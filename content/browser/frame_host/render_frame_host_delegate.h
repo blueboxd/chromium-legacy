@@ -483,15 +483,6 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   virtual Visibility GetVisibility();
 
   // Get the UKM source ID for current content from the last committed
-  // cross-document navigation. This is for providing data about the
-  // content to the URL-keyed metrics service. Use this method if UKM events
-  // should be attributed to the navigation that led to the creation of this
-  // document, that is, attribute events following navigations within the same
-  // document to the same source. Note: This is also exposed by the
-  // RenderWidgetHostDelegate class.
-  virtual ukm::SourceId GetUkmSourceIdForLastCommittedSource() const;
-
-  // Get the UKM source ID for current content from the last committed
   // navigation, either a cross-document or same-document navigation. This is
   // for providing data about the content to the URL-keyed metrics service.
   // Use this method if UKM events should be attributed to the latest

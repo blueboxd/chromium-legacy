@@ -16,9 +16,7 @@
 #include "cc/paint/element_id.h"
 #include "cc/trees/latency_info_swap_promise_monitor.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
-#include "content/common/input/input_event_ack.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/input_event_ack_state.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/ime_event_guard.h"
 #include "content/renderer/input/render_widget_input_handler_delegate.h"
@@ -34,6 +32,7 @@
 #include "third_party/blink/public/common/input/web_mouse_wheel_event.h"
 #include "third_party/blink/public/common/input/web_pointer_event.h"
 #include "third_party/blink/public/common/input/web_touch_event.h"
+#include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
@@ -192,10 +191,11 @@ viz::FrameSinkId GetRemoteFrameSinkId(const blink::WebHitTestResult& result) {
   return RenderFrameProxy::FromWebFrame(remote_frame)->frame_sink_id();
 }
 
-InputEventAckState GetAckResult(WebInputEventResult processed) {
+blink::mojom::InputEventResultState GetAckResult(
+    WebInputEventResult processed) {
   return processed == WebInputEventResult::kNotHandled
-             ? INPUT_EVENT_ACK_STATE_NOT_CONSUMED
-             : INPUT_EVENT_ACK_STATE_CONSUMED;
+             ? blink::mojom::InputEventResultState::kNotConsumed
+             : blink::mojom::InputEventResultState::kConsumed;
 }
 
 }  // namespace
@@ -624,8 +624,9 @@ void RenderWidgetInputHandler::InjectGestureScrollEvent(
 
     widget_->GetInputEventQueue()->HandleEvent(
         std::move(web_scoped_gesture_event), latency_info,
-        DISPATCH_TYPE_NON_BLOCKING, INPUT_EVENT_ACK_STATE_NOT_CONSUMED,
-        attribution, HandledEventCallback());
+        DISPATCH_TYPE_NON_BLOCKING,
+        blink::mojom::InputEventResultState::kNotConsumed, attribution,
+        HandledEventCallback());
   }
 }
 

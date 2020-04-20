@@ -210,7 +210,8 @@ TEST_F(OverscrollControllerAndroidUnitTest,
   blink::WebGestureEvent event(blink::WebInputEvent::kGestureScrollUpdate,
                                blink::WebInputEvent::kNoModifiers,
                                ui::EventTimeForNow());
-  controller_->OnGestureEventAck(event, INPUT_EVENT_ACK_STATE_CONSUMED);
+  controller_->OnGestureEventAck(
+      event, blink::mojom::InputEventResultState::kConsumed);
 
   testing::Mock::VerifyAndClearExpectations(&refresh_);
 }

@@ -1088,9 +1088,8 @@ class TestNavigationThrottle : public content::NavigationThrottle {
     }
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindRepeating(&TestNavigationThrottle::ShowInterstitial,
-                            weak_ptr_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&TestNavigationThrottle::ShowInterstitial,
+                                  weak_ptr_factory_.GetWeakPtr()));
     return NavigationThrottle::DEFER;
   }
 

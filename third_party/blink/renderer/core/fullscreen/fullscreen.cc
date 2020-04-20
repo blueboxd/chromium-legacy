@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -487,19 +488,13 @@ void EnqueueEvent(const AtomicString& type,
 
 const char Fullscreen::kSupplementName[] = "Fullscreen";
 
-Fullscreen& Fullscreen::From(Document& document) {
-  Fullscreen* fullscreen = FromIfExists(document);
+Fullscreen& Fullscreen::From(LocalDOMWindow& window) {
+  Fullscreen* fullscreen = Supplement<LocalDOMWindow>::From<Fullscreen>(window);
   if (!fullscreen) {
-    fullscreen = MakeGarbageCollected<Fullscreen>(document);
-    ProvideTo(document, fullscreen);
+    fullscreen = MakeGarbageCollected<Fullscreen>(window);
+    ProvideTo(window, fullscreen);
   }
   return *fullscreen;
-}
-
-Fullscreen* Fullscreen::FromIfExists(Document& document) {
-  if (!document.HasFullscreenSupplement())
-    return nullptr;
-  return Supplement<Document>::From<Fullscreen>(document);
 }
 
 Element* Fullscreen::FullscreenElementFrom(Document& document) {
@@ -543,17 +538,11 @@ bool Fullscreen::IsInFullscreenElementStack(const Element& element) {
   return HasFullscreenFlag(const_cast<Element&>(element));
 }
 
-Fullscreen::Fullscreen(Document& document)
-    : Supplement<Document>(document),
-      ExecutionContextLifecycleObserver(&document) {
-  document.SetHasFullscreenSupplement();
-}
+Fullscreen::Fullscreen(LocalDOMWindow& window)
+    : Supplement<LocalDOMWindow>(window),
+      ExecutionContextLifecycleObserver(&window) {}
 
 Fullscreen::~Fullscreen() = default;
-
-Document* Fullscreen::GetDocument() {
-  return Document::From(GetExecutionContext());
-}
 
 void Fullscreen::ContextDestroyed() {
   pending_requests_.clear();
@@ -605,11 +594,12 @@ ScriptPromise Fullscreen::RequestFullscreen(Element& pending,
 
   // Use counters only need to be incremented in the process of the actual
   // fullscreen element.
+  LocalDOMWindow& window = *document.domWindow();
   if (!for_cross_process_descendant) {
-    if (document.IsSecureContext())
-      UseCounter::Count(document, WebFeature::kFullscreenSecureOrigin);
+    if (window.IsSecureContext())
+      UseCounter::Count(window, WebFeature::kFullscreenSecureOrigin);
     else
-      UseCounter::Count(document, WebFeature::kFullscreenInsecureOrigin);
+      UseCounter::Count(window, WebFeature::kFullscreenInsecureOrigin);
   }
 
   // 5. Let |error| be false.
@@ -631,14 +621,14 @@ ScriptPromise Fullscreen::RequestFullscreen(Element& pending,
   // the output device. Optionally display a message how the end user can
   // revert this.
   if (!error) {
-    if (From(document).pending_requests_.size()) {
-      UseCounter::Count(document,
+    if (From(window).pending_requests_.size()) {
+      UseCounter::Count(window,
                         WebFeature::kFullscreenRequestWithPendingElement);
     }
 
-    From(document).pending_requests_.push_back(
+    From(window).pending_requests_.push_back(
         MakeGarbageCollected<PendingRequest>(&pending, request_type, resolver));
-    LocalFrame& frame = *document.GetFrame();
+    LocalFrame& frame = *window.GetFrame();
     frame.GetChromeClient().EnterFullscreen(frame, options,
                                             for_cross_process_descendant);
 
@@ -675,7 +665,7 @@ void Fullscreen::DidResolveEnterFullscreenRequest(Document& document,
   }
 
   PendingRequests requests;
-  requests.swap(From(document).pending_requests_);
+  requests.swap(From(*document.domWindow()).pending_requests_);
   for (const Member<PendingRequest>& request : requests) {
     ContinueRequestFullscreen(document, *request->element(), request->type(),
                               request->resolver(), !granted);
@@ -867,7 +857,7 @@ ScriptPromise Fullscreen::ExitFullscreen(Document& doc,
     if (ua_originated) {
       ContinueExitFullscreen(&doc, resolver, true /* resize */);
     } else {
-      From(top_level_doc).pending_exits_.push_back(resolver);
+      From(*top_level_doc.domWindow()).pending_exits_.push_back(resolver);
       LocalFrame& frame = *doc.GetFrame();
       frame.GetChromeClient().ExitFullscreen(frame);
     }
@@ -886,7 +876,7 @@ ScriptPromise Fullscreen::ExitFullscreen(Document& doc,
 void Fullscreen::DidExitFullscreen(Document& document) {
   // If this is a response to an ExitFullscreen call then
   // continue exiting. Otherwise call FullyExitFullscreen.
-  Fullscreen& fullscreen = From(document);
+  Fullscreen& fullscreen = From(*document.domWindow());
   PendingExits exits;
   exits.swap(fullscreen.pending_exits_);
   if (exits.IsEmpty()) {
@@ -1028,7 +1018,7 @@ void Fullscreen::ElementRemoved(Element& node) {
 void Fullscreen::Trace(Visitor* visitor) {
   visitor->Trace(pending_requests_);
   visitor->Trace(pending_exits_);
-  Supplement<Document>::Trace(visitor);
+  Supplement<LocalDOMWindow>::Trace(visitor);
   ExecutionContextLifecycleObserver::Trace(visitor);
 }
 

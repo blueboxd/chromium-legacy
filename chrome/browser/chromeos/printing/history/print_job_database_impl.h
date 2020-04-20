@@ -67,10 +67,15 @@ class PrintJobDatabaseImpl : public PrintJobDatabase {
                          DeletePrintJobsCallback callback,
                          bool success);
 
-  void GetPrintJobsFromProtoDatabase(GetPrintJobsCallback callback);
+  void GetPrintJobsFromProtoDatabase(
+      GetPrintJobsFromProtoDatabaseCallback callback);
 
-  void OnPrintJobsRetrieved(
-      GetPrintJobsCallback callback,
+  void OnPrintJobsRetrieved(GetPrintJobsCallback callback,
+                            bool success,
+                            std::vector<printing::proto::PrintJobInfo> entries);
+
+  void OnPrintJobRetrievedFromDatabase(
+      GetPrintJobsFromProtoDatabaseCallback callback,
       bool success,
       std::unique_ptr<std::vector<printing::proto::PrintJobInfo>> entries);
 

@@ -163,7 +163,7 @@ void PowerHandler::RegisterMessages() {
 void PowerHandler::OnJavascriptAllowed() {
   PowerManagerClient* power_manager_client = PowerManagerClient::Get();
   power_manager_client_observer_.Add(power_manager_client);
-  power_manager_client->GetSwitchStates(base::Bind(
+  power_manager_client->GetSwitchStates(base::BindOnce(
       &PowerHandler::OnGotSwitchStates, weak_ptr_factory_.GetWeakPtr()));
 
   // Observe power management prefs used in the UI.

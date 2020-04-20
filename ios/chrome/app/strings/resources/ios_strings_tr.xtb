@@ -102,6 +102,7 @@
 <translation id="2218443599109088993">Uzaklaştır</translation>
 <translation id="2230173723195178503">Web sayfası yüklendi</translation>
 <translation id="2239626343334228536">Göz atma verileri temizleniyor...</translation>
+<translation id="2245545499420671379">Gizli modda Üçüncü Taraf Çerezleri engelle</translation>
 <translation id="2257567812274161158">Senkronizasyon çalışmıyor.</translation>
 <translation id="2267753748892043616">Hesap Ekle</translation>
 <translation id="2268044343513325586">Hassaslaştır</translation>
@@ -115,6 +116,7 @@
 <translation id="2360196772093551345">Mobil Site İste</translation>
 <translation id="2381405137052800939">Temel ayarlar</translation>
 <translation id="2386793615875593361">1 fotoğraf seçildi</translation>
+<translation id="2421004566762153674">Üçüncü taraf çerezler engelleniyor</translation>
 <translation id="2421044535038393232">Düzenlemeye Devam Et</translation>
 <translation id="2435457462613246316">Şifreyi göster</translation>
 <translation id="2497852260688568942">Yöneticiniz senkronizasyonu devre dışı bıraktı</translation>
@@ -418,6 +420,7 @@ Handoff'un ayrıca, Ayarlar'ın Genel bölümünde de etkinleştirilmesi ve ciha
 
 Verileriniz <ph name="TIME" /> tarihinde senkronizasyon parolanızla şifrelendi. Senkronizasyonu başlatmak için senkronizasyon parolanızı girin.</translation>
 <translation id="6418346271604475326">PDF hazırlanıyor</translation>
+<translation id="6426067060178468363">Çerezlere İzin Ver</translation>
 <translation id="6434591244308415567">Bir hata oluştu. Daha sonra tekrar deneyin.</translation>
 <translation id="6445051938772793705">Ülke</translation>
 <translation id="6445981559479772097">Mesaj gönderildi.</translation>
@@ -543,6 +546,7 @@ Hesabınız <ph name="HOSTED_DOMAIN" /> tarafından yönetildiği için oturumun
 <translation id="8076014560081431679">Kayıtlı site ayarları silinmez ve web'e göz atma alışkanlıklarınızı yansıtabilir. <ph name="BEGIN_LINK" />Daha fazla bilgi edinin<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">Dosya indirme işlevi kullanılabilir. Seçenekler ekranın alt tarafındadır.</translation>
 <translation id="8131740175452115882">Onayla</translation>
+<translation id="8174524257672181687">Tüm Çerezleri Engelle (Önerilmez)</translation>
 <translation id="8197543752516192074">Sayfayı Çevir</translation>
 <translation id="8205564605687841303">İptal</translation>
 <translation id="8225985093977202398">Önbelleğe Alınan Resimler ve Dosyalar</translation>

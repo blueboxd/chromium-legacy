@@ -588,6 +588,15 @@ int Element::DefaultTabIndex() const {
 }
 
 bool Element::IsFocusableStyle() const {
+  // In order to check focusable style, we use the existence of LayoutObjects
+  // as a proxy for determining whether the element would have a display mode
+  // that restricts visibility (such as display: none). However, with
+  // display-locking, it is possible that we deferred such LayoutObject
+  // creation. We need to ensure to update style and layout tree to have
+  // up-to-date information.
+  if (RuntimeEnabledFeatures::CSSSubtreeVisibilityEnabled())
+    GetDocument().UpdateStyleAndLayoutTreeForNode(this);
+
   // Elements in canvas fallback content are not rendered, but they are allowed
   // to be focusable as long as their canvas is displayed and visible.
   if (IsInCanvasSubtree()) {
@@ -597,14 +606,6 @@ bool Element::IsFocusableStyle() const {
     return canvas->GetLayoutObject() &&
            canvas->GetLayoutObject()->Style()->Visibility() ==
                EVisibility::kVisible;
-  }
-
-  // Update style if we're in a display-locked subtree, because it isn't
-  // included in the normal style updates. We also need to update the layout
-  // here because some callers expect the layout stays clean.
-  if (DisplayLockUtilities::NearestLockedExclusiveAncestor(*this)) {
-    GetDocument().UpdateStyleAndLayoutForNode(
-        this, DocumentUpdateReason::kDisplayLock);
   }
 
   if (IsInsideInvisibleSubtree()) {

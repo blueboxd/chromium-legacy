@@ -230,7 +230,7 @@ TEST_F(CupsPrintersHandlerTest, RemoveCorrectPrinter) {
   bool expected = true;
   client->CupsRemovePrinter(
       "testprinter1",
-      base::BindRepeating(&RemovedPrinter, run_loop.QuitClosure(), &expected),
+      base::BindOnce(&RemovedPrinter, run_loop.QuitClosure(), &expected),
       base::DoNothing());
   run_loop.Run();
   EXPECT_FALSE(expected);

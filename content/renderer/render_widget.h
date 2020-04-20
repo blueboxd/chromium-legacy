@@ -37,7 +37,6 @@
 #include "content/common/edit_command.h"
 #include "content/common/widget.mojom.h"
 #include "content/public/common/drop_data.h"
-#include "content/renderer/compositor/layer_tree_view_delegate.h"
 #include "content/renderer/input/main_thread_event_queue.h"
 #include "content/renderer/input/render_widget_input_handler.h"
 #include "content/renderer/input/render_widget_input_handler_delegate.h"
@@ -93,7 +92,6 @@ class WebPagePopup;
 }  // namespace blink
 
 namespace cc {
-struct ApplyViewportChangesArgs;
 class SwapPromise;
 }
 
@@ -111,7 +109,6 @@ namespace content {
 class CompositorDependencies;
 class FrameSwapMessageQueue;
 class ImeEventGuard;
-class LayerTreeView;
 class MainThreadEventQueue;
 class PepperPluginInstanceImpl;
 class RenderFrameImpl;
@@ -145,7 +142,6 @@ class CONTENT_EXPORT RenderWidget
       public IPC::Sender,
       public blink::WebPagePopupClient,  // Is-a WebWidgetClient also.
       public mojom::Widget,
-      public LayerTreeViewDelegate,
       public RenderWidgetInputHandlerDelegate,
       public RenderWidgetScreenMetricsEmulatorDelegate,
       public MainThreadEventQueueClient {
@@ -298,36 +294,6 @@ class CONTENT_EXPORT RenderWidget
   // IPC::Sender
   bool Send(IPC::Message* msg) override;
 
-  // LayerTreeViewDelegate
-  void ApplyViewportChanges(const cc::ApplyViewportChangesArgs& args) override;
-  void RecordManipulationTypeCounts(cc::ManipulationInfo info) override;
-  void SendOverscrollEventFromImplSide(
-      const gfx::Vector2dF& overscroll_delta,
-      cc::ElementId scroll_latched_element_id) override;
-  void SendScrollEndEventFromImplSide(
-      cc::ElementId scroll_latched_element_id) override;
-  void BeginMainFrame(base::TimeTicks frame_time) override;
-  void OnDeferMainFrameUpdatesChanged(bool) override;
-  void OnDeferCommitsChanged(bool) override;
-  void DidBeginMainFrame() override;
-  void RequestNewLayerTreeFrameSink(
-      LayerTreeFrameSinkCallback callback) override;
-  void DidCommitAndDrawCompositorFrame() override;
-  void WillCommitCompositorFrame() override;
-  void DidCommitCompositorFrame(base::TimeTicks commit_start_time) override;
-  void DidCompletePageScaleAnimation() override;
-  void RecordStartOfFrameMetrics() override;
-  void RecordEndOfFrameMetrics(
-      base::TimeTicks frame_begin_time,
-      cc::ActiveFrameSequenceTrackers trackers) override;
-  std::unique_ptr<cc::BeginMainFrameMetrics> GetBeginMainFrameMetrics()
-      override;
-
-  void BeginUpdateLayers() override;
-  void EndUpdateLayers() override;
-  void UpdateVisualState() override;
-  void WillBeginCompositorFrame() override;
-
   // RenderWidgetInputHandlerDelegate
   void FocusChangeComplete() override;
   void ObserveGestureEventAndResult(
@@ -422,10 +388,15 @@ class CONTENT_EXPORT RenderWidget
   void RequestDecode(const cc::PaintImage& image,
                      base::OnceCallback<void(bool)> callback) override;
   viz::FrameSinkId GetFrameSinkId() override;
-  void AddPresentationCallback(
-      uint32_t frame_token,
-      base::OnceCallback<void(base::TimeTicks)> callback) override;
   void RecordTimeToFirstActivePaint(base::TimeDelta duration) override;
+  void OnDeferMainFrameUpdatesChanged(bool) override;
+  void OnDeferCommitsChanged(bool) override;
+  void DidCommitAndDrawCompositorFrame() override;
+  void DidCommitCompositorFrame(base::TimeTicks commit_start_time) override;
+  void DidCompletePageScaleAnimation() override;
+  void WillBeginMainFrame() override;
+  void RequestNewLayerTreeFrameSink(
+      LayerTreeFrameSinkCallback callback) override;
 
   // Returns the scale being applied to the document in blink by the device
   // emulator. Returns 1 if there is no emulation active. Use this to position
@@ -809,20 +780,17 @@ class CONTENT_EXPORT RenderWidget
   // features.
   CompositorDependencies* const compositor_deps_;
 
-  // We are responsible for destroying this object via its Close method, unless
-  // the RenderWidget is associated with a RenderViewImpl through |delegate_|.
-  // Becomes null once close is initiated on the RenderWidget.
-  blink::WebWidget* webwidget_ = nullptr;
-
   // The delegate for this object which is just a RenderViewImpl.
   // This member is non-null if and only if the RenderWidget is associated with
   // a RenderViewImpl.
   RenderWidgetDelegate* delegate_ = nullptr;
 
-  // Wraps the LayerTreeHost, providing clients for it with the ability to
-  // outlive RenderWidget during shutdown and keep the client pointers valid.
-  std::unique_ptr<LayerTreeView> layer_tree_view_;
-  // This is valid while |layer_tree_view_| is valid.
+  // We are responsible for destroying this object via its Close method, unless
+  // the RenderWidget is associated with a RenderViewImpl through |delegate_|.
+  // Becomes null once close is initiated on the RenderWidget.
+  blink::WebWidget* webwidget_ = nullptr;
+
+  // This is valid while |webwidget_| is valid.
   cc::LayerTreeHost* layer_tree_host_ = nullptr;
 
   // Present when emulation is enabled, only in a main frame RenderWidget. Used

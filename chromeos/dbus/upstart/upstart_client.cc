@@ -80,6 +80,14 @@ class UpstartClientImpl : public UpstartClient {
     CallJobMethod(kAuthPolicyJob, kRestartMethod, {}, base::DoNothing());
   }
 
+  void StartLacrosChrome(const std::vector<std::string>& upstart_env) override {
+    // TODO(lacros): Remove logging.
+    StartJob("lacros_2dchrome", upstart_env, base::BindOnce([](bool result) {
+               LOG(WARNING) << (result ? "success" : "fail")
+                            << " starting lacros-chrome";
+             }));
+  }
+
   void StartMediaAnalytics(const std::vector<std::string>& upstart_env,
                            VoidDBusMethodCallback callback) override {
     StartJob(kMediaAnalyticsJob, upstart_env, std::move(callback));

@@ -12,6 +12,7 @@
 
 #include "base/fuchsia/default_context.h"
 #include "base/fuchsia/file_utils.h"
+#include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "skia/ext/fontmgr_default.h"

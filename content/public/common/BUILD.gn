@@ -121,7 +121,6 @@ jumbo_source_set("common_sources") {
     "impression.h",
     "injection_test_mac.h",
     "injection_test_win.h",
-    "input_event_ack_source.h",
     "input_event_ack_state.h",
     "isolated_world_ids.h",
     "javascript_dialog_type.h",

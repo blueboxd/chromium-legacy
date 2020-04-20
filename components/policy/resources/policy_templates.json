@@ -6738,7 +6738,12 @@
       'owners': ['file://components/policy/resources/OWNERS'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:12-', 'chrome_os:12-', 'android:30-'],
+      'supported_on': [
+        'chrome.*:12-',
+        'chrome_os:12-',
+        'android:30-',
+        'ios:83-'
+      ],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -11919,7 +11924,7 @@
         {
           'name': 'CriticalFixesOnly',
           'value': 1,
-          'caption': '''Enable variations concerning criticial fixes only''',
+          'caption': '''Enable variations concerning critical fixes only''',
         },
         {
           'name': 'VariationsDisabled',
@@ -11944,7 +11949,7 @@
 
       Setting the <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME">CriticalFixesOnly</ph> (value 1), allows only variations considered critical security or stability fixes to be applied to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
-      Setting the <ph name="VARIATIONS_DISABLED_OPTION_NAME">VariationsDisabled</ph> (value 2), prevent all variations from being applied to the browser. Please note that this mode can potentially prevent the <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> developers from providing criticial security fixes in a timely manner and is thus not recommended.'''
+      Setting the <ph name="VARIATIONS_DISABLED_OPTION_NAME">VariationsDisabled</ph> (value 2), prevent all variations from being applied to the browser. Please note that this mode can potentially prevent the <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> developers from providing critical security fixes in a timely manner and is thus not recommended.'''
     },
     {
       'name': 'DeviceChromeVariations',
@@ -11964,7 +11969,7 @@
         {
           'name': 'CriticalFixesOnly',
           'value': 1,
-          'caption': '''Enable variations concerning criticial fixes only''',
+          'caption': '''Enable variations concerning critical fixes only''',
         },
         {
           'name': 'VariationsDisabled',
@@ -11989,7 +11994,7 @@
 
       Setting the <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME">CriticalFixesOnly</ph> (value 1), allows only variations considered critical security or stability fixes to be applied to <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>.
 
-      Setting the <ph name="VARIATIONS_DISABLED_OPTION_NAME">VariationsDisabled</ph> (value 2), will prevent all variations from being applied to the browser on the login screen. Please note that this mode can potentially prevent the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> developers from providing criticial security fixes in a timely manner and is thus not recommended.'''
+      Setting the <ph name="VARIATIONS_DISABLED_OPTION_NAME">VariationsDisabled</ph> (value 2), will prevent all variations from being applied to the browser on the login screen. Please note that this mode can potentially prevent the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> developers from providing critical security fixes in a timely manner and is thus not recommended.'''
     },
     {
       'name': 'AttestationEnabledForDevice',

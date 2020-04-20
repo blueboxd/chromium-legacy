@@ -410,47 +410,9 @@ void FetchManager::Loader::DidReceiveResponse(
   place_holder_body_ = MakeGarbageCollected<PlaceHolderBytesConsumer>();
   FetchResponseData* response_data = FetchResponseData::CreateWithBuffer(
       BodyStreamBuffer::Create(script_state, place_holder_body_, signal_));
-  response_data->SetStatus(response.HttpStatusCode());
-  if (response.CurrentRequestUrl().ProtocolIsAbout() ||
-      response.CurrentRequestUrl().ProtocolIsData() ||
-      response.CurrentRequestUrl().ProtocolIs("blob")) {
-    response_data->SetStatusMessage("OK");
-  } else {
-    response_data->SetStatusMessage(response.HttpStatusText());
-  }
 
-  for (auto& it : response.HttpHeaderFields())
-    response_data->HeaderList()->Append(it.key, it.value);
-
-  // Corresponds to https://fetch.spec.whatwg.org/#main-fetch step:
-  // "If |internalResponse|’s URL list is empty, then set it to a clone of
-  // |request|’s URL list."
-  if (response.UrlListViaServiceWorker().IsEmpty()) {
-    // Note: |UrlListViaServiceWorker()| is empty, unless the response came from
-    // a service worker, in which case it will only be empty if it was created
-    // through new Response().
-    response_data->SetURLList(url_list_);
-  } else {
-    DCHECK(response.WasFetchedViaServiceWorker());
-    response_data->SetURLList(response.UrlListViaServiceWorker());
-  }
-
-  response_data->SetMimeType(response.MimeType());
-  response_data->SetResponseTime(response.ResponseTime());
-
-  if (response.WasCached()) {
-    response_data->SetResponseSource(
-        network::mojom::FetchResponseSource::kHttpCache);
-  } else if (!response.WasFetchedViaServiceWorker()) {
-    response_data->SetResponseSource(
-        network::mojom::FetchResponseSource::kNetwork);
-  }
-
-  // Note if the response was loaded with credentials enabled.
-  response_data->SetLoadedWithCredentials(
-      fetch_request_data_->Credentials() == CredentialsMode::kInclude ||
-      (fetch_request_data_->Credentials() == CredentialsMode::kSameOrigin &&
-       tainting == FetchRequestData::kBasicTainting));
+  response_data->InitFromResourceResponse(
+      url_list_, fetch_request_data_->Credentials(), tainting, response);
 
   FetchResponseData* tainted_response = nullptr;
 

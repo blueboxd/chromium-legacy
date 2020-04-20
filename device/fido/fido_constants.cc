@@ -4,6 +4,8 @@
 
 #include "device/fido/fido_constants.h"
 
+#include "base/logging.h"
+
 namespace device {
 
 const std::array<uint8_t, 32> kBogusAppParam = {

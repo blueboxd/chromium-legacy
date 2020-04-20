@@ -10,14 +10,18 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/no_destructor.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/threading/platform_thread.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 
 namespace base {
 
@@ -45,6 +49,8 @@ const base::TimeDelta kMonitoringPeriod = base::TimeDelta::FromSeconds(10);
 HangWatchScope::HangWatchScope(TimeDelta timeout) {
   internal::HangWatchState* current_hang_watch_state =
       internal::HangWatchState::GetHangWatchStateForCurrentThread()->Get();
+
+  DCHECK(timeout >= base::TimeDelta()) << "Negative timeouts are invalid.";
 
   // TODO(crbug.com/1034046): Remove when all threads using HangWatchScope are
   // monitored. Thread is not monitored, noop.
@@ -146,6 +152,10 @@ void HangWatcher::Run() {
       should_monitor_.Wait();
     } else {
       Monitor();
+
+      if (after_monitor_closure_for_testing_) {
+        after_monitor_closure_for_testing_.Run();
+      }
     }
 
     if (keep_monitoring_.load(std::memory_order_relaxed)) {
@@ -186,34 +196,156 @@ ScopedClosureRunner HangWatcher::RegisterThread() {
                                       Unretained(HangWatcher::GetInstance())));
 }
 
-void HangWatcher::Monitor() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+base::TimeTicks HangWatcher::WatchStateSnapShot::GetHighestDeadline() const {
+  DCHECK(!hung_watch_state_copies_.empty());
+  // Since entries are sorted in increasing order the last entry is the largest
+  // one.
+  return hung_watch_state_copies_.back().deadline;
+}
 
-  bool must_invoke_hang_closure = false;
-  {
-    AutoLock auto_lock(watch_state_lock_);
-    for (const auto& watch_state : watch_states_) {
-      if (watch_state->IsOverDeadline()) {
-        must_invoke_hang_closure = true;
-        break;
-      }
+HangWatcher::WatchStateSnapShot::WatchStateSnapShot(
+    const HangWatchStates& watch_states,
+    base::TimeTicks snapshot_time,
+    base::TimeTicks previous_latest_expired_deadline)
+    : snapshot_time_(snapshot_time) {
+  // Initial copy of the values.
+  for (const auto& watch_state : watch_states) {
+    base::TimeTicks deadline = watch_state.get()->GetDeadline();
+
+    // Some hangs that were already recorded are still live, snapshot is
+    // not actionable.
+    if (deadline <= previous_latest_expired_deadline) {
+      hung_watch_state_copies_.clear();
+      return;
+    }
+
+    // Only copy hung threads.
+    if (deadline <= snapshot_time) {
+      hung_watch_state_copies_.push_back(
+          WatchStateCopy{deadline, watch_state.get()->GetThreadID()});
     }
   }
 
-  if (must_invoke_hang_closure) {
-    capture_in_progress.store(true, std::memory_order_relaxed);
-    base::AutoLock scope_lock(capture_lock_);
+  // Sort |hung_watch_state_copies_| by order of decreasing hang severity so the
+  // most severe hang is first in the list.
+  std::sort(hung_watch_state_copies_.begin(), hung_watch_state_copies_.end(),
+            [](const WatchStateCopy& lhs, const WatchStateCopy& rhs) {
+              return lhs.deadline < rhs.deadline;
+            });
+}
 
-    // Invoke the closure outside the scope of |watch_state_lock_|
-    // to prevent lock reentrancy.
-    on_hang_closure_.Run();
+HangWatcher::WatchStateSnapShot::WatchStateSnapShot(
+    const WatchStateSnapShot& other) = default;
 
-    capture_in_progress.store(false, std::memory_order_relaxed);
+HangWatcher::WatchStateSnapShot::~WatchStateSnapShot() = default;
+
+std::string HangWatcher::WatchStateSnapShot::PrepareHungThreadListCrashKey()
+    const {
+  // Build a crash key string that contains the ids of the hung threads.
+  constexpr char kSeparator{'|'};
+  std::string list_of_hung_thread_ids;
+
+  // Add as many thread ids to the crash key as possible.
+  for (const WatchStateCopy& copy : hung_watch_state_copies_) {
+    std::string fragment = base::NumberToString(copy.thread_id) + kSeparator;
+    if (list_of_hung_thread_ids.size() + fragment.size() <
+        static_cast<std::size_t>(debug::CrashKeySize::Size256)) {
+      list_of_hung_thread_ids += fragment;
+    } else {
+      // Respect the by priority ordering of thread ids in the crash key by
+      // stopping the construction as soon as one does not fit. This avoids
+      // including lesser priority ids while omitting more important ones.
+      break;
+    }
   }
 
-  if (after_monitor_closure_for_testing_) {
-    after_monitor_closure_for_testing_.Run();
-  }
+  return list_of_hung_thread_ids;
+}
+
+HangWatcher::WatchStateSnapShot HangWatcher::GrabWatchStateSnapshotForTesting()
+    const {
+  WatchStateSnapShot snapshot(watch_states_, base::TimeTicks::Now(),
+                              latest_expired_deadline_);
+  return snapshot;
+}
+
+void HangWatcher::Monitor() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  AutoLock auto_lock(watch_state_lock_);
+
+  // If all threads unregistered since this function was invoked there's
+  // nothing to do anymore.
+  if (watch_states_.empty())
+    return;
+
+  const base::TimeTicks now = base::TimeTicks::Now();
+
+  // See if any thread hung. We're holding |watch_state_lock_| so threads
+  // can't register or unregister but their deadline still can change
+  // atomically. This is fine. Detecting a hang is generally best effort and
+  // if a thread resumes from hang in the time it takes to move on to
+  // capturing then its ID will be absent from the crash keys.
+  bool any_thread_hung = std::any_of(
+      watch_states_.cbegin(), watch_states_.cend(),
+      [this, now](const std::unique_ptr<internal::HangWatchState>& state) {
+        base::TimeTicks deadline = state->GetDeadline();
+        return deadline > latest_expired_deadline_ && deadline < now;
+      });
+
+  // If at least a thread is hung we need to capture.
+  if (any_thread_hung)
+    CaptureHang(now);
+}
+
+void HangWatcher::CaptureHang(base::TimeTicks capture_time) {
+  capture_in_progress.store(true, std::memory_order_relaxed);
+  base::AutoLock scope_lock(capture_lock_);
+
+  WatchStateSnapShot watch_state_snapshot(watch_states_, capture_time,
+                                          latest_expired_deadline_);
+
+  // The hung thread(s) could detected at the start of Monitor() could have
+  // moved on from their scopes. If that happened and there are no more hung
+  // threads then abort capture.
+  std::string list_of_hung_thread_ids =
+      watch_state_snapshot.PrepareHungThreadListCrashKey();
+  if (list_of_hung_thread_ids.empty())
+    return;
+
+#if not defined(OS_NACL)
+  static debug::CrashKeyString* crash_key = AllocateCrashKeyString(
+      "list-of-hung-threads", debug::CrashKeySize::Size256);
+  debug::ScopedCrashKeyString list_of_hung_threads_crash_key_string(
+      crash_key, list_of_hung_thread_ids);
+#endif
+
+  // To avoid capturing more than one hang that blames a subset of the same
+  // threads it's necessary to keep track of what is the furthest deadline
+  // that contributed to declaring a hang. Only once
+  // all threads have deadlines past this point can we be sure that a newly
+  // discovered hang is not directly related.
+  // Example:
+  // **********************************************************************
+  // Timeline A : L------1-------2----------3-------4----------N-----------
+  // Timeline B : -------2----------3-------4----------L----5------N-------
+  // Timeline C : L----------------------------5------6----7---8------9---N
+  // **********************************************************************
+  // In the example when a Monitor() happens during timeline A
+  // |latest_expired_deadline_| (L) is at time zero and deadlines (1-4)
+  // are before Now() (N) . A hang is captured and L is updated. During
+  // the next Monitor() (timeline B) a new deadline is over but we can't
+  // capture a hang because deadlines 2-4 are still live and already counted
+  // toward a hang. During a third monitor (timeline C) all live deadlines
+  // are now after L and a second hang can be recorded.
+  base::TimeTicks latest_expired_deadline =
+      watch_state_snapshot.GetHighestDeadline();
+
+  on_hang_closure_.Run();
+
+  // Update after running the actual capture.
+  latest_expired_deadline_ = latest_expired_deadline;
+
+  capture_in_progress.store(false, std::memory_order_relaxed);
 }
 
 void HangWatcher::SetAfterMonitorClosureForTesting(
@@ -262,7 +394,7 @@ namespace internal {
 
 // |deadline_| starts at Max() to avoid validation problems
 // when setting the first legitimate value.
-HangWatchState::HangWatchState() {
+HangWatchState::HangWatchState() : thread_id_(PlatformThread::CurrentId()) {
   // There should not exist a state object for this thread already.
   DCHECK(!GetHangWatchStateForCurrentThread()->Get());
 
@@ -328,6 +460,10 @@ ThreadLocalPointer<HangWatchState>*
 HangWatchState::GetHangWatchStateForCurrentThread() {
   static NoDestructor<ThreadLocalPointer<HangWatchState>> hang_watch_state;
   return hang_watch_state.get();
+}
+
+PlatformThreadId HangWatchState::GetThreadID() const {
+  return thread_id_;
 }
 
 }  // namespace internal

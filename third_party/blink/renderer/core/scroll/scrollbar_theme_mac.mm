@@ -236,8 +236,8 @@ CocoaScrollbarPainter::Params GetPaintParams(const Scrollbar& scrollbar,
   if (scrollbar.IsLeftSideVerticalScrollbar())
     params.orientation = CocoaScrollbarPainter::Orientation::kVerticalOnLeft;
 
+  params.dark_mode = scrollbar.UsedColorScheme() == WebColorScheme::kDark;
   params.overlay = overlay;
-  // Only enable dark mode for overlay scrollbars (for now).
   if (overlay)
     params.dark_mode = scrollbar.GetScrollbarOverlayColorTheme() ==
                        kScrollbarOverlayColorThemeLight;

@@ -192,6 +192,7 @@
 <translation id="1241753985463165747">ਚਲਾਏ ਜਾਣ 'ਤੇ ਵਰਤਮਾਨ ਵੈੱਬਸਾਈਟ ਦਾ ਸਾਰਾ ਡਾਟਾ ਪੜ੍ਹੋ ਅਤੇ ਬਦਲੋ</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> ਤੁਹਾਡੀਆਂ ਸੈਟਿੰਗਾਂ ਨੂੰ ਰੀਸੈੱਟ ਕਰਨਾ ਚਾਹੁੰਦਾ ਹੈ।</translation>
 <translation id="1243314992276662751">ਅਪਲੋਡ ਕਰੋ</translation>
+<translation id="1243436884219965846">ਪਾਸਵਰਡਾਂ ਦੀ ਸਮੀਖਿਆ ਕਰੋ</translation>
 <translation id="1244265436519979884">ਇਸ ਵੇਲੇ Linux ਦੀ ਮੁੜ-ਬਹਾਲੀ ਜਾਰੀ ਹੈ</translation>
 <translation id="1244303850296295656">ਐਕਸਟੈਂਸ਼ਨ ਗੜਬੜ</translation>
 <translation id="1246158006305844142">ਤੁਹਾਡੀਆਂ ਐਪਾਂ ਅਤੇ ਸੈਟਿੰਗਾਂ ਦਾ ਉਹਨਾਂ ਸਾਰੇ Chrome OS ਡੀਵਾਈਸਾਂ ਨਾਲ ਸਮਕਾਲੀਕਰਨ ਕੀਤਾ ਜਾਵੇਗਾ, ਜਿੱਥੇ ਤੁਸੀਂ ਆਪਣੇ Google ਖਾਤੇ ਨਾਲ ਸਾਈਨ-ਇਨ ਹੋ। ਬ੍ਰਾਊਜ਼ਰ ਸਮਕਾਲੀਕਰਨ ਵਿਕਲਪਾਂ ਲਈ, <ph name="LINK_BEGIN" />Chrome ਸੈਟਿੰਗਾਂ<ph name="LINK_END" /> 'ਤੇ ਜਾਓ।</translation>
@@ -2564,6 +2565,7 @@
 <translation id="4404136731284211429">ਦੁਬਾਰਾ ਸਕੈਨ ਕਰੋ</translation>
 <translation id="4404843640767531781"><ph name="APP_NAME" /> ਨੂੰ ਤੁਹਾਡੇ ਮਾਂ-ਪਿਓ ਵੱਲੋਂ ਬਲਾਕ ਕੀਤਾ ਗਿਆ ਹੈ। ਇਸ ਐਪ ਨੂੰ ਵਰਤਣ ਲਈ ਆਪਣੇ ਮਾਂ-ਪਿਓ ਤੋਂ ਇਜਾਜ਼ਤ ਮੰਗੋ।</translation>
 <translation id="4405117686468554883">*.jpeg, *.jpg, *.png</translation>
+<translation id="4406883609789734330">ਲਾਈਵ ਸੁਰਖੀਆਂ</translation>
 <translation id="4408599188496843485">ਸ&amp;ਹਾਇਤਾ</translation>
 <translation id="4409697491990005945">ਹਾਸ਼ੀਏ</translation>
 <translation id="4410545552906060960">ਆਪਣੇ ਡੀਵਾਈਸ ਨੂੰ ਅਣਲਾਕ ਕਰਨ ਲਈ ਪਾਸਵਰਡ ਦੀ ਬਜਾਏ ਨੰਬਰ (ਪਿੰਨ) ਵਰਤੋ। ਬਾਅਦ ਵਿੱਚ ਆਪਣਾ ਪਿੰਨ ਸੈੱਟ ਕਰਨ ਲਈ, ਸੈਟਿੰਗਾਂ 'ਤੇ ਜਾਓ।</translation>
@@ -3967,6 +3969,7 @@
 <translation id="6326855256003666642">ਕੀਪਅਲਾਈਵ ਦੀ ਗਣਨਾ</translation>
 <translation id="632707535499064463"><ph name="ORGANIZATION_NAME" /> ਲਈ ਤੁਹਾਨੂੰ ਅੰਤਿਮ ਸੀਮਾ ਤੋਂ ਪਹਿਲਾਂ ਇਸ ਡੀਵਾਈਸ ਨੂੰ ਅੱਪਡੇਟ ਕਰਨ ਦੀ ਲੋੜ ਹੈ।</translation>
 <translation id="6327785803543103246">ਵੈੱਬ ਪ੍ਰੌਕਸੀ autodiscovery</translation>
+<translation id="6331566915566907158">Chrome OS ਦੀਆਂ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ ਅਤੇ ਕਾਰਗੁਜ਼ਾਰੀ ਨੂੰ ਬਿਹਤਰ ਬਣਾਉਣ ਵਿੱਚ ਮਦਦ ਕਰੋ</translation>
 <translation id="6333064448949140209">ਫ਼ਾਈਲ ਡੀਬੱਗਿੰਗ ਲਈ Google ਨੂੰ ਭੇਜੀ ਜਾਵੇਗੀ</translation>
 <translation id="6339668969738228384"><ph name="USER_EMAIL_ADDRESS" /> ਲਈ ਇੱਕ ਨਵਾਂ ਪ੍ਰੋਫ਼ਾਈਲ ਬਣਾਓ</translation>
 <translation id="6340017061976355871">ਸਰਵਰ ਨਾਲ ਕਨੈਕਟ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ। ਕਿਰਪਾ ਕਰਕੇ ਆਪਣੇ ਨੈੱਟਵਰਕ ਕਨੈਕਸ਼ਨ ਦੀ ਜਾਂਚ ਕਰੋ ਅਤੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ। ਜੇਕਰ ਸਮੱਸਿਆ ਬਣੀ ਰਹਿੰਦੀ ਹੈ, ਤਾਂ ਆਪਣੀ Chromebook ਨੂੰ ਮੁੜ-ਚਾਲੂ ਕਰੋ।</translation>
@@ -4925,6 +4928,7 @@
 <translation id="7669825497510425694">{NUM_ATTEMPTS,plural, =1{ਗਲਤ ਪਿੰਨ। ਤੁਹਾਡੇ ਕੋਲ ਇੱਕ ਕੋਸ਼ਿਸ਼ ਬਾਕੀ ਹੈ।}one{ਗਲਤ ਪਿੰਨ। ਤੁਹਾਡੇ ਕੋਲ # ਕੋਸ਼ਿਸ਼ ਬਾਕੀ ਹੈ।}other{ਗਲਤ ਪਿੰਨ। ਤੁਹਾਡੇ ਕੋਲ # ਕੋਸ਼ਿਸ਼ਾਂ ਬਾਕੀ ਹਨ।}}</translation>
 <translation id="7671130400130574146">ਸਿਸਟਮ ਟਾਈਟਲ ਬਾਰ ਅਤੇ ਬੌਰਡਰ ਵਰਤੋ</translation>
 <translation id="767127784612208024">ਰੀਸੈੱਟ ਦੀ ਪੁਸ਼ਟੀ ਕਰਨ ਲਈ ਸਪਰਸ਼ ਕਰੋ</translation>
+<translation id="767147716926917172">Google ਨੂੰ ਸਵੈਚਲਿਤ ਤੌਰ 'ਤੇ ਤਸ਼ਖੀਸ ਅਤੇ ਵਰਤੋਂ ਡਾਟਾ ਭੇਜਦਾ ਹੈ</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" />, <ph name="PAGE_TITLE" /> ਵਿੱਚ।</translation>
 <translation id="7676867886086876795">ਕਿਸੇ ਵੀ ਲਿਖਤ ਖੇਤਰ ਵਿੱਚ ਬੋਲ ਕੇ ਲਿਖਵਾਉਣ ਲਈ ਆਪਣੀ ਅਵਾਜ਼ Google ਨੂੰ ਭੇਜੋ।</translation>
 <translation id="7678280409648629969">ਇਨਕੋਗਨਿਟੋ ਮੋਡ ਤੋਂ ਬਾਹਰ ਨਿਕਲਣ ਦੇ ਬਾਅਦ ਸਾਈਨ-ਇਨ ਡਾਟਾ Chrome ਵਿੱਚ ਸਟੋਰ ਕੀਤਾ ਜਾਵੇਗਾ। ਇਹ ਤੁਹਾਨੂੰ ਬਾਅਦ ਵਿੱਚ ਫਿਰ ਤੋਂ ਇਸ ਵੈੱਬਸਾਈਟ ਨਾਲ ਸਪਰਸ਼ ਆਈ.ਡੀ. ਵਰਤਣ ਦੇਵੇਗਾ।</translation>

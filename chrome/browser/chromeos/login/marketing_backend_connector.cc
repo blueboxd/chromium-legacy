@@ -30,7 +30,7 @@ namespace chromeos {
 namespace {
 // The scope that will be used to access the ChromebookEmailService API.
 const char kChromebookOAuth2Scope[] =
-    "https://www.googleapis.com/auth/pixelbook.email.preferences";
+    "https://www.googleapis.com/auth/chromebook.email";
 
 // API Endpoint
 const char kAccessPointsApiEndpoint[] = "https://accesspoints.googleapis.com/";

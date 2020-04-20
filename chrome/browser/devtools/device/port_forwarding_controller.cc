@@ -260,7 +260,7 @@ class SocketTunnel {
     host_socket_.reset(new net::TCPClientSocket(resolved_addresses, nullptr,
                                                 nullptr, net::NetLogSource()));
     int result = host_socket_->Connect(
-        base::Bind(&SocketTunnel::OnConnected, base::Unretained(this)));
+        base::BindOnce(&SocketTunnel::OnConnected, base::Unretained(this)));
     if (result != net::ERR_IO_PENDING)
       OnConnected(result);
   }
@@ -288,11 +288,10 @@ class SocketTunnel {
 
     scoped_refptr<net::IOBuffer> buffer =
         base::MakeRefCounted<net::IOBuffer>(kBufferSize);
-    int result = from->Read(
-        buffer.get(),
-        kBufferSize,
-        base::Bind(
-            &SocketTunnel::OnRead, base::Unretained(this), from, to, buffer));
+    int result =
+        from->Read(buffer.get(), kBufferSize,
+                   base::BindOnce(&SocketTunnel::OnRead, base::Unretained(this),
+                                  from, to, buffer));
     if (result != net::ERR_IO_PENDING)
       OnRead(from, to, std::move(buffer), result);
   }
@@ -313,10 +312,11 @@ class SocketTunnel {
         base::MakeRefCounted<net::DrainableIOBuffer>(std::move(buffer), total);
 
     ++pending_writes_;
-    result = to->Write(drainable.get(), total,
-                       base::Bind(&SocketTunnel::OnWritten,
-                                  base::Unretained(this), drainable, from, to),
-                       kPortForwardingControllerTrafficAnnotation);
+    result =
+        to->Write(drainable.get(), total,
+                  base::BindOnce(&SocketTunnel::OnWritten,
+                                 base::Unretained(this), drainable, from, to),
+                  kPortForwardingControllerTrafficAnnotation);
     if (result != net::ERR_IO_PENDING)
       OnWritten(drainable, from, to, result);
   }
@@ -338,8 +338,8 @@ class SocketTunnel {
       ++pending_writes_;
       result =
           to->Write(drainable.get(), drainable->BytesRemaining(),
-                    base::Bind(&SocketTunnel::OnWritten, base::Unretained(this),
-                               drainable, from, to),
+                    base::BindOnce(&SocketTunnel::OnWritten,
+                                   base::Unretained(this), drainable, from, to),
                     kPortForwardingControllerTrafficAnnotation);
       if (result != net::ERR_IO_PENDING)
         OnWritten(drainable, from, to, result);

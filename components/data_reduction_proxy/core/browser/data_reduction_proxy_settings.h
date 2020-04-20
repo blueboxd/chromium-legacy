@@ -19,7 +19,6 @@
 #include "base/threading/thread_checker.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_member.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -226,9 +225,6 @@ class DataReductionProxySettings {
   virtual void RecordStartupState(
       data_reduction_proxy::ProxyStartupState state) const;
 
-  // Checks whether |proxy_server| is a valid configured proxy.
-  bool IsConfiguredDataReductionProxy(
-      const net::ProxyServer& proxy_server) const;
 
  private:
   friend class DataReductionProxySettingsTestBase;

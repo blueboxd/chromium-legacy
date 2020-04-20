@@ -2079,8 +2079,8 @@ void RenderWidgetHostImpl::GetContentRenderingTimeoutFrom(
 
 void RenderWidgetHostImpl::OnMouseEventAck(
     const MouseEventWithLatencyInfo& mouse_event,
-    InputEventAckSource ack_source,
-    InputEventAckState ack_result) {
+    blink::mojom::InputEventResultSource ack_source,
+    blink::mojom::InputEventResultState ack_result) {
   latency_tracker_.OnInputEventAck(mouse_event.event, &mouse_event.latency,
                                    ack_result);
   for (auto& input_event_observer : input_event_observers_)
@@ -2089,7 +2089,9 @@ void RenderWidgetHostImpl::OnMouseEventAck(
 
   // Give the delegate the ability to handle a mouse event that wasn't consumed
   // by the renderer. eg. Back/Forward mouse buttons.
-  if (delegate_ && ack_result != INPUT_EVENT_ACK_STATE_CONSUMED && !is_hidden())
+  if (delegate_ &&
+      ack_result != blink::mojom::InputEventResultState::kConsumed &&
+      !is_hidden())
     delegate_->HandleMouseEvent(mouse_event.event);
 }
 
@@ -2194,13 +2196,14 @@ void RenderWidgetHostImpl::ClearDisplayedGraphics() {
 
 void RenderWidgetHostImpl::OnKeyboardEventAck(
     const NativeWebKeyboardEventWithLatencyInfo& event,
-    InputEventAckSource ack_source,
-    InputEventAckState ack_result) {
+    blink::mojom::InputEventResultSource ack_source,
+    blink::mojom::InputEventResultState ack_result) {
   latency_tracker_.OnInputEventAck(event.event, &event.latency, ack_result);
   for (auto& input_event_observer : input_event_observers_)
     input_event_observer.OnInputEventAck(ack_source, ack_result, event.event);
 
-  bool processed = (INPUT_EVENT_ACK_STATE_CONSUMED == ack_result);
+  bool processed =
+      (blink::mojom::InputEventResultState::kConsumed == ack_result);
 
   // We only send unprocessed key event upwards if we are not hidden,
   // because the user has moved away from us and no longer expect any effect
@@ -2666,16 +2669,17 @@ bool RenderWidgetHostImpl::KeyPressListenersHandleEvent(
   return false;
 }
 
-InputEventAckState RenderWidgetHostImpl::FilterInputEvent(
-    const blink::WebInputEvent& event, const ui::LatencyInfo& latency_info) {
+blink::mojom::InputEventResultState RenderWidgetHostImpl::FilterInputEvent(
+    const blink::WebInputEvent& event,
+    const ui::LatencyInfo& latency_info) {
   // Don't ignore touch cancel events, since they may be sent while input
   // events are being ignored in order to keep the renderer from getting
   // confused about how many touches are active.
   if (IsIgnoringInputEvents() && event.GetType() != WebInputEvent::kTouchCancel)
-    return INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS;
+    return blink::mojom::InputEventResultState::kNoConsumerExists;
 
   if (!process_->IsInitializedAndNotDead())
-    return INPUT_EVENT_ACK_STATE_UNKNOWN;
+    return blink::mojom::InputEventResultState::kUnknown;
 
   if (delegate_) {
     if (event.GetType() == WebInputEvent::kMouseDown ||
@@ -2687,7 +2691,7 @@ InputEventAckState RenderWidgetHostImpl::FilterInputEvent(
   }
 
   return view_ ? view_->FilterInputEvent(event)
-               : INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
+               : blink::mojom::InputEventResultState::kNotConsumed;
 }
 
 void RenderWidgetHostImpl::IncrementInFlightEventCount() {
@@ -2697,7 +2701,7 @@ void RenderWidgetHostImpl::IncrementInFlightEventCount() {
 }
 
 void RenderWidgetHostImpl::DecrementInFlightEventCount(
-    InputEventAckSource ack_source) {
+    blink::mojom::InputEventResultSource ack_source) {
   --in_flight_event_count_;
   if (in_flight_event_count_ <= 0) {
     // Cancel pending hung renderer checks since the renderer is responsive.
@@ -2705,7 +2709,7 @@ void RenderWidgetHostImpl::DecrementInFlightEventCount(
   } else {
     // Only restart the hang monitor timer if we got a response from the
     // main thread.
-    if (ack_source == InputEventAckSource::MAIN_THREAD)
+    if (ack_source == blink::mojom::InputEventResultSource::kMainThread)
       RestartInputEventAckTimeoutIfNecessary();
   }
 }
@@ -2736,6 +2740,11 @@ void RenderWidgetHostImpl::DidStopFlinging() {
 void RenderWidgetHostImpl::DidStartScrollingViewport() {
   if (view_)
     view_->set_is_currently_scrolling_viewport(true);
+}
+
+void RenderWidgetHostImpl::OnInvalidInputEventSource() {
+  bad_message::ReceivedBadMessage(
+      GetProcess(), bad_message::INPUT_ROUTER_INVALID_EVENT_SOURCE);
 }
 
 void RenderWidgetHostImpl::AddPendingUserActivation(
@@ -2784,8 +2793,8 @@ void RenderWidgetHostImpl::DispatchInputEventWithLatencyInfo(
 
 void RenderWidgetHostImpl::OnWheelEventAck(
     const MouseWheelEventWithLatencyInfo& wheel_event,
-    InputEventAckSource ack_source,
-    InputEventAckState ack_result) {
+    blink::mojom::InputEventResultSource ack_source,
+    blink::mojom::InputEventResultState ack_result) {
   latency_tracker_.OnInputEventAck(wheel_event.event, &wheel_event.latency,
                                    ack_result);
   for (auto& input_event_observer : input_event_observers_)
@@ -2793,9 +2802,9 @@ void RenderWidgetHostImpl::OnWheelEventAck(
                                          wheel_event.event);
 
   if (!is_hidden() && view_) {
-    if (ack_result != INPUT_EVENT_ACK_STATE_CONSUMED &&
+    if (ack_result != blink::mojom::InputEventResultState::kConsumed &&
         delegate_ && delegate_->HandleWheelEvent(wheel_event.event)) {
-      ack_result = INPUT_EVENT_ACK_STATE_CONSUMED;
+      ack_result = blink::mojom::InputEventResultState::kConsumed;
     }
     view_->WheelEventAck(wheel_event.event, ack_result);
   }
@@ -2803,8 +2812,8 @@ void RenderWidgetHostImpl::OnWheelEventAck(
 
 void RenderWidgetHostImpl::OnGestureEventAck(
     const GestureEventWithLatencyInfo& event,
-    InputEventAckSource ack_source,
-    InputEventAckState ack_result) {
+    blink::mojom::InputEventResultSource ack_source,
+    blink::mojom::InputEventResultState ack_result) {
   latency_tracker_.OnInputEventAck(event.event, &event.latency, ack_result);
   for (auto& input_event_observer : input_event_observers_)
     input_event_observer.OnInputEventAck(ack_source, ack_result, event.event);
@@ -2820,8 +2829,8 @@ void RenderWidgetHostImpl::OnGestureEventAck(
 
 void RenderWidgetHostImpl::OnTouchEventAck(
     const TouchEventWithLatencyInfo& event,
-    InputEventAckSource ack_source,
-    InputEventAckState ack_result) {
+    blink::mojom::InputEventResultSource ack_source,
+    blink::mojom::InputEventResultState ack_result) {
   latency_tracker_.OnInputEventAck(event.event, &event.latency, ack_result);
   for (auto& input_event_observer : input_event_observers_)
     input_event_observer.OnInputEventAck(ack_source, ack_result, event.event);

@@ -5,6 +5,8 @@
 #ifndef ASH_PUBLIC_CPP_SHELF_UI_INFO_H_
 #define ASH_PUBLIC_CPP_SHELF_UI_INFO_H_
 
+#include <vector>
+
 #include "ash/public/cpp/ash_public_export.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ui/gfx/geometry/point.h"

@@ -68,6 +68,7 @@
 #include "third_party/blink/renderer/core/editing/writing_direction.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/events/text_event.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -725,8 +726,8 @@ void Editor::ComputeAndSetTypingStyle(CSSPropertyValueSet* style,
       EditingStyle::kPreserveWritingDirection);
 
   // Handle block styles, substracting these from the typing style.
-  EditingStyle* block_style = typing_style_->ExtractAndRemoveBlockProperties(
-      GetFrame().GetDocument()->ToExecutionContext());
+  EditingStyle* block_style =
+      typing_style_->ExtractAndRemoveBlockProperties(GetFrame().DomWindow());
   if (!block_style->IsEmpty()) {
     DCHECK(GetFrame().GetDocument());
     MakeGarbageCollected<ApplyStyleCommand>(*GetFrame().GetDocument(),

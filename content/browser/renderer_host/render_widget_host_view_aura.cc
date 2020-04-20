@@ -959,10 +959,10 @@ gfx::Rect RenderWidgetHostViewAura::GetBoundsInRootWindow() {
 
 void RenderWidgetHostViewAura::WheelEventAck(
     const blink::WebMouseWheelEvent& event,
-    InputEventAckState ack_result) {
+    blink::mojom::InputEventResultState ack_result) {
   if (overscroll_controller_) {
     overscroll_controller_->ReceivedEventACK(
-        event, (INPUT_EVENT_ACK_STATE_CONSUMED == ack_result));
+        event, (blink::mojom::InputEventResultState::kConsumed == ack_result));
   }
 }
 
@@ -974,7 +974,7 @@ void RenderWidgetHostViewAura::DidOverscroll(
 
 void RenderWidgetHostViewAura::GestureEventAck(
     const blink::WebGestureEvent& event,
-    InputEventAckState ack_result) {
+    blink::mojom::InputEventResultState ack_result) {
   const blink::WebInputEvent::Type event_type = event.GetType();
   if (event_type == blink::WebGestureEvent::kGestureScrollBegin ||
       event_type == blink::WebGestureEvent::kGestureScrollEnd) {
@@ -986,7 +986,7 @@ void RenderWidgetHostViewAura::GestureEventAck(
 
   if (overscroll_controller_) {
     overscroll_controller_->ReceivedEventACK(
-        event, (INPUT_EVENT_ACK_STATE_CONSUMED == ack_result));
+        event, (blink::mojom::InputEventResultState::kConsumed == ack_result));
     // Terminate an active fling when the ACK for a GSU generated from the fling
     // progress (GSU with inertial state) is consumed and the overscrolling mode
     // is not |OVERSCROLL_NONE|. The early fling termination generates a GSE
@@ -1013,7 +1013,7 @@ void RenderWidgetHostViewAura::GestureEventAck(
 
 void RenderWidgetHostViewAura::ProcessAckedTouchEvent(
     const TouchEventWithLatencyInfo& touch,
-    InputEventAckState ack_result) {
+    blink::mojom::InputEventResultState ack_result) {
   aura::WindowTreeHost* window_host = window_->GetHost();
   // |host| is NULL during tests.
   if (!window_host)
@@ -1023,9 +1023,10 @@ void RenderWidgetHostViewAura::ProcessAckedTouchEvent(
   // TouchEventQueue. So we don't expect an ACK up here.
   DCHECK(touch.event.GetType() != blink::WebInputEvent::kTouchScrollStarted);
 
-  ui::EventResult result = (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED)
-                               ? ui::ER_HANDLED
-                               : ui::ER_UNHANDLED;
+  ui::EventResult result =
+      (ack_result == blink::mojom::InputEventResultState::kConsumed)
+          ? ui::ER_HANDLED
+          : ui::ER_UNHANDLED;
 
   blink::WebTouchPoint::State required_state;
   switch (touch.event.GetType()) {
@@ -1054,7 +1055,7 @@ void RenderWidgetHostViewAura::ProcessAckedTouchEvent(
       DCHECK(!sent_ack);
       window_host->dispatcher()->ProcessedTouchEvent(
           touch.event.unique_touch_event_id, window_, result,
-          InputEventAckStateIsSetNonBlocking(ack_result));
+          InputEventResultStateIsSetNonBlocking(ack_result));
       if (touch.event.touch_start_or_first_touch_move &&
           result == ui::ER_HANDLED && host()->delegate() &&
           host()->delegate()->GetInputEventRouter()) {
@@ -1075,7 +1076,7 @@ RenderWidgetHostViewAura::CreateSyntheticGestureTarget() {
       new SyntheticGestureTargetAura(host()));
 }
 
-InputEventAckState RenderWidgetHostViewAura::FilterInputEvent(
+blink::mojom::InputEventResultState RenderWidgetHostViewAura::FilterInputEvent(
     const blink::WebInputEvent& input_event) {
   bool consumed = false;
   if (input_event.GetType() == WebInputEvent::kGestureFlingStart) {
@@ -1095,7 +1096,7 @@ InputEventAckState RenderWidgetHostViewAura::FilterInputEvent(
 
   // Touch events should always propagate to the renderer.
   if (WebTouchEvent::IsTouchEventType(input_event.GetType()))
-    return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
+    return blink::mojom::InputEventResultState::kNotConsumed;
 
   if (consumed &&
       input_event.GetType() == blink::WebInputEvent::kGestureFlingStart) {
@@ -1106,11 +1107,11 @@ InputEventAckState RenderWidgetHostViewAura::FilterInputEvent(
     // of indicating that touchpad scroll has ended, we don't actually want
     // a fling animation. Note: Similar code exists in
     // RenderWidgetHostViewChildFrame::FilterInputEvent()
-    return INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS;
+    return blink::mojom::InputEventResultState::kNoConsumerExists;
   }
 
-  return consumed ? INPUT_EVENT_ACK_STATE_CONSUMED
-                  : INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
+  return consumed ? blink::mojom::InputEventResultState::kConsumed
+                  : blink::mojom::InputEventResultState::kNotConsumed;
 }
 
 BrowserAccessibilityManager*
@@ -1504,9 +1505,7 @@ void RenderWidgetHostViewAura::SetTextEditCommandForNextKeyEvent(
 ukm::SourceId RenderWidgetHostViewAura::GetClientSourceForMetrics() const {
   RenderFrameHostImpl* frame = GetFocusedFrame();
   if (frame) {
-    return frame->GetRenderWidgetHost()
-        ->delegate()
-        ->GetUkmSourceIdForLastCommittedSource();
+    return frame->GetPageUkmSourceId();
   }
   return ukm::SourceId();
 }

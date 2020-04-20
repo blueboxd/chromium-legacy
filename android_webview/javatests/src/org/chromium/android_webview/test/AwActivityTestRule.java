@@ -31,7 +31,6 @@ import org.chromium.base.Log;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.InMemorySharedPreferences;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -468,15 +467,12 @@ public class AwActivityTestRule extends ActivityTestRule<AwTestRunnerActivity> {
      * timeouts and treats timeouts and exceptions as test failures automatically.
      */
     public static void pollInstrumentationThread(final Callable<Boolean> callable) {
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                try {
-                    return callable.call();
-                } catch (Throwable e) {
-                    Log.e(TAG, "Exception while polling.", e);
-                    return false;
-                }
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            try {
+                return callable.call();
+            } catch (Throwable e) {
+                Log.e(TAG, "Exception while polling.", e);
+                return false;
             }
         }, WAIT_TIMEOUT_MS, CHECK_INTERVAL);
     }

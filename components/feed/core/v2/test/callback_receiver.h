@@ -19,6 +19,8 @@ class CallbackReceiver {
     return base::BindOnce(&CallbackReceiver::Done, base::Unretained(this));
   }
 
+  void Clear() { result_ = base::nullopt; }
+
   base::Optional<T>& GetResult() { return result_; }
 
  private:

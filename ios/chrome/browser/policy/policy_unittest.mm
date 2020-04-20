@@ -22,6 +22,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync_preferences/pref_service_syncable.h"
+#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_paths.h"
 #include "ios/chrome/browser/chrome_switches.h"
 #include "ios/chrome/browser/policy/browser_policy_connector_ios.h"
@@ -87,10 +88,20 @@ class PolicyTest : public PlatformTest {
     scoped_refptr<user_prefs::PrefRegistrySyncable> pref_registry(
         new user_prefs::PrefRegistrySyncable);
     RegisterBrowserStatePrefs(pref_registry.get());
-    pref_service_ = CreateBrowserStatePrefs(
-        state_directory_.GetPath(), base::ThreadTaskRunnerHandle::Get().get(),
-        pref_registry, browser_state_policy_connector_->GetPolicyService(),
-        browser_policy_connector_.get());
+    std::unique_ptr<sync_preferences::PrefServiceSyncable> pref_service =
+        CreateBrowserStatePrefs(
+            state_directory_.GetPath(),
+            base::ThreadTaskRunnerHandle::Get().get(), pref_registry,
+            browser_state_policy_connector_->GetPolicyService(),
+            browser_policy_connector_.get());
+
+    // Create a TestChromeBrowserState, necessary so that individual keyed
+    // service factories can register prefs.
+    TestChromeBrowserState::Builder builder;
+    builder.SetPath(state_directory_.GetPath());
+    builder.SetPrefService(std::move(pref_service));
+    browser_state_ = builder.Build();
+    ASSERT_TRUE(browser_state_);
   }
 
  protected:
@@ -113,8 +124,8 @@ class PolicyTest : public PlatformTest {
   // The BrowserState-level policy connector. Must outlive |pref_service_|.
   std::unique_ptr<BrowserStatePolicyConnector> browser_state_policy_connector_;
 
-  // The PrefService managed by policy.
-  std::unique_ptr<PrefService> pref_service_;
+  // The ChromeBrowserState under test.
+  std::unique_ptr<TestChromeBrowserState> browser_state_;
 
   // The path to |policy_test_cases.json|.
   base::FilePath policy_test_cases_path_;
@@ -128,7 +139,7 @@ TEST_F(PolicyTest, AllPoliciesHaveATestCase) {
 
 TEST_F(PolicyTest, PolicyToPrefMappings) {
   const std::string no_skipped_prefix;
-  policy::VerifyPolicyToPrefMappings(policy_test_cases_path_,
-                                     local_state_.get(), pref_service_.get(),
-                                     &policy_provider_, no_skipped_prefix);
+  policy::VerifyPolicyToPrefMappings(
+      policy_test_cases_path_, local_state_.get(), browser_state_->GetPrefs(),
+      &policy_provider_, no_skipped_prefix);
 }

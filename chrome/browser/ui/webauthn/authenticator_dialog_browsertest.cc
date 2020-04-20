@@ -98,18 +98,18 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
       model->SetCurrentStep(
           AuthenticatorRequestDialogModel::Step::kCableActivate);
     } else if (name == "set_pin") {
-      model->CollectPIN(base::nullopt, base::Bind([](std::string pin) {}));
+      model->CollectPIN(base::nullopt, base::BindOnce([](std::string pin) {}));
     } else if (name == "get_pin") {
-      model->CollectPIN(8, base::Bind([](std::string pin) {}));
+      model->CollectPIN(8, base::BindOnce([](std::string pin) {}));
     } else if (name == "get_pin_two_tries_remaining") {
       model->set_has_attempted_pin_entry_for_testing();
-      model->CollectPIN(2, base::Bind([](std::string pin) {}));
+      model->CollectPIN(2, base::BindOnce([](std::string pin) {}));
     } else if (name == "get_pin_one_try_remaining") {
       model->set_has_attempted_pin_entry_for_testing();
-      model->CollectPIN(1, base::Bind([](std::string pin) {}));
+      model->CollectPIN(1, base::BindOnce([](std::string pin) {}));
     } else if (name == "get_pin_fallback") {
       model->set_internal_uv_locked();
-      model->CollectPIN(8, base::Bind([](std::string pin) {}));
+      model->CollectPIN(8, base::BindOnce([](std::string pin) {}));
     } else if (name == "inline_bio_enrollment") {
       model->StartInlineBioEnrollment(bio_samples_remaining_);
       timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(2),
@@ -170,7 +170,7 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
 
       model->SelectAccount(
           std::move(responses),
-          base::Bind([](device::AuthenticatorGetAssertionResponse) {}));
+          base::BindOnce([](device::AuthenticatorGetAssertionResponse) {}));
     } else if (name == "request_attestation_permission") {
       model->RequestAttestationPermission(base::DoNothing());
     } else if (name == "qr_code") {

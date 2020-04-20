@@ -11,8 +11,8 @@
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_image.h"
 #include "gpu/vulkan/vulkan_instance.h"
-#include "gpu/vulkan/vulkan_surface.h"
 #include "gpu/vulkan/vulkan_util.h"
+#include "gpu/vulkan/win32/vulkan_surface_win32.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
@@ -55,22 +55,7 @@ VulkanInstance* VulkanImplementationWin32::GetVulkanInstance() {
 
 std::unique_ptr<VulkanSurface> VulkanImplementationWin32::CreateViewSurface(
     gfx::AcceleratedWidget window) {
-  VkSurfaceKHR surface;
-  VkWin32SurfaceCreateInfoKHR surface_create_info = {};
-  surface_create_info.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
-  surface_create_info.hinstance =
-      reinterpret_cast<HINSTANCE>(GetWindowLongPtr(window, GWLP_HINSTANCE));
-  surface_create_info.hwnd = window;
-  VkResult result = vkCreateWin32SurfaceKHR(
-      vulkan_instance_.vk_instance(), &surface_create_info, nullptr, &surface);
-  if (VK_SUCCESS != result) {
-    DLOG(ERROR) << "vkCreatWin32SurfaceKHR() failed: " << result;
-    return nullptr;
-  }
-
-  return std::make_unique<VulkanSurface>(vulkan_instance_.vk_instance(),
-                                         surface,
-                                         /* use_protected_memory */ false);
+  return VulkanSurfaceWin32::Create(vulkan_instance_.vk_instance(), window);
 }
 
 bool VulkanImplementationWin32::GetPhysicalDevicePresentationSupport(

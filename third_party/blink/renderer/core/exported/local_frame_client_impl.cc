@@ -71,6 +71,7 @@
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
@@ -253,10 +254,10 @@ void LocalFrameClientImpl::DidCreateInitialEmptyDocument() {
     web_frame_->Client()->DidCreateInitialEmptyDocument();
 }
 
-void LocalFrameClientImpl::DidCommitJavascriptUrlNavigation(
+void LocalFrameClientImpl::DidCommitDocumentReplacementNavigation(
     DocumentLoader* loader) {
   if (web_frame_->Client()) {
-    web_frame_->Client()->DidCommitJavascriptUrlNavigation(
+    web_frame_->Client()->DidCommitDocumentReplacementNavigation(
         WebDocumentLoaderImpl::FromDocumentLoader(loader));
   }
 }
@@ -623,9 +624,8 @@ void LocalFrameClientImpl::BeginNavigation(
   // stack is not available here.
   std::unique_ptr<SourceLocation> source_location =
       origin_document
-          ? SourceLocation::Capture(origin_document->ToExecutionContext())
-          : SourceLocation::Capture(
-                web_frame_->GetFrame()->GetDocument()->ToExecutionContext());
+          ? SourceLocation::Capture(origin_document->GetExecutionContext())
+          : SourceLocation::Capture(web_frame_->GetFrame()->DomWindow());
   if (source_location && !source_location->IsUnknown()) {
     navigation_info->source_location.url = source_location->Url();
     navigation_info->source_location.line_number =
@@ -636,7 +636,7 @@ void LocalFrameClientImpl::BeginNavigation(
 
   std::unique_ptr<Vector<OriginTrialFeature>> initiator_origin_trial_features =
       OriginTrialContext::GetEnabledNavigationFeatures(
-          web_frame_->GetFrame()->GetDocument()->ToExecutionContext());
+          web_frame_->GetFrame()->DomWindow());
   if (initiator_origin_trial_features) {
     navigation_info->initiator_origin_trial_features.reserve(
         initiator_origin_trial_features->size());

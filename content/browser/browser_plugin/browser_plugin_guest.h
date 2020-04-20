@@ -36,10 +36,10 @@
 #include "content/public/browser/browser_plugin_guest_delegate.h"
 #include "content/public/browser/guest_host.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/input_event_ack_state.h"
 #include "content/public/common/screen_info.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-forward.h"
+#include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "third_party/blink/public/web/web_drag_status.h"
 #include "third_party/blink/public/web/web_ime_text_span.h"
@@ -296,9 +296,8 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   void OnExtendSelectionAndDelete(int instance_id, int before, int after);
 
   // Message handlers for messages from guest.
-  void OnHandleInputEventAck(
-      blink::WebInputEvent::Type event_type,
-      InputEventAckState ack_result);
+  void OnHandleInputEventAck(blink::WebInputEvent::Type event_type,
+                             blink::mojom::InputEventResultState ack_result);
 #if defined(OS_MACOSX)
   // On MacOS X popups are painted by the browser process. We handle them here
   // so that they are positioned correctly.

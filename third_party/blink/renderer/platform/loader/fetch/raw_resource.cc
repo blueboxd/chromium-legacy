@@ -351,6 +351,7 @@ void RawResource::DidDownloadToBlob(scoped_refptr<BlobDataHandle> blob) {
 }
 
 void RawResource::MatchPreload(const FetchParameters& params) {
+  Resource::MatchPreload(params);
   matched_with_non_streaming_destination_ =
       !params.GetResourceRequest().UseStreamOnResponse();
 }

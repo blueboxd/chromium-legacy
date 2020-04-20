@@ -13,9 +13,9 @@ import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
-import org.chromium.chrome.browser.notifications.NotificationManagerProxy;
-import org.chromium.chrome.browser.notifications.NotificationManagerProxyImpl;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
+import org.chromium.components.browser_ui.notifications.NotificationManagerProxy;
+import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 /** Class providing utils for when the VR module is not installed. */

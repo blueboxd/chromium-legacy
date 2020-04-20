@@ -31,36 +31,37 @@
 namespace content {
 namespace {
 void CallCallback(mojom::WidgetInputHandler::DispatchEventCallback callback,
-                  InputEventAckState ack_state,
+                  blink::mojom::InputEventResultState result_state,
                   const ui::LatencyInfo& latency_info,
                   std::unique_ptr<ui::DidOverscrollParams> overscroll_params,
                   base::Optional<cc::TouchAction> touch_action) {
   std::move(callback).Run(
-      InputEventAckSource::MAIN_THREAD, latency_info, ack_state,
+      blink::mojom::InputEventResultSource::kMainThread, latency_info,
+      result_state,
       overscroll_params
           ? base::Optional<ui::DidOverscrollParams>(*overscroll_params)
           : base::nullopt,
       touch_action);
 }
 
-InputEventAckState InputEventDispositionToAck(
+blink::mojom::InputEventResultState InputEventDispositionToAck(
     ui::InputHandlerProxy::EventDisposition disposition) {
   switch (disposition) {
     case ui::InputHandlerProxy::DID_HANDLE:
-      return INPUT_EVENT_ACK_STATE_CONSUMED;
+      return blink::mojom::InputEventResultState::kConsumed;
     case ui::InputHandlerProxy::DID_NOT_HANDLE:
-      return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
+      return blink::mojom::InputEventResultState::kNotConsumed;
     case ui::InputHandlerProxy::DID_NOT_HANDLE_NON_BLOCKING_DUE_TO_FLING:
-      return INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING_DUE_TO_FLING;
+      return blink::mojom::InputEventResultState::kSetNonBlockingDueToFling;
     case ui::InputHandlerProxy::DROP_EVENT:
-      return INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS;
+      return blink::mojom::InputEventResultState::kNoConsumerExists;
     case ui::InputHandlerProxy::DID_HANDLE_NON_BLOCKING:
-      return INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING;
+      return blink::mojom::InputEventResultState::kSetNonBlocking;
     case ui::InputHandlerProxy::DID_HANDLE_SHOULD_BUBBLE:
-      return INPUT_EVENT_ACK_STATE_CONSUMED_SHOULD_BUBBLE;
+      return blink::mojom::InputEventResultState::kConsumedShouldBubble;
   }
   NOTREACHED();
-  return INPUT_EVENT_ACK_STATE_UNKNOWN;
+  return blink::mojom::InputEventResultState::kUnknown;
 }
 
 }  // namespace
@@ -218,10 +219,10 @@ void WidgetInputHandlerManager::DispatchNonBlockingEventToMainThread(
     const ui::LatencyInfo& latency_info,
     const blink::WebInputEventAttribution& attribution) {
   DCHECK(input_event_queue_);
-  input_event_queue_->HandleEvent(std::move(event), latency_info,
-                                  DISPATCH_TYPE_NON_BLOCKING,
-                                  INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING,
-                                  attribution, HandledEventCallback());
+  input_event_queue_->HandleEvent(
+      std::move(event), latency_info, DISPATCH_TYPE_NON_BLOCKING,
+      blink::mojom::InputEventResultState::kSetNonBlocking, attribution,
+      HandledEventCallback());
 }
 
 void WidgetInputHandlerManager::FindScrollTargetOnMainThread(
@@ -347,9 +348,10 @@ void WidgetInputHandlerManager::DispatchEvent(
     // Call |callback| if it was available indicating this event wasn't
     // handled.
     if (callback) {
-      std::move(callback).Run(
-          InputEventAckSource::MAIN_THREAD, ui::LatencyInfo(),
-          INPUT_EVENT_ACK_STATE_NOT_CONSUMED, base::nullopt, base::nullopt);
+      std::move(callback).Run(blink::mojom::InputEventResultSource::kMainThread,
+                              ui::LatencyInfo(),
+                              blink::mojom::InputEventResultState::kNotConsumed,
+                              base::nullopt, base::nullopt);
     }
     return;
   }
@@ -371,9 +373,10 @@ void WidgetInputHandlerManager::DispatchEvent(
   // without a begin. Scrolling, pinch-zoom etc. don't seem dangerous.
   if (renderer_deferral_state_ && !allow_pre_commit_input_ && !event_is_move) {
     if (callback) {
-      std::move(callback).Run(
-          InputEventAckSource::MAIN_THREAD, ui::LatencyInfo(),
-          INPUT_EVENT_ACK_STATE_NOT_CONSUMED, base::nullopt, base::nullopt);
+      std::move(callback).Run(blink::mojom::InputEventResultSource::kMainThread,
+                              ui::LatencyInfo(),
+                              blink::mojom::InputEventResultState::kNotConsumed,
+                              base::nullopt, base::nullopt);
     }
     return;
   }
@@ -390,8 +393,10 @@ void WidgetInputHandlerManager::DispatchEvent(
     if (!input_handler_proxy_) {
       if (callback) {
         std::move(callback).Run(
-            InputEventAckSource::MAIN_THREAD, ui::LatencyInfo(),
-            INPUT_EVENT_ACK_STATE_NOT_CONSUMED, base::nullopt, base::nullopt);
+            blink::mojom::InputEventResultSource::kMainThread,
+            ui::LatencyInfo(),
+            blink::mojom::InputEventResultState::kNotConsumed, base::nullopt,
+            base::nullopt);
       }
       return;
     }
@@ -558,9 +563,10 @@ void WidgetInputHandlerManager::HandleInputEvent(
   // was just recreated for a provisional frame.
   if (!render_widget_ || render_widget_->IsForProvisionalFrame()) {
     if (callback) {
-      std::move(callback).Run(InputEventAckSource::MAIN_THREAD, latency,
-                              INPUT_EVENT_ACK_STATE_NOT_CONSUMED, base::nullopt,
-                              base::nullopt);
+      std::move(callback).Run(blink::mojom::InputEventResultSource::kMainThread,
+                              latency,
+                              blink::mojom::InputEventResultState::kNotConsumed,
+                              base::nullopt, base::nullopt);
     }
     return;
   }
@@ -583,8 +589,9 @@ void WidgetInputHandlerManager::DidHandleInputEventAndOverscroll(
                "WidgetInputHandlerManager::DidHandleInputEventAndOverscroll",
                "Disposition", event_disposition);
 
-  InputEventAckState ack_state = InputEventDispositionToAck(event_disposition);
-  if (ack_state == INPUT_EVENT_ACK_STATE_CONSUMED) {
+  blink::mojom::InputEventResultState ack_state =
+      InputEventDispositionToAck(event_disposition);
+  if (ack_state == blink::mojom::InputEventResultState::kConsumed) {
     main_thread_scheduler_->DidHandleInputEventOnCompositorThread(
         *input_event, blink::scheduler::WebThreadScheduler::InputEventState::
                           EVENT_CONSUMED_BY_COMPOSITOR);
@@ -594,9 +601,10 @@ void WidgetInputHandlerManager::DidHandleInputEventAndOverscroll(
                           EVENT_FORWARDED_TO_MAIN_THREAD);
   }
 
-  if (ack_state == INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING ||
-      ack_state == INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING_DUE_TO_FLING ||
-      ack_state == INPUT_EVENT_ACK_STATE_NOT_CONSUMED) {
+  if (ack_state == blink::mojom::InputEventResultState::kSetNonBlocking ||
+      ack_state ==
+          blink::mojom::InputEventResultState::kSetNonBlockingDueToFling ||
+      ack_state == blink::mojom::InputEventResultState::kNotConsumed) {
     DCHECK(!overscroll_params);
     DCHECK(!latency_info.coalesced());
     InputEventDispatchType dispatch_type = callback.is_null()
@@ -612,7 +620,8 @@ void WidgetInputHandlerManager::DidHandleInputEventAndOverscroll(
   }
   if (callback) {
     std::move(callback).Run(
-        InputEventAckSource::COMPOSITOR_THREAD, latency_info, ack_state,
+        blink::mojom::InputEventResultSource::kCompositorThread, latency_info,
+        ack_state,
         overscroll_params
             ? base::Optional<ui::DidOverscrollParams>(*overscroll_params)
             : base::nullopt,
@@ -622,7 +631,7 @@ void WidgetInputHandlerManager::DidHandleInputEventAndOverscroll(
 
 void WidgetInputHandlerManager::HandledInputEvent(
     mojom::WidgetInputHandler::DispatchEventCallback callback,
-    InputEventAckState ack_state,
+    blink::mojom::InputEventResultState ack_state,
     const ui::LatencyInfo& latency_info,
     std::unique_ptr<ui::DidOverscrollParams> overscroll_params,
     base::Optional<cc::TouchAction> touch_action) {
@@ -654,8 +663,9 @@ void WidgetInputHandlerManager::HandledInputEvent(
   } else {
     // Otherwise call the callback immediately.
     std::move(callback).Run(
-        is_compositor_thread ? InputEventAckSource::COMPOSITOR_THREAD
-                             : InputEventAckSource::MAIN_THREAD,
+        is_compositor_thread
+            ? blink::mojom::InputEventResultSource::kCompositorThread
+            : blink::mojom::InputEventResultSource::kMainThread,
         latency_info, ack_state,
         overscroll_params
             ? base::Optional<ui::DidOverscrollParams>(*overscroll_params)

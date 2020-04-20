@@ -172,7 +172,7 @@ class HttpRequest {
 
       result = socket_->Write(
           request_.get(), request_->BytesRemaining(),
-          base::Bind(&HttpRequest::DoSendRequest, base::Unretained(this)),
+          base::BindOnce(&HttpRequest::DoSendRequest, base::Unretained(this)),
           kAndroidDeviceManagerTrafficAnnotation);
     }
   }
@@ -212,9 +212,8 @@ class HttpRequest {
     response_buffer_ = base::MakeRefCounted<net::IOBuffer>(kBufferSize);
 
     result = socket_->Read(
-        response_buffer_.get(),
-        kBufferSize,
-        base::Bind(&HttpRequest::OnResponseData, base::Unretained(this)));
+        response_buffer_.get(), kBufferSize,
+        base::BindOnce(&HttpRequest::OnResponseData, base::Unretained(this)));
     if (result != net::ERR_IO_PENDING)
       OnResponseData(result);
   }
@@ -275,7 +274,7 @@ class HttpRequest {
 
       result = socket_->Read(
           response_buffer_.get(), kBufferSize,
-          base::Bind(&HttpRequest::OnResponseData, base::Unretained(this)));
+          base::BindOnce(&HttpRequest::OnResponseData, base::Unretained(this)));
     } while (result != net::ERR_IO_PENDING);
   }
 

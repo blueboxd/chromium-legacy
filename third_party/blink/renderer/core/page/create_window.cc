@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/frame/ad_tracker.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/frame_client.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
@@ -242,13 +243,12 @@ Frame* CreateNewWindow(LocalFrame& opener_frame,
 
   const KURL& url = request.GetResourceRequest().Url();
   if (url.ProtocolIsJavaScript() &&
-      opener_frame.GetDocument()->GetContentSecurityPolicy() &&
-      !ContentSecurityPolicy::ShouldBypassMainWorld(
-          opener_frame.GetDocument()->ToExecutionContext())) {
+      opener_frame.DomWindow()->GetContentSecurityPolicy() &&
+      !ContentSecurityPolicy::ShouldBypassMainWorld(opener_frame.DomWindow())) {
     String script_source = DecodeURLEscapeSequences(
         url.GetString(), DecodeURLMode::kUTF8OrIsomorphic);
 
-    if (!opener_frame.GetDocument()->GetContentSecurityPolicy()->AllowInline(
+    if (!opener_frame.DomWindow()->GetContentSecurityPolicy()->AllowInline(
             ContentSecurityPolicy::InlineType::kNavigation,
             nullptr /* element */, script_source, String() /* nonce */,
             opener_frame.GetDocument()->Url(), OrdinalNumber())) {

@@ -25,12 +25,14 @@ from .mako_renderer import MakoRenderer
 from .path_manager import PathManager
 
 
-def make_factory_method(cg_context):
+def make_factory_methods(cg_context):
     assert isinstance(cg_context, CodeGenContext)
 
     T = TextNode
 
-    factory_method_def = CxxFuncDefNode(
+    decls = ListNode()
+
+    func_def = CxxFuncDefNode(
         name="Create",
         arg_decls=[
             "v8::Isolate* isolate",
@@ -39,9 +41,10 @@ def make_factory_method(cg_context):
         ],
         return_type="${class_name}",
         static=True)
-    factory_method_def.set_base_template_vars(cg_context.template_bindings())
+    func_def.set_base_template_vars(cg_context.template_bindings())
+    decls.append(func_def)
 
-    factory_method_def.body.extend([
+    func_def.body.extend([
         T("const auto& result = bindings::FindIndexInEnumStringTable("
           "isolate, value, string_table_, \"${enumeration.identifier}\", "
           "exception_state);"),
@@ -50,7 +53,23 @@ def make_factory_method(cg_context):
           "${class_name}();"),
     ])
 
-    return factory_method_def, None
+    func_def = CxxFuncDefNode(
+        name="Create",
+        arg_decls=["const String& value"],
+        return_type="base::Optional<${class_name}>",
+        static=True)
+    func_def.set_base_template_vars(cg_context.template_bindings())
+    decls.append(func_def)
+
+    func_def.body.extend([
+        T("const auto& result = bindings::FindIndexInEnumStringTable"
+          "(value, string_table_);"),
+        T("if (!result)\n"
+          "  return base::nullopt;"),
+        T("return ${class_name}(static_cast<Enum>(result.value()));"),
+    ])
+
+    return decls, None
 
 
 def make_constructors(cg_context):
@@ -252,7 +271,7 @@ def generate_enumeration(enumeration):
     class_def.set_base_template_vars(cg_context.template_bindings())
 
     # Implementation parts
-    factory_decls, factory_defs = make_factory_method(cg_context)
+    factory_decls, factory_defs = make_factory_methods(cg_context)
     ctor_decls, ctor_defs = make_constructors(cg_context)
     assign_decls, assign_defs = make_assignment_operators(cg_context)
     equal_decls, equal_defs = make_equality_operators(cg_context)

@@ -4,16 +4,22 @@
 
 package org.chromium.chrome.browser.feed.v2;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import android.app.Activity;
+import android.content.Context;
 import android.support.test.filters.SmallTest;
+import android.view.View;
 
 import com.google.common.collect.ImmutableList;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
@@ -26,6 +32,7 @@ import java.util.List;
 @Config(manifest = Config.NONE)
 public class FeedListContentManagerTest implements ListContentManagerObserver {
     private FeedListContentManager mManager;
+    private Context mContext;
 
     private boolean mItemRangeInserted;
     private int mItemRangeInsertedStartIndex;
@@ -42,6 +49,7 @@ public class FeedListContentManagerTest implements ListContentManagerObserver {
 
     @Before
     public void setUp() {
+        mContext = Robolectric.buildActivity(Activity.class).get();
         mManager = new FeedListContentManager(null, null);
         mManager.addObserver(this);
     }
@@ -161,6 +169,34 @@ public class FeedListContentManagerTest implements ListContentManagerObserver {
         assertEquals(c1, mManager.getContent(4));
     }
 
+    @Test
+    @SmallTest
+    public void testGetViewData() {
+        FeedListContentManager.FeedContent c1 = createExternalViewContent("foo");
+        View v2 = new View(mContext);
+        FeedListContentManager.FeedContent c2 = createNativeViewContent(v2);
+        View v3 = new View(mContext);
+        FeedListContentManager.FeedContent c3 = createNativeViewContent(v3);
+        FeedListContentManager.FeedContent c4 = createExternalViewContent("hello");
+        View v5 = new View(mContext);
+        FeedListContentManager.FeedContent c5 = createNativeViewContent(v5);
+
+        addContents(0, ImmutableList.of(c1, c2, c3, c4, c5));
+        assertEquals(5, mManager.getItemCount());
+
+        assertFalse(mManager.isNativeView(0));
+        assertTrue(mManager.isNativeView(1));
+        assertTrue(mManager.isNativeView(2));
+        assertFalse(mManager.isNativeView(3));
+        assertTrue(mManager.isNativeView(4));
+
+        assertArrayEquals("foo".getBytes(), mManager.getExternalViewBytes(0));
+        assertEquals(v2, mManager.getNativeView(1, null));
+        assertEquals(v3, mManager.getNativeView(2, null));
+        assertArrayEquals("hello".getBytes(), mManager.getExternalViewBytes(3));
+        assertEquals(v5, mManager.getNativeView(4, null));
+    }
+
     @Override
     public void onItemRangeInserted(int startIndex, int count) {
         mItemRangeInserted = true;
@@ -231,5 +267,9 @@ public class FeedListContentManagerTest implements ListContentManagerObserver {
 
     private FeedListContentManager.FeedContent createExternalViewContent(String s) {
         return new FeedListContentManager.ExternalViewContent(s, s.getBytes());
+    }
+
+    private FeedListContentManager.FeedContent createNativeViewContent(View v) {
+        return new FeedListContentManager.NativeViewContent(v.toString(), v);
     }
 }

@@ -1084,9 +1084,6 @@ class WebContents : public PageNavigator,
   // created from a renderer that originated from this WebContents.
   virtual base::UnguessableToken GetAudioGroupId() = 0;
 
-  // The source ID of the last committed navigation.
-  virtual ukm::SourceId GetLastCommittedSourceId() = 0;
-
   // Returns the raw list of favicon candidates as reported to observers via
   // WebContentsObserver::DidUpdateFaviconURL() since the last navigation start.
   // Consider using FaviconDriver in components/favicon if possible for more

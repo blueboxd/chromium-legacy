@@ -80,15 +80,10 @@ public class SyncTest {
     public void testStopAndClear() {
         mSyncTestRule.setUpTestAccountAndSignIn();
         CriteriaHelper.pollUiThread(
-                new Criteria("Timed out checking that hasPrimaryAccount() == true") {
-                    @Override
-                    public boolean isSatisfied() {
-                        return IdentityServicesProvider.get()
-                                .getIdentityManager()
-                                .hasPrimaryAccount();
-                    }
-                },
-                SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
+                ()
+                        -> IdentityServicesProvider.get().getIdentityManager().hasPrimaryAccount(),
+                "Timed out checking that hasPrimaryAccount() == true", SyncTestUtil.TIMEOUT_MS,
+                SyncTestUtil.INTERVAL_MS);
 
         mSyncTestRule.clearServerData();
 
@@ -96,15 +91,10 @@ public class SyncTest {
         Assert.assertNull(SigninTestUtil.getCurrentAccount());
         Assert.assertFalse(SyncTestUtil.isSyncRequested());
         CriteriaHelper.pollUiThread(
-                new Criteria("Timed out checking that hasPrimaryAccount() == false") {
-                    @Override
-                    public boolean isSatisfied() {
-                        return !IdentityServicesProvider.get()
-                                        .getIdentityManager()
-                                        .hasPrimaryAccount();
-                    }
-                },
-                SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
+                ()
+                        -> !IdentityServicesProvider.get().getIdentityManager().hasPrimaryAccount(),
+                "Timed out checking that hasPrimaryAccount() == false", SyncTestUtil.TIMEOUT_MS,
+                SyncTestUtil.INTERVAL_MS);
     }
 
     /*
@@ -138,12 +128,8 @@ public class SyncTest {
             SigninHelper.get().validateAccountSettings(true);
         });
 
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return newAccount.equals(SigninTestUtil.getCurrentAccount());
-            }
-        });
+        CriteriaHelper.pollInstrumentationThread(
+                Criteria.equals(newAccount, SigninTestUtil::getCurrentAccount));
         SyncTestUtil.waitForSyncActive();
     }
 

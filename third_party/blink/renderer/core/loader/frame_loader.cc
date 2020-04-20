@@ -934,7 +934,7 @@ static bool ShouldNavigate(WebNavigationParams* params, LocalFrame* frame) {
 void FrameLoader::CommitNavigation(
     std::unique_ptr<WebNavigationParams> navigation_params,
     std::unique_ptr<WebDocumentLoader::ExtraData> extra_data,
-    bool is_javascript_url) {
+    CommitReason commit_reason) {
   DCHECK(frame_->GetDocument());
   DCHECK(Client()->HasWebView());
 
@@ -994,7 +994,8 @@ void FrameLoader::CommitNavigation(
   // violations and display console messages properly.
   ContentSecurityPolicy* content_security_policy = CreateCSP(
       navigation_params->url, navigation_params->response.ToResourceResponse(),
-      navigation_params->origin_policy, last_origin_document_csp_.Release());
+      navigation_params->origin_policy, last_origin_document_csp_.Release(),
+      commit_reason);
 
   base::Optional<Document::UnloadEventTiming> unload_timing;
   FrameSwapScope frame_swap_scope(frame_owner);
@@ -1028,9 +1029,7 @@ void FrameLoader::CommitNavigation(
       std::move(navigation_params), std::move(extra_data));
 
   CommitDocumentLoader(new_document_loader, unload_timing,
-                       previous_history_item,
-                       is_javascript_url ? CommitReason::kJavascriptUrl
-                                         : CommitReason::kRegular);
+                       previous_history_item, commit_reason);
 
   RestoreScrollPositionAndViewState();
 
@@ -1153,8 +1152,7 @@ void FrameLoader::CommitDocumentLoader(
   document_loader_ = document_loader;
   CHECK(document_loader_);
 
-  if (commit_reason == CommitReason::kJavascriptUrl)
-    document_loader_->SetLoadingJavaScriptUrl();
+  document_loader_->SetCommitReason(commit_reason);
 
   virtual_time_pauser_.PauseVirtualTime();
   document_loader_->StartLoading();
@@ -1192,8 +1190,9 @@ void FrameLoader::CommitDocumentLoader(
     FrameNavigationDisabler navigation_disabler(*frame_);
     if (commit_reason == CommitReason::kInitialization) {
       Client()->DidCreateInitialEmptyDocument();
-    } else if (commit_reason == CommitReason::kJavascriptUrl) {
-      Client()->DidCommitJavascriptUrlNavigation(document_loader_);
+    } else if (commit_reason == CommitReason::kJavascriptUrl ||
+               commit_reason == CommitReason::kXSLT) {
+      Client()->DidCommitDocumentReplacementNavigation(document_loader_);
     } else {
       Client()->DispatchDidCommitLoad(
           document_loader_->GetHistoryItem(),
@@ -1760,7 +1759,8 @@ ContentSecurityPolicy* FrameLoader::CreateCSP(
     const KURL& url,
     const ResourceResponse& response,
     const base::Optional<WebOriginPolicy>& origin_policy,
-    ContentSecurityPolicy* initiator_csp) {
+    ContentSecurityPolicy* initiator_csp,
+    CommitReason commit_reason) {
   // about:srcdoc inherits CSP from its parent.
   if (url.IsAboutSrcdocURL()) {
     ContentSecurityPolicy* csp = MakeGarbageCollected<ContentSecurityPolicy>();
@@ -1768,6 +1768,14 @@ ContentSecurityPolicy* FrameLoader::CreateCSP(
                            .Parent()
                            ->GetSecurityContext()
                            ->GetContentSecurityPolicy());
+    return csp;
+  }
+
+  // Documents constructed by XSLTProcessor inherit CSP from the previous
+  // Document.
+  if (commit_reason == CommitReason::kXSLT) {
+    ContentSecurityPolicy* csp = MakeGarbageCollected<ContentSecurityPolicy>();
+    csp->CopyStateFrom(frame_->GetDocument()->GetContentSecurityPolicy());
     return csp;
   }
 

@@ -5,6 +5,7 @@
 #include "sql/vfs_wrapper_fuchsia.h"
 
 #include "base/containers/flat_set.h"
+#include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"

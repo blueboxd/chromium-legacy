@@ -141,7 +141,7 @@ NaClDomHandler::NaClDomHandler()
     : has_plugin_info_(false),
       pnacl_path_validated_(false),
       pnacl_path_exists_(false) {
-  PluginService::GetInstance()->GetPlugins(base::Bind(
+  PluginService::GetInstance()->GetPlugins(base::BindOnce(
       &NaClDomHandler::OnGotPlugins, weak_ptr_factory_.GetWeakPtr()));
 }
 

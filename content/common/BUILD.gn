@@ -123,8 +123,6 @@ source_set("common") {
     "input/ime_text_span_conversions.h",
     "input/input_event.cc",
     "input/input_event.h",
-    "input/input_event_ack.cc",
-    "input/input_event_ack.h",
     "input/input_event_ack_state.cc",
     "input/input_event_dispatch_type.h",
     "input/input_event_mojom_traits.cc",
@@ -596,14 +594,6 @@ mojom("mojo_bindings") {
           cpp = "::content::FrameReplicationState"
         },
         {
-          mojom = "content.mojom.InputEventAckSource"
-          cpp = "::content::InputEventAckSource"
-        },
-        {
-          mojom = "content.mojom.InputEventAckState"
-          cpp = "::content::InputEventAckState"
-        },
-        {
           mojom = "content.mojom.NetworkConnectionType"
           cpp = "::net::NetworkChangeNotifier::ConnectionType"
         },
@@ -673,8 +663,6 @@ mojom("mojo_bindings") {
         "//content/common/input/synthetic_smooth_scroll_gesture_params.h",
         "//content/common/input/synthetic_tap_gesture_params.h",
         "//content/common/visual_properties.h",
-        "//content/public/common/input_event_ack_source.h",
-        "//content/public/common/input_event_ack_state.h",
         "//content/public/common/web_preferences.h",
         "//net/base/network_change_notifier.h",
         "//third_party/blink/public/common/input/web_input_event.h",

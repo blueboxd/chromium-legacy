@@ -54,6 +54,7 @@
 <translation id="1331212799747679585">Неможливо оновити Chrome. Більше опцій</translation>
 <translation id="1332501820983677155">Комбінації клавіш для функцій Google Chrome</translation>
 <translation id="1360432990279830238">Вийти й вимкнути синхронізацію?</translation>
+<translation id="1364532808393826295"><ph name="APP_NAME" />–<ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">Сайт <ph name="SITE_NAME" /> додано</translation>
 <translation id="1373696734384179344">Недостатньо пам’яті, щоб завантажити вибраний вміст.</translation>
 <translation id="1376578503827013741">Обчислення…</translation>
@@ -140,6 +141,7 @@
 <translation id="2017836877785168846">Очищує історію й автозавершення в адресному рядку.</translation>
 <translation id="2021896219286479412">Керування повноекранним режимом</translation>
 <translation id="2025115093177348061">Доповнена реальність</translation>
+<translation id="2030769033451695672">Натисніть, щоб повернутися на сторінку <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2038563949887743358">Увімкнути опцію "Запитувати версію сайту для комп’ютера"</translation>
 <translation id="2041019821020695769">Щоб надати Chrome доступ до сповіщень, також увімкніть їх у <ph name="BEGIN_LINK" />налаштуваннях Android<ph name="END_LINK" />.</translation>
 <translation id="204321170514947529">Дані додатка <ph name="APP_NAME" /> також містяться в Chrome</translation>
@@ -301,6 +303,7 @@
 <translation id="3207960819495026254">Створено закладку</translation>
 <translation id="3211426585530211793">Елемент "<ph name="ITEM_TITLE" />" видалено</translation>
 <translation id="321773570071367578">Якщо ви забули парольну фразу або хочете змінити це налаштування, <ph name="BEGIN_LINK" />скиньте синхронізацію<ph name="END_LINK" /></translation>
+<translation id="3223655101706843289">Буде видалено всі дані та файли cookie, збережені сайтом <ph name="ORIGIN" /> і його додатком на головному екрані.</translation>
 <translation id="3227137524299004712">Мікрофон</translation>
 <translation id="3232754137068452469">Веб-додаток</translation>
 <translation id="3236059992281584593">Залишилась 1 хв</translation>
@@ -535,6 +538,7 @@
 <translation id="4943872375798546930">Не знайдено жодного результату</translation>
 <translation id="4961107849584082341">Перекладіть цю сторінку будь-якою мовою</translation>
 <translation id="4962975101802056554">Скасувати всі дозволи для пристрою</translation>
+<translation id="4964199952259983386">Щоб дозволити Chrome використовувати доповнену реальність, увімкніть камеру в <ph name="BEGIN_LINK" />налаштуваннях Android<ph name="END_LINK" />.</translation>
 <translation id="4970824347203572753">Функція недоступна у вашій країні</translation>
 <translation id="497421865427891073">Перейти вперед</translation>
 <translation id="4988210275050210843">Завантажується файл (<ph name="MEGABYTES" />).</translation>
@@ -634,6 +638,7 @@
 <translation id="5684874026226664614">На жаль, цю сторінку неможливо перекласти.</translation>
 <translation id="5686790454216892815">Назва файлу задовга</translation>
 <translation id="5689516760719285838">Місцезнаходження</translation>
+<translation id="5690795753582697420">Камеру вимкнено в налаштуваннях Android</translation>
 <translation id="5694049548840660018">Легко повертайтеся на головну сторінку</translation>
 <translation id="569536719314091526">Перекладіть цю сторінку будь-якою мовою, натиснувши кнопку "Більше опцій"</translation>
 <translation id="5710871682236653961">Запитувати, перш ніж дозволяти сайтам обмінюватися даними з іншими пристроями через NFC (рекомендовано)</translation>
@@ -665,6 +670,7 @@
 <translation id="5876056640971328065">Призупинити відео</translation>
 <translation id="5884076754568147479">Щоб допомагати вам виконувати завдання, Google отримуватиме URL-адреси та вміст веб-сайтів, на яких ви користуєтесь Асистентом, а також інформацію, яку надсилаєте через нього</translation>
 <translation id="5919204609460789179">Оновіть <ph name="PRODUCT_NAME" />, щоб почати синхронізацію</translation>
+<translation id="5922853908706496913">Доступ до вашого екрана</translation>
 <translation id="5937580074298050696">Заощаджено <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Скинути</translation>
 <translation id="5942872142862698679">Пошук за допомогою Google</translation>
@@ -875,6 +881,7 @@
 <translation id="751961395872307827">Немає з’єднання із сайтом</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7542481630195938534">Не вдається отримати пропозиції</translation>
+<translation id="7554752735887601236">Сайт використовує мікрофон</translation>
 <translation id="7559975015014302720">Спрощений режим вимкнено</translation>
 <translation id="7562080006725997899">Очищення даних веб-перегляду</translation>
 <translation id="756809126120519699">Дані Chrome видалено</translation>
@@ -911,7 +918,9 @@
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 і ще <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}one{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 і ще <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}few{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 і ще <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}many{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 і ще <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 і ще <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7791543448312431591">Додати</translation>
 <translation id="780301667611848630">Ні, дякую</translation>
+<translation id="7804248752222191302">Сайт використовує камеру</translation>
 <translation id="7810647596859435254">Відкрити за допомогою…</translation>
+<translation id="7817023149356982970">Ви вийдете з облікового запису на цьому сайті.</translation>
 <translation id="7821588508402923572">Тут буде вказано обсяг заощадженого трафіку</translation>
 <translation id="7828557259026017104">Файли cookie – це файли, створені веб-сайтами, які ви відвідали. Сайти використовують їх, щоб запам'ятовувати ваші налаштування. Сторонні файли cookie створюються іншими сайтами. Ці сайти показують власний контент, як-от оголошення чи зображення, на веб-сторінці, яку ви відвідуєте.</translation>
 <translation id="783819812427904514">Увімкнути звук у відео</translation>
@@ -990,8 +999,10 @@
 <translation id="8364299278605033898">Перегляньте популярні сайти</translation>
 <translation id="8368027906805972958">Невідомий чи непідтримуваний пристрій (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">сайті.</translation>
+<translation id="83792324527827022">Сайт використовує камеру та мікрофон</translation>
 <translation id="8380167699614421159">Цей сайт показує нав’язливі чи оманливі оголошення</translation>
 <translation id="8393700583063109961">Надіслати повідомлення</translation>
+<translation id="8394832520002899662">Натисніть, щоб повернутися на сайт</translation>
 <translation id="8413126021676339697">Показати повну історію</translation>
 <translation id="8427875596167638501">Вкладку "Попередній перегляд" відкрито на половину висоти</translation>
 <translation id="8428213095426709021">Налаштування</translation>
@@ -1034,6 +1045,8 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{Рівень сигналу: # поділка}one{Рівень сигналу: # поділка}few{Рівень сигналу: # поділки}many{Рівень сигналу: # поділок}other{Рівень сигналу: # поділки}}</translation>
 <translation id="868929229000858085">Пошук у контактах</translation>
 <translation id="869891660844655955">Діє до</translation>
+<translation id="8702612070107455751">Усі дані, збережені офлайн, буде видалено.</translation>
+<translation id="8737217482364735741">Усі дані та файли cookie сайту <ph name="ORIGIN" /> буде видалено.</translation>
 <translation id="8748850008226585750">Вміст сховано</translation>
 <translation id="8751914237388039244">Виберіть зображення</translation>
 <translation id="8758557275681689734">Як переглянути всі відкриті вкладки</translation>
@@ -1080,6 +1093,7 @@
 <translation id="9100610230175265781">Потрібно вказати парольну фразу</translation>
 <translation id="9102803872260866941">Вкладку "Попередній перегляд" відкрито</translation>
 <translation id="9104217018994036254">Список пристроїв, з якими можна ділитися вкладкою.</translation>
+<translation id="9108312223223904744">Служба підтримки для телефона як ключа безпеки</translation>
 <translation id="9133397713400217035">Перегляд у режимі офлайн</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Показати оригінал</translation>

@@ -49,13 +49,17 @@ class StreamModel {
   struct StoreUpdate {
     StoreUpdate();
     ~StoreUpdate();
-    StoreUpdate(const StoreUpdate&);
     StoreUpdate(StoreUpdate&&);
-    StoreUpdate& operator=(const StoreUpdate&);
     StoreUpdate& operator=(StoreUpdate&&);
 
+    // Sequence number to use when writing to the store.
     int32_t sequence_number = 0;
+    // Whether the |update_request| should overwrite all stream data.
+    bool overwrite_stream_data = false;
+    // Data to write. Either a list of operations or a
+    // |StreamModelUpdateRequest|.
     std::vector<feedstore::DataOperation> operations;
+    std::unique_ptr<StreamModelUpdateRequest> update_request;
   };
 
   class Observer {
@@ -64,11 +68,12 @@ class StreamModel {
     // Called when the UI model changes.
     virtual void OnUiUpdate(const UiUpdate& update) = 0;
   };
+
   class StoreObserver {
    public:
     // Called when the peristent store should be modified to reflect a model
     // change.
-    virtual void OnStoreChange(const StoreUpdate& update) = 0;
+    virtual void OnStoreChange(StoreUpdate update) = 0;
   };
 
   StreamModel();
@@ -109,6 +114,9 @@ class StreamModel {
   // Rejects a change. Returns false if the change does not exist.
   bool RejectEphemeralChange(EphemeralChangeId id);
 
+  const std::string& GetNextPageToken() const;
+  const std::string& GetConsistencyToken() const;
+
   // Outputs a string representing the model state for debugging or testing.
   std::string DumpStateForTesting();
 
@@ -137,9 +145,7 @@ class StreamModel {
   // The following data is associated with the stream, but lives outside of the
   // tree.
 
-  std::string next_page_token_;    // TODO(harringtond): use this value.
-  std::string consistency_token_;  // TODO(harringtond): use this value.
-  base::Time last_added_time_;     // TODO(harringtond): use this value.
+  feedstore::StreamData stream_data_;
   base::flat_map<std::string, SharedState> shared_states_;
   int32_t next_structure_sequence_number_ = 0;
 

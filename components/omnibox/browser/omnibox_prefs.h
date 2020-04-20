@@ -12,9 +12,12 @@ class PrefService;
 
 namespace omnibox {
 
+// Histograms being recorded when visibility of suggestion group IDs change.
+extern const char kToggleSuggestionGroupIdOffHistogram[];
+extern const char kToggleSuggestionGroupIdOnHistogram[];
+
 // Alphabetical list of preference names specific to the omnibox component.
 // Keep alphabetized, and document each in the .cc file.
-
 extern const char kDocumentSuggestEnabled[];
 extern const char kOmniboxHiddenGroupIds[];
 extern const char kPreventUrlElisionsInOmnibox[];

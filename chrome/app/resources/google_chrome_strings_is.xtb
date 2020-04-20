@@ -102,6 +102,7 @@ Sumir eiginleikar kunna að vera óaðgengilegir og breytingar á kjörstillingu
 <translation id="3735758079232443276">Viðbótin „<ph name="EXTENSION_NAME" />“ hefur breytt því hvaða síða birtist þegar þú ræsir Chrome.</translation>
 <translation id="3780814664026482060">Chrome – <ph name="PAGE_TITLE" /></translation>
 <translation id="386202838227397562">Lokaðu öllum Google Chrome gluggum og reyndu aftur.</translation>
+<translation id="3865754807470779944">Chrome útgáfa <ph name="PRODUCT_VERSION" /> er uppsett</translation>
 <translation id="3873044882194371212">Opna tengil í h&amp;uliðsglugga í Chrome</translation>
 <translation id="3889417619312448367">Fjarlægja Google Chrome</translation>
 <translation id="4050175100176540509">Mikilvægar öryggislagfæringar og nýir eiginleikar eru í boði í nýjustu útgáfunni.</translation>
@@ -243,6 +244,7 @@ Google Chrome getur ekki endurheimt stillingarnar þínar.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8556340503434111824">Ný útgáfa af Google Chrome er í boði, og hún er hraðari en nokkru sinni fyrr.</translation>
 <translation id="8614913330719544658">Google Chrome svarar ekki. Endurræsa núna?</translation>
+<translation id="861702415419836452">Chrome þarf leyfi til að nota myndavélina til að búa til þrívíddarkort af umhverfinu</translation>
 <translation id="8625237574518804553">{0,plural, =1{Chrome verður endurræst eftir 1 mínútu}one{Chrome verður endurræst eftir # mínútu}other{Chrome verður endurræst eftir # mínútur}}</translation>
 <translation id="8641606876632989680">Chrome lætur þig vita þegar þú skráir þig inn með aðgangsorði sem er í hættu</translation>
 <translation id="8669527147644353129">Hjálparforrit Google Chrome</translation>

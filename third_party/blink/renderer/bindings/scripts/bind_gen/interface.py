@@ -205,6 +205,29 @@ def bind_blink_api_arguments(code_node, cg_context):
         return
 
     if cg_context.attribute_set:
+        real_type = cg_context.attribute.idl_type.unwrap(typedef=True)
+        if real_type.is_enumeration:
+            pattern = """\
+// https://heycam.github.io/webidl/#dfn-attribute-setter
+// step 4.6.1. Let S be ? ToString(V).
+const auto&& arg1_value_string =
+    NativeValueTraits<IDLStringV2>::NativeValue(
+        ${isolate}, ${v8_property_value}, ${exception_state});
+if (${exception_state}.HadException())
+  return;
+// step 4.6.2. If S is not one of the enumeration's values, then return
+//   undefined.
+const auto arg1_value_maybe_enum = {enum_type}::Create(arg1_value_string);
+if (!arg1_value_maybe_enum)
+  return;  // Return undefined.
+const auto ${arg1_value} = arg1_value_maybe_enum.value();
+"""
+            text = _format(
+                pattern,
+                enum_type=blink_class_name(real_type.type_definition_object))
+            code_node.register_code_symbol(SymbolNode("arg1_value", text))
+            return
+
         name = "arg1_value"
         v8_value = "${v8_property_value}"
         code_node.register_code_symbol(

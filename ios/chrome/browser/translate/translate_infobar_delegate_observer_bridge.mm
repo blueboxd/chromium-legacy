@@ -14,13 +14,13 @@ TranslateInfobarDelegateObserverBridge::TranslateInfobarDelegateObserverBridge(
     translate::TranslateInfoBarDelegate* translate_infobar_delegate,
     id<TranslateInfobarDelegateObserving> owner)
     : translate_infobar_delegate_(translate_infobar_delegate), owner_(owner) {
-  translate_infobar_delegate_->SetObserver(this);
+  translate_infobar_delegate_->AddObserver(this);
 }
 
 TranslateInfobarDelegateObserverBridge::
     ~TranslateInfobarDelegateObserverBridge() {
   if (translate_infobar_delegate_) {
-    translate_infobar_delegate_->SetObserver(nullptr);
+    translate_infobar_delegate_->RemoveObserver(this);
   }
 }
 
@@ -41,6 +41,6 @@ void TranslateInfobarDelegateObserverBridge::
     OnTranslateInfoBarDelegateDestroyed(
         translate::TranslateInfoBarDelegate* delegate) {
   DCHECK_EQ(translate_infobar_delegate_, delegate);
-  translate_infobar_delegate_->SetObserver(nullptr);
+  translate_infobar_delegate_->RemoveObserver(this);
   translate_infobar_delegate_ = nullptr;
 }

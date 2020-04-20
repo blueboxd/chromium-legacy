@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/big_endian.h"
+#include "base/logging.h"
 #include "third_party/zlib/zlib.h"
 
 using media::cast::FrameEventMap;

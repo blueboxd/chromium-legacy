@@ -145,7 +145,8 @@ IN_PROC_BROWSER_TEST_F(TouchInputBrowserTest, TouchNoHandler) {
   auto filter = AddFilter(WebInputEvent::kTouchStart);
   SendTouchEvent(&touch);
 
-  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS, filter->WaitForAck());
+  EXPECT_EQ(blink::mojom::InputEventResultState::kNoConsumerExists,
+            filter->WaitForAck());
 
   // If a touch-press is acked with NO_CONSUMER_EXISTS, then subsequent
   // touch-points don't need to be dispatched until the touch point is released.
@@ -162,7 +163,8 @@ IN_PROC_BROWSER_TEST_F(TouchInputBrowserTest, TouchHandlerNoConsume) {
   touch.PressPoint(125, 25);
   auto filter = AddFilter(WebInputEvent::kTouchStart);
   SendTouchEvent(&touch);
-  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, filter->WaitForAck());
+  EXPECT_EQ(blink::mojom::InputEventResultState::kNotConsumed,
+            filter->WaitForAck());
 
   filter = AddFilter(WebInputEvent::kTouchEnd);
   touch.ReleasePoint(0);
@@ -179,7 +181,8 @@ IN_PROC_BROWSER_TEST_F(TouchInputBrowserTest, TouchHandlerConsume) {
   touch.PressPoint(25, 125);
   auto filter = AddFilter(WebInputEvent::kTouchStart);
   SendTouchEvent(&touch);
-  EXPECT_EQ(INPUT_EVENT_ACK_STATE_CONSUMED, filter->WaitForAck());
+  EXPECT_EQ(blink::mojom::InputEventResultState::kConsumed,
+            filter->WaitForAck());
 
   touch.ReleasePoint(0);
   filter = AddFilter(WebInputEvent::kTouchEnd);
@@ -196,12 +199,14 @@ IN_PROC_BROWSER_TEST_F(TouchInputBrowserTest, MultiPointTouchPress) {
   touch.PressPoint(25, 25);
   auto filter = AddFilter(WebInputEvent::kTouchStart);
   SendTouchEvent(&touch);
-  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS, filter->WaitForAck());
+  EXPECT_EQ(blink::mojom::InputEventResultState::kNoConsumerExists,
+            filter->WaitForAck());
 
   touch.PressPoint(25, 125);
   filter = AddFilter(WebInputEvent::kTouchStart);
   SendTouchEvent(&touch);
-  EXPECT_EQ(INPUT_EVENT_ACK_STATE_CONSUMED, filter->WaitForAck());
+  EXPECT_EQ(blink::mojom::InputEventResultState::kConsumed,
+            filter->WaitForAck());
 }
 
 }  // namespace content

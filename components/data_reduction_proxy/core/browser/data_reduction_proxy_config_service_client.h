@@ -34,7 +34,6 @@ namespace data_reduction_proxy {
 class ClientConfig;
 class DataReductionProxyConfig;
 class DataReductionProxyService;
-class DataReductionProxyMutableConfigValues;
 class DataReductionProxyRequestOptions;
 
 using ConfigStorer = base::RepeatingCallback<void(const std::string&)>;
@@ -80,7 +79,6 @@ class DataReductionProxyConfigServiceClient
   DataReductionProxyConfigServiceClient(
       const net::BackoffEntry::Policy& backoff_policy,
       DataReductionProxyRequestOptions* request_options,
-      DataReductionProxyMutableConfigValues* config_values,
       DataReductionProxyConfig* config,
       DataReductionProxyService* service,
       network::NetworkConnectionTracker* network_connection_tracker,
@@ -179,9 +177,6 @@ class DataReductionProxyConfigServiceClient
 
   // The caller must ensure that the |request_options_| outlives this instance.
   DataReductionProxyRequestOptions* request_options_;
-
-  // The caller must ensure that the |config_values_| outlives this instance.
-  DataReductionProxyMutableConfigValues* config_values_;
 
   // The caller must ensure that the |config_| outlives this instance.
   DataReductionProxyConfig* config_;

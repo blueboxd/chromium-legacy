@@ -263,13 +263,13 @@ void NetExportMessageHandler::OnStopNetLog(const base::ListValue* list) {
 void NetExportMessageHandler::OnSendNetLog(const base::ListValue* list) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   file_writer_->GetFilePathToCompletedLog(
-      base::Bind(&NetExportMessageHandler::SendEmail));
+      base::BindOnce(&NetExportMessageHandler::SendEmail));
 }
 
 void NetExportMessageHandler::OnShowFile(const base::ListValue* list) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   file_writer_->GetFilePathToCompletedLog(
-      base::Bind(&NetExportMessageHandler::ShowFileInShell, AsWeakPtr()));
+      base::BindOnce(&NetExportMessageHandler::ShowFileInShell, AsWeakPtr()));
 }
 
 void NetExportMessageHandler::FileSelected(const base::FilePath& path,

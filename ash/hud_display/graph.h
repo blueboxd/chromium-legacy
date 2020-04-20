@@ -5,6 +5,8 @@
 #ifndef ASH_HUD_DISPLAY_GRAPH_H_
 #define ASH_HUD_DISPLAY_GRAPH_H_
 
+#include <vector>
+
 #include "base/containers/ring_buffer.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/point.h"

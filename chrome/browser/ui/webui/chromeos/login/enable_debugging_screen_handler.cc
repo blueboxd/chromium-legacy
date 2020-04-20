@@ -52,7 +52,7 @@ void EnableDebuggingScreenHandler::ShowWithParams() {
 
   // Wait for cryptohomed before checking debugd. See http://crbug.com/440506.
   chromeos::CryptohomeClient* client = chromeos::CryptohomeClient::Get();
-  client->WaitForServiceToBeAvailable(base::Bind(
+  client->WaitForServiceToBeAvailable(base::BindOnce(
       &EnableDebuggingScreenHandler::OnCryptohomeDaemonAvailabilityChecked,
       weak_ptr_factory_.GetWeakPtr()));
 }
@@ -158,8 +158,8 @@ void EnableDebuggingScreenHandler::HandleOnRemoveRootFSProtection() {
   chromeos::DebugDaemonClient* client =
       chromeos::DBusThreadManager::Get()->GetDebugDaemonClient();
   client->RemoveRootfsVerification(
-      base::Bind(&EnableDebuggingScreenHandler::OnRemoveRootfsVerification,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&EnableDebuggingScreenHandler::OnRemoveRootfsVerification,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void EnableDebuggingScreenHandler::HandleOnSetup(
@@ -169,8 +169,8 @@ void EnableDebuggingScreenHandler::HandleOnSetup(
       chromeos::DBusThreadManager::Get()->GetDebugDaemonClient();
   client->EnableDebuggingFeatures(
       password,
-      base::Bind(&EnableDebuggingScreenHandler::OnEnableDebuggingFeatures,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&EnableDebuggingScreenHandler::OnEnableDebuggingFeatures,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void EnableDebuggingScreenHandler::OnCryptohomeDaemonAvailabilityChecked(
@@ -185,7 +185,7 @@ void EnableDebuggingScreenHandler::OnCryptohomeDaemonAvailabilityChecked(
 
   chromeos::DebugDaemonClient* client =
       chromeos::DBusThreadManager::Get()->GetDebugDaemonClient();
-  client->WaitForServiceToBeAvailable(base::Bind(
+  client->WaitForServiceToBeAvailable(base::BindOnce(
       &EnableDebuggingScreenHandler::OnDebugDaemonServiceAvailabilityChecked,
       weak_ptr_factory_.GetWeakPtr()));
 }
@@ -204,8 +204,8 @@ void EnableDebuggingScreenHandler::OnDebugDaemonServiceAvailabilityChecked(
   chromeos::DebugDaemonClient* client =
       chromeos::DBusThreadManager::Get()->GetDebugDaemonClient();
   client->QueryDebuggingFeatures(
-      base::Bind(&EnableDebuggingScreenHandler::OnQueryDebuggingFeatures,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&EnableDebuggingScreenHandler::OnQueryDebuggingFeatures,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 // Removes rootfs verification, add flag to start with enable debugging features

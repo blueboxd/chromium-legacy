@@ -181,18 +181,12 @@ public class TypedUrlsTest {
 
     private void waitForServerTypedUrlCountWithName(final int count, final String name) {
         CriteriaHelper.pollInstrumentationThread(
-                new Criteria("Expected " + count + " server typed URLs with name " + name + ".") {
-                    @Override
-                    public boolean isSatisfied() {
-                        try {
-                            return mSyncTestRule.getFakeServerHelper()
-                                    .verifyEntityCountByTypeAndName(
-                                            count, ModelType.TYPED_URLS, name);
-                        } catch (Exception e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
+                ()
+                        -> {
+                    return mSyncTestRule.getFakeServerHelper().verifyEntityCountByTypeAndName(
+                            count, ModelType.TYPED_URLS, name);
                 },
+                "Expected " + count + " server typed URLs with name " + name + ".",
                 SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
     }
 

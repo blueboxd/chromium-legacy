@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "media/base/test_random.h"
 #include "media/blink/interval_map.h"

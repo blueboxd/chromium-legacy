@@ -31,7 +31,6 @@ class PLATFORM_EXPORT CompositorTransformOperations {
   void AppendSkew(double x, double y);
   void AppendPerspective(double depth);
   void AppendMatrix(const SkMatrix44&);
-  void AppendIdentity();
 
   bool IsIdentity() const;
 

@@ -292,11 +292,11 @@ IntentPickerBubbleView::IntentPickerBubbleView(
   DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(IDS_INTENT_PICKER_BUBBLE_VIEW_STAY_IN_CHROME));
-  DialogDelegate::SetAcceptCallback(base::Bind(
+  DialogDelegate::SetAcceptCallback(base::BindOnce(
       &IntentPickerBubbleView::OnDialogAccepted, base::Unretained(this)));
-  DialogDelegate::SetCancelCallback(base::Bind(
+  DialogDelegate::SetCancelCallback(base::BindOnce(
       &IntentPickerBubbleView::OnDialogCancelled, base::Unretained(this)));
-  DialogDelegate::SetCloseCallback(base::Bind(
+  DialogDelegate::SetCloseCallback(base::BindOnce(
       &IntentPickerBubbleView::OnDialogClosed, base::Unretained(this)));
 
   // Click to call bubbles need to be closed after navigation if the main frame

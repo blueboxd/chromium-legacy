@@ -87,9 +87,10 @@ class TracingRenderWidgetHost : public RenderWidgetHostImpl {
                              std::make_unique<FrameTokenMessageQueue>()) {
   }
 
-  void OnMouseEventAck(const MouseEventWithLatencyInfo& event,
-                       InputEventAckSource ack_source,
-                       InputEventAckState ack_result) override {
+  void OnMouseEventAck(
+      const MouseEventWithLatencyInfo& event,
+      blink::mojom::InputEventResultSource ack_source,
+      blink::mojom::InputEventResultState ack_result) override {
     RenderWidgetHostImpl::OnMouseEventAck(event, ack_source, ack_result);
   }
 
@@ -321,7 +322,7 @@ IN_PROC_BROWSER_TEST_F(MouseLatencyBrowserTest,
       GetWidgetHost(), blink::WebInputEvent::kMouseUp);
   StartTracing();
   DoSyncClick(gfx::PointF(100, 100));
-  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED,
+  EXPECT_EQ(blink::mojom::InputEventResultState::kNotConsumed,
             filter->GetAckStateWaitIfNecessary());
   const base::Value& trace_data = StopTracing();
 

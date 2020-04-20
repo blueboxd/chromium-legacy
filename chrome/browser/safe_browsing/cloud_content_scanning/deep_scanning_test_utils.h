@@ -8,6 +8,7 @@
 #include <set>
 #include <string>
 
+#include "base/callback.h"
 #include "base/optional.h"
 #include "components/safe_browsing/core/proto/webprotect.pb.h"
 
@@ -67,6 +68,9 @@ class EventReportValidator {
                                 const std::set<std::string>* expected_mimetypes,
                                 int expected_content_size);
 
+  // Closure to run once all expected events are validated.
+  void SetDoneClosure(base::RepeatingClosure closure);
+
  private:
   void ValidateReport(base::Value* report);
   void ValidateMimeType(base::Value* value);
@@ -97,6 +101,8 @@ class EventReportValidator {
   base::Optional<bool> clicked_through_ = base::nullopt;
   base::Optional<int> content_size_ = base::nullopt;
   const std::set<std::string>* mimetypes_ = nullptr;
+
+  base::RepeatingClosure done_closure_;
 };
 
 }  // namespace safe_browsing

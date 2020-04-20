@@ -5,6 +5,7 @@
 #include "skia/ext/benchmarking_canvas.h"
 
 #include <memory>
+#include <sstream>
 #include <utility>
 
 #include "base/logging.h"

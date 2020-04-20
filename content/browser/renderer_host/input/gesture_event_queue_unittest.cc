@@ -22,9 +22,9 @@
 #include "content/browser/renderer_host/input/input_router_config_helper.h"
 #include "content/browser/renderer_host/input/touchpad_tap_suppression_controller.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
-#include "content/public/common/input_event_ack_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
 #include "ui/events/blink/blink_features.h"
 
 #if defined(OS_WIN)
@@ -77,15 +77,16 @@ class GestureEventQueueTest : public testing::Test,
       const GestureEventWithLatencyInfo& event) override {
     ++sent_gesture_event_count_;
     if (sync_ack_result_) {
-      std::unique_ptr<InputEventAckState> ack_result =
+      std::unique_ptr<blink::mojom::InputEventResultState> ack_result =
           std::move(sync_ack_result_);
       SendInputEventACK(event.event.GetType(), *ack_result);
     }
   }
 
-  void OnGestureEventAck(const GestureEventWithLatencyInfo& event,
-                         InputEventAckSource ack_source,
-                         InputEventAckState ack_result) override {
+  void OnGestureEventAck(
+      const GestureEventWithLatencyInfo& event,
+      blink::mojom::InputEventResultSource ack_source,
+      blink::mojom::InputEventResultState ack_result) override {
     ++acked_gesture_event_count_;
     last_acked_event_ = event.event;
     if (sync_followup_event_) {
@@ -163,9 +164,10 @@ class GestureEventQueueTest : public testing::Test,
   }
 
   void SendInputEventACK(WebInputEvent::Type type,
-                         InputEventAckState ack) {
-    queue()->ProcessGestureAck(InputEventAckSource::COMPOSITOR_THREAD, ack,
-                               type, ui::LatencyInfo());
+                         blink::mojom::InputEventResultState ack) {
+    queue()->ProcessGestureAck(
+        blink::mojom::InputEventResultSource::kCompositorThread, ack, type,
+        ui::LatencyInfo());
   }
 
   void RunUntilIdle() { base::RunLoop().RunUntilIdle(); }
@@ -186,8 +188,8 @@ class GestureEventQueueTest : public testing::Test,
     return last_acked_event_;
   }
 
-  void set_synchronous_ack(InputEventAckState ack_result) {
-    sync_ack_result_.reset(new InputEventAckState(ack_result));
+  void set_synchronous_ack(blink::mojom::InputEventResultState ack_result) {
+    sync_ack_result_.reset(new blink::mojom::InputEventResultState(ack_result));
   }
 
   void set_sync_followup_event(WebInputEvent::Type type,
@@ -234,7 +236,7 @@ class GestureEventQueueTest : public testing::Test,
   size_t acked_gesture_event_count_;
   size_t sent_gesture_event_count_;
   WebGestureEvent last_acked_event_;
-  std::unique_ptr<InputEventAckState> sync_ack_result_;
+  std::unique_ptr<blink::mojom::InputEventResultState> sync_ack_result_;
   std::unique_ptr<WebGestureEvent> sync_followup_event_;
   base::test::ScopedFeatureList feature_list_;
 #if defined(OS_WIN)
@@ -247,7 +249,7 @@ class GestureEventQueueWithCompositorEventQueueTest
 
 // Tests a single event with an synchronous ack.
 TEST_F(GestureEventQueueTest, SimpleSyncAck) {
-  set_synchronous_ack(INPUT_EVENT_ACK_STATE_CONSUMED);
+  set_synchronous_ack(blink::mojom::InputEventResultState::kConsumed);
   SimulateGestureEvent(WebInputEvent::kGestureTapDown,
                        blink::WebGestureDevice::kTouchscreen);
   EXPECT_EQ(1U, GetAndResetSentGestureEventCount());
@@ -258,7 +260,7 @@ TEST_F(GestureEventQueueTest, SimpleSyncAck) {
 // Tests an event with an synchronous ack which enqueues an additional event.
 TEST_F(GestureEventQueueTest, SyncAckQueuesEvent) {
   std::unique_ptr<WebGestureEvent> queued_event;
-  set_synchronous_ack(INPUT_EVENT_ACK_STATE_CONSUMED);
+  set_synchronous_ack(blink::mojom::InputEventResultState::kConsumed);
   set_sync_followup_event(WebInputEvent::kGestureShowPress,
                           blink::WebGestureDevice::kTouchscreen);
   // This event enqueues the show press event.
@@ -269,7 +271,7 @@ TEST_F(GestureEventQueueTest, SyncAckQueuesEvent) {
   EXPECT_EQ(1U, GetAndResetAckedGestureEventCount());
 
   SendInputEventACK(WebInputEvent::kGestureShowPress,
-                    INPUT_EVENT_ACK_STATE_CONSUMED);
+                    blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
   EXPECT_EQ(0U, GestureEventQueueSize());
   EXPECT_EQ(1U, GetAndResetAckedGestureEventCount());
@@ -521,20 +523,20 @@ TEST_F(GestureEventQueueWithCompositorEventQueueTest,
 
   // Simulate GSB ACK.
   SendInputEventACK(WebInputEvent::kGestureScrollBegin,
-                    INPUT_EVENT_ACK_STATE_CONSUMED);
+                    blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(WebInputEvent::kGestureScrollBegin, last_acked_event().GetType());
   EXPECT_EQ(2U, GestureEventQueueSize());
 
   // Simulate GSE ACK first since it's usually dispatched non-blocking.
   SendInputEventACK(WebInputEvent::kGestureScrollEnd,
-                    INPUT_EVENT_ACK_STATE_CONSUMED);
+                    blink::mojom::InputEventResultState::kConsumed);
   // GSE ACK will be cached in GestureEventQueue since we haven't ACKed GSU yet.
   EXPECT_EQ(WebInputEvent::kGestureScrollBegin, last_acked_event().GetType());
   EXPECT_EQ(2U, GestureEventQueueSize());
 
   // Simulate GSU ACK.
   SendInputEventACK(WebInputEvent::kGestureScrollUpdate,
-                    INPUT_EVENT_ACK_STATE_CONSUMED);
+                    blink::mojom::InputEventResultState::kConsumed);
   // Both ACKs should be released in order.
   EXPECT_EQ(WebInputEvent::kGestureScrollEnd, last_acked_event().GetType());
   EXPECT_EQ(0U, GestureEventQueueSize());
@@ -567,13 +569,13 @@ TEST_F(GestureEventQueueWithCompositorEventQueueTest,
             GestureEventLastQueueEvent().GetType());
 
   SendInputEventACK(WebInputEvent::kGestureScrollBegin,
-                    INPUT_EVENT_ACK_STATE_CONSUMED);
+                    blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(4U, GestureEventQueueSize());
 
   SendInputEventACK(WebInputEvent::kGesturePinchBegin,
-                    INPUT_EVENT_ACK_STATE_CONSUMED);
+                    blink::mojom::InputEventResultState::kConsumed);
   SendInputEventACK(WebInputEvent::kGestureScrollUpdate,
-                    INPUT_EVENT_ACK_STATE_CONSUMED);
+                    blink::mojom::InputEventResultState::kConsumed);
 
   // Both GestureScrollUpdate and GesturePinchUpdate should have been sent.
   EXPECT_EQ(WebInputEvent::kGestureScrollUpdate, last_acked_event().GetType());
@@ -582,9 +584,9 @@ TEST_F(GestureEventQueueWithCompositorEventQueueTest,
 
   // Ack the last 2 GesturePinchUpdate events.
   SendInputEventACK(WebInputEvent::kGesturePinchUpdate,
-                    INPUT_EVENT_ACK_STATE_CONSUMED);
+                    blink::mojom::InputEventResultState::kConsumed);
   SendInputEventACK(WebInputEvent::kGesturePinchUpdate,
-                    INPUT_EVENT_ACK_STATE_CONSUMED);
+                    blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(WebInputEvent::kGesturePinchUpdate, last_acked_event().GetType());
   EXPECT_EQ(0U, GestureEventQueueSize());
   EXPECT_EQ(0U, GetAndResetSentGestureEventCount());

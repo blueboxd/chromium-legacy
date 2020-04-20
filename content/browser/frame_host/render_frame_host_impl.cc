@@ -185,6 +185,7 @@
 #include "services/device/public/mojom/sensor_provider.mojom.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
 #include "services/device/public/mojom/wake_lock_context.mojom.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/network/public/cpp/web_sandbox_flags.h"
@@ -3253,6 +3254,15 @@ void RenderFrameHostImpl::DownloadURL(
 
 void RenderFrameHostImpl::ReportNoBinderForInterface(const std::string& error) {
   broker_receiver_.ReportBadMessage(error + " for the frame/document scope");
+}
+
+ukm::SourceId RenderFrameHostImpl::GetPageUkmSourceId() {
+  int64_t navigation_id =
+      GetMainFrame()->last_committed_cross_document_navigation_id_;
+  if (navigation_id == -1)
+    return ukm::kInvalidSourceId;
+  return ukm::ConvertToSourceId(navigation_id,
+                                ukm::SourceIdType::NAVIGATION_ID);
 }
 
 void RenderFrameHostImpl::RequestTextSurroundingSelection(
@@ -7601,9 +7611,13 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
   accessibility_reset_count_ = 0;
   appcache_handle_ = navigation_request->TakeAppCacheHandle();
 
-  if (navigation_request->IsInMainFrame() && !is_same_document_navigation &&
+  if (!is_same_document_navigation &&
       !navigation_request->IsServedFromBackForwardCache()) {
-    render_view_host_->ResetPerPageState();
+    if (navigation_request->IsInMainFrame()) {
+      render_view_host_->ResetPerPageState();
+    }
+    last_committed_cross_document_navigation_id_ =
+        navigation_request->GetNavigationId();
   }
 
   // Clear all the user data associated with the non speculative RenderFrameHost

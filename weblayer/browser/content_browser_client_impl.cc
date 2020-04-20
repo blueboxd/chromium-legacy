@@ -282,12 +282,13 @@ blink::UserAgentMetadata ContentBrowserClientImpl::GetUserAgentMetadata() {
 void ContentBrowserClientImpl::OverrideWebkitPrefs(
     content::RenderViewHost* render_view_host,
     content::WebPreferences* prefs) {
+  prefs->default_encoding = l10n_util::GetStringUTF8(IDS_DEFAULT_ENCODING);
+
   content::WebContents* web_contents =
       content::WebContents::FromRenderViewHost(render_view_host);
   TabImpl* tab = TabImpl::FromWebContents(web_contents);
-  prefs->fullscreen_supported = tab && tab->fullscreen_delegate();
-  prefs->password_echo_enabled = tab && tab->GetPasswordEchoEnabled();
-  prefs->default_encoding = l10n_util::GetStringUTF8(IDS_DEFAULT_ENCODING);
+  if (tab)
+    tab->SetWebPreferences(prefs);
 }
 
 mojo::Remote<network::mojom::NetworkContext>

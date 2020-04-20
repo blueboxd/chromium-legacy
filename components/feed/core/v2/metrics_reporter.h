@@ -67,7 +67,7 @@ class MetricsReporter {
   virtual void OnLoadStream(LoadStreamStatus load_from_store_status,
                             LoadStreamStatus final_status);
   virtual void OnBackgroundRefresh(LoadStreamStatus final_status);
-  void OnLoadMore(LoadStreamStatus final_status);
+  virtual void OnLoadMore(LoadStreamStatus final_status);
   virtual void OnClearAll(base::TimeDelta time_since_last_clear);
 
  private:

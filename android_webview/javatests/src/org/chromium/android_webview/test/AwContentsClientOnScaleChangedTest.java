@@ -16,7 +16,6 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.base.task.PostTask;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
-import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 /**
@@ -48,12 +47,7 @@ public class AwContentsClientOnScaleChangedTest {
                                 + " minimum-scale=0.5, maximum-scale=2, user-scalable=yes\" />",
                         "testScaleUp test page body"),
                 "text/html", false);
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mAwContents.canZoomIn();
-            }
-        });
+        CriteriaHelper.pollUiThread(() -> mAwContents.canZoomIn());
         int callCount = mContentsClient.getOnScaleChangedHelper().getCallCount();
         PostTask.runOrPostTask(
                 UiThreadTaskTraits.DEFAULT, () -> Assert.assertTrue(mAwContents.zoomIn()));

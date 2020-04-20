@@ -375,6 +375,21 @@ std::ostream& operator<<(std::ostream& out,
 }
 #endif
 
+struct StructWithToStringNotStdString {
+  struct PseudoString {};
+
+  bool operator==(const StructWithToStringNotStdString& o) const {
+    return &o == this;
+  }
+  PseudoString ToString() const { return PseudoString(); }
+};
+#if !(defined(OFFICIAL_BUILD) && defined(NDEBUG))
+std::ostream& operator<<(std::ostream& out,
+                         const StructWithToStringNotStdString::PseudoString&) {
+  return out << "ToString+ostream";
+}
+#endif
+
 TEST_F(CheckTest, OstreamVsToString) {
   StructWithOstream a, b;
   EXPECT_CHECK("Check failed: a == b (ostream vs. ostream)", CHECK_EQ(a, b));
@@ -384,6 +399,10 @@ TEST_F(CheckTest, OstreamVsToString) {
 
   StructWithToStringAndOstream e, f;
   EXPECT_CHECK("Check failed: e == f (ostream vs. ostream)", CHECK_EQ(e, f));
+
+  StructWithToStringNotStdString g, h;
+  EXPECT_CHECK("Check failed: g == h (ToString+ostream vs. ToString+ostream)",
+               CHECK_EQ(g, h));
 }
 
 }  // namespace

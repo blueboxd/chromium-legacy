@@ -192,6 +192,7 @@
 <translation id="1241753985463165747">માગવામાં આવે ત્યારે વર્તમાન વેબસાઇટ પર તમારો બધો ડેટા વાંચો અને બદલો</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" />, તમારી સેટિંગ્સને ફરીથી સેટ કરવા માગે છે.</translation>
 <translation id="1243314992276662751">અપલોડ કરો</translation>
+<translation id="1243436884219965846">પાસવર્ડનો રિવ્યૂ કરો</translation>
 <translation id="1244265436519979884">હાલમાં Linuxને પહેલાંના જેવું કરવાની પ્રક્રિયા ચાલુ છે</translation>
 <translation id="1244303850296295656">એક્સટેંશન ભૂલ</translation>
 <translation id="1246158006305844142">તમે તમારા Google એકાઉન્ટ વડે જેમાં સાઇન ઇન કર્યું છે, તે તમામ Chrome OS ડિવાઇસ પર તમારી ઍપ અને સેટિંગ સિંક કરવામાં આવશે. બ્રાઉઝર સિંક કરવાના વિકલ્પો માટે, <ph name="LINK_BEGIN" />Chrome સેટિંગ<ph name="LINK_END" /> પર જાઓ.</translation>
@@ -2562,6 +2563,7 @@
 <translation id="4404136731284211429">ફરી સ્કૅન કરો</translation>
 <translation id="4404843640767531781"><ph name="APP_NAME" /> તમારા માતાપિતા દ્વારા બ્લૉક કરવામાં આવી છે. આ ઍપનો ઉપયોગ કરવા માટે તમારા માતાપિતા પાસેથી પરવાનગી મેળવો.</translation>
 <translation id="4405117686468554883">*.jpeg, *.jpg, *.png</translation>
+<translation id="4406883609789734330">લાઇવ કૅપ્શન</translation>
 <translation id="4408599188496843485">સ&amp;હાય</translation>
 <translation id="4409697491990005945">હાંસિયા</translation>
 <translation id="4410545552906060960">તમારા ઉપકરણને અનલૉક કરવા માટે પાસવર્ડને બદલે કોઈ સંખ્યા (પિન)નો ઉપયોગ કરો. પછીથી તમારો પિન સેટ કરવા માટે, સેટિંગ પર જાઓ.</translation>
@@ -3967,6 +3969,7 @@ USB ડિવાઇસ</translation>
 <translation id="6326855256003666642">સક્રિય રાખવા માટેની સંખ્યા</translation>
 <translation id="632707535499064463"><ph name="ORGANIZATION_NAME" /> માટે તમે આ ડિવાઇસને ડેડલાઇન પહેલાં અપડેટ કરો તે જરૂરી છે.</translation>
 <translation id="6327785803543103246">વેબ પ્રૉક્સીની ઑટોમૅટિક ખોજ</translation>
+<translation id="6331566915566907158">Chrome OSની સુવિધાઓ અને કાર્યપ્રદર્શનને સુધારવામાં સહાય કરો</translation>
 <translation id="6333064448949140209">ડીબગિંગ માટે ફાઇલ Google ને મોકલવામાં આવશે</translation>
 <translation id="6339668969738228384"><ph name="USER_EMAIL_ADDRESS" /> માટે એક નવી પ્રોફાઇલ બનાવો</translation>
 <translation id="6340017061976355871">સર્વર સાથે કનેક્ટ ન કરી શક્યાં. કૃપા કરીને તમારું નેટવર્ક કનેક્શન તપાસો અને ફરી પ્રયાસ કરો. જો સમસ્યા ચાલુ રહે, તો તમારી Chromebook ફરી શરૂ કરો.</translation>
@@ -4925,6 +4928,7 @@ USB ડિવાઇસ</translation>
 <translation id="7669825497510425694">{NUM_ATTEMPTS,plural, =1{ખોટો પિન. તમારી પાસે હવે એક પ્રયાસ બાકી છે.}one{ખોટો પિન. તમારી પાસે હવે # પ્રયાસ બાકી છે.}other{ખોટો પિન. તમારી પાસે હવે # પ્રયાસ બાકી છે.}}</translation>
 <translation id="7671130400130574146">સિસ્ટમ શીર્ષક બાર અને બોર્ડર્સનો ઉપયોગ કરો</translation>
 <translation id="767127784612208024">રીસેટ કન્ફર્મ કરવા માટે ટચ કરો</translation>
+<translation id="767147716926917172">Googleને ઑટોમૅટિક રીતે નિદાન અને વપરાશનો ડેટા મોકલવામાં આવે છે</translation>
 <translation id="7672520070349703697"><ph name="PAGE_TITLE" />માં <ph name="HUNG_IFRAME_URL" />.</translation>
 <translation id="7676867886086876795">કોઈપણ ટેક્સ્ટ ફીલ્ડમાં શ્રુતલેખનને મંજૂરી આપવા માટે Googleને તમારો અવાજ મોકલો.</translation>
 <translation id="7678280409648629969">તમે 'છૂપો મોડ'થી બહાર નીકળો તે પછી સાઇન-ઇન ડેટાને Chromeમાં સ્ટોર કરવામાં આવશે. આ રીતે તમે આ વેબસાઇટ સાથે થોડીવાર પછી ફરી સ્પર્શ IDનો ઉપયોગ કરી શકશો.</translation>

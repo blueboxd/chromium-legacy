@@ -171,14 +171,14 @@ TEST_F(FaviconSourceTestWithLegacyFormat, DarkDefault) {
   SetDarkMode(true);
   EXPECT_CALL(*source(), LoadIconBytes(_, IDR_DEFAULT_FAVICON_DARK));
   source()->StartDataRequest(GURL(kDummyPrefix), test_web_contents_getter_,
-                             base::BindRepeating(&Noop));
+                             base::BindOnce(&Noop));
 }
 
 TEST_F(FaviconSourceTestWithLegacyFormat, LightDefault) {
   SetDarkMode(false);
   EXPECT_CALL(*source(), LoadIconBytes(_, IDR_DEFAULT_FAVICON));
   source()->StartDataRequest(GURL(kDummyPrefix), test_web_contents_getter_,
-                             base::BindRepeating(&Noop));
+                             base::BindOnce(&Noop));
 }
 
 TEST_F(FaviconSourceTestWithLegacyFormat,
@@ -192,7 +192,7 @@ TEST_F(FaviconSourceTestWithLegacyFormat,
 
   source()->StartDataRequest(
       GURL(base::StrCat({kDummyPrefix, "size/16@1x/https://www.google.com"})),
-      test_web_contents_getter_, base::BindRepeating(&Noop));
+      test_web_contents_getter_, base::BindOnce(&Noop));
 }
 
 TEST_F(FaviconSourceTestWithLegacyFormat,
@@ -225,7 +225,7 @@ TEST_F(FaviconSourceTestWithFavicon2Format,
   base::HistogramTester tester;
   source()->StartDataRequest(
       GURL(base::StrCat({kDummyPrefix, "size/16@1x/https://www.google.com"})),
-      test_web_contents_getter_, base::BindRepeating(&Noop));
+      test_web_contents_getter_, base::BindOnce(&Noop));
   std::unique_ptr<base::HistogramSamples> samples(
       tester.GetHistogramSamplesSinceCreation(
           "Extensions.FaviconResourceUsed"));
@@ -237,14 +237,14 @@ TEST_F(FaviconSourceTestWithFavicon2Format, DarkDefault) {
   SetDarkMode(true);
   EXPECT_CALL(*source(), LoadIconBytes(_, IDR_DEFAULT_FAVICON_DARK));
   source()->StartDataRequest(GURL(kDummyPrefix), test_web_contents_getter_,
-                             base::BindRepeating(&Noop));
+                             base::BindOnce(&Noop));
 }
 
 TEST_F(FaviconSourceTestWithFavicon2Format, LightDefault) {
   SetDarkMode(false);
   EXPECT_CALL(*source(), LoadIconBytes(_, IDR_DEFAULT_FAVICON));
   source()->StartDataRequest(GURL(kDummyPrefix), test_web_contents_getter_,
-                             base::BindRepeating(&Noop));
+                             base::BindOnce(&Noop));
 }
 
 TEST_F(FaviconSourceTestWithFavicon2Format,
@@ -261,7 +261,7 @@ TEST_F(FaviconSourceTestWithFavicon2Format,
           {kDummyPrefix,
            "?size=16&scale_factor=1x&page_url=https%3A%2F%2Fwww.google."
            "com&allow_google_server_fallback=0"})),
-      test_web_contents_getter_, base::BindRepeating(&Noop));
+      test_web_contents_getter_, base::BindOnce(&Noop));
 }
 
 TEST_F(FaviconSourceTestWithFavicon2Format,
@@ -278,7 +278,7 @@ TEST_F(FaviconSourceTestWithFavicon2Format,
           {kDummyPrefix,
            "?size=16&scale_factor=1x&page_url=https%3A%2F%2Fwww.google."
            "com&allow_google_server_fallback=1"})),
-      test_web_contents_getter_, base::BindRepeating(&Noop));
+      test_web_contents_getter_, base::BindOnce(&Noop));
 }
 
 TEST_F(
@@ -297,5 +297,5 @@ TEST_F(
           {kDummyPrefix,
            "?size=16&scale_factor=1x&page_url=https%3A%2F%2Fwww.google."
            "com&allow_google_server_fallback=1"})),
-      test_web_contents_getter_, base::BindRepeating(&Noop));
+      test_web_contents_getter_, base::BindOnce(&Noop));
 }

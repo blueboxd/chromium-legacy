@@ -102,6 +102,7 @@
 <translation id="2218443599109088993">Herauszoomen</translation>
 <translation id="2230173723195178503">Webseite geladen</translation>
 <translation id="2239626343334228536">Browserdaten werden gelöscht…</translation>
+<translation id="2245545499420671379">Cookies von Drittanbietern im Inkognitomodus blockieren</translation>
 <translation id="2257567812274161158">Synchronisierung funktioniert nicht.</translation>
 <translation id="2267753748892043616">Konto hinzufügen</translation>
 <translation id="2268044343513325586">Verfeinern</translation>
@@ -418,6 +419,7 @@ Handoff muss auch im Abschnitt "Allgemein" Ihrer Einstellungen aktiviert sein un
 
 Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase verschlüsselt. Geben Sie diese ein, um die Synchronisierung zu starten.</translation>
 <translation id="6418346271604475326">PDF wird vorbereitet</translation>
+<translation id="6426067060178468363">Cookies zulassen</translation>
 <translation id="6434591244308415567">Ein Fehler ist aufgetreten. Bitte versuchen Sie es später noch einmal.</translation>
 <translation id="6445051938772793705">Land</translation>
 <translation id="6445981559479772097">Nachricht gesendet</translation>
@@ -543,6 +545,7 @@ Da Ihr Konto von <ph name="HOSTED_DOMAIN" /> verwaltet wird, werden Ihre Chrome-
 <translation id="8076014560081431679">Gespeicherte Website-Einstellungen werden nicht gelöscht und können möglicherweise Ihre Surfgewohnheiten wiedergeben. <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">Dateidownload verfügbar. Optionen stehen unten auf dem Bildschirm zur Verfügung.</translation>
 <translation id="8131740175452115882">Bestätigen</translation>
+<translation id="8174524257672181687">Alle Cookies blockieren (nicht empfohlen)</translation>
 <translation id="8197543752516192074">Seite übersetzen</translation>
 <translation id="8205564605687841303">Abbrechen</translation>
 <translation id="8225985093977202398">Bilder &amp; Dateien im Cache</translation>

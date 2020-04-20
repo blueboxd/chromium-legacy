@@ -536,16 +536,19 @@ ResourceFetcher::ResourceFetcher(const ResourceFetcherInit& init)
       loader_factory_(init.loader_factory),
       scheduler_(MakeGarbageCollected<ResourceLoadScheduler>(
           init.initial_throttling_policy,
+          init.throttle_option_override,
           *properties_,
-          init.frame_scheduler,
+          init.frame_or_worker_scheduler,
           *console_logger_)),
       archive_(init.archive),
       resource_timing_report_timer_(
           task_runner_,
           this,
           &ResourceFetcher::ResourceTimingReportTimerFired),
-      frame_scheduler_(init.frame_scheduler ? init.frame_scheduler->GetWeakPtr()
-                                            : nullptr),
+      frame_or_worker_scheduler_(
+          init.frame_or_worker_scheduler
+              ? init.frame_or_worker_scheduler->GetWeakPtr()
+              : nullptr),
       blob_registry_remote_(nullptr),
       auto_load_images_(true),
       images_enabled_(true),
@@ -2129,8 +2132,8 @@ mojom::blink::BlobRegistry* ResourceFetcher::GetBlobRegistry() {
   return blob_registry_remote_.get();
 }
 
-FrameScheduler* ResourceFetcher::GetFrameScheduler() {
-  return frame_scheduler_.get();
+FrameOrWorkerScheduler* ResourceFetcher::GetFrameOrWorkerScheduler() {
+  return frame_or_worker_scheduler_.get();
 }
 
 void ResourceFetcher::Trace(Visitor* visitor) {

@@ -34,34 +34,33 @@ void QuotaInternalsProxy::RequestInfo(
   }
   quota_manager_ = quota_manager;
 
-  quota_manager_->GetQuotaSettings(base::Bind(
+  quota_manager_->GetQuotaSettings(base::BindOnce(
       &QuotaInternalsProxy::DidGetSettings, weak_factory_.GetWeakPtr()));
 
-  quota_manager_->GetStorageCapacity(base::Bind(
+  quota_manager_->GetStorageCapacity(base::BindOnce(
       &QuotaInternalsProxy::DidGetCapacity, weak_factory_.GetWeakPtr()));
 
   quota_manager_->GetGlobalUsage(
       StorageType::kTemporary,
-      base::Bind(&QuotaInternalsProxy::DidGetGlobalUsage,
-                 weak_factory_.GetWeakPtr(), StorageType::kTemporary));
+      base::BindOnce(&QuotaInternalsProxy::DidGetGlobalUsage,
+                     weak_factory_.GetWeakPtr(), StorageType::kTemporary));
 
   quota_manager_->GetGlobalUsage(
       StorageType::kPersistent,
-      base::Bind(&QuotaInternalsProxy::DidGetGlobalUsage,
-                 weak_factory_.GetWeakPtr(), StorageType::kPersistent));
+      base::BindOnce(&QuotaInternalsProxy::DidGetGlobalUsage,
+                     weak_factory_.GetWeakPtr(), StorageType::kPersistent));
 
   quota_manager_->GetGlobalUsage(
       StorageType::kSyncable,
-      base::Bind(&QuotaInternalsProxy::DidGetGlobalUsage,
-                 weak_factory_.GetWeakPtr(), StorageType::kSyncable));
+      base::BindOnce(&QuotaInternalsProxy::DidGetGlobalUsage,
+                     weak_factory_.GetWeakPtr(), StorageType::kSyncable));
 
-  quota_manager_->DumpQuotaTable(
-      base::Bind(&QuotaInternalsProxy::DidDumpQuotaTable,
-                 weak_factory_.GetWeakPtr()));
+  quota_manager_->DumpQuotaTable(base::BindOnce(
+      &QuotaInternalsProxy::DidDumpQuotaTable, weak_factory_.GetWeakPtr()));
 
   quota_manager_->DumpOriginInfoTable(
-      base::Bind(&QuotaInternalsProxy::DidDumpOriginInfoTable,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&QuotaInternalsProxy::DidDumpOriginInfoTable,
+                     weak_factory_.GetWeakPtr()));
 
   std::map<std::string, std::string> stats = quota_manager_->GetStatistics();
   ReportStatistics(stats);
@@ -218,12 +217,10 @@ void QuotaInternalsProxy::VisitHost(const std::string& host, StorageType type) {
 void QuotaInternalsProxy::GetHostUsage(const std::string& host,
                                        StorageType type) {
   DCHECK(quota_manager_.get());
-  quota_manager_->GetHostUsage(host,
-                               type,
-                               base::Bind(&QuotaInternalsProxy::DidGetHostUsage,
-                                          weak_factory_.GetWeakPtr(),
-                                          host,
-                                          type));
+  quota_manager_->GetHostUsage(
+      host, type,
+      base::BindOnce(&QuotaInternalsProxy::DidGetHostUsage,
+                     weak_factory_.GetWeakPtr(), host, type));
 }
 
 }  // namespace quota_internals

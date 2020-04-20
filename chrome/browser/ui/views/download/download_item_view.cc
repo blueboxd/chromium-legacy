@@ -913,13 +913,14 @@ bool DownloadItemView::SubmitDownloadToFeedbackService(
 void DownloadItemView::LoadIcon() {
   IconManager* im = g_browser_process->icon_manager();
   last_download_item_path_ = model_->GetTargetFilePath();
-  im->LoadIcon(last_download_item_path_, IconLoader::SMALL,
-               base::Bind(&DownloadItemView::OnExtractIconComplete,
-                          base::Unretained(this), IconLoader::IconSize::SMALL),
-               &cancelable_task_tracker_);
+  im->LoadIcon(
+      last_download_item_path_, IconLoader::SMALL,
+      base::BindOnce(&DownloadItemView::OnExtractIconComplete,
+                     base::Unretained(this), IconLoader::IconSize::SMALL),
+      &cancelable_task_tracker_);
   im->LoadIcon(last_download_item_path_, IconLoader::NORMAL,
-               base::Bind(&DownloadItemView::OnExtractIconComplete,
-                          base::Unretained(this), IconLoader::NORMAL),
+               base::BindOnce(&DownloadItemView::OnExtractIconComplete,
+                              base::Unretained(this), IconLoader::NORMAL),
                &cancelable_task_tracker_);
 }
 

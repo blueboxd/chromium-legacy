@@ -119,7 +119,7 @@
 <translation id="2352947182261340447">لا تتوفر مساحة كافية في مساحة التخزين المحلية.</translation>
 <translation id="2377319039870049694">تبديل إلى عرض القائمة</translation>
 <translation id="2377590462528165447">‏<ph name="NUMBER_OF_ITEMS" /> من المجلَّدات المشتركة مع نظام التشغيل Linux.</translation>
-<translation id="2378075407703503998">تم تحديد <ph name="SELCTED_FILE_COUNT" /> من الملفات</translation>
+<translation id="2378075407703503998">تم اختيار <ph name="SELCTED_FILE_COUNT" /> من الملفات</translation>
 <translation id="2384596874640104496">لوحة مفاتيح اللغة السنهالية</translation>
 <translation id="240770291734945588">مساحة التخزين المتاحة هي <ph name="SPACE_AVAILABLE" /></translation>
 <translation id="2425665904502185219">إجمالي حجم الملف</translation>
@@ -317,7 +317,7 @@
 <translation id="4801956050125744859">الاحتفاظ بالاثنتين</translation>
 <translation id="4804827417948292437">أفوكادو</translation>
 <translation id="4823651846660089135">الجهاز للقراءة فقط</translation>
-<translation id="4839847978919684242">تم تحديد <ph name="SELCTED_FILES_COUNT" /> من العناصر</translation>
+<translation id="4839847978919684242">تم اختيار <ph name="SELCTED_FILES_COUNT" /> من العناصر</translation>
 <translation id="4850886885716139402">عرض</translation>
 <translation id="485316830061041779">الألمانية</translation>
 <translation id="4867079195717347957">انقر لترتيب محتوى العمود ترتيبًا تنازليًا.</translation>
@@ -526,7 +526,7 @@
 <translation id="6978611942794658017">‏تم تصميم هذا الملف لأجهزة الكمبيوتر باستخدام برنامج Windows. هذا غير متوافق مع جهازك الذي يعمل بنظام التشغيل Chrome OS. يُرجى البحث في سوق Chrome الإلكتروني للحصول على تطبيق بديل مناسب.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6990081529015358884">لقد نفدت المساحة</translation>
-<translation id="6998711733709403587">تم تحديد <ph name="SELCTED_FOLDERS_COUNT" /> من المجلدات</translation>
+<translation id="6998711733709403587">تم اختيار <ph name="SELCTED_FOLDERS_COUNT" /> من المجلدات</translation>
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">تعذّر التثبيت.</translation>
 <translation id="7040138676081995583">فتح باستخدام...</translation>

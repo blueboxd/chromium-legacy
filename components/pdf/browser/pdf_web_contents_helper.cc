@@ -10,9 +10,9 @@
 #include "components/pdf/browser/pdf_web_contents_helper_client.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/common/referrer_type_converters.h"
+#include "ui/base/pointer/touch_editing_controller.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/point_f.h"
-#include "ui/strings/grit/ui_strings.h"
 
 namespace pdf {
 
@@ -170,7 +170,7 @@ bool PDFWebContentsHelper::IsCommandIdEnabled(int command_id) const {
   bool readable = true;
 
   switch (command_id) {
-    case IDS_APP_COPY:
+    case ui::TouchEditable::kCopy:
       return readable && has_selection_;
       // TODO(wjmaclean): add logic for cut/paste as the information required
       // from PDFium becomes available.
@@ -182,7 +182,7 @@ void PDFWebContentsHelper::ExecuteCommand(int command_id, int event_flags) {
   // TODO(wjmaclean, dsinclair): Need to communicate to PDFium to accept
   // cut/paste commands.
   switch (command_id) {
-    case IDS_APP_COPY:
+    case ui::TouchEditable::kCopy:
       web_contents()->Copy();
       break;
   }

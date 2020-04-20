@@ -19,8 +19,8 @@
 
 namespace feed {
 namespace {
-using StoreUpdate = StreamModel::StoreUpdate;
 using UiUpdate = StreamModel::UiUpdate;
+using StoreUpdate = StreamModel::StoreUpdate;
 
 std::vector<std::string> GetContentFrames(const StreamModel& model) {
   std::vector<std::string> frames;
@@ -59,7 +59,9 @@ class TestStoreObserver : public StreamModel::StoreObserver {
   }
 
   // StreamModel::StoreObserver.
-  void OnStoreChange(const StoreUpdate& records) override { update_ = records; }
+  void OnStoreChange(StoreUpdate records) override {
+    update_ = std::move(records);
+  }
 
   const base::Optional<StoreUpdate>& GetUpdate() const { return update_; }
 
@@ -303,7 +305,7 @@ TEST(StreamModelTest, CommitEphemeralChange) {
 
   // Check that the observer's |OnStoreChange()| was called.
   ASSERT_TRUE(store_observer.GetUpdate());
-  StoreUpdate store_update = *store_observer.GetUpdate();
+  const StoreUpdate& store_update = *store_observer.GetUpdate();
   ASSERT_EQ(3UL, store_update.operations.size());
   EXPECT_EQ(feedstore::StreamStructure::CLUSTER,
             store_update.operations[0].structure().type());

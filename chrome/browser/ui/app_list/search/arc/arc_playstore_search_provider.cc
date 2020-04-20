@@ -113,9 +113,9 @@ void ArcPlayStoreSearchProvider::Start(const base::string16& query) {
 
   app_instance->GetRecentAndSuggestedAppsFromPlayStore(
       base::UTF16ToUTF8(query), max_results_,
-      base::Bind(&ArcPlayStoreSearchProvider::OnResults,
-                 weak_ptr_factory_.GetWeakPtr(), query,
-                 base::TimeTicks::Now()));
+      base::BindOnce(&ArcPlayStoreSearchProvider::OnResults,
+                     weak_ptr_factory_.GetWeakPtr(), query,
+                     base::TimeTicks::Now()));
 }
 
 void ArcPlayStoreSearchProvider::OnResults(

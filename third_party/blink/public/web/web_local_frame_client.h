@@ -357,10 +357,10 @@ class BLINK_EXPORT WebLocalFrameClient {
   virtual void DidCreateInitialEmptyDocument() {}
 
   // A new document has just been committed as a result of evaluating
-  // javascript url. This document inherited everything from the previous
-  // document (url, origin, global object, etc.).
+  // javascript url or XSLT. This document inherited everything from the
+  // previous document (url, origin, global object, etc.).
   // DidCommitNavigation is not called in this case.
-  virtual void DidCommitJavascriptUrlNavigation(WebDocumentLoader*) {}
+  virtual void DidCommitDocumentReplacementNavigation(WebDocumentLoader*) {}
 
   // The window object for the frame has been cleared of any extra properties
   // that may have been set by script from the previously loaded document. This

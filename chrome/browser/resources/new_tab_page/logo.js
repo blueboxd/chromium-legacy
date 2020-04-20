@@ -12,7 +12,7 @@ import {assert} from 'chrome://resources/js/assert.m.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {BrowserProxy} from './browser_proxy.js';
-import {skColorToRgb} from './utils.js';
+import {skColorToRgba} from './utils.js';
 
 // Shows the Google logo or a doodle if available.
 class LogoElement extends PolymerElement {
@@ -230,8 +230,8 @@ class LogoElement extends PolymerElement {
    * @return {string}
    * @private
    */
-  rgbOrUnset_(skColor) {
-    return skColor ? skColorToRgb(skColor) : 'unset';
+  rgbaOrUnset_(skColor) {
+    return skColor ? skColorToRgba(skColor) : 'unset';
   }
 
   /**

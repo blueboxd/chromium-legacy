@@ -128,7 +128,7 @@ To create a private (Googler-only) package:
 package: chrome_internal/third_party/sample_cipd_dep
 ```
 
-For more information about the package definition spec, see [the code][3].
+For more information about the package definition spec, see [the code].
 
 > **Note:** Committing the .yaml file to the repository isn't required,
 > but it is recommended. Doing so has benefits for visibility and ease of

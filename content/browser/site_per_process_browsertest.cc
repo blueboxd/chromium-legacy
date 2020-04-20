@@ -2206,11 +2206,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollLocalSubframeInOOPIF) {
   // unconsumed.
   InputEventAckWaiter ack_observer(
       parent_iframe_node->current_frame_host()->GetRenderWidgetHost(),
-      base::BindRepeating([](content::InputEventAckSource,
-                             content::InputEventAckState state,
+      base::BindRepeating([](blink::mojom::InputEventResultSource,
+                             blink::mojom::InputEventResultState state,
                              const blink::WebInputEvent& event) {
         return event.GetType() == blink::WebGestureEvent::kGestureScrollBegin &&
-               state == content::INPUT_EVENT_ACK_STATE_CONSUMED;
+               state == blink::mojom::InputEventResultState::kConsumed;
       }));
 
   // Wait until renderer's compositor thread is synced. Otherwise the non fast
@@ -10982,8 +10982,8 @@ class TouchEventObserver : public RenderWidgetHost::InputEventObserver {
     outgoing_touch_event_ids_->push_back(touch_event.unique_touch_event_id);
   }
 
-  void OnInputEventAck(InputEventAckSource source,
-                       InputEventAckState state,
+  void OnInputEventAck(blink::mojom::InputEventResultSource source,
+                       blink::mojom::InputEventResultState state,
                        const blink::WebInputEvent& event) override {
     if (!blink::WebInputEvent::IsTouchEventType(event.GetType()))
       return;
@@ -12941,8 +12941,8 @@ class SitePerProcessBrowserTouchActionTest : public SitePerProcessBrowserTest {
       base::Optional<cc::TouchAction>& whitelisted_touch_action) {
     InputEventAckWaiter ack_observer(
         rwhv_child->GetRenderWidgetHost(),
-        base::BindRepeating([](content::InputEventAckSource source,
-                               content::InputEventAckState state,
+        base::BindRepeating([](blink::mojom::InputEventResultSource source,
+                               blink::mojom::InputEventResultState state,
                                const blink::WebInputEvent& event) {
           return event.GetType() == blink::WebGestureEvent::kTouchStart ||
                  event.GetType() == blink::WebGestureEvent::kTouchMove ||

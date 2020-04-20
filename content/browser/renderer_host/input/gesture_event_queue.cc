@@ -155,10 +155,11 @@ void GestureEventQueue::ForwardGestureEvent(
   client_->SendGestureEventImmediately(gesture_event);
 }
 
-void GestureEventQueue::ProcessGestureAck(InputEventAckSource ack_source,
-                                          InputEventAckState ack_result,
-                                          WebInputEvent::Type type,
-                                          const ui::LatencyInfo& latency) {
+void GestureEventQueue::ProcessGestureAck(
+    blink::mojom::InputEventResultSource ack_source,
+    blink::mojom::InputEventResultState ack_result,
+    WebInputEvent::Type type,
+    const ui::LatencyInfo& latency) {
   TRACE_EVENT0("input", "GestureEventQueue::ProcessGestureAck");
 
   if (sent_events_awaiting_ack_.empty()) {
@@ -169,7 +170,8 @@ void GestureEventQueue::ProcessGestureAck(InputEventAckSource ack_source,
   // ACKs could come back out of order. We want to cache them to restore the
   // original order.
   for (auto& outstanding_event : sent_events_awaiting_ack_) {
-    if (outstanding_event.ack_state() != INPUT_EVENT_ACK_STATE_UNKNOWN)
+    if (outstanding_event.ack_state() !=
+        blink::mojom::InputEventResultState::kUnknown)
       continue;
     if (outstanding_event.event.GetType() == type) {
       outstanding_event.latency.AddNewLatencyFrom(latency);
@@ -189,7 +191,7 @@ void GestureEventQueue::AckCompletedEvents() {
   base::AutoReset<bool> process_acks(&processing_acks_, true);
   while (!sent_events_awaiting_ack_.empty()) {
     auto iter = sent_events_awaiting_ack_.begin();
-    if (iter->ack_state() == INPUT_EVENT_ACK_STATE_UNKNOWN)
+    if (iter->ack_state() == blink::mojom::InputEventResultState::kUnknown)
       break;
     GestureEventWithLatencyInfoAndAckState event = *iter;
     sent_events_awaiting_ack_.erase(iter);
@@ -199,8 +201,8 @@ void GestureEventQueue::AckCompletedEvents() {
 
 void GestureEventQueue::AckGestureEventToClient(
     const GestureEventWithLatencyInfo& event_with_latency,
-    InputEventAckSource ack_source,
-    InputEventAckState ack_result) {
+    blink::mojom::InputEventResultSource ack_source,
+    blink::mojom::InputEventResultState ack_result) {
   client_->OnGestureEventAck(event_with_latency, ack_source, ack_result);
 }
 
@@ -227,8 +229,8 @@ void GestureEventQueue::SendScrollEndingEventsNow() {
 
 void GestureEventQueue::OnWheelEventAck(
     const MouseWheelEventWithLatencyInfo& event,
-    InputEventAckSource ack_source,
-    InputEventAckState ack_result) {
+    blink::mojom::InputEventResultSource ack_source,
+    blink::mojom::InputEventResultState ack_result) {
   fling_controller_.OnWheelEventAck(event, ack_source, ack_result);
 }
 

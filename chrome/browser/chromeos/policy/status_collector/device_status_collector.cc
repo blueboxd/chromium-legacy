@@ -1708,16 +1708,16 @@ bool DeviceStatusCollector::GetWriteProtectSwitch(
     em::DeviceStatusReportRequest* status) {
   std::string firmware_write_protect;
   if (!statistics_provider_->GetMachineStatistic(
-          chromeos::system::kFirmwareWriteProtectBootKey,
+          chromeos::system::kFirmwareWriteProtectCurrentKey,
           &firmware_write_protect)) {
     return false;
   }
 
   if (firmware_write_protect ==
-      chromeos::system::kFirmwareWriteProtectBootValueOff) {
+      chromeos::system::kFirmwareWriteProtectCurrentValueOff) {
     status->set_write_protect_switch(false);
   } else if (firmware_write_protect ==
-             chromeos::system::kFirmwareWriteProtectBootValueOn) {
+             chromeos::system::kFirmwareWriteProtectCurrentValueOn) {
     status->set_write_protect_switch(true);
   } else {
     return false;

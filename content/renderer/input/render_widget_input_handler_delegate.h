@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "content/common/content_export.h"
-#include "content/common/input/input_event_ack.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
 
 namespace blink {

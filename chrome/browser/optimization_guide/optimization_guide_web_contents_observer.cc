@@ -4,7 +4,6 @@
 
 #include "chrome/browser/optimization_guide/optimization_guide_web_contents_observer.h"
 
-#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/optimization_guide/optimization_guide_top_host_provider.h"
@@ -26,23 +25,6 @@ bool WasHostCoveredByFetch(content::NavigationHandle* navigation_handle) {
           navigation_handle->GetWebContents()->GetBrowserContext())
           ->GetPrefs(),
       navigation_handle->GetURL().host());
-}
-
-// Records if the host for the current navigation was successfully
-// covered by a HintsFetch. HintsFetching must be enabled and only HTTPS
-// navigations are logged. Returns whether navigation was covered by fetch.
-bool RecordHintsFetcherCoverage(content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->GetURL().SchemeIs(url::kHttpsScheme))
-    return false;
-  if (!optimization_guide::features::IsRemoteFetchingEnabled())
-    return false;
-
-  bool was_host_covered_by_fetch = WasHostCoveredByFetch(navigation_handle);
-  UMA_HISTOGRAM_BOOLEAN(
-      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch",
-      was_host_covered_by_fetch);
-
-  return was_host_covered_by_fetch;
 }
 
 bool IsValidOptimizationGuideNavigation(
@@ -100,9 +82,6 @@ void OptimizationGuideWebContentsObserver::DidStartNavigation(
   OptimizationGuideTopHostProvider::MaybeUpdateTopHostBlacklist(
       navigation_handle);
 
-  bool was_host_covered_by_fetch =
-      RecordHintsFetcherCoverage(navigation_handle);
-
   if (!optimization_guide_keyed_service_)
     return;
 
@@ -111,7 +90,7 @@ void OptimizationGuideWebContentsObserver::DidStartNavigation(
   OptimizationGuideNavigationData* nav_data =
       GetOrCreateOptimizationGuideNavigationData(navigation_handle);
   nav_data->set_was_host_covered_by_fetch_at_navigation_start(
-      was_host_covered_by_fetch);
+      WasHostCoveredByFetch(navigation_handle));
   nav_data->set_is_same_origin_navigation(is_same_origin);
 }
 
@@ -122,11 +101,6 @@ void OptimizationGuideWebContentsObserver::DidRedirectNavigation(
   if (!IsValidOptimizationGuideNavigation(navigation_handle))
     return;
 
-  // Record the HintsFetcher coverage for the navigation, regardless if the
-  // keyed service is active or not.
-  bool was_host_covered_by_fetch =
-      RecordHintsFetcherCoverage(navigation_handle);
-
   if (!optimization_guide_keyed_service_)
     return;
 
@@ -135,7 +109,7 @@ void OptimizationGuideWebContentsObserver::DidRedirectNavigation(
   OptimizationGuideNavigationData* nav_data =
       GetOrCreateOptimizationGuideNavigationData(navigation_handle);
   nav_data->set_was_host_covered_by_fetch_at_navigation_start(
-      was_host_covered_by_fetch);
+      WasHostCoveredByFetch(navigation_handle));
 }
 
 void OptimizationGuideWebContentsObserver::DidFinishNavigation(
@@ -157,8 +131,7 @@ void OptimizationGuideWebContentsObserver::DidFinishNavigation(
       base::BindOnce(
           &OptimizationGuideWebContentsObserver::NotifyNavigationFinish,
           weak_factory_.GetWeakPtr(), navigation_handle->GetNavigationId(),
-          navigation_handle->GetRedirectChain(),
-          navigation_handle->HasCommitted()));
+          navigation_handle->GetRedirectChain()));
 
   if (!optimization_guide_keyed_service_)
     return;
@@ -171,8 +144,7 @@ void OptimizationGuideWebContentsObserver::DidFinishNavigation(
 
 void OptimizationGuideWebContentsObserver::NotifyNavigationFinish(
     int64_t navigation_id,
-    const std::vector<GURL>& navigation_redirect_chain,
-    bool has_committed) {
+    const std::vector<GURL>& navigation_redirect_chain) {
   auto nav_data_iter =
       inflight_optimization_guide_navigation_datas_.find(navigation_id);
   if (nav_data_iter == inflight_optimization_guide_navigation_datas_.end())
@@ -182,7 +154,6 @@ void OptimizationGuideWebContentsObserver::NotifyNavigationFinish(
     optimization_guide_keyed_service_->OnNavigationFinish(
         navigation_redirect_chain, nav_data_iter->second.get());
   }
-  nav_data_iter->second.get()->set_has_committed(has_committed);
 
   // We keep the last navigation data around to keep track of events happening
   // for the navigation that can happen after commit, such as a fetch for the

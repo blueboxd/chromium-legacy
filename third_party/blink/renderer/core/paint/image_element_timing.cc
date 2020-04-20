@@ -167,7 +167,7 @@ void ImageElementTiming::NotifyImagePaintedInternal(
       timing_allow_check = Performance::PassesTimingAllowCheck(
           cached_image.GetResponse(), cached_image.GetResponse(),
           *layout_object.GetDocument().GetSecurityOrigin(),
-          layout_object.GetDocument().ToExecutionContext(),
+          layout_object.GetDocument().GetExecutionContext(),
           &response_tainting_not_basic, &tainted_origin_flag);
     }
     if (!timing_allow_check) {

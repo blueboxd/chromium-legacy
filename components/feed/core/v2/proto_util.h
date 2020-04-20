@@ -10,8 +10,12 @@
 #include "base/time/time.h"
 #include "components/feed/core/proto/v2/wire/client_info.pb.h"
 #include "components/feed/core/proto/v2/wire/content_id.pb.h"
+#include "components/feed/core/proto/v2/wire/feed_query.pb.h"
 #include "components/feed/core/v2/types.h"
 
+namespace feedwire {
+class Request;
+}
 namespace feedstore {
 class StreamData;
 }
@@ -36,6 +40,16 @@ class ContentIdCompareFunctor {
 };
 
 feedwire::ClientInfo CreateClientInfo(const ChromeInfo& chrome_info);
+
+feedwire::Request CreateFeedQueryRefreshRequest(
+    feedwire::FeedQuery::RequestReason request_reason,
+    const ChromeInfo& chrome_info,
+    const std::string& consistency_token);
+
+feedwire::Request CreateFeedQueryLoadMoreRequest(
+    const ChromeInfo& chrome_info,
+    const std::string& consistency_token,
+    const std::string& next_page_token);
 
 }  // namespace feed
 

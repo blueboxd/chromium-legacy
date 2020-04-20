@@ -174,6 +174,9 @@ class WebTestRuntimeFlags {
   // Contains text passed by the test to testRunner.setCustomTextOutput.
   DEFINE_STRING_WEB_TEST_RUNTIME_FLAG(custom_text_output)
 
+  // True for web platform tests.
+  DEFINE_BOOL_WEB_TEST_RUNTIME_FLAG(is_web_platform_tests_mode)
+
 #undef DEFINE_BOOL_WEB_TEST_RUNTIME_FLAG
 #undef DEFINE_STRING_WEB_TEST_RUNTIME_FLAG
 

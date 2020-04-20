@@ -7,6 +7,8 @@
 
 #include <mfapi.h>
 
+#include <memory>
+
 #include "base/logging.h"
 #include "media/base/win/mf_initializer_export.h"
 

@@ -182,8 +182,8 @@ void FingerprintHandler::HandleGetFingerprintsList(
 
   AllowJavascript();
   fp_service_->GetRecordsForUser(
-      user_id_, base::Bind(&FingerprintHandler::OnGetFingerprintsList,
-                           weak_ptr_factory_.GetWeakPtr(), callback_id));
+      user_id_, base::BindOnce(&FingerprintHandler::OnGetFingerprintsList,
+                               weak_ptr_factory_.GetWeakPtr(), callback_id));
 }
 
 void FingerprintHandler::OnGetFingerprintsList(
@@ -249,8 +249,8 @@ void FingerprintHandler::HandleCancelCurrentEnroll(
     const base::ListValue* args) {
   AllowJavascript();
   fp_service_->CancelCurrentEnrollSession(
-      base::Bind(&FingerprintHandler::OnCancelCurrentEnrollSession,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&FingerprintHandler::OnCancelCurrentEnrollSession,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void FingerprintHandler::OnCancelCurrentEnrollSession(bool success) {
@@ -269,8 +269,8 @@ void FingerprintHandler::HandleGetEnrollmentLabel(const base::ListValue* args) {
   AllowJavascript();
   fp_service_->RequestRecordLabel(
       fingerprints_paths_[index],
-      base::Bind(&FingerprintHandler::OnRequestRecordLabel,
-                 weak_ptr_factory_.GetWeakPtr(), callback_id));
+      base::BindOnce(&FingerprintHandler::OnRequestRecordLabel,
+                     weak_ptr_factory_.GetWeakPtr(), callback_id));
 }
 
 void FingerprintHandler::OnRequestRecordLabel(const std::string& callback_id,
@@ -289,8 +289,8 @@ void FingerprintHandler::HandleRemoveEnrollment(const base::ListValue* args) {
   AllowJavascript();
   fp_service_->RemoveRecord(
       fingerprints_paths_[index],
-      base::Bind(&FingerprintHandler::OnRemoveRecord,
-                 weak_ptr_factory_.GetWeakPtr(), callback_id));
+      base::BindOnce(&FingerprintHandler::OnRemoveRecord,
+                     weak_ptr_factory_.GetWeakPtr(), callback_id));
 }
 
 void FingerprintHandler::OnRemoveRecord(const std::string& callback_id,
@@ -314,8 +314,8 @@ void FingerprintHandler::HandleChangeEnrollmentLabel(
   AllowJavascript();
   fp_service_->SetRecordLabel(
       new_label, fingerprints_paths_[index],
-      base::Bind(&FingerprintHandler::OnSetRecordLabel,
-                 weak_ptr_factory_.GetWeakPtr(), callback_id));
+      base::BindOnce(&FingerprintHandler::OnSetRecordLabel,
+                     weak_ptr_factory_.GetWeakPtr(), callback_id));
 }
 
 void FingerprintHandler::OnSetRecordLabel(const std::string& callback_id,
@@ -335,8 +335,8 @@ void FingerprintHandler::HandleEndCurrentAuthentication(
     const base::ListValue* args) {
   AllowJavascript();
   fp_service_->EndCurrentAuthSession(
-      base::Bind(&FingerprintHandler::OnEndCurrentAuthSession,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&FingerprintHandler::OnEndCurrentAuthSession,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void FingerprintHandler::OnEndCurrentAuthSession(bool success) {

@@ -5,8 +5,8 @@
 #include "third_party/blink/public/web/web_console_message.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
@@ -20,8 +20,8 @@ void WebConsoleMessage::LogWebConsoleMessage(v8::Local<v8::Context> context,
     return;
 
   LocalFrame* frame = nullptr;
-  if (auto* document = Document::DynamicFrom(execution_context))
-    frame = document->GetFrame();
+  if (auto* window = DynamicTo<LocalDOMWindow>(execution_context))
+    frame = window->GetFrame();
   execution_context->AddConsoleMessage(
       MakeGarbageCollected<ConsoleMessage>(message, frame));
 }

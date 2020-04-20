@@ -127,7 +127,6 @@ class CORE_EXPORT ExecutionContextLifecycleObserver
   void Trace(Visitor*) override;
 
  protected:
-  ExecutionContextLifecycleObserver();
   // TODO(crbug.com/1029822): This is a shim to enable migrating
   // ExecutionContext to LocalDOMWindow.
   explicit ExecutionContextLifecycleObserver(Document*,

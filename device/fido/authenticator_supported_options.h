@@ -91,7 +91,7 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorSupportedOptions {
   bool supports_uv_token = false;
   // Indicates whether the authenticator supports an extension for passing
   // information from the collectedClientData structure with a CTAP request.
-  bool supports_android_client_data_ext;
+  bool supports_android_client_data_ext = false;
 };
 
 COMPONENT_EXPORT(DEVICE_FIDO)

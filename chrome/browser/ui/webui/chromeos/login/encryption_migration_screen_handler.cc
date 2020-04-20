@@ -610,8 +610,8 @@ void EncryptionMigrationScreenHandler::OnMountExistingVault(
       cryptohome::CreateAccountIdentifierFromAccountId(
           user_context_.GetAccountId()),
       request,
-      base::Bind(&EncryptionMigrationScreenHandler::OnMigrationRequested,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&EncryptionMigrationScreenHandler::OnMigrationRequested,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 device::mojom::WakeLock* EncryptionMigrationScreenHandler::GetWakeLock() {

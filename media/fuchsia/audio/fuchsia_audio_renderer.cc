@@ -254,7 +254,6 @@ void FuchsiaAudioRenderer::StartTicking() {
     SetPlaybackState(PlaybackState::kStarting);
   }
 
-
   audio_consumer_->Start(flags, fuchsia::media::NO_TIMESTAMP,
                          media_pos.ToZxDuration());
 }
@@ -527,6 +526,13 @@ void FuchsiaAudioRenderer::OnDemuxerStreamReadDone(
   stream_sink_->SendPacket(std::move(packet), [this, buffer_index]() {
     OnStreamSendDone(buffer_index);
   });
+
+  // AudioConsumer doesn't report exact time when the data is decoded, but it's
+  // safe to report it as decoded right away since the packet is expected to be
+  // decoded soon after AudioConsumer receives it.
+  PipelineStatistics stats;
+  stats.audio_bytes_decoded = buffer->data_size();
+  client_->OnStatisticsUpdate(stats);
 
   last_packet_timestamp_ = buffer->timestamp();
 

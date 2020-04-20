@@ -302,10 +302,10 @@ void EnsureRecentUnexpireFlagsArePresent(
     return false;
   };
 
-  EXPECT_FALSE(contains_unexpire_for(current_milestone + 1));
-  EXPECT_TRUE(contains_unexpire_for(current_milestone));
+  EXPECT_FALSE(contains_unexpire_for(current_milestone));
   EXPECT_TRUE(contains_unexpire_for(current_milestone - 1));
-  EXPECT_FALSE(contains_unexpire_for(current_milestone - 2));
+  EXPECT_TRUE(contains_unexpire_for(current_milestone - 2));
+  EXPECT_FALSE(contains_unexpire_for(current_milestone - 3));
 }
 
 }  // namespace testing

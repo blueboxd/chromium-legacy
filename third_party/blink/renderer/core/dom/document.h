@@ -1350,9 +1350,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void DispatchEventsForPrinting();
 
-  bool HasFullscreenSupplement() const { return has_fullscreen_supplement_; }
-  void SetHasFullscreenSupplement() { has_fullscreen_supplement_ = true; }
-
   void exitPointerLock();
   Element* PointerLockElement() const;
 
@@ -2130,9 +2127,6 @@ class CORE_EXPORT Document : public ContainerNode,
   bool is_mobile_document_;
 
   LayoutView* layout_view_;
-
-  // For early return in Fullscreen::fromIfExists()
-  bool has_fullscreen_supplement_;
 
   // The last element in |top_layer_elements_| is topmost in the top layer
   // stack and is thus the one that will be visually on top.

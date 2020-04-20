@@ -5,8 +5,8 @@
 #ifndef CONTENT_RENDERER_INPUT_MAIN_THREAD_EVENT_QUEUE_TASK_H_
 #define CONTENT_RENDERER_INPUT_MAIN_THREAD_EVENT_QUEUE_TASK_H_
 
-#include "content/public/common/input_event_ack_state.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 
 namespace content {

@@ -1525,9 +1525,9 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
     last_committed_entry_index_ = pending_entry_index_;
   }
 
-  SetShouldSkipOnBackForwardUIIfNeeded(rfh, replace_entry,
-                                       previous_document_was_activated,
-                                       request->IsRendererInitiated());
+  SetShouldSkipOnBackForwardUIIfNeeded(
+      rfh, replace_entry, previous_document_was_activated,
+      request->IsRendererInitiated(), request->GetPreviousPageUkmSourceId());
 
   InsertOrReplaceEntry(std::move(new_entry), replace_entry,
                        !request->post_commit_error_page_html().empty());
@@ -1807,9 +1807,9 @@ void NavigationControllerImpl::RendererDidNavigateNewSubframe(
           std::move(frame_entry), is_same_document, rfh->frame_tree_node(),
           delegate_->GetFrameTree()->root());
 
-  SetShouldSkipOnBackForwardUIIfNeeded(rfh, replace_entry,
-                                       previous_document_was_activated,
-                                       request->IsRendererInitiated());
+  SetShouldSkipOnBackForwardUIIfNeeded(
+      rfh, replace_entry, previous_document_was_activated,
+      request->IsRendererInitiated(), request->GetPreviousPageUkmSourceId());
 
   // TODO(creis): Update this to add the frame_entry if we can't find the one
   // to replace, which can happen due to a unique name change. See
@@ -3549,7 +3549,8 @@ void NavigationControllerImpl::SetShouldSkipOnBackForwardUIIfNeeded(
     RenderFrameHostImpl* rfh,
     bool replace_entry,
     bool previous_document_was_activated,
-    bool is_renderer_initiated) {
+    bool is_renderer_initiated,
+    ukm::SourceId previous_page_load_ukm_source_id) {
   // Note that for a subframe, previous_document_was_activated is true if the
   // gesture happened in any subframe (propagated to main frame) or in the main
   // frame itself.
@@ -3568,15 +3569,10 @@ void NavigationControllerImpl::SetShouldSkipOnBackForwardUIIfNeeded(
   UMA_HISTOGRAM_BOOLEAN("Navigation.BackForward.SetShouldSkipOnBackForwardUI",
                         true);
 
-  // Log UKM with the URL we are navigating away from. Note that
-  // GetUkmSourceIdForLastCommittedSource looks into the WebContents to get
-  // the last committed source. Since WebContents has not yet been updated
-  // with the current URL being committed, this should give the correct source
-  // even though |rfh| here belongs to the current navigation.
-  ukm::SourceId source_id =
-      rfh->delegate()->GetUkmSourceIdForLastCommittedSource();
-  ukm::builders::HistoryManipulationIntervention(source_id).Record(
-      ukm::UkmRecorder::Get());
+  // Log UKM with the URL we are navigating away from.
+  ukm::builders::HistoryManipulationIntervention(
+      previous_page_load_ukm_source_id)
+      .Record(ukm::UkmRecorder::Get());
 }
 
 void NavigationControllerImpl::SetSkippableForSameDocumentEntries(

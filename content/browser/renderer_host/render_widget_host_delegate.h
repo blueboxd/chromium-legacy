@@ -307,14 +307,15 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // if the eTLD+1 is not known for |render_widget_host|.
   virtual bool AddDomainInfoToRapporSample(rappor::Sample* sample);
 
-  // Get the UKM source ID for current content. This is used for providing
-  // data about the content to the URL-keyed metrics service.
-  // Note: This is also exposed by the RenderFrameHostDelegate.
-  virtual ukm::SourceId GetUkmSourceIdForLastCommittedSource() const;
-
   // Return this object cast to a WebContents, if it is one. If the object is
   // not a WebContents, returns nullptr.
   virtual WebContents* GetAsWebContents();
+
+  // Get the UKM source ID for current content. This is used for providing
+  // data about the content to the URL-keyed metrics service.
+  // Note: Prefer using RenderFrameHost::GetPageUkmSourceId wherever
+  // possible.
+  virtual ukm::SourceId GetCurrentPageUkmSourceId();
 
   // Returns true if there is context menu shown on page.
   virtual bool IsShowingContextMenuOnPage() const;

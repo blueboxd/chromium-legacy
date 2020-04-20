@@ -45,6 +45,8 @@ std::ostream& operator<<(std::ostream& out, LoadStreamStatus value) {
       return out << "kLoadNotAllowedArticlesListHidden";
     case LoadStreamStatus::kCannotParseNetorkResponseBody:
       return out << "kCannotParseNetorkResponseBody";
+    case LoadStreamStatus::kLoadMoreModelIsNotLoaded:
+      return out << "kLoadMoreModelIsNotLoaded";
   }
 #else
   return out << (static_cast<int>(value));

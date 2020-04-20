@@ -108,8 +108,9 @@ void OfflineInternalsUIMessageHandler::HandleDeleteSelectedPages(
   criteria.offline_ids = std::move(offline_ids);
   offline_page_model_->DeletePagesWithCriteria(
       criteria,
-      base::Bind(&OfflineInternalsUIMessageHandler::HandleDeletedPagesCallback,
-                 weak_ptr_factory_.GetWeakPtr(), callback_id));
+      base::BindOnce(
+          &OfflineInternalsUIMessageHandler::HandleDeletedPagesCallback,
+          weak_ptr_factory_.GetWeakPtr(), callback_id));
 }
 
 void OfflineInternalsUIMessageHandler::HandleDeleteSelectedRequests(
@@ -133,7 +134,7 @@ void OfflineInternalsUIMessageHandler::HandleDeleteSelectedRequests(
   if (request_coordinator_) {
     request_coordinator_->RemoveRequests(
         offline_ids,
-        base::Bind(
+        base::BindOnce(
             &OfflineInternalsUIMessageHandler::HandleDeletedRequestsCallback,
             weak_ptr_factory_.GetWeakPtr(), callback_id));
   }
@@ -228,9 +229,9 @@ void OfflineInternalsUIMessageHandler::HandleGetStoredPages(
   CHECK(args->GetString(0, &callback_id));
 
   if (offline_page_model_) {
-    offline_page_model_->GetAllPages(
-        base::Bind(&OfflineInternalsUIMessageHandler::HandleStoredPagesCallback,
-                   weak_ptr_factory_.GetWeakPtr(), callback_id));
+    offline_page_model_->GetAllPages(base::BindOnce(
+        &OfflineInternalsUIMessageHandler::HandleStoredPagesCallback,
+        weak_ptr_factory_.GetWeakPtr(), callback_id));
   } else {
     base::ListValue results;
     ResolveJavascriptCallback(base::Value(callback_id), results);
@@ -540,7 +541,7 @@ void OfflineInternalsUIMessageHandler::HandleAddToRequestQueue(
                                                id_stream.str());
     request_coordinator_->SavePageLater(
         params,
-        base::Bind(
+        base::BindOnce(
             &OfflineInternalsUIMessageHandler::HandleSavePageLaterCallback,
             weak_ptr_factory_.GetWeakPtr(), callback_id));
   } else {

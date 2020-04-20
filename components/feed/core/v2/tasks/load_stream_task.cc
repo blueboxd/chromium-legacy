@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/time/clock.h"
+#include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "components/feed/core/proto/v2/wire/capability.pb.h"
 #include "components/feed/core/proto/v2/wire/client_info.pb.h"
@@ -46,14 +47,16 @@ LoadStreamTask::LoadStreamTask(LoadType load_type,
 LoadStreamTask::~LoadStreamTask() = default;
 
 void LoadStreamTask::Run() {
-  // Phase 1.
-  //  - Return early if the model is already loaded.
-  //  - Try to load from persistent storage.
+  // Phase 1: Try to load from persistent storage.
 
-  // Don't load if the model is already loaded.
-  if (stream_->GetModel()) {
-    Done(LoadStreamStatus::kModelAlreadyLoaded);
-    return;
+  // TODO(harringtond): We're checking ShouldAttemptLoad() here and before the
+  // task is added to the task queue. Maybe we can simplify this.
+
+  // First, ensure we still should load the model.
+  LoadStreamStatus should_not_attempt_reason = stream_->ShouldAttemptLoad(
+      /*model_loading=*/true);
+  if (should_not_attempt_reason != LoadStreamStatus::kNoStatus) {
+    return Done(should_not_attempt_reason);
   }
 
   // Use |kConsistencyTokenOnly| to short-circuit loading from store if we don't
@@ -92,25 +95,11 @@ void LoadStreamTask::LoadFromStoreComplete(
     return;
   }
 
-  // TODO(harringtond): Request parameters here are all placeholder values.
-  feedwire::Request request;
-  request.set_request_version(feedwire::Request::FEED_QUERY);
-
-  feedwire::FeedRequest& feed_request = *request.mutable_feed_request();
-  *feed_request.mutable_client_info() =
-      CreateClientInfo(stream_->GetChromeInfo());
-
-  request.mutable_feed_request()->add_client_capability(
-      feedwire::Capability::BASE_UI);
-  feed_request.mutable_feed_query()->set_reason(GetRequestReason(load_type_));
-  if (!result.consistency_token.empty()) {
-    feed_request.mutable_consistency_token()->set_token(
-        result.consistency_token);
-  }
-
-  fetch_start_time_ = base::TimeTicks::Now();
+  fetch_start_time_ = stream_->GetTickClock()->NowTicks();
   stream_->GetNetwork()->SendQueryRequest(
-      request,
+      CreateFeedQueryRefreshRequest(GetRequestReason(load_type_),
+                                    stream_->GetChromeInfo(),
+                                    result.consistency_token),
       base::BindOnce(&LoadStreamTask::QueryRequestComplete, GetWeakPtr()));
 }
 
@@ -124,14 +113,16 @@ void LoadStreamTask::QueryRequestComplete(
 
   std::unique_ptr<StreamModelUpdateRequest> update_request =
       stream_->GetWireResponseTranslator()->TranslateWireResponse(
-          *result.response_body, base::TimeTicks::Now() - fetch_start_time_,
+          *result.response_body,
+          StreamModelUpdateRequest::Source::kNetworkUpdate,
+          stream_->GetTickClock()->NowTicks() - fetch_start_time_,
           stream_->GetClock()->Now());
   if (!update_request) {
     Done(LoadStreamStatus::kProtoTranslationFailed);
     return;
   }
 
-  stream_->GetStore()->SaveFullStream(
+  stream_->GetStore()->OverwriteStream(
       std::make_unique<StreamModelUpdateRequest>(*update_request),
       base::DoNothing());
 

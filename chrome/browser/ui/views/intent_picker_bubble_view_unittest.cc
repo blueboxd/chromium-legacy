@@ -107,8 +107,8 @@ class IntentPickerBubbleViewTest : public BrowserWithTestWindowTest {
         anchor_view_.get(), /*icon_view=*/nullptr, icon_type,
         std::move(app_info), show_stay_in_chrome,
         /*show_remember_selection=*/true, initiating_origin,
-        base::Bind(&IntentPickerBubbleViewTest::OnBubbleClosed,
-                   base::Unretained(this)),
+        base::BindOnce(&IntentPickerBubbleViewTest::OnBubbleClosed,
+                       base::Unretained(this)),
         web_contents);
   }
 

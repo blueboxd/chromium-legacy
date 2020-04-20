@@ -5,6 +5,7 @@
 #include "media/base/supported_types.h"
 
 #include "base/feature_list.h"
+#include "base/logging.h"
 #include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "media/base/media.h"

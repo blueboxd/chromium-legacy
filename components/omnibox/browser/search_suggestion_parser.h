@@ -207,7 +207,7 @@ class SearchSuggestionParser {
     std::string additional_query_params_;
 
     // The suggestion group Id based on the SuggestionGroupIds enum in
-    // http://google3/suggest/base/suggestion_config.proto
+    // suggestion_config.proto
     // Used to look up the header this suggestion must appear under from the
     // server supplied map of suggestion group Ids to headers.
     base::Optional<int> suggestion_group_id_;

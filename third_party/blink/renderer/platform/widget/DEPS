@@ -1,0 +1,6 @@
+include_rules = [
+    "+cc/paint/element_id.h",
+    "+cc/trees/layer_tree_host.h",
+    "+cc/trees/layer_tree_settings.h",
+    "+cc/trees/ukm_manager.h",
+]

@@ -96,9 +96,9 @@ void WebTestRenderFrameObserver::SetTestConfiguration(
       ->OnSetTestConfiguration(std::move(config));
 }
 
-void WebTestRenderFrameObserver::SetupSecondaryRenderer() {
+void WebTestRenderFrameObserver::SetupRendererProcessForNonTestWindow() {
   BlinkTestRunner::Get(render_frame()->GetRenderView())
-      ->OnSetupSecondaryRenderer();
+      ->OnSetupRendererProcessForNonTestWindow();
 }
 
 void WebTestRenderFrameObserver::Reset() {

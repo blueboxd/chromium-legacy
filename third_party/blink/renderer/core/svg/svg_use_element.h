@@ -24,8 +24,8 @@
 
 #include "base/gtest_prod_util.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/loader/resource/document_resource.h"
 #include "third_party/blink/renderer/core/svg/svg_animated_length.h"
+#include "third_party/blink/renderer/core/svg/svg_external_document_cache.h"
 #include "third_party/blink/renderer/core/svg/svg_geometry_element.h"
 #include "third_party/blink/renderer/core/svg/svg_graphics_element.h"
 #include "third_party/blink/renderer/core/svg/svg_uri_reference.h"
@@ -35,10 +35,9 @@ namespace blink {
 
 class SVGUseElement final : public SVGGraphicsElement,
                             public SVGURIReference,
-                            public ResourceClient {
+                            public SVGExternalDocumentCache::Client {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(SVGUseElement);
-  USING_PRE_FINALIZER(SVGUseElement, Dispose);
 
  public:
   explicit SVGUseElement(Document&);
@@ -65,8 +64,6 @@ class SVGUseElement final : public SVGGraphicsElement,
   void Trace(Visitor*) override;
 
  private:
-  void Dispose();
-
   FloatRect GetBBox() override;
 
   void CollectStyleForPresentationAttribute(
@@ -107,10 +104,10 @@ class SVGUseElement final : public SVGGraphicsElement,
   bool HasCycleUseReferencing(const ContainerNode& target_instance,
                               const SVGElement& new_target) const;
 
-  bool ResourceIsValid() const;
-  void NotifyFinished(Resource*) override;
-  String DebugName() const override { return "SVGUseElement"; }
+  void NotifyFinished(Document*) override;
   void UpdateTargetReference();
+
+  Member<SVGExternalDocumentCache::Entry> cache_entry_;
 
   Member<SVGAnimatedLength> x_;
   Member<SVGAnimatedLength> y_;

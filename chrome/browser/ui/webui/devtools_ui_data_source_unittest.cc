@@ -89,8 +89,8 @@ class DevToolsUIDataSourceTest : public testing::Test {
     content::WebContents::Getter wc_getter;
     data_source()->StartDataRequest(
         GURL("chrome://any-host/" + trimmed_path), std::move(wc_getter),
-        base::BindRepeating(&DevToolsUIDataSourceTest::OnDataReceived,
-                            base::Unretained(this)));
+        base::BindOnce(&DevToolsUIDataSourceTest::OnDataReceived,
+                       base::Unretained(this)));
   }
 
  private:

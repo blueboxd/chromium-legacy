@@ -37,8 +37,6 @@ base::CancelableTaskTracker::TaskId kDummyTaskId = 1;
 const char kAvailabilityHistogramName[] =
     "Sync.SyncedHistoryFaviconAvailability";
 const char kLatencyHistogramName[] = "Sync.SyncedHistoryFaviconLatency";
-const char kGroupingHistogramName[] =
-    "Sync.RequestGroupSizeForSyncedHistoryFavicons";
 const int kDefaultDesiredSizeInPixel = 16;
 const SkColor kTestColor = SK_ColorRED;
 
@@ -290,8 +288,6 @@ TEST_F(HistoryUiFaviconRequestHandlerImplTest, ShouldGetGoogleServerBitmap) {
       FaviconAvailability::kLocal, 1);
   histogram_tester_.ExpectTotalCount(
       std::string(kLatencyHistogramName) + kDummyOriginHistogramSuffix, 1);
-  histogram_tester_.ExpectUniqueSample(
-      std::string(kGroupingHistogramName) + kDummyOriginHistogramSuffix, 1, 1);
 }
 
 TEST_F(HistoryUiFaviconRequestHandlerImplTest, ShouldGetEmptyImage) {
@@ -347,8 +343,6 @@ TEST_F(HistoryUiFaviconRequestHandlerImplTest, ShouldGetGoogleServerImage) {
       FaviconAvailability::kLocal, 1);
   histogram_tester_.ExpectTotalCount(
       std::string(kLatencyHistogramName) + kDummyOriginHistogramSuffix, 1);
-  histogram_tester_.ExpectUniqueSample(
-      std::string(kGroupingHistogramName) + kDummyOriginHistogramSuffix, 1, 1);
 }
 
 TEST_F(HistoryUiFaviconRequestHandlerImplTest,

@@ -57,7 +57,8 @@ void ContentIndexMetrics::RecordContentOpened(
     blink::mojom::ContentCategory category) {
   base::UmaHistogramEnumeration("ContentIndex.ContentOpened", category);
 
-  ukm::builders::ContentIndex_Opened(web_contents->GetLastCommittedSourceId())
+  ukm::builders::ContentIndex_Opened(
+      web_contents->GetMainFrame()->GetPageUkmSourceId())
       .SetIsOffline(net::NetworkChangeNotifier::IsOffline())
       .Record(ukm::UkmRecorder::Get());
 }

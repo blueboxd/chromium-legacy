@@ -12,7 +12,7 @@
 namespace blink {
 
 class Element;
-class LocalFrame;
+class LocalDOMWindow;
 class IdleDeadline;
 class SpellCheckRequester;
 
@@ -24,7 +24,7 @@ class SpellCheckRequester;
 class ColdModeSpellCheckRequester
     : public GarbageCollected<ColdModeSpellCheckRequester> {
  public:
-  explicit ColdModeSpellCheckRequester(LocalFrame&);
+  explicit ColdModeSpellCheckRequester(LocalDOMWindow&);
 
   void SetNeedsMoreInvocationForTesting() {
     needs_more_invocation_for_testing_ = true;
@@ -38,7 +38,6 @@ class ColdModeSpellCheckRequester
   void Trace(Visitor*);
 
  private:
-  LocalFrame& GetFrame() const { return *frame_; }
   SpellCheckRequester& GetSpellCheckRequester() const;
 
   const Element* CurrentFocusedEditable() const;
@@ -46,8 +45,8 @@ class ColdModeSpellCheckRequester
   void RequestCheckingForNextChunk();
   void SetHasFullyChecked();
 
-  // The LocalFrame this cold mode checker belongs to.
-  const Member<LocalFrame> frame_;
+  // The window this cold mode checker belongs to.
+  const Member<LocalDOMWindow> window_;
 
   // The root editable element checked in the last invocation. |nullptr| if not
   // invoked yet or didn't find any root editable element to check.

@@ -694,7 +694,7 @@
       'dimensions': {
         'gpu': '8086:5912-26.20.100.7870',
         'os': 'Windows-10',
-        'pool': 'chromium.tests.gpu.template|chromium.tests.gpu.experimental.template',
+        'pool': 'chromium.tests.gpu.experimental.template',
       },
     },
   },

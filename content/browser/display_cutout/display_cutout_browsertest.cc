@@ -308,7 +308,7 @@ IN_PROC_BROWSER_TEST_F(DisplayCutoutBrowserTest, ViewportFit_Fullscreen) {
   // Get the source id for the page and close the |shell|. This will flush any
   // unrecorded UKM metrics.
   ukm::SourceId source_id =
-      web_contents_impl()->GetUkmSourceIdForLastCommittedSource();
+      web_contents_impl()->GetMainFrame()->GetPageUkmSourceId();
   shell()->Close();
 
   // Check UKM metrics are recorded. The first two entries are from loading the
@@ -363,7 +363,7 @@ IN_PROC_BROWSER_TEST_F(DisplayCutoutBrowserTest,
   // Get the source id for the page and close the |shell|. This will flush any
   // unrecorded UKM metrics.
   ukm::SourceId source_id =
-      web_contents_impl()->GetUkmSourceIdForLastCommittedSource();
+      web_contents_impl()->GetMainFrame()->GetPageUkmSourceId();
   shell()->Close();
 
   // Check UKM metrics are recorded.
@@ -386,7 +386,7 @@ IN_PROC_BROWSER_TEST_F(DisplayCutoutBrowserTest, ViewportFit_Noop_Navigate) {
   }
 
   ukm::SourceId source_id =
-      web_contents_impl()->GetUkmSourceIdForLastCommittedSource();
+      web_contents_impl()->GetMainFrame()->GetPageUkmSourceId();
   LoadTestPageWithData("");
 
   // Check UKM metrics are recorded.
@@ -406,7 +406,7 @@ IN_PROC_BROWSER_TEST_F(DisplayCutoutBrowserTest,
   }
 
   ukm::SourceId source_id =
-      web_contents_impl()->GetUkmSourceIdForLastCommittedSource();
+      web_contents_impl()->GetMainFrame()->GetPageUkmSourceId();
   shell()->Close();
 
   // Check UKM metrics are recorded.

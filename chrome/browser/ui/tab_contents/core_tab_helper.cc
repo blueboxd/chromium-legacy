@@ -97,9 +97,9 @@ void CoreTabHelper::SearchByImageInNewTab(
       kImageSearchThumbnailMinSize,
       gfx::Size(kImageSearchThumbnailMaxWidth, kImageSearchThumbnailMaxHeight),
       chrome::mojom::ImageFormat::JPEG,
-      base::Bind(&CoreTabHelper::DoSearchByImageInNewTab,
-                 weak_factory_.GetWeakPtr(), base::Passed(&chrome_render_frame),
-                 src_url));
+      base::BindOnce(&CoreTabHelper::DoSearchByImageInNewTab,
+                     weak_factory_.GetWeakPtr(),
+                     base::Passed(&chrome_render_frame), src_url));
 }
 
 std::unique_ptr<content::WebContents> CoreTabHelper::SwapWebContents(

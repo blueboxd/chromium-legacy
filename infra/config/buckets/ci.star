@@ -3105,6 +3105,8 @@ ci.memory_builder(
         category = 'mac',
         short_name = 'bld',
     ),
+    # TODO(https://crbug.com/1071686): Remove this after debugging
+    execution_timeout = time.hour * 9 / 2,
     goma_debug = True,  # TODO(hinoka): Remove this after debugging.
     goma_jobs = None,
     cores = None,  # Swapping between 8 and 24

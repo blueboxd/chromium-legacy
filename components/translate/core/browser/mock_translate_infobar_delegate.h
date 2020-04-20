@@ -49,7 +49,8 @@ class MockTranslateInfoBarDelegate
   MOCK_CONST_METHOD1(language_name_at, base::string16(size_t index));
   MOCK_CONST_METHOD0(original_language_name, base::string16());
   MOCK_CONST_METHOD0(ShouldAlwaysTranslate, bool());
-  MOCK_METHOD1(SetObserver, void(Observer* observer));
+  MOCK_METHOD1(AddObserver, void(Observer* observer));
+  MOCK_METHOD1(RemoveObserver, void(Observer* observer));
 };
 
 class MockTranslateInfoBarDelegateFactory {

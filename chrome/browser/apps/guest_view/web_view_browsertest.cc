@@ -3933,12 +3933,12 @@ IN_PROC_BROWSER_TEST_P(WebViewGuestScrollTest,
 
   content::InputEventAckWaiter update_waiter(
       guest_contents->GetRenderViewHost()->GetWidget(),
-      base::BindRepeating([](content::InputEventAckSource,
-                             content::InputEventAckState state,
+      base::BindRepeating([](blink::mojom::InputEventResultSource,
+                             blink::mojom::InputEventResultState state,
                              const blink::WebInputEvent& event) {
         return event.GetType() ==
                    blink::WebGestureEvent::kGestureScrollUpdate &&
-               state != content::INPUT_EVENT_ACK_STATE_CONSUMED;
+               state != blink::mojom::InputEventResultState::kConsumed;
       }));
 
   blink::WebGestureEvent scroll_update(

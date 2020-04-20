@@ -680,9 +680,10 @@ TEST_P(FlingControllerTest, MiddleClickAutoScrollFling) {
 // wheel event was consumed.
 TEST_P(FlingControllerTest, NoFlingStartAfterWheelEventConsumed) {
   // First ensure that a fling can start after a not consumed wheel event.
-  fling_controller_->OnWheelEventAck(MouseWheelEventWithLatencyInfo(),
-                                     InputEventAckSource::COMPOSITOR_THREAD,
-                                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  fling_controller_->OnWheelEventAck(
+      MouseWheelEventWithLatencyInfo(),
+      blink::mojom::InputEventResultSource::kCompositorThread,
+      blink::mojom::InputEventResultState::kNotConsumed);
 
   SimulateFlingStart(blink::WebGestureDevice::kTouchpad,
                      gfx::Vector2dF(1000, 0));
@@ -693,9 +694,10 @@ TEST_P(FlingControllerTest, NoFlingStartAfterWheelEventConsumed) {
   EXPECT_FALSE(FlingInProgress());
 
   // Now test that a consumed touchpad wheel event results in no fling.
-  fling_controller_->OnWheelEventAck(MouseWheelEventWithLatencyInfo(),
-                                     InputEventAckSource::COMPOSITOR_THREAD,
-                                     INPUT_EVENT_ACK_STATE_CONSUMED);
+  fling_controller_->OnWheelEventAck(
+      MouseWheelEventWithLatencyInfo(),
+      blink::mojom::InputEventResultSource::kCompositorThread,
+      blink::mojom::InputEventResultState::kConsumed);
 
   SimulateFlingStart(blink::WebGestureDevice::kTouchpad,
                      gfx::Vector2dF(1000, 0));

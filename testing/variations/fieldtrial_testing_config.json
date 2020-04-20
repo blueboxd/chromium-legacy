@@ -4524,6 +4524,27 @@
             ]
         }
     ],
+    "RemoteCopy": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_2020-04-17",
+                    "params": {
+                        "RemoteCopyAllowedOrigins": "https://googleusercontent.com"
+                    },
+                    "enable_features": [
+                        "RemoteCopyReceiver"
+                    ]
+                }
+            ]
+        }
+    ],
     "RendererSchedulerWakeUpThrottling": [
         {
             "platforms": [

@@ -4,6 +4,7 @@
 
 #include "components/password_manager/core/browser/multi_store_password_save_manager.h"
 
+#include "components/autofill/core/common/gaia_id_hash.h"
 #include "components/password_manager/core/browser/form_fetcher.h"
 #include "components/password_manager/core/browser/form_saver.h"
 #include "components/password_manager/core/browser/form_saver_impl.h"
@@ -147,6 +148,9 @@ void MultiStorePasswordSaveManager::SavePendingToStoreImpl(
       break;
     case PendingCredentialsState::UPDATE:
     case PendingCredentialsState::EQUAL_TO_SAVED_MATCH:
+      // TODO(crbug.com/1012203): Make to preserve the moving_blocked_for_list
+      // in the profile store in case |pending_credentials_| is coming from the
+      // account store.
       form_saver_->Update(pending_credentials_, profile_matches,
                           old_profile_password);
       break;
@@ -244,6 +248,36 @@ void MultiStorePasswordSaveManager::MoveCredentialsToAccountStore() {
     }
     form_saver_->Remove(*match);
   }
+}
+
+void MultiStorePasswordSaveManager::BlockMovingToAccountStoreFor(
+    const autofill::GaiaIdHash& gaia_id_hash) {
+  // TODO(crbug.com/1032992): This doesn't work if moving is offered upon update
+  // prompts.
+
+  // We offer moving credentials to the account store only upon successful
+  // login. This entails that the credentials must exist in the profile store.
+  PendingCredentialsStates states = ComputePendingCredentialsStates(
+      pending_credentials_, form_fetcher_->GetAllRelevantMatches());
+  DCHECK(states.similar_saved_form_from_profile_store);
+  DCHECK_EQ(PendingCredentialsState::EQUAL_TO_SAVED_MATCH,
+            states.profile_store_state);
+
+  // If the submitted credentials exists in both stores, .|pending_credentials_|
+  // might be from the account store (and thus not have a
+  // moving_blocked_for_list). We need to preserve any existing list, so
+  // explicitly copy it over from the profile store match.
+
+  PasswordForm form_to_block(pending_credentials_);
+  form_to_block.moving_blocked_for_list =
+      states.similar_saved_form_from_profile_store->moving_blocked_for_list;
+  form_to_block.moving_blocked_for_list.push_back(gaia_id_hash);
+
+  // No need to pass matches to Update(). It's only used for post processing
+  // (e.g. updating the password for other credentials with the same
+  // old password).
+  form_saver_->Update(form_to_block, /*matches=*/{},
+                      form_to_block.password_value);
 }
 
 std::pair<const PasswordForm*, PendingCredentialsState>

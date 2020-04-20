@@ -102,6 +102,7 @@
 <translation id="2218443599109088993">નાનું કરો</translation>
 <translation id="2230173723195178503">વેબપેજ લોડ કર્યું</translation>
 <translation id="2239626343334228536">બ્રાઉઝિંગ ડેટા સાફ થઈ રહ્યો છે...</translation>
+<translation id="2245545499420671379">ત્રીજા પક્ષની કુકીને છૂપા મોડમાં બ્લૉક કરો</translation>
 <translation id="2257567812274161158">સિંક કાર્ય કરી રહ્યું નથી.</translation>
 <translation id="2267753748892043616">એકાઉન્ટ ઉમેરો</translation>
 <translation id="2268044343513325586">સુધારો</translation>
@@ -418,6 +419,7 @@
 
 તમારો ડેટા <ph name="TIME" />ના રોજ તમારા સિંક પાસફ્રેઝ સાથે એન્ક્રિપ્ટ કરવામાં આવ્યો હતો. સિંક શરૂ કરવા માટે એ દાખલ કરો.</translation>
 <translation id="6418346271604475326">PDF તૈયાર કરી રહ્યાં છે</translation>
+<translation id="6426067060178468363">કુકીને મંજૂરી આપો</translation>
 <translation id="6434591244308415567">એક ભૂલ આવી છે. થોડા સમય પછી ફરી પ્રયાસ કરો.</translation>
 <translation id="6445051938772793705">દેશ</translation>
 <translation id="6445981559479772097">સંદેશ મોકલ્યો.</translation>
@@ -543,6 +545,7 @@
 <translation id="8076014560081431679">સાચવેલ સાઇટ સેટિંગ્સ કાઢી નાખવામાં આવશે નહીં અને તે તમારી બ્રાઉઝિંગ ટેવોને પ્રતિબિંબિત કરી શકે છે. <ph name="BEGIN_LINK" />વધુ જાણો<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">ફાઇલ ડાઉનલોડ માટે ઉપલબ્ધ છે. સ્ક્રીનના તળિયે વિકલ્પો ઉપલબ્ધ છે.</translation>
 <translation id="8131740175452115882">પુષ્ટિ કરો</translation>
+<translation id="8174524257672181687">બધી કુકીને બ્લૉક કરો (સુઝાવ આપતા નથી)</translation>
 <translation id="8197543752516192074">પેજનો અનુવાદ કરો</translation>
 <translation id="8205564605687841303">રદ કરો</translation>
 <translation id="8225985093977202398">કૅશ કરેલ છબીઓ અને ફાઇલો</translation>

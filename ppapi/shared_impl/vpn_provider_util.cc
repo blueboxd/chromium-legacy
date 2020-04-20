@@ -4,6 +4,8 @@
 
 #include "ppapi/shared_impl/vpn_provider_util.h"
 
+#include "base/logging.h"
+
 namespace ppapi {
 
 VpnProviderSharedBuffer::VpnProviderSharedBuffer(

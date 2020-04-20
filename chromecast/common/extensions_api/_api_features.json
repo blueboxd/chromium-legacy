@@ -88,6 +88,10 @@
       "chrome://bookmarks/*"
     ]
   }],
+  "loginState": {
+    "dependencies": ["permission:loginState"],
+    "contexts": ["blessed_extension"]
+  },
   "settingsPrivate": [{
     "dependencies": ["permission:settingsPrivate"],
     "contexts": ["blessed_extension"]

@@ -149,12 +149,12 @@ class MockWidgetInputHandler : public mojom::WidgetInputHandler {
 
     // Invoke the callback on this object with the passed in |state|.
     // The callback is called with default values for the other fields.
-    void CallCallback(InputEventAckState state);
+    void CallCallback(blink::mojom::InputEventResultState state);
 
     // Invoke a callback with all the arguments provided.
-    void CallCallback(InputEventAckSource source,
+    void CallCallback(blink::mojom::InputEventResultSource source,
                       const ui::LatencyInfo& latency_info,
-                      InputEventAckState state,
+                      blink::mojom::InputEventResultState state,
                       const base::Optional<ui::DidOverscrollParams>& overscroll,
                       const base::Optional<cc::TouchAction>& touch_action);
 

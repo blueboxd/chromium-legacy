@@ -54,6 +54,7 @@
 <translation id="1331212799747679585">Chrome sa nedá aktualizovať. Ďalšie možnosti</translation>
 <translation id="1332501820983677155">Skratky pre funkcie prehliadača Google Chrome</translation>
 <translation id="1360432990279830238">Odhlásiť sa a vypnúť synchronizáciu?</translation>
+<translation id="1364532808393826295"><ph name="APP_NAME" /> – <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">Boli pridané stránky <ph name="SITE_NAME" /></translation>
 <translation id="1373696734384179344">Vybraný obsah nie je možné stiahnuť z dôvodu nedostatku pamäte</translation>
 <translation id="1376578503827013741">Vypočítava sa…</translation>
@@ -140,6 +141,7 @@
 <translation id="2017836877785168846">Vymaže históriu a automaticky doplňované výrazy v paneli s adresou.</translation>
 <translation id="2021896219286479412">Ovládanie webu na celú obrazovku</translation>
 <translation id="2025115093177348061">Rozšírená realita</translation>
+<translation id="2030769033451695672">Klepnutím sa vrátite na kartu <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2038563949887743358">Zapnutie žiadosti o verziu stránok pre počítače</translation>
 <translation id="2041019821020695769">Ak chcete povoliť Chromu odosielať vám upozornenia, zapnite ich aj v <ph name="BEGIN_LINK" />Nastaveniach Androidu<ph name="END_LINK" />.</translation>
 <translation id="204321170514947529">V Chrome má údaje aj aplikácia <ph name="APP_NAME" />.</translation>
@@ -301,6 +303,7 @@ Vyhľadávanie spustíte pridržaním ľubovoľného slova. Spresníte ho výber
 <translation id="3207960819495026254">Pridané medzi záložky</translation>
 <translation id="3211426585530211793">Záložka <ph name="ITEM_TITLE" /> bola odstránená</translation>
 <translation id="321773570071367578">Ak ste zabudli prístupovú frázu alebo chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchronizáciu<ph name="END_LINK" /></translation>
+<translation id="3223655101706843289">Týmto vymažete všetky dáta a súbory cookie uložené zdrojom <ph name="ORIGIN" /> a jeho aplikáciami na vašej ploche.</translation>
 <translation id="3227137524299004712">Mikrofón</translation>
 <translation id="3232754137068452469">Webová aplikácia</translation>
 <translation id="3236059992281584593">Zostáva: 1 min</translation>
@@ -535,6 +538,7 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="4943872375798546930">Žiadne výsledky</translation>
 <translation id="4961107849584082341">Preložte si túto stránku do ľubovoľného jazyka</translation>
 <translation id="4962975101802056554">Odvolať všetky povolenia pre zariadenie</translation>
+<translation id="4964199952259983386">Fotoaparát zapnite aj v <ph name="BEGIN_LINK" />Nastaveniach Androidu<ph name="END_LINK" />, aby mohol Chrome používať RR.</translation>
 <translation id="4970824347203572753">Nie je k dispozícii vo vašej krajine</translation>
 <translation id="497421865427891073">Ďalej</translation>
 <translation id="4988210275050210843">Sťahuje sa súbor (<ph name="MEGABYTES" />).</translation>
@@ -634,6 +638,7 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="5684874026226664614">Hops. Túto stránku nebolo možné preložiť.</translation>
 <translation id="5686790454216892815">Názov súboru je príliš dlhý</translation>
 <translation id="5689516760719285838">Poloha</translation>
+<translation id="5690795753582697420">Fotoaparát je vypnutý v nastaveniach Androidu</translation>
 <translation id="5694049548840660018">Prechádzajte ľahko na domovskú stránku</translation>
 <translation id="569536719314091526">Preložte si túto stránku do ľubovoľného jazyka pomocou tlačidla Ďalšie možnosti</translation>
 <translation id="5710871682236653961">Pýtať sa, či chcete povoliť webom odosielať a prijímať informácie, keď priložíte zariadenia NFC (odporúčané)</translation>
@@ -665,6 +670,7 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="5876056640971328065">Pozastaviť video</translation>
 <translation id="5884076754568147479">Google bude dostávať webové adresy a obsah webov, kde používate Asistenta, ako aj informácie, ktoré prostredníctvom neho odošlete, aby vám mohol pomáhať s dokončovaním úloh</translation>
 <translation id="5919204609460789179">Ak chcete spustiť synchronizáciu, aktualizujte aplikáciu <ph name="PRODUCT_NAME" /></translation>
+<translation id="5922853908706496913">Zdieľate obrazovku</translation>
 <translation id="5937580074298050696">Ušetrené: <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Resetovať</translation>
 <translation id="5942872142862698679">Na vyhľadávanie sa používa Google</translation>
@@ -875,6 +881,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="751961395872307827">Nedá sa pripojiť k webu</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7542481630195938534">Návrhy sa nedajú získať</translation>
+<translation id="7554752735887601236">Váš mikrofón používa nejaký web</translation>
 <translation id="7559975015014302720">Zjednodušený režim je vypnutý</translation>
 <translation id="7562080006725997899">Vymazávajú sa údaje prehliadania</translation>
 <translation id="756809126120519699">Údaje Chromu boli vymazané</translation>
@@ -911,7 +918,9 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 a <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ďalší}few{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 a <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ďalšie}many{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 a <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ďalšieho}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 a <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ďalších}}</translation>
 <translation id="7791543448312431591">Pridať</translation>
 <translation id="780301667611848630">Nie, ďakujem</translation>
+<translation id="7804248752222191302">Váš fotoaparát používa nejaký web</translation>
 <translation id="7810647596859435254">Otvoriť pomocou…</translation>
+<translation id="7817023149356982970">Systém vás z tohto webu odhlási.</translation>
 <translation id="7821588508402923572">Tu sa zobrazí úspora dát</translation>
 <translation id="7828557259026017104">Súbory cookie sú vytvárané webmi, ktoré navštívite. Pamätajú si pomocou nich vaše predvoľby. Súbory cookie tretích strán sú vytvárané ďalšími webmi. Tieto weby sú vlastníkmi prvkov obsahu, ktorý sa zobrazuje na navštívenej webovej stránke (napríklad reklamy alebo obrázky).</translation>
 <translation id="783819812427904514">Zapnúť zvuk videa</translation>
@@ -990,8 +999,10 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="8364299278605033898">Prezrite si obľúbené weby</translation>
 <translation id="8368027906805972958">Neznáme alebo nepodporované zariadenie (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">Povolenie synchronizácie na pozadí na konkrétnom webe.</translation>
+<translation id="83792324527827022">Váš fotoaparát a mikrofón používa nejaký web</translation>
 <translation id="8380167699614421159">Tento web zobrazuje obťažujúce alebo zavádzajúce reklamy</translation>
 <translation id="8393700583063109961">Odoslať správu</translation>
+<translation id="8394832520002899662">Klepnutím sa vrátite na web</translation>
 <translation id="8413126021676339697">Zobraziť celú históriu</translation>
 <translation id="8427875596167638501">Karta ukážky je dopoly otvorená</translation>
 <translation id="8428213095426709021">Nastavenia</translation>
@@ -1034,6 +1045,8 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="8687353297350450808">{N_BARS,plural, =1{Úroveň sily signálu: # čiarka}few{Úroveň sily signálu: # čiarky}many{Úroveň sily signálu: # čiarky}other{Úroveň sily signálu: # čiarok}}</translation>
 <translation id="868929229000858085">Prehľadať kontakty</translation>
 <translation id="869891660844655955">Koniec platnosti</translation>
+<translation id="8702612070107455751">Budú vymazané všetky offline údaje.</translation>
+<translation id="8737217482364735741">Týmto vymažete všetky dáta a súbory cookie uložené zdrojom <ph name="ORIGIN" />.</translation>
 <translation id="8748850008226585750">Obsah je skrytý</translation>
 <translation id="8751914237388039244">Vyberte obrázok</translation>
 <translation id="8758557275681689734">Zobrazenie všetkých vašich otvorených kariet</translation>
@@ -1080,6 +1093,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="9100610230175265781">Vyžaduje sa prístupová fráza</translation>
 <translation id="9102803872260866941">Karta ukážky je otvorená</translation>
 <translation id="9104217018994036254">Zoznam zariadení, s ktorými sa má zdieľať karta.</translation>
+<translation id="9108312223223904744">Podpora používania telefónu ako bezpečnostného kľúča</translation>
 <translation id="9133397713400217035">Preskúmať offline</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Zobraziť originál</translation>

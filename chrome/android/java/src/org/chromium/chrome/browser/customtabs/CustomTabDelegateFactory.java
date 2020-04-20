@@ -51,6 +51,7 @@ import org.chromium.chrome.browser.webapps.WebDisplayMode;
 import org.chromium.chrome.browser.webapps.WebappActivity;
 import org.chromium.chrome.browser.webapps.WebappExtras;
 import org.chromium.chrome.browser.webapps.WebappInfo;
+import org.chromium.chrome.browser.webapps.WebappIntentUtils;
 import org.chromium.chrome.browser.webapps.WebappLauncherActivity;
 import org.chromium.components.browser_ui.util.BrowserControlsVisibilityDelegate;
 import org.chromium.components.browser_ui.util.ComposedBrowserControlsVisibilityDelegate;
@@ -283,7 +284,7 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
             Intent intent = new Intent();
             intent.setAction(WebappLauncherActivity.ACTION_START_WEBAPP);
             intent.setPackage(mActivity.getPackageName());
-            webappInfo.setWebappIntentExtras(intent);
+            WebappIntentUtils.copyWebappLaunchIntentExtras(mActivity.getIntent(), intent);
 
             intent.putExtra(ShortcutHelper.EXTRA_MAC, ShortcutHelper.getEncodedMac(startUrl));
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

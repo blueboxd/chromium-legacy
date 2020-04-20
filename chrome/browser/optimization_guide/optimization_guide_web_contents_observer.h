@@ -61,8 +61,7 @@ class OptimizationGuideWebContentsObserver
   // finished.
   void NotifyNavigationFinish(
       int64_t navigation_id,
-      const std::vector<GURL>& navigation_redirect_chain,
-      bool has_committed);
+      const std::vector<GURL>& navigation_redirect_chain);
 
   // The data related to a given navigation ID.
   base::flat_map<int64_t, std::unique_ptr<OptimizationGuideNavigationData>>

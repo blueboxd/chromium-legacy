@@ -55,6 +55,8 @@
 #include "cc/layers/surface_layer_impl.h"
 #include "cc/layers/viewport.h"
 #include "cc/metrics/compositor_frame_reporting_controller.h"
+#include "cc/metrics/frame_sequence_metrics.h"
+#include "cc/metrics/lcd_text_metrics_reporter.h"
 #include "cc/paint/display_item_list.h"
 #include "cc/paint/paint_worklet_job.h"
 #include "cc/paint/paint_worklet_layer_painter.h"
@@ -349,7 +351,8 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       scrollbar_controller_(std::make_unique<ScrollbarController>(this)),
       frame_trackers_(settings.single_thread_proxy_scheduler,
                       compositor_frame_reporting_controller_.get()),
-      scroll_gesture_did_end_(false) {
+      scroll_gesture_did_end_(false),
+      lcd_text_metrics_reporter_(LCDTextMetricsReporter::CreateIfNeeded(this)) {
   DCHECK(mutator_host_);
   mutator_host_->SetMutatorHostClient(this);
   mutator_events_ = mutator_host_->CreateEvents();
@@ -2047,6 +2050,8 @@ void LayerTreeHostImpl::DidPresentCompositorFrame(
 
 void LayerTreeHostImpl::DidNotNeedBeginFrame() {
   frame_trackers_.NotifyPauseFrameProduction();
+  if (lcd_text_metrics_reporter_)
+    lcd_text_metrics_reporter_->NotifyPauseFrameProduction();
 }
 
 void LayerTreeHostImpl::ReclaimResources(
@@ -2349,6 +2354,11 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
   if (mutator_host_->MainThreadAnimationsCount() == 0) {
     frame_trackers_.StopSequence(
         FrameSequenceTrackerType::kMainThreadAnimation);
+  }
+
+  if (lcd_text_metrics_reporter_) {
+    lcd_text_metrics_reporter_->NotifySubmitFrame(
+        frame->origin_begin_main_frame_args);
   }
 
   // Clears the list of swap promises after calling DidSwap on each of them to

@@ -192,6 +192,10 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   void ScheduleRedrawRect(const gfx::Rect& damage_rect);
 
 #if defined(OS_WIN)
+  // Until this is called with |should| true then both DisableSwapUntilResize()
+  // and ReenableSwap() do nothing.
+  void SetShouldDisableSwapUntilResize(bool should);
+
   // Attempts to immediately swap a frame with the current size if possible,
   // then disables swapping on this surface until it is resized.
   void DisableSwapUntilResize();
@@ -457,6 +461,10 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   CompositorLockManager lock_manager_;
 
   std::unique_ptr<ScrollInputHandler> scroll_input_handler_;
+
+#if defined(OS_WIN)
+  bool should_disable_swap_until_resize_ = false;
+#endif
 
   // Set in DisableSwapUntilResize and reset when a resize happens.
   bool disabled_swap_until_resize_ = false;

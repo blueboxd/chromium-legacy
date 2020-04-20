@@ -163,7 +163,7 @@ class CONTENT_EXPORT RenderWidgetHostViewEventHandler
   void OnGestureEvent(ui::GestureEvent* event) override;
 
   void GestureEventAck(const blink::WebGestureEvent& event,
-                       InputEventAckState ack_result);
+                       blink::mojom::InputEventResultState ack_result);
 
   // Used to set the mouse_wheel_phase_handler_ timer timeout for testing.
   void set_mouse_wheel_wheel_phase_handler_timeout(base::TimeDelta timeout) {

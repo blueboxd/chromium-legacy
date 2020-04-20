@@ -39,12 +39,6 @@ class DataReductionProxyBypassProtocol {
   };
 
   DataReductionProxyBypassProtocol();
-
-
- private:
-
-
-  DISALLOW_COPY_AND_ASSIGN(DataReductionProxyBypassProtocol);
 };
 
 // Returns true if the proxy is on the retry map and the retry delay is not

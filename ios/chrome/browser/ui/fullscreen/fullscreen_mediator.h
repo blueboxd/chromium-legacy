@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_animator.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_model_observer.h"
@@ -91,6 +92,8 @@ class FullscreenMediator : public FullscreenModelObserver {
   // The FullscreenControllerObservers that need to get notified of model
   // changes.
   base::ObserverList<FullscreenControllerObserver>::Unchecked observers_;
+
+  base::WeakPtrFactory<FullscreenMediator> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FullscreenMediator);
 };

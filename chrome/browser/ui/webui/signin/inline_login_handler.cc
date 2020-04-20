@@ -86,12 +86,10 @@ void InlineLoginHandler::HandleInitializeMessage(const base::ListValue* args) {
         value == "0") {
       partition->ClearData(
           content::StoragePartition::REMOVE_DATA_MASK_ALL,
-          content::StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
-          GURL(),
-          base::Time(),
-          base::Time::Max(),
-          base::Bind(&InlineLoginHandler::ContinueHandleInitializeMessage,
-                     weak_ptr_factory_.GetWeakPtr()));
+          content::StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL, GURL(),
+          base::Time(), base::Time::Max(),
+          base::BindOnce(&InlineLoginHandler::ContinueHandleInitializeMessage,
+                         weak_ptr_factory_.GetWeakPtr()));
     } else {
       ContinueHandleInitializeMessage();
     }

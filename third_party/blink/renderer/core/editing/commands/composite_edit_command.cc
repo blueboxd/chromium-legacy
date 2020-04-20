@@ -1519,7 +1519,7 @@ void CompositeEditCommand::MoveParagraphs(
     style_in_empty_paragraph->MergeTypingStyle(&GetDocument());
     // The moved paragraph should assume the block style of the destination.
     style_in_empty_paragraph->RemoveBlockProperties(
-        GetDocument().ToExecutionContext());
+        GetDocument().GetExecutionContext());
   }
 
   // FIXME (5098931): We should add a new insert action

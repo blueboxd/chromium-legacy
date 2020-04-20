@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/loader/frame_resource_fetcher_properties.h"
 
+#include "base/metrics/field_trial_params.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -17,6 +18,23 @@
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 
 namespace blink {
+
+namespace {
+
+// Feature for throttling field trial.
+const base::Feature kResourceLoadThrottlingTrial{
+    "ResourceLoadScheduler", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Field trial parameters.
+// Note: bg_limit is supported on m61+, but bg_sub_limit is only on m63+.
+// If bg_sub_limit param is not found, we should use bg_limit to make the
+// study result statistically correct.
+constexpr base::FeatureParam<int> kOutstandingLimitForBackgroundMainFrame{
+    &kResourceLoadThrottlingTrial, "bg_limit", 3};
+constexpr base::FeatureParam<int> kOutstandingLimitForBackgroundSubFrame{
+    &kResourceLoadThrottlingTrial, "bg_sub_limit", 2};
+
+}  // namespace
 
 FrameResourceFetcherProperties::FrameResourceFetcherProperties(
     DocumentLoader& document_loader,
@@ -112,6 +130,15 @@ scheduler::FrameStatus FrameResourceFetcherProperties::GetFrameStatus() const {
 
 const KURL& FrameResourceFetcherProperties::WebBundlePhysicalUrl() const {
   return web_bundle_physical_url_;
+}
+
+int FrameResourceFetcherProperties::GetOutstandingThrottledLimit() const {
+  static const int main_frame_limit =
+      kOutstandingLimitForBackgroundMainFrame.Get();
+  static const int sub_frame_limit =
+      kOutstandingLimitForBackgroundSubFrame.Get();
+
+  return IsMainFrame() ? main_frame_limit : sub_frame_limit;
 }
 
 }  // namespace blink

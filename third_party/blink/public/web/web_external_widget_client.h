@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_EXTERNAL_WIDGET_CLIENT_H_
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_EXTERNAL_WIDGET_CLIENT_H_
 
+#include "cc/trees/layer_tree_host.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -36,6 +37,14 @@ class WebExternalWidgetClient {
   // Record the time it took for the first paint after the widget transitioned
   // from background inactive to active.
   virtual void RecordTimeToFirstActivePaint(base::TimeDelta duration) {}
+
+  using LayerTreeFrameSinkCallback = base::OnceCallback<void(
+      std::unique_ptr<cc::LayerTreeFrameSink>,
+      std::unique_ptr<cc::RenderFrameMetadataObserver>)>;
+
+  // Requests a LayerTreeFrameSink to submit CompositorFrames to.
+  virtual void RequestNewLayerTreeFrameSink(
+      LayerTreeFrameSinkCallback callback) = 0;
 };
 
 }  // namespace blink

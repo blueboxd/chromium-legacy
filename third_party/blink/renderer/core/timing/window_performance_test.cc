@@ -55,7 +55,7 @@ class WindowPerformanceTest : public testing::Test {
 
   void SimulateDidProcessLongTask() {
     auto* monitor = GetFrame()->GetPerformanceMonitor();
-    monitor->WillExecuteScript(GetDocument()->ToExecutionContext());
+    monitor->WillExecuteScript(GetWindow());
     monitor->DidExecuteScript();
     monitor->DidProcessTask(
         base::TimeTicks(), base::TimeTicks() + base::TimeDelta::FromSeconds(1));
@@ -67,7 +67,7 @@ class WindowPerformanceTest : public testing::Test {
 
   LocalFrame* GetFrame() const { return &page_holder_->GetFrame(); }
 
-  Document* GetDocument() const { return &page_holder_->GetDocument(); }
+  LocalDOMWindow* GetWindow() const { return GetFrame()->DomWindow(); }
 
   String SanitizedAttribution(ExecutionContext* context,
                               bool has_multiple_contexts,
@@ -120,13 +120,11 @@ TEST_F(WindowPerformanceTest, SanitizedLongTaskName) {
   EXPECT_EQ("unknown", SanitizedAttribution(nullptr, false, GetFrame()));
 
   // Attribute for same context (and same origin).
-  EXPECT_EQ("self", SanitizedAttribution(GetDocument()->ToExecutionContext(),
-                                         false, GetFrame()));
+  EXPECT_EQ("self", SanitizedAttribution(GetWindow(), false, GetFrame()));
 
   // Unable to attribute, when multiple script execution contents are involved.
   EXPECT_EQ("multiple-contexts",
-            SanitizedAttribution(GetDocument()->ToExecutionContext(), true,
-                                 GetFrame()));
+            SanitizedAttribution(GetWindow(), true, GetFrame()));
 }
 
 TEST_F(WindowPerformanceTest, SanitizedLongTaskName_CrossOrigin) {
@@ -138,10 +136,9 @@ TEST_F(WindowPerformanceTest, SanitizedLongTaskName_CrossOrigin) {
   EXPECT_EQ("unknown", SanitizedAttribution(nullptr, false, GetFrame()));
 
   // Attribute for same context (and same origin).
-  EXPECT_EQ(
-      "cross-origin-unreachable",
-      SanitizedAttribution(another_page.GetDocument().ToExecutionContext(),
-                           false, GetFrame()));
+  EXPECT_EQ("cross-origin-unreachable",
+            SanitizedAttribution(another_page.GetFrame().DomWindow(), false,
+                                 GetFrame()));
 }
 
 // https://crbug.com/706798: Checks that after navigation that have replaced the
@@ -183,8 +180,7 @@ TEST(PerformanceLifetimeTest, SurviveContextSwitch) {
   page_holder->GetFrame().DomWindow()->InstallNewDocument(
       DocumentInit::Create()
           .WithDocumentLoader(document_loader)
-          .WithTypeFrom("text/html"),
-      false);
+          .WithTypeFrom("text/html"));
 
   EXPECT_EQ(perf, DOMWindowPerformance::performance(
                       *page_holder->GetFrame().DomWindow()));

@@ -44,6 +44,8 @@ void EventReportValidator::ExpectUnscannedFileEvent(
       .WillOnce([this](base::Value& report,
                        base::OnceCallback<void(bool)>& callback) {
         ValidateReport(&report);
+        if (!done_closure_.is_null())
+          done_closure_.Run();
       });
 }
 
@@ -67,6 +69,8 @@ void EventReportValidator::ExpectDangerousDeepScanningResult(
       .WillOnce([this](base::Value& report,
                        base::OnceCallback<void(bool)>& callback) {
         ValidateReport(&report);
+        if (!done_closure_.is_null())
+          done_closure_.Run();
       });
 }
 
@@ -91,6 +95,8 @@ void EventReportValidator::ExpectSensitiveDataEvent(
       .WillOnce([this](base::Value& report,
                        base::OnceCallback<void(bool)>& callback) {
         ValidateReport(&report);
+        if (!done_closure_.is_null())
+          done_closure_.Run();
       });
 }
 
@@ -125,6 +131,8 @@ void EventReportValidator::
             clicked_through_ = false;
             dlp_verdict_ = expected_dlp_verdict;
             ValidateReport(&report);
+            if (!done_closure_.is_null())
+              done_closure_.Run();
           });
 }
 
@@ -253,6 +261,10 @@ void EventReportValidator::ValidateField(
     const std::string& field_key,
     const base::Optional<bool>& expected_value) {
   ASSERT_EQ(value->FindBoolKey(field_key), expected_value);
+}
+
+void EventReportValidator::SetDoneClosure(base::RepeatingClosure closure) {
+  done_closure_ = std::move(closure);
 }
 
 }  // namespace safe_browsing

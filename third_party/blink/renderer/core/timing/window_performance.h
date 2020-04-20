@@ -86,9 +86,7 @@ class CORE_EXPORT WindowPerformance final : public Performance,
                         const AtomicString& id,
                         Element*);
 
-  void AddLayoutShiftValue(double value,
-                           bool input_detected,
-                           base::TimeTicks input_timestamp);
+  void AddLayoutShiftEntry(LayoutShift*);
 
   void OnLargestContentfulPaintUpdated(base::TimeTicks paint_time,
                                        uint64_t paint_size,

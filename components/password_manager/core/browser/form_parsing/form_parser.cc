@@ -229,7 +229,7 @@ bool IsProbablyNotUsername(const base::string16& s) {
 }
 
 // Returns |typed_value| if it is not empty, |value| otherwise.
-base::string16 GetFieldValue(const FormFieldData& field) {
+const base::string16& GetFieldValue(const FormFieldData& field) {
   return field.typed_value.empty() ? field.value : field.typed_value;
 }
 
@@ -554,7 +554,7 @@ std::vector<const FormFieldData*> GetRelevantPasswords(
   if (mode == FormDataParser::Mode::kSaving) {
     // Step 2: apply filter criterion (2).
     base::EraseIf(passwords, [](const ProcessedField* processed_field) {
-      return processed_field->field->value.empty();
+      return GetFieldValue(*processed_field->field).empty();
     });
   }
 
@@ -875,21 +875,23 @@ std::vector<ProcessedField> ProcessFields(
   for (const FormFieldData& field : fields) {
     if (!field.IsTextInputElement())
       continue;
-    if (consider_only_non_empty && field.value.empty())
+
+    const base::string16& field_value = GetFieldValue(field);
+    if (consider_only_non_empty && field_value.empty())
       continue;
 
     const bool is_password = field.form_control_type == "password";
 
-    if (!field.value.empty()) {
+    if (!field_value.empty()) {
       std::set<base::StringPiece16>& seen_values =
           is_password ? seen_password_values : seen_username_values;
       autofill::ValueElementVector* all_possible_fields =
           is_password ? all_possible_passwords : all_possible_usernames;
       // Only the field name of the first occurrence is added.
-      auto insertion = seen_values.insert(base::StringPiece16(field.value));
+      auto insertion = seen_values.insert(field_value);
       if (insertion.second) {
         // There was no such element in |seen_values|.
-        all_possible_fields->push_back({field.value, field.name});
+        all_possible_fields->push_back({field_value, field.name});
       }
     }
 

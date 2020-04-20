@@ -23,7 +23,7 @@ class CC_EXPORT LatencyUkmReporter {
   void ReportLatencyUkm(
       CompositorFrameReporter::FrameReportType report_type,
       const std::vector<CompositorFrameReporter::StageData>& stage_history,
-      const base::flat_set<FrameSequenceTrackerType>* active_trackers,
+      const CompositorFrameReporter::ActiveTrackers& active_trackers,
       const viz::FrameTimingDetails& viz_breakdown);
 
   void SetUkmManager(UkmManager* manager) { ukm_manager_ = manager; }

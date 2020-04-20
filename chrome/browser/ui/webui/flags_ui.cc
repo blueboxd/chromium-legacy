@@ -219,9 +219,9 @@ FlagsUIHandler* InitializeHandler(content::WebUI* web_ui,
     chromeos::OwnerSettingsServiceChromeOS* service =
         chromeos::OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
             original_profile);
-    service->IsOwnerAsync(base::Bind(&FinishInitialization<T>,
-                                     weak_factory.GetWeakPtr(),
-                                     original_profile, handler));
+    service->IsOwnerAsync(base::BindOnce(&FinishInitialization<T>,
+                                         weak_factory.GetWeakPtr(),
+                                         original_profile, handler));
   } else {
     FinishInitialization(weak_factory.GetWeakPtr(), original_profile, handler,
                          false /* current_user_is_owner */);

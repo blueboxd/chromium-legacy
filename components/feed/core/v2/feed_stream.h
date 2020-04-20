@@ -21,6 +21,8 @@
 #include "components/feed/core/v2/public/feed_stream_api.h"
 #include "components/feed/core/v2/request_throttler.h"
 #include "components/feed/core/v2/stream_model.h"
+#include "components/feed/core/v2/stream_model_update_request.h"
+#include "components/feed/core/v2/tasks/load_more_task.h"
 #include "components/feed/core/v2/tasks/load_stream_task.h"
 #include "components/offline_pages/task/task_queue.h"
 
@@ -62,6 +64,7 @@ class FeedStream : public FeedStreamApi,
     ~WireResponseTranslator() = default;
     virtual std::unique_ptr<StreamModelUpdateRequest> TranslateWireResponse(
         feedwire::Response response,
+        StreamModelUpdateRequest::Source source,
         base::TimeDelta response_time,
         base::Time current_time);
   };
@@ -89,6 +92,7 @@ class FeedStream : public FeedStreamApi,
   void DetachSurface(SurfaceInterface*) override;
   void SetArticlesListVisible(bool is_visible) override;
   bool IsArticlesListVisible() override;
+  void LoadMore(base::OnceCallback<void(bool)> callback) override;
   void ExecuteOperations(
       std::vector<feedstore::DataOperation> operations) override;
   EphemeralChangeId CreateEphemeralChange(
@@ -114,7 +118,7 @@ class FeedStream : public FeedStreamApi,
   void OnTaskQueueIsIdle() override;
 
   // StreamModel::StoreObserver.
-  void OnStoreChange(const StreamModel::StoreUpdate& update) override;
+  void OnStoreChange(StreamModel::StoreUpdate update) override;
 
   // Event indicators. These functions are called from an external source
   // to indicate an event.
@@ -149,10 +153,14 @@ class FeedStream : public FeedStreamApi,
   // Returns the time of the last content fetch.
   base::Time GetLastFetchTime();
 
+  // Determines if we should attempt loading the stream or refreshing at all.
+  // Returns |LoadStreamStatus::kNoStatus| if loading may be attempted.
+  LoadStreamStatus ShouldAttemptLoad(bool model_loading = false);
+
   // Determines if a FeedQuery request can be made. If successful,
   // returns |LoadStreamStatus::kNoStatus| and acquires throttler quota.
   // Otherwise returns the reason.
-  LoadStreamStatus ShouldMakeFeedQueryRequest();
+  LoadStreamStatus ShouldMakeFeedQueryRequest(bool is_load_more = false);
 
   // Loads |model|. Should be used for testing in place of typical model
   // loading from network or storage.
@@ -163,7 +171,8 @@ class FeedStream : public FeedStreamApi,
   // Returns the model if it is loaded, or null otherwise.
   StreamModel* GetModel() { return model_.get(); }
 
-  const base::Clock* GetClock() { return clock_; }
+  const base::Clock* GetClock() const { return clock_; }
+  const base::TickClock* GetTickClock() const { return tick_clock_; }
   const ChromeInfo& GetChromeInfo() const { return chrome_info_; }
 
   WireResponseTranslator* GetWireResponseTranslator() const {
@@ -182,13 +191,11 @@ class FeedStream : public FeedStreamApi,
  private:
   class SurfaceUpdater;
   class ModelStoreChangeMonitor;
-  // Determines if we should attempt loading the stream or refreshing at all.
-  // Returns |LoadStreamStatus::kNoStatus| if loading may be attempted.
-  LoadStreamStatus ShouldAttemptLoad(bool model_loading = false);
   void TriggerStreamLoad();
   void UnloadModel();
 
   void InitialStreamLoadComplete(LoadStreamTask::Result result);
+  void LoadMoreComplete(LoadMoreTask::Result result);
   void BackgroundRefreshComplete(LoadStreamTask::Result result);
 
   void ClearAll();
@@ -224,6 +231,7 @@ class FeedStream : public FeedStreamApi,
   std::unique_ptr<UserClassifier> user_classifier_;
   RequestThrottler request_throttler_;
   base::TimeTicks suppress_refreshes_until_;
+  std::vector<base::OnceCallback<void(bool)>> load_more_complete_callbacks_;
 
   // To allow tests to wait on task queue idle.
   base::RepeatingClosure idle_callback_;

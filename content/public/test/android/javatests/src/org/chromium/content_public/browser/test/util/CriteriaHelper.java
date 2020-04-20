@@ -151,6 +151,24 @@ public class CriteriaHelper {
     }
 
     /**
+     * Checks whether the given Callable<Boolean> is satisfied at a given interval, until either
+     * the criteria is satisfied, or the specified maxTimeoutMs number of ms has elapsed.
+     *
+     * <p>
+     * This evaluates the Callable<Boolean> on the test thread, which more often than not is not
+     * correct in an InstrumentationTest.  Use {@link #pollUiThread(Callable)} instead.
+     *
+     * @param criteria The Callable<Boolean> that will be checked.
+     * @param maxTimeoutMs The maximum number of ms that this check will be performed for
+     *                     before timeout.
+     * @param checkIntervalMs The number of ms between checks.
+     */
+    public static void pollInstrumentationThread(
+            final Callable<Boolean> criteria, long maxTimeoutMs, long checkIntervalMs) {
+        pollInstrumentationThread(criteria, null, maxTimeoutMs, checkIntervalMs);
+    }
+
+    /**
      * Checks whether the given Callable<Boolean> is satisfied polling at a default interval.
      *
      * <p>
@@ -255,6 +273,22 @@ public class CriteriaHelper {
     public static void pollUiThread(final Callable<Boolean> criteria, String failureReason,
             long maxTimeoutMs, long checkIntervalMs) {
         pollUiThread(toAssertionRunnable(criteria, failureReason), maxTimeoutMs, checkIntervalMs);
+    }
+
+    /**
+     * Checks whether the given Callable<Boolean> is satisfied polling at a given interval on the UI
+     * thread, until either the criteria is satisfied, or the maxTimeoutMs number of ms has elapsed.
+     *
+     * @param criteria The Callable<Boolean> that will be checked.
+     * @param maxTimeoutMs The maximum number of ms that this check will be performed for
+     *                     before timeout.
+     * @param checkIntervalMs The number of ms between checks.
+     *
+     * @see #pollInstrumentationThread(Criteria)
+     */
+    public static void pollUiThread(
+            final Callable<Boolean> criteria, long maxTimeoutMs, long checkIntervalMs) {
+        pollUiThread(criteria, null, maxTimeoutMs, checkIntervalMs);
     }
 
     /**

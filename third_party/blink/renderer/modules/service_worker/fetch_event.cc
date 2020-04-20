@@ -136,16 +136,12 @@ void FetchEvent::OnNavigationPreloadResponse(
           : FetchResponseData::Create();
   Vector<KURL> url_list(1);
   url_list[0] = preload_response_->CurrentRequestUrl();
-  response_data->SetURLList(url_list);
-  response_data->SetStatus(preload_response_->HttpStatusCode());
-  response_data->SetStatusMessage(preload_response_->HttpStatusText());
-  response_data->SetResponseTime(
-      preload_response_->ToResourceResponse().ResponseTime());
-  const HTTPHeaderMap& headers(
-      preload_response_->ToResourceResponse().HttpHeaderFields());
-  for (const auto& header : headers) {
-    response_data->HeaderList()->Append(header.key, header.value);
-  }
+
+  response_data->InitFromResourceResponse(
+      url_list, network::mojom::CredentialsMode::kInclude,
+      FetchRequestData::kBasicTainting,
+      preload_response_->ToResourceResponse());
+
   FetchResponseData* tainted_response =
       network_utils::IsRedirectResponseCode(preload_response_->HttpStatusCode())
           ? response_data->CreateOpaqueRedirectFilteredResponse()

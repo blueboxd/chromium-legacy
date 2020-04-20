@@ -11,6 +11,7 @@ import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "third_party/blink/public/mojom/input/gesture_event.mojom";
 import "third_party/blink/public/mojom/input/input_event.mojom";
+import "third_party/blink/public/mojom/input/input_event_result.mojom";
 import "third_party/blink/public/mojom/input/pointer_lock_result.mojom";
 import "third_party/blink/public/mojom/selection_menu/selection_menu_behavior.mojom";
 import "ui/base/ime/mojom/ime_types.mojom";
@@ -289,8 +290,10 @@ interface WidgetInputHandler {
   // the main thread so DispatchNonBlockingEvent is always preferred if
   // you don't require notification.
   DispatchEvent(Event event)
-      => (InputEventAckSource source, ui.mojom.LatencyInfo updated_latency,
-         InputEventAckState state, DidOverscrollParams? overscroll,
+      => (blink.mojom.InputEventResultSource source,
+         ui.mojom.LatencyInfo updated_latency,
+         blink.mojom.InputEventResultState state,
+         DidOverscrollParams? overscroll,
          TouchActionOptional? touch_action);
 
   // Sends a non-blocking input event to the render widget. The behaviour

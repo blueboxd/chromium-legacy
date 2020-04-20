@@ -72,13 +72,13 @@ void WillLoadPluginsCallback(base::SequenceChecker* sequence_checker) {
 // static
 void PluginServiceImpl::RecordBrokerUsage(int render_process_id,
                                           int render_frame_id) {
-  WebContents* web_contents = WebContents::FromRenderFrameHost(
-      RenderFrameHost::FromID(render_process_id, render_frame_id));
-  if (web_contents) {
-    ukm::SourceId source_id = static_cast<WebContentsImpl*>(web_contents)
-                                  ->GetUkmSourceIdForLastCommittedSource();
-    ukm::builders::Pepper_Broker(source_id).Record(ukm::UkmRecorder::Get());
-  }
+  RenderFrameHostImpl* rfh =
+      RenderFrameHostImpl::FromID(render_process_id, render_frame_id);
+  if (!rfh)
+    return;
+
+  ukm::SourceId source_id = rfh->GetPageUkmSourceId();
+  ukm::builders::Pepper_Broker(source_id).Record(ukm::UkmRecorder::Get());
 }
 
 // static

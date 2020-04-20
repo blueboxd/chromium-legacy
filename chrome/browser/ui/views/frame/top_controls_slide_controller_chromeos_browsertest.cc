@@ -1351,7 +1351,7 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
   auto decided = [](ContentSetting) {};
   permissions::PermissionRequestImpl permission_request(
       url, url, ContentSettingsType::GEOLOCATION, true /* user_gesture */,
-      base::BindRepeating(decided), base::DoNothing() /* delete_callback */);
+      base::BindOnce(decided), base::DoNothing() /* delete_callback */);
   auto* permission_manager =
       permissions::PermissionRequestManager::FromWebContents(active_contents);
   TopControlsShownRatioWaiter waiter(top_controls_slide_controller());

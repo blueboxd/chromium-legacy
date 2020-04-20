@@ -1372,24 +1372,26 @@ class InputMsgWatcher : public RenderWidgetHost::InputEventObserver {
 
   // Wait until ack message occurs, returning the ack result from
   // the message.
-  InputEventAckState WaitForAck();
+  blink::mojom::InputEventResultState WaitForAck();
 
   // Wait for the ack if it hasn't been received, if it has been
   // received return the result immediately.
-  InputEventAckState GetAckStateWaitIfNecessary();
+  blink::mojom::InputEventResultState GetAckStateWaitIfNecessary();
 
-  InputEventAckSource last_event_ack_source() const { return ack_source_; }
+  blink::mojom::InputEventResultSource last_event_ack_source() const {
+    return ack_source_;
+  }
 
  private:
   // Overridden InputEventObserver methods.
-  void OnInputEventAck(InputEventAckSource source,
-                       InputEventAckState state,
+  void OnInputEventAck(blink::mojom::InputEventResultSource source,
+                       blink::mojom::InputEventResultState state,
                        const blink::WebInputEvent&) override;
 
   RenderWidgetHost* render_widget_host_;
   blink::WebInputEvent::Type wait_for_type_;
-  InputEventAckState ack_result_;
-  InputEventAckSource ack_source_;
+  blink::mojom::InputEventResultState ack_result_;
+  blink::mojom::InputEventResultSource ack_source_;
   base::OnceClosure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMsgWatcher);
@@ -1401,8 +1403,8 @@ class InputEventAckWaiter : public RenderWidgetHost::InputEventObserver {
   // A function determining if a given |event| and its ack are what we're
   // waiting for.
   using InputEventAckPredicate =
-      base::RepeatingCallback<bool(InputEventAckSource source,
-                                   InputEventAckState state,
+      base::RepeatingCallback<bool(blink::mojom::InputEventResultSource source,
+                                   blink::mojom::InputEventResultState state,
                                    const blink::WebInputEvent& event)>;
 
   // Wait for an event satisfying |predicate|.
@@ -1417,8 +1419,8 @@ class InputEventAckWaiter : public RenderWidgetHost::InputEventObserver {
   void Reset();
 
   // RenderWidgetHost::InputEventObserver:
-  void OnInputEventAck(InputEventAckSource source,
-                       InputEventAckState state,
+  void OnInputEventAck(blink::mojom::InputEventResultSource source,
+                       blink::mojom::InputEventResultState state,
                        const blink::WebInputEvent& event) override;
 
  private:

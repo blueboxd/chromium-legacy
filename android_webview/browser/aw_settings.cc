@@ -46,6 +46,8 @@ void PopulateFixedWebPreferences(WebPreferences* web_prefs) {
       !::features::IsUsingVizForWebView();
   web_prefs->disable_accelerated_small_canvases = true;
   web_prefs->reenable_web_components_v0 = true;
+  // WebView has historically not adjusted font scale for text autosizing.
+  web_prefs->device_scale_adjustment = 1.0;
 }
 
 const void* const kAwSettingsUserDataKey = &kAwSettingsUserDataKey;

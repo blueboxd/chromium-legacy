@@ -12,6 +12,8 @@
 #include "base/system/sys_info.h"
 #include "build/build_config.h"
 #include "components/feed/core/proto/v2/store.pb.h"
+#include "components/feed/core/proto/v2/wire/feed_request.pb.h"
+#include "components/feed/core/proto/v2/wire/request.pb.h"
 #include "components/feed/core/v2/feed_stream.h"
 
 #if defined(OS_ANDROID)
@@ -103,6 +105,32 @@ feedwire::Version GetAppVersionMessage(const ChromeInfo& chrome_info) {
   return result;
 }
 
+feedwire::Request CreateFeedQueryRequest(
+    feedwire::FeedQuery::RequestReason request_reason,
+    const ChromeInfo& chrome_info,
+    const std::string& consistency_token,
+    const std::string& next_page_token) {
+  feedwire::Request request;
+  request.set_request_version(feedwire::Request::FEED_QUERY);
+
+  feedwire::FeedRequest& feed_request = *request.mutable_feed_request();
+  feed_request.add_client_capability(feedwire::Capability::BASE_UI);
+  *feed_request.mutable_client_info() = CreateClientInfo(chrome_info);
+  feedwire::FeedQuery& query = *feed_request.mutable_feed_query();
+  query.set_reason(request_reason);
+  if (!consistency_token.empty()) {
+    feed_request.mutable_consistency_token()->set_token(consistency_token);
+  }
+  if (!next_page_token.empty()) {
+    DCHECK_EQ(request_reason, feedwire::FeedQuery::NEXT_PAGE_SCROLL);
+    query.mutable_next_page_token()
+        ->mutable_next_page_token()
+        ->set_next_page_token(next_page_token);
+    feed_request.mutable_consistency_token()->set_token(consistency_token);
+  }
+  return request;
+}
+
 }  // namespace
 
 std::string ContentIdString(const feedwire::ContentId& content_id) {
@@ -143,6 +171,23 @@ feedwire::ClientInfo CreateClientInfo(const ChromeInfo& chrome_info) {
   *client_info.mutable_platform_version() = GetPlatformVersionMessage();
   *client_info.mutable_app_version() = GetAppVersionMessage(chrome_info);
   return client_info;
+}
+
+feedwire::Request CreateFeedQueryRefreshRequest(
+    feedwire::FeedQuery::RequestReason request_reason,
+    const ChromeInfo& chrome_info,
+    const std::string& consistency_token) {
+  return CreateFeedQueryRequest(request_reason, chrome_info, consistency_token,
+                                std::string());
+}
+
+feedwire::Request CreateFeedQueryLoadMoreRequest(
+    const ChromeInfo& chrome_info,
+    const std::string& consistency_token,
+    const std::string& next_page_token) {
+  return CreateFeedQueryRequest(feedwire::FeedQuery::NEXT_PAGE_SCROLL,
+                                chrome_info, consistency_token,
+                                next_page_token);
 }
 
 }  // namespace feed

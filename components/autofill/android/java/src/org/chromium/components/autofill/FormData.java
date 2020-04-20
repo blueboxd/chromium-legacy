@@ -4,6 +4,8 @@
 
 package org.chromium.components.autofill;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
@@ -36,7 +38,8 @@ public class FormData {
         return fields;
     }
 
-    private FormData(String name, String host, ArrayList<FormFieldData> fields) {
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    public FormData(String name, String host, ArrayList<FormFieldData> fields) {
         mName = name;
         mHost = host;
         mFields = fields;

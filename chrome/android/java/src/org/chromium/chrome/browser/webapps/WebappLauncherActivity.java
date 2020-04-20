@@ -316,7 +316,6 @@ public class WebappLauncherActivity extends Activity {
 
         Intent launchIntent = new Intent();
         launchIntent.setClassName(ContextUtils.getApplicationContext(), launchActivityClassName);
-        webappInfo.setWebappIntentExtras(launchIntent);
         launchIntent.setAction(Intent.ACTION_VIEW);
 
         // On L+, firing intents with the exact same data should relaunch a particular
@@ -324,9 +323,11 @@ public class WebappLauncherActivity extends Activity {
         launchIntent.setData(Uri.parse(WebappActivity.WEBAPP_SCHEME + "://" + webappInfo.id()));
 
         IntentHandler.addTimestampToIntent(launchIntent, createTimestamp);
-        // Pass through WebAPK shell launch timestamp to the new intent.
-        WebappIntentUtils.copyWebApkShellLaunchTime(intent, launchIntent);
-        WebappIntentUtils.copyNewStyleWebApkSplashShownTime(intent, launchIntent);
+        if (webappInfo.isForWebApk()) {
+            WebappIntentUtils.copyWebApkLaunchIntentExtras(intent, launchIntent);
+        } else {
+            WebappIntentUtils.copyWebappLaunchIntentExtras(intent, launchIntent);
+        }
 
         // Setting FLAG_ACTIVITY_CLEAR_TOP handles 2 edge cases:
         // - If a legacy PWA is launching from a notification, we want to ensure that the URL being

@@ -40,9 +40,6 @@ void ExecutionContextClient::Trace(Visitor* visitor) {
   visitor->Trace(execution_context_);
 }
 
-ExecutionContextLifecycleObserver::ExecutionContextLifecycleObserver()
-    : observer_type_(kGenericType) {}
-
 ExecutionContextLifecycleObserver::ExecutionContextLifecycleObserver(
     Document* document,
     Type type)

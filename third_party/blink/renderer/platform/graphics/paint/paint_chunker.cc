@@ -130,7 +130,8 @@ void PaintChunker::CreateScrollHitTestChunk(
     const IntRect& rect) {
 #if DCHECK_IS_ON()
   if (id.type == DisplayItem::Type::kResizerScrollHitTest ||
-      id.type == DisplayItem::Type::kPluginScrollHitTest) {
+      id.type == DisplayItem::Type::kPluginScrollHitTest ||
+      id.type == DisplayItem::Type::kCustomScrollbarHitTest) {
     // Resizer and plugin scroll hit tests are only used to prevent composited
     // scrolling and should not have a scroll offset node.
     DCHECK(!scroll_translation);

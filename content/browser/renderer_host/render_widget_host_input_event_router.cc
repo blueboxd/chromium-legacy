@@ -93,7 +93,7 @@ class TouchEventAckQueue {
     RenderWidgetHostViewBase* root_view;
     TouchEventSource touch_event_source;
     TouchEventAckStatus touch_event_ack_status;
-    InputEventAckState ack_result;
+    blink::mojom::InputEventResultState ack_result;
   };
 
   explicit TouchEventAckQueue(RenderWidgetHostInputEventRouter* client)
@@ -106,7 +106,7 @@ class TouchEventAckQueue {
            RenderWidgetHostViewBase* root_view,
            TouchEventSource touch_event_source,
            TouchEventAckStatus touch_event_ack_status,
-           InputEventAckState ack_result);
+           blink::mojom::InputEventResultState ack_result);
 
   void Add(const TouchEventWithLatencyInfo& touch_event,
            RenderWidgetHostViewBase* target_view,
@@ -114,7 +114,7 @@ class TouchEventAckQueue {
            TouchEventSource touch_event_source);
 
   void MarkAcked(const TouchEventWithLatencyInfo& touch_event,
-                 InputEventAckState ack_result,
+                 blink::mojom::InputEventResultState ack_result,
                  RenderWidgetHostViewBase* target_view);
 
   void UpdateQueueAfterTargetDestroyed(RenderWidgetHostViewBase* target_view);
@@ -134,7 +134,7 @@ void TouchEventAckQueue::Add(const TouchEventWithLatencyInfo& touch_event,
                              RenderWidgetHostViewBase* root_view,
                              TouchEventSource touch_event_source,
                              TouchEventAckStatus touch_event_ack_status,
-                             InputEventAckState ack_result) {
+                             blink::mojom::InputEventResultState ack_result) {
   AckData data = {touch_event,
                   target_view,
                   root_view,
@@ -152,12 +152,14 @@ void TouchEventAckQueue::Add(const TouchEventWithLatencyInfo& touch_event,
                              RenderWidgetHostViewBase* root_view,
                              TouchEventSource touch_event_source) {
   Add(touch_event, target_view, root_view, touch_event_source,
-      TouchEventAckStatus::TouchEventNotAcked, INPUT_EVENT_ACK_STATE_UNKNOWN);
+      TouchEventAckStatus::TouchEventNotAcked,
+      blink::mojom::InputEventResultState::kUnknown);
 }
 
-void TouchEventAckQueue::MarkAcked(const TouchEventWithLatencyInfo& touch_event,
-                                   InputEventAckState ack_result,
-                                   RenderWidgetHostViewBase* target_view) {
+void TouchEventAckQueue::MarkAcked(
+    const TouchEventWithLatencyInfo& touch_event,
+    blink::mojom::InputEventResultState ack_result,
+    RenderWidgetHostViewBase* target_view) {
   auto it = find_if(ack_queue_.begin(), ack_queue_.end(),
                     [touch_event](AckData data) {
                       return data.touch_event.event.unique_touch_event_id ==
@@ -223,7 +225,7 @@ void TouchEventAckQueue::UpdateQueueAfterTargetDestroyed(
   for_each(ack_queue_.begin(), ack_queue_.end(), [target_view](AckData& data) {
     if (data.target_view == target_view) {
       data.touch_event_ack_status = TouchEventAckStatus::TouchEventAcked;
-      data.ack_result = INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS;
+      data.ack_result = blink::mojom::InputEventResultState::kNoConsumerExists;
     }
   });
 
@@ -705,8 +707,9 @@ void RenderWidgetHostInputEventRouter::DispatchMouseWheelEvent(
   }
 
   if (!target) {
-    root_view->WheelEventAck(mouse_wheel_event,
-                             INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+    root_view->WheelEventAck(
+        mouse_wheel_event,
+        blink::mojom::InputEventResultState::kNoConsumerExists);
     return;
   }
 
@@ -867,7 +870,7 @@ void RenderWidgetHostInputEventRouter::DispatchTouchEvent(
     touch_event_ack_queue_->Add(
         TouchEventWithLatencyInfo(touch_event), nullptr, root_view,
         event_source, TouchEventAckQueue::TouchEventAckStatus::TouchEventAcked,
-        INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+        blink::mojom::InputEventResultState::kNoConsumerExists);
     return;
   }
 
@@ -909,7 +912,7 @@ void RenderWidgetHostInputEventRouter::DispatchTouchEvent(
 
 void RenderWidgetHostInputEventRouter::ProcessAckedTouchEvent(
     const TouchEventWithLatencyInfo& event,
-    InputEventAckState ack_result,
+    blink::mojom::InputEventResultState ack_result,
     RenderWidgetHostViewBase* view) {
   touch_event_ack_queue_->MarkAcked(event, ack_result, view);
 }
@@ -1562,8 +1565,8 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
     SetTouchscreenGestureTarget(nullptr);
 
   if (!touchscreen_gesture_target_) {
-    root_view->GestureEventAck(gesture_event,
-                               INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+    root_view->GestureEventAck(
+        gesture_event, blink::mojom::InputEventResultState::kNoConsumerExists);
     return;
   }
 
@@ -1660,8 +1663,9 @@ void RenderWidgetHostInputEventRouter::DispatchTouchpadGestureEvent(
       wheel_target_->ProcessGestureEvent(gesture_fling, latency);
       last_fling_start_target_ = wheel_target_;
     } else {
-      root_view->GestureEventAck(touchpad_gesture_event,
-                                 INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+      root_view->GestureEventAck(
+          touchpad_gesture_event,
+          blink::mojom::InputEventResultState::kNoConsumerExists);
     }
     return;
   }
@@ -1674,8 +1678,9 @@ void RenderWidgetHostInputEventRouter::DispatchTouchpadGestureEvent(
     } else if (target) {
       target->ProcessGestureEvent(touchpad_gesture_event, latency);
     } else {
-      root_view->GestureEventAck(touchpad_gesture_event,
-                                 INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+      root_view->GestureEventAck(
+          touchpad_gesture_event,
+          blink::mojom::InputEventResultState::kNoConsumerExists);
     }
     return;
   }
@@ -1688,8 +1693,9 @@ void RenderWidgetHostInputEventRouter::DispatchTouchpadGestureEvent(
   }
 
   if (!touchpad_gesture_target_) {
-    root_view->GestureEventAck(touchpad_gesture_event,
-                               INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+    root_view->GestureEventAck(
+        touchpad_gesture_event,
+        blink::mojom::InputEventResultState::kNoConsumerExists);
     return;
   }
 
@@ -1836,11 +1842,11 @@ void RenderWidgetHostInputEventRouter::DispatchEventToTarget(
     TouchEventWithLatencyInfo touch_with_latency(touch_event, latency);
     if (touch_emulator_ &&
         touch_emulator_->HandleTouchEvent(touch_with_latency.event)) {
-      // We cheat a litle bit here, and assume that we know that even if the
+      // We cheat a little bit here, and assume that we know that even if the
       // target is a RenderWidgetHostViewChildFrame, that it would only try to
       // forward the ack to the root view anyways, so we send it there directly.
-      root_view->ProcessAckedTouchEvent(touch_with_latency,
-                                        INPUT_EVENT_ACK_STATE_CONSUMED);
+      root_view->ProcessAckedTouchEvent(
+          touch_with_latency, blink::mojom::InputEventResultState::kConsumed);
       return;
     }
     DispatchTouchEvent(root_view, target, touch_event, latency, target_location,

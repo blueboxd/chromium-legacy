@@ -2358,8 +2358,6 @@ jumbo_static_library("browser") {
       "android/chrome_backup_agent.h",
       "android/chrome_backup_watcher.cc",
       "android/chrome_backup_watcher.h",
-      "android/chrome_context_util.cc",
-      "android/chrome_context_util.h",
       "android/chrome_session_state.cc",
       "android/chrome_session_state.h",
       "android/chrome_startup_flags.cc",
@@ -5395,6 +5393,12 @@ jumbo_static_library("browser") {
       "supervised_user/supervised_user_service_management_api_delegate.h",
     ]
   }
+  if (is_chromeos) {
+    sources += [
+      "supervised_user/child_accounts/secondary_account_consent_logger.cc",
+      "supervised_user/child_accounts/secondary_account_consent_logger.h",
+    ]
+  }
 
   if (enable_vr) {
     if (enable_gvr_services) {
@@ -5730,7 +5734,10 @@ source_set("expired_flags_list") {
 
 action("unexpire_flags_gen") {
   script = "//tools/flags/generate_unexpire_flags.py"
-  inputs = [ "//chrome/VERSION" ]
+  inputs = [
+    "//chrome/VERSION",
+    "//tools/flags/generate_unexpire_flags.py",
+  ]
   outputs = [
     "$root_gen_dir/chrome/browser/unexpire_flags_gen.cc",
     "$root_gen_dir/chrome/browser/unexpire_flags_gen.h",

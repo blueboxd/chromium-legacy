@@ -314,19 +314,6 @@ void DataReductionProxySettings::UpdatePrefetchProxyHosts(
   LOCAL_HISTOGRAM_BOOLEAN("DataReductionProxy.Settings.ConfigReceived", true);
 }
 
-bool DataReductionProxySettings::IsConfiguredDataReductionProxy(
-    const net::ProxyServer& proxy_server) const {
-  if (proxy_server.is_direct() || !proxy_server.is_valid())
-    return false;
-
-  net::ProxyList proxies =
-      data_reduction_proxy_service_->config()->GetAllConfiguredProxies();
-  for (const auto& drp_proxy : proxies.GetAll()) {
-    if (drp_proxy.host_port_pair().Equals(proxy_server.host_port_pair()))
-      return true;
-  }
-  return false;
-}
 
 void DataReductionProxySettings::AddDataReductionProxySettingsObserver(
     DataReductionProxySettingsObserver* observer) {

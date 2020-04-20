@@ -5,6 +5,7 @@
 #ifndef MEDIA_GPU_WINDOWS_DISPLAY_HELPER_H_
 #define MEDIA_GPU_WINDOWS_DISPLAY_HELPER_H_
 
+#include "base/macros.h"
 #include "base/optional.h"
 #include "media/base/hdr_metadata.h"
 #include "media/gpu/media_gpu_export.h"

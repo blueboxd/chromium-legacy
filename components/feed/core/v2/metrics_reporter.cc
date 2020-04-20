@@ -191,9 +191,10 @@ void MetricsReporter::OnBackgroundRefresh(LoadStreamStatus final_status) {
       final_status);
 }
 
-void MetricsReporter::OnLoadMore(LoadStreamStatus final_status) {
+void MetricsReporter::OnLoadMore(LoadStreamStatus status) {
+  DVLOG(1) << "OnLoadMore status=" << status;
   UMA_HISTOGRAM_ENUMERATION("ContentSuggestions.Feed.LoadStreamStatus.LoadMore",
-                            final_status);
+                            status);
 }
 
 void MetricsReporter::OnClearAll(base::TimeDelta time_since_last_clear) {

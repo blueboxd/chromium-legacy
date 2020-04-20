@@ -1580,9 +1580,19 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForVulkan() {
       gl_surface_ = output_device->gl_surface();
       output_device_ = std::move(output_device);
     } else {
-      output_device_ = SkiaOutputDeviceVulkan::Create(
+      auto output_device = SkiaOutputDeviceVulkan::Create(
           vulkan_context_provider_, dependency_->GetSurfaceHandle(),
           memory_tracker_.get(), did_swap_buffer_complete_callback_);
+#if defined(OS_WIN)
+      gpu::SurfaceHandle child_surface =
+          output_device ? output_device->GetChildSurfaceHandle()
+                        : gpu::kNullSurfaceHandle;
+      if (child_surface != gpu::kNullSurfaceHandle) {
+        DidCreateAcceleratedSurfaceChildWindow(dependency_->GetSurfaceHandle(),
+                                               child_surface);
+      }
+#endif
+      output_device_ = std::move(output_device);
     }
 #endif
   }

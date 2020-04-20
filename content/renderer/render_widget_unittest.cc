@@ -31,10 +31,10 @@
 #include "content/public/test/mock_render_thread.h"
 #include "content/renderer/input/widget_input_handler_manager.h"
 #include "content/renderer/render_frame_proxy.h"
+#include "content/renderer/render_process.h"
 #include "content/renderer/render_widget_delegate.h"
 #include "content/renderer/render_widget_screen_metrics_emulator.h"
 #include "content/test/fake_compositor_dependencies.h"
-#include "content/test/mock_render_process.h"
 #include "ipc/ipc_test_sink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -98,7 +98,9 @@ class MockWidgetInputHandlerHost : public mojom::WidgetInputHandlerHost {
   MOCK_METHOD1(SetTouchActionFromMain, void(cc::TouchAction));
 
   MOCK_METHOD3(SetWhiteListedTouchAction,
-               void(cc::TouchAction, uint32_t, content::InputEventAckState));
+               void(cc::TouchAction,
+                    uint32_t,
+                    blink::mojom::InputEventResultState));
 
   MOCK_METHOD1(DidOverscroll, void(const ui::DidOverscrollParams&));
 
@@ -142,7 +144,7 @@ class MockHandledEventCallback {
  public:
   MockHandledEventCallback() = default;
   MOCK_METHOD4_T(Run,
-                 void(InputEventAckState,
+                 void(blink::mojom::InputEventResultState,
                       const ui::LatencyInfo&,
                       std::unique_ptr<ui::DidOverscrollParams>&,
                       base::Optional<cc::TouchAction>));
@@ -153,7 +155,7 @@ class MockHandledEventCallback {
   }
 
  private:
-  void HandleCallback(InputEventAckState ack_state,
+  void HandleCallback(blink::mojom::InputEventResultState ack_state,
                       const ui::LatencyInfo& latency_info,
                       std::unique_ptr<ui::DidOverscrollParams> overscroll,
                       base::Optional<cc::TouchAction> touch_action) {
@@ -173,6 +175,7 @@ class MockWebExternalWidgetClient : public blink::WebExternalWidgetClient {
   MOCK_METHOD1(
       HandleInputEvent,
       blink::WebInputEventResult(const blink::WebCoalescedInputEvent&));
+  MOCK_METHOD1(RequestNewLayerTreeFrameSink, void(LayerTreeFrameSinkCallback));
 };
 
 }  // namespace
@@ -306,7 +309,7 @@ class RenderWidgetUnittest : public testing::Test {
 
  private:
   base::test::TaskEnvironment task_environment_;
-  MockRenderProcess render_process_;
+  RenderProcess render_process_;
   MockRenderThread render_thread_;
   blink::WebViewClient web_view_client_;
   blink::WebView* web_view_;
@@ -361,7 +364,7 @@ class RenderWidgetExternalWidgetUnittest : public testing::Test {
 
  private:
   base::test::TaskEnvironment task_environment_;
-  MockRenderProcess render_process_;
+  RenderProcess render_process_;
   MockRenderThread render_thread_;
   FakeCompositorDependencies compositor_deps_;
   MockWebExternalWidgetClient mock_web_external_widget_client_;
@@ -417,8 +420,8 @@ TEST_F(RenderWidgetExternalWidgetUnittest, EventOverscroll) {
 
   // Overscroll notifications received while handling an input event should
   // be bundled with the event ack IPC.
-  EXPECT_CALL(handled_event, Run(INPUT_EVENT_ACK_STATE_CONSUMED, _,
-                                 testing::Pointee(expected_overscroll), _))
+  EXPECT_CALL(handled_event, Run(blink::mojom::InputEventResultState::kConsumed,
+                                 _, testing::Pointee(expected_overscroll), _))
       .Times(1);
 
   widget()->SendInputEvent(scroll, handled_event.GetCallback());

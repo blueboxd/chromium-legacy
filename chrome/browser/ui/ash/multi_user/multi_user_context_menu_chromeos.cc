@@ -116,7 +116,7 @@ void ExecuteVisitDesktopCommand(int command_id, aura::Window* window) {
           logged_in_users[command_id - IDC_VISIT_DESKTOP_OF_LRU_USER_NEXT + 1]
               ->GetAccountId();
       base::OnceCallback<void(bool, bool)> on_accept =
-          base::Bind(&OnAcceptTeleportWarning, account_id, window);
+          base::BindOnce(&OnAcceptTeleportWarning, account_id, window);
 
       // Don't show warning dialog if any logged in user in multi-profiles
       // session dismissed it.

@@ -99,6 +99,7 @@
 <translation id="3735758079232443276">ನೀವು Chrome ಪ್ರಾರಂಭಿಸಿದಾಗ ತೋರಿಸಬೇಕಾದ ಪುಟವನ್ನು "<ph name="EXTENSION_NAME" />" ವಿಸ್ತರಣೆಯು ಬದಲಾಯಿಸಿದೆ.</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
 <translation id="386202838227397562">ದಯವಿಟ್ಟು ಎಲ್ಲಾ Google Chrome ವಿಂಡೋಗಳನ್ನು ಮುಚ್ಚಿ ಹಾಗೂ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
+<translation id="3865754807470779944">Chrome ಆವೃತ್ತಿ <ph name="PRODUCT_VERSION" /> ಅನ್ನು ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="3873044882194371212">ಲಿಂಕ್‌ ಅನ್ನು Chrome ಅ&amp;ದೃಶ್ಯ ವಿಂಡೋದಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
 <translation id="3889417619312448367">Google Chrome ಅನ್ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿ</translation>
 <translation id="4050175100176540509">ಇತ್ತೀಚಿನ ಆವೃತ್ತಿಯಲ್ಲಿ ಪ್ರಮುಖವಾದ ಭದ್ರತಾ ಸುಧಾರಣೆಗಳು ಮತ್ತು ಹೊಸ ವೈಶಿಷ್ಟ್ಯಗಳು ಲಭ್ಯವಿದೆ.</translation>
@@ -236,6 +237,7 @@
 <translation id="8556340503434111824">Google Chrome ನ ಹೊಸ ಆವೃತ್ತಿ ಲಭ್ಯವಿದೆ, ಮತ್ತು ಇದು ಎಂದಿಗಿಂತಲೂ ವೇಗವಾಗಿದೆ.</translation>
 <translation id="8614913330719544658">Google Chrome ಸ್ಪಂದಿಸುತ್ತಿಲ್ಲ. ಇದೀಗ ಮರುಪ್ರಾರಂಭಿಸುವುದೆ?
 </translation>
+<translation id="861702415419836452">ನಿಮ್ಮ ಸುತ್ತಮುತ್ತಲಿನ ಪರಿಸರದ 3D ನಕ್ಷೆಯನ್ನು ರಚಿಸುವುದಕ್ಕಾಗಿ ನಿಮ್ಮ ಕ್ಯಾಮರಾವನ್ನು ಪ್ರವೇಶಿಸಲು Chrome ಗೆ ಅನುಮತಿ ಬೇಕಾಗಿದೆ</translation>
 <translation id="8625237574518804553">{0,plural, =1{1 ನಿಮಿಷದಲ್ಲಿ Chrome ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}one{# ನಿಮಿಷಗಳಲ್ಲಿ Chrome ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}other{# ನಿಮಿಷಗಳಲ್ಲಿ Chrome ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}}</translation>
 <translation id="8641606876632989680">ಅಪಾಯಕ್ಕೀಡಾದ ಪಾಸ್‌ವರ್ಡ್ ಮೂಲಕ ನೀವು ಸೈನ್ ಇನ್ ಮಾಡಿದಾಗ, Chrome ನಿಮಗೆ ಸೂಚನೆ ನೀಡುತ್ತದೆ</translation>
 <translation id="8669527147644353129">Google Chrome ಸಹಾಯಕ</translation>

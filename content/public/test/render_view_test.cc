@@ -31,12 +31,12 @@
 #include "content/public/test/frame_load_waiter.h"
 #include "content/renderer/history_serialization.h"
 #include "content/renderer/loader/resource_dispatcher.h"
+#include "content/renderer/render_process.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/renderer_main_platform_delegate.h"
 #include "content/test/fake_compositor_dependencies.h"
-#include "content/test/mock_render_process.h"
 #include "content/test/test_content_client.h"
 #include "content/test/test_render_frame.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -430,7 +430,7 @@ void RenderViewTest::SetUp() {
   }
 
   compositor_deps_ = CreateCompositorDependencies();
-  mock_process_ = std::make_unique<MockRenderProcess>();
+  process_ = std::make_unique<RenderProcess>();
 
   mojom::CreateViewParamsPtr view_params = mojom::CreateViewParams::New();
   view_params->opener_frame_route_id = MSG_ROUTING_NONE;
@@ -495,9 +495,9 @@ void RenderViewTest::TearDown() {
   // |view_| is ref-counted and deletes itself during the RunUntilIdle() call
   // below.
   view_ = nullptr;
-  mock_process_.reset();
+  process_.reset();
 
-  // After telling the view to close and resetting mock_process_ we may get
+  // After telling the view to close and resetting process_ we may get
   // some new tasks which need to be processed before shutting down WebKit
   // (http://crbug.com/21508).
   base::RunLoop().RunUntilIdle();

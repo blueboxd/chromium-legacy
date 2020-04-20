@@ -209,7 +209,7 @@ NavigationPredictor::NavigationPredictor(content::WebContents* web_contents)
   ukm_recorder_ = ukm::UkmRecorder::Get();
 
   current_visibility_ = web_contents->GetVisibility();
-  ukm_source_id_ = web_contents->GetLastCommittedSourceId();
+  ukm_source_id_ = web_contents->GetMainFrame()->GetPageUkmSourceId();
   Observe(web_contents);
 }
 

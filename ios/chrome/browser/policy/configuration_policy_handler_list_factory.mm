@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "components/autofill/core/browser/autofill_credit_card_policy_handler.h"
+#include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/bookmarks/managed/managed_bookmarks_policy_handler.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/policy/core/browser/configuration_policy_handler.h"
@@ -29,6 +30,9 @@ namespace {
 // that directly map to a single preference.
 // clang-format off
 const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
+  { policy::key::kEditBookmarksEnabled,
+    bookmarks::prefs::kEditBookmarksEnabled,
+    base::Value::Type::BOOLEAN },
   { policy::key::kPasswordManagerEnabled,
     password_manager::prefs::kCredentialsEnableService,
     base::Value::Type::BOOLEAN },

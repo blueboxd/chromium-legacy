@@ -627,7 +627,7 @@ void RenderWidgetHostViewEventHandler::OnGestureEvent(ui::GestureEvent* event) {
 
 void RenderWidgetHostViewEventHandler::GestureEventAck(
     const blink::WebGestureEvent& event,
-    InputEventAckState ack_result) {
+    blink::mojom::InputEventResultState ack_result) {
   mouse_wheel_phase_handler_.GestureEventAck(event, ack_result);
 }
 

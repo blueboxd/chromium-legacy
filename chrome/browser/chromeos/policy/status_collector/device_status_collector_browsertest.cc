@@ -1326,8 +1326,8 @@ TEST_F(DeviceStatusCollectorTest, DevSwitchBootMode) {
 TEST_F(DeviceStatusCollectorTest, WriteProtectSwitch) {
   // Test that write protect switch is reported by default.
   fake_statistics_provider_.SetMachineStatistic(
-      chromeos::system::kFirmwareWriteProtectBootKey,
-      chromeos::system::kFirmwareWriteProtectBootValueOn);
+      chromeos::system::kFirmwareWriteProtectCurrentKey,
+      chromeos::system::kFirmwareWriteProtectCurrentValueOn);
   GetStatus();
   EXPECT_TRUE(device_status_.write_protect_switch());
 
@@ -1345,24 +1345,24 @@ TEST_F(DeviceStatusCollectorTest, WriteProtectSwitch) {
       chromeos::kReportDeviceHardwareStatus, true);
 
   fake_statistics_provider_.SetMachineStatistic(
-      chromeos::system::kFirmwareWriteProtectBootKey, "(error)");
+      chromeos::system::kFirmwareWriteProtectCurrentKey, "(error)");
   GetStatus();
   EXPECT_FALSE(device_status_.has_write_protect_switch());
 
   fake_statistics_provider_.SetMachineStatistic(
-      chromeos::system::kFirmwareWriteProtectBootKey, " ");
+      chromeos::system::kFirmwareWriteProtectCurrentKey, " ");
   GetStatus();
   EXPECT_FALSE(device_status_.has_write_protect_switch());
 
   fake_statistics_provider_.SetMachineStatistic(
-      chromeos::system::kFirmwareWriteProtectBootKey,
-      chromeos::system::kFirmwareWriteProtectBootValueOn);
+      chromeos::system::kFirmwareWriteProtectCurrentKey,
+      chromeos::system::kFirmwareWriteProtectCurrentValueOn);
   GetStatus();
   EXPECT_TRUE(device_status_.write_protect_switch());
 
   fake_statistics_provider_.SetMachineStatistic(
-      chromeos::system::kFirmwareWriteProtectBootKey,
-      chromeos::system::kFirmwareWriteProtectBootValueOff);
+      chromeos::system::kFirmwareWriteProtectCurrentKey,
+      chromeos::system::kFirmwareWriteProtectCurrentValueOff);
   GetStatus();
   EXPECT_FALSE(device_status_.write_protect_switch());
 }

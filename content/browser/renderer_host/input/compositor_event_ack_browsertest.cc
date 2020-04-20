@@ -172,7 +172,7 @@ class CompositorEventAckBrowserTest : public ContentBrowserTest {
 
     // The compositor should send the event ack, and not be blocked by the event
     // above. The event watcher runs until we get the InputMsgAck callback
-    EXPECT_EQ(INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING,
+    EXPECT_EQ(blink::mojom::InputEventResultState::kSetNonBlocking,
               input_msg_watcher->WaitForAck());
 
     // Expect that the compositor scrolled at least one pixel while the

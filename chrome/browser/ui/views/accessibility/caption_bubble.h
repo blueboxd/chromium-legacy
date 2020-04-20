@@ -33,10 +33,14 @@ class CaptionBubble : public views::BubbleDialogDelegateView {
   void SetText(const std::string& text);
 
  protected:
+  // views::BubbleDialogDelegateView:
   void Init() override;
   bool ShouldShowCloseButton() const override;
   views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) override;
+  gfx::Rect GetBubbleBounds() override;
+  void OnWidgetBoundsChanged(views::Widget* widget,
+                             const gfx::Rect& new_bounds) override;
 
  private:
   friend class CaptionBubbleControllerViewsTest;
@@ -46,6 +50,14 @@ class CaptionBubble : public views::BubbleDialogDelegateView {
   views::Label* title_;
 
   base::ScopedClosureRunner destroyed_callback_;
+
+  // The bubble tries to stay relatively positioned in its parent.
+  // ratio_in_parent_x_ represents the ratio along the parent width at which
+  // to display the center of the bubble, if possible.
+  double ratio_in_parent_x_;
+  double ratio_in_parent_y_;
+  gfx::Rect latest_bounds_;
+  gfx::Rect latest_anchor_bounds_;
 };
 
 }  // namespace captions

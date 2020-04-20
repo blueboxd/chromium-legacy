@@ -12,6 +12,7 @@
 #include "base/path_service.h"
 #include "components/base32/base32.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/common/web_preferences.h"
 #include "weblayer/browser/feature_list_creator.h"
 #include "weblayer/browser/persistence/browser_persister.h"
 #include "weblayer/browser/persistence/minimal_browser_persister.h"
@@ -209,12 +210,14 @@ std::vector<uint8_t> BrowserImpl::GetMinimalPersistenceState(
   return PersistMinimalState(this, max_size_in_bytes);
 }
 
-bool BrowserImpl::GetPasswordEchoEnabled() {
+void BrowserImpl::SetWebPreferences(content::WebPreferences* prefs) {
 #if defined(OS_ANDROID)
-  return Java_BrowserImpl_getPasswordEchoEnabled(AttachCurrentThread(),
-                                                 java_impl_);
-#else
-  return false;
+  prefs->password_echo_enabled = Java_BrowserImpl_getPasswordEchoEnabled(
+      AttachCurrentThread(), java_impl_);
+  prefs->preferred_color_scheme =
+      Java_BrowserImpl_getDarkThemeEnabled(AttachCurrentThread(), java_impl_)
+          ? blink::PreferredColorScheme::kDark
+          : blink::PreferredColorScheme::kLight;
 #endif
 }
 

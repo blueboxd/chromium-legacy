@@ -148,7 +148,7 @@ class MouseWheelEventQueueTest : public testing::Test,
       : task_environment_(
             base::test::SingleThreadTaskEnvironment::MainThreadType::UI),
         acked_event_count_(0),
-        last_acked_event_state_(INPUT_EVENT_ACK_STATE_UNKNOWN) {
+        last_acked_event_state_(blink::mojom::InputEventResultState::kUnknown) {
     queue_.reset(new MouseWheelEventQueue(this));
   }
 
@@ -165,7 +165,8 @@ class MouseWheelEventQueueTest : public testing::Test,
     callbacks_.emplace_back(base::BindOnce(
         [](MouseWheelEventHandledCallback callback,
            const MouseWheelEventWithLatencyInfo& event,
-           InputEventAckSource ack_source, InputEventAckState ack_result) {
+           blink::mojom::InputEventResultSource ack_source,
+           blink::mojom::InputEventResultState ack_result) {
           std::move(callback).Run(event, ack_source, ack_result);
         },
         std::move(callback), event));
@@ -185,9 +186,10 @@ class MouseWheelEventQueueTest : public testing::Test,
     sent_events_.push_back(std::move(cloned_event_holder));
   }
 
-  void OnMouseWheelEventAck(const MouseWheelEventWithLatencyInfo& event,
-                            InputEventAckSource ack_source,
-                            InputEventAckState ack_result) override {
+  void OnMouseWheelEventAck(
+      const MouseWheelEventWithLatencyInfo& event,
+      blink::mojom::InputEventResultSource ack_source,
+      blink::mojom::InputEventResultState ack_result) override {
     ++acked_event_count_;
     last_acked_event_ = event.event;
     last_acked_event_state_ = ack_result;
@@ -201,8 +203,8 @@ class MouseWheelEventQueueTest : public testing::Test,
 
  protected:
   using HandleEventCallback =
-      base::OnceCallback<void(InputEventAckSource ack_source,
-                              InputEventAckState ack_result)>;
+      base::OnceCallback<void(blink::mojom::InputEventResultSource ack_source,
+                              blink::mojom::InputEventResultState ack_result)>;
 
   size_t queued_event_count() const { return queue_->queued_size(); }
 
@@ -233,9 +235,10 @@ class MouseWheelEventQueueTest : public testing::Test,
     return count;
   }
 
-  void SendMouseWheelEventAck(InputEventAckState ack_result) {
+  void SendMouseWheelEventAck(blink::mojom::InputEventResultState ack_result) {
     std::move(callbacks_.front())
-        .Run(InputEventAckSource::COMPOSITOR_THREAD, ack_result);
+        .Run(blink::mojom::InputEventResultSource::kCompositorThread,
+             ack_result);
     callbacks_.pop_front();
   }
 
@@ -316,7 +319,7 @@ class MouseWheelEventQueueTest : public testing::Test,
 
     // Receive an ACK for the mouse wheel event and release the next
     // mouse wheel event.
-    SendMouseWheelEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+    SendMouseWheelEventAck(blink::mojom::InputEventResultState::kNotConsumed);
     EXPECT_EQ(0U, queued_event_count());
     EXPECT_TRUE(event_in_flight());
     EXPECT_EQ(WebInputEvent::kMouseWheel, acked_event().GetType());
@@ -338,7 +341,7 @@ class MouseWheelEventQueueTest : public testing::Test,
                    WebMouseWheelEvent::kPhaseBegan,
                    WebMouseWheelEvent::kPhaseNone);
     EXPECT_EQ(1U, GetAndResetSentEventCount());
-    SendMouseWheelEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+    SendMouseWheelEventAck(blink::mojom::InputEventResultState::kNotConsumed);
     EXPECT_EQ(2U, all_sent_events().size());
     EXPECT_GESTURE_SCROLL_BEGIN_WITH_PHASE(sent_gesture_event(0));
     EXPECT_GESTURE_SCROLL_UPDATE_WITH_PHASE(sent_gesture_event(1));
@@ -349,7 +352,7 @@ class MouseWheelEventQueueTest : public testing::Test,
                    WebMouseWheelEvent::kPhaseChanged,
                    WebMouseWheelEvent::kPhaseNone);
     EXPECT_EQ(1U, GetAndResetSentEventCount());
-    SendMouseWheelEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+    SendMouseWheelEventAck(blink::mojom::InputEventResultState::kNotConsumed);
     EXPECT_EQ(1U, all_sent_events().size());
     EXPECT_GESTURE_SCROLL_UPDATE_WITH_PHASE(sent_gesture_event(0));
     EXPECT_EQ(1U, GetAndResetSentEventCount());
@@ -359,7 +362,7 @@ class MouseWheelEventQueueTest : public testing::Test,
                    WebMouseWheelEvent::kPhaseNone,
                    WebMouseWheelEvent::kPhaseBegan);
     EXPECT_EQ(1U, GetAndResetSentEventCount());
-    SendMouseWheelEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+    SendMouseWheelEventAck(blink::mojom::InputEventResultState::kNotConsumed);
     // A fling has started, no ScrollEnd/ScrollBegin is sent.
     EXPECT_EQ(1U, all_sent_events().size());
     EXPECT_INERTIAL_GESTURE_SCROLL_UPDATE(sent_gesture_event(0));
@@ -370,7 +373,7 @@ class MouseWheelEventQueueTest : public testing::Test,
                    WebMouseWheelEvent::kPhaseNone,
                    WebMouseWheelEvent::kPhaseChanged);
     EXPECT_EQ(1U, GetAndResetSentEventCount());
-    SendMouseWheelEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+    SendMouseWheelEventAck(blink::mojom::InputEventResultState::kNotConsumed);
     EXPECT_EQ(1U, all_sent_events().size());
     EXPECT_INERTIAL_GESTURE_SCROLL_UPDATE(sent_gesture_event(0));
     EXPECT_EQ(1U, GetAndResetSentEventCount());
@@ -380,7 +383,7 @@ class MouseWheelEventQueueTest : public testing::Test,
                    WebMouseWheelEvent::kPhaseNone,
                    WebMouseWheelEvent::kPhaseEnded);
     EXPECT_EQ(1U, GetAndResetSentEventCount());
-    SendMouseWheelEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+    SendMouseWheelEventAck(blink::mojom::InputEventResultState::kNotConsumed);
     // MomentumPhase is ended, the scroll is done, and GSE is sent
     // immediately.
     EXPECT_EQ(1U, all_sent_events().size());
@@ -393,7 +396,7 @@ class MouseWheelEventQueueTest : public testing::Test,
   std::vector<std::unique_ptr<WebInputEvent>> sent_events_;
   base::circular_deque<HandleEventCallback> callbacks_;
   size_t acked_event_count_;
-  InputEventAckState last_acked_event_state_;
+  blink::mojom::InputEventResultState last_acked_event_state_;
   WebMouseWheelEvent last_acked_event_;
 
  private:
@@ -420,7 +423,7 @@ TEST_F(MouseWheelEventQueueTest, Basic) {
   EXPECT_EQ(0U, GetAndResetSentEventCount());
 
   // Receive an ACK for the first mouse wheel event.
-  SendMouseWheelEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendMouseWheelEventAck(blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_TRUE(event_in_flight());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
@@ -428,7 +431,7 @@ TEST_F(MouseWheelEventQueueTest, Basic) {
   EXPECT_EQ(WebInputEvent::kMouseWheel, acked_event().GetType());
 
   // Receive an ACK for the second mouse wheel event.
-  SendMouseWheelEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendMouseWheelEventAck(blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_FALSE(event_in_flight());
   EXPECT_EQ(0U, GetAndResetSentEventCount());
@@ -467,7 +470,7 @@ TEST_F(MouseWheelEventQueueTest, WheelEndWithMomentumPhaseEndedInformation) {
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_TRUE(event_in_flight());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
-  SendMouseWheelEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendMouseWheelEventAck(blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_GESTURE_SCROLL_BEGIN_WITH_PHASE(sent_gesture_event(0));
   EXPECT_GESTURE_SCROLL_UPDATE_WITH_PHASE(sent_gesture_event(1));
   EXPECT_EQ(2U, GetAndResetSentEventCount());
@@ -479,7 +482,7 @@ TEST_F(MouseWheelEventQueueTest, WheelEndWithMomentumPhaseEndedInformation) {
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_TRUE(event_in_flight());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
-  SendMouseWheelEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendMouseWheelEventAck(blink::mojom::InputEventResultState::kNotConsumed);
 
   EXPECT_EQ(1U, all_sent_events().size());
   EXPECT_SYNTHETIC_INERTIAL_GESTURE_SCROLL_END(sent_gesture_event(0));
@@ -499,7 +502,7 @@ TEST_F(MouseWheelEventQueueTest, GestureSendingInterrupted) {
   EXPECT_EQ(1U, GetAndResetSentEventCount());
 
   // Receive an ACK for the mouse wheel event.
-  SendMouseWheelEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendMouseWheelEventAck(blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_FALSE(event_in_flight());
   EXPECT_EQ(WebInputEvent::kMouseWheel, acked_event().GetType());
@@ -516,7 +519,7 @@ TEST_F(MouseWheelEventQueueTest, GestureSendingInterrupted) {
                  kWheelScrollGlobalY, 0, 0, 0, false,
                  WebMouseWheelEvent::kPhaseEnded,
                  WebMouseWheelEvent::kPhaseNone);
-  SendMouseWheelEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendMouseWheelEventAck(blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
   // Ensure that a gesture scroll begin terminates the current scroll event.
@@ -537,7 +540,7 @@ TEST_F(MouseWheelEventQueueTest, GestureSendingInterrupted) {
 
   // New mouse wheel events won't cause gestures because a scroll
   // is already in progress by another device.
-  SendMouseWheelEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendMouseWheelEventAck(blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_FALSE(event_in_flight());
   EXPECT_EQ(WebInputEvent::kMouseWheel, acked_event().GetType());
@@ -557,7 +560,7 @@ TEST_F(MouseWheelEventQueueTest, GestureSendingInterrupted) {
   EXPECT_EQ(1U, GetAndResetSentEventCount());
 
   // Receive an ACK for the mouse wheel event.
-  SendMouseWheelEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendMouseWheelEventAck(blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_FALSE(event_in_flight());
   EXPECT_EQ(WebInputEvent::kMouseWheel, acked_event().GetType());
@@ -580,7 +583,7 @@ TEST_F(MouseWheelEventQueueTest, GestureRailScrolling) {
   EXPECT_EQ(1U, GetAndResetSentEventCount());
 
   // Receive an ACK for the mouse wheel event.
-  SendMouseWheelEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendMouseWheelEventAck(blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_FALSE(event_in_flight());
   EXPECT_EQ(WebInputEvent::kMouseWheel, acked_event().GetType());
@@ -602,7 +605,7 @@ TEST_F(MouseWheelEventQueueTest, GestureRailScrolling) {
   EXPECT_EQ(1U, GetAndResetSentEventCount());
 
   // Receive an ACK for the mouse wheel event.
-  SendMouseWheelEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendMouseWheelEventAck(blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_FALSE(event_in_flight());
   EXPECT_EQ(WebInputEvent::kMouseWheel, acked_event().GetType());
@@ -630,7 +633,7 @@ TEST_F(MouseWheelEventQueueTest, WheelScrollLatching) {
   EXPECT_EQ(1U, GetAndResetSentEventCount());
 
   // Receive an ACK for the mouse wheel event.
-  SendMouseWheelEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendMouseWheelEventAck(blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_FALSE(event_in_flight());
   EXPECT_EQ(WebInputEvent::kMouseWheel, acked_event().GetType());
@@ -651,7 +654,7 @@ TEST_F(MouseWheelEventQueueTest, WheelScrollLatching) {
   EXPECT_EQ(1U, GetAndResetSentEventCount());
 
   // Receive an ACK for the mouse wheel event.
-  SendMouseWheelEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendMouseWheelEventAck(blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_FALSE(event_in_flight());
   EXPECT_EQ(WebInputEvent::kMouseWheel, acked_event().GetType());
@@ -673,16 +676,16 @@ TEST_F(MouseWheelEventQueueTest, WheelScrollingWasLatchedHistogramCheck) {
                  kWheelScrollGlobalY, 1, 1, 0, false,
                  WebMouseWheelEvent::kPhaseBegan,
                  WebMouseWheelEvent::kPhaseNone);
-  SendMouseWheelEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendMouseWheelEventAck(blink::mojom::InputEventResultState::kNotConsumed);
   histogram_tester.ExpectBucketCount(latching_histogram_name, 0, 1);
 
   SendMouseWheel(kWheelScrollX, kWheelScrollY, kWheelScrollGlobalX,
                  kWheelScrollGlobalY, 1, 1, 0, false,
                  WebMouseWheelEvent::kPhaseChanged,
                  WebMouseWheelEvent::kPhaseNone);
-  SendMouseWheelEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-    histogram_tester.ExpectBucketCount(latching_histogram_name, 0, 1);
-    histogram_tester.ExpectBucketCount(latching_histogram_name, 1, 1);
+  SendMouseWheelEventAck(blink::mojom::InputEventResultState::kNotConsumed);
+  histogram_tester.ExpectBucketCount(latching_histogram_name, 0, 1);
+  histogram_tester.ExpectBucketCount(latching_histogram_name, 1, 1);
 }
 
 #if defined(OS_MACOSX)
@@ -698,7 +701,7 @@ TEST_F(MouseWheelEventQueueTest, DoNotSwapXYForShiftScroll) {
   EXPECT_EQ(1U, GetAndResetSentEventCount());
 
   // Receive an ACK for the mouse wheel event.
-  SendMouseWheelEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendMouseWheelEventAck(blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_FALSE(event_in_flight());
   EXPECT_EQ(WebInputEvent::kMouseWheel, acked_event().GetType());

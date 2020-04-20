@@ -35,6 +35,9 @@ class MultiStorePasswordSaveManager : public PasswordSaveManagerImpl {
 
   void MoveCredentialsToAccountStore() override;
 
+  void BlockMovingToAccountStoreFor(
+      const autofill::GaiaIdHash& gaia_id_hash) override;
+
  protected:
   void SavePendingToStoreImpl(
       const autofill::PasswordForm& parsed_submitted_form) override;

@@ -41,6 +41,7 @@ class CORE_EXPORT FrameResourceFetcherProperties final
   bool IsSubframeDeprioritizationEnabled() const override;
   scheduler::FrameStatus GetFrameStatus() const override;
   const KURL& WebBundlePhysicalUrl() const override;
+  int GetOutstandingThrottledLimit() const override;
 
  private:
   const Member<DocumentLoader> document_loader_;

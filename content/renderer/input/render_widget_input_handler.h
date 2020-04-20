@@ -11,7 +11,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "content/common/cursors/webcursor.h"
-#include "content/common/input/input_event_ack.h"
 #include "content/common/input/input_event_dispatch_type.h"
 #include "content/renderer/input/main_thread_event_queue.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"

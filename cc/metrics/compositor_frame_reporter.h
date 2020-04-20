@@ -5,17 +5,17 @@
 #ifndef CC_METRICS_COMPOSITOR_FRAME_REPORTER_H_
 #define CC_METRICS_COMPOSITOR_FRAME_REPORTER_H_
 
+#include <bitset>
 #include <memory>
 #include <vector>
 
-#include "base/containers/flat_set.h"
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "cc/base/base_export.h"
 #include "cc/cc_export.h"
 #include "cc/metrics/begin_main_frame_metrics.h"
 #include "cc/metrics/event_metrics.h"
-#include "cc/metrics/frame_sequence_tracker.h"
+#include "cc/metrics/frame_sequence_metrics.h"
 #include "cc/scheduler/scheduler.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/frame_timing_details.h"
@@ -121,12 +121,14 @@ class CC_EXPORT CompositorFrameReporter {
     ~StageData();
   };
 
-  CompositorFrameReporter(
-      const base::flat_set<FrameSequenceTrackerType>* active_trackers,
-      const viz::BeginFrameId& id,
-      const base::TimeTicks frame_deadline,
-      LatencyUkmReporter* latency_ukm_reporter,
-      bool should_report_metrics);
+  using ActiveTrackers =
+      std::bitset<static_cast<size_t>(FrameSequenceTrackerType::kMaxType)>;
+
+  CompositorFrameReporter(const ActiveTrackers& active_trackers,
+                          const viz::BeginFrameId& id,
+                          const base::TimeTicks frame_deadline,
+                          LatencyUkmReporter* latency_ukm_reporter,
+                          bool should_report_metrics);
   ~CompositorFrameReporter();
 
   CompositorFrameReporter(const CompositorFrameReporter& reporter) = delete;
@@ -239,7 +241,7 @@ class CC_EXPORT CompositorFrameReporter {
   FrameTerminationStatus frame_termination_status_ =
       FrameTerminationStatus::kUnknown;
 
-  const base::flat_set<FrameSequenceTrackerType>* active_trackers_;
+  const ActiveTrackers active_trackers_;
 
   LatencyUkmReporter* latency_ukm_reporter_;
 

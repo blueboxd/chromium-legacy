@@ -249,8 +249,8 @@ void KioskAppsHandler::HandleInitializeKioskAppSettings(
 
   AllowJavascript();
   KioskAppManager::Get()->GetConsumerKioskAutoLaunchStatus(
-      base::Bind(&KioskAppsHandler::OnGetConsumerKioskAutoLaunchStatus,
-                 weak_ptr_factory_.GetWeakPtr(), callback_id));
+      base::BindOnce(&KioskAppsHandler::OnGetConsumerKioskAutoLaunchStatus,
+                     weak_ptr_factory_.GetWeakPtr(), callback_id));
 }
 
 void KioskAppsHandler::HandleGetKioskAppSettings(const base::ListValue* args) {

@@ -5,7 +5,7 @@
 <translation id="111910763555783249">Benachrichtigungseinstellungen</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 Tag her}other{# Tage her}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{vor 1 Minute}other{vor # Minuten}}</translation>
-<translation id="1169783199079129864">{MINUTES,plural, =1{1 min}other{# min}}</translation>
+<translation id="1169783199079129864">{MINUTES,plural, =1{1 Min.}other{# Min.}}</translation>
 <translation id="1181037720776840403">Entfernen</translation>
 <translation id="1201402288615127009">Weiter</translation>
 <translation id="1218444235442067213"><ph name="APP_NAME" />, Play Store-App</translation>
@@ -207,7 +207,7 @@
 <translation id="7907591526440419938">Datei öffnen</translation>
 <translation id="7969046989155602842">Befehl</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Mehr als 1 ungelesene Benachrichtigung}other{Mehr als # ungelesene Benachrichtigungen}}</translation>
-<translation id="8086866675552927481">{MINUTES,plural, =1{in 1 min}other{in # min}}</translation>
+<translation id="8086866675552927481">{MINUTES,plural, =1{in 1 Min.}other{in # Min.}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" /> + <ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8090736967111090568">Zahl von <ph name="ORIGIN" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 Stunde her}other{# Stunden her}}</translation>

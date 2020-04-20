@@ -46,8 +46,17 @@ class FeedStore {
 
   void LoadStream(base::OnceCallback<void(LoadStreamResult)> callback);
 
-  void SaveFullStream(std::unique_ptr<StreamModelUpdateRequest> update_request,
-                      base::OnceCallback<void(bool)> callback);
+  // Stores the content of |update_request| in place of any existing stream
+  // data.
+  void OverwriteStream(std::unique_ptr<StreamModelUpdateRequest> update_request,
+                       base::OnceCallback<void(bool)> callback);
+
+  // Stores the content of |update_request| as an update to existing stream
+  // data.
+  void SaveStreamUpdate(
+      int32_t structure_set_sequence_number,
+      std::unique_ptr<StreamModelUpdateRequest> update_request,
+      base::OnceCallback<void(bool)> callback);
 
   void WriteOperations(int32_t sequence_number,
                        std::vector<feedstore::DataOperation> operations);
@@ -78,6 +87,14 @@ class FeedStore {
   // void RemoveOldData(base::OnceCallback<void(bool)> callback);
 
   bool IsInitializedForTesting() const;
+
+  leveldb_proto::ProtoDatabase<feedstore::Record>* GetDatabaseForTesting() {
+    return database_.get();
+  }
+
+  base::WeakPtr<FeedStore> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
 
  private:
   void OnDatabaseInitialized(leveldb_proto::Enums::InitStatus status);

@@ -10,6 +10,7 @@
 <translation id="1414495520565016063">Chromium'da oturum açtınız!</translation>
 <translation id="151962892725702025">Senkronizasyon alan adınızda kullanılamadığından Chromium OS, verilerinizi senkronize edemedi.</translation>
 <translation id="1524282610922162960">Chromium sekmesini paylaşın</translation>
+<translation id="1553461853655228091">Çevrenizin 3D haritasını oluşturmak için Chromium'un fotoğraf makinenize erişim iznine ihtiyacı var</translation>
 <translation id="1607715478322902680">{COUNT,plural, =0{Yöneticiniz bir güncellemeyi uygulamak için Chromium'u yeniden başlatmanızı gerektiriyor}=1{Yöneticiniz bir güncellemeyi uygulamak için Chromium'u yeniden başlatmanızı gerektiriyor. Gizli pencereniz yeniden açılmayacak.}other{Yöneticiniz bir güncellemeyi uygulamak için Chromium'u yeniden başlatmanızı gerektiriyor. # Gizli pencereniz yeniden açılmayacak.}}</translation>
 <translation id="1708666629004767631">Chromium'un kullanabileceğiniz yeni, daha güvenli bir sürümü var.</translation>
 <translation id="1774152462503052664">Chromium'un arka planda çalışmasına izin ver</translation>
@@ -23,6 +24,7 @@
 <translation id="2147976119693222405">Chromium OS, verilerinizi senkronize edemedi. Şimdi düzelt.</translation>
 <translation id="2185166961232948079">Chromium - Ağda Oturum Açın - <ph name="PAGE_TITLE" /></translation>
 <translation id="2241627712206172106">Bir bilgisayarı paylaşıyorsanız arkadaşlarınız ve aileniz ayrı olarak göz atabilir ve Chromium'u tam olarak istedikleri şekilde ayarlayabilir.</translation>
+<translation id="2294245788148774212">İsteğe bağlı: Teşhis ve kullanım verilerini Google'a otomatik olarak göndererek Chromium OS özelliklerini ve performansını iyileştirmeye yardımcı olun.</translation>
 <translation id="2347108572062610441">Bu uzantı, Chromium'u başlattığınızda gösterilen sayfayı değiştirdi.</translation>
 <translation id="2396765026452590966">"<ph name="EXTENSION_NAME" />" uzantısı, Chromium'u başlattığınızda gösterilen sayfayı değiştirdi.</translation>
 <translation id="2483889755041906834">Chromium'da</translation>
@@ -52,6 +54,7 @@
 <translation id="3190315855212034486">Hata! Chromium kilitlendi. Yeniden başlatılsın mı?</translation>
 <translation id="3229526316128325841">Chromium, şifrelerinizi dışa aktarmak istiyor.</translation>
 <translation id="3258596308407688501">Chromium veri dizini üzerinde okuma ve yazma işlemi yapamıyor: <ph name="USER_DATA_DIRECTORY" /></translation>
+<translation id="3283186697780795848">Chromium sürümü <ph name="PRODUCT_VERSION" /> yüklendi</translation>
 <translation id="328888136576916638">Google API anahtarları eksik. Chromium'un bazı işlevleri devre dışı bırakılacak.</translation>
 <translation id="3296368748942286671">Chromium kapandığında arka plan uygulamaları çalıştırmaya devam et</translation>
 <translation id="331951419404882060">Oturum açma sırasındaki bir hata nedeniyle Chromium OS, verilerinizi senkronize edemedi.</translation>

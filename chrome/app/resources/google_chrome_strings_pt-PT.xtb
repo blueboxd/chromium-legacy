@@ -98,6 +98,7 @@
 <translation id="3735758079232443276">A extensão "<ph name="EXTENSION_NAME" />" alterou a página apresentada quando inicia o Chrome.</translation>
 <translation id="3780814664026482060">Chrome – <ph name="PAGE_TITLE" /></translation>
 <translation id="386202838227397562">Feche todas as janelas do Google Chrome e tente novamente.</translation>
+<translation id="3865754807470779944">A versão <ph name="PRODUCT_VERSION" /> do Chrome está instalada.</translation>
 <translation id="3873044882194371212">Abrir link numa janela de nave&amp;gação anónima do Chrome</translation>
 <translation id="3889417619312448367">Desinstalar o Google Chrome</translation>
 <translation id="4050175100176540509">Estão disponíveis na versão mais recente melhorias de segurança importantes e novas funcionalidades.</translation>
@@ -119,7 +120,7 @@
 <translation id="4450664632294415862">Chrome – Início de sessão na rede – <ph name="PAGE_TITLE" /></translation>
 <translation id="4458462641685292929">Está em curso outra operação no Google Chrome. Tente novamente mais tarde.</translation>
 <translation id="4480040274068703980">O Chrome OS não conseguiu sincronizar os dados devido a um erro no início de sessão.</translation>
-<translation id="4521185804071812304">Opcional: Ajudar a melhorar as funcionalidade e o desempenho do Chrome OS ao enviar automaticamente dados de diagnóstico e de utilização para a Google.</translation>
+<translation id="4521185804071812304">Opcional: ajudar a melhorar as funcionalidades e o desempenho do Chrome OS ao enviar automaticamente dados de diagnóstico e de utilização para a Google.</translation>
 <translation id="4561051373932531560">O Google Chrome permite-lhe clicar num número de telefone na Web e fazer a chamada com o Skype!</translation>
 <translation id="4567424176335768812">Tem sessão iniciada como <ph name="USER_EMAIL_ADDRESS" />. Agora, pode aceder aos seus marcadores, ao histórico e a outras definições em todos os dispositivos com sessão iniciada.</translation>
 <translation id="4571503333518166079">Aceder às definições de notificação do Chrome</translation>
@@ -235,6 +236,7 @@
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8556340503434111824">Está disponível uma nova versão do Google Chrome, mais rápida do que nunca.</translation>
 <translation id="8614913330719544658">O Google Chrome não responde. Reiniciar agora?</translation>
+<translation id="861702415419836452">O Chrome necessita de autorização de acesso à câmara para criar um mapa 3D do ambiente à sua volta.</translation>
 <translation id="8625237574518804553">{0,plural, =1{O Chrome será reiniciado dentro de 1 minuto}other{O Chrome será reiniciado dentro de # minutos}}</translation>
 <translation id="8641606876632989680">O Chrome envia-lhe uma notificação quando iniciar sessão com uma palavra-passe comprometida.</translation>
 <translation id="8669527147644353129">Ajudante do Google Chrome</translation>

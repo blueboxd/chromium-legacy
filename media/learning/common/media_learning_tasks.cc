@@ -4,6 +4,8 @@
 
 #include "media/learning/common/media_learning_tasks.h"
 
+#include "base/logging.h"
+
 namespace media {
 namespace learning {
 

@@ -29,6 +29,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/renderer_preferences_util.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/web_preferences.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "ui/base/window_open_disposition.h"
 #include "weblayer/browser/autofill_client_impl.h"
@@ -342,8 +343,12 @@ void TabImpl::WebPreferencesChanged() {
   web_contents_->GetRenderViewHost()->OnWebkitPreferencesChanged();
 }
 
-bool TabImpl::GetPasswordEchoEnabled() {
-  return browser_ ? browser_->GetPasswordEchoEnabled() : false;
+void TabImpl::SetWebPreferences(content::WebPreferences* prefs) {
+  prefs->fullscreen_supported = !!fullscreen_delegate_;
+
+  if (!browser_)
+    return;
+  browser_->SetWebPreferences(prefs);
 }
 
 void TabImpl::OnLosingActive() {

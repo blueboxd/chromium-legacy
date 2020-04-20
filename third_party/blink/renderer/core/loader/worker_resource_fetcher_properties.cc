@@ -17,7 +17,9 @@ WorkerResourceFetcherProperties::WorkerResourceFetcherProperties(
     scoped_refptr<WebWorkerFetchContext> web_context)
     : global_scope_(global_scope),
       fetch_client_settings_object_(fetch_client_settings_object),
-      web_context_(std::move(web_context)) {
+      web_context_(std::move(web_context)),
+      outstanding_throttled_limit_(
+          global_scope_->GetOutstandingThrottledLimit()) {
   DCHECK(web_context_);
 }
 
@@ -38,6 +40,10 @@ bool WorkerResourceFetcherProperties::IsPaused() const {
 
 const KURL& WorkerResourceFetcherProperties::WebBundlePhysicalUrl() const {
   return NullURL();
+}
+
+int WorkerResourceFetcherProperties::GetOutstandingThrottledLimit() const {
+  return outstanding_throttled_limit_;
 }
 
 }  // namespace blink

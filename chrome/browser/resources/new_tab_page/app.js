@@ -18,7 +18,7 @@ import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/poly
 
 import {BrowserProxy} from './browser_proxy.js';
 import {BackgroundSelection, BackgroundSelectionType} from './customize_dialog.js';
-import {hexColorToSkColor, skColorToRgb} from './utils.js';
+import {hexColorToSkColor, skColorToRgba} from './utils.js';
 
 class AppElement extends PolymerElement {
   static get is() {
@@ -287,8 +287,8 @@ class AppElement extends PolymerElement {
    * @return {string}
    * @private
    */
-  rgbOrInherit_(skColor) {
-    return skColor ? skColorToRgb(skColor) : 'inherit';
+  rgbaOrInherit_(skColor) {
+    return skColor ? skColorToRgba(skColor) : 'inherit';
   }
 
   /**

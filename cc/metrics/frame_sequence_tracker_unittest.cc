@@ -4,11 +4,10 @@
 
 #include "cc/metrics/frame_sequence_tracker.h"
 
-#include <vector>
-
 #include "base/macros.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "cc/metrics/compositor_frame_reporting_controller.h"
+#include "cc/metrics/frame_sequence_tracker_collection.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

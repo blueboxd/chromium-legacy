@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/swap_promise.h"
+#include "cc/trees/ukm_manager.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_widget_client.h"
@@ -96,12 +97,15 @@ void WebFrameWidgetBase::BindLocalRoot(WebLocalFrame& local_root) {
           &WebFrameWidgetBase::RequestAnimationAfterDelayTimerFired));
 }
 
-void WebFrameWidgetBase::Close() {
+void WebFrameWidgetBase::Close(
+    scoped_refptr<base::SingleThreadTaskRunner> cleanup_runner,
+    base::OnceCallback<void()> cleanup_task) {
   mutator_dispatcher_ = nullptr;
   local_root_->SetFrameWidget(nullptr);
   local_root_ = nullptr;
   client_ = nullptr;
   request_animation_after_delay_timer_.reset();
+  widget_base_->Shutdown(std::move(cleanup_runner), std::move(cleanup_task));
   widget_base_.reset();
 }
 
@@ -435,6 +439,40 @@ void WebFrameWidgetBase::RequestBeginMainFrameNotExpected(bool request) {
   widget_base_->LayerTreeHost()->RequestBeginMainFrameNotExpected(request);
 }
 
+void WebFrameWidgetBase::EndCommitCompositorFrame(
+    base::TimeTicks commit_start_time) {
+  Client()->DidCommitCompositorFrame(commit_start_time);
+}
+
+void WebFrameWidgetBase::DidCommitAndDrawCompositorFrame() {
+  Client()->DidCommitAndDrawCompositorFrame();
+}
+
+void WebFrameWidgetBase::OnDeferMainFrameUpdatesChanged(bool defer) {
+  Client()->OnDeferMainFrameUpdatesChanged(defer);
+}
+
+void WebFrameWidgetBase::OnDeferCommitsChanged(bool defer) {
+  Client()->OnDeferCommitsChanged(defer);
+}
+
+void WebFrameWidgetBase::RequestNewLayerTreeFrameSink(
+    LayerTreeFrameSinkCallback callback) {
+  Client()->RequestNewLayerTreeFrameSink(std::move(callback));
+}
+
+void WebFrameWidgetBase::DidCompletePageScaleAnimation() {
+  Client()->DidCompletePageScaleAnimation();
+}
+
+void WebFrameWidgetBase::DidBeginMainFrame() {
+  Client()->DidBeginMainFrame();
+}
+
+void WebFrameWidgetBase::WillBeginMainFrame() {
+  Client()->WillBeginMainFrame();
+}
+
 int WebFrameWidgetBase::GetLayerTreeId() {
   if (!View()->does_composite())
     return 0;
@@ -584,32 +622,24 @@ WebLocalFrame* WebFrameWidgetBase::FocusedWebLocalFrameInWidget() const {
   return WebLocalFrameImpl::FromFrame(FocusedLocalFrameInWidget());
 }
 
-void WebFrameWidgetBase::SetCompositorHosts(cc::LayerTreeHost* layer_tree_host,
-                                            cc::AnimationHost* animation_host) {
-  widget_base_->SetCompositorHosts(layer_tree_host, animation_host);
+cc::LayerTreeHost* WebFrameWidgetBase::InitializeCompositing(
+    cc::TaskGraphRunner* task_graph_runner,
+    const cc::LayerTreeSettings& settings,
+    std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory) {
+  widget_base_->InitializeCompositing(task_graph_runner, settings,
+                                      std::move(ukm_recorder_factory));
   GetPage()->AnimationHostInitialized(*AnimationHost(),
                                       GetLocalFrameViewForAnimationScrolling());
+  return widget_base_->LayerTreeHost();
 }
 
 void WebFrameWidgetBase::SetCompositorVisible(bool visible) {
   widget_base_->SetCompositorVisible(visible);
 }
 
-void WebFrameWidgetBase::UpdateVisualState() {
-  widget_base_->UpdateVisualState();
-}
-
 void WebFrameWidgetBase::RecordTimeToFirstActivePaint(
     base::TimeDelta duration) {
   Client()->RecordTimeToFirstActivePaint(duration);
-}
-
-void WebFrameWidgetBase::BeginFrame(base::TimeTicks frame_time) {
-  widget_base_->BeginMainFrame(frame_time);
-}
-
-void WebFrameWidgetBase::WillBeginCompositorFrame() {
-  widget_base_->WillBeginCompositorFrame();
 }
 
 void WebFrameWidgetBase::DispatchRafAlignedInput(base::TimeTicks frame_time) {
@@ -629,10 +659,7 @@ void WebFrameWidgetBase::DispatchRafAlignedInput(base::TimeTicks frame_time) {
 
 void WebFrameWidgetBase::ApplyViewportChangesForTesting(
     const ApplyViewportChangesArgs& args) {
-  // TODO(dtapuska): Temporarily just call ApplyViewportChanges.
-  // ApplyViewportChanges will eventually be removed when compositing moves into
-  // |widget_base_|.
-  ApplyViewportChanges(args);
+  widget_base_->ApplyViewportChanges(args);
 }
 
 void WebFrameWidgetBase::SetDisplayMode(mojom::blink::DisplayMode mode) {
@@ -773,8 +800,8 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
       int frame_token) {
     // If the widget was collected or the widget wasn't collected yet, but
     // it was closed don't schedule a presentation callback.
-    if (widget && widget->Client()) {
-      widget->Client()->AddPresentationCallback(
+    if (widget && widget->widget_base_) {
+      widget->widget_base_->AddPresentationCallback(
           frame_token,
           WTF::Bind(&RunCallbackAfterPresentation,
                     std::move(presentation_time_callback), swap_time));

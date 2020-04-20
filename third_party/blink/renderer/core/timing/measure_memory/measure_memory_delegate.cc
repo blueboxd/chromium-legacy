@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/page/frame_tree.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
@@ -77,13 +78,12 @@ namespace {
 // Helper functions for constructing a memory measurement result.
 
 const LocalFrame* GetFrame(v8::Local<v8::Context> context) {
-  ExecutionContext* execution_context = ExecutionContext::From(context);
-  if (!execution_context) {
+  LocalDOMWindow* window = ToLocalDOMWindow(context);
+  if (!window) {
     // The context was detached. Ignore it.
     return nullptr;
   }
-  DCHECK(execution_context->IsDocument());
-  return Document::From(execution_context)->GetFrame();
+  return window->GetFrame();
 }
 
 String GetUrl(const LocalFrame* frame) {

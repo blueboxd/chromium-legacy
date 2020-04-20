@@ -75,9 +75,11 @@ VulkanSurface::~VulkanSurface() {
 }
 
 VulkanSurface::VulkanSurface(VkInstance vk_instance,
+                             gfx::AcceleratedWidget accelerated_widget,
                              VkSurfaceKHR surface,
                              bool enforce_protected_memory)
     : vk_instance_(vk_instance),
+      accelerated_widget_(accelerated_widget),
       surface_(surface),
       enforce_protected_memory_(enforce_protected_memory) {
   DCHECK_NE(static_cast<VkSurfaceKHR>(VK_NULL_HANDLE), surface_);

@@ -77,10 +77,11 @@ void TestInterfaces::ConfigureForTestWithURL(const blink::WebURL& test_url,
   if (path_start != std::string::npos)
     spec = spec.substr(path_start);
 
-  bool is_devtools_test = spec.find("/devtools/") != std::string::npos;
-  if (is_devtools_test) {
+  bool is_devtools_test =
+      spec.find("/devtools/") != std::string::npos ||
+      spec.find("/inspector-protocol/") != std::string::npos;
+  if (is_devtools_test)
     test_runner_->SetDumpConsoleMessages(false);
-  }
 
   // In protocol mode (see TestInfo::protocol_mode), we dump layout only when
   // requested by the test. In non-protocol mode, we dump layout by default
@@ -110,7 +111,7 @@ void TestInterfaces::ConfigureForTestWithURL(const blink::WebURL& test_url,
       spec.find("/external/csswg-test/") != std::string::npos ||
       spec.find("://web-platform.test") != std::string::npos ||
       spec.find("/harness-tests/wpt/") != std::string::npos)
-    test_runner_->set_is_web_platform_tests_mode();
+    test_runner_->SetIsWebPlatformTestsMode();
 }
 
 void TestInterfaces::WindowOpened(WebViewTestProxy* proxy) {

@@ -52,6 +52,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
@@ -68,25 +69,6 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
                     ModelType.AUTOFILL, ModelType.BOOKMARKS, ModelType.PASSWORDS,
                     ModelType.PREFERENCES, ModelType.PROXY_TABS, ModelType.TYPED_URLS,
             }));
-
-    public abstract static class DataCriteria<T> extends Criteria {
-        public DataCriteria() {
-            super("Sync data criteria not met.");
-        }
-
-        public abstract boolean isSatisfied(List<T> data);
-
-        public abstract List<T> getData() throws Exception;
-
-        @Override
-        public boolean isSatisfied() {
-            try {
-                return isSatisfied(getData());
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
 
     /**
      * Simple activity that mimics a trusted vault key retrieval flow that succeeds immediately.
@@ -263,12 +245,9 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
     public void clearServerData() {
         mFakeServerHelper.clearServerData();
         SyncTestUtil.triggerSync();
-        CriteriaHelper.pollUiThread(new Criteria("Timed out waiting for sync to stop.") {
-            @Override
-            public boolean isSatisfied() {
-                return !ProfileSyncService.get().isSyncRequested();
-            }
-        }, SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
+        CriteriaHelper.pollUiThread(
+                Criteria.equals(false, () -> ProfileSyncService.get().isSyncRequested()),
+                SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
     }
 
     /*
@@ -309,9 +288,20 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
         });
     }
 
+    @Deprecated // TODO(tedchoc): Remove this method once Criteria.equals returns a Runnable.
     public void pollInstrumentationThread(Criteria criteria) {
         CriteriaHelper.pollInstrumentationThread(
                 criteria, SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
+    }
+
+    public void pollInstrumentationThread(Runnable criteria) {
+        CriteriaHelper.pollInstrumentationThread(
+                criteria, SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
+    }
+
+    public void pollInstrumentationThread(Callable<Boolean> criteria, String reason) {
+        CriteriaHelper.pollInstrumentationThread(
+                criteria, reason, SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
     }
 
     @Override

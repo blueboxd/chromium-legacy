@@ -733,6 +733,13 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
 
       Wird diese Richtlinie nicht eingerichtet, ist die Okklusions-Erkennung deaktiviert.</translation>
 <translation id="2166472654199325139">Websites mit Inhalten nur für Erwachsene nicht filtern</translation>
+<translation id="2166746572083670600">Hiermit wird das Verzeichnis konfiguriert, in dem <ph name="PRODUCT_NAME" /> die Nutzerdaten speichert.
+
+      Wenn Sie diese Richtlinie festlegen, verwendet <ph name="PRODUCT_NAME" /> das bereitgestellte Verzeichnis unabhängig davon, ob der Nutzer das Argument "--user-data-dir" angegeben hat. Um Datenverluste oder andere unerwartete Fehler zu vermeiden, darf diese Richtlinie nicht auf ein Verzeichnis festgelegt werden, das für andere Zwecke verwendet wird, weil <ph name="PRODUCT_NAME" /> die entsprechenden Inhalte verwaltet.
+
+      Unter https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables finden Sie eine Liste mit Variablen, aus denen Sie wählen können.
+
+      Sollte diese Richtlinie nicht konfiguriert sein, kommt der Standardprofilpfad zum Einsatz, wobei der Nutzer dies mit dem Befehlszeilenparameter "--user-data-dir" ändern kann.</translation>
 <translation id="2168397434410358693">Inaktivitätsverzögerung im Netzbetrieb</translation>
 <translation id="217013996107840632">Befehlszeilenparameter für den Wechsel vom alternativen Browser.</translation>
 <translation id="2170233653554726857">WPAD-Optimierung aktivieren</translation>
@@ -2756,6 +2763,12 @@ Wenn diese Richtlinie nicht festgelegt ist, werden 0 Millisekunden als Zeitlimi
 
 Geben Sie den Richtlinienwert in Millisekunden an.</translation>
 <translation id="523505283826916779">Einstellungen für Bedienungshilfen</translation>
+<translation id="5236004592041099233">Hiermit wird die Liste der URLs für die Unternehmensanmeldung konfiguriert (nur HTTP- und HTTPS-Schemas). Der Passwortschutzdienst erfasst den Hashwert von Passwörtern auf diesen URLs und verwendet ihn, um zu prüfen, ob Passwörter wiederverwendet werden.
+      Ihre Anmeldeseiten müssen den Richtlinien unter https://www.chromium.org/developers/design-documents/create-amazing-password-forms entsprechen, damit Hashwerte von Passwörtern in <ph name="PRODUCT_NAME" /> richtig erfasst werden können.
+
+      Wenn diese Einstellung aktiviert ist, erfasst der Passwortschutzdienst den Hashwert von Passwörtern auf diesen URLs und verwendet ihn, um zu prüfen, ob Passwörter wiederverwendet werden.
+      Ist sie deaktiviert oder nicht konfiguriert, erfasst der Passwortschutzdienst die Hashwerte von Passwörtern nur unter https://accounts.google.com.
+      Diese Richtlinie ist nur in Windows-Instanzen verfügbar, die mit einer <ph name="MS_AD_NAME" />-Domain verbunden sind, oder bei Windows 10 Pro- oder Enterprise-Instanzen, bei denen zur Geräteverwaltung eine Anmeldung vorgenommen wurde.</translation>
 <translation id="5236882091572996759">Wenn diese Richtlinie auf "true" gesetzt oder nicht konfiguriert ist, wird der Nutzer während der Audiowiedergabe als aktiv angesehen. Dadurch wird verhindert, dass das Zeitlimit für die Inaktivität erreicht wird und entsprechende Maßnahmen ergriffen werden. Der Bildschirm wird jedoch unabhängig von den Audioaktivitäten gemäß den konfigurierten Zeitlimits gedimmt, abgeschaltet und gesperrt.
 
           Ist diese Richtlinie auf "false" gesetzt, wird der Nutzer trotz Audiowiedergabe als inaktiv angesehen.</translation>
@@ -3440,6 +3453,7 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
 <translation id="6221175752766085998">Zertifikate zulassen, die von lokalen Vertrauensankern ausgestellt werden, bei denen die "subjectAlternativeName"-Erweiterung fehlt</translation>
 <translation id="6224304369267200483">Automatischer Nachweis des Sicherheitsschlüssels durch URLs/Domains</translation>
 <translation id="6233173491898450179">Downloadverzeichnis festlegen</translation>
+<translation id="6234177445959386333">Hiermit wird die Liste der URLs für die Unternehmensanmeldung konfiguriert, für die der Passwortschutzdienst den Hashwert von Passwörtern registrieren soll.</translation>
 <translation id="6242147107333796512">Informationen im Zusammenhang mit Absturzberichten melden, wie Remote ID,
       Zeitstempel und Ursache.
 
@@ -3876,6 +3890,12 @@ Speicherinformationen werden unabhängig von der gewählten Option an die Seite 
       Ist die Richtlinie nicht konfiguriert, erscheint die Ablage standardmäßig unten auf dem Bildschirm und der Nutzer hat die Möglichkeit, diese Position zu ändern.</translation>
 <translation id="7040229947030068419">Beispielwert</translation>
 <translation id="7044883996351280650">Android-Dienst "Sicherung und Wiederherstellung" konfigurieren</translation>
+<translation id="705089873294344912">Hiermit wird die URL zur Passwortänderung konfiguriert (nur HTTP- und HTTPS-Schemas). Nutzer, in deren Browser eine Warnung angezeigt wurde, werden vom Passwortschutzdienst an diese URL weitergeleitet, damit sie ihr Passwort ändern können.
+      Die Seite zum Ändern des Passworts muss den Richtlinien unter https://www.chromium.org/developers/design-documents/create-amazing-password-forms entsprechen, damit der Hashwert des neuen Passworts in <ph name="PRODUCT_NAME" /> richtig erfasst werden kann.
+
+      Wenn diese Einstellung aktiviert ist, leitet der Passwortschutzdienst Nutzer, in deren Browser eine Warnung angezeigt wurde, an diese URL weiter, damit sie ihr Passwort ändern können.
+      Ist sie deaktiviert oder nicht konfiguriert, werden Nutzer an https://myaccount.google.com weitergeleitet, damit sie ihr Passwort ändern können.
+      Diese Richtlinie ist nur in Windows-Instanzen verfügbar, die mit einer <ph name="MS_AD_NAME" />-Domain verbunden sind, oder bei Windows 10 Pro- oder Enterprise-Instanzen, bei denen zur Geräteverwaltung eine Anmeldung vorgenommen wurde.</translation>
 <translation id="7053678646221257043">Bei Aktivierung erzwingt diese Richtlinie, dass die Lesezeichen vom aktuellen Standardbrowser importiert werden. Wenn Sie deaktiviert ist, werden keine Lesezeichen importiert. Sollte Sie nicht konfiguriert sein, wird der Nutzer gefragt, ob ein Import erfolgen soll, oder der Import findet automatisch statt.</translation>
 <translation id="7063895219334505671">Pop-ups auf diesen Websites zulassen</translation>
 <translation id="706669471845501145">Anzeige von Desktop-Benachrichtigungen durch Websites zulassen</translation>

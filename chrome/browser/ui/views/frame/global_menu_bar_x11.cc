@@ -350,7 +350,7 @@ void GlobalMenuBarX11::AddHistoryItemToMenu(std::unique_ptr<HistoryItem> item,
 void GlobalMenuBarX11::GetTopSitesData() {
   DCHECK(top_sites_);
 
-  top_sites_->GetMostVisitedURLs(base::Bind(
+  top_sites_->GetMostVisitedURLs(base::BindOnce(
       &GlobalMenuBarX11::OnTopSitesReceived, weak_ptr_factory_.GetWeakPtr()));
 }
 

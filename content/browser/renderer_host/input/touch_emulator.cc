@@ -317,18 +317,20 @@ bool TouchEmulator::HandleEmulatedTouchEvent(
 }
 
 bool TouchEmulator::HandleTouchEventAck(
-    const blink::WebTouchEvent& event, InputEventAckState ack_result) {
+    const blink::WebTouchEvent& event,
+    blink::mojom::InputEventResultState ack_result) {
   bool is_sequence_end = WebTouchEventTraits::IsTouchSequenceEnd(event);
   if (emulated_stream_active_sequence_count_) {
     if (is_sequence_end)
       emulated_stream_active_sequence_count_--;
 
     int taps_count_before = pending_taps_count_;
-    const bool event_consumed = ack_result == INPUT_EVENT_ACK_STATE_CONSUMED;
+    const bool event_consumed =
+        ack_result == blink::mojom::InputEventResultState::kConsumed;
     if (gesture_provider_) {
       gesture_provider_->OnTouchEventAck(
           event.unique_touch_event_id, event_consumed,
-          InputEventAckStateIsSetNonBlocking(ack_result));
+          InputEventResultStateIsSetNonBlocking(ack_result));
     }
     if (pending_taps_count_ == taps_count_before)
       OnInjectedTouchCompleted();

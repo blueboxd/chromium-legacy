@@ -403,10 +403,12 @@ ResourceLoader::ResourceLoader(ResourceFetcher* fetcher,
   auto& request = resource_->GetResourceRequest();
   auto request_context = request.GetRequestContext();
   if (!RequestContextObserveResponse(request_context)) {
-    if (FrameScheduler* frame_scheduler = fetcher->GetFrameScheduler()) {
-      feature_handle_for_scheduler_ = frame_scheduler->RegisterFeature(
-          GetFeatureFromRequestContextType(request_context),
-          {SchedulingPolicy::RecordMetricsForBackForwardCache()});
+    if (auto* frame_or_worker_scheduler =
+            fetcher->GetFrameOrWorkerScheduler()) {
+      feature_handle_for_scheduler_ =
+          frame_or_worker_scheduler->RegisterFeature(
+              GetFeatureFromRequestContextType(request_context),
+              {SchedulingPolicy::RecordMetricsForBackForwardCache()});
     }
   }
 
@@ -1089,14 +1091,14 @@ void ResourceLoader::DidReceiveResponseInternal(
         response.ResponseTime(), should_use_isolated_code_cache_, this);
   }
 
-  if (FrameScheduler* frame_scheduler = fetcher_->GetFrameScheduler()) {
+  if (auto* frame_or_worker_scheduler = fetcher_->GetFrameOrWorkerScheduler()) {
     if (response.CacheControlContainsNoCache()) {
-      frame_scheduler->RegisterStickyFeature(
+      frame_or_worker_scheduler->RegisterStickyFeature(
           SchedulingPolicy::Feature::kSubresourceHasCacheControlNoCache,
           {SchedulingPolicy::RecordMetricsForBackForwardCache()});
     }
     if (response.CacheControlContainsNoStore()) {
-      frame_scheduler->RegisterStickyFeature(
+      frame_or_worker_scheduler->RegisterStickyFeature(
           SchedulingPolicy::Feature::kSubresourceHasCacheControlNoStore,
           {SchedulingPolicy::RecordMetricsForBackForwardCache()});
     }

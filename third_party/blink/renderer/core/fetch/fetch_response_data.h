@@ -14,7 +14,9 @@
 #include "third_party/blink/public/mojom/fetch/fetch_api_response.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/fetch/body_stream_buffer.h"
+#include "third_party/blink/renderer/core/fetch/fetch_request_data.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/network/http_header_set.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
@@ -118,6 +120,13 @@ class CORE_EXPORT FetchResponseData final
   // Does not contain the blob response body.
   mojom::blink::FetchAPIResponsePtr PopulateFetchAPIResponse(
       const KURL& request_url);
+
+  // Initialize non-body data from the given |response|.
+  void InitFromResourceResponse(
+      const Vector<KURL>& request_url_list,
+      network::mojom::CredentialsMode request_credentials,
+      FetchRequestData::Tainting tainting,
+      const ResourceResponse& response);
 
   void Trace(Visitor*);
 

@@ -418,6 +418,11 @@
 <translation id="1555130319947370107">Samawati</translation>
 <translation id="1556537182262721003">Saraka ya kiendelezi haikuweza kuhamishwa hadi kwenye wasifu.</translation>
 <translation id="155865706765934889">Touchpad</translation>
+<translation id="1560763881671211335">Wasimamizi wa G Suite for Education hubaini huduma za Google ambazo watumiaji wanaweza kufikia wakiwa wameingia katika akaunti ya G Suite for Education. Wasimamizi wa shule wanahitajika kutoa au kupata idhini ya utumiaji wa huduma kwa niaba ya watumiaji ambao ni watoto.
+
+    Data ya kuvinjari (ikiwemo historia, alamisho na manenosiri) itahifadhiwa kwa kutumia akaunti ya Family Link wala si akaunti ya shule.
+
+    Mipangilio yako ya mzazi kwenye Family Link bado itatumika. Ikiwa ulizuia programu au tovuti hapo awali, hutalazimika kufanya hivyo tena.</translation>
 <translation id="1566049601598938765">Tovuti</translation>
 <translation id="15662109988763471">Printa iliyochaguliwa haipatikani au haijasakinishwa vizuri. Angalia printa yako au ujaribu kuchagua printa nyingine.</translation>
 <translation id="1567387640189251553">Kibodi tofauti imeunganishwa baada ya tukio lako la hivi karibuni la kuweka nenosiri. Huenda inajaribu kuiba mibofyo yako.</translation>
@@ -1197,6 +1202,7 @@ Unaweza kudhibiti mipangilio ya akaunti hii kwa kusakinisha programu ya Family L
 <translation id="258095186877893873">Muda mrefu</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (Jukwaa <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Imeshindwa kupata tiketi za Kerberos. Jaribu tena au wasiliana na msimamizi wa kifaa katika shirika lako. (Msimbo wa hitilafu <ph name="ERROR_CODE" />).</translation>
+<translation id="2585013490795742997">Inaonyesha tokeo moja la utafutaji wa <ph name="QUERY" /></translation>
 <translation id="2585724835339714757">Kichupo hiki kinashiriki skrini yako.</translation>
 <translation id="2586657967955657006">Ubao wa kunakili</translation>
 <translation id="2586672484245266891">Tafadhali weka URL fupi</translation>
@@ -1883,6 +1889,7 @@ Unaweza kudhibiti mipangilio ya akaunti hii kwa kusakinisha programu ya Family L
 <translation id="3498215018399854026">Hatukuweza kufikia mzazi wako wakati huu. Tafadhali jaribu tena.</translation>
 <translation id="3500417806337761827">Hitilafu imetokea wakati wa kupachika faili ya kushiriki. Tayari umepachika faili nyingi mno za kushiriki za SMB.</translation>
 <translation id="3505030558724226696">Batilisha uwezo wa kufikia kifaa</translation>
+<translation id="3507132249039706973">Kipengele cha Ulinzi wa Kawaida kimewashwa</translation>
 <translation id="3507421388498836150">Ruhusa za Sasa za "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="3507888235492474624">Tafuta tena vifaa vya Bluetooth</translation>
 <translation id="3508492320654304609">Imeshindwa kufuta data yako ya kuingia katika akaunti</translation>
@@ -3234,6 +3241,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5352033265844765294">Uwekaji Saa</translation>
 <translation id="5353252989841766347">Hamisha Manenosiri Kutoka Chrome</translation>
 <translation id="5355099869024327351">Ruhusu programu ya Mratibu ikuonyeshe arifa</translation>
+<translation id="5355191726083956201">Umewasha Kipengele cha Ulinzi Ulioboreshwa</translation>
 <translation id="5355926466126177564">Kiendelezi hiki "<ph name="EXTENSION_NAME" />" kimebadilisha ukurasa unaoonyeshwa unapotafuta kutoka Sanduku Kuu.</translation>
 <translation id="5359910752122114278">Tokeo moja</translation>
 <translation id="5360150013186312835">Onyesha katika Upau wa Vidhibiti</translation>
@@ -3545,6 +3553,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="577322787686508614">Shughuli za kusoma haziruhusiwi kwenye: " <ph name="DEVICE_NAME" /> ".</translation>
 <translation id="5774295353725270860">Fungua programu ya Faili</translation>
 <translation id="577624874850706961">Tafuta vidakuzi</translation>
+<translation id="5776858208024364029">Inaonyesha matokeo <ph name="NUMBER" /> ya utafutaji wa <ph name="QUERY" /></translation>
 <translation id="5777468213129569553">Fungua Chrome</translation>
 <translation id="5778747455497889540">Hapa chini pana nenosiri la sehemu salama lililozalishwa bila mpangilio ambalo linatumiwa kwenye kompyuta yako:</translation>
 <translation id="5780011244986845107">Folda uliyochagua ina faili nyeti. Je, una uhakika unataka kutoa uwezo wa kudumu wa "<ph name="APP_NAME" />" wa kusoma folda hii?</translation>
@@ -4101,6 +4110,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
+<translation id="6520876759015997832">Tokeo la utafutaji la <ph name="LIST_POSITION" /> kati ya <ph name="LIST_SIZE" />: <ph name="SEARCH_RESULT_TEXT" />. Bonyeza Enter ili uende kwenye sehemu.</translation>
 <translation id="652492607360843641">Umeunganishwa kwenye mtandao wa <ph name="NETWORK_TYPE" />.</translation>
 <translation id="6527303717912515753">Shiriki</translation>
 <translation id="6528513914570774834">Waruhusu watumiaji wengine wa kifaa hiki kutumia mtandao huu</translation>
@@ -4112,6 +4122,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6532206849875187177">Usalama na kuingia katika akaunti</translation>
 <translation id="6532527800157340614">Imeshindwa kuingia katika akaunti kwa sababu haikuleta data ya ufikiaji. Tafadhali kagua muunganisho wa mtandao kisha ujaribu tena.</translation>
 <translation id="6532663472409656417">Imejumuishwa kwenye Biashara</translation>
+<translation id="6535331821390304775">Ruhusu <ph name="ORIGIN" /> ili ifungue viungo vya aina hii kwenye programu inayohusiana kila wakati</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Kumbuka:<ph name="END_BOLD" /> Washa tu kama unajua unachofanya au kama umeambiwa ufanye hivyo, kwani mkusanyiko wa data unaweza kupunguza utendaji.</translation>
 <translation id="6541638731489116978">Tovuti hii imezuiwa ili isifikie vitambuzi vya mwendo.</translation>
 <translation id="6545665334409411530">Ukadiriaji wa kurudia</translation>
@@ -4241,6 +4252,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6727969043791803658">Imeunganishwa, kiasi cha chaji ni <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="6732801395666424405">Vyeti havijapakiwa</translation>
 <translation id="6732900235521116609">Imeshindwa kuondoa njia ya mkato</translation>
+<translation id="6734468588183300211">Katika hali fiche, tovuti haziwezi kutumia vidakuzi vyako kuona shughuli zako za kuvinjari kwenye tovuti mbalimbali, kwa mfano, ili kukuonyesha matangazo yanayokufaa zaidi. Huenda vipengele kwenye baadhi ya tovuti vikakosa kufanya kazi.</translation>
 <translation id="6735304988756581115">Onyesha vidakuzi na data ya tovuti zingine...</translation>
 <translation id="6736243959894955139">Anwani</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
@@ -4253,6 +4265,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="674632704103926902">Washa uburutaji wa kugonga</translation>
 <translation id="6748217015615267851">Mtekelezaji: <ph name="RENDERER_URL" /></translation>
 <translation id="6748465660675848252">Unaweza kuendelea, lakini data na mipangilio yako iliyosawazishwa pekee ndiyo itakayorejeshwa. Data yote ya karibu itapotea.</translation>
+<translation id="6749006854028927059">Tovuti haziwezi kutumia vidakuzi vyako kuona shughuli zako za kuvinjari kwenye tovuti tofauti, kwa mfano, ili kukuonyesha matangazo yanayokufaa zaidi. Huenda vipengele kwenye baadhi ya tovuti vikakosa kufanya kazi.</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (Hali fiche)</translation>
 <translation id="6757101664402245801">URL imenakiliwa</translation>
 <translation id="6758056191028427665">Tueleze jinsi huduma inavyokuridhisha.</translation>
@@ -4344,6 +4357,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="686664946474413495">Halijoto ya rangi</translation>
 <translation id="6871644448911473373">Kijibu OCSP: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">Nenosiri uliloweka limekataliwa na seva.</translation>
+<translation id="6874170800191969835">Umeenda kwenye <ph name="SEARCH_RESULT_TEXT" />.</translation>
 <translation id="6876155724392614295">Baiskeli</translation>
 <translation id="6876469544038980967">Haijanifaa</translation>
 <translation id="6878422606530379992">Imeruhusu vitambuzi</translation>
@@ -4614,6 +4628,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="7235737137505019098">Ufunguo wako wa usalama hauna nafasi ya kutosha ili kutumia akaunti nyingine zozote.</translation>
 <translation id="7238643356913091553"><ph name="NETWORK_NAME" />, Maelezo</translation>
 <translation id="7240339475467890413">Ungependa kuunganishwa kwenye mtandaopepe mpya?</translation>
+<translation id="7240847845291869311">Mtoto wako angependa kuweka Akaunti ya G Suite for Education kwenye kifaa hiki. <ph name="LINK_BEGIN" />Ilani ya Faragha ya G Suite for Education<ph name="LINK_END" /> imekusudiwa kuwasaidia watumiaji na wazazi wanaotumia G Suite for Education kuelewa data ambayo bidhaa inakusanya, sababu za kuikusanya na tunachofanya nayo.</translation>
 <translation id="7241389281993241388">Tafadhali ingia kwenye <ph name="TOKEN_NAME" /> ili kuleta cheti cha mteja.</translation>
 <translation id="7241443820034350811">Ikiwa ufunguo wako wa usalama haujaorodheshwa, bonyeza vitufe vyake kwa angalau sekunde 5.</translation>
 <translation id="7243632151880336635">Futa na Uondoke kwenye Akaunti</translation>
@@ -5198,6 +5213,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="7987814697832569482">Unganisha kupitia VPN hii wakati wote</translation>
 <translation id="7988355189918024273">Washa vipengele vya zana za walio na matatizo ya kuona au kusikia</translation>
 <translation id="7991296728590311172">Mipangilio ya Kufikia Kupitia Swichi</translation>
+<translation id="7992202128769240372">Umepitisha kima kinachoruhusiwa cha <ph name="SHEETS_LABEL" /> <ph name="NUMBER_OF_SHEETS" /></translation>
 <translation id="7994350303002908848">Imeshindwa kusakinisha Plugin VM. Tafadhali jaribu tena au wasiliana na msimamizi wa kifaa katika shirika lako. Msimbo wa hitilafu: <ph name="ERROR_CODE" />.</translation>
 <translation id="7994702968232966508">Mbinu ya EAP</translation>
 <translation id="7997826902155442747">Kipaumbele cha Mchakato</translation>

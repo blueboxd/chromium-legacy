@@ -10,6 +10,7 @@
 <translation id="1414495520565016063">Chromium‘ga xush kelibsiz!</translation>
 <translation id="151962892725702025">Ma’lumotlarni sinxronlab bo‘lmadi, chunki domeningizda Sync xizmati mavjud emas.</translation>
 <translation id="1524282610922162960">Chromium sahifasini namoyish qilish</translation>
+<translation id="1553461853655228091">Chromium atrofingiz 3D xaritasini yaratishi uchun unga kamera ruxsati zarur</translation>
 <translation id="1607715478322902680">{COUNT,plural, =0{Administrator yangilishlarni oʻrnatish uchun Chromium brauzerini qayta ishga tushirishni talab qilmoqda}=1{Administrator yangilishlarni oʻrnatish uchun Chromium brauzerini qayta ishga tushirishni talab qilmoqda Inkognito oynalar qayta ochilmaydi.}other{Administrator yangilishlarni oʻrnatish uchun Chromium brauzerini qayta ishga tushirishni talab qilmoqda # ta inkognito oyna qayta ochilmaydi.}}</translation>
 <translation id="1708666629004767631">Chromium brauzerining yangi, yanada xavfsiz versiyasi chiqdi.</translation>
 <translation id="1774152462503052664">Chromium fonda ishlashiga ruxsat</translation>
@@ -53,6 +54,7 @@
 <translation id="3190315855212034486">Voy! Chromium ishdan chiqdi. Qaytadan ishga tushirilsinmi?</translation>
 <translation id="3229526316128325841">Chromium parollaringizni eksport qilmoqchi.</translation>
 <translation id="3258596308407688501">Chromium o‘z jildidan ma’lumotlarni o‘qib yoki yozib ololmadi: <ph name="USER_DATA_DIRECTORY" /></translation>
+<translation id="3283186697780795848">Chromium <ph name="PRODUCT_VERSION" /> versiyasi oʻrnatildi</translation>
 <translation id="328888136576916638">Google API kalitlari yetishmayapti. Chromium’ning ba’zi funksiyalari ishlamasligi mumkin.</translation>
 <translation id="3296368748942286671">Chromium yopilishida orqa fon rejimida ishlayotgan ilovalar to‘xtatilmasin</translation>
 <translation id="331951419404882060">Hisobga kirishdagi xatolik sababli Chromium OS ma’lumotlarni sinxronlay olmadi.</translation>

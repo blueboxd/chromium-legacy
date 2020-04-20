@@ -76,8 +76,9 @@ TEST(StreamModelUpdateRequestTest, TranslateRealResponse) {
   ASSERT_EQ(feed_response.data_operation_size(),
             kExpectedStreamStructureCount + 1);
 
-  std::unique_ptr<StreamModelUpdateRequest> translated =
-      TranslateWireResponse(response, kResponseTime, kCurrentTime);
+  std::unique_ptr<StreamModelUpdateRequest> translated = TranslateWireResponse(
+      response, StreamModelUpdateRequest::Source::kNetworkUpdate, kResponseTime,
+      kCurrentTime);
 
   ASSERT_TRUE(translated);
   EXPECT_EQ(kCurrentTime, feedstore::GetLastAddedTime(translated->stream_data));

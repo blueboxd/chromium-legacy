@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "base/time/time.h"
 
 class GoogleServiceAuthError;

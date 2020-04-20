@@ -5,6 +5,9 @@
       Als dit beleid is ingesteld op een tekenreeks die een domeinnaam vertegenwoordigt, geeft <ph name="PRODUCT_OS_NAME" /> een optie voor automatisch aanvullen weer tijdens het inlogproces van de gebruiker, waarbij de gebruiker alleen zijn gebruikersnaam hoeft te typen zonder de domeinnaamextensie.  De gebruiker kan deze domeinnaamextensie overschrijven.
       Als de waarde van het beleid geen geldig domein is, wordt het beleid niet toegepast.</translation>
 <translation id="1010151305531217567">De rechtermuisknop instellen als de primaire muisknop</translation>
+<translation id="1011266755572744012">Hiermee specificeer je het maximum aantal vellen dat de gebruiker mag afdrukken voor één afdruktaak.
+
+      Als dit niet is ingesteld, worden er geen beperkingen toegepast en kan de gebruiker elk document afdrukken.</translation>
 <translation id="101438888985615157">Scherm 180 graden draaien</translation>
 <translation id="1016912092715201525">Hiermee worden de standaard browsercontroles ingesteld in <ph name="PRODUCT_NAME" /> en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
 
@@ -165,6 +168,11 @@
 <translation id="1160939557934457296">Doorgaan vanaf de waarschuwingspagina van Safe Browsing uitschakelen</translation>
 <translation id="1163080558183062209">Printertypen op de weigeringslijst uitschakelen</translation>
 <translation id="117059611145966538">Externe afdrukservers</translation>
+<translation id="1177624681620856105"> Met dit beleid wordt bepaald of het selectievakje 'Altijd openen' moet worden weergegeven in bevestigingsprompts voor externe protocolactivering.
+
+      Als dit beleid is ingesteld op True of niet is ingesteld, kan de gebruiker, als er een bevestiging van een extern protocol wordt weergegeven, 'Altijd toestaan' selecteren om alle toekomstige bevestigingsprompts voor het protocol op deze site over te slaan.
+
+      Als dit beleid is ingesteld op False, wordt het selectievakje 'Altijd toestaan' niet weergegeven en krijgt de gebruiker elke keer als er een extern protocol wordt aangeroepen een prompt.</translation>
 <translation id="1194005076170619046">Als dit beleid is ingeschakeld, wordt een grote rode uitlogknop weergegeven in het systeemvak terwijl een sessie actief is en het scherm niet is vergrendeld.
 
       Als dit beleid is uitgeschakeld of niet is gespecificeerd, wordt er geen grote rode uitlogknop weergegeven in het systeemvak.</translation>
@@ -602,6 +610,7 @@ Als je dit beleid uitschakelt, wordt op de webpagina naar specifieke tekstfragme
 
       Als dit beleid niet is ingesteld, zijn er geen apparaatprinters en worden de overige beleidsregels van <ph name="DEVICE_PRINTERS_POLICY_PATTERN" /> genegeerd.
       </translation>
+<translation id="1930127294345368978">Maximum aantal vellen dat mag worden gebruikt voor één afdruktaak</translation>
 <translation id="193259052151668190">Witte lijst met USB-apparaten die kunnen worden ontkoppeld</translation>
 <translation id="1933378685401357864">Achtergrondafbeelding</translation>
 <translation id="1956493342242507974">Energiebeheer configureren op het inlogscherm in <ph name="PRODUCT_OS_NAME" />.
@@ -1069,6 +1078,17 @@ Als dit beleid niet is ingesteld, is het privacyscherm in eerste instantie uitge
 <translation id="253135976343875019">Inactieve waarschuwingsvertraging wanneer op netstroom wordt gewerkt</translation>
 <translation id="2536525645274582300">De gebruiker beslist of Locatieservices van Google moeten worden ingeschakeld</translation>
 <translation id="254653220329944566">Schakelt cloudrapportage voor <ph name="PRODUCT_NAME" /> in</translation>
+<translation id="2548397295248733155">Dit beleid is beëindigd en wordt verwijderd in <ph name="PRODUCT_OS_NAME" />-versie 85. Gebruik in plaats daarvan <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
+
+          Specificeert de tijdsduur zonder gebruikersinvoer waarna het scherm wordt uitgeschakeld als er op de batterij wordt gewerkt.
+
+          Als dit beleid is ingesteld op een waarde groter dan nul, wordt hiermee de tijd aangegeven dat de gebruiker inactief moet zijn voordat het scherm door <ph name="PRODUCT_OS_NAME" /> wordt uitgeschakeld.
+
+          Als dit beleid is ingesteld op nul, wordt het scherm niet door <ph name="PRODUCT_OS_NAME" /> uitgeschakeld als de gebruiker inactief is.
+
+          Als dit beleid niet is ingesteld, wordt er een standaard tijdsduur gebruikt.
+
+          De beleidswaarde moet worden gespecificeerd in milliseconden. De opgegeven waarden moeten kleiner dan of gelijk zijn aan de inactieve vertraging.</translation>
 <translation id="2548572254685798999">Gegevens over Safe Browsing rapporteren</translation>
 <translation id="2550593661567988768">Alleen enkelzijdig afdrukken</translation>
 <translation id="2551520365302988324">Gebruikersuploads verzenden om te laten scannen</translation>
@@ -1477,6 +1497,15 @@ Als dit beleid niet is ingesteld, is het privacyscherm in eerste instantie uitge
 <translation id="3184161739683646075">Hiermee wordt de modus voor DNS-over-HTTPS bepaald</translation>
 <translation id="3185009703220253572">sinds versie <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Android-apps hebben geen toegang tot zakelijke sleutels. Dit beleid is niet van invloed op deze apps.</translation>
+<translation id="3196585866522778760">Dit beleid is beëindigd en wordt verwijderd in <ph name="PRODUCT_OS_NAME" />-versie 85. Gebruik in plaats daarvan <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
+
+          Specificeert de tijdsduur zonder gebruikersinvoer waarna de actie voor inactiviteit wordt uitgevoerd als er op de batterij wordt gewerkt.
+
+          Als dit beleid is ingesteld, specificeert het de tijdsduur dat de gebruiker inactief moet zijn voordat <ph name="PRODUCT_OS_NAME" /> de actie voor inactiviteit uitvoert. Dit kan afzonderlijk worden geconfigureerd.
+
+          Als dit beleid niet is ingesteld, wordt er een standaard tijdsduur gebruikt.
+
+          De beleidswaarde moet worden gespecificeerd in milliseconden.</translation>
 <translation id="3205825995289802549">Het eerste browservenster maximaliseren bij eerste uitvoering</translation>
 <translation id="3211426942294667684">Instellingen voor inloggen bij browser</translation>
 <translation id="3214164532079860003">Indien ingeschakeld, wordt met dit beleid afgedwongen dat de homepage wordt geïmporteerd uit de huidige standaardbrowser.
@@ -1549,6 +1578,17 @@ Als dit beleid niet is ingesteld, is het privacyscherm in eerste instantie uitge
 Als dit beleid is ingesteld op True of niet is ingesteld, mag <ph name="PRODUCT_NAME" /> native meldingen gebruiken.
 
 Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen native meldingen. Het berichtencentrum van <ph name="PRODUCT_NAME" /> wordt gebruikt als reserve.</translation>
+<translation id="3360093276083825336">Dit beleid is beëindigd en wordt verwijderd in <ph name="PRODUCT_OS_NAME" />-versie 85. Gebruik in plaats daarvan <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
+
+          Specificeert de tijdsduur zonder gebruikersinvoer waarna een waarschuwingsdialoogvenster wordt weergegeven als er op de batterij wordt gewerkt.
+
+          Als dit beleid is ingesteld, specificeert het de tijdsduur dat de gebruiker inactief moet zijn voordat <ph name="PRODUCT_OS_NAME" /> een waarschuwingsdialoogvenster laat zien om aan te geven dat de actie voor inactiviteit bijna wordt uitgevoerd.
+
+          Als dit beleid niet is ingesteld, wordt er geen waarschuwingsdialoogvenster weergegeven.
+
+          De beleidswaarde moet worden gespecificeerd in milliseconden. De opgegeven waarden moeten kleiner dan of gelijk zijn aan de inactieve vertraging.
+
+          Het waarschuwingsbericht wordt alleen weergegeven als de inactieve actie 'uitloggen' of 'afsluiten' is.</translation>
 <translation id="3373364525435227558">Hiermee worden een of meer aanbevolen landinstellingen ingesteld voor een beheerde sessie, zodat gebruikers gemakkelijk een van deze landinstellingen kunnen kiezen.
 
       De gebruiker kan een landinstelling en toetsenbordindeling kiezen voordat de beheerde sessie wordt gestart. Alle landinstellingen die worden ondersteund door <ph name="PRODUCT_OS_NAME" /> worden standaard op alfabetische volgorde weergegeven. Je kunt dit beleid gebruiken om een set aanbevolen landinstellingen naar bovenaan de lijst te verplaatsen.
@@ -1701,6 +1741,19 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
       Als dit beleid is ingesteld op DeveloperToolsAllowed (waarde 1), zijn de Developer Tools en de JavaScript-console toegankelijk en bruikbaar in elke context, inclusief de context van extensies die zijn geïnstalleerd op basis van het bedrijfsbeleid.
       Als dit beleid is ingesteld op DeveloperToolsDisallowed (waarde 2), zijn de Developer Tools niet toegankelijk en kunnen de website-elementen niet meer worden geïnspecteerd. De sneltoetsen en items van menu's of contextmenu's waarmee de Developer Tools of de JavaScript-console kunnen worden geopend, zijn uitgeschakeld.</translation>
 <translation id="3547954654003013442">Proxyinstellingen</translation>
+<translation id="3550122827225052130">Dit beleid is beëindigd en wordt verwijderd in <ph name="PRODUCT_OS_NAME" />-versie 85. Gebruik in plaats daarvan <ph name="SCREEN_LOCK_DELAYS_POLICY_NAME" />.
+
+          Specificeert de tijdsduur zonder gebruikersinvoer waarna het scherm wordt vergrendeld als er op netstroom wordt gewerkt.
+
+          Als dit beleid is ingesteld op een waarde groter dan nul, wordt hiermee de tijd aangegeven dat de gebruiker inactief moet zijn voordat het scherm door <ph name="PRODUCT_OS_NAME" /> wordt vergrendeld.
+
+          Als dit beleid is ingesteld op nul, wordt het scherm niet door <ph name="PRODUCT_OS_NAME" /> vergrendeld als de gebruiker inactief is.
+
+          Als dit beleid niet is ingesteld, wordt er een standaard tijdsduur gebruikt.
+
+          De aanbevolen manier om het scherm te vergrendelen bij inactiviteit is door schermvergrendeling bij opschorting in te schakelen en <ph name="PRODUCT_OS_NAME" /> te laten opschorten na een inactieve vertraging. Dit beleid moet uitsluitend worden gebruikt als het scherm aanzienlijk sneller moet worden vergrendeld dan de opschortingstijd of als opschorting bij inactiviteit helemaal niet gewenst is.
+
+          De beleidswaarde moet worden gespecificeerd in milliseconden. De opgegeven waarden moeten kleiner zijn dan de inactieve vertraging.</translation>
 <translation id="3550875587920006460">Hiermee kan een custom planning worden ingesteld om te controleren op updates. Dit is van toepassing op alle gebruikers en op alle interfaces op het apparaat. Nadat de planning is ingesteld, controleert het apparaat op updates in overeenstemming met de planning. Het beleid moet worden verwijderd om meer geplande updatecontroles te annuleren.</translation>
 <translation id="355118380775352753">Websites die worden geopend in de alternatieve browser</translation>
 <translation id="3554498762428140109">Native occlusie van vensters inschakelen</translation>
@@ -2506,6 +2559,11 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 
       OPMERKING: Dit beleid is niet van toepassing op Android. Als je SitePerProcess wilt inschakelen op Android, gebruik je de beleidsinstelling SitePerProcessAndroid.
       </translation>
+<translation id="4787763197941188108">Hiermee overschrijf je het standaardformaat voor de afdrukpagina.
+
+      <ph name="PAGE_SIZE_NAME" /> moet een van de vermelde indelingen bevatten of 'custom' als het vereiste papierformaat niet in de lijst staat. Als de waarde 'custom' is opgegeven, moet de eigenschap <ph name="PAGE_SIZE_CUSTOM_SIZE" /> worden gespecificeerd. Dit beschrijft de gewenste hoogte en breedte in micrometers. Anders moet de eigenschap <ph name="PAGE_SIZE_CUSTOM_SIZE" /> niet worden gespecificeerd. Beleid dat deze regels schendt, wordt genegeerd.
+
+      Als het paginaformaat niet beschikbaar is op de printer die de gebruiker heeft gekozen, wordt dit beleid genegeerd.</translation>
 <translation id="4788252609789586009">Hiermee wordt de functie 'Automatisch aanvullen' van <ph name="PRODUCT_NAME" /> ingeschakeld zodat gebruikers creditcardgegevens automatisch kunnen invullen op webformulieren aan de hand van eerder opgeslagen gegevens.
 
       Als deze instelling is uitgeschakeld, worden er nooit creditcardgegevens voorgesteld of ingevuld door 'Automatisch aanvullen'. Er worden ook geen aanvullende creditcardgegevens opgeslagen die de gebruiker mogelijk verzendt terwijl deze browset op internet.
@@ -3555,6 +3613,17 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 <translation id="6315673513957120120">Chrome toont een waarschuwingspagina wanneer gebruikers naar sites met SSL-fouten navigeren. Gebruikers kunnen standaard, of wanneer dit beleid is ingesteld op 'true', door deze waarschuwingspagina's klikken.
       Als dit beleid wordt ingesteld op 'false', kunnen gebruikers niet door waarschuwingspagina's klikken.</translation>
 <translation id="6319198883324703402">De tijd van de melding voor eerste keer opnieuw opstarten door gebruiker instellen</translation>
+<translation id="6331167725613770725">Dit beleid is beëindigd en wordt verwijderd in <ph name="PRODUCT_OS_NAME" />-versie 85. Gebruik in plaats daarvan <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
+
+          Specificeert de tijdsduur zonder gebruikersinvoer waarna een waarschuwingsdialoogvenster wordt weergegeven als er op netstroom wordt gewerkt.
+
+          Als dit beleid is ingesteld, specificeert het de tijdsduur dat de gebruiker inactief moet zijn voordat <ph name="PRODUCT_OS_NAME" /> een waarschuwingsdialoogvenster laat zien om aan te geven dat de actie voor inactiviteit bijna wordt uitgevoerd.
+
+          Als dit beleid niet is ingesteld, wordt er geen waarschuwingsdialoogvenster weergegeven.
+
+          De beleidswaarde moet worden gespecificeerd in milliseconden. De opgegeven waarden moeten kleiner dan of gelijk zijn aan de inactieve vertraging.
+
+          Het waarschuwingsbericht wordt alleen weergegeven als de inactieve actie 'uitloggen' of 'afsluiten' is.</translation>
 <translation id="6342187235303612558">Hiermee voorkom je dat gebruikers bestanden uploaden of downloaden die op dit moment niet worden ondersteund voor een DLP- of malwarescan.</translation>
 <translation id="6348718801326095108">Cookies die worden ingesteld door pagina's die overeenkomen met deze URL-patronen, worden beperkt tot de huidige sessie. Dit betekent dat ze worden verwijderd als de browser wordt gesloten.
 
@@ -3663,6 +3732,19 @@ Als dit beleid niet wordt ingesteld, kan de gebruiker ervoor kiezen de pagina 'N
       Als deze instelling ingeschakeld is, worden deze domeinen door Safe Browsing vertrouwd.
       Als deze instelling uitgeschakeld of niet ingesteld is, wordt de standaard Safe Browsing-beveiliging toegepast op alle bronnen.
       Dit beleid is alleen beschikbaar op Windows-instanties die gekoppeld zijn aan een <ph name="MS_AD_NAME" />-domein of op instanties van Windows 10 Pro of Enterprise die ingeschreven zijn voor apparaatbeheer.</translation>
+<translation id="6495337487202227251">Dit beleid is beëindigd en wordt verwijderd in <ph name="PRODUCT_OS_NAME" />-versie 85. Gebruik in plaats daarvan <ph name="SCREEN_LOCK_DELAYS_POLICY_NAME" />.
+
+          Specificeert de tijdsduur zonder gebruikersinvoer waarna het scherm wordt vergrendeld als er op de batterij wordt gewerkt.
+
+          Als dit beleid is ingesteld op een waarde groter dan nul, wordt hiermee de tijd aangegeven dat de gebruiker inactief moet zijn voordat het scherm door <ph name="PRODUCT_OS_NAME" /> wordt vergrendeld.
+
+          Als dit beleid is ingesteld op nul, wordt het scherm niet door <ph name="PRODUCT_OS_NAME" /> vergrendeld als de gebruiker inactief is.
+
+          Als dit beleid niet is ingesteld, wordt er een standaard tijdsduur gebruikt.
+
+          De aanbevolen manier om het scherm te vergrendelen bij inactiviteit is door schermvergrendeling bij opschorting in te schakelen en <ph name="PRODUCT_OS_NAME" /> te laten opschorten na een inactieve vertraging. Dit beleid moet uitsluitend worden gebruikt als het scherm aanzienlijk sneller moet worden vergrendeld dan de opschortingstijd of als opschorting bij inactiviteit helemaal niet gewenst is.
+
+          De beleidswaarde moet worden gespecificeerd in milliseconden. De opgegeven waarden moeten kleiner zijn dan de inactieve vertraging.</translation>
 <translation id="6515357889978918016"><ph name="PLUGIN_VM_NAME" />-afbeelding</translation>
 <translation id="6520802717075138474">Zoekmachines importeren uit standaardbrowser bij eerste uitvoering</translation>
 <translation id="6525955212636890608">Als je deze instelling inschakelt, wordt alle Flash-content uitgevoerd die is ingesloten op websites waarvoor in de instellingen voor content is ingesteld dat Flash is toegestaan (door de gebruiker of op basis van bedrijfsbeleid). Dit geldt ook voor content die afkomstig is uit andere bronnen of minder belangrijke content.
@@ -4411,6 +4493,17 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Als dit beleid niet wordt ingesteld, heeft het geen effect en wordt opnieuw opstarten na het uitloggen van een gebruiker niet afgedwongen. Hetzelfde is van toepassing als het beleid is ingesteld op Nooit.
       Dit beleid is alleen van invloed op niet-gelieerde gebruikers.
       </translation>
+<translation id="7679483888150212009">Dit beleid is beëindigd en wordt verwijderd in <ph name="PRODUCT_OS_NAME" />-versie 85. Gebruik in plaats daarvan <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
+
+          Specificeert de tijdsduur zonder gebruikersinvoer waarna het scherm wordt gedimd als er op netstroom wordt gewerkt.
+
+          Als dit beleid is ingesteld op een waarde groter dan nul, wordt hiermee de tijd aangegeven dat de gebruiker inactief moet zijn voordat het scherm door <ph name="PRODUCT_OS_NAME" /> wordt gedimd.
+
+          Als dit beleid is ingesteld op nul, wordt het scherm niet door <ph name="PRODUCT_OS_NAME" /> gedimd als de gebruiker inactief is.
+
+          Als dit beleid niet is ingesteld, wordt er een standaard tijdsduur gebruikt.
+
+          De beleidswaarde moet worden gespecificeerd in milliseconden. De opgegeven waarden moeten kleiner dan of gelijk zijn aan de vertraging van de uitschakeling van het scherm (indien ingesteld) en van de inactieve vertraging.</translation>
 <translation id="7683777542468165012">Beleid dynamisch vernieuwen</translation>
 <translation id="7687943045976362719">Als dit beleid is ingesteld, worden de opgegeven contenttypen verwerkt door <ph name="PRODUCT_FRAME_NAME" />.
 
@@ -4556,6 +4649,13 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
           Als dit beleid is uitgeschakeld, mogen gebruikers geen Kerberos-accounts toevoegen. De accounts kunnen alleen worden toegevoegd via het beleid 'Kerberos-accounts configureren'. Dit is een effectieve manier om accounts te vergrendelen.</translation>
 <translation id="7895553628261067384">Externe toegang</translation>
+<translation id="7898879331506985900">Dit bedrijfsbeleid is voor kortdurende aanpassing en wordt verwijderd in M86.
+
+      Het standaardbeleid van Chrome voor verwijzende URL's wordt versterkt van de huidige waarde 'no-referrer-when-downgrade' naar de beter beveiligde waarde 'strict-origin-when-cross-origin' via een geleidelijke uitrol die de stabiele versie M80 target.
+
+      Vóór de uitrol heeft dit bedrijfsbeleid geen effect. Als dit bedrijfsbeleid na de uitrol is ingeschakeld, wordt het standaardbeleid van Chrome voor verwijzende URL's ingesteld op de waarde 'no-referrer-when-downgrade' die vóór M80 van kracht was.
+
+      Dit bedrijfsbeleid is standaard uitgeschakeld.</translation>
 <translation id="7902040092815978832">Numeriek toetsenbord weergeven voor wachtwoord</translation>
 <translation id="7912255076272890813">Toegestane typen apps/extensies configureren</translation>
 <translation id="7922358664346625612">Laatste tabblad open houden in Chrome.</translation>
@@ -4593,6 +4693,17 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="7956210013490975468">Configureert de systeemproxyservice voor <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7958537754689366707">Het wachtwoord moet elke twaalf uur worden opgegeven</translation>
 <translation id="7961779417826583251">Handhaving van Certificaattransparantie voor een lijst met certificeringsinstanties uitschakelen</translation>
+<translation id="7973609468423251675">Dit beleid is beëindigd en wordt verwijderd in <ph name="PRODUCT_OS_NAME" />-versie 85. Gebruik in plaats daarvan <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
+
+          Specificeert de tijdsduur zonder gebruikersinvoer waarna het scherm wordt gedimd als er op de batterij wordt gewerkt.
+
+          Als dit beleid is ingesteld op een waarde groter dan nul, wordt hiermee de tijd aangegeven dat de gebruiker inactief moet zijn voordat het scherm door <ph name="PRODUCT_OS_NAME" /> wordt gedimd.
+
+          Als dit beleid is ingesteld op nul, wordt het scherm niet door <ph name="PRODUCT_OS_NAME" /> gedimd als de gebruiker inactief is.
+
+          Als dit beleid niet is ingesteld, wordt er een standaard tijdsduur gebruikt.
+
+          De beleidswaarde moet worden gespecificeerd in milliseconden. De opgegeven waarden moeten kleiner dan of gelijk zijn aan de vertraging van de uitschakeling van het scherm (indien ingesteld) en van de inactieve vertraging.</translation>
 <translation id="7974114691960514888">Dit beleid wordt niet meer ondersteund.
           Maakt het gebruik van STUN en relayservers mogelijk bij het verbinding maken met een externe client.
 
@@ -4605,6 +4716,17 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="798856998567564266">Als je deze instelling inschakelt, kunnen bladwijzers worden toegevoegd, verwijderd of aangepast. Dit is ook de standaardinstelling wanneer dit beleid niet is ingesteld.
 
       Als je deze instelling uitschakelt, kunnen er geen bladwijzers worden toegevoegd, verwijderd of aangepast. Bestaande bladwijzers zijn nog steeds beschikbaar.</translation>
+<translation id="7991022023019679916">Dit beleid is beëindigd en wordt verwijderd in <ph name="PRODUCT_OS_NAME" />-versie 85. Gebruik in plaats daarvan <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
+
+          Specificeert de tijdsduur zonder gebruikersinvoer waarna het scherm wordt uitgeschakeld als er op netstroom wordt gewerkt.
+
+          Als dit beleid is ingesteld op een waarde groter dan nul, wordt hiermee de tijd aangegeven dat de gebruiker inactief moet zijn voordat het scherm door <ph name="PRODUCT_OS_NAME" /> wordt uitgeschakeld.
+
+          Als dit beleid is ingesteld op nul, wordt het scherm niet door <ph name="PRODUCT_OS_NAME" /> uitgeschakeld als de gebruiker inactief is.
+
+          Als dit beleid niet is ingesteld, wordt er een standaard tijdsduur gebruikt.
+
+          De beleidswaarde moet worden gespecificeerd in milliseconden. De opgegeven waarden moeten kleiner dan of gelijk zijn aan de inactieve vertraging.</translation>
 <translation id="7992136759457836904">Hiermee kun je aangeven of er virtuele machines mogen worden uitgevoerd met Chrome OS.
 
       Als het beleid is ingesteld op 'True, mogen virtuele machines worden uitgevoerd op het apparaat.
@@ -4735,6 +4857,13 @@ Als dit beleid niet is ingesteld, wordt het privacyscherm in eerste instantie ui
 <translation id="8176035528522326671">Toestaan dat Enterprise-gebruiker alleen primair gebruiker van meerdere profielen is (standaardgedrag voor beheerde Enterprise-gebruikers)</translation>
 <translation id="8183108371184777472">Lancering van browservenster onderdrukken</translation>
 <translation id="8186911565834244165">Gebruikersfeedback toestaan</translation>
+<translation id="8213770777756919897">Dit beleid is beëindigd en wordt verwijderd in <ph name="PRODUCT_OS_NAME" />-versie 85. Gebruik in plaats daarvan <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
+
+          Als dit beleid is ingesteld, specificeert het de actie die worden ondernomen door <ph name="PRODUCT_OS_NAME" /> als de gebruiker inactief is gedurende de tijdsduur die is opgegeven door de inactieve vertraging. Dit kan afzonderlijk worden geconfigureerd.
+
+          Als dit beleid niet is ingesteld, wordt de standaardactie uitgevoerd. De standaardactie is 'opschorten'.
+
+          Als de actie 'opschorten' is, kan <ph name="PRODUCT_OS_NAME" /> afzonderlijk worden geconfigureerd om het scherm wel of niet te vergrendelen voordat de opschorting wordt geactiveerd.</translation>
 <translation id="8214600119442850823">Hiermee wordt Wachtwoordmanager geconfigureerd.</translation>
 <translation id="8217516105848565518">Dit beleid is beëindigd. Gebruik in plaats daarvan RemoteAccessHostDomainList.</translation>
 <translation id="8244171102276095471">RC4-coderingssuites in TLS inschakelen</translation>
@@ -4804,6 +4933,11 @@ De aanbevolen manier om beleidsregels te configureren op Windows, is via GPO, ma
 <translation id="8331479227794770304">Plaktoetsen inschakelen</translation>
 <translation id="8339420913453596618">Tweede factor uitgeschakeld</translation>
 <translation id="8344454543174932833">Bladwijzers importeren uit standaardbrowser bij eerste uitvoering</translation>
+<translation id="8347993687936322631">Dit beleid is beëindigd en wordt verwijderd in <ph name="PRODUCT_OS_NAME" />-versie 85. Gebruik in plaats daarvan <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
+
+          Dit beleid levert een reservewaarde voor de specifiekere beleidsregels <ph name="IDLE_ACTION_AC_POLICY_NAME" /> en <ph name="IDLE_ACTION_BATTERY_POLICY_NAME" />. Als dit beleid is ingesteld, wordt de bijbehorende waarde gebruikt als het respectieve specifiekere beleid niet is ingesteld.
+
+          Als dit beleid niet is ingesteld, heeft dit geen invloed op het gedrag van de specifiekere beleidsregels.</translation>
 <translation id="8351446723835838047">Hiermee kun je een lijst met URL-patronen opgeven van sites die sleutels mogen genereren. Als een URL-patroon in 'KeygenBlockedForUrls' wordt vermeld, worden deze uitzonderingen overschreven.
 
           Als dit beleid niet is ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites. Deze vind je in het beleid 'DefaultKeygenSetting' (als dit is ingesteld) of in de persoonlijke configuratie van de gebruiker.
@@ -4956,6 +5090,15 @@ Dit beleid wordt verwijderd in M75.</translation>
       Als dit beleid wordt gebruikt, zijn alle printers beschikbaar voor de gebruiker, met uitzondering van de ID's die in dit beleid worden vermeld. De ID's moeten overeenkomen met het ID- of GUID-veld in het bestand dat is opgegeven in <ph name="BULK_PRINTERS_POLICY" />.
       </translation>
 <translation id="8587229956764455752">Het maken van nieuwe gebruikersaccounts toestaan</translation>
+<translation id="8591713876665299827">Dit beleid is beëindigd en wordt verwijderd in <ph name="PRODUCT_OS_NAME" />-versie 85. Gebruik in plaats daarvan <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
+
+          Specificeert de tijdsduur zonder gebruikersinvoer waarna de actie voor inactiviteit wordt uitgevoerd als er op netstroom wordt gewerkt.
+
+          Als dit beleid is ingesteld, specificeert het de tijdsduur dat de gebruiker inactief moet zijn voordat <ph name="PRODUCT_OS_NAME" /> de actie voor inactiviteit uitvoert. Dit kan afzonderlijk worden geconfigureerd.
+
+          Als dit beleid niet is ingesteld, wordt er een standaard tijdsduur gebruikt.
+
+          De beleidswaarde moet worden gespecificeerd in milliseconden.</translation>
 <translation id="8598350264853261122">Als het beleid is ingesteld op 'False', mogen niet-gelieerde gebruikers ARC niet gebruiken.
 
       Als het beleid niet is ingesteld of is ingesteld op 'True', mogen alle gebruikers ARC gebruiken (tenzij ARC op een andere manier is uitgeschakeld).

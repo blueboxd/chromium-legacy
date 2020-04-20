@@ -131,7 +131,7 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
     return nullptr;
   }
 
-  enum TraceCategory { kEnabled, kDisabled, kDevTools };
+  enum TraceCategory { kEnabled, kDisabled };
   enum ScopeContext { kMutatorThread, kConcurrentThread };
 
   // Trace a particular scope. Will emit a trace event and record the time in
@@ -182,7 +182,6 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
   using EnabledScope = InternalScope<kEnabled>;
   using ConcurrentScope = InternalScope<kDisabled, kConcurrentThread>;
   using EnabledConcurrentScope = InternalScope<kEnabled, kConcurrentThread>;
-  using DevToolsScope = InternalScope<kDevTools>;
 
   // BlinkGCInV8Scope keeps track of time spent in Blink's GC when called by V8.
   // This is necessary to avoid double-accounting of Blink's time when computing
@@ -395,11 +394,9 @@ ThreadHeapStatsCollector::InternalScope<trace_category,
                                         scope_category>::TraceCategory() {
   switch (trace_category) {
     case kEnabled:
-      return "blink_gc";
+      return "blink_gc,devtools.timeline";
     case kDisabled:
       return TRACE_DISABLED_BY_DEFAULT("blink_gc");
-    case kDevTools:
-      return "blink_gc,devtools.timeline";
   }
 }
 

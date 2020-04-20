@@ -643,12 +643,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   const Member<ScriptController> script_controller_;
   const Member<Editor> editor_;
-  const Member<SpellChecker> spell_checker_;
   const Member<FrameSelection> selection_;
   const Member<EventHandler> event_handler_;
   const Member<FrameConsole> console_;
-  const Member<InputMethodController> input_method_controller_;
-  const Member<TextSuggestionController> text_suggestion_controller_;
 
   int navigation_disable_count_;
   // TODO(dcheng): In theory, this could be replaced by checking the
@@ -749,21 +746,8 @@ inline Editor& LocalFrame::GetEditor() const {
   return *editor_;
 }
 
-inline SpellChecker& LocalFrame::GetSpellChecker() const {
-  return *spell_checker_;
-}
-
 inline FrameConsole& LocalFrame::Console() const {
   return *console_;
-}
-
-inline InputMethodController& LocalFrame::GetInputMethodController() const {
-  return *input_method_controller_;
-}
-
-inline TextSuggestionController& LocalFrame::GetTextSuggestionController()
-    const {
-  return *text_suggestion_controller_;
 }
 
 inline bool LocalFrame::InViewSourceMode() const {

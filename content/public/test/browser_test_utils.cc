@@ -2800,8 +2800,8 @@ InputMsgWatcher::InputMsgWatcher(RenderWidgetHost* render_widget_host,
                                  blink::WebInputEvent::Type type)
     : render_widget_host_(render_widget_host),
       wait_for_type_(type),
-      ack_result_(INPUT_EVENT_ACK_STATE_UNKNOWN),
-      ack_source_(InputEventAckSource::UNKNOWN) {
+      ack_result_(blink::mojom::InputEventResultState::kUnknown),
+      ack_source_(blink::mojom::InputEventResultSource::kUnknown) {
   render_widget_host->AddInputEventObserver(this);
 }
 
@@ -2809,9 +2809,10 @@ InputMsgWatcher::~InputMsgWatcher() {
   render_widget_host_->RemoveInputEventObserver(this);
 }
 
-void InputMsgWatcher::OnInputEventAck(InputEventAckSource ack_source,
-                                      InputEventAckState ack_state,
-                                      const blink::WebInputEvent& event) {
+void InputMsgWatcher::OnInputEventAck(
+    blink::mojom::InputEventResultSource ack_source,
+    blink::mojom::InputEventResultState ack_state,
+    const blink::WebInputEvent& event) {
   if (event.GetType() == wait_for_type_) {
     ack_result_ = ack_state;
     ack_source_ = ack_source;
@@ -2821,10 +2822,10 @@ void InputMsgWatcher::OnInputEventAck(InputEventAckSource ack_source,
 }
 
 bool InputMsgWatcher::HasReceivedAck() const {
-  return ack_result_ != INPUT_EVENT_ACK_STATE_UNKNOWN;
+  return ack_result_ != blink::mojom::InputEventResultState::kUnknown;
 }
 
-InputEventAckState InputMsgWatcher::WaitForAck() {
+blink::mojom::InputEventResultState InputMsgWatcher::WaitForAck() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::RunLoop run_loop;
   quit_closure_ = run_loop.QuitClosure();
@@ -2832,7 +2833,8 @@ InputEventAckState InputMsgWatcher::WaitForAck() {
   return ack_result_;
 }
 
-InputEventAckState InputMsgWatcher::GetAckStateWaitIfNecessary() {
+blink::mojom::InputEventResultState
+InputMsgWatcher::GetAckStateWaitIfNecessary() {
   if (HasReceivedAck())
     return ack_result_;
   return WaitForAck();
@@ -2850,8 +2852,10 @@ namespace {
 InputEventAckWaiter::InputEventAckPredicate EventAckHasType(
     blink::WebInputEvent::Type type) {
   return base::BindRepeating(
-      [](blink::WebInputEvent::Type expected_type, InputEventAckSource source,
-         InputEventAckState state, const blink::WebInputEvent& event) {
+      [](blink::WebInputEvent::Type expected_type,
+         blink::mojom::InputEventResultSource source,
+         blink::mojom::InputEventResultState state,
+         const blink::WebInputEvent& event) {
         return event.GetType() == expected_type;
       },
       type);
@@ -2879,9 +2883,10 @@ void InputEventAckWaiter::Reset() {
   quit_closure_ = base::OnceClosure();
 }
 
-void InputEventAckWaiter::OnInputEventAck(InputEventAckSource source,
-                                          InputEventAckState state,
-                                          const blink::WebInputEvent& event) {
+void InputEventAckWaiter::OnInputEventAck(
+    blink::mojom::InputEventResultSource source,
+    blink::mojom::InputEventResultState state,
+    const blink::WebInputEvent& event) {
   if (predicate_.Run(source, state, event)) {
     event_received_ = true;
     if (quit_closure_)

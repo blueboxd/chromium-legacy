@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_timing.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/loader/document_load_timing.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
@@ -151,7 +152,7 @@ AtomicString PerformanceNavigationTiming::initiatorType() const {
 
 bool PerformanceNavigationTiming::GetAllowRedirectDetails() const {
   blink::ExecutionContext* context =
-      GetFrame() ? GetFrame()->GetDocument()->ToExecutionContext() : nullptr;
+      GetFrame() ? GetFrame()->DomWindow() : nullptr;
   const blink::SecurityOrigin* security_origin = nullptr;
   if (context)
     security_origin = context->GetSecurityOrigin();

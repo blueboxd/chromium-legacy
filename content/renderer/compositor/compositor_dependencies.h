@@ -47,12 +47,7 @@ class CONTENT_EXPORT CompositorDependencies {
   virtual bool IsGpuMemoryBufferCompositorResourcesEnabled() = 0;
   virtual bool IsElasticOverscrollEnabled() = 0;
   virtual bool IsUseZoomForDSFEnabled() = 0;
-  virtual scoped_refptr<base::SingleThreadTaskRunner>
-  GetCompositorMainThreadTaskRunner() = 0;
-  // Returns null if the compositor is in single-threaded mode (ie. there is no
-  // compositor thread).
-  virtual scoped_refptr<base::SingleThreadTaskRunner>
-  GetCompositorImplThreadTaskRunner() = 0;
+  virtual bool IsSingleThreaded() = 0;
   virtual scoped_refptr<base::SingleThreadTaskRunner>
   GetCleanupTaskRunner() = 0;
   virtual blink::scheduler::WebThreadScheduler* GetWebMainThreadScheduler() = 0;

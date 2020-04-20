@@ -27,21 +27,16 @@ developer will not remove it earlier than this process specifies.
 
 ## The Process
 
-After each milestone's branch point:
+The logic in //tools/flags/generate_unexpire_flags.py implements most of this.
+At any given time, if the current value of MAJOR in //chrome/version is $MSTONE,
+the two previous milestones ($MSTONE-1 and $MSTONE-2) are considered recent.
 
-1. The flags team chooses a set of flags to begin expiring, from the list
-   produced by `tools/flags/list_flags.py --expired-by $MSTONE`. In the steady
-   state, when there is not a big backlog of flags to remove, this set will be
-   the entire list of flags that are `expired-by $MSTONE`.
-2. The flags team hides the flags in this set by default from `chrome://flags`,
-   and adds a flag `temporary-unexpire-flags-m$MSTONE` and a base::Feature
-   `TemporaryUnexpireFlagsM$MSTONE` which unhide these flags. When hidden from
-   `chrome://flags`, all the expired flags will behave as if unset, so users
-   cannot be stuck with a non-default setting of a hidden flag.
-3. After two further milestones have passed (i.e. at $MSTONE+2 branch), the
-   temporary unhide flag & feature will be removed (meaning the flags are now
-   permanently invisible), and TPMs will file bugs against the listed owners to
-   remove the flags and clean up the backing code.
+Then:
+1) Flags whose expiration is $MSTONE or higher are not expired
+2) Flags whose expiration is $MSTONE-3 or lower are unconditionally expired
+3) Flags whose expiration is $MSTONE-1 or $MSTONE-2 are expired by default, but
+   can be temporarily unexpired via flags named
+   "temporary-unexpire-flags-M$MSTONE".
 
 There are other elements of this process not described here, such as emails to
 flags-dev@ tracking the status of the process.

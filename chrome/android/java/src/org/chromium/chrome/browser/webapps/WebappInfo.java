@@ -15,7 +15,6 @@ import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.webapps.WebApkExtras.ShortcutItem;
 import org.chromium.chrome.browser.webapps.WebApkInfo.ShareTarget;
-import org.chromium.webapk.lib.common.WebApkConstants;
 
 import java.util.List;
 import java.util.Map;
@@ -227,34 +226,6 @@ public class WebappInfo {
     @NonNull
     public List<ShortcutItem> shortcutItems() {
         return mWebApkExtras.shortcutItems;
-    }
-
-    /**
-     * Sets extras on an Intent that will launch a WebappActivity.
-     * @param intent Intent that will be used to launch a WebappActivity.
-     */
-    public void setWebappIntentExtras(Intent intent) {
-        intent.putExtra(ShortcutHelper.EXTRA_ID, id());
-        intent.putExtra(ShortcutHelper.EXTRA_URL, url());
-        intent.putExtra(ShortcutHelper.EXTRA_FORCE_NAVIGATION, shouldForceNavigation());
-        intent.putExtra(ShortcutHelper.EXTRA_SOURCE, source());
-        if (isForWebApk()) {
-            intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, webApkPackageName());
-            intent.putExtra(
-                    WebApkConstants.EXTRA_SPLASH_PROVIDED_BY_WEBAPK, isSplashProvidedByWebApk());
-        } else {
-            intent.putExtra(ShortcutHelper.EXTRA_SCOPE, scopeUrl());
-            intent.putExtra(ShortcutHelper.EXTRA_ICON, icon().encoded());
-            intent.putExtra(ShortcutHelper.EXTRA_VERSION, ShortcutHelper.WEBAPP_SHORTCUT_VERSION);
-            intent.putExtra(ShortcutHelper.EXTRA_NAME, name());
-            intent.putExtra(ShortcutHelper.EXTRA_SHORT_NAME, shortName());
-            intent.putExtra(ShortcutHelper.EXTRA_DISPLAY_MODE, displayMode());
-            intent.putExtra(ShortcutHelper.EXTRA_ORIENTATION, orientation());
-            intent.putExtra(ShortcutHelper.EXTRA_THEME_COLOR, toolbarColor());
-            intent.putExtra(ShortcutHelper.EXTRA_BACKGROUND_COLOR, backgroundColor());
-            intent.putExtra(ShortcutHelper.EXTRA_IS_ICON_GENERATED, isIconGenerated());
-            intent.putExtra(ShortcutHelper.EXTRA_IS_ICON_ADAPTIVE, isIconAdaptive());
-        }
     }
 
     /**

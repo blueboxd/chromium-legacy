@@ -534,7 +534,8 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
       RenderFrameHostImpl* rfh,
       bool replace_entry,
       bool previous_document_was_activated,
-      bool is_renderer_initiated);
+      bool is_renderer_initiated,
+      ukm::SourceId previous_page_load_ukm_source_id);
 
   // This function sets all same document entries with the same value
   // of skippable flag. This is to avoid back button abuse by inserting

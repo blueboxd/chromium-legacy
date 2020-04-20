@@ -200,7 +200,7 @@ bool OverscrollControllerAndroid::WillHandleGestureEvent(
 
 void OverscrollControllerAndroid::OnGestureEventAck(
     const blink::WebGestureEvent& event,
-    InputEventAckState ack_result) {
+    blink::mojom::InputEventResultState ack_result) {
   if (!enabled_)
     return;
 
@@ -215,7 +215,7 @@ void OverscrollControllerAndroid::OnGestureEventAck(
       refresh_effect_) {
     // The effect should only be allowed if the scroll events go unconsumed.
     if (refresh_effect_->IsAwaitingScrollUpdateAck() &&
-        ack_result == INPUT_EVENT_ACK_STATE_CONSUMED) {
+        ack_result == blink::mojom::InputEventResultState::kConsumed) {
       refresh_effect_->Reset();
     }
   }

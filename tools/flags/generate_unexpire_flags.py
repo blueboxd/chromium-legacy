@@ -159,9 +159,12 @@ def main():
     raise ValueError('Can\'t find or understand //chrome/VERSION')
 
   progname = sys.argv[0]
-  update_file_if_stale(sys.argv[1], gen_features_impl(progname, mstone))
-  update_file_if_stale(sys.argv[2], gen_features_header(progname, mstone))
-  update_file_if_stale(sys.argv[3], gen_flags_fragment(progname, mstone))
+
+  # Note the mstone - 1 here: the listed expiration mstone is the last mstone in
+  # which that flag is present, not the first mstone in which it is not present.
+  update_file_if_stale(sys.argv[1], gen_features_impl(progname, mstone - 1))
+  update_file_if_stale(sys.argv[2], gen_features_header(progname, mstone - 1))
+  update_file_if_stale(sys.argv[3], gen_flags_fragment(progname, mstone - 1))
 
 
 if __name__ == '__main__':

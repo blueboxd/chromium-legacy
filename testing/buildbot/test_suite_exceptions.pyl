@@ -16,13 +16,6 @@
 # The goal is to drive the number of exceptions to zero, to make all
 # the bots behave similarly.
 {
-  'accessibility_unittests': {
-    'remove_from': [
-      # crbug.com/1067355
-      'Fuchsia ARM64',
-      'Fuchsia x64',
-    ],
-  },
   'android_browsertests': {
     'modifications': {
       'android-pie-arm64-rel': {
@@ -597,7 +590,6 @@
     },
     'remove_from': [
       'Fuchsia ARM64', # https://crbug.com/1046552
-      'Fuchsia x64', # https://crbug.com/1046552
       'fuchsia-fyi-arm64-rel',
     ],
   },
@@ -1156,13 +1148,6 @@
       # Can't run on MSAN because gl_unittests_ozone uses the hardware driver,
       # which isn't instrumented.
       'Linux ChromiumOS MSan Tests',
-    ],
-  },
-  'google_apis_unittests': {
-    'remove_from': [
-      # crbug.com/1067355
-      'Fuchsia ARM64',
-      'Fuchsia x64',
     ],
   },
   'gpu_process_launch_tests': {
@@ -2489,13 +2474,6 @@
         ],
       },
     },
-  },
-  'wtf_unittests': {
-    'remove_from': [
-      # crbug.com/1067355
-      'Fuchsia ARM64',
-      'Fuchsia x64',
-    ],
   },
   'xr_browser_tests': {
     'remove_from': [

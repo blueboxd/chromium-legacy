@@ -39,7 +39,7 @@ std::unique_ptr<infobars::InfoBar> ChromeTranslateClient::CreateInfoBar(
 TranslateCompactInfoBar::TranslateCompactInfoBar(
     std::unique_ptr<translate::TranslateInfoBarDelegate> delegate)
     : InfoBarAndroid(std::move(delegate)), action_flags_(FLAG_NONE) {
-  GetDelegate()->SetObserver(this);
+  GetDelegate()->AddObserver(this);
 
   // Flip the translate bit if auto translate is enabled.
   if (GetDelegate()->translate_step() == translate::TRANSLATE_STEP_TRANSLATING)
@@ -47,7 +47,7 @@ TranslateCompactInfoBar::TranslateCompactInfoBar(
 }
 
 TranslateCompactInfoBar::~TranslateCompactInfoBar() {
-  GetDelegate()->SetObserver(nullptr);
+  GetDelegate()->RemoveObserver(this);
 }
 
 ScopedJavaLocalRef<jobject> TranslateCompactInfoBar::CreateRenderInfoBar(
@@ -225,5 +225,5 @@ bool TranslateCompactInfoBar::IsDeclinedByUser() {
 void TranslateCompactInfoBar::OnTranslateInfoBarDelegateDestroyed(
     translate::TranslateInfoBarDelegate* delegate) {
   DCHECK_EQ(GetDelegate(), delegate);
-  GetDelegate()->SetObserver(nullptr);
+  GetDelegate()->RemoveObserver(this);
 }

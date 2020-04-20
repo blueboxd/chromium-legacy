@@ -12,17 +12,9 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_config_values.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_type_info.h"
 #include "url/gurl.h"
 
-namespace net {
-class ProxyServer;
-}
-
 namespace data_reduction_proxy {
-
-class DataReductionProxyServer;
 
 // The data_reduction_proxy::params namespace is a collection of methods to
 // determine the operating parameters of the Data Reduction Proxy as specified
@@ -85,12 +77,6 @@ int GetFieldTrialParameterAsInteger(const std::string& group,
                                     int default_value,
                                     int min_value);
 
-// Returns true if the list of Data Reduction Proxies to use for HTTP requests
-// has been overridden on the command line, and if so, returns the override
-// proxy list in |override_proxies_for_http|.
-bool GetOverrideProxiesForHttpFromCommandLine(
-    std::vector<DataReductionProxyServer>* override_proxies_for_http);
-
 // Returns the server experiments option name. This name is used in the request
 // headers to the data saver proxy. This name is also used to set the experiment
 // name using finch trial.
@@ -109,45 +95,8 @@ bool IsEnabledWithNetworkService();
 // check probe.
 const char* GetDiscardCanaryCheckResultParam();
 
-// Helper function to locate |proxy_server| in |proxies| if it exists. This
-// function is exposed publicly so that DataReductionProxyParams can use it.
-base::Optional<DataReductionProxyTypeInfo> FindConfiguredProxyInVector(
-    const std::vector<DataReductionProxyServer>& proxies,
-    const net::ProxyServer& proxy_server);
 
 }  // namespace params
-
-// Provides initialization parameters. Proxy origins, and the secure proxy
-// check url are are taken from flags if available and from preprocessor
-// constants otherwise. The DataReductionProxySettings class and others use this
-// class to determine the necessary DNS names to configure use of the Data
-// Reduction Proxy.
-class DataReductionProxyParams : public DataReductionProxyConfigValues {
- public:
-  // Constructs configuration parameters. A standard configuration has a primary
-  // proxy, and a fallback proxy for HTTP traffic.
-  DataReductionProxyParams();
-
-  // Updates |proxies_for_http_|.
-  void SetProxiesForHttpForTesting(
-      const std::vector<DataReductionProxyServer>& proxies_for_http);
-
-  ~DataReductionProxyParams() override;
-
-  const std::vector<DataReductionProxyServer>& proxies_for_http()
-      const override;
-
-  // Finds the first proxy in |proxies_for_http()| that matches |proxy_server|
-  // if any exist.
-  base::Optional<DataReductionProxyTypeInfo> FindConfiguredDataReductionProxy(
-      const net::ProxyServer& proxy_server) const override;
-  net::ProxyList GetAllConfiguredProxies() const override;
-
- private:
-  std::vector<DataReductionProxyServer> proxies_for_http_;
-
-  DISALLOW_COPY_AND_ASSIGN(DataReductionProxyParams);
-};
 
 }  // namespace data_reduction_proxy
 

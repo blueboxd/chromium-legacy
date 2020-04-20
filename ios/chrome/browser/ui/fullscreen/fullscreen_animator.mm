@@ -16,6 +16,10 @@
 #error "This file requires ARC support."
 #endif
 
+CGFloat GetFinalFullscreenProgressForAnimation(FullscreenAnimatorStyle style) {
+  return style == FullscreenAnimatorStyle::ENTER_FULLSCREEN ? 0.0 : 1.0;
+}
+
 @interface FullscreenAnimator () {
   // The bezier backing the timing curve.
   std::unique_ptr<gfx::CubicBezier> _bezier;
@@ -44,8 +48,7 @@
     DCHECK_LE(startProgress, 1.0);
     _style = style;
     _startProgress = startProgress;
-    _finalProgress =
-        _style == FullscreenAnimatorStyle::ENTER_FULLSCREEN ? 0.0 : 1.0;
+    _finalProgress = GetFinalFullscreenProgressForAnimation(_style);
     _bezier = std::make_unique<gfx::CubicBezier>(
         timingParams.controlPoint1.x, timingParams.controlPoint1.y,
         timingParams.controlPoint2.x, timingParams.controlPoint2.y);

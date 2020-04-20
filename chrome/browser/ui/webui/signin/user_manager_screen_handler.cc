@@ -513,8 +513,8 @@ void UserManagerScreenHandler::HandleRemoveUserWarningLoadStats(
   } else {
     g_browser_process->profile_manager()->LoadProfileByPath(
         profile_path, false,
-        base::Bind(&UserManagerScreenHandler::GatherStatistics,
-                   weak_ptr_factory_.GetWeakPtr(), start_time));
+        base::BindOnce(&UserManagerScreenHandler::GatherStatistics,
+                       weak_ptr_factory_.GetWeakPtr(), start_time));
   }
 }
 

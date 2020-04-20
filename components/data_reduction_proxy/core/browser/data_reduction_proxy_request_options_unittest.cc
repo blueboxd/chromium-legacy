@@ -20,7 +20,6 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/base/auth.h"
@@ -148,9 +147,6 @@ class DataReductionProxyRequestOptionsTest : public testing::Test {
     callback_headers_ = headers;
   }
 
-  TestDataReductionProxyParams* params() {
-    return test_context_->config()->test_params();
-  }
 
   TestDataReductionProxyRequestOptions* request_options() {
     return request_options_.get();

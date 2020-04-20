@@ -81,7 +81,7 @@ class TouchEmulatorTest : public testing::Test,
     EXPECT_EQ(expected_dispatch_type, event.dispatch_type);
     if (ack_touches_synchronously_) {
       emulator()->HandleTouchEventAck(
-          event, INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+          event, blink::mojom::InputEventResultState::kNoConsumerExists);
     }
   }
 
@@ -224,7 +224,7 @@ class TouchEmulatorTest : public testing::Test,
 
       // Touch event is forwarded, ack should not be handled by emulator.
       EXPECT_FALSE(emulator()->HandleTouchEventAck(
-          event, INPUT_EVENT_ACK_STATE_CONSUMED));
+          event, blink::mojom::InputEventResultState::kConsumed));
     } else {
       touch_events_to_ack_.push_back(event);
     }
@@ -247,7 +247,7 @@ class TouchEmulatorTest : public testing::Test,
     touch_events_to_ack_.erase(touch_events_to_ack_.begin());
     // Emulator should not handle ack from native stream.
     EXPECT_FALSE(emulator()->HandleTouchEventAck(
-                 event, INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS));
+        event, blink::mojom::InputEventResultState::kNoConsumerExists));
   }
 
   void DisableSynchronousTouchAck() { ack_touches_synchronously_ = false; }
@@ -565,7 +565,7 @@ TEST_F(TouchEmulatorTest, MultipleTouchStreamsLateEnable) {
   WebTouchEvent event = MakeTouchEvent(WebInputEvent::kTouchEnd,
                                        WebTouchPoint::kStateReleased, 10, 10);
   EXPECT_FALSE(emulator()->HandleTouchEventAck(
-      event, INPUT_EVENT_ACK_STATE_CONSUMED));
+      event, blink::mojom::InputEventResultState::kConsumed));
 
   MouseDown(100, 200);
   EXPECT_EQ("TouchStart GestureTapDown", ExpectedEvents());

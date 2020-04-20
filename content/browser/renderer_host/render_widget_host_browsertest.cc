@@ -75,8 +75,8 @@ class TestInputEventObserver : public RenderWidgetHost::InputEventObserver {
     dispatched_events_.push_back(event.GetType());
   }
 
-  void OnInputEventAck(InputEventAckSource source,
-                       InputEventAckState state,
+  void OnInputEventAck(blink::mojom::InputEventResultSource source,
+                       blink::mojom::InputEventResultState state,
                        const blink::WebInputEvent& event) override {
     if (blink::WebInputEvent::IsTouchEventType(event.GetType()))
       acked_touch_event_type_ = event.GetType();

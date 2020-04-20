@@ -32,7 +32,7 @@
 #include "cc/layers/layer_collections.h"
 #include "cc/metrics/event_metrics.h"
 #include "cc/metrics/events_metrics_manager.h"
-#include "cc/metrics/frame_sequence_tracker.h"
+#include "cc/metrics/frame_sequence_tracker_collection.h"
 #include "cc/paint/discardable_image_map.h"
 #include "cc/paint/paint_worklet_job.h"
 #include "cc/resources/ui_resource_client.h"
@@ -84,6 +84,7 @@ class DebugRectHistory;
 class EvictionTilePriorityQueue;
 class FrameRateCounter;
 class ImageAnimationController;
+class LCDTextMetricsReporter;
 class LayerImpl;
 class LayerTreeFrameSink;
 class LayerTreeImpl;
@@ -1362,6 +1363,8 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   DeJellyState de_jelly_state_;
 
   EventsMetricsManager events_metrics_manager_;
+
+  std::unique_ptr<LCDTextMetricsReporter> lcd_text_metrics_reporter_;
 
   // Must be the last member to ensure this is destroyed first in the
   // destruction order and invalidates all weak pointers.

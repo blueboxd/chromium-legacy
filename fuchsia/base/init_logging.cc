@@ -5,6 +5,7 @@
 #include "fuchsia/base/init_logging.h"
 
 #include "base/command_line.h"
+#include "base/logging.h"
 
 namespace cr_fuchsia {
 namespace {

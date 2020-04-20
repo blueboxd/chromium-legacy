@@ -6,9 +6,9 @@
 #include "base/test/scoped_feature_list.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
-#include "content/public/common/input_event_ack_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
 #include "ui/events/blink/blink_features.h"
 
 using blink::WebGestureEvent;

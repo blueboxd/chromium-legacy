@@ -117,9 +117,6 @@ void ToCompositorTransformOperations(
             TransformationMatrix::ToSkMatrix44(m));
         break;
       }
-      case TransformOperation::kIdentity:
-        out_transform_operations->AppendIdentity();
-        break;
       default:
         NOTREACHED();
         break;

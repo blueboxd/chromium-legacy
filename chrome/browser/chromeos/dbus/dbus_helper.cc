@@ -20,6 +20,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/dlcservice/dlcservice_client.h"
 #include "chromeos/dbus/initialize_dbus_client.h"
+#include "chromeos/dbus/ip_peripheral/ip_peripheral_service_client.h"
 #include "chromeos/dbus/kerberos/kerberos_client.h"
 #include "chromeos/dbus/machine_learning/machine_learning_client.h"
 #include "chromeos/dbus/media_analytics/media_analytics_client.h"
@@ -67,6 +68,7 @@ void InitializeDBus() {
   InitializeDBusClient<CryptohomeClient>(bus);
   InitializeDBusClient<CupsProxyClient>(bus);
   InitializeDBusClient<DlcserviceClient>(bus);
+  InitializeDBusClient<IpPeripheralServiceClient>(bus);
   InitializeDBusClient<KerberosClient>(bus);
   InitializeDBusClient<MachineLearningClient>(bus);
   InitializeDBusClient<MediaAnalyticsClient>(bus);
@@ -106,6 +108,7 @@ void ShutdownDBus() {
   MediaAnalyticsClient::Shutdown();
   MachineLearningClient::Shutdown();
   KerberosClient::Shutdown();
+  IpPeripheralServiceClient::Shutdown();
   DlcserviceClient::Shutdown();
   CupsProxyClient::Shutdown();
   CryptohomeClient::Shutdown();

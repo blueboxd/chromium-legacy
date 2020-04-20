@@ -7,6 +7,7 @@ package org.chromium.components.autofill;
 import android.graphics.RectF;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -136,7 +137,8 @@ public class FormFieldData {
     }
 
     @CalledByNative
-    private static FormFieldData createFormFieldData(String name, String label, String value,
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    public static FormFieldData createFormFieldData(String name, String label, String value,
             String autocompleteAttr, boolean shouldAutocomplete, String placeholder, String type,
             String id, String[] optionValues, String[] optionContents, boolean isCheckField,
             boolean isChecked, int maxLength, String heuristicType, float left, float top,

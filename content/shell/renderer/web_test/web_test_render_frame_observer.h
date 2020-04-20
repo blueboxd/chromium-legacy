@@ -36,7 +36,7 @@ class WebTestRenderFrameObserver : public RenderFrameObserver,
   void SetTestConfiguration(mojom::ShellTestConfigurationPtr config) override;
   void ReplicateTestConfiguration(
       mojom::ShellTestConfigurationPtr config) override;
-  void SetupSecondaryRenderer() override;
+  void SetupRendererProcessForNonTestWindow() override;
   void Reset() override;
   void TestFinishedInSecondaryRenderer() override;
   void LayoutDumpCompleted(const std::string& completed_layout_dump) override;

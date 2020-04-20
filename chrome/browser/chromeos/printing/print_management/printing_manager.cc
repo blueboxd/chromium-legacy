@@ -30,13 +30,12 @@ void PrintingManager::GetPrintJobs(GetPrintJobsCallback callback) {
 void PrintingManager::OnPrintJobsRetrieved(
     GetPrintJobsCallback callback,
     bool success,
-    std::unique_ptr<std::vector<chromeos::printing::proto::PrintJobInfo>>
+    std::vector<chromeos::printing::proto::PrintJobInfo>
         print_job_info_protos) {
   std::vector<mojom::PrintJobInfoPtr> print_job_infos;
 
   if (success) {
-    DCHECK(print_job_info_protos);
-    for (const auto& print_job_info : *print_job_info_protos) {
+    for (const auto& print_job_info : print_job_info_protos) {
       print_job_infos.push_back(PrintJobProtoToMojom(print_job_info));
     }
   }

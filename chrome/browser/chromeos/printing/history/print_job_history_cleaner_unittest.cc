@@ -80,12 +80,11 @@ class PrintJobHistoryCleanerTest : public ::testing::Test {
     return entries_;
   }
 
-  void OnPrintJobsRetrieved(
-      base::RepeatingClosure run_loop_closure,
-      bool success,
-      std::unique_ptr<std::vector<PrintJobInfo>> entries) {
+  void OnPrintJobsRetrieved(base::RepeatingClosure run_loop_closure,
+                            bool success,
+                            std::vector<PrintJobInfo> entries) {
     EXPECT_TRUE(success);
-    entries_ = *entries;
+    entries_ = std::move(entries);
     run_loop_closure.Run();
   }
 

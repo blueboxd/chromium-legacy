@@ -5,8 +5,6 @@
 #ifndef BASE_CHECK_OP_H_
 #define BASE_CHECK_OP_H_
 
-#include <string.h>
-
 #include <cstddef>
 #include <type_traits>
 
@@ -33,7 +31,10 @@ namespace logging {
 // Caller takes ownership of the returned string.
 BASE_EXPORT char* CheckOpValueStr(int v);
 BASE_EXPORT char* CheckOpValueStr(unsigned v);
+BASE_EXPORT char* CheckOpValueStr(long v);
 BASE_EXPORT char* CheckOpValueStr(unsigned long v);
+BASE_EXPORT char* CheckOpValueStr(long long v);
+BASE_EXPORT char* CheckOpValueStr(unsigned long long v);
 BASE_EXPORT char* CheckOpValueStr(const void* v);
 BASE_EXPORT char* CheckOpValueStr(std::nullptr_t v);
 BASE_EXPORT char* CheckOpValueStr(double v);
@@ -73,7 +74,8 @@ inline typename std::enable_if<
         base::internal::SupportsToString<const T&>::value,
     char*>::type
 CheckOpValueStr(const T& v) {
-  return strdup(v.ToString().c_str());
+  // .ToString() may not return a std::string, e.g. blink::WTF::String.
+  return CheckOpValueStr(v.ToString());
 }
 
 // Provide an overload for functions and function pointers. Function pointers

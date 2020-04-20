@@ -54,6 +54,7 @@
 <translation id="1331212799747679585">อัปเดต Chrome ไม่ได้ ตัวเลือกอื่นๆ</translation>
 <translation id="1332501820983677155">แป้นพิมพ์ลัดสำหรับฟีเจอร์ของ Google Chrome</translation>
 <translation id="1360432990279830238">ออกจากระบบและปิดการซิงค์ไหม</translation>
+<translation id="1364532808393826295"><ph name="APP_NAME" /> - <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">เพิ่มเว็บไซต์ <ph name="SITE_NAME" /> แล้ว</translation>
 <translation id="1373696734384179344">หน่วยความจำไม่เพียงพอที่จะดาวน์โหลดเนื้อหาที่เลือก</translation>
 <translation id="1376578503827013741">กำลังประมวลผล…</translation>
@@ -140,6 +141,7 @@
 <translation id="2017836877785168846">ล้างประวัติการเข้าชมและการเติมข้อความอัตโนมัติในแถบที่อยู่เว็บ</translation>
 <translation id="2021896219286479412">ส่วนควบคุมเว็บไซต์แบบเต็มหน้าจอ</translation>
 <translation id="2025115093177348061">Augmented Reality</translation>
+<translation id="2030769033451695672">แตะเพื่อกลับไปที่ <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2038563949887743358">เปิดการขอเว็บไซต์เดสก์ท็อป</translation>
 <translation id="2041019821020695769">หากต้องการให้ Chrome ส่งการแจ้งเตือนให้คุณ ให้เปิดการแจ้งเตือนใน<ph name="BEGIN_LINK" />การตั้งค่า Android<ph name="END_LINK" /> ด้วย</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> มีข้อมูลอยู่ใน Chrome ด้วย</translation>
@@ -301,6 +303,7 @@
 <translation id="3207960819495026254">บุ๊กมาร์กแล้ว</translation>
 <translation id="3211426585530211793">ลบ <ph name="ITEM_TITLE" /> แล้ว</translation>
 <translation id="321773570071367578">หากคุณลืมรหัสผ่านหรือต้องการเปลี่ยนการตั้งค่านี้ ให้<ph name="BEGIN_LINK" />รีเซ็ตการซิงค์<ph name="END_LINK" /></translation>
+<translation id="3223655101706843289">การดำเนินการนี้จะล้างข้อมูลและคุกกี้ทั้งหมดที่ <ph name="ORIGIN" /> จัดเก็บไว้ รวมถึงแอปของต้นทางนี้ในหน้าจอหลัก</translation>
 <translation id="3227137524299004712">ไมโครโฟน</translation>
 <translation id="3232754137068452469">เว็บแอป</translation>
 <translation id="3236059992281584593">เหลือ 1 นาที</translation>
@@ -535,6 +538,7 @@
 <translation id="4943872375798546930">ไม่มีผลการค้นหา</translation>
 <translation id="4961107849584082341">แปลหน้านี้เป็นภาษาใดก็ได้</translation>
 <translation id="4962975101802056554">เพิกถอนสิทธิ์ทั้งหมดสำหรับอุปกรณ์</translation>
+<translation id="4964199952259983386">หากต้องการให้ Chrome ใช้ AR ให้เปิดกล้องใน<ph name="BEGIN_LINK" />การตั้งค่า Android<ph name="END_LINK" /> ด้วย</translation>
 <translation id="4970824347203572753">ไม่พร้อมใช้งานในประเทศของคุณ</translation>
 <translation id="497421865427891073">ไปข้างหน้า</translation>
 <translation id="4988210275050210843">กำลังดาวน์โหลดไฟล์ (<ph name="MEGABYTES" />)</translation>
@@ -634,6 +638,7 @@
 <translation id="5684874026226664614">อ๊ะ หน้านี้ไม่สามารถแปลได้</translation>
 <translation id="5686790454216892815">ชื่อไฟล์ยาวเกินไป</translation>
 <translation id="5689516760719285838">ตำแหน่ง</translation>
+<translation id="5690795753582697420">กล้องปิดอยู่ในการตั้งค่า Android</translation>
 <translation id="5694049548840660018">กลับสู่หน้าแรกได้ง่ายๆ</translation>
 <translation id="569536719314091526">แปลหน้านี้เป็นภาษาใดก็ได้จากปุ่มตัวเลือกเพิ่มเติม</translation>
 <translation id="5710871682236653961">ถามก่อนที่จะอนุญาตให้เว็บไซต์ส่งและรับข้อมูลเมื่อคุณแตะอุปกรณ์ NFC (แนะนำ)</translation>
@@ -665,6 +670,7 @@
 <translation id="5876056640971328065">หยุดวิดีโอชั่วคราว</translation>
 <translation id="5884076754568147479">Google จะได้รับ URL และเนื้อหาของเว็บไซต์ต่างๆ ที่คุณใช้งาน Assistant ด้วย รวมถึงข้อมูลที่คุณส่งผ่าน Assistant เพื่อช่วยทำงานที่ต้องการให้เสร็จสิ้น</translation>
 <translation id="5919204609460789179">อัปเดต <ph name="PRODUCT_NAME" /> เพื่อเริ่มซิงค์</translation>
+<translation id="5922853908706496913">กำลังแชร์หน้าจอ</translation>
 <translation id="5937580074298050696">ประหยัดได้ <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">รีเซ็ต</translation>
 <translation id="5942872142862698679">กำลังใช้ Google ในการค้นหา</translation>
@@ -875,6 +881,7 @@
 <translation id="751961395872307827">เชื่อมต่อเว็บไซต์ไม่ได้</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7542481630195938534">รับคำแนะนำไม่ได้</translation>
+<translation id="7554752735887601236">มีเว็บไซต์กำลังใช้ไมโครโฟน</translation>
 <translation id="7559975015014302720">โหมด Lite ปิดอยู่</translation>
 <translation id="7562080006725997899">กำลังล้างข้อมูลการท่องเว็บ</translation>
 <translation id="756809126120519699">ล้างข้อมูล Chrome แล้ว</translation>
@@ -911,7 +918,9 @@
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 และอีก <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> วิธี}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 และอีก <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> วิธี}}</translation>
 <translation id="7791543448312431591">เพิ่ม</translation>
 <translation id="780301667611848630">ไม่ ขอบคุณ</translation>
+<translation id="7804248752222191302">มีเว็บไซต์กำลังใช้กล้อง</translation>
 <translation id="7810647596859435254">เปิดด้วย…</translation>
+<translation id="7817023149356982970">คุณจะออกจากระบบของเว็บไซต์นี้</translation>
 <translation id="7821588508402923572">การประหยัดอินเทอร์เน็ตของคุณจะแสดงที่นี่</translation>
 <translation id="7828557259026017104">คุกกี้คือไฟล์ที่เว็บไซต์ต่างๆ ที่คุณเข้าชมสร้างขึ้น เว็บไซต์ใช้คุกกี้เพื่อจดจำข้อมูลการท่องเว็บของคุณ คุกกี้ของบุคคลที่สามซึ่งเว็บไซต์อื่นๆ เป็นผู้สร้างขึ้น เว็บไซต์เหล่านี้เป็นเจ้าของเนื้อหาบางอย่าง เช่น โฆษณาหรือรูปภาพที่คุณเห็นในหน้าเว็บที่เข้าชม</translation>
 <translation id="783819812427904514">เปิดเสียงวิดีโอ</translation>
@@ -990,8 +999,10 @@
 <translation id="8364299278605033898">ดูเว็บไซต์ยอดนิยม</translation>
 <translation id="8368027906805972958">อุปกรณ์ที่ไม่รู้จักหรือไม่รองรับ (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">อนุญาตให้ใช้การซิงค์ในแบ็กกราวด์สำหรับเว็บไซต์ที่เจาะจง</translation>
+<translation id="83792324527827022">มีเว็บไซต์กำลังใช้กล้องถ่ายรูปและไมโครโฟน</translation>
 <translation id="8380167699614421159">เว็บไซต์นี้แสดงโฆษณาที่แทรกหรือทำให้เข้าใจผิด</translation>
 <translation id="8393700583063109961">ส่งข้อความ</translation>
+<translation id="8394832520002899662">แตะเพื่อกลับไปที่เว็บไซต์</translation>
 <translation id="8413126021676339697">แสดงประวัติการเข้าชมทั้งหมด</translation>
 <translation id="8427875596167638501">แท็บแสดงตัวอย่างเปิดอยู่ครึ่งเดียว</translation>
 <translation id="8428213095426709021">การตั้งค่า</translation>
@@ -1034,6 +1045,8 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{ระดับความแรงของสัญญาณ: # แถบ}other{ระดับความแรงของสัญญาณ: # แถบ}}</translation>
 <translation id="868929229000858085">ค้นหารายชื่อติดต่อ</translation>
 <translation id="869891660844655955">วันหมดอายุ</translation>
+<translation id="8702612070107455751">ระบบจะล้างข้อมูลออฟไลน์ทั้งหมด</translation>
+<translation id="8737217482364735741">การดำเนินการนี้จะล้างข้อมูลและคุกกี้ทั้งหมด <ph name="ORIGIN" /> ที่จัดเก็บไว้</translation>
 <translation id="8748850008226585750">เนื้อหาถูกซ่อนไว้</translation>
 <translation id="8751914237388039244">เลือกรูปภาพ</translation>
 <translation id="8758557275681689734">ดูแท็บที่เปิดอยู่ทั้งหมด</translation>
@@ -1080,6 +1093,7 @@
 <translation id="9100610230175265781">ต้องระบุรหัสผ่าน</translation>
 <translation id="9102803872260866941">แท็บแสดงตัวอย่างเปิดอยู่</translation>
 <translation id="9104217018994036254">รายการอุปกรณ์ที่จะแชร์แท็บด้วย</translation>
+<translation id="9108312223223904744">การรองรับโทรศัพท์เป็นคีย์ความปลอดภัย</translation>
 <translation id="9133397713400217035">สำรวจแบบออฟไลน์</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">แสดงหน้าเว็บเดิม</translation>

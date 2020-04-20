@@ -65,8 +65,8 @@ void MouseWheelEventQueue::QueueEvent(
 }
 
 bool MouseWheelEventQueue::CanGenerateGestureScroll(
-    InputEventAckState ack_result) const {
-  if (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED) {
+    blink::mojom::InputEventResultState ack_result) const {
+  if (ack_result == blink::mojom::InputEventResultState::kConsumed) {
     TRACE_EVENT_INSTANT0("input", "Wheel Event Consumed",
                          TRACE_EVENT_SCOPE_THREAD);
     return false;
@@ -101,8 +101,8 @@ bool MouseWheelEventQueue::CanGenerateGestureScroll(
 
 void MouseWheelEventQueue::ProcessMouseWheelAck(
     const MouseWheelEventWithLatencyInfo& ack_event,
-    InputEventAckSource ack_source,
-    InputEventAckState ack_result) {
+    blink::mojom::InputEventResultSource ack_source,
+    blink::mojom::InputEventResultState ack_result) {
   TRACE_EVENT0("input", "MouseWheelEventQueue::ProcessMouseWheelAck");
   if (!event_sent_for_gesture_ack_)
     return;

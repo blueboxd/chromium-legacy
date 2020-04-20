@@ -8,7 +8,6 @@
 #include "net/base/proxy_server.h"
 
 namespace data_reduction_proxy {
-struct DataReductionProxyTypeInfo;
 
 // Scheme of the proxy used.
 enum ProxyScheme {
@@ -23,10 +22,6 @@ enum ProxyScheme {
 // Converts net::ProxyServer::Scheme to type ProxyScheme.
 ProxyScheme ConvertNetProxySchemeToProxyScheme(net::ProxyServer::Scheme scheme);
 
-// Logs UMAs for a successful request through a data reduction proxy.
-void LogSuccessfulProxyUMAs(const DataReductionProxyTypeInfo& proxy_info,
-                            const net::ProxyServer& proxy_server,
-                            bool is_main_frame);
 
 }  // namespace data_reduction_proxy
 

@@ -103,7 +103,7 @@ class CORE_EXPORT FrameLoader final {
   void CommitNavigation(
       std::unique_ptr<WebNavigationParams> navigation_params,
       std::unique_ptr<WebDocumentLoader::ExtraData> extra_data,
-      bool is_javascript_url = false);
+      CommitReason = CommitReason::kRegular);
 
   // Called before the browser process is asked to navigate this frame, to mark
   // the frame as loading and save some navigation information for later use.
@@ -270,14 +270,6 @@ class CORE_EXPORT FrameLoader final {
   std::unique_ptr<TracedValue> ToTracedValue() const;
   void TakeObjectSnapshot() const;
 
-  enum class CommitReason {
-    // Committing initial empty document.
-    kInitialization,
-    // Committing navigation as a result of javascript URL execution.
-    kJavascriptUrl,
-    // All other navigations.
-    kRegular
-  };
   // Commits the given |document_loader|.
   void CommitDocumentLoader(DocumentLoader* document_loader,
                             const base::Optional<Document::UnloadEventTiming>&,
@@ -294,7 +286,8 @@ class CORE_EXPORT FrameLoader final {
       const KURL& url,
       const ResourceResponse& response,
       const base::Optional<WebOriginPolicy>& origin_policy,
-      ContentSecurityPolicy* initiator_csp);
+      ContentSecurityPolicy* initiator_csp,
+      CommitReason);
 
   LocalFrameClient* Client() const;
 

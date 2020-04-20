@@ -201,7 +201,7 @@ std::string GetEventLatencyHistogramBaseName(
 }  // namespace
 
 CompositorFrameReporter::CompositorFrameReporter(
-    const base::flat_set<FrameSequenceTrackerType>* active_trackers,
+    const ActiveTrackers& active_trackers,
     const viz::BeginFrameId& id,
     const base::TimeTicks frame_deadline,
     LatencyUkmReporter* latency_ukm_reporter,
@@ -401,10 +401,12 @@ void CompositorFrameReporter::ReportCompositorLatencyHistograms() const {
   UMA_HISTOGRAM_ENUMERATION("CompositorLatency.Type", report_type_);
   for (const StageData& stage : stage_history_) {
     ReportStageHistogramWithBreakdown(stage);
-
-    for (const auto& frame_sequence_tracker_type : *active_trackers_) {
-      // Report stage breakdowns.
-      ReportStageHistogramWithBreakdown(stage, frame_sequence_tracker_type);
+    for (size_t type = 0; type < active_trackers_.size(); ++type) {
+      if (active_trackers_.test(type)) {
+        // Report stage breakdowns.
+        ReportStageHistogramWithBreakdown(
+            stage, static_cast<FrameSequenceTrackerType>(type));
+      }
     }
   }
   if (latency_ukm_reporter_) {

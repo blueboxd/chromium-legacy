@@ -27,10 +27,9 @@ MATCHER(IsWhitelisted,
 
 class CompositorFrameReporterTest : public testing::Test {
  public:
-  const base::flat_set<FrameSequenceTrackerType> active_trackers = {};
   CompositorFrameReporterTest()
       : pipeline_reporter_(std::make_unique<CompositorFrameReporter>(
-            &active_trackers,
+            CompositorFrameReporter::ActiveTrackers(),
             viz::BeginFrameId(),
             base::TimeTicks() + base::TimeDelta::FromMilliseconds(16),
             nullptr,

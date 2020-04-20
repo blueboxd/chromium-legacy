@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "ash/metrics/task_switch_time_tracker.h"
+#include "base/logging.h"
 
 namespace ash {
 

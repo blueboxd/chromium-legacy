@@ -252,8 +252,8 @@ void SyncInternalsMessageHandler::HandleGetAllNodes(const ListValue* args) {
     // the javascript side. We guard against this by invalidating this weak ptr
     // should javascript become disallowed.
     service->GetAllNodesForDebugging(
-        base::Bind(&SyncInternalsMessageHandler::OnReceivedAllNodes,
-                   weak_ptr_factory_.GetWeakPtr(), request_id));
+        base::BindOnce(&SyncInternalsMessageHandler::OnReceivedAllNodes,
+                       weak_ptr_factory_.GetWeakPtr(), request_id));
   }
 }
 

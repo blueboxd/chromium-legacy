@@ -98,6 +98,7 @@
 <translation id="3735758079232443276">Розширення "<ph name="EXTENSION_NAME" />" змінило сторінку, яка відкривається під час запуску Chrome.</translation>
 <translation id="3780814664026482060">Chrome – <ph name="PAGE_TITLE" /></translation>
 <translation id="386202838227397562">Закрийте всі вікна Google Chrome і повторіть спробу.</translation>
+<translation id="3865754807470779944">Chrome версії <ph name="PRODUCT_VERSION" /> встановлено</translation>
 <translation id="3873044882194371212">Відкрити посилання в аноні&amp;мному вікні Chrome</translation>
 <translation id="3889417619312448367">Видалити Google Chrome</translation>
 <translation id="4050175100176540509">В останній версії покращено безпеку та додано нові функції.</translation>
@@ -235,6 +236,7 @@
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8556340503434111824">Доступна нова версія Google Chrome – швидша, ніж будь-коли.</translation>
 <translation id="8614913330719544658">Google Chrome не відповідає. Перезапустити зараз?</translation>
+<translation id="861702415419836452">Chrome потрібен дозвіл на використання камери, щоб створити 3D-карту вашого оточення</translation>
 <translation id="8625237574518804553">{0,plural, =1{Chrome перезапуститься через 1 хвилину}one{Chrome перезапуститься через # хвилину}few{Chrome перезапуститься через # хвилини}many{Chrome перезапуститься через # хвилин}other{Chrome перезапуститься через # хвилини}}</translation>
 <translation id="8641606876632989680">Chrome сповістить, коли ви ввійдете в обліковий запис за допомогою зламаного пароля</translation>
 <translation id="8669527147644353129">Помічник Google Chrome</translation>

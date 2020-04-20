@@ -5,26 +5,24 @@
 // So that mojo is defined.
 import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
 
-import {createScrollBorders, hexColorToSkColor, skColorToRgb} from 'chrome://new-tab-page/utils.js';
+import {createScrollBorders, hexColorToSkColor, skColorToRgba} from 'chrome://new-tab-page/utils.js';
 import {waitAfterNextRender} from 'chrome://test/test_util.m.js';
 
 suite('NewTabPageUtilsTest', () => {
-  test('Can convert simple SkColors to rgb strings', () => {
-    assertEquals(skColorToRgb({value: 0xffff0000}), 'rgb(255, 0, 0)');
-    assertEquals(skColorToRgb({value: 0xff00ff00}), 'rgb(0, 255, 0)');
-    assertEquals(skColorToRgb({value: 0xff0000ff}), 'rgb(0, 0, 255)');
-    assertEquals(skColorToRgb({value: 0xffffffff}), 'rgb(255, 255, 255)');
-    assertEquals(skColorToRgb({value: 0xff000000}), 'rgb(0, 0, 0)');
+  test('Can convert simple SkColors to rgba strings', () => {
+    assertEquals(skColorToRgba({value: 0xffff0000}), 'rgba(255, 0, 0, 255)');
+    assertEquals(skColorToRgba({value: 0xff00ff00}), 'rgba(0, 255, 0, 255)');
+    assertEquals(skColorToRgba({value: 0xff0000ff}), 'rgba(0, 0, 255, 255)');
+    assertEquals(
+        skColorToRgba({value: 0xffffffff}), 'rgba(255, 255, 255, 255)');
+    assertEquals(skColorToRgba({value: 0xff000000}), 'rgba(0, 0, 0, 255)');
   });
 
-  test('Can convert complex SkColors to rgb strings', () => {
-    assertEquals(skColorToRgb({value: 0xffa11f8f}), 'rgb(161, 31, 143)');
-    assertEquals(skColorToRgb({value: 0xff2b6335}), 'rgb(43, 99, 53)');
-    assertEquals(skColorToRgb({value: 0xffe3d2c1}), 'rgb(227, 210, 193)');
-  });
-
-  test('Cannot convert transparent SkColors to rgb strings', () => {
-    assertEquals(skColorToRgb({value: 0xfeabcdef}), 'rgb(0, 0, 0)');
+  test('Can convert complex SkColors to rgba strings', () => {
+    assertEquals(skColorToRgba({value: 0xc2a11f8f}), 'rgba(161, 31, 143, 194)');
+    assertEquals(skColorToRgba({value: 0xf02b6335}), 'rgba(43, 99, 53, 240)');
+    assertEquals(
+        skColorToRgba({value: 0x8ae3d2c1}), 'rgba(227, 210, 193, 138)');
   });
 
   test('Can convert simple hex strings to SkColors', () => {

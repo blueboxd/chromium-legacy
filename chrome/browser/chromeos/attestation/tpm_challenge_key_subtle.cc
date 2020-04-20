@@ -476,7 +476,7 @@ void TpmChallengeKeySubtleImpl::GetPublicKey() {
   CryptohomeClient::Get()->TpmAttestationGetPublicKey(
       key_type_,
       cryptohome::CreateAccountIdentifierFromAccountId(GetAccountId()),
-      key_name_,
+      GetKeyNameForRegister(),
       base::BindOnce(&TpmChallengeKeySubtleImpl::PrepareKeyFinished,
                      weak_factory_.GetWeakPtr()));
 }

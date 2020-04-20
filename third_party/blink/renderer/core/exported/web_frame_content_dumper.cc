@@ -12,8 +12,10 @@
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/iterators/text_iterator.h"
 #include "third_party/blink/renderer/core/editing/serializers/serialization.h"
+#include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/html_element_type_helpers.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
@@ -102,12 +104,13 @@ WebString WebFrameContentDumper::DumpWebViewAsText(WebView* web_view,
   if (!frame)
     return WebString();
 
-  DCHECK(web_view->MainFrameWidget());
+  WebViewImpl* web_view_impl = static_cast<WebViewImpl*>(web_view);
+  DCHECK(web_view_impl->MainFrameWidgetBase());
   // Updating the document lifecycle isn't enough, the BeginFrame() step
   // should come first which runs events such as notifying of media query
   // changes or raf-based events.
-  web_view->MainFrameWidget()->BeginFrame(base::TimeTicks::Now());
-  web_view->MainFrameWidget()->UpdateAllLifecyclePhases(
+  web_view_impl->MainFrameWidgetBase()->BeginMainFrame(base::TimeTicks::Now());
+  web_view_impl->MainFrameWidgetBase()->UpdateAllLifecyclePhases(
       DocumentUpdateReason::kTest);
 
   StringBuilder text;

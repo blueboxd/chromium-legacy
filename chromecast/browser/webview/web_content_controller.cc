@@ -527,15 +527,16 @@ void WebContentController::AckTouchEvent(content::RenderWidgetHostView* rwhv,
   }
 }
 
-void WebContentController::OnInputEventAck(content::InputEventAckSource source,
-                                           content::InputEventAckState state,
-                                           const blink::WebInputEvent& e) {
+void WebContentController::OnInputEventAck(
+    blink::mojom::InputEventResultSource source,
+    blink::mojom::InputEventResultState state,
+    const blink::WebInputEvent& e) {
   if (!blink::WebInputEvent::IsTouchEventType(e.GetType()))
     return;
   const uint32_t id =
       static_cast<const blink::WebTouchEvent&>(e).unique_touch_event_id;
   ui::EventResult result =
-      state == content::InputEventAckState::INPUT_EVENT_ACK_STATE_CONSUMED
+      state == blink::mojom::InputEventResultState::kConsumed
           ? ui::ER_HANDLED
           : ui::ER_UNHANDLED;
   const auto it = find_if(touch_queue_.begin(), touch_queue_.end(),

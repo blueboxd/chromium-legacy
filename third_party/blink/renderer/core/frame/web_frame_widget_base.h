@@ -115,7 +115,6 @@ class CORE_EXPORT WebFrameWidgetBase
   mojom::blink::DisplayMode DisplayMode() const override;
 
   // WebFrameWidget implementation.
-  void Close() override;
   WebLocalFrame* LocalRoot() const override;
   WebDragOperation DragTargetDragEnter(const WebDragData&,
                                        const gfx::PointF& point_in_viewport,
@@ -142,7 +141,6 @@ class CORE_EXPORT WebFrameWidgetBase
       cc::ElementId scroll_latched_element_id) override;
 
   WebLocalFrame* FocusedWebLocalFrameInWidget() const override;
-  void SetCompositorHosts(cc::LayerTreeHost*, cc::AnimationHost*) override;
   void ApplyViewportChangesForTesting(
       const ApplyViewportChangesArgs& args) override;
   void NotifySwapAndPresentationTime(
@@ -161,19 +159,31 @@ class CORE_EXPORT WebFrameWidgetBase
   static bool IgnoreInputEvents() { return ignore_input_events_; }
 
   // WebWidget methods.
+  cc::LayerTreeHost* InitializeCompositing(
+      cc::TaskGraphRunner* task_graph_runner,
+      const cc::LayerTreeSettings& settings,
+      std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory) override;
+  void Close(scoped_refptr<base::SingleThreadTaskRunner> cleanup_runner,
+             base::OnceCallback<void()> cleanup_task) override;
   void DidAcquirePointerLock() override;
   void DidNotAcquirePointerLock() override;
   void DidLosePointerLock() override;
   void ShowContextMenu(WebMenuSourceType) override;
-  void BeginFrame(base::TimeTicks frame_time) final;
   void SetCompositorVisible(bool visible) override;
-  void UpdateVisualState() override;
-  void WillBeginCompositorFrame() final;
   void SetDisplayMode(mojom::blink::DisplayMode) override;
 
   // WidgetBaseClient methods.
   void DispatchRafAlignedInput(base::TimeTicks frame_time) override;
   void RecordTimeToFirstActivePaint(base::TimeDelta duration) override;
+  void EndCommitCompositorFrame(base::TimeTicks commit_start_time) override;
+  void DidCommitAndDrawCompositorFrame() override;
+  void OnDeferMainFrameUpdatesChanged(bool defer) override;
+  void OnDeferCommitsChanged(bool defer) override;
+  void RequestNewLayerTreeFrameSink(
+      LayerTreeFrameSinkCallback callback) override;
+  void DidCompletePageScaleAnimation() override;
+  void DidBeginMainFrame() override;
+  void WillBeginMainFrame() override;
 
   // mojom::blink::FrameWidget methods.
   void DragSourceSystemDragEnded() override;
@@ -331,6 +341,7 @@ class CORE_EXPORT WebFrameWidgetBase
   mojo::AssociatedReceiver<mojom::blink::FrameWidget> receiver_;
 
   friend class WebViewImpl;
+  friend class ReportTimeSwapPromise;
 };
 
 template <>

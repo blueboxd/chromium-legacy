@@ -4,6 +4,8 @@
 
 #include "media/base/audio_parameters.h"
 
+#include <sstream>
+
 #include "base/logging.h"
 #include "media/base/limits.h"
 

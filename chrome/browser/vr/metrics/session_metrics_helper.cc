@@ -112,10 +112,14 @@ SessionMetricsHelper::StartInlineSession(
   DCHECK(webxr_inline_session_trackers_.find(session_id) ==
          webxr_inline_session_trackers_.end());
 
+  // TODO(crbug.com/1061899): The code here assumes that it's called on
+  // behalf of the active frame, which is not always true.
+  // Plumb explicit RenderFrameHost reference from VRSessionImpl.
   auto result = webxr_inline_session_trackers_.emplace(
-      session_id, std::make_unique<WebXRSessionTracker>(
-                      std::make_unique<ukm::builders::XR_WebXR_Session>(
-                          web_contents()->GetLastCommittedSourceId())));
+      session_id,
+      std::make_unique<WebXRSessionTracker>(
+          std::make_unique<ukm::builders::XR_WebXR_Session>(
+              web_contents()->GetMainFrame()->GetPageUkmSourceId())));
   auto* tracker = result.first->second.get();
 
   ReportInitialSessionData(tracker, session_options, enabled_features);
@@ -148,9 +152,12 @@ SessionMetricsHelper::StartImmersiveSession(
   DCHECK(!webxr_immersive_session_tracker_);
   base::Time start_time = base::Time::Now();
 
+  // TODO(crbug.com/1061899): The code here assumes that it's called on
+  // behalf of the active frame, which is not always true.
+  // Plumb explicit RenderFrameHost reference from VRSessionImpl.
   webxr_immersive_session_tracker_ = std::make_unique<WebXRSessionTracker>(
       std::make_unique<ukm::builders::XR_WebXR_Session>(
-          web_contents()->GetLastCommittedSourceId()));
+          web_contents()->GetMainFrame()->GetPageUkmSourceId()));
 
   // TODO(https://crbug.com/1056930): Consider renaming the timers to something
   // that indicates both that these also record AR, and that these are no longer

@@ -97,8 +97,6 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
     virtual void DidRemoveAllEventListeners(LocalDOMWindow*) = 0;
   };
 
-  static Document* CreateDocument(const DocumentInit&, bool force_xhtml);
-
   static LocalDOMWindow* From(const ScriptState*);
 
   explicit LocalDOMWindow(LocalFrame&);
@@ -160,7 +158,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   void CountUse(mojom::WebFeature feature) final;
   void CountDeprecation(mojom::WebFeature feature) final;
 
-  Document* InstallNewDocument(const DocumentInit&, bool force_xhtml);
+  Document* InstallNewDocument(const DocumentInit&);
 
   // EventTarget overrides:
   ExecutionContext* GetExecutionContext() const override;
@@ -366,6 +364,14 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
         document_.Get());
   }
 
+  InputMethodController& GetInputMethodController() const {
+    return *input_method_controller_;
+  }
+  TextSuggestionController& GetTextSuggestionController() const {
+    return *text_suggestion_controller_;
+  }
+  SpellChecker& GetSpellChecker() const { return *spell_checker_; }
+
  protected:
   // EventTarget overrides.
   void AddedEventListener(const AtomicString& event_type,
@@ -439,6 +445,10 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   // TODO(altimin): We should be able to remove it after we complete
   // frame:document lifetime refactoring.
   std::unique_ptr<FrameOrWorkerScheduler> detached_scheduler_;
+
+  Member<InputMethodController> input_method_controller_;
+  Member<SpellChecker> spell_checker_;
+  Member<TextSuggestionController> text_suggestion_controller_;
 };
 
 template <>

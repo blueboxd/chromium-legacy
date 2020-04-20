@@ -13,7 +13,7 @@
 #include "services/network/proxy_service_mojo.h"
 #include "services/network/public/cpp/features.h"
 #if defined(OS_WIN)
-#include "net/proxy_resolution/dhcp_pac_file_fetcher_win.h"
+#include "net/proxy_resolution/win/dhcp_pac_file_fetcher_win.h"
 #elif defined(OS_CHROMEOS)
 #include "services/network/dhcp_pac_file_fetcher_mojo.h"
 #endif

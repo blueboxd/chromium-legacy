@@ -28,10 +28,8 @@
 #include "base/time/default_tick_clock.h"
 #include "build/build_config.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_bypass_protocol.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_config_values.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_type_info.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
@@ -51,11 +49,8 @@ using base::FieldTrialList;
 
 namespace data_reduction_proxy {
 
-DataReductionProxyConfig::DataReductionProxyConfig(
-    std::unique_ptr<DataReductionProxyConfigValues> config_values)
-    : unreachable_(false),
-      enabled_by_user_(false),
-      config_values_(std::move(config_values)) {
+DataReductionProxyConfig::DataReductionProxyConfig()
+    : unreachable_(false), enabled_by_user_(false) {
   // Constructed on the UI thread, but should be checked on the IO thread.
   thread_checker_.DetachFromThread();
 }
@@ -73,86 +68,6 @@ void DataReductionProxyConfig::OnNewClientConfigFetched() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-
-base::Optional<DataReductionProxyTypeInfo>
-DataReductionProxyConfig::FindConfiguredDataReductionProxy(
-    const net::ProxyServer& proxy_server) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return config_values_->FindConfiguredDataReductionProxy(proxy_server);
-}
-
-net::ProxyList DataReductionProxyConfig::GetAllConfiguredProxies() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return config_values_->GetAllConfiguredProxies();
-}
-
-bool DataReductionProxyConfig::AreProxiesBypassed(
-    const net::ProxyRetryInfoMap& retry_map,
-    const net::ProxyConfig::ProxyRules& proxy_rules,
-    bool is_https,
-    base::TimeDelta* min_retry_delay) const {
-  // Data reduction proxy config is Type::PROXY_LIST_PER_SCHEME.
-  if (proxy_rules.type != net::ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME)
-    return false;
-
-  if (is_https)
-    return false;
-
-  const net::ProxyList* proxies =
-      proxy_rules.MapUrlSchemeToProxyList(url::kHttpScheme);
-
-  if (!proxies)
-    return false;
-
-  base::TimeDelta min_delay = base::TimeDelta::Max();
-  bool bypassed = false;
-
-  for (const net::ProxyServer& proxy : proxies->GetAll()) {
-    if (!proxy.is_valid() || proxy.is_direct())
-      continue;
-
-    base::TimeDelta delay;
-    if (FindConfiguredDataReductionProxy(proxy)) {
-      if (!IsProxyBypassed(retry_map, proxy, &delay))
-        return false;
-      if (delay < min_delay)
-        min_delay = delay;
-      bypassed = true;
-    }
-  }
-
-  if (min_retry_delay && bypassed)
-    *min_retry_delay = min_delay;
-
-  return bypassed;
-}
-
-bool DataReductionProxyConfig::IsProxyBypassed(
-    const net::ProxyRetryInfoMap& retry_map,
-    const net::ProxyServer& proxy_server,
-    base::TimeDelta* retry_delay) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return IsProxyBypassedAtTime(retry_map, proxy_server, GetTicksNow(),
-                               retry_delay);
-}
-
-bool DataReductionProxyConfig::ContainsDataReductionProxy(
-    const net::ProxyConfig::ProxyRules& proxy_rules) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  // Data Reduction Proxy configurations are always Type::PROXY_LIST_PER_SCHEME.
-  if (proxy_rules.type != net::ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME)
-    return false;
-
-  const net::ProxyList* http_proxy_list =
-      proxy_rules.MapUrlSchemeToProxyList("http");
-  if (http_proxy_list && !http_proxy_list->IsEmpty() &&
-      // Sufficient to check only the first proxy.
-      FindConfiguredDataReductionProxy(http_proxy_list->Get())) {
-    return true;
-  }
-
-  return false;
-}
 
 void DataReductionProxyConfig::SetProxyConfig(bool enabled, bool at_startup) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -177,16 +92,6 @@ bool DataReductionProxyConfig::enabled_by_user_and_reachable() const {
 base::TimeTicks DataReductionProxyConfig::GetTicksNow() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return base::TimeTicks::Now();
-}
-
-std::vector<DataReductionProxyServer>
-DataReductionProxyConfig::GetProxiesForHttp() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (!enabled_by_user_)
-    return std::vector<DataReductionProxyServer>();
-
-  return config_values_->proxies_for_http();
 }
 
 }  // namespace data_reduction_proxy

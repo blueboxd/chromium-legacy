@@ -230,7 +230,7 @@ BookmarkBubbleView::BookmarkBubbleView(
   DialogDelegate::SetExtraView(CreateEditButton(this));
   DialogDelegate::SetFootnoteView(CreateSigninPromoView());
 
-  DialogDelegate::SetCancelCallback(base::Bind(
+  DialogDelegate::SetCancelCallback(base::BindOnce(
       &BookmarkBubbleView::OnDialogCancelled, base::Unretained(this)));
 
   chrome::RecordDialogCreation(chrome::DialogIdentifier::BOOKMARK);

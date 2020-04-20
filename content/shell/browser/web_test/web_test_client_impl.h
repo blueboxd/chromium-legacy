@@ -50,7 +50,6 @@ class WebTestClientImpl : public mojom::WebTestClient {
 
  private:
   // WebTestClient implementation.
-  void InspectSecondaryWindow() override;
   void TestFinishedInSecondaryRenderer() override;
   void SimulateWebNotificationClick(
       const std::string& title,

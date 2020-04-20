@@ -127,7 +127,9 @@ void PrintJobDatabaseImpl::DeletePrintJobs(const std::vector<std::string>& ids,
 void PrintJobDatabaseImpl::GetPrintJobs(GetPrintJobsCallback callback) {
   if (init_status_ == InitStatus::FAILED) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), false, nullptr));
+        FROM_HERE,
+        base::BindOnce(std::move(callback), false,
+                       std::vector<printing::proto::PrintJobInfo>()));
     return;
   }
 
@@ -140,9 +142,10 @@ void PrintJobDatabaseImpl::GetPrintJobs(GetPrintJobsCallback callback) {
   }
 
   base::Time start_time = base::Time::Now();
-  auto entries = std::make_unique<std::vector<printing::proto::PrintJobInfo>>();
+  std::vector<printing::proto::PrintJobInfo> entries;
+  entries.reserve(cache_.size());
   for (const auto& pair : cache_)
-    entries->emplace_back(pair.second);
+    entries.push_back(pair.second);
   base::UmaHistogramTimes(kPrintJobDatabaseLoadTime,
                           base::Time::Now() - start_time);
 
@@ -224,7 +227,7 @@ void PrintJobDatabaseImpl::OnPrintJobDeleted(
 }
 
 void PrintJobDatabaseImpl::GetPrintJobsFromProtoDatabase(
-    GetPrintJobsCallback callback) {
+    GetPrintJobsFromProtoDatabaseCallback callback) {
   if (init_status_ == InitStatus::FAILED) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), false, nullptr));
@@ -240,12 +243,12 @@ void PrintJobDatabaseImpl::GetPrintJobsFromProtoDatabase(
   }
 
   database_->LoadEntries(
-      base::BindOnce(&PrintJobDatabaseImpl::OnPrintJobsRetrieved,
+      base::BindOnce(&PrintJobDatabaseImpl::OnPrintJobRetrievedFromDatabase,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void PrintJobDatabaseImpl::OnPrintJobsRetrieved(
-    GetPrintJobsCallback callback,
+void PrintJobDatabaseImpl::OnPrintJobRetrievedFromDatabase(
+    GetPrintJobsFromProtoDatabaseCallback callback,
     bool success,
     std::unique_ptr<std::vector<printing::proto::PrintJobInfo>> entries) {
   base::SequencedTaskRunnerHandle::Get()->PostTask(

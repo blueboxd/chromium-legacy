@@ -6,9 +6,9 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_RESOURCE_H_
 
 #include "base/macros.h"
+#include "third_party/blink/renderer/core/svg/svg_external_document_cache.h"
 #include "third_party/blink/renderer/core/svg/svg_resource_client.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource_client.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/hash_counted_set.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
@@ -17,7 +17,6 @@
 namespace blink {
 
 class Document;
-class DocumentResource;
 class Element;
 class IdTargetObserver;
 class LayoutSVGResourceContainer;
@@ -63,8 +62,8 @@ class SVGResource : public GarbageCollected<SVGResource> {
  public:
   virtual ~SVGResource();
 
-  virtual void Load(const Document&) {}
-  virtual void LoadWithoutCSP(const Document&) {}
+  virtual void Load(Document&) {}
+  virtual void LoadWithoutCSP(Document&) {}
 
   Element* Target() const { return target_; }
   LayoutSVGResourceContainer* ResourceContainer() const;
@@ -111,26 +110,26 @@ class LocalSVGResource final : public SVGResource {
 };
 
 // External resource reference (see SVGResource.)
-class ExternalSVGResource final : public SVGResource, private ResourceClient {
+class ExternalSVGResource final : public SVGResource,
+                                  private SVGExternalDocumentCache::Client {
   USING_GARBAGE_COLLECTED_MIXIN(ExternalSVGResource);
 
  public:
   explicit ExternalSVGResource(const KURL&);
 
-  void Load(const Document&) override;
-  void LoadWithoutCSP(const Document&) override;
+  void Load(Document&) override;
+  void LoadWithoutCSP(Document&) override;
 
   void Trace(Visitor*) override;
 
  private:
   Element* ResolveTarget();
 
-  // ResourceClient implementation
-  String DebugName() const override;
-  void NotifyFinished(Resource*) override;
+  // SVGExternalDocumentCache::Client implementation
+  void NotifyFinished(Document*) override;
 
+  Member<SVGExternalDocumentCache::Entry> cache_entry_;
   KURL url_;
-  Member<DocumentResource> resource_document_;
 };
 
 }  // namespace blink

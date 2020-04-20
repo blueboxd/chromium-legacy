@@ -35,7 +35,9 @@
                 on-click="cancel">
             </cr-icon-button>
           </div>
-          <webview id="signin-frame" class="flex" name="signin-frame"></webview>
+          <webview id="signin-frame" class="flex"
+              hideshadows$="[[isPopUpOverlayVisible_]]"
+              name="signin-frame"></webview>
         </div>
       </div>
       <div id="gaia-screen-navigation-buttons"
@@ -112,7 +114,7 @@
         link-label="[[i18nDynamic(locale, 'learnMoreButton')]]">
     </notification-card>
     <div class="popup-overlay"
-        hidden="[[!showOverlay_(navigationEnabled_, isSamlSsoVisible_)]]">
+        hidden="[[!isPopUpOverlayVisible_]]">
     </div>
   </template>
 </dom-module>

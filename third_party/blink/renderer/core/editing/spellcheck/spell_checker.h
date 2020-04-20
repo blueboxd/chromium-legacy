@@ -35,9 +35,9 @@
 
 namespace blink {
 
-class Document;
 class Element;
 class IdleSpellCheckController;
+class LocalDOMWindow;
 class LocalFrame;
 class HTMLElement;
 class SpellCheckMarker;
@@ -49,7 +49,7 @@ class WebTextCheckClient;
 
 class CORE_EXPORT SpellChecker final : public GarbageCollected<SpellChecker> {
  public:
-  explicit SpellChecker(LocalFrame&);
+  explicit SpellChecker(LocalDOMWindow&);
 
   void Trace(Visitor*);
 
@@ -88,13 +88,8 @@ class CORE_EXPORT SpellChecker final : public GarbageCollected<SpellChecker> {
     return *idle_spell_check_controller_;
   }
 
-  void DidAttachDocument(Document*);
-
  private:
-  LocalFrame& GetFrame() const {
-    DCHECK(frame_);
-    return *frame_;
-  }
+  LocalFrame& GetFrame() const;
 
   // Helper functions for advanceToNextMisspelling()
   Vector<TextCheckingResult> FindMisspellings(const String&);
@@ -102,7 +97,7 @@ class CORE_EXPORT SpellChecker final : public GarbageCollected<SpellChecker> {
 
   void RemoveMarkers(const EphemeralRange&, DocumentMarker::MarkerTypes);
 
-  Member<LocalFrame> frame_;
+  Member<LocalDOMWindow> window_;
 
   const Member<SpellCheckRequester> spell_check_requester_;
   const Member<IdleSpellCheckController> idle_spell_check_controller_;

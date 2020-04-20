@@ -26,8 +26,8 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/touch_selection_controller_client_manager.h"
-#include "content/public/common/input_event_ack_state.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
+#include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
 #include "third_party/blink/public/platform/viewport_intersection_state.h"
 #include "third_party/blink/public/platform/web_intrinsic_sizing_info.h"
 #include "ui/gfx/geometry/rect.h"
@@ -99,7 +99,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void Destroy() override;
   void SetTooltipText(const base::string16& tooltip_text) override;
   void GestureEventAck(const blink::WebGestureEvent& event,
-                       InputEventAckState ack_result) override;
+                       blink::mojom::InputEventResultState ack_result) override;
   // Since the URL of content rendered by this class is not displayed in
   // the URL bar, this method does not need an implementation.
   void ResetFallbackToFirstNavigationSurface() override {}
@@ -149,7 +149,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void SpeakSelection() override;
 #endif  // defined(OS_MACOSX)
 
-  InputEventAckState FilterInputEvent(
+  blink::mojom::InputEventResultState FilterInputEvent(
       const blink::WebInputEvent& input_event) override;
   BrowserAccessibilityManager* CreateBrowserAccessibilityManager(
       BrowserAccessibilityDelegate* delegate,
@@ -211,8 +211,9 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   // RenderWidgetHostViewBase:
   void UpdateBackgroundColor() override;
 
-  void StopFlingingIfNecessary(const blink::WebGestureEvent& event,
-                               InputEventAckState ack_result) override;
+  void StopFlingingIfNecessary(
+      const blink::WebGestureEvent& event,
+      blink::mojom::InputEventResultState ack_result) override;
 
   // The ID for FrameSink associated with this view.
   viz::FrameSinkId frame_sink_id_;
@@ -250,11 +251,12 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void OnDidUpdateVisualPropertiesComplete(
       const cc::RenderFrameMetadata& metadata);
 
-  void ProcessTouchpadZoomEventAckInRoot(const blink::WebGestureEvent& event,
-                                         InputEventAckState ack_result);
+  void ProcessTouchpadZoomEventAckInRoot(
+      const blink::WebGestureEvent& event,
+      blink::mojom::InputEventResultState ack_result);
   void ForwardTouchpadZoomEventIfNecessary(
       const blink::WebGestureEvent& event,
-      InputEventAckState ack_result) override;
+      blink::mojom::InputEventResultState ack_result) override;
 
   std::vector<base::OnceClosure> frame_swapped_callbacks_;
 

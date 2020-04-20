@@ -8,6 +8,7 @@
 #include <limits>
 #include <type_traits>
 
+#include "base/logging.h"
 #include "sql/recover_module/integers.h"
 #include "sql/recover_module/payload.h"
 #include "third_party/sqlite/sqlite3.h"

@@ -92,11 +92,11 @@ void SizeStatCalculator::PerformCalculation() {
   int64_t* available_size = new int64_t(0);
   base::ThreadPool::PostTaskAndReply(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-      base::Bind(&GetSizeStatBlocking, my_files_path, total_size,
-                 available_size),
-      base::Bind(&SizeStatCalculator::OnGetSizeStat,
-                 weak_ptr_factory_.GetWeakPtr(), base::Owned(total_size),
-                 base::Owned(available_size)));
+      base::BindOnce(&GetSizeStatBlocking, my_files_path, total_size,
+                     available_size),
+      base::BindOnce(&SizeStatCalculator::OnGetSizeStat,
+                     weak_ptr_factory_.GetWeakPtr(), base::Owned(total_size),
+                     base::Owned(available_size)));
 }
 
 void SizeStatCalculator::OnGetSizeStat(int64_t* total_bytes,
@@ -187,8 +187,8 @@ void BrowsingDataSizeCalculator::PerformCalculation() {
         BrowsingDataFlashLSOHelper::Create(profile_));
   }
   site_data_size_collector_->Fetch(
-      base::Bind(&BrowsingDataSizeCalculator::OnGetBrowsingDataSize,
-                 weak_ptr_factory_.GetWeakPtr(), /*is_site_data=*/true));
+      base::BindOnce(&BrowsingDataSizeCalculator::OnGetBrowsingDataSize,
+                     weak_ptr_factory_.GetWeakPtr(), /*is_site_data=*/true));
 }
 
 void BrowsingDataSizeCalculator::OnGetCacheSize(bool is_upper_limit,

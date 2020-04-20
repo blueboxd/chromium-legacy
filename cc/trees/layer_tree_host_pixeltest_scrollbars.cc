@@ -188,7 +188,7 @@ TEST_P(LayerTreeHostScrollbarsPixelTest, MAYBE_HugeTransformScale) {
     pixel_comparator_ = std::make_unique<FuzzyPixelOffByOneComparator>(true);
 
   RunPixelTest(background,
-               use_vulkan()
+               use_skia_vulkan()
                    ? base::FilePath(FILE_PATH_LITERAL("spiral_64_scale_vk.png"))
                    : base::FilePath(FILE_PATH_LITERAL("spiral_64_scale.png")));
 }

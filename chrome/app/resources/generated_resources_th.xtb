@@ -421,6 +421,11 @@
 <translation id="1555130319947370107">สีน้ำเงิน</translation>
 <translation id="1556537182262721003">ไม่สามารถย้ายไดเรกทอรีส่วนขยายเข้าไปในโปรไฟล์</translation>
 <translation id="155865706765934889">ทัชแพด</translation>
+<translation id="1560763881671211335">ผู้ดูแลระบบ G Suite for Education เป็นผู้กำหนดบริการของ Google ที่ผู้ใช้จะเข้าถึงได้ขณะที่ลงชื่อเข้าใช้บัญชี G Suite for Education ผู้ดูแลระบบของโรงเรียนจำเป็นต้องให้หรือขอคำยินยอมสำหรับการใช้บริการโดยผู้ใช้ที่เป็นผู้เยาว์
+
+    ระบบจะจัดเก็บข้อมูลการท่องเว็บ (รวมถึงประวัติการเข้าชม บุ๊กมาร์ก และรหัสผ่าน) ไว้ในบัญชี Family Link ไม่ใช่ในบัญชีโรงเรียน
+
+    การตั้งค่า Family Link ของผู้ปกครองจะยังมีผลอยู่ หากเคยบล็อกแอปหรือเว็บไซต์ไว้ คุณไม่ต้องบล็อกซ้ำอีก</translation>
 <translation id="1566049601598938765">เว็บไซต์</translation>
 <translation id="15662109988763471">เครื่องพิมพ์ที่เลือกไว้ใช้ไม่ได้หรือติดตั้งไว้ไม่ถูกต้อง โปรดตรวจสอบเครื่องพิมพ์ของคุณหรือลองเลือกเครื่องพิมพ์อื่น</translation>
 <translation id="1567387640189251553">มีการเชื่อมต่อกับแป้นพิมพ์อื่นหลังจากที่คุณป้อนรหัสผ่านครั้งล่าสุด แป้นพิมพ์นี้อาจพยายามขโมยการกดแป้นพิมพ์ของคุณ</translation>
@@ -1200,6 +1205,7 @@
 <translation id="258095186877893873">ยาว</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (แพลตฟอร์ม <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">ดึงข้อมูลตั๋ว Kerberos ไม่สำเร็จ ลองอีกครั้ง หรือติดต่อผู้ดูแลระบบอุปกรณ์ขององค์กร (รหัสข้อผิดพลาด <ph name="ERROR_CODE" />)</translation>
+<translation id="2585013490795742997">กำลังแสดงผลการค้นหา <ph name="QUERY" /> 1 รายการ</translation>
 <translation id="2585724835339714757">แท็บนี้กำลังแชร์หน้าจอของคุณ</translation>
 <translation id="2586657967955657006">คลิปบอร์ด</translation>
 <translation id="2586672484245266891">โปรดป้อน URL ที่สั้นกว่านี้</translation>
@@ -1886,6 +1892,7 @@
 <translation id="3498215018399854026">เราไม่สามารถติดต่อผู้ปกครองของคุณได้ในขณะนี้ โปรดลองอีกครั้ง</translation>
 <translation id="3500417806337761827">เกิดข้อผิดพลาดในการต่อเชื่อมการแชร์ มีการต่อเชื่อม SMB เป็นจำนวนมากอยู่แล้ว</translation>
 <translation id="3505030558724226696">เพิกถอนสิทธิ์การเข้าถึงอุปกรณ์</translation>
+<translation id="3507132249039706973">การปกป้องแบบมาตรฐานเปิดอยู่</translation>
 <translation id="3507421388498836150">สิทธิ์ปัจจุบันสำหรับ "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="3507888235492474624">สแกนหาอุปกรณ์บลูทูธอีกครั้ง</translation>
 <translation id="3508492320654304609">ลบข้อมูลการลงชื่อเข้าใช้ของคุณไม่ได้</translation>
@@ -3239,6 +3246,7 @@
 <translation id="5352033265844765294">การระบุเวลา</translation>
 <translation id="5353252989841766347">ส่งออกรหัสผ่านจาก Chrome</translation>
 <translation id="5355099869024327351">อนุญาตให้ Assistant แสดงการแจ้งเตือน</translation>
+<translation id="5355191726083956201">การปกป้องที่ปรับปรุงแล้วเปิดอยู่</translation>
 <translation id="5355926466126177564">ส่วนขยาย "<ph name="EXTENSION_NAME" />" ได้เปลี่ยนหน้าที่จะแสดงเมื่อคุณค้นหาจากแถบอเนกประสงค์</translation>
 <translation id="5359910752122114278">ผลการค้นหา 1 รายการ</translation>
 <translation id="5360150013186312835">แสดงในแถบเครื่องมือ</translation>
@@ -3550,6 +3558,7 @@
 <translation id="577322787686508614">ไม่อนุญาตให้อ่านใน "<ph name="DEVICE_NAME" />"</translation>
 <translation id="5774295353725270860">เปิดแอปพลิเคชันไฟล์</translation>
 <translation id="577624874850706961">ค้นหาคุกกี้</translation>
+<translation id="5776858208024364029">กำลังแสดงผลการค้นหา <ph name="QUERY" /> <ph name="NUMBER" /> รายการ</translation>
 <translation id="5777468213129569553">เปิด Chrome</translation>
 <translation id="5778747455497889540">ด้านล่างนี้คือรหัสผ่านโมดูลความปลอดภัยที่สร้างขึ้นโดยการสุ่มและได้รับการกำหนดให้กับคอมพิวเตอร์ของคุณ:</translation>
 <translation id="5780011244986845107">โฟลเดอร์ที่คุณเลือกมีไฟล์ที่ละเอียดอ่อน แน่ใจไหมว่าต้องการให้สิทธิ์การเข้าถึงในการอ่านโฟลเดอร์นี้อย่างถาวรแก่ "<ph name="APP_NAME" />"</translation>
@@ -4106,6 +4115,7 @@
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
+<translation id="6520876759015997832">ผลการค้นหา <ph name="LIST_POSITION" /> จาก <ph name="LIST_SIZE" /> รายการ: <ph name="SEARCH_RESULT_TEXT" /> กด Enter เพื่อไปยังส่วนนี้</translation>
 <translation id="652492607360843641">คุณเชื่อมต่ออยู่กับเครือข่าย <ph name="NETWORK_TYPE" /></translation>
 <translation id="6527303717912515753">แชร์</translation>
 <translation id="6528513914570774834">อนุญาตให้ผู้ใช้อุปกรณ์นี้คนอื่นๆ ใช้เครือข่ายนี้ได้</translation>
@@ -4117,6 +4127,7 @@
 <translation id="6532206849875187177">ความปลอดภัยและการลงชื่อเข้าใช้</translation>
 <translation id="6532527800157340614">ลงชื่อเข้าใช้ไม่สำเร็จเนื่องจากระบบเรียกดูโทเค็นเพื่อการเข้าถึงไม่ได้ โปรดตรวจสอบการเชื่อมต่อเครือข่ายแล้วลองอีกครั้ง</translation>
 <translation id="6532663472409656417">องค์กรที่ลงทะเบียน</translation>
+<translation id="6535331821390304775">อนุญาตให้ <ph name="ORIGIN" /> เปิดลิงก์ประเภทนี้ในแอปที่เชื่อมโยงทุกครั้ง</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />หมายเหตุ:<ph name="END_BOLD" /> เปิดใช้งานเฉพาะเมื่อคุณทราบว่าคุณกำลังทำอะไรอยู่ หรือเมื่อคุณถูกร้องขอให้ทำเช่นนั้นเท่านั้น เนื่องจากคอลเล็กชันข้อมูลอาจลดประสิทธิภาพในการปฏิบัติงาน</translation>
 <translation id="6541638731489116978">เว็บไซต์นี้ถูกบล็อกไม่ให้เข้าถึงเซ็นเซอร์ตรวจจับความเคลื่อนไหว</translation>
 <translation id="6545665334409411530">อัตราการพิมพ์ซ้ำ</translation>
@@ -4246,6 +4257,7 @@
 <translation id="6727969043791803658">เชื่อมต่อแล้ว แบตเตอรี่ <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="6732801395666424405">ยังไม่ได้โหลดใบรับรอง</translation>
 <translation id="6732900235521116609">นำทางลัดออกไม่ได้</translation>
+<translation id="6734468588183300211">ขณะอยู่ในโหมดไม่ระบุตัวตน เว็บไซต์จะใช้คุกกี้เพื่อดูกิจกรรมการท่องเว็บของคุณในเว็บไซต์ต่างๆ ไม่ได้ เช่น เพื่อปรับโฆษณาตามโปรไฟล์ของคุณ ฟีเจอร์ในเว็บไซต์บางแห่งอาจใช้งานไม่ได้</translation>
 <translation id="6735304988756581115">แสดงคุกกี้และข้อมูลอื่นของไซต์...</translation>
 <translation id="6736243959894955139">ที่อยู่</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
@@ -4258,6 +4270,7 @@
 <translation id="674632704103926902">เปิดใช้งานการแตะลาก</translation>
 <translation id="6748217015615267851">ตัวแสดงผล: <ph name="RENDERER_URL" /></translation>
 <translation id="6748465660675848252">คุณสามารถดำเนินการต่อได้ แต่ระบบจะกู้คืนข้อมูลที่ซิงค์และการตั้งค่าเท่านั้น ข้อมูลในเครื่องทั้งหมดจะสูญหาย</translation>
+<translation id="6749006854028927059">เว็บไซต์จะใช้คุกกี้เพื่อดูกิจกรรมการท่องเว็บของคุณในเว็บไซต์ต่างๆ ไม่ได้ เช่น เพื่อปรับโฆษณาตามโปรไฟล์ของคุณ ฟีเจอร์ในเว็บไซต์บางแห่งอาจใช้งานไม่ได้</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (โหมดไม่ระบุตัวตน)</translation>
 <translation id="6757101664402245801">คัดลอก URL แล้ว</translation>
 <translation id="6758056191028427665">แจ้งให้เราทราบถึงความพึงพอใจ</translation>
@@ -4349,6 +4362,7 @@
 <translation id="686664946474413495">อุณหภูมิสี</translation>
 <translation id="6871644448911473373">OCSP Responder: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">เซิร์ฟเวอร์ปฏิเสธรหัสผ่านที่คุณป้อน</translation>
+<translation id="6874170800191969835">ไปยัง<ph name="SEARCH_RESULT_TEXT" /></translation>
 <translation id="6876155724392614295">จักรยาน</translation>
 <translation id="6876469544038980967">ไม่มีประโยชน์</translation>
 <translation id="6878422606530379992">อนุญาตให้ใช้เซ็นเซอร์</translation>
@@ -4619,6 +4633,7 @@
 <translation id="7235737137505019098">คีย์ความปลอดภัยมีพื้นที่ไม่เพียงพอสำหรับบัญชีเพิ่มเติม</translation>
 <translation id="7238643356913091553"><ph name="NETWORK_NAME" />, รายละเอียด</translation>
 <translation id="7240339475467890413">เชื่อมต่อกับฮอตสปอตใหม่ใช่ไหม</translation>
+<translation id="7240847845291869311">บุตรหลานต้องการเพิ่มบัญชี Google สำหรับ G Suite for Education ในอุปกรณ์นี้ <ph name="LINK_BEGIN" />ประกาศเกี่ยวกับนโยบายความเป็นส่วนตัวของ G Suite for Education<ph name="LINK_END" /> มีไว้เพื่อช่วยให้ผู้ใช้ G Suite for Education และผู้ปกครองทราบถึงข้อมูลที่ผลิตภัณฑ์เก็บรวบรวม เหตุผลที่เก็บรวบรวม ตลอดจนการใช้งานข้อมูลดังกล่าว</translation>
 <translation id="7241389281993241388">โปรดลงชื่อเข้าใช้ <ph name="TOKEN_NAME" /> เพื่อนำเข้าใบรับรองไคลเอ็นต์</translation>
 <translation id="7241443820034350811">หากคีย์ความปลอดภัยของคุณไม่ได้อยู่ในรายการ ให้กดปุ่มของคีย์อย่างน้อย 5 วินาที</translation>
 <translation id="7243632151880336635">ล้างและออกจากระบบ</translation>
@@ -5201,6 +5216,7 @@
 <translation id="7987814697832569482">เชื่อมต่อผ่าน VPN นี้ทุกครั้ง</translation>
 <translation id="7988355189918024273">เปิดการใช้งานฟีเจอร์การเข้าถึง</translation>
 <translation id="7991296728590311172">การตั้งค่าการเข้าถึงด้วยสวิตช์</translation>
+<translation id="7992202128769240372">มี<ph name="SHEETS_LABEL" />เกินขีดจำกัดที่ <ph name="NUMBER_OF_SHEETS" /> แผ่น</translation>
 <translation id="7994350303002908848">ติดตั้ง Plugin VM ไม่ได้ โปรดลองอีกครั้ง หรือติดต่อผู้ดูแลระบบอุปกรณ์ขององค์กร รหัสข้อผิดพลาด: <ph name="ERROR_CODE" /></translation>
 <translation id="7994702968232966508">วิธีการ EAP</translation>
 <translation id="7997826902155442747">ลำดับความสำคัญของกระบวนการ</translation>

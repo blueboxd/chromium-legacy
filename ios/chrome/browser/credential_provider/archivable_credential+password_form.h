@@ -15,7 +15,7 @@ struct PasswordForm;
 @interface ArchivableCredential (PasswordForm)
 
 // Convenience initializer from a PasswordForm. Will return nil for forms
-// with an empty origin or Android forms.
+// blacklisted by the user, with an empty origin or Android forms.
 - (instancetype)initWithPasswordForm:(const autofill::PasswordForm&)passwordForm
                              favicon:(NSString*)favicon
                 validationIdentifier:(NSString*)validationIdentifier;

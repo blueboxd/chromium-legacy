@@ -38,6 +38,10 @@ const char kAudioVolumePercent[] = "settings.audio.volume_percent";
 // as the active one for audio I/O, or it's a new plugged device.
 const char kAudioDevicesState[] = "settings.audio.device_state";
 
+// A string pref storing an identifier that is getting sent with parental
+// consent in EDU account addition flow.
+const char kEduCoexistenceId[] = "account_manager.edu_coexistence_id";
+
 // A dictionary of info for Quirks Client/Server interaction, mostly last server
 // request times, keyed to display product_id's.
 const char kQuirksClientLastServerCheck[] = "quirks_client.last_server_check";

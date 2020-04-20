@@ -44,11 +44,11 @@ class ContentBrowserClient;
 class ContentClient;
 class ContentRendererClient;
 class CompositorDependencies;
-class MockRenderProcess;
 class PageState;
 class RendererMainPlatformDelegate;
 class RendererBlinkPlatformImpl;
 class RendererBlinkPlatformImplTestOverrideImpl;
+class RenderProcess;
 class RenderView;
 struct VisualProperties;
 
@@ -210,7 +210,7 @@ class RenderViewTest : public testing::Test {
   base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<CompositorDependencies> compositor_deps_;
-  std::unique_ptr<MockRenderProcess> mock_process_;
+  std::unique_ptr<RenderProcess> process_;
   // We use a naked pointer because we don't want to expose RenderViewImpl in
   // the embedder's namespace.
   RenderView* view_ = nullptr;

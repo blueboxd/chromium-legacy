@@ -28,6 +28,8 @@
 #include "components/feed/core/v2/stream_model.h"
 #include "components/feed/core/v2/stream_model_update_request.h"
 #include "components/feed/core/v2/tasks/load_stream_from_store_task.h"
+#include "components/feed/core/v2/test/callback_receiver.h"
+#include "components/feed/core/v2/test/proto_printer.h"
 #include "components/feed/core/v2/test/stream_builder.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -232,13 +234,15 @@ class TestWireResponseTranslator : public FeedStream::WireResponseTranslator {
  public:
   std::unique_ptr<StreamModelUpdateRequest> TranslateWireResponse(
       feedwire::Response response,
+      StreamModelUpdateRequest::Source source,
       base::TimeDelta response_time,
       base::Time current_time) override {
     if (injected_response_) {
+      injected_response_->source = source;
       return std::move(injected_response_);
     }
     return FeedStream::WireResponseTranslator::TranslateWireResponse(
-        std::move(response), response_time, current_time);
+        std::move(response), source, response_time, current_time);
   }
   void InjectResponse(std::unique_ptr<StreamModelUpdateRequest> response) {
     injected_response_ = std::move(response);
@@ -280,6 +284,10 @@ class TestMetricsReporter : public MetricsReporter {
               << " (store status: " << load_from_store_status << ")";
     MetricsReporter::OnLoadStream(load_from_store_status, final_status);
   }
+  void OnLoadMore(LoadStreamStatus final_status) override {
+    load_more_status = final_status;
+    MetricsReporter::OnLoadMore(final_status);
+  }
   void OnBackgroundRefresh(LoadStreamStatus final_status) override {
     background_refresh_status = final_status;
     MetricsReporter::OnBackgroundRefresh(final_status);
@@ -293,6 +301,7 @@ class TestMetricsReporter : public MetricsReporter {
 
   base::Optional<int> slice_viewed_index;
   base::Optional<LoadStreamStatus> load_stream_status;
+  base::Optional<LoadStreamStatus> load_more_status;
   base::Optional<LoadStreamStatus> background_refresh_status;
   base::Optional<base::TimeDelta> time_since_last_clear;
   base::Optional<TriggerType> refresh_trigger_type;
@@ -356,6 +365,26 @@ class FeedStreamTest : public testing::Test, public FeedStream::Delegate {
   void UnloadModel() {
     WaitForIdleTaskQueue();
     stream_->UnloadModelForTesting();
+  }
+
+  // Dumps the state of |FeedStore| to a string for debugging.
+  std::string DumpStoreState() {
+    base::RunLoop run_loop;
+    std::unique_ptr<std::vector<feedstore::Record>> records;
+    auto callback =
+        [&](bool, std::unique_ptr<std::vector<feedstore::Record>> result) {
+          records = std::move(result);
+          run_loop.Quit();
+        };
+    store_->GetDatabaseForTesting()->LoadEntries(
+        base::BindLambdaForTesting(callback));
+
+    run_loop.Run();
+    std::stringstream ss;
+    for (const feedstore::Record& record : *records) {
+      ss << record << '\n';
+    }
+    return ss.str();
   }
 
  protected:
@@ -600,10 +629,11 @@ TEST_F(FeedStreamTest, LoadFromNetworkBecauseStoreIsStale) {
   // Fill the store with stream data that is just barely stale, and verify we
   // fetch new data over the network.
   user_classifier_->OverrideUserClass(UserClass::kActiveSuggestionsConsumer);
-  store_->SaveFullStream(MakeTypicalInitialModelState(
-                             kTestTimeEpoch - base::TimeDelta::FromHours(12) -
-                             base::TimeDelta::FromMinutes(1)),
-                         base::DoNothing());
+  store_->OverwriteStream(MakeTypicalInitialModelState(
+                              /*first_cluster_id=*/0,
+                              kTestTimeEpoch - base::TimeDelta::FromHours(12) -
+                                  base::TimeDelta::FromMinutes(1)),
+                          base::DoNothing());
 
   // Store is stale, so we should fallback to a network request.
   response_translator_.InjectResponse(MakeTypicalInitialModelState());
@@ -714,10 +744,11 @@ TEST_F(FeedStreamTest, LoadStreamFromStore) {
   // Fill the store with stream data that is just barely fresh, and verify it
   // loads.
   user_classifier_->OverrideUserClass(UserClass::kActiveSuggestionsConsumer);
-  store_->SaveFullStream(MakeTypicalInitialModelState(
-                             kTestTimeEpoch - base::TimeDelta::FromHours(12) +
-                             base::TimeDelta::FromMinutes(1)),
-                         base::DoNothing());
+  store_->OverwriteStream(MakeTypicalInitialModelState(
+                              /*first_cluster_id=*/0,
+                              kTestTimeEpoch - base::TimeDelta::FromHours(12) +
+                                  base::TimeDelta::FromMinutes(1)),
+                          base::DoNothing());
   TestSurface surface(stream_.get());
   WaitForIdleTaskQueue();
 
@@ -729,7 +760,7 @@ TEST_F(FeedStreamTest, LoadStreamFromStore) {
 }
 
 TEST_F(FeedStreamTest, LoadingSpinnerIsSentInitially) {
-  store_->SaveFullStream(MakeTypicalInitialModelState(), base::DoNothing());
+  store_->OverwriteStream(MakeTypicalInitialModelState(), base::DoNothing());
   TestSurface surface(stream_.get());
 
   ASSERT_EQ("loading", surface.Describe());
@@ -764,7 +795,7 @@ TEST_F(FeedStreamTest, AttachMultipleSurfacesLoadsModelOnce) {
 }
 
 TEST_F(FeedStreamTest, ModelChangesAreSavedToStorage) {
-  store_->SaveFullStream(MakeTypicalInitialModelState(), base::DoNothing());
+  store_->OverwriteStream(MakeTypicalInitialModelState(), base::DoNothing());
   TestSurface surface(stream_.get());
   WaitForIdleTaskQueue();
   ASSERT_TRUE(surface.initial_state);
@@ -810,7 +841,7 @@ TEST_F(FeedStreamTest, ModelChangesAreSavedToStorage) {
 }
 
 TEST_F(FeedStreamTest, ReportSliceViewedIdentifiesCorrectIndex) {
-  store_->SaveFullStream(MakeTypicalInitialModelState(), base::DoNothing());
+  store_->OverwriteStream(MakeTypicalInitialModelState(), base::DoNothing());
   TestSurface surface;
   stream_->AttachSurface(&surface);
   WaitForIdleTaskQueue();
@@ -841,6 +872,177 @@ TEST_F(FeedStreamTest, UsingTheFeedChangesUserClassification) {
     stream_->ReportOpenAction();
   }
   EXPECT_EQ(UserClass::kActiveSuggestionsConsumer, stream_->GetUserClass());
+}
+
+TEST_F(FeedStreamTest, LoadMoreAppendsContent) {
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  TestSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+  ASSERT_EQ("2 slices", surface.Describe());
+  // Load page 2.
+  response_translator_.InjectResponse(MakeTypicalNextPageState(2));
+  CallbackReceiver<bool> callback;
+  stream_->LoadMore(callback.Bind());
+  WaitForIdleTaskQueue();
+  ASSERT_EQ(base::Optional<bool>(true), callback.GetResult());
+  EXPECT_EQ("4 slices 2 updates", surface.Describe());
+  // Load page 3.
+  response_translator_.InjectResponse(MakeTypicalNextPageState(3));
+  stream_->LoadMore(callback.Bind());
+
+  WaitForIdleTaskQueue();
+  ASSERT_EQ(base::Optional<bool>(true), callback.GetResult());
+  EXPECT_EQ("6 slices 3 updates", surface.Describe());
+}
+
+TEST_F(FeedStreamTest, LoadMorePersistsData) {
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  TestSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+  ASSERT_EQ("2 slices", surface.Describe());
+
+  // Load page 2.
+  response_translator_.InjectResponse(MakeTypicalNextPageState(2));
+  CallbackReceiver<bool> callback;
+  stream_->LoadMore(callback.Bind());
+
+  WaitForIdleTaskQueue();
+  ASSERT_EQ(base::Optional<bool>(true), callback.GetResult());
+
+  // Verify stored state is equivalent to in-memory model.
+  EXPECT_STRINGS_EQUAL(stream_->GetModel()->DumpStateForTesting(),
+                       ModelStateFor(store_.get()));
+}
+
+TEST_F(FeedStreamTest, LoadMorePersistAndLoadMore) {
+  // Verify we can persist a LoadMore, and then do another LoadMore after
+  // reloading state.
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  TestSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+  ASSERT_EQ("2 slices", surface.Describe());
+
+  // Load page 2.
+  response_translator_.InjectResponse(MakeTypicalNextPageState(2));
+  CallbackReceiver<bool> callback;
+  stream_->LoadMore(callback.Bind());
+  WaitForIdleTaskQueue();
+  ASSERT_EQ(base::Optional<bool>(true), callback.GetResult());
+
+  surface.Detach();
+  UnloadModel();
+
+  // Load page 3.
+  surface.Attach(stream_.get());
+  response_translator_.InjectResponse(MakeTypicalNextPageState(3));
+  WaitForIdleTaskQueue();
+  callback.Clear();
+  surface.Clear();
+  stream_->LoadMore(callback.Bind());
+  WaitForIdleTaskQueue();
+
+  ASSERT_EQ(base::Optional<bool>(true), callback.GetResult());
+  ASSERT_EQ("6 slices", surface.Describe());
+  // Verify stored state is equivalent to in-memory model.
+  EXPECT_STRINGS_EQUAL(stream_->GetModel()->DumpStateForTesting(),
+                       ModelStateFor(store_.get()));
+}
+
+TEST_F(FeedStreamTest, LoadMoreSendsTokens) {
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  TestSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+  ASSERT_EQ("2 slices", surface.Describe());
+
+  response_translator_.InjectResponse(MakeTypicalNextPageState(2));
+  CallbackReceiver<bool> callback;
+  stream_->LoadMore(callback.Bind());
+
+  WaitForIdleTaskQueue();
+  ASSERT_EQ("4 slices 2 updates", surface.Describe());
+
+  EXPECT_EQ(
+      "token-1",
+      network_.query_request_sent->feed_request().consistency_token().token());
+  EXPECT_EQ("page-2", network_.query_request_sent->feed_request()
+                          .feed_query()
+                          .next_page_token()
+                          .next_page_token()
+                          .next_page_token());
+
+  response_translator_.InjectResponse(MakeTypicalNextPageState(3));
+  stream_->LoadMore(callback.Bind());
+
+  WaitForIdleTaskQueue();
+  ASSERT_EQ("6 slices 3 updates", surface.Describe());
+
+  EXPECT_EQ(
+      "token-2",
+      network_.query_request_sent->feed_request().consistency_token().token());
+  EXPECT_EQ("page-3", network_.query_request_sent->feed_request()
+                          .feed_query()
+                          .next_page_token()
+                          .next_page_token()
+                          .next_page_token());
+}
+
+TEST_F(FeedStreamTest, LoadMoreFail) {
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  TestSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+  ASSERT_EQ("2 slices", surface.Describe());
+
+  // Don't inject another response, which results in a proto translation
+  // failure.
+  CallbackReceiver<bool> callback;
+  stream_->LoadMore(callback.Bind());
+
+  WaitForIdleTaskQueue();
+
+  EXPECT_EQ(base::Optional<bool>(false), callback.GetResult());
+  EXPECT_EQ("2 slices", surface.Describe());
+}
+
+TEST_F(FeedStreamTest, LoadMoreWithClearAllInResponse) {
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  TestSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+  ASSERT_EQ("2 slices", surface.Describe());
+
+  // Use a different initial state (which includes a CLEAR_ALL).
+  response_translator_.InjectResponse(MakeTypicalInitialModelState(5));
+  CallbackReceiver<bool> callback;
+  stream_->LoadMore(callback.Bind());
+
+  WaitForIdleTaskQueue();
+  ASSERT_EQ(base::Optional<bool>(true), callback.GetResult());
+
+  // Verify stored state is equivalent to in-memory model.
+  EXPECT_STRINGS_EQUAL(stream_->GetModel()->DumpStateForTesting(),
+                       ModelStateFor(store_.get()));
+
+  // Verify the new state has been pushed to |surface|.
+  ASSERT_EQ("2 slices 2 updates", surface.Describe());
+  // Check that the surface is showing the new content.
+  const feedui::StreamUpdate& initial_state = surface.update.value();
+  ASSERT_EQ(2, initial_state.updated_slices().size());
+  EXPECT_NE("", initial_state.updated_slices(0).slice().slice_id());
+  EXPECT_EQ("f:5", initial_state.updated_slices(0)
+                       .slice()
+                       .xsurface_slice()
+                       .xsurface_frame());
+  EXPECT_NE("", initial_state.updated_slices(1).slice().slice_id());
+  EXPECT_EQ("f:6", initial_state.updated_slices(1)
+                       .slice()
+                       .xsurface_slice()
+                       .xsurface_frame());
+}
+
+TEST_F(FeedStreamTest, LoadMoreBeforeLoad) {
+  CallbackReceiver<bool> callback;
+  stream_->LoadMore(callback.Bind());
+
+  EXPECT_EQ(base::Optional<bool>(false), callback.GetResult());
 }
 
 }  // namespace

@@ -96,13 +96,13 @@ MouseWheelPhaseHandler* RenderWidgetHostViewBase::GetMouseWheelPhaseHandler() {
 
 void RenderWidgetHostViewBase::StopFlingingIfNecessary(
     const blink::WebGestureEvent& event,
-    InputEventAckState ack_result) {
+    blink::mojom::InputEventResultState ack_result) {
   // Reset view_stopped_flinging_for_test_ at the beginning of the scroll
   // sequence.
   if (event.GetType() == blink::WebInputEvent::kGestureScrollBegin)
     view_stopped_flinging_for_test_ = false;
 
-  bool processed = INPUT_EVENT_ACK_STATE_CONSUMED == ack_result;
+  bool processed = blink::mojom::InputEventResultState::kConsumed == ack_result;
   if (!processed &&
       event.GetType() == blink::WebInputEvent::kGestureScrollUpdate &&
       event.data.scroll_update.inertial_phase ==
@@ -353,29 +353,27 @@ RenderWidgetHostViewBase::GetKeyboardLayoutMap() {
   return base::flat_map<std::string, std::string>();
 }
 
-InputEventAckState RenderWidgetHostViewBase::FilterInputEvent(
+blink::mojom::InputEventResultState RenderWidgetHostViewBase::FilterInputEvent(
     const blink::WebInputEvent& input_event) {
   // By default, input events are simply forwarded to the renderer.
-  return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
+  return blink::mojom::InputEventResultState::kNotConsumed;
 }
 
 void RenderWidgetHostViewBase::WheelEventAck(
     const blink::WebMouseWheelEvent& event,
-    InputEventAckState ack_result) {
-}
+    blink::mojom::InputEventResultState ack_result) {}
 
 void RenderWidgetHostViewBase::GestureEventAck(
     const blink::WebGestureEvent& event,
-    InputEventAckState ack_result) {
-}
+    blink::mojom::InputEventResultState ack_result) {}
 
 void RenderWidgetHostViewBase::ChildDidAckGestureEvent(
     const blink::WebGestureEvent& event,
-    InputEventAckState ack_result) {}
+    blink::mojom::InputEventResultState ack_result) {}
 
 void RenderWidgetHostViewBase::ForwardTouchpadZoomEventIfNecessary(
     const blink::WebGestureEvent& event,
-    InputEventAckState ack_result) {
+    blink::mojom::InputEventResultState ack_result) {
   if (!event.IsTouchpadZoomEvent())
     return;
   if (!event.NeedsWheelEvent())
@@ -389,7 +387,7 @@ void RenderWidgetHostViewBase::ForwardTouchpadZoomEventIfNecessary(
       pending_touchpad_pinch_begin_->SetNeedsWheelEvent(false);
       break;
     case blink::WebInputEvent::kGesturePinchUpdate:
-      if (ack_result != INPUT_EVENT_ACK_STATE_CONSUMED &&
+      if (ack_result != blink::mojom::InputEventResultState::kConsumed &&
           !event.data.pinch_update.zoom_disabled) {
         if (pending_touchpad_pinch_begin_) {
           host()->ForwardGestureEvent(*pending_touchpad_pinch_begin_);
@@ -412,7 +410,7 @@ void RenderWidgetHostViewBase::ForwardTouchpadZoomEventIfNecessary(
       }
       break;
     case blink::WebInputEvent::kGestureDoubleTap:
-      if (ack_result != INPUT_EVENT_ACK_STATE_CONSUMED) {
+      if (ack_result != blink::mojom::InputEventResultState::kConsumed) {
         blink::WebGestureEvent double_tap(event);
         double_tap.SetNeedsWheelEvent(false);
         // TODO(mcnee): Support double-tap zoom gesture for OOPIFs. For now,
@@ -475,7 +473,7 @@ bool RenderWidgetHostViewBase::RequestRepaintForTesting() {
 
 void RenderWidgetHostViewBase::ProcessAckedTouchEvent(
     const TouchEventWithLatencyInfo& touch,
-    InputEventAckState ack_result) {
+    blink::mojom::InputEventResultState ack_result) {
   NOTREACHED();
 }
 

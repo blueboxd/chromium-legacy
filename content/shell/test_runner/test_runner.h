@@ -185,10 +185,8 @@ class TestRunner {
   bool ShouldWaitUntilExternalURLLoad() const;
   const std::set<std::string>* HttpHeadersToClear() const;
   bool ClearReferrer() const;
-  bool is_web_platform_tests_mode() const {
-    return is_web_platform_tests_mode_;
-  }
-  void set_is_web_platform_tests_mode() { is_web_platform_tests_mode_ = true; }
+  bool IsWebPlatformTestsMode() const;
+  void SetIsWebPlatformTestsMode();
   bool animation_requires_raster() const { return animation_requires_raster_; }
   void SetAnimationRequiresRaster(bool do_raster);
 
@@ -504,9 +502,6 @@ class TestRunner {
                         const std::string& frontend_url);
   void CloseWebInspector();
 
-  void NavigateSecondaryWindow(const GURL& url);
-  void InspectSecondaryWindow();
-
   // Inspect chooser state
   bool IsChooserShown();
 
@@ -648,9 +643,6 @@ class TestRunner {
   // Note - this can be a dangling pointer to an already destroyed WebView (this
   // is ok, because this is taken care of in BlinkTestRunner::SetFocus).
   blink::WebView* previously_focused_view_ = nullptr;
-
-  // True when running a test in web_tests/external/wpt/.
-  bool is_web_platform_tests_mode_ = false;
 
   // True if rasterization should be performed during tests that examine
   // fling-style animations. This includes middle-click auto-scroll behaviors.

@@ -635,9 +635,9 @@ void ReportCookiesChangedOnUI(
             cross_scheme_warning;
         if (cookie_and_status.status.HasCrossSchemeWarning(
                 &cross_scheme_warning)) {
-          ukm::SourceId source_id =
-              static_cast<WebContentsImpl*>(web_contents)
-                  ->GetUkmSourceIdForLastCommittedSource();
+          ukm::SourceId source_id = static_cast<WebContentsImpl*>(web_contents)
+                                        ->GetMainFrame()
+                                        ->GetPageUkmSourceId();
 
           int64_t context =
               CrossSchemeWarningToContextInt64(cross_scheme_warning);
@@ -692,9 +692,9 @@ void ReportCookiesReadOnUI(
         net::CanonicalCookie::CookieInclusionStatus::WarningReason
             cross_scheme_warning;
         if (status.HasCrossSchemeWarning(&cross_scheme_warning)) {
-          ukm::SourceId source_id =
-              static_cast<WebContentsImpl*>(web_contents)
-                  ->GetUkmSourceIdForLastCommittedSource();
+          ukm::SourceId source_id = static_cast<WebContentsImpl*>(web_contents)
+                                        ->GetMainFrame()
+                                        ->GetPageUkmSourceId();
 
           int64_t context =
               CrossSchemeWarningToContextInt64(cross_scheme_warning);

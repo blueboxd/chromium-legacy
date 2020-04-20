@@ -425,8 +425,8 @@ void NetInternalsMessageHandler::ImportONCFileToNSSDB(
     error += "Some certificates couldn't be parsed. ";
   cert_importer.ImportAllCertificatesUserInitiated(
       certs->server_or_authority_certificates(), certs->client_certificates(),
-      base::Bind(&NetInternalsMessageHandler::OnCertificatesImported,
-                 AsWeakPtr(), error /* previous_error */));
+      base::BindOnce(&NetInternalsMessageHandler::OnCertificatesImported,
+                     AsWeakPtr(), error /* previous_error */));
 }
 
 void NetInternalsMessageHandler::OnCertificatesImported(
@@ -546,13 +546,11 @@ void NetInternalsMessageHandler::OnSetNetworkDebugMode(
   std::string subsystem;
   if (list->GetSize() != 1 || !list->GetString(0, &subsystem))
     NOTREACHED();
-  chromeos::DBusThreadManager::Get()->GetDebugDaemonClient()->
-      SetDebugMode(
-          subsystem,
-          base::Bind(
-              &NetInternalsMessageHandler::OnSetNetworkDebugModeCompleted,
-              AsWeakPtr(),
-              subsystem));
+  chromeos::DBusThreadManager::Get()->GetDebugDaemonClient()->SetDebugMode(
+      subsystem,
+      base::BindOnce(
+          &NetInternalsMessageHandler::OnSetNetworkDebugModeCompleted,
+          AsWeakPtr(), subsystem));
 }
 
 void NetInternalsMessageHandler::OnSetNetworkDebugModeCompleted(

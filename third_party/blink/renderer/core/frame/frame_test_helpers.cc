@@ -115,6 +115,15 @@ T* CreateDefaultClientIfNeeded(T* client, std::unique_ptr<T>& owned_client) {
 
 }  // namespace
 
+cc::LayerTreeSettings GetSynchronousSingleThreadLayerTreeSettings() {
+  cc::LayerTreeSettings settings;
+  // Use synchronous compositing so that the MessageLoop becomes idle and the
+  // test makes progress.
+  settings.single_thread_proxy_scheduler = false;
+  settings.use_layer_lists = true;
+  return settings;
+}
+
 void LoadFrameDontWait(WebLocalFrame* frame, const WebURL& url) {
   auto* impl = To<WebLocalFrameImpl>(frame);
   if (url.ProtocolIs("javascript")) {
@@ -250,8 +259,11 @@ WebLocalFrameImpl* CreateProvisional(WebRemoteFrame& old_frame,
         CrossVariantMojoAssociatedReceiver<mojom::WidgetInterfaceBase>());
     widget_client->SetFrameWidget(frame_widget);
     // The WebWidget requires the compositor to be set before it is used.
-    frame_widget->SetCompositorHosts(widget_client->layer_tree_host(),
-                                     widget_client->animation_host());
+    widget_client->set_layer_tree_host(frame_widget->InitializeCompositing(
+        widget_client->task_graph_runner(),
+        GetSynchronousSingleThreadLayerTreeSettings(),
+        std::make_unique<cc::TestUkmRecorderFactory>()));
+    frame_widget->SetCompositorVisible(true);
   } else if (frame->Parent()->IsWebRemoteFrame()) {
     widget_client = std::make_unique<TestWebWidgetClient>();
     WebFrameWidget* frame_widget = WebFrameWidget::CreateForChildLocalRoot(
@@ -262,8 +274,11 @@ WebLocalFrameImpl* CreateProvisional(WebRemoteFrame& old_frame,
         CrossVariantMojoAssociatedReceiver<mojom::WidgetInterfaceBase>());
     widget_client->SetFrameWidget(frame_widget);
     // The WebWidget requires the compositor to be set before it is used.
-    frame_widget->SetCompositorHosts(widget_client->layer_tree_host(),
-                                     widget_client->animation_host());
+    widget_client->set_layer_tree_host(frame_widget->InitializeCompositing(
+        widget_client->task_graph_runner(),
+        GetSynchronousSingleThreadLayerTreeSettings(),
+        std::make_unique<cc::TestUkmRecorderFactory>()));
+    frame_widget->SetCompositorVisible(true);
     frame_widget->Resize(WebSize());
   }
   if (widget_client)
@@ -305,9 +320,12 @@ WebLocalFrameImpl* CreateLocalChild(WebRemoteFrame& parent,
       CrossVariantMojoAssociatedRemote<mojom::WidgetHostInterfaceBase>(),
       CrossVariantMojoAssociatedReceiver<mojom::WidgetInterfaceBase>());
   // The WebWidget requires the compositor to be set before it is used.
-  frame_widget->SetCompositorHosts(widget_client->layer_tree_host(),
-                                   widget_client->animation_host());
   widget_client->SetFrameWidget(frame_widget);
+  widget_client->set_layer_tree_host(frame_widget->InitializeCompositing(
+      widget_client->task_graph_runner(),
+      GetSynchronousSingleThreadLayerTreeSettings(),
+      std::make_unique<cc::TestUkmRecorderFactory>()));
+  frame_widget->SetCompositorVisible(true);
   // Set an initial size for subframes.
   if (frame->Parent())
     frame_widget->Resize(WebSize());
@@ -373,9 +391,13 @@ WebViewImpl* WebViewHelper::InitializeWithOpener(
       CrossVariantMojoAssociatedRemote<mojom::WidgetHostInterfaceBase>(),
       CrossVariantMojoAssociatedReceiver<mojom::WidgetInterfaceBase>());
   // The WebWidget requires the compositor to be set before it is used.
-  widget->SetCompositorHosts(test_web_widget_client_->layer_tree_host(),
-                             test_web_widget_client_->animation_host());
   test_web_widget_client_->SetFrameWidget(widget);
+  test_web_widget_client_->set_layer_tree_host(widget->InitializeCompositing(
+      test_web_widget_client_->task_graph_runner(),
+      GetSynchronousSingleThreadLayerTreeSettings(),
+      std::make_unique<cc::TestUkmRecorderFactory>()));
+  widget->SetCompositorVisible(true);
+
   // We inform the WebView when it has a local main frame attached once the
   // WebFrame it fully set up and the WebWidgetClient is initialized (which is
   // the case by this point).
@@ -649,28 +671,7 @@ void TestWebRemoteFrameClient::FrameDetached(DetachType type) {
   self_owned_.reset();
 }
 
-content::LayerTreeView* LayerTreeViewFactory::Initialize(
-    content::LayerTreeViewDelegate* specified_delegate) {
-  cc::LayerTreeSettings settings;
-  // Use synchronous compositing so that the MessageLoop becomes idle and the
-  // test makes progress.
-  settings.single_thread_proxy_scheduler = false;
-  settings.use_layer_lists = true;
-
-  layer_tree_view_ = std::make_unique<content::LayerTreeView>(
-      specified_delegate, Thread::Current()->GetTaskRunner(),
-      /*compositor_thread=*/nullptr, &test_task_graph_runner_,
-      &fake_thread_scheduler_);
-  layer_tree_view_->Initialize(settings,
-                               std::make_unique<cc::TestUkmRecorderFactory>());
-  layer_tree_view_->SetVisible(true);
-  return layer_tree_view_.get();
-}
-
-TestWebWidgetClient::TestWebWidgetClient() {
-  layer_tree_view_ = layer_tree_view_factory_.Initialize(this);
-  animation_host_ = layer_tree_view_->animation_host();
-}
+TestWebWidgetClient::TestWebWidgetClient() = default;
 
 void TestWebWidgetClient::SetFrameWidget(WebFrameWidget* widget) {
   frame_widget_ = widget;
@@ -717,23 +718,6 @@ void TestWebWidgetClient::DidMeaningfulLayout(
 
 viz::FrameSinkId TestWebWidgetClient::GetFrameSinkId() {
   return viz::FrameSinkId();
-}
-
-void TestWebWidgetClient::BeginMainFrame(base::TimeTicks frame_time) {
-  frame_widget_->BeginFrame(frame_time);
-}
-
-void TestWebWidgetClient::DidBeginMainFrame() {
-  frame_widget_->DidBeginFrame();
-}
-
-void TestWebWidgetClient::UpdateVisualState() {
-  frame_widget_->UpdateVisualState();
-}
-
-void TestWebWidgetClient::ApplyViewportChanges(
-    const ApplyViewportChangesArgs& args) {
-  frame_widget_->ApplyViewportChanges(args);
 }
 
 void TestWebWidgetClient::RequestNewLayerTreeFrameSink(

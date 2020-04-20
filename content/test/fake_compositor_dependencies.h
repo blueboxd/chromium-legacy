@@ -32,10 +32,7 @@ class FakeCompositorDependencies : public CompositorDependencies {
   bool IsGpuMemoryBufferCompositorResourcesEnabled() override;
   bool IsElasticOverscrollEnabled() override;
   bool IsUseZoomForDSFEnabled() override;
-  scoped_refptr<base::SingleThreadTaskRunner>
-  GetCompositorMainThreadTaskRunner() override;
-  scoped_refptr<base::SingleThreadTaskRunner>
-  GetCompositorImplThreadTaskRunner() override;
+  bool IsSingleThreaded() override;
   scoped_refptr<base::SingleThreadTaskRunner> GetCleanupTaskRunner() override;
   blink::scheduler::WebThreadScheduler* GetWebMainThreadScheduler() override;
   cc::TaskGraphRunner* GetTaskGraphRunner() override;

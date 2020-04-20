@@ -697,8 +697,8 @@ void AboutHandler::RequestUpdateOverCellular(const std::string& update_version,
 void AboutHandler::HandleRefreshTPMFirmwareUpdateStatus(
     const base::ListValue* args) {
   chromeos::tpm_firmware_update::GetAvailableUpdateModes(
-      base::Bind(&AboutHandler::RefreshTPMFirmwareUpdateStatus,
-                 weak_factory_.GetWeakPtr()),
+      base::BindOnce(&AboutHandler::RefreshTPMFirmwareUpdateStatus,
+                     weak_factory_.GetWeakPtr()),
       base::TimeDelta());
 }
 

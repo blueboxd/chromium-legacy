@@ -87,7 +87,7 @@ public class MostVisitedSitesFaviconHelperTest {
                 urlsToUpdate.size(), () -> getStateDirectorySize() - originalFilesNum));
 
         // The Favicon File lists in the disk.
-        File topSitesDirectory = MostVisitedSitesMetadataUtils.getStateDirectoryForTesting();
+        File topSitesDirectory = MostVisitedSitesMetadataUtils.getStateDirectory();
         Assert.assertNotNull(topSitesDirectory);
         String[] faviconFiles = topSitesDirectory.list();
         Assert.assertNotNull(faviconFiles);
@@ -141,8 +141,7 @@ public class MostVisitedSitesFaviconHelperTest {
     }
 
     private static int getStateDirectorySize() {
-        return Objects
-                .requireNonNull(MostVisitedSitesMetadataUtils.getStateDirectoryForTesting().list())
+        return Objects.requireNonNull(MostVisitedSitesMetadataUtils.getStateDirectory().list())
                 .length;
     }
 }

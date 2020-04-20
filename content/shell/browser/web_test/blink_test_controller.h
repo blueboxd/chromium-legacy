@@ -131,7 +131,6 @@ class BlinkTestController : public WebContentsObserver,
   void OnTestFinishedInSecondaryRenderer();
   void OnInitiateCaptureDump(bool capture_navigation_history,
                              bool capture_pixels);
-  void OnInspectSecondaryWindow();
 
   // Makes sure that the potentially new renderer associated with |frame| is 1)
   // initialized for the test, 2) kept up to date wrt test flags and 3)
@@ -211,7 +210,6 @@ class BlinkTestController : public WebContentsObserver,
   void GetBluetoothManualChooserEvents() override;
   void SetPopupBlockingEnabled(bool block_popups) override;
   void LoadURLForFrame(const GURL& url, const std::string& frame_name) override;
-  void NavigateSecondaryWindow(const GURL& url) override;
   void SetScreenOrientationChanged() override;
   void BlockThirdPartyCookies(bool block);
 
@@ -234,8 +232,6 @@ class BlinkTestController : public WebContentsObserver,
 
   static BlinkTestController* instance_;
 
-  Shell* SecondaryWindow();
-  void LoadDevToolsJSTest();
   void DiscardMainWindow();
 
   // Message handlers.
@@ -284,7 +280,6 @@ class BlinkTestController : public WebContentsObserver,
 
   Shell* main_window_;
   Shell* secondary_window_;
-  Shell* devtools_window_;
 
   std::unique_ptr<WebTestDevToolsBindings> devtools_bindings_;
   std::unique_ptr<DevToolsProtocolTestBindings>

@@ -80,7 +80,8 @@ TEST_F(PluginServiceImplTest, RecordBrokerUsage) {
 
   NavigateAndCommit(GURL(kURL1));
   ukm::SourceId source_id = static_cast<WebContentsImpl*>(web_contents())
-                                ->GetUkmSourceIdForLastCommittedSource();
+                                ->GetMainFrame()
+                                ->GetPageUkmSourceId();
   PluginServiceImpl* service = PluginServiceImpl::GetInstance();
 
   // Internal usage of the broker should not record metrics. Internal usage will

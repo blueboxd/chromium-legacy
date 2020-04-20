@@ -245,11 +245,9 @@ void CustomHomePagesTableModel::LoadAllTitles() {
   for (Entry& entry : entries_) {
     if (history_service) {
       entry.task_id = history_service->QueryURL(
-          entry.url,
-          false,
-          base::Bind(&CustomHomePagesTableModel::OnGotOneOfManyTitles,
-                     base::Unretained(this),
-                     entry.url),
+          entry.url, false,
+          base::BindOnce(&CustomHomePagesTableModel::OnGotOneOfManyTitles,
+                         base::Unretained(this), entry.url),
           &task_tracker_);
     }
   }

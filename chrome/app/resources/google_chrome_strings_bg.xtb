@@ -99,6 +99,7 @@
 <translation id="3735758079232443276">Разширението „<ph name="EXTENSION_NAME" />“ промени страницата, която се показва при стартиране на Chrome.</translation>
 <translation id="3780814664026482060">Chrome – <ph name="PAGE_TITLE" /></translation>
 <translation id="386202838227397562">Моля, затворете всички прозорци на Google Chrome и опитайте отново.</translation>
+<translation id="3865754807470779944">Инсталирана е версия <ph name="PRODUCT_VERSION" /> на Chrome</translation>
 <translation id="3873044882194371212">Отваряне на връзката в прозорец в режим „инко&amp;гнито“ на Chrome</translation>
 <translation id="3889417619312448367">Деинсталиране на Google Chrome</translation>
 <translation id="4050175100176540509">В последната версия са налице важни подобрения в сигурността и нови функции.</translation>
@@ -235,6 +236,7 @@
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8556340503434111824">Налице е нова версия на Google Chrome, която е по-бърза от всякога.</translation>
 <translation id="8614913330719544658">Google Chrome блокира. Да се стартира ли отново сега?</translation>
+<translation id="861702415419836452">Chrome се нуждае от разрешение за достъп до камерата ви, за да създаде триизмерна карта на заобикалящата ви среда</translation>
 <translation id="8625237574518804553">{0,plural, =1{Chrome ще се стартира отново след 1 минута}other{Chrome ще се стартира отново след # минути}}</translation>
 <translation id="8641606876632989680">Chrome ще ви уведоми, когато влизате в профил с компрометирана парола</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>

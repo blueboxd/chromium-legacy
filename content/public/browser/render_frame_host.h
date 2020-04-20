@@ -22,6 +22,7 @@
 #include "ipc/ipc_sender.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
 #include "third_party/blink/public/common/feature_policy/document_policy.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
@@ -548,6 +549,13 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // IsInBackForwardCache with the enum values and a new function like
   // DidChangeLifecycleState.
   virtual bool IsInBackForwardCache() = 0;
+
+  // Return the UKM source id for the page load (last committed cross-document
+  // non-bfcache navigation in the main frame).
+  // This id typically has an associated PageLoad UKM event.
+  // Note: this can be called on any frame, but this id for all subframes is the
+  // same as the id for the main frame.
+  virtual ukm::SourceId GetPageUkmSourceId() = 0;
 
  private:
   // This interface should only be implemented inside content.

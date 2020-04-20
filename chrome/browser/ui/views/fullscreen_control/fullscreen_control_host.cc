@@ -148,8 +148,8 @@ void FullscreenControlHost::OnKeyEvent(const ui::KeyEvent& event) {
           ->RequiresPressAndHoldEscToExit()) {
     key_press_delay_timer_.Start(
         FROM_HERE, kKeyPressPopupDelay,
-        base::Bind(&FullscreenControlHost::ShowForInputEntryMethod,
-                   base::Unretained(this), InputEntryMethod::KEYBOARD));
+        base::BindOnce(&FullscreenControlHost::ShowForInputEntryMethod,
+                       base::Unretained(this), InputEntryMethod::KEYBOARD));
   } else if (event.type() == ui::ET_KEY_RELEASED) {
     key_press_delay_timer_.Stop();
     if (IsVisible() && input_entry_method_ == InputEntryMethod::KEYBOARD)
@@ -274,8 +274,8 @@ void FullscreenControlHost::StartPopupTimeout(
     base::TimeDelta timeout) {
   popup_timeout_timer_.Start(
       FROM_HERE, timeout,
-      base::BindRepeating(&FullscreenControlHost::OnPopupTimeout,
-                          base::Unretained(this), expected_input_method));
+      base::BindOnce(&FullscreenControlHost::OnPopupTimeout,
+                     base::Unretained(this), expected_input_method));
 }
 
 void FullscreenControlHost::OnPopupTimeout(

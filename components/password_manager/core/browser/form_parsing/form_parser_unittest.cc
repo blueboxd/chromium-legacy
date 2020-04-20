@@ -2412,29 +2412,54 @@ TEST(FormParserTest, GetSignonRealm) {
 }
 
 TEST(FormParserTest, TypedValues) {
-  CheckTestData({{
-      .description_for_logging = "Simple sign-in forms with typed values",
-      // Tests that typed values are taken as username, password and
-      // new password instead of values that are set by JavaScript.
-      .fields =
-          {
-              {.role = ElementRole::USERNAME,
-               .autocomplete_attribute = "username",
-               .value = "js_username",
-               .typed_value = "typed_username",
-               .form_control_type = "text"},
-              {.role = ElementRole::CURRENT_PASSWORD,
-               .autocomplete_attribute = "current-password",
-               .value = "js_password",
-               .typed_value = "typed_password",
-               .form_control_type = "password"},
-              {.role = ElementRole::NEW_PASSWORD,
-               .autocomplete_attribute = "new-password",
-               .value = "js_new_password",
-               .typed_value = "typed_new_password",
-               .form_control_type = "password"},
-          },
-  }});
+  CheckTestData({
+      {
+          .description_for_logging = "Form with changed by JavaScript values",
+          // Tests that typed values are taken as username, password and
+          // new password instead of values that are set by JavaScript.
+          .fields =
+              {
+                  {.role = ElementRole::USERNAME,
+                   .autocomplete_attribute = "username",
+                   .value = "js_username",
+                   .typed_value = "typed_username",
+                   .form_control_type = "text"},
+                  {.role = ElementRole::CURRENT_PASSWORD,
+                   .autocomplete_attribute = "current-password",
+                   .value = "js_password",
+                   .typed_value = "typed_password",
+                   .form_control_type = "password"},
+                  {.role = ElementRole::NEW_PASSWORD,
+                   .autocomplete_attribute = "new-password",
+                   .value = "js_new_password",
+                   .typed_value = "typed_new_password",
+                   .form_control_type = "password"},
+              },
+      },
+      {
+          .description_for_logging = "Form with cleared by JavaScript values",
+          // Tests that typed values are taken as username, password and
+          // new password instead of values that are cleared by JavaScript.
+          .fields =
+              {
+                  {.role = ElementRole::USERNAME,
+                   .autocomplete_attribute = "username",
+                   .value = "",
+                   .typed_value = "typed_username",
+                   .form_control_type = "text"},
+                  {.role = ElementRole::CURRENT_PASSWORD,
+                   .autocomplete_attribute = "current-password",
+                   .value = "",
+                   .typed_value = "typed_password",
+                   .form_control_type = "password"},
+                  {.role = ElementRole::NEW_PASSWORD,
+                   .autocomplete_attribute = "new-password",
+                   .value = "",
+                   .typed_value = "typed_new_password",
+                   .form_control_type = "password"},
+              },
+      },
+  });
 }
 
 TEST(FormParserTest, ContradictingPasswordPredictionAndAutocomplete) {

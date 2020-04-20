@@ -175,7 +175,7 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
       const blink::WebInputEventAttribution& attribution);
   void HandledInputEvent(
       mojom::WidgetInputHandler::DispatchEventCallback callback,
-      InputEventAckState ack_state,
+      blink::mojom::InputEventResultState ack_state,
       const ui::LatencyInfo& latency_info,
       std::unique_ptr<ui::DidOverscrollParams> overscroll_params,
       base::Optional<cc::TouchAction> touch_action);

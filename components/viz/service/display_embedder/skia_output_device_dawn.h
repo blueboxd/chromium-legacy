@@ -51,6 +51,7 @@ class SkiaOutputDeviceDawn : public SkiaOutputDevice {
   wgpu::SwapChain swap_chain_;
   wgpu::Texture texture_;
   sk_sp<SkSurface> sk_surface_;
+  std::unique_ptr<gfx::VSyncProvider> vsync_provider_;
 
   gfx::Size size_;
   sk_sp<SkColorSpace> sk_color_space_;

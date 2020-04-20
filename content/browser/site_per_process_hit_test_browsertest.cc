@@ -100,12 +100,12 @@ class TestInputEventObserver : public RenderWidgetHost::InputEventObserver {
     event_ = event.Clone();
   }
 
-  const std::vector<InputEventAckSource>& events_acked() {
+  const std::vector<blink::mojom::InputEventResultSource>& events_acked() {
     return events_acked_;
   }
 
-  void OnInputEventAck(InputEventAckSource source,
-                       InputEventAckState state,
+  void OnInputEventAck(blink::mojom::InputEventResultSource source,
+                       blink::mojom::InputEventResultState state,
                        const blink::WebInputEvent&) override {
     events_acked_.push_back(source);
   }
@@ -113,7 +113,7 @@ class TestInputEventObserver : public RenderWidgetHost::InputEventObserver {
  private:
   RenderWidgetHost* host_;
   std::vector<blink::WebInputEvent::Type> events_received_;
-  std::vector<InputEventAckSource> events_acked_;
+  std::vector<blink::mojom::InputEventResultSource> events_acked_;
   ui::WebScopedInputEvent event_;
 
   DISALLOW_COPY_AND_ASSIGN(TestInputEventObserver);
@@ -1235,8 +1235,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
   auto await_touch_event_with_position = base::BindRepeating(
       [](blink::WebInputEvent::Type expected_type,
          RenderWidgetHostViewBase* rwhv, gfx::PointF expected_position,
-         gfx::PointF expected_position_in_root, InputEventAckSource,
-         InputEventAckState, const blink::WebInputEvent& event) {
+         gfx::PointF expected_position_in_root,
+         blink::mojom::InputEventResultSource,
+         blink::mojom::InputEventResultState,
+         const blink::WebInputEvent& event) {
         if (event.GetType() != expected_type)
           return false;
 
@@ -1257,8 +1259,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
   auto await_gesture_event_with_position = base::BindRepeating(
       [](blink::WebInputEvent::Type expected_type,
          RenderWidgetHostViewBase* rwhv, gfx::PointF expected_position,
-         gfx::PointF expected_position_in_root, InputEventAckSource,
-         InputEventAckState, const blink::WebInputEvent& event) {
+         gfx::PointF expected_position_in_root,
+         blink::mojom::InputEventResultSource,
+         blink::mojom::InputEventResultState,
+         const blink::WebInputEvent& event) {
         if (event.GetType() != expected_type)
           return false;
 
@@ -1662,9 +1666,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
   const gfx::Point position_in_root(gfx::ToCeiledInt(150 * scale_factor),
                                     gfx::ToCeiledInt(150 * scale_factor));
 
-  auto expect_gsb_with_position = base::BindRepeating(
-      [](const gfx::Point& expected_position, content::InputEventAckSource,
-         content::InputEventAckState, const blink::WebInputEvent& event) {
+  auto expect_gsb_with_position =
+      base::BindRepeating([](const gfx::Point& expected_position,
+                             blink::mojom::InputEventResultSource,
+                             blink::mojom::InputEventResultState,
+                             const blink::WebInputEvent& event) {
         if (event.GetType() != blink::WebInputEvent::kGestureScrollBegin)
           return false;
 
@@ -1904,10 +1910,12 @@ class SitePerProcessEmulatedTouchBrowserTest
 
     WaitForHitTestData(iframe_node->current_frame_host());
 
-    auto expect_gesture_with_position = base::BindRepeating(
-        [](blink::WebInputEvent::Type expected_type,
-           const gfx::Point& expected_position, content::InputEventAckSource,
-           content::InputEventAckState, const blink::WebInputEvent& event) {
+    auto expect_gesture_with_position =
+        base::BindRepeating([](blink::WebInputEvent::Type expected_type,
+                               const gfx::Point& expected_position,
+                               blink::mojom::InputEventResultSource,
+                               blink::mojom::InputEventResultState,
+                               const blink::WebInputEvent& event) {
           if (event.GetType() != expected_type)
             return false;
 
@@ -2102,8 +2110,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
 
   InputEventAckWaiter ack_observer(
       child_frame_host->GetRenderWidgetHost(),
-      base::BindRepeating([](content::InputEventAckSource source,
-                             content::InputEventAckState state,
+      base::BindRepeating([](blink::mojom::InputEventResultSource source,
+                             blink::mojom::InputEventResultState state,
                              const blink::WebInputEvent& event) {
         return event.GetType() == blink::WebGestureEvent::kGestureScrollEnd;
       }));
@@ -4529,8 +4537,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessMouseWheelHitTestBrowserTest,
   auto await_gesture_event_with_position = base::BindRepeating(
       [](blink::WebInputEvent::Type expected_type,
          RenderWidgetHostViewBase* rwhv, gfx::PointF expected_position,
-         gfx::PointF expected_position_in_root, InputEventAckSource,
-         InputEventAckState, const blink::WebInputEvent& event) {
+         gfx::PointF expected_position_in_root,
+         blink::mojom::InputEventResultSource,
+         blink::mojom::InputEventResultState,
+         const blink::WebInputEvent& event) {
         if (event.GetType() != expected_type)
           return false;
 
@@ -5247,8 +5257,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
   auto wait_for_pinch_sequence_end = base::BindRepeating(
       [](RenderWidgetHost* rwh) {
         InputEventAckWaiter pinch_end_observer(
-            rwh, base::BindRepeating([](content::InputEventAckSource,
-                                        content::InputEventAckState,
+            rwh, base::BindRepeating([](blink::mojom::InputEventResultSource,
+                                        blink::mojom::InputEventResultState,
                                         const blink::WebInputEvent& event) {
               return event.GetType() ==
                          blink::WebGestureEvent::kGesturePinchEnd &&
@@ -6179,9 +6189,9 @@ class SitePerProcessGestureHitTestBrowserTest
               child_frame_monitor.events_received()[6]);
 
     // Verify that the pinch gestures are consumed by browser.
-    EXPECT_EQ(InputEventAckSource::BROWSER,
+    EXPECT_EQ(blink::mojom::InputEventResultSource::kBrowser,
               child_frame_monitor.events_acked()[3]);
-    EXPECT_EQ(InputEventAckSource::BROWSER,
+    EXPECT_EQ(blink::mojom::InputEventResultSource::kBrowser,
               child_frame_monitor.events_acked()[4]);
   }
 

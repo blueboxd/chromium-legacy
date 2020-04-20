@@ -9,6 +9,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/credential_provider/credential_provider_service.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
+#import "ios/chrome/common/credential_provider/archivable_credential_store.h"
 #import "ios/chrome/common/credential_provider/constants.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -46,7 +47,9 @@ CredentialProviderServiceFactory::BuildServiceInstanceFor(
   scoped_refptr<password_manager::PasswordStore> password_store =
       IOSChromePasswordStoreFactory::GetForBrowserState(
           browser_state, ServiceAccessType::IMPLICIT_ACCESS);
-
-  return std::make_unique<CredentialProviderService>(
-      password_store, CredentialProviderSharedArchivableStoreURL());
+  ArchivableCredentialStore* credential_store =
+      [[ArchivableCredentialStore alloc]
+          initWithFileURL:CredentialProviderSharedArchivableStoreURL()];
+  return std::make_unique<CredentialProviderService>(password_store,
+                                                     credential_store);
 }

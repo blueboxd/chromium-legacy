@@ -118,6 +118,8 @@ class PLATFORM_EXPORT FrameOrWorkerScheduler {
 
   virtual FrameScheduler* ToFrameScheduler() { return nullptr; }
 
+  base::WeakPtr<FrameOrWorkerScheduler> GetWeakPtr();
+
  protected:
   FrameOrWorkerScheduler();
 
@@ -134,8 +136,6 @@ class PLATFORM_EXPORT FrameOrWorkerScheduler {
                                      const SchedulingPolicy& policy) = 0;
 
   virtual base::WeakPtr<FrameOrWorkerScheduler> GetDocumentBoundWeakPtr();
-
-  base::WeakPtr<FrameOrWorkerScheduler> GetWeakPtr();
 
  private:
   void RemoveLifecycleObserver(Observer* observer);

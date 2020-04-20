@@ -134,15 +134,16 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void TransformPointToRootSurface(gfx::PointF* point) override;
   gfx::Rect GetBoundsInRootWindow() override;
   void WheelEventAck(const blink::WebMouseWheelEvent& event,
-                     InputEventAckState ack_result) override;
+                     blink::mojom::InputEventResultState ack_result) override;
   void GestureEventAck(const blink::WebGestureEvent& event,
-                       InputEventAckState ack_result) override;
+                       blink::mojom::InputEventResultState ack_result) override;
   void DidOverscroll(const ui::DidOverscrollParams& params) override;
-  void ProcessAckedTouchEvent(const TouchEventWithLatencyInfo& touch,
-                              InputEventAckState ack_result) override;
+  void ProcessAckedTouchEvent(
+      const TouchEventWithLatencyInfo& touch,
+      blink::mojom::InputEventResultState ack_result) override;
   std::unique_ptr<SyntheticGestureTarget> CreateSyntheticGestureTarget()
       override;
-  InputEventAckState FilterInputEvent(
+  blink::mojom::InputEventResultState FilterInputEvent(
       const blink::WebInputEvent& input_event) override;
   BrowserAccessibilityManager* CreateBrowserAccessibilityManager(
       BrowserAccessibilityDelegate* delegate,

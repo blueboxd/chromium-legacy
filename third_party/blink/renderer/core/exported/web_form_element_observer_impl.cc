@@ -62,7 +62,7 @@ WebFormElementObserverImpl::ObserverCallback::ObserverCallback(
 
 ExecutionContext*
 WebFormElementObserverImpl::ObserverCallback::GetExecutionContext() const {
-  return element_ ? element_->GetDocument().ToExecutionContext() : nullptr;
+  return element_ ? element_->GetExecutionContext() : nullptr;
 }
 
 void WebFormElementObserverImpl::ObserverCallback::Deliver(

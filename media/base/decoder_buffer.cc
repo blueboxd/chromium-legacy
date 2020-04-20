@@ -4,6 +4,8 @@
 
 #include "media/base/decoder_buffer.h"
 
+#include <sstream>
+
 #include "base/debug/alias.h"
 
 namespace media {

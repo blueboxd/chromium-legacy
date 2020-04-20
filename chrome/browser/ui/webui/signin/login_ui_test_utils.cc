@@ -63,9 +63,9 @@ class SignInObserver : public signin::IdentityManager::Observer {
       return;
 
     base::OneShotTimer timer;
-    timer.Start(FROM_HERE, base::TimeDelta::FromSeconds(30),
-                base::BindRepeating(&SignInObserver::OnTimeout,
-                                    base::Unretained(this)));
+    timer.Start(
+        FROM_HERE, base::TimeDelta::FromSeconds(30),
+        base::BindOnce(&SignInObserver::OnTimeout, base::Unretained(this)));
     running_ = true;
     message_loop_runner_ = new MessageLoopRunner;
     message_loop_runner_->Run();

@@ -4,11 +4,14 @@
 
 #include "ash/home_screen/swipe_home_to_overview_controller.h"
 
+#include "ash/app_list/test/app_list_test_helper.h"
+#include "ash/app_list/views/app_list_view.h"
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/home_screen/home_screen_delegate.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_metrics.h"
+#include "ash/shelf/test/overview_animation_waiter.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/overview/overview_controller.h"
@@ -18,6 +21,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect_f.h"
 
@@ -25,9 +29,12 @@ namespace ash {
 
 namespace {
 
-gfx::RectF GetShelfBounds() {
-  return gfx::RectF(
-      Shelf::ForWindow(Shell::GetPrimaryRootWindow())->GetIdealBounds());
+gfx::Rect GetShelfBounds() {
+  return Shelf::ForWindow(Shell::GetPrimaryRootWindow())->GetIdealBounds();
+}
+
+gfx::RectF GetShelfBoundsInFloat() {
+  return gfx::RectF(GetShelfBounds());
 }
 
 }  // namespace
@@ -89,6 +96,22 @@ class SwipeHomeToOverviewControllerTest : public AshTestBase {
         ->FireNow();
   }
 
+  void WaitForHomeLauncherAnimationToFinish() {
+    // Wait until home launcher animation finishes.
+    while (GetAppListTestHelper()
+               ->GetAppListView()
+               ->GetWidget()
+               ->GetLayer()
+               ->GetAnimator()
+               ->is_animating()) {
+      base::RunLoop run_loop;
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE, run_loop.QuitClosure(),
+          base::TimeDelta::FromMilliseconds(200));
+      run_loop.Run();
+    }
+  }
+
   base::TimeTicks GetTimerDesiredRunTime() const {
     return home_to_overview_controller_->overview_transition_timer_for_testing()
         ->desired_run_time();
@@ -108,8 +131,63 @@ class SwipeHomeToOverviewControllerTest : public AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(SwipeHomeToOverviewControllerTest);
 };
 
+// Verify that the metrics of home launcher animation are recorded correctly
+// when entering/exiting overview mode.
+TEST_F(SwipeHomeToOverviewControllerTest, VerifyHomeLauncherMetrics) {
+  // Set non-zero animation duration to report animation metrics.
+  ui::ScopedAnimationDurationScaleMode non_zero_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  const gfx::Rect shelf_bounds = GetShelfBounds();
+  const int transition_threshold =
+      SwipeHomeToOverviewController::kVerticalThresholdForOverviewTransition;
+
+  base::HistogramTester histogram_tester;
+
+  // Enter overview mode by gesture swipe on shelf.
+  {
+    GetEventGenerator()->set_current_screen_location(
+        shelf_bounds.CenterPoint());
+    GetEventGenerator()->PressTouch();
+    GetEventGenerator()->MoveTouchBy(
+        0, -transition_threshold - shelf_bounds.height() / 2 - 10);
+
+    // Move touch location by a tiny distance to ensure the slow scroll speed
+    // which is required to trigger the overview animation.
+    GetEventGenerator()->MoveTouchBy(0, -1);
+
+    // Wait until overview animation finishes.
+    OverviewAnimationWaiter enter_overview_waiter;
+    enter_overview_waiter.Wait();
+
+    GetEventGenerator()->ReleaseTouch();
+    WaitForHomeLauncherAnimationToFinish();
+  }
+
+  // Verify that the animation to hide the home launcher is recorded.
+  histogram_tester.ExpectTotalCount(
+      "Apps.HomeLauncherTransition.AnimationSmoothness.FadeInOverview", 1);
+  histogram_tester.ExpectTotalCount(
+      "Apps.HomeLauncherTransition.AnimationSmoothness.FadeOutOverview", 0);
+
+  // Exit overview mode by gesture tap.
+  GetEventGenerator()->GestureTapAt(
+      GetContext()->GetBoundsInScreen().top_center());
+
+  // Wait until overview animation finishes.
+  OverviewAnimationWaiter exit_overview_waiter;
+  exit_overview_waiter.Wait();
+  WaitForHomeLauncherAnimationToFinish();
+
+  // Verify that the animation to show the home launcher is recorded.
+  histogram_tester.ExpectTotalCount(
+      "Apps.HomeLauncherTransition.AnimationSmoothness.FadeInOverview", 1);
+  histogram_tester.ExpectTotalCount(
+      "Apps.HomeLauncherTransition.AnimationSmoothness.FadeOutOverview", 1);
+}
+
 TEST_F(SwipeHomeToOverviewControllerTest, BasicFlow) {
-  const gfx::RectF shelf_bounds = GetShelfBounds();
+  const gfx::RectF shelf_bounds = GetShelfBoundsInFloat();
 
   base::HistogramTester histogram_tester;
   histogram_tester.ExpectBucketCount(
@@ -195,7 +273,7 @@ TEST_F(SwipeHomeToOverviewControllerTest, BasicFlow) {
 }
 
 TEST_F(SwipeHomeToOverviewControllerTest, EndDragBeforeTimeout) {
-  const gfx::RectF shelf_bounds = GetShelfBounds();
+  const gfx::RectF shelf_bounds = GetShelfBoundsInFloat();
 
   StartDrag();
 
@@ -236,7 +314,7 @@ TEST_F(SwipeHomeToOverviewControllerTest, EndDragBeforeTimeout) {
 }
 
 TEST_F(SwipeHomeToOverviewControllerTest, CancelDragBeforeTimeout) {
-  const gfx::RectF shelf_bounds = GetShelfBounds();
+  const gfx::RectF shelf_bounds = GetShelfBoundsInFloat();
 
   StartDrag();
 
@@ -275,7 +353,7 @@ TEST_F(SwipeHomeToOverviewControllerTest, CancelDragBeforeTimeout) {
 }
 
 TEST_F(SwipeHomeToOverviewControllerTest, DragMovementRestartsTimeout) {
-  const gfx::RectF shelf_bounds = GetShelfBounds();
+  const gfx::RectF shelf_bounds = GetShelfBoundsInFloat();
 
   StartDrag();
 
@@ -322,7 +400,7 @@ TEST_F(SwipeHomeToOverviewControllerTest, DragMovementRestartsTimeout) {
 
 TEST_F(SwipeHomeToOverviewControllerTest,
        SmallDragMovementDoesNotRestartTimeout) {
-  const gfx::RectF shelf_bounds = GetShelfBounds();
+  const gfx::RectF shelf_bounds = GetShelfBoundsInFloat();
 
   StartDrag();
 
@@ -376,7 +454,7 @@ TEST_F(SwipeHomeToOverviewControllerTest,
 }
 
 TEST_F(SwipeHomeToOverviewControllerTest, DragBellowThresholdStopsTimer) {
-  const gfx::RectF shelf_bounds = GetShelfBounds();
+  const gfx::RectF shelf_bounds = GetShelfBoundsInFloat();
 
   StartDrag();
   Drag(shelf_bounds.CenterPoint(), 0.f, 1.f);
@@ -451,7 +529,7 @@ TEST_F(SwipeHomeToOverviewControllerTest, DragBellowThresholdStopsTimer) {
 }
 
 TEST_F(SwipeHomeToOverviewControllerTest, ScaleChangesDuringDrag) {
-  const gfx::RectF shelf_bounds = GetShelfBounds();
+  const gfx::RectF shelf_bounds = GetShelfBoundsInFloat();
 
   StartDrag();
   Drag(shelf_bounds.CenterPoint(), 0.f, 1.f);

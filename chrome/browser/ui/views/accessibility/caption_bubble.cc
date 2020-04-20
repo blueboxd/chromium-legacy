@@ -30,16 +30,19 @@ namespace {
 static constexpr int kLineHeightDip = 24;
 static constexpr int kMaxHeightDip = kLineHeightDip * 2;
 static constexpr int kCornerRadiusDip = 8;
-static constexpr int kMaxWidthDip = 548;
 static constexpr int kHorizontalMarginsDip = 6;
 static constexpr int kVerticalMarginsDip = 8;
 static constexpr double kPreferredAnchorWidthPercentage = 0.8;
+static constexpr int kMaxWidthDip = 548;
+static constexpr int kButtonPaddingDip = 48;
+static constexpr int kSideMarginDip = 20;
 // 90% opacity.
 static constexpr int kCaptionBubbleAlpha = 230;
 static constexpr char kPrimaryFont[] = "Roboto";
 static constexpr char kSecondaryFont[] = "Arial";
 static constexpr char kTertiaryFont[] = "sans-serif";
 static constexpr int kFontSizePx = 16;
+static constexpr double kDefaultRatioInParent = 0.5;
 
 // CaptionBubble implementation of BubbleFrameView.
 class CaptionBubbleFrameView : public views::BubbleFrameView {
@@ -75,12 +78,87 @@ CaptionBubble::CaptionBubble(views::View* anchor,
     : BubbleDialogDelegateView(anchor,
                                views::BubbleBorder::FLOAT,
                                views::BubbleBorder::Shadow::NO_SHADOW),
-      destroyed_callback_(std::move(destroyed_callback)) {
+      destroyed_callback_(std::move(destroyed_callback)),
+      ratio_in_parent_x_(kDefaultRatioInParent),
+      ratio_in_parent_y_(kDefaultRatioInParent) {
   DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
   DialogDelegate::set_draggable(true);
 }
 
 CaptionBubble::~CaptionBubble() = default;
+
+gfx::Rect CaptionBubble::GetBubbleBounds() {
+  // Get the height and width of the full bubble using the superclass method.
+  // This includes shadow and insets.
+  gfx::Rect original_bounds =
+      views::BubbleDialogDelegateView::GetBubbleBounds();
+
+  gfx::Rect anchor_rect = GetAnchorView()->GetBoundsInScreen();
+  // Calculate the desired width based on the original bubble's width (which is
+  // the max allowed per the spec).
+  int min_width = anchor_rect.width() - kSideMarginDip * 2;
+  int desired_width = anchor_rect.width() * kPreferredAnchorWidthPercentage;
+  int width = std::max(min_width, desired_width);
+  if (width > original_bounds.width())
+    width = original_bounds.width();
+  int height = original_bounds.height();
+
+  // The placement is based on the ratio between the center of the widget and
+  // the center of the anchor_rect.
+  int target_x =
+      anchor_rect.x() + anchor_rect.width() * ratio_in_parent_x_ - width / 2.0;
+  int target_y = anchor_rect.y() + anchor_rect.height() * ratio_in_parent_y_ -
+                 height / 2.0;
+  latest_bounds_ = gfx::Rect(target_x, target_y, width, height);
+  latest_anchor_bounds_ = GetAnchorView()->GetBoundsInScreen();
+  anchor_rect.Inset(kSideMarginDip, 0, kSideMarginDip, kButtonPaddingDip);
+  if (!anchor_rect.Contains(latest_bounds_)) {
+    latest_bounds_.AdjustToFit(anchor_rect);
+  }
+  // If it still doesn't fit after being adjusted to fit, then it is too tall
+  // or too wide for the tiny window, and we need to simply hide it. Otherwise,
+  // ensure it is shown.
+  if (latest_bounds_.height() < height)
+    GetWidget()->Hide();
+  else if (!GetWidget()->IsVisible())
+    GetWidget()->Show();
+
+  return latest_bounds_;
+}
+
+void CaptionBubble::OnWidgetBoundsChanged(views::Widget* widget,
+                                          const gfx::Rect& new_bounds) {
+  gfx::Rect widget_bounds = GetWidget()->GetWindowBoundsInScreen();
+  gfx::Rect anchor_rect = GetAnchorView()->GetBoundsInScreen();
+  if (latest_bounds_ == widget_bounds && latest_anchor_bounds_ == anchor_rect) {
+    return;
+  }
+
+  if (latest_anchor_bounds_ != anchor_rect) {
+    // The window has moved. Reposition the widget within it.
+    SizeToContents();
+    return;
+  }
+
+  // The widget has moved within the window. Recalculate the desired ratio
+  // within the parent.
+  gfx::Rect bounds_rect = GetAnchorView()->GetBoundsInScreen();
+  bounds_rect.Inset(kSideMarginDip, 0, kSideMarginDip, kButtonPaddingDip);
+
+  bool out_of_bounds = false;
+  if (!bounds_rect.Contains(widget_bounds)) {
+    widget_bounds.AdjustToFit(bounds_rect);
+    out_of_bounds = true;
+  }
+
+  ratio_in_parent_x_ = (widget_bounds.CenterPoint().x() - anchor_rect.x()) /
+                       (1.0 * anchor_rect.width());
+  ratio_in_parent_y_ = (widget_bounds.CenterPoint().y() - anchor_rect.y()) /
+                       (1.0 * anchor_rect.height());
+
+  if (out_of_bounds)
+    SizeToContents();
+}
 
 void CaptionBubble::Init() {
   auto* layout = SetLayoutManager(std::make_unique<views::FlexLayout>());
@@ -123,10 +201,7 @@ void CaptionBubble::Init() {
   title->SetFontList(font_list);
   title->SetText(l10n_util::GetStringUTF16(IDS_LIVE_CAPTION_BUBBLE_TITLE));
 
-  // TODO(crbug.com/1055150): Resize responsively with anchor size changes.
-  int min_width = GetAnchorView()->width() * kPreferredAnchorWidthPercentage;
-  int width = std::min(min_width, kMaxWidthDip);
-  SetPreferredSize(gfx::Size(width, kMaxHeightDip));
+  SetPreferredSize(gfx::Size(kMaxWidthDip, kMaxHeightDip));
   set_margins(gfx::Insets(kHorizontalMarginsDip, kVerticalMarginsDip));
 
   title_ = AddChildView(std::move(title));

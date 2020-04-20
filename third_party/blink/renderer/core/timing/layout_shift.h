@@ -18,10 +18,24 @@ class CORE_EXPORT LayoutShift final : public PerformanceEntry {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  LayoutShift(double start_time,
-              double value,
-              bool input_detected,
-              double input_timestamp);
+  // Maximum number of attributions (shifted elements) to record in any single
+  // animation frame.
+  static constexpr int kMaxAttributions = 5;
+  typedef HeapVector<Member<LayoutShiftAttribution>, kMaxAttributions>
+      AttributionList;
+
+  static LayoutShift* Create(double start_time,
+                             double value,
+                             bool input_detected,
+                             double input_timestamp,
+                             AttributionList sources);
+
+  explicit LayoutShift(double start_time,
+                       double value,
+                       bool input_detected,
+                       double input_timestamp,
+                       AttributionList sources);
+
   ~LayoutShift() override;
 
   AtomicString entryType() const override;
@@ -30,9 +44,8 @@ class CORE_EXPORT LayoutShift final : public PerformanceEntry {
   double value() const { return value_; }
   bool hadRecentInput() const { return had_recent_input_; }
   double lastInputTime() const { return most_recent_input_timestamp_; }
-  HeapVector<Member<LayoutShiftAttribution>> sources() const {
-    return sources_;
-  }
+
+  AttributionList sources() const { return sources_; }
 
   void Trace(Visitor*) override;
 
@@ -42,7 +55,7 @@ class CORE_EXPORT LayoutShift final : public PerformanceEntry {
   double value_;
   bool had_recent_input_;
   DOMHighResTimeStamp most_recent_input_timestamp_;
-  HeapVector<Member<LayoutShiftAttribution>> sources_;
+  AttributionList sources_;
 };
 
 }  // namespace blink

@@ -41,6 +41,7 @@
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/proxy_server.h"
 #include "net/dns/public/resolve_error_info.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/cpp/blocked_by_response_reason.h"
 #include "services/network/public/cpp/origin_policy.h"
 
@@ -563,6 +564,13 @@ class CONTENT_EXPORT NavigationRequest
   }
 
   std::unique_ptr<CrossOriginEmbedderPolicyReporter> TakeCoepReporter();
+
+  // Returns UKM SourceId for the page we are navigating away from.
+  // Equal to GetRenderFrameHost()->GetPageUkmSourceId() for subframe
+  // and same-document navigations and to
+  // RenderFrameHost::FromID(GetPreviousRenderFrameHostId())
+  //     ->GetPageUkmSourceId() for main-frame cross-document navigations.
+  ukm::SourceId GetPreviousPageUkmSourceId();
 
  private:
   friend class NavigationRequestTest;
@@ -1208,6 +1216,9 @@ class CONTENT_EXPORT NavigationRequest
 #if DCHECK_IS_ON()
   bool is_safe_to_delete_ = true;
 #endif
+
+  // UKM source associated with the page we are navigated away from.
+  ukm::SourceId previous_page_load_ukm_source_id_ = ukm::kInvalidSourceId;
 
   base::WeakPtrFactory<NavigationRequest> weak_factory_{this};
 

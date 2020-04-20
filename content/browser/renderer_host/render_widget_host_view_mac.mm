@@ -1143,15 +1143,16 @@ RenderWidgetHostViewMac::GetKeyboardLayoutMap() {
   return ui::GenerateDomKeyboardLayoutMap();
 }
 
-void RenderWidgetHostViewMac::GestureEventAck(const WebGestureEvent& event,
-                                              InputEventAckState ack_result) {
+void RenderWidgetHostViewMac::GestureEventAck(
+    const WebGestureEvent& event,
+    blink::mojom::InputEventResultState ack_result) {
   ForwardTouchpadZoomEventIfNecessary(event, ack_result);
 
   // Stop flinging if a GSU event with momentum phase is sent to the renderer
   // but not consumed.
   StopFlingingIfNecessary(event, ack_result);
 
-  bool consumed = ack_result == INPUT_EVENT_ACK_STATE_CONSUMED;
+  bool consumed = ack_result == blink::mojom::InputEventResultState::kConsumed;
   switch (event.GetType()) {
     case WebInputEvent::kGestureScrollBegin:
     case WebInputEvent::kGestureScrollUpdate:
@@ -1167,11 +1168,12 @@ void RenderWidgetHostViewMac::GestureEventAck(const WebGestureEvent& event,
 
 void RenderWidgetHostViewMac::ProcessAckedTouchEvent(
     const TouchEventWithLatencyInfo& touch,
-    InputEventAckState ack_result) {
-  const bool event_consumed = ack_result == INPUT_EVENT_ACK_STATE_CONSUMED;
+    blink::mojom::InputEventResultState ack_result) {
+  const bool event_consumed =
+      ack_result == blink::mojom::InputEventResultState::kConsumed;
   gesture_provider_.OnTouchEventAck(
       touch.event.unique_touch_event_id, event_consumed,
-      InputEventAckStateIsSetNonBlocking(ack_result));
+      InputEventResultStateIsSetNonBlocking(ack_result));
   if (touch.event.touch_start_or_first_touch_move && event_consumed &&
       host()->delegate() && host()->delegate()->GetInputEventRouter()) {
     host()

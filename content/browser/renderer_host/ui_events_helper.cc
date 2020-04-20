@@ -90,10 +90,11 @@ bool MakeUITouchEventsFromWebTouchEvents(
   return true;
 }
 
-bool InputEventAckStateIsSetNonBlocking(InputEventAckState ack_state) {
+bool InputEventResultStateIsSetNonBlocking(
+    blink::mojom::InputEventResultState ack_state) {
   switch (ack_state) {
-    case INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING:
-    case INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING_DUE_TO_FLING:
+    case blink::mojom::InputEventResultState::kSetNonBlocking:
+    case blink::mojom::InputEventResultState::kSetNonBlockingDueToFling:
       return true;
     default:
       return false;

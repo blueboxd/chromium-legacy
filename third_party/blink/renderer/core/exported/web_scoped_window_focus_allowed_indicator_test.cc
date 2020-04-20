@@ -32,7 +32,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/web/web_document.h"
-#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 
@@ -40,20 +40,20 @@ namespace blink {
 
 TEST(WebScopedWindowFocusAllowedIndicatorTest, Basic) {
   auto dummy = std::make_unique<DummyPageHolder>();
-  auto* document = &dummy->GetDocument();
-  WebDocument web_document(document);
+  auto* window = dummy->GetFrame().DomWindow();
+  WebDocument web_document(&dummy->GetDocument());
 
-  EXPECT_FALSE(document->ToExecutionContext()->IsWindowInteractionAllowed());
+  EXPECT_FALSE(window->IsWindowInteractionAllowed());
   {
     WebScopedWindowFocusAllowedIndicator indicator1(&web_document);
-    EXPECT_TRUE(document->ToExecutionContext()->IsWindowInteractionAllowed());
+    EXPECT_TRUE(window->IsWindowInteractionAllowed());
     {
       WebScopedWindowFocusAllowedIndicator indicator2(&web_document);
-      EXPECT_TRUE(document->ToExecutionContext()->IsWindowInteractionAllowed());
+      EXPECT_TRUE(window->IsWindowInteractionAllowed());
     }
-    EXPECT_TRUE(document->ToExecutionContext()->IsWindowInteractionAllowed());
+    EXPECT_TRUE(window->IsWindowInteractionAllowed());
   }
-  EXPECT_FALSE(document->ToExecutionContext()->IsWindowInteractionAllowed());
+  EXPECT_FALSE(window->IsWindowInteractionAllowed());
 }
 
 }  // namespace blink

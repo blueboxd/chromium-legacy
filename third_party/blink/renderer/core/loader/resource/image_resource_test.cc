@@ -918,7 +918,8 @@ TEST_F(ImageResourceTest, PeriodicFlushTest) {
                           MakeGarbageCollected<TestLoaderFactory>()));
   auto frame_scheduler = std::make_unique<scheduler::FakeFrameScheduler>();
   auto* scheduler = MakeGarbageCollected<ResourceLoadScheduler>(
-      ResourceLoadScheduler::ThrottlingPolicy::kNormal, properties,
+      ResourceLoadScheduler::ThrottlingPolicy::kNormal,
+      ResourceLoadScheduler::ThrottleOptionOverride::kNone, properties,
       frame_scheduler.get(), *MakeGarbageCollected<DetachableConsoleLogger>());
   ImageResource* image_resource = ImageResource::CreateForTest(test_url);
 

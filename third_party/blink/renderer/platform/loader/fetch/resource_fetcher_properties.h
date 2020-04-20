@@ -87,6 +87,8 @@ class PLATFORM_EXPORT ResourceFetcherProperties
   // The physical URL of Web Bundle from which this global context is loaded.
   // Used as an additional identifier for MemoryCache.
   virtual const KURL& WebBundlePhysicalUrl() const = 0;
+
+  virtual int GetOutstandingThrottledLimit() const = 0;
 };
 
 // A delegating ResourceFetcherProperties subclass which can be retained
@@ -150,6 +152,11 @@ class PLATFORM_EXPORT DetachableResourceFetcherProperties final
                        : web_bundle_physical_url_;
   }
 
+  int GetOutstandingThrottledLimit() const override {
+    return properties_ ? properties_->GetOutstandingThrottledLimit()
+                       : outstanding_throttled_limit_;
+  }
+
  private:
   // |properties_| is null if and only if detached.
   Member<const ResourceFetcherProperties> properties_;
@@ -161,6 +168,7 @@ class PLATFORM_EXPORT DetachableResourceFetcherProperties final
   bool load_complete_ = false;
   bool is_subframe_deprioritization_enabled_ = false;
   KURL web_bundle_physical_url_;
+  int outstanding_throttled_limit_ = 0;
 };
 
 }  // namespace blink

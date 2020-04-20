@@ -100,6 +100,7 @@
 <translation id="3735758079232443276">Η επέκταση <ph name="EXTENSION_NAME" /> άλλαξε τη σελίδα που εμφανίζεται κατά την εκκίνηση του Chrome.</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
 <translation id="386202838227397562">Κλείστε όλα τα παράθυρα του Google Chrome και προσπαθήστε ξανά.</translation>
+<translation id="3865754807470779944">Εγκαταστάθηκε η έκδοση του Chrome <ph name="PRODUCT_VERSION" />.</translation>
 <translation id="3873044882194371212">Άνοιγμα συνδέσμου σε παράθυρο ανών&amp;υμης περιήγησης Chrome</translation>
 <translation id="3889417619312448367">Απεγκατάσταση Google Chrome</translation>
 <translation id="4050175100176540509">Στην πιο πρόσφατη έκδοση διατίθενται σημαντικές βελτιώσεις ασφάλειας και νέες λειτουργίες.</translation>
@@ -239,6 +240,7 @@
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8556340503434111824">Υπάρχει μια νέα έκδοση του Google Chrome και είναι ταχύτερη από ποτέ.</translation>
 <translation id="8614913330719544658">Το Google Chrome δεν αποκρίνεται. Επανεκκίνηση τώρα;</translation>
+<translation id="861702415419836452">Το Chrome χρειάζεται άδεια, για να αποκτήσει πρόσβαση στην κάμερά σας για να δημιουργήσει έναν τρισδιάστατο χάρτη του περιβάλλοντα χώρου σας.</translation>
 <translation id="8625237574518804553">{0,plural, =1{Η επανεκκίνηση του Chrome θα γίνει σε 1 λεπτό}other{Η επανεκκίνηση του Chrome θα γίνει σε # λεπτά}}</translation>
 <translation id="8641606876632989680">Το Chrome θα σας ειδοποιήσει όταν συνδεθείτε με έναν παραβιασμένο κωδικό πρόσβαση</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>

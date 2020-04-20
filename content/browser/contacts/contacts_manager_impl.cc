@@ -70,7 +70,7 @@ ContactsManagerImpl::ContactsManagerImpl(RenderFrameHostImpl* render_frame_host)
   if (!web_contents || !web_contents->GetTopLevelNativeWindow())
     return;
 
-  source_id_ = web_contents->GetLastCommittedSourceId();
+  source_id_ = render_frame_host->GetPageUkmSourceId();
 }
 
 ContactsManagerImpl::~ContactsManagerImpl() = default;

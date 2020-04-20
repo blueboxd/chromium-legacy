@@ -12,6 +12,8 @@ import android.os.Bundle;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.widget.RemoteViews;
 
+import org.chromium.components.browser_ui.notifications.ChromeNotification;
+
 /**
  * Abstraction over Notification.Builder and NotificationCompat.Builder interfaces.
  */

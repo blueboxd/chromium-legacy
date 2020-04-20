@@ -4,20 +4,16 @@
 
 /**
  * Converts an SkColor object to a string in the form
- * "rgb(<red>, <green>, <blue>)".
- * Note: Can only convert opaque SkColors.
+ * "rgba(<red>, <green>, <blue>, <alpha>)".
  * @param {skia.mojom.SkColor} skColor The input color.
- * @return {string} The rgb string.
+ * @return {string} The rgba string.
  */
-export function skColorToRgb(skColor) {
-  // Bail on transparent colors.
-  if (skColor.value < 0xff000000) {
-    return 'rgb(0, 0, 0)';
-  }
+export function skColorToRgba(skColor) {
+  const a = (skColor.value >> 24) & 0xff;
   const r = (skColor.value >> 16) & 0xff;
   const g = (skColor.value >> 8) & 0xff;
   const b = skColor.value & 0xff;
-  return `rgb(${r}, ${g}, ${b})`;
+  return `rgba(${r}, ${g}, ${b}, ${a})`;
 }
 
 /**

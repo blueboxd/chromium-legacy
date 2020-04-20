@@ -8,7 +8,7 @@
 // build time. Try not to raise this limit unless absolutely necessary. See
 // https://chromium.googlesource.com/chromium/src/+/HEAD/docs/wmax_tokens.md
 #ifndef NACL_TC_REV
-#pragma clang max_tokens_here 235000
+#pragma clang max_tokens_here 236000
 #endif
 
 #include <cstdio>
@@ -28,9 +28,27 @@ char* CheckOpValueStr(unsigned v) {
   return strdup(buf);
 }
 
+char* CheckOpValueStr(long v) {
+  char buf[50];
+  snprintf(buf, sizeof(buf), "%ld", v);
+  return strdup(buf);
+}
+
 char* CheckOpValueStr(unsigned long v) {
   char buf[50];
   snprintf(buf, sizeof(buf), "%lu", v);
+  return strdup(buf);
+}
+
+char* CheckOpValueStr(long long v) {
+  char buf[50];
+  snprintf(buf, sizeof(buf), "%lld", v);
+  return strdup(buf);
+}
+
+char* CheckOpValueStr(unsigned long long v) {
+  char buf[50];
+  snprintf(buf, sizeof(buf), "%llu", v);
   return strdup(buf);
 }
 

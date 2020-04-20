@@ -101,6 +101,7 @@
 <translation id="3735758079232443276">გაფართოებამ „<ph name="EXTENSION_NAME" />“ თქვენ მიერ Chrome-ის გაშვებისას ნაჩვენები გვერდი შეცვალა.</translation>
 <translation id="3780814664026482060">Chrome — <ph name="PAGE_TITLE" /></translation>
 <translation id="386202838227397562">დახურეთ Google Chrome-ის ყველა ფანჯარა და ხელახლა სცადეთ.</translation>
+<translation id="3865754807470779944">დაინსტალირებულია Chrome-ის ვერსია <ph name="PRODUCT_VERSION" /></translation>
 <translation id="3873044882194371212">ბმულის გახსნა Chrome-ი ინკო&amp;გნიტო ფანჯარაში</translation>
 <translation id="3889417619312448367">Google Chrome-ის დეინსტალაცია</translation>
 <translation id="4050175100176540509">უსაფრთხოების მნიშვნელოვანი გაუმჯობესება და ახალი თვისებები ხელმისაწვდომია უახლეს ვერსიაში.</translation>
@@ -241,6 +242,7 @@ Google Chrome ვერ შეძლებს თქვენი პარამ
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8556340503434111824">ხელმისაწვდომია Google Chrome-ის უფრო ახალი ვერსია, რომელიც უფრო სწრაფია.</translation>
 <translation id="8614913330719544658">Google Chrome არ პასუხობს. გავუშვათ ხელახლა?</translation>
+<translation id="861702415419836452">Chrome საჭიროებს თქვენს კამერაზე წვდომის ნებართვას, თქვენი გარემოს 3-განზომილებიანი რუკის შექმნა რომ შეძლოს</translation>
 <translation id="8625237574518804553">{0,plural, =1{Chrome ხელახლა გაეშვება 1 წუთში}other{Chrome ხელახლა გაეშვება # წუთში}}</translation>
 <translation id="8641606876632989680">Chrome შეგატყობინებთ, როცა სისტემაში გატეხილი პაროლით შეხვალთ</translation>
 <translation id="8669527147644353129">Google Chrome-ის დახმარება</translation>

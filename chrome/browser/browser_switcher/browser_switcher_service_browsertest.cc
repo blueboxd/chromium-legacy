@@ -30,8 +30,6 @@
 #include "url/gurl.h"
 
 #if defined(OS_WIN)
-#include "base/files/scoped_temp_dir.h"
-#include "base/path_service.h"
 #include "chrome/browser/browser_switcher/browser_switcher_policy_migrator.h"
 #include "chrome/browser/browser_switcher/browser_switcher_service_win.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -104,14 +102,15 @@ class BrowserSwitcherServiceTest : public InProcessBrowserTest {
         .WillRepeatedly(testing::Return(true));
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
     BrowserSwitcherService::SetFetchDelayForTesting(base::TimeDelta());
-    BrowserSwitcherService::SetRefreshDelayForTesting(action_timeout() * 3 / 2);
-#if defined(OS_WIN)
-    ASSERT_TRUE(fake_appdata_dir_.CreateUniqueTempDir());
-#endif
+    BrowserSwitcherService::SetRefreshDelayForTesting(base::TimeDelta());
   }
 
   void SetUpOnMainThread() override {
 #if defined(OS_WIN)
+    fake_appdata_dir_ =
+        browser()->profile()->GetPath().AppendASCII("FakeAppData");
+    ASSERT_TRUE(DirectoryExists(fake_appdata_dir_) ||
+                CreateDirectory(fake_appdata_dir_));
     BrowserSwitcherServiceFactory::GetInstance()->SetTestingFactory(
         browser()->profile(),
         base::BindRepeating(
@@ -143,19 +142,47 @@ class BrowserSwitcherServiceTest : public InProcessBrowserTest {
     base::RunLoop().RunUntilIdle();
   }
 
+  void WaitForRefresh() {
+    base::RunLoop run_loop;
+    GetService()->OnAllRulesetsLoadedForTesting(run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
+  void WaitForActionTimeout() {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::action_timeout());
+    run_loop.Run();
+  }
+
+  BrowserSwitcherService* GetService() {
+    return BrowserSwitcherServiceFactory::GetForBrowserContext(
+        browser()->profile());
+  }
+
   policy::MockConfigurationPolicyProvider& policy_provider() {
     return provider_;
   }
 
-  base::TimeDelta action_timeout() {
-    // Makes the tests a little less slow.
-    return TestTimeouts::action_timeout() / 2;
+#if defined(OS_WIN)
+  BrowserSwitcherServiceWin* GetServiceWin() {
+    return static_cast<BrowserSwitcherServiceWin*>(GetService());
   }
 
-#if defined(OS_WIN)
-  const base::FilePath& appdata_dir() const {
-    return fake_appdata_dir_.GetPath();
+  void WaitForCacheFile() {
+    base::RunLoop run_loop;
+    GetServiceWin()->OnCacheFileUpdatedForTesting(run_loop.QuitClosure());
+    run_loop.Run();
   }
+
+  void WaitForSitelistCacheFile() {
+    base::RunLoop run_loop;
+    GetServiceWin()->OnSitelistCacheFileUpdatedForTesting(
+        run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
+  const base::FilePath& appdata_dir() const { return fake_appdata_dir_; }
 
   const base::FilePath cache_dir() const {
     return appdata_dir().AppendASCII("Google").AppendASCII("BrowserSwitcher");
@@ -174,7 +201,7 @@ class BrowserSwitcherServiceTest : public InProcessBrowserTest {
   policy::MockConfigurationPolicyProvider provider_;
 
 #if defined(OS_WIN)
-  base::ScopedTempDir fake_appdata_dir_;
+  base::FilePath fake_appdata_dir_;
 #endif
 };
 
@@ -193,18 +220,9 @@ IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, ExternalSitelistInvalidUrl) {
       &fetch_happened));
 
   // Execute everything and make sure we didn't get to the fetch step.
-  BrowserSwitcherServiceFactory::GetForBrowserContext(browser()->profile());
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](bool* happened, base::OnceClosure quit) {
-            EXPECT_FALSE(*happened);
-            std::move(quit).Run();
-          },
-          &fetch_happened, run_loop.QuitClosure()),
-      action_timeout());
-  run_loop.Run();
+  GetService();
+  WaitForActionTimeout();
+  EXPECT_FALSE(fetch_happened);
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest,
@@ -228,32 +246,17 @@ IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest,
       &counter));
 
   // Execute everything and make sure the rules are applied correctly.
-  auto* service =
-      BrowserSwitcherServiceFactory::GetForBrowserContext(browser()->profile());
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](BrowserSwitcherService* service) {
-            EXPECT_FALSE(ShouldSwitch(service, GURL("http://google.com/")));
-            EXPECT_TRUE(ShouldSwitch(service, GURL("http://docs.google.com/")));
-            EXPECT_FALSE(ShouldSwitch(service, GURL("http://yahoo.com/")));
-          },
-          service),
-      action_timeout());
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](BrowserSwitcherService* service, base::OnceClosure quit) {
-            EXPECT_FALSE(ShouldSwitch(service, GURL("http://google.com/")));
-            EXPECT_FALSE(
-                ShouldSwitch(service, GURL("http://docs.google.com/")));
-            EXPECT_TRUE(ShouldSwitch(service, GURL("http://yahoo.com/")));
-            std::move(quit).Run();
-          },
-          service, run_loop.QuitClosure()),
-      action_timeout() * 2);
-  run_loop.Run();
+  auto* service = GetService();
+
+  WaitForRefresh();
+  EXPECT_FALSE(ShouldSwitch(service, GURL("http://google.com/")));
+  EXPECT_TRUE(ShouldSwitch(service, GURL("http://docs.google.com/")));
+  EXPECT_FALSE(ShouldSwitch(service, GURL("http://yahoo.com/")));
+
+  WaitForRefresh();
+  EXPECT_FALSE(ShouldSwitch(service, GURL("http://google.com/")));
+  EXPECT_FALSE(ShouldSwitch(service, GURL("http://docs.google.com/")));
+  EXPECT_TRUE(ShouldSwitch(service, GURL("http://yahoo.com/")));
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest,
@@ -276,31 +279,16 @@ IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest,
       &counter));
 
   // Execute everything and make sure the rules are applied correctly.
-  auto* service =
-      BrowserSwitcherServiceFactory::GetForBrowserContext(browser()->profile());
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](BrowserSwitcherService* service) {
-            EXPECT_FALSE(ShouldSwitch(service, GURL("http://google.com/")));
-            EXPECT_FALSE(
-                ShouldSwitch(service, GURL("http://docs.google.com/")));
-            EXPECT_FALSE(ShouldSwitch(service, GURL("http://yahoo.com/")));
-          },
-          service),
-      action_timeout());
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](BrowserSwitcherService* service, base::OnceClosure quit) {
-            EXPECT_FALSE(ShouldSwitch(service, GURL("http://google.com/")));
-            EXPECT_TRUE(ShouldSwitch(service, GURL("http://docs.google.com/")));
-            std::move(quit).Run();
-          },
-          service, run_loop.QuitClosure()),
-      action_timeout() * 2);
-  run_loop.Run();
+  auto* service = GetService();
+
+  WaitForRefresh();
+  EXPECT_FALSE(ShouldSwitch(service, GURL("http://google.com/")));
+  EXPECT_FALSE(ShouldSwitch(service, GURL("http://docs.google.com/")));
+  EXPECT_FALSE(ShouldSwitch(service, GURL("http://yahoo.com/")));
+
+  WaitForRefresh();
+  EXPECT_FALSE(ShouldSwitch(service, GURL("http://google.com/")));
+  EXPECT_TRUE(ShouldSwitch(service, GURL("http://docs.google.com/")));
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest,
@@ -311,43 +299,16 @@ IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest,
   content::URLLoaderInterceptor interceptor(
       base::BindRepeating(ReturnValidXml));
 
-  auto* service =
-      BrowserSwitcherServiceFactory::GetForBrowserContext(browser()->profile());
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](BrowserSwitcherService* service,
-             BrowserSwitcherServiceTest* test) {
-            EXPECT_FALSE(
-                ShouldSwitch(service, GURL("http://docs.google.com/")));
-            // This will cause the sitelist to be downloaded.
-            test->SetExternalUrl(kAValidUrl);
-          },
-          service, this),
-      action_timeout());
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](BrowserSwitcherService* service,
-             BrowserSwitcherServiceTest* test) {
-            EXPECT_TRUE(ShouldSwitch(service, GURL("http://docs.google.com/")));
-            // This will cause the sitelist to be cleared again.
-            test->SetExternalUrl(kAnInvalidUrl);
-          },
-          service, this),
-      action_timeout() * 2);
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](BrowserSwitcherService* service, base::OnceClosure quit) {
-            EXPECT_FALSE(
-                ShouldSwitch(service, GURL("http://docs.google.com/")));
-            std::move(quit).Run();
-          },
-          service, run_loop.QuitClosure()),
-      action_timeout() * 3);
-  run_loop.Run();
+  auto* service = GetService();
+
+  EXPECT_FALSE(ShouldSwitch(service, GURL("http://docs.google.com/")));
+
+  SetExternalUrl(kAValidUrl);
+  WaitForRefresh();
+  EXPECT_TRUE(ShouldSwitch(service, GURL("http://docs.google.com/")));
+
+  SetExternalUrl(kAnInvalidUrl);
+  EXPECT_FALSE(ShouldSwitch(service, GURL("http://docs.google.com/")));
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, ExternalFileUrl) {
@@ -361,20 +322,11 @@ IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, ExternalFileUrl) {
   SetExternalUrl(net::FilePathToFileURL(sitelist_path).spec());
 
   // Execute everything and make sure the rules are applied correctly.
-  auto* service =
-      BrowserSwitcherServiceFactory::GetForBrowserContext(browser()->profile());
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](BrowserSwitcherService* service, base::OnceClosure quit) {
-            EXPECT_FALSE(ShouldSwitch(service, GURL("http://google.com/")));
-            EXPECT_TRUE(ShouldSwitch(service, GURL("http://docs.google.com/")));
-            std::move(quit).Run();
-          },
-          service, run_loop.QuitClosure()),
-      action_timeout());
-  run_loop.Run();
+  auto* service = GetService();
+
+  WaitForRefresh();
+  EXPECT_FALSE(ShouldSwitch(service, GURL("http://google.com/")));
+  EXPECT_TRUE(ShouldSwitch(service, GURL("http://docs.google.com/")));
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest,
@@ -385,21 +337,11 @@ IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest,
       base::BindRepeating(FailToDownload));
 
   // Execute everything and make sure no rules are applied.
-  auto* service =
-      BrowserSwitcherServiceFactory::GetForBrowserContext(browser()->profile());
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](BrowserSwitcherService* service, base::OnceClosure quit) {
-            EXPECT_FALSE(ShouldSwitch(service, GURL("http://google.com/")));
-            EXPECT_FALSE(
-                ShouldSwitch(service, GURL("http://docs.google.com/")));
-            std::move(quit).Run();
-          },
-          service, run_loop.QuitClosure()),
-      action_timeout());
-  run_loop.Run();
+  auto* service = GetService();
+
+  WaitForRefresh();
+  EXPECT_FALSE(ShouldSwitch(service, GURL("http://google.com/")));
+  EXPECT_FALSE(ShouldSwitch(service, GURL("http://docs.google.com/")));
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest,
@@ -417,18 +359,9 @@ IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest,
       &fetch_happened));
 
   // Execute everything and make sure we didn't get to the fetch step.
-  BrowserSwitcherServiceFactory::GetForBrowserContext(browser()->profile());
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](bool* happened, base::OnceClosure quit) {
-            EXPECT_FALSE(*happened);
-            std::move(quit).Run();
-          },
-          &fetch_happened, run_loop.QuitClosure()),
-      action_timeout());
-  run_loop.Run();
+  GetService();
+  WaitForActionTimeout();
+  EXPECT_FALSE(fetch_happened);
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest,
@@ -448,22 +381,11 @@ IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest,
       base::BindRepeating(ReturnValidXml));
 
   // Execute everything and make sure the rules are applied correctly.
-  auto* service =
-      BrowserSwitcherServiceFactory::GetForBrowserContext(browser()->profile());
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](BrowserSwitcherService* service, base::OnceClosure quit) {
-            EXPECT_TRUE(ShouldSwitch(service, GURL("http://google.com/")));
-            EXPECT_FALSE(
-                ShouldSwitch(service, GURL("http://docs.google.com/")));
-            EXPECT_TRUE(ShouldSwitch(service, GURL("http://yahoo.com/")));
-            std::move(quit).Run();
-          },
-          service, run_loop.QuitClosure()),
-      action_timeout());
-  run_loop.Run();
+  auto* service = GetService();
+  WaitForRefresh();
+  EXPECT_TRUE(ShouldSwitch(service, GURL("http://google.com/")));
+  EXPECT_FALSE(ShouldSwitch(service, GURL("http://docs.google.com/")));
+  EXPECT_TRUE(ShouldSwitch(service, GURL("http://yahoo.com/")));
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest,
@@ -474,21 +396,11 @@ IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest,
       base::BindRepeating(&ReturnValidXml));
 
   // Execute everything and make sure the rules are applied correctly.
-  auto* service =
-      BrowserSwitcherServiceFactory::GetForBrowserContext(browser()->profile());
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](BrowserSwitcherService* service, base::OnceClosure quit) {
-            EXPECT_FALSE(ShouldSwitch(service, GURL("http://google.com/")));
-            EXPECT_TRUE(ShouldSwitch(service, GURL("http://docs.google.com/")));
-            EXPECT_FALSE(ShouldSwitch(service, GURL("http://yahoo.com/")));
-            std::move(quit).Run();
-          },
-          service, run_loop.QuitClosure()),
-      TestTimeouts::action_timeout());
-  run_loop.Run();
+  auto* service = GetService();
+  WaitForRefresh();
+  EXPECT_FALSE(ShouldSwitch(service, GURL("http://google.com/")));
+  EXPECT_TRUE(ShouldSwitch(service, GURL("http://docs.google.com/")));
+  EXPECT_FALSE(ShouldSwitch(service, GURL("http://yahoo.com/")));
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest,
@@ -499,11 +411,9 @@ IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest,
       base::BindRepeating(&ReturnValidXml));
 
   // Execute everything and make sure the rules are applied correctly.
-  auto* service =
-      BrowserSwitcherServiceFactory::GetForBrowserContext(browser()->profile());
+  auto* service = GetService();
   // No timeout here, since we're checking that the rules get applied *before*
   // downloading.
-  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(ShouldSwitch(service, GURL("http://google.com/")));
   EXPECT_TRUE(ShouldSwitch(service, GURL("http://docs.google.com/")));
   EXPECT_FALSE(ShouldSwitch(service, GURL("http://yahoo.com/")));
@@ -526,18 +436,9 @@ IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, IeemSitelistInvalidUrl) {
       &fetch_happened));
 
   // Execute everything and make sure we didn't get to the fetch step.
-  BrowserSwitcherServiceFactory::GetForBrowserContext(browser()->profile());
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](bool* happened, base::OnceClosure quit) {
-            EXPECT_FALSE(*happened);
-            std::move(quit).Run();
-          },
-          &fetch_happened, run_loop.QuitClosure()),
-      action_timeout());
-  run_loop.Run();
+  GetService();
+  WaitForActionTimeout();
+  EXPECT_FALSE(fetch_happened);
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest,
@@ -549,25 +450,13 @@ IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest,
       base::BindRepeating(&ReturnValidXml));
 
   // Execute everything and make sure the rules are applied correctly.
-  auto* service =
-      BrowserSwitcherServiceFactory::GetForBrowserContext(browser()->profile());
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](BrowserSwitcherService* service, base::OnceClosure quit) {
-            EXPECT_FALSE(ShouldSwitch(service, GURL("http://google.com/")));
-            EXPECT_TRUE(ShouldSwitch(service, GURL("http://docs.google.com/")));
-            std::move(quit).Run();
-          },
-          service, run_loop.QuitClosure()),
-      action_timeout());
-  run_loop.Run();
+  auto* service = GetService();
+  WaitForRefresh();
+  EXPECT_FALSE(ShouldSwitch(service, GURL("http://google.com/")));
+  EXPECT_TRUE(ShouldSwitch(service, GURL("http://docs.google.com/")));
 }
 
-// Disabled test due to flaky failures on Win 7: crbug.com/1044619
-IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest,
-                       DISABLED_IeemIgnoresFailedDownload) {
+IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, IeemIgnoresFailedDownload) {
   SetUseIeSitelist(true);
   BrowserSwitcherServiceWin::SetIeemSitelistUrlForTesting(kAValidUrl);
 
@@ -575,21 +464,11 @@ IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest,
       base::BindRepeating(FailToDownload));
 
   // Execute everything and make sure no rules are applied.
-  auto* service =
-      BrowserSwitcherServiceFactory::GetForBrowserContext(browser()->profile());
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](BrowserSwitcherService* service, base::OnceClosure quit) {
-            EXPECT_FALSE(ShouldSwitch(service, GURL("http://google.com/")));
-            EXPECT_FALSE(
-                ShouldSwitch(service, GURL("http://docs.google.com/")));
-            std::move(quit).Run();
-          },
-          service, run_loop.QuitClosure()),
-      action_timeout());
-  run_loop.Run();
+  auto* service = GetService();
+
+  WaitForRefresh();
+  EXPECT_FALSE(ShouldSwitch(service, GURL("http://google.com/")));
+  EXPECT_FALSE(ShouldSwitch(service, GURL("http://docs.google.com/")));
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, IeemIgnoresNonManagedPref) {
@@ -606,18 +485,9 @@ IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, IeemIgnoresNonManagedPref) {
       &fetch_happened));
 
   // Execute everything and make sure we didn't get to the fetch step.
-  BrowserSwitcherServiceFactory::GetForBrowserContext(browser()->profile());
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](bool* happened, base::OnceClosure quit) {
-            EXPECT_FALSE(*happened);
-            std::move(quit).Run();
-          },
-          &fetch_happened, run_loop.QuitClosure()),
-      action_timeout());
-  run_loop.Run();
+  GetService();
+  WaitForActionTimeout();
+  EXPECT_FALSE(fetch_happened);
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, IeemListensForPrefChanges) {
@@ -628,43 +498,15 @@ IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, IeemListensForPrefChanges) {
   content::URLLoaderInterceptor interceptor(
       base::BindRepeating(ReturnValidXml));
 
-  auto* service =
-      BrowserSwitcherServiceFactory::GetForBrowserContext(browser()->profile());
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](BrowserSwitcherService* service,
-             BrowserSwitcherServiceTest* test) {
-            EXPECT_FALSE(
-                ShouldSwitch(service, GURL("http://docs.google.com/")));
-            // This will cause the sitelist to be downloaded.
-            test->SetUseIeSitelist(true);
-          },
-          service, this),
-      action_timeout());
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](BrowserSwitcherService* service,
-             BrowserSwitcherServiceTest* test) {
-            EXPECT_TRUE(ShouldSwitch(service, GURL("http://docs.google.com/")));
-            // This will cause the sitelist to be cleared again.
-            test->SetUseIeSitelist(false);
-          },
-          service, this),
-      action_timeout() * 2);
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](BrowserSwitcherService* service, base::OnceClosure quit) {
-            EXPECT_FALSE(
-                ShouldSwitch(service, GURL("http://docs.google.com/")));
-            std::move(quit).Run();
-          },
-          service, run_loop.QuitClosure()),
-      action_timeout() * 3);
-  run_loop.Run();
+  auto* service = GetService();
+  EXPECT_FALSE(ShouldSwitch(service, GURL("http://docs.google.com/")));
+
+  SetUseIeSitelist(true);
+  WaitForRefresh();
+  EXPECT_TRUE(ShouldSwitch(service, GURL("http://docs.google.com/")));
+
+  SetUseIeSitelist(false);
+  EXPECT_FALSE(ShouldSwitch(service, GURL("http://docs.google.com/")));
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, WritesPrefsToCacheFile) {
@@ -694,43 +536,27 @@ IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, WritesPrefsToCacheFile) {
   base::RunLoop().RunUntilIdle();
 
   // Execute everything and check "cache.dat" file contents.
-  BrowserSwitcherServiceFactory::GetForBrowserContext(browser()->profile());
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](base::FilePath cache_file_path,
-             base::FilePath sitelist_cache_file_path, base::OnceClosure quit) {
-            base::ScopedAllowBlockingForTesting allow_blocking;
-            base::File file(cache_file_path,
-                            base::File::FLAG_OPEN | base::File::FLAG_READ);
-            ASSERT_TRUE(file.IsValid());
+  GetService();
+  WaitForCacheFile();
 
-            const char expected_output[] =
-                "1\n"
-                "IExplore.exe\n"
-                "--bogus-flag\n"
-                "chrome.exe\n"
-                "--force-dark-mode\n"
-                "1\n"
-                "example.com\n"
-                "1\n"
-                "foo.example.com\n";
+  const char expected_output[] =
+      "1\n"
+      "IExplore.exe\n"
+      "--bogus-flag\n"
+      "chrome.exe\n"
+      "--force-dark-mode\n"
+      "1\n"
+      "example.com\n"
+      "1\n"
+      "foo.example.com\n";
 
-            std::unique_ptr<char[]> buffer(new char[file.GetLength() + 1]);
-            buffer.get()[file.GetLength()] = '\0';
-            file.Read(0, buffer.get(), file.GetLength());
-            EXPECT_EQ(std::string(expected_output), std::string(buffer.get()));
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  std::string output;
+  EXPECT_TRUE(base::ReadFileToString(cache_file_path(), &output));
+  EXPECT_EQ(expected_output, output);
 
-            // Check that sitelistcache.dat doesn't exist.
-            EXPECT_FALSE(base::PathExists(sitelist_cache_file_path));
-
-            std::move(quit).Run();
-          },
-          cache_file_path(), sitelist_cache_file_path(),
-          run_loop.QuitClosure()),
-      action_timeout());
-  run_loop.Run();
+  // Check that sitelistcache.dat doesn't exist.
+  EXPECT_FALSE(base::PathExists(sitelist_cache_file_path()));
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, WritesSitelistsToCacheFile) {
@@ -769,51 +595,38 @@ IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, WritesSitelistsToCacheFile) {
 
   // Execute everything and check "cache.dat" file contents. It should
   // contain the *union* of both sitelists, not just one of them.
-  BrowserSwitcherServiceFactory::GetForBrowserContext(browser()->profile());
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](base::FilePath cache_file_path,
-             base::FilePath sitelist_cache_file_path, base::OnceClosure quit) {
-            base::ScopedAllowBlockingForTesting allow_blocking;
-            base::File file(cache_file_path,
-                            base::File::FLAG_OPEN | base::File::FLAG_READ);
-            ASSERT_TRUE(file.IsValid());
+  GetService();
+  // LBS will write to cache.dat twice: once before downloading the XML files,
+  // and then once after. We're interested in the second state, so wait for 2
+  // writes to cache.dat.
+  WaitForCacheFile();
+  WaitForCacheFile();
 
-            base::FilePath expected_chrome_path;
-            base::FilePath::CharType chrome_path[MAX_PATH];
+  base::FilePath expected_chrome_path;
+  base::FilePath::CharType chrome_path[MAX_PATH];
 #if defined(OS_WIN)
-            ::GetModuleFileName(NULL, chrome_path, ARRAYSIZE(chrome_path));
-            expected_chrome_path = base::FilePath(chrome_path);
+  ::GetModuleFileName(nullptr, chrome_path, ARRAYSIZE(chrome_path));
+  expected_chrome_path = base::FilePath(chrome_path);
 #endif
-            std::string expected_output = base::StringPrintf(
-                "1\n"
-                "\n"
-                "\n"
-                "%s\n"
-                "\n"
-                "2\n"
-                "docs.google.com\n"
-                "yahoo.com\n"
-                "1\n"
-                "greylist.invalid.com\n",
-                expected_chrome_path.MaybeAsASCII().c_str());
+  std::string expected_output = base::StringPrintf(
+      "1\n"
+      "\n"
+      "\n"
+      "%s\n"
+      "\n"
+      "2\n"
+      "docs.google.com\n"
+      "yahoo.com\n"
+      "1\n"
+      "greylist.invalid.com\n",
+      expected_chrome_path.MaybeAsASCII().c_str());
 
-            std::unique_ptr<char[]> buffer(new char[file.GetLength() + 1]);
-            buffer.get()[file.GetLength()] = '\0';
-            file.Read(0, buffer.get(), file.GetLength());
-            EXPECT_EQ(expected_output, std::string(buffer.get()));
+  std::string output;
+  EXPECT_TRUE(base::ReadFileToString(cache_file_path(), &output));
+  EXPECT_EQ(expected_output, output);
 
-            // Check that sitelistcache.dat doesn't exist.
-            EXPECT_FALSE(base::PathExists(sitelist_cache_file_path));
-
-            std::move(quit).Run();
-          },
-          cache_file_path(), sitelist_cache_file_path(),
-          run_loop.QuitClosure()),
-      action_timeout());
-  run_loop.Run();
+  // Check that sitelistcache.dat doesn't exist.
+  EXPECT_FALSE(base::PathExists(sitelist_cache_file_path()));
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest,
@@ -825,19 +638,15 @@ IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest,
       base::BindRepeating(&ReturnValidXml));
 
   // Execute everything and check "cache.dat" file contents.
-  BrowserSwitcherServiceFactory::GetForBrowserContext(browser()->profile());
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](base::FilePath cache_file_path, base::OnceClosure quit) {
-            base::ScopedAllowBlockingForTesting allow_blocking;
-            ASSERT_TRUE(base::PathExists(base::FilePath(cache_file_path)));
-            std::move(quit).Run();
-          },
-          cache_file_path(), run_loop.QuitClosure()),
-      action_timeout());
-  run_loop.Run();
+  GetService();
+  // LBS will write to cache.dat twice: once before downloading the XML files,
+  // and then once after. We're interested in the second state, so wait for 2
+  // writes to cache.dat.
+  WaitForCacheFile();
+  WaitForCacheFile();
+
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  ASSERT_TRUE(base::PathExists(cache_file_path()));
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, CacheFileCorrectOnStartup) {
@@ -852,45 +661,32 @@ IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, CacheFileCorrectOnStartup) {
       base::BindRepeating(&ReturnValidXml));
 
   // Execute everything and check "cache.dat" file contents.
-  BrowserSwitcherServiceFactory::GetForBrowserContext(browser()->profile());
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](base::FilePath cache_file_path,
-             base::FilePath sitelist_cache_file_path, base::OnceClosure quit) {
-            base::ScopedAllowBlockingForTesting allow_blocking;
-            base::File file(cache_file_path,
-                            base::File::FLAG_OPEN | base::File::FLAG_READ);
-            ASSERT_TRUE(file.IsValid());
-            base::FilePath expected_chrome_path;
-            base::FilePath::CharType chrome_path[MAX_PATH];
-#if defined(OS_WIN)
-            ::GetModuleFileName(NULL, chrome_path, ARRAYSIZE(chrome_path));
-            expected_chrome_path = base::FilePath(chrome_path);
-#endif
-            std::string expected_output = base::StringPrintf(
-                "1\n"
-                "\n"
-                "\n"
-                "%s\n"
-                "\n"
-                "1\n"
-                "docs.google.com\n"
-                "0\n",
-                expected_chrome_path.MaybeAsASCII().c_str());
+  GetService();
+  WaitForCacheFile();
 
-            std::unique_ptr<char[]> buffer(new char[file.GetLength() + 1]);
-            buffer.get()[file.GetLength()] = '\0';
-            file.Read(0, buffer.get(), file.GetLength());
-            EXPECT_EQ(expected_output, std::string(buffer.get()));
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  base::File file(cache_file_path(),
+                  base::File::FLAG_OPEN | base::File::FLAG_READ);
+  ASSERT_TRUE(base::PathExists(cache_file_path()));
+  ASSERT_TRUE(file.IsValid());
+  base::FilePath expected_chrome_path;
+  base::FilePath::CharType chrome_path[MAX_PATH];
+  ::GetModuleFileName(nullptr, chrome_path, ARRAYSIZE(chrome_path));
+  expected_chrome_path = base::FilePath(chrome_path);
+  std::string expected_output = base::StringPrintf(
+      "1\n"
+      "\n"
+      "\n"
+      "%s\n"
+      "\n"
+      "1\n"
+      "docs.google.com\n"
+      "0\n",
+      expected_chrome_path.MaybeAsASCII().c_str());
 
-            std::move(quit).Run();
-          },
-          cache_file_path(), sitelist_cache_file_path(),
-          run_loop.QuitClosure()),
-      action_timeout());
-  run_loop.Run();
+  std::string output;
+  EXPECT_TRUE(base::ReadFileToString(cache_file_path(), &output));
+  EXPECT_EQ(expected_output, output);
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest,
@@ -907,43 +703,33 @@ IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest,
   ASSERT_TRUE(base::PathExists(sitelist_cache_file_path()));
 
   // Check that "sitelistcache.dat" got cleaned up on startup.
-  BrowserSwitcherServiceFactory::GetForBrowserContext(browser()->profile());
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](base::FilePath sitelist_cache_file_path, base::OnceClosure quit) {
-            EXPECT_FALSE(base::PathExists(sitelist_cache_file_path));
-            std::move(quit).Run();
-          },
-          sitelist_cache_file_path(), run_loop.QuitClosure()),
-      action_timeout());
-  run_loop.Run();
+  GetService();
+  WaitForSitelistCacheFile();
+
+  EXPECT_FALSE(base::PathExists(sitelist_cache_file_path()));
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, WritesNothingIfDisabled) {
-  base::ScopedAllowBlockingForTesting allow_blocking;
-
   // No policies configured.
 
   // Check that "cache.dat" and "sitelistcache.dat" don't exist when LBS is not
   // configured.
-  BrowserSwitcherServiceFactory::GetForBrowserContext(browser()->profile());
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](base::FilePath cache_dir, base::FilePath cache_file_path,
-             base::FilePath sitelist_cache_file_path, base::OnceClosure quit) {
-            EXPECT_FALSE(base::PathExists(cache_dir));
-            EXPECT_FALSE(base::PathExists(cache_file_path));
-            EXPECT_FALSE(base::PathExists(sitelist_cache_file_path));
-            std::move(quit).Run();
-          },
-          cache_dir(), cache_file_path(), sitelist_cache_file_path(),
-          run_loop.QuitClosure()),
-      action_timeout());
-  run_loop.Run();
+  auto* service = GetServiceWin();
+  // Need to initialize both RunLoops at the same time to avoid deadlocks
+  // depending on which is written first (cache.dat or sitelistcache.dat).
+  base::RunLoop cache_run_loop;
+  base::RunLoop sitelist_cache_run_loop;
+  service->OnCacheFileUpdatedForTesting(cache_run_loop.QuitClosure());
+  service->OnSitelistCacheFileUpdatedForTesting(
+      sitelist_cache_run_loop.QuitClosure());
+  cache_run_loop.Run();
+  sitelist_cache_run_loop.Run();
+
+  base::ScopedAllowBlockingForTesting allow_blocking;
+
+  EXPECT_FALSE(base::PathExists(cache_dir()));
+  EXPECT_FALSE(base::PathExists(cache_file_path()));
+  EXPECT_FALSE(base::PathExists(sitelist_cache_file_path()));
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest,
@@ -973,22 +759,11 @@ IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest,
   ASSERT_TRUE(base::PathExists(cache_file_path()));
   ASSERT_TRUE(base::PathExists(sitelist_cache_file_path()));
 
-  BrowserSwitcherServiceFactory::GetForBrowserContext(browser()->profile());
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](base::FilePath cache_dir, base::FilePath cache_file_path,
-             base::FilePath sitelist_cache_file_path, base::OnceClosure quit) {
-            EXPECT_TRUE(base::PathExists(cache_dir));
-            EXPECT_TRUE(base::PathExists(cache_file_path));
-            EXPECT_TRUE(base::PathExists(sitelist_cache_file_path));
-            std::move(quit).Run();
-          },
-          cache_dir(), cache_file_path(), sitelist_cache_file_path(),
-          run_loop.QuitClosure()),
-      action_timeout());
-  run_loop.Run();
+  GetService();
+  WaitForActionTimeout();
+  EXPECT_TRUE(base::PathExists(cache_dir()));
+  EXPECT_TRUE(base::PathExists(cache_file_path()));
+  EXPECT_TRUE(base::PathExists(sitelist_cache_file_path()));
 }
 #endif
 

@@ -44,10 +44,6 @@ class OptimizationGuideNavigationData {
   // with.
   int64_t navigation_id() const { return navigation_id_; }
 
-  // Whether the navigation associated with |this| has committed.
-  bool has_committed() const { return has_committed_; }
-  void set_has_committed(bool has_committed) { has_committed_ = has_committed; }
-
   // The serialized hints version for the hint that applied to the navigation.
   base::Optional<std::string> serialized_hint_version_string() const {
     return serialized_hint_version_string_;
@@ -174,13 +170,8 @@ class OptimizationGuideNavigationData {
   }
 
  private:
-  // Records metrics based on data currently held in |this|. |has_committed|
-  // indicates whether commit-time metrics should be recorded.
-  void RecordMetrics(bool has_committed) const;
-
-  // Records the hint cache and fetch coverage based on data currently held in
-  // |this|.
-  void RecordHintCoverage(bool has_committed) const;
+  // Records metrics based on data currently held in |this|.
+  void RecordMetrics() const;
 
   // Records histograms for the decisions made for each optimization target and
   // type that was queried for the navigation based on data currently held in
@@ -202,9 +193,6 @@ class OptimizationGuideNavigationData {
   // The navigation ID of the navigation handle that this data is associated
   // with.
   const int64_t navigation_id_;
-
-  // Whether the navigation has committed.
-  bool has_committed_ = false;
 
   // The serialized hints version for the hint that applied to the navigation.
   base::Optional<std::string> serialized_hint_version_string_;

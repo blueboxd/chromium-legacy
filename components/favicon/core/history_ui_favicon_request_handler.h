@@ -33,6 +33,7 @@ class HistoryUiFaviconRequestHandler : public KeyedService {
   // favicon server if user settings allow to query it using history data.
   // If a non-empty |icon_url_for_uma| (optional) is passed, it will be used to
   // record UMA about the grouping of requests to the favicon server.
+  // TODO(crbug.com/978775): Remove |icon_url_for_uma|, it is not used any more.
   virtual void GetRawFaviconForPageURL(
       const GURL& page_url,
       int desired_size_in_pixel,
@@ -43,6 +44,7 @@ class HistoryUiFaviconRequestHandler : public KeyedService {
   // Requests favicon image at |page_url|. The same fallback considerations for
   // GetRawFaviconForPageURL apply.
   // This method is only called by desktop code.
+  // TODO(crbug.com/978775): Remove |icon_url_for_uma|, it is not used any more.
   virtual void GetFaviconImageForPageURL(
       const GURL& page_url,
       favicon_base::FaviconImageCallback callback,

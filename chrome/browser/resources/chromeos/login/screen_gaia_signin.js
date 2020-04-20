@@ -225,6 +225,16 @@ Polymer({
       type: Boolean,
       computed: 'computeSamlSsoVisible_(isSaml_, pinDialogParameters_)',
     },
+
+    /**
+     * Whether a pop-up overlay should be shown. This overlay is necessary
+     * when GAIA shows an overlay within their iframe. It covers the parts
+     * of the screen that would otherwise not show an overlay.
+     */
+    isPopUpOverlayVisible_: {
+      type: Boolean,
+      computed: 'showOverlay_(navigationEnabled_, isSamlSsoVisible_)'
+    }
   },
 
   observers: [

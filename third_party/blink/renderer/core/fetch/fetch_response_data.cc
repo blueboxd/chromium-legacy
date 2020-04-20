@@ -290,6 +290,53 @@ mojom::blink::FetchAPIResponsePtr FetchResponseData::PopulateFetchAPIResponse(
   return response;
 }
 
+void FetchResponseData::InitFromResourceResponse(
+    const Vector<KURL>& request_url_list,
+    network::mojom::CredentialsMode request_credentials,
+    FetchRequestData::Tainting tainting,
+    const ResourceResponse& response) {
+  SetStatus(response.HttpStatusCode());
+  if (response.CurrentRequestUrl().ProtocolIsAbout() ||
+      response.CurrentRequestUrl().ProtocolIsData() ||
+      response.CurrentRequestUrl().ProtocolIs("blob")) {
+    SetStatusMessage("OK");
+  } else {
+    SetStatusMessage(response.HttpStatusText());
+  }
+
+  for (auto& it : response.HttpHeaderFields())
+    HeaderList()->Append(it.key, it.value);
+
+  // Corresponds to https://fetch.spec.whatwg.org/#main-fetch step:
+  // "If |internalResponse|’s URL list is empty, then set it to a clone of
+  // |request|’s URL list."
+  if (response.UrlListViaServiceWorker().IsEmpty()) {
+    // Note: |UrlListViaServiceWorker()| is empty, unless the response came from
+    // a service worker, in which case it will only be empty if it was created
+    // through new Response().
+    SetURLList(request_url_list);
+  } else {
+    DCHECK(response.WasFetchedViaServiceWorker());
+    SetURLList(response.UrlListViaServiceWorker());
+  }
+
+  SetMimeType(response.MimeType());
+  SetResponseTime(response.ResponseTime());
+
+  if (response.WasCached()) {
+    SetResponseSource(network::mojom::FetchResponseSource::kHttpCache);
+  } else if (!response.WasFetchedViaServiceWorker()) {
+    SetResponseSource(network::mojom::FetchResponseSource::kNetwork);
+  }
+
+  // TODO(wanderview): Remove |tainting| and use |response.GetType()|
+  // instead once the OOR-CORS disabled path is removed.
+  SetLoadedWithCredentials(
+      request_credentials == network::mojom::CredentialsMode::kInclude ||
+      (request_credentials == network::mojom::CredentialsMode::kSameOrigin &&
+       tainting == FetchRequestData::kBasicTainting));
+}
+
 FetchResponseData::FetchResponseData(Type type,
                                      network::mojom::FetchResponseSource source,
                                      uint16_t status,

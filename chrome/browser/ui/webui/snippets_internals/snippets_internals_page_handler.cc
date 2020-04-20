@@ -253,7 +253,7 @@ void SnippetsInternalsPageHandler::FetchSuggestionsInBackground(
   DCHECK(delaySeconds >= 0);
   suggestion_fetch_timer_.Start(
       FROM_HERE, base::TimeDelta::FromSeconds(delaySeconds),
-      base::BindRepeating(
+      base::BindOnce(
           &SnippetsInternalsPageHandler::FetchSuggestionsInBackgroundImpl,
           weak_ptr_factory_.GetWeakPtr(), base::Passed(std::move(callback))));
 }
@@ -349,7 +349,7 @@ void SnippetsInternalsPageHandler::CollectDismissedSuggestions(
     if (last_index + 1 >= 0 && (size_t)last_index + 1 == i) {
       content_suggestions_service_->GetDismissedSuggestionsForDebugging(
           categories[i],
-          base::BindRepeating(
+          base::BindOnce(
               &SnippetsInternalsPageHandler::CollectDismissedSuggestions,
               weak_ptr_factory_.GetWeakPtr(), i,
               base::Passed(std::move(callback))));

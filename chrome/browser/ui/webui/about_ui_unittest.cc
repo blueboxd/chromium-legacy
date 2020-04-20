@@ -128,8 +128,8 @@ class ChromeOSTermsTest : public testing::Test {
         GURL(base::StrCat(
             {"chrome://", chrome::kChromeUITermsHost, "/", request_url})),
         std::move(wc_getter),
-        base::BindRepeating(&TestDataReceiver::OnDataReceived,
-                            base::Unretained(data_receiver)));
+        base::BindOnce(&TestDataReceiver::OnDataReceived,
+                       base::Unretained(data_receiver)));
     task_environment_.RunUntilIdle();
   }
 

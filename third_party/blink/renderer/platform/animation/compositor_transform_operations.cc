@@ -59,10 +59,6 @@ void CompositorTransformOperations::AppendMatrix(const SkMatrix44& matrix) {
   transform_operations_.AppendMatrix(transform);
 }
 
-void CompositorTransformOperations::AppendIdentity() {
-  transform_operations_.AppendIdentity();
-}
-
 bool CompositorTransformOperations::IsIdentity() const {
   return transform_operations_.IsIdentity();
 }

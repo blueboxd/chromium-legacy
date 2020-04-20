@@ -16,6 +16,8 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
+#include "base/observer_list_types.h"
 #include "build/build_config.h"
 #include "components/infobars/core/infobar_delegate.h"
 #include "components/translate/core/browser/translate_prefs.h"
@@ -43,7 +45,7 @@ class TranslateManager;
 class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
  public:
   // An observer to handle different translate steps' UI changes.
-  class Observer {
+  class Observer : public base::CheckedObserver {
    public:
     // Handles UI changes on the translate step given.
     virtual void OnTranslateStepChanged(translate::TranslateStep step,
@@ -53,9 +55,6 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
     // Called when the TranslateInfoBarDelegate instance is destroyed.
     virtual void OnTranslateInfoBarDelegateDestroyed(
         TranslateInfoBarDelegate* delegate) = 0;
-
-   protected:
-    virtual ~Observer() {}
   };
 
   static const size_t kNoIndex;
@@ -216,8 +215,11 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
   // May return NULL if the driver has been destroyed.
   TranslateDriver* GetTranslateDriver();
 
-  // Set a observer.
-  virtual void SetObserver(Observer* observer);
+  // Add an observer.
+  virtual void AddObserver(Observer* observer);
+
+  // Remove an observer.
+  virtual void RemoveObserver(Observer* observer);
 
   // InfoBarDelegate:
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
@@ -255,9 +257,9 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
   // (due to language detection, preferences...)
   bool triggered_from_menu_;
 
-  // A observer to handle front-end changes on different steps.
+  // Observers to handle front-end changes on different steps.
   // It's only used when we try to reuse the existing UI.
-  Observer* observer_;
+  base::ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(TranslateInfoBarDelegate);
 };

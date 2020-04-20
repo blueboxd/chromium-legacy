@@ -88,8 +88,7 @@ void V8DcheckCallbackHandler(const char* file, int line, const char* message) {
 namespace content {
 
 RenderProcessImpl::RenderProcessImpl()
-    : RenderProcess("Renderer", GetThreadPoolInitParams()),
-      enabled_bindings_(0) {
+    : RenderProcess("Renderer", GetThreadPoolInitParams()) {
 #if defined(DCHECK_IS_CONFIGURABLE)
   // Some official builds ship with DCHECKs compiled in. Failing DCHECKs then
   // are either fatal or simply log the error, based on a feature flag.
@@ -221,11 +220,6 @@ RenderProcessImpl::RenderProcessImpl()
       v8::V8::SetFlagsFromString(flag.as_string().c_str(), flag.size());
     }
   }
-
-  if (command_line.HasSwitch(switches::kDomAutomationController))
-    enabled_bindings_ |= BINDINGS_POLICY_DOM_AUTOMATION;
-  if (command_line.HasSwitch(switches::kStatsCollectionController))
-    enabled_bindings_ |= BINDINGS_POLICY_STATS_COLLECTION;
 }
 
 RenderProcessImpl::~RenderProcessImpl() {
@@ -240,14 +234,6 @@ RenderProcessImpl::~RenderProcessImpl() {
 
 std::unique_ptr<RenderProcess> RenderProcessImpl::Create() {
   return base::WrapUnique(new RenderProcessImpl());
-}
-
-void RenderProcessImpl::AddBindings(int bindings) {
-  enabled_bindings_ |= bindings;
-}
-
-int RenderProcessImpl::GetEnabledBindings() const {
-  return enabled_bindings_;
 }
 
 void RenderProcessImpl::AddRefProcess() {

@@ -84,8 +84,9 @@ class TestRenderWidgetHostViewChildFrame
     last_gesture_seen_ = event.GetType();
   }
 
-  void ProcessAckedTouchEvent(const TouchEventWithLatencyInfo& touch,
-                              InputEventAckState ack_result) override {
+  void ProcessAckedTouchEvent(
+      const TouchEventWithLatencyInfo& touch,
+      blink::mojom::InputEventResultState ack_result) override {
     unique_id_for_last_touch_ack_ = touch.event.unique_touch_event_id;
   }
 
@@ -147,8 +148,9 @@ class MockRootRenderWidgetHostView : public TestRenderWidgetHostView {
     last_gesture_seen_ = event.GetType();
   }
 
-  void ProcessAckedTouchEvent(const TouchEventWithLatencyInfo& touch,
-                              InputEventAckState ack_result) override {
+  void ProcessAckedTouchEvent(
+      const TouchEventWithLatencyInfo& touch,
+      blink::mojom::InputEventResultState ack_result) override {
     unique_id_for_last_touch_ack_ = touch.event.unique_touch_event_id;
   }
 

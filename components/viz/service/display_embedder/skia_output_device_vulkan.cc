@@ -60,6 +60,14 @@ SkiaOutputDeviceVulkan::~SkiaOutputDeviceVulkan() {
     vulkan_surface_->Destroy();
 }
 
+#if defined(OS_WIN)
+gpu::SurfaceHandle SkiaOutputDeviceVulkan::GetChildSurfaceHandle() {
+  if (vulkan_surface_->accelerated_widget() != surface_handle_)
+    return vulkan_surface_->accelerated_widget();
+  return gpu::kNullSurfaceHandle;
+}
+#endif
+
 bool SkiaOutputDeviceVulkan::Reshape(const gfx::Size& size,
                                      float device_scale_factor,
                                      const gfx::ColorSpace& color_space,

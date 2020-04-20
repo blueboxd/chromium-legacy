@@ -10,7 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "cc/input/browser_controls_state.h"
-#include "cc/metrics/frame_sequence_tracker.h"
+#include "cc/metrics/frame_sequence_tracker_collection.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 

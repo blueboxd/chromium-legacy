@@ -43,6 +43,10 @@ const char kChromeSyncOAuth2Scope[] =
 const char kChromeSyncSupervisedOAuth2Scope[] =
     "https://www.googleapis.com/auth/chromesync_playpen";
 
+// OAuth2 scope for parental consent logging for secondary account addition.
+const char kKidManagementPrivilegedOAuth2Scope[] =
+    "https://www.googleapis.com/auth/kid.management.privileged";
+
 // OAuth2 scope for access to Google Family Link Supervision Setup.
 const char kKidsSupervisionSetupChildOAuth2Scope[] =
     "https://www.googleapis.com/auth/kids.supervision.setup.child";

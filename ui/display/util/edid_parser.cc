@@ -10,6 +10,7 @@
 #include <bitset>
 
 #include "base/hash/hash.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_byteorder.h"
@@ -19,6 +20,25 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace display {
+namespace {
+
+constexpr char kParseEdidFailureMetric[] = "Display.ParseEdidFailure";
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class ParseEdidFailure {
+  kNoError = 0,
+  kManufacturerId = 1,
+  kProductId = 2,
+  kYearOfManufacture = 3,
+  kBitsPerChannel = 4,
+  kGamma = 5,
+  kChromaticityCoordinates = 6,
+  kDisplayName = 7,
+  kExtensions = 8,
+  kMaxValue = kExtensions,
+};
+}  // namespace
 
 EdidParser::EdidParser(const std::vector<uint8_t>& edid_blob)
     : manufacturer_id_(0),
@@ -100,7 +120,8 @@ void EdidParser::ParseEdid(const std::vector<uint8_t>& edid) {
 
   if (edid.size() < kManufacturerOffset + kManufacturerLength) {
     LOG(ERROR) << "Too short EDID data: manufacturer id";
-    // TODO(mcasas): add UMA, https://crbug.com/821393.
+    base::UmaHistogramEnumeration(kParseEdidFailureMetric,
+                                  ParseEdidFailure::kManufacturerId);
     return;  // Any other fields below are beyond this edid offset.
   }
   // ICC filename is generated based on these ids. We always read this as big
@@ -110,7 +131,8 @@ void EdidParser::ParseEdid(const std::vector<uint8_t>& edid) {
 
   if (edid.size() < kProductIdOffset + kProductIdLength) {
     LOG(ERROR) << "Too short EDID data: product id";
-    // TODO(mcasas): add UMA, https://crbug.com/821393.
+    base::UmaHistogramEnumeration(kParseEdidFailureMetric,
+                                  ParseEdidFailure::kProductId);
     return;  // Any other fields below are beyond this edid offset.
   }
   product_id_ = (edid[kProductIdOffset] << 8) + edid[kProductIdOffset + 1];
@@ -124,7 +146,8 @@ void EdidParser::ParseEdid(const std::vector<uint8_t>& edid) {
 
   if (edid.size() < kYearOfManufactureOffset + 1) {
     LOG(ERROR) << "Too short EDID data: year of manufacture";
-    // TODO(mcasas): add UMA, https://crbug.com/821393.
+    base::UmaHistogramEnumeration(kParseEdidFailureMetric,
+                                  ParseEdidFailure::kYearOfManufacture);
     return;  // Any other fields below are beyond this edid offset.
   }
   const uint8_t byte_data = edid[kYearOfManufactureOffset];
@@ -145,7 +168,8 @@ void EdidParser::ParseEdid(const std::vector<uint8_t>& edid) {
 
   if (edid.size() < kVideoInputDefinitionOffset + 1) {
     LOG(ERROR) << "Too short EDID data: bits per channel";
-    // TODO(mcasas): add UMA, https://crbug.com/821393.
+    base::UmaHistogramEnumeration(kParseEdidFailureMetric,
+                                  ParseEdidFailure::kBitsPerChannel);
     return;  // Any other fields below are beyond this edid offset.
   }
   if (edid[kEDIDRevisionNumberOffset] >= kEDIDRevision4Value &&
@@ -165,7 +189,8 @@ void EdidParser::ParseEdid(const std::vector<uint8_t>& edid) {
 
   if (edid.size() < kGammaOffset + 1) {
     LOG(ERROR) << "Too short EDID data: gamma";
-    // TODO(mcasas): add UMA, https://crbug.com/821393.
+    base::UmaHistogramEnumeration(kParseEdidFailureMetric,
+                                  ParseEdidFailure::kGamma);
     return;  // Any other fields below are beyond this edid offset.
   }
   if (edid[kGammaOffset] != 0xFF) {
@@ -210,7 +235,8 @@ void EdidParser::ParseEdid(const std::vector<uint8_t>& edid) {
 
   if (edid.size() < kChromaticityOffset + kChromaticityLength) {
     LOG(ERROR) << "Too short EDID data: chromaticity coordinates";
-    // TODO(mcasas): add UMA, https://crbug.com/821393.
+    base::UmaHistogramEnumeration(kParseEdidFailureMetric,
+                                  ParseEdidFailure::kChromaticityCoordinates);
     return;  // Any other fields below are beyond this edid offset.
   }
 
@@ -312,7 +338,8 @@ void EdidParser::ParseEdid(const std::vector<uint8_t>& edid) {
     if (!isascii(c) || !isprint(c)) {
       display_name_.clear();
       LOG(ERROR) << "invalid EDID: human unreadable char in name";
-      // TODO(mcasas): add UMA, https://crbug.com/821393.
+      base::UmaHistogramEnumeration(kParseEdidFailureMetric,
+                                    ParseEdidFailure::kDisplayName);
     }
   }
 
@@ -366,7 +393,8 @@ void EdidParser::ParseEdid(const std::vector<uint8_t>& edid) {
 
   if (edid.size() < kNumExtensionsOffset + 1) {
     LOG(ERROR) << "Too short EDID data: extensions";
-    // TODO(mcasas): add UMA, https://crbug.com/821393.
+    base::UmaHistogramEnumeration(kParseEdidFailureMetric,
+                                  ParseEdidFailure::kExtensions);
     return;  // Any other fields below are beyond this edid offset.
   }
   const uint8_t num_extensions = edid[kNumExtensionsOffset];
@@ -471,6 +499,8 @@ void EdidParser::ParseEdid(const std::vector<uint8_t>& edid) {
       data_offset += payload_length + 1;
     }
   }
+  base::UmaHistogramEnumeration(kParseEdidFailureMetric,
+                                ParseEdidFailure::kNoError);
 }
 
 }  // namespace display

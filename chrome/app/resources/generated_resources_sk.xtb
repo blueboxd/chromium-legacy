@@ -421,6 +421,11 @@
 <translation id="1555130319947370107">Modrá</translation>
 <translation id="1556537182262721003">Nepodarilo sa do profilu presunúť adresár rozšírenia.</translation>
 <translation id="155865706765934889">Touchpad</translation>
+<translation id="1560763881671211335">Správcovia služby G Suite for Education určujú, ku ktorým službám Googlu majú ich používatelia prístup s prihláseným účtom G Suite for Education. Správcovia škôl musia poskytnúť alebo získať súhlas s používaním služieb neplnoletými používateľmi.
+
+    Dáta prehliadania (vrátane histórie, záložiek a hesiel) budú uložené v účte Family Link, nie školskom účte.
+
+    Budú platiť nastavenia aplikácie Family Link nakonfigurované rodičmi. Ak ste v minulosti blokovali nejakú aplikáciu alebo web, nebudete to musieť robiť znova.</translation>
 <translation id="1566049601598938765">Webové stránky</translation>
 <translation id="15662109988763471">Vybratá tlačiareň nie je k dispozícii alebo nie je správne nainštalovaná. Skontrolujte ju alebo vyberte inú.</translation>
 <translation id="1567387640189251553">Od posledného zadania hesla bola pripojená iná klávesnica. Je možné, že sa pokúša ukradnúť vaše stlačenia klávesov.</translation>
@@ -1199,6 +1204,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="258095186877893873">Dlhé</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (platforma <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Tiket Kerberos nie je možné získať. Vyskúšajte to znova alebo kontaktujte správcu zariadení organizácie. (Kód chyby: <ph name="ERROR_CODE" />).</translation>
+<translation id="2585013490795742997">Zobrazuje sa jeden výsledok vyhľadávania pre dopyt <ph name="QUERY" /></translation>
 <translation id="2585724835339714757">Táto karta zdieľa vašu obrazovku.</translation>
 <translation id="2586657967955657006">Schránka</translation>
 <translation id="2586672484245266891">Zadajte kratšiu webovú adresu</translation>
@@ -1885,6 +1891,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="3498215018399854026">V tejto chvíli sa nám nepodarilo spojiť s vaším rodičom. Skúste to znova neskôr.</translation>
 <translation id="3500417806337761827">Chyba pri inštalácií zdieľaného priestoru. Už je nainštalovaných príliš veľa zdieľaných priestorov SMB.</translation>
 <translation id="3505030558724226696">Odvolať prístup k zariadeniam</translation>
+<translation id="3507132249039706973">Je zapnutá štandardná ochrana</translation>
 <translation id="3507421388498836150">Aktuálne povolenia pre rozšírenie <ph name="EXTENSION_NAME" /></translation>
 <translation id="3507888235492474624">Znova vyhľadať zariadenia Bluetooth</translation>
 <translation id="3508492320654304609">Vaše prihlasovacie údaje sa nepodarilo odstrániť</translation>
@@ -3238,6 +3245,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="5352033265844765294">Časová pečiatka</translation>
 <translation id="5353252989841766347">Export hesiel z Chromu</translation>
 <translation id="5355099869024327351">Umožnite Asistentovi zobrazovať vám upozornenia</translation>
+<translation id="5355191726083956201">Je zapnutá rozšírená ochrana</translation>
 <translation id="5355926466126177564">Rozšírenie „<ph name="EXTENSION_NAME" />“ zmenilo stránku, ktorá sa zobrazí pri vyhľadávaní pomocou všeobecného poľa.</translation>
 <translation id="5359910752122114278">1 výsledok</translation>
 <translation id="5360150013186312835">Zobraziť na paneli s nástrojmi</translation>
@@ -3549,6 +3557,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="577322787686508614">Operácia čítania je na zariadení <ph name="DEVICE_NAME" /> zakázaná.</translation>
 <translation id="5774295353725270860">Otvoriť aplikáciu Súbory</translation>
 <translation id="577624874850706961">Hľadať súbory cookie</translation>
+<translation id="5776858208024364029">Zobrazujú sa výsledky vyhľadávania (<ph name="NUMBER" />) pre dopyt <ph name="QUERY" /></translation>
 <translation id="5777468213129569553">Otvoriť Chrome</translation>
 <translation id="5778747455497889540">Nižšie je uvedené náhodne vygenerované heslo bezpečného modulu, ktoré bolo priradené k vášmu počítaču:</translation>
 <translation id="5780011244986845107">Vybraný priečinok obsahuje citlivé súbory. Naozaj chcete aplikácii <ph name="APP_NAME" /> povoliť trvalý prístup na čítanie pre tento priečinok?</translation>
@@ -4105,6 +4114,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
+<translation id="6520876759015997832"><ph name="LIST_POSITION" />. výsledok vyhľadávania z <ph name="LIST_SIZE" />: <ph name="SEARCH_RESULT_TEXT" />. Stlačením klávesa Enter prejdite na príslušnú sekciu.</translation>
 <translation id="652492607360843641">Máte aktívne pripojenie k sieti <ph name="NETWORK_TYPE" />.</translation>
 <translation id="6527303717912515753">Zdieľať</translation>
 <translation id="6528513914570774834">Povoliť ostatným používateľom zariadenia pripojiť sa k tejto sieti</translation>
@@ -4116,6 +4126,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="6532206849875187177">Zabezpečenie a prihlásenie</translation>
 <translation id="6532527800157340614">Prihlásenie zlyhalo, pretože sa nepodarilo načítať prístupový token. Skontrolujte pripojenie k sieti a skúste to znova.</translation>
 <translation id="6532663472409656417">Zaregistrované v rámci podniku</translation>
+<translation id="6535331821390304775">Vždy povoliť zdroju <ph name="ORIGIN" /> otvárať odkazy tohto typu v pridruženej aplikácii</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Poznámka:<ph name="END_BOLD" /> Túto možnosť povoľte iba v prípade, ak viete, čo robíte, alebo ak vás o to niekto požiadal, pretože zhromažďovanie údajov môže znížiť výkonnosť.</translation>
 <translation id="6541638731489116978">Tomuto webu bol zablokovaný prístup k senzorom pohybu.</translation>
 <translation id="6545665334409411530">Rýchlosť opakovania</translation>
@@ -4245,6 +4256,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="6727969043791803658">Pripojené, <ph name="BATTERY_PERCENTAGE" /> % batérie</translation>
 <translation id="6732801395666424405">Certifikáty neboli načítané</translation>
 <translation id="6732900235521116609">Skratka sa nedá odstrániť</translation>
+<translation id="6734468588183300211">Weby v anonymnom režime nemôžu pomocou súborov cookie zobraziť vašu aktivitu prehliadania v rámci rôznych webov (napríklad na prispôsobenie reklám). Funkcie na niektorých weboch môžu zlyhávať.</translation>
 <translation id="6735304988756581115">Zobraziť súbory cookie a ďalšie dáta webov…</translation>
 <translation id="6736243959894955139">Adresa</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [ <ph name="ISSUED_TO" /> ]</translation>
@@ -4257,6 +4269,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="674632704103926902">Povoliť presunutie klepnutím</translation>
 <translation id="6748217015615267851">Vykresľovací modul: <ph name="RENDERER_URL" /></translation>
 <translation id="6748465660675848252">Môžete pokračovať, ale obnovia sa iba vaše synchronizované údaje a nastavenia. Všetky miestne údaje stratíte.</translation>
+<translation id="6749006854028927059">Weby si nemôžu na základe súborov cookie zobraziť vašu históriu prehliadania v rámci rôznych webov (napríklad na prispôsobenie reklám). Funkcie na niektorých weboch môžu zlyhávať.</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (Inkognito)</translation>
 <translation id="6757101664402245801">Webová adresa bola skopírovaná</translation>
 <translation id="6758056191028427665">Dajte nám tak vedieť, ako sa nám darí v našom úsilí.</translation>
@@ -4348,6 +4361,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="686664946474413495">Teplota farieb</translation>
 <translation id="6871644448911473373">Odpovedajúce zariadenie OCSP: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">Zadané heslo bolo zamietnuté serverom.</translation>
+<translation id="6874170800191969835">Prešli ste na <ph name="SEARCH_RESULT_TEXT" />.</translation>
 <translation id="6876155724392614295">Bicykel</translation>
 <translation id="6876469544038980967">Neužitočné</translation>
 <translation id="6878422606530379992">Senzory sú povolené</translation>
@@ -4618,6 +4632,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="7235737137505019098">Bezpečnostný kľúč nemá dostatok miesta na ďalšie účty.</translation>
 <translation id="7238643356913091553"><ph name="NETWORK_NAME" />, podrobnosti</translation>
 <translation id="7240339475467890413">Pripojiť k novému hotspotu?</translation>
+<translation id="7240847845291869311">Vaše dieťa chce do tohto zariadenia pridať účet Google v rámci služby G Suite for Education. <ph name="LINK_BEGIN" />Oznámenie o ochrane údajov služby G Suite for Education<ph name="LINK_END" /> pomáha používateľom služby G Suite for Education a rodičom pochopiť, aké údaje sa v tejto službe zhromažďujú, na aký účel a akým spôsobom budú použité.</translation>
 <translation id="7241389281993241388">Ak chcete importovať certifikát klienta, prihláste sa do <ph name="TOKEN_NAME" />.</translation>
 <translation id="7241443820034350811">Ak váš bezpečnostný kľúč nie je uvedený, stlačte tlačidlo na kľúči aspoň na päť sekúnd.</translation>
 <translation id="7243632151880336635">Vymazať a odhlásiť sa</translation>
@@ -5200,6 +5215,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="7987814697832569482">Vždy pripájať cez túto sieť VPN</translation>
 <translation id="7988355189918024273">Povoliť funkcie zjednodušeného ovládania</translation>
 <translation id="7991296728590311172">Nastavenia ovládania prepínačmi</translation>
+<translation id="7992202128769240372">Prekračuje limit <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="7994350303002908848">Plugin VM sa nepodarilo nainštalovať. Skúste to znova alebo kontaktujte správcu zariadení organizácie. Kód chyby: <ph name="ERROR_CODE" />.</translation>
 <translation id="7994702968232966508">Metóda EAP</translation>
 <translation id="7997826902155442747">Priorita procesov</translation>

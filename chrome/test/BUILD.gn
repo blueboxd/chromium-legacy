@@ -4284,6 +4284,7 @@ test("unit_tests") {
       "../browser/ui/views/passwords/password_bubble_view_test_base.h",
       "../browser/ui/views/passwords/password_save_unsynced_credentials_locally_view_unittest.cc",
       "../browser/ui/views/passwords/password_save_update_with_account_store_view_unittest.cc",
+      "../browser/ui/views/passwords/post_save_compromised_bubble_view_unittest.cc",
       "../common/media_router/discovery/media_sink_internal_unittest.cc",
       "../common/media_router/discovery/media_sink_service_base_unittest.cc",
       "../common/media_router/mojom/media_router_mojom_traits_unittest.cc",
@@ -5434,6 +5435,9 @@ test("unit_tests") {
       "//chrome/browser/supervised_user:test_support",
       "//chrome/browser/supervised_user/supervised_user_error_page:unit_tests",
     ]
+  }
+  if (enable_supervised_users && is_chromeos) {
+    sources += [ "../browser/supervised_user/child_accounts/secondary_account_consent_logger_unittest.cc" ]
   }
   if (safe_browsing_mode == 1 && enable_extensions) {
     sources += [ "../browser/extensions/blacklist_unittest.cc" ]

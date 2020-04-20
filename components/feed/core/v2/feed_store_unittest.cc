@@ -117,10 +117,10 @@ TEST_F(FeedStoreTest, InitFailure) {
   EXPECT_FALSE(store->IsInitializedForTesting());
 }
 
-TEST_F(FeedStoreTest, SaveFullStream) {
+TEST_F(FeedStoreTest, OverwriteStream) {
   MakeFeedStore({});
   CallbackReceiver<bool> receiver;
-  store_->SaveFullStream(MakeTypicalInitialModelState(), receiver.Bind());
+  store_->OverwriteStream(MakeTypicalInitialModelState(), receiver.Bind());
   fake_db_->UpdateCallback(true);
 
   ASSERT_TRUE(receiver.GetResult());
@@ -130,6 +130,7 @@ TEST_F(FeedStoreTest, SaveFullStream) {
     content_id {
       content_domain: "root"
     }
+    next_page_token: "page-2"
     consistency_token: "token-1"
     shared_state_id {
       content_domain: "render_data"
@@ -230,7 +231,7 @@ TEST_F(FeedStoreTest, SaveFullStream) {
 )");
 }
 
-TEST_F(FeedStoreTest, SaveFullStreamOverwritesData) {
+TEST_F(FeedStoreTest, OverwriteStreamOverwritesData) {
   MakeFeedStore({});
   // Insert some junk that should be removed.
   db_entries_["S/0"].mutable_local_action()->set_id(6);
@@ -243,7 +244,7 @@ TEST_F(FeedStoreTest, SaveFullStreamOverwritesData) {
   db_entries_["s/garbage,0,0"].mutable_local_action()->set_id(6);
 
   CallbackReceiver<bool> receiver;
-  store_->SaveFullStream(MakeTypicalInitialModelState(), receiver.Bind());
+  store_->OverwriteStream(MakeTypicalInitialModelState(), receiver.Bind());
   fake_db_->UpdateCallback(true);
 
   ASSERT_TRUE(receiver.GetResult());
@@ -259,13 +260,13 @@ TEST_F(FeedStoreTest, SaveFullStreamOverwritesData) {
   for (std::string key : StoredKeys()) {
     EXPECT_FALSE(db_entries_[key].has_local_action())
         << "Found local action at key " << key
-        << ", did SaveFullStream erase everything?";
+        << ", did OverwriteStream erase everything?";
   }
 }
 
 TEST_F(FeedStoreTest, LoadStreamSuccess) {
   MakeFeedStore({});
-  store_->SaveFullStream(MakeTypicalInitialModelState(), base::DoNothing());
+  store_->OverwriteStream(MakeTypicalInitialModelState(), base::DoNothing());
   fake_db_->UpdateCallback(true);
 
   CallbackReceiver<LoadStreamResult> receiver;
@@ -280,7 +281,7 @@ TEST_F(FeedStoreTest, LoadStreamSuccess) {
 
 TEST_F(FeedStoreTest, LoadStreamFail) {
   MakeFeedStore({});
-  store_->SaveFullStream(MakeTypicalInitialModelState(), base::DoNothing());
+  store_->OverwriteStream(MakeTypicalInitialModelState(), base::DoNothing());
   fake_db_->UpdateCallback(true);
 
   CallbackReceiver<LoadStreamResult> receiver;

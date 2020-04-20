@@ -43,6 +43,7 @@
 
 namespace blink {
 
+class LocalDOMWindow;
 class FullscreenOptions;
 class ScriptPromiseResolver;
 
@@ -51,17 +52,16 @@ class ScriptPromiseResolver;
 // Document supplement as each document has some fullscreen state, and to
 // actually enter and exit fullscreen it (indirectly) uses FullscreenController.
 class CORE_EXPORT Fullscreen final : public GarbageCollected<Fullscreen>,
-                                     public Supplement<Document>,
+                                     public Supplement<LocalDOMWindow>,
                                      public ExecutionContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(Fullscreen);
 
  public:
   static const char kSupplementName[];
 
-  explicit Fullscreen(Document&);
+  explicit Fullscreen(LocalDOMWindow&);
   virtual ~Fullscreen();
 
-  static Fullscreen& From(Document&);
   static Element* FullscreenElementFrom(Document&);
   static Element* FullscreenElementForBindingFrom(TreeScope&);
   static bool IsFullscreenElement(const Element&);
@@ -109,9 +109,7 @@ class CORE_EXPORT Fullscreen final : public GarbageCollected<Fullscreen>,
   void Trace(Visitor*) override;
 
  private:
-  static Fullscreen* FromIfExists(Document&);
-
-  Document* GetDocument();
+  static Fullscreen& From(LocalDOMWindow&);
 
   static void ContinueRequestFullscreen(Document&,
                                         Element&,

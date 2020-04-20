@@ -26,20 +26,6 @@ namespace blink {
 
 namespace {
 
-// Field trial name for throttling.
-const char kResourceLoadThrottlingTrial[] = "ResourceLoadScheduler";
-
-// Field trial parameter names.
-// Note: bg_limit is supported on m61+, but bg_sub_limit is only on m63+.
-// If bg_sub_limit param is not found, we should use bg_limit to make the
-// study result statistically correct.
-const char kOutstandingLimitForBackgroundMainFrameName[] = "bg_limit";
-const char kOutstandingLimitForBackgroundSubFrameName[] = "bg_sub_limit";
-
-// Field trial default parameters.
-constexpr size_t kOutstandingLimitForBackgroundMainFrameDefault = 3u;
-constexpr size_t kOutstandingLimitForBackgroundSubFrameDefault = 2u;
-
 constexpr char kRendererSideResourceScheduler[] =
     "RendererSideResourceScheduler";
 
@@ -85,18 +71,6 @@ uint32_t GetFieldTrialUint32Param(const char* trial_name,
     return default_param;
 
   return param;
-}
-
-size_t GetOutstandingThrottledLimit(
-    const DetachableResourceFetcherProperties& properties) {
-  static const size_t main_frame_limit = GetFieldTrialUint32Param(
-      kResourceLoadThrottlingTrial, kOutstandingLimitForBackgroundMainFrameName,
-      kOutstandingLimitForBackgroundMainFrameDefault);
-  static const size_t sub_frame_limit = GetFieldTrialUint32Param(
-      kResourceLoadThrottlingTrial, kOutstandingLimitForBackgroundSubFrameName,
-      kOutstandingLimitForBackgroundSubFrameDefault);
-
-  return properties.IsMainFrame() ? main_frame_limit : sub_frame_limit;
 }
 
 int TakeWholeKilobytes(int64_t& bytes) {
@@ -205,19 +179,21 @@ constexpr ResourceLoadScheduler::ClientId
 
 ResourceLoadScheduler::ResourceLoadScheduler(
     ThrottlingPolicy initial_throttling_policy,
+    ThrottleOptionOverride throttle_option_override,
     const DetachableResourceFetcherProperties& resource_fetcher_properties,
-    FrameScheduler* frame_scheduler,
+    FrameOrWorkerScheduler* frame_or_worker_scheduler,
     DetachableConsoleLogger& console_logger)
     : resource_fetcher_properties_(resource_fetcher_properties),
       policy_(initial_throttling_policy),
       outstanding_limit_for_throttled_frame_scheduler_(
-          GetOutstandingThrottledLimit(*resource_fetcher_properties_)),
+          resource_fetcher_properties_->GetOutstandingThrottledLimit()),
       console_logger_(console_logger),
-      clock_(base::DefaultClock::GetInstance()) {
+      clock_(base::DefaultClock::GetInstance()),
+      throttle_option_override_(throttle_option_override) {
   traffic_monitor_ = std::make_unique<ResourceLoadScheduler::TrafficMonitor>(
       resource_fetcher_properties);
 
-  if (!frame_scheduler)
+  if (!frame_or_worker_scheduler)
     return;
 
   normal_outstanding_limit_ =
@@ -229,7 +205,7 @@ ResourceLoadScheduler::ResourceLoadScheduler(
                                kTightLimitForRendererSideResourceSchedulerName,
                                kTightLimitForRendererSideResourceScheduler);
 
-  scheduler_observer_handle_ = frame_scheduler->AddLifecycleObserver(
+  scheduler_observer_handle_ = frame_or_worker_scheduler->AddLifecycleObserver(
       FrameScheduler::ObserverType::kLoader, this);
 }
 
@@ -272,6 +248,12 @@ void ResourceLoadScheduler::Request(ResourceLoadSchedulerClient* client,
   *id = GenerateClientId();
   if (is_shutdown_)
     return;
+
+  if (option == ThrottleOption::kStoppable &&
+      throttle_option_override_ ==
+          ThrottleOptionOverride::kStoppableAsThrottleable) {
+    option = ThrottleOption::kThrottleable;
+  }
 
   // Check if the request can be throttled.
   ClientIdWithPriority request_info(*id, priority, intra_priority);

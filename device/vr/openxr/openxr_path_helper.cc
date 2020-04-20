@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "device/vr/openxr/openxr_path_helper.h"
+
 #include "base/logging.h"
 #include "base/stl_util.h"
-
-#include "device/vr/openxr/openxr_path_helper.h"
 #include "device/vr/openxr/openxr_util.h"
 
 namespace device {

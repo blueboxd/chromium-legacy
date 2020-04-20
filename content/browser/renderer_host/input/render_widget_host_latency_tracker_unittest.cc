@@ -226,7 +226,8 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
   size_t total_ukm_entry_count = 0;
   contents()->NavigateAndCommit(url);
   ukm::SourceId source_id = static_cast<WebContentsImpl*>(contents())
-                                ->GetUkmSourceIdForLastCommittedSource();
+                                ->GetMainFrame()
+                                ->GetPageUkmSourceId();
   EXPECT_NE(ukm::kInvalidSourceId, source_id);
   for (bool rendering_on_main : {false, true}) {
     ResetHistograms();
@@ -245,8 +246,9 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
           ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, nullptr));
       EXPECT_TRUE(wheel_latency.FindLatency(
           ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, nullptr));
-      tracker()->OnInputEventAck(wheel, &wheel_latency,
-                                 INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+      tracker()->OnInputEventAck(
+          wheel, &wheel_latency,
+          blink::mojom::InputEventResultState::kNotConsumed);
       viz_tracker()->OnGpuSwapBuffersCompleted(wheel_latency);
 
       // UKM metrics.
@@ -338,7 +340,8 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, MAYBE_TestWheelToScrollHistograms) {
   size_t total_ukm_entry_count = 0;
   contents()->NavigateAndCommit(url);
   ukm::SourceId source_id = static_cast<WebContentsImpl*>(contents())
-                                ->GetUkmSourceIdForLastCommittedSource();
+                                ->GetMainFrame()
+                                ->GetPageUkmSourceId();
   EXPECT_NE(ukm::kInvalidSourceId, source_id);
   for (bool rendering_on_main : {false, true}) {
     ResetHistograms();
@@ -357,8 +360,9 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, MAYBE_TestWheelToScrollHistograms) {
           ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, nullptr));
       EXPECT_TRUE(wheel_latency.FindLatency(
           ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, nullptr));
-      tracker()->OnInputEventAck(wheel, &wheel_latency,
-                                 INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+      tracker()->OnInputEventAck(
+          wheel, &wheel_latency,
+          blink::mojom::InputEventResultState::kNotConsumed);
       viz_tracker()->OnGpuSwapBuffersCompleted(wheel_latency);
 
       // UKM metrics.
@@ -466,8 +470,9 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
           ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, nullptr));
       EXPECT_TRUE(scroll_latency.FindLatency(
           ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, nullptr));
-      tracker()->OnInputEventAck(scroll, &scroll_latency,
-                                 INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+      tracker()->OnInputEventAck(
+          scroll, &scroll_latency,
+          blink::mojom::InputEventResultState::kNotConsumed);
       viz_tracker()->OnGpuSwapBuffersCompleted(scroll_latency);
     }
 
@@ -513,7 +518,8 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
   contents()->NavigateAndCommit(url);
   size_t total_ukm_entry_count = 0;
   ukm::SourceId source_id = static_cast<WebContentsImpl*>(contents())
-                                ->GetUkmSourceIdForLastCommittedSource();
+                                ->GetMainFrame()
+                                ->GetPageUkmSourceId();
   EXPECT_NE(ukm::kInvalidSourceId, source_id);
   for (bool rendering_on_main : {false, true}) {
     ResetHistograms();
@@ -530,8 +536,9 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
           ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, nullptr));
       EXPECT_TRUE(scroll_latency.FindLatency(
           ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, nullptr));
-      tracker()->OnInputEventAck(scroll, &scroll_latency,
-                                 INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+      tracker()->OnInputEventAck(
+          scroll, &scroll_latency,
+          blink::mojom::InputEventResultState::kNotConsumed);
     }
 
     {
@@ -551,8 +558,9 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
           ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, nullptr));
       EXPECT_TRUE(touch_latency.FindLatency(
           ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, nullptr));
-      tracker()->OnInputEventAck(touch, &touch_latency,
-                                 INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+      tracker()->OnInputEventAck(
+          touch, &touch_latency,
+          blink::mojom::InputEventResultState::kNotConsumed);
       viz_tracker()->OnGpuSwapBuffersCompleted(touch_latency);
     }
 
@@ -629,7 +637,8 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, MAYBE_TestTouchToScrollHistograms) {
   contents()->NavigateAndCommit(url);
   size_t total_ukm_entry_count = 0;
   ukm::SourceId source_id = static_cast<WebContentsImpl*>(contents())
-                                ->GetUkmSourceIdForLastCommittedSource();
+                                ->GetMainFrame()
+                                ->GetPageUkmSourceId();
   EXPECT_NE(ukm::kInvalidSourceId, source_id);
   for (bool rendering_on_main : {false, true}) {
     ResetHistograms();
@@ -646,8 +655,9 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, MAYBE_TestTouchToScrollHistograms) {
           ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, nullptr));
       EXPECT_TRUE(scroll_latency.FindLatency(
           ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, nullptr));
-      tracker()->OnInputEventAck(scroll, &scroll_latency,
-                                 INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+      tracker()->OnInputEventAck(
+          scroll, &scroll_latency,
+          blink::mojom::InputEventResultState::kNotConsumed);
     }
 
     {
@@ -667,8 +677,9 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, MAYBE_TestTouchToScrollHistograms) {
           ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, nullptr));
       EXPECT_TRUE(touch_latency.FindLatency(
           ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, nullptr));
-      tracker()->OnInputEventAck(touch, &touch_latency,
-                                 INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+      tracker()->OnInputEventAck(
+          touch, &touch_latency,
+          blink::mojom::InputEventResultState::kNotConsumed);
       viz_tracker()->OnGpuSwapBuffersCompleted(touch_latency);
     }
 
@@ -765,8 +776,9 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, MAYBE_ScrollbarEndToEndHistograms) {
             ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, nullptr));
         EXPECT_TRUE(scrollbar_latency.FindLatency(
             ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, nullptr));
-        tracker()->OnInputEventAck(mouse_move, &scrollbar_latency,
-                                   INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+        tracker()->OnInputEventAck(
+            mouse_move, &scrollbar_latency,
+            blink::mojom::InputEventResultState::kNotConsumed);
         viz_tracker()->OnGpuSwapBuffersCompleted(scrollbar_latency);
       }
     }
@@ -806,8 +818,9 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
     // Don't include the rendering schedule component, since we're testing the
     // case where rendering isn't scheduled.
     tracker()->OnInputEvent(scroll, &scroll_latency);
-    tracker()->OnInputEventAck(scroll, &scroll_latency,
-                               INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+    tracker()->OnInputEventAck(
+        scroll, &scroll_latency,
+        blink::mojom::InputEventResultState::kNotConsumed);
     EXPECT_TRUE(scroll_latency.terminated());
   }
 
@@ -818,8 +831,9 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
     wheel_latency.set_source_event_type(ui::SourceEventType::WHEEL);
     AddFakeComponents(*tracker(), &wheel_latency);
     tracker()->OnInputEvent(wheel, &wheel_latency);
-    tracker()->OnInputEventAck(wheel, &wheel_latency,
-                               INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+    tracker()->OnInputEventAck(
+        wheel, &wheel_latency,
+        blink::mojom::InputEventResultState::kNotConsumed);
     EXPECT_TRUE(wheel_latency.terminated());
   }
 
@@ -830,8 +844,9 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
     touch_latency.set_source_event_type(ui::SourceEventType::TOUCH);
     AddFakeComponents(*tracker(), &touch_latency);
     tracker()->OnInputEvent(touch, &touch_latency);
-    tracker()->OnInputEventAck(touch, &touch_latency,
-                               INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+    tracker()->OnInputEventAck(
+        touch, &touch_latency,
+        blink::mojom::InputEventResultState::kNotConsumed);
     EXPECT_TRUE(touch_latency.terminated());
   }
 
@@ -841,8 +856,9 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
     ui::LatencyInfo mouse_latency;
     AddFakeComponents(*tracker(), &mouse_latency);
     tracker()->OnInputEvent(mouse_move, &mouse_latency);
-    tracker()->OnInputEventAck(mouse_move, &mouse_latency,
-                               INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+    tracker()->OnInputEventAck(
+        mouse_move, &mouse_latency,
+        blink::mojom::InputEventResultState::kNotConsumed);
     EXPECT_TRUE(mouse_latency.terminated());
   }
 
@@ -853,8 +869,9 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
     key_latency.set_source_event_type(ui::SourceEventType::KEY_PRESS);
     AddFakeComponents(*tracker(), &key_latency);
     tracker()->OnInputEvent(key_event, &key_latency);
-    tracker()->OnInputEventAck(key_event, &key_latency,
-                               INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+    tracker()->OnInputEventAck(
+        key_event, &key_latency,
+        blink::mojom::InputEventResultState::kNotConsumed);
     EXPECT_TRUE(key_latency.terminated());
   }
 
@@ -890,8 +907,9 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, LatencyTerminatedOnAckIfGSUIgnored) {
       AddFakeComponentsWithTimeStamp(*tracker(), &scroll_latency, now);
       AddRenderingScheduledComponent(&scroll_latency, rendering_on_main, now);
       tracker()->OnInputEvent(scroll, &scroll_latency);
-      tracker()->OnInputEventAck(scroll, &scroll_latency,
-                                 INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+      tracker()->OnInputEventAck(
+          scroll, &scroll_latency,
+          blink::mojom::InputEventResultState::kNoConsumerExists);
       EXPECT_TRUE(scroll_latency.terminated());
     }
   }
@@ -948,8 +966,9 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TouchBlockingAndQueueingTime) {
   int touchmove_timestamps_ms[] = {1, 5, 12};
   int touchend_timestamps_ms[] = {3, 8, 12};
 
-  for (InputEventAckState blocking :
-       {INPUT_EVENT_ACK_STATE_NOT_CONSUMED, INPUT_EVENT_ACK_STATE_CONSUMED}) {
+  for (blink::mojom::InputEventResultState blocking :
+       {blink::mojom::InputEventResultState::kNotConsumed,
+        blink::mojom::InputEventResultState::kConsumed}) {
     SyntheticWebTouchEvent event;
     {
       // Touch start.
@@ -1121,8 +1140,9 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, KeyBlockingAndQueueingTime) {
   // These numbers are sensitive to where the histogram buckets are.
   int event_timestamps_ms[] = {11, 25, 35};
 
-  for (InputEventAckState blocking :
-       {INPUT_EVENT_ACK_STATE_NOT_CONSUMED, INPUT_EVENT_ACK_STATE_CONSUMED}) {
+  for (blink::mojom::InputEventResultState blocking :
+       {blink::mojom::InputEventResultState::kNotConsumed,
+        blink::mojom::InputEventResultState::kConsumed}) {
     {
       NativeWebKeyboardEvent event(blink::WebKeyboardEvent::kRawKeyDown,
                                    blink::WebInputEvent::kNoModifiers,
@@ -1216,7 +1236,8 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, KeyEndToEndLatency) {
 TEST_F(RenderWidgetHostLatencyTrackerTest,
        MultiFingerTouchIgnoredForQueueingAndBlockingTimeMetrics) {
   SyntheticWebTouchEvent event;
-  InputEventAckState ack_state = INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
+  blink::mojom::InputEventResultState ack_state =
+      blink::mojom::InputEventResultState::kNotConsumed;
 
   {
     // First touch start.

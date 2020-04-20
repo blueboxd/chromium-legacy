@@ -41,7 +41,7 @@ OptimizationGuideNavigationData::OptimizationGuideNavigationData(
     : navigation_id_(navigation_id) {}
 
 OptimizationGuideNavigationData::~OptimizationGuideNavigationData() {
-  RecordMetrics(has_committed_);
+  RecordMetrics();
 }
 
 // static
@@ -58,55 +58,9 @@ OptimizationGuideNavigationData::GetFromNavigationHandle(
       ->GetOrCreateOptimizationGuideNavigationData(navigation_handle);
 }
 
-void OptimizationGuideNavigationData::RecordMetrics(bool has_committed) const {
-  RecordHintCoverage(has_committed);
+void OptimizationGuideNavigationData::RecordMetrics() const {
   RecordOptimizationTypeAndTargetDecisions();
   RecordOptimizationGuideUKM();
-}
-
-void OptimizationGuideNavigationData::RecordHintCoverage(
-    bool has_committed) const {
-  bool has_hint_before_commit = false;
-  if (has_hint_before_commit_.has_value()) {
-    has_hint_before_commit = has_hint_before_commit_.value();
-    UMA_HISTOGRAM_BOOLEAN("OptimizationGuide.HintCache.HasHint.BeforeCommit",
-                          has_hint_before_commit);
-    UMA_HISTOGRAM_BOOLEAN(
-        "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
-        "BeforeCommit",
-        was_host_covered_by_fetch_at_navigation_start_.value_or(false));
-    UMA_HISTOGRAM_BOOLEAN(
-        "OptimizationGuide.Hints.NavigationHostCoverage.BeforeCommit",
-        WasHostCoveredByHintOrFetchAtNavigationStart());
-  }
-  // If the navigation didn't commit, then don't proceed to record any of the
-  // remaining metrics.
-  if (!has_committed || !has_hint_after_commit_.has_value())
-    return;
-
-  UMA_HISTOGRAM_BOOLEAN(
-      "OptimizationGuide.Hints.NavigationHostCoverage.AtCommit",
-      WasHostCoveredByHintOrFetchAtCommit());
-
-  UMA_HISTOGRAM_BOOLEAN(
-      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch.AtCommit",
-      was_host_covered_by_fetch_at_commit_.value_or(false));
-
-  UMA_HISTOGRAM_BOOLEAN("OptimizationGuide.HintCache.HasHint.AtCommit",
-                        has_hint_after_commit_.value());
-
-  // The remaining metrics rely on having a hint, so do not record them if we
-  // did not have a hint for the navigation.
-  if (!has_hint_after_commit_.value())
-    return;
-
-  bool had_hint_loaded = serialized_hint_version_string_.has_value();
-  UMA_HISTOGRAM_BOOLEAN("OptimizationGuide.HintCache.HostMatch.AtCommit",
-                        had_hint_loaded);
-  if (had_hint_loaded) {
-    UMA_HISTOGRAM_BOOLEAN("OptimizationGuide.HintCache.PageMatch.AtCommit",
-                          has_page_hint_value() && page_hint());
-  }
 }
 
 void OptimizationGuideNavigationData::RecordOptimizationTypeAndTargetDecisions()

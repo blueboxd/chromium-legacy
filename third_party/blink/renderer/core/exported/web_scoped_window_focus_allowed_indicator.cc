@@ -41,7 +41,7 @@ WebScopedWindowFocusAllowedIndicator::WebScopedWindowFocusAllowedIndicator(
   Document* document = web_document->Unwrap<Document>();
   DCHECK(document);
   private_.reset(
-      new ScopedWindowFocusAllowedIndicator(document->ToExecutionContext()));
+      new ScopedWindowFocusAllowedIndicator(document->GetExecutionContext()));
 }
 
 WebScopedWindowFocusAllowedIndicator::~WebScopedWindowFocusAllowedIndicator() =

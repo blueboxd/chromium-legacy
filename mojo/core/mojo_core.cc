@@ -31,8 +31,8 @@ class IPCSupport {
   ~IPCSupport() {
     base::WaitableEvent wait(base::WaitableEvent::ResetPolicy::MANUAL,
                              base::WaitableEvent::InitialState::NOT_SIGNALED);
-    mojo::core::Core::Get()->RequestShutdown(base::BindRepeating(
-        &base::WaitableEvent::Signal, base::Unretained(&wait)));
+    mojo::core::Core::Get()->RequestShutdown(
+        base::BindOnce(&base::WaitableEvent::Signal, base::Unretained(&wait)));
     wait.Wait();
   }
 

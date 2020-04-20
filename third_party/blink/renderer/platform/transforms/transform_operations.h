@@ -42,7 +42,7 @@ class PLATFORM_EXPORT TransformOperations {
   DISALLOW_NEW();
 
  public:
-  explicit TransformOperations(bool make_identity = false);
+  TransformOperations() = default;
   TransformOperations(const EmptyTransformOperations&) {}
 
   bool operator==(const TransformOperations& o) const;

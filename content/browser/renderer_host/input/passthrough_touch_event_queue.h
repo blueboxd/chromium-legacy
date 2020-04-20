@@ -15,8 +15,7 @@
 #include "base/time/time.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/common/content_export.h"
-#include "content/public/common/input_event_ack_source.h"
-#include "content/public/common/input_event_ack_state.h"
+#include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
 #include "ui/events/blink/blink_features.h"
 
 namespace content {
@@ -32,9 +31,10 @@ class CONTENT_EXPORT PassthroughTouchEventQueueClient {
   virtual void SendTouchEventImmediately(
       const TouchEventWithLatencyInfo& event) = 0;
 
-  virtual void OnTouchEventAck(const TouchEventWithLatencyInfo& event,
-                               InputEventAckSource ack_source,
-                               InputEventAckState ack_result) = 0;
+  virtual void OnTouchEventAck(
+      const TouchEventWithLatencyInfo& event,
+      blink::mojom::InputEventResultSource ack_source,
+      blink::mojom::InputEventResultState ack_result) = 0;
 
   virtual void OnFilteringTouchEvent(
       const blink::WebTouchEvent& touch_event) = 0;
@@ -96,15 +96,15 @@ class CONTENT_EXPORT PassthroughTouchEventQueue {
 
   void PrependTouchScrollNotification();
 
-  void ProcessTouchAck(InputEventAckSource ack_source,
-                       InputEventAckState ack_result,
+  void ProcessTouchAck(blink::mojom::InputEventResultSource ack_source,
+                       blink::mojom::InputEventResultState ack_result,
                        const ui::LatencyInfo& latency_info,
                        const uint32_t unique_touch_event_id,
                        bool should_stop_timeout_monitor);
   void OnGestureScrollEvent(const GestureEventWithLatencyInfo& gesture_event);
 
   void OnGestureEventAck(const GestureEventWithLatencyInfo& event,
-                         InputEventAckState ack_result);
+                         blink::mojom::InputEventResultState ack_result);
 
   void OnHasTouchEventHandlers(bool has_handlers);
 
@@ -127,8 +127,9 @@ class CONTENT_EXPORT PassthroughTouchEventQueue {
  protected:
   void SendTouchCancelEventForTouchEvent(
       const TouchEventWithLatencyInfo& event_to_cancel);
-  void UpdateTouchConsumerStates(const blink::WebTouchEvent& event,
-                                 InputEventAckState ack_result);
+  void UpdateTouchConsumerStates(
+      const blink::WebTouchEvent& event,
+      blink::mojom::InputEventResultState ack_result);
 
  private:
   friend class InputRouterImplTestBase;
@@ -171,16 +172,19 @@ class CONTENT_EXPORT PassthroughTouchEventQueue {
    public:
     TouchEventWithLatencyInfoAndAckState(const TouchEventWithLatencyInfo&);
     bool operator<(const TouchEventWithLatencyInfoAndAckState&) const;
-    InputEventAckState ack_state() const { return ack_state_; }
-    InputEventAckSource ack_source() const { return ack_source_; }
-    void set_ack_info(InputEventAckSource source, InputEventAckState state) {
+    blink::mojom::InputEventResultState ack_state() const { return ack_state_; }
+    blink::mojom::InputEventResultSource ack_source() const {
+      return ack_source_;
+    }
+    void set_ack_info(blink::mojom::InputEventResultSource source,
+                      blink::mojom::InputEventResultState state) {
       ack_source_ = source;
       ack_state_ = state;
     }
 
    private:
-    InputEventAckSource ack_source_;
-    InputEventAckState ack_state_;
+    blink::mojom::InputEventResultSource ack_source_;
+    blink::mojom::InputEventResultState ack_state_;
   };
 
   // These values are logged to UMA. Entries should not be renumbered and
@@ -202,8 +206,8 @@ class CONTENT_EXPORT PassthroughTouchEventQueue {
   bool ShouldFilterForEvent(const blink::WebTouchEvent& event);
 
   void AckTouchEventToClient(const TouchEventWithLatencyInfo& acked_event,
-                             InputEventAckSource ack_source,
-                             InputEventAckState ack_result);
+                             blink::mojom::InputEventResultSource ack_source,
+                             blink::mojom::InputEventResultState ack_result);
 
   void SendTouchEventImmediately(TouchEventWithLatencyInfo* touch,
                                  bool wait_for_ack);

@@ -236,7 +236,7 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
           &ContentPasswordManagerDriverFactory::RequestSendLoggingAvailability,
           base::Unretained(driver_factory_)));
 
-  saving_and_filling_passwords_enabled_.Init(
+  saving_passwords_enabled_.Init(
       password_manager::prefs::kCredentialsEnableService, GetPrefs());
   static base::NoDestructor<password_manager::StoreMetricsReporter> reporter(
       this, GetSyncService(profile_), GetIdentityManager(), GetPrefs());
@@ -282,10 +282,7 @@ bool ChromePasswordManagerClient::IsSavingAndFillingEnabled(
     // page, and there is no API to access (or dismiss) UI bubbles/infobars.
     return false;
   }
-  // TODO(melandory): remove saving_and_filling_passwords_enabled_ check from
-  // here once we decide to switch to new settings behavior for everyone.
-  return *saving_and_filling_passwords_enabled_ && !IsIncognito() &&
-         IsFillingEnabled(url);
+  return *saving_passwords_enabled_ && !IsIncognito() && IsFillingEnabled(url);
 }
 
 bool ChromePasswordManagerClient::IsFillingEnabled(const GURL& url) const {

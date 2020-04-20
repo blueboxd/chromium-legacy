@@ -28,6 +28,7 @@ const char* LayerTreeHostPixelResourceTest::GetRendererSuffix() const {
     case RENDERER_SKIA_GL:
       return "skia_gl";
     case RENDERER_SKIA_VK:
+    case RENDERER_SKIA_DAWN:
       return "skia_vk";
     case RENDERER_SOFTWARE:
       return "sw";
@@ -84,10 +85,9 @@ LayerTreeHostPixelResourceTest::CreateRasterBufferProvider(
       EXPECT_TRUE(compositor_context_provider);
       EXPECT_TRUE(worker_context_provider);
       EXPECT_FALSE(use_software_renderer());
-      bool enable_oopr = use_vulkan();
       return std::make_unique<GpuRasterBufferProvider>(
           compositor_context_provider, worker_context_provider, false,
-          gpu_raster_format, gfx::Size(), true, enable_oopr);
+          gpu_raster_format, gfx::Size(), true, use_oopr());
     }
     case ZERO_COPY:
       EXPECT_TRUE(compositor_context_provider);

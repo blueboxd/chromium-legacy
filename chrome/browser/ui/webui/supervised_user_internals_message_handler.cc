@@ -184,8 +184,9 @@ void SupervisedUserInternalsMessageHandler::HandleTryURL(
   std::map<std::string, base::string16> whitelists =
       filter->GetMatchingWhitelistTitles(url);
   filter->GetFilteringBehaviorForURLWithAsyncChecks(
-      url, base::Bind(&SupervisedUserInternalsMessageHandler::OnTryURLResult,
-                      weak_factory_.GetWeakPtr(), whitelists));
+      url,
+      base::BindOnce(&SupervisedUserInternalsMessageHandler::OnTryURLResult,
+                     weak_factory_.GetWeakPtr(), whitelists));
 }
 
 void SupervisedUserInternalsMessageHandler::SendBasicInfo() {

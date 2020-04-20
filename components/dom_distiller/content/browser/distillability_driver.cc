@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "build/build_config.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -60,15 +61,16 @@ void DistillabilityDriver::CreateDistillabilityService(
       std::move(receiver));
 }
 
-void DistillabilityDriver::SetIsDangerousCallback(
-    base::RepeatingCallback<bool(content::WebContents*)> is_dangerous_check) {
-  is_dangerous_check_ = std::move(is_dangerous_check);
+void DistillabilityDriver::SetIsSecureCallback(
+    base::RepeatingCallback<bool(content::WebContents*)> is_secure_check) {
+  is_secure_check_ = std::move(is_secure_check);
 }
 
 void DistillabilityDriver::OnDistillability(
     const DistillabilityResult& result) {
+#if !defined(OS_ANDROID)
   if (result.is_distillable) {
-    if (!is_dangerous_check_ || !is_dangerous_check_.Run(web_contents_)) {
+    if (!is_secure_check_ || !is_secure_check_.Run(web_contents_)) {
       DistillabilityResult not_distillable;
       not_distillable.is_distillable = false;
       not_distillable.is_last = result.is_last;
@@ -79,6 +81,7 @@ void DistillabilityDriver::OnDistillability(
       return;
     }
   }
+#endif  // !defined(OS_ANDROID)
   latest_result_ = result;
   for (auto& observer : observers_)
     observer.OnResult(result);

@@ -369,8 +369,9 @@ class ChromePasswordManagerClient
   base::WeakPtr<PasswordGenerationPopupControllerImpl> popup_controller_;
 
   // Set to false to disable password saving (will no longer ask if you
-  // want to save passwords and also won't fill the passwords).
-  BooleanPrefMember saving_and_filling_passwords_enabled_;
+  // want to save passwords). There is no pref for disabling filling at this
+  // point.
+  BooleanPrefMember saving_passwords_enabled_;
 
   const password_manager::SyncCredentialsFilter credentials_filter_;
 

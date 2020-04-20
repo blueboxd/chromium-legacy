@@ -91,8 +91,9 @@ class CONTENT_EXPORT CrossProcessFrameConnector
       RenderWidgetHostViewBase* target_view,
       const viz::SurfaceId& local_surface_id,
       gfx::PointF* transformed_point) override;
-  void ForwardAckedTouchpadZoomEvent(const blink::WebGestureEvent& event,
-                                     InputEventAckState ack_result) override;
+  void ForwardAckedTouchpadZoomEvent(
+      const blink::WebGestureEvent& event,
+      blink::mojom::InputEventResultState ack_result) override;
   bool BubbleScrollEvent(const blink::WebGestureEvent& event) override;
   bool HasFocus() override;
   void FocusRootView() override;
@@ -111,8 +112,9 @@ class CONTENT_EXPORT CrossProcessFrameConnector
   bool IsSubtreeThrottled() const override;
   void DidUpdateVisualProperties(
       const cc::RenderFrameMetadata& metadata) override;
-  void DidAckGestureEvent(const blink::WebGestureEvent& event,
-                          InputEventAckState ack_result) override;
+  void DidAckGestureEvent(
+      const blink::WebGestureEvent& event,
+      blink::mojom::InputEventResultState ack_result) override;
 
   // Set the visibility of immediate child views, i.e. views whose parent view
   // is |view_|.

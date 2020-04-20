@@ -28,11 +28,11 @@ ExtensionFunction::ResponseAction PrintingMetricsGetPrintJobsFunction::Run() {
 
 void PrintingMetricsGetPrintJobsFunction::OnPrintJobsRetrieved(
     bool success,
-    std::unique_ptr<std::vector<chromeos::printing::proto::PrintJobInfo>>
+    std::vector<chromeos::printing::proto::PrintJobInfo>
         print_job_info_protos) {
   std::vector<api::printing_metrics::PrintJobInfo> print_job_infos;
-  if (success && print_job_info_protos) {
-    for (const auto& print_job_info_proto : *print_job_info_protos)
+  if (success) {
+    for (const auto& print_job_info_proto : print_job_info_protos)
       print_job_infos.push_back(PrintJobInfoProtoToIdl(print_job_info_proto));
   }
   Respond(ArgumentList(

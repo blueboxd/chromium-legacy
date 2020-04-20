@@ -4,6 +4,8 @@
 
 #include "media/capture/video/win/filter_base_win.h"
 
+#include "base/logging.h"
+
 #pragma comment(lib, "strmiids.lib")
 
 namespace media {

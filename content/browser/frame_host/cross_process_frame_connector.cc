@@ -211,7 +211,7 @@ bool CrossProcessFrameConnector::TransformPointToCoordSpaceForView(
 
 void CrossProcessFrameConnector::ForwardAckedTouchpadZoomEvent(
     const blink::WebGestureEvent& event,
-    InputEventAckState ack_result) {
+    blink::mojom::InputEventResultState ack_result) {
   auto* root_view = GetRootRenderWidgetHostView();
   if (!root_view)
     return;
@@ -426,7 +426,7 @@ void CrossProcessFrameConnector::DidUpdateVisualProperties(
 
 void CrossProcessFrameConnector::DidAckGestureEvent(
     const blink::WebGestureEvent& event,
-    InputEventAckState ack_result) {
+    blink::mojom::InputEventResultState ack_result) {
   auto* root_view = GetRootRenderWidgetHostView();
   if (!root_view)
     return;

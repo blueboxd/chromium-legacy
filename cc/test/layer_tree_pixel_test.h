@@ -125,7 +125,7 @@ class LayerTreePixelTest : public LayerTreeTest {
   static const SkColor kCSSLime = 0xff00ff00;
   static const SkColor kCSSBlack = 0xff000000;
 
-  bool gpu_rasterization_ = use_vulkan();
+  bool gpu_rasterization_ = use_oopr();
   gl::DisableNullDrawGLBindings enable_pixel_output_;
   std::unique_ptr<PixelComparator> pixel_comparator_;
   scoped_refptr<Layer> content_root_;  // Not used in layer list mode.

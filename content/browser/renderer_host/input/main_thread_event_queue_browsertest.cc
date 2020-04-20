@@ -124,9 +124,10 @@ class MainThreadEventQueueBrowserTest : public ContentBrowserTest {
         blink::WebInputEvent::kMouseMove, 20, 25, 0));
 
     // Runs until we get the InputMsgAck callback.
-    EXPECT_EQ(INPUT_EVENT_ACK_STATE_CONSUMED, input_msg_watcher->WaitForAck());
-    EXPECT_EQ(InputEventAckSource::MAIN_THREAD,
-              static_cast<InputEventAckSource>(
+    EXPECT_EQ(blink::mojom::InputEventResultState::kConsumed,
+              input_msg_watcher->WaitForAck());
+    EXPECT_EQ(blink::mojom::InputEventResultSource::kMainThread,
+              static_cast<blink::mojom::InputEventResultSource>(
                   input_msg_watcher->last_event_ack_source()));
 
     int mouse_move_count = 0;
@@ -166,10 +167,10 @@ class MainThreadEventQueueBrowserTest : public ContentBrowserTest {
       input_event_router->RouteTouchEvent(root_view, &event, ui::LatencyInfo());
 
     // Runs until we get the InputMsgAck callback.
-    EXPECT_EQ(INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING,
+    EXPECT_EQ(blink::mojom::InputEventResultState::kSetNonBlocking,
               input_msg_watcher->WaitForAck());
-    EXPECT_EQ(InputEventAckSource::COMPOSITOR_THREAD,
-              static_cast<InputEventAckSource>(
+    EXPECT_EQ(blink::mojom::InputEventResultSource::kCompositorThread,
+              static_cast<blink::mojom::InputEventResultSource>(
                   input_msg_watcher->last_event_ack_source()));
 
     int touch_move_count = 0;

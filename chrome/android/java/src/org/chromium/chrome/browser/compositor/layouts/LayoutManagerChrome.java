@@ -193,7 +193,7 @@ public class LayoutManagerChrome
             mOverviewLayout.destroy();
             mOverviewLayout = null;
         }
-        if (mOverviewLayout != null) {
+        if (mOverviewListLayout != null) {
             mOverviewListLayout.destroy();
         }
         if (mToolbarSwipeLayout != null) {

@@ -104,8 +104,8 @@ void DiscardsGraphDumpImpl::FaviconRequestHelper::RequestFavicon(
   // on deletion of the cancelable task tracker.
   favicon_service->GetRawFaviconForPageURL(
       page_url, {favicon_base::IconType::kFavicon}, kIconSize, kFallbackToHost,
-      base::BindRepeating(&FaviconRequestHelper::FaviconDataAvailable,
-                          base::Unretained(this), serialization_id),
+      base::BindOnce(&FaviconRequestHelper::FaviconDataAvailable,
+                     base::Unretained(this), serialization_id),
       cancelable_task_tracker_.get());
 }
 

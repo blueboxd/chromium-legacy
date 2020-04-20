@@ -96,7 +96,7 @@ void EduAccountLoginHandler::ProfileImageFetcher::FetchProfileImage(
       true /* no_silhouette */));
   image_fetcher_->FetchImage(
       image_url_with_size,
-      base::BindRepeating(
+      base::BindOnce(
           &EduAccountLoginHandler::ProfileImageFetcher::OnImageFetched,
           weak_ptr_factory_.GetWeakPtr(), obfuscated_gaia_id),
       std::move(params));

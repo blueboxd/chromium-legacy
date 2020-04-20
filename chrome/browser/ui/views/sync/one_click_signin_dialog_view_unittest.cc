@@ -43,8 +43,8 @@ class OneClickSigninDialogViewTest : public ChromeViewsTestBase,
   OneClickSigninDialogView* ShowOneClickSigninDialog() {
     OneClickSigninDialogView::ShowDialog(
         base::string16(), nullptr, anchor_widget_->GetNativeWindow(),
-        base::Bind(&OneClickSigninDialogViewTest::ConfirmedCallback,
-                   base::Unretained(this)));
+        base::BindOnce(&OneClickSigninDialogViewTest::ConfirmedCallback,
+                       base::Unretained(this)));
 
     OneClickSigninDialogView* view =
         OneClickSigninDialogView::view_for_testing();

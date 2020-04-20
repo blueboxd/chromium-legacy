@@ -80,6 +80,7 @@
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
+#include "third_party/blink/renderer/core/xml/document_xslt.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
@@ -709,7 +710,7 @@ void DocumentLoader::FinishedLoading(base::TimeTicks finish_time) {
   body_loader_.reset();
   virtual_time_pauser_.UnpauseVirtualTime();
 
-  DCHECK(frame_->Loader().StateMachine()->CreatingInitialEmptyDocument() ||
+  DCHECK(commit_reason_ == CommitReason::kInitialization ||
          !frame_->GetPage()->Paused() ||
          MainThreadDebugger::Instance()->IsPaused());
 
@@ -892,7 +893,7 @@ void DocumentLoader::CommitNavigation() {
 
   // TODO(dcheng): This differs from the behavior of both IE and Firefox: the
   // origin is inherited from the document that loaded the URL.
-  if (loading_url_as_javascript_) {
+  if (IsJavaScriptURLOrXSLTCommit()) {
     owner_document = frame_->GetDocument();
   } else if (Document::ShouldInheritSecurityOriginFromOwner(Url())) {
     Frame* owner_frame = frame_->Tree().Parent();
@@ -1156,10 +1157,8 @@ void DocumentLoader::StartLoadingInternal() {
       GetFrame()->GetTaskRunner(TaskType::kNetworking),
       params_->appcache_host_id);
 
-  if (url_.IsEmpty() &&
-      !GetFrameLoader().StateMachine()->CreatingInitialEmptyDocument()) {
+  if (url_.IsEmpty() && commit_reason_ != CommitReason::kInitialization)
     url_ = BlankURL();
-  }
 
   if (loading_url_as_empty_document_) {
     InitializeEmptyResponse();
@@ -1398,14 +1397,14 @@ void DocumentLoader::DidInstallNewDocument(Document* document) {
 }
 
 void DocumentLoader::WillCommitNavigation() {
-  if (GetFrameLoader().StateMachine()->CreatingInitialEmptyDocument())
+  if (commit_reason_ != CommitReason::kRegular)
     return;
   probe::WillCommitLoad(frame_, this);
   frame_->GetIdlenessDetector()->WillCommitLoad();
 }
 
 void DocumentLoader::DidCommitNavigation() {
-  if (GetFrameLoader().StateMachine()->CreatingInitialEmptyDocument())
+  if (commit_reason_ != CommitReason::kRegular)
     return;
 
   if (!frame_->Loader().StateMachine()->CommittedMultipleRealLoads() &&
@@ -1538,10 +1537,13 @@ void DocumentLoader::InstallNewDocument(
           .WithContentSecurityPolicy(content_security_policy_.Get())
           .WithWebBundleClaimedUrl(web_bundle_claimed_url_);
 
-  // A javascript: url inherits CSP from the document in which it was
+  if (commit_reason_ == CommitReason::kXSLT)
+    init = init.WithSandboxFlags(owner_document->GetSandboxFlags());
+
+  // A javascript: url or XSLT inherits CSP from the document in which it was
   // executed.
   ContentSecurityPolicy* csp =
-      loading_url_as_javascript_
+      IsJavaScriptURLOrXSLTCommit()
           ? frame_->GetDocument()->GetContentSecurityPolicy()
           : content_security_policy_.Get();
   global_object_reuse_policy_ =
@@ -1585,10 +1587,9 @@ void DocumentLoader::InstallNewDocument(
     }
   }
 
-  if (!loading_url_as_javascript_)
-    WillCommitNavigation();
+  WillCommitNavigation();
 
-  Document* document = frame_->DomWindow()->InstallNewDocument(init, false);
+  Document* document = frame_->DomWindow()->InstallNewDocument(init);
 
   // Clear the user activation state.
   // TODO(crbug.com/736415): Clear this bit unconditionally for all frames.
@@ -1624,12 +1625,14 @@ void DocumentLoader::InstallNewDocument(
     document->SetBaseURLOverride(archive_->MainResource()->Url());
   }
 
+  if (commit_reason_ == CommitReason::kXSLT)
+    DocumentXSLT::From(*document).SetTransformSourceDocument(owner_document);
+
   DidInstallNewDocument(document);
 
   // This must be called before the document is opened, otherwise HTML parser
   // will use stale values from HTMLParserOption.
-  if (!loading_url_as_javascript_)
-    DidCommitNavigation();
+  DidCommitNavigation();
 
   if (was_cross_origin_to_parent_frame !=
       frame_->IsCrossOriginToParentFrame()) {
@@ -1704,8 +1707,7 @@ void DocumentLoader::CreateParserPostCommit() {
   DispatchLinkHeaderPreloads(nullptr /* viewport */,
                              PreloadHelper::kOnlyLoadNonMedia);
 
-  if (!loading_url_as_javascript_ &&
-      !GetFrameLoader().StateMachine()->CreatingInitialEmptyDocument()) {
+  if (commit_reason_ == CommitReason::kRegular) {
     // When the embedder gets notified (above) that the new navigation has
     // committed, the embedder will drop the old Content Security Policy and
     // therefore now is a good time to report to the embedder the Content
@@ -1747,12 +1749,24 @@ void DocumentLoader::CreateParserPostCommit() {
   }
 
   ParserSynchronizationPolicy parsing_policy = kAllowAsynchronousParsing;
-  if (loading_url_as_javascript_ ||
+  if (IsJavaScriptURLOrXSLTCommit() ||
       !Document::ThreadedParsingEnabledForTesting()) {
     parsing_policy = kForceSynchronousParsing;
   }
-  parser_ = document->OpenForNavigation(parsing_policy, MimeType(),
-                                        response_.TextEncodingName());
+  const AtomicString& encoding = commit_reason_ == CommitReason::kXSLT
+                                     ? "UTF-8"
+                                     : response_.TextEncodingName();
+
+  parser_ = document->OpenForNavigation(parsing_policy, MimeType(), encoding);
+
+  // XSLT processing converts the response into UTF-8 before sending it through
+  // the DocumentParser, but we should still report the original encoding when
+  // script queries it via document.characterSet.
+  if (commit_reason_ == CommitReason::kXSLT) {
+    DocumentEncodingData data;
+    data.SetEncoding(WTF::TextEncoding(response_.TextEncodingName()));
+    document->SetEncodingData(data);
+  }
 
   // If this is a scriptable parser and there is a resource, register the
   // resource's cache handler with the parser.

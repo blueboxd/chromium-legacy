@@ -275,6 +275,18 @@ void WorkerOrWorkletGlobalScope::CountDeprecation(WebFeature feature) {
   ReportingProxy().CountDeprecation(feature);
 }
 
+ResourceLoadScheduler::ThrottleOptionOverride
+WorkerOrWorkletGlobalScope::GetThrottleOptionOverride() const {
+  return ResourceLoadScheduler::ThrottleOptionOverride::kNone;
+}
+
+void WorkerOrWorkletGlobalScope::UpdateFetcherThrottleOptionOverride() {
+  if (inside_settings_resource_fetcher_) {
+    inside_settings_resource_fetcher_->SetThrottleOptionOverride(
+        GetThrottleOptionOverride());
+  }
+}
+
 void WorkerOrWorkletGlobalScope::InitializeWebFetchContextIfNeeded() {
   if (web_fetch_context_initialized_)
     return;
@@ -337,6 +349,20 @@ ResourceFetcher* WorkerOrWorkletGlobalScope::CreateFetcherInternal(
             *this, web_worker_fetch_context_));
     init.use_counter = MakeGarbageCollected<DetachableUseCounter>(this);
     init.console_logger = MakeGarbageCollected<DetachableConsoleLogger>(this);
+
+    // Potentially support throttling network requests from a worker.  Note,
+    // this does not work currently for worklets, but worklets should not be
+    // able to make network requests anyway.
+    if (IsWorkerGlobalScope()) {
+      init.frame_or_worker_scheduler = GetScheduler();
+
+      // The only network requests possible from a worker are
+      // RequestContext::FETCH which are not normally throttlable.
+      // Possibly override this restriction so network from a throttled
+      // worker will also be throttled.
+      init.throttle_option_override = GetThrottleOptionOverride();
+    }
+
     fetcher = MakeGarbageCollected<ResourceFetcher>(init);
     fetcher->SetResourceLoadObserver(
         MakeGarbageCollected<ResourceLoadObserverForWorker>(
@@ -510,6 +536,16 @@ void WorkerOrWorkletGlobalScope::SetDefersLoadingForResourceFetchers(
     bool defers) {
   for (ResourceFetcher* resource_fetcher : resource_fetchers_)
     resource_fetcher->SetDefersLoading(defers);
+}
+
+int WorkerOrWorkletGlobalScope::GetOutstandingThrottledLimit() const {
+  // Default to what has been a typical throttle limit for iframes.  Note,
+  // however, this value is largely meaningless unless the global has set
+  // a ThrottleOptionOverride.  Workers can only make fetch/xhr requests
+  // which are not throttlable by default.  If GetThrottleOptionOverride()
+  // is overridden, then this method should also be overridden with a
+  // more meaningful value.
+  return 2;
 }
 
 void WorkerOrWorkletGlobalScope::Trace(Visitor* visitor) {

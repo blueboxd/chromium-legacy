@@ -54,7 +54,6 @@ import org.chromium.components.safe_browsing.SafeBrowsingApiBridge;
 import org.chromium.components.safe_browsing.SafeBrowsingApiHandler;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentUrlConstants;
@@ -414,15 +413,12 @@ public class SafeBrowsingTest {
         final String script = "document.readyState;";
         final String expected = "\"complete\"";
 
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                try {
-                    String value = evaluateJavaScriptOnInterstitialOnUiThreadSync(script);
-                    return expected.equals(value);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            try {
+                Assert.assertEquals(
+                        expected, evaluateJavaScriptOnInterstitialOnUiThreadSync(script));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
         });
     }
@@ -456,16 +452,7 @@ public class SafeBrowsingTest {
             // subresource has loaded (and displayed), so we first wait for the interstitial to be
             // attached to the web contents, then for a visual state callback to allow the
             // interstitial to render.
-            CriteriaHelper.pollUiThread(new Criteria() {
-                @Override
-                public boolean isSatisfied() {
-                    try {
-                        return mAwContents.isDisplayingInterstitialForTesting();
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            });
+            CriteriaHelper.pollUiThread(() -> mAwContents.isDisplayingInterstitialForTesting());
             // Wait for the interstitial to actually render.
             mActivityTestRule.waitForVisualStateCallback(mAwContents);
         } else {
@@ -1360,17 +1347,13 @@ public class SafeBrowsingTest {
         // Awcontents#destroy() posts an asynchronous task itself to destroy natives. Therefore, we
         // still need to wait for the real work to actually finish.
         mActivityTestRule.destroyAwContentsOnMainSync(mAwContents);
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                try {
-                    return TestThreadUtils.runOnUiThreadBlocking(() -> {
-                        int count_aw_contents = AwContents.getNativeInstanceCount();
-                        return count_aw_contents == 0;
-                    });
-                } catch (Exception e) {
-                    return false;
-                }
+        CriteriaHelper.pollUiThread(() -> {
+            try {
+                int awContentsCount = TestThreadUtils.runOnUiThreadBlocking(
+                        () -> AwContents.getNativeInstanceCount());
+                Assert.assertEquals(0, awContentsCount);
+            } catch (Exception e) {
+                Assert.fail(e.getMessage());
             }
         });
     }

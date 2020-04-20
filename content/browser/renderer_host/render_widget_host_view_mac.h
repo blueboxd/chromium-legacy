@@ -165,9 +165,10 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   bool IsKeyboardLocked() override;
   base::flat_map<std::string, std::string> GetKeyboardLayoutMap() override;
   void GestureEventAck(const blink::WebGestureEvent& event,
-                       InputEventAckState ack_result) override;
-  void ProcessAckedTouchEvent(const TouchEventWithLatencyInfo& touch,
-                              InputEventAckState ack_result) override;
+                       blink::mojom::InputEventResultState ack_result) override;
+  void ProcessAckedTouchEvent(
+      const TouchEventWithLatencyInfo& touch,
+      blink::mojom::InputEventResultState ack_result) override;
 
   void DidOverscroll(const ui::DidOverscrollParams& params) override;
 

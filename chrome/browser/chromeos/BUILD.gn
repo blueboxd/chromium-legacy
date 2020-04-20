@@ -56,6 +56,8 @@ source_set("chromeos") {
     ":device_configuration_proto",
     ":device_policy_remover_generated",
     ":print_job_info_proto",
+    ":reporting_constants_proto",
+    ":reporting_record_proto",
     ":screen_brightness_event_proto",
     ":user_activity_event_proto",
     ":user_charging_event_proto",
@@ -136,6 +138,7 @@ source_set("chromeos") {
     "//chromeos/dbus/cups_proxy",
     "//chromeos/dbus/dlcservice",
     "//chromeos/dbus/dlcservice:dlcservice_proto",
+    "//chromeos/dbus/ip_peripheral",
     "//chromeos/dbus/kerberos",
     "//chromeos/dbus/kerberos:kerberos_proto",
     "//chromeos/dbus/machine_learning",
@@ -3381,6 +3384,14 @@ proto_library("device_configuration_proto") {
 
 proto_library("print_job_info_proto") {
   sources = [ "printing/history/print_job_info.proto" ]
+}
+
+proto_library("reporting_record_proto") {
+  sources = [ "policy/messaging_layer/proto/record.proto" ]
+}
+
+proto_library("reporting_constants_proto") {
+  sources = [ "policy/messaging_layer/public/record_constants.proto" ]
 }
 
 device_policy_remover_path = "$target_gen_dir/device_policy_remover.cc"

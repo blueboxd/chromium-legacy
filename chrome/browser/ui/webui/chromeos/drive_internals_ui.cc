@@ -632,7 +632,7 @@ class LogsZipper : public download::AllDownloadItemNotifier::Observer {
 
   void ZipLogFiles(const std::vector<base::FilePath>& files) {
     (new ZipFileCreator(
-         base::BindRepeating(&LogsZipper::OnZipDone, base::Unretained(this)),
+         base::BindOnce(&LogsZipper::OnZipDone, base::Unretained(this)),
          logs_directory_, files, zip_path_))
         ->Start(LaunchFileUtilService());
   }

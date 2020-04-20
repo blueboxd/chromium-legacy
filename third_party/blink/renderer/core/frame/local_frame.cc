@@ -358,12 +358,9 @@ void LocalFrame::Trace(Visitor* visitor) {
   visitor->Trace(page_popup_owner_);
   visitor->Trace(script_controller_);
   visitor->Trace(editor_);
-  visitor->Trace(spell_checker_);
   visitor->Trace(selection_);
   visitor->Trace(event_handler_);
   visitor->Trace(console_);
-  visitor->Trace(input_method_controller_);
-  visitor->Trace(text_suggestion_controller_);
   visitor->Trace(smooth_scroll_sequencer_);
   visitor->Trace(content_capture_manager_);
   visitor->Trace(system_clipboard_);
@@ -573,9 +570,6 @@ void LocalFrame::DidAttachDocument() {
   // even after the frame reattaches.
   GetEventHandler().Clear();
   Selection().DidAttachDocument(document);
-  GetInputMethodController().DidAttachDocument(document);
-  GetSpellChecker().DidAttachDocument(document);
-  GetTextSuggestionController().DidAttachDocument(document);
   if (IsCrossOriginToParentFrame() && !first_url_cross_origin_to_parent_) {
     first_url_cross_origin_to_parent_ = GetDocument()->Url().GetString();
   }
@@ -1015,14 +1009,9 @@ LocalFrame::LocalFrame(LocalFrameClient* client,
           *this,
           *static_cast<LocalWindowProxyManager*>(GetWindowProxyManager()))),
       editor_(MakeGarbageCollected<Editor>(*this)),
-      spell_checker_(MakeGarbageCollected<SpellChecker>(*this)),
       selection_(MakeGarbageCollected<FrameSelection>(*this)),
       event_handler_(MakeGarbageCollected<EventHandler>(*this)),
       console_(MakeGarbageCollected<FrameConsole>(*this)),
-      input_method_controller_(
-          MakeGarbageCollected<InputMethodController>(*this)),
-      text_suggestion_controller_(
-          MakeGarbageCollected<TextSuggestionController>(*this)),
       navigation_disable_count_(0),
       page_zoom_factor_(ParentPageZoomFactor(this)),
       text_zoom_factor_(ParentTextZoomFactor(this)),
@@ -1586,8 +1575,7 @@ void LocalFrame::ForceSynchronousDocumentInstall(
   DomWindow()->InstallNewDocument(
       DocumentInit::Create()
           .WithDocumentLoader(loader_.GetDocumentLoader())
-          .WithTypeFrom(mime_type),
-      false);
+          .WithTypeFrom(mime_type));
   loader_.StateMachine()->AdvanceTo(
       FrameLoaderStateMachine::kCommittedFirstRealLoad);
 
@@ -2569,6 +2557,21 @@ void LocalFrame::BindToMainFrameReceiver(
   frame->main_frame_receiver_.Bind(
       std::move(receiver),
       frame->GetTaskRunner(blink::TaskType::kInternalDefault));
+}
+
+SpellChecker& LocalFrame::GetSpellChecker() const {
+  DCHECK(DomWindow());
+  return DomWindow()->GetSpellChecker();
+}
+
+InputMethodController& LocalFrame::GetInputMethodController() const {
+  DCHECK(DomWindow());
+  return DomWindow()->GetInputMethodController();
+}
+
+TextSuggestionController& LocalFrame::GetTextSuggestionController() const {
+  DCHECK(DomWindow());
+  return DomWindow()->GetTextSuggestionController();
 }
 
 }  // namespace blink

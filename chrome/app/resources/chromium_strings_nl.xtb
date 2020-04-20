@@ -12,6 +12,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="1414495520565016063">Je bent ingelogd bij Chromium.</translation>
 <translation id="151962892725702025">Chromium OS kan je gegevens niet synchroniseren omdat synchronisatie niet beschikbaar is voor je domein.</translation>
 <translation id="1524282610922162960">Een Chromium-tabblad delen</translation>
+<translation id="1553461853655228091">Chromium heeft toegangsrechten voor de camera nodig om een 3D-kaart van je omgeving te maken</translation>
 <translation id="1607715478322902680">{COUNT,plural, =0{Je beheerder vereist dat je Chromium opnieuw start om een update uit te voeren.}=1{Je beheerder vereist dat je Chromium opnieuw start om een update uit te voeren. Je incognitovenster kan niet opnieuw worden geopend.}other{Je beheerder vereist dat je Chromium opnieuw start om een update uit te voeren. Je # incognitovensters kunnen niet opnieuw worden geopend.}}</translation>
 <translation id="1708666629004767631">Er is een nieuwe, veiligere versie van Chromium beschikbaar.</translation>
 <translation id="1774152462503052664">Chromium laten uitvoeren op de achtergrond</translation>
@@ -57,6 +58,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="3258596308407688501">Chrome kan niet lezen van en schrijven naar de eigen gegevensdirectory :
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
+<translation id="3283186697780795848">Chromium-versie <ph name="PRODUCT_VERSION" /> is geïnstalleerd</translation>
 <translation id="328888136576916638">Google API-sleutels ontbreken. Sommige functies van Chromium worden uitgeschakeld.</translation>
 <translation id="3296368748942286671">Achtergrondapps ingeschakeld houden als Chromium is gesloten</translation>
 <translation id="331951419404882060">Chromium OS kan je gegevens niet synchroniseren door een fout tijdens het inloggen.</translation>

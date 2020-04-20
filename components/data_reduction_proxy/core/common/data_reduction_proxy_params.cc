@@ -16,7 +16,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/base/host_port_pair.h"
@@ -183,72 +182,6 @@ int GetFieldTrialParameterAsInteger(const std::string& group,
   return value;
 }
 
-bool GetOverrideProxiesForHttpFromCommandLine(
-    std::vector<DataReductionProxyServer>* override_proxies_for_http) {
-  DCHECK(override_proxies_for_http);
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDataReductionProxyHttpProxies)) {
-    // It is illegal to use |kDataReductionProxy| or
-    // |kDataReductionProxyFallback| with |kDataReductionProxyHttpProxies|.
-    DCHECK(base::CommandLine::ForCurrentProcess()
-               ->GetSwitchValueASCII(switches::kDataReductionProxy)
-               .empty());
-    DCHECK(base::CommandLine::ForCurrentProcess()
-               ->GetSwitchValueASCII(switches::kDataReductionProxyFallback)
-               .empty());
-    override_proxies_for_http->clear();
-
-    std::string proxy_overrides =
-        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            switches::kDataReductionProxyHttpProxies);
-
-    for (const auto& proxy_override :
-         base::SplitStringPiece(proxy_overrides, ";", base::TRIM_WHITESPACE,
-                                base::SPLIT_WANT_NONEMPTY)) {
-      net::ProxyServer proxy_server = net::ProxyServer::FromURI(
-          proxy_override, net::ProxyServer::SCHEME_HTTP);
-      DCHECK(proxy_server.is_valid());
-      DCHECK(!proxy_server.is_direct());
-
-      override_proxies_for_http->push_back(
-          DataReductionProxyServer(std::move(proxy_server)));
-    }
-
-    return true;
-  }
-
-  std::string origin =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kDataReductionProxy);
-
-  std::string fallback_origin =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kDataReductionProxyFallback);
-
-  if (origin.empty() && fallback_origin.empty())
-    return false;
-
-  override_proxies_for_http->clear();
-
-  if (!origin.empty()) {
-    net::ProxyServer primary_proxy =
-        net::ProxyServer::FromURI(origin, net::ProxyServer::SCHEME_HTTP);
-    DCHECK(primary_proxy.is_valid());
-    DCHECK(!primary_proxy.is_direct());
-    override_proxies_for_http->push_back(
-        DataReductionProxyServer(std::move(primary_proxy)));
-  }
-  if (!fallback_origin.empty()) {
-    net::ProxyServer fallback_proxy = net::ProxyServer::FromURI(
-        fallback_origin, net::ProxyServer::SCHEME_HTTP);
-    DCHECK(fallback_proxy.is_valid());
-    DCHECK(!fallback_proxy.is_direct());
-    override_proxies_for_http->push_back(
-        DataReductionProxyServer(std::move(fallback_proxy)));
-  }
-
-  return true;
-}
 
 std::string GetDataSaverServerExperimentsOptionName() {
   return kExperimentsOption;
@@ -288,82 +221,7 @@ bool IsEnabledWithNetworkService() {
           kDataReductionProxyEnabledWithNetworkService);
 }
 
-base::Optional<DataReductionProxyTypeInfo> FindConfiguredProxyInVector(
-    const std::vector<DataReductionProxyServer>& proxies,
-    const net::ProxyServer& proxy_server) {
-  if (!proxy_server.is_valid() || proxy_server.is_direct())
-    return base::nullopt;
-
-  // Only compare the host port pair of the |proxy_server| since the proxy
-  // scheme of the stored data reduction proxy may be different than the proxy
-  // scheme of |proxy_server|. This may happen even when the |proxy_server| is a
-  // valid data reduction proxy. As an example, the stored data reduction proxy
-  // may have a proxy scheme of HTTPS while |proxy_server| may have QUIC as the
-  // proxy scheme.
-  const net::HostPortPair& host_port_pair = proxy_server.host_port_pair();
-  auto it = std::find_if(
-      proxies.begin(), proxies.end(),
-      [&host_port_pair](const DataReductionProxyServer& proxy) {
-        return proxy.proxy_server().host_port_pair().Equals(host_port_pair);
-      });
-
-  if (it == proxies.end())
-    return base::nullopt;
-
-  return DataReductionProxyTypeInfo(proxies,
-                                    static_cast<size_t>(it - proxies.begin()));
-}
 
 }  // namespace params
-
-DataReductionProxyParams::DataReductionProxyParams() {
-  bool use_override_proxies_for_http =
-      params::GetOverrideProxiesForHttpFromCommandLine(&proxies_for_http_);
-
-  if (!use_override_proxies_for_http) {
-    DCHECK(proxies_for_http_.empty());
-    proxies_for_http_.push_back(
-        DataReductionProxyServer(net::ProxyServer::FromURI(
-            "https://proxy.googlezip.net:443", net::ProxyServer::SCHEME_HTTP)));
-    proxies_for_http_.push_back(
-        DataReductionProxyServer(net::ProxyServer::FromURI(
-            "compress.googlezip.net:80", net::ProxyServer::SCHEME_HTTP)));
-  }
-
-  DCHECK(std::all_of(proxies_for_http_.begin(), proxies_for_http_.end(),
-                     [](const DataReductionProxyServer& proxy) {
-                       return proxy.proxy_server().is_valid() &&
-                              !proxy.proxy_server().is_direct();
-                     }));
-}
-
-DataReductionProxyParams::~DataReductionProxyParams() {}
-
-void DataReductionProxyParams::SetProxiesForHttpForTesting(
-    const std::vector<DataReductionProxyServer>& proxies_for_http) {
-  DCHECK(std::all_of(proxies_for_http.begin(), proxies_for_http.end(),
-                     [](const DataReductionProxyServer& proxy) {
-                       return proxy.proxy_server().is_valid() &&
-                              !proxy.proxy_server().is_direct();
-                     }));
-
-  proxies_for_http_ = proxies_for_http;
-}
-
-const std::vector<DataReductionProxyServer>&
-DataReductionProxyParams::proxies_for_http() const {
-  return proxies_for_http_;
-}
-
-base::Optional<DataReductionProxyTypeInfo>
-DataReductionProxyParams::FindConfiguredDataReductionProxy(
-    const net::ProxyServer& proxy_server) const {
-  return params::FindConfiguredProxyInVector(proxies_for_http(), proxy_server);
-}
-
-net::ProxyList DataReductionProxyParams::GetAllConfiguredProxies() const {
-  NOTREACHED();
-  return net::ProxyList();
-}
 
 }  // namespace data_reduction_proxy

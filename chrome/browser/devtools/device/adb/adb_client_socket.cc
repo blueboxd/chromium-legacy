@@ -52,8 +52,8 @@ class AdbTransportSocket : public AdbClientSocket {
       serial_(serial),
       socket_name_(socket_name),
       callback_(callback) {
-    Connect(base::Bind(&AdbTransportSocket::OnConnected,
-                       base::Unretained(this)));
+    Connect(base::BindOnce(&AdbTransportSocket::OnConnected,
+                           base::Unretained(this)));
   }
 
  private:
@@ -109,8 +109,8 @@ class AdbQuerySocket : AdbClientSocket {
       CheckNetResultOrDie(net::ERR_INVALID_ARGUMENT);
       return;
     }
-    Connect(base::Bind(&AdbQuerySocket::SendNextQuery,
-                       base::Unretained(this)));
+    Connect(
+        base::BindOnce(&AdbQuerySocket::SendNextQuery, base::Unretained(this)));
   }
 
  private:
@@ -228,8 +228,8 @@ void AdbClientSocket::SendCommand(const std::string& command,
         })");
   int result =
       socket_->Write(request_buffer.get(), request_buffer->size(),
-                     base::Bind(&AdbClientSocket::ReadResponse,
-                                base::Unretained(this), callback, is_void),
+                     base::BindOnce(&AdbClientSocket::ReadResponse,
+                                    base::Unretained(this), callback, is_void),
                      traffic_annotation);
   if (result != net::ERR_IO_PENDING)
     ReadResponse(callback, is_void, result);
@@ -244,13 +244,10 @@ void AdbClientSocket::ReadResponse(const CommandCallback& callback,
   }
   scoped_refptr<net::IOBuffer> response_buffer =
       base::MakeRefCounted<net::IOBuffer>(kBufferSize);
-  result = socket_->Read(response_buffer.get(),
-                         kBufferSize,
-                         base::Bind(&AdbClientSocket::OnResponseHeader,
-                                    base::Unretained(this),
-                                    callback,
-                                    is_void,
-                                    response_buffer));
+  result = socket_->Read(
+      response_buffer.get(), kBufferSize,
+      base::BindOnce(&AdbClientSocket::OnResponseHeader, base::Unretained(this),
+                     callback, is_void, response_buffer));
   if (result != net::ERR_IO_PENDING)
     OnResponseHeader(callback, is_void, response_buffer, result);
 }
@@ -318,14 +315,10 @@ void AdbClientSocket::OnResponseData(
   }
 
   // Read tail
-  result = socket_->Read(response_buffer.get(),
-                         kBufferSize,
-                         base::Bind(&AdbClientSocket::OnResponseData,
-                                    base::Unretained(this),
-                                    callback,
-                                    new_response,
-                                    response_buffer,
-                                    bytes_left));
+  result = socket_->Read(
+      response_buffer.get(), kBufferSize,
+      base::BindOnce(&AdbClientSocket::OnResponseData, base::Unretained(this),
+                     callback, new_response, response_buffer, bytes_left));
   if (result > 0)
     OnResponseData(callback, new_response, response_buffer, bytes_left, result);
   else if (result != net::ERR_IO_PENDING)

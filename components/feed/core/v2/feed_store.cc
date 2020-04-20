@@ -129,6 +129,32 @@ std::pair<std::string, feedstore::Record> MakeKeyAndRecord(T record_data) {
   return result;
 }
 
+std::unique_ptr<std::vector<std::pair<std::string, feedstore::Record>>>
+MakeUpdatesForStreamModelUpdateRequest(
+    int32_t structure_set_sequence_number,
+    std::unique_ptr<StreamModelUpdateRequest> update_request) {
+  auto updates = std::make_unique<
+      std::vector<std::pair<std::string, feedstore::Record>>>();
+  updates->push_back(MakeKeyAndRecord(std::move(update_request->stream_data)));
+  for (feedstore::Content& content : update_request->content) {
+    updates->push_back(MakeKeyAndRecord(std::move(content)));
+  }
+  for (feedstore::StreamSharedState& shared_state :
+       update_request->shared_states) {
+    updates->push_back(MakeKeyAndRecord(std::move(shared_state)));
+  }
+  feedstore::StreamStructureSet stream_structure_set;
+  stream_structure_set.set_stream_id(kMainStreamId);
+  stream_structure_set.set_sequence_number(structure_set_sequence_number);
+  for (feedstore::StreamStructure& structure :
+       update_request->stream_structures) {
+    *stream_structure_set.add_structures() = std::move(structure);
+  }
+  updates->push_back(MakeKeyAndRecord(std::move(stream_structure_set)));
+
+  return updates;
+}
+
 }  // namespace
 
 FeedStore::LoadStreamResult::LoadStreamResult() = default;
@@ -211,7 +237,7 @@ void FeedStore::LoadStream(
   database_->LoadEntriesWithFilter(
       base::BindRepeating(filter), CreateReadOptions(),
       /*target_prefix=*/"",
-      base::BindOnce(&FeedStore::OnLoadStreamFinished, base::Unretained(this),
+      base::BindOnce(&FeedStore::OnLoadStreamFinished, GetWeakPtr(),
                      std::move(callback)));
 }
 
@@ -235,26 +261,12 @@ void FeedStore::OnLoadStreamFinished(
   std::move(callback).Run(std::move(result));
 }
 
-void FeedStore::SaveFullStream(
+void FeedStore::OverwriteStream(
     std::unique_ptr<StreamModelUpdateRequest> update_request,
     base::OnceCallback<void(bool)> callback) {
-  auto updates = std::make_unique<
-      std::vector<std::pair<std::string, feedstore::Record>>>();
-  updates->push_back(MakeKeyAndRecord(std::move(update_request->stream_data)));
-  for (feedstore::Content& content : update_request->content) {
-    updates->push_back(MakeKeyAndRecord(std::move(content)));
-  }
-  for (feedstore::StreamSharedState& shared_state :
-       update_request->shared_states) {
-    updates->push_back(MakeKeyAndRecord(std::move(shared_state)));
-  }
-  feedstore::StreamStructureSet stream_structure_set;
-  stream_structure_set.set_stream_id(kMainStreamId);
-  for (feedstore::StreamStructure& structure :
-       update_request->stream_structures) {
-    *stream_structure_set.add_structures() = std::move(structure);
-  }
-  updates->push_back(MakeKeyAndRecord(std::move(stream_structure_set)));
+  std::unique_ptr<std::vector<std::pair<std::string, feedstore::Record>>>
+      updates = MakeUpdatesForStreamModelUpdateRequest(
+          /*structure_set_sequence_number=*/0, std::move(update_request));
 
   // Set up a filter to delete all stream-related data.
   // But we need to exclude keys being written right now.
@@ -271,8 +283,20 @@ void FeedStore::SaveFullStream(
 
   database_->UpdateEntriesWithRemoveFilter(
       std::move(updates), base::BindRepeating(filter, std::move(updated_keys)),
-      base::BindOnce(&FeedStore::OnSaveStreamEntriesUpdated,
-                     base::Unretained(this), std::move(callback)));
+      base::BindOnce(&FeedStore::OnSaveStreamEntriesUpdated, GetWeakPtr(),
+                     std::move(callback)));
+}
+
+void FeedStore::SaveStreamUpdate(
+    int32_t structure_set_sequence_number,
+    std::unique_ptr<StreamModelUpdateRequest> update_request,
+    base::OnceCallback<void(bool)> callback) {
+  database_->UpdateEntries(
+      MakeUpdatesForStreamModelUpdateRequest(structure_set_sequence_number,
+                                             std::move(update_request)),
+      std::make_unique<leveldb_proto::KeyVector>(),
+      base::BindOnce(&FeedStore::OnSaveStreamEntriesUpdated, GetWeakPtr(),
+                     std::move(callback)));
 }
 
 void FeedStore::OnSaveStreamEntriesUpdated(
@@ -320,8 +344,7 @@ void FeedStore::ReadContent(
     key_vector.push_back(SharedStateKey(shared_state_id));
 
   ReadMany(base::flat_set<std::string>(std::move(key_vector)),
-           base::BindOnce(&FeedStore::OnReadContentFinished,
-                          weak_ptr_factory_.GetWeakPtr(),
+           base::BindOnce(&FeedStore::OnReadContentFinished, GetWeakPtr(),
                           std::move(content_callback)));
 }
 

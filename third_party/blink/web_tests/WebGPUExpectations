@@ -303,6 +303,8 @@ crbug.com/dawn/243 wpt_internal/webgpu/cts.html?worker=1&q=webgpu:api/validation
 # Fails because we don't gracefully handle calls with objects from multiple devices
 crbug.com/dawn/383 wpt_internal/webgpu/cts.html?worker=0&q=webgpu:api/validation/fences:signal_a_fence_on_a_different_device_than_it_was_created_on_is_invalid= [ Skip ]
 crbug.com/dawn/383 wpt_internal/webgpu/cts.html?worker=1&q=webgpu:api/validation/fences:signal_a_fence_on_a_different_device_than_it_was_created_on_is_invalid= [ Skip ]
+crbug.com/dawn/383 wpt_internal/webgpu/cts.html?worker=0&q=webgpu:api/validation/fences:signal_a_fence_on_a_different_device_does_not_update_fence_signaled_value~ [ Skip ]
+crbug.com/dawn/383 wpt_internal/webgpu/cts.html?worker=1&q=webgpu:api/validation/fences:signal_a_fence_on_a_different_device_does_not_update_fence_signaled_value~ [ Skip ]
 
 # Somehow these incorrectly pass locally under run_web_tests.py, but correctly
 # fail when run alone.

@@ -511,5 +511,12 @@ const base::Feature kAlignFontDisplayAutoTimeoutWithLCPGoal{
 const base::FeatureParam<int> kAlignFontDisplayAutoTimeoutWithLCPGoalParam{
     &kAlignFontDisplayAutoTimeoutWithLCPGoal, "lcp-limit-in-ms", 2000};
 
+// Enable throttling of fetch() requests from service workers in the
+// installing state.
+const base::Feature kThrottleInstallingServiceWorker{
+    "ThrottleInstallingServiceWorker", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::FeatureParam<int> kInstallingServiceWorkerOutstandingThrottledLimit{
+    &kThrottleInstallingServiceWorker, "limit", 5};
+
 }  // namespace features
 }  // namespace blink

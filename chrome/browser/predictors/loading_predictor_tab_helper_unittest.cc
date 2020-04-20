@@ -146,7 +146,7 @@ void LoadingPredictorTabHelperTest::
   NavigateAndCommitInFrame(url, main_rfh());
 
   auto expected_navigation_id = CreateNavigationID(
-      GetTabID(), url, web_contents()->GetLastCommittedSourceId());
+      GetTabID(), url, web_contents()->GetMainFrame()->GetPageUkmSourceId());
   EXPECT_EQ(start_navigation_id, expected_navigation_id);
   EXPECT_EQ(old_finish_navigation_id, expected_navigation_id);
   EXPECT_EQ(new_finish_navigation_id, expected_navigation_id);
@@ -198,9 +198,10 @@ TEST_F(LoadingPredictorTabHelperTest, MainFrameNavigationWithRedirects) {
                                      /* is_error_page */ false));
   navigation->Commit();
 
-  EXPECT_EQ(start_navigation_id,
-            CreateNavigationID(GetTabID(), "http://test.org",
-                               web_contents()->GetLastCommittedSourceId()));
+  EXPECT_EQ(
+      start_navigation_id,
+      CreateNavigationID(GetTabID(), "http://test.org",
+                         web_contents()->GetMainFrame()->GetPageUkmSourceId()));
 }
 
 // Tests that a subframe navigation is not recorded.
@@ -235,9 +236,10 @@ TEST_F(LoadingPredictorTabHelperTest, MainFrameNavigationFailed) {
   navigation->Fail(net::ERR_TIMED_OUT);
   navigation->CommitErrorPage();
 
-  EXPECT_EQ(navigation_id,
-            CreateNavigationID(GetTabID(), "http://test.org",
-                               web_contents()->GetLastCommittedSourceId()));
+  EXPECT_EQ(
+      navigation_id,
+      CreateNavigationID(GetTabID(), "http://test.org",
+                         web_contents()->GetMainFrame()->GetPageUkmSourceId()));
 }
 
 // Tests that a same document navigation is not recorded.
@@ -256,7 +258,7 @@ TEST_F(LoadingPredictorTabHelperTest, DocumentOnLoadCompleted) {
   NavigateAndCommitInMainFrameAndVerifyMetrics("http://test.org");
   auto navigation_id =
       CreateNavigationID(GetTabID(), "http://test.org",
-                         web_contents()->GetLastCommittedSourceId());
+                         web_contents()->GetMainFrame()->GetPageUkmSourceId());
 
   // Adding subframe navigation to ensure that the committed main frame url will
   // be used.
@@ -277,7 +279,7 @@ TEST_F(LoadingPredictorTabHelperTest, ResourceLoadComplete) {
   NavigateAndCommitInMainFrameAndVerifyMetrics("http://test.org");
   auto navigation_id =
       CreateNavigationID(GetTabID(), "http://test.org",
-                         web_contents()->GetLastCommittedSourceId());
+                         web_contents()->GetMainFrame()->GetPageUkmSourceId());
 
   auto resource_load_info = CreateResourceLoadInfo(
       "http://test.org/script.js", network::mojom::RequestDestination::kScript);
@@ -311,7 +313,7 @@ TEST_F(LoadingPredictorTabHelperTest, LoadResourceFromMemoryCache) {
 
   auto navigation_id =
       CreateNavigationID(GetTabID(), "http://test.org",
-                         web_contents()->GetLastCommittedSourceId());
+                         web_contents()->GetMainFrame()->GetPageUkmSourceId());
 
   auto resource_load_info = CreateResourceLoadInfo(
       "http://test.org/script.js", network::mojom::RequestDestination::kScript,
@@ -363,7 +365,7 @@ TEST_F(LoadingPredictorTabHelperOptimizationGuideDeciderTest,
   NavigateAndCommitInMainFrameAndVerifyMetrics("http://test.org");
   auto navigation_id =
       CreateNavigationID(GetTabID(), "http://test.org",
-                         web_contents()->GetLastCommittedSourceId());
+                         web_contents()->GetMainFrame()->GetPageUkmSourceId());
 
   // Adding subframe navigation to ensure that the committed main frame url will
   // be used.
@@ -419,7 +421,7 @@ TEST_F(LoadingPredictorTabHelperOptimizationGuideDeciderTest,
   NavigateAndCommitInMainFrameAndVerifyMetrics("http://test.org");
   auto navigation_id =
       CreateNavigationID(GetTabID(), "http://test.org",
-                         web_contents()->GetLastCommittedSourceId());
+                         web_contents()->GetMainFrame()->GetPageUkmSourceId());
 
   // Invoke callback after commit.
   std::move(callback).Run(optimization_guide::OptimizationGuideDecision::kTrue,
@@ -530,7 +532,7 @@ TEST_F(LoadingPredictorTabHelperOptimizationGuideDeciderTest,
   NavigateAndCommitInMainFrameAndVerifyMetrics("http://test.org");
   auto navigation_id =
       CreateNavigationID(GetTabID(), "http://test.org",
-                         web_contents()->GetLastCommittedSourceId());
+                         web_contents()->GetMainFrame()->GetPageUkmSourceId());
 
   // Adding subframe navigation to ensure that the committed main frame url will
   // be used.
@@ -578,7 +580,7 @@ TEST_F(
   NavigateAndCommitInMainFrameAndVerifyMetrics("http://test.org");
   auto navigation_id =
       CreateNavigationID(GetTabID(), "http://test.org",
-                         web_contents()->GetLastCommittedSourceId());
+                         web_contents()->GetMainFrame()->GetPageUkmSourceId());
 
   // Adding subframe navigation to ensure that the committed main frame url will
   // be used.
@@ -625,7 +627,7 @@ TEST_F(LoadingPredictorTabHelperOptimizationGuideDeciderTest,
   NavigateAndCommitInMainFrameAndVerifyMetrics("http://test.org");
   auto navigation_id =
       CreateNavigationID(GetTabID(), "http://test.org",
-                         web_contents()->GetLastCommittedSourceId());
+                         web_contents()->GetMainFrame()->GetPageUkmSourceId());
 
   // Adding subframe navigation to ensure that the committed main frame url will
   // be used.
@@ -669,7 +671,7 @@ TEST_F(
   NavigateAndCommitInMainFrameAndVerifyMetrics("http://test.org");
   auto navigation_id =
       CreateNavigationID(GetTabID(), "http://test.org",
-                         web_contents()->GetLastCommittedSourceId());
+                         web_contents()->GetMainFrame()->GetPageUkmSourceId());
 
   // Adding subframe navigation to ensure that the committed main frame url will
   // be used.

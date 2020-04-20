@@ -54,6 +54,7 @@
 <translation id="1331212799747679585">Chromea ei voi päivittää. Lisää vaihtoehtoja</translation>
 <translation id="1332501820983677155">Google Chromen ominaisuuksien pikanäppäimet</translation>
 <translation id="1360432990279830238">Kirjaudu ulos ja lopeta synkronointi?</translation>
+<translation id="1364532808393826295"><ph name="APP_NAME" /> – <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">Sivusto <ph name="SITE_NAME" /> lisättiin.</translation>
 <translation id="1373696734384179344">Liian vähän muistia valitun sisällön lataamiseen.</translation>
 <translation id="1376578503827013741">Lasketaan…</translation>
@@ -140,6 +141,7 @@
 <translation id="2017836877785168846">Tyhjentää historian ja osoitepalkin automaattiset täydennykset.</translation>
 <translation id="2021896219286479412">Ohjaimet koko näytön tilassa</translation>
 <translation id="2025115093177348061">Lisätty todellisuus</translation>
+<translation id="2030769033451695672">Napauta, niin palaat tänne: <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2038563949887743358">Ota käyttöön Käytä tietokoneversiota</translation>
 <translation id="2041019821020695769">Ota ilmoitukset käyttöön myös <ph name="BEGIN_LINK" />Android-asetuksissa<ph name="END_LINK" />, niin Chrome voi lähettää sinulle ilmoituksia.</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> sisältää dataa myös Chromessa</translation>
@@ -301,6 +303,7 @@ Hae sanaa koskettamalla sitä pitkään. Jos haluat tarkentaa hakuasi, valitse e
 <translation id="3207960819495026254">Kirjanmerkeissä</translation>
 <translation id="3211426585530211793"><ph name="ITEM_TITLE" /> poistettiin.</translation>
 <translation id="321773570071367578">Jos unohdat tunnuslauseesi tai haluat muokata tätä asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name="END_LINK" />.</translation>
+<translation id="3223655101706843289">Tämä tyhjentää kaiken datan ja evästeet, jotka <ph name="ORIGIN" /> ja sen sovellus aloitusnäytöllä ovat tallentaneet.</translation>
 <translation id="3227137524299004712">Mikrofoni</translation>
 <translation id="3232754137068452469">Verkkosovellus</translation>
 <translation id="3236059992281584593">1 minuutti jäljellä</translation>
@@ -535,6 +538,7 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="4943872375798546930">Ei tuloksia</translation>
 <translation id="4961107849584082341">Käännä sivu mille tahansa kielelle</translation>
 <translation id="4962975101802056554">Peru kaikki laitteen käyttöoikeudet</translation>
+<translation id="4964199952259983386">Laita kamera päälle myös <ph name="BEGIN_LINK" />Androidin asetuksista<ph name="END_LINK" />, jotta Chrome voi käyttää AR:ää.</translation>
 <translation id="4970824347203572753">Ei käytettävissä sijainnissasi</translation>
 <translation id="497421865427891073">Siirry eteenpäin</translation>
 <translation id="4988210275050210843">Ladataan tiedostoa (<ph name="MEGABYTES" />)</translation>
@@ -634,6 +638,7 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="5684874026226664614">Hups, tätä sivua ei voi kääntää.</translation>
 <translation id="5686790454216892815">Tiedoston nimi on liian pitkä</translation>
 <translation id="5689516760719285838">Sijainti</translation>
+<translation id="5690795753582697420">Kamera laitettiin pois päältä Androidin asetuksista</translation>
 <translation id="5694049548840660018">Palaa etusivulle helposti</translation>
 <translation id="569536719314091526">Käännä sivu mille tahansa kielelle Lisävalinnat-painikkeella</translation>
 <translation id="5710871682236653961">Kysy, saavatko sivustot lähettää ja vastaanottaa tietoja, kun kosketat NFC-laitteita (suositus)</translation>
@@ -665,6 +670,7 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="5876056640971328065">Keskeytä video</translation>
 <translation id="5884076754568147479">Jotta tehtävien hoitaminen sujuisi helpommin, Google saa tiedot niiden sivustojen URL-osoitteista ja sisällöstä, joilla käytät Assistantia, sekä Assistantin kautta lähettämäsi tiedot</translation>
 <translation id="5919204609460789179">Aloita synkronointi päivittämällä <ph name="PRODUCT_NAME" /></translation>
+<translation id="5922853908706496913">Näyttösi jaetaan</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> säästetty</translation>
 <translation id="5939518447894949180">Tyhjennä</translation>
 <translation id="5942872142862698679">Hakukoneena käytetään Googlea.</translation>
@@ -875,6 +881,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="751961395872307827">Yhteyden muodostaminen sivustoon epäonnistui</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7542481630195938534">Ehdotusten haku epäonnistui</translation>
+<translation id="7554752735887601236">Sivusto käyttää mikrofoniasi</translation>
 <translation id="7559975015014302720">Yksinkertaistettu tila on pois päältä</translation>
 <translation id="7562080006725997899">Selaustietoja poistetaan</translation>
 <translation id="756809126120519699">Chrome-tiedot tyhjennetty</translation>
@@ -911,7 +918,9 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ja <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> muu}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ja <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> muuta}}</translation>
 <translation id="7791543448312431591">Lisää</translation>
 <translation id="780301667611848630">Ei kiitos</translation>
+<translation id="7804248752222191302">Sivusto käyttää kameraasi</translation>
 <translation id="7810647596859435254">Avaa sovelluksessa…</translation>
+<translation id="7817023149356982970">Sinut kirjataan ulos tältä sivustolta.</translation>
 <translation id="7821588508402923572">Datasäästösi näkyvät täällä</translation>
 <translation id="7828557259026017104">Evästeet ovat avaamiesi verkkosivustojen luomia tiedostoja. Niiden avulla sivustot muistavat valintasi. Kolmannen osapuolen evästeitä luovat muut sivustot. Nämä sivustot omistavat mainoksia, kuvia tai muita sisältöjä, joita käytetään avaamallasi sivulla.</translation>
 <translation id="783819812427904514">Poista videon mykistys</translation>
@@ -990,8 +999,10 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="8364299278605033898">Katso suositut sivustot</translation>
 <translation id="8368027906805972958">Tuntematon tai ei-tuettu laite (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">Salli taustasynkronointi tietyllä sivustolla.</translation>
+<translation id="83792324527827022">Sivusto käyttää kameraasi ja mikrofoniasi</translation>
 <translation id="8380167699614421159">Tällä sivustolla on häiritseviä tai harhaanjohtavia mainoksia</translation>
 <translation id="8393700583063109961">Lähetä viesti</translation>
+<translation id="8394832520002899662">Palaa sivustolle napauttamalla</translation>
 <translation id="8413126021676339697">Näytä koko selaushistoria</translation>
 <translation id="8427875596167638501">Esikatseluvälilehti on puoliksi auki</translation>
 <translation id="8428213095426709021">Asetukset</translation>
@@ -1034,6 +1045,8 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="8687353297350450808">{N_BARS,plural, =1{Signaalin voimakkuus: # palkki}other{Signaalin voimakkuus: # palkkia}}</translation>
 <translation id="868929229000858085">Hae yhteystiedoistasi</translation>
 <translation id="869891660844655955">Vanhenemispäivämäärä</translation>
+<translation id="8702612070107455751">Kaikki offline-data poistetaan</translation>
+<translation id="8737217482364735741">Tämä tyhjentää kaiken datan ja evästeet, jotka <ph name="ORIGIN" /> on tallentanut.</translation>
 <translation id="8748850008226585750">Sisältö piilotettu</translation>
 <translation id="8751914237388039244">Valitse kuva</translation>
 <translation id="8758557275681689734">Katso kaikki avoimet välilehdet</translation>
@@ -1080,6 +1093,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="9100610230175265781">Tunnuslause tarvitaan</translation>
 <translation id="9102803872260866941">Esikatseluvälilehti on avattu</translation>
 <translation id="9104217018994036254">Välilehden jakamisen laiteluettelo.</translation>
+<translation id="9108312223223904744">Ohjeet puhelimen käyttöön suojausavaimena</translation>
 <translation id="9133397713400217035">Tutki offline-tilassa</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Näytä alkuperäinen</translation>

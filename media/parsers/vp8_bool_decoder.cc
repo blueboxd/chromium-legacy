@@ -46,6 +46,7 @@
 
 #include <algorithm>
 
+#include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 
 namespace media {

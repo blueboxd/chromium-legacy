@@ -91,7 +91,6 @@ virtual/threaded/fast/events/pinch/scroll-visual-viewport-send-boundary-events.h
 paint/invalidation/media-audio-no-spurious-repaints.html [ Failure ]
 
 crbug.com/940033 virtual/threaded-prefer-compositing/fast/scrolling/mouse-scrolling-over-standard-scrollbar.html [ Failure ]
-crbug.com/940033 virtual/threaded-prefer-compositing/fast/scrolling/wheel-scrolling-over-custom-scrollbar.html [ Failure ]
 
 # Missing compositing reasons
 http/tests/devtools/layers/layer-compositing-reasons.js [ Failure ]

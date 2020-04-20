@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/util/type_safety/pass_key.h"
+#include "build/build_config.h"
 #include "components/viz/service/display_embedder/skia_output_device.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "gpu/vulkan/vulkan_swap_chain.h"
@@ -39,6 +40,9 @@ class SkiaOutputDeviceVulkan final : public SkiaOutputDevice {
       gpu::MemoryTracker* memory_tracker,
       DidSwapBufferCompleteCallback did_swap_buffer_complete_callback);
 
+#if defined(OS_WIN)
+  gpu::SurfaceHandle GetChildSurfaceHandle();
+#endif
   // SkiaOutputDevice implementation:
   bool Reshape(const gfx::Size& size,
                float device_scale_factor,

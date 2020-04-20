@@ -208,10 +208,11 @@ class FeedStream::SurfaceUpdater : public StreamModel::Observer {
 std::unique_ptr<StreamModelUpdateRequest>
 FeedStream::WireResponseTranslator::TranslateWireResponse(
     feedwire::Response response,
+    StreamModelUpdateRequest::Source source,
     base::TimeDelta response_time,
     base::Time current_time) {
-  return ::feed::TranslateWireResponse(std::move(response), response_time,
-                                       current_time);
+  return ::feed::TranslateWireResponse(std::move(response), source,
+                                       response_time, current_time);
 }
 
 FeedStream::FeedStream(RefreshTaskScheduler* refresh_task_scheduler,
@@ -308,6 +309,31 @@ bool FeedStream::IsArticlesListVisible() {
   return profile_prefs_->GetBoolean(prefs::kArticlesListVisible);
 }
 
+void FeedStream::LoadMore(base::OnceCallback<void(bool)> callback) {
+  if (!model_) {
+    DLOG(ERROR) << "Ignoring LoadMore() before the model is loaded";
+    return std::move(callback).Run(false);
+  }
+  // Have at most one in-flight LoadMore() request. Send the result to all
+  // requestors.
+  load_more_complete_callbacks_.push_back(std::move(callback));
+  if (load_more_complete_callbacks_.size() == 1) {
+    task_queue_.AddTask(std::make_unique<LoadMoreTask>(
+        this,
+        base::BindOnce(&FeedStream::LoadMoreComplete, base::Unretained(this))));
+  }
+}
+
+void FeedStream::LoadMoreComplete(LoadMoreTask::Result result) {
+  metrics_reporter_->OnLoadMore(result.final_status);
+  std::vector<base::OnceCallback<void(bool)>> moved_callbacks =
+      std::move(load_more_complete_callbacks_);
+  bool success = result.final_status == LoadStreamStatus::kLoadedFromNetwork;
+  for (auto& callback : moved_callbacks) {
+    std::move(callback).Run(success);
+  }
+}
+
 void FeedStream::ExecuteOperations(
     std::vector<feedstore::DataOperation> operations) {
   if (!model_) {
@@ -373,8 +399,22 @@ void FeedStream::SetUserClassifierForTesting(
   user_classifier_ = std::move(user_classifier);
 }
 
-void FeedStream::OnStoreChange(const StreamModel::StoreUpdate& update) {
-  store_->WriteOperations(update.sequence_number, update.operations);
+void FeedStream::OnStoreChange(StreamModel::StoreUpdate update) {
+  if (!update.operations.empty()) {
+    DCHECK(!update.update_request);
+    store_->WriteOperations(update.sequence_number, update.operations);
+  } else {
+    DCHECK(update.update_request);
+    if (update.overwrite_stream_data) {
+      DCHECK_EQ(update.sequence_number, 0);
+      store_->OverwriteStream(std::move(update.update_request),
+                              base::DoNothing());
+    } else {
+      store_->SaveStreamUpdate(update.sequence_number,
+                               std::move(update.update_request),
+                               base::DoNothing());
+    }
+  }
 }
 
 LoadStreamStatus FeedStream::ShouldAttemptLoad(bool model_loading) {
@@ -394,13 +434,15 @@ LoadStreamStatus FeedStream::ShouldAttemptLoad(bool model_loading) {
   return LoadStreamStatus::kNoStatus;
 }
 
-LoadStreamStatus FeedStream::ShouldMakeFeedQueryRequest() {
-  // Time has passed since calling |ShouldAttemptLoad()|, call it again to
-  // confirm we should still attempt loading.
-  const LoadStreamStatus should_not_attempt_reason =
-      ShouldAttemptLoad(/*model_loading=*/true);
-  if (should_not_attempt_reason != LoadStreamStatus::kNoStatus) {
-    return should_not_attempt_reason;
+LoadStreamStatus FeedStream::ShouldMakeFeedQueryRequest(bool is_load_more) {
+  if (!is_load_more) {
+    // Time has passed since calling |ShouldAttemptLoad()|, call it again to
+    // confirm we should still attempt loading.
+    const LoadStreamStatus should_not_attempt_reason =
+        ShouldAttemptLoad(/*model_loading=*/true);
+    if (should_not_attempt_reason != LoadStreamStatus::kNoStatus) {
+      return should_not_attempt_reason;
+    }
   }
 
   // TODO(harringtond): |suppress_refreshes_until_| was historically used
@@ -490,6 +532,8 @@ void FeedStream::LoadModel(std::unique_ptr<StreamModel> model) {
 }
 
 void FeedStream::UnloadModel() {
+  // Note: This should only be called from a running Task, as some tasks assume
+  // the model remains loaded.
   if (!model_)
     return;
   surface_updater_->SetModel(nullptr);

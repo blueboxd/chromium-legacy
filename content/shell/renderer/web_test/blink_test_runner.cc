@@ -161,8 +161,7 @@ void BlinkTestRunner::PrintMessageToStderr(const std::string& message) {
 }
 
 void BlinkTestRunner::PrintMessage(const std::string& message) {
-  if (!is_secondary_window_)
-    GetBlinkTestClientRemote()->PrintMessage(message);
+  GetBlinkTestClientRemote()->PrintMessage(message);
 }
 
 void BlinkTestRunner::PostTask(base::OnceClosure task) {
@@ -233,14 +232,6 @@ void BlinkTestRunner::ResetAutoResizeMode() {
   content::DisableAutoResizeMode(render_view(), gfx::Size());
   // Does not call ForceResizeRenderView() here intentionally. This is between
   // tests, and the next test will set up a size.
-}
-
-void BlinkTestRunner::NavigateSecondaryWindow(const GURL& url) {
-  GetBlinkTestClientRemote()->NavigateSecondaryWindow(url);
-}
-
-void BlinkTestRunner::InspectSecondaryWindow() {
-  GetWebTestClientRemote()->InspectSecondaryWindow();
 }
 
 void BlinkTestRunner::ClearAllDatabases() {
@@ -631,7 +622,7 @@ void BlinkTestRunner::DidCommitNavigationInMainFrame() {
 
   // Avoid a situation where ResetDone is called twice, because
   // ResetDone should be called once if a secondary renderer exists.
-  if (is_secondary_window_)
+  if (!is_main_window_)
     return;
 
   waiting_for_reset_ = false;
@@ -682,18 +673,20 @@ void BlinkTestRunner::HandleWebTestClientDisconnected() {
   web_test_client_remote_.reset();
 }
 
-void BlinkTestRunner::OnSetupSecondaryRenderer() {
+void BlinkTestRunner::OnSetupRendererProcessForNonTestWindow() {
   DCHECK(!is_main_window_);
-
-  // TODO(https://crbug.com/1039247): Consider to use |is_main_window_| instead
-  // of |is_secondary_window_|. But, there are many test failures when using
-  // |!is_main_window_|.
-  is_secondary_window_ = true;
 
   TestInterfaces* interfaces =
       WebTestRenderThreadObserver::GetInstance()->test_interfaces();
+  // Allows the window to receive replicated WebTestRuntimeFlags and to
+  // control or end the test.
   interfaces->SetTestIsRunning(true);
-  ForceResizeRenderView(render_view(), WebSize(800, 600));
+
+  // All non-main windows get sized to 800x600 (so does the main window).
+  // This is done for the main frame only, not child local roots in other
+  // processes.
+  if (render_view()->GetMainRenderFrame())
+    ForceResizeRenderView(render_view(), WebSize(800, 600));
 }
 
 void BlinkTestRunner::ApplyTestConfiguration(

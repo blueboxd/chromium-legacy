@@ -127,8 +127,8 @@ class WebContentController
                                     JsClientInstance* instance) override;
 
   // content::RenderWidgetHost::InputEventObserver
-  void OnInputEventAck(content::InputEventAckSource source,
-                       content::InputEventAckState state,
+  void OnInputEventAck(blink::mojom::InputEventResultSource source,
+                       blink::mojom::InputEventResultState state,
                        const blink::WebInputEvent&) override;
 
   ui::GestureRecognizerImpl gesture_recognizer_;

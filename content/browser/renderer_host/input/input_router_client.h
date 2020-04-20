@@ -10,9 +10,8 @@
 #include "content/common/content_export.h"
 #include "content/common/input/input_handler.mojom.h"
 #include "content/public/browser/native_web_keyboard_event.h"
-#include "content/public/common/input_event_ack_source.h"
-#include "content/public/common/input_event_ack_state.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
 
 namespace ui {
 class LatencyInfo;
@@ -31,7 +30,7 @@ class CONTENT_EXPORT InputRouterClient {
   //   * |NOT_CONSUMED| will result in |input_event| being sent as usual.
   //   * |CONSUMED| or |NO_CONSUMER_EXISTS| will trigger the appropriate ack.
   //   * |UNKNOWN| will result in |input_event| being dropped.
-  virtual InputEventAckState FilterInputEvent(
+  virtual blink::mojom::InputEventResultState FilterInputEvent(
       const blink::WebInputEvent& input_event,
       const ui::LatencyInfo& latency_info) = 0;
 
@@ -39,7 +38,8 @@ class CONTENT_EXPORT InputRouterClient {
   virtual void IncrementInFlightEventCount() = 0;
 
   // Called each time a WebInputEvent ACK IPC is received.
-  virtual void DecrementInFlightEventCount(InputEventAckSource ack_source) = 0;
+  virtual void DecrementInFlightEventCount(
+      blink::mojom::InputEventResultSource ack_source) = 0;
 
   // Called when the router has received an overscroll notification from the
   // renderer.
@@ -92,6 +92,9 @@ class CONTENT_EXPORT InputRouterClient {
 
   // Returns the size of visible viewport in screen space, in DIPs.
   virtual gfx::Size GetRootWidgetViewportSize() = 0;
+
+  // Called when an invalid input event source is sent from the renderer.
+  virtual void OnInvalidInputEventSource() = 0;
 };
 
 } // namespace content

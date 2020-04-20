@@ -496,16 +496,14 @@ class _DiffArchiveManager(object):
       return
 
     supersize_path = os.path.join(_BINARY_SIZE_DIR, 'supersize')
+    report_path = os.path.join(diff_path, 'diff.sizediff')
 
-    report_path = os.path.join(diff_path, 'diff.ndjson')
+    supersize_cmd = [
+        supersize_path, 'save_diff', before.archived_size_path,
+        after.archived_size_path, report_path
+    ]
 
-    supersize_cmd = [supersize_path, 'html_report', '--diff-with',
-      before.archived_size_path,
-      after.archived_size_path,
-      report_path]
-
-    logging.info('Creating HTML report')
-
+    logging.info('Creating .sizediff')
     _RunCmd(supersize_cmd)
 
     logging.info('View using a local server via: %s start_server %s',

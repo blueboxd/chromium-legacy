@@ -26,9 +26,12 @@ NavigationID::NavigationID(const NavigationID& other)
       main_frame_url(other.main_frame_url),
       creation_time(other.creation_time) {}
 
+// TODO(crbug.com/1061899): The code assumes that it was called on behalf of
+// the active frame, which might not be true. Pass RenderFrameHost reference
+// hereto avoid confusion.
 NavigationID::NavigationID(content::WebContents* web_contents)
     : tab_id(sessions::SessionTabHelper::IdForTab(web_contents)),
-      ukm_source_id(web_contents->GetLastCommittedSourceId()),
+      ukm_source_id(web_contents->GetMainFrame()->GetPageUkmSourceId()),
       main_frame_url(web_contents->GetLastCommittedURL()),
       creation_time(base::TimeTicks::Now()) {}
 

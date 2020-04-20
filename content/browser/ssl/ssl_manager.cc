@@ -16,6 +16,7 @@
 #include "base/task/post_task.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/ssl/ssl_error_handler.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -205,7 +206,7 @@ void SSLManager::DidDisplayMixedContent() {
       entry->GetSSL().certificate) {
     WebContentsImpl* contents = static_cast<WebContentsImpl*>(
         controller_->delegate()->GetWebContents());
-    ukm::SourceId source_id = contents->GetUkmSourceIdForLastCommittedSource();
+    ukm::SourceId source_id = contents->GetMainFrame()->GetPageUkmSourceId();
     LogMixedContentMetrics(MixedContentType::kDisplayMixedContent, source_id,
                            ukm::UkmRecorder::Get());
   }
@@ -218,7 +219,7 @@ void SSLManager::DidContainInsecureFormAction() {
       entry->GetSSL().certificate) {
     WebContentsImpl* contents = static_cast<WebContentsImpl*>(
         controller_->delegate()->GetWebContents());
-    ukm::SourceId source_id = contents->GetUkmSourceIdForLastCommittedSource();
+    ukm::SourceId source_id = contents->GetMainFrame()->GetPageUkmSourceId();
     LogMixedContentMetrics(MixedContentType::kMixedForm, source_id,
                            ukm::UkmRecorder::Get());
   }
@@ -234,7 +235,7 @@ void SSLManager::DidDisplayContentWithCertErrors() {
   if (entry->GetURL().SchemeIsCryptographic() && entry->GetSSL().certificate) {
     WebContentsImpl* contents = static_cast<WebContentsImpl*>(
         controller_->delegate()->GetWebContents());
-    ukm::SourceId source_id = contents->GetUkmSourceIdForLastCommittedSource();
+    ukm::SourceId source_id = contents->GetMainFrame()->GetPageUkmSourceId();
     LogMixedContentMetrics(MixedContentType::kDisplayWithCertErrors, source_id,
                            ukm::UkmRecorder::Get());
     UpdateLastCommittedEntry(SSLStatus::DISPLAYED_CONTENT_WITH_CERT_ERRORS, 0);
@@ -249,7 +250,7 @@ void SSLManager::DidRunMixedContent(const GURL& security_origin) {
   if (entry->GetURL().SchemeIsCryptographic() && entry->GetSSL().certificate) {
     WebContentsImpl* contents = static_cast<WebContentsImpl*>(
         controller_->delegate()->GetWebContents());
-    ukm::SourceId source_id = contents->GetUkmSourceIdForLastCommittedSource();
+    ukm::SourceId source_id = contents->GetMainFrame()->GetPageUkmSourceId();
     LogMixedContentMetrics(MixedContentType::kScriptingMixedContent, source_id,
                            ukm::UkmRecorder::Get());
   }
@@ -275,7 +276,7 @@ void SSLManager::DidRunContentWithCertErrors(const GURL& security_origin) {
   if (entry->GetURL().SchemeIsCryptographic() && entry->GetSSL().certificate) {
     WebContentsImpl* contents = static_cast<WebContentsImpl*>(
         controller_->delegate()->GetWebContents());
-    ukm::SourceId source_id = contents->GetUkmSourceIdForLastCommittedSource();
+    ukm::SourceId source_id = contents->GetMainFrame()->GetPageUkmSourceId();
     LogMixedContentMetrics(MixedContentType::kScriptingWithCertErrors,
                            source_id, ukm::UkmRecorder::Get());
   }

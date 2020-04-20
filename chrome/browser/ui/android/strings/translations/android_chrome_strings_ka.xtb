@@ -54,6 +54,7 @@
 <translation id="1331212799747679585">Chrome-ის განახლება ვერ მოხერხდა. დამატებითი ვარიანტები</translation>
 <translation id="1332501820983677155">Google Chrome-ის ფუნქციების მალსახმობები</translation>
 <translation id="1360432990279830238">გსურთ გამოსვლა და სინქრონიზაციის გამორთვა?</translation>
+<translation id="1364532808393826295"><ph name="APP_NAME" /> — <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">საიტი: <ph name="SITE_NAME" /> დამატებულია</translation>
 <translation id="1373696734384179344">შერჩეული შემცველობის ჩამოტვირთვისათვის, არ არის საკმარისი მეხსიერება.</translation>
 <translation id="1376578503827013741">მიმდინარეობს გამოთვლა…</translation>
@@ -140,6 +141,7 @@
 <translation id="2017836877785168846">გაასუფთავებს ისტორიას და მისამართთა ზოლის ავტომატური დასრულების მონაცემებს.</translation>
 <translation id="2021896219286479412">სრულეკრანიანი რეჟიმის მართვა</translation>
 <translation id="2025115093177348061">აუგმენტური რეალობა</translation>
+<translation id="2030769033451695672">შეეხეთ <ph name="URL_OF_THE_CURRENT_TAB" />-ზე დასაბრუნებლად</translation>
 <translation id="2038563949887743358">საიტის დესკტოპის ვერსიის მოთხოვნის ჩართვა</translation>
 <translation id="2041019821020695769">Chrome-ისთვის თქვენთვის შეტყობინებების გამოგზავნის დასაშვებად ჩართეთ შეტყობინებებზე წვდომის ნებართვაც <ph name="BEGIN_LINK" />Android-ის პარამეტრებიდან<ph name="END_LINK" />.</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" />-ს Chrome-შიც აქვს მონაცემები</translation>
@@ -301,6 +303,7 @@
 <translation id="3207960819495026254">ჩანიშნულია</translation>
 <translation id="3211426585530211793"><ph name="ITEM_TITLE" /> წაშლილია</translation>
 <translation id="321773570071367578">თუ დაგავიწყდათ თქვენი საიდუმლო ფრაზა, ან ამ პარამეტრის შეცვლა გსურთ, <ph name="BEGIN_LINK" />გადააყენეთ სინქრონიზაცია<ph name="END_LINK" /></translation>
+<translation id="3223655101706843289">ეს მოქმედება გაასუფთავებს <ph name="ORIGIN" />-ისა და მისი აპის მიერ თქვენს მთავარ ეკრანზე შენახულ ყველა მონაცემსა და ქუქი-ჩანაწერს.</translation>
 <translation id="3227137524299004712">მიკროფონი</translation>
 <translation id="3232754137068452469">ვებ-აპი</translation>
 <translation id="3236059992281584593">დარჩენილია 1 წთ</translation>
@@ -535,6 +538,7 @@
 <translation id="4943872375798546930">შედეგები არ არის</translation>
 <translation id="4961107849584082341">თარგმნეთ ეს გვერდი ნებისმიერ ენაზე</translation>
 <translation id="4962975101802056554">მოწყობილობისთვის ყველა ნებართვის გაუქმება</translation>
+<translation id="4964199952259983386">Chrome-მა AR რომ გამოიყენოს, საჭიროა კამერის ჩართვაც <ph name="BEGIN_LINK" />Android-ის პარამეტრებიდან<ph name="END_LINK" />.</translation>
 <translation id="4970824347203572753">მიუწვდომელია თქვენთან</translation>
 <translation id="497421865427891073">გადასვლა წინ</translation>
 <translation id="4988210275050210843">მიმდინარეობს ფაილის ჩამოტვირთვა (<ph name="MEGABYTES" />).</translation>
@@ -634,6 +638,7 @@
 <translation id="5684874026226664614">ამ გვერდის გადათარგმნა ვერ მოხერხდა.</translation>
 <translation id="5686790454216892815">ფაილის სახელი მეტისმეტად გრძელია</translation>
 <translation id="5689516760719285838">მდებარეობა</translation>
+<translation id="5690795753582697420">კამერა გამორთულია Android-ის პარამეტრებში</translation>
 <translation id="5694049548840660018">მარტივად დაბრუნდით მთავარ გვერდზე</translation>
 <translation id="569536719314091526">თარგმნეთ ეს გვერდი ნებისმიერ ენაზე „სხვა ვარიანტების“ ღილაკის მეშვეობით</translation>
 <translation id="5710871682236653961">შეკითხვა NFC მოწყობილობაზე შეხებისას საიტებისთვის ინფორმაციის გაგზავნისა და მიღების დაშვებამდე (რეკომენდებული)</translation>
@@ -665,6 +670,7 @@
 <translation id="5876056640971328065">ვიდეოს დაპაუზება</translation>
 <translation id="5884076754568147479">ამოცანების შესრულებაში დასახმარებლად Google მიიღებს იმ საიტების URL-ებსა და კონტენტს, რომლებზეც ასისტენტს იყენებთ, ასევე, თქვენ მიერ ასისტენტის მეშვეობით გადაგზავნილ ინფორმაციას</translation>
 <translation id="5919204609460789179">სინქრონიზაციის დასაწყებად, განაახლეთ <ph name="PRODUCT_NAME" /></translation>
+<translation id="5922853908706496913">თქვენი ეკრანი ზიარდება</translation>
 <translation id="5937580074298050696">დაზოგილია <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">გადატვირთვა</translation>
 <translation id="5942872142862698679">ძიებისთვის Google გამოიყენება</translation>
@@ -875,6 +881,7 @@
 <translation id="751961395872307827">საიტთან დაკავშირება ვერ ხერხდება</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7542481630195938534">შემოთავაზებების მიღება ვერ მოხერხდა</translation>
+<translation id="7554752735887601236">ეს საიტი იყენებს თქვენს მიკროფონს</translation>
 <translation id="7559975015014302720">Lite რეჟიმი გამორთულია</translation>
 <translation id="7562080006725997899">დათვალიერების მონაცემების გასუფთავება</translation>
 <translation id="756809126120519699">Chrome მონაცემები გასუფთავდა</translation>
@@ -911,7 +918,9 @@
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 და <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> სხვა}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 და <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> სხვა}}</translation>
 <translation id="7791543448312431591">დამატება</translation>
 <translation id="780301667611848630">არა, მადლობთ</translation>
+<translation id="7804248752222191302">ეს საიტი იყენებს თქვენს კამერას</translation>
 <translation id="7810647596859435254">გახსნა აპით…</translation>
+<translation id="7817023149356982970">თქვენ გამოხვალთ ამ საიტიდან.</translation>
 <translation id="7821588508402923572">აქ გამოჩნდება ინტერნეტის ტრაფიკის თქვენ მიერ დაზოგილი მოცულობა</translation>
 <translation id="7828557259026017104">ქუქი-ჩანაწერები თქვენ მიერ მონახულებული ვებსაიტების მიერ შექმნილი ფაილებია. მათი მეშვეობით საიტები თქვენ მიერ არჩეულ პარამეტრებს იმახსოვრებს. მესამე მხარის ქუქი-ჩანაწერები იქმნება სხვა საიტების მიერ. აღნიშნულ საიტებს ეკუთვნის თქვენ მიერ მონახულებულ ვებგვერდზე თქვენთვის ხილული გარკვეული კონტენტი (როგორიცაა რეკლამა ან სურათები).</translation>
 <translation id="783819812427904514">ვიდეოს დადუმების მოხსნა</translation>
@@ -990,8 +999,10 @@
 <translation id="8364299278605033898">იხილეთ პოპულარული ვებსაიტები</translation>
 <translation id="8368027906805972958">უცნობი ან მხარდაუჭერელი მოწყობილობა (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">კონკრეტული საიტისთვის ფონური სინქრონიზაციის დაშვება.</translation>
+<translation id="83792324527827022">ეს საიტი იყენებს თქვენს კამერასა და მიკროფონს</translation>
 <translation id="8380167699614421159">ამ საიტზე ნაჩვენებია მომაბეზრებელი ან შეცდომაში შემყვანი რეკლამა</translation>
 <translation id="8393700583063109961">შეტყობინების გაგზავნა</translation>
+<translation id="8394832520002899662">შეეხეთ საიტზე დასაბრუნებლად</translation>
 <translation id="8413126021676339697">სრული ისტორიის ჩვენება</translation>
 <translation id="8427875596167638501">გადახედვის ჩანართი ნახევრადგახსნილია</translation>
 <translation id="8428213095426709021">პარამეტრები</translation>
@@ -1034,6 +1045,8 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{სიგნალის სიძლიერის დონე: # ხაზი}other{სიგნალის სიძლიერის დონე: # ხაზი}}</translation>
 <translation id="868929229000858085">თქვენს კონტაქტებში ძიება</translation>
 <translation id="869891660844655955">ვადის გასვლის თარიღი</translation>
+<translation id="8702612070107455751">გასუფთავდება ხაზგარეშე მონაცემები.</translation>
+<translation id="8737217482364735741">ეს მოქმედება გაასუფთავებს <ph name="ORIGIN" />-ის მიერ შენახულ ყველა მონაცემსა და ქუქი-ჩანაწერს.</translation>
 <translation id="8748850008226585750">შიგთავსი დამალულია</translation>
 <translation id="8751914237388039244">აირჩიეთ სურათი</translation>
 <translation id="8758557275681689734">ყველა გახსნილი ჩანართის ნახვა</translation>
@@ -1080,6 +1093,7 @@
 <translation id="9100610230175265781">აუცილებელია კოდური ფრაზის მითითება</translation>
 <translation id="9102803872260866941">გადახედვის ჩანართი გახსნილია</translation>
 <translation id="9104217018994036254">მოწყობილობების სია, რომლებთანაც უნდა გაზიარდეს ჩანართი.</translation>
+<translation id="9108312223223904744">ტელეფონის, როგორც უსაფრთხოების გასაღების, მხარდაჭერა</translation>
 <translation id="9133397713400217035">ხაზგარეშე რეჟიმში გაცნობა</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">ორიგინალის ჩვენება</translation>

@@ -23,6 +23,7 @@ struct StreamModelUpdateRequest {
   enum class Source {
     kNetworkUpdate,
     kInitialLoadFromStore,
+    kNetworkLoadMore,
   };
 
   StreamModelUpdateRequest();
@@ -66,6 +67,7 @@ base::Optional<feedstore::DataOperation> TranslateDataOperation(
 
 std::unique_ptr<StreamModelUpdateRequest> TranslateWireResponse(
     feedwire::Response response,
+    StreamModelUpdateRequest::Source source,
     base::TimeDelta response_time,
     base::Time current_time);
 

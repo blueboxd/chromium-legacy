@@ -13,8 +13,8 @@
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/common/content_export.h"
 #include "content/common/input/input_handler.mojom.h"
-#include "content/public/common/input_event_ack_state.h"
 #include "content/public/common/screen_info.h"
+#include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
 #include "third_party/blink/public/platform/viewport_intersection_state.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -134,7 +134,7 @@ class CONTENT_EXPORT FrameConnectorDelegate {
   // for processing.
   virtual void ForwardAckedTouchpadZoomEvent(
       const blink::WebGestureEvent& event,
-      InputEventAckState ack_result) {}
+      blink::mojom::InputEventResultState ack_result) {}
 
   // A gesture scroll sequence that is not consumed by a child must be bubbled
   // to ancestors who may consume it.
@@ -231,8 +231,9 @@ class CONTENT_EXPORT FrameConnectorDelegate {
 
   bool has_size() const { return has_size_; }
 
-  virtual void DidAckGestureEvent(const blink::WebGestureEvent& event,
-                                  InputEventAckState ack_result) {}
+  virtual void DidAckGestureEvent(
+      const blink::WebGestureEvent& event,
+      blink::mojom::InputEventResultState ack_result) {}
 
  protected:
   explicit FrameConnectorDelegate(bool use_zoom_for_device_scale_factor);

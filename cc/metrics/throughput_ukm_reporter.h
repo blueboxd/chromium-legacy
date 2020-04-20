@@ -7,7 +7,7 @@
 
 #include "base/optional.h"
 #include "cc/cc_export.h"
-#include "cc/metrics/frame_sequence_tracker.h"
+#include "cc/metrics/frame_sequence_metrics.h"
 
 namespace cc {
 class UkmManager;

@@ -1396,7 +1396,6 @@ jumbo_component("platform") {
     "timer.h",
     "transforms/affine_transform.cc",
     "transforms/affine_transform.h",
-    "transforms/identity_transform_operation.h",
     "transforms/interpolated_transform_operation.cc",
     "transforms/interpolated_transform_operation.h",
     "transforms/matrix_3d_transform_operation.cc",
@@ -1451,6 +1450,9 @@ jumbo_component("platform") {
     "webrtc/webrtc_video_frame_adapter.h",
     "webrtc/webrtc_video_utils.cc",
     "webrtc/webrtc_video_utils.h",
+    "widget/compositing/layer_tree_view.cc",
+    "widget/compositing/layer_tree_view.h",
+    "widget/compositing/layer_tree_view_delegate.h",
     "widget/frame_widget.cc",
     "widget/frame_widget.h",
     "widget/widget_base.cc",
@@ -1950,6 +1952,8 @@ jumbo_source_set("blink_platform_unittests_sources") {
     "weborigin/security_origin_test.cc",
     "weborigin/security_policy_test.cc",
     "webrtc/webrtc_video_frame_adapter_test.cc",
+    "widget/compositing/layer_tree_view_unittest.cc",
+    "widget/compositing/test/stub_layer_tree_view_delegate.h",
   ]
 
   if (is_win) {

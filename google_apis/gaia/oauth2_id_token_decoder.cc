@@ -4,11 +4,13 @@
 
 #include "google_apis/gaia/oauth2_id_token_decoder.h"
 
-#include <base/base64url.h>
-#include <base/json/json_reader.h>
-#include <base/strings/string_split.h>
-#include <base/values.h>
 #include <memory>
+
+#include "base/base64url.h"
+#include "base/json/json_reader.h"
+#include "base/logging.h"
+#include "base/strings/string_split.h"
+#include "base/values.h"
 
 namespace {
 

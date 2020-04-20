@@ -14,7 +14,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.weblayer.Callback;
@@ -132,12 +131,7 @@ public class ProfileTest {
         Assert.assertTrue(Arrays.asList(enumerateAllProfileNames(weblayer)).contains(profileName));
 
         TestThreadUtils.runOnUiThreadBlocking(() -> activity.finish());
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return activity.isDestroyed();
-            }
-        });
+        CriteriaHelper.pollUiThread(activity::isDestroyed);
         final CallbackHelper callbackHelper = new CallbackHelper();
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> profile.destroyAndDeleteDataFromDisk(callbackHelper::notifyCalled));
@@ -155,12 +149,7 @@ public class ProfileTest {
         callback.onReceiveValue(activity);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> activity.finish());
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return activity.isDestroyed();
-            }
-        });
+        CriteriaHelper.pollUiThread(activity::isDestroyed);
         return profile;
     }
 

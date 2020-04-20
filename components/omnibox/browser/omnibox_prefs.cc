@@ -5,6 +5,7 @@
 #include "components/omnibox/browser/omnibox_prefs.h"
 
 #include "base/logging.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -12,6 +13,11 @@
 #include "components/prefs/scoped_user_pref_update.h"
 
 namespace omnibox {
+
+const char kToggleSuggestionGroupIdOffHistogram[] =
+    "Omnibox.ToggleSuggestionGroupId.Off";
+const char kToggleSuggestionGroupIdOnHistogram[] =
+    "Omnibox.ToggleSuggestionGroupId.On";
 
 // A client-side toggle for document (Drive) suggestions.
 // Also gated by a feature and server-side Admin Panel controls.
@@ -44,11 +50,17 @@ void ToggleSuggestionGroupIdVisibility(PrefService* prefs,
                                        int suggestion_group_id) {
   DCHECK(prefs);
   ListPrefUpdate update(prefs, kOmniboxHiddenGroupIds);
-  if (IsSuggestionGroupIdHidden(prefs, suggestion_group_id)) {
+  const bool is_hidden = IsSuggestionGroupIdHidden(prefs, suggestion_group_id);
+  if (is_hidden) {
     update->EraseListValue(base::Value(suggestion_group_id));
   } else {
     update->Append(suggestion_group_id);
   }
+  base::SparseHistogram::FactoryGet(
+      is_hidden ? kToggleSuggestionGroupIdOnHistogram
+                : kToggleSuggestionGroupIdOffHistogram,
+      base::HistogramBase::kUmaTargetedHistogramFlag)
+      ->Add(suggestion_group_id);
 }
 
 }  // namespace omnibox

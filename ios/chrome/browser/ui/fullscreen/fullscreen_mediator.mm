@@ -160,23 +160,29 @@ void FullscreenMediator::AnimateWithStyle(FullscreenAnimatorStyle style) {
   StopAnimating(true);
   DCHECK(!animator_);
 
+  // Early return if there is no progress change.
+  CGFloat start_progress = model_->progress();
+  CGFloat final_progress = GetFinalFullscreenProgressForAnimation(style);
+  if (AreCGFloatsEqual(start_progress, final_progress))
+    return;
+
   // Create the animator and set up its completion block.
-  animator_ =
-      [[FullscreenAnimator alloc] initWithStartProgress:model_->progress()
-                                                  style:style];
-  __weak FullscreenAnimator* weakAnimator = animator_;
-  FullscreenModel** modelPtr = &model_;
+  animator_ = [[FullscreenAnimator alloc] initWithStartProgress:start_progress
+                                                          style:style];
+  base::WeakPtr<FullscreenMediator> weak_mediator = weak_factory_.GetWeakPtr();
   [animator_ addAnimations:^{
     // Updates the WebView frame during the animation to have it animated.
-    [resizer_ forceToUpdateToProgress:animator_.finalProgress];
+    FullscreenMediator* mediator = weak_mediator.get();
+    if (mediator)
+      [mediator->resizer_ forceToUpdateToProgress:final_progress];
   }];
   [animator_ addCompletion:^(UIViewAnimatingPosition finalPosition) {
     DCHECK_EQ(finalPosition, UIViewAnimatingPositionEnd);
-    if (!weakAnimator || !*modelPtr)
+    FullscreenMediator* mediator = weak_mediator.get();
+    if (!mediator)
       return;
-    model_->AnimationEndedWithProgress(
-        [weakAnimator progressForAnimatingPosition:finalPosition]);
-    animator_ = nil;
+    mediator->model_->AnimationEndedWithProgress(final_progress);
+    mediator->animator_ = nil;
   }];
 
   // Notify observers that the animation will occur.
@@ -184,10 +190,8 @@ void FullscreenMediator::AnimateWithStyle(FullscreenAnimatorStyle style) {
     observer.FullscreenWillAnimate(controller_, animator_);
   }
 
-  // Only start the animator if animations have been added and it has a non-zero
-  // progress change.
-  if (animator_.hasAnimations &&
-      !AreCGFloatsEqual(animator_.startProgress, animator_.finalProgress)) {
+  // Only start the animator if animations have been added.
+  if (animator_.hasAnimations) {
     [animator_ startAnimation];
   } else {
     animator_ = nil;

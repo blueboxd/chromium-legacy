@@ -32,6 +32,7 @@ class AutofillProvider;
 namespace content {
 class WebContents;
 struct ContextMenuParams;
+struct WebPreferences;
 }
 
 namespace sessions {
@@ -126,7 +127,6 @@ class TabImpl : public Tab,
 #endif
 
   ErrorPageDelegate* error_page_delegate() { return error_page_delegate_; }
-  FullscreenDelegate* fullscreen_delegate() { return fullscreen_delegate_; }
 
   // Tab:
   void SetErrorPageDelegate(ErrorPageDelegate* delegate) override;
@@ -144,7 +144,7 @@ class TabImpl : public Tab,
 #endif
 
   void WebPreferencesChanged();
-  bool GetPasswordEchoEnabled();
+  void SetWebPreferences(content::WebPreferences* prefs);
 
   // Executes |script| with a user gesture.
   void ExecuteScriptWithUserGestureForTests(const base::string16& script);

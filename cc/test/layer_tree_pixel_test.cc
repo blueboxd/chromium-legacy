@@ -55,7 +55,7 @@ LayerTreePixelTest::CreateLayerTreeFrameSink(
   scoped_refptr<viz::TestInProcessContextProvider> worker_context_provider;
   if (!use_software_renderer()) {
     // Use gpu rasterization when using vulkan.
-    if (use_vulkan())
+    if (use_oopr())
       DCHECK(gpu_rasterization_);
     compositor_context_provider =
         base::MakeRefCounted<viz::TestInProcessContextProvider>(
@@ -65,7 +65,7 @@ LayerTreePixelTest::CreateLayerTreeFrameSink(
     worker_context_provider =
         base::MakeRefCounted<viz::TestInProcessContextProvider>(
             /*enable_gpu_rasterization=*/gpu_rasterization_,
-            /*enable_oop_rasterization=*/use_vulkan(),
+            /*enable_oop_rasterization=*/use_oopr(),
             /*support_locking=*/true);
     // Bind worker context to main thread like it is in production. This is
     // needed to fully initialize the context. Compositor context is bound to

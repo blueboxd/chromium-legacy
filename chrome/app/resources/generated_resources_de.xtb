@@ -46,7 +46,7 @@
 <translation id="1049795001945932310">&amp;Spracheinstellungen</translation>
 <translation id="1054153489933238809">&amp;Original in neuem Tab öffnen</translation>
 <translation id="1055806300943943258">Suche nach Bluetooth- und USB-Geräten...</translation>
-<translation id="1056466516655540509">Vor <ph name="MINUTES" /> min aktualisiert</translation>
+<translation id="1056466516655540509">Vor <ph name="MINUTES" /> Min. aktualisiert</translation>
 <translation id="1056775291175587022">Keine Netzwerke</translation>
 <translation id="1056898198331236512">Warnung</translation>
 <translation id="1058262162121953039">PUK</translation>
@@ -192,6 +192,7 @@
 <translation id="1241753985463165747">Beim Aufrufen alle Ihre Daten auf der aktuellen Website lesen und ändern</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> möchte Ihre Einstellungen zurücksetzen.</translation>
 <translation id="1243314992276662751">Hochladen</translation>
+<translation id="1243436884219965846">Passwörter prüfen</translation>
 <translation id="1244265436519979884">Wiederherstellung für Linux wird gerade ausgeführt</translation>
 <translation id="1244303850296295656">Erweiterungsfehler</translation>
 <translation id="1246158006305844142">Ihre Apps und Einstellungen werden auf allen Chrome OS-Geräten synchronisiert, bei denen Sie mit Ihrem Google-Konto angemeldet sind. Die Optionen zur Browsersynchronisation finden Sie in den <ph name="LINK_BEGIN" />Chrome-Einstellungen<ph name="LINK_END" />.</translation>
@@ -2562,6 +2563,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4404136731284211429">Noch einmal scannen</translation>
 <translation id="4404843640767531781"><ph name="APP_NAME" /> wurde von deinen Eltern blockiert. Bitte deine Eltern um Erlaubnis, diese App zu nutzen.</translation>
 <translation id="4405117686468554883">*.jpeg, *.jpg, *.png</translation>
+<translation id="4406883609789734330">Automatische Untertitel</translation>
 <translation id="4408599188496843485">&amp;Hilfe</translation>
 <translation id="4409697491990005945">Ränder</translation>
 <translation id="4410545552906060960">Anstelle eines Passworts können Sie eine Nummer (PIN) zum Entsperren Ihres Geräts verwenden. Die PIN kann später unter "Einstellungen" festgelegt werden.</translation>
@@ -3965,6 +3967,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6326855256003666642">Keepalive-Zahl</translation>
 <translation id="632707535499064463"><ph name="ORGANIZATION_NAME" /> verlangt, dass Sie dieses Gerät vor Ablauf der Frist neu starten.</translation>
 <translation id="6327785803543103246">Web-Proxy Autodiscovery</translation>
+<translation id="6331566915566907158">Helfen, die Funktionen und die Leistung von Chrome OS zu verbessern</translation>
 <translation id="6333064448949140209">Datei wird zur Fehlerbehebung an Google gesendet</translation>
 <translation id="6339668969738228384">Neues Profil für <ph name="USER_EMAIL_ADDRESS" /> erstellen</translation>
 <translation id="6340017061976355871">Keine Verbindung mit dem Server möglich. Bitte überprüfen Sie Ihre Netzwerkverbindung und versuchen Sie es noch einmal. Sollte das Problem weiterhin bestehen, starten Sie Ihr Chromebook neu.</translation>
@@ -4923,6 +4926,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7669825497510425694">{NUM_ATTEMPTS,plural, =1{Falsche PIN. Sie haben noch einen Eingabeversuch.}other{Falsche PIN. Sie haben noch # Eingabeversuche.}}</translation>
 <translation id="7671130400130574146">Titelleiste und Ränder des Systems verwenden</translation>
 <translation id="767127784612208024">Tippen, um Zurücksetzen zu bestätigen</translation>
+<translation id="767147716926917172">Diagnose- und Nutzungsdaten automatisch an Google senden</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" /> auf <ph name="PAGE_TITLE" />.</translation>
 <translation id="7676867886086876795">Ihre Spracheingaben werden an Google gesendet, damit sie in das entsprechende Textfeld eingetragen werden können.</translation>
 <translation id="7678280409648629969">Nach dem Verlassen des Inkognitomodus werden Anmeldedaten in Chrome gespeichert. Hierdurch können Sie Touch ID später wieder mit dieser Website verwenden.</translation>

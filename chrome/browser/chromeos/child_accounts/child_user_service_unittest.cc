@@ -19,6 +19,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/browser_task_environment.h"
+#include "extensions/common/constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -98,7 +99,7 @@ TEST_F(PerAppTimeLimitsTest, PauseAndResumeWebActivity) {
   EnableWebTimeLimits();
   EXPECT_FALSE(service()->WebTimeLimitReached());
 
-  const std::string app_id = "iniodglblcgmngkgdipeiclkdjjpnlbn";
+  const std::string app_id = extension_misc::kChromeAppId;
   service()->PauseWebActivity(app_id);
   EXPECT_TRUE(service()->WebTimeLimitReached());
 
@@ -111,7 +112,7 @@ TEST_F(PerAppTimeLimitsTest, PauseWebActivityTwice) {
   EnableWebTimeLimits();
   EXPECT_FALSE(service()->WebTimeLimitReached());
 
-  const std::string app_id = "iniodglblcgmngkgdipeiclkdjjpnlbn";
+  const std::string app_id = extension_misc::kChromeAppId;
   service()->PauseWebActivity(app_id);
   EXPECT_TRUE(service()->WebTimeLimitReached());
 
@@ -123,7 +124,7 @@ TEST_F(PerAppTimeLimitsTest, ResumeWebActivityTwice) {
   EnableWebTimeLimits();
   EXPECT_FALSE(service()->WebTimeLimitReached());
 
-  const std::string app_id = "iniodglblcgmngkgdipeiclkdjjpnlbn";
+  const std::string app_id = extension_misc::kChromeAppId;
   service()->ResumeWebActivity(app_id);
 
   EXPECT_FALSE(service()->WebTimeLimitReached());
@@ -133,6 +134,20 @@ TEST_F(PerAppTimeLimitsTest, ResumeWebActivityTwice) {
 
   EXPECT_FALSE(service()->WebTimeLimitReached());
   EXPECT_EQ(base::TimeDelta(), service()->GetWebTimeLimit());
+}
+
+TEST_F(PerAppTimeLimitsTest, WebAppsDontTriggerPauseOrResumeWebActivity) {
+  EnableWebTimeLimits();
+  EXPECT_FALSE(service()->WebTimeLimitReached());
+
+  const std::string chrome_app_id = extension_misc::kChromeAppId;
+  service()->PauseWebActivity(chrome_app_id);
+
+  EXPECT_TRUE(service()->WebTimeLimitReached());
+
+  const std::string web_app_id = "iniodglblcgmngkgdipeiclkdjjpnlbn";
+  service()->ResumeWebActivity(web_app_id);
+  EXPECT_TRUE(service()->WebTimeLimitReached());
 }
 
 }  // namespace chromeos

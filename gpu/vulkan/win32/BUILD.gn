@@ -18,13 +18,18 @@ component("win32") {
   sources = [
     "vulkan_implementation_win32.cc",
     "vulkan_implementation_win32.h",
+    "vulkan_surface_win32.cc",
+    "vulkan_surface_win32.h",
   ]
 
   defines = [ "IS_VULKAN_WIN32_IMPL" ]
 
   public_configs = [ ":vulkan_win32" ]
 
-  deps = [ "//ui/gfx" ]
+  deps = [
+    "//base/util/type_safety",
+    "//ui/gfx",
+  ]
 
   public_deps = [
     "//base",

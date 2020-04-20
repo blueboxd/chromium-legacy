@@ -522,7 +522,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void SetShowingContextMenu(bool showing) override;
   base::UnguessableToken GetAudioGroupId() override;
   bool CompletedFirstVisuallyNonEmptyPaint() override;
-  ukm::SourceId GetLastCommittedSourceId() override;
   void UpdateFaviconURL(
       RenderFrameHost* source,
       std::vector<blink::mojom::FaviconURLPtr> candidates) override;
@@ -824,7 +823,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   // RenderWidgetHostDelegate --------------------------------------------------
 
-  ukm::SourceId GetUkmSourceIdForLastCommittedSource() const override;
   ukm::SourceId GetUkmSourceIdForLastCommittedSourceIncludingSameDocument()
       const override;
   void SetTopControlsShownRatio(RenderWidgetHostImpl* render_widget_host,
@@ -1619,6 +1617,13 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // changes.
   void UpdateVisibilityAndNotifyPageAndView(Visibility new_visibility);
 
+  // Returns UKM source id for the currently displayed page.
+  // Intentionally kept private, prefer using
+  // render_frame_host->GetPageUkmSourceId() if you already have a
+  // |render_frame_host| reference or GetMainFrame()->GetPageUkmSourceId()
+  // if you don't.
+  ukm::SourceId GetCurrentPageUkmSourceId() override;
+
   // Data for core operation ---------------------------------------------------
 
   // Delegate for notifying our owner about stuff. Not owned by us.
@@ -1731,9 +1736,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // The last published theme color.
   base::Optional<SkColor> last_sent_theme_color_;
 
-  // SourceId for current page from the last committed cross-document
-  // navigation.
-  ukm::SourceId last_committed_source_id_ = ukm::kInvalidSourceId;
   // SourceId of the last committed navigation, either a cross-document or
   // same-document navigation.
   ukm::SourceId last_committed_source_id_including_same_document_ =

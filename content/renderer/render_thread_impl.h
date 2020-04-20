@@ -198,10 +198,7 @@ class CONTENT_EXPORT RenderThreadImpl
   bool IsGpuMemoryBufferCompositorResourcesEnabled() override;
   bool IsElasticOverscrollEnabled() override;
   bool IsUseZoomForDSFEnabled() override;
-  scoped_refptr<base::SingleThreadTaskRunner>
-  GetCompositorMainThreadTaskRunner() override;
-  scoped_refptr<base::SingleThreadTaskRunner>
-  GetCompositorImplThreadTaskRunner() override;
+  bool IsSingleThreaded() override;
   scoped_refptr<base::SingleThreadTaskRunner> GetCleanupTaskRunner() override;
   blink::scheduler::WebThreadScheduler* GetWebMainThreadScheduler() override;
   cc::TaskGraphRunner* GetTaskGraphRunner() override;
@@ -218,6 +215,8 @@ class CONTENT_EXPORT RenderThreadImpl
 #endif
 
   bool IsThreadedAnimationEnabled();
+  scoped_refptr<base::SingleThreadTaskRunner>
+  GetCompositorMainThreadTaskRunner();
 
   // viz::mojom::CompositingModeWatcher implementation.
   void CompositingModeFallbackToSoftware() override;

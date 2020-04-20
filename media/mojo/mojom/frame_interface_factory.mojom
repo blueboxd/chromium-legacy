@@ -4,8 +4,6 @@
 
 module media.mojom;
 
-[EnableIf=enable_cdm_proxy]
-import "media/mojo/mojom/cdm_proxy.mojom";
 import "media/mojo/mojom/cdm_storage.mojom";
 import "media/mojo/mojom/provision_fetcher.mojom";
 import "mojo/public/mojom/base/generic_pending_receiver.mojom";
@@ -19,10 +17,6 @@ interface FrameInterfaceFactory {
   // Binds the CdmStorage for the frame. This requires that the frame have
   // CDM storage available.
   CreateCdmStorage(pending_receiver<CdmStorage> cdm_storage);
-
-  /// Binds the CdmProxy for the frame.
-  [EnableIf=enable_cdm_proxy]
-  CreateCdmProxy(pending_receiver<CdmProxy> cdm_proxy);
 
   // Binds a generic media frame-bound interface. This is to allow //content
   // embedders to provide additional interfaces.

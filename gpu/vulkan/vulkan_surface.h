@@ -12,6 +12,7 @@
 #include "gpu/vulkan/vulkan_export.h"
 #include "gpu/vulkan/vulkan_swap_chain.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/overlay_transform.h"
 #include "ui/gfx/swap_result.h"
 
@@ -32,6 +33,7 @@ class VULKAN_EXPORT VulkanSurface {
   };
 
   VulkanSurface(VkInstance vk_instance,
+                gfx::AcceleratedWidget accelerated_widget,
                 VkSurfaceKHR surface,
                 bool enforce_protected_memory);
 
@@ -53,6 +55,9 @@ class VULKAN_EXPORT VulkanSurface {
   // See VkSwapchainCreateInfoKHR::preTransform for detail.
   virtual bool Reshape(const gfx::Size& size, gfx::OverlayTransform transform);
 
+  gfx::AcceleratedWidget accelerated_widget() const {
+    return accelerated_widget_;
+  }
   VulkanSwapChain* swap_chain() const { return swap_chain_.get(); }
   uint32_t swap_chain_generation() const { return swap_chain_generation_; }
   const gfx::Size& image_size() const { return image_size_; }
@@ -65,6 +70,7 @@ class VULKAN_EXPORT VulkanSurface {
 
   const VkInstance vk_instance_;
 
+  const gfx::AcceleratedWidget accelerated_widget_;
   VkSurfaceKHR surface_ = VK_NULL_HANDLE;
   VkSurfaceFormatKHR surface_format_ = {};
   VulkanDeviceQueue* device_queue_ = nullptr;

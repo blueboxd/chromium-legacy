@@ -1050,12 +1050,6 @@ void CdmAdapter::RequestStorageId(uint32_t version) {
                                        weak_factory_.GetWeakPtr()));
 }
 
-cdm::CdmProxy* CdmAdapter::RequestCdmProxy(cdm::CdmProxyClient* client) {
-  DVLOG(3) << __func__;
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  return nullptr;
-}
-
 void CdmAdapter::OnStorageIdObtained(uint32_t version,
                                      const std::vector<uint8_t>& storage_id) {
   DVLOG(2) << __func__ << ": version = " << version;

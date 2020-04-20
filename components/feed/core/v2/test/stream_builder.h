@@ -51,6 +51,15 @@ feedstore::Record MakeRecord(feedstore::StreamData stream_data);
 //    |-Content 1
 std::vector<feedstore::DataOperation> MakeTypicalStreamOperations();
 std::unique_ptr<StreamModelUpdateRequest> MakeTypicalInitialModelState(
+    int first_cluster_id = 0,
+    base::Time last_added_time = kTestTimeEpoch);
+// Root
+// |-Cluster 2
+// |  |-Content 2
+// |-Cluster 3
+//    |-Content 3
+std::unique_ptr<StreamModelUpdateRequest> MakeTypicalNextPageState(
+    int page_number = 2,
     base::Time last_added_time = kTestTimeEpoch);
 }  // namespace feed
 

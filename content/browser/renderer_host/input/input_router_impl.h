@@ -27,9 +27,9 @@
 #include "content/common/input/input_handler.mojom.h"
 #include "content/common/widget.mojom.h"
 #include "content/public/browser/native_web_keyboard_event.h"
-#include "content/public/common/input_event_ack_source.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
 
 namespace ui {
 class LatencyInfo;
@@ -137,17 +137,18 @@ class CONTENT_EXPORT InputRouterImpl : public InputRouter,
   void SendTouchEventImmediately(
       const TouchEventWithLatencyInfo& touch_event) override;
   void OnTouchEventAck(const TouchEventWithLatencyInfo& event,
-                       InputEventAckSource ack_source,
-                       InputEventAckState ack_result) override;
+                       blink::mojom::InputEventResultSource ack_source,
+                       blink::mojom::InputEventResultState ack_result) override;
   void OnFilteringTouchEvent(const blink::WebTouchEvent& touch_event) override;
   void FlushDeferredGestureQueue() override;
 
   // GestureEventFilterClient
   void SendGestureEventImmediately(
       const GestureEventWithLatencyInfo& gesture_event) override;
-  void OnGestureEventAck(const GestureEventWithLatencyInfo& event,
-                         InputEventAckSource ack_source,
-                         InputEventAckState ack_result) override;
+  void OnGestureEventAck(
+      const GestureEventWithLatencyInfo& event,
+      blink::mojom::InputEventResultSource ack_source,
+      blink::mojom::InputEventResultState ack_result) override;
 
   // FlingControllerEventSenderClient
   void SendGeneratedWheelEvent(
@@ -161,9 +162,10 @@ class CONTENT_EXPORT InputRouterImpl : public InputRouter,
       const MouseWheelEventWithLatencyInfo& touch_event,
       MouseWheelEventQueueClient::MouseWheelEventHandledCallback callback)
       override;
-  void OnMouseWheelEventAck(const MouseWheelEventWithLatencyInfo& event,
-                            InputEventAckSource ack_source,
-                            InputEventAckState ack_result) override;
+  void OnMouseWheelEventAck(
+      const MouseWheelEventWithLatencyInfo& event,
+      blink::mojom::InputEventResultSource ack_source,
+      blink::mojom::InputEventResultState ack_result) override;
   void ForwardGestureEventWithLatencyInfo(
       const blink::WebGestureEvent& gesture_event,
       const ui::LatencyInfo& latency_info) override;
@@ -175,9 +177,10 @@ class CONTENT_EXPORT InputRouterImpl : public InputRouter,
       const MouseWheelEventWithLatencyInfo& event,
       TouchpadPinchEventQueueClient::MouseWheelEventHandledCallback callback)
       override;
-  void OnGestureEventForPinchAck(const GestureEventWithLatencyInfo& event,
-                                 InputEventAckSource ack_source,
-                                 InputEventAckState ack_result) override;
+  void OnGestureEventForPinchAck(
+      const GestureEventWithLatencyInfo& event,
+      blink::mojom::InputEventResultSource ack_source,
+      blink::mojom::InputEventResultState ack_result) override;
 
   void FilterAndSendWebInputEvent(
       const blink::WebInputEvent& input_event,
@@ -187,39 +190,39 @@ class CONTENT_EXPORT InputRouterImpl : public InputRouter,
   void KeyboardEventHandled(
       const NativeWebKeyboardEventWithLatencyInfo& event,
       KeyboardEventCallback event_result_callback,
-      InputEventAckSource source,
+      blink::mojom::InputEventResultSource source,
       const ui::LatencyInfo& latency,
-      InputEventAckState state,
+      blink::mojom::InputEventResultState state,
       const base::Optional<ui::DidOverscrollParams>& overscroll,
       const base::Optional<cc::TouchAction>& touch_action);
   void MouseEventHandled(
       const MouseEventWithLatencyInfo& event,
       MouseEventCallback event_result_callback,
-      InputEventAckSource source,
+      blink::mojom::InputEventResultSource source,
       const ui::LatencyInfo& latency,
-      InputEventAckState state,
+      blink::mojom::InputEventResultState state,
       const base::Optional<ui::DidOverscrollParams>& overscroll,
       const base::Optional<cc::TouchAction>& touch_action);
   void TouchEventHandled(
       const TouchEventWithLatencyInfo& touch_event,
-      InputEventAckSource source,
+      blink::mojom::InputEventResultSource source,
       const ui::LatencyInfo& latency,
-      InputEventAckState state,
+      blink::mojom::InputEventResultState state,
       const base::Optional<ui::DidOverscrollParams>& overscroll,
       const base::Optional<cc::TouchAction>& touch_action);
   void GestureEventHandled(
       const GestureEventWithLatencyInfo& gesture_event,
-      InputEventAckSource source,
+      blink::mojom::InputEventResultSource source,
       const ui::LatencyInfo& latency,
-      InputEventAckState state,
+      blink::mojom::InputEventResultState state,
       const base::Optional<ui::DidOverscrollParams>& overscroll,
       const base::Optional<cc::TouchAction>& touch_action);
   void MouseWheelEventHandled(
       const MouseWheelEventWithLatencyInfo& event,
       MouseWheelEventQueueClient::MouseWheelEventHandledCallback callback,
-      InputEventAckSource source,
+      blink::mojom::InputEventResultSource source,
       const ui::LatencyInfo& latency,
-      InputEventAckState state,
+      blink::mojom::InputEventResultState state,
       const base::Optional<ui::DidOverscrollParams>& overscroll,
       const base::Optional<cc::TouchAction>& touch_action);
 

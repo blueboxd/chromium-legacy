@@ -12,9 +12,9 @@
 #include "content/browser/renderer_host/input/passthrough_touch_event_queue.h"
 #include "content/common/widget.mojom.h"
 #include "content/public/browser/native_web_keyboard_event.h"
-#include "content/public/common/input_event_ack_state.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
 
 namespace content {
 
@@ -37,8 +37,8 @@ class InputRouter {
   // the renderer, then callbacks are *not* run.
   using MouseEventCallback =
       base::OnceCallback<void(const MouseEventWithLatencyInfo& event,
-                              InputEventAckSource ack_source,
-                              InputEventAckState ack_result)>;
+                              blink::mojom::InputEventResultSource ack_source,
+                              blink::mojom::InputEventResultState ack_result)>;
   virtual void SendMouseEvent(const MouseEventWithLatencyInfo& mouse_event,
                               MouseEventCallback event_result_callback) = 0;
 
@@ -47,8 +47,8 @@ class InputRouter {
 
   using KeyboardEventCallback = base::OnceCallback<void(
       const NativeWebKeyboardEventWithLatencyInfo& event,
-      InputEventAckSource ack_source,
-      InputEventAckState ack_result)>;
+      blink::mojom::InputEventResultSource ack_source,
+      blink::mojom::InputEventResultState ack_result)>;
   virtual void SendKeyboardEvent(
       const NativeWebKeyboardEventWithLatencyInfo& key_event,
       KeyboardEventCallback event_result_callback) = 0;

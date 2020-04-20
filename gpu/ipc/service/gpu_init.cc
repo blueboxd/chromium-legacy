@@ -715,6 +715,11 @@ void GpuInit::InitializeVulkan() {
   }
   if (!vulkan_implementation_) {
     if (gpu_preferences_.gr_context_type == gpu::GrContextType::kVulkan) {
+#if defined(OS_FUCHSIA)
+      // Fuchsia uses ANGLE for GL which requires Vulkan, so don't fall
+      // back to GL if Vulkan init fails.
+      LOG(FATAL) << "Vulkan initialization failed";
+#endif
       gpu_preferences_.gr_context_type = gpu::GrContextType::kGL;
     }
     gpu_preferences_.use_vulkan = gpu::VulkanImplementationName::kNone;

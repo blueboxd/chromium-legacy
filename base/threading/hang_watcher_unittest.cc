@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/bind_test_util.h"
@@ -20,22 +21,24 @@
 namespace base {
 namespace {
 
-const base::TimeDelta kTimeout = base::TimeDelta::FromSeconds(10);
-const base::TimeDelta kHangTime = kTimeout + base::TimeDelta::FromSeconds(1);
-
 // Waits on provided WaitableEvent before executing and signals when done.
-class BlockingThread : public PlatformThread::Delegate {
+class BlockingThread : public DelegateSimpleThread::Delegate {
  public:
-  explicit BlockingThread(base::WaitableEvent* unblock_thread)
-      : unblock_thread_(unblock_thread) {}
+  explicit BlockingThread(base::WaitableEvent* unblock_thread,
+                          base::TimeDelta timeout)
+      : thread_(this, "BlockingThread"),
+        unblock_thread_(unblock_thread),
+        timeout_(timeout) {}
 
-  void ThreadMain() override {
+  ~BlockingThread() override = default;
+
+  void Run() override {
     // (Un)Register the thread here instead of in ctor/dtor so that the action
     // happens on the right thread.
     base::ScopedClosureRunner unregister_closure =
         base::HangWatcher::GetInstance()->RegisterThread();
 
-    HangWatchScope scope(kTimeout);
+    HangWatchScope scope(timeout_);
     wait_until_entered_scope_.Signal();
 
     unblock_thread_->Wait();
@@ -44,11 +47,20 @@ class BlockingThread : public PlatformThread::Delegate {
 
   bool IsDone() { return run_event_.IsSignaled(); }
 
-  // Block until this thread registered itself for hang watching and has entered
-  // a HangWatchScope.
-  void WaitUntilScopeEntered() { wait_until_entered_scope_.Wait(); }
+  void StartAndWaitForScopeEntered() {
+    thread_.Start();
+    // Block until this thread registered itself for hang watching and has
+    // entered a HangWatchScope.
+    wait_until_entered_scope_.Wait();
+  }
+
+  void Join() { thread_.Join(); }
+
+  PlatformThreadId GetId() { return thread_.tid(); }
 
  private:
+  base::DelegateSimpleThread thread_;
+
   // Will be signaled once the thread is properly registered for watching and
   // scope has been entered.
   WaitableEvent wait_until_entered_scope_;
@@ -57,15 +69,19 @@ class BlockingThread : public PlatformThread::Delegate {
   WaitableEvent run_event_;
 
   base::WaitableEvent* const unblock_thread_;
+
+  base::TimeDelta timeout_;
 };
 
 class HangWatcherTest : public testing::Test {
  public:
+  const base::TimeDelta kTimeout = base::TimeDelta::FromSeconds(10);
+  const base::TimeDelta kHangTime = kTimeout + base::TimeDelta::FromSeconds(1);
+
   HangWatcherTest()
       : hang_watcher_(std::make_unique<HangWatcher>(
             base::BindRepeating(&WaitableEvent::Signal,
-                                base::Unretained(&hang_event_)))),
-        thread_(&unblock_thread_) {
+                                base::Unretained(&hang_event_)))) {
     hang_watcher_->SetAfterMonitorClosureForTesting(base::BindRepeating(
         &WaitableEvent::Signal, base::Unretained(&monitor_event_)));
   }
@@ -74,39 +90,6 @@ class HangWatcherTest : public testing::Test {
     // We're not testing the monitoring loop behavior in this test so we want to
     // trigger monitoring manually.
     hang_watcher_->SetMonitoringPeriodForTesting(base::TimeDelta::Max());
-  }
-
-  void StartBlockedThread() {
-    // Thread has not run yet.
-    ASSERT_FALSE(thread_.IsDone());
-
-    // Start the thread. It will block since |unblock_thread_| was not
-    // signaled yet.
-    ASSERT_TRUE(PlatformThread::Create(0, &thread_, &handle));
-
-    thread_.WaitUntilScopeEntered();
-
-    // Thread registration triggered a call to HangWatcher::Monitor() which
-    // signaled |monitor_event_|. Reset it so it's ready for waiting later on.
-    monitor_event_.Reset();
-  }
-
-  void MonitorHangsAndJoinThread() {
-    // HangWatcher::Monitor() should not be set which would mean a call to
-    // HangWatcher::Monitor() happened and was unacounted for.
-    ASSERT_FALSE(monitor_event_.IsSignaled());
-
-    // Triger a monitoring on HangWatcher thread and verify results.
-    hang_watcher_->SignalMonitorEventForTesting();
-    monitor_event_.Wait();
-
-    unblock_thread_.Signal();
-
-    // Thread is joinable since we signaled |unblock_thread_|.
-    PlatformThread::Join(handle);
-
-    // If thread is done then it signaled.
-    ASSERT_TRUE(thread_.IsDone());
   }
 
  protected:
@@ -127,12 +110,50 @@ class HangWatcherTest : public testing::Test {
 
   // Used to unblock the monitored thread. Signaled from the test main thread.
   WaitableEvent unblock_thread_;
-
-  PlatformThreadHandle handle;
-  BlockingThread thread_;
-
 };
 }  // namespace
+
+class HangWatcherBlockingThreadTest : public HangWatcherTest {
+ protected:
+  HangWatcherBlockingThreadTest() : thread_(&unblock_thread_, kTimeout) {}
+
+  void JoinThread() {
+    unblock_thread_.Signal();
+
+    // Thread is joinable since we signaled |unblock_thread_|.
+    thread_.Join();
+
+    // If thread is done then it signaled.
+    ASSERT_TRUE(thread_.IsDone());
+  }
+
+  void StartBlockedThread() {
+    // Thread has not run yet.
+    ASSERT_FALSE(thread_.IsDone());
+
+    // Start the thread. It will block since |unblock_thread_| was not
+    // signaled yet.
+    thread_.StartAndWaitForScopeEntered();
+
+    // Thread registration triggered a call to HangWatcher::Monitor() which
+    // signaled |monitor_event_|. Reset it so it's ready for waiting later on.
+    monitor_event_.Reset();
+  }
+
+  void MonitorHangsAndJoinThread() {
+    // HangWatcher::Monitor() should not be set which would mean a call to
+    // HangWatcher::Monitor() happened and was unacounted for.
+    ASSERT_FALSE(monitor_event_.IsSignaled());
+
+    // Triger a monitoring on HangWatcher thread and verify results.
+    hang_watcher_->SignalMonitorEventForTesting();
+    monitor_event_.Wait();
+
+    JoinThread();
+  }
+
+  BlockingThread thread_;
+};
 
 TEST_F(HangWatcherTest, NoRegisteredThreads) {
   ASSERT_FALSE(monitor_event_.IsSignaled());
@@ -188,7 +209,7 @@ TEST_F(HangWatcherTest, NestedScopes) {
   ASSERT_EQ(current_hang_watch_state->GetDeadline(), original_deadline);
 }
 
-TEST_F(HangWatcherTest, Hang) {
+TEST_F(HangWatcherBlockingThreadTest, Hang) {
   StartBlockedThread();
 
   // Simulate hang.
@@ -198,11 +219,128 @@ TEST_F(HangWatcherTest, Hang) {
   ASSERT_TRUE(hang_event_.IsSignaled());
 }
 
-TEST_F(HangWatcherTest, NoHang) {
+TEST_F(HangWatcherBlockingThreadTest, NoHang) {
   StartBlockedThread();
 
   MonitorHangsAndJoinThread();
   ASSERT_FALSE(hang_event_.IsSignaled());
+}
+
+class HangWatcherSnapshotTest : public testing::Test {
+ protected:
+  void TriggerMonitorAndWaitForCompletion() {
+    monitor_event_.Reset();
+    hang_watcher_->SignalMonitorEventForTesting();
+    monitor_event_.Wait();
+  }
+
+  // Verify that a capture takes place and that at the time of the capture the
+  // list of hung thread ids is correct.
+  void TestIDList(const std::string& id_list) {
+    list_of_hung_thread_ids_during_capture_ = id_list;
+    TriggerMonitorAndWaitForCompletion();
+    ASSERT_EQ(++reference_capture_count_, hang_capture_count_);
+  }
+
+  // Verify that even if hang monitoring takes place no hangs are detected.
+  void ExpectNoCapture() {
+    int old_capture_count = hang_capture_count_;
+    TriggerMonitorAndWaitForCompletion();
+    ASSERT_EQ(old_capture_count, hang_capture_count_);
+  }
+
+  std::string ConcatenateThreadIds(
+      const std::vector<base::PlatformThreadId>& ids) const {
+    std::string result;
+    constexpr char kSeparator{'|'};
+
+    for (PlatformThreadId id : ids) {
+      result += base::NumberToString(id) + kSeparator;
+    }
+
+    return result;
+  }
+
+  // Will be signaled once monitoring took place. Marks the end of the test.
+  WaitableEvent monitor_event_;
+
+  const PlatformThreadId test_thread_id_ = PlatformThread::CurrentId();
+
+  // This is written to by the test main thread and read from the hang watching
+  // thread. It does not need to be protected because access to it is
+  // synchronized by always setting before triggering the execution of the
+  // reading code through HangWatcher::SignalMonitorEventForTesting().
+  std::string list_of_hung_thread_ids_during_capture_;
+
+  // This is written to by from the hang watching thread and read the test main
+  // thread. It does not need to be protected because access to it is
+  // synchronized by always reading  after monitor_event_ has been signaled.
+  int hang_capture_count_ = 0;
+
+  // Increases at the same time as |hang_capture_count_| to test that capture
+  // actually took place.
+  int reference_capture_count_ = 0;
+
+  std::unique_ptr<HangWatcher> hang_watcher_;
+};
+
+TEST_F(HangWatcherSnapshotTest, HungThreadIDs) {
+  // During hang capture the list of hung threads should be populated.
+  hang_watcher_ =
+      std::make_unique<HangWatcher>(base::BindLambdaForTesting([this]() {
+        EXPECT_EQ(hang_watcher_->GrabWatchStateSnapshotForTesting()
+                      .PrepareHungThreadListCrashKey(),
+                  list_of_hung_thread_ids_during_capture_);
+        ++hang_capture_count_;
+      }));
+
+  // When hang capture is over the list should be empty.
+  hang_watcher_->SetAfterMonitorClosureForTesting(
+      base::BindLambdaForTesting([this]() {
+        EXPECT_EQ(hang_watcher_->GrabWatchStateSnapshotForTesting()
+                      .PrepareHungThreadListCrashKey(),
+                  "");
+        monitor_event_.Signal();
+      }));
+
+  // Register the main test thread for hang watching.
+  auto unregister_thread_closure_ = hang_watcher_->RegisterThread();
+
+  BlockingThread blocking_thread(&monitor_event_, base::TimeDelta{});
+  blocking_thread.StartAndWaitForScopeEntered();
+  {
+    // Start a hang watch scope that expires right away. Ensures that
+    // the first monitor will detect a hang. This scope will naturally have a
+    // later deadline than the one in |blocking_thread_| since it was created
+    // after.
+    HangWatchScope expires_instantly(base::TimeDelta{});
+
+    // Hung thread list should contain the id the blocking thread and then the
+    // id of the test main thread since that is the order of increasing
+    // deadline.
+    TestIDList(
+        ConcatenateThreadIds({blocking_thread.GetId(), test_thread_id_}));
+
+    // |expires_instantly| and the scope from |blocking_thread| are still live
+    // but already recorded so should be ignored.
+    ExpectNoCapture();
+
+    // Thread is joinable since we signaled |monitor_event_|. This closes the
+    // scope in |blocking_thread|.
+    blocking_thread.Join();
+
+    // |expires_instantly| is still live but already recorded so should be
+    // ignored.
+    ExpectNoCapture();
+  }
+
+  // All hang watch scopes are over. There should be no capture.
+  ExpectNoCapture();
+
+  // Once all recorded scopes are over creating a new one and monitoring will
+  // trigger a hang detection.
+  HangWatchScope expires_instantly(base::TimeDelta{});
+  TestIDList(ConcatenateThreadIds({test_thread_id_}));
 }
 
 // |HangWatcher| relies on |WaitableEvent::TimedWait| to schedule monitoring
@@ -342,7 +480,11 @@ TEST_F(HangWatchScopeBlockingTest, ScopeBlocksDuringCapture) {
   // Start a hang watch scope that expires in the past already. Ensures that the
   // first monitor will detect a hang.
   {
-    HangWatchScope already_over(base::TimeDelta::FromDays(-1));
+    // Start a hang watch scope that expires immediately . Ensures that
+    // the first monitor will detect a hang.
+    BlockingThread blocking_thread(&capture_started_,
+                                   base::TimeDelta::FromMilliseconds(0));
+    blocking_thread.StartAndWaitForScopeEntered();
 
     // Manually trigger a monitoring.
     hang_watcher_->SignalMonitorEventForTesting();
@@ -352,11 +494,14 @@ TEST_F(HangWatchScopeBlockingTest, ScopeBlocksDuringCapture) {
 
     // Execution will get stuck in this scope because execution does not escape
     // ~HangWatchScope() if a hang capture is under way.
+
+    blocking_thread.Join();
   }
 
   // A hang was in progress so execution should have been blocked in
   // BlockWhileCaptureInProgress() until capture finishes.
   EXPECT_TRUE(completed_capture_);
+  completed_monitoring_.Wait();
 
   // Reset expectations
   completed_monitoring_.Reset();

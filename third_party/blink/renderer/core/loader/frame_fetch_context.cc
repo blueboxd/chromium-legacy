@@ -273,7 +273,7 @@ ResourceFetcher* FrameFetchContext::CreateFetcherForCommittedDocument(
   // frame will be in layout-blocking state until the <body> tag is inserted
   init.initial_throttling_policy =
       ResourceLoadScheduler::ThrottlingPolicy::kTight;
-  init.frame_scheduler = frame->GetFrameScheduler();
+  init.frame_or_worker_scheduler = frame->GetFrameScheduler();
   init.archive = loader.Archive();
   ResourceFetcher* fetcher = MakeGarbageCollected<ResourceFetcher>(init);
   fetcher->SetResourceLoadObserver(

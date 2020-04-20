@@ -209,12 +209,14 @@ base::Optional<feedstore::DataOperation> TranslateDataOperation(
 
 std::unique_ptr<StreamModelUpdateRequest> TranslateWireResponse(
     feedwire::Response response,
+    StreamModelUpdateRequest::Source source,
     base::TimeDelta response_time,
     base::Time current_time) {
   if (response.response_version() != feedwire::Response::FEED_RESPONSE)
     return nullptr;
 
   auto result = std::make_unique<StreamModelUpdateRequest>();
+  result->source = source;
 
   feedwire::FeedResponse* feed_response = response.mutable_feed_response();
   for (auto& wire_data_operation : *feed_response->mutable_data_operation()) {

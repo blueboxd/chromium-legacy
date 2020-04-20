@@ -26,6 +26,10 @@
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"]
   },
+  "loginState": {
+    "channel": "stable",
+    "extension_types": ["login_screen_extension", "extension"]
+  },
   "settingsPrivate": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"]

@@ -4,6 +4,8 @@
 
 #include "device/fido/fido_transport_protocol.h"
 
+#include "base/logging.h"
+
 namespace device {
 
 const char kUsbHumanInterfaceDevice[] = "usb";

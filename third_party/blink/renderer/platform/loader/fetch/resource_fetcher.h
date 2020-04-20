@@ -54,7 +54,7 @@ class DetachableConsoleLogger;
 class DetachableUseCounter;
 class DetachableResourceFetcherProperties;
 class FetchContext;
-class FrameScheduler;
+class FrameOrWorkerScheduler;
 class MHTMLArchive;
 class KURL;
 class Resource;
@@ -260,7 +260,7 @@ class PLATFORM_EXPORT ResourceFetcher
 
   mojom::blink::BlobRegistry* GetBlobRegistry();
 
-  FrameScheduler* GetFrameScheduler();
+  FrameOrWorkerScheduler* GetFrameOrWorkerScheduler();
 
   ResourceLoadPriority ComputeLoadPriorityForTesting(
       ResourceType type,
@@ -275,6 +275,11 @@ class PLATFORM_EXPORT ResourceFetcher
 
   void SetShouldLogRequestAsInvalidInImportedDocument() {
     should_log_request_as_invalid_in_imported_document_ = true;
+  }
+
+  void SetThrottleOptionOverride(
+      ResourceLoadScheduler::ThrottleOptionOverride throttle_option_override) {
+    scheduler_->SetThrottleOptionOverride(throttle_option_override);
   }
 
  private:
@@ -419,7 +424,7 @@ class PLATFORM_EXPORT ResourceFetcher
   std::unique_ptr<HashSet<String>> preloaded_urls_for_test_;
 
   // TODO(altimin): Move FrameScheduler to oilpan.
-  base::WeakPtr<FrameScheduler> frame_scheduler_;
+  base::WeakPtr<FrameOrWorkerScheduler> frame_or_worker_scheduler_;
 
   // Timeout timer for keepalive requests.
   TaskHandle keepalive_loaders_task_handle_;
@@ -493,7 +498,9 @@ struct PLATFORM_EXPORT ResourceFetcherInit final {
   ResourceLoadScheduler::ThrottlingPolicy initial_throttling_policy =
       ResourceLoadScheduler::ThrottlingPolicy::kNormal;
   MHTMLArchive* archive = nullptr;
-  FrameScheduler* frame_scheduler = nullptr;
+  FrameOrWorkerScheduler* frame_or_worker_scheduler = nullptr;
+  ResourceLoadScheduler::ThrottleOptionOverride throttle_option_override =
+      ResourceLoadScheduler::ThrottleOptionOverride::kNone;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceFetcherInit);
 };

@@ -34,10 +34,11 @@ class DistillabilityDriver
   }
 
   // Sets a callback which can be used to determine the security of a page,
-  // to decide whether it can be distilled. DANGEROUS pages are never
-  // distillable.
-  void SetIsDangerousCallback(
-      base::RepeatingCallback<bool(content::WebContents*)> is_dangerous_check);
+  // to decide whether it can be distilled. Only SECURE pages are currently
+  // distillable on Desktop. Android does not check page security status
+  // before distilling.
+  void SetIsSecureCallback(
+      base::RepeatingCallback<bool(content::WebContents*)> is_secure_check);
 
   UMAHelper::DistillabilityDriverTimer& GetTimer() { return timer_; }
 
@@ -67,7 +68,7 @@ class DistillabilityDriver
   UMAHelper::DistillabilityDriverTimer timer_;
 
   content::WebContents* web_contents_;
-  base::RepeatingCallback<bool(content::WebContents*)> is_dangerous_check_;
+  base::RepeatingCallback<bool(content::WebContents*)> is_secure_check_;
 
   base::WeakPtrFactory<DistillabilityDriver> weak_factory_{this};
 

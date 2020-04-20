@@ -95,6 +95,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/redirect_info.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/cpp/content_security_policy/content_security_policy.h"
 #include "services/network/public/cpp/cross_origin_resource_policy.h"
 #include "services/network/public/cpp/features.h"
@@ -1024,6 +1025,9 @@ NavigationRequest::NavigationRequest(
       frame_tree_node->current_frame_host()->GetProcess()->GetID(),
       frame_tree_node->current_frame_host()->GetRoutingID());
 
+  previous_page_load_ukm_source_id_ =
+      frame_tree_node_->current_frame_host()->GetPageUkmSourceId();
+
   // Update the load flags with cache information.
   UpdateLoadFlagsWithCacheFlags(&begin_params_->load_flags,
                                 common_params_->navigation_type,
@@ -1508,6 +1512,10 @@ void NavigationRequest::CreateCoepReporter(
 std::unique_ptr<CrossOriginEmbedderPolicyReporter>
 NavigationRequest::TakeCoepReporter() {
   return std::move(coep_reporter_);
+}
+
+ukm::SourceId NavigationRequest::GetPreviousPageUkmSourceId() {
+  return previous_page_load_ukm_source_id_;
 }
 
 void NavigationRequest::OnRequestRedirected(

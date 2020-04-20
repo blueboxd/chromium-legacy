@@ -160,7 +160,7 @@ class HandledEventCallbackTracker {
   }
 
   void DidHandleEvent(size_t index,
-                      InputEventAckState ack_result,
+                      blink::mojom::InputEventResultState ack_result,
                       const ui::LatencyInfo& latency,
                       std::unique_ptr<ui::DidOverscrollParams> params,
                       base::Optional<cc::TouchAction> touch_action) {
@@ -196,7 +196,8 @@ class MainThreadEventQueueTest : public testing::Test,
     queue_->set_use_raf_fallback_timer(false);
   }
 
-  void HandleEvent(WebInputEvent& event, InputEventAckState ack_result) {
+  void HandleEvent(WebInputEvent& event,
+                   blink::mojom::InputEventResultState ack_result) {
     base::AutoReset<bool> in_handle_event(&handler_callback_->handling_event_,
                                           true);
     queue_->HandleEvent(
@@ -256,8 +257,8 @@ class MainThreadEventQueueTest : public testing::Test,
       return false;
     std::unique_ptr<HandledTask> handled_event(new HandledEvent(event));
     handled_tasks_.push_back(std::move(handled_event));
-    std::move(callback).Run(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, latency,
-                            nullptr, base::nullopt);
+    std::move(callback).Run(blink::mojom::InputEventResultState::kNotConsumed,
+                            latency, nullptr, base::nullopt);
     return true;
   }
   void SetNeedsMainFrame() override { needs_main_frame_ = true; }
@@ -303,7 +304,7 @@ TEST_F(MainThreadEventQueueTest, ClientDoesntHandleInputEvent) {
   event.MovePoint(0, 20, 20);
   WebMouseWheelEvent event2 = SyntheticWebMouseWheelEventBuilder::Build(
       10, 10, 0, 53, 0, ui::ScrollGranularity::kScrollByPixel);
-  HandleEvent(event2, INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  HandleEvent(event2, blink::mojom::InputEventResultState::kNotConsumed);
   RunPendingTasksWithSimulatedRaf();
 
   std::vector<ReceivedCallback> received = GetAndResetCallbackResults();
@@ -340,7 +341,7 @@ TEST_F(MainThreadEventQueueTest, NonBlockingWheel) {
       .Times(0);
 
   for (WebMouseWheelEvent& event : kEvents)
-    HandleEvent(event, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+    HandleEvent(event, blink::mojom::InputEventResultState::kSetNonBlocking);
 
   EXPECT_EQ(2u, event_queue().size());
   EXPECT_FALSE(main_task_runner_->HasPendingTask());
@@ -434,7 +435,7 @@ TEST_F(MainThreadEventQueueTest, NonBlockingTouch) {
   kEvents[3].MovePoint(0, 35, 35);
 
   for (SyntheticWebTouchEvent& event : kEvents)
-    HandleEvent(event, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+    HandleEvent(event, blink::mojom::InputEventResultState::kSetNonBlocking);
 
   EXPECT_EQ(3u, event_queue().size());
   EXPECT_TRUE(main_task_runner_->HasPendingTask());
@@ -523,10 +524,11 @@ TEST_F(MainThreadEventQueueTest, BlockingTouch) {
       .Times(3);
   {
     // Ensure that coalescing takes place.
-    HandleEvent(kEvents[0], INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
-    HandleEvent(kEvents[1], INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-    HandleEvent(kEvents[2], INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-    HandleEvent(kEvents[3], INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+    HandleEvent(kEvents[0],
+                blink::mojom::InputEventResultState::kSetNonBlocking);
+    HandleEvent(kEvents[1], blink::mojom::InputEventResultState::kNotConsumed);
+    HandleEvent(kEvents[2], blink::mojom::InputEventResultState::kNotConsumed);
+    HandleEvent(kEvents[3], blink::mojom::InputEventResultState::kNotConsumed);
 
     EXPECT_EQ(2u, event_queue().size());
     EXPECT_TRUE(main_task_runner_->HasPendingTask());
@@ -551,9 +553,9 @@ TEST_F(MainThreadEventQueueTest, BlockingTouch) {
               last_touch_event->unique_touch_event_id);
   }
 
-  HandleEvent(kEvents[1], INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
-  HandleEvent(kEvents[2], INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
-  HandleEvent(kEvents[3], INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+  HandleEvent(kEvents[1], blink::mojom::InputEventResultState::kSetNonBlocking);
+  HandleEvent(kEvents[2], blink::mojom::InputEventResultState::kSetNonBlocking);
+  HandleEvent(kEvents[3], blink::mojom::InputEventResultState::kSetNonBlocking);
   EXPECT_EQ(1u, event_queue().size());
   RunPendingTasksWithSimulatedRaf();
   EXPECT_THAT(GetAndResetCallbackResults(),
@@ -581,10 +583,14 @@ TEST_F(MainThreadEventQueueTest, InterleavedEvents) {
   EXPECT_FALSE(main_task_runner_->HasPendingTask());
   EXPECT_EQ(0u, event_queue().size());
 
-  HandleEvent(kWheelEvents[0], INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
-  HandleEvent(kTouchEvents[0], INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
-  HandleEvent(kWheelEvents[1], INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
-  HandleEvent(kTouchEvents[1], INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+  HandleEvent(kWheelEvents[0],
+              blink::mojom::InputEventResultState::kSetNonBlocking);
+  HandleEvent(kTouchEvents[0],
+              blink::mojom::InputEventResultState::kSetNonBlocking);
+  HandleEvent(kWheelEvents[1],
+              blink::mojom::InputEventResultState::kSetNonBlocking);
+  HandleEvent(kTouchEvents[1],
+              blink::mojom::InputEventResultState::kSetNonBlocking);
 
   EXPECT_EQ(2u, event_queue().size());
   EXPECT_FALSE(main_task_runner_->HasPendingTask());
@@ -652,11 +658,13 @@ TEST_F(MainThreadEventQueueTest, RafAlignedMouseInput) {
   // then a discrete event. The last discrete event should flush the
   // continuous events so the aren't aligned to rAF and are processed
   // immediately.
-  HandleEvent(mouseDown, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
-  HandleEvent(mouseMove, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
-  HandleEvent(wheelEvents[0], INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
-  HandleEvent(wheelEvents[1], INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
-  HandleEvent(mouseUp, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+  HandleEvent(mouseDown, blink::mojom::InputEventResultState::kSetNonBlocking);
+  HandleEvent(mouseMove, blink::mojom::InputEventResultState::kSetNonBlocking);
+  HandleEvent(wheelEvents[0],
+              blink::mojom::InputEventResultState::kSetNonBlocking);
+  HandleEvent(wheelEvents[1],
+              blink::mojom::InputEventResultState::kSetNonBlocking);
+  HandleEvent(mouseUp, blink::mojom::InputEventResultState::kSetNonBlocking);
 
   EXPECT_EQ(4u, event_queue().size());
   EXPECT_TRUE(main_task_runner_->HasPendingTask());
@@ -670,8 +678,9 @@ TEST_F(MainThreadEventQueueTest, RafAlignedMouseInput) {
 
   // Simulate the rAF running before the PostTask occurs. The rAF
   // will consume everything.
-  HandleEvent(mouseDown, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
-  HandleEvent(wheelEvents[0], INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+  HandleEvent(mouseDown, blink::mojom::InputEventResultState::kSetNonBlocking);
+  HandleEvent(wheelEvents[0],
+              blink::mojom::InputEventResultState::kSetNonBlocking);
   EXPECT_EQ(2u, event_queue().size());
   EXPECT_TRUE(needs_main_frame_);
   RunSimulatedRafOnce();
@@ -685,11 +694,14 @@ TEST_F(MainThreadEventQueueTest, RafAlignedMouseInput) {
   // Simulate event consumption but no rAF signal. The mouse wheel events
   // should still be in the queue.
   handled_tasks_.clear();
-  HandleEvent(mouseDown, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
-  HandleEvent(wheelEvents[0], INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
-  HandleEvent(mouseUp, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
-  HandleEvent(wheelEvents[2], INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
-  HandleEvent(wheelEvents[0], INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+  HandleEvent(mouseDown, blink::mojom::InputEventResultState::kSetNonBlocking);
+  HandleEvent(wheelEvents[0],
+              blink::mojom::InputEventResultState::kSetNonBlocking);
+  HandleEvent(mouseUp, blink::mojom::InputEventResultState::kSetNonBlocking);
+  HandleEvent(wheelEvents[2],
+              blink::mojom::InputEventResultState::kSetNonBlocking);
+  HandleEvent(wheelEvents[0],
+              blink::mojom::InputEventResultState::kSetNonBlocking);
   EXPECT_EQ(5u, event_queue().size());
   EXPECT_TRUE(needs_main_frame_);
   main_task_runner_->RunUntilIdle();
@@ -725,7 +737,7 @@ TEST_F(MainThreadEventQueueTest, RafAlignedTouchInput) {
   // continuous events so the aren't aligned to rAF and are processed
   // immediately.
   for (SyntheticWebTouchEvent& event : kEvents)
-    HandleEvent(event, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+    HandleEvent(event, blink::mojom::InputEventResultState::kSetNonBlocking);
 
   EXPECT_EQ(3u, event_queue().size());
   EXPECT_TRUE(main_task_runner_->HasPendingTask());
@@ -739,8 +751,8 @@ TEST_F(MainThreadEventQueueTest, RafAlignedTouchInput) {
 
   // Simulate the rAF running before the PostTask occurs. The rAF
   // will consume everything.
-  HandleEvent(kEvents[0], INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
-  HandleEvent(kEvents[1], INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+  HandleEvent(kEvents[0], blink::mojom::InputEventResultState::kSetNonBlocking);
+  HandleEvent(kEvents[1], blink::mojom::InputEventResultState::kSetNonBlocking);
   EXPECT_EQ(2u, event_queue().size());
   EXPECT_TRUE(needs_main_frame_);
   RunSimulatedRafOnce();
@@ -754,8 +766,8 @@ TEST_F(MainThreadEventQueueTest, RafAlignedTouchInput) {
   // Simulate event consumption but no rAF signal. The touch events
   // should still be in the queue.
   handled_tasks_.clear();
-  HandleEvent(kEvents[0], INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
-  HandleEvent(kEvents[1], INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+  HandleEvent(kEvents[0], blink::mojom::InputEventResultState::kSetNonBlocking);
+  HandleEvent(kEvents[1], blink::mojom::InputEventResultState::kSetNonBlocking);
   EXPECT_EQ(2u, event_queue().size());
   EXPECT_TRUE(needs_main_frame_);
   main_task_runner_->RunUntilIdle();
@@ -771,7 +783,7 @@ TEST_F(MainThreadEventQueueTest, RafAlignedTouchInput) {
   kEvents[1].touch_start_or_first_touch_move = true;
 
   for (SyntheticWebTouchEvent& event : kEvents)
-    HandleEvent(event, INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+    HandleEvent(event, blink::mojom::InputEventResultState::kNotConsumed);
 
   EXPECT_EQ(3u, event_queue().size());
   EXPECT_TRUE(main_task_runner_->HasPendingTask());
@@ -800,11 +812,11 @@ TEST_F(MainThreadEventQueueTest, RafAlignedTouchInputCoalescedMoves) {
   {
     // Send a non-blocking input event and then blocking  event.
     // The events should coalesce together.
-    HandleEvent(kEvents[0], INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+    HandleEvent(kEvents[0], blink::mojom::InputEventResultState::kNotConsumed);
     EXPECT_EQ(1u, event_queue().size());
     EXPECT_FALSE(main_task_runner_->HasPendingTask());
     EXPECT_TRUE(needs_main_frame_);
-    HandleEvent(kEvents[1], INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+    HandleEvent(kEvents[1], blink::mojom::InputEventResultState::kNotConsumed);
     EXPECT_EQ(1u, event_queue().size());
     EXPECT_FALSE(main_task_runner_->HasPendingTask());
     EXPECT_TRUE(needs_main_frame_);
@@ -821,11 +833,11 @@ TEST_F(MainThreadEventQueueTest, RafAlignedTouchInputCoalescedMoves) {
 
   // Send a non-cancelable ack required event, and then a non-ack
   // required event they should be coalesced together.
-  HandleEvent(kEvents[0], INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  HandleEvent(kEvents[0], blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_EQ(1u, event_queue().size());
   EXPECT_FALSE(main_task_runner_->HasPendingTask());
   EXPECT_TRUE(needs_main_frame_);
-  HandleEvent(kEvents[1], INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+  HandleEvent(kEvents[1], blink::mojom::InputEventResultState::kSetNonBlocking);
   EXPECT_EQ(1u, event_queue().size());
   EXPECT_FALSE(main_task_runner_->HasPendingTask());
   EXPECT_TRUE(needs_main_frame_);
@@ -837,11 +849,11 @@ TEST_F(MainThreadEventQueueTest, RafAlignedTouchInputCoalescedMoves) {
 
   // Send a non-ack required event, and then a non-cancelable ack
   // required event they should be coalesced together.
-  HandleEvent(kEvents[1], INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+  HandleEvent(kEvents[1], blink::mojom::InputEventResultState::kSetNonBlocking);
   EXPECT_EQ(1u, event_queue().size());
   EXPECT_FALSE(main_task_runner_->HasPendingTask());
   EXPECT_TRUE(needs_main_frame_);
-  HandleEvent(kEvents[0], INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  HandleEvent(kEvents[0], blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_EQ(1u, event_queue().size());
   EXPECT_FALSE(main_task_runner_->HasPendingTask());
   EXPECT_TRUE(needs_main_frame_);
@@ -870,7 +882,7 @@ TEST_F(MainThreadEventQueueTest, RafAlignedTouchInputThrottlingMoves) {
 
   // Send a non-cancelable touch move and then send it another one. The
   // second one shouldn't go out with the next rAF call and should be throttled.
-  HandleEvent(kEvents[0], INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  HandleEvent(kEvents[0], blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_EQ(1u, event_queue().size());
   EXPECT_FALSE(main_task_runner_->HasPendingTask());
   EXPECT_TRUE(needs_main_frame_);
@@ -878,8 +890,8 @@ TEST_F(MainThreadEventQueueTest, RafAlignedTouchInputThrottlingMoves) {
   EXPECT_THAT(GetAndResetCallbackResults(),
               testing::Each(ReceivedCallback(
                   CallbackReceivedState::kCalledWhileHandlingEvent, false)));
-  HandleEvent(kEvents[0], INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  HandleEvent(kEvents[1], INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  HandleEvent(kEvents[0], blink::mojom::InputEventResultState::kNotConsumed);
+  HandleEvent(kEvents[1], blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_EQ(1u, event_queue().size());
   EXPECT_FALSE(main_task_runner_->HasPendingTask());
   EXPECT_TRUE(needs_main_frame_);
@@ -913,7 +925,7 @@ TEST_F(MainThreadEventQueueTest, LowLatency) {
       .Times(0);
 
   for (SyntheticWebTouchEvent& event : kEvents)
-    HandleEvent(event, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+    HandleEvent(event, blink::mojom::InputEventResultState::kSetNonBlocking);
 
   EXPECT_EQ(2u, event_queue().size());
   EXPECT_TRUE(main_task_runner_->HasPendingTask());
@@ -930,8 +942,9 @@ TEST_F(MainThreadEventQueueTest, LowLatency) {
   WebMouseWheelEvent mouse_wheel = SyntheticWebMouseWheelEventBuilder::Build(
       10, 10, 0, 53, 0, ui::ScrollGranularity::kScrollByPixel);
 
-  HandleEvent(mouse_move, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
-  HandleEvent(mouse_wheel, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+  HandleEvent(mouse_move, blink::mojom::InputEventResultState::kSetNonBlocking);
+  HandleEvent(mouse_wheel,
+              blink::mojom::InputEventResultState::kSetNonBlocking);
 
   EXPECT_EQ(2u, event_queue().size());
   EXPECT_TRUE(main_task_runner_->HasPendingTask());
@@ -945,7 +958,7 @@ TEST_F(MainThreadEventQueueTest, LowLatency) {
   // Now turn off low latency mode.
   queue_->SetNeedsLowLatency(false);
   for (SyntheticWebTouchEvent& event : kEvents)
-    HandleEvent(event, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+    HandleEvent(event, blink::mojom::InputEventResultState::kSetNonBlocking);
 
   EXPECT_EQ(2u, event_queue().size());
   EXPECT_TRUE(main_task_runner_->HasPendingTask());
@@ -957,8 +970,9 @@ TEST_F(MainThreadEventQueueTest, LowLatency) {
   EXPECT_EQ(0u, event_queue().size());
   EXPECT_FALSE(main_task_runner_->HasPendingTask());
 
-  HandleEvent(mouse_move, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
-  HandleEvent(mouse_wheel, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+  HandleEvent(mouse_move, blink::mojom::InputEventResultState::kSetNonBlocking);
+  HandleEvent(mouse_wheel,
+              blink::mojom::InputEventResultState::kSetNonBlocking);
 
   EXPECT_EQ(2u, event_queue().size());
   EXPECT_FALSE(main_task_runner_->HasPendingTask());
@@ -981,7 +995,8 @@ TEST_F(MainThreadEventQueueTest, BlockingTouchesDuringFling) {
       .Times(4);
 
   EXPECT_FALSE(last_touch_start_forced_nonblocking_due_to_fling());
-  HandleEvent(kEvents, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING_DUE_TO_FLING);
+  HandleEvent(kEvents,
+              blink::mojom::InputEventResultState::kSetNonBlockingDueToFling);
   RunPendingTasksWithSimulatedRaf();
   EXPECT_THAT(GetAndResetCallbackResults(),
               testing::Each(ReceivedCallback(
@@ -1000,7 +1015,8 @@ TEST_F(MainThreadEventQueueTest, BlockingTouchesDuringFling) {
 
   kEvents.MovePoint(0, 30, 30);
   EXPECT_FALSE(main_task_runner_->HasPendingTask());
-  HandleEvent(kEvents, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING_DUE_TO_FLING);
+  HandleEvent(kEvents,
+              blink::mojom::InputEventResultState::kSetNonBlockingDueToFling);
   EXPECT_FALSE(main_task_runner_->HasPendingTask());
   RunPendingTasksWithSimulatedRaf();
   EXPECT_THAT(GetAndResetCallbackResults(),
@@ -1020,7 +1036,8 @@ TEST_F(MainThreadEventQueueTest, BlockingTouchesDuringFling) {
 
   kEvents.MovePoint(0, 50, 50);
   kEvents.touch_start_or_first_touch_move = false;
-  HandleEvent(kEvents, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING_DUE_TO_FLING);
+  HandleEvent(kEvents,
+              blink::mojom::InputEventResultState::kSetNonBlockingDueToFling);
   RunPendingTasksWithSimulatedRaf();
   EXPECT_THAT(GetAndResetCallbackResults(),
               testing::Each(ReceivedCallback(
@@ -1036,7 +1053,8 @@ TEST_F(MainThreadEventQueueTest, BlockingTouchesDuringFling) {
   EXPECT_TRUE(Equal(kEvents, *last_touch_event));
 
   kEvents.ReleasePoint(0);
-  HandleEvent(kEvents, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING_DUE_TO_FLING);
+  HandleEvent(kEvents,
+              blink::mojom::InputEventResultState::kSetNonBlockingDueToFling);
   RunPendingTasksWithSimulatedRaf();
   EXPECT_THAT(GetAndResetCallbackResults(),
               testing::Each(ReceivedCallback(
@@ -1062,7 +1080,7 @@ TEST_F(MainThreadEventQueueTest, BlockingTouchesOutsideFling) {
               DidHandleInputEventOnMainThread(testing::_, testing::_))
       .Times(4);
 
-  HandleEvent(kEvents, INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  HandleEvent(kEvents, blink::mojom::InputEventResultState::kNotConsumed);
   RunPendingTasksWithSimulatedRaf();
   EXPECT_THAT(GetAndResetCallbackResults(),
               testing::Each(ReceivedCallback(
@@ -1079,7 +1097,7 @@ TEST_F(MainThreadEventQueueTest, BlockingTouchesOutsideFling) {
   EXPECT_TRUE(Equal(kEvents, *last_touch_event));
 
   set_enable_fling_passive_listener_flag(false);
-  HandleEvent(kEvents, INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  HandleEvent(kEvents, blink::mojom::InputEventResultState::kNotConsumed);
   RunPendingTasksWithSimulatedRaf();
   EXPECT_THAT(GetAndResetCallbackResults(),
               testing::Each(ReceivedCallback(
@@ -1096,7 +1114,7 @@ TEST_F(MainThreadEventQueueTest, BlockingTouchesOutsideFling) {
   EXPECT_TRUE(Equal(kEvents, *last_touch_event));
 
   set_enable_fling_passive_listener_flag(true);
-  HandleEvent(kEvents, INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  HandleEvent(kEvents, blink::mojom::InputEventResultState::kNotConsumed);
   RunPendingTasksWithSimulatedRaf();
   EXPECT_THAT(GetAndResetCallbackResults(),
               testing::Each(ReceivedCallback(
@@ -1113,7 +1131,7 @@ TEST_F(MainThreadEventQueueTest, BlockingTouchesOutsideFling) {
   EXPECT_TRUE(Equal(kEvents, *last_touch_event));
 
   kEvents.MovePoint(0, 30, 30);
-  HandleEvent(kEvents, INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  HandleEvent(kEvents, blink::mojom::InputEventResultState::kNotConsumed);
   RunPendingTasksWithSimulatedRaf();
   EXPECT_THAT(GetAndResetCallbackResults(),
               testing::Each(ReceivedCallback(
@@ -1139,8 +1157,8 @@ class MainThreadEventQueueInitializationTest
   bool HandleInputEvent(const blink::WebCoalescedInputEvent& event,
                         const ui::LatencyInfo& latency,
                         HandledEventCallback callback) override {
-    std::move(callback).Run(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, latency,
-                            nullptr, base::nullopt);
+    std::move(callback).Run(blink::mojom::InputEventResultState::kNotConsumed,
+                            latency, nullptr, base::nullopt);
     return true;
   }
 
@@ -1184,12 +1202,12 @@ TEST_F(MainThreadEventQueueTest, QueuingClosureWithRafEvent) {
               DidHandleInputEventOnMainThread(testing::_, testing::_))
       .Times(2);
 
-  HandleEvent(kEvents[0], INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  HandleEvent(kEvents[0], blink::mojom::InputEventResultState::kNotConsumed);
   QueueClosure();
   EXPECT_EQ(3u, event_queue().size());
   EXPECT_TRUE(main_task_runner_->HasPendingTask());
   EXPECT_FALSE(needs_main_frame_);
-  HandleEvent(kEvents[1], INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  HandleEvent(kEvents[1], blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_EQ(4u, event_queue().size());
 
   EXPECT_TRUE(needs_main_frame_);
@@ -1228,10 +1246,10 @@ TEST_F(MainThreadEventQueueTest, QueuingClosuresBetweenEvents) {
               DidHandleInputEventOnMainThread(testing::_, testing::_))
       .Times(2);
 
-  HandleEvent(kEvents[0], INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  HandleEvent(kEvents[0], blink::mojom::InputEventResultState::kNotConsumed);
   QueueClosure();
   QueueClosure();
-  HandleEvent(kEvents[1], INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  HandleEvent(kEvents[1], blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_EQ(4u, event_queue().size());
   EXPECT_FALSE(needs_main_frame_);
   main_task_runner_->RunUntilIdle();
@@ -1271,9 +1289,9 @@ TEST_F(MainThreadEventQueueTest, BlockingTouchMoveBecomesNonBlocking) {
   EXPECT_EQ(WebInputEvent::DispatchType::kBlocking, kEvents[0].dispatch_type);
   EXPECT_EQ(WebInputEvent::DispatchType::kEventNonBlocking,
             kEvents[1].dispatch_type);
-  HandleEvent(kEvents[0], INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  HandleEvent(kEvents[1], INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  HandleEvent(scroll_start, INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  HandleEvent(kEvents[0], blink::mojom::InputEventResultState::kNotConsumed);
+  HandleEvent(kEvents[1], blink::mojom::InputEventResultState::kNotConsumed);
+  HandleEvent(scroll_start, blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_EQ(3u, event_queue().size());
   RunPendingTasksWithSimulatedRaf();
   EXPECT_THAT(GetAndResetCallbackResults(),
@@ -1316,9 +1334,9 @@ TEST_F(MainThreadEventQueueTest, BlockingTouchMoveWithTouchEnd) {
       .Times(3);
   EXPECT_EQ(WebInputEvent::DispatchType::kBlocking, kEvents[0].dispatch_type);
   EXPECT_EQ(WebInputEvent::DispatchType::kBlocking, kEvents[1].dispatch_type);
-  HandleEvent(kEvents[0], INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  HandleEvent(kEvents[1], INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  HandleEvent(scroll_start, INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  HandleEvent(kEvents[0], blink::mojom::InputEventResultState::kNotConsumed);
+  HandleEvent(kEvents[1], blink::mojom::InputEventResultState::kNotConsumed);
+  HandleEvent(scroll_start, blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_EQ(3u, event_queue().size());
   RunPendingTasksWithSimulatedRaf();
   EXPECT_THAT(GetAndResetCallbackResults(),
@@ -1355,20 +1373,20 @@ TEST_F(MainThreadEventQueueTest, UnbufferedDispatchTouchEvent) {
 
   EXPECT_EQ(WebInputEvent::DispatchType::kBlocking, kEvents[0].dispatch_type);
   EXPECT_EQ(WebInputEvent::DispatchType::kBlocking, kEvents[1].dispatch_type);
-  HandleEvent(kEvents[0], INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  HandleEvent(kEvents[0], blink::mojom::InputEventResultState::kNotConsumed);
   queue_->RequestUnbufferedInputEvents();
   EXPECT_EQ(1u, event_queue().size());
   RunPendingTasksWithSimulatedRaf();
   EXPECT_TRUE(needs_low_latency_until_pointer_up());
   EXPECT_FALSE(needs_main_frame_);
 
-  HandleEvent(kEvents[1], INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  HandleEvent(kEvents[1], blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_EQ(1u, event_queue().size());
   RunPendingTasksWithSimulatedRaf();
   EXPECT_TRUE(needs_low_latency_until_pointer_up());
   EXPECT_FALSE(needs_main_frame_);
 
-  HandleEvent(kEvents[2], INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  HandleEvent(kEvents[2], blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_EQ(1u, event_queue().size());
   RunPendingTasksWithSimulatedRaf();
   EXPECT_FALSE(needs_low_latency_until_pointer_up());
@@ -1386,14 +1404,14 @@ TEST_F(MainThreadEventQueueTest, PointerEventsCoalescing) {
   EXPECT_FALSE(main_task_runner_->HasPendingTask());
   EXPECT_EQ(0u, event_queue().size());
 
-  HandleEvent(mouse_move, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
-  HandleEvent(touch_move, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+  HandleEvent(mouse_move, blink::mojom::InputEventResultState::kSetNonBlocking);
+  HandleEvent(touch_move, blink::mojom::InputEventResultState::kSetNonBlocking);
   EXPECT_EQ(4u, event_queue().size());
 
-  HandleEvent(mouse_move, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
-  HandleEvent(touch_move, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
-  HandleEvent(mouse_move, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
-  HandleEvent(touch_move, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+  HandleEvent(mouse_move, blink::mojom::InputEventResultState::kSetNonBlocking);
+  HandleEvent(touch_move, blink::mojom::InputEventResultState::kSetNonBlocking);
+  HandleEvent(mouse_move, blink::mojom::InputEventResultState::kSetNonBlocking);
+  HandleEvent(touch_move, blink::mojom::InputEventResultState::kSetNonBlocking);
   EXPECT_EQ(4u, event_queue().size());
 
   main_task_runner_->RunUntilIdle();
@@ -1415,14 +1433,14 @@ TEST_F(MainThreadEventQueueTest, PointerRawUpdateEvents) {
               DidHandleInputEventOnMainThread(testing::_, testing::_))
       .Times(0);
 
-  HandleEvent(mouse_move, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+  HandleEvent(mouse_move, blink::mojom::InputEventResultState::kSetNonBlocking);
   EXPECT_EQ(1u, event_queue().size());
   RunPendingTasksWithSimulatedRaf();
   EXPECT_EQ(0u, event_queue().size());
   EXPECT_FALSE(needs_main_frame_);
 
   queue_->HasPointerRawUpdateEventHandlers(true);
-  HandleEvent(mouse_move, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+  HandleEvent(mouse_move, blink::mojom::InputEventResultState::kSetNonBlocking);
   EXPECT_EQ(2u, event_queue().size());
   RunPendingTasksWithSimulatedRaf();
   EXPECT_EQ(0u, event_queue().size());
@@ -1432,14 +1450,14 @@ TEST_F(MainThreadEventQueueTest, PointerRawUpdateEvents) {
   SyntheticWebTouchEvent touch_move;
   touch_move.PressPoint(10, 10);
   touch_move.MovePoint(0, 50, 50);
-  HandleEvent(touch_move, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+  HandleEvent(touch_move, blink::mojom::InputEventResultState::kSetNonBlocking);
   EXPECT_EQ(1u, event_queue().size());
   RunPendingTasksWithSimulatedRaf();
   EXPECT_EQ(0u, event_queue().size());
   EXPECT_FALSE(needs_main_frame_);
 
   queue_->HasPointerRawUpdateEventHandlers(true);
-  HandleEvent(touch_move, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+  HandleEvent(touch_move, blink::mojom::InputEventResultState::kSetNonBlocking);
   EXPECT_EQ(2u, event_queue().size());
   RunPendingTasksWithSimulatedRaf();
   EXPECT_EQ(0u, event_queue().size());
@@ -1461,21 +1479,21 @@ TEST_F(MainThreadEventQueueTest, UnbufferedDispatchMouseEvent) {
               DidHandleInputEventOnMainThread(testing::_, testing::_))
       .Times(0);
 
-  HandleEvent(mouse_down, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+  HandleEvent(mouse_down, blink::mojom::InputEventResultState::kSetNonBlocking);
   queue_->RequestUnbufferedInputEvents();
   EXPECT_EQ(1u, event_queue().size());
   RunPendingTasksWithSimulatedRaf();
   EXPECT_TRUE(needs_low_latency_until_pointer_up());
   EXPECT_FALSE(needs_main_frame_);
 
-  HandleEvent(mouse_move, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+  HandleEvent(mouse_move, blink::mojom::InputEventResultState::kSetNonBlocking);
   queue_->RequestUnbufferedInputEvents();
   EXPECT_EQ(1u, event_queue().size());
   RunPendingTasksWithSimulatedRaf();
   EXPECT_TRUE(needs_low_latency_until_pointer_up());
   EXPECT_FALSE(needs_main_frame_);
 
-  HandleEvent(mouse_up, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+  HandleEvent(mouse_up, blink::mojom::InputEventResultState::kSetNonBlocking);
   queue_->RequestUnbufferedInputEvents();
   EXPECT_EQ(1u, event_queue().size());
   RunPendingTasksWithSimulatedRaf();

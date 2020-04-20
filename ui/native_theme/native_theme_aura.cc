@@ -144,7 +144,9 @@ void NativeThemeAura::PaintArrowButton(
     State state,
     ColorScheme color_scheme,
     const ScrollbarArrowExtraParams& arrow) const {
-  SkColor bg_color = kTrackColor;
+  SkColor bg_color = color_scheme == ui::NativeTheme::ColorScheme::kDark
+                         ? SkColorSetRGB(0x42, 0x42, 0x42)
+                         : kTrackColor;
   // Aura-win uses slightly different arrow colors.
   SkColor arrow_color = gfx::kPlaceholderColor;
   switch (state) {
@@ -152,14 +154,22 @@ void NativeThemeAura::PaintArrowButton(
       arrow_color = GetArrowColor(state, color_scheme);
       break;
     case kHovered:
-      bg_color = SkColorSetRGB(0xD2, 0xD2, 0xD2);
+      bg_color = color_scheme == ui::NativeTheme::ColorScheme::kDark
+                     ? SkColorSetRGB(0x4F, 0x4F, 0x4F)
+                     : SkColorSetRGB(0xD2, 0xD2, 0xD2);
       FALLTHROUGH;
     case kNormal:
-      arrow_color = SkColorSetRGB(0x50, 0x50, 0x50);
+      arrow_color = color_scheme == ui::NativeTheme::ColorScheme::kDark
+                        ? SK_ColorWHITE
+                        : SkColorSetRGB(0x50, 0x50, 0x50);
       break;
     case kPressed:
-      bg_color = SkColorSetRGB(0x78, 0x78, 0x78);
-      arrow_color = SK_ColorWHITE;
+      bg_color = color_scheme == ui::NativeTheme::ColorScheme::kDark
+                     ? SkColorSetRGB(0xB1, 0xB1, 0xB1)
+                     : SkColorSetRGB(0x78, 0x78, 0x78);
+      arrow_color = color_scheme == ui::NativeTheme::ColorScheme::kDark
+                        ? SK_ColorBLACK
+                        : SK_ColorWHITE;
       break;
     case kNumStates:
       break;
@@ -209,7 +219,10 @@ void NativeThemeAura::PaintScrollbarTrack(
   // Overlay Scrollbar should never paint a scrollbar track.
   DCHECK(!use_overlay_scrollbars_);
   cc::PaintFlags flags;
-  flags.setColor(kTrackColor);
+  SkColor track_color = color_scheme == ui::NativeTheme::ColorScheme::kDark
+                            ? SkColorSetRGB(0x42, 0x42, 0x42)
+                            : kTrackColor;
+  flags.setColor(track_color);
   canvas->drawIRect(gfx::RectToSkIRect(rect), flags);
 }
 
@@ -313,7 +326,9 @@ void NativeThemeAura::PaintScrollbarThumb(cc::PaintCanvas* canvas,
     else
       thumb_rect.Inset(extra_padding, kThumbPadding);
 
-    thumb_color = SK_ColorBLACK;
+    thumb_color = color_scheme == ui::NativeTheme::ColorScheme::kDark
+                      ? SK_ColorWHITE
+                      : SK_ColorBLACK;
   }
 
   cc::PaintFlags flags;

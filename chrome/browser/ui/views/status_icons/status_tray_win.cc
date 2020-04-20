@@ -59,11 +59,11 @@ class StatusTrayStateChangerProxyImpl : public StatusTrayStateChangerProxy {
     ++pending_requests_;
     worker_thread_.task_runner()->PostTaskAndReply(
         FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             &StatusTrayStateChangerProxyImpl::EnqueueChangeOnWorkerThread,
             icon_id, window),
-        base::Bind(&StatusTrayStateChangerProxyImpl::ChangeDone,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&StatusTrayStateChangerProxyImpl::ChangeDone,
+                       weak_factory_.GetWeakPtr()));
   }
 
  private:

@@ -742,6 +742,16 @@ bool ServiceWorkerGlobalScope::FetchClassicImportedScript(
       script_url, out_response_url, out_source_code, out_cached_meta_data);
 }
 
+ResourceLoadScheduler::ThrottleOptionOverride
+ServiceWorkerGlobalScope::GetThrottleOptionOverride() const {
+  if (is_installing_ && base::FeatureList::IsEnabled(
+                            features::kThrottleInstallingServiceWorker)) {
+    return ResourceLoadScheduler::ThrottleOptionOverride::
+        kStoppableAsThrottleable;
+  }
+  return ResourceLoadScheduler::ThrottleOptionOverride::kNone;
+}
+
 const AtomicString& ServiceWorkerGlobalScope::InterfaceName() const {
   return event_target_names::kServiceWorkerGlobalScope;
 }
@@ -783,6 +793,10 @@ bool ServiceWorkerGlobalScope::HasRelatedFetchEvent(
     const KURL& request_url) const {
   auto it = unresponded_fetch_event_counts_.find(request_url);
   return it != unresponded_fetch_event_counts_.end();
+}
+
+int ServiceWorkerGlobalScope::GetOutstandingThrottledLimit() const {
+  return features::kInstallingServiceWorkerOutstandingThrottledLimit.Get();
 }
 
 void ServiceWorkerGlobalScope::importScripts(const Vector<String>& urls,
@@ -1244,8 +1258,25 @@ void ServiceWorkerGlobalScope::DidHandleContentDeleteEvent(
 
 void ServiceWorkerGlobalScope::SetIsInstalling(bool is_installing) {
   is_installing_ = is_installing;
-  if (is_installing)
+  UpdateFetcherThrottleOptionOverride();
+  if (is_installing) {
+    // Mark the scheduler as "hidden" to enable network throttling while the
+    // service worker is installing.
+    if (base::FeatureList::IsEnabled(
+            features::kThrottleInstallingServiceWorker)) {
+      GetThread()->GetScheduler()->OnLifecycleStateChanged(
+          scheduler::SchedulingLifecycleState::kHidden);
+    }
     return;
+  }
+
+  // Disable any network throttling that was enabled while the service worker
+  // was in the installing state.
+  if (base::FeatureList::IsEnabled(
+          features::kThrottleInstallingServiceWorker)) {
+    GetThread()->GetScheduler()->OnLifecycleStateChanged(
+        scheduler::SchedulingLifecycleState::kNotThrottled);
+  }
 
   // Installing phase is finished; record the stats for the scripts that are
   // stored in Cache storage during installation.

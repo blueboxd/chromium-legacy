@@ -23,6 +23,7 @@ class FilePath;
 
 namespace content {
 class WebContents;
+struct WebPreferences;
 }
 
 namespace weblayer {
@@ -100,6 +101,7 @@ class BrowserImpl : public Browser {
   }
 
   bool GetPasswordEchoEnabled();
+  void SetWebPreferences(content::WebPreferences* prefs);
 
   // Browser:
   Tab* AddTab(std::unique_ptr<Tab> tab) override;

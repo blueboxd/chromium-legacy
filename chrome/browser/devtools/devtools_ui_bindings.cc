@@ -447,8 +447,8 @@ class DevToolsUIBindings::NetworkResourceLoader
     loader_->SetOnResponseStartedCallback(base::BindOnce(
         &NetworkResourceLoader::OnResponseStarted, base::Unretained(this)));
     timer_.Start(FROM_HERE, delay,
-                 base::BindRepeating(&NetworkResourceLoader::DownloadAsStream,
-                                     base::Unretained(this)));
+                 base::BindOnce(&NetworkResourceLoader::DownloadAsStream,
+                                base::Unretained(this)));
   }
 
  private:

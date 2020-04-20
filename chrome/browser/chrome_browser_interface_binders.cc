@@ -225,13 +225,13 @@ void BindDistillabilityService(
       dom_distiller::DistillabilityDriver::FromWebContents(web_contents);
   if (!driver)
     return;
-  driver->SetIsDangerousCallback(
+  driver->SetIsSecureCallback(
       base::BindRepeating([](content::WebContents* contents) {
         // SecurityStateTabHelper uses chrome-specific
-        // GetVisibleSecurityState to determine if a page is DANGEROUS.
+        // GetVisibleSecurityState to determine if a page is SECURE.
         return SecurityStateTabHelper::FromWebContents(contents)
-                   ->GetSecurityLevel() !=
-               security_state::SecurityLevel::DANGEROUS;
+                   ->GetSecurityLevel() ==
+               security_state::SecurityLevel::SECURE;
       }));
   driver->CreateDistillabilityService(std::move(receiver));
 }

@@ -52,9 +52,9 @@ void FontHandler::HandleFetchFontsData(const base::ListValue* args) {
   CHECK(args->GetString(0, &callback_id));
 
   AllowJavascript();
-  content::GetFontListAsync(base::Bind(&FontHandler::FontListHasLoaded,
-                                       weak_ptr_factory_.GetWeakPtr(),
-                                       callback_id));
+  content::GetFontListAsync(base::BindOnce(&FontHandler::FontListHasLoaded,
+                                           weak_ptr_factory_.GetWeakPtr(),
+                                           callback_id));
 }
 
 void FontHandler::FontListHasLoaded(std::string callback_id,

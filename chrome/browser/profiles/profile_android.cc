@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/profiles/profile_key_android.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 
 using base::android::AttachCurrentThread;
@@ -120,6 +121,11 @@ jboolean ProfileAndroid::IsChild(
 
 void ProfileAndroid::Wipe(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   profile_->Wipe();
+}
+
+jlong ProfileAndroid::GetBrowserContextPointer(JNIEnv* env) {
+  return reinterpret_cast<jlong>(
+      static_cast<content::BrowserContext*>(profile_));
 }
 
 // static

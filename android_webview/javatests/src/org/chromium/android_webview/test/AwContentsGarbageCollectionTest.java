@@ -12,8 +12,10 @@ import android.os.ResultReceiver;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 import android.support.test.filters.SmallTest;
+import android.util.Pair;
 import android.webkit.JavascriptInterface;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -26,7 +28,6 @@ import org.chromium.android_webview.test.AwActivityTestRule.TestDependencyFactor
 import org.chromium.base.test.util.Feature;
 import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.browser.WebContentsAccessibility;
-import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentUrlConstants;
@@ -329,20 +330,20 @@ public class AwContentsGarbageCollectionTest {
     private void gcAndCheckAllAwContentsDestroyed() {
         Runtime.getRuntime().gc();
 
-        Criteria criteria = new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                try {
-                    return TestThreadUtils.runOnUiThreadBlocking(() -> {
-                        int count_aw_contents = AwContents.getNativeInstanceCount();
-                        int count_aw_functor = AwGLFunctor.getNativeInstanceCount();
-                        return count_aw_contents <= MAX_IDLE_INSTANCES
-                                && count_aw_functor <= MAX_IDLE_INSTANCES;
-                    });
-                } catch (Exception e) {
-                    return false;
-                }
+        Runnable criteria = () -> {
+            Pair<Integer, Integer> nativeCounts = null;
+            try {
+                nativeCounts = TestThreadUtils.runOnUiThreadBlocking(() -> {
+                    return Pair.create(AwContents.getNativeInstanceCount(),
+                            AwGLFunctor.getNativeInstanceCount());
+                });
+            } catch (Exception e) {
+                Assert.fail(e.toString());
             }
+            Assert.assertThat("AwContents count", nativeCounts.first,
+                    Matchers.lessThanOrEqualTo(MAX_IDLE_INSTANCES));
+            Assert.assertThat("AwGLFunctor count", nativeCounts.second,
+                    Matchers.lessThanOrEqualTo(MAX_IDLE_INSTANCES));
         };
 
         // Depending on a single gc call can make this test flaky. It's possible
@@ -360,6 +361,7 @@ public class AwContentsGarbageCollectionTest {
             }
         }
 
-        Assert.assertTrue(criteria.isSatisfied());
+        // Ensure it passes w/o Assertions.
+        criteria.run();
     }
 }

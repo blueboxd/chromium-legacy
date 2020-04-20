@@ -27,7 +27,10 @@ class PrintJobDatabase {
 
   using DeletePrintJobsCallback = base::OnceCallback<void(bool success)>;
 
-  using GetPrintJobsCallback = base::OnceCallback<void(
+  using GetPrintJobsCallback = base::OnceCallback<
+      void(bool success, std::vector<printing::proto::PrintJobInfo> entries)>;
+
+  using GetPrintJobsFromProtoDatabaseCallback = base::OnceCallback<void(
       bool success,
       std::unique_ptr<std::vector<printing::proto::PrintJobInfo>> entries)>;
 

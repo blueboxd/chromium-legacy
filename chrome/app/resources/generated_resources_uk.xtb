@@ -421,6 +421,11 @@
 <translation id="1555130319947370107">Синій</translation>
 <translation id="1556537182262721003">Не вдалося перемістити каталог розширення в профіль.</translation>
 <translation id="155865706765934889">Сенсорна панель</translation>
+<translation id="1560763881671211335">Адміністратори визначають, до яких сервісів Google користувачі мають доступ, коли входять в обліковий запис G Suite for Education. Адміністратори навчальних закладів зобов'язані надавати або отримувати згоду на використання сервісів неповнолітніми.
+
+    Дані веб-перегляду (зокрема історія, закладки й паролі) зберігатимуться в обліковому записі Family Link, а не навчального закладу.
+
+    Застосовуватимуться ваші налаштування для батьків із Family Link. Якщо ви заблокували додаток або сайт раніше, не потрібно блокувати його знову.</translation>
 <translation id="1566049601598938765">Веб-сайт</translation>
 <translation id="15662109988763471">Вибраний принтер недоступний або його встановлено неправильно. Перевірте принтер або спробуйте вибрати інший.</translation>
 <translation id="1567387640189251553">Після останнього введення пароля було під’єднано іншу клавіатуру. Можливо, це спроба викрасти введені символи.</translation>
@@ -1200,6 +1205,7 @@
 <translation id="258095186877893873">Довго</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (платформа <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Не вдалось отримати квиток Kerberos. Повторіть спробу або зв'яжіться з адміністратором пристрою у своїй організації. (Код помилки: <ph name="ERROR_CODE" />)</translation>
+<translation id="2585013490795742997">Показано 1 результат пошуку для запиту "<ph name="QUERY" />"</translation>
 <translation id="2585724835339714757">Ця вкладка має доступ до вашого екрана.</translation>
 <translation id="2586657967955657006">Буфер обміну</translation>
 <translation id="2586672484245266891">Введіть коротшу URL-адресу</translation>
@@ -1886,6 +1892,7 @@
 <translation id="3498215018399854026">Не вдалося зв’язатися з одним із ваших батьків. Повторіть спробу.</translation>
 <translation id="3500417806337761827">Помилка підключення спільного доступу. Підключено забагато файлообмінників SMB.</translation>
 <translation id="3505030558724226696">Скасувати доступ до пристрою</translation>
+<translation id="3507132249039706973">Стандартний захист увімкнено</translation>
 <translation id="3507421388498836150">Поточні дозволи розширення <ph name="EXTENSION_NAME" /></translation>
 <translation id="3507888235492474624">Шукати пристрої Bluetooth знову</translation>
 <translation id="3508492320654304609">Не вдалося видалити дані для входу</translation>
@@ -3239,6 +3246,7 @@
 <translation id="5352033265844765294">Встановлення позначки часу</translation>
 <translation id="5353252989841766347">Експортувати паролі з Chrome</translation>
 <translation id="5355099869024327351">Дозволити Асистенту показувати сповіщення</translation>
+<translation id="5355191726083956201">Покращений захист увімкнено</translation>
 <translation id="5355926466126177564">Розширення "<ph name="EXTENSION_NAME" />" змінило сторінку, яка відкривається під час пошуку в універсальному вікні пошуку.</translation>
 <translation id="5359910752122114278">1 результат</translation>
 <translation id="5360150013186312835">Показати на панелі інструментів</translation>
@@ -3550,6 +3558,7 @@
 <translation id="577322787686508614">Операцію перегляду заборонено на пристрої <ph name="DEVICE_NAME" />.</translation>
 <translation id="5774295353725270860">Відкрити програму файлів</translation>
 <translation id="577624874850706961">Пошук файлів cookie</translation>
+<translation id="5776858208024364029">Показано результати пошуку (<ph name="NUMBER" />) за запитом "<ph name="QUERY" />"</translation>
 <translation id="5777468213129569553">Відкрити Chrome</translation>
 <translation id="5778747455497889540">Ось навмання згенерований пароль для модуля безпеки, присвоєний вашому комп’ютеру:</translation>
 <translation id="5780011244986845107">Вибрана папка містить файли з конфіденційною інформацією. Надати додатку <ph name="APP_NAME" /> постійний дозвіл на перегляд цієї папки?</translation>
@@ -4106,6 +4115,7 @@
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
+<translation id="6520876759015997832">Результат пошуку <ph name="LIST_POSITION" /> з <ph name="LIST_SIZE" />: <ph name="SEARCH_RESULT_TEXT" />. Натисніть Enter, щоб перейти до розділу.</translation>
 <translation id="652492607360843641">Пристрій під'єднано до такої мережі: <ph name="NETWORK_TYPE" />.</translation>
 <translation id="6527303717912515753">Надіслати</translation>
 <translation id="6528513914570774834">Надіти іншим користувачам цього пристрою доступ до цієї мережі</translation>
@@ -4117,6 +4127,7 @@
 <translation id="6532206849875187177">Безпека та вхід</translation>
 <translation id="6532527800157340614">Не вдалось отримати маркер доступу та ввійти. Перевірте з'єднання з мережею та повторіть спробу.</translation>
 <translation id="6532663472409656417">Зареєстровано підприємством</translation>
+<translation id="6535331821390304775">Завжди дозволяти сайту <ph name="ORIGIN" /> відкривати посилання цього типу у зв'язаному додатку</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Примітка.<ph name="END_BOLD" /> Вмикайте, лише якщо ви знаєте, що робите, або вас попросили це зробити, оскільки збір даних може знизити ефективність.</translation>
 <translation id="6541638731489116978">Цьому сайту заборонено доступ до датчиків руху.</translation>
 <translation id="6545665334409411530">Частота повторів</translation>
@@ -4246,6 +4257,7 @@
 <translation id="6727969043791803658">Під'єднано, акумулятор заряджено на <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="6732801395666424405">Сертифікати не завантажено</translation>
 <translation id="6732900235521116609">Неможливо видалити ярлик</translation>
+<translation id="6734468588183300211">В анонімному режимі сайти не можуть використовувати файли cookie для перегляду ваших дій у веб-переглядачі, зокрема, щоб персоналізувати рекламу. Функції на деяких сайтах можуть не працювати.</translation>
 <translation id="6735304988756581115">Показати файли cookie та інші дані із сайтів...</translation>
 <translation id="6736243959894955139">Адреса</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
@@ -4258,6 +4270,7 @@
 <translation id="674632704103926902">Увімкнути перетягування дотиком</translation>
 <translation id="6748217015615267851">Засіб обробки відео: <ph name="RENDERER_URL" /></translation>
 <translation id="6748465660675848252">Ви можете продовжити, однак буде відновлено лише синхронізовані дані та налаштування. Усі локальні дані буде втрачено.</translation>
+<translation id="6749006854028927059">Сайти не можуть використовувати файли cookie для перегляду ваших дій у веб-переглядачі, зокрема, щоб персоналізувати рекламу. Функції на деяких сайтах можуть не працювати.</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (Анонімний перегляд)</translation>
 <translation id="6757101664402245801">URL-адресу скопійовано</translation>
 <translation id="6758056191028427665">Поділіться з нами своїми враженнями.</translation>
@@ -4349,6 +4362,7 @@
 <translation id="686664946474413495">Температура кольорів</translation>
 <translation id="6871644448911473373">Відповідач OCSP: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">Сервер відхилив введений вами пароль.</translation>
+<translation id="6874170800191969835">Перейдено до результату пошуку "<ph name="SEARCH_RESULT_TEXT" />".</translation>
 <translation id="6876155724392614295">Велосипед</translation>
 <translation id="6876469544038980967">Не корисно</translation>
 <translation id="6878422606530379992">Використання датчиків дозволено</translation>
@@ -4619,6 +4633,7 @@
 <translation id="7235737137505019098">На вашому ключі безпеки замало місця, щоб створити ще один обліковий запис.</translation>
 <translation id="7238643356913091553"><ph name="NETWORK_NAME" />, дeталі</translation>
 <translation id="7240339475467890413">Під’єднатися до нової точки доступу?</translation>
+<translation id="7240847845291869311">Ваша дитина хоче додати обліковий запис G Suite for Education на цей пристрій. У <ph name="LINK_BEGIN" />Примітці про конфіденційність для G Suite for Education<ph name="LINK_END" /> подано пояснення для користувачів і батьків про те, які дані збирає продукт, навіщо це робиться та як вони використовуються.</translation>
 <translation id="7241389281993241388">Увійдіть у <ph name="TOKEN_NAME" />, щоб імпортувати сертифікат клієнта.</translation>
 <translation id="7241443820034350811">Якщо ключ безпеки не вказано в списку, утримуйте його кнопку принаймні 5 секунд.</translation>
 <translation id="7243632151880336635">Очистити та вийти з облікового запису</translation>
@@ -5201,6 +5216,7 @@
 <translation id="7987814697832569482">Завжди підключатися через цю мережу VPN</translation>
 <translation id="7988355189918024273">Увімкнути функції доступності</translation>
 <translation id="7991296728590311172">Налаштування кнопкового доступу</translation>
+<translation id="7992202128769240372">Перевищено обмеження: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="7994350303002908848">Не вдалося встановити Plugin VM. Повторіть спробу або зв'яжіться з адміністратором пристрою у своїй організації. Код помилки: <ph name="ERROR_CODE" />.</translation>
 <translation id="7994702968232966508">Метод EAP</translation>
 <translation id="7997826902155442747">Пріоритет обробки</translation>

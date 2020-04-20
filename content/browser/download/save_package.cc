@@ -260,8 +260,11 @@ void SavePackage::InternalInit() {
 
   download::RecordSavePackageEvent(download::SAVE_PACKAGE_STARTED);
 
+  // TODO(crbug.com/1061899): The code here should take an explicit reference
+  // to the corresponding frame instead of using the current main frame.
   ukm_source_id_ = static_cast<WebContentsImpl*>(web_contents())
-                       ->GetUkmSourceIdForLastCommittedSource();
+                       ->GetMainFrame()
+                       ->GetPageUkmSourceId();
   ukm_download_id_ = download::GetUniqueDownloadId();
   download::DownloadUkmHelper::RecordDownloadStarted(
       ukm_download_id_, ukm_source_id_, download::DownloadContent::TEXT,

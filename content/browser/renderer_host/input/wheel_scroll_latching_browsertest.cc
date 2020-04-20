@@ -175,7 +175,7 @@ IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest, MAYBE_WheelEventTarget) {
                                     ui::LatencyInfo());
 
   // Runs until we get the InputMsgAck callback.
-  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED,
+  EXPECT_EQ(blink::mojom::InputEventResultState::kNotConsumed,
             input_msg_watcher->WaitForAck());
 
   while (ExecuteScriptAndExtractDouble("document.scrollingElement.scrollTop") <
@@ -228,7 +228,8 @@ IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest,
                                     ui::LatencyInfo());
 
   // Runs until we get the UpdateMsgAck callback.
-  EXPECT_EQ(INPUT_EVENT_ACK_STATE_CONSUMED, update_msg_watcher->WaitForAck());
+  EXPECT_EQ(blink::mojom::InputEventResultState::kConsumed,
+            update_msg_watcher->WaitForAck());
 
   EXPECT_EQ(
       0, ExecuteScriptAndExtractDouble("document.scrollingElement.scrollTop"));
@@ -244,7 +245,8 @@ IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest,
                                     ui::LatencyInfo());
 
   // Runs until we get the UpdateMsgAck callbacks.
-  EXPECT_EQ(INPUT_EVENT_ACK_STATE_CONSUMED, update_msg_watcher->WaitForAck());
+  EXPECT_EQ(blink::mojom::InputEventResultState::kConsumed,
+            update_msg_watcher->WaitForAck());
 
   // Wait for the document event listenr to handle the second wheel event.
   while (ExecuteScriptAndExtractInt("documentWheelEventCounter") != 1) {
@@ -387,7 +389,8 @@ IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest,
                                     ui::LatencyInfo());
 
   // Run until we get the callback, then check the target.
-  EXPECT_EQ(INPUT_EVENT_ACK_STATE_CONSUMED, wheel_msg_watcher->WaitForAck());
+  EXPECT_EQ(blink::mojom::InputEventResultState::kConsumed,
+            wheel_msg_watcher->WaitForAck());
   EXPECT_EQ("blueDiv", ExecuteScriptAndExtractString("domTarget"));
 
   // Send the second wheel event.
@@ -398,7 +401,7 @@ IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest,
                                     ui::LatencyInfo());
 
   // Run until we get the callback, then check the target.
-  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED,
+  EXPECT_EQ(blink::mojom::InputEventResultState::kNotConsumed,
             wheel_msg_watcher->WaitForAck());
   EXPECT_EQ("redDiv", ExecuteScriptAndExtractString("domTarget"));
 }

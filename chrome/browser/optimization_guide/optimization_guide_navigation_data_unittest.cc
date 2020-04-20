@@ -42,335 +42,12 @@ TEST(OptimizationGuideNavigationDataTest, RecordMetricsNoDataNoCommit) {
       histogram_tester.GetAllHistogramsRecorded(),
       Not(AnyOf(
           HasSubstr("OptimizationGuide.ApplyDecision"),
-          HasSubstr("OptimizationGuide.HintCache"),
-          HasSubstr(
-              "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch"),
-          HasSubstr("OptimizationGuide.Hints."),
           HasSubstr("OptimizationGuide.TargetDecision"))));
 
   // Make sure no UKM recorded.
   auto entries = ukm_recorder.GetEntriesByName(
       ukm::builders::OptimizationGuide::kEntryName);
   EXPECT_TRUE(entries.empty());
-}
-
-TEST(OptimizationGuideNavigationDataTest, RecordMetricsNoDataHasCommit) {
-  base::test::TaskEnvironment env;
-
-  base::HistogramTester histogram_tester;
-  ukm::TestAutoSetUkmRecorder ukm_recorder;
-
-  std::unique_ptr<OptimizationGuideNavigationData> data =
-      std::make_unique<OptimizationGuideNavigationData>(/*navigation_id=*/3);
-  data->set_has_committed(true);
-  data.reset();
-
-  // Make sure no UMA recorded.
-  EXPECT_THAT(histogram_tester.GetAllHistogramsRecorded(),
-              Not(AnyOf(HasSubstr("OptimizationGuide.Hints."),
-                        HasSubstr("OptimizationGuide.HintCache"))));
-  // Make sure no UKM recorded.
-  auto entries = ukm_recorder.GetEntriesByName(
-      ukm::builders::OptimizationGuide::kEntryName);
-  EXPECT_TRUE(entries.empty());
-}
-
-TEST(OptimizationGuideNavigationDataTest,
-     RecordMetricsCoveredByFetchButNoHintLoadAttempted) {
-  base::HistogramTester histogram_tester;
-
-  std::unique_ptr<OptimizationGuideNavigationData> data =
-      std::make_unique<OptimizationGuideNavigationData>(/*navigation_id=*/3);
-  data->set_was_host_covered_by_fetch_at_navigation_start(true);
-  data.reset();
-
-  histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.HintCache.HasHint.BeforeCommit", 0);
-  histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.Hints.NavigationHostCoverage.BeforeCommit", 0);
-  histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.Hints.NavigationHostCoverage.AtCommit", 0);
-  histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
-      "BeforeCommit",
-      0);
-  histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch.AtCommit",
-      0);
-  histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.HintCache.HasHint.AtCommit", 0);
-  histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.HintCache.HostMatch.AtCommit", 0);
-  histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.HintCache.PageMatch.AtCommit", 0);
-}
-
-TEST(OptimizationGuideNavigationDataTest,
-     RecordMetricsHintCacheNoHostMatchBeforeCommit) {
-  base::HistogramTester histogram_tester;
-
-  std::unique_ptr<OptimizationGuideNavigationData> data =
-      std::make_unique<OptimizationGuideNavigationData>(/*navigation_id=*/3);
-  data->set_has_hint_before_commit(false);
-  data->set_was_host_covered_by_fetch_at_navigation_start(true);
-  data.reset();
-
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintCache.HasHint.BeforeCommit", false, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
-      "BeforeCommit",
-      true, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.Hints.NavigationHostCoverage.BeforeCommit", true, 1);
-  histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.Hints.NavigationHostCoverage.AtCommit", 0);
-  histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.HintCache.HasHint.AtCommit", 0);
-  histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.HintCache.HostMatch.AtCommit", 0);
-  histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.HintCache.PageMatch.AtCommit", 0);
-}
-
-TEST(OptimizationGuideNavigationDataTest,
-     RecordMetricsHintCacheNoHostMatchBeforeCommitAlsoNotCoveredByFetch) {
-  base::HistogramTester histogram_tester;
-
-  std::unique_ptr<OptimizationGuideNavigationData> data =
-      std::make_unique<OptimizationGuideNavigationData>(/*navigation_id=*/3);
-  data->set_has_hint_before_commit(false);
-  data->set_was_host_covered_by_fetch_at_navigation_start(false);
-  data.reset();
-
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintCache.HasHint.BeforeCommit", false, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
-      "BeforeCommit",
-      false, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.Hints.NavigationHostCoverage.BeforeCommit", false, 1);
-  histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
-      "AtCommit",
-      0);
-  histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.Hints.NavigationHostCoverage.AtCommit", 0);
-  histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.HintCache.HasHint.AtCommit", 0);
-  histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.HintCache.HostMatch.AtCommit", 0);
-  histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.HintCache.PageMatch.AtCommit", 0);
-}
-
-TEST(OptimizationGuideNavigationDataTest,
-     RecordMetricsHintCacheNoHintButCoveredByFetchAtCommit) {
-  base::HistogramTester histogram_tester;
-
-  std::unique_ptr<OptimizationGuideNavigationData> data =
-      std::make_unique<OptimizationGuideNavigationData>(/*navigation_id=*/3);
-  data->set_has_hint_before_commit(false);
-  data->set_has_hint_after_commit(false);
-  data->set_was_host_covered_by_fetch_at_navigation_start(false);
-  data->set_was_host_covered_by_fetch_at_commit(true);
-  data->set_has_committed(true);
-  data.reset();
-
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintCache.HasHint.BeforeCommit", false, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
-      "BeforeCommit",
-      false, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.Hints.NavigationHostCoverage.BeforeCommit", false, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
-      "AtCommit",
-      true, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.Hints.NavigationHostCoverage.AtCommit", true, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintCache.HasHint.AtCommit", false, 1);
-  histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.HintCache.HostMatch.AtCommit", 0);
-  histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.HintCache.PageMatch.AtCommit", 0);
-}
-
-TEST(OptimizationGuideNavigationDataTest,
-     RecordMetricsHintCacheNoHintAtCommit) {
-  base::HistogramTester histogram_tester;
-
-  std::unique_ptr<OptimizationGuideNavigationData> data =
-      std::make_unique<OptimizationGuideNavigationData>(/*navigation_id=*/3);
-  data->set_has_hint_after_commit(false);
-  data->set_has_committed(true);
-  data.reset();
-
-  // This probably wouldn't actually happen in practice but make sure optional
-  // check works for before commit.
-  histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.HintCache.HasHint.BeforeCommit", 0);
-  histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
-      "BeforeCommit",
-      0);
-  histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.Hints.NavigationHostCoverage.BeforeCommit", 0);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
-      "AtCommit",
-      false, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.Hints.NavigationHostCoverage.AtCommit", false, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintCache.HasHint.AtCommit", false, 1);
-  histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.HintCache.HostMatch.AtCommit", 0);
-  histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.HintCache.PageMatch.AtCommit", 0);
-}
-
-TEST(OptimizationGuideNavigationDataTest,
-     RecordMetricsHintCacheHasHintButNotLoadedAtCommit) {
-  base::HistogramTester histogram_tester;
-
-  std::unique_ptr<OptimizationGuideNavigationData> data =
-      std::make_unique<OptimizationGuideNavigationData>(/*navigation_id=*/3);
-  data->set_has_hint_after_commit(true);
-  data->set_has_committed(true);
-  data.reset();
-
-  // This probably wouldn't actually happen in practice but make sure optional
-  // check works for before commit.
-  histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.HintCache.HasHint.BeforeCommit", 0);
-  histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
-      "BeforeCommit",
-      0);
-  histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.Hints.NavigationHostCoverage.BeforeCommit", 0);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
-      "AtCommit",
-      false, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.Hints.NavigationHostCoverage.AtCommit", true, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintCache.HasHint.AtCommit", true, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintCache.HostMatch.AtCommit", false, 1);
-  histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.HintCache.PageMatch.AtCommit", 0);
-}
-
-TEST(OptimizationGuideNavigationDataTest,
-     RecordMetricsHintCacheHasPageHintAtCommit) {
-  base::HistogramTester histogram_tester;
-
-  std::unique_ptr<OptimizationGuideNavigationData> data =
-      std::make_unique<OptimizationGuideNavigationData>(/*navigation_id=*/3);
-  data->set_has_hint_before_commit(true);
-  data->set_was_host_covered_by_fetch_at_navigation_start(false);
-  data->set_has_hint_after_commit(true);
-  data->set_serialized_hint_version_string("abc");
-  data->set_page_hint(std::make_unique<optimization_guide::proto::PageHint>());
-  data->set_has_committed(true);
-  data.reset();
-
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintCache.HasHint.BeforeCommit", true, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
-      "BeforeCommit",
-      false, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.Hints.NavigationHostCoverage.BeforeCommit", true, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
-      "AtCommit",
-      false, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.Hints.NavigationHostCoverage.AtCommit", true, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintCache.HasHint.AtCommit", true, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintCache.HostMatch.AtCommit", true, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintCache.PageMatch.AtCommit", true, 1);
-}
-
-TEST(OptimizationGuideNavigationDataTest,
-     RecordMetricsHintCacheHasHintButPageHintNotSetAtCommit) {
-  base::HistogramTester histogram_tester;
-
-  std::unique_ptr<OptimizationGuideNavigationData> data =
-      std::make_unique<OptimizationGuideNavigationData>(/*navigation_id=*/3);
-  data->set_has_hint_before_commit(true);
-  data->set_has_hint_after_commit(true);
-  data->set_serialized_hint_version_string("abc");
-  data->set_has_committed(true);
-  data.reset();
-
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintCache.HasHint.BeforeCommit", true, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
-      "BeforeCommit",
-      false, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.Hints.NavigationHostCoverage.BeforeCommit", true, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
-      "AtCommit",
-      false, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.Hints.NavigationHostCoverage.AtCommit", true, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintCache.HasHint.AtCommit", true, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintCache.HostMatch.AtCommit", true, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintCache.PageMatch.AtCommit", false, 1);
-}
-
-TEST(OptimizationGuideNavigationDataTest,
-     RecordMetricsHintCacheHasHintButNoPageHintAtCommit) {
-  base::HistogramTester histogram_tester;
-
-  std::unique_ptr<OptimizationGuideNavigationData> data =
-      std::make_unique<OptimizationGuideNavigationData>(/*navigation_id=*/3);
-  data->set_has_hint_before_commit(true);
-  data->set_has_hint_after_commit(true);
-  data->set_serialized_hint_version_string("abc");
-  data->set_page_hint(nullptr);
-  data->set_has_committed(true);
-  data.reset();
-
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintCache.HasHint.BeforeCommit", true, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
-      "BeforeCommit",
-      false, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.Hints.NavigationHostCoverage.BeforeCommit", true, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
-      "AtCommit",
-      false, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.Hints.NavigationHostCoverage.AtCommit", true, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintCache.HasHint.AtCommit", true, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintCache.HostMatch.AtCommit", true, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintCache.PageMatch.AtCommit", false, 1);
 }
 
 TEST(OptimizationGuideNavigationDataTest, RecordMetricsBadHintVersion) {
@@ -695,7 +372,6 @@ TEST(OptimizationGuideNavigationDataTest,
   std::unique_ptr<OptimizationGuideNavigationData> data =
       std::make_unique<OptimizationGuideNavigationData>(/*navigation_id=*/3);
   data->set_has_hint_after_commit(true);
-  data->set_has_committed(true);
   data.reset();
 
   auto entries = ukm_recorder.GetEntriesByName(
@@ -744,7 +420,6 @@ TEST(OptimizationGuideNavigationDataTest,
       std::make_unique<OptimizationGuideNavigationData>(/*navigation_id=*/3);
   data->set_has_hint_after_commit(false);
   data->set_was_host_covered_by_fetch_at_commit(true);
-  data->set_has_committed(true);
   data.reset();
 
   auto entries = ukm_recorder.GetEntriesByName(
@@ -769,7 +444,6 @@ TEST(OptimizationGuideNavigationDataTest,
       std::make_unique<OptimizationGuideNavigationData>(/*navigation_id=*/3);
   data->set_has_hint_before_commit(false);
   data->set_was_host_covered_by_fetch_at_navigation_start(false);
-  data->set_has_committed(true);
   data.reset();
 
   auto entries = ukm_recorder.GetEntriesByName(
@@ -794,7 +468,6 @@ TEST(OptimizationGuideNavigationDataTest,
       std::make_unique<OptimizationGuideNavigationData>(/*navigation_id=*/3);
   data->set_has_hint_after_commit(false);
   data->set_was_host_covered_by_fetch_at_commit(false);
-  data->set_has_committed(true);
   data.reset();
 
   auto entries = ukm_recorder.GetEntriesByName(
@@ -820,7 +493,6 @@ TEST(OptimizationGuideNavigationDataTest,
   data->set_has_hint_before_commit(false);
   data->set_was_host_covered_by_fetch_at_navigation_start(false);
   data->set_was_hint_for_host_attempted_to_be_fetched(true);
-  data->set_has_committed(true);
   data.reset();
 
   auto entries = ukm_recorder.GetEntriesByName(
@@ -846,7 +518,6 @@ TEST(OptimizationGuideNavigationDataTest,
   data->set_has_hint_after_commit(false);
   data->set_was_host_covered_by_fetch_at_commit(false);
   data->set_was_hint_for_host_attempted_to_be_fetched(true);
-  data->set_has_committed(true);
   data.reset();
 
   auto entries = ukm_recorder.GetEntriesByName(

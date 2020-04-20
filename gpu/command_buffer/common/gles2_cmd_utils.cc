@@ -15,6 +15,7 @@
 
 #include <sstream>
 
+#include "base/logging.h"
 #include "base/numerics/safe_math.h"
 #include "base/stl_util.h"
 

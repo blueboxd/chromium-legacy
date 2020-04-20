@@ -391,8 +391,8 @@ int ComputeAutocapitalizeFlags(const Element* element) {
 
 enum class InputMethodController::TypingContinuation { kContinue, kEnd };
 
-InputMethodController::InputMethodController(LocalFrame& frame)
-    : frame_(&frame), has_composition_(false) {}
+InputMethodController::InputMethodController(LocalDOMWindow& window)
+    : ExecutionContextLifecycleObserver(&window), has_composition_(false) {}
 
 InputMethodController::~InputMethodController() = default;
 
@@ -402,7 +402,7 @@ bool InputMethodController::IsAvailable() const {
 
 Document& InputMethodController::GetDocument() const {
   DCHECK(IsAvailable());
-  return *Document::From(GetExecutionContext());
+  return *To<LocalDOMWindow>(GetExecutionContext())->document();
 }
 
 bool InputMethodController::HasComposition() const {
@@ -412,6 +412,11 @@ bool InputMethodController::HasComposition() const {
 
 inline Editor& InputMethodController::GetEditor() const {
   return GetFrame().GetEditor();
+}
+
+LocalFrame& InputMethodController::GetFrame() const {
+  DCHECK(IsAvailable());
+  return *To<LocalDOMWindow>(GetExecutionContext())->GetFrame();
 }
 
 void InputMethodController::Clear() {
@@ -430,11 +435,6 @@ void InputMethodController::ContextDestroyed() {
   Clear();
   composition_range_ = nullptr;
   active_edit_context_ = nullptr;
-}
-
-void InputMethodController::DidAttachDocument(Document* document) {
-  DCHECK(document);
-  SetExecutionContext(document->ToExecutionContext());
 }
 
 void InputMethodController::SelectComposition() const {
@@ -770,7 +770,7 @@ void InputMethodController::CancelComposition() {
 
   // An open typing command that disagrees about current selection would cause
   // issues with typing later on.
-  TypingCommand::CloseTyping(frame_);
+  TypingCommand::CloseTyping(&GetFrame());
 
   // No DOM update after 'compositionend'.
   DispatchCompositionEndEvent(GetFrame(), g_empty_string);
@@ -1618,7 +1618,6 @@ void InputMethodController::WillChangeFocus() {
 }
 
 void InputMethodController::Trace(Visitor* visitor) {
-  visitor->Trace(frame_);
   visitor->Trace(composition_range_);
   visitor->Trace(active_edit_context_);
   ExecutionContextLifecycleObserver::Trace(visitor);

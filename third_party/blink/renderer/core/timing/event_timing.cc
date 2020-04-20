@@ -93,10 +93,9 @@ std::unique_ptr<EventTiming> EventTiming::Create(LocalDOMWindow* window,
 
   base::TimeTicks processing_start = Now();
   if (should_log_event) {
-    Document* document =
-        Document::DynamicFrom(performance->GetExecutionContext());
+    auto* window = To<LocalDOMWindow>(performance->GetExecutionContext());
     InteractiveDetector* interactive_detector =
-        InteractiveDetector::From(*document);
+        InteractiveDetector::From(*window->document());
     if (interactive_detector) {
       interactive_detector->HandleForInputDelay(event, event_timestamp,
                                                 processing_start);

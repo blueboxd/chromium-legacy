@@ -48,6 +48,7 @@
 #include "third_party/blink/renderer/core/editing/spellcheck/spell_checker.h"
 #include "third_party/blink/renderer/core/editing/suggestion/text_suggestion_controller.h"
 #include "third_party/blink/renderer/core/editing/visible_position.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -62,7 +63,7 @@
 namespace blink {
 
 SelectionController::SelectionController(LocalFrame& frame)
-    : ExecutionContextLifecycleObserver(frame.GetDocument()),
+    : ExecutionContextLifecycleObserver(frame.DomWindow()),
       frame_(&frame),
       mouse_down_may_start_select_(false),
       mouse_down_was_single_click_in_selection_(false),
@@ -833,7 +834,7 @@ void SelectionController::SetNonDirectionalSelectionIfNeeded(
   if (adjusted_selection.Base() != base.GetPosition() ||
       adjusted_selection.Extent() != extent.GetPosition()) {
     original_base_in_flat_tree_ = base;
-    SetExecutionContext(GetDocument().ToExecutionContext());
+    SetExecutionContext(frame_->DomWindow());
     builder.SetBaseAndExtent(adjusted_selection.Base(),
                              adjusted_selection.Extent());
   } else if (original_base.IsNotNull()) {

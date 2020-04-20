@@ -13,11 +13,11 @@
 #include "content/common/content_export.h"
 #include "content/common/input/input_event_dispatch_type.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/input_event_ack_state.h"
 #include "content/renderer/input/input_event_prediction.h"
 #include "content/renderer/input/main_thread_event_queue_task_list.h"
 #include "content/renderer/input/scoped_web_input_event_with_latency_info.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "ui/events/blink/did_overscroll_params.h"
 #include "ui/events/blink/web_input_event_traits.h"
@@ -26,7 +26,7 @@
 namespace content {
 
 using HandledEventCallback =
-    base::OnceCallback<void(InputEventAckState ack_state,
+    base::OnceCallback<void(blink::mojom::InputEventResultState ack_state,
                             const ui::LatencyInfo& latency_info,
                             std::unique_ptr<ui::DidOverscrollParams>,
                             base::Optional<cc::TouchAction>)>;
@@ -95,7 +95,7 @@ class CONTENT_EXPORT MainThreadEventQueue
   void HandleEvent(ui::WebScopedInputEvent event,
                    const ui::LatencyInfo& latency,
                    InputEventDispatchType dispatch_type,
-                   InputEventAckState ack_result,
+                   blink::mojom::InputEventResultState ack_result,
                    const blink::WebInputEventAttribution& attribution,
                    HandledEventCallback handled_callback);
   void DispatchRafAlignedInput(base::TimeTicks frame_time);
@@ -115,9 +115,11 @@ class CONTENT_EXPORT MainThreadEventQueue
       const std::unique_ptr<MainThreadEventQueueTask>& item,
       base::TimeTicks frame_time);
 
-  static bool IsForwardedAndSchedulerKnown(InputEventAckState ack_state) {
-    return ack_state == INPUT_EVENT_ACK_STATE_NOT_CONSUMED ||
-           ack_state == INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING_DUE_TO_FLING;
+  static bool IsForwardedAndSchedulerKnown(
+      blink::mojom::InputEventResultState ack_state) {
+    return ack_state == blink::mojom::InputEventResultState::kNotConsumed ||
+           ack_state ==
+               blink::mojom::InputEventResultState::kSetNonBlockingDueToFling;
   }
 
  protected:

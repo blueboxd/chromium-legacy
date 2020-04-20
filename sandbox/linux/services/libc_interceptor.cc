@@ -22,6 +22,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/lazy_instance.h"
+#include "base/logging.h"
 #include "base/pickle.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/global_descriptors.h"

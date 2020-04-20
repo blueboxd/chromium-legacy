@@ -13,8 +13,8 @@ import android.os.Build;
 import android.text.TextUtils;
 
 import org.chromium.base.CollectionUtil;
-import org.chromium.chrome.browser.notifications.NotificationManagerProxy;
 import org.chromium.chrome.browser.webapps.WebApkServiceClient;
+import org.chromium.components.browser_ui.notifications.NotificationManagerProxy;
 
 import java.util.Collection;
 import java.util.Collections;

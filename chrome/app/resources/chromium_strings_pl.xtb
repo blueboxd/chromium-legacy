@@ -10,6 +10,7 @@
 <translation id="1414495520565016063">Jesteś zalogowany w Chromium.</translation>
 <translation id="151962892725702025">System operacyjny Chromium nie może zsynchronizować danych, ponieważ synchronizacja jest niedostępna w Twojej domenie.</translation>
 <translation id="1524282610922162960">Udostępnij kartę Chromium</translation>
+<translation id="1553461853655228091">Aby utworzyć mapę 3D Twojego otoczenia, Chromium potrzebuje uprawnień dostępu do kamery</translation>
 <translation id="1607715478322902680">{COUNT,plural, =0{Administrator wymaga ponownego uruchomienia Chromium, by przeglądarka mogła zainstalować aktualizację}=1{Administrator wymaga ponownego uruchomienia Chromium, by przeglądarka mogła zainstalować aktualizację. Okno incognito nie otworzy się ponownie.}few{Administrator wymaga ponownego uruchomienia Chromium, by przeglądarka mogła zainstalować aktualizację. # okna incognito nie otworzą się ponownie.}many{Administrator wymaga ponownego uruchomienia Chromium, by przeglądarka mogła zainstalować aktualizację. # okien incognito nie otworzy się ponownie.}other{Administrator wymaga ponownego uruchomienia Chromium, by przeglądarka mogła zainstalować aktualizację. # okna incognito nie otworzy się ponownie.}}</translation>
 <translation id="1708666629004767631">Dostępna jest nowa, bezpieczniejsza wersja Chromium.</translation>
 <translation id="1774152462503052664">Zezwól Chromium na działanie w tle</translation>
@@ -53,6 +54,7 @@
 <translation id="3190315855212034486">O kurczę! Chromium uległ awarii. Uruchomić go teraz ponownie?</translation>
 <translation id="3229526316128325841">Chromium chce wyeksportować Twoje hasła.</translation>
 <translation id="3258596308407688501">Chromium nie może odczytać ani zapisać danych w katalogu <ph name="USER_DATA_DIRECTORY" />.</translation>
+<translation id="3283186697780795848">Zainstalowana jest wersja Chromium <ph name="PRODUCT_VERSION" /></translation>
 <translation id="328888136576916638">Brakuje kluczy interfejsu Google API. Niektóre funkcje Chromium będą wyłączone.</translation>
 <translation id="3296368748942286671">Kontynuuj działanie aplikacji w tle po zamknięciu Chromium</translation>
 <translation id="331951419404882060">System operacyjny Chromium nie może zsynchronizować danych z powodu błędu logowania.</translation>

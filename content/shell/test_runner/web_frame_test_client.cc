@@ -371,7 +371,7 @@ void WebFrameTestClient::WillSendRequest(blink::WebURLRequest& request) {
   // Set the new substituted URL.
   request.SetUrl(blink_test_runner()->RewriteWebTestsURL(
       request.Url().GetString().Utf8(),
-      test_runner()->is_web_platform_tests_mode()));
+      test_runner()->IsWebPlatformTestsMode()));
 }
 
 void WebFrameTestClient::DidAddMessageToConsole(
@@ -409,7 +409,7 @@ void WebFrameTestClient::DidAddMessageToConsole(
   // web-platform-tests because they may create non-determinism not
   // intended by the test author. They are still included in the stderr
   // output for debug purposes.
-  bool dump_to_stderr = test_runner()->is_web_platform_tests_mode();
+  bool dump_to_stderr = test_runner()->IsWebPlatformTestsMode();
   if (!message.text.IsEmpty()) {
     std::string new_message;
     new_message = message.text.Utf8();
@@ -485,7 +485,7 @@ bool WebFrameTestClient::ShouldContinueNavigation(
 
   info->url_request.SetUrl(blink_test_runner()->RewriteWebTestsURL(
       info->url_request.Url().GetString().Utf8(),
-      test_runner()->is_web_platform_tests_mode()));
+      test_runner()->IsWebPlatformTestsMode()));
   return should_continue;
 }
 

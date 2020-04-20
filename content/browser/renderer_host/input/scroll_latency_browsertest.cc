@@ -241,7 +241,7 @@ IN_PROC_BROWSER_TEST_F(ScrollLatencyBrowserTest,
   // Runs until we get the OnSyntheticGestureCompleted callback and verify that
   // the first GSU event is ignored.
   run_loop_->Run();
-  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS,
+  EXPECT_EQ(blink::mojom::InputEventResultState::kNoConsumerExists,
             scroll_update_watcher->GetAckStateWaitIfNecessary());
 
   // Wait for one frame and then verify that the scroll metrics are not

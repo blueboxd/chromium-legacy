@@ -2173,6 +2173,25 @@ TEST_F(DisplayLockContextRenderingTest, NestedLockDoesHideWhenItIsOffscreen) {
   EXPECT_TRUE(inner_context->IsLocked());
 }
 
+TEST_F(DisplayLockContextRenderingTest,
+       LockedCanvasWithFallbackHasFocusableStyle) {
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+      .auto { subtree-visibility: auto; }
+      .spacer { height: 3000px; }
+    </style>
+    <div class=spacer></div>
+    <div class=auto>
+      <canvas>
+        <div id=target tabindex=0></div>
+      </canvas>
+    </div>
+  )HTML");
+
+  auto* target = GetDocument().getElementById("target");
+  EXPECT_TRUE(target->IsFocusable());
+}
+
 TEST_F(DisplayLockContextRenderingTest, ForcedUnlockBookkeeping) {
   SetHtmlInnerHTML(R"HTML(
     <style>

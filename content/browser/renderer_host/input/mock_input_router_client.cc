@@ -21,13 +21,13 @@ namespace content {
 MockInputRouterClient::MockInputRouterClient()
     : input_router_(nullptr),
       in_flight_event_count_(0),
-      filter_state_(INPUT_EVENT_ACK_STATE_NOT_CONSUMED),
+      filter_state_(blink::mojom::InputEventResultState::kNotConsumed),
       filter_input_event_called_(false),
       white_listed_touch_action_(cc::TouchAction::kAuto) {}
 
 MockInputRouterClient::~MockInputRouterClient() {}
 
-InputEventAckState MockInputRouterClient::FilterInputEvent(
+blink::mojom::InputEventResultState MockInputRouterClient::FilterInputEvent(
     const WebInputEvent& input_event,
     const ui::LatencyInfo& latency_info) {
   filter_input_event_called_ = true;
@@ -40,7 +40,7 @@ void MockInputRouterClient::IncrementInFlightEventCount() {
 }
 
 void MockInputRouterClient::DecrementInFlightEventCount(
-    InputEventAckSource ack_source) {
+    blink::mojom::InputEventResultSource ack_source) {
   --in_flight_event_count_;
 }
 

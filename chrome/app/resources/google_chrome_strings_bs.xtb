@@ -102,6 +102,7 @@ Neke funkcije možda neće biti dostupne i promjene postavki se neće sačuvati.
 <translation id="3735758079232443276">Ekstenzija "<ph name="EXTENSION_NAME" />" je promijenila stranicu koja se prikazuje kada pokrenete Chrome.</translation>
 <translation id="3780814664026482060">Chrome – <ph name="PAGE_TITLE" /></translation>
 <translation id="386202838227397562">Zatvorite sve prozore Google Chromea i pokušajte ponovo.</translation>
+<translation id="3865754807470779944">Instalirana je Chromeova verzija <ph name="PRODUCT_VERSION" /></translation>
 <translation id="3873044882194371212">Otvori link u ano&amp;nimnom prozoru Chromea</translation>
 <translation id="3889417619312448367">Deinstalirajte Google Chrome</translation>
 <translation id="4050175100176540509">U najnovijoj verziji su dostupna važna poboljšanja sigurnosti i nove funkcije.</translation>
@@ -241,6 +242,7 @@ Moguće je da neke funkcije neće biti dostupne. Odredite drugi direktorij profi
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8556340503434111824">Dostupna je nova verzija Google Chromea koji je brži nego ikad.</translation>
 <translation id="8614913330719544658">Google Chrome ne reagira. Ponovo pokrenuti sada?</translation>
+<translation id="861702415419836452">Chrome treba dopuštenje za pristup kameri radi izrade 3D karte vašeg okruženja</translation>
 <translation id="8625237574518804553">{0,plural, =1{Chrome će se ponovo pokrenuti za 1 minutu}one{Chrome će se ponovo pokrenuti za # minutu}few{Chrome će se ponovo pokrenuti za # minute}other{Chrome će se ponovo pokrenuti za # minuta}}</translation>
 <translation id="8641606876632989680">Chrome će vas obavijestiti kada se prijavite s ugroženom lozinkom</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>

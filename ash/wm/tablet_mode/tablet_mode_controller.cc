@@ -554,6 +554,12 @@ void TabletModeController::OnAccelerometerUpdated(
   if (update->HasLidAngleDriver(ACCELEROMETER_SOURCE_SCREEN) ||
       update->HasLidAngleDriver(ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD)) {
     ec_lid_angle_driver_present_ = true;
+    // Reset lid angle that might be calculated before lid angle driver is
+    // read.
+    lid_angle_ = 0.f;
+    can_detect_lid_angle_ = false;
+    if (record_lid_angle_timer_.IsRunning())
+      record_lid_angle_timer_.Stop();
     AccelerometerReader::GetInstance()->RemoveObserver(this);
     return;
   }
@@ -1154,10 +1160,10 @@ bool TabletModeController::CalculateIsInTabletPhysicalState() const {
   if (tablet_mode_switch_is_on_)
     return true;
 
-  if (!can_detect_lid_angle_)
+  if (lid_is_closed_)
     return false;
 
-  if (lid_is_closed_)
+  if (!can_detect_lid_angle_)
     return false;
 
   // Toggle tablet mode on or off when corresponding thresholds are passed.

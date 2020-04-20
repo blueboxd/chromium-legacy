@@ -50,11 +50,11 @@ COMPONENT_EXPORT(CHROMEOS_SYSTEM) extern const char kEthernetMacAddressKey[];
 
 // Firmware write protect switch value.
 COMPONENT_EXPORT(CHROMEOS_SYSTEM)
-extern const char kFirmwareWriteProtectBootKey[];
+extern const char kFirmwareWriteProtectCurrentKey[];
 COMPONENT_EXPORT(CHROMEOS_SYSTEM)
-extern const char kFirmwareWriteProtectBootValueOn[];
+extern const char kFirmwareWriteProtectCurrentValueOn[];
 COMPONENT_EXPORT(CHROMEOS_SYSTEM)
-extern const char kFirmwareWriteProtectBootValueOff[];
+extern const char kFirmwareWriteProtectCurrentValueOff[];
 
 // Firmware type and associated values. The values are from crossystem output
 // for the mainfw_type key. Normal and developer correspond to Chrome OS

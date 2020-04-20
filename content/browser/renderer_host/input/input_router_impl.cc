@@ -27,6 +27,7 @@
 #include "content/public/common/input_event_ack_state.h"
 #include "ipc/ipc_sender.h"
 #include "services/tracing/public/cpp/perfetto/flow_event_utils.h"
+#include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/blink/blink_features.h"
 #include "ui/events/blink/web_input_event_traits.h"
@@ -47,11 +48,11 @@ using ui::WebInputEventTraits;
 
 namespace {
 
-bool WasHandled(InputEventAckState state) {
+bool WasHandled(blink::mojom::InputEventResultState state) {
   switch (state) {
-    case INPUT_EVENT_ACK_STATE_CONSUMED:
-    case INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS:
-    case INPUT_EVENT_ACK_STATE_UNKNOWN:
+    case blink::mojom::InputEventResultState::kConsumed:
+    case blink::mojom::InputEventResultState::kNoConsumerExists:
+    case blink::mojom::InputEventResultState::kUnknown:
       return true;
     default:
       return false;
@@ -111,8 +112,8 @@ void InputRouterImpl::SendMouseEvent(
        gesture_event_queue_.GetTouchpadTapSuppressionController()
            ->ShouldSuppressMouseUp())) {
     std::move(event_result_callback)
-        .Run(mouse_event, InputEventAckSource::BROWSER,
-             INPUT_EVENT_ACK_STATE_IGNORED);
+        .Run(mouse_event, blink::mojom::InputEventResultSource::kBrowser,
+             blink::mojom::InputEventResultState::kIgnored);
     return;
   }
 
@@ -144,9 +145,9 @@ void InputRouterImpl::SendGestureEvent(
 
   if (gesture_event_queue_.PassToFlingController(gesture_event)) {
     TRACE_EVENT_INSTANT0("input", "FilteredForFling", TRACE_EVENT_SCOPE_THREAD);
-    disposition_handler_->OnGestureEventAck(gesture_event,
-                                            InputEventAckSource::BROWSER,
-                                            INPUT_EVENT_ACK_STATE_CONSUMED);
+    disposition_handler_->OnGestureEventAck(
+        gesture_event, blink::mojom::InputEventResultSource::kBrowser,
+        blink::mojom::InputEventResultState::kConsumed);
     return;
   }
 
@@ -171,9 +172,9 @@ void InputRouterImpl::SendGestureEventWithoutQueueing(
       FilterGestureEventResult::kFilterGestureEventFiltered) {
     TRACE_EVENT_INSTANT0("input", "FilteredForTouchAction",
                          TRACE_EVENT_SCOPE_THREAD);
-    disposition_handler_->OnGestureEventAck(gesture_event,
-                                            InputEventAckSource::BROWSER,
-                                            INPUT_EVENT_ACK_STATE_CONSUMED);
+    disposition_handler_->OnGestureEventAck(
+        gesture_event, blink::mojom::InputEventResultSource::kBrowser,
+        blink::mojom::InputEventResultState::kConsumed);
     return;
   }
 
@@ -206,9 +207,9 @@ void InputRouterImpl::SendGestureEventWithoutQueueing(
   if (!gesture_event_queue_.DebounceOrForwardEvent(gesture_event)) {
     TRACE_EVENT_INSTANT0("input", "FilteredForDebounce",
                          TRACE_EVENT_SCOPE_THREAD);
-    disposition_handler_->OnGestureEventAck(gesture_event,
-                                            InputEventAckSource::BROWSER,
-                                            INPUT_EVENT_ACK_STATE_CONSUMED);
+    disposition_handler_->OnGestureEventAck(
+        gesture_event, blink::mojom::InputEventResultSource::kBrowser,
+        blink::mojom::InputEventResultState::kConsumed);
   }
 }
 
@@ -395,13 +396,14 @@ void InputRouterImpl::FlushDeferredGestureQueue() {
   ProcessDeferredGestureEventQueue();
 }
 
-void InputRouterImpl::OnTouchEventAck(const TouchEventWithLatencyInfo& event,
-                                      InputEventAckSource ack_source,
-                                      InputEventAckState ack_result) {
+void InputRouterImpl::OnTouchEventAck(
+    const TouchEventWithLatencyInfo& event,
+    blink::mojom::InputEventResultSource ack_source,
+    blink::mojom::InputEventResultState ack_result) {
   if (WebTouchEventTraits::IsTouchSequenceStart(event.event)) {
     touch_action_filter_.AppendToGestureSequenceForDebugging("T");
     touch_action_filter_.AppendToGestureSequenceForDebugging(
-        base::NumberToString(ack_result).c_str());
+        base::NumberToString(static_cast<uint32_t>(ack_result)).c_str());
     touch_action_filter_.AppendToGestureSequenceForDebugging(
         base::NumberToString(event.event.unique_touch_event_id).c_str());
     touch_action_filter_.IncreaseActiveTouches();
@@ -439,8 +441,8 @@ void InputRouterImpl::SendGestureEventImmediately(
 
 void InputRouterImpl::OnGestureEventAck(
     const GestureEventWithLatencyInfo& event,
-    InputEventAckSource ack_source,
-    InputEventAckState ack_result) {
+    blink::mojom::InputEventResultSource ack_source,
+    blink::mojom::InputEventResultState ack_result) {
   touch_event_queue_.OnGestureEventAck(event, ack_result);
   disposition_handler_->OnGestureEventAck(event, ack_source, ack_result);
 }
@@ -474,8 +476,8 @@ void InputRouterImpl::SendMouseWheelEventImmediately(
 
 void InputRouterImpl::OnMouseWheelEventAck(
     const MouseWheelEventWithLatencyInfo& event,
-    InputEventAckSource ack_source,
-    InputEventAckState ack_result) {
+    blink::mojom::InputEventResultSource ack_source,
+    blink::mojom::InputEventResultState ack_result) {
   disposition_handler_->OnWheelEventAck(event, ack_source, ack_result);
   gesture_event_queue_.OnWheelEventAck(event, ack_source, ack_result);
 }
@@ -494,8 +496,8 @@ void InputRouterImpl::SendMouseWheelEventForPinchImmediately(
 
 void InputRouterImpl::OnGestureEventForPinchAck(
     const GestureEventWithLatencyInfo& event,
-    InputEventAckSource ack_source,
-    InputEventAckState ack_result) {
+    blink::mojom::InputEventResultSource ack_source,
+    blink::mojom::InputEventResultState ack_result) {
   OnGestureEventAck(event, ack_source, ack_result);
 }
 
@@ -529,14 +531,15 @@ void InputRouterImpl::FilterAndSendWebInputEvent(
               });
 
   output_stream_validator_.Validate(input_event);
-  InputEventAckState filtered_state =
+  blink::mojom::InputEventResultState filtered_state =
       client_->FilterInputEvent(input_event, latency_info);
   if (WasHandled(filtered_state)) {
     TRACE_EVENT_INSTANT0("input", "InputEventFiltered",
                          TRACE_EVENT_SCOPE_THREAD);
-    if (filtered_state != INPUT_EVENT_ACK_STATE_UNKNOWN) {
-      std::move(callback).Run(InputEventAckSource::BROWSER, latency_info,
-                              filtered_state, base::nullopt, base::nullopt);
+    if (filtered_state != blink::mojom::InputEventResultState::kUnknown) {
+      std::move(callback).Run(blink::mojom::InputEventResultSource::kBrowser,
+                              latency_info, filtered_state, base::nullopt,
+                              base::nullopt);
     }
     return;
   }
@@ -547,32 +550,54 @@ void InputRouterImpl::FilterAndSendWebInputEvent(
     TRACE_EVENT_INSTANT0("input", "InputEventSentBlocking",
                          TRACE_EVENT_SCOPE_THREAD);
     client_->IncrementInFlightEventCount();
-    client_->GetWidgetInputHandler()->DispatchEvent(std::move(event),
-                                                    std::move(callback));
+    mojom::WidgetInputHandler::DispatchEventCallback renderer_callback =
+        base::BindOnce(
+            [](mojom::WidgetInputHandler::DispatchEventCallback callback,
+               base::WeakPtr<InputRouterImpl> input_router,
+               blink::mojom::InputEventResultSource source,
+               const ui::LatencyInfo& latency,
+               blink::mojom::InputEventResultState state,
+               const base::Optional<ui::DidOverscrollParams>& overscroll,
+               const base::Optional<cc::TouchAction>& touch_action) {
+              // Filter source to ensure only valid values are sent from the
+              // renderer.
+              if (source == blink::mojom::InputEventResultSource::kBrowser) {
+                if (input_router)
+                  input_router->client_->OnInvalidInputEventSource();
+                return;
+              }
+
+              std::move(callback).Run(source, latency, state, overscroll,
+                                      touch_action);
+            },
+            std::move(callback), weak_this_);
+    client_->GetWidgetInputHandler()->DispatchEvent(
+        std::move(event), std::move(renderer_callback));
   } else {
     TRACE_EVENT_INSTANT0("input", "InputEventSentNonBlocking",
                          TRACE_EVENT_SCOPE_THREAD);
     client_->GetWidgetInputHandler()->DispatchNonBlockingEvent(
         std::move(event));
-    std::move(callback).Run(InputEventAckSource::BROWSER, latency_info,
-                            INPUT_EVENT_ACK_STATE_IGNORED, base::nullopt,
-                            base::nullopt);
+    std::move(callback).Run(blink::mojom::InputEventResultSource::kBrowser,
+                            latency_info,
+                            blink::mojom::InputEventResultState::kIgnored,
+                            base::nullopt, base::nullopt);
   }
 }
 
 void InputRouterImpl::KeyboardEventHandled(
     const NativeWebKeyboardEventWithLatencyInfo& event,
     KeyboardEventCallback event_result_callback,
-    InputEventAckSource source,
+    blink::mojom::InputEventResultSource source,
     const ui::LatencyInfo& latency,
-    InputEventAckState state,
+    blink::mojom::InputEventResultState state,
     const base::Optional<ui::DidOverscrollParams>& overscroll,
     const base::Optional<cc::TouchAction>& touch_action) {
   TRACE_EVENT2("input", "InputRouterImpl::KeboardEventHandled", "type",
                WebInputEvent::GetName(event.event.GetType()), "ack",
-               InputEventAckStateToString(state));
+               InputEventResultStateToString(state));
 
-  if (source != InputEventAckSource::BROWSER)
+  if (source != blink::mojom::InputEventResultSource::kBrowser)
     client_->DecrementInFlightEventCount(source);
   event.latency.AddNewLatencyFrom(latency);
   std::move(event_result_callback).Run(event, source, state);
@@ -586,16 +611,16 @@ void InputRouterImpl::KeyboardEventHandled(
 void InputRouterImpl::MouseEventHandled(
     const MouseEventWithLatencyInfo& event,
     MouseEventCallback event_result_callback,
-    InputEventAckSource source,
+    blink::mojom::InputEventResultSource source,
     const ui::LatencyInfo& latency,
-    InputEventAckState state,
+    blink::mojom::InputEventResultState state,
     const base::Optional<ui::DidOverscrollParams>& overscroll,
     const base::Optional<cc::TouchAction>& touch_action) {
   TRACE_EVENT2("input", "InputRouterImpl::MouseEventHandled", "type",
                WebInputEvent::GetName(event.event.GetType()), "ack",
-               InputEventAckStateToString(state));
+               InputEventResultStateToString(state));
 
-  if (source != InputEventAckSource::BROWSER)
+  if (source != blink::mojom::InputEventResultSource::kBrowser)
     client_->DecrementInFlightEventCount(source);
   event.latency.AddNewLatencyFrom(latency);
   std::move(event_result_callback).Run(event, source, state);
@@ -603,15 +628,15 @@ void InputRouterImpl::MouseEventHandled(
 
 void InputRouterImpl::TouchEventHandled(
     const TouchEventWithLatencyInfo& touch_event,
-    InputEventAckSource source,
+    blink::mojom::InputEventResultSource source,
     const ui::LatencyInfo& latency,
-    InputEventAckState state,
+    blink::mojom::InputEventResultState state,
     const base::Optional<ui::DidOverscrollParams>& overscroll,
     const base::Optional<cc::TouchAction>& touch_action) {
   TRACE_EVENT2("input", "InputRouterImpl::TouchEventHandled", "type",
                WebInputEvent::GetName(touch_event.event.GetType()), "ack",
-               InputEventAckStateToString(state));
-  if (source != InputEventAckSource::BROWSER)
+               InputEventResultStateToString(state));
+  if (source != blink::mojom::InputEventResultSource::kBrowser)
     client_->DecrementInFlightEventCount(source);
   touch_event.latency.AddNewLatencyFrom(latency);
 
@@ -619,9 +644,9 @@ void InputRouterImpl::TouchEventHandled(
   // send it in the input event ack to ensure it is available at the
   // time the ACK is handled.
   if (touch_action.has_value()) {
-    if (source == InputEventAckSource::COMPOSITOR_THREAD)
+    if (source == blink::mojom::InputEventResultSource::kCompositorThread)
       OnSetWhiteListedTouchAction(touch_action.value());
-    else if (source == InputEventAckSource::MAIN_THREAD)
+    else if (source == blink::mojom::InputEventResultSource::kMainThread)
       OnSetTouchAction(touch_action.value());
     else
       NOTREACHED();
@@ -637,15 +662,15 @@ void InputRouterImpl::TouchEventHandled(
 
 void InputRouterImpl::GestureEventHandled(
     const GestureEventWithLatencyInfo& gesture_event,
-    InputEventAckSource source,
+    blink::mojom::InputEventResultSource source,
     const ui::LatencyInfo& latency,
-    InputEventAckState state,
+    blink::mojom::InputEventResultState state,
     const base::Optional<ui::DidOverscrollParams>& overscroll,
     const base::Optional<cc::TouchAction>& touch_action) {
   TRACE_EVENT2("input", "InputRouterImpl::GestureEventHandled", "type",
                WebInputEvent::GetName(gesture_event.event.GetType()), "ack",
-               InputEventAckStateToString(state));
-  if (source != InputEventAckSource::BROWSER)
+               InputEventResultStateToString(state));
+  if (source != blink::mojom::InputEventResultSource::kBrowser)
     client_->DecrementInFlightEventCount(source);
 
   if (overscroll) {
@@ -662,15 +687,15 @@ void InputRouterImpl::GestureEventHandled(
 void InputRouterImpl::MouseWheelEventHandled(
     const MouseWheelEventWithLatencyInfo& event,
     MouseWheelEventQueueClient::MouseWheelEventHandledCallback callback,
-    InputEventAckSource source,
+    blink::mojom::InputEventResultSource source,
     const ui::LatencyInfo& latency,
-    InputEventAckState state,
+    blink::mojom::InputEventResultState state,
     const base::Optional<ui::DidOverscrollParams>& overscroll,
     const base::Optional<cc::TouchAction>& touch_action) {
   TRACE_EVENT2("input", "InputRouterImpl::MouseWheelEventHandled", "type",
                WebInputEvent::GetName(event.event.GetType()), "ack",
-               InputEventAckStateToString(state));
-  if (source != InputEventAckSource::BROWSER)
+               InputEventResultStateToString(state));
+  if (source != blink::mojom::InputEventResultSource::kBrowser)
     client_->DecrementInFlightEventCount(source);
   event.latency.AddNewLatencyFrom(latency);
 

@@ -180,7 +180,7 @@ class MediaRouterViewsUI::WebContentsFullscreenOnLoadedObserver final
 
     capture_poll_timer_.Start(
         FROM_HERE, base::TimeDelta::FromSeconds(1),
-        base::BindRepeating(
+        base::BindOnce(
             &WebContentsFullscreenOnLoadedObserver::FullscreenIfContentCaptured,
             base::Unretained(this), web_contents));
   }

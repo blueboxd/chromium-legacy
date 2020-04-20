@@ -2409,8 +2409,9 @@ TEST_F(MainThreadSchedulerImplTest, UseCaseToString) {
 TEST_F(MainThreadSchedulerImplTest, MismatchedDidHandleInputEventOnMainThread) {
   // This should not DCHECK because there was no corresponding compositor side
   // call to DidHandleInputEventOnCompositorThread with
-  // INPUT_EVENT_ACK_STATE_NOT_CONSUMED. There are legitimate reasons for the
-  // compositor to not be there and we don't want to make debugging impossible.
+  // blink::mojom::InputEventResultState::kNotConsumed. There are legitimate
+  // reasons for the compositor to not be there and we don't want to make
+  // debugging impossible.
   scheduler_->DidHandleInputEventOnMainThread(
       FakeInputEvent(blink::WebInputEvent::kGestureFlingStart),
       WebInputEventResult::kHandledSystem);

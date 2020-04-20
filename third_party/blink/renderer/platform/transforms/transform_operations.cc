@@ -24,7 +24,6 @@
 #include <algorithm>
 #include "third_party/blink/renderer/platform/geometry/blend.h"
 #include "third_party/blink/renderer/platform/geometry/float_box.h"
-#include "third_party/blink/renderer/platform/transforms/identity_transform_operation.h"
 #include "third_party/blink/renderer/platform/transforms/interpolated_transform_operation.h"
 #include "third_party/blink/renderer/platform/transforms/matrix_3d_transform_operation.h"
 #include "third_party/blink/renderer/platform/transforms/rotate_transform_operation.h"
@@ -72,11 +71,6 @@ TransformOperations ApplyFunctionToMatchingPrefix(
   return result;
 }
 }  // namespace
-
-TransformOperations::TransformOperations(bool make_identity) {
-  if (make_identity)
-    operations_.push_back(IdentityTransformOperation::Create());
-}
 
 bool TransformOperations::operator==(const TransformOperations& o) const {
   if (operations_.size() != o.operations_.size())
@@ -391,9 +385,6 @@ bool TransformOperations::BlendedBoundsForBox(const FloatBox& box,
       return false;
 
     switch (interpolation_type) {
-      case TransformOperation::kIdentity:
-        bounds->ExpandTo(box);
-        continue;
       case TransformOperation::kTranslate:
       case TransformOperation::kTranslateX:
       case TransformOperation::kTranslateY:

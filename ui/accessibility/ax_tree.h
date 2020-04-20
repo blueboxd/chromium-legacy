@@ -328,7 +328,14 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
   bool enable_extra_mac_nodes_ = false;
 
   // Contains pos_in_set and set_size data for an AXNode.
-  struct NodeSetSizePosInSetInfo;
+  struct NodeSetSizePosInSetInfo {
+    NodeSetSizePosInSetInfo();
+    ~NodeSetSizePosInSetInfo();
+
+    int32_t pos_in_set = 0;
+    int32_t set_size = 0;
+    base::Optional<int> lowest_hierarchical_level;
+  };
 
   // Represents the content of an ordered set which includes the ordered set
   // items and the ordered set container if it exists.

@@ -155,9 +155,6 @@ class MEDIA_EXPORT CdmAdapter : public ContentDecryptionModule,
   cdm::FileIO* CreateFileIO(cdm::FileIOClient* client) override;
   void RequestStorageId(uint32_t version) override;
 
-  // cdm::Host_11 specific implementation.
-  cdm::CdmProxy* RequestCdmProxy(cdm::CdmProxyClient* client) override;
-
  private:
   CdmAdapter(const std::string& key_system,
              const url::Origin& security_origin,

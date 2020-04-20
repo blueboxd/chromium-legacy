@@ -22,9 +22,6 @@ interface WebTestControl {
 
 // Web test messages sent from the renderer process to the browser.
 interface WebTestClient {
-  // Start to inspect a secondary window.
-  InspectSecondaryWindow();
-
   // Sent by secondary test window to notify the test has finished.
   TestFinishedInSecondaryRenderer();
 

@@ -709,7 +709,7 @@ class CONTENT_EXPORT RenderFrameImpl
                            blink::WebHistoryCommitType commit_type,
                            bool should_reset_browser_interface_broker) override;
   void DidCreateInitialEmptyDocument() override;
-  void DidCommitJavascriptUrlNavigation(
+  void DidCommitDocumentReplacementNavigation(
       blink::WebDocumentLoader* document_loader) override;
   void DidClearWindowObject() override;
   void DidCreateDocumentElement() override;

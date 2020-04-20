@@ -111,7 +111,7 @@ VulkanImplementationScenic::CreateViewSurface(gfx::AcceleratedWidget window) {
   }
 
   return std::make_unique<gpu::VulkanSurface>(
-      vulkan_instance_.vk_instance(), surface,
+      vulkan_instance_.vk_instance(), window, surface,
       enforce_protected_memory() /* use_protected_memory */);
 }
 

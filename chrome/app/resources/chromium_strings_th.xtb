@@ -10,6 +10,7 @@
 <translation id="1414495520565016063">คุณลงชื่อเข้าใช้ Chromium แล้ว!</translation>
 <translation id="151962892725702025">Chromium OS ไม่สามารถซิงค์ข้อมูลของคุณเนื่องจากการซิงค์ไม่พร้อมให้บริการสำหรับโดเมนของคุณ</translation>
 <translation id="1524282610922162960">แชร์แท็บ Chromium</translation>
+<translation id="1553461853655228091">Chromium ต้องการสิทธิ์เข้าถึงกล้องเพื่อสร้างแผนที่ 3 มิติของสิ่งที่อยู่รอบตัวคุณ</translation>
 <translation id="1607715478322902680">{COUNT,plural, =0{ผู้ดูแลระบบต้องการให้คุณเปิด Chromium ขึ้นมาใหม่เพื่อใช้การอัปเดต}=1{ผู้ดูแลระบบต้องการให้คุณเปิด Chromium ขึ้นมาใหม่เพื่อใช้การอัปเดต หน้าต่างที่ไม่ระบุตัวตนจะไม่เปิดให้อีก}other{ผู้ดูแลระบบต้องการให้คุณเปิด Chromium ขึ้นมาใหม่เพื่อใช้การอัปเดต หน้าต่างที่ไม่ระบุตัวตนจำนวน # หน้าต่างจะไม่เปิดให้อีก}}</translation>
 <translation id="1708666629004767631">Chromium รุ่นใหม่ที่ปลอดภัยกว่าเดิมพร้อมให้ใช้งานแล้ว</translation>
 <translation id="1774152462503052664">ให้ Chromium ทำงานในพื้นหลัง</translation>
@@ -55,6 +56,7 @@
 <translation id="3258596308407688501">Google Chrome ไม่สามารถอ่านและเขียนข้อมูลในไดเรกทอรีข้อมูล:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
+<translation id="3283186697780795848">ติดตั้ง Chromium เวอร์ชัน <ph name="PRODUCT_VERSION" /> ไว้</translation>
 <translation id="328888136576916638">คีย์ API ของ Google หายไป การทำงานบางอย่างของ Chromium จะถูกปิดใช้งาน</translation>
 <translation id="3296368748942286671">เรียกใช้แอปพลิเคชันพื้นหลังต่อไปเมื่อปิด Chromium</translation>
 <translation id="331951419404882060">Chromium OS ไม่สามารถซิงค์ข้อมูลของคุณเนื่องจากเกิดข้อผิดพลาดในการลงชื่อเข้าใช้</translation>

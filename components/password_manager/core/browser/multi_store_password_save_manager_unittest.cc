@@ -813,4 +813,67 @@ TEST_F(MultiStorePasswordSaveManagerTest,
   password_save_manager()->MoveCredentialsToAccountStore();
 }
 
+TEST_F(MultiStorePasswordSaveManagerTest, BlockMovingWhenExistsInProfileStore) {
+  autofill::GaiaIdHash user1_id_hash =
+      autofill::GaiaIdHash::FromGaiaId("user1@gmail.com");
+  autofill::GaiaIdHash user2_id_hash =
+      autofill::GaiaIdHash::FromGaiaId("user2@gmail.com");
+
+  PasswordForm profile_saved_match(saved_match_);
+  profile_saved_match.username_value = parsed_submitted_form_.username_value;
+  profile_saved_match.password_value = parsed_submitted_form_.password_value;
+  profile_saved_match.in_store = PasswordForm::Store::kProfileStore;
+  profile_saved_match.moving_blocked_for_list = {user1_id_hash};
+
+  SetNonFederatedAndNotifyFetchCompleted({&profile_saved_match});
+
+  password_save_manager()->CreatePendingCredentials(
+      parsed_submitted_form_, observed_form_, submitted_form_,
+      /*is_http_auth=*/false,
+      /*is_credential_api_save=*/false);
+
+  PasswordForm profile_updated_match(profile_saved_match);
+  profile_updated_match.date_last_used =
+      password_save_manager()->GetPendingCredentials().date_last_used;
+  profile_updated_match.moving_blocked_for_list.push_back(user2_id_hash);
+
+  EXPECT_CALL(*mock_account_form_saver(), Update).Times(0);
+  EXPECT_CALL(*mock_profile_form_saver(), Update(profile_updated_match, _, _));
+
+  password_save_manager()->BlockMovingToAccountStoreFor(user2_id_hash);
+}
+
+TEST_F(MultiStorePasswordSaveManagerTest, BlockMovingWhenExistsInBothStores) {
+  autofill::GaiaIdHash user1_id_hash =
+      autofill::GaiaIdHash::FromGaiaId("user1@gmail.com");
+  autofill::GaiaIdHash user2_id_hash =
+      autofill::GaiaIdHash::FromGaiaId("user2@gmail.com");
+
+  PasswordForm account_saved_match(saved_match_);
+  account_saved_match.username_value = parsed_submitted_form_.username_value;
+  account_saved_match.password_value = parsed_submitted_form_.password_value;
+  account_saved_match.in_store = PasswordForm::Store::kAccountStore;
+
+  PasswordForm profile_saved_match(account_saved_match);
+  profile_saved_match.in_store = PasswordForm::Store::kProfileStore;
+  profile_saved_match.moving_blocked_for_list = {user1_id_hash};
+
+  SetNonFederatedAndNotifyFetchCompleted({&profile_saved_match});
+
+  password_save_manager()->CreatePendingCredentials(
+      parsed_submitted_form_, observed_form_, submitted_form_,
+      /*is_http_auth=*/false,
+      /*is_credential_api_save=*/false);
+
+  PasswordForm profile_updated_match(profile_saved_match);
+  profile_updated_match.date_last_used =
+      password_save_manager()->GetPendingCredentials().date_last_used;
+  profile_updated_match.moving_blocked_for_list.push_back(user2_id_hash);
+
+  EXPECT_CALL(*mock_account_form_saver(), Update).Times(0);
+  EXPECT_CALL(*mock_profile_form_saver(), Update(profile_updated_match, _, _));
+
+  password_save_manager()->BlockMovingToAccountStoreFor(user2_id_hash);
+}
+
 }  // namespace password_manager

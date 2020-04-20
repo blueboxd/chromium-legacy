@@ -50,8 +50,8 @@ class GestureScrollEventWatcher : public RenderWidgetHost::InputEventObserver {
       rwh_->RemoveInputEventObserver(this);
   }
 
-  void OnInputEventAck(InputEventAckSource,
-                       InputEventAckState,
+  void OnInputEventAck(blink::mojom::InputEventResultSource,
+                       blink::mojom::InputEventResultState,
                        const blink::WebInputEvent& event) override {
     if (event.GetType() != event_type_)
       return;
@@ -325,7 +325,7 @@ IN_PROC_BROWSER_TEST_F(AutoscrollBrowserTest,
   move_up.SetPositionInScreen(20, 20);
   GetWidgetHost()->ForwardMouseEvent(move_up);
   scroll_begin_watcher->Wait();
-  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS,
+  EXPECT_EQ(blink::mojom::InputEventResultState::kNoConsumerExists,
             scroll_update_watcher->WaitForAck());
 
   // Wait for 10 commits before changing the scroll direction.

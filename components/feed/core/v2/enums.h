@@ -39,7 +39,8 @@ enum class LoadStreamStatus {
   kLoadNotAllowedArticlesListHidden = 14,
   // TODO(harringtond): Emit this status value.
   kCannotParseNetorkResponseBody = 15,
-  kMaxValue = kCannotParseNetorkResponseBody,
+  kLoadMoreModelIsNotLoaded = 16,
+  kMaxValue = kLoadMoreModelIsNotLoaded,
 };
 
 std::ostream& operator<<(std::ostream& out, LoadStreamStatus value);

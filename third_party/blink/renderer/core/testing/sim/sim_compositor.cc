@@ -73,8 +73,7 @@ SimCanvas::Commands SimCompositor::PaintFrame() {
   return canvas.GetCommands();
 }
 
-void SimCompositor::UpdateVisualState() {
-  TestWebWidgetClient::UpdateVisualState();
+void SimCompositor::DidBeginMainFrame() {
   *paint_commands_ = PaintFrame();
 }
 

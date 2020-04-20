@@ -1,0 +1,54 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package reporting_messaging_layer;
+
+// |Destination| indicates which handler a |Record| should be delivered to.
+enum Destination {
+  UNDEFINED_DESTINATION = 0;
+
+  // |UPLOAD_EVENTS| handler sends records to the Eventing pipeline.
+  UPLOAD_EVENTS = 1;
+}
+
+// |Priority| is used to determine when items from the queue should be rate
+// limited or shed. Rate limiting indicates that fewer records will be sent due
+// to message volume, records of the lowest priority are limited first. Shedding
+// records occurs when disk space is at or near the limt, records of the lowest
+// priority are shed first.
+enum Priority {
+  UNDEFINED_PRIORITY = 0;
+
+  // |IMMEDIATE| queues should transfer small amounts of immediately necessary
+  // information. These are the events that will be rate limited last.
+  // |IMMEDIATE| records are the last ones to be shed.
+  // Security events are the only example of events that need to be |IMMEDIATE|.
+  IMMEDIATE = 1;
+
+  // |FAST_BATCH| queues should transfer small amounts of information that may
+  // be critical for administrative experience. These records will be rate
+  // limited before |IMMEDIATE| records.
+  // |FAST_BATCH| records are shed before |IMMEDIATE| records.
+  // Resource utilization and failed application installation are perfect
+  // examples of records that need to be |FAST_BATCH|.
+  FAST_BATCH = 2;
+
+  // |SLOW_BATCH| queues should transfer small amounts of non-immediate data.
+  // These records will be rate limited before |FAST_BATCH| records.
+  // |SLOW_BATCH| records are shed before |FAST_BATCH| records.
+  // Application metrics are a good example of records that should be
+  // |SLOW_BATCH|.
+  SLOW_BATCH = 3;
+
+  // |BACKGROUND_BATCH| queues transfer large amounts of non-immediate data.
+  // These records are the first to be rate limited.
+  // |BACKGROUND_BATCH| records are the first to be shed.
+  // Log files are a perfect examples of records that need to be
+  // |BACKGROUND_BATCH|.
+  BACKGROUND_BATCH = 4;
+}

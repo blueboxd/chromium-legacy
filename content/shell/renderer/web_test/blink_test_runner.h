@@ -98,9 +98,6 @@ class BlinkTestRunner : public RenderViewObserver,
   // Resets auto resize mode off in between tests, without requiring a size.
   void ResetAutoResizeMode();
 
-  void NavigateSecondaryWindow(const GURL& url);
-  void InspectSecondaryWindow();
-
   // Controls WebSQL databases.
   void ClearAllDatabases();
   // Setting quota to kDefaultDatabaseQuota will reset it to the default value.
@@ -240,7 +237,7 @@ class BlinkTestRunner : public RenderViewObserver,
   // Message handlers forwarded by WebTestRenderFrameObserver.
   void OnSetTestConfiguration(mojom::ShellTestConfigurationPtr params);
   void OnReplicateTestConfiguration(mojom::ShellTestConfigurationPtr params);
-  void OnSetupSecondaryRenderer();
+  void OnSetupRendererProcessForNonTestWindow();
   void CaptureDump(mojom::BlinkTestControl::CaptureDumpCallback callback);
   void DidCommitNavigationInMainFrame();
   void OnReset();
@@ -287,8 +284,6 @@ class BlinkTestRunner : public RenderViewObserver,
       get_bluetooth_events_callbacks_;
 
   bool is_main_window_ = false;
-  bool is_secondary_window_ = false;
-
   bool waiting_for_reset_ = false;
 
   std::unique_ptr<AppBannerService> app_banner_service_;

@@ -149,8 +149,8 @@ void SandboxHandler::FetchBrowserChildProcessesCompleted(
   browser_processes_ = std::move(browser_processes);
 
   service_manager::SandboxWin::GetPolicyDiagnostics(
-      base::Bind(&SandboxHandler::FetchSandboxDiagnosticsCompleted,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&SandboxHandler::FetchSandboxDiagnosticsCompleted,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 // This runs nested inside SandboxWin so we get out quickly.

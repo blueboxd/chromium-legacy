@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/layout_shift_region.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
+#include "third_party/blink/renderer/core/timing/layout_shift.h"
 #include "third_party/blink/renderer/platform/geometry/region.h"
 #include "third_party/blink/renderer/platform/graphics/dom_node_id.h"
 #include "third_party/blink/renderer/platform/timer.h"
@@ -100,6 +101,8 @@ class CORE_EXPORT LayoutShiftTracker {
   double SubframeWeightingFactor() const;
   void SetLayoutShiftRects(const Vector<IntRect>& int_rects);
   void UpdateInputTimestamp(base::TimeTicks timestamp);
+  LayoutShift::AttributionList CreateAttributionList() const;
+  void SubmitPerformanceEntry(double score_delta, bool input_detected) const;
 
   // This owns us.
   UntracedMember<LocalFrameView> frame_view_;
@@ -175,13 +178,11 @@ class CORE_EXPORT LayoutShiftTracker {
     bool MoreImpactfulThan(const Attribution&) const;
     int Area() const;
   };
-  static constexpr int kMaxAttributions = 5;
 
   void MaybeRecordAttribution(const Attribution&);
 
-  // Nodes that have contributed to the impact region for the current frame, for
-  // use in trace event. Only populated while tracing.
-  std::array<Attribution, kMaxAttributions> attributions_;
+  // Nodes that have contributed to the impact region for the current frame.
+  std::array<Attribution, LayoutShift::kMaxAttributions> attributions_;
 };
 
 }  // namespace blink

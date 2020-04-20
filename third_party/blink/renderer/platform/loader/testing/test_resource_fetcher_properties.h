@@ -56,6 +56,9 @@ class TestResourceFetcherProperties final : public ResourceFetcherProperties {
     return frame_status_;
   }
   const KURL& WebBundlePhysicalUrl() const override;
+  int GetOutstandingThrottledLimit() const override {
+    return IsMainFrame() ? 3 : 2;
+  }
 
   void SetIsMainFrame(bool value) { is_main_frame_ = value; }
   void SetControllerServiceWorkerMode(ControllerServiceWorkerMode mode) {

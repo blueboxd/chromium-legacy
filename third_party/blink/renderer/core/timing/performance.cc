@@ -50,6 +50,7 @@
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/document_load_timing.h"
@@ -163,11 +164,11 @@ bool IsMeasureMemoryAvailable(ScriptState* script_state) {
   }
   // The window.crossOriginIsolated will be true only for the top-level frame.
   // Until the flag is available we check for the top-level condition manually.
-  ExecutionContext* execution_context = ExecutionContext::From(script_state);
-  if (!execution_context->IsDocument()) {
+  LocalDOMWindow* window = LocalDOMWindow::From(script_state);
+  if (!window) {
     return false;
   }
-  LocalFrame* local_frame = Document::From(execution_context)->GetFrame();
+  LocalFrame* local_frame = window->GetFrame();
   if (!local_frame || !local_frame->IsMainFrame()) {
     return false;
   }

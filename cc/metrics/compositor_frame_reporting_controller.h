@@ -12,13 +12,14 @@
 #include "cc/cc_export.h"
 #include "cc/metrics/compositor_frame_reporter.h"
 #include "cc/metrics/event_metrics.h"
-#include "cc/metrics/frame_sequence_tracker.h"
+#include "cc/metrics/frame_sequence_metrics.h"
 
 namespace viz {
 struct FrameTimingDetails;
 }
 
 namespace cc {
+class UkmManager;
 struct BeginMainFrameMetrics;
 
 // This is used for managing simultaneous CompositorFrameReporter instances
@@ -103,7 +104,7 @@ class CC_EXPORT CompositorFrameReportingController {
   viz::BeginFrameId last_submitted_frame_id_;
 
   bool next_activate_has_invalidation_ = false;
-  base::flat_set<FrameSequenceTrackerType> active_trackers_;
+  CompositorFrameReporter::ActiveTrackers active_trackers_;
 
   // The latency reporter passed to each CompositorFrameReporter. Owned here
   // because it must be common among all reporters.

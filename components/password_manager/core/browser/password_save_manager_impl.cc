@@ -318,6 +318,12 @@ void PasswordSaveManagerImpl::MoveCredentialsToAccountStore() {
   NOTREACHED();
 }
 
+void PasswordSaveManagerImpl::BlockMovingToAccountStoreFor(
+    const autofill::GaiaIdHash& gaia_id_hash) {
+  // Moving credentials is only supported in MultiStorePasswordSaveManager.
+  NOTREACHED();
+}
+
 bool PasswordSaveManagerImpl::IsNewLogin() const {
   return pending_credentials_state_ == PendingCredentialsState::NEW_LOGIN ||
          pending_credentials_state_ == PendingCredentialsState::AUTOMATIC_SAVE;

@@ -234,8 +234,8 @@ void LocalDiscoveryUIHandler::HandleRegisterDevice(
   privet_resolution_ = privet_http_factory_->CreatePrivetHTTP(device);
   privet_resolution_->Start(
       it->second.address,
-      base::Bind(&LocalDiscoveryUIHandler::StartRegisterHTTP,
-                 base::Unretained(this)));
+      base::BindOnce(&LocalDiscoveryUIHandler::StartRegisterHTTP,
+                     base::Unretained(this)));
 }
 
 void LocalDiscoveryUIHandler::HandleCancelRegistration(

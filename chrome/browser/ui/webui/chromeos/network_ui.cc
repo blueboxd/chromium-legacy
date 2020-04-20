@@ -146,7 +146,7 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
     }
     NetworkHandler::Get()->network_configuration_handler()->GetShillProperties(
         service_path,
-        base::Bind(
+        base::BindOnce(
             &NetworkConfigMessageHandler::GetShillNetworkPropertiesSuccess,
             weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&NetworkConfigMessageHandler::ErrorCallback,

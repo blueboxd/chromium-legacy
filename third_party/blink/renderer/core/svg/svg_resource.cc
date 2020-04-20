@@ -9,12 +9,9 @@
 #include "third_party/blink/renderer/core/dom/id_target_observer.h"
 #include "third_party/blink/renderer/core/dom/tree_scope.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_container.h"
-#include "third_party/blink/renderer/core/loader/resource/document_resource.h"
 #include "third_party/blink/renderer/core/svg/svg_uri_reference.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
-#include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 
 namespace blink {
 
@@ -132,35 +129,24 @@ void LocalSVGResource::Trace(Visitor* visitor) {
 
 ExternalSVGResource::ExternalSVGResource(const KURL& url) : url_(url) {}
 
-void ExternalSVGResource::Load(const Document& document) {
-  if (resource_document_)
+void ExternalSVGResource::Load(Document& document) {
+  if (cache_entry_)
     return;
-  ResourceLoaderOptions options;
-  options.initiator_info.name = fetch_initiator_type_names::kCSS;
-  FetchParameters params(ResourceRequest(url_), options);
-  params.MutableResourceRequest().SetMode(
-      network::mojom::blink::RequestMode::kSameOrigin);
-  resource_document_ =
-      DocumentResource::FetchSVGDocument(params, document, this);
+  cache_entry_ = SVGExternalDocumentCache::From(document)->Get(
+      this, url_, fetch_initiator_type_names::kCSS);
   target_ = ResolveTarget();
 }
 
-void ExternalSVGResource::LoadWithoutCSP(const Document& document) {
-  if (resource_document_)
+void ExternalSVGResource::LoadWithoutCSP(Document& document) {
+  if (cache_entry_)
     return;
-  ResourceLoaderOptions options;
-  options.initiator_info.name = fetch_initiator_type_names::kCSS;
-  FetchParameters params(ResourceRequest(url_), options);
-  params.SetContentSecurityCheck(
+  cache_entry_ = SVGExternalDocumentCache::From(document)->Get(
+      this, url_, fetch_initiator_type_names::kCSS,
       network::mojom::blink::CSPDisposition::DO_NOT_CHECK);
-  params.MutableResourceRequest().SetMode(
-      network::mojom::blink::RequestMode::kSameOrigin);
-  resource_document_ =
-      DocumentResource::FetchSVGDocument(params, document, this);
   target_ = ResolveTarget();
 }
 
-void ExternalSVGResource::NotifyFinished(Resource*) {
+void ExternalSVGResource::NotifyFinished(Document*) {
   Element* new_target = ResolveTarget();
   if (new_target == target_)
     return;
@@ -168,16 +154,12 @@ void ExternalSVGResource::NotifyFinished(Resource*) {
   NotifyElementChanged();
 }
 
-String ExternalSVGResource::DebugName() const {
-  return "ExternalSVGResource";
-}
-
 Element* ExternalSVGResource::ResolveTarget() {
-  if (!resource_document_)
+  if (!cache_entry_)
     return nullptr;
   if (!url_.HasFragmentIdentifier())
     return nullptr;
-  Document* external_document = resource_document_->GetDocument();
+  Document* external_document = cache_entry_->GetDocument();
   if (!external_document)
     return nullptr;
   AtomicString decoded_fragment(DecodeURLEscapeSequences(
@@ -186,9 +168,9 @@ Element* ExternalSVGResource::ResolveTarget() {
 }
 
 void ExternalSVGResource::Trace(Visitor* visitor) {
-  visitor->Trace(resource_document_);
+  visitor->Trace(cache_entry_);
   SVGResource::Trace(visitor);
-  ResourceClient::Trace(visitor);
+  SVGExternalDocumentCache::Client::Trace(visitor);
 }
 
 }  // namespace blink

@@ -610,10 +610,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("setWillSendRequestClearReferrer",
                  &TestRunnerBindings::SetWillSendRequestClearReferrer)
       .SetMethod("setWindowIsKey", &TestRunnerBindings::SetWindowIsKey)
-      .SetMethod("navigateSecondaryWindow",
-                 &TestRunnerBindings::NavigateSecondaryWindow)
-      .SetMethod("inspectSecondaryWindow",
-                 &TestRunnerBindings::InspectSecondaryWindow)
       .SetMethod("simulateWebNotificationClick",
                  &TestRunnerBindings::SimulateWebNotificationClick)
       .SetMethod("simulateWebNotificationClose",
@@ -1175,16 +1171,6 @@ void TestRunnerBindings::DumpNavigationPolicy() {
     runner_->DumpNavigationPolicy();
 }
 
-void TestRunnerBindings::NavigateSecondaryWindow(const std::string& url) {
-  if (runner_)
-    runner_->NavigateSecondaryWindow(GURL(url));
-}
-
-void TestRunnerBindings::InspectSecondaryWindow() {
-  if (runner_)
-    runner_->InspectSecondaryWindow();
-}
-
 bool TestRunnerBindings::IsChooserShown() {
   if (runner_)
     return runner_->IsChooserShown();
@@ -1527,7 +1513,7 @@ void TestRunner::Install(
     base::WeakPtr<TestRunnerForSpecificView> view_test_runner) {
   // In WPT, only reftests generate pixel results.
   TestRunnerBindings::Install(weak_factory_.GetWeakPtr(), view_test_runner,
-                              frame, is_web_platform_tests_mode(),
+                              frame, IsWebPlatformTestsMode(),
                               IsFramePartOfMainTestWindow(frame));
   mock_screen_orientation_client_.OverrideAssociatedInterfaceProviderForFrame(
       frame);
@@ -1546,7 +1532,6 @@ void TestRunner::SetMainView(blink::WebView* web_view) {
 }
 
 void TestRunner::Reset() {
-  is_web_platform_tests_mode_ = false;
   loading_frames_.clear();
   web_test_runtime_flags_.Reset();
   mock_screen_orientation_client_.ResetData();
@@ -1949,14 +1934,6 @@ void TestRunner::SetV8CacheDisabled(bool disabled) {
   main_view_->GetSettings()->SetV8CacheOptions(
       disabled ? blink::WebSettings::V8CacheOptions::kNone
                : blink::WebSettings::V8CacheOptions::kDefault);
-}
-
-void TestRunner::NavigateSecondaryWindow(const GURL& url) {
-  blink_test_runner_->NavigateSecondaryWindow(url);
-}
-
-void TestRunner::InspectSecondaryWindow() {
-  blink_test_runner_->InspectSecondaryWindow();
 }
 
 class WorkItemBackForward : public TestRunner::WorkItem {
@@ -2494,6 +2471,15 @@ void TestRunner::DumpNavigationPolicy() {
 void TestRunner::SetDumpConsoleMessages(bool value) {
   web_test_runtime_flags_.set_dump_console_messages(value);
   OnWebTestRuntimeFlagsChanged();
+}
+
+void TestRunner::SetIsWebPlatformTestsMode() {
+  web_test_runtime_flags_.set_is_web_platform_tests_mode(true);
+  OnWebTestRuntimeFlagsChanged();
+}
+
+bool TestRunner::IsWebPlatformTestsMode() const {
+  return web_test_runtime_flags_.is_web_platform_tests_mode();
 }
 
 void TestRunner::SetDumpJavaScriptDialogs(bool value) {

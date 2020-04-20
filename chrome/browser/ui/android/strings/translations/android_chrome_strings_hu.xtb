@@ -54,6 +54,7 @@
 <translation id="1331212799747679585">A Chrome frissítése nem lehetséges. További lehetőségek</translation>
 <translation id="1332501820983677155">A Google Chrome-funkciók billentyűparancsai</translation>
 <translation id="1360432990279830238">Kijelentkezik, és kikapcsolja a szinkronizálást?</translation>
+<translation id="1364532808393826295"><ph name="APP_NAME" />–<ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">A(z) <ph name="SITE_NAME" /> webhely hozzáadva</translation>
 <translation id="1373696734384179344">Nincs elegendő memória a kiválasztott tartalom letöltéséhez.</translation>
 <translation id="1376578503827013741">Számítás…</translation>
@@ -140,6 +141,7 @@
 <translation id="2017836877785168846">Törli a címsávban található előzményeket és automatikus kiegészítéseket.</translation>
 <translation id="2021896219286479412">Teljes képernyős oldal vezérlői</translation>
 <translation id="2025115093177348061">Kiterjesztett valóság</translation>
+<translation id="2030769033451695672">Koppintson, hogy visszatérjen ide: <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2038563949887743358">Kapcsolja be az Asztali webhely kérése funkciót</translation>
 <translation id="2041019821020695769">Ahhoz, hogy a Chrome értesítéseket küldhessen, az értesítéseket az <ph name="BEGIN_LINK" />Android-beállítások<ph name="END_LINK" /> között is be kell kapcsolni.</translation>
 <translation id="204321170514947529">A(z) <ph name="APP_NAME" /> a Chrome-ban is rendelkezik adatokkal</translation>
@@ -301,6 +303,7 @@ A kereséshez tartsa nyomva a kívánt szót. A keresés finomításához válas
 <translation id="3207960819495026254">Könyvjelző rögzítve</translation>
 <translation id="3211426585530211793"><ph name="ITEM_TITLE" /> törölve</translation>
 <translation id="321773570071367578">Ha elfelejtette összetett jelszavát, vagy módosítani szeretné ezt a beállítást, <ph name="BEGIN_LINK" />állítsa alaphelyzetbe a szinkronizálást<ph name="END_LINK" /></translation>
+<translation id="3223655101706843289">Ezzel törli a(z) <ph name="ORIGIN" /> és alkalmazásai által tárolt összes adatot és cookie-t a kezdőképernyőn.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3232754137068452469">Internetes alkalmazás</translation>
 <translation id="3236059992281584593">1 perc van hátra</translation>
@@ -535,6 +538,7 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="4943872375798546930">Nincs találat</translation>
 <translation id="4961107849584082341">Bármely nyelvre lefordíthatja ezt az oldalt</translation>
 <translation id="4962975101802056554">Az eszköz összes engedélyének visszavonása</translation>
+<translation id="4964199952259983386">Ahhoz, hogy a Chrome használhassa az AR-t, kapcsolja be a kamerát is az <ph name="BEGIN_LINK" />Android-beállítások<ph name="END_LINK" /> között.</translation>
 <translation id="4970824347203572753">Nem áll rendelkezésre az Ön tartózkodási helyén</translation>
 <translation id="497421865427891073">Előrelépés</translation>
 <translation id="4988210275050210843">Fájl letöltése folyamatban (<ph name="MEGABYTES" />).</translation>
@@ -634,6 +638,7 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="5684874026226664614">Hoppá! Az oldalt nem sikerült lefordítani.</translation>
 <translation id="5686790454216892815">A fájl neve túl hosszú</translation>
 <translation id="5689516760719285838">Tartózkodási hely</translation>
+<translation id="5690795753582697420">A kamera ki van kapcsolva az Android-beállítások között</translation>
 <translation id="5694049548840660018">Egyszerűen megnyithatja a kezdőlapot</translation>
 <translation id="569536719314091526">Bármely nyelvre lefordíthatja ezt az oldalt a További lehetőségek gomb segítségével</translation>
 <translation id="5710871682236653961">Kérdezzen rá, mielőtt engedélyezi a webhelyek számára az adatok küldését és fogadását, amikor NFC-eszközökre koppint (javasolt)</translation>
@@ -665,6 +670,7 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="5876056640971328065">Videó szüneteltetése</translation>
 <translation id="5884076754568147479">Annak érdekében, hogy segíteni tudjon a feladatok elvégzésében, a Google megkapja azoknak a webhelyeknek az URL-jeit és tartalmait, amelyeken Ön használta Segédjét, valamint megkapja a Segéden keresztül elküldött információkat</translation>
 <translation id="5919204609460789179">A szinkronizálás megkezdéséhez frissítse a következőt: <ph name="PRODUCT_NAME" /></translation>
+<translation id="5922853908706496913">Képernyő megosztása</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> megtakarított adatmennyiség</translation>
 <translation id="5939518447894949180">Visszaállítás</translation>
 <translation id="5942872142862698679">A Google használata a kereséshez</translation>
@@ -875,6 +881,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="751961395872307827">Nem lehet csatlakozni a webhelyhez</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7542481630195938534">Nem sikerült lekérni a javaslatokat</translation>
+<translation id="7554752735887601236">Valamilyen webhely használja az Ön mikrofonját</translation>
 <translation id="7559975015014302720">Az Egyszerűsített mód ki van kapcsolva</translation>
 <translation id="7562080006725997899">Böngészési adatok törlése</translation>
 <translation id="756809126120519699">Chrome-adatok törölve</translation>
@@ -911,7 +918,9 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 és további <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 és további <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7791543448312431591">Hozzáadás</translation>
 <translation id="780301667611848630">Köszönöm, nem</translation>
+<translation id="7804248752222191302">Valamilyen webhely használja az Ön kameráját</translation>
 <translation id="7810647596859435254">Megnyitás ezzel:</translation>
+<translation id="7817023149356982970">A rendszer kijelentkezteti majd erről a webhelyről</translation>
 <translation id="7821588508402923572">Itt látható a megtakarított adatmennyiség</translation>
 <translation id="7828557259026017104">A cookie-k a felkeresett webhelyek által létrehozott fájlok. A webhelyek arra használják őket, hogy megjegyezzék az Ön preferenciáit. A harmadik féltől származó cookie-kat más webhelyek hozzák létre. Ezek a webhelyek birtokolják a meglátogatott weboldalon látható tartalom bizonyos részét (például hirdetéseket vagy képeket).</translation>
 <translation id="783819812427904514">Videó némításának feloldása</translation>
@@ -990,8 +999,10 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="8364299278605033898">Tekintse meg a népszerű webhelyeket</translation>
 <translation id="8368027906805972958">Ismeretlen vagy nem támogatott eszköz (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">Háttérben történő szinkronizálás engedélyezése adott webhely esetében.</translation>
+<translation id="83792324527827022">Valamilyen webhely használja az Ön kameráját és mikrofonját</translation>
 <translation id="8380167699614421159">Ez a webhely tolakodó vagy félrevezető hirdetéseket jelenít meg</translation>
 <translation id="8393700583063109961">Üzenet küldése</translation>
+<translation id="8394832520002899662">Koppintson a webhelyre való visszatéréshez</translation>
 <translation id="8413126021676339697">Az összes előzmény</translation>
 <translation id="8427875596167638501">Félmagasságban megnyitott előnézeti ablak</translation>
 <translation id="8428213095426709021">Beállítások</translation>
@@ -1034,6 +1045,8 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="8687353297350450808">{N_BARS,plural, =1{Jelerősség szintje: # sáv}other{Jelerősség szintje: # sáv}}</translation>
 <translation id="868929229000858085">Keresés a névjegyek között</translation>
 <translation id="869891660844655955">Lejárati dátum</translation>
+<translation id="8702612070107455751">Az offline adatok törlődnek.</translation>
+<translation id="8737217482364735741">Ezzel törli a(z) <ph name="ORIGIN" /> által tárolt összes adatot és cookie-t.</translation>
 <translation id="8748850008226585750">Tartalom elrejtve</translation>
 <translation id="8751914237388039244">Válasszon képet</translation>
 <translation id="8758557275681689734">Az összes megnyitott ablak megtekintése</translation>
@@ -1080,6 +1093,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="9100610230175265781">Összetett jelszó szükséges</translation>
 <translation id="9102803872260866941">Az előnézeti lap meg van nyitva</translation>
 <translation id="9104217018994036254">Lap megosztására szolgáló eszközök listája.</translation>
+<translation id="9108312223223904744">Telefon a biztonsági hardverkulcs támogatásaként</translation>
 <translation id="9133397713400217035">Offline felfedezés</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Eredeti megjelenítése</translation>

@@ -52,6 +52,14 @@ struct BlinkTestDump {
 
 // Blink test messages sent from the browser process to the renderer.
 interface BlinkTestControl {
+  // Sets up a renderer in a window other than the main test window. This may
+  // be for a window opened by javascript (window.open()) or by the test harness
+  // (devtools inspector). This should be called as early as possible (as soon
+  // as a RenderFrame has been created for this interface to be available) after
+  // the renderer process is created, for each process not tied to the main
+  // window.
+  SetupRendererProcessForNonTestWindow();
+
   CaptureDump() => (BlinkTestDump result);
 
   CompositeWithRaster() => ();
@@ -66,10 +74,6 @@ interface BlinkTestControl {
   // Sets the test config for a web test that is being started.  This message
   // is sent only to a renderer that hosts parts of the main test window.
   SetTestConfiguration(ShellTestConfiguration config);
-
-  // Sets up a secondary renderer (renderer that doesn't [yet] host parts of the
-  // main test window) for a web test.
-  SetupSecondaryRenderer();
 
   // Tells the renderer to reset all test runners.
   Reset();
@@ -138,9 +142,6 @@ interface BlinkTestClient {
 
   // Trigger a loadURL navigation on the main WebView.
   LoadURLForFrame(url.mojom.Url url, string frame_name);
-
-  // Naivgate a URL on the secondary window.
-  NavigateSecondaryWindow(url.mojom.Url url);
 
   // Mark the orientation changed in the browser process for the layout tests
   // that request fullscreen on screen orientation change.

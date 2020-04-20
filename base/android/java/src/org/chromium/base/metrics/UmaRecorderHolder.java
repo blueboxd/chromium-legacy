@@ -4,32 +4,14 @@
 
 package org.chromium.base.metrics;
 
-import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
-
-import javax.annotation.concurrent.GuardedBy;
 
 /** Holds the {@link CachingUmaRecorder} used by {@link RecordHistogram}. */
 public class UmaRecorderHolder {
+    private UmaRecorderHolder() {}
+
     /** The instance held by this class. */
     private static CachingUmaRecorder sRecorder = new CachingUmaRecorder();
-
-    /**
-     * {@code null}, unless recording is currently disabled for testing. Exposed for use in peer
-     * classes {e.g. AnimationFrameTimeHistogram}.
-     * <p>
-     * Use {@link #setDisabledForTests(boolean)} to set this value.
-     */
-    @Nullable
-    private static Throwable sDisabledForTest;
-
-    /** Lock for {@code sDisabledDelegateForTest}. */
-    private static final Object sLock = new Object();
-
-    /** The delegate disabled by {@link #setDisabledForTests(boolean)}. */
-    @GuardedBy("sLock")
-    @Nullable
-    private static UmaRecorder sDisabledDelegateForTest;
 
     /** Returns the {@link CachingUmaRecorder}. */
     /* package */ static CachingUmaRecorder get() {
@@ -38,35 +20,16 @@ public class UmaRecorderHolder {
 
     /** Starts forwarding metrics to the native code. Returns after the cache has been flushed. */
     public static void onLibraryLoaded() {
-        synchronized (sLock) {
-            if (sDisabledForTest == null) {
-                sRecorder.setDelegate(new NativeUmaRecorder());
-            } else {
-                // If metrics are disabled for test, use native when metrics get restored.
-                sDisabledDelegateForTest = new NativeUmaRecorder();
-            }
-        }
+        sRecorder.setDelegate(new NativeUmaRecorder());
     }
 
     /**
      * Tests may need to disable metrics. The value should be reset after the test done, to avoid
      * carrying over state to unrelated tests.
+     *
+     * @deprecated This method does nothing.
      */
     @VisibleForTesting
-    public static void setDisabledForTests(boolean disabled) {
-        synchronized (sLock) {
-            if (disabled) {
-                if (sDisabledForTest != null) {
-                    throw new IllegalStateException(
-                            "Histograms are already disabled.", sDisabledForTest);
-                }
-                sDisabledForTest = new Throwable();
-                sDisabledDelegateForTest = sRecorder.setDelegate(new NoopUmaRecorder());
-            } else {
-                sDisabledForTest = null;
-                sRecorder.setDelegate(sDisabledDelegateForTest);
-                sDisabledDelegateForTest = null;
-            }
-        }
-    }
+    @Deprecated
+    public static void setDisabledForTests(boolean disabled) {}
 }

@@ -12,7 +12,7 @@
 #include "content/common/buildflags.h"
 #include "content/common/content_export.h"
 #include "content/common/drag_event_source_info.h"
-#include "content/public/common/input_event_ack_state.h"
+#include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
 
 namespace blink {
@@ -95,7 +95,7 @@ class CONTENT_EXPORT RenderViewHostDelegateView {
 
   // Do post-event tasks for gesture events.
   virtual void GestureEventAck(const blink::WebGestureEvent& event,
-                               InputEventAckState ack_result);
+                               blink::mojom::InputEventResultState ack_result);
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
   // Shows a popup menu with the specified items.

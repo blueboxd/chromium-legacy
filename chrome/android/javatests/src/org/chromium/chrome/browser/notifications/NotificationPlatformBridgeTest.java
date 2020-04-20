@@ -44,7 +44,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.TabTitleObserver;
-import org.chromium.chrome.test.util.browser.notifications.MockNotificationManagerProxy.NotificationEntry;
+import org.chromium.components.browser_ui.notifications.MockNotificationManagerProxy.NotificationEntry;
 import org.chromium.components.browser_ui.widget.RoundedIconGenerator;
 import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.permissions.PermissionDialogController;

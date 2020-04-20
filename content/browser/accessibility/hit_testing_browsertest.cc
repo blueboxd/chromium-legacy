@@ -224,7 +224,8 @@ class AccessibilityHitTestingBrowserTest
   void SimulatePinchZoom(float desired_page_scale) {
     RenderFrameSubmissionObserver observer(shell()->web_contents());
     AccessibilityNotificationWaiter accessibility_waiter(
-        shell()->web_contents(), ui::AXMode(), ax::mojom::Event::kNone);
+        shell()->web_contents(), ui::AXMode(),
+        ax::mojom::Event::kLocationChanged);
 
     const gfx::Rect contents_rect =
         shell()->web_contents()->GetContainerBounds();

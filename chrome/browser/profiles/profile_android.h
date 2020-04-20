@@ -61,6 +61,8 @@ class ProfileAndroid : public base::SupportsUserData::Data {
 
   void Wipe(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
+  jlong GetBrowserContextPointer(JNIEnv* env);
+
   explicit ProfileAndroid(Profile* profile);
   ~ProfileAndroid() override;
 

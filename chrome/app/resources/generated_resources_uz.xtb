@@ -419,6 +419,11 @@ xizmatlarini sizga moslashtirish maqsadlarida foydalanishi mumkin. Bu ruxsatni m
 <translation id="1555130319947370107">Ko‘k</translation>
 <translation id="1556537182262721003">Kengaytmalar katalogini profilga ko‘chirib bo‘lmadi.</translation>
 <translation id="155865706765934889">Sensorli panel</translation>
+<translation id="1560763881671211335">G Suite for Education administratorlari G Suite for Education hisobiga kirgan foydalanuvchilar qaysi Google xizmatlaridan foydalanish mumkinligini aniqlaydi. Maktab administratorlaridan quyi foydalanuvchilari tomonidan xizmatlarning ishlatilishi uchun ruxsat berish yoki olish talab etiladi.
+
+    Brauzerning ishlashi haqida axborot (jumladan, tarix, xatchoʻplar va parollar) Family Link hisobi bilan saqlanadi, maktab hisobi bilan esa saqlanmaydi.
+
+    Family Link orqali ota-ona sozlamalari tatbiq etiladi. Agar ilgari ilova yoki saytni bloklagan boʻlsangiz, uni yana bajarishingiz shart emas.</translation>
 <translation id="1566049601598938765">Veb-sayt</translation>
 <translation id="15662109988763471">Bu printer mavjud emas yoki notoʻgʻri oʻrnatilgan. Uni tekshiring yoki boshqasini tanlang.</translation>
 <translation id="1567387640189251553">Parol kiritilgandan keyin boshqa klaviatura ulandi. Bu bosilayotgan tugmalarni kuzatish urinishi bo‘lishi mumkin.</translation>
@@ -1198,6 +1203,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="258095186877893873">Uzoq</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (<ph name="PLATFORM_VERSION" /> platformasi) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Kerberos chiptasini olish imkonsiz. Yana urining yoki tashkilotingizning qurilma boʻyicha administratoriga murojaat qiling. (Xatolik kodi: <ph name="ERROR_CODE" />).</translation>
+<translation id="2585013490795742997"><ph name="QUERY" /> uchun 1 ta natija chiqarilgan</translation>
 <translation id="2585724835339714757">Bu varaq ekraningizni namoyish qilmoqda.</translation>
 <translation id="2586657967955657006">Klipbord</translation>
 <translation id="2586672484245266891">Qisqaroq URL kiriting</translation>
@@ -1884,6 +1890,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="3498215018399854026">Ota-onangiz bilan bog‘lanib bo‘lmadi. Qaytadan urinib ko‘ring.</translation>
 <translation id="3500417806337761827">Umumiy jild ulanmadi. Allaqachon juda koʻp umumiy SMB jildlar ulangan.</translation>
 <translation id="3505030558724226696">Qurilmadan ruxsatni olib qo‘yish</translation>
+<translation id="3507132249039706973">Standart himoya yoniq</translation>
 <translation id="3507421388498836150">“<ph name="EXTENSION_NAME" />” uchun joriy ruxsatlar</translation>
 <translation id="3507888235492474624">Bluetooth qurilmalarni qayta qidirish</translation>
 <translation id="3508492320654304609">Kirish maʼlumotlaringiz olib tashlanmadi</translation>
@@ -3237,6 +3244,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="5352033265844765294">Vaqt shtampi</translation>
 <translation id="5353252989841766347">Parollarni Chrome’dan eksport qilish</translation>
 <translation id="5355099869024327351">Sizga bildirishnomalar chiqishi uchun Assistentni ishga tushiradi.</translation>
+<translation id="5355191726083956201">Kengaytirilgan himoya yoniq</translation>
 <translation id="5355926466126177564">“<ph name="EXTENSION_NAME" />” kengaytmasi omniboks orqali qidiruv so‘rovini kiritishda ishlatiladigan birlamchi qidiruv tizimini o‘zgartirdi.</translation>
 <translation id="5359910752122114278">1 ta natija</translation>
 <translation id="5360150013186312835">Asboblar panelida ko‘rsatish</translation>
@@ -3548,6 +3556,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="577322787686508614">“<ph name="DEVICE_NAME" />” qurilmasidan ma’lumot o‘qish taqiqlangan.</translation>
 <translation id="5774295353725270860">“Fayllar” ilovasini ochish</translation>
 <translation id="577624874850706961">Cookie fayllari qidiruvi</translation>
+<translation id="5776858208024364029"><ph name="QUERY" /> – <ph name="NUMBER" /> ta natija</translation>
 <translation id="5777468213129569553">Chrome brauzerini ochish</translation>
 <translation id="5778747455497889540">Bu modul kompyuteringiz uchun quyidagi tasodifiy parolni yaratdi:</translation>
 <translation id="5780011244986845107">Tanlangan jildda maxfiy maʼlumotlar mavjud. “<ph name="APP_NAME" />” ilovasiga ushbu jildni oʻqish uchun doimiy ruxsat berilsinmi?</translation>
@@ -4104,6 +4113,7 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
 <ph name="FILE_INFO" />
 <ph name="EVENT_NAME" /></translation>
+<translation id="6520876759015997832"><ph name="LIST_POSITION" />/<ph name="LIST_SIZE" /> ta natija: <ph name="SEARCH_RESULT_TEXT" />. Boʻlimga kirish uchun Enter tugmasini bosing.</translation>
 <translation id="652492607360843641">Siz <ph name="NETWORK_TYPE" /> tarmoqqa ulangansiz.</translation>
 <translation id="6527303717912515753">Ulashish</translation>
 <translation id="6528513914570774834">Bu tarmoqdan foydalanish uchun ushbu qurilmadagi boshqa foydalanuvchilarga ruxsat berish</translation>
@@ -4115,6 +4125,7 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="6532206849875187177">Xavfsizlik va kirish</translation>
 <translation id="6532527800157340614">Hisobga kirishda xatolik yuz berdi: ruxsat tokeni berilmadi. Tarmoq sozlamalarini tekshiring va qaytadan urining.</translation>
 <translation id="6532663472409656417">Korporativ domenda qayd qilingan</translation>
+<translation id="6535331821390304775">Bu turdagi havolalar har doim <ph name="ORIGIN" /> ilovasida ochilsin</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Eslatma:<ph name="END_BOLD" /> Ushbu funksiya faqat zarurligida yoqilsin, chunki ma’lumotlarni yig‘ish jarayoni unumdorlikni pasaytirishi mumkin.</translation>
 <translation id="6541638731489116978">Bu sayt uchun harakat sensorlaridan foydalanish taqiqlandi</translation>
 <translation id="6545665334409411530">Takrorlash tezligi</translation>
@@ -4244,6 +4255,7 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="6727969043791803658">Ulangan, batareya quvvati: <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="6732801395666424405">Sertifikatlar yuklanmadi</translation>
 <translation id="6732900235521116609">Yorliq olib tashlanmadi</translation>
+<translation id="6734468588183300211">Inkognito rejimida cookie fayllaringiz yopiq boʻladi va saytlar reklamalarni sizga moslashtirish uchun brauzerdagi faoliyatingizni kuzata olmaydi. Ayrim saytlardagi funksiyalar ishlamay qolishi mumkin.</translation>
 <translation id="6735304988756581115">Cookie fayllari va boshqa sayt ma‘lumotlarini ko‘rsatish...</translation>
 <translation id="6736243959894955139">Manzil</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
@@ -4256,6 +4268,7 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="674632704103926902">Teginib tortish imkoniyatini yoqish</translation>
 <translation id="6748217015615267851">Videoni renderlash vositasi: <ph name="RENDERER_URL" /></translation>
 <translation id="6748465660675848252">Agar davom etsangiz, faqat sinxronlangan ma’lumotlar qayta tiklanadi. Qurilmadagi ma’lumotlar esa tiklanmaydi.</translation>
+<translation id="6749006854028927059">Saytlar reklamalarni sizga moslashtirish uchun brauzerdagi faoliyatingizni kuzata olmaydi Ayrim saytlardagi funksiyalar ishlamay qolishi mumkin.</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (Inkognito)</translation>
 <translation id="6757101664402245801">URL manzilidan nusxa olindi.</translation>
 <translation id="6758056191028427665">Bizga fikr-mulohaza yuboring.</translation>
@@ -4347,6 +4360,7 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="686664946474413495">Rang harorati</translation>
 <translation id="6871644448911473373">OCSP javob beruvchisi: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">Server kiritilgan parolni qabul qilmadi.</translation>
+<translation id="6874170800191969835"><ph name="SEARCH_RESULT_TEXT" /> sahifasiga kirildi.</translation>
 <translation id="6876155724392614295">Velosiped</translation>
 <translation id="6876469544038980967">Foydasiz</translation>
 <translation id="6878422606530379992">Sensorlarga ruxsat berildi</translation>
@@ -4617,6 +4631,7 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="7235737137505019098">Elektron kalitda boshqa hisoblar uchun yetarli joy qolmadi.</translation>
 <translation id="7238643356913091553"><ph name="NETWORK_NAME" />, Batafsil</translation>
 <translation id="7240339475467890413">Yangi hotspotga ulanilsinmi?</translation>
+<translation id="7240847845291869311">Farzandingiz bu qurilmagan G Suite for Education Google hisobini kiritmoqchi. <ph name="LINK_BEGIN" />G Suite for Education maxfiylik eslatmasi<ph name="LINK_END" /> G Suite for Education foydalanuvchilar va ota-onalarga mahsulotga oid qaysi maʼlumotlari toʻplanishi, nima sababdan toʻplanishi va ular bilan nima ishlar qilinishini tushuntiradi.</translation>
 <translation id="7241389281993241388">Mijoz sertifikatini import qilish uchun, <ph name="TOKEN_NAME" />’ga kiring.</translation>
 <translation id="7241443820034350811">Agar elektron kalit ekrandagi ro‘yxatda chiqmasa, tugmasini kamida 5 soniya bosib turing.</translation>
 <translation id="7243632151880336635">Tozalash va sinxronizatsiyadan chiqish</translation>
@@ -5198,6 +5213,7 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="7987814697832569482">Har doim VPN orqali ulanish</translation>
 <translation id="7988355189918024273">Maxsus imkoniyatlarni yoqish</translation>
 <translation id="7991296728590311172">Switch Access sozlamalari</translation>
+<translation id="7992202128769240372"><ph name="NUMBER_OF_SHEETS" /> ta <ph name="SHEETS_LABEL" /> cheklovidan oshib ketdi</translation>
 <translation id="7994350303002908848">Plugin VM oʻrnatilmadi. Qayta urining yoki tashkilotingizning qurilma boʻyicha administratoriga murojaat qiling. Xatolik kodi: <ph name="ERROR_CODE" />.</translation>
 <translation id="7994702968232966508">EAP usuli</translation>
 <translation id="7997826902155442747">Jarayonlarning muhimligi</translation>

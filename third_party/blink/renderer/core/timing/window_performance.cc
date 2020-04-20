@@ -170,7 +170,7 @@ WindowPerformance::~WindowPerformance() = default;
 ExecutionContext* WindowPerformance::GetExecutionContext() const {
   if (!GetFrame())
     return nullptr;
-  return GetFrame()->GetDocument()->ToExecutionContext();
+  return GetFrame()->DomWindow();
 }
 
 PerformanceTiming* WindowPerformance::timing() const {
@@ -260,15 +260,15 @@ std::pair<AtomicString, DOMWindow*> WindowPerformance::SanitizedAttribution(
     return std::make_pair(kAmbiguousAttribution, nullptr);
   }
 
-  Document* document = Document::DynamicFrom(task_context);
-  if (!document || !document->GetFrame()) {
+  LocalDOMWindow* window = DynamicTo<LocalDOMWindow>(task_context);
+  if (!window || !window->GetFrame()) {
     // Unable to attribute as no script was involved.
     DEFINE_STATIC_LOCAL(const AtomicString, kUnknownAttribution, ("unknown"));
     return std::make_pair(kUnknownAttribution, nullptr);
   }
 
   // Exactly one culprit location, attribute based on origin boundary.
-  Frame* culprit_frame = document->GetFrame();
+  Frame* culprit_frame = window->GetFrame();
   DCHECK(culprit_frame);
   if (CanAccessOrigin(observer_frame, culprit_frame)) {
     // From accessible frames or same origin, return culprit location URL.
@@ -433,13 +433,7 @@ void WindowPerformance::DispatchFirstInputTiming(
   first_input_timing_ = entry;
 }
 
-void WindowPerformance::AddLayoutShiftValue(double value,
-                                            bool input_detected,
-                                            base::TimeTicks input_timestamp) {
-  auto* entry = MakeGarbageCollected<LayoutShift>(
-      now(), value, input_detected,
-      input_detected ? MonotonicTimeToDOMHighResTimeStamp(input_timestamp)
-                     : 0.0);
+void WindowPerformance::AddLayoutShiftEntry(LayoutShift* entry) {
   if (HasObserverFor(PerformanceEntry::kLayoutShift))
     NotifyObserversOfEntry(*entry);
   AddLayoutShiftBuffer(*entry);

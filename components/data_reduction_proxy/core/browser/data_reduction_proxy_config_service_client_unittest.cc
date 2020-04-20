@@ -24,13 +24,10 @@
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_mutable_config_values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -198,10 +195,6 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
     return test_context_->mock_request_options();
   }
 
-  std::vector<net::ProxyServer> GetConfiguredProxiesForHttp() const {
-    return test_context_->GetConfiguredProxiesForHttp();
-  }
-
   bool ignore_blacklist() const {
     return test_context_->test_data_reduction_proxy_service()
         ->ignore_blacklist();
@@ -300,12 +293,10 @@ TEST_F(DataReductionProxyConfigServiceClientTest, EnsureBackoff) {
   EXPECT_EQ(0, config_client()->failed_attempts_before_success());
 
   SetDataReductionProxyEnabled(true, true);
-  EXPECT_EQ(std::vector<net::ProxyServer>(), GetConfiguredProxiesForHttp());
 
   // First attempt should be unsuccessful.
   config_client()->RetrieveConfig();
   RunUntilIdle();
-  EXPECT_EQ(std::vector<net::ProxyServer>(), GetConfiguredProxiesForHttp());
   EXPECT_EQ(base::TimeDelta::FromSeconds(30), config_client()->GetDelay());
 
 #if defined(OS_ANDROID)
@@ -315,7 +306,6 @@ TEST_F(DataReductionProxyConfigServiceClientTest, EnsureBackoff) {
   // Second attempt should be unsuccessful and backoff time should increase.
   config_client()->RetrieveConfig();
   RunUntilIdle();
-  EXPECT_EQ(std::vector<net::ProxyServer>(), GetConfiguredProxiesForHttp());
   EXPECT_EQ(base::TimeDelta::FromSeconds(90), config_client()->GetDelay());
   EXPECT_TRUE(persisted_config().empty());
   EXPECT_TRUE(persisted_config_retrieval_time().is_null());
@@ -336,7 +326,6 @@ TEST_F(DataReductionProxyConfigServiceClientTest, RemoteConfigSuccess) {
 
   AddMockSuccess();
   SetDataReductionProxyEnabled(true, true);
-  EXPECT_EQ(std::vector<net::ProxyServer>(), GetConfiguredProxiesForHttp());
   config_client()->RetrieveConfig();
   RunUntilIdle();
   VerifyRemoteSuccess(true);
@@ -354,7 +343,6 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
   Init();
   AddMockSuccess();
   SetDataReductionProxyEnabled(true, false);
-  EXPECT_EQ(std::vector<net::ProxyServer>(), GetConfiguredProxiesForHttp());
   config_client()->RetrieveConfig();
   RunUntilIdle();
   VerifyRemoteSuccess(false);
@@ -376,14 +364,12 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
   EXPECT_EQ(0, config_client()->failed_attempts_before_success());
 
   SetDataReductionProxyEnabled(true, true);
-  EXPECT_EQ(std::vector<net::ProxyServer>(), GetConfiguredProxiesForHttp());
 
   // First attempt should be unsuccessful.
   config_client()->RetrieveConfig();
   RunUntilIdle();
   EXPECT_EQ(1, config_client()->failed_attempts_before_success());
   EXPECT_EQ(base::TimeDelta::FromSeconds(30), config_client()->GetDelay());
-  EXPECT_EQ(std::vector<net::ProxyServer>(), GetConfiguredProxiesForHttp());
   EXPECT_TRUE(request_options()->GetSecureSession().empty());
 
   // Second attempt should be successful.
@@ -584,8 +570,6 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
   }
 }
 
-
-
 // Tests that the config is overriden by kDataReductionProxyServerClientConfig.
 TEST_F(DataReductionProxyConfigServiceClientTest, ApplyClientConfigOverride) {
   const std::string override_key = "OverrideSecureSession";
@@ -619,7 +603,6 @@ TEST_F(DataReductionProxyConfigServiceClientTest, ApplySerializedConfig) {
   AddMockSuccess();
 
   SetDataReductionProxyEnabled(true, true);
-  EXPECT_EQ(std::vector<net::ProxyServer>(), GetConfiguredProxiesForHttp());
   config_client()->ApplySerializedConfig(loaded_config());
   VerifySuccessWithLoadedConfig(true);
   EXPECT_TRUE(persisted_config().empty());
@@ -639,7 +622,6 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
   AddMockSuccess();
 
   SetDataReductionProxyEnabled(true, false);
-  EXPECT_EQ(std::vector<net::ProxyServer>(), GetConfiguredProxiesForHttp());
   config_client()->ApplySerializedConfig(loaded_config());
   VerifySuccessWithLoadedConfig(false);
   EXPECT_TRUE(persisted_config().empty());
@@ -657,7 +639,6 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
   AddMockSuccess();
 
   SetDataReductionProxyEnabled(true, true);
-  EXPECT_EQ(std::vector<net::ProxyServer>(), GetConfiguredProxiesForHttp());
   EXPECT_TRUE(request_options()->GetSecureSession().empty());
 
   // Retrieve the remote config.
@@ -676,7 +657,6 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
 TEST_F(DataReductionProxyConfigServiceClientTest, ApplySerializedConfigLocal) {
   Init();
   SetDataReductionProxyEnabled(true, true);
-  EXPECT_EQ(std::vector<net::ProxyServer>(), GetConfiguredProxiesForHttp());
   EXPECT_TRUE(request_options()->GetSecureSession().empty());
   EXPECT_TRUE(persisted_config_retrieval_time().is_null());
 
@@ -698,10 +678,8 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
 TEST_F(DataReductionProxyConfigServiceClientTest, EmptyConfigDisablesDRP) {
   Init();
   SetDataReductionProxyEnabled(true, true);
-  EXPECT_EQ(std::vector<net::ProxyServer>(), GetConfiguredProxiesForHttp());
 
   config_client()->ApplySerializedConfig(no_proxies_config());
-  EXPECT_EQ(std::vector<net::ProxyServer>(), GetConfiguredProxiesForHttp());
 }
 
 #if defined(OS_ANDROID)

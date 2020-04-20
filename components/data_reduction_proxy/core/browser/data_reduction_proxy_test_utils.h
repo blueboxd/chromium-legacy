@@ -41,13 +41,10 @@ class TestURLLoaderFactory;
 namespace data_reduction_proxy {
 
 class ClientConfig;
-class DataReductionProxyMutableConfigValues;
 class DataReductionProxyRequestOptions;
-class DataReductionProxyServer;
 class DataReductionProxySettings;
 class MockDataReductionProxyConfig;
 class TestDataReductionProxyConfig;
-class TestDataReductionProxyParams;
 
 // Test version of |DataReductionProxyRequestOptions|.
 class TestDataReductionProxyRequestOptions
@@ -81,9 +78,7 @@ class TestDataReductionProxyConfigServiceClient
     : public DataReductionProxyConfigServiceClient {
  public:
   TestDataReductionProxyConfigServiceClient(
-      std::unique_ptr<DataReductionProxyParams> params,
       DataReductionProxyRequestOptions* request_options,
-      DataReductionProxyMutableConfigValues* config_values,
       DataReductionProxyConfig* config,
       DataReductionProxyService* service,
       network::NetworkConnectionTracker* network_connection_tracker,
@@ -280,10 +275,6 @@ class DataReductionProxyTestContext {
     // Construct, but do not initialize the |DataReductionProxySettings| object.
     Builder& SkipSettingsInitialization();
 
-    // Specifies the data reduction proxy servers.
-    Builder& WithProxiesForHttp(
-        const std::vector<DataReductionProxyServer>& proxy_servers);
-
     // Specifies a settings object to use.
     Builder& WithSettings(std::unique_ptr<DataReductionProxySettings> settings);
 
@@ -300,7 +291,6 @@ class DataReductionProxyTestContext {
     bool use_config_client_;
     bool use_test_config_client_;
     bool skip_settings_initialization_;
-    std::vector<DataReductionProxyServer> proxy_servers_;
     std::unique_ptr<DataReductionProxySettings> settings_;
   };
 
@@ -354,10 +344,6 @@ class DataReductionProxyTestContext {
   // Returns the underlying |TestDataReductionProxyConfig|.
   TestDataReductionProxyConfig* config() const;
 
-  // Returns the underlying |DataReductionProxyMutableConfigValues|. This can
-  // only be called if built with WithConfigClient.
-  DataReductionProxyMutableConfigValues* mutable_config_values();
-
   // Returns the underlying |TestDataReductionProxyConfigServiceClient|. This
   // can only be called if built with WithTestConfigClient.
   TestDataReductionProxyConfigServiceClient* test_config_client();
@@ -376,17 +362,12 @@ class DataReductionProxyTestContext {
 
   DataReductionProxySettings* settings() const { return settings_.get(); }
 
-  TestDataReductionProxyParams* test_params() const { return params_; }
-
   network::TestNetworkQualityTracker* test_network_quality_tracker() const {
     return test_network_quality_tracker_.get();
   }
 
   void InitSettingsWithoutCheck();
 
-  // Returns the proxies that are currently configured for "http://" requests,
-  // excluding any that are invalid or direct.
-  std::vector<net::ProxyServer> GetConfiguredProxiesForHttp() const;
 
  private:
   // Used to storage a serialized Data Reduction Proxy config.
@@ -412,7 +393,6 @@ class DataReductionProxyTestContext {
       std::unique_ptr<network::TestNetworkQualityTracker>
           test_network_quality_tracker,
       std::unique_ptr<TestConfigStorer> config_storer,
-      TestDataReductionProxyParams* params,
       unsigned int test_context_flags);
 
   unsigned int test_context_flags_;
@@ -429,8 +409,6 @@ class DataReductionProxyTestContext {
       test_network_quality_tracker_;
   std::unique_ptr<DataReductionProxyService> service_;
   std::unique_ptr<TestConfigStorer> config_storer_;
-
-  TestDataReductionProxyParams* params_;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyTestContext);
 };

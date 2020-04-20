@@ -124,6 +124,8 @@ class BrowserSwitcherService : public KeyedService {
   explicit BrowserSwitcherService(Profile* profile);
   ~BrowserSwitcherService() override;
 
+  virtual void Init();
+
   // KeyedService:
   void Shutdown() override;
 
@@ -149,7 +151,10 @@ class BrowserSwitcherService : public KeyedService {
   // happens.
   virtual void LoadRulesFromPrefs();
 
-  void Init();
+  // Called after all XML rulesets finished downloading, and the rules are
+  // applied. The XML is downloaded asynchronously, so browser tests use this
+  // event to check that they applied correctly.
+  void OnAllRulesetsLoadedForTesting(base::OnceCallback<void()> callback);
 
  protected:
   virtual void OnAllRulesetsParsed();
@@ -193,6 +198,8 @@ class BrowserSwitcherService : public KeyedService {
 
   // CallbackList for OnAllRulesetsParsed() listeners.
   base::CallbackList<AllRulesetsParsedCallbackSignature> callback_list_;
+
+  base::OnceCallback<void()> all_rulesets_loaded_callback_for_testing_;
 
   // Per-profile helpers.
   std::unique_ptr<AlternativeBrowserDriver> driver_;

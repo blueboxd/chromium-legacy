@@ -21,13 +21,13 @@ namespace content {
 
 WebWidgetTestProxy::~WebWidgetTestProxy() = default;
 
-void WebWidgetTestProxy::WillBeginCompositorFrame() {
-  // WillBeginCompositorFrame occurs before we run BeginMainFrame() in the base
+void WebWidgetTestProxy::WillBeginMainFrame() {
+  // WillBeginMainFrame occurs before we run BeginMainFrame() in the base
   // class, which will change states. TestFinished() wants to grab the current
   // state.
   GetTestRunner()->FinishTestIfReady();
 
-  RenderWidget::WillBeginCompositorFrame();
+  RenderWidget::WillBeginMainFrame();
 }
 
 void WebWidgetTestProxy::RequestDecode(
@@ -71,7 +71,7 @@ void WebWidgetTestProxy::ScheduleAnimationInternal(bool do_raster) {
   // Note that for WebWidgetTestProxy the RenderWidget is subclassed to override
   // the WebWidgetClient, so we must call up to the base class RenderWidget
   // explicitly here to jump out of the test harness as intended.
-  if (RenderWidget::compositor_deps()->GetCompositorImplThreadTaskRunner()) {
+  if (!RenderWidget::compositor_deps()->IsSingleThreaded()) {
     RenderWidget::ScheduleAnimation();
     return;
   }
@@ -193,7 +193,7 @@ void WebWidgetTestProxy::DoComposite(content::RenderWidget* widget,
 }
 
 void WebWidgetTestProxy::SynchronouslyComposite(bool do_raster) {
-  DCHECK(!compositor_deps()->GetCompositorImplThreadTaskRunner());
+  DCHECK(compositor_deps()->IsSingleThreaded());
   DCHECK(!layer_tree_host()->GetSettings().single_thread_proxy_scheduler);
 
   if (!layer_tree_host()->IsVisible())

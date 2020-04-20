@@ -302,9 +302,8 @@ void SimpleHttpServer::Connection::ReadData() {
     input_buffer_->SetCapacity(input_buffer_->capacity() * 2);
 
   int read_result = socket_->Read(
-      input_buffer_.get(),
-      input_buffer_->RemainingCapacity(),
-      base::Bind(&Connection::OnDataRead, base::Unretained(this)));
+      input_buffer_.get(), input_buffer_->RemainingCapacity(),
+      base::BindOnce(&Connection::OnDataRead, base::Unretained(this)));
 
   if (read_result != net::ERR_IO_PENDING)
     OnDataRead(read_result);
@@ -345,7 +344,7 @@ void SimpleHttpServer::Connection::WriteData() {
 
   int write_result = socket_->Write(
       output_buffer_.get(), bytes_to_write_,
-      base::Bind(&Connection::OnDataWritten, base::Unretained(this)),
+      base::BindOnce(&Connection::OnDataWritten, base::Unretained(this)),
       TRAFFIC_ANNOTATION_FOR_TESTS);
 
   if (write_result != net::ERR_IO_PENDING)
@@ -377,8 +376,9 @@ void SimpleHttpServer::Connection::OnDataWritten(int count) {
 void SimpleHttpServer::OnConnect() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  int accept_result = socket_->Accept(&client_socket_,
-      base::Bind(&SimpleHttpServer::OnAccepted, base::Unretained(this)));
+  int accept_result = socket_->Accept(
+      &client_socket_,
+      base::BindOnce(&SimpleHttpServer::OnAccepted, base::Unretained(this)));
 
   if (accept_result != net::ERR_IO_PENDING)
     base::ThreadTaskRunnerHandle::Get()->PostTask(

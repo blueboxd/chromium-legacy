@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/task/common/checked_lock.h"
 #include "base/task/task_features.h"
 #include "base/task/thread_pool/pooled_task_runner_delegate.h"
 #include "base/threading/thread_restrictions.h"
@@ -145,6 +146,7 @@ JobTaskSource::JobTaskSource(
       worker_task_(std::move(worker_task)),
       primary_task_(base::BindRepeating(
           [](JobTaskSource* self) {
+            CheckedLock::AssertNoLockHeldOnCurrentThread();
             // Each worker task has its own delegate with associated state.
             JobDelegate job_delegate{self, self->delegate_};
             self->worker_task_.Run(&job_delegate);

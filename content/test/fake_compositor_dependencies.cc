@@ -51,14 +51,9 @@ bool FakeCompositorDependencies::IsUseZoomForDSFEnabled() {
   return use_zoom_for_dsf_;
 }
 
-scoped_refptr<base::SingleThreadTaskRunner>
-FakeCompositorDependencies::GetCompositorMainThreadTaskRunner() {
-  return base::ThreadTaskRunnerHandle::Get();
-}
-
-scoped_refptr<base::SingleThreadTaskRunner>
-FakeCompositorDependencies::GetCompositorImplThreadTaskRunner() {
-  return nullptr;  // Currently never threaded compositing in unit tests.
+bool FakeCompositorDependencies::IsSingleThreaded() {
+  // Currently never threaded compositing in unit tests.
+  return true;
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>

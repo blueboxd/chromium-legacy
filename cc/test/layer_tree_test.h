@@ -6,7 +6,9 @@
 #define CC_TEST_LAYER_TREE_TEST_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread.h"
+#include "build/build_config.h"
 #include "cc/animation/animation_delegate.h"
 #include "cc/test/property_tree_test_utils.h"
 #include "cc/test/test_hooks.h"
@@ -62,6 +64,9 @@ class LayerTreeTest : public testing::Test, public TestHooks {
     RENDERER_GL,
     RENDERER_SKIA_GL,
     RENDERER_SKIA_VK,
+    // SkiaRenderer with the Dawn backend will be used; on Linux this will
+    // initialize Vulkan, and on Windows this will initialize D3D12.
+    RENDERER_SKIA_DAWN,
     RENDERER_SOFTWARE,
   };
 
@@ -73,6 +78,8 @@ class LayerTreeTest : public testing::Test, public TestHooks {
         return "Skia GL";
       case RENDERER_SKIA_VK:
         return "Skia Vulkan";
+      case RENDERER_SKIA_DAWN:
+        return "Skia Dawn";
       case RENDERER_SOFTWARE:
         return "Software";
     }
@@ -208,12 +215,24 @@ class LayerTreeTest : public testing::Test, public TestHooks {
 
   bool use_skia_renderer() const {
     return renderer_type_ == RENDERER_SKIA_GL ||
-           renderer_type_ == RENDERER_SKIA_VK;
+           renderer_type_ == RENDERER_SKIA_VK ||
+           renderer_type_ == RENDERER_SKIA_DAWN;
   }
   bool use_software_renderer() const {
     return renderer_type_ == RENDERER_SOFTWARE;
   }
-  bool use_vulkan() const { return renderer_type_ == RENDERER_SKIA_VK; }
+  bool use_skia_vulkan() const { return renderer_type_ == RENDERER_SKIA_VK; }
+  bool use_oopr() const {
+    return renderer_type_ == RENDERER_SKIA_VK ||
+           renderer_type_ == RENDERER_SKIA_DAWN;
+  }
+  bool use_d3d12() const {
+#if defined(OS_WIN)
+    return renderer_type_ == RENDERER_SKIA_DAWN;
+#else
+    return false;
+#endif
+  }
 
   const RendererType renderer_type_;
 
@@ -245,7 +264,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
 
   // |scoped_feature_list_| must be the first member to ensure that it is
   // destroyed after any member that might be using it.
-  std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
+  base::test::ScopedFeatureList scoped_feature_list_;
   viz::TestGpuServiceHolder::ScopedResetter gpu_service_resetter_;
 
   LayerTreeSettings settings_;

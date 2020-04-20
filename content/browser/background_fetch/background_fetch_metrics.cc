@@ -33,6 +33,9 @@ void RecordBackgroundFetchUkmEvent(
     BackgroundFetchPermission permission) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  // TODO(crbug.com/1061899): The code here should take an explicit reference
+  // to the corresponding frame instead of using the current main frame.
+
   // Only record UKM data if there's a frame associated.
   auto* web_contents = WebContents::FromFrameTreeNodeId(frame_tree_node_id);
   if (!web_contents)
@@ -44,7 +47,8 @@ void RecordBackgroundFetchUkmEvent(
   if (!origin.IsSameOriginWith(url::Origin::Create(displayed_origin)))
     return;
   ukm::SourceId source_id = static_cast<WebContentsImpl*>(web_contents)
-                                ->GetUkmSourceIdForLastCommittedSource();
+                                ->GetMainFrame()
+                                ->GetPageUkmSourceId();
 
   ukm::builders::BackgroundFetch(source_id)
       .SetHasTitle(!options->title.empty())

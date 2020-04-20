@@ -120,18 +120,6 @@ WebTestDevToolsBindings::WebTestDevToolsBindings(
 
 WebTestDevToolsBindings::~WebTestDevToolsBindings() {}
 
-void WebTestDevToolsBindings::RenderProcessGone(
-    base::TerminationStatus status) {
-  if (BlinkTestController::Get())
-    BlinkTestController::Get()->DevToolsProcessCrashed();
-}
-
-void WebTestDevToolsBindings::RenderFrameCreated(
-    RenderFrameHost* render_frame_host) {
-  if (BlinkTestController::Get())
-    BlinkTestController::Get()->HandleNewRenderFrameHost(render_frame_host);
-}
-
 void WebTestDevToolsBindings::DocumentAvailableInMainFrame() {
   ShellDevToolsBindings::Attach();
 }

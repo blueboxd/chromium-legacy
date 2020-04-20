@@ -38,7 +38,7 @@ NSString* recordIdentifierForPasswordForm(const autofill::PasswordForm& form) {
 - (instancetype)initWithPasswordForm:(const autofill::PasswordForm&)passwordForm
                              favicon:(NSString*)favicon
                 validationIdentifier:(NSString*)validationIdentifier {
-  if (passwordForm.origin.is_empty() ||
+  if (passwordForm.origin.is_empty() || passwordForm.blacklisted_by_user ||
       password_manager::IsValidAndroidFacetURI(passwordForm.signon_realm)) {
     return nil;
   }

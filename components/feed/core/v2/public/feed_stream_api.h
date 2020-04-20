@@ -42,6 +42,12 @@ class FeedStreamApi {
   virtual void SetArticlesListVisible(bool is_visible) = 0;
   virtual bool IsArticlesListVisible() = 0;
 
+  // Request to load additional content at the end of the stream.
+  // Calls |callback| when complete. If no content could be added, the parameter
+  // is false, and the caller should expect |LoadMore| to fail if called
+  // further.
+  virtual void LoadMore(base::OnceCallback<void(bool)> callback) = 0;
+
   // Apply |operations| to the stream model. Does nothing if the model is not
   // yet loaded.
   virtual void ExecuteOperations(

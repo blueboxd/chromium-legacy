@@ -16,6 +16,9 @@
 
 namespace feed {
 namespace {
+using UiUpdate = StreamModel::UiUpdate;
+using StoreUpdate = StreamModel::StoreUpdate;
+
 bool HasClearAll(const std::vector<feedstore::StreamStructure>& structures) {
   for (const feedstore::StreamStructure& data : structures) {
     if (data.operation() == feedstore::StreamStructure::CLEAR_ALL)
@@ -24,19 +27,15 @@ bool HasClearAll(const std::vector<feedstore::StreamStructure>& structures) {
   return false;
 }
 }  // namespace
-StreamModel::UiUpdate::UiUpdate() = default;
-StreamModel::UiUpdate::~UiUpdate() = default;
-StreamModel::UiUpdate::UiUpdate(const UiUpdate&) = default;
-StreamModel::UiUpdate& StreamModel::UiUpdate::operator=(const UiUpdate&) =
-    default;
-StreamModel::StoreUpdate::StoreUpdate() = default;
-StreamModel::StoreUpdate::~StoreUpdate() = default;
-StreamModel::StoreUpdate::StoreUpdate(const StoreUpdate&) = default;
-StreamModel::StoreUpdate& StreamModel::StoreUpdate::operator=(
-    const StoreUpdate&) = default;
-StreamModel::StoreUpdate::StoreUpdate(StoreUpdate&&) = default;
-StreamModel::StoreUpdate& StreamModel::StoreUpdate::operator=(StoreUpdate&&) =
-    default;
+
+UiUpdate::UiUpdate() = default;
+UiUpdate::~UiUpdate() = default;
+UiUpdate::UiUpdate(const UiUpdate&) = default;
+UiUpdate& UiUpdate::operator=(const UiUpdate&) = default;
+StoreUpdate::StoreUpdate() = default;
+StoreUpdate::~StoreUpdate() = default;
+StoreUpdate::StoreUpdate(StoreUpdate&&) = default;
+StoreUpdate& StoreUpdate::operator=(StoreUpdate&&) = default;
 
 StreamModel::StreamModel() = default;
 StreamModel::~StreamModel() = default;
@@ -76,10 +75,51 @@ std::vector<std::string> StreamModel::GetSharedStateIds() const {
 
 void StreamModel::Update(
     std::unique_ptr<StreamModelUpdateRequest> update_request) {
-  feedstore::StreamData& stream_data = update_request->stream_data;
   std::vector<feedstore::StreamStructure>& stream_structures =
       update_request->stream_structures;
-  if (HasClearAll(stream_structures)) {
+  const bool has_clear_all = HasClearAll(stream_structures);
+
+  switch (update_request->source) {
+    case StreamModelUpdateRequest::Source::kNetworkUpdate:
+      // In this case, the stream state has been saved to persistent
+      // storage by the caller. Next sequence number is always 1.
+      next_structure_sequence_number_ = 1;
+      break;
+    case StreamModelUpdateRequest::Source::kInitialLoadFromStore:
+      // In this case, use max_structure_sequence_number to derive the next
+      // sequence number.
+      next_structure_sequence_number_ =
+          update_request->max_structure_sequence_number + 1;
+      break;
+    case StreamModelUpdateRequest::Source::kNetworkLoadMore: {
+      // In this case, |StreamModel| is responsible for triggering the update
+      // to the store. There are two main cases:
+      // 1. The update request has a CLEAR_ALL (this is unexpected).
+      //    In this case, we want to overwrite all stored stream data, since
+      //    the old data is no longer useful. Start using sequence number 0.
+      // 2. The update request does not have a CLEAR_ALL.
+      //    Save the new stream data with the next sequence number.
+      if (has_clear_all) {
+        next_structure_sequence_number_ = 0;
+      }
+      // Note: We might be overwriting some shared-states unnecessarily.
+      StoreUpdate store_update;
+      store_update.overwrite_stream_data = has_clear_all;
+      store_update.update_request =
+          std::make_unique<StreamModelUpdateRequest>(*update_request);
+      store_update.sequence_number = next_structure_sequence_number_++;
+      store_observer_->OnStoreChange(std::move(store_update));
+      break;
+    }
+  }
+
+  // Update non-tree data.
+  // TODO(harringtond): Once we start using StreamData.next_action_id, this line
+  // would be problematic. We should probably move next_action_id into a
+  // different record in FeedStore.
+  stream_data_ = update_request->stream_data;
+
+  if (has_clear_all) {
     shared_states_.clear();
   }
 
@@ -91,13 +131,6 @@ void StreamModel::Update(
     base_feature_tree_.AddContent(std::move(content));
   }
 
-  // Update non-tree data.
-  next_page_token_ = stream_data.next_page_token();
-  last_added_time_ =
-      base::Time::UnixEpoch() +
-      base::TimeDelta::FromMilliseconds(stream_data.last_added_time_millis());
-  consistency_token_ = stream_data.consistency_token();
-
   for (feedstore::StreamSharedState& shared_state :
        update_request->shared_states) {
     std::string id = ContentIdString(shared_state.content_id());
@@ -105,13 +138,6 @@ void StreamModel::Update(
       shared_states_[id].data =
           std::move(*shared_state.mutable_shared_state_data());
     }
-  }
-
-  // Set next_structure_sequence_number_ when doing the initial load.
-  if (update_request->source ==
-      StreamModelUpdateRequest::Source::kInitialLoadFromStore) {
-    next_structure_sequence_number_ =
-        update_request->max_structure_sequence_number + 1;
   }
 
   // TODO(harringtond): Some StreamData fields not yet used.
@@ -213,11 +239,19 @@ const stream_model::FeatureTree* StreamModel::GetFinalFeatureTree() const {
   return const_cast<StreamModel*>(this)->GetFinalFeatureTree();
 }
 
+const std::string& StreamModel::GetNextPageToken() const {
+  return stream_data_.next_page_token();
+}
+
+const std::string& StreamModel::GetConsistencyToken() const {
+  return stream_data_.consistency_token();
+}
+
 std::string StreamModel::DumpStateForTesting() {
   std::stringstream ss;
   ss << "StreamModel{\n";
-  ss << "next_page_token='" << next_page_token_ << "'\n";
-  ss << "consistency_token='" << consistency_token_ << "'\n";
+  ss << "next_page_token='" << GetNextPageToken() << "'\n";
+  ss << "consistency_token='" << GetConsistencyToken() << "'\n";
   for (auto& entry : shared_states_) {
     ss << "shared_state[" << entry.first << "]='" << entry.second.data << "'\n";
   }

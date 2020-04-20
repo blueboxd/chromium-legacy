@@ -89,7 +89,9 @@
 #include "ui/base/pointer/pointer_device.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/display/display.h"
 #include "ui/display/display_switches.h"
+#include "ui/display/screen.h"
 #include "ui/events/blink/blink_features.h"
 #include "ui/gfx/animation/animation.h"
 #include "ui/gfx/color_space.h"
@@ -136,6 +138,25 @@ void GetFontInfo(gfx::win::SystemFont system_font,
   *size = font.GetFontSize();
 }
 #endif  // OS_WIN
+
+#if defined(OS_ANDROID)
+float GetDeviceScaleAdjustment(int min_width) {
+  static const float kMinFSM = 1.05f;
+  static const int kWidthForMinFSM = 320;
+  static const float kMaxFSM = 1.3f;
+  static const int kWidthForMaxFSM = 800;
+
+  if (min_width <= kWidthForMinFSM)
+    return kMinFSM;
+  if (min_width >= kWidthForMaxFSM)
+    return kMaxFSM;
+
+  // The font scale multiplier varies linearly between kMinFSM and kMaxFSM.
+  float ratio = static_cast<float>(min_width - kWidthForMinFSM) /
+                (kWidthForMaxFSM - kWidthForMinFSM);
+  return ratio * (kMaxFSM - kMinFSM) + kMinFSM;
+}
+#endif
 
 }  // namespace
 
@@ -623,6 +644,14 @@ const WebPreferences RenderViewHostImpl::ComputeWebPreferences() {
   // `media_controls_enabled` is `true` by default.
   if (delegate_->HasPersistentVideo())
     prefs.media_controls_enabled = false;
+
+#if defined(OS_ANDROID)
+  display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
+  gfx::Size size = display.GetSizeInPixel();
+  int min_width = size.width() < size.height() ? size.width() : size.height();
+  prefs.device_scale_adjustment = GetDeviceScaleAdjustment(
+      static_cast<int>(min_width / display.device_scale_factor()));
+#endif  // OS_ANDROID
 
   GetContentClient()->browser()->OverrideWebkitPrefs(this, &prefs);
   return prefs;

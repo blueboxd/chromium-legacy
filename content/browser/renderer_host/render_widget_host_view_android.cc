@@ -1548,11 +1548,13 @@ gfx::Rect RenderWidgetHostViewAndroid::GetBoundsInRootWindow() {
 }
 
 void RenderWidgetHostViewAndroid::ProcessAckedTouchEvent(
-    const TouchEventWithLatencyInfo& touch, InputEventAckState ack_result) {
-  const bool event_consumed = ack_result == INPUT_EVENT_ACK_STATE_CONSUMED;
+    const TouchEventWithLatencyInfo& touch,
+    blink::mojom::InputEventResultState ack_result) {
+  const bool event_consumed =
+      ack_result == blink::mojom::InputEventResultState::kConsumed;
   gesture_provider_.OnTouchEventAck(
       touch.event.unique_touch_event_id, event_consumed,
-      InputEventAckStateIsSetNonBlocking(ack_result));
+      InputEventResultStateIsSetNonBlocking(ack_result));
   if (touch.event.touch_start_or_first_touch_move && event_consumed &&
       host()->delegate() && host()->delegate()->GetInputEventRouter()) {
     host()
@@ -1565,7 +1567,7 @@ void RenderWidgetHostViewAndroid::ProcessAckedTouchEvent(
 
 void RenderWidgetHostViewAndroid::GestureEventAck(
     const blink::WebGestureEvent& event,
-    InputEventAckState ack_result) {
+    blink::mojom::InputEventResultState ack_result) {
   if (overscroll_controller_)
     overscroll_controller_->OnGestureEventAck(event, ack_result);
   mouse_wheel_phase_handler_.GestureEventAck(event, ack_result);
@@ -1582,12 +1584,13 @@ void RenderWidgetHostViewAndroid::GestureEventAck(
 
 void RenderWidgetHostViewAndroid::ChildDidAckGestureEvent(
     const blink::WebGestureEvent& event,
-    InputEventAckState ack_result) {
+    blink::mojom::InputEventResultState ack_result) {
   if (gesture_listener_manager_)
     gesture_listener_manager_->GestureEventAck(event, ack_result);
 }
 
-InputEventAckState RenderWidgetHostViewAndroid::FilterInputEvent(
+blink::mojom::InputEventResultState
+RenderWidgetHostViewAndroid::FilterInputEvent(
     const blink::WebInputEvent& input_event) {
   if (overscroll_controller_ &&
       blink::WebInputEvent::IsGestureEventType(input_event.GetType())) {
@@ -1605,17 +1608,17 @@ InputEventAckState RenderWidgetHostViewAndroid::FilterInputEvent(
         host_->StopFling();
       }
 
-      return INPUT_EVENT_ACK_STATE_CONSUMED;
+      return blink::mojom::InputEventResultState::kConsumed;
     }
   }
 
   if (gesture_listener_manager_ &&
       gesture_listener_manager_->FilterInputEvent(input_event)) {
-    return INPUT_EVENT_ACK_STATE_CONSUMED;
+    return blink::mojom::InputEventResultState::kConsumed;
   }
 
   if (!host())
-    return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
+    return blink::mojom::InputEventResultState::kNotConsumed;
 
   if (input_event.GetType() == blink::WebInputEvent::kGestureTapDown ||
       input_event.GetType() == blink::WebInputEvent::kTouchStart) {
@@ -1624,7 +1627,7 @@ InputEventAckState RenderWidgetHostViewAndroid::FilterInputEvent(
                              base::BindOnce(&WakeUpGpu));
   }
 
-  return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
+  return blink::mojom::InputEventResultState::kNotConsumed;
 }
 
 BrowserAccessibilityManager*

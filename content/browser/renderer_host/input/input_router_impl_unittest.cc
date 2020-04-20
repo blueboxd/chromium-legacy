@@ -128,11 +128,13 @@ class MockInputRouterImplClient : public InputRouterImplClient {
     return gfx::Size(1920, 1080);
   }
 
+  void OnInvalidInputEventSource() override {}
+
   MockWidgetInputHandler::MessageVector GetAndResetDispatchedMessages() {
     return widget_input_handler_.GetAndResetDispatchedMessages();
   }
 
-  InputEventAckState FilterInputEvent(
+  blink::mojom::InputEventResultState FilterInputEvent(
       const blink::WebInputEvent& input_event,
       const ui::LatencyInfo& latency_info) override {
     return input_router_client_.FilterInputEvent(input_event, latency_info);
@@ -142,7 +144,8 @@ class MockInputRouterImplClient : public InputRouterImplClient {
     input_router_client_.IncrementInFlightEventCount();
   }
 
-  void DecrementInFlightEventCount(InputEventAckSource ack_source) override {
+  void DecrementInFlightEventCount(
+      blink::mojom::InputEventResultSource ack_source) override {
     input_router_client_.DecrementInFlightEventCount(ack_source);
   }
 
@@ -196,7 +199,7 @@ class MockInputRouterImplClient : public InputRouterImplClient {
     input_router_client_.set_input_router(input_router);
   }
 
-  void set_filter_state(InputEventAckState filter_state) {
+  void set_filter_state(blink::mojom::InputEventResultState filter_state) {
     input_router_client_.set_filter_state(filter_state);
   }
   int in_flight_event_count() const {
@@ -444,18 +447,19 @@ class InputRouterImplTestBase : public testing::Test {
 
   void ActiveTouchSequenceCountTest(
       const base::Optional<cc::TouchAction>& touch_action,
-      InputEventAckState state) {
+      blink::mojom::InputEventResultState state) {
     PressTouchPoint(1, 1);
     base::Optional<ui::DidOverscrollParams> overscroll;
     input_router_->SendTouchEvent(TouchEventWithLatencyInfo(touch_event_));
-    input_router_->TouchEventHandled(TouchEventWithLatencyInfo(touch_event_),
-                                     InputEventAckSource::MAIN_THREAD,
-                                     ui::LatencyInfo(), state, overscroll,
-                                     touch_action);
+    input_router_->TouchEventHandled(
+        TouchEventWithLatencyInfo(touch_event_),
+        blink::mojom::InputEventResultSource::kMainThread, ui::LatencyInfo(),
+        state, overscroll, touch_action);
     EXPECT_EQ(input_router_->touch_action_filter_.num_of_active_touches_, 1);
     ReleaseTouchPoint(0);
-    input_router_->OnTouchEventAck(TouchEventWithLatencyInfo(touch_event_),
-                                   InputEventAckSource::MAIN_THREAD, state);
+    input_router_->OnTouchEventAck(
+        TouchEventWithLatencyInfo(touch_event_),
+        blink::mojom::InputEventResultSource::kMainThread, state);
     EXPECT_EQ(input_router_->touch_action_filter_.num_of_active_touches_, 0);
   }
 
@@ -468,8 +472,9 @@ class InputRouterImplTestBase : public testing::Test {
     EXPECT_TRUE(input_router_->touch_event_queue_.IsTimeoutRunningForTesting());
     input_router_->TouchEventHandled(
         TouchEventWithLatencyInfo(touch_event_),
-        InputEventAckSource::COMPOSITOR_THREAD, ui::LatencyInfo(),
-        INPUT_EVENT_ACK_STATE_NOT_CONSUMED, overscroll, touch_action);
+        blink::mojom::InputEventResultSource::kCompositorThread,
+        ui::LatencyInfo(), blink::mojom::InputEventResultState::kNotConsumed,
+        overscroll, touch_action);
     EXPECT_TRUE(input_router_->touch_event_queue_.IsTimeoutRunningForTesting());
     input_router_->SetTouchActionFromMain(cc::TouchAction::kPan);
     EXPECT_FALSE(
@@ -477,8 +482,8 @@ class InputRouterImplTestBase : public testing::Test {
   }
 
   void OnTouchEventAckWithAckState(
-      InputEventAckSource source,
-      InputEventAckState ack_state,
+      blink::mojom::InputEventResultSource source,
+      blink::mojom::InputEventResultState ack_state,
       base::Optional<cc::TouchAction> expected_touch_action,
       base::Optional<cc::TouchAction> expected_white_listed_touch_action) {
     input_router_->OnHasTouchEventHandlers(true);
@@ -518,7 +523,7 @@ class InputRouterImplTest : public InputRouterImplTestBase {
 };
 
 TEST_F(InputRouterImplTest, HandledInputEvent) {
-  client_->set_filter_state(INPUT_EVENT_ACK_STATE_CONSUMED);
+  client_->set_filter_state(blink::mojom::InputEventResultState::kConsumed);
 
   // Simulate a keyboard event.
   SimulateKeyboardEvent(WebInputEvent::kRawKeyDown);
@@ -532,7 +537,8 @@ TEST_F(InputRouterImplTest, HandledInputEvent) {
 }
 
 TEST_F(InputRouterImplTest, ClientCanceledKeyboardEvent) {
-  client_->set_filter_state(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+  client_->set_filter_state(
+      blink::mojom::InputEventResultState::kNoConsumerExists);
 
   // Simulate a keyboard event that has no consumer.
   SimulateKeyboardEvent(WebInputEvent::kRawKeyDown);
@@ -543,7 +549,7 @@ TEST_F(InputRouterImplTest, ClientCanceledKeyboardEvent) {
   EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
 
   // Simulate a keyboard event that should be dropped.
-  client_->set_filter_state(INPUT_EVENT_ACK_STATE_UNKNOWN);
+  client_->set_filter_state(blink::mojom::InputEventResultState::kUnknown);
   SimulateKeyboardEvent(WebInputEvent::kRawKeyDown);
 
   // Make sure no input event is sent to the renderer, and no ack is sent.
@@ -563,7 +569,7 @@ TEST_F(InputRouterImplTest, HandleKeyEventsWeSent) {
   ASSERT_EQ(1u, dispatched_messages.size());
   ASSERT_TRUE(dispatched_messages[0]->ToEvent());
   dispatched_messages[0]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+      blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
   EXPECT_EQ(WebInputEvent::kRawKeyDown,
             disposition_handler_->acked_keyboard_event().GetType());
@@ -602,7 +608,7 @@ TEST_F(InputRouterImplTest, CoalescesWheelEvents) {
 
   // Check that the ACK sends the second message immediately.
   dispatched_messages[0]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_CONSUMED);
+      blink::mojom::InputEventResultState::kConsumed);
   // The coalesced events can queue up a delayed ack
   // so that additional input events can be processed before
   // we turn off coalescing.
@@ -620,7 +626,7 @@ TEST_F(InputRouterImplTest, CoalescesWheelEvents) {
 
   // Ack the second event (which had the third coalesced into it).
   dispatched_messages[0]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_CONSUMED);
+      blink::mojom::InputEventResultState::kConsumed);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
   dispatched_messages = GetAndResetDispatchedMessages();
@@ -635,7 +641,7 @@ TEST_F(InputRouterImplTest, CoalescesWheelEvents) {
 
   // Ack the fourth event.
   dispatched_messages[0]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_CONSUMED);
+      blink::mojom::InputEventResultState::kConsumed);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
   dispatched_messages = GetAndResetDispatchedMessages();
@@ -650,7 +656,7 @@ TEST_F(InputRouterImplTest, CoalescesWheelEvents) {
 
   // Ack the fifth event.
   dispatched_messages[0]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_CONSUMED);
+      blink::mojom::InputEventResultState::kConsumed);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
   dispatched_messages = GetAndResetDispatchedMessages();
@@ -666,7 +672,7 @@ TEST_F(InputRouterImplTest, CoalescesWheelEvents) {
 
   // After the final ack, the queue should be empty.
   dispatched_messages[0]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_CONSUMED);
+      blink::mojom::InputEventResultState::kConsumed);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
   dispatched_messages = GetAndResetDispatchedMessages();
@@ -677,79 +683,84 @@ TEST_F(InputRouterImplTest, CoalescesWheelEvents) {
 // not ACKed from the main thread.
 TEST_F(InputRouterImplTest, ActiveTouchSequenceCountWithoutTouchAction) {
   base::Optional<cc::TouchAction> touch_action;
-  ActiveTouchSequenceCountTest(touch_action,
-                               INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+  ActiveTouchSequenceCountTest(
+      touch_action, blink::mojom::InputEventResultState::kSetNonBlocking);
 }
 
 TEST_F(InputRouterImplTest,
        ActiveTouchSequenceCountWithoutTouchActionNoConsumer) {
   base::Optional<cc::TouchAction> touch_action;
-  ActiveTouchSequenceCountTest(touch_action,
-                               INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+  ActiveTouchSequenceCountTest(
+      touch_action, blink::mojom::InputEventResultState::kNoConsumerExists);
 }
 
 // Test that the active touch sequence count increment when the touch start is
 // ACKed from the main thread.
 TEST_F(InputRouterImplTest, ActiveTouchSequenceCountWithTouchAction) {
   base::Optional<cc::TouchAction> touch_action(cc::TouchAction::kPanY);
-  ActiveTouchSequenceCountTest(touch_action,
-                               INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+  ActiveTouchSequenceCountTest(
+      touch_action, blink::mojom::InputEventResultState::kSetNonBlocking);
 }
 
 TEST_F(InputRouterImplTest, ActiveTouchSequenceCountWithTouchActionNoConsumer) {
   base::Optional<cc::TouchAction> touch_action(cc::TouchAction::kPanY);
-  ActiveTouchSequenceCountTest(touch_action,
-                               INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+  ActiveTouchSequenceCountTest(
+      touch_action, blink::mojom::InputEventResultState::kNoConsumerExists);
 }
 
 TEST_F(InputRouterImplTest, TouchActionAutoWithAckStateConsumed) {
-  InputEventAckSource source = InputEventAckSource::COMPOSITOR_THREAD;
   base::Optional<cc::TouchAction> expected_touch_action;
-  OnTouchEventAckWithAckState(source, INPUT_EVENT_ACK_STATE_CONSUMED,
-                              expected_touch_action, cc::TouchAction::kAuto);
+  OnTouchEventAckWithAckState(
+      blink::mojom::InputEventResultSource::kCompositorThread,
+      blink::mojom::InputEventResultState::kConsumed, expected_touch_action,
+      cc::TouchAction::kAuto);
 }
 
 TEST_F(InputRouterImplTest, TouchActionAutoWithAckStateNotConsumed) {
-  InputEventAckSource source = InputEventAckSource::COMPOSITOR_THREAD;
   base::Optional<cc::TouchAction> expected_touch_action;
-  OnTouchEventAckWithAckState(source, INPUT_EVENT_ACK_STATE_NOT_CONSUMED,
-                              expected_touch_action, cc::TouchAction::kAuto);
+  OnTouchEventAckWithAckState(
+      blink::mojom::InputEventResultSource::kCompositorThread,
+      blink::mojom::InputEventResultState::kNotConsumed, expected_touch_action,
+      cc::TouchAction::kAuto);
 }
 
 TEST_F(InputRouterImplTest, TouchActionAutoWithAckStateConsumedShouldBubble) {
-  InputEventAckSource source = InputEventAckSource::COMPOSITOR_THREAD;
   base::Optional<cc::TouchAction> expected_touch_action;
-  OnTouchEventAckWithAckState(source,
-                              INPUT_EVENT_ACK_STATE_CONSUMED_SHOULD_BUBBLE,
-                              expected_touch_action, cc::TouchAction::kAuto);
+  OnTouchEventAckWithAckState(
+      blink::mojom::InputEventResultSource::kCompositorThread,
+      blink::mojom::InputEventResultState::kConsumedShouldBubble,
+      expected_touch_action, cc::TouchAction::kAuto);
 }
 
 TEST_F(InputRouterImplTest, TouchActionAutoWithAckStateNoConsumerExists) {
-  InputEventAckSource source = InputEventAckSource::COMPOSITOR_THREAD;
   base::Optional<cc::TouchAction> expected_touch_action;
-  OnTouchEventAckWithAckState(source, INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS,
-                              expected_touch_action, cc::TouchAction::kAuto);
+  OnTouchEventAckWithAckState(
+      blink::mojom::InputEventResultSource::kCompositorThread,
+      blink::mojom::InputEventResultState::kNoConsumerExists,
+      expected_touch_action, cc::TouchAction::kAuto);
 }
 
 TEST_F(InputRouterImplTest, TouchActionAutoWithAckStateIgnored) {
-  InputEventAckSource source = InputEventAckSource::COMPOSITOR_THREAD;
   base::Optional<cc::TouchAction> expected_touch_action;
-  OnTouchEventAckWithAckState(source, INPUT_EVENT_ACK_STATE_IGNORED,
-                              expected_touch_action, cc::TouchAction::kAuto);
+  OnTouchEventAckWithAckState(
+      blink::mojom::InputEventResultSource::kCompositorThread,
+      blink::mojom::InputEventResultState::kIgnored, expected_touch_action,
+      cc::TouchAction::kAuto);
 }
 
 TEST_F(InputRouterImplTest, TouchActionAutoWithAckStateNonBlocking) {
-  InputEventAckSource source = InputEventAckSource::COMPOSITOR_THREAD;
   base::Optional<cc::TouchAction> expected_touch_action;
-  OnTouchEventAckWithAckState(source, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING,
-                              expected_touch_action, cc::TouchAction::kAuto);
+  OnTouchEventAckWithAckState(
+      blink::mojom::InputEventResultSource::kCompositorThread,
+      blink::mojom::InputEventResultState::kSetNonBlocking,
+      expected_touch_action, cc::TouchAction::kAuto);
 }
 
 TEST_F(InputRouterImplTest, TouchActionAutoWithAckStateNonBlockingDueToFling) {
-  InputEventAckSource source = InputEventAckSource::COMPOSITOR_THREAD;
   base::Optional<cc::TouchAction> expected_touch_action;
   OnTouchEventAckWithAckState(
-      source, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING_DUE_TO_FLING,
+      blink::mojom::InputEventResultSource::kCompositorThread,
+      blink::mojom::InputEventResultState::kSetNonBlockingDueToFling,
       expected_touch_action, cc::TouchAction::kAuto);
 }
 
@@ -776,14 +787,16 @@ TEST_F(InputRouterImplTest, TouchEventQueue) {
   EXPECT_FALSE(TouchEventQueueEmpty());
 
   // Receive an ACK for the first touch-event.
-  touch_start_event[0]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_CONSUMED);
+  touch_start_event[0]->ToEvent()->CallCallback(
+      blink::mojom::InputEventResultState::kConsumed);
   EXPECT_FALSE(TouchEventQueueEmpty());
   EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
   EXPECT_EQ(WebInputEvent::kTouchStart,
             disposition_handler_->acked_touch_event().event.GetType());
   EXPECT_EQ(0U, GetAndResetDispatchedMessages().size());
 
-  touch_move_event[0]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_CONSUMED);
+  touch_move_event[0]->ToEvent()->CallCallback(
+      blink::mojom::InputEventResultState::kConsumed);
   EXPECT_TRUE(TouchEventQueueEmpty());
   EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
   EXPECT_EQ(WebInputEvent::kTouchMove,
@@ -817,7 +830,7 @@ TEST_F(InputRouterImplTest, TouchEventQueueFlush) {
   // After the ack, the touch-event queue should be empty, and none of the
   // flushed touch-events should have been sent to the renderer.
   dispatched_messages[0]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_CONSUMED);
+      blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(0U, GetAndResetDispatchedMessages().size());
   EXPECT_TRUE(TouchEventQueueEmpty());
 }
@@ -834,7 +847,7 @@ TEST_F(InputRouterImplTest, UnhandledWheelEvent) {
 
   // Indicate that the wheel event was unhandled.
   dispatched_messages[0]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+      blink::mojom::InputEventResultState::kNotConsumed);
 
   // There should be a ScrollBegin, ScrollUpdate, second MouseWheel, and second
   // ScrollUpdate sent.
@@ -855,7 +868,7 @@ TEST_F(InputRouterImplTest, UnhandledWheelEvent) {
 
   // Indicate that the GestureScrollBegin event was consumed.
   dispatched_messages[0]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_CONSUMED);
+      blink::mojom::InputEventResultState::kConsumed);
 
   // Check that the ack for the first MouseWheel, ScrollBegin, and the second
   // MouseWheel were processed.
@@ -864,12 +877,12 @@ TEST_F(InputRouterImplTest, UnhandledWheelEvent) {
   // The last acked wheel event should be the second one since the input router
   // has already sent the immediate ack for the second wheel event.
   EXPECT_EQ(disposition_handler_->acked_wheel_event().delta_y, -10);
-  EXPECT_EQ(INPUT_EVENT_ACK_STATE_IGNORED,
+  EXPECT_EQ(blink::mojom::InputEventResultState::kIgnored,
             disposition_handler_->acked_wheel_event_state());
 
   // Ack the first gesture scroll update.
   dispatched_messages[1]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_CONSUMED);
+      blink::mojom::InputEventResultState::kConsumed);
 
   // Check that the ack for the first ScrollUpdate were processed.
   EXPECT_EQ(
@@ -879,7 +892,7 @@ TEST_F(InputRouterImplTest, UnhandledWheelEvent) {
 
   // Ack the second gesture scroll update.
   dispatched_messages[3]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_CONSUMED);
+      blink::mojom::InputEventResultState::kConsumed);
 
   // Check that the ack for the second ScrollUpdate were processed.
   EXPECT_EQ(
@@ -906,7 +919,7 @@ TEST_F(InputRouterImplTest, TouchTypesIgnoringAck) {
   ASSERT_EQ(1U, dispatched_messages.size());
   ASSERT_TRUE(dispatched_messages[0]->ToEvent());
   dispatched_messages[0]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_CONSUMED);
+      blink::mojom::InputEventResultState::kConsumed);
   ASSERT_EQ(1U, disposition_handler_->GetAndResetAckCount());
   ASSERT_EQ(0, client_->in_flight_event_count());
 
@@ -985,7 +998,7 @@ TEST_F(InputRouterImplTest, DISABLED_GestureTypesIgnoringAck) {
 
       dispatched_messages[dispatched_messages.size() - 1]
           ->ToEvent()
-          ->CallCallback(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+          ->CallCallback(blink::mojom::InputEventResultState::kNotConsumed);
 
       EXPECT_EQ(0U, GetAndResetDispatchedMessages().size());
       EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
@@ -1018,7 +1031,7 @@ TEST_F(InputRouterImplTest, MouseTypesIgnoringAck) {
       EXPECT_EQ(1, client_->in_flight_event_count());
 
       dispatched_messages[0]->ToEvent()->CallCallback(
-          INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+          blink::mojom::InputEventResultState::kNotConsumed);
       EXPECT_EQ(0U, GetAndResetDispatchedMessages().size());
       EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
       EXPECT_EQ(0, client_->in_flight_event_count());
@@ -1063,7 +1076,7 @@ TEST_F(InputRouterImplTest, GestureTypesIgnoringAckInterleaved) {
   ASSERT_EQ(1U, dispatched_messages.size());
   ASSERT_TRUE(dispatched_messages[0]->ToEvent());
   dispatched_messages[0]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_CONSUMED);
+      blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
   EXPECT_EQ(0, client_->in_flight_event_count());
 
@@ -1127,19 +1140,19 @@ TEST_F(InputRouterImplTest, GestureTypesIgnoringAckInterleaved) {
   ASSERT_TRUE(dispatched_messages[2]->ToEvent());
   ASSERT_TRUE(dispatched_messages[3]->ToEvent());
   dispatched_messages[1]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+      blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_EQ(2U, disposition_handler_->GetAndResetAckCount());
   EXPECT_EQ(2, client_->in_flight_event_count());
 
   // Ack the second GestureScrollUpdate
   dispatched_messages[2]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+      blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_EQ(2U, disposition_handler_->GetAndResetAckCount());
   EXPECT_EQ(1, client_->in_flight_event_count());
 
   // Ack the last GestureScrollUpdate
   dispatched_messages[3]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+      blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_EQ(2U, disposition_handler_->GetAndResetAckCount());
   EXPECT_EQ(0, client_->in_flight_event_count());
 
@@ -1156,7 +1169,7 @@ TEST_F(InputRouterImplTest, GestureShowPressIsInOrder) {
   DispatchedMessages dispatched_messages = GetAndResetDispatchedMessages();
   EXPECT_EQ(1U, dispatched_messages.size());
   dispatched_messages[0]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_CONSUMED);
+      blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
 
   // GesturePinchBegin ignores its ack.
@@ -1209,7 +1222,7 @@ TEST_F(InputRouterImplTest, GestureShowPressIsInOrder) {
 
   // Ack the GestureScrollUpdate to release the two GestureShowPress acks.
   dispatched_messages[1]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+      blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_EQ(0U, GetAndResetDispatchedMessages().size());
   EXPECT_EQ(3U, disposition_handler_->GetAndResetAckCount());
   EXPECT_EQ(0, client_->in_flight_event_count());
@@ -1241,7 +1254,7 @@ TEST_F(InputRouterImplTest, TouchAckTimeoutConfigured) {
 
   // Ack'ing the timed-out event should fire a TouchCancel.
   dispatched_messages[0]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_CONSUMED);
+      blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(0U, disposition_handler_->GetAndResetAckCount());
   EXPECT_EQ(1U, GetAndResetDispatchedMessages().size());
 
@@ -1275,9 +1288,9 @@ TEST_F(InputRouterImplTest, TouchAckTimeoutConfigured) {
   ASSERT_EQ(1U, touch_release_event2.size());
   ASSERT_TRUE(touch_release_event2[0]->ToEvent());
   touch_press_event2[0]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_CONSUMED);
+      blink::mojom::InputEventResultState::kConsumed);
   touch_release_event2[0]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_CONSUMED);
+      blink::mojom::InputEventResultState::kConsumed);
 
   PressTouchPoint(1, 1);
   SendTouchEvent();
@@ -1293,9 +1306,9 @@ TEST_F(InputRouterImplTest, TouchAckTimeoutConfigured) {
   ASSERT_EQ(1u, touch_release_event3.size());
   ASSERT_TRUE(touch_release_event3[0]->ToEvent());
   touch_press_event3[0]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_CONSUMED);
+      blink::mojom::InputEventResultState::kConsumed);
   touch_release_event3[0]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_CONSUMED);
+      blink::mojom::InputEventResultState::kConsumed);
 
   // As the touch-action is reset by a new touch sequence, the timeout behavior
   // should be restored.
@@ -1326,8 +1339,9 @@ TEST_F(InputRouterImplTest,
   // TouchAction::kNone should disable the timeout.
   CancelTouchTimeout();
   dispatched_messages[0]->ToEvent()->CallCallback(
-      InputEventAckSource::MAIN_THREAD, ui::LatencyInfo(),
-      INPUT_EVENT_ACK_STATE_CONSUMED, base::nullopt, cc::TouchAction::kNone);
+      blink::mojom::InputEventResultSource::kMainThread, ui::LatencyInfo(),
+      blink::mojom::InputEventResultState::kConsumed, base::nullopt,
+      cc::TouchAction::kNone);
   EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
   EXPECT_FALSE(TouchEventTimeoutEnabled());
 
@@ -1342,7 +1356,7 @@ TEST_F(InputRouterImplTest,
   EXPECT_EQ(0U, disposition_handler_->GetAndResetAckCount());
   EXPECT_EQ(0U, GetAndResetDispatchedMessages().size());
   dispatched_messages[0]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_CONSUMED);
+      blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
 
   // End the touch sequence.
@@ -1352,7 +1366,7 @@ TEST_F(InputRouterImplTest,
   dispatched_messages = GetAndResetDispatchedMessages();
   EXPECT_EQ(1U, dispatched_messages.size());
   dispatched_messages[0]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_CONSUMED);
+      blink::mojom::InputEventResultState::kConsumed);
   EXPECT_TRUE(TouchEventTimeoutEnabled());
   disposition_handler_->GetAndResetAckCount();
   GetAndResetDispatchedMessages();
@@ -1410,9 +1424,11 @@ TEST_F(InputRouterImplTest, TouchActionResetBeforeEventReachesRenderer) {
   ASSERT_TRUE(touch_release_event2[0]->ToEvent());
 
   touch_press_event1[0]->ToEvent()->CallCallback(
-      InputEventAckSource::MAIN_THREAD, ui::LatencyInfo(),
-      INPUT_EVENT_ACK_STATE_CONSUMED, base::nullopt, cc::TouchAction::kNone);
-  touch_move_event1[0]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_CONSUMED);
+      blink::mojom::InputEventResultSource::kMainThread, ui::LatencyInfo(),
+      blink::mojom::InputEventResultState::kConsumed, base::nullopt,
+      cc::TouchAction::kNone);
+  touch_move_event1[0]->ToEvent()->CallCallback(
+      blink::mojom::InputEventResultState::kConsumed);
 
   // Ensure touch action is still none, as the next touch start hasn't been
   // acked yet. ScrollBegin and ScrollEnd don't require acks.
@@ -1428,28 +1444,30 @@ TEST_F(InputRouterImplTest, TouchActionResetBeforeEventReachesRenderer) {
 
   // This allows the next touch sequence to start.
   touch_release_event1[0]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_CONSUMED);
+      blink::mojom::InputEventResultState::kConsumed);
 
   // Ensure touch action has been set to auto, as a new touch sequence has
   // started.
   touch_press_event2[0]->ToEvent()->CallCallback(
-      InputEventAckSource::COMPOSITOR_THREAD, ui::LatencyInfo(),
-      INPUT_EVENT_ACK_STATE_CONSUMED, base::nullopt, cc::TouchAction::kAuto);
+      blink::mojom::InputEventResultSource::kCompositorThread,
+      ui::LatencyInfo(), blink::mojom::InputEventResultState::kConsumed,
+      base::nullopt, cc::TouchAction::kAuto);
   touch_press_event2[0]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_CONSUMED);
-  touch_move_event2[0]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_CONSUMED);
+      blink::mojom::InputEventResultState::kConsumed);
+  touch_move_event2[0]->ToEvent()->CallCallback(
+      blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(0U, GetAndResetDispatchedMessages().size());
   SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
                        blink::WebGestureDevice::kTouchscreen);
   DispatchedMessages gesture_scroll_begin = GetAndResetDispatchedMessages();
   EXPECT_EQ(1U, gesture_scroll_begin.size());
   gesture_scroll_begin[0]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_CONSUMED);
+      blink::mojom::InputEventResultState::kConsumed);
   SimulateGestureEvent(WebInputEvent::kGestureScrollEnd,
                        blink::WebGestureDevice::kTouchscreen);
   EXPECT_EQ(1U, GetAndResetDispatchedMessages().size());
   touch_release_event2[0]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_CONSUMED);
+      blink::mojom::InputEventResultState::kConsumed);
 }
 
 // Test that TouchActionFilter::ResetTouchAction is called when a new touch
@@ -1470,9 +1488,11 @@ TEST_F(InputRouterImplTest, TouchActionResetWhenTouchHasNoConsumer) {
   ASSERT_TRUE(touch_move_event1[0]->ToEvent());
   CancelTouchTimeout();
   touch_press_event1[0]->ToEvent()->CallCallback(
-      InputEventAckSource::MAIN_THREAD, ui::LatencyInfo(),
-      INPUT_EVENT_ACK_STATE_CONSUMED, base::nullopt, cc::TouchAction::kNone);
-  touch_move_event1[0]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_CONSUMED);
+      blink::mojom::InputEventResultSource::kMainThread, ui::LatencyInfo(),
+      blink::mojom::InputEventResultState::kConsumed, base::nullopt,
+      cc::TouchAction::kNone);
+  touch_move_event1[0]->ToEvent()->CallCallback(
+      blink::mojom::InputEventResultState::kConsumed);
 
   ReleaseTouchPoint(0);
   SendTouchEvent();
@@ -1505,9 +1525,9 @@ TEST_F(InputRouterImplTest, TouchActionResetWhenTouchHasNoConsumer) {
   EXPECT_EQ(0U, GetAndResetDispatchedMessages().size());
 
   touch_release_event1[0]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_CONSUMED);
+      blink::mojom::InputEventResultState::kConsumed);
   touch_press_event2[0]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+      blink::mojom::InputEventResultState::kNoConsumerExists);
 
   PressAndSetTouchActionAuto();
   // Ensure touch action has been set to auto, as the touch had no consumer.
@@ -1518,7 +1538,7 @@ TEST_F(InputRouterImplTest, TouchActionResetWhenTouchHasNoConsumer) {
   ASSERT_EQ(1U, dispatched_messages.size());
   ASSERT_TRUE(dispatched_messages[0]->ToEvent());
   dispatched_messages[0]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_CONSUMED);
+      blink::mojom::InputEventResultState::kConsumed);
   SimulateGestureEvent(WebInputEvent::kGestureScrollEnd,
                        blink::WebGestureDevice::kTouchscreen);
   EXPECT_EQ(1U, GetAndResetDispatchedMessages().size());
@@ -1544,11 +1564,12 @@ TEST_F(InputRouterImplTest, TouchActionResetWhenTouchHandlerRemoved) {
 
   // Ensure we have touch-action:none, suppressing scroll events.
   dispatched_messages[0]->ToEvent()->CallCallback(
-      InputEventAckSource::MAIN_THREAD, ui::LatencyInfo(),
-      INPUT_EVENT_ACK_STATE_CONSUMED, base::nullopt, cc::TouchAction::kNone);
+      blink::mojom::InputEventResultSource::kMainThread, ui::LatencyInfo(),
+      blink::mojom::InputEventResultState::kConsumed, base::nullopt,
+      cc::TouchAction::kNone);
   EXPECT_EQ(0U, GetAndResetDispatchedMessages().size());
   dispatched_messages[1]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+      blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_EQ(0U, GetAndResetDispatchedMessages().size());
   SimulateGestureEvent(WebInputEvent::kGestureTapDown,
                        blink::WebGestureDevice::kTouchscreen);
@@ -1558,7 +1579,7 @@ TEST_F(InputRouterImplTest, TouchActionResetWhenTouchHandlerRemoved) {
   EXPECT_EQ(0U, GetAndResetDispatchedMessages().size());
 
   dispatched_messages[2]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+      blink::mojom::InputEventResultState::kNotConsumed);
   SimulateGestureEvent(WebInputEvent::kGestureScrollEnd,
                        blink::WebGestureDevice::kTouchscreen);
   EXPECT_EQ(0U, GetAndResetDispatchedMessages().size());
@@ -1575,7 +1596,7 @@ TEST_F(InputRouterImplTest, TouchActionResetWhenTouchHandlerRemoved) {
   ASSERT_EQ(1U, dispatched_messages.size());
   ASSERT_TRUE(dispatched_messages[0]->ToEvent());
   dispatched_messages[0]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_CONSUMED);
+      blink::mojom::InputEventResultState::kConsumed);
   SimulateGestureEvent(WebInputEvent::kGestureScrollEnd,
                        blink::WebGestureDevice::kTouchscreen);
   EXPECT_EQ(1U, GetAndResetDispatchedMessages().size());
@@ -1596,7 +1617,7 @@ TEST_F(InputRouterImplTest, AsyncTouchMoveAckedImmediately) {
 
   // Receive an ACK for the first touch-event.
   dispatched_messages[0]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_CONSUMED);
+      blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
   SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
                        blink::WebGestureDevice::kTouchscreen);
@@ -1604,7 +1625,7 @@ TEST_F(InputRouterImplTest, AsyncTouchMoveAckedImmediately) {
   ASSERT_EQ(1U, dispatched_messages.size());
   ASSERT_TRUE(dispatched_messages[0]->ToEvent());
   dispatched_messages[0]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_CONSUMED);
+      blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
   SimulateGestureEvent(WebInputEvent::kGestureScrollUpdate,
                        blink::WebGestureDevice::kTouchscreen);
@@ -1631,8 +1652,9 @@ TEST_F(InputRouterImplTest, DoubleTapGestureDependsOnFirstTap) {
   ASSERT_EQ(1U, dispatched_messages.size());
   ASSERT_TRUE(dispatched_messages[0]->ToEvent());
   dispatched_messages[0]->ToEvent()->CallCallback(
-      InputEventAckSource::MAIN_THREAD, ui::LatencyInfo(),
-      INPUT_EVENT_ACK_STATE_CONSUMED, base::nullopt, cc::TouchAction::kNone);
+      blink::mojom::InputEventResultSource::kMainThread, ui::LatencyInfo(),
+      blink::mojom::InputEventResultState::kConsumed, base::nullopt,
+      cc::TouchAction::kNone);
   ReleaseTouchPoint(0);
   SendTouchEvent();
 
@@ -1660,7 +1682,7 @@ TEST_F(InputRouterImplTest, DoubleTapGestureDependsOnFirstTap) {
   EXPECT_EQ(3, client_->in_flight_event_count());
 
   dispatched_messages[3]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_CONSUMED);
+      blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(2, client_->in_flight_event_count());
 
   // This tap gesture is dropped, since the GestureTapUnconfirmed was turned
@@ -1670,9 +1692,9 @@ TEST_F(InputRouterImplTest, DoubleTapGestureDependsOnFirstTap) {
   EXPECT_EQ(0U, GetAndResetDispatchedMessages().size());
 
   dispatched_messages[0]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_CONSUMED);
+      blink::mojom::InputEventResultState::kConsumed);
   dispatched_messages[1]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+      blink::mojom::InputEventResultState::kNoConsumerExists);
 
   // Second Tap.
   EXPECT_EQ(0U, GetAndResetDispatchedMessages().size());
@@ -1693,7 +1715,7 @@ TEST_F(InputRouterImplTest, DoubleTapGestureDependsOnFirstTap) {
   ASSERT_EQ(1, client_->in_flight_event_count());
   ASSERT_TRUE(dispatched_messages[0]->ToEvent());
   dispatched_messages[0]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_CONSUMED);
+      blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(0, client_->in_flight_event_count());
 }
 
@@ -1758,13 +1780,13 @@ TEST_P(TouchpadPinchInputRouterImplTest, TouchpadPinchUpdate) {
             synthetic_wheel->dispatch_type);
 
   dispatched_messages[0]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+      blink::mojom::InputEventResultState::kNotConsumed);
 
   // Check that the correct unhandled pinch event was received.
   EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
   ASSERT_EQ(WebInputEvent::kGesturePinchUpdate,
             disposition_handler_->ack_event_type());
-  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED,
+  EXPECT_EQ(blink::mojom::InputEventResultState::kNotConsumed,
             disposition_handler_->ack_state());
   EXPECT_EQ(
       1.5f,
@@ -1791,10 +1813,10 @@ TEST_P(TouchpadPinchInputRouterImplTest, TouchpadPinchUpdate) {
 
   if (async_events_enabled_) {
     dispatched_messages[0]->ToEvent()->CallCallback(
-        INPUT_EVENT_ACK_STATE_IGNORED);
+        blink::mojom::InputEventResultState::kIgnored);
   } else {
     dispatched_messages[0]->ToEvent()->CallCallback(
-        INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+        blink::mojom::InputEventResultState::kNotConsumed);
   }
 
   // Check that the correct HANDLED pinch event was received.
@@ -1802,9 +1824,10 @@ TEST_P(TouchpadPinchInputRouterImplTest, TouchpadPinchUpdate) {
   EXPECT_EQ(WebInputEvent::kGesturePinchUpdate,
             disposition_handler_->ack_event_type());
   if (async_events_enabled_) {
-    EXPECT_EQ(INPUT_EVENT_ACK_STATE_IGNORED, disposition_handler_->ack_state());
+    EXPECT_EQ(blink::mojom::InputEventResultState::kIgnored,
+              disposition_handler_->ack_state());
   } else {
-    EXPECT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED,
+    EXPECT_EQ(blink::mojom::InputEventResultState::kNotConsumed,
               disposition_handler_->ack_state());
   }
   EXPECT_FLOAT_EQ(
@@ -1823,12 +1846,13 @@ TEST_P(TouchpadPinchInputRouterImplTest, TouchpadPinchUpdate) {
   EXPECT_EQ(blink::WebInputEvent::DispatchType::kEventNonBlocking,
             synthetic_wheel->dispatch_type);
   dispatched_messages[0]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_IGNORED);
+      blink::mojom::InputEventResultState::kIgnored);
 
   EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
   EXPECT_EQ(WebInputEvent::kGesturePinchEnd,
             disposition_handler_->ack_event_type());
-  EXPECT_EQ(INPUT_EVENT_ACK_STATE_IGNORED, disposition_handler_->ack_state());
+  EXPECT_EQ(blink::mojom::InputEventResultState::kIgnored,
+            disposition_handler_->ack_state());
 
   // The first event is blocked. We should send following wheel events as
   // blocking events.
@@ -1855,13 +1879,14 @@ TEST_P(TouchpadPinchInputRouterImplTest, TouchpadPinchUpdate) {
             synthetic_wheel->dispatch_type);
 
   dispatched_messages[0]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_CONSUMED);
+      blink::mojom::InputEventResultState::kConsumed);
 
   // Check that the correct handled pinch event was received.
   EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
   ASSERT_EQ(WebInputEvent::kGesturePinchUpdate,
             disposition_handler_->ack_event_type());
-  EXPECT_EQ(INPUT_EVENT_ACK_STATE_CONSUMED, disposition_handler_->ack_state());
+  EXPECT_EQ(blink::mojom::InputEventResultState::kConsumed,
+            disposition_handler_->ack_state());
   EXPECT_EQ(
       1.5f,
       disposition_handler_->acked_gesture_event().data.pinch_update.scale);
@@ -1881,13 +1906,14 @@ TEST_P(TouchpadPinchInputRouterImplTest, TouchpadPinchUpdate) {
             synthetic_wheel->dispatch_type);
 
   dispatched_messages[0]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_CONSUMED);
+      blink::mojom::InputEventResultState::kConsumed);
 
   // Check that the correct HANDLED pinch event was received.
   EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
   EXPECT_EQ(WebInputEvent::kGesturePinchUpdate,
             disposition_handler_->ack_event_type());
-  EXPECT_EQ(INPUT_EVENT_ACK_STATE_CONSUMED, disposition_handler_->ack_state());
+  EXPECT_EQ(blink::mojom::InputEventResultState::kConsumed,
+            disposition_handler_->ack_state());
   EXPECT_FLOAT_EQ(
       0.3f,
       disposition_handler_->acked_gesture_event().data.pinch_update.scale);
@@ -1941,27 +1967,27 @@ TEST_F(InputRouterImplTest, TouchpadPinchAndScrollUpdate) {
 
   // Ack'ing events should decrease in-flight event count.
   dispatched_messages[0]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_CONSUMED);
+      blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
   EXPECT_EQ(3, client_->in_flight_event_count());
 
   // Ack the second scroll.
   dispatched_messages[1]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_CONSUMED);
+      blink::mojom::InputEventResultState::kConsumed);
   EXPECT_FALSE(dispatched_messages[2]->ToEvent()->HasCallback());
   EXPECT_EQ(2U, disposition_handler_->GetAndResetAckCount());
   EXPECT_EQ(2, client_->in_flight_event_count());
 
   // Ack the scroll event.
   dispatched_messages[3]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_CONSUMED);
+      blink::mojom::InputEventResultState::kConsumed);
   EXPECT_FALSE(dispatched_messages[4]->ToEvent()->HasCallback());
   EXPECT_EQ(2U, disposition_handler_->GetAndResetAckCount());
   EXPECT_EQ(1, client_->in_flight_event_count());
 
   // Ack the scroll event.
   dispatched_messages[5]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_CONSUMED);
+      blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
   EXPECT_EQ(0, client_->in_flight_event_count());
 }
@@ -1997,9 +2023,9 @@ TEST_F(InputRouterImplTest, OverscrollDispatch) {
   ASSERT_TRUE(dispatched_messages[0]->ToEvent());
 
   dispatched_messages[0]->ToEvent()->CallCallback(
-      InputEventAckSource::COMPOSITOR_THREAD, ui::LatencyInfo(),
-      INPUT_EVENT_ACK_STATE_NOT_CONSUMED, DidOverscrollParams(wheel_overscroll),
-      base::nullopt);
+      blink::mojom::InputEventResultSource::kCompositorThread,
+      ui::LatencyInfo(), blink::mojom::InputEventResultState::kNotConsumed,
+      DidOverscrollParams(wheel_overscroll), base::nullopt);
 
   client_overscroll = client_->GetAndResetOverscroll();
   EXPECT_EQ(wheel_overscroll.accumulated_overscroll,
@@ -2024,7 +2050,7 @@ TEST_F(InputRouterImplTest, TouchValidationPassesWithFilteredInputEvents) {
   ASSERT_EQ(1U, dispatched_messages.size());
   ASSERT_TRUE(dispatched_messages[0]->ToEvent());
   dispatched_messages[0]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+      blink::mojom::InputEventResultState::kNoConsumerExists);
 
   PressTouchPoint(1, 1);
   SendTouchEvent();
@@ -2032,7 +2058,7 @@ TEST_F(InputRouterImplTest, TouchValidationPassesWithFilteredInputEvents) {
   ASSERT_EQ(1U, dispatched_messages.size());
   ASSERT_TRUE(dispatched_messages[0]->ToEvent());
   dispatched_messages[0]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+      blink::mojom::InputEventResultState::kNoConsumerExists);
 
   // This event will not be filtered out even though no consumer exists.
   ReleaseTouchPoint(1);
@@ -2048,7 +2074,7 @@ TEST_F(InputRouterImplTest, TouchValidationPassesWithFilteredInputEvents) {
   ASSERT_EQ(1U, dispatched_messages.size());
   ASSERT_TRUE(dispatched_messages[0]->ToEvent());
   dispatched_messages[0]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+      blink::mojom::InputEventResultState::kNoConsumerExists);
 }
 
 TEST_F(InputRouterImplTest, TouchActionInCallback) {
@@ -2060,12 +2086,11 @@ TEST_F(InputRouterImplTest, TouchActionInCallback) {
   DispatchedMessages dispatched_messages = GetAndResetDispatchedMessages();
   ASSERT_EQ(1U, dispatched_messages.size());
   ASSERT_TRUE(dispatched_messages[0]->ToEvent());
-  InputEventAckSource source = InputEventAckSource::MAIN_THREAD;
   base::Optional<cc::TouchAction> expected_touch_action = cc::TouchAction::kPan;
-  source = InputEventAckSource::COMPOSITOR_THREAD;
   dispatched_messages[0]->ToEvent()->CallCallback(
-      source, ui::LatencyInfo(), INPUT_EVENT_ACK_STATE_CONSUMED, base::nullopt,
-      expected_touch_action);
+      blink::mojom::InputEventResultSource::kCompositorThread,
+      ui::LatencyInfo(), blink::mojom::InputEventResultState::kConsumed,
+      base::nullopt, expected_touch_action);
   ASSERT_EQ(1U, disposition_handler_->GetAndResetAckCount());
   base::Optional<cc::TouchAction> allowed_touch_action = AllowedTouchAction();
   cc::TouchAction white_listed_touch_action = WhiteListedTouchAction();
@@ -2227,7 +2252,7 @@ class InputRouterImplScaleTouchEventTest
     ASSERT_EQ(1u, dispatched_messages_.size());
     ASSERT_TRUE(dispatched_messages_[0]->ToEvent());
     dispatched_messages_[0]->ToEvent()->CallCallback(
-        INPUT_EVENT_ACK_STATE_CONSUMED);
+        blink::mojom::InputEventResultState::kConsumed);
     ASSERT_TRUE(TouchEventQueueEmpty());
   }
 
@@ -2238,7 +2263,7 @@ class InputRouterImplScaleTouchEventTest
     ASSERT_EQ(1u, dispatched_messages_.size());
     ASSERT_TRUE(dispatched_messages_[0]->ToEvent());
     dispatched_messages_[0]->ToEvent()->CallCallback(
-        INPUT_EVENT_ACK_STATE_CONSUMED);
+        blink::mojom::InputEventResultState::kConsumed);
   }
 
  private:
@@ -2395,7 +2420,7 @@ class InputRouterImplScaleGestureEventTest
           expected_types[i],
           dispatched_messages_[i]->ToEvent()->Event()->web_event->GetType());
       dispatched_messages_[i]->ToEvent()->CallCallback(
-          INPUT_EVENT_ACK_STATE_CONSUMED);
+          blink::mojom::InputEventResultState::kConsumed);
     }
   }
 

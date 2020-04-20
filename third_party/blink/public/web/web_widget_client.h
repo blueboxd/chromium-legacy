@@ -248,18 +248,49 @@ class WebWidgetClient {
   virtual void RequestDecode(const cc::PaintImage& image,
                              base::OnceCallback<void(bool)> callback) {}
 
+  using LayerTreeFrameSinkCallback = base::OnceCallback<void(
+      std::unique_ptr<cc::LayerTreeFrameSink>,
+      std::unique_ptr<cc::RenderFrameMetadataObserver>)>;
+
+  // Requests a LayerTreeFrameSink to submit CompositorFrames to.
+  virtual void RequestNewLayerTreeFrameSink(
+      LayerTreeFrameSinkCallback callback) {}
 
   virtual viz::FrameSinkId GetFrameSinkId() {
     NOTREACHED();
     return viz::FrameSinkId();
   }
 
-  // Add a presentation callback. |callback| should be called when
-  // |frame_token| has been completely displayed by the compositor.
-  // |callback| should be run on the main thread.
-  virtual void AddPresentationCallback(
-      uint32_t frame_token,
-      base::OnceCallback<void(base::TimeTicks)> callback) {}
+  // Notification that the LayerTreeHost started or stopped deferring main frame
+  // updates.
+  virtual void OnDeferMainFrameUpdatesChanged(bool defer) {}
+
+  // Notification that the LayerTreeHost started or stopped deferring commits.
+  virtual void OnDeferCommitsChanged(bool defer) {}
+
+  // For more information on the sequence of when these callbacks are made
+  // consult cc/trees/layer_tree_host_client.h.
+
+  // Indicates that the compositor is about to begin a frame. This is primarily
+  // to signal to flow control mechanisms that a frame is beginning, not to
+  // perform actual painting work.
+  virtual void WillBeginMainFrame() {}
+
+  // Notification that the BeginMainFrame completed, was committed into the
+  // compositor (thread) and submitted to the display compositor.
+  virtual void DidCommitAndDrawCompositorFrame() {}
+
+  // Notification that page scale animation was changed.
+  virtual void DidCompletePageScaleAnimation() {}
+
+  // Notification that the output of a BeginMainFrame was committed to the
+  // compositor (thread), though would not be submitted to the display
+  // compositor yet (see DidCommitAndDrawCompositorFrame()).
+  virtual void DidCommitCompositorFrame(base::TimeTicks commit_start_time) {}
+
+  // Notifies that the layer tree host has completed a call to
+  // RequestMainFrameUpdate in response to a BeginMainFrame.
+  virtual void DidBeginMainFrame() {}
 
   // Record the time it took for the first paint after the widget transitioned
   // from background inactive to active.

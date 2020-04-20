@@ -451,8 +451,8 @@ void CrostiniHandler::HandleQueryArcAdbRequest(const base::ListValue* args) {
 
   chromeos::SessionManagerClient* client =
       chromeos::SessionManagerClient::Get();
-  client->QueryAdbSideload(base::Bind(&CrostiniHandler::OnQueryAdbSideload,
-                                      weak_ptr_factory_.GetWeakPtr()));
+  client->QueryAdbSideload(base::BindOnce(&CrostiniHandler::OnQueryAdbSideload,
+                                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void CrostiniHandler::HandleCrostiniUpgraderDialogStatusRequest(
@@ -488,8 +488,8 @@ void CrostiniHandler::HandleAddCrostiniPortForward(
       port_number,
       static_cast<crostini::CrostiniPortForwarder::Protocol>(protocol_type),
       std::move(label),
-      base::Bind(&CrostiniHandler::OnPortForwardComplete,
-                 weak_ptr_factory_.GetWeakPtr(), std::move(callback_id)));
+      base::BindOnce(&CrostiniHandler::OnPortForwardComplete,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback_id)));
 }
 
 void CrostiniHandler::OnPortForwardComplete(std::string callback_id,

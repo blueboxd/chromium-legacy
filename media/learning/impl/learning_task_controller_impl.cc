@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "media/learning/impl/distribution_reporter.h"
 #include "media/learning/impl/extra_trees_trainer.h"
 #include "media/learning/impl/lookup_table_trainer.h"

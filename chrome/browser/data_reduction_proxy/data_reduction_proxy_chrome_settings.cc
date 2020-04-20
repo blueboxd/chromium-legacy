@@ -150,9 +150,7 @@ DataReductionProxyChromeSettings::MigrateDataReductionProxyOffProxyPrefsHelper(
     // ensure that any DRP in the pref is cleared even if the DRP configuration
     // was changed. See http://crbug.com/476610.
     ProxyPrefMigrationResult rv;
-    if (Config()->ContainsDataReductionProxy(proxy_rules))
-      rv = PROXY_PREF_CLEARED_DRP;
-    else if (ContainsDataReductionProxyDefaultHostSuffix(proxy_rules))
+    if (ContainsDataReductionProxyDefaultHostSuffix(proxy_rules))
       rv = PROXY_PREF_CLEARED_GOOGLEZIP;
     else
       return PROXY_PREF_NOT_CLEARED;
@@ -279,8 +277,7 @@ DataReductionProxyChromeSettings::CreateDataFromNavigationHandle(
       data_reduction_proxy_service()->GetEffectiveConnectionType());
   data->set_connection_type(net::NetworkChangeNotifier::ConnectionType(
       data_reduction_proxy_service()->GetConnectionType()));
-  data->set_used_data_reduction_proxy(
-      IsConfiguredDataReductionProxy(handle->GetProxyServer()));
+  data->set_used_data_reduction_proxy(false);
 
   if (!headers || headers->IsRedirect(nullptr))
     return data;

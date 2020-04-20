@@ -54,6 +54,7 @@
 <translation id="1331212799747679585">Det går inte att uppdatera Chrome. Fler alternativ</translation>
 <translation id="1332501820983677155">Kortkommandon för funktioner i Google Chrome</translation>
 <translation id="1360432990279830238">Logga ut och inaktivera synkronisering?</translation>
+<translation id="1364532808393826295"><ph name="APP_NAME" />–<ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">Webbplatsen <ph name="SITE_NAME" /> har lagts till</translation>
 <translation id="1373696734384179344">Det finns inte tillräckligt med minne för att ladda ned det valda innehållet.</translation>
 <translation id="1376578503827013741">Beräknar …</translation>
@@ -140,6 +141,7 @@
 <translation id="2017836877785168846">Rensar historik och autoslutföranden i adressfältet.</translation>
 <translation id="2021896219286479412">Helskärmskontroller på webbsidan</translation>
 <translation id="2025115093177348061">Förstärkt verklighet</translation>
+<translation id="2030769033451695672">Återgå till <ph name="URL_OF_THE_CURRENT_TAB" /> genom att trycka här</translation>
 <translation id="2038563949887743358">Aktivera begäran av skrivbordsversion</translation>
 <translation id="2041019821020695769">Om du vill få aviseringar från Chrome måste du även aktivera aviseringar i <ph name="BEGIN_LINK" />inställningarna för Android<ph name="END_LINK" />.</translation>
 <translation id="204321170514947529">Data för <ph name="APP_NAME" /> finns även i Chrome</translation>
@@ -301,6 +303,7 @@ Sök genom att trycka länge på ett ord. Du kan förfina sökningen genom att v
 <translation id="3207960819495026254">Bokmärkt</translation>
 <translation id="3211426585530211793"><ph name="ITEM_TITLE" /> raderades</translation>
 <translation id="321773570071367578">Om du har glömt lösenfrasen eller vill ändra inställningen <ph name="BEGIN_LINK" />återställer du synkroniseringen<ph name="END_LINK" /></translation>
+<translation id="3223655101706843289">All data och alla cookies som har sparats av <ph name="ORIGIN" /> och den tillhörande appen på startskärmen rensas.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3232754137068452469">Webbapp</translation>
 <translation id="3236059992281584593">1 minut kvar</translation>
@@ -535,6 +538,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="4943872375798546930">Inga resultat</translation>
 <translation id="4961107849584082341">Översätt den här sidan till vilket språk som helst</translation>
 <translation id="4962975101802056554">Återkalla alla behörigheter för enheten</translation>
+<translation id="4964199952259983386">Om du vill att Chrome ska använda AR måste du även aktivera kameran i <ph name="BEGIN_LINK" />inställningarna för Android<ph name="END_LINK" />.</translation>
 <translation id="4970824347203572753">Inte tillgängligt i ditt land</translation>
 <translation id="497421865427891073">Fortsätt</translation>
 <translation id="4988210275050210843">En fil laddas ned (<ph name="MEGABYTES" />).</translation>
@@ -634,6 +638,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5684874026226664614">Det gick inte att översätta sidan.</translation>
 <translation id="5686790454216892815">Filnamnet är för långt</translation>
 <translation id="5689516760719285838">Plats</translation>
+<translation id="5690795753582697420">Kamera har inaktiverats i inställningarna för Android</translation>
 <translation id="5694049548840660018">Kom tillbaka till startsidan snabbt</translation>
 <translation id="569536719314091526">Översätt den här sidan till vilket språk som helst via knappen Fler alternativ</translation>
 <translation id="5710871682236653961">Fråga innan webbplatser tillåts att skicka och ta emot uppgifter när du snuddar vid NFC-enheter (rekommenderas)</translation>
@@ -665,6 +670,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5876056640971328065">Pausa video</translation>
 <translation id="5884076754568147479">Innehållet på en webbplats där du använder Google Assistent, dess webbadress samt information som du skickar via assistenten överförs till Google så att du kan få uppgifterna utförda</translation>
 <translation id="5919204609460789179">Uppdatera <ph name="PRODUCT_NAME" /> för att starta synkronisering</translation>
+<translation id="5922853908706496913">Delar skärmen</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> har sparats</translation>
 <translation id="5939518447894949180">Återställ</translation>
 <translation id="5942872142862698679">Du söker med Google</translation>
@@ -875,6 +881,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="751961395872307827">Det gick inte att ansluta till webbplatsen</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7542481630195938534">Det går inte att få förslag</translation>
+<translation id="7554752735887601236">En webbplats använder mikrofonen</translation>
 <translation id="7559975015014302720">Begränsat läge har inaktiverats</translation>
 <translation id="7562080006725997899">Tar bort webbinformation</translation>
 <translation id="756809126120519699">Data i Chrome har rensats</translation>
@@ -911,7 +918,9 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 och <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> till}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 och <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> till}}</translation>
 <translation id="7791543448312431591">Lägg till</translation>
 <translation id="780301667611848630">Nej tack</translation>
+<translation id="7804248752222191302">En webbplats använder kameran</translation>
 <translation id="7810647596859435254">Öppna med …</translation>
+<translation id="7817023149356982970">Du loggas ut från webbplatsen.</translation>
 <translation id="7821588508402923572">Här visas hur mycket data du har sparat</translation>
 <translation id="7828557259026017104">Cookies är filer som har skapats av webbplatser du besöker. De används för att spara inställningar på en webbplats. Cookies från tredje part skapas av andra webbplatser. Dessa webbplatser äger en del av innehållet som visas på webbplatsen du besöker, till exempel annonser eller bilder.</translation>
 <translation id="783819812427904514">Slå på ljudet för videon</translation>
@@ -990,8 +999,10 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8364299278605033898">Visa populära webbplatser</translation>
 <translation id="8368027906805972958">Enheten är okänd eller stöds inte (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">Tillåt bakgrundssynkronisering för en specifik webbplats.</translation>
+<translation id="83792324527827022">En webbplats använder kameran och mikrofonen</translation>
 <translation id="8380167699614421159">Påträngande eller vilseledande annonser visas på den här webbplatsen</translation>
 <translation id="8393700583063109961">Skicka meddelande</translation>
+<translation id="8394832520002899662">Återgå till webbplatsen genom att trycka här</translation>
 <translation id="8413126021676339697">Visa fullständig historik</translation>
 <translation id="8427875596167638501">Fliken Förhandsgranskning visas på halva skärmen</translation>
 <translation id="8428213095426709021">Inställningar</translation>
@@ -1034,6 +1045,8 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8687353297350450808">{N_BARS,plural, =1{Signalstyrka: # streck}other{Signalstyrka: # streck}}</translation>
 <translation id="868929229000858085">Sök bland kontakterna</translation>
 <translation id="869891660844655955">Utgångsdatum</translation>
+<translation id="8702612070107455751">All offlinedata raderas.</translation>
+<translation id="8737217482364735741">All data och alla cookies som har sparats av <ph name="ORIGIN" /> rensas.</translation>
 <translation id="8748850008226585750">Innehållet har dolts</translation>
 <translation id="8751914237388039244">Välj en bild</translation>
 <translation id="8758557275681689734">Visa alla öppnade flikar</translation>
@@ -1080,6 +1093,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="9100610230175265781">Lösenfras krävs</translation>
 <translation id="9102803872260866941">Fliken Förhandsgranskning har öppnats</translation>
 <translation id="9104217018994036254">Lista över enheter som fliken kan delas med.</translation>
+<translation id="9108312223223904744">Telefonen som säkerhetsnyckel</translation>
 <translation id="9133397713400217035">Utforska offline</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Visa original</translation>

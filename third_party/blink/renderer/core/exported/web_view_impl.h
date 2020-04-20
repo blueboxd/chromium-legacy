@@ -459,11 +459,8 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // WebViewImpl. We expect to eventually move these out.
   void SetSuppressFrameRequestsWorkaroundFor704763Only(bool);
   void BeginFrame(base::TimeTicks last_frame_time);
-  void DidBeginFrame();
   void BeginUpdateLayers();
   void EndUpdateLayers();
-  void BeginCommitCompositorFrame();
-  void EndCommitCompositorFrame(base::TimeTicks commit_start_time);
   void RecordStartOfFrameMetrics();
   void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time,
                                cc::ActiveFrameSequenceTrackers trackers);
@@ -728,7 +725,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   // Set when a measurement begins, reset when the measurement is taken.
   base::Optional<base::TimeTicks> update_layers_start_time_;
-  base::Optional<base::TimeTicks> commit_compositor_frame_start_time_;
 
   mojo::AssociatedReceiver<mojom::blink::PageBroadcast> receiver_;
 };

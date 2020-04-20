@@ -60,7 +60,8 @@ public class MostVisitedSitesMetadataUtilsTest {
             List<SiteSuggestion> sitesAfterRestore = null;
 
             try {
-                sitesAfterRestore = MostVisitedSitesMetadataUtils.restoreFileToSuggestionLists();
+                sitesAfterRestore =
+                        MostVisitedSitesMetadataUtils.restoreFileToSuggestionListsOnUiThread();
             } catch (IOException e) {
                 e.printStackTrace();
             }

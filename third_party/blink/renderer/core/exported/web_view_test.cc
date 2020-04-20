@@ -39,6 +39,7 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "cc/test/test_ukm_recorder_factory.h"
 #include "cc/trees/layer_tree_host.h"
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
@@ -534,8 +535,10 @@ TEST_F(WebViewTest, SetBaseBackgroundColorBeforeMainFrame) {
         CrossVariantMojoAssociatedReceiver<mojom::FrameWidgetInterfaceBase>(),
         CrossVariantMojoAssociatedRemote<mojom::WidgetHostInterfaceBase>(),
         CrossVariantMojoAssociatedReceiver<mojom::WidgetInterfaceBase>());
-    widget->SetCompositorHosts(web_widget_client.layer_tree_host(),
-                               web_widget_client.animation_host());
+    web_widget_client.set_layer_tree_host(widget->InitializeCompositing(
+        web_widget_client.task_graph_runner(),
+        frame_test_helpers::GetSynchronousSingleThreadLayerTreeSettings(),
+        std::make_unique<cc::TestUkmRecorderFactory>()));
     widget->SetCompositorVisible(true);
     web_view->DidAttachLocalMainFrame();
   }
@@ -5409,9 +5412,8 @@ TEST_F(WebViewTest, DetachPluginInLayout) {
       To<HTMLObjectElement>(main_frame->GetDocument()->body()->firstChild());
   EXPECT_TRUE(plugin_element->OwnedPlugin());
 
-  plugin_element->style()->setCSSText(
-      main_frame->GetDocument()->ToExecutionContext(), "display: none",
-      ASSERT_NO_EXCEPTION);
+  plugin_element->style()->setCSSText(main_frame->DomWindow(), "display: none",
+                                      ASSERT_NO_EXCEPTION);
   EXPECT_TRUE(plugin_element->OwnedPlugin());
   UpdateAllLifecyclePhases();
   EXPECT_FALSE(plugin_element->OwnedPlugin());

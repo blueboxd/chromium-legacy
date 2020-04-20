@@ -192,6 +192,7 @@
 <translation id="1241753985463165747">विनंती केल्यावर सध्याच्या वेबसाइटवर असलेला सर्व डेटा वाचू आणि बदलू शकता</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> आपल्या सेटिंग्ज रीसेट करू इच्छिते.</translation>
 <translation id="1243314992276662751">अपलोड करा</translation>
+<translation id="1243436884219965846">पासवर्डचे परीक्षण करा</translation>
 <translation id="1244265436519979884">Linux रिस्टोअर सध्या प्रगतीपथावर आहे</translation>
 <translation id="1244303850296295656">एक्स्टेंशन एरर</translation>
 <translation id="1246158006305844142">तुमची अ‍ॅप्स आणि सेटिंग्ज तुम्ही तुमच्या Google खात्याने साइन इन केलेल्या सर्व Chrome OS डिव्हाइसवर सिंक होतील. ब्राउझर सिंक पर्यायांसाठी, <ph name="LINK_BEGIN" />Chrome सेटिंग्ज<ph name="LINK_END" /> वर जा.</translation>
@@ -2563,6 +2564,7 @@
 <translation id="4404136731284211429">पुन्हा स्कॅन करा</translation>
 <translation id="4404843640767531781">तुमच्या पालकाने <ph name="APP_NAME" /> ब्लॉक केले आहे. तुमच्या पालकाकडे हे अ‍ॅप वापरण्याची परवानगी मागा.</translation>
 <translation id="4405117686468554883">*.jpeg, *.jpg, *.png</translation>
+<translation id="4406883609789734330">लाइव्ह कॅप्शन</translation>
 <translation id="4408599188496843485">मदत</translation>
 <translation id="4409697491990005945">समास</translation>
 <translation id="4410545552906060960">तुमचे डिव्हाइस अनलॉक करण्यासाठी पासवर्डऐवजी नंबर (पिन) वापरा. तुमचा पिन नंतर सेट करण्यासाठी, सेटिंग्जवर जा.</translation>
@@ -3967,6 +3969,7 @@
 <translation id="6326855256003666642">Keepalive गणना</translation>
 <translation id="632707535499064463"><ph name="ORGANIZATION_NAME" /> ला तुम्ही हे डिव्हाइस डेडलाइनच्या आधी अपडेट करणे आवश्यक आहे.</translation>
 <translation id="6327785803543103246">वेब प्रॉक्सी स्वयं शोध</translation>
+<translation id="6331566915566907158">Chrome OS ची वैशिष्ट्ये आणि परफॉर्मन्समध्ये सुधारणा करण्यात मदत करा</translation>
 <translation id="6333064448949140209">फाइल डीबग करण्यासाठी Google कडे पाठवली जाईल</translation>
 <translation id="6339668969738228384"><ph name="USER_EMAIL_ADDRESS" /> साठी एक नवीन प्रोफाइल तयार करा</translation>
 <translation id="6340017061976355871">सर्व्हरशी कनेक्ट करता आले नाही. कृपया तुमचे नेटवर्क कनेक्शन तपासा आणि पुन्हा प्रयत्न करा. समस्या तशीच राहिल्यास, तुमचे Chromebook रीस्टार्ट करा.</translation>
@@ -4925,6 +4928,7 @@
 <translation id="7669825497510425694">{NUM_ATTEMPTS,plural, =1{चुकीचा पिन. तुमच्याकडे एक प्रयत्न शिल्लक आहे.}other{चुकीचा पिन. तुमच्याकडे # प्रयत्न शिल्लक आहेत.}}</translation>
 <translation id="7671130400130574146">सिस्टम शीर्षक बार आणि किनारी वापरा</translation>
 <translation id="767127784612208024">रीसेटची खात्री करण्यासाठी स्पर्श करा</translation>
+<translation id="767147716926917172">Google ला निदान आणि वापर डेटा आपोआप पाठवते</translation>
 <translation id="7672520070349703697"><ph name="PAGE_TITLE" /> मध्ये <ph name="HUNG_IFRAME_URL" />.</translation>
 <translation id="7676867886086876795">कोणत्याही मजकूर फील्डमध्ये डिक्टेशनला अनुमती देण्यासाठी Google ला तुमचा व्हॉइस पाठवा.</translation>
 <translation id="7678280409648629969">गुप्त मोडमधून बाहेर आल्यावर साइन इन डेटा Chrome मध्ये स्टोअर केला जाईल. हे तुम्हाला पुन्हा या वेबसाइटसह टच आयडीचा वापर करू देईल.</translation>

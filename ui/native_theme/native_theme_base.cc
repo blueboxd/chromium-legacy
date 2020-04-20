@@ -43,7 +43,7 @@ const int kSliderThumbHeight = 21;
 constexpr SkColor kThumbActiveColor[2] = {SkColorSetRGB(0xF4, 0xF4, 0xF4),
                                           gfx::kPlaceholderColor};
 constexpr SkColor kThumbInactiveColor[2] = {SkColorSetRGB(0xEA, 0xEA, 0xEA),
-                                            gfx::kPlaceholderColor};
+                                            SK_ColorWHITE};
 constexpr SkColor kTrackColor[2] = {SkColorSetRGB(0xD3, 0xD3, 0xD3),
                                     gfx::kPlaceholderColor};
 constexpr SkColor kSliderTrackBackgroundColor[2] = {

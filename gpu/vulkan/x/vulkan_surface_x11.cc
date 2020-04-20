@@ -76,7 +76,10 @@ VulkanSurfaceX11::VulkanSurfaceX11(VkInstance vk_instance,
                                    VkSurfaceKHR vk_surface,
                                    Window parent_window,
                                    Window window)
-    : VulkanSurface(vk_instance, vk_surface, false /* use_protected_memory */),
+    : VulkanSurface(vk_instance,
+                    window,
+                    vk_surface,
+                    false /* use_protected_memory */),
       parent_window_(parent_window),
       window_(window),
       expose_event_forwarder_(new ExposeEventForwarder(this)) {}

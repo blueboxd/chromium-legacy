@@ -4,6 +4,8 @@
 
 #include "ash/home_screen/drag_window_from_shelf_controller.h"
 
+#include "ash/app_list/test/app_list_test_helper.h"
+#include "ash/app_list/views/app_list_view.h"
 #include "ash/home_screen/drag_window_from_shelf_controller_test_api.h"
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/home_screen/home_screen_delegate.h"
@@ -88,6 +90,21 @@ class DragWindowFromShelfControllerTest : public AshTestBase {
     window_drag_controller_->FinalizeDraggedWindow();
   }
   void CancelDrag() { window_drag_controller_->CancelDrag(); }
+  void WaitForHomeLauncherAnimationToFinish() {
+    // Wait until home launcher animation finishes.
+    while (GetAppListTestHelper()
+               ->GetAppListView()
+               ->GetWidget()
+               ->GetLayer()
+               ->GetAnimator()
+               ->is_animating()) {
+      base::RunLoop run_loop;
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE, run_loop.QuitClosure(),
+          base::TimeDelta::FromMilliseconds(200));
+      run_loop.Run();
+    }
+  }
 
   SplitViewController* split_view_controller() {
     return SplitViewController::Get(Shell::GetPrimaryRootWindow());
@@ -370,6 +387,35 @@ TEST_F(DragWindowFromShelfControllerTest, FlingInOverview) {
               -DragWindowFromShelfController::kVelocityToHomeScreenThreshold));
   EXPECT_FALSE(overview_controller->InOverviewSession());
   EXPECT_TRUE(WindowState::Get(window.get())->IsMinimized());
+}
+
+// Verify that metrics of home launcher animation are recorded correctly when
+// swiping up from shelf with sufficient velocity.
+TEST_F(DragWindowFromShelfControllerTest, VerifyHomeLauncherAnimationMetrics) {
+  // Set non-zero animation duration to report animation metrics.
+  ui::ScopedAnimationDurationScaleMode non_zero_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  UpdateDisplay("400x400");
+  const gfx::Rect shelf_bounds =
+      Shelf::ForWindow(Shell::GetPrimaryRootWindow())->GetIdealBounds();
+  auto window = CreateTestWindow();
+
+  base::HistogramTester histogram_tester;
+
+  // Ensure that fling velocity is sufficient to show homelauncher without
+  // triggering overview mode.
+  StartDrag(window.get(), shelf_bounds.CenterPoint(), HotseatState::kExtended);
+  Drag(gfx::Point(200, 200), 0.f,
+       DragWindowFromShelfController::kOpenOverviewThreshold + 1);
+  EndDrag(gfx::Point(0, 350),
+          base::make_optional(
+              -DragWindowFromShelfController::kVelocityToHomeScreenThreshold));
+  WaitForHomeLauncherAnimationToFinish();
+
+  // Verify that animation to show the home launcher is recorded.
+  histogram_tester.ExpectTotalCount(
+      "Apps.HomeLauncherTransition.AnimationSmoothness.FadeOutOverview", 1);
 }
 
 // Test if splitview is active when fling happens, the window will be put in

@@ -161,11 +161,6 @@ Visibility RenderFrameHostDelegate::GetVisibility() {
   return Visibility::HIDDEN;
 }
 
-ukm::SourceId RenderFrameHostDelegate::GetUkmSourceIdForLastCommittedSource()
-    const {
-  return ukm::kInvalidSourceId;
-}
-
 ukm::SourceId RenderFrameHostDelegate::
     GetUkmSourceIdForLastCommittedSourceIncludingSameDocument() const {
   return ukm::kInvalidSourceId;

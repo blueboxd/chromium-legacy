@@ -95,6 +95,7 @@ class ResourceLoadSchedulerTest : public testing::Test {
     console_logger_ = MakeGarbageCollected<MockConsoleLogger>();
     scheduler_ = MakeGarbageCollected<ResourceLoadScheduler>(
         ResourceLoadScheduler::ThrottlingPolicy::kTight,
+        ResourceLoadScheduler::ThrottleOptionOverride::kNone,
         properties->MakeDetachable(), frame_scheduler.get(),
         *MakeGarbageCollected<DetachableConsoleLogger>(console_logger_));
     Scheduler()->SetOutstandingLimitForTesting(1);

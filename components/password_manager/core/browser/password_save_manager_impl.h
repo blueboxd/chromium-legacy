@@ -73,6 +73,9 @@ class PasswordSaveManagerImpl : public PasswordSaveManager {
 
   void MoveCredentialsToAccountStore() override;
 
+  void BlockMovingToAccountStoreFor(
+      const autofill::GaiaIdHash& gaia_id_hash) override;
+
   bool IsNewLogin() const override;
   bool IsPasswordUpdate() const override;
   bool HasGeneratedPassword() const override;

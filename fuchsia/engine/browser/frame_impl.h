@@ -41,6 +41,7 @@ class FromRenderFrameHost;
 
 class ContextImpl;
 class FrameLayoutManager;
+class MediaPlayerImpl;
 
 // Implementation of fuchsia.web.Frame based on content::WebContents.
 class FrameImpl : public fuchsia::web::Frame,
@@ -127,6 +128,9 @@ class FrameImpl : public fuchsia::web::Frame,
 
   void OnPopupListenerDisconnected(zx_status_t status);
 
+  // Cleans up the MediaPlayerImpl on disconnect.
+  void OnMediaPlayerDisconnect();
+
   // Sets the WindowTreeHost to use for this Frame. Only one WindowTreeHost can
   // be set at a time.
   void SetWindowTreeHost(
@@ -141,6 +145,8 @@ class FrameImpl : public fuchsia::web::Frame,
 
   // fuchsia::web::Frame implementation.
   void CreateView(fuchsia::ui::views::ViewToken view_token) override;
+  void GetMediaPlayer(fidl::InterfaceRequest<fuchsia::media::sessions2::Player>
+                          player) override;
   void GetNavigationController(
       fidl::InterfaceRequest<fuchsia::web::NavigationController> controller)
       override;
@@ -255,6 +261,8 @@ class FrameImpl : public fuchsia::web::Frame,
   std::list<std::unique_ptr<content::WebContents>> pending_popups_;
   bool popup_ack_outstanding_ = false;
   gfx::Size render_size_override_;
+
+  std::unique_ptr<MediaPlayerImpl> media_player_;
 
   fidl::Binding<fuchsia::web::Frame> binding_;
   media_control::MediaBlocker media_blocker_;

@@ -675,7 +675,6 @@ static bool IsUnknownMimeType(const std::string& mime_type) {
 static bool SniffCRX(const char* content,
                      size_t size,
                      const GURL& url,
-                     const std::string& type_hint,
                      bool* have_enough_content,
                      std::string* result) {
   // Technically, the crx magic number is just Cr24, but the bytes after that
@@ -812,8 +811,7 @@ bool SniffMimeType(const char* content,
 
   // CRX files (Chrome extensions) have a special sniffing algorithm. It is
   // tighter than the others because we don't have to match legacy behavior.
-  if (SniffCRX(content, content_size, url, type_hint,
-               &have_enough_content, result))
+  if (SniffCRX(content, content_size, url, &have_enough_content, result))
     return true;
 
   // Check the file extension and magic numbers to see if this is an Office

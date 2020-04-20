@@ -156,14 +156,11 @@ template("chrome_public_common_apk_or_module_tmpl") {
     }
     target_sdk_version = android_sdk_version
 
-    # Match drawables, but not mipmaps.
+    # Strip xxxhdpi images to save size. It's extremely difficult to see the
+    # difference without magnification.
     resource_exclusion_regex = "drawable[^/]*-xxxhdpi"
-    if (min_sdk_version >= 21) {
-      # Resources used by AndroidManifest.xml only for pre-21.
-      resource_exclusion_regex += "|app_single_page_icon"
-    }
 
-    # Exception rationale in https://crbug.com/691733.
+    # Exceptions (rationale in https://crbug.com/691733):
     resource_exclusion_exceptions = [
       "*shadow*",  # Combination of gradient & transparency cause pixelation.
       "*.9.*",  # Most nine-patches contain shadows.
@@ -171,6 +168,14 @@ template("chrome_public_common_apk_or_module_tmpl") {
       "*ic_lock.*",  # Bottom edge seems misaligned.
       "*ic_group_*",  # Appear only in xxxhdpi.
     ]
+
+    if (min_sdk_version >= 21) {
+      # Resources used by AndroidManifest.xml only for pre-21.
+      resource_exclusion_regex += "|app_single_page_icon"
+    }
+
+    # Remove WearOS resources (a couple exist in appcompat).
+    resource_exclusion_regex += "|-watch\b"
 
     if (!_is_monochrome) {
       product_config_java_packages = [ "org.chromium.chrome.browser" ]

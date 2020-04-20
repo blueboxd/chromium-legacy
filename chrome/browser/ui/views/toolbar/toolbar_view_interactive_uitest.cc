@@ -199,8 +199,8 @@ IN_PROC_BROWSER_TEST_F(ToolbarViewInteractiveUITest,
   ASSERT_TRUE(toolbar_action);
   ui_test_utils::MoveMouseToCenterAndPress(
       toolbar_action, ui_controls::LEFT, ui_controls::DOWN,
-      base::BindRepeating(&ToolbarViewInteractiveUITest::StartDrag,
-                          base::Unretained(this)));
+      base::BindOnce(&ToolbarViewInteractiveUITest::StartDrag,
+                     base::Unretained(this)));
   base::RunLoop run_loop;
   set_quit_closure(run_loop.QuitWhenIdleClosure());
   run_loop.Run();

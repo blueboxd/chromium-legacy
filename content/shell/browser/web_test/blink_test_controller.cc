@@ -441,7 +441,6 @@ BlinkTestController* BlinkTestController::Get() {
 BlinkTestController::BlinkTestController()
     : main_window_(nullptr),
       secondary_window_(nullptr),
-      devtools_window_(nullptr),
       test_phase_(BETWEEN_TESTS),
       crash_when_leak_found_(false),
       pending_layout_dumps_(0) {
@@ -522,50 +521,10 @@ bool BlinkTestController::PrepareForWebTest(const TestInfo& test_info) {
         browser_context, GURL(url::kAboutBlankURL), nullptr, initial_size_);
     WebContentsObserver::Observe(main_window_->web_contents());
 
-    // The render frame host is constructed before the call to
-    // WebContentsObserver::Observe, so we need to manually handle the creation
-    // of the new render frame host.
-    HandleNewRenderFrameHost(main_window_->web_contents()->GetMainFrame());
-
-    if (is_devtools_protocol_test) {
-      devtools_protocol_test_bindings_.reset(
-          new DevToolsProtocolTestBindings(main_window_->web_contents()));
-    }
     current_pid_ = base::kNullProcessId;
     default_prefs_ = main_window_->web_contents()
                          ->GetRenderViewHost()
                          ->GetWebkitPreferences();
-    if (is_devtools_js_test) {
-      LoadDevToolsJSTest();
-    } else {
-      // Focus the RenderWidgetHost. This will send an IPC message to the
-      // renderer to propagate the state change.
-      main_window_->web_contents()->GetRenderViewHost()->GetWidget()->Focus();
-
-      // Flush various interfaces to ensure a test run begins from a known
-      // state.
-      main_window_->web_contents()
-          ->GetRenderViewHost()
-          ->GetWidget()
-          ->FlushForTesting();
-      GetBlinkTestControlRemote(
-          main_window_->web_contents()->GetRenderViewHost()->GetMainFrame())
-          .FlushForTesting();
-
-      // Loading the URL will immediately start the web test. Manually call
-      // LoadURLWithParams on the WebContents to avoid extraneous calls from
-      // content::Shell such as SetFocus(), which could race with the web
-      // test.
-      NavigationController::LoadURLParams params(test_url_);
-
-      // Using PAGE_TRANSITION_TYPED replicates an omnibox navigation.
-      params.transition_type =
-          ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED);
-
-      // Clear history to purge the prior navigation to about:blank.
-      params.should_clear_history_list = true;
-      main_window_->web_contents()->GetController().LoadURLWithParams(params);
-    }
   } else {
 #if defined(OS_MACOSX)
     // Shell::SizeTo is not implemented on all platforms.
@@ -584,53 +543,66 @@ bool BlinkTestController::PrepareForWebTest(const TestInfo& test_info) {
     render_widget_host->GetView()->SetSize(initial_size_);
     render_widget_host->SynchronizeVisualProperties();
 
-    if (is_devtools_protocol_test) {
-      devtools_protocol_test_bindings_.reset(
-          new DevToolsProtocolTestBindings(main_window_->web_contents()));
-    }
-
     render_view_host->UpdateWebkitPreferences(default_prefs_);
-    HandleNewRenderFrameHost(render_view_host->GetMainFrame());
-
-    // Focus the RenderWidgetHost. This will send an IPC message to the
-    // renderer to propagate the state change.
-    render_widget_host->Focus();
-
-    // Flush various interfaces to ensure a test run begins from a known state.
-    render_widget_host->FlushForTesting();
-    GetBlinkTestControlRemote(render_view_host->GetMainFrame())
-        .FlushForTesting();
-
-    if (is_devtools_js_test) {
-      LoadDevToolsJSTest();
-    } else {
-      NavigationController::LoadURLParams params(test_url_);
-      // Using PAGE_TRANSITION_LINK avoids a BrowsingInstance/process swap
-      // between web tests.
-      params.transition_type =
-          ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK);
-      params.should_clear_history_list = true;
-      main_window_->web_contents()->GetController().LoadURLWithParams(params);
-    }
   }
+
+  if (is_devtools_js_test && !secondary_window_) {
+    secondary_window_ = content::Shell::CreateNewWindow(
+        ShellContentBrowserClient::Get()->browser_context(),
+        GURL(url::kAboutBlankURL), nullptr, initial_size_);
+  }
+
+  // The main frame is constructed along with the Shell, which is before we can
+  // observe it happening. Further, we clear all observers and re-add the main
+  // frame here before each test.
+  HandleNewRenderFrameHost(main_window_->web_contents()->GetMainFrame());
+  if (secondary_window_)
+    HandleNewRenderFrameHost(secondary_window_->web_contents()->GetMainFrame());
+
+  if (is_devtools_protocol_test) {
+    devtools_protocol_test_bindings_ =
+        std::make_unique<DevToolsProtocolTestBindings>(
+            main_window_->web_contents());
+  }
+
+  // Focus the RenderWidgetHost. This will send an IPC message to the
+  // renderer to propagate the state change.
+  main_window_->web_contents()->GetRenderViewHost()->GetWidget()->Focus();
+
+  // Flush various interfaces to ensure a test run begins from a known
+  // state.
+  main_window_->web_contents()
+      ->GetRenderViewHost()
+      ->GetWidget()
+      ->FlushForTesting();
+  GetBlinkTestControlRemote(
+      main_window_->web_contents()->GetRenderViewHost()->GetMainFrame())
+      .FlushForTesting();
+
+  if (is_devtools_js_test) {
+    // This navigates the secondary (devtools inspector) window, and then
+    // navigates the main window once that has loaded to a devtools html test
+    // page, based on the test url.
+    devtools_bindings_ = std::make_unique<WebTestDevToolsBindings>(
+        main_window_->web_contents(), secondary_window_->web_contents(),
+        test_url_);
+  } else {
+    // Loading the URL will immediately start the web test. Manually call
+    // LoadURLWithParams on the WebContents to avoid extraneous calls from
+    // content::Shell such as SetFocus(), which could race with the web
+    // test.
+    NavigationController::LoadURLParams params(test_url_);
+
+    // Using PAGE_TRANSITION_TYPED replicates an omnibox navigation.
+    params.transition_type =
+        ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED);
+
+    // Clear history to purge the prior navigation to about:blank.
+    params.should_clear_history_list = true;
+    main_window_->web_contents()->GetController().LoadURLWithParams(params);
+  }
+
   return true;
-}
-
-Shell* BlinkTestController::SecondaryWindow() {
-  if (!secondary_window_) {
-    ShellBrowserContext* browser_context =
-        ShellContentBrowserClient::Get()->browser_context();
-    secondary_window_ = content::Shell::CreateNewWindow(browser_context, GURL(),
-                                                        nullptr, initial_size_);
-  }
-  return secondary_window_;
-}
-
-void BlinkTestController::LoadDevToolsJSTest() {
-  devtools_window_ = main_window_;
-  Shell* secondary = SecondaryWindow();
-  devtools_bindings_ = std::make_unique<WebTestDevToolsBindings>(
-      devtools_window_->web_contents(), secondary->web_contents(), test_url_);
 }
 
 bool BlinkTestController::ResetAfterWebTest() {
@@ -943,15 +915,6 @@ void BlinkTestController::RenderFrameCreated(
   HandleNewRenderFrameHost(render_frame_host);
 }
 
-void BlinkTestController::DevToolsProcessCrashed() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  printer_->AddErrorMessage("#CRASHED - devtools");
-  devtools_bindings_.reset();
-  if (devtools_window_)
-    devtools_window_->Close();
-  devtools_window_ = nullptr;
-}
-
 void BlinkTestController::TitleWasSet(NavigationEntry* entry) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::vector<std::string> logs = DumpTitleWasSet(main_window_->web_contents());
@@ -1135,7 +1098,7 @@ void BlinkTestController::HandleNewRenderFrameHost(RenderFrameHost* frame) {
     all_observed_render_process_hosts_.insert(process_host);
 
     if (!main_window)
-      GetBlinkTestControlRemote(frame)->SetupSecondaryRenderer();
+      GetBlinkTestControlRemote(frame)->SetupRendererProcessForNonTestWindow();
 
     GetWebTestControlRemote(process_host)
         ->ReplicateWebTestRuntimeFlagsChanges(
@@ -1387,16 +1350,6 @@ void BlinkTestController::OverridePreferences(const WebPreferences& prefs) {
 
 void BlinkTestController::SetPopupBlockingEnabled(bool block_popups) {
   WebTestContentBrowserClient::Get()->SetPopupBlockingEnabled(block_popups);
-}
-
-void BlinkTestController::NavigateSecondaryWindow(const GURL& url) {
-  if (secondary_window_)
-    secondary_window_->LoadURL(url);
-}
-
-void BlinkTestController::OnInspectSecondaryWindow() {
-  if (devtools_bindings_)
-    devtools_bindings_->Attach();
 }
 
 void BlinkTestController::SetScreenOrientationChanged() {

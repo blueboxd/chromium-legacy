@@ -40,6 +40,6 @@ bool RenderViewHostDelegateView::DoBrowserControlsShrinkRendererSize() const {
 
 void RenderViewHostDelegateView::GestureEventAck(
     const blink::WebGestureEvent& event,
-    InputEventAckState ack_result) {}
+    blink::mojom::InputEventResultState ack_result) {}
 
 }  //  namespace content

@@ -98,8 +98,9 @@ void GcmInternalsUIMessageHandler::RequestAllInfo(
     ReturnResults(profile, NULL, NULL);
   } else {
     profile_service->driver()->GetGCMStatistics(
-        base::Bind(&GcmInternalsUIMessageHandler::RequestGCMStatisticsFinished,
-                   weak_ptr_factory_.GetWeakPtr()),
+        base::BindOnce(
+            &GcmInternalsUIMessageHandler::RequestGCMStatisticsFinished,
+            weak_ptr_factory_.GetWeakPtr()),
         clear_activity_logs);
   }
 }

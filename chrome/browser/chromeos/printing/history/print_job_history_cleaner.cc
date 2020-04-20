@@ -86,9 +86,8 @@ void PrintJobHistoryCleaner::OnPrefServiceInitialized(
 void PrintJobHistoryCleaner::OnPrintJobsRetrieved(
     base::OnceClosure callback,
     bool success,
-    std::unique_ptr<std::vector<printing::proto::PrintJobInfo>>
-        print_job_infos) {
-  if (!success || !print_job_infos) {
+    std::vector<printing::proto::PrintJobInfo> print_job_infos) {
+  if (!success) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                      std::move(callback));
     return;
@@ -100,7 +99,7 @@ void PrintJobHistoryCleaner::OnPrintJobsRetrieved(
 
   base::Time now = clock_->Now();
   oldest_print_job_completion_time_ = now;
-  for (const auto& print_job_info : *print_job_infos) {
+  for (const auto& print_job_info : print_job_infos) {
     base::Time completion_time =
         base::Time::FromJsTime(print_job_info.completion_time());
     if (IsCompletionTimeExpired(completion_time, now,

@@ -97,8 +97,9 @@ suite('NewTabPageAppTest', () => {
     assertStyle(app.$.background, 'background-color', 'rgb(255, 0, 0)');
     assertStyle(
         app.$.background, '--ntp-theme-shortcut-background-color',
-        'rgb(0, 255, 0)');
-    assertStyle(app.$.background, '--ntp-theme-text-color', 'rgb(0, 0, 255)');
+        'rgba(0, 255, 0, 255)');
+    assertStyle(
+        app.$.background, '--ntp-theme-text-color', 'rgba(0, 0, 255, 255)');
     assertFalse(app.$.background.hasAttribute('has-background-image'));
     assertStyle(app.$.backgroundImage, 'display', 'none');
     assertStyle(app.$.backgroundGradient, 'display', 'none');
@@ -180,7 +181,7 @@ suite('NewTabPageAppTest', () => {
 
     // Assert.
     assertTrue(app.$.logo.singleColored);
-    assertStyle(app.$.logo, '--ntp-logo-color', 'rgb(255, 0, 0)');
+    assertStyle(app.$.logo, '--ntp-logo-color', 'rgba(255, 0, 0, 255)');
   });
 
   test('preview background image', async () => {

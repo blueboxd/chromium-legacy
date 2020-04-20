@@ -6,18 +6,27 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WIDGET_WIDGET_BASE_H_
 
 #include "base/time/time.h"
+#include "cc/paint/element_id.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
+#include "third_party/blink/public/common/metrics/document_update_reason.h"
 #include "third_party/blink/public/mojom/page/widget.mojom-blink.h"
 #include "third_party/blink/public/platform/cross_variant_mojo_util.h"
+#include "third_party/blink/public/web/web_widget.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/widget/compositing/layer_tree_view_delegate.h"
 
 namespace cc {
 class AnimationHost;
 class LayerTreeHost;
+class LayerTreeSettings;
+class TaskGraphRunner;
+class UkmRecorderFactory;
 }  // namespace cc
 
 namespace blink {
+class LayerTreeView;
 class WidgetBaseClient;
 
 // This class is the foundational class for all widgets that blink creates.
@@ -25,7 +34,8 @@ class WidgetBaseClient;
 // class. For simplicity purposes this class will be a member of those classes.
 // It will eventually host compositing, input and emulation. See design doc:
 // https://docs.google.com/document/d/10uBnSWBaitGsaROOYO155Wb83rjOPtrgrGTrQ_pcssY/edit?ts=5e3b26f7
-class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget {
+class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
+                                   public LayerTreeViewDelegate {
  public:
   WidgetBase(
       WidgetBaseClient* client,
@@ -34,23 +44,55 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget {
       CrossVariantMojoAssociatedReceiver<mojom::WidgetInterfaceBase> widget);
   ~WidgetBase() override;
 
-  // Set the current compositor hosts.
-  void SetCompositorHosts(cc::LayerTreeHost*, cc::AnimationHost*);
+  // Initialize the compositor.
+  void InitializeCompositing(
+      cc::TaskGraphRunner* task_graph_runner,
+      const cc::LayerTreeSettings& settings,
+      std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory);
+
+  // Shutdown the compositor.
+  void Shutdown(scoped_refptr<base::SingleThreadTaskRunner> cleanup_runner,
+                base::OnceCallback<void()> cleanup_task);
 
   // Set the compositor as visible. If |visible| is true, then the compositor
   // will request a new layer frame sink, begin producing frames from the
   // compositor scheduler, and in turn will update the document lifecycle.
   void SetCompositorVisible(bool visible);
 
-  // Called to update the document lifecycle, advance the state of animations
-  // and dispatch rAF.
-  void BeginMainFrame(base::TimeTicks frame_time);
+  void AddPresentationCallback(
+      uint32_t frame_token,
+      base::OnceCallback<void(base::TimeTicks)> callback);
 
-  // Update the visual state of the document, running the document lifecycle.
-  void UpdateVisualState();
-
-  // Called when a compositor frame will begin.
-  void WillBeginCompositorFrame();
+  // LayerTreeDelegate overrides:
+  // Applies viewport related properties during a commit from the compositor
+  // thread.
+  void ApplyViewportChanges(const cc::ApplyViewportChangesArgs& args) override;
+  void RecordManipulationTypeCounts(cc::ManipulationInfo info) override;
+  void SendOverscrollEventFromImplSide(
+      const gfx::Vector2dF& overscroll_delta,
+      cc::ElementId scroll_latched_element_id) override;
+  void SendScrollEndEventFromImplSide(
+      cc::ElementId scroll_latched_element_id) override;
+  void BeginMainFrame(base::TimeTicks frame_time) override;
+  void OnDeferMainFrameUpdatesChanged(bool) override;
+  void OnDeferCommitsChanged(bool) override;
+  void DidBeginMainFrame() override;
+  void RequestNewLayerTreeFrameSink(
+      LayerTreeFrameSinkCallback callback) override;
+  void DidCommitAndDrawCompositorFrame() override;
+  void WillCommitCompositorFrame() override;
+  void DidCommitCompositorFrame(base::TimeTicks commit_start_time) override;
+  void DidCompletePageScaleAnimation() override;
+  void RecordStartOfFrameMetrics() override;
+  void RecordEndOfFrameMetrics(
+      base::TimeTicks frame_begin_time,
+      cc::ActiveFrameSequenceTrackers trackers) override;
+  std::unique_ptr<cc::BeginMainFrameMetrics> GetBeginMainFrameMetrics()
+      override;
+  void BeginUpdateLayers() override;
+  void EndUpdateLayers() override;
+  void UpdateVisualState() override;
+  void WillBeginMainFrame() override;
 
   cc::AnimationHost* AnimationHost() const;
   cc::LayerTreeHost* LayerTreeHost() const;
@@ -60,9 +102,7 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget {
   static bool ShouldRecordBeginMainFrameMetrics();
 
  private:
-  // Not owned, they are owned by the RenderWidget.
-  cc::LayerTreeHost* layer_tree_host_ = nullptr;
-  cc::AnimationHost* animation_host_ = nullptr;
+  std::unique_ptr<LayerTreeView> layer_tree_view_;
   WidgetBaseClient* client_;
   mojo::AssociatedRemote<mojom::blink::WidgetHost> widget_host_;
   mojo::AssociatedReceiver<mojom::blink::Widget> receiver_;

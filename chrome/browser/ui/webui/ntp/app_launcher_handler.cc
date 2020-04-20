@@ -1115,9 +1115,8 @@ void AppLauncherHandler::HandleGenerateAppForLink(const base::ListValue* args) {
 
   favicon_service->GetFaviconImageForPageURL(
       launch_url,
-      base::Bind(&AppLauncherHandler::OnFaviconForApp,
-                 base::Unretained(this),
-                 base::Passed(&install_info)),
+      base::BindOnce(&AppLauncherHandler::OnFaviconForApp,
+                     base::Unretained(this), base::Passed(&install_info)),
       &cancelable_task_tracker_);
 }
 

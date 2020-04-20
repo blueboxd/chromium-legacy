@@ -28,20 +28,10 @@ public class TestFullscreenCallback extends FullscreenCallback {
     }
 
     public void waitForFullscreen() {
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mEnterFullscreenCount == 1;
-            }
-        });
+        CriteriaHelper.pollUiThread(Criteria.equals(1, () -> mEnterFullscreenCount));
     }
 
     public void waitForExitFullscreen() {
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mExitFullscreenCount == 1;
-            }
-        });
+        CriteriaHelper.pollUiThread(Criteria.equals(1, () -> mExitFullscreenCount));
     }
 }

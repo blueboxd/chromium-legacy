@@ -373,8 +373,8 @@ class ChromeOSCreditsHandler
     // Load local Chrome OS credits from the disk.
     base::ThreadPool::PostTaskAndReply(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-        base::Bind(&ChromeOSCreditsHandler::LoadCreditsFileAsync, this),
-        base::Bind(&ChromeOSCreditsHandler::ResponseOnUIThread, this));
+        base::BindOnce(&ChromeOSCreditsHandler::LoadCreditsFileAsync, this),
+        base::BindOnce(&ChromeOSCreditsHandler::ResponseOnUIThread, this));
   }
 
   void LoadCreditsFileAsync() {

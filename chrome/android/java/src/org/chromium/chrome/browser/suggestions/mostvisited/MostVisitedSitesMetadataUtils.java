@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.suggestions.mostvisited;
 
 import android.content.Context;
 
-import androidx.annotation.VisibleForTesting;
 import androidx.core.util.AtomicFile;
 
 import org.chromium.base.ContextUtils;
@@ -75,17 +74,33 @@ public class MostVisitedSitesMetadataUtils {
     /**
      * Restore the suggestion lists from the disk and deserialize them.
      * @return Suggestion lists
-     * IOException: If there is any problem when restoring file or deserialize data, throw an
-     * exception, then the UI thread will know there is no cache file and show something else.
+     * IOException: If there is any problem when restoring file or deserialize data, remove the
+     * stale files and throw an exception, then the UI thread will know there is no cache file and
+     * show something else.
      */
     public static List<SiteSuggestion> restoreFileToSuggestionLists() throws IOException {
-        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-            List<SiteSuggestion> suggestions;
+        List<SiteSuggestion> suggestions;
+        try {
             byte[] listData =
                     restoreFileToSuggestionLists(getOrCreateTopSitesDirectory(), sStateFileName);
             suggestions = deserializeTopSitesData(listData);
+        } catch (IOException e) {
+            getOrCreateTopSitesDirectory().delete();
+            throw e;
+        }
+        return suggestions;
+    }
 
-            return suggestions;
+    /**
+     * Restore the suggestion lists from the disk and deserialize them on UI thread.
+     * @return Suggestion lists
+     * IOException: If there is any problem when restoring file or deserialize data, remove the
+     * stale files and throw an exception, then the UI thread will know there is no cache file and
+     * show something else.
+     */
+    public static List<SiteSuggestion> restoreFileToSuggestionListsOnUiThread() throws IOException {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
+            return restoreFileToSuggestionLists();
         }
     }
 
@@ -211,8 +226,7 @@ public class MostVisitedSitesMetadataUtils {
         }
     }
 
-    @VisibleForTesting
-    protected static File getStateDirectoryForTesting() {
+    protected static File getStateDirectory() {
         return sStateDirectory;
     }
 }

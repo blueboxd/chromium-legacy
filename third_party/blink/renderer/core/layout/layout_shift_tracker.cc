@@ -363,6 +363,30 @@ void LayoutShiftTracker::NotifyPrePaintFinished() {
   attributions_.fill(Attribution());
 }
 
+LayoutShift::AttributionList LayoutShiftTracker::CreateAttributionList() const {
+  // TODO(crbug.com/1053510): Implement.
+  return LayoutShift::AttributionList();
+}
+
+void LayoutShiftTracker::SubmitPerformanceEntry(double score_delta,
+                                                bool had_recent_input) const {
+  LocalDOMWindow* window = frame_view_->GetFrame().DomWindow();
+  if (!window)
+    return;
+  WindowPerformance* performance = DOMWindowPerformance::performance(*window);
+  DCHECK(performance);
+
+  double input_timestamp =
+      had_recent_input ? performance->MonotonicTimeToDOMHighResTimeStamp(
+                             most_recent_input_timestamp_)
+                       : 0.0;
+  LayoutShift* entry =
+      LayoutShift::Create(performance->now(), score_delta, had_recent_input,
+                          input_timestamp, CreateAttributionList());
+
+  performance->AddLayoutShiftEntry(entry);
+}
+
 void LayoutShiftTracker::ReportShift(double score_delta,
                                      double weighted_score_delta) {
   LocalFrame& frame = frame_view_->GetFrame();
@@ -377,14 +401,7 @@ void LayoutShiftTracker::ReportShift(double score_delta,
     }
   }
 
-  if (frame.DomWindow()) {
-    WindowPerformance* performance =
-        DOMWindowPerformance::performance(*frame.DomWindow());
-    if (performance) {
-      performance->AddLayoutShiftValue(score_delta, had_recent_input,
-                                       most_recent_input_timestamp_);
-    }
-  }
+  SubmitPerformanceEntry(score_delta, had_recent_input);
 
   TRACE_EVENT_INSTANT2("loading", "LayoutShift", TRACE_EVENT_SCOPE_THREAD,
                        "data", PerFrameTraceData(score_delta, had_recent_input),

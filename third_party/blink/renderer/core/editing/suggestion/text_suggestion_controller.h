@@ -20,6 +20,7 @@ namespace blink {
 
 class Document;
 class DocumentMarker;
+class LocalDOMWindow;
 class LocalFrame;
 struct TextSuggestionInfo;
 
@@ -27,14 +28,9 @@ struct TextSuggestionInfo;
 // suggestions (e.g. from spellcheck), and performing actions relating to those
 // suggestions. Android is currently the only platform that has such a menu.
 class CORE_EXPORT TextSuggestionController final
-    : public GarbageCollected<TextSuggestionController>,
-      public ExecutionContextLifecycleObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(TextSuggestionController);
-
+    : public GarbageCollected<TextSuggestionController> {
  public:
-  explicit TextSuggestionController(LocalFrame&);
-
-  void DidAttachDocument(Document*);
+  explicit TextSuggestionController(LocalDOMWindow&);
 
   bool IsMenuOpen() const;
 
@@ -47,10 +43,7 @@ class CORE_EXPORT TextSuggestionController final
   void OnSuggestionMenuClosed();
   void SuggestionMenuTimeoutCallback(size_t max_number_of_suggestions);
 
-  // ExecutionContextLifecycleObserver methods:
-  void ContextDestroyed() override {}
-
-  void Trace(Visitor*) override;
+  virtual void Trace(Visitor*);
 
  private:
   friend class TextSuggestionControllerTest;
@@ -78,7 +71,7 @@ class CORE_EXPORT TextSuggestionController final
   void ReplaceRangeWithText(const EphemeralRange&, const String& replacement);
 
   bool is_suggestion_menu_open_;
-  const Member<LocalFrame> frame_;
+  const Member<LocalDOMWindow> window_;
   HeapMojoRemote<mojom::blink::TextSuggestionHost,
                  HeapMojoWrapperMode::kWithoutContextObserver>
       text_suggestion_host_;

@@ -26,6 +26,7 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/browser/cache_storage/cache_storage.h"
@@ -75,6 +76,7 @@
 #include "services/network/public/cpp/constants.h"
 #include "services/network/public/cpp/features.h"
 #include "storage/browser/blob/blob_handle.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
@@ -122,15 +124,16 @@ void ExpectResultAndRun(bool expected,
   continuation.Run();
 }
 
-class WorkerActivatedObserver
+class WorkerStateObserver
     : public ServiceWorkerContextCoreObserver,
-      public base::RefCountedThreadSafe<WorkerActivatedObserver> {
+      public base::RefCountedThreadSafe<WorkerStateObserver> {
  public:
-  explicit WorkerActivatedObserver(ServiceWorkerContextWrapper* context)
-      : context_(context) {}
+  WorkerStateObserver(ServiceWorkerContextWrapper* context,
+                      ServiceWorkerVersion::Status target)
+      : context_(context), target_(target) {}
   void Init() {
     RunOnCoreThread(
-        base::BindOnce(&WorkerActivatedObserver::InitOnCoreThread, this));
+        base::BindOnce(&WorkerStateObserver::InitOnCoreThread, this));
   }
   // ServiceWorkerContextCoreObserver overrides.
   void OnVersionStateChanged(int64_t version_id,
@@ -139,13 +142,12 @@ class WorkerActivatedObserver
     ASSERT_TRUE(
         BrowserThread::CurrentlyOn(ServiceWorkerContext::GetCoreThreadId()));
     const ServiceWorkerVersion* version = context_->GetLiveVersion(version_id);
-    if (version->status() == ServiceWorkerVersion::ACTIVATED) {
+    if (version->status() == target_) {
       context_->RemoveObserver(this);
       version_id_ = version_id;
       registration_id_ = version->registration_id();
-      RunOrPostTaskOnThread(
-          FROM_HERE, BrowserThread::UI,
-          base::BindOnce(&WorkerActivatedObserver::Quit, this));
+      RunOrPostTaskOnThread(FROM_HERE, BrowserThread::UI,
+                            base::BindOnce(&WorkerStateObserver::Quit, this));
     }
   }
   void Wait() { run_loop_.Run(); }
@@ -153,9 +155,11 @@ class WorkerActivatedObserver
   int64_t registration_id() { return registration_id_; }
   int64_t version_id() { return version_id_; }
 
+ protected:
+  friend class base::RefCountedThreadSafe<WorkerStateObserver>;
+  ~WorkerStateObserver() override = default;
+
  private:
-  friend class base::RefCountedThreadSafe<WorkerActivatedObserver>;
-  ~WorkerActivatedObserver() override {}
   void InitOnCoreThread() { context_->AddObserver(this); }
   void Quit() { run_loop_.Quit(); }
 
@@ -164,7 +168,8 @@ class WorkerActivatedObserver
 
   base::RunLoop run_loop_;
   ServiceWorkerContextWrapper* context_;
-  DISALLOW_COPY_AND_ASSIGN(WorkerActivatedObserver);
+  const ServiceWorkerVersion::Status target_;
+  DISALLOW_COPY_AND_ASSIGN(WorkerStateObserver);
 };
 
 std::unique_ptr<net::test_server::HttpResponse> VerifySaveDataHeaderInRequest(
@@ -544,8 +549,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, FetchPageWithSaveData) {
   ContentBrowserClient* old_client =
       SetBrowserClientForTesting(&content_browser_client);
   shell()->web_contents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
-  scoped_refptr<WorkerActivatedObserver> observer =
-      new WorkerActivatedObserver(wrapper());
+  auto observer = base::MakeRefCounted<WorkerStateObserver>(
+      wrapper(), ServiceWorkerVersion::ACTIVATED);
   observer->Init();
   blink::mojom::ServiceWorkerRegistrationOptions options(
       embedded_test_server()->GetURL(kPageUrl),
@@ -589,8 +594,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, CrossOriginFetchWithSaveData) {
   ContentBrowserClient* old_client =
       SetBrowserClientForTesting(&content_browser_client);
   shell()->web_contents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
-  scoped_refptr<WorkerActivatedObserver> observer =
-      new WorkerActivatedObserver(wrapper());
+  auto observer = base::MakeRefCounted<WorkerStateObserver>(
+      wrapper(), ServiceWorkerVersion::ACTIVATED);
   observer->Init();
   blink::mojom::ServiceWorkerRegistrationOptions options(
       embedded_test_server()->GetURL(kPageUrl),
@@ -630,8 +635,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest,
   ContentBrowserClient* old_client =
       SetBrowserClientForTesting(&content_browser_client);
   shell()->web_contents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
-  scoped_refptr<WorkerActivatedObserver> observer =
-      new WorkerActivatedObserver(wrapper());
+  auto observer = base::MakeRefCounted<WorkerStateObserver>(
+      wrapper(), ServiceWorkerVersion::ACTIVATED);
   observer->Init();
 
   embedded_test_server()->RegisterRequestHandler(
@@ -664,8 +669,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, Reload) {
   StartServerAndNavigateToSetup();
   const char kPageUrl[] = "/service_worker/reload.html";
   const char kWorkerUrl[] = "/service_worker/fetch_event_reload.js";
-  scoped_refptr<WorkerActivatedObserver> observer =
-      new WorkerActivatedObserver(wrapper());
+  auto observer = base::MakeRefCounted<WorkerStateObserver>(
+      wrapper(), ServiceWorkerVersion::ACTIVATED);
   observer->Init();
   blink::mojom::ServiceWorkerRegistrationOptions options(
       embedded_test_server()->GetURL(kPageUrl),
@@ -704,8 +709,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, IdleTimerWithDevTools) {
   StartServerAndNavigateToSetup();
 
   // Register a service worker.
-  scoped_refptr<WorkerActivatedObserver> observer =
-      new WorkerActivatedObserver(wrapper());
+  auto observer = base::MakeRefCounted<WorkerStateObserver>(
+      wrapper(), ServiceWorkerVersion::ACTIVATED);
   observer->Init();
   const GURL scope =
       embedded_test_server()->GetURL("/service_worker/fetch_from_page.html");
@@ -798,7 +803,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest,
   // 1st attempt: install a service worker and open the controlled page.
   {
     // Register a service worker which controls |kPageUrl|.
-    auto observer = base::MakeRefCounted<WorkerActivatedObserver>(wrapper());
+    auto observer = base::MakeRefCounted<WorkerStateObserver>(
+        wrapper(), ServiceWorkerVersion::ACTIVATED);
     observer->Init();
     blink::mojom::ServiceWorkerRegistrationOptions options(
         https_server.GetURL(kPageUrl), blink::mojom::ScriptType::kClassic,
@@ -825,7 +831,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest,
   // 2nd attempt: update the service worker and open the controlled page again.
   {
     // Update the service worker.
-    auto observer = base::MakeRefCounted<WorkerActivatedObserver>(wrapper());
+    auto observer = base::MakeRefCounted<WorkerStateObserver>(
+        wrapper(), ServiceWorkerVersion::ACTIVATED);
     observer->Init();
     wrapper()->UpdateRegistration(https_server.GetURL(kPageUrl));
     observer->Wait();
@@ -854,8 +861,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest,
   StartServerAndNavigateToSetup();
   const char kPageUrl[] = "/service_worker/fetch_event_blob.html";
   const char kWorkerUrl[] = "/service_worker/fetch_event_blob.js";
-  scoped_refptr<WorkerActivatedObserver> observer =
-      new WorkerActivatedObserver(wrapper());
+  auto observer = base::MakeRefCounted<WorkerStateObserver>(
+      wrapper(), ServiceWorkerVersion::ACTIVATED);
   observer->Init();
   blink::mojom::ServiceWorkerRegistrationOptions options(
       embedded_test_server()->GetURL(kPageUrl),
@@ -960,8 +967,8 @@ class ServiceWorkerNavigationPreloadTest : public ServiceWorkerBrowserTest {
 
   void SetupForNavigationPreloadTest(const GURL& scope,
                                      const GURL& worker_url) {
-    scoped_refptr<WorkerActivatedObserver> observer =
-        new WorkerActivatedObserver(wrapper());
+    auto observer = base::MakeRefCounted<WorkerStateObserver>(
+        wrapper(), ServiceWorkerVersion::ACTIVATED);
     observer->Init();
 
     blink::mojom::ServiceWorkerRegistrationOptions options(
@@ -1970,8 +1977,8 @@ class ServiceWorkerV8CodeCacheForCacheStorageTest
   virtual std::string GetWorkerURL() { return kWorkerUrl; }
 
   void RegisterAndActivateServiceWorker() {
-    scoped_refptr<WorkerActivatedObserver> observer =
-        new WorkerActivatedObserver(wrapper());
+    auto observer = base::MakeRefCounted<WorkerStateObserver>(
+        wrapper(), ServiceWorkerVersion::ACTIVATED);
     observer->Init();
     blink::mojom::ServiceWorkerRegistrationOptions options(
         embedded_test_server()->GetURL(kPageUrl),
@@ -2300,8 +2307,8 @@ class ServiceWorkerDisableWebSecurityTest : public ServiceWorkerBrowserTest {
 
   void RegisterServiceWorkerOnCrossOriginServer(const std::string& scope,
                                                 const std::string& script) {
-    scoped_refptr<WorkerActivatedObserver> observer =
-        new WorkerActivatedObserver(wrapper());
+    auto observer = base::MakeRefCounted<WorkerStateObserver>(
+        wrapper(), ServiceWorkerVersion::ACTIVATED);
     observer->Init();
     blink::mojom::ServiceWorkerRegistrationOptions options(
         cross_origin_server_.GetURL(scope), blink::mojom::ScriptType::kClassic,
@@ -2579,6 +2586,211 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerURLLoaderThrottleTest,
                    "document.body.textContent"));
 
   SetBrowserClientForTesting(old_content_browser_client);
+}
+
+// Test fixture to support validating throttling from within an installing
+// service worker.
+class ServiceWorkerThrottlingTest : public ServiceWorkerBrowserTest {
+ protected:
+  ServiceWorkerThrottlingTest() {
+    // Configure the field trial param to trigger throttling after
+    // there are only 2 outstanding requests from an installiner
+    // service worker.
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        blink::features::kThrottleInstallingServiceWorker, {{"limit", "2"}});
+  }
+
+  void RegisterServiceWorkerAndWaitForState(
+      const std::string& script_url,
+      const std::string& scope,
+      ServiceWorkerVersion::Status state) {
+    auto observer = base::MakeRefCounted<WorkerStateObserver>(wrapper(), state);
+    observer->Init();
+    blink::mojom::ServiceWorkerRegistrationOptions options(
+        embedded_test_server()->GetURL(scope),
+        blink::mojom::ScriptType::kClassic,
+        blink::mojom::ServiceWorkerUpdateViaCache::kImports);
+    public_context()->RegisterServiceWorker(
+        embedded_test_server()->GetURL(script_url), options,
+        base::BindOnce(&ExpectResultAndRun, true, base::DoNothing()));
+    observer->Wait();
+  }
+
+  int GetBlockingResponseCount() { return blocking_response_list_.size(); }
+
+  void StopBlocking() {
+    std::vector<scoped_refptr<BlockingResponse>> list;
+    {
+      base::AutoLock auto_lock(lock_);
+      should_block_ = false;
+      list = std::move(blocking_response_list_);
+    }
+    for (const auto& response : list) {
+      response->StopBlocking();
+    }
+  }
+
+  void SetUpOnMainThread() override {
+    ServiceWorkerBrowserTest::SetUpOnMainThread();
+    // Configure the EmbeddedTestServer to use our custom request handler
+    // to return blocking responses where appropriate.
+    embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
+        &ServiceWorkerThrottlingTest::HandleRequest, base::Unretained(this)));
+    StartServerAndNavigateToSetup();
+  }
+
+ private:
+  // An object representing an http response that blocks returning its status
+  // code until the test tells it to proceed.
+  class BlockingResponse : public base::RefCountedThreadSafe<BlockingResponse> {
+   public:
+    // We must return ownership of a net::test_server::HttpResponse from
+    // HandleRequest(), but we also want to track the Response in our test
+    // so that we can unblock the response.  In addition, the EmbeddedTestServer
+    // deletes its HttpResponse after calling SendResponse().  Therefore, we
+    // use an inner class to return to EmbeddedTestServer and hold the
+    // outer BlockingResponse alive in the test itself.  The inner class simply
+    // forwards the SendResponse() method to the outer class.
+    class Inner : public net::test_server::HttpResponse {
+     public:
+      explicit Inner(base::WeakPtr<BlockingResponse> owner)
+          : owner_(std::move(owner)) {}
+
+      ~Inner() override = default;
+      void SendResponse(const net::test_server::SendBytesCallback& send,
+                        base::OnceClosure done) override {
+        if (owner_)
+          owner_->SendResponse(std::move(send), std::move(done));
+      }
+
+     private:
+      base::WeakPtr<BlockingResponse> owner_;
+    };
+
+    BlockingResponse() : task_runner_(base::SequencedTaskRunnerHandle::Get()) {}
+
+    // Mint an HttpResponse suitable for returning to the EmbeddedTestServer
+    // that will forward to this BlockingResponse.
+    std::unique_ptr<net::test_server::HttpResponse> GetResponse() {
+      DCHECK(task_runner_->RunsTasksInCurrentSequence());
+      return std::make_unique<Inner>(weak_factory_.GetWeakPtr());
+    }
+
+    // Called by the EmbeddedTestServer via our inner class.  The callbacks
+    // are stored and invoked later when we've been told to unblock.
+    void SendResponse(const net::test_server::SendBytesCallback& send,
+                      base::OnceClosure done) {
+      DCHECK(task_runner_->RunsTasksInCurrentSequence());
+      send_ = send;
+      done_ = std::move(done);
+      if (should_block_) {
+        blocking_ = true;
+        return;
+      }
+      CompleteResponseOnTaskRunner();
+    }
+
+    // Called by the test when we want to unblock this response.
+    void StopBlocking() {
+      // Called on the main thread by the test.
+      task_runner_->PostTask(
+          FROM_HERE,
+          base::BindOnce(&BlockingResponse::StopBlockingOnTaskRunner, this));
+    }
+
+   private:
+    friend class base::RefCountedThreadSafe<BlockingResponse>;
+    ~BlockingResponse() = default;
+
+    void StopBlockingOnTaskRunner() {
+      DCHECK(task_runner_->RunsTasksInCurrentSequence());
+      should_block_ = false;
+      if (!blocking_)
+        return;
+      blocking_ = false;
+      CompleteResponseOnTaskRunner();
+    }
+
+    void CompleteResponseOnTaskRunner() {
+      DCHECK(task_runner_->RunsTasksInCurrentSequence());
+      const char kPageResponse[] =
+          "HTTP/1.1 200 HELLOWORLD\r\n"
+          "Connection: close\r\n"
+          "Content-Length: 32\r\n"
+          "Content-Type: text/html\r\n"
+          "\r\n"
+          "<title>ERROR</title>Hello world.";
+      std::move(send_).Run(kPageResponse, std::move(done_));
+    }
+
+    // Accessed on any thread.
+    scoped_refptr<base::SequencedTaskRunner> task_runner_;
+    // All other members only accessed on |task_runner_| sequence.
+    net::test_server::SendBytesCallback send_;
+    base::OnceClosure done_;
+    bool should_block_ = true;
+    bool blocking_ = false;
+    base::WeakPtrFactory<BlockingResponse> weak_factory_{this};
+  };
+
+  // Return a blocking response to the EmbeddedTestServer for any
+  // request where there is a search param named "block".
+  std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
+      const net::test_server::HttpRequest& request) {
+    base::AutoLock auto_lock(lock_);
+    if (!should_block_ ||
+        request.GetURL().query().find("block") == std::string::npos) {
+      return nullptr;
+    }
+    auto response = base::MakeRefCounted<BlockingResponse>();
+    blocking_response_list_.push_back(std::move(response));
+    return blocking_response_list_.back()->GetResponse();
+  }
+
+  base::test::ScopedFeatureList scoped_feature_list_;
+  base::Lock lock_;
+  // Accessed from multiple threads, but protected by |lock_|.
+  std::vector<scoped_refptr<BlockingResponse>> blocking_response_list_;
+  // Accessed from multiple threads, but protected by |lock_|.
+  bool should_block_ = true;
+  base::WeakPtrFactory<ServiceWorkerThrottlingTest> weak_factory_{this};
+};
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerThrottlingTest, ThrottleInstalling) {
+  // Register a service worker that loads 3 resources in its install
+  // handler.  The test server will cause these loads to block which
+  // should trigger throttling on the third request.
+  RegisterServiceWorkerAndWaitForState(
+      "/service_worker/throttling_blocking_sw.js",
+      "/service_worker/throttling_blocking", ServiceWorkerVersion::INSTALLING);
+
+  // Register a second service worker that also loads 3 resources in
+  // its install handler.  The test server will not block these loads
+  // and the worker should progress to the activated state.
+  //
+  // This second service worker is used to wait for the first worker
+  // to potentially request its resources.  By the time the second worker
+  // activates the first worker should have requested its resources and
+  // triggered throttling.  This avoids the need for an arbitrary timeout.
+  RegisterServiceWorkerAndWaitForState(
+      "/service_worker/throttling_non_blocking_sw.js",
+      "/service_worker/throttling_non_blocking",
+      ServiceWorkerVersion::ACTIVATED);
+
+  // If throttling worked correctly then there should only be 2 outstanding
+  // requests blocked by the test server.
+  EXPECT_EQ(2, GetBlockingResponseCount());
+
+  auto observer = base::MakeRefCounted<WorkerStateObserver>(
+      wrapper(), ServiceWorkerVersion::ACTIVATED);
+  observer->Init();
+
+  // Stop blocking the resources loaded by the first service worker.
+  StopBlocking();
+
+  // Verify that throttling correctly notes when resources can load and
+  // the first service worker fully activates.
+  observer->Wait();
 }
 
 }  // namespace content

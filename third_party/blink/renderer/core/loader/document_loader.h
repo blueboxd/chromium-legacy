@@ -290,7 +290,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
     application_cache_host_ = host;
   }
 
-  void SetLoadingJavaScriptUrl() { loading_url_as_javascript_ = true; }
+  void SetCommitReason(CommitReason reason) { commit_reason_ = reason; }
 
   bool HadTransientActivation() const { return had_transient_activation_; }
 
@@ -427,6 +427,11 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   // prefetched signed exchanges for matching requests.
   void InitializePrefetchedSignedExchangeManager();
 
+  bool IsJavaScriptURLOrXSLTCommit() const {
+    return commit_reason_ == CommitReason::kJavascriptUrl ||
+           commit_reason_ == CommitReason::kXSLT;
+  }
+
   // These fields are copied from WebNavigationParams, see there for definition.
   KURL url_;
   AtomicString http_method_;
@@ -530,7 +535,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   bool loading_mhtml_archive_ = false;
   bool loading_srcdoc_ = false;
   bool loading_url_as_empty_document_ = false;
-  bool loading_url_as_javascript_ = false;
+  CommitReason commit_reason_ = CommitReason::kRegular;
   uint64_t main_resource_identifier_ = 0;
   scoped_refptr<ResourceTimingInfo> navigation_timing_info_;
   bool report_timing_info_to_parent_ = false;

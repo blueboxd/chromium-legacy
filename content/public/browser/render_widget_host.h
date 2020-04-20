@@ -16,12 +16,11 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/common/drop_data.h"
-#include "content/public/common/input_event_ack_source.h"
-#include "content/public/common/input_event_ack_state.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_sender.h"
 #include "third_party/blink/public/common/input/web_gesture_event.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "ui/surface/transport_dib.h"
 
@@ -239,8 +238,8 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
     virtual ~InputEventObserver() {}
 
     virtual void OnInputEvent(const blink::WebInputEvent&) {}
-    virtual void OnInputEventAck(InputEventAckSource source,
-                                 InputEventAckState state,
+    virtual void OnInputEventAck(blink::mojom::InputEventResultSource source,
+                                 blink::mojom::InputEventResultState state,
                                  const blink::WebInputEvent&) {}
 
 #if defined(OS_ANDROID)

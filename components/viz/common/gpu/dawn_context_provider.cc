@@ -51,10 +51,16 @@ wgpu::Device DawnContextProvider::CreateDevice(dawn_native::BackendType type) {
   DawnProcTable backend_procs = dawn_native::GetProcs();
   dawnProcSetProcs(&backend_procs);
 
+  // Disable validation in non-DCHECK builds.
+  dawn_native::DeviceDescriptor descriptor;
+#if !DCHECK_IS_ON()
+  descriptor.forceEnabledToggles = {"skip_validation"};
+#endif
+
   std::vector<dawn_native::Adapter> adapters = instance_.GetAdapters();
   for (dawn_native::Adapter adapter : adapters) {
     if (adapter.GetBackendType() == type)
-      return adapter.CreateDevice();
+      return adapter.CreateDevice(&descriptor);
   }
   return nullptr;
 }

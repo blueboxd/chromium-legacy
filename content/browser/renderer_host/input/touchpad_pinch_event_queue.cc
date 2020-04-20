@@ -126,8 +126,8 @@ void TouchpadPinchEventQueue::QueueEvent(
 
 void TouchpadPinchEventQueue::ProcessMouseWheelAck(
     const MouseWheelEventWithLatencyInfo& ack_event,
-    InputEventAckSource ack_source,
-    InputEventAckState ack_result) {
+    blink::mojom::InputEventResultSource ack_source,
+    blink::mojom::InputEventResultState ack_result) {
   TRACE_EVENT0("input", "TouchpadPinchEventQueue::ProcessMouseWheelAck");
   if (!pinch_event_awaiting_ack_)
     return;
@@ -135,7 +135,8 @@ void TouchpadPinchEventQueue::ProcessMouseWheelAck(
   if (pinch_event_awaiting_ack_->event.GetType() ==
           blink::WebInputEvent::kGesturePinchUpdate &&
       !first_event_prevented_.has_value())
-    first_event_prevented_ = (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED);
+    first_event_prevented_ =
+        (ack_result == blink::mojom::InputEventResultState::kConsumed);
 
   pinch_event_awaiting_ack_->latency.AddNewLatencyFrom(ack_event.latency);
   client_->OnGestureEventForPinchAck(*pinch_event_awaiting_ack_, ack_source,
@@ -157,9 +158,10 @@ void TouchpadPinchEventQueue::TryForwardNextEventToRenderer() {
 
   if (pinch_event_awaiting_ack_->event.GetType() ==
       blink::WebInputEvent::kGesturePinchBegin) {
-    client_->OnGestureEventForPinchAck(*pinch_event_awaiting_ack_,
-                                       InputEventAckSource::BROWSER,
-                                       INPUT_EVENT_ACK_STATE_IGNORED);
+    client_->OnGestureEventForPinchAck(
+        *pinch_event_awaiting_ack_,
+        blink::mojom::InputEventResultSource::kBrowser,
+        blink::mojom::InputEventResultState::kIgnored);
     pinch_event_awaiting_ack_.reset();
     TryForwardNextEventToRenderer();
     return;

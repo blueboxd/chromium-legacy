@@ -11,9 +11,8 @@
 #include "base/optional.h"
 #include "content/common/content_export.h"
 #include "content/common/input/event_with_latency_info.h"
-#include "content/public/common/input_event_ack_source.h"
-#include "content/public/common/input_event_ack_state.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
 
 namespace content {
 
@@ -27,16 +26,16 @@ class CONTENT_EXPORT TouchpadPinchEventQueueClient {
 
   using MouseWheelEventHandledCallback =
       base::OnceCallback<void(const MouseWheelEventWithLatencyInfo& event,
-                              InputEventAckSource ack_source,
-                              InputEventAckState ack_result)>;
+                              blink::mojom::InputEventResultSource ack_source,
+                              blink::mojom::InputEventResultState ack_result)>;
 
   virtual void SendMouseWheelEventForPinchImmediately(
       const MouseWheelEventWithLatencyInfo& event,
       MouseWheelEventHandledCallback callback) = 0;
   virtual void OnGestureEventForPinchAck(
       const GestureEventWithLatencyInfo& event,
-      InputEventAckSource ack_source,
-      InputEventAckState ack_result) = 0;
+      blink::mojom::InputEventResultSource ack_source,
+      blink::mojom::InputEventResultState ack_result) = 0;
 };
 
 // A queue for sending synthetic mouse wheel events for touchpad pinches.
@@ -61,8 +60,8 @@ class CONTENT_EXPORT TouchpadPinchEventQueue {
   // Notifies the queue that a synthetic mouse wheel event has been processed
   // by the renderer.
   void ProcessMouseWheelAck(const MouseWheelEventWithLatencyInfo& ack_event,
-                            InputEventAckSource ack_source,
-                            InputEventAckState ack_result);
+                            blink::mojom::InputEventResultSource ack_source,
+                            blink::mojom::InputEventResultState ack_result);
 
   void TryForwardNextEventToRenderer();
 

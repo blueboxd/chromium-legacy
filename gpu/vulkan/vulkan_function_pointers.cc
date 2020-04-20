@@ -10,6 +10,7 @@
 
 #include "gpu/vulkan/vulkan_function_pointers.h"
 
+#include "base/logging.h"
 #include "base/no_destructor.h"
 
 namespace gpu {

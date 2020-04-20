@@ -1097,7 +1097,7 @@ void PolicyUIHandler::HandleReloadPolicies(const base::ListValue* args) {
     }
   }
 #endif
-  GetPolicyService()->RefreshPolicies(base::Bind(
+  GetPolicyService()->RefreshPolicies(base::BindOnce(
       &PolicyUIHandler::OnRefreshPoliciesDone, weak_factory_.GetWeakPtr()));
 }
 

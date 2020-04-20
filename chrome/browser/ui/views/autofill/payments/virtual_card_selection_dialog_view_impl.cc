@@ -32,11 +32,11 @@ VirtualCardSelectionDialogViewImpl::VirtualCardSelectionDialogViewImpl(
   DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
                                    controller_->GetCancelButtonLabel());
   DialogDelegate::SetAcceptCallback(
-      base::Bind(&VirtualCardSelectionDialogController::OnOkButtonClicked,
-                 base::Unretained(controller_)));
-  DialogDelegate::SetCancelCallback(
-      base::Bind(&VirtualCardSelectionDialogController::OnCancelButtonClicked,
-                 base::Unretained(controller_)));
+      base::BindOnce(&VirtualCardSelectionDialogController::OnOkButtonClicked,
+                     base::Unretained(controller_)));
+  DialogDelegate::SetCancelCallback(base::BindOnce(
+      &VirtualCardSelectionDialogController::OnCancelButtonClicked,
+      base::Unretained(controller_)));
 }
 
 VirtualCardSelectionDialogViewImpl::~VirtualCardSelectionDialogViewImpl() {

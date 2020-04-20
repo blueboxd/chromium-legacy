@@ -56,7 +56,7 @@ class TranslateInfobarDelegateObserverBridgeTest : public PlatformTest {
       : delegate_factory_("fr", "en"),
         observer_([[TestTranslateInfoBarDelegateObserver alloc] init]) {
     // Make sure the observer bridge sets up itself as an observer.
-    EXPECT_CALL(*GetDelegate(), SetObserver(_)).Times(1);
+    EXPECT_CALL(*GetDelegate(), AddObserver(_));
 
     observer_bridge_ = std::make_unique<TranslateInfobarDelegateObserverBridge>(
         delegate_factory_.GetMockTranslateInfoBarDelegate(), observer_);
@@ -64,7 +64,7 @@ class TranslateInfobarDelegateObserverBridgeTest : public PlatformTest {
 
   ~TranslateInfobarDelegateObserverBridgeTest() override {
     // Make sure the observer bridge removes itself as an observer.
-    EXPECT_CALL(*GetDelegate(), SetObserver(nullptr)).Times(1);
+    EXPECT_CALL(*GetDelegate(), RemoveObserver(_));
   }
 
   MockTranslateInfoBarDelegate* GetDelegate() {

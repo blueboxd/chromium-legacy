@@ -115,7 +115,7 @@ void ImageDocumentTest::CreateDocumentWithoutLoadingImage(int view_width,
       DocumentInit::Create()
           .WithDocumentLoader(frame.Loader().GetDocumentLoader())
           .WithTypeFrom("image/jpeg");
-  frame.DomWindow()->InstallNewDocument(init, false);
+  frame.DomWindow()->InstallNewDocument(init);
   frame.GetDocument()->SetURL(KURL("http://www.example.com/image.jpg"));
 }
 

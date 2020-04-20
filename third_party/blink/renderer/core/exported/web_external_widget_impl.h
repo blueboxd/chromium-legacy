@@ -28,10 +28,13 @@ class WebExternalWidgetImpl : public WebExternalWidget,
   ~WebExternalWidgetImpl() override;
 
   // WebWidget overrides:
-  void SetCompositorHosts(cc::LayerTreeHost*, cc::AnimationHost*) override;
+  cc::LayerTreeHost* InitializeCompositing(
+      cc::TaskGraphRunner* task_graph_runner,
+      const cc::LayerTreeSettings& settings,
+      std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory) override;
   void SetCompositorVisible(bool visible) override;
-  void UpdateVisualState() override;
-  void WillBeginCompositorFrame() override;
+  void Close(scoped_refptr<base::SingleThreadTaskRunner> cleanup_runner,
+             base::OnceCallback<void()> cleanup_task) override;
   WebHitTestResult HitTestResultAt(const gfx::Point&) override;
   WebURL GetURLForDebugTrace() override;
   WebSize Size() override;
@@ -49,6 +52,8 @@ class WebExternalWidgetImpl : public WebExternalWidget,
   void RecordTimeToFirstActivePaint(base::TimeDelta duration) override;
   void UpdateLifecycle(WebLifecycleUpdate requested_update,
                        DocumentUpdateReason reason) override {}
+  void RequestNewLayerTreeFrameSink(
+      LayerTreeFrameSinkCallback callback) override;
 
  private:
   WebExternalWidgetClient* const client_;

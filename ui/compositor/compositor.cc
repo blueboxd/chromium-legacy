@@ -311,6 +311,7 @@ void Compositor::SetLayerTreeFrameSink(
   // Display properties are reset when the output surface is lost, so update it
   // to match the Compositor's.
   if (display_private_) {
+    disabled_swap_until_resize_ = false;
     display_private_->Resize(size());
     display_private_->SetDisplayVisible(host_->IsVisible());
     display_private_->SetDisplayColorSpaces(display_color_spaces_);
@@ -381,8 +382,12 @@ void Compositor::ScheduleRedrawRect(const gfx::Rect& damage_rect) {
 }
 
 #if defined(OS_WIN)
+void Compositor::SetShouldDisableSwapUntilResize(bool should) {
+  should_disable_swap_until_resize_ = should;
+}
+
 void Compositor::DisableSwapUntilResize() {
-  if (display_private_) {
+  if (should_disable_swap_until_resize_ && display_private_) {
     // Browser needs to block for Viz to receive and process this message.
     // Otherwise when we return from WM_WINDOWPOSCHANGING message handler and
     // receive a WM_WINDOWPOSCHANGED the resize is finalized and any swaps of
@@ -396,7 +401,7 @@ void Compositor::DisableSwapUntilResize() {
 }
 
 void Compositor::ReenableSwap() {
-  if (display_private_)
+  if (should_disable_swap_until_resize_ && display_private_)
     display_private_->Resize(size_);
 }
 #endif

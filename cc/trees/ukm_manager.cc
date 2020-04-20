@@ -190,7 +190,7 @@ void UkmManager::RecordAggregateThroughput(AggregationType aggregation_type,
 void UkmManager::RecordLatencyUKM(
     CompositorFrameReporter::FrameReportType report_type,
     const std::vector<CompositorFrameReporter::StageData>& stage_history,
-    const base::flat_set<FrameSequenceTrackerType>* active_trackers,
+    const CompositorFrameReporter::ActiveTrackers& active_trackers,
     const viz::FrameTimingDetails& viz_breakdown) const {
   ukm::builders::Graphics_Smoothness_Latency builder(source_id_);
 
@@ -258,7 +258,11 @@ void UkmManager::RecordLatencyUKM(
   }
 
   // Record the active trackers
-  for (const auto& frame_sequence_tracker_type : *active_trackers) {
+  for (size_t type = 0; type < active_trackers.size(); ++type) {
+    if (!active_trackers.test(type))
+      continue;
+    const auto frame_sequence_tracker_type =
+        static_cast<FrameSequenceTrackerType>(type);
     if (frame_sequence_tracker_type == FrameSequenceTrackerType::kUniversal)
       continue;
     switch (frame_sequence_tracker_type) {

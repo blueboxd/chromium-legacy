@@ -6,6 +6,7 @@
 #define GPU_COMMAND_BUFFER_CLIENT_RASTER_INTERFACE_H_
 
 #include <GLES2/gl2.h>
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/containers/span.h"
 #include "components/viz/common/resources/resource_format.h"

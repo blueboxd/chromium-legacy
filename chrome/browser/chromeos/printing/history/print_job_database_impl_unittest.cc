@@ -65,7 +65,15 @@ class PrintJobDatabaseImplTest : public ::testing::Test {
     run_loop_closure.Run();
   }
 
-  void OnPrintJobsRetrieved(
+  void OnPrintJobsRetrieved(base::RepeatingClosure run_loop_closure,
+                            bool success,
+                            std::vector<PrintJobInfo> entries) {
+    EXPECT_TRUE(success);
+    entries_ = std::move(entries);
+    run_loop_closure.Run();
+  }
+
+  void OnPrintJobsRetrievedFromDatabase(
       base::RepeatingClosure run_loop_closure,
       bool success,
       std::unique_ptr<std::vector<PrintJobInfo>> entries) {
@@ -116,9 +124,9 @@ class PrintJobDatabaseImplTest : public ::testing::Test {
 
   std::vector<PrintJobInfo> GetPrintJobsFromProtoDatabase() {
     base::RunLoop run_loop;
-    print_job_database_->GetPrintJobsFromProtoDatabase(
-        base::BindOnce(&PrintJobDatabaseImplTest::OnPrintJobsRetrieved,
-                       base::Unretained(this), run_loop.QuitClosure()));
+    print_job_database_->GetPrintJobsFromProtoDatabase(base::BindOnce(
+        &PrintJobDatabaseImplTest::OnPrintJobsRetrievedFromDatabase,
+        base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
     return entries_;
   }

@@ -282,7 +282,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
       HTMLMediaElement&) = 0;
 
   virtual void DidCreateInitialEmptyDocument() = 0;
-  virtual void DidCommitJavascriptUrlNavigation(DocumentLoader*) = 0;
+  virtual void DidCommitDocumentReplacementNavigation(DocumentLoader*) = 0;
   virtual void DispatchDidClearWindowObjectInMainWorld() = 0;
   virtual void DocumentElementAvailable() = 0;
   virtual void RunScriptsAtDocumentElementAvailable() = 0;

@@ -1513,16 +1513,6 @@ void WebViewImpl::BeginFrame(base::TimeTicks last_frame_time) {
   PageWidgetDelegate::Animate(*AsView().page, last_frame_time);
 }
 
-void WebViewImpl::DidBeginFrame() {
-  if (!MainFrameImpl() || !MainFrameImpl()->GetFrame())
-    return;
-  if (Document* document = MainFrameImpl()->GetFrame()->GetDocument()) {
-    DocumentLifecycle::AllowThrottlingScope throttling_scope(
-        document->Lifecycle());
-    PageWidgetDelegate::DidBeginFrame(*MainFrameImpl()->GetFrame());
-  }
-}
-
 void WebViewImpl::BeginUpdateLayers() {
   if (MainFrameImpl())
     update_layers_start_time_.emplace(base::TimeTicks::Now());
@@ -1537,25 +1527,6 @@ void WebViewImpl::EndUpdateLayers() {
     probe::LayerTreeDidChange(MainFrameImpl()->GetFrame());
   }
   update_layers_start_time_.reset();
-}
-
-void WebViewImpl::BeginCommitCompositorFrame() {
-  if (MainFrameImpl()) {
-    commit_compositor_frame_start_time_.emplace(base::TimeTicks::Now());
-  }
-}
-
-void WebViewImpl::EndCommitCompositorFrame(base::TimeTicks commit_start_time) {
-  // Some tests call this without ever beginning a frame.
-  if (MainFrameImpl() && commit_compositor_frame_start_time_) {
-    MainFrameImpl()
-        ->GetFrame()
-        ->View()
-        ->EnsureUkmAggregator()
-        .RecordImplCompositorSample(commit_compositor_frame_start_time_.value(),
-                                    commit_start_time, base::TimeTicks::Now());
-  }
-  commit_compositor_frame_start_time_.reset();
 }
 
 void WebViewImpl::RecordStartOfFrameMetrics() {

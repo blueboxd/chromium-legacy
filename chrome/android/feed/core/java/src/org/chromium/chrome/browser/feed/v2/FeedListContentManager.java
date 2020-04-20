@@ -212,14 +212,13 @@ public class FeedListContentManager implements ListContentManager {
 
     @Override
     public boolean isNativeView(int index) {
-        return index == 0 || mFeedContentList.get(index - 1).isNativeView();
+        return mFeedContentList.get(index).isNativeView();
     }
 
     @Override
     public byte[] getExternalViewBytes(int index) {
-        assert !mFeedContentList.get(index - 1).isNativeView();
-        ExternalViewContent externalViewContent =
-                (ExternalViewContent) mFeedContentList.get(index - 1);
+        assert !mFeedContentList.get(index).isNativeView();
+        ExternalViewContent externalViewContent = (ExternalViewContent) mFeedContentList.get(index);
         return externalViewContent.getBytes();
     }
 
@@ -230,8 +229,8 @@ public class FeedListContentManager implements ListContentManager {
 
     @Override
     public View getNativeView(int index, ViewGroup parent) {
-        assert mFeedContentList.get(index - 1).isNativeView();
-        NativeViewContent nativeViewContent = (NativeViewContent) mFeedContentList.get(index - 1);
+        assert mFeedContentList.get(index).isNativeView();
+        NativeViewContent nativeViewContent = (NativeViewContent) mFeedContentList.get(index);
         return nativeViewContent.getNativeView();
     }
 

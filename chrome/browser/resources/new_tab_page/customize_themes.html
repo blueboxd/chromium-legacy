@@ -135,9 +135,9 @@
     <template>
       <ntp-theme-icon title="[[item.label]]" on-click="onChromeThemeClick_"
           style="--ntp-theme-icon-frame-color:
-              [[skColorToRgb_(item.colors.frame)]];
+              [[skColorToRgba_(item.colors.frame)]];
             --ntp-theme-icon-active-tab-color:
-              [[skColorToRgb_(item.colors.activeTab)]];"
+              [[skColorToRgba_(item.colors.activeTab)]];"
           tabindex="0"
           selected$="[[isThemeIconSelected_(item.id, theme)]]">
       </ntp-theme-icon>

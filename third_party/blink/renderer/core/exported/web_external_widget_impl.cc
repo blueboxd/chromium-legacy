@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/exported/web_external_widget_impl.h"
 
 #include "cc/trees/layer_tree_host.h"
+#include "cc/trees/ukm_manager.h"
 #include "third_party/blink/renderer/platform/widget/widget_base.h"
 
 namespace blink {
@@ -37,22 +38,24 @@ WebExternalWidgetImpl::WebExternalWidgetImpl(
 
 WebExternalWidgetImpl::~WebExternalWidgetImpl() = default;
 
-void WebExternalWidgetImpl::SetCompositorHosts(
-    cc::LayerTreeHost* layer_tree_host,
-    cc::AnimationHost* animation_host) {
-  widget_base_->SetCompositorHosts(layer_tree_host, animation_host);
+cc::LayerTreeHost* WebExternalWidgetImpl::InitializeCompositing(
+    cc::TaskGraphRunner* task_graph_runner,
+    const cc::LayerTreeSettings& settings,
+    std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory) {
+  widget_base_->InitializeCompositing(task_graph_runner, settings,
+                                      std::move(ukm_recorder_factory));
+  return widget_base_->LayerTreeHost();
+}
+
+void WebExternalWidgetImpl::Close(
+    scoped_refptr<base::SingleThreadTaskRunner> cleanup_runner,
+    base::OnceCallback<void()> cleanup_task) {
+  widget_base_->Shutdown(std::move(cleanup_runner), std::move(cleanup_task));
+  widget_base_.reset();
 }
 
 void WebExternalWidgetImpl::SetCompositorVisible(bool visible) {
   widget_base_->SetCompositorVisible(visible);
-}
-
-void WebExternalWidgetImpl::UpdateVisualState() {
-  widget_base_->UpdateVisualState();
-}
-
-void WebExternalWidgetImpl::WillBeginCompositorFrame() {
-  widget_base_->WillBeginCompositorFrame();
 }
 
 WebHitTestResult WebExternalWidgetImpl::HitTestResultAt(const gfx::Point&) {
@@ -86,6 +89,11 @@ WebInputEventResult WebExternalWidgetImpl::DispatchBufferedTouchEvents() {
 
 void WebExternalWidgetImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {
   widget_base_->LayerTreeHost()->SetNonBlinkManagedRootLayer(layer);
+}
+
+void WebExternalWidgetImpl::RequestNewLayerTreeFrameSink(
+    LayerTreeFrameSinkCallback callback) {
+  client_->RequestNewLayerTreeFrameSink(std::move(callback));
 }
 
 void WebExternalWidgetImpl::RecordTimeToFirstActivePaint(

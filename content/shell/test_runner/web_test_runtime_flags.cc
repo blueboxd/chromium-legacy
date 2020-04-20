@@ -63,6 +63,8 @@ void WebTestRuntimeFlags::Reset() {
   set_has_custom_text_output(false);
   set_custom_text_output("");
 
+  set_is_web_platform_tests_mode(false);
+
   // No need to report the initial state - only the future delta is important.
   tracked_dictionary().ResetChangeTracking();
 }

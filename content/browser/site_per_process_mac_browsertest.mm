@@ -154,14 +154,16 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessMacBrowserTest,
       child_iframe_node->current_frame_host()->GetRenderWidgetHost();
 
   InputEventAckWaiter gesture_scroll_begin_ack_observer(
-      child_rwh, base::BindRepeating([](InputEventAckSource, InputEventAckState,
+      child_rwh, base::BindRepeating([](blink::mojom::InputEventResultSource,
+                                        blink::mojom::InputEventResultState,
                                         const blink::WebInputEvent& event) {
         return event.GetType() == blink::WebInputEvent::kGestureScrollBegin &&
                !static_cast<const blink::WebGestureEvent&>(event)
                     .data.scroll_begin.synthetic;
       }));
   InputEventAckWaiter gesture_scroll_end_ack_observer(
-      child_rwh, base::BindRepeating([](InputEventAckSource, InputEventAckState,
+      child_rwh, base::BindRepeating([](blink::mojom::InputEventResultSource,
+                                        blink::mojom::InputEventResultState,
                                         const blink::WebInputEvent& event) {
         return event.GetType() == blink::WebInputEvent::kGestureScrollEnd &&
                !static_cast<const blink::WebGestureEvent&>(event)

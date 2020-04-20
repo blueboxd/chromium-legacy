@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-#include "content/public/common/input_event_ack_state.h"
+#include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
 #include "ui/android/overscroll_glow.h"
 #include "ui/android/overscroll_refresh.h"
 #include "ui/gfx/geometry/vector2d_f.h"
@@ -56,7 +56,7 @@ class CONTENT_EXPORT OverscrollControllerAndroid
 
   // To be called upon receipt of a gesture event ack.
   void OnGestureEventAck(const blink::WebGestureEvent& event,
-                         InputEventAckState ack_result);
+                         blink::mojom::InputEventResultState ack_result);
 
   // To be called upon receipt of an overscroll event.
   void OnOverscrolled(const ui::DidOverscrollParams& overscroll_params);

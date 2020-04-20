@@ -7,7 +7,6 @@
 
 #include "base/time/time.h"
 #include "cc/trees/layer_tree_host.h"
-#include "content/test/stub_layer_tree_view_delegate.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/apply_viewport_changes.h"
@@ -79,8 +78,8 @@ class SimCompositor final : public frame_test_helpers::TestWebWidgetClient {
   base::TimeTicks LastFrameTime() const { return last_frame_time_; }
 
  private:
-  // content::LayerTreeViewDelegate implementation.
-  void UpdateVisualState() override;
+  // TestWebWidgetClient overrides:
+  void DidBeginMainFrame() override;
 
   WebViewImpl* web_view_ = nullptr;
   frame_test_helpers::TestWebViewClient* test_web_view_client_ = nullptr;

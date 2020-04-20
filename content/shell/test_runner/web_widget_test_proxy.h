@@ -58,7 +58,7 @@ class WebWidgetTestProxy : public content::RenderWidget {
   ~WebWidgetTestProxy() override;
 
   // RenderWidget overrides.
-  void WillBeginCompositorFrame() override;
+  void WillBeginMainFrame() override;
   void RequestDecode(const cc::PaintImage& image,
                      base::OnceCallback<void(bool)> callback) override;
   void RequestPresentation(PresentationTimeCallback callback) override;

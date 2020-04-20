@@ -264,8 +264,8 @@ class GestureEventWaiter : public RenderWidgetHost::InputEventObserver {
     }
   }
 
-  void OnInputEventAck(InputEventAckSource,
-                       InputEventAckState,
+  void OnInputEventAck(blink::mojom::InputEventResultSource,
+                       blink::mojom::InputEventResultState,
                        const blink::WebInputEvent& event) override {
     if (event.GetType() == target_event_type_) {
       gesture_event_type_ack_seen_ = true;

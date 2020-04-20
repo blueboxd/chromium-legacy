@@ -163,10 +163,11 @@ class CardUnmaskPromptViewBrowserTest : public DialogBrowserTest {
     if (name == kExpiryExpired)
       card.SetExpirationYear(2016);
 
-    controller()->ShowPrompt(
-        base::Bind(&CreateCardUnmaskPromptView, base::Unretained(controller()),
-                   base::Unretained(contents())),
-        card, AutofillClient::UNMASK_FOR_AUTOFILL, delegate()->GetWeakPtr());
+    controller()->ShowPrompt(base::BindOnce(&CreateCardUnmaskPromptView,
+                                            base::Unretained(controller()),
+                                            base::Unretained(contents())),
+                             card, AutofillClient::UNMASK_FOR_AUTOFILL,
+                             delegate()->GetWeakPtr());
     // Setting error expectations and confirming the dialogs for some test
     // cases.
     if (name == kExpiryValidPermanentError ||

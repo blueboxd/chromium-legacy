@@ -14,7 +14,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
-import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.weblayer.shell.InstrumentationActivity;
@@ -73,17 +72,13 @@ public class SmokeTest {
         }
 
         Runtime.getRuntime().gc();
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                Reference enqueuedReference = referenceQueue.poll();
-                if (enqueuedReference == null) {
-                    Runtime.getRuntime().gc();
-                    return false;
-                }
-                Assert.assertEquals(reference, enqueuedReference);
-                return true;
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Reference enqueuedReference = referenceQueue.poll();
+            if (enqueuedReference == null) {
+                Runtime.getRuntime().gc();
+                Assert.fail("No enqueued reference");
             }
+            Assert.assertEquals(reference, enqueuedReference);
         });
     }
 
@@ -107,17 +102,13 @@ public class SmokeTest {
             reference = new PhantomReference<>(activity, referenceQueue);
         }
 
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                Reference enqueuedReference = referenceQueue.poll();
-                if (enqueuedReference == null) {
-                    Runtime.getRuntime().gc();
-                    return false;
-                }
-                Assert.assertEquals(reference, enqueuedReference);
-                return true;
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Reference enqueuedReference = referenceQueue.poll();
+            if (enqueuedReference == null) {
+                Runtime.getRuntime().gc();
+                Assert.fail("No enqueued reference");
             }
+            Assert.assertEquals(reference, enqueuedReference);
         });
     }
 }

@@ -37,11 +37,10 @@ class PrintingManager : public mojom::PrintingMetadataProvider,
   // KeyedService:
   void Shutdown() override;
 
-  void OnPrintJobsRetrieved(
-      GetPrintJobsCallback callback,
-      bool success,
-      std::unique_ptr<std::vector<chromeos::printing::proto::PrintJobInfo>>
-          print_job_info_protos);
+  void OnPrintJobsRetrieved(GetPrintJobsCallback callback,
+                            bool success,
+                            std::vector<chromeos::printing::proto::PrintJobInfo>
+                                print_job_info_protos);
 
   mojo::Receiver<mojom::PrintingMetadataProvider> receiver_{this};
 

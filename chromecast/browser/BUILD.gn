@@ -334,6 +334,8 @@ cast_source_set("browser") {
       "extensions/api/i18n/i18n_api.h",
       "extensions/api/identity/identity_api.cc",
       "extensions/api/identity/identity_api.h",
+      "extensions/api/login_state/login_state.cc",
+      "extensions/api/login_state/login_state.h",
       "extensions/api/notifications/notifications_api.cc",
       "extensions/api/notifications/notifications_api.h",
       "extensions/api/settings_private/settings_private_api.cc",

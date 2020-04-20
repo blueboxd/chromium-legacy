@@ -364,6 +364,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const std::string& relying_party_id) override;
   void SetIsXrOverlaySetup() override;
   bool IsInBackForwardCache() override;
+  ukm::SourceId GetPageUkmSourceId() override;
 
   // Determines if a clipboard paste using |data| of type |data_type| is allowed
   // in this renderer frame.  The implementation delegates to
@@ -2790,6 +2791,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   base::TimeTicks last_xr_overlay_setup_time_;
 
   std::unique_ptr<CrossOriginEmbedderPolicyReporter> coep_reporter_;
+
+  // Navigation ID for the last committed cross-document non-bfcached navigation
+  // in this RenderFrameHost.
+  // TODO(crbug.com/936696): Make this const after we have RenderDocument.
+  int64_t last_committed_cross_document_navigation_id_ = -1;
 
   // If true, RenderFrameHost should not be actually deleted and should be left
   // stuck in pending deletion.

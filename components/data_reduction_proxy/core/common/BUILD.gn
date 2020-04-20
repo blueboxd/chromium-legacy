@@ -13,7 +13,6 @@ template("common_tmpl") {
       "data_reduction_proxy_bypass_protocol.cc",
       "data_reduction_proxy_bypass_protocol.h",
       "data_reduction_proxy_bypass_type_list.h",
-      "data_reduction_proxy_config_values.h",
       "data_reduction_proxy_features.cc",
       "data_reduction_proxy_features.h",
       "data_reduction_proxy_headers.cc",
@@ -22,11 +21,8 @@ template("common_tmpl") {
       "data_reduction_proxy_params.h",
       "data_reduction_proxy_pref_names.cc",
       "data_reduction_proxy_pref_names.h",
-      "data_reduction_proxy_server.cc",
-      "data_reduction_proxy_server.h",
       "data_reduction_proxy_switches.cc",
       "data_reduction_proxy_switches.h",
-      "data_reduction_proxy_type_info.h",
       "uma_util.cc",
       "uma_util.h",
     ]
@@ -60,8 +56,6 @@ static_library("test_support") {
   sources = [
     "data_reduction_proxy_headers_test_utils.cc",
     "data_reduction_proxy_headers_test_utils.h",
-    "data_reduction_proxy_params_test_utils.cc",
-    "data_reduction_proxy_params_test_utils.h",
   ]
 
   public_deps = [ ":common" ]

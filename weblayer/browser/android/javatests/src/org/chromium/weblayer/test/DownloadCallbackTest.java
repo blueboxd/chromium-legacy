@@ -16,7 +16,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.util.TestWebServer;
@@ -97,39 +96,19 @@ public class DownloadCallbackTest {
         }
 
         public void waitForIntercept() {
-            CriteriaHelper.pollInstrumentationThread(new Criteria() {
-                @Override
-                public boolean isSatisfied() {
-                    return mUrl != null;
-                }
-            }, CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+            CriteriaHelper.pollInstrumentationThread(() -> Assert.assertNotNull(mUrl));
         }
 
         public void waitForStarted() {
-            CriteriaHelper.pollInstrumentationThread(new Criteria() {
-                @Override
-                public boolean isSatisfied() {
-                    return mSeenStarted;
-                }
-            }, CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+            CriteriaHelper.pollInstrumentationThread(() -> mSeenStarted);
         }
 
         public void waitForCompleted() {
-            CriteriaHelper.pollInstrumentationThread(new Criteria() {
-                @Override
-                public boolean isSatisfied() {
-                    return mSeenCompleted;
-                }
-            }, CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+            CriteriaHelper.pollInstrumentationThread(() -> mSeenCompleted);
         }
 
         public void waitForFailed() {
-            CriteriaHelper.pollInstrumentationThread(new Criteria() {
-                @Override
-                public boolean isSatisfied() {
-                    return mSeenFailed;
-                }
-            }, CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+            CriteriaHelper.pollInstrumentationThread(() -> mSeenFailed);
         }
     }
 

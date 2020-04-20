@@ -15,7 +15,6 @@
 #include "content/common/content_param_traits.h"
 #include "content/common/edit_command.h"
 #include "content/common/input/input_event.h"
-#include "content/common/input/input_event_ack.h"
 #include "content/common/input/input_event_dispatch_type.h"
 #include "content/common/input/synthetic_gesture_params.h"
 #include "content/common/input/synthetic_pinch_gesture_params.h"
@@ -24,11 +23,10 @@
 #include "content/common/input/synthetic_smooth_drag_gesture_params.h"
 #include "content/common/input/synthetic_smooth_scroll_gesture_params.h"
 #include "content/common/input/synthetic_tap_gesture_params.h"
-#include "content/public/common/input_event_ack_source.h"
-#include "content/public/common/input_event_ack_state.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/input/web_pointer_properties.h"
+#include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
 #include "ui/events/blink/did_overscroll_params.h"
 #include "ui/events/ipc/ui_events_param_traits_macros.h"
 #include "ui/gfx/geometry/point.h"
@@ -42,8 +40,6 @@
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 
-IPC_ENUM_TRAITS_MAX_VALUE(content::InputEventAckSource,
-                          content::InputEventAckSource::MAX_FROM_RENDERER)
 IPC_ENUM_TRAITS_MAX_VALUE(
     content::SyntheticGestureParams::GestureSourceType,
     content::SyntheticGestureParams::GESTURE_SOURCE_TYPE_MAX)

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include "base/macros.h"
 #include "chrome/browser/ui/views/reader_mode/reader_mode_icon_view.h"
 
@@ -24,6 +25,7 @@
 #include "components/security_interstitials/core/controller_client.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/test/button_test_api.h"
@@ -38,10 +40,13 @@ class ReaderModeIconViewBrowserTest : public InProcessBrowserTest {
  protected:
   ReaderModeIconViewBrowserTest() {
     feature_list_.InitAndEnableFeature(dom_distiller::kReaderMode);
+    https_server_secure_ = std::make_unique<net::EmbeddedTestServer>(
+        net::EmbeddedTestServer::TYPE_HTTPS);
+    https_server_secure_->ServeFilesFromSourceDirectory(GetChromeTestDataDir());
   }
 
   void SetUpOnMainThread() override {
-    ASSERT_TRUE(embedded_test_server()->Start());
+    ASSERT_TRUE(https_server_secure()->Start());
     reader_mode_icon_ =
         BrowserView::GetBrowserViewForBrowser(browser())
             ->toolbar_button_provider()
@@ -49,7 +54,12 @@ class ReaderModeIconViewBrowserTest : public InProcessBrowserTest {
     ASSERT_NE(nullptr, reader_mode_icon_);
   }
 
+  net::EmbeddedTestServer* https_server_secure() {
+    return https_server_secure_.get();
+  }
+
   PageActionIconView* reader_mode_icon_;
+  std::unique_ptr<net::EmbeddedTestServer> https_server_secure_;
 
  private:
   base::test::ScopedFeatureList feature_list_;
@@ -77,7 +87,7 @@ IN_PROC_BROWSER_TEST_F(ReaderModeIconViewBrowserTest,
 
   // The icon should be hidden on pages that aren't distillable
   ui_test_utils::NavigateToURL(browser(),
-                               embedded_test_server()->GetURL(kNonArticlePath));
+                               https_server_secure()->GetURL(kNonArticlePath));
   observer.WaitForResult(expected_result);
   const bool is_visible_on_non_distillable_page =
       reader_mode_icon_->GetVisible();
@@ -85,7 +95,7 @@ IN_PROC_BROWSER_TEST_F(ReaderModeIconViewBrowserTest,
 
   // The icon should appear after navigating to a distillable article.
   ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL(kSimpleArticlePath));
+      browser(), https_server_secure()->GetURL(kSimpleArticlePath));
   expected_result.is_distillable = true;
   observer.WaitForResult(expected_result);
   const bool is_visible_on_article = reader_mode_icon_->GetVisible();
@@ -93,7 +103,7 @@ IN_PROC_BROWSER_TEST_F(ReaderModeIconViewBrowserTest,
 
   // Navigating back to a non-distillable page hides the icon again.
   ui_test_utils::NavigateToURL(browser(),
-                               embedded_test_server()->GetURL(kNonArticlePath));
+                               https_server_secure()->GetURL(kNonArticlePath));
   expected_result.is_distillable = false;
   observer.WaitForResult(expected_result);
   const bool is_visible_after_navigation_back_to_non_distillable_page =
@@ -136,14 +146,14 @@ IN_PROC_BROWSER_TEST_F(ReaderModeIconViewBrowserTestWithSettings,
   // The icon should not appear after navigating to a distillable article,
   // because the setting to offer reader mode is disabled.
   ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL(kSimpleArticlePath));
+      browser(), https_server_secure()->GetURL(kSimpleArticlePath));
   observer.WaitForResult(expected_result);
   bool is_visible_on_article = reader_mode_icon_->GetVisible();
   EXPECT_FALSE(is_visible_on_article);
 
   // It continues to not show up when navigating to a non-distillable page.
   ui_test_utils::NavigateToURL(browser(),
-                               embedded_test_server()->GetURL(kNonArticlePath));
+                               https_server_secure()->GetURL(kNonArticlePath));
   expected_result.is_distillable = false;
   observer.WaitForResult(expected_result);
   bool is_visible_after_navigation_back_to_non_distillable_page =
@@ -154,7 +164,7 @@ IN_PROC_BROWSER_TEST_F(ReaderModeIconViewBrowserTestWithSettings,
   // distillable page.
   SetOfferReaderModeSetting(true);
   ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL(kSimpleArticlePath));
+      browser(), https_server_secure()->GetURL(kSimpleArticlePath));
   expected_result.is_distillable = true;
   observer.WaitForResult(expected_result);
   is_visible_on_article = reader_mode_icon_->GetVisible();
@@ -162,7 +172,7 @@ IN_PROC_BROWSER_TEST_F(ReaderModeIconViewBrowserTestWithSettings,
 
   // But it still turns off when navigating to a non-distillable page.
   ui_test_utils::NavigateToURL(browser(),
-                               embedded_test_server()->GetURL(kNonArticlePath));
+                               https_server_secure()->GetURL(kNonArticlePath));
   expected_result.is_distillable = false;
   observer.WaitForResult(expected_result);
   is_visible_after_navigation_back_to_non_distillable_page =
@@ -171,7 +181,7 @@ IN_PROC_BROWSER_TEST_F(ReaderModeIconViewBrowserTestWithSettings,
 }
 
 IN_PROC_BROWSER_TEST_F(ReaderModeIconViewBrowserTest,
-                       DangerousPagesNotDistillable) {
+                       NonSecurePagesNotDistillable) {
   std::unique_ptr<net::EmbeddedTestServer> https_server_expired;
   https_server_expired.reset(
       new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
@@ -188,13 +198,22 @@ IN_PROC_BROWSER_TEST_F(ReaderModeIconViewBrowserTest,
   expected_result.is_last = false;
   expected_result.is_mobile_friendly = false;
 
-  // Check test setup by ensuring the icon is shown with the normal test
+  // Check test setup by ensuring the icon is shown with the secure test
   // server.
   ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL(kSimpleArticlePath));
-  EXPECT_NE(security_state::DANGEROUS, helper->GetSecurityLevel());
+      browser(), https_server_secure()->GetURL(kSimpleArticlePath));
+  EXPECT_EQ(security_state::SECURE, helper->GetSecurityLevel());
   observer.WaitForResult(expected_result);
   EXPECT_TRUE(reader_mode_icon_->GetVisible());
+
+  // The icon should not be shown with a http test server.
+  ASSERT_TRUE(embedded_test_server()->Start());
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(kSimpleArticlePath));
+  EXPECT_NE(security_state::SECURE, helper->GetSecurityLevel());
+  expected_result.is_distillable = false;
+  observer.WaitForResult(expected_result);
+  EXPECT_FALSE(reader_mode_icon_->GetVisible());
 
   // Set security state to DANGEROUS for the test by using an expired
   // certificate.
@@ -221,7 +240,6 @@ IN_PROC_BROWSER_TEST_F(ReaderModeIconViewBrowserTest,
 
   // Check security state is DANGEROUS per https_server_expired_.
   EXPECT_EQ(security_state::DANGEROUS, helper->GetSecurityLevel());
-  expected_result.is_distillable = false;
 
   // The page should not be distillable.
   observer.WaitForResult(expected_result);

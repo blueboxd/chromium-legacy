@@ -21,22 +21,17 @@
 
       window.addEventListener('scroll', this.sendScrollInfo_.bind(this));
       window.addEventListener('resize', this.sendScrollInfo_.bind(this));
-
-      // Besides binding to the 'scroll' and 'resize' events, send once the
-      // scroll information when the page if fully loaded.
-      if (document.readyState === 'complete') {
+      this.boundAttachResizeObserver_ = this.attachResizeObserver_.bind(this);
+      window.addEventListener('load', this.boundAttachResizeObserver_);
+      this.resizeObserver = new ResizeObserver(() => {
         this.sendScrollInfo_();
-        return;
-      }
+      });
+    },
 
-      const boundSendScrollInfo = this.sendScrollInfo_.bind(this);
-      window.addEventListener('readystatechange', function listener(event) {
-        if (document.readyState != 'complete') {
-          return;
-        }
-        boundSendScrollInfo();
-        window.removeEventListener(event.type, listener, true);
-      }, true);
+    // Observe when document.body changes in size.
+    attachResizeObserver_(event) {
+      this.resizeObserver.observe(document.body);
+      window.removeEventListener(event.type, this.boundAttachResizeObserver_);
     },
 
     sendScrollInfo_(event) {

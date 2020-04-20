@@ -72,10 +72,8 @@ TEST_P(LayerTreeHostMirrorPixelTest, MirrorLayer) {
         max_abs_error_limit, small_error_threshold);
   }
 
-#if defined(ENABLE_CC_VULKAN_TESTS) && defined(OS_LINUX)
-  if (use_vulkan())
+  if (use_skia_vulkan())
     pixel_comparator_ = std::make_unique<FuzzyPixelOffByOneComparator>(true);
-#endif
 
   RunPixelTest(background,
                base::FilePath(FILE_PATH_LITERAL("mirror_layer.png")));

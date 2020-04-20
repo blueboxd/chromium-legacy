@@ -44,9 +44,8 @@ void OnRead(net::StreamSocket* socket,
 
   std::string new_data = data + std::string(buffer->data(), result);
   result =
-      socket->Read(buffer.get(),
-                   kBufferSize,
-                   base::Bind(&OnRead, socket, buffer, new_data, callback));
+      socket->Read(buffer.get(), kBufferSize,
+                   base::BindOnce(&OnRead, socket, buffer, new_data, callback));
   if (result != net::ERR_IO_PENDING)
     OnRead(socket, buffer, new_data, callback, result);
 }
@@ -61,9 +60,8 @@ void OpenedForCommand(const UsbDeviceProvider::CommandCallback& callback,
   scoped_refptr<net::IOBuffer> buffer =
       base::MakeRefCounted<net::IOBuffer>(kBufferSize);
   result = socket->Read(
-      buffer.get(),
-      kBufferSize,
-      base::Bind(&OnRead, socket, buffer, std::string(), callback));
+      buffer.get(), kBufferSize,
+      base::BindOnce(&OnRead, socket, buffer, std::string(), callback));
   if (result != net::ERR_IO_PENDING)
     OnRead(socket, buffer, std::string(), callback, result);
 }
@@ -76,8 +74,8 @@ void RunCommand(scoped_refptr<AndroidUsbDevice> device,
     callback.Run(net::ERR_CONNECTION_FAILED, std::string());
     return;
   }
-  int result = socket->Connect(
-      base::Bind(&OpenedForCommand, callback, socket));
+  int result =
+      socket->Connect(base::BindOnce(&OpenedForCommand, callback, socket));
   if (result != net::ERR_IO_PENDING)
     callback.Run(result, std::string());
 }
@@ -123,7 +121,7 @@ void UsbDeviceProvider::OpenSocket(const std::string& serial,
                  base::WrapUnique<net::StreamSocket>(NULL));
     return;
   }
-  int result = socket->Connect(base::Bind(&OnOpenSocket, callback, socket));
+  int result = socket->Connect(base::BindOnce(&OnOpenSocket, callback, socket));
   if (result != net::ERR_IO_PENDING)
     callback.Run(result, base::WrapUnique<net::StreamSocket>(NULL));
 }

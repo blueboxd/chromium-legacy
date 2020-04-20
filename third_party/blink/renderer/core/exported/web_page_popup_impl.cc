@@ -33,6 +33,7 @@
 
 #include "cc/animation/animation_host.h"
 #include "cc/layers/picture_layer.h"
+#include "cc/trees/ukm_manager.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/web/web_view_client.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache_base.h"
@@ -325,23 +326,19 @@ void WebPagePopupImpl::Initialize(WebViewImpl* web_view,
   SetFocus(true);
 }
 
-void WebPagePopupImpl::SetCompositorHosts(cc::LayerTreeHost* layer_tree_host,
-                                          cc::AnimationHost* animation_host) {
-  // Careful Initialize() is called after SetCompositorHosts, so don't do
+cc::LayerTreeHost* WebPagePopupImpl::InitializeCompositing(
+    cc::TaskGraphRunner* task_graph_runner,
+    const cc::LayerTreeSettings& settings,
+    std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory) {
+  // Careful Initialize() is called after InitializeCompositing, so don't do
   // much work here.
-  widget_base_->SetCompositorHosts(layer_tree_host, animation_host);
+  widget_base_->InitializeCompositing(task_graph_runner, settings,
+                                      std::move(ukm_recorder_factory));
+  return widget_base_->LayerTreeHost();
 }
 
 void WebPagePopupImpl::SetCompositorVisible(bool visible) {
   widget_base_->SetCompositorVisible(visible);
-}
-
-void WebPagePopupImpl::UpdateVisualState() {
-  widget_base_->UpdateVisualState();
-}
-
-void WebPagePopupImpl::WillBeginCompositorFrame() {
-  widget_base_->WillBeginCompositorFrame();
 }
 
 void WebPagePopupImpl::PostMessageToPopup(const String& message) {
@@ -387,8 +384,9 @@ void WebPagePopupImpl::SetSuppressFrameRequestsWorkaroundFor704763Only(
       suppress_frame_requests);
 }
 
-void WebPagePopupImpl::BeginFrame(base::TimeTicks last_frame_time) {
-  widget_base_->BeginMainFrame(last_frame_time);
+void WebPagePopupImpl::RequestNewLayerTreeFrameSink(
+    LayerTreeFrameSinkCallback callback) {
+  WidgetClient()->RequestNewLayerTreeFrameSink(std::move(callback));
 }
 
 void WebPagePopupImpl::RecordTimeToFirstActivePaint(base::TimeDelta duration) {
@@ -557,7 +555,9 @@ WebURL WebPagePopupImpl::GetURLForDebugTrace() {
   return {};
 }
 
-void WebPagePopupImpl::Close() {
+void WebPagePopupImpl::Close(
+    scoped_refptr<base::SingleThreadTaskRunner> cleanup_runner,
+    base::OnceCallback<void()> cleanup_task) {
   // If the popup is closed from the renderer via Cancel(), then ClosePopup()
   // has already run on another stack, and destroyed |page_|. If the popup is
   // closed from the browser via IPC to RenderWidget, then we come here first
@@ -570,8 +570,9 @@ void WebPagePopupImpl::Close() {
     Cancel();
   }
 
-  web_page_popup_client_ = nullptr;
+  widget_base_->Shutdown(std::move(cleanup_runner), std::move(cleanup_task));
   widget_base_.reset();
+  web_page_popup_client_ = nullptr;
 
   // Self-delete on Close().
   Release();

@@ -227,6 +227,12 @@ const base::Feature kVirtualKeyboardFloatingDefault{
 const base::Feature kInstantTethering{"InstantTethering",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables "Linux and Chrome OS" support. Allows a Linux version of Chrome
+// ("lacros-chrome") to run as a Wayland client with this instance of Chrome
+// ("ash-chrome") acting as the Wayland server and window manager.
+const base::Feature kLacrosSupport{"LacrosSupport",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
 // ChromeOS Media App. https://crbug.com/996088.
 const base::Feature kMediaApp{"MediaApp", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -403,6 +409,10 @@ bool IsImeDecoderWithSandboxEnabled() {
 bool IsInstantTetheringBackgroundAdvertisingSupported() {
   return base::FeatureList::IsEnabled(
       kInstantTetheringBackgroundAdvertisementSupport);
+}
+
+bool IsLacrosSupportEnabled() {
+  return base::FeatureList::IsEnabled(kLacrosSupport);
 }
 
 bool IsOobeScreensPriorityEnabled() {

@@ -5,6 +5,7 @@
 #ifndef MEDIA_BASE_MEDIA_SERIALIZERS_H_
 #define MEDIA_BASE_MEDIA_SERIALIZERS_H_
 
+#include <sstream>
 #include <vector>
 
 #include "base/location.h"

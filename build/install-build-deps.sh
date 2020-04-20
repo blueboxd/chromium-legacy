@@ -204,7 +204,6 @@ dev_list="\
   python-crypto
   python-dev
   python-numpy
-  python-opencv
   python-openssl
   python-psutil
   python-yaml

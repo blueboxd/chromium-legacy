@@ -61,7 +61,6 @@ class PLATFORM_EXPORT TransformOperation
     kMatrix3D,
     kPerspective,
     kInterpolated,
-    kIdentity,
     kRotateAroundOrigin,
   };
 

@@ -54,6 +54,7 @@
 <translation id="1331212799747679585">Nie udało się zaktualizować Chrome. Więcej opcji</translation>
 <translation id="1332501820983677155">Skróty do funkcji Google Chrome</translation>
 <translation id="1360432990279830238">Wylogować i wyłączyć synchronizację?</translation>
+<translation id="1364532808393826295"><ph name="APP_NAME" />–<ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">Strona <ph name="SITE_NAME" /> została dodana</translation>
 <translation id="1373696734384179344">Za mało pamięci, by pobrać te treści.</translation>
 <translation id="1376578503827013741">Obliczam…</translation>
@@ -140,6 +141,7 @@
 <translation id="2017836877785168846">Usuwa historię i wpisy autouzupełniania w pasku adresu.</translation>
 <translation id="2021896219286479412">Elementy sterowania stroną na pełnym ekranie</translation>
 <translation id="2025115093177348061">Rzeczywistość rozszerzona</translation>
+<translation id="2030769033451695672">Kliknij, by wrócić na <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2038563949887743358">Włącz opcję „Wersja na komputer”</translation>
 <translation id="2041019821020695769">Aby zezwolić Chrome na wysyłanie Ci powiadomień, musisz je też włączyć w <ph name="BEGIN_LINK" />Ustawieniach Androida<ph name="END_LINK" />.</translation>
 <translation id="204321170514947529">Dane aplikacji <ph name="APP_NAME" /> znajdują się też w Chrome</translation>
@@ -301,6 +303,7 @@ Aby coś wyszukać, naciśnij i przytrzymaj dowolne słowo. Aby doprecyzować w
 <translation id="3207960819495026254">Dodano do zakładek</translation>
 <translation id="3211426585530211793">Usunięto: <ph name="ITEM_TITLE" /></translation>
 <translation id="321773570071367578">Jeśli nie pamiętasz hasła lub chcesz zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph name="END_LINK" /></translation>
+<translation id="3223655101706843289">Spowoduje to usunięcie wszystkich danych i plików cookie zapisanych przez stronę <ph name="ORIGIN" /> oraz jej aplikację na ekranie głównym.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3232754137068452469">Aplikacja internetowa</translation>
 <translation id="3236059992281584593">Pozostała minuta</translation>
@@ -535,6 +538,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="4943872375798546930">Brak wyników</translation>
 <translation id="4961107849584082341">Możesz przetłumaczyć tę stronę na dowolny język</translation>
 <translation id="4962975101802056554">Anuluj wszystkie uprawnienia urządzenia</translation>
+<translation id="4964199952259983386">Aby w Chrome można było korzystać z AR, włącz też kamerę w <ph name="BEGIN_LINK" />ustawieniach Androida<ph name="END_LINK" />.</translation>
 <translation id="4970824347203572753">Funkcja niedostępna w Twojej lokalizacji</translation>
 <translation id="497421865427891073">Dalej</translation>
 <translation id="4988210275050210843">Pobieram plik (<ph name="MEGABYTES" />).</translation>
@@ -634,6 +638,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5684874026226664614">Nie można przetłumaczyć tej strony.</translation>
 <translation id="5686790454216892815">Nazwa pliku jest za długa</translation>
 <translation id="5689516760719285838">Lokalizacja</translation>
+<translation id="5690795753582697420">Kamera jest wyłączona w ustawieniach Androida</translation>
 <translation id="5694049548840660018">Łatwy powrót na stronę główną</translation>
 <translation id="569536719314091526">Możesz przetłumaczyć tę stronę na dowolny język, używając przycisku Więcej opcji</translation>
 <translation id="5710871682236653961">Pytaj, zanim zezwolisz stronom na wysyłanie i odbieranie informacji po dotknięciu urządzeń z funkcją NFC (zalecane)</translation>
@@ -665,6 +670,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5876056640971328065">Wstrzymaj film</translation>
 <translation id="5884076754568147479">Aby pomóc Ci w wykonywaniu zadań, Google będzie otrzymywać adresy URL i zawartość stron, na których używasz Asystenta, a także informacje, które przekazujesz za pomocą Asystenta</translation>
 <translation id="5919204609460789179">Zaktualizuj przeglądarkę <ph name="PRODUCT_NAME" />, by rozpocząć synchronizację</translation>
+<translation id="5922853908706496913">Udostępnianie ekranu</translation>
 <translation id="5937580074298050696">Zaoszczędzono <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Resetuj</translation>
 <translation id="5942872142862698679">Korzystam z wyszukiwarki Google</translation>
@@ -875,6 +881,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="751961395872307827">Nie można połączyć się ze stroną</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7542481630195938534">Nie można uzyskać sugestii</translation>
+<translation id="7554752735887601236">Strona używa mikrofonu</translation>
 <translation id="7559975015014302720">Wersja uproszczona jest wyłączona</translation>
 <translation id="7562080006725997899">Czyszczenie danych przeglądania</translation>
 <translation id="756809126120519699">Wyczyszczono dane Chrome</translation>
@@ -911,7 +918,9 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 i jeszcze <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}few{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 i jeszcze <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}many{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 i jeszcze <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 i jeszcze <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7791543448312431591">Dodaj</translation>
 <translation id="780301667611848630">Nie, dziękuję</translation>
+<translation id="7804248752222191302">Strona używa kamery</translation>
 <translation id="7810647596859435254">Otwórz za pomocą…</translation>
+<translation id="7817023149356982970">Wylogujemy Cię z tej strony.</translation>
 <translation id="7821588508402923572">Tutaj będą widoczne informacje o zaoszczędzonych danych</translation>
 <translation id="7828557259026017104">Pliki cookie są tworzone przez odwiedzane witryny. Witryny zapisują w nich Twoje ustawienia. Pliki cookie innych firm są tworzone przez inne witryny. W tych witrynach znajdują się niektóre treści, np. reklamy i obrazy, które wyświetlają się na odwiedzanej stronie.</translation>
 <translation id="783819812427904514">Wyłącz wyciszenie filmu</translation>
@@ -990,8 +999,10 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="8364299278605033898">Zobacz najpopularniejsze strony</translation>
 <translation id="8368027906805972958">Nieznane lub nieobsługiwane urządzenie (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">Zezwalaj na synchronizowanie w tle z określoną stroną.</translation>
+<translation id="83792324527827022">Strona używa kamery i mikrofonu</translation>
 <translation id="8380167699614421159">Na tej stronie wyświetlają się uciążliwe lub wprowadzające w błąd reklamy</translation>
 <translation id="8393700583063109961">Wyślij wiadomość</translation>
+<translation id="8394832520002899662">Kliknij, by wrócić na tę stronę</translation>
 <translation id="8413126021676339697">Wyświetl całą historię</translation>
 <translation id="8427875596167638501">Karta podglądu jest otwarta w połowie</translation>
 <translation id="8428213095426709021">Ustawienia</translation>
@@ -1034,6 +1045,8 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="8687353297350450808">{N_BARS,plural, =1{Poziom siły sygnału: # słupek}few{Poziom siły sygnału: # słupki}many{Poziom siły sygnału: # słupków}other{Poziom siły sygnału: # słupka}}</translation>
 <translation id="868929229000858085">Wyszukaj w kontaktach</translation>
 <translation id="869891660844655955">Data wygaśnięcia</translation>
+<translation id="8702612070107455751">Wszystkie dane offline zostaną wyczyszczone.</translation>
+<translation id="8737217482364735741">Spowoduje to usunięcie wszystkich danych i plików cookie zapisanych przez stronę <ph name="ORIGIN" />.</translation>
 <translation id="8748850008226585750">Treści ukryte</translation>
 <translation id="8751914237388039244">Wybierz obraz</translation>
 <translation id="8758557275681689734">Zobacz wszystkie otwarte karty</translation>
@@ -1080,6 +1093,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="9100610230175265781">Wymagane jest hasło</translation>
 <translation id="9102803872260866941">Karta podglądu jest otwarta</translation>
 <translation id="9104217018994036254">Lista urządzeń, którym udostępnisz kartę.</translation>
+<translation id="9108312223223904744">Telefon jako klucz bezpieczeństwa</translation>
 <translation id="9133397713400217035">Przeglądaj offline</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Pokaż tekst oryginalny</translation>

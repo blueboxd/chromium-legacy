@@ -14,7 +14,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -636,14 +635,28 @@ LayerTreeTest::LayerTreeTest(LayerTreeTest::RendererType renderer_type)
   if (command_line->HasSwitch(switches::kCCLayerTreeTestLongTimeout))
     timeout_seconds_ = 5 * 60;
 
-  if (use_vulkan()) {
+  // Check if the graphics backend needs to initialize Vulkan.
+  bool init_vulkan = false;
+  if (renderer_type_ == RENDERER_SKIA_VK) {
+    scoped_feature_list_.InitAndEnableFeature(features::kVulkan);
+    init_vulkan = true;
+  } else if (renderer_type_ == RENDERER_SKIA_DAWN) {
+    scoped_feature_list_.InitAndEnableFeature(features::kSkiaDawn);
+#if defined(OS_LINUX)
+    init_vulkan = true;
+#elif defined(OS_WIN)
+    // TODO(sgilhuly): Initialize D3D12 for Windows.
+#else
+    NOTREACHED();
+#endif
+  }
+
+  if (init_vulkan) {
     bool use_gpu = command_line->HasSwitch(::switches::kUseGpuInTests);
     command_line->AppendSwitchASCII(
         ::switches::kUseVulkan,
         use_gpu ? ::switches::kVulkanImplementationNameNative
                 : ::switches::kVulkanImplementationNameSwiftshader);
-    scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
-    scoped_feature_list_->InitAndEnableFeature(features::kVulkan);
   }
 }
 

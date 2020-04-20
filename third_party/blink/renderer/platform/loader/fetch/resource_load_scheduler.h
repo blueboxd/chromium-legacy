@@ -83,7 +83,7 @@ class PLATFORM_EXPORT ResourceLoadSchedulerClient
 //     indefinitely (i.e., threshold is zero in such a circumstance).
 class PLATFORM_EXPORT ResourceLoadScheduler final
     : public GarbageCollected<ResourceLoadScheduler>,
-      public FrameScheduler::Observer {
+      public FrameOrWorkerScheduler::Observer {
  public:
   // An option to use in calling Request(). If kCanNotBeStoppedOrThrottled is
   // specified, the request should be granted and Run() should be called
@@ -94,6 +94,18 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
     kThrottleable = 0,
     kStoppable = 1,
     kCanNotBeStoppedOrThrottled = 2,
+  };
+
+  // In some cases we may want to override the default ThrottleOption.  For
+  // example, service workers can only perform requests that are normally
+  // stoppable, but we want to be able to throttle these requests in some
+  // cases.  This enum is used to indicate what kind of override should be
+  // applied.
+  enum class ThrottleOptionOverride {
+    // Use the default ThrottleOption for the request type.
+    kNone,
+    // Treat stoppable requests as throttleable.
+    kStoppableAsThrottleable,
   };
 
   // An option to use in calling Release(). If kReleaseOnly is specified,
@@ -152,8 +164,9 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
       std::numeric_limits<size_t>::max();
 
   ResourceLoadScheduler(ThrottlingPolicy initial_throttling_poilcy,
+                        ThrottleOptionOverride throttle_option_override,
                         const DetachableResourceFetcherProperties&,
-                        FrameScheduler*,
+                        FrameOrWorkerScheduler*,
                         DetachableConsoleLogger& console_logger);
   ~ResourceLoadScheduler() override;
 
@@ -200,12 +213,17 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
   }
   void SetOutstandingLimitForTesting(size_t tight_limit, size_t normal_limit);
 
-  // FrameScheduler::Observer overrides:
+  // FrameOrWorkerScheduler::Observer overrides:
   void OnLifecycleStateChanged(scheduler::SchedulingLifecycleState) override;
 
   // The caller is the owner of the |clock|. The |clock| must outlive the
   // ResourceLoadScheduler.
   void SetClockForTesting(const base::Clock* clock);
+
+  void SetThrottleOptionOverride(
+      ThrottleOptionOverride throttle_option_override) {
+    throttle_option_override_ = throttle_option_override;
+  }
 
  private:
   class TrafficMonitor;
@@ -330,12 +348,14 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
   std::unique_ptr<TrafficMonitor> traffic_monitor_;
 
   // Handle to throttling observer.
-  std::unique_ptr<FrameScheduler::LifecycleObserverHandle>
+  std::unique_ptr<FrameOrWorkerScheduler::LifecycleObserverHandle>
       scheduler_observer_handle_;
 
   const Member<DetachableConsoleLogger> console_logger_;
 
   const base::Clock* clock_;
+
+  ThrottleOptionOverride throttle_option_override_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceLoadScheduler);
 };

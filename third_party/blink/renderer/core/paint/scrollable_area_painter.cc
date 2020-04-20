@@ -201,9 +201,18 @@ void ScrollableAreaPainter::PaintScrollbar(GraphicsContext& context,
   if (!cull_rect.Intersects(rect))
     return;
 
-  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
-      scrollbar.IsCustomScrollbar()) {
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     scrollbar.Paint(context, paint_offset);
+    return;
+  }
+
+  if (scrollbar.IsCustomScrollbar()) {
+    scrollbar.Paint(context, paint_offset);
+
+    // Prevent composited scroll hit test on the custom scrollbar which always
+    // need main thread scrolling.
+    context.GetPaintController().RecordScrollHitTestData(
+        scrollbar, DisplayItem::kCustomScrollbarHitTest, nullptr, rect);
     return;
   }
 

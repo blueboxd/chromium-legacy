@@ -1358,9 +1358,8 @@ RenderThreadImpl::GetCompositorMainThreadTaskRunner() {
   return main_thread_compositor_task_runner_;
 }
 
-scoped_refptr<base::SingleThreadTaskRunner>
-RenderThreadImpl::GetCompositorImplThreadTaskRunner() {
-  return compositor_task_runner_;
+bool RenderThreadImpl::IsSingleThreaded() {
+  return !compositor_task_runner_;
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>

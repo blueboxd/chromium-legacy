@@ -127,6 +127,11 @@ public class ScrimCoordinator {
         mMediator.setAlpha(alpha);
     }
 
+    /** Clean up this coordinator. */
+    public void destroy() {
+        mMediator.destroy();
+    }
+
     @VisibleForTesting
     public void disableAnimationForTesting(boolean disable) {
         mMediator.disableAnimationForTesting(disable);

@@ -403,19 +403,6 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
   // Navigate away so metrics get recorded.
   ui_test_utils::NavigateToURL(browser(), url_with_hints());
 
-  // Make sure hint cache match UMA was logged.
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintCache.HasHint.BeforeCommit", true, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.Hints.NavigationHostCoverage.BeforeCommit", true, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.Hints.NavigationHostCoverage.AtCommit", true, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintCache.HasHint.AtCommit", true, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintCache.HostMatch.AtCommit", true, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintCache.PageMatch.AtCommit", true, 1);
   // Expect that the optimization guide UKM was recorded.
   auto entries = ukm_recorder.GetEntriesByName(
       ukm::builders::OptimizationGuide::kEntryName);
@@ -513,19 +500,6 @@ IN_PROC_BROWSER_TEST_F(
   // Navigate away so metrics get recorded.
   ui_test_utils::NavigateToURL(browser(), url_with_hints());
 
-  // Make sure hint cache match UMA was logged.
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintCache.HasHint.BeforeCommit", true, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.Hints.NavigationHostCoverage.BeforeCommit", true, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.Hints.NavigationHostCoverage.AtCommit", true, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintCache.HasHint.AtCommit", true, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintCache.HostMatch.AtCommit", true, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintCache.PageMatch.AtCommit", true, 1);
   // Expect that the optimization guide UKM was recorded.
   auto entries = ukm_recorder.GetEntriesByName(
       ukm::builders::OptimizationGuide::kEntryName);
@@ -575,19 +549,6 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
       static_cast<int>(
           optimization_guide::OptimizationTargetDecision::kPageLoadMatches),
       1);
-  // Make sure hint cache match UMA was logged.
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintCache.HasHint.BeforeCommit", false, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.Hints.NavigationHostCoverage.BeforeCommit", false, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.Hints.NavigationHostCoverage.AtCommit", false, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintCache.HasHint.AtCommit", false, 1);
-  histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.HintCache.HostMatch.AtCommit", 0);
-  histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.HintCache.PageMatch.AtCommit", 0);
   // Should expect that no hints were loaded and so we don't have a hint
   // version recorded.
   auto entries = ukm_recorder.GetEntriesByName(
@@ -634,19 +595,6 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
       static_cast<int>(
           optimization_guide::OptimizationTargetDecision::kPageLoadMatches),
       1);
-  // Make sure hint cache match UMA was logged.
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintCache.HasHint.BeforeCommit", true, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.Hints.NavigationHostCoverage.BeforeCommit", true, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.Hints.NavigationHostCoverage.AtCommit", true, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintCache.HasHint.AtCommit", true, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintCache.HostMatch.AtCommit", true, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintCache.PageMatch.AtCommit", true, 1);
   // Should expect that UKM was not recorded for hint timestamp and source since
   // it did not have a version.
   auto entries = ukm_recorder.GetEntriesByName(
@@ -693,19 +641,6 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
       static_cast<int>(
           optimization_guide::OptimizationTargetDecision::kPageLoadMatches),
       1);
-  // Make sure hint cache match UMA was logged.
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintCache.HasHint.BeforeCommit", true, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.Hints.NavigationHostCoverage.BeforeCommit", true, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.Hints.NavigationHostCoverage.AtCommit", true, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintCache.HasHint.AtCommit", true, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintCache.HostMatch.AtCommit", true, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintCache.PageMatch.AtCommit", true, 1);
   // Should expect that UKM was not recorded for the hint generation timestamp
   // and source since it had a bad version string.
   auto entries = ukm_recorder.GetEntriesByName(

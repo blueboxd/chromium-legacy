@@ -297,6 +297,8 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   // is still waiting for a Response.
   bool HasRelatedFetchEvent(const KURL& request_url) const;
 
+  int GetOutstandingThrottledLimit() const override;
+
  protected:
   // EventTarget
   bool AddEventListenerInternal(
@@ -310,6 +312,9 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
       KURL* out_response_url,
       String* out_source_code,
       std::unique_ptr<Vector<uint8_t>>* out_cached_meta_data) override;
+
+  ResourceLoadScheduler::ThrottleOptionOverride GetThrottleOptionOverride()
+      const override;
 
  private:
   void importScripts(const Vector<String>& urls, ExceptionState&) override;

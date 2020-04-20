@@ -174,6 +174,10 @@ BLINK_COMMON_EXPORT extern const base::Feature
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kAlignFontDisplayAutoTimeoutWithLCPGoalParam;
 
+BLINK_COMMON_EXPORT extern const base::Feature kThrottleInstallingServiceWorker;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kInstallingServiceWorkerOutstandingThrottledLimit;
+
 }  // namespace features
 }  // namespace blink
 

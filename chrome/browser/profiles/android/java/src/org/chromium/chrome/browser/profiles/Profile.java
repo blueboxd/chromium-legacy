@@ -9,12 +9,13 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.cookies.CookiesFetcher;
+import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
 import org.chromium.content_public.browser.WebContents;
 
 /**
  * Wrapper that allows passing a Profile reference around in the Java layer.
  */
-public class Profile {
+public class Profile implements BrowserContextHandle {
     /** Whether this wrapper corresponds to an off the record Profile. */
     private final boolean mIsOffTheRecord;
 
@@ -112,6 +113,11 @@ public class Profile {
         return mNativeProfileAndroid != 0;
     }
 
+    @Override
+    public long getNativeBrowserContextPointer() {
+        return ProfileJni.get().getBrowserContextPointer(mNativeProfileAndroid);
+    }
+
     @CalledByNative
     private static Profile create(long nativeProfileAndroid) {
         return new Profile(nativeProfileAndroid);
@@ -145,5 +151,6 @@ public class Profile {
         boolean isChild(long nativeProfileAndroid, Profile caller);
         void wipe(long nativeProfileAndroid, Profile caller);
         Object getProfileKey(long nativeProfileAndroid, Profile caller);
+        long getBrowserContextPointer(long nativeProfileAndroid);
     }
 }

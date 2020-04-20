@@ -33,6 +33,9 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
+import org.chromium.components.browser_ui.notifications.ChromeNotification;
+import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
+import org.chromium.components.browser_ui.notifications.NotificationMetadata;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /**

@@ -11,7 +11,7 @@
 
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
-#include "content/test/mock_render_process.h"
+#include "content/renderer/render_process.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -22,7 +22,7 @@ class PepperBrokerTest : public ::testing::Test {
       : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {}
   base::test::TaskEnvironment task_environment_;
   // We need a render process for ppapi::proxy::ProxyChannel to work.
-  MockRenderProcess mock_process_;
+  RenderProcess process_;
 };
 
 // Try to initialize PepperBrokerDispatcherWrapper with invalid ChannelHandle.

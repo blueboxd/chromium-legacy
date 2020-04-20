@@ -91,7 +91,7 @@ RenderWidgetHostLatencyTracker::~RenderWidgetHostLatencyTracker() {}
 void RenderWidgetHostLatencyTracker::ComputeInputLatencyHistograms(
     WebInputEvent::Type type,
     const LatencyInfo& latency,
-    InputEventAckState ack_result,
+    blink::mojom::InputEventResultState ack_result,
     base::TimeTicks ack_timestamp) {
   DCHECK(!ack_timestamp.is_null());
   // If this event was coalesced into another event, ignore it, as the event it
@@ -114,11 +114,12 @@ void RenderWidgetHostLatencyTracker::ComputeInputLatencyHistograms(
   bool multi_finger_touch_gesture =
       WebInputEvent::IsTouchEventType(type) && active_multi_finger_gesture_;
 
-  bool action_prevented = ack_result == INPUT_EVENT_ACK_STATE_CONSUMED;
+  bool action_prevented =
+      ack_result == blink::mojom::InputEventResultState::kConsumed;
   // Touchscreen tap and scroll gestures depend on the disposition of the touch
   // start and the current touch. For touch start,
   // touch_start_default_prevented_ == (ack_result ==
-  // INPUT_EVENT_ACK_STATE_CONSUMED).
+  // blink::mojom::InputEventResultState::kConsumed).
   if (WebInputEvent::IsTouchEventType(type))
     action_prevented |= touch_start_default_prevented_;
 
@@ -229,7 +230,8 @@ void RenderWidgetHostLatencyTracker::OnInputEvent(
 
 void RenderWidgetHostLatencyTracker::OnInputEventAck(
     const blink::WebInputEvent& event,
-    LatencyInfo* latency, InputEventAckState ack_result) {
+    LatencyInfo* latency,
+    blink::mojom::InputEventResultState ack_result) {
   DCHECK(latency);
 
   // Latency ends if an event is acked but does not cause render scheduling.
@@ -243,7 +245,7 @@ void RenderWidgetHostLatencyTracker::OnInputEventAck(
         *static_cast<const WebTouchEvent*>(&event);
     if (event.GetType() == WebInputEvent::kTouchStart) {
       touch_start_default_prevented_ =
-          ack_result == INPUT_EVENT_ACK_STATE_CONSUMED;
+          ack_result == blink::mojom::InputEventResultState::kConsumed;
     } else if (event.GetType() == WebInputEvent::kTouchEnd ||
                event.GetType() == WebInputEvent::kTouchCancel) {
       active_multi_finger_gesture_ = touch_event.touches_length > 2;
@@ -256,7 +258,7 @@ void RenderWidgetHostLatencyTracker::OnInputEventAck(
   // extent from scrolling metrics.
   if (!rendering_scheduled || latency->coalesced() ||
       (event.GetType() == WebInputEvent::kGestureScrollUpdate &&
-       ack_result == INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS)) {
+       ack_result == blink::mojom::InputEventResultState::kNoConsumerExists)) {
     latency->Terminate();
   }
 
@@ -268,7 +270,7 @@ void RenderWidgetHostLatencyTracker::OnEventStart(ui::LatencyInfo* latency) {
   static uint64_t global_trace_id = 0;
   latency->set_trace_id(++global_trace_id);
   latency->set_ukm_source_id(
-      render_widget_host_delegate_->GetUkmSourceIdForLastCommittedSource());
+      render_widget_host_delegate_->GetCurrentPageUkmSourceId());
 }
 
 }  // namespace content

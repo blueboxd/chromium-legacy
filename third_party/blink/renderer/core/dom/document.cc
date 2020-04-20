@@ -723,7 +723,6 @@ Document::Document(const DocumentInit& initializer,
       is_srcdoc_document_(initializer.IsSrcdocDocument()),
       is_mobile_document_(false),
       layout_view_(nullptr),
-      has_fullscreen_supplement_(false),
       load_event_delay_count_(0),
       // We already intentionally fire load event asynchronously and here we use
       // kDOMManipulation to ensure that we run onload() in order with other

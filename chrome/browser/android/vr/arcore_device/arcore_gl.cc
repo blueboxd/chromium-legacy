@@ -979,9 +979,9 @@ std::vector<mojom::XRInputSourceStatePtr> ArCoreGl::GetInputSourceStates() {
     // be projected onto the projection matrix near plane. See also
     // third_party/blink/renderer/modules/xr/xr_view.cc's UnprojectPointer.
     const float x_normalized =
-        screen_last_touch.x() / transfer_size_.width() * 2.f - 1.f;
+        screen_last_touch.x() / camera_image_size_.width() * 2.f - 1.f;
     const float y_normalized =
-        (1.f - screen_last_touch.y() / transfer_size_.height()) * 2.f - 1.f;
+        (1.f - screen_last_touch.y() / camera_image_size_.height()) * 2.f - 1.f;
     gfx::Point3F touch_point(x_normalized, y_normalized, -1.f);
     DVLOG(3) << __func__ << ": touch_point=" << touch_point.ToString();
     inverse_projection_.TransformPoint(&touch_point);

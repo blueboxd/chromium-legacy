@@ -85,12 +85,8 @@ public class TopControlsTest {
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(url);
 
         // Poll until the top view becomes visible.
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return View.VISIBLE == activity.getTopContentsContainer().getVisibility();
-            }
-        });
+        CriteriaHelper.pollUiThread(Criteria.equals(
+                View.VISIBLE, () -> activity.getTopContentsContainer().getVisibility()));
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mTopControlsHeight = activity.getTopContentsContainer().getHeight();
             Assert.assertTrue(mTopControlsHeight > 0);
@@ -107,12 +103,8 @@ public class TopControlsTest {
         // Moving should change the size of the page. Don't attempt to correlate the size as the
         // page doesn't see pixels, and to attempt to compare may result in rounding errors. Poll
         // for this value as there is no good way to detect when done.
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mInitialVisiblePageHeight != getVisiblePageHeight();
-            }
-        });
+        CriteriaHelper.pollInstrumentationThread(
+                () -> Assert.assertNotEquals(mInitialVisiblePageHeight, getVisiblePageHeight()));
 
         // Moving should also hide the top-controls View.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -124,19 +116,11 @@ public class TopControlsTest {
                 activity.getWindow().getDecorView(), 0, mTopControlsHeight);
 
         // Wait for the page height to match initial height.
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mInitialVisiblePageHeight == getVisiblePageHeight();
-            }
-        });
+        CriteriaHelper.pollInstrumentationThread(
+                Criteria.equals(mInitialVisiblePageHeight, this::getVisiblePageHeight));
 
         // top-controls are shown async.
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return activity.getTopContentsContainer().getVisibility() == View.VISIBLE;
-            }
-        });
+        CriteriaHelper.pollUiThread(Criteria.equals(
+                View.VISIBLE, () -> activity.getTopContentsContainer().getVisibility()));
     }
 }

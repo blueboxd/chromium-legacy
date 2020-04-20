@@ -68,7 +68,7 @@ chrome::MessageBoxResult ShowSync(gfx::NativeWindow parent,
 
   MessageBoxDialog::Show(
       parent, title, message, type, yes_text, no_text, checkbox_text,
-      base::Bind(
+      base::BindOnce(
           [](base::RunLoop* run_loop, chrome::MessageBoxResult* out_result,
              chrome::MessageBoxResult messagebox_result) {
             *out_result = messagebox_result;
@@ -294,7 +294,7 @@ void ShowWarningMessageBoxWithCheckbox(
   MessageBoxDialog::Show(parent, title, message,
                          chrome::MESSAGE_BOX_TYPE_WARNING, base::string16(),
                          base::string16(), checkbox_text,
-                         base::Bind(
+                         base::BindOnce(
                              [](base::OnceCallback<void(bool checked)> callback,
                                 MessageBoxResult message_box_result) {
                                std::move(callback).Run(message_box_result ==

@@ -429,9 +429,10 @@ FlingController::GetTouchpadTapSuppressionController() {
 
 void FlingController::OnWheelEventAck(
     const MouseWheelEventWithLatencyInfo& event,
-    InputEventAckSource ack_source,
-    InputEventAckState ack_result) {
-  last_wheel_event_consumed_ = (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED);
+    blink::mojom::InputEventResultSource ack_source,
+    blink::mojom::InputEventResultState ack_result) {
+  last_wheel_event_consumed_ =
+      (ack_result == blink::mojom::InputEventResultState::kConsumed);
 }
 
 }  // namespace content

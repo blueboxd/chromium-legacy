@@ -406,10 +406,6 @@ public class AccountManagerFacadeImpl implements AccountManagerFacade {
         Context context = ContextUtils.getApplicationContext();
         UserManager userManager = (UserManager) context.getSystemService(Context.USER_SERVICE);
         Bundle appRestrictions = userManager.getApplicationRestrictions(context.getPackageName());
-        // TODO(https://crbug.com/779568): Remove this after migrating to Robolectric 3.7+.
-        // Android guarantees that getApplicationRestrictions result won't be null, but
-        // Robolectric versions 3.6 and older don't respect this.
-        if (appRestrictions == null) appRestrictions = new Bundle();
         return appRestrictions.getStringArray(ACCOUNT_RESTRICTION_PATTERNS_KEY);
     }
 

@@ -20,6 +20,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/media_session.h"
 #include "content/public/browser/message_port_provider.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
@@ -36,6 +37,7 @@
 #include "fuchsia/engine/browser/context_impl.h"
 #include "fuchsia/engine/browser/event_filter.h"
 #include "fuchsia/engine/browser/frame_layout_manager.h"
+#include "fuchsia/engine/browser/media_player_impl.h"
 #include "fuchsia/engine/browser/web_engine_devtools_controller.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/system/platform_handle.h"
@@ -544,6 +546,10 @@ void FrameImpl::OnPopupListenerDisconnected(zx_status_t status) {
   pending_popups_.clear();
 }
 
+void FrameImpl::OnMediaPlayerDisconnect() {
+  media_player_ = nullptr;
+}
+
 void FrameImpl::CreateView(fuchsia::ui::views::ViewToken view_token) {
   if (IsHeadless()) {
     LOG(WARNING) << "CreateView() called on a HEADLESS Context.";
@@ -578,6 +584,14 @@ void FrameImpl::CreateView(fuchsia::ui::views::ViewToken view_token) {
 
   SetWindowTreeHost(std::make_unique<FrameWindowTreeHost>(std::move(properties),
                                                           web_contents_.get()));
+}
+
+void FrameImpl::GetMediaPlayer(
+    fidl::InterfaceRequest<fuchsia::media::sessions2::Player> player) {
+  media_player_ = std::make_unique<MediaPlayerImpl>(
+      content::MediaSession::Get(web_contents_.get()), std::move(player),
+      base::BindOnce(&FrameImpl::OnMediaPlayerDisconnect,
+                     base::Unretained(this)));
 }
 
 void FrameImpl::GetNavigationController(

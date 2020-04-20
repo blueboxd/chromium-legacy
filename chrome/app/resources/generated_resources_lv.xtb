@@ -421,6 +421,11 @@
 <translation id="1555130319947370107">Zila</translation>
 <translation id="1556537182262721003">Nevarēja pārvietot paplašinājuma katalogu uz profilu.</translation>
 <translation id="155865706765934889">Skārienpaliktnis</translation>
+<translation id="1560763881671211335">G Suite for Education administratori nosaka, kuriem Google pakalpojumiem lietotāji var piekļūt ar G Suite for Education kontu. Skolu administratoriem ir jāsniedz vai jāiegūst piekrišana tam, ka mazgadīgie lietotāji izmanto pakalpojumus.
+
+    Pārlūkošanas dati (tostarp vēsture, grāmatzīmes un paroles) tiks glabāti Family Link kontā, nevis skolas kontā.
+
+    Joprojām būs spēkā jūsu Family Link vecāku iestatījumi. Ja iepriekš bloķējāt kādu lietotni vai vietni, jums tas nebūs jādara vēlreiz.</translation>
 <translation id="1566049601598938765">Vietne</translation>
 <translation id="15662109988763471">Atlasītais printeris nav pieejams vai nav instalēts pareizi. Pārbaudiet printeri vai mēģiniet atlasīt citu printeri.</translation>
 <translation id="1567387640189251553">Kopš pēdējās reizes, kad ievadījāt paroli, ir pievienota cita tastatūra. Tā, iespējams, mēģina piesavināties jūsu taustiņsitienus.</translation>
@@ -1200,6 +1205,7 @@ Varat pārvaldīt šī konta iestatījumus, savā ierīcē instalējot lietotni 
 <translation id="258095186877893873">Ilgi</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (platforma <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Neizdevās iegūt Kerberos biļeti. Mēģiniet vēlreiz vai sazinieties ar savas organizācijas ierīču administratoru. (Kļūdas kods: <ph name="ERROR_CODE" />.)</translation>
+<translation id="2585013490795742997">Tiek rādīts 1 meklēšanas rezultāts vaicājumam “<ph name="QUERY" />”</translation>
 <translation id="2585724835339714757">Šī cilne kopīgo jūsu ekrānu.</translation>
 <translation id="2586657967955657006">Starpliktuve</translation>
 <translation id="2586672484245266891">Lūdzu, ievadiet īsāku vietrādi URL.</translation>
@@ -1886,6 +1892,7 @@ Servera ziņojums: <ph name="SERVER_MSG" /></translation>
 <translation id="3498215018399854026">Mēs nevarējām sasniegt jūsu māti/tēvu. Lūdzu, mēģiniet vēlreiz.</translation>
 <translation id="3500417806337761827">Iekļaujot kopīgošanu, radās kļūda. Iekļauti pārāk daudzi SMB faili.</translation>
 <translation id="3505030558724226696">Atsaukt piekļuvi ierīcei</translation>
+<translation id="3507132249039706973">Ir ieslēgta standarta aizsardzība</translation>
 <translation id="3507421388498836150">“<ph name="EXTENSION_NAME" />” pašreizējās atļaujas</translation>
 <translation id="3507888235492474624">Atkārtoti meklēt Bluetooth ierīces</translation>
 <translation id="3508492320654304609">Jūsu pierakstīšanās datus nevar izdzēst</translation>
@@ -3239,6 +3246,7 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="5352033265844765294">Laikspiedola uzlikšana</translation>
 <translation id="5353252989841766347">Paroļu eksportēšana no pārlūka Chrome</translation>
 <translation id="5355099869024327351">Ļaut Asistentam rādīt jums paziņojumus</translation>
+<translation id="5355191726083956201">Uzlabota aizsardzība ir ieslēgta</translation>
 <translation id="5355926466126177564">Paplašinājums “<ph name="EXTENSION_NAME" />” mainīja iestatījumu, kura lapa tiek parādīta, kad veicat meklēšanu, izmantojot universālo lodziņu.</translation>
 <translation id="5359910752122114278">1 rezultāts</translation>
 <translation id="5360150013186312835">Rādīšana rīkjoslā</translation>
@@ -3550,6 +3558,7 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="577322787686508614">Lasīšanas darbība nav atļauta šajā ierīcē: “<ph name="DEVICE_NAME" />”.</translation>
 <translation id="5774295353725270860">Atvērt lietotni Files</translation>
 <translation id="577624874850706961">Meklēt sīkfailus</translation>
+<translation id="5776858208024364029">Parādīto meklēšanas rezultātu skaits vaicājumam “<ph name="QUERY" />”: <ph name="NUMBER" /></translation>
 <translation id="5777468213129569553">Atvērt Chrome</translation>
 <translation id="5778747455497889540">Tālāk ir redzama pēc nejaušības principa ģenerēta drošības moduļa parole, kas piešķirta jūsu datoram.</translation>
 <translation id="5780011244986845107">Atlasītajā mapē ir iekļauti sensitīvi faili. Vai tiešām vēlaties piešķirt lietotnei <ph name="APP_NAME" /> pastāvīgu lasīšanas piekļuvi šai mapei?</translation>
@@ -4106,6 +4115,7 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
+<translation id="6520876759015997832">Meklēšanas rezultātu skaits ir <ph name="LIST_SIZE" />. Meklēšanas rezultāts numur <ph name="LIST_POSITION" />: <ph name="SEARCH_RESULT_TEXT" />. Lai pārietu uz sadaļu, nospiediet taustiņu Enter.</translation>
 <translation id="652492607360843641">Jūs esat izveidojis savienojumu ar šāda veida tīklu: <ph name="NETWORK_TYPE" />.</translation>
 <translation id="6527303717912515753">Kopīgot</translation>
 <translation id="6528513914570774834">Atļaut citiem lietotājiem šajā ierīcē izmantot šo tīklu</translation>
@@ -4117,6 +4127,7 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="6532206849875187177">Drošība un pierakstīšanās</translation>
 <translation id="6532527800157340614">Neizdevās pierakstīties, jo nevarēja izgūt piekļuves pilnvaru. Lūdzu, pārbaudiet tīkla savienojumu un mēģiniet vēlreiz.</translation>
 <translation id="6532663472409656417">Reģistrēja uzņēmums</translation>
+<translation id="6535331821390304775">Vienmēr atļaut vietnei <ph name="ORIGIN" /> atvērt šī veida saites saistītajā lietotnē</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Piezīme<ph name="END_BOLD" />. Iespējojiet tikai tad, ja esat pārliecināts par savu rīcību vai kāds jums lūdzis šādi rīkoties, jo datu apkopošana var mazināt veiktspēju.</translation>
 <translation id="6541638731489116978">Šīs vietnes piekļuve jūsu kustību sensoriem ir bloķēta.</translation>
 <translation id="6545665334409411530">Atkārtošanas ātrums</translation>
@@ -4246,6 +4257,7 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="6727969043791803658">Savienojums izveidots, akumulatora uzlādes līmenis: <ph name="BATTERY_PERCENTAGE" /></translation>
 <translation id="6732801395666424405">Sertifikāti netika ielādēti.</translation>
 <translation id="6732900235521116609">Nevar noņemt saīsni</translation>
+<translation id="6734468588183300211">Inkognito režīmā vietnes nedrīkst izmantot sīkfailus, lai skatītu jūsu pārlūkošanas darbības dažādās vietnēs, piemēram, lai personalizētu reklāmas. Noteiktās vietnēs funkcijas var nedarboties.</translation>
 <translation id="6735304988756581115">Rādīt sīkfailus un citus vietņu datus...</translation>
 <translation id="6736243959894955139">Adrese</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
@@ -4258,6 +4270,7 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="674632704103926902">Iespējot vilkšanu pieskaroties</translation>
 <translation id="6748217015615267851">Renderētājs: <ph name="RENDERER_URL" /></translation>
 <translation id="6748465660675848252">Varat turpināt, taču tiks atjaunoti tikai sinhronizētie dati un iestatījumi. Visi lokālie dati tiks zaudēti.</translation>
+<translation id="6749006854028927059">Vietnes nedrīkst izmantot sīkfailus, lai skatītu jūsu pārlūkošanas darbības dažādās vietnēs, piemēram, lai personalizētu reklāmas. Noteiktās vietnēs funkcijas var nedarboties.</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (Inkognito režīms)</translation>
 <translation id="6757101664402245801">URL ir nokopēts</translation>
 <translation id="6758056191028427665">Sniedziet atsauksmes par pakalpojuma darbību.</translation>
@@ -4349,6 +4362,7 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="686664946474413495">Krāsu temperatūra</translation>
 <translation id="6871644448911473373">OCSP atbildētājs: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">Ievadīto paroli noraidīja serveris.</translation>
+<translation id="6874170800191969835">Pārgājāt uz meklēšanas rezultātu <ph name="SEARCH_RESULT_TEXT" />.</translation>
 <translation id="6876155724392614295">Velosipēds</translation>
 <translation id="6876469544038980967">Nav noderīgi</translation>
 <translation id="6878422606530379992">Atļauti sensori</translation>
@@ -4619,6 +4633,7 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="7235737137505019098">Jūsu drošības atslēgai nav pietiekami daudz brīvas vietas papildu kontiem.</translation>
 <translation id="7238643356913091553"><ph name="NETWORK_NAME" />, informācija</translation>
 <translation id="7240339475467890413">Vai izveidot savienojumu ar jaunu tīklāju?</translation>
+<translation id="7240847845291869311">Jūsu bērns vēlas šai ierīcei pievienot G Suite for Education Google kontu. <ph name="LINK_BEGIN" />G Suite for Education konfidencialitātes paziņojums<ph name="LINK_END" /> ir paredzēts, lai palīdzētu G Suite for Education lietotājiem un vecākiem izprast, kādi dati šajā produktā tiek apkopoti, kādēļ tie tiek apkopoti un kas ar tiem tiek darīts.</translation>
 <translation id="7241389281993241388">Pierakstieties ierīcē <ph name="TOKEN_NAME" />, lai importētu klienta sertifikātu.</translation>
 <translation id="7241443820034350811">Ja jūsu drošības atslēga nav norādīta, nospiediet un turiet tās pogu vismaz 5 sekundes.</translation>
 <translation id="7243632151880336635">Dzēst un izrakstīties</translation>
@@ -5200,6 +5215,7 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="7987814697832569482">Savienojuma izveidei vienmēr izmantot šo VPN</translation>
 <translation id="7988355189918024273">Iespējot pieejamības funkcijas</translation>
 <translation id="7991296728590311172">Slēdžu piekļuves iestatījumi</translation>
+<translation id="7992202128769240372">Pārsniegts ierobežojums: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="7994350303002908848">Nevarēja instalēt Plugin VM. Lūdzu, mēģiniet vēlreiz vai sazinieties ar savas organizācijas ierīču administratoru. Kļūdas kods: <ph name="ERROR_CODE" />.</translation>
 <translation id="7994702968232966508">EAP metode</translation>
 <translation id="7997826902155442747">Procesa prioritāte</translation>

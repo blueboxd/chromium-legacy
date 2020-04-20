@@ -125,8 +125,8 @@ void VersionHandler::HandleRequestPluginInfo(const base::ListValue* args) {
   // The Flash version information is needed in the response, so make sure
   // the plugins are loaded.
   content::PluginService::GetInstance()->GetPlugins(
-      base::Bind(&VersionHandler::OnGotPlugins, weak_ptr_factory_.GetWeakPtr(),
-                 callback_id));
+      base::BindOnce(&VersionHandler::OnGotPlugins,
+                     weak_ptr_factory_.GetWeakPtr(), callback_id));
 #else
   RejectJavascriptCallback(base::Value(callback_id), base::Value());
 #endif

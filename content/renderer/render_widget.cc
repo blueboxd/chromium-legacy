@@ -54,7 +54,6 @@
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/render_thread.h"
-#include "content/renderer/compositor/layer_tree_view.h"
 #include "content/renderer/drop_data_builder.h"
 #include "content/renderer/external_popup_menu.h"
 #include "content/renderer/frame_swap_message_queue.h"
@@ -524,6 +523,7 @@ void RenderWidget::Initialize(ShowCallback show_callback,
 
   RenderThread::Get()->AddRoute(routing_id_, this);
 
+  webwidget_ = web_widget;
   InitCompositing(screen_info);
 
   // If the widget is hidden, delay starting the compositor until the user
@@ -531,14 +531,9 @@ void RenderWidget::Initialize(ShowCallback show_callback,
   // for a provisional frame, this importantly starts the compositor before
   // the frame is inserted into the frame tree, which impacts first paint
   // metrics.
-  if (!is_hidden_ && !never_composited_) {
+  if (!is_hidden_ && !never_composited_)
     web_widget->SetCompositorVisible(true);
-    layer_tree_view_->SetVisible(true);
-  }
 
-  webwidget_ = web_widget;
-  web_widget->SetCompositorHosts(layer_tree_view_->layer_tree_host(),
-                                 layer_tree_view_->animation_host());
   // Note that this calls into the WebWidget.
   UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
                              CompositorViewportRect(), screen_info);
@@ -1114,34 +1109,6 @@ void RenderWidget::OnSetFocus(bool enable) {
     observer.RenderWidgetSetFocus(enable);
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// LayerTreeViewDelegate
-
-void RenderWidget::ApplyViewportChanges(
-    const cc::ApplyViewportChangesArgs& args) {
-  GetWebWidget()->ApplyViewportChanges(args);
-}
-
-void RenderWidget::RecordManipulationTypeCounts(cc::ManipulationInfo info) {
-  GetWebWidget()->RecordManipulationTypeCounts(info);
-}
-
-void RenderWidget::SendOverscrollEventFromImplSide(
-    const gfx::Vector2dF& overscroll_delta,
-    cc::ElementId scroll_latched_element_id) {
-  GetWebWidget()->SendOverscrollEventFromImplSide(overscroll_delta,
-                                                  scroll_latched_element_id);
-}
-void RenderWidget::SendScrollEndEventFromImplSide(
-    cc::ElementId scroll_latched_element_id) {
-  GetWebWidget()->SendScrollEndEventFromImplSide(scroll_latched_element_id);
-}
-
-void RenderWidget::BeginMainFrame(base::TimeTicks frame_time) {
-  DCHECK(!IsForProvisionalFrame());
-  GetWebWidget()->BeginFrame(frame_time);
-}
-
 void RenderWidget::DispatchRafAlignedInput(base::TimeTicks frame_time) {
   input_event_queue_->DispatchRafAlignedInput(frame_time);
 }
@@ -1168,10 +1135,6 @@ void RenderWidget::OnDeferCommitsChanged(bool deferral_state) {
   // The input handler wants to know about the commit status for metric purposes
   // and to enable/disable input.
   widget_input_handler_manager_->OnDeferCommitsChanged(deferral_state);
-}
-
-void RenderWidget::DidBeginMainFrame() {
-  GetWebWidget()->DidBeginFrame();
 }
 
 void RenderWidget::RequestNewLayerTreeFrameSink(
@@ -1208,14 +1171,9 @@ void RenderWidget::DidCommitAndDrawCompositorFrame() {
   DidInitiatePaint();
 }
 
-void RenderWidget::WillCommitCompositorFrame() {
-  GetWebWidget()->BeginCommitCompositorFrame();
-}
-
 void RenderWidget::DidCommitCompositorFrame(base::TimeTicks commit_start_time) {
   if (delegate())
     delegate()->DidCommitCompositorFrameForWidget();
-  GetWebWidget()->EndCommitCompositorFrame(commit_start_time);
 }
 
 void RenderWidget::DidCompletePageScaleAnimation() {
@@ -1228,11 +1186,6 @@ void RenderWidget::ScheduleAnimation() {
   // scheduler, but they override this method in order to schedule a synchronous
   // composite task themselves.
   layer_tree_host_->SetNeedsAnimate();
-}
-
-void RenderWidget::UpdateVisualState() {
-  DCHECK(!IsForProvisionalFrame());
-  GetWebWidget()->UpdateVisualState();
 }
 
 void RenderWidget::RecordTimeToFirstActivePaint(base::TimeDelta duration) {
@@ -1250,33 +1203,8 @@ void RenderWidget::RecordTimeToFirstActivePaint(base::TimeDelta duration) {
   }
 }
 
-void RenderWidget::RecordStartOfFrameMetrics() {
-  GetWebWidget()->RecordStartOfFrameMetrics();
-}
-
-void RenderWidget::RecordEndOfFrameMetrics(
-    base::TimeTicks frame_begin_time,
-    cc::ActiveFrameSequenceTrackers trackers) {
-  GetWebWidget()->RecordEndOfFrameMetrics(frame_begin_time, trackers);
-}
-
-std::unique_ptr<cc::BeginMainFrameMetrics>
-RenderWidget::GetBeginMainFrameMetrics() {
-  return GetWebWidget()->GetBeginMainFrameMetrics();
-}
-
-void RenderWidget::BeginUpdateLayers() {
-  GetWebWidget()->BeginUpdateLayers();
-}
-
-void RenderWidget::EndUpdateLayers() {
-  GetWebWidget()->EndUpdateLayers();
-}
-
-void RenderWidget::WillBeginCompositorFrame() {
+void RenderWidget::WillBeginMainFrame() {
   TRACE_EVENT0("gpu", "RenderWidget::willBeginCompositorFrame");
-
-  GetWebWidget()->WillBeginCompositorFrame();
 
   // The UpdateTextInputState can result in further layout and possibly
   // enable GPU acceleration so they need to be called before any painting
@@ -1711,18 +1639,13 @@ void RenderWidget::Show(WebNavigationPolicy policy) {
 void RenderWidget::InitCompositing(const ScreenInfo& screen_info) {
   TRACE_EVENT0("blink", "RenderWidget::InitializeLayerTreeView");
 
-  layer_tree_view_ = std::make_unique<LayerTreeView>(
-      this, compositor_deps_->GetCompositorMainThreadTaskRunner(),
-      compositor_deps_->GetCompositorImplThreadTaskRunner(),
+  layer_tree_host_ = webwidget_->InitializeCompositing(
       compositor_deps_->GetTaskGraphRunner(),
-      compositor_deps_->GetWebMainThreadScheduler());
-  layer_tree_view_->Initialize(
       GenerateLayerTreeSettings(compositor_deps_, for_child_local_root_frame_,
                                 screen_info.rect.size(),
                                 screen_info.device_scale_factor),
       compositor_deps_->CreateUkmRecorderFactory());
-  layer_tree_host_ = layer_tree_view_->layer_tree_host();
-
+  DCHECK(layer_tree_host_);
   blink::scheduler::WebThreadScheduler* main_thread_scheduler =
       compositor_deps_->GetWebMainThreadScheduler();
 
@@ -1804,29 +1727,24 @@ void RenderWidget::Close(std::unique_ptr<RenderWidget> widget) {
     g_routing_id_widget_map.Get().erase(routing_id_);
   }
 
-  webwidget_->Close();
-  webwidget_ = nullptr;
-
   // The |input_event_queue_| is refcounted and will live while an event is
   // being handled. This drops the connection back to this RenderWidget which
   // is being destroyed.
   input_event_queue_->ClearClient();
 
-  // The LayerTreeHost may already be in the call stack, if this RenderWidget
-  // is being destroyed during an animation callback for instance. We can not
-  // delete it here and unwind the stack back up to it, or it will crash. So
-  // we post the deletion to another task, but disconnect the LayerTreeHost
-  // (via the LayerTreeView) from the destroying RenderWidget. The
-  // LayerTreeView owns the LayerTreeHost, and is its client, so they are kept
-  // alive together for a clean call stack.
-  layer_tree_view_->Disconnect();
-  compositor_deps_->GetCleanupTaskRunner()->DeleteSoon(
-      FROM_HERE, std::move(layer_tree_view_));
-  // The |widget_input_handler_manager_| is referenced through the
-  // LayerTreeHost on the compositor thread, so must outlive the
-  // LayerTreeHost.
-  compositor_deps_->GetCleanupTaskRunner()->ReleaseSoon(
-      FROM_HERE, std::move(widget_input_handler_manager_));
+  // |layer_tree_host_| is valid only when |webwidget_| is valid, so
+  // clear it before calling Close.
+  layer_tree_host_ = nullptr;
+
+  // The |widget_input_handler_manager_| needs to outlive the LayerTreeHost,
+  // which is destroyed asynchronously by Close(). We pass ownership of it to
+  // Close() for it to destroy the LayerTreeHost and
+  // |widget_input_handler_manager_| together on the cleanup TaskRunner.
+  webwidget_->Close(
+      compositor_deps_->GetCleanupTaskRunner(),
+      base::BindOnce([](scoped_refptr<WidgetInputHandlerManager> manager) {},
+                     std::move(widget_input_handler_manager_)));
+  webwidget_ = nullptr;
 
   // Note the ACK is a control message going to the RenderProcessHost.
   RenderThread::Get()->Send(new WidgetHostMsg_Close_ACK(routing_id()));
@@ -2420,10 +2338,8 @@ void RenderWidget::SetHidden(bool hidden) {
   if (is_hidden_)
     widget_input_handler_manager_->InvokeInputProcessedCallback();
 
-  if (!never_composited_) {
+  if (!never_composited_)
     webwidget_->SetCompositorVisible(!is_hidden_);
-    layer_tree_view_->SetVisible(!is_hidden_);
-  }
 }
 
 void RenderWidget::OnImeEventGuardStart(ImeEventGuard* guard) {
@@ -2651,8 +2567,7 @@ cc::LayerTreeSettings RenderWidget::GenerateLayerTreeSettings(
     bool is_for_subframe,
     const gfx::Size& initial_screen_size,
     float initial_device_scale_factor) {
-  const bool is_threaded =
-      !!compositor_deps->GetCompositorImplThreadTaskRunner();
+  const bool is_threaded = !compositor_deps->IsSingleThreaded();
 
   const base::CommandLine& cmd = *base::CommandLine::ForCurrentProcess();
   cc::LayerTreeSettings settings;
@@ -3206,12 +3121,6 @@ void RenderWidget::RequestDecode(const cc::PaintImage& image,
 
 viz::FrameSinkId RenderWidget::GetFrameSinkId() {
   return viz::FrameSinkId(RenderThread::Get()->GetClientId(), routing_id());
-}
-
-void RenderWidget::AddPresentationCallback(
-    uint32_t frame_token,
-    base::OnceCallback<void(base::TimeTicks)> callback) {
-  layer_tree_view_->AddPresentationCallback(frame_token, std::move(callback));
 }
 
 void RenderWidget::RequestUnbufferedInputEvents() {

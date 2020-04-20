@@ -4,6 +4,7 @@
 #include <windows.h>
 
 #include "base/files/file_path.h"
+#include "base/logging.h"
 #include "base/scoped_native_library.h"
 
 namespace {

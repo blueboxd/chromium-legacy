@@ -213,9 +213,10 @@ MockWidgetInputHandler::DispatchedEventMessage::DispatchedEventMessage(
 
 MockWidgetInputHandler::DispatchedEventMessage::~DispatchedEventMessage() {
   if (callback_) {
-    std::move(callback_).Run(InputEventAckSource::UNKNOWN, ui::LatencyInfo(),
-                             INPUT_EVENT_ACK_STATE_NOT_CONSUMED, base::nullopt,
-                             base::nullopt);
+    std::move(callback_).Run(blink::mojom::InputEventResultSource::kUnknown,
+                             ui::LatencyInfo(),
+                             blink::mojom::InputEventResultState::kNotConsumed,
+                             base::nullopt, base::nullopt);
     base::RunLoop().RunUntilIdle();
   }
 }
@@ -226,9 +227,9 @@ MockWidgetInputHandler::DispatchedEventMessage::ToEvent() {
 }
 
 void MockWidgetInputHandler::DispatchedEventMessage::CallCallback(
-    InputEventAckState state) {
+    blink::mojom::InputEventResultState state) {
   if (callback_) {
-    std::move(callback_).Run(InputEventAckSource::MAIN_THREAD,
+    std::move(callback_).Run(blink::mojom::InputEventResultSource::kMainThread,
                              ui::LatencyInfo(), state, base::nullopt,
                              base::nullopt);
     base::RunLoop().RunUntilIdle();
@@ -236,9 +237,9 @@ void MockWidgetInputHandler::DispatchedEventMessage::CallCallback(
 }
 
 void MockWidgetInputHandler::DispatchedEventMessage::CallCallback(
-    InputEventAckSource source,
+    blink::mojom::InputEventResultSource source,
     const ui::LatencyInfo& latency_info,
-    InputEventAckState state,
+    blink::mojom::InputEventResultState state,
     const base::Optional<ui::DidOverscrollParams>& overscroll,
     const base::Optional<cc::TouchAction>& touch_action) {
   if (callback_) {

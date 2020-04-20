@@ -1467,7 +1467,7 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, MAYBE_LongPressSelection) {
                                 guest_rect.CenterPoint());
 
   content::SimulateLongTapAt(embedder_web_contents(), guest_rect.CenterPoint());
-  EXPECT_EQ(content::INPUT_EVENT_ACK_STATE_CONSUMED,
+  EXPECT_EQ(blink::mojom::InputEventResultState::kConsumed,
             filter->GetAckStateWaitIfNecessary());
 
   // Give enough time for the quick menu to fire.

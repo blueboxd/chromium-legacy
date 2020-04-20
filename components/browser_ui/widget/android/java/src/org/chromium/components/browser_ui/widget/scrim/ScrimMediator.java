@@ -190,6 +190,12 @@ class ScrimMediator implements View.OnClickListener, ScrimCoordinator.TouchEvent
         return mModel != null;
     }
 
+    /** "Destroy" the mediator and clean up any state. */
+    void destroy() {
+        // If the scrim was active, ending the animation will clean up any state, otherwise noop.
+        if (mOverlayAnimator != null) mOverlayAnimator.end();
+    }
+
     @Override
     public void onClick(View view) {
         if (mModel.get(ScrimProperties.CLICK_DELEGATE) != null) {

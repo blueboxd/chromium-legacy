@@ -192,9 +192,12 @@ void DisplayCutoutHostImpl::MaybeQueueUKMEvent(RenderFrameHost* frame) {
 }
 
 void DisplayCutoutHostImpl::RecordPendingUKMEvents() {
+  // TODO(crbug.com/1061899): The code here should take an explicit reference
+  // to the corresponding frame instead of using the current main frame.
+
   for (const auto& event : pending_ukm_events_) {
     ukm::builders::Layout_DisplayCutout_StateChanged builder(
-        web_contents_impl_->GetUkmSourceIdForLastCommittedSource());
+        web_contents_impl_->GetMainFrame()->GetPageUkmSourceId());
     builder.SetIsMainFrame(event.is_main_frame);
     builder.SetViewportFit_Applied(static_cast<int>(event.applied_value));
     builder.SetViewportFit_Supplied(static_cast<int>(event.supplied_value));

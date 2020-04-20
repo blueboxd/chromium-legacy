@@ -977,7 +977,8 @@ TEST_F(RenderWidgetHostViewMacTest, ScrollWheelEndEventDelivery) {
       host_->GetAndResetDispatchedMessages();
   EXPECT_EQ("MouseWheel", GetMessageNames(events));
   // Send an ACK for the first wheel event, so that the queue will be flushed.
-  events[0]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_CONSUMED);
+  events[0]->ToEvent()->CallCallback(
+      blink::mojom::InputEventResultState::kConsumed);
 
   // Post the NSEventPhaseEnded wheel event to NSApp and check whether the
   // render view receives it.
@@ -1182,7 +1183,8 @@ TEST_F(RenderWidgetHostViewMacTest,
 
   // GestureEventQueue allows multiple in-flight events.
   ASSERT_EQ("GestureScrollBegin GestureScrollUpdate", GetMessageNames(events));
-  events[0]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_CONSUMED);
+  events[0]->ToEvent()->CallCallback(
+      blink::mojom::InputEventResultState::kConsumed);
 
   events.clear();
 
@@ -1527,7 +1529,7 @@ TEST_P(RenderWidgetHostViewMacPinchTest, PinchThresholding) {
     // After acking the synthetic mouse wheel, no GesturePinch events are
     // produced.
     events[0]->ToEvent()->CallCallback(
-        INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+        blink::mojom::InputEventResultState::kNoConsumerExists);
     events = host_->GetAndResetDispatchedMessages();
     EXPECT_EQ(0U, events.size());
 
@@ -1544,7 +1546,7 @@ TEST_P(RenderWidgetHostViewMacPinchTest, PinchThresholding) {
       EXPECT_EQ("MouseWheel", GetMessageNames(events));
       // Now acking the synthetic mouse wheel does produce GesturePinch events.
       events[0]->ToEvent()->CallCallback(
-          INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+          blink::mojom::InputEventResultState::kNoConsumerExists);
       events = host_->GetAndResetDispatchedMessages();
       EXPECT_EQ("GesturePinchBegin GesturePinchUpdate",
                 GetMessageNames(events));
@@ -1559,7 +1561,7 @@ TEST_P(RenderWidgetHostViewMacPinchTest, PinchThresholding) {
     } else {
       EXPECT_EQ("MouseWheel", GetMessageNames(events));
       events[0]->ToEvent()->CallCallback(
-          INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+          blink::mojom::InputEventResultState::kNoConsumerExists);
       events = host_->GetAndResetDispatchedMessages();
       EXPECT_EQ("GesturePinchUpdate", GetMessageNames(events));
     }
@@ -1589,7 +1591,7 @@ TEST_P(RenderWidgetHostViewMacPinchTest, PinchThresholding) {
     events = host_->GetAndResetDispatchedMessages();
     EXPECT_EQ("MouseWheel", GetMessageNames(events));
     events[0]->ToEvent()->CallCallback(
-        INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+        blink::mojom::InputEventResultState::kNoConsumerExists);
     events = host_->GetAndResetDispatchedMessages();
     EXPECT_EQ("GesturePinchBegin GesturePinchUpdate", GetMessageNames(events));
 
@@ -1623,7 +1625,7 @@ TEST_P(RenderWidgetHostViewMacPinchTest, PinchThresholding) {
     EXPECT_EQ("MouseWheel", GetMessageNames(events));
 
     events[0]->ToEvent()->CallCallback(
-        INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+        blink::mojom::InputEventResultState::kNoConsumerExists);
     events = host_->GetAndResetDispatchedMessages();
     EXPECT_EQ(0U, events.size());
 
@@ -1648,7 +1650,8 @@ TEST_F(RenderWidgetHostViewMacTest, DoubleTapZoom) {
       host_->GetAndResetDispatchedMessages();
   EXPECT_EQ("MouseWheel", GetMessageNames(events));
 
-  events[0]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+  events[0]->ToEvent()->CallCallback(
+      blink::mojom::InputEventResultState::kNoConsumerExists);
 
   events = host_->GetAndResetDispatchedMessages();
   EXPECT_EQ("GestureDoubleTap", GetMessageNames(events));
@@ -1665,7 +1668,8 @@ TEST_F(RenderWidgetHostViewMacTest, DoubleTapZoomConsumed) {
       host_->GetAndResetDispatchedMessages();
   EXPECT_EQ("MouseWheel", GetMessageNames(events));
 
-  events[0]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_CONSUMED);
+  events[0]->ToEvent()->CallCallback(
+      blink::mojom::InputEventResultState::kConsumed);
 
   events = host_->GetAndResetDispatchedMessages();
   EXPECT_EQ(0U, events.size());

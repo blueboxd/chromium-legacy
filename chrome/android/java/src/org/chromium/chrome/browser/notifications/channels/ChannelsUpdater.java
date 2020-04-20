@@ -9,9 +9,9 @@ import android.os.Build;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.chrome.browser.notifications.NotificationManagerProxyImpl;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
 
 /**
  * Contains helper methods for checking if we should update channels and updating them if so.

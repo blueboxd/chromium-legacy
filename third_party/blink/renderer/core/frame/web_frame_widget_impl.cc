@@ -194,10 +194,12 @@ void WebFrameWidgetImpl::Trace(Visitor* visitor) {
 
 // WebWidget ------------------------------------------------------------------
 
-void WebFrameWidgetImpl::Close() {
+void WebFrameWidgetImpl::Close(
+    scoped_refptr<base::SingleThreadTaskRunner> cleanup_runner,
+    base::OnceCallback<void()> cleanup_task) {
   GetPage()->WillCloseAnimationHost(LocalRootImpl()->GetFrame()->View());
 
-  WebFrameWidgetBase::Close();
+  WebFrameWidgetBase::Close(std::move(cleanup_runner), std::move(cleanup_task));
 
   self_keep_alive_.Clear();
 }
@@ -310,8 +312,9 @@ void WebFrameWidgetImpl::BeginMainFrame(base::TimeTicks last_frame_time) {
     GetPage()->GetValidationMessageClient().LayoutOverlay();
 }
 
-void WebFrameWidgetImpl::DidBeginFrame() {
+void WebFrameWidgetImpl::DidBeginMainFrame() {
   DCHECK(LocalRootImpl()->GetFrame());
+  WebFrameWidgetBase::DidBeginMainFrame();
   PageWidgetDelegate::DidBeginFrame(*LocalRootImpl()->GetFrame());
 }
 

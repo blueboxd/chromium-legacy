@@ -35,6 +35,16 @@
     ]
   },
 
+  "EditBookmarksEnabled": {
+    "os": [ "ios" ],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "EditBookmarksEnabled": false },
+        "prefs": { "bookmarks.editing_enabled": {} }
+      }
+    ]
+  },
+
   "PasswordManagerEnabled": {
     "os": [ "ios" ],
     "can_be_recommended": true,

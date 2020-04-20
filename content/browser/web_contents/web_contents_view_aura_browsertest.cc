@@ -874,11 +874,11 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
     }
     InputEventAckWaiter touch_start_waiter(
         GetRenderWidgetHost(),
-        base::BindRepeating([](content::InputEventAckSource,
-                               content::InputEventAckState state,
+        base::BindRepeating([](blink::mojom::InputEventResultSource,
+                               blink::mojom::InputEventResultState state,
                                const blink::WebInputEvent& event) {
           return event.GetType() == blink::WebGestureEvent::kTouchStart &&
-                 state == content::INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
+                 state == blink::mojom::InputEventResultState::kNotConsumed;
         }));
     // Send touch press.
     SyntheticWebTouchEvent touch;
@@ -892,11 +892,11 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
     touch.MovePoint(0, bounds.x() + 20 + 1 * dx, bounds.y() + 100);
     InputEventAckWaiter touch_move_waiter(
         GetRenderWidgetHost(),
-        base::BindRepeating([](content::InputEventAckSource,
-                               content::InputEventAckState state,
+        base::BindRepeating([](blink::mojom::InputEventResultSource,
+                               blink::mojom::InputEventResultState state,
                                const blink::WebInputEvent& event) {
           return event.GetType() == blink::WebGestureEvent::kTouchMove &&
-                 state == content::INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
+                 state == blink::mojom::InputEventResultState::kNotConsumed;
         }));
     GetRenderWidgetHost()->ForwardTouchEventWithLatencyInfo(touch,
                                                             ui::LatencyInfo());

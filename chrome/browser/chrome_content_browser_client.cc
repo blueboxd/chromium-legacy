@@ -403,7 +403,6 @@
 #include "chrome/android/features/dev_ui/buildflags.h"
 #include "chrome/android/modules/extra_icu/provider/module_provider.h"
 #include "chrome/browser/android/app_hooks.h"
-#include "chrome/browser/android/chrome_context_util.h"
 #include "chrome/browser/android/customtabs/client_data_header_web_contents_observer.h"
 #include "chrome/browser/android/devtools_manager_delegate_android.h"
 #include "chrome/browser/android/ntp/new_tab_page_url_handler.h"
@@ -866,27 +865,6 @@ class CertificateReportingServiceCertReporter : public SSLCertReporter {
 
   DISALLOW_COPY_AND_ASSIGN(CertificateReportingServiceCertReporter);
 };
-
-#if defined(OS_ANDROID)
-float GetDeviceScaleAdjustment() {
-  static const float kMinFSM = 1.05f;
-  static const int kWidthForMinFSM = 320;
-  static const float kMaxFSM = 1.3f;
-  static const int kWidthForMaxFSM = 800;
-
-  int minWidth = chrome::android::ChromeContextUtil::GetSmallestDIPWidth();
-
-  if (minWidth <= kWidthForMinFSM)
-    return kMinFSM;
-  if (minWidth >= kWidthForMaxFSM)
-    return kMaxFSM;
-
-  // The font scale multiplier varies linearly between kMinFSM and kMaxFSM.
-  float ratio = static_cast<float>(minWidth - kWidthForMinFSM) /
-                (kWidthForMaxFSM - kWidthForMinFSM);
-  return ratio * (kMaxFSM - kMinFSM) + kMinFSM;
-}
-#endif  // defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 
@@ -3061,7 +3039,6 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
 #if defined(OS_ANDROID)
   web_prefs->font_scale_factor =
       static_cast<float>(prefs->GetDouble(prefs::kWebKitFontScaleFactor));
-  web_prefs->device_scale_adjustment = GetDeviceScaleAdjustment();
   web_prefs->force_enable_zoom =
       prefs->GetBoolean(prefs::kWebKitForceEnableZoom);
 #endif

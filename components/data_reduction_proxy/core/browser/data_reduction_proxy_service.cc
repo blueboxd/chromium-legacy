@@ -20,7 +20,6 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_mutable_config_values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_util.h"
@@ -90,12 +89,7 @@ DataReductionProxyService::DataReductionProxyService(
   DCHECK(network_quality_tracker_);
   DCHECK(network_connection_tracker_);
 
-  DataReductionProxyMutableConfigValues* raw_mutable_config = nullptr;
-  std::unique_ptr<DataReductionProxyMutableConfigValues> mutable_config =
-      std::make_unique<DataReductionProxyMutableConfigValues>();
-  raw_mutable_config = mutable_config.get();
-  config_ =
-      std::make_unique<DataReductionProxyConfig>(std::move(mutable_config));
+  config_ = std::make_unique<DataReductionProxyConfig>();
   request_options_ = std::make_unique<DataReductionProxyRequestOptions>(
       client_, config_.get());
   request_options_->Init();
@@ -113,8 +107,8 @@ DataReductionProxyService::DataReductionProxyService(
       previews::params::IsLitePageServerPreviewsEnabled() ||
       params::ForceEnableClientConfigServiceForAllDataSaverUsers()) {
     config_client_ = std::make_unique<DataReductionProxyConfigServiceClient>(
-        GetBackoffPolicy(), request_options_.get(), raw_mutable_config,
-        config_.get(), this, network_connection_tracker_,
+        GetBackoffPolicy(), request_options_.get(), config_.get(), this,
+        network_connection_tracker_,
         base::BindRepeating(&DataReductionProxyService::StoreSerializedConfig,
                             base::Unretained(this)));
   }

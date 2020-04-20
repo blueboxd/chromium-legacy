@@ -421,6 +421,11 @@
 <translation id="1555130319947370107">Kék</translation>
 <translation id="1556537182262721003">Nem sikerült áthelyezni a bővítménykönyvtárat a profilba.</translation>
 <translation id="155865706765934889">Érintőpad</translation>
+<translation id="1560763881671211335">A G Suite for Education-adminisztrátorok határozzák meg, hogy a felhasználók mely Google-szolgáltatásokhoz férhetnek hozzá, amikor be vannak jelentkezve a G Suite for Education-fiókjukba. A szolgáltatások kiskorú felhasználók általi használata esetén az iskolai adminisztrátoroknak hozzájárulást kell biztosítaniuk, illetve kérniük.
+
+    A böngészési adatokat (többek között az előzményeket, a könyvjelzőket és a jelszavakat) a rendszer a Family Link-fiókban, nem pedig az iskolai fiókban tárolja.
+
+    A Family Linkben beállított szülői beállítások továbbra is érvényesek maradnak. Ha korábban letiltott valamilyen alkalmazást vagy webhelyet, akkor nem kell újra hozzáadnia őket.</translation>
 <translation id="1566049601598938765">Webhely</translation>
 <translation id="15662109988763471">A kiválasztott nyomtató nem áll rendelkezésre, vagy nincs megfelelően telepítve. Ellenőrizze a nyomtatót, vagy válasszon egy másikat.</translation>
 <translation id="1567387640189251553">A jelszó utolsó megadása óta új billentyűzetet csatlakoztattak. Előfordulhat, hogy így kísérlik meg a billentyűleütések rögzítését.</translation>
@@ -1200,6 +1205,7 @@ Ha kezelni szeretné a fiók beállításait, telepítse eszközére a Family Li
 <translation id="258095186877893873">Hosszú</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (<ph name="PLATFORM_VERSION" /> platform) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Nem sikerült a Kerberos-jegy lekérése. Próbálja újra, vagy forduljon a szervezet eszközadminisztrátorához. (Hibakód: <ph name="ERROR_CODE" />).</translation>
+<translation id="2585013490795742997">1 keresési találat megjelenítése a következő lekérdezésre: <ph name="QUERY" /></translation>
 <translation id="2585724835339714757">Ez a lap megosztja a képernyőt.</translation>
 <translation id="2586657967955657006">Vágólap</translation>
 <translation id="2586672484245266891">Rövidebb URL-t adjon meg</translation>
@@ -1886,6 +1892,7 @@ Ha kezelni szeretné a fiók beállításait, telepítse eszközére a Family Li
 <translation id="3498215018399854026">Jelenleg nem tudjuk elérni szüleidet. Próbálkozz újra.</translation>
 <translation id="3500417806337761827">Hiba történt a megosztás felcsatolása során. Túl sok felcsatolt SMB-megosztás.</translation>
 <translation id="3505030558724226696">Eszközhozzáférés visszavonása</translation>
+<translation id="3507132249039706973">A Normál védelem be van kapcsolva</translation>
 <translation id="3507421388498836150">Aktuális engedélyek a következőhöz: „<ph name="EXTENSION_NAME" />”</translation>
 <translation id="3507888235492474624">Bluetooth-eszközök újrakeresése</translation>
 <translation id="3508492320654304609">Nem sikerült a bejelentkezési adatok törlése</translation>
@@ -3239,6 +3246,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="5352033265844765294">Időbélyegzés</translation>
 <translation id="5353252989841766347">Jelszavak exportálása a Chrome-ból</translation>
 <translation id="5355099869024327351">Engedély a Segédnek értesítések megjelenítésére</translation>
+<translation id="5355191726083956201">A Speciális védelem be van kapcsolva</translation>
 <translation id="5355926466126177564">A(z) <ph name="EXTENSION_NAME" /> bővítmény módosította, hogy melyik oldal jelenjen meg a cím- és keresősávban indított kereséskor.</translation>
 <translation id="5359910752122114278">1 találat</translation>
 <translation id="5360150013186312835">Megjelenítés az eszköztáron</translation>
@@ -3551,6 +3559,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="577322787686508614">Az olvasási művelet nem engedélyezett a következőn: „<ph name="DEVICE_NAME" />”.</translation>
 <translation id="5774295353725270860">Fájlok alkalmazás megnyitása</translation>
 <translation id="577624874850706961">Cookie-k keresése</translation>
+<translation id="5776858208024364029"><ph name="NUMBER" /> keresési találat megjelenítve a következőre: <ph name="QUERY" /></translation>
 <translation id="5777468213129569553">A Chrome megnyitása</translation>
 <translation id="5778747455497889540">Alább látható a véletlenszerűen generált biztonságimodul-jelszó, amelyet számítógépéhez rendeltünk:</translation>
 <translation id="5780011244986845107">A kiválasztott mappa bizalmas fájlokat tartalmaz. Biztosan állandó olvasási hozzáférést szeretne adni a(z) „<ph name="APP_NAME" />” alkalmazásnak a mappához?</translation>
@@ -4107,6 +4116,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
+<translation id="6520876759015997832"><ph name="LIST_POSITION" />. keresési találat a(z) <ph name="LIST_SIZE" />. listán: <ph name="SEARCH_RESULT_TEXT" />. A szakasz megnyitásához nyomja meg az Enter billentyűt.</translation>
 <translation id="652492607360843641">A következő típusú hálózatra csatlakozik: <ph name="NETWORK_TYPE" />.</translation>
 <translation id="6527303717912515753">Megosztás</translation>
 <translation id="6528513914570774834">Engedélyezi a hálózat használatát az eszköz többi felhasználója számára</translation>
@@ -4118,6 +4128,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6532206849875187177">Biztonság és bejelentkezés</translation>
 <translation id="6532527800157340614">A bejelentkezés nem sikerült, mert nem lehetett lekérni a hozzáférési tokent. Ellenőrizze a hálózati kapcsolatot, és próbálja újra.</translation>
 <translation id="6532663472409656417">Vállalati regisztráció</translation>
+<translation id="6535331821390304775">Engedélyezze, hogy a(z) <ph name="ORIGIN" /> az ilyen típusú linkeket mindig a társított alkalmazással nyissa meg</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Megjegyzés:<ph name="END_BOLD" /> csak akkor engedélyezze, ha tisztában van a következményekkel, vagy megkérték rá, mivel az adatok gyűjtése csökkentheti a teljesítményt.</translation>
 <translation id="6541638731489116978">Ennél a webhelynél le van tiltva a mozgásérzékelőkhöz való hozzáférés.</translation>
 <translation id="6545665334409411530">Ismétlési sebesség</translation>
@@ -4247,6 +4258,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6727969043791803658">Csatlakoztatva, <ph name="BATTERY_PERCENTAGE" />%-os töltöttség</translation>
 <translation id="6732801395666424405">A tanúsítványok betöltése nem történt meg</translation>
 <translation id="6732900235521116609">A parancsikon nem távolítható el</translation>
+<translation id="6734468588183300211">Inkognitómódban a webhelyek nem használhatják fel az Ön cookie-jait arra, hogy lássák a különböző webhelyeken végzett böngészési tevékenységeit például annak érdekében, hogy a hirdetéseket személyre szabják. Előfordulhat, hogy bizonyos webhelyek funkciói nem működnek megfelelően.</translation>
 <translation id="6735304988756581115">Cookie-k és egyéb webhelyadatok megjelenítése...</translation>
 <translation id="6736243959894955139">Cím</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
@@ -4259,6 +4271,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="674632704103926902">Érintéssel húzás engedélyezése</translation>
 <translation id="6748217015615267851">Megjelenítő: <ph name="RENDERER_URL" /></translation>
 <translation id="6748465660675848252">Továbbléphet, de csak szinkronizált adatait és beállításait állítjuk helyre. Összes helyi adata elvész.</translation>
+<translation id="6749006854028927059">A webhelyek nem használhatnak cookie-kat az Ön böngészési tevékenységeinek megismeréséhez a különböző webhelyeken például arra, hogy a hirdetéseket személyre szabják. Előfordulhat, hogy bizonyos webhelyek funkciói nem működnek megfelelően.</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (Inkognitómód)</translation>
 <translation id="6757101664402245801">Az URL kimásolva</translation>
 <translation id="6758056191028427665">Ossza meg velünk, mennyire van megelégedve munkánkkal.</translation>
@@ -4350,6 +4363,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="686664946474413495">Színhőmérséklet</translation>
 <translation id="6871644448911473373">OCSP válaszadó: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">A szerver elutasította a megadott jelszót.</translation>
+<translation id="6874170800191969835">Ön ide érkezett: <ph name="SEARCH_RESULT_TEXT" />.</translation>
 <translation id="6876155724392614295">Kerékpár</translation>
 <translation id="6876469544038980967">Nem hasznos</translation>
 <translation id="6878422606530379992">Érzékelők engedélyezve</translation>
@@ -4620,6 +4634,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="7235737137505019098">A biztonsági hardverkulcson nincs elég hely további fiókok számára.</translation>
 <translation id="7238643356913091553"><ph name="NETWORK_NAME" />, részletek</translation>
 <translation id="7240339475467890413">Csatlakozik az új hotspothoz?</translation>
+<translation id="7240847845291869311">Gyermeke a G Suite for Education szolgáltatáshoz tartozó Google-fiókot szeretne hozzáadni ehhez az eszközhöz. A <ph name="LINK_BEGIN" />G Suite for Education Adatvédelmi közleményének<ph name="LINK_END" /> az a célja, hogy segítse a G Suite for Education-felhasználókat és a szülőket annak megértésében, hogy a termékben milyen adatokat gyűjtünk, milyen céllal, illetve mire használjuk fel őket.</translation>
 <translation id="7241389281993241388">Kérjük, jelentkezzen be a(z) <ph name="TOKEN_NAME" /> szolgáltatásba az ügyféltanúsítvány importálásához.</translation>
 <translation id="7241443820034350811">Ha biztonsági hardverkulcsa nem szerepel a listán, tartsa nyomva a kulcs gombját legalább öt másodpercig.</translation>
 <translation id="7243632151880336635">Törlés és kijelentkezés</translation>
@@ -5202,6 +5217,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="7987814697832569482">Mindig ezen a VPN-en keresztül csatlakozzon</translation>
 <translation id="7988355189918024273">Kisegítő lehetőségek bekapcsolása</translation>
 <translation id="7991296728590311172">A kapcsolóalapú hozzáférés beállításai</translation>
+<translation id="7992202128769240372">A(z) <ph name="SHEETS_LABEL" /> száma (<ph name="NUMBER_OF_SHEETS" />) meghaladja a korlátot</translation>
 <translation id="7994350303002908848">Nem sikerült a Plugin VM telepítése. Próbálja újra, vagy forduljon a szervezet eszközadminisztrátorához. Hibakód: <ph name="ERROR_CODE" />.</translation>
 <translation id="7994702968232966508">EAP módszer</translation>
 <translation id="7997826902155442747">Folyamatprioritás</translation>

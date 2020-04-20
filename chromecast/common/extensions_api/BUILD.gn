@@ -21,6 +21,7 @@ schema_sources = [
   "history.json",
   "i18n.json",
   "identity.idl",
+  "login_state.idl",
   "notifications.idl",
   "settings_private.idl",
   "tabs.json",

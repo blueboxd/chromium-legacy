@@ -109,12 +109,6 @@ WebTestClientImpl::WebTestClientImpl(
 
 WebTestClientImpl::~WebTestClientImpl() = default;
 
-void WebTestClientImpl::InspectSecondaryWindow() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (BlinkTestController::Get())
-    BlinkTestController::Get()->OnInspectSecondaryWindow();
-}
-
 void WebTestClientImpl::TestFinishedInSecondaryRenderer() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (BlinkTestController::Get())

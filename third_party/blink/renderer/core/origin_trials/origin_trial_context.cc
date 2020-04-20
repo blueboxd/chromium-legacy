@@ -238,10 +238,10 @@ void OriginTrialContext::ActivateNavigationFeaturesFromInitiator(
 void OriginTrialContext::InitializePendingFeatures() {
   if (!enabled_features_.size() && !navigation_activated_features_.size())
     return;
-  auto* document = Document::DynamicFrom(context_.Get());
-  if (!document)
+  auto* window = DynamicTo<LocalDOMWindow>(context_.Get());
+  if (!window)
     return;
-  LocalFrame* frame = document->GetFrame();
+  LocalFrame* frame = window->GetFrame();
   if (!frame)
     return;
   ScriptState* script_state = ToScriptStateForMainWorld(frame);

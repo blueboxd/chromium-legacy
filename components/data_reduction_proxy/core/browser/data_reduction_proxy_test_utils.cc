@@ -16,14 +16,11 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_mutable_config_values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/browser/data_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -90,9 +87,7 @@ MockDataReductionProxyRequestOptions::~MockDataReductionProxyRequestOptions() {}
 
 TestDataReductionProxyConfigServiceClient::
     TestDataReductionProxyConfigServiceClient(
-        std::unique_ptr<DataReductionProxyParams> params,
         DataReductionProxyRequestOptions* request_options,
-        DataReductionProxyMutableConfigValues* config_values,
         DataReductionProxyConfig* config,
         DataReductionProxyService* service,
         network::NetworkConnectionTracker* network_connection_tracker,
@@ -100,7 +95,6 @@ TestDataReductionProxyConfigServiceClient::
         const net::BackoffEntry::Policy& backoff_policy)
     : DataReductionProxyConfigServiceClient(backoff_policy,
                                             request_options,
-                                            config_values,
                                             config,
                                             service,
                                             network_connection_tracker,
@@ -346,14 +340,6 @@ DataReductionProxyTestContext::Builder::SkipSettingsInitialization() {
 }
 
 DataReductionProxyTestContext::Builder&
-DataReductionProxyTestContext::Builder::WithProxiesForHttp(
-    const std::vector<DataReductionProxyServer>& proxy_servers) {
-  DCHECK(!proxy_servers.empty());
-  proxy_servers_ = proxy_servers;
-  return *this;
-}
-
-DataReductionProxyTestContext::Builder&
 DataReductionProxyTestContext::Builder::WithSettings(
     std::unique_ptr<DataReductionProxySettings> settings) {
   settings_ = std::move(settings);
@@ -390,28 +376,15 @@ DataReductionProxyTestContext::Builder::Build() {
 
   std::unique_ptr<TestDataReductionProxyConfig> config;
   std::unique_ptr<DataReductionProxyConfigServiceClient> config_client;
-  DataReductionProxyMutableConfigValues* raw_mutable_config = nullptr;
-  std::unique_ptr<TestDataReductionProxyParams> params(
-      new TestDataReductionProxyParams());
-  TestDataReductionProxyParams* raw_params = params.get();
   if (use_config_client_) {
     test_context_flags |= USE_CONFIG_CLIENT;
-    std::unique_ptr<DataReductionProxyMutableConfigValues> mutable_config =
-        std::make_unique<DataReductionProxyMutableConfigValues>();
-    if (!proxy_servers_.empty()) {
-      mutable_config->UpdateValues(proxy_servers_);
-    }
-    raw_mutable_config = mutable_config.get();
-    config.reset(new TestDataReductionProxyConfig(std::move(mutable_config)));
+    config.reset(new TestDataReductionProxyConfig());
   } else if (use_mock_config_) {
     test_context_flags |= USE_MOCK_CONFIG;
-    config.reset(new MockDataReductionProxyConfig(std::move(params)));
+    config.reset(new MockDataReductionProxyConfig());
   } else {
     test_context_flags ^= USE_MOCK_CONFIG;
-    if (!proxy_servers_.empty()) {
-      params->SetProxiesForHttp(proxy_servers_);
-    }
-    config.reset(new TestDataReductionProxyConfig(std::move(params)));
+    config.reset(new TestDataReductionProxyConfig());
   }
 
   std::unique_ptr<TestDataReductionProxyRequestOptions> request_options;
@@ -452,15 +425,15 @@ DataReductionProxyTestContext::Builder::Build() {
   if (use_test_config_client_) {
     test_context_flags |= USE_TEST_CONFIG_CLIENT;
     config_client.reset(new TestDataReductionProxyConfigServiceClient(
-        std::move(params), request_options.get(), raw_mutable_config,
-        config.get(), service.get(), test_network_connection_tracker,
+        request_options.get(), config.get(), service.get(),
+        test_network_connection_tracker,
         base::BindRepeating(&TestConfigStorer::StoreSerializedConfig,
                             base::Unretained(config_storer.get())),
         GetTestBackoffPolicy()));
   } else if (use_config_client_) {
     config_client.reset(new DataReductionProxyConfigServiceClient(
-        GetBackoffPolicy(), request_options.get(), raw_mutable_config,
-        config.get(), service.get(), test_network_connection_tracker,
+        GetBackoffPolicy(), request_options.get(), config.get(), service.get(),
+        test_network_connection_tracker,
         base::BindRepeating(&TestConfigStorer::StoreSerializedConfig,
                             base::Unretained(config_storer.get()))));
   }
@@ -473,7 +446,7 @@ DataReductionProxyTestContext::Builder::Build() {
           task_runner, std::move(pref_service), url_loader_factory,
           std::move(test_url_loader_factory), std::move(settings_),
           std::move(service), std::move(test_network_quality_tracker),
-          std::move(config_storer), raw_params, test_context_flags));
+          std::move(config_storer), test_context_flags));
 
   if (!skip_settings_initialization_)
     test_context->InitSettingsWithoutCheck();
@@ -491,7 +464,6 @@ DataReductionProxyTestContext::DataReductionProxyTestContext(
     std::unique_ptr<network::TestNetworkQualityTracker>
         test_network_quality_tracker,
     std::unique_ptr<TestConfigStorer> config_storer,
-    TestDataReductionProxyParams* params,
     unsigned int test_context_flags)
     : test_context_flags_(test_context_flags),
       task_runner_(task_runner),
@@ -501,8 +473,7 @@ DataReductionProxyTestContext::DataReductionProxyTestContext(
       settings_(std::move(settings)),
       test_network_quality_tracker_(std::move(test_network_quality_tracker)),
       service_(std::move(service)),
-      config_storer_(std::move(config_storer)),
-      params_(params) {
+      config_storer_(std::move(config_storer)) {
   if (service_)
     data_reduction_proxy_service_ = service_.get();
   else
@@ -622,12 +593,6 @@ TestDataReductionProxyConfig* DataReductionProxyTestContext::config() const {
       data_reduction_proxy_service()->config());
 }
 
-DataReductionProxyMutableConfigValues*
-DataReductionProxyTestContext::mutable_config_values() {
-  DCHECK(test_context_flags_ & USE_CONFIG_CLIENT);
-  return reinterpret_cast<DataReductionProxyMutableConfigValues*>(
-      config()->config_values());
-}
 
 TestDataReductionProxyConfigServiceClient*
 DataReductionProxyTestContext::test_config_client() {
@@ -647,20 +612,6 @@ void DataReductionProxyTestContext::TestConfigStorer::StoreSerializedConfig(
   prefs_->SetString(prefs::kDataReductionProxyConfig, serialized_config);
   prefs_->SetInt64(prefs::kDataReductionProxyLastConfigRetrievalTime,
                    (base::Time::Now() - base::Time()).InMicroseconds());
-}
-
-std::vector<net::ProxyServer>
-DataReductionProxyTestContext::GetConfiguredProxiesForHttp() const {
-  const GURL kHttpUrl("http://test_http_url.net");
-  // The test URL shouldn't match any of the bypass rules in the proxy rules.
-
-  net::ProxyInfo proxy_info;
-
-  std::vector<net::ProxyServer> proxies_without_direct;
-  for (const net::ProxyServer& proxy : proxy_info.proxy_list().GetAll())
-    if (proxy.is_valid() && !proxy.is_direct())
-      proxies_without_direct.push_back(proxy);
-  return proxies_without_direct;
 }
 
 }  // namespace data_reduction_proxy

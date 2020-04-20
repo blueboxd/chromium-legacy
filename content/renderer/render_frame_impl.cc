@@ -3045,9 +3045,6 @@ void RenderFrameImpl::AllowBindings(int32_t enabled_bindings_flags) {
   }
 
   enabled_bindings_ |= enabled_bindings_flags;
-
-  // Keep track of the total bindings accumulated in this process.
-  RenderProcess::current()->AddBindings(enabled_bindings_flags);
 }
 
 void RenderFrameImpl::EnableMojoJsBindings() {
@@ -4379,7 +4376,7 @@ void RenderFrameImpl::DidCreateInitialEmptyDocument() {
     observer.DidCreateNewDocument();
 }
 
-void RenderFrameImpl::DidCommitJavascriptUrlNavigation(
+void RenderFrameImpl::DidCommitDocumentReplacementNavigation(
     blink::WebDocumentLoader* document_loader) {
   // TODO(https://crbug.com/855189): figure out which of the following observer
   // calls are necessary, if any.
@@ -5686,9 +5683,10 @@ void RenderFrameImpl::BeginNavigation(
     // All navigations to or from WebUI URLs or within WebUI-enabled
     // RenderProcesses must be handled by the browser process so that the
     // correct bindings and data sources can be registered.
-    int cumulative_bindings = RenderProcess::current()->GetEnabledBindings();
+    // All frames in a WebUI process must have the same enabled_bindings_, so
+    // we can do a per-frame check here rather than a process-wide check.
     bool should_fork = HasWebUIScheme(url) || HasWebUIScheme(old_url) ||
-                       (cumulative_bindings & kWebUIBindingsPolicyMask);
+                       (enabled_bindings_ & kWebUIBindingsPolicyMask);
     if (should_fork) {
       OpenURL(std::move(info));
       return;  // Suppress the load here.

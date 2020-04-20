@@ -98,12 +98,6 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
 
   LocalDOMWindow* Window();
 
-  // WebWidget implementation.
-  WebInputEventResult DispatchBufferedTouchEvents() override;
-  void SetCompositorVisible(bool visible) override;
-  void UpdateVisualState() override;
-  void WillBeginCompositorFrame() override;
-
   // WebPagePopup implementation.
   gfx::Point PositionRelativeToOwner() override;
   WebDocument GetDocument() override;
@@ -119,8 +113,11 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   // WidgetBaseClient overrides:
   void DispatchRafAlignedInput(base::TimeTicks frame_time) override;
   void BeginMainFrame(base::TimeTicks last_frame_time) override;
+  void RequestNewLayerTreeFrameSink(
+      LayerTreeFrameSinkCallback callback) override;
   void RecordTimeToFirstActivePaint(base::TimeDelta duration) override;
   void SetSuppressFrameRequestsWorkaroundFor704763Only(bool) final;
+  WebInputEventResult DispatchBufferedTouchEvents() override;
 
   // WebWidget implementation.
   // NOTE: The WebWidget may still be used after requesting the popup to be
@@ -128,16 +125,20 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   // immediately. So all methods (outside of initialization) that are part
   // of the WebWidget need to check if close has already been initiated (they
   // can do so by checking |page_|) and not crash! https://crbug.com/906340
-  void SetCompositorHosts(cc::LayerTreeHost*, cc::AnimationHost*) override;
-  void BeginFrame(base::TimeTicks last_frame_time) override;
+  void SetCompositorVisible(bool visible) override;
   void UpdateLifecycle(WebLifecycleUpdate requested_update,
                        DocumentUpdateReason reason) override;
   void Resize(const WebSize&) override;
-  void Close() override;
+  void Close(scoped_refptr<base::SingleThreadTaskRunner> cleanup_runner,
+             base::OnceCallback<void()> cleanup_task) override;
   WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&) override;
   void SetFocus(bool) override;
   WebURL GetURLForDebugTrace() override;
   WebHitTestResult HitTestResultAt(const gfx::Point&) override { return {}; }
+  cc::LayerTreeHost* InitializeCompositing(
+      cc::TaskGraphRunner* task_graph_runner,
+      const cc::LayerTreeSettings& settings,
+      std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory) override;
 
   // PageWidgetEventHandler functions
   WebInputEventResult HandleCharEvent(const WebKeyboardEvent&) override;

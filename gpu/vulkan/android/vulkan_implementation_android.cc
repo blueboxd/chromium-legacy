@@ -60,7 +60,7 @@ std::unique_ptr<VulkanSurface> VulkanImplementationAndroid::CreateViewSurface(
     return nullptr;
   }
 
-  return std::make_unique<VulkanSurface>(vulkan_instance_.vk_instance(),
+  return std::make_unique<VulkanSurface>(vulkan_instance_.vk_instance(), window,
                                          surface,
                                          false /* use_protected_memory */);
 }

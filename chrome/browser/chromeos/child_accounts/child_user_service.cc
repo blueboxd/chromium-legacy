@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/child_accounts/time_limits/web_time_limit_enforcer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_context.h"
+#include "extensions/common/constants.h"
 #include "url/gurl.h"
 
 namespace chromeos {
@@ -43,6 +44,10 @@ ChildUserService::~ChildUserService() = default;
 void ChildUserService::PauseWebActivity(const std::string& app_service_id) {
   DCHECK(app_time_controller_);
 
+  // Pause web activity only if the app is chrome.
+  if (app_service_id != extension_misc::kChromeAppId)
+    return;
+
   app_time::WebTimeLimitEnforcer* web_time_enforcer =
       app_time_controller_->web_time_enforcer();
   DCHECK(web_time_enforcer);
@@ -58,6 +63,10 @@ void ChildUserService::PauseWebActivity(const std::string& app_service_id) {
 
 void ChildUserService::ResumeWebActivity(const std::string& app_service_id) {
   DCHECK(app_time_controller_);
+
+  // Only unpause web activity if the app is chrome.
+  if (app_service_id != extension_misc::kChromeAppId)
+    return;
 
   app_time::WebTimeLimitEnforcer* web_time_enforcer =
       app_time_controller_->web_time_enforcer();

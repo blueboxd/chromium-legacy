@@ -2244,10 +2244,6 @@ void WebContentsImpl::LostCapture(RenderWidgetHostImpl* render_widget_host) {
     delegate_->LostCapture();
 }
 
-ukm::SourceId WebContentsImpl::GetUkmSourceIdForLastCommittedSource() const {
-  return last_committed_source_id_;
-}
-
 ukm::SourceId
 WebContentsImpl::GetUkmSourceIdForLastCommittedSourceIncludingSameDocument()
     const {
@@ -4564,8 +4560,6 @@ void WebContentsImpl::DidFinishNavigation(NavigationHandle* navigation_handle) {
 
       if (!navigation_handle->IsSameDocument()) {
         was_ever_audible_ = false;
-        last_committed_source_id_ =
-            last_committed_source_id_including_same_document_;
       }
     }
 
@@ -6874,10 +6868,6 @@ base::UnguessableToken WebContentsImpl::GetAudioGroupId() {
   return GetAudioStreamFactory()->group_id();
 }
 
-ukm::SourceId WebContentsImpl::GetLastCommittedSourceId() {
-  return last_committed_source_id_;
-}
-
 const std::vector<blink::mojom::FaviconURLPtr>&
 WebContentsImpl::GetFaviconURLs() {
   return favicon_urls_;
@@ -7538,6 +7528,10 @@ mojom::FrameInputHandler* WebContentsImpl::GetFocusedFrameInputHandler() {
   if (!focused_frame)
     return nullptr;
   return focused_frame->GetFrameInputHandler();
+}
+
+ukm::SourceId WebContentsImpl::GetCurrentPageUkmSourceId() {
+  return GetMainFrame()->GetPageUkmSourceId();
 }
 
 }  // namespace content

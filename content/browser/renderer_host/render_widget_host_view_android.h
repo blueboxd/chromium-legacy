@@ -129,14 +129,16 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void SetTooltipText(const base::string16& tooltip_text) override;
   void TransformPointToRootSurface(gfx::PointF* point) override;
   gfx::Rect GetBoundsInRootWindow() override;
-  void ProcessAckedTouchEvent(const TouchEventWithLatencyInfo& touch,
-                              InputEventAckState ack_result) override;
-  InputEventAckState FilterInputEvent(
+  void ProcessAckedTouchEvent(
+      const TouchEventWithLatencyInfo& touch,
+      blink::mojom::InputEventResultState ack_result) override;
+  blink::mojom::InputEventResultState FilterInputEvent(
       const blink::WebInputEvent& input_event) override;
   void GestureEventAck(const blink::WebGestureEvent& event,
-                       InputEventAckState ack_result) override;
-  void ChildDidAckGestureEvent(const blink::WebGestureEvent& event,
-                               InputEventAckState ack_result) override;
+                       blink::mojom::InputEventResultState ack_result) override;
+  void ChildDidAckGestureEvent(
+      const blink::WebGestureEvent& event,
+      blink::mojom::InputEventResultState ack_result) override;
   BrowserAccessibilityManager* CreateBrowserAccessibilityManager(
       BrowserAccessibilityDelegate* delegate,
       bool for_root_frame) override;

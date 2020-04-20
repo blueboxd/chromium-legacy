@@ -325,7 +325,8 @@ IN_PROC_BROWSER_TEST_F(PrecisionTouchpadBrowserTest, PreventDefaultPinchZoom) {
 
   // First, test a standard zoom.
   UpdateContents(kInitialZoom, 0, 0);
-  EXPECT_TRUE(input_msg_watcher->WaitForAck());
+  input_msg_watcher->WaitForAck();
+  EXPECT_TRUE(input_msg_watcher->HasReceivedAck());
   RunUntilInputProcessed(rwhi);
 
   EXPECT_EQ(kInitialZoom, EvalJs(web_contents, "window.visualViewport.scale"));
@@ -342,7 +343,8 @@ IN_PROC_BROWSER_TEST_F(PrecisionTouchpadBrowserTest, PreventDefaultPinchZoom) {
 
   // Arbitrary zoom amount chosen here to make the test fail if it does zoom.
   UpdateContents(3.5, 0, 0);
-  EXPECT_TRUE(input_msg_watcher->WaitForAck());
+  input_msg_watcher->WaitForAck();
+  EXPECT_TRUE(input_msg_watcher->HasReceivedAck());
   RunUntilInputProcessed(rwhi);
 
   EXPECT_EQ(kInitialZoom, EvalJs(web_contents, "window.visualViewport.scale"));
@@ -358,7 +360,8 @@ IN_PROC_BROWSER_TEST_F(PrecisionTouchpadBrowserTest, PreventDefaultPinchZoom) {
   const float kEndZoom = 0.5;
 
   UpdateContents(kEndZoom, 0, 0);
-  EXPECT_TRUE(input_msg_watcher->WaitForAck());
+  input_msg_watcher->WaitForAck();
+  EXPECT_TRUE(input_msg_watcher->HasReceivedAck());
   RunUntilInputProcessed(rwhi);
 
   EXPECT_EQ(static_cast<int>(kInitialZoom * kEndZoom),
@@ -406,7 +409,8 @@ IN_PROC_BROWSER_TEST_F(PrecisionTouchpadBrowserTest, PreventDefaultScroll) {
 
   // First, test scrolling vertically
   UpdateContents(1, 0, -kInitialScrollDistance);
-  EXPECT_TRUE(input_msg_watcher->WaitForAck());
+  input_msg_watcher->WaitForAck();
+  EXPECT_TRUE(input_msg_watcher->HasReceivedAck());
   RunUntilInputProcessed(rwhi);
 
   EXPECT_EQ(0, EvalJs(web_contents, "document.documentElement.scrollLeft"));
@@ -436,7 +440,8 @@ IN_PROC_BROWSER_TEST_F(PrecisionTouchpadBrowserTest, PreventDefaultScroll) {
   // Updating with arbitrarily chosen numbers that should make it obvious where
   // values are coming from when this test fails.
   UpdateContents(1, 354, 291);
-  EXPECT_TRUE(input_msg_watcher->WaitForAck());
+  input_msg_watcher->WaitForAck();
+  EXPECT_TRUE(input_msg_watcher->HasReceivedAck());
   RunUntilInputProcessed(rwhi);
 
   EXPECT_EQ(kInitialScrollDistance,
@@ -457,7 +462,8 @@ IN_PROC_BROWSER_TEST_F(PrecisionTouchpadBrowserTest, PreventDefaultScroll) {
   const int kScrollXDistance = 120;
   const int kScrollYDistance = 150;
   UpdateContents(1, kScrollXDistance, kScrollYDistance);
-  EXPECT_TRUE(input_msg_watcher->WaitForAck());
+  input_msg_watcher->WaitForAck();
+  EXPECT_TRUE(input_msg_watcher->HasReceivedAck());
   RunUntilInputProcessed(rwhi);
 
   EXPECT_EQ(kInitialScrollDistance - kScrollXDistance,

@@ -631,6 +631,117 @@ INSTANTIATE_TEST_SUITE_P(
                     BLOCK_LARGE_UPLOADS,
                     BLOCK_LARGE_UPLOADS_AND_DOWNLOADS));
 
+class DeepScanningDialogDelegateDelayDeliveryUntilVerdictTest
+    : public DeepScanningDialogDelegateBrowserTest,
+      public testing::WithParamInterface<DelayDeliveryUntilVerdictValues> {
+ public:
+  using DeepScanningDialogDelegateBrowserTest::
+      DeepScanningDialogDelegateBrowserTest;
+
+  DelayDeliveryUntilVerdictValues delay_delivery_until_verdict() const {
+    return GetParam();
+  }
+
+  bool expected_result() const {
+    switch (delay_delivery_until_verdict()) {
+      case DELAY_NONE:
+      case DELAY_DOWNLOADS:
+        return true;
+      case DELAY_UPLOADS:
+      case DELAY_UPLOADS_AND_DOWNLOADS:
+        return false;
+    }
+  }
+};
+
+IN_PROC_BROWSER_TEST_P(DeepScanningDialogDelegateDelayDeliveryUntilVerdictTest,
+                       Test) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+
+  // Set up delegate and upload service.
+  EnableUploadsScanningAndReporting();
+  SetWaitPolicy(delay_delivery_until_verdict());
+
+  DeepScanningDialogDelegate::SetFactoryForTesting(
+      base::BindRepeating(&MinimalFakeDeepScanningDialogDelegate::Create));
+
+  FakeBinaryUploadServiceStorage()->SetAuthorized(true);
+  FakeBinaryUploadServiceStorage()->SetShouldAutomaticallyAuthorize(true);
+
+  DeepScanningClientResponse response;
+  response.mutable_malware_scan_verdict()->set_verdict(
+      MalwareDeepScanningVerdict::MALWARE);
+  response.mutable_dlp_scan_verdict()->set_status(
+      DlpDeepScanningVerdict::SUCCESS);
+  response.mutable_dlp_scan_verdict()->add_triggered_rules()->set_action(
+      DlpDeepScanningVerdict::TriggeredRule::BLOCK);
+
+  FakeBinaryUploadServiceStorage()->SetResponseForFile(
+      "foo.doc", BinaryUploadService::Result::SUCCESS, response);
+
+  // Create a file.
+  DeepScanningDialogDelegate::Data data;
+  data.do_dlp_scan = true;
+  data.do_malware_scan = true;
+
+  CreateFilesForTest({"foo.doc"}, {"foo content"}, &data);
+  ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(browser()->profile(),
+                                                    GURL(kTestUrl), &data));
+
+  // The file should be reported as malware and sensitive content.
+  EventReportValidator validator(client());
+  validator.ExpectDangerousDeepScanningResultAndSensitiveDataEvent(
+      /*url*/ "about:blank",
+      /*filename*/ created_file_paths()[0].AsUTF8Unsafe(),
+      // printf "foo content" | sha256sum  |  tr '[:lower:]' '[:upper:]'
+      /*sha*/
+      "B3A2E2EDBAA3C798B4FC267792B1641B94793DE02D870124E5CBE663750B4CFC",
+      /*threat_type*/ "DANGEROUS",
+      /*trigger*/
+      extensions::SafeBrowsingPrivateEventRouter::kTriggerFileUpload,
+      /*dlp_verdict*/ response.dlp_scan_verdict(),
+      /*mimetypes*/ DocMimeTypes(),
+      /*size*/ std::string("foo content").size());
+
+  bool called = false;
+  base::RunLoop run_loop;
+
+  // If the delivery is not delayed, put the quit closure right after the events
+  // are reported instead of when the dialog closes.
+  if (expected_result())
+    validator.SetDoneClosure(run_loop.QuitClosure());
+  else
+    SetQuitClosure(run_loop.QuitClosure());
+
+  // Start test.
+  DeepScanningDialogDelegate::ShowForWebContents(
+      browser()->tab_strip_model()->GetActiveWebContents(), std::move(data),
+      base::BindLambdaForTesting(
+          [this, &called](const DeepScanningDialogDelegate::Data& data,
+                          const DeepScanningDialogDelegate::Result& result) {
+            ASSERT_TRUE(result.text_results.empty());
+            ASSERT_EQ(result.paths_results.size(), 1u);
+            ASSERT_EQ(result.paths_results[0], expected_result());
+
+            called = true;
+          }),
+      DeepScanAccessPoint::UPLOAD);
+
+  run_loop.Run();
+  EXPECT_TRUE(called);
+
+  // Expect 1 request for authentication and 1 to scan the file in all cases.
+  ASSERT_EQ(FakeBinaryUploadServiceStorage()->requests_count(), 2);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    DeepScanningDialogDelegateDelayDeliveryUntilVerdictTest,
+    DeepScanningDialogDelegateDelayDeliveryUntilVerdictTest,
+    testing::Values(DELAY_NONE,
+                    DELAY_DOWNLOADS,
+                    DELAY_UPLOADS,
+                    DELAY_UPLOADS_AND_DOWNLOADS));
+
 IN_PROC_BROWSER_TEST_F(DeepScanningDialogDelegateBrowserTest, Texts) {
   // Set up delegate and upload service.
   EnableUploadsScanningAndReporting();

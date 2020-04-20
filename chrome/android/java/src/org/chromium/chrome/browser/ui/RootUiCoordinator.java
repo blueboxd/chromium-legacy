@@ -51,6 +51,7 @@ import org.chromium.chrome.browser.ui.appmenu.AppMenuBlocker;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuCoordinator;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuCoordinatorFactory;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
+import org.chromium.chrome.browser.ui.system.StatusBarColorController;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
@@ -202,6 +203,9 @@ public class RootUiCoordinator
             mButtonDataProviders = null;
         }
 
+        if (mScrimCoordinator != null) mScrimCoordinator.destroy();
+        mScrimCoordinator = null;
+
         mActivity = null;
     }
 
@@ -213,12 +217,13 @@ public class RootUiCoordinator
     @Override
     public void onPostInflationStartup() {
         ViewGroup coordinator = mActivity.findViewById(R.id.coordinator);
+        StatusBarColorController statusBarColorController = mActivity.getStatusBarColorController();
         mScrimView = new ScrimView(mActivity,
-                mActivity.getStatusBarColorController().getStatusBarScrimDelegate(), coordinator);
+                statusBarColorController.getStatusBarScrimDelegate(), coordinator);
         mScrimCoordinator = new ScrimCoordinator(mActivity,
-                (fraction) -> mActivity.getStatusBarColorController()
-                       .getStatusBarScrimDelegate()
-                       .setStatusBarScrimFraction(fraction),
+                (fraction) -> statusBarColorController
+                        .getStatusBarScrimDelegate()
+                        .setStatusBarScrimFraction(fraction),
                 coordinator,
                 ApiCompatibilityUtils.getColor(coordinator.getResources(),
                         R.color.omnibox_focused_fading_background_color));

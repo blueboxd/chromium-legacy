@@ -37,6 +37,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
+import org.chromium.components.browser_ui.notifications.NotificationMetadata;
 import org.chromium.content_public.browser.test.NativeLibraryTestRule;
 
 import java.util.ArrayList;

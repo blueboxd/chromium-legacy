@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.sync;
 import android.support.test.filters.LargeTest;
 import android.util.Pair;
 
+import org.hamcrest.Matchers;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -268,31 +269,21 @@ public class OpenTabsTest {
 
     private void waitForServerTabs(final String... urls) {
         mSyncTestRule.pollInstrumentationThread(
-                new Criteria("Expected server open tabs: " + Arrays.toString(urls)) {
-                    @Override
-                    public boolean isSatisfied() {
-                        try {
-                            return mSyncTestRule.getFakeServerHelper().verifySessions(urls);
-                        } catch (Exception e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                });
+                ()
+                        -> mSyncTestRule.getFakeServerHelper().verifySessions(urls),
+                "Expected server open tabs: " + Arrays.toString(urls));
     }
 
     private String getClientName() throws Exception {
-        mSyncTestRule.pollInstrumentationThread(new Criteria(
-                "Expected at least one tab entity to exist.") {
-            @Override
-            public boolean isSatisfied() {
-                try {
-                    return SyncTestUtil
-                                   .getLocalData(mSyncTestRule.getTargetContext(), OPEN_TABS_TYPE)
-                                   .size()
-                            > 0;
-                } catch (JSONException e) {
-                    return false;
-                }
+        mSyncTestRule.pollInstrumentationThread(() -> {
+            try {
+                int size =
+                        SyncTestUtil.getLocalData(mSyncTestRule.getTargetContext(), OPEN_TABS_TYPE)
+                                .size();
+                Assert.assertThat("Expected at least one tab entity to exist.", size,
+                        Matchers.greaterThan(0));
+            } catch (JSONException ex) {
+                Assert.fail(ex.toString());
             }
         });
         List<Pair<String, JSONObject>> tabEntities =

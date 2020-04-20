@@ -8,8 +8,8 @@
 #include "base/timer/timer.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/common/content_export.h"
-#include "content/public/common/input_event_ack_state.h"
 #include "third_party/blink/public/common/input/web_mouse_wheel_event.h"
+#include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
 
 namespace content {
 class RenderWidgetHostViewBase;
@@ -73,7 +73,7 @@ class CONTENT_EXPORT MouseWheelPhaseHandler {
     return mouse_wheel_end_dispatch_timer_.IsRunning();
   }
   void GestureEventAck(const blink::WebGestureEvent& event,
-                       InputEventAckState ack_result);
+                       blink::mojom::InputEventResultState ack_result);
 
   // Used to verify the correctness of touchpad_scroll_phase_state_'s value in
   // testing.

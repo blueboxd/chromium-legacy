@@ -36,7 +36,6 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
-import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
@@ -209,12 +208,8 @@ public class FirstRunTest {
             processFirstRunOnUiThread();
         }
 
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return FirstRunSignInProcessor.getFirstRunFlowSignInComplete();
-            }
-        });
+        CriteriaHelper.pollInstrumentationThread(
+                () -> FirstRunSignInProcessor.getFirstRunFlowSignInComplete());
         return settingsActivity;
     }
 

@@ -1,0 +1,14 @@
+include_rules = [
+    "+base/containers/circular_deque.h",
+    "+base/task/task_traits.h",
+    "+base/task/thread_pool/thread_pool_instance.h",
+    "+cc",
+    "+components/viz/client",
+    "+components/viz/common",
+]
+
+specific_include_rules = {
+  ".*unittest.cc": [
+    "+components/viz/test",
+  ],
+}

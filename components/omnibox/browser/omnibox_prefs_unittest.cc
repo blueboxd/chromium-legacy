@@ -3,10 +3,13 @@
 // found in the LICENSE file.
 
 #include "components/omnibox/browser/omnibox_prefs.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using omnibox::IsSuggestionGroupIdHidden;
+using omnibox::kToggleSuggestionGroupIdOffHistogram;
+using omnibox::kToggleSuggestionGroupIdOnHistogram;
 using omnibox::ToggleSuggestionGroupIdVisibility;
 
 class OmniboxPrefsTest : public ::testing::Test {
@@ -19,27 +22,54 @@ class OmniboxPrefsTest : public ::testing::Test {
 
   TestingPrefServiceSimple* GetPrefs() { return &pref_service_; }
 
+  base::HistogramTester* histogram() { return &histogram_; }
+
  private:
   TestingPrefServiceSimple pref_service_;
+  base::HistogramTester histogram_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxPrefsTest);
 };
 
 TEST_F(OmniboxPrefsTest, SuggestionGroupId) {
-  const int kRecommendedForYouGroupId = 1;
-  const int kRecentSearchesGroupId = 2;
+  const int kOnboardingGroupId = 40001;
+  const int kPZPSGroupId = 40009;
+  {
+    // Expect |kOnboardingGroupId| to be visible.
+    EXPECT_FALSE(IsSuggestionGroupIdHidden(GetPrefs(), kOnboardingGroupId));
+    histogram()->ExpectTotalCount(kToggleSuggestionGroupIdOffHistogram, 0);
 
-  EXPECT_FALSE(
-      IsSuggestionGroupIdHidden(GetPrefs(), kRecommendedForYouGroupId));
-  EXPECT_FALSE(IsSuggestionGroupIdHidden(GetPrefs(), kRecentSearchesGroupId));
+    // Expect |kPZPSGroupId| to be visible.
+    EXPECT_FALSE(IsSuggestionGroupIdHidden(GetPrefs(), kPZPSGroupId));
+    histogram()->ExpectTotalCount(kToggleSuggestionGroupIdOnHistogram, 0);
+  }
+  {
+    ToggleSuggestionGroupIdVisibility(GetPrefs(), kOnboardingGroupId);
 
-  ToggleSuggestionGroupIdVisibility(GetPrefs(), kRecommendedForYouGroupId);
-  EXPECT_TRUE(IsSuggestionGroupIdHidden(GetPrefs(), kRecommendedForYouGroupId));
-  EXPECT_FALSE(IsSuggestionGroupIdHidden(GetPrefs(), kRecentSearchesGroupId));
+    // Expect |kOnboardingGroupId| to have been toggled hidden.
+    EXPECT_TRUE(IsSuggestionGroupIdHidden(GetPrefs(), kOnboardingGroupId));
+    histogram()->ExpectTotalCount(kToggleSuggestionGroupIdOffHistogram, 1);
+    histogram()->ExpectBucketCount(kToggleSuggestionGroupIdOffHistogram,
+                                   kOnboardingGroupId, 1);
 
-  ToggleSuggestionGroupIdVisibility(GetPrefs(), kRecommendedForYouGroupId);
-  ToggleSuggestionGroupIdVisibility(GetPrefs(), kRecentSearchesGroupId);
-  EXPECT_FALSE(
-      IsSuggestionGroupIdHidden(GetPrefs(), kRecommendedForYouGroupId));
-  EXPECT_TRUE(IsSuggestionGroupIdHidden(GetPrefs(), kRecentSearchesGroupId));
+    // Expect |kPZPSGroupId| to have remained visible.
+    EXPECT_FALSE(IsSuggestionGroupIdHidden(GetPrefs(), kPZPSGroupId));
+    histogram()->ExpectTotalCount(kToggleSuggestionGroupIdOnHistogram, 0);
+  }
+  {
+    ToggleSuggestionGroupIdVisibility(GetPrefs(), kOnboardingGroupId);
+    ToggleSuggestionGroupIdVisibility(GetPrefs(), kPZPSGroupId);
+
+    // Expect |kPZPSGroupId| to have been toggled hidden.
+    EXPECT_TRUE(IsSuggestionGroupIdHidden(GetPrefs(), kPZPSGroupId));
+    histogram()->ExpectTotalCount(kToggleSuggestionGroupIdOffHistogram, 2);
+    histogram()->ExpectBucketCount(kToggleSuggestionGroupIdOffHistogram,
+                                   kPZPSGroupId, 1);
+
+    // Expect |kOnboardingGroupId| to have been toggled visible again.
+    EXPECT_FALSE(IsSuggestionGroupIdHidden(GetPrefs(), kOnboardingGroupId));
+    histogram()->ExpectTotalCount(kToggleSuggestionGroupIdOnHistogram, 1);
+    histogram()->ExpectBucketCount(kToggleSuggestionGroupIdOnHistogram,
+                                   kOnboardingGroupId, 1);
+  }
 }

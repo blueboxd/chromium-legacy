@@ -139,7 +139,7 @@ void GestureListenerManager::SetMultiTouchZoomSupportEnabled(
 
 void GestureListenerManager::GestureEventAck(
     const blink::WebGestureEvent& event,
-    InputEventAckState ack_result) {
+    blink::mojom::InputEventResultState ack_result) {
   // This is called to fix crash happening while WebContents is being
   // destroyed. See https://crbug.com/803244#c20
   if (web_contents_->IsBeingDestroyed())
@@ -150,7 +150,7 @@ void GestureListenerManager::GestureEventAck(
     return;
   Java_GestureListenerManagerImpl_onEventAck(
       env, j_obj, event.GetType(),
-      ack_result == INPUT_EVENT_ACK_STATE_CONSUMED);
+      ack_result == blink::mojom::InputEventResultState::kConsumed);
 }
 
 void GestureListenerManager::DidStopFlinging() {

@@ -90,11 +90,8 @@ SVGUseElement::SVGUseElement(Document& document)
 
 SVGUseElement::~SVGUseElement() = default;
 
-void SVGUseElement::Dispose() {
-  ClearResource();
-}
-
 void SVGUseElement::Trace(Visitor* visitor) {
+  visitor->Trace(cache_entry_);
   visitor->Trace(x_);
   visitor->Trace(y_);
   visitor->Trace(width_);
@@ -102,7 +99,7 @@ void SVGUseElement::Trace(Visitor* visitor) {
   visitor->Trace(target_id_observer_);
   SVGGraphicsElement::Trace(visitor);
   SVGURIReference::Trace(visitor);
-  ResourceClient::Trace(visitor);
+  SVGExternalDocumentCache::Client::Trace(visitor);
 }
 
 #if DCHECK_IS_ON()
@@ -196,19 +193,15 @@ void SVGUseElement::UpdateTargetReference() {
   element_url_ = GetDocument().CompleteURL(url_string);
   element_url_is_local_ = url_string.StartsWith('#');
   if (!IsStructurallyExternal() || !GetDocument().IsActive()) {
-    ClearResource();
+    cache_entry_ = nullptr;
     return;
   }
   if (!element_url_.HasFragmentIdentifier() ||
-      (GetResource() &&
-       EqualIgnoringFragmentIdentifier(element_url_, GetResource()->Url())))
+      (cache_entry_ &&
+       EqualIgnoringFragmentIdentifier(element_url_, cache_entry_->Url()))) {
     return;
+  }
 
-  ResourceLoaderOptions options;
-  options.initiator_info.name = localName();
-  FetchParameters params(ResourceRequest(element_url_), options);
-  params.MutableResourceRequest().SetMode(
-      network::mojom::RequestMode::kSameOrigin);
   auto* context_document = &GetDocument();
   if (GetDocument().ImportsController()) {
     // For @imports from HTML imported Documents, we use the
@@ -216,12 +209,13 @@ void SVGUseElement::UpdateTargetReference() {
     // main Document's origin, while using the element document for
     // CompleteURL() to use imported Documents' base URLs.
     if (!GetDocument().ContextDocument()) {
-      ClearResource();
+      cache_entry_ = nullptr;
       return;
     }
     context_document = GetDocument().ContextDocument();
   }
-  DocumentResource::FetchSVGDocument(params, *context_document, this);
+  cache_entry_ = SVGExternalDocumentCache::From(*context_document)
+                     ->Get(this, element_url_, localName());
 }
 
 void SVGUseElement::SvgAttributeChanged(const QualifiedName& attr_name) {
@@ -319,11 +313,9 @@ Element* SVGUseElement::ResolveTargetElement() {
                              WrapWeakPersistent(this)));
     }
   }
-  if (!ResourceIsValid())
+  if (!cache_entry_ || !cache_entry_->GetDocument())
     return nullptr;
-  return To<DocumentResource>(GetResource())
-      ->GetDocument()
-      ->getElementById(element_identifier);
+  return cache_entry_->GetDocument()->getElementById(element_identifier);
 }
 
 SVGElement* SVGUseElement::InstanceRoot() const {
@@ -594,15 +586,14 @@ void SVGUseElement::DispatchPendingEvent() {
   DispatchEvent(*Event::Create(event_type_names::kLoad));
 }
 
-void SVGUseElement::NotifyFinished(Resource* resource) {
-  DCHECK_EQ(GetResource(), resource);
+void SVGUseElement::NotifyFinished(Document* external_document) {
   if (!isConnected())
     return;
 
   InvalidateShadowTree();
-  if (!ResourceIsValid()) {
+  if (!external_document) {
     DispatchEvent(*Event::Create(event_type_names::kError));
-  } else if (!resource->WasCanceled()) {
+  } else {
     if (have_fired_load_event_)
       return;
     if (!IsStructurallyExternal())
@@ -614,23 +605,6 @@ void SVGUseElement::NotifyFinished(Resource* resource) {
         ->PostTask(FROM_HERE, WTF::Bind(&SVGUseElement::DispatchPendingEvent,
                                         WrapPersistent(this)));
   }
-}
-
-bool SVGUseElement::ResourceIsValid() const {
-  Resource* resource = GetResource();
-  if (!resource || resource->ErrorOccurred())
-    return false;
-  // If the resource has not yet finished loading but is revalidating, consider
-  // it to be valid if it actually carries a document. <use> elements that are
-  // in the process of "loading" the revalidated resource (performing the
-  // revalidation) will get a NotifyFinished() callback and invalidate as
-  // needed. <use> elements that have already finished loading (a potentially
-  // older version of the resource) will keep showing that until its shadow
-  // tree is invalidated.
-  // TODO(fs): Handle revalidations that return a new/different resource.
-  if (!resource->IsLoaded() && !resource->IsCacheValidator())
-    return false;
-  return To<DocumentResource>(resource)->GetDocument();
 }
 
 }  // namespace blink

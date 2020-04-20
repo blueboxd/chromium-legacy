@@ -17,16 +17,15 @@ ThemedVectorIcon::ThemedVectorIcon(const gfx::VectorIcon* icon,
     : icon_(icon), icon_size_(icon_size), color_id_(color_id) {}
 
 ThemedVectorIcon::ThemedVectorIcon(const VectorIconModel& vector_icon_model)
-    : icon_size_(vector_icon_model.icon_size()) {
+    : icon_(vector_icon_model.vector_icon()),
+      icon_size_(vector_icon_model.icon_size()) {
   if (vector_icon_model.has_color()) {
-    ThemedVectorIcon(vector_icon_model.vector_icon(),
-                     vector_icon_model.color());
+    color_ = vector_icon_model.color();
   } else if (vector_icon_model.color_id() >= 0) {
-    ThemedVectorIcon(
-        vector_icon_model.vector_icon(),
-        static_cast<ui::NativeTheme::ColorId>(vector_icon_model.color_id()));
+    color_id_ =
+        static_cast<ui::NativeTheme::ColorId>(vector_icon_model.color_id());
   } else {
-    ThemedVectorIcon(vector_icon_model.vector_icon());
+    color_id_ = ui::NativeTheme::kColorId_DefaultIconColor;
   }
 }
 

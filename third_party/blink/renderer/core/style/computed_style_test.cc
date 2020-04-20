@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/platform/transforms/scale_transform_operation.h"
 #include "ui/base/ui_base_features.h"
 
 namespace blink {
@@ -167,7 +168,12 @@ TEST(ComputedStyleTest,
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
   scoped_refptr<ComputedStyle> other = ComputedStyle::Clone(*style);
 
-  TransformOperations operations(true);
+  TransformOperations operations;
+  // An operation is necessary since having either a non-empty transform list
+  // or a transform animation will set HasTransform();
+  operations.Operations().push_back(
+      ScaleTransformOperation::Create(1, 1, TransformOperation::kScale));
+
   style->SetTransform(operations);
   other->SetTransform(operations);
 

@@ -8,6 +8,9 @@ import android.app.Notification;
 import android.content.Context;
 import android.os.Build;
 
+import org.chromium.components.browser_ui.notifications.ChromeNotification;
+import org.chromium.components.browser_ui.notifications.NotificationMetadata;
+
 /**
  * Builds a notification using the standard Notification.BigTextStyle layout.
  */

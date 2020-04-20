@@ -19,6 +19,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -152,12 +153,7 @@ public class AwImeTest {
     }
 
     private void waitForNonNullInputConnection() {
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return getInputConnection() != null;
-            }
-        });
+        CriteriaHelper.pollUiThread(() -> { Assert.assertNotNull(getInputConnection()); });
     }
 
     /**
@@ -189,24 +185,16 @@ public class AwImeTest {
         focusOnWebViewAndEnableEditing();
         waitForNonNullInputConnection();
 
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mActivityTestRule.getActivity().getCurrentFocus() == mTestContainerView;
-            }
-        });
+        CriteriaHelper.pollUiThread(Criteria.equals(
+                mTestContainerView, () -> mActivityTestRule.getActivity().getCurrentFocus()));
 
         TestThreadUtils.runOnUiThreadBlocking((Runnable) () -> {
             getInputConnection().sendKeyEvent(
                     new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_UP));
         });
 
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mActivityTestRule.getActivity().getCurrentFocus() == mEditText;
-            }
-        });
+        CriteriaHelper.pollUiThread(Criteria.equals(
+                mEditText, () -> mActivityTestRule.getActivity().getCurrentFocus()));
     }
 
     /**
@@ -221,24 +209,16 @@ public class AwImeTest {
         focusOnWebViewAndEnableEditing();
         waitForNonNullInputConnection();
 
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mActivityTestRule.getActivity().getCurrentFocus() == mTestContainerView;
-            }
-        });
+        CriteriaHelper.pollUiThread(Criteria.equals(
+                mTestContainerView, () -> mActivityTestRule.getActivity().getCurrentFocus()));
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mTestContainerView.dispatchKeyEvent(
                     new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_UP));
         });
 
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mActivityTestRule.getActivity().getCurrentFocus() == mEditText;
-            }
-        });
+        CriteriaHelper.pollUiThread(Criteria.equals(
+                mEditText, () -> mActivityTestRule.getActivity().getCurrentFocus()));
     }
 
     private void scrollBottomOfNodeIntoView(String nodeId) throws Exception {

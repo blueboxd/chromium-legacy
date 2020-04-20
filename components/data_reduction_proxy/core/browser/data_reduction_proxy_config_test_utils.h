@@ -21,34 +21,21 @@ class TickClock;
 
 namespace data_reduction_proxy {
 
-class DataReductionProxyMutableConfigValues;
-class TestDataReductionProxyParams;
-
 // Test version of |DataReductionProxyConfig|, which uses an underlying
 // |TestDataReductionProxyParams| to permit overriding of default values
 // returning from |DataReductionProxyParams|, as well as exposing methods to
 // change the underlying state.
 class TestDataReductionProxyConfig : public DataReductionProxyConfig {
  public:
-  TestDataReductionProxyConfig();
-
   // Creates a |TestDataReductionProxyConfig| with the provided |config_values|.
   // This permits any DataReductionProxyConfigValues to be used (such as
   // DataReductionProxyParams or DataReductionProxyMutableConfigValues).
-  TestDataReductionProxyConfig(
-      std::unique_ptr<DataReductionProxyConfigValues> config_values);
+  TestDataReductionProxyConfig();
 
   ~TestDataReductionProxyConfig() override;
 
   // Allows tests to reset the params being used for configuration.
   void ResetParamFlagsForTest();
-
-  // Retrieves the test params being used for the configuration.
-  TestDataReductionProxyParams* test_params();
-
-  // Retrieves the underlying config values.
-  // TODO(jeremyim): Rationalize with test_params().
-  DataReductionProxyConfigValues* config_values();
 
   // Sets the |tick_clock_| to |tick_clock|. Ownership of |tick_clock| is not
   // passed to the callee.
@@ -83,12 +70,8 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
 class MockDataReductionProxyConfig : public TestDataReductionProxyConfig {
  public:
   // Creates a |MockDataReductionProxyConfig|.
-  MockDataReductionProxyConfig(
-      std::unique_ptr<DataReductionProxyConfigValues> config_values);
+  MockDataReductionProxyConfig();
   ~MockDataReductionProxyConfig() override;
-
-  MOCK_CONST_METHOD1(ContainsDataReductionProxy,
-                     bool(const net::ProxyConfig::ProxyRules& proxy_rules));
 };
 
 }  // namespace data_reduction_proxy

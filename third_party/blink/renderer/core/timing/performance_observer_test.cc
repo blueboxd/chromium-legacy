@@ -74,7 +74,8 @@ TEST_F(PerformanceObserverTest, ObserveWithBufferedFlag) {
   EXPECT_EQ(0, NumPerformanceEntries());
 
   // add a layout-shift to performance so getEntries() returns it
-  auto* entry = MakeGarbageCollected<LayoutShift>(0.0, 1234, true, 5678);
+  auto* entry = LayoutShift::Create(0.0, 1234, true, 5678,
+                                    LayoutShift::AttributionList());
   base_->AddLayoutShiftBuffer(*entry);
 
   // call observe with the buffered flag

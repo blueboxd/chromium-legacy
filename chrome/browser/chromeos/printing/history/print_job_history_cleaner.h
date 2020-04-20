@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_PRINTING_HISTORY_PRINT_JOB_HISTORY_CLEANER_H_
 #define CHROME_BROWSER_CHROMEOS_PRINTING_HISTORY_PRINT_JOB_HISTORY_CLEANER_H_
 
-#include <memory>
-
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/printing/history/print_job_database.h"
@@ -45,8 +43,7 @@ class PrintJobHistoryCleaner {
   void OnPrintJobsRetrieved(
       base::OnceClosure callback,
       bool success,
-      std::unique_ptr<std::vector<printing::proto::PrintJobInfo>>
-          print_job_infos);
+      std::vector<printing::proto::PrintJobInfo> print_job_infos);
   void OnPrintJobsDeleted(base::OnceClosure callback, bool success);
 
   // This object is owned by PrintJobHistoryService and outlives

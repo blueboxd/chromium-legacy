@@ -48,6 +48,7 @@
 #include "third_party/blink/renderer/core/editing/spellcheck/text_checking_paragraph.h"
 #include "third_party/blink/renderer/core/editing/visible_position.h"
 #include "third_party/blink/renderer/core/editing/visible_units.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
@@ -100,11 +101,16 @@ WebTextCheckClient* SpellChecker::GetTextCheckerClient() const {
   return GetFrame().Client()->GetTextCheckerClient();
 }
 
-SpellChecker::SpellChecker(LocalFrame& frame)
-    : frame_(&frame),
-      spell_check_requester_(MakeGarbageCollected<SpellCheckRequester>(frame)),
+SpellChecker::SpellChecker(LocalDOMWindow& window)
+    : window_(&window),
+      spell_check_requester_(MakeGarbageCollected<SpellCheckRequester>(window)),
       idle_spell_check_controller_(
-          MakeGarbageCollected<IdleSpellCheckController>(frame)) {}
+          MakeGarbageCollected<IdleSpellCheckController>(window)) {}
+
+LocalFrame& SpellChecker::GetFrame() const {
+  DCHECK(window_->GetFrame());
+  return *window_->GetFrame();
+}
 
 bool SpellChecker::IsSpellCheckingEnabled() const {
   if (WebTextCheckClient* client = GetTextCheckerClient())
@@ -599,12 +605,8 @@ void SpellChecker::RemoveMarkers(const EphemeralRange& range,
   GetFrame().GetDocument()->Markers().RemoveMarkersInRange(range, marker_types);
 }
 
-void SpellChecker::DidAttachDocument(Document* document) {
-  idle_spell_check_controller_->DidAttachDocument(document);
-}
-
 void SpellChecker::Trace(Visitor* visitor) {
-  visitor->Trace(frame_);
+  visitor->Trace(window_);
   visitor->Trace(spell_check_requester_);
   visitor->Trace(idle_spell_check_controller_);
 }

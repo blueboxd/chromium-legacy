@@ -17,7 +17,6 @@
 #include "content/common/widget_messages.h"
 #include "content/renderer/frame_swap_message_queue.h"
 #include "content/renderer/render_widget.h"
-#include "content/test/mock_render_process.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "ipc/ipc_test_sink.h"

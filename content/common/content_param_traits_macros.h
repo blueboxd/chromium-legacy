@@ -11,7 +11,6 @@
 #include "components/viz/common/quads/selection.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
-#include "content/public/common/input_event_ack_state.h"
 #include "content/public/common/page_visibility_state.h"
 #include "ipc/ipc_message_macros.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
@@ -28,8 +27,6 @@
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 
-IPC_ENUM_TRAITS_MAX_VALUE(content::InputEventAckState,
-                          content::INPUT_EVENT_ACK_STATE_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::RequestContextType,
                           blink::mojom::RequestContextType::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::ResourceType,

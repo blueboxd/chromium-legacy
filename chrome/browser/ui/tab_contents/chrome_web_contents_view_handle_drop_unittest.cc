@@ -90,7 +90,7 @@ class ChromeWebContentsViewDelegateHandleOnPerformDrop : public testing::Test {
     bool called = false;
     HandleOnPerformDrop(
         contents(), data,
-        base::Bind(
+        base::BindOnce(
             [](content::WebContentsViewDelegate::DropCompletionResult
                    expected_result,
                bool* called,

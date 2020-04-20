@@ -147,23 +147,55 @@ std::vector<feedstore::DataOperation> MakeTypicalStreamOperations() {
 }
 
 std::unique_ptr<StreamModelUpdateRequest> MakeTypicalInitialModelState(
+    int first_cluster_id,
+    base::Time last_added_time) {
+  auto initial_update = std::make_unique<StreamModelUpdateRequest>();
+  const int i = first_cluster_id;
+  const int j = first_cluster_id + 1;
+  initial_update->source =
+      StreamModelUpdateRequest::Source::kInitialLoadFromStore;
+  initial_update->content.push_back(MakeContent(i));
+  initial_update->content.push_back(MakeContent(j));
+  initial_update->stream_structures = {MakeClearAll(),
+                                       MakeStream(),
+                                       MakeCluster(i, MakeRootId()),
+                                       MakeContentNode(i, MakeClusterId(i)),
+                                       MakeCluster(j, MakeRootId()),
+                                       MakeContentNode(j, MakeClusterId(j))};
+
+  initial_update->shared_states.push_back(MakeSharedState(i));
+  *initial_update->stream_data.mutable_content_id() = MakeRootId();
+  *initial_update->stream_data.mutable_shared_state_id() = MakeSharedStateId(i);
+  initial_update->stream_data.set_consistency_token("token-1");
+  initial_update->stream_data.set_next_page_token("page-2");
+  SetLastAddedTime(last_added_time, &initial_update->stream_data);
+
+  return initial_update;
+}
+
+std::unique_ptr<StreamModelUpdateRequest> MakeTypicalNextPageState(
+    int page_number,
     base::Time last_added_time) {
   auto initial_update = std::make_unique<StreamModelUpdateRequest>();
   initial_update->source =
       StreamModelUpdateRequest::Source::kInitialLoadFromStore;
-  initial_update->content.push_back(MakeContent(0));
-  initial_update->content.push_back(MakeContent(1));
-  initial_update->stream_structures = {MakeClearAll(),
-                                       MakeStream(),
-                                       MakeCluster(0, MakeRootId()),
-                                       MakeContentNode(0, MakeClusterId(0)),
-                                       MakeCluster(1, MakeRootId()),
-                                       MakeContentNode(1, MakeClusterId(1))};
+  // Each page has two pieces of content, get their indices.
+  const int i = 2 * page_number - 2;
+  const int j = i + 1;
+  initial_update->content.push_back(MakeContent(i));
+  initial_update->content.push_back(MakeContent(j));
+  initial_update->stream_structures = {
+      MakeStream(), MakeCluster(i, MakeRootId()),
+      MakeContentNode(i, MakeClusterId(i)), MakeCluster(j, MakeRootId()),
+      MakeContentNode(j, MakeClusterId(j))};
 
   initial_update->shared_states.push_back(MakeSharedState(0));
   *initial_update->stream_data.mutable_content_id() = MakeRootId();
   *initial_update->stream_data.mutable_shared_state_id() = MakeSharedStateId(0);
-  initial_update->stream_data.set_consistency_token("token-1");
+  initial_update->stream_data.set_consistency_token(
+      "token-" + base::NumberToString(page_number));
+  initial_update->stream_data.set_next_page_token(
+      "page-" + base::NumberToString(page_number + 1));
   SetLastAddedTime(last_added_time, &initial_update->stream_data);
 
   return initial_update;

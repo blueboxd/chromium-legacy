@@ -182,8 +182,9 @@ SecurityLevel GetSecurityLevel(
       // Display ReaderMode pages as neutral even if the original URL was
       // secure, because Chrome has modified the content so we don't want to
       // present it as the actual content that the server sent. Distilled pages
-      // do not contain forms, payment handlers, or other JS from the original
-      // URL, so they won't be affected by a downgraded security level.
+      // should not contain forms, payment handlers, or other JS from the
+      // original URL, so they won't be affected by a downgraded security level.
+      // Reader Mode is only run on SECURE pages.
       if (visible_security_state.is_reader_mode) {
         return NONE;
       }

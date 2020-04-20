@@ -2359,6 +2359,7 @@ class MockPasswordSaveManager : public PasswordSaveManager {
     return std::make_unique<MockPasswordSaveManager>();
   }
   MOCK_METHOD0(MoveCredentialsToAccountStore, void());
+  MOCK_METHOD1(BlockMovingToAccountStoreFor, void(const autofill::GaiaIdHash&));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockPasswordSaveManager);

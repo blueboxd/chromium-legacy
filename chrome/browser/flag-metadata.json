@@ -20,12 +20,12 @@
 //     - Any other string, which is treated as the username part of an
 //       @chromium.org email address;
 //
-//   expiry_milestone: the milestone after which this flag is obsolete.
-//   Specifically, after the milestone with the given number branches, this flag
-//   may freely be deleted and defaulted to either enabled or disabled where
-//   used. The special value -1 means "never expires", which should only be used
-//   in consultation with top-level OWNERS. The use of the -1 value must be
-//   accompanied by a comment explaining why the flag must not expire.
+//   expiry_milestone: the last milestone in which this flag should be present.
+//   Specifically, once the trunk milestone number is larger than this
+//   milestone, the flag may be freely hidden or deleted. The special value -1
+//   means "never expires", which should only be used in consultation with
+//   top-level OWNERS. The use of the -1 value must be accompanied by a comment
+//   explaining why the flag must not expire.
 
 [
   {
@@ -1237,7 +1237,7 @@
   {
     "name": "enable-close-tab-suggestions",
     "owners": [ "memex-team@google.com" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 86
   },
   {
     "name": "enable-cloud-print-xps",
@@ -2075,37 +2075,37 @@
   {
     "name": "enable-tab-engagement-reporting",
     "owners": [ "memex-team@google.com" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 86
   },
   {
     "name": "enable-tab-grid-layout",
     "owners": [ "memex-team@google.com" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 86
   },
   {
     "name": "enable-tab-groups",
     "owners": [ "memex-team@google.com" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 86
   },
   {
     "name": "enable-tab-groups-continuation",
     "owners": [ "memex-team@google.com" ],
-    "expiry_milestone": 84
+    "expiry_milestone": 86
   },
   {
     "name": "enable-tab-groups-ui-improvements",
     "owners": [ "memex-team@google.com" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 86
   },
   {
     "name": "enable-tab-switcher-on-return",
     "owners": [ "memex-team@google.com" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 86
   },
   {
     "name": "enable-tab-to-gts-animation",
     "owners": [ "memex-team@google.com" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 86
   },
   {
     "name": "enable-text-fragment-anchor",
@@ -2190,7 +2190,7 @@
   {
     "name": "enable-web-authentication-cable-v2-support",
     "owners": [ "webauthn-team@google.com" ],
-    "expiry_milestone": 84
+    "expiry_milestone": 87
   },
   {
     "name": "enable-web-bluetooth-new-permissions-backend",

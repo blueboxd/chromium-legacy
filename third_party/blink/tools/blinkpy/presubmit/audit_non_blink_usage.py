@@ -520,6 +520,18 @@ _CONFIG = [
         ],
     },
     {
+        'paths': [
+            'third_party/blink/renderer/core/exported',
+            'third_party/blink/renderer/core/frame',
+        ],
+        'allowed': [
+            'cc::ActiveFrameSequenceTrackers',
+            'cc::ApplyViewportChangesArgs',
+            'cc::LayerTreeSettings',
+            'cc::TaskGraphRunner',
+        ],
+    },
+    {
         'paths': ['third_party/blink/renderer/core/clipboard'],
         'allowed': ['net::EscapeForHTML'],
     },

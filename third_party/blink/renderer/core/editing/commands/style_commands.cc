@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/editing/visible_position.h"
 #include "third_party/blink/renderer/core/editing/writing_direction.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/html_font_element.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -216,9 +217,9 @@ bool StyleCommands::SelectionStartHasStyle(LocalFrame& frame,
           frame.Selection().ComputeVisibleSelectionInDOMTreeDeprecated(),
           property_id == CSSPropertyID::kBackgroundColor,
           style_to_check->Style());
-  return style_to_check->TriStateOfStyle(
-             frame.GetDocument()->ToExecutionContext(), style_at_start,
-             secure_context_mode) != EditingTriState::kFalse;
+  return style_to_check->TriStateOfStyle(frame.DomWindow(), style_at_start,
+                                         secure_context_mode) !=
+         EditingTriState::kFalse;
 }
 
 bool StyleCommands::ExecuteToggleStyle(LocalFrame& frame,

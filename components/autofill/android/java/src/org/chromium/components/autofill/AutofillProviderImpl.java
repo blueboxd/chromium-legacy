@@ -237,7 +237,7 @@ public class AutofillProviderImpl extends AutofillProvider {
         this(containerView, new AutofillManagerWrapper(context), context, providerName);
     }
 
-    @VisibleForTesting
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     public AutofillProviderImpl(ViewGroup containerView, AutofillManagerWrapper manager,
             Context context, String providerName) {
         mProviderName = providerName;
@@ -494,7 +494,8 @@ public class AutofillProviderImpl extends AutofillProvider {
         for (int i = 0; i < mRequest.getFieldCount(); ++i) notifyVirtualValueChanged(i);
     }
 
-    private Rect transformToWindowBounds(RectF rect) {
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    public Rect transformToWindowBounds(RectF rect) {
         // Convert bounds to device pixel.
         WindowAndroid windowAndroid = mWebContents.getTopLevelNativeWindow();
         DisplayAndroid displayAndroid = windowAndroid.getDisplay();
@@ -516,7 +517,8 @@ public class AutofillProviderImpl extends AutofillProvider {
      *
      * @param formData the form need to be transformed.
      */
-    private void transformFormFieldToContainViewCoordinates(FormData formData) {
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    public void transformFormFieldToContainViewCoordinates(FormData formData) {
         WindowAndroid windowAndroid = mWebContents.getTopLevelNativeWindow();
         DisplayAndroid displayAndroid = windowAndroid.getDisplay();
         float dipScale = displayAndroid.getDipScale();

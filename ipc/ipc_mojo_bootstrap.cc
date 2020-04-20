@@ -245,7 +245,8 @@ class ChannelAssociatedGroupController
   void ShutDown() {
     DCHECK(thread_checker_.CalledOnValidThread());
     shut_down_ = true;
-    connector_->CloseMessagePipe();
+    if (connector_)
+      connector_->CloseMessagePipe();
     OnPipeError();
     connector_.reset();
 

@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_async_blob_creator.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_context_creation_attributes_core.h"
@@ -51,7 +52,7 @@ OffscreenCanvas::OffscreenCanvas(ExecutionContext* context, const IntSize& size)
     if (context->IsDocument()) {
       // If this OffscreenCanvas is being created in the context of a
       // cross-origin iframe, it should prefer to use the low-power GPU.
-      LocalFrame* frame = Document::From(context)->GetFrame();
+      LocalFrame* frame = To<LocalDOMWindow>(context)->GetFrame();
       if (!(frame && frame->IsCrossOriginToMainFrame())) {
         AllowHighPerformancePowerPreference();
       }
@@ -498,8 +499,8 @@ bool OffscreenCanvas::ShouldAccelerate2dContext() const {
 }
 
 FontSelector* OffscreenCanvas::GetFontSelector() {
-  if (auto* document = Document::DynamicFrom(GetExecutionContext())) {
-    return document->GetStyleEngine().GetFontSelector();
+  if (auto* window = DynamicTo<LocalDOMWindow>(GetExecutionContext())) {
+    return window->document()->GetStyleEngine().GetFontSelector();
   }
   return To<WorkerGlobalScope>(GetExecutionContext())->GetFontSelector();
 }

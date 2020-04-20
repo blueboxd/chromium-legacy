@@ -53,10 +53,18 @@ bool VulkanSwapChain::Initialize(
       gfx::HasExtension(device_queue_->enabled_extensions(),
                         VK_KHR_INCREMENTAL_PRESENT_EXTENSION_NAME);
   device_queue_->GetFenceHelper()->ProcessCleanupTasks();
-  return InitializeSwapChain(surface, surface_format, image_size,
-                             min_image_count, pre_transform,
-                             use_protected_memory, std::move(old_swap_chain)) &&
-         InitializeSwapImages(surface_format);
+
+  if (!InitializeSwapChain(surface, surface_format, image_size, min_image_count,
+                           pre_transform, use_protected_memory,
+                           std::move(old_swap_chain))) {
+    return false;
+  }
+
+  if (!InitializeSwapImages(surface_format))
+    return false;
+
+  // Acquire an image for the next frame.
+  return AcquireNextImage();
 }
 
 void VulkanSwapChain::Destroy() {
@@ -68,6 +76,8 @@ void VulkanSwapChain::Destroy() {
 gfx::SwapResult VulkanSwapChain::PresentBuffer(const gfx::Rect& rect) {
   DCHECK(acquired_image_);
   DCHECK(end_write_semaphore_ != VK_NULL_HANDLE);
+
+  CHECK(!surface_lost_);
 
   VkResult result = VK_SUCCESS;
   VkDevice device = device_queue_->GetVulkanDevice();
@@ -125,7 +135,8 @@ gfx::SwapResult VulkanSwapChain::PresentBuffer(const gfx::Rect& rect) {
 
   result = vkQueuePresentKHR(queue, &present_info);
   if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-    LOG(FATAL) << "vkQueuePresentKHR() failed: " << result;
+    LOG(DFATAL) << "vkQueuePresentKHR() failed: " << result;
+    surface_lost_ = true;
     return gfx::SwapResult::SWAP_FAILED;
   }
   DLOG_IF(ERROR, result == VK_SUBOPTIMAL_KHR) << "Swapchian is suboptimal.";
@@ -147,6 +158,11 @@ gfx::SwapResult VulkanSwapChain::PresentBuffer(const gfx::Rect& rect) {
 
   in_present_images_.emplace_back(*acquired_image_);
   acquired_image_.reset();
+
+  // Acquire an image for the next frame.
+  if (!AcquireNextImage())
+    return gfx::SwapResult::SWAP_FAILED;
+
   return gfx::SwapResult::SWAP_ACK;
 }
 
@@ -193,7 +209,7 @@ bool VulkanSwapChain::InitializeSwapChain(
   }
 
   if (VK_SUCCESS != result) {
-    LOG(FATAL) << "vkCreateSwapchainKHR() failed: " << result;
+    LOG(DFATAL) << "vkCreateSwapchainKHR() failed: " << result;
     return false;
   }
 
@@ -282,28 +298,22 @@ bool VulkanSwapChain::BeginWriteCurrentImage(VkImage* image,
   DCHECK(image_index);
   DCHECK(image_layout);
   DCHECK(semaphore);
+  DCHECK(*semaphore == VK_NULL_HANDLE);
   DCHECK(!is_writing_);
+  DCHECK(acquired_image_);
 
-  VkSemaphore vk_semaphore = VK_NULL_HANDLE;
-
-  if (!acquired_image_) {
-    DCHECK(end_write_semaphore_ == VK_NULL_HANDLE);
-    if (!AcquireNextImage())
-      return false;
-    DCHECK(acquired_image_);
-    std::swap(vk_semaphore, images_[*acquired_image_].present_end_semaphore);
-  } else {
+  auto& current_image_data = images_[*acquired_image_];
+  std::swap(*semaphore, current_image_data.present_end_semaphore);
+  if (*semaphore == VK_NULL_HANDLE) {
     // In this case, PresentBuffer() is not called after
     // {Begin,End}WriteCurrentImage pairs, |end_write_semaphore_| should be
     // waited on before writing the image again.
-    std::swap(vk_semaphore, end_write_semaphore_);
+    std::swap(*semaphore, end_write_semaphore_);
   }
 
-  auto& current_image_data = images_[*acquired_image_];
   *image = current_image_data.image;
   *image_index = acquired_image_.value();
   *image_layout = current_image_data.layout;
-  *semaphore = vk_semaphore;
   is_writing_ = true;
 
   return true;
@@ -323,6 +333,8 @@ void VulkanSwapChain::EndWriteCurrentImage(VkImageLayout image_layout,
 
 bool VulkanSwapChain::AcquireNextImage() {
   DCHECK(!acquired_image_);
+  DCHECK(!surface_lost_);
+
   VkDevice device = device_queue_->GetVulkanDevice();
   // The Vulkan spec doesn't require vkAcquireNextImageKHR() returns images in
   // the present order for a vulkan swap chain. However for the best performnce,
@@ -352,6 +364,7 @@ bool VulkanSwapChain::AcquireNextImage() {
         vkAcquireNextImageKHR(device, swap_chain_, UINT64_MAX, vk_semaphore,
                               VK_NULL_HANDLE, &next_image);
     if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+      surface_lost_ = true;
       vkDestroySemaphore(device, vk_semaphore, nullptr /* pAllocator */);
       LOG(FATAL) << "vkAcquireNextImageKHR() failed: " << result;
       return false;

@@ -50,7 +50,6 @@
 #include "content/common/widget.mojom.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/render_widget_host.h"
-#include "content/public/common/input_event_ack_state.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/url_constants.h"
 #include "ipc/ipc_listener.h"
@@ -61,6 +60,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
 #include "services/viz/public/mojom/hit_test/input_target_client.mojom.h"
+#include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "third_party/blink/public/mojom/page/widget.mojom.h"
 #include "ui/base/ime/text_input_mode.h"
@@ -804,19 +804,20 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   // InputDispositionHandler
   void OnWheelEventAck(const MouseWheelEventWithLatencyInfo& event,
-                       InputEventAckSource ack_source,
-                       InputEventAckState ack_result) override;
+                       blink::mojom::InputEventResultSource ack_source,
+                       blink::mojom::InputEventResultState ack_result) override;
   void OnTouchEventAck(const TouchEventWithLatencyInfo& event,
-                       InputEventAckSource ack_source,
-                       InputEventAckState ack_result) override;
-  void OnGestureEventAck(const GestureEventWithLatencyInfo& event,
-                         InputEventAckSource ack_source,
-                         InputEventAckState ack_result) override;
+                       blink::mojom::InputEventResultSource ack_source,
+                       blink::mojom::InputEventResultState ack_result) override;
+  void OnGestureEventAck(
+      const GestureEventWithLatencyInfo& event,
+      blink::mojom::InputEventResultSource ack_source,
+      blink::mojom::InputEventResultState ack_result) override;
 
   // virtual for testing.
   virtual void OnMouseEventAck(const MouseEventWithLatencyInfo& event,
-                               InputEventAckSource ack_source,
-                               InputEventAckState ack_result);
+                               blink::mojom::InputEventResultSource ack_source,
+                               blink::mojom::InputEventResultState ack_result);
   // ---------------------------------------------------------------------------
 
   bool IsMouseLocked() const;
@@ -866,8 +867,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // InputRouter::SendKeyboardEvent() callbacks to this. This may be called
   // synchronously.
   void OnKeyboardEventAck(const NativeWebKeyboardEventWithLatencyInfo& event,
-                          InputEventAckSource ack_source,
-                          InputEventAckState ack_result);
+                          blink::mojom::InputEventResultSource ack_source,
+                          blink::mojom::InputEventResultState ack_result);
 
   // IPC message handlers
   void OnClose();
@@ -929,15 +930,17 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   bool KeyPressListenersHandleEvent(const NativeWebKeyboardEvent& event);
 
   // InputRouterClient
-  InputEventAckState FilterInputEvent(
+  blink::mojom::InputEventResultState FilterInputEvent(
       const blink::WebInputEvent& event,
       const ui::LatencyInfo& latency_info) override;
   void IncrementInFlightEventCount() override;
-  void DecrementInFlightEventCount(InputEventAckSource ack_source) override;
+  void DecrementInFlightEventCount(
+      blink::mojom::InputEventResultSource ack_source) override;
   void DidOverscroll(const ui::DidOverscrollParams& params) override;
   void DidStartScrollingViewport() override;
   void OnSetWhiteListedTouchAction(
       cc::TouchAction white_listed_touch_action) override {}
+  void OnInvalidInputEventSource() override;
 
   // Dispatch input events with latency information
   void DispatchInputEventWithLatencyInfo(const blink::WebInputEvent& event,

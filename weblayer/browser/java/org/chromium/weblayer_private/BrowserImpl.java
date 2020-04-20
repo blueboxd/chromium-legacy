@@ -6,6 +6,7 @@ package org.chromium.weblayer_private;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.provider.Settings;
@@ -62,6 +63,7 @@ public class BrowserImpl extends IBrowser.Stub {
     private boolean mFragmentResumed;
     // Cache the value instead of querying system every time.
     private Boolean mPasswordEchoEnabled;
+    private Boolean mDarkThemeEnabled;
 
     // Created in the constructor from saved state and used in setClient().
     private PersistenceInfo mPersistenceInfo;
@@ -237,12 +239,21 @@ public class BrowserImpl extends IBrowser.Stub {
         new TabImpl(mProfile, mWindowAndroid, nativeTab);
     }
 
-    private void checkPasswordEchoEnabled() {
-        if (mPasswordEchoEnabled == null) return;
-        boolean oldEnabled = mPasswordEchoEnabled;
-        mPasswordEchoEnabled = null;
-        boolean newEnabled = getPasswordEchoEnabled();
-        if (oldEnabled != newEnabled) {
+    private void checkPreferences() {
+        boolean changed = false;
+        if (mPasswordEchoEnabled != null) {
+            boolean oldEnabled = mPasswordEchoEnabled;
+            mPasswordEchoEnabled = null;
+            boolean newEnabled = getPasswordEchoEnabled();
+            changed = changed || oldEnabled != newEnabled;
+        }
+        if (mDarkThemeEnabled != null) {
+            boolean oldEnabled = mDarkThemeEnabled;
+            mDarkThemeEnabled = null;
+            boolean newEnabled = getDarkThemeEnabled();
+            changed = changed || oldEnabled != newEnabled;
+        }
+        if (changed) {
             BrowserImplJni.get().webPreferencesChanged(mNativeBrowser);
         }
     }
@@ -257,6 +268,18 @@ public class BrowserImpl extends IBrowser.Stub {
                     == 1;
         }
         return mPasswordEchoEnabled;
+    }
+
+    @CalledByNative
+    private boolean getDarkThemeEnabled() {
+        Context context = getContext();
+        if (context == null) return false;
+        if (mDarkThemeEnabled == null) {
+            int uiMode = context.getResources().getConfiguration().uiMode;
+            mDarkThemeEnabled =
+                    (uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
+        }
+        return mDarkThemeEnabled;
     }
 
     @CalledByNative
@@ -398,7 +421,7 @@ public class BrowserImpl extends IBrowser.Stub {
         mFragmentStarted = true;
         BrowserImplJni.get().onFragmentStart(mNativeBrowser, this);
         updateAllTabs();
-        checkPasswordEchoEnabled();
+        checkPreferences();
     }
 
     public void onFragmentStop() {

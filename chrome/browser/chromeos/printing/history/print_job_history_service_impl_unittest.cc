@@ -55,9 +55,9 @@ class PrintJobHistoryServiceImplTest : public ::testing::Test {
   void OnPrintJobsRetrieved(
       base::RepeatingClosure run_loop_closure,
       bool success,
-      std::unique_ptr<std::vector<printing::proto::PrintJobInfo>> entries) {
+      std::vector<printing::proto::PrintJobInfo> entries) {
     EXPECT_TRUE(success);
-    entries_ = *entries;
+    entries_ = std::move(entries);
     run_loop_closure.Run();
   }
 

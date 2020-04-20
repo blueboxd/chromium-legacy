@@ -172,7 +172,7 @@ void VersionUpdaterCros::CheckForUpdate(const StatusCallback& callback,
   // Make sure that libcros is loaded and OOBE is complete.
   if (!WizardController::default_controller() ||
       chromeos::StartupUtils::IsDeviceRegistered()) {
-    update_engine_client->RequestUpdateCheck(base::Bind(
+    update_engine_client->RequestUpdateCheck(base::BindOnce(
         &VersionUpdaterCros::OnUpdateCheck, weak_ptr_factory_.GetWeakPtr()));
   }
 }
@@ -200,7 +200,7 @@ void VersionUpdaterCros::SetUpdateOverCellularOneTimePermission(
       ->GetUpdateEngineClient()
       ->SetUpdateOverCellularOneTimePermission(
           update_version, update_size,
-          base::Bind(
+          base::BindOnce(
               &VersionUpdaterCros::OnSetUpdateOverCellularOneTimePermission,
               weak_ptr_factory_.GetWeakPtr()));
 }
@@ -227,8 +227,8 @@ void VersionUpdaterCros::GetChannel(bool get_current_channel,
   // Request the channel information. Bind to a weak_ptr bound method rather
   // than passing |cb| directly so that |cb| does not outlive |this|.
   update_engine_client->GetChannel(
-      get_current_channel, base::Bind(&VersionUpdaterCros::OnGetChannel,
-                                      weak_ptr_factory_.GetWeakPtr(), cb));
+      get_current_channel, base::BindOnce(&VersionUpdaterCros::OnGetChannel,
+                                          weak_ptr_factory_.GetWeakPtr(), cb));
 }
 
 void VersionUpdaterCros::OnGetChannel(const ChannelCallback& cb,

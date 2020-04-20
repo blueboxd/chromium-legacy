@@ -24,13 +24,11 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_mutable_config_values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_util.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
@@ -94,21 +92,6 @@ const net::BackoffEntry::Policy kDefaultBackoffPolicy = {
     true,             // always_use_initial_delay
 };
 
-// Extracts the list of Data Reduction Proxy servers to use for HTTP requests.
-std::vector<DataReductionProxyServer> GetProxiesForHTTP(
-    const data_reduction_proxy::ProxyConfig& proxy_config) {
-  std::vector<DataReductionProxyServer> proxies;
-  for (const auto& server : proxy_config.http_proxy_servers()) {
-    if (server.scheme() != ProxyServer_ProxyScheme_UNSPECIFIED) {
-      proxies.push_back(DataReductionProxyServer(net::ProxyServer(
-          protobuf_parser::SchemeFromProxyScheme(server.scheme()),
-          net::HostPortPair(server.host(), server.port()),
-          /* HTTPS proxies are marked as trusted. */
-          server.scheme() == ProxyServer_ProxyScheme_HTTPS)));
-    }
-  }
-  return proxies;
-}
 
 bool AllowInsecurePrefetchProxy() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -190,13 +173,11 @@ net::BackoffEntry::Policy GetBackoffPolicy() {
 DataReductionProxyConfigServiceClient::DataReductionProxyConfigServiceClient(
     const net::BackoffEntry::Policy& backoff_policy,
     DataReductionProxyRequestOptions* request_options,
-    DataReductionProxyMutableConfigValues* config_values,
     DataReductionProxyConfig* config,
     DataReductionProxyService* service,
     network::NetworkConnectionTracker* network_connection_tracker,
     ConfigStorer config_storer)
     : request_options_(request_options),
-      config_values_(config_values),
       config_(config),
       service_(service),
       network_connection_tracker_(network_connection_tracker),
@@ -214,7 +195,6 @@ DataReductionProxyConfigServiceClient::DataReductionProxyConfigServiceClient(
       fetch_in_progress_(false),
       client_config_override_used_(false) {
   DCHECK(request_options);
-  DCHECK(config_values);
   DCHECK(config);
   DCHECK(service);
   DCHECK(config_service_url_.is_valid());
@@ -289,7 +269,6 @@ void DataReductionProxyConfigServiceClient::InvalidateAndRetrieveNewConfig() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   InvalidateConfig();
-  DCHECK(config_->GetProxiesForHttp().empty());
 
   if (fetch_in_progress_) {
     // If a client config fetch is already in progress, then do not start
@@ -490,7 +469,6 @@ void DataReductionProxyConfigServiceClient::InvalidateConfig() {
   GetBackoffEntry()->InformOfRequest(false);
   config_storer_.Run(std::string());
   request_options_->Invalidate();
-  config_values_->Invalidate();
   config_->OnNewClientConfigFetched();
 }
 
@@ -510,12 +488,8 @@ void DataReductionProxyConfigServiceClient::HandleResponse(
     succeeded = ParseAndApplyProxyConfig(config);
   }
 
-  // These are proxies listed in the config. The proxies that client eventually
-  // ends up using depend on the field trials.
-  std::vector<DataReductionProxyServer> proxies;
   base::TimeDelta refresh_duration;
   if (succeeded) {
-    proxies = GetProxiesForHTTP(config.proxy_config());
     refresh_duration =
         protobuf_parser::DurationToTimeDelta(config.refresh_duration());
 
@@ -571,13 +545,8 @@ bool DataReductionProxyConfigServiceClient::ParseAndApplyProxyConfig(
   service_->SetIgnoreLongTermBlackListRules(
       config.ignore_long_term_black_list_rules());
 
-  // An empty proxy config is OK, and allows the server to effectively turn off
-  // DataSaver if needed. See http://crbug.com/840978.
-  std::vector<DataReductionProxyServer> proxies =
-      GetProxiesForHTTP(config.proxy_config());
 
   request_options_->SetSecureSession(config.session_key());
-  config_values_->UpdateValues(proxies);
   config_->OnNewClientConfigFetched();
   remote_config_applied_ = true;
   return true;

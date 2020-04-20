@@ -69,7 +69,7 @@ void CompositorFrameReportingController::WillBeginImplFrame(
   }
   std::unique_ptr<CompositorFrameReporter> reporter =
       std::make_unique<CompositorFrameReporter>(
-          &active_trackers_, args.frame_id,
+          active_trackers_, args.frame_id,
           args.frame_time + (args.interval * 1.5), latency_ukm_reporter_.get(),
           should_report_metrics_);
   reporter->StartStage(StageType::kBeginImplFrameToSendBeginMainFrame,
@@ -109,7 +109,7 @@ void CompositorFrameReportingController::WillBeginMainFrame(
     // deadline yet). So will start a new reporter at BeginMainFrame.
     std::unique_ptr<CompositorFrameReporter> reporter =
         std::make_unique<CompositorFrameReporter>(
-            &active_trackers_, args.frame_id,
+            active_trackers_, args.frame_id,
             args.frame_time + (args.interval * 1.5),
             latency_ukm_reporter_.get(), should_report_metrics_);
     reporter->StartStage(StageType::kSendBeginMainFrameToCommit, now);
@@ -335,12 +335,12 @@ void CompositorFrameReportingController::SetBlinkBreakdown(
 
 void CompositorFrameReportingController::AddActiveTracker(
     FrameSequenceTrackerType type) {
-  active_trackers_.insert(type);
+  active_trackers_.set(static_cast<size_t>(type));
 }
 
 void CompositorFrameReportingController::RemoveActiveTracker(
     FrameSequenceTrackerType type) {
-  active_trackers_.erase(type);
+  active_trackers_.reset(static_cast<size_t>(type));
 }
 
 void CompositorFrameReportingController::AdvanceReporterStage(

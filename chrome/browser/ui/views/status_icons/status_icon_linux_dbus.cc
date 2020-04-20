@@ -252,8 +252,8 @@ void StatusIconLinuxDbus::CheckStatusNotifierWatcherHasOwner() {
   writer.AppendString(kServiceStatusNotifierWatcher);
   bus_proxy->CallMethod(
       &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-      base::BindRepeating(&StatusIconLinuxDbus::OnNameHasOwnerResponse,
-                          weak_factory_.GetWeakPtr()));
+      base::BindOnce(&StatusIconLinuxDbus::OnNameHasOwnerResponse,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void StatusIconLinuxDbus::OnNameHasOwnerResponse(dbus::Response* response) {
@@ -274,8 +274,8 @@ void StatusIconLinuxDbus::OnNameHasOwnerResponse(dbus::Response* response) {
   writer.AppendString(kPropertyIsStatusNotifierHostRegistered);
   watcher_->CallMethod(
       &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-      base::BindRepeating(&StatusIconLinuxDbus::OnHostRegisteredResponse,
-                          weak_factory_.GetWeakPtr()));
+      base::BindOnce(&StatusIconLinuxDbus::OnHostRegisteredResponse,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void StatusIconLinuxDbus::OnHostRegisteredResponse(dbus::Response* response) {
@@ -295,8 +295,8 @@ void StatusIconLinuxDbus::OnHostRegisteredResponse(dbus::Response* response) {
   service_id_ = NextServiceId();
   bus_->RequestOwnership(ServiceNameFromId(service_id_),
                          dbus::Bus::ServiceOwnershipOptions::REQUIRE_PRIMARY,
-                         base::BindRepeating(&StatusIconLinuxDbus::OnOwnership,
-                                             weak_factory_.GetWeakPtr()));
+                         base::BindOnce(&StatusIconLinuxDbus::OnOwnership,
+                                        weak_factory_.GetWeakPtr()));
 }
 
 void StatusIconLinuxDbus::OnOwnership(const std::string& service_name,
@@ -331,8 +331,8 @@ void StatusIconLinuxDbus::OnOwnership(const std::string& service_name,
     item_->ExportMethod(
         kInterfaceStatusNotifierItem, method.name,
         base::BindRepeating(method.callback, weak_factory_.GetWeakPtr()),
-        base::BindRepeating(&StatusIconLinuxDbus::OnExported,
-                            weak_factory_.GetWeakPtr()));
+        base::BindOnce(&StatusIconLinuxDbus::OnExported,
+                       weak_factory_.GetWeakPtr()));
   }
 
   menu_ = std::make_unique<DbusMenu>(
@@ -383,8 +383,8 @@ void StatusIconLinuxDbus::OnInitialized(bool success) {
   dbus::MessageWriter writer(&method_call);
   writer.AppendString(ServiceNameFromId(service_id_));
   watcher_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                       base::BindRepeating(&StatusIconLinuxDbus::OnRegistered,
-                                           weak_factory_.GetWeakPtr()));
+                       base::BindOnce(&StatusIconLinuxDbus::OnRegistered,
+                                      weak_factory_.GetWeakPtr()));
 }
 
 void StatusIconLinuxDbus::OnRegistered(dbus::Response* response) {

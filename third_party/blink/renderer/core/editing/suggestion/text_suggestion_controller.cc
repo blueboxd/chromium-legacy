@@ -193,15 +193,10 @@ SuggestionInfosWithNodeAndHighlightColor ComputeSuggestionInfos(
 
 }  // namespace
 
-TextSuggestionController::TextSuggestionController(LocalFrame& frame)
+TextSuggestionController::TextSuggestionController(LocalDOMWindow& window)
     : is_suggestion_menu_open_(false),
-      frame_(&frame),
-      text_suggestion_host_(frame.DomWindow()) {}
-
-void TextSuggestionController::DidAttachDocument(Document* document) {
-  DCHECK(document);
-  SetExecutionContext(document->ToExecutionContext());
-}
+      window_(&window),
+      text_suggestion_host_(&window) {}
 
 bool TextSuggestionController::IsMenuOpen() const {
   return is_suggestion_menu_open_;
@@ -256,9 +251,8 @@ void TextSuggestionController::HandlePotentialSuggestionTap(
 }
 
 void TextSuggestionController::Trace(Visitor* visitor) {
-  visitor->Trace(frame_);
+  visitor->Trace(window_);
   visitor->Trace(text_suggestion_host_);
-  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 void TextSuggestionController::ReplaceActiveSuggestionRange(
@@ -540,16 +534,16 @@ void TextSuggestionController::CallMojoShowTextSuggestionMenu(
 
 Document& TextSuggestionController::GetDocument() const {
   DCHECK(IsAvailable());
-  return *Document::From(GetExecutionContext());
+  return *window_->document();
 }
 
 bool TextSuggestionController::IsAvailable() const {
-  return GetExecutionContext();
+  return !window_->IsContextDestroyed();
 }
 
 LocalFrame& TextSuggestionController::GetFrame() const {
-  DCHECK(frame_);
-  return *frame_;
+  DCHECK(window_->GetFrame());
+  return *window_->GetFrame();
 }
 
 std::pair<const Node*, const DocumentMarker*>

@@ -18,8 +18,10 @@
 namespace feed {
 class FeedStream;
 
-// Loads the stream model from storage or network.
-// Has two modes, see |LoadStreamTask::LoadType|.
+// Loads the stream model from storage or network. If data is refreshed from the
+// network, it is persisted to |FeedStore| by overwriting any existing stream
+// data.
+// This task has two modes, see |LoadStreamTask::LoadType|.
 class LoadStreamTask : public offline_pages::Task {
  public:
   enum class LoadType {

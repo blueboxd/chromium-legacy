@@ -6,6 +6,7 @@
 
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
+#include "base/logging.h"
 #include "base/no_destructor.h"
 
 namespace cr_fuchsia {

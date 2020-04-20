@@ -11,6 +11,7 @@
 #include <algorithm>
 
 #include "base/files/file_path.h"
+#include "base/logging.h"
 #include "base/scoped_native_library.h"
 #include "base/win/windows_version.h"
 #include "build/build_config.h"

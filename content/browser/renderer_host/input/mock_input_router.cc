@@ -30,7 +30,7 @@ void MockInputRouter::SendTouchEvent(
     const TouchEventWithLatencyInfo& touch_event) {
   send_touch_event_not_cancelled_ =
       client_->FilterInputEvent(touch_event.event, touch_event.latency) ==
-      INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
+      blink::mojom::InputEventResultState::kNotConsumed;
 }
 
 bool MockInputRouter::HasPendingEvents() const {

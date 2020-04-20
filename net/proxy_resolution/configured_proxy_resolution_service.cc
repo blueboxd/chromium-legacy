@@ -39,8 +39,8 @@
 #include "net/url_request/url_request_context.h"
 
 #if defined(OS_WIN)
-#include "net/proxy_resolution/proxy_config_service_win.h"
-#include "net/proxy_resolution/proxy_resolver_winhttp.h"
+#include "net/proxy_resolution/win/proxy_config_service_win.h"
+#include "net/proxy_resolution/win/proxy_resolver_winhttp.h"
 #elif defined(OS_IOS)
 #include "net/proxy_resolution/proxy_config_service_ios.h"
 #include "net/proxy_resolution/proxy_resolver_mac.h"

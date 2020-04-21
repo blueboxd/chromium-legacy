@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL supportsSession resolves when immersive options supported promise_test: Unhandled rejection with value: object "NotSupportedError: Failed to execute 'supportsSession' on 'XRSystem': The specified session configuration is not supported."
+Harness: the test ran to completion.
+

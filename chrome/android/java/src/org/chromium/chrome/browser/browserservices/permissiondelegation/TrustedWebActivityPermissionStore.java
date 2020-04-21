@@ -15,6 +15,7 @@ import androidx.browser.trusted.Token;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.StrictModeContext;
+import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.embedder_support.util.Origin;
 
 import java.util.Collections;
@@ -56,6 +57,8 @@ public class TrustedWebActivityPermissionStore {
     private static final String KEY_ALL_ORIGINS = "origins";
 
     private static final String KEY_NOTIFICATION_PERMISSION_PREFIX = "notification_permission.";
+    private static final String KEY_GEOLOCATION_PERMISSION_PREFIX = "geolocation_permission.";
+    private static final String KEY_UNSUPPORTED_PERMISSION_PREFIX = "unsurpported__permission.";
     private static final String KEY_PACKAGE_NAME_PREFIX = "package_name.";
     private static final String KEY_APP_NAME_PREFIX = "app_name.";
     private static final String KEY_PRE_TWA_NOTIFICATION_PERMISSION_PREFIX
@@ -84,11 +87,11 @@ public class TrustedWebActivityPermissionStore {
     }
 
     /**
-     * Whether notifications for that origin should be enabled due to a TWA. {@code null} if
-     * given origin is not linked to a TWA.
+     * Whether permission of {@link ContentSettingsType} for that origin should be enabled due to a
+     * TWA. {@code null} if given origin is not linked to a TWA.
      */
-    public Boolean areNotificationsEnabled(Origin origin) {
-        String key = createNotificationPermissionKey(origin);
+    public Boolean arePermissionEnabled(@ContentSettingsType int type, Origin origin) {
+        String key = createPermissionKey(type, origin);
         if (!mPreferences.contains(key)) return null;
         return mPreferences.getBoolean(key, false);
     }
@@ -144,13 +147,14 @@ public class TrustedWebActivityPermissionStore {
      * Returns whether {@code true} if state was changed, {@code false} if the provided state was
      * the same as the state beforehand.
      */
-    boolean setStateForOrigin(Origin origin, String packageName, String appName, boolean enabled) {
+    boolean setStateForOrigin(Origin origin, String packageName, String appName,
+            @ContentSettingsType int type, boolean enabled) {
         boolean modified = !getStoredOrigins().contains(origin.toString());
 
         if (!modified) {
             // Don't bother with these extra checks if we have a brand new origin.
-            boolean enabledChanged = enabled !=
-                    mPreferences.getBoolean(createNotificationPermissionKey(origin), false);
+            boolean enabledChanged =
+                    enabled != mPreferences.getBoolean(createPermissionKey(type, origin), false);
             boolean packageChanged = !packageName.equals(
                     mPreferences.getString(createPackageNameKey(origin), null));
             boolean appNameChanged = !appName.equals(
@@ -161,7 +165,7 @@ public class TrustedWebActivityPermissionStore {
         addOrigin(origin);
 
         mPreferences.edit()
-                .putBoolean(createNotificationPermissionKey(origin), enabled)
+                .putBoolean(createPermissionKey(type, origin), enabled)
                 .putString(createPackageNameKey(origin), packageName)
                 .putString(createAppNameKey(origin), appName)
                 .apply();
@@ -176,7 +180,8 @@ public class TrustedWebActivityPermissionStore {
 
         mPreferences.edit()
                 .putStringSet(KEY_ALL_ORIGINS, origins)
-                .remove(createNotificationPermissionKey(origin))
+                .remove(createPermissionKey(ContentSettingsType.NOTIFICATIONS, origin))
+                .remove(createPermissionKey(ContentSettingsType.GEOLOCATION, origin))
                 .remove(createAppNameKey(origin))
                 .remove(createPackageNameKey(origin))
                 .remove(createAllDelegateAppsKey(origin))
@@ -221,8 +226,20 @@ public class TrustedWebActivityPermissionStore {
                 .apply();
     }
 
-    private String createNotificationPermissionKey(Origin origin) {
-        return KEY_NOTIFICATION_PERMISSION_PREFIX + origin.toString();
+    private String getKeyPermissionPrefix(@ContentSettingsType int type) {
+        switch (type) {
+            case ContentSettingsType.NOTIFICATIONS:
+                return KEY_NOTIFICATION_PERMISSION_PREFIX;
+            case ContentSettingsType.GEOLOCATION:
+                return KEY_GEOLOCATION_PERMISSION_PREFIX;
+            default:
+                assert false;
+                return KEY_UNSUPPORTED_PERMISSION_PREFIX;
+        }
+    }
+
+    private String createPermissionKey(@ContentSettingsType int type, Origin origin) {
+        return getKeyPermissionPrefix(type) + origin.toString();
     }
 
     private String createNotificationPreTwaPermissionKey(Origin origin) {

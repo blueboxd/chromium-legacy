@@ -254,6 +254,7 @@ ServiceWorkerUtils::CreateResourceResponseHeadAndMetadata(
     base::TimeTicks response_start_time,
     int response_data_size) {
   DCHECK(http_info);
+  DCHECK(http_info->headers);
 
   auto head = network::mojom::URLResponseHead::New();
   head->request_start = request_start_time;

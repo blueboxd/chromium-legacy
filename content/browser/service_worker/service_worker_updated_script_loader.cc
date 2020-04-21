@@ -336,30 +336,25 @@ void ServiceWorkerUpdatedScriptLoader::OnComplete(
 
 // End of URLLoaderClient ------------------------------------------------------
 
-int ServiceWorkerUpdatedScriptLoader::WillWriteInfo(
-    scoped_refptr<HttpResponseInfoIOBuffer> response_info) {
-  DCHECK(response_info);
-  const net::HttpResponseInfo* info = response_info->http_info.get();
-  DCHECK(info);
+int ServiceWorkerUpdatedScriptLoader::WillWriteResponseHead(
+    const network::mojom::URLResponseHead& response_head) {
+  auto client_response = response_head.Clone();
+  client_response->request_start = request_start_;
 
   if (resource_type_ == blink::mojom::ResourceType::kServiceWorker) {
     version_->SetMainScriptResponse(
-        std::make_unique<ServiceWorkerVersion::MainScriptResponse>(*info));
+        std::make_unique<ServiceWorkerVersion::MainScriptResponse>(
+            *client_response));
   }
 
-  auto response = ServiceWorkerUtils::CreateResourceResponseHeadAndMetadata(
-      info, options_, request_start_, base::TimeTicks::Now(),
-      response_info->response_data_size);
   // Don't pass SSLInfo to the client when the original request doesn't ask
   // to send it.
-  if (response.head->ssl_info.has_value() &&
+  if (client_response->ssl_info.has_value() &&
       !(options_ & network::mojom::kURLLoadOptionSendSSLInfoWithResponse)) {
-    response.head->ssl_info.reset();
+    client_response->ssl_info.reset();
   }
 
-  client_->OnReceiveResponse(std::move(response.head));
-  if (!response.metadata.empty())
-    client_->OnReceiveCachedMetadata(std::move(response.metadata));
+  client_->OnReceiveResponse(std::move(client_response));
 
   mojo::ScopedDataPipeConsumerHandle client_consumer;
   if (mojo::CreateDataPipe(nullptr, &client_producer_, &client_consumer) !=

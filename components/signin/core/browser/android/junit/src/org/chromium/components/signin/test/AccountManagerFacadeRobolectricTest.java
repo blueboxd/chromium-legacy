@@ -38,6 +38,7 @@ import org.chromium.testing.local.CustomShadowUserManager;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -88,10 +89,12 @@ public class AccountManagerFacadeRobolectricTest {
     @SmallTest
     public void testCanonicalAccount() {
         addTestAccount("test@gmail.com");
+        List<Account> accounts = mFacade.tryGetGoogleAccounts();
 
-        Assert.assertNotNull(mFacade.getAccountFromName("test@gmail.com"));
-        Assert.assertNotNull(mFacade.getAccountFromName("Test@gmail.com"));
-        Assert.assertNotNull(mFacade.getAccountFromName("te.st@gmail.com"));
+        Assert.assertNotNull(AccountUtils.findAccountByName(accounts, "test@gmail.com"));
+        Assert.assertNotNull(AccountUtils.findAccountByName(accounts, "Test@gmail.com"));
+        Assert.assertNotNull(AccountUtils.findAccountByName(accounts, "te.st@gmail.com"));
+        Assert.assertNull(AccountUtils.findAccountByName(accounts, "te@googlemail.com"));
     }
 
     // If this test starts flaking, please re-open crbug.com/568636 and make sure there is some sort
@@ -100,11 +103,12 @@ public class AccountManagerFacadeRobolectricTest {
     @SmallTest
     public void testNonCanonicalAccount() {
         addTestAccount("test.me@gmail.com");
+        List<Account> accounts = mFacade.tryGetGoogleAccounts();
 
-        Assert.assertNotNull(mFacade.getAccountFromName("test.me@gmail.com"));
-        Assert.assertNotNull(mFacade.getAccountFromName("testme@gmail.com"));
-        Assert.assertNotNull(mFacade.getAccountFromName("Testme@gmail.com"));
-        Assert.assertNotNull(mFacade.getAccountFromName("te.st.me@gmail.com"));
+        Assert.assertNotNull(AccountUtils.findAccountByName(accounts, "test.me@gmail.com"));
+        Assert.assertNotNull(AccountUtils.findAccountByName(accounts, "testme@gmail.com"));
+        Assert.assertNotNull(AccountUtils.findAccountByName(accounts, "Testme@gmail.com"));
+        Assert.assertNotNull(AccountUtils.findAccountByName(accounts, "te.st.me@gmail.com"));
     }
 
     @Test

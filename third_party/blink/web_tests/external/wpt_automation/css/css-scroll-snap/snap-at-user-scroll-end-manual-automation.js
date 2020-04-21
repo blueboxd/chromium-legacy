@@ -1,15 +1,5 @@
 importAutomationScript('/pointerevents/pointerevent_common_input.js');
 
-const WHEEL_SOURCE_TYPE = 2;
-
-function smoothScroll(pixels_to_scroll, start_x, start_y,
-    direction, speed_in_pixels_s) {
-  return new Promise((resolve, reject) => {
-    chrome.gpuBenchmarking.smoothScrollBy(pixels_to_scroll, resolve, start_x,
-        start_y, WHEEL_SOURCE_TYPE, direction, speed_in_pixels_s);
-  });
-}
-
 function waitForAnimationEnd() {
   const MAX_FRAME = 500;
   var last_changed_frame = 0;
@@ -36,7 +26,7 @@ function waitForAnimationEnd() {
 }
 
 function inject_input() {
-  return smoothScroll(100, 20, 20, 'downright', 4000).then(() => {
+  return smoothScrollBy(100, 20, 20, "downright", chrome.gpuBenchmarking.MOUSE_INPUT, 4000).then(() => {
     return waitForAnimationEnd();
   }).then(() => {
     return mouseClickInTarget('#btn', undefined, /* left button */ 0,

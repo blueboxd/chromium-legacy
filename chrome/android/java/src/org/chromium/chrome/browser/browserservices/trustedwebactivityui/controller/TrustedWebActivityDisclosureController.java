@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller;
 
 import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.DISCLOSURE_EVENTS_CALLBACK;
+import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.DISCLOSURE_SCOPE;
 import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.DISCLOSURE_STATE;
 import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.DISCLOSURE_STATE_DISMISSED_BY_USER;
 import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.DISCLOSURE_STATE_NOT_SHOWN;
@@ -49,8 +50,10 @@ public class TrustedWebActivityDisclosureController implements NativeInitObserve
 
     private void onVerificationStatusChanged() {
         if (shouldShowInCurrentState()) {
+            mModel.set(DISCLOSURE_SCOPE, mCurrentPageVerifier.getState().scope);
             showIfNeeded();
         } else {
+            mModel.set(DISCLOSURE_SCOPE, null);
             dismiss();
         }
     }

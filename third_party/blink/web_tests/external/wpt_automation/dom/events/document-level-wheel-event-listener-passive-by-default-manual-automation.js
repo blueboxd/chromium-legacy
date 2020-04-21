@@ -25,5 +25,5 @@ function wheelScroll(direction, start_x, start_y) {
 }
 
 function inject_input() {
-  return wheelScroll('down', window.innerWidth / 2, window.innerHeight / 2);
+  return smoothScrollBy(100, window.innerWidth / 2, window.innerHeight / 2, 'down', chrome.gpuBenchmarking.MOUSE_INPUT);
 }

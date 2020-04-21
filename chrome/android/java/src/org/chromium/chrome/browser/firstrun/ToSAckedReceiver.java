@@ -14,8 +14,8 @@ import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.init.ProcessInitializationHandler;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
+import org.chromium.components.signin.AccountUtils;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.List;
@@ -53,8 +53,8 @@ public class ToSAckedReceiver extends BroadcastReceiver {
         if (toSAckedAccounts == null || toSAckedAccounts.isEmpty()) return false;
         PostTask.runSynchronously(UiThreadTaskTraits.DEFAULT,
                 () -> { ProcessInitializationHandler.getInstance().initializePreNative(); });
-        AccountManagerFacade accountHelper = AccountManagerFacadeProvider.getInstance();
-        List<String> accountNames = accountHelper.tryGetGoogleAccountNames();
+        List<String> accountNames = AccountUtils.toAccountNames(
+                AccountManagerFacadeProvider.getInstance().tryGetGoogleAccounts());
         if (accountNames.isEmpty()) return false;
         for (int k = 0; k < accountNames.size(); k++) {
             if (toSAckedAccounts.contains(accountNames.get(k))) return true;

@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controll
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TwaRegistrar;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.Verifier;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.splashscreen.TwaSplashController;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.view.NewDisclosureSnackbar;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.view.TrustedWebActivityDisclosureView;
 import org.chromium.chrome.browser.customtabs.CustomTabStatusBarColorProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
@@ -60,7 +61,8 @@ public class TrustedWebActivityCoordinator implements InflationObserver {
     @Inject
     public TrustedWebActivityCoordinator(
             TrustedWebActivityDisclosureController disclosureController,
-            TrustedWebActivityDisclosureView disclosureView,
+            Lazy<TrustedWebActivityDisclosureView> disclosureView,
+            Lazy<NewDisclosureSnackbar> newDisclosureView,
             TrustedWebActivityOpenTimeRecorder openTimeRecorder,
             CurrentPageVerifier currentPageVerifier,
             Verifier verifier,
@@ -93,12 +95,24 @@ public class TrustedWebActivityCoordinator implements InflationObserver {
         externalIntentsPolicyProvider.setPolicyCriteria(
                 verifier::shouldIgnoreExternalIntentHandlers);
 
+        initDisclosure(disclosureView, newDisclosureView);
         initSplashScreen(splashController, intentDataProvider, umaRecorder);
 
         currentPageVerifier.addVerificationObserver(this::onVerificationUpdate);
         lifecycleDispatcher.register(this);
         lifecycleDispatcher.register(
                 new PostMessageDisabler(customTabsConnection, intentDataProvider));
+    }
+
+    private void initDisclosure(Lazy<TrustedWebActivityDisclosureView> disclosureView,
+            Lazy<NewDisclosureSnackbar> newDisclosureView) {
+        // Calling get on the appropriate Lazy instance will cause Dagger to create the class.
+        // The classes wire themselves up to the rest of the code in their constructors.
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.TRUSTED_WEB_ACTIVITY_NEW_DISCLOSURE)) {
+            newDisclosureView.get();
+        } else {
+            disclosureView.get();
+        }
     }
 
     @Override

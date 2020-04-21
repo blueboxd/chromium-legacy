@@ -54,6 +54,7 @@
 <translation id="1331212799747679585">Impossible de mettre à jour Chrome. Autres options</translation>
 <translation id="1332501820983677155">Raccourcis relatifs aux fonctionnalités Google Chrome</translation>
 <translation id="1360432990279830238">Se déconnecter et désactiver la synchro?</translation>
+<translation id="1364532808393826295"><ph name="APP_NAME" /> : <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">Le site <ph name="SITE_NAME" /> a été ajouté</translation>
 <translation id="1373696734384179344">Mémoire insuffisante pour télécharger le contenu sélectionné.</translation>
 <translation id="1376578503827013741">Calcul en cours…</translation>
@@ -140,6 +141,7 @@
 <translation id="2017836877785168846">Efface l'historique et la saisie semi-automatique de la barre d'adresse.</translation>
 <translation id="2021896219286479412">Contrôles du site en plein écran</translation>
 <translation id="2025115093177348061">Réalité augmentée</translation>
+<translation id="2030769033451695672">Touchez pour revenir à <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2038563949887743358">Activer l’option Demander site pour ordinateurs de bureau</translation>
 <translation id="2041019821020695769">Pour autoriser Chrome à vous envoyer des notifications, vous devez aussi activer celles-ci dans les <ph name="BEGIN_LINK" />paramètres Android<ph name="END_LINK" />.</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> a aussi des données dans Chrome</translation>
@@ -301,6 +303,7 @@ Maintenez le doigt sur un mot pour effectuer une recherche sur celui-ci. Pour af
 <translation id="3207960819495026254">Favori</translation>
 <translation id="3211426585530211793"><ph name="ITEM_TITLE" /> a été supprimé</translation>
 <translation id="321773570071367578">Si vous avez oublié votre phrase de passe ou souhaitez modifier ce paramètre, veuillez <ph name="BEGIN_LINK" />réinitialiser la synchronisation<ph name="END_LINK" /></translation>
+<translation id="3223655101706843289">Cette action effacera toutes les données et tous les témoins stockés par <ph name="ORIGIN" /> et son application sur votre écran d'accueil.</translation>
 <translation id="3227137524299004712">Microphone</translation>
 <translation id="3232754137068452469">Application Web</translation>
 <translation id="3236059992281584593">Il reste 1 min</translation>
@@ -535,6 +538,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="4943872375798546930">Aucun résultat</translation>
 <translation id="4961107849584082341">Traduire cette page vers n'importe quelle langue</translation>
 <translation id="4962975101802056554">Révoquer toutes les autorisations pour l'appareil</translation>
+<translation id="4964199952259983386">Pour autoriser Chrome à utiliser la RA, activez aussi l'accès à l'appareil photo dans les <ph name="BEGIN_LINK" />paramètres Android<ph name="END_LINK" />.</translation>
 <translation id="4970824347203572753">Cette fonctionnalité n'est pas offerte dans votre région</translation>
 <translation id="497421865427891073">Avancer</translation>
 <translation id="4988210275050210843">Téléchargement du fichier (<ph name="MEGABYTES" />) en cours…</translation>
@@ -634,6 +638,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5684874026226664614">Oups… Impossible de traduire cette page.</translation>
 <translation id="5686790454216892815">Nom de fichier trop long</translation>
 <translation id="5689516760719285838">Lieu</translation>
+<translation id="5690795753582697420">L'appareil photo est désactivé dans les paramètres d'Android</translation>
 <translation id="5694049548840660018">Revenez facilement à votre page d'accueil</translation>
 <translation id="569536719314091526">Utilisez le bouton Plus d'options pour traduire cette page vers n'importe quelle langue</translation>
 <translation id="5710871682236653961">Demander avant d'autoriser les sites à envoyer et à recevoir de l'information lorsque vous touchez des appareils NFC (recommandé)</translation>
@@ -665,6 +670,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5876056640971328065">Suspendre la vidéo</translation>
 <translation id="5884076754568147479">Pour vous aider à effectuer des tâches, Google recevra les URL et le contenu des sites avec lesquels vous utilisez l'Assistant, ainsi que l'information que vous envoyez par l'intermédiaire de l'Assistant</translation>
 <translation id="5919204609460789179">Mettez à jour <ph name="PRODUCT_NAME" /> pour commencer la synchronisation</translation>
+<translation id="5922853908706496913">Partage de votre écran…</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> enregistré(s)</translation>
 <translation id="5939518447894949180">Recommencer</translation>
 <translation id="5942872142862698679">Google est utilisé pour la recherche</translation>
@@ -875,6 +881,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="751961395872307827">Impossible de se connecter à ce site</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7542481630195938534">Impossible d'obtenir des suggestions</translation>
+<translation id="7554752735887601236">Un site utilise votre microphone</translation>
 <translation id="7559975015014302720">Le mode simplifié est désactivé</translation>
 <translation id="7562080006725997899">Effacement des données de navigation en cours…</translation>
 <translation id="756809126120519699">Données de Chrome effacées</translation>
@@ -911,7 +918,9 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 et <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> autre mode de paiement}one{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 et <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> autre mode de paiement}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 et <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> autres modes de paiement}}</translation>
 <translation id="7791543448312431591">Ajouter</translation>
 <translation id="780301667611848630">Non merci</translation>
+<translation id="7804248752222191302">Un site utilise votre appareil photo</translation>
 <translation id="7810647596859435254">Ouvrir avec…</translation>
+<translation id="7817023149356982970">Vous serez déconnecté de ce site.</translation>
 <translation id="7821588508402923572">Vos économies de données s'afficheront ici</translation>
 <translation id="7828557259026017104">Les témoins sont des fichiers créés par les sites Web que vous visitez. Les sites les utilisent pour mémoriser vos préférences. Les témoins tiers sont ceux que créent d'autres sites. Ces sites possèdent certains types de contenu, comme des annonces et des images, que vous voyez sur les pages que vous visitez.</translation>
 <translation id="783819812427904514">Réactiver le son de la vidéo</translation>
@@ -990,8 +999,10 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="8364299278605033898">Afficher des sites Web populaires</translation>
 <translation id="8368027906805972958">Appareil inconnu ou non pris en charge (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">Autorisez la synchronisation en arrière-plan pour un site en particulier.</translation>
+<translation id="83792324527827022">Un site utilise votre appareil photo et votre microphone</translation>
 <translation id="8380167699614421159">Ce site diffuse des annonces intrusives ou trompeuses</translation>
 <translation id="8393700583063109961">Envoyer un message</translation>
+<translation id="8394832520002899662">Touchez pour revenir au site</translation>
 <translation id="8413126021676339697">Afficher l'historique complet</translation>
 <translation id="8427875596167638501">L'onglet d'aperçu est ouvert à moitié</translation>
 <translation id="8428213095426709021">Paramètres</translation>
@@ -1034,6 +1045,8 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="8687353297350450808">{N_BARS,plural, =1{Niveau du signal : # barre}one{Niveau du signal : # barre}other{Niveau du signal : # barres}}</translation>
 <translation id="868929229000858085">Effectuez une recherche dans vos contacts</translation>
 <translation id="869891660844655955">Date d'expiration</translation>
+<translation id="8702612070107455751">Toutes les données hors ligne seront effacées.</translation>
+<translation id="8737217482364735741">Cette action effacera toutes les données et tous les témoins stockés par <ph name="ORIGIN" />.</translation>
 <translation id="8748850008226585750">Contenus masqués</translation>
 <translation id="8751914237388039244">Sélectionner une image</translation>
 <translation id="8758557275681689734">Afficher tous vos onglets ouverts</translation>
@@ -1080,6 +1093,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="9100610230175265781">Une phrase de passe est requise</translation>
 <translation id="9102803872260866941">L'onglet d'aperçu est ouvert</translation>
 <translation id="9104217018994036254">La liste d'appareils avec lesquels partager un onglet.</translation>
+<translation id="9108312223223904744">Assistance pour l'utilisation du téléphone comme clé de sécurité</translation>
 <translation id="9133397713400217035">Explorer hors ligne</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Afficher l'original</translation>

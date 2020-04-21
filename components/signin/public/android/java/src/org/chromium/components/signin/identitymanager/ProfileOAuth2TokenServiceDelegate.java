@@ -19,6 +19,7 @@ import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountTrackerService;
+import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.AuthException;
 import org.chromium.net.NetworkChangeNotifier;
 
@@ -100,7 +101,8 @@ public final class ProfileOAuth2TokenServiceDelegate
             return null;
         }
 
-        Account account = mAccountManagerFacade.getAccountFromName(username);
+        Account account = AccountUtils.findAccountByName(
+                mAccountManagerFacade.tryGetGoogleAccounts(), username);
         if (account == null) {
             Log.e(TAG, "Account not found for provided username.");
             return null;
@@ -117,7 +119,8 @@ public final class ProfileOAuth2TokenServiceDelegate
         // TODO(https://crbug.com/768366): Remove this after adding cache to account manager
         // facade. This function is called by native code on UI thread.
         try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-            List<String> accountNames = mAccountManagerFacade.tryGetGoogleAccountNames();
+            List<String> accountNames =
+                    AccountUtils.toAccountNames(mAccountManagerFacade.tryGetGoogleAccounts());
             return accountNames.toArray(new String[accountNames.size()]);
         }
     }
@@ -274,7 +277,9 @@ public final class ProfileOAuth2TokenServiceDelegate
         // ProfileOAuth2TokenServiceDelegate which is expected to be called in the UI thread
         // synchronously.
         try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-            return mAccountManagerFacade.getAccountFromName(accountName) != null;
+            return AccountUtils.findAccountByName(
+                           mAccountManagerFacade.tryGetGoogleAccounts(), accountName)
+                    != null;
         }
     }
 

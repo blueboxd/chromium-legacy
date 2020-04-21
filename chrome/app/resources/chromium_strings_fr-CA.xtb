@@ -12,6 +12,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles et les modificat
 <translation id="1414495520565016063">Vous êtes connecté à Chromium!</translation>
 <translation id="151962892725702025">Chromium OS n'a pas pu synchroniser vos données, car la synchronisation n'est pas offerte pour votre nom de domaine.</translation>
 <translation id="1524282610922162960">Partager un onglet de Chromium</translation>
+<translation id="1553461853655228091">Chromium a besoin de votre autorisation pour accéder à votre appareil photo afin de créer une carte 3D de votre environnement</translation>
 <translation id="1607715478322902680">{COUNT,plural, =0{Votre administrateur exige que vous relanciez Chromium pour appliquer une mise à jour}=1{Votre administrateur exige que vous relanciez Chromium pour appliquer une mise à jour. Votre fenêtre de navigation privée ne sera pas rouverte.}one{Votre administrateur exige que vous relanciez Chromium pour appliquer une mise à jour. Votre fenêtre de navigation privée ne sera pas rouverte.}other{Votre administrateur exige que vous relanciez Chromium pour appliquer une mise à jour. Vos # fenêtres de navigation privée ne seront pas rouvertes.}}</translation>
 <translation id="1708666629004767631">Une nouvelle version de Chromium encore plus sûre est maintenant offerte.</translation>
 <translation id="1774152462503052664">Laisser Chromium fonctionner en arrière-plan</translation>
@@ -25,7 +26,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles et les modificat
 <translation id="2147976119693222405">Chromium OS n'a pas pu synchroniser vos données. Corrigez le problème maintenant.</translation>
 <translation id="2185166961232948079">Chromium – Connexion au réseau – <ph name="PAGE_TITLE" /></translation>
 <translation id="2241627712206172106">Si vous partagez un ordinateur avec vos proches, ceux-ci peuvent configurer Google Chrome comme bon leur semble et naviguer sur le Web à leur manière.</translation>
-<translation id="2294245788148774212">Facultatif : Aidez-nous à améliorer les fonctionnalités et les performances de Chromium OS en envoyant automatiquement les données de diagnostic et d'utilisation à Google.</translation>
+<translation id="2294245788148774212">Facultatif : aidez-nous à améliorer les fonctionnalités et les performances de Chromium OS en envoyant automatiquement les données de diagnostic et d'utilisation à Google.</translation>
 <translation id="2347108572062610441">Cette extension a modifié la page qui s'affiche au démarrage de Chromium.</translation>
 <translation id="2396765026452590966">L'extension « <ph name="EXTENSION_NAME" /> » a modifié la page qui s'affiche au démarrage de Chromium.</translation>
 <translation id="2483889755041906834">Dans Chromium</translation>
@@ -57,6 +58,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles et les modificat
 <translation id="3258596308407688501">Chromium ne peut pas lire et écrire dans son répertoire de données :
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
+<translation id="3283186697780795848">La version <ph name="PRODUCT_VERSION" /> de Chromium est installée</translation>
 <translation id="328888136576916638">Les clés d'API Google sont manquantes. Certaines fonctionnalités de Chromium seront désactivées</translation>
 <translation id="3296368748942286671">Continuer l'exécution d'applications en arrière-plan après la fermeture de Chromium</translation>
 <translation id="331951419404882060">Chromium OS ne peut pas synchroniser vos données, car une erreur s'est produite lors de la connexion.</translation>

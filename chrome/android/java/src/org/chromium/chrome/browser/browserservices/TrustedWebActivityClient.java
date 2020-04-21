@@ -38,6 +38,7 @@ import org.chromium.chrome.browser.browserservices.permissiondelegation.TrustedW
 import org.chromium.chrome.browser.notifications.NotificationBuilderBase;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
+import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -130,7 +131,8 @@ public class TrustedWebActivityClient {
         connectAndExecute(scope, (origin, service) -> {
             if (!service.areNotificationsEnabled(channelDisplayName)) {
                 mDelegatesManager.updatePermission(origin,
-                        service.getComponentName().getPackageName(), false);
+                        service.getComponentName().getPackageName(),
+                        ContentSettingsType.NOTIFICATIONS, false);
 
                 // Attempting to notify when notifications are disabled won't have any effect, but
                 // returning here just saves us from doing unnecessary work.

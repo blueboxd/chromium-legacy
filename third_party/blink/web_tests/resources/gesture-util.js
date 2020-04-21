@@ -167,19 +167,46 @@ const GestureSourceType = (function() {
 const SPEED_INSTANT = 400000;
 
 function smoothScroll(pixels_to_scroll, start_x, start_y, gesture_source_type, direction, speed_in_pixels_s, precise_scrolling_deltas, scroll_by_page, cursor_visible, scroll_by_percentage) {
+  let pixels_to_scroll_x = 0;
+  let pixels_to_scroll_y = 0;
+  if (direction == "down") {
+    pixels_to_scroll_y = pixels_to_scroll;
+  } else if (direction == "up") {
+    pixels_to_scroll_y = -pixels_to_scroll;
+  } else if (direction == "right") {
+    pixels_to_scroll_x = pixels_to_scroll;
+  } else if (direction == "left") {
+    pixels_to_scroll_x = -pixels_to_scroll;
+  } else if (direction == "upleft") {
+    pixels_to_scroll_x = -pixels_to_scroll;
+    pixels_to_scroll_y = -pixels_to_scroll;
+  } else if (direction == "upright") {
+    pixels_to_scroll_x = pixels_to_scroll;
+    pixels_to_scroll_y = -pixels_to_scroll;
+  } else if (direction == "downleft") {
+    pixels_to_scroll_x = -pixels_to_scroll;
+    pixels_to_scroll_y = pixels_to_scroll;
+  } else if (direction == "downright") {
+    pixels_to_scroll_x = pixels_to_scroll;
+    pixels_to_scroll_y = pixels_to_scroll;
+  }
+  return smoothScrollWithXY(pixels_to_scroll_x, pixels_to_scroll_y, start_x, start_y, gesture_source_type, speed_in_pixels_s, precise_scrolling_deltas, scroll_by_page, cursor_visible, scroll_by_percentage);
+}
+
+function smoothScrollWithXY(pixels_to_scroll_x, pixels_to_scroll_y, start_x, start_y, gesture_source_type, speed_in_pixels_s, precise_scrolling_deltas, scroll_by_page, cursor_visible, scroll_by_percentage) {
   return new Promise((resolve, reject) => {
     if (window.chrome && chrome.gpuBenchmarking) {
-      chrome.gpuBenchmarking.smoothScrollBy(pixels_to_scroll,
-                                            resolve,
-                                            start_x,
-                                            start_y,
-                                            gesture_source_type,
-                                            direction,
-                                            speed_in_pixels_s,
-                                            precise_scrolling_deltas,
-                                            scroll_by_page,
-                                            cursor_visible,
-                                            scroll_by_percentage);
+      chrome.gpuBenchmarking.smoothScrollByXY(pixels_to_scroll_x,
+                                              pixels_to_scroll_y,
+                                              resolve,
+                                              start_x,
+                                              start_y,
+                                              gesture_source_type,
+                                              speed_in_pixels_s,
+                                              precise_scrolling_deltas,
+                                              scroll_by_page,
+                                              cursor_visible,
+                                              scroll_by_percentage);
     } else {
       reject('This test requires chrome.gpuBenchmarking');
     }

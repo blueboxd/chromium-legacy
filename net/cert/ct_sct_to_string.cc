@@ -4,6 +4,8 @@
 
 #include "net/cert/ct_sct_to_string.h"
 
+#include "base/logging.h"
+
 namespace net {
 
 namespace ct {

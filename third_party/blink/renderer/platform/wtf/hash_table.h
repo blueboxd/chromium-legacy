@@ -2111,7 +2111,7 @@ struct WeakProcessingHashTableHelper<kWeakHandling,
   using ValueType = typename HashTableType::ValueType;
 
   // Used for purely weak and for weak-and-strong tables (ephemerons).
-  static void Process(const typename Allocator::WeakCallbackInfo&,
+  static void Process(const typename Allocator::WeakCallbackInfo& info,
                       const void* parameter) {
     HashTableType* table =
         reinterpret_cast<HashTableType*>(const_cast<void*>(parameter));
@@ -2126,7 +2126,7 @@ struct WeakProcessingHashTableHelper<kWeakHandling,
          element >= table->table_; element--) {
       if (!HashTableType::IsEmptyOrDeletedBucket(*element)) {
         if (!TraceInCollectionTrait<kWeakHandling, ValueType, Traits>::IsAlive(
-                *element)) {
+                info, *element)) {
           table->RegisterModification();
           HashTableType::DeleteBucket(*element);  // Also calls the destructor.
           table->deleted_count_++;

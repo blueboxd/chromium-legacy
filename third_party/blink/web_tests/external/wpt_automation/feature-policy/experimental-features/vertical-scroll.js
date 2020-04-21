@@ -17,17 +17,44 @@ function waitForCompositorCommit() {
   });
 }
 
+function smoothScrollBy(scrollOffset, xPosition, yPosition, direction, source, speed, preciseScrollingDeltas) {
+  return new Promise(function(resolve, reject) {
+    if (window.chrome && chrome.gpuBenchmarking) {
+      var scrollOffsetX = 0;
+      var scrollOffsetY = 0;
+      if (direction == "down") {
+        scrollOffsetY = scrollOffset;
+      } else if (direction == "up") {
+        scrollOffsetY = -scrollOffset;
+      } else if (direction == "right") {
+        scrollOffsetX = scrollOffset;
+      } else if (direction == "left") {
+        scrollOffsetX = -scrollOffset;
+      } else if (direction == "upleft") {
+        scrollOffsetX = -scrollOffset;
+        scrollOffsetY = -scrollOffset;
+      } else if (direction == "upright") {
+        scrollOffsetX = scrollOffset;
+        scrollOffsetY = -scrollOffset;
+      } else if (direction == "downleft") {
+        scrollOffsetX = -scrollOffset;
+        scrollOffsetY = scrollOffset;
+      } else if (direction == "downright") {
+        scrollOffsetX = scrollOffset;
+        scrollOffsetY = scrollOffset;
+      }
+      chrome.gpuBenchmarking.smoothScrollByXY(scrollOffsetX, scrollOffsetY, resolve, xPosition,
+        yPosition, source, speed, preciseScrollingDeltas);
+    } else {
+      reject();
+    }
+  });
+}
+
 async function touchScroll(direction, start_x, start_y) {
   ensurePlatformAPIExists("touch");
   await waitForCompositorCommit();
-  await new Promise((resolve) => {
-    chrome.gpuBenchmarking.smoothScrollBy(delta_for_scroll,
-                                          resolve,
-                                          start_x,
-                                          start_y,
-                                          ScrollSource.Touch,
-                                          direction);
-  });
+  await smoothScrollBy(delta_for_scroll, start_x, start_y, direction, ScrollSource.Touch);
   await waitForCompositorCommit();
 }
 
@@ -79,14 +106,7 @@ async function pinchZoom(direction, start_x_1, start_y_1, start_x_2, start_y_2) 
 async function wheelScroll(direction, start_x, start_y) {
   ensurePlatformAPIExists("wheel");
   await waitForCompositorCommit();
-  await new Promise((resolve) => {
-    chrome.gpuBenchmarking.smoothScrollBy(delta_for_scroll,
-                                          resolve,
-                                          start_x,
-                                          start_y,
-                                          ScrollSource.Wheel,
-                                          direction);
-  });
+  await smoothScrollBy(delta_for_scroll, start_x, start_y, direction, ScrollSource.Wheel);
   await waitForCompositorCommit();
 }
 

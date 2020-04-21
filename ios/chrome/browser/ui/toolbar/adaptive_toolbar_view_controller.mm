@@ -207,6 +207,10 @@ const CGFloat kTabGridAnimationsTotalDuration = 0.5;
   self.view.bookmarkButton.spotlighted = bookmarked;
 }
 
+- (void)setBookmarkEnabled:(BOOL)enabled {
+  self.view.bookmarkButton.enabled = enabled;
+}
+
 - (void)setVoiceSearchEnabled:(BOOL)enabled {
   // No-op, should be handled by the location bar.
 }

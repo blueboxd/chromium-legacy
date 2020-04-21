@@ -12,6 +12,7 @@
 #include "ui/platform_window/extensions/workspace_extension.h"
 #include "ui/platform_window/extensions/x11_extension.h"
 #include "ui/platform_window/platform_window.h"
+#include "ui/platform_window/platform_window_handler/wm_move_loop_handler.h"
 #include "ui/platform_window/platform_window_handler/wm_move_resize_handler.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 #include "ui/platform_window/x11/x11_window_export.h"
@@ -19,6 +20,7 @@
 namespace ui {
 
 class X11ExtensionDelegate;
+class X11DesktopWindowMoveClient;
 class LocatedEvent;
 class WorkspaceExtensionDelegate;
 
@@ -41,7 +43,8 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
                                     public PlatformEventDispatcher,
                                     public XEventDispatcher,
                                     public WorkspaceExtension,
-                                    public X11Extension {
+                                    public X11Extension,
+                                    public WmMoveLoopHandler {
  public:
   explicit X11Window(PlatformWindowDelegate* platform_window_delegate);
   ~X11Window() override;
@@ -159,6 +162,10 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
       int hittest,
       const gfx::Point& pointer_location_in_px) override;
 
+  // WmMoveLoopHandler:
+  bool RunMoveLoop(const gfx::Vector2d& drag_offset) override;
+  void EndMoveLoop() override;
+
   // Handles |xevent| as a Atk Key Event
   bool HandleAsAtkEvent(XEvent* xevent);
 
@@ -199,6 +206,8 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
   // previous check in ::CheckCanDispatchNextPlatformEvent based on a XID
   // target.
   XEvent* current_xevent_ = nullptr;
+
+  std::unique_ptr<X11DesktopWindowMoveClient> x11_window_move_client_;
 
   DISALLOW_COPY_AND_ASSIGN(X11Window);
 };

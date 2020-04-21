@@ -48,7 +48,6 @@ async function doInverseSignalingHandshake(pc1, pc2) {
   // Munge the SDP to disable bandwidth probing via RTX.
   const sdp = offer.sdp.replace(new RegExp('rtx', 'g'), 'invalid');
   await pc1.setRemoteDescription({type: 'offer', sdp});
-  await pc1.setRemoteDescription(offer);
   await pc2.setLocalDescription(offer);
 
   const answer = await pc1.createAnswer();
@@ -87,21 +86,15 @@ async function testVideoFlow(t, negotiationFunction) {
       const receiverReader = receiverStreams.readableStream.getReader();
       const receiverWriter = receiverStreams.writableStream.getWriter();
 
-      // The WebRTC stack may occassionally deliver duplicate frames on the
-      // receiver side, therefore start twice as many read attempts as sent
-      // frames to account for this.
-      const maxFramesToReceive = numFramesToSend * 2;
+      const maxFramesToReceive = numFramesToSend;
       let numVerifiedFrames = 0;
       for (let i = 0; i < maxFramesToReceive; i++) {
         receiverReader.read().then(t.step_func(result => {
           if (frameInfos[numVerifiedFrames] &&
               areFrameInfosEqual(result.value, frameInfos[numVerifiedFrames])) {
             numVerifiedFrames++;
-          } else if (frameInfos[numVerifiedFrames-1] &&
-                     areFrameInfosEqual(result.value, frameInfos[numVerifiedFrames-1])) {
-            // Duplicate frame. It can happen occassionally. Ignore.
           } else {
-            // Receiving unexpected (nonduplicate) frames is an indication that
+            // Receiving unexpected frames is an indication that
             // frames are not passed correctly between sender and receiver.
             assert_unreached("Incorrect frame received");
           }
@@ -348,10 +341,11 @@ promise_test(async t => {
   // Pass frames as they come from the encoder.
   for (let i = 0; i < numFramesToSend; i++) {
     const result = await senderReader.read()
-    if (result.value.type == 'key')
+    if (result.value.type == 'key') {
       numSentKeyFrames++;
-    else
+    } else {
       numSentDeltaFrames++;
+    }
 
     senderWriter.write(result.value);
   }

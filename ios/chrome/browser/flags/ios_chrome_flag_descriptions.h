@@ -376,6 +376,11 @@ extern const char kToolbarContainerDescription[];
 extern const char kTranslateInfobarMessagesUIName[];
 extern const char kTranslateInfobarMessagesUIDescription[];
 
+// Title and description for the flag to enable URLBlocklist/URLAllowlist
+// enterprise policy.
+extern const char kURLBlocklistIOSName[];
+extern const char kURLBlocklistIOSDescription[];
+
 // Title and description for the flag to control if Google Payments API calls
 // should use the sandbox servers.
 extern const char kWalletServiceUseSandboxName[];

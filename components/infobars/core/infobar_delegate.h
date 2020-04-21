@@ -162,6 +162,7 @@ class InfoBarDelegate {
     SMS_RECEIVER_INFOBAR_DELEGATE = 95,
     KNOWN_INTERCEPTION_DISCLOSURE_INFOBAR_DELEGATE = 96,
     SYNC_ERROR_INFOBAR_DELEGATE_ANDROID = 97,
+    MIXED_CONTENT_DOWNLOAD_INFOBAR_DELEGATE_ANDROID = 98,
   };
 
   // Describes navigation events, used to decide whether infobars should be

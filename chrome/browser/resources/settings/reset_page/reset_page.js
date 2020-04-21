@@ -14,7 +14,7 @@ import '../settings_shared_css.m.js';
 
 // <if expr="_google_chrome and is_win">
 import '../chrome_cleanup_page/chrome_cleanup_page.js';
-import '../incompatible_applications_page/incompatible_applications_page.m.js';
+import '../incompatible_applications_page/incompatible_applications_page.js';
 // </if>
 
 import {assert} from 'chrome://resources/js/assert.m.js';

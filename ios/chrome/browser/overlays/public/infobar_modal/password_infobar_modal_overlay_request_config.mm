@@ -42,7 +42,7 @@ PasswordInfobarModalOverlayRequestConfig::
 PasswordInfobarModalOverlayRequestConfig::
     ~PasswordInfobarModalOverlayRequestConfig() = default;
 
-void PasswordInfobarModalOverlayRequestConfig::CreateAuxilliaryData(
+void PasswordInfobarModalOverlayRequestConfig::CreateAuxiliaryData(
     base::SupportsUserData* user_data) {
   InfobarOverlayRequestConfig::CreateForUserData(user_data, infobar_,
                                                  InfobarOverlayType::kModal);

@@ -50,6 +50,7 @@ class GpuBenchmarking : public gin::Wrappable<GpuBenchmarking> {
 
   // All arguments in these methods are in visual viewport coordinates.
   bool SmoothScrollBy(gin::Arguments* args);
+  bool SmoothScrollByXY(gin::Arguments* args);
   bool SmoothDrag(gin::Arguments* args);
   bool Swipe(gin::Arguments* args);
   bool ScrollBounce(gin::Arguments* args);

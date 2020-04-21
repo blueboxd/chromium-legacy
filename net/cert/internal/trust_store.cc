@@ -4,6 +4,8 @@
 
 #include "net/cert/internal/trust_store.h"
 
+#include "base/logging.h"
+
 namespace net {
 
 CertificateTrust CertificateTrust::ForTrustAnchor() {

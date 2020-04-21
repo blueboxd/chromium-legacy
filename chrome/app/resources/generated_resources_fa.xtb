@@ -418,6 +418,11 @@
 <translation id="1555130319947370107">آبی</translation>
 <translation id="1556537182262721003">انتقال دایرکتوری برنامهٔ افزودنی به نمایه ممکن نیست.</translation>
 <translation id="155865706765934889">صفحه لمسی</translation>
+<translation id="1560763881671211335">‏سرپرستان G Suite for Education تعیین می‌کنند که وقتی کاربرانشان به سیستم حساب G Suite for Education وارد شده‌اند به کدام سرویس‌های Google می‌توانند دسترسی داشته باشند. سرپرستان مدرسه باید برای استفاده کاربران خردسال از سرویس‌های موردنظر، اعلام یا کسب رضایت کند.
+
+    داده‌های محصول مرور (ازجمله سابقه، نشانک‌ها، و گذرواژه‌ها) با حساب Family Link ذخیره خواهد شد، نه حساب مدرسه.
+
+    تنظیمات ولی Family Link همچنان اعمال خواهد شد. اگر برنامه یا سایتی را قبلاً مسدود کرده باشید، لازم نیست دوباره آن را مسدود کنید.</translation>
 <translation id="1566049601598938765">وب‌سایت</translation>
 <translation id="15662109988763471">چاپگر انتخابی موجود نیست یا به‌درستی نصب نشده است. چاپگر خود را بررسی کنید یا چاپگر دیگری را انتخاب کنید.</translation>
 <translation id="1567387640189251553">بعد از آخرین باری که گذرواژه‌تان را وارد کردید، صفحه‌کلید دیگری متصل شده است. ممکن است تلاش کند ضربه‌کلیدهای شما را به سرقت ببرد.</translation>
@@ -1197,6 +1202,7 @@
 <translation id="258095186877893873">طولانی</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (پلتفورم <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">‏بلیت Kerberos اضافه نشد. دوباره امتحان کنید یا با سرپرست دستگاه سازمانتان تماس بگیرید. (کد خطا: <ph name="ERROR_CODE" />).</translation>
+<translation id="2585013490795742997">درحال نمایش ۱ نتیجه جستجو برای <ph name="QUERY" /></translation>
 <translation id="2585724835339714757">این برگه درحال اشتراک‌گذاری صفحه‌نمایش شماست.</translation>
 <translation id="2586657967955657006">بریده‌دان</translation>
 <translation id="2586672484245266891">لطفاً نشانی وب کوتاه‌تری وارد کنید</translation>
@@ -1883,6 +1889,7 @@
 <translation id="3498215018399854026">در حال حاضر نمی‌توانیم با والدینتان تماس برقرار کنیم. لطفاً دوباره امتحان کنید.</translation>
 <translation id="3500417806337761827">‏هنگام نشاندن هم‌رسانی خطایی روی داد. هم‌رسانی‌های SMB زیادی نشانده شده است.</translation>
 <translation id="3505030558724226696">لغو دسترسی دستگاه</translation>
+<translation id="3507132249039706973">«محافظت استاندارد» روشن است</translation>
 <translation id="3507421388498836150">اجازه‌های فعلی برای «<ph name="EXTENSION_NAME" />»</translation>
 <translation id="3507888235492474624">اسکن مجدد دستگاه‌های بلوتوث</translation>
 <translation id="3508492320654304609">داده‌های ورود به سیستم شما حذف نشد</translation>
@@ -3236,6 +3243,7 @@
 <translation id="5352033265844765294">مهر زمان</translation>
 <translation id="5353252989841766347">‏صادر کردن گذرواژه‌ها از Chrome</translation>
 <translation id="5355099869024327351">به «دستیار» اجازه می‌دهد اعلان نشان دهد</translation>
+<translation id="5355191726083956201">«محافظت بهبودیافته» روشن است</translation>
 <translation id="5355926466126177564">‏افزونه «<ph name="EXTENSION_NAME" />»، صفحه‌ای را تغییر داده است که هنگام جستجو از Omnibox نشان داده می‌شود.</translation>
 <translation id="5359910752122114278">۱ نتیجه</translation>
 <translation id="5360150013186312835">نمایش در نوار ابزار</translation>
@@ -3547,6 +3555,7 @@
 <translation id="577322787686508614">عملیات خواندن در این دستگاه مجاز نیست: «<ph name="DEVICE_NAME" />».</translation>
 <translation id="5774295353725270860">‏باز کردن برنامه Files</translation>
 <translation id="577624874850706961">جستجوی کوکی‌ها</translation>
+<translation id="5776858208024364029">درحال نمایش <ph name="NUMBER" /> نتیجه جستجو برای <ph name="QUERY" /></translation>
 <translation id="5777468213129569553">‏باز کردن Chrome</translation>
 <translation id="5778747455497889540">گذرواژه زیر، گذرواژه به‌صورت تصادفی ایجادشده مدول امن است که به رایانه شما اختصاص داده شده است:</translation>
 <translation id="5780011244986845107">پوشه‌ای که انتخاب کرده‌اید حاوی فایل‌های حساسی است. آیا مطمئنید می‌خواهید به «<ph name="APP_NAME" />» دسترسی دائم خواندن این پوشه را بدهید؟</translation>
@@ -4103,6 +4112,7 @@
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         ‏<ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
+<translation id="6520876759015997832">‏نتیجه جستجوی <ph name="LIST_POSITION" /> از <ph name="LIST_SIZE" />: <ph name="SEARCH_RESULT_TEXT" /> برای پیمایش کردن به بخش، Enter را فشار دهید.</translation>
 <translation id="652492607360843641">به یک شبکه <ph name="NETWORK_TYPE" /> متصل شده‌اید.</translation>
 <translation id="6527303717912515753">اشتراک‌گذاری</translation>
 <translation id="6528513914570774834">به سایر کاربران این دستگاه اجازه داده شود از این شبکه استفاده کنند</translation>
@@ -4114,6 +4124,7 @@
 <translation id="6532206849875187177">امنیت و ورود به سیستم</translation>
 <translation id="6532527800157340614">ورود به سیستم انجام نشد، زیرا کد دسترسی شما بازیابی نشد. لطفاً اتصال شبکه‌تان را بررسی کنید و دوباره امتحان کنید.</translation>
 <translation id="6532663472409656417">ثبت شرکتی</translation>
+<translation id="6535331821390304775"><ph name="ORIGIN" /> همیشه مجاز باشد این نوع پیوندها را در برنامه مرتبط باز کند</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />توجه:<ph name="END_BOLD" /> فقط درصورتی آن را فعال کنید که اطلاع دارید چه کاری انجام می‌دهید یا از شما خواسته شده باشد این کار را انجام دهید، زیرا جمع‌آوری داده‌ها ممکن است عملکرد را کاهش دهد.</translation>
 <translation id="6541638731489116978">دسترسی این سایت به حسگرهای حرکتی مسدود شده است.</translation>
 <translation id="6545665334409411530">سرعت تکرار</translation>
@@ -4243,6 +4254,7 @@
 <translation id="6727969043791803658">متصل، <ph name="BATTERY_PERCENTAGE" />٪ باتری</translation>
 <translation id="6732801395666424405">گواهی‌ها بارگیری نشدند</translation>
 <translation id="6732900235521116609">برداشتن میان‌بر ممکن نیست</translation>
+<translation id="6734468588183300211">در حالت ناشناس، سایت‌ها نمی‌توانند از کوکی‌های شما برای دیدن فعالیت مرور شما در سایت‌های مختلف و برای مثال شخصی‌سازی آگهی‌ها استفاده کنند. ویژگی‌ها ممکن است در برخی سایت‌ها کار نکنند.</translation>
 <translation id="6735304988756581115">نمایش کوکی‌ها و دیگر داده‌های سایت...</translation>
 <translation id="6736243959894955139">آدرس</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
@@ -4255,6 +4267,7 @@
 <translation id="674632704103926902">فعال کردن کشیدن برگه</translation>
 <translation id="6748217015615267851">تولید‌کننده تصویر: <ph name="RENDERER_URL" /></translation>
 <translation id="6748465660675848252">می‌توانید ادامه دهید، اما تنها تنظیمات و داده‌های همگام‌سازی شده شما بازیابی می‌شوند. همه داده‌های محلی از دست می‌روند.</translation>
+<translation id="6749006854028927059">سایت‌ها نمی‌توانند از کوکی‌های شما برای دیدن فعالیت مرور شما در سایت‌های مختلف و برای مثال شخصی‌سازی آگهی‌ها استفاده کنند. ویژگی‌ها ممکن است در برخی سایت‌ها کار نکنند.</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (ناشناس)</translation>
 <translation id="6757101664402245801">نشانی اینترنتی کپی شد</translation>
 <translation id="6758056191028427665">عملکردمان را به ما نشان دهید.</translation>
@@ -4346,6 +4359,7 @@
 <translation id="686664946474413495">دمای رنگ</translation>
 <translation id="6871644448911473373">‏پاسخگوی OCSP: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">سرور گذرواژه‌ای را که وارد کردید نپذیرفته است.</translation>
+<translation id="6874170800191969835">به <ph name="SEARCH_RESULT_TEXT" /> پیمایش کردید.</translation>
 <translation id="6876155724392614295">دوچرخه‌</translation>
 <translation id="6876469544038980967">مفید نبودند</translation>
 <translation id="6878422606530379992">دسترسی به حسگرها مجاز شده است</translation>
@@ -4616,6 +4630,7 @@
 <translation id="7235737137505019098">کلید امنیتی‌تان فضای آزاد کافی برای حساب دیگری ندارد.</translation>
 <translation id="7238643356913091553"><ph name="NETWORK_NAME" />، جزئیات</translation>
 <translation id="7240339475467890413">به نقطه اتصال جدید متصل شود؟</translation>
+<translation id="7240847845291869311">‏فرزندتان می‌خواهد «حساب Google» ویژه G Suite for Education به این دستگاه اضافه کند. <ph name="LINK_BEGIN" />اعلان حریم خصوصی G Suite for Education<ph name="LINK_END" /> برای این درنظر گرفته شده است تا به کاربران و والدین کمک کند متوجه شوند محصول موردنظر چه داده‌هایی را جمع‌آوری می‌کند، چرا این داده‌ها را جمع‌آوری می‌کند، و اینکه چه کاری با آن‌ها انجام می‌شود.</translation>
 <translation id="7241389281993241388">لطفاً جهت ورود به مجوز سرویس گیرنده، به <ph name="TOKEN_NAME" /> وارد شوید.</translation>
 <translation id="7241443820034350811">اگر کلید امنیتی‌تان در فهرست نیست، دکمه آن را برای حداقل ۵ ثانیه فشار دهید.</translation>
 <translation id="7243632151880336635">پاک کردن و خروج از سیستم</translation>
@@ -5198,6 +5213,7 @@
 <translation id="7987814697832569482">‏همیشه ازطریق این VPN اتصال برقرار شود</translation>
 <translation id="7988355189918024273">فعالسازی ویژگی‌های دسترسی</translation>
 <translation id="7991296728590311172">تنظیمات دسترسی کلیدی</translation>
+<translation id="7992202128769240372">از تعداد مجاز <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /> بیشتر است</translation>
 <translation id="7994350303002908848">‏Plugin VM نصب نشد. لطفاً دوباره امتحان کنید یا با سرپرست دستگاه سازمانتان تماس بگیرید. کد خطا: <ph name="ERROR_CODE" />.</translation>
 <translation id="7994702968232966508">‏روش EAP</translation>
 <translation id="7997826902155442747">پردازش اولویت‌دار</translation>

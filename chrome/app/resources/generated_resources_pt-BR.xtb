@@ -421,6 +421,11 @@
 <translation id="1555130319947370107">Azul</translation>
 <translation id="1556537182262721003">Não foi possível mover o diretório de extensões para o perfil.</translation>
 <translation id="155865706765934889">Touchpad</translation>
+<translation id="1560763881671211335">Os administradores do G Suite for Education determinam quais serviços do Google os usuários podem acessar enquanto estiverem conectados a uma conta do G Suite for Education. Os administradores da escola precisam fornecer ou receber permissão para o uso dos serviços por usuários menores de idade.
+
+    Os dados de navegação (incluindo histórico, favoritos e senhas) serão armazenados na conta do Family Link, e não na conta escolar.
+
+    As configurações de pai/mãe no Family Link serão mantidas. Se você tiver bloqueado um app ou site, não terá que fazer isso novamente.</translation>
 <translation id="1566049601598938765">Website</translation>
 <translation id="15662109988763471">A impressora selecionada não está disponível ou não foi instalada corretamente. Verifique a impressora ou selecione outra.</translation>
 <translation id="1567387640189251553">Um teclado diferente foi conectado desde a última vez que você inseriu sua senha. Ele pode estar tentando capturar sua digitação.</translation>
@@ -1200,6 +1205,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="258095186877893873">Longo</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (plataforma <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Não foi possível acessar o tíquete do Kerberos. Tente novamente ou entre em contato com o administrador do dispositivo da sua organização. Código de erro: <ph name="ERROR_CODE" />.</translation>
+<translation id="2585013490795742997">Exibindo 1 resultado da pesquisa para "<ph name="QUERY" />"</translation>
 <translation id="2585724835339714757">Esta guia está compartilhando sua tela.</translation>
 <translation id="2586657967955657006">Área de transferência</translation>
 <translation id="2586672484245266891">Informe um URL menor</translation>
@@ -1886,6 +1892,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="3498215018399854026">Não foi possível contatar seu pai/mãe no momento. Tente novamente.</translation>
 <translation id="3500417806337761827">Erro ao ativar o compartilhamento. Muitos compartilhamentos SMB já estão ativos.</translation>
 <translation id="3505030558724226696">Revogar acesso ao dispositivo</translation>
+<translation id="3507132249039706973">A "Proteção padrão" está ativada</translation>
 <translation id="3507421388498836150">Permissões atuais para "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="3507888235492474624">Procurar dispositivos Bluetooth novamente</translation>
 <translation id="3508492320654304609">Não foi possível excluir os dados de login</translation>
@@ -3239,6 +3246,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="5352033265844765294">Carimbo de data/hora</translation>
 <translation id="5353252989841766347">Exportar senhas do Chrome</translation>
 <translation id="5355099869024327351">Permitir que o Assistente mostre notificações</translation>
+<translation id="5355191726083956201">A "Proteção melhorada" está ativada</translation>
 <translation id="5355926466126177564">A extensão "<ph name="EXTENSION_NAME" />" alterou a página que é exibida quando você pesquisa na Omnibox.</translation>
 <translation id="5359910752122114278">1 resultado</translation>
 <translation id="5360150013186312835">Mostrar na barra de ferramentas</translation>
@@ -3551,6 +3559,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="577322787686508614">A operação de leitura não é permitida em "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5774295353725270860">Abrir aplicativo Arquivos</translation>
 <translation id="577624874850706961">Pesquisar cookies</translation>
+<translation id="5776858208024364029">Exibindo <ph name="NUMBER" /> resultados da pesquisa por "<ph name="QUERY" />"</translation>
 <translation id="5777468213129569553">Abra o Chrome</translation>
 <translation id="5778747455497889540">Veja abaixo a senha do módulo de segurança gerada aleatoriamente e atribuída ao seu computador:</translation>
 <translation id="5780011244986845107">A pasta selecionada contém arquivos confidenciais. Tem certeza de que quer conceder acesso permanente de leitura nessa pasta ao "<ph name="APP_NAME" />"?</translation>
@@ -4108,6 +4117,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
+<translation id="6520876759015997832">Resultado da pesquisa <ph name="LIST_POSITION" /> de <ph name="LIST_SIZE" />: <ph name="SEARCH_RESULT_TEXT" />. Pressione Enter para navegar até a seção.</translation>
 <translation id="652492607360843641">Você está conectado a uma rede <ph name="NETWORK_TYPE" />.</translation>
 <translation id="6527303717912515753">Compartilhar</translation>
 <translation id="6528513914570774834">Permitir que outros usuários deste dispositivo usem esta rede</translation>
@@ -4119,6 +4129,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6532206849875187177">Segurança e login</translation>
 <translation id="6532527800157340614">O login falhou porque não foi possível recuperar seu token de acesso. Verifique sua conexão de rede e tente novamente.</translation>
 <translation id="6532663472409656417">Inscrito pela empresa</translation>
+<translation id="6535331821390304775">Sempre permitir que <ph name="ORIGIN" /> abra esse tipo de link no app associado</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Observação:<ph name="END_BOLD" /> Ative somente se você souber o que está fazendo ou tiver sido solicitado(a) a fazê-lo, porque a coleta de dados pode reduzir o desempenho.</translation>
 <translation id="6541638731489116978">Este site foi impedido de acessar seus sensores de movimento.</translation>
 <translation id="6545665334409411530">Taxa de repetição</translation>
@@ -4248,6 +4259,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6727969043791803658">Conectado, <ph name="BATTERY_PERCENTAGE" />% de bateria</translation>
 <translation id="6732801395666424405">Certificados não carregados</translation>
 <translation id="6732900235521116609">Não é possível remover o atalho</translation>
+<translation id="6734468588183300211">Na navegação anônima, os sites não podem usar seus cookies para ver suas atividades de navegação em sites diferentes, por exemplo, para personalizar anúncios. Os recursos de alguns sites podem falhar.</translation>
 <translation id="6735304988756581115">Mostrar cookies e outros dados do site...</translation>
 <translation id="6736243959894955139">Endereço</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
@@ -4260,6 +4272,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="674632704103926902">Ativar gesto de arrastar com toque</translation>
 <translation id="6748217015615267851">Renderizador: <ph name="RENDERER_URL" /></translation>
 <translation id="6748465660675848252">É possível prosseguir, mas apenas seus dados e configurações sincronizados serão restaurados. Todos os dados locais serão perdidos.</translation>
+<translation id="6749006854028927059">Os sites não podem usar seus cookies para ver sua atividade de navegação em diferentes sites, por exemplo, para personalizar anúncios. Os recursos de alguns sites podem falhar.</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (Modo anônimo)</translation>
 <translation id="6757101664402245801">URL copiado</translation>
 <translation id="6758056191028427665">Diga como estamos nos saindo.</translation>
@@ -4351,6 +4364,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="686664946474413495">Temperatura da cor</translation>
 <translation id="6871644448911473373">Respondente OCSP: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">A senha inserida foi recusada pelo servidor.</translation>
+<translation id="6874170800191969835">Acessou <ph name="SEARCH_RESULT_TEXT" />.</translation>
 <translation id="6876155724392614295">Bicicleta</translation>
 <translation id="6876469544038980967">Não é útil</translation>
 <translation id="6878422606530379992">Sensores permitidos</translation>
@@ -4621,6 +4635,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7235737137505019098">Sua chave de segurança não tem espaço suficiente para mais contas.</translation>
 <translation id="7238643356913091553"><ph name="NETWORK_NAME" />, detalhes</translation>
 <translation id="7240339475467890413">Conectar a um novo ponto de acesso?</translation>
+<translation id="7240847845291869311">A criança quer adicionar uma Conta do Google do G Suite for Education neste dispositivo. O <ph name="LINK_BEGIN" />Aviso de privacidade do G Suite for Education<ph name="LINK_END" /> tem a finalidade de ajudar os usuários e os pais deles a entender quais são os dados coletados pelo produto, o motivo da coleta e o que é feito com eles.</translation>
 <translation id="7241389281993241388">Faça login no <ph name="TOKEN_NAME" /> para importar o certificado do cliente.</translation>
 <translation id="7241443820034350811">Se sua chave de segurança não estiver na lista, pressione o botão dela por pelo menos cinco segundos.</translation>
 <translation id="7243632151880336635">Limpar e sair</translation>
@@ -4932,7 +4947,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7669825497510425694">{NUM_ATTEMPTS,plural, =1{PIN incorreto. Você tem apenas uma tentativa restante.}one{PIN incorreto. Você tem apenas # tentativa restante.}other{PIN incorreto. Você tem apenas # tentativas restantes.}}</translation>
 <translation id="7671130400130574146">Usar barra de título e bordas do sistema</translation>
 <translation id="767127784612208024">Toque para confirmar a redefinição</translation>
-<translation id="767147716926917172">Enviar automaticamente dados de uso e diagnóstico ao Google</translation>
+<translation id="767147716926917172">Envia automaticamente dados de uso e diagnóstico ao Google</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" />, neste site: <ph name="PAGE_TITLE" />.</translation>
 <translation id="7676867886086876795">Envie sua voz para que o Google permita que o ditado seja usado em qualquer campo de texto.</translation>
 <translation id="7678280409648629969">Os dados de login serão armazenados no Chrome depois que você sair do modo de navegação anônima. Isso permitirá utilizar o Touch ID nesse site novamente.</translation>
@@ -5203,6 +5218,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7987814697832569482">Sempre se conectar usando esta VPN</translation>
 <translation id="7988355189918024273">Ativa os recursos de acessibilidade</translation>
 <translation id="7991296728590311172">Configurações do acesso com interruptor</translation>
+<translation id="7992202128769240372">Excede o limite de <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="7994350303002908848">Não foi possível instalar o Plugin VM. Tente novamente ou entre em contato com o administrador de dispositivos da sua organização. Código do erro: <ph name="ERROR_CODE" />.</translation>
 <translation id="7994702968232966508">Método EAP</translation>
 <translation id="7997826902155442747">Prioridade de processo</translation>

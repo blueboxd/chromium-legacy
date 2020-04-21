@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "net/nqe/network_quality_observation.h"
+
+#include "base/logging.h"
 #include "base/macros.h"
 
 namespace net {

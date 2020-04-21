@@ -47,6 +47,7 @@ import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.components.browser_ui.settings.ChromeBasePreference;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
+import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.GAIAServiceType;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.metrics.SignoutReason;
@@ -136,8 +137,9 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
         super.onResume();
         IdentityServicesProvider.get().getSigninManager().addSignInStateObserver(this);
         mProfileDataCache.addObserver(this);
-        mProfileDataCache.update(
-                AccountManagerFacadeProvider.getInstance().tryGetGoogleAccountNames());
+        List<String> accountNames = AccountUtils.toAccountNames(
+                AccountManagerFacadeProvider.getInstance().tryGetGoogleAccounts());
+        mProfileDataCache.update(accountNames);
         update();
     }
 

@@ -268,7 +268,7 @@ public class TileGroup implements MostVisitedSites.Observer {
             if (suggestion.url.equals(mPendingInsertionUrl)) insertionCompleted = true;
             if (suggestion.source == TileSource.EXPLORE && !mExploreSitesLoaded) {
                 mExploreSitesLoaded = true;
-                ExploreSitesBridge.initializeCatalog(Profile.getLastUsedProfile(),
+                ExploreSitesBridge.initializeCatalog(Profile.getLastUsedRegularProfile(),
                         ExploreSitesCatalogUpdateRequestSource.NEW_TAB_PAGE);
             }
         }

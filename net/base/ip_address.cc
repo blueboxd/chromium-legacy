@@ -8,6 +8,7 @@
 #include <climits>
 
 #include "base/containers/stack_container.h"
+#include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"

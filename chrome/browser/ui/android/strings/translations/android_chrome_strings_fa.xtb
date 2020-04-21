@@ -54,6 +54,7 @@
 <translation id="1331212799747679585">‏Chrome به‌روزرسانی نشد. گزینه‌های دیگر</translation>
 <translation id="1332501820983677155">‏میان‌برهای ویژه Google Chrome</translation>
 <translation id="1360432990279830238">از سیستم خارج و همگام‌سازی خاموش شود؟</translation>
+<translation id="1364532808393826295"><ph name="APP_NAME" /> - <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">سایت <ph name="SITE_NAME" /> اضافه شد</translation>
 <translation id="1373696734384179344">حافظه برای بارگیری محتوای انتخابی کافی نیست.</translation>
 <translation id="1376578503827013741">درحال محاسبه…</translation>
@@ -140,6 +141,7 @@
 <translation id="2017836877785168846">سابقه و تکمیل خودکار را در نوار نشانی پاک می‌کند.</translation>
 <translation id="2021896219286479412">کنترل‌های سایت تمام‌صفحه</translation>
 <translation id="2025115093177348061">واقعیت افزوده</translation>
+<translation id="2030769033451695672">برای برگشتن به <ph name="URL_OF_THE_CURRENT_TAB" /> ضربه بزنید</translation>
 <translation id="2038563949887743358">روشن کردن درخواست سایت رایانه‌ای</translation>
 <translation id="2041019821020695769">‏برای اینکه به Chrome امکان دهید برایتان اعلان ارسال کند، در <ph name="BEGIN_LINK" />تنظیمات Android<ph name="END_LINK" /> هم اعلان‌ها را روشن کنید.</translation>
 <translation id="204321170514947529">‏<ph name="APP_NAME" /> داده‌هایی در Chrome نیز دارد</translation>
@@ -301,6 +303,7 @@
 <translation id="3207960819495026254">نشانک‌گذاری شده</translation>
 <translation id="3211426585530211793"><ph name="ITEM_TITLE" /> حذف شد</translation>
 <translation id="321773570071367578">اگر عبارت عبورتان را فراموش کردید یا می‌خواهید این تنظیم را تغییر دهید، <ph name="BEGIN_LINK" />همگام‌سازی را بازنشانی کنید<ph name="END_LINK" /></translation>
+<translation id="3223655101706843289">این کار همه داده‌ها و کوکی‌های ذخیره‌شده توسط <ph name="ORIGIN" /> و برنامه‌های آن را از صفحه اصلی پاک می‌کند.</translation>
 <translation id="3227137524299004712">میکروفن</translation>
 <translation id="3232754137068452469">برنامه وب</translation>
 <translation id="3236059992281584593">۱ دقیقه باقی‌مانده است</translation>
@@ -535,6 +538,7 @@
 <translation id="4943872375798546930">نتیجه‌ای پیدا نشد</translation>
 <translation id="4961107849584082341">ترجمه این صفحه به زبان‌های دیگر</translation>
 <translation id="4962975101802056554">لغو همه مجوزها برای دستگاه</translation>
+<translation id="4964199952259983386">‏برای اینکه به Chrome اجازه دهید از AR استفاده کند، دوربین را در <ph name="BEGIN_LINK" />تنظیمات Android<ph name="END_LINK" /> نیز روشن کنید.</translation>
 <translation id="4970824347203572753">در مکان شما دردسترس نیست</translation>
 <translation id="497421865427891073">جلو رفتن</translation>
 <translation id="4988210275050210843">درحال بارگیری فایل (<ph name="MEGABYTES" />).</translation>
@@ -634,6 +638,7 @@
 <translation id="5684874026226664614">متأسفیم. این صفحه ترجمه نشد.</translation>
 <translation id="5686790454216892815">نام فایل خیلی طولانی است</translation>
 <translation id="5689516760719285838">مکان</translation>
+<translation id="5690795753582697420">‏«دوربین» در تنظیمات Android خاموش است</translation>
 <translation id="5694049548840660018">برگشت آسان به صفحه اصلی</translation>
 <translation id="569536719314091526">با استفاده از دکمه «گزینه‌های بیشتر»، این صفحه را به زبان‌های دیگر ترجمه کنید</translation>
 <translation id="5710871682236653961">‏وقتی روی دستگاه‌های NFC ضربه می‌زنید، قبل از ارسال و دریافت اطلاعات سؤال شود (توصیه می‌شود)</translation>
@@ -665,6 +670,7 @@
 <translation id="5876056640971328065">مکث ویدیو</translation>
 <translation id="5884076754568147479">‏برای کمک به انجام کارها، Google نشانی‌های وب و محتوای سایت‌هایی را که در آن‌ها از «دستیار» استفاده می‌کنید، و همچنین اطلاعاتی را که ازطریق «دستیار» ارسال می‌کنید دریافت خواهد کرد</translation>
 <translation id="5919204609460789179">برای شروع همگام‌سازی، <ph name="PRODUCT_NAME" /> را به‌روزرسانی کنید</translation>
+<translation id="5922853908706496913">درحال هم‌رسانی صفحه‌نمایش</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> صرفه‌جویی‌شده</translation>
 <translation id="5939518447894949180">بازنشانی</translation>
 <translation id="5942872142862698679">‏استفاده از Google برای جستجو</translation>
@@ -875,6 +881,7 @@
 <translation id="751961395872307827">نمی‌توان به این سایت متصل شد</translation>
 <translation id="7521387064766892559">جاوا اسکریپت</translation>
 <translation id="7542481630195938534">دریافت پیشنهادها امکان‌پذیر نیست</translation>
+<translation id="7554752735887601236">سایتی درحال استفاده از میکروفونتان است</translation>
 <translation id="7559975015014302720">«حالت ساده» خاموش است</translation>
 <translation id="7562080006725997899">پاک کردن داده‌های مرور</translation>
 <translation id="756809126120519699">‏داده‌های Chrome پاک شد</translation>
@@ -911,7 +918,9 @@
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{‏<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 و <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> روش پرداخت دیگر}one{‏<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 و <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> روش پرداخت دیگر}other{‏<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 و <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> روش پرداخت دیگر}}</translation>
 <translation id="7791543448312431591">افزودن</translation>
 <translation id="780301667611848630">نه متشکرم</translation>
+<translation id="7804248752222191302">سایتی درحال استفاده از دوربینتان است</translation>
 <translation id="7810647596859435254">باز کردن با…</translation>
+<translation id="7817023149356982970">از سیستم این سایت خارج خواهید شد.</translation>
 <translation id="7821588508402923572">میزان داده صرفه‌جویی‌شده اینجا نشان داده می‌شود</translation>
 <translation id="7828557259026017104">کوکی‌ها فایل‌هایی هستند که توسط وب‌سایت‌هایی که بازدید می‌کنید ایجاد می‌شوند. سایت‌ها برای به‌خاطر سپردن اولویت‌هایتان از آن‌ها استفاده می‌کنند. کوکی‌های شخص ثالث را سایت‌های دیگری ایجاد می‌کنند. برخی از محتواها مثل آگهی‌ها یا تصاویر موجود در صفحه وبی که از آن دیدن می‌کنید، متعلق به این سایت‌ها هستند.</translation>
 <translation id="783819812427904514">با صدا کردن ویدیو</translation>
@@ -990,8 +999,10 @@
 <translation id="8364299278605033898">مشاهده وب‌سایت‌های پرطرفدار</translation>
 <translation id="8368027906805972958">دستگاه ناشناس یا پشتیبانی‌نشده (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">«همگام‌سازی پس‌زمینه» را برای یک سایت خاص مجاز کنید.</translation>
+<translation id="83792324527827022">سایتی درحال استفاده از دوربین و میکروفونتان است</translation>
 <translation id="8380167699614421159">این سایتْ آگهی‌های مزاحم یا گمراه‌کننده نشان می‌دهد</translation>
 <translation id="8393700583063109961">ارسال پیام</translation>
+<translation id="8394832520002899662">برای برگشتن به سایت ضربه بزنید</translation>
 <translation id="8413126021676339697">نمایش کل سابقه</translation>
 <translation id="8427875596167638501">برگه پیش‌نمایش نیمه‌باز است</translation>
 <translation id="8428213095426709021">تنظیمات</translation>
@@ -1034,6 +1045,8 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{سطح قدرت سیگنال: # نوار}one{سطح قدرت سیگنال: # نوار}other{سطح قدرت سیگنال: # نوار}}</translation>
 <translation id="868929229000858085">جستجوی مخاطبین</translation>
 <translation id="869891660844655955">تاریخ انقضا</translation>
+<translation id="8702612070107455751">همه داده‌های آفلاین پاک خواهند شد.</translation>
+<translation id="8737217482364735741">با این کار همه داده‌ها و کوکی‌های ذخیره‌شده توسط <ph name="ORIGIN" /> پاک می‌شود.</translation>
 <translation id="8748850008226585750">محتوا پنهان است</translation>
 <translation id="8751914237388039244">تصویری انتخاب کنید</translation>
 <translation id="8758557275681689734">دیدن همه برگه‌های باز</translation>
@@ -1080,6 +1093,7 @@
 <translation id="9100610230175265781">عبارت عبور لازم است</translation>
 <translation id="9102803872260866941">برگه پیش‌نمایش باز است</translation>
 <translation id="9104217018994036254">فهرست دستگاه‌هایی که می‌توان با آن‌ها برگه هم‌رسانی کرد.</translation>
+<translation id="9108312223223904744">«تلفن» به‌عنوان «پشتیبان کلید امنیتی»</translation>
 <translation id="9133397713400217035">کاوش درحالت آفلاین</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">نمایش مورد اصلی</translation>

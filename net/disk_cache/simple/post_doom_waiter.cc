@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/logging.h"
 #include "net/disk_cache/simple/simple_histogram_macros.h"
 
 namespace disk_cache {

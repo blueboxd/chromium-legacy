@@ -251,6 +251,7 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
             PageInfoController.show(this, webContents, getToolbarManager().getContentPublisher(),
                     PageInfoController.OpenedFromSource.MENU,
                     new ChromePageInfoControllerDelegate(this, webContents,
+                            this::getModalDialogManager,
                             /*offlinePageLoadUrlDelegate=*/
                             new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(tab)));
             return true;

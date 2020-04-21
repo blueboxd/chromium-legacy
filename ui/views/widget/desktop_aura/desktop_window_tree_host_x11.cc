@@ -35,7 +35,6 @@
 #include "ui/base/hit_test.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/layout.h"
-#include "ui/base/x/x11_desktop_window_move_client.h"
 #include "ui/base/x/x11_pointer_grab.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/base/x/x11_util_internal.h"
@@ -89,13 +88,6 @@ void DesktopWindowTreeHostX11::Init(const Widget::InitParams& params) {
   static_cast<ui::X11Window*>(platform_window())->SetXEventDelegate(this);
 }
 
-void DesktopWindowTreeHostX11::OnNativeWidgetCreated(
-    const Widget::InitParams& params) {
-  x11_window_move_client_ = std::make_unique<ui::X11DesktopWindowMoveClient>(
-      static_cast<ui::X11Window*>(platform_window()));
-  DesktopWindowTreeHostLinux::OnNativeWidgetCreated(params);
-}
-
 std::unique_ptr<aura::client::DragDropClient>
 DesktopWindowTreeHostX11::CreateDragDropClient(
     DesktopNativeCursorManager* cursor_manager) {
@@ -104,21 +96,6 @@ DesktopWindowTreeHostX11::CreateDragDropClient(
                                                        GetXWindow()->window());
   drag_drop_client_->Init();
   return base::WrapUnique(drag_drop_client_);
-}
-
-Widget::MoveLoopResult DesktopWindowTreeHostX11::RunMoveLoop(
-    const gfx::Vector2d& drag_offset,
-    Widget::MoveLoopSource source,
-    Widget::MoveLoopEscapeBehavior escape_behavior) {
-  GetContentWindow()->SetCapture();
-  if (x11_window_move_client_->RunMoveLoop(!GetContentWindow()->HasCapture(),
-                                           drag_offset))
-    return Widget::MOVE_LOOP_SUCCESSFUL;
-  return Widget::MOVE_LOOP_CANCELED;
-}
-
-void DesktopWindowTreeHostX11::EndMoveLoop() {
-  x11_window_move_client_->EndMoveLoop();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

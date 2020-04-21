@@ -46,7 +46,7 @@ class PasswordInfobarModalOverlayRequestConfig
   explicit PasswordInfobarModalOverlayRequestConfig(InfoBarIOS* infobar);
 
   // OverlayUserData:
-  void CreateAuxilliaryData(base::SupportsUserData* user_data) override;
+  void CreateAuxiliaryData(base::SupportsUserData* user_data) override;
 
   // The InfoBar causing this modal.
   InfoBarIOS* infobar_ = nullptr;

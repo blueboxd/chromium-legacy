@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.page_info;
 
+import android.content.Context;
 import android.content.Intent;
 import android.text.SpannableString;
 import android.text.TextUtils;
@@ -14,8 +15,8 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
 import org.chromium.base.Consumer;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
@@ -74,7 +75,8 @@ public class ChromePageInfoControllerDelegate implements PageInfoControllerDeleg
     }
 
     private final WebContents mWebContents;
-    private final ChromeActivity mActivity;
+    private final Context mContext;
+    private final Supplier<ModalDialogManager> mModalDialogManagerSupplier;
     private final @PreviewPageState int mPreviewPageState;
     private String mOfflinePageUrl;
     private String mOfflinePageCreationDate;
@@ -85,10 +87,12 @@ public class ChromePageInfoControllerDelegate implements PageInfoControllerDeleg
     // Bridge updating the CookieControlsView when cookie settings change.
     private CookieControlsBridge mBridge;
 
-    public ChromePageInfoControllerDelegate(ChromeActivity activity, WebContents webContents,
+    public ChromePageInfoControllerDelegate(Context context, WebContents webContents,
+            Supplier<ModalDialogManager> modalDialogManagerSupplier,
             OfflinePageLoadUrlDelegate offlinePageLoadUrlDelegate) {
+        mContext = context;
         mWebContents = webContents;
-        mActivity = activity;
+        mModalDialogManagerSupplier = modalDialogManagerSupplier;
         mPreviewPageState = getPreviewPageStateAndRecordUma();
         initOfflinePageParams();
         mOfflinePageLoadUrlDelegate = offlinePageLoadUrlDelegate;
@@ -161,15 +165,7 @@ public class ChromePageInfoControllerDelegate implements PageInfoControllerDeleg
      */
     @Override
     public ModalDialogManager getModalDialogManager() {
-        return mActivity.getModalDialogManager();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean useDarkColors() {
-        return !mActivity.getNightModeStateProvider().isInNightMode();
+        return mModalDialogManagerSupplier.get();
     }
 
     /**
@@ -194,14 +190,14 @@ public class ChromePageInfoControllerDelegate implements PageInfoControllerDeleg
             };
             final String previewOriginalHost =
                     bridge.getOriginalHost(mWebContents.getVisibleUrlString());
-            final String loadOriginalText = mActivity.getString(
+            final String loadOriginalText = mContext.getString(
                     R.string.page_info_preview_load_original, previewOriginalHost);
             final SpannableString loadOriginalSpan = SpanApplier.applySpans(loadOriginalText,
                     new SpanInfo("<link>", "</link>",
                             // The callback given to NoUnderlineClickableSpan is overridden in
                             // PageInfoView so use previewShowOriginalClickCallback (above) instead
                             // because the entire TextView will be clickable.
-                            new NoUnderlineClickableSpan(mActivity.getResources(), (view) -> {})));
+                            new NoUnderlineClickableSpan(mContext.getResources(), (view) -> {})));
             viewParams.previewLoadOriginalMessage = loadOriginalSpan;
 
             viewParams.previewStaleTimestamp = bridge.getStalePreviewTimestamp(mWebContents);
@@ -294,16 +290,15 @@ public class ChromePageInfoControllerDelegate implements PageInfoControllerDeleg
     @Nullable
     public String getOfflinePageConnectionMessage() {
         if (mOfflinePageState == OfflinePageState.TRUSTED_OFFLINE_PAGE) {
-            return String.format(mActivity.getString(R.string.page_info_connection_offline),
+            return String.format(mContext.getString(R.string.page_info_connection_offline),
                     mOfflinePageCreationDate);
         } else if (mOfflinePageState == OfflinePageState.UNTRUSTED_OFFLINE_PAGE) {
             // For untrusted pages, if there's a creation date, show it in the message.
             if (TextUtils.isEmpty(mOfflinePageCreationDate)) {
-                return mActivity.getString(
-                        R.string.page_info_offline_page_not_trusted_without_date);
+                return mContext.getString(R.string.page_info_offline_page_not_trusted_without_date);
             } else {
                 return String.format(
-                        mActivity.getString(R.string.page_info_offline_page_not_trusted_with_date),
+                        mContext.getString(R.string.page_info_offline_page_not_trusted_with_date),
                         mOfflinePageCreationDate);
             }
         }
@@ -323,7 +318,7 @@ public class ChromePageInfoControllerDelegate implements PageInfoControllerDeleg
      */
     @Override
     public void showSiteSettings(String url) {
-        SiteSettingsHelper.showSiteSettings(mActivity, url);
+        SiteSettingsHelper.showSiteSettings(mContext, url);
     }
 
     /**
@@ -358,9 +353,9 @@ public class ChromePageInfoControllerDelegate implements PageInfoControllerDeleg
             String fullUrl, boolean shouldShowTitle,
             SystemSettingsActivityRequiredListener systemSettingsActivityRequiredListener,
             Callback<PageInfoView.PermissionParams> displayPermissionsCallback) {
-        mPermissionParamsListBuilder = new PermissionParamsListBuilder(mActivity,
-                permissionDelegate, fullUrl, shouldShowTitle,
-                systemSettingsActivityRequiredListener, displayPermissionsCallback);
+        mPermissionParamsListBuilder = new PermissionParamsListBuilder(mContext, permissionDelegate,
+                fullUrl, shouldShowTitle, systemSettingsActivityRequiredListener,
+                displayPermissionsCallback);
     }
 
     /**

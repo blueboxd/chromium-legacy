@@ -20,6 +20,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.components.content_settings.ContentSettingValues;
+import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.embedder_support.util.Origin;
 
 import java.util.ArrayList;
@@ -64,18 +65,19 @@ public class TrustedWebActivityPermissionManager {
         mPermissionPreserver = preserver;
     }
 
-    InstalledWebappBridge.Permission[] getNotificationPermissions() {
+    InstalledWebappBridge.Permission[] getPermissions(@ContentSettingsType int type) {
         List<InstalledWebappBridge.Permission> permissions = new ArrayList<>();
         for (String originAsString : mStore.getStoredOrigins()) {
             Origin origin = Origin.create(originAsString);
-            assert origin != null
-                    : "Found unparsable Origins in the Permission Store : " + originAsString;
+            assert origin
+                    != null : "Found unparsable Origins in the Permission Store : "
+                              + originAsString;
             if (origin == null) continue;
 
-            Boolean enabled = mStore.areNotificationsEnabled(origin);
+            Boolean enabled = mStore.arePermissionEnabled(type, origin);
 
             if (enabled == null) {
-                Log.w(TAG, "%s is known but has no notification permission.", origin);
+                Log.w(TAG, "%s is known but has no permission set.", origin);
                 continue;
             }
 
@@ -102,7 +104,8 @@ public class TrustedWebActivityPermissionManager {
     }
 
     @UiThread
-    public void updatePermission(Origin origin, String packageName, boolean notificationsEnabled) {
+    public void updatePermission(
+            Origin origin, String packageName, @ContentSettingsType int type, boolean enabled) {
         // TODO(peconn): Only trigger if this is for the first time?
 
         String appName = getAppNameForPackage(packageName);
@@ -113,11 +116,13 @@ public class TrustedWebActivityPermissionManager {
         // notification permission could flicker from SET -> UNSET -> SET. This way we transition
         // straight from the channel's permission to the app's permission.
         boolean stateChanged =
-                mStore.setStateForOrigin(origin, packageName, appName, notificationsEnabled);
+                mStore.setStateForOrigin(origin, packageName, appName, type, enabled);
 
-        NotificationChannelPreserver.deleteChannelIfNeeded(mPermissionPreserver, origin);
+        if (type == ContentSettingsType.NOTIFICATIONS) {
+            NotificationChannelPreserver.deleteChannelIfNeeded(mPermissionPreserver, origin);
+        }
 
-        if (stateChanged) InstalledWebappBridge.notifyPermissionsChange();
+        if (stateChanged) InstalledWebappBridge.notifyPermissionsChange(type);
     }
 
     @UiThread
@@ -126,7 +131,8 @@ public class TrustedWebActivityPermissionManager {
 
         NotificationChannelPreserver.restoreChannelIfNeeded(mPermissionPreserver, origin);
 
-        InstalledWebappBridge.notifyPermissionsChange();
+        InstalledWebappBridge.notifyPermissionsChange(ContentSettingsType.NOTIFICATIONS);
+        InstalledWebappBridge.notifyPermissionsChange(ContentSettingsType.GEOLOCATION);
     }
 
     /**

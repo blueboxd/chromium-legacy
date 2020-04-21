@@ -1713,7 +1713,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestSettings) {
 }
 
 // Tests that external navigation from inspector page is always handled by
-// DevToolsWindow and results in inspected page navigation.
+// DevToolsWindow and results in inspected page navigation.  See also
+// https://crbug.com/180555.
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestDevToolsExternalNavigation) {
   OpenDevToolsWindow(kDebuggerTestPage, true);
   GURL url = spawned_test_server()->GetURL(kNavigateBackTestPage);

@@ -51,6 +51,7 @@ source_set("feature_flags") {
     "//components/version_info",
     "//ios/chrome/browser:utils",
     "//ios/chrome/common",
+    "//ios/web/common:features",
   ]
 }
 

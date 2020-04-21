@@ -8,7 +8,10 @@
 #include "base/scoped_observer.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/bookmarks/common/bookmark_pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#include "ios/chrome/browser/policy/policy_features.h"
 #include "ios/chrome/browser/ui/bookmarks/bookmark_model_bridge_observer.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_consumer.h"
@@ -228,7 +231,12 @@
   }
 }
 
-#pragma mark - Helper methods
+- (void)setPrefService:(PrefService*)prefService {
+  _prefService = prefService;
+  [self.consumer setBookmarkEnabled:[self isEditBookmarksEnabled]];
+}
+
+#pragma mark - Update helper methods
 
 // Updates the consumer to match the current WebState.
 - (void)updateConsumer {
@@ -269,6 +277,16 @@
   BOOL shareMenuEnabled =
       URL.is_valid() && !web::GetWebClient()->IsAppSpecificURL(URL);
   [self.consumer setShareMenuEnabled:shareMenuEnabled];
+}
+
+#pragma mark - Other private methods
+
+// Returns YES if user is allowed to edit any bookmarks.
+- (BOOL)isEditBookmarksEnabled {
+  if (IsEditBookmarksIOSEnabled())
+    return self.prefService->GetBoolean(
+        bookmarks::prefs::kEditBookmarksEnabled);
+  return YES;
 }
 
 #pragma mark - BookmarkModelBridgeObserver

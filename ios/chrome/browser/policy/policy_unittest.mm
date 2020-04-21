@@ -48,6 +48,8 @@ class PolicyTest : public PlatformTest {
   PolicyTest() {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableEnterprisePolicy);
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kInstallURLBlocklistHandlers);
   }
 
   void SetUp() override {

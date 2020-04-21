@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include "base/optional.h"
+#include "base/strings/string_piece.h"
 #include "net/log/net_log_event_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

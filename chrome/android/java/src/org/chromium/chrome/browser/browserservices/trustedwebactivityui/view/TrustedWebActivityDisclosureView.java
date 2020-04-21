@@ -37,6 +37,7 @@ import dagger.Lazy;
 @ActivityScope
 public class TrustedWebActivityDisclosureView implements
         PropertyObservable.PropertyObserver<PropertyKey>, StartStopWithNativeObserver {
+    private static final String TAG = "RunningInChrome";
     private final Resources mResources;
     private final Lazy<SnackbarManager> mSnackbarManager;
     private final TrustedWebActivityModel mModel;
@@ -77,7 +78,7 @@ public class TrustedWebActivityDisclosureView implements
 
         switch (mModel.get(DISCLOSURE_STATE)) {
             case DISCLOSURE_STATE_SHOWN:
-                mSnackbarManager.get().showSnackbar(makeRunningInChromeInfobar());
+                showIfNeeded();
                 break;
             case DISCLOSURE_STATE_NOT_SHOWN:
                 mSnackbarManager.get().dismissSnackbars(mSnackbarController);
@@ -89,21 +90,37 @@ public class TrustedWebActivityDisclosureView implements
     public void onStartWithNative() {
         // SnackbarManager removes all snackbars when Chrome goes to background. Restore if needed.
         if (mModel.get(DISCLOSURE_STATE) == DISCLOSURE_STATE_SHOWN) {
-            mSnackbarManager.get().showSnackbar(makeRunningInChromeInfobar());
+            showIfNeeded();
         }
     }
 
     @Override
     public void onStopWithNative() {}
 
-    private Snackbar makeRunningInChromeInfobar() {
+    /**
+     * Creates the Infobar/Snackbar to show. The override of this method in
+     * {@link NewDisclosureSnackbar} may return {@code null}, meaning that no Infobar should be
+     * shown.
+     */
+    @Nullable
+    protected Snackbar makeRunningInChromeInfobar(SnackbarManager.SnackbarController controller) {
         String title = mResources.getString(R.string.twa_running_in_chrome);
         int type = Snackbar.TYPE_PERSISTENT;
+
         int code = Snackbar.UMA_TWA_PRIVACY_DISCLOSURE;
 
         String action = mResources.getString(R.string.ok);
         return Snackbar.make(title, mSnackbarController, type, code)
                 .setAction(action, null)
                 .setSingleLine(false);
+    }
+
+    private void showIfNeeded() {
+        Snackbar snackbar = makeRunningInChromeInfobar(mSnackbarController);
+        if (snackbar == null) {
+            return;
+        }
+
+        mSnackbarManager.get().showSnackbar(snackbar);
     }
 }

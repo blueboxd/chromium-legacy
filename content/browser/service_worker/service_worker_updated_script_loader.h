@@ -29,7 +29,6 @@ namespace content {
 
 class BrowserContext;
 class ServiceWorkerVersion;
-struct HttpResponseInfoIOBuffer;
 
 // Used only for ServiceWorkerImportedScriptUpdateCheck.
 //
@@ -164,8 +163,8 @@ class CONTENT_EXPORT ServiceWorkerUpdatedScriptLoader final
   void OnComplete(const network::URLLoaderCompletionStatus& status) override;
 
   // Implements ServiceWorkerCacheWriter::WriteObserver.
-  int WillWriteInfo(
-      scoped_refptr<HttpResponseInfoIOBuffer> response_info) override;
+  int WillWriteResponseHead(
+      const network::mojom::URLResponseHead& response_head) override;
   int WillWriteData(scoped_refptr<net::IOBuffer> data,
                     int length,
                     base::OnceCallback<void(net::Error)> callback) override;

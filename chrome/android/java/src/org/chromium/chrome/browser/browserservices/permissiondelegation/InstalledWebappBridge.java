@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.browserservices.permissiondelegation;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.components.content_settings.ContentSettingValues;
+import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.embedder_support.util.Origin;
 
 /**
@@ -40,10 +41,11 @@ public class InstalledWebappBridge {
         }
     }
 
-    public static void notifyPermissionsChange() {
+    public static void notifyPermissionsChange(@ContentSettingsType int type) {
         if (sNativeInstalledWebappProvider == 0) return;
 
-        InstalledWebappBridgeJni.get().notifyPermissionsChange(sNativeInstalledWebappProvider);
+        InstalledWebappBridgeJni.get().notifyPermissionsChange(
+                sNativeInstalledWebappProvider, type);
     }
 
     @CalledByNative
@@ -52,8 +54,8 @@ public class InstalledWebappBridge {
     }
 
     @CalledByNative
-    private static Permission[] getNotificationPermissions() {
-        return TrustedWebActivityPermissionManager.get().getNotificationPermissions();
+    private static Permission[] getPermissions(@ContentSettingsType int type) {
+        return TrustedWebActivityPermissionManager.get().getPermissions(type);
     }
 
     @CalledByNative
@@ -68,6 +70,6 @@ public class InstalledWebappBridge {
 
     @NativeMethods
     interface Natives {
-        void notifyPermissionsChange(long provider);
+        void notifyPermissionsChange(long provider, int type);
     }
 }

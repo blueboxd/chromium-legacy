@@ -147,11 +147,6 @@ class PLATFORM_EXPORT HeapAllocator {
            ThreadState::Current()->IsIncrementalMarking();
   }
 
-  template <typename T>
-  static bool IsHeapObjectAlive(T* object) {
-    return ThreadHeap::IsHeapObjectAlive(object);
-  }
-
   template <typename T, typename Traits>
   static void Trace(Visitor* visitor, const T& t) {
     TraceCollectionIfEnabled<WTF::WeakHandlingTrait<T>::value, T,

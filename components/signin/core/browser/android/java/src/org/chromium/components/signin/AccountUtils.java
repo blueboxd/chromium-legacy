@@ -6,6 +6,7 @@ package org.chromium.components.signin;
 
 import android.accounts.Account;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import java.util.ArrayList;
@@ -43,9 +44,24 @@ public class AccountUtils {
     }
 
     /**
+     * Finds the first account of the account list whose canonical name equal the given
+     * accountName's canonical name; null if account does not exist.
+     */
+    public static @Nullable Account findAccountByName(
+            final List<Account> accounts, String accountName) {
+        String canonicalName = AccountUtils.canonicalizeName(accountName);
+        for (Account account : accounts) {
+            if (AccountUtils.canonicalizeName(account.name).equals(canonicalName)) {
+                return account;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Canonicalizes the account name.
      */
-    static String canonicalizeName(String name) {
+    private static String canonicalizeName(String name) {
         String[] parts = AT_SYMBOL.split(name);
         if (parts.length != 2) return name;
 

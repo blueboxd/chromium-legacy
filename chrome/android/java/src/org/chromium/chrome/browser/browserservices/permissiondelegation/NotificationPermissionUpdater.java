@@ -15,6 +15,7 @@ import org.chromium.base.PackageManagerUtils;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.browserservices.BrowserServicesMetrics;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityClient;
+import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
@@ -93,7 +94,8 @@ public class NotificationPermissionUpdater {
         // This method will be called by the TrustedWebActivityClient on a background thread, so
         // hop back over to the UI thread to deal with the result.
         PostTask.postTask(UiThreadTaskTraits.USER_VISIBLE, () -> {
-            mPermissionManager.updatePermission(origin, app.getPackageName(), enabled);
+            mPermissionManager.updatePermission(
+                    origin, app.getPackageName(), ContentSettingsType.NOTIFICATIONS, enabled);
             Log.d(TAG, "Updating origin notification permissions to: %b", enabled);
         });
     }

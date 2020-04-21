@@ -44,18 +44,18 @@ void SVGPolyElement::Trace(Visitor* visitor) {
 Path SVGPolyElement::AsPathFromPoints() const {
   Path path;
 
-  SVGPointList* points_value = Points()->CurrentValue();
+  const SVGPointList* points_value = Points()->CurrentValue();
   if (points_value->IsEmpty())
     return path;
 
-  SVGPointList::ConstIterator it = points_value->begin();
-  SVGPointList::ConstIterator it_end = points_value->end();
+  const auto* it = points_value->begin();
+  const auto* it_end = points_value->end();
   DCHECK(it != it_end);
-  path.MoveTo(it->Value());
+  path.MoveTo((*it)->Value());
   ++it;
 
   for (; it != it_end; ++it)
-    path.AddLineTo(it->Value());
+    path.AddLineTo((*it)->Value());
 
   return path;
 }

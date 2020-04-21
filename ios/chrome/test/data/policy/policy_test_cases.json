@@ -93,10 +93,28 @@
     ]
   },
 
+  "URLBlacklist": {
+    "os": [ "ios" ],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {"URLBlacklist": ["google.com"]},
+        "prefs": { "policy.url_blacklist": {}}
+      }
+    ]
+  },
+
+  "URLWhitelist": {
+    "os": [ "ios" ],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {"URLWhitelist": ["google.com"]},
+        "prefs": { "policy.url_whitelist": {}}
+      }
+    ]
+  },
+
   "DefaultPopupsSetting": {},
   "DefaultSearchProviderEnabled": {},
   "DefaultSearchProviderName": {},
-  "ManagedBookmarks": {},
-  "URLBlacklist": {},
-  "URLWhitelist": {}
+  "ManagedBookmarks": {}
 }

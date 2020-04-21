@@ -608,6 +608,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"edit-bookmarks-ios", flag_descriptions::kEditBookmarksIOSName,
      flag_descriptions::kEditBookmarksIOSDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kEditBookmarksIOS)},
+    {"url-blocklist-ios", flag_descriptions::kURLBlocklistIOSName,
+     flag_descriptions::kURLBlocklistIOSDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kURLBlocklistIOS)},
 };
 
 // Add all switches from experimental flags to |command_line|.

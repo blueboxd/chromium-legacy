@@ -11,6 +11,8 @@
 #include "base/memory/ptr_util.h"
 #include "content/browser/appcache/appcache_response_info.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
+#include "content/common/service_worker/service_worker_utils.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace {
 
@@ -599,13 +601,24 @@ int ServiceWorkerCacheWriter::WriteInfo(
   if (!write_observer_)
     return WriteInfoToResponseWriter(std::move(response_info));
 
-  int result = write_observer_->WillWriteInfo(response_info);
+  // Always set SSLInfo. An observer will drop it if the SSLInfo isn't needed.
+  auto response = ServiceWorkerUtils::CreateResourceResponseHeadAndMetadata(
+      response_info->http_info.get(),
+      /*options=*/network::mojom::kURLLoadOptionSendSSLInfoWithResponse,
+      /*request_start_time=*/base::TimeTicks(),
+      /*response_start_time=*/base::TimeTicks::Now(),
+      response_info->response_data_size);
+  // There should be no metadata when writing response headers.
+  DCHECK(response.metadata.empty());
+
+  int result = write_observer_->WillWriteResponseHead(*response.head);
   if (result != net::OK) {
     DCHECK_NE(result, net::ERR_IO_PENDING);
     state_ = STATE_DONE;
     return result;
   }
 
+  // TODO(crbug.com/1060076): Pass |response.head|.
   return WriteInfoToResponseWriter(std::move(response_info));
 }
 

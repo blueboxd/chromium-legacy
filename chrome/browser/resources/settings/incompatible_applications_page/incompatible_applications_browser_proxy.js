@@ -3,10 +3,9 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
 // clang-format on
 
-cr.define('settings', function() {
   /**
    * All possible actions to take on an incompatible application.
    *
@@ -15,7 +14,7 @@ cr.define('settings', function() {
    * @readonly
    * @enum {number}
    */
-  /* #export */ const ActionTypes = {
+  export const ActionTypes = {
     UNINSTALL: 0,
     MORE_INFO: 1,
     UPGRADE: 2,
@@ -28,13 +27,13 @@ cr.define('settings', function() {
    *   actionUrl: string,
    * }}
    */
-  /* #export */ let IncompatibleApplication;
+  export let IncompatibleApplication;
 
   /** @interface */
-  /* #export */ class IncompatibleApplicationsBrowserProxy {
+  export class IncompatibleApplicationsBrowserProxy {
     /**
      * Get the list of incompatible applications.
-     * @return {!Promise<!Array<!settings.IncompatibleApplication>>}
+     * @return {!Promise<!Array<!IncompatibleApplication>>}
      */
     requestIncompatibleApplicationsList() {}
 
@@ -76,11 +75,11 @@ cr.define('settings', function() {
     getListTitlePluralString(numApplications) {}
   }
 
-  /** @implements {settings.IncompatibleApplicationsBrowserProxy} */
-  /* #export */ class IncompatibleApplicationsBrowserProxyImpl {
+  /** @implements {IncompatibleApplicationsBrowserProxy} */
+  export class IncompatibleApplicationsBrowserProxyImpl {
     /** @override */
     requestIncompatibleApplicationsList() {
-      return cr.sendWithPromise('requestIncompatibleApplicationsList');
+      return sendWithPromise('requestIncompatibleApplicationsList');
     }
 
     /** @override */
@@ -95,28 +94,20 @@ cr.define('settings', function() {
 
     /** @override */
     getSubtitlePluralString(numApplications) {
-      return cr.sendWithPromise('getSubtitlePluralString', numApplications);
+      return sendWithPromise('getSubtitlePluralString', numApplications);
     }
 
     /** @override */
     getSubtitleNoAdminRightsPluralString(numApplications) {
-      return cr.sendWithPromise(
+      return sendWithPromise(
           'getSubtitleNoAdminRightsPluralString', numApplications);
     }
 
     /** @override */
     getListTitlePluralString(numApplications) {
-      return cr.sendWithPromise('getListTitlePluralString', numApplications);
+      return sendWithPromise('getListTitlePluralString', numApplications);
     }
   }
 
-  cr.addSingletonGetter(IncompatibleApplicationsBrowserProxyImpl);
+  addSingletonGetter(IncompatibleApplicationsBrowserProxyImpl);
 
-  // #cr_define_end
-  return {
-    ActionTypes,
-    IncompatibleApplication,
-    IncompatibleApplicationsBrowserProxy,
-    IncompatibleApplicationsBrowserProxyImpl,
-  };
-});

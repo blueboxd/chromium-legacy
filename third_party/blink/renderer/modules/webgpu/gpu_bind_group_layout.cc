@@ -28,10 +28,10 @@ WGPUBindGroupLayoutEntry AsDawnType(
     device->AddConsoleWarning(
         "GPUBindGroupLayoutEntry.textureDimension is deprecated: renamed to "
         "viewDimension");
-    dawn_binding.textureDimension = AsDawnEnum<WGPUTextureViewDimension>(
+    dawn_binding.viewDimension = AsDawnEnum<WGPUTextureViewDimension>(
         webgpu_binding->textureDimension());
   } else {
-    dawn_binding.textureDimension =
+    dawn_binding.viewDimension =
         AsDawnEnum<WGPUTextureViewDimension>(webgpu_binding->viewDimension());
   }
 

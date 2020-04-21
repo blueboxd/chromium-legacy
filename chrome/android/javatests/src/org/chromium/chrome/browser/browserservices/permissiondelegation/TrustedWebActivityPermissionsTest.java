@@ -25,7 +25,9 @@ import org.chromium.chrome.browser.background_sync.BackgroundSyncPwaDetector;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.webapps.WebappRegistry;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -44,6 +46,9 @@ public class TrustedWebActivityPermissionsTest {
     public CustomTabActivityTestRule mCustomTabActivityTestRule = new CustomTabActivityTestRule();
 
     private static final String TEST_PAGE = "/chrome/test/data/android/google.html";
+    private static final int NOTIFICATIONS = ContentSettingsType.NOTIFICATIONS;
+    private static final int GEOLOCATION = ContentSettingsType.GEOLOCATION;
+
     private EmbeddedTestServer mTestServer;
     private String mTestPage;
     private Origin mOrigin;
@@ -81,24 +86,24 @@ public class TrustedWebActivityPermissionsTest {
     @Test
     @MediumTest
     public void allowNotifications() throws TimeoutException {
-        TestThreadUtils.runOnUiThreadBlocking(() ->
-                mPermissionManager.updatePermission(mOrigin, mPackage, true));
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mPermissionManager.updatePermission(mOrigin, mPackage, NOTIFICATIONS, true));
         assertEquals("\"granted\"", getNotificationPermission());
     }
 
     @Test
     @MediumTest
     public void blockNotifications() throws TimeoutException {
-        TestThreadUtils.runOnUiThreadBlocking(() ->
-                mPermissionManager.updatePermission(mOrigin, mPackage, false));
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mPermissionManager.updatePermission(mOrigin, mPackage, NOTIFICATIONS, false));
         assertEquals("\"denied\"", getNotificationPermission());
     }
 
     @Test
     @MediumTest
     public void unregisterTwa() throws TimeoutException {
-        TestThreadUtils.runOnUiThreadBlocking(() ->
-                mPermissionManager.updatePermission(mOrigin, mPackage, true));
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mPermissionManager.updatePermission(mOrigin, mPackage, NOTIFICATIONS, true));
         assertEquals("\"granted\"", getNotificationPermission());
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -111,11 +116,31 @@ public class TrustedWebActivityPermissionsTest {
     @SmallTest
     public void detectTwa() {
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> mPermissionManager.updatePermission(mOrigin, mPackage, true));
+                () -> mPermissionManager.updatePermission(mOrigin, mPackage, NOTIFICATIONS, true));
         assertTrue(BackgroundSyncPwaDetector.isTwaInstalled(mOrigin.toString()));
 
         TestThreadUtils.runOnUiThreadBlocking(() -> { mPermissionManager.unregister(mOrigin); });
         assertFalse(BackgroundSyncPwaDetector.isTwaInstalled(mOrigin.toString()));
+    }
+
+    @Test
+    @SmallTest
+    public void allowGeolocation() {
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mPermissionManager.updatePermission(mOrigin, mPackage, GEOLOCATION, true));
+        assertTrue(WebappRegistry.getInstance()
+                           .getTrustedWebActivityPermissionStore()
+                           .arePermissionEnabled(GEOLOCATION, mOrigin));
+    }
+
+    @Test
+    @SmallTest
+    public void blockGeolocation() {
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mPermissionManager.updatePermission(mOrigin, mPackage, GEOLOCATION, false));
+        assertFalse(WebappRegistry.getInstance()
+                            .getTrustedWebActivityPermissionStore()
+                            .arePermissionEnabled(GEOLOCATION, mOrigin));
     }
 
     private String getNotificationPermission() throws TimeoutException {

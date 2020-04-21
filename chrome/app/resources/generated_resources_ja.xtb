@@ -421,6 +421,11 @@
 <translation id="1555130319947370107">青</translation>
 <translation id="1556537182262721003">拡張機能ディレクトリをプロフィールに移動できませんでした。</translation>
 <translation id="155865706765934889">タッチパッド</translation>
+<translation id="1560763881671211335">G Suite for Education の管理者は、ユーザーが G Suite for Education アカウントにログインしているときにアクセスできる Google サービスを管理します。学校の管理者は、未成年のユーザーがサービスを利用することに関して、管理者自身が同意するか、保護者から同意を得る必要があります。
+
+    履歴、ブックマーク、パスワードなどの閲覧データは、ファミリー リンク アカウントに保存され、学校のアカウントには保存されません。
+
+    保護者によるファミリー リンクの設定は引き続き適用されます。以前にアプリやサイトをブロックした場合、再度ブロックする必要はありません。</translation>
 <translation id="1566049601598938765">ウェブサイト</translation>
 <translation id="15662109988763471">選択したプリンタは利用できないか、正しくインストールされていません。プリンタを確認するか、別のプリンタを選択してみてください。</translation>
 <translation id="1567387640189251553">前回のパスワード入力時以降に別のキーボードが接続されました。キー入力が読み取られる可能性があります。</translation>
@@ -1200,6 +1205,7 @@
 <translation id="258095186877893873">長い</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" />（プラットフォーム <ph name="PLATFORM_VERSION" />）<ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Kerberos チケットを取得できませんでした。もう一度お試しいただくか、組織のデバイス管理者にお問い合わせください。（エラーコード <ph name="ERROR_CODE" />）。</translation>
+<translation id="2585013490795742997">「<ph name="QUERY" />」の検索結果 1 件を表示しています</translation>
 <translation id="2585724835339714757">このタブではデスクトップ画面が共有されます。</translation>
 <translation id="2586657967955657006">クリップボード</translation>
 <translation id="2586672484245266891">URL を短くしてください</translation>
@@ -1886,6 +1892,7 @@
 <translation id="3498215018399854026">現在、保護者にたずねることができません。もう一度お試しください。</translation>
 <translation id="3500417806337761827">共有フォルダのマウントエラー。マウントされた SMB 共有の数が上限を超えています。</translation>
 <translation id="3505030558724226696">デバイスのアクセスを取り消す</translation>
+<translation id="3507132249039706973">標準保護機能がオンになっています</translation>
 <translation id="3507421388498836150">「<ph name="EXTENSION_NAME" />」の現在の権限</translation>
 <translation id="3507888235492474624">Bluetooth デバイスを再スキャン</translation>
 <translation id="3508492320654304609">ログインデータを削除できませんでした</translation>
@@ -3239,6 +3246,7 @@
 <translation id="5352033265844765294">タイム スタンプ</translation>
 <translation id="5353252989841766347">Chrome からパスワードをエクスポート</translation>
 <translation id="5355099869024327351">アシスタントによる通知の表示を許可する</translation>
+<translation id="5355191726083956201">保護強化機能がオンになっています</translation>
 <translation id="5355926466126177564">拡張機能「<ph name="EXTENSION_NAME" />」により、アドレスバーから検索したときに表示されるページが変更されました。</translation>
 <translation id="5359910752122114278">検索結果 1 件</translation>
 <translation id="5360150013186312835">ツールバーに表示</translation>
@@ -3550,6 +3558,7 @@
 <translation id="577322787686508614">「<ph name="DEVICE_NAME" />」での読み取り操作は許可されていません。</translation>
 <translation id="5774295353725270860">ファイルのアプリを開く</translation>
 <translation id="577624874850706961">Cookie を検索</translation>
+<translation id="5776858208024364029">「<ph name="QUERY" />」の検索結果 <ph name="NUMBER" /> 件を表示しています</translation>
 <translation id="5777468213129569553">Chrome を起動</translation>
 <translation id="5778747455497889540">ご使用のパソコンに割り当てられたランダム生成のセキュア モジュール パスワードは以下のとおりです。</translation>
 <translation id="5780011244986845107">選択したフォルダには、機密ファイルが含まれています。このフォルダに対する永続的な読み取りアクセス権を「<ph name="APP_NAME" />」に付与してもよろしいですか？</translation>
@@ -4106,6 +4115,7 @@
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
+<translation id="6520876759015997832"><ph name="SEARCH_RESULT_TEXT" /> の検索結果 <ph name="LIST_SIZE" /> 件中 <ph name="LIST_POSITION" /> 件目です。Enter キーを押すと、そのセクションに移動します。</translation>
 <translation id="652492607360843641"><ph name="NETWORK_TYPE" /> ネットワークに接続しています。</translation>
 <translation id="6527303717912515753">共有</translation>
 <translation id="6528513914570774834">このデバイスの他のユーザーにこのネットワークの使用を許可する</translation>
@@ -4117,6 +4127,7 @@
 <translation id="6532206849875187177">セキュリティとログイン</translation>
 <translation id="6532527800157340614">アクセス トークンを取得できなかったため、ログインできませんでした。ネットワーク接続を確認してからもう一度お試しください。</translation>
 <translation id="6532663472409656417">企業登録済み</translation>
+<translation id="6535331821390304775"><ph name="ORIGIN" /> のこのタイプのリンクは常に関連付けられたアプリで開く</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />注:<ph name="END_BOLD" /> データの収集によりパフォーマンスが低下する場合があるため、意図的に行う場合、または指示された場合のみ有効にしてください。</translation>
 <translation id="6541638731489116978">このサイトではモーション センサーへのアクセスがブロックされています。</translation>
 <translation id="6545665334409411530">リピート回数 / 秒</translation>
@@ -4246,6 +4257,7 @@
 <translation id="6727969043791803658">接続済み、<ph name="BATTERY_PERCENTAGE" />% のバッテリー残量</translation>
 <translation id="6732801395666424405">証明書が読み込まれていません</translation>
 <translation id="6732900235521116609">ショートカットの削除はできません</translation>
+<translation id="6734468588183300211">シークレット モードのとき、サイトは、Cookie を使用して別のサイトでのあなたの閲覧アクティビティを確認できず、広告のカスタマイズなどが行えなくなります。一部サイトの機能が使用できなくなる可能性もあります。</translation>
 <translation id="6735304988756581115">Cookie と他のサイトのデータを表示...</translation>
 <translation id="6736243959894955139">アドレス</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
@@ -4258,6 +4270,7 @@
 <translation id="674632704103926902">タップによるドラッグを有効にする</translation>
 <translation id="6748217015615267851">レンダラ: <ph name="RENDERER_URL" /></translation>
 <translation id="6748465660675848252">続行した場合、同期済みのデータと設定のみが復元され、ローカルデータはすべて失われます。</translation>
+<translation id="6749006854028927059">サイトは、Cookie を使用して別のサイトでのあなたの閲覧アクティビティを確認できず、広告のカスタマイズなどが行えなくなります。一部サイトの機能が使用できなくなる可能性もあります。</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" />（シークレット モード）</translation>
 <translation id="6757101664402245801">URL がコピーされました</translation>
 <translation id="6758056191028427665">アンケートにご協力ください。</translation>
@@ -4349,6 +4362,7 @@
 <translation id="686664946474413495">色温度</translation>
 <translation id="6871644448911473373">OCSP レスポンダ: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">入力したパスワードはサーバーによって拒否されました。</translation>
+<translation id="6874170800191969835"><ph name="SEARCH_RESULT_TEXT" /> に移動しました。</translation>
 <translation id="6876155724392614295">自転車</translation>
 <translation id="6876469544038980967">役に立たなかった</translation>
 <translation id="6878422606530379992">センサーが許可されました</translation>
@@ -4619,6 +4633,7 @@
 <translation id="7235737137505019098">セキュリティ キーに空き容量がないため、これ以上アカウントを追加できません。</translation>
 <translation id="7238643356913091553"><ph name="NETWORK_NAME" />、詳細</translation>
 <translation id="7240339475467890413">新しいアクセス ポイントに接続しますか？</translation>
+<translation id="7240847845291869311">お子様がこのデバイスに G Suite for Education の Google アカウントを追加しようとしています。<ph name="LINK_BEGIN" />G Suite for Education のプライバシーに関するお知らせ<ph name="LINK_END" />は、G Suite for Education のユーザーとパートナーの皆様に、このサービスで収集されるデータとその理由、Google でのデータの取り扱いについて理解を深めていただくためのものです。</translation>
 <translation id="7241389281993241388">クライアント証明書をインポートするには <ph name="TOKEN_NAME" /> にログインしてください。</translation>
 <translation id="7241443820034350811">セキュリティ キーが表示されていない場合は、キーのボタンを 5 秒以上長押ししてください。</translation>
 <translation id="7243632151880336635">削除してログアウト</translation>
@@ -5201,6 +5216,7 @@
 <translation id="7987814697832569482">この VPN で常に接続する</translation>
 <translation id="7988355189918024273">ユーザー補助機能を有効にします</translation>
 <translation id="7991296728590311172">スイッチ アクセスの設定</translation>
+<translation id="7992202128769240372"><ph name="SHEETS_LABEL" /> の上限（<ph name="NUMBER_OF_SHEETS" /> 枚）を超えています</translation>
 <translation id="7994350303002908848">Plugin VM をインストールできませんでした。もう一度お試しいただくか、組織のデバイス管理者にお問い合わせください。エラーコード: <ph name="ERROR_CODE" />。</translation>
 <translation id="7994702968232966508">EAP 方式</translation>
 <translation id="7997826902155442747">プロセスの優先値</translation>

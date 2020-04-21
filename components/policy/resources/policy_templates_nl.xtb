@@ -68,15 +68,6 @@
 
       Als het beleid is ingesteld op False of niet is ingesteld, worden de gegevens niet gerapporteerd.
       Als het beleid is ingesteld op True, wordt informatie over de schermverlichting van het apparaat gerapporteerd.</translation>
-<translation id="1076271193420500757">Als je dit beleid configureert, kun je opgeven welke varianten mogen worden toegepast op een zakelijk beheerd <ph name="PRODUCT_OS_NAME" />-apparaat.
-
-      Varianten vormen een manier om aanpassingen in <ph name="PRODUCT_OS_NAME" /> aan te bieden zonder een nieuwe versie te publiceren. Hiervoor worden reeds bestaande functies selectief in- of uitgeschakeld.
-
-      Als je <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (waarde 0) instelt of het beleid niet instelt, mogen alle varianten worden toegepast op <ph name="PRODUCT_OS_NAME" />.
-
-      Als je <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (waarde 1) instelt, mogen alleen varianten die worden beschouwd als essentiële beveiligings- of stabiliteitsoplossingen, worden toegepast op <ph name="PRODUCT_OS_NAME" />.
-
-      Als je <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (waarde 2) instelt, mag geen van de varianten op de browser worden toegepast op het inlogscherm. Deze modus kan er potentieel voor zorgen dat <ph name="PRODUCT_OS_NAME" />-ontwikkelaars essentiële beveiligingsoplossingen niet tijdig kunnen leveren en wordt dus niet aanbevolen.</translation>
 <translation id="1079801999187584280">Het gebruik van de hulpprogramma's voor ontwikkelaars niet toestaan</translation>
 <translation id="1087437665304381368">Met dit beleid wordt alleen de ontwikkelaarsmodus van <ph name="PRODUCT_OS_NAME" /> bepaald. Als je de toegang tot de ontwikkelaarsopties van Android wilt blokkeren, moet je het beleid <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" /> instellen.</translation>
 <translation id="1087707496788636333">De Chrome Enterprise-beleidslijst wordt verplaatst. Update je bladwijzers naar <ph name="POLICY_DOCUMENTATION_URL" />.</translation>
@@ -1862,7 +1853,6 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
       Als dit beleid niet is ingesteld, worden certificaten die openbaar moeten worden gemaakt via certificaattransparantie behandeld als niet-vertrouwd als het niet openbaar wordt gemaakt in overeenstemming met het beleid voor certificaattransparantie.</translation>
 <translation id="3765260570442823273">Duur van de waarschuwing bij uitloggen inactieve gebruiker</translation>
 <translation id="377044054160169374">Interventie voor misleidende functionaliteit afdwingen</translation>
-<translation id="3780102107513139202">Varianten alleen inschakelen voor essentiële oplossingen</translation>
 <translation id="3780152581321609624">Niet-standaardpoort in Kerberos-SPN opnemen</translation>
 <translation id="3780319008680229708">Als dit beleid is ingesteld op 'True', wordt het Cast-icoon altijd weergegeven in de werkbalk of het overloopmenu en kunnen gebruikers het niet verwijderen.
 
@@ -4260,15 +4250,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="7311458740754205918">Als dit beleid is ingesteld op 'True' of niet is ingesteld, kunnen op de nieuwe tabbladpagina contentsuggesties worden weergegeven op basis van de browsegeschiedenis, interesses en locatie van de gebruiker.
 
       Als dit is ingesteld op 'False', worden er geen automatisch gegenereerde contentsuggesties weergegeven op de nieuwe tabbladpagina.</translation>
-<translation id="7323572763274343342">Als je dit beleid configureert, kun je opgeven welke varianten mogen worden toegepast in <ph name="PRODUCT_NAME" />.
-
-      Varianten vormen een manier om aanpassingen in <ph name="PRODUCT_NAME" /> aan te bieden zonder een nieuwe versie van de browser te publiceren. Hiervoor worden reeds bestaande functies selectief in- of uitgeschakeld.
-
-      Als je <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (waarde 0) instelt of het beleid niet instelt, mogen alle varianten worden toegepast op de browser.
-
-      Als je <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (waarde 1) instelt, mogen alleen varianten die worden beschouwd als essentiële beveiligings- of stabiliteitsoplossingen, worden toegepast op <ph name="PRODUCT_NAME" />.
-
-      Als je <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (waarde 2) instelt, mag geen van de varianten worden toegepast op de browser. Deze modus kan er potentieel voor zorgen dat <ph name="PRODUCT_NAME" />-ontwikkelaars essentiële beveiligingsoplossingen niet tijdig kunnen leveren en wordt dus niet aanbevolen.</translation>
 <translation id="7323896582714668701">Extra opdrachtregelparameters voor <ph name="PRODUCT_NAME" /></translation>
 <translation id="7326394567531622570">Vergelijkbaar met Wipe (waarde 2), maar probeert inlogtokens te behouden, zodat de gebruiker niet opnieuw hoeft in te loggen.</translation>
 <translation id="7329968046053403405">Hiermee wordt het accounttype gespecificeerd van de accounts die worden geleverd door de verificatie-app voor Android die <ph name="HTTP_NEGOTIATE" />-verificatie ondersteunt (zoals Kerberos-verificatie). Deze informatie is beschikbaar via de leverancier van de verificatie-app. Ga voor meer informatie naar https://goo.gl/hajyfN.

@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "components/content_settings/core/browser/content_settings_observable_provider.h"
 #include "components/content_settings/core/common/content_settings.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "url/gurl.h"
 
 class InstalledWebappProvider : public content_settings::ObservableProvider {
@@ -38,7 +39,7 @@ class InstalledWebappProvider : public content_settings::ObservableProvider {
   void ClearAllContentSettingsRules(ContentSettingsType content_type) override;
   void ShutdownOnUIThread() override;
 
-  void Notify();
+  void Notify(ContentSettingsType content_type);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InstalledWebappProvider);

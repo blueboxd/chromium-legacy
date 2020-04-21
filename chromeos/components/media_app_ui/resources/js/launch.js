@@ -145,7 +145,6 @@ guestMessagePipe.registerHandler(Message.SAVE_COPY, async (message) => {
     return 'attemptedCurrentlyWritableFileOverwrite';
   }
 
-  // Load this file into the app.
   await saveToFile(handle, blob);
 });
 

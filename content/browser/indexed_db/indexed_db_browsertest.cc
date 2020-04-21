@@ -1013,9 +1013,7 @@ INSTANTIATE_TEST_SUITE_P(IndexedDBBrowserTestInstantiation,
                                            "failTransactionCommit",
                                            "clearObjectStore"));
 
-// TODO(crbug.com/1071292): Make this test less brittle and re-enable it.
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest,
-                       DISABLED_DeleteCompactsBackingStore) {
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DeleteCompactsBackingStore) {
   const GURL kTestUrl = GetTestUrl("indexeddb", "delete_compact.html");
   const url::Origin kTestOrigin = url::Origin::Create(kTestUrl);
   SimpleTest(GURL(kTestUrl.spec() + "#fill"));

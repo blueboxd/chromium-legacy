@@ -16,7 +16,8 @@ FAIL createAnswer uses operations chain assert_equals: isOperationsChainEmpty is
 FAIL setLocalDescription uses operations chain assert_true: Empty before expected true got false
 FAIL setRemoteDescription uses operations chain assert_true: Empty before expected true got false
 FAIL addIceCandidate uses operations chain promise_test: Unhandled rejection with value: object "InvalidStateError: Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'."
-FAIL Firing of negotiationneeded uses operations chain promise_test: Unhandled rejection with value: object "InvalidStateError: Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'."
+FAIL Firing of negotiationneeded does NOT use operations chain promise_test: Unhandled rejection with value: object "InvalidStateError: Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'."
+FAIL Negotiationneeded only fires once operations chain is empty promise_test: Unhandled rejection with value: object "InvalidStateError: Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'."
 FAIL replaceTrack uses operations chain promise_test: Unhandled rejection with value: object "InvalidStateError: Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'."
 FAIL setParameters does NOT use the operations chain promise_test: Unhandled rejection with value: object "InvalidStateError: Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'."
 FAIL pc.getStats does NOT use the operations chain assert_true: Empty chain expected true got false

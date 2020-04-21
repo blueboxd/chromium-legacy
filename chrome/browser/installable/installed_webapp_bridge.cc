@@ -15,17 +15,21 @@ using base::android::ConvertJavaStringToUTF8;
 using base::android::ScopedJavaLocalRef;
 
 static void JNI_InstalledWebappBridge_NotifyPermissionsChange(JNIEnv* env,
-    jlong j_provider) {
+                                                              jlong j_provider,
+                                                              int type) {
+  DCHECK_LT(type, static_cast<int32_t>(ContentSettingsType::NUM_TYPES));
   InstalledWebappProvider* provider =
     reinterpret_cast<InstalledWebappProvider*>(j_provider);
-  provider->Notify();
+  provider->Notify(static_cast<ContentSettingsType>(type));
 }
 
 InstalledWebappProvider::RuleList
-InstalledWebappBridge::GetInstalledWebappNotificationPermissions() {
+InstalledWebappBridge::GetInstalledWebappPermissions(
+    ContentSettingsType content_type) {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobjectArray> j_permissions =
-      Java_InstalledWebappBridge_getNotificationPermissions(env);
+      Java_InstalledWebappBridge_getPermissions(env,
+                                                static_cast<int>(content_type));
 
   InstalledWebappProvider::RuleList rules;
   for (auto j_permission : j_permissions.ReadElements<jobject>()) {

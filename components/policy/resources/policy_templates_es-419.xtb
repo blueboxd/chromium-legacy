@@ -66,15 +66,6 @@
 
       Si se establece la política como falsa o no se establece, no se enviará la información.
       Si se establece como verdadera, se enviará información sobre la luz de fondo del dispositivo.</translation>
-<translation id="1076271193420500757">Si se configura esta política, se podrán especificar las variaciones que se aplicarán en un dispositivo <ph name="PRODUCT_OS_NAME" /> administrado por una empresa.
-
-      Las variaciones brindan un medio para proponer modificaciones en <ph name="PRODUCT_OS_NAME" /> sin necesidad de enviar una nueva versión. Para hacerlo, se habilitan o inhabilitan de forma selectiva las funciones existentes.
-
-      Si se establece <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (valor 0) o no se establece la política, podrán aplicarse todas las variaciones en <ph name="PRODUCT_OS_NAME" />.
-
-      Si se establece <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (valor 1), solo se permitirá que se apliquen a <ph name="PRODUCT_OS_NAME" /> las variaciones que se consideren correcciones críticas de estabilidad o seguridad.
-
-      Si se establece <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (valor 2), no podrá aplicarse ninguna variación en el navegador para la pantalla de acceso. Ten en cuenta que no se recomienda este modo porque podría impedir que los desarrolladores de <ph name="PRODUCT_OS_NAME" /> proporcionen correcciones críticas de seguridad de manera oportuna.</translation>
 <translation id="1079801999187584280">No permitir el uso de las Herramientas para desarrolladores</translation>
 <translation id="1087437665304381368">Esta política controla solo el modo de desarrollador de <ph name="PRODUCT_OS_NAME" />. Si quieres impedir el acceso a las Opciones para desarrolladores de Android, deberás configurar la política <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" />.</translation>
 <translation id="1087707496788636333">La lista de políticas de Chrome Enterprise cambia de sitio. Guarda <ph name="POLICY_DOCUMENTATION_URL" /> en tus favoritos.</translation>
@@ -1778,7 +1769,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
       Si no se establece esta política, cualquier certificado que deba divulgarse mediante el Certificado de transparencia se considerará que no es de confianza cuando no se divulga según la política del Certificado de transparencia.</translation>
 <translation id="3765260570442823273">Duración del mensaje que advierte al usuario que saldrá del navegador porque se encuentra inactivo</translation>
 <translation id="377044054160169374">Intervención ante experiencias abusivas</translation>
-<translation id="3780102107513139202">Habilitar variaciones que estén relacionadas únicamente con correcciones críticas</translation>
 <translation id="3780152581321609624">Incluir puerto no estándar en el SPN de Kerberos</translation>
 <translation id="3780319008680229708">Si esta política se establece como verdadera, el ícono de Cast aparecerá siempre en la barra de herramientas o en el menú ampliado, y los usuarios no podrán quitarlo.
 
@@ -4125,15 +4115,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="7311458740754205918">Si esta política se establece como verdadera o no se establece, la página Nueva pestaña mostrará sugerencias de contenido basadas en la ubicación, los intereses o el historial de navegación del usuario.
 
       Si se establece como falsa, la página Nueva pestaña no mostrará sugerencias de contenido generadas de forma automática.</translation>
-<translation id="7323572763274343342">Si se configura esta política, se podrán especificar las variaciones que se pueden aplicar en <ph name="PRODUCT_NAME" />.
-
-      Las variaciones brindan un medio para proponer modificaciones en <ph name="PRODUCT_NAME" /> sin necesidad de enviar una nueva versión del navegador. Para hacerlo, se habilitan o inhabilitan de forma selectiva las funciones existentes.
-
-      Si se establece <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (valor 0) o no se establece la política, se podrán aplicar todas las variaciones en el navegador.
-
-      Si se establece <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (valor 1), se permitirá solo la aplicación de las variaciones que se consideren correcciones de estabilidad o seguridad críticas en <ph name="PRODUCT_NAME" />.
-
-      Si se establece <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (valor 2), no se permitirá la aplicación de ninguna variación en el navegador. Ten en cuenta que no se recomienda este modo porque podría impedir que los desarrolladores de <ph name="PRODUCT_NAME" /> proporcionen correcciones de seguridad críticas de manera oportuna.</translation>
 <translation id="7323896582714668701">Parámetros de línea de comandos adicionales para <ph name="PRODUCT_NAME" /></translation>
 <translation id="7326394567531622570">Similar a Wipe (valor 2), pero intenta preservar los tokens de acceso para que el usuario no tenga que volver a acceder.</translation>
 <translation id="7329968046053403405">Especifica el tipo de cuenta compatible para la autenticación <ph name="HTTP_NEGOTIATE" /> (p. ej., autenticación Kerberos) de las cuentas que proporciona la app de autenticación de Android. El proveedor de la app de autenticación debe tener esta información disponible. Para obtener más detalles, se puede consultar https://goo.gl/hajyfN.

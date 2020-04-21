@@ -85,6 +85,7 @@ public class Snackbar {
     public static final int UMA_TAB_CLOSE_MULTIPLE_UNDO = 30;
     public static final int UMA_SEARCH_ENGINE_CHOICE_NOTIFICATION = 31;
     public static final int UMA_TAB_GROUP_MANUAL_CREATION_UNDO = 32;
+    public static final int UMA_TWA_PRIVACY_DISCLOSURE_V2 = 33;
 
     private SnackbarController mController;
     private CharSequence mText;

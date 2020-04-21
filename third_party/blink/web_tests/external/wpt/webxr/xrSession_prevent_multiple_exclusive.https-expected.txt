@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Test prevention of multiple simultaneous immersive sessions promise_test: Unhandled rejection with value: object "NotSupportedError: Failed to execute 'requestSession' on 'XRSystem': No XR hardware found."
+Harness: the test ran to completion.
+

@@ -194,8 +194,8 @@ class ExtensionTabUtil {
 
   // Takes |url_string| and returns a GURL which is either valid and absolute
   // or invalid. If |url_string| is not directly interpretable as a valid (it is
-  // likely a relative URL) an attempt is made to resolve it. |extension| is
-  // provided so it can be resolved relative to its extension base
+  // likely a relative URL) an attempt is made to resolve it. When |extension|
+  // is non-null, the URL is resolved relative to its extension base
   // (chrome-extension://<id>/). Using the source frame url would be more
   // correct, but because the api shipped with urls resolved relative to their
   // extension base, we decided it wasn't worth breaking existing extensions to

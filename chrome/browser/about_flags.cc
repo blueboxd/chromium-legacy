@@ -3771,7 +3771,8 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"treat-unsafe-downloads-as-active-content",
      flag_descriptions::kTreatUnsafeDownloadsAsActiveName,
-     flag_descriptions::kTreatUnsafeDownloadsAsActiveDescription, kOsDesktop,
+     flag_descriptions::kTreatUnsafeDownloadsAsActiveDescription,
+     kOsDesktop | kOsAndroid,
      FEATURE_VALUE_TYPE(features::kTreatUnsafeDownloadsAsActive)},
 
 #if defined(OS_CHROMEOS)
@@ -5270,6 +5271,12 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(
          blink::features::kAlignFontDisplayAutoTimeoutWithLCPGoal)},
+
+#if defined(OS_CHROMEOS)
+    {"enable-palm-suppression", flag_descriptions::kEnablePalmSuppressionName,
+     flag_descriptions::kEnablePalmSuppressionDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ui::kEnablePalmSuppression)},
+#endif  // defined(OS_CHROMEOS)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

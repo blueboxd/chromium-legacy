@@ -421,6 +421,11 @@
 <translation id="1555130319947370107">Asul</translation>
 <translation id="1556537182262721003">Hindi maililipat ang direktoryo ng extension papunta sa profile.</translation>
 <translation id="155865706765934889">Touchpad</translation>
+<translation id="1560763881671211335">Natutukoy ng mga administrator ng G Suite for Education kung aling mga serbisyo ng Google ang maa-access ng mga user nito habang naka-sign in sa G Suite for Education account. Kinakailangang magbigay o kumuha ng pahintulot ng mga administrator ng paaralan para sa paggamit sa mga serbisyo ng mga menor de edad na user nito.
+
+    Iso-store ang data mula sa pag-browse (kabilang ang history, mga bookmark, at password) sa Family Link account at hindi sa pampaaralang account.
+
+    Mailalapat pa rin ang mga setting bilang magulang sa Family Link. Kung nag-block ka na dati ng app o site, hindi mo na ito kakailanganing gawin ulit.</translation>
 <translation id="1566049601598938765">Website</translation>
 <translation id="15662109988763471">Ang napiling printer ay hindi available o hindi naka-install nang tama. Tingnan ang iyong printer o subukang pumili ng isa pang printer.</translation>
 <translation id="1567387640189251553">Nagkonekta ng ibang keyboard mula nang huli mong inilagay ang iyong password. Maaaring sinusubukan nitong nakawin ang iyong mga keystroke.</translation>
@@ -1200,6 +1205,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="258095186877893873">Matagal</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (Platform <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Hindi makuha ang ticket ng Kerberos. Subukan ulit, o makipag-ugnayan sa admin ng device ng iyong organisasyon. (Code ng error <ph name="ERROR_CODE" />).</translation>
+<translation id="2585013490795742997">Ipinapakita ang 1 resulta ng paghahanap para sa <ph name="QUERY" /></translation>
 <translation id="2585724835339714757">Ibinabahagi ng tab na ito ang iyong screen.</translation>
 <translation id="2586657967955657006">Clipboard</translation>
 <translation id="2586672484245266891">Maglagay ng mas maikling URL</translation>
@@ -1886,6 +1892,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="3498215018399854026">Hindi namin makaugnayan ang iyong magulang sa sandaling ito. Pakisubukang muli.</translation>
 <translation id="3500417806337761827">Nagka-error sa pag-mount ng pagbabahagi. Masyado nang marami ang na-mount na pagbabahagi ng SMB.</translation>
 <translation id="3505030558724226696">Bawiin ang access sa device</translation>
+<translation id="3507132249039706973">Naka-on ang Standard Protection</translation>
 <translation id="3507421388498836150">Mga Kasalukuyang Pahintulot para sa "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="3507888235492474624">Muling mag-scan ng mga Bluetooth device</translation>
 <translation id="3508492320654304609">Hindi ma-delete ang iyong data sa pag-sign in</translation>
@@ -3239,6 +3246,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="5352033265844765294">Time Stamping</translation>
 <translation id="5353252989841766347">Mag-export ng Mga Password mula sa Chrome</translation>
 <translation id="5355099869024327351">Payagan ang Assistant na magpakita sa iyo ng mga notification</translation>
+<translation id="5355191726083956201">Naka-on ang Enhanced Protection</translation>
 <translation id="5355926466126177564">Binago ng isang extension na "<ph name="EXTENSION_NAME" />" ang ipinapakitang page kapag naghanap ka sa Omnibox.</translation>
 <translation id="5359910752122114278">1 resulta</translation>
 <translation id="5360150013186312835">Ipakita sa Toolbar</translation>
@@ -3550,6 +3558,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="577322787686508614">Hindi pinapahintulutan ang read na operation sa: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5774295353725270860">App na Buksan ang Mga File</translation>
 <translation id="577624874850706961">Maghanap ng cookies</translation>
+<translation id="5776858208024364029">Ipinapakita ang <ph name="NUMBER" /> (na) resulta ng paghahanap para sa <ph name="QUERY" /></translation>
 <translation id="5777468213129569553">Buksan ang Chrome</translation>
 <translation id="5778747455497889540">Nasa ibaba ang random na ginawang password ng secure na module na naitalaga sa iyong computer:</translation>
 <translation id="5780011244986845107">Naglalaman ng mga sensitibong file ang folder na pinili mo. Sigurado ka bang gusto mong bigyan ang "<ph name="APP_NAME" />" ng permanenteng access sa pag-read sa folder na ito?</translation>
@@ -4106,6 +4115,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
+<translation id="6520876759015997832">Resulta ng paghahanap sa <ph name="LIST_POSITION" /> sa <ph name="LIST_SIZE" />: <ph name="SEARCH_RESULT_TEXT" />. Pindutin ang Enter para mag-navigate sa seksyon.</translation>
 <translation id="652492607360843641">Nakakonekta ka sa isang <ph name="NETWORK_TYPE" /> network.</translation>
 <translation id="6527303717912515753">Ibahagi</translation>
 <translation id="6528513914570774834">Payagan ang iba pang user ng device na ito na gamitin ang network na ito</translation>
@@ -4117,6 +4127,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="6532206849875187177">Seguridad at pag-sign in</translation>
 <translation id="6532527800157340614">Hindi nakapag-sign in dahil hindi makuha ang iyong token ng access. Pakisuri ang iyong koneksyon ng network at subukan ulit.</translation>
 <translation id="6532663472409656417">Naka-enroll sa Enterprise</translation>
+<translation id="6535331821390304775">Palaging payagan ang <ph name="ORIGIN" /> na buksan ang ganitong uri ng mga link sa nauugnay na app</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Tandaan:<ph name="END_BOLD" /> I-enable lang kung alam mo kung ano ang iyong ginagawa o kung hiniling kang gawin ito, dahil maaaring mabawasan ng pagkolekta ng data ang pagganap.</translation>
 <translation id="6541638731489116978">Na-block ang site na ito sa pag-access sa iyong mga sensor ng paggalaw.</translation>
 <translation id="6545665334409411530">Rate ng pag-uulit</translation>
@@ -4246,6 +4257,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="6727969043791803658">Nakakonekta, <ph name="BATTERY_PERCENTAGE" />% ang baterya</translation>
 <translation id="6732801395666424405">Hindi na-load ang mga certificate</translation>
 <translation id="6732900235521116609">Hindi maalis ang shortcut</translation>
+<translation id="6734468588183300211">Habang nasa incognito, hindi magagamit ng mga site ang cookies mo para makita ang iyong aktibidad sa pag-browse sa iba't ibang site, halimbawa, para mag-personalize ng mga ad. Posibleng masira ang mga feature sa ilang site.</translation>
 <translation id="6735304988756581115">Magpakita ng cookies at iba pang data ng site...</translation>
 <translation id="6736243959894955139">Address</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
@@ -4258,6 +4270,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="674632704103926902">Paganahin ang pag-tap upang mag-drag</translation>
 <translation id="6748217015615267851">Tagapag-render: <ph name="RENDERER_URL" /></translation>
 <translation id="6748465660675848252">Maaari kang magpatuloy ngunit ang iyong naka-sync na data at mga setting lang ang maibabalik. Mawawala ang lahat ng iyong lokal na data.</translation>
+<translation id="6749006854028927059">Hindi magagamit ng Sites ang cookies mo para makita ang iyong aktibidad sa pag-browse sa iba't ibang site, halimbawa, para mag-personalize ng mga ad. Posibleng masira ang mga feature sa ilang site.</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (Incognito)</translation>
 <translation id="6757101664402245801">Nakopya ang URL</translation>
 <translation id="6758056191028427665">Ipaalam sa amin kung ano ang iyong palagay sa ginagawa namin.</translation>
@@ -4349,6 +4362,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="686664946474413495">Temperatura ng kulay</translation>
 <translation id="6871644448911473373">OCSP Responder: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">Tinanggihan ng server ang password na inilagay mo.</translation>
+<translation id="6874170800191969835">Na-navigate sa <ph name="SEARCH_RESULT_TEXT" />.</translation>
 <translation id="6876155724392614295">Bisikleta</translation>
 <translation id="6876469544038980967">Hindi Kapaki-pakinabang</translation>
 <translation id="6878422606530379992">Pinapayagan ang mga sensor</translation>
@@ -4619,6 +4633,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="7235737137505019098">Walang sapat na espasyo para sa higit pang account ang iyong security key.</translation>
 <translation id="7238643356913091553"><ph name="NETWORK_NAME" />, Mga Detalye</translation>
 <translation id="7240339475467890413">Kumonekta sa bagong hotspot?</translation>
+<translation id="7240847845291869311">Gustong magdagdag ng iyong anak ng G Suite for Education Google Account sa device na ito. Ang <ph name="LINK_BEGIN" />Notification ng Privacy ng G Suite for Education<ph name="LINK_END" /> ay naglalayong makatulong sa mga user ng at magulang sa G Suite for Education na maunawaan kung anong data ang kinokolekta ng produkto, bakit ito kinokolekta, at ano ang ginagawa rito.</translation>
 <translation id="7241389281993241388">Mangyaring mag-sign in sa <ph name="TOKEN_NAME" /> upang i-import ang certificate ng client.</translation>
 <translation id="7241443820034350811">Kung hindi nakalista ang iyong security key, pindutin ang button nito nang hindi bababa sa 5 segundo.</translation>
 <translation id="7243632151880336635">I-clear at Mag-sign Out</translation>
@@ -5201,6 +5216,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="7987814697832569482">Palaging kumonekta sa pamamagitan ng VPN na ito</translation>
 <translation id="7988355189918024273">Paganahin ang mga feature sa pagiging accessible</translation>
 <translation id="7991296728590311172">Mga setting ng Switch Access</translation>
+<translation id="7992202128769240372">Lumalampas na sa limitasyong <ph name="NUMBER_OF_SHEETS" /> sa <ph name="SHEETS_LABEL" /></translation>
 <translation id="7994350303002908848">Hindi ma-install ang Plugin VM. Pakisubukan ulit, o makipag-ugnayan sa administrator ng device ng iyong organisasyon. Code ng error: <ph name="ERROR_CODE" />.</translation>
 <translation id="7994702968232966508">Pamamaraang EAP</translation>
 <translation id="7997826902155442747">Priority ng Proseso</translation>

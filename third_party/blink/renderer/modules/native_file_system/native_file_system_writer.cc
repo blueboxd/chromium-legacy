@@ -30,9 +30,10 @@ NativeFileSystemWriter::NativeFileSystemWriter(
     ExecutionContext* context,
     mojo::PendingRemote<mojom::blink::NativeFileSystemFileWriter>
         writer_pending_remote)
-    : ExecutionContextLifecycleObserver(context),
-      writer_remote_(std::move(writer_pending_remote)) {
-  DCHECK(writer_remote_);
+    : writer_remote_(context) {
+  writer_remote_.Bind(std::move(writer_pending_remote),
+                      context->GetTaskRunner(TaskType::kMiscPlatformAPI));
+  DCHECK(writer_remote_.is_bound());
 }
 
 ScriptPromise NativeFileSystemWriter::write(
@@ -74,7 +75,7 @@ ScriptPromise NativeFileSystemWriter::WriteBlob(
     uint64_t position,
     Blob* blob,
     ExceptionState& exception_state) {
-  if (!writer_remote_ || pending_operation_) {
+  if (!writer_remote_.is_bound() || pending_operation_) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError, "");
     return ScriptPromise();
   }
@@ -178,7 +179,7 @@ ScriptPromise NativeFileSystemWriter::WriteStream(
     uint64_t position,
     ReadableStream* stream,
     ExceptionState& exception_state) {
-  if (!writer_remote_ || pending_operation_) {
+  if (!writer_remote_.is_bound() || pending_operation_) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError, "");
     return ScriptPromise();
   }
@@ -207,7 +208,7 @@ ScriptPromise NativeFileSystemWriter::truncate(
     ScriptState* script_state,
     uint64_t size,
     ExceptionState& exception_state) {
-  if (!writer_remote_ || pending_operation_) {
+  if (!writer_remote_.is_bound() || pending_operation_) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError, "");
     return ScriptPromise();
   }
@@ -222,7 +223,7 @@ ScriptPromise NativeFileSystemWriter::truncate(
 
 ScriptPromise NativeFileSystemWriter::close(ScriptState* script_state,
                                             ExceptionState& exception_state) {
-  if (!writer_remote_ || pending_operation_) {
+  if (!writer_remote_.is_bound() || pending_operation_) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError, "");
     return ScriptPromise();
   }
@@ -237,7 +238,7 @@ ScriptPromise NativeFileSystemWriter::close(ScriptState* script_state,
 
 void NativeFileSystemWriter::Trace(Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
-  ExecutionContextLifecycleObserver::Trace(visitor);
+  visitor->Trace(writer_remote_);
   visitor->Trace(file_);
   visitor->Trace(pending_operation_);
   visitor->Trace(stream_loader_);
@@ -266,10 +267,6 @@ void NativeFileSystemWriter::CloseComplete(
   pending_operation_ = nullptr;
   // We close the mojo pipe because we intend this writer to be discarded after
   // close. Subsequent operations will fail.
-  writer_remote_.reset();
-}
-
-void NativeFileSystemWriter::ContextDestroyed() {
   writer_remote_.reset();
 }
 

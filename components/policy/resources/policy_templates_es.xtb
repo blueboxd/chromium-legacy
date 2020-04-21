@@ -65,15 +65,6 @@
 
       Si se asigna el valor "false" a esta política o no se establece, no se enviará ninguna información.
       Si se le asigna el valor "true", se enviará la información sobre la retroiluminación del dispositivo.</translation>
-<translation id="1076271193420500757">Configura esta política para especificar qué variaciones pueden aplicarse a un dispositivo <ph name="PRODUCT_OS_NAME" /> gestionado por una empresa.
-
-      Con las variaciones puede modificarse <ph name="PRODUCT_OS_NAME" /> sin enviar una nueva versión, ya que permiten habilitar o inhabilitar de forma selectiva las funciones existentes.
-
-      Si se establece la opción <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (valor 0) o no se le asigna ningún valor a la política, se permitirá que se apliquen todas las variaciones a <ph name="PRODUCT_OS_NAME" />.
-
-      Si se establece la opción <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (valor 1), solo se permitirá que se apliquen las variaciones que se consideren correcciones críticas de seguridad o de estabilidad a <ph name="PRODUCT_OS_NAME" />.
-
-      Si se establece la opción <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (valor 2), no se permitirá aplicar ninguna variación al navegador en la pantalla de inicio de sesión. Ten en cuenta que este modo puede evitar que los desarrolladores de <ph name="PRODUCT_OS_NAME" /> proporcionen correcciones críticas de seguridad a su debido tiempo y, por lo tanto, no se recomienda su uso.</translation>
 <translation id="1079801999187584280">No permitir el uso de herramientas para desarrolladores</translation>
 <translation id="1087437665304381368">Esta política permite controlar únicamente el modo desarrollador de <ph name="PRODUCT_OS_NAME" />. Si quieres impedir el acceso a las opciones para desarrolladores de Android, debes asignar un valor a la política <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" />.</translation>
 <translation id="1087707496788636333">La lista de políticas de Chrome Enterprise se traslada a otra URL. Modifica tus marcadores para que incluyan la URL actualizada: <ph name="POLICY_DOCUMENTATION_URL" />.</translation>
@@ -1820,7 +1811,6 @@ Si se le asigna el valor "False", <ph name="PRODUCT_NAME" /> no usará notificac
       Si no se habilita esta política, los certificados que se deban comunicar a través de la transparencia en los certificados no se considerarán de confianza si no se comunican de acuerdo con la política de transparencia en los certificados.</translation>
 <translation id="3765260570442823273">Duración del mensaje que advierte al usuario de que se cerrará la sesión porque se encuentra inactivo</translation>
 <translation id="377044054160169374">Aplicar intervención de experiencia abusiva</translation>
-<translation id="3780102107513139202">Habilitar variaciones referentes solo a correcciones críticas</translation>
 <translation id="3780152581321609624">Incluir un puerto no estándar en SPN de Kerberos</translation>
 <translation id="3780319008680229708">Si se asigna el valor true a esta política, el icono de la barra de herramientas de Google Cast siempre aparecerá en la barra de herramientas o en el menú adicional, y los usuarios no podrán quitarlo.
 
@@ -3365,15 +3355,15 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
           La configuración de esta política no afecta a los clientes de acceso remoto, ya que siempre utilizan "chromoting-client.talkgadget.google.com" para acceder a TalkGadget.</translation>
 <translation id="5888171512889380367">Permite usar la implementación antigua de <ph name="CORS" /> en vez de la nueva implementación de <ph name="CORS" />.
 
-      Si se asigna el valor Verdadero a esta política, se usará la implementación antigua, la cual debería ser compatible con las versiones anteriores.
+Si se asigna el valor "True" a esta política, se usará la implementación antigua, la cual debería ser compatible con las versiones anteriores.
 
-      Si se le asigna el valor Falso o no se establece, se usará la nueva implementación, lo que podría causar distintos problemas de compatibilidad según la empresa.
+Si se le asigna el valor "False" o no se establece, se usará la nueva implementación, lo que podría causar distintos problemas de compatibilidad según la empresa.
 
-      Esta política se eliminará después de dos hitos.
+Esta política se eliminará después de dos hitos.
 
-      Para consultar más información sobre <ph name="CORS" />, visita <ph name="CORS_HELP_URL" />.
+Para consultar más información sobre <ph name="CORS" />, visita <ph name="CORS_HELP_URL" />.
 
-      Ten en cuenta que se anunció que esta política se eliminaría en la versión 82 de <ph name="PRODUCT_NAME" />, pero el plan ha cambiado y se eliminará en la versión 84.</translation>
+Ten en cuenta que se anunció que esta política se eliminaría en la versión 82 de <ph name="PRODUCT_NAME" />, pero el plan ha cambiado y se eliminará en la versión 84.</translation>
 <translation id="5893553533827140852">Si esta opción está habilitada, las solicitudes de autenticación gnubby se representarán a través de una conexión de host remota.
 
           Si esta opción está inhabilitada o no está configurada, no se representarán solicitudes de autenticación gnubby.</translation>
@@ -4223,15 +4213,6 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
 <translation id="7311458740754205918">Si se asigna True o no se establece ningún valor, la página Nueva pestaña puede mostrar sugerencias de contenido basadas en la ubicación, los intereses o el historial de navegación del usuario.
 
      Si se asigna el valor False, no se mostrarán las sugerencias de contenido generadas automáticamente en la página Nueva pestaña.</translation>
-<translation id="7323572763274343342">Configurar esta política permite especificar qué variaciones pueden aplicarse a <ph name="PRODUCT_NAME" />.
-
-      Las variaciones proporcionan un medio para ofrecer modificaciones a <ph name="PRODUCT_NAME" /> sin enviar una nueva versión del navegador, ya que permiten habilitar o inhabilitar de forma selectiva las funciones existentes.
-
-      Si se establece la opción <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (valor 0) o no se define la política, se permitirá que se apliquen todas las variaciones al navegador.
-
-      Si se establece la opción <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (valor 1), solo se permitirá que se apliquen a <ph name="PRODUCT_NAME" /> las variaciones que se consideren correcciones críticas de seguridad o de estabilidad.
-
-      Si se establece la opción <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (valor 2), no se permitirá aplicar ninguna variación al navegador. Ten en cuenta que este modo puede evitar que los desarrolladores de <ph name="PRODUCT_NAME" /> proporcionen correcciones críticas de seguridad a su debido tiempo y, por lo tanto, no se recomienda su uso.</translation>
 <translation id="7323896582714668701">Parámetros de línea de comandos adicionales para <ph name="PRODUCT_NAME" /></translation>
 <translation id="7326394567531622570">Similar a Wipe (valor 2), pero intenta conservar los tokens de inicio de sesión para que el usuario no tenga que volver a iniciar sesión.</translation>
 <translation id="7329968046053403405">Especifica el tipo de cuenta de las cuentas proporcionadas por la aplicación de autenticación de Android que admita la autenticación <ph name="HTTP_NEGOTIATE" /> (p. ej., autenticación Kerberos). Esta información debe estar disponible desde el proveedor de la aplicación de autenticación. Para obtener más información, consulta la página https://goo.gl/hajyfN.

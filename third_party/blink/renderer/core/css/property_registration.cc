@@ -104,31 +104,29 @@ PropertyRegistration* PropertyRegistration::MaybeCreate(
     Document& document,
     const AtomicString& name,
     StyleRuleProperty& rule) {
-  const auto& properties = rule.Properties();
-
-  // syntax
-  const CSSValue* syntax_value =
-      properties.GetPropertyCSSValue(CSSPropertyID::kSyntax);
+  // https://drafts.css-houdini.org/css-properties-values-api-1/#the-syntax-descriptor
+  const CSSValue* syntax_value = rule.GetSyntax();
   if (!syntax_value)
     return nullptr;
   base::Optional<CSSSyntaxDefinition> syntax = ConvertSyntax(*syntax_value);
   if (!syntax)
     return nullptr;
 
-  // inherits
-  const CSSValue* inherits_value =
-      properties.GetPropertyCSSValue(CSSPropertyID::kInherits);
+  // https://drafts.css-houdini.org/css-properties-values-api-1/#inherits-descriptor
+  const CSSValue* inherits_value = rule.Inherits();
   if (!inherits_value)
     return nullptr;
   bool inherits = ConvertInherts(*inherits_value);
 
-  // initial-value (optional)
-  const CSSValue* initial_value =
-      properties.GetPropertyCSSValue(CSSPropertyID::kInitialValue);
+  // https://drafts.css-houdini.org/css-properties-values-api-1/#initial-value-descriptor
+  const CSSValue* initial_value = rule.GetInitialValue();
   scoped_refptr<CSSVariableData> initial_variable_data =
       ConvertInitialVariableData(initial_value);
 
   // Parse initial value, if we have it.
+  //
+  // TODO(andruud): The initial-value should only be optional if 'syntax'
+  // is the universal syntax definition ("*").
   const CSSValue* initial = nullptr;
   if (initial_variable_data) {
     const CSSParserContext* parser_context =

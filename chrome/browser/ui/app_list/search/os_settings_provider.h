@@ -13,8 +13,14 @@
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search.mojom.h"
+#include "chrome/services/app_service/public/cpp/app_registry_cache.h"
+#include "chrome/services/app_service/public/mojom/types.mojom.h"
 
 class Profile;
+
+namespace apps {
+class AppServiceProxy;
+}  // namespace apps
 
 namespace chromeos {
 namespace settings {
@@ -22,13 +28,18 @@ class SearchHandler;
 }
 }  // namespace chromeos
 
+namespace gfx {
+class ImageSkia;
+}
+
 namespace app_list {
 
 // Search results for OS settings.
 class OsSettingsResult : public ChromeSearchResult {
  public:
   OsSettingsResult(Profile* profile,
-                   const chromeos::settings::mojom::SearchResultPtr& result);
+                   const chromeos::settings::mojom::SearchResultPtr& result,
+                   const gfx::ImageSkia& icon);
   ~OsSettingsResult() override;
 
   OsSettingsResult(const OsSettingsResult&) = delete;
@@ -45,7 +56,8 @@ class OsSettingsResult : public ChromeSearchResult {
 
 // Provider results for OS settings based on a search query. No results are
 // provided for zero-state.
-class OsSettingsProvider : public SearchProvider {
+class OsSettingsProvider : public SearchProvider,
+                           public apps::AppRegistryCache::Observer {
  public:
   explicit OsSettingsProvider(Profile* profile);
   ~OsSettingsProvider() override;
@@ -56,12 +68,21 @@ class OsSettingsProvider : public SearchProvider {
   // SearchProvider:
   void Start(const base::string16& query) override;
 
+  // apps::AppRegistryCache::Observer:
+  void OnAppUpdate(const apps::AppUpdate& update) override;
+  void OnAppRegistryCacheWillBeDestroyed(
+      apps::AppRegistryCache* cache) override;
+
  private:
   void OnSearchReturned(
       std::vector<chromeos::settings::mojom::SearchResultPtr> results);
 
+  void OnLoadIcon(apps::mojom::IconValuePtr icon_value);
+
   Profile* const profile_;
   chromeos::settings::SearchHandler* const search_handler_;
+  apps::AppServiceProxy* app_service_proxy_;
+  gfx::ImageSkia icon_;
 
   base::WeakPtrFactory<OsSettingsProvider> weak_factory_{this};
 };

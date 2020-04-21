@@ -13,6 +13,7 @@ class BookmarkModel;
 namespace web {
 class WebState;
 }
+class PrefService;
 @protocol ToolbarConsumer;
 class WebStateList;
 
@@ -29,6 +30,9 @@ class WebStateList;
 
 // The bookmarks model to know if the page is bookmarked.
 @property(nonatomic, assign) bookmarks::BookmarkModel* bookmarkModel;
+
+// Pref service to retrieve preference values.
+@property(nonatomic, assign) PrefService* prefService;
 
 // The consumer for this object. This can change during the lifetime of this
 // object and may be nil.

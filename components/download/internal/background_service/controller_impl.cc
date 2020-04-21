@@ -151,8 +151,8 @@ void ControllerImpl::Initialize(base::OnceClosure callback) {
 
   driver_->Initialize(this);
   model_->Initialize(this);
-  file_monitor_->Initialize(base::Bind(&ControllerImpl::OnFileMonitorReady,
-                                       weak_ptr_factory_.GetWeakPtr()));
+  file_monitor_->Initialize(base::BindOnce(&ControllerImpl::OnFileMonitorReady,
+                                           weak_ptr_factory_.GetWeakPtr()));
   navigation_monitor_->Configure(config_->navigation_completion_delay,
                                  config_->navigation_timeout_delay);
   navigation_monitor_->SetObserver(this);
@@ -377,8 +377,8 @@ void ControllerImpl::RemoveCleanupEligibleDownloads() {
   }
 
   file_monitor_->CleanupFilesForCompletedEntries(
-      entries_to_remove, base::Bind(&ControllerImpl::OnCompleteCleanupTask,
-                                    weak_ptr_factory_.GetWeakPtr()));
+      entries_to_remove, base::BindOnce(&ControllerImpl::OnCompleteCleanupTask,
+                                        weak_ptr_factory_.GetWeakPtr()));
 
   for (auto* entry : entries_to_remove) {
     DCHECK_EQ(Entry::State::COMPLETE, entry->state);
@@ -718,8 +718,8 @@ void ControllerImpl::StartHardRecoveryAttempt() {
   driver_->HardRecover();
   model_->HardRecover();
   file_monitor_->HardRecover(
-      base::Bind(&ControllerImpl::OnFileMonitorHardRecoverComplete,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&ControllerImpl::OnFileMonitorHardRecoverComplete,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ControllerImpl::PollActiveDriverDownloads() {
@@ -1018,7 +1018,7 @@ void ControllerImpl::PrepareToStartDownload(Entry* entry) {
                                                     std::move(callback)));
 
   // Reset the timeout timer in case client doesn't respond.
-  cancel_uploads_callback_.Reset(base::BindRepeating(
+  cancel_uploads_callback_.Reset(base::BindOnce(
       &ControllerImpl::KillTimedOutUploads, weak_ptr_factory_.GetWeakPtr()));
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, cancel_uploads_callback_.callback(),
@@ -1241,7 +1241,7 @@ void ControllerImpl::ScheduleKillDownloadTaskIfNecessary() {
           ? earliest_cancel_time - base::Time::Now()
           : base::TimeDelta();
 
-  cancel_downloads_callback_.Reset(base::Bind(
+  cancel_downloads_callback_.Reset(base::BindOnce(
       &ControllerImpl::KillTimedOutDownloads, weak_ptr_factory_.GetWeakPtr()));
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, cancel_downloads_callback_.callback(), time_to_cancel);

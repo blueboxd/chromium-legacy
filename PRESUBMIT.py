@@ -310,7 +310,7 @@ _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK = '|'.join((
   '^components/data_reduction_proxy/',
   '^components/domain_reliability/',
   '^components/dom_distiller/',
-  '^components/download/',
+  '^components/download/internal/common/',
   '^components/drive/',
   '^components/exo/',
   '^components/feature_engagement/',

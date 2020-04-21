@@ -142,28 +142,49 @@ function mouseDragInTarget(targetSelector) {
   return mouseDragInTargets([targetSelector, targetSelector]);
 }
 
-function mouseWheelScroll(targetSelector, direction) {
+function smoothScrollBy(scrollOffset, xPosition, yPosition, direction, source, speed, preciseScrollingDeltas) {
   return new Promise(function(resolve, reject) {
     if (window.chrome && chrome.gpuBenchmarking) {
-      scrollPageIfNeeded(targetSelector, document);
-      var target = document.querySelector(targetSelector);
-      var targetRect = target.getBoundingClientRect();
-      var xPosition = targetRect.left + boundaryOffset;
-      var yPosition = targetRect.top + boundaryOffset;
-      const SPEED_INSTANT = 400000;
-      const PRECISE_SCROLLING_DELTAS = false;
-      chrome.gpuBenchmarking.smoothScrollBy(scrollOffset,
-                                            resolve,
-                                            xPosition,
-                                            yPosition,
-                                            chrome.gpuBenchmarking.TOUCHPAD_INPUT,
-                                            direction,
-                                            SPEED_INSTANT,
-                                            PRECISE_SCROLLING_DELTAS);
+      var scrollOffsetX = 0;
+      var scrollOffsetY = 0;
+      if (direction == "down") {
+        scrollOffsetY = scrollOffset;
+      } else if (direction == "up") {
+        scrollOffsetY = -scrollOffset;
+      } else if (direction == "right") {
+        scrollOffsetX = scrollOffset;
+      } else if (direction == "left") {
+        scrollOffsetX = -scrollOffset;
+      } else if (direction == "upleft") {
+        scrollOffsetX = -scrollOffset;
+        scrollOffsetY = -scrollOffset;
+      } else if (direction == "upright") {
+        scrollOffsetX = scrollOffset;
+        scrollOffsetY = -scrollOffset;
+      } else if (direction == "downleft") {
+        scrollOffsetX = -scrollOffset;
+        scrollOffsetY = scrollOffset;
+      } else if (direction == "downright") {
+        scrollOffsetX = scrollOffset;
+        scrollOffsetY = scrollOffset;
+      }
+      chrome.gpuBenchmarking.smoothScrollByXY(scrollOffsetX, scrollOffsetY, resolve, xPosition,
+        yPosition, source, speed, preciseScrollingDeltas);
     } else {
       reject();
     }
   });
+}
+
+function mouseWheelScroll(targetSelector, direction) {
+  scrollPageIfNeeded(targetSelector, document);
+  var target = document.querySelector(targetSelector);
+  var targetRect = target.getBoundingClientRect();
+  var xPosition = targetRect.left + boundaryOffset;
+  var yPosition = targetRect.top + boundaryOffset;
+  const SPEED_INSTANT = 400000;
+  const PRECISE_SCROLLING_DELTAS = false;
+  return smoothScrollBy(scrollOffset, xPosition, yPosition, direction, chrome.gpuBenchmarking.TOUCHPAD_INPUT, SPEED_INSTANT, PRECISE_SCROLLING_DELTAS);
 }
 
 // Touch inputs.

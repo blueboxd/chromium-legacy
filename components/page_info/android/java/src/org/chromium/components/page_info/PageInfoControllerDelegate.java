@@ -37,11 +37,6 @@ public interface PageInfoControllerDelegate {
     ModalDialogManager getModalDialogManager();
 
     /**
-     * Whether Page Info UI should use dark colors.
-     */
-    boolean useDarkColors();
-
-    /**
      * Initialize viewParams with Preview UI info, if any.
      * @param viewParams The params to be initialized with Preview UI info.
      * @param runAfterDismiss Used to set "show original" callback on Previews UI.

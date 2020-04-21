@@ -80,6 +80,9 @@ class DownloadController : public DownloadControllerBase {
   // The download item contains dangerous file types.
   void OnDangerousDownload(download::DownloadItem* item);
 
+  // The download item is a mixed content download.
+  void OnMixedContentDownload(download::DownloadItem* item);
+
   // Helper methods to start android download on UI thread.
   void StartAndroidDownload(const content::WebContents::Getter& wc_getter,
                             const DownloadInfo& info);

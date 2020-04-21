@@ -8,12 +8,16 @@
 #include "components/version_info/version_info.h"
 #include "ios/chrome/browser/chrome_switches.h"
 #include "ios/chrome/common/channel_info.h"
+#include "ios/web/common/features.h"
 
 const base::Feature kEditBookmarksIOS{"EditBookmarksIOS",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kManagedBookmarksIOS{"ManagedBookmarksIOS",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kURLBlocklistIOS{"URLBlocklistIOS",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
 namespace {
 
@@ -54,4 +58,20 @@ bool ShouldInstallManagedBookmarksPolicyHandler() {
 bool IsManagedBookmarksEnabled() {
   return ShouldInstallManagedBookmarksPolicyHandler() &&
          base::FeatureList::IsEnabled(kManagedBookmarksIOS);
+}
+
+bool ShouldInstallURLBlocklistPolicyHandlers() {
+  // This feature is controlled via the command line because policy must be
+  // initialized before about:flags or field trials. Using a command line flag
+  // is the only way to control this feature at runtime.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  return command_line->HasSwitch(switches::kInstallURLBlocklistHandlers);
+}
+
+bool IsURLBlocklistEnabled() {
+  return ShouldInstallURLBlocklistPolicyHandlers() &&
+         base::FeatureList::IsEnabled(kURLBlocklistIOS) &&
+         // The error page shown for blocked URLs requires
+         // |web::features::kUseJSForErrorPage| to be enabled.
+         base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage);
 }

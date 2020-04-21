@@ -8,7 +8,9 @@
 #include "base/metrics/user_metrics.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/bookmarks/managed/managed_bookmark_service.h"
+#include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/bookmarks/bookmarks_utils.h"
@@ -18,6 +20,7 @@
 #include "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
+#include "ios/chrome/browser/policy/policy_features.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_configurator.h"
@@ -1182,9 +1185,10 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   // The root folder displayed by the table view must also be editable to allow
   // creation of new folders. Note that Bookmarks Bar, Mobile Bookmarks, and
   // Other Bookmarks return as "editable" since the user can edit the contents
-  // of those folders.
+  // of those folders. Editing bookmarks must also be allowed.
   return self.sharedState.tableViewDisplayedRootNode != NULL &&
          !self.sharedState.currentlyShowingSearchResults &&
+         [self isEditBookmarksEnabled] &&
          [self
              isNodeEditableByUser:self.sharedState.tableViewDisplayedRootNode];
 }
@@ -1239,6 +1243,14 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   return managedBookmarkService
              ? managedBookmarkService->CanBeEditedByUser(node)
              : YES;
+}
+
+// Returns YES if user is allowed to edit any bookmarks.
+- (BOOL)isEditBookmarksEnabled {
+  if (IsEditBookmarksIOSEnabled())
+    return self.browserState->GetPrefs()->GetBoolean(
+        bookmarks::prefs::kEditBookmarksEnabled);
+  return YES;
 }
 
 // Returns the bookmark node associated with |indexPath|.
@@ -1542,9 +1554,10 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   editButton.accessibilityIdentifier = kBookmarkHomeTrailingButtonIdentifier;
   // The edit button is only enabled if the displayed root folder is editable
   // and has items. Note that Bookmarks Bar, Mobile Bookmarks, and Other
-  // Bookmarks return as "editable" since their contents can be edited.
+  // Bookmarks return as "editable" since their contents can be edited. Editing
+  // bookmarks must also be allowed.
   editButton.enabled =
-      [self hasBookmarksOrFolders] &&
+      [self isEditBookmarksEnabled] && [self hasBookmarksOrFolders] &&
       [self isNodeEditableByUser:self.sharedState.tableViewDisplayedRootNode];
 
   [self setToolbarItems:@[ newFolderButton, spaceButton, editButton ]
@@ -1649,8 +1662,9 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
                            [weakSelf editNode:node];
                          }
                           style:UIAlertActionStyleDefault];
-  // Disable the edit menu option if the node is not editable by user.
-  if (![self isNodeEditableByUser:node]) {
+  // Disable the edit menu option if the node is not editable by user, or if
+  // editing bookmarks is not allowed.
+  if (![self isEditBookmarksEnabled] || ![self isNodeEditableByUser:node]) {
     // TODO(crbug.com/1070830): Modify AlertCoordinator to allow disabled
     // actions.
     coordinator.alertController.actions[0].enabled = NO;
@@ -1710,8 +1724,8 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
                          }
                           style:UIAlertActionStyleDefault];
   // Disable the edit and move menu options if the folder is not editable by
-  // user.
-  if (![self isNodeEditableByUser:node]) {
+  // user, or if editing bookmarks is not allowed.
+  if (![self isEditBookmarksEnabled] || ![self isNodeEditableByUser:node]) {
     // TODO(crbug.com/1070830): Modify AlertCoordinator to allow disabled
     // actions.
     coordinator.alertController.actions[0].enabled = NO;
@@ -1917,11 +1931,13 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   }
 
   // Enable the swipe-to-delete gesture and reordering control for editable
-  // nodes of type URL or Folder, but not the permanent ones.
+  // nodes of type URL or Folder, but not the permanent ones. Only enable
+  // swipe-to-delete if editing bookmarks is allowed.
   BookmarkHomeNodeItem* nodeItem =
       base::mac::ObjCCastStrict<BookmarkHomeNodeItem>(item);
   const BookmarkNode* node = nodeItem.bookmarkNode;
-  return [self isUrlOrFolder:node] && [self isNodeEditableByUser:node];
+  return [self isEditBookmarksEnabled] && [self isUrlOrFolder:node] &&
+         [self isNodeEditableByUser:node];
 }
 
 - (void)tableView:(UITableView*)tableView

@@ -132,6 +132,7 @@ public class PaymentHandlerToolbarCoordinator implements PaymentHandlerToolbarMe
         PageInfoController.show(mActivity, mWebContents, null,
                 PageInfoController.OpenedFromSource.TOOLBAR,
                 new ChromePageInfoControllerDelegate(mActivity, mWebContents,
+                        mActivity::getModalDialogManager,
                         /*offlinePageLoadUrlDelegate=*/
                         new OfflinePageUtils.WebContentsOfflinePageLoadUrlDelegate(mWebContents)));
     }

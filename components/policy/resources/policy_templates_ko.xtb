@@ -67,15 +67,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
       정책이 False로 설정되거나 설정되지 않으면 정보가 보고되지 않습니다.
       True로 설정된 경우 기기의 백라이트 정보가 보고됩니다.</translation>
-<translation id="1076271193420500757">이 정책을 구성하면 기업에서 관리하는 <ph name="PRODUCT_OS_NAME" /> 기기에 적용할 변형을 지정할 수 있습니다.
-
-      변형을 사용하면 새로운 버전을 제공하지 않고도 이미 존재하는 기능을 선별적으로 사용 설정 또는 중지하여 <ph name="PRODUCT_OS_NAME" />의 변형본을 제공할 수 있습니다.
-
-      <ph name="VARIATIONS_ENABLED_OPTION_NAME" />을(를) 설정하거나(값 0) 정책을 설정하지 않으면 <ph name="PRODUCT_OS_NAME" />에 모든 변형을 적용할 수 있습니다.
-
-      <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" />을(를) 설정하면(값 1) 중요한 보안 문제 또는 안정성 관련 수정사항으로 간주되는 변형만 <ph name="PRODUCT_OS_NAME" />에 적용 가능합니다.
-
-      <ph name="VARIATIONS_DISABLED_OPTION_NAME" />을(를) 설정하면(값 2) 로그인 화면에서 브라우저에 어떤 변형도 적용할 수 없습니다. 이 모드는 <ph name="PRODUCT_OS_NAME" /> 개발자가 중요한 보안 수정사항을 신속히 제공하지 못하게 할 수 있으므로 권장되지 않습니다.</translation>
 <translation id="1079801999187584280">Developer Tools 사용 금지</translation>
 <translation id="1087437665304381368">이 정책은 <ph name="PRODUCT_OS_NAME" /> 개발자 모드만 제어합니다. Android 개발자 옵션에 액세스하지 못하게 하려면 <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" /> 정책을 설정해야 합니다.</translation>
 <translation id="1087707496788636333">Chrome Enterprise 정책 목록이 이동됩니다. 북마크를 <ph name="POLICY_DOCUMENTATION_URL" /> 페이지로 업데이트하세요.</translation>
@@ -1817,7 +1808,6 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
       이 정책이 설정되지 않는 경우 인증서 투명성을 통해 공개되어야 하는 인증서가 인증서 투명성 정책에 따라 공개되지 않은 경우 신뢰할 수 없는 인증서로 처리됩니다.</translation>
 <translation id="3765260570442823273">유휴 로그아웃 경고 메시지 표시 시간</translation>
 <translation id="377044054160169374">악의적 사용자 환경 개입 시행</translation>
-<translation id="3780102107513139202">중요한 수정사항과 관련된 변형만 사용</translation>
 <translation id="3780152581321609624">Kerberos SPN에 비표준 포트 포함</translation>
 <translation id="3780319008680229708">이 정책을 'true'로 설정하면 Cast 툴바 아이콘이 툴바 또는 더보기 메뉴에 항상 표시되며 사용자는 이 아이콘을 삭제할 수 없습니다.
 
@@ -4221,15 +4211,6 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 <translation id="7311458740754205918">true로 설정되거나 설정되지 않으면 새 탭 페이지에서 사용자의 방문 기록, 관심분야 또는 위치를 기반으로 콘텐츠 추천을 표시할 수 있습니다.
 
       false로 설정되어 있다면 자동 생성 콘텐츠 추천이 새 탭 페이지에 표시되지 않습니다.</translation>
-<translation id="7323572763274343342">이 정책을 설정하면 <ph name="PRODUCT_NAME" />에서 적용 가능한 변형을 지정할 수 있습니다.
-
-      변형을 사용하면 새로운 브라우저 버전을 제공하지 않고도 이미 존재하는 기능을 선별적으로 사용 설정 또는 중지하여 <ph name="PRODUCT_NAME" />의 변형본을 제공할 수 있습니다.
-
-      <ph name="VARIATIONS_ENABLED_OPTION_NAME" />을(를) 설정하거나(값 0) 정책을 설정하지 않으면 모든 변형이 브라우저에 적용될 수 있습니다.
-
-      <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" />을(를) 설정하면(값 1) 중요한 보안 문제 또는 안정성 관련 수정사항으로 간주되는 변형만 <ph name="PRODUCT_NAME" />에 적용 가능합니다.
-
-      <ph name="VARIATIONS_DISABLED_OPTION_NAME" />을(를) 설정하면(값 2) 어떤 변형도 브라우저에 적용할 수 없습니다. 이 모드는 <ph name="PRODUCT_NAME" /> 개발자가 중요한 보안 수정사항을 신속히 제공하지 못하게 할 수 있으므로 권장되지 않습니다.</translation>
 <translation id="7323896582714668701"><ph name="PRODUCT_NAME" />의 추가 명령줄 매개변수</translation>
 <translation id="7326394567531622570">완전 삭제(값 2)와 유사하지만, 사용자가 다시 로그인할 필요가 없도록 로그인 토큰을 저장합니다.</translation>
 <translation id="7329968046053403405"><ph name="HTTP_NEGOTIATE" /> 인증(예: Kerberos 인증)을 지원하는 Android 인증 앱에서 제공하는 계정의 계정 유형을 지정합니다. 이 정보는 인증 앱 제공업체에서 확인할 수 있습니다. 자세한 내용은 https://goo.gl/hajyfN 페이지를 참조하세요.

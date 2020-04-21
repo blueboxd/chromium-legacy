@@ -195,6 +195,9 @@ class StyleRuleProperty : public StyleRuleBase {
   const CSSPropertyValueSet& Properties() const { return *properties_; }
   MutableCSSPropertyValueSet& MutableProperties();
   const String& GetName() const { return name_; }
+  const CSSValue* GetSyntax() const;
+  const CSSValue* Inherits() const;
+  const CSSValue* GetInitialValue() const;
 
   StyleRuleProperty* Copy() const {
     return MakeGarbageCollected<StyleRuleProperty>(*this);

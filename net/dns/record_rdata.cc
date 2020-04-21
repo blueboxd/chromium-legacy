@@ -8,6 +8,7 @@
 #include <numeric>
 
 #include "base/big_endian.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
 #include "net/base/ip_address.h"

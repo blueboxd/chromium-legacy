@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/lazy_instance.h"
+#include "base/logging.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"

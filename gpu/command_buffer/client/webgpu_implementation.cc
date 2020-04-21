@@ -47,7 +47,11 @@ WebGPUCommandSerializer::WebGPUCommandSerializer(
   wire_client_ = std::make_unique<dawn_wire::WireClient>(descriptor);
 }
 
-WebGPUCommandSerializer::~WebGPUCommandSerializer() {}
+WebGPUCommandSerializer::~WebGPUCommandSerializer() {
+  // Destroy the wire client before anything else because it might still call
+  // GetCmdSpace so the rest of the serializer must still be valid.
+  wire_client_ = nullptr;
+}
 
 // This function can only be called once for each WebGPUCommandSerializer
 // object (before any call of GetCmdSpace()).

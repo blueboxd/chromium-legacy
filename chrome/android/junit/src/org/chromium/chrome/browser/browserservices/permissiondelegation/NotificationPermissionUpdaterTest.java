@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.browserservices.permissiondelegation;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
@@ -35,6 +36,7 @@ import org.chromium.chrome.browser.browserservices.TrustedWebActivityClient;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
+import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.embedder_support.util.Origin;
 
 /**
@@ -229,7 +231,8 @@ public class NotificationPermissionUpdaterTest {
     }
 
     private void verifyPermissionNotUpdated() {
-        verify(mPermissionManager, never()).updatePermission(any(), anyString(), anyBoolean());
+        verify(mPermissionManager, never())
+                .updatePermission(any(), anyString(), anyInt(), anyBoolean());
     }
 
     private void verifyPermissionUpdated(boolean enabled) {
@@ -237,7 +240,9 @@ public class NotificationPermissionUpdaterTest {
     }
 
     private void verifyPermissionUpdated(String packageName, boolean enabled) {
-        verify(mPermissionManager).updatePermission(eq(ORIGIN), eq(packageName), eq(enabled));
+        verify(mPermissionManager)
+                .updatePermission(eq(ORIGIN), eq(packageName),
+                        eq(ContentSettingsType.NOTIFICATIONS), eq(enabled));
     }
 
     private void verifyPermissionUnregistered() {

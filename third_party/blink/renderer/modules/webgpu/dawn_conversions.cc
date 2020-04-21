@@ -31,6 +31,9 @@ WGPUBindingType AsDawnEnum<WGPUBindingType>(const WTF::String& webgpu_enum) {
   if (webgpu_enum == "sampler") {
     return WGPUBindingType_Sampler;
   }
+  if (webgpu_enum == "comparison-sampler") {
+    return WGPUBindingType_ComparisonSampler;
+  }
   if (webgpu_enum == "sampled-texture") {
     return WGPUBindingType_SampledTexture;
   }

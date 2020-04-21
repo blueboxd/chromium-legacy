@@ -65,7 +65,7 @@ export {CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW} from './chrome_cleanup_page/items_
 export {ClearBrowsingDataBrowserProxyImpl} from './clear_browsing_data_dialog/clear_browsing_data_browser_proxy.m.js';
 export {DownloadsBrowserProxyImpl} from './downloads_page/downloads_browser_proxy.js';
 // <if expr="_google_chrome and is_win">
-export {IncompatibleApplication, IncompatibleApplicationsBrowserProxyImpl} from './incompatible_applications_page/incompatible_applications_browser_proxy.m.js';
+export {IncompatibleApplication, IncompatibleApplicationsBrowserProxyImpl} from './incompatible_applications_page/incompatible_applications_browser_proxy.js';
 // </if>
 export {LanguagesBrowserProxyImpl} from './languages_page/languages_browser_proxy.m.js';
 export {kMenuCloseDelay} from './languages_page/languages_page.m.js';

@@ -3431,6 +3431,11 @@ const char kEnablePalmOnToolTypePalmDescription[] =
     "Experimental: Enable palm detection when touchscreen reports "
     "TOOL_TYPE_PALM. Not compatible with all devices.";
 
+const char kEnablePalmSuppressionName[] =
+    "Enable Palm Suppression with Stylus.";
+const char kEnablePalmSuppressionDescription[] =
+    "If enabled, suppresses touch when a stylus is on a touchscreen.";
+
 const char kEnableParentalControlsSettingsName[] =
     "Enable Parental controls settings";
 const char kEnableParentalControlsSettingsDescription[] =

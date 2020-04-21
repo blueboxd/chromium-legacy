@@ -37,7 +37,6 @@ import androidx.annotation.NonNull;
 
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -51,13 +50,15 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
+import org.chromium.chrome.browser.download.DownloadTestRule;
+import org.chromium.chrome.browser.download.DownloadTestRule.CustomMainActivityStart;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.infobar.InfoBar;
 import org.chromium.chrome.browser.infobar.ReaderModeInfoBar;
+import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
@@ -71,11 +72,13 @@ import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.Objects;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -84,10 +87,9 @@ import java.util.concurrent.atomic.AtomicReference;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-public class ReaderModeTest {
+public class ReaderModeTest implements CustomMainActivityStart {
     @Rule
-    public ChromeActivityTestRule<ChromeTabbedActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeTabbedActivity.class);
+    public DownloadTestRule mDownloadTestRule = new DownloadTestRule(this);
 
     private static final String TEST_PAGE = "/chrome/test/data/dom_distiller/simple_article.html";
     private static final String TITLE = "Test Page Title";
@@ -100,22 +102,22 @@ public class ReaderModeTest {
     @Mock
     DistilledPagePrefs.Observer mTestObserver;
 
-    @Before
-    public void setUp() throws InterruptedException, TimeoutException {
+    @Override
+    public void customMainActivityStart() {
         MockitoAnnotations.initMocks(this);
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mURL = mTestServer.getURL(TEST_PAGE);
+        mDownloadTestRule.startMainActivityWithURL(mURL);
     }
 
     @After
     public void tearDown() {
-        mTestServer.stopAndDestroyServer();
+        if (mTestServer != null) mTestServer.stopAndDestroyServer();
     }
 
     @Test
     @MediumTest
     public void testReaderModeInfobarShown() {
-        mActivityTestRule.startMainActivityWithURL(mURL);
         waitForReaderModeInfobar();
     }
 
@@ -123,8 +125,7 @@ public class ReaderModeTest {
     @MediumTest
     @EnableFeatures(ChromeFeatureList.READER_MODE_IN_CCT)
     public void testReaderModeInCCT() throws TimeoutException {
-        mActivityTestRule.startMainActivityWithURL(mURL);
-        Tab originalTab = mActivityTestRule.getActivity().getActivityTab();
+        Tab originalTab = mDownloadTestRule.getActivity().getActivityTab();
         String innerHtml = getInnerHtml(originalTab);
         assertThat(innerHtml).doesNotContain("article-header");
 
@@ -139,21 +140,40 @@ public class ReaderModeTest {
         @NonNull
         Tab distillerViewerTab = Objects.requireNonNull(customTabActivity.getActivityTab());
         waitForDistillation(TITLE, distillerViewerTab);
+    }
 
-        innerHtml = getInnerHtml(distillerViewerTab);
-        assertThat(innerHtml).contains("article-header");
-        assertThat(innerHtml).contains(CONTENT);
+    @Test
+    @MediumTest
+    @EnableFeatures({ChromeFeatureList.READER_MODE_IN_CCT})
+    public void testReaderModeInCCT_Downloaded() throws TimeoutException {
+        Tab originalTab = mDownloadTestRule.getActivity().getActivityTab();
+        String innerHtml = getInnerHtml(originalTab);
+        assertThat(innerHtml).doesNotContain("article-header");
+
+        downloadAndOpenOfflinePage();
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            originalTab.getUserDataHost()
+                    .getUserData(ReaderModeManager.USER_DATA_KEY)
+                    .activateReaderMode(originalTab);
+        });
+        CustomTabActivity customTabActivity = waitForCustomTabActivity();
+        CriteriaHelper.pollUiThread(
+                () -> Assert.assertThat(customTabActivity.getActivityTab(), notNullValue()));
+        @NonNull
+        Tab distillerViewerTab = Objects.requireNonNull(customTabActivity.getActivityTab());
+        waitForDistillation(TITLE, distillerViewerTab);
     }
 
     @Test
     @MediumTest
     @EnableFeatures({ChromeFeatureList.READER_MODE_IN_CCT, ChromeFeatureList.CCT_INCOGNITO})
     public void testReaderModeInCCT_Incognito() throws TimeoutException {
-        mActivityTestRule.startMainActivityWithURL(mURL);
+        mDownloadTestRule.startMainActivityWithURL(mURL);
         ChromeTabUtils.fullyLoadUrlInNewTab(InstrumentationRegistry.getInstrumentation(),
-                mActivityTestRule.getActivity(), mURL, true);
+                (ChromeTabbedActivity) mDownloadTestRule.getActivity(), mURL, true);
 
-        Tab originalTab = mActivityTestRule.getActivity().getActivityTab();
+        Tab originalTab = mDownloadTestRule.getActivity().getActivityTab();
         assertTrue(originalTab.isIncognito());
         String innerHtml = getInnerHtml(originalTab);
         assertThat(innerHtml).doesNotContain("article-header");
@@ -170,18 +190,39 @@ public class ReaderModeTest {
         Tab distillerViewerTab = Objects.requireNonNull(customTabActivity.getActivityTab());
         waitForDistillation(TITLE, distillerViewerTab);
         assertTrue(distillerViewerTab.isIncognito());
+    }
 
-        innerHtml = getInnerHtml(distillerViewerTab);
-        assertThat(innerHtml).contains("article-header");
-        assertThat(innerHtml).contains(CONTENT);
+    private void downloadAndOpenOfflinePage() {
+        int callCount = mDownloadTestRule.getChromeDownloadCallCount();
+        MenuUtils.invokeCustomMenuActionSync(InstrumentationRegistry.getInstrumentation(),
+                mDownloadTestRule.getActivity(), org.chromium.chrome.R.id.offline_page_id);
+        Assert.assertTrue(mDownloadTestRule.waitForChromeDownloadToFinish(callCount));
+
+        // Stop the server and also disconnect the network.
+        mTestServer.stopAndDestroyServer();
+        mTestServer = null;
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { NetworkChangeNotifier.forceConnectivityState(false); });
+
+        // Load the page that has an offline copy. The offline page should be shown.
+        Tab tab = mDownloadTestRule.getActivity().getActivityTab();
+        Assert.assertFalse(isOfflinePage(tab));
+        mDownloadTestRule.loadUrl(tab.getUrl().getSpec());
+        Assert.assertTrue(isOfflinePage(tab));
+    }
+
+    private static boolean isOfflinePage(final Tab tab) {
+        AtomicBoolean isOffline = new AtomicBoolean();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> isOffline.set(OfflinePageUtils.isOfflinePage(tab)));
+        return isOffline.get();
     }
 
     @Test
     @MediumTest
     @DisableFeatures(ChromeFeatureList.READER_MODE_IN_CCT)
     public void testReaderModeInTab() throws TimeoutException {
-        mActivityTestRule.startMainActivityWithURL(mURL);
-        Tab tab = mActivityTestRule.getActivity().getActivityTab();
+        Tab tab = mDownloadTestRule.getActivity().getActivityTab();
         String innerHtml = getInnerHtml(tab);
         assertThat(innerHtml).doesNotContain("article-header");
 
@@ -190,20 +231,14 @@ public class ReaderModeTest {
                     .getUserData(ReaderModeManager.USER_DATA_KEY)
                     .activateReaderMode(tab);
         });
-        waitForDistillation(TITLE, mActivityTestRule.getActivity().getActivityTab());
-
-        innerHtml = getInnerHtml(tab);
-        assertThat(innerHtml).contains("article-header");
-        assertThat(innerHtml).contains(CONTENT);
+        waitForDistillation(TITLE, mDownloadTestRule.getActivity().getActivityTab());
     }
 
     @Test
     @MediumTest
     @EnableFeatures(ChromeFeatureList.READER_MODE_IN_CCT)
-    public void testPreferenceInCCT() {
-        mActivityTestRule.startMainActivityWithURL(mURL);
-
-        Tab originalTab = mActivityTestRule.getActivity().getActivityTab();
+    public void testPreferenceInCCT() throws TimeoutException {
+        Tab originalTab = mDownloadTestRule.getActivity().getActivityTab();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             originalTab.getUserDataHost()
                     .getUserData(ReaderModeManager.USER_DATA_KEY)
@@ -221,16 +256,14 @@ public class ReaderModeTest {
     @Test
     @MediumTest
     @DisableFeatures(ChromeFeatureList.READER_MODE_IN_CCT)
-    public void testPreferenceInTab() {
-        // getDistillerViewUrlFromUrl() requires native, so start on blank page first.
-        mActivityTestRule.startMainActivityOnBlankPage();
-        mActivityTestRule.startMainActivityWithURL(
+    public void testPreferenceInTab() throws TimeoutException {
+        mDownloadTestRule.loadUrl(
                 DomDistillerUrlUtils.getDistillerViewUrlFromUrl(DOM_DISTILLER_SCHEME, mURL, TITLE));
 
-        Tab tab = mActivityTestRule.getActivity().getActivityTab();
+        Tab tab = mDownloadTestRule.getActivity().getActivityTab();
         waitForDistillation(TITLE, tab);
 
-        testPreference(mActivityTestRule.getActivity(), tab);
+        testPreference(mDownloadTestRule.getActivity(), tab);
     }
 
     /**
@@ -372,7 +405,7 @@ public class ReaderModeTest {
      */
     private void waitForReaderModeInfobar() {
         CriteriaHelper.pollUiThread(() -> {
-            for (InfoBar infobar : mActivityTestRule.getInfoBars()) {
+            for (InfoBar infobar : mDownloadTestRule.getInfoBars()) {
                 if (infobar instanceof ReaderModeInfoBar) return true;
             }
             return false;
@@ -384,12 +417,16 @@ public class ReaderModeTest {
      * @param expectedTitle The expected title of the distilled content
      * @param tab the tab to wait
      */
-    private void waitForDistillation(
-            @SuppressWarnings("SameParameterValue") String expectedTitle, Tab tab) {
+    private void waitForDistillation(@SuppressWarnings("SameParameterValue") String expectedTitle,
+            Tab tab) throws TimeoutException {
         CriteriaHelper.pollUiThread(
                 Criteria.equals("chrome-distiller", () -> tab.getUrl().getScheme()));
         ChromeTabUtils.waitForTabPageLoaded(tab, null);
         // Distiller Viewer load the content dynamically, so waitForTabPageLoaded() is not enough.
         CriteriaHelper.pollUiThread(Criteria.equals(expectedTitle, tab::getTitle));
+
+        String innerHtml = getInnerHtml(tab);
+        assertThat(innerHtml).contains("article-header");
+        assertThat(innerHtml).contains(CONTENT);
     }
 }

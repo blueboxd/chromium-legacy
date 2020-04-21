@@ -16,8 +16,24 @@
  *    </iron-animated-pages>
  */
 
+import 'chrome://resources/cr_elements/icons.m.js';
+import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
+import '../settings_shared_css.m.js';
+import './incompatible_application_item.js';
+
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {loadTimeData} from '../i18n_setup.m.js';
+
+import {IncompatibleApplication, IncompatibleApplicationsBrowserProxyImpl} from './incompatible_applications_browser_proxy.js';
+
 Polymer({
   is: 'settings-incompatible-applications-page',
+
+  _template: html`{__html_template__}`,
 
   behaviors: [I18nBehavior, WebUIListenerBehavior],
 
@@ -35,7 +51,7 @@ Polymer({
 
     /**
      * The list of all the incompatible applications.
-     * @private {Array<settings.IncompatibleApplication>}
+     * @private {Array<IncompatibleApplication>}
      */
     applications_: Array,
 
@@ -83,7 +99,7 @@ Polymer({
         'incompatible-application-removed',
         this.onIncompatibleApplicationRemoved_.bind(this));
 
-    settings.IncompatibleApplicationsBrowserProxyImpl.getInstance()
+    IncompatibleApplicationsBrowserProxyImpl.getInstance()
         .requestIncompatibleApplicationsList()
         .then(list => {
           this.applications_ = list;
@@ -120,8 +136,7 @@ Polymer({
    * @private
    */
   updatePluralStrings_() {
-    const browserProxy =
-        settings.IncompatibleApplicationsBrowserProxyImpl.getInstance();
+    const browserProxy = IncompatibleApplicationsBrowserProxyImpl.getInstance();
     const numApplications = this.applications_.length;
 
     // The plural strings are not displayed when there is no applications.

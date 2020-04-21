@@ -7,15 +7,20 @@
 #include <memory>
 #include <string>
 
+#include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/chromeos/web_applications/default_web_app_ids.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search.mojom.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_handler_factory.h"
+#include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
 
 namespace app_list {
@@ -27,7 +32,8 @@ constexpr char kOsSettingsResultPrefix[] = "os-settings://";
 
 OsSettingsResult::OsSettingsResult(
     Profile* profile,
-    const chromeos::settings::mojom::SearchResultPtr& result)
+    const chromeos::settings::mojom::SearchResultPtr& result,
+    const gfx::ImageSkia& icon)
     : profile_(profile), url_path_(result->url_path_with_parameters) {
   // TODO(crbug.com/1068851): Results need a useful relevance score and details
   // text. Once this is available in the SearchResultPtr, set the metadata here.
@@ -36,7 +42,7 @@ OsSettingsResult::OsSettingsResult(
   SetTitle(result->result_text);
   SetResultType(ResultType::kOsSettings);
   SetDisplayType(DisplayType::kList);
-  // TODO(crbug.com/1068851): Set the icon for the result.
+  SetIcon(icon);
 }
 
 OsSettingsResult::~OsSettingsResult() = default;
@@ -56,6 +62,21 @@ OsSettingsProvider::OsSettingsProvider(Profile* profile)
           chromeos::settings::SearchHandlerFactory::GetForProfile(profile)) {
   DCHECK(profile_);
   DCHECK(search_handler_);
+
+  // TODO(crbug.com/1068851): Record an error metric if we can't get an app
+  // service proxy.
+  app_service_proxy_ = apps::AppServiceProxyFactory::GetForProfile(profile_);
+  if (app_service_proxy_) {
+    Observe(&app_service_proxy_->AppRegistryCache());
+    app_service_proxy_->LoadIcon(
+        apps::mojom::AppType::kWeb,
+        chromeos::default_web_apps::kOsSettingsAppId,
+        apps::mojom::IconCompression::kUncompressed,
+        ash::AppListConfig::instance().search_list_icon_dimension(),
+        /*allow_placeholder_icon=*/false,
+        base::BindOnce(&OsSettingsProvider::OnLoadIcon,
+                       weak_factory_.GetWeakPtr()));
+  }
 }
 
 OsSettingsProvider::~OsSettingsProvider() = default;
@@ -81,9 +102,41 @@ void OsSettingsProvider::OnSearchReturned(
   SearchProvider::Results search_results;
   for (const auto& result : results) {
     search_results.emplace_back(
-        std::make_unique<OsSettingsResult>(profile_, result));
+        std::make_unique<OsSettingsResult>(profile_, result, icon_));
   }
   SwapResults(&search_results);
+}
+
+void OsSettingsProvider::OnAppUpdate(const apps::AppUpdate& update) {
+  // Watch the app service for updates. On an update that marks the OS settings
+  // app as ready, retrieve the icon for the app to use for search results.
+  if (app_service_proxy_ &&
+      update.AppId() == chromeos::default_web_apps::kOsSettingsAppId &&
+      update.ReadinessChanged() &&
+      update.Readiness() == apps::mojom::Readiness::kReady) {
+    app_service_proxy_->LoadIcon(
+        apps::mojom::AppType::kWeb,
+        chromeos::default_web_apps::kOsSettingsAppId,
+        apps::mojom::IconCompression::kUncompressed,
+        ash::AppListConfig::instance().search_list_icon_dimension(),
+        /*allow_placeholder_icon=*/false,
+        base::BindOnce(&OsSettingsProvider::OnLoadIcon,
+                       weak_factory_.GetWeakPtr()));
+  }
+}
+
+void OsSettingsProvider::OnAppRegistryCacheWillBeDestroyed(
+    apps::AppRegistryCache* cache) {
+  Observe(nullptr);
+}
+
+void OsSettingsProvider::OnLoadIcon(apps::mojom::IconValuePtr icon_value) {
+  // TODO(crbug.com/1068851): Record an error metric if we receive a compressed
+  // icon.
+  if (icon_value->icon_compression ==
+      apps::mojom::IconCompression::kUncompressed) {
+    icon_ = icon_value->uncompressed;
+  }
 }
 
 }  // namespace app_list

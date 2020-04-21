@@ -1773,6 +1773,12 @@
     "expiry_milestone": 90
   },
   {
+    "name": "enable-palm-suppression",
+    "owners": ["robsc", "napper", "hcutts", "chromeos-tango@google.com"],
+    // Added feature, for testing. expiry deep in future.
+    "expiry_milestone": 95
+  },
+  {
     "name": "enable-palm-tool-type-palm",
     "owners": ["robsc", "napper", "adlr"],
     // Added feature to possibly disable/enable this functionality, combined
@@ -4060,6 +4066,11 @@
     "name": "updated_cellular_activation_ui",
     "owners": [ "azeemarshad", "khorimoto", "vecore", "cros-system-services@google.com" ],
     "expiry_milestone": 85
+  },
+  {
+    "name": "url-blocklist-ios",
+    "owners": [ "michaeldo" , "rohitrao" ],
+    "expiry_milestone": 90
   },
   {
     "name": "usage-stats",

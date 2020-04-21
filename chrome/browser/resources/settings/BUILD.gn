@@ -82,12 +82,6 @@ group("closure_compile") {
     "site_settings_page:closure_compile",
   ]
 
-  if (is_win) {
-    deps += [
-      "incompatible_applications_page:closure_compile",
-    ]
-  }
-
   if (!is_chromeos) {
     deps += [ "default_browser_page:closure_compile" ]
   }

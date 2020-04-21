@@ -1,0 +1,28 @@
+This is a testharness.js-based test.
+FAIL If node is a host-including inclusive ancestor of parent, then throw a HierarchyRequestError DOMException. assert_throws_dom: function "() => insert(doc.body, doc.body)" threw object "TypeError: Cannot read property 'length' of undefined" that is not a DOMException HierarchyRequestError: property "code" is equal to undefined, expected 3
+FAIL If node is not a DocumentFragment, DocumentType, Element, Text, ProcessingInstruction, or Comment node, then throw a HierarchyRequestError DOMException. assert_throws_dom: function "() => insert(doc, doc2)" threw object "TypeError: Cannot read property 'length' of undefined" that is not a DOMException HierarchyRequestError: property "code" is equal to undefined, expected 3
+FAIL If node is a Text node and parent is a document, then throw a HierarchyRequestError DOMException. assert_throws_dom: function "() => insert(doc, doc.createTextNode("text"))" threw object "TypeError: Cannot read property 'length' of undefined" that is not a DOMException HierarchyRequestError: property "code" is equal to undefined, expected 3
+FAIL If node is a doctype and parent is not a document, then throw a HierarchyRequestError DOMException. assert_throws_dom: function "() => insert(doc.createElement("a"), doctype)" threw object "TypeError: Cannot read property 'length' of undefined" that is not a DOMException HierarchyRequestError: property "code" is equal to undefined, expected 3
+FAIL If node is a DocumentFragment with multiple elements and parent is a document, then throw a HierarchyRequestError DOMException. assert_throws_dom: function "() => insert(doc, df)" threw object "TypeError: Cannot read property 'length' of undefined" that is not a DOMException HierarchyRequestError: property "code" is equal to undefined, expected 3
+FAIL If node is a DocumentFragment with an element and parent is a document with another element, then throw a HierarchyRequestError DOMException. assert_throws_dom: function "() => insert(doc, df)" threw object "TypeError: Cannot read property 'length' of undefined" that is not a DOMException HierarchyRequestError: property "code" is equal to undefined, expected 3
+FAIL If node is an Element and parent is a document with another element, then throw a HierarchyRequestError DOMException. assert_throws_dom: function "() => insert(doc, el)" threw object "TypeError: Cannot read property 'length' of undefined" that is not a DOMException HierarchyRequestError: property "code" is equal to undefined, expected 3
+FAIL If node is a doctype and parent is a document with another doctype, then throw a HierarchyRequestError DOMException. assert_throws_dom: function "() => insert(doc, doctype)" threw object "TypeError: Cannot read property 'length' of undefined" that is not a DOMException HierarchyRequestError: property "code" is equal to undefined, expected 3
+FAIL If node is a doctype and parent is a document with an element, then throw a HierarchyRequestError DOMException. assert_throws_dom: function "() => insert(doc, doctype)" threw object "TypeError: Cannot read property 'length' of undefined" that is not a DOMException HierarchyRequestError: property "code" is equal to undefined, expected 3
+FAIL Element.replaceChildren() without any argument, on a parent having no child. parent.replaceChildren is not a function
+FAIL Element.replaceChildren() with null as an argument, on a parent having no child. parent.replaceChildren is not a function
+FAIL Element.replaceChildren() with undefined as an argument, on a parent having no child. parent.replaceChildren is not a function
+FAIL Element.replaceChildren() with only text as an argument, on a parent having no child. parent.replaceChildren is not a function
+FAIL Element.replaceChildren() with only one element as an argument, on a parent having no child. parent.replaceChildren is not a function
+FAIL Element.replaceChildren() with null as an argument, on a parent having a child. parent.replaceChildren is not a function
+FAIL Element.replaceChildren() with one element and text as argument, on a parent having a child. parent.replaceChildren is not a function
+FAIL Element.replaceChildren() should move nodes in the right order parent.replaceChildren is not a function
+FAIL DocumentFragment.replaceChildren() without any argument, on a parent having no child. parent.replaceChildren is not a function
+FAIL DocumentFragment.replaceChildren() with null as an argument, on a parent having no child. parent.replaceChildren is not a function
+FAIL DocumentFragment.replaceChildren() with undefined as an argument, on a parent having no child. parent.replaceChildren is not a function
+FAIL DocumentFragment.replaceChildren() with only text as an argument, on a parent having no child. parent.replaceChildren is not a function
+FAIL DocumentFragment.replaceChildren() with only one element as an argument, on a parent having no child. parent.replaceChildren is not a function
+FAIL DocumentFragment.replaceChildren() with null as an argument, on a parent having a child. parent.replaceChildren is not a function
+FAIL DocumentFragment.replaceChildren() with one element and text as argument, on a parent having a child. parent.replaceChildren is not a function
+FAIL DocumentFragment.replaceChildren() should move nodes in the right order parent.replaceChildren is not a function
+Harness: the test ran to completion.
+

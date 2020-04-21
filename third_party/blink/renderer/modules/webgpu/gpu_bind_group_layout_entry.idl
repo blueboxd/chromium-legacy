@@ -22,6 +22,7 @@ enum GPUBindingType {
     "storage-buffer",
     "readonly-storage-buffer",
     "sampler",
+    "comparison-sampler",
     "sampled-texture",
     "readonly-storage-texture",
     "writeonly-storage-texture",

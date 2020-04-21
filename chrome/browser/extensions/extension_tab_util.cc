@@ -762,7 +762,7 @@ ExtensionTabUtil::GetAllActiveWebContentsForContext(
 GURL ExtensionTabUtil::ResolvePossiblyRelativeURL(const std::string& url_string,
                                                   const Extension* extension) {
   GURL url = GURL(url_string);
-  if (!url.is_valid())
+  if (!url.is_valid() && extension)
     url = extension->GetResourceURL(url_string);
 
   return url;

@@ -7,6 +7,7 @@
 #import <UIKit/UIKit.h>
 
 #include <float.h>
+#include "base/ios/ios_util.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
@@ -30,6 +31,11 @@ namespace {
 // versions of the library whitelists |backgroundTimeRemaining|.
 NSTimeInterval GetBackgroundTimeRemaining(UIApplication* application) {
 #if BUILDFLAG(CHROMIUM_BRANDING)
+  if (!base::ios::IsRunningOnIOS13OrLater()) {
+    // On developer iOS12 builds there's no way to suppress the main thread
+    // checker assert.  Since it's a developer build, simply return 0.
+    return 0;
+  }
   static char const* const lib_main_thread_checker_bundle_path =
 #if TARGET_IPHONE_SIMULATOR
       "/usr/lib/libMainThreadChecker.dylib";

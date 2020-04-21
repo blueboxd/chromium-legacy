@@ -89,7 +89,9 @@ struct TraceCollectionIfEnabled<weakness,
                                 WTF::kNoWeakHandling> {
   STATIC_ONLY(TraceCollectionIfEnabled);
 
-  static bool IsAlive(const T&) { return true; }
+  static bool IsAlive(const blink::WeakCallbackInfo& info, const T&) {
+    return true;
+  }
 
   static void Trace(Visitor*, const void*) {
     static_assert(!WTF::IsTraceableInCollectionTrait<Traits>::value,
@@ -119,8 +121,9 @@ template <WTF::WeakHandlingFlag weakness,
 struct TraceCollectionIfEnabled {
   STATIC_ONLY(TraceCollectionIfEnabled);
 
-  static bool IsAlive(const T& traceable) {
-    return WTF::TraceInCollectionTrait<weakness, T, Traits>::IsAlive(traceable);
+  static bool IsAlive(const blink::WeakCallbackInfo& info, const T& traceable) {
+    return WTF::TraceInCollectionTrait<weakness, T, Traits>::IsAlive(info,
+                                                                     traceable);
   }
 
   static void Trace(Visitor* visitor, const void* t) {
@@ -267,7 +270,9 @@ namespace WTF {
 // weak elements.
 template <typename T, typename Traits>
 struct TraceInCollectionTrait<kNoWeakHandling, T, Traits> {
-  static bool IsAlive(const T& t) { return true; }
+  static bool IsAlive(const blink::WeakCallbackInfo& info, const T& t) {
+    return true;
+  }
 
   static void Trace(blink::Visitor* visitor, const T& t) {
     static_assert(IsTraceableInCollectionTrait<Traits>::value,
@@ -278,7 +283,10 @@ struct TraceInCollectionTrait<kNoWeakHandling, T, Traits> {
 
 template <typename T, typename Traits>
 struct TraceInCollectionTrait<kNoWeakHandling, blink::Member<T>, Traits> {
-  static bool IsAlive(const blink::Member<T>& t) { return true; }
+  static bool IsAlive(const blink::WeakCallbackInfo& info,
+                      const blink::Member<T>& t) {
+    return true;
+  }
   static void Trace(blink::Visitor* visitor, const blink::Member<T>& t) {
     visitor->TraceMaybeDeleted(t);
   }
@@ -286,7 +294,10 @@ struct TraceInCollectionTrait<kNoWeakHandling, blink::Member<T>, Traits> {
 
 template <typename T, typename Traits>
 struct TraceInCollectionTrait<kWeakHandling, blink::Member<T>, Traits> {
-  static bool IsAlive(const blink::Member<T>& t) { return true; }
+  static bool IsAlive(const blink::WeakCallbackInfo& info,
+                      const blink::Member<T>& t) {
+    return true;
+  }
   static void Trace(blink::Visitor* visitor, const blink::Member<T>& t) {
     visitor->TraceMaybeDeleted(t);
   }
@@ -306,8 +317,9 @@ struct TraceInCollectionTrait<kWeakHandling, T, Traits> {};
 
 template <typename T, typename Traits>
 struct TraceInCollectionTrait<kWeakHandling, blink::WeakMember<T>, Traits> {
-  static bool IsAlive(const blink::WeakMember<T>& value) {
-    return blink::ThreadHeap::IsHeapObjectAlive(value);
+  static bool IsAlive(const blink::WeakCallbackInfo& info,
+                      const blink::WeakMember<T>& value) {
+    return info.IsHeapObjectAlive(value);
   }
 };
 
@@ -372,10 +384,11 @@ template <typename Value, typename Traits>
 struct TraceInCollectionTrait<kNoWeakHandling,
                               LinkedHashSetNode<Value>,
                               Traits> {
-  static bool IsAlive(const LinkedHashSetNode<Value>& self) {
+  static bool IsAlive(const blink::WeakCallbackInfo& info,
+                      const LinkedHashSetNode<Value>& self) {
     return TraceInCollectionTrait<
         kNoWeakHandling, Value,
-        typename Traits::ValueTraits>::IsAlive(self.value_);
+        typename Traits::ValueTraits>::IsAlive(info, self.value_);
   }
 
   static void Trace(blink::Visitor* visitor,
@@ -391,10 +404,11 @@ struct TraceInCollectionTrait<kNoWeakHandling,
 
 template <typename Value, typename Traits>
 struct TraceInCollectionTrait<kWeakHandling, LinkedHashSetNode<Value>, Traits> {
-  static bool IsAlive(const LinkedHashSetNode<Value>& self) {
+  static bool IsAlive(const blink::WeakCallbackInfo& info,
+                      const LinkedHashSetNode<Value>& self) {
     return TraceInCollectionTrait<
         kWeakHandling, Value,
-        typename Traits::ValueTraits>::IsAlive(self.value_);
+        typename Traits::ValueTraits>::IsAlive(info, self.value_);
   }
 
   static void Trace(blink::Visitor* visitor,

@@ -31,7 +31,7 @@ MockRenderViewContextMenu::MockMenuItem::operator=(const MockMenuItem& other) =
 MockRenderViewContextMenu::MockRenderViewContextMenu(bool incognito)
     : observer_(nullptr),
       original_profile_(TestingProfile::Builder().Build()),
-      profile_(incognito ? original_profile_->GetOffTheRecordProfile()
+      profile_(incognito ? original_profile_->GetPrimaryOTRProfile()
                          : original_profile_.get()) {}
 
 MockRenderViewContextMenu::~MockRenderViewContextMenu() {}

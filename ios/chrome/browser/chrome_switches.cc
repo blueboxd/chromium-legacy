@@ -40,6 +40,9 @@ const char kEnableThirdPartyKeyboardWorkaround[] =
 const char kInstallManagedBookmarksHandler[] =
     "install-managed-bookmarks-handler";
 
+// Installs the URLBlocklist and URLAllowlist handlers.
+const char kInstallURLBlocklistHandlers[] = "install-url-blocklist-handlers";
+
 // A string used to override the default user agent with a custom one.
 const char kUserAgent[] = "user-agent";
 

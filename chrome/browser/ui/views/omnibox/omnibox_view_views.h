@@ -206,6 +206,10 @@ class OmniboxViewViews : public OmniboxView,
   // and returns true.
   bool MaybeTriggerSecondaryButton(const ui::KeyEvent& event);
 
+#if defined(OS_MACOSX)
+  void AnnounceFriendlySuggestionText();
+#endif
+
   // OmniboxView:
   void SetCaretPos(size_t caret_pos) override;
   void UpdatePopup() override;
@@ -372,6 +376,8 @@ class OmniboxViewViews : public OmniboxView,
       send_tab_to_self_sub_menu_model_;
 
   PrefChangeRegistrar pref_change_registrar_;
+
+  base::WeakPtrFactory<OmniboxViewViews> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxViewViews);
 };

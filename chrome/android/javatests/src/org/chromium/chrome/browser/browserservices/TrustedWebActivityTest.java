@@ -68,7 +68,6 @@ public class TrustedWebActivityTest {
     public CustomTabActivityTestRule mCustomTabActivityTestRule = new CustomTabActivityTestRule();
     public EmbeddedTestServerRule mEmbeddedTestServerRule = new EmbeddedTestServerRule();
 
-
     @Rule
     public RuleChain mRuleChain = RuleChain.emptyRuleChain()
                                           .around(mCustomTabActivityTestRule)

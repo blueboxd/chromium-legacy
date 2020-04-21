@@ -346,26 +346,6 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
   [_autofillAgent hideAutofillPopup];
 }
 
-- (void)confirmSaveAutofillProfile:(const autofill::AutofillProfile&)profile
-                          callback:(base::OnceClosure)callback {
-  if (![_delegate respondsToSelector:@selector
-                  (autofillController:
-                      decideSavePolicyForAutofillProfile:decisionHandler:)]) {
-    return;
-  }
-
-  __block base::OnceClosure scopedCallback = std::move(callback);
-  CWVAutofillProfile* autofillProfile =
-      [[CWVAutofillProfile alloc] initWithProfile:profile];
-  [_delegate autofillController:self
-      decideSavePolicyForAutofillProfile:autofillProfile
-                         decisionHandler:^(BOOL save) {
-                           if (save) {
-                             std::move(scopedCallback).Run();
-                           }
-                         }];
-}
-
 - (void)confirmSaveCreditCardLocally:(const autofill::CreditCard&)creditCard
                saveCreditCardOptions:
                    (autofill::AutofillClient::SaveCreditCardOptions)

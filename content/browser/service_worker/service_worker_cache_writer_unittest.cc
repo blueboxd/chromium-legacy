@@ -30,9 +30,9 @@ class MockServiceWorkerCacheWriterObserver
   MockServiceWorkerCacheWriterObserver() : data_length_(0), result_(net::OK) {}
   ~MockServiceWorkerCacheWriterObserver() {}
 
-  int WillWriteInfo(
-      scoped_refptr<HttpResponseInfoIOBuffer> response_info) override {
-    response_info_ = std::move(response_info);
+  int WillWriteResponseHead(
+      const network::mojom::URLResponseHead& response_head) override {
+    response_ = response_head.Clone();
     return net::OK;
   }
 
@@ -54,7 +54,7 @@ class MockServiceWorkerCacheWriterObserver
   // Set the return value of WillWriteData().
   void set_result(net::Error result) { result_ = result; }
 
-  scoped_refptr<HttpResponseInfoIOBuffer> response_info_;
+  network::mojom::URLResponseHeadPtr response_;
   scoped_refptr<net::IOBuffer> data_;
   size_t data_length_;
   base::OnceCallback<void(net::Error)> callback_;
@@ -1121,7 +1121,7 @@ TEST_F(ServiceWorkerCacheWriterTest, ObserverSyncResponseWriterSync) {
   cache_writer_->set_write_observer(&observer);
 
   net::Error error = WriteHeaders(kHeaderSize);
-  EXPECT_TRUE(observer.response_info_);
+  EXPECT_TRUE(observer.response_);
   EXPECT_EQ(net::OK, error);
 
   error = WriteData(data);
@@ -1153,7 +1153,7 @@ TEST_F(ServiceWorkerCacheWriterTest, ObserverAsyncResponseWriterSync) {
 
   net::Error error = WriteHeaders(kHeaderSize);
   EXPECT_EQ(net::OK, error);
-  EXPECT_TRUE(observer.response_info_);
+  EXPECT_TRUE(observer.response_);
 
   error = WriteData(data);
   EXPECT_EQ(net::ERR_IO_PENDING, error);
@@ -1186,7 +1186,7 @@ TEST_F(ServiceWorkerCacheWriterTest, ObserverSyncResponseWriterAsync) {
 
   net::Error error = WriteHeaders(kHeaderSize);
   EXPECT_EQ(net::ERR_IO_PENDING, error);
-  EXPECT_TRUE(observer.response_info_);
+  EXPECT_TRUE(observer.response_);
   writer->CompletePendingWrite();
   EXPECT_TRUE(write_complete_);
   EXPECT_EQ(last_error_, net::OK);
@@ -1223,7 +1223,7 @@ TEST_F(ServiceWorkerCacheWriterTest, ObserverAsyncResponseWriterAsync) {
 
   net::Error error = WriteHeaders(kHeaderSize);
   EXPECT_EQ(net::ERR_IO_PENDING, error);
-  EXPECT_TRUE(observer.response_info_);
+  EXPECT_TRUE(observer.response_);
   writer->CompletePendingWrite();
   EXPECT_TRUE(write_complete_);
   EXPECT_EQ(last_error_, net::OK);
@@ -1258,7 +1258,7 @@ TEST_F(ServiceWorkerCacheWriterTest, ObserverSyncFail) {
   cache_writer_->set_write_observer(&observer);
 
   net::Error error = WriteHeaders(kHeaderSize);
-  EXPECT_TRUE(observer.response_info_);
+  EXPECT_TRUE(observer.response_);
   EXPECT_EQ(net::OK, error);
 
   observer.set_result(net::ERR_FAILED);
@@ -1286,7 +1286,7 @@ TEST_F(ServiceWorkerCacheWriterTest, ObserverAsyncFail) {
 
   net::Error error = WriteHeaders(kHeaderSize);
   EXPECT_EQ(net::OK, error);
-  EXPECT_TRUE(observer.response_info_);
+  EXPECT_TRUE(observer.response_);
 
   error = WriteData(data);
   EXPECT_EQ(net::ERR_IO_PENDING, error);

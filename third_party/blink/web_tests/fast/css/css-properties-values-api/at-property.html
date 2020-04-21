@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <!--TODO(andruud): Migrate to WPT once @property is in the specification. -->
+<link rel="help" href="https://drafts.css-houdini.org/css-properties-values-api-1/#at-property-rule">
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <div id="outer">
@@ -51,49 +52,63 @@ function test_with_style_node(text, fn, description) {
 let uppercase_first = (x) => x.charAt(0).toUpperCase() + x.slice(1);
 let to_camel_case = (x) => x.split('-')[0] + x.split('-').slice(1).map(uppercase_first).join('');
 
-function test_parse_success(descriptor, value) {
-  test_with_at_rule({ [to_camel_case(descriptor)]: value }, (name, rule) => {
-    assert_equals(rule.style[to_camel_case(descriptor)], value);
-  }, `Accepts valid value for '${descriptor}' descriptor [${value}]`);
+function get_cssom_descriptor_value(rule, descriptor) {
+  switch (descriptor) {
+    case 'syntax':
+      return rule.syntax;
+    case 'inherits':
+      return rule.inherits;
+    case 'initial-value':
+      return rule.initialValue;
+    default:
+      assert_true(false, 'Should not reach here');
+      return null;
+  }
 }
 
-function test_parse_failure(descriptor, value) {
-  test_with_at_rule({ [to_camel_case(descriptor)]: value }, (name, rule) => {
-    assert_equals(rule.style[to_camel_case(descriptor)], '');
-  }, `Rejects invalid value for '${descriptor}' descriptor [${value}]`);
+// Test that for the given descriptor (e.g. 'syntax'), the specified value
+// will yield the expected_value when observed using CSSOM. If the expected_value
+// is omitted, it is the same as the specified value.
+function test_descriptor(descriptor, specified_value, expected_value) {
+  let camel = to_camel_case(descriptor);
+  if (typeof(expected_value) === 'undefined')
+    expected_value = specified_value;
+  test_with_at_rule({ [camel]: specified_value }, (name, rule) => {
+    assert_equals(get_cssom_descriptor_value(rule, descriptor), expected_value);
+  }, `Attribute '${descriptor}' returns expected value for [${specified_value}]`);
 }
 
-// syntax
-test_parse_success('syntax', '"<color>"');
-test_parse_success('syntax', '"<color> | none"');
-test_parse_success('syntax', '"<color># | <image> | none"');
-test_parse_success('syntax', '"foo | bar | baz"');
-test_parse_success('syntax', '"*"');
-test_parse_success('syntax', '"notasyntax"');
+// syntax (valid)
+test_descriptor('syntax', '"<color>"', '<color>');
+test_descriptor('syntax', '"<color> | none"', '<color> | none');
+test_descriptor('syntax', '"<color># | <image> | none"', '<color># | <image> | none');
+test_descriptor('syntax', '"foo | bar | baz"', 'foo | bar | baz');
+test_descriptor('syntax', '"*"', '*');
+test_descriptor('syntax', '"notasyntax"', 'notasyntax');
 
-test_parse_failure('syntax', 'red');
-test_parse_failure('syntax', 'rgb(255, 0, 0)');
-test_parse_failure('syntax', '<color>');
-test_parse_failure('syntax', 'foo | bar');
+test_descriptor('syntax', 'red', '');
+test_descriptor('syntax', 'rgb(255, 0, 0)', '');
+test_descriptor('syntax', '<color>', '');
+test_descriptor('syntax', 'foo | bar', '');
 
 // initial-value
-test_parse_success('initial-value', '10px');
-test_parse_success('initial-value', 'rgb(1, 2, 3)');
-test_parse_success('initial-value', 'red');
-test_parse_success('initial-value', 'foo');
-test_parse_success('initial-value', 'if(){}');
-test_parse_success('initial-value', 'var(--x)');
+test_descriptor('initial-value', '10px');
+test_descriptor('initial-value', 'rgb(1, 2, 3)');
+test_descriptor('initial-value', 'red');
+test_descriptor('initial-value', 'foo');
+test_descriptor('initial-value', 'if(){}');
+test_descriptor('initial-value', 'var(--x)');
 
 // inherits
-test_parse_success('inherits', 'true');
-test_parse_success('inherits', 'false');
+test_descriptor('inherits', 'true', true);
+test_descriptor('inherits', 'false', false);
 
-test_parse_failure('inherits', 'none');
-test_parse_failure('inherits', '0');
-test_parse_failure('inherits', '1');
-test_parse_failure('inherits', '"true"');
-test_parse_failure('inherits', '"false"');
-test_parse_failure('inherits', 'calc(0)');
+test_descriptor('inherits', 'none', false);
+test_descriptor('inherits', '0', false);
+test_descriptor('inherits', '1', false);
+test_descriptor('inherits', '"true"', false);
+test_descriptor('inherits', '"false"', false);
+test_descriptor('inherits', 'calc(0)', false);
 
 test_with_style_node('@property foo { }', (node) => {
   assert_equals(node.sheet.rules.length, 0);

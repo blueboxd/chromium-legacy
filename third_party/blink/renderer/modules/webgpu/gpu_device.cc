@@ -44,7 +44,7 @@ GPUDevice::GPUDevice(ExecutionContext* execution_context,
       adapter_(adapter),
       queue_(MakeGarbageCollected<GPUQueue>(
           this,
-          GetProcs().deviceCreateQueue(GetHandle()))),
+          GetProcs().deviceGetDefaultQueue(GetHandle()))),
       lost_property_(MakeGarbageCollected<LostProperty>(execution_context)),
       error_callback_(BindRepeatingDawnCallback(&GPUDevice::OnUncapturedError,
                                                 WrapWeakPersistent(this))),

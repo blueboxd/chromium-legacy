@@ -33,8 +33,19 @@
  *   </div>
  */
 
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import '../settings_shared_css.m.js';
+
+import {assertNotReached} from 'chrome://resources/js/assert.m.js';
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {ActionTypes, IncompatibleApplicationsBrowserProxy, IncompatibleApplicationsBrowserProxyImpl} from './incompatible_applications_browser_proxy.js';
+
 Polymer({
   is: 'incompatible-application-item',
+
+  _template: html`{__html_template__}`,
 
   behaviors: [I18nBehavior],
 
@@ -50,7 +61,7 @@ Polymer({
      * The type of the action to be taken on this incompatible application. Must
      * be one of BlacklistMessageType in
      * chrome/browser/win/conflicts/proto/module_list.proto.
-     * @type {!settings.ActionTypes}
+     * @type {!ActionTypes}
      */
     actionType: Number,
 
@@ -61,13 +72,12 @@ Polymer({
     actionUrl: String,
   },
 
-  /** @private {settings.IncompatibleApplicationsBrowserProxy} */
+  /** @private {IncompatibleApplicationsBrowserProxy} */
   browserProxy_: null,
 
   /** @override */
   created() {
-    this.browserProxy_ =
-        settings.IncompatibleApplicationsBrowserProxyImpl.getInstance();
+    this.browserProxy_ = IncompatibleApplicationsBrowserProxyImpl.getInstance();
   },
 
   /**
@@ -76,11 +86,11 @@ Polymer({
    * @private
    */
   onActionTap_() {
-    if (this.actionType === settings.ActionTypes.UNINSTALL) {
+    if (this.actionType === ActionTypes.UNINSTALL) {
       this.browserProxy_.startApplicationUninstallation(this.applicationName);
     } else if (
-        this.actionType === settings.ActionTypes.MORE_INFO ||
-        this.actionType === settings.ActionTypes.UPGRADE) {
+        this.actionType === ActionTypes.MORE_INFO ||
+        this.actionType === ActionTypes.UPGRADE) {
       this.browserProxy_.openURL(this.actionUrl);
     } else {
       assertNotReached();
@@ -92,13 +102,13 @@ Polymer({
    * @private
    */
   getActionName_(actionType) {
-    if (actionType === settings.ActionTypes.UNINSTALL) {
+    if (actionType === ActionTypes.UNINSTALL) {
       return this.i18n('incompatibleApplicationsRemoveButton');
     }
-    if (actionType === settings.ActionTypes.MORE_INFO) {
+    if (actionType === ActionTypes.MORE_INFO) {
       return this.i18n('learnMore');
     }
-    if (actionType === settings.ActionTypes.UPGRADE) {
+    if (actionType === ActionTypes.UPGRADE) {
       return this.i18n('incompatibleApplicationsUpdateButton');
     }
     assertNotReached();

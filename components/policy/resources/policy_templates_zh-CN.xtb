@@ -65,15 +65,6 @@
 
       如果此政策设为 false 或未设置，系统将不会报告这些信息。
       如果此政策设为 true，系统将会报告设备的背光信息。</translation>
-<translation id="1076271193420500757">通过配置此政策，您可以指定允许在受企业管理的 <ph name="PRODUCT_OS_NAME" /> 设备上应用哪些变体。
-
-      通过有选择地启用/停用现有功能，变体让我们无需推出新版本即可实现对 <ph name="PRODUCT_OS_NAME" /> 的修改。
-
-      设置 <ph name="VARIATIONS_ENABLED_OPTION_NAME" />（值为 0）或不设置此政策会允许将所有变体应用于 <ph name="PRODUCT_OS_NAME" />。
-
-      设置 <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" />（值为 1）会仅允许将那些被视为重要的安全性或稳定性修复程序的变体应用于 <ph name="PRODUCT_OS_NAME" />。
-
-      设置 <ph name="VARIATIONS_DISABLED_OPTION_NAME" />（值为 2）会禁止在登录屏幕上将任何变体应用于该浏览器。请注意，我们不建议您使用此模式，因为它可能会妨碍 <ph name="PRODUCT_OS_NAME" /> 开发者及时提供重要的安全性修复程序。</translation>
 <translation id="1079801999187584280">禁止使用开发者工具</translation>
 <translation id="1087437665304381368">此政策仅用于控制 <ph name="PRODUCT_OS_NAME" />开发者模式。如果您想阻止对 Android 开发者选项的访问，则需设置 <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" /> 政策。</translation>
 <translation id="1087707496788636333">Chrome 企业版政策列表迁址了！请更新您的书签以改用 <ph name="POLICY_DOCUMENTATION_URL" />。</translation>
@@ -1743,7 +1734,6 @@
       如果此政策未设置，则对于任何需要通过证书透明化操作予以披露的证书，如果并未根据证书透明化政策进行披露，系统都会将其视为不可信证书。</translation>
 <translation id="3765260570442823273">待机退出警告讯息的持续时间</translation>
 <translation id="377044054160169374">针对误导性体验的强制干预政策</translation>
-<translation id="3780102107513139202">仅启用与重要修复程序有关的变体</translation>
 <translation id="3780152581321609624">在 Kerberos SPN 中加入非标准端口</translation>
 <translation id="3780319008680229708">如果此政策设为 true，Cast 工具栏图标将始终显示在工具栏或菜单中，用户无法将其移除。
 
@@ -4047,15 +4037,6 @@
 <translation id="7311458740754205918">如果此政策设为 true 或未设置，“打开新的标签页”页面可能会根据用户的浏览记录、兴趣或位置信息显示内容建议。
 
       如果此政策设为 false，“打开新的标签页”页面上不会显示自动生成的内容建议。</translation>
-<translation id="7323572763274343342">通过配置此政策，您可以指定允许在 <ph name="PRODUCT_NAME" /> 中应用哪些变体。
-
-      变体可通过有选择地启用/停用现有功能（无需推出新版浏览器）提供对 <ph name="PRODUCT_NAME" /> 的修改。
-
-      设置 <ph name="VARIATIONS_ENABLED_OPTION_NAME" />（值为 0）或不设置此政策会允许将所有变体应用于该浏览器。
-
-      设置 <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" />（值为 1）会仅允许将那些被视为重要的安全性或稳定性修复程序的变体应用于 <ph name="PRODUCT_NAME" />。
-
-      设置 <ph name="VARIATIONS_DISABLED_OPTION_NAME" />（值为 2）会阻止将所有变体应用于该浏览器。请注意，我们不建议您使用此模式，因为它可能会阻止 <ph name="PRODUCT_NAME" /> 开发者及时提供重要的安全性修复程序。</translation>
 <translation id="7323896582714668701">适用于 <ph name="PRODUCT_NAME" />的其他命令行参数</translation>
 <translation id="7326394567531622570">与 Wipe（值 2）类似，但该选项会尝试保留登录令牌，以使用户无需再次登录。</translation>
 <translation id="7329968046053403405">指定由支持 <ph name="HTTP_NEGOTIATE" />身份验证（例如 Kerberos 身份验证）的 Android 身份验证应用提供的帐号所属的类型。您应该可以从身份验证应用的供应商处获得此信息。如需更多详细信息，请访问 https://goo.gl/hajyfN。

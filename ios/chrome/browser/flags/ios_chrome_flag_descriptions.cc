@@ -429,6 +429,11 @@ const char kTranslateInfobarMessagesUIName[] =
 const char kTranslateInfobarMessagesUIDescription[] =
     "When enabled, the Translate Infobar uses the new Messages UI.";
 
+const char kURLBlocklistIOSName[] = "URL Blocklist Policy";
+const char kURLBlocklistIOSDescription[] =
+    "When enabled, URLs can be blocked/allowed by the URLBlocklist/URLAllowlist"
+    "enterprise policies.";
+
 const char kWalletServiceUseSandboxName[] = "Use Google Payments sandbox";
 const char kWalletServiceUseSandboxDescription[] =
     "Uses the sandbox service for Google Payments API calls.";

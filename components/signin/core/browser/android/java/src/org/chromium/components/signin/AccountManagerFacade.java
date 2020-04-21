@@ -16,7 +16,6 @@ import androidx.annotation.WorkerThread;
 
 import org.chromium.base.Callback;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -58,20 +57,7 @@ public interface AccountManagerFacade {
     boolean isCachePopulated();
 
     /**
-     * Retrieves a list of the Google account names on the device.
-     * Returns an empty list if Google Play Services aren't available or out of date.
-     */
-    @AnyThread
-    default List<String> tryGetGoogleAccountNames() {
-        List<String> accountNames = new ArrayList<>();
-        for (Account account : tryGetGoogleAccounts()) {
-            accountNames.add(account.name);
-        }
-        return accountNames;
-    }
-
-    /**
-     * Asynchronous version of {@link #tryGetGoogleAccountNames()}.
+     * Gets Google account names asynchronously.
      * TODO(https://crbug.com/1070624): Remove this method
      */
     @Deprecated
@@ -106,22 +92,6 @@ public interface AccountManagerFacade {
     @MainThread
     default void tryGetGoogleAccounts(final Callback<List<Account>> callback) {
         runAfterCacheIsPopulated(() -> callback.onResult(tryGetGoogleAccounts()));
-    }
-
-    /**
-     * Returns the account if it exists; null if account doesn't exists or an error occurs
-     * while getting account list.
-     */
-    @AnyThread
-    default Account getAccountFromName(String accountName) {
-        String canonicalName = AccountUtils.canonicalizeName(accountName);
-        List<Account> accounts = tryGetGoogleAccounts();
-        for (Account account : accounts) {
-            if (AccountUtils.canonicalizeName(account.name).equals(canonicalName)) {
-                return account;
-            }
-        }
-        return null;
     }
 
     /**

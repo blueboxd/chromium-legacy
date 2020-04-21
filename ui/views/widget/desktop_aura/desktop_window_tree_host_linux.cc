@@ -200,6 +200,15 @@ void DesktopWindowTreeHostLinux::InitModalType(ui::ModalType modal_type) {
   }
 }
 
+Widget::MoveLoopResult DesktopWindowTreeHostLinux::RunMoveLoop(
+    const gfx::Vector2d& drag_offset,
+    Widget::MoveLoopSource source,
+    Widget::MoveLoopEscapeBehavior escape_behavior) {
+  GetContentWindow()->SetCapture();
+  return DesktopWindowTreeHostPlatform::RunMoveLoop(drag_offset, source,
+                                                    escape_behavior);
+}
+
 void DesktopWindowTreeHostLinux::OnDisplayMetricsChanged(
     const display::Display& display,
     uint32_t changed_metrics) {

@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/values.h"
 #include "net/base/net_errors.h"

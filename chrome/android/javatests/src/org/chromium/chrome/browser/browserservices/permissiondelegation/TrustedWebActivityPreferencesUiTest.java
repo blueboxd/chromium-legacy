@@ -30,6 +30,7 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.browser_ui.settings.ChromeImageViewPreference;
 import org.chromium.components.browser_ui.settings.ExpandablePreferenceGroup;
+import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -72,7 +73,9 @@ public class TrustedWebActivityPreferencesUiTest {
         final Origin origin = Origin.create(site);
 
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> mPermissionMananger.updatePermission(origin, mPackage, true));
+                ()
+                        -> mPermissionMananger.updatePermission(
+                                origin, mPackage, ContentSettingsType.NOTIFICATIONS, true));
 
         SettingsActivity settingsActivity = SiteSettingsTestUtils.startSiteSettingsCategory(
                 SiteSettingsCategory.Type.NOTIFICATIONS);
@@ -125,7 +128,9 @@ public class TrustedWebActivityPreferencesUiTest {
         final Origin origin = Origin.create(site);
 
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> mPermissionMananger.updatePermission(origin, mPackage, true));
+                ()
+                        -> mPermissionMananger.updatePermission(
+                                origin, mPackage, ContentSettingsType.NOTIFICATIONS, true));
 
         WebsiteAddress address = WebsiteAddress.create(site);
         Website website = new Website(address, address);

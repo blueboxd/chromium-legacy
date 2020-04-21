@@ -38,7 +38,7 @@ class SavePasswordInfobarBannerOverlayRequestConfig
       infobars::InfoBar* infobar);
 
   // OverlayUserData:
-  void CreateAuxilliaryData(base::SupportsUserData* user_data) override;
+  void CreateAuxiliaryData(base::SupportsUserData* user_data) override;
 
   // The InfoBar causing this banner.
   infobars::InfoBar* infobar_ = nullptr;

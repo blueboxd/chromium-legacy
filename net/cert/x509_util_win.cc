@@ -4,6 +4,7 @@
 
 #include "net/cert/x509_util_win.h"
 
+#include "base/logging.h"
 #include "crypto/scoped_capi_types.h"
 #include "crypto/sha2.h"
 #include "net/cert/x509_certificate.h"

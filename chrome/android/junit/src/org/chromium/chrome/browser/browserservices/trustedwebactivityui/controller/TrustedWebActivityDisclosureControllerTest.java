@@ -11,6 +11,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 
 import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.DISCLOSURE_EVENTS_CALLBACK;
+import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.DISCLOSURE_SCOPE;
 import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.DISCLOSURE_STATE;
 import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.DISCLOSURE_STATE_NOT_SHOWN;
 import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.DISCLOSURE_STATE_SHOWN;
@@ -71,6 +72,7 @@ public class TrustedWebActivityDisclosureControllerTest {
     public void showsWhenOriginVerified() {
         enterVerifiedOrigin();
         assertSnackbarShown();
+        assertScope(SCOPE);
     }
 
     @Test
@@ -79,6 +81,7 @@ public class TrustedWebActivityDisclosureControllerTest {
         enterVerifiedOrigin();
         exitVerifiedOrigin();
         assertSnackbarNotShown();
+        assertScope(null);
     }
 
     @Test
@@ -127,6 +130,10 @@ public class TrustedWebActivityDisclosureControllerTest {
 
     private void assertSnackbarNotShown() {
         assertEquals(DISCLOSURE_STATE_NOT_SHOWN, mModel.get(DISCLOSURE_STATE));
+    }
+
+    private void assertScope(String scope) {
+        assertEquals(scope, mModel.get(DISCLOSURE_SCOPE));
     }
 
     private void dismissSnackbar() {

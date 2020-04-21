@@ -10,6 +10,7 @@
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
+#include "base/logging.h"
 #include "base/path_service.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"

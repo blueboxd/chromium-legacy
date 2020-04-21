@@ -125,7 +125,7 @@ public class TileRenderer {
      * Record that a tile was clicked for IPH reasons.
      */
     private void recordTileClickedForIPH(String eventName) {
-        Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
+        Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedRegularProfile());
         tracker.notifyEvent(eventName);
     }
 
@@ -152,7 +152,8 @@ public class TileRenderer {
             // One task to load actual icon.
             LargeIconBridge.LargeIconCallback bridgeCallback =
                     setupDelegate.createIconLoadCallback(tile);
-            ExploreSitesBridge.getSummaryImage(Profile.getLastUsedProfile(), mDesiredIconSize,
+            ExploreSitesBridge.getSummaryImage(Profile.getLastUsedRegularProfile(),
+                    mDesiredIconSize,
                     (Bitmap img)
                             -> bridgeCallback.onLargeIconAvailable(
                                     img, Color.BLACK, false, IconType.FAVICON));
@@ -182,7 +183,7 @@ public class TileRenderer {
         tileView.setOnCreateContextMenuListener(delegate);
 
         if (tile.getSource() == TileSource.EXPLORE) {
-            ExploreSitesIPH.configureIPH(tileView, Profile.getLastUsedProfile());
+            ExploreSitesIPH.configureIPH(tileView, Profile.getLastUsedRegularProfile());
         }
 
         return tileView;

@@ -12,6 +12,9 @@ extern const base::Feature kEditBookmarksIOS;
 // Feature flag for supporting the ManagedBookmarks enterprise policy on iOS.
 extern const base::Feature kManagedBookmarksIOS;
 
+// Feature flag for supporting the URLBlocklist enterprise policy on iOS.
+extern const base::Feature kURLBlocklistIOS;
+
 // Returns true if EditBookmarksEnabled enterprise policy is supported on iOS.
 bool IsEditBookmarksIOSEnabled();
 
@@ -30,5 +33,12 @@ bool ShouldInstallManagedBookmarksPolicyHandler();
 
 // Returns true if ManagedBookmarks enterprise policy is enabled.
 bool IsManagedBookmarksEnabled();
+
+// Returns true if the URLBlocklist and URLAllowlist policy handlers should be
+// installed.
+bool ShouldInstallURLBlocklistPolicyHandlers();
+
+// Returns true if URLBlocklist/URLAllowlist enterprise policies are enabled.
+bool IsURLBlocklistEnabled();
 
 #endif  // IOS_CHROME_BROWSER_POLICY_POLICY_FEATURES_H_

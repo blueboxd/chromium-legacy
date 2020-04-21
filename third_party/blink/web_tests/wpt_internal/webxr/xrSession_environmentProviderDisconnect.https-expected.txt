@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Outstanding promises get rejected if environmentProvider disconnects promise_test: Unhandled rejection with value: "Session with params \"immersive-ar\" was rejected on device {\"supportedModes\":[\"immersive-ar\"],\"views\":[{\"eye\":\"left\",\"projectionMatrix\":[1,0,0,0,0,1,0,0,3,2,-1,-1,0,0,-0.2,0],\"viewOffset\":{\"position\":[-0.1,0,0],\"orientation\":[0,0,0,1]},\"resolution\":{\"width\":200,\"height\":200}},{\"eye\":\"right\",\"projectionMatrix\":[1,0,0,0,0,1,0,0,3,2,-1,-1,0,0,-0.2,0],\"viewOffset\":{\"position\":[0.1,0,0],\"orientation\":[0,0,0,1]},\"resolution\":{\"width\":200,\"height\":200}}],\"supportsEnvironmentIntegration\":true,\"supportedFeatures\":[\"viewer\",\"local\",\"local-floor\",\"bounded-floor\",\"unbounded\",\"hit-test\",\"dom-overlay\",\"light-estimation\"]} with error: NotSupportedError: Failed to execute 'requestSession' on 'XRSystem': No XR hardware found."
+Harness: the test ran to completion.
+

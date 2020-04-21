@@ -126,34 +126,6 @@
 }
 
 - (void)autofillController:(CWVAutofillController*)autofillController
-    decideSavePolicyForAutofillProfile:(CWVAutofillProfile*)autofillProfile
-                       decisionHandler:
-                           (void (^)(BOOL decision))decisionHandler {
-  UIAlertController* alertController = [UIAlertController
-      alertControllerWithTitle:@"Save profile?"
-                       message:autofillProfile.debugDescription
-                preferredStyle:UIAlertControllerStyleAlert];
-  UIAlertAction* allowAction =
-      [UIAlertAction actionWithTitle:@"Allow"
-                               style:UIAlertActionStyleDefault
-                             handler:^(UIAlertAction* _Nonnull action) {
-                               decisionHandler(YES);
-                             }];
-  UIAlertAction* cancelAction =
-      [UIAlertAction actionWithTitle:@"Cancel"
-                               style:UIAlertActionStyleCancel
-                             handler:^(UIAlertAction* _Nonnull action) {
-                               decisionHandler(NO);
-                             }];
-  [alertController addAction:allowAction];
-  [alertController addAction:cancelAction];
-  [UIApplication.sharedApplication.keyWindow.rootViewController
-      presentViewController:alertController
-                   animated:YES
-                 completion:nil];
-}
-
-- (void)autofillController:(CWVAutofillController*)autofillController
     saveCreditCardWithSaver:(CWVCreditCardSaver*)saver {
   CWVCreditCard* creditCard = saver.creditCard;
   UIAlertController* alertController =

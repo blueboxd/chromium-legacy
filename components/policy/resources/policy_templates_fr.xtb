@@ -67,15 +67,6 @@
 
       Si la règle est définie sur "False" ou n'est pas définie, ces informations ne sont pas transmises.
       Si elle est définie sur "True", les informations concernant le rétroéclairage de l'appareil sont transmises.</translation>
-<translation id="1076271193420500757">Permet de définir quelles variantes peuvent être appliquées sur un appareil <ph name="PRODUCT_OS_NAME" /> géré par une entreprise.
-
-      Les variantes offrent un moyen de proposer des modifications concernant <ph name="PRODUCT_OS_NAME" /> sans envoyer de nouvelle version, en activant ou en désactivant des fonctionnalités déjà disponibles.
-
-      Si vous définissez <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> sur "0" ou si vous ne la définissez pas, toutes les variantes peuvent alors être appliquées à <ph name="PRODUCT_OS_NAME" />.
-
-      Si vous définissez <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> sur "1", seules les variantes considérées comme des correctifs essentiels de sécurité ou de stabilité peuvent être appliquées à <ph name="PRODUCT_OS_NAME" />.
-
-      Si vous définissez <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> sur "2", aucune variante ne peut être appliquée au navigateur sur l'écran de connexion. Veuillez noter que ce mode n'est pas recommandé, car il est susceptible d'empêcher les développeurs <ph name="PRODUCT_OS_NAME" /> de fournir des correctifs essentiels de sécurité en temps voulu.</translation>
 <translation id="1079801999187584280">Interdire l'utilisation des outils pour les développeurs</translation>
 <translation id="1087437665304381368">Cette règle permet de ne contrôler que le mode développeur <ph name="PRODUCT_OS_NAME" />. Si vous voulez bloquer l'accès aux options pour les développeurs Android, vous devez définir la règle <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" />.</translation>
 <translation id="1087707496788636333">La liste des règles Chrome Enterprise a changé d'adresse ! Pensez à mettre à jour vos favoris. Le lien correct est le suivant : <ph name="POLICY_DOCUMENTATION_URL" />.</translation>
@@ -1826,7 +1817,6 @@ Si elle est définie sur "False", <ph name="PRODUCT_NAME" /> n'utilise pas les n
       Si cette règle n'est pas configurée, tout certificat qui doit être communiqué tel que le prévoient les règles de transparence des certificats est considéré comme n'étant pas fiable s'il n'est pas communiqué comme il se doit.</translation>
 <translation id="3765260570442823273">Durée du message d'avertissement avant la déconnexion pour cause d'inactivité</translation>
 <translation id="377044054160169374">Application de l'intervention en cas d'expérience abusive</translation>
-<translation id="3780102107513139202">Activer les variantes concernant les correctifs essentiels uniquement</translation>
 <translation id="3780152581321609624">Inclure un port non standard dans le SPN Kerberos</translation>
 <translation id="3780319008680229708">Si cette règle est définie sur "true", l'icône Cast de la barre d'outils s'afficher toujours dans la barre d'outils ou dans le menu à développer et les utilisateurs ne peuvent pas la supprimer.
 
@@ -4212,15 +4202,6 @@ Ces règles sont ignorées, sauf si l'hôte Bureau à distance Chrome est instal
 <translation id="7311458740754205918">Si cette règle est définie sur "True" ou n'est pas définie, la page "Nouvel onglet" peut proposer des recommandations de contenus en fonction de l'historique de navigation, des centres d'intérêt ou de la position de l'utilisateur.
 
       Si cette règle est définie sur "False", aucune recommandation de contenus générée automatiquement ne s'affiche sur la page "Nouvel onglet".</translation>
-<translation id="7323572763274343342">Permet de définir quelles variantes peuvent être appliquées dans <ph name="PRODUCT_NAME" />.
-
-      Les variantes offrent un moyen de proposer des modifications concernant <ph name="PRODUCT_NAME" /> sans envoyer de nouvelle version du navigateur, en activant ou en désactivant au choix des fonctionnalités déjà disponibles.
-
-      Si vous définissez <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> sur 0 ou si cette règle n'est pas configurée, toutes les variantes peuvent alors être appliquées au navigateur.
-
-      Si vous définissez <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> sur 1, seules les variantes considérées comme des correctifs essentiels de sécurité ou de stabilité peuvent être appliquées à <ph name="PRODUCT_NAME" />.
-
-      Si vous définissez <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> sur 2, aucune variante ne peut être appliquée au navigateur. Veuillez noter que ce mode n'est pas recommandé, car il est susceptible d'empêcher les développeurs de <ph name="PRODUCT_NAME" /> de fournir des correctifs essentiels de sécurité en temps voulu.</translation>
 <translation id="7323896582714668701">Paramètres de ligne de commande supplémentaires pour <ph name="PRODUCT_NAME" /></translation>
 <translation id="7326394567531622570">Semblable à l'option "Nettoyer" (valeur 2), celle-ci essaie de conserver les jetons de connexion pour éviter à l'utilisateur de devoir se reconnecter.</translation>
 <translation id="7329968046053403405">Indique le type des comptes fournis par l'application d'authentification Android compatible avec l'authentification <ph name="HTTP_NEGOTIATE" /> (authentification Kerberos, par exemple). Ces informations devraient être disponibles auprès du fournisseur de l'application d'authentification. Pour en savoir plus, consultez le site https://goo.gl/hajyfN.

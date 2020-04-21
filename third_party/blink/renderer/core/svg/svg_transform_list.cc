@@ -193,10 +193,8 @@ bool SVGTransformList::Concatenate(AffineTransform& result) const {
   if (IsEmpty())
     return false;
 
-  ConstIterator it = begin();
-  ConstIterator it_end = end();
-  for (; it != it_end; ++it)
-    result *= it->Matrix();
+  for (const auto& item : *this)
+    result *= item->Matrix();
 
   return true;
 }
@@ -294,10 +292,8 @@ const CSSValue* SVGTransformList::CssValue() const {
     list->Append(*CreateTransformCSSValue(*at(0)));
     return list;
   }
-  ConstIterator it = begin();
-  ConstIterator it_end = end();
-  for (; it != it_end; ++it)
-    list->Append(*CreateTransformCSSValue(**it));
+  for (const auto& item : *this)
+    list->Append(*CreateTransformCSSValue(*item));
   return list;
 }
 

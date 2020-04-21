@@ -693,6 +693,12 @@ bool OmniboxViewViews::DirectionAwareSelectionAtEnd() const {
   return TextAndUIDirectionMatch() ? SelectionAtEnd() : SelectionAtBeginning();
 }
 
+#if defined(OS_MACOSX)
+void OmniboxViewViews::AnnounceFriendlySuggestionText() {
+  GetViewAccessibility().AnnounceText(friendly_suggestion_text_);
+}
+#endif
+
 bool OmniboxViewViews::MaybeTriggerSecondaryButton(const ui::KeyEvent& event) {
   // TODO(tommycli): If we have a WebUI omnibox popup, we should move the
   // secondary button logic out of the View and into the OmniboxPopupModel.
@@ -833,9 +839,15 @@ void OmniboxViewViews::SetAccessibilityLabel(const base::string16& display_text,
   }
 
 #if defined(OS_MACOSX)
-  // On macOS, the text field value changed notification is not
-  // announced, so we need to explicitly announce the suggestion text.
-  GetViewAccessibility().AnnounceText(friendly_suggestion_text_);
+  // On macOS, the only way to get VoiceOver to speak the friendly suggestion
+  // text (for example, "how to open a pdf, search suggestion, 4 of 8") is
+  // with an explicit announcement. Use PostTask to ensure that this
+  // announcement happens after the text change notification, otherwise
+  // the text change can interrupt the announcement.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&OmniboxViewViews::AnnounceFriendlySuggestionText,
+                     weak_factory_.GetWeakPtr()));
 #endif
 }
 

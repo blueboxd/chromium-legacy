@@ -23,10 +23,16 @@ public class TrustedWebActivityModel extends PropertyModel {
     public static final int DISCLOSURE_STATE_SHOWN = 1;
     public static final int DISCLOSURE_STATE_DISMISSED_BY_USER = 2;
 
+    public static final WritableObjectPropertyKey<String> DISCLOSURE_SCOPE =
+            new WritableObjectPropertyKey<>();
+
     /** Callback for routing disclosure-related view events back to controller side. */
     public static final WritableObjectPropertyKey<DisclosureEventsCallback>
             DISCLOSURE_EVENTS_CALLBACK = new WritableObjectPropertyKey<>();
 
+    /**
+     * A callback for when the disclosure is accepted.
+     */
     public interface DisclosureEventsCallback {
         /** Called when user accepted the disclosure. */
         void onDisclosureAccepted();
@@ -34,6 +40,6 @@ public class TrustedWebActivityModel extends PropertyModel {
 
     @Inject
     public TrustedWebActivityModel() {
-        super(DISCLOSURE_STATE, DISCLOSURE_EVENTS_CALLBACK);
+        super(DISCLOSURE_STATE, DISCLOSURE_SCOPE, DISCLOSURE_EVENTS_CALLBACK);
     }
 }

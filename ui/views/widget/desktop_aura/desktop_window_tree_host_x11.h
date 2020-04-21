@@ -17,7 +17,6 @@
 namespace ui {
 enum class DomCode;
 class X11Window;
-class X11DesktopWindowMoveClient;
 }  // namespace ui
 
 namespace views {
@@ -34,14 +33,8 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
  protected:
   // Overridden from DesktopWindowTreeHost:
   void Init(const Widget::InitParams& params) override;
-  void OnNativeWidgetCreated(const Widget::InitParams& params) override;
   std::unique_ptr<aura::client::DragDropClient> CreateDragDropClient(
       DesktopNativeCursorManager* cursor_manager) override;
-  Widget::MoveLoopResult RunMoveLoop(
-      const gfx::Vector2d& drag_offset,
-      Widget::MoveLoopSource source,
-      Widget::MoveLoopEscapeBehavior escape_behavior) override;
-  void EndMoveLoop() override;
 
  private:
   friend class DesktopWindowTreeHostX11HighDPITest;
@@ -57,8 +50,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
   const ui::XWindow* GetXWindow() const;
 
   DesktopDragDropClientAuraX11* drag_drop_client_ = nullptr;
-
-  std::unique_ptr<ui::X11DesktopWindowMoveClient> x11_window_move_client_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopWindowTreeHostX11);
 };

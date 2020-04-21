@@ -7,6 +7,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/base/buildflags.h"
+#include "ui/base/x/x11_desktop_window_move_client.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/base/x/x11_util_internal.h"
 #include "ui/display/screen.h"
@@ -626,6 +627,13 @@ void X11Window::OnXWindowCreated() {
   DCHECK(X11EventSource::HasInstance());
   X11EventSource::GetInstance()->AddXEventDispatcher(this);
 
+  x11_window_move_client_ =
+      std::make_unique<ui::X11DesktopWindowMoveClient>(this);
+
+  // Set a class property key, which allows |this| to be used for move loop aka
+  // tab dragging.
+  SetWmMoveLoopHandler(this, static_cast<WmMoveLoopHandler*>(this));
+
   platform_window_delegate_->OnAcceleratedWidgetAvailable(GetWidget());
 }
 
@@ -741,6 +749,14 @@ void X11Window::DispatchHostWindowDragMovement(
     int hittest,
     const gfx::Point& pointer_location_in_px) {
   XWindow::WmMoveResize(hittest, pointer_location_in_px);
+}
+
+bool X11Window::RunMoveLoop(const gfx::Vector2d& drag_offset) {
+  return x11_window_move_client_->RunMoveLoop(!HasCapture(), drag_offset);
+}
+
+void X11Window::EndMoveLoop() {
+  x11_window_move_client_->EndMoveLoop();
 }
 
 gfx::Size X11Window::AdjustSizeForDisplay(

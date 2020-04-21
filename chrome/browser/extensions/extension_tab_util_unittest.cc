@@ -118,4 +118,16 @@ TEST(ExtensionTabUtilTest, ScrubTabBehaviorForWebUIUntrusted) {
   EXPECT_EQ(ExtensionTabUtil::kScrubTabFully, scrub_tab_behavior.pending_info);
 }
 
+TEST(ExtensionTabUtilTest, ResolvePossiblyRelativeURL) {
+  auto extension = ExtensionBuilder("test").Build();
+  EXPECT_EQ(ExtensionTabUtil::ResolvePossiblyRelativeURL(
+                "http://example.com/path", extension.get()),
+            GURL("http://example.com/path"));
+  EXPECT_EQ(
+      ExtensionTabUtil::ResolvePossiblyRelativeURL("path", extension.get()),
+      GURL("chrome-extension://jpignaibiiemhngfjkcpokkamffknabf/path"));
+  EXPECT_EQ(ExtensionTabUtil::ResolvePossiblyRelativeURL("path", nullptr),
+            GURL("path"));
+}
+
 }  // namespace extensions

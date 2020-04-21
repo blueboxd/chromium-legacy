@@ -131,8 +131,6 @@
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 #endif
 
-#include "url/url_constants.h"
-
 using base::TimeDelta;
 using blink::WebFrame;
 using blink::WebFrameContentDumper;
@@ -392,7 +390,7 @@ class RenderViewImplTest : public RenderViewTest {
     NativeWebKeyboardEvent keyup_event(*event3);
     SendNativeKeyEvent(keyup_event);
 
-    long c = DomCodeToUsLayoutCharacter(
+    base::char16 c = DomCodeToUsLayoutCharacter(
         UsLayoutKeyboardCodeToDomCode(static_cast<ui::KeyboardCode>(key_code)),
         flags);
     output->assign(1, static_cast<base::char16>(c));
@@ -418,7 +416,7 @@ class RenderViewImplTest : public RenderViewTest {
     NativeWebKeyboardEvent keyup_web_event(keyup_event);
     SendNativeKeyEvent(keyup_web_event);
 
-    long c = DomCodeToUsLayoutCharacter(
+    base::char16 c = DomCodeToUsLayoutCharacter(
         UsLayoutKeyboardCodeToDomCode(static_cast<ui::KeyboardCode>(key_code)),
         flags);
     output->assign(1, static_cast<base::char16>(c));
@@ -891,7 +889,7 @@ TEST_F(RenderViewImplTest, BeginNavigation) {
   blink::WebSecurityOrigin requestor_origin =
       blink::WebSecurityOrigin::Create(GURL("http://foo.com"));
 
-  // Navigations to normal HTTP URLs can be handled locally.
+  // Navigations to normal HTTP URLs.
   blink::WebURLRequest request(GURL("http://foo.com"));
   request.SetMode(network::mojom::RequestMode::kNavigate);
   request.SetCredentialsMode(network::mojom::CredentialsMode::kInclude);
@@ -910,10 +908,16 @@ TEST_F(RenderViewImplTest, BeginNavigation) {
   // stop and be sent to the browser.
   EXPECT_TRUE(frame()->IsBrowserSideNavigationPending());
 
-  // Verify that form posts to WebUI URLs will be sent to the browser process.
+  // Form posts to WebUI URLs.
   auto form_navigation_info = std::make_unique<blink::WebNavigationInfo>();
   form_navigation_info->url_request = blink::WebURLRequest(GetWebUIURL("foo"));
   form_navigation_info->url_request.SetHttpMethod("POST");
+  form_navigation_info->url_request.SetMode(
+      network::mojom::RequestMode::kNavigate);
+  form_navigation_info->url_request.SetRedirectMode(
+      network::mojom::RedirectMode::kManual);
+  form_navigation_info->url_request.SetRequestContext(
+      blink::mojom::RequestContextType::INTERNAL);
   blink::WebHTTPBody post_body;
   post_body.Initialize();
   post_body.AppendData("blah");
@@ -927,13 +931,18 @@ TEST_F(RenderViewImplTest, BeginNavigation) {
       blink::kWebNavigationPolicyCurrentTab;
   render_thread_->sink().ClearMessages();
   frame()->BeginNavigation(std::move(form_navigation_info));
-  EXPECT_TRUE(render_thread_->sink().GetUniqueMessageMatching(
-      FrameHostMsg_OpenURL::ID));
+  EXPECT_TRUE(frame()->IsBrowserSideNavigationPending());
 
-  // Verify that popup links to WebUI URLs also are sent to browser.
+  // Popup links to WebUI URLs.
   blink::WebURLRequest popup_request(GetWebUIURL("foo"));
   auto popup_navigation_info = std::make_unique<blink::WebNavigationInfo>();
   popup_navigation_info->url_request = blink::WebURLRequest(GetWebUIURL("foo"));
+  popup_navigation_info->url_request.SetMode(
+      network::mojom::RequestMode::kNavigate);
+  popup_navigation_info->url_request.SetRedirectMode(
+      network::mojom::RedirectMode::kManual);
+  popup_navigation_info->url_request.SetRequestContext(
+      blink::mojom::RequestContextType::INTERNAL);
   popup_navigation_info->url_request.SetRequestorOrigin(requestor_origin);
   popup_navigation_info->frame_type =
       blink::mojom::RequestContextFrameType::kAuxiliary;
@@ -942,8 +951,7 @@ TEST_F(RenderViewImplTest, BeginNavigation) {
       blink::kWebNavigationPolicyNewForegroundTab;
   render_thread_->sink().ClearMessages();
   frame()->BeginNavigation(std::move(popup_navigation_info));
-  EXPECT_TRUE(render_thread_->sink().GetUniqueMessageMatching(
-      FrameHostMsg_OpenURL::ID));
+  EXPECT_TRUE(frame()->IsBrowserSideNavigationPending());
 }
 
 TEST_F(RenderViewImplTest, BeginNavigationHandlesAllTopLevel) {
@@ -984,9 +992,14 @@ TEST_F(RenderViewImplTest, BeginNavigationForWebUI) {
   blink::WebSecurityOrigin requestor_origin =
       blink::WebSecurityOrigin::Create(GURL("http://foo.com"));
 
-  // Navigations to normal HTTP URLs will be sent to browser process.
+  // Navigations to normal HTTP URLs.
   auto navigation_info = std::make_unique<blink::WebNavigationInfo>();
   navigation_info->url_request = blink::WebURLRequest(GURL("http://foo.com"));
+  navigation_info->url_request.SetMode(network::mojom::RequestMode::kNavigate);
+  navigation_info->url_request.SetRedirectMode(
+      network::mojom::RedirectMode::kManual);
+  navigation_info->url_request.SetRequestContext(
+      blink::mojom::RequestContextType::INTERNAL);
   navigation_info->url_request.SetRequestorOrigin(requestor_origin);
   navigation_info->frame_type =
       blink::mojom::RequestContextFrameType::kTopLevel;
@@ -995,12 +1008,17 @@ TEST_F(RenderViewImplTest, BeginNavigationForWebUI) {
 
   render_thread_->sink().ClearMessages();
   frame()->BeginNavigation(std::move(navigation_info));
-  EXPECT_TRUE(render_thread_->sink().GetUniqueMessageMatching(
-      FrameHostMsg_OpenURL::ID));
+  EXPECT_TRUE(frame()->IsBrowserSideNavigationPending());
 
-  // Navigations to WebUI URLs will also be sent to browser process.
+  // Navigations to WebUI URLs.
   auto webui_navigation_info = std::make_unique<blink::WebNavigationInfo>();
   webui_navigation_info->url_request = blink::WebURLRequest(GetWebUIURL("foo"));
+  webui_navigation_info->url_request.SetMode(
+      network::mojom::RequestMode::kNavigate);
+  webui_navigation_info->url_request.SetRedirectMode(
+      network::mojom::RedirectMode::kManual);
+  webui_navigation_info->url_request.SetRequestContext(
+      blink::mojom::RequestContextType::INTERNAL);
   webui_navigation_info->url_request.SetRequestorOrigin(requestor_origin);
   webui_navigation_info->frame_type =
       blink::mojom::RequestContextFrameType::kTopLevel;
@@ -1009,13 +1027,18 @@ TEST_F(RenderViewImplTest, BeginNavigationForWebUI) {
       blink::kWebNavigationPolicyCurrentTab;
   render_thread_->sink().ClearMessages();
   frame()->BeginNavigation(std::move(webui_navigation_info));
-  EXPECT_TRUE(render_thread_->sink().GetUniqueMessageMatching(
-      FrameHostMsg_OpenURL::ID));
+  EXPECT_TRUE(frame()->IsBrowserSideNavigationPending());
 
-  // Verify that form posts to data URLs will be sent to the browser process.
+  // Form posts to data URLs.
   auto data_navigation_info = std::make_unique<blink::WebNavigationInfo>();
   data_navigation_info->url_request =
       blink::WebURLRequest(GURL("data:text/html,foo"));
+  data_navigation_info->url_request.SetMode(
+      network::mojom::RequestMode::kNavigate);
+  data_navigation_info->url_request.SetRedirectMode(
+      network::mojom::RedirectMode::kManual);
+  data_navigation_info->url_request.SetRequestContext(
+      blink::mojom::RequestContextType::INTERNAL);
   data_navigation_info->url_request.SetRequestorOrigin(requestor_origin);
   data_navigation_info->url_request.SetHttpMethod("POST");
   blink::WebHTTPBody post_body;
@@ -1030,14 +1053,15 @@ TEST_F(RenderViewImplTest, BeginNavigationForWebUI) {
       blink::kWebNavigationPolicyCurrentTab;
   render_thread_->sink().ClearMessages();
   frame()->BeginNavigation(std::move(data_navigation_info));
-  EXPECT_TRUE(render_thread_->sink().GetUniqueMessageMatching(
-      FrameHostMsg_OpenURL::ID));
+  EXPECT_TRUE(frame()->IsBrowserSideNavigationPending());
 
-  // Verify that a popup that creates a view first and then navigates to a
-  // normal HTTP URL will be sent to the browser process, even though the
-  // new view does not have any enabled_bindings_.
+  // A popup that creates a view first and then navigates to a
+  // normal HTTP URL.
   blink::WebURLRequest popup_request(GURL("http://foo.com"));
   popup_request.SetRequestorOrigin(requestor_origin);
+  popup_request.SetMode(network::mojom::RequestMode::kNavigate);
+  popup_request.SetRedirectMode(network::mojom::RedirectMode::kManual);
+  popup_request.SetRequestContext(blink::mojom::RequestContextType::INTERNAL);
   blink::WebView* new_web_view = view()->CreateView(
       GetMainFrame(), popup_request, blink::WebWindowFeatures(), "foo",
       blink::kWebNavigationPolicyNewForegroundTab,
@@ -1055,8 +1079,7 @@ TEST_F(RenderViewImplTest, BeginNavigationForWebUI) {
   render_thread_->sink().ClearMessages();
   static_cast<RenderFrameImpl*>(new_view->GetMainRenderFrame())
       ->BeginNavigation(std::move(popup_navigation_info));
-  EXPECT_TRUE(render_thread_->sink().GetUniqueMessageMatching(
-      FrameHostMsg_OpenURL::ID));
+  EXPECT_TRUE(frame()->IsBrowserSideNavigationPending());
 }
 
 // This test verifies that when device emulation is enabled, RenderFrameProxy

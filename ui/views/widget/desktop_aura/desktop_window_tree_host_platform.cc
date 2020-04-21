@@ -21,6 +21,7 @@
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/platform_window/extensions/workspace_extension.h"
 #include "ui/platform_window/platform_window.h"
+#include "ui/platform_window/platform_window_handler/wm_move_loop_handler.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 #include "ui/views/corewm/tooltip_aura.h"
 #include "ui/views/widget/desktop_aura/desktop_drag_drop_client_ozone.h"
@@ -510,14 +511,16 @@ Widget::MoveLoopResult DesktopWindowTreeHostPlatform::RunMoveLoop(
     const gfx::Vector2d& drag_offset,
     Widget::MoveLoopSource source,
     Widget::MoveLoopEscapeBehavior escape_behavior) {
-  // TODO(crbug.com/896640): needs PlatformWindow support.
-  NOTIMPLEMENTED_LOG_ONCE();
+  auto* move_loop_handler = ui::GetWmMoveLoopHandler(*platform_window());
+  if (move_loop_handler && move_loop_handler->RunMoveLoop(drag_offset))
+    return Widget::MOVE_LOOP_SUCCESSFUL;
   return Widget::MOVE_LOOP_CANCELED;
 }
 
 void DesktopWindowTreeHostPlatform::EndMoveLoop() {
-  // TODO(crbug.com/896640): needs PlatformWindow support.
-  NOTIMPLEMENTED_LOG_ONCE();
+  auto* move_loop_handler = ui::GetWmMoveLoopHandler(*platform_window());
+  if (move_loop_handler)
+    move_loop_handler->EndMoveLoop();
 }
 
 void DesktopWindowTreeHostPlatform::SetVisibilityChangedAnimationsEnabled(

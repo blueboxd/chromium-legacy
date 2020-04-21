@@ -4,6 +4,7 @@
 
 #include "net/log/net_log.h"
 
+#include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"

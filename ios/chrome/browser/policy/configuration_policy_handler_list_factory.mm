@@ -14,6 +14,8 @@
 #include "components/policy/core/browser/configuration_policy_handler.h"
 #include "components/policy/core/browser/configuration_policy_handler_list.h"
 #include "components/policy/core/browser/configuration_policy_handler_parameters.h"
+#include "components/policy/core/browser/url_blacklist_policy_handler.h"
+#include "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/policy_constants.h"
 #include "ios/chrome/browser/policy/policy_features.h"
 #include "ios/chrome/browser/pref_names.h"
@@ -43,6 +45,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { policy::key::kSearchSuggestEnabled,
     prefs::kSearchSuggestEnabled,
     base::Value::Type::BOOLEAN },
+  { policy::key::kURLWhitelist,
+    policy::policy_prefs::kUrlWhitelist,
+    base::Value::Type::LIST},
 };
 // clang-format on
 
@@ -79,6 +84,10 @@ std::unique_ptr<policy::ConfigurationPolicyHandlerList> BuildPolicyHandlerList(
     handlers->AddHandler(
         std::make_unique<bookmarks::ManagedBookmarksPolicyHandler>(
             chrome_schema));
+  }
+
+  if (ShouldInstallURLBlocklistPolicyHandlers()) {
+    handlers->AddHandler(std::make_unique<policy::URLBlacklistPolicyHandler>());
   }
 
   return handlers;

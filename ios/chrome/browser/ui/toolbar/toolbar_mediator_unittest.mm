@@ -9,12 +9,17 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
+#include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/testing_pref_service.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#include "ios/chrome/browser/policy/policy_features.h"
 #import "ios/chrome/browser/ui/toolbar/test/toolbar_test_navigation_manager.h"
 #import "ios/chrome/browser/ui/toolbar/test/toolbar_test_web_state.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_consumer.h"
@@ -127,6 +132,11 @@ class ToolbarMediatorTest : public PlatformTest {
     consumer_ = OCMProtocolMock(@protocol(ToolbarConsumer));
     strict_consumer_ = OCMStrictProtocolMock(@protocol(ToolbarConsumer));
     SetUpWebStateList();
+
+    prefs_ = std::make_unique<TestingPrefServiceSimple>();
+    prefs_->registry()->RegisterBooleanPref(
+        bookmarks::prefs::kEditBookmarksEnabled,
+        /*default_value=*/true);
   }
 
   // Explicitly disconnect the mediator so there won't be any WebStateList
@@ -189,6 +199,7 @@ class ToolbarMediatorTest : public PlatformTest {
   id strict_consumer_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   BookmarkModel* bookmark_model_;
+  std::unique_ptr<TestingPrefServiceSimple> prefs_;
 
  private:
   std::unique_ptr<ToolbarTestWebState> test_web_state_;
@@ -301,6 +312,23 @@ TEST_F(ToolbarMediatorTest, TestToolbarNotBookmarked) {
   mediator_.webStateList = web_state_list_.get();
   SetUpActiveWebState();
   mediator_.consumer = consumer_;
+
+  EXPECT_OCMOCK_VERIFY(consumer_);
+  bookmark_model_->RemoveAllUserBookmarks();
+}
+
+// Tests that the bookmark button is disabled when the EditBookmarksEnabled pref
+// is false.
+TEST_F(ToolbarMediatorTest, TestBookmarkDisabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(kEditBookmarksIOS);
+
+  SetUpBookmarks();
+  prefs_->SetBoolean(bookmarks::prefs::kEditBookmarksEnabled, false);
+  OCMExpect([consumer_ setBookmarkEnabled:NO]);
+
+  mediator_.consumer = consumer_;
+  [mediator_ setPrefService:prefs_.get()];
 
   EXPECT_OCMOCK_VERIFY(consumer_);
   bookmark_model_->RemoveAllUserBookmarks();

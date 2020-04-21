@@ -272,8 +272,8 @@ class ControllerImpl : public Controller,
   std::set<std::string> pending_uploads_;
   std::map<std::string, DownloadParams::StartCallback> start_callbacks_;
   std::map<DownloadTaskType, TaskFinishedCallback> task_finished_callbacks_;
-  base::CancelableClosure cancel_downloads_callback_;
-  base::CancelableClosure cancel_uploads_callback_;
+  base::CancelableOnceClosure cancel_downloads_callback_;
+  base::CancelableOnceClosure cancel_uploads_callback_;
 
   // Only used to post tasks on the same thread.
   base::WeakPtrFactory<ControllerImpl> weak_ptr_factory_{this};

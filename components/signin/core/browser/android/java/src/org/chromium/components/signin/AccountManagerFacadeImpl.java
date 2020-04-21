@@ -145,7 +145,7 @@ public class AccountManagerFacadeImpl implements AccountManagerFacade {
     }
 
     /**
-     * Asynchronous version of {@link #tryGetGoogleAccountNames()}.
+     * Gets Google account names asynchronously.
      */
     @Override
     public void getGoogleAccountNames(final Callback<AccountManagerResult<List<String>>> callback) {

@@ -57,6 +57,7 @@ source_set("bookmarks") {
     "//base",
     "//base:i18n",
     "//components/bookmarks/browser",
+    "//components/bookmarks/common",
     "//components/bookmarks/managed",
     "//components/browser_sync",
     "//components/pref_registry",

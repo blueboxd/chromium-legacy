@@ -69,21 +69,15 @@ async function testAudioFlow(t, negotiationFunction) {
       const receiverReader = receiverStreams.readableStream.getReader();
       const receiverWriter = receiverStreams.writableStream.getWriter();
 
-      // The WebRTC stack may occassionally deliver duplicate frames on the
-      // receiver side, therefore start twice as many read attempts as sent
-      // frames to account for this.
-      const maxFramesToReceive = numFramesToSend * 20;
+      const maxFramesToReceive = numFramesToSend;
       let numVerifiedFrames = 0;
       for (let i = 0; i < maxFramesToReceive; i++) {
         receiverReader.read().then(t.step_func(result => {
           if (frameInfos[numVerifiedFrames] &&
               areFrameInfosEqual(result.value, frameInfos[numVerifiedFrames])) {
             numVerifiedFrames++;
-          } else if (frameInfos[numVerifiedFrames-1] &&
-                     areFrameInfosEqual(result.value, frameInfos[numVerifiedFrames-1])) {
-            // Duplicate frame. It can happen occassionally. Ignore.
           } else {
-            // Receiving unexpected (nonduplicate) frames is an indication that
+            // Receiving unexpected frames is an indication that
             // frames are not passed correctly between sender and receiver.
             assert_unreached("Incorrect frame received");
           }

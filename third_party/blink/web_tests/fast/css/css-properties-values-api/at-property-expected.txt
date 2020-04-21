@@ -1,28 +1,28 @@
 This is a testharness.js-based test.
-FAIL Accepts valid value for 'syntax' descriptor ["<color>"] Cannot read property 'style' of undefined
-FAIL Accepts valid value for 'syntax' descriptor ["<color> | none"] Cannot read property 'style' of undefined
-FAIL Accepts valid value for 'syntax' descriptor ["<color># | <image> | none"] Cannot read property 'style' of undefined
-FAIL Accepts valid value for 'syntax' descriptor ["foo | bar | baz"] Cannot read property 'style' of undefined
-FAIL Accepts valid value for 'syntax' descriptor ["*"] Cannot read property 'style' of undefined
-FAIL Accepts valid value for 'syntax' descriptor ["notasyntax"] Cannot read property 'style' of undefined
-FAIL Rejects invalid value for 'syntax' descriptor [red] Cannot read property 'style' of undefined
-FAIL Rejects invalid value for 'syntax' descriptor [rgb(255, 0, 0)] Cannot read property 'style' of undefined
-FAIL Rejects invalid value for 'syntax' descriptor [<color>] Cannot read property 'style' of undefined
-FAIL Rejects invalid value for 'syntax' descriptor [foo | bar] Cannot read property 'style' of undefined
-FAIL Accepts valid value for 'initial-value' descriptor [10px] Cannot read property 'style' of undefined
-FAIL Accepts valid value for 'initial-value' descriptor [rgb(1, 2, 3)] Cannot read property 'style' of undefined
-FAIL Accepts valid value for 'initial-value' descriptor [red] Cannot read property 'style' of undefined
-FAIL Accepts valid value for 'initial-value' descriptor [foo] Cannot read property 'style' of undefined
-FAIL Accepts valid value for 'initial-value' descriptor [if(){}] Cannot read property 'style' of undefined
-FAIL Accepts valid value for 'initial-value' descriptor [var(--x)] Cannot read property 'style' of undefined
-FAIL Accepts valid value for 'inherits' descriptor [true] Cannot read property 'style' of undefined
-FAIL Accepts valid value for 'inherits' descriptor [false] Cannot read property 'style' of undefined
-FAIL Rejects invalid value for 'inherits' descriptor [none] Cannot read property 'style' of undefined
-FAIL Rejects invalid value for 'inherits' descriptor [0] Cannot read property 'style' of undefined
-FAIL Rejects invalid value for 'inherits' descriptor [1] Cannot read property 'style' of undefined
-FAIL Rejects invalid value for 'inherits' descriptor ["true"] Cannot read property 'style' of undefined
-FAIL Rejects invalid value for 'inherits' descriptor ["false"] Cannot read property 'style' of undefined
-FAIL Rejects invalid value for 'inherits' descriptor [calc(0)] Cannot read property 'style' of undefined
+FAIL Attribute 'syntax' returns expected value for ["<color>"] Cannot read property 'syntax' of undefined
+FAIL Attribute 'syntax' returns expected value for ["<color> | none"] Cannot read property 'syntax' of undefined
+FAIL Attribute 'syntax' returns expected value for ["<color># | <image> | none"] Cannot read property 'syntax' of undefined
+FAIL Attribute 'syntax' returns expected value for ["foo | bar | baz"] Cannot read property 'syntax' of undefined
+FAIL Attribute 'syntax' returns expected value for ["*"] Cannot read property 'syntax' of undefined
+FAIL Attribute 'syntax' returns expected value for ["notasyntax"] Cannot read property 'syntax' of undefined
+FAIL Attribute 'syntax' returns expected value for [red] Cannot read property 'syntax' of undefined
+FAIL Attribute 'syntax' returns expected value for [rgb(255, 0, 0)] Cannot read property 'syntax' of undefined
+FAIL Attribute 'syntax' returns expected value for [<color>] Cannot read property 'syntax' of undefined
+FAIL Attribute 'syntax' returns expected value for [foo | bar] Cannot read property 'syntax' of undefined
+FAIL Attribute 'initial-value' returns expected value for [10px] Cannot read property 'initialValue' of undefined
+FAIL Attribute 'initial-value' returns expected value for [rgb(1, 2, 3)] Cannot read property 'initialValue' of undefined
+FAIL Attribute 'initial-value' returns expected value for [red] Cannot read property 'initialValue' of undefined
+FAIL Attribute 'initial-value' returns expected value for [foo] Cannot read property 'initialValue' of undefined
+FAIL Attribute 'initial-value' returns expected value for [if(){}] Cannot read property 'initialValue' of undefined
+FAIL Attribute 'initial-value' returns expected value for [var(--x)] Cannot read property 'initialValue' of undefined
+FAIL Attribute 'inherits' returns expected value for [true] Cannot read property 'inherits' of undefined
+FAIL Attribute 'inherits' returns expected value for [false] Cannot read property 'inherits' of undefined
+FAIL Attribute 'inherits' returns expected value for [none] Cannot read property 'inherits' of undefined
+FAIL Attribute 'inherits' returns expected value for [0] Cannot read property 'inherits' of undefined
+FAIL Attribute 'inherits' returns expected value for [1] Cannot read property 'inherits' of undefined
+FAIL Attribute 'inherits' returns expected value for ["true"] Cannot read property 'inherits' of undefined
+FAIL Attribute 'inherits' returns expected value for ["false"] Cannot read property 'inherits' of undefined
+FAIL Attribute 'inherits' returns expected value for [calc(0)] Cannot read property 'inherits' of undefined
 PASS Invalid property name does not parse [foo]
 PASS Invalid property name does not parse [-foo]
 FAIL Rule applied [*, if(){}, false] assert_equals: expected "if(){}" but got ""

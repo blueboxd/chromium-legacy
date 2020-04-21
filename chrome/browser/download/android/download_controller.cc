@@ -24,6 +24,7 @@
 #include "chrome/browser/download/android/dangerous_download_infobar_delegate.h"
 #include "chrome/browser/download/android/download_manager_service.h"
 #include "chrome/browser/download/android/download_utils.h"
+#include "chrome/browser/download/android/mixed_content_download_infobar_delegate.h"
 #include "chrome/browser/download/download_offline_content_provider.h"
 #include "chrome/browser/download/download_offline_content_provider_factory.h"
 #include "chrome/browser/download/download_stats.h"
@@ -366,10 +367,10 @@ bool DownloadController::HasFileAccessPermission() {
 }
 
 void DownloadController::OnDownloadStarted(DownloadItem* download_item) {
-  // For dangerous item, we need to show the dangerous infobar before the
-  // download can start.
+  // For dangerous or mixed-content downloads, we need to show the dangerous
+  // infobar before the download can start.
   JNIEnv* env = base::android::AttachCurrentThread();
-  if (!download_item->IsDangerous())
+  if (!download_item->IsDangerous() && !download_item->IsMixedContent())
     Java_DownloadController_onDownloadStarted(env);
 
   // Register for updates to the DownloadItem.
@@ -398,6 +399,14 @@ void DownloadController::OnDownloadUpdated(DownloadItem* item) {
     // Dont't show notification for a dangerous download, as user can resume
     // the download after browser crash through notification.
     OnDangerousDownload(item);
+    return;
+  }
+
+  if (item->IsMixedContent() && (item->GetState() != DownloadItem::CANCELLED)) {
+    // Don't show a notification for a mixed content download, either.
+    // Note: Mixed content is less scary than a Dangerous download, so check for
+    // danger first.
+    OnMixedContentDownload(item);
     return;
   }
 
@@ -451,6 +460,24 @@ void DownloadController::OnDangerousDownload(DownloadItem* item) {
   }
 
   DangerousDownloadInfoBarDelegate::Create(
+      InfoBarService::FromWebContents(web_contents), item);
+}
+
+void DownloadController::OnMixedContentDownload(DownloadItem* item) {
+  WebContents* web_contents = content::DownloadItemUtils::GetWebContents(item);
+  if (!web_contents) {
+    auto download_manager_getter = std::make_unique<DownloadManagerGetter>(
+        BrowserContext::GetDownloadManager(
+            content::DownloadItemUtils::GetBrowserContext(item)));
+    base::PostTask(
+        FROM_HERE, {BrowserThread::UI},
+        base::BindOnce(&RemoveDownloadItem, std::move(download_manager_getter),
+                       item->GetGuid()));
+    item->RemoveObserver(this);
+    return;
+  }
+
+  MixedContentDownloadInfoBarDelegate::Create(
       InfoBarService::FromWebContents(web_contents), item);
 }
 

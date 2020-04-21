@@ -7,11 +7,12 @@
 
 #include "base/macros.h"
 #include "chrome/browser/installable/installed_webapp_provider.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 
 class InstalledWebappBridge {
  public:
-  static InstalledWebappProvider::RuleList
-  GetInstalledWebappNotificationPermissions();
+  static InstalledWebappProvider::RuleList GetInstalledWebappPermissions(
+      ContentSettingsType content_type);
 
   static void SetProviderInstance(InstalledWebappProvider* provider);
 

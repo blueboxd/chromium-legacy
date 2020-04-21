@@ -68,15 +68,6 @@
 
       如果將這項政策設為 False 或未設定，系統將不會回報這項資訊。
       如果設為 True，系統會回報裝置背光的資訊。</translation>
-<translation id="1076271193420500757">你可以透過這項政策指定哪些變化版本可套用至受企業管理的 <ph name="PRODUCT_OS_NAME" />裝置。
-
-      變化版本可以透過選擇性啟用或停用現有功能的方式，在不推出新版本的情況下提供對 <ph name="PRODUCT_OS_NAME" />的修改項目。
-
-      如果將這項政策設為 <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (值為 0) 或未設定，使用者可以將所有變化版本套用到 <ph name="PRODUCT_OS_NAME" />。
-
-      如果設為 <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (值為 1)，使用者只能將修正重大安全性或穩定性問題的變化版本套用到 <ph name="PRODUCT_OS_NAME" />。
-
-      如果設為 <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (值為 2)，使用者無法在登入畫面上將任何變化版本套用到瀏覽器。請注意，這個模式可能會讓 <ph name="PRODUCT_OS_NAME" />開發人員無法及時提供重大安全性修正項目，因此不建議使用。</translation>
 <translation id="1079801999187584280">禁止使用開發人員工具</translation>
 <translation id="1087437665304381368">這項政策只能控管 <ph name="PRODUCT_OS_NAME" />開發人員模式。如要禁止他人存取 Android 開發人員選項，則必須設定 <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" /> 政策。</translation>
 <translation id="1087707496788636333">Chrome Enterprise 政策清單的網址已變更！請將你的書籤更新為 <ph name="POLICY_DOCUMENTATION_URL" />。</translation>
@@ -1769,7 +1760,6 @@
       如果未設定這項政策，凡是必須透過憑證透明化作業公開，但並未依憑證透明化政策確實公開的憑證，都會被視為不受信任的憑證。</translation>
 <translation id="3765260570442823273">閒置登出時間警告訊息</translation>
 <translation id="377044054160169374">強制干預濫用行為</translation>
-<translation id="3780102107513139202">僅啟用與重大修正項目相關的變化版本</translation>
 <translation id="3780152581321609624">Kerberos SPN 包含非標準通訊埠</translation>
 <translation id="3780319008680229708">如果這項政策設為 True，工具列或溢位選單就一定會顯示 Cast 工具列圖示，而且使用者無法移除這個圖示。
 
@@ -4078,15 +4068,6 @@
 <translation id="7311458740754205918">如果將這項政策設為 true 或未設定這項政策，系統可能會根據使用者的瀏覽記錄、興趣或位置在新分頁顯示內容建議。
 
       如果將這項政策設為 false，新分頁就不會顯示系統自動產生的內容建議。</translation>
-<translation id="7323572763274343342">設定這項政策後，你可以指定哪些變化版本可套用至 <ph name="PRODUCT_NAME" />。
-
-      變化版本可以透過選擇性啟用或停用現有功能的方式，在不推出新版瀏覽器的情況下提供對 <ph name="PRODUCT_NAME" /> 的修改項目。
-
-      如果將這項政策設為 <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (值為 0) 或不予設定，使用者可以將所有變化版本套用到瀏覽器。
-
-      如果設為 <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (值為 1)，使用者只能將修正重大安全性或穩定性問題的變化版本套用到 <ph name="PRODUCT_NAME" />。
-
-      如果設為 <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (值為 2)，使用者無法將任何變化版本套用到瀏覽器。請注意，這個模式可能會讓 <ph name="PRODUCT_NAME" /> 開發人員無法及時提供重大安全性修正項目，因此不建議使用。</translation>
 <translation id="7323896582714668701"><ph name="PRODUCT_NAME" /> 額外命令列參數</translation>
 <translation id="7326394567531622570">與 Wipe (值 2) 類似，但會嘗試保留登入憑證，因此使用者不必重新登入。</translation>
 <translation id="7329968046053403405">指定支援 <ph name="HTTP_NEGOTIATE" /> 驗證模式 (例如 Kerberos 驗證) 的 Android 驗證應用程式所提供的帳戶類型。驗證應用程式的供應商應提供這項資訊。詳情請參閱 https://goo.gl/hajyfN。

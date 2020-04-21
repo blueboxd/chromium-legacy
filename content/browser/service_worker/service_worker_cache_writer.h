@@ -16,6 +16,7 @@
 #include "content/common/content_export.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace content {
 
@@ -44,10 +45,10 @@ class CONTENT_EXPORT ServiceWorkerCacheWriter {
   // will be written to storage.
   class WriteObserver {
    public:
-    // Called before response info is written to storage.
+    // Called before response headers are written to storage.
     // Returns net::OK if success. Other values are treated as errors.
-    virtual int WillWriteInfo(
-        scoped_refptr<HttpResponseInfoIOBuffer> response_info) = 0;
+    virtual int WillWriteResponseHead(
+        const network::mojom::URLResponseHead& response_head) = 0;
 
     // Called before response data is written to storage.
     // Return value is used by cache writer to decide what to do next. A net

@@ -41,6 +41,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
@@ -58,6 +59,7 @@ import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
 import org.chromium.chrome.browser.page_info.ChromePageInfoControllerDelegate;
 import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TrustedCdn;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
@@ -76,6 +78,7 @@ import org.chromium.ui.base.Clipboard;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
+import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
 import org.chromium.ui.util.ColorUtils;
@@ -604,6 +607,7 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
                 PageInfoController.show(activity, webContents, getContentPublisher(),
                         PageInfoController.OpenedFromSource.TOOLBAR,
                         new ChromePageInfoControllerDelegate(activity, webContents,
+                                activity::getModalDialogManager,
                                 /*offlinePageLoadUrlDelegate=*/
                                 new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(currentTab)));
             });
@@ -766,7 +770,10 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
 
         @Override
         public void initializeControls(WindowDelegate windowDelegate, WindowAndroid windowAndroid,
-                ActivityTabProvider provider, IncognitoStateProvider incognitoStateProvider) {}
+                ActivityTabProvider activityTabProvider,
+                Supplier<ModalDialogManager> modalDialogManager,
+                Supplier<ShareDelegate> shareDelegateSupplier,
+                IncognitoStateProvider incognitoStateProvider) {}
 
         @Override
         public void updateStatusIcon() {

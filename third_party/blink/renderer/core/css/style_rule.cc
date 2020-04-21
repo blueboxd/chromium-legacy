@@ -333,6 +333,18 @@ MutableCSSPropertyValueSet& StyleRuleProperty::MutableProperties() {
   return *To<MutableCSSPropertyValueSet>(properties_.Get());
 }
 
+const CSSValue* StyleRuleProperty::GetSyntax() const {
+  return properties_->GetPropertyCSSValue(CSSPropertyID::kSyntax);
+}
+
+const CSSValue* StyleRuleProperty::Inherits() const {
+  return properties_->GetPropertyCSSValue(CSSPropertyID::kInherits);
+}
+
+const CSSValue* StyleRuleProperty::GetInitialValue() const {
+  return properties_->GetPropertyCSSValue(CSSPropertyID::kInitialValue);
+}
+
 void StyleRuleProperty::TraceAfterDispatch(blink::Visitor* visitor) const {
   visitor->Trace(properties_);
   StyleRuleBase::TraceAfterDispatch(visitor);

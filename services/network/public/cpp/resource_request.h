@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/unguessable_token.h"
-#include "net/base/network_isolation_key.h"
+#include "net/base/isolation_info.h"
 #include "net/base/request_priority.h"
 #include "net/cookies/site_for_cookies.h"
 #include "net/http/http_request_headers.h"
@@ -42,12 +42,9 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
     TrustedParams();
     ~TrustedParams();
 
-    bool operator==(const TrustedParams& other) const;
+    bool EqualsForTesting(const TrustedParams& trusted_params) const;
 
-    net::NetworkIsolationKey network_isolation_key;
-    mojom::UpdateNetworkIsolationKeyOnRedirect
-        update_network_isolation_key_on_redirect =
-            network::mojom::UpdateNetworkIsolationKeyOnRedirect::kDoNotUpdate;
+    net::IsolationInfo isolation_info;
     bool disable_secure_dns = false;
     bool has_user_activation = false;
   };

@@ -353,14 +353,11 @@ base::TimeTicks TimeTicksFromXEvent(const XEvent& xev) {
     case ButtonPress:
     case ButtonRelease:
       return TimeTicksFromXEventTime(xev.xbutton.time);
-      break;
     case MotionNotify:
       return TimeTicksFromXEventTime(xev.xmotion.time);
-      break;
     case EnterNotify:
     case LeaveNotify:
       return TimeTicksFromXEventTime(xev.xcrossing.time);
-      break;
     case GenericEvent: {
       double start, end;
       double touch_timestamp;
@@ -371,11 +368,9 @@ base::TimeTicks TimeTicksFromXEvent(const XEvent& xev) {
                      xev, ui::DeviceDataManagerX11::DT_TOUCH_RAW_TIMESTAMP,
                      &touch_timestamp)) {
         return ui::EventTimeStampFromSeconds(touch_timestamp);
-      } else {
-        XIDeviceEvent* xide = static_cast<XIDeviceEvent*>(xev.xcookie.data);
-        return TimeTicksFromXEventTime(xide->time);
       }
-      break;
+      XIDeviceEvent* xide = static_cast<XIDeviceEvent*>(xev.xcookie.data);
+      return TimeTicksFromXEventTime(xide->time);
     }
   }
   NOTREACHED();
@@ -529,7 +524,6 @@ int EventFlagsFromXEvent(const XEvent& xev) {
                  GetEventFlagsFromXState(xievent->mods.effective) |
                  GetEventFlagsFromXState(
                      XModifierStateWatcher::GetInstance()->state());
-          break;
         case XI_ButtonPress:
         case XI_ButtonRelease: {
           const bool touch =

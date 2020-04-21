@@ -50,6 +50,12 @@ void TestNavigationListener::RunUntilNavigationStateMatches(
   }
 }
 
+void TestNavigationListener::RunUntilLoaded() {
+  fuchsia::web::NavigationState state;
+  state.set_is_main_document_loaded(true);
+  RunUntilNavigationStateMatches(state);
+}
+
 void TestNavigationListener::RunUntilUrlEquals(const GURL& expected_url) {
   fuchsia::web::NavigationState state;
   state.set_url(expected_url.spec());

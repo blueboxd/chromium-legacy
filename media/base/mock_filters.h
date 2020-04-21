@@ -13,6 +13,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "media/base/audio_decoder.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/audio_parameters.h"
@@ -522,6 +523,11 @@ class MockCdmContext : public CdmContext {
 
   MOCK_METHOD0(GetDecryptor, Decryptor*());
   MOCK_METHOD0(RequiresMediaFoundationRenderer, bool());
+
+#if defined(OS_WIN)
+  MOCK_METHOD1(GetMediaFoundationCdmProxy,
+               bool(GetMediaFoundationCdmProxyCB get_mf_cdm_proxy_cb));
+#endif
 
   int GetCdmId() const override;
 

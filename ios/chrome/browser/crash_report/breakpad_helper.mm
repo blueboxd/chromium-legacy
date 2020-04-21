@@ -20,6 +20,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
+#include "components/crash/core/common/breakpad_running_ios.h"
 #include "ios/chrome/browser/chrome_paths.h"
 #import "ios/chrome/browser/crash_report/crash_report_user_application_state.h"
 #import "ios/chrome/browser/crash_report/main_thread_freeze_detector.h"
@@ -67,9 +68,6 @@ NSString* const kIncognitoTabCount = @"OTRTabs";
 NSString* const kRegularTabCount = @"regTabs";
 NSString* const kDestroyingAndRebuildingIncognitoBrowserState =
     @"destroyingAndRebuildingOTR";
-
-// Whether the crash reporter is enabled.
-bool g_crash_reporter_enabled = false;
 
 void DeleteAllReportsInDirectory(base::FilePath directory) {
   base::FileEnumerator enumerator(directory, false,
@@ -126,11 +124,11 @@ void UploadResultHandler(NSString* report_id, NSError* error) {
 }  // namespace
 
 void Start(const std::string& channel_name) {
-  DCHECK(!g_crash_reporter_enabled);
+  DCHECK(!crash_reporter::IsBreakpadRunning());
   [[BreakpadController sharedInstance] start:YES];
   [[MainThreadFreezeDetector sharedInstance] start];
   logging::SetLogMessageHandler(&FatalMessageHandler);
-  g_crash_reporter_enabled = true;
+  crash_reporter::SetBreakpadRunning(true);
   // Register channel information.
   if (channel_name.length()) {
     AddReportParameter(@"channel", base::SysUTF8ToNSString(channel_name), true);
@@ -151,10 +149,10 @@ void SetEnabled(bool enabled) {
   // It is necessary to always call |MainThreadFreezeDetector setEnabled| as
   // the function will update its preference based on finch.
   [[MainThreadFreezeDetector sharedInstance] setEnabled:enabled];
-  if (g_crash_reporter_enabled == enabled)
+  if (crash_reporter::IsBreakpadRunning() == enabled)
     return;
-  g_crash_reporter_enabled = enabled;
-  if (g_crash_reporter_enabled) {
+  crash_reporter::SetBreakpadRunning(enabled);
+  if (enabled) {
     [[BreakpadController sharedInstance] start:NO];
   } else {
     [[BreakpadController sharedInstance] stop];
@@ -162,7 +160,7 @@ void SetEnabled(bool enabled) {
 }
 
 void SetBreakpadUploadingEnabled(bool enabled) {
-  if (!g_crash_reporter_enabled)
+  if (!crash_reporter::IsBreakpadRunning())
     return;
   if (enabled) {
     static dispatch_once_t once_token;
@@ -211,7 +209,7 @@ void CleanupCrashReports() {
 }
 
 void AddReportParameter(NSString* key, NSString* value, bool async) {
-  if (!g_crash_reporter_enabled)
+  if (!crash_reporter::IsBreakpadRunning())
     return;
   if (async) {
     [[BreakpadController sharedInstance] addUploadParameter:value forKey:key];
@@ -246,7 +244,7 @@ bool HasReportToUpload() {
 }
 
 void RemoveReportParameter(NSString* key) {
-  if (!g_crash_reporter_enabled)
+  if (!crash_reporter::IsBreakpadRunning())
     return;
   [[BreakpadController sharedInstance] removeUploadParameterForKey:key];
 }
@@ -389,7 +387,7 @@ void MediaStreamPlaybackDidStop() {
 // process uptime at crash and process uptime at restore is smaller than X
 // seconds and find insta-crashers.
 void WillStartCrashRestoration() {
-  if (!g_crash_reporter_enabled)
+  if (!crash_reporter::IsBreakpadRunning())
     return;
   // We use gettimeofday and BREAKPAD_PROCESS_START_TIME to compute the
   // uptime to stay as close as possible as how breakpad computes the
@@ -420,7 +418,7 @@ void WillStartCrashRestoration() {
 }
 
 void StartUploadingReportsInRecoveryMode() {
-  if (!g_crash_reporter_enabled)
+  if (!crash_reporter::IsBreakpadRunning())
     return;
   [[BreakpadController sharedInstance] stop];
   [[BreakpadController sharedInstance] setParametersToAddAtUploadTime:@{
@@ -432,7 +430,7 @@ void StartUploadingReportsInRecoveryMode() {
 }
 
 void RestoreDefaultConfiguration() {
-  if (!g_crash_reporter_enabled)
+  if (!crash_reporter::IsBreakpadRunning())
     return;
   [[BreakpadController sharedInstance] stop];
   [[BreakpadController sharedInstance] resetConfiguration];

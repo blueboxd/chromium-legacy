@@ -91,7 +91,7 @@ CancelCallback FakeDriveUploader::UploadNewFile(
     const std::string& content_type,
     const drive::UploadNewFileOptions& options,
     UploadCompletionCallback callback,
-    const ProgressCallback& progress_callback) {
+    ProgressCallback progress_callback) {
   DCHECK(!callback.is_null());
   const std::string kFileContent = "test content";
 
@@ -117,7 +117,7 @@ CancelCallback FakeDriveUploader::UploadExistingFile(
     const std::string& content_type,
     const drive::UploadExistingFileOptions& options,
     UploadCompletionCallback callback,
-    const ProgressCallback& progress_callback) {
+    ProgressCallback progress_callback) {
   DCHECK(!callback.is_null());
   return fake_drive_service_->GetFileResource(
       resource_id, base::BindOnce(&DidGetFileResourceForUploadExisting,
@@ -129,7 +129,7 @@ CancelCallback FakeDriveUploader::ResumeUploadFile(
     const base::FilePath& local_file_path,
     const std::string& content_type,
     drive::UploadCompletionCallback callback,
-    const ProgressCallback& progress_callback) {
+    ProgressCallback progress_callback) {
   // At the moment, sync file system doesn't support resuming of the uploading.
   // So this method shouldn't be reached.
   NOTREACHED();

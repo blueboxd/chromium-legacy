@@ -114,7 +114,6 @@ std::string DesktopMediaID::ToString() const {
       break;
     case TYPE_WEB_CONTENTS:
       return web_contents_id.ToString();
-      break;
   }
   DCHECK(!prefix.empty());
 

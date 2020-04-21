@@ -287,11 +287,8 @@ size_t TriggerThrottler::GetDailyQuotaForTrigger(
       if (TryFindQuotaForTrigger(trigger_type, trigger_type_and_quota_list_,
                                  &quota_from_finch)) {
         return quota_from_finch;
-      } else {
-        return kAdSamplerTriggerDefaultQuota;
       }
-
-      break;
+      return kAdSamplerTriggerDefaultQuota;
     case TriggerType::SUSPICIOUS_SITE:
       // Suspicious Sites are disabled unless they are configured through Finch.
       if (TryFindQuotaForTrigger(trigger_type, trigger_type_and_quota_list_,

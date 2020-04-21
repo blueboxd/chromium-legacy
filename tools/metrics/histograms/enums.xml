@@ -19978,6 +19978,7 @@ Called by update_document_policy_enum.py.-->
   <int value="690" label="CrostiniArcAdbSideloadingAllowed"/>
   <int value="691" label="FloatingAccessibilityMenuEnabled"/>
   <int value="692" label="PrintingMaxSheetsAllowed"/>
+  <int value="693" label="OnFileAttachedEnterpriseConnector"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -53966,7 +53967,8 @@ Called by update_net_trust_anchors.py.-->
   <int value="0" label="User opted out of the preview"/>
   <int value="1" label="User opened the page info dialog"/>
   <int value="2" label="The Lite Page badge was displayed at commit"/>
-  <int value="3" label="The Lite Page badge was displayed at page load finish"/>
+  <int value="3"
+      label="OBSOLETE - The Lite Page badge was displayed at page load finish"/>
 </enum>
 
 <enum name="PreviewsUserOptedOut">

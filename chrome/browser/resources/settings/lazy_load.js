@@ -36,7 +36,7 @@ import 'chrome://resources/cr_components/certificate_manager/certificate_manager
 // </if>
 
 // Sections
-import './a11y_page/a11y_page.m.js';
+import './a11y_page/a11y_page.js';
 import './downloads_page/downloads_page.js';
 import './languages_page/languages_page.m.js';
 import './printing_page/printing_page.js';

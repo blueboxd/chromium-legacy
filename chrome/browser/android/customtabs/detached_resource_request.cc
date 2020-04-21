@@ -92,9 +92,10 @@ DetachedResourceRequest::DetachedResourceRequest(
   // verification, it should be ok to use it to compute the network isolation
   // key.
   resource_request->trusted_params = network::ResourceRequest::TrustedParams();
-  resource_request->trusted_params->network_isolation_key =
-      net::NetworkIsolationKey(site_for_cookies_origin,
-                               site_for_cookies_origin);
+  resource_request->trusted_params->isolation_info = net::IsolationInfo::Create(
+      net::IsolationInfo::RedirectMode::kUpdateNothing, site_for_cookies_origin,
+      site_for_cookies_origin,
+      net::SiteForCookies::FromOrigin(site_for_cookies_origin));
 
   resource_request->resource_type =
       static_cast<int>(blink::mojom::ResourceType::kSubResource);

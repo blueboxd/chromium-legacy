@@ -8,8 +8,6 @@
 # with sections copied from:
 # //build/scripts/slave/slave_utils.py
 
-from __future__ import print_function
-
 import json
 import optparse
 import os
@@ -19,9 +17,14 @@ import sys
 import tempfile
 import time
 import urllib
+import logging
 
 from core import results_dashboard
 
+logging.basicConfig(
+    level=logging.INFO,
+    format='(%(levelname)s) %(asctime)s pid=%(process)d'
+    '  %(module)s.%(funcName)s:%(lineno)d  %(message)s')
 
 RESULTS_LINK_PATH = '/report?masters=%s&bots=%s&tests=%s&rev=%s'
 
@@ -43,7 +46,7 @@ def _GetDashboardJson(options):
   reference_build = 'reference' in options.name
   stripped_test_name = options.name.replace('.reference', '')
   results = {}
-  print('Opening results file %s' % options.results_file)
+  logging.info('Opening results file %s' % options.results_file)
   with open(options.results_file) as f:
     results = json.load(f)
   dashboard_json = {}
@@ -95,8 +98,8 @@ def _GetDashboardHistogramData(options):
         output_dir=output_dir,
         max_bytes=max_bytes)
     end_time = time.time()
-    print('Duration of adding diagnostics for %s: %d seconds' %
-          (stripped_test_name, end_time - begin_time))
+    logging.info('Duration of adding diagnostics for %s: %d seconds' %
+                 (stripped_test_name, end_time - begin_time))
 
     # Read all batch files from output_dir.
     dashboard_jsons = []
@@ -142,7 +145,7 @@ def main(args):
     parser.error('configuration_name and results_url are required.')
 
   if not options.perf_dashboard_machine_group:
-    print('Error: Invalid perf dashboard machine group')
+    logging.error('Invalid perf dashboard machine group')
     return 1
 
   if not options.send_as_histograms:
@@ -182,7 +185,7 @@ def main(args):
         return 1
   else:
     # The upload didn't fail since there was no data to upload.
-    print('Warning: No perf dashboard JSON was produced.')
+    logging.warning('No perf dashboard JSON was produced.')
   return 0
 
 if __name__ == '__main__':

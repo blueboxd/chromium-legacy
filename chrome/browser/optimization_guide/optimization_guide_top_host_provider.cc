@@ -102,8 +102,8 @@ OptimizationGuideTopHostProvider::CreateIfAllowed(
     content::BrowserContext* browser_context) {
   if (IsUserPermittedToFetchFromRemoteOptimizationGuide(
           Profile::FromBrowserContext(browser_context))) {
-    return std::make_unique<OptimizationGuideTopHostProvider>(
-        browser_context, base::DefaultClock::GetInstance());
+    return base::WrapUnique(new OptimizationGuideTopHostProvider(
+        browser_context, base::DefaultClock::GetInstance()));
   }
   return nullptr;
 }

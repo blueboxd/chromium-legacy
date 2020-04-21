@@ -512,10 +512,10 @@ void NGInlineLayoutStateStack::BoxData::UpdateFragmentEdges(
 }
 
 LayoutUnit NGInlineLayoutStateStack::ComputeInlinePositions(
-    NGLineBoxFragmentBuilder::ChildList* line_box) {
+    NGLineBoxFragmentBuilder::ChildList* line_box,
+    LayoutUnit position) {
   // At this point, children are in the visual order, and they have their
   // origins at (0, 0). Accumulate inline offset from left to right.
-  LayoutUnit position;
   for (NGLineBoxFragmentBuilder::Child& child : *line_box) {
     child.margin_line_left = child.rect.offset.inline_offset;
     child.rect.offset.inline_offset += position;

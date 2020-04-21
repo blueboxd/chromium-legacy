@@ -1,5 +1,4 @@
 per-file ChromeApplication.java=agrieve@chromium.org
-per-file ChromeCachedFlags.java=hnakashima@chromium.org
 per-file ShortcutHelper.java=dominickn@chromium.org
 
 # This is For simple changes of adding/removing features.  For more structural

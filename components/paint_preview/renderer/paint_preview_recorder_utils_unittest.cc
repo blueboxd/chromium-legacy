@@ -27,7 +27,7 @@
 
 namespace paint_preview {
 
-TEST(PaintPreviewServiceUtilsTest, TestParseGlyphs) {
+TEST(PaintPreviewRecorderUtilsTest, TestParseGlyphs) {
   auto typeface = SkTypeface::MakeDefault();
   SkFont font(typeface);
   std::string unichars_1 = "abc";
@@ -64,7 +64,7 @@ TEST(PaintPreviewServiceUtilsTest, TestParseGlyphs) {
       (*usage_map)[typeface->uniqueID()]->IsSet(typeface->unicharToGlyph('g')));
 }
 
-TEST(PaintPreviewServiceUtilsTest, TestSerializeAsSkPicture) {
+TEST(PaintPreviewRecorderUtilsTest, TestSerializeAsSkPicture) {
   PaintPreviewTracker tracker(base::UnguessableToken::Create(),
                               base::UnguessableToken::Create(), true);
 
@@ -94,7 +94,7 @@ TEST(PaintPreviewServiceUtilsTest, TestSerializeAsSkPicture) {
 
   auto record = recorder.finishRecordingAsPicture();
   EXPECT_TRUE(SerializeAsSkPicture(record, &tracker, dimensions,
-                                   std::move(write_file)));
+                                   std::move(write_file), 0));
   base::File read_file(file_path, base::File::FLAG_OPEN |
                                       base::File::FLAG_READ |
                                       base::File::FLAG_EXCLUSIVE_READ);
@@ -115,7 +115,30 @@ TEST(PaintPreviewServiceUtilsTest, TestSerializeAsSkPicture) {
   EXPECT_TRUE(ctx.empty());
 }
 
-TEST(PaintPreviewServiceUtilsTest, TestBuildAndSerializeProto) {
+TEST(PaintPreviewRecorderUtilsTest, TestSerializeAsSkPictureFail) {
+  PaintPreviewTracker tracker(base::UnguessableToken::Create(),
+                              base::UnguessableToken::Create(), true);
+
+  gfx::Rect dimensions(100, 100);
+  cc::PaintRecorder recorder;
+  cc::PaintCanvas* canvas =
+      recorder.beginRecording(dimensions.width(), dimensions.width());
+  cc::PaintFlags flags;
+  canvas->drawRect(SkRect::MakeWH(dimensions.width(), dimensions.height()),
+                   flags);
+
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::FilePath file_path = temp_dir.GetPath().AppendASCII("test_file");
+  base::File write_file(
+      file_path, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
+
+  auto record = recorder.finishRecordingAsPicture();
+  EXPECT_FALSE(SerializeAsSkPicture(record, &tracker, dimensions,
+                                    std::move(write_file), 1));
+}
+
+TEST(PaintPreviewRecorderUtilsTest, TestBuildResponse) {
   auto token = base::UnguessableToken::Create();
   auto embedding_token = base::UnguessableToken::Create();
   PaintPreviewTracker tracker(token, embedding_token, true);

@@ -65,10 +65,8 @@ QualifiedName GetCorrespondingARIAAttribute(AOMRelationProperty property) {
   switch (property) {
     case AOMRelationProperty::kActiveDescendant:
       return html_names::kAriaActivedescendantAttr;
-      break;
     case AOMRelationProperty::kErrorMessage:
       return html_names::kAriaErrormessageAttr;
-      break;
   }
 
   NOTREACHED();
@@ -79,24 +77,18 @@ QualifiedName GetCorrespondingARIAAttribute(AOMRelationListProperty property) {
   switch (property) {
     case AOMRelationListProperty::kDescribedBy:
       return html_names::kAriaDescribedbyAttr;
-      break;
     case AOMRelationListProperty::kDetails:
       return html_names::kAriaDetailsAttr;
-      break;
     case AOMRelationListProperty::kControls:
       return html_names::kAriaControlsAttr;
-      break;
     case AOMRelationListProperty::kFlowTo:
       return html_names::kAriaFlowtoAttr;
-      break;
     case AOMRelationListProperty::kLabeledBy:
       // Note that there are two allowed spellings of this attribute.
       // Callers should check both.
       return html_names::kAriaLabelledbyAttr;
-      break;
     case AOMRelationListProperty::kOwns:
       return html_names::kAriaOwnsAttr;
-      break;
   }
 
   NOTREACHED();
@@ -107,37 +99,26 @@ QualifiedName GetCorrespondingARIAAttribute(AOMBooleanProperty property) {
   switch (property) {
     case AOMBooleanProperty::kAtomic:
       return html_names::kAriaAtomicAttr;
-      break;
     case AOMBooleanProperty::kBusy:
       return html_names::kAriaBusyAttr;
-      break;
     case AOMBooleanProperty::kDisabled:
       return html_names::kAriaDisabledAttr;
-      break;
     case AOMBooleanProperty::kExpanded:
       return html_names::kAriaExpandedAttr;
-      break;
     case AOMBooleanProperty::kHidden:
       return html_names::kAriaHiddenAttr;
-      break;
     case AOMBooleanProperty::kModal:
       return html_names::kAriaModalAttr;
-      break;
     case AOMBooleanProperty::kMultiline:
       return html_names::kAriaMultilineAttr;
-      break;
     case AOMBooleanProperty::kMultiselectable:
       return html_names::kAriaMultiselectableAttr;
-      break;
     case AOMBooleanProperty::kReadOnly:
       return html_names::kAriaReadonlyAttr;
-      break;
     case AOMBooleanProperty::kRequired:
       return html_names::kAriaRequiredAttr;
-      break;
     case AOMBooleanProperty::kSelected:
       return html_names::kAriaSelectedAttr;
-      break;
   }
 
   NOTREACHED();
@@ -149,13 +130,10 @@ QualifiedName GetCorrespondingARIAAttribute(AOMFloatProperty property) {
   switch (property) {
     case AOMFloatProperty::kValueMax:
       return html_names::kAriaValuemaxAttr;
-      break;
     case AOMFloatProperty::kValueMin:
       return html_names::kAriaValueminAttr;
-      break;
     case AOMFloatProperty::kValueNow:
       return html_names::kAriaValuenowAttr;
-      break;
   }
 
   NOTREACHED();
@@ -166,22 +144,16 @@ QualifiedName GetCorrespondingARIAAttribute(AOMUIntProperty property) {
   switch (property) {
     case AOMUIntProperty::kColIndex:
       return html_names::kAriaColindexAttr;
-      break;
     case AOMUIntProperty::kColSpan:
       return html_names::kAriaColspanAttr;
-      break;
     case AOMUIntProperty::kLevel:
       return html_names::kAriaLevelAttr;
-      break;
     case AOMUIntProperty::kPosInSet:
       return html_names::kAriaPosinsetAttr;
-      break;
     case AOMUIntProperty::kRowIndex:
       return html_names::kAriaRowindexAttr;
-      break;
     case AOMUIntProperty::kRowSpan:
       return html_names::kAriaRowspanAttr;
-      break;
   }
 
   NOTREACHED();
@@ -192,13 +164,10 @@ QualifiedName GetCorrespondingARIAAttribute(AOMIntProperty property) {
   switch (property) {
     case AOMIntProperty::kColCount:
       return html_names::kAriaColcountAttr;
-      break;
     case AOMIntProperty::kRowCount:
       return html_names::kAriaRowcountAttr;
-      break;
     case AOMIntProperty::kSetSize:
       return html_names::kAriaSetsizeAttr;
-      break;
   }
 
   NOTREACHED();

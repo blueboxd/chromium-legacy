@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/bind.h"
 #include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "chrome/common/string_matching/fuzzy_tokenized_string_match.h"
@@ -87,34 +86,8 @@ IndexImpl::IndexImpl() = default;
 
 IndexImpl::~IndexImpl() = default;
 
-void IndexImpl::BindReceiver(mojo::PendingReceiver<mojom::Index> receiver) {
-  receivers_.Add(this, std::move(receiver));
-}
-
-void IndexImpl::GetSize(GetSizeCallback callback) {
-  const uint64_t size = GetSize();
-  std::move(callback).Run(size);
-}
-
 uint64_t IndexImpl::GetSize() {
   return data_.size();
-}
-
-void IndexImpl::AddOrUpdate(std::vector<mojom::DataPtr> data,
-                            AddOrUpdateCallback callback) {
-  std::vector<local_search_service::Data> data_in;
-  for (const auto& d : data) {
-    if (d->id.empty())
-      receivers_.ReportBadMessage("Empty ID in updated data");
-
-    local_search_service::Data d_in;
-    d_in.id = d->id;
-    d_in.search_tags = d->search_tags;
-    data_in.push_back(d_in);
-  }
-
-  AddOrUpdate(data_in);
-  std::move(callback).Run();
 }
 
 void IndexImpl::AddOrUpdate(
@@ -127,16 +100,6 @@ void IndexImpl::AddOrUpdate(
     data_[id] = std::vector<std::unique_ptr<TokenizedString>>();
     TokenizeSearchTags(item.search_tags, &data_[id]);
   }
-}
-
-void IndexImpl::Delete(const std::vector<std::string>& ids,
-                       DeleteCallback callback) {
-  for (const auto& id : ids) {
-    if (id.empty())
-      receivers_.ReportBadMessage("Empty ID in deleted data");
-  }
-  const uint32_t num_deleted = Delete(ids);
-  std::move(callback).Run(num_deleted);
 }
 
 uint32_t IndexImpl::Delete(const std::vector<std::string>& ids) {
@@ -154,53 +117,6 @@ uint32_t IndexImpl::Delete(const std::vector<std::string>& ids) {
   return num_deleted;
 }
 
-void IndexImpl::Find(const base::string16& query,
-                     int32_t max_latency_in_ms,
-                     int32_t max_results,
-                     FindCallback callback) {
-  std::vector<local_search_service::Result> results;
-  // TODO(jiameng): |max_latency| isn't supported yet. We're
-  // temporarily ignoring it before the next cl removes the async call.
-  const auto response =
-      Find(query, max_results < 0 ? 0u : max_results, &results);
-
-  mojom::ResponseStatus mresponse = mojom::ResponseStatus::UNKNOWN_ERROR;
-  switch (response) {
-    case local_search_service::ResponseStatus::kEmptyQuery:
-      mresponse = mojom::ResponseStatus::EMPTY_QUERY;
-      break;
-    case local_search_service::ResponseStatus::kEmptyIndex:
-      mresponse = mojom::ResponseStatus::EMPTY_INDEX;
-      break;
-    case local_search_service::ResponseStatus::kSuccess:
-      mresponse = mojom::ResponseStatus::SUCCESS;
-      break;
-    default:
-      break;
-  }
-
-  if (mresponse != mojom::ResponseStatus::SUCCESS) {
-    std::move(callback).Run(mresponse, base::nullopt);
-    return;
-  }
-
-  std::vector<mojom::ResultPtr> mresults;
-  for (const auto& r : results) {
-    mojom::ResultPtr mr = mojom::Result::New();
-    mr->id = r.id;
-    mr->score = r.score;
-    std::vector<mojom::RangePtr> mhits;
-    for (const auto& hit : r.hits) {
-      mojom::RangePtr range = mojom::Range::New(hit.start, hit.end);
-      mhits.push_back(std::move(range));
-    }
-    mr->hits = std::move(mhits);
-    mresults.push_back(std::move(mr));
-  }
-
-  std::move(callback).Run(mojom::ResponseStatus::SUCCESS, std::move(mresults));
-}
-
 local_search_service::ResponseStatus IndexImpl::Find(
     const base::string16& query,
     uint32_t max_results,
@@ -216,19 +132,6 @@ local_search_service::ResponseStatus IndexImpl::Find(
 
   *results = GetSearchResults(query, max_results);
   return local_search_service::ResponseStatus::kSuccess;
-}
-
-void IndexImpl::SetSearchParams(mojom::SearchParamsPtr search_params,
-                                SetSearchParamsCallback callback) {
-  local_search_service::SearchParams search_params_in;
-  search_params_in.relevance_threshold = search_params->relevance_threshold;
-  search_params_in.partial_match_penalty_rate =
-      search_params->partial_match_penalty_rate;
-  search_params_in.use_prefix_only = search_params->use_prefix_only;
-  search_params_in.use_weighted_ratio = search_params->use_weighted_ratio;
-  search_params_in.use_edit_distance = search_params->use_edit_distance;
-  SetSearchParams(search_params_in);
-  std::move(callback).Run();
 }
 
 void IndexImpl::SetSearchParams(

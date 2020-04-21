@@ -463,12 +463,11 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
         int contextMenuMode = getContextMenuMode(mActivityType);
         Supplier<ShareDelegate> shareDelegateSupplier =
                 mActivity == null ? null : mActivity.getShareDelegateSupplier();
-        if (EphemeralTabCoordinator.isSupported() && mActivity != null
-                && mActivity.getBottomSheetController() != null) {
+        if (EphemeralTabCoordinator.isSupported() && mActivity != null) {
             mEphemeralTabCoordinator = new EphemeralTabCoordinator(mActivity,
                     mActivity.getWindowAndroid(), mActivity.getWindow().getDecorView(),
                     mActivity.getActivityTabProvider(), mActivity::getCurrentTabCreator,
-                    mActivity.getBottomSheetController(), () -> false);
+                    mActivity::getBottomSheetController, () -> false);
         }
         return new ChromeContextMenuPopulator(
                 new TabContextMenuItemDelegate(tab, () -> mEphemeralTabCoordinator),

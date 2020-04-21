@@ -1870,15 +1870,14 @@ void LocalFrame::DidResume() {
 
 void LocalFrame::PauseContext() {
   GetDocument()->Fetcher()->SetDefersLoading(true);
-  GetDocument()->ToExecutionContext()->SetLifecycleState(lifecycle_state_);
+  DomWindow()->SetLifecycleState(lifecycle_state_);
   Loader().SetDefersLoading(true);
   GetFrameScheduler()->SetPaused(true);
 }
 
 void LocalFrame::UnpauseContext() {
   GetDocument()->Fetcher()->SetDefersLoading(false);
-  GetDocument()->ToExecutionContext()->SetLifecycleState(
-      mojom::FrameLifecycleState::kRunning);
+  DomWindow()->SetLifecycleState(mojom::FrameLifecycleState::kRunning);
   Loader().SetDefersLoading(false);
   GetFrameScheduler()->SetPaused(false);
 }

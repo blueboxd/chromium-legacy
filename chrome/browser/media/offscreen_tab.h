@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/profiles/independent_otr_profile_manager.h"
+#include "chrome/browser/profiles/profile_observer.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/gfx/geometry/size.h"
@@ -43,7 +43,8 @@ class BrowserContext;
 //   3. Automatically, when the associated profile is destroyed.
 //
 // This class operates exclusively on the UI thread and so is not thread-safe.
-class OffscreenTab : protected content::WebContentsDelegate,
+class OffscreenTab : public ProfileObserver,
+                     protected content::WebContentsDelegate,
                      protected content::WebContentsObserver {
  public:
   class Owner {
@@ -134,9 +135,10 @@ class OffscreenTab : protected content::WebContentsDelegate,
   // when the capturer count returns to zero.
   void DieIfContentCaptureEnded();
 
-  // Called if the profile that our OTR profile is based on is being destroyed
-  // and |this| therefore needs to be destroyed also.
-  void DieIfOriginalProfileDestroyed(Profile* profile);
+  // Called if OTR profile is being destroyed and |this| therefore needs to be
+  // destroyed also.
+  // ProfileObserver:
+  void OnProfileWillBeDestroyed(Profile* profile) override;
 
   Owner* const owner_;  // Outlives this class.
 
@@ -146,8 +148,7 @@ class OffscreenTab : protected content::WebContentsDelegate,
 
   // A non-shared off-the-record profile based on the profile of the extension
   // background page.
-  const std::unique_ptr<IndependentOTRProfileManager::OTRProfileRegistration>
-      otr_profile_registration_;
+  Profile* otr_profile_;
 
   // The WebContents containing the off-screen tab's page.
   std::unique_ptr<content::WebContents> offscreen_tab_web_contents_;

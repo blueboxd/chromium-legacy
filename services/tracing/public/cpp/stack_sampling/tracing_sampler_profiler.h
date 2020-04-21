@@ -100,7 +100,6 @@ class COMPONENT_EXPORT(TRACING_CPP) TracingSamplerProfiler {
     InterningIndex<TypeList<uintptr_t>, SizeList<1024>> interned_modules_{};
     bool reset_incremental_state_ = true;
     uint32_t last_incremental_state_reset_id_ = 0;
-    int32_t last_emitted_process_priority_ = -1;
     base::TimeTicks last_timestamp_;
     const bool should_enable_filtering_;
     base::RepeatingClosure sample_callback_for_testing_;

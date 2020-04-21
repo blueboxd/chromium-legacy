@@ -213,8 +213,9 @@ void PreviewsLitePageRedirectURLLoader::CreateRedirectInformation(
 
   if (modified_resource_request_.trusted_params.has_value()) {
     auto params = modified_resource_request_.trusted_params.value();
-    params.network_isolation_key = net::NetworkIsolationKey(
-        url::Origin::Create(redirect_url), url::Origin::Create(redirect_url));
+    params.isolation_info =
+        modified_resource_request_.trusted_params->isolation_info
+            .CreateForRedirect(url::Origin::Create(redirect_url));
     modified_resource_request_.trusted_params = params;
   }
 }

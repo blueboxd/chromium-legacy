@@ -18,7 +18,6 @@
 #include "content/public/common/content_features.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "device/vr/public/cpp/session_mode.h"
-#include "device/vr/vr_device.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/transform_util.h"
 

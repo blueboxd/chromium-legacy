@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_CONVERSIONS_CONVERSION_MANAGER_IMPL_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -67,6 +68,10 @@ class CONTENT_EXPORT ConversionManagerImpl : public ConversionManager {
   void HandleConversion(const StorableConversion& conversion) override;
   void HandleSentReport(int64_t conversion_id) override;
   const ConversionPolicy& GetConversionPolicy() const override;
+  void ClearData(base::Time delete_begin,
+                 base::Time delete_end,
+                 base::RepeatingCallback<bool(const url::Origin&)> filter,
+                 base::OnceClosure done) override;
 
  private:
   ConversionManagerImpl(

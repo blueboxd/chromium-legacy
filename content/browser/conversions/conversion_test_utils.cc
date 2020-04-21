@@ -4,6 +4,8 @@
 
 #include "content/browser/conversions/conversion_test_utils.h"
 
+#include <limits.h>
+
 #include <tuple>
 
 #include "url/gurl.h"
@@ -21,8 +23,8 @@ const int64_t kExpiryTime = 30;
 
 }  // namespace
 
-int EmptyStorageDelegate::GetMaxConversionsPerImpression() const {
-  return 1;
+int PassThroughStorageDelegate::GetMaxConversionsPerImpression() const {
+  return INT_MAX;
 }
 
 void TestConversionManager::HandleImpression(
@@ -42,6 +44,12 @@ void TestConversionManager::HandleSentReport(int64_t conversion_id) {
 const ConversionPolicy& TestConversionManager::GetConversionPolicy() const {
   return policy_;
 }
+
+void TestConversionManager::ClearData(
+    base::Time delete_begin,
+    base::Time delete_end,
+    base::RepeatingCallback<bool(const url::Origin&)> filter,
+    base::OnceClosure done) {}
 
 void TestConversionManager::Reset() {
   num_impressions_ = 0u;

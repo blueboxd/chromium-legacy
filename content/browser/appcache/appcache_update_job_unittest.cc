@@ -4233,23 +4233,11 @@ class AppCacheUpdateJobTest : public testing::Test,
       EXPECT_TRUE(group_->newest_complete_cache() == nullptr);
     }
 
-    // Verify token_expires times on cache, group, entry, namespaces.
-    {
-      EXPECT_EQ(group_->token_expires(), expect_token_expires_);
-      if (expect_group_has_cache_) {
-        AppCache* cache = group_->newest_complete_cache();
-        ASSERT_TRUE(cache);
-        EXPECT_EQ(cache->token_expires(), expect_token_expires_);
-        for (const auto& pair : cache->entries()) {
-          EXPECT_EQ(pair.second.token_expires(), expect_token_expires_);
-        }
-        for (auto& fallback : cache->fallback_namespaces_) {
-          EXPECT_EQ(fallback.token_expires, expect_token_expires_);
-        }
-        for (auto& intercept : cache->intercept_namespaces_) {
-          EXPECT_EQ(intercept.token_expires, expect_token_expires_);
-        }
-      }
+    // Verify token_expires times on cache.
+    if (expect_group_has_cache_) {
+      AppCache* cache = group_->newest_complete_cache();
+      ASSERT_TRUE(cache);
+      EXPECT_EQ(cache->token_expires(), expect_token_expires_);
     }
 
     // Check expected events.

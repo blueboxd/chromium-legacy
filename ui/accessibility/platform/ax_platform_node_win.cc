@@ -4472,9 +4472,6 @@ STDMETHODIMP AXPlatformNodeWin::InternalQueryInterface(
 
 HRESULT AXPlatformNodeWin::GetTextAttributeValue(TEXTATTRIBUTEID attribute_id,
                                                  VARIANT* result) {
-  // This should only be called on nodes actually in the tree
-  DCHECK(!GetDelegate()->IsChildOfLeaf());
-
   switch (attribute_id) {
     case UIA_BackgroundColorAttributeId:
       V_VT(result) = VT_I4;

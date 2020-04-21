@@ -39,10 +39,12 @@ bool IsAllowedImpl(Profile* profile) {
       profile->IsOffTheRecord() ||
       chromeos::ProfileHelper::IsEphemeralUserProfile(profile) ||
       chromeos::ProfileHelper::IsLockScreenAppProfile(profile)) {
+    VLOG(1) << "Profile is not allowed to run crostini.";
     return false;
   }
   if (!crostini::CrostiniManager::IsDevKvmPresent()) {
     // Hardware is physically incapable, no matter what the user wants.
+    VLOG(1) << "Cannot run crostini because /dev/kvm is not present.";
     return false;
   }
 
@@ -54,10 +56,16 @@ bool IsAllowedImpl(Profile* profile) {
     // The host kernel is on an experimental version. In future updates this
     // device may not have VM support, so we allow enabling VMs, but guard them
     // on a chrome://flags switch (enable-experimental-kernel-vm-support).
+    VLOG(1) << "Cannot run crostini on experimental kernel without "
+            << "--enable-experimental-kernel-vm-support.";
     return false;
   }
 
-  return base::FeatureList::IsEnabled(features::kCrostini);
+  if (!base::FeatureList::IsEnabled(features::kCrostini)) {
+    VLOG(1) << "Crostini is not enabled in feature list.";
+    return false;
+  }
+  return true;
 }
 
 bool IsArcManagedAdbSideloadingSupported(bool is_device_enterprise_managed,
@@ -118,13 +126,17 @@ bool CrostiniFeatures::IsAllowed(Profile* profile) {
   const user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
   if (!IsUnaffiliatedCrostiniAllowedByPolicy() && !user->IsAffiliated()) {
+    VLOG(1) << "Policy blocks unaffiliated user from running Crostini.";
     return false;
   }
   if (!profile->GetPrefs()->GetBoolean(
           crostini::prefs::kUserCrostiniAllowedByPolicy)) {
+    VLOG(1) << "kUserCrostiniAllowedByPolicy preference is false.";
     return false;
   }
   if (!virtual_machines::AreVirtualMachinesAllowedByPolicy()) {
+    VLOG(1)
+        << "Crostini cannot run as virtual machines are not allowed by policy.";
     return false;
   }
   return IsAllowedImpl(profile);
@@ -132,6 +144,7 @@ bool CrostiniFeatures::IsAllowed(Profile* profile) {
 
 bool CrostiniFeatures::IsUIAllowed(Profile* profile, bool check_policy) {
   if (!chromeos::ProfileHelper::IsPrimaryProfile(profile)) {
+    VLOG(1) << "Crostini UI is not allowed on non-primary profiles.";
     return false;
   }
   if (check_policy) {

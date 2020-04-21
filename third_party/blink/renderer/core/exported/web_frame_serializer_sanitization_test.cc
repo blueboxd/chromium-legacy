@@ -94,21 +94,23 @@ class WebFrameSerializerSanitizationTest : public testing::Test {
     test::RunPendingTasks();
   }
 
-  ShadowRoot* SetShadowContent(TreeScope& scope,
-                               const char* host,
-                               ShadowRootType shadow_type,
-                               const char* shadow_content,
-                               bool delegates_focus = false) {
+  ShadowRoot* SetShadowContent(
+      TreeScope& scope,
+      const char* host,
+      ShadowRootType shadow_type,
+      const char* shadow_content,
+      FocusDelegation focus_delegation = FocusDelegation::kNone) {
     Element* host_element = scope.getElementById(AtomicString::FromUTF8(host));
     ShadowRoot* shadow_root;
     if (shadow_type == ShadowRootType::V0) {
-      DCHECK(!delegates_focus);
+      DCHECK_EQ(focus_delegation, FocusDelegation::kNone);
       shadow_root = &host_element->CreateV0ShadowRootForTesting();
     } else {
-      shadow_root =
-          &host_element->AttachShadowRootInternal(shadow_type, delegates_focus);
+      shadow_root = &host_element->AttachShadowRootInternal(shadow_type,
+                                                            focus_delegation);
     }
-    shadow_root->SetDelegatesFocus(delegates_focus);
+    shadow_root->SetDelegatesFocus(focus_delegation ==
+                                   FocusDelegation::kDelegateFocus);
     shadow_root->setInnerHTML(String::FromUTF8(shadow_content),
                               ASSERT_NO_EXCEPTION);
     scope.GetDocument().View()->UpdateAllLifecyclePhases(
@@ -337,9 +339,9 @@ TEST_F(WebFrameSerializerSanitizationTest, ShadowDOM) {
   LoadFrame("http://www.test.com", "shadow_dom.html", "text/html");
   Document* document = MainFrameImpl()->GetFrame()->GetDocument();
   SetShadowContent(*document, "h1", ShadowRootType::V0, "V0 shadow");
-  ShadowRoot* shadowRoot =
-      SetShadowContent(*document, "h2", ShadowRootType::kOpen,
-                       "Parent shadow\n<p id=\"h3\">Foo</p>", true);
+  ShadowRoot* shadowRoot = SetShadowContent(
+      *document, "h2", ShadowRootType::kOpen,
+      "Parent shadow\n<p id=\"h3\">Foo</p>", FocusDelegation::kDelegateFocus);
   SetShadowContent(*shadowRoot, "h3", ShadowRootType::kClosed, "Nested shadow");
   String mhtml = WebFrameSerializerTestHelper::GenerateMHTML(MainFrameImpl());
 

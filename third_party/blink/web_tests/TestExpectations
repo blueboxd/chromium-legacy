@@ -5560,7 +5560,7 @@ crbug.com/927769 fast/webgl/OffscreenCanvas-webgl-preserveDrawingBuffer.html [ S
 # Flay probably due to outstanding work for FeaturePolicyForSandbox.
 
 # Sheriff 2019-02-12
-crbug.com/931349 [ Mac ] media/video-played-ranges-1.html [ Failure Timeout Pass ]
+crbug.com/1072768 media/video-played-ranges-1.html [ Failure Timeout Pass ]
 crbug.com/931533 [ Debug ] virtual/audio-service/media/video-played-ranges-1.html [ Failure Timeout Pass ]
 
 # Sheriff 2019-02-13
@@ -6722,9 +6722,3 @@ crbug.com/1042694 virtual/form-controls-refresh-disabled/fast/forms/form-control
 
 # QUIC reordered versions to prefer IETF QUIC
 crbug.com/1070747 external/wpt/webrtc-quic/* [ Skip ]
-
-# Temporarily disabling security tests to check in security changes.
-crbug.com/962686 http/tests/devtools/security/origin-view-then-interstitial.js [ Pass Failure ]
-crbug.com/962686 http/tests/devtools/security/security-details-updated-with-security-state.js [ Pass Failure ]
-crbug.com/962686 http/tests/devtools/security/origin-view-noncryptographic-secure-origin.js [ Pass Failure ]
-crbug.com/962686 http/tests/devtools/security/origin-view-ct-compliance.js [ Pass Failure ]

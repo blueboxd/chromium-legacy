@@ -152,11 +152,9 @@ class CONTENT_EXPORT AppCacheDatabase {
   // the database is functioning.
   bool UpdateLastAccessTime(int64_t group_id, base::Time last_access_time);
   bool LazyUpdateLastAccessTime(int64_t group_id, base::Time last_access_time);
-  bool UpdateEvictionTimesAndTokenExpires(
-      int64_t group_id,
-      base::Time last_full_update_check_time,
-      base::Time first_evictable_error_time,
-      base::Time token_expires);
+  bool UpdateEvictionTimes(int64_t group_id,
+                           base::Time last_full_update_check_time,
+                           base::Time first_evictable_error_time);
   bool CommitLazyLastAccessTimes();  // The destructor calls this too.
 
   bool FindCache(int64_t cache_id, CacheRecord* record);

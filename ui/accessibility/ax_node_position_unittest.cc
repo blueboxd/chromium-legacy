@@ -7687,6 +7687,155 @@ TEST_F(AXPositionTest, EmptyObjectReplacedByCharacterTextNavigation) {
   EXPECT_EQ(1, text_position->text_offset());
 }
 
+TEST_F(AXPositionTest, TextNavigationWithCollapsedCombobox) {
+  // On Windows, a <select> element is replaced by a combobox that contains
+  // an AXMenuListPopup parent of AXMenuListOptions. When the select dropdown is
+  // collapsed, the subtree of that combobox needs to be hidden and, when
+  // expanded, it must be accessible in the tree. This test ensures we can't
+  // navigate into the options of a collapsed menu list popup.
+  g_ax_embedded_object_behavior = AXEmbeddedObjectBehavior::kExposeCharacter;
+
+  // ++1 kRootWebArea
+  // ++++2 kStaticText "Hi"
+  // ++++++3 kInlineTextBox "Hi"
+  // ++++4 kPopUpButton
+  // ++++++5 kMenuListPopup
+  // ++++++++6 kMenuListOption "Option"
+  // ++++7 kStaticText "3.14"
+  // ++++++8 kInlineTextBox "3.14"
+  AXNodeData root_1;
+  AXNodeData static_text_2;
+  AXNodeData inline_box_3;
+  AXNodeData popup_button_4;
+  AXNodeData menu_list_popup_5;
+  AXNodeData menu_list_option_6;
+  AXNodeData static_text_7;
+  AXNodeData inline_box_8;
+
+  root_1.id = 1;
+  static_text_2.id = 2;
+  inline_box_3.id = 3;
+  popup_button_4.id = 4;
+  menu_list_popup_5.id = 5;
+  menu_list_option_6.id = 6;
+  static_text_7.id = 7;
+  inline_box_8.id = 8;
+
+  root_1.role = ax::mojom::Role::kRootWebArea;
+  root_1.child_ids = {static_text_2.id, popup_button_4.id, static_text_7.id};
+
+  static_text_2.role = ax::mojom::Role::kStaticText;
+  static_text_2.SetName("Hi");
+  static_text_2.child_ids = {inline_box_3.id};
+
+  inline_box_3.role = ax::mojom::Role::kInlineTextBox;
+  inline_box_3.SetName("Hi");
+  inline_box_3.AddIntListAttribute(ax::mojom::IntListAttribute::kWordStarts,
+                                   {0});
+  inline_box_3.AddIntListAttribute(ax::mojom::IntListAttribute::kWordEnds, {2});
+
+  popup_button_4.role = ax::mojom::Role::kPopUpButton;
+  popup_button_4.child_ids = {menu_list_popup_5.id};
+  popup_button_4.AddState(ax::mojom::State::kCollapsed);
+
+  menu_list_popup_5.role = ax::mojom::Role::kMenuListPopup;
+  menu_list_popup_5.child_ids = {menu_list_option_6.id};
+
+  menu_list_option_6.role = ax::mojom::Role::kMenuListOption;
+  menu_list_option_6.SetName("Option");
+
+  static_text_7.role = ax::mojom::Role::kStaticText;
+  static_text_7.SetName("3.14");
+  static_text_7.child_ids = {inline_box_8.id};
+
+  inline_box_8.role = ax::mojom::Role::kInlineTextBox;
+  inline_box_8.SetName("3.14");
+  inline_box_8.AddIntListAttribute(ax::mojom::IntListAttribute::kWordStarts,
+                                   {0});
+  inline_box_8.AddIntListAttribute(ax::mojom::IntListAttribute::kWordEnds, {4});
+
+  SetTree(CreateAXTree({root_1, static_text_2, inline_box_3, popup_button_4,
+                        menu_list_popup_5, menu_list_option_6, static_text_7,
+                        inline_box_8}));
+
+  // Collapsed - Forward navigation.
+  TestPositionType position = AXNodePosition::CreateTextPosition(
+      GetTreeID(), inline_box_3.id, 0, ax::mojom::TextAffinity::kDownstream);
+  ASSERT_NE(nullptr, position);
+
+  position = position->CreateNextParagraphStartPosition(
+      AXBoundaryBehavior::StopAtLastAnchorBoundary);
+  ASSERT_NE(nullptr, position);
+  EXPECT_EQ(popup_button_4.id, position->anchor_id());
+  EXPECT_EQ(0, position->text_offset());
+
+  position = position->CreateNextParagraphStartPosition(
+      AXBoundaryBehavior::StopAtLastAnchorBoundary);
+  ASSERT_NE(nullptr, position);
+  EXPECT_EQ(inline_box_8.id, position->anchor_id());
+  EXPECT_EQ(0, position->text_offset());
+
+  // Collapsed - Backward navigation.
+  position = AXNodePosition::CreateTextPosition(
+      GetTreeID(), inline_box_8.id, 4, ax::mojom::TextAffinity::kDownstream);
+  ASSERT_NE(nullptr, position);
+
+  position = position->CreatePreviousParagraphEndPosition(
+      AXBoundaryBehavior::StopAtLastAnchorBoundary);
+  ASSERT_NE(nullptr, position);
+  EXPECT_EQ(popup_button_4.id, position->anchor_id());
+  // The content of this popup button should be replaced with the empty object
+  // character of length 1.
+  EXPECT_EQ(1, position->text_offset());
+
+  position = position->CreatePreviousParagraphEndPosition(
+      AXBoundaryBehavior::StopAtLastAnchorBoundary);
+  ASSERT_NE(nullptr, position);
+  EXPECT_EQ(inline_box_3.id, position->anchor_id());
+  EXPECT_EQ(2, position->text_offset());
+
+  // Expand the combobox for the rest of the test.
+  popup_button_4.RemoveState(ax::mojom::State::kCollapsed);
+  popup_button_4.AddState(ax::mojom::State::kExpanded);
+  AXTreeUpdate update;
+  update.nodes = {popup_button_4};
+  ASSERT_TRUE(GetTree()->Unserialize(update));
+
+  // Expanded - Forward navigation.
+  position = AXNodePosition::CreateTextPosition(
+      GetTreeID(), inline_box_3.id, 0, ax::mojom::TextAffinity::kDownstream);
+  ASSERT_NE(nullptr, position);
+
+  position = position->CreateNextParagraphStartPosition(
+      AXBoundaryBehavior::StopAtLastAnchorBoundary);
+  ASSERT_NE(nullptr, position);
+  EXPECT_EQ(menu_list_option_6.id, position->anchor_id());
+  EXPECT_EQ(0, position->text_offset());
+
+  position = position->CreateNextParagraphStartPosition(
+      AXBoundaryBehavior::StopAtLastAnchorBoundary);
+  ASSERT_NE(nullptr, position);
+  EXPECT_EQ(inline_box_8.id, position->anchor_id());
+  EXPECT_EQ(0, position->text_offset());
+
+  // Expanded- Backward navigation.
+  position = AXNodePosition::CreateTextPosition(
+      GetTreeID(), inline_box_8.id, 4, ax::mojom::TextAffinity::kDownstream);
+  ASSERT_NE(nullptr, position);
+
+  position = position->CreatePreviousParagraphEndPosition(
+      AXBoundaryBehavior::StopAtLastAnchorBoundary);
+  ASSERT_NE(nullptr, position);
+  EXPECT_EQ(menu_list_option_6.id, position->anchor_id());
+  EXPECT_EQ(1, position->text_offset());
+
+  position = position->CreatePreviousParagraphEndPosition(
+      AXBoundaryBehavior::StopAtLastAnchorBoundary);
+  ASSERT_NE(nullptr, position);
+  EXPECT_EQ(inline_box_3.id, position->anchor_id());
+  EXPECT_EQ(2, position->text_offset());
+}
+
 //
 // Parameterized tests.
 //

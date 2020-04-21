@@ -77,6 +77,10 @@ void TestingPrefStore::RemoveValue(const std::string& key, uint32_t flags) {
   }
 }
 
+void TestingPrefStore::RemoveValuesByPrefixSilently(const std::string& prefix) {
+  prefs_.ClearWithPrefix(prefix);
+}
+
 bool TestingPrefStore::ReadOnly() const {
   return read_only_;
 }

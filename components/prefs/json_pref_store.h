@@ -108,6 +108,9 @@ class COMPONENTS_PREFS_EXPORT JsonPrefStore
   // cleanup that shouldn't otherwise alert observers.
   void RemoveValueSilently(const std::string& key, uint32_t flags);
 
+  // Just like RemoveValue(), but removes all the prefs that start with
+  // |prefix|. Used for pref-initialization cleanup.
+  void RemoveValuesByPrefixSilently(const std::string& prefix) override;
   // Registers |on_next_successful_write_reply| to be called once, on the next
   // successful write event of |writer_|.
   // |on_next_successful_write_reply| will be called on the thread from which

@@ -31,9 +31,9 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_navigation_handle.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "net/base/isolation_info.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
-#include "net/base/network_isolation_key.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_util.h"
 #include "net/http/http_status_code.h"
@@ -166,10 +166,12 @@ class IsolatedPrerenderTabHelperTest : public ChromeRenderViewHostTestHarness {
     return tab_helper_->metrics().prefetch_total_redirect_count_;
   }
 
-  void VerifyNIK(const net::NetworkIsolationKey& key) {
-    EXPECT_FALSE(key.IsEmpty());
-    EXPECT_FALSE(key.IsTransient());
+  void VerifyIsolationInfo(const net::IsolationInfo& isolation_info) {
+    EXPECT_FALSE(isolation_info.IsEmpty());
+    EXPECT_TRUE(isolation_info.opaque_and_non_transient());
+    net::NetworkIsolationKey key = isolation_info.network_isolation_key();
     EXPECT_TRUE(key.IsFullyPopulated());
+    EXPECT_FALSE(key.IsTransient());
     EXPECT_TRUE(base::StartsWith(key.ToString(), "opaque non-transient ",
                                  base::CompareCase::SENSITIVE));
   }
@@ -189,7 +191,7 @@ class IsolatedPrerenderTabHelperTest : public ChromeRenderViewHostTestHarness {
               network::mojom::CredentialsMode::kOmit);
 
     EXPECT_TRUE(request->request.trusted_params.has_value());
-    VerifyNIK(request->request.trusted_params.value().network_isolation_key);
+    VerifyIsolationInfo(request->request.trusted_params->isolation_info);
 
     return request->request;
   }
@@ -744,9 +746,9 @@ TEST_F(IsolatedPrerenderTabHelperTest, SuccessCase) {
   network::mojom::URLResponseHeadPtr head = resp->TakeHead();
   EXPECT_TRUE(head->headers->HasHeaderValue("X-Testing", "Hello World"));
 
-  EXPECT_EQ(resp->network_isolation_key(),
-            request.trusted_params.value().network_isolation_key);
-  VerifyNIK(resp->network_isolation_key());
+  EXPECT_TRUE(resp->isolation_info().IsEqualForTesting(
+      request.trusted_params->isolation_info));
+  VerifyIsolationInfo(resp->isolation_info());
 
   EXPECT_EQ(prefetch_eligible_count(), 1U);
   EXPECT_EQ(prefetch_attempted_count(), 1U);

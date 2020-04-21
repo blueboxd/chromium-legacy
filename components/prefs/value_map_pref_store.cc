@@ -74,3 +74,8 @@ void ValueMapPrefStore::NotifyInitializationCompleted() {
   for (Observer& observer : observers_)
     observer.OnInitializationCompleted(true);
 }
+
+void ValueMapPrefStore::RemoveValuesByPrefixSilently(
+    const std::string& prefix) {
+  prefs_.ClearWithPrefix(prefix);
+}

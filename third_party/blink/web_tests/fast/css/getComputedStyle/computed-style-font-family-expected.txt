@@ -8,9 +8,9 @@ font-size-adjust: none;
 font-stretch: 100%;
 font-style: normal;
 font-variant: normal;
-font-variant-ligatures: normal;
 font-variant-caps: normal;
-font-variant-numeric: normal;
 font-variant-east-asian: normal;
+font-variant-ligatures: normal;
+font-variant-numeric: normal;
 font-weight: 400;
 

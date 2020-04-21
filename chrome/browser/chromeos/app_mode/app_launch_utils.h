@@ -7,6 +7,7 @@
 
 #include <string>
 
+class PrefService;
 class Profile;
 
 namespace chromeos {
@@ -15,7 +16,12 @@ namespace chromeos {
 // or exit on failure. This function will not show any launch UI
 // during the launch. Use StartupAppLauncher for finer control
 // over the app launch processes.
-void LaunchAppOrDie(Profile *profile, const std::string& app_id);
+void LaunchAppOrDie(Profile* profile, const std::string& app_id);
+
+// Removes obsolete preferences left out by previous user session;
+void ResetEphemeralKioskPreferences(PrefService* prefs);
+// Replace the list of preferences which are reset in tests.
+void SetEphemeralKioskPreferencesListForTesting(std::vector<std::string>*);
 
 }  // namespace chromeos
 

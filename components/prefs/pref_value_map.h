@@ -44,6 +44,9 @@ class COMPONENTS_PREFS_EXPORT PrefValueMap {
   // Clears the map.
   void Clear();
 
+  // Clear the preferences which start with |prefix|.
+  void ClearWithPrefix(const std::string& prefix);
+
   // Swaps the contents of two maps.
   void Swap(PrefValueMap* other);
 

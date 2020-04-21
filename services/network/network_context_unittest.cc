@@ -6271,14 +6271,7 @@ class NetworkContextSplitCacheTest : public NetworkContextTest {
       params->isolation_info = isolation_info;
     } else {
       request.trusted_params = ResourceRequest::TrustedParams();
-      request.trusted_params->network_isolation_key =
-          isolation_info.network_isolation_key();
-      request.trusted_params->update_network_isolation_key_on_redirect =
-          isolation_info.redirect_mode() ==
-                  net::IsolationInfo::RedirectMode::kUpdateTopFrame
-              ? mojom::UpdateNetworkIsolationKeyOnRedirect::
-                    kUpdateTopFrameAndFrameOrigin
-              : mojom::UpdateNetworkIsolationKeyOnRedirect::kUpdateFrameOrigin;
+      request.trusted_params->isolation_info = isolation_info;
       params->is_trusted = true;
     }
 

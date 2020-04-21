@@ -120,6 +120,12 @@ class CC_EXPORT FrameSequenceTrackerCollection {
   // Destroy the trackers that are ready to be terminated.
   void DestroyTrackers();
 
+  // Adds collected metrics data for |custom_sequence_id| to be picked up via
+  // TakeCustomTrackerResults() below.
+  void AddCustomTrackerResult(
+      int custom_sequence_id,
+      FrameSequenceMetrics::ThroughputData throughput_data);
+
   const bool is_single_threaded_;
   // The callsite can use the type to manipulate the tracker.
   base::flat_map<FrameSequenceTrackerType,

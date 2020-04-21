@@ -626,3 +626,44 @@ TEST_F(WebEngineIntegrationTest, SetBlockMediaLoading_SetBlockedAfterLoading) {
   cr_fuchsia::ExecuteJavaScript(frame_.get(), "bear.play()");
   navigation_listener_->RunUntilTitleEquals("playing");
 }
+
+TEST_F(WebEngineIntegrationTest, WebGLContextAbsentWithoutVulkanFeature) {
+  StartWebEngine();
+
+  fuchsia::web::CreateContextParams create_params = DefaultContextParams();
+  CreateContextAndFrame(std::move(create_params));
+
+  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
+      navigation_controller_.get(), fuchsia::web::LoadUrlParams(),
+      embedded_test_server_.GetURL("/webgl_presence.html").spec()));
+
+  navigation_listener_->RunUntilLoaded();
+
+  EXPECT_EQ(navigation_listener_->title(), "absent");
+}
+
+#if defined(ARCH_CPU_ARM_FAMILY)
+// TODO(crbug.com/1058247): Support Vulkan in tests on ARM64.
+#define MAYBE_VulkanWebEngineIntegrationTest \
+  DISABLED_VulkanWebEngineIntegrationTest
+#else
+#define MAYBE_VulkanWebEngineIntegrationTest VulkanWebEngineIntegrationTest
+#endif
+class MAYBE_VulkanWebEngineIntegrationTest : public WebEngineIntegrationTest {};
+
+TEST_F(MAYBE_VulkanWebEngineIntegrationTest,
+       WebGLContextPresentWithVulkanFeature) {
+  StartWebEngine();
+
+  fuchsia::web::CreateContextParams create_params = DefaultContextParams();
+  create_params.set_features(fuchsia::web::ContextFeatureFlags::VULKAN);
+  CreateContextAndFrame(std::move(create_params));
+
+  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
+      navigation_controller_.get(), fuchsia::web::LoadUrlParams(),
+      embedded_test_server_.GetURL("/webgl_presence.html").spec()));
+
+  navigation_listener_->RunUntilLoaded();
+
+  EXPECT_EQ(navigation_listener_->title(), "present");
+}

@@ -409,6 +409,11 @@ void PrefService::ClearPref(const std::string& path) {
   user_pref_store_->RemoveValue(path, GetWriteFlags(pref));
 }
 
+void PrefService::ClearPrefsWithPrefixSilently(const std::string& prefix) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  user_pref_store_->RemoveValuesByPrefixSilently(prefix);
+}
+
 void PrefService::ClearMutableValues() {
   user_pref_store_->ClearMutableValues();
 }

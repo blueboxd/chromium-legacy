@@ -1350,7 +1350,7 @@ class BBJSONGenerator(object):
   def get_internal_waterfalls(self):
     # Similar to get_builders_that_do_not_actually_exist above, but for
     # waterfalls defined in internal configs.
-    return ['chrome']
+    return ['chrome', 'chrome.pgo']
 
   def check_input_file_consistency(self, verbose=False):
     self.check_input_files_sorting(verbose)

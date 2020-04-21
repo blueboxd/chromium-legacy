@@ -22,7 +22,7 @@ class MockController : public Controller {
   ~MockController() override;
 
   // Controller implementation.
-  void Initialize(const base::Closure& callback) override;
+  void Initialize(base::OnceClosure callback) override;
   MOCK_METHOD0(GetState, Controller::State());
   MOCK_METHOD1(StartDownload, void(const DownloadParams&));
   MOCK_METHOD1(PauseDownload, void(const std::string&));
@@ -38,7 +38,7 @@ class MockController : public Controller {
   void TriggerInitCompleted();
 
  private:
-  base::Closure init_callback_;
+  base::OnceClosure init_callback_;
   DISALLOW_COPY_AND_ASSIGN(MockController);
 };
 

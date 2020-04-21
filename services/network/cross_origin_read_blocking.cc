@@ -511,9 +511,7 @@ SniffingResult CrossOriginReadBlocking::SniffForJSON(base::StringPiece data) {
       case kRightQuoteState:
         if (c == ':')
           return kYes;
-        else
-          return kNo;
-        break;
+        return kNo;
     }
   }
   return kMaybe;
@@ -892,18 +890,14 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
     case MimeType::kPlain:
       if (HasNoSniff(response))
         return kBlock;
-      else
-        return kNeedToSniffMore;
-      break;
+      return kNeedToSniffMore;
 
     case MimeType::kOthers:
       // Stylesheets shouldn't be sniffed for JSON parser breakers - see
       // https://crbug.com/809259.
       if (base::LowerCaseEqualsASCII(response.mime_type, "text/css"))
         return kAllow;
-      else
-        return kNeedToSniffMore;
-      break;
+      return kNeedToSniffMore;
 
     case MimeType::kInvalidMimeType:
     case MimeType::kNeverSniffed:  // Handled much earlier.
@@ -988,7 +982,6 @@ CrossOriginReadBlocking::ResponseAnalyzer::GetMimeTypeBucket(
     case MimeType::kNeverSniffed:
     case MimeType::kPlain:
       return kProtected;
-      break;
     case MimeType::kOthers:
       break;
     case MimeType::kInvalidMimeType:

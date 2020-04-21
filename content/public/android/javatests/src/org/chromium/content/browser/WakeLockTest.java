@@ -16,7 +16,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content_public.browser.test.ContentJUnit4ClassRunner;
-import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule;
@@ -62,14 +61,10 @@ public class WakeLockTest {
 
         getWakeLock("screen");
 
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mActivityTestRule.getActivity()
-                        .getActiveShell()
-                        .getContentView()
-                        .getKeepScreenOn();
-            }
-        });
+        CriteriaHelper.pollInstrumentationThread(()
+                                                         -> mActivityTestRule.getActivity()
+                                                                    .getActiveShell()
+                                                                    .getContentView()
+                                                                    .getKeepScreenOn());
     }
 }

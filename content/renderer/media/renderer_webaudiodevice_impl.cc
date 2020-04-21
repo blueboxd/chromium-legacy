@@ -61,15 +61,12 @@ int GetOutputBufferSize(const blink::WebAudioLatencyHint& latency_hint,
     case media::AudioLatency::LATENCY_INTERACTIVE:
       return media::AudioLatency::GetInteractiveBufferSize(
           hardware_params.frames_per_buffer());
-      break;
     case media::AudioLatency::LATENCY_RTC:
       return media::AudioLatency::GetRtcBufferSize(
           hardware_params.sample_rate(), hardware_params.frames_per_buffer());
-      break;
     case media::AudioLatency::LATENCY_PLAYBACK:
       return media::AudioLatency::GetHighLatencyBufferSize(
           hardware_params.sample_rate(), hardware_params.frames_per_buffer());
-      break;
     case media::AudioLatency::LATENCY_EXACT_MS:
       return media::AudioLatency::GetExactBufferSize(
           base::TimeDelta::FromSecondsD(latency_hint.Seconds()),
@@ -77,7 +74,6 @@ int GetOutputBufferSize(const blink::WebAudioLatencyHint& latency_hint,
           hardware_capabilities.min_frames_per_buffer,
           hardware_capabilities.max_frames_per_buffer,
           media::limits::kMaxWebAudioBufferSize);
-      break;
     default:
       NOTREACHED();
   }

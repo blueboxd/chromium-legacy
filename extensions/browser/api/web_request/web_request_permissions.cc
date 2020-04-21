@@ -109,7 +109,6 @@ PermissionsData::PageAccess CanExtensionAccessURLInternal(
   switch (host_permissions_check) {
     case WebRequestPermissions::DO_NOT_CHECK_HOST:
       return PermissionsData::PageAccess::kAllowed;
-      break;
     case WebRequestPermissions::REQUIRE_HOST_PERMISSION_FOR_URL: {
       PermissionsData::PageAccess access =
           GetHostAccessForURL(*extension, url, tab_id);
@@ -131,7 +130,6 @@ PermissionsData::PageAccess CanExtensionAccessURLInternal(
           access = PermissionsData::PageAccess::kAllowed;
       }
       return access;
-      break;
     }
     case WebRequestPermissions::REQUIRE_HOST_PERMISSION_FOR_URL_AND_INITIATOR: {
       PermissionsData::PageAccess request_access =
@@ -174,13 +172,11 @@ PermissionsData::PageAccess CanExtensionAccessURLInternal(
       // crbug.com/851722.
 
       return GetHostAccessForURL(*extension, initiator->GetURL(), tab_id);
-      break;
     }
     case WebRequestPermissions::REQUIRE_ALL_URLS:
       return extension->permissions_data()->HasEffectiveAccessToAllHosts()
                  ? PermissionsData::PageAccess::kAllowed
                  : PermissionsData::PageAccess::kDenied;
-      break;
   }
 
   NOTREACHED();

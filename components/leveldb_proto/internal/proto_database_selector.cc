@@ -235,15 +235,13 @@ void ProtoDatabaseSelector::OnGetSharedDBClient(
           std::move(callback).Run(Enums::InitStatus::kOK);
           OnInitDone(ProtoDatabaseInitState::kUniqueDbMissingSharedReturned);
           return;
-        } else {
-          // If the unique DB failed to open and the migration status is not
-          // attempted then we return an error, as we don't know if the unique
-          // DB contains any data.
-          std::move(callback).Run(Enums::InitStatus::kError);
-          OnInitDone(ProtoDatabaseInitState::kUniqueDbOpenFailed);
-          return;
         }
-        break;
+        // If the unique DB failed to open and the migration status is not
+        // attempted then we return an error, as we don't know if the unique
+        // DB contains any data.
+        std::move(callback).Run(Enums::InitStatus::kError);
+        OnInitDone(ProtoDatabaseInitState::kUniqueDbOpenFailed);
+        return;
       case SharedDBMetadataProto::MIGRATE_TO_SHARED_SUCCESSFUL:
       case SharedDBMetadataProto::MIGRATE_TO_SHARED_UNIQUE_TO_BE_DELETED:
         // If the unique DB failed to open, but the data is located in shared
@@ -255,7 +253,6 @@ void ProtoDatabaseSelector::OnGetSharedDBClient(
         std::move(callback).Run(Enums::InitStatus::kOK);
         OnInitDone(ProtoDatabaseInitState::kMigratedSharedDbOpened);
         return;
-        break;
       case SharedDBMetadataProto::MIGRATE_TO_UNIQUE_SUCCESSFUL:
       case SharedDBMetadataProto::MIGRATE_TO_UNIQUE_SHARED_TO_BE_DELETED:
         if (unique_db_status == Enums::kInvalidOperation) {

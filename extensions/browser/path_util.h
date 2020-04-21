@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_BROWSER_PATH_UTIL_H_
 #define EXTENSIONS_BROWSER_PATH_UTIL_H_
 
+#include "base/callback_forward.h"
 #include "base/files/file_path.h"
 
 namespace extensions {

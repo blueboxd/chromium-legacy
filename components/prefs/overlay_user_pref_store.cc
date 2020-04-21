@@ -159,6 +159,11 @@ void OverlayUserPrefStore::RemoveValue(const std::string& key, uint32_t flags) {
   ephemeral_user_pref_store_->RemoveValue(key, flags);
 }
 
+void OverlayUserPrefStore::RemoveValuesByPrefixSilently(
+    const std::string& prefix) {
+  NOTIMPLEMENTED();
+}
+
 bool OverlayUserPrefStore::ReadOnly() const {
   return false;
 }

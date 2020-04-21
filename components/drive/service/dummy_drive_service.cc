@@ -116,7 +116,7 @@ CancelCallback DummyDriveService::GetAboutResource(
 
 CancelCallback DummyDriveService::GetStartPageToken(
     const std::string& team_drive_id,
-    const google_apis::StartPageTokenCallback& callback) {
+    google_apis::StartPageTokenCallback callback) {
   return CancelCallback();
 }
 
@@ -134,7 +134,9 @@ CancelCallback DummyDriveService::DownloadFile(
     const std::string& resource_id,
     const DownloadActionCallback& download_action_callback,
     const GetContentCallback& get_content_callback,
-    const ProgressCallback& progress_callback) { return CancelCallback(); }
+    ProgressCallback progress_callback) {
+  return CancelCallback();
+}
 
 CancelCallback DummyDriveService::CopyResource(
     const std::string& resource_id,
@@ -201,7 +203,7 @@ CancelCallback DummyDriveService::ResumeUpload(
     const std::string& content_type,
     const base::FilePath& local_file_path,
     UploadRangeCallback callback,
-    const ProgressCallback& progress_callback) {
+    ProgressCallback progress_callback) {
   return CancelCallback();
 }
 
@@ -220,7 +222,7 @@ CancelCallback DummyDriveService::MultipartUploadNewFile(
     const base::FilePath& local_file_path,
     const UploadNewFileOptions& options,
     FileResourceCallback callback,
-    const ProgressCallback& progress_callback) {
+    ProgressCallback progress_callback) {
   return CancelCallback();
 }
 
@@ -231,7 +233,7 @@ CancelCallback DummyDriveService::MultipartUploadExistingFile(
     const base::FilePath& local_file_path,
     const UploadExistingFileOptions& options,
     FileResourceCallback callback,
-    const ProgressCallback& progress_callback) {
+    ProgressCallback progress_callback) {
   return CancelCallback();
 }
 

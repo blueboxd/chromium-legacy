@@ -7,6 +7,7 @@ package org.chromium.content.browser;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -65,18 +66,16 @@ public class ContentViewLocationTest {
         mJavascriptHelper.waitUntilHasValue();
         Assert.assertEquals(0, Integer.parseInt(mJavascriptHelper.getJsonResultAndClear()));
 
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-                @Override
-                public boolean isSatisfied() {
-                    mJavascriptHelper.evaluateJavaScriptForTests(
-                            mActivityTestRule.getWebContents(), "positionCount");
-                    try {
-                        mJavascriptHelper.waitUntilHasValue();
-                    } catch (Exception e) {
-                        Assert.fail();
-                    }
-                    return Integer.parseInt(mJavascriptHelper.getJsonResultAndClear()) > 0;
-                }
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            mJavascriptHelper.evaluateJavaScriptForTests(
+                    mActivityTestRule.getWebContents(), "positionCount");
+            try {
+                mJavascriptHelper.waitUntilHasValue();
+            } catch (Exception e) {
+                Assert.fail(e.toString());
+            }
+            int result = Integer.parseInt(mJavascriptHelper.getJsonResultAndClear());
+            Assert.assertThat(result, Matchers.greaterThan(0));
         });
     }
 

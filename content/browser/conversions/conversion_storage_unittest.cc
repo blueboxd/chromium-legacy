@@ -4,13 +4,17 @@
 
 #include "content/browser/conversions/conversion_storage.h"
 
+#include <functional>
 #include <list>
 #include <memory>
 #include <tuple>
+#include <utility>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/simple_test_clock.h"
 #include "content/browser/conversions/conversion_report.h"
 #include "content/browser/conversions/conversion_storage_sql.h"
@@ -33,6 +37,11 @@ const int kReportTime = 5;
 
 using AttributionCredits = std::list<int>;
 
+base::RepeatingCallback<bool(const url::Origin&)> GetMatcher(
+    const url::Origin& to_delete) {
+  return base::BindRepeating(std::equal_to<url::Origin>(), to_delete);
+}
+
 }  // namespace
 
 // Mock delegate which provides default behavior and delays reports by a fixed
@@ -45,6 +54,7 @@ class MockStorageDelegate : public ConversionStorage::Delegate {
   // ConversionStorage::Delegate
   void ProcessNewConversionReports(
       std::vector<ConversionReport>* reports) override {
+    // Note: reports are ordered by impression time, descending.
     for (auto& report : *reports) {
       report.report_time = report.impression.impression_time() +
                            base::TimeDelta::FromMilliseconds(kReportTime);
@@ -547,6 +557,261 @@ TEST_F(ConversionStorageTest,
   std::vector<ConversionReport> actual_reports =
       storage()->GetConversionsToReport(clock()->Now());
   EXPECT_TRUE(ReportsEqual(expected_reports, actual_reports));
+}
+
+TEST_F(ConversionStorageTest, ClearDataWithNoMatch_NoDelete) {
+  base::Time now = clock()->Now();
+  auto impression = ImpressionBuilder(now).Build();
+  storage()->StoreImpression(impression);
+  storage()->ClearData(
+      now, now, GetMatcher(url::Origin::Create(GURL("https://no-match.com"))));
+  EXPECT_EQ(
+      1, storage()->MaybeCreateAndStoreConversionReports(DefaultConversion()));
+}
+
+TEST_F(ConversionStorageTest, ClearDataOutsideRange_NoDelete) {
+  base::Time now = clock()->Now();
+  auto impression = ImpressionBuilder(now).Build();
+  storage()->StoreImpression(impression);
+
+  storage()->ClearData(now + base::TimeDelta::FromMinutes(10),
+                       now + base::TimeDelta::FromMinutes(20),
+                       GetMatcher(impression.impression_origin()));
+  EXPECT_EQ(
+      1, storage()->MaybeCreateAndStoreConversionReports(DefaultConversion()));
+}
+
+TEST_F(ConversionStorageTest, ClearDataImpression) {
+  base::Time now = clock()->Now();
+  {
+    auto impression = ImpressionBuilder(now).Build();
+    storage()->StoreImpression(impression);
+    storage()->ClearData(now, now + base::TimeDelta::FromMinutes(20),
+                         GetMatcher(impression.impression_origin()));
+    EXPECT_EQ(0, storage()->MaybeCreateAndStoreConversionReports(
+                     DefaultConversion()));
+  }
+  {
+    auto impression = ImpressionBuilder(now).Build();
+    storage()->StoreImpression(impression);
+    storage()->ClearData(now, now + base::TimeDelta::FromMinutes(20),
+                         GetMatcher(impression.reporting_origin()));
+    EXPECT_EQ(0, storage()->MaybeCreateAndStoreConversionReports(
+                     DefaultConversion()));
+  }
+  {
+    auto impression = ImpressionBuilder(now).Build();
+    storage()->StoreImpression(impression);
+    storage()->ClearData(now, now + base::TimeDelta::FromMinutes(20),
+                         GetMatcher(impression.conversion_origin()));
+    EXPECT_EQ(0, storage()->MaybeCreateAndStoreConversionReports(
+                     DefaultConversion()));
+  }
+}
+
+TEST_F(ConversionStorageTest, ClearDataImpressionConversion) {
+  base::Time now = clock()->Now();
+  auto impression = ImpressionBuilder(now).Build();
+  auto conversion = DefaultConversion();
+
+  storage()->StoreImpression(impression);
+  EXPECT_EQ(1, storage()->MaybeCreateAndStoreConversionReports(conversion));
+
+  storage()->ClearData(now - base::TimeDelta::FromMinutes(20),
+                       now + base::TimeDelta::FromMinutes(20),
+                       GetMatcher(impression.impression_origin()));
+
+  EXPECT_TRUE(storage()->GetConversionsToReport(base::Time::Max()).empty());
+}
+
+// The null filter should match all origins.
+TEST_F(ConversionStorageTest, ClearDataNullFilter) {
+  base::Time now = clock()->Now();
+
+  for (int i = 0; i < 10; i++) {
+    auto origin =
+        url::Origin::Create(GURL(base::StringPrintf("https://%d.com/", i)));
+    storage()->StoreImpression(ImpressionBuilder(now)
+                                   .SetExpiry(base::TimeDelta::FromDays(30))
+                                   .SetImpressionOrigin(origin)
+                                   .SetReportingOrigin(origin)
+                                   .SetConversionOrigin(origin)
+                                   .Build());
+    clock()->Advance(base::TimeDelta::FromDays(1));
+  }
+
+  // Convert half of them now, half after another day.
+  for (int i = 0; i < 5; i++) {
+    auto origin =
+        url::Origin::Create(GURL(base::StringPrintf("https://%d.com/", i)));
+    StorableConversion conversion("1", origin, origin);
+    EXPECT_EQ(1, storage()->MaybeCreateAndStoreConversionReports(conversion));
+  }
+  clock()->Advance(base::TimeDelta::FromDays(1));
+  for (int i = 5; i < 10; i++) {
+    auto origin =
+        url::Origin::Create(GURL(base::StringPrintf("https://%d.com/", i)));
+    StorableConversion conversion("1", origin, origin);
+    EXPECT_EQ(1, storage()->MaybeCreateAndStoreConversionReports(conversion));
+  }
+
+  auto null_filter = base::RepeatingCallback<bool(const url::Origin&)>();
+  storage()->ClearData(clock()->Now(), clock()->Now(), null_filter);
+  EXPECT_EQ(5u, storage()->GetConversionsToReport(base::Time::Max()).size());
+}
+
+TEST_F(ConversionStorageTest, ClearDataWithImpressionOutsideRange) {
+  base::Time start = clock()->Now();
+  auto impression =
+      ImpressionBuilder(start).SetExpiry(base::TimeDelta::FromDays(30)).Build();
+  auto conversion = DefaultConversion();
+
+  storage()->StoreImpression(impression);
+
+  EXPECT_EQ(1, storage()->MaybeCreateAndStoreConversionReports(conversion));
+  storage()->ClearData(clock()->Now(), clock()->Now(),
+                       GetMatcher(impression.impression_origin()));
+  EXPECT_TRUE(storage()->GetConversionsToReport(base::Time::Max()).empty());
+}
+
+// Deletions with time range between the impression and conversion should not
+// delete anything, unless the time range intersects one of the events.
+TEST_F(ConversionStorageTest, ClearDataRangeBetweenEvents) {
+  base::Time start = clock()->Now();
+  auto impression =
+      ImpressionBuilder(start).SetExpiry(base::TimeDelta::FromDays(30)).Build();
+  auto conversion = DefaultConversion();
+
+  std::vector<ConversionReport> expected_reports = {
+      GetExpectedReport(impression, conversion, 0)};
+
+  storage()->StoreImpression(impression);
+
+  clock()->Advance(base::TimeDelta::FromDays(1));
+
+  EXPECT_EQ(1, storage()->MaybeCreateAndStoreConversionReports(conversion));
+
+  storage()->ClearData(start + base::TimeDelta::FromMinutes(1),
+                       start + base::TimeDelta::FromMinutes(10),
+                       GetMatcher(impression.impression_origin()));
+
+  std::vector<ConversionReport> actual_reports =
+      storage()->GetConversionsToReport(base::Time::Max());
+  EXPECT_TRUE(ReportsEqual(expected_reports, actual_reports));
+}
+// Test that only a subset of impressions / conversions are deleted with
+// multiple impressions per conversion, if only a subset of impressions match.
+TEST_F(ConversionStorageTest, ClearDataWithMultiTouch) {
+  base::Time start = clock()->Now();
+  auto impression1 =
+      ImpressionBuilder(start).SetExpiry(base::TimeDelta::FromDays(30)).Build();
+  storage()->StoreImpression(impression1);
+
+  clock()->Advance(base::TimeDelta::FromDays(1));
+  auto impression2 = ImpressionBuilder(clock()->Now())
+                         .SetExpiry(base::TimeDelta::FromDays(30))
+                         .Build();
+  auto impression3 = ImpressionBuilder(clock()->Now())
+                         .SetExpiry(base::TimeDelta::FromDays(30))
+                         .Build();
+
+  storage()->StoreImpression(impression2);
+  storage()->StoreImpression(impression3);
+
+  EXPECT_EQ(
+      3, storage()->MaybeCreateAndStoreConversionReports(DefaultConversion()));
+
+  // Only the first impression should overlap with this time range, but all the
+  // impressions should share the origin.
+  storage()->ClearData(start, start,
+                       GetMatcher(impression1.impression_origin()));
+  EXPECT_EQ(2u, storage()->GetConversionsToReport(base::Time::Max()).size());
+}
+
+// Attribution occurs at conversion time, not report time, so deleted
+// impressions should not adjust credit allocation.
+TEST_F(ConversionStorageTest, ClearData_AttributionUnaffected) {
+  auto impression1 = ImpressionBuilder(clock()->Now())
+                         .SetData("xyz")
+                         .SetExpiry(base::TimeDelta::FromDays(30))
+                         .Build();
+  auto impression2 = ImpressionBuilder(clock()->Now())
+                         .SetData("abc")
+                         .SetExpiry(base::TimeDelta::FromDays(30))
+                         .Build();
+  auto conversion = DefaultConversion();
+  storage()->StoreImpression(impression1);
+  storage()->StoreImpression(impression2);
+  std::vector<ConversionReport> expected_reports = {
+      GetExpectedReport(impression1, conversion, 0),
+      GetExpectedReport(impression2, conversion, 0)};
+
+  clock()->Advance(base::TimeDelta::FromDays(1));
+  auto impression3 = ImpressionBuilder(clock()->Now())
+                         .SetExpiry(base::TimeDelta::FromDays(30))
+                         .Build();
+  storage()->StoreImpression(impression3);
+  base::Time delete_time = clock()->Now();
+  clock()->Advance(base::TimeDelta::FromDays(1));
+
+  AddAttributionCredits({100, 0, 0});
+  EXPECT_EQ(3, storage()->MaybeCreateAndStoreConversionReports(conversion));
+
+  // The last impression should be deleted, but the conversion shouldn't be.
+  storage()->ClearData(delete_time, delete_time,
+                       GetMatcher(impression1.impression_origin()));
+  std::vector<ConversionReport> actual_reports =
+      storage()->GetConversionsToReport(base::Time::Max());
+  EXPECT_TRUE(ReportsEqual(expected_reports, actual_reports));
+}
+
+// The max time range with a null filter should delete everything.
+TEST_F(ConversionStorageTest, DeleteAll) {
+  base::Time start = clock()->Now();
+  for (int i = 0; i < 10; i++) {
+    auto impression = ImpressionBuilder(start)
+                          .SetExpiry(base::TimeDelta::FromDays(30))
+                          .Build();
+    storage()->StoreImpression(impression);
+    clock()->Advance(base::TimeDelta::FromDays(1));
+  }
+
+  EXPECT_EQ(
+      10, storage()->MaybeCreateAndStoreConversionReports(DefaultConversion()));
+  clock()->Advance(base::TimeDelta::FromDays(1));
+  EXPECT_EQ(
+      10, storage()->MaybeCreateAndStoreConversionReports(DefaultConversion()));
+
+  auto null_filter = base::RepeatingCallback<bool(const url::Origin&)>();
+  storage()->ClearData(base::Time::Min(), base::Time::Max(), null_filter);
+
+  // Verify that everything is deleted.
+  EXPECT_TRUE(storage()->GetConversionsToReport(base::Time::Max()).empty());
+}
+
+// Same as the above test, but uses base::Time() instead of base::Time::Min()
+// for delete_begin, which should yield the same behavior.
+TEST_F(ConversionStorageTest, DeleteAllNullDeleteBegin) {
+  base::Time start = clock()->Now();
+  for (int i = 0; i < 10; i++) {
+    auto impression = ImpressionBuilder(start)
+                          .SetExpiry(base::TimeDelta::FromDays(30))
+                          .Build();
+    storage()->StoreImpression(impression);
+    clock()->Advance(base::TimeDelta::FromDays(1));
+  }
+
+  EXPECT_EQ(
+      10, storage()->MaybeCreateAndStoreConversionReports(DefaultConversion()));
+  clock()->Advance(base::TimeDelta::FromDays(1));
+  EXPECT_EQ(
+      10, storage()->MaybeCreateAndStoreConversionReports(DefaultConversion()));
+
+  auto null_filter = base::RepeatingCallback<bool(const url::Origin&)>();
+  storage()->ClearData(base::Time(), base::Time::Max(), null_filter);
+
+  // Verify that everything is deleted.
+  EXPECT_TRUE(storage()->GetConversionsToReport(base::Time::Max()).empty());
 }
 
 }  // namespace content

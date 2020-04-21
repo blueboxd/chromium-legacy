@@ -15,6 +15,7 @@
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_view_host.h"
+#include "ui/accessibility/ax_role_properties.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/accessibility/view_accessibility.h"
@@ -93,8 +94,7 @@ void LocationBarBubbleDelegateView::ShowForReason(DisplayReason reason,
           l10n_util::GetStringUTF8(IDS_SHOW_BUBBLE_INACTIVE_DESCRIPTION));
     }
   }
-  if (GetAccessibleWindowRole() == ax::mojom::Role::kAlert ||
-      GetAccessibleWindowRole() == ax::mojom::Role::kAlertDialog) {
+  if (ui::IsAlert(GetAccessibleWindowRole())) {
     GetWidget()->GetRootView()->NotifyAccessibilityEvent(
         ax::mojom::Event::kAlert, true);
   }

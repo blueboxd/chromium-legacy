@@ -802,15 +802,14 @@ IN_PROC_BROWSER_TEST_P(NetworkIsolationNavigationBrowserTest,
   base::Optional<network::ResourceRequest> request =
       monitor.GetRequestInfo(url);
   ASSERT_TRUE(request->trusted_params);
-  EXPECT_EQ(net::NetworkIsolationKey(origin, origin),
-            request->trusted_params->network_isolation_key);
-  EXPECT_EQ(network::mojom::UpdateNetworkIsolationKeyOnRedirect::
-                kUpdateTopFrameAndFrameOrigin,
-            request->trusted_params->update_network_isolation_key_on_redirect);
+  EXPECT_TRUE(net::IsolationInfo::Create(
+                  net::IsolationInfo::RedirectMode::kUpdateTopFrame, origin,
+                  origin, net::SiteForCookies::FromOrigin(origin))
+                  .IsEqualForTesting(request->trusted_params->isolation_info));
 }
 
 IN_PROC_BROWSER_TEST_P(NetworkIsolationNavigationBrowserTest,
-                       RenderNavigationNetworkIsolationKey) {
+                       RenderNavigationIsolationInfo) {
   GURL url(embedded_test_server()->GetURL("/title2.html"));
   url::Origin origin = url::Origin::Create(url);
   EXPECT_TRUE(NavigateToURL(shell(), GURL("about:blank")));
@@ -821,15 +820,14 @@ IN_PROC_BROWSER_TEST_P(NetworkIsolationNavigationBrowserTest,
   base::Optional<network::ResourceRequest> request =
       monitor.GetRequestInfo(url);
   ASSERT_TRUE(request->trusted_params);
-  EXPECT_EQ(net::NetworkIsolationKey(origin, origin),
-            request->trusted_params->network_isolation_key);
-  EXPECT_EQ(network::mojom::UpdateNetworkIsolationKeyOnRedirect::
-                kUpdateTopFrameAndFrameOrigin,
-            request->trusted_params->update_network_isolation_key_on_redirect);
+  EXPECT_TRUE(net::IsolationInfo::Create(
+                  net::IsolationInfo::RedirectMode::kUpdateTopFrame, origin,
+                  origin, net::SiteForCookies::FromOrigin(origin))
+                  .IsEqualForTesting(request->trusted_params->isolation_info));
 }
 
 IN_PROC_BROWSER_TEST_P(NetworkIsolationNavigationBrowserTest,
-                       SubframeNetworkIsolationKey) {
+                       SubframeIsolationInfo) {
   GURL url(embedded_test_server()->GetURL("/page_with_iframe.html"));
   GURL iframe_document = embedded_test_server()->GetURL("/title1.html");
   url::Origin origin = url::Origin::Create(url);
@@ -842,21 +840,20 @@ IN_PROC_BROWSER_TEST_P(NetworkIsolationNavigationBrowserTest,
       monitor.GetRequestInfo(url);
   ASSERT_TRUE(main_frame_request.has_value());
   ASSERT_TRUE(main_frame_request->trusted_params);
-  EXPECT_EQ(net::NetworkIsolationKey(origin, origin),
-            main_frame_request->trusted_params->network_isolation_key);
-  EXPECT_EQ(network::mojom::UpdateNetworkIsolationKeyOnRedirect::
-                kUpdateTopFrameAndFrameOrigin,
-            main_frame_request->trusted_params
-                ->update_network_isolation_key_on_redirect);
+  EXPECT_TRUE(net::IsolationInfo::Create(
+                  net::IsolationInfo::RedirectMode::kUpdateTopFrame, origin,
+                  origin, net::SiteForCookies::FromOrigin(origin))
+                  .IsEqualForTesting(
+                      main_frame_request->trusted_params->isolation_info));
 
   base::Optional<network::ResourceRequest> iframe_request =
       monitor.GetRequestInfo(iframe_document);
   ASSERT_TRUE(iframe_request->trusted_params);
-  EXPECT_EQ(net::NetworkIsolationKey(origin, iframe_origin),
-            iframe_request->trusted_params->network_isolation_key);
-  EXPECT_EQ(
-      network::mojom::UpdateNetworkIsolationKeyOnRedirect::kUpdateFrameOrigin,
-      iframe_request->trusted_params->update_network_isolation_key_on_redirect);
+  EXPECT_TRUE(
+      net::IsolationInfo::Create(
+          net::IsolationInfo::RedirectMode::kUpdateFrameOnly, origin,
+          iframe_origin, net::SiteForCookies::FromOrigin(origin))
+          .IsEqualForTesting(iframe_request->trusted_params->isolation_info));
 }
 
 // Tests that the initiator is not set for a browser initiated top frame

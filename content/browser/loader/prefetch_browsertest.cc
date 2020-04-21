@@ -19,7 +19,7 @@
 #include "content/public/test/url_loader_monitor.h"
 #include "content/shell/browser/shell.h"
 #include "net/base/features.h"
-#include "net/base/network_isolation_key.h"
+#include "net/base/isolation_info.h"
 #include "net/dns/mock_host_resolver.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -198,8 +198,10 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest,
   ASSERT_TRUE(request->site_for_cookies.IsNull());
   ASSERT_TRUE(request->trusted_params);
   url::Origin cross_origin = url::Origin::Create(cross_origin_target_url);
-  EXPECT_EQ(net::NetworkIsolationKey(cross_origin, cross_origin),
-            request->trusted_params->network_isolation_key);
+  EXPECT_TRUE(net::IsolationInfo::Create(
+                  net::IsolationInfo::RedirectMode::kUpdateNothing,
+                  cross_origin, cross_origin, net::SiteForCookies())
+                  .IsEqualForTesting(request->trusted_params->isolation_info));
 }
 
 IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest,
@@ -697,8 +699,10 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest,
   ASSERT_TRUE(request->site_for_cookies.IsNull());
   ASSERT_TRUE(request->trusted_params);
   url::Origin cross_origin = url::Origin::Create(cross_origin_target_url);
-  EXPECT_EQ(net::NetworkIsolationKey(cross_origin, cross_origin),
-            request->trusted_params->network_isolation_key);
+  EXPECT_TRUE(net::IsolationInfo::Create(
+                  net::IsolationInfo::RedirectMode::kUpdateNothing,
+                  cross_origin, cross_origin, net::SiteForCookies())
+                  .IsEqualForTesting(request->trusted_params->isolation_info));
 }
 
 IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, CrossOriginWithPreload) {

@@ -7,11 +7,16 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/xr_consent_helper.h"
 #include "content/public/browser/xr_install_helper.h"
+#include "content/public/common/content_features.h"
 #include "device/vr/buildflags/buildflags.h"
+#include "device/vr/public/cpp/vr_device_provider.h"
 #include "device/vr/public/mojom/vr_service.mojom-shared.h"
 
 #if defined(OS_WIN)
@@ -20,9 +25,11 @@
 #elif defined(OS_ANDROID)
 #include "chrome/browser/android/vr/gvr_consent_helper.h"
 #include "chrome/browser/android/vr/gvr_install_helper.h"
+#include "device/vr/android/gvr/gvr_device_provider.h"
 #if BUILDFLAG(ENABLE_ARCORE)
 #include "chrome/browser/android/vr/arcore_device/arcore_consent_prompt.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_install_helper.h"
+#include "device/vr/android/arcore/arcore_device_provider_factory.h"
 #endif  // ENABLE_ARCORE
 #endif  // OS_WIN/OS_ANDROID
 
@@ -100,6 +107,31 @@ ChromeXrIntegrationClient::GetConsentHelper(
       return nullptr;
   }
 #endif
+}
+
+content::XRProviderList ChromeXrIntegrationClient::GetAdditionalProviders() {
+  content::XRProviderList providers;
+
+#if defined(OS_ANDROID)
+  providers.push_back(std::make_unique<device::GvrDeviceProvider>());
+#if BUILDFLAG(ENABLE_ARCORE)
+  // TODO(https://crbug.com/966647) remove this check.
+  if (base::FeatureList::IsEnabled(features::kWebXrArModule)) {
+    auto arcore_device_provider = device::ArCoreDeviceProviderFactory::Create();
+    if (arcore_device_provider) {
+      providers.push_back(std::move(arcore_device_provider));
+    } else {
+      // TODO(https://crbug.com/1050470): Remove this logging after
+      // investigation.
+      LOG(ERROR) << "Could not get ARCoreDeviceProviderFactory";
+      base::RecordAction(base::UserMetricsAction(
+          "XR.ARCoreDeviceProviderFactory.NotInstalled"));
+    }
+  }
+#endif  // BUILDFLAG(ENABLE_ARCORE)
+#endif  // defined(OS_ANDROID)
+
+  return providers;
 }
 
 #if defined(OS_WIN)

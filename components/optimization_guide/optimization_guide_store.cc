@@ -759,6 +759,7 @@ void OptimizationGuideStore::OnLoadEntryKeys(
     hint_entry_keys.reset();
 
   entry_keys_ = std::move(hint_entry_keys);
+
   std::move(callback).Run();
 }
 

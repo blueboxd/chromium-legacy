@@ -14,9 +14,7 @@ import android.os.Parcelable;
  *
  * @since 83
  */
-public final class NavigateParams implements Parcelable {
-    // Indicates whether the navigation should replace the current navigation entry in the history
-    // stack.
+public class NavigateParams implements Parcelable {
     public boolean mShouldReplaceCurrentEntry = false;
 
     public static final Parcelable.Creator<NavigateParams> CREATOR =

@@ -67,7 +67,7 @@ class AutofillDriverIOS : public AutofillDriver {
   void PopupHidden() override;
   gfx::RectF TransformBoundingBoxToViewportCoordinates(
       const gfx::RectF& bounding_box) override;
-  net::NetworkIsolationKey NetworkIsolationKey() override;
+  net::IsolationInfo IsolationInfo() override;
 
   bool is_processed() const { return processed_; }
   void set_processed(bool processed) { processed_ = processed; }

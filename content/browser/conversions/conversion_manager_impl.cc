@@ -4,7 +4,7 @@
 
 #include "content/browser/conversions/conversion_manager_impl.h"
 
-#include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
@@ -106,6 +106,19 @@ void ConversionManagerImpl::HandleSentReport(int64_t conversion_id) {
 
 const ConversionPolicy& ConversionManagerImpl::GetConversionPolicy() const {
   return *conversion_policy_;
+}
+
+void ConversionManagerImpl::ClearData(
+    base::Time delete_begin,
+    base::Time delete_end,
+    base::RepeatingCallback<bool(const url::Origin&)> filter,
+    base::OnceClosure done) {
+  storage_task_runner_->PostTaskAndReply(
+      FROM_HERE,
+      base::BindOnce(&ConversionStorage::ClearData,
+                     base::Unretained(storage_.get()), delete_begin, delete_end,
+                     std::move(filter)),
+      std::move(done));
 }
 
 void ConversionManagerImpl::OnInitCompleted(bool success) {

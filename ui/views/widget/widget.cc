@@ -162,10 +162,8 @@ ui::ZOrderLevel Widget::InitParams::EffectiveZOrderLevel() const {
   switch (type) {
     case TYPE_MENU:
       return ui::ZOrderLevel::kFloatingWindow;
-      break;
     case TYPE_DRAG:
       return ui::ZOrderLevel::kFloatingUIElement;
-      break;
     default:
       return ui::ZOrderLevel::kNormal;
   }

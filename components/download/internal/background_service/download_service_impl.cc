@@ -24,8 +24,8 @@ DownloadServiceImpl::DownloadServiceImpl(std::unique_ptr<Configuration> config,
       service_config_(config_.get()),
       startup_completed_(false) {
   controller_->Initialize(
-      base::BindRepeating(&DownloadServiceImpl::OnControllerInitialized,
-                          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&DownloadServiceImpl::OnControllerInitialized,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 DownloadServiceImpl::~DownloadServiceImpl() = default;

@@ -6,9 +6,8 @@
 #define CHROME_BROWSER_VR_SERVICE_ISOLATED_DEVICE_PROVIDER_H_
 
 #include "base/containers/flat_map.h"
+#include "device/vr/public/cpp/vr_device_provider.h"
 #include "device/vr/public/mojom/isolated_xr_service.mojom-forward.h"
-#include "device/vr/vr_device.h"
-#include "device/vr/vr_device_provider.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"

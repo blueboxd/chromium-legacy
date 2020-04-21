@@ -508,9 +508,9 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, RequestOrigin) {
         auto it = expected_request_urls.find(params->url_request.url);
         if (it != expected_request_urls.end()) {
           EXPECT_TRUE(params->url_request.originated_from_service_worker);
-          EXPECT_FALSE(params->url_request.trusted_params.has_value() &&
-                       params->url_request.trusted_params->network_isolation_key
-                           .IsFullyPopulated());
+          EXPECT_FALSE(
+              params->url_request.trusted_params.has_value() &&
+              !params->url_request.trusted_params->isolation_info.IsEmpty());
           EXPECT_TRUE(params->url_request.request_initiator.has_value());
           EXPECT_EQ(params->url_request.request_initiator->GetURL(),
                     cross_origin_server.base_url());

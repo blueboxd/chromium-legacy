@@ -7,6 +7,7 @@
 #include "base/test/gtest_util.h"
 #include "mojo/public/cpp/base/unguessable_token_mojom_traits.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
+#include "net/base/isolation_info.h"
 #include "services/network/public/cpp/http_request_headers_mojom_traits.h"
 #include "services/network/public/cpp/network_ipc_param_traits.h"
 #include "services/network/public/cpp/optional_trust_token_params.h"
@@ -90,11 +91,10 @@ TEST(URLRequestMojomTraitsTest, Roundtrips_ResourceRequest) {
   original.fetch_window_id = base::UnguessableToken::Create();
 
   original.trusted_params = ResourceRequest::TrustedParams();
-  url::Origin origin = url::Origin::Create(original.url);
-  original.trusted_params->network_isolation_key =
-      net::NetworkIsolationKey(origin, origin);
-  original.trusted_params->update_network_isolation_key_on_redirect = network::
-      mojom::UpdateNetworkIsolationKeyOnRedirect::kUpdateTopFrameAndFrameOrigin;
+  original.trusted_params->isolation_info = net::IsolationInfo::Create(
+      net::IsolationInfo::RedirectMode::kUpdateTopFrame,
+      url::Origin::Create(original.url), url::Origin::Create(original.url),
+      original.site_for_cookies);
   original.trusted_params->disable_secure_dns = true;
 
   original.trust_token_params = network::mojom::TrustTokenParams();

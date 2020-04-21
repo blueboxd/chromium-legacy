@@ -19,6 +19,7 @@
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/services/app_service/public/cpp/instance_registry.h"
+#include "chrome/services/app_service/public/cpp/publisher_base.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -39,7 +40,7 @@ class WebAppRegistrar;
 namespace apps {
 
 // An app publisher (in the App Service sense) of Web Apps.
-class WebApps : public apps::mojom::Publisher,
+class WebApps : public apps::PublisherBase,
                 public web_app::AppRegistrarObserver,
                 public content_settings::Observer,
                 public ArcAppListPrefs::Observer {
@@ -50,8 +51,6 @@ class WebApps : public apps::mojom::Publisher,
   WebApps(const WebApps&) = delete;
   WebApps& operator=(const WebApps&) = delete;
   ~WebApps() override;
-
-  void FlushMojoCallsForTesting();
 
   void Shutdown();
 
@@ -98,11 +97,6 @@ class WebApps : public apps::mojom::Publisher,
                     int64_t display_id,
                     GetMenuModelCallback callback) override;
   void OpenNativeSettings(const std::string& app_id) override;
-  void OnPreferredAppSet(
-      const std::string& app_id,
-      apps::mojom::IntentFilterPtr intent_filter,
-      apps::mojom::IntentPtr intent,
-      apps::mojom::ReplacedAppPreferencesPtr replaced_app_preferences) override;
 
   // content_settings::Observer overrides.
   void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
@@ -123,8 +117,6 @@ class WebApps : public apps::mojom::Publisher,
                         bool uninstalled) override;
   void OnPackageListInitialRefreshed() override;
   void OnArcAppListPrefsDestroyed() override;
-
-  void Publish(apps::mojom::AppPtr app);
 
   void SetShowInFields(apps::mojom::AppPtr& app,
                        const web_app::WebApp* web_app);
@@ -151,7 +143,6 @@ class WebApps : public apps::mojom::Publisher,
 
   bool Accepts(const std::string& app_id);
 
-  mojo::Receiver<apps::mojom::Publisher> receiver_{this};
   mojo::RemoteSet<apps::mojom::Subscriber> subscribers_;
 
   Profile* const profile_;

@@ -73,25 +73,19 @@ public class VideoFullscreenOrientationLockTest {
     }
 
     private void waitUntilLockedToLandscape() {
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                try {
-                    return isScreenOrientationLocked() && isScreenOrientationLandscape();
-                } catch (TimeoutException e) {
-                    return false;
-                }
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            try {
+                Assert.assertTrue(isScreenOrientationLocked());
+                Assert.assertTrue(isScreenOrientationLandscape());
+            } catch (TimeoutException e) {
+                Assert.fail(e.toString());
             }
         });
     }
 
     private void waitUntilUnlocked() {
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return !isScreenOrientationLocked();
-            }
-        });
+        CriteriaHelper.pollInstrumentationThread(
+                Criteria.equals(false, this::isScreenOrientationLocked));
     }
 
     // TODO(mlamouri): move these constants and bounds  methods to a dedicated helper file for

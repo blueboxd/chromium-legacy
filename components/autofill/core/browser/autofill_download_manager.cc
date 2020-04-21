@@ -859,8 +859,7 @@ bool AutofillDownloadManager::StartRequest(FormRequestData request_data) {
   // to the network request.
 #if !defined(OS_IOS)
   resource_request->trusted_params = network::ResourceRequest::TrustedParams();
-  resource_request->trusted_params->network_isolation_key =
-      driver_->NetworkIsolationKey();
+  resource_request->trusted_params->isolation_info = driver_->IsolationInfo();
 #endif
 
   // Add Chrome experiment state to the request headers.

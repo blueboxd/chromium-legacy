@@ -13,11 +13,11 @@
 #include "chrome/browser/vr/service/vr_service_impl.h"
 #include "chrome/browser/vr/service/xr_runtime_manager_impl.h"
 #include "chrome/browser/vr/xr_runtime_manager_statics.h"
+#include "device/vr/public/cpp/vr_device_provider.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/test/fake_vr_device.h"
 #include "device/vr/test/fake_vr_device_provider.h"
 #include "device/vr/test/fake_vr_service_client.h"
-#include "device/vr/vr_device_provider.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -6920,6 +6920,41 @@
     ]
   },
 
+  "OnFileAttachedEnterpriseConnector": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "OnFileAttachedEnterpriseConnector": [
+            {
+              "service_provider": "Google",
+              "enable": [
+                {
+                  "url_list": ["*"],
+                  "tags": ["malware"]
+                },
+                {
+                  "url_list": ["*.them.com", "*.others.com"],
+                  "tags": ["dlp"]
+                }
+              ],
+              "disable": [
+                {
+                  "url_list": ["*.us.com"],
+                  "tags": ["malware"]
+                }
+              ],
+              "block_until_verdict": 0,
+              "block_password_protected": true,
+              "block_large_files": false
+            }
+          ]
+        },
+        "prefs": { "enterprise_connectors.on_file_attached": { "local_state": true } }
+      }
+    ]
+  },
+
   "RendererCodeIntegrityEnabled": {
     "os": ["win"],
     "policy_pref_mapping_test": [

@@ -13,6 +13,7 @@
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/icon_key_util.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_registry_service.h"
+#include "chrome/services/app_service/public/cpp/publisher_base.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -29,14 +30,12 @@ namespace apps {
 //
 // See chrome/services/app_service/README.md.
 class CrostiniApps : public KeyedService,
-                     public apps::mojom::Publisher,
+                     public apps::PublisherBase,
                      public guest_os::GuestOsRegistryService::Observer {
  public:
   CrostiniApps(const mojo::Remote<apps::mojom::AppService>& app_service,
                Profile* profile);
   ~CrostiniApps() override;
-
-  void FlushMojoCallsForTesting();
 
   void ReInitializeForTesting(
       const mojo::Remote<apps::mojom::AppService>& app_service,
@@ -64,33 +63,13 @@ class CrostiniApps : public KeyedService,
               int32_t event_flags,
               apps::mojom::LaunchSource launch_source,
               int64_t display_id) override;
-  void LaunchAppWithFiles(const std::string& app_id,
-                          apps::mojom::LaunchContainer container,
-                          int32_t event_flags,
-                          apps::mojom::LaunchSource launch_source,
-                          apps::mojom::FilePathsPtr file_paths) override;
-  void LaunchAppWithIntent(const std::string& app_id,
-                           int32_t event_flags,
-                           apps::mojom::IntentPtr intent,
-                           apps::mojom::LaunchSource launch_source,
-                           int64_t display_id) override;
-  void SetPermission(const std::string& app_id,
-                     apps::mojom::PermissionPtr permission) override;
   void Uninstall(const std::string& app_id,
                  bool clear_site_data,
                  bool report_abuse) override;
-  void PauseApp(const std::string& app_id) override;
-  void UnpauseApps(const std::string& app_id) override;
   void GetMenuModel(const std::string& app_id,
                     apps::mojom::MenuType menu_type,
                     int64_t display_id,
                     GetMenuModelCallback callback) override;
-  void OpenNativeSettings(const std::string& app_id) override;
-  void OnPreferredAppSet(
-      const std::string& app_id,
-      apps::mojom::IntentFilterPtr intent_filter,
-      apps::mojom::IntentPtr intent,
-      apps::mojom::ReplacedAppPreferencesPtr replaced_app_preferences) override;
 
   // GuestOsRegistryService::Observer overrides.
   void OnRegistryUpdated(
@@ -120,9 +99,7 @@ class CrostiniApps : public KeyedService,
       bool new_icon_key);
   apps::mojom::IconKeyPtr NewIconKey(const std::string& app_id);
   void PublishAppID(const std::string& app_id, PublishAppIDType type);
-  void Publish(apps::mojom::AppPtr app);
 
-  mojo::Receiver<apps::mojom::Publisher> receiver_{this};
   mojo::RemoteSet<apps::mojom::Subscriber> subscribers_;
 
   Profile* profile_;

@@ -18,8 +18,6 @@ Document Name='Action verbs'
 ++++Button Name='Summary' ExpandCollapse.ExpandCollapseState='Collapsed'
 ++++++Text Name='Summary'
 ++ComboBox ExpandCollapse.ExpandCollapseState='Collapsed' Value.Value='Pop-up button'
-++++List Selection.CanSelectMultiple=false Selection.IsSelectionRequired=false
-++++++ListItem Name='Pop-up button' SelectionItem.IsSelected=true
 ++Group
 ++++Text Name='Div with click handler'
 ++Group

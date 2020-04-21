@@ -153,20 +153,22 @@ gfx::RectF AutofillDriverIOS::TransformBoundingBoxToViewportCoordinates(
   return bounding_box;
 }
 
-net::NetworkIsolationKey AutofillDriverIOS::NetworkIsolationKey() {
+net::IsolationInfo AutofillDriverIOS::IsolationInfo() {
   std::string main_web_frame_id = web::GetMainWebFrameId(web_state_);
   web::WebFrame* main_web_frame =
       web::GetWebFrameWithId(web_state_, main_web_frame_id);
   if (!main_web_frame)
-    return net::NetworkIsolationKey();
+    return net::IsolationInfo();
 
   web::WebFrame* web_frame = web::GetWebFrameWithId(web_state_, web_frame_id_);
   if (!web_frame)
-    return net::NetworkIsolationKey();
+    return net::IsolationInfo();
 
-  return net::NetworkIsolationKey(
+  return net::IsolationInfo::Create(
+      net::IsolationInfo::RedirectMode::kUpdateNothing,
       url::Origin::Create(main_web_frame->GetSecurityOrigin()),
-      url::Origin::Create(web_frame->GetSecurityOrigin()));
+      url::Origin::Create(web_frame->GetSecurityOrigin()),
+      net::SiteForCookies());
 }
 
 }  // namespace autofill

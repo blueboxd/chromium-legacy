@@ -168,7 +168,8 @@ class CORE_EXPORT NGInlineLayoutStateStack {
   void UpdateFragmentedBoxDataEdges();
 
   // Compute inline positions of fragments and boxes.
-  LayoutUnit ComputeInlinePositions(NGLineBoxFragmentBuilder::ChildList*);
+  LayoutUnit ComputeInlinePositions(NGLineBoxFragmentBuilder::ChildList*,
+                                    LayoutUnit position);
 
   // Create box fragments. This function turns a flat list of children into
   // a box tree.

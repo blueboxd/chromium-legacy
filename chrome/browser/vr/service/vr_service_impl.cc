@@ -29,7 +29,6 @@
 #include "content/public/common/origin_util.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "device/vr/public/cpp/session_mode.h"
-#include "device/vr/vr_device.h"
 
 namespace {
 

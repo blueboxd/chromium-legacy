@@ -17,15 +17,6 @@ bool IsolatedPrerenderIsEnabled() {
   return base::FeatureList::IsEnabled(features::kIsolatePrerenders);
 }
 
-bool IsolatedPrerenderShouldReplaceDataReductionCustomProxy() {
-  bool replace =
-      data_reduction_proxy::params::IsIncludedInHoldbackFieldTrial() &&
-      IsolatedPrerenderIsEnabled();
-  // TODO(robertogden): Remove this once all pieces are landed.
-  DCHECK(!replace);
-  return replace;
-}
-
 base::Optional<size_t> IsolatedPrerenderMaximumNumberOfPrefetches() {
   if (!IsolatedPrerenderIsEnabled()) {
     return 0;
@@ -49,6 +40,11 @@ base::TimeDelta IsolatedPrerenderProbeTimeout() {
       base::GetFieldTrialParamByFeatureAsInt(
           features::kIsolatePrerendersMustProbeOrigin, "probe_timeout_ms",
           10 * 1000 /* 10 seconds */));
+}
+
+bool IsolatedPrerenderCloseIdleSockets() {
+  return base::GetFieldTrialParamByFeatureAsBool(features::kIsolatePrerenders,
+                                                 "close_idle_sockets", true);
 }
 
 base::TimeDelta IsolatedPrefetchTimeoutDuration() {

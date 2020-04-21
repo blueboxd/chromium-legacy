@@ -409,7 +409,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, WebRequest) {
 
 // Tests more chrome.webRequest APIs. Any potentially flaky tests are isolated
 // here.
-IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, WebRequest2) {
+// Flaky (crbug.com/1072715).
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, DISABLED_WebRequest2) {
   ASSERT_TRUE(
       RunExtensionTest("service_worker/worker_based_background/web_request2"))
       << message_;

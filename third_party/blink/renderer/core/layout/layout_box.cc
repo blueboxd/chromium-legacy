@@ -1131,13 +1131,10 @@ PhysicalRect LayoutBox::PhysicalBackgroundRect(
   switch (background_box) {
     case EFillBox::kBorder:
       return PhysicalBorderBoxRect();
-      break;
     case EFillBox::kPadding:
       return PhysicalPaddingBoxRect();
-      break;
     case EFillBox::kContent:
       return PhysicalContentBoxRect();
-      break;
     default:
       break;
   }

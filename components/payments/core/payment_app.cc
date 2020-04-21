@@ -32,13 +32,11 @@ int GetSortingGroup(const PaymentApp& app) {
         return 3;
       }
       return 1;
-      break;
     case PaymentApp::Type::AUTOFILL:
       if (app.IsCompleteForPayment()) {
         return 2;
-      } else {
-        return 4;
       }
+      return 4;
   }
 }
 }  // namespace

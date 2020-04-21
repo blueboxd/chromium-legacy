@@ -6,8 +6,9 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_SERVICE_WORKER_WEB_SERVICE_WORKER_OBJECT_INFO_H_
 
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom-shared.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_state.mojom-shared.h"
+#include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/platform/web_url.h"
 
 namespace blink {
@@ -21,11 +22,14 @@ namespace blink {
 // As we're on the border line between non-Blink and Blink variants, we need
 // to use mojo::ScopedInterfaceEndpointHandle to pass Mojo types.
 struct WebServiceWorkerObjectInfo {
-  WebServiceWorkerObjectInfo(int64_t version_id,
-                             mojom::ServiceWorkerState state,
-                             WebURL url,
-                             mojo::ScopedInterfaceEndpointHandle host_remote,
-                             mojo::ScopedInterfaceEndpointHandle receiver)
+  WebServiceWorkerObjectInfo(
+      int64_t version_id,
+      mojom::ServiceWorkerState state,
+      WebURL url,
+      CrossVariantMojoAssociatedRemote<
+          mojom::ServiceWorkerObjectHostInterfaceBase> host_remote,
+      CrossVariantMojoAssociatedReceiver<
+          mojom::ServiceWorkerObjectInterfaceBase> receiver)
       : version_id(version_id),
         state(state),
         url(std::move(url)),
@@ -36,10 +40,10 @@ struct WebServiceWorkerObjectInfo {
   int64_t version_id;
   mojom::ServiceWorkerState state;
   WebURL url;
-  // For PendingAssociatedRemote<blink::mojom::ServiceWorkerObjectHost>.
-  mojo::ScopedInterfaceEndpointHandle host_remote;
-  // For AssociatedReceiver<blink::mojom::ServiceWorkerObject>.
-  mojo::ScopedInterfaceEndpointHandle receiver;
+  CrossVariantMojoAssociatedRemote<mojom::ServiceWorkerObjectHostInterfaceBase>
+      host_remote;
+  CrossVariantMojoAssociatedReceiver<mojom::ServiceWorkerObjectInterfaceBase>
+      receiver;
 
   DISALLOW_COPY_AND_ASSIGN(WebServiceWorkerObjectInfo);
 };

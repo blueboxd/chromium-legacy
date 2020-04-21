@@ -21,14 +21,14 @@ template <>
 struct TypeConverter<blink::WebServiceWorkerObjectInfo,
                      blink::mojom::ServiceWorkerObjectInfoPtr> {
   static blink::WebServiceWorkerObjectInfo Convert(
-      const blink::mojom::ServiceWorkerObjectInfoPtr& input);
+      blink::mojom::ServiceWorkerObjectInfoPtr input);
 };
 
 template <>
 struct TypeConverter<blink::WebServiceWorkerRegistrationObjectInfo,
                      blink::mojom::ServiceWorkerRegistrationObjectInfoPtr> {
   static blink::WebServiceWorkerRegistrationObjectInfo Convert(
-      const blink::mojom::ServiceWorkerRegistrationObjectInfoPtr& input);
+      blink::mojom::ServiceWorkerRegistrationObjectInfoPtr input);
 };
 
 }  // namespace

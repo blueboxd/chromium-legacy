@@ -85,6 +85,11 @@ base::Optional<CanonicalCookie> ToCanonicalCookie(
   String cookie_url_host = cookie_url.Host();
   String domain;
   if (options->hasDomain()) {
+    if (name.StartsWith("__Host-")) {
+      exception_state.ThrowTypeError(
+          "Cookies with \"__Host-\" prefix cannot have a domain");
+      return base::nullopt;
+    }
     // The leading dot (".") from the domain attribute is stripped in the
     // Set-Cookie header, for compatibility. This API doesn't have compatibility
     // constraints, so reject the edge case outright.
@@ -107,6 +112,11 @@ base::Optional<CanonicalCookie> ToCanonicalCookie(
 
   String path = options->path();
   if (!path.IsEmpty()) {
+    if (name.StartsWith("__Host-") && path != "/") {
+      exception_state.ThrowTypeError(
+          "Cookies with \"__Host-\" prefix cannot have a non-\"/\" path");
+      return base::nullopt;
+    }
     if (!path.StartsWith("/")) {
       exception_state.ThrowTypeError("Cookie path must start with \"/\"");
       return base::nullopt;

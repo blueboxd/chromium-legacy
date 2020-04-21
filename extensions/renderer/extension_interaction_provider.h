@@ -7,6 +7,7 @@
 
 #include "extensions/renderer/bindings/interaction_provider.h"
 
+#include "base/macros.h"
 #include "base/optional.h"
 #include "v8/include/v8.h"
 

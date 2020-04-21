@@ -52,8 +52,7 @@ class FakeArCore : public ArCore {
 
   mojom::XRHitTestSubscriptionResultsDataPtr GetHitTestSubscriptionResults(
       const gfx::Transform& mojo_from_viewer,
-      const base::Optional<std::vector<mojom::XRInputSourceStatePtr>>&
-          maybe_input_state) override;
+      const std::vector<mojom::XRInputSourceStatePtr>& input_state) override;
 
   void UnsubscribeFromHitTest(uint64_t subscription_id) override;
 
@@ -71,8 +70,7 @@ class FakeArCore : public ArCore {
 
   void ProcessAnchorCreationRequests(
       const gfx::Transform& mojo_from_viewer,
-      const base::Optional<std::vector<mojom::XRInputSourceStatePtr>>&
-          maybe_input_state) override;
+      const std::vector<mojom::XRInputSourceStatePtr>& input_state) override;
 
   void DetachAnchor(uint64_t anchor_id) override;
 

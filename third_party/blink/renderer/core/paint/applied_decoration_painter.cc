@@ -84,7 +84,6 @@ FloatRect AppliedDecorationPainter::Bounds() {
     }
     case ETextDecorationStyle::kWavy:
       return PrepareWavyStrokePath().StrokeBoundingRect(stroke_data);
-      break;
     case ETextDecorationStyle::kDouble:
       if (double_offset_ > 0) {
         return FloatRect(start_point_.X(), start_point_.Y(),
@@ -94,7 +93,6 @@ FloatRect AppliedDecorationPainter::Bounds() {
       return FloatRect(start_point_.X(), start_point_.Y() + double_offset_,
                        decoration_info_.width,
                        -double_offset_ + decoration_info_.thickness);
-      break;
     case ETextDecorationStyle::kSolid:
       return FloatRect(start_point_.X(), start_point_.Y(),
                        decoration_info_.width, decoration_info_.thickness);

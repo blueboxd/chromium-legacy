@@ -228,12 +228,12 @@ bool ServiceWorkerControlleeRequestHandler::InitializeContainerHost(
   container_host_->SetControllerRegistration(nullptr,
                                              /*notify_controllerchange=*/false);
   stripped_url_ = net::SimplifyUrlForRequest(tentative_resource_request.url);
-  container_host_->UpdateUrls(
-      stripped_url_, tentative_resource_request.site_for_cookies,
-      tentative_resource_request.trusted_params
-          ? tentative_resource_request.trusted_params->network_isolation_key
-                .GetTopFrameOrigin()
-          : base::nullopt);
+  container_host_->UpdateUrls(stripped_url_,
+                              tentative_resource_request.site_for_cookies,
+                              tentative_resource_request.trusted_params
+                                  ? tentative_resource_request.trusted_params
+                                        ->isolation_info.top_frame_origin()
+                                  : base::nullopt);
   return true;
 }
 

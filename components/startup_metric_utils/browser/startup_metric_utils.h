@@ -46,6 +46,8 @@ void RecordApplicationStartTime(base::TimeTicks ticks);
 void RecordChromeMainEntryTime(base::TimeTicks ticks);
 
 // Call this with the time recorded just before the message loop is started.
+// Must be called after RecordApplicationStartTime(), because it computes time
+// deltas based on application start time.
 // |is_first_run| - is the current launch part of a first run.
 void RecordBrowserMainMessageLoopStart(base::TimeTicks ticks,
                                        bool is_first_run);
@@ -54,25 +56,29 @@ void RecordBrowserMainMessageLoopStart(base::TimeTicks ticks,
 void RecordBrowserWindowDisplay(base::TimeTicks ticks);
 
 // Call this with the time when the first web contents had a non-empty paint,
-// only if the first web contents was unimpeded in its attempt to do so.
+// only if the first web contents was unimpeded in its attempt to do so. Must be
+// called after RecordApplicationStartTime(), because it computes time deltas
+// based on application start time.
 void RecordFirstWebContentsNonEmptyPaint(
     base::TimeTicks now,
     base::TimeTicks render_process_host_init_time);
 
 // Call this with the time when the first web contents began navigating its main
-// frame.
+// frame / successfully committed its navigation for the main frame. These
+// functions must be called after RecordApplicationStartTime(), because they
+// compute time deltas based on application start time.
 void RecordFirstWebContentsMainNavigationStart(base::TimeTicks ticks);
-
-// Call this with the time when the first web contents successfully committed
-// its navigation for the main frame.
 void RecordFirstWebContentsMainNavigationFinished(base::TimeTicks ticks);
 
 // Call this with the time when the Browser window painted its children for the
-// first time.
+// first time. Must be called after RecordApplicationStartTime(), because it
+// computes time deltas based on application start time.
 void RecordBrowserWindowFirstPaint(base::TimeTicks ticks);
 
 // Call this with the time when the Browser window painted its children for the
-// first time and we got a CompositingEnded after that.
+// first time and we got a CompositingEnded after that. Must be called after
+// RecordApplicationStartTime(), because it computes time deltas based on
+// application start time.
 void RecordBrowserWindowFirstPaintCompositingEnded(base::TimeTicks ticks);
 
 // Returns the TimeTicks corresponding to main entry as recorded by
@@ -81,6 +87,8 @@ void RecordBrowserWindowFirstPaintCompositingEnded(base::TimeTicks ticks);
 base::TimeTicks MainEntryPointTicks();
 
 // Record metrics for the web-footer experiment. See https://crbug.com/993502.
+// These functions must be called after RecordApplicationStartTime(), because
+// they compute time deltas based on application start time.
 void RecordWebFooterDidFirstVisuallyNonEmptyPaint(base::TimeTicks ticks);
 void RecordWebFooterCreation(base::TimeTicks ticks);
 

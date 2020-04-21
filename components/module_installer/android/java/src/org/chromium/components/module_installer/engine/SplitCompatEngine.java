@@ -37,7 +37,6 @@ class SplitCompatEngine implements InstallEngine {
 
     public SplitCompatEngine(SplitCompatEngineFacade facade) {
         mFacade = facade;
-        mFacade.initApplicationContext(this);
     }
 
     @Override

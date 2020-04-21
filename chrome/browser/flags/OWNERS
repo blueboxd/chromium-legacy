@@ -8,5 +8,5 @@ per-file *ChromeFeatureList.java=*
 per-file *chrome_feature_list.*=*
 
 # TEAM: clank-modularization@chromium.org
-# COMPONENT: UI>Browser>Mobile
+# COMPONENT: Internals>Flags
 # OS: Android

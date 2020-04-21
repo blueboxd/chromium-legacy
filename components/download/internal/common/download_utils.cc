@@ -23,8 +23,9 @@
 #include "components/download/public/common/download_stats.h"
 #include "components/download/public/common/download_task_runner.h"
 #include "components/download/public/common/download_url_parameters.h"
+#include "net/base/isolation_info.h"
 #include "net/base/load_flags.h"
-#include "net/base/network_isolation_key.h"
+#include "net/cookies/site_for_cookies.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -271,8 +272,9 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   // sites can't use download timing information to tell if a cross-site URL has
   // been visited before.
   url::Origin origin = url::Origin::Create(params->url());
-  request->trusted_params->network_isolation_key =
-      net::NetworkIsolationKey(origin, origin);
+  request->trusted_params->isolation_info = net::IsolationInfo::Create(
+      net::IsolationInfo::RedirectMode::kUpdateTopFrame, origin, origin,
+      net::SiteForCookies::FromOrigin(origin));
 
   request->do_not_prompt_for_login = params->do_not_prompt_for_login();
   request->site_for_cookies = net::SiteForCookies::FromUrl(params->url());

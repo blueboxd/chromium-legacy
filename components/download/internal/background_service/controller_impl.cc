@@ -137,10 +137,10 @@ ControllerImpl::~ControllerImpl() {
       this);
 }
 
-void ControllerImpl::Initialize(const base::Closure& callback) {
+void ControllerImpl::Initialize(base::OnceClosure callback) {
   DCHECK_EQ(controller_state_, State::CREATED);
 
-  init_callback_ = callback;
+  init_callback_ = std::move(callback);
   controller_state_ = State::INITIALIZING;
 
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(

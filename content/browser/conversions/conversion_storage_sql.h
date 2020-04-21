@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_CONVERSIONS_CONVERSION_STORAGE_SQL_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
@@ -44,6 +45,14 @@ class CONTENT_EXPORT ConversionStorageSql : public ConversionStorage {
       base::Time expiry_time) override;
   int DeleteExpiredImpressions() override;
   bool DeleteConversion(int64_t conversion_id) override;
+  void ClearData(
+      base::Time delete_begin,
+      base::Time delete_end,
+      base::RepeatingCallback<bool(const url::Origin&)> filter) override;
+
+  // Variants of ClearData that assume all Origins match the filter.
+  void ClearAllDataInRange(base::Time delete_begin, base::Time delete_end);
+  void ClearAllDataAllTime();
 
   bool InitializeSchema();
 

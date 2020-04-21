@@ -878,22 +878,9 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
   request_.referrer = GURL(redirect_info.new_referrer);
   request_.referrer_policy = redirect_info.new_referrer_policy;
   if (request_.trusted_params) {
-    url::Origin new_origin = url::Origin::Create(redirect_info.new_url);
-    switch (request_.trusted_params->update_network_isolation_key_on_redirect) {
-      case network::mojom::UpdateNetworkIsolationKeyOnRedirect::
-          kUpdateTopFrameAndFrameOrigin:
-        request_.trusted_params->network_isolation_key =
-            net::NetworkIsolationKey(new_origin, new_origin);
-        break;
-      case network::mojom::UpdateNetworkIsolationKeyOnRedirect::
-          kUpdateFrameOrigin:
-        request_.trusted_params->network_isolation_key =
-            request_.trusted_params->network_isolation_key
-                .CreateWithNewFrameOrigin(new_origin);
-        break;
-      case network::mojom::UpdateNetworkIsolationKeyOnRedirect::kDoNotUpdate:
-        break;
-    }
+    request_.trusted_params->isolation_info =
+        request_.trusted_params->isolation_info.CreateForRedirect(
+            url::Origin::Create(redirect_info.new_url));
   }
 
   // The request method can be changed to "GET". In this case we need to

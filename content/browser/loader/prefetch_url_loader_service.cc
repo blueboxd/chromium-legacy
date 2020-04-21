@@ -51,8 +51,7 @@ struct PrefetchURLLoaderService::BindContext {
         cross_origin_factory(other->cross_origin_factory),
         prefetched_signed_exchange_cache(
             other->prefetched_signed_exchange_cache),
-        prefetch_network_isolation_keys(
-            other->prefetch_network_isolation_keys) {}
+        prefetch_isolation_infos(other->prefetch_isolation_infos) {}
 
   ~BindContext() = default;
 
@@ -65,10 +64,9 @@ struct PrefetchURLLoaderService::BindContext {
 
   scoped_refptr<PrefetchedSignedExchangeCache> prefetched_signed_exchange_cache;
 
-  // This maps recursive prefetch tokens to NetworkIsolationKeys that they
-  // should be fetched with.
-  std::map<base::UnguessableToken, net::NetworkIsolationKey>
-      prefetch_network_isolation_keys;
+  // This maps recursive prefetch tokens to IsolationInfos that they should be
+  // fetched with.
+  std::map<base::UnguessableToken, net::IsolationInfo> prefetch_isolation_infos;
 
   // This must be the last member.
   base::WeakPtrFactory<PrefetchURLLoaderService::BindContext> weak_ptr_factory{
@@ -159,8 +157,10 @@ void PrefetchURLLoaderService::CreateLoaderAndStart(
     network_loader_factory_to_use = current_context.cross_origin_factory;
     url::Origin destination_origin = url::Origin::Create(resource_request.url);
     resource_request.trusted_params = network::ResourceRequest::TrustedParams();
-    resource_request.trusted_params->network_isolation_key =
-        net::NetworkIsolationKey(destination_origin, destination_origin);
+    resource_request.trusted_params->isolation_info =
+        net::IsolationInfo::Create(
+            net::IsolationInfo::RedirectMode::kUpdateNothing,
+            destination_origin, destination_origin, net::SiteForCookies());
   }
 
   // Recursive prefetch from a cross-origin main resource prefetch.
@@ -170,14 +170,16 @@ void PrefetchURLLoaderService::CreateLoaderAndStart(
     // context's |cross_origin_factory| was already created.
     DCHECK(current_context.cross_origin_factory);
 
-    // Resurrect the request's NetworkIsolationKey from the current context's
-    // map, and use it for this request.
-    auto nik_iterator = current_context.prefetch_network_isolation_keys.find(
-        resource_request.recursive_prefetch_token.value());
+    // Resurrect the request's IsolationInfo from the current context's map, and
+    // use it for this request.
+    auto isolation_info_iterator =
+        current_context.prefetch_isolation_infos.find(
+            resource_request.recursive_prefetch_token.value());
 
     // An unexpected token could indicate a compromised renderer trying to fetch
     // a request in a special way. We'll cancel the request.
-    if (nik_iterator == current_context.prefetch_network_isolation_keys.end()) {
+    if (isolation_info_iterator ==
+        current_context.prefetch_isolation_infos.end()) {
       mojo::Remote<network::mojom::URLLoaderClient>(std::move(client))
           ->OnComplete(
               network::URLLoaderCompletionStatus(net::ERR_INVALID_ARGUMENT));
@@ -188,8 +190,8 @@ void PrefetchURLLoaderService::CreateLoaderAndStart(
     resource_request.site_for_cookies = net::SiteForCookies();
 
     resource_request.trusted_params = network::ResourceRequest::TrustedParams();
-    resource_request.trusted_params->network_isolation_key =
-        nik_iterator->second;
+    resource_request.trusted_params->isolation_info =
+        isolation_info_iterator->second;
     network_loader_factory_to_use = current_context.cross_origin_factory;
   }
 
@@ -327,17 +329,18 @@ base::UnguessableToken PrefetchURLLoaderService::GenerateRecursivePrefetchToken(
   if (!current_context)
     return base::UnguessableToken::Create();
 
-  // Create NetworkIsolationKey.
+  // Create IsolationInfo.
   url::Origin destination_origin = url::Origin::Create(request.url);
-  net::NetworkIsolationKey preload_nik =
-      net::NetworkIsolationKey(destination_origin, destination_origin);
+  net::IsolationInfo preload_isolation_info = net::IsolationInfo::Create(
+      net::IsolationInfo::RedirectMode::kUpdateNothing, destination_origin,
+      destination_origin, net::SiteForCookies());
 
   // Generate token.
   base::UnguessableToken return_token = base::UnguessableToken::Create();
 
   // Associate the two, and return the token.
-  current_context->prefetch_network_isolation_keys.insert(
-      {return_token, preload_nik});
+  current_context->prefetch_isolation_infos.insert(
+      {return_token, preload_isolation_info});
   return return_token;
 }
 

@@ -53,14 +53,9 @@ template <>
 struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
     StructTraits<network::mojom::TrustedUrlRequestParamsDataView,
                  network::ResourceRequest::TrustedParams> {
-  static const net::NetworkIsolationKey& network_isolation_key(
+  static const net::IsolationInfo& isolation_info(
       const network::ResourceRequest::TrustedParams& trusted_params) {
-    return trusted_params.network_isolation_key;
-  }
-  static network::mojom::UpdateNetworkIsolationKeyOnRedirect
-  update_network_isolation_key_on_redirect(
-      const network::ResourceRequest::TrustedParams& trusted_params) {
-    return trusted_params.update_network_isolation_key_on_redirect;
+    return trusted_params.isolation_info;
   }
   static bool disable_secure_dns(
       const network::ResourceRequest::TrustedParams& trusted_params) {

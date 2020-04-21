@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -203,14 +204,13 @@ void History::go(ScriptState* script_state,
   }
 
   DCHECK(IsMainThread());
-  Document* active_document =
-      Document::From(ExecutionContext::From(script_state));
-  if (!active_document)
+  auto* active_window = LocalDOMWindow::From(script_state);
+  if (!active_window)
     return;
 
-  if (!active_document->GetFrame() ||
-      !active_document->GetFrame()->CanNavigate(*GetFrame()) ||
-      !active_document->GetFrame()->IsNavigationAllowed() ||
+  if (!active_window->GetFrame() ||
+      !active_window->GetFrame()->CanNavigate(*GetFrame()) ||
+      !active_window->GetFrame()->IsNavigationAllowed() ||
       !GetFrame()->IsNavigationAllowed()) {
     return;
   }

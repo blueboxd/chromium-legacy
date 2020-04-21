@@ -630,13 +630,10 @@ static GrGLenum SkFormatToGlFormat(SkColorType format) {
   switch (format) {
     case kRGB_888x_SkColorType:
       return GL_RGB8_OES;
-      break;
     case kRGBA_8888_SkColorType:
       return GL_RGBA8_OES;
-      break;
     case kBGRA_8888_SkColorType:
       return GL_BGRA8_EXT;
-      break;
     default:
       NOTREACHED();
       return GL_RGBA8_OES;

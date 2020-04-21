@@ -620,7 +620,6 @@ SelectorChecker::MatchStatus SelectorChecker::MatchForRelation(
           return MatchSelector(next_context, result);
       }
       return kSelectorFailsCompletely;
-      break;
     case CSSSelector::kSubSelector:
       break;
   }
@@ -1368,7 +1367,6 @@ bool SelectorChecker::CheckPseudoClassForVTT(
       return false;
     default:
       return CheckPseudoClass(context, result);
-      break;
   }
   return false;
 }

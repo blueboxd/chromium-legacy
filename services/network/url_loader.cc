@@ -545,22 +545,12 @@ URLLoader::URLLoader(
   if (!factory_params_->isolation_info.IsEmpty()) {
     url_request_->set_isolation_info(factory_params_->isolation_info);
   } else if (request.trusted_params &&
-             !request.trusted_params->network_isolation_key.IsEmpty()) {
-    net::IsolationInfo::RedirectMode redirect_mode;
-    switch (request.trusted_params->update_network_isolation_key_on_redirect) {
-      case mojom::UpdateNetworkIsolationKeyOnRedirect::
-          kUpdateTopFrameAndFrameOrigin:
-        redirect_mode = net::IsolationInfo::RedirectMode::kUpdateTopFrame;
-        break;
-      case mojom::UpdateNetworkIsolationKeyOnRedirect::kUpdateFrameOrigin:
-        redirect_mode = net::IsolationInfo::RedirectMode::kUpdateFrameOnly;
-        break;
-      case mojom::UpdateNetworkIsolationKeyOnRedirect::kDoNotUpdate:
-        redirect_mode = net::IsolationInfo::RedirectMode::kUpdateNothing;
-        break;
+             !request.trusted_params->isolation_info.IsEmpty()) {
+    url_request_->set_isolation_info(request.trusted_params->isolation_info);
+    if (request.credentials_mode != network::mojom::CredentialsMode::kOmit) {
+      DCHECK(url_request_->isolation_info().site_for_cookies().IsEquivalent(
+          request.site_for_cookies));
     }
-    url_request_->set_isolation_info(net::IsolationInfo::CreatePartial(
-        redirect_mode, request.trusted_params->network_isolation_key));
   }
 
   if (factory_params_->disable_secure_dns) {

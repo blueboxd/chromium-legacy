@@ -24,28 +24,18 @@
 namespace {
 
 apps::mojom::AppPtr GetPluginVmApp(bool allowed) {
-  apps::mojom::AppPtr app = apps::mojom::App::New();
-
-  app->app_type = apps::mojom::AppType::kPluginVm;
-  app->app_id = plugin_vm::kPluginVmAppId;
-  app->readiness = allowed ? apps::mojom::Readiness::kReady
-                           : apps::mojom::Readiness::kDisabledByPolicy;
-  app->name = l10n_util::GetStringUTF8(IDS_PLUGIN_VM_APP_NAME);
-  app->short_name = app->name;
+  apps::mojom::AppPtr app = apps::PublisherBase::MakeApp(
+      apps::mojom::AppType::kPluginVm, plugin_vm::kPluginVmAppId,
+      allowed ? apps::mojom::Readiness::kReady
+              : apps::mojom::Readiness::kDisabledByPolicy,
+      l10n_util::GetStringUTF8(IDS_PLUGIN_VM_APP_NAME),
+      apps::mojom::InstallSource::kSystem);
 
   app->icon_key = apps::mojom::IconKey::New(
       apps::mojom::IconKey::kDoesNotChangeOverTime,
       IDR_LOGO_PLUGIN_VM_DEFAULT_192, apps::IconEffects::kNone);
 
-  app->last_launch_time = base::Time();
-  app->install_time = base::Time();
-
-  app->install_source = apps::mojom::InstallSource::kSystem;
-
-  app->is_platform_app = apps::mojom::OptionalBool::kFalse;
-
   app->show_in_management = apps::mojom::OptionalBool::kFalse;
-  app->paused = apps::mojom::OptionalBool::kFalse;
 
   const apps::mojom::OptionalBool opt_allowed =
       allowed ? apps::mojom::OptionalBool::kTrue
@@ -66,20 +56,10 @@ PluginVmApps::PluginVmApps(
     const mojo::Remote<apps::mojom::AppService>& app_service,
     Profile* profile)
     : profile_(profile) {
-  Initialize(app_service);
+  PublisherBase::Initialize(app_service, apps::mojom::AppType::kPluginVm);
 }
 
 PluginVmApps::~PluginVmApps() = default;
-
-void PluginVmApps::FlushMojoCallsForTesting() {
-  receiver_.FlushForTesting();
-}
-
-void PluginVmApps::Initialize(
-    const mojo::Remote<apps::mojom::AppService>& app_service) {
-  app_service->RegisterPublisher(receiver_.BindNewPipeAndPassRemote(),
-                                 apps::mojom::AppType::kPluginVm);
-}
 
 void PluginVmApps::Connect(
     mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
@@ -124,42 +104,6 @@ void PluginVmApps::Launch(const std::string& app_id,
   }
 }
 
-void PluginVmApps::LaunchAppWithFiles(const std::string& app_id,
-                                      apps::mojom::LaunchContainer container,
-                                      int32_t event_flags,
-                                      apps::mojom::LaunchSource launch_source,
-                                      apps::mojom::FilePathsPtr file_paths) {
-  NOTIMPLEMENTED();
-}
-
-void PluginVmApps::LaunchAppWithIntent(const std::string& app_id,
-                                       int32_t event_flags,
-                                       apps::mojom::IntentPtr intent,
-                                       apps::mojom::LaunchSource launch_source,
-                                       int64_t display_id) {
-  NOTIMPLEMENTED();
-}
-
-void PluginVmApps::SetPermission(const std::string& app_id,
-                                 apps::mojom::PermissionPtr permission) {
-  NOTIMPLEMENTED();
-}
-
-void PluginVmApps::Uninstall(const std::string& app_id,
-                             bool clear_site_data,
-                             bool report_abuse) {
-  LOG(ERROR) << "Uninstall failed, could not remove Plugin VM app with id "
-             << app_id;
-}
-
-void PluginVmApps::PauseApp(const std::string& app_id) {
-  NOTIMPLEMENTED();
-}
-
-void PluginVmApps::UnpauseApps(const std::string& app_id) {
-  NOTIMPLEMENTED();
-}
-
 void PluginVmApps::GetMenuModel(const std::string& app_id,
                                 apps::mojom::MenuType menu_type,
                                 int64_t display_id,
@@ -184,15 +128,4 @@ void PluginVmApps::GetMenuModel(const std::string& app_id,
   std::move(callback).Run(std::move(menu_items));
 }
 
-void PluginVmApps::OpenNativeSettings(const std::string& app_id) {
-  NOTIMPLEMENTED();
-}
-
-void PluginVmApps::OnPreferredAppSet(
-    const std::string& app_id,
-    apps::mojom::IntentFilterPtr intent_filter,
-    apps::mojom::IntentPtr intent,
-    apps::mojom::ReplacedAppPreferencesPtr replaced_app_preferences) {
-  NOTIMPLEMENTED();
-}
 }  // namespace apps

@@ -110,6 +110,11 @@ void FrameSequenceMetrics::SetScrollingThread(ThreadType scrolling_thread) {
   scrolling_thread_ = scrolling_thread;
 }
 
+void FrameSequenceMetrics::SetCustomReporter(CustomReporter custom_reporter) {
+  DCHECK_EQ(FrameSequenceTrackerType::kCustom, type_);
+  custom_reporter_ = std::move(custom_reporter);
+}
+
 FrameSequenceMetrics::ThreadType FrameSequenceMetrics::GetEffectiveThread()
     const {
   switch (type_) {
@@ -183,10 +188,16 @@ void FrameSequenceMetrics::ReportMetrics() {
       ThroughputData::ToTracedValue(impl_throughput_, main_throughput_),
       "checkerboard", frames_checkerboarded_);
 
-  // Data for kCustom typed tracker is handled by caller instead being
-  // reported here.
-  if (type_ == FrameSequenceTrackerType::kCustom)
+  if (type_ == FrameSequenceTrackerType::kCustom) {
+    DCHECK(!custom_reporter_.is_null());
+    std::move(custom_reporter_).Run(std::move(main_throughput_));
+
+    main_throughput_ = {};
+    impl_throughput_ = {};
+    aggregated_throughput_ = {};
+    frames_checkerboarded_ = 0;
     return;
+  }
 
   ComputeAggregatedThroughput();
 

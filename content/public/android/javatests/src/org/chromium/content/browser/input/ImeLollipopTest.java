@@ -20,7 +20,6 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.content_public.browser.test.ContentJUnit4ClassRunner;
-import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
@@ -93,20 +92,14 @@ public class ImeLollipopTest {
     }
 
     private void waitForUpdateCursorAnchorInfoComposingText(final String expected) {
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                CursorAnchorInfo info =
-                        mRule.getInputMethodManagerWrapper().getLastCursorAnchorInfo();
-                if (info != null && info.getComposingText() == null) {
-                    updateFailureReason("info.getCompositingText() returned null");
-                    return false;
-                }
-
-                String actual = (info == null ? "" : info.getComposingText().toString());
-                updateFailureReason("Expected: {" + expected + "}, Actual: {" + actual + "}");
-                return expected.equals(actual);
+        CriteriaHelper.pollUiThread(() -> {
+            CursorAnchorInfo info = mRule.getInputMethodManagerWrapper().getLastCursorAnchorInfo();
+            if (info != null) {
+                Assert.assertNotNull(info.getComposingText());
             }
+
+            String actual = (info == null ? "" : info.getComposingText().toString());
+            Assert.assertEquals(expected, actual);
         });
     }
 }

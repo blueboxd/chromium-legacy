@@ -1773,7 +1773,6 @@ ScriptPromise RTCPeerConnection::generateCertificate(
                                         "AlgorithmIdentifier, but the "
                                         "algorithm is not supported.");
       return ScriptPromise();
-      break;
   }
   DCHECK(key_params.has_value());
 

@@ -36,8 +36,8 @@ class OptimizationGuideTopHostProviderTest
     // Advance by 1-day to avoid running into null checks.
     test_clock_.Advance(base::TimeDelta::FromDays(1));
 
-    top_host_provider_ = std::make_unique<OptimizationGuideTopHostProvider>(
-        profile(), &test_clock_);
+    top_host_provider_ = base::WrapUnique(
+        new OptimizationGuideTopHostProvider(profile(), &test_clock_));
 
     service_ = SiteEngagementService::Get(profile());
     pref_service_ = profile()->GetPrefs();

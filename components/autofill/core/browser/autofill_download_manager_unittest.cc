@@ -1357,9 +1357,10 @@ class AutofillServerCommunicationTest
             nullptr /* network_service */, true /* is_trusted */);
     driver_ = std::make_unique<TestAutofillDriver>();
     driver_->SetSharedURLLoaderFactory(shared_url_loader_factory_);
-    driver_->SetNetworkIsolationKey(
-        net::NetworkIsolationKey(url::Origin::Create(GURL("https://abc.com")),
-                                 url::Origin::Create(GURL("https://xyz.com"))));
+    driver_->SetIsolationInfo(net::IsolationInfo::Create(
+        net::IsolationInfo::RedirectMode::kUpdateNothing,
+        url::Origin::Create(GURL("https://abc.com")),
+        url::Origin::Create(GURL("https://xyz.com")), net::SiteForCookies()));
 
     // Configure the autofill server communications channel.
     switch (GetParam()) {

@@ -92,6 +92,9 @@ std::unique_ptr<optimization_guide::proto::GetHintsResponse> BuildHintsResponse(
     hint->set_key(host);
     optimization_guide::proto::PageHint* page_hint = hint->add_page_hints();
     page_hint->set_page_pattern("page pattern");
+    optimization_guide::proto::Optimization* opt =
+        page_hint->add_whitelisted_optimizations();
+    opt->set_optimization_type(optimization_guide::proto::DEFER_ALL_SCRIPT);
   }
   for (const auto& url : urls) {
     optimization_guide::proto::Hint* hint = get_hints_response->add_hints();
@@ -1462,6 +1465,8 @@ TEST_F(OptimizationGuideHintsManagerTest,
 
 TEST_F(OptimizationGuideHintsManagerTest,
        CanApplyOptimizationAndPopulatesPerformanceHintsMetadata) {
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::PERFORMANCE_HINTS});
   optimization_guide::proto::Configuration config;
   optimization_guide::proto::Hint* hint = config.add_hints();
   hint->set_key("somedomain.org");
@@ -1479,8 +1484,6 @@ TEST_F(OptimizationGuideHintsManagerTest,
       optimization_guide::proto::PERFORMANCE_SLOW);
 
   ProcessHints(config, "1.0.0.0");
-  hints_manager()->RegisterOptimizationTypes(
-      {optimization_guide::proto::PERFORMANCE_HINTS});
 
   std::unique_ptr<content::MockNavigationHandle> navigation_handle =
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
@@ -1505,6 +1508,8 @@ TEST_F(OptimizationGuideHintsManagerTest,
 
 TEST_F(OptimizationGuideHintsManagerTest,
        CanApplyOptimizationAndPopulatesPublicImageMetadata) {
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::COMPRESS_PUBLIC_IMAGES});
   optimization_guide::proto::Configuration config;
   optimization_guide::proto::Hint* hint = config.add_hints();
   hint->set_key("somedomain.org");
@@ -1518,8 +1523,6 @@ TEST_F(OptimizationGuideHintsManagerTest,
   opt->mutable_public_image_metadata()->add_url("someimage");
 
   ProcessHints(config, "1.0.0.0");
-  hints_manager()->RegisterOptimizationTypes(
-      {optimization_guide::proto::COMPRESS_PUBLIC_IMAGES});
 
   std::unique_ptr<content::MockNavigationHandle> navigation_handle =
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
@@ -1545,6 +1548,8 @@ TEST_F(OptimizationGuideHintsManagerTest,
 
 TEST_F(OptimizationGuideHintsManagerTest,
        CanApplyOptimizationAndPopulatesLoadingPredictorMetadata) {
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::LOADING_PREDICTOR});
   optimization_guide::proto::Configuration config;
   optimization_guide::proto::Hint* hint = config.add_hints();
   hint->set_key("somedomain.org");
@@ -1559,8 +1564,6 @@ TEST_F(OptimizationGuideHintsManagerTest,
       "https://resource.com/");
 
   ProcessHints(config, "1.0.0.0");
-  hints_manager()->RegisterOptimizationTypes(
-      {optimization_guide::proto::LOADING_PREDICTOR});
 
   std::unique_ptr<content::MockNavigationHandle> navigation_handle =
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
@@ -1918,9 +1921,9 @@ TEST_F(
     CanApplyOptimizationAsyncReturnsRightAwayIfNotAllowedToFetchAndNotWhitelistedByAvailableHint) {
   base::HistogramTester histogram_tester;
 
-  InitializeWithDefaultConfig("1.0.0.0");
   hints_manager()->RegisterOptimizationTypes(
       {optimization_guide::proto::COMPRESS_PUBLIC_IMAGES});
+  InitializeWithDefaultConfig("1.0.0.0");
 
   std::unique_ptr<content::MockNavigationHandle> navigation_handle =
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
@@ -3552,4 +3555,71 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
   RunUntilIdle();
 
   EXPECT_TRUE(navigation_data->has_hint_after_commit().value());
+}
+
+TEST_F(OptimizationGuideHintsManagerFetchingTest,
+       NewOptTypeRegisteredClearsHintCache) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      optimization_guide::switches::kDisableCheckingUserPermissionsForTesting);
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::DEFER_ALL_SCRIPT});
+
+  InitializeWithDefaultConfig("1.0.0.0");
+
+  GURL url("https://host.com/fetched_hint_host");
+
+  // Set ECT estimate so fetch is activated.
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+
+  hints_manager()->SetHintsFetcherFactoryForTesting(
+      BuildTestHintsFetcherFactory(
+          {HintsFetcherEndState::kFetchSuccessWithHostHints}));
+  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
+      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(url);
+
+  // Attempt to fetch a hint but ensure nothing comes back.
+  hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
+                                               base::DoNothing());
+  RunUntilIdle();
+
+  optimization_guide::OptimizationMetadata optimization_metadata;
+  optimization_guide::OptimizationTypeDecision optimization_type_decision =
+      hints_manager()->CanApplyOptimization(
+          navigation_handle.get(), optimization_guide::proto::DEFER_ALL_SCRIPT,
+          &optimization_metadata);
+
+  // Make sure decisions are logged correctly.
+  EXPECT_EQ(optimization_guide::OptimizationTypeDecision::kNotAllowedByHint,
+            optimization_type_decision);
+
+  // Register a new type that is unlaunched - this should clear the Fetched
+  // hints.
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::COMPRESS_PUBLIC_IMAGES});
+
+  RunUntilIdle();
+
+  base::RunLoop run_loop;
+
+  // Set ECT estimate to 4g so the fetch does not happen so
+  // the cache state is known and empty.
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_OFFLINE);
+
+  navigation_handle =
+      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(url);
+  hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
+                                               run_loop.QuitClosure());
+
+  run_loop.Run();
+
+  optimization_type_decision = hints_manager()->CanApplyOptimization(
+      navigation_handle.get(), optimization_guide::proto::DEFER_ALL_SCRIPT,
+      &optimization_metadata);
+
+  // The fetched hints should not be available after registering a new
+  // optimization type.
+  EXPECT_EQ(optimization_guide::OptimizationTypeDecision::kNoHintAvailable,
+            optimization_type_decision);
 }

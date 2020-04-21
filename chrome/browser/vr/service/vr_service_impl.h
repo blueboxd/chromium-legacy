@@ -18,8 +18,8 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/xr_consent_helper.h"
 #include "content/public/browser/xr_consent_prompt_level.h"
-#include "device/vr/public/mojom/vr_service.mojom-forward.h"
-#include "device/vr/vr_device.h"
+#include "device/vr/public/mojom/isolated_xr_service.mojom-forward.h"
+#include "device/vr/public/mojom/vr_service.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -164,7 +164,7 @@ class VRServiceImpl : public device::mojom::VRService,
   mojo::RemoteSet<device::mojom::XRSessionClient> session_clients_;
   mojo::Remote<device::mojom::VRServiceClient> service_client_;
   content::RenderFrameHost* render_frame_host_;
-  mojo::SelfOwnedReceiverRef<VRService> receiver_;
+  mojo::SelfOwnedReceiverRef<device::mojom::VRService> receiver_;
   mojo::RemoteSet<device::mojom::XRSessionController> magic_window_controllers_;
   device::mojom::XRVisibilityState visibility_state_ =
       device::mojom::XRVisibilityState::VISIBLE;

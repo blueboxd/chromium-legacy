@@ -10,6 +10,7 @@
 #include "content/public/browser/media_device_id.h"
 #include "content/public/browser/resource_context.h"
 #include "extensions/browser/api/serial/serial_port_manager.h"
+#include "extensions/browser/api/webcam_private/ip_webcam.h"
 #include "extensions/browser/api/webcam_private/v4l2_webcam.h"
 #include "extensions/browser/api/webcam_private/visca_webcam.h"
 #include "extensions/browser/process_manager.h"
@@ -60,15 +61,22 @@ Webcam* WebcamPrivateAPI::GetWebcam(const std::string& extension_id,
 
   std::string device_id;
   GetDeviceId(extension_id, webcam_id, &device_id);
-  V4L2Webcam* v4l2_webcam(new V4L2Webcam(device_id));
-  if (!v4l2_webcam->Open()) {
-    return nullptr;
+  Webcam* webcam = nullptr;
+
+  if (device_id.compare(0, 8, "192.168.") == 0) {
+    webcam = new IpWebcam(device_id);
+  } else {
+    V4L2Webcam* v4l2_webcam = new V4L2Webcam(device_id);
+    if (!v4l2_webcam->Open()) {
+      return nullptr;
+    }
+    webcam = v4l2_webcam;
   }
 
   webcam_resource_manager_->Add(
-      new WebcamResource(extension_id, v4l2_webcam, webcam_id));
+      new WebcamResource(extension_id, webcam, webcam_id));
 
-  return v4l2_webcam;
+  return webcam;
 }
 
 bool WebcamPrivateAPI::OpenSerialWebcam(

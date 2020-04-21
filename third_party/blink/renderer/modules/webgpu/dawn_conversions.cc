@@ -34,8 +34,11 @@ WGPUBindingType AsDawnEnum<WGPUBindingType>(const WTF::String& webgpu_enum) {
   if (webgpu_enum == "sampled-texture") {
     return WGPUBindingType_SampledTexture;
   }
-  if (webgpu_enum == "storage-texture") {
-    return WGPUBindingType_StorageTexture;
+  if (webgpu_enum == "readonly-storage-texture") {
+    return WGPUBindingType_ReadonlyStorageTexture;
+  }
+  if (webgpu_enum == "writeonly-storage-texture") {
+    return WGPUBindingType_WriteonlyStorageTexture;
   }
   NOTREACHED();
   return WGPUBindingType_Force32;

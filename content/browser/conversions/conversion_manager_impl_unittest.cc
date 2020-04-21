@@ -5,12 +5,16 @@
 #include "content/browser/conversions/conversion_manager_impl.h"
 
 #include <stdint.h>
+
 #include <memory>
+#include <utility>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
+#include "base/test/bind_test_util.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "content/browser/conversions/conversion_test_utils.h"
@@ -49,7 +53,6 @@ class TestConversionReporter
     base::RunLoop wait_loop;
     quit_closure_ = wait_loop.QuitClosure();
     wait_loop.Run();
-    ;
   }
 
  private:
@@ -173,6 +176,30 @@ TEST_F(ConversionManagerImplTest, ExpiredReportsAtStartup_Queued) {
   // The second report is still queued at the correct time.
   task_environment_.FastForwardBy(kConversionManagerQueueReportsInterval);
   EXPECT_EQ(2u, test_reporter_->num_reports());
+}
+
+// This functionality is tested more thoroughly in the ConversionStorageSql
+// unit tests. Here, just test to make sure the basic control flow is working.
+TEST_F(ConversionManagerImplTest, ClearData) {
+  for (bool match_url : {true, false}) {
+    base::Time start = clock().Now();
+    conversion_manager_->HandleImpression(
+        ImpressionBuilder(start).SetExpiry(kImpressionExpiry).Build());
+    conversion_manager_->HandleConversion(DefaultConversion());
+
+    base::RunLoop run_loop;
+    conversion_manager_->ClearData(
+        start, start + base::TimeDelta::FromMinutes(1),
+        base::BindLambdaForTesting(
+            [match_url](const url::Origin& _) { return match_url; }),
+        run_loop.QuitClosure());
+    run_loop.Run();
+
+    task_environment_.FastForwardBy(kFirstReportingWindow -
+                                    kConversionManagerQueueReportsInterval);
+    size_t expected_reports = match_url ? 0u : 1u;
+    EXPECT_EQ(expected_reports, test_reporter_->num_reports());
+  }
 }
 
 }  // namespace content

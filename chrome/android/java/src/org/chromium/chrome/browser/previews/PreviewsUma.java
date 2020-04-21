@@ -25,8 +25,7 @@ public final class PreviewsUma {
     private static final int ACTION_PAGE_INFO_OPENED = 1;
     // The Lite Page badge was displayed at commit.
     private static final int ACTION_LITE_PAGE_AT_COMMIT = 2;
-    // The Lite Page badge was displayed at page load finish.
-    private static final int ACTION_LITE_PAGE_AT_FINISH = 3;
+    // OBSOLETE:  private static final int ACTION_LITE_PAGE_AT_FINISH = 3;
     private static final int ACTION_INDEX_BOUNDARY = 4;
 
     /**
@@ -66,13 +65,5 @@ public final class PreviewsUma {
             final String previewType, final boolean isInMainFrame) {
         if (!isInMainFrame) return;
         recordHistogram(previewType, ACTION_LITE_PAGE_AT_COMMIT);
-    }
-
-    /**
-     * Records that the lite page badge was displayed at page load finish.
-     * @param previewType the committed preview type
-     */
-    public static void recordLitePageAtLoadFinish(final String previewType) {
-        recordHistogram(previewType, ACTION_LITE_PAGE_AT_FINISH);
     }
 }

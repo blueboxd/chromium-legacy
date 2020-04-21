@@ -67,8 +67,9 @@ void MediaFeedsFetcher::FetchFeed(const GURL& url, MediaFeedCallback callback) {
   // Treat this request as same-site for the purposes of cookie inclusion.
   resource_request->site_for_cookies = net::SiteForCookies::FromOrigin(origin);
   resource_request->trusted_params = network::ResourceRequest::TrustedParams();
-  resource_request->trusted_params->network_isolation_key =
-      net::NetworkIsolationKey(origin, origin);
+  resource_request->trusted_params->isolation_info = net::IsolationInfo::Create(
+      net::IsolationInfo::RedirectMode::kUpdateNothing, origin, origin,
+      net::SiteForCookies::FromOrigin(origin));
 
   DCHECK(!pending_request_);
   pending_request_ = network::SimpleURLLoader::Create(

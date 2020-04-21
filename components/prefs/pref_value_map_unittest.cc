@@ -71,6 +71,51 @@ TEST(PrefValueMapTest, Clear) {
   EXPECT_FALSE(map.GetValue("key", nullptr));
 }
 
+TEST(PrefValueMapTest, ClearWithPrefix) {
+  {
+    PrefValueMap map;
+    EXPECT_TRUE(map.SetValue("a", Value("test")));
+    EXPECT_TRUE(map.SetValue("b", Value("test")));
+    EXPECT_TRUE(map.SetValue("bb", Value("test")));
+    EXPECT_TRUE(map.SetValue("z", Value("test")));
+
+    map.ClearWithPrefix("b");
+
+    EXPECT_TRUE(map.GetValue("a", nullptr));
+    EXPECT_FALSE(map.GetValue("b", nullptr));
+    EXPECT_FALSE(map.GetValue("bb", nullptr));
+    EXPECT_TRUE(map.GetValue("z", nullptr));
+  }
+  {
+    PrefValueMap map;
+    EXPECT_TRUE(map.SetValue("a", Value("test")));
+    EXPECT_TRUE(map.SetValue("b", Value("test")));
+    EXPECT_TRUE(map.SetValue("bb", Value("test")));
+    EXPECT_TRUE(map.SetValue("z", Value("test")));
+
+    map.ClearWithPrefix("z");
+
+    EXPECT_TRUE(map.GetValue("a", nullptr));
+    EXPECT_TRUE(map.GetValue("b", nullptr));
+    EXPECT_TRUE(map.GetValue("bb", nullptr));
+    EXPECT_FALSE(map.GetValue("z", nullptr));
+  }
+  {
+    PrefValueMap map;
+    EXPECT_TRUE(map.SetValue("a", Value("test")));
+    EXPECT_TRUE(map.SetValue("b", Value("test")));
+    EXPECT_TRUE(map.SetValue("bb", Value("test")));
+    EXPECT_TRUE(map.SetValue("z", Value("test")));
+
+    map.ClearWithPrefix("c");
+
+    EXPECT_TRUE(map.GetValue("a", nullptr));
+    EXPECT_TRUE(map.GetValue("b", nullptr));
+    EXPECT_TRUE(map.GetValue("bb", nullptr));
+    EXPECT_TRUE(map.GetValue("z", nullptr));
+  }
+}
+
 TEST(PrefValueMapTest, GetDifferingKeys) {
   PrefValueMap reference;
   EXPECT_TRUE(reference.SetValue("b", Value("test")));

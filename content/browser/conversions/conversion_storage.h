@@ -8,10 +8,12 @@
 #include <stdint.h>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/time/time.h"
 #include "content/browser/conversions/conversion_report.h"
 #include "content/browser/conversions/storable_conversion.h"
 #include "content/browser/conversions/storable_impression.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -77,9 +79,18 @@ class ConversionStorage {
   // whether the deletion was successful.
   virtual bool DeleteConversion(int64_t conversion_id) = 0;
 
-  // TODO(johnidel): Add an API to ConversionStorage that removes site data, and
-  // hook it into the data remover. This should be added before the API is
-  // enabled.
+  // Deletes all data in storage for URLs matching |filter|, between
+  // |delete_begin| and |delete_end| time. More specifically, this:
+  // 1. Deletes all impressions within the time range. If any conversion is
+  //    attributed to this impression it is also deleted.
+  // 2. Deletes all conversions within the time range. All impressions
+  //    attributed to the conversion are also deleted.
+  //
+  // Note: if |filter| is null, it means that all Origins should match.
+  virtual void ClearData(
+      base::Time delete_begin,
+      base::Time delete_end,
+      base::RepeatingCallback<bool(const url::Origin& origin)> filter) = 0;
 };
 
 }  // namespace content

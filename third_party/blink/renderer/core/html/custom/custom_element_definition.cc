@@ -143,14 +143,19 @@ HTMLElement* CustomElementDefinition::CreateElement(
     result->SetCustomElementState(CustomElementState::kUndefined);
     result->SetIsValue(Descriptor().GetName());
 
-    // 5.3. If the synchronous custom elements flag is set, upgrade
-    // element using definition.
-    // 5.4. Otherwise, enqueue a custom element upgrade reaction given
-    // result and definition.
-    if (!flags.IsAsyncCustomElements())
+    if (!flags.IsAsyncCustomElements()) {
+      // 5.3 If the synchronous custom elements flag is set, then run this step
+      // while catching any exceptions:
+      //   1. Upgrade element using definition.
+      // If this step threw an exception, then:
+      //   1. Report the exception.
+      //   2. Set result's custom element state to "failed".
       Upgrade(*result);
-    else
+    } else {
+      // 5.4. Otherwise, enqueue a custom element upgrade reaction given
+      // result and definition.
       EnqueueUpgradeReaction(*result);
+    }
     return To<HTMLElement>(result);
   }
 

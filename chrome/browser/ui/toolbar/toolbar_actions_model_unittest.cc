@@ -1533,3 +1533,40 @@ TEST_F(ToolbarActionsModelUnitTest,
       extension_prefs->GetPinnedExtensions(),
       testing::ElementsAre(browser_action_a()->id(), browser_action_b()->id()));
 }
+
+TEST_F(ToolbarActionsModelUnitTest, PinStateErasedOnUninstallation) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kExtensionsToolbarMenu);
+
+  Init();
+
+  scoped_refptr<const extensions::Extension> extension =
+      extensions::ExtensionBuilder("extension")
+          .SetAction(ActionType::BROWSER_ACTION)
+          .SetLocation(extensions::Manifest::INTERNAL)
+          .Build();
+
+  // Add and pin an extension.
+  EXPECT_TRUE(AddExtension(extension));
+  EXPECT_FALSE(toolbar_model()->IsActionPinned(extension->id()));
+  extensions::ExtensionPrefs* const prefs =
+      extensions::ExtensionPrefs::Get(profile());
+  EXPECT_THAT(prefs->GetPinnedExtensions(), testing::IsEmpty());
+
+  toolbar_model()->SetActionVisibility(extension->id(), true);
+  EXPECT_TRUE(toolbar_model()->IsActionPinned(extension->id()));
+  EXPECT_THAT(prefs->GetPinnedExtensions(),
+              testing::ElementsAre(extension->id()));
+
+  // Uninstall the extension. The pin state should be forgotten.
+  service()->UninstallExtension(
+      extension->id(), extensions::UNINSTALL_REASON_FOR_TESTING, nullptr);
+
+  EXPECT_FALSE(toolbar_model()->IsActionPinned(extension->id()));
+  EXPECT_THAT(prefs->GetPinnedExtensions(), testing::IsEmpty());
+
+  // Re-add the extension. It should be in the default (unpinned) state.
+  EXPECT_TRUE(AddExtension(extension));
+  EXPECT_FALSE(toolbar_model()->IsActionPinned(extension->id()));
+  EXPECT_THAT(prefs->GetPinnedExtensions(), testing::IsEmpty());
+}

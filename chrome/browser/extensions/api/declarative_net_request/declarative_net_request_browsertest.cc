@@ -2010,7 +2010,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
       RulesetSource::CreateStatic(*extension);
   ASSERT_EQ(1u, static_sources.size());
   RulesetSource dynamic_source =
-      RulesetSource::CreateDynamic(profile(), *extension);
+      RulesetSource::CreateDynamic(profile(), extension->id());
 
   // Loading the extension should cause some main frame requests to be blocked.
   {

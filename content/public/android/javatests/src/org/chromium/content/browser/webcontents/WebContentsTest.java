@@ -25,7 +25,6 @@ import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsStatics;
-import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_shell.Shell;
@@ -388,13 +387,11 @@ public class WebContentsTest {
 
         final ChildProcessConnection connection = getSandboxedChildProcessConnection();
         // Need to poll here because there is an intentional delay for removing binding.
-        CriteriaHelper.pollInstrumentationThread(new Criteria("Failed to remove moderate binding") {
-            @Override
-            public boolean isSatisfied() {
-                return ChildProcessLauncherTestUtils.runOnLauncherAndGetResult(
-                        () -> !connection.isModerateBindingBound());
-            }
-        });
+        CriteriaHelper.pollInstrumentationThread(
+                ()
+                        -> ChildProcessLauncherTestUtils.runOnLauncherAndGetResult(
+                                () -> !connection.isModerateBindingBound()),
+                "Failed to remove moderate binding");
 
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> webContents.setImportance(ChildProcessImportance.MODERATE));
@@ -415,13 +412,11 @@ public class WebContentsTest {
                 () -> Assert.assertTrue(connection.isStrongBindingBound()));
 
         TestThreadUtils.runOnUiThreadBlocking(() -> webContents.onHide());
-        CriteriaHelper.pollInstrumentationThread(new Criteria("Failed to remove strong binding") {
-            @Override
-            public boolean isSatisfied() {
-                return ChildProcessLauncherTestUtils.runOnLauncherAndGetResult(
-                        () -> !connection.isStrongBindingBound());
-            }
-        });
+        CriteriaHelper.pollInstrumentationThread(
+                ()
+                        -> ChildProcessLauncherTestUtils.runOnLauncherAndGetResult(
+                                () -> !connection.isStrongBindingBound()),
+                "Failed to remove strong binding");
 
         TestThreadUtils.runOnUiThreadBlocking(() -> webContents.onShow());
         ChildProcessLauncherTestUtils.runOnLauncherThreadBlocking(

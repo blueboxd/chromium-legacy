@@ -25,6 +25,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "build/build_config.h"
 #include "fuchsia/base/agent_impl.h"
 #include "fuchsia/base/context_provider_test_connector.h"
 #include "fuchsia/base/fake_component_context.h"
@@ -201,7 +202,9 @@ class FakeComponentState : public cr_fuchsia::AgentImpl::ComponentStateBase {
 
 class CastRunnerIntegrationTest : public testing::Test {
  public:
-  CastRunnerIntegrationTest() : CastRunnerIntegrationTest(/*headless=*/false) {}
+  CastRunnerIntegrationTest()
+      : CastRunnerIntegrationTest(/*enable_headless=*/false,
+                                  /*enable_vulkan=*/false) {}
   CastRunnerIntegrationTest(const CastRunnerIntegrationTest&) = delete;
   CastRunnerIntegrationTest& operator=(const CastRunnerIntegrationTest&) =
       delete;
@@ -216,7 +219,7 @@ class CastRunnerIntegrationTest : public testing::Test {
   }
 
  protected:
-  explicit CastRunnerIntegrationTest(bool headless)
+  explicit CastRunnerIntegrationTest(bool enable_headless, bool enable_vulkan)
       : app_config_manager_binding_(&component_services_,
                                     &app_config_manager_) {
     EnsureFuchsiaDirSchemeInitialized();
@@ -225,9 +228,11 @@ class CastRunnerIntegrationTest : public testing::Test {
     fuchsia::web::ContextFeatureFlags feature_flags =
         fuchsia::web::ContextFeatureFlags::NETWORK |
         fuchsia::web::ContextFeatureFlags::LEGACYMETRICS;
-    if (headless) {
-      feature_flags =
-          feature_flags | fuchsia::web::ContextFeatureFlags::HEADLESS;
+    if (enable_headless) {
+      feature_flags |= fuchsia::web::ContextFeatureFlags::HEADLESS;
+    }
+    if (enable_vulkan) {
+      feature_flags |= fuchsia::web::ContextFeatureFlags::VULKAN;
     }
 
     WebContentRunner::GetContextParamsCallback get_context_params =
@@ -243,8 +248,8 @@ class CastRunnerIntegrationTest : public testing::Test {
               CastRunner::kRemoteDebuggingPort);
           return create_context_params;
         });
-    cast_runner_ =
-        std::make_unique<CastRunner>(std::move(get_context_params), headless);
+    cast_runner_ = std::make_unique<CastRunner>(std::move(get_context_params),
+                                                enable_headless);
     cast_runner_->PublishRunnerService(&outgoing_directory_);
 
     StartAndPublishWebEngine();
@@ -790,7 +795,8 @@ TEST_F(CastRunnerIntegrationTest, MicrophoneRedirect) {
 class HeadlessCastRunnerIntegrationTest : public CastRunnerIntegrationTest {
  public:
   HeadlessCastRunnerIntegrationTest()
-      : CastRunnerIntegrationTest(/*headless=*/true) {}
+      : CastRunnerIntegrationTest(/*enable_headless=*/true,
+                                  /*enable_vulkan=*/false) {}
 };
 
 // A basic integration test ensuring a basic cast request launches the right
@@ -852,4 +858,62 @@ TEST_F(CastRunnerIntegrationTest, LegacyMetricsRedirect) {
       },
       base::Unretained(&component_state_), run_loop.QuitClosure());
   run_loop.Run();
+}
+
+TEST_F(CastRunnerIntegrationTest, WebGLContextAbsentWithoutVulkanFeature) {
+  const char kTestPath[] = "/webgl_presence.html";
+  const GURL test_url = test_server_.GetURL(kTestPath);
+  app_config_manager_.AddApp(kTestAppId, test_url);
+
+  CreateComponentContextAndStartComponent();
+
+  EXPECT_EQ(ExecuteJavaScript("document.title"), "absent");
+}
+
+TEST_F(CastRunnerIntegrationTest,
+       WebGLContextAbsentWithoutVulkanFeature_IsolatedRunner) {
+  const GURL kContentDirectoryUrl("fuchsia-dir://testdata/webgl_presence.html");
+
+  RegisterAppWithTestData(kContentDirectoryUrl);
+  CreateComponentContextAndStartComponent();
+  CheckAppUrl(kContentDirectoryUrl);
+
+  EXPECT_EQ(ExecuteJavaScript("document.title"), "absent");
+}
+
+#if defined(ARCH_CPU_ARM_FAMILY)
+// TODO(crbug.com/1058247): Support Vulkan in tests on ARM64.
+#define MAYBE_VulkanCastRunnerIntegrationTest \
+  DISABLED_VulkanCastRunnerIntegrationTest
+#else
+#define MAYBE_VulkanCastRunnerIntegrationTest VulkanCastRunnerIntegrationTest
+#endif
+
+class MAYBE_VulkanCastRunnerIntegrationTest : public CastRunnerIntegrationTest {
+ public:
+  MAYBE_VulkanCastRunnerIntegrationTest()
+      : CastRunnerIntegrationTest(/*enable_headless=*/false,
+                                  /*enable_vulkan=*/true) {}
+};
+
+TEST_F(MAYBE_VulkanCastRunnerIntegrationTest,
+       WebGLContextPresentWithVulkanFeature) {
+  const char kTestPath[] = "/webgl_presence.html";
+  const GURL test_url = test_server_.GetURL(kTestPath);
+  app_config_manager_.AddApp(kTestAppId, test_url);
+
+  CreateComponentContextAndStartComponent();
+
+  EXPECT_EQ(ExecuteJavaScript("document.title"), "present");
+}
+
+TEST_F(MAYBE_VulkanCastRunnerIntegrationTest,
+       WebGLContextPresentWithVulkanFeature_IsolatedRunner) {
+  const GURL kContentDirectoryUrl("fuchsia-dir://testdata/webgl_presence.html");
+
+  RegisterAppWithTestData(kContentDirectoryUrl);
+  CreateComponentContextAndStartComponent();
+  CheckAppUrl(kContentDirectoryUrl);
+
+  EXPECT_EQ(ExecuteJavaScript("document.title"), "present");
 }

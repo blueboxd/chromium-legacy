@@ -1099,5 +1099,26 @@ TEST_F(AppActivityRegistryTest, WebAppInstalled) {
   task_environment()->FastForwardBy(base::TimeDelta::FromHours(1));
 }
 
+TEST_F(AppActivityRegistryTest, AppBlocked) {
+  const AppLimit app1_limit(AppRestriction::kBlocked, base::nullopt,
+                            base::Time::Now());
+  const std::map<AppId, AppLimit> limits{{kApp1, app1_limit}};
+
+  EXPECT_CALL(
+      notification_delegate_mock(),
+      ShowAppTimeLimitNotification(
+          kApp1, testing::_, chromeos::app_time::AppNotification::kBlocked))
+      .Times(1);
+  registry().UpdateAppLimits(limits);
+
+  EXPECT_CALL(
+      notification_delegate_mock(),
+      ShowAppTimeLimitNotification(
+          kApp1, testing::_, chromeos::app_time::AppNotification::kAvailable))
+      .Times(1);
+
+  registry().UpdateAppLimits(std::map<AppId, AppLimit>());
+}
+
 }  // namespace app_time
 }  // namespace chromeos

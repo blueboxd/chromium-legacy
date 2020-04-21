@@ -136,8 +136,8 @@ static ResourceRequest CreateResourceRequest(const char* method,
   request.request_initiator = origin;  // ensure initiator is set
   request.is_main_frame = true;
   request.trusted_params = network::ResourceRequest::TrustedParams();
-  request.trusted_params->network_isolation_key =
-      net::NetworkIsolationKey(origin, origin);
+  request.trusted_params->isolation_info =
+      net::IsolationInfo::CreateForInternalRequest(origin);
   return request;
 }
 
@@ -4376,8 +4376,12 @@ TEST_F(URLLoaderTest, CookieReportingCategories) {
     ResourceRequest request = CreateResourceRequest(
         "GET", https_server.GetURL("/set-cookie?a=b;Secure"));
     // Make this a third-party request.
+    url::Origin third_party_origin =
+        url::Origin::Create(GURL("http://www.example.com"));
     request.site_for_cookies =
-        net::SiteForCookies::FromUrl(GURL("http://www.example.com"));
+        net::SiteForCookies::FromOrigin(third_party_origin);
+    request.trusted_params->isolation_info =
+        net::IsolationInfo::CreateForInternalRequest(third_party_origin);
 
     base::RunLoop delete_run_loop;
     mojo::PendingRemote<mojom::URLLoader> loader;
@@ -4432,8 +4436,12 @@ TEST_F(URLLoaderTest, CookieReportingCategories) {
     ResourceRequest request = CreateResourceRequest(
         "GET", https_server.GetURL("/set-cookie?a=b;Secure"));
     // Make this a third-party request.
+    url::Origin third_party_origin =
+        url::Origin::Create(GURL("http://www.example.com"));
     request.site_for_cookies =
-        net::SiteForCookies::FromUrl(GURL("http://www.example.com"));
+        net::SiteForCookies::FromOrigin(third_party_origin);
+    request.trusted_params->isolation_info =
+        net::IsolationInfo::CreateForInternalRequest(third_party_origin);
 
     base::RunLoop delete_run_loop;
     mojo::PendingRemote<mojom::URLLoader> loader;

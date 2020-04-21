@@ -132,9 +132,11 @@ void AppServiceWrapper::GetAppIcon(
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile_);
   DCHECK(proxy);
+  const std::string app_service_id = AppServiceIdFromAppId(app_id, profile_);
+  DCHECK(!app_service_id.empty());
 
   proxy->LoadIcon(
-      app_id.app_type(), app_id.app_id(),
+      app_id.app_type(), app_service_id,
       apps::mojom::IconCompression::kUncompressed, size_hint_in_dp,
       /* allow_placeholder_icon */ false,
       base::BindOnce(

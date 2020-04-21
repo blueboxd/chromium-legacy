@@ -11,7 +11,6 @@ import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition;
 import static android.support.test.espresso.matcher.ViewMatchers.Visibility.GONE;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static android.support.test.espresso.matcher.ViewMatchers.isRoot;
 import static android.support.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withParent;
@@ -35,6 +34,7 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.r
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.switchTabModel;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyTabModelTabCount;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyTabSwitcherCardCount;
+import static org.chromium.chrome.test.util.ViewUtils.onViewWaiting;
 import static org.chromium.chrome.test.util.ViewUtils.waitForView;
 import static org.chromium.components.embedder_support.util.UrlConstants.NTP_URL;
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL;
@@ -102,7 +102,6 @@ import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.OverviewModeBehaviorWatcher;
-import org.chromium.chrome.test.util.ViewUtils;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
@@ -1495,7 +1494,7 @@ public class StartSurfaceLayoutTest {
 
         onView(withId(R.id.tab_list_view)).check(TabCountAssertion.havingTabCount(1));
         onView(withId(R.id.search_button))
-                .check(ViewUtils.waitForView(allOf(withText(expectedTerm), isDisplayed())));
+                .check(waitForView(allOf(withText(expectedTerm), isDisplayed())));
         Espresso.pressBack();
 
         // Do another search, and verify the chip is gone.
@@ -1520,13 +1519,13 @@ public class StartSurfaceLayoutTest {
 
         onView(withId(R.id.tab_list_view)).check(TabCountAssertion.havingTabCount(1));
         onView(withId(R.id.search_button))
-                .check(ViewUtils.waitForView(allOf(withText(expectedTerm), isDisplayed())));
+                .check(waitForView(allOf(withText(expectedTerm), isDisplayed())));
 
         // Click the chip and check the tab navigates back to the search result page.
         assertEquals(mUrl, currentTab.getUrlString());
         OverviewModeBehaviorWatcher hideWatcher = TabUiTestHelper.createOverviewHideWatcher(cta);
         onView(withId(R.id.search_button))
-                .check(ViewUtils.waitForView(allOf(withText(expectedTerm), isDisplayed())));
+                .check(waitForView(allOf(withText(expectedTerm), isDisplayed())));
         onView(withId(R.id.search_button)).perform(click());
         hideWatcher.waitForBehavior();
         ChromeTabUtils.waitForTabPageLoaded(currentTab, searchUrl.get());
@@ -1575,7 +1574,7 @@ public class StartSurfaceLayoutTest {
 
         onView(withId(R.id.tab_list_view)).check(TabCountAssertion.havingTabCount(1));
         onView(withId(R.id.search_button))
-                .check(ViewUtils.waitForView(allOf(withText(searchTerm), isDisplayed())));
+                .check(waitForView(allOf(withText(searchTerm), isDisplayed())));
 
         // Switch the default search engine from google.com to yahoo.com, the search chip icon
         // should change.
@@ -1616,7 +1615,7 @@ public class StartSurfaceLayoutTest {
         robot.resultRobot.verifyTabSelectionEditorIsHidden();
         onView(allOf(withParent(withId(R.id.compositor_view_holder)), withId(R.id.tab_list_view)))
                 .check(TabCountAssertion.havingTabCount(2));
-        onView(isRoot()).check(waitForView(withText("2 tabs grouped")));
+        onViewWaiting(withText("2 tabs grouped"));
     }
 
     private void enterTabGroupManualSelection(ChromeTabbedActivity cta) {

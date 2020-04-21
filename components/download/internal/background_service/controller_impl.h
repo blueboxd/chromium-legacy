@@ -70,7 +70,7 @@ class ControllerImpl : public Controller,
   ~ControllerImpl() override;
 
   // Controller implementation.
-  void Initialize(const base::Closure& callback) override;
+  void Initialize(base::OnceClosure callback) override;
   State GetState() override;
   void StartDownload(const DownloadParams& params) override;
   void PauseDownload(const std::string& guid) override;
@@ -265,7 +265,7 @@ class ControllerImpl : public Controller,
   std::unique_ptr<FileMonitor> file_monitor_;
 
   // Internal state.
-  base::Closure init_callback_;
+  base::OnceClosure init_callback_;
   State controller_state_;
   StartupStatus startup_status_;
   std::set<std::string> externally_active_downloads_;

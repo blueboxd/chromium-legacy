@@ -29,23 +29,17 @@ String TransportStateToString(webrtc::DtlsTransportState state) {
   switch (state) {
     case webrtc::DtlsTransportState::kNew:
       return String("new");
-      break;
     case webrtc::DtlsTransportState::kConnecting:
       return String("connecting");
-      break;
     case webrtc::DtlsTransportState::kConnected:
       return String("connected");
-      break;
     case webrtc::DtlsTransportState::kClosed:
       return String("closed");
-      break;
     case webrtc::DtlsTransportState::kFailed:
       return String("failed");
-      break;
     default:
       NOTREACHED();
       return String("failed");
-      break;
   }
 }
 

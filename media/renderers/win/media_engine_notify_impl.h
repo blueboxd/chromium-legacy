@@ -18,7 +18,6 @@ namespace media {
 
 using ErrorCB = base::RepeatingCallback<void(PipelineStatus)>;
 using EndedCB = base::RepeatingClosure;
-using DurationChangedCB = base::RepeatingClosure;
 using BufferingStateChangedCB =
     base::RepeatingCallback<void(BufferingState, BufferingStateChangeReason)>;
 using VideoNaturalSizeChangedCB = base::RepeatingClosure;
@@ -38,7 +37,6 @@ class MediaEngineNotifyImpl
   HRESULT RuntimeClassInitialize(
       ErrorCB error_cb,
       EndedCB ended_cb,
-      DurationChangedCB duration_changed_cb,
       BufferingStateChangedCB buffering_state_changed_cb,
       VideoNaturalSizeChangedCB video_natural_size_changed_cb);
 
@@ -55,7 +53,6 @@ class MediaEngineNotifyImpl
   // e.g. using BindToCurrentLoop().
   ErrorCB error_cb_;
   EndedCB ended_cb_;
-  DurationChangedCB duration_changed_cb_;
   BufferingStateChangedCB buffering_state_changed_cb_;
   VideoNaturalSizeChangedCB video_natural_size_changed_cb_;
 

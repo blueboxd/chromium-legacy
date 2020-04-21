@@ -4,7 +4,8 @@
 
 #include "third_party/blink/renderer/core/frame/dactyloscoper.h"
 
-#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 
 namespace blink {
@@ -21,9 +22,9 @@ void Dactyloscoper::Record(ExecutionContext* context, WebFeature feature) {
   // TODO: Workers.
   if (!context)
     return;
-  if (auto* document = Document::DynamicFrom(context)) {
-    if (DocumentLoader* loader = document->Loader())
-      loader->GetDactyloscoper().Record(feature);
+  if (auto* window = DynamicTo<LocalDOMWindow>(context)) {
+    if (auto* frame = window->GetFrame())
+      frame->Loader().GetDocumentLoader()->GetDactyloscoper().Record(feature);
   }
 }
 

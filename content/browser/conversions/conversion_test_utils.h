@@ -19,10 +19,10 @@
 
 namespace content {
 
-class EmptyStorageDelegate : public ConversionStorage::Delegate {
+class PassThroughStorageDelegate : public ConversionStorage::Delegate {
  public:
-  EmptyStorageDelegate() = default;
-  ~EmptyStorageDelegate() override = default;
+  PassThroughStorageDelegate() = default;
+  ~PassThroughStorageDelegate() override = default;
 
   // ConversionStorage::Delegate
   void ProcessNewConversionReports(
@@ -43,6 +43,10 @@ class TestConversionManager : public ConversionManager {
   void HandleConversion(const StorableConversion& conversion) override;
   void HandleSentReport(int64_t conversion_id) override;
   const ConversionPolicy& GetConversionPolicy() const override;
+  void ClearData(base::Time delete_begin,
+                 base::Time delete_end,
+                 base::RepeatingCallback<bool(const url::Origin&)> filter,
+                 base::OnceClosure done) override;
 
   // Resets all counters on this.
   void Reset();
@@ -64,7 +68,7 @@ class TestConversionManager : public ConversionManager {
 // builder pattern.
 class ImpressionBuilder {
  public:
-  ImpressionBuilder(base::Time time);
+  explicit ImpressionBuilder(base::Time time);
   ~ImpressionBuilder();
 
   ImpressionBuilder& SetExpiry(base::TimeDelta delta);

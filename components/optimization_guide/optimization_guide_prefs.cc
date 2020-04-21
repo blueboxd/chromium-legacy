@@ -70,6 +70,13 @@ const char kSessionStatisticFCPStdDev[] =
 const char kPendingHintsProcessingVersion[] =
     "optimization_guide.pending_hints_processing_version";
 
+// A dictionary pref that stores optimization type was previously
+// registered so that the first run of optimization types can be identified.
+// The entry is the OptimizationType enum. The value of the key-value pair will
+// not be used.
+const char kPreviouslyRegisteredOptimizationTypes[] =
+    "optimization_guide.previously_registered_optimization_types";
+
 void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterInt64Pref(
       kHintsFetcherLastFetchAttempt,
@@ -106,6 +113,8 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
 
   registry->RegisterStringPref(kPendingHintsProcessingVersion, "",
                                PrefRegistry::LOSSY_PREF);
+  registry->RegisterDictionaryPref(kPreviouslyRegisteredOptimizationTypes,
+                                   PrefRegistry::LOSSY_PREF);
 }
 
 }  // namespace prefs

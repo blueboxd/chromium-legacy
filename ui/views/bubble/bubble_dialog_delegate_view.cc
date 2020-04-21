@@ -12,6 +12,7 @@
 #include "build/build_config.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/ax_role_properties.h"
 #include "ui/base/default_style.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_utils.h"
@@ -513,8 +514,7 @@ void BubbleDialogDelegateView::HandleVisibilityChanged(Widget* widget,
   // the bubble in its entirety rather than just its title and initially focused
   // view.  See http://crbug.com/474622 for details.
   if (widget == GetWidget() && visible) {
-    if (GetAccessibleWindowRole() == ax::mojom::Role::kAlert ||
-        GetAccessibleWindowRole() == ax::mojom::Role::kAlertDialog) {
+    if (ui::IsAlert(GetAccessibleWindowRole())) {
       widget->GetRootView()->NotifyAccessibilityEvent(ax::mojom::Event::kAlert,
                                                       true);
     }

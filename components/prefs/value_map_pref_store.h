@@ -40,6 +40,7 @@ class COMPONENTS_PREFS_EXPORT ValueMapPrefStore : public WriteablePrefStore {
   void SetValueSilently(const std::string& key,
                         std::unique_ptr<base::Value> value,
                         uint32_t flags) override;
+  void RemoveValuesByPrefixSilently(const std::string& prefix) override;
 
  protected:
   ~ValueMapPrefStore() override;

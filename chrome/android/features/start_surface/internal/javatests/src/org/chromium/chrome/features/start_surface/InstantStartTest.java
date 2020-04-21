@@ -22,6 +22,7 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.Callback;
+import org.chromium.base.CommandLine;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
@@ -239,6 +240,7 @@ public class InstantStartTest {
             TabManagementDelegate tabManagementDelegate = TabManagementModuleProvider.getDelegate();
             startSurface.set(
                     tabManagementDelegate.createStartSurface(mActivityTestRule.getActivity()));
+            startSurface.get().getController().enableRecordingFirstMeaningfulPaint(0);
             startSurface.get().getController().showOverview(false);
         });
         Assert.assertTrue(startSurface.get().getController().overviewVisible());
@@ -306,6 +308,31 @@ public class InstantStartTest {
                 Criteria.equals(true, () -> allCardsHaveThumbnail(recyclerView)));
         mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(R.id.tab_list_view),
                 "tabSwitcher_3tabs");
+
+        // Resume native initialization and make sure it doesn't crash.
+        // TODO(crbug.com/1065314): emulate realistic pre-native to post-native transition
+        //  with real tab models, and make sure the GTS looks the same.
+        //  Right now the real tab model is empty despite of our fake state file.
+        Assert.assertFalse(LibraryLoader.getInstance().isInitialized());
+
+        CommandLine.getInstance().removeSwitch(ChromeSwitches.DISABLE_NATIVE_INITIALIZATION);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mActivityTestRule.getActivity().startDelayedNativeInitializationForTests());
+        CriteriaHelper.pollUiThread(() -> {
+            return mActivityTestRule.getActivity()
+                            .getTabModelSelector()
+                            .getTabModelFilterProvider()
+                            .getCurrentTabModelFilter()
+                    != null
+                    && mActivityTestRule.getActivity()
+                               .getTabModelSelector()
+                               .getTabModelFilterProvider()
+                               .getCurrentTabModelFilter()
+                               .isTabModelRestored();
+        });
+        Assert.assertTrue(LibraryLoader.getInstance().isInitialized());
+        mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(R.id.tab_list_view),
+                "tabSwitcher_empty");
     }
 
     @Test

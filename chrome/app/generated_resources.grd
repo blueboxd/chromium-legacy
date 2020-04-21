@@ -8990,7 +8990,10 @@ Please help our engineers fix this problem. Tell us what happened right before y
 
       <!-- Live caption. -->
       <message name="IDS_LIVE_CAPTION_BUBBLE_TITLE" desc="Title for the Live Caption bubble">
-          Live Caption
+        Live Caption
+      </message>
+      <message name="IDS_LIVE_CAPTION_BUBBLE_ERROR" desc="Error message for the Live Caption bubble when Live Captions are unavailable.">
+        Live Caption is not available right now
       </message>
 
       <!-- Media Galleries. -->

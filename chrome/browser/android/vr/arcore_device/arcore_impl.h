@@ -140,8 +140,7 @@ class ArCoreImpl : public ArCore {
 
   mojom::XRHitTestSubscriptionResultsDataPtr GetHitTestSubscriptionResults(
       const gfx::Transform& mojo_from_viewer,
-      const base::Optional<std::vector<mojom::XRInputSourceStatePtr>>&
-          maybe_input_state) override;
+      const std::vector<mojom::XRInputSourceStatePtr>& input_state) override;
 
   void UnsubscribeFromHitTest(uint64_t subscription_id) override;
 
@@ -155,8 +154,7 @@ class ArCoreImpl : public ArCore {
 
   void ProcessAnchorCreationRequests(
       const gfx::Transform& mojo_from_viewer,
-      const base::Optional<std::vector<mojom::XRInputSourceStatePtr>>&
-          maybe_input_state) override;
+      const std::vector<mojom::XRInputSourceStatePtr>& input_state) override;
 
   void DetachAnchor(uint64_t anchor_id) override;
 
@@ -222,8 +220,7 @@ class ArCoreImpl : public ArCore {
   bool NativeOriginExists(
       const mojom::XRNativeOriginInformation& native_origin_information,
       const gfx::Transform& mojo_from_viewer,
-      const base::Optional<std::vector<mojom::XRInputSourceStatePtr>>&
-          maybe_input_state);
+      const std::vector<mojom::XRInputSourceStatePtr>& input_state);
 
   // Returns mojo_from_native_origin transform given native origin
   // information. If the transform cannot be found or is unknown, it will return
@@ -231,8 +228,7 @@ class ArCoreImpl : public ArCore {
   base::Optional<gfx::Transform> GetMojoFromNativeOrigin(
       const mojom::XRNativeOriginInformation& native_origin_information,
       const gfx::Transform& mojo_from_viewer,
-      const base::Optional<std::vector<mojom::XRInputSourceStatePtr>>&
-          maybe_input_state);
+      const std::vector<mojom::XRInputSourceStatePtr>& input_state);
 
   // Returns mojo_from_reference_space transform given reference space
   // category. Mojo_from_reference_space is equivalent to
@@ -251,12 +247,11 @@ class ArCoreImpl : public ArCore {
   std::vector<std::pair<uint32_t, gfx::Transform>> GetMojoFromInputSources(
       const std::string& profile_name,
       const gfx::Transform& mojo_from_viewer,
-      const base::Optional<std::vector<mojom::XRInputSourceStatePtr>>&
-          maybe_input_state);
+      const std::vector<mojom::XRInputSourceStatePtr>& maybe_input_state);
 
   // Processes deferred anchor creation requests.
   // |mojo_from_viewer| - viewer pose in world space of the current frame.
-  // |maybe_input_state| - current input state.
+  // |input_state| - current input state.
   // |anchor_creation_requests| - vector of deferred anchor creation requests
   // that are supposed to be processed now; post-call, the vector will only
   // contain the requests that have not been processed.
@@ -266,8 +261,7 @@ class ArCoreImpl : public ArCore {
   template <typename T, typename FunctionType>
   void ProcessAnchorCreationRequestsHelper(
       const gfx::Transform& mojo_from_viewer,
-      const base::Optional<std::vector<mojom::XRInputSourceStatePtr>>&
-          maybe_input_state,
+      const std::vector<mojom::XRInputSourceStatePtr>& input_state,
       std::vector<T>* anchor_creation_requests,
       FunctionType&& create_anchor_function);
 

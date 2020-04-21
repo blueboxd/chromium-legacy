@@ -1,11 +1,3 @@
 Document
 ++ComboBox ExpandCollapse.ExpandCollapseState='Collapsed' Value.Value='Onscreen 1'
-++++List Selection.CanSelectMultiple=false Selection.IsSelectionRequired=false
-++++++ListItem Name='Onscreen 1' SelectionItem.IsSelected=true
-++++++ListItem Name='Onscreen 2' SelectionItem.IsSelected=false
-++++++ListItem Name='Onscreen 3' SelectionItem.IsSelected=false
 ++ComboBox ExpandCollapse.ExpandCollapseState='Collapsed' Value.Value='Offscreen 1'
-++++List Selection.CanSelectMultiple=false Selection.IsSelectionRequired=false
-++++++ListItem Name='Offscreen 1' SelectionItem.IsSelected=true
-++++++ListItem Name='Offscreen 2' SelectionItem.IsSelected=false
-++++++ListItem Name='Offscreen 3' SelectionItem.IsSelected=false

@@ -133,11 +133,9 @@ class NetworkRequestMetricsBrowserTest
                                   subresource_path.c_str());
       case RequestType::kImage:
         return base::StringPrintf("<img src='%s'>", subresource_path.c_str());
-        break;
       case RequestType::kScript:
         return base::StringPrintf("<script src='%s'></script>",
                                   subresource_path.c_str());
-        break;
       case RequestType::kMainFrame:
         NOTREACHED();
     }

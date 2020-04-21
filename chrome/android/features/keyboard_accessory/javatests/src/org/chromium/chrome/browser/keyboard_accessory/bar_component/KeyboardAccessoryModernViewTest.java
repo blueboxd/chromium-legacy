@@ -27,6 +27,7 @@ import static org.chromium.chrome.browser.keyboard_accessory.bar_component.Keybo
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.SHEET_TITLE;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.TAB_LAYOUT_ITEM;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.VISIBLE;
+import static org.chromium.chrome.test.util.ViewUtils.onViewWaiting;
 import static org.chromium.chrome.test.util.ViewUtils.waitForView;
 
 import android.content.pm.ActivityInfo;
@@ -204,8 +205,7 @@ public class KeyboardAccessoryModernViewTest {
                     createAutofillChipAndTab("Johnathan", result -> clickRecorded.set(true)));
         });
 
-        onView(isRoot()).check(waitForView(withText("Johnathan")));
-        onView(withText("Johnathan")).perform(click());
+        onViewWaiting(withText("Johnathan")).perform(click());
 
         assertTrue(clickRecorded.get());
     }
@@ -254,7 +254,7 @@ public class KeyboardAccessoryModernViewTest {
             mModel.get(BAR_ITEMS).set(new BarItem[] {itemWithIPH, createTabs()});
         });
 
-        onView(isRoot()).check(waitForView(withText("Johnathan")));
+        onViewWaiting(withText("Johnathan"));
         waitForHelpBubble(withText(R.string.iph_keyboard_accessory_fill_password));
         onView(withChild(withText("Johnathan"))).check(matches(isSelected()));
         onView(withText("Johnathan")).perform(click());
@@ -282,7 +282,7 @@ public class KeyboardAccessoryModernViewTest {
             mModel.get(BAR_ITEMS).set(new BarItem[] {itemWithIPH, createTabs()});
         });
 
-        onView(isRoot()).check(waitForView(withText("Johnathan")));
+        onViewWaiting(withText("Johnathan"));
         waitForHelpBubble(withText(R.string.iph_keyboard_accessory_fill_address));
         onView(withText("Johnathan")).perform(click());
 
@@ -308,7 +308,7 @@ public class KeyboardAccessoryModernViewTest {
             mModel.get(BAR_ITEMS).set(new BarItem[] {itemWithIPH, createTabs()});
         });
 
-        onView(isRoot()).check(waitForView(withText("Johnathan")));
+        onViewWaiting(withText("Johnathan"));
         waitForHelpBubble(withText(R.string.iph_keyboard_accessory_fill_payment));
         onView(withText("Johnathan")).perform(click());
 

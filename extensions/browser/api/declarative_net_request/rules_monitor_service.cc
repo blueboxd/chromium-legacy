@@ -131,25 +131,40 @@ void RulesMonitorService::UpdateDynamicRules(
     std::vector<int> rule_ids_to_remove,
     std::vector<api::declarative_net_request::Rule> rules_to_add,
     DynamicRuleUpdateUICallback callback) {
-  // TODO(crbug.com/953894): Subtle: The extension might just have been enabled
-  // and the ruleset for that extension might still be loading. In that case,
-  // the ruleset loading might race with updating the dynamic rules. If updating
-  // the dynamic rules wins the race, the subsequent completion of load will
-  // cause a DCHECK in RulesetManager::AddRuleset.
+  // Sanity check that this is only called for an enabled extension.
+  DCHECK(extension_registry_->enabled_extensions().Contains(extension.id()));
 
-  LoadRequestData data(extension.id());
+  DynamicRuleUpdate update(std::move(rule_ids_to_remove),
+                           std::move(rules_to_add), std::move(callback));
 
-  // We are updating the indexed ruleset. Don't set the expected checksum since
-  // it'll change.
-  data.rulesets.emplace_back(RulesetSource::CreateDynamic(context_, extension));
+  // There are two possible cases, either the extension has completed its
+  // initial ruleset load in response to OnExtensionLoaded or it is still
+  // undergoing that load. For the latter case, we must wait till the ruleset
+  // loading is complete.
+  auto it = pending_dynamic_rule_updates_.find(extension.id());
+  if (it != pending_dynamic_rule_updates_.end()) {
+    it->second.push_back(std::move(update));
+    return;
+  }
 
-  auto update_rules_callback =
-      base::BindOnce(&RulesMonitorService::OnDynamicRulesUpdated,
-                     weak_factory_.GetWeakPtr(), std::move(callback));
-  file_sequence_bridge_->UpdateDynamicRules(
-      std::move(data), std::move(rule_ids_to_remove), std::move(rules_to_add),
-      std::move(update_rules_callback));
+  // Else we can update dynamic rules immediately.
+  UpdateDynamicRulesInternal(extension.id(), std::move(update));
 }
+
+RulesMonitorService::DynamicRuleUpdate::DynamicRuleUpdate(
+    std::vector<int> rule_ids_to_remove,
+    std::vector<api::declarative_net_request::Rule> rules_to_add,
+    RulesMonitorService::DynamicRuleUpdateUICallback ui_callback)
+    : rule_ids_to_remove(std::move(rule_ids_to_remove)),
+      rules_to_add(std::move(rules_to_add)),
+      ui_callback(std::move(ui_callback)) {}
+
+RulesMonitorService::DynamicRuleUpdate::DynamicRuleUpdate(DynamicRuleUpdate&&) =
+    default;
+RulesMonitorService::DynamicRuleUpdate&
+RulesMonitorService::DynamicRuleUpdate::operator=(DynamicRuleUpdate&&) =
+    default;
+RulesMonitorService::DynamicRuleUpdate::~DynamicRuleUpdate() = default;
 
 RulesMonitorService::RulesMonitorService(
     content::BrowserContext* browser_context)
@@ -226,7 +241,7 @@ void RulesMonitorService::OnExtensionLoaded(
   if (prefs_->GetDNRDynamicRulesetChecksum(extension->id(),
                                            &expected_ruleset_checksum)) {
     RulesetInfo dynamic_ruleset(
-        RulesetSource::CreateDynamic(browser_context, *extension));
+        RulesetSource::CreateDynamic(browser_context, extension->id()));
     dynamic_ruleset.set_expected_checksum(expected_ruleset_checksum);
     load_data.rulesets.push_back(std::move(dynamic_ruleset));
   }
@@ -243,6 +258,14 @@ void RulesMonitorService::OnExtensionLoaded(
 
     return;
   }
+
+  // Add an entry for the extension in |pending_dynamic_rule_updates_| to
+  // indicate that it's loading its rulesets.
+  bool inserted =
+      pending_dynamic_rule_updates_
+          .emplace(extension->id(), std::vector<DynamicRuleUpdate>())
+          .second;
+  DCHECK(inserted);
 
   auto load_ruleset_callback = base::BindOnce(
       &RulesMonitorService::OnRulesetsLoaded, weak_factory_.GetWeakPtr());
@@ -284,12 +307,38 @@ void RulesMonitorService::OnExtensionUninstalled(
   // TODO(karandeepb): It's possible that this task fails, e.g. during shutdown.
   // Make this more robust.
   RulesetSource source =
-      RulesetSource::CreateDynamic(browser_context, *extension);
+      RulesetSource::CreateDynamic(browser_context, extension->id());
   DCHECK_EQ(source.json_path().DirName(), source.indexed_path().DirName());
   GetExtensionFileTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(base::IgnoreResult(&base::DeleteFile),
                      source.json_path().DirName(), false /* recursive */));
+}
+
+void RulesMonitorService::UpdateDynamicRulesInternal(
+    const ExtensionId& extension_id,
+    DynamicRuleUpdate update) {
+  if (!extension_registry_->enabled_extensions().Contains(extension_id)) {
+    // There is no enabled extension to respond to. While this is probably a
+    // no-op, still dispatch the callback to ensure any related book-keeping is
+    // done.
+    std::move(update.ui_callback).Run(base::nullopt /* error */);
+    return;
+  }
+
+  LoadRequestData data(extension_id);
+
+  // We are updating the indexed ruleset. Don't set the expected checksum since
+  // it'll change.
+  data.rulesets.emplace_back(
+      RulesetSource::CreateDynamic(context_, extension_id));
+
+  auto update_rules_callback =
+      base::BindOnce(&RulesMonitorService::OnDynamicRulesUpdated,
+                     weak_factory_.GetWeakPtr(), std::move(update.ui_callback));
+  file_sequence_bridge_->UpdateDynamicRules(
+      std::move(data), std::move(update.rule_ids_to_remove),
+      std::move(update.rules_to_add), std::move(update_rules_callback));
 }
 
 void RulesMonitorService::OnRulesetsLoaded(LoadRequestData load_data) {
@@ -299,6 +348,20 @@ void RulesMonitorService::OnRulesetsLoaded(LoadRequestData load_data) {
       [](const RulesetInfo& ruleset) { return ruleset.source().enabled(); }));
   DCHECK(std::is_sorted(load_data.rulesets.begin(), load_data.rulesets.end(),
                         &RulesetInfoCompareByID));
+
+  // Perform pending dynamic rule updates.
+  {
+    auto it = pending_dynamic_rule_updates_.find(load_data.extension_id);
+
+    // Even if there are no updates to perform (i.e., the list is empty), we
+    // expect an entry in the map.
+    DCHECK(it != pending_dynamic_rule_updates_.end());
+
+    for (DynamicRuleUpdate& update : it->second)
+      UpdateDynamicRulesInternal(load_data.extension_id, std::move(update));
+
+    pending_dynamic_rule_updates_.erase(it);
+  }
 
   if (test_observer_)
     test_observer_->OnRulesetLoadComplete(load_data.extension_id);

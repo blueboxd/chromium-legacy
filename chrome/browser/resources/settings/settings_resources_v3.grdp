@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <grit-part>
   <!-- Polymer 3.0 Elements -->
-  <include name="IDR_SETTINGS_A11Y_PAGE_A11Y_PAGE_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/a11y_page/a11y_page.m.js"
+  <include name="IDR_SETTINGS_A11Y_PAGE_A11Y_PAGE_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/a11y_page/a11y_page.js"
            use_base_dir="false"
            compress="false" type="BINDATA"
            preprocess="true" />
@@ -13,9 +13,8 @@
              compress="false" type="BINDATA" />
   </if>
   <if expr="is_win or is_macosx">
-    <include name="IDR_SETTINGS_A11Y_PAGE_CAPTIONS_BROWSER_PROXY_M_JS"
-             file="${root_gen_dir}/chrome/browser/resources/settings/a11y_page/captions_browser_proxy.m.js"
-             use_base_dir="false"
+    <include name="IDR_SETTINGS_A11Y_PAGE_CAPTIONS_BROWSER_PROXY_JS"
+             file="a11y_page/captions_browser_proxy.js"
              compress="false" type="BINDATA" />
   </if>
   <include name="IDR_SETTINGS_ABOUT_PAGE_ABOUT_PAGE_BROWSER_PROXY_M_JS"

@@ -9,11 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/services/local_search_service/public/mojom/local_search_service.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/receiver_set.h"
-#include "mojo/public/cpp/bindings/remote.h"
 
 class Profile;
 
@@ -21,10 +17,8 @@ namespace local_search_service {
 
 class LocalSearchServiceImpl;
 
-// This class owns an implementation of LocalSearchService.
-// It exposes LocalSearchService through the mojo interface by returning a
-// remote. However, in-process clients can request implementation ptr directly.
-// TODO(jiameng): the next cl will remove mojo and will provide impl directly.
+// TODO(jiameng): the next cl will remove this class completely because the
+// factory will return LocalSearchService (that will be a KeyedService).
 class LocalSearchServiceProxy : public KeyedService {
  public:
   // Profile isn't required, hence can be nullptr in tests.
@@ -34,19 +28,10 @@ class LocalSearchServiceProxy : public KeyedService {
   LocalSearchServiceProxy(const LocalSearchServiceProxy&) = delete;
   LocalSearchServiceProxy& operator=(const LocalSearchServiceProxy&) = delete;
 
-  // Clients should call this function to get a remote to LocalSearchService.
-  // This function returns to the caller a pointer to |remote_|, which is bound
-  // to |local_search_service_impl_|.
-  mojom::LocalSearchService* GetLocalSearchService();
-
-  // For in-process clients, it could be more efficient to get the
-  // implementation ptr directly.
   LocalSearchServiceImpl* GetLocalSearchServiceImpl();
 
  private:
-  void CreateLocalSearchServiceAndBind();
   std::unique_ptr<LocalSearchServiceImpl> local_search_service_impl_;
-  mojo::Remote<mojom::LocalSearchService> remote_;
 
   base::WeakPtrFactory<LocalSearchServiceProxy> weak_ptr_factory_{this};
 };

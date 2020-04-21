@@ -7,6 +7,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/optimization_guide/optimization_guide_hints_manager.h"
 #include "chrome/browser/optimization_guide/optimization_guide_navigation_data.h"
 #include "chrome/browser/optimization_guide/optimization_guide_session_statistic.h"
@@ -38,8 +39,8 @@ GetTopHostProviderIfUserPermitted(content::BrowserContext* browser_context) {
   if (top_host_provider)
     return top_host_provider;
 
-  // If not enabled by flag, see if the user is a Data Saver user and has seen
-  // all the right prompts for it.
+  // If not enabled by flag, see if the user is allowed to fetch from the remote
+  // Optimization Guide Service.
   return OptimizationGuideTopHostProvider::CreateIfAllowed(browser_context);
 }
 
@@ -116,6 +117,8 @@ void OptimizationGuideKeyedService::Initialize(
 
   Profile* profile = Profile::FromBrowserContext(browser_context_);
   top_host_provider_ = GetTopHostProviderIfUserPermitted(browser_context_);
+  UMA_HISTOGRAM_BOOLEAN("OptimizationGuide.RemoteFetchingEnabled",
+                        top_host_provider_ != nullptr);
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetURLLoaderFactoryForBrowserProcess();

@@ -8,12 +8,11 @@
  */
 
 // clang-format off
-// #import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
+import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
 // clang-format on
 
-cr.define('settings', function() {
   /** @interface */
-  /* #export */ class CaptionsBrowserProxy {
+  export class CaptionsBrowserProxy {
     /**
      * Open the native captions system dialog.
      */
@@ -21,20 +20,14 @@ cr.define('settings', function() {
   }
 
   /**
-   * @implements {settings.CaptionsBrowserProxy}
+   * @implements {CaptionsBrowserProxy}
    */
-  /* #export */ class CaptionsBrowserProxyImpl {
+  export class CaptionsBrowserProxyImpl {
     /** @override */
     openSystemCaptionsDialog() {
       chrome.send('openSystemCaptionsDialog');
     }
   }
 
-  cr.addSingletonGetter(CaptionsBrowserProxyImpl);
+  addSingletonGetter(CaptionsBrowserProxyImpl);
 
-  // #cr_define_end
-  return {
-    CaptionsBrowserProxy: CaptionsBrowserProxy,
-    CaptionsBrowserProxyImpl: CaptionsBrowserProxyImpl,
-  };
-});

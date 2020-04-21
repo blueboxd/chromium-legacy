@@ -113,8 +113,9 @@ enum class ElementFlags {
 };
 
 enum class ShadowRootType;
-enum class FocusDelegation;
-enum class SlotAssignmentMode;
+
+enum class SlotAssignmentMode { kManual, kAuto };
+enum class FocusDelegation { kNone, kDelegateFocus };
 
 enum class SelectionBehaviorOnFocus {
   kReset,
@@ -565,6 +566,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // throws an exception.  Multiple shadow roots are allowed only when
   // createShadowRoot() is used without any parameters from JavaScript.
   ShadowRoot* createShadowRoot(ExceptionState&);
+
   ShadowRoot* attachShadow(const ShadowRootInit*, ExceptionState&);
 
   void AttachDeclarativeShadowRoot(HTMLTemplateElement*,
@@ -576,9 +578,10 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
     return CreateShadowRootInternal();
   }
   ShadowRoot& CreateUserAgentShadowRoot();
-  ShadowRoot& AttachShadowRootInternal(ShadowRootType,
-                                       bool delegates_focus = false,
-                                       bool manual_slotting = false);
+  ShadowRoot& AttachShadowRootInternal(
+      ShadowRootType,
+      FocusDelegation focus_delegation = FocusDelegation::kNone,
+      SlotAssignmentMode slot_assignment_mode = SlotAssignmentMode::kAuto);
 
   // Returns the shadow root attached to this element if it is a shadow host.
   ShadowRoot* GetShadowRoot() const;
@@ -1031,8 +1034,9 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   bool IsDocumentNode() const =
       delete;  // This will catch anyone doing an unnecessary check.
 
-  bool CanAttachShadowRoot() const;
   ShadowRoot& CreateShadowRootInternal();
+  bool CanAttachShadowRoot() const;
+  const char* ErrorMessageForAttachShadow() const;
 
   void StyleAttributeChanged(const AtomicString& new_style_string,
                              AttributeModificationReason);

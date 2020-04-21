@@ -7,8 +7,8 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "device/vr/public/cpp/vr_device_provider.h"
 #include "device/vr/vr_device_base.h"
-#include "device/vr/vr_device_provider.h"
 #include "device/vr/vr_export.h"
 
 namespace device {

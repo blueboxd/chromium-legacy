@@ -357,7 +357,7 @@ void NetworkCongestionAnalyzer::FinalizeCurrentMeasurementPeriod() {
     // Records the count of in-flight requests causing the peak queueing delay
     // within the current measurement period. These samples are bucketized
     // into 10 peak queueing delay levels.
-    base::UmaHistogramCounts100(
+    LOCAL_HISTOGRAM_COUNTS_100(
         "NQE.CongestionAnalyzer.CountInflightRequestsForPeakQueueingDelay."
         "Level" +
             base::NumberToString(peak_queueing_delay_level),

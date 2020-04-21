@@ -16,6 +16,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
+#include "net/base/isolation_info.h"
 #include "net/base/load_flags.h"
 #include "net/cert/x509_util.h"
 #include "net/test/cert_test_util.h"
@@ -223,8 +224,7 @@ class SignedExchangeCertFetcherTest : public testing::Test {
             &mock_loader_factory_),
         std::move(throttles_), url, force_fetch, std::move(callback),
         nullptr /* devtools_proxy */, nullptr /* reporter */,
-        base::nullopt /* throttling_profile_id */,
-        base::nullopt /* network_isolation_key */);
+        base::nullopt /* throttling_profile_id */, net::IsolationInfo());
   }
 
   void CallOnReceiveResponse() {

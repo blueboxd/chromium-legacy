@@ -314,16 +314,16 @@ std::vector<RulesetSource> RulesetSource::CreateStatic(
 
 // static
 RulesetSource RulesetSource::CreateDynamic(content::BrowserContext* context,
-                                           const Extension& extension) {
+                                           const ExtensionId& extension_id) {
   base::FilePath dynamic_ruleset_directory =
       context->GetPath()
           .AppendASCII(kDynamicRulesetDirectory)
-          .AppendASCII(extension.id());
+          .AppendASCII(extension_id);
   return RulesetSource(
       dynamic_ruleset_directory.AppendASCII(kDynamicRulesJSONFilename),
       dynamic_ruleset_directory.AppendASCII(kDynamicIndexedRulesFilename),
       kDynamicRulesetID, dnr_api::SOURCE_TYPE_DYNAMIC,
-      dnr_api::MAX_NUMBER_OF_DYNAMIC_RULES, extension.id(), true /* enabled */);
+      dnr_api::MAX_NUMBER_OF_DYNAMIC_RULES, extension_id, true /* enabled */);
 }
 
 // static

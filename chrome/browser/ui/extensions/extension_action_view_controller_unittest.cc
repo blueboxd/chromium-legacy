@@ -729,11 +729,9 @@ ExtensionActionViewControllerGrayscaleTest::GetPageAccess(
     case PermissionType::kExplicitHost:
       return extension->permissions_data()->GetPageAccess(url, tab_id,
                                                           /*error=*/nullptr);
-      break;
     case PermissionType::kScriptableHost:
       return extension->permissions_data()->GetContentScriptAccess(
           url, tab_id, /*error=*/nullptr);
-      break;
   }
 }
 

@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -38,6 +39,8 @@ namespace {
 const char kNewTabOgbApiPath[] = "/async/newtab_ogb";
 
 const char kResponsePreamble[] = ")]}'";
+
+const char kUrlOverrideCommandLineSwitch[] = "ogb-parts-test-url";
 
 // This namespace contains helpers to extract SafeHtml-wrapped strings (see
 // https://github.com/google/safe-html-types) from the response json. If there
@@ -292,12 +295,19 @@ GURL OneGoogleBarLoaderImpl::GetLoadURLForTesting() const {
 }
 
 GURL OneGoogleBarLoaderImpl::GetApiUrl() const {
-  GURL google_base_url = google_util::CommandLineGoogleBaseURL();
-  if (!google_base_url.is_valid()) {
-    google_base_url = GURL(google_util::kGoogleHomepageURL);
-  }
+  GURL api_url;
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          kUrlOverrideCommandLineSwitch)) {
+    api_url = GURL(base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+        kUrlOverrideCommandLineSwitch));
+  } else {
+    GURL google_base_url = google_util::CommandLineGoogleBaseURL();
+    if (!google_base_url.is_valid()) {
+      google_base_url = GURL(google_util::kGoogleHomepageURL);
+    }
 
-  GURL api_url = google_base_url.Resolve(kNewTabOgbApiPath);
+    api_url = google_base_url.Resolve(kNewTabOgbApiPath);
+  }
 
   // Add the "hl=" parameter.
   api_url = net::AppendQueryParameter(api_url, "hl", application_locale_);

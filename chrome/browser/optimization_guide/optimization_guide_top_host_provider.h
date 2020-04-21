@@ -28,12 +28,6 @@ class NavigationHandle;
 class OptimizationGuideTopHostProvider
     : public optimization_guide::TopHostProvider {
  public:
-  // TODO(sophiechang): Make this constructor private when
-  // OptimizationGuideKeyedService is fully rolled out. All future callers
-  // should be using the CreateIfAllowed() factory method instead, which
-  // validates if the user has the proper permissions to use this class.
-  OptimizationGuideTopHostProvider(content::BrowserContext* BrowserContext,
-                                   base::Clock* time_clock);
   ~OptimizationGuideTopHostProvider() override;
 
   // Creates a OptimizationGuideTopHostProvider if the user is eligible to fetch
@@ -52,6 +46,10 @@ class OptimizationGuideTopHostProvider
   std::vector<std::string> GetTopHosts() override;
 
  private:
+  OptimizationGuideTopHostProvider(content::BrowserContext* BrowserContext,
+                                   base::Clock* time_clock);
+  friend class OptimizationGuideTopHostProviderTest;
+
   // Initializes the HintsFetcherTopHostBlacklist with all the hosts in the site
   // engagement service and transitions the blacklist state from kNotInitialized
   // to kInitialized.

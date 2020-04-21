@@ -18,6 +18,7 @@ import org.chromium.base.SysUtils;
 import org.chromium.base.UserData;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
@@ -446,6 +447,12 @@ public class ReaderModeManager extends EmptyTabObserver implements UserData {
 
         // Add the parent ID as an intent extra for back button functionality.
         customTabsIntent.intent.putExtra(EXTRA_READER_MODE_PARENT, tab.getId());
+
+        // Use Incognito CCT if the source page is in Incognito mode. This is gated by
+        // flag ChromeFeatureList.CCT_INCOGNITO.
+        if (tab.isIncognito()) {
+            customTabsIntent.intent.putExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, true);
+        }
 
         customTabsIntent.launchUrl(activity, Uri.parse(distillerUrl));
     }

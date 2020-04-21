@@ -15,11 +15,13 @@
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate_factory.h"
 #include "chrome/browser/password_manager/bulk_leak_check_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/version_info/version_info.h"
 #include "extensions/browser/extension_prefs_factory.h"
 #include "extensions/browser/extension_system.h"
@@ -352,8 +354,14 @@ base::string16 SafetyCheckHandler::GetStringForUpdates(UpdateStatus status) {
           base::ASCIIToUTF16(chrome::kChromeFixUpdateProblems));
     case UpdateStatus::kUnknown:
       return l10n_util::GetStringFUTF16(
-          IDS_SETTINGS_SAFETY_CHECK_UPDATES_UNKNOWN,
-          base::UTF8ToUTF16(version_info::GetVersionNumber()));
+          IDS_SETTINGS_ABOUT_PAGE_BROWSER_VERSION,
+          base::UTF8ToUTF16(version_info::GetVersionNumber()),
+          l10n_util::GetStringUTF16(version_info::IsOfficialBuild()
+                                        ? IDS_VERSION_UI_OFFICIAL
+                                        : IDS_VERSION_UI_UNOFFICIAL),
+          base::UTF8ToUTF16(chrome::GetChannelName()),
+          l10n_util::GetStringUTF16(sizeof(void*) == 8 ? IDS_VERSION_UI_64BIT
+                                                       : IDS_VERSION_UI_32BIT));
   }
 }
 

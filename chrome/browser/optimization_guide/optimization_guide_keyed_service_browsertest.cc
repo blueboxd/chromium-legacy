@@ -260,6 +260,8 @@ class OptimizationGuideKeyedServiceBrowserTest
     return url_that_redirects_to_no_hints_;
   }
 
+  base::HistogramTester* histogram_tester() { return &histogram_tester_; }
+
  private:
   std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
       const net::test_server::HttpRequest& request) {
@@ -286,6 +288,9 @@ class OptimizationGuideKeyedServiceBrowserTest
   optimization_guide::testing::TestHintsComponentCreator
       test_hints_component_creator_;
   std::unique_ptr<OptimizationGuideConsumerWebContentsObserver> consumer_;
+  // Histogram tester used specifically to capture metrics that are recorded
+  // during browser initialization.
+  base::HistogramTester histogram_tester_;
 
   DISALLOW_COPY_AND_ASSIGN(OptimizationGuideKeyedServiceBrowserTest);
 };
@@ -302,6 +307,13 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
   ASSERT_FALSE(
       OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile())
           ->GetTopHostProvider());
+
+  // ChromeOS has multiple profiles and optimization guide currently does not
+  // run on non-Android.
+#if !defined(OS_CHROMEOS)
+  histogram_tester()->ExpectUniqueSample(
+      "OptimizationGuide.RemoteFetchingEnabled", false, 1);
+#endif
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -740,6 +752,13 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(2ul, top_hosts.size());
   EXPECT_EQ("myfavoritesite.com", top_hosts[0]);
   EXPECT_EQ("myotherfavoritesite.com", top_hosts[1]);
+
+  // ChromeOS has multiple profiles and optimization guide currently does not
+  // run on non-Android.
+#if !defined(OS_CHROMEOS)
+  histogram_tester()->ExpectUniqueSample(
+      "OptimizationGuide.RemoteFetchingEnabled", true, 1);
+#endif
 }
 
 class OptimizationGuideKeyedServiceCommandLineOverridesTest
@@ -770,6 +789,13 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceCommandLineOverridesTest,
   EXPECT_EQ(2ul, top_hosts.size());
   EXPECT_EQ("whatever.com", top_hosts[0]);
   EXPECT_EQ("somehost.com", top_hosts[1]);
+
+  // ChromeOS has multiple profiles and optimization guide currently does not
+  // run on non-Android.
+#if !defined(OS_CHROMEOS)
+  histogram_tester()->ExpectUniqueSample(
+      "OptimizationGuide.RemoteFetchingEnabled", true, 1);
+#endif
 }
 
 class OptimizationGuideKeyedServiceTargetPredictionEnabledBrowserTest

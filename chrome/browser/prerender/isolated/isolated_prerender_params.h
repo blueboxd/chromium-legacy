@@ -14,14 +14,13 @@
 // Returns true if the Isolated Prerender feature is enabled.
 bool IsolatedPrerenderIsEnabled();
 
-// Returns true if the proxy for Isolated Prerenders should replace the DRP
-// custom proxy.
-bool IsolatedPrerenderShouldReplaceDataReductionCustomProxy();
-
 // The maximum number of prefetches that should be done from predictions on a
 // Google SRP. nullopt is returned for unlimited. Negative values given by the
 // field trial return nullopt.
 base::Optional<size_t> IsolatedPrerenderMaximumNumberOfPrefetches();
+
+// Whether idle sockets should be closed after every prefetch.
+bool IsolatedPrerenderCloseIdleSockets();
 
 // The amount of time to allow before timing out an origin probe.
 base::TimeDelta IsolatedPrerenderProbeTimeout();

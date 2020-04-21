@@ -123,14 +123,11 @@ class PreviewsLitePageRedirectURLLoaderInterceptorTest : public testing::Test {
     ASSERT_TRUE(previews::IsLitePageRedirectPreviewDomain(request.url));
 
     ASSERT_TRUE(request.trusted_params.has_value());
-    ASSERT_TRUE(request.trusted_params.value()
-                    .network_isolation_key.GetTopFrameOrigin()
-                    .has_value());
+    ASSERT_TRUE(
+        request.trusted_params->isolation_info.top_frame_origin().has_value());
 
-    GURL nik_url = request.trusted_params.value()
-                       .network_isolation_key.GetTopFrameOrigin()
-                       .value()
-                       .GetURL();
+    GURL nik_url =
+        request.trusted_params->isolation_info.top_frame_origin()->GetURL();
 
     EXPECT_TRUE(previews::IsLitePageRedirectPreviewDomain(nik_url));
     EXPECT_TRUE(request.site_for_cookies.IsFirstParty(nik_url));
@@ -195,6 +192,10 @@ TEST_F(PreviewsLitePageRedirectURLLoaderInterceptorTest,
 
   network::ResourceRequest request;
   request.trusted_params = network::ResourceRequest::TrustedParams();
+  url::Origin test_origin = url::Origin::Create(TestUrl());
+  request.trusted_params->isolation_info = net::IsolationInfo::Create(
+      net::IsolationInfo::RedirectMode::kUpdateTopFrame, test_origin,
+      test_origin, net::SiteForCookies::FromOrigin(test_origin));
   request.site_for_cookies = net::SiteForCookies::FromUrl(TestUrl());
   request.url = TestUrl();
   request.resource_type =
@@ -228,6 +229,10 @@ TEST_F(PreviewsLitePageRedirectURLLoaderInterceptorTest,
 
   network::ResourceRequest request;
   request.trusted_params = network::ResourceRequest::TrustedParams();
+  url::Origin test_origin = url::Origin::Create(TestUrl());
+  request.trusted_params->isolation_info = net::IsolationInfo::Create(
+      net::IsolationInfo::RedirectMode::kUpdateTopFrame, test_origin,
+      test_origin, net::SiteForCookies::FromOrigin(test_origin));
   request.site_for_cookies = net::SiteForCookies::FromUrl(TestUrl());
   request.url = TestUrl();
   request.resource_type =
@@ -260,6 +265,10 @@ TEST_F(PreviewsLitePageRedirectURLLoaderInterceptorTest,
   base::HistogramTester histogram_tester;
   network::ResourceRequest request;
   request.trusted_params = network::ResourceRequest::TrustedParams();
+  url::Origin test_origin = url::Origin::Create(TestUrl());
+  request.trusted_params->isolation_info = net::IsolationInfo::Create(
+      net::IsolationInfo::RedirectMode::kUpdateTopFrame, test_origin,
+      test_origin, net::SiteForCookies::FromOrigin(test_origin));
   request.site_for_cookies = net::SiteForCookies::FromUrl(TestUrl());
   request.url = TestUrl();
   request.resource_type =
@@ -292,6 +301,10 @@ TEST_F(PreviewsLitePageRedirectURLLoaderInterceptorTest,
   base::HistogramTester histogram_tester;
   network::ResourceRequest request;
   request.trusted_params = network::ResourceRequest::TrustedParams();
+  url::Origin test_origin = url::Origin::Create(TestUrl());
+  request.trusted_params->isolation_info = net::IsolationInfo::Create(
+      net::IsolationInfo::RedirectMode::kUpdateTopFrame, test_origin,
+      test_origin, net::SiteForCookies::FromOrigin(test_origin));
   request.site_for_cookies = net::SiteForCookies::FromUrl(TestUrl());
   request.url = TestUrl();
   request.resource_type =
@@ -324,6 +337,10 @@ TEST_F(PreviewsLitePageRedirectURLLoaderInterceptorTest,
   base::HistogramTester histogram_tester;
   network::ResourceRequest request;
   request.trusted_params = network::ResourceRequest::TrustedParams();
+  url::Origin test_origin = url::Origin::Create(TestUrl());
+  request.trusted_params->isolation_info = net::IsolationInfo::Create(
+      net::IsolationInfo::RedirectMode::kUpdateTopFrame, test_origin,
+      test_origin, net::SiteForCookies::FromOrigin(test_origin));
   request.site_for_cookies = net::SiteForCookies::FromUrl(TestUrl());
   request.url = TestUrl();
   request.resource_type =
@@ -355,6 +372,10 @@ TEST_F(PreviewsLitePageRedirectURLLoaderInterceptorTest, NetStackError) {
   base::HistogramTester histogram_tester;
   network::ResourceRequest request;
   request.trusted_params = network::ResourceRequest::TrustedParams();
+  url::Origin test_origin = url::Origin::Create(TestUrl());
+  request.trusted_params->isolation_info = net::IsolationInfo::Create(
+      net::IsolationInfo::RedirectMode::kUpdateTopFrame, test_origin,
+      test_origin, net::SiteForCookies::FromOrigin(test_origin));
   request.site_for_cookies = net::SiteForCookies::FromUrl(TestUrl());
   request.url = TestUrl();
   request.resource_type =

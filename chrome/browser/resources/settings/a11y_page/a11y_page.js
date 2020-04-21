@@ -8,8 +8,35 @@
  * a link to the web store accessibility page on most platforms, and
  * a subpage with lots of other settings on Chrome OS.
  */
+import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.m.js';
+import '../settings_page/settings_animated_pages.m.js';
+import '../settings_shared_css.m.js';
+
+// <if expr="not is_macosx and not chromeos">
+import './captions_subpage.m.js';
+import '../settings_page/settings_subpage.m.js';
+// </if>
+
+// <if expr="not chromeos">
+import '../controls/settings_toggle_button.m.js';
+// </if>
+
+import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {loadTimeData} from '../i18n_setup.m.js';
+import {routes} from '../route.m.js';
+import {Router} from '../router.m.js';
+
+// <if expr="is_win or is_macosx">
+import {CaptionsBrowserProxyImpl} from './captions_browser_proxy.js';
+// </if>
+
+
 Polymer({
   is: 'settings-a11y-page',
+
+  _template: html`{__html_template__}`,
 
   behaviors: [WebUIListenerBehavior],
 
@@ -53,8 +80,8 @@ Polymer({
       type: Object,
       value() {
         const map = new Map();
-        if (settings.routes.CAPTIONS) {
-          map.set(settings.routes.CAPTIONS.path, '#captions');
+        if (routes.CAPTIONS) {
+          map.set(routes.CAPTIONS.path, '#captions');
         }
         return map;
       },
@@ -127,24 +154,23 @@ Polymer({
   onCaptionsClick_() {
     // Open the system captions dialog for Mac.
     // <if expr="is_macosx">
-    settings.CaptionsBrowserProxyImpl.getInstance().openSystemCaptionsDialog();
+    CaptionsBrowserProxyImpl.getInstance().openSystemCaptionsDialog();
     // </if>
 
     // Open the system captions dialog for Windows 10+ or navigate to the
     // caption settings page for older versions of Windows
     // <if expr="is_win">
     if (loadTimeData.getBoolean('isWindows10OrNewer')) {
-      settings.CaptionsBrowserProxyImpl.getInstance()
-          .openSystemCaptionsDialog();
+      CaptionsBrowserProxyImpl.getInstance().openSystemCaptionsDialog();
     } else {
-      settings.Router.getInstance().navigateTo(settings.routes.CAPTIONS);
+      Router.getInstance().navigateTo(routes.CAPTIONS);
     }
     // </if>
 
     // Navigate to the caption settings page for Linux as they do not have
     // system caption settings.
     // <if expr="is_linux">
-    settings.Router.getInstance().navigateTo(settings.routes.CAPTIONS);
+    Router.getInstance().navigateTo(routes.CAPTIONS);
     // </if>
   },
 });

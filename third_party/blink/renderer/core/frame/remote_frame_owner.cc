@@ -6,6 +6,7 @@
 
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/renderer/core/exported/web_remote_frame_impl.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
@@ -55,7 +56,7 @@ void RemoteFrameOwner::AddResourceTiming(const ResourceTimingInfo& info) {
   mojom::blink::ResourceTimingInfoPtr resource_timing =
       Performance::GenerateResourceTiming(
           *frame->Tree().Parent()->GetSecurityContext()->GetSecurityOrigin(),
-          info, *frame->GetDocument()->ToExecutionContext());
+          info, *frame->DomWindow());
   frame->GetLocalFrameHostRemote().ForwardResourceTimingToParent(
       std::move(resource_timing));
 }

@@ -195,6 +195,8 @@ LayoutUnit NGLineInfo::ComputeTrailingSpaceWidth(
         // not safe-to-break. We avoid reshaping in this case because the cost
         // is high and the difference is subtle for the purpose of this
         // function.
+        // TODO(kojii): This does not compute correctly for RTL. Need to re-work
+        // when we support UAX#9 L1.
         // TODO(kojii): Compute this without |CreateShapeResult|.
         scoped_refptr<ShapeResult> shape_result =
             item_result.shape_result->CreateShapeResult();

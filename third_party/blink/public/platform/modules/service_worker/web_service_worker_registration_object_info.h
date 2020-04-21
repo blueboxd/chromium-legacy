@@ -6,8 +6,9 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_SERVICE_WORKER_WEB_SERVICE_WORKER_REGISTRATION_OBJECT_INFO_H_
 
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom-shared.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_registration_options.mojom-shared.h"
+#include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_object_info.h"
 #include "third_party/blink/public/platform/web_url.h"
 
@@ -28,8 +29,10 @@ struct WebServiceWorkerRegistrationObjectInfo {
       int64_t registration_id,
       WebURL scope,
       mojom::ServiceWorkerUpdateViaCache update_via_cache,
-      mojo::ScopedInterfaceEndpointHandle host_remote,
-      mojo::ScopedInterfaceEndpointHandle receiver,
+      CrossVariantMojoAssociatedRemote<
+          mojom::ServiceWorkerRegistrationObjectHostInterfaceBase> host_remote,
+      CrossVariantMojoAssociatedReceiver<
+          mojom::ServiceWorkerRegistrationObjectInterfaceBase> receiver,
       WebServiceWorkerObjectInfo installing,
       WebServiceWorkerObjectInfo waiting,
       WebServiceWorkerObjectInfo active)
@@ -49,12 +52,12 @@ struct WebServiceWorkerRegistrationObjectInfo {
   WebURL scope;
   mojom::ServiceWorkerUpdateViaCache update_via_cache;
 
-  // For
-  // mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerRegistrationObjectHost>.
-  mojo::ScopedInterfaceEndpointHandle host_remote;
-  // For
-  // mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerRegistrationObject>.
-  mojo::ScopedInterfaceEndpointHandle receiver;
+  CrossVariantMojoAssociatedRemote<
+      mojom::ServiceWorkerRegistrationObjectHostInterfaceBase>
+      host_remote;
+  CrossVariantMojoAssociatedReceiver<
+      mojom::ServiceWorkerRegistrationObjectInterfaceBase>
+      receiver;
 
   WebServiceWorkerObjectInfo installing;
   WebServiceWorkerObjectInfo waiting;

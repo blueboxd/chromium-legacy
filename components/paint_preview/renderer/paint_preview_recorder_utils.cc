@@ -31,7 +31,8 @@ void ParseGlyphs(const cc::PaintOpBuffer* buffer,
 bool SerializeAsSkPicture(sk_sp<const cc::PaintRecord> record,
                           PaintPreviewTracker* tracker,
                           const gfx::Rect& dimensions,
-                          base::File file) {
+                          base::File file,
+                          size_t max_size) {
   if (!file.IsValid())
     return false;
 
@@ -49,11 +50,11 @@ bool SerializeAsSkPicture(sk_sp<const cc::PaintRecord> record,
   TypefaceSerializationContext typeface_context(tracker->GetTypefaceUsageMap());
   auto serial_procs = MakeSerialProcs(tracker->GetPictureSerializationContext(),
                                       &typeface_context);
-  FileWStream stream(std::move(file));
+  FileWStream stream(std::move(file), max_size);
   skp->serialize(&stream, &serial_procs);
   stream.flush();
   stream.Close();
-  return true;
+  return !stream.DidWriteFail();
 }
 
 void BuildResponse(PaintPreviewTracker* tracker,

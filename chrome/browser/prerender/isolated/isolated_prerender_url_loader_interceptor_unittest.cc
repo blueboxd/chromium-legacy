@@ -61,7 +61,7 @@ class TestIsolatedPrerenderURLLoaderInterceptor
     EXPECT_EQ(expected_url_, url);
     if (has_prefetch_) {
       return std::make_unique<PrefetchedMainframeResponseContainer>(
-          net::NetworkIsolationKey(), network::mojom::URLResponseHead::New(),
+          net::IsolationInfo(), network::mojom::URLResponseHead::New(),
           std::make_unique<std::string>("body"));
     }
     return nullptr;

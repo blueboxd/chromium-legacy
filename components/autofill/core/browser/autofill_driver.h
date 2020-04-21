@@ -11,7 +11,7 @@
 #include "build/build_config.h"
 #include "components/autofill/core/common/form_data.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "net/base/network_isolation_key.h"
+#include "net/base/isolation_info.h"
 
 #if !defined(OS_IOS)
 #include "components/autofill/core/browser/payments/internal_authenticator.h"
@@ -128,7 +128,7 @@ class AutofillDriver {
   virtual gfx::RectF TransformBoundingBoxToViewportCoordinates(
       const gfx::RectF& bounding_box) = 0;
 
-  virtual net::NetworkIsolationKey NetworkIsolationKey() = 0;
+  virtual net::IsolationInfo IsolationInfo() = 0;
 };
 
 }  // namespace autofill

@@ -87,13 +87,10 @@ class ArCore {
       const std::vector<mojom::EntityTypeForHitTest>& entity_types,
       mojom::XRRayPtr ray) = 0;
 
-  // TODO(https://crbug.com/1071229): remove base::Optional, vector should be
-  // sufficient here.
   virtual mojom::XRHitTestSubscriptionResultsDataPtr
   GetHitTestSubscriptionResults(
       const gfx::Transform& mojo_from_viewer,
-      const base::Optional<std::vector<mojom::XRInputSourceStatePtr>>&
-          maybe_input_state) = 0;
+      const std::vector<mojom::XRInputSourceStatePtr>& input_state) = 0;
 
   virtual void UnsubscribeFromHitTest(uint64_t subscription_id) = 0;
 
@@ -125,12 +122,10 @@ class ArCore {
   // called when ARCore is in appropriate state. This method must be called on a
   // regular basis (once per ARCore update is sufficient), otherwise the anchor
   // creation requests may be deferred for longer than they need to.
-  // TODO(https://crbug.com/1071229): remove base::Optional, vector should be
   // sufficient here.
   virtual void ProcessAnchorCreationRequests(
       const gfx::Transform& mojo_from_viewer,
-      const base::Optional<std::vector<mojom::XRInputSourceStatePtr>>&
-          maybe_input_state) = 0;
+      const std::vector<mojom::XRInputSourceStatePtr>& input_state) = 0;
 
   virtual void DetachAnchor(uint64_t anchor_id) = 0;
 

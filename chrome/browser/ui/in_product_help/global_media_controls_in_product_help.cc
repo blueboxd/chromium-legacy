@@ -44,6 +44,12 @@ void GlobalMediaControlsInProductHelp::OnTabStripModelChanged(
     OnMediaBackgrounded();
 }
 
+void GlobalMediaControlsInProductHelp::OnTabStripModelDestroyed(
+    TabStripModel* tab_strip_model) {
+  DCHECK_EQ(observed_tab_strip_model_, tab_strip_model);
+  StopListening();
+}
+
 void GlobalMediaControlsInProductHelp::OnBrowserClosing(Browser* browser) {
   // If the window we're watching is closing, stop listening to it.
   if (browser->tab_strip_model() == observed_tab_strip_model_)

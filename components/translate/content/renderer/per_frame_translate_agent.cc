@@ -20,7 +20,6 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/render_frame.h"
-#include "content/public/renderer/v8_value_converter.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/web_isolated_world_info.h"
@@ -73,14 +72,6 @@ PerFrameTranslateAgent::PerFrameTranslateAgent(
     : content::RenderFrameObserver(render_frame), world_id_(world_id) {
   registry->AddInterface(base::BindRepeating(
       &PerFrameTranslateAgent::BindReceiver, base::Unretained(this)));
-
-  // Set up v8 isolated world with proper content-security-policy and
-  // security-origin.
-  blink::WebIsolatedWorldInfo info;
-  info.security_origin =
-      WebSecurityOrigin::Create(GetTranslateSecurityOrigin());
-  info.content_security_policy = WebString::FromUTF8(kContentSecurityPolicy);
-  render_frame->GetWebFrame()->SetIsolatedWorldInfo(world_id_, info);
 }
 
 PerFrameTranslateAgent::~PerFrameTranslateAgent() = default;
@@ -134,6 +125,17 @@ void PerFrameTranslateAgent::TranslateFrame(const std::string& translate_script,
 
   GURL url(render_frame()->GetWebFrame()->GetDocument().Url());
   ReportPageScheme(url.scheme());
+
+  if (!isolated_world_initialized_) {
+    // Set up v8 isolated world with proper content-security-policy and
+    // security-origin.
+    blink::WebIsolatedWorldInfo info;
+    info.security_origin =
+        WebSecurityOrigin::Create(GetTranslateSecurityOrigin());
+    info.content_security_policy = WebString::FromUTF8(kContentSecurityPolicy);
+    render_frame()->GetWebFrame()->SetIsolatedWorldInfo(world_id_, info);
+    isolated_world_initialized_ = true;
+  }
 
   if (!IsTranslateLibAvailable()) {
     // Evaluate the script to add the translation related method to the global
@@ -200,6 +202,7 @@ base::TimeDelta PerFrameTranslateAgent::AdjustDelay(int delay_in_milliseconds) {
 }
 
 void PerFrameTranslateAgent::ExecuteScript(const std::string& script) {
+  EnsureIsolatedWorldInitialized();
   WebLocalFrame* local_frame = render_frame()->GetWebFrame();
   if (!local_frame)
     return;
@@ -211,6 +214,7 @@ void PerFrameTranslateAgent::ExecuteScript(const std::string& script) {
 bool PerFrameTranslateAgent::ExecuteScriptAndGetBoolResult(
     const std::string& script,
     bool fallback) {
+  EnsureIsolatedWorldInitialized();
   WebLocalFrame* local_frame = render_frame()->GetWebFrame();
   if (!local_frame)
     return fallback;
@@ -227,6 +231,7 @@ bool PerFrameTranslateAgent::ExecuteScriptAndGetBoolResult(
 
 std::string PerFrameTranslateAgent::ExecuteScriptAndGetStringResult(
     const std::string& script) {
+  EnsureIsolatedWorldInitialized();
   WebLocalFrame* local_frame = render_frame()->GetWebFrame();
   if (!local_frame)
     return std::string();
@@ -239,14 +244,16 @@ std::string PerFrameTranslateAgent::ExecuteScriptAndGetStringResult(
                                                               source);
   DCHECK(result->IsString());
 
-  std::unique_ptr<base::Value> string_result =
-      content::V8ValueConverter::Create()->FromV8Value(
-          result, isolate->GetCurrentContext());
-  return string_result->GetString();
+  v8::Local<v8::String> v8_str = result.As<v8::String>();
+  int length = v8_str->Utf8Length(isolate) + 1;
+  std::unique_ptr<char[]> str(new char[length]);
+  v8_str->WriteUtf8(isolate, str.get(), length);
+  return std::string(str.get());
 }
 
 double PerFrameTranslateAgent::ExecuteScriptAndGetDoubleResult(
     const std::string& script) {
+  EnsureIsolatedWorldInitialized();
   WebLocalFrame* local_frame = render_frame()->GetWebFrame();
   if (!local_frame)
     return 0.0;
@@ -263,6 +270,7 @@ double PerFrameTranslateAgent::ExecuteScriptAndGetDoubleResult(
 
 int64_t PerFrameTranslateAgent::ExecuteScriptAndGetIntegerResult(
     const std::string& script) {
+  EnsureIsolatedWorldInitialized();
   WebLocalFrame* local_frame = render_frame()->GetWebFrame();
   if (!local_frame)
     return 0;
@@ -398,6 +406,19 @@ void PerFrameTranslateAgent::CancelPendingTranslation() {
   }
   source_lang_.clear();
   target_lang_.clear();
+}
+
+void PerFrameTranslateAgent::EnsureIsolatedWorldInitialized() {
+  if (!isolated_world_initialized_) {
+    // Set up v8 isolated world with proper content-security-policy and
+    // security-origin.
+    blink::WebIsolatedWorldInfo info;
+    info.security_origin =
+        WebSecurityOrigin::Create(GetTranslateSecurityOrigin());
+    info.content_security_policy = WebString::FromUTF8(kContentSecurityPolicy);
+    render_frame()->GetWebFrame()->SetIsolatedWorldInfo(world_id_, info);
+    isolated_world_initialized_ = true;
+  }
 }
 
 void PerFrameTranslateAgent::BindReceiver(

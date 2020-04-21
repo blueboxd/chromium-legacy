@@ -184,7 +184,7 @@ void ExecutionContextCSPDelegate::PostViolationReport(
   auto* body = MakeGarbageCollected<CSPViolationReportBody>(violation_data);
   Report* observed_report = MakeGarbageCollected<Report>(
       ReportType::kCSPViolation, Url().GetString(), body);
-  ReportingContext::From(document->ToExecutionContext())
+  ReportingContext::From(execution_context_.Get())
       ->QueueReport(observed_report,
                     use_reporting_api ? report_endpoints : Vector<String>());
 
@@ -233,11 +233,11 @@ void ExecutionContextCSPDelegate::ReportBlockedScriptExecutionToInspector(
 
 void ExecutionContextCSPDelegate::DidAddContentSecurityPolicies(
     WTF::Vector<network::mojom::blink::ContentSecurityPolicyPtr> policies) {
-  Document* document = GetDocument();
-  if (!document)
+  auto* window = DynamicTo<LocalDOMWindow>(execution_context_.Get());
+  if (!window)
     return;
 
-  LocalFrame* frame = document->GetFrame();
+  LocalFrame* frame = window->GetFrame();
   if (!frame)
     return;
 

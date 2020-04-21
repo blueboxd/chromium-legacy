@@ -4,6 +4,7 @@
 
 module storage.mojom;
 
+import "components/services/storage/public/mojom/local_storage_control.mojom";
 import "components/services/storage/public/mojom/service_worker_database.mojom";
 import "mojo/public/mojom/base/big_buffer.mojom";
 import "mojo/public/mojom/base/time.mojom";
@@ -187,4 +188,8 @@ interface ServiceWorkerStorageControl {
   // of keys.
   ClearUserDataForAllRegistrationsByKeyPrefix(string key_prefix) =>
       (ServiceWorkerDatabaseStatus status);
+
+  // Applies changes to data retention policy which are relevant at shutdown.
+  // This is analogous to LocalStorageControl::ApplyPolicyUpdates.
+  ApplyPolicyUpdates(array<LocalStoragePolicyUpdate> policy_updates);
 };

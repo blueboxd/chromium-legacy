@@ -181,10 +181,7 @@ void ServiceWorkerRegistration::Attach(
   // If |host_| is bound, it already points to the same object host as
   // |info.host_remote|, so there is no need to bind again.
   if (!host_) {
-    host_.Bind(mojo::PendingAssociatedRemote<
-                   mojom::blink::ServiceWorkerRegistrationObjectHost>(
-                   std::move(info.host_remote),
-                   mojom::blink::ServiceWorkerRegistrationObjectHost::Version_),
+    host_.Bind(std::move(info.host_remote),
                GetExecutionContext()->GetTaskRunner(
                    blink::TaskType::kInternalDefault));
   }

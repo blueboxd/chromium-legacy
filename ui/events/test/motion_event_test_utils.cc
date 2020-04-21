@@ -126,7 +126,6 @@ MockMotionEvent& MockMotionEvent::ReleasePoint() {
     case Action::UP:
     case Action::CANCEL:
       return ReleasePointAtIndex(GetPointerCount() - 2);
-      break;
     default:
       break;
   }

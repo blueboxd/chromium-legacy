@@ -5,6 +5,7 @@
 #ifndef CC_METRICS_FRAME_SEQUENCE_METRICS_H_
 #define CC_METRICS_FRAME_SEQUENCE_METRICS_H_
 
+#include "base/callback.h"
 #include "base/optional.h"
 #include "base/trace_event/traced_value.h"
 #include "cc/cc_export.h"
@@ -81,6 +82,11 @@ class CC_EXPORT FrameSequenceMetrics {
 
   void SetScrollingThread(ThreadType thread);
 
+  using CustomReporter =
+      base::OnceCallback<void(ThroughputData throughput_data)>;
+  // Sets reporter callback for kCustom typed sequence.
+  void SetCustomReporter(CustomReporter custom_reporter);
+
   // Returns the 'effective thread' for the metrics (i.e. the thread most
   // relevant for this metric).
   ThreadType GetEffectiveThread() const;
@@ -124,6 +130,9 @@ class CC_EXPORT FrameSequenceMetrics {
   // Tracks the number of produced frames that had some amount of
   // checkerboarding, and how many frames showed such checkerboarded frames.
   uint32_t frames_checkerboarded_ = 0;
+
+  // Callback invoked to report metrics for kCustom typed sequence.
+  CustomReporter custom_reporter_;
 };
 
 }  // namespace cc

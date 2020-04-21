@@ -19,6 +19,10 @@ group("common") {
   if (is_mac || is_ios) {
     public_deps += [ ":zombies" ]
   }
+
+  if (is_ios) {
+    public_deps += [ ":breakpad_running_ios" ]
+  }
 }
 
 use_crashpad_annotation =
@@ -147,6 +151,15 @@ if (is_mac || is_ios) {
     }
 
     libs = [ "Foundation.framework" ]
+  }
+}
+
+if (is_ios) {
+  source_set("breakpad_running_ios") {
+    sources = [
+      "breakpad_running_ios.cc",
+      "breakpad_running_ios.h",
+    ]
   }
 }
 

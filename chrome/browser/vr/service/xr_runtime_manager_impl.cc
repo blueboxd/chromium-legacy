@@ -12,10 +12,9 @@
 #include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "base/memory/singleton.h"
-#include "base/metrics/user_metrics.h"
-#include "base/metrics/user_metrics_action.h"
 #include "base/trace_event/common/trace_event_common.h"
 #include "build/build_config.h"
+#include "chrome/browser/vr/chrome_xr_integration_client.h"
 #include "chrome/browser/vr/service/browser_xr_runtime_impl.h"
 #include "content/public/browser/device_service.h"
 #include "content/public/common/content_features.h"
@@ -23,20 +22,13 @@
 #include "device/base/features.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "device/vr/orientation/orientation_device_provider.h"
-#include "device/vr/vr_device_provider.h"
+#include "device/vr/public/cpp/vr_device_provider.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/device/public/mojom/sensor_provider.mojom.h"
 
-#if defined(OS_ANDROID)
-#include "device/vr/android/gvr/gvr_device_provider.h"
-
-#if BUILDFLAG(ENABLE_ARCORE)
-#include "device/vr/android/arcore/arcore_device_provider_factory.h"
-#endif  // BUILDFLAG(ENABLE_ARCORE)
-
-#else  // !defined(OS_ANDROID)
+#if !defined(OS_ANDROID)
 #include "chrome/browser/vr/service/isolated_device_provider.h"
-#endif  // defined(OS_ANDROID)
+#endif  // !defined(OS_ANDROID)
 
 namespace vr {
 
@@ -97,33 +89,21 @@ XRRuntimeManagerImpl::GetOrCreateInstance() {
     return base::WrapRefCounted(g_xr_runtime_manager);
   }
 
-  // Register VRDeviceProviders for the current platform
-  ProviderList providers;
+  // Start by getting any providers specified by the XrIntegrationClient
+  content::XRProviderList providers;
+  auto* integration_client = ChromeXrIntegrationClient::GetInstance();
 
-  // TODO(https://crbug.com/966647) remove this check when AR features ships as
-  // enabled by default or as an origin trial.
-  if (base::FeatureList::IsEnabled(features::kWebXrArModule)) {
-#if defined(OS_ANDROID)
-#if BUILDFLAG(ENABLE_ARCORE)
-    auto arcore_device_provider = device::ArCoreDeviceProviderFactory::Create();
-    if (arcore_device_provider) {
-      providers.emplace_back(std::move(arcore_device_provider));
-    } else {
-      // TODO(https://crbug.com/1050470): Remove this logging after
-      // investigation.
-      LOG(ERROR) << "Could not get ARCoreDeviceProviderFactory";
-      base::RecordAction(base::UserMetricsAction(
-          "XR.ARCoreDeviceProviderFactory.NotInstalled"));
-    }
-#endif  // BUILDFLAG(ENABLE_ARCORE)
-#endif  // defined(OS_ANDROID)
+  if (integration_client) {
+    auto additional_providers = integration_client->GetAdditionalProviders();
+    providers.insert(providers.end(),
+                     make_move_iterator(additional_providers.begin()),
+                     make_move_iterator(additional_providers.end()));
   }
 
-#if defined(OS_ANDROID)
-  providers.emplace_back(std::make_unique<device::GvrDeviceProvider>());
-#else   // !defined(OS_ANDROID)
-  providers.emplace_back(std::make_unique<vr::IsolatedVRDeviceProvider>());
-#endif  // defined(OS_ANDROID)
+  // Then add any other "built-in" providers
+#if !defined(OS_ANDROID)
+  providers.push_back(std::make_unique<vr::IsolatedVRDeviceProvider>());
+#endif  // !defined(OS_ANDROID)
 
   bool orientation_provider_enabled = true;
 
@@ -333,7 +313,7 @@ void XRRuntimeManagerImpl::SupportsSession(
   std::move(callback).Run(true);
 }
 
-XRRuntimeManagerImpl::XRRuntimeManagerImpl(ProviderList providers)
+XRRuntimeManagerImpl::XRRuntimeManagerImpl(content::XRProviderList providers)
     : providers_(std::move(providers)) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   CHECK(!g_xr_runtime_manager);
@@ -347,7 +327,7 @@ XRRuntimeManagerImpl::~XRRuntimeManagerImpl() {
 }
 
 scoped_refptr<XRRuntimeManagerImpl> XRRuntimeManagerImpl::CreateInstance(
-    ProviderList providers) {
+    content::XRProviderList providers) {
   auto* ptr = new XRRuntimeManagerImpl(std::move(providers));
   CHECK_EQ(ptr, g_xr_runtime_manager);
   return base::AdoptRef(ptr);

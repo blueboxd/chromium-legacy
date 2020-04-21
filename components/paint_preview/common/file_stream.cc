@@ -26,6 +26,7 @@ FileWStream::FileWStream(base::File file)
     : file_(std::move(file)),
       max_size_(0),
       bytes_written_(0),
+      fake_bytes_written_(0),
       has_write_failed_(false) {
   DCHECK(file_.IsValid());
 }
@@ -34,6 +35,7 @@ FileWStream::FileWStream(base::File file, size_t max_size)
     : file_(std::move(file)),
       max_size_(max_size),
       bytes_written_(0),
+      fake_bytes_written_(0),
       has_write_failed_(false) {
   DCHECK(file_.IsValid());
 }
@@ -42,6 +44,7 @@ FileWStream::FileWStream(base::File file, size_t max_size)
 FileWStream::~FileWStream() = default;
 
 bool FileWStream::write(const void* buffer, size_t size) {
+  fake_bytes_written_ += size;
   if (!file_.IsValid() || has_write_failed_)
     return false;
   if (max_size_ && !ShouldWrite(bytes_written_, max_size_, size)) {
@@ -69,7 +72,7 @@ void FileWStream::flush() {
 }
 
 size_t FileWStream::bytesWritten() const {
-  return bytes_written_;
+  return fake_bytes_written_;
 }
 
 void FileWStream::Close() {

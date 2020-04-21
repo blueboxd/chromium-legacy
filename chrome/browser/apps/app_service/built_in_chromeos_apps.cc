@@ -33,13 +33,13 @@ apps::mojom::AppPtr Convert(const app_list::InternalApp& internal_app) {
       (internal_app.icon_resource_id <= 0)) {
     return apps::mojom::AppPtr();
   }
-  apps::mojom::AppPtr app = apps::mojom::App::New();
 
-  app->app_type = apps::mojom::AppType::kBuiltIn;
-  app->app_id = internal_app.app_id;
-  app->readiness = apps::mojom::Readiness::kReady;
-  app->name = l10n_util::GetStringUTF8(internal_app.name_string_resource_id);
-  app->short_name = app->name;
+  apps::mojom::AppPtr app = apps::PublisherBase::MakeApp(
+      apps::mojom::AppType::kBuiltIn, internal_app.app_id,
+      apps::mojom::Readiness::kReady,
+      l10n_util::GetStringUTF8(internal_app.name_string_resource_id),
+      apps::mojom::InstallSource::kSystem);
+
   if (internal_app.searchable_string_resource_id != 0) {
     app->additional_search_terms.push_back(
         l10n_util::GetStringUTF8(internal_app.searchable_string_resource_id));
@@ -49,12 +49,6 @@ apps::mojom::AppPtr Convert(const app_list::InternalApp& internal_app) {
       apps::mojom::IconKey::kDoesNotChangeOverTime,
       internal_app.icon_resource_id, apps::IconEffects::kNone);
 
-  app->last_launch_time = base::Time();
-  app->install_time = base::Time();
-
-  app->install_source = apps::mojom::InstallSource::kSystem;
-
-  app->is_platform_app = apps::mojom::OptionalBool::kFalse;
   app->recommendable = internal_app.recommendable
                            ? apps::mojom::OptionalBool::kTrue
                            : apps::mojom::OptionalBool::kFalse;
@@ -67,7 +61,6 @@ apps::mojom::AppPtr Convert(const app_list::InternalApp& internal_app) {
                             ? apps::mojom::OptionalBool::kTrue
                             : apps::mojom::OptionalBool::kFalse;
   app->show_in_management = apps::mojom::OptionalBool::kFalse;
-  app->paused = apps::mojom::OptionalBool::kFalse;
 
   return app;
 }
@@ -80,14 +73,10 @@ BuiltInChromeOsApps::BuiltInChromeOsApps(
     const mojo::Remote<apps::mojom::AppService>& app_service,
     Profile* profile)
     : profile_(profile) {
-  Initialize(app_service);
+  PublisherBase::Initialize(app_service, apps::mojom::AppType::kBuiltIn);
 }
 
 BuiltInChromeOsApps::~BuiltInChromeOsApps() = default;
-
-void BuiltInChromeOsApps::FlushMojoCallsForTesting() {
-  receiver_.FlushForTesting();
-}
 
 bool BuiltInChromeOsApps::hide_settings_app_for_testing_ = false;
 
@@ -96,12 +85,6 @@ bool BuiltInChromeOsApps::SetHideSettingsAppForTesting(bool hide) {
   bool old_value = hide_settings_app_for_testing_;
   hide_settings_app_for_testing_ = hide;
   return old_value;
-}
-
-void BuiltInChromeOsApps::Initialize(
-    const mojo::Remote<apps::mojom::AppService>& app_service) {
-  app_service->RegisterPublisher(receiver_.BindNewPipeAndPassRemote(),
-                                 apps::mojom::AppType::kBuiltIn);
 }
 
 void BuiltInChromeOsApps::Connect(
@@ -170,44 +153,6 @@ void BuiltInChromeOsApps::Launch(const std::string& app_id,
   }
 }
 
-void BuiltInChromeOsApps::LaunchAppWithFiles(
-    const std::string& app_id,
-    apps::mojom::LaunchContainer container,
-    int32_t event_flags,
-    apps::mojom::LaunchSource launch_source,
-    apps::mojom::FilePathsPtr file_paths) {
-  NOTIMPLEMENTED();
-}
-
-void BuiltInChromeOsApps::LaunchAppWithIntent(
-    const std::string& app_id,
-    int32_t event_flags,
-    apps::mojom::IntentPtr intent,
-    apps::mojom::LaunchSource launch_source,
-    int64_t display_id) {
-  NOTIMPLEMENTED();
-}
-
-void BuiltInChromeOsApps::SetPermission(const std::string& app_id,
-                                        apps::mojom::PermissionPtr permission) {
-  NOTIMPLEMENTED();
-}
-
-void BuiltInChromeOsApps::Uninstall(const std::string& app_id,
-                                    bool clear_site_data,
-                                    bool report_abuse) {
-  LOG(ERROR) << "Uninstall failed, could not remove built-in app with id "
-             << app_id;
-}
-
-void BuiltInChromeOsApps::PauseApp(const std::string& app_id) {
-  NOTIMPLEMENTED();
-}
-
-void BuiltInChromeOsApps::UnpauseApps(const std::string& app_id) {
-  NOTIMPLEMENTED();
-}
-
 void BuiltInChromeOsApps::GetMenuModel(const std::string& app_id,
                                        apps::mojom::MenuType menu_type,
                                        int64_t display_id,
@@ -226,15 +171,4 @@ void BuiltInChromeOsApps::GetMenuModel(const std::string& app_id,
   std::move(callback).Run(std::move(menu_items));
 }
 
-void BuiltInChromeOsApps::OpenNativeSettings(const std::string& app_id) {
-  NOTIMPLEMENTED();
-}
-
-void BuiltInChromeOsApps::OnPreferredAppSet(
-    const std::string& app_id,
-    apps::mojom::IntentFilterPtr intent_filter,
-    apps::mojom::IntentPtr intent,
-    apps::mojom::ReplacedAppPreferencesPtr replaced_app_preferences) {
-  NOTIMPLEMENTED();
-}
 }  // namespace apps

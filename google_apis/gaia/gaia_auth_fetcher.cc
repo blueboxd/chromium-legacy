@@ -30,6 +30,7 @@
 #include "google_apis/gaia/oauth2_id_token_decoder.h"
 #include "google_apis/gaia/oauth_multilogin_result.h"
 #include "net/base/escape.h"
+#include "net/base/isolation_info.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -307,8 +308,8 @@ void GaiaAuthFetcher::CreateAndStartGaiaFetcher(
         net::SiteForCookies::FromOrigin(origin);
     resource_request->trusted_params =
         network::ResourceRequest::TrustedParams();
-    resource_request->trusted_params->network_isolation_key =
-        net::NetworkIsolationKey(origin, origin);
+    resource_request->trusted_params->isolation_info =
+        net::IsolationInfo::CreateForInternalRequest(origin);
   }
 
   if (!body.empty())

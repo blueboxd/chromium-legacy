@@ -514,13 +514,10 @@ CompositorTimingHistory::CreateUMAReporter(UMACategory category) {
   switch (category) {
     case RENDERER_UMA:
       return base::WrapUnique(new RendererUMAReporter);
-      break;
     case BROWSER_UMA:
       return base::WrapUnique(new BrowserUMAReporter);
-      break;
     case NULL_UMA:
       return base::WrapUnique(new NullUMAReporter);
-      break;
   }
   NOTREACHED();
   return base::WrapUnique<CompositorTimingHistory::UMAReporter>(nullptr);

@@ -844,7 +844,6 @@ WebInputEventResult WebFrameWidgetImpl::HandleGestureEvent(
       event_result = WebInputEventResult::kHandledSystem;
       Client()->DidHandleGestureEvent(event, event_cancelled);
       return event_result;
-      break;
     case WebInputEvent::kGestureTwoFingerTap:
     case WebInputEvent::kGestureLongPress:
     case WebInputEvent::kGestureLongTap:

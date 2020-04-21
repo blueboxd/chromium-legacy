@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 
 namespace content {

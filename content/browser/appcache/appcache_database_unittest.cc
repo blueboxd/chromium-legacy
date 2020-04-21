@@ -497,8 +497,7 @@ TEST_F(AppCacheDatabaseTest, GroupAccessAndEvictionTimes) {
   // See that the methods behave as expected with an empty db.
   // To accommodate lazy updating, for consistency, none of them fail
   // given ids not found in the db.
-  EXPECT_TRUE(
-      db.UpdateEvictionTimesAndTokenExpires(1, kDayOne, kDayTwo, kDayTwo));
+  EXPECT_TRUE(db.UpdateEvictionTimes(1, kDayOne, kDayTwo));
   EXPECT_TRUE(db.UpdateLastAccessTime(1, kDayOne));
   EXPECT_TRUE(db.CommitLazyLastAccessTimes());
   EXPECT_TRUE(db.LazyUpdateLastAccessTime(1, kDayTwo));
@@ -513,7 +512,6 @@ TEST_F(AppCacheDatabaseTest, GroupAccessAndEvictionTimes) {
   record.last_access_time = kDayOne;
   record.last_full_update_check_time = kDayOne;
   record.first_evictable_error_time = kDayOne;
-  record.token_expires = kDayOne;
   EXPECT_TRUE(db.InsertGroup(&record));
 
   // Verify the round trip.
@@ -522,18 +520,15 @@ TEST_F(AppCacheDatabaseTest, GroupAccessAndEvictionTimes) {
   EXPECT_EQ(kDayOne, record.last_access_time);
   EXPECT_EQ(kDayOne, record.last_full_update_check_time);
   EXPECT_EQ(kDayOne, record.first_evictable_error_time);
-  EXPECT_EQ(kDayOne, record.token_expires);
 
   // Update the times to DAY2 and verify.
-  EXPECT_TRUE(
-      db.UpdateEvictionTimesAndTokenExpires(1, kDayTwo, kDayTwo, kDayTwo));
+  EXPECT_TRUE(db.UpdateEvictionTimes(1, kDayTwo, kDayTwo));
   EXPECT_TRUE(db.UpdateLastAccessTime(1, kDayTwo));
   record = AppCacheDatabase::GroupRecord();
   EXPECT_TRUE(db.FindGroup(1, &record));
   EXPECT_EQ(kDayTwo, record.last_access_time);
   EXPECT_EQ(kDayTwo, record.last_full_update_check_time);
   EXPECT_EQ(kDayTwo, record.first_evictable_error_time);
-  EXPECT_EQ(kDayTwo, record.token_expires);
 
   // Lazy update back to DAY1 and verify its reflected without having committed.
   EXPECT_TRUE(db.lazy_last_access_times_.empty());

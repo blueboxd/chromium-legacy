@@ -205,7 +205,8 @@ Element* CustomElement::CreateUncustomizedOrUndefinedElement(
 
 HTMLElement* CustomElement::CreateFailedElement(Document& document,
                                                 const QualifiedName& tag_name) {
-  DCHECK(ShouldCreateCustomElement(tag_name));
+  CHECK(ShouldCreateCustomElement(tag_name))
+      << "HTMLUnknownElement with built-in tag name: " << tag_name;
 
   // "create an element for a token":
   // https://html.spec.whatwg.org/C/#create-an-element-for-the-token

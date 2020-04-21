@@ -10,7 +10,8 @@
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/core_probe_sink.h"
-#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
@@ -24,8 +25,8 @@ namespace {
 
 bool IsKnownAdExecutionContext(ExecutionContext* execution_context) {
   // TODO(jkarlin): Do the same check for worker contexts.
-  if (auto* document = Document::DynamicFrom(execution_context)) {
-    LocalFrame* frame = document->GetFrame();
+  if (auto* window = DynamicTo<LocalDOMWindow>(execution_context)) {
+    LocalFrame* frame = window->GetFrame();
     if (frame && frame->IsAdSubframe())
       return true;
   }
@@ -51,9 +52,8 @@ AdTracker* AdTracker::FromExecutionContext(
     ExecutionContext* execution_context) {
   if (!execution_context)
     return nullptr;
-  if (auto* document = Document::DynamicFrom(execution_context)) {
-    LocalFrame* frame = document->GetFrame();
-    if (frame) {
+  if (auto* window = DynamicTo<LocalDOMWindow>(execution_context)) {
+    if (LocalFrame* frame = window->GetFrame()) {
       return frame->GetAdTracker();
     }
   }

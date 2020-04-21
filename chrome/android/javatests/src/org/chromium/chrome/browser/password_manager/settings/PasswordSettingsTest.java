@@ -43,6 +43,7 @@ import static org.mockito.Mockito.verify;
 import static org.chromium.chrome.test.util.ViewUtils.VIEW_GONE;
 import static org.chromium.chrome.test.util.ViewUtils.VIEW_INVISIBLE;
 import static org.chromium.chrome.test.util.ViewUtils.VIEW_NULL;
+import static org.chromium.chrome.test.util.ViewUtils.onViewWaiting;
 import static org.chromium.chrome.test.util.ViewUtils.waitForView;
 
 import android.app.Activity;
@@ -1738,7 +1739,7 @@ public class PasswordSettingsTest {
     public void testTriggeringSearchRestoresHelpIcon() {
         setPasswordSource(null);
         mSettingsActivityTestRule.startSettingsActivity();
-        Espresso.onView(isRoot()).check(waitForView(withText(R.string.password_settings_title)));
+        onViewWaiting(withText(R.string.password_settings_title));
 
         // Retrieve the initial status and ensure that the help option is there at all.
         final AtomicReference<Boolean> helpInOverflowMenu = new AtomicReference<>(false);
@@ -1759,7 +1760,7 @@ public class PasswordSettingsTest {
         Espresso.onView(withSearchMenuIdOrText()).perform(click());
         Espresso.onView(withContentDescription(R.string.abc_action_bar_up_description))
                 .perform(click());
-        Espresso.onView(isRoot()).check(waitForView(withText(R.string.password_settings_title)));
+        onViewWaiting(withText(R.string.password_settings_title));
 
         // Check that the help option is exactly where it was to begin with.
         if (helpInOverflowMenu.get()) {
@@ -2032,7 +2033,7 @@ public class PasswordSettingsTest {
         // Open the search and filter all but "Zeus".
         Espresso.onView(withSearchMenuIdOrText()).perform(click());
 
-        Espresso.onView(isRoot()).check(waitForView(withId(R.id.search_src_text)));
+        onViewWaiting(withId(R.id.search_src_text));
         Espresso.onView(withId(R.id.search_src_text))
                 .perform(click(), typeText("Zeu"), closeSoftKeyboard());
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
@@ -2069,8 +2070,7 @@ public class PasswordSettingsTest {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
         // The search bar should still be open and still display the search query.
-        Espresso.onView(isRoot()).check(
-                waitForView(allOf(withId(R.id.search_src_text), withText("Zeu"))));
+        onViewWaiting(allOf(withId(R.id.search_src_text), withText("Zeu")));
         Espresso.onView(withId(R.id.search_src_text)).check(matches(withText("Zeu")));
     }
 

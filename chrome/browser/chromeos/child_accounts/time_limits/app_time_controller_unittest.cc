@@ -12,6 +12,8 @@
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/app_service_test.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_activity_registry.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limits_policy_builder.h"
@@ -21,6 +23,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/services/app_service/public/cpp/icon_loader.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/system_clock/system_clock_client.h"
 #include "chromeos/settings/timezone_settings.h"
@@ -30,6 +33,8 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_rep_default.h"
 #include "ui/message_center/public/cpp/notification.h"
 
 namespace chromeos {
@@ -68,6 +73,37 @@ base::Time GetLastResetTime(base::Time timestamp) {
 
 class AppTimeControllerTest : public testing::Test {
  protected:
+  class FakeIconLoader : public apps::IconLoader {
+   public:
+    FakeIconLoader() = default;
+    FakeIconLoader(const FakeIconLoader&) = delete;
+    FakeIconLoader& operator=(const FakeIconLoader&) = delete;
+    ~FakeIconLoader() override = default;
+
+    apps::mojom::IconKeyPtr GetIconKey(const std::string& app_id) override {
+      return apps::mojom::IconKey::New(0, 0, 0);
+    }
+
+    std::unique_ptr<apps::IconLoader::Releaser> LoadIconFromIconKey(
+        apps::mojom::AppType app_type,
+        const std::string& app_id,
+        apps::mojom::IconKeyPtr icon_key,
+        apps::mojom::IconCompression icon_compression,
+        int32_t size_hint_in_dip,
+        bool allow_placeholder_icon,
+        apps::mojom::Publisher::LoadIconCallback callback) override {
+      EXPECT_EQ(icon_compression, apps::mojom::IconCompression::kUncompressed);
+      auto iv = apps::mojom::IconValue::New();
+      iv->icon_compression = apps::mojom::IconCompression::kUncompressed;
+      iv->uncompressed =
+          gfx::ImageSkia(gfx::ImageSkiaRep(gfx::Size(1, 1), 1.0f));
+      iv->is_placeholder_icon = false;
+
+      std::move(callback).Run(std::move(iv));
+      return nullptr;
+    }
+  };
+
   AppTimeControllerTest() = default;
   AppTimeControllerTest(const AppTimeControllerTest&) = delete;
   AppTimeControllerTest& operator=(const AppTimeControllerTest&) = delete;
@@ -115,6 +151,7 @@ class AppTimeControllerTest : public testing::Test {
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   TestingProfile profile_;
   NotificationDisplayServiceTester notification_tester_{&profile_};
+  FakeIconLoader icon_loader_;
   apps::AppServiceTest app_service_test_;
   ArcAppTest arc_test_;
 
@@ -135,6 +172,10 @@ void AppTimeControllerTest::SetUp() {
   task_environment_.FastForwardBy(forward_by);
 
   app_service_test_.SetUp(&profile_);
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(&profile_);
+  proxy->OverrideInnerIconLoaderForTesting(&icon_loader_);
+
   arc_test_.SetUp(&profile_);
   arc_test_.app_instance()->set_icon_response_type(
       arc::FakeAppInstance::IconResponseType::ICON_RESPONSE_SKIP);

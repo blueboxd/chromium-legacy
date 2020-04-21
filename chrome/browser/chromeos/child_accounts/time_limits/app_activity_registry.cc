@@ -234,8 +234,13 @@ void AppActivityRegistry::OnAppAvailable(const AppId& app_id) {
 }
 
 void AppActivityRegistry::OnAppBlocked(const AppId& app_id) {
-  if (base::Contains(activity_registry_, app_id))
-    SetAppState(app_id, AppState::kBlocked);
+  if (!base::Contains(activity_registry_, app_id))
+    return;
+
+  if (GetAppState(app_id) == AppState::kBlocked)
+    return;
+
+  SetAppState(app_id, AppState::kBlocked);
 }
 
 void AppActivityRegistry::OnAppActive(const AppId& app_id,
@@ -514,6 +519,13 @@ bool AppActivityRegistry::SetAppLimit(
   // early.
   if (!IsAppInstalled(app_id))
     return false;
+
+  // Chrome and web apps should not be blocked.
+  if (app_limit && app_limit->restriction() == AppRestriction::kBlocked &&
+      (app_id == GetChromeAppId() ||
+       app_id.app_type() == apps::mojom::AppType::kWeb)) {
+    return false;
+  }
 
   AppDetails& details = activity_registry_.at(app_id);
   // Limit 'data' are considered equal if only the |last_updated_| is different.
@@ -970,10 +982,27 @@ bool AppActivityRegistry::ShowLimitUpdatedNotificationIfNeeded(
   if (new_limit && new_limit->last_updated() <= latest_app_limit_update_)
     return false;
 
+  const bool was_blocked =
+      old_limit && old_limit->restriction() == AppRestriction::kBlocked;
+  const bool is_blocked =
+      new_limit && new_limit->restriction() == AppRestriction::kBlocked;
+
+  if (!was_blocked && is_blocked) {
+    MaybeShowSystemNotification(
+        app_id, SystemNotification(base::nullopt, AppNotification::kBlocked));
+    return true;
+  }
+
   const bool had_time_limit =
       old_limit && old_limit->restriction() == AppRestriction::kTimeLimit;
   const bool has_time_limit =
       new_limit && new_limit->restriction() == AppRestriction::kTimeLimit;
+
+  if (was_blocked && !is_blocked && !has_time_limit) {
+    MaybeShowSystemNotification(
+        app_id, SystemNotification(base::nullopt, AppNotification::kAvailable));
+    return true;
+  }
 
   // Time limit was removed.
   if (!has_time_limit && had_time_limit) {

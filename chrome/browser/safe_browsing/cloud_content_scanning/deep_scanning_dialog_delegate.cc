@@ -403,10 +403,7 @@ DeepScanningDialogDelegate::DeepScanningDialogDelegate(
     : web_contents_(web_contents),
       data_(std::move(data)),
       callback_(std::move(callback)),
-      access_point_(access_point),
-      handler_("CheckContentCompliance",
-               prefs::kCheckContentCompliance,
-               policy::GetChromeSchema()) {
+      access_point_(access_point) {
   DCHECK(web_contents_);
   result_.text_results.resize(data_.text.size(), false);
   result_.paths_results.resize(data_.paths.size(), false);

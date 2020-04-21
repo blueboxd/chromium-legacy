@@ -107,3 +107,5 @@ virtual/threaded/fast/scroll-snap/snaps-after-touchpad-scrolling.html [ Failure 
 
 compositing/gestures/gesture-tapHighlight-composited-img.html [ Pass Failure ]
 http/tests/images/image-decode-in-frame.html [ Pass Failure ]
+
+crbug.com/1072824 compositing/text-on-scaled-surface.html [ Failure ]

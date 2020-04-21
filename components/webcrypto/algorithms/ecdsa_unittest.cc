@@ -219,7 +219,6 @@ blink::WebCryptoKeyUsageMask GetExpectedUsagesForKeyImport(
       return kPublicUsages;
     case blink::kWebCryptoKeyFormatPkcs8:
       return kPrivateUsages;
-      break;
     case blink::kWebCryptoKeyFormatJwk: {
       const base::DictionaryValue* key = nullptr;
       if (!test->GetDictionary("key", &key))

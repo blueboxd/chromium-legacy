@@ -734,6 +734,11 @@ void KerberosCredentialsManager::NotifyAccountsChanged() {
     observer.OnAccountsChanged();
 }
 
+void KerberosCredentialsManager::NotifyEnabledStateChanged() {
+  for (auto& observer : observers_)
+    observer.OnKerberosEnabledStateChanged();
+}
+
 const std::string& KerberosCredentialsManager::GetActivePrincipalName() const {
   // Using Get()->GetString() instead of GetString() directly to prevent a
   // string copy.
@@ -778,12 +783,13 @@ void KerberosCredentialsManager::UpdateEnabledFromPref() {
     // Kerberos got enabled, re-populate managed accounts.
     VLOG(1) << "Kerberos got enabled, populating managed accounts";
     UpdateAccountsFromPref(false /* is_retry */);
-    return;
+  } else {
+    // Note that ClearAccounts logs an error if the operation fails.
+    VLOG(1) << "Kerberos got disabled, clearing accounts";
+    ClearAccounts(EmptyResultCallback());
   }
 
-  // Note that ClearAccounts logs an error if the operation fails.
-  VLOG(1) << "Kerberos got disabled, clearing accounts";
-  ClearAccounts(EmptyResultCallback());
+  NotifyEnabledStateChanged();
 }
 
 void KerberosCredentialsManager::UpdateRememberPasswordEnabledFromPref() {

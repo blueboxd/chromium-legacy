@@ -11,6 +11,10 @@
 #include "media/base/media_export.h"
 #include "media/media_buildflags.h"
 
+#if defined(OS_WIN)
+struct IMFCdmProxy;
+#endif
+
 namespace media {
 
 class CallbackRegistration;
@@ -84,6 +88,19 @@ class MEDIA_EXPORT CdmContext {
   // is not supported (e.g. this CDM is a local CDM).
   // TODO(crbug.com/804397): Use base::UnguessableToken for CDM ID.
   virtual int GetCdmId() const;
+
+#if defined(OS_WIN)
+  using GetMediaFoundationCdmProxyCB = base::OnceCallback<void(IMFCdmProxy*)>;
+  // This allows a CdmContext to expose an IMFTrustedInput instance for use in
+  // a Media Foundation rendering pipeline. This method is asynchronous because
+  // the underlying MF-based CDM might not have a native session created yet.
+  // When the return value is true, the callback might also not be invoked
+  // if the application has never caused the MF-based CDM to create its
+  // native session.
+  // NOTE: the callback should always be fired asynchronously.
+  virtual bool GetMediaFoundationCdmProxy(
+      GetMediaFoundationCdmProxyCB get_mf_cdm_proxy_cb);
+#endif
 
 #if defined(OS_ANDROID)
   // Returns a MediaCryptoContext that can be used by MediaCodec based decoders.

@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/dom/events/event_listener.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/parser/html_document_parser.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
@@ -52,10 +53,10 @@ void PerformanceMonitor::ReportGenericViolation(
 // static
 PerformanceMonitor* PerformanceMonitor::Monitor(
     const ExecutionContext* context) {
-  const auto* document = Document::DynamicFrom(context);
-  if (!document)
+  const auto* window = DynamicTo<LocalDOMWindow>(context);
+  if (!window)
     return nullptr;
-  LocalFrame* frame = document->GetFrame();
+  LocalFrame* frame = window->GetFrame();
   if (!frame)
     return nullptr;
   return frame->GetPerformanceMonitor();
@@ -147,12 +148,12 @@ void PerformanceMonitor::DidExecuteScript() {
 }
 
 void PerformanceMonitor::UpdateTaskAttribution(ExecutionContext* context) {
-  // If |context| is not a document, unable to attribute a frame context.
-  auto* document = Document::DynamicFrom(context);
-  if (!document)
+  // If |context| is not a window, unable to attribute a frame context.
+  auto* window = DynamicTo<LocalDOMWindow>(context);
+  if (!window)
     return;
 
-  UpdateTaskShouldBeReported(document->GetFrame());
+  UpdateTaskShouldBeReported(window->GetFrame());
   if (!task_execution_context_)
     task_execution_context_ = context;
   else if (task_execution_context_ != context)
@@ -263,7 +264,7 @@ void PerformanceMonitor::DocumentWriteFetchScript(Document* document) {
   if (!enabled_)
     return;
   String text = "Parser was blocked due to document.write(<script>)";
-  InnerReportGenericViolation(document->ToExecutionContext(), kBlockedParser,
+  InnerReportGenericViolation(document->GetExecutionContext(), kBlockedParser,
                               text, base::TimeDelta(), nullptr);
 }
 

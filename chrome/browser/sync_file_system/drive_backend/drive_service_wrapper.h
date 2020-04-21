@@ -40,12 +40,12 @@ class DriveServiceWrapper : public base::SupportsWeakPtr<DriveServiceWrapper> {
       const std::string& resource_id,
       const google_apis::DownloadActionCallback& download_action_callback,
       const google_apis::GetContentCallback& get_content_callback,
-      const google_apis::ProgressCallback& progress_callback);
+      google_apis::ProgressCallback progress_callback);
 
   void GetAboutResource(google_apis::AboutResourceCallback callback);
 
   void GetStartPageToken(const std::string& team_drive_id,
-                         const google_apis::StartPageTokenCallback& callback);
+                         google_apis::StartPageTokenCallback callback);
 
   void GetChangeList(int64_t start_changestamp,
                      const google_apis::ChangeListCallback& callback);
@@ -85,7 +85,7 @@ class DriveServiceWrapper : public base::SupportsWeakPtr<DriveServiceWrapper> {
 
  private:
   drive::DriveServiceInterface* drive_service_;
-  base::SequenceChecker sequece_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(DriveServiceWrapper);
 };

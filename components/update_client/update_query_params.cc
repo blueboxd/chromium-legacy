@@ -88,10 +88,8 @@ const char* UpdateQueryParams::GetProdIdString(UpdateQueryParams::ProdId prod) {
   switch (prod) {
     case UpdateQueryParams::CHROME:
       return kChrome;
-      break;
     case UpdateQueryParams::CRX:
       return kCrx;
-      break;
   }
   return kUnknown;
 }

@@ -987,8 +987,7 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
       }
     }
 
-    if (dst->role == ax::mojom::Role::kDialog ||
-        dst->role == ax::mojom::Role::kAlertDialog) {
+    if (ui::IsDialog(dst->role)) {
       dst->AddBoolAttribute(ax::mojom::BoolAttribute::kModal, src.IsModal());
     }
 

@@ -365,8 +365,7 @@ void AppCacheStorageImpl::GetAllInfoTask::Run() {
       info.padding_sizes = cache_record.padding_size;
       info.last_access_time = group.last_access_time;
       info.last_update_time = cache_record.update_time;
-      // TODO(enne): should this be cache? group? both??
-      info.token_expires = group.token_expires;
+      info.token_expires = cache_record.token_expires;
       info.cache_id = cache_record.cache_id;
       info.group_id = group.group_id;
       info.is_complete = true;
@@ -637,7 +636,6 @@ AppCacheStorageImpl::StoreGroupAndCacheTask::StoreGroupAndCacheTask(
       group->last_full_update_check_time();
   group_record_.first_evictable_error_time =
       group->first_evictable_error_time();
-  group_record_.token_expires = group->token_expires();
   newest_cache->ToDatabaseRecords(
       group,
       &cache_record_, &entry_records_,
@@ -704,9 +702,9 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::Run() {
     database_->UpdateLastAccessTime(group_record_.group_id,
                                     base::Time::Now());
 
-    database_->UpdateEvictionTimesAndTokenExpires(
-        group_record_.group_id, group_record_.last_full_update_check_time,
-        group_record_.first_evictable_error_time, group_record_.token_expires);
+    database_->UpdateEvictionTimes(group_record_.group_id,
+                                   group_record_.last_full_update_check_time,
+                                   group_record_.first_evictable_error_time);
 
     AppCacheDatabase::CacheRecord cache;
     if (database_->FindCacheForGroup(group_record_.group_id, &cache)) {
@@ -1350,8 +1348,7 @@ class AppCacheStorageImpl::UpdateEvictionTimesTask
       : DatabaseTask(storage),
         group_id_(group->group_id()),
         last_full_update_check_time_(group->last_full_update_check_time()),
-        first_evictable_error_time_(group->first_evictable_error_time()),
-        token_expires_(group->token_expires()) {}
+        first_evictable_error_time_(group->first_evictable_error_time()) {}
 
   // DatabaseTask:
   void Run() override;
@@ -1363,13 +1360,11 @@ class AppCacheStorageImpl::UpdateEvictionTimesTask
   int64_t group_id_;
   base::Time last_full_update_check_time_;
   base::Time first_evictable_error_time_;
-  base::Time token_expires_;
 };
 
 void AppCacheStorageImpl::UpdateEvictionTimesTask::Run() {
-  database_->UpdateEvictionTimesAndTokenExpires(
-      group_id_, last_full_update_check_time_, first_evictable_error_time_,
-      token_expires_);
+  database_->UpdateEvictionTimes(group_id_, last_full_update_check_time_,
+                                 first_evictable_error_time_);
 }
 
 // AppCacheStorageImpl ---------------------------------------------------

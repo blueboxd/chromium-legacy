@@ -169,6 +169,8 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/app_mode/app_mode_utils.h"
+#include "chrome/browser/chromeos/app_mode/app_launch_utils.h"
 #include "chrome/browser/chromeos/arc/session/arc_service_launcher.h"
 #include "chrome/browser/chromeos/locale_change_guard.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
@@ -987,6 +989,14 @@ void ProfileImpl::OnLocaleReady() {
   // be handled specially (rather than directly as part of
   // MigrateObsoleteProfilePrefs()).
   extensions::ExtensionPrefs::Get(this)->MigrateObsoleteExtensionPrefs();
+#endif
+
+#if defined(OS_CHROMEOS)
+  // If this is a kiosk profile, reset some of its prefs which should not
+  // persist between sessions.
+  if (chrome::IsRunningInForcedAppMode()) {
+    chromeos::ResetEphemeralKioskPreferences(prefs_.get());
+  }
 #endif
 
   // |kSessionExitType| was added after |kSessionExitedCleanly|. If the pref

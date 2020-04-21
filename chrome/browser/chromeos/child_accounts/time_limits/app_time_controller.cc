@@ -85,6 +85,8 @@ base::string16 GetNotificationTitleFor(const base::string16& app_name,
       return l10n_util::GetStringFUTF16(
           IDS_APP_TIME_LIMIT_APP_WILL_PAUSE_SYSTEM_NOTIFICATION_TITLE,
           app_name);
+    case AppNotification::kBlocked:
+    case AppNotification::kAvailable:
     case AppNotification::kTimeLimitChanged:
       return l10n_util::GetStringUTF16(
           IDS_APP_TIME_LIMIT_APP_TIME_LIMIT_SET_SYSTEM_NOTIFICATION_TITLE);
@@ -116,6 +118,13 @@ base::string16 GetNotificationMessageFor(
                  : l10n_util::GetStringFUTF16(
                        IDS_APP_TIME_LIMIT_APP_TIME_LIMIT_REMOVED_SYSTEM_NOTIFICATION_MESSAGE,
                        app_name);
+    case AppNotification::kBlocked:
+      return l10n_util::GetStringFUTF16(
+          IDS_APP_TIME_LIMIT_APP_BLOCKED_NOTIFICATION_MESSAGE, app_name);
+
+    case AppNotification::kAvailable:
+      return l10n_util::GetStringFUTF16(
+          IDS_APP_TIME_LIMIT_APP_AVAILABLE_NOTIFICATION_MESSAGE, app_name);
     default:
       NOTREACHED();
       return base::EmptyString16();
@@ -131,6 +140,8 @@ std::string GetNotificationIdFor(const std::string& app_name,
       notification_id = kAppTimeLimitReachingNotificationId;
       break;
     case AppNotification::kTimeLimitChanged:
+    case AppNotification::kBlocked:
+    case AppNotification::kAvailable:
       notification_id = kAppTimeLimitUpdateNotificationId;
       break;
     default:
@@ -148,9 +159,13 @@ void ShowNotificationForApp(const std::string& app_name,
                             base::Optional<gfx::ImageSkia> icon) {
   DCHECK(notification == AppNotification::kFiveMinutes ||
          notification == AppNotification::kOneMinute ||
-         notification == AppNotification::kTimeLimitChanged);
+         notification == AppNotification::kTimeLimitChanged ||
+         notification == AppNotification::kBlocked ||
+         notification == AppNotification::kAvailable);
+
   DCHECK(notification == AppNotification::kTimeLimitChanged ||
-         time_limit.has_value());
+         notification == AppNotification::kBlocked ||
+         notification == AppNotification::kAvailable || time_limit.has_value());
 
   // Alright we have all the messages that we want.
   const base::string16 app_name_16 = base::UTF8ToUTF16(app_name);

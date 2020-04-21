@@ -62,7 +62,8 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.ViewUtils;
-import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.dom_distiller.core.DistilledPagePrefs;
 import org.chromium.components.dom_distiller.core.DomDistillerService;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
@@ -120,7 +121,7 @@ public class ReaderModeTest {
 
     @Test
     @MediumTest
-    @Features.EnableFeatures(ChromeFeatureList.READER_MODE_IN_CCT)
+    @EnableFeatures(ChromeFeatureList.READER_MODE_IN_CCT)
     public void testReaderModeInCCT() throws TimeoutException {
         mActivityTestRule.startMainActivityWithURL(mURL);
         Tab originalTab = mActivityTestRule.getActivity().getActivityTab();
@@ -146,7 +147,7 @@ public class ReaderModeTest {
 
     @Test
     @MediumTest
-    @Features.EnableFeatures({ChromeFeatureList.READER_MODE_IN_CCT})
+    @EnableFeatures({ChromeFeatureList.READER_MODE_IN_CCT, ChromeFeatureList.CCT_INCOGNITO})
     public void testReaderModeInCCT_Incognito() throws TimeoutException {
         mActivityTestRule.startMainActivityWithURL(mURL);
         ChromeTabUtils.fullyLoadUrlInNewTab(InstrumentationRegistry.getInstrumentation(),
@@ -168,6 +169,7 @@ public class ReaderModeTest {
         @NonNull
         Tab distillerViewerTab = Objects.requireNonNull(customTabActivity.getActivityTab());
         waitForDistillation(TITLE, distillerViewerTab);
+        assertTrue(distillerViewerTab.isIncognito());
 
         innerHtml = getInnerHtml(distillerViewerTab);
         assertThat(innerHtml).contains("article-header");
@@ -176,7 +178,7 @@ public class ReaderModeTest {
 
     @Test
     @MediumTest
-    @Features.DisableFeatures(ChromeFeatureList.READER_MODE_IN_CCT)
+    @DisableFeatures(ChromeFeatureList.READER_MODE_IN_CCT)
     public void testReaderModeInTab() throws TimeoutException {
         mActivityTestRule.startMainActivityWithURL(mURL);
         Tab tab = mActivityTestRule.getActivity().getActivityTab();
@@ -197,7 +199,7 @@ public class ReaderModeTest {
 
     @Test
     @MediumTest
-    @Features.EnableFeatures(ChromeFeatureList.READER_MODE_IN_CCT)
+    @EnableFeatures(ChromeFeatureList.READER_MODE_IN_CCT)
     public void testPreferenceInCCT() {
         mActivityTestRule.startMainActivityWithURL(mURL);
 
@@ -218,7 +220,7 @@ public class ReaderModeTest {
 
     @Test
     @MediumTest
-    @Features.DisableFeatures(ChromeFeatureList.READER_MODE_IN_CCT)
+    @DisableFeatures(ChromeFeatureList.READER_MODE_IN_CCT)
     public void testPreferenceInTab() {
         // getDistillerViewUrlFromUrl() requires native, so start on blank page first.
         mActivityTestRule.startMainActivityOnBlankPage();

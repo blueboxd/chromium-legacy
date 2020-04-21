@@ -13,6 +13,7 @@
 #include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "mojo/public/cpp/base/unguessable_token_mojom_traits.h"
 #include "services/network/public/cpp/http_request_headers_mojom_traits.h"
+#include "services/network/public/cpp/isolation_info_mojom_traits.h"
 #include "services/network/public/cpp/network_ipc_param_traits.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/mojom/trust_tokens.mojom.h"
@@ -156,10 +157,8 @@ bool StructTraits<network::mojom::TrustedUrlRequestParamsDataView,
                   network::ResourceRequest::TrustedParams>::
     Read(network::mojom::TrustedUrlRequestParamsDataView data,
          network::ResourceRequest::TrustedParams* out) {
-  if (!data.ReadNetworkIsolationKey(&out->network_isolation_key))
+  if (!data.ReadIsolationInfo(&out->isolation_info))
     return false;
-  out->update_network_isolation_key_on_redirect =
-      data.update_network_isolation_key_on_redirect();
   out->disable_secure_dns = data.disable_secure_dns();
   out->has_user_activation = data.has_user_activation();
   return true;

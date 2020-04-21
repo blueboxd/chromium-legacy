@@ -106,7 +106,6 @@ base::TaskTraits TaskQueuePriority2Traits(
 #else
       return {base::TaskPriority::HIGHEST};
 #endif
-      break;
     case webrtc::TaskQueueFactory::Priority::LOW:
       return {base::MayBlock(), base::TaskPriority::BEST_EFFORT};
     case webrtc::TaskQueueFactory::Priority::NORMAL:

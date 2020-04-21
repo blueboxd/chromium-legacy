@@ -524,7 +524,10 @@ jumbo_source_set("browser_sources") {
       "xr_runtime_manager.h",
     ]
 
-    public_deps += [ "//device/vr/public/mojom" ]
+    public_deps += [
+      "//device/vr/public/cpp",
+      "//device/vr/public/mojom",
+    ]
   }
 }
 

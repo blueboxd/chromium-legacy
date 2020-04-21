@@ -154,11 +154,6 @@ public class SafeBrowsingTest {
 
         @Override
         public boolean init(Observer result) {
-            return init(result, false);
-        }
-
-        @Override
-        public boolean init(Observer result, boolean enableLocalBlacklists) {
             mObserver = result;
             return true;
         }

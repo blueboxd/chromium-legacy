@@ -376,19 +376,15 @@ void DOMWindow::focus(v8::Isolate* isolate) {
   // https://html.spec.whatwg.org/C/#dom-window-focus
   // https://html.spec.whatwg.org/C/#focusing-steps
   LocalDOMWindow* incumbent_window = IncumbentDOMWindow(isolate);
-  ExecutionContext* incumbent_execution_context =
-      incumbent_window->GetExecutionContext();
 
   // TODO(mustaq): Use of |allow_focus| and consuming the activation here seems
   // suspicious (https://crbug.com/959815).
-  bool allow_focus = incumbent_execution_context->IsWindowInteractionAllowed();
+  bool allow_focus = incumbent_window->IsWindowInteractionAllowed();
   if (allow_focus) {
-    incumbent_execution_context->ConsumeWindowInteraction();
+    incumbent_window->ConsumeWindowInteraction();
   } else {
     DCHECK(IsMainThread());
-    allow_focus =
-        opener() && (opener() != this) &&
-        (Document::From(incumbent_execution_context)->domWindow() == opener());
+    allow_focus = opener() && opener() != this && incumbent_window == opener();
   }
 
   // If we're a top level window, bring the window to the front.

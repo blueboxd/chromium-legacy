@@ -266,10 +266,6 @@ void ExtensionApps::RecordUninstallCanceledAction(Profile* profile,
   }
 }
 
-void ExtensionApps::FlushMojoCallsForTesting() {
-  receiver_.FlushForTesting();
-}
-
 void ExtensionApps::Shutdown() {
   if (arc_prefs_) {
     arc_prefs_->RemoveObserver(this);
@@ -297,8 +293,7 @@ void ExtensionApps::Initialize(
     const mojo::Remote<apps::mojom::AppService>& app_service) {
   DCHECK(profile_);
   DCHECK_NE(apps::mojom::AppType::kUnknown, app_type_);
-  app_service->RegisterPublisher(receiver_.BindNewPipeAndPassRemote(),
-                                 app_type_);
+  PublisherBase::Initialize(app_service, app_type_);
 
   prefs_observer_.Add(extensions::ExtensionPrefs::Get(profile_));
   registry_observer_.Add(extensions::ExtensionRegistry::Get(profile_));
@@ -368,9 +363,10 @@ void ExtensionApps::OnSystemWebAppsInstalled() {
       continue;
     }
 
-    Publish(Convert(
-        extension,
-        GetReadiness(app_id, extensions::ExtensionPrefs::Get(profile_))));
+    Publish(Convert(extension,
+                    GetReadiness(app_id,
+                                 extensions::ExtensionPrefs::Get(profile_))),
+            subscribers_);
   }
 }
 
@@ -679,7 +675,8 @@ void ExtensionApps::Uninstall(const std::string& app_id,
 void ExtensionApps::PauseApp(const std::string& app_id) {
   paused_apps_.MaybeAddApp(app_id);
   constexpr bool kPaused = true;
-  Publish(paused_apps_.GetAppWithPauseStatus(app_type_, app_id, kPaused));
+  Publish(paused_apps_.GetAppWithPauseStatus(app_type_, app_id, kPaused),
+          subscribers_);
 
   SetIconEffect(app_id);
 
@@ -716,7 +713,8 @@ void ExtensionApps::PauseApp(const std::string& app_id) {
 void ExtensionApps::UnpauseApps(const std::string& app_id) {
   paused_apps_.MaybeRemoveApp(app_id);
   constexpr bool kPaused = false;
-  Publish(paused_apps_.GetAppWithPauseStatus(app_type_, app_id, kPaused));
+  Publish(paused_apps_.GetAppWithPauseStatus(app_type_, app_id, kPaused),
+          subscribers_);
 
   SetIconEffect(app_id);
 
@@ -824,14 +822,6 @@ void ExtensionApps::OpenNativeSettings(const std::string& app_id) {
   }
 }
 
-void ExtensionApps::OnPreferredAppSet(
-    const std::string& app_id,
-    apps::mojom::IntentFilterPtr intent_filter,
-    apps::mojom::IntentPtr intent,
-    apps::mojom::ReplacedAppPreferencesPtr replaced_app_preferences) {
-  NOTIMPLEMENTED();
-}
-
 void ExtensionApps::OnContentSettingChanged(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,
@@ -870,7 +860,7 @@ void ExtensionApps::OnContentSettingChanged(
       app->app_id = extension->id();
       PopulatePermissions(extension.get(), &app->permissions);
 
-      Publish(std::move(app));
+      Publish(std::move(app), subscribers_);
     }
   }
 }
@@ -953,7 +943,7 @@ void ExtensionApps::OnExtensionLastLaunchTimeChanged(
   app->app_id = extension->id();
   app->last_launch_time = last_launch_time;
 
-  Publish(std::move(app));
+  Publish(std::move(app), subscribers_);
 }
 
 void ExtensionApps::OnExtensionPrefsWillBeDestroyed(
@@ -972,7 +962,7 @@ void ExtensionApps::OnExtensionLoaded(content::BrowserContext* browser_context,
   app->app_id = extension->id();
   app->readiness = apps::mojom::Readiness::kReady;
   app->name = extension->name();
-  Publish(std::move(app));
+  Publish(std::move(app), subscribers_);
 }
 
 void ExtensionApps::OnExtensionUnloaded(
@@ -1007,7 +997,7 @@ void ExtensionApps::OnExtensionUnloaded(
   app->app_type = app_type_;
   app->app_id = extension->id();
   app->readiness = readiness;
-  Publish(std::move(app));
+  Publish(std::move(app), subscribers_);
 }
 
 void ExtensionApps::OnExtensionInstalled(
@@ -1021,7 +1011,7 @@ void ExtensionApps::OnExtensionInstalled(
 
   // TODO(crbug.com/826982): Does the is_update case need to be handled
   // differently? E.g. by only passing through fields that have changed.
-  Publish(Convert(extension, apps::mojom::Readiness::kReady));
+  Publish(Convert(extension, apps::mojom::Readiness::kReady), subscribers_);
 }
 
 void ExtensionApps::OnExtensionUninstalled(
@@ -1044,20 +1034,12 @@ void ExtensionApps::OnExtensionUninstalled(
   app->readiness = apps::mojom::Readiness::kUninstalledByUser;
 
   SetShowInFields(app, extension, profile_);
-  Publish(std::move(app));
+  Publish(std::move(app), subscribers_);
 
   if (!app_service_) {
     return;
   }
   app_service_->RemovePreferredApp(app_type_, extension->id());
-}
-
-void ExtensionApps::Publish(apps::mojom::AppPtr app) {
-  for (auto& subscriber : subscribers_) {
-    std::vector<apps::mojom::AppPtr> apps;
-    apps.push_back(app.Clone());
-    subscriber->OnApps(std::move(apps));
-  }
 }
 
 void ExtensionApps::OnPackageInstalled(
@@ -1185,7 +1167,7 @@ void ExtensionApps::UpdateShowInFields(const std::string& app_id) {
   app->app_type = app_type_;
   app->app_id = app_id;
   SetShowInFields(app, extension, profile_);
-  Publish(std::move(app));
+  Publish(std::move(app), subscribers_);
 }
 
 void ExtensionApps::PopulatePermissions(
@@ -1275,12 +1257,10 @@ void ExtensionApps::PopulateIntentFilters(
 apps::mojom::AppPtr ExtensionApps::Convert(
     const extensions::Extension* extension,
     apps::mojom::Readiness readiness) {
-  apps::mojom::AppPtr app = apps::mojom::App::New();
+  apps::mojom::AppPtr app = PublisherBase::MakeApp(
+      app_type_, extension->id(), readiness, extension->name(),
+      GetInstallSource(profile_, extension));
 
-  app->app_type = app_type_;
-  app->app_id = extension->id();
-  app->readiness = readiness;
-  app->name = extension->name();
   app->short_name = extension->short_name();
   app->description = extension->description();
   app->version = extension->GetVersionForDisplay();
@@ -1297,13 +1277,9 @@ apps::mojom::AppPtr ExtensionApps::Convert(
     }
   }
 
-  app->install_source = GetInstallSource(profile_, extension);
-
   app->is_platform_app = extension->is_platform_app()
                              ? apps::mojom::OptionalBool::kTrue
                              : apps::mojom::OptionalBool::kFalse;
-  app->recommendable = apps::mojom::OptionalBool::kTrue;
-  app->searchable = apps::mojom::OptionalBool::kTrue;
   app->paused = paused ? apps::mojom::OptionalBool::kTrue
                        : apps::mojom::OptionalBool::kFalse;
   SetShowInFields(app, extension, profile_);
@@ -1417,7 +1393,7 @@ void ExtensionApps::SetIconEffect(const std::string& app_id) {
   app->app_id = app_id;
   app->icon_key = icon_key_factory_.MakeIconKey(
       GetIconEffects(extension, paused_apps_.IsPaused(app_id)));
-  Publish(std::move(app));
+  Publish(std::move(app), subscribers_);
 }
 
 bool ExtensionApps::ShouldRecordAppWindowActivity(

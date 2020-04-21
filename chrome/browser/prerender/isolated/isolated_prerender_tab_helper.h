@@ -29,7 +29,7 @@ class IsolatedPrerenderPageLoadMetricsObserver;
 class Profile;
 
 namespace net {
-class NetworkIsolationKey;
+class IsolationInfo;
 }  // namespace net
 
 namespace network {
@@ -107,7 +107,7 @@ class IsolatedPrerenderTabHelper
 
   void CallHandlePrefetchResponseForTesting(
       const GURL& url,
-      const net::NetworkIsolationKey& key,
+      const net::IsolationInfo& isolation_info,
       network::mojom::URLResponseHeadPtr head,
       std::unique_ptr<std::string> body);
 
@@ -182,14 +182,14 @@ class IsolatedPrerenderTabHelper
   // Called when |url_loader_| completes. |url| is the url that was requested
   // and |key| is the temporary NIK used during the request.
   void OnPrefetchComplete(const GURL& url,
-                          const net::NetworkIsolationKey& key,
+                          const net::IsolationInfo& isolation_info,
                           std::unique_ptr<std::string> response_body);
 
   // Checks the response from |OnPrefetchComplete| for success or failure. On
   // success the response is moved to a |PrefetchedMainframeResponseContainer|
   // and cached in |prefetched_responses_|.
   void HandlePrefetchResponse(const GURL& url,
-                              const net::NetworkIsolationKey& key,
+                              const net::IsolationInfo& isolation_info,
                               network::mojom::URLResponseHeadPtr head,
                               std::unique_ptr<std::string> body);
 

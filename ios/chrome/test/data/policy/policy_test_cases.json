@@ -24,6 +24,17 @@
     ]
   },
 
+  "AutofillAddressEnabled": {
+    "os": [ "ios" ],
+    "can_be_recommended": true,
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "AutofillAddressEnabled": false },
+        "prefs": { "autofill.profile_enabled": {} }
+      }
+    ]
+  },
+
   "AutofillCreditCardEnabled": {
     "os": [ "ios" ],
     "can_be_recommended": true,

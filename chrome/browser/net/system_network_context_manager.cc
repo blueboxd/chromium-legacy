@@ -153,6 +153,8 @@ network::mojom::HttpAuthDynamicParamsPtr CreateHttpAuthDynamicParams(
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
+  // TODO: Use KerberosCredentialsManager to determine whether Kerberos is
+  // enabled instead of relying directly on the preference.
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   auth_dynamic_params->allow_gssapi_library_load =
@@ -364,6 +366,8 @@ SystemNetworkContextManager::SystemNetworkContextManager(
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
+  // TODO: Use KerberosCredentialsManager::Observer to be notified of when the
+  // enabled state changes instead of relying directly on the preference.
   pref_change_registrar_.Add(prefs::kKerberosEnabled, auth_pref_callback);
 #endif  // defined(OS_CHROMEOS)
 

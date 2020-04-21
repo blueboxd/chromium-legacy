@@ -567,8 +567,8 @@ class NetworkContextConfigurationBrowserTest
     request->site_for_cookies = net::SiteForCookies::FromOrigin(origin);
 
     request->trusted_params = network::ResourceRequest::TrustedParams();
-    request->trusted_params->network_isolation_key =
-        net::NetworkIsolationKey(origin, origin);
+    request->trusted_params->isolation_info =
+        net::IsolationInfo::CreateForInternalRequest(origin);
 
     content::SimpleURLLoaderTestHelper simple_loader_helper;
     std::unique_ptr<network::SimpleURLLoader> simple_loader =
@@ -802,8 +802,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
   url::Origin origin = url::Origin::Create(GURL(chrome::kChromeUIPrintURL));
   request->site_for_cookies = net::SiteForCookies::FromOrigin(origin);
   request->trusted_params = network::ResourceRequest::TrustedParams();
-  request->trusted_params->network_isolation_key =
-      net::NetworkIsolationKey(origin, origin);
+  request->trusted_params->isolation_info =
+      net::IsolationInfo::CreateForInternalRequest(origin);
   content::SimpleURLLoaderTestHelper simple_loader_helper;
   std::unique_ptr<network::SimpleURLLoader> simple_loader =
       network::SimpleURLLoader::Create(std::move(request),
@@ -926,8 +926,10 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, Cache) {
       std::make_unique<network::ResourceRequest>();
   request->url = request_url;
   request->trusted_params = network::ResourceRequest::TrustedParams();
-  request->trusted_params->network_isolation_key =
-      net::NetworkIsolationKey(request_origin, request_origin);
+  request->trusted_params->isolation_info =
+      net::IsolationInfo::CreateForInternalRequest(request_origin);
+  request->site_for_cookies =
+      request->trusted_params->isolation_info.site_for_cookies();
 
   content::SimpleURLLoaderTestHelper simple_loader_helper;
   std::unique_ptr<network::SimpleURLLoader> simple_loader =
@@ -950,8 +952,10 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, Cache) {
       std::make_unique<network::ResourceRequest>();
   request2->url = request_url;
   request2->trusted_params = network::ResourceRequest::TrustedParams();
-  request2->trusted_params->network_isolation_key =
-      net::NetworkIsolationKey(request_origin, request_origin);
+  request2->trusted_params->isolation_info =
+      net::IsolationInfo::CreateForInternalRequest(request_origin);
+  request2->site_for_cookies =
+      request2->trusted_params->isolation_info.site_for_cookies();
 
   content::SimpleURLLoaderTestHelper simple_loader_helper2;
   std::unique_ptr<network::SimpleURLLoader> simple_loader2 =
@@ -1039,8 +1043,10 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, PRE_DiskCache) {
       std::make_unique<network::ResourceRequest>();
   request->url = test_url;
   request->trusted_params = network::ResourceRequest::TrustedParams();
-  request->trusted_params->network_isolation_key =
-      net::NetworkIsolationKey(test_origin, test_origin);
+  request->trusted_params->isolation_info =
+      net::IsolationInfo::CreateForInternalRequest(test_origin);
+  request->site_for_cookies =
+      request->trusted_params->isolation_info.site_for_cookies();
 
   content::SimpleURLLoaderTestHelper simple_loader_helper;
   std::unique_ptr<network::SimpleURLLoader> simple_loader =
@@ -1097,8 +1103,10 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, DiskCache) {
       std::make_unique<network::ResourceRequest>();
   request->url = test_url;
   request->trusted_params = network::ResourceRequest::TrustedParams();
-  request->trusted_params->network_isolation_key =
-      net::NetworkIsolationKey(test_origin, test_origin);
+  request->trusted_params->isolation_info =
+      net::IsolationInfo::CreateForInternalRequest(test_origin);
+  request->site_for_cookies =
+      request->trusted_params->isolation_info.site_for_cookies();
 
   content::SimpleURLLoaderTestHelper simple_loader_helper;
   request->load_flags = net::LOAD_ONLY_FROM_CACHE;

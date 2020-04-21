@@ -12,6 +12,7 @@
 #include "build/build_config.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/ax_role_properties.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -430,8 +431,7 @@ View* DialogDelegateView::GetContentsView() {
 void DialogDelegateView::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
   if (details.is_add && details.child == this && GetWidget() &&
-      (GetAccessibleWindowRole() == ax::mojom::Role::kAlert ||
-       GetAccessibleWindowRole() == ax::mojom::Role::kAlertDialog)) {
+      ui::IsAlert(GetAccessibleWindowRole())) {
     NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
   }
 }

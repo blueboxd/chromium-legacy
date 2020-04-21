@@ -21,6 +21,7 @@
 #include "chrome/browser/extensions/api/passwords_private/test_passwords_private_delegate.h"
 #include "chrome/browser/extensions/test_extension_service.h"
 #include "chrome/browser/ui/webui/help/test_version_updater.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/extensions/api/passwords_private.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/crx_file/id_util.h"
@@ -376,8 +377,11 @@ TEST_F(SafetyCheckHandlerTest, CheckUpdates_Disabled) {
           static_cast<int>(SafetyCheckHandler::UpdateStatus::kUnknown));
   ASSERT_TRUE(event);
   VerifyDisplayString(
-      event,
-      "Browser version " + version_info::GetVersionNumber() + " is installed");
+      event, "Version " + version_info::GetVersionNumber() + " (" +
+                 (version_info::IsOfficialBuild() ? "Official Build"
+                                                  : "Developer Build") +
+                 ") " + chrome::GetChannelName() +
+                 (sizeof(void*) == 8 ? " (64-bit)" : " (32-bit)"));
   histogram_tester_.ExpectBucketCount(
       "Settings.SafetyCheck.UpdatesResult",
       SafetyCheckHandler::UpdateStatus::kUnknown, 1);

@@ -65,17 +65,16 @@ class FakeUrlFetchRequest : public UrlFetchRequestBase {
 
 class FakeMultipartUploadRequest : public MultipartUploadRequestBase {
  public:
-  FakeMultipartUploadRequest(
-      base::SequencedTaskRunner* blocking_task_runner,
-      const std::string& metadata_json,
-      const std::string& content_type,
-      int64_t content_length,
-      const base::FilePath& local_file_path,
-      FileResourceCallback callback,
-      const google_apis::ProgressCallback& progress_callback,
-      const GURL& url,
-      std::string* upload_content_type,
-      std::string* upload_content_data)
+  FakeMultipartUploadRequest(base::SequencedTaskRunner* blocking_task_runner,
+                             const std::string& metadata_json,
+                             const std::string& content_type,
+                             int64_t content_length,
+                             const base::FilePath& local_file_path,
+                             FileResourceCallback callback,
+                             google_apis::ProgressCallback progress_callback,
+                             const GURL& url,
+                             std::string* upload_content_type,
+                             std::string* upload_content_data)
       : MultipartUploadRequestBase(blocking_task_runner,
                                    metadata_json,
                                    content_type,

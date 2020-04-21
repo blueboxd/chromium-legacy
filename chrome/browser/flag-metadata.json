@@ -1304,7 +1304,7 @@
   {
     "name": "enable-cros-virtual-keyboard-bordered-key",
     "owners": [ "essential-inputs-team@google.com" ],
-    "expiry_milestone": 83
+    "expiry_milestone": 90
   },
   {
     "name": "enable-cros-virtual-keyboard-floating-resizable",
@@ -1345,12 +1345,12 @@
   {
     "name": "enable-defer-all-script",
     "owners": [ "//components/data_reduction_proxy/OWNERS" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 90
   },
   {
     "name": "enable-defer-all-script-without-optimization-hints",
     "owners": [ "//components/data_reduction_proxy/OWNERS" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 90
   },
   {
     "name": "enable-desktop-minimal-ui",
@@ -2555,7 +2555,7 @@
   {
     "name": "handwriting-gesture",
     "owners": [ "essential-inputs-team@google.com" ],
-    "expiry_milestone": 83
+    "expiry_milestone": 90
   },
   {
     "name": "happiness-tracking-surveys-for-desktop",
@@ -2620,7 +2620,7 @@
   {
     "name": "ignore-litepage-redirect-optimization-blacklist",
     "owners": [ "//components/data_reduction_proxy/OWNERS" ],
-    "expiry_milestone": 79
+    "expiry_milestone": 90
   },
   {
     "name": "ignore-previews-blocklist",

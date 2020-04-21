@@ -4,11 +4,14 @@
 
 #include "content/browser/conversions/conversion_storage_sql.h"
 
+#include <functional>
 #include <memory>
 
+#include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/test/simple_test_clock.h"
+#include "base/time/time.h"
 #include "content/browser/conversions/conversion_report.h"
 #include "content/browser/conversions/conversion_test_utils.h"
 #include "content/browser/conversions/storable_conversion.h"
@@ -29,8 +32,8 @@ class ConversionStorageSqlTest : public testing::Test {
   void OpenDatabase() {
     storage_.reset();
     storage_ = std::make_unique<ConversionStorageSql>(
-        temp_directory_.GetPath(), std::make_unique<EmptyStorageDelegate>(),
-        &clock_);
+        temp_directory_.GetPath(),
+        std::make_unique<PassThroughStorageDelegate>(), &clock_);
     EXPECT_TRUE(storage_->Initialize());
   }
 
@@ -98,6 +101,121 @@ TEST_F(ConversionStorageSqlTest, CorruptDatabase_RecoveredOnOpen) {
   EXPECT_EQ(1u, storage()->GetConversionsToReport(clock()->Now()).size());
 
   EXPECT_TRUE(expecter.SawExpectedErrors());
+}
+
+//  Create an impression with two conversions (C1 and C2). Craft a query that
+//  will target C2, which will in turn delete the impression. We should ensure
+//  that C1 is properly deleted (conversions should not be stored unattributed).
+TEST_F(ConversionStorageSqlTest, ClearDataWithVestigialConversion) {
+  OpenDatabase();
+
+  base::Time start = clock()->Now();
+  auto impression =
+      ImpressionBuilder(start).SetExpiry(base::TimeDelta::FromDays(30)).Build();
+  storage()->StoreImpression(impression);
+
+  clock()->Advance(base::TimeDelta::FromDays(1));
+  EXPECT_EQ(
+      1, storage()->MaybeCreateAndStoreConversionReports(DefaultConversion()));
+
+  clock()->Advance(base::TimeDelta::FromDays(1));
+  EXPECT_EQ(
+      1, storage()->MaybeCreateAndStoreConversionReports(DefaultConversion()));
+
+  // Use a time range that only intersects the last conversion.
+  storage()->ClearData(clock()->Now(), clock()->Now(),
+                       base::BindRepeating(std::equal_to<url::Origin>(),
+                                           impression.impression_origin()));
+  EXPECT_TRUE(storage()->GetConversionsToReport(base::Time::Max()).empty());
+
+  CloseDatabase();
+
+  // Verify that everything is deleted.
+  sql::Database raw_db;
+  EXPECT_TRUE(raw_db.Open(db_path()));
+
+  size_t conversion_rows;
+  size_t impression_rows;
+  sql::test::CountTableRows(&raw_db, "conversions", &conversion_rows);
+  sql::test::CountTableRows(&raw_db, "impressions", &impression_rows);
+
+  EXPECT_EQ(0u, conversion_rows);
+  EXPECT_EQ(0u, impression_rows);
+}
+
+// Same as the above test, but with a null filter.
+TEST_F(ConversionStorageSqlTest, ClearAllDataWithVestigialConversion) {
+  OpenDatabase();
+
+  base::Time start = clock()->Now();
+  auto impression =
+      ImpressionBuilder(start).SetExpiry(base::TimeDelta::FromDays(30)).Build();
+  storage()->StoreImpression(impression);
+
+  clock()->Advance(base::TimeDelta::FromDays(1));
+  EXPECT_EQ(
+      1, storage()->MaybeCreateAndStoreConversionReports(DefaultConversion()));
+
+  clock()->Advance(base::TimeDelta::FromDays(1));
+  EXPECT_EQ(
+      1, storage()->MaybeCreateAndStoreConversionReports(DefaultConversion()));
+
+  // Use a time range that only intersects the last conversion.
+  auto null_filter = base::RepeatingCallback<bool(const url::Origin&)>();
+  storage()->ClearData(clock()->Now(), clock()->Now(), null_filter);
+  EXPECT_TRUE(storage()->GetConversionsToReport(base::Time::Max()).empty());
+
+  CloseDatabase();
+
+  // Verify that everything is deleted.
+  sql::Database raw_db;
+  EXPECT_TRUE(raw_db.Open(db_path()));
+
+  size_t conversion_rows;
+  size_t impression_rows;
+  sql::test::CountTableRows(&raw_db, "conversions", &conversion_rows);
+  sql::test::CountTableRows(&raw_db, "impressions", &impression_rows);
+
+  EXPECT_EQ(0u, conversion_rows);
+  EXPECT_EQ(0u, impression_rows);
+}
+
+// The max time range with a null filter should delete everything.
+TEST_F(ConversionStorageSqlTest, DeleteEverything) {
+  OpenDatabase();
+
+  base::Time start = clock()->Now();
+  for (int i = 0; i < 10; i++) {
+    auto impression = ImpressionBuilder(start)
+                          .SetExpiry(base::TimeDelta::FromDays(30))
+                          .Build();
+    storage()->StoreImpression(impression);
+    clock()->Advance(base::TimeDelta::FromDays(1));
+  }
+
+  EXPECT_EQ(
+      10, storage()->MaybeCreateAndStoreConversionReports(DefaultConversion()));
+  clock()->Advance(base::TimeDelta::FromDays(1));
+  EXPECT_EQ(
+      10, storage()->MaybeCreateAndStoreConversionReports(DefaultConversion()));
+
+  auto null_filter = base::RepeatingCallback<bool(const url::Origin&)>();
+  storage()->ClearData(base::Time::Min(), base::Time::Max(), null_filter);
+  EXPECT_TRUE(storage()->GetConversionsToReport(base::Time::Max()).empty());
+
+  CloseDatabase();
+
+  // Verify that everything is deleted.
+  sql::Database raw_db;
+  EXPECT_TRUE(raw_db.Open(db_path()));
+
+  size_t conversion_rows;
+  size_t impression_rows;
+  sql::test::CountTableRows(&raw_db, "conversions", &conversion_rows);
+  sql::test::CountTableRows(&raw_db, "impressions", &impression_rows);
+
+  EXPECT_EQ(0u, conversion_rows);
+  EXPECT_EQ(0u, impression_rows);
 }
 
 }  // namespace content

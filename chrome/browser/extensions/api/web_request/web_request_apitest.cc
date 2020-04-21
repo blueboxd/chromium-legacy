@@ -3329,8 +3329,12 @@ IN_PROC_BROWSER_TEST_P(RedirectInfoWebRequestApiTest,
   EXPECT_TRUE(resource_request->site_for_cookies.IsFirstParty(redirected_url));
   ASSERT_TRUE(resource_request->trusted_params);
   url::Origin redirected_origin = url::Origin::Create(redirected_url);
-  EXPECT_EQ(resource_request->trusted_params->network_isolation_key,
-            net::NetworkIsolationKey(redirected_origin, redirected_origin));
+  EXPECT_TRUE(
+      resource_request->trusted_params->isolation_info.IsEqualForTesting(
+          net::IsolationInfo::Create(
+              net::IsolationInfo::RedirectMode::kUpdateTopFrame,
+              redirected_origin, redirected_origin,
+              net::SiteForCookies::FromOrigin(redirected_origin))));
 }
 
 // Test that a sub frame request redirected by an extension has the correct
@@ -3376,8 +3380,12 @@ IN_PROC_BROWSER_TEST_P(RedirectInfoWebRequestApiTest,
   ASSERT_TRUE(resource_request->trusted_params);
   url::Origin top_level_origin = url::Origin::Create(page_with_iframe_url);
   url::Origin redirected_origin = url::Origin::Create(redirected_url);
-  EXPECT_EQ(resource_request->trusted_params->network_isolation_key,
-            net::NetworkIsolationKey(top_level_origin, redirected_origin));
+  EXPECT_TRUE(
+      resource_request->trusted_params->isolation_info.IsEqualForTesting(
+          net::IsolationInfo::Create(
+              net::IsolationInfo::RedirectMode::kUpdateFrameOnly,
+              top_level_origin, redirected_origin,
+              net::SiteForCookies::FromOrigin(top_level_origin))));
 }
 
 }  // namespace extensions

@@ -45,21 +45,16 @@ bool DataTypeStatusTable::UpdateFailedDataType(ModelType type,
       break;
     case SyncError::UNRECOVERABLE_ERROR:
       return unrecoverable_errors_.emplace(type, error).second;
-      break;
     case SyncError::DATATYPE_ERROR:
       return data_type_errors_.emplace(type, error).second;
-      break;
     case SyncError::DATATYPE_POLICY_ERROR:
       return data_type_policy_errors_.emplace(type, error).second;
     case SyncError::CRYPTO_ERROR:
       return crypto_errors_.emplace(type, error).second;
-      break;
     case SyncError::PERSISTENCE_ERROR:
       return persistence_errors_.emplace(type, error).second;
-      break;
     case SyncError::UNREADY_ERROR:
       return unready_errors_.emplace(type, error).second;
-      break;
   }
   NOTREACHED();
   return false;

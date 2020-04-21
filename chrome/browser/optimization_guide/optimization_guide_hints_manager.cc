@@ -44,6 +44,7 @@
 #include "components/optimization_guide/optimization_guide_switches.h"
 #include "components/optimization_guide/top_host_provider.h"
 #include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -224,6 +225,22 @@ class ScopedHintsManagerRaceNavigationHintsFetchAttemptRecorder {
  private:
   optimization_guide::RaceNavigationFetchAttemptStatus race_attempt_status_;
 };
+
+// Returns true if the optimization type should be ignored when is newly
+// registered as the optimization type is likely launched.
+bool ShouldIgnoreNewlyRegisteredOptimizationType(
+    optimization_guide::proto::OptimizationType optimization_type) {
+  switch (optimization_type) {
+    case optimization_guide::proto::NOSCRIPT:
+    case optimization_guide::proto::RESOURCE_LOADING:
+    case optimization_guide::proto::LITE_PAGE_REDIRECT:
+    case optimization_guide::proto::DEFER_ALL_SCRIPT:
+      return true;
+    default:
+      return false;
+  }
+  return false;
+}
 
 }  // namespace
 
@@ -841,6 +858,11 @@ void OptimizationGuideHintsManager::RegisterOptimizationTypes(
     const std::vector<optimization_guide::proto::OptimizationType>&
         optimization_types) {
   bool should_load_new_optimization_filter = false;
+  bool should_clear_hints_for_new_type = false;
+
+  DictionaryPrefUpdate previously_registered_opt_types(
+      pref_service_,
+      optimization_guide::prefs::kPreviouslyRegisteredOptimizationTypes);
   for (const auto optimization_type : optimization_types) {
     if (optimization_type == optimization_guide::proto::TYPE_UNSPECIFIED)
       continue;
@@ -851,6 +873,16 @@ void OptimizationGuideHintsManager::RegisterOptimizationTypes(
     }
     registered_optimization_types_.insert(optimization_type);
 
+    base::Optional<double> value = previously_registered_opt_types->FindBoolKey(
+        optimization_guide::proto::OptimizationType_Name(optimization_type));
+    if (!value) {
+      if (!ShouldIgnoreNewlyRegisteredOptimizationType(optimization_type))
+        should_clear_hints_for_new_type = true;
+      previously_registered_opt_types->SetBoolKey(
+          optimization_guide::proto::OptimizationType_Name(optimization_type),
+          true);
+    }
+
     if (!should_load_new_optimization_filter) {
       base::AutoLock lock(optimization_filters_lock_);
       if (optimization_types_with_filter_.find(optimization_type) !=
@@ -860,9 +892,13 @@ void OptimizationGuideHintsManager::RegisterOptimizationTypes(
     }
   }
 
+  // Clear all hint state so newly registered types can have their hints
+  // immediately included in hint fetches.
+  if (should_clear_hints_for_new_type)
+    ClearFetchedHints();
+
   if (should_load_new_optimization_filter) {
     DCHECK(hints_component_info_);
-
     OnHintsComponentAvailable(*hints_component_info_);
   } else {
     MaybeRunUpdateClosure(std::move(next_update_closure_));

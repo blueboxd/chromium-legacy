@@ -9,12 +9,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "chrome/services/local_search_service/public/mojom/local_search_service.mojom.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/receiver_set.h"
-#include "mojo/public/cpp/bindings/remote.h"
-#include "mojo/public/cpp/bindings/remote_set.h"
 
 namespace local_search_service {
 
@@ -22,30 +16,19 @@ class IndexImpl;
 
 enum class IndexId { kCrosSettings = 0 };
 
-// Actual implementation of LocalSearchService.
-// It creates and owns content-specific Indices. Clients can call it |GetIndex|
-// method to get an Index for a given index id.
-// In-process clients can call |GetIndexImpl| directly.
-class LocalSearchServiceImpl : public mojom::LocalSearchService {
+// LocalSearchServiceImpl creates and owns content-specific Indices. Clients can
+// call it |GetIndexImpl| method to get an Index for a given index id.
+class LocalSearchServiceImpl {
  public:
   LocalSearchServiceImpl();
-  ~LocalSearchServiceImpl() override;
+  ~LocalSearchServiceImpl();
+  LocalSearchServiceImpl(const LocalSearchServiceImpl&) = delete;
+  LocalSearchServiceImpl& operator=(const LocalSearchServiceImpl&) = delete;
 
-  void BindReceiver(mojo::PendingReceiver<mojom::LocalSearchService> receiver);
-
-  // mojom::LocalSearchService overrides.
-  void GetIndex(mojom::LocalSearchService::IndexId index_id,
-                mojo::PendingReceiver<mojom::Index> index) override;
-
-  // Only to be used by in-process clients.
   IndexImpl* GetIndexImpl(local_search_service::IndexId index_id);
 
  private:
-  IndexImpl* IndexLookupOrCreate(local_search_service::IndexId index_id);
-  mojo::ReceiverSet<mojom::LocalSearchService> receivers_;
   std::map<local_search_service::IndexId, std::unique_ptr<IndexImpl>> indices_;
-
-  DISALLOW_COPY_AND_ASSIGN(LocalSearchServiceImpl);
 };
 
 }  // namespace local_search_service

@@ -75,9 +75,9 @@ class PerFrameContentTranslateDriver : public ContentTranslateDriver {
 
     int pending_request_count = 0;
     bool main_frame_success = false;
-    int sub_frame_request_count = 0;
-    int sub_frame_success_count = 0;
-    std::vector<TranslateErrors::Type> sub_frame_errors;
+    int frame_request_count = 0;
+    int frame_success_count = 0;
+    std::vector<TranslateErrors::Type> frame_errors;
   };
 
   void StartLanguageDetection();
@@ -89,25 +89,31 @@ class PerFrameContentTranslateDriver : public ContentTranslateDriver {
 
   void RevertFrame(content::RenderFrameHost* render_frame_host);
 
-  void OnWebLanguageDetectionDetails(const std::string& content_language,
-                                     const std::string& html_lang,
-                                     const GURL& url,
-                                     bool has_no_translate_meta);
+  // Callback for the GetWebLanguageDetectionDetails IPC. Note we will
+  // pass the Remote handle to the TranslateAgent through to it in order
+  // for the Remote handle to stay alive to receive the callback.
+  void OnWebLanguageDetectionDetails(
+      mojo::AssociatedRemote<mojom::TranslateAgent> translate_agent,
+      const std::string& content_language,
+      const std::string& html_lang,
+      const GURL& url,
+      bool has_no_translate_meta);
 
   void OnPageContents(base::TimeTicks capture_begin_time,
                       const base::string16& contents);
 
   void ComputeActualPageLanguage();
 
-  void OnMainFrameTranslated(bool cancelled,
-                             const std::string& original_lang,
-                             const std::string& translated_lang,
-                             TranslateErrors::Type error_type);
-
-  void OnSubFrameTranslated(bool cancelled,
-                            const std::string& original_lang,
-                            const std::string& translated_lang,
-                            TranslateErrors::Type error_type);
+  // Callback for the TranslateFrame IPC. Note we will  pass the Remote
+  // handle to the TranslateAgent through to it in order for the Remote
+  // handle to stay alive to receive the callback.
+  void OnFrameTranslated(
+      bool is_main_frame,
+      mojo::AssociatedRemote<mojom::TranslateAgent> translate_agent,
+      bool cancelled,
+      const std::string& original_lang,
+      const std::string& translated_lang,
+      TranslateErrors::Type error_type);
 
   bool IsForCurrentPage(int page_seq_no);
 
@@ -117,8 +123,6 @@ class PerFrameContentTranslateDriver : public ContentTranslateDriver {
   LanguageDetectionDetails details_;
 
   bool awaiting_contents_ = false;
-
-  mojo::AssociatedRemote<mojom::TranslateAgent> main_frame_translate_agent_;
 
   // Time when a page language is determined. This is used to know a duration
   // time from showing infobar to requesting translation.

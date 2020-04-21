@@ -14,6 +14,7 @@ dictionary GPUBindGroupLayoutEntry {
     GPUTextureComponentType textureComponentType = "float";
     boolean multisampled = false;
     boolean hasDynamicOffset = false;
+    GPUTextureFormat storageTextureFormat;
 };
 
 enum GPUBindingType {
@@ -22,7 +23,8 @@ enum GPUBindingType {
     "readonly-storage-buffer",
     "sampler",
     "sampled-texture",
-    "storage-texture",
+    "readonly-storage-texture",
+    "writeonly-storage-texture",
 };
 
 enum GPUTextureComponentType {

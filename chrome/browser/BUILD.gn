@@ -3184,6 +3184,8 @@ jumbo_static_library("browser") {
       "enterprise/connectors/common.h",
       "enterprise/connectors/connectors_manager.cc",
       "enterprise/connectors/connectors_manager.h",
+      "enterprise/connectors/connectors_prefs.cc",
+      "enterprise/connectors/connectors_prefs.h",
       "enterprise/connectors/enterprise_connectors_policy_handler.cc",
       "enterprise/connectors/enterprise_connectors_policy_handler.h",
       "enterprise/reporting/browser_report_generator.cc",
@@ -3768,6 +3770,7 @@ jumbo_static_library("browser") {
       "//chrome/services/app_service/public/cpp:icon_loader",
       "//chrome/services/app_service/public/cpp:intents",
       "//chrome/services/app_service/public/cpp:preferred_apps",
+      "//chrome/services/app_service/public/cpp:publisher",
       "//chrome/services/sharing/public/cpp",
       "//chrome/services/sharing/public/mojom",
       "//components/feedback",
@@ -5444,6 +5447,7 @@ jumbo_static_library("browser") {
     deps += [
       "//chrome/browser/vr:vr_common",
       "//device/vr",
+      "//device/vr/public/cpp",
     ]
   }
 

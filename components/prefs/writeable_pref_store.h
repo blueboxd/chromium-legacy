@@ -76,6 +76,10 @@ class COMPONENTS_PREFS_EXPORT WriteablePrefStore : public PrefStore {
                                 std::unique_ptr<base::Value> value,
                                 uint32_t flags) = 0;
 
+  // Clears all the preferences which names start with |prefix| and doesn't
+  // generate update notifications.
+  virtual void RemoveValuesByPrefixSilently(const std::string& prefix) = 0;
+
  protected:
   ~WriteablePrefStore() override {}
 

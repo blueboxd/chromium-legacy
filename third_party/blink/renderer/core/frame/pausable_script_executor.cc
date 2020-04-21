@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -115,7 +116,7 @@ Vector<v8::Local<v8::Value>> V8FunctionExecutor::Execute(LocalFrame* frame) {
 
   {
     if (V8ScriptRunner::CallFunction(function_.NewLocal(isolate),
-                                     frame->GetDocument()->ToExecutionContext(),
+                                     frame->DomWindow(),
                                      receiver_.NewLocal(isolate), args.size(),
                                      args.data(), ToIsolate(frame))
             .ToLocal(&single_result))
@@ -187,7 +188,7 @@ PausableScriptExecutor::PausableScriptExecutor(
     ScriptState* script_state,
     WebScriptExecutionCallback* callback,
     Executor* executor)
-    : ExecutionContextLifecycleObserver(frame->GetDocument()),
+    : ExecutionContextLifecycleObserver(frame->DomWindow()),
       script_state_(script_state),
       callback_(callback),
       blocking_option_(kNonBlocking),
@@ -216,7 +217,7 @@ void PausableScriptExecutor::RunAsync(BlockingOption blocking) {
   DCHECK(context);
   blocking_option_ = blocking;
   if (blocking_option_ == kOnloadBlocking)
-    Document::From(GetExecutionContext())->IncrementLoadEventDelayCount();
+    To<LocalDOMWindow>(context)->document()->IncrementLoadEventDelayCount();
 
   task_handle_ = PostCancellableTask(
       *context->GetTaskRunner(TaskType::kJavascriptTimer), FROM_HERE,
@@ -230,9 +231,9 @@ void PausableScriptExecutor::ExecuteAndDestroySelf() {
   if (callback_)
     callback_->WillExecute();
 
+  auto* window = To<LocalDOMWindow>(GetExecutionContext());
   ScriptState::Scope script_scope(script_state_);
-  Vector<v8::Local<v8::Value>> results =
-      executor_->Execute(Document::From(GetExecutionContext())->GetFrame());
+  Vector<v8::Local<v8::Value>> results = executor_->Execute(window->GetFrame());
 
   // The script may have removed the frame, in which case contextDestroyed()
   // will have handled the disposal/callback.
@@ -240,7 +241,7 @@ void PausableScriptExecutor::ExecuteAndDestroySelf() {
     return;
 
   if (blocking_option_ == kOnloadBlocking)
-    Document::From(GetExecutionContext())->DecrementLoadEventDelayCount();
+    window->document()->DecrementLoadEventDelayCount();
 
   if (callback_)
     callback_->Completed(results);

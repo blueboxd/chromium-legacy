@@ -96,9 +96,6 @@ bool AppCache::AddOrModifyEntry(const GURL& url, const AppCacheEntry& entry) {
     cache_size_ += entry.response_size();  // New entry. Add to cache size.
     padding_size_ += entry.padding_size();
   }
-  // TODO(pwnall): Figure out if we want to overwrite or max the two entries.
-  ret.first->second.set_token_expires(
-      std::max(entry.token_expires(), ret.first->second.token_expires()));
   return ret.second;
 }
 
@@ -166,12 +163,6 @@ void AppCache::InitializeWithManifest(AppCacheManifest* manifest,
             SortNamespacesByLength);
   std::sort(fallback_namespaces_.begin(), fallback_namespaces_.end(),
             SortNamespacesByLength);
-
-  for (auto& intercept : intercept_namespaces_)
-    intercept.token_expires = token_expires;
-
-  for (auto& fallback : fallback_namespaces_)
-    fallback.token_expires = token_expires;
 }
 
 void AppCache::InitializeWithDatabaseRecords(
@@ -188,9 +179,8 @@ void AppCache::InitializeWithDatabaseRecords(
   token_expires_ = cache_record.token_expires;
 
   for (const AppCacheDatabase::EntryRecord& entry : entries) {
-    AddEntry(entry.url,
-             AppCacheEntry(entry.flags, entry.response_id, entry.response_size,
-                           entry.padding_size, entry.token_expires));
+    AddEntry(entry.url, AppCacheEntry(entry.flags, entry.response_id,
+                                      entry.response_size, entry.padding_size));
   }
   DCHECK_EQ(cache_size_, cache_record.cache_size);
   DCHECK_EQ(padding_size_, cache_record.padding_size);
@@ -243,7 +233,6 @@ void AppCache::ToDatabaseRecords(
     record.response_id = pair.second.response_id();
     record.response_size = pair.second.response_size();
     record.padding_size = pair.second.padding_size();
-    record.token_expires = pair.second.token_expires();
   }
 
   const url::Origin origin = url::Origin::Create(group->manifest_url());
@@ -254,7 +243,6 @@ void AppCache::ToDatabaseRecords(
     record.cache_id = cache_id_;
     record.origin = origin;
     record.namespace_ = intercept_namespace;
-    record.token_expires = intercept_namespace.token_expires;
   }
 
   for (const AppCacheNamespace& fallback_namespace : fallback_namespaces_) {
@@ -263,7 +251,6 @@ void AppCache::ToDatabaseRecords(
     record.cache_id = cache_id_;
     record.origin = origin;
     record.namespace_ = fallback_namespace;
-    record.token_expires = fallback_namespace.token_expires;
   }
 
   for (const AppCacheNamespace& online_namespace :

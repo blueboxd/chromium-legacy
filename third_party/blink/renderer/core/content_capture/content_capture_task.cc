@@ -187,7 +187,6 @@ bool ContentCaptureTask::RunInternal() {
         break;
       case TaskState::kProcessCurrentSession:
         return ProcessSession();
-        break;
       default:
         return true;
     }

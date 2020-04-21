@@ -63,6 +63,7 @@
 #include "chrome/browser/ui/webui/settings/chromeos/internet_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/kerberos_accounts_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/multidevice_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/os_settings_features_util.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_localized_strings_provider_factory.h"
 #include "chrome/browser/ui/webui/settings/chromeos/parental_controls_handler.h"
@@ -135,13 +136,6 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
   // This handler is for chrome://os-settings.
   html_source->AddBoolean("isOSSettings", true);
 
-  html_source->AddBoolean(
-      "showParentalControls",
-      chromeos::settings::ShouldShowParentalControls(profile));
-  html_source->AddBoolean(
-      "syncSetupFriendlySettings",
-      base::FeatureList::IsEnabled(::features::kSyncSetupFriendlySettings));
-
   AddSettingsPageUIHandler(
       std::make_unique<::settings::AccessibilityMainHandler>());
   AddSettingsPageUIHandler(
@@ -164,11 +158,6 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
       std::make_unique<::settings::ProtocolHandlersHandler>());
   AddSettingsPageUIHandler(
       std::make_unique<::settings::SearchEnginesHandler>(profile));
-
-  html_source->AddBoolean("splitSettingsSyncEnabled",
-                          chromeos::features::IsSplitSettingsSyncEnabled());
-  html_source->AddBoolean("splitSyncConsent",
-                          chromeos::features::IsSplitSyncConsentEnabled());
 
   html_source->AddBoolean(
       "isSupportedArcVersion",
@@ -276,7 +265,7 @@ void OSSettingsUI::InitOSWebUIHandlers(content::WebUIDataSource* html_source) {
         profile->GetPrefs()->GetBoolean(
             chromeos::prefs::kSecondaryGoogleAccountSigninAllowed));
     html_source->AddBoolean("isEduCoexistenceEnabled",
-                            features::IsEduCoexistenceEnabled());
+                            ::chromeos::features::IsEduCoexistenceEnabled());
   }
 
   web_ui()->AddMessageHandler(
@@ -361,7 +350,7 @@ void OSSettingsUI::InitOSWebUIHandlers(content::WebUIDataSource* html_source) {
                 : nullptr,
             android_sms_service ? android_sms_service->android_sms_app_manager()
                                 : nullptr));
-    if (chromeos::settings::ShouldShowParentalControls(profile)) {
+    if (features::ShouldShowParentalControlSettings(profile)) {
       web_ui()->AddMessageHandler(
           std::make_unique<chromeos::settings::ParentalControlsHandler>(
               profile));
@@ -378,41 +367,11 @@ void OSSettingsUI::InitOSWebUIHandlers(content::WebUIDataSource* html_source) {
       base::FeatureList::IsEnabled(::features::kPrivacySettingsRedesign));
 
   html_source->AddBoolean(
-      "quickUnlockEnabled",
-      chromeos::quick_unlock::IsPinEnabled(profile->GetPrefs()));
-  html_source->AddBoolean(
-      "quickUnlockDisabledByPolicy",
-      chromeos::quick_unlock::IsPinDisabledByPolicy(profile->GetPrefs()));
-  html_source->AddBoolean(
       "userCannotManuallyEnterPassword",
       !chromeos::password_visibility::AccountHasUserFacingPassword(
           chromeos::ProfileHelper::Get()
               ->GetUserByProfile(profile)
               ->GetAccountId()));
-  const bool fingerprint_unlock_enabled =
-      chromeos::quick_unlock::IsFingerprintEnabled(profile);
-  html_source->AddBoolean("fingerprintUnlockEnabled",
-                          fingerprint_unlock_enabled);
-  if (fingerprint_unlock_enabled) {
-    html_source->AddInteger(
-        "fingerprintReaderLocation",
-        static_cast<int32_t>(chromeos::quick_unlock::GetFingerprintLocation()));
-
-    // To use lottie, the worker-src CSP needs to be updated for the web ui that
-    // is using it. Since as of now there are only a couple of webuis using
-    // lottie animations, this update has to be performed manually. As the usage
-    // increases, set this as the default so manual override is no longer
-    // required.
-    html_source->OverrideContentSecurityPolicyWorkerSrc(
-        "worker-src blob: 'self';");
-    html_source->AddResourcePath("finger_print.json",
-                                 IDR_LOGIN_FINGER_PRINT_TABLET_ANIMATION);
-  }
-  html_source->AddBoolean("lockScreenNotificationsEnabled",
-                          ash::features::IsLockScreenNotificationsEnabled());
-  html_source->AddBoolean(
-      "lockScreenHideSensitiveNotificationsSupported",
-      ash::features::IsLockScreenHideSensitiveNotificationsSupported());
   html_source->AddBoolean("hasInternalStylus",
                           ash::stylus_utils::HasInternalStylus());
 
@@ -443,10 +402,6 @@ void OSSettingsUI::InitOSWebUIHandlers(content::WebUIDataSource* html_source) {
   html_source->AddBoolean("enablePowerSettings", true);
   web_ui()->AddMessageHandler(
       std::make_unique<chromeos::settings::PowerHandler>(profile->GetPrefs()));
-
-  html_source->AddBoolean(
-      "showParentalControlsSettings",
-      chromeos::settings::ShouldShowParentalControls(profile));
 }
 
 void OSSettingsUI::AddSettingsPageUIHandler(

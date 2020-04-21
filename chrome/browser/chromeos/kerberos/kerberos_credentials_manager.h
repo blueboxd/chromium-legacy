@@ -52,7 +52,11 @@ class KerberosCredentialsManager : public KeyedService,
 
     // Called when the set of accounts was changed through Kerberos credentials
     // manager.
-    virtual void OnAccountsChanged() = 0;
+    virtual void OnAccountsChanged() {}
+
+    // Called when Kerberos enabled/disabled state changes. The new state is
+    // available via IsKerberosEnabled().
+    virtual void OnKerberosEnabledStateChanged() {}
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Observer);
@@ -222,6 +226,9 @@ class KerberosCredentialsManager : public KeyedService,
 
   // Calls OnAccountsChanged() on all observers.
   void NotifyAccountsChanged();
+
+  // Calls OnKerberosEnabledStateChanged() on all observers.
+  void NotifyEnabledStateChanged();
 
   // Accessors for active principal (stored in user pref).
   const std::string& GetActivePrincipalName() const;

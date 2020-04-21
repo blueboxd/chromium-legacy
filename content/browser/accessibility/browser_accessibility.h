@@ -573,6 +573,8 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   base::Optional<int> GetPosInSet() const override;
   base::Optional<int> GetSetSize() const override;
   bool IsInListMarker() const;
+  bool IsCollapsedMenuListPopUpButton() const;
+  BrowserAccessibility* GetCollapsedMenuListPopUpButtonAncestor() const;
 
   // Returns true if:
   // 1. This node is a list, AND

@@ -109,6 +109,9 @@ def _upload_perf_results(json_to_upload, name, configuration_name,
   if _is_histogram(json_to_upload):
     args.append('--send-as-histograms')
 
+  #TODO(crbug.com/1072729): log this in top level
+  logging.info('upload_results_to_perf_dashboard: %s.' % args)
+
   return upload_results_to_perf_dashboard.main(args)
 
 def _is_histogram(json_file):
@@ -507,6 +510,8 @@ def _handle_perf_results(
     output_json_file = os.path.join(
         output_results_dir, (str(uuid.uuid4()) + benchmark_name))
     results_dict[benchmark_name] = output_json_file
+    #TODO(crbug.com/1072729): pass final arguments instead of build properties
+    # and configuration_name
     invocations.append((
         benchmark_name, directories, configuration_name,
         build_properties, output_json_file))

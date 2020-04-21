@@ -16,6 +16,7 @@ import static org.chromium.chrome.browser.keyboard_accessory.tab_layout_componen
 import static org.chromium.chrome.test.util.ViewUtils.VIEW_GONE;
 import static org.chromium.chrome.test.util.ViewUtils.VIEW_INVISIBLE;
 import static org.chromium.chrome.test.util.ViewUtils.VIEW_NULL;
+import static org.chromium.chrome.test.util.ViewUtils.onViewWaiting;
 import static org.chromium.chrome.test.util.ViewUtils.waitForView;
 import static org.chromium.ui.base.LocalizationUtils.setRtlForTesting;
 
@@ -449,11 +450,10 @@ public class ManualFillingTestHelper {
      * Use like {@link android.support.test.espresso.Espresso#onView}. It waits for a view matching
      * the given |matcher| to be displayed and allows to chain checks/performs on the result.
      * @param matcher The matcher matching exactly the view that is expected to be displayed.
-     * @return An interaction on the view matching |matcher.
+     * @return An interaction on the view matching |matcher|.
      */
     public static ViewInteraction whenDisplayed(Matcher<View> matcher) {
-        onView(isRoot()).check(waitForView(allOf(matcher, isDisplayed())));
-        return onView(matcher);
+        return onViewWaiting(allOf(matcher, isDisplayed()));
     }
 
     public ViewInteraction waitForViewOnRoot(View root, Matcher<View> matcher) {

@@ -304,15 +304,20 @@ void NGInlineLayoutAlgorithm::CreateLine(
     box_states_->PrepareForReorder(&line_box_);
     BidiReorder(line_info->BaseDirection());
     box_states_->UpdateAfterReorder(&line_box_);
+  } else {
+    DCHECK(IsLtr(line_info->BaseDirection()));
   }
-  LayoutUnit inline_size = box_states_->ComputeInlinePositions(&line_box_);
-  if (LayoutUnit hang_width = line_info->HangWidth()) {
+  const LayoutUnit hang_width = line_info->HangWidth();
+  LayoutUnit inline_size;
+  if (IsLtr(line_info->BaseDirection())) {
+    inline_size = box_states_->ComputeInlinePositions(&line_box_, LayoutUnit());
+  } else {
+    inline_size = box_states_->ComputeInlinePositions(&line_box_, -hang_width);
+    inline_size += hang_width;
+  }
+  if (UNLIKELY(hang_width)) {
     inline_size -= hang_width;
     container_builder_.SetHangInlineSize(hang_width);
-
-    if (IsRtl(line_info->BaseDirection())) {
-      line_box_.MoveInInlineDirection(-hang_width);
-    }
   }
 
   // Truncate the line if 'text-overflow: ellipsis' is set, or for line-clamp.

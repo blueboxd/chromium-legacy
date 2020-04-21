@@ -7,8 +7,6 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
-#include "ui/accessibility/ax_mode.h"
-#include "ui/accessibility/ax_mode_observer.h"
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #endif  // defined(OS_CHROMEOS)
@@ -21,24 +19,22 @@ namespace settings {
 
 // Settings handler for the main accessibility settings page,
 // chrome://settings/accessibility.
-class AccessibilityMainHandler : public ::settings::SettingsPageUIHandler,
-                                 public ui::AXModeObserver {
+class AccessibilityMainHandler : public ::settings::SettingsPageUIHandler {
  public:
   AccessibilityMainHandler();
   ~AccessibilityMainHandler() override;
 
   // SettingsPageUIHandler implementation.
   void RegisterMessages() override;
-  void OnJavascriptAllowed() override {}
-  void OnJavascriptDisallowed() override {}
-
-  // AXModeObserver implementation.
-  void OnAXModeAdded(ui::AXMode mode) override;
+  void OnJavascriptAllowed() override;
+  void OnJavascriptDisallowed() override;
 
   void HandleGetScreenReaderState(const base::ListValue* args);
   void HandleCheckAccessibilityImageLabels(const base::ListValue* args);
 
  private:
+  void SendScreenReaderStateChanged();
+
 #if defined(OS_CHROMEOS)
   void OnAccessibilityStatusChanged(
       const chromeos::AccessibilityStatusEventDetails& details);

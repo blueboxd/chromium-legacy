@@ -107,10 +107,6 @@ WebApps::~WebApps() {
   }
 }
 
-void WebApps::FlushMojoCallsForTesting() {
-  receiver_.FlushForTesting();
-}
-
 void WebApps::Shutdown() {
   if (arc_prefs_) {
     arc_prefs_->RemoveObserver(this);
@@ -152,8 +148,7 @@ void WebApps::Initialize(
   web_app_launch_manager_ =
       std::make_unique<web_app::WebAppLaunchManager>(profile_);
 
-  app_service->RegisterPublisher(receiver_.BindNewPipeAndPassRemote(),
-                                 apps::mojom::AppType::kWeb);
+  PublisherBase::Initialize(app_service, apps::mojom::AppType::kWeb);
   app_service_ = app_service.get();
 }
 
@@ -352,7 +347,8 @@ void WebApps::PauseApp(const std::string& app_id) {
   paused_apps_.MaybeAddApp(app_id);
   constexpr bool kPaused = true;
   Publish(paused_apps_.GetAppWithPauseStatus(apps::mojom::AppType::kWeb, app_id,
-                                             kPaused));
+                                             kPaused),
+          subscribers_);
 
   SetIconEffect(app_id);
   for (auto* browser : *BrowserList::GetInstance()) {
@@ -369,7 +365,8 @@ void WebApps::UnpauseApps(const std::string& app_id) {
   paused_apps_.MaybeRemoveApp(app_id);
   constexpr bool kPaused = false;
   Publish(paused_apps_.GetAppWithPauseStatus(apps::mojom::AppType::kWeb, app_id,
-                                             kPaused));
+                                             kPaused),
+          subscribers_);
 
   SetIconEffect(app_id);
 }
@@ -426,14 +423,6 @@ void WebApps::OpenNativeSettings(const std::string& app_id) {
   chrome::ShowSiteSettings(profile_, web_app->launch_url());
 }
 
-void WebApps::OnPreferredAppSet(
-    const std::string& app_id,
-    apps::mojom::IntentFilterPtr intent_filter,
-    apps::mojom::IntentPtr intent,
-    apps::mojom::ReplacedAppPreferencesPtr replaced_app_preferences) {
-  NOTIMPLEMENTED();
-}
-
 void WebApps::OnContentSettingChanged(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,
@@ -460,7 +449,7 @@ void WebApps::OnContentSettingChanged(
       app->app_id = web_app.app_id();
       PopulatePermissions(&web_app, &app->permissions);
 
-      Publish(std::move(app));
+      Publish(std::move(app), subscribers_);
     }
   }
 }
@@ -468,7 +457,7 @@ void WebApps::OnContentSettingChanged(
 void WebApps::OnWebAppInstalled(const web_app::AppId& app_id) {
   const web_app::WebApp* web_app = GetWebApp(app_id);
   if (web_app && Accepts(app_id)) {
-    Publish(Convert(web_app, apps::mojom::Readiness::kReady));
+    Publish(Convert(web_app, apps::mojom::Readiness::kReady), subscribers_);
   }
 }
 
@@ -489,7 +478,7 @@ void WebApps::OnWebAppWillBeUninstalled(const web_app::AppId& app_id) {
   app->readiness = apps::mojom::Readiness::kUninstalledByUser;
 
   SetShowInFields(app, web_app);
-  Publish(std::move(app));
+  Publish(std::move(app), subscribers_);
 
   if (app_service_) {
     app_service_->RemovePreferredApp(apps::mojom::AppType::kWeb,
@@ -499,14 +488,6 @@ void WebApps::OnWebAppWillBeUninstalled(const web_app::AppId& app_id) {
 
 void WebApps::OnAppRegistrarDestroyed() {
   registrar_observer_.RemoveAll();
-}
-
-void WebApps::Publish(apps::mojom::AppPtr app) {
-  for (auto& subscriber : subscribers_) {
-    std::vector<apps::mojom::AppPtr> apps;
-    apps.push_back(app.Clone());
-    subscriber->OnApps(std::move(apps));
-  }
 }
 
 void WebApps::OnPackageInstalled(
@@ -610,13 +591,10 @@ void WebApps::PopulateIntentFilters(
 
 apps::mojom::AppPtr WebApps::Convert(const web_app::WebApp* web_app,
                                      apps::mojom::Readiness readiness) {
-  apps::mojom::AppPtr app = apps::mojom::App::New();
+  apps::mojom::AppPtr app = PublisherBase::MakeApp(
+      apps::mojom::AppType::kWeb, web_app->app_id(), readiness, web_app->name(),
+      GetHighestPriorityInstallSource(web_app));
 
-  app->app_type = apps::mojom::AppType::kWeb;
-  app->app_id = web_app->app_id();
-  app->readiness = readiness;
-  app->name = web_app->name();
-  app->short_name = web_app->name();
   app->description = web_app->description();
   app->additional_search_terms = web_app->additional_search_terms();
 
@@ -628,11 +606,6 @@ apps::mojom::AppPtr WebApps::Convert(const web_app::WebApp* web_app,
 
   PopulatePermissions(web_app, &app->permissions);
 
-  app->install_source = GetHighestPriorityInstallSource(web_app);
-
-  app->is_platform_app = apps::mojom::OptionalBool::kFalse;
-  app->recommendable = apps::mojom::OptionalBool::kTrue;
-  app->searchable = apps::mojom::OptionalBool::kTrue;
   app->paused = paused ? apps::mojom::OptionalBool::kTrue
                        : apps::mojom::OptionalBool::kFalse;
   SetShowInFields(app, web_app);
@@ -711,7 +684,7 @@ void WebApps::SetIconEffect(const std::string& app_id) {
   app->app_id = app_id;
   app->icon_key = icon_key_factory_.MakeIconKey(
       GetIconEffects(web_app, paused_apps_.IsPaused(app_id)));
-  Publish(std::move(app));
+  Publish(std::move(app), subscribers_);
 }
 
 bool WebApps::Accepts(const std::string& app_id) {

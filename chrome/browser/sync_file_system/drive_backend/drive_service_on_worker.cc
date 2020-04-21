@@ -67,7 +67,7 @@ google_apis::CancelCallback DriveServiceOnWorker::DownloadFile(
     const std::string& resource_id,
     const google_apis::DownloadActionCallback& download_action_callback,
     const google_apis::GetContentCallback& get_content_callback,
-    const google_apis::ProgressCallback& progress_callback) {
+    google_apis::ProgressCallback progress_callback) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
 
   ui_task_runner_->PostTask(
@@ -101,15 +101,15 @@ google_apis::CancelCallback DriveServiceOnWorker::GetAboutResource(
 
 google_apis::CancelCallback DriveServiceOnWorker::GetStartPageToken(
     const std::string& team_drive_id,
-    const google_apis::StartPageTokenCallback& callback) {
+    google_apis::StartPageTokenCallback callback) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
 
   ui_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&DriveServiceWrapper::GetStartPageToken, wrapper_,
-                     team_drive_id,
-                     RelayCallbackToTaskRunner(worker_task_runner_.get(),
-                                               FROM_HERE, callback)));
+      base::BindOnce(
+          &DriveServiceWrapper::GetStartPageToken, wrapper_, team_drive_id,
+          RelayCallbackToTaskRunner(worker_task_runner_.get(), FROM_HERE,
+                                    std::move(callback))));
 
   return google_apis::CancelCallback();
 }
@@ -385,7 +385,7 @@ google_apis::CancelCallback DriveServiceOnWorker::ResumeUpload(
     const std::string& content_type,
     const base::FilePath& local_file_path,
     google_apis::drive::UploadRangeCallback callback,
-    const google_apis::ProgressCallback& progress_callback) {
+    google_apis::ProgressCallback progress_callback) {
   NOTREACHED();
   return google_apis::CancelCallback();
 }
@@ -406,7 +406,7 @@ google_apis::CancelCallback DriveServiceOnWorker::MultipartUploadNewFile(
     const base::FilePath& local_file_path,
     const drive::UploadNewFileOptions& options,
     google_apis::FileResourceCallback callback,
-    const google_apis::ProgressCallback& progress_callback) {
+    google_apis::ProgressCallback progress_callback) {
   NOTREACHED();
   return google_apis::CancelCallback();
 }
@@ -418,7 +418,7 @@ google_apis::CancelCallback DriveServiceOnWorker::MultipartUploadExistingFile(
     const base::FilePath& local_file_path,
     const drive::UploadExistingFileOptions& options,
     google_apis::FileResourceCallback callback,
-    const google_apis::ProgressCallback& progress_callback) {
+    google_apis::ProgressCallback progress_callback) {
   NOTREACHED();
   return google_apis::CancelCallback();
 }

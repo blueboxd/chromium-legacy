@@ -202,18 +202,8 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   new_request->attach_same_site_cookies =
       request_info->begin_params->attach_same_site_cookies;
   new_request->trusted_params = network::ResourceRequest::TrustedParams();
-  new_request->trusted_params->network_isolation_key =
-      request_info->isolation_info.network_isolation_key();
+  new_request->trusted_params->isolation_info = request_info->isolation_info;
   new_request->is_main_frame = request_info->is_main_frame;
-
-  if (request_info->is_main_frame) {
-    new_request->trusted_params->update_network_isolation_key_on_redirect =
-        network::mojom::UpdateNetworkIsolationKeyOnRedirect::
-            kUpdateTopFrameAndFrameOrigin;
-  } else {
-    new_request->trusted_params->update_network_isolation_key_on_redirect =
-        network::mojom::UpdateNetworkIsolationKeyOnRedirect::kUpdateFrameOrigin;
-  }
 
   net::RequestPriority net_priority = net::HIGHEST;
   if (!request_info->is_main_frame &&
@@ -813,19 +803,9 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     resource_request_->site_for_cookies = redirect_info_.new_site_for_cookies;
 
     // See if navigation network isolation key needs to be updated.
-    if (resource_request_->resource_type ==
-        static_cast<int>(blink::mojom::ResourceType::kMainFrame)) {
-      url::Origin origin = url::Origin::Create(resource_request_->url);
-      resource_request_->trusted_params->network_isolation_key =
-          net::NetworkIsolationKey(origin, origin);
-    } else {
-      DCHECK_EQ(static_cast<int>(blink::mojom::ResourceType::kSubFrame),
-                resource_request_->resource_type);
-      url::Origin subframe_origin = url::Origin::Create(resource_request_->url);
-      resource_request_->trusted_params->network_isolation_key =
-          resource_request_->trusted_params->network_isolation_key
-              .CreateWithNewFrameOrigin(subframe_origin);
-    }
+    resource_request_->trusted_params->isolation_info =
+        resource_request_->trusted_params->isolation_info.CreateForRedirect(
+            url::Origin::Create(resource_request_->url));
 
     resource_request_->referrer = GURL(redirect_info_.new_referrer);
     resource_request_->referrer_policy = redirect_info_.new_referrer_policy;

@@ -2083,6 +2083,19 @@ bool BrowserAccessibility::IsInListMarker() const {
   return node()->IsInListMarker();
 }
 
+bool BrowserAccessibility::IsCollapsedMenuListPopUpButton() const {
+  return node()->IsCollapsedMenuListPopUpButton();
+}
+
+BrowserAccessibility*
+BrowserAccessibility::GetCollapsedMenuListPopUpButtonAncestor() const {
+  ui::AXNode* popup_button = node()->GetCollapsedMenuListPopUpButtonAncestor();
+  if (!popup_button)
+    return nullptr;
+
+  return manager()->GetFromAXNode(popup_button);
+}
+
 std::string BrowserAccessibility::ToString() const {
   return GetData().ToString();
 }

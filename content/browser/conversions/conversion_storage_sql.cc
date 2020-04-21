@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/flat_set.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
@@ -333,6 +334,164 @@ bool ConversionStorageSql::DeleteConversion(int64_t conversion_id) {
     return false;
 
   return db_.GetLastChangeCount() > 0;
+}
+
+void ConversionStorageSql::ClearData(
+    base::Time delete_begin,
+    base::Time delete_end,
+    base::RepeatingCallback<bool(const url::Origin&)> filter) {
+  if (filter.is_null()) {
+    ClearAllDataInRange(delete_begin, delete_end);
+    return;
+  }
+
+  // TODO(csharrison, johnidel): This query can be split up and optimized by
+  // adding indexes on the impression_time and conversion_time columns.
+  // See this comment for more information:
+  // crrev.com/c/2150071/4/content/browser/conversions/conversion_storage_sql.cc#342
+  const char kScanCandidateData[] =
+      "SELECT C.conversion_id, I.impression_id,"
+      "I.impression_origin, I.conversion_origin, I.reporting_origin "
+      "FROM impressions I LEFT JOIN conversions C ON "
+      "C.impression_id = I.impression_id WHERE"
+      "(I.impression_time BETWEEN ?1 AND ?2) OR"
+      "(C.conversion_time BETWEEN ?1 AND ?2)";
+  sql::Statement statement(
+      db_.GetCachedStatement(SQL_FROM_HERE, kScanCandidateData));
+  statement.BindInt64(0, SerializeTime(delete_begin));
+  statement.BindInt64(1, SerializeTime(delete_end));
+
+  std::vector<int64_t> impression_ids_to_delete;
+  std::vector<int64_t> conversion_ids_to_delete;
+  while (statement.Step()) {
+    int64_t conversion_id = statement.ColumnInt64(0);
+    int64_t impression_id = statement.ColumnInt64(1);
+    if (filter.Run(DeserializeOrigin(statement.ColumnString(2))) ||
+        filter.Run(DeserializeOrigin(statement.ColumnString(3))) ||
+        filter.Run(DeserializeOrigin(statement.ColumnString(4)))) {
+      impression_ids_to_delete.push_back(impression_id);
+      if (conversion_id != 0)
+        conversion_ids_to_delete.push_back(conversion_id);
+    }
+  }
+
+  // Since multiple conversions can be associated with a single impression,
+  // |impression_ids_to_delete| may contain duplicates. Remove duplicates by
+  // converting the vector into a flat_set. Internally, this sorts the vector
+  // and then removes duplicates.
+  const base::flat_set<int64_t> unique_impression_ids_to_delete(
+      impression_ids_to_delete);
+
+  // TODO(csharrison, johnidel): Should we consider poisoning the DB if some of
+  // the delete operations fail?
+  if (!statement.Succeeded())
+    return;
+
+  // Delete the data in a transaction to avoid cases where the impression part
+  // of a conversion is deleted without deleting the associated conversion, or
+  // vice versa.
+  sql::Transaction transaction(&db_);
+  if (!transaction.Begin())
+    return;
+
+  for (int64_t impression_id : unique_impression_ids_to_delete) {
+    const char kDeleteImpressionSql[] =
+        "DELETE FROM impressions WHERE impression_id = ?";
+    sql::Statement impression_statement(
+        db_.GetCachedStatement(SQL_FROM_HERE, kDeleteImpressionSql));
+    impression_statement.BindInt64(0, impression_id);
+    if (!impression_statement.Run())
+      return;
+  }
+
+  for (int64_t conversion_id : conversion_ids_to_delete) {
+    const char kDeleteConversionSql[] =
+        "DELETE FROM conversions WHERE conversion_id = ?";
+    sql::Statement conversion_statement(
+        db_.GetCachedStatement(SQL_FROM_HERE, kDeleteConversionSql));
+    conversion_statement.BindInt64(0, conversion_id);
+    if (!conversion_statement.Run())
+      return;
+  }
+
+  // Careful! At this point we can still have some vestigial entries in the DB.
+  // For example, if an impression has two conversions, and one conversion is
+  // deleted, the above logic will delete the impression as well, leaving the
+  // second conversion in limbo (it was not in the deletion time range).
+  // Delete all unattributed conversions here to ensure everything is cleaned
+  // up.
+  for (int64_t impression_id : unique_impression_ids_to_delete) {
+    const char kDeleteVestigialConversionSql[] =
+        "DELETE FROM conversions WHERE impression_id = ?";
+    sql::Statement delete_vestigial_statement(
+        db_.GetCachedStatement(SQL_FROM_HERE, kDeleteVestigialConversionSql));
+    delete_vestigial_statement.BindInt64(0, impression_id);
+    if (!delete_vestigial_statement.Run())
+      return;
+  }
+  transaction.Commit();
+}
+
+void ConversionStorageSql::ClearAllDataInRange(base::Time delete_begin,
+                                               base::Time delete_end) {
+  // Browsing data remover will call this with null |delete_begin|, but also
+  // perform the ClearAllDataAllTime optimization if |delete_begin| is
+  // base::Time::Min().
+  if ((delete_begin.is_null() || delete_begin.is_min()) &&
+      delete_end.is_max()) {
+    ClearAllDataAllTime();
+    return;
+  }
+
+  sql::Transaction transaction(&db_);
+  if (!transaction.Begin())
+    return;
+
+  // Delete all impressions and conversion reports in the given time range.
+  // Note: This should follow the same basic logic in ClearData, with the
+  // assumption that all origins match the filter. This means we can omit a
+  // SELECT statement, and all of the in-memory id management.
+  //
+  // Optimizing these queries are also tough, see this comment for an idea:
+  // http://crrev.com/c/2150071/12/content/browser/conversions/conversion_storage_sql.cc#468
+  const char kDeleteImpressionRangeSql[] =
+      "DELETE FROM impressions WHERE (impression_time BETWEEN ?1 AND ?2) OR "
+      "impression_id in (SELECT impression_id FROM conversions "
+      "WHERE conversion_time BETWEEN ?1 AND ?2)";
+  sql::Statement delete_impressions_statement(
+      db_.GetCachedStatement(SQL_FROM_HERE, kDeleteImpressionRangeSql));
+  delete_impressions_statement.BindInt64(0, SerializeTime(delete_begin));
+  delete_impressions_statement.BindInt64(1, SerializeTime(delete_end));
+  if (!delete_impressions_statement.Run())
+    return;
+
+  const char kDeleteConversionRangeSql[] =
+      "DELETE FROM conversions WHERE (conversion_time BETWEEN ? AND ?) "
+      "OR impression_id NOT IN (SELECT impression_id FROM impressions)";
+  sql::Statement delete_conversions_statement(
+      db_.GetCachedStatement(SQL_FROM_HERE, kDeleteConversionRangeSql));
+  delete_conversions_statement.BindInt64(0, SerializeTime(delete_begin));
+  delete_conversions_statement.BindInt64(1, SerializeTime(delete_end));
+  if (!delete_conversions_statement.Run())
+    return;
+  transaction.Commit();
+}
+
+void ConversionStorageSql::ClearAllDataAllTime() {
+  sql::Transaction transaction(&db_);
+  if (!transaction.Begin())
+    return;
+  const char kDeleteAllConversionsSql[] = "DELETE FROM conversions";
+  const char kDeleteAllImpressionsSql[] = "DELETE FROM impressions";
+  sql::Statement delete_all_conversions_statement(
+      db_.GetCachedStatement(SQL_FROM_HERE, kDeleteAllConversionsSql));
+  sql::Statement delete_all_impressions_statement(
+      db_.GetCachedStatement(SQL_FROM_HERE, kDeleteAllImpressionsSql));
+  if (!delete_all_conversions_statement.Run())
+    return;
+  if (!delete_all_impressions_statement.Run())
+    return;
+  transaction.Commit();
 }
 
 bool ConversionStorageSql::InitializeSchema() {

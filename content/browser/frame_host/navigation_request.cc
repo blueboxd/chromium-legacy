@@ -2535,8 +2535,7 @@ void NavigationRequest::OnWillProcessResponseChecksComplete(
       resource_request->transition_type = common_params_->transition;
       resource_request->trusted_params =
           network::ResourceRequest::TrustedParams();
-      resource_request->trusted_params->network_isolation_key =
-          GetIsolationInfo().network_isolation_key();
+      resource_request->trusted_params->isolation_info = GetIsolationInfo();
 
       BrowserContext* browser_context =
           frame_tree_node_->navigator()->GetController()->GetBrowserContext();

@@ -40,7 +40,7 @@ google_apis::CancelCallback DriveUploaderOnWorker::UploadNewFile(
     const std::string& content_type,
     const drive::UploadNewFileOptions& options,
     drive::UploadCompletionCallback callback,
-    const google_apis::ProgressCallback& progress_callback) {
+    google_apis::ProgressCallback progress_callback) {
   DCHECK(sequece_checker_.CalledOnValidSequence());
 
   ui_task_runner_->PostTask(
@@ -60,7 +60,7 @@ google_apis::CancelCallback DriveUploaderOnWorker::UploadExistingFile(
     const std::string& content_type,
     const drive::UploadExistingFileOptions& options,
     drive::UploadCompletionCallback callback,
-    const google_apis::ProgressCallback& progress_callback) {
+    google_apis::ProgressCallback progress_callback) {
   DCHECK(sequece_checker_.CalledOnValidSequence());
 
   ui_task_runner_->PostTask(
@@ -79,7 +79,7 @@ google_apis::CancelCallback DriveUploaderOnWorker::ResumeUploadFile(
     const base::FilePath& local_file_path,
     const std::string& content_type,
     drive::UploadCompletionCallback callback,
-    const google_apis::ProgressCallback& progress_callback) {
+    google_apis::ProgressCallback progress_callback) {
   NOTREACHED();
   return google_apis::CancelCallback();
 }

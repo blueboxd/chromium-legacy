@@ -108,24 +108,22 @@ PerFrameContentTranslateDriver::PendingRequestStats::~PendingRequestStats() =
     default;
 
 void PerFrameContentTranslateDriver::PendingRequestStats::Clear() {
-  sub_frame_request_count = 0;
+  frame_request_count = 0;
   main_frame_success = false;
-  sub_frame_success_count = 0;
-  sub_frame_errors.clear();
+  frame_success_count = 0;
+  frame_errors.clear();
 }
 
 void PerFrameContentTranslateDriver::PendingRequestStats::Report() {
-  // Only called when main frame translate succeeds so total frame count is
-  // 1 for main frame plus the sub frame count.
-  UMA_HISTOGRAM_COUNTS_100(kTranslateFrameCount, (1 + sub_frame_request_count));
+  UMA_HISTOGRAM_COUNTS_100(kTranslateFrameCount, frame_request_count);
   if (main_frame_success) {
-    if (sub_frame_request_count > 0) {
+    if (frame_request_count > 1) {
       int success_percentage_as_int =
-          (sub_frame_success_count * 100) / sub_frame_request_count;
+          (frame_success_count * 100) / frame_request_count;
       UMA_HISTOGRAM_PERCENTAGE(kTranslateSubframeSuccessPercentage,
                                success_percentage_as_int);
     }
-    for (TranslateErrors::Type error_type : sub_frame_errors) {
+    for (TranslateErrors::Type error_type : frame_errors) {
       UMA_HISTOGRAM_ENUMERATION(kTranslateSubframeErrorType, error_type,
                                 TranslateErrors::TRANSLATE_ERROR_MAX);
     }
@@ -146,7 +144,7 @@ void PerFrameContentTranslateDriver::TranslatePage(
     const std::string& translate_script,
     const std::string& source_lang,
     const std::string& target_lang) {
-  if (!IsForCurrentPage(page_seq_no) || !main_frame_translate_agent_)
+  if (!IsForCurrentPage(page_seq_no))
     return;
 
   ReportUserActionDuration(language_determined_time_, base::TimeTicks::Now());
@@ -162,27 +160,21 @@ void PerFrameContentTranslateDriver::TranslateFrame(
     const std::string& source_lang,
     const std::string& target_lang,
     content::RenderFrameHost* render_frame_host) {
-  if (!render_frame_host->GetParent()) {
-    DCHECK(main_frame_translate_agent_);
-    main_frame_translate_agent_->TranslateFrame(
-        translate_script, source_lang, target_lang,
-        base::BindOnce(&PerFrameContentTranslateDriver::OnMainFrameTranslated,
-                       weak_pointer_factory_.GetWeakPtr()));
-  } else {
-    mojo::AssociatedRemote<mojom::TranslateAgent> frame_agent;
-    render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
-        &frame_agent);
-    frame_agent->TranslateFrame(
-        translate_script, source_lang, target_lang,
-        base::BindOnce(&PerFrameContentTranslateDriver::OnSubFrameTranslated,
-                       weak_pointer_factory_.GetWeakPtr()));
-    stats_.sub_frame_request_count++;
-  }
+  bool is_main_frame = (!render_frame_host->GetParent());
+  mojo::AssociatedRemote<mojom::TranslateAgent> frame_agent;
+  render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
+      &frame_agent);
+  frame_agent->TranslateFrame(
+      translate_script, source_lang, target_lang,
+      base::BindOnce(&PerFrameContentTranslateDriver::OnFrameTranslated,
+                     weak_pointer_factory_.GetWeakPtr(), is_main_frame,
+                     std::move(frame_agent)));
+  stats_.frame_request_count++;
   stats_.pending_request_count++;
 }
 
 void PerFrameContentTranslateDriver::RevertTranslation(int page_seq_no) {
-  if (!IsForCurrentPage(page_seq_no) || !main_frame_translate_agent_)
+  if (!IsForCurrentPage(page_seq_no))
     return;
 
   web_contents()->ForEachFrame(base::BindRepeating(
@@ -191,15 +183,10 @@ void PerFrameContentTranslateDriver::RevertTranslation(int page_seq_no) {
 
 void PerFrameContentTranslateDriver::RevertFrame(
     content::RenderFrameHost* render_frame_host) {
-  if (!render_frame_host->GetParent()) {
-    DCHECK(main_frame_translate_agent_);
-    main_frame_translate_agent_->RevertTranslation();
-  } else {
     mojo::AssociatedRemote<mojom::TranslateAgent> frame_agent;
     render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
         &frame_agent);
     frame_agent->RevertTranslation();
-  }
 }
 
 // content::WebContentsObserver methods
@@ -300,10 +287,6 @@ void PerFrameContentTranslateDriver::DOMContentLoaded(
   // Main frame loaded, set new sequence number.
   current_seq_no_ = (current_seq_no_ % 100000) + 1;
   translate_manager()->set_current_seq_no(current_seq_no_);
-
-  main_frame_translate_agent_.reset();
-  web_contents()->GetMainFrame()->GetRemoteAssociatedInterfaces()->GetInterface(
-      &main_frame_translate_agent_);
 }
 
 void PerFrameContentTranslateDriver::DocumentOnLoadCompletedInMainFrame() {
@@ -312,10 +295,6 @@ void PerFrameContentTranslateDriver::DocumentOnLoadCompletedInMainFrame() {
 }
 
 void PerFrameContentTranslateDriver::StartLanguageDetection() {
-  DCHECK(main_frame_translate_agent_);
-  if (!main_frame_translate_agent_)
-    return;
-
   // Get page contents (via snapshot of a11y tree) for language determination.
   // This will include subframe content for any subframes loaded at this point.
   base::TimeTicks capture_begin_time = base::TimeTicks::Now();
@@ -330,9 +309,12 @@ void PerFrameContentTranslateDriver::StartLanguageDetection() {
 
   // Kick off language detection by first requesting web language details.
   details_ = LanguageDetectionDetails();
-  main_frame_translate_agent_->GetWebLanguageDetectionDetails(base::BindOnce(
+  mojo::AssociatedRemote<mojom::TranslateAgent> frame_agent;
+  web_contents()->GetMainFrame()->GetRemoteAssociatedInterfaces()->GetInterface(
+      &frame_agent);
+  frame_agent->GetWebLanguageDetectionDetails(base::BindOnce(
       &PerFrameContentTranslateDriver::OnWebLanguageDetectionDetails,
-      weak_pointer_factory_.GetWeakPtr()));
+      weak_pointer_factory_.GetWeakPtr(), std::move(frame_agent)));
 }
 
 void PerFrameContentTranslateDriver::OnPageLanguageDetermined(
@@ -356,6 +338,7 @@ void PerFrameContentTranslateDriver::OnPageLanguageDetermined(
 }
 
 void PerFrameContentTranslateDriver::OnWebLanguageDetectionDetails(
+    mojo::AssociatedRemote<mojom::TranslateAgent> translate_agent,
     const std::string& content_language,
     const std::string& html_lang,
     const GURL& url,
@@ -398,31 +381,27 @@ void PerFrameContentTranslateDriver::ComputeActualPageLanguage() {
   details_ = LanguageDetectionDetails();
 }
 
-void PerFrameContentTranslateDriver::OnMainFrameTranslated(
+void PerFrameContentTranslateDriver::OnFrameTranslated(
+    bool is_main_frame,
+    mojo::AssociatedRemote<mojom::TranslateAgent> translate_agent,
     bool cancelled,
     const std::string& original_lang,
     const std::string& translated_lang,
     TranslateErrors::Type error_type) {
-  OnPageTranslated(cancelled, original_lang, translated_lang, error_type);
-  if (error_type == TranslateErrors::NONE) {
-    stats_.main_frame_success = true;
-  }
-  if (--stats_.pending_request_count == 0) {
-    stats_.Report();
-  }
-}
+  if (cancelled)
+    return;
 
-void PerFrameContentTranslateDriver::OnSubFrameTranslated(
-    bool cancelled,
-    const std::string& original_lang,
-    const std::string& translated_lang,
-    TranslateErrors::Type error_type) {
   if (error_type == TranslateErrors::NONE) {
-    stats_.sub_frame_success_count++;
+    stats_.frame_success_count++;
+    if (is_main_frame) {
+      stats_.main_frame_success = true;
+    }
   } else {
-    stats_.sub_frame_errors.push_back(error_type);
+    stats_.frame_errors.push_back(error_type);
   }
+
   if (--stats_.pending_request_count == 0) {
+    OnPageTranslated(cancelled, original_lang, translated_lang, error_type);
     stats_.Report();
   }
 }

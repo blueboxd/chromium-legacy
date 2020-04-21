@@ -5,10 +5,13 @@
 #ifndef CONTENT_BROWSER_CONVERSIONS_CONVERSION_MANAGER_H_
 #define CONTENT_BROWSER_CONVERSIONS_CONVERSION_MANAGER_H_
 
+#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "content/browser/conversions/conversion_policy.h"
 #include "content/browser/conversions/storable_conversion.h"
 #include "content/browser/conversions/storable_impression.h"
 #include "content/common/content_export.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -48,6 +51,16 @@ class CONTENT_EXPORT ConversionManager {
   // Returns the ConversionPolicy that is used to control API policies such
   // as noise.
   virtual const ConversionPolicy& GetConversionPolicy() const = 0;
+
+  // Deletes all data in storage for URLs matching |filter|, between
+  // |delete_begin| and |delete_end| time.
+  //
+  // If |filter| is null, then consider all origins in storage as matching.
+  virtual void ClearData(
+      base::Time delete_begin,
+      base::Time delete_end,
+      base::RepeatingCallback<bool(const url::Origin&)> filter,
+      base::OnceClosure done) = 0;
 };
 
 }  // namespace content

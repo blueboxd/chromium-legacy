@@ -22,6 +22,9 @@ namespace paint_preview {
 
 namespace {
 
+// TODO(crbug/1071446): Provide this value over mojo in the capture params.
+constexpr size_t kDefaultMaxCaptureSizeBytes = 0;  // 0 = unlimited.
+
 mojom::PaintPreviewStatus FinishRecording(
     sk_sp<const cc::PaintRecord> recording,
     const gfx::Rect& bounds,
@@ -29,7 +32,8 @@ mojom::PaintPreviewStatus FinishRecording(
     base::File skp_file,
     mojom::PaintPreviewCaptureResponse* response) {
   ParseGlyphs(recording.get(), tracker);
-  if (!SerializeAsSkPicture(recording, tracker, bounds, std::move(skp_file)))
+  if (!SerializeAsSkPicture(recording, tracker, bounds, std::move(skp_file),
+                            kDefaultMaxCaptureSizeBytes))
     return mojom::PaintPreviewStatus::kCaptureFailed;
 
   BuildResponse(tracker, response);

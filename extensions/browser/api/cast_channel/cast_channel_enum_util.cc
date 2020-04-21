@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "extensions/browser/api/cast_channel/cast_channel_enum_util.h"
+#include "base/logging.h"
 
 namespace extensions {
 

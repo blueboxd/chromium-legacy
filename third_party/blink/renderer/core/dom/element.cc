@@ -3513,29 +3513,6 @@ ShadowRoot& Element::CreateAndAttachShadowRoot(ShadowRootType type) {
   return *shadow_root;
 }
 
-void Element::AttachDeclarativeShadowRoot(HTMLTemplateElement* template_element,
-                                          ShadowRootType type,
-                                          FocusDelegation focus_delegation,
-                                          SlotAssignmentMode slot_assignment) {
-  DCHECK(template_element);
-  DCHECK(type == ShadowRootType::kOpen || type == ShadowRootType::kClosed);
-  if (!CanAttachShadowRoot()) {
-    // TODO(1067488): Eventually, this should be a DOMException.
-    LOG(ERROR) << "Invalid shadow root host element";
-    return;
-  }
-  if (GetShadowRoot()) {
-    // TODO(1067488): Eventually, this should be a DOMException.
-    LOG(ERROR) << "Shadow root already present!";
-    return;
-  }
-  ShadowRoot* shadow_root = &AttachShadowRootInternal(
-      type, focus_delegation == FocusDelegation::kDelegateFocus,
-      slot_assignment == SlotAssignmentMode::kManual);
-  shadow_root->appendChild(template_element->DeclarativeShadowContent());
-  template_element->remove();
-}
-
 ShadowRoot* Element::GetShadowRoot() const {
   return HasRareData() ? GetElementRareData()->GetShadowRoot() : nullptr;
 }
@@ -3644,6 +3621,7 @@ ElementInternals& Element::EnsureElementInternals() {
 }
 
 ShadowRoot* Element::createShadowRoot(ExceptionState& exception_state) {
+  DCHECK(RuntimeEnabledFeatures::ShadowDOMV0Enabled(&GetDocument()));
   if (ShadowRoot* root = GetShadowRoot()) {
     if (root->IsUserAgent()) {
       exception_state.ThrowDOMException(
@@ -3677,6 +3655,15 @@ ShadowRoot* Element::createShadowRoot(ExceptionState& exception_state) {
   return &CreateShadowRootInternal();
 }
 
+ShadowRoot& Element::CreateShadowRootInternal() {
+  DCHECK(RuntimeEnabledFeatures::ShadowDOMV0Enabled(&GetDocument()));
+  DCHECK(!ClosedShadowRoot());
+  DCHECK(AreAuthorShadowsAllowed());
+  DCHECK(!AlwaysCreateUserAgentShadowRoot());
+  GetDocument().SetShadowCascadeOrder(ShadowCascadeOrder::kShadowCascadeV0);
+  return CreateAndAttachShadowRoot(ShadowRootType::V0);
+}
+
 bool Element::CanAttachShadowRoot() const {
   const AtomicString& tag_name = localName();
   // Checking Is{V0}CustomElement() here is just an optimization
@@ -3696,17 +3683,26 @@ bool Element::CanAttachShadowRoot() const {
          tag_name == html_names::kSpanTag;
 }
 
-ShadowRoot* Element::attachShadow(const ShadowRootInit* shadow_root_init_dict,
-                                  ExceptionState& exception_state) {
-  DCHECK(shadow_root_init_dict->hasMode());
+const char* Element::ErrorMessageForAttachShadow() const {
+  // https://dom.spec.whatwg.org/#concept-attach-a-shadow-root
+  // 1. If shadow host’s namespace is not the HTML namespace, then throw a
+  // "NotSupportedError" DOMException.
+  // 2. If shadow host’s local name is not a valid custom element name,
+  // "article", "aside", "blockquote", "body", "div", "footer", "h1", "h2",
+  // "h3", "h4", "h5", "h6", "header", "main", "nav", "p", "section", or "span",
+  // then throw a "NotSupportedError" DOMException.
   if (!CanAttachShadowRoot()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kNotSupportedError,
-        "This element does not support attachShadow");
-    return nullptr;
+    return "This element does not support attachShadow";
   }
 
-  // Checking IsCustomElement() here is just an optimization because
+  // 3. If shadow host’s local name is a valid custom element name, or shadow
+  // host’s is value is not null, then:
+  // 3.1 Let definition be the result of looking up a custom element
+  // definition given shadow host’s node document, its namespace, its local
+  // name, and its is value.
+  // 3.2 If definition is not null and definition’s
+  // disable shadow is true, then throw a "NotSupportedError" DOMException.
+  // Note: Checking IsCustomElement() is just an optimization because
   // IsValidName() is not cheap.
   if (IsCustomElement() &&
       (CustomElement::IsValidName(localName()) || !IsValue().IsNull())) {
@@ -3716,45 +3712,76 @@ ShadowRoot* Element::attachShadow(const ShadowRootInit* shadow_root_init_dict,
                                                                   : IsValue())
                  : nullptr;
     if (definition && definition->DisableShadow()) {
-      exception_state.ThrowDOMException(
-          DOMExceptionCode::kNotSupportedError,
-          "attachShadow() is disabled by disabledFeatures static field.");
-      return nullptr;
+      return "attachShadow() is disabled by disabledFeatures static field.";
     }
   }
 
+  // 4. If shadow host has a non-null shadow root whose is declarative shadow
+  // root property is false, then throw an "NotSupportedError" DOMException.
+  // 5. TODO(masonfreed): If shadow host has a non-null shadow root whose is
+  // declarative shadow root property is true, then remove all of shadow root’s
+  // children, in tree order. Return shadow host’s shadow root.
   if (GetShadowRoot()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
-                                      "Shadow root cannot be created on a host "
-                                      "which already hosts a shadow tree.");
-    return nullptr;
+    return "Shadow root cannot be created on a host "
+           "which already hosts a shadow tree.";
   }
+  return nullptr;
+}
 
+ShadowRoot* Element::attachShadow(const ShadowRootInit* shadow_root_init_dict,
+                                  ExceptionState& exception_state) {
+  DCHECK(shadow_root_init_dict->hasMode());
   ShadowRootType type = shadow_root_init_dict->mode() == "open"
                             ? ShadowRootType::kOpen
                             : ShadowRootType::kClosed;
-
   if (type == ShadowRootType::kOpen)
     UseCounter::Count(GetDocument(), WebFeature::kElementAttachShadowOpen);
   else
     UseCounter::Count(GetDocument(), WebFeature::kElementAttachShadowClosed);
 
-  DCHECK(!shadow_root_init_dict->hasMode() || !GetShadowRoot());
-  bool delegates_focus = shadow_root_init_dict->hasDelegatesFocus() &&
-                         shadow_root_init_dict->delegatesFocus();
-  bool manual_slotting = false;
-  if (shadow_root_init_dict->hasSlotAssignment()) {
-    manual_slotting = (shadow_root_init_dict->slotAssignment() == "manual");
+  auto focus_delegation = (shadow_root_init_dict->hasDelegatesFocus() &&
+                           shadow_root_init_dict->delegatesFocus())
+                              ? FocusDelegation::kDelegateFocus
+                              : FocusDelegation::kNone;
+  auto slot_assignment = (shadow_root_init_dict->hasSlotAssignment() &&
+                          shadow_root_init_dict->slotAssignment() == "manual")
+                             ? SlotAssignmentMode::kManual
+                             : SlotAssignmentMode::kAuto;
+
+  if (const char* error_message = ErrorMessageForAttachShadow()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                      error_message);
+    return nullptr;
   }
-  return &AttachShadowRootInternal(type, delegates_focus, manual_slotting);
+  return &AttachShadowRootInternal(type, focus_delegation, slot_assignment);
 }
 
-ShadowRoot& Element::CreateShadowRootInternal() {
-  DCHECK(!ClosedShadowRoot());
-  DCHECK(AreAuthorShadowsAllowed());
-  DCHECK(!AlwaysCreateUserAgentShadowRoot());
-  GetDocument().SetShadowCascadeOrder(ShadowCascadeOrder::kShadowCascadeV0);
-  return CreateAndAttachShadowRoot(ShadowRootType::V0);
+void Element::AttachDeclarativeShadowRoot(HTMLTemplateElement* template_element,
+                                          ShadowRootType type,
+                                          FocusDelegation focus_delegation,
+                                          SlotAssignmentMode slot_assignment) {
+  DCHECK(template_element);
+  DCHECK(type == ShadowRootType::kOpen || type == ShadowRootType::kClosed);
+
+  // 12. Run attach a shadow root with shadow host equal to declarative shadow
+  // host element, mode equal to declarative shadow mode, and delegates focus
+  // equal to declarative shadow delegates focus. If an exception was thrown by
+  // attach a shadow root, catch it, and report the exception.
+  if (const char* error_message = ErrorMessageForAttachShadow()) {
+    // TODO(1067488): Fire this exception at Window.
+    LOG(ERROR) << error_message;
+    return;
+  }
+  ShadowRoot& shadow_root =
+      AttachShadowRootInternal(type, focus_delegation, slot_assignment);
+  // 13.1. Set declarative shadow host element's shadow host's "is declarative
+  // shadow root" property to true.
+  shadow_root.SetIsDeclarativeShadowRoot(true);
+  // 13.2. Append the declarative template element's DocumentFragment to the
+  // newly-created shadow root.
+  shadow_root.appendChild(template_element->DeclarativeShadowContent());
+  // 13.3. Remove the declarative template element from the document.
+  template_element->remove();
 }
 
 ShadowRoot& Element::CreateUserAgentShadowRoot() {
@@ -3762,9 +3789,10 @@ ShadowRoot& Element::CreateUserAgentShadowRoot() {
   return CreateAndAttachShadowRoot(ShadowRootType::kUserAgent);
 }
 
-ShadowRoot& Element::AttachShadowRootInternal(ShadowRootType type,
-                                              bool delegates_focus,
-                                              bool manual_slotting) {
+ShadowRoot& Element::AttachShadowRootInternal(
+    ShadowRootType type,
+    FocusDelegation focus_delegation,
+    SlotAssignmentMode slot_assignment_mode) {
   // SVG <use> is a special case for using this API to create a closed shadow
   // root.
   DCHECK(CanAttachShadowRoot() || IsA<SVGUseElement>(*this));
@@ -3773,11 +3801,17 @@ ShadowRoot& Element::AttachShadowRootInternal(ShadowRootType type,
   DCHECK(!AlwaysCreateUserAgentShadowRoot());
 
   GetDocument().SetShadowCascadeOrder(ShadowCascadeOrder::kShadowCascadeV1);
+
+  // 6. Let shadow be a new shadow root whose node document is shadow host’s
+  // node document, host is shadow host, and mode is mode.
+  // 9. Set shadow host’s shadow root to shadow.
   ShadowRoot& shadow_root = CreateAndAttachShadowRoot(type);
-  shadow_root.SetDelegatesFocus(delegates_focus);
-  shadow_root.SetSlotAssignmentMode(manual_slotting
-                                        ? SlotAssignmentMode::kManual
-                                        : SlotAssignmentMode::kAuto);
+  // 7. Set shadow’s delegates focus to delegates focus.
+  shadow_root.SetDelegatesFocus(focus_delegation ==
+                                FocusDelegation::kDelegateFocus);
+  // 8. Set shadow’s "is declarative shadow root" property to false.
+  shadow_root.SetIsDeclarativeShadowRoot(false);
+  shadow_root.SetSlotAssignmentMode(slot_assignment_mode);
   return shadow_root;
 }
 

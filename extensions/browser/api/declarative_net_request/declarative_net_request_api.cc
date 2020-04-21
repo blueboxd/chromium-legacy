@@ -107,7 +107,7 @@ DeclarativeNetRequestGetDynamicRulesFunction::
 ExtensionFunction::ResponseAction
 DeclarativeNetRequestGetDynamicRulesFunction::Run() {
   auto source = declarative_net_request::RulesetSource::CreateDynamic(
-      browser_context(), *extension());
+      browser_context(), extension()->id());
 
   auto read_dynamic_rules = base::BindOnce(
       [](const declarative_net_request::RulesetSource& source) {

@@ -12,7 +12,6 @@ import android.os.Build;
 import android.os.SystemClock;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
-import android.text.TextUtils;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -828,16 +827,14 @@ public class ContentTextSelectionTest {
     }
 
     private void waitForClipboardContents(final String expectedContents) {
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                Context context = mActivityTestRule.getActivity();
-                ClipboardManager clipboardManager =
-                        (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
-                ClipData clip = clipboardManager.getPrimaryClip();
-                return clip != null && clip.getItemCount() == 1
-                        && TextUtils.equals(clip.getItemAt(0).getText(), expectedContents);
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Context context = mActivityTestRule.getActivity();
+            ClipboardManager clipboardManager =
+                    (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+            ClipData clip = clipboardManager.getPrimaryClip();
+            Assert.assertNotNull(clip);
+            Assert.assertEquals(1, clip.getItemCount());
+            Assert.assertEquals(expectedContents, clip.getItemAt(0).getText());
         });
     }
 

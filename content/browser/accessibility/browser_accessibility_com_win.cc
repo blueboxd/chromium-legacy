@@ -1669,8 +1669,15 @@ bool BrowserAccessibilityComWin::IsListBoxOptionOrMenuListOption() {
 }
 
 void BrowserAccessibilityComWin::FireNativeEvent(LONG win_event_type) const {
-  if (owner()->IsChildOfLeaf())
+  // We only allow events on descendants of a platform leaf when that platform
+  // leaf is a popup button parent of a menu list popup. On Windows, the menu
+  // list popup is not part of the tree when its parent is collapsed but events
+  // should be fired anyway.
+  if (owner()->IsChildOfLeaf() &&
+      !owner()->GetCollapsedMenuListPopUpButtonAncestor()) {
     return;
+  }
+
   Manager()->ToBrowserAccessibilityManagerWin()->FireWinAccessibilityEvent(
       win_event_type, owner());
 }

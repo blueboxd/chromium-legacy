@@ -11,14 +11,8 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
-#include "chrome/services/local_search_service/public/mojom/local_search_service.mojom.h"
-#include "chrome/services/local_search_service/public/mojom/types.mojom.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/receiver_set.h"
-#include "mojo/public/cpp/bindings/remote.h"
-#include "mojo/public/cpp/bindings/remote_set.h"
 
 class TokenizedString;
 
@@ -83,47 +77,36 @@ enum class ResponseStatus {
   kSuccess = 3
 };
 
-// Actual implementation of a local search service Index.
-// It has a registry of searchable data, which can be updated. It also runs an
-// asynchronous search function to find matching items for a given query, and
-// returns results via a callback.
-// In-process clients can choose to call synchronous versions of these
-// functions.
-// TODO(jiameng): all async calls will be deleted in the next cl.
-class IndexImpl : public mojom::Index {
+// A local search service Index.
+// It has a registry of searchable data, which can be updated. It also runs a
+// synchronous search function to find matching items for a given query.
+class IndexImpl {
  public:
   IndexImpl();
-  ~IndexImpl() override;
+  ~IndexImpl();
 
-  void BindReceiver(mojo::PendingReceiver<mojom::Index> receiver);
+  IndexImpl(const IndexImpl&) = delete;
+  IndexImpl& operator=(const IndexImpl&) = delete;
 
-  // mojom::Index overrides.
-  // Also included the synchronous versions for in-process clients.
-  void GetSize(GetSizeCallback callback) override;
+  // Returns number of data items.
   uint64_t GetSize();
 
+  // Adds or updates data.
   // IDs of data should not be empty.
-  void AddOrUpdate(std::vector<mojom::DataPtr> data,
-                   AddOrUpdateCallback callback) override;
   void AddOrUpdate(const std::vector<local_search_service::Data>& data);
 
+  // Deletes data with |ids| and returns number of items deleted.
+  // If an id doesn't exist in the Index, no operation will be done.
   // IDs should not be empty.
-  void Delete(const std::vector<std::string>& ids,
-              DeleteCallback callback) override;
   uint32_t Delete(const std::vector<std::string>& ids);
 
-  void Find(const base::string16& query,
-            int32_t max_latency_in_ms,
-            int32_t max_results,
-            FindCallback callback) override;
+  // Returns matching results for a given query.
   // Zero |max_results| means no max.
   local_search_service::ResponseStatus Find(
       const base::string16& query,
       uint32_t max_results,
       std::vector<local_search_service::Result>* results);
 
-  void SetSearchParams(mojom::SearchParamsPtr search_params,
-                       SetSearchParamsCallback callback) override;
   void SetSearchParams(const local_search_service::SearchParams& search_params);
 
   void GetSearchParamsForTesting(double* relevance_threshold,
@@ -141,12 +124,10 @@ class IndexImpl : public mojom::Index {
   // A map from key to tokenized search-tags.
   std::map<std::string, std::vector<std::unique_ptr<TokenizedString>>> data_;
 
-  mojo::ReceiverSet<mojom::Index> receivers_;
-
   // Search parameters.
   local_search_service::SearchParams search_params_;
 
-  DISALLOW_COPY_AND_ASSIGN(IndexImpl);
+  base::WeakPtrFactory<IndexImpl> weak_ptr_factory_{this};
 };
 
 }  // namespace local_search_service

@@ -6,6 +6,7 @@
 
 #include "content/public/browser/xr_consent_helper.h"
 #include "content/public/browser/xr_install_helper.h"
+#include "device/vr/public/cpp/vr_device_provider.h"
 #include "device/vr/public/mojom/vr_service.mojom-shared.h"
 
 namespace content {
@@ -18,6 +19,10 @@ std::unique_ptr<XrInstallHelper> XrIntegrationClient::GetInstallHelper(
 std::unique_ptr<XrConsentHelper> XrIntegrationClient::GetConsentHelper(
     device::mojom::XRDeviceId device_id) {
   return nullptr;
+}
+
+XRProviderList XrIntegrationClient::GetAdditionalProviders() {
+  return {};
 }
 
 #if !defined(OS_ANDROID)

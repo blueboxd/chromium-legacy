@@ -157,7 +157,6 @@ int WebMStreamParser::ParseInfoAndTracks(const uint8_t* data, int size) {
       }
       // Skip the element.
       return result + element_size;
-      break;
     case kWebMIdCluster:
       if (!cluster_parser_) {
         MEDIA_LOG(ERROR, media_log_) << "Found Cluster element before Info.";
@@ -166,14 +165,12 @@ int WebMStreamParser::ParseInfoAndTracks(const uint8_t* data, int size) {
       ChangeState(kParsingClusters);
       new_segment_cb_.Run();
       return 0;
-      break;
     case kWebMIdSegment:
       // Segment of unknown size indicates live stream.
       if (element_size == kWebMUnknownSize)
         unknown_segment_size_ = true;
       // Just consume the segment header.
       return result;
-      break;
     case kWebMIdInfo:
       // We've found the element we are looking for.
       break;

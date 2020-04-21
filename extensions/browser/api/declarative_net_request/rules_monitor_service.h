@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_BROWSER_API_DECLARATIVE_NET_REQUEST_RULES_MONITOR_SERVICE_H_
 #define EXTENSIONS_BROWSER_API_DECLARATIVE_NET_REQUEST_RULES_MONITOR_SERVICE_H_
 
+#include <map>
 #include <memory>
 #include <set>
 #include <string>
@@ -95,6 +96,22 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
 
   friend class BrowserContextKeyedAPIFactory<RulesMonitorService>;
 
+  struct DynamicRuleUpdate {
+    DynamicRuleUpdate(
+        std::vector<int> rule_ids_to_remove,
+        std::vector<api::declarative_net_request::Rule> rules_to_add,
+        DynamicRuleUpdateUICallback ui_callback);
+
+    DynamicRuleUpdate(DynamicRuleUpdate&&);
+    DynamicRuleUpdate& operator=(DynamicRuleUpdate&&);
+
+    ~DynamicRuleUpdate();
+
+    std::vector<int> rule_ids_to_remove;
+    std::vector<api::declarative_net_request::Rule> rules_to_add;
+    DynamicRuleUpdateUICallback ui_callback;
+  };
+
   // The constructor is kept private since this should only be created by the
   // BrowserContextKeyedAPIFactory.
   explicit RulesMonitorService(content::BrowserContext* browser_context);
@@ -113,6 +130,10 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
   void OnExtensionUninstalled(content::BrowserContext* browser_context,
                               const Extension* extension,
                               UninstallReason reason) override;
+
+  // Internal helper for UpdateDynamicRules.
+  void UpdateDynamicRulesInternal(const ExtensionId& extension_id,
+                                  DynamicRuleUpdate update);
 
   // Invoked when we have loaded the rulesets in |load_data| on
   // |file_task_runner_|.
@@ -153,6 +174,12 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
 
   // Non-owned pointer.
   TestObserver* test_observer_ = nullptr;
+
+  // Stores the pending dynamic rule updates to be performed once ruleset
+  // loading is done for an extension. This is only maintained for extensions
+  // which are undergoing a ruleset load in response to OnExtensionLoaded.
+  std::map<ExtensionId, std::vector<DynamicRuleUpdate>>
+      pending_dynamic_rule_updates_;
 
   // Must be the last member variable. See WeakPtrFactory documentation for
   // details.

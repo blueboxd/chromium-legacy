@@ -16,10 +16,15 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #endif
 
+namespace device {
+class VRDeviceProvider;
+}
+
 namespace content {
 class XrConsentHelper;
 class XrInstallHelper;
 
+using XRProviderList = std::vector<std::unique_ptr<device::VRDeviceProvider>>;
 #if !defined(OS_ANDROID)
 // This class is intended to provide implementers a means of accessing the
 // the XRCompositorHost returned from a create session call. Content has no
@@ -56,6 +61,10 @@ class CONTENT_EXPORT XrIntegrationClient {
   // In this case, consent is assumed to have been denied.
   virtual std::unique_ptr<XrConsentHelper> GetConsentHelper(
       device::mojom::XRDeviceId device_id);
+
+  // Returns a vector of device providers that should be used in addition to
+  // any default providers built-in to //content.
+  virtual XRProviderList GetAdditionalProviders();
 
 #if !defined(OS_ANDROID)
   // Creates a VrUiHost object for the specified device_id, and takes ownership

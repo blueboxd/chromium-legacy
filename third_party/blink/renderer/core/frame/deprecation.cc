@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/deprecation_report_body.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/report.h"
@@ -614,7 +615,7 @@ void Deprecation::CountDeprecation(Document* document, WebFeature feature) {
   if (!document)
     return;
 
-  Deprecation::CountDeprecation(document->ToExecutionContext(), feature);
+  Deprecation::CountDeprecation(document->GetExecutionContext(), feature);
 }
 
 void Deprecation::CountDeprecation(DocumentLoader* loader, WebFeature feature) {
@@ -661,6 +662,9 @@ void Deprecation::CountDeprecationCrossOriginIframe(const Document& document,
 }
 
 void Deprecation::GenerateReport(const LocalFrame* frame, WebFeature feature) {
+  if (!frame || !frame->Client())
+    return;
+
   DeprecationInfo info = GetDeprecationInfo(feature);
 
   // Send the deprecation message to the console as a warning.
@@ -670,10 +674,7 @@ void Deprecation::GenerateReport(const LocalFrame* frame, WebFeature feature) {
       mojom::ConsoleMessageLevel::kWarning, info.message);
   frame->Console().AddMessage(console_message);
 
-  if (!frame || !frame->Client())
-    return;
-
-  Document* document = frame->GetDocument();
+  auto* window = frame->DomWindow();
 
   // Construct the deprecation report.
   base::Optional<base::Time> optional_removal_date;
@@ -687,11 +688,11 @@ void Deprecation::GenerateReport(const LocalFrame* frame, WebFeature feature) {
   DeprecationReportBody* body = MakeGarbageCollected<DeprecationReportBody>(
       info.id, optional_removal_date, info.message);
   Report* report = MakeGarbageCollected<Report>(
-      ReportType::kDeprecation, document->Url().GetString(), body);
+      ReportType::kDeprecation, window->document()->Url().GetString(), body);
 
   // Send the deprecation report to the Reporting API and any
   // ReportingObservers.
-  ReportingContext::From(document->ToExecutionContext())->QueueReport(report);
+  ReportingContext::From(window)->QueueReport(report);
 }
 
 // static

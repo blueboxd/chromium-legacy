@@ -1092,4 +1092,37 @@ bool AXNode::IsInListMarker() const {
          grandparent_node->data().role == ax::mojom::Role::kListMarker;
 }
 
+bool AXNode::IsCollapsedMenuListPopUpButton() const {
+  if (data().role != ax::mojom::Role::kPopUpButton ||
+      !data().HasState(ax::mojom::State::kCollapsed)) {
+    return false;
+  }
+
+  // When a popup button contains a menu list popup, its only child is unignored
+  // and is a menu list popup.
+  AXNode* node = GetFirstUnignoredChild();
+  if (!node)
+    return false;
+
+  return node->data().role == ax::mojom::Role::kMenuListPopup;
+}
+
+AXNode* AXNode::GetCollapsedMenuListPopUpButtonAncestor() const {
+  AXNode* node = GetOrderedSet();
+
+  if (!node)
+    return nullptr;
+
+  // The ordered set returned is either the popup element child of the popup
+  // button (e.g., the AXMenuListPopup) or the popup button itself. We need
+  // |node| to point to the popup button itself.
+  if (node->data().role != ax::mojom::Role::kPopUpButton) {
+    node = node->parent();
+    if (!node)
+      return nullptr;
+  }
+
+  return node->IsCollapsedMenuListPopUpButton() ? node : nullptr;
+}
+
 }  // namespace ui

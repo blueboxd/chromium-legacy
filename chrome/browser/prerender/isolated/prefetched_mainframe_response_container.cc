@@ -5,10 +5,10 @@
 #include "chrome/browser/prerender/isolated/prefetched_mainframe_response_container.h"
 
 PrefetchedMainframeResponseContainer::PrefetchedMainframeResponseContainer(
-    const net::NetworkIsolationKey& nik,
+    const net::IsolationInfo& isolation_info,
     network::mojom::URLResponseHeadPtr head,
     std::unique_ptr<std::string> body)
-    : network_isolation_key_(nik),
+    : isolation_info_(isolation_info),
       head_(std::move(head)),
       body_(std::move(body)) {}
 

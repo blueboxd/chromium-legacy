@@ -14,7 +14,7 @@
 #include "content/browser/service_worker/service_worker_main_resource_handle_core.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/test/fake_network_url_loader_factory.h"
-#include "net/base/network_isolation_key.h"
+#include "net/base/isolation_info.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_client.h"
@@ -69,9 +69,11 @@ class WorkerScriptLoaderFactoryTest : public testing::Test {
     network::ResourceRequest resource_request;
     resource_request.url = url;
     resource_request.trusted_params = network::ResourceRequest::TrustedParams();
-    resource_request.trusted_params->network_isolation_key =
-        net::NetworkIsolationKey(url::Origin::Create(url),
-                                 url::Origin::Create(url));
+    resource_request.trusted_params->isolation_info =
+        net::IsolationInfo::Create(
+            net::IsolationInfo::RedirectMode::kUpdateNothing,
+            url::Origin::Create(url), url::Origin::Create(url),
+            net::SiteForCookies());
     resource_request.resource_type =
         static_cast<int>(blink::mojom::ResourceType::kSharedWorker);
     factory->CreateLoaderAndStart(

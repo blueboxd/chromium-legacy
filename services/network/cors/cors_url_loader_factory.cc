@@ -251,7 +251,7 @@ bool CorsURLLoaderFactory::IsSane(const NetworkContext* context,
   // NetworkIsolationKey to correctly cache-partition the resource.
   bool request_network_isolation_key_present =
       request.trusted_params &&
-      !request.trusted_params->network_isolation_key.IsEmpty();
+      !request.trusted_params->isolation_info.IsEmpty();
   if (request.load_flags & net::LOAD_RESTRICTED_PREFETCH &&
       !request_network_isolation_key_present) {
     mojo::ReportBadMessage(

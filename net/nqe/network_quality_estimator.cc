@@ -1756,7 +1756,9 @@ void NetworkQualityEstimator::OnPeerToPeerConnectionsCountChange(
     DCHECK(p2p_connections_count_active_timestamp_);
     base::TimeDelta duration = tick_clock_->NowTicks() -
                                p2p_connections_count_active_timestamp_.value();
-    UMA_HISTOGRAM_LONG_TIMES("NQE.PeerToPeerConnectionsDuration", duration);
+    LOCAL_HISTOGRAM_CUSTOM_TIMES("NQE.PeerToPeerConnectionsDuration", duration,
+                                 base::TimeDelta::FromMilliseconds(1),
+                                 base::TimeDelta::FromHours(1), 50);
     p2p_connections_count_active_timestamp_ = base::nullopt;
   }
 

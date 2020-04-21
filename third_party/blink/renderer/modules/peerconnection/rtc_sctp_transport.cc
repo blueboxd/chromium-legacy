@@ -30,20 +30,15 @@ String TransportStateToString(webrtc::SctpTransportState state) {
       // only be visible after reaching "connecting" state.
       NOTREACHED();
       return String("new");
-      break;
     case webrtc::SctpTransportState::kConnecting:
       return String("connecting");
-      break;
     case webrtc::SctpTransportState::kConnected:
       return String("connected");
-      break;
     case webrtc::SctpTransportState::kClosed:
       return String("closed");
-      break;
     default:
       NOTREACHED();
       return String("failed");
-      break;
   }
 }
 

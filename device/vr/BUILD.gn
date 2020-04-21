@@ -37,9 +37,10 @@ if (enable_vr) {
       "vr_device.h",
       "vr_device_base.cc",
       "vr_device_base.h",
-      "vr_device_provider.h",
       "vr_export.h",
     ]
+
+    public_deps = [ "//device/vr/public/cpp" ]
     deps = [
       "//base",
       "//components/ukm:ukm",

@@ -119,9 +119,9 @@ const char kBlogspotSite2[] = "b.blogspot.com";
 
 const char k404Response[] = "HTTP/1.1 404 Not found\r\n\r\n";
 
-void ExpectRequestNetworkIsolationKey(
+void ExpectRequestIsolationInfo(
     const GURL& request_url,
-    const net::NetworkIsolationKey& expected_network_isolation_key,
+    const net::IsolationInfo& expected_isolation_info,
     base::OnceCallback<void()> function) {
   URLLoaderMonitor monitor({request_url});
 
@@ -131,12 +131,11 @@ void ExpectRequestNetworkIsolationKey(
   base::Optional<network::ResourceRequest> request =
       monitor.GetRequestInfo(request_url);
   ASSERT_TRUE(request->trusted_params.has_value());
-  EXPECT_EQ(expected_network_isolation_key,
-            request->trusted_params->network_isolation_key);
+  EXPECT_TRUE(expected_isolation_info.IsEqualForTesting(
+      request->trusted_params->isolation_info));
   // SiteForCookies should be consistent with the NIK.
-  EXPECT_TRUE(net::SiteForCookies::FromOrigin(
-                  *expected_network_isolation_key.GetTopFrameOrigin())
-                  .IsEquivalent(request->site_for_cookies));
+  EXPECT_TRUE(expected_isolation_info.site_for_cookies().IsEquivalent(
+      request->site_for_cookies));
 }
 
 // Implementation of TestContentBrowserClient that overrides
@@ -3582,10 +3581,11 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
       std::string("/download-attribute.html?target=") + download_url.spec());
   GURL final_url = origin_two.GetURL(kOriginTwo, "/download");
   url::Origin final_url_origin = url::Origin::Create(final_url);
-  // The NetworkIsolationKey after the cross-site redirect should be the same as
+  // The IsolationInfo after the cross-site redirect should be the same as
   // if there were a top-level navigation to the final URL.
-  net::NetworkIsolationKey expected_network_isolation_key =
-      net::NetworkIsolationKey(final_url_origin, final_url_origin);
+  net::IsolationInfo expected_isolation_info = net::IsolationInfo::Create(
+      net::IsolationInfo::RedirectMode::kUpdateTopFrame, final_url_origin,
+      final_url_origin, net::SiteForCookies::FromOrigin(final_url_origin));
 
   // <origin_one>/download-attribute.html initiates a download of
   // <origin_one>/ping, which redirects to <origin_two>/download.
@@ -3598,12 +3598,11 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
                                  "application/octet-stream", "Hello"));
   origin_two.StartAcceptingConnections();
 
-  ExpectRequestNetworkIsolationKey(final_url, expected_network_isolation_key,
-                                   base::BindLambdaForTesting([&]() {
-                                     NavigateToCommittedURLAndWaitForDownload(
-                                         shell(), referrer_url,
-                                         download::DownloadItem::COMPLETE);
-                                   }));
+  ExpectRequestIsolationInfo(
+      final_url, expected_isolation_info, base::BindLambdaForTesting([&]() {
+        NavigateToCommittedURLAndWaitForDownload(
+            shell(), referrer_url, download::DownloadItem::COMPLETE);
+      }));
 
   std::vector<download::DownloadItem*> downloads;
   DownloadManagerForShell(shell())->GetAllDownloads(&downloads);
@@ -4053,14 +4052,15 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, DuplicateContentDisposition) {
 // navigation path
 // (2) the request resuming an interrupted download.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest,
-                       AnchorDownload_Resume_NetworkIsolationKeyPopulated) {
+                       AnchorDownload_Resume_IsolationInfoPopulated) {
   SetupEnsureNoPendingDownloads();
 
   GURL slow_download_url = embedded_test_server()->GetURL(
       kOriginTwo, SlowDownloadHttpResponse::kKnownSizeUrl);
   url::Origin download_origin = url::Origin::Create(slow_download_url);
-  net::NetworkIsolationKey expected_network_isolation_key =
-      net::NetworkIsolationKey(download_origin, download_origin);
+  net::IsolationInfo expected_isolation_info = net::IsolationInfo::Create(
+      net::IsolationInfo::RedirectMode::kUpdateTopFrame, download_origin,
+      download_origin, net::SiteForCookies::FromOrigin(download_origin));
 
   GURL frame_url = embedded_test_server()->GetURL(
       kOriginTwo,
@@ -4076,8 +4076,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
 
   // Click the <a download> link in the child frame.
   download::DownloadItem* download_item = nullptr;
-  ExpectRequestNetworkIsolationKey(
-      slow_download_url, expected_network_isolation_key,
+  ExpectRequestIsolationInfo(
+      slow_download_url, expected_isolation_info,
       base::BindLambdaForTesting([&]() {
         DownloadInProgressObserver observer(DownloadManagerForShell(shell()));
         EXPECT_TRUE(
@@ -4091,8 +4091,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
       download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED);
   EXPECT_EQ(download::DownloadItem::INTERRUPTED, download_item->GetState());
 
-  ExpectRequestNetworkIsolationKey(
-      slow_download_url, expected_network_isolation_key,
+  ExpectRequestIsolationInfo(
+      slow_download_url, expected_isolation_info,
       base::BindLambdaForTesting([&]() { download_item->Resume(true); }));
 
   EXPECT_EQ(download::DownloadItem::IN_PROGRESS, download_item->GetState());
@@ -4125,10 +4125,11 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
 
   GURL download_url = origin_two.GetURL("/download-test.lib");
   url::Origin download_origin = url::Origin::Create(download_url);
-  // The NetworkIsolationKey of the download should be the same as that of a
-  // top-level navigation to the download.
-  net::NetworkIsolationKey expected_network_isolation_key =
-      net::NetworkIsolationKey(download_origin, download_origin);
+  // The IsolationInfo of the download should be the same as that of a top-level
+  // navigation to the download.
+  net::IsolationInfo expected_isolation_info = net::IsolationInfo::Create(
+      net::IsolationInfo::RedirectMode::kUpdateFrameOnly, download_origin,
+      download_origin, net::SiteForCookies::FromOrigin(download_origin));
 
   GURL frame_url = origin_one.GetURL("/download-attribute.html?target=" +
                                      download_url.spec());
@@ -4138,11 +4139,10 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
   GURL document_url =
       origin_two.GetURL("/iframe-host.html?target=" + frame_url.spec());
   download::DownloadItem* download = nullptr;
-  ExpectRequestNetworkIsolationKey(download_url, expected_network_isolation_key,
-                                   base::BindLambdaForTesting([&]() {
-                                     download = StartDownloadAndReturnItem(
-                                         shell(), document_url);
-                                   }));
+  ExpectRequestIsolationInfo(
+      download_url, expected_isolation_info, base::BindLambdaForTesting([&]() {
+        download = StartDownloadAndReturnItem(shell(), document_url);
+      }));
 
   WaitForCompletion(download);
 

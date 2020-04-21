@@ -1545,10 +1545,8 @@ Maybe<String> GetBlockedReasonFor(
                     CorpNotSameOriginAfterDefaultedToSameOriginByCoep};
       case network::BlockedByResponseReason::kCorpNotSameOrigin:
         return {protocol::Network::BlockedReasonEnum::CorpNotSameOrigin};
-        break;
       case network::BlockedByResponseReason::kCorpNotSameSite:
         return {protocol::Network::BlockedReasonEnum::CorpNotSameSite};
-        break;
     }
     NOTREACHED();
   }

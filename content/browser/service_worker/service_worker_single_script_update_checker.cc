@@ -21,7 +21,9 @@
 #include "content/public/common/referrer.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/ip_endpoint.h"
+#include "net/base/isolation_info.h"
 #include "net/base/load_flags.h"
+#include "net/cookies/site_for_cookies.h"
 #include "net/http/http_response_info.h"
 #include "services/network/public/cpp/net_adapters.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -154,8 +156,9 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
   // This key is used to isolate requests from different contexts in accessing
   // shared network resources like the http cache.
   resource_request.trusted_params = network::ResourceRequest::TrustedParams();
-  resource_request.trusted_params->network_isolation_key =
-      net::NetworkIsolationKey(origin, origin);
+  resource_request.trusted_params->isolation_info = net::IsolationInfo::Create(
+      net::IsolationInfo::RedirectMode::kUpdateNothing, origin, origin,
+      net::SiteForCookies::FromOrigin(origin));
 
   if (is_main_script_) {
     // Set the "Service-Worker" header for the main script request:

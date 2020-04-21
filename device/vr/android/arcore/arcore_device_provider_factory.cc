@@ -5,7 +5,7 @@
 #include "device/vr/android/arcore/arcore_device_provider_factory.h"
 
 #include "base/logging.h"
-#include "device/vr/vr_device_provider.h"
+#include "device/vr/public/cpp/vr_device_provider.h"
 
 namespace device {
 

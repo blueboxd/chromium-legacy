@@ -126,7 +126,7 @@ class DriveServiceBatchOperationsInterface {
       const base::FilePath& local_file_path,
       const UploadNewFileOptions& options,
       google_apis::FileResourceCallback callback,
-      const google_apis::ProgressCallback& progress_callback) = 0;
+      google_apis::ProgressCallback progress_callback) = 0;
 
   // Uploads a file by a single request with multipart body. It's more efficient
   // for small files than using |InitiateUploadExistingFile| and |ResumeUpload|.
@@ -139,7 +139,7 @@ class DriveServiceBatchOperationsInterface {
       const base::FilePath& local_file_path,
       const UploadExistingFileOptions& options,
       google_apis::FileResourceCallback callback,
-      const google_apis::ProgressCallback& progress_callback) = 0;
+      google_apis::ProgressCallback progress_callback) = 0;
 };
 
 // Builder returned by DriveServiceInterface to build batch request.
@@ -334,7 +334,7 @@ class DriveServiceInterface : public DriveServiceBatchOperationsInterface {
   // |callback| must not be null.
   virtual google_apis::CancelCallback GetStartPageToken(
       const std::string& team_drive_id,
-      const google_apis::StartPageTokenCallback& callback) = 0;
+      google_apis::StartPageTokenCallback callback) = 0;
 
   // Permanently deletes a resource identified by its |resource_id|.
   // If |etag| is not empty and did not match, the deletion fails with
@@ -431,7 +431,7 @@ class DriveServiceInterface : public DriveServiceBatchOperationsInterface {
       const std::string& resource_id,
       const google_apis::DownloadActionCallback& download_action_callback,
       const google_apis::GetContentCallback& get_content_callback,
-      const google_apis::ProgressCallback& progress_callback) = 0;
+      google_apis::ProgressCallback progress_callback) = 0;
 
   // Initiates uploading of a new document/file.
   // |content_type| and |content_length| should be the ones of the file to be
@@ -466,7 +466,7 @@ class DriveServiceInterface : public DriveServiceBatchOperationsInterface {
       const std::string& content_type,
       const base::FilePath& local_file_path,
       google_apis::drive::UploadRangeCallback callback,
-      const google_apis::ProgressCallback& progress_callback) = 0;
+      google_apis::ProgressCallback progress_callback) = 0;
 
   // Gets the current status of the uploading to |upload_url| from the server.
   // |drive_file_path| and |content_length| should be set to the same value

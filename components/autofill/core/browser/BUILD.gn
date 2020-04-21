@@ -30,6 +30,8 @@ jumbo_static_library("browser") {
     "address_rewriter.h",
     "autocomplete_history_manager.cc",
     "autocomplete_history_manager.h",
+    "autofill_address_policy_handler.cc",
+    "autofill_address_policy_handler.h",
     "autofill_address_util.cc",
     "autofill_address_util.h",
     "autofill_browser_util.cc",
@@ -317,8 +319,6 @@ jumbo_static_library("browser") {
 
   if (!is_ios) {
     sources += [
-      "autofill_address_policy_handler.cc",
-      "autofill_address_policy_handler.h",
       "autofill_policy_handler.cc",
       "autofill_policy_handler.h",
       "payments/credit_card_fido_authenticator.cc",
@@ -539,6 +539,7 @@ source_set("unit_tests") {
     "address_normalizer_impl_unittest.cc",
     "address_rewriter_unittest.cc",
     "autocomplete_history_manager_unittest.cc",
+    "autofill_address_policy_handler_unittest.cc",
     "autofill_credit_card_policy_handler_unittest.cc",
     "autofill_data_util_unittest.cc",
     "autofill_download_manager_unittest.cc",
@@ -622,7 +623,6 @@ source_set("unit_tests") {
 
   if (!is_ios) {
     sources += [
-      "autofill_address_policy_handler_unittest.cc",
       "autofill_policy_handler_unittest.cc",
       "payments/credit_card_fido_authenticator_unittest.cc",
     ]

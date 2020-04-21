@@ -21,17 +21,9 @@
 
 namespace settings {
 
-AccessibilityMainHandler::AccessibilityMainHandler() {
-#if defined(OS_CHROMEOS)
-  accessibility_subscription_ =
-      chromeos::AccessibilityManager::Get()->RegisterCallback(
-          base::BindRepeating(
-              &AccessibilityMainHandler::OnAccessibilityStatusChanged,
-              base::Unretained(this)));
-#endif  // defined(OS_CHROMEOS)
-}
+AccessibilityMainHandler::AccessibilityMainHandler() = default;
 
-AccessibilityMainHandler::~AccessibilityMainHandler() {}
+AccessibilityMainHandler::~AccessibilityMainHandler() = default;
 
 void AccessibilityMainHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
@@ -45,15 +37,26 @@ void AccessibilityMainHandler::RegisterMessages() {
           base::Unretained(this)));
 }
 
-void AccessibilityMainHandler::OnAXModeAdded(ui::AXMode mode) {
-  HandleGetScreenReaderState(nullptr);
+void AccessibilityMainHandler::OnJavascriptAllowed() {
+#if defined(OS_CHROMEOS)
+  accessibility_subscription_ =
+      chromeos::AccessibilityManager::Get()->RegisterCallback(
+          base::BindRepeating(
+              &AccessibilityMainHandler::OnAccessibilityStatusChanged,
+              base::Unretained(this)));
+#endif  // defined(OS_CHROMEOS)
+}
+
+void AccessibilityMainHandler::OnJavascriptDisallowed() {
+#if defined(OS_CHROMEOS)
+  accessibility_subscription_.reset();
+#endif  // defined(OS_CHROMEOS)
 }
 
 void AccessibilityMainHandler::HandleGetScreenReaderState(
     const base::ListValue* args) {
-  base::Value result(accessibility_state_utils::IsScreenReaderEnabled());
   AllowJavascript();
-  FireWebUIListener("screen-reader-state-changed", result);
+  SendScreenReaderStateChanged();
 }
 
 void AccessibilityMainHandler::HandleCheckAccessibilityImageLabels(
@@ -71,12 +74,17 @@ void AccessibilityMainHandler::HandleCheckAccessibilityImageLabels(
       gfx::Point(rect.CenterPoint().x(), rect.y()), std::move(model));
 }
 
+void AccessibilityMainHandler::SendScreenReaderStateChanged() {
+  base::Value result(accessibility_state_utils::IsScreenReaderEnabled());
+  FireWebUIListener("screen-reader-state-changed", result);
+}
+
 #if defined(OS_CHROMEOS)
 void AccessibilityMainHandler::OnAccessibilityStatusChanged(
     const chromeos::AccessibilityStatusEventDetails& details) {
   if (details.notification_type ==
       chromeos::ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK) {
-    HandleGetScreenReaderState(nullptr);
+    SendScreenReaderStateChanged();
   }
 }
 #endif  // defined(OS_CHROMEOS)

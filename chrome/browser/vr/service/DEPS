@@ -1,6 +1,4 @@
 include_rules = [
-  "+device/vr",
-
   # Enumerate dependencies on chrome code for VRService, since these all either
   # will need to be replaced or broken before the code can move.
   "-chrome",

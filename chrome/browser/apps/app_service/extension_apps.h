@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/web_applications/web_app_launch_manager.h"
 #include "chrome/services/app_service/public/cpp/instance.h"
 #include "chrome/services/app_service/public/cpp/instance_registry.h"
+#include "chrome/services/app_service/public/cpp/publisher_base.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -55,7 +56,7 @@ class ExtensionAppsEnableFlow;
 // In the future, desktop PWAs will be migrated to a new system.
 //
 // See chrome/services/app_service/README.md.
-class ExtensionApps : public apps::mojom::Publisher,
+class ExtensionApps : public apps::PublisherBase,
                       public extensions::AppWindowRegistry::Observer,
                       public extensions::ExtensionPrefsObserver,
                       public extensions::ExtensionRegistryObserver,
@@ -71,8 +72,6 @@ class ExtensionApps : public apps::mojom::Publisher,
   // Record uninstall dialog action for Web apps and Chrome apps.
   static void RecordUninstallCanceledAction(Profile* profile,
                                             const std::string& app_id);
-
-  void FlushMojoCallsForTesting();
 
   void Shutdown();
 
@@ -120,11 +119,6 @@ class ExtensionApps : public apps::mojom::Publisher,
                     int64_t display_id,
                     GetMenuModelCallback callback) override;
   void OpenNativeSettings(const std::string& app_id) override;
-  void OnPreferredAppSet(
-      const std::string& app_id,
-      apps::mojom::IntentFilterPtr intent_filter,
-      apps::mojom::IntentPtr intent,
-      apps::mojom::ReplacedAppPreferencesPtr replaced_app_preferences) override;
 
   // content_settings::Observer overrides.
   void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
@@ -169,8 +163,6 @@ class ExtensionApps : public apps::mojom::Publisher,
                         bool uninstalled) override;
   void OnPackageListInitialRefreshed() override;
   void OnArcAppListPrefsDestroyed() override;
-
-  void Publish(apps::mojom::AppPtr app);
 
   // Checks if extension is disabled and if enable flow should be started.
   // Returns true if extension enable flow is started or there is already one
@@ -222,7 +214,6 @@ class ExtensionApps : public apps::mojom::Publisher,
 
   content::WebContents* LaunchImpl(const AppLaunchParams& params);
 
-  mojo::Receiver<apps::mojom::Publisher> receiver_{this};
   mojo::RemoteSet<apps::mojom::Subscriber> subscribers_;
 
   Profile* const profile_;

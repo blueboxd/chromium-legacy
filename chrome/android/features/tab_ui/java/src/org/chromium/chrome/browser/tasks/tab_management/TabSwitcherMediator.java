@@ -137,15 +137,17 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
 
         private void record(int numOfThumbnails) {
             assert numOfThumbnails >= 0;
-            long elasped = SystemClock.elapsedRealtime() - mActivityCreationTimeMs;
+            long elapsed = SystemClock.elapsedRealtime() - mActivityCreationTimeMs;
             PostTask.postTask(UiThreadTaskTraits.BEST_EFFORT,
                     ()
                             -> ReturnToChromeExperimentsUtil.recordTimeToGTSFirstMeaningfulPaint(
-                                    elasped, numOfThumbnails));
+                                    elapsed, numOfThumbnails));
         }
     }
     private FirstMeaningfulPaintRecorder mFirstMeaningfulPaintRecorder;
     private boolean mRegisteredFirstMeaningfulPaintRecorder;
+    private List<PseudoTab> mAllPseudoTabs;
+    private boolean mPseudoTabsRestored;
 
     /**
      * Interface to delegate resetting the tab grid.
@@ -323,7 +325,22 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
 
         mFullscreenManager.addListener(mFullscreenListener);
 
-        if (!mTabModelSelector.getModels().isEmpty()) {
+        if (mTabModelSelector.getModels().isEmpty()) {
+            TabModelSelectorObserver selectorObserver = new EmptyTabModelSelectorObserver() {
+                @Override
+                public void onChange() {
+                    assert !mTabModelSelector.getModels().isEmpty();
+                    assert mTabModelSelector.getTabModelFilterProvider().getTabModelFilter(false)
+                            != null;
+                    assert mTabModelSelector.getTabModelFilterProvider().getTabModelFilter(true)
+                            != null;
+                    mTabModelSelector.removeObserver(this);
+                    mTabModelSelector.getTabModelFilterProvider().addTabModelFilterObserver(
+                            mTabModelObserver);
+                }
+            };
+            mTabModelSelector.addObserver(selectorObserver);
+        } else {
             mTabModelSelector.getTabModelFilterProvider().addTabModelFilterObserver(
                     mTabModelObserver);
         }
@@ -519,11 +536,22 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
         if (mRegisteredFirstMeaningfulPaintRecorder) return;
         mRegisteredFirstMeaningfulPaintRecorder = true;
 
-        assert mTabModelSelector.getTabModelFilterProvider()
-                .getCurrentTabModelFilter()
-                .isTabModelRestored();
-        if (mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter().getCount()
-                == 0) {
+        boolean hasTabs = false;
+        if (mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter() != null
+                && mTabModelSelector.getTabModelFilterProvider()
+                           .getCurrentTabModelFilter()
+                           .isTabModelRestored()) {
+            hasTabs = mTabModelSelector.getTabModelFilterProvider()
+                              .getCurrentTabModelFilter()
+                              .getCount()
+                    > 0;
+            mAllPseudoTabs = null;
+        } else {
+            assert mPseudoTabsRestored;
+            hasTabs = mAllPseudoTabs != null && !mAllPseudoTabs.isEmpty();
+        }
+
+        if (!hasTabs) {
             FirstDrawDetector.waitForFirstDraw(
                     mContainerView, this::notifyOnFirstMeaningfulPaintNoTab);
         } else {
@@ -578,12 +606,13 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
                     mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter(),
                     TabUiFeatureUtilities.isTabToGtsAnimationEnabled(), mShowTabsInMruOrder);
             recordTabCounts();
+            mAllPseudoTabs = null;
         } else if (CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START)) {
-            List<PseudoTab> allRootTabs;
             try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-                allRootTabs = getAllPseudoTabsFromStateFile();
+                mAllPseudoTabs = getAllPseudoTabsFromStateFile();
+                mPseudoTabsRestored = true;
             }
-            mResetHandler.resetWithTabs(allRootTabs,
+            mResetHandler.resetWithTabs(mAllPseudoTabs,
                     TabUiFeatureUtilities.isTabToGtsAnimationEnabled(), mShowTabsInMruOrder);
         }
 
@@ -642,7 +671,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
         }
 
         Log.d(TAG, "All pre-native tabs: " + allTabs);
-        Log.d(TAG, "getAllPseudoTabsFromStateFile() took %dms",
+        Log.i(TAG, "getAllPseudoTabsFromStateFile() took %dms",
                 SystemClock.elapsedRealtime() - startMs);
         return allTabs;
     }

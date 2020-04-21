@@ -106,7 +106,7 @@ class FrameSequenceTrackerTest : public testing::Test {
   bool RemovalTrackerExists(unsigned index,
                             FrameSequenceTrackerType type) const {
     DCHECK_GT(collection_.removal_trackers_.size(), index);
-    return collection_.removal_trackers_[index]->type_ == type;
+    return collection_.removal_trackers_[index]->type() == type;
   }
 
   void GenerateSequence(const char* str) {
@@ -1862,11 +1862,10 @@ TEST_F(FrameSequenceTrackerTest, CustomTrackers) {
   collection_.StopCustomSequence(2);
   EXPECT_EQ(2u, NumberOfCustomTrackers());
 
-  // Tracker 2 should report with no data.
+  // Tracker 2 has no data to report.
   collection_.NotifyFramePresented(frame_token, {});
   results = collection_.TakeCustomTrackerResults();
-  EXPECT_EQ(1u, results.size());
-  EXPECT_EQ(0u, results[2].frames_expected);
+  EXPECT_EQ(0u, results.size());
 
   // Simple sequence of one frame.
   const char sequence[] = "b(1)B(0,1)s(1)S(1)e(1,0)P(1)";

@@ -43,11 +43,14 @@ class PerFrameContentTranslateDriverTest
     content::RenderViewHostTestHarness::TearDown();
   }
 
-  void OnWebLanguageDetectionDetails(const std::string& content_language,
-                                     const std::string& html_lang,
-                                     const GURL& url,
-                                     bool has_no_translate_meta) {
-    driver_->OnWebLanguageDetectionDetails(content_language, html_lang, url,
+  void OnWebLanguageDetectionDetails(
+      mojo::AssociatedRemote<mojom::TranslateAgent> translate_agent,
+      const std::string& content_language,
+      const std::string& html_lang,
+      const GURL& url,
+      bool has_no_translate_meta) {
+    driver_->OnWebLanguageDetectionDetails(std::move(translate_agent),
+                                           content_language, html_lang, url,
                                            has_no_translate_meta);
   }
 
@@ -77,8 +80,9 @@ TEST_F(PerFrameContentTranslateDriverTest,
   base::string16 contents =
       base::UTF8ToUTF16("El niño atrapó un dorado muy grande con cebo vivo.");
   OnPageContents(contents);
-  OnWebLanguageDetectionDetails("en" /* meta */, "" /* html */,
-                                GURL("https://whatever.com"),
+  mojo::AssociatedRemote<mojom::TranslateAgent> translate_agent;
+  OnWebLanguageDetectionDetails(std::move(translate_agent), "en" /* meta */,
+                                "" /* html */, GURL("https://whatever.com"),
                                 false /* notranslate */);
   EXPECT_FALSE(DoNotTranslate());
   EXPECT_FALSE(HasGoodContentDetection());
@@ -90,8 +94,9 @@ TEST_F(PerFrameContentTranslateDriverTest,
   base::string16 contents =
       base::UTF8ToUTF16("El niño atrapó un dorado muy grande con cebo vivo.");
   OnPageContents(contents);
-  OnWebLanguageDetectionDetails("en" /* meta */, "fr" /* html */,
-                                GURL("https://whatever.com"),
+  mojo::AssociatedRemote<mojom::TranslateAgent> translate_agent;
+  OnWebLanguageDetectionDetails(std::move(translate_agent), "en" /* meta */,
+                                "fr" /* html */, GURL("https://whatever.com"),
                                 false /* notranslate */);
   EXPECT_EQ("fr", GetAdoptedLanguage());
 }
@@ -103,8 +108,9 @@ TEST_F(PerFrameContentTranslateDriverTest,
       "pescado y lo asó a la parrilla. Sabía excelente. Espera pescar otro "
       "buen pescado mañana.");
   OnPageContents(contents);
-  OnWebLanguageDetectionDetails("en" /* meta */, "" /* html */,
-                                GURL("https://whatever.com"),
+  mojo::AssociatedRemote<mojom::TranslateAgent> translate_agent;
+  OnWebLanguageDetectionDetails(std::move(translate_agent), "en" /* meta */,
+                                "" /* html */, GURL("https://whatever.com"),
                                 false /* notranslate */);
   EXPECT_TRUE(HasGoodContentDetection());
   EXPECT_EQ("es", GetAdoptedLanguage());
@@ -117,9 +123,10 @@ TEST_F(PerFrameContentTranslateDriverTest,
       "pescado y lo asó a la parrilla. Sabía excelente. Espera pescar otro "
       "buen pescado mañana.");
   OnPageContents(contents);
-  OnWebLanguageDetectionDetails("en" /* meta */, "es-MX" /* html */,
-                                GURL("https://whatever.com"),
-                                false /* notranslate */);
+  mojo::AssociatedRemote<mojom::TranslateAgent> translate_agent;
+  OnWebLanguageDetectionDetails(
+      std::move(translate_agent), "en" /* meta */, "es-MX" /* html */,
+      GURL("https://whatever.com"), false /* notranslate */);
   EXPECT_EQ("es", GetAdoptedLanguage());
 }
 
@@ -130,8 +137,9 @@ TEST_F(PerFrameContentTranslateDriverTest,
       "pescado y lo asó a la parrilla. Sabía excelente. Espera pescar otro "
       "buen pescado mañana.");
   OnPageContents(contents);
-  OnWebLanguageDetectionDetails("en" /* meta */, "" /* html */,
-                                GURL("https://whatever.com"),
+  mojo::AssociatedRemote<mojom::TranslateAgent> translate_agent;
+  OnWebLanguageDetectionDetails(std::move(translate_agent), "en" /* meta */,
+                                "" /* html */, GURL("https://whatever.com"),
                                 true /* notranslate */);
   EXPECT_TRUE(DoNotTranslate());
   EXPECT_EQ("es", GetAdoptedLanguage());
@@ -140,15 +148,17 @@ TEST_F(PerFrameContentTranslateDriverTest,
 TEST_F(PerFrameContentTranslateDriverTest,
        ComputeActualPageLanguage_LanguageFormatVariants) {
   OnPageContents(base::UTF8ToUTF16("Some content"));
-  OnWebLanguageDetectionDetails("ZH_tw" /* meta */, "" /* html */,
-                                GURL("https://whatever.com"),
+  mojo::AssociatedRemote<mojom::TranslateAgent> translate_agent;
+  OnWebLanguageDetectionDetails(std::move(translate_agent), "ZH_tw" /* meta */,
+                                "" /* html */, GURL("https://whatever.com"),
                                 false /* notranslate */);
   EXPECT_EQ("zh-TW", GetAdoptedLanguage());
 
   OnPageContents(base::UTF8ToUTF16("Some other content"));
-  OnWebLanguageDetectionDetails(" fr , es,en " /* meta */, "" /* html */,
-                                GURL("https://whatever.com"),
-                                false /* notranslate */);
+  mojo::AssociatedRemote<mojom::TranslateAgent> translate_agent2;
+  OnWebLanguageDetectionDetails(
+      std::move(translate_agent2), " fr , es,en " /* meta */, "" /* html */,
+      GURL("https://whatever.com"), false /* notranslate */);
   EXPECT_EQ("fr", GetAdoptedLanguage());
 }
 

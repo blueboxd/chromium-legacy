@@ -153,8 +153,8 @@ class CONTENT_EXPORT AppCacheUpdateJob
   void RefetchManifest();
   void HandleManifestRefetchCompleted(URLFetcher* url_fetcher, int net_error);
 
-  void OnManifestInfoWriteComplete(base::Time token_expires, int result);
-  void OnManifestDataWriteComplete(base::Time token_expires, int result);
+  void OnManifestInfoWriteComplete(int result);
+  void OnManifestDataWriteComplete(int result);
 
   void StoreGroupAndCache();
 

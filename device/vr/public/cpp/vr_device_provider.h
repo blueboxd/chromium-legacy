@@ -2,21 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_VR_VR_DEVICE_PROVIDER_H
-#define DEVICE_VR_VR_DEVICE_PROVIDER_H
+#ifndef DEVICE_VR_PUBLIC_CPP_VR_DEVICE_PROVIDER_H_
+#define DEVICE_VR_PUBLIC_CPP_VR_DEVICE_PROVIDER_H_
 
 #include <vector>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace device {
 
-class VRDeviceProvider {
+class COMPONENT_EXPORT(VR_PUBLIC_CPP) VRDeviceProvider {
  public:
-  VRDeviceProvider() {}
-  virtual ~VRDeviceProvider() {}
+  VRDeviceProvider();
+  virtual ~VRDeviceProvider();
 
   // If the VR API requires initialization that should happen here.
   virtual void Initialize(
@@ -34,4 +35,4 @@ class VRDeviceProvider {
 
 }  // namespace device
 
-#endif  // DEVICE_VR_VR_DEVICE_PROVIDER_H
+#endif  // DEVICE_VR_PUBLIC_CPP_VR_DEVICE_PROVIDER_H_

@@ -324,7 +324,7 @@ TEST_F(NavigationURLLoaderImplTest, RequestPriority) {
             NavigateAndReturnRequestPriority(url, false /* is_main_frame */));
 }
 
-TEST_F(NavigationURLLoaderImplTest, NetworkIsolationKeyOfMainFrameNavigation) {
+TEST_F(NavigationURLLoaderImplTest, IsolationInfoOfMainFrameNavigation) {
   ASSERT_TRUE(http_test_server_.Start());
 
   const GURL url = http_test_server_.GetURL("/foo");
@@ -341,13 +341,16 @@ TEST_F(NavigationURLLoaderImplTest, NetworkIsolationKeyOfMainFrameNavigation) {
 
   ASSERT_TRUE(most_recent_resource_request_);
   ASSERT_TRUE(most_recent_resource_request_->trusted_params);
-  EXPECT_EQ(
-      net::NetworkIsolationKey(origin, origin),
-      most_recent_resource_request_->trusted_params->network_isolation_key);
+  EXPECT_TRUE(
+      net::IsolationInfo::Create(
+          net::IsolationInfo::RedirectMode::kUpdateTopFrame, origin, origin,
+          net::SiteForCookies::FromOrigin(origin))
+          .IsEqualForTesting(
+              most_recent_resource_request_->trusted_params->isolation_info));
 }
 
 TEST_F(NavigationURLLoaderImplTest,
-       NetworkIsolationKeyOfRedirectedMainFrameNavigation) {
+       IsolationInfoOfRedirectedMainFrameNavigation) {
   ASSERT_TRUE(http_test_server_.Start());
 
   const GURL url = http_test_server_.GetURL("/redirect301-to-echo");
@@ -357,9 +360,12 @@ TEST_F(NavigationURLLoaderImplTest,
   HTTPRedirectOriginHeaderTest(url, "GET", "GET", url.GetOrigin().spec());
 
   ASSERT_TRUE(most_recent_resource_request_->trusted_params);
-  EXPECT_EQ(
-      net::NetworkIsolationKey(origin, origin),
-      most_recent_resource_request_->trusted_params->network_isolation_key);
+  EXPECT_TRUE(
+      net::IsolationInfo::Create(
+          net::IsolationInfo::RedirectMode::kUpdateTopFrame, origin, origin,
+          net::SiteForCookies::FromOrigin(origin))
+          .IsEqualForTesting(
+              most_recent_resource_request_->trusted_params->isolation_info));
 }
 
 TEST_F(NavigationURLLoaderImplTest, Redirect301Tests) {

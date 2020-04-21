@@ -310,4 +310,10 @@ void ServiceWorkerStorageControlImpl::
                                                         std::move(callback));
 }
 
+void ServiceWorkerStorageControlImpl::ApplyPolicyUpdates(
+    const std::vector<storage::mojom::LocalStoragePolicyUpdatePtr>
+        policy_updates) {
+  storage_->ApplyPolicyUpdates(std::move(policy_updates));
+}
+
 }  // namespace content

@@ -29,7 +29,9 @@ WGPUSamplerDescriptor AsDawnType(const GPUSamplerDescriptor* webgpu_desc) {
       AsDawnEnum<WGPUFilterMode>(webgpu_desc->mipmapFilter());
   dawn_desc.lodMinClamp = webgpu_desc->lodMinClamp();
   dawn_desc.lodMaxClamp = webgpu_desc->lodMaxClamp();
-  dawn_desc.compare = AsDawnEnum<WGPUCompareFunction>(webgpu_desc->compare());
+  if (webgpu_desc->hasCompare()) {
+    dawn_desc.compare = AsDawnEnum<WGPUCompareFunction>(webgpu_desc->compare());
+  }
   if (webgpu_desc->hasLabel()) {
     dawn_desc.label = webgpu_desc->label().Utf8().data();
   }

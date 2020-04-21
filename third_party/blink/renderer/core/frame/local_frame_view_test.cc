@@ -344,7 +344,7 @@ TEST_F(SimTest, FragmentNavChangesFocusWhileRenderingBlocked) {
       << "Scroll offset changed while rendering is blocked";
 
   // Force a layout.
-  anchor->style()->setProperty(GetDocument().ToExecutionContext(), "display",
+  anchor->style()->setProperty(GetDocument().GetExecutionContext(), "display",
                                "block", String(), ASSERT_NO_EXCEPTION);
   GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 

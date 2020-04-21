@@ -638,8 +638,7 @@ base::Optional<uint64_t> ArCoreImpl::SubscribeToHitTestForTransientInput(
 mojom::XRHitTestSubscriptionResultsDataPtr
 ArCoreImpl::GetHitTestSubscriptionResults(
     const gfx::Transform& mojo_from_viewer,
-    const base::Optional<std::vector<mojom::XRInputSourceStatePtr>>&
-        maybe_input_state) {
+    const std::vector<mojom::XRInputSourceStatePtr>& input_state) {
   mojom::XRHitTestSubscriptionResultsDataPtr result =
       mojom::XRHitTestSubscriptionResultsData::New();
 
@@ -648,7 +647,7 @@ ArCoreImpl::GetHitTestSubscriptionResults(
     // skip processing this subscription.
     auto maybe_mojo_from_native_origin = GetMojoFromNativeOrigin(
         *subscription_id_and_data.second.native_origin_information,
-        mojo_from_viewer, maybe_input_state);
+        mojo_from_viewer, input_state);
 
     if (!maybe_mojo_from_native_origin) {
       continue;
@@ -666,7 +665,7 @@ ArCoreImpl::GetHitTestSubscriptionResults(
        hit_test_subscription_id_to_transient_hit_test_data_) {
     auto input_source_ids_and_transforms =
         GetMojoFromInputSources(subscribtion_id_and_data.second.profile_name,
-                                mojo_from_viewer, maybe_input_state);
+                                mojo_from_viewer, input_state);
 
     result->transient_input_results.push_back(
         GetTransientHitTestSubscriptionResult(
@@ -741,27 +740,23 @@ std::vector<std::pair<uint32_t, gfx::Transform>>
 ArCoreImpl::GetMojoFromInputSources(
     const std::string& profile_name,
     const gfx::Transform& mojo_from_viewer,
-    const base::Optional<std::vector<mojom::XRInputSourceStatePtr>>&
-        maybe_input_state) {
+    const std::vector<mojom::XRInputSourceStatePtr>& input_state) {
   std::vector<std::pair<uint32_t, gfx::Transform>> result;
 
-  if (!maybe_input_state) {
-    return result;
-  }
-
-  for (const auto& input_state : *maybe_input_state) {
-    if (input_state && input_state->description) {
-      if (base::Contains(input_state->description->profiles, profile_name)) {
+  for (const auto& input_source_state : input_state) {
+    if (input_source_state && input_source_state->description) {
+      if (base::Contains(input_source_state->description->profiles,
+                         profile_name)) {
         // Input source represented by input_state matches the profile, find
         // the transform and grab input source id.
         base::Optional<gfx::Transform> maybe_mojo_from_input_source =
-            GetMojoFromInputSource(input_state, mojo_from_viewer);
+            GetMojoFromInputSource(input_source_state, mojo_from_viewer);
 
         if (!maybe_mojo_from_input_source)
           continue;
 
         result.push_back(
-            {input_state->source_id, *maybe_mojo_from_input_source});
+            {input_source_state->source_id, *maybe_mojo_from_input_source});
       }
     }
   }
@@ -792,17 +787,13 @@ base::Optional<gfx::Transform> ArCoreImpl::GetMojoFromReferenceSpace(
 bool ArCoreImpl::NativeOriginExists(
     const mojom::XRNativeOriginInformation& native_origin_information,
     const gfx::Transform& mojo_from_viewer,
-    const base::Optional<std::vector<mojom::XRInputSourceStatePtr>>&
-        maybe_input_state) {
+    const std::vector<mojom::XRInputSourceStatePtr>& input_state) {
   switch (native_origin_information.which()) {
     case mojom::XRNativeOriginInformation::Tag::INPUT_SOURCE_ID:
-      if (!maybe_input_state) {
-        return false;
-      }
 
       // Linear search should be fine for ARCore device as it only has one input
       // source (for now).
-      for (auto& input_source_state : *maybe_input_state) {
+      for (auto& input_source_state : input_state) {
         if (input_source_state->source_id ==
             native_origin_information.get_input_source_id()) {
           return true;
@@ -827,18 +818,13 @@ bool ArCoreImpl::NativeOriginExists(
 base::Optional<gfx::Transform> ArCoreImpl::GetMojoFromNativeOrigin(
     const mojom::XRNativeOriginInformation& native_origin_information,
     const gfx::Transform& mojo_from_viewer,
-    const base::Optional<std::vector<mojom::XRInputSourceStatePtr>>&
-        maybe_input_state) {
+    const std::vector<mojom::XRInputSourceStatePtr>& input_state) {
   switch (native_origin_information.which()) {
     case mojom::XRNativeOriginInformation::Tag::INPUT_SOURCE_ID:
 
-      if (!maybe_input_state) {
-        return base::nullopt;
-      }
-
       // Linear search should be fine for ARCore device as it only has one input
       // source (for now).
-      for (auto& input_source_state : *maybe_input_state) {
+      for (auto& input_source_state : input_state) {
         if (input_source_state->source_id ==
             native_origin_information.get_input_source_id()) {
           return GetMojoFromInputSource(input_source_state, mojo_from_viewer);
@@ -1067,12 +1053,11 @@ void ArCoreImpl::CreatePlaneAttachedAnchor(const mojom::Pose& plane_from_anchor,
 
 void ArCoreImpl::ProcessAnchorCreationRequests(
     const gfx::Transform& mojo_from_viewer,
-    const base::Optional<std::vector<mojom::XRInputSourceStatePtr>>&
-        maybe_input_state) {
+    const std::vector<mojom::XRInputSourceStatePtr>& input_state) {
   DVLOG(2) << __func__;
 
   ProcessAnchorCreationRequestsHelper(
-      mojo_from_viewer, maybe_input_state, &create_anchor_requests_,
+      mojo_from_viewer, input_state, &create_anchor_requests_,
       [this](const CreateAnchorRequest& create_anchor_request,
              const gfx::Point3F& position, const gfx::Quaternion& orientation) {
         return anchor_manager_->CreateAnchor(
@@ -1080,8 +1065,7 @@ void ArCoreImpl::ProcessAnchorCreationRequests(
       });
 
   ProcessAnchorCreationRequestsHelper(
-      mojo_from_viewer, maybe_input_state,
-      &create_plane_attached_anchor_requests_,
+      mojo_from_viewer, input_state, &create_plane_attached_anchor_requests_,
       [this](const CreatePlaneAttachedAnchorRequest& create_anchor_request,
              const gfx::Point3F& position, const gfx::Quaternion& orientation) {
         PlaneId plane_id = PlaneId(create_anchor_request.GetPlaneId());
@@ -1094,8 +1078,7 @@ void ArCoreImpl::ProcessAnchorCreationRequests(
 template <typename T, typename FunctionType>
 void ArCoreImpl::ProcessAnchorCreationRequestsHelper(
     const gfx::Transform& mojo_from_viewer,
-    const base::Optional<std::vector<mojom::XRInputSourceStatePtr>>&
-        maybe_input_state,
+    const std::vector<mojom::XRInputSourceStatePtr>& input_state,
     std::vector<T>* anchor_creation_requests,
     FunctionType&& create_anchor_function) {
   DCHECK(anchor_creation_requests);
@@ -1114,7 +1097,7 @@ void ArCoreImpl::ProcessAnchorCreationRequestsHelper(
         create_anchor.GetNativeOriginInformation();
 
     if (!NativeOriginExists(native_origin_information, mojo_from_viewer,
-                            maybe_input_state)) {
+                            input_state)) {
       // Native origin does not exist / is no longer tracked, fail the call.
       create_anchor.TakeCallback().Run(
           device::mojom::CreateAnchorResult::FAILURE, 0);
@@ -1123,7 +1106,7 @@ void ArCoreImpl::ProcessAnchorCreationRequestsHelper(
 
     base::Optional<gfx::Transform> maybe_mojo_from_native_origin =
         GetMojoFromNativeOrigin(native_origin_information, mojo_from_viewer,
-                                maybe_input_state);
+                                input_state);
 
     if (!maybe_mojo_from_native_origin) {
       // We don't know where the native origin currently is (but we know it is

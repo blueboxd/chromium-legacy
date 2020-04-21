@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/arc/app_shortcuts/arc_app_shortcut_item.h"
 #include "chrome/browser/chromeos/arc/app_shortcuts/arc_app_shortcuts_request.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/services/app_service/public/cpp/publisher_base.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/arc/intent_helper/arc_intent_helper_observer.h"
@@ -41,7 +42,7 @@ class AppServiceProxy;
 //
 // See chrome/services/app_service/README.md.
 class ArcApps : public KeyedService,
-                public apps::mojom::Publisher,
+                public apps::PublisherBase,
                 public ArcAppListPrefs::Observer,
                 public arc::ArcIntentHelperObserver {
  public:
@@ -76,11 +77,6 @@ class ArcApps : public KeyedService,
               int32_t event_flags,
               apps::mojom::LaunchSource launch_source,
               int64_t display_id) override;
-  void LaunchAppWithFiles(const std::string& app_id,
-                          apps::mojom::LaunchContainer container,
-                          int32_t event_flags,
-                          apps::mojom::LaunchSource launch_source,
-                          apps::mojom::FilePathsPtr file_paths) override;
   void LaunchAppWithIntent(const std::string& app_id,
                            int32_t event_flags,
                            apps::mojom::IntentPtr intent,
@@ -140,7 +136,6 @@ class ArcApps : public KeyedService,
                               const std::string& app_id,
                               const ArcAppListPrefs::AppInfo& app_info,
                               bool update_icon = true);
-  void Publish(apps::mojom::AppPtr app);
   void ConvertAndPublishPackageApps(
       const arc::mojom::ArcPackageInfo& package_info,
       bool update_icon = true);
@@ -162,7 +157,6 @@ class ArcApps : public KeyedService,
       GetMenuModelCallback callback,
       std::unique_ptr<arc::ArcAppShortcutItems> app_shortcut_items);
 
-  mojo::Receiver<apps::mojom::Publisher> receiver_{this};
   mojo::RemoteSet<apps::mojom::Subscriber> subscribers_;
 
   Profile* const profile_;

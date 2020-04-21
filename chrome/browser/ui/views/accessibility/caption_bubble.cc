@@ -12,12 +12,15 @@
 
 #include "base/strings/string16.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/vector_icons/vector_icons.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/bubble/bubble_frame_view.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/flex_layout.h"
@@ -43,6 +46,7 @@ static constexpr char kSecondaryFont[] = "Arial";
 static constexpr char kTertiaryFont[] = "sans-serif";
 static constexpr int kFontSizePx = 16;
 static constexpr double kDefaultRatioInParent = 0.5;
+static constexpr int kErrorImageSizeDip = 20;
 
 // CaptionBubble implementation of BubbleFrameView.
 class CaptionBubbleFrameView : public views::BubbleFrameView {
@@ -201,11 +205,29 @@ void CaptionBubble::Init() {
   title->SetFontList(font_list);
   title->SetText(l10n_util::GetStringUTF16(IDS_LIVE_CAPTION_BUBBLE_TITLE));
 
+  auto error_message = std::make_unique<views::Label>();
+  error_message->SetEnabledColor(SK_ColorWHITE);
+  error_message->SetBackgroundColor(SK_ColorTRANSPARENT);
+  error_message->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_CENTER);
+  error_message->SetLineHeight(kLineHeightDip);
+  error_message->SetFontList(font_list);
+  error_message->SetText(
+      l10n_util::GetStringUTF16(IDS_LIVE_CAPTION_BUBBLE_ERROR));
+  error_message->SetVisible(false);
+
+  auto error_icon = std::make_unique<views::ImageView>();
+  error_icon->SetImage(gfx::CreateVectorIcon(
+      vector_icons::kErrorOutlineIcon, kErrorImageSizeDip, SK_ColorWHITE));
+  error_icon->SetVisible(false);
+
   SetPreferredSize(gfx::Size(kMaxWidthDip, kMaxHeightDip));
   set_margins(gfx::Insets(kHorizontalMarginsDip, kVerticalMarginsDip));
 
   title_ = AddChildView(std::move(title));
   label_ = AddChildView(std::move(label));
+
+  error_icon_ = AddChildView(std::move(error_icon));
+  error_message_ = AddChildView(std::move(error_message));
 }
 
 bool CaptionBubble::ShouldShowCloseButton() const {
@@ -225,8 +247,23 @@ views::NonClientFrameView* CaptionBubble::CreateNonClientFrameView(
 
 void CaptionBubble::SetText(const std::string& text) {
   label_->SetText(base::ASCIIToUTF16(text));
-  // Show the title if there is room for it.
-  title_->SetVisible(label_->GetPreferredSize().height() < kMaxHeightDip);
+  UpdateTitleVisibility();
+}
+
+void CaptionBubble::SetHasError(bool has_error) {
+  if (has_error_ == has_error)
+    return;
+  has_error_ = has_error;
+  label_->SetVisible(!has_error);
+  UpdateTitleVisibility();
+  error_icon_->SetVisible(has_error);
+  error_message_->SetVisible(has_error);
+}
+
+void CaptionBubble::UpdateTitleVisibility() {
+  // Show the title if there is room for it and no error.
+  title_->SetVisible(!has_error_ &&
+                     label_->GetPreferredSize().height() < kMaxHeightDip);
 }
 
 }  // namespace captions

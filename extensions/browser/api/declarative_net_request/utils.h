@@ -40,6 +40,8 @@ std::string GetVersionHeaderForTesting();
 int GetIndexedRulesetFormatVersionForTesting();
 
 // Override the ruleset format version for testing.
+// TODO(karandeepb): Introduce a scoped update class for this to ensure tests
+// don't have to manually reset this every time.
 void SetIndexedRulesetFormatVersionForTesting(int version);
 
 // Strips the version header from |ruleset_data|. Returns false on version

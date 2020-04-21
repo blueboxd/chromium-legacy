@@ -1064,87 +1064,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   EXPECT_TRUE(IsEmptyPrerenderLinkManager());
 }
 
-
-// Checks that plugins are not loaded while a page is being preloaded, but
-// are loaded when the page is displayed.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDelayLoadPlugin) {
-  HostContentSettingsMap* content_settings_map =
-      HostContentSettingsMapFactory::GetForProfile(
-          current_browser()->profile());
-  GURL server_root = embedded_test_server()->GetURL("/");
-  content_settings_map->SetContentSettingDefaultScope(
-      server_root, server_root, ContentSettingsType::PLUGINS, std::string(),
-      CONTENT_SETTING_ALLOW);
-
-  PrerenderTestURL("/prerender/prerender_plugin_delay_load.html",
-                   FINAL_STATUS_USED, 1);
-  NavigateToDestURL();
-
-  // Because NavigateToDestURL relies on a synchronous check, and the plugin
-  // loads asynchronously, we use a separate DidPluginLoad() test. Failure
-  // is indicated by timeout, as plugins may take arbitrarily long to load.
-  bool plugin_loaded = false;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      GetActiveWebContents(), "DidPluginLoad()", &plugin_loaded));
-  EXPECT_TRUE(plugin_loaded);
-}
-
-// For Plugin Power Saver, checks that plugins are not loaded while
-// a page is being preloaded, but are loaded when the page is displayed.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPluginPowerSaver) {
-  HostContentSettingsMap* content_settings_map =
-      HostContentSettingsMapFactory::GetForProfile(
-          current_browser()->profile());
-  GURL server_root = embedded_test_server()->GetURL("/");
-  content_settings_map->SetContentSettingDefaultScope(
-      server_root, server_root, ContentSettingsType::PLUGINS, std::string(),
-      CONTENT_SETTING_ALLOW);
-
-  PrerenderTestURL("/prerender/prerender_plugin_power_saver.html",
-                   FINAL_STATUS_USED, 1);
-
-  DisableJavascriptCalls();
-  NavigateToDestURL();
-  bool second_placeholder_present = false;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      GetActiveWebContents(), "AwaitPluginPrerollAndPlaceholder();",
-      &second_placeholder_present));
-  EXPECT_TRUE(second_placeholder_present);
-}
-
-// Checks that plugins in an iframe are not loaded while a page is
-// being preloaded, but are loaded when the page is displayed.
-#if defined(USE_AURA) && !defined(OS_WIN)
-// http://crbug.com/103496
-#define MAYBE_PrerenderIframeDelayLoadPlugin \
-  DISABLED_PrerenderIframeDelayLoadPlugin
-#elif defined(OS_MACOSX)
-// http://crbug.com/100514
-#define MAYBE_PrerenderIframeDelayLoadPlugin \
-  DISABLED_PrerenderIframeDelayLoadPlugin
-#elif defined(OS_WIN)
-// TODO(jschuh): Failing plugin tests. https://crbug.com/244653,
-// https://crbug.com/876872
-#define MAYBE_PrerenderIframeDelayLoadPlugin \
-  DISABLED_PrerenderIframeDelayLoadPlugin
-#else
-#define MAYBE_PrerenderIframeDelayLoadPlugin PrerenderIframeDelayLoadPlugin
-#endif
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       MAYBE_PrerenderIframeDelayLoadPlugin) {
-  HostContentSettingsMap* content_settings_map =
-      HostContentSettingsMapFactory::GetForProfile(
-          current_browser()->profile());
-  GURL server_root = embedded_test_server()->GetURL("/");
-  content_settings_map->SetContentSettingDefaultScope(
-      server_root, server_root, ContentSettingsType::PLUGINS, std::string(),
-      CONTENT_SETTING_ALLOW);
-
-  PrerenderTestURL("/prerender/prerender_iframe_plugin_delay_load.html",
-                   FINAL_STATUS_USED, 1);
-  NavigateToDestURL();
-}
-
 // Renders a page that contains a prerender link to a page that contains an
 // iframe with a source that requires http authentication. This should not
 // prerender successfully.
@@ -1381,7 +1300,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   NavigateToURLWithDisposition("/prerender/no_prerender_page.html#fragment",
                                WindowOpenDisposition::CURRENT_TAB, false);
 }
-
 
 // Sets up HTTPS server for prerendered page, and checks that an SSL error will
 // cancel the prerender. The prerenderer loader will be served through HTTP.

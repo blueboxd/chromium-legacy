@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "net/base/network_isolation_key.h"
+#include "net/base/isolation_info.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "url/gurl.h"
 
@@ -16,14 +16,12 @@
 // and later replaying a prefetched request.
 class PrefetchedMainframeResponseContainer {
  public:
-  PrefetchedMainframeResponseContainer(const net::NetworkIsolationKey& nik,
+  PrefetchedMainframeResponseContainer(const net::IsolationInfo& isolation_info,
                                        network::mojom::URLResponseHeadPtr head,
                                        std::unique_ptr<std::string> body);
   ~PrefetchedMainframeResponseContainer();
 
-  const net::NetworkIsolationKey& network_isolation_key() const {
-    return network_isolation_key_;
-  }
+  const net::IsolationInfo& isolation_info() const { return isolation_info_; }
 
   // Takes ownership of the response head.
   network::mojom::URLResponseHeadPtr TakeHead();
@@ -32,7 +30,7 @@ class PrefetchedMainframeResponseContainer {
   std::unique_ptr<std::string> TakeBody();
 
  private:
-  const net::NetworkIsolationKey network_isolation_key_;
+  const net::IsolationInfo isolation_info_;
   network::mojom::URLResponseHeadPtr head_;
   std::unique_ptr<std::string> body_;
 

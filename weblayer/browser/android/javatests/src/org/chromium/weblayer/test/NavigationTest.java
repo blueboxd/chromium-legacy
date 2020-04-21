@@ -26,6 +26,7 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.util.TestWebServer;
 import org.chromium.weblayer.LoadError;
+import org.chromium.weblayer.NavigateParams;
 import org.chromium.weblayer.Navigation;
 import org.chromium.weblayer.NavigationCallback;
 import org.chromium.weblayer.NavigationController;
@@ -33,7 +34,6 @@ import org.chromium.weblayer.NavigationState;
 import org.chromium.weblayer.Tab;
 import org.chromium.weblayer.TabCallback;
 import org.chromium.weblayer.shell.InstrumentationActivity;
-import org.chromium.weblayer_private.interfaces.NavigateParams;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -241,31 +241,12 @@ public class NavigationTest {
 
     @Test
     @SmallTest
-    public void testDefaultNavigateParams() throws Exception {
-        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(URL1);
-        setNavigationCallback(activity);
-
-        NavigateParams params = new NavigateParams();
-        navigateAndWaitForCompletion(URL2,
-                ()
-                        -> activity.getTab().getNavigationController().navigate(
-                                Uri.parse(URL2), params));
-        runOnUiThreadBlocking(() -> {
-            NavigationController navigationController = activity.getTab().getNavigationController();
-            assertFalse(navigationController.canGoForward());
-            assertTrue(navigationController.canGoBack());
-            assertEquals(2, navigationController.getNavigationListSize());
-        });
-    }
-
-    @Test
-    @SmallTest
     public void testReplace() throws Exception {
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(URL1);
         setNavigationCallback(activity);
 
-        final NavigateParams params = new NavigateParams();
-        params.mShouldReplaceCurrentEntry = true;
+        final NavigateParams params =
+                new NavigateParams.Builder().setShouldReplaceCurrentEntry(true).build();
         navigateAndWaitForCompletion(URL2,
                 ()
                         -> activity.getTab().getNavigationController().navigate(

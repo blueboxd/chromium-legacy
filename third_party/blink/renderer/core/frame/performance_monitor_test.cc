@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/frame/performance_monitor.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/location.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
@@ -25,13 +26,13 @@ class PerformanceMonitorTest : public testing::Test {
     return page_holder_->GetDocument().GetFrame();
   }
   ExecutionContext* GetExecutionContext() const {
-    return page_holder_->GetDocument().ToExecutionContext();
+    return page_holder_->GetFrame().DomWindow();
   }
   LocalFrame* AnotherFrame() const {
     return another_page_holder_->GetDocument().GetFrame();
   }
   ExecutionContext* AnotherExecutionContext() const {
-    return another_page_holder_->GetDocument().ToExecutionContext();
+    return another_page_holder_->GetFrame().DomWindow();
   }
 
   void WillExecuteScript(ExecutionContext* execution_context) {
@@ -91,7 +92,7 @@ String PerformanceMonitorTest::FrameContextURL() {
   // This is reported only if there is a single frameContext URL.
   if (monitor_->task_has_multiple_contexts_)
     return g_empty_string;
-  return Document::From(monitor_->task_execution_context_.Get())
+  return To<LocalDOMWindow>(monitor_->task_execution_context_.Get())
       ->location()
       ->toString();
 }

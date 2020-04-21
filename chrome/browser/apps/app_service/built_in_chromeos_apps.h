@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "chrome/services/app_service/public/cpp/publisher_base.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -20,19 +21,15 @@ namespace apps {
 // An app publisher (in the App Service sense) of built-in Chrome OS apps.
 //
 // See chrome/services/app_service/README.md.
-class BuiltInChromeOsApps : public apps::mojom::Publisher {
+class BuiltInChromeOsApps : public apps::PublisherBase {
  public:
   BuiltInChromeOsApps(const mojo::Remote<apps::mojom::AppService>& app_service,
                       Profile* profile);
   ~BuiltInChromeOsApps() override;
 
-  void FlushMojoCallsForTesting();
-
   static bool SetHideSettingsAppForTesting(bool hide);
 
  private:
-  void Initialize(const mojo::Remote<apps::mojom::AppService>& app_service);
-
   // apps::mojom::Publisher overrides.
   void Connect(mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
                apps::mojom::ConnectOptionsPtr opts) override;
@@ -46,35 +43,10 @@ class BuiltInChromeOsApps : public apps::mojom::Publisher {
               int32_t event_flags,
               apps::mojom::LaunchSource launch_source,
               int64_t display_id) override;
-  void LaunchAppWithFiles(const std::string& app_id,
-                          apps::mojom::LaunchContainer container,
-                          int32_t event_flags,
-                          apps::mojom::LaunchSource launch_source,
-                          apps::mojom::FilePathsPtr file_paths) override;
-  void LaunchAppWithIntent(const std::string& app_id,
-                           int32_t event_flags,
-                           apps::mojom::IntentPtr intent,
-                           apps::mojom::LaunchSource launch_source,
-                           int64_t display_id) override;
-  void SetPermission(const std::string& app_id,
-                     apps::mojom::PermissionPtr permission) override;
-  void Uninstall(const std::string& app_id,
-                 bool clear_site_data,
-                 bool report_abuse) override;
-  void PauseApp(const std::string& app_id) override;
-  void UnpauseApps(const std::string& app_id) override;
   void GetMenuModel(const std::string& app_id,
                     apps::mojom::MenuType menu_type,
                     int64_t display_id,
                     GetMenuModelCallback callback) override;
-  void OpenNativeSettings(const std::string& app_id) override;
-  void OnPreferredAppSet(
-      const std::string& app_id,
-      apps::mojom::IntentFilterPtr intent_filter,
-      apps::mojom::IntentPtr intent,
-      apps::mojom::ReplacedAppPreferencesPtr replaced_app_preferences) override;
-
-  mojo::Receiver<apps::mojom::Publisher> receiver_{this};
 
   Profile* const profile_;
 

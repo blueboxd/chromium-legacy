@@ -15,6 +15,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 
 class Profile;
+class SupervisedUserService;
 
 namespace content {
 class WebUIDataSource;
@@ -24,7 +25,13 @@ namespace local_search_service {
 class LocalSearchServiceImpl;
 }  // namespace local_search_service
 
+namespace syncer {
+class SyncService;
+}  // namespace syncer
+
 namespace chromeos {
+
+class KerberosCredentialsManager;
 
 namespace multidevice_setup {
 class MultiDeviceSetupClient;
@@ -62,7 +69,10 @@ class OsSettingsLocalizedStringsProvider
   OsSettingsLocalizedStringsProvider(
       Profile* profile,
       local_search_service::LocalSearchServiceImpl* local_search_service,
-      multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client);
+      multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client,
+      syncer::SyncService* sync_service,
+      SupervisedUserService* supervised_user_service,
+      KerberosCredentialsManager* kerberos_credentials_manager);
   OsSettingsLocalizedStringsProvider(
       const OsSettingsLocalizedStringsProvider& other) = delete;
   OsSettingsLocalizedStringsProvider& operator=(

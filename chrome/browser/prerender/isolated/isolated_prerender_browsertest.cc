@@ -279,8 +279,7 @@ class IsolatedPrerenderBrowserTest
     head->mime_type = "text/html";
 
     tab_helper->CallHandlePrefetchResponseForTesting(
-        url, net::NetworkIsolationKey::CreateOpaqueAndNonTransient(),
-        std::move(head),
+        url, net::IsolationInfo::CreateOpaqueAndNonTransient(), std::move(head),
         std::make_unique<std::string>(
             "<html><head><title>Successful prefetch</title></head></html>"));
   }

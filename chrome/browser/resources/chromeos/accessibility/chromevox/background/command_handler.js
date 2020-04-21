@@ -321,7 +321,10 @@ CommandHandler.onCommand = function(command) {
   if (!ChromeVoxState.instance.currentRange_) {
     if (!ChromeVoxState.instance.talkBackEnabled) {
       new Output()
-          .withString(Msgs.getMsg('no_focus'))
+          .withString(Msgs.getMsg(
+              EventSourceState.get() == EventSourceType.TOUCH_GESTURE ?
+                  'no_focus_touch' :
+                  'no_focus'))
           .withQueueMode(QueueMode.FLUSH)
           .go();
     }

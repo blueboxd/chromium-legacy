@@ -43,10 +43,10 @@ bool StructTraits<gfx::mojom::CALayerParamsDataView, gfx::CALayerParams>::Read(
       if (!platform_handle.is_mach_send())
         return false;
       out->io_surface_mach_port.reset(platform_handle.ReleaseMachSendRight());
+      break;
 #else
       return false;
 #endif
-      break;
   }
 
   if (!data.ReadPixelSize(&out->pixel_size))

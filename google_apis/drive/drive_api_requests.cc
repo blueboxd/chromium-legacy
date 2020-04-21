@@ -525,11 +525,9 @@ GURL TeamDriveListRequest::GetURLInternal() const {
 StartPageTokenRequest::StartPageTokenRequest(
     RequestSender* sender,
     const DriveApiUrlGenerator& url_generator,
-    const StartPageTokenCallback& callback)
-    : DriveApiDataRequest<StartPageToken>(sender, callback),
-      url_generator_(url_generator) {
-  DCHECK(!callback.is_null());
-}
+    StartPageTokenCallback callback)
+    : DriveApiDataRequest<StartPageToken>(sender, std::move(callback)),
+      url_generator_(url_generator) {}
 
 StartPageTokenRequest::~StartPageTokenRequest() = default;
 
@@ -847,16 +845,15 @@ bool InitiateUploadExistingFileRequest::GetContentData(
 
 //============================ ResumeUploadRequest ===========================
 
-ResumeUploadRequest::ResumeUploadRequest(
-    RequestSender* sender,
-    const GURL& upload_location,
-    int64_t start_position,
-    int64_t end_position,
-    int64_t content_length,
-    const std::string& content_type,
-    const base::FilePath& local_file_path,
-    UploadRangeCallback callback,
-    const ProgressCallback& progress_callback)
+ResumeUploadRequest::ResumeUploadRequest(RequestSender* sender,
+                                         const GURL& upload_location,
+                                         int64_t start_position,
+                                         int64_t end_position,
+                                         int64_t content_length,
+                                         const std::string& content_type,
+                                         const base::FilePath& local_file_path,
+                                         UploadRangeCallback callback,
+                                         ProgressCallback progress_callback)
     : ResumeUploadRequestBase(sender,
                               upload_location,
                               start_position,
@@ -914,7 +911,7 @@ MultipartUploadNewFileDelegate::MultipartUploadNewFileDelegate(
     const Properties& properties,
     const DriveApiUrlGenerator& url_generator,
     FileResourceCallback callback,
-    const ProgressCallback& progress_callback)
+    ProgressCallback progress_callback)
     : MultipartUploadRequestBase(
           task_runner,
           CreateMultipartUploadMetadataJson(title,
@@ -957,7 +954,7 @@ MultipartUploadExistingFileDelegate::MultipartUploadExistingFileDelegate(
     const Properties& properties,
     const DriveApiUrlGenerator& url_generator,
     FileResourceCallback callback,
-    const ProgressCallback& progress_callback)
+    ProgressCallback progress_callback)
     : MultipartUploadRequestBase(
           task_runner,
           CreateMultipartUploadMetadataJson(title,
@@ -1004,15 +1001,14 @@ DownloadFileRequest::DownloadFileRequest(
     const base::FilePath& output_file_path,
     const DownloadActionCallback& download_action_callback,
     const GetContentCallback& get_content_callback,
-    const ProgressCallback& progress_callback)
+    ProgressCallback progress_callback)
     : DownloadFileRequestBase(
           sender,
           download_action_callback,
           get_content_callback,
           progress_callback,
           url_generator.GenerateDownloadFileUrl(resource_id),
-          output_file_path) {
-}
+          output_file_path) {}
 
 DownloadFileRequest::~DownloadFileRequest() {
 }

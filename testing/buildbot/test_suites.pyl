@@ -3183,6 +3183,23 @@
       },
     },
 
+    'performance_system_health_isolated_scripts': {
+      'performance_test_suite': {
+        'args': [
+          # executable is set in gn_isolate_map.pyl
+          '--benchmarks=system_health.common_desktop',
+          # Unknown args are appended as passthrough-args to the executable
+          '-v',
+          '--assert-gpu-compositing',
+          '--upload-results',
+          '--extra-browser-args=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}'
+        ],
+        'merge': {
+          'script': '//tools/perf/process_perf_results.py',
+        },
+      }
+    },
+
     'pixel_browser_tests_gtests': {
       'pixel_browser_tests': {
         'name': 'pixel_browser_tests',
@@ -4113,6 +4130,7 @@
       'non_android_chromium_gtests',
       'vr_platform_specific_chromium_gtests',
       'weblayer_gtests',
+      'weblayer_unittests',
     ],
 
     'chromium_linux_rel_isolated_scripts': [
@@ -4155,6 +4173,7 @@
       'pixel_browser_tests_gtests',
       'vr_platform_specific_chromium_gtests',
       'weblayer_gtests',
+      'weblayer_unittests',
       'win_specific_chromium_gtests',
     ],
 
@@ -4175,6 +4194,7 @@
       'non_android_chromium_gtests',
       'vr_platform_specific_chromium_gtests',
       'weblayer_gtests',
+      'weblayer_unittests',
       'win_specific_chromium_gtests',
     ],
 
@@ -4683,7 +4703,6 @@
 
     'mojo_linux_gtests': [
       'storage_service_gtests',
-      'weblayer_unittests',
     ],
 
     'mojo_windows_gtests': [
@@ -4691,7 +4710,6 @@
       'network_service_fyi_gtests',
       'network_service_in_process_gtests',
       'storage_service_gtests',
-      'weblayer_unittests',
     ],
 
     'network_service_extra_gtests': [

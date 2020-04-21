@@ -374,6 +374,12 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
         if (mFirstDrawComplete) onFirstDrawComplete();
     }
 
+    @VisibleForTesting
+    public void startDelayedNativeInitializationForTests() {
+        mStartupDelayed = true;
+        startDelayedNativeInitialization();
+    }
+
     /**
      * @return Whether the native library initialization is delayed at this point.
      */

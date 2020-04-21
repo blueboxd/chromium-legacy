@@ -11,6 +11,7 @@ import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -23,7 +24,6 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content_public.browser.ViewEventSink.InternalAccessDelegate;
-import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.WebContentsUtils;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule;
@@ -88,45 +88,43 @@ public class ContentViewScrollingTest {
     private RenderCoordinatesImpl mCoordinates;
 
     private void waitForScroll(final boolean hugLeft, final boolean hugTop) {
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                // Scrolling and flinging don't result in exact coordinates.
-                final int minThreshold = 5;
-                final int maxThreshold = 100;
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            // Scrolling and flinging don't result in exact coordinates.
+            final int minThreshold = 5;
+            final int maxThreshold = 100;
+            if (hugLeft) {
+                Assert.assertThat(mCoordinates.getScrollXPixInt(), Matchers.lessThan(minThreshold));
+            } else {
+                Assert.assertThat(
+                        mCoordinates.getScrollXPixInt(), Matchers.greaterThan(maxThreshold));
+            }
 
-                boolean xCorrect = hugLeft ? mCoordinates.getScrollXPixInt() < minThreshold
-                                           : mCoordinates.getScrollXPixInt() > maxThreshold;
-                boolean yCorrect = hugTop ? mCoordinates.getScrollYPixInt() < minThreshold
-                                          : mCoordinates.getScrollYPixInt() > maxThreshold;
-                return xCorrect && yCorrect;
+            if (hugTop) {
+                Assert.assertThat(mCoordinates.getScrollYPixInt(), Matchers.lessThan(minThreshold));
+            } else {
+                Assert.assertThat(
+                        mCoordinates.getScrollYPixInt(), Matchers.greaterThan(maxThreshold));
             }
         });
     }
 
     private void waitForScrollToPosition(final int x, final int y) {
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                // Scrolling and flinging don't result in exact coordinates.
-                final int threshold = 5;
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            // Scrolling and flinging don't result in exact coordinates.
+            final int threshold = 5;
 
-                boolean xCorrect = (mCoordinates.getScrollXPixInt() < x + threshold
-                        && mCoordinates.getScrollXPixInt() > x - threshold);
-                boolean yCorrect = (mCoordinates.getScrollYPixInt() < y + threshold
-                        && mCoordinates.getScrollYPixInt() > y - threshold);
-                return xCorrect && yCorrect;
-            }
+            Assert.assertThat(mCoordinates.getScrollXPixInt(),
+                    Matchers.allOf(
+                            Matchers.lessThan(x + threshold), Matchers.greaterThan(x - threshold)));
+            Assert.assertThat(mCoordinates.getScrollYPixInt(),
+                    Matchers.allOf(
+                            Matchers.lessThan(y + threshold), Matchers.greaterThan(y - threshold)));
         });
     }
 
     private void waitForViewportInitialization() {
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mCoordinates.getLastFrameViewportWidthPixInt() != 0;
-            }
-        });
+        CriteriaHelper.pollInstrumentationThread(
+                () -> Assert.assertNotEquals(0, mCoordinates.getLastFrameViewportWidthPixInt()));
     }
 
     private void fling(final int vx, final int vy) {
@@ -396,11 +394,6 @@ public class ContentViewScrollingTest {
         });
         scrollTo(scrollToX, scrollToY);
         waitForScroll(false, false);
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return accessDelegate.isScrollChanged();
-            }
-        });
+        CriteriaHelper.pollInstrumentationThread(accessDelegate::isScrollChanged);
     }
 }

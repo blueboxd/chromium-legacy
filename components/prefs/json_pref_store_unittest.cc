@@ -534,6 +534,30 @@ TEST_P(JsonPrefStoreTest, ReadAsyncWithInterceptor) {
                             &task_environment_);
 }
 
+TEST_P(JsonPrefStoreTest, RemoveValuesByPrefix) {
+  FilePath pref_file = temp_dir_.GetPath().AppendASCII("empty.json");
+
+  auto pref_store = base::MakeRefCounted<JsonPrefStore>(pref_file);
+
+  const Value* value;
+  const std::string prefix = "pref";
+  const std::string subpref_name1 = "pref.a";
+  const std::string subpref_name2 = "pref.b";
+  const std::string other_name = "other";
+
+  pref_store->SetValue(subpref_name1, std::make_unique<base::Value>(42),
+                       WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
+  pref_store->SetValue(subpref_name2, std::make_unique<base::Value>(42),
+                       WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
+  pref_store->SetValue(other_name, std::make_unique<base::Value>(42),
+                       WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
+
+  pref_store->RemoveValuesByPrefixSilently(prefix);
+  EXPECT_FALSE(pref_store->GetValue(subpref_name1, &value));
+  EXPECT_FALSE(pref_store->GetValue(subpref_name2, &value));
+  EXPECT_TRUE(pref_store->GetValue(other_name, &value));
+}
+
 INSTANTIATE_TEST_SUITE_P(
     WithoutCallback,
     JsonPrefStoreTest,

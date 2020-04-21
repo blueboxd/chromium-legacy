@@ -4027,8 +4027,10 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
     if (!offscreen_single_buffer_) {
       // Allocate the offscreen saved color texture.
       DCHECK(offscreen_saved_color_format_);
+      // Use 64x64 instead of 1x1 to handle minimum framebuffer size
+      // requirement on some platforms: b/151774454
       offscreen_saved_color_texture_->AllocateStorage(
-          gfx::Size(1, 1), offscreen_saved_color_format_, true);
+          gfx::Size(64, 64), offscreen_saved_color_format_, true);
 
       offscreen_saved_frame_buffer_->AttachRenderTexture(
           offscreen_saved_color_texture_.get());

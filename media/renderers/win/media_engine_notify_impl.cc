@@ -37,14 +37,12 @@ MediaEngineNotifyImpl::~MediaEngineNotifyImpl() = default;
 HRESULT MediaEngineNotifyImpl::RuntimeClassInitialize(
     ErrorCB error_cb,
     EndedCB ended_cb,
-    DurationChangedCB duration_changed_cb,
     BufferingStateChangedCB buffering_state_changed_cb,
     VideoNaturalSizeChangedCB video_natural_size_changed_cb) {
   DVLOG(1) << __func__ << ": this=" << this;
 
   error_cb_ = std::move(error_cb);
   ended_cb_ = std::move(ended_cb);
-  duration_changed_cb_ = std::move(duration_changed_cb);
   buffering_state_changed_cb_ = std::move(buffering_state_changed_cb);
   video_natural_size_changed_cb_ = std::move(video_natural_size_changed_cb);
   return S_OK;
@@ -78,7 +76,7 @@ HRESULT MediaEngineNotifyImpl::EventNotify(DWORD event_code,
       ended_cb_.Run();
       break;
     case MF_MEDIA_ENGINE_EVENT_DURATIONCHANGE:
-      duration_changed_cb_.Run();
+      DVLOG(2) << __func__ << ": this=" << this << ", duration changed.";
       break;
     case MF_MEDIA_ENGINE_EVENT_FORMATCHANGE:
       video_natural_size_changed_cb_.Run();

@@ -31,6 +31,7 @@
 #include <memory>
 
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/console_message_storage.h"
@@ -57,11 +58,10 @@ void FrameConsole::AddMessage(ConsoleMessage* console_message,
 
 bool FrameConsole::AddMessageToStorage(ConsoleMessage* console_message,
                                        bool discard_duplicates) {
-  if (!frame_->GetDocument() || !frame_->GetPage())
+  if (!frame_->DomWindow())
     return false;
   return frame_->GetPage()->GetConsoleMessageStorage().AddConsoleMessage(
-      frame_->GetDocument()->ToExecutionContext(), console_message,
-      discard_duplicates);
+      frame_->DomWindow(), console_message, discard_duplicates);
 }
 
 void FrameConsole::ReportMessageToClient(mojom::ConsoleMessageSource source,

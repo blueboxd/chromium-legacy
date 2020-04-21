@@ -27,6 +27,7 @@ aggregate_vector_icons("components_vector_icons") {
     "devices.icon",
     "edit.icon",
     "error.icon",
+    "error_outline.icon",
     "ethernet.icon",
     "extension.icon",
     "file_download.icon",

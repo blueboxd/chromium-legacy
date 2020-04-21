@@ -199,7 +199,6 @@ const char* ServiceWorkerMetrics::StartSituationToString(
       return "Existing unready process";
     case StartSituation::EXISTING_READY_PROCESS:
       return "Existing ready process";
-      break;
   }
   NOTREACHED() << "Got unexpected start situation: "
                << static_cast<int>(start_situation);

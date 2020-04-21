@@ -216,10 +216,8 @@ BlockedByResponseReasonToResourceRequestBlockedReason(
         kCorpNotSameOriginAfterDefaultedToSameOriginByCoep:
       return blink::ResourceRequestBlockedReason::
           kCorpNotSameOriginAfterDefaultedToSameOriginByCoep;
-      break;
     case network::BlockedByResponseReason::kCorpNotSameSite:
       return blink::ResourceRequestBlockedReason::kCorpNotSameSite;
-      break;
   }
   NOTREACHED();
   return blink::ResourceRequestBlockedReason::kOther;

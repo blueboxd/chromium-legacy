@@ -716,9 +716,6 @@ void AppCacheUpdateJob::HandleResourceFetchCompleted(URLFetcher* url_fetcher,
     entry.SetResponseAndPaddingSizes(
         entry_fetcher->response_writer()->amount_written(),
         ComputeAppCacheResponsePadding(url, manifest_url_));
-    entry.set_token_expires(storage_->GetOriginTrialExpiration(
-        url, entry_fetcher->request()->GetResponseHeaders(),
-        base::Time::Now()));
     if (!inprogress_cache_->AddOrModifyEntry(url, entry))
       duplicate_response_ids_.push_back(entry.response_id());
 
@@ -804,9 +801,6 @@ void AppCacheUpdateJob::HandleResourceFetchCompleted(URLFetcher* url_fetcher,
     entry.SetResponseAndPaddingSizes(
         entry_fetcher->existing_entry().response_size(),
         entry_fetcher->existing_entry().padding_size());
-    entry.set_token_expires(storage_->GetOriginTrialExpiration(
-        url, entry_fetcher->request()->GetResponseHeaders(),
-        base::Time::Now()));
     inprogress_cache_->AddOrModifyEntry(url, entry);
   }
 
@@ -833,8 +827,6 @@ void AppCacheUpdateJob::ContinueHandleResourceFetchCompleted(
   entry.SetResponseAndPaddingSizes(
       cache_copier->response_writer()->amount_written(),
       ComputeAppCacheResponsePadding(url, manifest_url_));
-  entry.set_token_expires(storage_->GetOriginTrialExpiration(
-      url, entry_fetcher->request()->GetResponseHeaders(), base::Time::Now()));
   inprogress_cache_->AddOrModifyEntry(url, entry);
   cache_copier.reset();
   cache_copier_by_url_.erase(url);
@@ -891,12 +883,10 @@ void AppCacheUpdateJob::HandleNewMasterEntryFetchCompleted(
     DCHECK(entry_fetcher->response_writer());
     // Master entries cannot be cross-origin by definition, so they do not
     // require padding.
-    base::Time token_expires = storage_->GetOriginTrialExpiration(
-        url, entry_fetcher->request()->GetResponseHeaders(), base::Time::Now());
     AppCacheEntry master_entry(
         AppCacheEntry::MASTER, entry_fetcher->response_writer()->response_id(),
         entry_fetcher->response_writer()->amount_written(),
-        /*padding_size=*/0, token_expires);
+        /*padding_size=*/0);
     if (cache->AddOrModifyEntry(url, master_entry))
       added_master_entries_.push_back(url);
     else
@@ -989,13 +979,10 @@ void AppCacheUpdateJob::HandleManifestRefetchCompleted(URLFetcher* url_fetcher,
       scoped_refptr<HttpResponseInfoIOBuffer> io_buffer =
           base::MakeRefCounted<HttpResponseInfoIOBuffer>(
               std::move(manifest_response_info_));
-      base::Time token_expires = storage_->GetOriginTrialExpiration(
-          manifest_url_, manifest_fetcher->request()->GetResponseHeaders(),
-          base::Time::Now());
       manifest_response_writer_->WriteInfo(
           io_buffer.get(),
           base::BindOnce(&AppCacheUpdateJob::OnManifestInfoWriteComplete,
-                         base::Unretained(this), token_expires));
+                         base::Unretained(this)));
     }
   } else {
     VLOG(1) << "Request error: " << net_error
@@ -1029,15 +1016,14 @@ void AppCacheUpdateJob::HandleManifestRefetchCompleted(URLFetcher* url_fetcher,
   }
 }
 
-void AppCacheUpdateJob::OnManifestInfoWriteComplete(base::Time token_expires,
-                                                    int result) {
+void AppCacheUpdateJob::OnManifestInfoWriteComplete(int result) {
   if (result > 0) {
     scoped_refptr<net::StringIOBuffer> io_buffer =
         base::MakeRefCounted<net::StringIOBuffer>(manifest_data_);
     manifest_response_writer_->WriteData(
         io_buffer.get(), manifest_data_.length(),
         base::BindOnce(&AppCacheUpdateJob::OnManifestDataWriteComplete,
-                       base::Unretained(this), token_expires));
+                       base::Unretained(this)));
   } else {
     HandleCacheFailure(
         blink::mojom::AppCacheErrorDetails(
@@ -1048,23 +1034,17 @@ void AppCacheUpdateJob::OnManifestInfoWriteComplete(base::Time token_expires,
   }
 }
 
-void AppCacheUpdateJob::OnManifestDataWriteComplete(base::Time token_expires,
-                                                    int result) {
+void AppCacheUpdateJob::OnManifestDataWriteComplete(int result) {
   if (result > 0) {
     // The manifest determines the cache's origin, so the manifest entry is
     // always same-origin, and thus does not require padding.
     AppCacheEntry entry(AppCacheEntry::MANIFEST,
                         manifest_response_writer_->response_id(),
                         manifest_response_writer_->amount_written(),
-                        /*padding_size=*/0, token_expires);
+                        /*padding_size=*/0);
     if (!inprogress_cache_->AddOrModifyEntry(manifest_url_, entry))
       duplicate_response_ids_.push_back(entry.response_id());
 
-    // Although the manifest url entry has the right token_expires,
-    // push this to the cache as well.
-    // TODO(pwnall): Figure out if we want to overwrite or max the two entries.
-    inprogress_cache_->set_token_expires(
-        std::max(token_expires, inprogress_cache_->token_expires()));
     StoreGroupAndCache();
   } else {
     HandleCacheFailure(
@@ -1112,11 +1092,6 @@ void AppCacheUpdateJob::StoreGroupAndCache() {
   group_->set_first_evictable_error_time(base::Time());
   if (doing_full_update_check_)
     group_->set_last_full_update_check_time(base::Time::Now());
-
-  // TODO(pwnall): Figure out if we want to overwrite or max the two entries.
-  group_->set_token_expires(
-      std::max(group_->token_expires(), newest_cache->token_expires()));
-
   storage_->StoreGroupAndNewestCache(group_, newest_cache.get(), this);
 }
 
@@ -1335,7 +1310,6 @@ void AppCacheUpdateJob::ReadManifestFromCacheAndContinue() {
       read_manifest_buffer_.get(), kAppCacheFetchBufferSize,
       base::BindOnce(&AppCacheUpdateJob::OnManifestFromCacheDataReadComplete,
                      base::Unretained(this)));  // async read
-  read_manifest_token_expires_ = entry->token_expires();
 }
 
 void AppCacheUpdateJob::OnManifestFromCacheDataReadComplete(int result) {
@@ -1653,7 +1627,6 @@ void AppCacheUpdateJob::OnResponseInfoLoaded(
       entry.set_response_id(response_id);
       entry.SetResponseAndPaddingSizes(copy_me->response_size(),
                                        copy_me->padding_size());
-      entry.set_token_expires(copy_me->token_expires());
       inprogress_cache_->AddOrModifyEntry(url, entry);
       NotifyAllProgress(url);
       ++url_fetches_completed_;

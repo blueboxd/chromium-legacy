@@ -849,10 +849,10 @@ void ArCoreGl::ProcessFrame(
     // Get results for hit test subscriptions.
     frame_data->hit_test_subscription_results =
         arcore_->GetHitTestSubscriptionResults(mojo_from_viewer,
-                                               frame_data->input_state);
+                                               *frame_data->input_state);
 
     arcore_->ProcessAnchorCreationRequests(mojo_from_viewer,
-                                           frame_data->input_state);
+                                           *frame_data->input_state);
   }
 
   // Get anchors data, including anchors created this frame.

@@ -1012,19 +1012,16 @@ class AXPosition {
         if (!position->GetAnchor())
           return CreateNullPosition();
 
-        if (GetAnchor()->IsIgnored()) {
-          // In this class, we define the empty object as one whose all
-          // descendants are ignored. Its content is replaced by the empty
-          // object character (string of length 1). Its underlying content is
-          // not exposed. A position on an ignored descendant of an empty object
-          // is invalid. To make it valid we move the position from its ignored
-          // descendant to the empty object node itself.
-          AXNodeType* empty_object_node = GetEmptyObjectAncestorNode();
-          if (empty_object_node) {
-            return CreateTreePosition(
-                position->tree_id(), GetAnchorID(empty_object_node),
-                position->child_index() == BEFORE_TEXT ? BEFORE_TEXT : 0);
-          }
+        if (AXNodeType* empty_object_node = GetEmptyObjectAncestorNode()) {
+          // In this class and on certain platforms, we define the empty object
+          // as one that doesn't expose its underlying content. Its content is
+          // replaced by the empty object character (string of length 1). A
+          // position on a descendant of an empty object is invalid. To make it
+          // valid we move the position from the descendant to the empty object
+          // node itself.
+          return CreateTreePosition(
+              position->tree_id(), GetAnchorID(empty_object_node),
+              position->child_index() == BEFORE_TEXT ? BEFORE_TEXT : 0);
         }
 
         if (position->child_index_ == BEFORE_TEXT)
@@ -1040,21 +1037,20 @@ class AXPosition {
         if (!position->GetAnchor())
           return CreateNullPosition();
 
-        if (GetAnchor()->IsIgnored()) {
-          // This is needed because an empty object as defined in this class can
-          // have ignored descendants that should not be exposed. See comment
-          // above in similar implementation for AXPositionKind::TREE_POSITION.
-          AXNodeType* empty_object_node = GetEmptyObjectAncestorNode();
-          if (empty_object_node) {
-            // We set the |text_offset_| to either 0 or 1 here because the
-            // MaxTextOffset of an empty object is 1 (the empty object
-            // character, a string of length 1). If the invalid position was
-            // already at the start of the node, we set it to 0.
-            return CreateTextPosition(position->tree_id(),
-                                      GetAnchorID(empty_object_node),
-                                      position->text_offset() > 0 ? 1 : 0,
-                                      ax::mojom::TextAffinity::kDownstream);
-          }
+        if (AXNodeType* empty_object_node = GetEmptyObjectAncestorNode()) {
+          // This is needed because an empty object as defined in this class and
+          // on certain platforms can have descendants that should not be
+          // exposed. See comment above in similar implementation for
+          // AXPositionKind::TREE_POSITION.
+          //
+          // We set the |text_offset_| to either 0 or 1 here because the
+          // MaxTextOffset of an empty object is 1 (the empty object character,
+          // a string of length 1). If the invalid position was already at the
+          // start of the node, we set it to 0.
+          return CreateTextPosition(position->tree_id(),
+                                    GetAnchorID(empty_object_node),
+                                    position->text_offset() > 0 ? 1 : 0,
+                                    ax::mojom::TextAffinity::kDownstream);
         }
 
         if (position->text_offset_ <= 0) {
@@ -3020,14 +3016,25 @@ class AXPosition {
 
   // Returns true if this position is on an empty object node that needs to
   // be represented by an empty object replacement character. It does when the
-  // node has no unignored child, is not a text object and we are on a platform
-  // that enables this feature.
+  // node is a collapsed menu list popup button or has no unignored child and is
+  // not a text object. This feature is only enabled on some platforms.
   bool IsEmptyObjectReplacedByCharacter() const {
     if (g_ax_embedded_object_behavior ==
             AXEmbeddedObjectBehavior::kSuppressCharacter ||
-        IsNullPosition() || AnchorUnignoredChildCount()) {
+        IsNullPosition()) {
       return false;
     }
+
+    // A collapsed popup button that contains a menu list popup (i.e, the exact
+    // subtree representation we get from a collapsed <select> element on
+    // Windows) should not expose its children even though they are not ignored.
+    if (GetAnchor()->IsCollapsedMenuListPopUpButton())
+      return true;
+
+    // All other elements that have unignored descendants should not be treated
+    // as empty objects.
+    if (AnchorUnignoredChildCount())
+      return false;
 
     // All unignored leaf nodes in the AXTree except the document and the text
     // nodes should be replaced by the embedded object character. Also, nodes
@@ -3049,18 +3056,27 @@ class AXPosition {
       return false;
     }
 
-    // Empty objects can only have ignored descendants. If the node is not
-    // ignored, it can't be a descendant of an empty object.
-    if (!GetAnchor()->IsIgnored() || !GetEmptyObjectAncestorNode())
-      return false;
-
-    return true;
+    // Empty objects are only possible on a collapsed popup button parent of a
+    // menu list popup or a node that only has ignored descendants. If it has no
+    // empty object ancestor, it can't be inside of an empty object.
+    return GetEmptyObjectAncestorNode();
   }
 
   AXNodeType* GetEmptyObjectAncestorNode() const {
     if (g_ax_embedded_object_behavior ==
             AXEmbeddedObjectBehavior::kSuppressCharacter ||
         !GetAnchor()) {
+      return nullptr;
+    }
+
+    if (!GetAnchor()->IsIgnored()) {
+      // The only case where a descendant of an empty object can be unignored is
+      // when we are inside of a collapsed popup button parent of a menu list
+      // popup.
+      if (AXNodeType* popup_button =
+              GetAnchor()->GetCollapsedMenuListPopUpButtonAncestor()) {
+        return popup_button;
+      }
       return nullptr;
     }
 

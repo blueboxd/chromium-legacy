@@ -235,8 +235,8 @@ class DownloadServiceControllerImplTest : public testing::Test {
 
   void InitializeController() {
     controller_->Initialize(
-        base::Bind(&DownloadServiceControllerImplTest::OnInitCompleted,
-                   base::Unretained(this)));
+        base::BindOnce(&DownloadServiceControllerImplTest::OnInitCompleted,
+                       base::Unretained(this)));
   }
 
   DownloadParams MakeDownloadParams() {

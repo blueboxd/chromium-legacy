@@ -55,6 +55,14 @@ void PrefValueMap::Clear() {
   prefs_.clear();
 }
 
+void PrefValueMap::ClearWithPrefix(const std::string& prefix) {
+  Map::iterator low = prefs_.lower_bound(prefix);
+  // Appending maximum possible character so that there will be no string with
+  // prefix |prefix| that we may miss.
+  Map::iterator high = prefs_.upper_bound(prefix + char(CHAR_MAX));
+  prefs_.erase(low, high);
+}
+
 void PrefValueMap::Swap(PrefValueMap* other) {
   prefs_.swap(other->prefs_);
 }
@@ -79,8 +87,7 @@ bool PrefValueMap::empty() const {
   return prefs_.empty();
 }
 
-bool PrefValueMap::GetBoolean(const std::string& key,
-                              bool* value) const {
+bool PrefValueMap::GetBoolean(const std::string& key, bool* value) const {
   const base::Value* stored_value = nullptr;
   return GetValue(key, &stored_value) && stored_value->GetAsBoolean(value);
 }
@@ -89,14 +96,12 @@ void PrefValueMap::SetBoolean(const std::string& key, bool value) {
   SetValue(key, base::Value(value));
 }
 
-bool PrefValueMap::GetString(const std::string& key,
-                             std::string* value) const {
+bool PrefValueMap::GetString(const std::string& key, std::string* value) const {
   const base::Value* stored_value = nullptr;
   return GetValue(key, &stored_value) && stored_value->GetAsString(value);
 }
 
-void PrefValueMap::SetString(const std::string& key,
-                             const std::string& value) {
+void PrefValueMap::SetString(const std::string& key, const std::string& value) {
   SetValue(key, base::Value(value));
 }
 
@@ -146,9 +151,9 @@ void PrefValueMap::GetDifferingKeys(
   }
 
   // Add the remaining entries.
-  for ( ; this_pref != this_prefs.end(); ++this_pref)
+  for (; this_pref != this_prefs.end(); ++this_pref)
     differing_keys->push_back(this_pref->first);
-  for ( ; other_pref != other_prefs.end(); ++other_pref)
+  for (; other_pref != other_prefs.end(); ++other_pref)
     differing_keys->push_back(other_pref->first);
 }
 

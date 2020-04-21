@@ -2720,6 +2720,7 @@ source_set("unit_tests") {
     "android_sms/connection_manager_unittest.cc",
     "android_sms/fcm_connection_establisher_unittest.cc",
     "android_sms/pairing_lost_notifier_unittest.cc",
+    "app_mode/app_launch_utils_unittest.cc",
     "app_mode/app_session_unittest.cc",
     "app_mode/startup_app_launcher_unittest.cc",
     "app_mode/web_app/web_kiosk_app_launcher_unittest.cc",

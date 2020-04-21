@@ -14,7 +14,7 @@ import "services/network/public/mojom/chunked_data_pipe_getter.mojom";
 import "services/network/public/mojom/data_pipe_getter.mojom";
 import "services/network/public/mojom/fetch_api.mojom";
 import "services/network/public/mojom/http_request_headers.mojom";
-import "services/network/public/mojom/network_isolation_key.mojom";
+import "services/network/public/mojom/isolation_info.mojom";
 import "services/network/public/mojom/network_param.mojom";
 import "services/network/public/mojom/site_for_cookies.mojom";
 import "services/network/public/mojom/trust_tokens.mojom";
@@ -71,31 +71,12 @@ enum DataElementType {
   kBytes,
 };
 
-// Used to determine if URLRequest::trusted_network_isolation_key should be
-// updated on redirect.
-enum UpdateNetworkIsolationKeyOnRedirect {
-  kDoNotUpdate,
-
-  // The updated network isolation key will take the redirected url's origin as
-  // the top frame origin and frame origin.
-  kUpdateTopFrameAndFrameOrigin,
-
-  // The updated network isolation key will take the existing
-  // NetworkIsolationKey's top frame origin and redirected url's origin as the
-  // frame origin.
-  kUpdateFrameOrigin
-};
-
 // Options that may only be set on URLRequests passed to a URLLoaderFactory
 // created with |is_trusted| set to true.
 struct TrustedUrlRequestParams {
-  // This resource request will be keyed using |network_isolation_key| for
-  // accessing shared network resources like the http cache.
-  NetworkIsolationKey? network_isolation_key;
-
-  // Whether or not the network isolation key needs to be recomputed on
-  // redirects. Typically this is only done for navigations.
-  UpdateNetworkIsolationKeyOnRedirect update_network_isolation_key_on_redirect;
+  // If non-empty, this value will be used to set the SiteForCookies and
+  // NetworkIsolationKey used by the network request.
+  IsolationInfo isolation_info;
 
   // Whether secure DNS should be disabled for the request.
   bool disable_secure_dns;

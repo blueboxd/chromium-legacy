@@ -50,6 +50,7 @@ class COMPONENTS_PREFS_EXPORT InMemoryPrefStore : public PersistentPrefStore {
   void ClearMutableValues() override {}
   void OnStoreDeletionFromDisk() override {}
   bool IsInMemoryPrefStore() const override;
+  void RemoveValuesByPrefixSilently(const std::string& prefix) override;
 
  protected:
   ~InMemoryPrefStore() override;

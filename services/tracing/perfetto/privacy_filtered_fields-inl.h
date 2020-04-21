@@ -274,7 +274,7 @@ constexpr MessageInfo kChromeMetadataPacket = {
     kChromeMetadataPacketIndices, kChromeMetadataPacketComplexMessages};
 
 // Proto Message: StreamingProfilePacket
-constexpr int kStreamingProfilePacketIndices[] = {1, 2, -1};
+constexpr int kStreamingProfilePacketIndices[] = {1, 2, 3, -1};
 constexpr MessageInfo kStreamingProfilePacket = {kStreamingProfilePacketIndices,
                                                  nullptr};
 
@@ -305,7 +305,6 @@ constexpr MessageInfo kHeapGraph = {kHeapGraphIndices,
                                     kHeapGraphComplexMessages};
 
 // Proto Message: TrackEventDefaults
-// Manually whitelisted: 31.
 constexpr int kTrackEventDefaultsIndices[] = {11, 31, -1};
 constexpr MessageInfo kTrackEventDefaults = {kTrackEventDefaultsIndices,
                                              nullptr};

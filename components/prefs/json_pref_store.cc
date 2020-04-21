@@ -245,6 +245,11 @@ void JsonPrefStore::RemoveValueSilently(const std::string& key,
   ScheduleWrite(flags);
 }
 
+void JsonPrefStore::RemoveValuesByPrefixSilently(const std::string& prefix) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  RemoveValueSilently(prefix, /*flags*/ 0);
+}
+
 bool JsonPrefStore::ReadOnly() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 

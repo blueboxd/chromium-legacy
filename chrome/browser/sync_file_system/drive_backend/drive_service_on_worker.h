@@ -54,14 +54,14 @@ class DriveServiceOnWorker : public drive::DriveServiceInterface {
       const std::string& resource_id,
       const google_apis::DownloadActionCallback& download_action_callback,
       const google_apis::GetContentCallback& get_content_callback,
-      const google_apis::ProgressCallback& progress_callback) override;
+      google_apis::ProgressCallback progress_callback) override;
 
   google_apis::CancelCallback GetAboutResource(
       google_apis::AboutResourceCallback callback) override;
 
   google_apis::CancelCallback GetStartPageToken(
       const std::string& team_drive_id,
-      const google_apis::StartPageTokenCallback& callback) override;
+      google_apis::StartPageTokenCallback callback) override;
 
   google_apis::CancelCallback GetChangeList(
       int64_t start_changestamp,
@@ -165,7 +165,7 @@ class DriveServiceOnWorker : public drive::DriveServiceInterface {
       const std::string& content_type,
       const base::FilePath& local_file_path,
       google_apis::drive::UploadRangeCallback callback,
-      const google_apis::ProgressCallback& progress_callback) override;
+      google_apis::ProgressCallback progress_callback) override;
   google_apis::CancelCallback GetUploadStatus(
       const GURL& upload_url,
       int64_t content_length,
@@ -178,7 +178,7 @@ class DriveServiceOnWorker : public drive::DriveServiceInterface {
       const base::FilePath& local_file_path,
       const drive::UploadNewFileOptions& options,
       google_apis::FileResourceCallback callback,
-      const google_apis::ProgressCallback& progress_callback) override;
+      google_apis::ProgressCallback progress_callback) override;
   google_apis::CancelCallback MultipartUploadExistingFile(
       const std::string& content_type,
       int64_t content_length,
@@ -186,7 +186,7 @@ class DriveServiceOnWorker : public drive::DriveServiceInterface {
       const base::FilePath& local_file_path,
       const drive::UploadExistingFileOptions& options,
       google_apis::FileResourceCallback callback,
-      const google_apis::ProgressCallback& progress_callback) override;
+      google_apis::ProgressCallback progress_callback) override;
   std::unique_ptr<drive::BatchRequestConfiguratorInterface> StartBatchRequest()
       override;
   google_apis::CancelCallback AddPermission(

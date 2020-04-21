@@ -21,7 +21,6 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
-import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content_shell_apk.ChildProcessLauncherTestUtils;
@@ -265,13 +264,10 @@ public class ChildProcessLauncherIntegrationTest {
 
         // Poll until connection is allocated, then wait until connection is disconnected.
         CriteriaHelper.pollInstrumentationThread(
-                new Criteria("The connection wasn't established.") {
-                    @Override
-                    public boolean isSatisfied() {
-                        return ChildProcessLauncherTestUtils.runOnLauncherAndGetResult(
-                                () -> factory.getCrashConnection() != null);
-                    }
-                });
+                ()
+                        -> ChildProcessLauncherTestUtils.runOnLauncherAndGetResult(
+                                () -> factory.getCrashConnection() != null),
+                "The connection wasn't established.");
         CrashOnLaunchChildProcessConnection crashConnection =
                 ChildProcessLauncherTestUtils.runOnLauncherAndGetResult(
                         () -> factory.getCrashConnection());

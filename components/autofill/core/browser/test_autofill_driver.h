@@ -55,15 +55,14 @@ class TestAutofillDriver : public AutofillDriver {
   void PopupHidden() override;
   gfx::RectF TransformBoundingBoxToViewportCoordinates(
       const gfx::RectF& bounding_box) override;
-  net::NetworkIsolationKey NetworkIsolationKey() override;
+  net::IsolationInfo IsolationInfo() override;
 
   // Methods unique to TestAutofillDriver that tests can use to specialize
   // functionality.
 
   void SetIsIncognito(bool is_incognito);
   void SetIsInMainFrame(bool is_in_main_frame);
-  void SetNetworkIsolationKey(
-      const net::NetworkIsolationKey& network_isolation_key);
+  void SetIsolationInfo(const net::IsolationInfo& isolation_info);
 
   void SetSharedURLLoaderFactory(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
@@ -76,7 +75,7 @@ class TestAutofillDriver : public AutofillDriver {
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
   bool is_incognito_ = false;
   bool is_in_main_frame_ = false;
-  net::NetworkIsolationKey network_isolation_key_;
+  net::IsolationInfo isolation_info_;
 
 #if !defined(OS_IOS)
   std::unique_ptr<InternalAuthenticator> test_authenticator_;

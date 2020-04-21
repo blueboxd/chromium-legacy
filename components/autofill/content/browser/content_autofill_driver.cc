@@ -216,8 +216,8 @@ gfx::RectF ContentAutofillDriver::TransformBoundingBoxToViewportCoordinates(
                     bounding_box.width(), bounding_box.height());
 }
 
-net::NetworkIsolationKey ContentAutofillDriver::NetworkIsolationKey() {
-  return render_frame_host_->GetNetworkIsolationKey();
+net::IsolationInfo ContentAutofillDriver::IsolationInfo() {
+  return render_frame_host_->GetIsolationInfoForSubresources();
 }
 
 void ContentAutofillDriver::FormsSeen(const std::vector<FormData>& forms,

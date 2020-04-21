@@ -8,7 +8,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
-import android.os.Build;
 import android.support.test.filters.MediumTest;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,7 +21,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.MathUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.ui.test.util.UiRestriction;
@@ -71,10 +69,7 @@ public class BottomSheetObserverTest {
     /** Test that the onSheetClosed event is triggered if the sheet is closed with animation. */
     @Test
     @MediumTest
-    @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.LOLLIPOP,
-            sdk_is_less_than = Build.VERSION_CODES.N, message = "https://crbug.com/1072455")
-    public void
-    testCloseEventCalled_withAnimation() throws TimeoutException {
+    public void testCloseEventCalled_withAnimation() throws TimeoutException {
         runCloseEventTest(true, true);
     }
 
@@ -137,20 +132,14 @@ public class BottomSheetObserverTest {
      */
     @Test
     @MediumTest
-    @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.LOLLIPOP,
-            sdk_is_less_than = Build.VERSION_CODES.N, message = "https://crbug.com/1072455")
-    public void
-    testOpenedEventCalled_noAnimationNoPeekState() throws TimeoutException {
+    public void testOpenedEventCalled_noAnimationNoPeekState() throws TimeoutException {
         runOpenEventTest(false, false);
     }
 
     /** Test that the onSheetOpened event is triggered if the sheet is opened with animation. */
     @Test
     @MediumTest
-    @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.LOLLIPOP,
-            sdk_is_less_than = Build.VERSION_CODES.N, message = "https://crbug.com/1072455")
-    public void
-    testOpenedEventCalled_withAnimation() throws TimeoutException {
+    public void testOpenedEventCalled_withAnimation() throws TimeoutException {
         runOpenEventTest(true, true);
     }
 
@@ -209,10 +198,7 @@ public class BottomSheetObserverTest {
      */
     @Test
     @MediumTest
-    @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.LOLLIPOP,
-            sdk_is_less_than = Build.VERSION_CODES.N, message = "https://crbug.com/1072455")
-    public void
-    testOffsetChangedEvent() throws TimeoutException {
+    public void testOffsetChangedEvent() throws TimeoutException {
         mBottomSheetTestRule.setSheetState(BottomSheetController.SheetState.FULL, false);
         CallbackHelper callbackHelper = mObserver.mOffsetChangedCallbackHelper;
 

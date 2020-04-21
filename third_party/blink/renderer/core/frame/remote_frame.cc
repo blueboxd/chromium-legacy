@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy_manager.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/remote_dom_window.h"
@@ -131,10 +132,7 @@ void RemoteFrame::Navigate(FrameLoadRequest& frame_request,
                           : nullptr;
   MixedContentChecker::UpgradeInsecureRequest(
       frame_request.GetResourceRequest(), fetch_client_settings_object,
-      frame_request.OriginDocument()
-          ? frame_request.OriginDocument()->ToExecutionContext()
-          : nullptr,
-      frame_request.GetFrameType(),
+      frame ? frame->DomWindow() : nullptr, frame_request.GetFrameType(),
       frame ? frame->GetContentSettingsClient() : nullptr);
 
   // Navigations in portal contexts do not create back/forward entries.

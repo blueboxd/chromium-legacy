@@ -396,7 +396,6 @@ VisiblePosition SelectionModifier::ModifyExtendingForwardInternal(
       return LogicalEndOfLine(EndForPlatform());
     case TextGranularity::kParagraphBoundary:
       return EndOfParagraph(EndForPlatform());
-      break;
     case TextGranularity::kDocumentBoundary: {
       const VisiblePosition& pos = EndForPlatform();
       if (IsEditablePosition(pos.DeepEquivalent()))

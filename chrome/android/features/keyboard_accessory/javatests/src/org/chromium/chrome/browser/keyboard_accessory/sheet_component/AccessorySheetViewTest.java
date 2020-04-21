@@ -24,6 +24,7 @@ import static org.chromium.chrome.browser.keyboard_accessory.sheet_component.Acc
 import static org.chromium.chrome.browser.keyboard_accessory.sheet_component.AccessorySheetProperties.TABS;
 import static org.chromium.chrome.browser.keyboard_accessory.sheet_component.AccessorySheetProperties.TOP_SHADOW_VISIBLE;
 import static org.chromium.chrome.browser.keyboard_accessory.sheet_component.AccessorySheetProperties.VISIBLE;
+import static org.chromium.chrome.test.util.ViewUtils.onViewWaiting;
 import static org.chromium.chrome.test.util.ViewUtils.waitForView;
 
 import android.support.test.filters.MediumTest;
@@ -153,7 +154,7 @@ public class AccessorySheetViewTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> mModel.set(ACTIVE_TAB_INDEX, 1));
 
-        onView(isRoot()).check(waitForView(withText(kSecondTab)));
+        onViewWaiting(withText(kSecondTab));
     }
 
     @Test
@@ -194,7 +195,7 @@ public class AccessorySheetViewTest {
             mModel.get(TABS).add(createTestTabWithTextView(kSecondTab));
             mModel.set(ACTIVE_TAB_INDEX, 0);
         });
-        onView(isRoot()).check(waitForView(withText(kSecondTab)));
+        onViewWaiting(withText(kSecondTab));
     }
 
     @Test

@@ -18,7 +18,6 @@ import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer;
@@ -45,14 +44,15 @@ public class GestureDetectorResetTest {
             + "<div id=\"test\">not clicked</div><br/>"
             + "</body></html>");
 
-    private static class NodeContentsIsEqualToCriteria extends Criteria {
+    private static class NodeContentsIsEqualToCriteria implements Runnable {
+        private final String mFailureReason;
         private final WebContents mWebContents;
         private final String mNodeId;
         private final String mExpectedContents;
 
         public NodeContentsIsEqualToCriteria(String failureReason, WebContents webContents,
                 String nodeId, String expectedContents) {
-            super(failureReason);
+            mFailureReason = failureReason;
             mWebContents = webContents;
             mNodeId = nodeId;
             mExpectedContents = expectedContents;
@@ -60,14 +60,14 @@ public class GestureDetectorResetTest {
         }
 
         @Override
-        public boolean isSatisfied() {
+        public void run() {
+            String contents = null;
             try {
-                String contents = DOMUtils.getNodeContents(mWebContents, mNodeId);
-                return mExpectedContents.equals(contents);
+                contents = DOMUtils.getNodeContents(mWebContents, mNodeId);
             } catch (Throwable e) {
                 Assert.fail("Failed to retrieve node contents: " + e);
-                return false;
             }
+            Assert.assertEquals(mFailureReason, mExpectedContents, contents);
         }
     }
 

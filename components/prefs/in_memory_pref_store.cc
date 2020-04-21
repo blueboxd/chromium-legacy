@@ -63,6 +63,11 @@ void InMemoryPrefStore::RemoveValue(const std::string& key, uint32_t flags) {
     ReportValueChanged(key, flags);
 }
 
+void InMemoryPrefStore::RemoveValuesByPrefixSilently(
+    const std::string& prefix) {
+  prefs_.ClearWithPrefix(prefix);
+}
+
 bool InMemoryPrefStore::ReadOnly() const {
   return false;
 }

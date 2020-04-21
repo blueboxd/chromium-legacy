@@ -290,14 +290,6 @@ void TracingSamplerProfiler::TracingProfileBuilder::WriteSampleToTrace(
     reset_incremental_state_ = false;
   }
 
-  int32_t current_process_priority = base::Process::Current().GetPriority();
-  if (current_process_priority != last_emitted_process_priority_) {
-    last_emitted_process_priority_ = current_process_priority;
-    auto trace_packet = trace_writer_->NewTracePacket();
-    auto* process_descriptor = trace_packet->set_process_descriptor();
-    process_descriptor->set_pid(base::GetCurrentProcId());
-    process_descriptor->set_process_priority(current_process_priority);
-  }
 
   auto trace_packet = trace_writer_->NewTracePacket();
   // Delta encoded timestamps and interned data require incremental state.
@@ -306,6 +298,12 @@ void TracingSamplerProfiler::TracingProfileBuilder::WriteSampleToTrace(
   auto callstack_id = GetCallstackIDAndMaybeEmit(frames, &trace_packet);
   auto* streaming_profile_packet = trace_packet->set_streaming_profile_packet();
   streaming_profile_packet->add_callstack_iid(callstack_id);
+
+  int32_t current_process_priority = base::Process::Current().GetPriority();
+  if (current_process_priority != 0) {
+    streaming_profile_packet->set_process_priority(current_process_priority);
+  }
+
   streaming_profile_packet->add_timestamp_delta_us(
       (sample.timestamp - last_timestamp_).InMicroseconds());
   last_timestamp_ = sample.timestamp;

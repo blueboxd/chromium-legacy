@@ -11,6 +11,7 @@
 
 namespace views {
 class Label;
+class ImageView;
 }
 
 namespace captions {
@@ -32,6 +33,9 @@ class CaptionBubble : public views::BubbleDialogDelegateView {
   // Set the text of the caption bubble. The bubble displays the last 2 lines.
   void SetText(const std::string& text);
 
+  // Displays an error if |has_error|, otherwise displays the latest text.
+  void SetHasError(bool has_error);
+
  protected:
   // views::BubbleDialogDelegateView:
   void Init() override;
@@ -45,9 +49,15 @@ class CaptionBubble : public views::BubbleDialogDelegateView {
  private:
   friend class CaptionBubbleControllerViewsTest;
 
+  void UpdateTitleVisibility();
+
   // Unowned. Owned by views hierarchy.
   views::Label* label_;
   views::Label* title_;
+  views::Label* error_message_;
+  views::ImageView* error_icon_;
+
+  bool has_error_ = false;
 
   base::ScopedClosureRunner destroyed_callback_;
 

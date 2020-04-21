@@ -10,6 +10,8 @@ assert(is_chromeos)
 
 source_set("webcam_private") {
   sources = [
+    "ip_webcam.cc",
+    "ip_webcam.h",
     "v4l2_webcam.cc",
     "v4l2_webcam.h",
     "visca_webcam.cc",
@@ -21,6 +23,7 @@ source_set("webcam_private") {
   ]
 
   deps = [
+    "//chromeos/dbus/ip_peripheral",
     "//extensions/common/api",
     "//mojo/public/cpp/bindings",
     "//services/device/public/mojom",

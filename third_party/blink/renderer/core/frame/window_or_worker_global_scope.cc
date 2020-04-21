@@ -35,11 +35,11 @@
 #include "base/containers/span.h"
 #include "third_party/blink/renderer/bindings/core/v8/scheduled_action.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_for_context_dispose.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/dom_timer.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap_factories.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
@@ -55,10 +55,10 @@ namespace blink {
 static bool IsAllowed(ExecutionContext* execution_context,
                       bool is_eval,
                       const String& source) {
-  if (Document* document = Document::DynamicFrom(execution_context)) {
-    if (!document->GetFrame())
+  if (auto* window = DynamicTo<LocalDOMWindow>(execution_context)) {
+    if (!window->GetFrame())
       return false;
-    if (is_eval && !document->GetContentSecurityPolicy()->AllowEval(
+    if (is_eval && !window->GetContentSecurityPolicy()->AllowEval(
                        ReportingDisposition::kReport,
                        ContentSecurityPolicy::kWillNotThrowException, source)) {
       return false;

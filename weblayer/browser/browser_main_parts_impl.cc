@@ -114,10 +114,6 @@ void BrowserMainPartsImpl::PreMainMessageLoopStart() {
 #if defined(USE_AURA) && defined(USE_X11)
   ui::TouchFactory::SetTouchDeviceListFromCommandLine();
 #endif
-
-#if defined(OS_ANDROID)
-  startup_metric_utils::RecordApplicationStartTime(GetApplicationStartTime());
-#endif
 }
 
 int BrowserMainPartsImpl::PreEarlyInitialization() {
@@ -160,7 +156,9 @@ void BrowserMainPartsImpl::PreMainMessageLoopRun() {
   }
 
 #if defined(OS_ANDROID)
-  // Record collected startup metrics.
+  // Record collected startup metrics. Application start time must be recorded
+  // before browser main message loop start (see startup_metric_utils.h).
+  startup_metric_utils::RecordApplicationStartTime(GetApplicationStartTime());
   startup_metric_utils::RecordBrowserMainMessageLoopStart(
       base::TimeTicks::Now(), /* is_first_run */ false);
   memory_metrics_logger_ = std::make_unique<metrics::MemoryMetricsLogger>();

@@ -1812,9 +1812,8 @@ void NGLineBreaker::RewindOverflow(unsigned new_end, NGLineInfo* line_info) {
         if (ComputedStyle::AutoWrap(white_space) &&
             white_space != EWhiteSpace::kBreakSpaces &&
             IsBreakableSpace(text[item_result.start_offset])) {
-          // If more items left and all characters are trailable spaces, check
-          // the next item.
-          if (item_result.shape_result && index < item_results.size() - 1 &&
+          // If all characters are trailable spaces, check the next item.
+          if (item_result.shape_result &&
               IsAllBreakableSpaces(text, item_result.start_offset + 1,
                                    item_result.end_offset)) {
             continue;

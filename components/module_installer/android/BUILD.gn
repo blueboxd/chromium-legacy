@@ -25,6 +25,7 @@ android_library("module_installer_java") {
     "java/src/org/chromium/components/module_installer/observer/ActivityObserver.java",
     "java/src/org/chromium/components/module_installer/observer/ActivityObserverFacade.java",
     "java/src/org/chromium/components/module_installer/observer/InstallerObserver.java",
+    "java/src/org/chromium/components/module_installer/util/ActivityObserverUtil.java",
     "java/src/org/chromium/components/module_installer/util/CrashKeyRecorder.java",
     "java/src/org/chromium/components/module_installer/util/ModuleUtil.java",
     "java/src/org/chromium/components/module_installer/util/SplitCompatInitializer.java",

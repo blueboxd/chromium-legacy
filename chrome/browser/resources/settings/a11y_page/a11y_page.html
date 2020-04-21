@@ -1,28 +1,3 @@
-<link rel="import" href="chrome://resources/html/polymer.html">
-
-<link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
-<link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
-<link rel="import" href="../i18n_setup.html">
-<link rel="import" href="../route.html">
-<link rel="import" href="../router.html">
-<link rel="import" href="../settings_page/settings_animated_pages.html">
-<link rel="import" href="../settings_shared_css.html">
-
-<if expr="is_win or is_macosx">
-<link rel="import" href="captions_browser_proxy.html">
-</if>
-
-<if expr="not is_macosx and not chromeos">
-<link rel="import" href="captions_subpage.html">
-<link rel="import" href="../settings_page/settings_subpage.html">
-</if>
-
-<if expr="not chromeos">
-<link rel="import" href="../controls/settings_toggle_button.html">
-</if>
-
-<dom-module id="settings-a11y-page">
-  <template>
     <style include="settings-shared"></style>
     <settings-animated-pages id="pages" current-route="{{currentRoute}}"
         section="a11y" focus-config="[[focusConfig_]]">
@@ -71,6 +46,3 @@
       </template>
 </if>
     </settings-animated-pages>
-  </template>
-  <script src="a11y_page.js"></script>
-</dom-module>

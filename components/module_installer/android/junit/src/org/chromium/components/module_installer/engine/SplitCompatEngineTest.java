@@ -79,16 +79,6 @@ public class SplitCompatEngineTest {
     }
 
     @Test
-    public void whenConstructed_verifySplitInitialized() {
-        // Arrange.
-        InOrder inOrder = inOrder(mInstallerFacade, mManager);
-
-        // Act & Assert.
-        inOrder.verify(mInstallerFacade).initApplicationContext(mInstaller);
-        inOrder.verifyNoMoreInteractions();
-    }
-
-    @Test
     public void whenInitActivity_verifyActivityInstalled() {
         // Arrange.
         Activity activityMock = mock(Activity.class);

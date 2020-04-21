@@ -234,8 +234,7 @@ base::Optional<uint64_t> FakeArCore::SubscribeToHitTestForTransientInput(
 mojom::XRHitTestSubscriptionResultsDataPtr
 FakeArCore::GetHitTestSubscriptionResults(
     const gfx::Transform& mojo_from_viewer,
-    const base::Optional<std::vector<mojom::XRInputSourceStatePtr>>&
-        maybe_input_state) {
+    const std::vector<mojom::XRInputSourceStatePtr>& input_state) {
   return nullptr;
 }
 
@@ -324,8 +323,7 @@ void FakeArCore::CreateAnchor(
 
 void FakeArCore::ProcessAnchorCreationRequests(
     const gfx::Transform& mojo_from_viewer,
-    const base::Optional<std::vector<mojom::XRInputSourceStatePtr>>&
-        maybe_input_state) {
+    const std::vector<mojom::XRInputSourceStatePtr>& input_state) {
   // No-op - nothing gets deferred so far.
 }
 

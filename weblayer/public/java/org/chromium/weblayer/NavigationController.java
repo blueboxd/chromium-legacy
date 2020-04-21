@@ -16,7 +16,6 @@ import org.chromium.weblayer_private.interfaces.INavigation;
 import org.chromium.weblayer_private.interfaces.INavigationController;
 import org.chromium.weblayer_private.interfaces.INavigationControllerClient;
 import org.chromium.weblayer_private.interfaces.ITab;
-import org.chromium.weblayer_private.interfaces.NavigateParams;
 import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
 
 /**
@@ -60,7 +59,8 @@ public class NavigationController {
             throw new UnsupportedOperationException();
         }
         try {
-            mNavigationController.navigate(uri.toString(), params);
+            mNavigationController.navigate(
+                    uri.toString(), params == null ? null : params.toInterfaceParams());
         } catch (RemoteException e) {
             throw new APICallException(e);
         }

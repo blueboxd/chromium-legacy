@@ -239,8 +239,8 @@ void AppServiceImpl::AddPreferredApp(apps::mojom::AppType app_type,
   // update this logic to only call the relevant publisher for each app after
   // updating the storage structure.
   for (const auto& iter : publishers_) {
-    iter.second->OnPreferredAppSet(app_id, std::move(intent_filter),
-                                   std::move(intent),
+    iter.second->OnPreferredAppSet(app_id, intent_filter->Clone(),
+                                   intent->Clone(),
                                    replaced_app_preferences->Clone());
   }
 }

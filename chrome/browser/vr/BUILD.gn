@@ -411,6 +411,7 @@ component("vr_base") {
     "//components/omnibox/browser",
     "//components/strings:components_strings_grit",
     "//content/public/common",
+    "//device/vr/public/cpp",
     "//ui/base",
   ]
 

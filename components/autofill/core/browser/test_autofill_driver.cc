@@ -98,8 +98,8 @@ gfx::RectF TestAutofillDriver::TransformBoundingBoxToViewportCoordinates(
   return bounding_box;
 }
 
-net::NetworkIsolationKey TestAutofillDriver::NetworkIsolationKey() {
-  return network_isolation_key_;
+net::IsolationInfo TestAutofillDriver::IsolationInfo() {
+  return isolation_info_;
 }
 
 void TestAutofillDriver::SetIsIncognito(bool is_incognito) {
@@ -110,9 +110,9 @@ void TestAutofillDriver::SetIsInMainFrame(bool is_in_main_frame) {
   is_in_main_frame_ = is_in_main_frame;
 }
 
-void TestAutofillDriver::SetNetworkIsolationKey(
-    const net::NetworkIsolationKey& network_isolation_key) {
-  network_isolation_key_ = network_isolation_key;
+void TestAutofillDriver::SetIsolationInfo(
+    const net::IsolationInfo& isolation_info) {
+  isolation_info_ = isolation_info;
 }
 
 void TestAutofillDriver::SetSharedURLLoaderFactory(

@@ -463,21 +463,6 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             }
 
             @Override
-            public void onPageLoadFinished(Tab tab, String url) {
-                // TODO(crbug.com/896476): Remove this.
-                if (Previews.isPreview(tab)) {
-                    // Some previews (like Client LoFi) are not fully decided until the page
-                    // finishes loading. If this is a preview, update the security icon which will
-                    // also update the verbose status view to make sure the "Lite" badge is
-                    // displayed.
-                    mLocationBar.updateStatusIcon();
-                    PreviewsUma.recordLitePageAtLoadFinish(
-                            PreviewsAndroidBridge.getInstance().getPreviewsType(
-                                    tab.getWebContents()));
-                }
-            }
-
-            @Override
             public void onLoadStarted(Tab tab, boolean toDifferentDocument) {
                 if (!toDifferentDocument) return;
                 updateButtonStatus();

@@ -10,8 +10,6 @@
 # That file is now deprecated and this one is
 # the new source of truth.
 
-from __future__ import print_function
-
 import calendar
 import datetime
 import httplib
@@ -24,12 +22,17 @@ import traceback
 import urllib
 import urllib2
 import zlib
+import logging
 
 # TODO(crbug.com/996778): Figure out how to get httplib2 hermetically.
 import httplib2  # pylint: disable=import-error
 
 from core import path_util
 
+logging.basicConfig(
+    level=logging.INFO,
+    format='(%(levelname)s) %(asctime)s pid=%(process)d'
+    '  %(module)s.%(funcName)s:%(lineno)d  %(message)s')
 
 # The paths in the results dashboard URLs for sending results.
 SEND_RESULTS_PATH = '/add_point'
@@ -89,8 +92,9 @@ def SendResults(data, data_label, url, send_as_histograms=False,
   wait_before_next_retry_in_seconds = 15
   for i in xrange(1, num_retries + 1):
     try:
-      print('Sending %s result of %s to dashboard (attempt %i out of %i).' %
-            (data_type, data_label, i, num_retries))
+      logging.info(
+          'Sending %s result of %s to dashboard (attempt %i out of %i).' %
+          (data_type, data_label, i, num_retries))
       if send_as_histograms:
         _SendHistogramJson(url, dashboard_data_str, token_generator_callback)
       else:
@@ -99,17 +103,19 @@ def SendResults(data, data_label, url, send_as_histograms=False,
       all_data_uploaded = True
       break
     except SendResultsRetryException as e:
-      print('Error while uploading %s data: %s' % (data_type, str(e)))
+      logging.error('Error while uploading %s data: %s' % (data_type, str(e)))
       time.sleep(wait_before_next_retry_in_seconds)
       wait_before_next_retry_in_seconds *= 2
     except SendResultsFatalException as e:
-      print('Fatal error while uploading %s data: %s' % (data_type, str(e)))
+      logging.error(
+          'Fatal error while uploading %s data: %s' % (data_type, str(e)))
       break
     except Exception:
-      print('Unexpected error while uploading %s data: %s' % (
-            data_type, traceback.format_exc()))
+      logging.error('Unexpected error while uploading %s data: %s' %
+                    (data_type, traceback.format_exc()))
       break
-  print('Time spent sending results to %s: %s' % (url, time.time() - start))
+  logging.info(
+      'Time spent sending results to %s: %s' % (url, time.time() - start))
   return all_data_uploaded
 
 
@@ -256,8 +262,8 @@ def MakeDashboardJsonV1(chart_json, revision_dict, test_name, bot, buildername,
     A dictionary in the format accepted by the perf dashboard.
   """
   if not chart_json:
-    print('Error: No json output from telemetry.')
-    print('@@@STEP_FAILURE@@@')
+    logging.error('Error: No json output from telemetry.')
+    logging.error('@@@STEP_FAILURE@@@')
 
   point_id, versions = _RevisionNumberColumns(revision_dict, prefix='')
 

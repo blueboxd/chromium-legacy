@@ -257,7 +257,9 @@ void TestResponseProvider::GetLanguageResponse(
   [super setUp];
 
 #if defined(CHROME_EARL_GREY_1)
-  _featureList.InitAndEnableFeature(kIOSInfobarUIReboot);
+  _featureList.InitWithFeatures(
+      /*enabled_features=*/{kIOSInfobarUIReboot},
+      /*disabled_features=*/{kInfobarUIRebootOnlyiOS13});
 #endif
 
   // Set up the fake URL for the translate script to hit the mock HTTP server.
@@ -276,6 +278,7 @@ void TestResponseProvider::GetLanguageResponse(
 - (AppLaunchConfiguration)appConfigurationForTestCase {
   AppLaunchConfiguration config;
   config.features_enabled.push_back(kIOSInfobarUIReboot);
+  config.features_disabled.push_back(kInfobarUIRebootOnlyiOS13);
   return config;
 }
 

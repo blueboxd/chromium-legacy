@@ -10,6 +10,7 @@
 
 #include <map>
 
+#include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/win/vector.h"
 #include "base/win/winrt_foundation_helpers.h"

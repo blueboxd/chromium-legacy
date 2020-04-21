@@ -34,9 +34,20 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
   NavigatorImpl(NavigationControllerImpl* navigation_controller,
                 NavigatorDelegate* delegate);
 
-  static void CheckWebUIRendererDoesNotDisplayNormalURL(
+  // This method verifies that a navigation to |url| doesn't commit into a WebUI
+  // process if it is not allowed to. Callers of this method should take one of
+  // two actions if the method returns false:
+  // * When called from browser process logic (e.g. NavigationRequest), this
+  //   indicates issues with the navigation logic and the browser process must
+  //   be terminated to avoid security issues.
+  // * If the codepath is processing an IPC message from a renderer process,
+  //   then the renderer process is misbehaving and must be terminated.
+  // TODO(nasko): Remove the is_renderer_initiated_check parameter when callers
+  // of this method are migrated to use CHECK instead of DumpWithoutCrashing.
+  static WARN_UNUSED_RESULT bool CheckWebUIRendererDoesNotDisplayNormalURL(
       RenderFrameHostImpl* render_frame_host,
-      const GURL& url);
+      const GURL& url,
+      bool is_renderer_initiated_check);
 
   static bool ShouldIgnoreIncomingRendererRequest(
       const NavigationRequest* ongoing_navigation_request,

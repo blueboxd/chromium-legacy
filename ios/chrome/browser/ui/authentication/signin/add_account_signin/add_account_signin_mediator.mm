@@ -61,24 +61,6 @@
 
 #pragma mark - Private
 
-// Returns the sign-in result status of the user.
-// |identity| is the identity of the added account.
-// |error| is an error reported by the SSOAuth following adding an account.
-- (SigninCoordinatorResult)signinStateWithIdentity:(ChromeIdentity*)identity
-                                             error:(NSError*)error {
-  DCHECK(self.identityInteractionManager);
-  if (error) {
-    DCHECK(!identity);
-    // Filter out errors handled internally by ChromeIdentity.
-    if (ShouldHandleSigninError(error)) {
-      return SigninCoordinatorResultInterrupted;
-    }
-    return SigninCoordinatorResultCanceledByUser;
-  }
-  DCHECK(identity);
-  return SigninCoordinatorResultSuccess;
-}
-
 // Handles the reauth operation for a user. User account will be
 // automatically populated using the primary user account. In the case of a
 // sign-in error will display a modal alert and abort adding an account.
@@ -115,21 +97,23 @@
 // if the flow is interrupted by a sign-in error.
 - (void)operationCompletedWithIdentity:(ChromeIdentity*)identity
                                  error:(NSError*)error {
-  SigninCoordinatorResult signinResult = [self signinStateWithIdentity:identity
-                                                                 error:error];
-  switch (signinResult) {
-    case SigninCoordinatorResultSuccess:
-    case SigninCoordinatorResultCanceledByUser: {
-      [self.delegate
-          addAccountSigninMediatorFinishedWithSigninResult:signinResult
-                                                  identity:identity];
-      break;
-    }
-    case SigninCoordinatorResultInterrupted: {
+  SigninCoordinatorResult signinResult;
+  if (error) {
+    DCHECK(!identity);
+    // Filter out errors handled internally by ChromeIdentity.
+    if (ShouldHandleSigninError(error)) {
       [self.delegate addAccountSigninMediatorFailedWithError:error];
-      break;
+      return;
     }
+    signinResult = SigninCoordinatorResultCanceledByUser;
+  } else {
+    DCHECK(identity);
+    signinResult = self.signinInterrupted ? SigninCoordinatorResultInterrupted
+                                          : SigninCoordinatorResultSuccess;
   }
+
+  [self.delegate addAccountSigninMediatorFinishedWithSigninResult:signinResult
+                                                         identity:identity];
 }
 
 // Handles the add account operation for a user. Presents the screen to enter

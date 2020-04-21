@@ -551,6 +551,19 @@ static_library("test_support_model") {
   deps = [ ":sync" ]
 }
 
+static_library("test_support_nigori") {
+  testonly = true
+  sources = [
+    "nigori/nigori_test_utils.cc",
+    "nigori/nigori_test_utils.h",
+  ]
+
+  deps = [
+    ":sync",
+    "//testing/gtest",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [

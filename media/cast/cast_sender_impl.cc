@@ -104,7 +104,7 @@ CastSenderImpl::CastSenderImpl(scoped_refptr<CastEnvironment> cast_environment,
 
 void CastSenderImpl::InitializeAudio(
     const FrameSenderConfig& audio_config,
-    const StatusChangeCallback& status_change_cb) {
+    StatusChangeOnceCallback status_change_cb) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   CHECK(audio_config.use_external_encoder ||
         cast_environment_->HasAudioThread());
@@ -113,8 +113,8 @@ void CastSenderImpl::InitializeAudio(
 
   audio_sender_ = std::make_unique<AudioSender>(
       cast_environment_, audio_config,
-      base::BindRepeating(&CastSenderImpl::OnAudioStatusChange,
-                          weak_factory_.GetWeakPtr(), status_change_cb),
+      base::BindOnce(&CastSenderImpl::OnAudioStatusChange,
+                     weak_factory_.GetWeakPtr(), std::move(status_change_cb)),
       transport_sender_);
   if (video_sender_) {
     DCHECK(audio_sender_->GetTargetPlayoutDelay() ==
@@ -169,14 +169,14 @@ void CastSenderImpl::SetTargetPlayoutDelay(
 }
 
 void CastSenderImpl::OnAudioStatusChange(
-    const StatusChangeCallback& status_change_cb,
+    StatusChangeOnceCallback status_change_cb,
     OperationalStatus status) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   if (status == STATUS_INITIALIZED && !audio_frame_input_) {
     audio_frame_input_ =
         new LocalAudioFrameInput(cast_environment_, audio_sender_->AsWeakPtr());
   }
-  status_change_cb.Run(status);
+  std::move(status_change_cb).Run(status);
 }
 
 void CastSenderImpl::OnVideoStatusChange(

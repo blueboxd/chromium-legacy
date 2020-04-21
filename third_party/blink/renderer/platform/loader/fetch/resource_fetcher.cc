@@ -601,7 +601,6 @@ bool ResourceFetcher::ResourceNeedsLoad(Resource* resource,
 }
 
 void ResourceFetcher::DidLoadResourceFromMemoryCache(
-    uint64_t identifier,
     Resource* resource,
     const ResourceRequest& request,
     bool is_static_data) {
@@ -609,18 +608,19 @@ void ResourceFetcher::DidLoadResourceFromMemoryCache(
     return;
 
   resource_load_observer_->WillSendRequest(
-      identifier, request, ResourceResponse() /* redirects */,
+      request.InspectorId(), request, ResourceResponse() /* redirects */,
       resource->GetType(), resource->Options().initiator_info);
   resource_load_observer_->DidReceiveResponse(
-      identifier, request, resource->GetResponse(), resource,
+      request.InspectorId(), request, resource->GetResponse(), resource,
       ResourceLoadObserver::ResponseSource::kFromMemoryCache);
   if (resource->EncodedSize() > 0) {
     resource_load_observer_->DidReceiveData(
-        identifier, base::span<const char>(nullptr, resource->EncodedSize()));
+        request.InspectorId(),
+        base::span<const char>(nullptr, resource->EncodedSize()));
   }
 
   resource_load_observer_->DidFinishLoading(
-      identifier, base::TimeTicks(), 0,
+      request.InspectorId(), base::TimeTicks(), 0,
       resource->GetResponse().DecodedBodyLength(), false);
 
   if (!is_static_data) {
@@ -785,7 +785,6 @@ void ResourceFetcher::RemovePreload(Resource* resource) {
 base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
     FetchParameters& params,
     const ResourceFactory& factory,
-    uint64_t identifier,
     WebScopedVirtualTimePauser& virtual_time_pauser) {
   ResourceRequest& resource_request = params.MutableResourceRequest();
   ResourceType resource_type = factory.GetType();
@@ -867,7 +866,8 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
 
   TRACE_EVENT_NESTABLE_ASYNC_INSTANT1(
       TRACE_DISABLED_BY_DEFAULT("network"), "ResourcePrioritySet",
-      TRACE_ID_WITH_SCOPE("BlinkResourceID", TRACE_ID_LOCAL(identifier)),
+      TRACE_ID_WITH_SCOPE("BlinkResourceID",
+                          TRACE_ID_LOCAL(resource_request.InspectorId())),
       "data", ResourcePrioritySetData(resource_request.Priority()));
 
   KURL url = MemoryCache::RemoveFragmentIdentifierIfNeeded(params.Url());
@@ -976,7 +976,7 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
   WebScopedVirtualTimePauser pauser;
 
   base::Optional<ResourceRequestBlockedReason> blocked_reason =
-      PrepareRequest(params, factory, identifier, pauser);
+      PrepareRequest(params, factory, pauser);
   if (blocked_reason) {
     return ResourceForBlockedRequest(params, factory, blocked_reason.value(),
                                      client);
@@ -1071,8 +1071,7 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
       !cached_resources_map_.Contains(
           MemoryCache::RemoveFragmentIdentifierIfNeeded(params.Url()))) {
     // Loaded from MemoryCache.
-    DidLoadResourceFromMemoryCache(identifier, resource, resource_request,
-                                   is_static_data);
+    DidLoadResourceFromMemoryCache(resource, resource_request, is_static_data);
   }
   if (!is_stale_revalidation) {
     String resource_url =
@@ -2047,6 +2046,7 @@ void ResourceFetcher::EmulateLoadStartedForInspector(
   }
   resource_request.SetReferrerString(Referrer::NoReferrer());
   resource_request.SetReferrerPolicy(network::mojom::ReferrerPolicy::kNever);
+  resource_request.SetInspectorId(CreateUniqueIdentifier());
 
   ResourceLoaderOptions options = resource->Options();
   options.initiator_info.name = initiator_name;
@@ -2056,8 +2056,7 @@ void ResourceFetcher::EmulateLoadStartedForInspector(
                        last_resource_request.Url(), params.Options(),
                        ReportingDisposition::kReport,
                        last_resource_request.GetRedirectStatus());
-  DidLoadResourceFromMemoryCache(resource->InspectorId(), resource,
-                                 params.GetResourceRequest(),
+  DidLoadResourceFromMemoryCache(resource, params.GetResourceRequest(),
                                  false /* is_static_data */);
 }
 

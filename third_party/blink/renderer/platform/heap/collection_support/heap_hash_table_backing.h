@@ -301,7 +301,7 @@ struct TraceInCollectionTrait<kWeakHandling, KeyValuePair<Key, Value>, Traits> {
                                    typename Traits::KeyTraits,
                                    typename Traits::ValueTraits>;
 
-  static bool IsAlive(const blink::WeakCallbackInfo& info,
+  static bool IsAlive(const blink::LivenessBroker& info,
                       const KeyValuePair<Key, Value>& self) {
     // Needed for Weak/Weak, Strong/Weak (reverse ephemeron), and Weak/Strong
     // (ephemeron). Order of invocation does not matter as tracing weak key or

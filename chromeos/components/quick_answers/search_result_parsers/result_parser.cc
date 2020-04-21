@@ -4,6 +4,7 @@
 
 #include "chromeos/components/quick_answers/search_result_parsers/result_parser.h"
 
+#include "base/logging.h"
 #include "base/values.h"
 #include "chromeos/components/quick_answers/search_result_parsers/definition_result_parser.h"
 #include "chromeos/components/quick_answers/search_result_parsers/kp_entity_result_parser.h"

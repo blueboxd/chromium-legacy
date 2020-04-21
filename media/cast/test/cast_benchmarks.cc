@@ -492,7 +492,7 @@ void RunOneBenchmark::Create(const MeasuringPoint& p) {
       CastSender::Create(cast_environment_sender_, &transport_sender_);
 
   cast_sender_->InitializeAudio(audio_sender_config_,
-                                base::Bind(&ExpectAudioSuccess));
+                                base::BindOnce(&ExpectAudioSuccess));
   cast_sender_->InitializeVideo(video_sender_config_,
                                 base::Bind(&ExpectVideoSuccess),
                                 CreateDefaultVideoEncodeAcceleratorCallback(),

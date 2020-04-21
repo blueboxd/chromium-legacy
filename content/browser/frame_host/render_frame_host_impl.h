@@ -98,7 +98,7 @@
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 #include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
-#include "third_party/blink/public/mojom/frame/frame.mojom.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom-forward.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-forward.h"
 #include "third_party/blink/public/mojom/frame/navigation_initiator.mojom.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
@@ -954,6 +954,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
   }
 
   // Exposed so that tests can swap the implementation and intercept calls.
+  mojo::AssociatedReceiver<blink::mojom::LocalMainFrameHost>&
+  local_main_frame_host_receiver_for_testing() {
+    return local_main_frame_host_receiver_;
+  }
+
+  // Exposed so that tests can swap the implementation and intercept calls.
   mojo::Receiver<blink::mojom::BrowserInterfaceBroker>&
   browser_interface_broker_receiver_for_testing() {
     return broker_receiver_;
@@ -1439,6 +1445,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // blink::LocalMainFrameHost overrides:
   void ScaleFactorChanged(float scale) override;
   void ContentsPreferredSizeChanged(const gfx::Size& pref_size) override;
+  void TextAutosizerPageInfoChanged(
+      blink::mojom::TextAutosizerPageInfoPtr page_info) override;
 
   void ReportNoBinderForInterface(const std::string& error);
 

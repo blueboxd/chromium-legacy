@@ -199,6 +199,12 @@ source_set("zlib_crc32_simd") {
   public_configs = [ ":zlib_crc32_simd_config" ]
 }
 
+config("zlib_x86_simd_config") {
+  if (use_x86_x64_optimizations) {
+    defines = [ "CRC32_SIMD_SSE42_PCLMUL" ]
+  }
+}
+
 source_set("zlib_x86_simd") {
   visibility = [ ":*" ]
 
@@ -217,6 +223,8 @@ source_set("zlib_x86_simd") {
   }
 
   configs += [ ":zlib_internal_config" ]
+
+  public_configs = [ ":zlib_x86_simd_config" ]
 }
 
 config("zlib_warnings") {

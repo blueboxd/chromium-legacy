@@ -506,8 +506,9 @@ void CastRtpStream::Start(int32_t stream_id,
 
   if (track_.IsNull()) {
     cast_session_->StartRemotingStream(
-        stream_id, config, base::Bind(&CastRtpStream::DidEncounterError,
-                                      weak_factory_.GetWeakPtr()));
+        stream_id, config,
+        base::BindOnce(&CastRtpStream::DidEncounterError,
+                       weak_factory_.GetWeakPtr()));
   } else if (is_audio_) {
     // In case of error we have to go through DidEncounterError() to stop
     // the streaming after reporting the error.

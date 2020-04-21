@@ -7,6 +7,7 @@
 #include <new>
 #include <utility>
 
+#include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_util.h"
 #include "components/cbor/constants.h"

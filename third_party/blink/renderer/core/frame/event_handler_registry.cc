@@ -341,7 +341,7 @@ void EventHandlerRegistry::Trace(Visitor* visitor) {
       EventHandlerRegistry, &EventHandlerRegistry::ProcessCustomWeakness>(this);
 }
 
-void EventHandlerRegistry::ProcessCustomWeakness(const WeakCallbackInfo& info) {
+void EventHandlerRegistry::ProcessCustomWeakness(const LivenessBroker& info) {
   Vector<UntracedMember<EventTarget>> dead_targets;
   for (int i = 0; i < kEventHandlerClassCount; ++i) {
     EventHandlerClass handler_class = static_cast<EventHandlerClass>(i);

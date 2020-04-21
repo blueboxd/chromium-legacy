@@ -3070,6 +3070,15 @@ void WebViewImpl::MainFrameScrollOffsetChanged() {
   }
 }
 
+void WebViewImpl::TextAutosizerPageInfoChanged(
+    const WebTextAutosizerPageInfo& page_info) {
+  DCHECK(MainFrameImpl());
+  local_main_frame_host_remote_->TextAutosizerPageInfoChanged(
+      mojom::blink::TextAutosizerPageInfo::New(
+          page_info.main_frame_width, page_info.main_frame_layout_width,
+          page_info.device_scale_adjustment));
+}
+
 void WebViewImpl::SetBackgroundColorOverride(SkColor color) {
   DCHECK(does_composite_);
 

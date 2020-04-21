@@ -16,7 +16,9 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/mock_password_feature_manager.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
+#include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -40,6 +42,20 @@ constexpr char kTestURL[] = "https://example.com/login/";
 constexpr char kTestUsername[] = "Username";
 constexpr char kTestUsername2[] = "Username2";
 constexpr char kTestPassword[] = "12345";
+
+class MockPasswordManagerClient
+    : public password_manager::StubPasswordManagerClient {
+ public:
+  MockPasswordManagerClient() = default;
+  ~MockPasswordManagerClient() override = default;
+
+  MOCK_METHOD(void,
+              TriggerReauthForPrimaryAccount,
+              (base::OnceCallback<void(
+                   password_manager::PasswordManagerClient::ReauthSucceeded)>),
+              (override));
+  MOCK_METHOD(void, GeneratePassword, (), (override));
+};
 
 autofill::PasswordForm GetTestAndroidCredential() {
   autofill::PasswordForm form;
@@ -715,6 +731,59 @@ TEST(PasswordManagerUtil, SyncDisablesAccountStorage) {
   EXPECT_FALSE(ShouldShowPasswordStorePicker(&pref_service, &sync_service));
   EXPECT_EQ(GetDefaultPasswordStore(&pref_service, &sync_service),
             autofill::PasswordForm::Store::kProfileStore);
+}
+
+TEST(PasswordManagerUtil, ManualGenerationShouldNotReauthIfNotNeeded) {
+  MockPasswordManagerClient mock_client;
+  ON_CALL(*(mock_client.GetPasswordFeatureManager()),
+          ShouldShowAccountStorageOptIn)
+      .WillByDefault(Return(false));
+
+  EXPECT_CALL(mock_client, TriggerReauthForPrimaryAccount).Times(0);
+  EXPECT_CALL(mock_client, GeneratePassword);
+
+  UserTriggeredManualGenerationFromContextMenu(&mock_client);
+}
+
+TEST(PasswordManagerUtil,
+     ManualGenerationShouldGeneratePasswordIfReauthSucessful) {
+  MockPasswordManagerClient mock_client;
+  ON_CALL(*(mock_client.GetPasswordFeatureManager()),
+          ShouldShowAccountStorageOptIn)
+      .WillByDefault(Return(true));
+
+  EXPECT_CALL(mock_client, TriggerReauthForPrimaryAccount)
+      .WillOnce(
+          [](base::OnceCallback<void(
+                 password_manager::PasswordManagerClient::ReauthSucceeded)>
+                 callback) {
+            std::move(callback).Run(
+                password_manager::PasswordManagerClient::ReauthSucceeded(true));
+          });
+  EXPECT_CALL(mock_client, GeneratePassword);
+
+  UserTriggeredManualGenerationFromContextMenu(&mock_client);
+}
+
+TEST(PasswordManagerUtil,
+     ManualGenerationShouldNotGeneratePasswordIfReauthFailed) {
+  MockPasswordManagerClient mock_client;
+  ON_CALL(*(mock_client.GetPasswordFeatureManager()),
+          ShouldShowAccountStorageOptIn)
+      .WillByDefault(Return(true));
+
+  EXPECT_CALL(mock_client, TriggerReauthForPrimaryAccount)
+      .WillOnce(
+          [](base::OnceCallback<void(
+                 password_manager::PasswordManagerClient::ReauthSucceeded)>
+                 callback) {
+            std::move(callback).Run(
+                password_manager::PasswordManagerClient::ReauthSucceeded(
+                    false));
+          });
+  EXPECT_CALL(mock_client, GeneratePassword).Times(0);
+
+  UserTriggeredManualGenerationFromContextMenu(&mock_client);
 }
 
 }  // namespace password_manager_util

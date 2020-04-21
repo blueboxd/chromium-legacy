@@ -64,7 +64,7 @@ class CONTENT_EXPORT NavigationURLLoaderImpl : public NavigationURLLoader {
       bool is_download,
       base::TimeDelta total_ui_to_io_time,
       base::Time io_post_time);
-  void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
+  void OnReceiveRedirect(net::RedirectInfo redirect_info,
                          network::mojom::URLResponseHeadPtr response,
                          base::Time io_post_time);
   void OnComplete(const network::URLLoaderCompletionStatus& status);

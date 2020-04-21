@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/hash/hash.h"
+#include "base/strings/string_util.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace media_session {

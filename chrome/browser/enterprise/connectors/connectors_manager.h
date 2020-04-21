@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_ENTERPRISE_CONNECTORS_CONNECTORS_MANAGER_H_
 #define CHROME_BROWSER_ENTERPRISE_CONNECTORS_CONNECTORS_MANAGER_H_
 
+#include <set>
+
 #include "base/callback_forward.h"
 #include "base/optional.h"
 #include "chrome/browser/enterprise/connectors/common.h"

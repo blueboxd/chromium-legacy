@@ -1049,6 +1049,10 @@ void DriveIntegrationService::OnGetQuickAccessItems(
   std::move(callback).Run(error, std::move(result));
 }
 
+void DriveIntegrationService::RestartDrive() {
+  MaybeRemountFileSystem(base::TimeDelta(), false);
+}
+
 //===================== DriveIntegrationServiceFactory =======================
 
 DriveIntegrationServiceFactory::FactoryCallback*

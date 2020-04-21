@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/logging.h"
 #include "net/cookies/cookie_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"

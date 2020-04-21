@@ -108,18 +108,19 @@ enum PartitionPurgeFlags {
 };
 
 // Never instantiate a PartitionRoot directly, instead use PartitionAlloc.
-struct BASE_EXPORT PartitionRoot : public internal::PartitionRootBase {
+struct BASE_EXPORT PartitionRoot
+    : public internal::PartitionRootBase<internal::NotThreadSafe> {
   PartitionRoot();
   ~PartitionRoot() override;
   // This references the buckets OFF the edge of this struct. All uses of
   // PartitionRoot must have the bucket array come right after.
   //
   // The PartitionAlloc templated class ensures the following is correct.
-  ALWAYS_INLINE internal::PartitionBucket* buckets() {
-    return reinterpret_cast<internal::PartitionBucket*>(this + 1);
+  ALWAYS_INLINE Bucket* buckets() {
+    return reinterpret_cast<Bucket*>(this + 1);
   }
-  ALWAYS_INLINE const internal::PartitionBucket* buckets() const {
-    return reinterpret_cast<const internal::PartitionBucket*>(this + 1);
+  ALWAYS_INLINE const Bucket* buckets() const {
+    return reinterpret_cast<const Bucket*>(this + 1);
   }
 
   void Init(size_t bucket_count, size_t maximum_allocation);
@@ -136,10 +137,10 @@ struct BASE_EXPORT PartitionRoot : public internal::PartitionRootBase {
 
 // Never instantiate a PartitionRootGeneric directly, instead use
 // PartitionAllocatorGeneric.
-struct BASE_EXPORT PartitionRootGeneric : public internal::PartitionRootBase {
+struct BASE_EXPORT PartitionRootGeneric
+    : public internal::PartitionRootBase<internal::ThreadSafe> {
   PartitionRootGeneric();
   ~PartitionRootGeneric() override;
-  subtle::SpinLock lock;
   // Some pre-computed constants.
   size_t order_index_shifts[kBitsPerSizeT + 1] = {};
   size_t order_sub_index_masks[kBitsPerSizeT + 1] = {};
@@ -148,10 +149,9 @@ struct BASE_EXPORT PartitionRootGeneric : public internal::PartitionRootBase {
   // sizes.  It is one flat array instead of a 2D array because in the 2D
   // world, we'd need to index array[blah][max+1] which risks undefined
   // behavior.
-  internal::PartitionBucket*
-      bucket_lookups[((kBitsPerSizeT + 1) * kGenericNumBucketsPerOrder) + 1] =
-          {};
-  internal::PartitionBucket buckets[kGenericNumBuckets] = {};
+  Bucket* bucket_lookups[((kBitsPerSizeT + 1) * kGenericNumBucketsPerOrder) +
+                         1] = {};
+  Bucket buckets[kGenericNumBuckets] = {};
 
   // Public API.
   void Init();
@@ -159,7 +159,6 @@ struct BASE_EXPORT PartitionRootGeneric : public internal::PartitionRootBase {
   ALWAYS_INLINE void* Alloc(size_t size, const char* type_name);
   ALWAYS_INLINE void* AllocFlags(int flags, size_t size, const char* type_name);
   ALWAYS_INLINE void Free(void* ptr);
-
   NOINLINE void* Realloc(void* ptr, size_t new_size, const char* type_name);
   // Overload that may return nullptr if reallocation isn't possible. In this
   // case, |ptr| remains valid.
@@ -320,8 +319,11 @@ ALWAYS_INLINE void* PartitionRoot::AllocFlags(int flags,
   size_t index = size >> kBucketShift;
   DCHECK(index < num_buckets);
   DCHECK(size == index << kBucketShift);
-  internal::PartitionBucket* bucket = &buckets()[index];
-  result = AllocFromBucket(bucket, flags, size);
+  {
+    ScopedGuard guard{lock_};
+    Bucket* bucket = &buckets()[index];
+    result = AllocFromBucket(bucket, flags, size);
+  }
   if (UNLIKELY(hooks_enabled)) {
     PartitionAllocHooks::AllocationObserverHookIfEnabled(result, requested_size,
                                                          type_name);
@@ -343,9 +345,10 @@ ALWAYS_INLINE size_t PartitionAllocGetSize(void* ptr) {
   // cause trouble, and the caller is responsible for that not happening.
   DCHECK(PartitionAllocSupportsGetSize());
   ptr = internal::PartitionCookieFreePointerAdjust(ptr);
-  internal::PartitionPage* page = internal::PartitionPage::FromPointer(ptr);
+  internal::PartitionPage<internal::ThreadSafe>* page =
+      internal::PartitionPage<internal::ThreadSafe>::FromPointer(ptr);
   // TODO(palmer): See if we can afford to make this a CHECK.
-  DCHECK(internal::PartitionRootBase::IsValidPage(page));
+  DCHECK(internal::PartitionRootBase<internal::ThreadSafe>::IsValidPage(page));
   size_t size = page->bucket->slot_size;
   return internal::PartitionCookieSizeAdjustSubtract(size);
 }
@@ -363,24 +366,23 @@ ALWAYS_INLINE void PartitionFree(void* ptr) {
   }
 
   ptr = internal::PartitionCookieFreePointerAdjust(ptr);
-  internal::PartitionPage* page = internal::PartitionPage::FromPointer(ptr);
+  PartitionRoot::Page* page = PartitionRoot::Page::FromPointer(ptr);
   // TODO(palmer): See if we can afford to make this a CHECK.
-  DCHECK(internal::PartitionRootBase::IsValidPage(page));
+  DCHECK(PartitionRoot::IsValidPage(page));
   internal::DeferredUnmap deferred_unmap = page->Free(ptr);
   deferred_unmap.Run();
 #endif
 }
 
-ALWAYS_INLINE internal::PartitionBucket* PartitionGenericSizeToBucket(
-    PartitionRootGeneric* root,
-    size_t size) {
+ALWAYS_INLINE internal::PartitionBucket<internal::ThreadSafe>*
+PartitionGenericSizeToBucket(PartitionRootGeneric* root, size_t size) {
   size_t order = kBitsPerSizeT - bits::CountLeadingZeroBitsSizeT(size);
   // The order index is simply the next few bits after the most significant bit.
   size_t order_index = (size >> root->order_index_shifts[order]) &
                        (kGenericNumBucketsPerOrder - 1);
   // And if the remaining bits are non-zero we must bump the bucket up.
   size_t sub_order_index = size & root->order_sub_index_masks[order];
-  internal::PartitionBucket* bucket =
+  internal::PartitionBucket<internal::ThreadSafe>* bucket =
       root->bucket_lookups[(order << kGenericNumBucketsPerOrderBits) +
                            order_index + !!sub_order_index];
   CHECK(bucket);
@@ -417,9 +419,11 @@ ALWAYS_INLINE void* PartitionAllocGenericFlags(PartitionRootGeneric* root,
   }
   size_t requested_size = size;
   size = internal::PartitionCookieSizeAdjustAdd(size);
-  internal::PartitionBucket* bucket = PartitionGenericSizeToBucket(root, size);
+  internal::PartitionBucket<internal::ThreadSafe>* bucket =
+      PartitionGenericSizeToBucket(root, size);
+  DCHECK(bucket);
   {
-    subtle::SpinLock::Guard guard(root->lock);
+    PartitionRootGeneric::ScopedGuard guard{root->lock_};
     result = root->AllocFromBucket(bucket, flags, size);
   }
   if (UNLIKELY(hooks_enabled)) {
@@ -458,12 +462,12 @@ ALWAYS_INLINE void PartitionRootGeneric::Free(void* ptr) {
   }
 
   ptr = internal::PartitionCookieFreePointerAdjust(ptr);
-  internal::PartitionPage* page = internal::PartitionPage::FromPointer(ptr);
+  Page* page = Page::FromPointer(ptr);
   // TODO(palmer): See if we can afford to make this a CHECK.
   DCHECK(IsValidPage(page));
   internal::DeferredUnmap deferred_unmap;
   {
-    subtle::SpinLock::Guard guard(lock);
+    ScopedGuard guard{lock_};
     deferred_unmap = page->Free(ptr);
   }
   deferred_unmap.Run();
@@ -482,13 +486,13 @@ ALWAYS_INLINE size_t PartitionRootGeneric::ActualSize(size_t size) {
 #else
   DCHECK(initialized);
   size = internal::PartitionCookieSizeAdjustAdd(size);
-  internal::PartitionBucket* bucket = PartitionGenericSizeToBucket(this, size);
+  Bucket* bucket = PartitionGenericSizeToBucket(this, size);
   if (LIKELY(!bucket->is_direct_mapped())) {
     size = bucket->slot_size;
   } else if (size > kGenericMaxDirectMapped) {
     // Too large to allocate => return the size unchanged.
   } else {
-    size = internal::PartitionBucket::get_direct_map_size(size);
+    size = Bucket::get_direct_map_size(size);
   }
   return internal::PartitionCookieSizeAdjustSubtract(size);
 #endif
@@ -499,7 +503,7 @@ class SizeSpecificPartitionAllocator {
  public:
   SizeSpecificPartitionAllocator() {
     memset(actual_buckets_, 0,
-           sizeof(internal::PartitionBucket) * base::size(actual_buckets_));
+           sizeof(PartitionRoot::Bucket) * base::size(actual_buckets_));
   }
   ~SizeSpecificPartitionAllocator() {
     PartitionAllocMemoryReclaimer::Instance()->UnregisterPartition(
@@ -516,7 +520,7 @@ class SizeSpecificPartitionAllocator {
 
  private:
   PartitionRoot partition_root_;
-  internal::PartitionBucket actual_buckets_[kNumBuckets];
+  PartitionRoot::Bucket actual_buckets_[kNumBuckets];
 };
 
 class BASE_EXPORT PartitionAllocatorGeneric {

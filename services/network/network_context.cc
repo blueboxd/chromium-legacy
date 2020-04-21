@@ -85,9 +85,9 @@
 #include "services/network/proxy_config_service_mojo.h"
 #include "services/network/proxy_lookup_request.h"
 #include "services/network/proxy_resolving_socket_factory_mojo.h"
-#include "services/network/public/cpp/content_security_policy/content_security_policy.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
+#include "services/network/public/cpp/parsed_headers.h"
 #include "services/network/quic_transport.h"
 #include "services/network/resolve_host_request.h"
 #include "services/network/resource_scheduler/resource_scheduler_client.h"
@@ -1321,13 +1321,11 @@ void NetworkContext::VerifyCertForSignedExchange(
     OnCertVerifyForSignedExchangeComplete(cert_verify_id, result);
 }
 
-void NetworkContext::ParseContentSecurityPolicy(
-    const GURL& base_url,
+void NetworkContext::ParseHeaders(
+    const GURL& url,
     const scoped_refptr<net::HttpResponseHeaders>& headers,
-    ParseContentSecurityPolicyCallback callback) {
-  std::vector<mojom::ContentSecurityPolicyPtr> policy;
-  AddContentSecurityPolicyFromHeaders(*headers, base_url, &policy);
-  std::move(callback).Run(std::move(policy));
+    ParseHeadersCallback callback) {
+  std::move(callback).Run(PopulateParsedHeaders(headers, url));
 }
 
 void NetworkContext::NotifyExternalCacheHit(

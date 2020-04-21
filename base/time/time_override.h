@@ -6,6 +6,7 @@
 #define BASE_TIME_TIME_OVERRIDE_H_
 
 #include "base/base_export.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 
 namespace base {

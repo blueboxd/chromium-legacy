@@ -17,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_util.h"
 #include "services/device/usb/usb_descriptors.h"
 #include "url/gurl.h"
 

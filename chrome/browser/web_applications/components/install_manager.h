@@ -122,6 +122,7 @@ class InstallManager {
     // These have no effect outside of Chrome OS.
     bool add_to_search = true;
     bool add_to_management = true;
+    bool is_disabled = false;
 
     bool bypass_service_worker_check = false;
     bool require_manifest = false;

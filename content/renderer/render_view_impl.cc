@@ -1771,13 +1771,6 @@ void RenderViewImpl::OnSetInsidePortal(bool inside_portal) {
   GetWebView()->SetInsidePortal(inside_portal);
 }
 
-void RenderViewImpl::DidUpdateTextAutosizerPageInfo(
-    const blink::WebTextAutosizerPageInfo& page_info) {
-  DCHECK(GetWebView()->MainFrame()->IsWebLocalFrame());
-  Send(new ViewHostMsg_NotifyTextAutosizerPageInfoChangedInLocalMainFrame(
-      GetRoutingID(), page_info));
-}
-
 void RenderViewImpl::DidAutoResize(const blink::WebSize& newSize) {
   // Auto resize should only happen on local main frames.
   DCHECK(main_render_frame_);

@@ -506,30 +506,6 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
                 break;
             }
 
-            // Categories that support adding exceptions also manage the 'Add site' preference.
-            // This should only be used for settings that have host-pattern based exceptions.
-            if (mCategory.showSites(SiteSettingsCategory.Type.BACKGROUND_SYNC)
-                    || mCategory.showSites(SiteSettingsCategory.Type.COOKIES)
-                    || mCategory.showSites(SiteSettingsCategory.Type.JAVASCRIPT)
-                    || mCategory.showSites(SiteSettingsCategory.Type.SOUND)) {
-                if ((boolean) newValue) {
-                    Preference addException =
-                            getPreferenceScreen().findPreference(ADD_EXCEPTION_KEY);
-                    if (addException != null) { // Can be null in testing.
-                        getPreferenceScreen().removePreference(addException);
-                    }
-                } else {
-                    getPreferenceScreen().addPreference(
-                            new AddExceptionPreference(getStyledContext(), ADD_EXCEPTION_KEY,
-                                    getAddExceptionDialogMessage(), mCategory, this));
-                }
-            }
-
-            ChromeSwitchPreference binaryToggle =
-                    (ChromeSwitchPreference) getPreferenceScreen().findPreference(
-                            BINARY_TOGGLE_KEY);
-            updateAllowedHeader(mAllowedSiteCount, !binaryToggle.isChecked());
-
             getInfoForOrigins();
         } else if (TRI_STATE_TOGGLE_KEY.equals(preference.getKey())) {
             @ContentSettingValues

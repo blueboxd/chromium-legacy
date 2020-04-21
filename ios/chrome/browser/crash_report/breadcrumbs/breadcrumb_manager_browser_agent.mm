@@ -7,6 +7,7 @@
 #import <Foundation/Foundation.h>
 
 #include "base/strings/stringprintf.h"
+#include "base/strings/string_util.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service_factory.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_tab_helper.h"

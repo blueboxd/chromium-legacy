@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/sync_consent_screen_handler.h"
 
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/screens/sync_consent_screen.h"
 #include "chrome/grit/generated_resources.h"

@@ -134,23 +134,15 @@ FakeDeepScanningDialogDelegate::MalwareAndDlpResponse(
 void FakeDeepScanningDialogDelegate::Response(
     base::FilePath path,
     std::unique_ptr<BinaryUploadService::Request> request) {
-  DeepScanningClientResponse response = status_callback_.is_null()
-                                            ? DeepScanningClientResponse()
-                                            : status_callback_.Run(path);
+  DeepScanningClientResponse response =
+      (status_callback_.is_null() ||
+       result_ != BinaryUploadService::Result::SUCCESS)
+          ? DeepScanningClientResponse()
+          : status_callback_.Run(path);
   if (path.empty())
     StringRequestCallback(result_, response);
   else
     FileRequestCallback(path, result_, response);
-}
-
-void FakeDeepScanningDialogDelegate::PrepareFileRequest(
-    base::FilePath path,
-    AnalyzeCallback callback) {
-  safe_browsing::ArchiveAnalyzerResults results;
-  if (!encryption_callback_.is_null() && encryption_callback_.Run(path))
-    results.archived_binary.Add()->set_is_encrypted(true);
-
-  std::move(callback).Run(results);
 }
 
 void FakeDeepScanningDialogDelegate::UploadTextForDeepScanning(

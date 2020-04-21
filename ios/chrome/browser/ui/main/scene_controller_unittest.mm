@@ -25,4 +25,7 @@ class SceneControllerTest : public PlatformTest {
   SceneState* scene_state_;
 };
 
+// TODO(crbug.com/1072366): Add a test for
+// ContentSuggestionsSchedulerNotifications receiving notifyForeground:.
+
 }  // namespace

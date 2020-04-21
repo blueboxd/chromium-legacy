@@ -62,6 +62,7 @@ ExternalInstallOptions GetWindowedInstallOptions() {
   options.add_to_quick_launch_bar = false;
   options.add_to_search = true;
   options.add_to_management = false;
+  options.is_disabled = false;
   options.bypass_service_worker_check = true;
   options.force_reinstall = true;
   return options;

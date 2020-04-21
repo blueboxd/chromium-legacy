@@ -367,12 +367,14 @@ TEST_F(CRWWebControllerTest, WebViewCreatedAfterEnsureWebViewCreated) {
       base::SysUTF8ToNSString(web_client->GetUserAgent(UserAgentType::MOBILE)),
       web_view.customUserAgent);
 
-  web_client->SetDefaultUserAgent(UserAgentType::DESKTOP);
-  [web_controller() removeWebView];
-  web_view = [web_controller() ensureWebViewCreated];
-  EXPECT_NSEQ(
-      base::SysUTF8ToNSString(web_client->GetUserAgent(UserAgentType::DESKTOP)),
-      web_view.customUserAgent);
+  if (@available(iOS 13, *)) {
+    web_client->SetDefaultUserAgent(UserAgentType::DESKTOP);
+    [web_controller() removeWebView];
+    web_view = [web_controller() ensureWebViewCreated];
+    EXPECT_NSEQ(base::SysUTF8ToNSString(
+                    web_client->GetUserAgent(UserAgentType::DESKTOP)),
+                web_view.customUserAgent);
+  }
 }
 
 // Test fixture to test JavaScriptDialogPresenter.

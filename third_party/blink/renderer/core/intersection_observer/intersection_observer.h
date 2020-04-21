@@ -165,7 +165,7 @@ class CORE_EXPORT IntersectionObserver final
   static void SetThrottleDelayEnabledForTesting(bool);
 
  private:
-  void ProcessCustomWeakness(const WeakCallbackInfo&);
+  void ProcessCustomWeakness(const LivenessBroker&);
 
   const Member<IntersectionObserverDelegate> delegate_;
   UntracedMember<Node> root_;

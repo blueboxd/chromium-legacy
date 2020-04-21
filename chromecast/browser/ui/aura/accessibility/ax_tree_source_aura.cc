@@ -7,17 +7,16 @@
 #include "chromecast/browser/accessibility/accessibility_manager.h"
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/ui/aura/accessibility/automation_manager_aura.h"
-#include "components/exo/fullscreen_shell_surface.h"
-#include "components/exo/shell_surface_util.h"
-#include "components/exo/surface.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_tree_data.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/views/accessibility/ax_aura_obj_wrapper.h"
 #include "ui/views/accessibility/ax_view_obj_wrapper.h"
+#include "ui/views/widget/widget.h"
 
 AXTreeSourceAura::AXTreeSourceAura(views::AXAuraObjWrapper* root,
                                    const ui::AXTreeID& tree_id,
@@ -52,23 +51,25 @@ bool AXTreeSourceAura::GetTreeData(ui::AXTreeData* tree_data) const {
           aura::Window* top = stack.top();
           stack.pop();
           DCHECK(top);
-
-          exo::Surface* surface = exo::GetShellMainSurface(top);
-          if (surface) {
-            views::Widget* widget =
-                views::Widget::GetWidgetForNativeWindow(top);
-            if (widget) {
-              exo::FullscreenShellSurface* full_screen_shell_surface =
-                  static_cast<exo::FullscreenShellSurface*>(
-                      widget->widget_delegate());
-              tree_data->focus_id = cache_->GetID(full_screen_shell_surface);
-              break;
+          views::Widget* widget = views::Widget::GetWidgetForNativeWindow(top);
+          if (widget) {
+            views::View* contents = widget->GetContentsView();
+            if (contents) {
+              ui::AXNodeData node_data;
+              contents->GetAccessibleNodeData(&node_data);
+              std::string tree_id;
+              if (node_data.role == ax::mojom::Role::kClient &&
+                  node_data.GetStringAttribute(
+                      ax::mojom::StringAttribute::kChildTreeId, &tree_id)) {
+                tree_data->focus_id = cache_->GetID(contents);
+                break;
+              }
             }
           }
           for (aura::Window* child : top->children())
             stack.push(child);
         }
-        if (tree_data->focus_id == -1) {
+        if (tree_data->focus_id == ui::AXNode::kInvalidAXID) {
           LOG(ERROR) << "Could not find node to focus in desktop tree.";
         }
       }

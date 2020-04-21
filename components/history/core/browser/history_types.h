@@ -14,6 +14,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/containers/stack_container.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"

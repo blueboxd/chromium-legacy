@@ -1136,11 +1136,12 @@ void ThreadState::InvokePreFinalizers() {
   // The prefinalizer callback wrapper returns |true| when its associated
   // object is unreachable garbage and the prefinalizer callback has run.
   // The registered prefinalizer entry must then be removed and deleted.
+  LivenessBroker broker;
   Deque<PreFinalizer> remaining_ordered_pre_finalizers;
   for (auto rit = ordered_pre_finalizers_.rbegin();
        rit != ordered_pre_finalizers_.rend(); ++rit) {
     const PreFinalizer& pre_finalizer = *rit;
-    if (!(pre_finalizer.second)(pre_finalizer.first))
+    if (!(pre_finalizer.second)(broker, pre_finalizer.first))
       remaining_ordered_pre_finalizers.push_front(pre_finalizer);
   }
 

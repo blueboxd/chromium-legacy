@@ -5,6 +5,7 @@
 #include "chromeos/printing/printer_configuration.h"
 
 #include "base/guid.h"
+#include "base/logging.h"
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"

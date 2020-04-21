@@ -131,13 +131,8 @@ void ReportingContext::SendToReportingAPI(Report* report,
 
   const LocationReportBody* location_body =
       static_cast<LocationReportBody*>(report->body());
-  bool is_null;
-  int line_number = location_body->lineNumber(is_null);
-  if (is_null)
-    line_number = 0;
-  int column_number = location_body->columnNumber(is_null);
-  if (is_null)
-    column_number = 0;
+  int line_number = location_body->lineNumber().value_or(0);
+  int column_number = location_body->columnNumber().value_or(0);
   KURL url = KURL(report->url());
 
   if (type == ReportType::kCSPViolation) {

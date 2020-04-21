@@ -48,6 +48,9 @@ class IdentityManager;
 // The delegate.
 @property(nonatomic, weak) id<AddAccountSigninMediatorDelegate> delegate;
 
+// Indicates that the add account sign-in flow was interrupted.
+@property(nonatomic, readwrite) BOOL signinInterrupted;
+
 // Handles the sign-in operation.
 // |signinIntent| is the add account sign-in flow intent.
 - (void)handleSigninWithIntent:(AddAccountSigninIntent)addAccountSigninIntent;

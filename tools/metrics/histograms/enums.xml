@@ -15083,6 +15083,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="34" label="Settings - Throttling Conditions"/>
   <int value="35" label="Settings - Emulation Geolocations"/>
   <int value="36" label="Settings - Shortcuts"/>
+  <int value="37" label="Drawer - Issues"/>
 </enum>
 
 <enum name="DevToolsSetting">
@@ -59482,6 +59483,12 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="11"
       label="Not Present in non-partnership device (Removed after first
              start)"/>
+</enum>
+
+<enum name="SecondaryAccountConsentLoggerResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="OAuth2 token error"/>
+  <int value="2" label="Network error"/>
 </enum>
 
 <enum name="SecureCookieAction">

@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "components/autofill/core/common/signatures_util.h"
 #include "url/gurl.h"

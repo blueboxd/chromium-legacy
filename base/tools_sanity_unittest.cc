@@ -12,6 +12,7 @@
 #include "base/cfi_buildflags.h"
 #include "base/debug/asan_invalid_access.h"
 #include "base/debug/profiler.h"
+#include "base/logging.h"
 #include "base/sanitizer_buildflags.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/threading/thread.h"

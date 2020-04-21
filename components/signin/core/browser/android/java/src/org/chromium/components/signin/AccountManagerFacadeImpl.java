@@ -145,27 +145,6 @@ public class AccountManagerFacadeImpl implements AccountManagerFacade {
     }
 
     /**
-     * Gets Google account names asynchronously.
-     */
-    @Override
-    public void getGoogleAccountNames(final Callback<AccountManagerResult<List<String>>> callback) {
-        runAfterCacheIsPopulated(() -> {
-            final AccountManagerResult<List<Account>> accounts = mFilteredAccounts.get();
-            final AccountManagerResult<List<String>> result;
-            if (accounts.hasValue()) {
-                List<String> accountNames = new ArrayList<>(accounts.getValue().size());
-                for (Account account : accounts.getValue()) {
-                    accountNames.add(account.name);
-                }
-                result = new AccountManagerResult<>(accountNames);
-            } else {
-                result = new AccountManagerResult<>(accounts.getException());
-            }
-            callback.onResult(result);
-        });
-    }
-
-    /**
      * Retrieves all Google accounts on the device.
      *
      * @throws AccountManagerDelegateException if Google Play Services are out of date,
@@ -190,6 +169,14 @@ public class AccountManagerFacadeImpl implements AccountManagerFacade {
             }
         }
         return maybeAccounts.get();
+    }
+
+    /**
+     * Asynchronous version of {@link #getGoogleAccounts()}.
+     */
+    @Override
+    public void getGoogleAccounts(Callback<AccountManagerResult<List<Account>>> callback) {
+        runAfterCacheIsPopulated(() -> callback.onResult(mFilteredAccounts.get()));
     }
 
     /**

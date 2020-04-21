@@ -156,11 +156,17 @@ void BrowserMainPartsImpl::PreMainMessageLoopRun() {
   }
 
 #if defined(OS_ANDROID)
-  // Record collected startup metrics. Application start time must be recorded
-  // before browser main message loop start (see startup_metric_utils.h).
+  // On Android, retrieve the application start time from Java and record it. On
+  // other platforms, the application start time was already recorded in the
+  // constructor of ContentMainDelegateImpl.
   startup_metric_utils::RecordApplicationStartTime(GetApplicationStartTime());
+#endif  // defined(OS_ANDROID)
+  // Record the time at which the main message loop starts. Must be recorded
+  // after application start time (see startup_metric_utils.h).
   startup_metric_utils::RecordBrowserMainMessageLoopStart(
       base::TimeTicks::Now(), /* is_first_run */ false);
+
+#if defined(OS_ANDROID)
   memory_metrics_logger_ = std::make_unique<metrics::MemoryMetricsLogger>();
 
   // Set the global singleton app modal dialog factory.

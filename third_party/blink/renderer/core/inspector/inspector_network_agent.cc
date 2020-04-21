@@ -749,7 +749,12 @@ void InspectorNetworkAgent::DidBlockRequest(
     const FetchInitiatorInfo& initiator_info,
     ResourceRequestBlockedReason reason,
     ResourceType resource_type) {
-  uint64_t identifier = CreateUniqueIdentifier();
+  uint64_t identifier = request.InspectorId();
+  if (identifier == 0UL) {
+    NOTREACHED();
+    // Defensively create a valid identifier.
+    identifier = CreateUniqueIdentifier();
+  }
   InspectorPageAgent::ResourceType type =
       InspectorPageAgent::ToResourceType(resource_type);
 

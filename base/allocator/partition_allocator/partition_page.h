@@ -8,16 +8,16 @@
 #include <string.h>
 
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
+#include "base/allocator/partition_allocator/partition_alloc_forward.h"
 #include "base/allocator/partition_allocator/partition_bucket.h"
 #include "base/allocator/partition_allocator/partition_cookie.h"
 #include "base/allocator/partition_allocator/partition_freelist_entry.h"
 #include "base/allocator/partition_allocator/random.h"
 #include "base/logging.h"
+#include "base/thread_annotations.h"
 
 namespace base {
 namespace internal {
-
-struct PartitionRootBase;
 
 // PartitionPage::Free() defers unmapping a large page until the lock is
 // released. Callers of PartitionPage::Free() must invoke Run().
@@ -63,10 +63,11 @@ struct DeferredUnmap {
 // similar. If so, all uses of the term "page" in comments, member variables,
 // local variables, and documentation that refer to this concept should be
 // updated.
+template <bool thread_safe>
 struct PartitionPage {
   PartitionFreelistEntry* freelist_head;
-  PartitionPage* next_page;
-  PartitionBucket* bucket;
+  PartitionPage<thread_safe>* next_page;
+  PartitionBucket<thread_safe>* bucket;
   // Deliberately signed, 0 for empty or decommitted page, -n for full pages:
   int16_t num_allocated_slots;
   uint16_t num_unprovisioned_slots;
@@ -80,8 +81,8 @@ struct PartitionPage {
   BASE_EXPORT NOINLINE DeferredUnmap FreeSlowPath() WARN_UNUSED_RESULT;
   ALWAYS_INLINE DeferredUnmap Free(void* ptr) WARN_UNUSED_RESULT;
 
-  void Decommit(PartitionRootBase* root);
-  void DecommitIfPossible(PartitionRootBase* root);
+  void Decommit(PartitionRootBase<thread_safe>* root);
+  void DecommitIfPossible(PartitionRootBase<thread_safe>* root);
 
   // Pointer manipulation functions. These must be static as the input |page|
   // pointer may be the result of an offset calculation and therefore cannot
@@ -128,7 +129,7 @@ struct PartitionPage {
   // namespace so the getter can be fully inlined.
   static PartitionPage sentinel_page_;
 };
-static_assert(sizeof(PartitionPage) <= kPageMetadataSize,
+static_assert(sizeof(PartitionPage<ThreadSafe>) <= kPageMetadataSize,
               "PartitionPage must be able to fit in a metadata slot");
 
 ALWAYS_INLINE char* PartitionSuperPageToMetadataArea(char* ptr) {
@@ -139,8 +140,9 @@ ALWAYS_INLINE char* PartitionSuperPageToMetadataArea(char* ptr) {
   return reinterpret_cast<char*>(pointer_as_uint + kSystemPageSize);
 }
 
-ALWAYS_INLINE PartitionPage* PartitionPage::FromPointerNoAlignmentCheck(
-    void* ptr) {
+template <bool thread_safe>
+ALWAYS_INLINE PartitionPage<thread_safe>*
+PartitionPage<thread_safe>::FromPointerNoAlignmentCheck(void* ptr) {
   uintptr_t pointer_as_uint = reinterpret_cast<uintptr_t>(ptr);
   char* super_page_ptr =
       reinterpret_cast<char*>(pointer_as_uint & kSuperPageBaseMask);
@@ -150,7 +152,7 @@ ALWAYS_INLINE PartitionPage* PartitionPage::FromPointerNoAlignmentCheck(
   // the last index is invalid because it is a guard page.
   DCHECK(partition_page_index);
   DCHECK(partition_page_index < kNumPartitionPagesPerSuperPage - 1);
-  PartitionPage* page = reinterpret_cast<PartitionPage*>(
+  auto* page = reinterpret_cast<PartitionPage*>(
       PartitionSuperPageToMetadataArea(super_page_ptr) +
       (partition_page_index << kPageMetadataShift));
   // Partition pages in the same slot span can share the same page object.
@@ -161,8 +163,10 @@ ALWAYS_INLINE PartitionPage* PartitionPage::FromPointerNoAlignmentCheck(
   return page;
 }
 
-// Resturns start of the slot span for the PartitionPage.
-ALWAYS_INLINE void* PartitionPage::ToPointer(const PartitionPage* page) {
+// Returns: start of the slot span for the PartitionPage.
+template <bool thread_safe>
+ALWAYS_INLINE void* PartitionPage<thread_safe>::ToPointer(
+    const PartitionPage<thread_safe>* page) {
   uintptr_t pointer_as_uint = reinterpret_cast<uintptr_t>(page);
 
   uintptr_t super_page_offset = (pointer_as_uint & kSuperPageOffsetMask);
@@ -186,7 +190,9 @@ ALWAYS_INLINE void* PartitionPage::ToPointer(const PartitionPage* page) {
   return ret;
 }
 
-ALWAYS_INLINE PartitionPage* PartitionPage::FromPointer(void* ptr) {
+template <bool thread_safe>
+ALWAYS_INLINE PartitionPage<thread_safe>*
+PartitionPage<thread_safe>::FromPointer(void* ptr) {
   PartitionPage* page = PartitionPage::FromPointerNoAlignmentCheck(ptr);
   // Checks that the pointer is a multiple of bucket size.
   DCHECK(!((reinterpret_cast<uintptr_t>(ptr) -
@@ -195,7 +201,9 @@ ALWAYS_INLINE PartitionPage* PartitionPage::FromPointer(void* ptr) {
   return page;
 }
 
-ALWAYS_INLINE const size_t* PartitionPage::get_raw_size_ptr() const {
+template <bool thread_safe>
+ALWAYS_INLINE const size_t* PartitionPage<thread_safe>::get_raw_size_ptr()
+    const {
   // For single-slot buckets which span more than one partition page, we
   // have some spare metadata space to store the raw allocation size. We
   // can use this to report better statistics.
@@ -209,14 +217,16 @@ ALWAYS_INLINE const size_t* PartitionPage::get_raw_size_ptr() const {
   return reinterpret_cast<const size_t*>(&the_next_page->freelist_head);
 }
 
-ALWAYS_INLINE size_t PartitionPage::get_raw_size() const {
+template <bool thread_safe>
+ALWAYS_INLINE size_t PartitionPage<thread_safe>::get_raw_size() const {
   const size_t* ptr = get_raw_size_ptr();
   if (UNLIKELY(ptr != nullptr))
     return *ptr;
   return 0;
 }
 
-ALWAYS_INLINE DeferredUnmap PartitionPage::Free(void* ptr) {
+template <bool thread_safe>
+ALWAYS_INLINE DeferredUnmap PartitionPage<thread_safe>::Free(void* ptr) {
 #if DCHECK_IS_ON()
   size_t slot_size = bucket->slot_size;
   const size_t raw_size = get_raw_size();
@@ -238,8 +248,7 @@ ALWAYS_INLINE DeferredUnmap PartitionPage::Free(void* ptr) {
   // Look for double free one level deeper in debug.
   DCHECK(!freelist_head ||
          ptr != EncodedPartitionFreelistEntry::Decode(freelist_head->next));
-  internal::PartitionFreelistEntry* entry =
-      static_cast<internal::PartitionFreelistEntry*>(ptr);
+  auto* entry = static_cast<internal::PartitionFreelistEntry*>(ptr);
   entry->next = internal::PartitionFreelistEntry::Encode(freelist_head);
   freelist_head = entry;
   --num_allocated_slots;
@@ -253,14 +262,16 @@ ALWAYS_INLINE DeferredUnmap PartitionPage::Free(void* ptr) {
   return {};
 }
 
-ALWAYS_INLINE bool PartitionPage::is_active() const {
+template <bool thread_safe>
+ALWAYS_INLINE bool PartitionPage<thread_safe>::is_active() const {
   DCHECK(this != get_sentinel_page());
   DCHECK(!page_offset);
   return (num_allocated_slots > 0 &&
           (freelist_head || num_unprovisioned_slots));
 }
 
-ALWAYS_INLINE bool PartitionPage::is_full() const {
+template <bool thread_safe>
+ALWAYS_INLINE bool PartitionPage<thread_safe>::is_full() const {
   DCHECK(this != get_sentinel_page());
   DCHECK(!page_offset);
   bool ret = (num_allocated_slots == bucket->get_slots_per_span());
@@ -271,13 +282,15 @@ ALWAYS_INLINE bool PartitionPage::is_full() const {
   return ret;
 }
 
-ALWAYS_INLINE bool PartitionPage::is_empty() const {
+template <bool thread_safe>
+ALWAYS_INLINE bool PartitionPage<thread_safe>::is_empty() const {
   DCHECK(this != get_sentinel_page());
   DCHECK(!page_offset);
   return (!num_allocated_slots && freelist_head);
 }
 
-ALWAYS_INLINE bool PartitionPage::is_decommitted() const {
+template <bool thread_safe>
+ALWAYS_INLINE bool PartitionPage<thread_safe>::is_decommitted() const {
   DCHECK(this != get_sentinel_page());
   DCHECK(!page_offset);
   bool ret = (!num_allocated_slots && !freelist_head);
@@ -288,13 +301,15 @@ ALWAYS_INLINE bool PartitionPage::is_decommitted() const {
   return ret;
 }
 
-ALWAYS_INLINE void PartitionPage::set_raw_size(size_t size) {
+template <bool thread_safe>
+ALWAYS_INLINE void PartitionPage<thread_safe>::set_raw_size(size_t size) {
   size_t* raw_size_ptr = get_raw_size_ptr();
   if (UNLIKELY(raw_size_ptr != nullptr))
     *raw_size_ptr = size;
 }
 
-ALWAYS_INLINE void PartitionPage::Reset() {
+template <bool thread_safe>
+ALWAYS_INLINE void PartitionPage<thread_safe>::Reset() {
   DCHECK(is_decommitted());
 
   num_unprovisioned_slots = bucket->get_slots_per_span();

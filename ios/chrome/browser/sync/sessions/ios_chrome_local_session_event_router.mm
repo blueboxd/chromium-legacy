@@ -49,15 +49,6 @@ IOSChromeLocalSessionEventRouter::IOSChromeLocalSessionEventRouter(
           base::Bind(&IOSChromeLocalSessionEventRouter::OnTabParented,
                      base::Unretained(this)));
 
-  history::HistoryService* history_service =
-      ios::HistoryServiceFactory::GetForBrowserState(
-          browser_state, ServiceAccessType::EXPLICIT_ACCESS);
-  if (history_service) {
-    favicon_changed_subscription_ = history_service->AddFaviconsChangedCallback(
-        base::Bind(&IOSChromeLocalSessionEventRouter::OnFaviconsChanged,
-                   base::Unretained(this)));
-  }
-
   for (TabModel* tab_model in TabModelList::GetTabModelsForChromeBrowserState(
            browser_state_)) {
     StartObservingWebStateList(tab_model.webStateList);
@@ -198,13 +189,6 @@ void IOSChromeLocalSessionEventRouter::OnWebStateChange(
     flare_.Run(syncer::SESSIONS);
     flare_.Reset();
   }
-}
-
-void IOSChromeLocalSessionEventRouter::OnFaviconsChanged(
-    const std::set<GURL>& page_urls,
-    const GURL& icon_url) {
-  if (handler_ && !page_urls.empty())
-    handler_->OnFaviconsChanged(page_urls, icon_url);
 }
 
 void IOSChromeLocalSessionEventRouter::StartRoutingTo(

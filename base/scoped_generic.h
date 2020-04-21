@@ -6,6 +6,7 @@
 #define BASE_SCOPED_GENERIC_H_
 
 #include <stdlib.h>
+#include <ostream>
 
 #include <algorithm>
 

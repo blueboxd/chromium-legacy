@@ -11,7 +11,6 @@
 #include "chrome/browser/password_manager/account_storage/account_password_store_factory.h"
 #include "chrome/browser/password_manager/password_manager_test_base.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
-#include "chrome/browser/sync/test/integration/encryption_helper.h"
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/secondary_account_helper.h"
@@ -26,6 +25,7 @@
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
+#include "components/sync/test/fake_server/fake_server_nigori_helper.h"
 #include "net/dns/mock_host_resolver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -87,7 +87,7 @@ class PasswordManagerSyncTest : public SyncTest {
     ASSERT_TRUE(embedded_test_server()->Start());
     host_resolver()->AddRule("*", "127.0.0.1");
 
-    encryption_helper::SetKeystoreNigoriInFakeServer(GetFakeServer());
+    fake_server::SetKeystoreNigoriInFakeServer(GetFakeServer());
   }
 
   void TearDownOnMainThread() override {

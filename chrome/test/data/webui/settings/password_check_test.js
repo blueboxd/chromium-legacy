@@ -1204,6 +1204,23 @@ cr.define('settings_passwords_check', function() {
       assertEquals('password', node.$.leakedPassword.type);
       assertNotEquals('test4', node.$.leakedPassword.value);
     });
+
+    // Verify that clicking "Change password" reveals "Already changed password"
+    test('alreadyChangedPassword', async function() {
+      passwordManager.data.leakedCredentials =
+          [autofill_test_util.makeCompromisedCredential(
+              'google.com', 'jdoerrie', 'LEAKED')];
+      const checkPasswordSection = createCheckPasswordSection();
+      await passwordManager.whenCalled('getCompromisedCredentials');
+      Polymer.dom.flush();
+      const listElements = checkPasswordSection.$.leakedPasswordList;
+      const passwordCheckListItem = listElements.children[1];
+
+      assertFalse(isElementVisible(passwordCheckListItem.$$('#alreadyChanged')));
+      passwordCheckListItem.$$('#changePasswordButton').click();
+      Polymer.dom.flush();
+      assertTrue(isElementVisible(passwordCheckListItem.$$('#alreadyChanged')));
+    });
   });
   // #cr_define_end
 });

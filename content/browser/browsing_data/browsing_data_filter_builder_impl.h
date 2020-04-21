@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -17,6 +18,8 @@ class CONTENT_EXPORT BrowsingDataFilterBuilderImpl
  public:
   explicit BrowsingDataFilterBuilderImpl(Mode mode);
   ~BrowsingDataFilterBuilderImpl() override;
+
+  base::RepeatingCallback<bool(const url::Origin&)> BuildGeneralOriginFilter();
 
   // BrowsingDataFilterBuilder implementation:
   void AddOrigin(const url::Origin& origin) override;

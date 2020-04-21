@@ -12,6 +12,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
+#include "base/strings/string_util.h"
 #include "base/values.h"
 #include "build/branding_buildflags.h"
 #include "chrome/browser/browser_process.h"

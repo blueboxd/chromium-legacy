@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/strings/string_piece.h"
+#include "base/strings/string_util.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   if (size > 8 * 1024)

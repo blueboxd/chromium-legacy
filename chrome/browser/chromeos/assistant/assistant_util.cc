@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/strings/string_util.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"

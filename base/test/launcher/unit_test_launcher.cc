@@ -17,6 +17,7 @@
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/sequence_checker.h"

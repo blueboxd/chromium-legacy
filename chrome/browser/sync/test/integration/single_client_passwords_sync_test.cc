@@ -17,6 +17,7 @@
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/sync/driver/profile_sync_service.h"
+#include "components/sync/test/fake_server/fake_server_nigori_helper.h"
 #include "content/public/test/test_launcher.h"
 
 namespace {
@@ -229,7 +230,7 @@ class SingleClientPasswordsWithAccountStorageSyncTest : public SyncTest {
 #endif  // defined(OS_CHROMEOS)
     SyncTest::SetUpOnMainThread();
 
-    encryption_helper::SetKeystoreNigoriInFakeServer(GetFakeServer());
+    fake_server::SetKeystoreNigoriInFakeServer(GetFakeServer());
   }
 
   void AddTestPasswordToFakeServer() {

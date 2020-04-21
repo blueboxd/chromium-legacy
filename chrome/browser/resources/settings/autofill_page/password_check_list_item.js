@@ -28,6 +28,11 @@ Polymer({
       type: String,
       computed: 'computePassword_(item.password)',
     },
+
+    clickedChangePassword: {
+      type: Boolean,
+      value: false,
+    }
   },
 
   /**
@@ -63,6 +68,8 @@ Polymer({
    * @private
    */
   onChangePasswordClick_() {
+    this.fire('change-password-clicked', {id: this.item.id});
+
     const url = assert(this.item.changePasswordUrl);
     settings.OpenWindowProxyImpl.getInstance().openURL(url);
 
@@ -135,5 +142,10 @@ Polymer({
     if (this.isPasswordVisible_) {
       this.$$('#leakedPassword').select();
     }
+  },
+
+  /** @private */
+  onAlreadyChangedClick_(e) {
+    e.preventDefault();
   },
 });

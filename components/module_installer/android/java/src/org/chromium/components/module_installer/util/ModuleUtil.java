@@ -24,18 +24,6 @@ public class ModuleUtil {
     }
 
     /**
-     * Records the start time in order to later report the install duration via UMA.
-     */
-    public static void recordModuleAvailability() {
-        if (!BundleUtils.isBundle()) return;
-
-        try (Timer timer = new Timer()) {
-            initApplication();
-            SplitAvailabilityLogger.logModuleAvailability();
-        }
-    }
-
-    /**
      * Updates the CrashKey report containing modules currently present.
      */
     public static void updateCrashKeys() {
@@ -55,6 +43,7 @@ public class ModuleUtil {
         try (Timer timer = new Timer()) {
             SplitCompatInitializer.initApplication();
             ActivityObserverUtil.registerDefaultObserver();
+            SplitAvailabilityLogger.logModuleAvailability();
         }
     }
 

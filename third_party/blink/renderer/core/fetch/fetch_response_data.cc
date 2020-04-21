@@ -267,7 +267,7 @@ mojom::blink::FetchAPIResponsePtr FetchResponseData::PopulateFetchAPIResponse(
   response->loaded_with_credentials = loaded_with_credentials_;
   for (const auto& header : HeaderList()->List())
     response->headers.insert(header.first, header.second);
-  response->content_security_policy = ParseContentSecurityPolicy(
+  response->parsed_headers = ParseHeaders(
       HeaderList()->GetAsRawString(status_, status_message_), request_url);
 
   if (base::FeatureList::IsEnabled(

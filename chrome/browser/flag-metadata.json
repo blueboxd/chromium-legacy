@@ -925,11 +925,6 @@
     "expiry_milestone": 84
   },
   {
-    "name": "document-passive-event-listeners",
-    "owners": [ "nzolghadr", "input-dev" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "double-buffer-compositing",
     "owners": [ "chromeos-gfx@google.com" ],
     "expiry_milestone": 86
@@ -3320,11 +3315,6 @@
     "name": "paint-preview-demo",
     "owners": [ "ckitagawa", "fredmello", "mahmoudi" ],
     "expiry_milestone": 84
-  },
-  {
-    "name": "passive-event-listeners-due-to-fling",
-    "owners": [ "sahel", "input-dev" ],
-    "expiry_milestone": 76
   },
   {
     "name": "passive-listener-default",

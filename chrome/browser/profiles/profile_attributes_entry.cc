@@ -6,6 +6,7 @@
 
 #include "base/hash/hash.h"
 #include "base/optional.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"

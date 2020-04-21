@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/bits.h"
+#include "base/logging.h"
 #include "base/process/process_metrics.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/platform_thread.h"

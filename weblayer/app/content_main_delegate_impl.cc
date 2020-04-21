@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "build/build_config.h"
+#include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -103,7 +104,16 @@ void DisableFeaturesIfNotSet(
 }  // namespace
 
 ContentMainDelegateImpl::ContentMainDelegateImpl(MainParams params)
-    : params_(std::move(params)) {}
+    : params_(std::move(params)) {
+#if !defined(OS_ANDROID)
+  // On non-Android, the application start time is recorded in this constructor,
+  // which runs early during application lifetime. On Android, the application
+  // start time is sampled when the Java code is entered, and it is retrieved
+  // from C++ after initializing the JNI (see
+  // BrowserMainPartsImpl::PreMainMessageLoopRun()).
+  startup_metric_utils::RecordApplicationStartTime(base::TimeTicks::Now());
+#endif
+}
 
 ContentMainDelegateImpl::~ContentMainDelegateImpl() = default;
 

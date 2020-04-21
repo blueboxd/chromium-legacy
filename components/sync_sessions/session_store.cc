@@ -129,7 +129,6 @@ base::Optional<syncer::ModelError> ParseInitialDataOnBackendSequence(
 }  // namespace
 
 struct SessionStore::Builder {
-  RestoredForeignTabCallback restored_foreign_tab_callback;
   SyncSessionsClient* sessions_client = nullptr;
   OpenCallback callback;
   SessionInfo local_session_info;
@@ -141,7 +140,6 @@ struct SessionStore::Builder {
 // static
 void SessionStore::Open(
     const std::string& cache_guid,
-    const RestoredForeignTabCallback& restored_foreign_tab_callback,
     SyncSessionsClient* sessions_client,
     OpenCallback callback) {
   DCHECK(sessions_client);
@@ -149,7 +147,6 @@ void SessionStore::Open(
   DVLOG(1) << "Opening session store";
 
   auto builder = std::make_unique<Builder>();
-  builder->restored_foreign_tab_callback = restored_foreign_tab_callback;
   builder->sessions_client = sessions_client;
   builder->callback = std::move(callback);
 
@@ -393,8 +390,8 @@ void SessionStore::OnReadAllData(
 
   // WrapUnique() used because constructor is private.
   auto session_store = base::WrapUnique(new SessionStore(
-      builder->local_session_info, builder->restored_foreign_tab_callback,
-      std::move(builder->underlying_store), std::move(builder->initial_data),
+      builder->local_session_info, std::move(builder->underlying_store),
+      std::move(builder->initial_data),
       builder->metadata_batch->GetAllMetadata(), builder->sessions_client));
 
   std::move(builder->callback)
@@ -404,13 +401,11 @@ void SessionStore::OnReadAllData(
 
 SessionStore::SessionStore(
     const SessionInfo& local_session_info,
-    const RestoredForeignTabCallback& restored_foreign_tab_callback,
     std::unique_ptr<syncer::ModelTypeStore> underlying_store,
     std::map<std::string, sync_pb::SessionSpecifics> initial_data,
     const syncer::EntityMetadataMap& initial_metadata,
     SyncSessionsClient* sessions_client)
     : local_session_info_(local_session_info),
-      restored_foreign_tab_callback_(restored_foreign_tab_callback),
       store_(std::move(underlying_store)),
       session_tracker_(sessions_client) {
   session_tracker_.InitLocalSession(local_session_info_.session_tag,
@@ -448,12 +443,6 @@ SessionStore::SessionStore(
 
     if (specifics.session_tag() != local_session_info_.session_tag) {
       UpdateTrackerWithSpecifics(specifics, mtime, &session_tracker_);
-
-      // Notify listeners. In practice, this has the goal to load the URLs into
-      // the in-memory favicon cache.
-      if (specifics.has_tab()) {
-        restored_foreign_tab_callback_.Run(specifics.tab());
-      }
     } else if (specifics.has_header()) {
       // This is previously stored local header information. Restoring the local
       // is actually needed on Android only where we might not have a complete

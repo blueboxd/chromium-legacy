@@ -4,6 +4,7 @@
 
 #include "components/viz/service/display/sync_query_collection.h"
 
+#include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/base/container_util.h"
 #include "components/viz/service/display/resource_fence.h"

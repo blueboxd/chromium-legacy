@@ -841,16 +841,6 @@ void Element::SetElementArrayAttribute(
   element_attribute_map->Set(name, elements);
 }
 
-void Element::SetElementArrayAttribute(
-    const QualifiedName& name,
-    HeapVector<Member<Element>> given_elements,
-    bool is_null) {
-  if (is_null)
-    SetElementArrayAttribute(name, base::nullopt);
-  else
-    SetElementArrayAttribute(name, std::move(given_elements));
-}
-
 base::Optional<HeapVector<Member<Element>>> Element::GetElementArrayAttribute(
     const QualifiedName& name) {
   HeapVector<Member<Element>>* explicitly_set_elements =
@@ -885,14 +875,6 @@ base::Optional<HeapVector<Member<Element>>> Element::GetElementArrayAttribute(
   if (content_elements.IsEmpty())
     return base::nullopt;
   return content_elements;
-}
-
-HeapVector<Member<Element>> Element::GetElementArrayAttribute(
-    const QualifiedName& name,
-    bool& is_null) {
-  const auto& result = GetElementArrayAttribute(name);
-  is_null = !result.has_value();
-  return result.value_or(HeapVector<Member<Element>>());
 }
 
 NamedNodeMap* Element::attributesForBindings() const {

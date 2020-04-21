@@ -89,15 +89,14 @@ class MediaGalleriesEventRouter : public extensions::BrowserContextKeyedAPI,
   DISALLOW_COPY_AND_ASSIGN(MediaGalleriesEventRouter);
 };
 
-class MediaGalleriesGetMediaFileSystemsFunction
-    : public ChromeAsyncExtensionFunction {
+class MediaGalleriesGetMediaFileSystemsFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("mediaGalleries.getMediaFileSystems",
                              MEDIAGALLERIES_GETMEDIAFILESYSTEMS)
 
  protected:
   ~MediaGalleriesGetMediaFileSystemsFunction() override;
-  bool RunAsync() override;
+  ResponseAction Run() override;
 
  private:
   // Bottom half for RunAsync, invoked after the preferences is initialized.
@@ -126,15 +125,14 @@ class MediaGalleriesGetMediaFileSystemsFunction
   void GetMediaFileSystemsForExtension(const MediaFileSystemsCallback& cb);
 };
 
-class MediaGalleriesAddUserSelectedFolderFunction
-    : public ChromeAsyncExtensionFunction {
+class MediaGalleriesAddUserSelectedFolderFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("mediaGalleries.addUserSelectedFolder",
                              MEDIAGALLERIES_ADDUSERSELECTEDFOLDER)
 
  protected:
   ~MediaGalleriesAddUserSelectedFolderFunction() override;
-  bool RunAsync() override;
+  ResponseAction Run() override;
 
  private:
   // Bottom half for RunAsync, invoked after the preferences is initialized.
@@ -159,14 +157,14 @@ class MediaGalleriesAddUserSelectedFolderFunction
   void GetMediaFileSystemsForExtension(const MediaFileSystemsCallback& cb);
 };
 
-class MediaGalleriesGetMetadataFunction : public ChromeAsyncExtensionFunction {
+class MediaGalleriesGetMetadataFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("mediaGalleries.getMetadata",
                              MEDIAGALLERIES_GETMETADATA)
 
  protected:
   ~MediaGalleriesGetMetadataFunction() override;
-  bool RunAsync() override;
+  ResponseAction Run() override;
 
  private:
   // Bottom half for RunAsync, invoked after the preferences is initialized.
@@ -191,15 +189,14 @@ class MediaGalleriesGetMetadataFunction : public ChromeAsyncExtensionFunction {
       std::unique_ptr<content::BlobHandle> current_blob);
 };
 
-class MediaGalleriesAddGalleryWatchFunction
-    : public ChromeAsyncExtensionFunction {
+class MediaGalleriesAddGalleryWatchFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("mediaGalleries.addGalleryWatch",
                              MEDIAGALLERIES_ADDGALLERYWATCH)
 
  protected:
   ~MediaGalleriesAddGalleryWatchFunction() override;
-  bool RunAsync() override;
+  ResponseAction Run() override;
 
  private:
   void OnPreferencesInit(const std::string& pref_id);
@@ -208,15 +205,14 @@ class MediaGalleriesAddGalleryWatchFunction
   void HandleResponse(MediaGalleryPrefId gallery_id, const std::string& error);
 };
 
-class MediaGalleriesRemoveGalleryWatchFunction
-    : public ChromeAsyncExtensionFunction {
+class MediaGalleriesRemoveGalleryWatchFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("mediaGalleries.removeGalleryWatch",
                              MEDIAGALLERIES_REMOVEGALLERYWATCH)
 
  protected:
   ~MediaGalleriesRemoveGalleryWatchFunction() override;
-  bool RunAsync() override;
+  ResponseAction Run() override;
 
  private:
   void OnPreferencesInit(const std::string& pref_id);

@@ -5,6 +5,7 @@
 #include "fuchsia/engine/url_request_rewrite_type_converters.h"
 
 #include "base/strings/strcat.h"
+#include "base/strings/string_util.h"
 
 namespace {
 

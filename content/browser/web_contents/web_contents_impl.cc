@@ -892,19 +892,17 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHostImpl* render_view_host,
       return true;
   }
 
+#if BUILDFLAG(ENABLE_PLUGINS)
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(WebContentsImpl, message, render_view_host)
-    IPC_MESSAGE_HANDLER(
-        ViewHostMsg_NotifyTextAutosizerPageInfoChangedInLocalMainFrame,
-        OnTextAutosizerPageInfoChanged)
-#if BUILDFLAG(ENABLE_PLUGINS)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RequestPpapiBrokerPermission,
                         OnRequestPpapiBrokerPermission)
-#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
-
   return handled;
+#else
+  return false;
+#endif
 }
 
 bool WebContentsImpl::OnMessageReceived(RenderFrameHostImpl* render_frame_host,
@@ -5026,14 +5024,18 @@ void WebContentsImpl::OnPageScaleFactorChanged(RenderFrameHostImpl* source,
 }
 
 void WebContentsImpl::OnTextAutosizerPageInfoChanged(
-    RenderViewHostImpl* source,
-    const blink::WebTextAutosizerPageInfo& page_info) {
+    RenderFrameHostImpl* source,
+    blink::mojom::TextAutosizerPageInfoPtr page_info) {
   // Keep a copy of |page_info| in case we create a new RenderView before
   // the next update.
-  text_autosizer_page_info_ = page_info;
+  text_autosizer_page_info_.main_frame_width = page_info->main_frame_width;
+  text_autosizer_page_info_.main_frame_layout_width =
+      page_info->main_frame_layout_width;
+  text_autosizer_page_info_.device_scale_adjustment =
+      page_info->device_scale_adjustment;
   frame_tree_.root()->render_manager()->SendPageMessage(
       new PageMsg_UpdateTextAutosizerPageInfoForRemoteMainFrames(
-          MSG_ROUTING_NONE, page_info),
+          MSG_ROUTING_NONE, text_autosizer_page_info_),
       source->GetSiteInstance());
 }
 

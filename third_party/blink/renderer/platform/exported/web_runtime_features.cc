@@ -303,10 +303,6 @@ void WebRuntimeFeatures::EnableMiddleClickAutoscroll(bool enable) {
   RuntimeEnabledFeatures::SetMiddleClickAutoscrollEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnablePassiveDocumentEventListeners(bool enable) {
-  RuntimeEnabledFeatures::SetPassiveDocumentEventListenersEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnablePaymentApp(bool enable) {
   RuntimeEnabledFeatures::SetPaymentAppEnabled(enable);
 }

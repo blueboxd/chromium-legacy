@@ -19,6 +19,7 @@
 #include "base/macros.h"
 #include "fuchsia/fidl/chromium/cast/cpp/fidl.h"
 #include "fuchsia/runners/cast/cast_component.h"
+#include "fuchsia/runners/cast/pending_cast_component.h"
 #include "fuchsia/runners/common/web_content_runner.h"
 
 namespace base {
@@ -28,35 +29,32 @@ class FilteredServiceDirectory;
 }  // namespace base
 
 // sys::Runner which instantiates Cast activities specified via cast/casts URIs.
-class CastRunner : public WebContentRunner {
+class CastRunner : public WebContentRunner,
+                   public PendingCastComponent::Delegate {
  public:
   using OnDestructionCallback = base::OnceCallback<void(CastRunner*)>;
 
   static constexpr uint16_t kRemoteDebuggingPort = 9222;
 
-  // Creates a Runner for Cast components and publishes it into the specified
-  // OutgoingDirectory.
+  // Creates a Runner for Cast components.
   // |get_context_params_callback|: Returns the context parameters to use.
   // |is_headless|: True if |get_context_params_callback| sets the HEADLESS
   //     feature flag.
   CastRunner(GetContextParamsCallback get_context_params_callback,
              bool is_headless);
-  ~CastRunner() override;
+  ~CastRunner() final;
 
   CastRunner(const CastRunner&) = delete;
   CastRunner& operator=(const CastRunner&) = delete;
 
   // WebContentRunner implementation.
-  void DestroyComponent(WebComponent* component) override;
+  void DestroyComponent(WebComponent* component) final;
 
   // fuchsia::sys::Runner implementation.
   void StartComponent(fuchsia::sys::Package package,
                       fuchsia::sys::StartupInfo startup_info,
                       fidl::InterfaceRequest<fuchsia::sys::ComponentController>
-                          controller_request) override;
-
-  // Used to connect to the CastAgent to access Cast-specific services.
-  static const char kAgentComponentUrl[];
+                          controller_request) final;
 
   // Returns true if this Runner is configured not to use Scenic.
   bool is_headless() const { return is_headless_; }
@@ -67,25 +65,21 @@ class CastRunner : public WebContentRunner {
   std::unique_ptr<base::fuchsia::FilteredServiceDirectory>
   CreateServiceDirectory();
 
-  // Starts a component once all configuration data is available.
-  void MaybeStartComponent(
-      CastComponent::CastComponentParams* pending_component_params);
+  // PendingCastComponent::Delegate implementation.
+  void LaunchPendingComponent(PendingCastComponent* pending_component,
+                              CastComponent::Params params) final;
+  void CancelPendingComponent(PendingCastComponent* pending_component) final;
 
-  // Cancels the launch of a component.
-  void CancelComponentLaunch(
-      CastComponent::CastComponentParams* pending_component_params);
+  // Creates a component in this Runner, using the supplied |params|.
+  void CreateAndRegisterCastComponent(CastComponent::Params component_params);
 
-  void CreateAndRegisterCastComponent(
-      CastComponent::CastComponentParams component_params);
-  void OnApplicationConfigReceived(
-      CastComponent::CastComponentParams* pending_component_params,
-      chromium::cast::ApplicationConfig app_config);
-  void OnChildRunnerDestroyed(CastRunner* cast_runner);
+  // Called when the isolated component in |runner| is ready to be destroyed.
+  void OnIsolatedRunnerEmpty(CastRunner* runner);
 
   // Creates a CastRunner configured to serve data from content directories in
-  // |params|. Returns nullptr if an error occurred during CastRunner creation.
+  // |params|.
   CastRunner* CreateChildRunnerForIsolatedComponent(
-      CastComponent::CastComponentParams* component_params);
+      CastComponent::Params* component_params);
 
   // Handler for fuchsia.media.Audio requests in |service_directory_|.
   void ConnectAudioProtocol(
@@ -104,15 +98,16 @@ class CastRunner : public WebContentRunner {
   // True if this Runner uses Context(s) with the HEADLESS feature set.
   const bool is_headless_;
 
-  // Holds StartComponent() requests while the ApplicationConfig is being
-  // fetched from the ApplicationConfigManager.
-  base::flat_set<std::unique_ptr<CastComponent::CastComponentParams>,
+  // Temporarily holds a PendingCastComponent instance, responsible for fetching
+  // the parameters required to launch the component, for each call to
+  // StartComponent().
+  base::flat_set<std::unique_ptr<PendingCastComponent>,
                  base::UniquePtrComparator>
       pending_components_;
 
   // Invoked upon destruction of "isolated" runners, used to signal termination
   // to parents.
-  OnDestructionCallback on_destruction_callback_;
+  OnDestructionCallback on_component_destroyed_callback_;
 
   // Manages isolated CastRunners owned by |this| instance.
   base::flat_set<std::unique_ptr<CastRunner>, base::UniquePtrComparator>

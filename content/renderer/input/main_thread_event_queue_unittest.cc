@@ -228,10 +228,6 @@ class MainThreadEventQueueTest : public testing::Test,
     return queue_->last_touch_start_forced_nonblocking_due_to_fling_;
   }
 
-  void set_enable_fling_passive_listener_flag(bool enable_flag) {
-    queue_->enable_fling_passive_listener_flag_ = enable_flag;
-  }
-
   void RunPendingTasksWithSimulatedRaf() {
     while (needs_main_frame_ || main_task_runner_->HasPendingTask()) {
       main_task_runner_->RunUntilIdle();
@@ -988,7 +984,6 @@ TEST_F(MainThreadEventQueueTest, BlockingTouchesDuringFling) {
   SyntheticWebTouchEvent kEvents;
   kEvents.PressPoint(10, 10);
   kEvents.touch_start_or_first_touch_move = true;
-  set_enable_fling_passive_listener_flag(true);
 
   EXPECT_CALL(thread_scheduler_,
               DidHandleInputEventOnMainThread(testing::_, testing::_))
@@ -1074,7 +1069,6 @@ TEST_F(MainThreadEventQueueTest, BlockingTouchesOutsideFling) {
   SyntheticWebTouchEvent kEvents;
   kEvents.PressPoint(10, 10);
   kEvents.touch_start_or_first_touch_move = true;
-  set_enable_fling_passive_listener_flag(false);
 
   EXPECT_CALL(thread_scheduler_,
               DidHandleInputEventOnMainThread(testing::_, testing::_))
@@ -1096,7 +1090,6 @@ TEST_F(MainThreadEventQueueTest, BlockingTouchesOutsideFling) {
       handled_tasks_.at(0)->taskAsEvent()->EventPointer());
   EXPECT_TRUE(Equal(kEvents, *last_touch_event));
 
-  set_enable_fling_passive_listener_flag(false);
   HandleEvent(kEvents, blink::mojom::InputEventResultState::kNotConsumed);
   RunPendingTasksWithSimulatedRaf();
   EXPECT_THAT(GetAndResetCallbackResults(),
@@ -1113,7 +1106,6 @@ TEST_F(MainThreadEventQueueTest, BlockingTouchesOutsideFling) {
       handled_tasks_.at(1)->taskAsEvent()->EventPointer());
   EXPECT_TRUE(Equal(kEvents, *last_touch_event));
 
-  set_enable_fling_passive_listener_flag(true);
   HandleEvent(kEvents, blink::mojom::InputEventResultState::kNotConsumed);
   RunPendingTasksWithSimulatedRaf();
   EXPECT_THAT(GetAndResetCallbackResults(),

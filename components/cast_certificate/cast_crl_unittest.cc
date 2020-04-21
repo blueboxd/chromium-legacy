@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/cast_certificate/cast_crl.h"
+#include "base/logging.h"
 #include "base/time/time.h"
 #include "components/cast_certificate/cast_cert_validator.h"
 #include "components/cast_certificate/cast_cert_validator_test_helpers.h"

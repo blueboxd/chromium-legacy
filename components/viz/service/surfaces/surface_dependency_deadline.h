@@ -8,6 +8,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 
+#include "base/macros.h"
 #include "components/viz/service/viz_service_export.h"
 
 namespace base {

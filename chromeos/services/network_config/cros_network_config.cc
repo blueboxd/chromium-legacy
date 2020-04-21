@@ -4,6 +4,7 @@
 
 #include "chromeos/services/network_config/cros_network_config.h"
 
+#include "base/strings/string_util.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/managed_network_configuration_handler.h"

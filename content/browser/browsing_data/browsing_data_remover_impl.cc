@@ -21,6 +21,7 @@
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "content/browser/browsing_data/browsing_data_filter_builder_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -67,30 +68,30 @@ base::OnceClosure RunsOrPostOnCurrentTaskRunner(base::OnceClosure closure) {
 // it matches |predicate|. If |origin_type_mask| contains embedder-specific
 // datatypes, |embedder_matcher| must not be null; the decision for those
 // datatypes will be delegated to it.
-bool DoesOriginMatchMaskAndURLs(
+bool DoesOriginMatchMaskAndPredicate(
     int origin_type_mask,
-    base::OnceCallback<bool(const GURL&)> predicate,
+    base::OnceCallback<bool(const url::Origin&)> predicate,
     const BrowsingDataRemoverDelegate::EmbedderOriginTypeMatcher&
         embedder_matcher,
     const url::Origin& origin,
     storage::SpecialStoragePolicy* policy) {
-  if (predicate && !std::move(predicate).Run(origin.GetURL()))
+  if (predicate && !std::move(predicate).Run(origin))
     return false;
 
   const std::vector<std::string>& schemes = url::GetWebStorageSchemes();
   bool is_web_scheme = base::Contains(schemes, origin.scheme());
 
   // If a websafe origin is unprotected, it matches iff UNPROTECTED_WEB.
-  if ((!policy || !policy->IsStorageProtected(origin.GetURL())) &&
+  if ((origin_type_mask & BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB) &&
       is_web_scheme &&
-      (origin_type_mask & BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB)) {
+      (!policy || !policy->IsStorageProtected(origin.GetURL()))) {
     return true;
   }
   origin_type_mask &= ~BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB;
 
   // Hosted applications (protected and websafe origins) iff PROTECTED_WEB.
-  if (policy && policy->IsStorageProtected(origin.GetURL()) && is_web_scheme &&
-      (origin_type_mask & BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB)) {
+  if ((origin_type_mask & BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB) &&
+      is_web_scheme && policy && policy->IsStorageProtected(origin.GetURL())) {
     return true;
   }
   origin_type_mask &= ~BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB;
@@ -157,9 +158,9 @@ bool BrowsingDataRemoverImpl::DoesOriginMatchMaskForTesting(
   if (embedder_delegate_)
     embedder_matcher = embedder_delegate_->GetOriginTypeMatcher();
 
-  return DoesOriginMatchMaskAndURLs(origin_type_mask, base::NullCallback(),
-                                    std::move(embedder_matcher), origin,
-                                    policy);
+  return DoesOriginMatchMaskAndPredicate(origin_type_mask, base::NullCallback(),
+                                         std::move(embedder_matcher), origin,
+                                         policy);
 }
 
 void BrowsingDataRemoverImpl::Remove(const base::Time& delete_begin,
@@ -300,15 +301,18 @@ void BrowsingDataRemoverImpl::RemoveImpl(
 
   //////////////////////////////////////////////////////////////////////////////
   // INITIALIZATION
-  base::RepeatingCallback<bool(const GURL& url)> filter =
+  base::RepeatingCallback<bool(const GURL&)> url_filter =
       filter_builder->BuildGeneralFilter();
+  base::RepeatingCallback<bool(const url::Origin&)> origin_filter =
+      static_cast<BrowsingDataFilterBuilderImpl*>(filter_builder)
+          ->BuildGeneralOriginFilter();
 
   // Some backends support a filter that |is_null()| to make complete deletion
   // more efficient.
-  base::RepeatingCallback<bool(const GURL&)> nullable_filter =
+  base::RepeatingCallback<bool(const GURL&)> nullable_url_filter =
       filter_builder->IsEmptyBlacklist()
           ? base::RepeatingCallback<bool(const GURL&)>()
-          : filter;
+          : url_filter;
 
   //////////////////////////////////////////////////////////////////////////////
   // DATA_TYPE_DOWNLOADS
@@ -317,7 +321,7 @@ void BrowsingDataRemoverImpl::RemoveImpl(
     base::RecordAction(UserMetricsAction("ClearBrowsingData_Downloads"));
     DownloadManager* download_manager =
         BrowserContext::GetDownloadManager(browser_context_);
-    download_manager->RemoveDownloadsByURLAndTime(filter, delete_begin_,
+    download_manager->RemoveDownloadsByURLAndTime(url_filter, delete_begin_,
                                                   delete_end_);
   }
 
@@ -423,8 +427,8 @@ void BrowsingDataRemoverImpl::RemoveImpl(
 
     storage_partition->ClearData(
         storage_partition_remove_mask, quota_storage_remove_mask,
-        base::BindRepeating(&DoesOriginMatchMaskAndURLs, origin_type_mask_,
-                            filter, std::move(embedder_matcher)),
+        base::BindRepeating(&DoesOriginMatchMaskAndPredicate, origin_type_mask_,
+                            origin_filter, std::move(embedder_matcher)),
         std::move(deletion_filter), perform_storage_cleanup, delete_begin_,
         delete_end_,
         CreateTaskCompletionClosure(TracingDataType::kStoragePartition));
@@ -450,7 +454,7 @@ void BrowsingDataRemoverImpl::RemoveImpl(
         CreateTaskCompletionClosureForMojo(TracingDataType::kHttpCache));
 
     storage_partition->ClearCodeCaches(
-        delete_begin, delete_end, nullable_filter,
+        delete_begin, delete_end, nullable_url_filter,
         CreateTaskCompletionClosureForMojo(TracingDataType::kCodeCaches));
 
     // TODO(crbug.com/1985971) : Implement filtering for NetworkHistory.

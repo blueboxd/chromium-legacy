@@ -63,14 +63,14 @@ public class ClearWebsiteStorage extends DialogPreference {
     /**
      * Returns the string resource id to use to explain that the user will be signed out.
      */
-    public int getSignedOutText() {
+    public static int getSignedOutText() {
         return R.string.webstorage_clear_data_dialog_sign_out_message;
     }
 
     /**
      * Returns the string resource id to use to explain what happens with offline files.
      */
-    public int getOfflineText() {
+    public static int getOfflineText() {
         return R.string.webstorage_clear_data_dialog_offline_message;
     }
 }

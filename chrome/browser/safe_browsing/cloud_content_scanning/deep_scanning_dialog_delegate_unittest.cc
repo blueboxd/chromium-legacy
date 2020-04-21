@@ -11,15 +11,19 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_utils.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/fake_deep_scanning_dialog_delegate.h"
 #include "chrome/browser/safe_browsing/dm_token_utils.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -29,6 +33,7 @@
 #include "components/safe_browsing/core/features.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_task_environment.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace safe_browsing {
@@ -120,6 +125,18 @@ class BaseTest : public testing::Test {
         DeepScanAccessPoint::UPLOAD);
   }
 
+  void CreateFilesForTest(
+      const std::vector<base::FilePath::StringType>& file_names,
+      DeepScanningDialogDelegate::Data* data) {
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    for (const auto& file_name : file_names) {
+      base::FilePath path = temp_dir_.GetPath().Append(file_name);
+      base::File file(path, base::File::FLAG_CREATE | base::File::FLAG_WRITE);
+      file.WriteAtCurrentPos("content", 7);
+      data->paths.emplace_back(path);
+    }
+  }
+
   void SetUp() override {
     // Always set this so DeepScanningDialogDelegate::ShowForWebContents waits
     // for the verdict before running its callback.
@@ -134,6 +151,7 @@ class BaseTest : public testing::Test {
   TestingPrefServiceSimple pref_service_;
   TestingProfileManager profile_manager_;
   TestingProfile* profile_;
+  base::ScopedTempDir temp_dir_;
 };
 
 }  // namespace
@@ -737,7 +755,7 @@ TEST_F(DeepScanningDialogDelegateAuditOnlyTest,
   DeepScanningDialogDelegate::Data data;
   ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(profile(), url, &data));
 
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.doc"));
+  CreateFilesForTest({FILE_PATH_LITERAL("foo.doc")}, &data);
 
   bool called = false;
   ScanUpload(contents(), std::move(data),
@@ -762,8 +780,8 @@ TEST_F(DeepScanningDialogDelegateAuditOnlyTest,
   DeepScanningDialogDelegate::Data data;
   ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(profile(), url, &data));
 
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.doc"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/bar.doc"));
+  CreateFilesForTest(
+      {FILE_PATH_LITERAL("foo.doc"), FILE_PATH_LITERAL("bar.doc")}, &data);
 
   bool called = false;
   ScanUpload(contents(), std::move(data),
@@ -791,8 +809,8 @@ TEST_F(DeepScanningDialogDelegateAuditOnlyTest,
   DeepScanningDialogDelegate::Data data;
   ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(profile(), url, &data));
 
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/good.doc"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/good2.doc"));
+  CreateFilesForTest(
+      {FILE_PATH_LITERAL("good.doc"), FILE_PATH_LITERAL("good2.doc")}, &data);
 
   bool called = false;
   ScanUpload(contents(), std::move(data),
@@ -813,6 +831,8 @@ TEST_F(DeepScanningDialogDelegateAuditOnlyTest,
 }
 
 TEST_F(DeepScanningDialogDelegateAuditOnlyTest, FileIsEncrypted) {
+  content::InProcessUtilityThreadHelper in_process_utility_thread_helper;
+
   SetScanPolicies(/*dlp=*/true, /*malware=*/true);
   SetAllowPasswordPolicy(ALLOW_NONE);
   AddUrlToList(prefs::kURLsToCheckForMalwareOfUploadedContent, "*");
@@ -820,9 +840,12 @@ TEST_F(DeepScanningDialogDelegateAuditOnlyTest, FileIsEncrypted) {
   DeepScanningDialogDelegate::Data data;
   ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(profile(), url, &data));
 
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/enc.zip"));
-
-  SetPathIsEncrypted(data.paths[0]);
+  base::FilePath test_zip;
+  EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_zip));
+  test_zip = test_zip.AppendASCII("safe_browsing")
+                 .AppendASCII("download_protection")
+                 .AppendASCII("encrypted.zip");
+  data.paths.emplace_back(test_zip);
 
   bool called = false;
   ScanUpload(contents(), std::move(data),
@@ -842,6 +865,8 @@ TEST_F(DeepScanningDialogDelegateAuditOnlyTest, FileIsEncrypted) {
 }
 
 TEST_F(DeepScanningDialogDelegateAuditOnlyTest, FileIsEncrypted_PolicyAllows) {
+  content::InProcessUtilityThreadHelper in_process_utility_thread_helper;
+
   SetScanPolicies(/*dlp=*/true, /*malware=*/true);
   SetAllowPasswordPolicy(ALLOW_UPLOADS);
   AddUrlToList(prefs::kURLsToCheckForMalwareOfUploadedContent, "*");
@@ -849,9 +874,12 @@ TEST_F(DeepScanningDialogDelegateAuditOnlyTest, FileIsEncrypted_PolicyAllows) {
   DeepScanningDialogDelegate::Data data;
   ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(profile(), url, &data));
 
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/enc.zip"));
-
-  SetPathIsEncrypted(data.paths[0]);
+  base::FilePath test_zip;
+  EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_zip));
+  test_zip = test_zip.AppendASCII("safe_browsing")
+                 .AppendASCII("download_protection")
+                 .AppendASCII("encrypted.zip");
+  data.paths.emplace_back(test_zip);
 
   bool called = false;
   ScanUpload(contents(), std::move(data),
@@ -878,9 +906,8 @@ TEST_F(DeepScanningDialogDelegateAuditOnlyTest,
   DeepScanningDialogDelegate::Data data;
   ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(profile(), url, &data));
 
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/good.doc"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/bad.doc"));
-
+  CreateFilesForTest(
+      {FILE_PATH_LITERAL("good.doc"), FILE_PATH_LITERAL("bad.doc")}, &data);
   PathFailsDeepScan(data.paths[1],
                     FakeDeepScanningDialogDelegate::MalwareResponse(
                         MalwareDeepScanningVerdict::MALWARE));
@@ -909,8 +936,8 @@ TEST_F(DeepScanningDialogDelegateAuditOnlyTest, FileDataPositiveDlpVerdict) {
   DeepScanningDialogDelegate::Data data;
   ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(profile(), url, &data));
 
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/good.doc"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/good2.doc"));
+  CreateFilesForTest(
+      {FILE_PATH_LITERAL("good.doc"), FILE_PATH_LITERAL("good2.doc")}, &data);
 
   bool called = false;
   ScanUpload(contents(), std::move(data),
@@ -937,8 +964,8 @@ TEST_F(DeepScanningDialogDelegateAuditOnlyTest, FileDataNegativeDlpVerdict) {
   DeepScanningDialogDelegate::Data data;
   ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(profile(), url, &data));
 
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/good.doc"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/bad.doc"));
+  CreateFilesForTest(
+      {FILE_PATH_LITERAL("good.doc"), FILE_PATH_LITERAL("bad.doc")}, &data);
 
   PathFailsDeepScan(data.paths[1],
                     FakeDeepScanningDialogDelegate::DlpResponse(
@@ -971,8 +998,8 @@ TEST_F(DeepScanningDialogDelegateAuditOnlyTest,
   DeepScanningDialogDelegate::Data data;
   ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(profile(), url, &data));
 
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/good.doc"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/bad.doc"));
+  CreateFilesForTest(
+      {FILE_PATH_LITERAL("good.doc"), FILE_PATH_LITERAL("bad.doc")}, &data);
 
   PathFailsDeepScan(
       data.paths[1],
@@ -1004,8 +1031,8 @@ TEST_F(DeepScanningDialogDelegateAuditOnlyTest, StringFileData) {
   ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(profile(), url, &data));
 
   data.text.emplace_back(base::UTF8ToUTF16("foo"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.doc"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/bar.doc"));
+  CreateFilesForTest(
+      {FILE_PATH_LITERAL("foo.doc"), FILE_PATH_LITERAL("bar.doc")}, &data);
 
   bool called = false;
   ScanUpload(contents(), std::move(data),
@@ -1036,8 +1063,8 @@ TEST_F(DeepScanningDialogDelegateAuditOnlyTest, StringFileDataNoDLP) {
 
   data.text.emplace_back(base::UTF8ToUTF16("foo"));
   data.text.emplace_back(base::UTF8ToUTF16("bar"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.doc"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/bar.doc"));
+  CreateFilesForTest(
+      {FILE_PATH_LITERAL("foo.doc"), FILE_PATH_LITERAL("bar.doc")}, &data);
 
   bool called = false;
   ScanUpload(contents(), std::move(data),
@@ -1097,11 +1124,12 @@ TEST_F(DeepScanningDialogDelegateAuditOnlyTest, StringFileDataPartialSuccess) {
   ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(profile(), url, &data));
 
   data.text.emplace_back(base::UTF8ToUTF16("foo"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.doc"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo_fail_malware_1.doc"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo_fail_malware_2.doc"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo_fail_dlp_status.doc"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo_fail_dlp_rule.doc"));
+  CreateFilesForTest({FILE_PATH_LITERAL("foo.doc"),
+                      FILE_PATH_LITERAL("foo_fail_malware_1.doc"),
+                      FILE_PATH_LITERAL("foo_fail_malware_2.doc"),
+                      FILE_PATH_LITERAL("foo_fail_dlp_status.doc"),
+                      FILE_PATH_LITERAL("foo_fail_dlp_rule.doc")},
+                     &data);
 
   // Mark some files with failed scans.
   PathFailsDeepScan(data.paths[1],
@@ -1149,11 +1177,12 @@ TEST_F(DeepScanningDialogDelegateAuditOnlyTest, NoDelay) {
   ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(profile(), url, &data));
 
   data.text.emplace_back(base::UTF8ToUTF16("dlp_text"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo_fail_malware_0.doc"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo_fail_malware_1.doc"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo_fail_malware_2.doc"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo_fail_dlp_status.doc"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo_fail_dlp_rule.doc"));
+  CreateFilesForTest({FILE_PATH_LITERAL("foo_fail_malware_0.doc"),
+                      FILE_PATH_LITERAL("foo_fail_malware_1.doc"),
+                      FILE_PATH_LITERAL("foo_fail_malware_2.doc"),
+                      FILE_PATH_LITERAL("foo_fail_dlp_status.doc"),
+                      FILE_PATH_LITERAL("foo_fail_dlp_rule.doc")},
+                     &data);
 
   // Mark all files and text with failed scans.
   SetDLPResponse(FakeDeepScanningDialogDelegate::DlpResponse(
@@ -1225,34 +1254,19 @@ TEST_F(DeepScanningDialogDelegateAuditOnlyTest, EmptyWait) {
 }
 
 TEST_F(DeepScanningDialogDelegateAuditOnlyTest, SupportedTypes) {
+  content::InProcessUtilityThreadHelper in_process_utility_thread_helper;
+
   GURL url(kTestUrl);
   DeepScanningDialogDelegate::Data data;
   ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(profile(), url, &data));
 
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.7z"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.bz2"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.bzip"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.cab"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.csv"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.doc"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.docx"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.eps"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.tar.gz"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.gzip"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.odt"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.pdf"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.ppt"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.pptx"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.ps"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.rar"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.rtf"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.tar"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.txt"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.wpd"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.xls"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.xlsx"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.xps"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.zip"));
+  std::vector<base::FilePath::StringType> file_names;
+  for (const base::FilePath::StringType& supported_type :
+       SupportedDlpFileTypes()) {
+    file_names.push_back(base::FilePath::StringType(FILE_PATH_LITERAL("foo")) +
+                         supported_type);
+  }
+  CreateFilesForTest(file_names, &data);
 
   // Mark all files with failed scans.
   for (const auto& path : data.paths) {
@@ -1283,12 +1297,11 @@ TEST_F(DeepScanningDialogDelegateAuditOnlyTest, UnsupportedTypesDefaultPolicy) {
   DeepScanningDialogDelegate::Data data;
   ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(profile(), url, &data));
 
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.these"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.file"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.types"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.are"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.not"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.supported"));
+  CreateFilesForTest(
+      {FILE_PATH_LITERAL("foo.these"), FILE_PATH_LITERAL("foo.file"),
+       FILE_PATH_LITERAL("foo.types"), FILE_PATH_LITERAL("foo.are"),
+       FILE_PATH_LITERAL("foo.not"), FILE_PATH_LITERAL("foo.supported")},
+      &data);
 
   // Mark all files with failed scans.
   for (const auto& path : data.paths) {
@@ -1322,12 +1335,11 @@ TEST_F(DeepScanningDialogDelegateAuditOnlyTest, UnsupportedTypesBlockPolicy) {
   DeepScanningDialogDelegate::Data data;
   EXPECT_TRUE(DeepScanningDialogDelegate::IsEnabled(profile(), url, &data));
 
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.these"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.file"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.types"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.are"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.not"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.supported"));
+  CreateFilesForTest(
+      {FILE_PATH_LITERAL("foo.these"), FILE_PATH_LITERAL("foo.file"),
+       FILE_PATH_LITERAL("foo.types"), FILE_PATH_LITERAL("foo.are"),
+       FILE_PATH_LITERAL("foo.not"), FILE_PATH_LITERAL("foo.supported")},
+      &data);
 
   // Mark all files with failed scans.
   for (const auto& path : data.paths) {
@@ -1361,20 +1373,13 @@ TEST_F(DeepScanningDialogDelegateAuditOnlyTest, SupportedAndUnsupportedTypes) {
 
   // Only 3 of these file types are supported (bzip, cab and doc). They are
   // mixed in the list so as to show that insertion order does not matter.
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.bzip"));
-
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.these"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.file"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.types"));
-
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.cab"));
-
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.are"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.not"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.supported"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo_no_extension"));
-
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.doc"));
+  CreateFilesForTest(
+      {FILE_PATH_LITERAL("foo.bzip"), FILE_PATH_LITERAL("foo.these"),
+       FILE_PATH_LITERAL("foo.file"), FILE_PATH_LITERAL("foo.types"),
+       FILE_PATH_LITERAL("foo.cab"), FILE_PATH_LITERAL("foo.are"),
+       FILE_PATH_LITERAL("foo.not"), FILE_PATH_LITERAL("foo.supported"),
+       FILE_PATH_LITERAL("foo_no_extension"), FILE_PATH_LITERAL("foo.doc")},
+      &data);
 
   // Mark all files with failed scans.
   for (const auto& path : data.paths) {
@@ -1411,8 +1416,9 @@ TEST_F(DeepScanningDialogDelegateAuditOnlyTest, UnsupportedTypeAndDLPFailure) {
   DeepScanningDialogDelegate::Data data;
   ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(profile(), url, &data));
 
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.unsupported_extension"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/dlp_fail.doc"));
+  CreateFilesForTest({FILE_PATH_LITERAL("foo.unsupported_extension"),
+                      FILE_PATH_LITERAL("dlp_fail.doc")},
+                     &data);
 
   // Mark DLP as failure.
   SetDLPResponse(FakeDeepScanningDialogDelegate::DlpResponse(
@@ -1454,7 +1460,7 @@ TEST_P(DeepScanningDialogDelegateResultHandlingTest, Test) {
   FakeDeepScanningDialogDelegate::SetResponseResult(GetParam());
   ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(profile(), url, &data));
 
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.txt"));
+  CreateFilesForTest({FILE_PATH_LITERAL("foo.txt")}, &data);
 
   bool called = false;
   ScanUpload(

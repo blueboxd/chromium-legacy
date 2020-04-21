@@ -12,6 +12,8 @@
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/engine/sync_engine_switches.h"
 #include "components/sync/nigori/cryptographer_impl.h"
+#include "components/sync/nigori/nigori_test_utils.h"
+#include "components/sync/test/fake_server/fake_server_nigori_helper.h"
 #include "content/public/test/test_launcher.h"
 #include "crypto/ec_private_key.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -22,18 +24,18 @@ using bookmarks_helper::AddURL;
 using bookmarks_helper::BookmarksTitleChecker;
 using bookmarks_helper::CreateBookmarkServerEntity;
 using bookmarks_helper::ServerBookmarksEqualityChecker;
-using encryption_helper::CreateCustomPassphraseNigori;
-using encryption_helper::GetEncryptedBookmarkEntitySpecifics;
-using encryption_helper::GetServerNigori;
-using encryption_helper::InitCustomPassphraseCryptographerFromNigori;
-using encryption_helper::KeyParams;
-using encryption_helper::SetNigoriInFakeServer;
 using fake_server::FakeServer;
+using fake_server::GetServerNigori;
+using fake_server::SetNigoriInFakeServer;
 using sync_pb::EncryptedData;
 using sync_pb::NigoriSpecifics;
 using sync_pb::SyncEntity;
+using syncer::CreateCustomPassphraseNigori;
 using syncer::Cryptographer;
+using syncer::GetEncryptedBookmarkEntitySpecifics;
+using syncer::InitCustomPassphraseCryptographerFromNigori;
 using syncer::KeyDerivationParams;
+using syncer::KeyParamsForTesting;
 using syncer::LoopbackServerEntity;
 using syncer::ModelType;
 using syncer::ModelTypeSet;
@@ -102,11 +104,11 @@ class SingleClientCustomPassphraseSyncTest : public SyncTest {
   }
 
   // Waits until the given set of bookmarks appears on the server, encrypted
-  // with the precise KeyParams given.
+  // with the precise KeyParamsForTesting given.
   bool WaitForEncryptedServerBookmarks(
       const std::vector<ServerBookmarksEqualityChecker::ExpectedBookmark>&
           expected_bookmarks,
-      const KeyParams& key_params) {
+      const KeyParamsForTesting& key_params) {
     auto cryptographer = syncer::CryptographerImpl::FromSingleKeyForTesting(
         key_params.password, key_params.derivation_params);
     return ServerBookmarksEqualityChecker(GetSyncService(), GetFakeServer(),
@@ -163,7 +165,7 @@ class SingleClientCustomPassphraseSyncTest : public SyncTest {
 
   void InjectEncryptedServerBookmark(const std::string& title,
                                      const GURL& url,
-                                     const KeyParams& key_params) {
+                                     const KeyParamsForTesting& key_params) {
     std::unique_ptr<LoopbackServerEntity> server_entity =
         CreateBookmarkServerEntity(title, url);
     server_entity->SetSpecifics(GetEncryptedBookmarkEntitySpecifics(
@@ -203,7 +205,7 @@ class SingleClientCustomPassphraseForceDisableScryptDirectoryOnlySyncTest
     // |force_disabled| temporary set to false.
     ScopedScryptFeatureToggler toggler(/*force_disabled=*/false,
                                        /*use_for_new_passphrases_=*/false);
-    KeyParams key_params = {
+    KeyParamsForTesting key_params = {
         KeyDerivationParams::CreateForScrypt("someConstantSalt"), "hunter2"};
     scrypt_nigori_ = CreateCustomPassphraseNigori(key_params);
   }
@@ -256,12 +258,13 @@ IN_PROC_BROWSER_TEST_P(SingleClientCustomPassphraseSyncTestWithUssTests,
 
 IN_PROC_BROWSER_TEST_P(SingleClientCustomPassphraseSyncTestWithUssTests,
                        CanDecryptPbkdf2KeyEncryptedData) {
-  KeyParams key_params = {KeyDerivationParams::CreateForPbkdf2(), "hunter2"};
+  KeyParamsForTesting key_params = {KeyDerivationParams::CreateForPbkdf2(),
+                                    "hunter2"};
   InjectEncryptedServerBookmark("PBKDF2-encrypted bookmark",
                                 GURL("http://example.com/doesnt-matter"),
                                 key_params);
-  SetNigoriInFakeServer(GetFakeServer(),
-                        CreateCustomPassphraseNigori(key_params));
+  SetNigoriInFakeServer(CreateCustomPassphraseNigori(key_params),
+                        GetFakeServer());
   SetDecryptionPassphraseForClient(/*index=*/0, "hunter2");
   ASSERT_TRUE(SetupSync());
   EXPECT_TRUE(WaitForPassphraseRequiredState(/*desired_state=*/false));
@@ -275,9 +278,10 @@ IN_PROC_BROWSER_TEST_P(SingleClientCustomPassphraseSyncTestWithUssTests,
       GetFakeServer()->GetKeystoreKeys();
   ASSERT_THAT(keystore_keys, SizeIs(1));
 
-  KeyParams key_params = {KeyDerivationParams::CreateForPbkdf2(), "hunter2"};
-  SetNigoriInFakeServer(GetFakeServer(),
-                        CreateCustomPassphraseNigori(key_params));
+  KeyParamsForTesting key_params = {KeyDerivationParams::CreateForPbkdf2(),
+                                    "hunter2"};
+  SetNigoriInFakeServer(CreateCustomPassphraseNigori(key_params),
+                        GetFakeServer());
   SetupSyncNoWaitingForCompletion();
   ASSERT_TRUE(WaitForPassphraseRequiredState(/*desired_state=*/true));
 
@@ -356,13 +360,13 @@ IN_PROC_BROWSER_TEST_P(SingleClientCustomPassphraseUseScryptSyncTest,
 
 IN_PROC_BROWSER_TEST_P(SingleClientCustomPassphraseDoNotUseScryptSyncTest,
                        CanDecryptScryptKeyEncryptedDataWhenScryptNotDisabled) {
-  KeyParams key_params = {
+  KeyParamsForTesting key_params = {
       KeyDerivationParams::CreateForScrypt("someConstantSalt"), "hunter2"};
   InjectEncryptedServerBookmark("scypt-encrypted bookmark",
                                 GURL("http://example.com/doesnt-matter"),
                                 key_params);
-  SetNigoriInFakeServer(GetFakeServer(),
-                        CreateCustomPassphraseNigori(key_params));
+  SetNigoriInFakeServer(CreateCustomPassphraseNigori(key_params),
+                        GetFakeServer());
   SetDecryptionPassphraseForClient(/*index=*/0, "hunter2");
 
   ASSERT_TRUE(SetupSync());
@@ -374,7 +378,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientCustomPassphraseDoNotUseScryptSyncTest,
 IN_PROC_BROWSER_TEST_F(
     SingleClientCustomPassphraseForceDisableScryptDirectoryOnlySyncTest,
     CannotDecryptScryptKeyEncryptedDataWhenScryptDisabled) {
-  SetNigoriInFakeServer(GetFakeServer(), scrypt_nigori());
+  SetNigoriInFakeServer(scrypt_nigori(), GetFakeServer());
   SetDecryptionPassphraseForClient(/*index=*/0, "hunter2");
 
   SetupSyncNoWaitingForCompletion();
@@ -464,8 +468,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTestInDirectoryMode,
 
 IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTestInDirectoryMode,
                        ShouldLoadUSSCustomPassphraseInDirectoryMode) {
-  const KeyParams key_params = {KeyDerivationParams::CreateForPbkdf2(),
-                                "hunter2"};
+  const KeyParamsForTesting key_params = {
+      KeyDerivationParams::CreateForPbkdf2(), "hunter2"};
   InjectEncryptedServerBookmark(
       "some bookmark", GURL("http://example.com/doesnt-matter"), key_params);
   ASSERT_TRUE(SetupClients());
@@ -512,7 +516,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTestInUSSMode,
   std::string decoded_scrypt_salt;
   ASSERT_TRUE(base::Base64Decode(nigori.custom_passphrase_key_derivation_salt(),
                                  &decoded_scrypt_salt));
-  const KeyParams key_params = {
+  const KeyParamsForTesting key_params = {
       KeyDerivationParams::CreateForScrypt(decoded_scrypt_salt), "hunter2"};
   InjectEncryptedServerBookmark(
       "some bookmark", GURL("http://example.com/doesnt-matter"), key_params);

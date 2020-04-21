@@ -197,14 +197,14 @@ bool Video::LoadMetadata() {
     return false;
   }
 
-  base::JSONReader reader;
-  std::unique_ptr<base::Value> metadata(
-      reader.ReadToValueDeprecated(json_data));
-  if (!metadata) {
+  auto metadata_result =
+      base::JSONReader::ReadAndReturnValueWithError(json_data);
+  if (!metadata_result.value) {
     LOG(ERROR) << "Failed to parse video metadata: " << metadata_file_path_
-               << ": " << reader.GetErrorMessage();
+               << ": " << metadata_result.error_message;
     return false;
   }
+  base::Optional<base::Value> metadata = std::move(metadata_result.value);
 
   // Find the video's profile, only required for encoded video streams.
   profile_ = VIDEO_CODEC_PROFILE_UNKNOWN;

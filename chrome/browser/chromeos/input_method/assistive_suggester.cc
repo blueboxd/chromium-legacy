@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/strings/string_util.h"
 #include "chromeos/constants/chromeos_features.h"
 
 using input_method::InputMethodEngineBase;

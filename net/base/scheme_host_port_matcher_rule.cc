@@ -5,6 +5,7 @@
 #include "net/base/scheme_host_port_matcher_rule.h"
 
 #include "base/strings/pattern.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/parse_number.h"

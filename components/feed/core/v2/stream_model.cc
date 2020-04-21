@@ -5,6 +5,7 @@
 #include "components/feed/core/v2/stream_model.h"
 
 #include <algorithm>
+#include <sstream>
 #include <utility>
 
 #include "base/logging.h"

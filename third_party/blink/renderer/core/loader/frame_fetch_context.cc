@@ -716,6 +716,9 @@ void FrameFetchContext::PopulateResourceRequest(
     const ClientHintsPreferences& hints_preferences,
     const FetchParameters::ResourceWidth& resource_width,
     ResourceRequest& request) {
+  if (!GetResourceFetcherProperties().IsDetached())
+    probe::SetDevToolsIds(Probe(), request);
+
   ModifyRequestForCSP(request);
   AddClientHintsIfNecessary(hints_preferences, resource_width, request);
 
@@ -725,9 +728,6 @@ void FrameFetchContext::PopulateResourceRequest(
     // (i.e. "CSP: active, active") on asynchronous "stale-while-revalidate"
     // revalidation requests and if this is unexpected behavior.
     request.AddHttpHeaderField("CSP", "active");
-
-  if (!GetResourceFetcherProperties().IsDetached())
-    probe::SetDevToolsIds(Probe(), request);
 }
 
 void FrameFetchContext::SetFirstPartyCookie(ResourceRequest& request) {

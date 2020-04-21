@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/stl_util.h"
+#include "base/strings/string_util.h"
 #include "chrome/credential_provider/gaiacp/gcp_utils.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
 #include "chrome/credential_provider/gaiacp/os_user_manager.h"

@@ -89,7 +89,7 @@ struct TraceCollectionIfEnabled<weakness,
                                 WTF::kNoWeakHandling> {
   STATIC_ONLY(TraceCollectionIfEnabled);
 
-  static bool IsAlive(const blink::WeakCallbackInfo& info, const T&) {
+  static bool IsAlive(const blink::LivenessBroker& info, const T&) {
     return true;
   }
 
@@ -121,7 +121,7 @@ template <WTF::WeakHandlingFlag weakness,
 struct TraceCollectionIfEnabled {
   STATIC_ONLY(TraceCollectionIfEnabled);
 
-  static bool IsAlive(const blink::WeakCallbackInfo& info, const T& traceable) {
+  static bool IsAlive(const blink::LivenessBroker& info, const T& traceable) {
     return WTF::TraceInCollectionTrait<weakness, T, Traits>::IsAlive(info,
                                                                      traceable);
   }
@@ -270,7 +270,7 @@ namespace WTF {
 // weak elements.
 template <typename T, typename Traits>
 struct TraceInCollectionTrait<kNoWeakHandling, T, Traits> {
-  static bool IsAlive(const blink::WeakCallbackInfo& info, const T& t) {
+  static bool IsAlive(const blink::LivenessBroker& info, const T& t) {
     return true;
   }
 
@@ -283,7 +283,7 @@ struct TraceInCollectionTrait<kNoWeakHandling, T, Traits> {
 
 template <typename T, typename Traits>
 struct TraceInCollectionTrait<kNoWeakHandling, blink::Member<T>, Traits> {
-  static bool IsAlive(const blink::WeakCallbackInfo& info,
+  static bool IsAlive(const blink::LivenessBroker& info,
                       const blink::Member<T>& t) {
     return true;
   }
@@ -294,7 +294,7 @@ struct TraceInCollectionTrait<kNoWeakHandling, blink::Member<T>, Traits> {
 
 template <typename T, typename Traits>
 struct TraceInCollectionTrait<kWeakHandling, blink::Member<T>, Traits> {
-  static bool IsAlive(const blink::WeakCallbackInfo& info,
+  static bool IsAlive(const blink::LivenessBroker& info,
                       const blink::Member<T>& t) {
     return true;
   }
@@ -317,7 +317,7 @@ struct TraceInCollectionTrait<kWeakHandling, T, Traits> {};
 
 template <typename T, typename Traits>
 struct TraceInCollectionTrait<kWeakHandling, blink::WeakMember<T>, Traits> {
-  static bool IsAlive(const blink::WeakCallbackInfo& info,
+  static bool IsAlive(const blink::LivenessBroker& info,
                       const blink::WeakMember<T>& value) {
     return info.IsHeapObjectAlive(value);
   }
@@ -384,7 +384,7 @@ template <typename Value, typename Traits>
 struct TraceInCollectionTrait<kNoWeakHandling,
                               LinkedHashSetNode<Value>,
                               Traits> {
-  static bool IsAlive(const blink::WeakCallbackInfo& info,
+  static bool IsAlive(const blink::LivenessBroker& info,
                       const LinkedHashSetNode<Value>& self) {
     return TraceInCollectionTrait<
         kNoWeakHandling, Value,
@@ -404,7 +404,7 @@ struct TraceInCollectionTrait<kNoWeakHandling,
 
 template <typename Value, typename Traits>
 struct TraceInCollectionTrait<kWeakHandling, LinkedHashSetNode<Value>, Traits> {
-  static bool IsAlive(const blink::WeakCallbackInfo& info,
+  static bool IsAlive(const blink::LivenessBroker& info,
                       const LinkedHashSetNode<Value>& self) {
     return TraceInCollectionTrait<
         kWeakHandling, Value,

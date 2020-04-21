@@ -15,6 +15,7 @@
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "build/branding_buildflags.h"

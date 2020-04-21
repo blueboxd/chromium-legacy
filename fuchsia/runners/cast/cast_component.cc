@@ -27,20 +27,34 @@ constexpr int kRewriteRulesProviderDisconnectExitCode = 130;
 
 }  // namespace
 
-CastComponent::CastComponentParams::CastComponentParams() = default;
-CastComponent::CastComponentParams::CastComponentParams(CastComponentParams&&) =
-    default;
-CastComponent::CastComponentParams::~CastComponentParams() = default;
+const char CastComponent::kAgentComponentUrl[] =
+    "fuchsia-pkg://fuchsia.com/cast_agent#meta/cast_agent.cmx";
 
-CastComponent::CastComponent(CastRunner* runner,
-                             CastComponent::CastComponentParams params)
+CastComponent::Params::Params() = default;
+CastComponent::Params::Params(Params&&) = default;
+CastComponent::Params::~Params() = default;
+
+bool CastComponent::Params::AreComplete() const {
+  if (application_config.IsEmpty())
+    return false;
+  if (!api_bindings_client->HasBindings())
+    return false;
+  if (!initial_url_rewrite_rules)
+    return false;
+  if (!media_session_id)
+    return false;
+  return true;
+}
+
+CastComponent::CastComponent(CastRunner* runner, CastComponent::Params params)
     : WebComponent(runner,
                    std::move(params.startup_context),
                    std::move(params.controller_request)),
       agent_manager_(std::move(params.agent_manager)),
-      application_config_(std::move(params.app_config)),
-      rewrite_rules_provider_(std::move(params.rewrite_rules_provider)),
-      initial_rewrite_rules_(std::move(params.rewrite_rules.value())),
+      application_config_(std::move(params.application_config)),
+      url_rewrite_rules_provider_(std::move(params.url_rewrite_rules_provider)),
+      initial_url_rewrite_rules_(
+          std::move(params.initial_url_rewrite_rules.value())),
       api_bindings_client_(std::move(params.api_bindings_client)),
       media_session_id_(params.media_session_id.value()),
       headless_disconnect_watch_(FROM_HERE),
@@ -60,13 +74,13 @@ void CastComponent::StartComponent() {
 
   connector_ = std::make_unique<NamedMessagePortConnector>(frame());
 
-  rewrite_rules_provider_.set_error_handler([this](zx_status_t status) {
+  url_rewrite_rules_provider_.set_error_handler([this](zx_status_t status) {
     ZX_LOG_IF(ERROR, status != ZX_OK, status)
         << "UrlRequestRewriteRulesProvider disconnected.";
     DestroyComponent(kRewriteRulesProviderDisconnectExitCode,
                      fuchsia::sys::TerminationReason::INTERNAL_ERROR);
   });
-  OnRewriteRulesReceived(std::move(initial_rewrite_rules_));
+  OnRewriteRulesReceived(std::move(initial_url_rewrite_rules_));
 
   frame()->SetMediaSessionId(media_session_id_);
   frame()->ConfigureInputTypes(fuchsia::web::InputTypes::ALL,
@@ -87,7 +101,7 @@ void CastComponent::StartComponent() {
   application_controller_ = std::make_unique<ApplicationControllerImpl>(
       frame(),
       agent_manager_->ConnectToAgentService<chromium::cast::ApplicationContext>(
-          CastRunner::kAgentComponentUrl));
+          kAgentComponentUrl));
 
   // Pass application permissions to the frame.
   std::string origin = GURL(application_config_.web_url()).GetOrigin().spec();
@@ -116,7 +130,7 @@ void CastComponent::DestroyComponent(int termination_exit_code,
 void CastComponent::OnRewriteRulesReceived(
     std::vector<fuchsia::web::UrlRequestRewriteRule> rewrite_rules) {
   frame()->SetUrlRequestRewriteRules(std::move(rewrite_rules), [this]() {
-    rewrite_rules_provider_->GetUrlRequestRewriteRules(
+    url_rewrite_rules_provider_->GetUrlRequestRewriteRules(
         fit::bind_member(this, &CastComponent::OnRewriteRulesReceived));
   });
 }

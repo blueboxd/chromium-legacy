@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 
 namespace content_settings {

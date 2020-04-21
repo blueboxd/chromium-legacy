@@ -71,7 +71,7 @@ void MemoryCacheEntry::Trace(Visitor* visitor) {
       MemoryCacheEntry, &MemoryCacheEntry::ClearResourceWeak>(this);
 }
 
-void MemoryCacheEntry::ClearResourceWeak(const WeakCallbackInfo& info) {
+void MemoryCacheEntry::ClearResourceWeak(const LivenessBroker& info) {
   if (!resource_ || info.IsHeapObjectAlive(resource_))
     return;
   GetMemoryCache()->Remove(resource_.Get());

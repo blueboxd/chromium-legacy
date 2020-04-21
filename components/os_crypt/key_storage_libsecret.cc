@@ -5,6 +5,7 @@
 #include "components/os_crypt/key_storage_libsecret.h"
 
 #include "base/base64.h"
+#include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"

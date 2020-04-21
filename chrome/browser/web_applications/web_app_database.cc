@@ -131,6 +131,7 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
     mutable_chromeos_data->set_show_in_search(chromeos_data.show_in_search);
     mutable_chromeos_data->set_show_in_management(
         chromeos_data.show_in_management);
+    mutable_chromeos_data->set_is_disabled(chromeos_data.is_disabled);
   }
 
   local_data->set_is_in_sync_install(web_app.is_in_sync_install());
@@ -255,6 +256,7 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
     chromeos_data->show_in_search = chromeos_data_proto.show_in_search();
     chromeos_data->show_in_management =
         chromeos_data_proto.show_in_management();
+    chromeos_data->is_disabled = chromeos_data_proto.is_disabled();
     web_app->SetWebAppChromeOsData(std::move(chromeos_data));
   }
 

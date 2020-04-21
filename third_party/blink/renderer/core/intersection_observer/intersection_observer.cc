@@ -293,7 +293,7 @@ IntersectionObserver::IntersectionObserver(
   }
 }
 
-void IntersectionObserver::ProcessCustomWeakness(const WeakCallbackInfo& info) {
+void IntersectionObserver::ProcessCustomWeakness(const LivenessBroker& info) {
   // For explicit-root observers, if the root element disappears for any reason,
   // any remaining obsevations must be dismantled.
   if (root() && !info.IsHeapObjectAlive(root()))

@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/category_rankers/category_ranker.h"

@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_piece.h"
 #include "components/cbor/constants.h"

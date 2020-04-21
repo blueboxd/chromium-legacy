@@ -58,13 +58,6 @@ public interface AccountManagerFacade {
 
     /**
      * Gets Google account names asynchronously.
-     * TODO(https://crbug.com/1070624): Remove this method
-     */
-    @Deprecated
-    @MainThread
-    void getGoogleAccountNames(final Callback<AccountManagerResult<List<String>>> callback);
-
-    /**
      * Retrieves all Google accounts on the device.
      *
      * @throws AccountManagerDelegateException if Google Play Services are out of date,
@@ -72,6 +65,12 @@ public interface AccountManagerFacade {
      */
     @AnyThread
     List<Account> getGoogleAccounts() throws AccountManagerDelegateException;
+
+    /**
+     * Asynchronous version of {@link #getGoogleAccounts()}.
+     */
+    @MainThread
+    void getGoogleAccounts(Callback<AccountManagerResult<List<Account>>> callback);
 
     /**
      * Retrieves all Google accounts on the device.

@@ -58,6 +58,10 @@ struct ExternalInstallOptions {
   // other platforms.
   bool add_to_management = true;
 
+  // If true, the app icon is displayed on Chrome OS with a blocked logo on
+  // top, and the user cannot launch the app. Has no effect on other platforms.
+  bool is_disabled = false;
+
   // Whether the app should be reinstalled even if the user has previously
   // uninstalled it.
   bool override_previous_user_uninstall = false;

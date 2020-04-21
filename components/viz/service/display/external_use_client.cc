@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/viz/service/display/external_use_client.h"
+#include "base/logging.h"
 
 namespace viz {
 

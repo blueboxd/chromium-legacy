@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/ui/find_bar/find_bar_coordinator.h"
 
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/find_in_page/find_in_page_response_delegate.h"
 #import "ios/chrome/browser/find_in_page/find_tab_helper.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
@@ -23,8 +22,7 @@
 #error "This file requires ARC support."
 #endif
 
-@interface FindBarCoordinator () <FindInPageResponseDelegate,
-                                  ContainedPresenterDelegate>
+@interface FindBarCoordinator () <ContainedPresenterDelegate>
 
 @property(nonatomic, strong) FindBarMediator* mediator;
 
@@ -45,17 +43,16 @@
   self.presenter.delegate = self;
 
   self.mediator = [[FindBarMediator alloc]
-      initWithWebStateList:self.browser->GetWebStateList()
-            commandHandler:self.findInPageCommandHandler];
+      initWithCommandHandler:self.findInPageCommandHandler];
+  self.mediator.consumer = self.findBarController;
 
   DCHECK(self.currentWebState);
   FindTabHelper* helper = FindTabHelper::FromWebState(self.currentWebState);
+  helper->SetResponseDelegate(self.mediator);
   // If the FindUI is already active, just reshow it.
   if (helper->IsFindUIActive()) {
     [self showAnimated:NO shouldFocus:[self.findBarController isFocused]];
   } else {
-    DCHECK(!helper->IsFindUIActive());
-    helper->SetResponseDelegate(self);
     helper->SetFindUIActive(true);
     [self showAnimated:YES shouldFocus:YES];
   }
@@ -111,16 +108,6 @@
                          initialUpdate:NO
                         focusTextfield:NO];
   }
-}
-
-#pragma mark - FindInPageResponseDelegate
-
-- (void)findDidFinishWithUpdatedModel:(FindInPageModel*)model {
-  [self.findBarController updateResultsCount:model];
-}
-
-- (void)findDidStop {
-  [self.findInPageCommandHandler closeFindInPage];
 }
 
 #pragma mark - ContainedPresenterDelegate

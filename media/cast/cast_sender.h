@@ -82,6 +82,9 @@ class AudioFrameInput : public base::RefCountedThreadSafe<AudioFrameInput> {
 // have halted the session.
 using StatusChangeCallback = base::RepeatingCallback<void(OperationalStatus)>;
 
+// The equivalent of StatusChangeCallback when only one change is expected.
+using StatusChangeOnceCallback = base::OnceCallback<void(OperationalStatus)>;
+
 // All methods of CastSender must be called on the main thread.
 // Provided CastTransport will also be called on the main thread.
 class CastSender {
@@ -100,9 +103,8 @@ class CastSender {
 
   // Initialize the audio stack. Must be called in order to send audio frames.
   // |status_change_cb| will be run as operational status changes.
-  virtual void InitializeAudio(
-      const FrameSenderConfig& audio_config,
-      const StatusChangeCallback& status_change_cb) = 0;
+  virtual void InitializeAudio(const FrameSenderConfig& audio_config,
+                               StatusChangeOnceCallback status_change_cb) = 0;
 
   // Initialize the video stack. Must be called in order to send video frames.
   // |status_change_cb| will be run as operational status changes.

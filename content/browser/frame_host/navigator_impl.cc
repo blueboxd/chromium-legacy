@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
@@ -75,26 +76,85 @@ NavigatorImpl::NavigatorImpl(NavigationControllerImpl* navigation_controller,
 NavigatorImpl::~NavigatorImpl() {}
 
 // static
-void NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(
+bool NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(
     RenderFrameHostImpl* render_frame_host,
-    const GURL& url) {
-  int enabled_bindings = render_frame_host->GetEnabledBindings();
+    const GURL& url,
+    bool is_renderer_initiated_check) {
+  // In single process mode, everything runs in the same process, so the checks
+  // below are irrelevant.
+  if (RenderProcessHost::run_renderer_in_process())
+    return true;
+
+  ChildProcessSecurityPolicyImpl* security_policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+  GURL process_lock_url =
+      security_policy->GetOriginLock(render_frame_host->GetProcess()->GetID());
+
+  // In the case of error page process, any URL is allowed to commit.
+  if (process_lock_url == GURL(kUnreachableWebDataURL))
+    return true;
+
+  bool frame_has_bindings = ((render_frame_host->GetEnabledBindings() &
+                              kWebUIBindingsPolicyMask) != 0);
   bool is_allowed_in_web_ui_renderer =
       WebUIControllerFactoryRegistry::GetInstance()->IsURLAcceptableForWebUI(
-          render_frame_host->frame_tree_node()
-              ->navigator()
-              ->GetController()
-              ->GetBrowserContext(),
-          url);
-  if ((enabled_bindings & kWebUIBindingsPolicyMask) &&
-      !is_allowed_in_web_ui_renderer) {
-    // Log the URL to help us diagnose any future failures of this CHECK.
-    FrameTreeNode* root_node =
-        render_frame_host->frame_tree_node()->frame_tree()->root();
-    GetContentClient()->SetActiveURL(
-        url, root_node->current_url().possibly_invalid_spec());
-    CHECK(0);
+          render_frame_host->GetProcess()->GetBrowserContext(), url);
+
+  // Embedders might disable locking for WebUI URLs, which is bad idea, however
+  // this method should take this into account.
+  bool should_lock_to_origin = SiteInstanceImpl::ShouldLockToOrigin(
+      render_frame_host->GetSiteInstance()->GetIsolationContext(), url,
+      render_frame_host->GetSiteInstance()->IsGuest());
+
+  // If the |render_frame_host| has any WebUI bindings, disallow URLs that are
+  // not allowed in a WebUI renderer process.
+  if (frame_has_bindings) {
+    // The process itself must have WebUI bit in the security policy.
+    // Otherwise it indicates that there is a bug in browser process logic and
+    // the browser process must be terminated.
+    // TODO(nasko): Convert to CHECK() once it is confirmed this is not
+    // violated in reality.
+    if (!security_policy->HasWebUIBindings(
+            render_frame_host->GetProcess()->GetID())) {
+      base::debug::DumpWithoutCrashing();
+    }
+
+    // Check whether the process must be locked and if so that the process lock
+    // is indeed in place.
+    if (should_lock_to_origin && process_lock_url.is_empty())
+      return false;
+
+    // There must be a WebUI on the frame.
+    if (!render_frame_host->web_ui())
+      return false;
+
+    // The |url| must be allowed in a WebUI process if the frame has WebUI.
+    if (!is_allowed_in_web_ui_renderer) {
+      // If this method is called in response to IPC message from the renderer
+      // process, it should be terminated, otherwise it is a bug in the
+      // navigation logic and the browser process should be terminated to avoid
+      // exposing users to security issues.
+      if (is_renderer_initiated_check)
+        return false;
+
+      CHECK(false);
+    }
   }
+
+  // If |url| is one that is allowed in WebUI renderer process, ensure that its
+  // origin is either opaque or matches the origin of the process lock.
+  if (is_allowed_in_web_ui_renderer) {
+    url::Origin url_origin = url::Origin::Create(url.GetOrigin());
+
+    // Verify |url| matches the origin of the process lock, if one is in place.
+    if (should_lock_to_origin) {
+      url::Origin process_lock_origin = url::Origin::Create(process_lock_url);
+      if (!url_origin.opaque() && process_lock_origin != url_origin)
+        return false;
+    }
+  }
+
+  return true;
 }
 
 // A renderer-initiated navigation should be ignored iff a) there is an ongoing

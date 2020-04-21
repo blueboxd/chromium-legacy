@@ -161,7 +161,7 @@ class EphemeronCallbacksCounter
         this);
   }
 
-  void Callback(const WeakCallbackInfo& info) {
+  void Callback(const LivenessBroker& info) {
     *count_holder_ = ThreadState::Current()->Heap().ephemeron_callbacks_.size();
   }
 

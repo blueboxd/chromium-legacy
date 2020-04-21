@@ -12,19 +12,23 @@
 namespace base {
 namespace internal {
 
+template <bool thread_safe>
 struct PartitionDirectMapExtent {
-  PartitionDirectMapExtent* next_extent;
-  PartitionDirectMapExtent* prev_extent;
-  PartitionBucket* bucket;
+  PartitionDirectMapExtent<thread_safe>* next_extent;
+  PartitionDirectMapExtent<thread_safe>* prev_extent;
+  PartitionBucket<thread_safe>* bucket;
   size_t map_size;  // Mapped size, not including guard pages and meta-data.
 
-  ALWAYS_INLINE static PartitionDirectMapExtent* FromPage(PartitionPage* page);
+  ALWAYS_INLINE static PartitionDirectMapExtent<thread_safe>* FromPage(
+      PartitionPage<thread_safe>* page);
 };
 
-ALWAYS_INLINE PartitionDirectMapExtent* PartitionDirectMapExtent::FromPage(
-    PartitionPage* page) {
+template <bool thread_safe>
+ALWAYS_INLINE PartitionDirectMapExtent<thread_safe>*
+PartitionDirectMapExtent<thread_safe>::FromPage(
+    PartitionPage<thread_safe>* page) {
   DCHECK(page->bucket->is_direct_mapped());
-  return reinterpret_cast<PartitionDirectMapExtent*>(
+  return reinterpret_cast<PartitionDirectMapExtent<thread_safe>*>(
       reinterpret_cast<char*>(page) + 3 * kPageMetadataSize);
 }
 

@@ -183,8 +183,14 @@ enum UnknownRegistryFilter {
 NET_EXPORT std::string GetDomainAndRegistry(const GURL& gurl,
                                             PrivateRegistryFilter filter);
 
-// Like the GURL version, but takes a host (which is canonicalized internally)
-// instead of a full GURL.
+// Like the GURL version, but takes an Origin. Returns an empty string if the
+// Origin is opaque.
+NET_EXPORT std::string GetDomainAndRegistry(const url::Origin& origin,
+                                            PrivateRegistryFilter filter);
+
+// Like the GURL / Origin versions, but takes a host (which is canonicalized
+// internally). Prefer either the GURL or Origin variants instead of this one
+// to avoid needing to re-canonicalize the host.
 NET_EXPORT std::string GetDomainAndRegistry(base::StringPiece host,
                                             PrivateRegistryFilter filter);
 

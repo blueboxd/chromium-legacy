@@ -4,6 +4,7 @@
 
 #include "components/policy/core/common/plist_writer.h"
 
+#include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "third_party/libxml/chromium/xml_writer.h"

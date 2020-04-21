@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "components/google/core/common/google_util.h"
 #include "components/url_formatter/url_fixer.h"
 #include "components/url_matcher/url_matcher.h"

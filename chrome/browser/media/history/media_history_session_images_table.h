@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/strings/string_util.h"
 #include "chrome/browser/media/history/media_history_table_base.h"
 #include "sql/init_status.h"
 #include "url/gurl.h"

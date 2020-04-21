@@ -6,6 +6,7 @@
 
 #include "base/files/file.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "net/base/filename_util.h"
 #include "net/base/url_util.h"

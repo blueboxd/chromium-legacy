@@ -8,6 +8,7 @@
 
 #include "base/base64url.h"
 #include "base/big_endian.h"
+#include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"

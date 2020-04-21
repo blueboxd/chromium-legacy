@@ -289,6 +289,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
   updateToc();
 
+  $('button-restart-drive').addEventListener('click', function() {
+    chrome.send('restartDrive');
+  });
+
   $('button-reset-drive-filesystem').addEventListener('click', function() {
     $('reset-status-text').textContent = 'resetting...';
     chrome.send('resetDriveFileSystem');

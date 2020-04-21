@@ -69,6 +69,7 @@ class WebAppSyncBridge : public AppRegistryController,
   void Init(base::OnceClosure callback) override;
   void SetAppUserDisplayMode(const AppId& app_id,
                              DisplayMode user_display_mode) override;
+  void SetAppIsDisabled(const AppId& app_id, bool is_disabled) override;
   void SetAppIsLocallyInstalledForTesting(const AppId& app_id,
                                           bool is_locally_installed) override;
   WebAppSyncBridge* AsWebAppSyncBridge() override;

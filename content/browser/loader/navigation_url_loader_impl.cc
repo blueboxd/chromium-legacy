@@ -335,6 +335,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
           initial_interceptors,
       std::unique_ptr<network::ResourceRequest> resource_request,
       BrowserContext* browser_context,
+      StoragePartitionImpl* storage_partition,
       const GURL& url,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory>
           proxied_factory_receiver,
@@ -352,6 +353,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
         known_schemes_(std::move(known_schemes)),
         bypass_redirect_checks_(bypass_redirect_checks),
         browser_context_(browser_context),
+        storage_partition_(storage_partition),
         head_(network::mojom::URLResponseHead::New()) {}
 
   ~URLLoaderRequestController() override {
@@ -944,10 +946,13 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       network::mojom::URLResponseHeadPtr head,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       bool is_download) {
-    owner_->OnReceiveResponse(std::move(head),
-                              std::move(url_loader_client_endpoints),
-                              std::move(response_body_), global_request_id_,
-                              is_download, ui_to_io_time_, base::Time::Now());
+    network::mojom::URLResponseHead* head_ptr = head.get();
+    auto on_receive_response = base::BindOnce(
+        &NavigationURLLoaderImpl::OnReceiveResponse, owner_, std::move(head),
+        std::move(url_loader_client_endpoints), std::move(response_body_),
+        global_request_id_, is_download, ui_to_io_time_, base::Time::Now());
+
+    ParseHeaders(url_, head_ptr, std::move(on_receive_response));
   }
 
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
@@ -982,10 +987,11 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 
     url_ = redirect_info.new_url;
 
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    network::mojom::URLResponseHead* head_ptr = head.get();
+    auto on_receive_redirect =
         base::BindOnce(&NavigationURLLoaderImpl::OnReceiveRedirect, owner_,
-                       redirect_info, std::move(head), base::Time::Now()));
+                       redirect_info, std::move(head), base::Time::Now());
+    ParseHeaders(url_, head_ptr, std::move(on_receive_redirect));
   }
 
   void OnUploadProgress(int64_t current_position,
@@ -1130,6 +1136,44 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
         std::move(accept_langs));
   }
 
+  void ParseHeaders(const GURL& url,
+                    network::mojom::URLResponseHead* head,
+                    base::OnceClosure continuation) {
+    // The main path:
+    // --------------
+    // The ParsedHeaders are already provided. No more work needed.
+    //
+    // Currently used when the response is coming from:
+    // - Network
+    // - ServiceWorker
+    // - WebUI
+    if (head->parsed_headers) {
+      std::move(continuation).Run();
+      return;
+    }
+
+    // As an optimization, when we know the parsed headers will be empty, we can
+    // skip the network process roundtrip.
+    // TODO(arthursonzogni): If there are any performance issues, consider
+    // checking the |head->headers| contains at least one header to be parsed.
+    if (!head->headers) {
+      head->parsed_headers = network::mojom::ParsedHeaders::New();
+      std::move(continuation).Run();
+      return;
+    }
+
+    auto assign = [](base::OnceClosure continuation,
+                     network::mojom::URLResponseHead* head,
+                     network::mojom::ParsedHeadersPtr parsed_headers) {
+      head->parsed_headers = std::move(parsed_headers);
+      std::move(continuation).Run();
+    };
+
+    storage_partition_->GetNetworkContext()->ParseHeaders(
+        url, head->headers,
+        base::BindOnce(assign, std::move(continuation), head));
+  }
+
   std::vector<std::unique_ptr<NavigationLoaderInterceptor>> interceptors_;
   size_t interceptor_index_ = 0;
 
@@ -1238,6 +1282,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   base::TimeDelta ui_to_io_time_;
 
   BrowserContext* browser_context_;
+  StoragePartitionImpl* storage_partition_;
 
   network::mojom::URLResponseHeadPtr head_;
   mojo::ScopedDataPipeConsumerHandle response_body_;
@@ -1411,9 +1456,10 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
   DCHECK(!request_controller_);
   request_controller_ = std::make_unique<URLLoaderRequestController>(
       std::move(initial_interceptors), std::move(new_request), browser_context,
-      request_info->common_params->url, std::move(proxied_factory_receiver),
-      std::move(proxied_factory_remote), std::move(known_schemes),
-      bypass_redirect_checks, weak_factory_.GetWeakPtr());
+      partition, request_info->common_params->url,
+      std::move(proxied_factory_receiver), std::move(proxied_factory_remote),
+      std::move(known_schemes), bypass_redirect_checks,
+      weak_factory_.GetWeakPtr());
   request_controller_->Start(
       std::move(pending_network_factory), service_worker_handle,
       service_worker_handle_core, appcache_handle,
@@ -1468,7 +1514,7 @@ void NavigationURLLoaderImpl::OnReceiveResponse(
 }
 
 void NavigationURLLoaderImpl::OnReceiveRedirect(
-    const net::RedirectInfo& redirect_info,
+    net::RedirectInfo redirect_info,
     network::mojom::URLResponseHeadPtr response_head,
     base::Time io_post_time) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

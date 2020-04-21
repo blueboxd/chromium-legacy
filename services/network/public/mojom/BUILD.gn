@@ -304,6 +304,7 @@ mojom("mojom") {
     "origin_policy_manager.mojom",
     "p2p.mojom",
     "p2p_trusted.mojom",
+    "parsed_headers.mojom",
     "proxy_config.mojom",
     "proxy_config_with_annotation.mojom",
     "proxy_lookup_client.mojom",

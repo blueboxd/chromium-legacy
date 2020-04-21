@@ -5,6 +5,7 @@
 #include "components/autofill_assistant/browser/value_util.h"
 #include <algorithm>
 #include "base/i18n/case_conversion.h"
+#include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 
 namespace autofill_assistant {

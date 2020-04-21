@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/logging.h"
 #include "components/ui_devtools/Protocol.h"
 #include "components/ui_devtools/ui_element_delegate.h"
 

@@ -665,7 +665,7 @@ inline void ThreadHeap::SetLastAllocatedRegion(Address start, size_t length) {
 }
 
 template <typename T>
-void Visitor::HandleWeakCell(const WeakCallbackInfo&, const void* object) {
+void Visitor::HandleWeakCell(const LivenessBroker&, const void* object) {
   WeakMember<T>* weak_member =
       reinterpret_cast<WeakMember<T>*>(const_cast<void*>(object));
   if (weak_member->Get()) {
@@ -680,7 +680,7 @@ void Visitor::HandleWeakCell(const WeakCallbackInfo&, const void* object) {
   }
 }
 
-class PLATFORM_EXPORT WeakCallbackInfo final {
+class PLATFORM_EXPORT LivenessBroker final {
  public:
   template <typename T>
   bool IsHeapObjectAlive(const T*) const;
@@ -690,23 +690,23 @@ class PLATFORM_EXPORT WeakCallbackInfo final {
   bool IsHeapObjectAlive(const UntracedMember<T>&) const;
 
  private:
-  WeakCallbackInfo() = default;
+  LivenessBroker() = default;
   friend class ThreadHeap;
+  friend class ThreadState;
 };
 
 template <typename T>
-bool WeakCallbackInfo::IsHeapObjectAlive(const T* object) const {
+bool LivenessBroker::IsHeapObjectAlive(const T* object) const {
   return ThreadHeap::IsHeapObjectAlive(object);
 }
 
 template <typename T>
-bool WeakCallbackInfo::IsHeapObjectAlive(
-    const WeakMember<T>& weak_member) const {
+bool LivenessBroker::IsHeapObjectAlive(const WeakMember<T>& weak_member) const {
   return ThreadHeap::IsHeapObjectAlive(weak_member);
 }
 
 template <typename T>
-bool WeakCallbackInfo::IsHeapObjectAlive(
+bool LivenessBroker::IsHeapObjectAlive(
     const UntracedMember<T>& untraced_member) const {
   return ThreadHeap::IsHeapObjectAlive(untraced_member.Get());
 }

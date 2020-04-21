@@ -390,7 +390,7 @@ class PersistentBase {
 #endif
   }
 
-  static void HandleWeakPersistent(const WeakCallbackInfo&,
+  static void HandleWeakPersistent(const LivenessBroker&,
                                    const void* persistent_pointer) {
     using Base =
         PersistentBase<typename std::remove_const<T>::type,

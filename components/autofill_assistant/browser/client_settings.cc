@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/autofill_assistant/browser/client_settings.h"
+#include "base/logging.h"
 
 namespace {
 

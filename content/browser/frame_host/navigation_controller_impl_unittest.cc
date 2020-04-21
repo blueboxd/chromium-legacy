@@ -30,6 +30,8 @@
 #include "content/browser/frame_host/navigator_impl.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/browser/webui/content_web_ui_controller_factory.h"
+#include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/common/frame_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/render_view_host.h"
@@ -158,6 +160,9 @@ class NavigationControllerTest : public RenderViewHostImplTestHarness,
     WebContents* web_contents = RenderViewHostImplTestHarness::web_contents();
     ASSERT_TRUE(web_contents);  // The WebContents should be created by now.
     WebContentsObserver::Observe(web_contents);
+
+    WebUIControllerFactory::RegisterFactory(
+        ContentWebUIControllerFactory::GetInstance());
   }
 
   // WebContentsObserver:
@@ -905,23 +910,13 @@ TEST_F(NavigationControllerTest, LoadURL_PrivilegedPending) {
   NavigationControllerImpl& controller = controller_impl();
 
   // First make some history, starting with a privileged URL.
-  const GURL kExistingURL1("chrome://privileged");
-  auto navigation =
-      NavigationSimulator::CreateBrowserInitiated(kExistingURL1, contents());
-  navigation->Start();
-  navigation->ReadyToCommit();
-  // Pretend it has bindings so we can tell if we incorrectly copy it. This has
-  // to be done after ReadyToCommit, otherwise we won't use the current RFH to
-  // commit since its bindings don't match the URL.
-  EXPECT_EQ(0, main_test_rfh()->GetEnabledBindings());
-  main_test_rfh()->AllowBindings(BINDINGS_POLICY_MOJO_WEB_UI);
-  EXPECT_EQ(BINDINGS_POLICY_MOJO_WEB_UI, main_test_rfh()->GetEnabledBindings());
-  navigation->Commit();
+  const GURL kExistingURL1("chrome://gpu");
+  NavigationSimulator::NavigateAndCommitFromBrowser(contents(), kExistingURL1);
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
-  EXPECT_EQ(BINDINGS_POLICY_MOJO_WEB_UI, controller.GetLastCommittedEntry()
-                                             ->GetFrameEntry(root_ftn())
-                                             ->bindings());
+  EXPECT_EQ(BINDINGS_POLICY_WEB_UI, controller.GetLastCommittedEntry()
+                                        ->GetFrameEntry(root_ftn())
+                                        ->bindings());
   // Simulate a user gesture so that the above entry is not marked to be skipped
   // on back.
   main_test_rfh()->frame_tree_node()->UpdateUserActivationState(
@@ -946,7 +941,7 @@ TEST_F(NavigationControllerTest, LoadURL_PrivilegedPending) {
   EXPECT_EQ(0, controller.GetPendingEntryIndex());
   EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
   EXPECT_EQ(
-      BINDINGS_POLICY_MOJO_WEB_UI,
+      BINDINGS_POLICY_WEB_UI,
       controller.GetPendingEntry()->GetFrameEntry(root_ftn())->bindings());
 
   // Before that commits, do a new navigation.

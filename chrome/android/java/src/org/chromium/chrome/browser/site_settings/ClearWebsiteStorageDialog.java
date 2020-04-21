@@ -34,11 +34,10 @@ public class ClearWebsiteStorageDialog extends PreferenceDialogFragmentCompat {
 
     @Override
     protected void onBindDialogView(View view) {
-        ClearWebsiteStorage preference = (ClearWebsiteStorage) getPreference();
         TextView signedOutView = view.findViewById(R.id.signed_out_text);
         TextView offlineTextView = view.findViewById(R.id.offline_text);
-        signedOutView.setText(preference.getSignedOutText());
-        offlineTextView.setText(preference.getOfflineText());
+        signedOutView.setText(ClearWebsiteStorage.getSignedOutText());
+        offlineTextView.setText(ClearWebsiteStorage.getOfflineText());
 
         super.onBindDialogView(view);
     }

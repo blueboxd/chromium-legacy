@@ -176,6 +176,18 @@ TEST_F(AddAccountSigninMediatorTest,
   EXPECT_FALSE(identity_service_->HasIdentities());
 }
 
+TEST_F(AddAccountSigninMediatorTest, AddAccountSigninInterrupted) {
+  // Verify that completion was called with interrupted result state.
+  OCMExpect([mediator_delegate_
+      addAccountSigninMediatorFinishedWithSigninResult:
+          SigninCoordinatorResultInterrupted
+                                              identity:fake_identity_]);
+
+  [mediator_ setSigninInterrupted:YES];
+  [mediator_ handleSigninWithIntent:AddAccountSigninIntentAddSecondaryAccount];
+  [identity_interaction_manager_ addAccountViewControllerDidTapSignIn];
+}
+
 // Verifies the following state in the successful reauth flow:
 //   - Account is added to the identity service
 //   - Completion callback is called with success state
@@ -225,4 +237,16 @@ TEST_F(AddAccountSigninMediatorTest, ReauthIntentWithErrorHandledByMediator) {
 
   // No account is present.
   EXPECT_FALSE(identity_service_->HasIdentities());
+}
+
+TEST_F(AddAccountSigninMediatorTest, ReauthSigninInterrupted) {
+  // Verify that completion was called with interrupted result state.
+  OCMExpect([mediator_delegate_
+      addAccountSigninMediatorFinishedWithSigninResult:
+          SigninCoordinatorResultInterrupted
+                                              identity:fake_identity_]);
+
+  [mediator_ setSigninInterrupted:YES];
+  [mediator_ handleSigninWithIntent:AddAccountSigninIntentReauthPrimaryAccount];
+  [identity_interaction_manager_ addAccountViewControllerDidTapSignIn];
 }

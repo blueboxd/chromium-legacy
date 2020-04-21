@@ -71,7 +71,9 @@ bool ManualPasswordGenerationEnabled(
 bool ShowAllSavedPasswordsContextMenuEnabled(
     password_manager::PasswordManagerDriver* driver);
 
-// Triggers password generation flow and records the metrics.
+// Triggers password generation flow and records the metrics. If the user should
+// be asked to opt in to account storage, will trigger a reauth flow first and
+// generation will only happen on success.
 void UserTriggeredManualGenerationFromContextMenu(
     password_manager::PasswordManagerClient* password_manager_client);
 

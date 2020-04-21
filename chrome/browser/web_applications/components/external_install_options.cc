@@ -37,14 +37,15 @@ bool ExternalInstallOptions::operator==(
   return std::tie(url, user_display_mode, install_source,
                   add_to_applications_menu, add_to_desktop,
                   add_to_quick_launch_bar, add_to_search, add_to_management,
-                  override_previous_user_uninstall, bypass_service_worker_check,
-                  require_manifest, force_reinstall, wait_for_windows_closed,
-                  install_placeholder, reinstall_placeholder,
-                  uninstall_and_replace, additional_search_terms) ==
+                  is_disabled, override_previous_user_uninstall,
+                  bypass_service_worker_check, require_manifest,
+                  force_reinstall, wait_for_windows_closed, install_placeholder,
+                  reinstall_placeholder, uninstall_and_replace,
+                  additional_search_terms) ==
          std::tie(other.url, other.user_display_mode, other.install_source,
                   other.add_to_applications_menu, other.add_to_desktop,
                   other.add_to_quick_launch_bar, other.add_to_search,
-                  other.add_to_management,
+                  other.add_to_management, other.is_disabled,
                   other.override_previous_user_uninstall,
                   other.bypass_service_worker_check, other.require_manifest,
                   other.force_reinstall, other.wait_for_windows_closed,
@@ -65,6 +66,7 @@ std::ostream& operator<<(std::ostream& out,
              << install_options.add_to_quick_launch_bar
              << "\n add_to_search: " << install_options.add_to_search
              << "\n add_to_management: " << install_options.add_to_management
+             << "\n is_disabled: " << install_options.is_disabled
              << "\n override_previous_user_uninstall: "
              << install_options.override_previous_user_uninstall
              << "\n bypass_service_worker_check: "
@@ -97,6 +99,7 @@ InstallManager::InstallParams ConvertExternalInstallOptionsToParams(
   params.add_to_quick_launch_bar = install_options.add_to_quick_launch_bar;
   params.add_to_search = install_options.add_to_search;
   params.add_to_management = install_options.add_to_management;
+  params.is_disabled = install_options.is_disabled;
 
   params.bypass_service_worker_check =
       install_options.bypass_service_worker_check;

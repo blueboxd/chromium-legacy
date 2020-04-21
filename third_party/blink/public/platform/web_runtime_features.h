@@ -133,9 +133,6 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableOverscrollCustomization(bool);
   BLINK_PLATFORM_EXPORT static void EnableOutOfBlinkCors(bool);
   BLINK_PLATFORM_EXPORT static void EnablePagePopup(bool);
-  BLINK_PLATFORM_EXPORT static void EnablePassiveDocumentEventListeners(bool);
-  BLINK_PLATFORM_EXPORT static void EnablePassiveDocumentWheelEventListeners(
-      bool);
   BLINK_PLATFORM_EXPORT static void EnablePaymentApp(bool);
   BLINK_PLATFORM_EXPORT static void EnablePaymentHandlerMinimalUI(bool);
   BLINK_PLATFORM_EXPORT static void EnablePaymentRequest(bool);

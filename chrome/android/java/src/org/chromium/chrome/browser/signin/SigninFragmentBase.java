@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.signin;
 
+import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Activity;
 import android.content.Intent;
@@ -38,6 +39,7 @@ import org.chromium.components.signin.AccountManagerDelegateException;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountManagerResult;
 import org.chromium.components.signin.AccountTrackerService;
+import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.AccountsChangeObserver;
 import org.chromium.components.signin.ChildAccountStatus;
 import org.chromium.components.signin.GmsAvailabilityException;
@@ -569,13 +571,13 @@ public abstract class SigninFragmentBase
     }
 
     private void triggerUpdateAccounts() {
-        AccountManagerFacadeProvider.getInstance().getGoogleAccountNames(this::updateAccounts);
+        AccountManagerFacadeProvider.getInstance().getGoogleAccounts(this::updateAccounts);
     }
 
-    private void updateAccounts(AccountManagerResult<List<String>> maybeAccountNames) {
+    private void updateAccounts(AccountManagerResult<List<Account>> accounts) {
         if (!mResumed) return;
 
-        mAccountNames = getAccountNames(maybeAccountNames);
+        mAccountNames = getAccountNames(accounts);
         mHasGmsError = mAccountNames == null;
         mView.getAcceptButton().setEnabled(!mHasGmsError);
         if (mHasGmsError) return;
@@ -618,9 +620,9 @@ public abstract class SigninFragmentBase
     }
 
     @Nullable
-    private List<String> getAccountNames(AccountManagerResult<List<String>> maybeAccountNames) {
+    private List<String> getAccountNames(AccountManagerResult<List<Account>> accounts) {
         try {
-            List<String> result = maybeAccountNames.get();
+            List<String> result = AccountUtils.toAccountNames(accounts.get());
             dismissGmsErrorDialog();
             dismissGmsUpdatingDialog();
             return result;

@@ -4,6 +4,7 @@
 
 #include "components/previews/core/previews_lite_page_redirect.h"
 
+#include "base/logging.h"
 #include "components/previews/core/previews_experiments.h"
 #include "net/base/url_util.h"
 

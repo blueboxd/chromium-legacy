@@ -7,16 +7,20 @@
 
 #import <Foundation/Foundation.h>
 
+#import "ios/chrome/browser/find_in_page/find_in_page_response_delegate.h"
+
+@protocol FindBarConsumer;
 @protocol FindInPageCommands;
 class WebStateList;
 
 // Mediator for the Find Bar and the Find In page feature. As this feature is
 // currently being split off from BVC, this mediator will have more features
 // added and is not an ideal example of the mediator pattern.
-@interface FindBarMediator : NSObject
+@interface FindBarMediator : NSObject <FindInPageResponseDelegate>
 
-- (instancetype)initWithWebStateList:(WebStateList*)webStateList
-                      commandHandler:(id<FindInPageCommands>)commandHandler;
+- (instancetype)initWithCommandHandler:(id<FindInPageCommands>)commandHandler;
+
+@property(nonatomic, weak) id<FindBarConsumer> consumer;
 
 @end
 

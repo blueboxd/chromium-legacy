@@ -174,9 +174,6 @@ class DeepScanningDialogDelegate {
           Data,
           CompletionCallback)>;
 
-  using AnalyzeCallback = base::OnceCallback<void(
-      const safe_browsing::ArchiveAnalyzerResults& results)>;
-
   DeepScanningDialogDelegate(const DeepScanningDialogDelegate&) = delete;
   DeepScanningDialogDelegate& operator=(const DeepScanningDialogDelegate&) =
       delete;
@@ -262,12 +259,7 @@ class DeepScanningDialogDelegate {
   // Prepares an upload request for the file at |path|.  If the file
   // cannot be uploaded it will have a failure verdict added to |result_|.
   // Virtual so that it can be overridden in tests.
-  virtual void PrepareFileRequest(base::FilePath path,
-                                  AnalyzeCallback callback);
-
-  // Prepares an upload request for the given file.
-  void AnalyzerCallback(int index,
-                        const safe_browsing::ArchiveAnalyzerResults& results);
+  void PrepareFileRequest(const base::FilePath& path);
 
   // Adds required fields to |request| before sending it to the binary upload
   // service.

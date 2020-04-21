@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "components/ntp_snippets/category.h"

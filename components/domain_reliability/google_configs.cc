@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/strings/string_util.h"
 #include "net/base/url_util.h"
 
 namespace domain_reliability {

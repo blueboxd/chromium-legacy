@@ -129,7 +129,7 @@ class CORE_EXPORT EventHandlerRegistry final
 
   Page* GetPage() const;
 
-  void ProcessCustomWeakness(const WeakCallbackInfo&);
+  void ProcessCustomWeakness(const LivenessBroker&);
 
   Member<LocalFrame> frame_;
   EventTargetSet targets_[kEventHandlerClassCount];

@@ -58,11 +58,6 @@ class SyncSessionsWebContentsRouter : public LocalSessionEventRouter,
   ~SyncSessionsWebContentsRouter() override;
 
  private:
-  void OnFaviconsChanged(const std::set<GURL>& page_urls, const GURL& icon_url);
-
-  std::unique_ptr<base::CallbackList<void(const std::set<GURL>&,
-                                          const GURL&)>::Subscription>
-      favicon_changed_subscription_;
   syncer::SyncableService::StartSyncFlare flare_;
   LocalSessionEventHandler* handler_ = nullptr;
 

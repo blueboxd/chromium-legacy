@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/permissions/permission_request.h"
+#include "base/logging.h"
 #include "build/build_config.h"
 
 namespace permissions {

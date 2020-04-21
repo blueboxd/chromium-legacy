@@ -9,6 +9,7 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/base_export.h"
+#include "base/strings/string_piece.h"
 
 namespace base {
 namespace android {

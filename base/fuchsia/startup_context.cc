@@ -9,6 +9,8 @@
 #include <lib/sys/cpp/service_directory.h>
 
 #include "base/fuchsia/file_utils.h"
+#include "base/logging.h"
+#include "base/macros.h"
 
 namespace base {
 namespace fuchsia {

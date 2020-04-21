@@ -18,12 +18,12 @@
 class ApiBindingsClient {
  public:
   // Reads bindings definitions from |bindings_service_| at construction time.
-  // Invokes |on_bindings_received_callback| once the definitions are received,
-  // after which the client may invoke AttachToFrame().
+  // |on_initialization_complete| is invoked when either the initial bindings
+  // have been received, or on failure. The caller should use HasBindings()
+  // to verify that bindings were received, and may then use AttachToFrame().
   ApiBindingsClient(
       fidl::InterfaceHandle<chromium::cast::ApiBindings> bindings_service,
-      base::OnceClosure on_bindings_received_callback,
-      base::OnceClosure on_error_callback);
+      base::OnceClosure on_initialization_complete);
   ~ApiBindingsClient();
 
   // Injects APIs and handles channel connections on |frame|.
@@ -50,7 +50,7 @@ class ApiBindingsClient {
   fuchsia::web::Frame* frame_ = nullptr;
   NamedMessagePortConnector* connector_ = nullptr;
   chromium::cast::ApiBindingsPtr bindings_service_;
-  base::OnceClosure on_bindings_received_callback_;
+  base::OnceClosure on_initialization_complete_;
 
   DISALLOW_COPY_AND_ASSIGN(ApiBindingsClient);
 };

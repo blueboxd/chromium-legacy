@@ -6,6 +6,7 @@
 #define COMPONENTS_BACKGROUND_TASK_SCHEDULER_TASK_INFO_H_
 
 #include <stdint.h>
+#include <string>
 
 #include "base/macros.h"
 #include "base/optional.h"

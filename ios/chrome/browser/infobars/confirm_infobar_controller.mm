@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/infobars/confirm_infobar_controller.h"
 
 #include "base/mac/foundation_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #import "ios/chrome/browser/infobars/infobar_controller+protected.h"

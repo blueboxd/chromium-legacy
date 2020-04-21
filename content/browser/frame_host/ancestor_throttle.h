@@ -58,7 +58,7 @@ class CONTENT_EXPORT AncestorThrottle : public NavigationThrottle {
   void ParseError(const std::string& value, HeaderDisposition disposition);
   void ConsoleError(HeaderDisposition disposition);
   NavigationThrottle::ThrottleAction EvaluateContentSecurityPolicy(
-      std::vector<network::mojom::ContentSecurityPolicyPtr>
+      const std::vector<network::mojom::ContentSecurityPolicyPtr>&
           content_security_policy);
 
   // Parses an 'X-Frame-Options' header. If the result is either CONFLICT

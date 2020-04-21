@@ -29,6 +29,11 @@ class AppRegistrarObserver : public base::CheckedObserver {
   virtual void OnAppRegistrarShutdown() {}
 
   virtual void OnAppRegistrarDestroyed() {}
+
+  // The disabled status WebApp::chromeos_data().is_disabled of the app backing
+  // |app_id| is updated.
+  virtual void OnWebAppDisabledStateChanged(const AppId& app_id,
+                                            bool is_disabled) {}
 };
 
 }  // namespace web_app

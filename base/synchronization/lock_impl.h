@@ -17,6 +17,7 @@
 #include <errno.h>
 #include <pthread.h>
 #include <string.h>
+#include <ostream>
 #endif
 
 namespace base {

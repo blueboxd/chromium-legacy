@@ -57,7 +57,7 @@ class CORE_EXPORT LiveNodeListRegistry {
 
   // Removes any entries corresponding to node lists which have been collected
   // by the GC, and updates the mask accordingly.
-  void ProcessCustomWeakness(const WeakCallbackInfo&);
+  void ProcessCustomWeakness(const LivenessBroker&);
 
   Vector<Entry> data_;
   unsigned mask_ = 0;

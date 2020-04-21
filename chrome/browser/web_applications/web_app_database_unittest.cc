@@ -132,9 +132,10 @@ class WebAppDatabaseTest : public WebAppTest {
 
     if (IsChromeOs()) {
       auto chromeos_data = base::make_optional<WebAppChromeOsData>();
-      chromeos_data->show_in_launcher = suffix & 0b001;
-      chromeos_data->show_in_search = suffix & 0b010;
-      chromeos_data->show_in_management = suffix & 0b100;
+      chromeos_data->show_in_launcher = suffix & 0b0001;
+      chromeos_data->show_in_search = suffix & 0b0010;
+      chromeos_data->show_in_management = suffix & 0b0100;
+      chromeos_data->is_disabled = suffix & 0b1000;
       app->SetWebAppChromeOsData(std::move(chromeos_data));
     }
 
@@ -354,6 +355,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
     EXPECT_TRUE(chromeos_data->show_in_launcher);
     EXPECT_TRUE(chromeos_data->show_in_search);
     EXPECT_TRUE(chromeos_data->show_in_management);
+    EXPECT_FALSE(chromeos_data->is_disabled);
   } else {
     EXPECT_FALSE(chromeos_data.has_value());
   }

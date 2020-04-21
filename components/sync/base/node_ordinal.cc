@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <string>
 
+#include "base/logging.h"
+
 namespace syncer {
 
 NodeOrdinal Int64ToNodeOrdinal(int64_t x) {

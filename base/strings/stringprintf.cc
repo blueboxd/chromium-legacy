@@ -9,6 +9,7 @@
 
 #include <vector>
 
+#include "base/logging.h"
 #include "base/scoped_clear_last_error.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"

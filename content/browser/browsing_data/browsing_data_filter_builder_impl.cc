@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
-#include "url/origin.h"
 
 using net::registry_controlled_domains::GetDomainAndRegistry;
 using net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES;
@@ -36,23 +35,26 @@ bool IsSubdomainOfARegistrableDomain(const std::string& domain) {
 // True if the domain of |url| is in the whitelist, or isn't in the blacklist.
 // The whitelist or blacklist is represented as |origins|,
 // |registerable_domains|, and |mode|.
-bool MatchesURL(
-    const std::set<url::Origin>& origins,
-    const std::set<std::string>& registerable_domains,
-    BrowsingDataFilterBuilder::Mode mode,
-    const GURL& url) {
-  std::string url_registerable_domain =
-      GetDomainAndRegistry(url, INCLUDE_PRIVATE_REGISTRIES);
-  bool found_domain =
-      (registerable_domains.find(
-          url_registerable_domain != "" ? url_registerable_domain
-                                        : url.host()) !=
-       registerable_domains.end());
-
-  bool found_origin = (origins.find(url::Origin::Create(url)) != origins.end());
-
+bool MatchesOrigin(const std::set<url::Origin>& origins,
+                   const std::set<std::string>& registerable_domains,
+                   BrowsingDataFilterBuilder::Mode mode,
+                   const url::Origin& origin) {
+  std::string registerable_domain =
+      GetDomainAndRegistry(origin, INCLUDE_PRIVATE_REGISTRIES);
+  bool found_domain = base::Contains(
+      registerable_domains,
+      registerable_domain == "" ? origin.host() : registerable_domain);
+  bool found_origin = base::Contains(origins, origin);
   return ((found_domain || found_origin) ==
           (mode == BrowsingDataFilterBuilder::WHITELIST));
+}
+
+bool MatchesURL(const std::set<url::Origin>& origins,
+                const std::set<std::string>& registerable_domains,
+                BrowsingDataFilterBuilder::Mode mode,
+                const GURL& url) {
+  return MatchesOrigin(origins, registerable_domains, mode,
+                       url::Origin::Create(url));
 }
 
 // True if none of the supplied domains matches this plugin's |site| and we're
@@ -124,7 +126,16 @@ bool BrowsingDataFilterBuilderImpl::IsEmptyBlacklist() {
 
 base::RepeatingCallback<bool(const GURL&)>
 BrowsingDataFilterBuilderImpl::BuildGeneralFilter() {
+  if (IsEmptyBlacklist())
+    return base::BindRepeating([](const GURL&) { return true; });
   return base::BindRepeating(&MatchesURL, origins_, domains_, mode_);
+}
+
+base::RepeatingCallback<bool(const url::Origin&)>
+BrowsingDataFilterBuilderImpl::BuildGeneralOriginFilter() {
+  if (IsEmptyBlacklist())
+    return base::BindRepeating([](const url::Origin&) { return true; });
+  return base::BindRepeating(&MatchesOrigin, origins_, domains_, mode_);
 }
 
 network::mojom::ClearDataFilterPtr

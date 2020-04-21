@@ -74,7 +74,17 @@ Polymer({
     showHideMenuTitle_: {
       type: String,
       computed: 'computeShowHideMenuTitle(activePassword_)',
-    }
+    },
+
+    /**
+     * The ids of compromised credentials for which user clicked "Change
+     * Password" button
+     * @private
+     */
+    clickedChangePasswordIds_: {
+      type: Object,
+      value: new Set(),
+    },
   },
 
   /**
@@ -502,6 +512,24 @@ Polymer({
     // Return true if there was a successful check and no compromised passwords
     // were found.
     return !this.hasLeakedCredentials_() && this.showsTimestamp_();
+  },
+
+  /**
+   * @param {!CustomEvent<{id: number}>} event
+   * @private
+   */
+  onChangePasswordClick_(event) {
+    this.clickedChangePasswordIds_.add(event.detail.id);
+    this.notifyPath('clickedChangePasswordIds_.size');
+  },
+
+  /**
+   * @param {!PasswordManagerProxy.CompromisedCredential} item
+   * @return {boolean}
+   * @private
+   */
+  clickedChangePassword_(item) {
+    return this.clickedChangePasswordIds_.has(item.id);
   },
 });
 })();

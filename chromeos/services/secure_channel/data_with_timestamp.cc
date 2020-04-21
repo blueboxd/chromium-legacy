@@ -5,6 +5,7 @@
 #include "chromeos/services/secure_channel/data_with_timestamp.h"
 
 #include <iomanip>
+#include <sstream>
 
 #include "base/logging.h"
 

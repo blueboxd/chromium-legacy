@@ -11,6 +11,7 @@
 #include "base/containers/flat_set.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
@@ -340,6 +341,7 @@ void ConversionStorageSql::ClearData(
     base::Time delete_begin,
     base::Time delete_end,
     base::RepeatingCallback<bool(const url::Origin&)> filter) {
+  SCOPED_UMA_HISTOGRAM_TIMER("Conversions.ClearDataTime");
   if (filter.is_null()) {
     ClearAllDataInRange(delete_begin, delete_end);
     return;

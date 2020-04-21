@@ -37,6 +37,7 @@
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 #include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom-forward.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_mode.h"
@@ -557,6 +558,10 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // Notified when the main frame adjusts the page scale.
   virtual void OnPageScaleFactorChanged(RenderFrameHostImpl* source,
                                         float page_scale_factor) {}
+
+  virtual void OnTextAutosizerPageInfoChanged(
+      RenderFrameHostImpl* source,
+      blink::mojom::TextAutosizerPageInfoPtr page_info) {}
 
   // Return true if we have seen a recent orientation change, which is used to
   // decide if we should consume user activation when entering fullscreen.

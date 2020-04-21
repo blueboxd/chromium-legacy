@@ -303,7 +303,7 @@ TEST_F(SafetyCheckHandlerTest, CheckUpdates_Checking) {
           kUpdates,
           static_cast<int>(SafetyCheckHandler::UpdateStatus::kChecking));
   ASSERT_TRUE(event);
-  VerifyDisplayString(event, base::UTF8ToUTF16("Running…"));
+  VerifyDisplayString(event, base::UTF8ToUTF16(""));
   // Checking state should not get recorded.
   histogram_tester_.ExpectTotalCount("Settings.SafetyCheck.UpdatesResult", 0);
 }
@@ -580,7 +580,7 @@ TEST_F(SafetyCheckHandlerTest, CheckPasswords_ObserverRemovedAfterError) {
           kPasswords,
           static_cast<int>(SafetyCheckHandler::PasswordsStatus::kChecking));
   ASSERT_TRUE(event);
-  VerifyDisplayString(event, base::UTF8ToUTF16("Running…"));
+  VerifyDisplayString(event, base::UTF8ToUTF16(""));
   histogram_tester_.ExpectTotalCount("Settings.SafetyCheck.PasswordsResult", 0);
   // Second, an "offline" state.
   test_leak_service_->set_state_and_notify(
@@ -620,7 +620,7 @@ TEST_F(SafetyCheckHandlerTest, CheckPasswords_InterruptedAndRefreshed) {
           kPasswords,
           static_cast<int>(SafetyCheckHandler::PasswordsStatus::kChecking));
   ASSERT_TRUE(event);
-  VerifyDisplayString(event, base::UTF8ToUTF16("Running…"));
+  VerifyDisplayString(event, base::UTF8ToUTF16(""));
   // The check gets interrupted and the page is refreshed.
   safety_check_->DisallowJavascript();
   safety_check_->AllowJavascript();

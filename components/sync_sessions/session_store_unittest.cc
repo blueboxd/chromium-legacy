@@ -179,9 +179,6 @@ class SessionStoreOpenTest : public ::testing::Test {
   TestingPrefServiceSimple pref_service_;
   SessionSyncPrefs session_sync_prefs_;
   std::unique_ptr<MockSyncSessionsClient> mock_sync_sessions_client_;
-  testing::NiceMock<
-      base::MockCallback<SessionStore::RestoredForeignTabCallback>>
-      mock_restored_foreign_tab_callback_;
   std::unique_ptr<ModelTypeStore> underlying_store_;
 };
 
@@ -191,8 +188,8 @@ TEST_F(SessionStoreOpenTest, ShouldCreateStore) {
   MockOpenCallback completion;
   EXPECT_CALL(completion, Run(NoModelError(), /*store=*/NotNull(),
                               MetadataBatchContains(_, IsEmpty())));
-  SessionStore::Open(kCacheGuid, mock_restored_foreign_tab_callback_.Get(),
-                     mock_sync_sessions_client_.get(), completion.Get());
+  SessionStore::Open(kCacheGuid, mock_sync_sessions_client_.get(),
+                     completion.Get());
   completion.Wait();
   ASSERT_THAT(completion.GetResult(), NotNull());
   EXPECT_THAT(completion.GetResult()->local_session_info().client_name,
@@ -206,8 +203,8 @@ TEST_F(SessionStoreOpenTest, ShouldReadSessionsGuidFromPrefs) {
   session_sync_prefs_.SetSyncSessionsGUID(kCachedGuid);
 
   NiceMock<MockOpenCallback> completion;
-  SessionStore::Open(kCacheGuid, mock_restored_foreign_tab_callback_.Get(),
-                     mock_sync_sessions_client_.get(), completion.Get());
+  SessionStore::Open(kCacheGuid, mock_sync_sessions_client_.get(),
+                     completion.Get());
   completion.Wait();
   ASSERT_THAT(completion.GetResult(), NotNull());
   EXPECT_THAT(completion.GetResult()->local_session_info().session_tag,
@@ -241,8 +238,7 @@ TEST_F(SessionStoreOpenTest, ShouldNotUseClientIfCancelled) {
 
   EXPECT_CALL(mock_completion, Run(_, _, _)).Times(0);
 
-  SessionStore::Open(kCacheGuid, mock_restored_foreign_tab_callback_.Get(),
-                     mock_sync_sessions_client_.get(),
+  SessionStore::Open(kCacheGuid, mock_sync_sessions_client_.get(),
                      caller->GetCancelableCallback());
 
   // The client gets destroyed before callback completion.
@@ -265,8 +261,8 @@ class SessionStoreTest : public SessionStoreOpenTest {
 
   std::unique_ptr<SessionStore> CreateSessionStore() {
     NiceMock<MockOpenCallback> completion;
-    SessionStore::Open(kCacheGuid, mock_restored_foreign_tab_callback_.Get(),
-                       mock_sync_sessions_client_.get(), completion.Get());
+    SessionStore::Open(kCacheGuid, mock_sync_sessions_client_.get(),
+                       completion.Get());
     completion.Wait();
     EXPECT_THAT(completion.GetResult(), NotNull());
     return completion.StealResult();
@@ -334,8 +330,8 @@ TEST_F(SessionStoreTest, ShouldWriteAndRestoreMetadata) {
                               MetadataBatchContains(
                                   HasEncryptionKeyName(kEncryptionKeyName1),
                                   ElementsAre(Pair(kStorageKey1, _)))));
-  SessionStore::Open(kCacheGuid, mock_restored_foreign_tab_callback_.Get(),
-                     mock_sync_sessions_client_.get(), completion.Get());
+  SessionStore::Open(kCacheGuid, mock_sync_sessions_client_.get(),
+                     completion.Get());
   completion.Wait();
   EXPECT_THAT(completion.GetResult(), NotNull());
   EXPECT_NE(session_store(), completion.GetResult());
@@ -348,8 +344,6 @@ TEST_F(SessionStoreTest, ShouldUpdateTrackerWithForeignData) {
   const int kTabId2 = 8;
   const int kTabNodeId1 = 2;
   const int kTabNodeId2 = 3;
-
-  EXPECT_CALL(mock_restored_foreign_tab_callback_, Run(_)).Times(0);
 
   ASSERT_THAT(session_store()->tracker()->LookupAllForeignSessions(
                   SyncedSessionTracker::RAW),
@@ -422,8 +416,6 @@ TEST_F(SessionStoreTest, ShouldWriteAndRestoreForeignData) {
   const int kTabId1 = 7;
   const int kTabNodeId1 = 2;
 
-  EXPECT_CALL(mock_restored_foreign_tab_callback_, Run(_)).Times(0);
-
   const std::string local_header_storage_key =
       SessionStore::GetHeaderStorageKey(kLocalSessionTag);
 
@@ -489,11 +481,6 @@ TEST_F(SessionStoreTest, ShouldWriteAndRestoreForeignData) {
       ElementsAre(MatchesSyncedSession(
           kForeignSessionTag, {{kWindowId, std::vector<int>{kTabId1}}})));
 
-  // Creation of a second session store should trigger a callback for the
-  // restored tab.
-  EXPECT_CALL(mock_restored_foreign_tab_callback_,
-              Run(testing::Property(&sync_pb::SessionTab::tab_id, kTabId1)));
-
   // Create second session store to verify that the persisted state is restored,
   // by mimicing a Chrome restart and using |underlying_store_| (in-memory) as a
   // replacement for on-disk persistence.
@@ -538,8 +525,6 @@ TEST_F(SessionStoreTest, ShouldDeleteForeignData) {
   const int kTabId2 = 8;
   const int kTabNodeId1 = 1;
   const int kTabNodeId2 = 2;
-
-  EXPECT_CALL(mock_restored_foreign_tab_callback_, Run(_)).Times(0);
 
   const std::string local_header_storage_key =
       SessionStore::GetHeaderStorageKey(kLocalSessionTag);

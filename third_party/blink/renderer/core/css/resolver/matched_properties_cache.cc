@@ -187,7 +187,7 @@ void MatchedPropertiesCache::Trace(Visitor* visitor) {
 }
 
 void MatchedPropertiesCache::RemoveCachedMatchedPropertiesWithDeadEntries(
-    const WeakCallbackInfo& info) {
+    const LivenessBroker& info) {
   Vector<unsigned> to_remove;
   for (const auto& entry_pair : cache_) {
     // A nullptr value indicates that the entry is currently being created; see

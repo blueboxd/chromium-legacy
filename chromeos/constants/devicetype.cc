@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/logging.h"
 #include "base/strings/string_split.h"
 #include "base/system/sys_info.h"
 

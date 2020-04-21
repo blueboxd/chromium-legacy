@@ -14,7 +14,7 @@
 
 namespace blink {
 
-class WeakCallbackInfo;
+class LivenessBroker;
 class MarkingVisitor;
 class Visitor;
 
@@ -25,7 +25,7 @@ using FinalizationCallback = void (*)(void*);
 using VisitorCallback = void (*)(Visitor*, const void*);
 using MarkingVisitorCallback = void (*)(MarkingVisitor*, const void*);
 using TraceCallback = VisitorCallback;
-using WeakCallback = void (*)(const WeakCallbackInfo&, const void*);
+using WeakCallback = void (*)(const LivenessBroker&, const void*);
 using EphemeronCallback = VisitorCallback;
 
 // Simple alias to avoid heap compaction type signatures turning into

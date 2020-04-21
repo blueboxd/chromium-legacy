@@ -277,7 +277,7 @@ TEST_F(FetchResponseDataTest, ContentSecurityPolicy) {
 
   mojom::blink::FetchAPIResponsePtr fetch_api_response =
       internal_response->PopulateFetchAPIResponse(KURL());
-  auto& csp = fetch_api_response->content_security_policy;
+  auto& csp = fetch_api_response->parsed_headers->content_security_policy;
 
   EXPECT_EQ(csp.size(), 2U);
   EXPECT_EQ(csp[0]->header->type,

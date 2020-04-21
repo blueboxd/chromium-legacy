@@ -86,6 +86,16 @@ enum PluginActionType {
 // to accept in the browser process.
 const uint16 kMaxTitleChars = 4096; // 4 * 1024;
 
+struct TextAutosizerPageInfo {
+  // LocalFrame width in density-independent pixels.
+  int32 main_frame_width;
+
+  // Layout width in CSS pixels.
+  int32 main_frame_layout_width;
+
+  float device_scale_adjustment;
+};
+
 // Implemented in Browser, this interface defines frame-specific methods that
 // will be invoked from the render process (e.g. content::RenderFrameHostImpl).
 //
@@ -664,4 +674,10 @@ interface LocalMainFrameHost {
 
   // Notifies that the preferred size of the view has changed.
   ContentsPreferredSizeChanged(gfx.mojom.Size pref_size);
+
+  // Informs the browser that page metrics relevant to Blink's TextAutosizer
+  // have changed, so that they can be shared with other renderers. The
+  // browser will share this information with other renderers that have frames
+  // in the page.
+  TextAutosizerPageInfoChanged(TextAutosizerPageInfo page_info);
 };

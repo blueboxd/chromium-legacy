@@ -342,8 +342,7 @@ void EventTarget::SetDefaultAddEventListenerOptions(
     }
   }
 
-  if (RuntimeEnabledFeatures::PassiveDocumentEventListenersEnabled() &&
-      IsTouchScrollBlockingEvent(event_type)) {
+  if (IsTouchScrollBlockingEvent(event_type)) {
     if (!options->hasPassive() && IsTopLevelNode()) {
       options->setPassive(true);
       options->SetPassiveForcedForDocumentTarget(true);

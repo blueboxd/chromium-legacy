@@ -11,6 +11,7 @@
 #include "base/debug/debugging_buildflags.h"
 #include "base/debug/leak_annotations.h"
 #include "base/debug/stack_trace.h"
+#include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "base/threading/platform_thread.h"

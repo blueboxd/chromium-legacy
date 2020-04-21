@@ -135,13 +135,12 @@ class ObjectVectorAttributeSetter : public AXSparseAttributeSetter {
     if (!element)
       return;
 
-    bool is_null = false;
-    HeapVector<Member<Element>> attr_associated_elements =
-        element->GetElementArrayAttribute(GetAttributeQualifiedName(), is_null);
-    if (is_null)
+    base::Optional<HeapVector<Member<Element>>> attr_associated_elements =
+        element->GetElementArrayAttribute(GetAttributeQualifiedName());
+    if (!attr_associated_elements)
       return;
     HeapVector<Member<AXObject>> objects;
-    for (const auto& associated_element : attr_associated_elements) {
+    for (const auto& associated_element : attr_associated_elements.value()) {
       AXObject* ax_element =
           obj.AXObjectCache().GetOrCreate(associated_element);
       if (!ax_element)

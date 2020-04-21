@@ -25,6 +25,7 @@
 #include "components/password_manager/core/browser/credentials_cleaner.h"
 #include "components/password_manager/core/browser/credentials_cleaner_runner.h"
 #include "components/password_manager/core/browser/http_credentials_cleaner.h"
+#include "components/password_manager/core/browser/password_feature_manager.h"
 #include "components/password_manager/core/browser/password_generation_frame_helper.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
@@ -263,9 +264,26 @@ bool ShowAllSavedPasswordsContextMenuEnabled(
 
 void UserTriggeredManualGenerationFromContextMenu(
     password_manager::PasswordManagerClient* password_manager_client) {
-  password_manager_client->GeneratePassword();
-  LogPasswordGenerationEvent(
-      autofill::password_generation::PASSWORD_GENERATION_CONTEXT_MENU_PRESSED);
+  if (!password_manager_client->GetPasswordFeatureManager()
+           ->ShouldShowAccountStorageOptIn()) {
+    password_manager_client->GeneratePassword();
+    LogPasswordGenerationEvent(autofill::password_generation::
+                                   PASSWORD_GENERATION_CONTEXT_MENU_PRESSED);
+    return;
+  }
+  // The client ensures the callback won't be run if it is destroyed, so
+  // base::Unretained is safe.
+  password_manager_client->TriggerReauthForPrimaryAccount(base::BindOnce(
+      [](password_manager::PasswordManagerClient* client,
+         password_manager::PasswordManagerClient::ReauthSucceeded succeeded) {
+        if (succeeded) {
+          client->GeneratePassword();
+          LogPasswordGenerationEvent(
+              autofill::password_generation::
+                  PASSWORD_GENERATION_CONTEXT_MENU_PRESSED);
+        }
+      },
+      base::Unretained(password_manager_client)));
 }
 
 // TODO(http://crbug.com/890318): Add unitests to check cleaners are correctly

@@ -7,6 +7,7 @@
 #include <windows.h>
 
 #include <winternl.h>
+#include "base/logging.h"
 
 namespace base {
 namespace win {

@@ -7,10 +7,15 @@
 
 #include "base/allocator/partition_allocator/page_allocator.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
+#include "base/allocator/partition_allocator/partition_alloc_forward.h"
 #include "base/allocator/partition_allocator/partition_bucket.h"
 #include "base/allocator/partition_allocator/partition_direct_map_extent.h"
 #include "base/allocator/partition_allocator/partition_page.h"
+#include "base/allocator/partition_allocator/spin_lock.h"
 #include "base/logging.h"
+#include "base/no_destructor.h"
+#include "base/synchronization/lock.h"
+#include "base/thread_annotations.h"
 #include "build/build_config.h"
 
 namespace base {
@@ -19,25 +24,93 @@ typedef void (*OomFunction)(size_t);
 
 namespace internal {
 
-struct PartitionPage;
-struct PartitionRootBase;
+template <bool thread_safe>
+class LOCKABLE MaybeSpinLock {
+ public:
+  void Lock() EXCLUSIVE_LOCK_FUNCTION() {}
+  void Unlock() UNLOCK_FUNCTION() {}
+  void AssertAcquired() const ASSERT_EXCLUSIVE_LOCK() {}
+};
+
+template <bool thread_safe>
+class SCOPED_LOCKABLE ScopedGuard {
+ public:
+  explicit ScopedGuard(MaybeSpinLock<thread_safe>& lock)
+      EXCLUSIVE_LOCK_FUNCTION(lock)
+      : lock_(lock) {
+    lock_.Lock();
+  }
+  ~ScopedGuard() UNLOCK_FUNCTION() { lock_.Unlock(); }
+
+ private:
+  MaybeSpinLock<thread_safe>& lock_;
+};
+
+#if DCHECK_IS_ON()
+template <>
+class LOCKABLE MaybeSpinLock<ThreadSafe> {
+ public:
+  MaybeSpinLock() : lock_() {}
+  void Lock() EXCLUSIVE_LOCK_FUNCTION() { lock_->Acquire(); }
+  void Unlock() UNLOCK_FUNCTION() { lock_->Release(); }
+  void AssertAcquired() const ASSERT_EXCLUSIVE_LOCK() {
+#if DCHECK_IS_ON()
+    lock_->AssertAcquired();
+#endif
+  }
+
+ private:
+  // NoDestructor to avoid issues with the "static destruction order fiasco".
+  //
+  // This also means that for DCHECK_IS_ON() builds we leak a lock when a
+  // partition is destructed. This will in practice only show in some tests, as
+  // partitons are not destructed in regular use. In addition, on most
+  // platforms, base::Lock doesn't allocate memory and neither does the OS
+  // library, and the destructor is a no-op.
+  base::NoDestructor<base::Lock> lock_;
+};
+
+#else
+template <>
+class LOCKABLE MaybeSpinLock<ThreadSafe> {
+ public:
+  void Lock() EXCLUSIVE_LOCK_FUNCTION() { lock_.lock(); }
+  void Unlock() UNLOCK_FUNCTION() { lock_.unlock(); }
+  void AssertAcquired() const ASSERT_EXCLUSIVE_LOCK() {
+    // Not supported by subtle::SpinLock.
+  }
+
+ private:
+  subtle::SpinLock lock_;
+};
+#endif  // DCHECK_IS_ON()
 
 // An "extent" is a span of consecutive superpages. We link to the partition's
 // next extent (if there is one) to the very start of a superpage's metadata
 // area.
+template <bool thread_safety>
 struct PartitionSuperPageExtentEntry {
-  PartitionRootBase* root;
+  PartitionRootBase<thread_safety>* root;
   char* super_page_base;
   char* super_pages_end;
-  PartitionSuperPageExtentEntry* next;
+  PartitionSuperPageExtentEntry<thread_safety>* next;
 };
 static_assert(
-    sizeof(PartitionSuperPageExtentEntry) <= kPageMetadataSize,
+    sizeof(PartitionSuperPageExtentEntry<ThreadSafe>) <= kPageMetadataSize,
     "PartitionSuperPageExtentEntry must be able to fit in a metadata slot");
 
+// g_oom_handling_function is invoked when PartitionAlloc hits OutOfMemory.
+static OomFunction g_oom_handling_function = nullptr;
+
+template <bool thread_safety>
 struct BASE_EXPORT PartitionRootBase {
+  using Page = PartitionPage<thread_safety>;
+  using Bucket = PartitionBucket<thread_safety>;
+  using ScopedGuard = internal::ScopedGuard<thread_safety>;
+
   PartitionRootBase();
   virtual ~PartitionRootBase();
+  MaybeSpinLock<thread_safety> lock_;
   size_t total_size_of_committed_pages = 0;
   size_t total_size_of_super_pages = 0;
   size_t total_size_of_direct_mapped_pages = 0;
@@ -50,10 +123,10 @@ struct BASE_EXPORT PartitionRootBase {
   char* next_super_page = nullptr;
   char* next_partition_page = nullptr;
   char* next_partition_page_end = nullptr;
-  PartitionSuperPageExtentEntry* current_extent = nullptr;
-  PartitionSuperPageExtentEntry* first_extent = nullptr;
-  PartitionDirectMapExtent* direct_map_list = nullptr;
-  PartitionPage* global_empty_page_ring[kMaxFreeableSpans] = {};
+  PartitionSuperPageExtentEntry<thread_safety>* current_extent = nullptr;
+  PartitionSuperPageExtentEntry<thread_safety>* first_extent = nullptr;
+  PartitionDirectMapExtent<thread_safety>* direct_map_list = nullptr;
+  Page* global_empty_page_ring[kMaxFreeableSpans] = {};
   int16_t global_empty_page_ring_index = 0;
   uintptr_t inverted_self = 0;
 
@@ -69,42 +142,45 @@ struct BASE_EXPORT PartitionRootBase {
   // preserves the layering of the includes.
   //
   // Note the matching Free() functions are in PartitionPage.
-  ALWAYS_INLINE void* AllocFromBucket(PartitionBucket* bucket,
-                                      int flags,
-                                      size_t size);
+  ALWAYS_INLINE void* AllocFromBucket(Bucket* bucket, int flags, size_t size)
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
-  ALWAYS_INLINE static bool IsValidPage(PartitionPage* page);
-  ALWAYS_INLINE static PartitionRootBase* FromPage(PartitionPage* page);
-
-  // g_oom_handling_function is invoked when PartitionAlloc hits OutOfMemory.
-  static OomFunction g_oom_handling_function;
-  NOINLINE void OutOfMemory(size_t size);
+  ALWAYS_INLINE static bool IsValidPage(Page* page);
+  ALWAYS_INLINE static PartitionRootBase* FromPage(Page* page);
 
   ALWAYS_INLINE void IncreaseCommittedPages(size_t len);
   ALWAYS_INLINE void DecreaseCommittedPages(size_t len);
-  ALWAYS_INLINE void DecommitSystemPages(void* address, size_t length);
-  ALWAYS_INLINE void RecommitSystemPages(void* address, size_t length);
+  ALWAYS_INLINE void DecommitSystemPages(void* address, size_t length)
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
+  ALWAYS_INLINE void RecommitSystemPages(void* address, size_t length)
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Frees memory from this partition, if possible, by decommitting pages.
   // |flags| is an OR of base::PartitionPurgeFlags.
   virtual void PurgeMemory(int flags) = 0;
-  void DecommitEmptyPages();
+  NOINLINE void OutOfMemory(size_t size);
+
+ protected:
+  void DecommitEmptyPages() EXCLUSIVE_LOCKS_REQUIRED(lock_);
 };
 
-ALWAYS_INLINE void* PartitionRootBase::AllocFromBucket(PartitionBucket* bucket,
-                                                       int flags,
-                                                       size_t size) {
+template <bool thread_safety>
+ALWAYS_INLINE void* PartitionRootBase<thread_safety>::AllocFromBucket(
+    Bucket* bucket,
+    int flags,
+    size_t size) {
   bool zero_fill = flags & PartitionAllocZeroFill;
   bool is_already_zeroed = false;
 
-  PartitionPage* page = bucket->active_pages_head;
+  Page* page = bucket->active_pages_head;
   // Check that this page is neither full nor freed.
+  DCHECK(page);
   DCHECK(page->num_allocated_slots >= 0);
   void* ret = page->freelist_head;
   if (LIKELY(ret != 0)) {
     // If these DCHECKs fire, you probably corrupted memory. TODO(palmer): See
     // if we can afford to make these CHECKs.
-    DCHECK(PartitionRootBase::IsValidPage(page));
+    DCHECK(IsValidPage(page));
 
     // All large allocations must go through the slow path to correctly update
     // the size metadata.
@@ -117,8 +193,7 @@ ALWAYS_INLINE void* PartitionRootBase::AllocFromBucket(PartitionBucket* bucket,
   } else {
     ret = bucket->SlowPathAlloc(this, flags, size, &is_already_zeroed);
     // TODO(palmer): See if we can afford to make this a CHECK.
-    DCHECK(!ret ||
-           PartitionRootBase::IsValidPage(PartitionPage::FromPointer(ret)));
+    DCHECK(!ret || IsValidPage(Page::FromPointer(ret)));
   }
 
 #if DCHECK_IS_ON()
@@ -126,7 +201,7 @@ ALWAYS_INLINE void* PartitionRootBase::AllocFromBucket(PartitionBucket* bucket,
     return nullptr;
   }
 
-  page = PartitionPage::FromPointer(ret);
+  page = Page::FromPointer(ret);
   // TODO(ajwong): Can |page->bucket| ever not be |this|? If not, can this just
   // be bucket->slot_size?
   size_t new_slot_size = page->bucket->slot_size;
@@ -157,39 +232,49 @@ ALWAYS_INLINE void* PartitionRootBase::AllocFromBucket(PartitionBucket* bucket,
   return ret;
 }
 
-ALWAYS_INLINE bool PartitionRootBase::IsValidPage(PartitionPage* page) {
+template <bool thread_safety>
+ALWAYS_INLINE bool PartitionRootBase<thread_safety>::IsValidPage(Page* page) {
   PartitionRootBase* root = PartitionRootBase::FromPage(page);
   return root->inverted_self == ~reinterpret_cast<uintptr_t>(root);
 }
 
-ALWAYS_INLINE PartitionRootBase* PartitionRootBase::FromPage(
-    PartitionPage* page) {
-  PartitionSuperPageExtentEntry* extent_entry =
-      reinterpret_cast<PartitionSuperPageExtentEntry*>(
+template <bool thread_safety>
+ALWAYS_INLINE PartitionRootBase<thread_safety>*
+PartitionRootBase<thread_safety>::FromPage(Page* page) {
+  auto* extent_entry =
+      reinterpret_cast<PartitionSuperPageExtentEntry<thread_safety>*>(
           reinterpret_cast<uintptr_t>(page) & kSystemPageBaseMask);
   return extent_entry->root;
 }
 
-ALWAYS_INLINE void PartitionRootBase::IncreaseCommittedPages(size_t len) {
+template <bool thread_safety>
+ALWAYS_INLINE void PartitionRootBase<thread_safety>::IncreaseCommittedPages(
+    size_t len) {
   total_size_of_committed_pages += len;
   DCHECK(total_size_of_committed_pages <=
          total_size_of_super_pages + total_size_of_direct_mapped_pages);
 }
 
-ALWAYS_INLINE void PartitionRootBase::DecreaseCommittedPages(size_t len) {
+template <bool thread_safety>
+ALWAYS_INLINE void PartitionRootBase<thread_safety>::DecreaseCommittedPages(
+    size_t len) {
   total_size_of_committed_pages -= len;
   DCHECK(total_size_of_committed_pages <=
          total_size_of_super_pages + total_size_of_direct_mapped_pages);
 }
 
-ALWAYS_INLINE void PartitionRootBase::DecommitSystemPages(void* address,
-                                                          size_t length) {
+template <bool thread_safety>
+ALWAYS_INLINE void PartitionRootBase<thread_safety>::DecommitSystemPages(
+    void* address,
+    size_t length) {
   ::base::DecommitSystemPages(address, length);
   DecreaseCommittedPages(length);
 }
 
-ALWAYS_INLINE void PartitionRootBase::RecommitSystemPages(void* address,
-                                                          size_t length) {
+template <bool thread_safety>
+ALWAYS_INLINE void PartitionRootBase<thread_safety>::RecommitSystemPages(
+    void* address,
+    size_t length) {
   CHECK(::base::RecommitSystemPages(address, length, PageReadWrite));
   IncreaseCommittedPages(length);
 }

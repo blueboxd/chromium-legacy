@@ -12,6 +12,7 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/task_manager/providers/vm/crostini_process_task.h"
@@ -220,6 +221,7 @@ void VmProcessTaskProvider::StopUpdating() {
 }
 
 std::vector<VmProcessData> GetVmProcessList() {
+  TRACE_EVENT0("browser", "GetVmProcessList");
   std::vector<VmProcessData> ret_processes;
   const base::ProcessIterator::ProcessEntries& entry_list =
       base::ProcessIterator(nullptr).Snapshot();

@@ -97,7 +97,7 @@ class BrowsingDataSettingsFunction : public ExtensionFunction {
 // Each child class must implement GetRemovalMask(), which returns the bitmask
 // of data types to remove.
 class BrowsingDataRemoverFunction
-    : public ChromeAsyncExtensionFunction,
+    : public ExtensionFunction,
       public content::BrowsingDataRemover::Observer {
  public:
   BrowsingDataRemoverFunction();
@@ -106,7 +106,7 @@ class BrowsingDataRemoverFunction
   void OnBrowsingDataRemoverDone() override;
 
   // ExtensionFunction:
-  bool RunAsync() override;
+  ResponseAction Run() override;
 
  protected:
   ~BrowsingDataRemoverFunction() override;
@@ -137,10 +137,12 @@ class BrowsingDataRemoverFunction
   bool ParseOriginTypeMask(const base::DictionaryValue& options,
                            int* origin_type_mask);
 
-  // Parse the developer-provided list of origins into |result|.
-  // Returns true if parsing was successful.
+  // Parses the developer-provided list of origins into |result|.
+  // Returns whether or not parsing was successful. In case of parse failure,
+  // |error_response| will contain the error response.
   bool ParseOrigins(const base::Value& list_value,
-                    std::vector<url::Origin>* result);
+                    std::vector<url::Origin>* result,
+                    ResponseValue* error_response);
 
   // Called when we're ready to start removing data.
   void StartRemoving();

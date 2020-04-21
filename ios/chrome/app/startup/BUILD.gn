@@ -39,8 +39,6 @@ source_set("startup") {
     "chrome_app_startup_parameters.mm",
     "client_registration.h",
     "client_registration.mm",
-    "content_suggestions_scheduler_notifications.h",
-    "content_suggestions_scheduler_notifications.mm",
     "provider_registration.h",
     "provider_registration.mm",
   ]
@@ -50,7 +48,6 @@ source_set("startup") {
   deps = [
     ":startup_basic",
     "//base",
-    "//components/ntp_snippets",
     "//components/search_engines:search_engines",
     "//ios/chrome/app",
     "//ios/chrome/browser",

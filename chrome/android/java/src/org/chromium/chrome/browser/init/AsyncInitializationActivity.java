@@ -226,8 +226,11 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
             if (intent == null || !Intent.ACTION_VIEW.equals(intent.getAction())) return;
             String url = IntentHandler.getUrlFromIntent(intent);
             if (url == null) return;
+            // TODO(https://crbug.com/1041781): Use the current profile (i.e., regular profile or
+            // incognito profile) instead of always using regular profile. It is wrong and needs to
+            // be fixed.
             WarmupManager.getInstance().maybePreconnectUrlAndSubResources(
-                    Profile.getLastUsedProfile(), url);
+                    Profile.getLastUsedRegularProfile(), url);
         } finally {
             TraceEvent.end("maybePreconnect");
         }

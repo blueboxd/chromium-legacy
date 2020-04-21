@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "base/debug/alias.h"
+#include "base/logging.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/process/memory.h"
 #include "build/build_config.h"

@@ -100,9 +100,7 @@ TEST_F(AccessibilityObjectModelTest, AOMDoesNotReflectARIA) {
   // The AOM properties should still all be null.
   EXPECT_EQ(nullptr, textbox->accessibleNode()->role());
   EXPECT_EQ(nullptr, textbox->accessibleNode()->label());
-  bool is_null = false;
-  EXPECT_FALSE(textbox->accessibleNode()->disabled(is_null));
-  EXPECT_TRUE(is_null);
+  EXPECT_FALSE(textbox->accessibleNode()->disabled().has_value());
 }
 
 TEST_F(AccessibilityObjectModelTest, AOMPropertiesCanBeCleared) {
@@ -133,7 +131,7 @@ TEST_F(AccessibilityObjectModelTest, AOMPropertiesCanBeCleared) {
   // Now set the AOM properties to override.
   button->accessibleNode()->setRole("radio");
   button->accessibleNode()->setLabel("Radio");
-  button->accessibleNode()->setDisabled(false, false);
+  button->accessibleNode()->setDisabled(false);
   GetDocument().View()->UpdateLifecycleToLayoutClean(
       DocumentUpdateReason::kTest);
 
@@ -146,7 +144,7 @@ TEST_F(AccessibilityObjectModelTest, AOMPropertiesCanBeCleared) {
   // Null the AOM properties.
   button->accessibleNode()->setRole(g_null_atom);
   button->accessibleNode()->setLabel(g_null_atom);
-  button->accessibleNode()->setDisabled(false, true);
+  button->accessibleNode()->setDisabled(base::nullopt);
   GetDocument().View()->UpdateLifecycleToLayoutClean(
       DocumentUpdateReason::kTest);
 
@@ -165,9 +163,9 @@ TEST_F(AccessibilityObjectModelTest, RangeProperties) {
 
   auto* slider = GetDocument().getElementById("slider");
   ASSERT_NE(nullptr, slider);
-  slider->accessibleNode()->setValueMin(-0.5, false);
-  slider->accessibleNode()->setValueMax(0.5, false);
-  slider->accessibleNode()->setValueNow(0.1, false);
+  slider->accessibleNode()->setValueMin(-0.5);
+  slider->accessibleNode()->setValueMax(0.5);
+  slider->accessibleNode()->setValueNow(0.1);
 
   auto* cache = AXObjectCache();
   ASSERT_NE(nullptr, cache);
@@ -191,7 +189,7 @@ TEST_F(AccessibilityObjectModelTest, Level) {
 
   auto* heading = GetDocument().getElementById("heading");
   ASSERT_NE(nullptr, heading);
-  heading->accessibleNode()->setLevel(5, false);
+  heading->accessibleNode()->setLevel(5);
 
   auto* cache = AXObjectCache();
   ASSERT_NE(nullptr, cache);
@@ -208,8 +206,8 @@ TEST_F(AccessibilityObjectModelTest, ListItem) {
 
   auto* listitem = GetDocument().getElementById("listitem");
   ASSERT_NE(nullptr, listitem);
-  listitem->accessibleNode()->setPosInSet(9, false);
-  listitem->accessibleNode()->setSetSize(10, false);
+  listitem->accessibleNode()->setPosInSet(9);
+  listitem->accessibleNode()->setSetSize(10);
 
   auto* cache = AXObjectCache();
   ASSERT_NE(nullptr, cache);
@@ -233,20 +231,20 @@ TEST_F(AccessibilityObjectModelTest, Grid) {
 
   auto* grid = GetDocument().getElementById("grid");
   ASSERT_NE(nullptr, grid);
-  grid->accessibleNode()->setColCount(16, false);
-  grid->accessibleNode()->setRowCount(9, false);
+  grid->accessibleNode()->setColCount(16);
+  grid->accessibleNode()->setRowCount(9);
 
   auto* row = GetDocument().getElementById("row");
   ASSERT_NE(nullptr, row);
-  row->accessibleNode()->setColIndex(8, false);
-  row->accessibleNode()->setRowIndex(5, false);
+  row->accessibleNode()->setColIndex(8);
+  row->accessibleNode()->setRowIndex(5);
 
   auto* cell = GetDocument().getElementById("cell");
 
   auto* cell2 = GetDocument().getElementById("cell2");
   ASSERT_NE(nullptr, cell2);
-  cell2->accessibleNode()->setColIndex(10, false);
-  cell2->accessibleNode()->setRowIndex(7, false);
+  cell2->accessibleNode()->setColIndex(10);
+  cell2->accessibleNode()->setRowIndex(7);
 
   auto* cache = AXObjectCache();
   ASSERT_NE(nullptr, cache);

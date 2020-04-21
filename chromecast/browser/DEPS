@@ -16,7 +16,6 @@ include_rules = [
   "+components/cdm/browser",
   "+components/crash",
   "+components/download/public/common",
-  "+components/exo",
   "+components/heap_profiling",
   "+components/keyed_service",
   "+components/media_control/browser",

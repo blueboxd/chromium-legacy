@@ -65,11 +65,13 @@ void TestNavigationURLLoader::CallOnRequestRedirected(
     const net::RedirectInfo& redirect_info,
     network::mojom::URLResponseHeadPtr response_head) {
   DCHECK(!is_served_from_back_forward_cache_);
+  response_head->parsed_headers = network::mojom::ParsedHeaders::New();
   delegate_->OnRequestRedirected(redirect_info, std::move(response_head));
 }
 
 void TestNavigationURLLoader::CallOnResponseStarted(
     network::mojom::URLResponseHeadPtr response_head) {
+  response_head->parsed_headers = network::mojom::ParsedHeaders::New();
   // Create a bidirectionnal communication pipe between a URLLoader and a
   // URLLoaderClient. It will be closed at the end of this function. The sole
   // purpose of this is not to violate some DCHECKs when the navigation commits.

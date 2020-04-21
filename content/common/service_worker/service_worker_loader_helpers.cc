@@ -127,8 +127,7 @@ void ServiceWorkerLoaderHelpers::SaveResponseInfo(
     out_head->cache_storage_cache_name.clear();
   out_head->cors_exposed_header_names = response.cors_exposed_header_names;
   out_head->did_service_worker_navigation_preload = false;
-  out_head->content_security_policy =
-      mojo::Clone(response.content_security_policy);
+  out_head->parsed_headers = mojo::Clone(response.parsed_headers);
   out_head->cross_origin_embedder_policy =
       response.cross_origin_embedder_policy;
 }

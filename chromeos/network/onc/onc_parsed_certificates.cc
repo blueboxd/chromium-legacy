@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/logging.h"
 #include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"

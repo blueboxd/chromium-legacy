@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
+#include "base/strings/string_util.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "components/history/core/browser/history_service.h"

@@ -307,6 +307,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void DidChangeContentsSize();
   void PageScaleFactorChanged();
   void MainFrameScrollOffsetChanged();
+  void TextAutosizerPageInfoChanged(const WebTextAutosizerPageInfo& page_info);
 
   bool ShouldAutoResize() const { return should_auto_resize_; }
 

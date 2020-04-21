@@ -288,13 +288,14 @@ void BrowsingDataRemoverFunction::OnTaskFinished() {
     return;
   synced_data_deletion_.reset();
   observer_.RemoveAll();
-  this->SendResponse(true);
+  Respond(NoArguments());
   Release();  // Balanced in StartRemoving.
 }
 
-bool BrowsingDataRemoverFunction::RunAsync() {
+ExtensionFunction::ResponseAction BrowsingDataRemoverFunction::Run() {
+  Profile* profile = Profile::FromBrowserContext(browser_context());
   // If we don't have a profile, something's pretty wrong.
-  DCHECK(GetProfile());
+  DCHECK(profile);
 
   // Grab the initial |options| parameter, and parse out the arguments.
   base::DictionaryValue* options;
@@ -326,30 +327,34 @@ bool BrowsingDataRemoverFunction::RunAsync() {
 
   // Check that only |origins| or |excludeOrigins| can be set.
   if (origins && exclude_origins) {
-    error_ = extension_browsing_data_api_constants::kIncompatibleFilterError;
-    return false;
+    return RespondNow(
+        Error(extension_browsing_data_api_constants::kIncompatibleFilterError));
   }
 
   if (origins) {
-    if (!ParseOrigins(*origins, &origins_))
-      return false;
+    ResponseValue error_response;
+    if (!ParseOrigins(*origins, &origins_, &error_response))
+      return RespondNow(std::move(error_response));
     mode_ = content::BrowsingDataFilterBuilder::WHITELIST;
   } else {
-    if (exclude_origins && !ParseOrigins(*exclude_origins, &origins_))
-      return false;
+    if (exclude_origins) {
+      ResponseValue error_response;
+      if (!ParseOrigins(*exclude_origins, &origins_, &error_response))
+        return RespondNow(std::move(error_response));
+    }
     mode_ = content::BrowsingDataFilterBuilder::BLACKLIST;
   }
 
   // Check if a filter is set but non-filterable types are selected.
   if ((!origins_.empty() && (removal_mask_ & ~kFilterableDataTypes) != 0)) {
-    error_ = extension_browsing_data_api_constants::kNonFilterableError;
-    return false;
+    return RespondNow(
+        Error(extension_browsing_data_api_constants::kNonFilterableError));
   }
 
   // Check for prohibited data types.
-  if (!IsRemovalPermitted(removal_mask_, GetProfile()->GetPrefs())) {
-    error_ = extension_browsing_data_api_constants::kDeleteProhibitedError;
-    return false;
+  if (!IsRemovalPermitted(removal_mask_, profile->GetPrefs())) {
+    return RespondNow(
+        Error(extension_browsing_data_api_constants::kDeleteProhibitedError));
   }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -363,7 +368,7 @@ bool BrowsingDataRemoverFunction::RunAsync() {
          base::TaskPriority::USER_VISIBLE},
         base::BindOnce(
             &BrowsingDataRemoverFunction::CheckRemovingPluginDataSupported,
-            this, PluginPrefs::GetForProfile(GetProfile())));
+            this, PluginPrefs::GetForProfile(profile)));
   } else {
     StartRemoving();
   }
@@ -371,8 +376,7 @@ bool BrowsingDataRemoverFunction::RunAsync() {
   StartRemoving();
 #endif
 
-  // Will finish asynchronously.
-  return true;
+  return did_respond() ? AlreadyResponded() : RespondLater();
 }
 
 BrowsingDataRemoverFunction::~BrowsingDataRemoverFunction() {}
@@ -394,7 +398,7 @@ void BrowsingDataRemoverFunction::CheckRemovingPluginDataSupported(
 #endif
 
 void BrowsingDataRemoverFunction::StartRemoving() {
-  Profile* profile = GetProfile();
+  Profile* profile = Profile::FromBrowserContext(browser_context());
   content::BrowsingDataRemover* remover =
       content::BrowserContext::GetBrowsingDataRemover(profile);
 
@@ -505,18 +509,21 @@ bool BrowsingDataRemoverFunction::ParseOriginTypeMask(
   return true;
 }
 
-bool BrowsingDataRemoverFunction::ParseOrigins(
-    const base::Value& list_value,
-    std::vector<url::Origin>* result) {
+bool BrowsingDataRemoverFunction::ParseOrigins(const base::Value& list_value,
+                                               std::vector<url::Origin>* result,
+                                               ResponseValue* error_response) {
   DCHECK(list_value.is_list());
   result->reserve(list_value.GetList().size());
   for (const auto& value : list_value.GetList()) {
-    EXTENSION_FUNCTION_VALIDATE(value.is_string());
+    if (!value.is_string()) {
+      *error_response = BadMessage();
+      return false;
+    }
     url::Origin origin = url::Origin::Create(GURL(value.GetString()));
     if (origin.opaque()) {
-      error_ = base::StringPrintf(
+      *error_response = Error(base::StringPrintf(
           extension_browsing_data_api_constants::kInvalidOriginError,
-          value.GetString().c_str());
+          value.GetString().c_str()));
       return false;
     }
     result->push_back(std::move(origin));

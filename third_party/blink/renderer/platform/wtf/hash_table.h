@@ -2080,8 +2080,7 @@ template <WeakHandlingFlag weakHandlingFlag,
           typename Allocator>
 struct WeakProcessingHashTableHelper {
   STATIC_ONLY(WeakProcessingHashTableHelper);
-  static void Process(const typename Allocator::WeakCallbackInfo&,
-                      const void*) {}
+  static void Process(const typename Allocator::LivenessBroker&, const void*) {}
 };
 
 template <typename Key,
@@ -2111,7 +2110,7 @@ struct WeakProcessingHashTableHelper<kWeakHandling,
   using ValueType = typename HashTableType::ValueType;
 
   // Used for purely weak and for weak-and-strong tables (ephemerons).
-  static void Process(const typename Allocator::WeakCallbackInfo& info,
+  static void Process(const typename Allocator::LivenessBroker& info,
                       const void* parameter) {
     HashTableType* table =
         reinterpret_cast<HashTableType*>(const_cast<void*>(parameter));

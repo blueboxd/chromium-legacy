@@ -313,12 +313,12 @@ void DeepScanningDialogViews::UpdateDialog() {
   // Update the message's text.
   message_->SetText(GetDialogMessage());
 
-  // Resize the dialog's height. This is needed since the button might be
-  // removed (in the success case) and the text might take fewer or more lines.
+  // Resize the dialog's height. This is needed since the text might take more
+  // lines after changing.
   int text_height = message_->GetRequiredLines() * message_->GetLineHeight();
   int row_height = message_->parent()->height();
   int height_to_add = std::max(text_height - row_height, 0);
-  if (is_success() || (height_to_add > 0))
+  if (height_to_add > 0)
     Resize(height_to_add);
 
   // Update the dialog.

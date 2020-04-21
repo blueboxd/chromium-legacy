@@ -3396,10 +3396,9 @@ void AXNodeObject::ComputeAriaOwnsChildren(
   Element* element = GetElement();
   if (element && element->HasExplicitlySetAttrAssociatedElements(
                      html_names::kAriaOwnsAttr)) {
-    bool is_null = false;
     AXObjectCache().UpdateAriaOwnsFromAttrAssociatedElements(
         this,
-        element->GetElementArrayAttribute(html_names::kAriaOwnsAttr, is_null),
+        element->GetElementArrayAttribute(html_names::kAriaOwnsAttr).value(),
         owned_children);
     return;
   }

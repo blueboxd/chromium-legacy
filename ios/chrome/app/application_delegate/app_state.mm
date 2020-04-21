@@ -26,7 +26,6 @@
 #import "ios/chrome/app/application_delegate/user_activity_handler.h"
 #import "ios/chrome/app/deferred_initialization_runner.h"
 #import "ios/chrome/app/main_application_delegate.h"
-#import "ios/chrome/app/startup/content_suggestions_scheduler_notifications.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_constants.h"
@@ -39,6 +38,7 @@
 #import "ios/chrome/browser/metrics/ios_profile_session_durations_service.h"
 #import "ios/chrome/browser/metrics/ios_profile_session_durations_service_factory.h"
 #import "ios/chrome/browser/metrics/previous_session_info.h"
+#import "ios/chrome/browser/ntp_snippets/content_suggestions_scheduler_notifications.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
@@ -343,11 +343,6 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
                                           connectedScenes:self.connectedScenes];
   [memoryHelper resetForegroundMemoryWarningCount];
 
-  // Use the mainBVC as the ContentSuggestions can only be started in non-OTR.
-  ChromeBrowserState* mainBrowserState =
-      _browserLauncher.interfaceProvider.mainInterface.browserState;
-  [ContentSuggestionsSchedulerNotifications notifyForeground:mainBrowserState];
-
   // If the current browser state is not OTR, check for cookie loss.
   ChromeBrowserState* currentBrowserState =
       _browserLauncher.interfaceProvider.currentInterface.browserState;
@@ -526,6 +521,11 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
       NSSet* connectedScenes =
           [UIApplication sharedApplication].connectedScenes;
       for (UIWindowScene* scene in connectedScenes) {
+        if (!scene.delegate) {
+          // This might happen in tests.
+          continue;
+        }
+
         SceneDelegate* sceneDelegate =
             base::mac::ObjCCastStrict<SceneDelegate>(scene.delegate);
         [sceneStates addObject:sceneDelegate.sceneState];

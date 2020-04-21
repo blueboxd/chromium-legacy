@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/ios/ios_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "components/policy/core/common/policy_loader_ios_constants.h"
 #include "components/policy/policy_constants.h"

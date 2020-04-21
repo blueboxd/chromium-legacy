@@ -50,7 +50,6 @@
 #include "services/network/origin_policy/origin_policy_constants.h"
 #include "services/network/origin_policy/origin_policy_manager.h"
 #include "services/network/public/cpp/constants.h"
-#include "services/network/public/cpp/content_security_policy/content_security_policy.h"
 #include "services/network/public/cpp/cross_origin_opener_policy_parser.h"
 #include "services/network/public/cpp/cross_origin_resource_policy.h"
 #include "services/network/public/cpp/features.h"
@@ -58,6 +57,7 @@
 #include "services/network/public/cpp/net_adapters.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/cpp/origin_policy.h"
+#include "services/network/public/cpp/parsed_headers.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/origin_policy_manager.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -88,6 +88,9 @@ void PopulateResourceResponse(net::URLRequest* request,
   response->request_time = request->request_time();
   response->response_time = request->response_time();
   response->headers = request->response_headers();
+  response->parsed_headers =
+      PopulateParsedHeaders(response->headers, request->url());
+
   request->GetCharset(&response->charset);
   response->content_length = request->GetExpectedContentSize();
   request->GetMimeType(&response->mime_type);
@@ -1201,15 +1204,6 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
       // treat the response as "text/plain".  This is the most secure option.
       response_->mime_type.assign("text/plain");
     }
-  }
-
-  // Parse the Content-Security-Policy headers.
-  if (base::FeatureList::IsEnabled(
-          network::features::kOutOfBlinkFrameAncestors) &&
-      url_request_->response_headers()) {
-    AddContentSecurityPolicyFromHeaders(*url_request_->response_headers(),
-                                        url_request_->url(),
-                                        &(response_->content_security_policy));
   }
 
   // If necessary, retrieve the associated origin policy, before sending the

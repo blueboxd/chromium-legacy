@@ -67,11 +67,11 @@
 #include "services/network/public/mojom/fetch_api.mojom-forward.h"
 #include "third_party/blink/public/mojom/choosers/color_chooser.mojom.h"
 #include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom-forward.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "third_party/blink/public/mojom/page/display_cutout.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
-#include "third_party/blink/public/platform/web_text_autosizer_page_info.h"
 #include "ui/accessibility/ax_mode.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -715,6 +715,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       IsClipboardPasteAllowedCallback callback) override;
   void OnPageScaleFactorChanged(RenderFrameHostImpl* source,
                                 float page_scale_factor) override;
+  void OnTextAutosizerPageInfoChanged(
+      RenderFrameHostImpl* source,
+      blink::mojom::TextAutosizerPageInfoPtr page_info) override;
   bool HasSeenRecentScreenOrientationChange() override;
   void CreateNewWidget(int32_t render_process_id,
                        int32_t route_id,
@@ -1395,9 +1398,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void OnUpdateZoomLimits(RenderViewHostImpl* source,
                           int minimum_percent,
                           int maximum_percent);
-  void OnTextAutosizerPageInfoChanged(
-      RenderViewHostImpl* source,
-      const blink::WebTextAutosizerPageInfo& page_info);
 
   void OnDomOperationResponse(RenderFrameHostImpl* source,
                               const std::string& json_string);

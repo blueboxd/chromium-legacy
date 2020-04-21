@@ -220,17 +220,9 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void SetElementAttribute(const QualifiedName&, Element*);
   base::Optional<HeapVector<Member<Element>>> GetElementArrayAttribute(
       const QualifiedName& name);
-  // TODO(crbug.com/1060971): Remove |is_null| version.
-  HeapVector<Member<Element>> GetElementArrayAttribute(  // DEPRECATED
-      const QualifiedName& name,
-      bool& is_null);
   void SetElementArrayAttribute(
       const QualifiedName&,
       const base::Optional<HeapVector<Member<Element>>>&);
-  // TODO(crbug.com/1060971): Remove |is_null| version.
-  void SetElementArrayAttribute(const QualifiedName&,  // DEPRECATED
-                                HeapVector<Member<Element>>,
-                                bool is_null);
 
   // Call this to get the value of an attribute that is known not to be the
   // style attribute or one of the SVG animatable attributes.

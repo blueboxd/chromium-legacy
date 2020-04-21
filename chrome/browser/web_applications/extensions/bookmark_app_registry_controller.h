@@ -23,6 +23,8 @@ class BookmarkAppRegistryController : public web_app::AppRegistryController {
   void Init(base::OnceClosure callback) override;
   void SetAppUserDisplayMode(const web_app::AppId& app_id,
                              web_app::DisplayMode display_mode) override;
+  void SetAppIsDisabled(const web_app::AppId& app_id,
+                        bool is_disabled) override;
   void SetAppIsLocallyInstalledForTesting(const web_app::AppId& app_id,
                                           bool is_locally_installed) override;
   web_app::WebAppSyncBridge* AsWebAppSyncBridge() override;

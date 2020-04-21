@@ -5,12 +5,15 @@
 #ifndef CHROME_BROWSER_DEVTOOLS_DEVTOOLS_BROWSER_CONTEXT_MANAGER_H_
 #define CHROME_BROWSER_DEVTOOLS_DEVTOOLS_BROWSER_CONTEXT_MANAGER_H_
 
+#include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
 #include "base/no_destructor.h"
-#include "chrome/browser/profiles/independent_otr_profile_manager.h"
+#include "chrome/browser/profiles/profile_observer.h"
+#include "chrome/browser/ui/browser_list_observer.h"
 #include "content/public/browser/devtools_manager_delegate.h"
 
-class DevToolsBrowserContextManager : public BrowserListObserver {
+class DevToolsBrowserContextManager : public BrowserListObserver,
+                                      public ProfileObserver {
  public:
   static DevToolsBrowserContextManager& GetInstance();
 
@@ -26,14 +29,14 @@ class DevToolsBrowserContextManager : public BrowserListObserver {
   friend class base::NoDestructor<DevToolsBrowserContextManager>;
   DevToolsBrowserContextManager();
   ~DevToolsBrowserContextManager() override;
-  void OnOriginalProfileDestroyed(Profile* profile);
 
+  // BrowserListObserver:
   void OnBrowserRemoved(Browser* browser) override;
 
-  base::flat_map<
-      std::string,
-      std::unique_ptr<IndependentOTRProfileManager::OTRProfileRegistration>>
-      registrations_;
+  // ProfileObserver:
+  void OnProfileWillBeDestroyed(Profile* profile) override;
+
+  base::flat_map<std::string, Profile*> otr_profiles_;
   base::flat_map<std::string, content::DevToolsManagerDelegate::DisposeCallback>
       pending_context_disposals_;
 

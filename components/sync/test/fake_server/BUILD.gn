@@ -18,6 +18,8 @@ static_library("fake_server") {
     "fake_server_http_post_provider.h",
     "fake_server_network_resources.cc",
     "fake_server_network_resources.h",
+    "fake_server_nigori_helper.cc",
+    "fake_server_nigori_helper.h",
     "fake_server_verifier.cc",
     "fake_server_verifier.h",
     "sessions_hierarchy.cc",
@@ -27,6 +29,7 @@ static_library("fake_server") {
   deps = [
     "//base",
     "//components/sync",
+    "//components/sync:test_support_nigori",
     "//net",
     "//services/network/public/cpp:cpp",
     "//testing/gtest",

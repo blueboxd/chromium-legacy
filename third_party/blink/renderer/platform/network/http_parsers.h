@@ -33,7 +33,7 @@
 
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "services/network/public/mojom/content_security_policy.mojom-blink-forward.h"
+#include "services/network/public/mojom/parsed_headers.mojom-blink-forward.h"
 #include "third_party/blink/renderer/platform/network/parsed_content_type.h"
 #include "third_party/blink/renderer/platform/network/server_timing_header.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -144,11 +144,11 @@ PLATFORM_EXPORT bool ParseContentRangeHeaderFor206(const String& content_range,
 PLATFORM_EXPORT std::unique_ptr<ServerTimingHeaderVector>
 ParseServerTimingHeader(const String&);
 
-// Parse CSP ContentSecurityPolicy from raw headers.
-// This is the same as network::AddContentSecurityPolicyFromHeaders(), but using
-// blink types.
-PLATFORM_EXPORT WTF::Vector<network::mojom::blink::ContentSecurityPolicyPtr>
-ParseContentSecurityPolicy(const String& raw_headers, const KURL& url);
+// Build ParsedHeaders from raw headers. This is the same as
+// network::PopulateParsedHeaders(headers, url) but using blink types.
+PLATFORM_EXPORT network::mojom::blink::ParsedHeadersPtr ParseHeaders(
+    const String& raw_headers,
+    const KURL& url);
 
 }  // namespace blink
 

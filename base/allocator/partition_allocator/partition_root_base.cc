@@ -12,7 +12,8 @@
 namespace base {
 namespace internal {
 
-NOINLINE void PartitionRootBase::OutOfMemory(size_t size) {
+template <bool thread_safety>
+NOINLINE void PartitionRootBase<thread_safety>::OutOfMemory(size_t size) {
 #if !defined(ARCH_CPU_64_BITS)
   // Check whether this OOM is due to a lot of super pages that are allocated
   // but not committed, probably due to http://crbug.com/421387.
@@ -22,19 +23,28 @@ NOINLINE void PartitionRootBase::OutOfMemory(size_t size) {
     PartitionOutOfMemoryWithLotsOfUncommitedPages(size);
   }
 #endif
-  if (PartitionRootBase::g_oom_handling_function)
-    (*PartitionRootBase::g_oom_handling_function)(size);
+  if (g_oom_handling_function)
+    (*g_oom_handling_function)(size);
   OOM_CRASH(size);
 }
 
-void PartitionRootBase::DecommitEmptyPages() {
+template <bool thread_safe>
+void PartitionRootBase<thread_safe>::DecommitEmptyPages() {
   for (size_t i = 0; i < kMaxFreeableSpans; ++i) {
-    internal::PartitionPage* page = global_empty_page_ring[i];
+    Page* page = global_empty_page_ring[i];
     if (page)
       page->DecommitIfPossible(this);
     global_empty_page_ring[i] = nullptr;
   }
 }
+
+template <bool thread_safe>
+internal::PartitionRootBase<thread_safe>::PartitionRootBase() = default;
+template <bool thread_safe>
+internal::PartitionRootBase<thread_safe>::~PartitionRootBase() = default;
+
+template struct PartitionRootBase<ThreadSafe>;
+template struct PartitionRootBase<NotThreadSafe>;
 
 }  // namespace internal
 }  // namespace base

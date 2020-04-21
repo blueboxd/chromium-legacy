@@ -15,8 +15,10 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.SyncFirstSetupCompleteSource;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
+import org.chromium.chrome.browser.sync.settings.ManageSyncSettings;
 import org.chromium.chrome.browser.sync.settings.SyncAndServicesSettings;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountUtils;
@@ -143,9 +145,16 @@ public class SigninFragment extends SigninFragmentBase {
                         UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(
                                 true);
                         if (settingsClicked) {
-                            SettingsLauncher.getInstance().launchSettingsPage(getActivity(),
-                                    SyncAndServicesSettings.class,
-                                    SyncAndServicesSettings.createArguments(true));
+                            if (ChromeFeatureList.isEnabled(
+                                        ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)) {
+                                SettingsLauncher.getInstance().launchSettingsPage(getActivity(),
+                                        ManageSyncSettings.class,
+                                        ManageSyncSettings.createArguments(true));
+                            } else {
+                                SettingsLauncher.getInstance().launchSettingsPage(getActivity(),
+                                        SyncAndServicesSettings.class,
+                                        SyncAndServicesSettings.createArguments(true));
+                            }
                         } else {
                             ProfileSyncService.get().setFirstSetupComplete(
                                     SyncFirstSetupCompleteSource.BASIC_FLOW);

@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"

@@ -4,13 +4,18 @@
 
 #include "chrome/browser/safe_browsing/cloud_content_scanning/file_source_request.h"
 
+#include "base/bind_helpers.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_dialog_delegate.h"
+#include "chrome/common/chrome_paths.h"
+#include "content/public/test/browser_task_environment.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace safe_browsing {
@@ -247,6 +252,83 @@ TEST(FileSourceRequestTest, CachesResults) {
   EXPECT_EQ(sync_data.contents, async_data.contents);
   EXPECT_EQ(sync_data.size, async_data.size);
   EXPECT_EQ(sync_data.hash, async_data.hash);
+}
+
+TEST(FileSourceRequestTest, Encrypted) {
+  content::BrowserTaskEnvironment browser_task_environment;
+  content::InProcessUtilityThreadHelper in_process_utility_thread_helper;
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  base::FilePath test_zip;
+  EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_zip));
+  test_zip = test_zip.AppendASCII("safe_browsing")
+                 .AppendASCII("download_protection")
+                 .AppendASCII("encrypted.zip");
+
+  FileSourceRequest request(test_zip, base::DoNothing());
+
+  bool called = false;
+  base::RunLoop run_loop;
+  BinaryUploadService::Result result;
+  BinaryUploadService::Request::Data data;
+  request.GetRequestData(base::BindLambdaForTesting(
+      [&run_loop, &called, &result, &data](
+          BinaryUploadService::Result tmp_result,
+          const BinaryUploadService::Request::Data& tmp_data) {
+        called = true;
+        run_loop.Quit();
+        result = tmp_result;
+        data = tmp_data;
+      }));
+  run_loop.Run();
+
+  ASSERT_TRUE(called);
+  EXPECT_EQ(result, BinaryUploadService::Result::FILE_ENCRYPTED);
+  // du chrome/test/data/safe_browsing/download_protection -b
+  EXPECT_EQ(data.size, 20015u);
+  // sha256sum < chrome/test/data/safe_browsing/download_protection/\
+  // encrypted.zip |  tr '[:lower:]' '[:upper:]'
+  EXPECT_EQ(data.hash,
+            "701FCEA8B2112FFAB257A8A8DFD3382ABCF047689AB028D42903E3B3AA488D9A");
+  EXPECT_EQ(request.deep_scanning_request().digest(), data.hash);
+}
+
+TEST(FileSourceRequestTest, UnsupportedFileType) {
+  base::test::TaskEnvironment task_environment;
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  std::string normal_contents = "Normal file contents";
+  base::FilePath file_path = temp_dir.GetPath().AppendASCII("normal.xyz");
+  base::WriteFile(file_path, normal_contents.data(), normal_contents.size());
+
+  FileSourceRequest request(file_path, base::DoNothing());
+  request.set_request_dlp_scan(DlpDeepScanningClientRequest());
+
+  bool called = false;
+  base::RunLoop run_loop;
+  BinaryUploadService::Result result;
+  BinaryUploadService::Request::Data data;
+  request.GetRequestData(base::BindLambdaForTesting(
+      [&run_loop, &called, &result, &data](
+          BinaryUploadService::Result tmp_result,
+          const BinaryUploadService::Request::Data& tmp_data) {
+        called = true;
+        run_loop.Quit();
+        result = tmp_result;
+        data = tmp_data;
+      }));
+  run_loop.Run();
+
+  ASSERT_TRUE(called);
+  EXPECT_EQ(result, BinaryUploadService::Result::UNSUPPORTED_FILE_TYPE);
+  EXPECT_EQ(data.contents, normal_contents);
+  EXPECT_EQ(data.size, normal_contents.size());
+  // printf "Normal file contents" | sha256sum |  tr '[:lower:]' '[:upper:]'
+  EXPECT_EQ(data.hash,
+            "29644C10BD036866FCFD2BDACFF340DB5DE47A90002D6AB0C42DE6A22C26158B");
+  EXPECT_EQ(request.deep_scanning_request().digest(), data.hash);
 }
 
 }  // namespace safe_browsing

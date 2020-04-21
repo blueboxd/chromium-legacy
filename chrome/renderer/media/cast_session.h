@@ -42,7 +42,10 @@ class CastSession : public base::RefCounted<CastSession> {
   using EventLogsCallback = base::Callback<void(std::unique_ptr<base::Value>)>;
   using StatsCallback =
       base::Callback<void(std::unique_ptr<base::DictionaryValue>)>;
+  // TODO(crbug.com/1007641): remove ErrorCallback and rename ErrorOnceCallback
+  // once all occurrences of base::Callback have been removed.
   using ErrorCallback = base::Callback<void(const std::string&)>;
+  using ErrorOnceCallback = base::OnceCallback<void(const std::string&)>;
 
   explicit CastSession(scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
@@ -65,7 +68,7 @@ class CastSession : public base::RefCounted<CastSession> {
   // occurs. |StartUDP()| must be called before calling this method.
   void StartRemotingStream(int32_t stream_id,
                            const media::cast::FrameSenderConfig& config,
-                           const ErrorCallback& error_callback);
+                           ErrorOnceCallback error_callback);
 
   // This will create the Cast transport and connect to |remote_endpoint|.
   // |options| is a dictionary which contain optional configuration for the

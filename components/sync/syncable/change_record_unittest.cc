@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"

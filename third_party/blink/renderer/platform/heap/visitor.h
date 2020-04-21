@@ -53,7 +53,7 @@ namespace blink {
 
 template <typename T>
 class GarbageCollected;
-class WeakCallbackInfo;
+class LivenessBroker;
 template <typename T>
 struct TraceTrait;
 class ThreadState;
@@ -78,10 +78,10 @@ struct TraceMethodDelegate {
   }
 };
 
-template <typename T, void (T::*method)(const WeakCallbackInfo&)>
+template <typename T, void (T::*method)(const LivenessBroker&)>
 struct WeakCallbackMethodDelegate {
   STATIC_ONLY(WeakCallbackMethodDelegate);
-  static void Trampoline(const WeakCallbackInfo& info, const void* self) {
+  static void Trampoline(const LivenessBroker& info, const void* self) {
     (reinterpret_cast<T*>(const_cast<void*>(self))->*method)(info);
   }
 };
@@ -248,7 +248,7 @@ class PLATFORM_EXPORT Visitor {
 
   // Registers an instance method using |RegisterWeakCallback|. See description
   // below.
-  template <typename T, void (T::*method)(const WeakCallbackInfo&)>
+  template <typename T, void (T::*method)(const LivenessBroker&)>
   void RegisterWeakCallbackMethod(const T* obj) {
     RegisterWeakCallback(&WeakCallbackMethodDelegate<T, method>::Trampoline,
                          obj);
@@ -305,7 +305,7 @@ class PLATFORM_EXPORT Visitor {
 
   // Adds a |callback| that is invoked with |parameter| after liveness has been
   // computed on the whole object graph. The |callback| may use the provided
-  // |WeakCallbackInfo| to determine whether an object is considered alive or
+  // |LivenessBroker| to determine whether an object is considered alive or
   // dead.
   //
   // - Upon returning from the callback all references to dead objects must have
@@ -340,7 +340,7 @@ class PLATFORM_EXPORT Visitor {
 
  private:
   template <typename T>
-  static void HandleWeakCell(const WeakCallbackInfo&, const void*);
+  static void HandleWeakCell(const LivenessBroker&, const void*);
 
   ThreadState* const state_;
 };

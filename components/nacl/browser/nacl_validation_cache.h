@@ -6,7 +6,7 @@
 #define COMPONENTS_NACL_BROWSER_NACL_VALIDATION_CACHE_H_
 
 #include <stddef.h>
-
+#include <string>
 #include <vector>
 
 #include "base/containers/mru_cache.h"

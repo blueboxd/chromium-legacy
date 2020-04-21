@@ -15,6 +15,7 @@
 #include "base/optional.h"
 #include "base/util/type_safety/pass_key.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_database.h"
 #include "chrome/browser/web_applications/web_app_database_factory.h"
@@ -173,6 +174,25 @@ void WebAppSyncBridge::SetAppUserDisplayMode(const AppId& app_id,
   WebApp* web_app = update->UpdateApp(app_id);
   if (web_app)
     web_app->SetUserDisplayMode(user_display_mode);
+}
+
+void WebAppSyncBridge::SetAppIsDisabled(const AppId& app_id, bool is_disabled) {
+  if (!IsChromeOs())
+    return;
+
+  ScopedRegistryUpdate update(this);
+  WebApp* web_app = update->UpdateApp(app_id);
+  if (!web_app)
+    return;
+
+  auto cros_data = web_app->chromeos_data();
+  DCHECK(cros_data.has_value());
+
+  if (cros_data->is_disabled != is_disabled) {
+    cros_data->is_disabled = is_disabled;
+    web_app->SetWebAppChromeOsData(cros_data);
+    registrar_->NotifyWebAppDisabledStateChanged(app_id, is_disabled);
+  }
 }
 
 void WebAppSyncBridge::SetAppIsLocallyInstalledForTesting(

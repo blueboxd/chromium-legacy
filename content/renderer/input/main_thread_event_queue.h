@@ -155,7 +155,6 @@ class CONTENT_EXPORT MainThreadEventQueue
   friend class MainThreadEventQueueInitializationTest;
   MainThreadEventQueueClient* client_;
   bool last_touch_start_forced_nonblocking_due_to_fling_;
-  bool enable_fling_passive_listener_flag_;
   bool needs_low_latency_;
   bool needs_unbuffered_input_for_debugger_;
   bool allow_raf_aligned_input_;

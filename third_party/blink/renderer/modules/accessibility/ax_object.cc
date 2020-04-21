@@ -1922,14 +1922,12 @@ void AXObject::ElementsFromAttribute(HeapVector<Member<Element>>& elements,
   if (!element)
     return;
 
-  bool attr_associated_elements_are_null = true;
-  HeapVector<Member<Element>> attr_associated_elements =
-      element->GetElementArrayAttribute(attribute,
-                                        attr_associated_elements_are_null);
-  if (attr_associated_elements_are_null)
+  base::Optional<HeapVector<Member<Element>>> attr_associated_elements =
+      element->GetElementArrayAttribute(attribute);
+  if (!attr_associated_elements)
     return;
 
-  for (const auto& element : attr_associated_elements)
+  for (const auto& element : attr_associated_elements.value())
     elements.push_back(element);
 }
 

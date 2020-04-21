@@ -34,6 +34,7 @@
 #import "ios/chrome/browser/first_run/first_run.h"
 #include "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/ntp/features.h"
+#import "ios/chrome/browser/ntp_snippets/content_suggestions_scheduler_notifications.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #include "ios/chrome/browser/system_flags.h"
@@ -263,6 +264,8 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
 
   if (level == SceneActivationLevelForegroundActive) {
     [self presentSignInAccountsViewControllerIfNecessary];
+    [ContentSuggestionsSchedulerNotifications
+        notifyForeground:self.mainInterface.browserState];
   }
 }
 

@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/logging.h"
-#include "services/network/public/mojom/content_security_policy.mojom-blink.h"
+#include "services/network/public/mojom/parsed_headers.mojom-blink.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/testing/blink_fuzzer_test_support.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -42,7 +42,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
                                        size, &response, &end);
   blink::ParseServerTimingHeader(terminated.c_str());
   blink::ParseContentTypeOptionsHeader(terminated.c_str());
-  blink::ParseContentSecurityPolicy(terminated.c_str(),
-                                    blink::KURL("http://example.com"));
+  blink::ParseHeaders(terminated.c_str(), blink::KURL("http://example.com"));
   return 0;
 }

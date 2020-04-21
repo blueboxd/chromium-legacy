@@ -214,8 +214,6 @@ MainThreadEventQueue::MainThreadEventQueue(
     bool allow_raf_aligned_input)
     : client_(client),
       last_touch_start_forced_nonblocking_due_to_fling_(false),
-      enable_fling_passive_listener_flag_(base::FeatureList::IsEnabled(
-          features::kPassiveEventListenersDueToFling)),
       needs_low_latency_(false),
       needs_unbuffered_input_for_debugger_(false),
       allow_raf_aligned_input_(allow_raf_aligned_input),
@@ -269,8 +267,7 @@ void MainThreadEventQueue::HandleEvent(
     if (touch_event->GetType() == blink::WebInputEvent::kTouchStart)
       last_touch_start_forced_nonblocking_due_to_fling_ = false;
 
-    if (enable_fling_passive_listener_flag_ &&
-        touch_event->touch_start_or_first_touch_move &&
+    if (touch_event->touch_start_or_first_touch_move &&
         touch_event->dispatch_type ==
             blink::WebInputEvent::DispatchType::kBlocking) {
       // If the touch start is forced to be passive due to fling, its following

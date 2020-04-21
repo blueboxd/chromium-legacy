@@ -124,7 +124,7 @@ void NetworkResourcesData::ResourceData::SetResource(
 }
 
 void NetworkResourcesData::ResourceData::ProcessCustomWeakness(
-    const WeakCallbackInfo& info) {
+    const LivenessBroker& info) {
   if (!cached_resource_ || info.IsHeapObjectAlive(cached_resource_))
     return;
 

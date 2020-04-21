@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "autocomplete_match_classification.h"
+
 #include "base/i18n/case_conversion.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/omnibox/browser/scored_history_match.h"
 #include "in_memory_url_index_types.h"

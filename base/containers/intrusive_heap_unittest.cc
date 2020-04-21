@@ -4,6 +4,7 @@
 
 #include "base/containers/intrusive_heap.h"
 
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"

@@ -4,6 +4,7 @@
 
 #include "components/ntp_snippets/category_rankers/constant_category_ranker.h"
 
+#include "base/macros.h"
 #include "components/ntp_snippets/category.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -128,14 +128,14 @@ bool Image::LoadMetadata() {
     return false;
   }
 
-  base::JSONReader reader;
-  std::unique_ptr<base::Value> metadata(
-      reader.ReadToValueDeprecated(json_data));
-  if (!metadata) {
+  auto metadata_result =
+      base::JSONReader::ReadAndReturnValueWithError(json_data);
+  if (!metadata_result.value) {
     VLOGF(1) << "Failed to parse image metadata: " << json_path << ": "
-             << reader.GetErrorMessage();
+             << metadata_result.error_message;
     return false;
   }
+  base::Optional<base::Value> metadata = std::move(metadata_result.value);
 
   // Get the pixel format from the json data.
   const base::Value* pixel_format =

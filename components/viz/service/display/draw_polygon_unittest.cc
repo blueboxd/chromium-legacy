@@ -7,6 +7,7 @@
 #include <limits>
 #include <vector>
 
+#include "base/logging.h"
 #include "base/numerics/math_constants.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"

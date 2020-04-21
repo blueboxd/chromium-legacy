@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "chromeos/system/statistics_provider.h"
 

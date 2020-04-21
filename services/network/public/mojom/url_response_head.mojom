@@ -6,7 +6,6 @@ module network.mojom;
 
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
-import "services/network/public/mojom/content_security_policy.mojom";
 import "services/network/public/mojom/cross_origin_embedder_policy.mojom";
 import "services/network/public/mojom/cross_origin_opener_policy.mojom";
 import "services/network/public/mojom/fetch_api.mojom";
@@ -16,6 +15,7 @@ import "services/network/public/mojom/load_timing_info.mojom";
 import "services/network/public/mojom/network_param.mojom";
 import "services/network/public/mojom/network_types.mojom";
 import "services/network/public/mojom/origin_policy_manager.mojom";
+import "services/network/public/mojom/parsed_headers.mojom";
 import "services/proxy_resolver/public/mojom/proxy_resolver.mojom";
 import "url/mojom/url.mojom";
 
@@ -185,14 +185,19 @@ struct URLResponseHead {
   // recorded here.
   AuthChallengeInfo? auth_challenge_info;
 
-  // The parsed content security policy from the response headers.
-  array<ContentSecurityPolicy> content_security_policy;
-
   // TimeTicks::Now() when the browser received the request from the renderer.
   mojo_base.mojom.TimeTicks request_start;
 
   // TimeTicks::Now() when the browser sent the response to the renderer.
   mojo_base.mojom.TimeTicks response_start;
+
+  // A set of security related parsed headers. This is for clients that should
+  // not do the parsing themselves, because they aren't sandboxed (e.g. the
+  // browser process). This is the output of network::PopulateParsedHeaders().
+  //
+  // This can be null. It means the URLLoader didn't parsed the headers. Either
+  // it wasn't implemented or not allowed from its process.
+  ParsedHeaders? parsed_headers;
 
   // Origin Policy associated with this response or nullptr if not applicable.
   // Spec: https://wicg.github.io/origin-policy/

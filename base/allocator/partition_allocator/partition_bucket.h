@@ -9,22 +9,22 @@
 #include <stdint.h>
 
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
+#include "base/allocator/partition_allocator/partition_alloc_forward.h"
 #include "base/base_export.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/thread_annotations.h"
 
 namespace base {
 namespace internal {
 
-struct PartitionPage;
-struct PartitionRootBase;
-
+template <bool thread_safe>
 struct PartitionBucket {
   // Accessed most in hot path => goes first.
-  PartitionPage* active_pages_head;
+  PartitionPage<thread_safe>* active_pages_head;
 
-  PartitionPage* empty_pages_head;
-  PartitionPage* decommitted_pages_head;
+  PartitionPage<thread_safe>* empty_pages_head;
+  PartitionPage<thread_safe>* decommitted_pages_head;
   uint32_t slot_size;
   uint32_t num_system_pages_per_slot_span : 8;
   uint32_t num_full_pages : 24;
@@ -39,10 +39,11 @@ struct PartitionBucket {
   // them. (See |PartitionRootBase::AllocFromBucket|.)
   //
   // Note the matching Free() functions are in PartitionPage.
-  BASE_EXPORT NOINLINE void* SlowPathAlloc(PartitionRootBase* root,
+  BASE_EXPORT NOINLINE void* SlowPathAlloc(PartitionRootBase<thread_safe>* root,
                                            int flags,
                                            size_t size,
-                                           bool* is_already_zeroed);
+                                           bool* is_already_zeroed)
+      EXCLUSIVE_LOCKS_REQUIRED(root->lock_);
 
   ALWAYS_INLINE bool is_direct_mapped() const {
     return !num_system_pages_per_slot_span;
@@ -82,9 +83,6 @@ struct PartitionBucket {
   bool SetNewActivePage();
 
  private:
-  static void OutOfMemory(const PartitionRootBase* root);
-  static void OutOfMemoryWithLotsOfUncommitedPages();
-
   static NOINLINE void OnFull();
 
   // Returns a natural number of PartitionPages (calculated by
@@ -103,9 +101,10 @@ struct PartitionBucket {
   // Allocates a new slot span with size |num_partition_pages| from the
   // current extent. Metadata within this slot span will be uninitialized.
   // Returns nullptr on error.
-  ALWAYS_INLINE void* AllocNewSlotSpan(PartitionRootBase* root,
+  ALWAYS_INLINE void* AllocNewSlotSpan(PartitionRootBase<thread_safe>* root,
                                        int flags,
-                                       uint16_t num_partition_pages);
+                                       uint16_t num_partition_pages)
+      EXCLUSIVE_LOCKS_REQUIRED(root->lock_);
 
   // Each bucket allocates a slot span when it runs out of slots.
   // A slot span's size is equal to get_pages_per_slot_span() number of
@@ -113,12 +112,12 @@ struct PartitionBucket {
   // span to point to the first PartitionPage which holds all the metadata
   // for the span and registers this bucket as the owner of the span. It does
   // NOT put the slots into the bucket's freelist.
-  ALWAYS_INLINE void InitializeSlotSpan(PartitionPage* page);
+  ALWAYS_INLINE void InitializeSlotSpan(PartitionPage<thread_safe>* page);
 
   // Allocates one slot from the given |page| and then adds the remainder to
   // the current bucket. If the |page| was freshly allocated, it must have been
   // passed through InitializeSlotSpan() first.
-  ALWAYS_INLINE char* AllocAndFillFreelist(PartitionPage* page);
+  ALWAYS_INLINE char* AllocAndFillFreelist(PartitionPage<thread_safe>* page);
 
   static PartitionBucket sentinel_bucket_;
 };

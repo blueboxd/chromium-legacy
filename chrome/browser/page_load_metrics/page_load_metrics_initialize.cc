@@ -12,7 +12,6 @@
 #include "chrome/browser/page_load_metrics/observers/aborts_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/ad_metrics/ads_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/amp_page_load_metrics_observer.h"
-#include "chrome/browser/page_load_metrics/observers/data_reduction_proxy_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/data_saver_site_breakdown_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/data_use_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/document_write_page_load_metrics_observer.h"
@@ -98,9 +97,6 @@ void PageLoadMetricsEmbedder::RegisterEmbedderObservers(
   if (!IsPrerendering()) {
     tracker->AddObserver(std::make_unique<AbortsPageLoadMetricsObserver>());
     tracker->AddObserver(std::make_unique<AMPPageLoadMetricsObserver>());
-    tracker->AddObserver(
-        std::make_unique<
-            data_reduction_proxy::DataReductionProxyMetricsObserver>());
     tracker->AddObserver(std::make_unique<SchemePageLoadMetricsObserver>());
     tracker->AddObserver(std::make_unique<FromGWSPageLoadMetricsObserver>());
     tracker->AddObserver(std::make_unique<ForegroundDurationUKMObserver>());

@@ -8,6 +8,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_tracing.h"
+#include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/timer/elapsed_timer.h"

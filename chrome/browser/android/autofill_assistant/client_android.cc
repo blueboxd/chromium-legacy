@@ -423,8 +423,14 @@ void ClientAndroid::AttachUI(
       CreateController(nullptr);
     ui_controller_android_->Attach(web_contents_, this, controller_.get());
 
-    GetPasswordManagerClient()->GetPasswordManager()->SetAutofillAssistantMode(
-        password_manager::AutofillAssistantMode::kRunning);
+    // Suppress password manager's prompts while running a password change
+    // script.
+    auto* password_manager_client = GetPasswordManagerClient();
+    if (password_manager_client &&
+        password_manager_client->WasCredentialLeakDialogShown()) {
+      password_manager_client->GetPasswordManager()->SetAutofillAssistantMode(
+          password_manager::AutofillAssistantMode::kRunning);
+    }
   }
 }
 

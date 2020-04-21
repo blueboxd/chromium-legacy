@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "build/branding_buildflags.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/ui/webui/webui_util.h"

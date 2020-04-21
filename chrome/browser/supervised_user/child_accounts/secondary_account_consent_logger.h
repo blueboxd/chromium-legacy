@@ -39,10 +39,13 @@ class SharedURLLoaderFactory;
 // yet. Text version specifies the version of the text on the information page.
 class SecondaryAccountConsentLogger {
  public:
+  // NOTE: This enum is persisted to histograms. Do not change or reorder
+  // values.
   enum class Result : int {
-    kSuccess,
+    kSuccess = 0,
     kTokenError,    // Failed to get OAuth2 token.
     kNetworkError,  // Network failure.
+    kMaxValue = kNetworkError,
   };
 
   // Create a new instance to log the consent. To start logging call

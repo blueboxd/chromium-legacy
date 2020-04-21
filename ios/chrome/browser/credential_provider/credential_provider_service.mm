@@ -35,7 +35,6 @@ BOOL ShouldSyncAllCredentials() {
 }
 
 ArchivableCredential* CredentialFromForm(const PasswordForm& form) {
-  DCHECK(!form.blacklisted_by_user);
   ArchivableCredential* credential =
       [[ArchivableCredential alloc] initWithPasswordForm:form
                                                  favicon:nil

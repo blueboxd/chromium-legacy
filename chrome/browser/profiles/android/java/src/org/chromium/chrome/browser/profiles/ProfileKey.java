@@ -24,18 +24,6 @@ public class ProfileKey {
     }
 
     /**
-     * Returns the original profile key, even if it is called in an incognito context.
-     *
-     * https://crbug.com/1041781: Remove after auditing and replacing all usecases.
-     *
-     * @deprecated use {@link #getLastUsedRegularProfileKey()} instead.
-     */
-    @Deprecated
-    public static ProfileKey getLastUsedProfileKey() {
-        return getLastUsedRegularProfileKey();
-    }
-
-    /**
      * Returns the regular (i.e., not off-the-record) profile key.
      *
      * Note: The function name uses the "last used" terminology for consistency with

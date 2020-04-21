@@ -4,6 +4,7 @@
 
 #include "components/autofill_assistant/browser/metrics.h"
 
+#include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 
 namespace autofill_assistant {

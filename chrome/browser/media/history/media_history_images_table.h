@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_MEDIA_HISTORY_MEDIA_HISTORY_IMAGES_TABLE_H_
 #define CHROME_BROWSER_MEDIA_HISTORY_MEDIA_HISTORY_IMAGES_TABLE_H_
 
+#include "base/strings/string_util.h"
 #include "chrome/browser/media/history/media_history_table_base.h"
 #include "sql/init_status.h"
 #include "url/gurl.h"

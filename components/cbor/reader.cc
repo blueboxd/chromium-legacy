@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "base/logging.h"
 #include "base/numerics/checked_math.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"

@@ -5,6 +5,7 @@
 #ifndef BASE_TASK_SEQUENCE_MANAGER_TASK_TIME_OBSERVER_H_
 #define BASE_TASK_SEQUENCE_MANAGER_TASK_TIME_OBSERVER_H_
 
+#include "base/macros.h"
 #include "base/time/time.h"
 
 namespace base {

@@ -1,0 +1,18 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module network.mojom;
+
+import "services/network/public/mojom/content_security_policy.mojom";
+import "services/network/public/mojom/cross_origin_embedder_policy.mojom";
+import "services/network/public/mojom/cross_origin_opener_policy.mojom";
+
+// Holds the parsed representation of several security related HTTP headers.
+// This struct should only be populated by network::PopulateParsedHeaders()
+struct ParsedHeaders {
+  // The parsed Content-Security-Policy from the response headers.
+  array<ContentSecurityPolicy> content_security_policy;
+
+  // TODO(arthursonzogni): Move COOP/COEP here.
+};

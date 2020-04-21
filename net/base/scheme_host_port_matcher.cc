@@ -5,6 +5,7 @@
 #include "net/base/scheme_host_port_matcher.h"
 
 #include "base/strings/string_tokenizer.h"
+#include "base/strings/string_util.h"
 
 namespace net {
 

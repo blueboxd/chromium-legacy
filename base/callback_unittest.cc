@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/callback_internal.h"
+#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread.h"

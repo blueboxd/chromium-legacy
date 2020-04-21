@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_TEST_TEST_WEB_APP_URL_LOADER_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_TEST_TEST_WEB_APP_URL_LOADER_H_
 
+#include <map>
 #include <queue>
 
 #include "chrome/browser/web_applications/components/web_app_url_loader.h"

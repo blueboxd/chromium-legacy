@@ -25,6 +25,8 @@ public class AccountUtils {
     @VisibleForTesting
     public static final String GOOGLE_ACCOUNT_TYPE = "com.google";
 
+    private AccountUtils() {}
+
     /**
      * Creates an Account object for the given name.
      */

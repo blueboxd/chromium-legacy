@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
 #include "components/offline_pages/core/prefetch/prefetch_network_request_factory.h"
 #include "components/prefs/pref_service.h"

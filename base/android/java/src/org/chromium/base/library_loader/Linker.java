@@ -408,20 +408,10 @@ public abstract class Linker {
         LibraryLoader.setEnvForNative();
         if (DEBUG) Log.i(TAG, "Loading lib%s.so", LINKER_JNI_LIBRARY);
 
-        try {
-            System.loadLibrary(LINKER_JNI_LIBRARY);
-        } catch (UnsatisfiedLinkError e) {
-            if (LibraryLoader.PLATFORM_REQUIRES_NATIVE_FALLBACK_EXTRACTION) {
-                System.load(LibraryLoader.getExtractedLibraryPath(
-                        ContextUtils.getApplicationContext().getApplicationInfo(),
-                        LINKER_JNI_LIBRARY));
-            } else {
-                // Cannot continue if we cannot load the linker. Technically we could try to
-                // load the library with the system linker on Android M+, but this should never
-                // happen, better to catch it in crash reports.
-                throw e;
-            }
-        }
+        // May throw UnsatisfiedLinkError, we do not catch it as we cannot continue if we cannot
+        // load the linker. Technically we could try to load the library with the system linker on
+        // Android M+, but this should never happen, better to catch it in crash reports.
+        System.loadLibrary(LINKER_JNI_LIBRARY);
     }
 
     // Used internally to initialize the linker's data. Loads JNI.

@@ -590,6 +590,7 @@
     },
     'remove_from': [
       'Fuchsia ARM64', # https://crbug.com/1046552
+      'Fuchsia x64', # https://crbug.com/1046552
       'fuchsia-fyi-arm64-rel',
     ],
   },

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/app/startup/content_suggestions_scheduler_notifications.h"
+#import "ios/chrome/browser/ntp_snippets/content_suggestions_scheduler_notifications.h"
 
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"

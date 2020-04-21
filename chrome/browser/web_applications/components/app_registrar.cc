@@ -58,6 +58,12 @@ void AppRegistrar::NotifyWebAppUninstalled(const AppId& app_id) {
   RecordWebAppUninstallation(profile()->GetPrefs(), app_id);
 }
 
+void AppRegistrar::NotifyWebAppDisabledStateChanged(const AppId& app_id,
+                                                    bool is_disabled) {
+  for (AppRegistrarObserver& observer : observers_)
+    observer.OnWebAppDisabledStateChanged(app_id, is_disabled);
+}
+
 void AppRegistrar::NotifyWebAppProfileWillBeDeleted(const AppId& app_id) {
   for (AppRegistrarObserver& observer : observers_)
     observer.OnWebAppProfileWillBeDeleted(app_id);

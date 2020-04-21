@@ -38,9 +38,6 @@ class SessionStore {
       const base::Optional<syncer::ModelError>& error,
       std::unique_ptr<SessionStore> store,
       std::unique_ptr<syncer::MetadataBatch> metadata_batch)>;
-  // Mimics signature of FaviconCache::UpdateMappingsFromForeignTab().
-  using RestoredForeignTabCallback =
-      base::RepeatingCallback<void(const sync_pb::SessionTab&)>;
 
   // Opens a SessionStore instance, which involves IO to load previous state
   // from disk. |sessions_client| must not be null and must outlive the
@@ -48,7 +45,6 @@ class SessionStore {
   // cancelled.
   static void Open(
       const std::string& cache_guid,
-      const RestoredForeignTabCallback& restored_foreign_tab_callback,
       SyncSessionsClient* sessions_client,
       OpenCallback callback);
 
@@ -156,14 +152,12 @@ class SessionStore {
 
   // |sessions_client| must not be null and must outlive this object.
   SessionStore(const SessionInfo& local_session_info,
-               const RestoredForeignTabCallback& restored_foreign_tab_callback,
                std::unique_ptr<syncer::ModelTypeStore> underlying_store,
                std::map<std::string, sync_pb::SessionSpecifics> initial_data,
                const syncer::EntityMetadataMap& initial_metadata,
                SyncSessionsClient* sessions_client);
 
   const SessionInfo local_session_info_;
-  const RestoredForeignTabCallback restored_foreign_tab_callback_;
 
   // In charge of actually persisting changes to disk.
   const std::unique_ptr<syncer::ModelTypeStore> store_;

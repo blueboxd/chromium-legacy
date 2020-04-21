@@ -53,7 +53,7 @@ class PLATFORM_EXPORT HeapAllocator {
   STATIC_ONLY(HeapAllocator);
 
  public:
-  using WeakCallbackInfo = blink::WeakCallbackInfo;
+  using LivenessBroker = blink::LivenessBroker;
   using Visitor = blink::Visitor;
   static constexpr bool kIsGarbageCollected = true;
 

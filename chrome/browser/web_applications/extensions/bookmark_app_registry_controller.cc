@@ -62,6 +62,12 @@ void BookmarkAppRegistryController::SetAppUserDisplayMode(
   }
 }
 
+void BookmarkAppRegistryController::SetAppIsDisabled(
+    const web_app::AppId& app_id,
+    bool is_disabled) {
+  NOTIMPLEMENTED();
+}
+
 void BookmarkAppRegistryController::SetAppIsLocallyInstalledForTesting(
     const web_app::AppId& app_id,
     bool is_locally_installed) {

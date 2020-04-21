@@ -42,7 +42,6 @@
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/platform/web_rect.h"
-#include "third_party/blink/public/platform/web_text_autosizer_page_info.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/public/web/web_autofill_client.h"
@@ -1231,7 +1230,7 @@ WebAutofillClient* ChromeClientImpl::AutofillClientFromFrame(
 
 void ChromeClientImpl::DidUpdateTextAutosizerPageInfo(
     const WebTextAutosizerPageInfo& page_info) {
-  web_view_->Client()->DidUpdateTextAutosizerPageInfo(page_info);
+  web_view_->TextAutosizerPageInfoChanged(page_info);
 }
 
 void ChromeClientImpl::DocumentDetached(Document& document) {

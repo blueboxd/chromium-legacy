@@ -165,6 +165,8 @@ class DriveIntegrationService : public KeyedService,
   void GetQuickAccessItems(int max_number,
                            GetQuickAccessItemsCallback callback);
 
+  void RestartDrive();
+
  private:
   enum State {
     NOT_INITIALIZED,

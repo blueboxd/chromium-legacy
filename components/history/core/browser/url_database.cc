@@ -10,6 +10,7 @@
 
 #include "base/i18n/case_conversion.h"
 #include "base/stl_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/history/core/browser/keyword_search_term.h"
 #include "components/url_formatter/url_formatter.h"

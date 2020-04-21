@@ -273,9 +273,10 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   void RequestBeginMainFrameNotExpected(LocalFrame& frame,
                                         bool request) override;
 
-  int GetLayerTreeId(LocalFrame& frame) override;
+  void DidUpdateTextAutosizerPageInfo(
+      const WebTextAutosizerPageInfo& page_info) override;
 
-  void DidUpdateTextAutosizerPageInfo(const WebTextAutosizerPageInfo&) override;
+  int GetLayerTreeId(LocalFrame& frame) override;
 
   void DocumentDetached(Document&) override;
 

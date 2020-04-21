@@ -7,6 +7,7 @@
 #include <array>
 #include <memory>
 
+#include "base/logging.h"
 #include "net/base/address_family.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"

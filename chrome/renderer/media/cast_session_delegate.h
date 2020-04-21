@@ -41,7 +41,10 @@ class CastTransport;
 // CastReceiverSessionDelegate.
 class CastSessionDelegateBase {
  public:
-  typedef base::Callback<void(const std::string&)> ErrorCallback;
+  // TODO(crbug.com/1007641): remove ErrorCallback and rename ErrorOnceCallback
+  // once all occurrences of base::Callback have been removed.
+  using ErrorCallback = base::RepeatingCallback<void(const std::string&)>;
+  using ErrorOnceCallback = base::OnceCallback<void(const std::string&)>;
 
   CastSessionDelegateBase();
   virtual ~CastSessionDelegateBase();
@@ -55,9 +58,8 @@ class CastSessionDelegateBase {
                 const ErrorCallback& error_callback);
 
  protected:
-  void StatusNotificationCB(
-      const ErrorCallback& error_callback,
-      media::cast::CastTransportStatus status);
+  void StatusNotificationCB(ErrorOnceCallback error_callback,
+                            media::cast::CastTransportStatus status);
 
   virtual void ReceivePacket(std::unique_ptr<media::cast::Packet> packet) = 0;
 
@@ -102,7 +104,7 @@ class CastSessionDelegate : public CastSessionDelegateBase {
   // StartUDP must be called before these methods.
   void StartAudio(const media::cast::FrameSenderConfig& config,
                   const AudioFrameInputAvailableCallback& callback,
-                  const ErrorCallback& error_callback);
+                  ErrorOnceCallback error_callback);
 
   void StartVideo(
       const media::cast::FrameSenderConfig& config,
@@ -117,7 +119,7 @@ class CastSessionDelegate : public CastSessionDelegateBase {
   // must be called before calling this method.
   void StartRemotingStream(int32_t stream_id,
                            const media::cast::FrameSenderConfig& config,
-                           const ErrorCallback& error_callback);
+                           ErrorOnceCallback error_callback);
 
   void ToggleLogging(bool is_audio, bool enable);
   void GetEventLogsAndReset(bool is_audio,
@@ -132,10 +134,9 @@ class CastSessionDelegate : public CastSessionDelegateBase {
   // session, the |error_callback| provided to StartXXX() will be run.  This
   // method may be called multiple times during the session to indicate codec
   // re-initializations are taking place and/or runtime errors have occurred.
-  void OnOperationalStatusChange(
-      bool is_for_audio,
-      const ErrorCallback& error_callback,
-      media::cast::OperationalStatus result);
+  void OnOperationalStatusChange(bool is_for_audio,
+                                 ErrorOnceCallback error_callback,
+                                 media::cast::OperationalStatus result);
 
  private:
   void ReceivePacket(std::unique_ptr<media::cast::Packet> packet) override;

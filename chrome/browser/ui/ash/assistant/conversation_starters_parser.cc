@@ -8,6 +8,7 @@
 
 #include "ash/public/cpp/assistant/conversation_starter.h"
 #include "base/json/json_string_value_serializer.h"
+#include "base/strings/string_util.h"
 #include "base/values.h"
 
 namespace {

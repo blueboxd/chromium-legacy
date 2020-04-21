@@ -351,6 +351,11 @@ std::string GetDomainAndRegistry(const GURL& gurl,
       .as_string();
 }
 
+std::string GetDomainAndRegistry(const url::Origin& origin,
+                                 PrivateRegistryFilter filter) {
+  return GetDomainAndRegistryAsStringPiece(origin.host(), filter).as_string();
+}
+
 std::string GetDomainAndRegistry(base::StringPiece host,
                                  PrivateRegistryFilter filter) {
   url::CanonHostInfo host_info;

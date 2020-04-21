@@ -167,7 +167,7 @@ class NetworkResourcesData final
     uint64_t DataLength() const;
     void AppendData(const char* data, size_t data_length);
     size_t DecodeDataToContent();
-    void ProcessCustomWeakness(const WeakCallbackInfo&);
+    void ProcessCustomWeakness(const LivenessBroker&);
 
     Member<NetworkResourcesData> network_resources_data_;
     String request_id_;

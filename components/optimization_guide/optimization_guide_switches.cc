@@ -6,6 +6,7 @@
 
 #include "base/base64.h"
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/optional.h"
 #include "base/strings/string_split.h"
 #include "components/optimization_guide/proto/hints.pb.h"

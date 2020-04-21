@@ -4,6 +4,7 @@
 
 #include "components/viz/common/surfaces/local_surface_id.h"
 
+#include "base/logging.h"
 #include "base/strings/stringprintf.h"
 
 namespace viz {

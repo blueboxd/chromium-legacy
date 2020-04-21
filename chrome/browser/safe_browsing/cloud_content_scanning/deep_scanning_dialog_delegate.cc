@@ -534,65 +534,23 @@ bool DeepScanningDialogDelegate::UploadData() {
   }
 
   // Create a file request for each file.
-  for (size_t i = 0; i < data_.paths.size(); ++i) {
-    if (FileTypeSupported(data_.do_malware_scan, data_.do_dlp_scan,
-                          data_.paths[i])) {
-      PrepareFileRequest(
-          data_.paths[i],
-          base::BindOnce(&DeepScanningDialogDelegate::AnalyzerCallback,
-                         weak_ptr_factory_.GetWeakPtr(), i));
-    } else {
-      FileRequestCallback(data_.paths[i],
-                          BinaryUploadService::Result::UNSUPPORTED_FILE_TYPE,
-                          DeepScanningClientResponse());
-    }
-  }
+  for (const base::FilePath& path : data_.paths)
+    PrepareFileRequest(path);
 
   return !text_request_complete_ || file_result_count_ != data_.paths.size();
 }
 
-void DeepScanningDialogDelegate::PrepareFileRequest(base::FilePath path,
-                                                    AnalyzeCallback callback) {
-  base::FilePath::StringType ext(path.FinalExtension());
-  std::transform(ext.begin(), ext.end(), ext.begin(), tolower);
-  if (ext == FILE_PATH_LITERAL(".zip")) {
-    auto analyzer = base::MakeRefCounted<SandboxedZipAnalyzer>(
-        path, std::move(callback), LaunchFileUtilService());
-    analyzer->Start();
-  } else if (ext == FILE_PATH_LITERAL(".rar")) {
-    auto analyzer = base::MakeRefCounted<SandboxedRarAnalyzer>(
-        path, std::move(callback), LaunchFileUtilService());
-    analyzer->Start();
-  } else {
-    std::move(callback).Run(safe_browsing::ArchiveAnalyzerResults());
-  }
-}
-
-void DeepScanningDialogDelegate::AnalyzerCallback(
-    int index,
-    const safe_browsing::ArchiveAnalyzerResults& results) {
-  bool contains_encrypted_parts = std::any_of(
-      results.archived_binary.begin(), results.archived_binary.end(),
-      [](const auto& binary) { return binary.is_encrypted(); });
-
-  // If the file contains encrypted parts and the user is not allowed to use
-  // them, fail the request.
-  if (contains_encrypted_parts) {
-    FileRequestCallback(data_.paths[index],
-                        BinaryUploadService::Result::FILE_ENCRYPTED,
-                        DeepScanningClientResponse());
-    return;
-  }
-
+void DeepScanningDialogDelegate::PrepareFileRequest(
+    const base::FilePath& path) {
   auto request = std::make_unique<FileSourceRequest>(
-      data_.paths[index],
-      base::BindOnce(&DeepScanningDialogDelegate::FileRequestCallback,
-                     weak_ptr_factory_.GetWeakPtr(), data_.paths[index]));
+      path, base::BindOnce(&DeepScanningDialogDelegate::FileRequestCallback,
+                           weak_ptr_factory_.GetWeakPtr(), path));
 
   FileSourceRequest* request_raw = request.get();
-  request_raw->GetRequestData(base::BindOnce(
-      &DeepScanningDialogDelegate::OnGotFileInfo,
-      weak_ptr_factory_.GetWeakPtr(), std::move(request), data_.paths[index]));
+  PrepareRequest(DlpDeepScanningClientRequest::FILE_UPLOAD, request_raw);
+  request_raw->GetRequestData(
+      base::BindOnce(&DeepScanningDialogDelegate::OnGotFileInfo,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(request), path));
 }
 
 void DeepScanningDialogDelegate::PrepareRequest(
@@ -646,16 +604,6 @@ void DeepScanningDialogDelegate::UploadFileForDeepScanning(
       (DlpDeepScanningClientRequest::FILE_UPLOAD ==
        request->deep_scanning_request().dlp_scan_request().content_source()));
 
-  // If a non-SUCCESS result was previously obtained, it means the file has some
-  // property (too large, unsupported file type, encrypted, ...) that makes its
-  // upload pointless, so the request should finish early. This is done here
-  // instead of OnGotFileInfo (UploadFileForDeepScanning's only caller) so tests
-  // can override this behavior.
-  if (result != BinaryUploadService::Result::SUCCESS) {
-    request->FinishRequest(result, DeepScanningClientResponse());
-    return;
-  }
-
   BinaryUploadService* upload_service = GetBinaryUploadService();
   if (upload_service)
     upload_service->MaybeUploadForDeepScanning(std::move(request));
@@ -700,7 +648,14 @@ void DeepScanningDialogDelegate::OnGotFileInfo(
   file_info_[index].sha256 = data.hash;
   file_info_[index].size = data.size;
 
-  PrepareRequest(DlpDeepScanningClientRequest::FILE_UPLOAD, request.get());
+  // If a non-SUCCESS result was previously obtained, it means the file has some
+  // property (too large, unsupported file type, encrypted, ...) that make its
+  // upload pointless, so the request should finish early.
+  if (result != BinaryUploadService::Result::SUCCESS) {
+    request->FinishRequest(result, DeepScanningClientResponse());
+    return;
+  }
+
   UploadFileForDeepScanning(result, data_.paths[index], std::move(request));
 }
 

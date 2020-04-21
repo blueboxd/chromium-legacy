@@ -19,7 +19,6 @@
 #import "ios/chrome/app/application_delegate/tab_switching.h"
 #import "ios/chrome/app/application_delegate/user_activity_handler.h"
 #import "ios/chrome/app/main_application_delegate.h"
-#import "ios/chrome/app/startup/content_suggestions_scheduler_notifications.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/device_sharing/device_sharing_manager.h"
@@ -27,6 +26,7 @@
 #import "ios/chrome/browser/main/test_browser.h"
 #import "ios/chrome/browser/metrics/ios_profile_session_durations_service.h"
 #import "ios/chrome/browser/metrics/ios_profile_session_durations_service_factory.h"
+#import "ios/chrome/browser/ntp_snippets/content_suggestions_scheduler_notifications.h"
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service_fake.h"
@@ -735,10 +735,6 @@ TEST_F(AppStateTest, applicationWillEnterForeground) {
   [[[tabOpener stub] andReturnValue:@YES]
       shouldOpenNTPTabOnActivationOfTabModel:tabModel];
 
-  id contentSuggestionsNotifier =
-      OCMClassMock([ContentSuggestionsSchedulerNotifications class]);
-  OCMExpect([contentSuggestionsNotifier notifyForeground:getBrowserState()]);
-
   void (^swizzleBlock)() = ^{
   };
 
@@ -760,7 +756,6 @@ TEST_F(AppStateTest, applicationWillEnterForeground) {
       static_cast<FakeUserFeedbackProvider*>(
           ios::GetChromeBrowserProvider()->GetUserFeedbackProvider());
   EXPECT_TRUE(user_feedback_provider->synchronize_called());
-  EXPECT_OCMOCK_VERIFY(contentSuggestionsNotifier);
 }
 
 // Tests that -applicationWillEnterForeground starts the browser if the

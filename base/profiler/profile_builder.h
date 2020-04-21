@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/base_export.h"
+#include "base/macros.h"
 #include "base/optional.h"
 #include "base/profiler/frame.h"
 #include "base/profiler/module_cache.h"

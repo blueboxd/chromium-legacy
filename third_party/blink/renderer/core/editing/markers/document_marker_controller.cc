@@ -771,7 +771,7 @@ void DocumentMarkerController::InvalidateRectsForAllTextMatchMarkers() {
   }
 }
 
-void DocumentMarkerController::DidProcessMarkerMap(const WeakCallbackInfo&) {
+void DocumentMarkerController::DidProcessMarkerMap(const LivenessBroker&) {
   if (markers_.IsEmpty())
     Clear();
 }

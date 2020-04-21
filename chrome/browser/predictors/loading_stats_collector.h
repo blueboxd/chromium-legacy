@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "url/gurl.h"
 

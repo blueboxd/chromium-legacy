@@ -9,6 +9,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "components/zucchini/address_translator.h"

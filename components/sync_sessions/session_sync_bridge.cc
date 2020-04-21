@@ -239,11 +239,6 @@ base::Optional<syncer::ModelError> SessionSyncBridge::ApplySyncChanges(
                       syncer::SESSIONS, SessionStore::GetClientTag(specifics)));
 
         batch->PutAndUpdateTracker(specifics, change->data().modification_time);
-        // If a favicon or favicon urls are present, load the URLs into the
-        // in-memory favicon cache.
-        if (specifics.has_tab()) {
-          favicon_cache_.UpdateMappingsFromForeignTab(specifics.tab());
-        }
         break;
       }
     }
@@ -342,15 +337,6 @@ void SessionSyncBridge::TrackLocalNavigationId(base::Time timestamp,
   global_id_mapper_.TrackNavigationId(timestamp, unique_id);
 }
 
-void SessionSyncBridge::OnPageFaviconUpdated(const GURL& page_url) {
-  favicon_cache_.OnPageFaviconUpdated(page_url);
-}
-
-void SessionSyncBridge::OnFaviconVisited(const GURL& page_url,
-                                         const GURL& favicon_url) {
-  favicon_cache_.OnFaviconVisited(page_url, favicon_url);
-}
-
 void SessionSyncBridge::OnSyncStarting(
     const syncer::DataTypeActivationRequest& request) {
   DCHECK(!syncing_);
@@ -369,8 +355,6 @@ void SessionSyncBridge::OnSyncStarting(
   // Open the store and read state from disk if it exists.
   SessionStore::Open(
       request.cache_guid,
-      base::BindRepeating(&FaviconCache::UpdateMappingsFromForeignTab,
-                          favicon_cache_.GetWeakPtr()),
       sessions_client_,
       base::BindOnce(&SessionSyncBridge::OnStoreInitialized,
                      weak_ptr_factory_.GetWeakPtr()));

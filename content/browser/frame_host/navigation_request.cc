@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/debug/alias.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
@@ -49,6 +50,7 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/scoped_active_url.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_main_resource_handle.h"
 #include "content/browser/site_instance_impl.h"
@@ -1285,8 +1287,13 @@ void NavigationRequest::BeginNavigation() {
     // Select an appropriate RenderFrameHost.
     render_frame_host_ =
         frame_tree_node_->render_manager()->GetFrameHostForNavigation(this);
-    NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(
-        render_frame_host_, common_params_->url);
+    if (!NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(
+            render_frame_host_, common_params_->url,
+            /* is_renderer_initiated_check */ false)) {
+      // TODO(nasko): Convert this to CHECK once it is confirmed that it does
+      // not happen in reality.
+      base::debug::DumpWithoutCrashing();
+    }
 
     ReadyToCommitNavigation(false /* is_error */);
     CommitNavigation();
@@ -1526,6 +1533,8 @@ void NavigationRequest::OnRequestRedirected(
   // Sanity check - this can only be set at commit time.
   DCHECK(!auth_challenge_info_);
 
+  DCHECK(response_head);
+  DCHECK(response_head->parsed_headers);
   response_head_ = std::move(response_head);
   ssl_info_ = response_head_->ssl_info;
 
@@ -1773,6 +1782,7 @@ void NavigationRequest::OnResponseStarted(
 
   DCHECK(IsNavigationStarted());
   DCHECK(response_head);
+  DCHECK(response_head->parsed_headers);
   EnterChildTraceEvent("OnResponseStarted", this);
   state_ = WILL_PROCESS_RESPONSE;
   response_head_ = std::move(response_head);
@@ -1957,8 +1967,13 @@ void NavigationRequest::OnResponseStarted(
   } else if (response_should_be_rendered_) {
     render_frame_host_ =
         frame_tree_node_->render_manager()->GetFrameHostForNavigation(this);
-    NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(
-        render_frame_host_, common_params_->url);
+    if (!NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(
+            render_frame_host_, common_params_->url,
+            /* is_renderer_initiated_check */ false)) {
+      // TODO(nasko): Convert this to CHECK once it is confirmed that it does
+      // not happen in reality.
+      base::debug::DumpWithoutCrashing();
+    }
   } else {
     render_frame_host_ = nullptr;
   }
@@ -2198,8 +2213,13 @@ void NavigationRequest::OnRequestFailedInternal(
   // to be committed in a WebUI process as shown in https://crbug.com/944086.
   if (SiteIsolationPolicy::IsErrorPageIsolationEnabled(
           frame_tree_node_->IsMainFrame())) {
-    NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(
-        render_frame_host_, common_params_->url);
+    if (!NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(
+            render_frame_host_, common_params_->url,
+            /* is_renderer_initiated_check */ false)) {
+      // TODO(nasko): Convert this to CHECK once it is confirmed that it does
+      // not happen in reality.
+      base::debug::DumpWithoutCrashing();
+    }
   }
 
   has_stale_copy_in_cache_ = status.exists_in_cache;

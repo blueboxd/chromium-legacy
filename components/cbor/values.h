@@ -13,6 +13,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/containers/span.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "components/cbor/cbor_export.h"

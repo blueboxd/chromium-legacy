@@ -401,13 +401,15 @@ IN_PROC_BROWSER_TEST_P(
   validator.ExpectUnscannedFileEvent(
       /*url*/ "about:blank",
       /*filename*/ test_zip.AsUTF8Unsafe(),
-      // TODO(1061461): Check SHA256 in this test once the bug is fixed.
-      /*sha*/ "",
+      // sha256sum < chrome/test/data/safe_browsing/download_protection/\
+      // encrypted.zip |  tr '[:lower:]' '[:upper:]'
+      /*sha*/
+      "701FCEA8B2112FFAB257A8A8DFD3382ABCF047689AB028D42903E3B3AA488D9A",
       /*trigger*/ SafeBrowsingPrivateEventRouter::kTriggerFileUpload,
       /*reason*/ "filePasswordProtected",
       /*mimetypes*/ ZipMimeTypes(),
-      // TODO(1061461): Put real size once the file contents are read.
-      /*size*/ 0);
+      // du chrome/test/data/safe_browsing/download_protection/encrypted.zip -b
+      /*size*/ 20015);
 
   // Start test.
   DeepScanningDialogDelegate::ShowForWebContents(
@@ -492,13 +494,13 @@ IN_PROC_BROWSER_TEST_P(
   validator.ExpectUnscannedFileEvent(
       /*url*/ "about:blank",
       /*filename*/ created_file_paths()[0].AsUTF8Unsafe(),
-      // TODO(1061461): Check SHA256 in this test once the bug is fixed.
-      /*sha*/ "",
+      // printf "file content" | sha256sum |  tr '[:lower:]' '[:upper:]'
+      /*sha*/
+      "E0AC3601005DFA1864F5392AABAF7D898B1B5BAB854F1ACB4491BCD806B76B0C",
       /*trigger*/ SafeBrowsingPrivateEventRouter::kTriggerFileUpload,
       /*reason*/ "unsupportedFileType",
       /*mimetype*/ ShellScriptMimeTypes(),
-      // TODO(1061461): Put real size once the file contents are read.
-      /*size*/ 0);
+      /*size*/ std::string("file content").size());
 
   bool called = false;
   base::RunLoop run_loop;

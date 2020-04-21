@@ -149,6 +149,7 @@ class AppRegistrar {
   void NotifyWebAppInstalled(const AppId& app_id);
   void NotifyWebAppWillBeUninstalled(const AppId& app_id);
   void NotifyWebAppUninstalled(const AppId& app_id);
+  void NotifyWebAppDisabledStateChanged(const AppId& app_id, bool is_disabled);
 
  protected:
   Profile* profile() const { return profile_; }

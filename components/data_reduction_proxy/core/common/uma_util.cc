@@ -4,6 +4,7 @@
 
 #include "components/data_reduction_proxy/core/common/uma_util.h"
 
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 
 namespace data_reduction_proxy {

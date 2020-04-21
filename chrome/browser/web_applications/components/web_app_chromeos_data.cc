@@ -12,12 +12,12 @@ namespace web_app {
 
 bool operator==(const WebAppChromeOsData& chromeos_data1,
                 const WebAppChromeOsData& chromeos_data2) {
-  return std::tie(chromeos_data1.show_in_launcher,
-                  chromeos_data1.show_in_search,
-                  chromeos_data1.show_in_management) ==
-         std::tie(chromeos_data2.show_in_launcher,
-                  chromeos_data2.show_in_search,
-                  chromeos_data2.show_in_management);
+  return std::tie(
+             chromeos_data1.show_in_launcher, chromeos_data1.show_in_search,
+             chromeos_data1.show_in_management, chromeos_data1.is_disabled) ==
+         std::tie(
+             chromeos_data2.show_in_launcher, chromeos_data2.show_in_search,
+             chromeos_data2.show_in_management, chromeos_data2.is_disabled);
 }
 
 std::ostream& operator<<(std::ostream& out,
@@ -26,6 +26,7 @@ std::ostream& operator<<(std::ostream& out,
   out << "  show_in_search: " << chromeos_data.show_in_search << std::endl;
   out << "  show_in_management: " << chromeos_data.show_in_management
       << std::endl;
+  out << "  is_disabled: " << chromeos_data.is_disabled << std::endl;
 
   return out;
 }

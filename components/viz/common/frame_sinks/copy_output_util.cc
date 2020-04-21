@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include "base/logging.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
 

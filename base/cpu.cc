@@ -10,6 +10,7 @@
 #include <string.h>
 
 #include <algorithm>
+#include <sstream>
 #include <utility>
 
 #include "base/stl_util.h"

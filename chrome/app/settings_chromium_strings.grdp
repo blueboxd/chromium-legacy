@@ -64,7 +64,9 @@
   <message name="IDS_SETTINGS_NO_COMPROMISED_CREDENTIALS_LABEL" desc="Label which is shown when there were no compromised passwords detected.">
     Chromium will notify you when you sign in with a compromised password
   </message>
-
+  <message name="IDS_SETTINGS_COMPROMISED_EDIT_DISCLAIMER_DESCRIPTION" desc="A description for the dialog which tells the user to edit password in Chromium if it was changed already.">
+    If so, please edit your saved password in Chromium so it matches your new password.
+  </message>
   <!-- Default Browser Page -->
   <if expr="not chromeos">
     <message name="IDS_SETTINGS_DEFAULT_BROWSER_DEFAULT" desc="The text displayed when Chrome is the default browser">

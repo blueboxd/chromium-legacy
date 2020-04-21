@@ -27,7 +27,7 @@ class CastSenderImpl : public CastSender {
                  CastTransport* const transport_sender);
 
   void InitializeAudio(const FrameSenderConfig& audio_config,
-                       const StatusChangeCallback& status_change_cb) final;
+                       StatusChangeOnceCallback status_change_cb) final;
   void InitializeVideo(
       const FrameSenderConfig& video_config,
       const StatusChangeCallback& status_change_cb,
@@ -43,7 +43,7 @@ class CastSenderImpl : public CastSender {
 
  private:
   void ReceivedPacket(std::unique_ptr<Packet> packet);
-  void OnAudioStatusChange(const StatusChangeCallback& status_change_cb,
+  void OnAudioStatusChange(StatusChangeOnceCallback status_change_cb,
                            OperationalStatus status);
   void OnVideoStatusChange(const StatusChangeCallback& status_change_cb,
                            OperationalStatus status);

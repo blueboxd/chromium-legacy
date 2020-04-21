@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/leveldb_proto/internal/migration_delegate.h"
 #include "components/leveldb_proto/internal/shared_proto_database.h"

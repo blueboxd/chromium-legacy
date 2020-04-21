@@ -452,7 +452,7 @@ The semantics then are as follows:
 In case very specific weakness semantics are required Oilpan allows adding custom weakness callbacks through its tracing method.
 
 There exist two helper methods on `blink::Visitor` to add such callbacks:
-- `RegisterWeakCallback`: Used to add custom weak callbacks of the form `void(void*, const blink::WeakCallbackInfo&)`.
+- `RegisterWeakCallback`: Used to add custom weak callbacks of the form `void(void*, const blink::LivenessBroker&)`.
 - `RegisterWeakCallbackMethod`: Helper for adding an instance method.
 
 Note that custom weak callbacks should not be used to clear `WeakMember<T>` fields as such fields are automatically handled by Oilpan.
@@ -466,7 +466,7 @@ class W final : public GarbageCollected<W> {
  public:
   virtual void Trace(Visitor*);
  private:
-  void ProcessCustomWeakness(const WeakCallbackInfo&);
+  void ProcessCustomWeakness(const LivenessBroker&);
 
   UntracedMember<C> other_;
 };
@@ -475,7 +475,7 @@ void W::Trace(Visitor* visitor) {
   visitor->template RegisterCustomWeakMethod<W, &W::ProcessCustomWeakness>(this);
 }
 
-void W::ProcessCustomWeakness(const WeakCallbackInfo& info) {
+void W::ProcessCustomWeakness(const LivenessBroker& info) {
   if (info.IsHeapObjectAlive(other_)) {
     // Do something with other_.
   }

@@ -99,17 +99,20 @@ void SafetyCheckHandler::PerformSafetyCheck() {
   FireBasicSafetyCheckWebUiListener(kParentEvent,
                                     static_cast<int>(parent_status_),
                                     GetStringForParent(parent_status_));
+  FireBasicSafetyCheckWebUiListener(kUpdatesEvent,
+                                    static_cast<int>(update_status_),
+                                    GetStringForUpdates(update_status_));
   FireBasicSafetyCheckWebUiListener(
-      kUpdatesEvent, static_cast<int>(update_status_), base::UTF8ToUTF16(""));
-  FireBasicSafetyCheckWebUiListener(kPasswordsEvent,
-                                    static_cast<int>(passwords_status_),
-                                    base::UTF8ToUTF16(""));
-  FireBasicSafetyCheckWebUiListener(kSafeBrowsingEvent,
-                                    static_cast<int>(safe_browsing_status_),
-                                    base::UTF8ToUTF16(""));
-  FireBasicSafetyCheckWebUiListener(kExtensionsEvent,
-                                    static_cast<int>(extensions_status_),
-                                    base::UTF8ToUTF16(""));
+      kPasswordsEvent, static_cast<int>(passwords_status_),
+      GetStringForPasswords(passwords_status_, Compromised(0), Done(0),
+                            Total(0)));
+  FireBasicSafetyCheckWebUiListener(
+      kSafeBrowsingEvent, static_cast<int>(safe_browsing_status_),
+      GetStringForSafeBrowsing(safe_browsing_status_));
+  FireBasicSafetyCheckWebUiListener(
+      kExtensionsEvent, static_cast<int>(extensions_status_),
+      GetStringForExtensions(extensions_status_, Blocklisted(0),
+                             ReenabledUser(0), ReenabledAdmin(0)));
 
   // Run safety check.
   // Checks common to desktop, Android, and iOS are handled by
@@ -329,7 +332,7 @@ base::string16 SafetyCheckHandler::GetStringForParent(ParentStatus status) {
 base::string16 SafetyCheckHandler::GetStringForUpdates(UpdateStatus status) {
   switch (status) {
     case UpdateStatus::kChecking:
-      return l10n_util::GetStringUTF16(IDS_SETTINGS_SAFETY_CHECK_RUNNING);
+      return base::UTF8ToUTF16("");
     case UpdateStatus::kUpdated:
 #if defined(OS_CHROMEOS)
       return ui::SubstituteChromeOSDeviceType(IDS_SETTINGS_UPGRADE_UP_TO_DATE);
@@ -369,7 +372,7 @@ base::string16 SafetyCheckHandler::GetStringForSafeBrowsing(
     SafeBrowsingStatus status) {
   switch (status) {
     case SafeBrowsingStatus::kChecking:
-      return l10n_util::GetStringUTF16(IDS_SETTINGS_SAFETY_CHECK_RUNNING);
+      return base::UTF8ToUTF16("");
     case SafeBrowsingStatus::kEnabled:
     case SafeBrowsingStatus::kEnabledStandard:
       return l10n_util::GetStringUTF16(
@@ -399,7 +402,7 @@ base::string16 SafetyCheckHandler::GetStringForPasswords(
     case PasswordsStatus::kChecking: {
       // Unable to get progress for some reason.
       if (total.value() == 0) {
-        return l10n_util::GetStringUTF16(IDS_SETTINGS_SAFETY_CHECK_RUNNING);
+        return base::UTF8ToUTF16("");
       }
       return l10n_util::GetStringFUTF16(IDS_SETTINGS_CHECK_PASSWORDS_PROGRESS,
                                         base::FormatNumber(done.value()),
@@ -436,7 +439,7 @@ base::string16 SafetyCheckHandler::GetStringForExtensions(
     ReenabledAdmin reenabled_admin) {
   switch (status) {
     case ExtensionsStatus::kChecking:
-      return l10n_util::GetStringUTF16(IDS_SETTINGS_SAFETY_CHECK_RUNNING);
+      return base::UTF8ToUTF16("");
     case ExtensionsStatus::kError:
       return l10n_util::GetStringUTF16(
           IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_ERROR);

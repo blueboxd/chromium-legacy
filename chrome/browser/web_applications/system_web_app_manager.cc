@@ -170,6 +170,7 @@ ExternalInstallOptions CreateInstallOptionsForSystemApp(
   install_options.add_to_quick_launch_bar = false;
   install_options.add_to_search = info.show_in_search;
   install_options.add_to_management = false;
+  install_options.is_disabled = false;
   install_options.bypass_service_worker_check = true;
   install_options.force_reinstall = force_update;
   install_options.uninstall_and_replace = info.uninstall_and_replace;

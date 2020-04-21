@@ -10,6 +10,7 @@
 #include "base/base64.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -205,6 +206,7 @@ class ChildSigninHelper : public SigninHelper {
 
   void OnConsentLogged(const std::string& refresh_token,
                        SecondaryAccountConsentLogger::Result result) {
+    UMA_HISTOGRAM_ENUMERATION("Signin.SecondaryAccountConsentLog", result);
     secondary_account_consent_logger_.reset();
     if (result == SecondaryAccountConsentLogger::Result::kSuccess) {
       UpsertAccount(refresh_token);

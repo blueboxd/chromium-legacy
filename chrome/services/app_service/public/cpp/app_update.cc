@@ -5,6 +5,7 @@
 #include "chrome/services/app_service/public/cpp/app_update.h"
 
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 #include "base/time/time.h"
 
 namespace {

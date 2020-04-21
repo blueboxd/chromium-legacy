@@ -6,13 +6,12 @@ package org.chromium.chrome.browser.firstrun;
 
 import android.accounts.Account;
 import android.app.Activity;
-import android.os.Bundle;
 import android.text.TextUtils;
 
 import androidx.annotation.VisibleForTesting;
-import androidx.fragment.app.Fragment;
 
 import org.chromium.chrome.browser.SyncFirstSetupCompleteSource;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
@@ -21,6 +20,7 @@ import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInCallback;
 import org.chromium.chrome.browser.signin.UnifiedConsentServiceBridge;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
+import org.chromium.chrome.browser.sync.settings.ManageSyncSettings;
 import org.chromium.chrome.browser.sync.settings.SyncAndServicesSettings;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountUtils;
@@ -105,9 +105,13 @@ public final class FirstRunSignInProcessor {
      * Opens sign in settings as requested in the FRE sign-in dialog.
      */
     private static void openSignInSettings(Activity activity) {
-        final Class<? extends Fragment> fragment = SyncAndServicesSettings.class;
-        final Bundle arguments = SyncAndServicesSettings.createArguments(true);
-        SettingsLauncher.getInstance().launchSettingsPage(activity, fragment, arguments);
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)) {
+            SettingsLauncher.getInstance().launchSettingsPage(
+                    activity, ManageSyncSettings.class, ManageSyncSettings.createArguments(true));
+        } else {
+            SettingsLauncher.getInstance().launchSettingsPage(activity,
+                    SyncAndServicesSettings.class, SyncAndServicesSettings.createArguments(true));
+        }
     }
 
     /**

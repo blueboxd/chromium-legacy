@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/dummy_histogram.h"
 #include "base/metrics/metrics_hashes.h"

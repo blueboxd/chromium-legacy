@@ -932,8 +932,8 @@ void End2EndTest::Create() {
       CastSender::Create(cast_environment_sender_, transport_sender_.get());
 
   // Initializing audio and video senders.
-  cast_sender_->InitializeAudio(audio_sender_config_,
-                                base::Bind(&ExpectSuccessOperationalStatus));
+  cast_sender_->InitializeAudio(
+      audio_sender_config_, base::BindOnce(&ExpectSuccessOperationalStatus));
   cast_sender_->InitializeVideo(video_sender_config_,
                                 base::Bind(&ExpectSuccessOperationalStatus),
                                 CreateDefaultVideoEncodeAcceleratorCallback(),

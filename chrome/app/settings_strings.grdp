@@ -373,6 +373,12 @@
   <message name="IDS_SETTINGS_COMPROMISED_EDIT_PASSWORD_APP" desc="A label for the field, which displays the app for which the password was saved. The field is part of a dialog, which allows the user to edit the password.">
     App
   </message>
+  <message name="IDS_SETTINGS_COMPROMISED_ALREADY_CHANGED_PASSWORD" desc="A link which asks if user has already changed the password.">
+    Already changed this password?
+  </message>
+  <message name="IDS_SETTINGS_COMPROMISED_EDIT_DISCLAIMER_TITLE" desc="A title for the dialog which asks the user passwords was changed.">
+    Did you already change this password on <ph name="WEBSITE">$1<ex>airbnb.com</ex></ph>?
+  </message>
   <message name="IDS_SETTINGS_PASSWORDS_SAVE_PASSWORDS_TOGGLE_LABEL" desc="Label for a toggle that allows users to be prompted if they want to save their passwords when logging into webpages.">
     Offer to save passwords
   </message>

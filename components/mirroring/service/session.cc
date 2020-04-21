@@ -702,8 +702,8 @@ void Session::OnAnswer(const std::vector<FrameSenderConfig>& audio_configs,
     if (has_audio) {
       auto audio_sender = std::make_unique<media::cast::AudioSender>(
           cast_environment_, audio_config,
-          base::BindRepeating(&Session::OnEncoderStatusChange,
-                              weak_factory_.GetWeakPtr()),
+          base::BindOnce(&Session::OnEncoderStatusChange,
+                         weak_factory_.GetWeakPtr()),
           cast_transport_.get());
       audio_stream_ = std::make_unique<AudioRtpStream>(
           std::move(audio_sender), weak_factory_.GetWeakPtr());

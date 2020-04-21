@@ -391,15 +391,6 @@ const base::Feature kOverscrollHistoryNavigation {
 #endif
 };
 
-// Whether document level event listeners should default 'passive' to true.
-const base::Feature kPassiveDocumentEventListeners{
-    "PassiveDocumentEventListeners", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Whether we should force a touchstart and first touchmove per scroll event
-// listeners to be non-blocking during fling.
-const base::Feature kPassiveEventListenersDueToFling{
-    "PassiveEventListenersDueToFling", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Whether web apps can run periodic tasks upon network connectivity.
 const base::Feature kPeriodicBackgroundSync{"PeriodicBackgroundSync",
                                             base::FEATURE_DISABLED_BY_DEFAULT};

@@ -68,8 +68,8 @@ base::ProcessId GetArcInitProcessId(
 }
 
 std::vector<ArcProcess> GetArcSystemProcessList() {
+  TRACE_EVENT0("browser", "GetArcSystemProcessList");
   std::vector<ArcProcess> ret_processes;
-
   if (arc::IsArcVmEnabled()) {
     // TODO(b/122992194): Fix this for ARCVM.
     return ret_processes;

@@ -26,19 +26,15 @@ LocationReportBody::ReportLocation LocationReportBody::CreateReportLocation(
 
 void LocationReportBody::BuildJSONValue(V8ObjectBuilder& builder) const {
   builder.AddStringOrNull("sourceFile", sourceFile());
-  bool is_null = false;
-  uint32_t line_number = lineNumber(is_null);
-  if (is_null) {
+  if (lineNumber()) {
+    builder.AddNumber("lineNumber", lineNumber().value());
+  } else {
     builder.AddNull("lineNumber");
-  } else {
-    builder.AddNumber("lineNumber", line_number);
   }
-  is_null = true;
-  uint32_t column_number = columnNumber(is_null);
-  if (is_null) {
-    builder.AddNull("columnNumber");
+  if (columnNumber()) {
+    builder.AddNumber("columnNumber", columnNumber().value());
   } else {
-    builder.AddNumber("columnNumber", column_number);
+    builder.AddNull("columnNumber");
   }
 }
 

@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "base/logging.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_samples.h"

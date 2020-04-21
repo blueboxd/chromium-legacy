@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "base/strings/string_util.h"
 #include "components/sync/test/fake_server/bookmark_entity_builder.h"
 #include "url/gurl.h"
 

@@ -994,55 +994,61 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 #endif
 
-class TextAutosizerPageInfoObserver : public WebContentsObserver {
+class TextAutosizerPageInfoInterceptor
+    : public blink::mojom::LocalMainFrameHostInterceptorForTesting {
  public:
-  explicit TextAutosizerPageInfoObserver(WebContents* web_contents)
-      : remote_page_info_seen_(false), remote_page_info_({0, 0, 1.f}) {
-    Observe(web_contents);
+  explicit TextAutosizerPageInfoInterceptor(
+      RenderFrameHostImpl* render_frame_host)
+      : render_frame_host_(render_frame_host) {
+    render_frame_host_->local_main_frame_host_receiver_for_testing()
+        .SwapImplForTesting(this);
   }
-  ~TextAutosizerPageInfoObserver() override { Observe(nullptr); }
 
-  bool OnMessageReceived(const IPC::Message& message) override {
-    IPC_BEGIN_MESSAGE_MAP(TextAutosizerPageInfoObserver, message)
-      IPC_MESSAGE_HANDLER(
-          ViewHostMsg_NotifyTextAutosizerPageInfoChangedInLocalMainFrame,
-          OnUpdateRemotePageInfo)
-    IPC_END_MESSAGE_MAP()
-    return false;
+  ~TextAutosizerPageInfoInterceptor() override = default;
+
+  LocalMainFrameHost* GetForwardingInterface() override {
+    return render_frame_host_;
   }
 
   void WaitForPageInfo(base::Optional<int> target_main_frame_width,
                        base::Optional<float> target_device_scale_adjustment) {
+    if (remote_page_info_seen_)
+      return;
     target_main_frame_width_ = target_main_frame_width;
     target_device_scale_adjustment_ = target_device_scale_adjustment;
-    remote_page_info_seen_ = false;
     run_loop_ = std::make_unique<base::RunLoop>();
     run_loop_->Run();
     run_loop_.reset();
   }
 
-  const blink::WebTextAutosizerPageInfo& GetTextAutosizerPageInfo() {
-    return remote_page_info_;
+  const blink::mojom::TextAutosizerPageInfo& GetTextAutosizerPageInfo() {
+    return *remote_page_info_;
   }
 
- private:
-  void OnUpdateRemotePageInfo(
-      const blink::WebTextAutosizerPageInfo& remote_page_info) {
-    remote_page_info_ = remote_page_info;
+  void TextAutosizerPageInfoChanged(
+      blink::mojom::TextAutosizerPageInfoPtr remote_page_info) override {
     if ((!target_main_frame_width_ ||
-         remote_page_info.main_frame_width != target_main_frame_width_) &&
+         remote_page_info->main_frame_width != target_main_frame_width_) &&
         (!target_device_scale_adjustment_ ||
-         remote_page_info.device_scale_adjustment !=
+         remote_page_info->device_scale_adjustment !=
              target_device_scale_adjustment_)) {
       return;
     }
+    remote_page_info_ = remote_page_info.Clone();
     remote_page_info_seen_ = true;
     if (run_loop_)
       run_loop_->Quit();
+    GetForwardingInterface()->TextAutosizerPageInfoChanged(
+        std::move(remote_page_info));
   }
 
-  bool remote_page_info_seen_;
-  blink::WebTextAutosizerPageInfo remote_page_info_;
+ private:
+  RenderFrameHostImpl* render_frame_host_;
+  bool remote_page_info_seen_ = false;
+  blink::mojom::TextAutosizerPageInfoPtr remote_page_info_ =
+      blink::mojom::TextAutosizerPageInfo::New(/*main_frame_width=*/0,
+                                               /*main_frame_layout_width=*/0,
+                                               /*device_scale_adjustment=*/1.f);
   std::unique_ptr<base::RunLoop> run_loop_;
   base::Optional<int> target_main_frame_width_;
   base::Optional<float> target_device_scale_adjustment_;
@@ -1127,9 +1133,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, TextAutosizerPageInfo) {
   auto* child_rph = static_cast<RenderProcessHostImpl*>(
       b_child->current_frame_host()->GetProcess());
 
-  blink::WebTextAutosizerPageInfo received_page_info;
-  auto observer =
-      std::make_unique<TextAutosizerPageInfoObserver>(web_contents());
+  blink::mojom::TextAutosizerPageInfo received_page_info;
+  auto interceptor = std::make_unique<TextAutosizerPageInfoInterceptor>(
+      web_contents()->GetMainFrame());
 #if defined(OS_ANDROID)
   prefs.device_scale_adjustment += 0.05f;
   OutgoingTextAutosizerPageInfoIPCWatcher ipc_watcher(
@@ -1137,11 +1143,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, TextAutosizerPageInfo) {
   // Change the device scale adjustment to trigger a RemotePageInfo update.
   web_contents()->GetRenderViewHost()->UpdateWebkitPreferences(prefs);
   // Make sure we receive a ViewHostMsg from the main frame's renderer.
-  observer->WaitForPageInfo(base::Optional<int>(),
-                            prefs.device_scale_adjustment);
+  interceptor->WaitForPageInfo(base::Optional<int>(),
+                               prefs.device_scale_adjustment);
   // Make sure the correct page message is sent to the child.
   ipc_watcher.WaitForIPC();
-  received_page_info = observer->GetTextAutosizerPageInfo();
+  received_page_info = interceptor->GetTextAutosizerPageInfo();
   EXPECT_EQ(prefs.device_scale_adjustment,
             received_page_info.device_scale_adjustment);
 #else
@@ -1156,10 +1162,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, TextAutosizerPageInfo) {
       child_rph, new_bounds.width(), base::Optional<float>());
   view->SetBounds(new_bounds);
   // Make sure we receive a ViewHostMsg from the main frame's renderer.
-  observer->WaitForPageInfo(new_bounds.width(), base::Optional<float>());
+  interceptor->WaitForPageInfo(new_bounds.width(), base::Optional<float>());
   // Make sure the correct page message is sent to the child.
   ipc_watcher.WaitForIPC();
-  received_page_info = observer->GetTextAutosizerPageInfo();
+  received_page_info = interceptor->GetTextAutosizerPageInfo();
   EXPECT_EQ(new_bounds.width(), received_page_info.main_frame_width);
 #endif  // defined(OS_ANDROID)
 
@@ -1192,7 +1198,15 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, TextAutosizerPageInfo) {
 
   // Ensure IPC is sent.
   c_ipc_watcher.WaitForIPC();
-  EXPECT_EQ(received_page_info, c_ipc_watcher.GetTextAutosizerPageInfo());
+  // TODO(hferreiro): use the comparison operator when
+  // PageMsg_UpdateTextAutosizerPageInfoForRemoteMainFrames is migrated to
+  // Mojo.
+  EXPECT_EQ(received_page_info.main_frame_width,
+            c_ipc_watcher.GetTextAutosizerPageInfo().main_frame_width);
+  EXPECT_EQ(received_page_info.main_frame_layout_width,
+            c_ipc_watcher.GetTextAutosizerPageInfo().main_frame_layout_width);
+  EXPECT_EQ(received_page_info.device_scale_adjustment,
+            c_ipc_watcher.GetTextAutosizerPageInfo().device_scale_adjustment);
 }
 
 // Ensure that navigating subframes in --site-per-process mode works and the

@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"

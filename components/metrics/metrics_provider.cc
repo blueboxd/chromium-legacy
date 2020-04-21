@@ -4,6 +4,7 @@
 
 #include "components/metrics/metrics_provider.h"
 
+#include "base/logging.h"
 #include "third_party/metrics_proto/chrome_user_metrics_extension.pb.h"
 
 namespace metrics {

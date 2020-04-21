@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_WEBSITE_LOGIN_FETCHER_IMPL_H_
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_WEBSITE_LOGIN_FETCHER_IMPL_H_
 
+#include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "components/autofill_assistant/browser/website_login_fetcher.h"
 

@@ -702,6 +702,8 @@ void WebAppInstallTask::OnDialogCompleted(
           install_params_->add_to_search;
       finalize_options.chromeos_data->show_in_management =
           install_params_->add_to_management;
+      finalize_options.chromeos_data->is_disabled =
+          install_params_->is_disabled;
     }
 
     if (install_params_->user_display_mode != DisplayMode::kUndefined) {

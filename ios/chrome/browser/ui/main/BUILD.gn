@@ -56,6 +56,7 @@ source_set("scene") {
     "//ios/chrome/browser/first_run",
     "//ios/chrome/browser/main",
     "//ios/chrome/browser/ntp:features",
+    "//ios/chrome/browser/ntp_snippets:ntp_snippets",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/snapshots",
     "//ios/chrome/browser/tabs:tabs",
@@ -159,6 +160,8 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//components/bookmarks/test",
+    "//ios/chrome/app:app_internal",
+    "//ios/chrome/app/startup",
     "//ios/chrome/browser/bookmarks",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/main",
@@ -169,5 +172,6 @@ source_set("unit_tests") {
     "//ios/chrome/test:block_cleanup_test",
     "//ios/web/public/test",
     "//testing/gtest",
+    "//third_party/ocmock",
   ]
 }

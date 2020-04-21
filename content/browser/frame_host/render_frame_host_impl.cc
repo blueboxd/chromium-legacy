@@ -208,6 +208,7 @@
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
 #include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
 #include "third_party/blink/public/mojom/frame/media_player_action.mojom.h"
@@ -3182,6 +3183,11 @@ void RenderFrameHostImpl::ContentsPreferredSizeChanged(
   render_view_host_->OnDidContentsPreferredSizeChange(pref_size);
 }
 
+void RenderFrameHostImpl::TextAutosizerPageInfoChanged(
+    blink::mojom::TextAutosizerPageInfoPtr page_info) {
+  delegate_->OnTextAutosizerPageInfoChanged(this, std::move(page_info));
+}
+
 void RenderFrameHostImpl::UpdateFaviconURL(
     std::vector<blink::mojom::FaviconURLPtr> favicon_urls) {
   delegate_->UpdateFaviconURL(this, std::move(favicon_urls));
@@ -4888,9 +4894,27 @@ CanCommitStatus RenderFrameHostImpl::CanCommitOriginAndUrl(
     return CanCommitStatus::CANNOT_COMMIT_URL;
   }
 
-  // TODO(creis): We should also check for WebUI pages here.  Also, when the
-  // out-of-process iframes implementation is ready, we should check for
-  // cross-site URLs that are not allowed to commit in this process.
+  // Verify that if this RenderFrameHost is for a WebUI it is not committing a
+  // URL which is not allowed in a WebUI process.
+  if (!NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(
+          this, url,
+          /* is_renderer_initiated_check */ true)) {
+    // TODO(nasko): Once this is known to not happen in reality, change the
+    // return value to CanCommitStatus::CANNOT_COMMIT_URL and remove the
+    // instrumentation.
+    base::debug::ScopedCrashKeyString scoped_url(
+        base::debug::AllocateCrashKeyString("disallowed_url",
+                                            base::debug::CrashKeySize::Size256),
+        url.possibly_invalid_spec());
+
+    base::debug::ScopedCrashKeyString scoped_process_lock(
+        base::debug::AllocateCrashKeyString("site_lock",
+                                            base::debug::CrashKeySize::Size256),
+        ChildProcessSecurityPolicyImpl::GetInstance()
+            ->GetOriginLock(process_->GetID())
+            .possibly_invalid_spec());
+    base::debug::DumpWithoutCrashing();
+  }
 
   // MHTML subframes can supply URLs at commit time that do not match the
   // process lock. For example, it can be either "cid:..." or arbitrary URL at

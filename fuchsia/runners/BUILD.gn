@@ -63,6 +63,8 @@ source_set("cast_runner_core") {
     "cast/cast_runner.h",
     "cast/named_message_port_connector.cc",
     "cast/named_message_port_connector.h",
+    "cast/pending_cast_component.cc",
+    "cast/pending_cast_component.h",
   ]
   data_deps = [ "//chromecast/bindings:named_message_port_connector_resources" ]
   deps = [

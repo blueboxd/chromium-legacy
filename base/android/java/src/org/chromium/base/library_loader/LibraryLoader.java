@@ -15,19 +15,15 @@ import android.system.Os;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
-import androidx.core.content.ContextCompat;
 
 import org.chromium.base.BaseSwitches;
 import org.chromium.base.BuildConfig;
-import org.chromium.base.BuildInfo;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.FileUtils;
 import org.chromium.base.JNIUtils;
 import org.chromium.base.Log;
 import org.chromium.base.NativeLibraryLoadedStatus;
 import org.chromium.base.NativeLibraryLoadedStatus.NativeLibraryLoadedStatusProvider;
-import org.chromium.base.StreamUtil;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.JNINamespace;
@@ -38,14 +34,9 @@ import org.chromium.base.compat.ApiHelperForM;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.UmaRecorderHolder;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Locale;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 import javax.annotation.concurrent.GuardedBy;
 
@@ -67,23 +58,6 @@ import javax.annotation.concurrent.GuardedBy;
 @JNINamespace("base::android")
 public class LibraryLoader {
     private static final String TAG = "LibraryLoader";
-
-    // Experience shows that on some devices, the PackageManager fails to properly extract
-    // native shared libraries to the /data partition at installation or upgrade time,
-    // which creates all kind of chaos (https://crbug.com/806998).
-    //
-    // We implement a fallback when we detect the issue by manually extracting the library
-    // into Chromium's own data directory, then retrying to load the new library from here.
-    //
-    // This will work for any device running K-. Starting with Android L, render processes
-    // cannot access the file system anymore, and extraction will always fail for them.
-    // However, the issue doesn't seem to appear in the field for Android L.
-    //
-    // Also, starting with M, the issue doesn't exist if shared libraries are stored
-    // uncompressed in the APK (as Chromium does), because the system linker can access them
-    // directly, and the PackageManager will thus never extract them in the first place.
-    public static final boolean PLATFORM_REQUIRES_NATIVE_FALLBACK_EXTRACTION =
-            Build.VERSION.SDK_INT <= VERSION_CODES.KITKAT;
 
     // Location of extracted native libraries.
     private static final String LIBRARY_DIR = "native_libraries";
@@ -434,17 +408,6 @@ public class LibraryLoader {
         }
     }
 
-    // Experience shows that on some devices, the system sometimes fails to extract native libraries
-    // at installation or update time from the APK. This function will extract the library and
-    // return the extracted file path.
-    static String getExtractedLibraryPath(ApplicationInfo appInfo, String libName) {
-        assert PLATFORM_REQUIRES_NATIVE_FALLBACK_EXTRACTION;
-        Log.w(TAG, "Failed to load libName %s, attempting fallback extraction then trying again",
-                libName);
-        String libraryEntry = LibraryLoader.makeLibraryPathInZipFile(libName, false, false);
-        return extractFileIfStale(appInfo, libraryEntry, makeLibraryDirAndSetPermission());
-    }
-
     private void loadWithChromiumLinker(ApplicationInfo appInfo, String library) {
         Linker linker = Linker.getInstance();
 
@@ -648,36 +611,6 @@ public class LibraryLoader {
         // From now on, keep tracing in sync with native.
         TraceEvent.registerNativeEnabledObserver();
 
-        if (mLibraryProcessType == LibraryProcessType.PROCESS_BROWSER
-                && PLATFORM_REQUIRES_NATIVE_FALLBACK_EXTRACTION) {
-            // Perform the detection and deletion of obsolete native libraries on a
-            // background thread.
-            new Thread(() -> {
-                final String suffix = BuildInfo.getInstance().extractedFileSuffix;
-                final File[] files = getLibraryDir().listFiles();
-                if (files == null) return;
-
-                for (File file : files) {
-                    // NOTE: Do not simply look for <suffix> at the end of the file.
-                    //
-                    // Extracted library files have names like 'libfoo.so<suffix>', but
-                    // extractFileIfStale() will use FileUtils.copyFileStreamAtomicWithBuffer()
-                    // to create them, and this method actually uses a transient temporary file
-                    // named like 'libfoo.so<suffix>.tmp' to do that. These temporary files, if
-                    // detected here, should be preserved; hence the reason why contains() is
-                    // used below.
-                    if (!file.getName().contains(suffix)) {
-                        String fileName = file.getName();
-                        if (!file.delete()) {
-                            Log.w(TAG, "Unable to remove %s", fileName);
-                        } else {
-                            Log.i(TAG, "Removed obsolete file %s", fileName);
-                        }
-                    }
-                }
-            }).start();
-        }
-
         // From this point on, native code is ready to use, but non-MainDex JNI may not yet have
         // been registered. Check isInitialized() to be sure that initialization is fully complete.
         // Note that this flag can be accessed asynchronously, so any initialization
@@ -733,59 +666,6 @@ public class LibraryLoader {
                 Log.w(TAG, "failed to set UBSAN_OPTIONS", e);
             }
         }
-    }
-
-    // Android system sometimes fails to extract libraries from APK (https://crbug.com/806998).
-    // This function manually extract libraries as a fallback.
-    @SuppressLint({"SetWorldReadable"})
-    private static String extractFileIfStale(
-            ApplicationInfo appInfo, String pathWithinApk, File destDir) {
-        assert PLATFORM_REQUIRES_NATIVE_FALLBACK_EXTRACTION;
-
-        String apkPath = appInfo.sourceDir;
-        String fileName =
-                (new File(pathWithinApk)).getName() + BuildInfo.getInstance().extractedFileSuffix;
-        File libraryFile = new File(destDir, fileName);
-
-        if (!libraryFile.exists()) {
-            ZipFile zipFile = null;
-            try {
-                zipFile = new ZipFile(apkPath);
-                ZipEntry zipEntry = zipFile.getEntry(pathWithinApk);
-                if (zipEntry == null) {
-                    throw new RuntimeException("Cannot find ZipEntry" + pathWithinApk);
-                }
-                InputStream inputStream = zipFile.getInputStream(zipEntry);
-
-                FileUtils.copyStreamToFile(inputStream, libraryFile);
-                libraryFile.setReadable(true, false);
-                libraryFile.setExecutable(true, false);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            } finally {
-                StreamUtil.closeQuietly(zipFile);
-            }
-        }
-        return libraryFile.getAbsolutePath();
-    }
-
-    // Ensure the extracted native libraries is created with the right permissions.
-    private static File makeLibraryDirAndSetPermission() {
-        if (!ContextUtils.isIsolatedProcess()) {
-            File cacheDir = ContextCompat.getCodeCacheDir(ContextUtils.getApplicationContext());
-            File libDir = new File(cacheDir, LIBRARY_DIR);
-            cacheDir.mkdir();
-            cacheDir.setExecutable(true, false);
-            libDir.mkdir();
-            libDir.setExecutable(true, false);
-        }
-        return getLibraryDir();
-    }
-
-    // Return File object for the directory containing extracted native libraries.
-    private static File getLibraryDir() {
-        return new File(
-                ContextCompat.getCodeCacheDir(ContextUtils.getApplicationContext()), LIBRARY_DIR);
     }
 
     /**

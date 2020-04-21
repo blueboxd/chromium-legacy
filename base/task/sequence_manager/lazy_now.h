@@ -6,6 +6,7 @@
 #define BASE_TASK_SEQUENCE_MANAGER_LAZY_NOW_H_
 
 #include "base/base_export.h"
+#include "base/macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
 

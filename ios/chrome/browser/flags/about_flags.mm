@@ -382,7 +382,7 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxOnFocusSuggestionsDescription, flags_ui::kOsIos,
      FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kOnFocusSuggestions,
                                     kOmniboxOnFocusSuggestionsVariations,
-                                    "OmniboxOnFocusSuggestions")},
+                                    "OmniboxBundledExperimentV1")},
     {"omnibox-ui-max-autocomplete-matches",
      flag_descriptions::kOmniboxUIMaxAutocompleteMatchesName,
      flag_descriptions::kOmniboxUIMaxAutocompleteMatchesDescription,

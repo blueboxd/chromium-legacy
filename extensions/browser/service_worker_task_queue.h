@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
+#include "base/strings/string_util.h"
 #include "base/version.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/lazy_context_id.h"

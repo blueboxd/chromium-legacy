@@ -36,9 +36,8 @@
 #include "net/http/http_content_disposition.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
-#include "services/network/public/cpp/content_security_policy/content_security_policy.h"
-#include "services/network/public/cpp/features.h"
-#include "services/network/public/mojom/content_security_policy.mojom-blink.h"
+#include "services/network/public/cpp/parsed_headers.h"
+#include "services/network/public/mojom/parsed_headers.mojom-blink.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/network/header_field_tokenizer.h"
@@ -111,6 +110,11 @@ WTF::Vector<blink::ContentSecurityPolicyPtr> ConvertToBlink(
     blink_policies.push_back(ConvertToBlink(std::move(policy)));
 
   return blink_policies;
+}
+
+blink::ParsedHeadersPtr ConvertToBlink(ParsedHeadersPtr parsed_headers) {
+  return blink::ParsedHeaders::New(
+      ConvertToBlink(std::move(parsed_headers->content_security_policy)));
 }
 
 }  // namespace mojom
@@ -666,21 +670,15 @@ std::unique_ptr<ServerTimingHeaderVector> ParseServerTimingHeader(
   return headers;
 }
 
-// This function is simply calling network::AddContentSecurityPolicyFromHeaders
-// and convert from/to blink types. It is used for navigation requests served by
-// a ServiceWorker. It is tested by FetchResponseDataTest.ContentSecurityPolicy.
-WTF::Vector<network::mojom::blink::ContentSecurityPolicyPtr>
-ParseContentSecurityPolicy(const String& raw_headers, const KURL& url) {
-  if (!base::FeatureList::IsEnabled(
-          network::features::kOutOfBlinkFrameAncestors)) {
-    return {};
-  }
-
+// This function is simply calling network::ParseHeaders and convert from/to
+// blink types. It is used for navigation requests served by a ServiceWorker. It
+// is tested by FetchResponseDataTest.ContentSecurityPolicy.
+network::mojom::blink::ParsedHeadersPtr ParseHeaders(const String& raw_headers,
+                                                     const KURL& url) {
   auto headers = base::MakeRefCounted<net::HttpResponseHeaders>(
       net::HttpUtil::AssembleRawHeaders(raw_headers.Latin1()));
-  std::vector<network::mojom::ContentSecurityPolicyPtr> policies;
-  network::AddContentSecurityPolicyFromHeaders(*headers, url, &policies);
-  return network::mojom::ConvertToBlink(std::move(policies));
+  return network::mojom::ConvertToBlink(
+      network::PopulateParsedHeaders(headers, url));
 }
 
 }  // namespace blink

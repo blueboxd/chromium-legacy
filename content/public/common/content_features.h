@@ -90,8 +90,6 @@ CONTENT_EXPORT extern const base::Feature kNotificationTriggers;
 CONTENT_EXPORT extern const base::Feature kOriginIsolationHeader;
 CONTENT_EXPORT extern const base::Feature kOriginPolicy;
 CONTENT_EXPORT extern const base::Feature kOverscrollHistoryNavigation;
-CONTENT_EXPORT extern const base::Feature kPassiveDocumentEventListeners;
-CONTENT_EXPORT extern const base::Feature kPassiveEventListenersDueToFling;
 CONTENT_EXPORT extern const base::Feature kPeriodicBackgroundSync;
 CONTENT_EXPORT extern const base::Feature kPepper3DImageChromium;
 CONTENT_EXPORT extern const base::Feature kPepperCrossOriginRedirectRestriction;

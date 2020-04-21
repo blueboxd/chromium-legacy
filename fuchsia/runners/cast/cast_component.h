@@ -32,26 +32,37 @@ class CastComponent : public WebComponent,
                       public fuchsia::web::NavigationEventListener,
                       public base::MessagePumpFuchsia::ZxHandleWatcher {
  public:
-  struct CastComponentParams {
-    CastComponentParams();
-    CastComponentParams(CastComponentParams&&);
-    ~CastComponentParams();
+  // Used to connect to the CastAgent to access Cast-specific services.
+  static const char kAgentComponentUrl[];
 
-    chromium::cast::ApplicationConfigManagerPtr app_config_manager;
-    chromium::cast::ApplicationContextPtr application_context;
+  struct Params {
+    Params();
+    Params(Params&&);
+    ~Params();
+
+    // Returns true if all parameters required for component launch have
+    // been initialized.
+    bool AreComplete() const;
+
+    // Parameters populated directly from the StartComponent() arguments.
     std::unique_ptr<base::fuchsia::StartupContext> startup_context;
-    std::unique_ptr<cr_fuchsia::AgentManager> agent_manager;
-    std::unique_ptr<ApiBindingsClient> api_bindings_client;
     fidl::InterfaceRequest<fuchsia::sys::ComponentController>
         controller_request;
-    chromium::cast::ApplicationConfig app_config;
-    chromium::cast::UrlRequestRewriteRulesProviderPtr rewrite_rules_provider;
+
+    // Parameters initialized synchronously.
+    std::unique_ptr<cr_fuchsia::AgentManager> agent_manager;
+    chromium::cast::UrlRequestRewriteRulesProviderPtr
+        url_rewrite_rules_provider;
+
+    // Parameters asynchronously initialized by PendingCastComponent.
+    std::unique_ptr<ApiBindingsClient> api_bindings_client;
+    chromium::cast::ApplicationConfig application_config;
     base::Optional<std::vector<fuchsia::web::UrlRequestRewriteRule>>
-        rewrite_rules;
+        initial_url_rewrite_rules;
     base::Optional<uint64_t> media_session_id;
   };
 
-  CastComponent(CastRunner* runner, CastComponentParams params);
+  CastComponent(CastRunner* runner, Params params);
   ~CastComponent() final;
 
   // WebComponent overrides.
@@ -67,7 +78,7 @@ class CastComponent : public WebComponent,
 
  private:
   void OnRewriteRulesReceived(
-      std::vector<fuchsia::web::UrlRequestRewriteRule> rewrite_rules);
+      std::vector<fuchsia::web::UrlRequestRewriteRule> url_rewrite_rules);
 
   // WebComponent overrides.
   void DestroyComponent(int termination_exit_code,
@@ -92,8 +103,8 @@ class CastComponent : public WebComponent,
 
   std::unique_ptr<cr_fuchsia::AgentManager> agent_manager_;
   chromium::cast::ApplicationConfig application_config_;
-  chromium::cast::UrlRequestRewriteRulesProviderPtr rewrite_rules_provider_;
-  std::vector<fuchsia::web::UrlRequestRewriteRule> initial_rewrite_rules_;
+  chromium::cast::UrlRequestRewriteRulesProviderPtr url_rewrite_rules_provider_;
+  std::vector<fuchsia::web::UrlRequestRewriteRule> initial_url_rewrite_rules_;
 
   bool constructor_active_ = false;
   std::unique_ptr<NamedMessagePortConnector> connector_;

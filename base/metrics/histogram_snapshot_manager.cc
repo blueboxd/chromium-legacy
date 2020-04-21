@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/debug/alias.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_flattener.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"

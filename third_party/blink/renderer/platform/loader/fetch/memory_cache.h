@@ -55,7 +55,7 @@ class MemoryCacheEntry final : public GarbageCollected<MemoryCacheEntry> {
   Resource* GetResource() const { return resource_; }
 
  private:
-  void ClearResourceWeak(const WeakCallbackInfo&);
+  void ClearResourceWeak(const LivenessBroker&);
 
   UntracedMember<Resource> resource_;
 };

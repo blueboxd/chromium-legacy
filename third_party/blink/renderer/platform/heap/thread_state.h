@@ -94,18 +94,18 @@ class Visitor;
 //     }
 //     Member<Bar> bar_;
 //   };
-#define USING_PRE_FINALIZER(Class, preFinalizer)                          \
- public:                                                                  \
-  static bool InvokePreFinalizer(void* object) {                          \
-    Class* self = reinterpret_cast<Class*>(object);                       \
-    if (ThreadHeap::IsHeapObjectAlive(self))                              \
-      return false;                                                       \
-    self->Class::preFinalizer();                                          \
-    return true;                                                          \
-  }                                                                       \
-                                                                          \
- private:                                                                 \
-  ThreadState::PrefinalizerRegistration<Class> prefinalizer_dummy_{this}; \
+#define USING_PRE_FINALIZER(Class, PreFinalizer)                             \
+ public:                                                                     \
+  static bool InvokePreFinalizer(const LivenessBroker& info, void* object) { \
+    Class* self = reinterpret_cast<Class*>(object);                          \
+    if (info.IsHeapObjectAlive(self))                                        \
+      return false;                                                          \
+    self->Class::PreFinalizer();                                             \
+    return true;                                                             \
+  }                                                                          \
+                                                                             \
+ private:                                                                    \
+  ThreadState::PrefinalizerRegistration<Class> prefinalizer_dummy_{this};    \
   using UsingPreFinalizerMacroNeedsTrailingSemiColon = char
 
 class PLATFORM_EXPORT BlinkGCObserver {
@@ -139,7 +139,7 @@ class PLATFORM_EXPORT ThreadState final {
     DISALLOW_NEW();
 
    public:
-    PrefinalizerRegistration(T* self) {
+    PrefinalizerRegistration(T* self) {  // NOLINT
       static_assert(sizeof(&T::InvokePreFinalizer) > 0,
                     "USING_PRE_FINALIZER(T) must be defined.");
       ThreadState* state =
@@ -590,7 +590,7 @@ class PLATFORM_EXPORT ThreadState final {
   BlinkGC::GCReason reason_for_scheduled_gc_ =
       BlinkGC::GCReason::kForcedGCForTesting;
 
-  using PreFinalizerCallback = bool (*)(void*);
+  using PreFinalizerCallback = bool (*)(const LivenessBroker&, void*);
   using PreFinalizer = std::pair<void*, PreFinalizerCallback>;
 
   // Pre-finalizers are called in the reverse order in which they are

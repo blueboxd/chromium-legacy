@@ -52,10 +52,6 @@ class LocalSessionEventHandlerImpl : public LocalSessionEventHandler {
     // Analogous to SessionsGlobalIdMapper.
     virtual void TrackLocalNavigationId(base::Time timestamp,
                                         int unique_id) = 0;
-    // Analogous to the functions in FaviconCache.
-    virtual void OnPageFaviconUpdated(const GURL& page_url) = 0;
-    virtual void OnFaviconVisited(const GURL& page_url,
-                                  const GURL& favicon_url) = 0;
   };
 
   // Raw pointers must not be null and all pointees must outlive this object.
@@ -70,8 +66,6 @@ class LocalSessionEventHandlerImpl : public LocalSessionEventHandler {
   // LocalSessionEventHandler implementation.
   void OnSessionRestoreComplete() override;
   void OnLocalTabModified(SyncedTabDelegate* modified_tab) override;
-  void OnFaviconsChanged(const std::set<GURL>& page_urls,
-                         const GURL& icon_url) override;
 
   // Returns tab specifics from |tab_delegate|. Exposed publicly for testing.
   sync_pb::SessionTab GetTabSpecificsFromDelegateForTest(

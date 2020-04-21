@@ -6,6 +6,7 @@
 
 #include "base/stl_util.h"
 #include "services/network/public/mojom/content_security_policy.mojom-blink.h"
+#include "services/network/public/mojom/parsed_headers.mojom-blink.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
@@ -622,19 +623,24 @@ TEST(HTTPParsersTest, ParseContentTypeOptionsTest) {
 // and fuzzed.
 // What needs to be tested is the basic conversion from/to blink types.
 // -----------------------------------------------------------------------------
+namespace {
+WTF::Vector<network::mojom::blink::ContentSecurityPolicyPtr>
+ParseContentSecurityPolicy(String http_headers) {
+  return std::move(ParseHeaders("HTTP/1.1 200 OK\r\n" + http_headers,
+                                KURL("http://example.com"))
+                       ->content_security_policy);
+}
+}  // namespace
 
 TEST(HTTPParsersTest, ParseContentSecurityPolicyEmpty) {
-  auto csp = ParseContentSecurityPolicy("HTTP/1.1 200 OK\r\n",
-                                        KURL("http://example.com"));
+  auto csp = ParseContentSecurityPolicy("");
   EXPECT_TRUE(csp.IsEmpty());
 }
 
 TEST(HTTPParsersTest, ParseContentSecurityPolicyMultiple) {
   auto csp = ParseContentSecurityPolicy(
-      "HTTP/1.1 200 OK\r\n"
       "Content-Security-Policy: frame-ancestors a.com\r\n"
-      "Content-Security-Policy: frame-ancestors b.com\r\n",
-      KURL("http://example.com"));
+      "Content-Security-Policy: frame-ancestors b.com\r\n");
   ASSERT_EQ(2u, csp.size());
   EXPECT_EQ("frame-ancestors a.com", csp[0]->header->header_value);
   EXPECT_EQ("frame-ancestors b.com", csp[1]->header->header_value);
@@ -642,10 +648,8 @@ TEST(HTTPParsersTest, ParseContentSecurityPolicyMultiple) {
 
 TEST(HTTPParsersTest, ParseContentSecurityPolicyCoalesce) {
   auto csp = ParseContentSecurityPolicy(
-      "HTTP/1.1 200 OK\r\n"
       "Content-Security-Policy:"
-      "frame-ancestors a.com, frame-ancestors b.com\r\n",
-      KURL("http://example.com"));
+      "frame-ancestors a.com, frame-ancestors b.com\r\n");
   ASSERT_EQ(2u, csp.size());
   EXPECT_EQ("frame-ancestors a.com", csp[0]->header->header_value);
   EXPECT_EQ("frame-ancestors b.com", csp[1]->header->header_value);
@@ -653,10 +657,8 @@ TEST(HTTPParsersTest, ParseContentSecurityPolicyCoalesce) {
 
 TEST(HTTPParsersTest, ParseContentSecurityPolicyHeader) {
   auto csp = ParseContentSecurityPolicy(
-      "HTTP/1.1 200 OK\r\n"
       "Content-Security-Policy: frame-ancestors a.com\r\n"
-      "Content-Security-Policy-Report-Only: frame-ancestors b.com",
-      KURL("http://example.com"));
+      "Content-Security-Policy-Report-Only: frame-ancestors b.com");
   ASSERT_EQ(2u, csp.size());
 
   // Header source:
@@ -678,7 +680,6 @@ TEST(HTTPParsersTest, ParseContentSecurityPolicyHeader) {
 
 TEST(HTTPParsersTest, ParseContentSecurityPolicyDirectiveName) {
   auto policies = ParseContentSecurityPolicy(
-      "HTTP/1.1 200 OK\r\n"
       "Content-Security-Policy: frame-ancestors 'none'\r\n"
       "Content-Security-Policy: sandbox allow-script\r\n"
       "Content-Security-Policy: form-action 'none'\r\n"
@@ -686,8 +687,7 @@ TEST(HTTPParsersTest, ParseContentSecurityPolicyDirectiveName) {
       "Content-Security-Policy: frame-src 'none'\r\n"
       "Content-Security-Policy: child-src 'none'\r\n"
       "Content-Security-Policy: script-src 'none'\r\n"
-      "Content-Security-Policy: default-src 'none'\r\n",
-      KURL("http://example.com"));
+      "Content-Security-Policy: default-src 'none'\r\n");
   EXPECT_EQ(8u, policies.size());
   // frame-ancestors
   EXPECT_EQ(1u, policies[0]->directives.size());
@@ -708,10 +708,8 @@ TEST(HTTPParsersTest, ParseContentSecurityPolicyDirectiveName) {
 }
 
 TEST(HTTPParsersTest, ParseContentSecurityPolicyReportTo) {
-  auto policies = ParseContentSecurityPolicy(
-      "HTTP/1.1 200 OK\r\n"
-      "Content-Security-Policy: report-to a b\r\n",
-      KURL("http://example.com"));
+  auto policies =
+      ParseContentSecurityPolicy("Content-Security-Policy: report-to a b\r\n");
   EXPECT_TRUE(policies[0]->use_reporting_api);
   ASSERT_EQ(2u, policies[0]->report_endpoints.size());
   EXPECT_EQ("a", policies[0]->report_endpoints[0]);
@@ -720,9 +718,7 @@ TEST(HTTPParsersTest, ParseContentSecurityPolicyReportTo) {
 
 TEST(HTTPParsersTest, ParseContentSecurityPolicyReportUri) {
   auto policies = ParseContentSecurityPolicy(
-      "HTTP/1.1 200 OK\r\n"
-      "Content-Security-Policy: report-uri ./report.py\r\n",
-      KURL("http://example.com"));
+      "Content-Security-Policy: report-uri ./report.py\r\n");
   EXPECT_FALSE(policies[0]->use_reporting_api);
   ASSERT_EQ(1u, policies[0]->report_endpoints.size());
   EXPECT_EQ("http://example.com/report.py", policies[0]->report_endpoints[0]);
@@ -731,14 +727,12 @@ TEST(HTTPParsersTest, ParseContentSecurityPolicyReportUri) {
 TEST(HTTPParsersTest, ParseContentSecurityPolicySourceBasic) {
   auto frame_ancestors = network::mojom::CSPDirectiveName::FrameAncestors;
   auto policies = ParseContentSecurityPolicy(
-      "HTTP/1.1 200 OK\r\n"
       "Content-Security-Policy: frame-ancestors 'none'\r\n"
       "Content-Security-Policy: frame-ancestors *\r\n"
       "Content-Security-Policy: frame-ancestors 'self'\r\n"
       "Content-Security-Policy: frame-ancestors http://a.com:22/path\r\n"
       "Content-Security-Policy: frame-ancestors a.com:*\r\n"
-      "Content-Security-Policy: frame-ancestors */report.py\r\n",
-      KURL("http://example.com"));
+      "Content-Security-Policy: frame-ancestors */report.py\r\n");
   // 'none'
   {
     auto source_list = policies[0]->directives.Take(frame_ancestors);

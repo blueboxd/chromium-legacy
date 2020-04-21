@@ -466,7 +466,7 @@ void RunSimulation(const base::FilePath& source_path,
 
   // Initializing audio and video senders.
   cast_sender->InitializeAudio(audio_sender_config,
-                               base::Bind(&LogAudioOperationalStatus));
+                               base::BindOnce(&LogAudioOperationalStatus));
   cast_sender->InitializeVideo(media_source.get_video_config(),
                                base::Bind(&LogVideoOperationalStatus),
                                CreateDefaultVideoEncodeAcceleratorCallback(),

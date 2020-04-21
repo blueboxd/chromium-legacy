@@ -676,7 +676,7 @@ class CacheStorageCacheTest : public testing::Test {
         std::vector<std::string>() /* cors_exposed_header_names */,
         nullptr /* side_data_blob */,
         nullptr /* side_data_blob_for_cache_put */,
-        std::vector<network::mojom::ContentSecurityPolicyPtr>(),
+        network::mojom::ParsedHeaders::New(),
         network::CrossOriginEmbedderPolicy(),
         false /* loaded_with_credentials */);
   }

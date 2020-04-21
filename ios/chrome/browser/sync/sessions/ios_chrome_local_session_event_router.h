@@ -19,7 +19,6 @@
 #include "ios/web/public/web_state_observer.h"
 
 class ChromeBrowserState;
-class GURL;
 
 namespace sync_sessions {
 class SyncSessionsClient;
@@ -88,21 +87,10 @@ class IOSChromeLocalSessionEventRouter
   // Called on observation of a change in |web_state|.
   void OnWebStateChange(web::WebState* web_state);
 
-  // Called when the favicons for the given page URLs
-  // (e.g. http://www.google.com) and the given icon URL (e.g.
-  // http://www.google.com/favicon.ico) have changed. It is valid to call
-  // OnFaviconsChanged() with non-empty |page_urls| and an empty |icon_url|
-  // and vice versa.
-  void OnFaviconsChanged(const std::set<GURL>& page_urls, const GURL& icon_url);
-
   sync_sessions::LocalSessionEventHandler* handler_;
   ChromeBrowserState* const browser_state_;
   sync_sessions::SyncSessionsClient* const sessions_client_;
   syncer::SyncableService::StartSyncFlare flare_;
-
-  std::unique_ptr<base::CallbackList<void(const std::set<GURL>&,
-                                          const GURL&)>::Subscription>
-      favicon_changed_subscription_;
 
   std::unique_ptr<base::CallbackList<void(web::WebState*)>::Subscription>
       tab_parented_subscription_;

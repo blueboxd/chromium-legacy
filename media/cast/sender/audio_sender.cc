@@ -17,7 +17,7 @@ namespace cast {
 
 AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
                          const FrameSenderConfig& audio_config,
-                         StatusChangeCallback status_change_cb,
+                         StatusChangeOnceCallback status_change_cb,
                          CastTransport* const transport_sender)
     : FrameSender(cast_environment,
                   transport_sender,

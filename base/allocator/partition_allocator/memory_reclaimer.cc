@@ -13,6 +13,26 @@
 
 namespace base {
 
+namespace {
+
+template <bool thread_safe>
+void Insert(std::set<internal::PartitionRootBase<thread_safe>*>* partitions,
+            internal::PartitionRootBase<thread_safe>* partition) {
+  DCHECK(partition);
+  auto it_and_whether_inserted = partitions->insert(partition);
+  DCHECK(it_and_whether_inserted.second);
+}
+
+template <bool thread_safe>
+void Remove(std::set<internal::PartitionRootBase<thread_safe>*>* partitions,
+            internal::PartitionRootBase<thread_safe>* partition) {
+  DCHECK(partition);
+  size_t erased_count = partitions->erase(partition);
+  DCHECK_EQ(1u, erased_count);
+}
+
+}  // namespace
+
 constexpr TimeDelta PartitionAllocMemoryReclaimer::kStatsRecordingTimeDelta;
 
 // static
@@ -22,19 +42,27 @@ PartitionAllocMemoryReclaimer* PartitionAllocMemoryReclaimer::Instance() {
 }
 
 void PartitionAllocMemoryReclaimer::RegisterPartition(
-    internal::PartitionRootBase* partition) {
+    internal::PartitionRootBase<internal::ThreadSafe>* partition) {
   AutoLock lock(lock_);
-  DCHECK(partition);
-  auto it_and_whether_inserted = partitions_.insert(partition);
-  DCHECK(it_and_whether_inserted.second);
+  Insert(&thread_safe_partitions_, partition);
+}
+
+void PartitionAllocMemoryReclaimer::RegisterPartition(
+    internal::PartitionRootBase<internal::NotThreadSafe>* partition) {
+  AutoLock lock(lock_);
+  Insert(&thread_unsafe_partitions_, partition);
 }
 
 void PartitionAllocMemoryReclaimer::UnregisterPartition(
-    internal::PartitionRootBase* partition) {
+    internal::PartitionRootBase<internal::ThreadSafe>* partition) {
   AutoLock lock(lock_);
-  DCHECK(partition);
-  size_t erased_count = partitions_.erase(partition);
-  DCHECK_EQ(1u, erased_count);
+  Remove(&thread_safe_partitions_, partition);
+}
+
+void PartitionAllocMemoryReclaimer::UnregisterPartition(
+    internal::PartitionRootBase<internal::NotThreadSafe>* partition) {
+  AutoLock lock(lock_);
+  Remove(&thread_unsafe_partitions_, partition);
 }
 
 void PartitionAllocMemoryReclaimer::Start(
@@ -44,7 +72,7 @@ void PartitionAllocMemoryReclaimer::Start(
 
   {
     AutoLock lock(lock_);
-    DCHECK(!partitions_.empty());
+    DCHECK(!thread_safe_partitions_.empty());
   }
 
   // This does not need to run on the main thread, however there are a few
@@ -94,7 +122,9 @@ void PartitionAllocMemoryReclaimer::Reclaim() {
 
   {
     AutoLock lock(lock_);  // Has to protect from concurrent (Un)Register calls.
-    for (auto* partition : partitions_)
+    for (auto* partition : thread_safe_partitions_)
+      partition->PurgeMemory(kFlags);
+    for (auto* partition : thread_unsafe_partitions_)
       partition->PurgeMemory(kFlags);
   }
 
@@ -121,7 +151,8 @@ void PartitionAllocMemoryReclaimer::ResetForTesting() {
   has_called_reclaim_ = false;
   total_reclaim_thread_time_ = TimeDelta();
   timer_ = nullptr;
-  partitions_.clear();
+  thread_safe_partitions_.clear();
+  thread_unsafe_partitions_.clear();
 }
 
 }  // namespace base

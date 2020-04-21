@@ -147,6 +147,12 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
                                connectedScenes:(NSArray<SceneState*>*)scenes {
   int numTabs = 0;
   for (SceneState* scene in scenes) {
+    if (!scene.interfaceProvider) {
+      // The scene might not yet be initiated.
+      // TODO(crbug.com/1064611): This will not be an issue when the tabs are
+      // counted in sessions instead of scenes.
+      continue;
+    }
     numTabs += scene.interfaceProvider.mainInterface.browser->GetWebStateList()
                    ->count();
   }

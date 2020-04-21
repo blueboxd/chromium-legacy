@@ -86,7 +86,7 @@ MediaControlSliderElement::MediaControlSliderElement(
       segment_highlight_before_(nullptr),
       segment_highlight_after_(nullptr),
       resize_observer_(ResizeObserver::Create(
-          GetDocument(),
+          GetDocument().domWindow(),
           MakeGarbageCollected<MediaControlSliderElementResizeObserverDelegate>(
               this))) {
   setType(input_type_names::kRange);

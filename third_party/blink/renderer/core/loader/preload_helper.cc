@@ -122,7 +122,7 @@ KURL GetBestFitImageURL(const Document& document,
                         const String& image_srcset,
                         const String& image_sizes) {
   float source_size = SizesAttributeParser(media_values, image_sizes,
-                                           document.ToExecutionContext())
+                                           document.GetExecutionContext())
                           .length();
   ImageCandidate candidate = BestFitSourceForImageAttributes(
       media_values->DevicePixelRatio(), source_size, href, image_srcset);
@@ -280,7 +280,7 @@ Resource* PreloadHelper::PreloadIfNeeded(
     if (!media_values)
       media_values = CreateMediaValues(document, viewport_description);
     if (!MediaMatches(params.media, media_values,
-                      document.ToExecutionContext()))
+                      document.GetExecutionContext()))
       return nullptr;
   }
 
@@ -340,7 +340,7 @@ Resource* PreloadHelper::PreloadIfNeeded(
       SubresourceIntegrity::ParseIntegrityAttribute(
           integrity_attr,
           SubresourceIntegrityHelper::GetFeatures(
-              document.ToExecutionContext()),
+              document.GetExecutionContext()),
           metadata_set);
       link_fetch_params.SetIntegrityMetadata(metadata_set);
       link_fetch_params.MutableResourceRequest().SetFetchIntegrity(
@@ -446,7 +446,7 @@ void PreloadHelper::ModulePreloadIfNeeded(
     MediaValues* media_values =
         CreateMediaValues(document, viewport_description);
     if (!MediaMatches(params.media, media_values,
-                      document.ToExecutionContext()))
+                      document.GetExecutionContext()))
       return;
   }
 
@@ -464,11 +464,11 @@ void PreloadHelper::ModulePreloadIfNeeded(
   IntegrityMetadataSet integrity_metadata;
   if (!params.integrity.IsEmpty()) {
     SubresourceIntegrity::IntegrityFeatures integrity_features =
-        SubresourceIntegrityHelper::GetFeatures(document.ToExecutionContext());
+        SubresourceIntegrityHelper::GetFeatures(document.GetExecutionContext());
     SubresourceIntegrity::ReportInfo report_info;
     SubresourceIntegrity::ParseIntegrityAttribute(
         params.integrity, integrity_features, integrity_metadata, &report_info);
-    SubresourceIntegrityHelper::DoReport(*document.ToExecutionContext(),
+    SubresourceIntegrityHelper::DoReport(*document.GetExecutionContext(),
                                          report_info);
   }
 

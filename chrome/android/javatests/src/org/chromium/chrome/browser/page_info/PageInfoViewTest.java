@@ -35,6 +35,7 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.ContentSettingsFeatureList;
 import org.chromium.components.content_settings.ContentSettingsType;
+import org.chromium.components.page_info.PageInfoController;
 import org.chromium.components.page_info.PageInfoView;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentSwitches;

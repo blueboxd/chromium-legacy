@@ -128,8 +128,8 @@ source_set("weblayer_lib_base") {
     "browser/content_browser_client_impl.cc",
     "browser/content_browser_client_impl.h",
     "browser/content_browser_client_impl_receiver_bindings.cc",
-    "browser/content_settings_manager_impl.cc",
-    "browser/content_settings_manager_impl.h",
+    "browser/content_settings_manager_delegate.cc",
+    "browser/content_settings_manager_delegate.h",
     "browser/controls_visibility_reason.h",
     "browser/cookie_manager_impl.cc",
     "browser/cookie_manager_impl.h",
@@ -305,7 +305,7 @@ source_set("weblayer_lib_base") {
     "//content:content_resources",
     "//content:dev_ui_content_resources",
     "//content/app/resources",
-    "//content/public/app:both",
+    "//content/public/app",
     "//content/public/browser",
     "//content/public/child",
     "//content/public/common",
@@ -538,7 +538,7 @@ if (is_android) {
     deps = [
       ":weblayer_lib_webview",
       "//base",
-      "//content/public/app:both",
+      "//content/public/app",
     ]
     configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
     configs += [ "//build/config/android:hide_all_but_jni" ]

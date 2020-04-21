@@ -57,16 +57,18 @@ class GaloisKeyTest : public ::testing::Test {
  protected:
   void SetUp() override {
     ASSERT_OK_AND_ASSIGN(params59_, uint_m::Params::Create(rlwe::kModulus59));
-    ASSERT_OK_AND_ASSIGN(ntt_params_,
+    ASSERT_OK_AND_ASSIGN(auto ntt_params,
                          rlwe::InitializeNttParameters<uint_m>(
                              rlwe::testing::kLogCoeffs, params59_.get()));
+    ntt_params_ = absl::make_unique<const rlwe::NttParameters<uint_m>>(
+        std::move(ntt_params));
     ASSERT_OK_AND_ASSIGN(
-        auto temp_error_params,
+        auto error_params,
         rlwe::ErrorParams<uint_m>::Create(rlwe::testing::kDefaultLogT,
                                           rlwe::testing::kDefaultVariance,
-                                          params59_.get(), &ntt_params_));
+                                          params59_.get(), ntt_params_.get()));
     error_params_ =
-        absl::make_unique<rlwe::ErrorParams<uint_m>>(temp_error_params);
+        absl::make_unique<const rlwe::ErrorParams<uint_m>>(error_params);
   }
 
   // Sample a random key.
@@ -77,12 +79,12 @@ class GaloisKeyTest : public ::testing::Test {
                           rlwe::SingleThreadPrng::GenerateSeed());
     RLWE_ASSIGN_OR_RETURN(auto prng, rlwe::SingleThreadPrng::Create(prng_seed));
     return Key::Sample(rlwe::testing::kLogCoeffs, variance, log_t,
-                       params59_.get(), &ntt_params_, prng.get());
+                       params59_.get(), ntt_params_.get(), prng.get());
   }
 
   // Convert a vector of integers to a vector of montgomery integers.
   rlwe::StatusOr<std::vector<uint_m>> ConvertToMontgomery(
-      const std::vector<uint_m::Int>& coeffs, uint_m::Params* params) {
+      const std::vector<uint_m::Int>& coeffs, const uint_m::Params* params) {
     std::vector<uint_m> output(coeffs.size(), uint_m::ImportZero(params));
     for (unsigned int i = 0; i < output.size(); i++) {
       RLWE_ASSIGN_OR_RETURN(output[i], uint_m::ImportInt(coeffs[i], params));
@@ -107,7 +109,7 @@ class GaloisKeyTest : public ::testing::Test {
     RLWE_ASSIGN_OR_RETURN(auto mp,
                           ConvertToMontgomery(plaintext, params59_.get()));
     auto plaintext_ntt =
-        Polynomial::ConvertToNtt(mp, ntt_params_, params59_.get());
+        Polynomial::ConvertToNtt(mp, ntt_params_.get(), params59_.get());
     RLWE_ASSIGN_OR_RETURN(std::string prng_seed,
                           rlwe::SingleThreadPrng::GenerateSeed());
     RLWE_ASSIGN_OR_RETURN(auto prng, rlwe::SingleThreadPrng::Create(prng_seed));
@@ -115,9 +117,9 @@ class GaloisKeyTest : public ::testing::Test {
                                  prng.get());
   }
 
-  std::unique_ptr<uint_m::Params> params59_;
-  rlwe::NttParameters<uint_m> ntt_params_;
-  std::unique_ptr<rlwe::ErrorParams<uint_m>> error_params_;
+  std::unique_ptr<const uint_m::Params> params59_;
+  std::unique_ptr<const rlwe::NttParameters<uint_m>> ntt_params_;
+  std::unique_ptr<const rlwe::ErrorParams<uint_m>> error_params_;
 };
 
 TEST_F(GaloisKeyTest, GaloisKeyPowerOfSDoesNotMatchSubPower) {
@@ -134,7 +136,7 @@ TEST_F(GaloisKeyTest, GaloisKeyPowerOfSDoesNotMatchSubPower) {
   ASSERT_OK_AND_ASSIGN(auto ciphertext, Encrypt(key, plaintext));
   ASSERT_OK_AND_ASSIGN(
       auto subbed_ciphertext,
-      ciphertext.Substitute(substitution_power + 2, ntt_params_));
+      ciphertext.Substitute(substitution_power + 2, ntt_params_.get()));
   EXPECT_THAT(
       galois_key.ApplyTo(subbed_ciphertext),
       StatusIs(::absl::StatusCode::kInvalidArgument,
@@ -157,8 +159,9 @@ TEST_F(GaloisKeyTest, GaloisKeyUpdatesPowerOfS) {
 
   // Substituted ciphertext has substition_power PowerOfS.
   ASSERT_OK_AND_ASSIGN(auto ciphertext, Encrypt(key, plaintext));
-  ASSERT_OK_AND_ASSIGN(auto subbed_ciphertext,
-                       ciphertext.Substitute(substitution_power, ntt_params_));
+  ASSERT_OK_AND_ASSIGN(
+      auto subbed_ciphertext,
+      ciphertext.Substitute(substitution_power, ntt_params_.get()));
   EXPECT_EQ(subbed_ciphertext.PowerOfS(), substitution_power);
 
   // PowerOfS transformed back to 1.
@@ -184,18 +187,20 @@ TEST_F(GaloisKeyTest, KeySwitchedCiphertextDecrypts) {
   ASSERT_OK_AND_ASSIGN(auto mp1,
                        ConvertToMontgomery(plaintext, params59_.get()));
   Polynomial plaintext_ntt =
-      Polynomial::ConvertToNtt(mp1, ntt_params_, params59_.get());
-  ASSERT_OK_AND_ASSIGN(Polynomial expected_ntt,
-                       plaintext_ntt.Substitute(substitution_power, ntt_params_,
-                                                params59_.get()));
+      Polynomial::ConvertToNtt(mp1, ntt_params_.get(), params59_.get());
+  ASSERT_OK_AND_ASSIGN(
+      Polynomial expected_ntt,
+      plaintext_ntt.Substitute(substitution_power, ntt_params_.get(),
+                               params59_.get()));
   std::vector<uint_m::Int> expected = rlwe::RemoveError<uint_m>(
-      expected_ntt.InverseNtt(ntt_params_, params59_.get()), params59_->modulus,
-      kPlaintextModulus, params59_.get());
+      expected_ntt.InverseNtt(ntt_params_.get(), params59_.get()),
+      params59_->modulus, kPlaintextModulus, params59_.get());
 
   // Encrypt and substitute the ciphertext. Decrypt with a substituted key.
   ASSERT_OK_AND_ASSIGN(auto intermediate, Encrypt(key, plaintext));
-  ASSERT_OK_AND_ASSIGN(auto ciphertext, intermediate.Substitute(
-                                            substitution_power, ntt_params_));
+  ASSERT_OK_AND_ASSIGN(
+      auto ciphertext,
+      intermediate.Substitute(substitution_power, ntt_params_.get()));
   ASSERT_OK_AND_ASSIGN(auto transformed_ciphertext,
                        galois_key.ApplyTo(ciphertext));
   ASSERT_OK_AND_ASSIGN(std::vector<uint_m::Int> decrypted,
@@ -224,23 +229,24 @@ TEST_F(GaloisKeyTest, ComposingSubstitutions) {
   ASSERT_OK_AND_ASSIGN(auto mp1,
                        ConvertToMontgomery(plaintext, params59_.get()));
   Polynomial plaintext_ntt =
-      Polynomial::ConvertToNtt(mp1, ntt_params_, params59_.get());
-  ASSERT_OK_AND_ASSIGN(Polynomial expected_ntt,
-                       plaintext_ntt.Substitute(substitution_power, ntt_params_,
-                                                params59_.get()));
+      Polynomial::ConvertToNtt(mp1, ntt_params_.get(), params59_.get());
+  ASSERT_OK_AND_ASSIGN(
+      Polynomial expected_ntt,
+      plaintext_ntt.Substitute(substitution_power, ntt_params_.get(),
+                               params59_.get()));
   std::vector<uint_m::Int> expected = rlwe::RemoveError<uint_m>(
-      expected_ntt.InverseNtt(ntt_params_, params59_.get()), params59_->modulus,
-      kPlaintextModulus, params59_.get());
+      expected_ntt.InverseNtt(ntt_params_.get(), params59_.get()),
+      params59_->modulus, kPlaintextModulus, params59_.get());
 
   // Encrypt and substitute the ciphertext in steps using a single galois key.
   ASSERT_OK_AND_ASSIGN(auto ciphertext, Encrypt(key, plaintext));
   ASSERT_OK_AND_ASSIGN(auto sub_ciphertext,
-                       ciphertext.Substitute(galois_power, ntt_params_));
+                       ciphertext.Substitute(galois_power, ntt_params_.get()));
   ASSERT_OK_AND_ASSIGN(auto ciphertext_power_3,
                        galois_key.ApplyTo(sub_ciphertext));
   ASSERT_OK_AND_ASSIGN(
       auto sub_ciphertext_power_3,
-      ciphertext_power_3.Substitute(galois_power, ntt_params_));
+      ciphertext_power_3.Substitute(galois_power, ntt_params_.get()));
   ASSERT_OK_AND_ASSIGN(auto ciphertext_power_9,
                        galois_key.ApplyTo(sub_ciphertext_power_3));
 
@@ -266,18 +272,20 @@ TEST_F(GaloisKeyTest, LargeDecompositionModulus) {
   ASSERT_OK_AND_ASSIGN(auto mp1,
                        ConvertToMontgomery(plaintext, params59_.get()));
   Polynomial plaintext_ntt =
-      Polynomial::ConvertToNtt(mp1, ntt_params_, params59_.get());
-  ASSERT_OK_AND_ASSIGN(Polynomial expected_ntt,
-                       plaintext_ntt.Substitute(substitution_power, ntt_params_,
-                                                params59_.get()));
+      Polynomial::ConvertToNtt(mp1, ntt_params_.get(), params59_.get());
+  ASSERT_OK_AND_ASSIGN(
+      Polynomial expected_ntt,
+      plaintext_ntt.Substitute(substitution_power, ntt_params_.get(),
+                               params59_.get()));
   std::vector<uint_m::Int> expected = rlwe::RemoveError<uint_m>(
-      expected_ntt.InverseNtt(ntt_params_, params59_.get()), params59_->modulus,
-      kPlaintextModulus, params59_.get());
+      expected_ntt.InverseNtt(ntt_params_.get(), params59_.get()),
+      params59_->modulus, kPlaintextModulus, params59_.get());
 
   // Encrypt and substitute the ciphertext. Decrypt with a substituted key.
   ASSERT_OK_AND_ASSIGN(auto intermediate, Encrypt(key, plaintext));
-  ASSERT_OK_AND_ASSIGN(auto ciphertext, intermediate.Substitute(
-                                            substitution_power, ntt_params_));
+  ASSERT_OK_AND_ASSIGN(
+      auto ciphertext,
+      intermediate.Substitute(substitution_power, ntt_params_.get()));
   ASSERT_OK_AND_ASSIGN(auto transformed_ciphertext,
                        galois_key.ApplyTo(ciphertext));
   ASSERT_OK_AND_ASSIGN(std::vector<uint_m::Int> decrypted,
@@ -298,8 +306,9 @@ TEST_F(GaloisKeyTest, CiphertextWithTooManyComponents) {
   auto plaintext = SamplePlaintext(kPlaintextModulus);
 
   ASSERT_OK_AND_ASSIGN(auto intermediate, Encrypt(key, plaintext));
-  ASSERT_OK_AND_ASSIGN(auto ciphertext, intermediate.Substitute(
-                                            substitution_power, ntt_params_));
+  ASSERT_OK_AND_ASSIGN(
+      auto ciphertext,
+      intermediate.Substitute(substitution_power, ntt_params_.get()));
 
   ASSERT_OK_AND_ASSIGN(auto product, ciphertext* ciphertext);
   EXPECT_THAT(galois_key.ApplyTo(product),
@@ -322,24 +331,26 @@ TEST_F(GaloisKeyTest, DeserializedKeySwitches) {
   ASSERT_OK_AND_ASSIGN(auto serialized, galois_key.Serialize());
   ASSERT_OK_AND_ASSIGN(auto deserialized,
                        rlwe::GaloisKey<uint_m>::Deserialize(
-                           serialized, params59_.get(), &ntt_params_));
+                           serialized, params59_.get(), ntt_params_.get()));
 
   // Create the expected polynomial output by substituting the plaintext.
   ASSERT_OK_AND_ASSIGN(auto mp,
                        ConvertToMontgomery(plaintext, params59_.get()));
   Polynomial plaintext_ntt =
-      Polynomial::ConvertToNtt(mp, ntt_params_, params59_.get());
-  ASSERT_OK_AND_ASSIGN(Polynomial expected_ntt,
-                       plaintext_ntt.Substitute(substitution_power, ntt_params_,
-                                                params59_.get()));
+      Polynomial::ConvertToNtt(mp, ntt_params_.get(), params59_.get());
+  ASSERT_OK_AND_ASSIGN(
+      Polynomial expected_ntt,
+      plaintext_ntt.Substitute(substitution_power, ntt_params_.get(),
+                               params59_.get()));
   std::vector<uint_m::Int> expected = rlwe::RemoveError<uint_m>(
-      expected_ntt.InverseNtt(ntt_params_, params59_.get()), params59_->modulus,
-      kPlaintextModulus, params59_.get());
+      expected_ntt.InverseNtt(ntt_params_.get(), params59_.get()),
+      params59_->modulus, kPlaintextModulus, params59_.get());
 
   // Encrypt and substitute the ciphertext.
   ASSERT_OK_AND_ASSIGN(auto intermediate, Encrypt(key, plaintext));
-  ASSERT_OK_AND_ASSIGN(auto ciphertext, intermediate.Substitute(
-                                            substitution_power, ntt_params_));
+  ASSERT_OK_AND_ASSIGN(
+      auto ciphertext,
+      intermediate.Substitute(substitution_power, ntt_params_.get()));
 
   // Key-switch with the original galois key.
   ASSERT_OK_AND_ASSIGN(auto key_switched_ciphertext,
@@ -373,7 +384,7 @@ TEST_F(GaloisKeyTest, DeserializationFailsWithIncorrectModulus) {
   ASSERT_OK_AND_ASSIGN(auto serialized, galois_key.Serialize());
   EXPECT_THAT(
       rlwe::GaloisKey<uint_m>::Deserialize(serialized, params29.get(),
-                                           &ntt_params_),
+                                           ntt_params_.get()),
       StatusIs(::absl::StatusCode::kInvalidArgument,
                HasSubstr(absl::StrCat(
                    "Log decomposition modulus, ", kLargeLogDecompositionModulus,

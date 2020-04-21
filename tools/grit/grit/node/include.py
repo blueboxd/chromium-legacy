@@ -56,19 +56,20 @@ class IncludeNode(base.Node):
        skip_minify:           If true, skips minifying the node's contents.
        skip_in_resource_map:  If true, do not add to the resource map.
     """
-    return {'translateable' : 'true',
-            'generateid': 'true',
-            'filenameonly': 'false',
-            'mkoutput': 'false',
-            'preprocess': 'false',
-            'flattenhtml': 'false',
-            'compress': 'false',
-            'allowexternalscript': 'false',
-            'relativepath': 'false',
-            'use_base_dir': 'true',
-            'skip_minify': 'false',
-            'skip_in_resource_map': 'false',
-           }
+    return {
+        'translateable': 'true',
+        'generateid': 'true',
+        'filenameonly': 'false',
+        'mkoutput': 'false',
+        'preprocess': 'false',
+        'flattenhtml': 'false',
+        'compress': 'default',
+        'allowexternalscript': 'false',
+        'relativepath': 'false',
+        'use_base_dir': 'true',
+        'skip_minify': 'false',
+        'skip_in_resource_map': 'false',
+    }
 
   def GetInputPath(self):
     # Do not mess with absolute paths, that would make them invalid.

@@ -23,6 +23,7 @@
 #include "chromeos/services/assistant/service_context.h"
 #include "chromeos/services/assistant/test_support/fake_assistant_manager_service_delegate.h"
 #include "chromeos/services/assistant/test_support/fake_client.h"
+#include "chromeos/services/assistant/test_support/fake_service_context.h"
 #include "chromeos/services/assistant/test_support/fully_initialized_assistant_state.h"
 #include "chromeos/services/assistant/test_support/mock_assistant_interaction_subscriber.h"
 #include "chromeos/services/assistant/test_support/mock_media_manager.h"
@@ -46,7 +47,6 @@ using UserInfo = AssistantManagerService::UserInfo;
 
 namespace {
 
-const char* kGaiaId = "<fake-gaia-id>";
 const char* kNoValue = FakeAssistantManager::kNoValue;
 
 // Action CloneArg<k>(pointer) clones the k-th (0-based) argument of the mock
@@ -116,80 +116,6 @@ class FakeAssistantClient : public FakeClient {
   DISALLOW_COPY_AND_ASSIGN(FakeAssistantClient);
 };
 
-class FakeServiceContext : public ServiceContext {
- public:
-  FakeServiceContext(
-      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-      ash::AssistantState* assistant_state,
-      PowerManagerClient* power_manager_client)
-      : main_task_runner_(main_task_runner),
-        assistant_state_(assistant_state),
-        power_manager_client_(power_manager_client) {}
-  ~FakeServiceContext() override = default;
-
-  void set_assistant_alarm_timer_controller(
-      ash::mojom::AssistantAlarmTimerController*
-          assistant_alarm_timer_controller) {
-    assistant_alarm_timer_controller_ = assistant_alarm_timer_controller;
-  }
-
-  ash::mojom::AssistantAlarmTimerController* assistant_alarm_timer_controller()
-      override {
-    return assistant_alarm_timer_controller_;
-  }
-
-  mojom::AssistantController* assistant_controller() override {
-    NOTIMPLEMENTED();
-    return nullptr;
-  }
-
-  ash::mojom::AssistantNotificationController*
-  assistant_notification_controller() override {
-    NOTIMPLEMENTED();
-    return nullptr;
-  }
-
-  ash::mojom::AssistantScreenContextController*
-  assistant_screen_context_controller() override {
-    NOTIMPLEMENTED();
-    return nullptr;
-  }
-
-  ash::AssistantStateBase* assistant_state() override {
-    return assistant_state_;
-  }
-
-  CrasAudioHandler* cras_audio_handler() override {
-    NOTIMPLEMENTED();
-    return nullptr;
-  }
-
-  mojom::DeviceActions* device_actions() override {
-    NOTIMPLEMENTED();
-    return nullptr;
-  }
-
-  scoped_refptr<base::SequencedTaskRunner> main_task_runner() override {
-    return main_task_runner_;
-  }
-
-  PowerManagerClient* power_manager_client() override {
-    return power_manager_client_;
-  }
-
-  std::string primary_account_gaia_id() override { return gaia_id; }
-
- private:
-  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
-  ash::AssistantState* const assistant_state_;
-  PowerManagerClient* const power_manager_client_;
-  std::string gaia_id = kGaiaId;
-  ash::mojom::AssistantAlarmTimerController* assistant_alarm_timer_controller_ =
-      nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeServiceContext);
-};
-
 class AssistantAlarmTimerControllerMock
     : public ash::mojom::AssistantAlarmTimerController {
  public:
@@ -250,9 +176,11 @@ class AssistantManagerServiceImplTest : public testing::Test {
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &url_loader_factory_);
 
-    service_context_ = std::make_unique<FakeServiceContext>(
-        task_environment.GetMainThreadTaskRunner(), &assistant_state_,
-        PowerManagerClient::Get());
+    service_context_ = std::make_unique<FakeServiceContext>();
+    service_context_
+        ->set_main_task_runner(task_environment.GetMainThreadTaskRunner())
+        .set_power_manager_client(PowerManagerClient::Get())
+        .set_assistant_state(&assistant_state_);
 
     CreateAssistantManagerServiceImpl(/*libassistant_config=*/{});
   }

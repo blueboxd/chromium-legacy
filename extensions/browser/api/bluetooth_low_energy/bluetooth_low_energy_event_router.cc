@@ -285,7 +285,7 @@ bool BluetoothLowEnergyEventRouter::InitializeAdapterAndInvokeCallback(
     return true;
   }
 
-  BluetoothAdapterFactory::GetAdapter(
+  BluetoothAdapterFactory::Get()->GetAdapter(
       base::BindOnce(&BluetoothLowEnergyEventRouter::OnGetAdapter,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   return true;

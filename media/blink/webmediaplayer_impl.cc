@@ -276,7 +276,8 @@ void CreateAllocation(base::trace_event::ProcessMemoryDump* pmd,
 
   auto* std_allocator = base::trace_event::MemoryDumpManager::GetInstance()
                             ->system_allocator_pool_name();
-  pmd->AddSuballocation(dump->guid(), std_allocator);
+  if (std_allocator)
+    pmd->AddSuballocation(dump->guid(), std_allocator);
 }
 
 }  // namespace

@@ -9,6 +9,8 @@ import androidx.annotation.Nullable;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tasks.TasksSurface;
 import org.chromium.chrome.browser.tasks.TasksSurfaceProperties;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementDelegate.TabSwitcherType;
@@ -174,6 +176,12 @@ public class StartSurfaceCoordinator implements StartSurface {
         // places. Note that the cached flag may have been set before native initialization.
         if (!StartSurfaceConfiguration.isStartSurfaceEnabled()) {
             return SurfaceMode.NO_START_SURFACE;
+        }
+
+        // TODO(hanxi): Removes this check once other variations of start surface don't crash when
+        //  the feature flag {@link ChromeFeatureList.INSTANT_START} is true.
+        if (CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START)) {
+            return SurfaceMode.OMNIBOX_ONLY;
         }
 
         String feature = StartSurfaceConfiguration.START_SURFACE_VARIATION.getValue();

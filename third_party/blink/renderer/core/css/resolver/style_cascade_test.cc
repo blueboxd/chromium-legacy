@@ -97,6 +97,10 @@ class TestCascade {
     cascade_.Apply(filter);
   }
 
+  std::unique_ptr<CSSBitset> GetImportantSet() {
+    return cascade_.GetImportantSet();
+  }
+
   String ComputedValue(String name) const {
     CSSPropertyRef ref(name, GetDocument());
     DCHECK(ref.IsValid());
@@ -2311,86 +2315,6 @@ TEST_F(StyleCascadeTest, AnimatedVisitedHighPrio) {
             style->VisitedDependentColor(GetCSSPropertyColor()));
 }
 
-TEST_F(StyleCascadeTest, AnimatedImportantOverrideFlag) {
-  AppendSheet(R"HTML(
-     @keyframes test {
-        from { background-color: white; }
-        to { background-color: gray; }
-     }
-    )HTML");
-
-  TestCascade cascade(GetDocument());
-  cascade.Add("animation:test 10s -5s linear");
-  cascade.Add("background-color: green !important");
-  cascade.Apply();
-  EXPECT_FALSE(cascade.State().HasImportantOverrides());
-
-  cascade.CalculateAnimationUpdate();
-  cascade.Apply();
-  EXPECT_TRUE(cascade.State().HasImportantOverrides());
-}
-
-TEST_F(StyleCascadeTest, AnimatedImportantOverrideNoFlag) {
-  AppendSheet(R"HTML(
-     @keyframes test {
-        from { background-color: white; }
-        to { background-color: gray; }
-     }
-    )HTML");
-
-  TestCascade cascade(GetDocument());
-  cascade.Add("animation:test 10s -5s linear");
-  cascade.Add("color:green !important");
-  cascade.Apply();
-  EXPECT_FALSE(cascade.State().HasImportantOverrides());
-
-  cascade.CalculateAnimationUpdate();
-  cascade.Apply();
-  EXPECT_FALSE(cascade.State().HasImportantOverrides());
-}
-
-TEST_F(StyleCascadeTest, AnimatedImportantOverrideFlagHighPriority) {
-  AppendSheet(R"HTML(
-     @keyframes test {
-        from { color: white; }
-        to { color: gray; }
-     }
-    )HTML");
-
-  // 'color' is a high priority property, and therefore applied by lookup.
-  TestCascade cascade(GetDocument());
-  cascade.Add("animation:test 10s -5s linear");
-  cascade.Add("color:green !important");
-  cascade.Apply();
-  EXPECT_FALSE(cascade.State().HasImportantOverrides());
-
-  cascade.CalculateAnimationUpdate();
-  cascade.Apply();
-  EXPECT_TRUE(cascade.State().HasImportantOverrides());
-}
-
-TEST_F(StyleCascadeTest, AnimatedImportantOverrideFlagVisited) {
-  AppendSheet(R"HTML(
-     @keyframes test {
-        from { background-color: white; }
-        to { background-color: gray; }
-     }
-    )HTML");
-
-  TestCascade cascade(GetDocument());
-  cascade.State().Style()->SetInsideLink(EInsideLink::kInsideVisitedLink);
-
-  cascade.Add(ParseDeclarationBlock("background-color:red !important"),
-              CascadeOrigin::kAuthor, CSSSelector::kMatchVisited);
-  cascade.Add("animation:test 10s -5s linear");
-  cascade.Apply();
-  EXPECT_FALSE(cascade.State().HasImportantOverrides());
-
-  cascade.CalculateAnimationUpdate();
-  cascade.Apply();
-  EXPECT_TRUE(cascade.State().HasImportantOverrides());
-}
-
 TEST_F(StyleCascadeTest, AnimatePendingSubstitutionValue) {
   RegisterProperty(GetDocument(), "--x", "<length>", "0px", false);
 
@@ -2889,6 +2813,32 @@ TEST_F(StyleCascadeTest, Reset) {
 
   EXPECT_EQ(CascadePriority(), cascade.GetPriority("color"));
   EXPECT_EQ(CascadePriority(), cascade.GetPriority("--x"));
+}
+
+TEST_F(StyleCascadeTest, GetImportantSetEmpty) {
+  TestCascade cascade(GetDocument());
+  cascade.Add("color:red");
+  cascade.Add("width:1px");
+  cascade.Add("--x:green");
+  EXPECT_FALSE(cascade.GetImportantSet());
+}
+
+TEST_F(StyleCascadeTest, GetImportantSetSingle) {
+  TestCascade cascade(GetDocument());
+  cascade.Add("width:1px !important");
+  ASSERT_TRUE(cascade.GetImportantSet());
+  EXPECT_EQ(CSSBitset({CSSPropertyID::kWidth}), *cascade.GetImportantSet());
+}
+
+TEST_F(StyleCascadeTest, GetImportantSetMany) {
+  TestCascade cascade(GetDocument());
+  cascade.Add("width:1px !important");
+  cascade.Add("height:1px !important");
+  cascade.Add("top:1px !important");
+  ASSERT_TRUE(cascade.GetImportantSet());
+  EXPECT_EQ(CSSBitset({CSSPropertyID::kWidth, CSSPropertyID::kHeight,
+                       CSSPropertyID::kTop}),
+            *cascade.GetImportantSet());
 }
 
 }  // namespace blink

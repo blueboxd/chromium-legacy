@@ -146,10 +146,15 @@ class BluetoothGattBlueZTest : public testing::Test {
   }
 
   void GetAdapter() {
-    device::BluetoothAdapterFactory::GetAdapter(base::BindOnce(
-        &BluetoothGattBlueZTest::AdapterCallback, base::Unretained(this)));
-    base::RunLoop().Run();
-    ASSERT_TRUE(adapter_.get() != NULL);
+    base::RunLoop run_loop;
+    device::BluetoothAdapterFactory::Get()->GetAdapter(
+        base::BindLambdaForTesting(
+            [&](scoped_refptr<BluetoothAdapter> adapter) {
+              adapter_ = std::move(adapter);
+              run_loop.Quit();
+            }));
+    run_loop.Run();
+    ASSERT_TRUE(adapter_);
     ASSERT_TRUE(adapter_->IsInitialized());
     ASSERT_TRUE(adapter_->IsPresent());
   }
@@ -245,12 +250,6 @@ class BluetoothGattBlueZTest : public testing::Test {
     EXPECT_EQ(
         BluetoothRemoteGattDescriptor::ClientCharacteristicConfigurationUuid(),
         descriptor->GetUUID());
-  }
-
-  void AdapterCallback(scoped_refptr<BluetoothAdapter> adapter) {
-    adapter_ = adapter;
-    if (base::RunLoop::IsRunningOnCurrentThread())
-      base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
   void SuccessCallback() { ++success_callback_count_; }

@@ -64,8 +64,12 @@ void BoundsAnimator::AnimateViewTo(
     // Calculate the target transform. Note that we don't reset the transform if
     // there already was one, otherwise users will end up with visual bounds
     // different than what they set.
+    // Note that View::SetTransform() does not handle RTL, which is different
+    // from View::SetBounds(). So mirror the start bounds and target bounds
+    // manually if necessary.
     const gfx::Transform target_transform = gfx::TransformBetweenRects(
-        gfx::RectF(data.start_bounds), gfx::RectF(data.target_bounds));
+        gfx::RectF(parent_->GetMirroredRect(data.start_bounds)),
+        gfx::RectF(parent_->GetMirroredRect(data.target_bounds)));
     data.target_transform = target_transform;
   }
 

@@ -228,8 +228,6 @@ class MODULES_EXPORT RTCPeerConnection final
   String connectionState() const;
 
   base::Optional<bool> canTrickleIceCandidates() const;
-  // TODO(crbug.com/1060971): Remove |is_null| version.
-  bool canTrickleIceCandidates(bool&) const;  // DEPRECATED
 
   void restartIce();
 

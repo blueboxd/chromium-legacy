@@ -20,22 +20,25 @@ PhoneticData.init = function() {
 };
 
 /**
- * Returns the phonetic disambiguation for |character| in |locale|.
+ * Returns the phonetic disambiguation for |char| in |locale|.
  * Returns empty string if disambiguation can't be found.
+ * @param {string} char
  * @param {string} locale
- * @param {string} character
  * @return {string}
  */
-PhoneticData.getPhoneticDisambiguation = function(locale, character) {
+PhoneticData.forCharacter = function(char, locale) {
   const phoneticDictionaries =
       chrome.extension.getBackgroundPage().PhoneticDictionaries;
-  if (!locale || !character || !phoneticDictionaries ||
-      !phoneticDictionaries.phoneticMap_) {
-    return '';
+  if (!phoneticDictionaries || !phoneticDictionaries.phoneticMap_) {
+    throw Error('PhoneticDictionaries map must be defined.');
   }
 
+  if (!char || !locale) {
+    throw Error('PhoneticData api requires non-empty arguments.');
+  }
+
+  char = char.toLowerCase();
   locale = locale.toLowerCase();
-  character = character.toLowerCase();
   let map = null;
   if (locale === 'ja') {
     map = JaPhoneticData.phoneticMap_;
@@ -50,5 +53,5 @@ PhoneticData.getPhoneticDisambiguation = function(locale, character) {
     return '';
   }
 
-  return map[character] || '';
+  return map[char] || '';
 };

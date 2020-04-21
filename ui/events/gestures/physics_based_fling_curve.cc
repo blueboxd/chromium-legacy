@@ -54,7 +54,7 @@ gfx::Vector2dF GetDuration(const gfx::Vector2dF& velocity,
 // generate fling animation curve.
 gfx::Vector2dF CalculateEndPoint(const gfx::Vector2dF& pixels_per_inch,
                                  const gfx::Vector2dF& velocity_pixels_per_ms,
-                                 const gfx::Size& viewport) {
+                                 const gfx::Size& bounding_size) {
   // deceleration is in pixels/ ms^2.
   gfx::Vector2dF deceleration = GetDecelerationInPixelsPerMs2(pixels_per_inch);
 
@@ -66,18 +66,14 @@ gfx::Vector2dF CalculateEndPoint(const gfx::Vector2dF& pixels_per_inch,
       GetOffset(velocity_pixels_per_ms.x(), deceleration.x(), duration.x()),
       GetOffset(velocity_pixels_per_ms.y(), deceleration.y(), duration.y()));
 
-  // Upper bound for the scroll distance for a fling
-  gfx::Vector2dF max_end_point =
-      gfx::Vector2dF(3 * viewport.width(), 3 * viewport.height());
-
-  if (std::abs(offset_in_screen_coord_space.x()) > max_end_point.x()) {
+  if (std::abs(offset_in_screen_coord_space.x()) > bounding_size.width()) {
     float sign = offset_in_screen_coord_space.x() > 0 ? 1 : -1;
-    offset_in_screen_coord_space.set_x(max_end_point.x() * sign);
+    offset_in_screen_coord_space.set_x(bounding_size.width() * sign);
   }
 
-  if (std::abs(offset_in_screen_coord_space.y()) > max_end_point.y()) {
+  if (std::abs(offset_in_screen_coord_space.y()) > bounding_size.height()) {
     float sign = offset_in_screen_coord_space.y() > 0 ? 1 : -1;
-    offset_in_screen_coord_space.set_y(max_end_point.y() * sign);
+    offset_in_screen_coord_space.set_y(bounding_size.height() * sign);
   }
 
   return offset_in_screen_coord_space;
@@ -91,13 +87,16 @@ PhysicsBasedFlingCurve::PhysicsBasedFlingCurve(
     const gfx::Vector2dF& velocity,
     base::TimeTicks start_timestamp,
     const gfx::Vector2dF& pixels_per_inch,
-    const gfx::Size& viewport)
+    const float boost_multiplier,
+    const gfx::Size& bounding_size)
     : start_timestamp_(start_timestamp),
       p1_(gfx::PointF(kDefaultP1X, kDefaultP1Y)),
       p2_(gfx::PointF(kDefaultP2X, kDefaultP2Y)),
-      distance_(CalculateEndPoint(pixels_per_inch,
-                                  gfx::ScaleVector2d(velocity, 1 / 1000.0f),
-                                  viewport)),
+      distance_(CalculateEndPoint(
+          pixels_per_inch,
+          gfx::ScaleVector2d(velocity, 1 / 1000.0f),
+          ScaleToFlooredSize(bounding_size,
+                             boost_multiplier * kDefaultBoundsMultiplier))),
       curve_duration_(CalculateDurationAndConfigureControlPoints(velocity)),
       bezier_(p1_.x(), p1_.y(), p2_.x(), p2_.y()),
       previous_time_delta_(base::TimeDelta()) {

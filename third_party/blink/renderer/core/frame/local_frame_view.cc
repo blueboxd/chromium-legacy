@@ -2179,22 +2179,21 @@ bool LocalFrameView::NotifyResizeObservers(
     return false;
 
   // Controller exists only if ResizeObserver was created.
-  if (!GetFrame().GetDocument()->GetResizeObserverController())
+  ResizeObserverController* resize_controller =
+      ResizeObserverController::FromIfExists(*GetFrame().DomWindow());
+  if (!resize_controller)
     return false;
-
-  ResizeObserverController& resize_controller =
-      frame_->GetDocument()->EnsureResizeObserverController();
 
   DCHECK(Lifecycle().GetState() >= DocumentLifecycle::kPrePaintClean);
 
-  size_t min_depth = resize_controller.GatherObservations();
+  size_t min_depth = resize_controller->GatherObservations();
 
   if (min_depth != ResizeObserverController::kDepthBottom) {
-    resize_controller.DeliverObservations();
+    resize_controller->DeliverObservations();
   } else {
     // Observation depth limit reached
-    if (resize_controller.SkippedObservations()) {
-      resize_controller.ClearObservations();
+    if (resize_controller->SkippedObservations()) {
+      resize_controller->ClearObservations();
       ErrorEvent* error = ErrorEvent::Create(
           "ResizeObserver loop limit exceeded",
           SourceLocation::Capture(frame_->DomWindow()), nullptr);
@@ -2420,9 +2419,9 @@ bool LocalFrameView::RunResizeObserverSteps(
   }
   if (!re_run_lifecycles) {
     ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
-      ResizeObserverController& resize_controller =
-          frame_view.frame_->GetDocument()->EnsureResizeObserverController();
-      resize_controller.ClearMinDepth();
+      ResizeObserverController* resize_controller =
+          ResizeObserverController::From(*frame_view.frame_->DomWindow());
+      resize_controller->ClearMinDepth();
     });
   }
   return re_run_lifecycles;

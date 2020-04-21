@@ -134,12 +134,6 @@ PaymentRequestEvent::shippingOptions() const {
   return shipping_options_;
 }
 
-const HeapVector<Member<PaymentShippingOption>>&
-PaymentRequestEvent::shippingOptions(bool& is_null) const {
-  is_null = shipping_options_.IsEmpty();
-  return shipping_options_;
-}
-
 ScriptPromise PaymentRequestEvent::openWindow(ScriptState* script_state,
                                               const String& url) {
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);

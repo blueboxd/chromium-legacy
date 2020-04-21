@@ -24,6 +24,13 @@ class EmbeddedTestServerConnectionListener {
   // Notified when a socket was read from by the EmbeddedTestServer.
   virtual void ReadFromSocket(const StreamSocket& socket, int rv) = 0;
 
+  // Notified when the EmbeddedTestServer has completed a request and response
+  // successfully on |socket|. The listener can take |socket| to manually handle
+  // further traffic on it (for example, if doing a proxy tunnel), otherwise
+  // |socket| is destroyed.
+  virtual void OnResponseCompletedSuccessfully(
+      std::unique_ptr<StreamSocket> socket) {}
+
  protected:
   EmbeddedTestServerConnectionListener() {}
 

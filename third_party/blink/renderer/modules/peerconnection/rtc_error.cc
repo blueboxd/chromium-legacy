@@ -44,29 +44,4 @@ const String& RTCError::errorDetail() const {
   return error_detail_;
 }
 
-int32_t RTCError::sdpLineNumber(bool& is_null) const {
-  is_null = !sdp_line_number_;
-  return sdp_line_number_ ? *sdp_line_number_ : 0;
-}
-
-int32_t RTCError::httpRequestStatusCode(bool& is_null) const {
-  is_null = !http_request_status_code_;
-  return http_request_status_code_ ? *http_request_status_code_ : 0;
-}
-
-int32_t RTCError::sctpCauseCode(bool& is_null) const {
-  is_null = !sctp_cause_code_;
-  return sctp_cause_code_ ? *sctp_cause_code_ : 0;
-}
-
-uint32_t RTCError::receivedAlert(bool& is_null) const {
-  is_null = !received_alert_;
-  return received_alert_ ? *received_alert_ : 0u;
-}
-
-uint32_t RTCError::sentAlert(bool& is_null) const {
-  is_null = !sent_alert_;
-  return sent_alert_ ? *sent_alert_ : 0u;
-}
-
 }  // namespace blink

@@ -79,8 +79,8 @@ void SocketDataPump::ReceiveMore() {
   // Use WeakPtr here because |this| doesn't outlive |socket_|.
   int read_result = socket_->ReadIfReady(
       buf.get(), base::saturated_cast<int>(num_bytes),
-      base::BindRepeating(&SocketDataPump::OnNetworkReadIfReadyCompleted,
-                          weak_factory_.GetWeakPtr()));
+      base::BindOnce(&SocketDataPump::OnNetworkReadIfReadyCompleted,
+                     weak_factory_.GetWeakPtr()));
   DCHECK_NE(net::ERR_READ_IF_READY_NOT_IMPLEMENTED, read_result);
   receive_stream_ =
       pending_receive_buffer->Complete(read_result >= 0 ? read_result : 0);
@@ -172,11 +172,11 @@ void SocketDataPump::SendMore() {
   scoped_refptr<net::IOBuffer> buf = base::MakeRefCounted<net::WrappedIOBuffer>(
       pending_send_buffer_->buffer());
   // Use WeakPtr here because |this| doesn't outlive |socket_|.
-  int write_result = socket_->Write(
-      buf.get(), static_cast<int>(num_bytes),
-      base::BindRepeating(&SocketDataPump::OnNetworkWriteCompleted,
-                          weak_factory_.GetWeakPtr()),
-      traffic_annotation_);
+  int write_result =
+      socket_->Write(buf.get(), static_cast<int>(num_bytes),
+                     base::BindOnce(&SocketDataPump::OnNetworkWriteCompleted,
+                                    weak_factory_.GetWeakPtr()),
+                     traffic_annotation_);
   if (write_result == net::ERR_IO_PENDING)
     return;
   OnNetworkWriteCompleted(write_result);

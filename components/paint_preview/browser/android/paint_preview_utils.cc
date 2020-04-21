@@ -149,6 +149,7 @@ void InitiateCapture(scoped_refptr<FileManager> manager,
   params.document_guid = base::UnguessableToken::Create();
   params.is_main_frame = true;
   params.root_dir = url_path.value();
+  params.max_per_capture_size = 0;  // Unlimited size.
 
   ukm::SourceId source_id = ukm::GetSourceIdForWebContentsDocument(contents);
   auto start_time = base::TimeTicks::Now();

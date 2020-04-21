@@ -127,6 +127,7 @@ void CascadeMap::Add(const CSSPropertyName& name, CascadePriority priority) {
                 "CascadeMap supports at most 63 high-priority properties");
   if (HighPriority::PropertyHasPriority(id))
     high_priority_ |= (1ull << index);
+  has_important_ |= priority.IsImportant();
 
   if (origin <= CascadeOrigin::kUserAgent)
     AddNative(id, priority, native_ua_properties_);
@@ -137,6 +138,7 @@ void CascadeMap::Add(const CSSPropertyName& name, CascadePriority priority) {
 
 void CascadeMap::Reset() {
   high_priority_ = 0;
+  has_important_ = false;
   native_properties_.Bits().Reset();
   native_ua_properties_.Bits().Reset();
   native_user_properties_.Bits().Reset();

@@ -45,7 +45,8 @@ static constexpr char kPrimaryFont[] = "Roboto";
 static constexpr char kSecondaryFont[] = "Arial";
 static constexpr char kTertiaryFont[] = "sans-serif";
 static constexpr int kFontSizePx = 16;
-static constexpr double kDefaultRatioInParent = 0.5;
+static constexpr double kDefaultRatioInParentX = 0.5;
+static constexpr double kDefaultRatioInParentY = 1;
 static constexpr int kErrorImageSizeDip = 20;
 
 // CaptionBubble implementation of BubbleFrameView.
@@ -83,8 +84,8 @@ CaptionBubble::CaptionBubble(views::View* anchor,
                                views::BubbleBorder::FLOAT,
                                views::BubbleBorder::Shadow::NO_SHADOW),
       destroyed_callback_(std::move(destroyed_callback)),
-      ratio_in_parent_x_(kDefaultRatioInParent),
-      ratio_in_parent_y_(kDefaultRatioInParent) {
+      ratio_in_parent_x_(kDefaultRatioInParentX),
+      ratio_in_parent_y_(kDefaultRatioInParentY) {
   DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
   DialogDelegate::set_draggable(true);
 }
@@ -143,6 +144,13 @@ void CaptionBubble::OnWidgetBoundsChanged(views::Widget* widget,
     SizeToContents();
     return;
   }
+  // Check the widget which changed size is our widget. It's possible for
+  // this to be called when another widget resizes.
+  // Also check that our widget is visible. If it is not visible then
+  // the user has not explicitly moved it (because the user can't see it),
+  // so we should take no action.
+  if (widget != GetWidget() || !GetWidget()->IsVisible())
+    return;
 
   // The widget has moved within the window. Recalculate the desired ratio
   // within the parent.

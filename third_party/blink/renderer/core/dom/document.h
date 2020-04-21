@@ -180,7 +180,6 @@ class ProcessingInstruction;
 class PropertyRegistry;
 class QualifiedName;
 class Range;
-class ResizeObserverController;
 class ResourceFetcher;
 class RootScrollerController;
 class ScriptValue;
@@ -1084,11 +1083,6 @@ class CORE_EXPORT Document : public ContainerNode,
   DocumentExplicitRootIntersectionObserverData() const;
   ElementIntersectionObserverData&
   EnsureDocumentExplicitRootIntersectionObserverData();
-
-  ResizeObserverController* GetResizeObserverController() const {
-    return resize_observer_controller_;
-  }
-  ResizeObserverController& EnsureResizeObserverController();
 
   // Returns the owning element in the parent document. Returns nullptr if
   // this is the top level document or the owner is remote.
@@ -2177,7 +2171,6 @@ class CORE_EXPORT Document : public ContainerNode,
   Member<CanvasFontCache> canvas_font_cache_;
 
   Member<IntersectionObserverController> intersection_observer_controller_;
-  Member<ResizeObserverController> resize_observer_controller_;
 
   int node_count_;
 

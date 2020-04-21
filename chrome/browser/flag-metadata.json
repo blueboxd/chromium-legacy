@@ -992,6 +992,11 @@
     "expiry_milestone": 77
   },
   {
+    "name": "enable-accessibility-live-captions",
+    "owners": [ "//ui/accessibility/OWNERS" ],
+    "expiry_milestone": 86
+  },
+  {
     "name": "enable-accessibility-object-model",
     "owners": [ "//ui/accessibility/OWNERS" ],
     "expiry_milestone": 79
@@ -2213,7 +2218,7 @@
   {
     "name": "enable-webassembly-baseline",
     "owners": [ "clemensb", "wasm-team@google.com" ],
-    "expiry_milestone": 83
+    "expiry_milestone": 92
   },
   {
     "name": "enable-webassembly-code-cache",
@@ -2223,22 +2228,22 @@
   {
     "name": "enable-webassembly-lazy-compilation",
     "owners": [ "clemensb", "wasm-team@google.com" ],
-    "expiry_milestone": 86
+    "expiry_milestone": 92
   },
   {
     "name": "enable-webassembly-simd",
     "owners": [ "gdeepti", "wasm-team@google.com" ],
-    "expiry_milestone": 83
+    "expiry_milestone": 92
   },
   {
     "name": "enable-webassembly-threads",
     "owners": [ "binji", "hablich", "wasm-team@google.com" ],
-    "expiry_milestone": 83
+    "expiry_milestone": 92
   },
   {
     "name": "enable-webassembly-tiering",
     "owners": [ "clemensb", "wasm-team@google.com" ],
-    "expiry_milestone": 86
+    "expiry_milestone": 92
   },
   {
     "name": "enable-webgl-draft-extensions",
@@ -3182,7 +3187,7 @@
   {
     "name": "omnibox-search-engine-logo",
     "owners": [ "wylieb", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 90
   },
   {
     "name": "omnibox-short-bookmark-suggestions",

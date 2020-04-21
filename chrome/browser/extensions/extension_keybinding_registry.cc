@@ -14,7 +14,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/media_keys_listener_manager.h"
 #include "extensions/browser/event_router.h"
-#include "extensions/browser/notification_types.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_constants.h"
 
@@ -39,14 +38,7 @@ ExtensionKeybindingRegistry::ExtensionKeybindingRegistry(
       delegate_(delegate),
       shortcut_handling_suspended_(false) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
-
-  Profile* profile = Profile::FromBrowserContext(browser_context_);
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSION_COMMAND_ADDED,
-                 content::Source<Profile>(profile->GetOriginalProfile()));
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSION_COMMAND_REMOVED,
-                 content::Source<Profile>(profile->GetOriginalProfile()));
+  command_service_observer_.Add(CommandService::Get(browser_context_));
   media_keys_listener_ = ui::MediaKeysListener::Create(
       this, ui::MediaKeysListener::Scope::kFocused);
 }
@@ -241,43 +233,44 @@ void ExtensionKeybindingRegistry::OnExtensionUnloaded(
     RemoveExtensionKeybinding(extension, std::string());
 }
 
-void ExtensionKeybindingRegistry::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  switch (type) {
-    case extensions::NOTIFICATION_EXTENSION_COMMAND_ADDED:
-    case extensions::NOTIFICATION_EXTENSION_COMMAND_REMOVED: {
-      ExtensionCommandRemovedDetails* payload =
-          content::Details<ExtensionCommandRemovedDetails>(details).ptr();
+void ExtensionKeybindingRegistry::OnExtensionCommandAdded(
+    const std::string& extension_id,
+    const Command& command) {
+  const Extension* extension = ExtensionRegistry::Get(browser_context_)
+                                   ->enabled_extensions()
+                                   .GetByID(extension_id);
+  // During install and uninstall the extension won't be found. We'll catch
+  // those events above, with the OnExtension[Unloaded|Loaded], so we ignore
+  // this event.
+  if (!extension || !ExtensionMatchesFilter(extension))
+    return;
 
-      const Extension* extension = ExtensionRegistry::Get(browser_context_)
-                                       ->enabled_extensions()
-                                       .GetByID(payload->extension_id);
-      // During install and uninstall the extension won't be found. We'll catch
-      // those events above, with the LOADED/UNLOADED, so we ignore this event.
-      if (!extension)
-        return;
+  // Component extensions trigger OnExtensionLoaded() for extension
+  // installs as well as loads. This can cause adding of multiple key
+  // targets.
+  if (extension->location() == Manifest::COMPONENT)
+    return;
 
-      if (ExtensionMatchesFilter(extension)) {
-        if (type == extensions::NOTIFICATION_EXTENSION_COMMAND_ADDED) {
-          // Component extensions triggers OnExtensionLoaded for extension
-          // installs as well as loads. This can cause adding of multiple key
-          // targets.
-          if (extension->location() == Manifest::COMPONENT)
-            return;
+  AddExtensionKeybindings(extension, command.command_name());
+}
 
-          AddExtensionKeybindings(extension, payload->command_name);
-        } else {
-          RemoveExtensionKeybinding(extension, payload->command_name);
-        }
-      }
-      break;
-    }
-    default:
-      NOTREACHED();
-      break;
-  }
+void ExtensionKeybindingRegistry::OnExtensionCommandRemoved(
+    const std::string& extension_id,
+    const Command& command) {
+  const Extension* extension = ExtensionRegistry::Get(browser_context_)
+                                   ->enabled_extensions()
+                                   .GetByID(extension_id);
+  // During install and uninstall the extension won't be found. We'll catch
+  // those events above, with the OnExtension[Unloaded|Loaded], so we ignore
+  // this event.
+  if (!extension || !ExtensionMatchesFilter(extension))
+    return;
+
+  RemoveExtensionKeybinding(extension, command.command_name());
+}
+
+void ExtensionKeybindingRegistry::OnCommandServiceDestroying() {
+  command_service_observer_.RemoveAll();
 }
 
 void ExtensionKeybindingRegistry::OnMediaKeysAccelerator(

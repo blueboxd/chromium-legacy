@@ -228,6 +228,7 @@ class FrameImpl : public fuchsia::web::Frame,
                      const GURL& validated_url) override;
   void RenderViewCreated(content::RenderViewHost* render_view_host) override;
   void RenderViewReady() override;
+  void DidFirstVisuallyNonEmptyPaint() override;
 
   const std::unique_ptr<content::WebContents> web_contents_;
   ContextImpl* const context_;

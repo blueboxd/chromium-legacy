@@ -218,13 +218,6 @@ bool WebAXObject::CanPress() const {
          private_->IsMenuRelated();
 }
 
-bool WebAXObject::CanSetFocusAttribute() const {
-  if (IsDetached())
-    return false;
-
-  return private_->CanSetFocusAttribute();
-}
-
 bool WebAXObject::CanSetValueAttribute() const {
   if (IsDetached())
     return false;
@@ -265,18 +258,18 @@ void WebAXObject::GetSparseAXAttributes(
   private_->GetSparseAXAttributes(adapter);
 }
 
+void WebAXObject::Serialize(ui::AXNodeData* node_data) const {
+  if (IsDetached())
+    return;
+
+  private_->Serialize(node_data);
+}
+
 bool WebAXObject::IsAnchor() const {
   if (IsDetached())
     return false;
 
   return private_->IsAnchor();
-}
-
-bool WebAXObject::IsAutofillAvailable() const {
-  if (IsDetached())
-    return false;
-
-  return private_->IsAutofillAvailable();
 }
 
 WebString WebAXObject::AutoComplete() const {
@@ -314,13 +307,6 @@ bool WebAXObject::IsControl() const {
   return private_->IsControl();
 }
 
-bool WebAXObject::IsDefault() const {
-  if (IsDetached())
-    return false;
-
-  return private_->IsDefault();
-}
-
 WebAXRestriction WebAXObject::Restriction() const {
   if (IsDetached())
     return kWebAXRestrictionNone;
@@ -328,32 +314,11 @@ WebAXRestriction WebAXObject::Restriction() const {
   return static_cast<WebAXRestriction>(private_->Restriction());
 }
 
-WebAXExpanded WebAXObject::IsExpanded() const {
-  if (IsDetached())
-    return kWebAXExpandedUndefined;
-
-  return static_cast<WebAXExpanded>(private_->IsExpanded());
-}
-
 bool WebAXObject::IsFocused() const {
   if (IsDetached())
     return false;
 
   return private_->IsFocused();
-}
-
-WebAXGrabbedState WebAXObject::IsGrabbed() const {
-  if (IsDetached())
-    return kWebAXGrabbedStateUndefined;
-
-  return static_cast<WebAXGrabbedState>(private_->IsGrabbed());
-}
-
-bool WebAXObject::IsHovered() const {
-  if (IsDetached())
-    return false;
-
-  return private_->IsHovered();
 }
 
 bool WebAXObject::IsLineBreakingObject() const {
@@ -377,13 +342,6 @@ bool WebAXObject::IsModal() const {
   return private_->IsModal();
 }
 
-bool WebAXObject::IsMultiSelectable() const {
-  if (IsDetached())
-    return false;
-
-  return private_->IsMultiSelectable();
-}
-
 bool WebAXObject::IsOffScreen() const {
   if (IsDetached())
     return false;
@@ -391,39 +349,11 @@ bool WebAXObject::IsOffScreen() const {
   return private_->IsOffScreen();
 }
 
-bool WebAXObject::IsPasswordField() const {
-  if (IsDetached())
-    return false;
-
-  return private_->IsPasswordField();
-}
-
-bool WebAXObject::IsRequired() const {
-  if (IsDetached())
-    return false;
-
-  return private_->IsRequired();
-}
-
-WebAXSelectedState WebAXObject::IsSelected() const {
-  if (IsDetached())
-    return kWebAXSelectedStateUndefined;
-
-  return static_cast<WebAXSelectedState>(private_->IsSelected());
-}
-
 bool WebAXObject::IsSelectedOptionActive() const {
   if (IsDetached())
     return false;
 
   return private_->IsSelectedOptionActive();
-}
-
-bool WebAXObject::IsVisible() const {
-  if (IsDetached())
-    return false;
-
-  return private_->IsVisible();
 }
 
 bool WebAXObject::IsVisited() const {
@@ -496,20 +426,6 @@ WebAXObject WebAXObject::ErrorMessage() const {
   return WebAXObject(private_->ErrorMessage());
 }
 
-ax::mojom::HasPopup WebAXObject::HasPopup() const {
-  if (IsDetached())
-    return ax::mojom::HasPopup::kFalse;
-
-  return private_->HasPopup();
-}
-
-bool WebAXObject::IsEditableRoot() const {
-  if (IsDetached())
-    return false;
-
-  return private_->IsEditableRoot();
-}
-
 bool WebAXObject::IsEditable() const {
   if (IsDetached())
     return false;
@@ -517,18 +433,11 @@ bool WebAXObject::IsEditable() const {
   return private_->IsEditable();
 }
 
-bool WebAXObject::IsMultiline() const {
+bool WebAXObject::IsEditableRoot() const {
   if (IsDetached())
     return false;
 
-  return private_->IsMultiline();
-}
-
-bool WebAXObject::IsRichlyEditable() const {
-  if (IsDetached())
-    return false;
-
-  return private_->IsRichlyEditable();
+  return private_->IsEditableRoot();
 }
 
 int WebAXObject::PosInSet() const {
@@ -796,13 +705,6 @@ WebAXObject WebAXObject::InPageLinkTarget() const {
   if (!target)
     return WebAXObject();
   return WebAXObject(target);
-}
-
-WebAXOrientation WebAXObject::Orientation() const {
-  if (IsDetached())
-    return kWebAXOrientationUndefined;
-
-  return static_cast<WebAXOrientation>(private_->Orientation());
 }
 
 WebVector<WebAXObject> WebAXObject::RadioButtonsInGroup() const {

@@ -27,6 +27,23 @@ from grit.node import structure
 from grit.format import rc
 
 
+def checkIsGzipped(filename, compress_attr):
+  test_data_root = util.PathFromRoot('grit/testdata')
+  root = util.ParseGrdForUnittest(
+      '''
+      <structures>
+        <structure name="TEST_TXT" file="%s" %s type="chrome_html"/>
+      </structures>''' % (filename, compress_attr),
+      base_dir=test_data_root)
+  node, = root.GetChildrenOfType(structure.StructureNode)
+  node.RunPreSubstitutionGatherer()
+  compressed = node.GetDataPackValue(lang='en', encoding=util.BINARY)
+
+  decompressed_data = zlib.decompress(compressed, 16 + zlib.MAX_WBITS)
+  expected = util.ReadFile(os.path.join(test_data_root, filename), util.BINARY)
+  return expected == decompressed_data
+
+
 class StructureUnittest(unittest.TestCase):
   def testSkeleton(self):
     grd = util.ParseGrdForUnittest('''
@@ -100,20 +117,18 @@ class StructureUnittest(unittest.TestCase):
                          base_dir, r'structure_variables.html')))
 
   def testCompressGzip(self):
-    test_data_root = util.PathFromRoot('grit/testdata')
-    root = util.ParseGrdForUnittest('''
-        <structures>
-          <structure name="TEST_TXT" file="test_text.txt"
-                   compress="gzip" type="chrome_html" />
-        </structures>''', base_dir=test_data_root)
-    node, = root.GetChildrenOfType(structure.StructureNode)
-    node.RunPreSubstitutionGatherer()
-    compressed = node.GetDataPackValue(lang='en', encoding=util.BINARY)
+    self.assertTrue(checkIsGzipped('test_text.txt', 'compress="gzip"'))
 
-    decompressed_data = zlib.decompress(compressed, 16 + zlib.MAX_WBITS)
-    self.assertEqual(util.ReadFile(
-        os.path.join(test_data_root, 'test_text.txt'), util.BINARY),
-                     decompressed_data)
+  def testCompressGzipByDefault(self):
+    self.assertTrue(checkIsGzipped('test_html.html', ''))
+    self.assertTrue(checkIsGzipped('test_js.js', ''))
+    self.assertTrue(checkIsGzipped('test_css.css', ''))
+    self.assertTrue(checkIsGzipped('test_svg.svg', ''))
+
+    self.assertTrue(checkIsGzipped('test_html.html', 'compress="default"'))
+    self.assertTrue(checkIsGzipped('test_js.js', 'compress="default"'))
+    self.assertTrue(checkIsGzipped('test_css.css', 'compress="default"'))
+    self.assertTrue(checkIsGzipped('test_svg.svg', 'compress="default"'))
 
   def testCompressBrotli(self):
     test_data_root = util.PathFromRoot('grit/testdata')

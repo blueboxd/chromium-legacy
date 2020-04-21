@@ -4,6 +4,7 @@
 
 #include "mojo/public/cpp/system/platform_handle.h"
 
+#include "base/logging.h"
 #include "base/memory/platform_shared_memory_region.h"
 #include "base/numerics/safe_conversions.h"
 #include "build/build_config.h"

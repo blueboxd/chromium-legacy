@@ -13,6 +13,7 @@
 #include "base/fuchsia/default_context.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/json/json_writer.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -1064,4 +1065,8 @@ void FrameImpl::RenderViewReady() {
   // request a redraw if there is a view connected to this Frame.
   if (window_tree_host_)
     window_tree_host_->compositor()->ScheduleDraw();
+}
+
+void FrameImpl::DidFirstVisuallyNonEmptyPaint() {
+  base::RecordComputedAction("AppFirstPaint");
 }

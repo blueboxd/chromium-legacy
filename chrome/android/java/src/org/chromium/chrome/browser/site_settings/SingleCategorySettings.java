@@ -409,12 +409,12 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.menu_id_targeted_help) {
-            int helpContextResId = R.string.help_context_settings;
             if (mCategory.showSites(SiteSettingsCategory.Type.PROTECTED_MEDIA)) {
-                helpContextResId = R.string.help_context_protected_content;
+                getSiteSettingsClient().launchProtectedContentHelpAndFeedbackActivity(
+                        getActivity());
+            } else {
+                getSiteSettingsClient().launchSettingsHelpAndFeedbackActivity(getActivity());
             }
-            getSiteSettingsClient().launchHelpAndFeedbackActivity(
-                    getActivity(), getString(helpContextResId));
             return true;
         }
         if (handleSearchNavigation(item, mSearchItem, mSearch, getActivity())) {

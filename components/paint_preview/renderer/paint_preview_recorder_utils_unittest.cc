@@ -93,8 +93,9 @@ TEST(PaintPreviewRecorderUtilsTest, TestSerializeAsSkPicture) {
       file_path, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
 
   auto record = recorder.finishRecordingAsPicture();
+  size_t out_size = 0;
   EXPECT_TRUE(SerializeAsSkPicture(record, &tracker, dimensions,
-                                   std::move(write_file), 0));
+                                   std::move(write_file), 0, &out_size));
   base::File read_file(file_path, base::File::FLAG_OPEN |
                                       base::File::FLAG_READ |
                                       base::File::FLAG_EXCLUSIVE_READ);
@@ -134,8 +135,10 @@ TEST(PaintPreviewRecorderUtilsTest, TestSerializeAsSkPictureFail) {
       file_path, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
 
   auto record = recorder.finishRecordingAsPicture();
+  size_t out_size = 2;
   EXPECT_FALSE(SerializeAsSkPicture(record, &tracker, dimensions,
-                                    std::move(write_file), 1));
+                                    std::move(write_file), 1, &out_size));
+  EXPECT_LE(out_size, 1U);
 }
 
 TEST(PaintPreviewRecorderUtilsTest, TestBuildResponse) {

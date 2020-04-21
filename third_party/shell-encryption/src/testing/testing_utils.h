@@ -1,3 +1,19 @@
+/*
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 // This file contains constants and utilities for testing RLWE operations.
 
 #ifndef RLWE_TESTING_TESTING_UTILS_H_
@@ -26,7 +42,7 @@ const Uint32 kModulus = kModulus25;
 
 // Construct montgomery int parameters used for testing rlwe encryption and
 // decryption functionality.
-inline rlwe::StatusOr<std::unique_ptr<MontgomeryIntParams<uint>>>
+inline rlwe::StatusOr<std::unique_ptr<const MontgomeryIntParams<uint>>>
 ConstructMontgomeryIntParams() {
   return MontgomeryIntParams<uint>::Create(kModulus);
 }
@@ -52,7 +68,7 @@ std::vector<typename ModularInt::Int> SamplePlaintext(
 template <typename ModularInt>
 rlwe::StatusOr<std::vector<ModularInt>> ConvertToMontgomery(
     const std::vector<typename ModularInt::Int>& coeffs,
-    rlwe::MontgomeryIntParams<typename ModularInt::Int>* params14) {
+    const rlwe::MontgomeryIntParams<typename ModularInt::Int>* params14) {
   auto val = ModularInt::ImportZero(params14);
   std::vector<ModularInt> output(coeffs.size(), val);
   for (unsigned int i = 0; i < output.size(); i++) {
@@ -64,9 +80,9 @@ rlwe::StatusOr<std::vector<ModularInt>> ConvertToMontgomery(
 
 template <typename ModularInt>
 rlwe::StatusOr<Polynomial<ModularInt>> GenerateRandomPlaintextPolynomial(
-    int num_coeffs, Uint64 log_t, typename ModularInt::Params* params,
-    const NttParameters<ModularInt>& ntt_params) {
-  if (ntt_params.number_coeffs != num_coeffs) {
+    int num_coeffs, Uint64 log_t, const typename ModularInt::Params* params,
+    const NttParameters<ModularInt>* ntt_params) {
+  if (ntt_params->number_coeffs != num_coeffs) {
     return absl::InvalidArgumentError(
         "The number of coefficients does not match that of the ntt "
         "parameters.");

@@ -639,7 +639,8 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, DISABLED_BadApp) {
   EXPECT_EQ("", GetAppIds());
 }
 
-IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, GoodApp) {
+// Disabled: https://crbug.com/1044417
+IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, DISABLED_GoodApp) {
   // Webstore data json is in
   //   chrome/test/data/chromeos/app_mode/webstore/inlineinstall/detail/app_1
   const char kAppId[] = "app_1";
@@ -652,8 +653,9 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, GoodApp) {
   CheckAppDataAndCache(kAppId, "Name of App 1", "");
 }
 
+// Disabled: https://crbug.com/1044417
 IN_PROC_BROWSER_TEST_F(KioskAppManagerTest,
-                       AppWithRequiredPlatformVersion) {
+                       DISABLED_AppWithRequiredPlatformVersion) {
   // Webstore data json is in
   //   chrome/test/data/chromeos/app_mode/webstore/inlineinstall/detail/
   //     app_with_required_platform_version
@@ -682,11 +684,13 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, AppWithBadRequiredPlatformVersion) {
   EXPECT_EQ("", GetAppIds());
 }
 
-IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, DownloadNewApp) {
+// Disabled: https://crbug.com/1044417
+IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, DISABLED_DownloadNewApp) {
   RunAddNewAppTest(kTestLocalFsKioskApp, "1.0.0", kTestLocalFsKioskAppName, "");
 }
 
-IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, RemoveApp) {
+// Disabled: https://crbug.com/1044417
+IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, DISABLED_RemoveApp) {
   // Add a new app.
   RunAddNewAppTest(kTestLocalFsKioskApp, "1.0.0", kTestLocalFsKioskAppName, "");
   KioskAppManager::AppList apps;

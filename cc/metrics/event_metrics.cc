@@ -6,6 +6,7 @@
 
 #include <tuple>
 
+#include "base/logging.h"
 #include "base/stl_util.h"
 
 namespace cc {

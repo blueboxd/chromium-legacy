@@ -57,6 +57,7 @@
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/forms/form_data.h"
 #include "third_party/blink/renderer/core/html/html_document.h"
@@ -308,7 +309,8 @@ XMLHttpRequest::~XMLHttpRequest() {
 }
 
 Document* XMLHttpRequest::GetDocument() const {
-  return Document::From(GetExecutionContext());
+  DCHECK(IsA<LocalDOMWindow>(GetExecutionContext()));
+  return To<LocalDOMWindow>(GetExecutionContext())->document();
 }
 
 XMLHttpRequest::State XMLHttpRequest::readyState() const {

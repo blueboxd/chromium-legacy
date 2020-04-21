@@ -664,7 +664,7 @@
 -keep class android.support.v4.app.CoreComponentFactory
 
 ################################################################################
-# obj/third_party/android_deps/com_android_support_versionedparcelable_java_orig/proguard.txt
+# obj/third_party/android_deps/com_android_support_versionedparcelable_java/proguard.txt
 ################################################################################
 -keep public class * extends androidx.versionedparcelable.VersionedParcelable
 -keep public class android.support.**Parcelizer { *; }

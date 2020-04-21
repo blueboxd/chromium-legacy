@@ -68,14 +68,9 @@ class MODULES_EXPORT RTCDataChannel final
   bool ordered() const;
   base::Optional<uint16_t> maxPacketLifeTime() const;
   base::Optional<uint16_t> maxRetransmits() const;
-  // TODO(crbug.com/1060971): Remove |is_null| version.
-  uint16_t maxPacketLifeTime(bool&) const;  // DEPRECATED
-  uint16_t maxRetransmits(bool&) const;     // DEPRECATED
   String protocol() const;
   bool negotiated() const;
   base::Optional<uint16_t> id() const;
-  // TODO(crbug.com/1060971): Remove |is_null| version.
-  uint16_t id(bool& is_null) const;  // DEPRECATED
   String readyState() const;
   unsigned bufferedAmount() const;
 

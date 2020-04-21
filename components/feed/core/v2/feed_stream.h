@@ -39,6 +39,7 @@ class FeedStore;
 class MetricsReporter;
 class RefreshTaskScheduler;
 class StreamModel;
+class SurfaceUpdater;
 struct StreamModelUpdateRequest;
 
 // Implements FeedStreamApi. |FeedStream| additionally exposes functionality
@@ -189,7 +190,6 @@ class FeedStream : public FeedStreamApi,
       std::unique_ptr<UserClassifier> user_classifier);
 
  private:
-  class SurfaceUpdater;
   class ModelStoreChangeMonitor;
   void TriggerStreamLoad();
   void UnloadModel();
@@ -223,9 +223,6 @@ class FeedStream : public FeedStreamApi,
   // Internally, this should only be changed by |LoadModel()| and
   // |UnloadModel()|.
   std::unique_ptr<StreamModel> model_;
-
-  // Set of (unowned) attached surfaces.
-  base::ObserverList<SurfaceInterface> surfaces_;
 
   // Mutable state.
   std::unique_ptr<UserClassifier> user_classifier_;

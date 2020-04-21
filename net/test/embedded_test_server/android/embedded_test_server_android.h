@@ -79,6 +79,8 @@ class EmbeddedTestServerAndroid {
     std::unique_ptr<StreamSocket> AcceptedSocket(
         std::unique_ptr<StreamSocket> socket) override;
     void ReadFromSocket(const StreamSocket& socket, int rv) override;
+    void OnResponseCompletedSuccessfully(
+        std::unique_ptr<StreamSocket> socket) override;
 
    private:
     EmbeddedTestServerAndroid* test_server_android_;

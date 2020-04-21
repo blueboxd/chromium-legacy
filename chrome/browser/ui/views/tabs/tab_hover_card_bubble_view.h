@@ -66,7 +66,7 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView {
   class WidgetFadeAnimationDelegate;
   class WidgetSlideAnimationDelegate;
   class FadeLabel;
-  class ThumbnailWatcher;
+  class ThumbnailObserver;
 
   // Get delay in milliseconds based on tab width.
   base::TimeDelta GetDelay(int tab_width) const;
@@ -100,7 +100,7 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView {
   std::unique_ptr<WidgetFadeAnimationDelegate> fade_animation_delegate_;
   // Used to animate the tab hover card's movement between tabs.
   std::unique_ptr<WidgetSlideAnimationDelegate> slide_animation_delegate_;
-  std::unique_ptr<ThumbnailWatcher> thumbnail_watcher_;
+  std::unique_ptr<ThumbnailObserver> thumbnail_observer_;
 
   // Timestamp of the last time a hover card was visible, recorded before it is
   // hidden. This is used for metrics.

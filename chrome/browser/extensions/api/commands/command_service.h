@@ -78,6 +78,10 @@ class CommandService : public BrowserContextKeyedAPI,
     // Called when an extension command is removed.
     virtual void OnExtensionCommandRemoved(const std::string& extension_id,
                                            const Command& command) {}
+
+    // Called when the CommandService is being destroyed.
+    virtual void OnCommandServiceDestroying() {}
+
    protected:
     virtual ~Observer() {}
   };

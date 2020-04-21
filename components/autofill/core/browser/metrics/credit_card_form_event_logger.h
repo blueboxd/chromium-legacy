@@ -94,9 +94,13 @@ class CreditCardFormEventLogger : public FormEventLoggerBase {
   bool is_context_secure_ = false;
   UnmaskAuthFlowType current_authentication_flow_;
   bool has_logged_masked_server_card_suggestion_selected_ = false;
+  bool has_logged_suggestion_selected_timestamp_ = false;
   bool logged_suggestion_filled_was_masked_server_card_ = false;
+  base::TimeTicks first_suggestion_shown_timestamp_;
 
-  // True when ANY of the masked server cards has a nickname.
+  // True when ANY of the masked server cards has a nickname. Note that,
+  // depending on the experimental setup, the user may not be shown the
+  // nickname.
   bool has_server_nickname_ = false;
 
   // Weak references.

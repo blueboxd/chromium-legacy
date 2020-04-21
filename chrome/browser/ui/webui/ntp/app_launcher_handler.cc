@@ -35,6 +35,7 @@
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
+#include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/apps/app_info_dialog.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -164,7 +165,6 @@ AppLauncherHandler::AppLauncherHandler(
     : extension_service_(extension_service),
       web_app_provider_(web_app_provider),
       ignore_changes_(false),
-      attempted_bookmark_app_install_(false),
       has_loaded_apps_(false) {}
 
 AppLauncherHandler::~AppLauncherHandler() {
@@ -477,18 +477,6 @@ void AppLauncherHandler::Observe(int type,
       }
       break;
     }
-    case extensions::NOTIFICATION_EXTENSION_INSTALL_ERROR: {
-      CrxInstaller* crx_installer = content::Source<CrxInstaller>(source).ptr();
-      if (!Profile::FromWebUI(web_ui())->IsSameProfile(
-              crx_installer->profile())) {
-        return;
-      }
-      FALLTHROUGH;
-    }
-    case extensions::NOTIFICATION_EXTENSION_LOAD_ERROR: {
-      attempted_bookmark_app_install_ = false;
-      break;
-    }
     default:
       NOTREACHED();
   }
@@ -508,11 +496,8 @@ void AppLauncherHandler::OnExtensionLoaded(
     return;
 
   visible_apps_.insert(extension->id());
-  ExtensionPrefs* prefs = ExtensionPrefs::Get(extension_service_->profile());
-  base::Value highlight(prefs->IsFromBookmark(extension->id()) &&
-                        attempted_bookmark_app_install_);
-  attempted_bookmark_app_install_ = false;
-  web_ui()->CallJavascriptFunctionUnsafe("ntp.appAdded", *app_info, highlight);
+  web_ui()->CallJavascriptFunctionUnsafe("ntp.appAdded", *app_info,
+                                         /*highlight=*/base::Value(false));
 }
 
 void AppLauncherHandler::OnExtensionUnloaded(
@@ -540,9 +525,16 @@ void AppLauncherHandler::OnWebAppInstalled(const web_app::AppId& app_id) {
   if (!app_info.get())
     return;
 
+  if (attempting_web_app_install_page_ordinal_.has_value()) {
+    AppSorting* sorting =
+        ExtensionSystem::Get(Profile::FromWebUI(web_ui()))->app_sorting();
+    sorting->SetPageOrdinal(app_id,
+                            attempting_web_app_install_page_ordinal_.value());
+  }
+
   visible_apps_.insert(app_id);
-  base::Value highlight(attempted_bookmark_app_install_);
-  attempted_bookmark_app_install_ = false;
+  base::Value highlight(attempting_web_app_install_page_ordinal_.has_value());
+  attempting_web_app_install_page_ordinal_ = base::nullopt;
   web_ui()->CallJavascriptFunctionUnsafe("ntp.appAdded", *app_info, highlight);
 }
 
@@ -683,11 +675,6 @@ void AppLauncherHandler::HandleGetApps(const base::ListValue* args) {
     registrar_.Add(this, chrome::NOTIFICATION_APP_LAUNCHER_REORDERED,
                    content::Source<AppSorting>(
                        ExtensionSystem::Get(profile)->app_sorting()));
-    registrar_.Add(this, extensions::NOTIFICATION_EXTENSION_INSTALL_ERROR,
-                   content::Source<CrxInstaller>(nullptr));
-    registrar_.Add(this,
-                   extensions::NOTIFICATION_EXTENSION_LOAD_ERROR,
-                   content::Source<Profile>(profile));
     web_apps_observer_.Add(&web_app_provider_->registrar());
   }
 
@@ -1088,6 +1075,10 @@ void AppLauncherHandler::HandleGenerateAppForLink(const base::ListValue* args) {
   CHECK(args->GetString(0, &url));
   GURL launch_url(url);
 
+  // Can only install one app at a time.
+  if (attempting_web_app_install_page_ordinal_.has_value())
+    return;
+
   base::string16 title;
   CHECK(args->GetString(1, &title));
 
@@ -1141,12 +1132,29 @@ void AppLauncherHandler::OnFaviconForApp(
         image_result.image.AsBitmap();
   }
 
-  scoped_refptr<CrxInstaller> installer(
-      CrxInstaller::CreateSilent(extension_service_));
-  installer->set_error_on_unsupported_requirements(true);
-  installer->set_page_ordinal(install_info->page_ordinal);
-  installer->InstallWebApp(*web_app);
-  attempted_bookmark_app_install_ = true;
+  attempting_web_app_install_page_ordinal_ = install_info->page_ordinal;
+
+  web_app::InstallManager::OnceInstallCallback install_complete_callback =
+      base::BindOnce(
+          [](base::WeakPtr<AppLauncherHandler> app_launcher_handler,
+             const web_app::AppId& app_id,
+             web_app::InstallResultCode install_result) {
+            LOCAL_HISTOGRAM_ENUMERATION(
+                "Apps.AppInfoDialog.InstallAppLocallyInstallResult",
+                install_result);
+            if (!app_launcher_handler)
+              return;
+            if (install_result !=
+                web_app::InstallResultCode::kSuccessNewInstall) {
+              app_launcher_handler->attempting_web_app_install_page_ordinal_ =
+                  base::nullopt;
+            }
+          },
+          weak_ptr_factory_.GetWeakPtr());
+
+  web_app_provider_->install_manager().InstallWebAppFromInfo(
+      std::move(web_app), web_app::ForInstallableSite::kUnknown,
+      WebappInstallSource::SYNC, std::move(install_complete_callback));
 }
 
 void AppLauncherHandler::SetAppToBeHighlighted() {

@@ -86,13 +86,11 @@
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/canonical_cookie.h"
-#include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_util.h"
 #include "net/http/http_auth_preferences.h"
 #include "net/ssl/client_cert_store.h"
 #include "net/url_request/url_request_context.h"
 #include "ppapi/buildflags/buildflags.h"
-#include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/network/public/cpp/cross_thread_pending_shared_url_loader_factory.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
@@ -529,71 +527,6 @@ void DeprecateSameSiteCookies(
   }
 }
 
-int64_t CrossSchemeWarningToContextInt64(
-    net::CanonicalCookie::CookieInclusionStatus::WarningReason reason) {
-  // Convert from the status's WarningReason enum to a SameSiteCookieContext
-  // enum and cast to a int64_t for UKM. The UKMs are using the
-  // SameSiteCookieContext in order to match up with the UMAs which are
-  // recording similar information.
-  // TODO(https://crbug.com/1046456): Remove after deprecated.
-  net::CookieOptions::SameSiteCookieContext same_site_context;
-  switch (reason) {
-    case net::CanonicalCookie::CookieInclusionStatus::
-        WARN_SAMESITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_SECURE_URL:
-      same_site_context.set_context(
-          net::CookieOptions::SameSiteCookieContext::ContextType::
-              SAME_SITE_LAX_METHOD_UNSAFE);
-      same_site_context.set_cross_schemeness(
-          net::CookieOptions::SameSiteCookieContext::CrossSchemeness::
-              INSECURE_SECURE);
-      return same_site_context.ConvertToMetricsValue();
-    case net::CanonicalCookie::CookieInclusionStatus::
-        WARN_SAMESITE_LAX_CROSS_SCHEME_SECURE_URL:
-      same_site_context.set_context(net::CookieOptions::SameSiteCookieContext::
-                                        ContextType::SAME_SITE_LAX);
-      same_site_context.set_cross_schemeness(
-          net::CookieOptions::SameSiteCookieContext::CrossSchemeness::
-              INSECURE_SECURE);
-      return same_site_context.ConvertToMetricsValue();
-    case net::CanonicalCookie::CookieInclusionStatus::
-        WARN_SAMESITE_STRICT_CROSS_SCHEME_SECURE_URL:
-      same_site_context.set_context(net::CookieOptions::SameSiteCookieContext::
-                                        ContextType::SAME_SITE_STRICT);
-      same_site_context.set_cross_schemeness(
-          net::CookieOptions::SameSiteCookieContext::CrossSchemeness::
-              INSECURE_SECURE);
-      return same_site_context.ConvertToMetricsValue();
-    case net::CanonicalCookie::CookieInclusionStatus::
-        WARN_SAMESITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_INSECURE_URL:
-      same_site_context.set_context(
-          net::CookieOptions::SameSiteCookieContext::ContextType::
-              SAME_SITE_LAX_METHOD_UNSAFE);
-      same_site_context.set_cross_schemeness(
-          net::CookieOptions::SameSiteCookieContext::CrossSchemeness::
-              SECURE_INSECURE);
-      return same_site_context.ConvertToMetricsValue();
-    case net::CanonicalCookie::CookieInclusionStatus::
-        WARN_SAMESITE_LAX_CROSS_SCHEME_INSECURE_URL:
-      same_site_context.set_context(net::CookieOptions::SameSiteCookieContext::
-                                        ContextType::SAME_SITE_LAX);
-      same_site_context.set_cross_schemeness(
-          net::CookieOptions::SameSiteCookieContext::CrossSchemeness::
-              SECURE_INSECURE);
-      return same_site_context.ConvertToMetricsValue();
-    case net::CanonicalCookie::CookieInclusionStatus::
-        WARN_SAMESITE_STRICT_CROSS_SCHEME_INSECURE_URL:
-      same_site_context.set_context(net::CookieOptions::SameSiteCookieContext::
-                                        ContextType::SAME_SITE_STRICT);
-      same_site_context.set_cross_schemeness(
-          net::CookieOptions::SameSiteCookieContext::CrossSchemeness::
-              SECURE_INSECURE);
-      return same_site_context.ConvertToMetricsValue();
-    default:
-      // Return invalid value if there is no cross-scheme warning.
-      return -1;
-  }
-}
-
 void ReportCookiesChangedOnUI(
     std::vector<GlobalFrameRoutingId> destinations,
     const GURL& url,
@@ -629,22 +562,6 @@ void ReportCookiesChangedOnUI(
         web_contents->OnCookieChange(url, site_for_cookies.RepresentativeUrl(),
                                      cookie_and_status.cookie,
                                      /* blocked_by_policy =*/false);
-
-        // TODO(https://crbug.com/1046456): Remove after deprecated.
-        net::CanonicalCookie::CookieInclusionStatus::WarningReason
-            cross_scheme_warning;
-        if (cookie_and_status.status.HasCrossSchemeWarning(
-                &cross_scheme_warning)) {
-          ukm::SourceId source_id = static_cast<WebContentsImpl*>(web_contents)
-                                        ->GetMainFrame()
-                                        ->GetPageUkmSourceId();
-
-          int64_t context =
-              CrossSchemeWarningToContextInt64(cross_scheme_warning);
-          ukm::builders::SameSiteDifferentSchemeRequest(source_id)
-              .SetSameSiteContextWithSchemes(context)
-              .Record(ukm::UkmRecorder::Get());
-        }
       }
     }
   }
@@ -665,7 +582,6 @@ void ReportCookiesReadOnUI(
   }
 
   net::CookieList accepted, blocked;
-  std::vector<net::CanonicalCookie::CookieInclusionStatus> accepted_status;
   for (auto& cookie_and_status : cookie_list) {
     if (cookie_and_status.status.HasExclusionReason(
             net::CanonicalCookie::CookieInclusionStatus::
@@ -673,7 +589,6 @@ void ReportCookiesReadOnUI(
       blocked.push_back(std::move(cookie_and_status.cookie));
     } else if (cookie_and_status.status.IsInclude()) {
       accepted.push_back(std::move(cookie_and_status.cookie));
-      accepted_status.push_back(std::move(cookie_and_status.status));
     }
   }
 
@@ -686,23 +601,6 @@ void ReportCookiesReadOnUI(
       web_contents->OnCookiesRead(url, site_for_cookies.RepresentativeUrl(),
                                   accepted,
                                   /* blocked_by_policy =*/false);
-
-      // TODO(https://crbug.com/1046456): Remove after deprecated.
-      for (const auto& status : accepted_status) {
-        net::CanonicalCookie::CookieInclusionStatus::WarningReason
-            cross_scheme_warning;
-        if (status.HasCrossSchemeWarning(&cross_scheme_warning)) {
-          ukm::SourceId source_id = static_cast<WebContentsImpl*>(web_contents)
-                                        ->GetMainFrame()
-                                        ->GetPageUkmSourceId();
-
-          int64_t context =
-              CrossSchemeWarningToContextInt64(cross_scheme_warning);
-          ukm::builders::SameSiteDifferentSchemeResponse(source_id)
-              .SetSameSiteContextWithSchemes(context)
-              .Record(ukm::UkmRecorder::Get());
-        }
-      }
     }
   }
 

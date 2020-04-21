@@ -54,10 +54,13 @@ class CaptionBubbleControllerViewsTest : public InProcessBrowserTest {
     return controller_ ? controller_->caption_widget_ : nullptr;
   }
 
-  // There may be some rounding errors. Check that points are almost the same.
-  void ExpectPointsApproximatelyEqual(gfx::Point first, gfx::Point second) {
-    EXPECT_LT(abs(first.x() - second.x()), 2);
-    EXPECT_LT(abs(first.y() - second.y()), 2);
+  // There may be some rounding errors as we do floating point math with ints.
+  // Check that points are almost the same.
+  void ExpectInBottomCenter(gfx::Rect anchor_bounds, gfx::Rect bubble_bounds) {
+    EXPECT_LT(
+        abs(bubble_bounds.CenterPoint().x() - anchor_bounds.CenterPoint().x()),
+        2);
+    EXPECT_EQ(bubble_bounds.bottom(), anchor_bounds.bottom() - 48);
   }
 
   bool IsBubbleErrorMessageVisible() {
@@ -138,46 +141,44 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
 
   browser()->window()->SetBounds(gfx::Rect(10, 10, 800, 600));
   GetController()->OnCaptionReceived("Mantis shrimp have 12-16 photoreceptors");
-  ExpectPointsApproximatelyEqual(
-      contents_view->GetBoundsInScreen().CenterPoint(),
-      GetCaptionWidget()->GetClientAreaBoundsInScreen().CenterPoint());
+  ExpectInBottomCenter(contents_view->GetBoundsInScreen(),
+                       GetCaptionWidget()->GetClientAreaBoundsInScreen());
   EXPECT_EQ(GetBubble()->GetBoundsInScreen().width(), 548);
 
   // Move the window and the widget should stay centered.
   browser()->window()->SetBounds(gfx::Rect(50, 50, 800, 600));
-  ExpectPointsApproximatelyEqual(
-      contents_view->GetBoundsInScreen().CenterPoint(),
-      GetCaptionWidget()->GetClientAreaBoundsInScreen().CenterPoint());
+  ExpectInBottomCenter(contents_view->GetBoundsInScreen(),
+                       GetCaptionWidget()->GetClientAreaBoundsInScreen());
   EXPECT_EQ(GetBubble()->GetBoundsInScreen().width(), 548);
 
   // Shrink the window's height.
   browser()->window()->SetBounds(gfx::Rect(50, 50, 800, 300));
-  ExpectPointsApproximatelyEqual(
-      contents_view->GetBoundsInScreen().CenterPoint(),
-      GetCaptionWidget()->GetClientAreaBoundsInScreen().CenterPoint());
+  ExpectInBottomCenter(contents_view->GetBoundsInScreen(),
+                       GetCaptionWidget()->GetClientAreaBoundsInScreen());
   EXPECT_EQ(GetBubble()->GetBoundsInScreen().width(), 548);
 
-  // Grow the height again.
+  // Shrink it super far, then grow it back up again, and it should still
+  // be in the right place.
+  browser()->window()->SetBounds(gfx::Rect(50, 50, 800, 100));
   browser()->window()->SetBounds(gfx::Rect(50, 50, 800, 500));
-  ExpectPointsApproximatelyEqual(
-      contents_view->GetBoundsInScreen().CenterPoint(),
-      GetCaptionWidget()->GetClientAreaBoundsInScreen().CenterPoint());
+  ExpectInBottomCenter(contents_view->GetBoundsInScreen(),
+                       GetCaptionWidget()->GetClientAreaBoundsInScreen());
   EXPECT_EQ(GetBubble()->GetBoundsInScreen().width(), 548);
 
   // Now shrink the width so that the caption bubble shrinks.
   browser()->window()->SetBounds(gfx::Rect(50, 50, 500, 500));
   gfx::Rect widget_bounds = GetCaptionWidget()->GetClientAreaBoundsInScreen();
   gfx::Rect contents_bounds = contents_view->GetBoundsInScreen();
-  EXPECT_EQ(contents_bounds.CenterPoint(), widget_bounds.CenterPoint());
+  ExpectInBottomCenter(contents_view->GetBoundsInScreen(),
+                       GetCaptionWidget()->GetClientAreaBoundsInScreen());
   EXPECT_LT(GetBubble()->GetBoundsInScreen().width(), 548);
   EXPECT_EQ(20, widget_bounds.x() - contents_bounds.x());
   EXPECT_EQ(20, contents_bounds.right() - widget_bounds.right());
 
   // Make it bigger again and ensure it's visible and wide again.
   browser()->window()->SetBounds(gfx::Rect(10, 10, 800, 600));
-  ExpectPointsApproximatelyEqual(
-      contents_view->GetBoundsInScreen().CenterPoint(),
-      GetCaptionWidget()->GetClientAreaBoundsInScreen().CenterPoint());
+  ExpectInBottomCenter(contents_view->GetBoundsInScreen(),
+                       GetCaptionWidget()->GetClientAreaBoundsInScreen());
   EXPECT_EQ(GetBubble()->GetBoundsInScreen().width(), 548);
 
   // Now move the widget within the window.

@@ -141,6 +141,15 @@ const CSSProperty* TargetPropertyForRevert(const CSSProperty& original,
   return (original_priority < surrogate_priority) ? surrogate : &original;
 }
 
+CSSPropertyID UnvisitedID(CSSPropertyID id) {
+  if (id == CSSPropertyID::kVariable)
+    return id;
+  const CSSProperty& property = CSSProperty::Get(id);
+  if (!property.IsVisited())
+    return id;
+  return property.GetUnvisitedProperty()->PropertyID();
+}
+
 }  // namespace
 
 MatchResult& StyleCascade::MutableMatchResult() {
@@ -181,6 +190,20 @@ void StyleCascade::Apply(CascadeFilter filter) {
     state_.Style()->SetHasAuthorBackground(HasAuthorBackground());
     state_.Style()->SetHasAuthorBorder(HasAuthorBorder());
   }
+}
+
+std::unique_ptr<CSSBitset> StyleCascade::GetImportantSet() {
+  AnalyzeIfNeeded();
+  if (!map_.HasImportant())
+    return nullptr;
+  auto set = std::make_unique<CSSBitset>();
+  for (CSSPropertyID id : map_.NativeBitset()) {
+    // We use the unvisited ID because visited/unvisited colors are currently
+    // interpolated together.
+    // TODO(crbug.com/1062217): Interpolate visited colors separately
+    set->Or(UnvisitedID(id), map_.At(CSSPropertyName(id)).IsImportant());
+  }
+  return set;
 }
 
 void StyleCascade::Reset() {

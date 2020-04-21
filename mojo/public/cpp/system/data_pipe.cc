@@ -4,6 +4,8 @@
 
 #include "mojo/public/cpp/system/data_pipe.h"
 
+#include "base/logging.h"
+
 namespace mojo {
 
 namespace {

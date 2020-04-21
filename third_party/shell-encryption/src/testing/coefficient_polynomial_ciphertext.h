@@ -60,7 +60,7 @@ class CoefficientPolynomialCiphertext {
   // component.
   static rlwe::StatusOr<CoefficientPolynomialCiphertext> ConvertToCoefficients(
       const SymmetricRlweCiphertext<ModularInt>& ntt_ciphertext,
-      const NttParameters<ModularInt>& ntt_params) {
+      const NttParameters<ModularInt>* ntt_params) {
     std::vector<CoefficientPolynomial<ModularInt>> result;
 
     for (int i = 0; i < ntt_ciphertext.Len(); i++) {
@@ -77,7 +77,7 @@ class CoefficientPolynomialCiphertext {
 
   // Converts the polynomial to a SymmetricRlweCiphertext in NTT representation.
   SymmetricRlweCiphertext<ModularInt> ConvertToNtt(
-      const NttParameters<ModularInt>& ntt_params) {
+      const NttParameters<ModularInt>* ntt_params) {
     std::vector<Polynomial<ModularInt>> c;
 
     for (const CoefficientPolynomial<ModularInt>& p : p_) {
@@ -158,7 +158,7 @@ class CoefficientPolynomialCiphertext {
   std::vector<CoefficientPolynomial<ModularInt>> p_;
 
   // ModularInt parameters.
-  typename ModularInt::Params* modulus_params_;
+  const typename ModularInt::Params* modulus_params_;
 
   // ErrorParams.
   const rlwe::ErrorParams<ModularInt>* error_params_;

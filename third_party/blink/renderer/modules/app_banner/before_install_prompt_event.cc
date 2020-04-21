@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -28,8 +29,8 @@ BeforeInstallPromptEvent::BeforeInstallPromptEvent(
                 std::move(event_receiver),
                 frame.GetTaskRunner(TaskType::kApplicationLifeCycle)),
       platforms_(platforms),
-      user_choice_(MakeGarbageCollected<UserChoiceProperty>(
-          frame.GetDocument()->ToExecutionContext())) {
+      user_choice_(
+          MakeGarbageCollected<UserChoiceProperty>(frame.DomWindow())) {
   DCHECK(banner_service_remote_);
   DCHECK(receiver_.is_bound());
   UseCounter::Count(frame.GetDocument(), WebFeature::kBeforeInstallPromptEvent);
@@ -81,18 +82,16 @@ ScriptPromise BeforeInstallPromptEvent::prompt(
     return ScriptPromise();
   }
 
-  ExecutionContext* context = ExecutionContext::From(script_state);
-  Document* doc = Document::From(context);
-
-  if (!LocalFrame::ConsumeTransientUserActivation(doc ? doc->GetFrame()
-                                                      : nullptr)) {
+  LocalDOMWindow* window = LocalDOMWindow::From(script_state);
+  if (!LocalFrame::ConsumeTransientUserActivation(window ? window->GetFrame()
+                                                         : nullptr)) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotAllowedError,
         "The prompt() method must be called with a user gesture");
     return ScriptPromise();
   }
 
-  UseCounter::Count(context, WebFeature::kBeforeInstallPromptEventPrompt);
+  UseCounter::Count(window, WebFeature::kBeforeInstallPromptEventPrompt);
   banner_service_remote_->DisplayAppBanner();
   return user_choice_->Promise(script_state->World());
 }

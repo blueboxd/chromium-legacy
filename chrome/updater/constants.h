@@ -117,6 +117,10 @@ extern const char kAppsDir[];
 // The name of the uninstall script which is invoked by the --uninstall switch.
 extern const char kUninstallScript[];
 
+// Developer override keys.
+extern const char kDevOverrideKeyUrl[];
+extern const char kDevOverrideKeyUseCUP[];
+
 // Timing constants.
 //
 // How long to wait for an application installer (such as chrome_installer.exe)

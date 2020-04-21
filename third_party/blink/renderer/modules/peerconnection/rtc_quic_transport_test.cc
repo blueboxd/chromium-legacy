@@ -864,9 +864,8 @@ TEST_F(RTCQuicTransportTest, MaxDatagramLengthComesFromNegotiatedParams) {
   delegate->OnConnected(params);
   RunUntilIdle();
   ASSERT_EQ("connected", quic_transport->state());
-  bool is_null;
-  EXPECT_EQ(max_datagram_length, quic_transport->maxDatagramLength(is_null));
-  EXPECT_FALSE(is_null);
+  ASSERT_TRUE(quic_transport->maxDatagramLength().has_value());
+  EXPECT_EQ(max_datagram_length, quic_transport->maxDatagramLength().value());
 }
 
 // Test that sending a datagram after the buffer is full will raise a

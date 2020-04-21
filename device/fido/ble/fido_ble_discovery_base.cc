@@ -75,7 +75,7 @@ void FidoBleDiscoveryBase::OnGetAdapter(
 }
 
 void FidoBleDiscoveryBase::StartInternal() {
-  BluetoothAdapterFactory::Get().GetAdapter(base::BindOnce(
+  BluetoothAdapterFactory::Get()->GetAdapter(base::BindOnce(
       &FidoBleDiscoveryBase::OnGetAdapter, weak_factory_.GetWeakPtr()));
 }
 

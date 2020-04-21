@@ -12,6 +12,8 @@
 #include "build/build_config.h"
 #include "components/paint_preview/buildflags/buildflags.h"
 #include "components/safe_browsing/buildflags.h"
+#include "components/services/language_detection/language_detection_service_impl.h"
+#include "components/services/language_detection/public/mojom/language_detection.mojom.h"
 #include "components/services/patch/file_patcher_impl.h"
 #include "components/services/patch/public/mojom/file_patcher.mojom.h"
 #include "components/services/unzip/public/mojom/unzipper.mojom.h"
@@ -95,6 +97,13 @@ auto RunFilePatcher(mojo::PendingReceiver<patch::mojom::FilePatcher> receiver) {
 
 auto RunUnzipper(mojo::PendingReceiver<unzip::mojom::Unzipper> receiver) {
   return std::make_unique<unzip::UnzipperImpl>(std::move(receiver));
+}
+
+auto RunLanguageDetectionService(
+    mojo::PendingReceiver<language_detection::mojom::LanguageDetectionService>
+        receiver) {
+  return std::make_unique<language_detection::LanguageDetectionServiceImpl>(
+      std::move(receiver));
 }
 
 #if defined(OS_WIN)
@@ -238,6 +247,7 @@ mojo::ServiceFactory* GetMainThreadServiceFactory() {
   static base::NoDestructor<mojo::ServiceFactory> factory {
     RunFilePatcher,
     RunUnzipper,
+    RunLanguageDetectionService,
 
 #if !defined(OS_ANDROID)
     RunProfileImporter,

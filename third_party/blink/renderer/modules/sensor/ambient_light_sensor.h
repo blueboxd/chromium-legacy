@@ -24,8 +24,6 @@ class MODULES_EXPORT AmbientLightSensor final : public Sensor {
   AmbientLightSensor(ExecutionContext*, const SensorOptions*, ExceptionState&);
 
   base::Optional<double> illuminance() const;
-  // TODO(crbug.com/1060971): Remove |is_null| version.
-  double illuminance(bool& is_null) const;  // DEPRECATED
 
   void OnSensorReadingChanged() override;
 

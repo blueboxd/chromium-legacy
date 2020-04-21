@@ -662,6 +662,7 @@ blink_core_tests("unit_tests") {
     "properties/css_property_ref_test.cc",
     "properties/css_property_test.cc",
     "properties/longhands/custom_property_test.cc",
+    "property_registry_test.cc",
     "resolver/cascade_expansion_test.cc",
     "resolver/cascade_filter_test.cc",
     "resolver/cascade_interpolations_test.cc",

@@ -959,8 +959,7 @@ bool SiteInstanceImpl::CanBePlacedInDefaultSiteInstance(
 GURL SiteInstanceImpl::GetSiteForOrigin(const url::Origin& origin) {
   // Only keep the scheme and registered domain of |origin|.
   std::string domain = net::registry_controlled_domains::GetDomainAndRegistry(
-      origin.host(),
-      net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+      origin, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
   return SchemeAndHostToSite(origin.scheme(),
                              domain.empty() ? origin.host() : domain);
 }

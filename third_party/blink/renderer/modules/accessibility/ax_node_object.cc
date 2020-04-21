@@ -3412,6 +3412,8 @@ void AXNodeObject::ComputeAriaOwnsChildren(
 // last child: https://html.spec.whatwg.org/#the-figcaption-element
 static Element* GetChildFigcaption(const Node& node) {
   Element* element = ElementTraversal::FirstChild(node);
+  if (!element)
+    return nullptr;
   if (element->HasTagName(html_names::kFigcaptionTag))
     return element;
 

@@ -184,7 +184,7 @@ class FrameFetchContextSubresourceFilterTest : public FrameFetchContextTest {
                        bool is_associated_with_ad_subframe = false) {
     document->Loader()->SetSubresourceFilter(
         MakeGarbageCollected<SubresourceFilter>(
-            document->ToExecutionContext(),
+            document->GetExecutionContext(),
             std::make_unique<FixedPolicySubresourceFilter>(
                 policy, &filtered_load_callback_counter_,
                 is_associated_with_ad_subframe)));
@@ -215,12 +215,12 @@ class FrameFetchContextSubresourceFilterTest : public FrameFetchContextTest {
 
   void AppendExecutingScriptToAdTracker(const String& url) {
     AdTracker* ad_tracker = document->GetFrame()->GetAdTracker();
-    ad_tracker->WillExecuteScript(document->ToExecutionContext(), url);
+    ad_tracker->WillExecuteScript(document->GetExecutionContext(), url);
   }
 
   void AppendAdScriptToAdTracker(const KURL& ad_script_url) {
     AdTracker* ad_tracker = document->GetFrame()->GetAdTracker();
-    ad_tracker->AppendToKnownAdScripts(*document->ToExecutionContext(),
+    ad_tracker->AppendToKnownAdScripts(*document->GetExecutionContext(),
                                        ad_script_url.GetString());
   }
 

@@ -262,7 +262,7 @@ executable("app_shell") {
   deps = [
     ":app_shell_lib",
     "//build/win:default_exe_manifest",
-    "//content/public/app:both",
+    "//content/public/app",
     "//extensions:shell_and_test_pak",
   ]
 

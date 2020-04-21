@@ -26,6 +26,7 @@
 #include "constants.h"
 #include "serialization.pb.h"
 #include "status_macros.h"
+#include "testing/parameters.h"
 #include "testing/status_matchers.h"
 #include "testing/status_testing.h"
 #include "testing/testing_prng.h"
@@ -39,13 +40,8 @@ std::uniform_int_distribution<Uint64> uniform_uint64;
 using ::rlwe::testing::StatusIs;
 using ::testing::HasSubstr;
 
-const Uint64 kTestingRounds = 1;
-
-// Montgomery parameters for a 10-bit modulus.
-constexpr Uint64 kModulus10 = 997;
-
-// Montgomery parameters for a 8-bit modulus.
-constexpr Uint64 kModulus8 = 233;
+const Uint64 kTestingRounds = 10;
+const size_t kExhaustiveTest = 1000;
 
 // Generate a random integer of a specified number of bits.
 template <class TypeParam>
@@ -69,79 +65,11 @@ uint256 GenerateRandom(unsigned int* seed) {
 }
 
 template <typename T>
-std::list<std::unique_ptr<MontgomeryIntParams<T>>> ConstructParams();
-
-template <>
-std::list<std::unique_ptr<MontgomeryIntParams<Uint16>>>
-ConstructParams<Uint16>() {
-  std::list<std::unique_ptr<MontgomeryIntParams<Uint16>>> params;
-  for (auto modulus :
-       std::vector<Uint16>({kModulus8, kModulus10, kNewhopeModulus})) {
-    auto status_or_params = MontgomeryIntParams<Uint16>::Create(modulus);
-    if (!status_or_params.ok()) {
-      LOG(FATAL) << "Creating MontgomeryIntParams failed.\n";
-    }
-    params.emplace_back(std::move(status_or_params).ValueOrDie());
-  }
-  return params;
-}
-
-template <>
-std::list<std::unique_ptr<MontgomeryIntParams<Uint32>>>
-ConstructParams<Uint32>() {
-  std::list<std::unique_ptr<MontgomeryIntParams<Uint32>>> params;
-  for (auto modulus : std::vector<Uint32>(
-           {kModulus8, kModulus10, kNewhopeModulus, kModulus29})) {
-    auto status_or_params = MontgomeryIntParams<Uint32>::Create(modulus);
-    if (!status_or_params.ok()) {
-      LOG(FATAL) << "Creating MontgomeryIntParams failed.\n";
-    }
-    params.emplace_back(std::move(status_or_params).ValueOrDie());
-  }
-  return params;
-}
-
-template <>
-std::list<std::unique_ptr<MontgomeryIntParams<Uint64>>>
-ConstructParams<Uint64>() {
-  std::list<std::unique_ptr<MontgomeryIntParams<Uint64>>> params;
-  for (auto modulus : std::vector<Uint64>(
-           {kModulus8, kModulus10, kNewhopeModulus, kModulus29, kModulus59})) {
-    auto status_or_params = MontgomeryIntParams<Uint64>::Create(modulus);
-    if (!status_or_params.ok()) {
-      LOG(FATAL) << "Creating MontgomeryIntParams failed.\n";
-    }
-    params.emplace_back(std::move(status_or_params).ValueOrDie());
-  }
-  return params;
-}
-
-template <>
-std::list<std::unique_ptr<MontgomeryIntParams<absl::uint128>>>
-ConstructParams<absl::uint128>() {
-  std::list<std::unique_ptr<MontgomeryIntParams<absl::uint128>>> params;
-  for (auto modulus : std::vector<absl::uint128>({kModulus59, kModulus80})) {
-    auto status_or_params = MontgomeryIntParams<absl::uint128>::Create(modulus);
-    if (!status_or_params.ok()) {
-      LOG(FATAL) << "Creating MontgomeryIntParams failed.\n";
-    }
-    params.emplace_back(std::move(status_or_params).ValueOrDie());
-  }
-  return params;
-}
-
-template <typename T>
-class MontgomeryTest : public ::testing::Test {
- protected:
-  MontgomeryTest() { params_ = ConstructParams<T>(); }
-
-  std::list<std::unique_ptr<MontgomeryIntParams<T>>> params_;
-};
-using IntTypes = ::testing::Types<Uint16, Uint32, Uint64, absl::uint128>;
-TYPED_TEST_SUITE(MontgomeryTest, IntTypes);
+class MontgomeryTest : public ::testing::Test {};
+TYPED_TEST_SUITE(MontgomeryTest, testing::ModularIntTypes);
 
 TYPED_TEST(MontgomeryTest, ModulusTooLarge) {
-  using Int = TypeParam;
+  using Int = typename TypeParam::Int;
 
   unsigned int seed = 0;
   Int modulus;
@@ -171,25 +99,34 @@ TYPED_TEST(MontgomeryTest, ModulusTooLarge) {
 
 // Verifies that the MontgomeryIntParams code computes the inverse modulus.
 TYPED_TEST(MontgomeryTest, ParamsInvModulus) {
-  using BigInt = typename internal::BigInt<TypeParam>::value_type;
-  for (auto& params : this->params_) {
-    EXPECT_EQ(params->r * params->inv_r -
-                  static_cast<BigInt>(params->modulus) * params->inv_modulus,
+  using Int = typename TypeParam::Int;
+  using BigInt = typename internal::BigInt<Int>::value_type;
+  for (const auto& params :
+       rlwe::testing::ContextParameters<TypeParam>::value) {
+    ASSERT_OK_AND_ASSIGN(auto modulus_params,
+                         TypeParam::Params::Create(params.modulus));
+    EXPECT_EQ(modulus_params->r * modulus_params->inv_r -
+                  static_cast<BigInt>(modulus_params->modulus) *
+                      modulus_params->inv_modulus,
               1);
   }
 }
 
 // Verifies that numbers can be imported and exported properly.
 TYPED_TEST(MontgomeryTest, ImportExportInt) {
-  using Int = TypeParam;
-
+  using Int = typename TypeParam::Int;
   unsigned int seed = 0;
-  for (auto& params : this->params_) {
+
+  for (const auto& params :
+       rlwe::testing::ContextParameters<TypeParam>::value) {
+    ASSERT_OK_AND_ASSIGN(auto modulus_params,
+                         TypeParam::Params::Create(params.modulus));
+
     for (Int i = 0; i < kTestingRounds; ++i) {
-      Int a = GenerateRandom<Int>(&seed) % params->modulus;
+      Int a = GenerateRandom<Int>(&seed) % modulus_params->modulus;
       ASSERT_OK_AND_ASSIGN(auto m,
-                           MontgomeryInt<Int>::ImportInt(a, params.get()));
-      Int after = m.ExportInt(params.get());
+                           TypeParam::ImportInt(a, modulus_params.get()));
+      Int after = m.ExportInt(modulus_params.get());
       EXPECT_EQ(after, a);
     }
   }
@@ -197,60 +134,68 @@ TYPED_TEST(MontgomeryTest, ImportExportInt) {
 
 // Verifies that numbers can be added correctly.
 TYPED_TEST(MontgomeryTest, AddSub) {
-  using Int = TypeParam;
+  using Int = typename TypeParam::Int;
 
   // Test over a selection of the possible input space.
   unsigned int seed = 0;
 
-  for (auto& params : this->params_) {
+  for (const auto& params :
+       rlwe::testing::ContextParameters<TypeParam>::value) {
+    ASSERT_OK_AND_ASSIGN(auto modulus_params,
+                         TypeParam::Params::Create(params.modulus));
     for (int i = 0; i < kTestingRounds; i++) {
-      Int a = GenerateRandom<Int>(&seed) % params->modulus;
-      Int b = GenerateRandom<Int>(&seed) % params->modulus;
-      ASSERT_OK_AND_ASSIGN(MontgomeryInt<Int> ma,
-                           MontgomeryInt<Int>::ImportInt(a, params.get()));
-      ASSERT_OK_AND_ASSIGN(MontgomeryInt<Int> mb,
-                           MontgomeryInt<Int>::ImportInt(b, params.get()));
-      MontgomeryInt<Int> mc = ma.Add(mb, params.get());
-      Int c = mc.ExportInt(params.get());
+      Int a = GenerateRandom<Int>(&seed) % modulus_params->modulus;
+      Int b = GenerateRandom<Int>(&seed) % modulus_params->modulus;
+      ASSERT_OK_AND_ASSIGN(TypeParam ma,
+                           TypeParam::ImportInt(a, modulus_params.get()));
+      ASSERT_OK_AND_ASSIGN(TypeParam mb,
+                           TypeParam::ImportInt(b, modulus_params.get()));
+      TypeParam mc = ma.Add(mb, modulus_params.get());
+      Int c = mc.ExportInt(modulus_params.get());
 
-      Int expected = (a + b) % params->modulus;
+      Int expected = (a + b) % modulus_params->modulus;
       EXPECT_EQ(expected, c);
 
-      MontgomeryInt<Int> md = ma.Sub(mb, params.get());
-      Int d = md.ExportInt(params.get());
+      TypeParam md = ma.Sub(mb, modulus_params.get());
+      Int d = md.ExportInt(modulus_params.get());
 
-      Int expected2 = (a + params->modulus - b) % params->modulus;
+      Int expected2 =
+          (a + modulus_params->modulus - b) % modulus_params->modulus;
       EXPECT_EQ(expected2, d);
     }
   }
 }
 
 TYPED_TEST(MontgomeryTest, InlineAddSub) {
-  using Int = TypeParam;
+  using Int = typename TypeParam::Int;
 
   // Test over a selection of the possible input space.
   unsigned int seed = 0;
 
-  for (auto& params : this->params_) {
+  for (const auto& params :
+       rlwe::testing::ContextParameters<TypeParam>::value) {
+    ASSERT_OK_AND_ASSIGN(auto modulus_params,
+                         TypeParam::Params::Create(params.modulus));
     for (int i = 0; i < kTestingRounds; i++) {
-      Int a = GenerateRandom<Int>(&seed) % params->modulus;
-      Int b = GenerateRandom<Int>(&seed) % params->modulus;
-      ASSERT_OK_AND_ASSIGN(MontgomeryInt<Int> ma,
-                           MontgomeryInt<Int>::ImportInt(a, params.get()));
-      ASSERT_OK_AND_ASSIGN(MontgomeryInt<Int> mb,
-                           MontgomeryInt<Int>::ImportInt(b, params.get()));
-      ma.AddInPlace(mb, params.get());
-      Int c = ma.ExportInt(params.get());
+      Int a = GenerateRandom<Int>(&seed) % modulus_params->modulus;
+      Int b = GenerateRandom<Int>(&seed) % modulus_params->modulus;
+      ASSERT_OK_AND_ASSIGN(TypeParam ma,
+                           TypeParam::ImportInt(a, modulus_params.get()));
+      ASSERT_OK_AND_ASSIGN(TypeParam mb,
+                           TypeParam::ImportInt(b, modulus_params.get()));
+      ma.AddInPlace(mb, modulus_params.get());
+      Int c = ma.ExportInt(modulus_params.get());
 
-      Int expected = (a + b) % params->modulus;
+      Int expected = (a + b) % modulus_params->modulus;
       EXPECT_EQ(expected, c);
 
-      ASSERT_OK_AND_ASSIGN(ma, MontgomeryInt<Int>::ImportInt(a, params.get()));
+      ASSERT_OK_AND_ASSIGN(ma, TypeParam::ImportInt(a, modulus_params.get()));
 
-      ma.SubInPlace(mb, params.get());
-      Int d = ma.ExportInt(params.get());
+      ma.SubInPlace(mb, modulus_params.get());
+      Int d = ma.ExportInt(modulus_params.get());
 
-      Int expected2 = (a + params->modulus - b) % params->modulus;
+      Int expected2 =
+          (a + modulus_params->modulus - b) % modulus_params->modulus;
       EXPECT_EQ(expected2, d);
     }
   }
@@ -258,27 +203,30 @@ TYPED_TEST(MontgomeryTest, InlineAddSub) {
 
 // Verifies that equality functions properly.
 TYPED_TEST(MontgomeryTest, Equality) {
-  using Int = TypeParam;
+  using Int = typename TypeParam::Int;
 
   // Test over a selection of the possible input space.
   unsigned int seed = 0;
 
-  for (auto& params : this->params_) {
+  for (const auto& params :
+       rlwe::testing::ContextParameters<TypeParam>::value) {
+    ASSERT_OK_AND_ASSIGN(auto modulus_params,
+                         TypeParam::Params::Create(params.modulus));
     for (int i = 0; i < kTestingRounds; i++) {
-      Int a = GenerateRandom<Int>(&seed) % params->modulus;
-      Int b = GenerateRandom<Int>(&seed) % params->modulus;
+      Int a = GenerateRandom<Int>(&seed) % modulus_params->modulus;
+      Int b = GenerateRandom<Int>(&seed) % modulus_params->modulus;
       while (b == a) {
-        b = GenerateRandom<Int>(&seed) % params->modulus;
+        b = GenerateRandom<Int>(&seed) % modulus_params->modulus;
       }
 
       ASSERT_OK_AND_ASSIGN(auto ma1,
-                           MontgomeryInt<Int>::ImportInt(a, params.get()));
+                           TypeParam::ImportInt(a, modulus_params.get()));
       ASSERT_OK_AND_ASSIGN(auto ma2,
-                           MontgomeryInt<Int>::ImportInt(a, params.get()));
+                           TypeParam::ImportInt(a, modulus_params.get()));
       ASSERT_OK_AND_ASSIGN(auto mb1,
-                           MontgomeryInt<Int>::ImportInt(b, params.get()));
+                           TypeParam::ImportInt(b, modulus_params.get()));
       ASSERT_OK_AND_ASSIGN(auto mb2,
-                           MontgomeryInt<Int>::ImportInt(b, params.get()));
+                           TypeParam::ImportInt(b, modulus_params.get()));
 
       EXPECT_TRUE(ma1 == ma2);
       EXPECT_TRUE(ma2 == ma1);
@@ -300,158 +248,207 @@ TYPED_TEST(MontgomeryTest, Equality) {
 
 // Verifies that numbers can be negated correctly.
 TYPED_TEST(MontgomeryTest, Negate) {
-  using Int = TypeParam;
+  using Int = typename TypeParam::Int;
 
-  for (auto& params : this->params_) {
+  for (const auto& params :
+       rlwe::testing::ContextParameters<TypeParam>::value) {
+    ASSERT_OK_AND_ASSIGN(auto modulus_params,
+                         TypeParam::Params::Create(params.modulus));
     for (Int i = 0; i < 4 * kNewhopeModulus; i++) {
       ASSERT_OK_AND_ASSIGN(auto mi,
-                           MontgomeryInt<Int>::ImportInt(i, params.get()));
-      EXPECT_EQ(0, mi.Add(mi.Negate(params.get()), params.get())
-                       .ExportInt(params.get()));
+                           TypeParam::ImportInt(i, modulus_params.get()));
+      EXPECT_EQ(0, mi.Add(mi.Negate(modulus_params.get()), modulus_params.get())
+                       .ExportInt(modulus_params.get()));
     }
   }
 }
 
 // Verifies that repeated addition works properly.
 TYPED_TEST(MontgomeryTest, AddRepeatedly) {
-  using Int = TypeParam;
+  using Int = typename TypeParam::Int;
 
   // Test over a selection of the possible input space.
   unsigned int seed = 0;
 
-  for (auto& params : this->params_) {
+  for (const auto& params :
+       rlwe::testing::ContextParameters<TypeParam>::value) {
+    ASSERT_OK_AND_ASSIGN(auto modulus_params,
+                         TypeParam::Params::Create(params.modulus));
     for (int i = 0; i < kTestingRounds; i++) {
       Int sum = 0;
       Int diff = 0;
-      MontgomeryInt<Int> mont_sum =
-          MontgomeryInt<Int>::ImportZero(params.get());
-      MontgomeryInt<Int> mont_diff =
-          MontgomeryInt<Int>::ImportZero(params.get());
+      TypeParam mont_sum = TypeParam::ImportZero(modulus_params.get());
+      TypeParam mont_diff = TypeParam::ImportZero(modulus_params.get());
 
       for (int j = 0; j < 1000; j++) {
-        Int a = GenerateRandom<Int>(&seed) % params->modulus;
+        Int a = GenerateRandom<Int>(&seed) % modulus_params->modulus;
 
-        sum = (sum + a) % params->modulus;
+        sum = (sum + a) % modulus_params->modulus;
         ASSERT_OK_AND_ASSIGN(auto ma,
-                             MontgomeryInt<Int>::ImportInt(a, params.get()));
-        mont_sum = mont_sum.Add(ma, params.get());
+                             TypeParam::ImportInt(a, modulus_params.get()));
+        mont_sum = mont_sum.Add(ma, modulus_params.get());
 
-        diff = (diff + params->modulus - a) % params->modulus;
-        mont_diff = mont_diff.Sub(ma, params.get());
+        diff = (diff + modulus_params->modulus - a) % modulus_params->modulus;
+        mont_diff = mont_diff.Sub(ma, modulus_params.get());
       }
 
-      EXPECT_EQ(sum, mont_sum.ExportInt(params.get()));
-      EXPECT_EQ(diff, mont_diff.ExportInt(params.get()));
+      EXPECT_EQ(sum, mont_sum.ExportInt(modulus_params.get()));
+      EXPECT_EQ(diff, mont_diff.ExportInt(modulus_params.get()));
     }
   }
 }
 
 // Verifies that numbers can be multiplied correctly.
 TYPED_TEST(MontgomeryTest, Multiply) {
-  using Int = TypeParam;
+  using Int = typename TypeParam::Int;
   using BigInt = typename internal::BigInt<Int>::value_type;
+
+  // Test over a selection of the possible input space.
   unsigned int seed = 0;
 
-  for (auto& params : this->params_) {
+  for (const auto& params :
+       rlwe::testing::ContextParameters<TypeParam>::value) {
+    ASSERT_OK_AND_ASSIGN(auto modulus_params,
+                         TypeParam::Params::Create(params.modulus));
     // Test over many random values.
     for (int i = 0; i < kTestingRounds; i++) {
-      Int a = GenerateRandom<Int>(&seed) % params->modulus;
-      Int b = GenerateRandom<Int>(&seed) % params->modulus;
+      Int a = GenerateRandom<Int>(&seed) % modulus_params->modulus;
+      Int b = GenerateRandom<Int>(&seed) % modulus_params->modulus;
       ASSERT_OK_AND_ASSIGN(auto ma,
-                           MontgomeryInt<Int>::ImportInt(a, params.get()));
+                           TypeParam::ImportInt(a, modulus_params.get()));
       ASSERT_OK_AND_ASSIGN(auto mb,
-                           MontgomeryInt<Int>::ImportInt(b, params.get()));
-      MontgomeryInt<Int> mc = ma.Mul(mb, params.get());
-      Int c = mc.ExportInt(params.get());
+                           TypeParam::ImportInt(b, modulus_params.get()));
+      TypeParam mc = ma.Mul(mb, modulus_params.get());
+      Int c = mc.ExportInt(modulus_params.get());
 
       Int expected =
           static_cast<Int>((static_cast<BigInt>(a) * static_cast<BigInt>(b)) %
-                           static_cast<BigInt>(params->modulus));
+                           static_cast<BigInt>(modulus_params->modulus));
       EXPECT_EQ(expected, c);
     }
     // Test the multiplication of the maximum values together.
-    Int a = params->modulus - 1;
+    Int a = modulus_params->modulus - 1;
     ASSERT_OK_AND_ASSIGN(auto ma,
-                         MontgomeryInt<Int>::ImportInt(a, params.get()));
+                         TypeParam::ImportInt(a, modulus_params.get()));
 
-    MontgomeryInt<Int> mb = ma.Mul(ma, params.get());
-    Int b = mb.ExportInt(params.get());
+    TypeParam mb = ma.Mul(ma, modulus_params.get());
+    Int b = mb.ExportInt(modulus_params.get());
 
     EXPECT_EQ(1, b);
   }
 }
 
-TYPED_TEST(MontgomeryTest, InlineMultiply) {
-  using Int = TypeParam;
+TYPED_TEST(MontgomeryTest, MulInPlace) {
+  using Int = typename TypeParam::Int;
   using BigInt = typename internal::BigInt<Int>::value_type;
+
+  // Test over a selection of the possible input space.
   unsigned int seed = 0;
 
-  for (auto& params : this->params_) {
+  for (const auto& params :
+       rlwe::testing::ContextParameters<TypeParam>::value) {
+    ASSERT_OK_AND_ASSIGN(auto modulus_params,
+                         TypeParam::Params::Create(params.modulus));
     // Test over many random values.
     for (int i = 0; i < kTestingRounds; i++) {
-      Int a = GenerateRandom<Int>(&seed) % params->modulus;
-      Int b = GenerateRandom<Int>(&seed) % params->modulus;
+      Int a = GenerateRandom<Int>(&seed) % modulus_params->modulus;
+      Int b = GenerateRandom<Int>(&seed) % modulus_params->modulus;
       ASSERT_OK_AND_ASSIGN(auto ma,
-                           MontgomeryInt<Int>::ImportInt(a, params.get()));
+                           TypeParam::ImportInt(a, modulus_params.get()));
       ASSERT_OK_AND_ASSIGN(auto mb,
-                           MontgomeryInt<Int>::ImportInt(b, params.get()));
-      ma.MulInPlace(mb, params.get());
-      Int c = ma.ExportInt(params.get());
+                           TypeParam::ImportInt(b, modulus_params.get()));
+      ma.MulInPlace(mb, modulus_params.get());
+      Int c = ma.ExportInt(modulus_params.get());
 
       Int expected =
           static_cast<Int>((static_cast<BigInt>(a) * static_cast<BigInt>(b)) %
-                           static_cast<BigInt>(params->modulus));
+                           static_cast<BigInt>(modulus_params->modulus));
       EXPECT_EQ(expected, c);
+    }
+  }
+}
+
+TYPED_TEST(MontgomeryTest, MulConstantInPlace) {
+  using Int = typename TypeParam::Int;
+
+  // Test over a selection of the possible input space.
+  unsigned int seed = 0;
+
+  for (const auto& params :
+       rlwe::testing::ContextParameters<TypeParam>::value) {
+    ASSERT_OK_AND_ASSIGN(auto modulus_params,
+                         TypeParam::Params::Create(params.modulus));
+    // Test over many random values.
+    for (int i = 0; i < kTestingRounds; i++) {
+      Int a = GenerateRandom<Int>(&seed) % modulus_params->modulus;
+      Int b = GenerateRandom<Int>(&seed) % modulus_params->modulus;
+      ASSERT_OK_AND_ASSIGN(auto ma,
+                           TypeParam::ImportInt(a, modulus_params.get()));
+      auto ma_clone = ma;
+      ASSERT_OK_AND_ASSIGN(auto mb,
+                           TypeParam::ImportInt(b, modulus_params.get()));
+      auto [constant, constant_barrett] = mb.GetConstant(modulus_params.get());
+      ma.MulInPlace(mb, modulus_params.get());
+      ma_clone.MulConstantInPlace(constant, constant_barrett,
+                                  modulus_params.get());
+
+      EXPECT_EQ(ma.ExportInt(modulus_params.get()),
+                ma_clone.ExportInt(modulus_params.get()));
     }
   }
 }
 
 // Verifies that repeated addition works properly.
 TYPED_TEST(MontgomeryTest, MultiplyRepeatedly) {
-  using Int = TypeParam;
+  using Int = typename TypeParam::Int;
   using BigInt = typename internal::BigInt<Int>::value_type;
 
   // Test over a selection of the possible input space.
   unsigned int seed = 0;
 
-  for (auto& params : this->params_) {
+  for (const auto& params :
+       rlwe::testing::ContextParameters<TypeParam>::value) {
+    ASSERT_OK_AND_ASSIGN(auto modulus_params,
+                         TypeParam::Params::Create(params.modulus));
     for (int i = 0; i < kTestingRounds; i++) {
       BigInt prod = 1;
-      MontgomeryInt<Int> mont_prod =
-          MontgomeryInt<Int>::ImportOne(params.get());
+      TypeParam mont_prod = TypeParam::ImportOne(modulus_params.get());
 
       for (int j = 0; j < 1000; j++) {
-        Int a = GenerateRandom<Int>(&seed) % params->modulus;
+        Int a = GenerateRandom<Int>(&seed) % modulus_params->modulus;
 
         prod = (prod * static_cast<BigInt>(a)) %
-               static_cast<BigInt>(params->modulus);
+               static_cast<BigInt>(modulus_params->modulus);
         ASSERT_OK_AND_ASSIGN(auto ma,
-                             MontgomeryInt<Int>::ImportInt(a, params.get()));
-        mont_prod = mont_prod.Mul(ma, params.get());
+                             TypeParam::ImportInt(a, modulus_params.get()));
+        mont_prod = mont_prod.Mul(ma, modulus_params.get());
       }
 
-      EXPECT_EQ(static_cast<Int>(prod), mont_prod.ExportInt(params.get()));
+      EXPECT_EQ(static_cast<Int>(prod),
+                mont_prod.ExportInt(modulus_params.get()));
     }
   }
 }
 
 // Test the entire space for a small modulus.
 TYPED_TEST(MontgomeryTest, SmallModulus) {
-  using Int = TypeParam;
+  using Int = typename TypeParam::Int;
   using BigInt = typename internal::BigInt<Int>::value_type;
 
-  for (auto& params : this->params_) {
-    const BigInt modulus = static_cast<BigInt>(params->modulus);
-    Int upper_bound = std::min<Int>(kModulus8, params->modulus);
-    for (Int a = 0; a < 2 * upper_bound; a++) {
+  for (const auto& params :
+       rlwe::testing::ContextParameters<TypeParam>::value) {
+    ASSERT_OK_AND_ASSIGN(auto modulus_params,
+                         TypeParam::Params::Create(params.modulus));
+    const BigInt modulus = static_cast<BigInt>(modulus_params->modulus);
+    for (Int a = 0; a < kExhaustiveTest; a++) {
       Int b = a + 1;
       BigInt a_BigInt = static_cast<BigInt>(a);
       BigInt b_BigInt = static_cast<BigInt>(b);
       ASSERT_OK_AND_ASSIGN(auto ma,
-                           MontgomeryInt<Int>::ImportInt(a, params.get()));
+                           TypeParam::ImportInt(a, modulus_params.get()));
       ASSERT_OK_AND_ASSIGN(auto mb,
-                           MontgomeryInt<Int>::ImportInt(b, params.get()));
-      MontgomeryInt<Int> mc = ma.Add(mb, params.get());
+                           TypeParam::ImportInt(b, modulus_params.get()));
+      TypeParam mc = ma.Add(mb, modulus_params.get());
 
       // Equality.
       if (a_BigInt % modulus == b_BigInt % modulus) {
@@ -464,46 +461,58 @@ TYPED_TEST(MontgomeryTest, SmallModulus) {
 
       // Addition.
       EXPECT_EQ(static_cast<Int>((a_BigInt + b_BigInt) % modulus),
-                mc.ExportInt(params.get()));
+                mc.ExportInt(modulus_params.get()));
 
       // Negation.
-      EXPECT_EQ(static_cast<Int>((2 * modulus - a_BigInt) % modulus),
-                (ma.Negate(params.get())).ExportInt(params.get()));
-      EXPECT_EQ(static_cast<Int>((2 * modulus - b_BigInt) % modulus),
-                (mb.Negate(params.get())).ExportInt(params.get()));
-      EXPECT_EQ(static_cast<Int>((4 * modulus - a_BigInt - b_BigInt) % modulus),
-                (mc.Negate(params.get())).ExportInt(params.get()));
+      EXPECT_EQ(
+          static_cast<Int>((2 * modulus - a_BigInt) % modulus),
+          (ma.Negate(modulus_params.get())).ExportInt(modulus_params.get()));
+      EXPECT_EQ(
+          static_cast<Int>((2 * modulus - b_BigInt) % modulus),
+          (mb.Negate(modulus_params.get())).ExportInt(modulus_params.get()));
+      EXPECT_EQ(
+          static_cast<Int>((4 * modulus - a_BigInt - b_BigInt) % modulus),
+          (mc.Negate(modulus_params.get())).ExportInt(modulus_params.get()));
 
       // Subtraction.
-      EXPECT_EQ(static_cast<Int>((2 * modulus - a_BigInt + b_BigInt) % modulus),
-                (mb.Sub(ma, params.get()).ExportInt(params.get())));
-      EXPECT_EQ(static_cast<Int>((2 * modulus - b_BigInt + a_BigInt) % modulus),
-                (ma.Sub(mb, params.get()).ExportInt(params.get())));
+      EXPECT_EQ(
+          static_cast<Int>((2 * modulus - a_BigInt + b_BigInt) % modulus),
+          (mb.Sub(ma, modulus_params.get()).ExportInt(modulus_params.get())));
+      EXPECT_EQ(
+          static_cast<Int>((2 * modulus - b_BigInt + a_BigInt) % modulus),
+          (ma.Sub(mb, modulus_params.get()).ExportInt(modulus_params.get())));
 
       // Multiplication and commutativity.
-      EXPECT_EQ(static_cast<Int>((a_BigInt * b_BigInt) % modulus),
-                (ma.Mul(mb, params.get())).ExportInt(params.get()));
-      EXPECT_EQ(static_cast<Int>((a_BigInt * b_BigInt) % modulus),
-                (mb.Mul(ma, params.get())).ExportInt(params.get()));
+      EXPECT_EQ(
+          static_cast<Int>((a_BigInt * b_BigInt) % modulus),
+          (ma.Mul(mb, modulus_params.get())).ExportInt(modulus_params.get()));
+      EXPECT_EQ(
+          static_cast<Int>((a_BigInt * b_BigInt) % modulus),
+          (mb.Mul(ma, modulus_params.get())).ExportInt(modulus_params.get()));
     }
   }
 }
 
 TYPED_TEST(MontgomeryTest, ModExpModulus) {
-  using Int = TypeParam;
+  using Int = typename TypeParam::Int;
   using BigInt = typename internal::BigInt<Int>::value_type;
+
+  // Test over a selection of the possible input space.
   unsigned int seed = 0;
 
-  for (auto& params : this->params_) {
-    const BigInt modulus = static_cast<BigInt>(params->modulus);
+  for (const auto& params :
+       rlwe::testing::ContextParameters<TypeParam>::value) {
+    ASSERT_OK_AND_ASSIGN(auto modulus_params,
+                         TypeParam::Params::Create(params.modulus));
+    const BigInt modulus = static_cast<BigInt>(modulus_params->modulus);
     for (int i = 0; i < kTestingRounds; i++) {
       BigInt expected = 1;
-      Int base = GenerateRandom<Int>(&seed) % params->modulus;
-      for (Int exp = 0; exp < 1000; exp++) {
+      Int base = GenerateRandom<Int>(&seed) % modulus_params->modulus;
+      for (Int exp = 0; exp < kExhaustiveTest; exp++) {
         ASSERT_OK_AND_ASSIGN(auto base_m,
-                             MontgomeryInt<Int>::ImportInt(base, params.get()));
-        auto actual_m = base_m.ModExp(exp, params.get());
-        Int actual = actual_m.ExportInt(params.get());
+                             TypeParam::ImportInt(base, modulus_params.get()));
+        auto actual_m = base_m.ModExp(exp, modulus_params.get());
+        Int actual = actual_m.ExportInt(modulus_params.get());
         ASSERT_EQ(actual, expected);
 
         expected *= static_cast<BigInt>(base);
@@ -514,66 +523,79 @@ TYPED_TEST(MontgomeryTest, ModExpModulus) {
 }
 
 TYPED_TEST(MontgomeryTest, InverseModulus) {
-  using Int = TypeParam;
+  using Int = typename TypeParam::Int;
+
+  // Test over a selection of the possible input space.
   unsigned int seed = 0;
 
-  for (auto& params : this->params_) {
+  for (const auto& params :
+       rlwe::testing::ContextParameters<TypeParam>::value) {
+    ASSERT_OK_AND_ASSIGN(auto modulus_params,
+                         TypeParam::Params::Create(params.modulus));
     for (int i = 0; i < kTestingRounds; i++) {
-      Int a = GenerateRandom<Int>(&seed) % params->modulus;
+      Int a = GenerateRandom<Int>(&seed) % modulus_params->modulus;
       ASSERT_OK_AND_ASSIGN(auto a_m,
-                           MontgomeryInt<Int>::ImportInt(a, params.get()));
-      MontgomeryInt<Int> inv = a_m.MultiplicativeInverse(params.get());
-      ASSERT_EQ((a_m.Mul(inv, params.get())).ExportInt(params.get()), 1);
+                           TypeParam::ImportInt(a, modulus_params.get()));
+      TypeParam inv = a_m.MultiplicativeInverse(modulus_params.get());
+      ASSERT_EQ(
+          (a_m.Mul(inv, modulus_params.get())).ExportInt(modulus_params.get()),
+          1);
     }
   }
 }
 
 TYPED_TEST(MontgomeryTest, Serialization) {
-  using Int = TypeParam;
+  using Int = typename TypeParam::Int;
 
-  // Try all possible values up to kModulus10.
-  for (auto& params : this->params_) {
-    for (Int i = 0; i < kModulus10; i++) {
-      Int input_int = i % params->modulus;
+  for (const auto& params :
+       rlwe::testing::ContextParameters<TypeParam>::value) {
+    ASSERT_OK_AND_ASSIGN(auto modulus_params,
+                         TypeParam::Params::Create(params.modulus));
+    for (Int i = 0; i < kExhaustiveTest; i++) {
+      Int input_int = i % modulus_params->modulus;
       // Serialize and ensure the byte length is as expected.
-      ASSERT_OK_AND_ASSIGN(auto int_value, MontgomeryInt<Int>::ImportInt(
-                                               input_int, params.get()));
+      ASSERT_OK_AND_ASSIGN(
+          auto int_value,
+          TypeParam::ImportInt(input_int, modulus_params.get()));
 
       ASSERT_OK_AND_ASSIGN(std::string serialized,
-                           int_value.Serialize(params.get()));
+                           int_value.Serialize(modulus_params.get()));
 
-      EXPECT_EQ(serialized.length(), params->SerializedSize());
+      EXPECT_EQ(serialized.length(), modulus_params->SerializedSize());
 
       // Ensure that deserialization works properly.
       ASSERT_OK_AND_ASSIGN(
           auto int_deserialized,
-          MontgomeryInt<Int>::Deserialize(serialized, params.get()));
+          TypeParam::Deserialize(serialized, modulus_params.get()));
       EXPECT_EQ(int_deserialized, int_value);
 
       // Ensure that that any bit beyond bit the serialized bit length can be
       // wiped out without issue. That is, ensure that the bit size is accurate.
       serialized[serialized.length() - 1] &=
           (static_cast<Uint8>(1)
-           << (params->log_modulus - 8 * (serialized.length() - 1))) -
+           << (modulus_params->log_modulus - 8 * (serialized.length() - 1))) -
           1;
       ASSERT_OK_AND_ASSIGN(
           auto int_deserialized2,
-          MontgomeryInt<Int>::Deserialize(serialized, params.get()));
+          TypeParam::Deserialize(serialized, modulus_params.get()));
       EXPECT_EQ(int_deserialized2, int_value);
     }
   }
 }
 
 TYPED_TEST(MontgomeryTest, ExceedMaxNumCoeffVectorSerialization) {
-  using Int = TypeParam;
   int num_coeffs = kMaxNumCoeffs + 1;
 
-  for (auto& params : this->params_) {
-    std::vector<MontgomeryInt<Int>> coeffs;
+  for (const auto& params :
+       rlwe::testing::ContextParameters<TypeParam>::value) {
+    ASSERT_OK_AND_ASSIGN(auto modulus_params,
+                         TypeParam::Params::Create(params.modulus));
+
+    std::vector<TypeParam> coeffs;
     for (int i = 0; i < num_coeffs; ++i) {
-      coeffs.push_back(MontgomeryInt<Int>::ImportOne(params.get()));
+      coeffs.push_back(TypeParam::ImportOne(modulus_params.get()));
     }
-    EXPECT_THAT(MontgomeryInt<Int>::SerializeVector(coeffs, params.get()),
+    EXPECT_THAT(TypeParam::SerializeVector(coeffs, modulus_params.get()),
                 StatusIs(absl::StatusCode::kInvalidArgument,
                          HasSubstr(absl::StrCat(
                              "Number of coefficients, ", num_coeffs,
@@ -582,39 +604,43 @@ TYPED_TEST(MontgomeryTest, ExceedMaxNumCoeffVectorSerialization) {
 }
 
 TYPED_TEST(MontgomeryTest, EmptyVectorSerialization) {
-  using Int = TypeParam;
-
-  for (auto& params : this->params_) {
-    std::vector<MontgomeryInt<Int>> coeffs;
-    EXPECT_THAT(MontgomeryInt<Int>::SerializeVector(coeffs, params.get()),
+  for (const auto& params :
+       rlwe::testing::ContextParameters<TypeParam>::value) {
+    ASSERT_OK_AND_ASSIGN(auto modulus_params,
+                         TypeParam::Params::Create(params.modulus));
+    std::vector<TypeParam> coeffs;
+    EXPECT_THAT(TypeParam::SerializeVector(coeffs, modulus_params.get()),
                 StatusIs(absl::StatusCode::kInvalidArgument,
                          HasSubstr("Cannot serialize an empty vector")));
   }
 }
 
 TYPED_TEST(MontgomeryTest, VectorSerialization) {
-  using Int = TypeParam;
-
   // Prng to generate random values
   auto prng = absl::make_unique<rlwe::testing::TestingPrng>(0);
 
-  for (auto& params : this->params_) {
+  for (const auto& params :
+       rlwe::testing::ContextParameters<TypeParam>::value) {
+    ASSERT_OK_AND_ASSIGN(auto modulus_params,
+                         TypeParam::Params::Create(params.modulus));
+
     for (int num_coeffs = 3; num_coeffs <= 25; ++num_coeffs) {
-      std::vector<MontgomeryInt<Int>> coeffs;
+      std::vector<TypeParam> coeffs;
       coeffs.reserve(num_coeffs);
       for (int i = 0; i < num_coeffs; ++i) {
-        ASSERT_OK_AND_ASSIGN(auto int_value, MontgomeryInt<Int>::ImportRandom(
-                                                 prng.get(), params.get()));
+        ASSERT_OK_AND_ASSIGN(
+            auto int_value,
+            TypeParam::ImportRandom(prng.get(), modulus_params.get()));
         coeffs.push_back(int_value);
       }
       ASSERT_OK_AND_ASSIGN(
           std::string serialized,
-          MontgomeryInt<Int>::SerializeVector(coeffs, params.get()));
-      int expected_size = (num_coeffs * params->log_modulus + 7) / 8;
+          TypeParam::SerializeVector(coeffs, modulus_params.get()));
+      int expected_size = (num_coeffs * modulus_params->log_modulus + 7) / 8;
       EXPECT_EQ(serialized.size(), expected_size);
       ASSERT_OK_AND_ASSIGN(auto deserialized,
-                           MontgomeryInt<Int>::DeserializeVector(
-                               num_coeffs, serialized, params.get()));
+                           TypeParam::DeserializeVector(num_coeffs, serialized,
+                                                        modulus_params.get()));
       EXPECT_EQ(deserialized.size(), num_coeffs);
       for (int i = 0; i < num_coeffs; ++i) {
         EXPECT_EQ(coeffs[i], deserialized[i]);
@@ -624,11 +650,15 @@ TYPED_TEST(MontgomeryTest, VectorSerialization) {
 }
 
 TYPED_TEST(MontgomeryTest, ExceedMaxNumCoeffVectorDeserialization) {
-  using Int = TypeParam;
   int num_coeffs = kMaxNumCoeffs + 1;
-  for (auto& params : this->params_) {
-    EXPECT_THAT(MontgomeryInt<Int>::DeserializeVector(num_coeffs, std::string(),
-                                                      params.get()),
+
+  for (const auto& params :
+       rlwe::testing::ContextParameters<TypeParam>::value) {
+    ASSERT_OK_AND_ASSIGN(auto modulus_params,
+                         TypeParam::Params::Create(params.modulus));
+
+    EXPECT_THAT(TypeParam::DeserializeVector(num_coeffs, std::string(),
+                                             modulus_params.get()),
                 StatusIs(absl::StatusCode::kInvalidArgument,
                          HasSubstr(absl::StrCat(
                              "Number of coefficients, ", num_coeffs,
@@ -637,182 +667,233 @@ TYPED_TEST(MontgomeryTest, ExceedMaxNumCoeffVectorDeserialization) {
 }
 
 TYPED_TEST(MontgomeryTest, NegativeVectorDeserialization) {
-  using Int = TypeParam;
   int num_coeffs = -1;
-  for (auto& params : this->params_) {
+
+  for (const auto& params :
+       rlwe::testing::ContextParameters<TypeParam>::value) {
+    ASSERT_OK_AND_ASSIGN(auto modulus_params,
+                         TypeParam::Params::Create(params.modulus));
     EXPECT_THAT(
-        MontgomeryInt<Int>::DeserializeVector(num_coeffs, std::string(),
-                                              params.get()),
+        TypeParam::DeserializeVector(num_coeffs, std::string(),
+                                     modulus_params.get()),
         StatusIs(absl::StatusCode::kInvalidArgument,
                  HasSubstr("Number of coefficients must be non-negative.")));
   }
 }
 
 TYPED_TEST(MontgomeryTest, ImportRandomWithPrngWithSameKeys) {
-  using Int = TypeParam;
+  unsigned seed = 0;
+  unsigned int seed_prng = GenerateRandom<unsigned int>(&seed);
 
-  unsigned int seed = 0;
+  for (const auto& params :
+       rlwe::testing::ContextParameters<TypeParam>::value) {
+    ASSERT_OK_AND_ASSIGN(auto modulus_params,
+                         TypeParam::Params::Create(params.modulus));
 
-  for (auto& params : this->params_) {
-    unsigned int seed_prng = GenerateRandom<unsigned int>(&seed);
     auto prng1 = absl::make_unique<rlwe::testing::TestingPrng>(seed_prng);
     auto prng2 = absl::make_unique<rlwe::testing::TestingPrng>(seed_prng);
 
     ASSERT_OK_AND_ASSIGN(
-        auto r1, MontgomeryInt<Int>::ImportRandom(prng1.get(), params.get()));
+        auto r1, TypeParam::ImportRandom(prng1.get(), modulus_params.get()));
     ASSERT_OK_AND_ASSIGN(
-        auto r2, MontgomeryInt<Int>::ImportRandom(prng2.get(), params.get()));
+        auto r2, TypeParam::ImportRandom(prng2.get(), modulus_params.get()));
     EXPECT_EQ(r1, r2);
   }
 }
 
 TYPED_TEST(MontgomeryTest, ImportRandomWithPrngWithDifferentKeys) {
-  using Int = TypeParam;
+  unsigned seed = 0;
+  unsigned int seed_prng1 = GenerateRandom<unsigned int>(&seed);
+  unsigned int seed_prng2 = seed_prng1 + 1;  // Different seed
 
-  unsigned int seed = 0;
+  for (const auto& params :
+       rlwe::testing::ContextParameters<TypeParam>::value) {
+    ASSERT_OK_AND_ASSIGN(auto modulus_params,
+                         TypeParam::Params::Create(params.modulus));
 
-  for (auto& params : this->params_) {
-    unsigned int seed_prng1 = GenerateRandom<unsigned int>(&seed);
-    unsigned int seed_prng2 = seed_prng1 + 1;  // Different seed
     auto prng1 = absl::make_unique<rlwe::testing::TestingPrng>(seed_prng1);
     auto prng2 = absl::make_unique<rlwe::testing::TestingPrng>(seed_prng2);
-
     ASSERT_OK_AND_ASSIGN(
-        auto r1, MontgomeryInt<Int>::ImportRandom(prng1.get(), params.get()));
+        auto r1, TypeParam::ImportRandom(prng1.get(), modulus_params.get()));
     ASSERT_OK_AND_ASSIGN(
-        auto r2, MontgomeryInt<Int>::ImportRandom(prng2.get(), params.get()));
+        auto r2, TypeParam::ImportRandom(prng2.get(), modulus_params.get()));
     EXPECT_NE(r1, r2);
   }
 }
 
 // Verifies that Barrett reductions functions properly.
 TYPED_TEST(MontgomeryTest, VerifyBarrett) {
-  using Int = TypeParam;
+  using Int = typename TypeParam::Int;
   using BigInt = typename internal::BigInt<Int>::value_type;
 
-  // Test over a selection of the possible input space.
-  for (unsigned int j = 0; j < kTestingRounds; j++) {
-    unsigned int seed = j;
+  for (const auto& params :
+       rlwe::testing::ContextParameters<TypeParam>::value) {
+    ASSERT_OK_AND_ASSIGN(auto modulus_params,
+                         TypeParam::Params::Create(params.modulus));
 
-    for (auto& params : this->params_) {
-      const BigInt modulus = static_cast<BigInt>(params->modulus);
+    // Test over a selection of the possible input space.
+    for (unsigned int j = 0; j < kTestingRounds; j++) {
+      unsigned int seed = j;
+
       for (int i = 0; i < kTestingRounds; i++) {
         // Verify Barrett reduction up to max(Int).
-        Int a = params->modulus +
+        Int a = modulus_params->modulus +
                 (GenerateRandom<Int>(&seed) %
-                 (std::numeric_limits<Int>::max() - params->modulus));
-        EXPECT_EQ(params->BarrettReduce(a), static_cast<BigInt>(a) % modulus);
-
-        // Verify Barrett reduction for BigInt up to max(Int) * modulus.
-        BigInt b = GenerateRandom<BigInt>(&seed) %
-                   (std::numeric_limits<Int>::max() * params->modulus);
-        EXPECT_EQ(params->BarrettReduceBigInt(b), b % modulus);
+                 (std::numeric_limits<Int>::max() - modulus_params->modulus));
+        EXPECT_EQ(modulus_params->BarrettReduce(a), a % params.modulus);
       }
     }
   }
 }
 
 TYPED_TEST(MontgomeryTest, BatchOperations) {
-  using Int = TypeParam;
+  using Int = typename TypeParam::Int;
+
   unsigned int seed = 0;
   unsigned int seed_prng = GenerateRandom<unsigned int>(&seed);
   auto prng = absl::make_unique<rlwe::testing::TestingPrng>(seed_prng);
 
-  for (auto& params : this->params_) {
+  for (const auto& params :
+       rlwe::testing::ContextParameters<TypeParam>::value) {
+    ASSERT_OK_AND_ASSIGN(auto modulus_params,
+                         TypeParam::Params::Create(params.modulus));
+
     for (size_t length : {1, 2, 7, 32, 500, 1024}) {
-      std::vector<MontgomeryInt<Int>> a, b;
-      std::vector<MontgomeryInt<Int>> expected_add, expected_sub, expected_mul;
-      MontgomeryInt<Int> scalar =
-          MontgomeryInt<Int>::ImportRandom(prng.get(), params.get())
+      std::vector<TypeParam> a, b;
+      std::vector<Int> b_constant, b_constant_barrett;
+      std::vector<TypeParam> expected_add, expected_sub, expected_mul;
+      TypeParam scalar =
+          TypeParam::ImportRandom(prng.get(), modulus_params.get())
               .ValueOrDie();
-      std::vector<MontgomeryInt<Int>> expected_add_scalar, expected_sub_scalar,
+      auto [scalar_constant, scalar_constant_barrett] =
+          scalar.GetConstant(modulus_params.get());
+      std::vector<TypeParam> expected_add_scalar, expected_sub_scalar,
           expected_mul_scalar;
       for (size_t i = 0; i < length; i++) {
-        a.push_back(MontgomeryInt<Int>::ImportRandom(prng.get(), params.get())
+        a.push_back(TypeParam::ImportRandom(prng.get(), modulus_params.get())
                         .ValueOrDie());
-        b.push_back(MontgomeryInt<Int>::ImportRandom(prng.get(), params.get())
+        b.push_back(TypeParam::ImportRandom(prng.get(), modulus_params.get())
                         .ValueOrDie());
-        expected_add.push_back(a[i].Add(b[i], params.get()));
-        expected_sub.push_back(a[i].Sub(b[i], params.get()));
-        expected_mul.push_back(a[i].Mul(b[i], params.get()));
-        expected_add_scalar.push_back(a[i].Add(scalar, params.get()));
-        expected_sub_scalar.push_back(a[i].Sub(scalar, params.get()));
-        expected_mul_scalar.push_back(a[i].Mul(scalar, params.get()));
+        auto [constant, constant_barrett] =
+            b[i].GetConstant(modulus_params.get());
+        b_constant.push_back(constant);
+        b_constant_barrett.push_back(constant_barrett);
+        expected_add.push_back(a[i].Add(b[i], modulus_params.get()));
+        expected_sub.push_back(a[i].Sub(b[i], modulus_params.get()));
+        expected_mul.push_back(a[i].Mul(b[i], modulus_params.get()));
+        expected_add_scalar.push_back(a[i].Add(scalar, modulus_params.get()));
+        expected_sub_scalar.push_back(a[i].Sub(scalar, modulus_params.get()));
+        expected_mul_scalar.push_back(a[i].Mul(scalar, modulus_params.get()));
       }
 
-      ASSERT_OK_AND_ASSIGN(std::vector<MontgomeryInt<Int>> add,
-                           MontgomeryInt<Int>::BatchAdd(a, b, params.get()));
-      ASSERT_OK_AND_ASSIGN(std::vector<MontgomeryInt<Int>> sub,
-                           MontgomeryInt<Int>::BatchSub(a, b, params.get()));
-      ASSERT_OK_AND_ASSIGN(std::vector<MontgomeryInt<Int>> mul,
-                           MontgomeryInt<Int>::BatchMul(a, b, params.get()));
+      ASSERT_OK_AND_ASSIGN(std::vector<TypeParam> add,
+                           TypeParam::BatchAdd(a, b, modulus_params.get()));
+      ASSERT_OK_AND_ASSIGN(std::vector<TypeParam> sub,
+                           TypeParam::BatchSub(a, b, modulus_params.get()));
+      ASSERT_OK_AND_ASSIGN(std::vector<TypeParam> mul,
+                           TypeParam::BatchMul(a, b, modulus_params.get()));
       ASSERT_OK_AND_ASSIGN(
-          std::vector<MontgomeryInt<Int>> add_scalar,
-          MontgomeryInt<Int>::BatchAdd(a, scalar, params.get()));
+          std::vector<TypeParam> mul_constant,
+          TypeParam::BatchMulConstant(a, b_constant, b_constant_barrett,
+                                      modulus_params.get()));
       ASSERT_OK_AND_ASSIGN(
-          std::vector<MontgomeryInt<Int>> sub_scalar,
-          MontgomeryInt<Int>::BatchSub(a, scalar, params.get()));
+          std::vector<TypeParam> add_scalar,
+          TypeParam::BatchAdd(a, scalar, modulus_params.get()));
       ASSERT_OK_AND_ASSIGN(
-          std::vector<MontgomeryInt<Int>> mul_scalar,
-          MontgomeryInt<Int>::BatchMul(a, scalar, params.get()));
+          std::vector<TypeParam> sub_scalar,
+          TypeParam::BatchSub(a, scalar, modulus_params.get()));
+      ASSERT_OK_AND_ASSIGN(
+          std::vector<TypeParam> mul_scalar,
+          TypeParam::BatchMul(a, scalar, modulus_params.get()));
+      ASSERT_OK_AND_ASSIGN(std::vector<TypeParam> mul_scalar_constant,
+                           TypeParam::BatchMulConstant(a, scalar_constant,
+                                                       scalar_constant_barrett,
+                                                       modulus_params.get()));
 
       EXPECT_EQ(add.size(), expected_add.size());
       EXPECT_EQ(sub.size(), expected_sub.size());
       EXPECT_EQ(mul.size(), expected_mul.size());
+      EXPECT_EQ(mul_constant.size(), expected_mul.size());
       EXPECT_EQ(add_scalar.size(), expected_add_scalar.size());
       EXPECT_EQ(sub_scalar.size(), expected_sub_scalar.size());
       EXPECT_EQ(mul_scalar.size(), expected_mul_scalar.size());
+      EXPECT_EQ(mul_scalar_constant.size(), expected_mul_scalar.size());
       for (size_t i = 0; i < length; i++) {
-        EXPECT_EQ(add[i].ExportInt(params.get()),
-                  expected_add[i].ExportInt(params.get()));
-        EXPECT_EQ(sub[i].ExportInt(params.get()),
-                  expected_sub[i].ExportInt(params.get()));
-        EXPECT_EQ(mul[i].ExportInt(params.get()),
-                  expected_mul[i].ExportInt(params.get()));
-        EXPECT_EQ(add_scalar[i].ExportInt(params.get()),
-                  expected_add_scalar[i].ExportInt(params.get()));
-        EXPECT_EQ(sub_scalar[i].ExportInt(params.get()),
-                  expected_sub_scalar[i].ExportInt(params.get()));
-        EXPECT_EQ(mul_scalar[i].ExportInt(params.get()),
-                  expected_mul_scalar[i].ExportInt(params.get()));
+        EXPECT_EQ(add[i].ExportInt(modulus_params.get()),
+                  expected_add[i].ExportInt(modulus_params.get()));
+        EXPECT_EQ(sub[i].ExportInt(modulus_params.get()),
+                  expected_sub[i].ExportInt(modulus_params.get()));
+        EXPECT_EQ(mul[i].ExportInt(modulus_params.get()),
+                  expected_mul[i].ExportInt(modulus_params.get()));
+        EXPECT_EQ(mul_constant[i].ExportInt(modulus_params.get()),
+                  expected_mul[i].ExportInt(modulus_params.get()));
+        EXPECT_EQ(add_scalar[i].ExportInt(modulus_params.get()),
+                  expected_add_scalar[i].ExportInt(modulus_params.get()));
+        EXPECT_EQ(sub_scalar[i].ExportInt(modulus_params.get()),
+                  expected_sub_scalar[i].ExportInt(modulus_params.get()));
+        EXPECT_EQ(mul_scalar[i].ExportInt(modulus_params.get()),
+                  expected_mul_scalar[i].ExportInt(modulus_params.get()));
+        EXPECT_EQ(mul_scalar_constant[i].ExportInt(modulus_params.get()),
+                  expected_mul_scalar[i].ExportInt(modulus_params.get()));
       }
     }
   }
 }
 
 TYPED_TEST(MontgomeryTest, BatchOperationsFailsWithVectorsOfDifferentSize) {
-  using Int = TypeParam;
-  for (auto& params : this->params_) {
+  using Int = typename TypeParam::Int;
+
+  for (const auto& params :
+       rlwe::testing::ContextParameters<TypeParam>::value) {
+    ASSERT_OK_AND_ASSIGN(auto modulus_params,
+                         TypeParam::Params::Create(params.modulus));
     for (size_t length_a : {1, 2, 7, 32, 500, 1024}) {
       for (size_t length_b : {1, 2, 7, 32, 500, 1024}) {
         if (length_a != length_b) {
-          std::vector<MontgomeryInt<Int>> a(
-              length_a, MontgomeryInt<Int>::ImportZero(params.get()));
-          std::vector<MontgomeryInt<Int>> b(
-              length_b, MontgomeryInt<Int>::ImportZero(params.get()));
+          std::vector<TypeParam> a(length_a,
+                                   TypeParam::ImportZero(modulus_params.get()));
+          std::vector<Int> a_constant(length_a, static_cast<Int>(0));
+          std::vector<TypeParam> b(length_b,
+                                   TypeParam::ImportZero(modulus_params.get()));
+          std::vector<Int> b_constant(length_b, static_cast<Int>(0));
 
           EXPECT_THAT(
-              MontgomeryInt<Int>::BatchAdd(a, b, params.get()),
+              TypeParam::BatchAdd(a, b, modulus_params.get()),
               StatusIs(absl::StatusCode::kInvalidArgument,
                        HasSubstr("Input vectors are not of same size")));
           EXPECT_THAT(
-              MontgomeryInt<Int>::BatchAddInPlace(&a, b, params.get()),
+              TypeParam::BatchAddInPlace(&a, b, modulus_params.get()),
               StatusIs(absl::StatusCode::kInvalidArgument,
                        HasSubstr("Input vectors are not of same size")));
           EXPECT_THAT(
-              MontgomeryInt<Int>::BatchSub(a, b, params.get()),
+              TypeParam::BatchSub(a, b, modulus_params.get()),
               StatusIs(absl::StatusCode::kInvalidArgument,
                        HasSubstr("Input vectors are not of same size")));
           EXPECT_THAT(
-              MontgomeryInt<Int>::BatchSubInPlace(&a, b, params.get()),
+              TypeParam::BatchSubInPlace(&a, b, modulus_params.get()),
               StatusIs(absl::StatusCode::kInvalidArgument,
                        HasSubstr("Input vectors are not of same size")));
           EXPECT_THAT(
-              MontgomeryInt<Int>::BatchMul(a, b, params.get()),
+              TypeParam::BatchMul(a, b, modulus_params.get()),
               StatusIs(absl::StatusCode::kInvalidArgument,
                        HasSubstr("Input vectors are not of same size")));
           EXPECT_THAT(
-              MontgomeryInt<Int>::BatchMulInPlace(&a, b, params.get()),
+              TypeParam::BatchMulInPlace(&a, b, modulus_params.get()),
+              StatusIs(absl::StatusCode::kInvalidArgument,
+                       HasSubstr("Input vectors are not of same size")));
+          EXPECT_THAT(
+              TypeParam::BatchMulConstant(a, b_constant, b_constant,
+                                          modulus_params.get()),
+              StatusIs(absl::StatusCode::kInvalidArgument,
+                       HasSubstr("Input vectors are not of same size")));
+          EXPECT_THAT(
+              TypeParam::BatchMulConstantInPlace(&a, b_constant, b_constant,
+                                                 modulus_params.get()),
+              StatusIs(absl::StatusCode::kInvalidArgument,
+                       HasSubstr("Input vectors are not of same size")));
+          EXPECT_THAT(
+              TypeParam::BatchMulConstantInPlace(&a, a_constant, b_constant,
+                                                 modulus_params.get()),
               StatusIs(absl::StatusCode::kInvalidArgument,
                        HasSubstr("Input vectors are not of same size")));
         }
@@ -829,11 +910,13 @@ class FakePrng {
 };
 
 TYPED_TEST(MontgomeryTest, PrngTemplateParameterizationWorks) {
-  using Int = TypeParam;
-  FakePrng prng;
-  auto& params = this->params_.front();
-  ASSERT_OK(MontgomeryInt<Int>::ImportRandom(
-      &prng, params.get()));
+  for (const auto& params :
+       rlwe::testing::ContextParameters<TypeParam>::value) {
+    ASSERT_OK_AND_ASSIGN(auto modulus_params,
+                         TypeParam::Params::Create(params.modulus));
+    FakePrng prng;
+    ASSERT_OK(TypeParam::ImportRandom(&prng, modulus_params.get()));
+  }
 }
 
 }  // namespace

@@ -1502,25 +1502,84 @@ TEST_F(NGLayoutResultCachingTest, MissIsFixedBlockSizeIndefinite) {
   EXPECT_EQ(result.get(), nullptr);
 }
 
-TEST_F(NGLayoutResultCachingTest, HitFlexBoxMeasureAndLayout) {
+TEST_F(NGLayoutResultCachingTest, HitColumnFlexBoxMeasureAndLayout) {
   ScopedLayoutNGFlexBoxForTest layout_ng_flex_box(true);
 
   SetBodyInnerHTML(R"HTML(
     <!DOCTYPE html>
-    <div style="display: flex; flex-direction: column; width: 100px; height: 100px;">
+    <style>
+      .bfc { display: flex; flex-direction: column; width: 100px; height: 100px; }
+    </style>
+    <div class="bfc">
       <div id="src1" style="flex-grow: 0;">
         <div style="height: 50px;"></div>
       </div>
     </div>
-    <div style="display: flex; flex-direction: column; width: 100px; height: 100px;">
+    <div class="bfc">
       <div id="src2" style="flex-grow: 1;">
         <div style="height: 50px;"></div>
       </div>
     </div>
-    <div style="display: flex; flex-direction: column; width: 100px; height: 100px;">
+    <div class="bfc">
       <div id="test1" style="flex-grow: 2;">
         <div style="height: 50px;"></div>
       </div>
+    </div>
+  )HTML");
+
+  auto* test1 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("test1"));
+  auto* src1 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("src1"));
+  auto* src2 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("src2"));
+
+  NGLayoutCacheStatus cache_status;
+  base::Optional<NGFragmentGeometry> fragment_geometry;
+
+  // "src1" only had one "measure" pass performed, and should hit the "measure"
+  // cache-slot for "test1".
+  NGConstraintSpace space =
+      src1->GetCachedLayoutResult()->GetConstraintSpaceForCaching();
+  scoped_refptr<const NGLayoutResult> result = test1->CachedLayoutResult(
+      space, nullptr, nullptr, &fragment_geometry, &cache_status);
+
+  EXPECT_EQ(space.CacheSlot(), NGCacheSlot::kMeasure);
+  EXPECT_EQ(cache_status, NGLayoutCacheStatus::kHit);
+  EXPECT_NE(result.get(), nullptr);
+
+  // "src2" had both a "measure" and "layout" pass performed, and should hit
+  // the "layout" cache-slot for "test1".
+  space = src2->GetCachedLayoutResult()->GetConstraintSpaceForCaching();
+  result = test1->CachedLayoutResult(space, nullptr, nullptr,
+                                     &fragment_geometry, &cache_status);
+
+  EXPECT_EQ(space.CacheSlot(), NGCacheSlot::kLayout);
+  EXPECT_EQ(cache_status, NGLayoutCacheStatus::kHit);
+  EXPECT_NE(result.get(), nullptr);
+}
+
+TEST_F(NGLayoutResultCachingTest, HitRowFlexBoxMeasureAndLayout) {
+  ScopedLayoutNGFlexBoxForTest layout_ng_flex_box(true);
+
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      .bfc { display: flex; width: 100px; }
+    </style>
+    <div class="bfc">
+      <div id="src1">
+        <div style="height: 50px;"></div>
+      </div>
+    </div>
+    <div class="bfc">
+      <div id="src2">
+        <div style="height: 70px;"></div>
+      </div>
+      <div style="width: 0px; height: 100px;"></div>
+    </div>
+    <div class="bfc">
+      <div id="test1">
+        <div style="height: 50px;"></div>
+      </div>
+      <div style="width: 0px; height: 100px;"></div>
     </div>
   )HTML");
 

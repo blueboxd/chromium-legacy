@@ -76,6 +76,7 @@ class TestConnectionListener
   TestConnectionListener()
       : socket_accepted_count_(0),
         did_read_from_socket_(false),
+        did_get_socket_on_complete_(false),
         task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 
   ~TestConnectionListener() override = default;
@@ -97,6 +98,12 @@ class TestConnectionListener
     did_read_from_socket_ = true;
   }
 
+  void OnResponseCompletedSuccessfully(
+      std::unique_ptr<StreamSocket> socket) override {
+    base::AutoLock lock(lock_);
+    did_get_socket_on_complete_ = socket && socket->IsConnected();
+  }
+
   void WaitUntilFirstConnectionAccepted() { accept_loop_.Run(); }
 
   size_t SocketAcceptedCount() const {
@@ -109,9 +116,15 @@ class TestConnectionListener
     return did_read_from_socket_;
   }
 
+  bool DidGetSocketOnComplete() const {
+    base::AutoLock lock(lock_);
+    return did_get_socket_on_complete_;
+  }
+
  private:
   size_t socket_accepted_count_;
   bool did_read_from_socket_;
+  bool did_get_socket_on_complete_;
 
   base::RunLoop accept_loop_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
@@ -329,6 +342,7 @@ TEST_P(EmbeddedTestServerTest, ConnectionListenerAccept) {
 
   EXPECT_EQ(1u, connection_listener_.SocketAcceptedCount());
   EXPECT_FALSE(connection_listener_.DidReadFromSocket());
+  EXPECT_FALSE(connection_listener_.DidGetSocketOnComplete());
 }
 
 TEST_P(EmbeddedTestServerTest, ConnectionListenerRead) {
@@ -343,6 +357,22 @@ TEST_P(EmbeddedTestServerTest, ConnectionListenerRead) {
   WaitForResponses(1);
   EXPECT_EQ(1u, connection_listener_.SocketAcceptedCount());
   EXPECT_TRUE(connection_listener_.DidReadFromSocket());
+  EXPECT_TRUE(connection_listener_.DidGetSocketOnComplete());
+}
+
+TEST_P(EmbeddedTestServerTest, ConnectionListenerComplete) {
+  ASSERT_TRUE(server_->Start());
+
+  std::unique_ptr<URLFetcher> fetcher =
+      URLFetcher::Create(server_->GetURL("/non-existent"), URLFetcher::GET,
+                         this, TRAFFIC_ANNOTATION_FOR_TESTS);
+  fetcher->SetRequestContext(request_context_getter_.get());
+
+  fetcher->Start();
+  WaitForResponses(1);
+  EXPECT_EQ(1u, connection_listener_.SocketAcceptedCount());
+  EXPECT_TRUE(connection_listener_.DidReadFromSocket());
+  EXPECT_TRUE(connection_listener_.DidGetSocketOnComplete());
 }
 
 TEST_P(EmbeddedTestServerTest, ConcurrentFetches) {

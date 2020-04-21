@@ -173,9 +173,9 @@ void NetworkConnectionTracker::Initialize() {
   manager_remote->RequestNotifications(receiver_.BindNewPipeAndPassRemote());
 
   // base::Unretained is safe as |receiver_| is owned by |this|.
-  receiver_.set_disconnect_handler(base::BindRepeating(
-      &NetworkConnectionTracker::HandleNetworkServicePipeBroken,
-      base::Unretained(this)));
+  receiver_.set_disconnect_handler(
+      base::BindOnce(&NetworkConnectionTracker::HandleNetworkServicePipeBroken,
+                     base::Unretained(this)));
 }
 
 void NetworkConnectionTracker::HandleNetworkServicePipeBroken() {

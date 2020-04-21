@@ -44,8 +44,6 @@ class MODULES_EXPORT PushSubscription final : public ScriptWrappable {
 
   KURL endpoint() const { return endpoint_; }
   base::Optional<DOMTimeStamp> expirationTime() const;
-  // TODO(crbug.com/1060971): Remove |is_null| version.
-  DOMTimeStamp expirationTime(bool& out_is_null) const;  // DEPRECATED
 
   PushSubscriptionOptions* options() const { return options_.Get(); }
 

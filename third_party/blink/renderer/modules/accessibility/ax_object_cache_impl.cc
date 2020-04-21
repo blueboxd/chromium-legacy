@@ -129,8 +129,8 @@ AXObjectCacheImpl::AXObjectCacheImpl(Document& document)
       validation_message_axid_(0),
       relation_cache_(std::make_unique<AXRelationCache>(this)),
       accessibility_event_permission_(mojom::blink::PermissionStatus::ASK),
-      permission_service_(document.ToExecutionContext()),
-      permission_observer_receiver_(this, document.ToExecutionContext()) {
+      permission_service_(document.GetExecutionContext()),
+      permission_observer_receiver_(this, document.GetExecutionContext()) {
   if (document_->LoadEventFinished())
     AddPermissionStatusListener();
   documents_.insert(&document);

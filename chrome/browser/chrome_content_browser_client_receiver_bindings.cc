@@ -14,7 +14,7 @@
 #include "chrome/browser/cache_stats_recorder.h"
 #include "chrome/browser/chrome_browser_interface_binders.h"
 #include "chrome/browser/chrome_content_browser_client_parts.h"
-#include "chrome/browser/content_settings/content_settings_manager_impl.h"
+#include "chrome/browser/content_settings/content_settings_manager_delegate.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
@@ -284,8 +284,9 @@ void ChromeContentBrowserClient::BindHostReceiverForRenderer(
     mojo::GenericPendingReceiver receiver) {
   if (auto host_receiver =
           receiver.As<content_settings::mojom::ContentSettingsManager>()) {
-    chrome::ContentSettingsManagerImpl::Create(render_process_host,
-                                               std::move(host_receiver));
+    content_settings::ContentSettingsManagerImpl::Create(
+        render_process_host, std::move(host_receiver),
+        std::make_unique<chrome::ContentSettingsManagerDelegate>());
     return;
   }
 

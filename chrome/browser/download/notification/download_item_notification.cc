@@ -23,6 +23,7 @@
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/notification/download_notification_manager.h"
+#include "chrome/browser/enterprise/connectors/connectors_manager.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/notifications/notification_handler.h"
@@ -1023,10 +1024,9 @@ bool DownloadItemNotification::IsScanning() const {
 }
 
 bool DownloadItemNotification::AllowedToOpenWhileScanning() const {
-  int delay_delivery = g_browser_process->local_state()->GetInteger(
-      prefs::kDelayDeliveryUntilVerdict);
-  return (delay_delivery != safe_browsing::DELAY_DOWNLOADS &&
-          delay_delivery != safe_browsing::DELAY_UPLOADS_AND_DOWNLOADS);
+  return !enterprise_connectors::ConnectorsManager::GetInstance()
+              ->DelayUntilVerdict(
+                  enterprise_connectors::AnalysisConnector::FILE_DOWNLOADED);
 }
 
 Browser* DownloadItemNotification::GetBrowser() const {

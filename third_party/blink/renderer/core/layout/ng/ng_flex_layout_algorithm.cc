@@ -852,6 +852,16 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
           available_size.block_size = CalculateFixedCrossSize(
               available_size.block_size, flex_item.min_max_cross_sizes.value(),
               margins.BlockSum());
+        } else {
+          // If we are in a row flexbox, and we don't have a fixed block-size
+          // (yet), use the "measure" cache slot. Typically this will be the
+          // first layout, and we will use the "layout" cache slot if this gets
+          // stretched later.
+          //
+          // Setting the "measure" cache slot on the space writes the result
+          // into both the "measure", and "layout" cache slots. If a subsequent
+          // "layout" occurs, it'll just get written into the "layout" slot.
+          space_builder.SetCacheSlot(NGCacheSlot::kMeasure);
         }
       }
 

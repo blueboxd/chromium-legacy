@@ -311,6 +311,7 @@ ci.console_view(
     ('linux-chrome', 'lnx'),
     ('mac-chrome', 'mac'),
     ('win-chrome', 'win'),
+    ('win64-chrome', 'win'),
 )]
 
 

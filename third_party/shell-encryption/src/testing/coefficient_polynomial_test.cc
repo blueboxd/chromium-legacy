@@ -59,7 +59,7 @@ class PolynomialTest : public ::testing::Test {
     return v;
   }
 
-  std::unique_ptr<uint_m::Params> params14_;
+  std::unique_ptr<const uint_m::Params> params14_;
   uint_m one_;
   uint_m zero_;
 };

@@ -4,8 +4,8 @@
 
 #include "third_party/blink/renderer/modules/battery/navigator_battery.h"
 
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/battery/battery_manager.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
@@ -21,15 +21,14 @@ ScriptPromise NavigatorBattery::getBattery(ScriptState* script_state,
 }
 
 ScriptPromise NavigatorBattery::getBattery(ScriptState* script_state) {
-  ExecutionContext* context = ExecutionContext::From(script_state);
+  LocalDOMWindow* window = LocalDOMWindow::From(script_state);
 
   // Check to see if this request would be blocked according to the Battery
   // Status API specification.
-  if (auto* document = Document::From(context)) {
-    LocalFrame* frame = document->GetFrame();
-    if (frame) {
-      if (!context->IsSecureContext())
-        UseCounter::Count(document, WebFeature::kBatteryStatusInsecureOrigin);
+  if (window) {
+    if (LocalFrame* frame = window->GetFrame()) {
+      if (!window->IsSecureContext())
+        UseCounter::Count(window, WebFeature::kBatteryStatusInsecureOrigin);
       frame->CountUseIfFeatureWouldBeBlockedByFeaturePolicy(
           WebFeature::kBatteryStatusCrossOrigin,
           WebFeature::kBatteryStatusSameOriginABA);
@@ -37,7 +36,7 @@ ScriptPromise NavigatorBattery::getBattery(ScriptState* script_state) {
   }
 
   if (!battery_manager_)
-    battery_manager_ = BatteryManager::Create(context);
+    battery_manager_ = BatteryManager::Create(window);
   return battery_manager_->StartRequest(script_state);
 }
 

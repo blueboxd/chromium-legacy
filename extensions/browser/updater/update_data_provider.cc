@@ -115,7 +115,7 @@ UpdateDataProvider::GetData(bool install_immediately,
                                    : GetPolicyVerifierFormat();
     crx_component->installer = base::MakeRefCounted<ExtensionInstaller>(
         id, extension->path(), install_immediately,
-        base::BindOnce(&UpdateDataProvider::RunInstallCallback, this));
+        base::BindRepeating(&UpdateDataProvider::RunInstallCallback, this));
     if (!ExtensionsBrowserClient::Get()->IsExtensionEnabled(id,
                                                             browser_context_)) {
       int disabled_reasons = extension_prefs->GetDisableReasons(id);

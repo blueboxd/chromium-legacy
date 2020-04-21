@@ -690,8 +690,8 @@ TEST_F(ConnectTest, ConnectWithDifferentInstanceId_Blocked) {
   base::Optional<Identity> result_identity;
   base::RunLoop loop;
   identity_test->ConnectToClassAppWithFilter(
-      filter, base::BindRepeating(&ReceiveConnectionResult, &result,
-                                  &result_identity, &loop));
+      filter, base::BindOnce(&ReceiveConnectionResult, &result,
+                             &result_identity, &loop));
   loop.Run();
   EXPECT_EQ(mojom::ConnectResult::ACCESS_DENIED, result);
   EXPECT_FALSE(result_identity);

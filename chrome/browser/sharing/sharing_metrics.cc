@@ -59,6 +59,8 @@ std::string DevicePlatformToString(SharingDevicePlatform device_platform) {
       return "Mac";
     case SharingDevicePlatform::kWindows:
       return "Windows";
+    case SharingDevicePlatform::kServer:
+      return "Server";
     case SharingDevicePlatform::kUnknown:
       return "Unknown";
   }

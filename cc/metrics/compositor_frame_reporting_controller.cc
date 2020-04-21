@@ -79,7 +79,6 @@ void CompositorFrameReportingController::WillBeginImplFrame(
 
 void CompositorFrameReportingController::WillBeginMainFrame(
     const viz::BeginFrameArgs& args) {
-  const auto now = Now();
   if (reporters_[PipelineStage::kBeginImplFrame]) {
     // We need to use .get() below because operator<< in std::unique_ptr is a
     // C++20 feature.
@@ -88,22 +87,10 @@ void CompositorFrameReportingController::WillBeginMainFrame(
     DCHECK_EQ(reporters_[PipelineStage::kBeginImplFrame]->frame_id_,
               args.frame_id);
     reporters_[PipelineStage::kBeginImplFrame]->StartStage(
-        StageType::kSendBeginMainFrameToCommit, now);
+        StageType::kSendBeginMainFrameToCommit, Now());
     AdvanceReporterStage(PipelineStage::kBeginImplFrame,
                          PipelineStage::kBeginMainFrame);
   } else {
-    auto& old_reporter = reporters_[PipelineStage::kBeginMainFrame];
-    if (old_reporter) {
-      DCHECK(old_reporter->did_abort_main_frame());
-      if (old_reporter->did_not_produce_frame()) {
-        old_reporter->TerminateFrame(
-            FrameTerminationStatus::kDidNotProduceFrame,
-            old_reporter->did_not_produce_frame_time());
-      } else {
-        old_reporter->TerminateFrame(
-            FrameTerminationStatus::kReplacedByNewReporter, now);
-      }
-    }
     // In this case we have already submitted the ImplFrame, but we received
     // beginMain frame before next BeginImplFrame (Not reached the ImplFrame
     // deadline yet). So will start a new reporter at BeginMainFrame.
@@ -112,7 +99,7 @@ void CompositorFrameReportingController::WillBeginMainFrame(
             active_trackers_, args.frame_id,
             args.frame_time + (args.interval * 1.5),
             latency_ukm_reporter_.get(), should_report_metrics_);
-    reporter->StartStage(StageType::kSendBeginMainFrameToCommit, now);
+    reporter->StartStage(StageType::kSendBeginMainFrameToCommit, Now());
     reporters_[PipelineStage::kBeginMainFrame] = std::move(reporter);
   }
 }
@@ -369,9 +356,7 @@ bool CompositorFrameReportingController::CanSubmitImplFrame(
   if (!reporters_[PipelineStage::kBeginImplFrame])
     return false;
   auto& reporter = reporters_[PipelineStage::kBeginImplFrame];
-  DCHECK_EQ(reporter->frame_id_, id);
-  DCHECK(reporter->did_finish_impl_frame());
-  return true;
+  return (reporter->frame_id_ == id && reporter->did_finish_impl_frame());
 }
 
 bool CompositorFrameReportingController::CanSubmitMainFrame(
@@ -379,8 +364,8 @@ bool CompositorFrameReportingController::CanSubmitMainFrame(
   if (!reporters_[PipelineStage::kBeginMainFrame])
     return false;
   auto& reporter = reporters_[PipelineStage::kBeginMainFrame];
-  DCHECK(reporter->did_finish_impl_frame());
-  return reporter->frame_id_ == id && reporter->did_abort_main_frame();
+  return (reporter->frame_id_ == id && reporter->did_finish_impl_frame() &&
+          reporter->did_abort_main_frame());
 }
 
 std::unique_ptr<CompositorFrameReporter>

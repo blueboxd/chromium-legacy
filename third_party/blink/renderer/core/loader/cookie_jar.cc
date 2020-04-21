@@ -11,7 +11,7 @@
 namespace blink {
 
 CookieJar::CookieJar(blink::Document* document)
-    : backend_(document->ToExecutionContext()), document_(document) {}
+    : backend_(document->GetExecutionContext()), document_(document) {}
 
 CookieJar::~CookieJar() = default;
 

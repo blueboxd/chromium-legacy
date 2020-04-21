@@ -43,6 +43,10 @@ const char kCrashStagingUploadURL[] =
 const char kAppsDir[] = "apps";
 const char kUninstallScript[] = "uninstall.cmd";
 
+// Developer override key names.
+const char kDevOverrideKeyUrl[] = "url";
+const char kDevOverrideKeyUseCUP[] = "use_cup";
+
 // Policy Management constants.
 const char kProxyModeDirect[] = "direct";
 const char kProxyModeAutoDetect[] = "auto_detect";

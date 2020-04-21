@@ -27,6 +27,7 @@
       'linux-chromeos-chrome': 'official_goma_chromeos',
       'mac-chrome': 'official_goma',
       'win-chrome': 'official_goma_x86',
+      'win64-chrome': 'official_goma_x64',
     },
 
     'chrome.pgo': {
@@ -778,6 +779,7 @@
       'chromeos-kevin-compile-chrome': 'chromeos_kevin_include_unwind_tables_official',
       'linux-chrome': 'official_goma',
       'linux-chromeos-chrome': 'official_goma_chromeos_include_unwind_tables',
+      'win64-chrome': 'official_goma_x64',
       'win_chrome_official': 'official_goma_x86',
       'win-celab-try-rel': 'official_celab_release_bot',
     },
@@ -2018,6 +2020,10 @@
 
     'official_goma_minimal_symbols_android_thin_lto_opt_arm64': [
       'official', 'goma', 'minimal_symbols', 'android', 'thin_lto_opt', 'arm64',
+    ],
+
+    'official_goma_x64': [
+      'official', 'goma', 'x64',
     ],
 
     'official_goma_x64_pgo': [

@@ -44,10 +44,9 @@ class SessionCleanupCookieStoreTest : public testing::Test {
   CanonicalCookieVector Load() {
     base::RunLoop run_loop;
     CanonicalCookieVector cookies;
-    store_->Load(
-        base::BindRepeating(&SessionCleanupCookieStoreTest::OnLoaded,
-                            base::Unretained(this), &run_loop, &cookies),
-        net_log_.bound());
+    store_->Load(base::BindOnce(&SessionCleanupCookieStoreTest::OnLoaded,
+                                base::Unretained(this), &run_loop, &cookies),
+                 net_log_.bound());
     run_loop.Run();
     return cookies;
   }

@@ -48,7 +48,7 @@ public class PromoCardCoordinatorTest {
     public void
     testTextImageBinding() {
         final Drawable testImage =
-                AppCompatResources.getDrawable(mContext, R.drawable.logo_avatar_anonymous);
+                AppCompatResources.getDrawable(mContext, R.drawable.test_logo_avatar_anonymous);
         final String titleString = "Some string for title";
         final String testString = "Some test string";
         final String primaryButtonString = "Primary button string";

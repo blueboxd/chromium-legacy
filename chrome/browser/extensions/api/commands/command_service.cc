@@ -69,14 +69,6 @@ bool IsForCurrentPlatform(const std::string& key) {
                           base::CompareCase::SENSITIVE);
 }
 
-std::string StripCurrentPlatform(const std::string& key) {
-  DCHECK(IsForCurrentPlatform(key));
-  std::string result = key;
-  base::ReplaceFirstSubstringAfterOffset(
-      &result, 0, Command::CommandPlatform() + ":", base::StringPiece());
-  return result;
-}
-
 // Merge |suggested_key_prefs| into the saved preferences for the extension. We
 // merge rather than overwrite to preserve existing was_assigned preferences.
 void MergeSuggestedKeyPrefs(
@@ -115,6 +107,8 @@ CommandService::CommandService(content::BrowserContext* context)
 }
 
 CommandService::~CommandService() {
+  for (auto& observer : observers_)
+    observer.OnCommandServiceDestroying();
 }
 
 static base::LazyInstance<BrowserContextKeyedAPIFactory<CommandService>>::
@@ -236,19 +230,9 @@ bool CommandService::AddKeybindingPref(
                          std::move(suggested_key_prefs));
 
   // Fetch the newly-updated command, and notify the observers.
-  for (auto& observer : observers_) {
-    observer.OnExtensionCommandAdded(
-        extension_id, FindCommandByName(extension_id, command_name));
-  }
-
-  // TODO(devlin): Deprecate this notification in favor of the observers.
-  std::pair<const std::string, const std::string> details =
-      std::make_pair(extension_id, command_name);
-  content::NotificationService::current()->Notify(
-      extensions::NOTIFICATION_EXTENSION_COMMAND_ADDED,
-      content::Source<Profile>(profile_),
-      content::Details<std::pair<const std::string, const std::string> >(
-          &details));
+  Command command = FindCommandByName(extension_id, command_name);
+  for (auto& observer : observers_)
+    observer.OnExtensionCommandAdded(extension_id, command);
 
   return true;
 }
@@ -653,14 +637,6 @@ void CommandService::RemoveKeybindingPrefs(const std::string& extension_id,
        it != keys_to_remove.end(); ++it) {
     std::string key = *it;
     bindings->Remove(key, NULL);
-
-    // TODO(devlin): Deprecate this notification in favor of the observers.
-    ExtensionCommandRemovedDetails details(extension_id, command_name,
-                                           StripCurrentPlatform(key));
-    content::NotificationService::current()->Notify(
-        extensions::NOTIFICATION_EXTENSION_COMMAND_REMOVED,
-        content::Source<Profile>(profile_),
-        content::Details<ExtensionCommandRemovedDetails>(&details));
   }
 
   for (const Command& removed_command : removed_commands) {

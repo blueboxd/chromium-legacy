@@ -83,6 +83,15 @@ apps::mojom::InstallSource GetHighestPriorityInstallSource(
   }
 }
 
+apps::mojom::Readiness GetWebAppCrOsReadiness(
+    const web_app::WebApp* web_app,
+    const apps::mojom::Readiness readiness) {
+  DCHECK(web_app->chromeos_data().has_value());
+  return web_app->chromeos_data().value().is_disabled
+             ? apps::mojom::Readiness::kDisabledByPolicy
+             : readiness;
+}
+
 }  // namespace
 
 namespace apps {
@@ -457,7 +466,11 @@ void WebApps::OnContentSettingChanged(
 void WebApps::OnWebAppInstalled(const web_app::AppId& app_id) {
   const web_app::WebApp* web_app = GetWebApp(app_id);
   if (web_app && Accepts(app_id)) {
-    Publish(Convert(web_app, apps::mojom::Readiness::kReady), subscribers_);
+    apps::mojom::Readiness readiness = apps::mojom::Readiness::kReady;
+    readiness = web_app::IsChromeOs()
+                    ? GetWebAppCrOsReadiness(web_app, readiness)
+                    : readiness;
+    Publish(Convert(web_app, readiness), subscribers_);
   }
 }
 
@@ -488,6 +501,25 @@ void WebApps::OnWebAppWillBeUninstalled(const web_app::AppId& app_id) {
 
 void WebApps::OnAppRegistrarDestroyed() {
   registrar_observer_.RemoveAll();
+}
+
+// If is_disabled is set, the app backed by |app_id| is published with readiness
+// kDisabledByPolicy, otherwise it's published with readiness kReady.
+void WebApps::OnWebAppDisabledStateChanged(const web_app::AppId& app_id,
+                                           bool is_disabled) {
+  if (!web_app::IsChromeOs()) {
+    return;
+  }
+
+  const web_app::WebApp* web_app = GetWebApp(app_id);
+  if (!web_app || !Accepts(app_id)) {
+    return;
+  }
+
+  const apps::mojom::Readiness readiness =
+      is_disabled ? apps::mojom::Readiness::kDisabledByPolicy
+                  : apps::mojom::Readiness::kReady;
+  Publish(Convert(web_app, readiness), subscribers_);
 }
 
 void WebApps::OnPackageInstalled(
@@ -621,7 +653,10 @@ void WebApps::ConvertWebApps(apps::mojom::Readiness readiness,
                              std::vector<apps::mojom::AppPtr>* apps_out) {
   for (const web_app::WebApp& web_app : GetRegistrar().AllApps()) {
     if (!web_app.is_in_sync_install()) {
-      apps_out->push_back(Convert(&web_app, readiness));
+      apps_out->push_back(
+          Convert(&web_app, web_app::IsChromeOs()
+                                ? GetWebAppCrOsReadiness(&web_app, readiness)
+                                : readiness));
     }
   }
 }

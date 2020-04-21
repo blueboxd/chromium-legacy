@@ -250,7 +250,7 @@ bool BluetoothSocketListenFunction::PreRunValidation(std::string* error) {
 
 ExtensionFunction::ResponseAction BluetoothSocketListenFunction::Run() {
   DCHECK_CURRENTLY_ON(work_thread_id());
-  device::BluetoothAdapterFactory::GetClassicAdapter(
+  device::BluetoothAdapterFactory::Get()->GetClassicAdapter(
       base::BindOnce(&BluetoothSocketListenFunction::OnGetAdapter, this));
   return did_respond() ? AlreadyResponded() : RespondLater();
 }
@@ -426,7 +426,7 @@ bool BluetoothSocketAbstractConnectFunction::PreRunValidation(
 ExtensionFunction::ResponseAction
 BluetoothSocketAbstractConnectFunction::Run() {
   DCHECK_CURRENTLY_ON(work_thread_id());
-  device::BluetoothAdapterFactory::GetClassicAdapter(base::BindOnce(
+  device::BluetoothAdapterFactory::Get()->GetClassicAdapter(base::BindOnce(
       &BluetoothSocketAbstractConnectFunction::OnGetAdapter, this));
   return did_respond() ? AlreadyResponded() : RespondLater();
 }

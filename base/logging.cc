@@ -446,7 +446,7 @@ bool BaseInitLoggingImpl(const LoggingSettings& settings) {
     const char* log_tag_data = log_tag.data();
     config.tags = &log_tag_data;
     config.num_tags = 1;
-    fx_log_init_with_config(&config);
+    fx_log_reconfigure(&config);
   }
 #endif
 

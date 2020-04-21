@@ -82,7 +82,7 @@ if (!is_nacl_nonsfi) {
 if (is_component_build) {
   component("content") {
     public_deps =
-        content_shared_components + [ "//content/public/app:both_sources" ]
+        content_shared_components + [ "//content/public/app:app_sources" ]
   }
   if(is_mac) {
     libs = [

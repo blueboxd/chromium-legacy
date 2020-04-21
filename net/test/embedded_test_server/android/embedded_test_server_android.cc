@@ -39,6 +39,9 @@ void EmbeddedTestServerAndroid::ConnectionListener::ReadFromSocket(
   test_server_android_->ReadFromSocket(static_cast<const void*>(&socket));
 }
 
+void EmbeddedTestServerAndroid::ConnectionListener::
+    OnResponseCompletedSuccessfully(std::unique_ptr<StreamSocket> socket) {}
+
 EmbeddedTestServerAndroid::EmbeddedTestServerAndroid(
     JNIEnv* env,
     const JavaRef<jobject>& jobj,

@@ -212,8 +212,8 @@ class MockGlobalMemoryDumpCallback {
   }
 
   RequestGlobalMemoryDumpCallback Get() {
-    return base::BindRepeating(&MockGlobalMemoryDumpCallback::Run,
-                               base::Unretained(this));
+    return base::BindOnce(&MockGlobalMemoryDumpCallback::Run,
+                          base::Unretained(this));
   }
 };
 
@@ -225,9 +225,8 @@ class MockGlobalMemoryDumpAndAppendToTraceCallback {
   void Run(bool success, uint64_t dump_guid) { OnCall(success, dump_guid); }
 
   RequestGlobalMemoryDumpAndAppendToTraceCallback Get() {
-    return base::BindRepeating(
-        &MockGlobalMemoryDumpAndAppendToTraceCallback::Run,
-        base::Unretained(this));
+    return base::BindOnce(&MockGlobalMemoryDumpAndAppendToTraceCallback::Run,
+                          base::Unretained(this));
   }
 };
 
@@ -244,8 +243,8 @@ class MockGetVmRegionsForHeapProfilerCallback {
   }
 
   GetVmRegionsForHeapProfilerCallback Get() {
-    return base::BindRepeating(&MockGetVmRegionsForHeapProfilerCallback::Run,
-                               base::Unretained(this));
+    return base::BindOnce(&MockGetVmRegionsForHeapProfilerCallback::Run,
+                          base::Unretained(this));
   }
 };
 

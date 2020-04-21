@@ -7,6 +7,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/inspector/console_message_storage.h"
 #include "third_party/blink/renderer/core/inspector/thread_debugger.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
@@ -192,22 +193,26 @@ class ThreadedWorkletMessagingProxyForTest
   ~ThreadedWorkletMessagingProxyForTest() override = default;
 
   void Start() {
-    Document* document = Document::From(GetExecutionContext());
     std::unique_ptr<Vector<char>> cached_meta_data = nullptr;
     WorkerClients* worker_clients = nullptr;
     std::unique_ptr<WorkerSettings> worker_settings = nullptr;
     InitializeWorkerThread(
         std::make_unique<GlobalScopeCreationParams>(
-            document->Url(), mojom::blink::ScriptType::kModule,
-            "threaded_worklet", document->UserAgent(),
-            document->GetFrame()->Loader().UserAgentMetadata(),
+            GetExecutionContext()->Url(), mojom::blink::ScriptType::kModule,
+            "threaded_worklet", GetExecutionContext()->UserAgent(),
+            To<LocalDOMWindow>(GetExecutionContext())
+                ->GetFrame()
+                ->Loader()
+                .UserAgentMetadata(),
             nullptr /* web_worker_fetch_context */,
-            document->GetContentSecurityPolicy()->Headers(),
-            document->GetReferrerPolicy(), document->GetSecurityOrigin(),
-            document->IsSecureContext(), document->GetHttpsState(),
-            worker_clients, nullptr /* content_settings_client */,
-            document->GetSecurityContext().AddressSpace(),
-            OriginTrialContext::GetTokens(document->ToExecutionContext()).get(),
+            GetExecutionContext()->GetContentSecurityPolicy()->Headers(),
+            GetExecutionContext()->GetReferrerPolicy(),
+            GetExecutionContext()->GetSecurityOrigin(),
+            GetExecutionContext()->IsSecureContext(),
+            GetExecutionContext()->GetHttpsState(), worker_clients,
+            nullptr /* content_settings_client */,
+            GetExecutionContext()->GetSecurityContext().AddressSpace(),
+            OriginTrialContext::GetTokens(GetExecutionContext()).get(),
             base::UnguessableToken::Create(), std::move(worker_settings),
             kV8CacheOptionsDefault,
             MakeGarbageCollected<WorkletModuleResponsesMap>()),

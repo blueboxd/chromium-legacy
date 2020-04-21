@@ -792,8 +792,7 @@ bool FrameFetchContext::ShouldBypassMainWorldCSP() const {
   if (GetResourceFetcherProperties().IsDetached())
     return false;
 
-  return ContentSecurityPolicy::ShouldBypassMainWorld(
-      GetFrame()->GetDocument()->ToExecutionContext());
+  return ContentSecurityPolicy::ShouldBypassMainWorld(GetFrame()->DomWindow());
 }
 
 bool FrameFetchContext::IsSVGImageChromeClient() const {
@@ -1021,7 +1020,7 @@ bool FrameFetchContext::CalculateIfAdSubresource(
   // The AdTracker needs to know about the request as well, and may also mark it
   // as an ad.
   return GetFrame()->GetAdTracker()->CalculateIfAdSubresource(
-      document_->ToExecutionContext(), resource_request, type, known_ad);
+      document_->domWindow(), resource_request, type, known_ad);
 }
 
 bool FrameFetchContext::SendConversionRequestInsteadOfRedirecting(

@@ -162,8 +162,8 @@ void FingerprintChromeOS::StartAuthSession() {
 
   if (opened_session_ == FingerprintSession::ENROLL) {
     GetBiodClient()->CancelEnrollSession(
-        base::BindRepeating(&FingerprintChromeOS::OnCloseEnrollSessionForAuth,
-                            weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&FingerprintChromeOS::OnCloseEnrollSessionForAuth,
+                       weak_ptr_factory_.GetWeakPtr()));
   } else {
     GetBiodClient()->StartAuthSession(
         base::BindOnce(&FingerprintChromeOS::OnStartAuthSession,

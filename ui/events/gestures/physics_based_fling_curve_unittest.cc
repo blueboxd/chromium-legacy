@@ -9,6 +9,7 @@
 namespace ui {
 
 const float kDefaultPixelsPerInch = 96.f;
+const float kBoostMultiplierUnboosted = 1.f;
 
 TEST(PhysicsBasedFlingCurveTest, BasicFlingTestVelocityY) {
   const gfx::Vector2dF fling_velocity(0, 5000);
@@ -17,7 +18,8 @@ TEST(PhysicsBasedFlingCurveTest, BasicFlingTestVelocityY) {
                                        kDefaultPixelsPerInch);
   const gfx::Size viewport(1920, 1080);
 
-  PhysicsBasedFlingCurve curve(fling_velocity, now, pixels_per_inch, viewport);
+  PhysicsBasedFlingCurve curve(fling_velocity, now, pixels_per_inch,
+                               kBoostMultiplierUnboosted, viewport);
 
   gfx::Vector2dF offset;
   gfx::Vector2dF velocity;
@@ -66,7 +68,8 @@ TEST(PhysicsBasedFlingCurveTest, BasicFlingTestVelocityX) {
                                        kDefaultPixelsPerInch);
   const gfx::Size viewport(1920, 1080);
 
-  PhysicsBasedFlingCurve curve(fling_velocity, now, pixels_per_inch, viewport);
+  PhysicsBasedFlingCurve curve(fling_velocity, now, pixels_per_inch,
+                               kBoostMultiplierUnboosted, viewport);
 
   gfx::Vector2dF offset;
   gfx::Vector2dF velocity;
@@ -114,7 +117,8 @@ TEST(PhysicsBasedFlingCurveTest, BasicFlingTestVelocityXAndY) {
                                        kDefaultPixelsPerInch);
   const gfx::Size viewport(1920, 1080);
 
-  PhysicsBasedFlingCurve curve(fling_velocity, now, pixels_per_inch, viewport);
+  PhysicsBasedFlingCurve curve(fling_velocity, now, pixels_per_inch,
+                               kBoostMultiplierUnboosted, viewport);
 
   gfx::Vector2dF offset;
   gfx::Vector2dF velocity;
@@ -162,7 +166,8 @@ TEST(PhysicsBasedFlingCurveTest, ControlPointsWithSlopeLessThan1) {
                                        kDefaultPixelsPerInch);
   const gfx::Size viewport(1920, 1080);
 
-  PhysicsBasedFlingCurve curve(velocity, now, pixels_per_inch, viewport);
+  PhysicsBasedFlingCurve curve(velocity, now, pixels_per_inch,
+                               kBoostMultiplierUnboosted, viewport);
 
   EXPECT_EQ(0.20f, curve.p1_for_testing().x());
   EXPECT_NEAR(curve.p1_for_testing().y(), 0.43f, 0.01f);
@@ -177,7 +182,8 @@ TEST(PhysicsBasedFlingCurveTest, ControlPointsWithSlopeGreaterThan1) {
                                        kDefaultPixelsPerInch);
   const gfx::Size viewport(1920, 1080);
 
-  PhysicsBasedFlingCurve curve(velocity, now, pixels_per_inch, viewport);
+  PhysicsBasedFlingCurve curve(velocity, now, pixels_per_inch,
+                               kBoostMultiplierUnboosted, viewport);
 
   EXPECT_NEAR(curve.p1_for_testing().x(), 0.19f, 0.01f);
   EXPECT_EQ(curve.p1_for_testing().y(), 1.0f);

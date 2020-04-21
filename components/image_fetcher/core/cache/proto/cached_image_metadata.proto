@@ -8,7 +8,8 @@ option optimize_for = LITE_RUNTIME;
 
 package image_fetcher;
 
-// Controls how cached image fetcher manages disk cache files.
+// Controls how cached image fetcher manages disk cache files. Maps to
+// CacheOption enum in cpp.
 enum CacheStrategy {
   // If reached storage space limit, the cache file may be deleted based on LRU
   // eviction. The cache files also have a default expiration time after

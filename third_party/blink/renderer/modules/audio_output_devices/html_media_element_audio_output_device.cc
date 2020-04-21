@@ -12,9 +12,9 @@
 #include "third_party/blink/public/platform/web_set_sink_id_callbacks.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -116,11 +116,9 @@ void SetSinkIdResolver::DoSetSinkId() {
     return;
   }
 
-  // This is associated with an HTML element, so the context must be a Document.
-  auto& document = Document::From(*context);
-  WebLocalFrameImpl* web_frame =
-      WebLocalFrameImpl::FromFrame(document.GetFrame());
-  if (web_frame && web_frame->Client()) {
+  // This is associated with an HTML element, so the context must be a window.
+  if (WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(
+          To<LocalDOMWindow>(context)->GetFrame())) {
     web_frame->Client()->CheckIfAudioSinkExistsAndIsAuthorized(
         sink_id_, std::move(set_sink_id_completion_callback));
   } else {

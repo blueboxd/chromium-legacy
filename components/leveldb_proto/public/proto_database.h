@@ -123,7 +123,8 @@ class ProtoDatabase {
 
   // Asynchronously saves |entries_to_save| and deletes entries from
   // |keys_to_remove| from the database. |callback| will be invoked on the
-  // calling thread when complete.
+  // calling thread when complete. |entries_to_save| and |keys_to_remove| must
+  // be non-null.
   virtual void UpdateEntries(
       std::unique_ptr<typename Util::Internal<T>::KeyEntryVector>
           entries_to_save,
@@ -133,7 +134,7 @@ class ProtoDatabase {
   // Asynchronously saves |entries_to_save| and deletes entries that satisfies
   // the |delete_key_filter| from the database. |callback| will be invoked on
   // the calling thread when complete. The filter will be called on
-  // ProtoDatabase's taskrunner.
+  // ProtoDatabase's taskrunner. |entries_to_save| must be non-null.
   virtual void UpdateEntriesWithRemoveFilter(
       std::unique_ptr<typename Util::Internal<T>::KeyEntryVector>
           entries_to_save,

@@ -55,7 +55,8 @@ class PaintWorkletProxyClientTest : public RenderingTest {
 
   void SetUp() override {
     RenderingTest::SetUp();
-    paint_worklet_ = MakeGarbageCollected<PaintWorklet>(&GetFrame());
+    paint_worklet_ =
+        MakeGarbageCollected<PaintWorklet>(*GetFrame().DomWindow());
     dispatcher_ = std::make_unique<PaintWorkletPaintDispatcher>();
     fake_compositor_thread_runner_ = base::MakeRefCounted<FakeTaskRunner>();
     proxy_client_ = MakeGarbageCollected<PaintWorkletProxyClient>(

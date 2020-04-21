@@ -726,8 +726,7 @@ TtsBackground = class extends ChromeTtsBase {
       properties['lang'] = chrome.i18n.getUILanguage();
     }
 
-    const phoneticText =
-        PhoneticData.getPhoneticDisambiguation(properties['lang'], text);
+    const phoneticText = PhoneticData.forCharacter(text, properties['lang']);
     if (phoneticText) {
       properties['delay'] = true;
       this.speak(phoneticText, QueueMode.QUEUE, properties);

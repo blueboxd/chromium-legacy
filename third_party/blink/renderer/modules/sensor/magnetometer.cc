@@ -52,21 +52,6 @@ base::Optional<double> Magnetometer::z() const {
   return base::nullopt;
 }
 
-double Magnetometer::x(bool& is_null) const {
-  INIT_IS_NULL_AND_RETURN(is_null, 0.0);
-  return GetReading().magn.x;
-}
-
-double Magnetometer::y(bool& is_null) const {
-  INIT_IS_NULL_AND_RETURN(is_null, 0.0);
-  return GetReading().magn.y;
-}
-
-double Magnetometer::z(bool& is_null) const {
-  INIT_IS_NULL_AND_RETURN(is_null, 0.0);
-  return GetReading().magn.z;
-}
-
 void Magnetometer::Trace(Visitor* visitor) {
   Sensor::Trace(visitor);
 }

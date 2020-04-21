@@ -87,15 +87,6 @@ base::Optional<DOMTimeStamp> PushSubscription::expirationTime() const {
   return base::nullopt;
 }
 
-DOMTimeStamp PushSubscription::expirationTime(bool& out_is_null) const {
-  // This attribute reflects the time at which the subscription will expire,
-  // which is not relevant to this implementation yet as subscription refreshes
-  // are not supported.
-  out_is_null = true;
-
-  return 0;
-}
-
 DOMArrayBuffer* PushSubscription::getKey(const AtomicString& name) const {
   if (name == "p256dh")
     return p256dh_;

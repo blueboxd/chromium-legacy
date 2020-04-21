@@ -219,6 +219,20 @@ void FrameSequenceTracker::ReportSubmitFrame(
     const viz::BeginFrameAck& ack,
     const viz::BeginFrameArgs& origin_args) {
   DCHECK_NE(termination_status_, TerminationStatus::kReadyForTermination);
+
+  // TODO(crbug.com/1072482): find a proper way to terminate a tracker.
+  // Right now, we define a magical number |frames_to_terminate_tracker| = 3,
+  // which means that if this frame_token is more than 3 frames compared with
+  // the last submitted frame, then we assume that the last submitted frame is
+  // not going to be presented, and thus terminate this tracker.
+  const uint32_t frames_to_terminate_tracker = 3;
+  if (termination_status_ == TerminationStatus::kScheduledForTermination &&
+      viz::FrameTokenGT(frame_token,
+                        last_submitted_frame_ + frames_to_terminate_tracker)) {
+    termination_status_ = TerminationStatus::kReadyForTermination;
+    return;
+  }
+
   if (ShouldIgnoreBeginFrameSource(ack.frame_id.source_id) ||
       ShouldIgnoreSequence(ack.frame_id.sequence_number)) {
     ignored_frame_tokens_.insert(frame_token);

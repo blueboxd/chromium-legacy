@@ -35,7 +35,7 @@ class CORE_EXPORT LayoutWorklet : public Worklet,
   static const size_t kNumGlobalScopes;
   static LayoutWorklet* From(LocalDOMWindow&);
 
-  explicit LayoutWorklet(LocalFrame*);
+  explicit LayoutWorklet(LocalDOMWindow&);
   ~LayoutWorklet() override;
 
   typedef HeapHashMap<String, Member<DocumentLayoutDefinition>>

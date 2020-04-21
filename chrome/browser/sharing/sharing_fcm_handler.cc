@@ -202,7 +202,7 @@ void SharingFCMHandler::SendAckMessage(
         base::BindOnce(&SharingFCMHandler::OnAckMessageSent,
                        weak_ptr_factory_.GetWeakPtr(),
                        std::move(original_message_id), original_message_type,
-                       sender_device_type, trace_id));
+                       SharingDevicePlatform::kServer, trace_id));
     return;
   }
 

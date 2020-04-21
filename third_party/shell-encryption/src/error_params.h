@@ -37,7 +37,8 @@ template <typename ModularInt>
 class ErrorParams {
  public:
   static rlwe::StatusOr<ErrorParams> Create(
-      const int log_t, Uint64 variance, typename ModularInt::Params* params,
+      const int log_t, Uint64 variance,
+      const typename ModularInt::Params* params,
       const rlwe::NttParameters<ModularInt>* ntt_params) {
     if (log_t > params->log_modulus - 1) {
       return absl::InvalidArgumentError(
@@ -74,7 +75,7 @@ class ErrorParams {
  private:
   // Constructor to set up the params.
   ErrorParams(const int log_t, Uint64 variance,
-              typename ModularInt::Params* params,
+              const typename ModularInt::Params* params,
               const rlwe::NttParameters<ModularInt>* ntt_params)
       : t_(params->One()) {
     t_ = (params->One() << log_t) + params->One();

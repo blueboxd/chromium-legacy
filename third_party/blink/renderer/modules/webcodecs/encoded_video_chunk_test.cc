@@ -32,9 +32,7 @@ TEST_F(EncodedVideoChunkTest, ConstructorAndAttributes) {
   EXPECT_EQ(type, encoded->type());
   EXPECT_EQ(timestamp, encoded->timestamp());
   EXPECT_EQ(data, BufferToString(encoded->data()));
-  bool is_null = false;
-  encoded->duration(&is_null);
-  EXPECT_TRUE(is_null);
+  EXPECT_FALSE(encoded->duration().has_value());
 }
 
 TEST_F(EncodedVideoChunkTest, ConstructorWithDuration) {
@@ -48,9 +46,8 @@ TEST_F(EncodedVideoChunkTest, ConstructorWithDuration) {
   EXPECT_EQ(type, encoded->type());
   EXPECT_EQ(timestamp, encoded->timestamp());
   EXPECT_EQ(data, BufferToString(encoded->data()));
-  bool is_null = false;
-  EXPECT_EQ(duration, encoded->duration(&is_null));
-  EXPECT_FALSE(is_null);
+  ASSERT_TRUE(encoded->duration().has_value());
+  EXPECT_EQ(duration, encoded->duration().value());
 }
 
 }  // namespace

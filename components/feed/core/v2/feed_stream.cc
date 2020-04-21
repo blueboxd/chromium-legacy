@@ -24,186 +24,12 @@
 #include "components/feed/core/v2/scheduling.h"
 #include "components/feed/core/v2/stream_model.h"
 #include "components/feed/core/v2/stream_model_update_request.h"
+#include "components/feed/core/v2/surface_updater.h"
 #include "components/feed/core/v2/tasks/load_stream_task.h"
 #include "components/feed/core/v2/tasks/wait_for_store_initialize_task.h"
 #include "components/prefs/pref_service.h"
 
 namespace feed {
-namespace {
-constexpr char kZeroStateSliceId[] = "zero-state";
-}
-
-// Tracks UI changes in |StreamModel| and forwards them to |SurfaceInterface|s.
-class FeedStream::SurfaceUpdater : public StreamModel::Observer {
- public:
-  using ContentRevision = ContentRevision;
-  explicit SurfaceUpdater(const base::ObserverList<SurfaceInterface>* surfaces)
-      : surfaces_(surfaces) {}
-  ~SurfaceUpdater() override = default;
-  SurfaceUpdater(const SurfaceUpdater&) = delete;
-  SurfaceUpdater& operator=(const SurfaceUpdater&) = delete;
-
-  void SetModel(StreamModel* model) {
-    if (model_ == model)
-      return;
-    if (model_)
-      model_->SetObserver(nullptr);
-    model_ = model;
-    if (model_) {
-      model_->SetObserver(this);
-
-      const std::vector<ContentRevision>& content_list =
-          model_->GetContentList();
-      current_content_set_.insert(content_list.begin(), content_list.end());
-      for (SurfaceInterface& surface : *surfaces_) {
-        surface.StreamUpdate(GetUpdateForNewSurface(*model_));
-      }
-    }
-  }
-
-  // StreamModel::Observer.
-  void OnUiUpdate(const StreamModel::UiUpdate& update) override {
-    DCHECK(model_);  // The update comes from the model.
-
-    if (!update.content_list_changed)
-      return;
-    feedui::StreamUpdate stream_update;
-    const std::vector<ContentRevision>& content_list = model_->GetContentList();
-    for (ContentRevision content_revision : content_list) {
-      AddSliceUpdate(*model_, content_revision,
-                     current_content_set_.count(content_revision) == 0,
-                     &stream_update);
-    }
-    for (const StreamModel::UiUpdate::SharedStateInfo& info :
-         update.shared_states) {
-      if (info.updated)
-        AddSharedState(*model_, info.shared_state_id, &stream_update);
-    }
-
-    current_content_set_.clear();
-    current_content_set_.insert(content_list.begin(), content_list.end());
-
-    for (SurfaceInterface& surface : *surfaces_) {
-      surface.StreamUpdate(stream_update);
-    }
-  }
-
-  // Sends the initial stream state to a newly connected surface.
-  void SurfaceAdded(SurfaceInterface* surface) {
-    if (model_) {
-      surface->StreamUpdate(GetUpdateForNewSurface(*model_));
-    }
-  }
-
-  void LoadStreamStarted() {
-    if (model_)
-      return;
-    for (SurfaceInterface& surface : *surfaces_) {
-      SendLoadingSpinnerUpdate(&surface);
-    }
-  }
-
-  void LoadStreamFailed(LoadStreamStatus load_stream_status) {
-    auto zero_state_type = feedui::ZeroStateSlice::NO_CARDS_AVAILABLE;
-    switch (load_stream_status) {
-      case LoadStreamStatus::kProtoTranslationFailed:
-      case LoadStreamStatus::kNoResponseBody:
-      case LoadStreamStatus::kCannotLoadFromNetworkOffline:
-      case LoadStreamStatus::kCannotLoadFromNetworkThrottled:
-        zero_state_type = feedui::ZeroStateSlice::CANT_REFRESH;
-        break;
-      default:
-        break;
-    }
-    // Note that with multiple surface, it's possible that we send a zero-state
-    // to a single surface multiple times.
-    for (SurfaceInterface& surface : *surfaces_) {
-      SendZeroStateUpdate(zero_state_type, &surface);
-    }
-  }
-
-  // Returns the 0-based index of the slice in the stream, or -1 if the slice is
-  // not found. Ignores all non-content slices.
-  int GetSliceIndexFromSliceId(const std::string& slice_id) {
-    ContentRevision slice_rev = ToContentRevision(slice_id);
-    if (slice_rev.is_null())
-      return -1;
-    int index = 0;
-    for (const ContentRevision& rev : model_->GetContentList()) {
-      if (rev == slice_rev)
-        return index;
-      ++index;
-    }
-    return -1;
-  }
-
- private:
-  static feedui::StreamUpdate GetUpdateForNewSurface(const StreamModel& model) {
-    feedui::StreamUpdate result;
-    for (ContentRevision content_revision : model.GetContentList()) {
-      AddSliceUpdate(model, content_revision, /*is_content_new=*/true, &result);
-    }
-    for (std::string& id : model.GetSharedStateIds()) {
-      AddSharedState(model, id, &result);
-    }
-
-    return result;
-  }
-
-  static void SendLoadingSpinnerUpdate(SurfaceInterface* surface) {
-    feedui::StreamUpdate update;
-    feedui::Slice* slice = update.add_updated_slices()->mutable_slice();
-    slice->mutable_loading_spinner_slice()->set_is_at_top(true);
-    slice->set_slice_id("loading-spinner");
-    surface->StreamUpdate(update);
-  }
-
-  static void SendZeroStateUpdate(feedui::ZeroStateSlice::Type zero_state_type,
-                                  SurfaceInterface* surface) {
-    feedui::StreamUpdate update;
-    feedui::Slice* slice = update.add_updated_slices()->mutable_slice();
-    slice->mutable_zero_state_slice()->set_type(zero_state_type);
-    slice->set_slice_id(kZeroStateSliceId);
-    surface->StreamUpdate(update);
-  }
-
-  static void AddSharedState(const StreamModel& model,
-                             const std::string& shared_state_id,
-                             feedui::StreamUpdate* stream_update) {
-    const std::string* shared_state_data =
-        model.FindSharedStateData(shared_state_id);
-    if (!shared_state_data)
-      return;
-    feedui::SharedState* added_shared_state =
-        stream_update->add_new_shared_states();
-    added_shared_state->set_id(shared_state_id);
-    added_shared_state->set_xsurface_shared_state(*shared_state_data);
-  }
-
-  static void AddSliceUpdate(const StreamModel& model,
-                             ContentRevision content_revision,
-                             bool is_content_new,
-                             feedui::StreamUpdate* stream_update) {
-    if (is_content_new) {
-      feedui::Slice* slice =
-          stream_update->add_updated_slices()->mutable_slice();
-      slice->set_slice_id(ToString(content_revision));
-      const feedstore::Content* content = model.FindContent(content_revision);
-      DCHECK(content);
-      slice->mutable_xsurface_slice()->set_xsurface_frame(content->frame());
-    } else {
-      stream_update->add_updated_slices()->set_slice_id(
-          ToString(content_revision));
-    }
-  }
-
-  // Owned by |FeedStream|.
-  // Warning!: Null when the model is not yet loaded.
-  StreamModel* model_ = nullptr;
-  const base::ObserverList<SurfaceInterface>* surfaces_;
-
-  std::set<ContentRevision> current_content_set_;
-};
 
 std::unique_ptr<StreamModelUpdateRequest>
 FeedStream::WireResponseTranslator::TranslateWireResponse(
@@ -239,7 +65,7 @@ FeedStream::FeedStream(RefreshTaskScheduler* refresh_task_scheduler,
   static WireResponseTranslator default_translator;
   wire_response_translator_ = &default_translator;
 
-  surface_updater_ = std::make_unique<SurfaceUpdater>(&surfaces_);
+  surface_updater_ = std::make_unique<SurfaceUpdater>();
 
   // Inserting this task first ensures that |store_| is initialized before
   // it is used.
@@ -283,22 +109,18 @@ void FeedStream::InitialStreamLoadComplete(LoadStreamTask::Result result) {
 
   model_loading_in_progress_ = false;
 
-  // If loading failed, update surfaces with an appropriate zero-state error.
-  if (!model_) {
-    surface_updater_->LoadStreamFailed(result.final_status);
-  }
+  surface_updater_->LoadStreamComplete(model_ != nullptr, result.final_status);
 }
 
 void FeedStream::AttachSurface(SurfaceInterface* surface) {
   metrics_reporter_->SurfaceOpened();
   user_classifier_->OnEvent(UserClassifier::Event::kSuggestionsViewed);
-  surfaces_.AddObserver(surface);
-  surface_updater_->SurfaceAdded(surface);
   TriggerStreamLoad();
+  surface_updater_->SurfaceAdded(surface);
 }
 
 void FeedStream::DetachSurface(SurfaceInterface* surface) {
-  surfaces_.RemoveObserver(surface);
+  surface_updater_->SurfaceRemoved(surface);
 }
 
 void FeedStream::SetArticlesListVisible(bool is_visible) {
@@ -314,6 +136,7 @@ void FeedStream::LoadMore(base::OnceCallback<void(bool)> callback) {
     DLOG(ERROR) << "Ignoring LoadMore() before the model is loaded";
     return std::move(callback).Run(false);
   }
+  surface_updater_->SetLoadingMore(true);
   // Have at most one in-flight LoadMore() request. Send the result to all
   // requestors.
   load_more_complete_callbacks_.push_back(std::move(callback));
@@ -326,6 +149,9 @@ void FeedStream::LoadMore(base::OnceCallback<void(bool)> callback) {
 
 void FeedStream::LoadMoreComplete(LoadMoreTask::Result result) {
   metrics_reporter_->OnLoadMore(result.final_status);
+  // TODO(harringtond): In the case of failure, do we need to load an error
+  // message slice?
+  surface_updater_->SetLoadingMore(false);
   std::vector<base::OnceCallback<void(bool)>> moved_callbacks =
       std::move(load_more_complete_callbacks_);
   bool success = result.final_status == LoadStreamStatus::kLoadedFromNetwork;
@@ -467,7 +293,7 @@ LoadStreamStatus FeedStream::ShouldMakeFeedQueryRequest(bool is_load_more) {
 }
 
 void FeedStream::OnEulaAccepted() {
-  if (surfaces_.might_have_observers())
+  if (surface_updater_->HasSurfaceAttached())
     TriggerStreamLoad();
 }
 

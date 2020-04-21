@@ -17,9 +17,25 @@ load("@rules_proto//proto:defs.bzl", "proto_library")
 
 package(default_visibility = ["//visibility:public"])
 
-licenses(["notice"])  # Apache 2.0
+licenses(["notice"])
+
+exports_files(["LICENSE"])
 
 # Utilities.
+
+cc_library(
+    name = "parameters",
+    testonly = 1,
+    hdrs = ["parameters.h"],
+    deps = [
+        "//:constants",
+        "//:context",
+        "//:integral_types",
+        "//:montgomery",
+        "@com_github_google_googletest//:gtest",
+        "@com_google_absl//absl/numeric:int128",
+    ],
+)
 
 cc_library(
     name = "testing_prng",
@@ -61,8 +77,8 @@ cc_library(
     ],
     deps = [
         "//:statusor_fork",
+        "@com_github_google_googletest//:gtest",
         "@com_google_absl//absl/status",
-        "@com_google_googletest//:gtest",
     ],
 )
 
@@ -75,8 +91,8 @@ cc_library(
     ],
     deps = [
         "//:statusor_fork",
+        "@com_github_google_googletest//:gtest",
         "@com_google_absl//absl/status",
-        "@com_google_googletest//:gtest",
     ],
 )
 
@@ -87,7 +103,7 @@ cc_test(
         ":coefficient_polynomial_cc_proto",
         ":matchers",
         ":status_testing",
-        "@com_google_googletest//:gtest_main",
+        "@com_github_google_googletest//:gtest_main",
     ],
 )
 
@@ -100,7 +116,7 @@ cc_library(
     deps = [
         ":coefficient_polynomial_cc_proto",
         "//:statusor_fork",
-        "@com_github_glog_glog//:glog",
+        "@com_github_google_glog//:glog",
         "@com_google_absl//absl/strings",
     ],
 )
@@ -117,7 +133,7 @@ cc_test(
         ":testing_prng",
         "//:constants",
         "//:montgomery",
-        "@com_google_googletest//:gtest_main",
+        "@com_github_google_googletest//:gtest_main",
     ],
 )
 
@@ -148,9 +164,10 @@ cc_test(
         ":testing_utils",
         "//:constants",
         "//:montgomery",
+        "//:ntt_parameters",
         "//:polynomial",
         "//:symmetric_encryption",
-        "@com_google_googletest//:gtest_main",
+        "@com_github_google_googletest//:gtest_main",
     ],
 )
 

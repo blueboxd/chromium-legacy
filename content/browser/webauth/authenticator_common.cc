@@ -487,7 +487,7 @@ base::flat_set<device::FidoTransportProtocol> GetAvailableTransports(
 
   // FIXME(martinkr): Check whether this can be moved in front of the BLE
   // adapter enumeration logic in FidoRequestHandlerBase.
-  if (!device::BluetoothAdapterFactory::Get().IsLowEnergySupported()) {
+  if (!device::BluetoothAdapterFactory::Get()->IsLowEnergySupported()) {
     return transports;
   }
 

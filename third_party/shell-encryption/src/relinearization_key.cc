@@ -16,6 +16,7 @@
 #include "relinearization_key.h"
 
 #include "absl/numeric/int128.h"
+#include "bits_util.h"
 #include "montgomery.h"
 #include "prng/integral_prng_types.h"
 #include "status_macros.h"
@@ -25,18 +26,13 @@
 namespace rlwe {
 namespace {
 // Method to compute the number of digits needed to represent integers mod
-// q in base T. Upcasts the modulus to absl::uint128 to handle all uint*_t
+// q in base T. Upcasts the modulus to absl::uint128 to handle all Uint*
 // types.
 inline int ComputeDimension(Uint64 log_decomposition_modulus,
                             absl::uint128 modulus) {
-  double modulus_bits;
-  // Compute bit lengths of each as a double and divide.
-  if (absl::Uint128High64(modulus) > 0) {
-    modulus_bits = std::log2(absl::Uint128High64(modulus)) + 64;
-  } else {
-    modulus_bits = std::log2(absl::Uint128Low64(modulus));
-  }
-  return std::ceil(modulus_bits / log_decomposition_modulus);
+  Uint64 modulus_bits = static_cast<Uint64>(internal::BitLength(modulus));
+  return (modulus_bits + (log_decomposition_modulus - 1)) /
+         log_decomposition_modulus;
 }
 
 // Returns a random vector r orthogonal to (1,s). The second component is chosen
@@ -83,30 +79,26 @@ rlwe::StatusOr<std::vector<Polynomial<ModularInt>>> PowersOfT(
 template <typename ModularInt>
 rlwe::StatusOr<std::vector<std::vector<ModularInt>>> BitDecompose(
     const std::vector<ModularInt>& coefficients,
-    typename ModularInt::Params* modulus_params,
+    const typename ModularInt::Params* modulus_params,
     const Uint64 log_decomposition_modulus, int dimension) {
-  std::vector<std::vector<ModularInt>> result;
-
   std::vector<typename ModularInt::Int> ciphertext_coeffs(coefficients.size(),
                                                           0);
-
   std::transform(
       coefficients.begin(), coefficients.end(), ciphertext_coeffs.begin(),
       [modulus_params](ModularInt x) { return x.ExportInt(modulus_params); });
 
-  auto zero = ModularInt::ImportZero(modulus_params);
-  std::vector<ModularInt> sum_part(ciphertext_coeffs.size(), zero);
-
+  std::vector<std::vector<ModularInt>> result(dimension);
   for (int i = 0; i < dimension; i++) {
+    result[i].reserve(ciphertext_coeffs.size());
     for (int j = 0; j < ciphertext_coeffs.size(); ++j) {
       RLWE_ASSIGN_OR_RETURN(
-          sum_part[j],
+          auto coefficient_part,
           ModularInt::ImportInt(
               (ciphertext_coeffs[j] % (1L << log_decomposition_modulus)),
               modulus_params));
+      result[i].push_back(std::move(coefficient_part));
       ciphertext_coeffs[j] = ciphertext_coeffs[j] >> log_decomposition_modulus;
     }
-    result.push_back(sum_part);
   }
 
   return result;
@@ -116,7 +108,7 @@ template <typename ModularInt>
 rlwe::StatusOr<std::vector<Polynomial<ModularInt>>> MatrixMultiply(
     std::vector<std::vector<ModularInt>> decomposed_coefficients,
     const std::vector<std::vector<Polynomial<ModularInt>>>& matrix,
-    typename ModularInt::Params* modulus_params,
+    const typename ModularInt::Params* modulus_params,
     const NttParameters<ModularInt>* ntt_params) {
   Polynomial<ModularInt> temp(matrix[0][0].Len(), modulus_params);
   Polynomial<ModularInt> ntt_part(matrix[0][0].Len(), modulus_params);
@@ -125,7 +117,7 @@ rlwe::StatusOr<std::vector<Polynomial<ModularInt>>> MatrixMultiply(
 
   for (int i = 0; i < matrix[0].size(); i++) {
     ntt_part = Polynomial<ModularInt>::ConvertToNtt(
-        std::move(decomposed_coefficients[i]), *ntt_params, modulus_params);
+        std::move(decomposed_coefficients[i]), ntt_params, modulus_params);
     RLWE_ASSIGN_OR_RETURN(temp, ntt_part.Mul(matrix[0][i], modulus_params));
     RLWE_RETURN_IF_ERROR(result[0].AddInPlace(temp, modulus_params));
     RLWE_RETURN_IF_ERROR(ntt_part.MulInPlace(matrix[1][i], modulus_params))
@@ -166,8 +158,8 @@ RelinearizationKey<ModularInt>::RelinearizationKeyPart::Create(
                               key_power.Len(), key.Variance(), prng_encryption,
                               key.ModulusParams()));
     // Convert the error coefficients into an error polynomial.
-    auto e = Polynomial<ModularInt>::ConvertToNtt(error, *key.NttParams(),
-                                                  key.ModulusParams());
+    auto e = Polynomial<ModularInt>::ConvertToNtt(
+        std::move(error), key.NttParams(), key.ModulusParams());
     // Set the column of the Relinearization matrix.
     RLWE_RETURN_IF_ERROR(
         e.MulInPlace(key.PlaintextModulus(), key.ModulusParams()));
@@ -184,11 +176,11 @@ template <typename ModularInt>
 rlwe::StatusOr<std::vector<Polynomial<ModularInt>>>
 RelinearizationKey<ModularInt>::RelinearizationKeyPart::ApplyPartTo(
     const Polynomial<ModularInt>& ciphertext_part,
-    typename ModularInt::Params* modulus_params,
+    const typename ModularInt::Params* modulus_params,
     const NttParameters<ModularInt>* ntt_params) const {
   // Convert ciphertext out of NTT form.
   std::vector<ModularInt> ciphertext_coefficients =
-      ciphertext_part.InverseNtt(*ntt_params, modulus_params);
+      ciphertext_part.InverseNtt(ntt_params, modulus_params);
 
   // Bit-decompose the vector of coefficients in the ciphertext.
   RLWE_ASSIGN_OR_RETURN(
@@ -206,14 +198,16 @@ rlwe::StatusOr<typename RelinearizationKey<ModularInt>::RelinearizationKeyPart>
 RelinearizationKey<ModularInt>::RelinearizationKeyPart::Deserialize(
     const std::vector<SerializedNttPolynomial>& polynomials,
     Uint64 log_decomposition_modulus, SecurePrng* prng,
-    ModularIntParams* modulus_params,
+    const ModularIntParams* modulus_params,
     const NttParameters<ModularInt>* ntt_params) {
   // The polynomials input is a flattened representation of a 2 x dimension
   // matrix where the first half corresponds to the first row of matrix and the
   // second half corresponds to the second row of matrix. This matrix makes up
   // the RelinearizationKeyPart.
-  auto matrix = std::vector<std::vector<Polynomial<ModularInt>>>(2);
   int dimension = polynomials.size();
+  auto matrix = std::vector<std::vector<Polynomial<ModularInt>>>(2);
+  matrix[0].reserve(dimension);
+  matrix[1].reserve(dimension);
 
   for (int i = 0; i < dimension; i++) {
     RLWE_ASSIGN_OR_RETURN(auto elt, Polynomial<ModularInt>::Deserialize(
@@ -282,6 +276,7 @@ RelinearizationKey<ModularInt>::Create(const SymmetricRlweKey<ModularInt>& key,
   auto dimension =
       ComputeDimension(log_decomposition_modulus, key.ModulusParams()->modulus);
   std::vector<RelinearizationKeyPart> relinearization_key;
+  relinearization_key.reserve(num_parts);
   // Create RealinearizationKeyPart for each of the secret key parts: s, ...,
   // s^k.
   for (int i = 1; i < num_parts; i++) {
@@ -362,7 +357,7 @@ template <typename ModularInt>
 rlwe::StatusOr<RelinearizationKey<ModularInt>>
 RelinearizationKey<ModularInt>::Deserialize(
     const SerializedRelinearizationKey& serialized,
-    typename ModularInt::Params* modulus_params,
+    const typename ModularInt::Params* modulus_params,
     const NttParameters<ModularInt>* ntt_params) {
   // Verifies that the number of polynomials in serialized is expected.
   // A RelinearizationKey can decrypt ciphertexts with num_parts number of
@@ -419,6 +414,7 @@ RelinearizationKey<ModularInt>::Deserialize(
 
   // Takes each polynomials_per_matrix chunk of serialized.c()'s and places them
   // into a KeyPart.
+  output.relinearization_key_.reserve(serialized.num_parts() - 1);
   for (int i = 0; i < (serialized.num_parts() - 1); i++) {
     auto start = serialized.c().begin() + i * polynomials_per_matrix;
     auto end = start + polynomials_per_matrix;

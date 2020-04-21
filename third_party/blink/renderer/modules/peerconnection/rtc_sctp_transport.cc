@@ -107,15 +107,6 @@ base::Optional<int16_t> RTCSctpTransport::maxChannels() const {
   return current_state_.MaxChannels().value();
 }
 
-int16_t RTCSctpTransport::maxChannels(bool& isNull) const {
-  if (!current_state_.MaxChannels()) {
-    isNull = true;
-    return 0;
-  }
-  isNull = false;
-  return *current_state_.MaxChannels();
-}
-
 RTCDtlsTransport* RTCSctpTransport::transport() const {
   return dtls_transport_;
 }

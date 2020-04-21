@@ -60,7 +60,7 @@ PictureInPictureInterstitial::PictureInPictureInterstitial(
     HTMLVideoElement& videoElement)
     : HTMLDivElement(videoElement.GetDocument()),
       resize_observer_(ResizeObserver::Create(
-          videoElement.GetDocument(),
+          videoElement.GetDocument().domWindow(),
           MakeGarbageCollected<VideoElementResizeObserverDelegate>(this))),
       interstitial_timer_(
           videoElement.GetDocument().GetTaskRunner(TaskType::kInternalMedia),
@@ -127,7 +127,7 @@ Node::InsertionNotificationRequest PictureInPictureInterstitial::InsertedInto(
     ContainerNode& root) {
   if (GetVideoElement().isConnected() && !resize_observer_) {
     resize_observer_ = ResizeObserver::Create(
-        GetVideoElement().GetDocument(),
+        GetVideoElement().GetDocument().domWindow(),
         MakeGarbageCollected<VideoElementResizeObserverDelegate>(this));
     resize_observer_->observe(&GetVideoElement());
   }

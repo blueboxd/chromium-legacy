@@ -28,7 +28,6 @@ import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.webapps.WebappRegistry;
 import org.chromium.components.browser_ui.settings.ChromeImageViewPreference;
 import org.chromium.components.browser_ui.settings.ManagedPreferencesUtils;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
@@ -371,9 +370,8 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
     private void setUpClearDataPreference(ClearWebsiteStorage preference) {
         long usage = mSite.getTotalUsage();
         if (usage > 0) {
-            WebappRegistry registry = WebappRegistry.getInstance();
-            Set<String> originsWithApps = registry.getOriginsWithInstalledApp();
-            boolean appFound = originsWithApps.contains(mSite.getAddress().getOrigin());
+            boolean appFound = getSiteSettingsClient().originHasInstalledWebapp(
+                    mSite.getAddress().getOrigin());
             Context context = preference.getContext();
             preference.setTitle(
                     String.format(context.getString(R.string.origin_settings_storage_usage_brief),

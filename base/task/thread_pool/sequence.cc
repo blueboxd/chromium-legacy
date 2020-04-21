@@ -11,7 +11,6 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/task/task_features.h"
 #include "base/time/time.h"
 
@@ -51,13 +50,6 @@ void Sequence::Transaction::PushTask(Task task) {
                   : std::move(task.task);
 
   sequence()->queue_.push(std::move(task));
-
-  // Record an histogram to determine how often the size of a Sequence grows
-  // above 10000 tasks. Once this is known, consider adding a
-  // DumpWithoutCrashing to catch code that causes that to happen.
-  // https://crbug.com/1071862.
-  UMA_HISTOGRAM_COUNTS_100000("ThreadPool.NumTasksInSequenceOnPush",
-                              sequence()->queue_.size());
 
   // AddRef() matched by manual Release() when the sequence has no more tasks
   // to run (in DidProcessTask() or Clear()).

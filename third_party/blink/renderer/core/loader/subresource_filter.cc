@@ -10,6 +10,7 @@
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
@@ -43,10 +44,11 @@ SubresourceFilter::SubresourceFilter(
   DCHECK(subresource_filter_);
   // Report the main resource as an ad if the subresource filter is
   // associated with an ad subframe.
-  if (auto* document = Document::DynamicFrom(execution_context_.Get())) {
-    auto* loader = document->Loader();
-    if (document->GetFrame()->IsAdSubframe()) {
-      ReportAdRequestId(loader->GetResponse().RequestId());
+  if (auto* window = DynamicTo<LocalDOMWindow>(execution_context_.Get())) {
+    auto* frame = window->GetFrame();
+    if (frame->IsAdSubframe()) {
+      ReportAdRequestId(
+          frame->Loader().GetDocumentLoader()->GetResponse().RequestId());
     }
   }
 }
@@ -132,9 +134,9 @@ void SubresourceFilter::ReportLoad(
       // TODO(csharrison): Consider posting a task to the main thread from
       // worker thread, or adding support for DidObserveLoadingBehavior to
       // ExecutionContext.
-      if (auto* document = Document::DynamicFrom(execution_context_.Get())) {
-        if (DocumentLoader* loader = document->Loader()) {
-          loader->DidObserveLoadingBehavior(
+      if (auto* window = DynamicTo<LocalDOMWindow>(execution_context_.Get())) {
+        if (auto* frame = window->GetFrame()) {
+          frame->Loader().GetDocumentLoader()->DidObserveLoadingBehavior(
               kLoadingBehaviorSubresourceFilterMatch);
         }
       }

@@ -93,8 +93,7 @@ CrossOriginResourcePolicy::ParsedHeader ParseHeaderByHttpResponseHeaders(
 
 std::string GetDomain(const url::Origin& origin) {
   return net::registry_controlled_domains::GetDomainAndRegistry(
-      origin.host(),
-      net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+      origin, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
 }
 
 bool ShouldAllowSameSite(const url::Origin& initiator,

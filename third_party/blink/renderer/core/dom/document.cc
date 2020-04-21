@@ -7354,14 +7354,6 @@ Document::EnsureDocumentExplicitRootIntersectionObserverData() {
   return *document_explicit_root_intersection_observer_data_;
 }
 
-ResizeObserverController& Document::EnsureResizeObserverController() {
-  if (!resize_observer_controller_) {
-    resize_observer_controller_ =
-        MakeGarbageCollected<ResizeObserverController>();
-  }
-  return *resize_observer_controller_;
-}
-
 void Document::AddConsoleMessage(ConsoleMessage* message,
                                  bool discard_duplicates) const {
   // Don't let non-attached Documents spam the console.
@@ -8331,7 +8323,6 @@ void Document::Trace(Visitor* visitor) {
   visitor->Trace(canvas_font_cache_);
   visitor->Trace(intersection_observer_controller_);
   visitor->Trace(snap_coordinator_);
-  visitor->Trace(resize_observer_controller_);
   visitor->Trace(property_registry_);
   visitor->Trace(network_state_observer_);
   visitor->Trace(policy_);

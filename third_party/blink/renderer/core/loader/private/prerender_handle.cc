@@ -90,7 +90,7 @@ PrerenderHandle::PrerenderHandle(
     const KURL& url,
     mojo::Remote<mojom::blink::PrerenderHandle> remote_handle,
     mojo::PendingReceiver<mojom::blink::PrerenderHandleClient> receiver)
-    : ExecutionContextLifecycleObserver(&document),
+    : ExecutionContextLifecycleObserver(document.GetExecutionContext()),
       url_(url),
       client_(client),
       remote_handle_(std::move(remote_handle)),

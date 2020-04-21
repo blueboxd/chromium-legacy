@@ -51,21 +51,6 @@ base::Optional<double> Gyroscope::z() const {
   return base::nullopt;
 }
 
-double Gyroscope::x(bool& is_null) const {
-  INIT_IS_NULL_AND_RETURN(is_null, 0.0);
-  return GetReading().gyro.x;
-}
-
-double Gyroscope::y(bool& is_null) const {
-  INIT_IS_NULL_AND_RETURN(is_null, 0.0);
-  return GetReading().gyro.y;
-}
-
-double Gyroscope::z(bool& is_null) const {
-  INIT_IS_NULL_AND_RETURN(is_null, 0.0);
-  return GetReading().gyro.z;
-}
-
 void Gyroscope::Trace(Visitor* visitor) {
   Sensor::Trace(visitor);
 }

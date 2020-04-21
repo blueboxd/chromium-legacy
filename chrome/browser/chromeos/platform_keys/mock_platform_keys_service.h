@@ -74,6 +74,11 @@ class MockPlatformKeysService : public PlatformKeysService {
               (override));
 
   MOCK_METHOD(void,
+              GetAllKeys,
+              (const std::string& token_id, GetAllKeysCallback callback),
+              (override));
+
+  MOCK_METHOD(void,
               ImportCertificate,
               (const std::string& token_id,
                const scoped_refptr<net::X509Certificate>& certificate,

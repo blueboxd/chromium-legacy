@@ -1007,7 +1007,7 @@ void WebLocalFrameImpl::SetReferrerForRequest(WebURLRequest& request,
 
 WebAssociatedURLLoader* WebLocalFrameImpl::CreateAssociatedURLLoader(
     const WebAssociatedURLLoaderOptions& options) {
-  return new WebAssociatedURLLoaderImpl(GetFrame()->GetDocument(), options);
+  return new WebAssociatedURLLoaderImpl(GetFrame()->DomWindow(), options);
 }
 
 void WebLocalFrameImpl::ReplaceSelection(const WebString& text) {

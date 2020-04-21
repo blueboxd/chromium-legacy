@@ -200,7 +200,6 @@ dev_list="\
   perl
   pkg-config
   python
-  python-cherrypy3
   python-crypto
   python-dev
   python-numpy

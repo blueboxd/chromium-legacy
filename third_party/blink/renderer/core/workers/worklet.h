@@ -16,7 +16,7 @@
 
 namespace blink {
 
-class Document;
+class LocalDOMWindow;
 class WorkletOptions;
 
 // This is the base implementation of Worklet interface defined in the spec:
@@ -54,7 +54,7 @@ class CORE_EXPORT Worklet : public ScriptWrappable,
   void Trace(Visitor*) override;
 
  protected:
-  explicit Worklet(Document*);
+  explicit Worklet(LocalDOMWindow&);
 
   // Returns one of available global scopes.
   WorkletGlobalScopeProxy* FindAvailableGlobalScope();

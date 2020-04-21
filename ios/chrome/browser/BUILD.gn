@@ -5,6 +5,7 @@
 import("//build/config/features.gni")
 import("//build/config/ios/rules.gni")
 import("//build/mac/tweak_info_plist.gni")
+import("//ios/chrome/features.gni")
 import("//rlz/buildflags/buildflags.gni")
 import("//third_party/protobuf/proto_library.gni")
 
@@ -257,8 +258,11 @@ source_set("browser_impl") {
 }
 
 tweak_info_plist("experimental_info_plist") {
-  info_plists = [
-    "resources/Settings.bundle/Experimental.plist",
+  info_plists = [ "resources/Settings.bundle/Experimental.plist" ]
+  if (ios_enable_metrickit) {
+    info_plists += [ "resources/Settings.bundle/ExperimentalMetricKit.plist" ]
+  }
+  info_plists += [
     "resources/Settings.bundle/ExperimentalFlags.plist",
     "resources/Settings.bundle/ExperimentalBlank.plist",
   ]

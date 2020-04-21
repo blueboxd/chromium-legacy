@@ -90,8 +90,8 @@ void ConditionalCacheDeletionHelper::IterateOverEntries(
 
     previous_entry_ = result.ReleaseEntry();
     result = iterator_->OpenNextEntry(
-        base::BindRepeating(&ConditionalCacheDeletionHelper::IterateOverEntries,
-                            weak_factory_.GetWeakPtr()));
+        base::BindOnce(&ConditionalCacheDeletionHelper::IterateOverEntries,
+                       weak_factory_.GetWeakPtr()));
   }
 }
 

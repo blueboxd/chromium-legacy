@@ -39,45 +39,6 @@ java_group("android_arch_lifecycle_common_java") {
   input_jars_paths = [ "libs/android_arch_lifecycle_common/common-1.1.1.jar" ]
 }
 
-java_group("android_arch_lifecycle_viewmodel_java") {
-  deps = [
-    ":${target_name}_orig__unpack_aar",
-    ":androidx_lifecycle_lifecycle_viewmodel_java",
-  ]
-  input_jars_paths = [
-    "${target_out_dir}/android_arch_lifecycle_viewmodel_java_orig/classes.jar",
-  ]
-}
-
-# TODO (bjoyce): Remove when downstream bots can call this directly.
-java_group("com_android_support_animated_vector_drawable_java_temp") {
-  deps = [ ":com_android_support_animated_vector_drawable_java" ]
-}
-
-# TODO (bjoyce): Remove when downstream bots can call this directly.
-java_group("com_android_support_appcompat_v7_java_temp") {
-  deps = [ ":com_android_support_appcompat_v7_java" ]
-}
-
-java_group("com_android_support_cardview_v7_java") {
-  deps = [
-    ":${target_name}_orig__unpack_aar",
-    ":androidx_cardview_cardview_java",
-  ]
-  input_jars_paths = [
-    "${target_out_dir}/com_android_support_cardview_v7_java_orig/classes.jar",
-  ]
-}
-
-java_group("com_android_support_design_java") {
-  deps = [
-    ":${target_name}_orig__unpack_aar",
-    ":com_google_android_material_material_java",
-  ]
-  input_jars_paths =
-      [ "${target_out_dir}/com_android_support_design_java_orig/classes.jar" ]
-}
-
 java_group("com_android_support_drawerlayout_java") {
   deps = [
     ":${target_name}_orig__unpack_aar",
@@ -178,19 +139,6 @@ java_group("com_android_support_support_v4_java") {
   ]
 }
 
-# TODO (bjoyce): Remove when downstream bots can call this directly.
-java_group("com_android_support_support_vector_drawable_java_temp") {
-  deps = [ ":com_android_support_support_vector_drawable_java" ]
-}
-
-java_group("com_android_support_versionedparcelable_java") {
-  deps = [
-    ":${target_name}_orig__unpack_aar",
-    ":androidx_versionedparcelable_versionedparcelable_java",
-  ]
-  input_jars_paths = [ "${target_out_dir}/com_android_support_versionedparcelable_java_orig/classes.jar" ]
-}
-
 # The dependencies below are used by chromecast internal.
 java_group("android_support_v7_preference_java") {
   deps = [ ":androidx_preference_preference_java" ]
@@ -263,7 +211,7 @@ android_aar_prebuilt("android_arch_lifecycle_runtime_java") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
-android_aar_prebuilt("android_arch_lifecycle_viewmodel_java_orig") {
+android_aar_prebuilt("android_arch_lifecycle_viewmodel_java") {
   aar_path = "libs/android_arch_lifecycle_viewmodel/viewmodel-1.1.1.aar"
   info_path = "libs/android_arch_lifecycle_viewmodel/android_arch_lifecycle_viewmodel.info"
   skip_jetify = true
@@ -771,7 +719,7 @@ android_aar_prebuilt("com_android_support_appcompat_v7_java") {
   info_path = "libs/com_android_support_appcompat_v7/com_android_support_appcompat_v7.info"
   deps = [
     ":com_android_support_animated_vector_drawable_java",
-    ":com_android_support_collections_java_orig",
+    ":com_android_support_collections_java",
     ":com_android_support_cursoradapter_java",
     ":com_android_support_support_annotations_java_orig",
     ":com_android_support_support_compat_java_orig",
@@ -795,7 +743,7 @@ android_aar_prebuilt("com_android_support_asynclayoutinflater_java_orig") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
-android_aar_prebuilt("com_android_support_cardview_v7_java_orig") {
+android_aar_prebuilt("com_android_support_cardview_v7_java") {
   aar_path = "libs/com_android_support_cardview_v7/cardview-v7-28.0.0.aar"
   info_path = "libs/com_android_support_cardview_v7/com_android_support_cardview_v7.info"
   skip_jetify = true
@@ -803,7 +751,7 @@ android_aar_prebuilt("com_android_support_cardview_v7_java_orig") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
-java_prebuilt("com_android_support_collections_java_orig") {
+java_prebuilt("com_android_support_collections_java") {
   jar_path = "libs/com_android_support_collections/collections-28.0.0.jar"
   output_name = "com_android_support_collections"
   supports_android = true
@@ -840,12 +788,12 @@ android_aar_prebuilt("com_android_support_customview_java") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
-android_aar_prebuilt("com_android_support_design_java_orig") {
+android_aar_prebuilt("com_android_support_design_java") {
   aar_path = "libs/com_android_support_design/design-28.0.0.aar"
   info_path = "libs/com_android_support_design/com_android_support_design.info"
   deps = [
     ":com_android_support_appcompat_v7_java",
-    ":com_android_support_cardview_v7_java_orig",
+    ":com_android_support_cardview_v7_java",
     ":com_android_support_recyclerview_v7_java_orig",
     ":com_android_support_support_annotations_java_orig",
     ":com_android_support_support_compat_java_orig",
@@ -927,7 +875,7 @@ android_aar_prebuilt("com_android_support_preference_leanback_v17_java") {
   info_path = "libs/com_android_support_preference_leanback_v17/com_android_support_preference_leanback_v17.info"
   deps = [
     ":com_android_support_appcompat_v7_java",
-    ":com_android_support_collections_java_orig",
+    ":com_android_support_collections_java",
     ":com_android_support_leanback_v17_java",
     ":com_android_support_preference_v14_java",
     ":com_android_support_preference_v7_java",
@@ -943,7 +891,7 @@ android_aar_prebuilt("com_android_support_preference_v7_java") {
   info_path = "libs/com_android_support_preference_v7/com_android_support_preference_v7.info"
   deps = [
     ":com_android_support_appcompat_v7_java",
-    ":com_android_support_collections_java_orig",
+    ":com_android_support_collections_java",
     ":com_android_support_recyclerview_v7_java_orig",
     ":com_android_support_support_compat_java_orig",
     ":com_android_support_support_fragment_java_orig",
@@ -986,9 +934,9 @@ android_aar_prebuilt("com_android_support_support_compat_java_orig") {
   info_path = "libs/com_android_support_support_compat/com_android_support_support_compat.info"
   deps = [
     ":android_arch_lifecycle_runtime_java",
-    ":com_android_support_collections_java_orig",
+    ":com_android_support_collections_java",
     ":com_android_support_support_annotations_java_orig",
-    ":com_android_support_versionedparcelable_java_orig",
+    ":com_android_support_versionedparcelable_java",
   ]
   skip_jetify = true
   ignore_aidl = true
@@ -1046,7 +994,7 @@ android_aar_prebuilt("com_android_support_support_fragment_java_orig") {
       "libs/com_android_support_support_fragment/support-fragment-28.0.0.aar"
   info_path = "libs/com_android_support_support_fragment/com_android_support_support_fragment.info"
   deps = [
-    ":android_arch_lifecycle_viewmodel_java_orig",
+    ":android_arch_lifecycle_viewmodel_java",
     ":com_android_support_loader_java",
     ":com_android_support_support_annotations_java_orig",
     ":com_android_support_support_compat_java_orig",
@@ -1954,7 +1902,7 @@ android_aar_prebuilt("com_android_support_loader_java") {
   visibility = [ ":*" ]
   deps = [
     ":android_arch_lifecycle_livedata_java",
-    ":android_arch_lifecycle_viewmodel_java_orig",
+    ":android_arch_lifecycle_viewmodel_java",
     ":com_android_support_support_annotations_java_orig",
     ":com_android_support_support_compat_java_orig",
   ]
@@ -2030,7 +1978,7 @@ android_aar_prebuilt("com_android_support_support_media_compat_java_orig") {
   deps = [
     ":com_android_support_support_annotations_java_orig",
     ":com_android_support_support_compat_java_orig",
-    ":com_android_support_versionedparcelable_java_orig",
+    ":com_android_support_versionedparcelable_java",
   ]
   skip_jetify = true
   ignore_aidl = true
@@ -2070,7 +2018,7 @@ android_aar_prebuilt("com_android_support_transition_java") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
-android_aar_prebuilt("com_android_support_versionedparcelable_java_orig") {
+android_aar_prebuilt("com_android_support_versionedparcelable_java") {
   aar_path = "libs/com_android_support_versionedparcelable/versionedparcelable-28.0.0.aar"
   info_path = "libs/com_android_support_versionedparcelable/com_android_support_versionedparcelable.info"
 
@@ -2078,7 +2026,7 @@ android_aar_prebuilt("com_android_support_versionedparcelable_java_orig") {
   # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
-    ":com_android_support_collections_java_orig",
+    ":com_android_support_collections_java",
     ":com_android_support_support_annotations_java_orig",
   ]
   skip_jetify = true

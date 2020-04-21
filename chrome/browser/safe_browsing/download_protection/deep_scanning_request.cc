@@ -9,6 +9,7 @@
 #include "base/callback_forward.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/enterprise/connectors/connectors_manager.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_utils.h"
@@ -103,11 +104,8 @@ bool ShouldUploadForDlpScanByPolicy(download::DownloadItem* item) {
           CheckContentComplianceValues::CHECK_UPLOADS_AND_DOWNLOADS)
     return false;
 
-  const base::ListValue* domains = g_browser_process->local_state()->GetList(
-      prefs::kURLsToCheckComplianceOfDownloadedContent);
-  url_matcher::URLMatcher matcher;
-  policy::url_util::AddAllowFilters(&matcher, domains);
-  return !matcher.MatchURL(item->GetURL()).empty();
+  return enterprise_connectors::ConnectorsManager::GetInstance()
+      ->MatchURLAgainstLegacyDlpPolicies(item->GetURL(), /*upload*/ false);
 }
 
 bool ShouldUploadForMalwareScanByPolicy(download::DownloadItem* item) {
@@ -131,13 +129,8 @@ bool ShouldUploadForMalwareScanByPolicy(download::DownloadItem* item) {
           SendFilesForMalwareCheckValues::SEND_UPLOADS_AND_DOWNLOADS)
     return false;
 
-  // If the item's URL does not match the do-not-check list it must be
-  // uploaded for scanning.
-  const base::ListValue* domains = g_browser_process->local_state()->GetList(
-      prefs::kURLsToNotCheckForMalwareOfDownloadedContent);
-  url_matcher::URLMatcher matcher;
-  policy::url_util::AddAllowFilters(&matcher, domains);
-  return matcher.MatchURL(item->GetURL()).empty();
+  return enterprise_connectors::ConnectorsManager::GetInstance()
+      ->MatchURLAgainstLegacyMalwarePolicies(item->GetURL(), /*upload*/ false);
 }
 
 }  // namespace
@@ -273,36 +266,36 @@ void DeepScanningRequest::OnScanComplete(BinaryUploadService::Result result,
                  base::BindOnce(&DeepScanningRequest::OpenDownload,
                                 weak_ptr_factory_.GetWeakPtr()))) {
     return;
-  } else if (result == BinaryUploadService::Result::FILE_TOO_LARGE) {
-    int block_large_file_transfer =
-        g_browser_process->local_state()->GetInteger(
-            prefs::kBlockLargeFileTransfer);
-    if (block_large_file_transfer ==
-            BlockLargeFileTransferValues::BLOCK_LARGE_DOWNLOADS ||
-        block_large_file_transfer ==
-            BlockLargeFileTransferValues::BLOCK_LARGE_UPLOADS_AND_DOWNLOADS) {
+  } else if (result == BinaryUploadService::Result::FILE_TOO_LARGE ||
+             result == BinaryUploadService::Result::FILE_ENCRYPTED ||
+             result == BinaryUploadService::Result::UNSUPPORTED_FILE_TYPE) {
+    enterprise_connectors::ConnectorsManager::GetInstance()
+        ->GetAnalysisSettings(
+            item_->GetURL(),
+            enterprise_connectors::AnalysisConnector::FILE_DOWNLOADED,
+            base::BindOnce(&DeepScanningRequest::OnGotAnalysisSettings,
+                           weak_ptr_factory_.GetWeakPtr(), result));
+    return;
+  }
+
+  FinishRequest(download_result);
+}
+
+void DeepScanningRequest::OnGotAnalysisSettings(
+    BinaryUploadService::Result result,
+    base::Optional<enterprise_connectors::AnalysisSettings> settings) {
+  DCHECK(settings.has_value());
+
+  DownloadCheckResult download_result = DownloadCheckResult::UNKNOWN;
+  if (result == BinaryUploadService::Result::FILE_TOO_LARGE) {
+    if (settings.value().block_large_files)
       download_result = DownloadCheckResult::BLOCKED_TOO_LARGE;
-    }
   } else if (result == BinaryUploadService::Result::FILE_ENCRYPTED) {
-    int password_protected_allowed_policy =
-        g_browser_process->local_state()->GetInteger(
-            prefs::kAllowPasswordProtectedFiles);
-    if (password_protected_allowed_policy ==
-            AllowPasswordProtectedFilesValues::ALLOW_NONE ||
-        password_protected_allowed_policy ==
-            AllowPasswordProtectedFilesValues::ALLOW_UPLOADS) {
+    if (settings.value().block_password_protected_files)
       download_result = DownloadCheckResult::BLOCKED_PASSWORD_PROTECTED;
-    }
   } else if (result == BinaryUploadService::Result::UNSUPPORTED_FILE_TYPE) {
-    int block_unsupported_policy = g_browser_process->local_state()->GetInteger(
-        prefs::kBlockUnsupportedFiletypes);
-    if (block_unsupported_policy == BlockUnsupportedFiletypesValues::
-                                        BLOCK_UNSUPPORTED_FILETYPES_DOWNLOADS ||
-        block_unsupported_policy ==
-            BlockUnsupportedFiletypesValues::
-                BLOCK_UNSUPPORTED_FILETYPES_UPLOADS_AND_DOWNLOADS) {
+    if (settings.value().block_unsupported_file_types)
       download_result = DownloadCheckResult::BLOCKED_UNSUPPORTED_FILE_TYPE;
-    }
   }
 
   FinishRequest(download_result);

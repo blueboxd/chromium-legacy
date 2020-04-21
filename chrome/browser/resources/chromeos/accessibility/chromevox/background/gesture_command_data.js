@@ -14,7 +14,8 @@ goog.provide('GestureGranularity');
  *     command: string,
  *     menuKeyOverride: (boolean|undefined),
  *     keyOverride: ({keyCode: number, modifiers: ({ctrl:
- * boolean}|undefined)}|undefined)
+ * boolean}|undefined)}|undefined),
+ *     shouldRecoverRange: (boolean|undefined)
  *    }>}
  * @const
  */
@@ -24,25 +25,29 @@ GestureCommandData.GESTURE_COMMAND_MAP = {
     msgId: 'swipeUp1_gesture',
     command: 'previousAtGranularity',
     menuKeyOverride: true,
-    keyOverride: {keyCode: 38 /* up */, skipStart: true, multiline: true}
+    keyOverride: {keyCode: 38 /* up */, skipStart: true, multiline: true},
+    shouldRecoverRange: true
   },
   'swipeDown1': {
     msgId: 'swipeDown1_gesture',
     command: 'nextAtGranularity',
     menuKeyOverride: true,
-    keyOverride: {keyCode: 40 /* Down */, skipEnd: true, multiline: true}
+    keyOverride: {keyCode: 40 /* Down */, skipEnd: true, multiline: true},
+    shouldRecoverRange: true
   },
   'swipeLeft1': {
     msgId: 'swipeLeft1_gesture',
     command: 'previousObject',
     menuKeyOverride: true,
-    keyOverride: {keyCode: 37 /* left */}
+    keyOverride: {keyCode: 37 /* left */},
+    shouldRecoverRange: true
   },
   'swipeRight1': {
     msgId: 'swipeRight1_gesture',
     command: 'nextObject',
     menuKeyOverride: true,
-    keyOverride: {keyCode: 39 /* right */}
+    keyOverride: {keyCode: 39 /* right */},
+    shouldRecoverRange: true
   },
   'swipeUp2': {msgId: 'swipeUp2_gesture', command: 'jumpToTop'},
   'swipeDown2': {msgId: 'swipeDown2_gesture', command: 'readFromHere'},

@@ -102,7 +102,8 @@ class _IRBuilder(object):
         iterable = self._take_iterable(child_nodes)
         maplike = self._take_maplike(
             child_nodes, interface_identifier=identifier)
-        setlike = self._take_setlike(child_nodes)
+        setlike = self._take_setlike(
+            child_nodes, interface_identifier=identifier)
         extended_attributes = self._take_extended_attributes(child_nodes)
 
         members = [
@@ -664,8 +665,9 @@ class _IRBuilder(object):
             operations=operations,
             debug_info=self._build_debug_info(node))
 
-    def _build_setlike(self, node):
+    def _build_setlike(self, node, interface_identifier):
         assert node.GetClass() == 'Setlike'
+        assert isinstance(interface_identifier, Identifier)
         types = map(self._build_type, node.GetChildren())
         assert len(types) == 1
         value_type = types[0]
@@ -695,6 +697,18 @@ class _IRBuilder(object):
                 node=node),
         ]
         write_ops = [
+            self._create_operation(
+                Identifier('add'),
+                arguments=self._create_arguments([
+                    (Identifier('value'), value_type),
+                ]),
+                return_type=interface_identifier,
+                extended_attributes={
+                    'CallWith': 'ScriptState',
+                    'RaisesException': None,
+                    'ImplementedAs': 'addForBinding',
+                },
+                node=node),
             self._create_operation(
                 Identifier('delete'),
                 arguments=self._create_arguments([
@@ -1112,8 +1126,9 @@ class _IRBuilder(object):
         return self._take_and_build('Maplike', self._build_maplike, node_list,
                                     **kwargs)
 
-    def _take_setlike(self, node_list):
-        return self._take_and_build('Setlike', self._build_setlike, node_list)
+    def _take_setlike(self, node_list, **kwargs):
+        return self._take_and_build('Setlike', self._build_setlike, node_list,
+                                    **kwargs)
 
     def _take_stringifier(self, node_list):
         return self._take_and_build('Stringifier', self._build_stringifier,

@@ -165,6 +165,10 @@ void FrameSequenceTrackerCollection::NotifySubmitFrame(
     tracker->ReportSubmitFrame(frame_token, has_missing_content, ack,
                                origin_args);
   }
+
+  // TODO(crbug.com/1072482): find a proper way to terminate a tracker. Please
+  // refer to details in FrameSequenceTracker::ReportSubmitFrame
+  DestroyTrackers();
 }
 
 void FrameSequenceTrackerCollection::NotifyFrameEnd(

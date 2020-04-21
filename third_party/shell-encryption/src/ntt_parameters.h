@@ -32,7 +32,7 @@ namespace internal {
 template <typename ModularInt>
 void FillWithEveryPower(const ModularInt& base, unsigned int n,
                         std::vector<ModularInt>* row,
-                        typename ModularInt::Params* params) {
+                        const typename ModularInt::Params* params) {
   for (int i = 0; i < n; i++) {
     (*row)[i].AddInPlace(base.ModExp(i, params), params);
   }
@@ -40,7 +40,7 @@ void FillWithEveryPower(const ModularInt& base, unsigned int n,
 
 template <typename ModularInt>
 rlwe::StatusOr<ModularInt> PrimitiveNthRootOfUnity(
-    unsigned int log_n, typename ModularInt::Params* params) {
+    unsigned int log_n, const typename ModularInt::Params* params) {
   typename ModularInt::Int n = params->One() << log_n;
   typename ModularInt::Int half_n = n >> 1;
 
@@ -78,7 +78,7 @@ rlwe::StatusOr<ModularInt> PrimitiveNthRootOfUnity(
 // Each item of the vector is in modular integer representation.
 template <typename ModularInt>
 rlwe::StatusOr<std::vector<ModularInt>> NttPsis(
-    unsigned int log_n, typename ModularInt::Params* params) {
+    unsigned int log_n, const typename ModularInt::Params* params) {
   // Obtain psi, a primitive 2n-th root of unity (hence log_n + 1).
   RLWE_ASSIGN_OR_RETURN(
       ModularInt psi,
@@ -116,7 +116,7 @@ static void BitrevHelper(const std::vector<unsigned int>& bitrevs,
 // bitreversed powers of the primitive 2n-th root of unity.
 template <typename ModularInt>
 rlwe::StatusOr<std::vector<ModularInt>> NttPsisBitrev(
-    unsigned int log_n, typename ModularInt::Params* params) {
+    unsigned int log_n, const typename ModularInt::Params* params) {
   // Retrieve the table for the forward transformation.
   RLWE_ASSIGN_OR_RETURN(std::vector<ModularInt> psis,
                         internal::NttPsis<ModularInt>(log_n, params));
@@ -129,7 +129,7 @@ rlwe::StatusOr<std::vector<ModularInt>> NttPsisBitrev(
 // of the bitreversed powers of the primitive 2n-th root of unity plus 1.
 template <typename ModularInt>
 rlwe::StatusOr<std::vector<ModularInt>> NttPsisInvBitrev(
-    unsigned int log_n, typename ModularInt::Params* params) {
+    unsigned int log_n, const typename ModularInt::Params* params) {
   // Retrieve the table for the forward transformation.
   RLWE_ASSIGN_OR_RETURN(std::vector<ModularInt> row,
                         internal::NttPsis<ModularInt>(log_n, params));
@@ -168,7 +168,7 @@ struct NttParameters {
   ~NttParameters() = default;
 
   int number_coeffs;
-  std::unique_ptr<ModularInt> n_inv_ptr;
+  absl::optional<ModularInt> n_inv_ptr;
   std::vector<ModularInt> psis_bitrev;
   std::vector<ModularInt> psis_inv_bitrev;
   std::vector<unsigned int> bitrevs;
@@ -178,7 +178,7 @@ struct NttParameters {
 // Does not take ownership of params.
 template <typename ModularInt>
 rlwe::StatusOr<NttParameters<ModularInt>> InitializeNttParameters(
-    int log_n, typename ModularInt::Params* params) {
+    int log_n, const typename ModularInt::Params* params) {
   // Abort if log_n is non-positive.
   if (log_n <= 0) {
     return absl::InvalidArgumentError("log_n must be positive");
@@ -203,11 +203,10 @@ rlwe::StatusOr<NttParameters<ModularInt>> InitializeNttParameters(
         absl::StrCat("modulus is not 1 mod 2n for logn, ", log_n));
   }
 
-  // 1-dimensional vector containing the inverse of n
+  // Compute the inverse of n.
   typename ModularInt::Int n = params->One() << log_n;
   RLWE_ASSIGN_OR_RETURN(auto mn, ModularInt::ImportInt(n, params));
-  auto minv = mn.MultiplicativeInverse(params);
-  output.n_inv_ptr = absl::make_unique<ModularInt>(minv);
+  output.n_inv_ptr = mn.MultiplicativeInverse(params);
 
   RLWE_ASSIGN_OR_RETURN(output.psis_bitrev,
                         NttPsisBitrev<ModularInt>(log_n, params));

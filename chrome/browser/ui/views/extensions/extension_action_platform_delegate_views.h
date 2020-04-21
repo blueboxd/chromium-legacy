@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSION_ACTION_PLATFORM_DELEGATE_VIEWS_H_
 
 #include "base/macros.h"
+#include "base/scoped_observer.h"
+#include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/ui/extensions/extension_action_platform_delegate.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "ui/base/accelerators/accelerator.h"
 
 class ToolbarActionViewDelegateViews;
@@ -23,7 +23,7 @@ class ToolbarActionViewDelegateViews;
 // the views::View wrapper.
 class ExtensionActionPlatformDelegateViews
     : public ExtensionActionPlatformDelegate,
-      public content::NotificationObserver,
+      public extensions::CommandService::Observer,
       public ui::AcceleratorTarget {
  public:
   ExtensionActionPlatformDelegateViews(
@@ -39,10 +39,12 @@ class ExtensionActionPlatformDelegateViews
       ExtensionActionViewController::PopupShowAction show_action) override;
   void ShowContextMenu() override;
 
-  // content::NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  // extensions::CommandService::Observer:
+  void OnExtensionCommandAdded(const std::string& extension_id,
+                               const extensions::Command& command) override;
+  void OnExtensionCommandRemoved(const std::string& extension_id,
+                                 const extensions::Command& command) override;
+  void OnCommandServiceDestroying() override;
 
   // ui::AcceleratorTarget:
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
@@ -62,7 +64,9 @@ class ExtensionActionPlatformDelegateViews
   // for (to show the popup).
   std::unique_ptr<ui::Accelerator> action_keybinding_;
 
-  content::NotificationRegistrar registrar_;
+  ScopedObserver<extensions::CommandService,
+                 extensions::CommandService::Observer>
+      command_service_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionActionPlatformDelegateViews);
 };

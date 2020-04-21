@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.DoubleCachedFieldTrialParameter;
 import org.chromium.chrome.browser.flags.IntCachedFieldTrialParameter;
 import org.chromium.chrome.browser.flags.StringCachedFieldTrialParameter;
+import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.ui.base.DeviceFormFactor;
 
@@ -167,5 +168,24 @@ public class TabUiFeatureUtilities {
                 && Build.VERSION.SDK_INT >= ZOOMING_MIN_SDK.getValue()
                 && SysUtils.amountOfPhysicalMemoryKB() / 1024 >= ZOOMING_MIN_MEMORY.getValue()
                 && !StartSurfaceConfiguration.isStartSurfaceSinglePaneEnabled();
+    }
+
+    /**
+     * @return Whether the instant start is supported.
+     */
+    public static boolean supportInstantStart(boolean isTablet) {
+        return CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START) && !isTablet;
+    }
+
+    /**
+     * @return Whether the start surface is allowed running in the instant start mode.
+     */
+    public static boolean supportStartSurfaceInInstantStart(
+            boolean isTablet, final long lastBackgroundedTimeMillis) {
+        // TODO(hanxi): Uses shouldShowTabSwitcherOnStart() instead of
+        // ReturnToChromeExperimentsUtil.shouldShowTabSwitcher() once the NewTabPage.isNTPUrl()
+        // works in pre-native.
+        return supportInstantStart(isTablet)
+                && ReturnToChromeExperimentsUtil.shouldShowTabSwitcher(lastBackgroundedTimeMillis);
     }
 }

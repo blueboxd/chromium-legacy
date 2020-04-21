@@ -2340,7 +2340,7 @@ executable("ash_shell_with_content") {
     "//base",
     "//components/user_manager",
     "//content",
-    "//content/public/app:both",
+    "//content/public/app",
     "//device/bluetooth",
   ]
 }

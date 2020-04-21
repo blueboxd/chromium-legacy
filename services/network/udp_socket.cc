@@ -343,8 +343,8 @@ void UDPSocket::DoRecvFrom(uint32_t buffer_size) {
   // base::Unretained(this) is safe because socket is owned by |this|.
   int net_result = wrapped_socket_->RecvFrom(
       recvfrom_buffer_.get(), buffer_size, &recvfrom_address_,
-      base::BindRepeating(&UDPSocket::OnRecvFromCompleted,
-                          base::Unretained(this), buffer_size));
+      base::BindOnce(&UDPSocket::OnRecvFromCompleted, base::Unretained(this),
+                     buffer_size));
   if (net_result != net::ERR_IO_PENDING)
     OnRecvFromCompleted(buffer_size, net_result);
 }
@@ -400,14 +400,12 @@ void UDPSocket::DoSendToOrWriteBuffer(
   if (dest_addr) {
     net_result = wrapped_socket_->SendTo(
         buffer.get(), buffer->size(), *dest_addr,
-        base::BindRepeating(&UDPSocket::OnSendToCompleted,
-                            base::Unretained(this)),
+        base::BindOnce(&UDPSocket::OnSendToCompleted, base::Unretained(this)),
         traffic_annotation);
   } else {
     net_result = wrapped_socket_->Write(
         buffer.get(), buffer->size(),
-        base::BindRepeating(&UDPSocket::OnSendToCompleted,
-                            base::Unretained(this)),
+        base::BindOnce(&UDPSocket::OnSendToCompleted, base::Unretained(this)),
         traffic_annotation);
   }
   if (net_result != net::ERR_IO_PENDING)

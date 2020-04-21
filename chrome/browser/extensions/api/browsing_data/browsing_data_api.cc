@@ -431,8 +431,7 @@ void BrowsingDataRemoverFunction::StartRemoving() {
     auto filter_builder = content::BrowsingDataFilterBuilder::Create(mode_);
     for (const auto& origin : origins_) {
       std::string domain = GetDomainAndRegistry(
-          origin.host(),
-          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+          origin, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
       if (domain.empty())
         domain = origin.host();  // IP address or internal hostname.
       filter_builder->AddRegisterableDomain(domain);

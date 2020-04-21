@@ -1,0 +1,8 @@
+This is a testharness.js-based test.
+FAIL @property determines the registration when uncontested assert_equals: expected "1px" but got ""
+PASS CSS.registerProperty wins over @property
+FAIL @property later in document order wins assert_equals: expected "6" but got ""
+FAIL @property later in stylesheet wins assert_equals: expected "rgb(255, 0, 0)" but got ""
+PASS CSS.registerProperty determines the registration when uncontested
+Harness: the test ran to completion.
+

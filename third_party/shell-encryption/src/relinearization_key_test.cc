@@ -59,25 +59,30 @@ class RelinearizationKeyTest : public ::testing::Test {
     ASSERT_OK_AND_ASSIGN(params14_,
                          uint_m::Params::Create(rlwe::kNewhopeModulus));
     ASSERT_OK_AND_ASSIGN(params80_, uint_m::Params::Create(rlwe::kModulus80));
-    ASSERT_OK_AND_ASSIGN(ntt_params_, rlwe::InitializeNttParameters<uint_m>(
-                                          kLogCoeffs, params14_.get()));
-    ASSERT_OK_AND_ASSIGN(ntt_params80_, rlwe::InitializeNttParameters<uint_m>(
-                                            kLogCoeffs, params80_.get()));
-    ASSERT_OK_AND_ASSIGN(auto temp_error_params,
+    ASSERT_OK_AND_ASSIGN(auto ntt_params, rlwe::InitializeNttParameters<uint_m>(
+                                              kLogCoeffs, params14_.get()));
+    ASSERT_OK_AND_ASSIGN(
+        auto ntt_params80,
+        rlwe::InitializeNttParameters<uint_m>(kLogCoeffs, params80_.get()));
+    ntt_params_ = absl::make_unique<const rlwe::NttParameters<uint_m>>(
+        std::move(ntt_params));
+    ntt_params80_ = absl::make_unique<const rlwe::NttParameters<uint_m>>(
+        std::move(ntt_params80));
+    ASSERT_OK_AND_ASSIGN(auto error_params,
                          rlwe::ErrorParams<uint_m>::Create(
                              kLogPlaintextModulus, kDefaultVariance,
-                             params14_.get(), &ntt_params_));
-    error_params_ = absl::make_unique<ErrorParams>(temp_error_params);
-    ASSERT_OK_AND_ASSIGN(auto temp_error_params80,
+                             params14_.get(), ntt_params_.get()));
+    error_params_ = absl::make_unique<const ErrorParams>(error_params);
+    ASSERT_OK_AND_ASSIGN(auto error_params80,
                          rlwe::ErrorParams<uint_m>::Create(
                              kLogPlaintextModulus, kDefaultVariance,
-                             params80_.get(), &ntt_params80_));
-    error_params80_ = absl::make_unique<ErrorParams>(temp_error_params80);
+                             params80_.get(), ntt_params80_.get()));
+    error_params80_ = absl::make_unique<const ErrorParams>(error_params80);
   }
 
   // Convert a vector of integers to a vector of montgomery integers.
   rlwe::StatusOr<std::vector<uint_m>> ConvertToMontgomery(
-      const std::vector<uint_m::Int>& coeffs, uint_m::Params* params) {
+      const std::vector<uint_m::Int>& coeffs, const uint_m::Params* params) {
     std::vector<uint_m> output(coeffs.size(), uint_m::ImportZero(params));
     for (unsigned int i = 0; i < output.size(); i++) {
       RLWE_ASSIGN_OR_RETURN(output[i], uint_m::ImportInt(coeffs[i], params));
@@ -92,7 +97,7 @@ class RelinearizationKeyTest : public ::testing::Test {
                           rlwe::SingleThreadPrng::GenerateSeed());
     RLWE_ASSIGN_OR_RETURN(auto prng, rlwe::SingleThreadPrng::Create(prng_seed));
     return Key::Sample(kLogCoeffs, variance, log_t, params14_.get(),
-                       &ntt_params_, prng.get());
+                       ntt_params_.get(), prng.get());
   }
 
   // Sample a random plaintext.
@@ -108,7 +113,8 @@ class RelinearizationKeyTest : public ::testing::Test {
   // Encrypt a plaintext.
   rlwe::StatusOr<Ciphertext> Encrypt(
       const Key& key, const std::vector<uint_m::Int>& plaintext,
-      uint_m::Params* params, const rlwe::NttParameters<uint_m>& ntt_params,
+      const uint_m::Params* params,
+      const rlwe::NttParameters<uint_m>* ntt_params,
       const ErrorParams* error_params) {
     RLWE_ASSIGN_OR_RETURN(auto m_plaintext,
                           ConvertToMontgomery(plaintext, params));
@@ -120,12 +126,12 @@ class RelinearizationKeyTest : public ::testing::Test {
     return rlwe::Encrypt<uint_m>(key, plaintext_ntt, error_params, prng.get());
   }
 
-  std::unique_ptr<uint_m::Params> params14_;
-  std::unique_ptr<uint_m::Params> params80_;
-  rlwe::NttParameters<uint_m> ntt_params_;
-  rlwe::NttParameters<uint_m> ntt_params80_;
-  std::unique_ptr<ErrorParams> error_params_;
-  std::unique_ptr<ErrorParams> error_params80_;
+  std::unique_ptr<const uint_m::Params> params14_;
+  std::unique_ptr<const uint_m::Params> params80_;
+  std::unique_ptr<const rlwe::NttParameters<uint_m>> ntt_params_;
+  std::unique_ptr<const rlwe::NttParameters<uint_m>> ntt_params80_;
+  std::unique_ptr<const ErrorParams> error_params_;
+  std::unique_ptr<const ErrorParams> error_params80_;
 };
 
 TEST_F(RelinearizationKeyTest, RelinearizationKeyReducesSizeOfCiphertext) {
@@ -143,21 +149,21 @@ TEST_F(RelinearizationKeyTest, RelinearizationKeyReducesSizeOfCiphertext) {
   ASSERT_OK_AND_ASSIGN(auto mp1,
                        ConvertToMontgomery(plaintext1, params14_.get()));
   Polynomial plaintext1_ntt =
-      Polynomial::ConvertToNtt(mp1, ntt_params_, params14_.get());
+      Polynomial::ConvertToNtt(mp1, ntt_params_.get(), params14_.get());
 
   std::vector<uint_m::Int> plaintext2 = SamplePlaintext(kPlaintextModulus);
   ASSERT_OK_AND_ASSIGN(auto mp2,
                        ConvertToMontgomery(plaintext2, params14_.get()));
   Polynomial plaintext2_ntt =
-      Polynomial::ConvertToNtt(mp2, ntt_params_, params14_.get());
+      Polynomial::ConvertToNtt(mp2, ntt_params_.get(), params14_.get());
 
   // Encrypt, multiply, apply the relinearization key and decrypt.
   ASSERT_OK_AND_ASSIGN(auto ciphertext1,
-                       Encrypt(key, plaintext1, params14_.get(), ntt_params_,
-                               error_params_.get()));
+                       Encrypt(key, plaintext1, params14_.get(),
+                               ntt_params_.get(), error_params_.get()));
   ASSERT_OK_AND_ASSIGN(auto ciphertext2,
-                       Encrypt(key, plaintext2, params14_.get(), ntt_params_,
-                               error_params_.get()));
+                       Encrypt(key, plaintext2, params14_.get(),
+                               ntt_params_.get(), error_params_.get()));
   ASSERT_OK_AND_ASSIGN(auto product, ciphertext1* ciphertext2);
   ASSERT_OK_AND_ASSIGN(auto relinearized_product,
                        relinearization_key.ApplyTo(product));
@@ -172,8 +178,9 @@ TEST_F(RelinearizationKeyTest, RelinearizeKey3PartsDecrypts) {
   ASSERT_OK_AND_ASSIGN(auto key_prng,
                        rlwe::SingleThreadPrng::Create(key_prng_seed));
   ASSERT_OK_AND_ASSIGN(
-      auto key, Key::Sample(kLogCoeffs, kDefaultVariance, kLogPlaintextModulus,
-                            params80_.get(), &ntt_params80_, key_prng.get()));
+      auto key,
+      Key::Sample(kLogCoeffs, kDefaultVariance, kLogPlaintextModulus,
+                  params80_.get(), ntt_params80_.get(), key_prng.get()));
   ASSERT_OK_AND_ASSIGN(std::string prng_seed,
                        rlwe::SingleThreadPrng::GenerateSeed());
 
@@ -187,21 +194,21 @@ TEST_F(RelinearizationKeyTest, RelinearizeKey3PartsDecrypts) {
   ASSERT_OK_AND_ASSIGN(auto mp1,
                        ConvertToMontgomery(plaintext1, params80_.get()));
   Polynomial plaintext1_ntt =
-      Polynomial::ConvertToNtt(mp1, ntt_params80_, params80_.get());
+      Polynomial::ConvertToNtt(mp1, ntt_params80_.get(), params80_.get());
 
   std::vector<uint_m::Int> plaintext2 = SamplePlaintext(kPlaintextModulus);
   ASSERT_OK_AND_ASSIGN(auto mp2,
                        ConvertToMontgomery(plaintext2, params80_.get()));
   Polynomial plaintext2_ntt =
-      Polynomial::ConvertToNtt(mp2, ntt_params80_, params80_.get());
+      Polynomial::ConvertToNtt(mp2, ntt_params80_.get(), params80_.get());
 
   // Encrypt, multiply, apply the relinearization key and decrypt.
   ASSERT_OK_AND_ASSIGN(auto ciphertext1,
-                       Encrypt(key, plaintext1, params80_.get(), ntt_params80_,
-                               error_params80_.get()));
+                       Encrypt(key, plaintext1, params80_.get(),
+                               ntt_params80_.get(), error_params80_.get()));
   ASSERT_OK_AND_ASSIGN(auto ciphertext2,
-                       Encrypt(key, plaintext2, params80_.get(), ntt_params80_,
-                               error_params80_.get()));
+                       Encrypt(key, plaintext2, params80_.get(),
+                               ntt_params80_.get(), error_params80_.get()));
   ASSERT_OK_AND_ASSIGN(auto product, ciphertext1* ciphertext2);
   ASSERT_OK_AND_ASSIGN(auto relinearized_product,
                        relinearization_key.ApplyTo(product));
@@ -211,7 +218,7 @@ TEST_F(RelinearizationKeyTest, RelinearizeKey3PartsDecrypts) {
   // Create the polynomial we expect.
   ASSERT_OK(plaintext1_ntt.MulInPlace(plaintext2_ntt, params80_.get()));
   std::vector<uint_m::Int> expected = rlwe::RemoveError<uint_m>(
-      plaintext1_ntt.InverseNtt(ntt_params80_, params80_.get()),
+      plaintext1_ntt.InverseNtt(ntt_params80_.get(), params80_.get()),
       params80_->modulus, kPlaintextModulus, params80_.get());
 
   EXPECT_EQ(decrypted, expected);
@@ -223,8 +230,9 @@ TEST_F(RelinearizationKeyTest, RelinearizeKey4PartsDecrypts) {
   ASSERT_OK_AND_ASSIGN(auto key_prng,
                        rlwe::SingleThreadPrng::Create(key_prng_seed));
   ASSERT_OK_AND_ASSIGN(
-      auto key, Key::Sample(kLogCoeffs, kDefaultVariance, kLogPlaintextModulus,
-                            params80_.get(), &ntt_params80_, key_prng.get()));
+      auto key,
+      Key::Sample(kLogCoeffs, kDefaultVariance, kLogPlaintextModulus,
+                  params80_.get(), ntt_params80_.get(), key_prng.get()));
   ASSERT_OK_AND_ASSIGN(std::string prng_seed,
                        rlwe::SingleThreadPrng::GenerateSeed());
 
@@ -238,30 +246,30 @@ TEST_F(RelinearizationKeyTest, RelinearizeKey4PartsDecrypts) {
   ASSERT_OK_AND_ASSIGN(auto mp1,
                        ConvertToMontgomery(plaintext1, params80_.get()));
   Polynomial plaintext1_ntt =
-      Polynomial::ConvertToNtt(mp1, ntt_params80_, params80_.get());
+      Polynomial::ConvertToNtt(mp1, ntt_params80_.get(), params80_.get());
 
   std::vector<uint_m::Int> plaintext2 = SamplePlaintext(kPlaintextModulus);
   ASSERT_OK_AND_ASSIGN(auto mp2,
                        ConvertToMontgomery(plaintext2, params80_.get()));
   Polynomial plaintext2_ntt =
-      Polynomial::ConvertToNtt(mp2, ntt_params80_, params80_.get());
+      Polynomial::ConvertToNtt(mp2, ntt_params80_.get(), params80_.get());
 
   std::vector<uint_m::Int> plaintext3 = SamplePlaintext(kPlaintextModulus);
   ASSERT_OK_AND_ASSIGN(auto mp3,
                        ConvertToMontgomery(plaintext3, params80_.get()));
   Polynomial plaintext3_ntt =
-      Polynomial::ConvertToNtt(mp3, ntt_params80_, params80_.get());
+      Polynomial::ConvertToNtt(mp3, ntt_params80_.get(), params80_.get());
 
   // Relinearize a 4 component ciphertext produced from three multiplications.
   ASSERT_OK_AND_ASSIGN(auto ciphertext1,
-                       Encrypt(key, plaintext1, params80_.get(), ntt_params80_,
-                               error_params80_.get()));
+                       Encrypt(key, plaintext1, params80_.get(),
+                               ntt_params80_.get(), error_params80_.get()));
   ASSERT_OK_AND_ASSIGN(auto ciphertext2,
-                       Encrypt(key, plaintext2, params80_.get(), ntt_params80_,
-                               error_params80_.get()));
+                       Encrypt(key, plaintext2, params80_.get(),
+                               ntt_params80_.get(), error_params80_.get()));
   ASSERT_OK_AND_ASSIGN(auto ciphertext3,
-                       Encrypt(key, plaintext3, params80_.get(), ntt_params80_,
-                               error_params80_.get()));
+                       Encrypt(key, plaintext3, params80_.get(),
+                               ntt_params80_.get(), error_params80_.get()));
   ASSERT_OK_AND_ASSIGN(auto intermediate, ciphertext1* ciphertext2);
   ASSERT_OK_AND_ASSIGN(auto product, intermediate* ciphertext3);
   ASSERT_OK_AND_ASSIGN(auto relinearized_product,
@@ -274,7 +282,7 @@ TEST_F(RelinearizationKeyTest, RelinearizeKey4PartsDecrypts) {
   ASSERT_OK(plaintext1_ntt.MulInPlace(plaintext2_ntt, params80_.get()));
   ASSERT_OK(plaintext1_ntt.MulInPlace(plaintext3_ntt, params80_.get()));
   std::vector<uint_m::Int> expected = rlwe::RemoveError<uint_m>(
-      plaintext1_ntt.InverseNtt(ntt_params80_, params80_.get()),
+      plaintext1_ntt.InverseNtt(ntt_params80_.get(), params80_.get()),
       params80_->modulus, kPlaintextModulus, params80_.get());
 
   EXPECT_EQ(decrypted, expected);
@@ -286,8 +294,9 @@ TEST_F(RelinearizationKeyTest, RelinearizeKeyLargeModulusDecrypts) {
   ASSERT_OK_AND_ASSIGN(auto key_prng,
                        rlwe::SingleThreadPrng::Create(key_prng_seed));
   ASSERT_OK_AND_ASSIGN(
-      auto key, Key::Sample(kLogCoeffs, kDefaultVariance, kLogPlaintextModulus,
-                            params80_.get(), &ntt_params80_, key_prng.get()));
+      auto key,
+      Key::Sample(kLogCoeffs, kDefaultVariance, kLogPlaintextModulus,
+                  params80_.get(), ntt_params80_.get(), key_prng.get()));
   ASSERT_OK_AND_ASSIGN(std::string prng_seed,
                        rlwe::SingleThreadPrng::GenerateSeed());
 
@@ -301,21 +310,21 @@ TEST_F(RelinearizationKeyTest, RelinearizeKeyLargeModulusDecrypts) {
   ASSERT_OK_AND_ASSIGN(auto mp1,
                        ConvertToMontgomery(plaintext1, params80_.get()));
   Polynomial plaintext1_ntt =
-      Polynomial::ConvertToNtt(mp1, ntt_params80_, params80_.get());
+      Polynomial::ConvertToNtt(mp1, ntt_params80_.get(), params80_.get());
 
   std::vector<uint_m::Int> plaintext2 = SamplePlaintext(kPlaintextModulus);
   ASSERT_OK_AND_ASSIGN(auto mp2,
                        ConvertToMontgomery(plaintext2, params80_.get()));
   Polynomial plaintext2_ntt =
-      Polynomial::ConvertToNtt(mp2, ntt_params80_, params80_.get());
+      Polynomial::ConvertToNtt(mp2, ntt_params80_.get(), params80_.get());
 
   // Multiply, apply the relinearization key, multiply, relinearize and decrypt.
   ASSERT_OK_AND_ASSIGN(auto ciphertext1,
-                       Encrypt(key, plaintext1, params80_.get(), ntt_params80_,
-                               error_params80_.get()));
+                       Encrypt(key, plaintext1, params80_.get(),
+                               ntt_params80_.get(), error_params80_.get()));
   ASSERT_OK_AND_ASSIGN(auto ciphertext2,
-                       Encrypt(key, plaintext2, params80_.get(), ntt_params80_,
-                               error_params80_.get()));
+                       Encrypt(key, plaintext2, params80_.get(),
+                               ntt_params80_.get(), error_params80_.get()));
   ASSERT_OK_AND_ASSIGN(auto product, ciphertext1* ciphertext2);
   ASSERT_OK_AND_ASSIGN(auto relinearized_product,
                        relinearization_key.ApplyTo(product));
@@ -326,7 +335,7 @@ TEST_F(RelinearizationKeyTest, RelinearizeKeyLargeModulusDecrypts) {
   // Create the polynomial we expect.
   ASSERT_OK(plaintext1_ntt.MulInPlace(plaintext2_ntt, params80_.get()));
   std::vector<uint_m::Int> expected = rlwe::RemoveError<uint_m>(
-      plaintext1_ntt.InverseNtt(ntt_params80_, params80_.get()),
+      plaintext1_ntt.InverseNtt(ntt_params80_.get(), params80_.get()),
       params80_->modulus, kPlaintextModulus, params80_.get());
 
   EXPECT_EQ(decrypted, expected);
@@ -338,8 +347,9 @@ TEST_F(RelinearizationKeyTest, RepeatedRelinearizationDecrypts) {
   ASSERT_OK_AND_ASSIGN(auto key_prng,
                        rlwe::SingleThreadPrng::Create(key_prng_seed));
   ASSERT_OK_AND_ASSIGN(
-      auto key, Key::Sample(kLogCoeffs, kDefaultVariance, kLogPlaintextModulus,
-                            params80_.get(), &ntt_params80_, key_prng.get()));
+      auto key,
+      Key::Sample(kLogCoeffs, kDefaultVariance, kLogPlaintextModulus,
+                  params80_.get(), ntt_params80_.get(), key_prng.get()));
   ASSERT_OK_AND_ASSIGN(std::string prng_seed,
                        rlwe::SingleThreadPrng::GenerateSeed());
 
@@ -353,30 +363,30 @@ TEST_F(RelinearizationKeyTest, RepeatedRelinearizationDecrypts) {
   ASSERT_OK_AND_ASSIGN(auto mp1,
                        ConvertToMontgomery(plaintext1, params80_.get()));
   Polynomial plaintext1_ntt =
-      Polynomial::ConvertToNtt(mp1, ntt_params80_, params80_.get());
+      Polynomial::ConvertToNtt(mp1, ntt_params80_.get(), params80_.get());
 
   std::vector<uint_m::Int> plaintext2 = SamplePlaintext(kPlaintextModulus);
   ASSERT_OK_AND_ASSIGN(auto mp2,
                        ConvertToMontgomery(plaintext2, params80_.get()));
   Polynomial plaintext2_ntt =
-      Polynomial::ConvertToNtt(mp2, ntt_params80_, params80_.get());
+      Polynomial::ConvertToNtt(mp2, ntt_params80_.get(), params80_.get());
 
   std::vector<uint_m::Int> plaintext3 = SamplePlaintext(kPlaintextModulus);
   ASSERT_OK_AND_ASSIGN(auto mp3,
                        ConvertToMontgomery(plaintext3, params80_.get()));
   Polynomial plaintext3_ntt =
-      Polynomial::ConvertToNtt(mp3, ntt_params80_, params80_.get());
+      Polynomial::ConvertToNtt(mp3, ntt_params80_.get(), params80_.get());
 
   // Multiply, apply the relinearization key, multiply, relinearize and decrypt.
   ASSERT_OK_AND_ASSIGN(auto ciphertext1,
-                       Encrypt(key, plaintext1, params80_.get(), ntt_params80_,
-                               error_params80_.get()));
+                       Encrypt(key, plaintext1, params80_.get(),
+                               ntt_params80_.get(), error_params80_.get()));
   ASSERT_OK_AND_ASSIGN(auto ciphertext2,
-                       Encrypt(key, plaintext2, params80_.get(), ntt_params80_,
-                               error_params80_.get()));
+                       Encrypt(key, plaintext2, params80_.get(),
+                               ntt_params80_.get(), error_params80_.get()));
   ASSERT_OK_AND_ASSIGN(auto ciphertext3,
-                       Encrypt(key, plaintext3, params80_.get(), ntt_params80_,
-                               error_params80_.get()));
+                       Encrypt(key, plaintext3, params80_.get(),
+                               ntt_params80_.get(), error_params80_.get()));
   ASSERT_OK_AND_ASSIGN(auto product1, ciphertext1* ciphertext2);
   ASSERT_OK_AND_ASSIGN(auto relinearized_product1,
                        relinearization_key.ApplyTo(product1));
@@ -391,7 +401,7 @@ TEST_F(RelinearizationKeyTest, RepeatedRelinearizationDecrypts) {
   ASSERT_OK(plaintext1_ntt.MulInPlace(plaintext2_ntt, params80_.get()));
   ASSERT_OK(plaintext1_ntt.MulInPlace(plaintext3_ntt, params80_.get()));
   std::vector<uint_m::Int> expected = rlwe::RemoveError<uint_m>(
-      plaintext1_ntt.InverseNtt(ntt_params80_, params80_.get()),
+      plaintext1_ntt.InverseNtt(ntt_params80_.get(), params80_.get()),
       params80_->modulus, kPlaintextModulus, params80_.get());
 
   EXPECT_EQ(decrypted, expected);
@@ -413,21 +423,21 @@ TEST_F(RelinearizationKeyTest, CiphertextWithTooManyComponents) {
   ASSERT_OK_AND_ASSIGN(auto mp1,
                        ConvertToMontgomery(plaintext1, params14_.get()));
   Polynomial plaintext1_ntt =
-      Polynomial::ConvertToNtt(mp1, ntt_params_, params14_.get());
+      Polynomial::ConvertToNtt(mp1, ntt_params_.get(), params14_.get());
 
   std::vector<uint_m::Int> plaintext2 = SamplePlaintext(kPlaintextModulus);
   ASSERT_OK_AND_ASSIGN(auto mp2,
                        ConvertToMontgomery(plaintext2, params14_.get()));
   Polynomial plaintext2_ntt =
-      Polynomial::ConvertToNtt(mp2, ntt_params_, params14_.get());
+      Polynomial::ConvertToNtt(mp2, ntt_params_.get(), params14_.get());
 
   // Encrypt, multiply, apply the relinearization key.
   ASSERT_OK_AND_ASSIGN(auto ciphertext1,
-                       Encrypt(key, plaintext1, params14_.get(), ntt_params_,
-                               error_params_.get()));
+                       Encrypt(key, plaintext1, params14_.get(),
+                               ntt_params_.get(), error_params_.get()));
   ASSERT_OK_AND_ASSIGN(auto ciphertext2,
-                       Encrypt(key, plaintext2, params14_.get(), ntt_params_,
-                               error_params_.get()));
+                       Encrypt(key, plaintext2, params14_.get(),
+                               ntt_params_.get(), error_params_.get()));
   ASSERT_OK_AND_ASSIGN(auto product, ciphertext1* ciphertext2);
   EXPECT_THAT(relinearization_key.ApplyTo(product),
               StatusIs(absl::StatusCode::kInvalidArgument,
@@ -477,8 +487,9 @@ TEST_F(RelinearizationKeyTest, InvalidDeserialize) {
   ASSERT_OK_AND_ASSIGN(auto key_prng,
                        rlwe::SingleThreadPrng::Create(key_prng_seed));
   ASSERT_OK_AND_ASSIGN(
-      auto key, Key::Sample(kLogCoeffs, kDefaultVariance, kLogPlaintextModulus,
-                            params80_.get(), &ntt_params80_, key_prng.get()));
+      auto key,
+      Key::Sample(kLogCoeffs, kDefaultVariance, kLogPlaintextModulus,
+                  params80_.get(), ntt_params80_.get(), key_prng.get()));
   ASSERT_OK_AND_ASSIGN(std::string prng_seed,
                        rlwe::SingleThreadPrng::GenerateSeed());
 
@@ -492,7 +503,7 @@ TEST_F(RelinearizationKeyTest, InvalidDeserialize) {
   for (int i = -1; i <= 1; i++) {
     serialized.set_num_parts(i);
     EXPECT_THAT(RelinearizationKey::Deserialize(serialized, params80_.get(),
-                                                &ntt_params80_),
+                                                ntt_params80_.get()),
                 StatusIs(absl::StatusCode::kInvalidArgument,
                          HasSubstr(absl::StrCat(
                              "The number of parts, ", serialized.num_parts(),
@@ -502,7 +513,7 @@ TEST_F(RelinearizationKeyTest, InvalidDeserialize) {
   serialized.set_num_parts(serialized.c_size() - 1);
   EXPECT_THAT(
       RelinearizationKey::Deserialize(serialized, params80_.get(),
-                                      &ntt_params80_),
+                                      ntt_params80_.get()),
       StatusIs(absl::StatusCode::kInvalidArgument,
                HasSubstr(absl::StrCat(
                    "The length of serialized, ", serialized.c_size(), ", ",
@@ -512,7 +523,7 @@ TEST_F(RelinearizationKeyTest, InvalidDeserialize) {
             /* log2(kModulus80) / kLargeLogDecompositionModulus = */ 8);
   serialized.set_num_parts(serialized.c_size() + 1);
   EXPECT_THAT(RelinearizationKey::Deserialize(serialized, params80_.get(),
-                                              &ntt_params80_),
+                                              ntt_params80_.get()),
               StatusIs(absl::StatusCode::kInvalidArgument,
                        HasSubstr(absl::StrCat(
                            "Number of NTT Polynomials does not match expected ",
@@ -525,8 +536,9 @@ TEST_F(RelinearizationKeyTest, SerializeKey) {
   ASSERT_OK_AND_ASSIGN(auto key_prng,
                        rlwe::SingleThreadPrng::Create(key_prng_seed));
   ASSERT_OK_AND_ASSIGN(
-      auto key, Key::Sample(kLogCoeffs, kDefaultVariance, kLogPlaintextModulus,
-                            params80_.get(), &ntt_params80_, key_prng.get()));
+      auto key,
+      Key::Sample(kLogCoeffs, kDefaultVariance, kLogPlaintextModulus,
+                  params80_.get(), ntt_params80_.get(), key_prng.get()));
   ASSERT_OK_AND_ASSIGN(std::string prng_seed,
                        rlwe::SingleThreadPrng::GenerateSeed());
 
@@ -540,28 +552,28 @@ TEST_F(RelinearizationKeyTest, SerializeKey) {
                        relinearization_key.Serialize());
   ASSERT_OK_AND_ASSIGN(auto deserialized,
                        RelinearizationKey::Deserialize(
-                           serialized, params80_.get(), &ntt_params80_));
+                           serialized, params80_.get(), ntt_params80_.get()));
 
   // Create the initial plaintexts.
   std::vector<uint_m::Int> plaintext1 = SamplePlaintext(kPlaintextModulus);
   ASSERT_OK_AND_ASSIGN(auto mp1,
                        ConvertToMontgomery(plaintext1, params80_.get()));
   Polynomial plaintext1_ntt =
-      Polynomial::ConvertToNtt(mp1, ntt_params80_, params80_.get());
+      Polynomial::ConvertToNtt(mp1, ntt_params80_.get(), params80_.get());
 
   std::vector<uint_m::Int> plaintext2 = SamplePlaintext(kPlaintextModulus);
   ASSERT_OK_AND_ASSIGN(auto mp2,
                        ConvertToMontgomery(plaintext2, params80_.get()));
   Polynomial plaintext2_ntt =
-      Polynomial::ConvertToNtt(mp2, ntt_params80_, params80_.get());
+      Polynomial::ConvertToNtt(mp2, ntt_params80_.get(), params80_.get());
 
   // Encrypt, multiply, apply the relinearization key and decrypt.
   ASSERT_OK_AND_ASSIGN(auto ciphertext1,
-                       Encrypt(key, plaintext1, params80_.get(), ntt_params80_,
-                               error_params80_.get()));
+                       Encrypt(key, plaintext1, params80_.get(),
+                               ntt_params80_.get(), error_params80_.get()));
   ASSERT_OK_AND_ASSIGN(auto ciphertext2,
-                       Encrypt(key, plaintext2, params80_.get(), ntt_params80_,
-                               error_params80_.get()));
+                       Encrypt(key, plaintext2, params80_.get(),
+                               ntt_params80_.get(), error_params80_.get()));
   ASSERT_OK_AND_ASSIGN(auto product, ciphertext1* ciphertext2);
   ASSERT_OK_AND_ASSIGN(auto relinearized_product,
                        deserialized.ApplyTo(product));
@@ -571,7 +583,7 @@ TEST_F(RelinearizationKeyTest, SerializeKey) {
   // Create the polynomial we expect.
   ASSERT_OK(plaintext1_ntt.MulInPlace(plaintext2_ntt, params80_.get()));
   std::vector<uint_m::Int> expected = rlwe::RemoveError<uint_m>(
-      plaintext1_ntt.InverseNtt(ntt_params80_, params80_.get()),
+      plaintext1_ntt.InverseNtt(ntt_params80_.get(), params80_.get()),
       params80_->modulus, kPlaintextModulus, params80_.get());
 
   EXPECT_EQ(decrypted, expected);
@@ -592,21 +604,21 @@ TEST_F(RelinearizationKeyTest, RelinearizationKeyIncreasesError) {
   ASSERT_OK_AND_ASSIGN(auto mp1,
                        ConvertToMontgomery(plaintext1, params14_.get()));
   Polynomial plaintext1_ntt =
-      Polynomial::ConvertToNtt(mp1, ntt_params_, params14_.get());
+      Polynomial::ConvertToNtt(mp1, ntt_params_.get(), params14_.get());
 
   std::vector<uint_m::Int> plaintext2 = SamplePlaintext(kPlaintextModulus);
   ASSERT_OK_AND_ASSIGN(auto mp2,
                        ConvertToMontgomery(plaintext2, params14_.get()));
   Polynomial plaintext2_ntt =
-      Polynomial::ConvertToNtt(mp2, ntt_params_, params14_.get());
+      Polynomial::ConvertToNtt(mp2, ntt_params_.get(), params14_.get());
 
   // Encrypt, multiply, apply the relinearization key and decrypt.
   ASSERT_OK_AND_ASSIGN(auto ciphertext1,
-                       Encrypt(key, plaintext1, params14_.get(), ntt_params_,
-                               error_params_.get()));
+                       Encrypt(key, plaintext1, params14_.get(),
+                               ntt_params_.get(), error_params_.get()));
   ASSERT_OK_AND_ASSIGN(auto ciphertext2,
-                       Encrypt(key, plaintext2, params14_.get(), ntt_params_,
-                               error_params_.get()));
+                       Encrypt(key, plaintext2, params14_.get(),
+                               ntt_params_.get(), error_params_.get()));
   ASSERT_OK_AND_ASSIGN(auto product, ciphertext1* ciphertext2);
   ASSERT_OK_AND_ASSIGN(auto relinearized_product,
                        relinearization_key.ApplyTo(product));

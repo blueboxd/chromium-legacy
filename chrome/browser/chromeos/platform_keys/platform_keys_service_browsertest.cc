@@ -164,6 +164,17 @@ class SignExecutionWaiter : public ExecutionWaiter<const std::string&> {
     return std::get<0>(result_callback_args());
   }
 };
+
+class GetAllKeysExecutionWaiter
+    : public ExecutionWaiter<std::vector<std::string>> {
+ public:
+  GetAllKeysExecutionWaiter() = default;
+  ~GetAllKeysExecutionWaiter() = default;
+
+  const std::vector<std::string> public_keys() const {
+    return std::get<0>(result_callback_args());
+  }
+};
 }  // namespace
 
 class PlatformKeysServiceBrowserTest
@@ -212,6 +223,19 @@ class PlatformKeysServiceBrowserTest
  protected:
   PlatformKeysService* platform_keys_service() {
     return platform_keys_service_;
+  }
+
+  // Generates a key pair in the given |token_id| using platform keys service
+  // and returns the SubjectPublicKeyInfo string encoded in DER format.
+  std::string GenerateKeyPair(const std::string& token_id) {
+    const unsigned int kKeySize = 2048;
+
+    GenerateKeyExecutionWaiter generate_key_waiter;
+    platform_keys_service()->GenerateRSAKey(token_id, kKeySize,
+                                            generate_key_waiter.GetCallback());
+    generate_key_waiter.Wait();
+
+    return generate_key_waiter.public_key_spki_der();
   }
 
  private:
@@ -284,8 +308,45 @@ IN_PROC_BROWSER_TEST_P(PlatformKeysServiceBrowserTest, GenerateRsaAndSign) {
   }
 }
 
-// TODO(https://crbug.com/1067591): Enable for sign-in screen by adding
-// ProfileToUse::kSigninProfile.
+// Generates a key pair in tokens accessible from the profile under test and
+// retrieves them.
+IN_PROC_BROWSER_TEST_P(PlatformKeysServiceBrowserTest, GetAllKeys) {
+  // Generate key pair in every token.
+  std::map<std::string, std::string> token_key_map;
+  for (const std::string& token_id : GetParam().token_ids) {
+    const std::string public_key_spki_der = GenerateKeyPair(token_id);
+    ASSERT_FALSE(public_key_spki_der.empty());
+    token_key_map[token_id] = public_key_spki_der;
+  }
+
+  // Only keys in the requested token should be retrieved.
+  for (const std::string& token_id : GetParam().token_ids) {
+    GetAllKeysExecutionWaiter get_all_keys_waiter;
+    platform_keys_service()->GetAllKeys(token_id,
+                                        get_all_keys_waiter.GetCallback());
+    get_all_keys_waiter.Wait();
+
+    EXPECT_TRUE(get_all_keys_waiter.error_message().empty());
+    std::vector<std::string> public_keys = get_all_keys_waiter.public_keys();
+    EXPECT_EQ(public_keys.size(), 1U);
+    EXPECT_EQ(public_keys[0], token_key_map[token_id]);
+  }
+}
+
+IN_PROC_BROWSER_TEST_P(PlatformKeysServiceBrowserTest,
+                       GetAllKeysWhenNoKeysGenerated) {
+  for (const std::string& token_id : GetParam().token_ids) {
+    GetAllKeysExecutionWaiter get_all_keys_waiter;
+    platform_keys_service()->GetAllKeys(token_id,
+                                        get_all_keys_waiter.GetCallback());
+    get_all_keys_waiter.Wait();
+
+    EXPECT_TRUE(get_all_keys_waiter.error_message().empty());
+    std::vector<std::string> public_keys = get_all_keys_waiter.public_keys();
+    EXPECT_EQ(public_keys.size(), 0U);
+  }
+}
+
 INSTANTIATE_TEST_SUITE_P(
     AllSupportedProfileTypes,
     PlatformKeysServiceBrowserTest,

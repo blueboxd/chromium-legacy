@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // Subpages
-import './appearance_page/appearance_fonts_page.m.js';
+import './appearance_page/appearance_fonts_page.js';
 import './autofill_page/password_check.m.js';
 import './autofill_page/passwords_section.m.js';
 import './autofill_page/payments_section.m.js';

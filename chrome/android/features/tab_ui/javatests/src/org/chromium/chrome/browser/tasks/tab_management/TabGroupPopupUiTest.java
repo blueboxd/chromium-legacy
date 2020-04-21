@@ -19,7 +19,8 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.c
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.closeFirstTabInDialog;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.createTabs;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.enterTabSwitcher;
-import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.isShowingPopupTabList;
+import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.isPopupTabListCompletelyHidden;
+import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.isPopupTabListCompletelyShowing;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.mergeAllNormalTabsToAGroup;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.prepareTabsWithThumbnail;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.rotateDeviceToOrientation;
@@ -167,20 +168,20 @@ public class TabGroupPopupUiTest {
         onView(withId(R.id.toolbar_left_button))
                 .inRoot(withDecorView(not(cta.getWindow().getDecorView())))
                 .perform(click());
-        CriteriaHelper.pollInstrumentationThread(() -> !isTabStripShowing(cta));
+        CriteriaHelper.pollInstrumentationThread(() -> isTabStripHidden(cta));
 
         // Re-show the tab strip.
         triggerTabStripAndVerify(cta, 2);
 
         // Tab strip should not show when overview mode is visible.
         enterTabSwitcher(cta);
-        CriteriaHelper.pollInstrumentationThread(() -> !isTabStripShowing(cta));
+        CriteriaHelper.pollInstrumentationThread(() -> isTabStripHidden(cta));
 
         // Re-verify that tab strip never shows in single tab.
         clickFirstCardFromTabSwitcher(cta);
         closeFirstTabInDialog(cta);
         clickFirstTabInDialog(cta);
-        CriteriaHelper.pollInstrumentationThread(() -> !isTabStripShowing(cta));
+        CriteriaHelper.pollInstrumentationThread(() -> isTabStripHidden(cta));
         triggerTabStripAndVerify(cta, 0);
     }
 
@@ -283,7 +284,7 @@ public class TabGroupPopupUiTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { cta.findViewById(R.id.tab_switcher_button).performLongClick(); });
         if (count == 0) {
-            CriteriaHelper.pollInstrumentationThread(() -> !isTabStripShowing(cta));
+            CriteriaHelper.pollInstrumentationThread(() -> isTabStripHidden(cta));
             return;
         }
         CriteriaHelper.pollInstrumentationThread(() -> isTabStripShowing(cta));
@@ -317,7 +318,11 @@ public class TabGroupPopupUiTest {
     }
 
     private boolean isTabStripShowing(ChromeTabbedActivity cta) {
-        return isShowingPopupTabList(cta);
+        return isPopupTabListCompletelyShowing(cta);
+    }
+
+    private boolean isTabStripHidden(ChromeTabbedActivity cta) {
+        return isPopupTabListCompletelyHidden(cta);
     }
 
     private void verifyShowingTabStrip(ChromeTabbedActivity cta, int tabCount) {

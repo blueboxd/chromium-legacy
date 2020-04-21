@@ -1458,7 +1458,7 @@
     {
       // See https://crbug.com/1012063
       name: "RequestVideoFrameCallback",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "ResizeObserverUpdates",

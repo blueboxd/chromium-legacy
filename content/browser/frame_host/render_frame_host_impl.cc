@@ -6575,6 +6575,8 @@ void RenderFrameHostImpl::AXContentNodeDataToAXNodeData(
   // Map content-specific's |child_routing_id| attribute to a generic attribute
   // with a global AXTreeID.
   if (src.child_routing_id != MSG_ROUTING_NONE) {
+    DCHECK_EQ(dst->child_ids.size(), 0U)
+        << "A node should not have both children and a child tree.";
     dst->string_attributes.push_back(
         std::make_pair(ax::mojom::StringAttribute::kChildTreeId,
                        RoutingIDToAXTreeID(src.child_routing_id).ToString()));

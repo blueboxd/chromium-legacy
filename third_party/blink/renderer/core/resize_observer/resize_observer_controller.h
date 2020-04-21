@@ -5,23 +5,33 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_RESIZE_OBSERVER_RESIZE_OBSERVER_CONTROLLER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_RESIZE_OBSERVER_RESIZE_OBSERVER_CONTROLLER_H_
 
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 
+class LocalDOMWindow;
 class ResizeObserver;
 
 // ResizeObserverController keeps track of all ResizeObservers
-// in a single Document.
+// in a single window.
 //
 // The observation API is used to integrate ResizeObserver
 // and the event loop. It delivers notification in a loop.
 // In each iteration, only notifications deeper than the
 // shallowest notification from previous iteration are delivered.
-class ResizeObserverController final
-    : public GarbageCollected<ResizeObserverController> {
+class CORE_EXPORT ResizeObserverController final
+    : public GarbageCollected<ResizeObserverController>,
+      public Supplement<LocalDOMWindow> {
+  USING_GARBAGE_COLLECTED_MIXIN(ResizeObserverController);
+
  public:
   static const size_t kDepthBottom = 4096;
+
+  static const char kSupplementName[];
+  static ResizeObserverController* From(LocalDOMWindow&);
+  static ResizeObserverController* FromIfExists(LocalDOMWindow&);
 
   ResizeObserverController();
 
@@ -38,7 +48,7 @@ class ResizeObserverController final
 
   void ClearMinDepth() { min_depth_ = 0; }
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) override;
 
   // For testing only.
   const HeapLinkedHashSet<WeakMember<ResizeObserver>>& Observers() {

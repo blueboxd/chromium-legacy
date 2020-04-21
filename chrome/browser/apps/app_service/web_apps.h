@@ -108,6 +108,8 @@ class WebApps : public apps::PublisherBase,
   void OnWebAppInstalled(const web_app::AppId& app_id) override;
   void OnWebAppWillBeUninstalled(const web_app::AppId& app_id) override;
   void OnAppRegistrarDestroyed() override;
+  void OnWebAppDisabledStateChanged(const web_app::AppId& app_id,
+                                    bool is_disabled) override;
   // TODO(loyso): Implement app->last_launch_time field for the new system.
 
   // ArcAppListPrefs::Observer overrides.

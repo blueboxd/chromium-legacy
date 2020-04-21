@@ -3,13 +3,12 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
-// #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 // clang-format on
 
-cr.define('settings', function() {
   /** @interface */
-  /* #export */ class AppearanceBrowserProxy {
+  export class AppearanceBrowserProxy {
     /** @return {!Promise<number>} */
     getDefaultZoom() {}
 
@@ -37,9 +36,9 @@ cr.define('settings', function() {
   }
 
   /**
-   * @implements {settings.AppearanceBrowserProxy}
+   * @implements {AppearanceBrowserProxy}
    */
-  /* #export */ class AppearanceBrowserProxyImpl {
+  export class AppearanceBrowserProxyImpl {
     /** @override */
     getDefaultZoom() {
       return new Promise(function(resolve) {
@@ -74,15 +73,9 @@ cr.define('settings', function() {
 
     /** @override */
     validateStartupPage(url) {
-      return cr.sendWithPromise('validateStartupPage', url);
+      return sendWithPromise('validateStartupPage', url);
     }
   }
 
-  cr.addSingletonGetter(AppearanceBrowserProxyImpl);
+  addSingletonGetter(AppearanceBrowserProxyImpl);
 
-  // #cr_define_end
-  return {
-    AppearanceBrowserProxy: AppearanceBrowserProxy,
-    AppearanceBrowserProxyImpl: AppearanceBrowserProxyImpl,
-  };
-});

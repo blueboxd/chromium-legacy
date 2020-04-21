@@ -96,7 +96,7 @@ class RelinearizationKey {
   // input parameters.
   static rlwe::StatusOr<RelinearizationKey> Deserialize(
       const SerializedRelinearizationKey& serialized,
-      ModularIntParams* modulus_params,
+      const ModularIntParams* modulus_params,
       const NttParameters<ModularInt>* ntt_params);
 
   // Substitution Power accessor.
@@ -120,14 +120,14 @@ class RelinearizationKey {
     // of polynomials.
     rlwe::StatusOr<std::vector<Polynomial<ModularInt>>> ApplyPartTo(
         const Polynomial<ModularInt>& ciphertext_part,
-        ModularIntParams* modulus_params,
+        const ModularIntParams* modulus_params,
         const NttParameters<ModularInt>* ntt_params) const;
 
     // Creates a RelinearizationKeyPart out of a vector of Polynomials.
     static rlwe::StatusOr<RelinearizationKeyPart> Deserialize(
         const std::vector<SerializedNttPolynomial>& polynomials,
         Uint64 log_decomposition_modulus, SecurePrng* prng,
-        ModularIntParams* modulus_params,
+        const ModularIntParams* modulus_params,
         const NttParameters<ModularInt>* ntt_params);
 
     std::vector<Polynomial<ModularInt>> Matrix() const { return matrix_[0]; }
@@ -147,7 +147,7 @@ class RelinearizationKey {
   // Creates an empty RelinearizationKey.
   RelinearizationKey(Uint64 log_decomposition_modulus,
                      const ModularInt& decomposition_modulus,
-                     ModularIntParams* params,
+                     const ModularIntParams* params,
                      const NttParameters<ModularInt>* ntt_params)
       : log_decomposition_modulus_(log_decomposition_modulus),
         decomposition_modulus_(decomposition_modulus),
@@ -176,7 +176,7 @@ class RelinearizationKey {
   int substitution_power_;
 
   // Modulus parameters. Does not take ownership.
-  ModularIntParams* modulus_params_;
+  const ModularIntParams* modulus_params_;
 
   // NTT parameters. Does not take ownership.
   const NttParameters<ModularInt>* ntt_params_;

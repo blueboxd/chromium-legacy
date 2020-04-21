@@ -235,7 +235,7 @@ class PreflightController::PreflightLoader final {
 
     loader_->SetOnRedirectCallback(base::BindRepeating(
         &PreflightLoader::HandleRedirect, base::Unretained(this)));
-    loader_->SetOnResponseStartedCallback(base::BindRepeating(
+    loader_->SetOnResponseStartedCallback(base::BindOnce(
         &PreflightLoader::HandleResponseHeader, base::Unretained(this)));
 
     loader_->DownloadToString(

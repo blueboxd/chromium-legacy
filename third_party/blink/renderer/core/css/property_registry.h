@@ -16,20 +16,79 @@ class CORE_EXPORT PropertyRegistry : public GarbageCollected<PropertyRegistry> {
   using RegistrationMap =
       HeapHashMap<AtomicString, Member<PropertyRegistration>>;
 
+  // Registers a property (CSS.registerProperty).
   void RegisterProperty(const AtomicString&, PropertyRegistration&);
+  // Registers a property (@property).
+  void DeclareProperty(const AtomicString&, PropertyRegistration&);
+
+  // TODO(andruud): Support removing declarations.
+
+  // Returns the registration originating from CSS.registerProperty if present,
+  // otherwise returns the registration originating from @property (which may
+  // be nullptr).
+  //
+  // https://drafts.css-houdini.org/css-properties-values-api-1/#determining-registration
   const PropertyRegistration* Registration(const AtomicString&) const;
-  size_t RegistrationCount() const { return registrations_.size(); }
 
-  RegistrationMap::const_iterator begin() const;
-  RegistrationMap::const_iterator end() const;
+  // TODO(andruud): This is used by CSSInterpolationTypesMap::Version() in
+  // a way which isn't correct when registering via @property. Should probably
+  // rethink that use-case and remove this function.
+  size_t RegistrationCount() const;
 
-  void Trace(Visitor* visitor) { visitor->Trace(registrations_); }
+  // Returns true for properties registered with RegisterProperty/
+  // (CSS.registerProperty). Ignores declared properties (@property).
+  //
+  // https://drafts.css-houdini.org/css-properties-values-api-1/#dom-window-registeredpropertyset-slot
+  bool IsInRegisteredPropertySet(const AtomicString&) const;
 
+  // Produces all active registrations.
+  //
+  // This means all registrations originating from CSS.registerProperty,
+  // plus all registration originating from @property that don't conflict
+  // with any CSS.registerProperty-registrations.
+  //
+  // https://drafts.css-houdini.org/css-properties-values-api-1/#determining-registration
+  class CORE_EXPORT Iterator {
+    STACK_ALLOCATED();
+    using MapIterator = RegistrationMap::const_iterator;
+
+   public:
+    Iterator(const RegistrationMap& registered_properties,
+             const RegistrationMap& declared_properties,
+             MapIterator registered_iterator,
+             MapIterator declared_iterator);
+
+    void operator++();
+    RegistrationMap::ValueType operator*() const;
+    bool operator==(const Iterator&) const;
+    bool operator!=(const Iterator& o) const { return !(*this == o); }
+
+   private:
+    // True if declared_iterator_ points to a registation that has already
+    // been emitted by registered_iterator_.
+    bool CurrentDeclaredIteratorIsMasked();
+
+    MapIterator registered_iterator_;
+    MapIterator declared_iterator_;
+    const RegistrationMap& registered_properties_;
+    const RegistrationMap& declared_properties_;
+  };
+
+  Iterator begin() const;
+  Iterator end() const;
+
+  void Trace(Visitor* visitor) {
+    visitor->Trace(registered_properties_);
+    visitor->Trace(declared_properties_);
+  }
+
+  // TODO(andruud): Doesn't work with declared properties.
   void MarkReferenced(const AtomicString&) const;
   bool WasReferenced(const AtomicString&) const;
 
  private:
-  RegistrationMap registrations_;
+  RegistrationMap registered_properties_;
+  RegistrationMap declared_properties_;
 };
 
 }  // namespace blink

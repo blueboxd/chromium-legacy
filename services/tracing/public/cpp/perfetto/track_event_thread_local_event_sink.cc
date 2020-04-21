@@ -680,7 +680,9 @@ void TrackEventThreadLocalEventSink::UpdateDuration(
       trace_event_internal::kNoId /* bind_id */, nullptr,
       explicit_timestamps ? TRACE_EVENT_FLAG_EXPLICIT_TIMESTAMP
                           : TRACE_EVENT_FLAG_NONE);
-  AddTraceEvent(&new_trace_event, nullptr, [](perfetto::EventContext) {});
+  perfetto::Track track{};
+  AddTraceEvent(&new_trace_event, nullptr, track,
+                [](perfetto::EventContext) {});
 }
 
 void TrackEventThreadLocalEventSink::Flush() {

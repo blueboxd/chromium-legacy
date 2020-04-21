@@ -6,6 +6,8 @@
 
 #include <algorithm>
 
+#include "base/logging.h"
+
 namespace cc {
 
 ReverseSpiralIterator::ReverseSpiralIterator()

@@ -14,13 +14,14 @@
 
 namespace blink {
 
-class Document;
 class Element;
+class LocalDOMWindow;
 class ResizeObserverController;
 class ResizeObserverEntry;
 class ResizeObservation;
-class V8ResizeObserverCallback;
 class ResizeObserverOptions;
+class ScriptState;
+class V8ResizeObserverCallback;
 
 // ResizeObserver represents ResizeObserver javascript api:
 // https://github.com/WICG/ResizeObserver/
@@ -41,11 +42,11 @@ class CORE_EXPORT ResizeObserver final
     virtual void Trace(Visitor* visitor) {}
   };
 
-  static ResizeObserver* Create(Document&, V8ResizeObserverCallback*);
-  static ResizeObserver* Create(Document&, Delegate*);
+  static ResizeObserver* Create(ScriptState*, V8ResizeObserverCallback*);
+  static ResizeObserver* Create(LocalDOMWindow*, Delegate*);
 
-  ResizeObserver(V8ResizeObserverCallback*, Document&);
-  ResizeObserver(Delegate*, Document&);
+  ResizeObserver(V8ResizeObserverCallback*, LocalDOMWindow*);
+  ResizeObserver(Delegate*, LocalDOMWindow*);
   ~ResizeObserver() override = default;
 
   // API methods

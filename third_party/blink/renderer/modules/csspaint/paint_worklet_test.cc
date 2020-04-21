@@ -26,7 +26,7 @@
 namespace blink {
 class TestPaintWorklet : public PaintWorklet {
  public:
-  explicit TestPaintWorklet(LocalFrame* frame) : PaintWorklet(frame) {
+  explicit TestPaintWorklet(LocalDOMWindow& window) : PaintWorklet(window) {
     ResetIsPaintOffThreadForTesting();
   }
 
@@ -51,8 +51,8 @@ class PaintWorkletTest : public PageTestBase {
  public:
   void SetUp() override {
     PageTestBase::SetUp(IntSize());
-    test_paint_worklet_ = MakeGarbageCollected<TestPaintWorklet>(
-        GetDocument().domWindow()->GetFrame());
+    test_paint_worklet_ =
+        MakeGarbageCollected<TestPaintWorklet>(*GetDocument().domWindow());
     proxy_ = test_paint_worklet_->CreateGlobalScope();
   }
 
@@ -304,7 +304,7 @@ TEST_P(MainOrOffThreadPaintWorkletTest, ConsistentGlobalScopeOnMainThread) {
 
 TEST_P(MainOrOffThreadPaintWorkletTest, AllGlobalScopesMustBeCreated) {
   PaintWorklet* paint_worklet_to_test =
-      MakeGarbageCollected<PaintWorklet>(&GetFrame());
+      MakeGarbageCollected<PaintWorklet>(*GetFrame().DomWindow());
   paint_worklet_to_test->ResetIsPaintOffThreadForTesting();
 
   EXPECT_TRUE(paint_worklet_to_test->GetGlobalScopesForTesting().IsEmpty());

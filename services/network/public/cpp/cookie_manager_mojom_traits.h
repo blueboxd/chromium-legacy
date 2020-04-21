@@ -49,16 +49,6 @@ struct EnumTraits<network::mojom::ContextType,
 };
 
 template <>
-struct EnumTraits<network::mojom::CrossSchemeness,
-                  net::CookieOptions::SameSiteCookieContext::CrossSchemeness> {
-  static network::mojom::CrossSchemeness ToMojom(
-      net::CookieOptions::SameSiteCookieContext::CrossSchemeness input);
-  static bool FromMojom(
-      network::mojom::CrossSchemeness input,
-      net::CookieOptions::SameSiteCookieContext::CrossSchemeness* output);
-};
-
-template <>
 struct EnumTraits<network::mojom::CookieSourceScheme, net::CookieSourceScheme> {
   static network::mojom::CookieSourceScheme ToMojom(
       net::CookieSourceScheme input);
@@ -82,11 +72,6 @@ struct StructTraits<network::mojom::CookieSameSiteContextDataView,
   static net::CookieOptions::SameSiteCookieContext::ContextType context(
       net::CookieOptions::SameSiteCookieContext& s) {
     return s.context();
-  }
-
-  static net::CookieOptions::SameSiteCookieContext::CrossSchemeness
-  cross_schemeness(net::CookieOptions::SameSiteCookieContext& s) {
-    return s.cross_schemeness();
   }
 
   static bool Read(network::mojom::CookieSameSiteContextDataView mojo_options,

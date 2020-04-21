@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/test/icu_test_util.h"
 #include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/animation/slide_animation.h"
@@ -76,6 +77,56 @@ class TestView : public View {
   int repaint_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestView);
+};
+
+class RTLAnimationTestDelegate : public gfx::AnimationDelegate {
+ public:
+  RTLAnimationTestDelegate(const gfx::Rect& start,
+                           const gfx::Rect& target,
+                           View* view,
+                           base::RepeatingClosure quit_closure)
+      : start_(start),
+        target_(target),
+        view_(view),
+        quit_closure_(std::move(quit_closure)) {}
+  ~RTLAnimationTestDelegate() override = default;
+
+ private:
+  // gfx::AnimationDelegate:
+  void AnimationProgressed(const Animation* animation) override {
+    gfx::Transform transform = view_->GetTransform();
+    ASSERT_TRUE(!transform.IsIdentity());
+
+    // In this test, assume that |parent| is root view.
+    View* parent = view_->parent();
+
+    const gfx::Rect start_rect_in_screen = parent->GetMirroredRect(start_);
+    const gfx::Rect target_rect_in_screen = parent->GetMirroredRect(target_);
+
+    gfx::RectF current_bounds_in_screen(
+        parent->GetMirroredRect(view_->bounds()));
+    transform.TransformRect(&current_bounds_in_screen);
+
+    // Verify that |view_|'s current bounds in screen are valid.
+    EXPECT_GE(current_bounds_in_screen.x(),
+              std::min(start_rect_in_screen.x(), target_rect_in_screen.x()));
+    EXPECT_LE(
+        current_bounds_in_screen.right(),
+        std::max(start_rect_in_screen.right(), target_rect_in_screen.right()));
+
+    quit_closure_.Run();
+  }
+
+  // Animation initial bounds.
+  gfx::Rect start_;
+
+  // Animation target bounds.
+  gfx::Rect target_;
+
+  // view to be animated.
+  View* view_;
+
+  base::RepeatingClosure quit_closure_;
 };
 
 }  // namespace
@@ -266,6 +317,38 @@ TEST_F(BoundsAnimatorTest, UseTransformsAnimateViewToEmptySrc) {
   // done.
   base::RunLoop().Run();
   EXPECT_EQ(target_bounds, child()->bounds());
+}
+
+// Verify that the bounds animation which updates the transform of views work
+// as expected under RTL (https://crbug.com/1067033).
+TEST_F(BoundsAnimatorTest, VerifyBoundsAnimatorUnderRTL) {
+  // Enable RTL.
+  base::test::ScopedRestoreICUDefaultLocale scoped_locale("he");
+
+  RecreateAnimator(/*use_transform=*/true);
+  parent()->SetBounds(0, 0, 40, 40);
+
+  const gfx::Rect initial_bounds(0, 0, 10, 10);
+  child()->SetBoundsRect(initial_bounds);
+  const gfx::Rect target_bounds(10, 10, 10, 10);
+
+  const base::TimeDelta animation_duration =
+      base::TimeDelta::FromMilliseconds(10);
+  animator()->SetAnimationDuration(animation_duration);
+  child()->set_repaint_count(0);
+  animator()->AnimateViewTo(child(), target_bounds);
+  base::RunLoop run_loop;
+  animator()->SetAnimationDelegate(
+      child(),
+      std::make_unique<RTLAnimationTestDelegate>(
+          initial_bounds, target_bounds, child(), run_loop.QuitClosure()));
+
+  // The animator should be animating now.
+  EXPECT_TRUE(animator()->IsAnimating());
+  EXPECT_TRUE(animator()->IsAnimating(child()));
+
+  run_loop.Run();
+  EXPECT_FALSE(animator()->IsAnimating(child()));
 }
 
 }  // namespace views

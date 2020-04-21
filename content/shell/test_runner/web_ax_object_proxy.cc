@@ -16,6 +16,7 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
 #include "ui/accessibility/ax_enums.mojom-shared.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/transform.h"
 
@@ -1120,7 +1121,9 @@ bool WebAXObjectProxy::IsAtomic() {
 
 bool WebAXObjectProxy::IsAutofillAvailable() {
   accessibility_object_.UpdateLayoutAndCheckValidity();
-  return accessibility_object_.IsAutofillAvailable();
+  ui::AXNodeData node_data;
+  accessibility_object_.Serialize(&node_data);
+  return node_data.HasState(ax::mojom::State::kAutofillAvailable);
 }
 
 bool WebAXObjectProxy::IsBusy() {
@@ -1146,7 +1149,9 @@ std::string WebAXObjectProxy::Restriction() {
 
 bool WebAXObjectProxy::IsRequired() {
   accessibility_object_.UpdateLayoutAndCheckValidity();
-  return accessibility_object_.IsRequired();
+  ui::AXNodeData node_data;
+  accessibility_object_.Serialize(&node_data);
+  return node_data.HasState(ax::mojom::State::kRequired);
 }
 
 bool WebAXObjectProxy::IsEditableRoot() {
@@ -1156,12 +1161,16 @@ bool WebAXObjectProxy::IsEditableRoot() {
 
 bool WebAXObjectProxy::IsEditable() {
   accessibility_object_.UpdateLayoutAndCheckValidity();
-  return accessibility_object_.IsEditable();
+  ui::AXNodeData node_data;
+  accessibility_object_.Serialize(&node_data);
+  return node_data.HasState(ax::mojom::State::kEditable);
 }
 
 bool WebAXObjectProxy::IsRichlyEditable() {
   accessibility_object_.UpdateLayoutAndCheckValidity();
-  return accessibility_object_.IsRichlyEditable();
+  ui::AXNodeData node_data;
+  accessibility_object_.Serialize(&node_data);
+  return node_data.HasState(ax::mojom::State::kRichlyEditable);
 }
 
 bool WebAXObjectProxy::IsFocused() {
@@ -1171,7 +1180,9 @@ bool WebAXObjectProxy::IsFocused() {
 
 bool WebAXObjectProxy::IsFocusable() {
   accessibility_object_.UpdateLayoutAndCheckValidity();
-  return accessibility_object_.CanSetFocusAttribute();
+  ui::AXNodeData node_data;
+  accessibility_object_.Serialize(&node_data);
+  return node_data.HasState(ax::mojom::State::kFocusable);
 }
 
 bool WebAXObjectProxy::IsModal() {
@@ -1181,23 +1192,31 @@ bool WebAXObjectProxy::IsModal() {
 
 bool WebAXObjectProxy::IsSelected() {
   accessibility_object_.UpdateLayoutAndCheckValidity();
-  return accessibility_object_.IsSelected() == blink::kWebAXSelectedStateTrue;
+  ui::AXNodeData node_data;
+  accessibility_object_.Serialize(&node_data);
+  return node_data.GetBoolAttribute(ax::mojom::BoolAttribute::kSelected);
 }
 
 bool WebAXObjectProxy::IsSelectable() {
   accessibility_object_.UpdateLayoutAndCheckValidity();
-  return accessibility_object_.IsSelected() !=
-         blink::kWebAXSelectedStateUndefined;
+  ui::AXNodeData node_data;
+  accessibility_object_.Serialize(&node_data);
+  // It's selectable if it has the attribute, whether it's true or false.
+  return node_data.HasBoolAttribute(ax::mojom::BoolAttribute::kSelected);
 }
 
 bool WebAXObjectProxy::IsMultiLine() {
   accessibility_object_.UpdateLayoutAndCheckValidity();
-  return accessibility_object_.IsMultiline();
+  ui::AXNodeData node_data;
+  accessibility_object_.Serialize(&node_data);
+  return node_data.HasState(ax::mojom::State::kMultiline);
 }
 
 bool WebAXObjectProxy::IsMultiSelectable() {
   accessibility_object_.UpdateLayoutAndCheckValidity();
-  return accessibility_object_.IsMultiSelectable();
+  ui::AXNodeData node_data;
+  accessibility_object_.Serialize(&node_data);
+  return node_data.HasState(ax::mojom::State::kMultiselectable);
 }
 
 bool WebAXObjectProxy::IsSelectedOptionActive() {
@@ -1207,7 +1226,9 @@ bool WebAXObjectProxy::IsSelectedOptionActive() {
 
 bool WebAXObjectProxy::IsExpanded() {
   accessibility_object_.UpdateLayoutAndCheckValidity();
-  return accessibility_object_.IsExpanded() == blink::kWebAXExpandedExpanded;
+  ui::AXNodeData node_data;
+  accessibility_object_.Serialize(&node_data);
+  return node_data.HasState(ax::mojom::State::kExpanded);
 }
 
 std::string WebAXObjectProxy::Checked() {
@@ -1226,12 +1247,16 @@ std::string WebAXObjectProxy::Checked() {
 
 bool WebAXObjectProxy::IsCollapsed() {
   accessibility_object_.UpdateLayoutAndCheckValidity();
-  return accessibility_object_.IsExpanded() == blink::kWebAXExpandedCollapsed;
+  ui::AXNodeData node_data;
+  accessibility_object_.Serialize(&node_data);
+  return node_data.HasState(ax::mojom::State::kCollapsed);
 }
 
 bool WebAXObjectProxy::IsVisible() {
   accessibility_object_.UpdateLayoutAndCheckValidity();
-  return accessibility_object_.IsVisible();
+  ui::AXNodeData node_data;
+  accessibility_object_.Serialize(&node_data);
+  return !node_data.HasState(ax::mojom::State::kInvisible);
 }
 
 bool WebAXObjectProxy::IsVisited() {
@@ -1324,7 +1349,9 @@ std::string WebAXObjectProxy::Current() {
 
 std::string WebAXObjectProxy::HasPopup() {
   accessibility_object_.UpdateLayoutAndCheckValidity();
-  switch (accessibility_object_.HasPopup()) {
+  ui::AXNodeData node_data;
+  accessibility_object_.Serialize(&node_data);
+  switch (node_data.GetHasPopup()) {
     case ax::mojom::HasPopup::kTrue:
       return "true";
     case ax::mojom::HasPopup::kMenu:
@@ -1420,12 +1447,12 @@ std::string WebAXObjectProxy::Live() {
 
 std::string WebAXObjectProxy::Orientation() {
   accessibility_object_.UpdateLayoutAndCheckValidity();
-  if (accessibility_object_.Orientation() == blink::kWebAXOrientationVertical)
+  ui::AXNodeData node_data;
+  accessibility_object_.Serialize(&node_data);
+  if (node_data.HasState(ax::mojom::State::kVertical))
     return "AXOrientation: AXVerticalOrientation";
-  else if (accessibility_object_.Orientation() ==
-           blink::kWebAXOrientationHorizontal)
+  else if (node_data.HasState(ax::mojom::State::kHorizontal))
     return "AXOrientation: AXHorizontalOrientation";
-
   return std::string();
 }
 

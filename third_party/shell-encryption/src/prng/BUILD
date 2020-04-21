@@ -14,7 +14,9 @@
 
 package(default_visibility = ["//visibility:public"])
 
-licenses(["notice"])  # Apache 2.0
+licenses(["notice"])
+
+exports_files(["LICENSE"])
 
 # PRNG interface.
 
@@ -44,7 +46,7 @@ cc_library(
     deps = [
         ":chacha_prng",
         ":single_thread_chacha_prng",
-        "@com_google_googletest//:gtest",
+        "@com_github_google_googletest//:gtest",
     ],
 )
 
@@ -61,8 +63,8 @@ cc_test(
         ":integral_prng_types",
         "//testing:matchers",
         "//testing:status_testing",
+        "@com_github_google_googletest//:gtest_main",
         "@com_google_absl//absl/strings",
-        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -124,8 +126,8 @@ cc_test(
         ":chacha_prng",
         "//testing:matchers",
         "//testing:status_testing",
+        "@com_github_google_googletest//:gtest_main",
         "@com_google_absl//absl/strings",
-        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -139,7 +141,7 @@ cc_test(
         ":single_thread_chacha_prng",
         "//testing:matchers",
         "//testing:status_testing",
+        "@com_github_google_googletest//:gtest_main",
         "@com_google_absl//absl/strings",
-        "@com_google_googletest//:gtest_main",
     ],
 )

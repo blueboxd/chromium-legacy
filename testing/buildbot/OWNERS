@@ -1,6 +1,8 @@
 # This is reserved for people that are familiar with how Chromium builders
 # run tests and understand the implications of changing these files.
 
+# If you're making changes that affect CQ builders (like adding new tests or
+# compile targets) please get a review from someone in //infra/OWNERS.
 file://infra/OWNERS
 
 bsheedy@chromium.org

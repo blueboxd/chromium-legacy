@@ -647,42 +647,7 @@ std::vector<blink::mojom::SameSiteCookieWarningReason> BuildWarningReasons(
     warning_reasons.push_back(blink::mojom::SameSiteCookieWarningReason::
                                   WarnSameSiteUnspecifiedLaxAllowUnsafe);
   }
-  if (status.HasWarningReason(
-          net::CanonicalCookie::CookieInclusionStatus::
-              WARN_SAMESITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_SECURE_URL)) {
-    warning_reasons.push_back(blink::mojom::SameSiteCookieWarningReason::
-                                  WarnSameSiteCrossSchemeSecureUrlMethodUnsafe);
-  }
-  if (status.HasWarningReason(net::CanonicalCookie::CookieInclusionStatus::
-                                  WARN_SAMESITE_LAX_CROSS_SCHEME_SECURE_URL)) {
-    warning_reasons.push_back(blink::mojom::SameSiteCookieWarningReason::
-                                  WarnSameSiteCrossSchemeSecureUrlLax);
-  }
-  if (status.HasWarningReason(
-          net::CanonicalCookie::CookieInclusionStatus::
-              WARN_SAMESITE_STRICT_CROSS_SCHEME_SECURE_URL)) {
-    warning_reasons.push_back(blink::mojom::SameSiteCookieWarningReason::
-                                  WarnSameSiteCrossSchemeSecureUrlStrict);
-  }
-  if (status.HasWarningReason(
-          net::CanonicalCookie::CookieInclusionStatus::
-              WARN_SAMESITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_INSECURE_URL)) {
-    warning_reasons.push_back(
-        blink::mojom::SameSiteCookieWarningReason::
-            WarnSameSiteCrossSchemeInsecureUrlMethodUnsafe);
-  }
-  if (status.HasWarningReason(
-          net::CanonicalCookie::CookieInclusionStatus::
-              WARN_SAMESITE_LAX_CROSS_SCHEME_INSECURE_URL)) {
-    warning_reasons.push_back(blink::mojom::SameSiteCookieWarningReason::
-                                  WarnSameSiteCrossSchemeInsecureUrlLax);
-  }
-  if (status.HasWarningReason(
-          net::CanonicalCookie::CookieInclusionStatus::
-              WARN_SAMESITE_STRICT_CROSS_SCHEME_INSECURE_URL)) {
-    warning_reasons.push_back(blink::mojom::SameSiteCookieWarningReason::
-                                  WarnSameSiteCrossSchemeInsecureUrlStrict);
-  }
+
   return warning_reasons;
 }
 }  // namespace

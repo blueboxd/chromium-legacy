@@ -40,7 +40,7 @@ void SwitchToRegistrableDomainAndRemovePort(
   DCHECK(!(*origin)->opaque());
 
   std::string registrable_domain = GetDomainAndRegistry(
-      (*origin)->host(),
+      origin->value(),
       net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
   // GetDomainAndRegistry() returns an empty string for IP literals and
   // effective TLDs.

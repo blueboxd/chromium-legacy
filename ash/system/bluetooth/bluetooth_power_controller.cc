@@ -25,7 +25,7 @@ const int kBluetoothInitializationDelay = 1000;
 
 BluetoothPowerController::BluetoothPowerController(PrefService* local_state)
     : local_state_(local_state) {
-  device::BluetoothAdapterFactory::GetAdapter(
+  device::BluetoothAdapterFactory::Get()->GetAdapter(
       base::BindOnce(&BluetoothPowerController::InitializeOnAdapterReady,
                      weak_ptr_factory_.GetWeakPtr()));
   Shell::Get()->session_controller()->AddObserver(this);

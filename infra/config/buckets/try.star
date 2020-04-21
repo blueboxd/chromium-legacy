@@ -750,3 +750,7 @@ chrome_internal_verifier(
 chrome_internal_verifier(
     builder = 'win_chrome_official',
 )
+
+chrome_internal_verifier(
+    builder = 'win64-chrome',
+)

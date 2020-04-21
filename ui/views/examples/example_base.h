@@ -6,6 +6,7 @@
 #define UI_VIEWS_EXAMPLES_EXAMPLE_BASE_H_
 
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "ui/views/examples/views_examples_export.h"
@@ -37,6 +38,8 @@ class VIEWS_EXAMPLES_EXPORT ExampleBase {
 
   DISALLOW_COPY_AND_ASSIGN(ExampleBase);
 };
+
+using ExampleVector = std::vector<std::unique_ptr<ExampleBase>>;
 
 }  // namespace examples
 }  // namespace views

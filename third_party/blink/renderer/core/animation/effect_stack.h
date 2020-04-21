@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/animation/property_handle.h"
 #include "third_party/blink/renderer/core/animation/sampled_effect.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/properties/css_bitset.h"
 #include "third_party/blink/renderer/platform/geometry/float_box.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -64,6 +65,8 @@ class CORE_EXPORT EffectStack {
 
   using PropertyHandleFilter = bool (*)(const PropertyHandle&);
   bool AffectsProperties(PropertyHandleFilter) const;
+  bool AffectsProperties(const CSSBitset&,
+                         KeyframeEffect::Priority priority) const;
   bool HasRevert() const;
 
   // Produces a map of properties to active effects.

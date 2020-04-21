@@ -17,7 +17,7 @@ load("@rules_proto//proto:defs.bzl", "proto_library")
 
 package(default_visibility = ["//visibility:public"])
 
-licenses(["notice"])  # Apache 2.0
+licenses(["notice"])
 
 exports_files(["LICENSE"])
 
@@ -30,6 +30,36 @@ proto_library(
 cc_proto_library(
     name = "serialization_cc_proto",
     deps = [":serialization_proto"],
+)
+
+# Context.
+
+cc_library(
+    name = "context",
+    hdrs = ["context.h"],
+    deps = [
+        ":error_params",
+        ":ntt_parameters",
+        ":statusor_fork",
+        "@com_google_absl//absl/memory",
+    ],
+)
+
+cc_test(
+    name = "context_test",
+    size = "small",
+    srcs = ["context_test.cc"],
+    deps = [
+        ":constants",
+        ":context",
+        ":integral_types",
+        ":montgomery",
+        ":statusor_fork",
+        "//testing:parameters",
+        "//testing:status_testing",
+        "@com_github_google_googletest//:gtest_main",
+        "@com_google_absl//absl/numeric:int128",
+    ],
 )
 
 # Integral types for integers.
@@ -60,18 +90,18 @@ cc_library(
     hdrs = ["bits_util.h"],
     deps = [
         ":integral_types",
-        "@com_google_absl//absl/base",
-        "@com_google_absl//absl/base:core_headers",
         "@com_google_absl//absl/numeric:int128",
     ],
 )
 
 cc_test(
     name = "bits_util_test",
+    size = "small",
     srcs = ["bits_util_test.cc"],
     deps = [
         ":bits_util",
-        "@com_google_googletest//:gtest_main",
+        "@com_github_google_googletest//:gtest_main",
+        "@com_google_absl//absl/numeric:int128",
     ],
 )
 
@@ -90,19 +120,20 @@ cc_library(
 
 cc_test(
     name = "sample_error_test",
+    size = "small",
     srcs = [
         "sample_error_test.cc",
     ],
     deps = [
-        ":constants",
-        ":integral_types",
+        ":context",
         ":montgomery",
         ":sample_error",
         ":symmetric_encryption",
+        "//testing:parameters",
         "//testing:status_is_fork",
         "//testing:status_testing",
         "//testing:testing_prng",
-        "@com_google_googletest//:gtest_main",
+        "@com_github_google_googletest//:gtest_main",
     ],
 )
 
@@ -114,7 +145,7 @@ cc_library(
         "statusor.h",
     ],
     deps = [
-        "@com_github_glog_glog//:glog",
+        "@com_github_google_glog//:glog",
         "@com_google_absl//absl/base:core_headers",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/types:optional",
@@ -123,21 +154,23 @@ cc_library(
 
 cc_test(
     name = "statusor_test",
+    size = "small",
     srcs = ["statusor_test.cc"],
     deps = [
         ":statusor_fork",
+        "@com_github_google_googletest//:gtest_main",
         "@com_google_absl//absl/status",
-        "@com_google_googletest//:gtest_main",
     ],
 )
 
 cc_test(
     name = "status_macros_test",
+    size = "small",
     srcs = ["status_macros_test.cc"],
     deps = [
         ":statusor_fork",
+        "@com_github_google_googletest//:gtest_main",
         "@com_google_absl//absl/status",
-        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -145,29 +178,25 @@ cc_test(
 
 cc_library(
     name = "montgomery",
-    hdrs = [
-        "montgomery.h",
-    ],
+    srcs = ["montgomery.cc"],
+    hdrs = ["montgomery.h"],
     deps = [
         ":bits_util",
         ":constants",
         ":int256",
-        ":integral_types",
         ":serialization_cc_proto",
         ":statusor_fork",
         ":transcription",
         "//prng",
-        "@com_github_glog_glog//:glog",
-        "@com_google_absl//absl/base",
-        "@com_google_absl//absl/base:core_headers",
+        "@com_github_google_glog//:glog",
         "@com_google_absl//absl/numeric:int128",
-        "@com_google_absl//absl/status",
         "@com_google_absl//absl/strings",
     ],
 )
 
 cc_test(
     name = "montgomery_test",
+    size = "small",
     srcs = [
         "montgomery_test.cc",
     ],
@@ -176,11 +205,12 @@ cc_test(
         ":montgomery",
         ":serialization_cc_proto",
         ":statusor_fork",
+        "//testing:parameters",
         "//testing:status_is_fork",
         "//testing:status_testing",
         "//testing:testing_prng",
+        "@com_github_google_googletest//:gtest_main",
         "@com_google_absl//absl/numeric:int128",
-        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -194,13 +224,13 @@ cc_library(
         ":constants",
         ":statusor_fork",
         "@com_google_absl//absl/memory",
-        "@com_google_absl//absl/status",
         "@com_google_absl//absl/strings",
     ],
 )
 
 cc_test(
     name = "ntt_parameters_test",
+    size = "small",
     srcs = [
         "ntt_parameters_test.cc",
     ],
@@ -209,10 +239,11 @@ cc_test(
         ":montgomery",
         ":ntt_parameters",
         ":statusor_fork",
+        "//testing:parameters",
         "//testing:status_is_fork",
         "//testing:status_testing",
+        "@com_github_google_googletest//:gtest_main",
         "@com_google_absl//absl/numeric:int128",
-        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -227,13 +258,13 @@ cc_library(
         ":serialization_cc_proto",
         ":statusor_fork",
         "//prng",
-        "@com_google_absl//absl/status",
         "@com_google_absl//absl/strings",
     ],
 )
 
 cc_test(
     name = "polynomial_test",
+    size = "small",
     srcs = [
         "polynomial_test.cc",
     ],
@@ -249,7 +280,7 @@ cc_test(
         "//testing:status_is_fork",
         "//testing:status_testing",
         "//testing:testing_prng",
-        "@com_google_googletest//:gtest_main",
+        "@com_github_google_googletest//:gtest_main",
     ],
 )
 
@@ -267,22 +298,25 @@ cc_library(
 
 cc_test(
     name = "error_params_test",
+    size = "small",
     srcs = [
         "error_params_test.cc",
     ],
     deps = [
         ":constants",
+        ":context",
         ":error_params",
         ":montgomery",
         ":ntt_parameters",
         ":statusor_fork",
         ":symmetric_encryption",
         "//prng:integral_prng_types",
+        "//testing:parameters",
         "//testing:status_is_fork",
         "//testing:status_testing",
         "//testing:testing_prng",
         "//testing:testing_utils",
-        "@com_google_googletest//:gtest_main",
+        "@com_github_google_googletest//:gtest_main",
     ],
 )
 
@@ -304,11 +338,13 @@ cc_library(
 
 cc_test(
     name = "symmetric_encryption_test",
+    size = "medium",
     srcs = [
         "symmetric_encryption_test.cc",
     ],
     deps = [
         ":constants",
+        ":context",
         ":montgomery",
         ":ntt_parameters",
         ":polynomial",
@@ -316,11 +352,12 @@ cc_test(
         ":statusor_fork",
         ":symmetric_encryption",
         "//prng:integral_prng_types",
+        "//testing:parameters",
         "//testing:status_is_fork",
         "//testing:status_testing",
         "//testing:testing_prng",
         "//testing:testing_utils",
-        "@com_google_googletest//:gtest_main",
+        "@com_github_google_googletest//:gtest_main",
     ],
 )
 
@@ -333,35 +370,39 @@ cc_library(
         ":symmetric_encryption",
         "//prng",
         "//prng:integral_prng_types",
-        "@com_google_absl//absl/status",
     ],
 )
 
 cc_test(
     name = "symmetric_encryption_with_prng_test",
+    size = "small",
     srcs = [
         "symmetric_encryption_with_prng_test.cc",
     ],
     deps = [
+        ":context",
         ":montgomery",
         ":ntt_parameters",
         ":polynomial",
         ":statusor_fork",
         ":symmetric_encryption_with_prng",
         "//prng:integral_prng_types",
+        "//testing:parameters",
         "//testing:status_is_fork",
         "//testing:status_testing",
         "//testing:testing_utils",
-        "@com_google_googletest//:gtest_main",
+        "@com_github_google_googletest//:gtest_main",
     ],
 )
 
 # Relinearization Key
+
 cc_library(
     name = "relinearization_key",
     srcs = ["relinearization_key.cc"],
     hdrs = ["relinearization_key.h"],
     deps = [
+        ":bits_util",
         ":montgomery",
         ":sample_error",
         ":statusor_fork",
@@ -369,12 +410,12 @@ cc_library(
         ":symmetric_encryption_with_prng",
         "//prng:integral_prng_types",
         "@com_google_absl//absl/numeric:int128",
-        "@com_google_absl//absl/status",
     ],
 )
 
 cc_test(
     name = "relinearization_key_test",
+    size = "small",
     srcs = ["relinearization_key_test.cc"],
     deps = [
         ":constants",
@@ -388,24 +429,25 @@ cc_test(
         "//testing:status_is_fork",
         "//testing:status_testing",
         "//testing:testing_prng",
-        "@com_google_googletest//:gtest_main",
+        "@com_github_google_googletest//:gtest_main",
     ],
 )
 
 # Galois Key.
+
 cc_library(
     name = "galois_key",
     hdrs = ["galois_key.h"],
     deps = [
         ":relinearization_key",
         ":statusor_fork",
-        "@com_google_absl//absl/status",
         "@com_google_absl//absl/strings",
     ],
 )
 
 cc_test(
     name = "galois_key_test",
+    size = "small",
     srcs = ["galois_key_test.cc"],
     deps = [
         ":constants",
@@ -420,7 +462,7 @@ cc_test(
         "//testing:status_testing",
         "//testing:testing_prng",
         "//testing:testing_utils",
-        "@com_google_googletest//:gtest_main",
+        "@com_github_google_googletest//:gtest_main",
     ],
 )
 
@@ -432,20 +474,21 @@ cc_library(
     hdrs = ["int256.h"],
     deps = [
         ":integral_types",
-        "@com_github_glog_glog//:glog",
+        "@com_github_google_glog//:glog",
         "@com_google_absl//absl/numeric:int128",
     ],
 )
 
 cc_test(
     name = "int256_test",
+    size = "small",
     srcs = ["int256_test.cc"],
     deps = [
         ":int256",
-        "@com_github_glog_glog//:glog",
+        "@com_github_google_glog//:glog",
+        "@com_github_google_googletest//:gtest_main",
         "@com_google_absl//absl/container:fixed_array",
         "@com_google_absl//absl/numeric:int128",
-        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -463,6 +506,7 @@ cc_library(
 
 cc_test(
     name = "transcription_test",
+    size = "small",
     srcs = ["transcription_test.cc"],
     deps = [
         ":integral_types",
@@ -470,7 +514,7 @@ cc_test(
         ":transcription",
         "//testing:status_is_fork",
         "//testing:status_testing",
+        "@com_github_google_googletest//:gtest_main",
         "@com_google_absl//absl/numeric:int128",
-        "@com_google_googletest//:gtest_main",
     ],
 )

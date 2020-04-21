@@ -1671,19 +1671,6 @@ TEST_F(FrameSequenceTrackerTest, IgnoredFrameTokensRemovedAtPresentation1) {
   EXPECT_EQ(IgnoredFrameTokens().size(), 0u);
 }
 
-TEST_F(FrameSequenceTrackerTest, TerminationWithNullPresentationTimeStamp) {
-  GenerateSequence("b(1)s(1)");
-  collection_.StopSequence(FrameSequenceTrackerType::kTouchScroll);
-  EXPECT_EQ(NumberOfRemovalTrackers(), 1u);
-  // Even if the presentation timestamp is null, as long as this presentation
-  // is acking the last impl frame, we consider that impl frame completed and
-  // so the tracker is ready for termination.
-  collection_.NotifyFramePresented(
-      1, {base::TimeTicks(), viz::BeginFrameArgs::DefaultInterval(), 0});
-  GenerateSequence("e(1,0)");
-  EXPECT_EQ(NumberOfRemovalTrackers(), 0u);
-}
-
 // Test the case where the frame tokens wraps around the 32-bit max value.
 TEST_F(FrameSequenceTrackerTest, IgnoredFrameTokensRemovedAtPresentation2) {
   GenerateSequence("b(5)");
@@ -1697,6 +1684,42 @@ TEST_F(FrameSequenceTrackerTest, IgnoredFrameTokensRemovedAtPresentation2) {
   collection_.NotifySubmitFrame(1, false, viz::BeginFrameAck(args, true), args);
   GenerateSequence("e(5,0)P(1)");
   EXPECT_TRUE(IgnoredFrameTokens().empty());
+}
+
+TEST_F(FrameSequenceTrackerTest, TerminationWithNullPresentationTimeStamp) {
+  GenerateSequence("b(1)s(1)");
+  collection_.StopSequence(FrameSequenceTrackerType::kTouchScroll);
+  EXPECT_EQ(NumberOfRemovalTrackers(), 1u);
+  // Even if the presentation timestamp is null, as long as this presentation
+  // is acking the last impl frame, we consider that impl frame completed and
+  // so the tracker is ready for termination.
+  collection_.NotifyFramePresented(
+      1, {base::TimeTicks(), viz::BeginFrameArgs::DefaultInterval(), 0});
+  GenerateSequence("e(1,0)");
+  EXPECT_EQ(NumberOfRemovalTrackers(), 0u);
+}
+
+// Test that a tracker is terminated after 3 submitted frames, remove this
+// once crbug.com/1072482 is fixed.
+TEST_F(FrameSequenceTrackerTest, TerminationAfterThreeSubmissions1) {
+  GenerateSequence("b(1)s(1)e(1,0)");
+  collection_.StopSequence(FrameSequenceTrackerType::kTouchScroll);
+  EXPECT_EQ(NumberOfRemovalTrackers(), 1u);
+  GenerateSequence("b(2)s(2)e(2,0)b(3)s(3)e(3,0)b(4)s(4)e(4,0)b(5)s(5)e(5,0)");
+  EXPECT_EQ(NumberOfRemovalTrackers(), 0u);
+}
+
+TEST_F(FrameSequenceTrackerTest, TerminationAfterThreeSubmissions2) {
+  GenerateSequence("b(1)");
+  auto args = CreateBeginFrameArgs(1u, 1u);
+  // Ack to an impl frame that doesn't exist in this tracker.
+  collection_.NotifySubmitFrame(UINT32_MAX, /*has_missing_content=*/false,
+                                viz::BeginFrameAck(args, true), args);
+  GenerateSequence("e(1,0)");
+  collection_.StopSequence(FrameSequenceTrackerType::kTouchScroll);
+  EXPECT_EQ(NumberOfRemovalTrackers(), 1u);
+  GenerateSequence("b(2)s(1)e(2,0)b(3)s(2)e(3,0)b(4)s(3)e(4,0)");
+  EXPECT_EQ(NumberOfRemovalTrackers(), 0u);
 }
 
 TEST_F(FrameSequenceTrackerTest, OffScreenMainDamage1) {

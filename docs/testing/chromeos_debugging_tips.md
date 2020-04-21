@@ -30,12 +30,18 @@ the test step's [shard #0 isolated out] link. From there, view the various
 `log/chrome/...` or `log/ui/...` text files and you should find some with
 browser [crashes and stack traces].
 
-To disable a test on Chrome's builders, the preferred method is to add the
-`informational` attribute to the test's definition (see [Tast attributes] for
-more info). Note that this requires a full Chrome OS checkout. If that's not an
-option, or if it needs to be disabled ASAP, you can add it to the list of
+There a couple ways to disable a test on Chrome's builders:
+- **With a full CrOS checkout**: If you have a full CrOS checkout, you can add
+the `informational` attribute to the test's definition (see [Tast attributes]
+for more info). This can take time (ie: many hours) to land and propagate onto
+Chrome's builders. So if you need the test disabled ASAP, consult the next
+option.
+- **With only a Chromium checkout**: You can also add the test to the list of
 disabled tests for the step's GN target. For example, to disable a test in the
 `chrome_all_tast_tests` step, add it to [this list].
+
+In both cases, please make sure a bug is filed for the test, and route it to
+the appropriate owners.
 
 ## Telemetry
 

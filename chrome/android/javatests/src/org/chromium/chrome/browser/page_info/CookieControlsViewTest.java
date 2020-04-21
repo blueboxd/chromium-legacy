@@ -34,6 +34,7 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.content_settings.ContentSettingsFeatureList;
+import org.chromium.components.page_info.PageInfoAction;
 import org.chromium.components.page_info.R;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentSwitches;

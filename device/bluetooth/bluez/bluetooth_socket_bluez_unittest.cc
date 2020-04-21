@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -76,13 +77,16 @@ class BluetoothSocketBlueZTest : public testing::Test {
     // Grab a pointer to the adapter.
     {
       base::RunLoop run_loop;
-      device::BluetoothAdapterFactory::GetAdapter(base::BindOnce(
-          &BluetoothSocketBlueZTest::AdapterCallback, base::Unretained(this),
-          run_loop.QuitWhenIdleClosure()));
+      device::BluetoothAdapterFactory::Get()->GetAdapter(
+          base::BindLambdaForTesting(
+              [&](scoped_refptr<BluetoothAdapter> adapter) {
+                adapter_ = std::move(adapter);
+                run_loop.Quit();
+              }));
       run_loop.Run();
     }
 
-    ASSERT_TRUE(adapter_.get() != nullptr);
+    ASSERT_TRUE(adapter_);
     ASSERT_TRUE(adapter_->IsInitialized());
     ASSERT_TRUE(adapter_->IsPresent());
 
@@ -95,12 +99,6 @@ class BluetoothSocketBlueZTest : public testing::Test {
     adapter_ = nullptr;
     BluetoothSocketThread::CleanupForTesting();
     bluez::BluezDBusManager::Shutdown();
-  }
-
-  void AdapterCallback(base::OnceClosure continuation,
-                       scoped_refptr<BluetoothAdapter> adapter) {
-    adapter_ = adapter;
-    std::move(continuation).Run();
   }
 
   void SuccessCallback(base::OnceClosure continuation) {

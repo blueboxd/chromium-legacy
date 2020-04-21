@@ -100,22 +100,21 @@ static scoped_refptr<CSSVariableData> ConvertInitialVariableData(
   return To<CSSCustomPropertyDeclaration>(*value).Value();
 }
 
-PropertyRegistration* PropertyRegistration::MaybeCreate(
-    Document& document,
-    const AtomicString& name,
-    StyleRuleProperty& rule) {
+void PropertyRegistration::DeclareProperty(Document& document,
+                                           const AtomicString& name,
+                                           StyleRuleProperty& rule) {
   // https://drafts.css-houdini.org/css-properties-values-api-1/#the-syntax-descriptor
   const CSSValue* syntax_value = rule.GetSyntax();
   if (!syntax_value)
-    return nullptr;
+    return;
   base::Optional<CSSSyntaxDefinition> syntax = ConvertSyntax(*syntax_value);
   if (!syntax)
-    return nullptr;
+    return;
 
   // https://drafts.css-houdini.org/css-properties-values-api-1/#inherits-descriptor
   const CSSValue* inherits_value = rule.Inherits();
   if (!inherits_value)
-    return nullptr;
+    return;
   bool inherits = ConvertInherts(*inherits_value);
 
   // https://drafts.css-houdini.org/css-properties-values-api-1/#initial-value-descriptor
@@ -135,9 +134,9 @@ PropertyRegistration* PropertyRegistration::MaybeCreate(
     initial = syntax->Parse(initial_variable_data->TokenRange(),
                             *parser_context, is_animation_tainted);
     if (!initial)
-      return nullptr;
+      return;
     if (!ComputationallyIndependent(*initial))
-      return nullptr;
+      return;
     initial = &StyleBuilderConverter::ConvertRegisteredPropertyInitialValue(
         document, *initial);
     initial_variable_data =
@@ -145,8 +144,11 @@ PropertyRegistration* PropertyRegistration::MaybeCreate(
             *initial, is_animation_tainted);
   }
 
-  return MakeGarbageCollected<PropertyRegistration>(
-      name, *syntax, inherits, initial, initial_variable_data);
+  document.GetPropertyRegistry()->DeclareProperty(
+      name, *MakeGarbageCollected<PropertyRegistration>(
+                name, *syntax, inherits, initial, initial_variable_data));
+
+  document.GetStyleEngine().CustomPropertyRegistered();
 }
 
 void PropertyRegistration::registerProperty(
@@ -168,7 +170,7 @@ void PropertyRegistration::registerProperty(
   AtomicString atomic_name(name);
   Document* document = To<LocalDOMWindow>(execution_context)->document();
   PropertyRegistry& registry = *document->GetPropertyRegistry();
-  if (registry.Registration(atomic_name)) {
+  if (registry.IsInRegisteredPropertySet(atomic_name)) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidModificationError,
         "The name provided has already been registered.");

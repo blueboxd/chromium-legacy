@@ -24,7 +24,6 @@
 #include "extensions/common/constants.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/origin.h"
-#include "url/url_util.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/resource_mapper.h"
@@ -103,13 +102,14 @@ void ChromePermissionsClient::AreSitesImportant(
           Profile::FromBrowserContext(browser_context), kMaxImportantSites);
 
   for (auto& entry : *origins) {
-    const std::string host = entry.first.host();
+    const url::Origin& origin = entry.first;
+    const std::string& host = origin.host();
     std::string registerable_domain =
-        url::HostIsIPAddress(host)
-            ? host
-            : net::registry_controlled_domains::GetDomainAndRegistry(
-                  host,
-                  net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+        net::registry_controlled_domains::GetDomainAndRegistry(
+            origin,
+            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+    if (registerable_domain.empty())
+      registerable_domain = host;  // IP address or internal hostname.
     auto important_domain_search =
         [&registerable_domain](
             const ImportantSitesUtil::ImportantDomainInfo& item) {

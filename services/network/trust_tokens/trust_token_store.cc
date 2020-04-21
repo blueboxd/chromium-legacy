@@ -291,7 +291,7 @@ bool TrustTokenStore::ClearDataForFilter(mojom::ClearDataFilterPtr filter) {
         if (!is_match) {
           std::string etld1_for_origin =
               net::registry_controlled_domains::GetDomainAndRegistry(
-                  storage_key.origin().host(),
+                  storage_key.origin(),
                   net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
           is_match = base::Contains(filter.domains, etld1_for_origin);
         }

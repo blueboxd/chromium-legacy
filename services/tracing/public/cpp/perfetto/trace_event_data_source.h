@@ -188,12 +188,13 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
   static void OnAddTraceEvent(base::trace_event::TraceEvent* trace_event,
                               bool thread_will_flush,
                               base::trace_event::TraceEventHandle* handle,
+                              const perfetto::Track& track,
                               TrackEventArgumentFunction func) {
     auto* thread_local_event_sink = GetOrPrepareEventSink(thread_will_flush);
     if (thread_local_event_sink) {
       AutoThreadLocalBoolean thread_is_in_trace_event(
           GetThreadIsInTraceEventTLS());
-      thread_local_event_sink->AddTraceEvent(trace_event, handle, func);
+      thread_local_event_sink->AddTraceEvent(trace_event, handle, track, func);
     }
   }
 

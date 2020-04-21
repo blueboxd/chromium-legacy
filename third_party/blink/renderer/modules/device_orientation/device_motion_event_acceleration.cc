@@ -69,19 +69,4 @@ base::Optional<double> DeviceMotionEventAcceleration::z() const {
   return z_;
 }
 
-double DeviceMotionEventAcceleration::x(bool& is_null) const {
-  is_null = std::isnan(x_);
-  return x_;
-}
-
-double DeviceMotionEventAcceleration::y(bool& is_null) const {
-  is_null = std::isnan(y_);
-  return y_;
-}
-
-double DeviceMotionEventAcceleration::z(bool& is_null) const {
-  is_null = std::isnan(z_);
-  return z_;
-}
-
 }  // namespace blink

@@ -19,11 +19,13 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include "context.h"
 #include "montgomery.h"
 #include "ntt_parameters.h"
 #include "polynomial.h"
 #include "prng/integral_prng_types.h"
 #include "status_macros.h"
+#include "testing/parameters.h"
 #include "testing/status_matchers.h"
 #include "testing/status_testing.h"
 #include "testing/testing_utils.h"
@@ -34,53 +36,39 @@ namespace {
 // Set constants.
 const unsigned int kTestingRounds = 10;
 
-// Useful typedefs.
-using uint_m = MontgomeryInt<Uint32>;
-using Polynomial = Polynomial<uint_m>;
-using Key = SymmetricRlweKey<uint_m>;
-
+template <typename ModularInt>
 class SymmetricEncryptionWithPrngTest : public ::testing::Test {
- protected:
-  void SetUp() override {
-    ASSERT_OK_AND_ASSIGN(params14_,
-                         rlwe::testing::ConstructMontgomeryIntParams());
-    ASSERT_OK_AND_ASSIGN(
-        ntt_params_, InitializeNttParameters<uint_m>(rlwe::testing::kLogCoeffs,
-                                                     params14_.get()));
-    ASSERT_OK_AND_ASSIGN(
-        auto temp_error_params,
-        ErrorParams<uint_m>::Create(rlwe::testing::kDefaultLogT,
-                                    rlwe::testing::kDefaultVariance,
-                                    params14_.get(), &ntt_params_));
-    error_params_ = absl::make_unique<ErrorParams<uint_m>>(temp_error_params);
-  }
+ public:
+  using Key = SymmetricRlweKey<ModularInt>;
 
   // Sample a random key.
-  rlwe::StatusOr<Key> SampleKey() {
+  rlwe::StatusOr<Key> SampleKey(const rlwe::RlweContext<ModularInt>* context) {
     RLWE_ASSIGN_OR_RETURN(std::string prng_seed,
                           rlwe::SingleThreadPrng::GenerateSeed());
     RLWE_ASSIGN_OR_RETURN(auto prng, rlwe::SingleThreadPrng::Create(prng_seed));
-    return Key::Sample(
-        rlwe::testing::kLogCoeffs, rlwe::testing::kDefaultVariance,
-        rlwe::testing::kDefaultLogT, params14_.get(), &ntt_params_, prng.get());
+    return Key::Sample(context->GetLogN(), context->GetVariance(),
+                       context->GetLogT(), context->GetModulusParams(),
+                       context->GetNttParams(), prng.get());
   }
 
-  rlwe::StatusOr<std::vector<Polynomial>> ConvertPlaintextsToNtt(
-      const std::vector<std::vector<uint_m::Int>>& coeffs) {
-    std::vector<Polynomial> ntt_plaintexts;
+  rlwe::StatusOr<std::vector<Polynomial<ModularInt>>> ConvertPlaintextsToNtt(
+      const std::vector<std::vector<typename ModularInt::Int>>& coeffs,
+      const rlwe::RlweContext<ModularInt>* context) {
+    std::vector<Polynomial<ModularInt>> ntt_plaintexts;
     for (int i = 0; i < coeffs.size(); ++i) {
       RLWE_ASSIGN_OR_RETURN(auto mont,
-                            rlwe::testing::ConvertToMontgomery<uint_m>(
-                                coeffs[i], params14_.get()));
-      ntt_plaintexts.push_back(
-          Polynomial::ConvertToNtt(mont, ntt_params_, params14_.get()));
+                            rlwe::testing::ConvertToMontgomery<ModularInt>(
+                                coeffs[i], context->GetModulusParams()));
+      ntt_plaintexts.push_back(Polynomial<ModularInt>::ConvertToNtt(
+          mont, context->GetNttParams(), context->GetModulusParams()));
     }
     return ntt_plaintexts;
   }
 
   void TestCompressedEncryptionDecryption(
-      const std::vector<std::vector<uint_m::Int>>& plaintexts) {
-    ASSERT_OK_AND_ASSIGN(auto key, SampleKey());
+      const std::vector<std::vector<typename ModularInt::Int>>& plaintexts,
+      const rlwe::RlweContext<ModularInt>* context) {
+    ASSERT_OK_AND_ASSIGN(auto key, SampleKey(context));
     ASSERT_OK_AND_ASSIGN(std::string prng_seed,
                          SingleThreadPrng::GenerateSeed());
     ASSERT_OK_AND_ASSIGN(auto prng, SingleThreadPrng::Create(prng_seed));
@@ -88,54 +76,67 @@ class SymmetricEncryptionWithPrngTest : public ::testing::Test {
                          SingleThreadPrng::GenerateSeed());
     ASSERT_OK_AND_ASSIGN(auto prng_encryption,
                          SingleThreadPrng::Create(prng_encryption_seed));
-    ASSERT_OK_AND_ASSIGN(std::vector<Polynomial> ntt_plaintexts,
-                         ConvertPlaintextsToNtt(plaintexts));
+    ASSERT_OK_AND_ASSIGN(std::vector<Polynomial<ModularInt>> ntt_plaintexts,
+                         ConvertPlaintextsToNtt(plaintexts, context));
     ASSERT_OK_AND_ASSIGN(
         auto compressed_ciphertexts,
-        EncryptWithPrng<uint_m>(key, ntt_plaintexts, prng.get(),
-                                prng_encryption.get()));
+        EncryptWithPrng<ModularInt>(key, ntt_plaintexts, prng.get(),
+                                    prng_encryption.get()));
     EXPECT_EQ(plaintexts.size(), compressed_ciphertexts.size());
     ASSERT_OK_AND_ASSIGN(auto another_prng,
                          SingleThreadPrng::Create(prng_seed));
-    ASSERT_OK_AND_ASSIGN(
-        auto ciphertexts,
-        ExpandFromPrng<uint_m>(compressed_ciphertexts, key.ModulusParams(),
-                               key.NttParams(), error_params_.get(),
-                               another_prng.get()));
+    ASSERT_OK_AND_ASSIGN(auto ciphertexts,
+                         ExpandFromPrng<ModularInt>(compressed_ciphertexts,
+                                                    context->GetModulusParams(),
+                                                    context->GetNttParams(),
+                                                    context->GetErrorParams(),
+                                                    another_prng.get()));
     EXPECT_EQ(plaintexts.size(), ciphertexts.size());
     for (int i = 0; i < ciphertexts.size(); ++i) {
       // Expect that the error of an expanded ciphertext is of a fresh
       // encryption.
-      EXPECT_EQ(ciphertexts[i].Error(), error_params_->B_encryption());
+      EXPECT_EQ(ciphertexts[i].Error(),
+                context->GetErrorParams()->B_encryption());
       ASSERT_OK_AND_ASSIGN(auto decrypted,
-                           Decrypt<uint_m>(key, ciphertexts[i]));
+                           Decrypt<ModularInt>(key, ciphertexts[i]));
       EXPECT_EQ(plaintexts[i], decrypted);
     }
   }
-
-  std::unique_ptr<uint_m::Params> params14_;
-  NttParameters<uint_m> ntt_params_;
-  std::unique_ptr<ErrorParams<uint_m>> error_params_;
 };
+TYPED_TEST_SUITE(SymmetricEncryptionWithPrngTest,
+                 rlwe::testing::ModularIntTypes);
 
 // Ensure that the encryption scheme can encrypt and decrypt a single compressed
 // ciphertext.
-TEST_F(SymmetricEncryptionWithPrngTest, EncryptDecryptSingleCompressed) {
-  for (unsigned int i = 0; i < kTestingRounds; ++i) {
-    TestCompressedEncryptionDecryption(
-        {rlwe::testing::SamplePlaintext<uint_m>()});
+TYPED_TEST(SymmetricEncryptionWithPrngTest, EncryptDecryptSingleCompressed) {
+  for (const auto& params :
+       rlwe::testing::ContextParameters<TypeParam>::value) {
+    ASSERT_OK_AND_ASSIGN(auto context,
+                         rlwe::RlweContext<TypeParam>::Create(params));
+    for (unsigned int i = 0; i < kTestingRounds; ++i) {
+      this->TestCompressedEncryptionDecryption(
+          {rlwe::testing::SamplePlaintext<TypeParam>(context->GetN(),
+                                                     context->GetT())},
+          context.get());
+    }
   }
 }
 
 // Ensure that the encryption scheme can encrypt and decrypt multiple compressed
 // ciphertexts.
-TEST_F(SymmetricEncryptionWithPrngTest, EncryptDecryptMultipleCompressed) {
-  for (unsigned int i = 0; i < kTestingRounds; ++i) {
-    std::vector<std::vector<uint_m::Int>> plaintexts;
-    for (int j = 0; j < i + 2; ++j) {
-      plaintexts.push_back(rlwe::testing::SamplePlaintext<uint_m>());
+TYPED_TEST(SymmetricEncryptionWithPrngTest, EncryptDecryptMultipleCompressed) {
+  for (const auto& params :
+       rlwe::testing::ContextParameters<TypeParam>::value) {
+    ASSERT_OK_AND_ASSIGN(auto context,
+                         rlwe::RlweContext<TypeParam>::Create(params));
+    for (unsigned int i = 0; i < kTestingRounds; ++i) {
+      std::vector<std::vector<typename TypeParam::Int>> plaintexts;
+      for (int j = 0; j < i + 2; ++j) {
+        plaintexts.push_back(rlwe::testing::SamplePlaintext<TypeParam>(
+            context->GetN(), context->GetT()));
+      }
+      this->TestCompressedEncryptionDecryption(plaintexts, context.get());
     }
-    TestCompressedEncryptionDecryption(plaintexts);
   }
 }
 

@@ -92,7 +92,7 @@ rlwe::StatusOr<std::vector<Polynomial<ModularInt>>> EncryptWithPrng(
 template <typename ModularInt>
 rlwe::StatusOr<std::vector<SymmetricRlweCiphertext<ModularInt>>> ExpandFromPrng(
     std::vector<Polynomial<ModularInt>> c0,
-    typename ModularInt::Params* modulus_params,
+    const typename ModularInt::Params* modulus_params,
     const NttParameters<ModularInt>* ntt_params,
     const ErrorParams<ModularInt>* error_params, SecurePrng* prng) {
   std::vector<SymmetricRlweCiphertext<ModularInt>> ciphertexts;

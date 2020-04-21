@@ -18,8 +18,6 @@
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "content/public/common/page_state.h"
-#include "content/public/renderer/render_view_observer.h"
-#include "content/public/renderer/render_view_observer_tracker.h"
 #include "content/shell/common/web_test/blink_test.mojom.h"
 #include "content/shell/common/web_test/web_test.mojom.h"
 #include "content/shell/common/web_test/web_test_bluetooth_fake_adapter_setter.mojom.h"
@@ -48,19 +46,17 @@ struct WebSize;
 
 namespace content {
 class AppBannerService;
+class WebViewTestProxy;
 struct TestPreferences;
 
-// This is the renderer side of the webkit test runner.
-// TODO(lukasza): Rename to WebTestRenderViewObserver for consistency with
-// WebTestRenderFrameObserver.
-// TODO(danakj): Remove RenderViewObserver, but we use the fact it's a
-// RenderViewObserver to access a keyed global map of RenderViews to
-// BlinkTestRunners.
-class BlinkTestRunner : public RenderViewObserver,
-                        public RenderViewObserverTracker<BlinkTestRunner> {
+// An instance of this class is attached to each RenderView in each renderer
+// process during a web test. It handles IPCs (forwarded from
+// WebTestRenderFrameObserver) from the browser to manage the web test state
+// machine.
+class BlinkTestRunner {
  public:
-  explicit BlinkTestRunner(RenderView* render_view);
-  ~BlinkTestRunner() override;
+  explicit BlinkTestRunner(WebViewTestProxy* web_view_test_proxy);
+  ~BlinkTestRunner();
 
   // Add a message to stderr (not saved to expected output files, for debugging
   // only).
@@ -247,9 +243,6 @@ class BlinkTestRunner : public RenderViewObserver,
       const std::vector<std::string>& events);
 
  private:
-  // RenderViewObserver implementation.
-  void OnDestruct() override;
-
   // Helper reused by OnSetTestConfiguration and OnReplicateTestConfiguration.
   void ApplyTestConfiguration(mojom::ShellTestConfigurationPtr params);
 
@@ -274,6 +267,8 @@ class BlinkTestRunner : public RenderViewObserver,
   void HandleWebTestClientDisconnected();
   mojo::AssociatedRemote<mojom::WebTestClient>& GetWebTestClientRemote();
   mojo::AssociatedRemote<mojom::WebTestClient> web_test_client_remote_;
+
+  WebViewTestProxy* const web_view_test_proxy_;
 
   TestPreferences prefs_;
 

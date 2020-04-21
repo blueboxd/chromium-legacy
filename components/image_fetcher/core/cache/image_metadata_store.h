@@ -48,9 +48,9 @@ class ImageMetadataStore {
   // Returns all the keys this store has.
   virtual void GetAllKeys(KeysCallback callback) = 0;
 
-  // Returns the total size of what's in metadata for a given cache strategy,
+  // Returns the total size of what's in metadata for a given cache option,
   // possibly incorrect.
-  virtual int64_t GetEstimatedSize(CacheStrategy cache_strategy) = 0;
+  virtual int64_t GetEstimatedSize(CacheOption cache_option) = 0;
 
   // Deletes all metadata that's been cached before the boundary given as
   // |expiration_time|.

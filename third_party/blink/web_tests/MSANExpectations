@@ -404,3 +404,6 @@ crbug.com/1047818 [ Linux ] external/wpt/permissions-revoke/idlharness.any.worke
 
 # Sheriff 2020-03-31
 crbug.com/1066647 [ Linux ] http/tests/devtools/sources/debugger-breakpoints/breakpoint-with-sourcemap-dart.js [ Timeout ]
+
+# Sheriff 2020-04-21
+crbug.com/1073062 [ Linux ] external/wpt/page-lifecycle/idlharness.html [ Timeout ]

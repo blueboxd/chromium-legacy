@@ -35,6 +35,26 @@ class GerritCLTest(unittest.TestCase):
         self.assertEqual(gerrit_cl.url,
                          'https://chromium-review.googlesource.com/638250')
 
+    def test_current_revision_description(self):
+        data = {
+            'change_id': 'Ib58c7125d85d2fd71af711ea8bbd2dc927ed02cb',
+            'subject': 'fake subject',
+            '_number': 638250,
+            'current_revision': '1',
+            'revisions': {
+                '1': {}
+            },
+            'owner': {
+                'email': 'test@chromium.org'
+            },
+        }
+        gerrit_cl = GerritCL(data, MockGerritAPI())
+        self.assertEqual(gerrit_cl.current_revision_description, '')
+
+        data['revisions']['1']['description'] = 'patchset 1'
+        gerrit_cl = GerritCL(data, MockGerritAPI())
+        self.assertEqual(gerrit_cl.current_revision_description, 'patchset 1')
+
     def test_fetch_current_revision_commit(self):
         host = MockHost()
         host.executive = mock_git_commands(

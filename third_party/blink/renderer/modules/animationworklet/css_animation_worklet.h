@@ -14,8 +14,6 @@
 
 namespace blink {
 
-class Document;
-
 class MODULES_EXPORT CSSAnimationWorklet final
     : public GarbageCollected<CSSAnimationWorklet>,
       public Supplement<LocalDOMWindow>,
@@ -27,7 +25,7 @@ class MODULES_EXPORT CSSAnimationWorklet final
 
   static AnimationWorklet* animationWorklet(ScriptState*);
 
-  explicit CSSAnimationWorklet(Document*);
+  explicit CSSAnimationWorklet(LocalDOMWindow&);
 
   void ContextDestroyed() override;
 

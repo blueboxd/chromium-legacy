@@ -120,7 +120,7 @@ TEST_F(ExtensionInstallerTest, Install_InvalidUnpackedDir) {
   scoped_refptr<ExtensionInstaller> installer =
       base::MakeRefCounted<ExtensionInstaller>(
           kExtensionId, root_dir.GetPath(), true /*install_immediately*/,
-          base::BindOnce(
+          base::BindRepeating(
               [](const std::string& extension_id, const std::string& public_key,
                  const base::FilePath& unpacked_dir, bool install_immediately,
                  UpdateClientCallback update_client_callback) {
@@ -152,11 +152,11 @@ TEST_F(ExtensionInstallerTest, Install_BasicInstallOperation_Error) {
   scoped_refptr<ExtensionInstaller> installer =
       base::MakeRefCounted<ExtensionInstaller>(
           kExtensionId, root_dir.GetPath(), false /*install_immediately*/,
-          base::BindOnce([](const std::string& extension_id,
-                            const std::string& public_key,
-                            const base::FilePath& unpacked_dir,
-                            bool install_immediately,
-                            UpdateClientCallback update_client_callback) {
+          base::BindRepeating([](const std::string& extension_id,
+                                 const std::string& public_key,
+                                 const base::FilePath& unpacked_dir,
+                                 bool install_immediately,
+                                 UpdateClientCallback update_client_callback) {
             EXPECT_FALSE(install_immediately);
             std::move(update_client_callback)
                 .Run(Result(InstallError::GENERIC_ERROR));
@@ -184,11 +184,11 @@ TEST_F(ExtensionInstallerTest, Install_BasicInstallOperation_Success) {
   scoped_refptr<ExtensionInstaller> installer =
       base::MakeRefCounted<ExtensionInstaller>(
           kExtensionId, root_dir.GetPath(), true /*install_immediately*/,
-          base::BindOnce([](const std::string& extension_id,
-                            const std::string& public_key,
-                            const base::FilePath& unpacked_dir,
-                            bool install_immediately,
-                            UpdateClientCallback update_client_callback) {
+          base::BindRepeating([](const std::string& extension_id,
+                                 const std::string& public_key,
+                                 const base::FilePath& unpacked_dir,
+                                 bool install_immediately,
+                                 UpdateClientCallback update_client_callback) {
             EXPECT_TRUE(install_immediately);
             std::move(update_client_callback).Run(Result(InstallError::NONE));
           }));

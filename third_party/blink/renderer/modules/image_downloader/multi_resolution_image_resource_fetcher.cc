@@ -17,6 +17,7 @@
 #include "third_party/blink/public/web/web_associated_url_loader_options.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/loader/web_associated_url_loader_impl.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -213,7 +214,7 @@ void MultiResolutionImageResourceFetcher::Start(
 
   client_ = std::make_unique<ClientImpl>(std::move(callback));
 
-  loader_ = std::make_unique<WebAssociatedURLLoaderImpl>(frame->GetDocument(),
+  loader_ = std::make_unique<WebAssociatedURLLoaderImpl>(frame->DomWindow(),
                                                          options_);
   loader_->LoadAsynchronously(request_, client_.get());
 

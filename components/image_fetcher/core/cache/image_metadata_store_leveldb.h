@@ -64,7 +64,7 @@ class ImageMetadataStoreLevelDB : public ImageMetadataStore {
   // which means it hasn't been calculated yet, or it's an over-estimate. In
   // the case of an over estimate, it will be recified if you call into an
   // eviction routine.
-  int64_t GetEstimatedSize(CacheStrategy cache_strategy) override;
+  int64_t GetEstimatedSize(CacheOption cache_option) override;
   void EvictImageMetadata(base::Time expiration_time,
                           const size_t bytes_left,
                           KeysCallback callback) override;
@@ -89,7 +89,7 @@ class ImageMetadataStoreLevelDB : public ImageMetadataStore {
       KeysCallback callback,
       bool success,
       std::unique_ptr<std::vector<CachedImageMetadataProto>> entries);
-  void GetMetadataToRemove(CacheStrategy cache_strategy,
+  void GetMetadataToRemove(CacheOption cache_option,
                            std::vector<const CachedImageMetadataProto*> entries,
                            base::Time expiration_time,
                            const size_t bytes_left,
@@ -98,7 +98,7 @@ class ImageMetadataStoreLevelDB : public ImageMetadataStore {
                                 std::vector<std::string> deleted_keys,
                                 bool success);
 
-  std::map<CacheStrategy, int64_t> estimated_size_;
+  std::map<CacheOption, int64_t> estimated_size_;
   InitializationStatus initialization_status_;
   std::unique_ptr<leveldb_proto::ProtoDatabase<CachedImageMetadataProto>>
       database_;

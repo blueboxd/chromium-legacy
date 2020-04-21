@@ -37,7 +37,7 @@ void TLSClientSocket::Connect(
   send_ssl_info_ = send_ssl_info;
   socket_ = socket_factory->CreateSSLClientSocket(
       ssl_client_context, std::move(tcp_socket), host_port_pair, ssl_config);
-  int result = socket_->Connect(base::BindRepeating(
+  int result = socket_->Connect(base::BindOnce(
       &TLSClientSocket::OnTLSConnectCompleted, base::Unretained(this)));
   if (result != net::ERR_IO_PENDING)
     OnTLSConnectCompleted(result);

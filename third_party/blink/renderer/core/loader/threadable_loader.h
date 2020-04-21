@@ -52,8 +52,8 @@
 namespace blink {
 
 class ExecutionContext;
-class Document;
 class KURL;
+class LocalFrame;
 class ResourceRequest;
 class SecurityOrigin;
 class ThreadableLoaderClient;
@@ -203,9 +203,9 @@ class CORE_EXPORT ThreadableLoader final
 
   const SecurityOrigin* GetSecurityOrigin() const;
 
-  // Returns null if the loader is not associated with Document.
-  // TODO(kinuko): Remove dependency to document.
-  Document* GetDocument() const;
+  // Returns null if the loader is not associated with a frame.
+  // TODO(kinuko): Remove dependency to frame.
+  LocalFrame* GetFrame() const;
 
   Member<ThreadableLoaderClient> client_;
   Member<ExecutionContext> execution_context_;

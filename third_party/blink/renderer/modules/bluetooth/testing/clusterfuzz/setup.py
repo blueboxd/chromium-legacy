@@ -47,17 +47,17 @@ def RetrieveResources():
     current_path = _GetCurrentPath()
     resources_path = os.path.join(current_path, 'resources')
     if not os.path.exists(resources_path):
-        print '\'resources\' folder doesn\'t exist. Creating one...'
+        print('\'resources\' folder doesn\'t exist. Creating one...')
         os.makedirs(resources_path)
     else:
-        print '\'resources\' folder already exists. Clearing it...'
+        print('\'resources\' folder already exists. Clearing it...')
         filelist = glob.glob(os.path.join(resources_path, '*'))
         for f in filelist:
             os.remove(f)
 
     # Copy necessary files.
     for r in RESOURCES:
-        print 'Copying: ' + os.path.abspath(os.path.join(current_path, r))
+        print('Copying: ' + os.path.abspath(os.path.join(current_path, r)))
         shutil.copy(os.path.join(current_path, r), resources_path)
 
     return resources_path
@@ -85,14 +85,14 @@ def main():
     args = parser.parse_args()
 
     if not (args.cluster_fuzz or args.local):
-        print 'No action requested.'
+        print('No action requested.')
         return
 
     RetrieveResources()
 
     # To run locally we only need to copy the files.
     if args.local:
-        print 'Ready to run locally!'
+        print('Ready to run locally!')
 
     # To run on ClusterFuzz we create a tar.bz2 file.
     if args.cluster_fuzz:
@@ -110,7 +110,7 @@ def main():
             format='bztar',
             root_dir=os.path.join(current_path, os.pardir),
             base_dir='clusterfuzz')
-        print 'File wrote to: ' + compressed_file_path + '.tar.bz2'
+        print('File written to: ' + compressed_file_path + '.tar.bz2')
 
 
 if __name__ == '__main__':

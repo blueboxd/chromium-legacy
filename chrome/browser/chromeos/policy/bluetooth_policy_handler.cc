@@ -34,7 +34,7 @@ void BluetoothPolicyHandler::OnBluetoothPolicyChanged() {
   if (status != chromeos::CrosSettingsProvider::TRUSTED)
     return;
 
-  device::BluetoothAdapterFactory::GetAdapter(base::BindOnce(
+  device::BluetoothAdapterFactory::Get()->GetAdapter(base::BindOnce(
       &BluetoothPolicyHandler::SetBluetoothPolicy, weak_factory_.GetWeakPtr()));
 }
 

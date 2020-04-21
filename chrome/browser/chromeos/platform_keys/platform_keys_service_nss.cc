@@ -7,10 +7,12 @@
 #include <cert.h>
 #include <cryptohi.h>
 #include <keyhi.h>
+#include <pk11pub.h>
 #include <secder.h>
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -377,6 +379,34 @@ class GetCertificatesState : public NSSOperationState {
   GetCertificatesCallback callback_;
 };
 
+class GetAllKeysState : public NSSOperationState {
+ public:
+  explicit GetAllKeysState(ServiceWeakPtr weak_ptr,
+                           GetAllKeysCallback callback);
+  ~GetAllKeysState() override = default;
+
+  void OnError(const base::Location& from,
+               const std::string& error_message) override {
+    CallBack(from, std::vector<std::string>() /* no public keys */,
+             error_message);
+  }
+
+  void CallBack(const base::Location& from,
+                std::vector<std::string> public_key_spki_der_list,
+                const std::string& error_message) {
+    auto bound_callback =
+        base::BindOnce(std::move(callback_),
+                       std::move(public_key_spki_der_list), error_message);
+    origin_task_runner_->PostTask(
+        from, base::BindOnce(&NSSOperationState::RunCallback,
+                             std::move(bound_callback), service_weak_ptr_));
+  }
+
+ private:
+  // Must be called on origin thread, therefore use CallBack().
+  GetAllKeysCallback callback_;
+};
+
 class ImportCertificateState : public NSSOperationState {
  public:
   ImportCertificateState(ServiceWeakPtr weak_ptr,
@@ -531,6 +561,10 @@ GetCertificatesState::GetCertificatesState(
     ServiceWeakPtr weak_ptr,
     const GetCertificatesCallback& callback)
     : NSSOperationState(weak_ptr), callback_(callback) {}
+
+GetAllKeysState::GetAllKeysState(ServiceWeakPtr weak_ptr,
+                                 GetAllKeysCallback callback)
+    : NSSOperationState(weak_ptr), callback_(std::move(callback)) {}
 
 ImportCertificateState::ImportCertificateState(
     ServiceWeakPtr weak_ptr,
@@ -891,6 +925,57 @@ void GetCertificatesWithDB(std::unique_ptr<GetCertificatesState> state,
       base::BindOnce(&DidGetCertificates, std::move(state)), slot);
 }
 
+// Does the actual retrieval of the SubjectPublicKeyInfo string on a worker
+// thread. Used by GetAllKeysWithDb().
+void GetAllKeysOnWorkerThread(std::unique_ptr<GetAllKeysState> state) {
+  DCHECK(state->slot_.get());
+
+  std::vector<std::string> public_key_spki_der_list;
+
+  // This assumes that all public keys on the slots are actually key pairs with
+  // private + public keys, so it's sufficient to get the public keys (and also
+  // not necessary to check that a private key for that public key really
+  // exists).
+  SECKEYPublicKeyList* public_keys =
+      PK11_ListPublicKeysInSlot(state->slot_.get(), /*nickname=*/nullptr);
+
+  if (!public_keys) {
+    state->CallBack(FROM_HERE, std::move(public_key_spki_der_list),
+                    std::string() /* no error */);
+    return;
+  }
+
+  for (SECKEYPublicKeyListNode* node = PUBKEY_LIST_HEAD(public_keys);
+       !PUBKEY_LIST_END(node, public_keys); node = PUBKEY_LIST_NEXT(node)) {
+    crypto::ScopedSECItem subject_public_key_info(
+        SECKEY_EncodeDERSubjectPublicKeyInfo(node->key));
+    if (!subject_public_key_info) {
+      LOG(WARNING) << "Could not encode subject public key info.";
+      continue;
+    }
+    public_key_spki_der_list.push_back(std::string(
+        subject_public_key_info->data,
+        subject_public_key_info->data + subject_public_key_info->len));
+  }
+
+  SECKEY_DestroyPublicKeyList(public_keys);
+  state->CallBack(FROM_HERE, std::move(public_key_spki_der_list),
+                  std::string() /* no error */);
+}
+
+// Continues the retrieval of the SubjectPublicKeyInfo list with |cert_db|.
+// Used by GetAllKeys().
+void GetAllKeysWithDb(std::unique_ptr<GetAllKeysState> state,
+                      net::NSSCertDatabase* cert_db) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  base::ThreadPool::PostTask(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      base::BindOnce(&GetAllKeysOnWorkerThread, std::move(state)));
+}
+
 // Does the actual certificate importing on the IO thread. Used by
 // ImportCertificate().
 void ImportCertificateWithDB(std::unique_ptr<ImportCertificateState> state,
@@ -1235,6 +1320,19 @@ void PlatformKeysServiceImpl::GetCertificates(
   NSSOperationState* state_ptr = state.get();
   GetCertDatabase(token_id,
                   base::Bind(&GetCertificatesWithDB, base::Passed(&state)),
+                  browser_context_, state_ptr);
+}
+
+void PlatformKeysServiceImpl::GetAllKeys(const std::string& token_id,
+                                         GetAllKeysCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  auto state = std::make_unique<GetAllKeysState>(weak_factory_.GetWeakPtr(),
+                                                 std::move(callback));
+
+  NSSOperationState* state_ptr = state.get();
+  GetCertDatabase(token_id,
+                  base::BindRepeating(&GetAllKeysWithDb, base::Passed(&state)),
                   browser_context_, state_ptr);
 }
 

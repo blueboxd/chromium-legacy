@@ -155,7 +155,7 @@ PeripheralBatteryNotifier::PeripheralBatteryNotifier()
       weakptr_factory_(
           new base::WeakPtrFactory<PeripheralBatteryNotifier>(this)) {
   chromeos::PowerManagerClient::Get()->AddObserver(this);
-  device::BluetoothAdapterFactory::GetAdapter(
+  device::BluetoothAdapterFactory::Get()->GetAdapter(
       base::BindOnce(&PeripheralBatteryNotifier::InitializeOnBluetoothReady,
                      weakptr_factory_->GetWeakPtr()));
 }

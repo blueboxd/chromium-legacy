@@ -744,8 +744,7 @@ void AutocompleteMatch::GetMatchComponents(
 
   size_t domain_length =
       net::registry_controlled_domains::GetDomainAndRegistry(
-          url.host_piece(),
-          net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES)
+          url, net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES)
           .size();
   const url::Parsed& parsed = url.parsed_for_possibly_invalid_spec();
 

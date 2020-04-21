@@ -28,7 +28,7 @@ NavigableContentsImpl::NavigableContentsImpl(
           service_->delegate()->CreateNavigableContentsDelegate(*params,
                                                                 client_.get())),
       native_content_view_(delegate_->GetNativeView()) {
-  receiver_.set_disconnect_handler(base::BindRepeating(
+  receiver_.set_disconnect_handler(base::BindOnce(
       &Service::RemoveNavigableContents, base::Unretained(service_), this));
 }
 

@@ -35,12 +35,11 @@ Modulator* Modulator::From(ScriptState* script_state) {
   if (modulator)
     return modulator;
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
-  if (auto* document = Document::DynamicFrom(execution_context)) {
+  if (auto* window = DynamicTo<LocalDOMWindow>(execution_context)) {
     modulator = MakeGarbageCollected<DocumentModulatorImpl>(script_state);
     Modulator::SetModulator(script_state, modulator);
 
     // See comment in LocalDOMWindow::modulator_ for this workaround.
-    LocalDOMWindow* window = document->ExecutingWindow();
     window->SetModulator(modulator);
   } else if (auto* worklet_scope =
                  DynamicTo<WorkletGlobalScope>(execution_context)) {

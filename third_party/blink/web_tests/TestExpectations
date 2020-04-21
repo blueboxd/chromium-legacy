@@ -3231,7 +3231,7 @@ crbug.com/626703 [ Win ] wpt_internal/webxr/events_deviceconnect.https.html [ Ti
 crbug.com/626703 [ Linux ] wpt_internal/webxr/render_state_vertical_fov_inline.https.html [ Timeout ]
 crbug.com/626703 [ Mac ] wpt_internal/webxr/render_state_vertical_fov_inline.https.html [ Timeout ]
 crbug.com/626703 [ Win ] wpt_internal/webxr/render_state_vertical_fov_inline.https.html [ Timeout ]
-crbug.com/626703 [ Linux ] external/wpt/webxr/xrSession_viewer_availability.https.html [ Timeout ]
+crbug.com/1073060 [ Linux ] external/wpt/webxr/xrSession_viewer_availability.https.html [ Timeout Crash ]
 crbug.com/626703 [ Mac ] external/wpt/webxr/xrSession_viewer_availability.https.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/webxr/xrSession_viewer_availability.https.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/webxr/xrWebGLLayer_opaque_framebuffer.https.html [ Timeout ]
@@ -3251,7 +3251,6 @@ crbug.com/626703 [ Win ] external/wpt/webxr/xrWebGLLayer_opaque_framebuffer_sten
 crbug.com/626703 [ Linux ] external/wpt/uievents/order-of-events/focus-events/focus-management-expectations.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/uievents/order-of-events/focus-events/focus-management-expectations.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/uievents/order-of-events/focus-events/focus-management-expectations.html [ Timeout ]
-crbug.com/626703 [ Linux ] external/wpt/webxr/webxr_feature_policy.https.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/webxr/webxr_feature_policy.https.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/webxr/webxr_feature_policy.https.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/webrtc/RTCPeerConnection-perfect-negotiation.https.html [ Failure Timeout ]
@@ -3360,21 +3359,9 @@ crbug.com/626703 [ Mac10.10 ] external/wpt/css/css-layout-api/auto-block-size/in
 crbug.com/626703 [ Mac10.11 ] external/wpt/css/css-layout-api/auto-block-size/inflow.https.html [ Failure ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/css/css-layout-api/edges/scrollbar.https.html [ Failure ]
 crbug.com/626703 [ Mac10.11 ] external/wpt/css/css-layout-api/edges/scrollbar.https.html [ Failure ]
-crbug.com/626703 [ Linux ] virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/client-navigate.https.html [ Timeout ]
-crbug.com/626703 [ Mac ] virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/client-navigate.https.html [ Timeout ]
-crbug.com/626703 [ Win ] virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/client-navigate.https.html [ Timeout ]
 crbug.com/626703 [ Linux ] virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/windowclient-navigate.https.html [ Timeout ]
 crbug.com/626703 [ Mac ] virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/windowclient-navigate.https.html [ Timeout ]
 crbug.com/626703 [ Win ] virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/windowclient-navigate.https.html [ Timeout ]
-crbug.com/626703 [ Linux ] virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/client-navigate.https.html [ Timeout ]
-crbug.com/626703 [ Mac ] virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/client-navigate.https.html [ Timeout ]
-crbug.com/626703 [ Win ] virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/client-navigate.https.html [ Timeout ]
-crbug.com/626703 [ Linux ] virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/client-navigate.https.html [ Timeout ]
-crbug.com/626703 [ Mac ] virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/client-navigate.https.html [ Timeout ]
-crbug.com/626703 [ Win ] virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/client-navigate.https.html [ Timeout ]
-crbug.com/626703 [ Linux ] external/wpt/service-workers/service-worker/client-navigate.https.html [ Timeout ]
-crbug.com/626703 [ Mac ] external/wpt/service-workers/service-worker/client-navigate.https.html [ Timeout ]
-crbug.com/626703 [ Win ] external/wpt/service-workers/service-worker/client-navigate.https.html [ Timeout ]
 crbug.com/626703 [ Linux ] virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/windowclient-navigate.https.html [ Timeout ]
 crbug.com/626703 [ Mac ] virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/windowclient-navigate.https.html [ Timeout ]
 crbug.com/626703 [ Win ] virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/windowclient-navigate.https.html [ Timeout ]
@@ -6645,6 +6632,9 @@ crbug.com/1025274 http/tests/security/mixedContent/insecure-audio-video-in-main-
 crbug.com/1042877 virtual/autoupgrade-optionally-blockable-mixed-content/http/tests/mixed-autoupgrade/optionally/image-upgrade-console-message.https.html [ Failure ]
 crbug.com/1042877 virtual/autoupgrade-optionally-blockable-mixed-content/http/tests/mixed-autoupgrade/optionally/image-upgrade.https.html [ Failure ]
 
+# temporary due to changes in DevTools
+crbug.com/1072952 http/tests/devtools/elements/styles-3/spectrum.js [ Skip ]
+
 # DevTools roll
 crbug.com/1006759 http/tests/devtools/profiler/agents-disabled-check.js [ Skip ]
 
@@ -6808,3 +6798,6 @@ crbug.com/1042694 virtual/form-controls-refresh-disabled/fast/forms/form-control
 
 # QUIC reordered versions to prefer IETF QUIC
 crbug.com/1070747 external/wpt/webrtc-quic/* [ Skip ]
+
+# Sheriff 2020-04-21
+crbug.com/1073133 [ Linux ] external/wpt/webxr/webxr_feature_policy.https.html [ Pass Failure Timeout Crash ]

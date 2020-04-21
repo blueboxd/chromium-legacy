@@ -27,6 +27,7 @@
 #include "content/shell/renderer/web_test/web_test_render_frame_observer.h"
 #include "content/shell/renderer/web_test/web_test_render_thread_observer.h"
 #include "content/shell/test_runner/web_frame_test_proxy.h"
+#include "content/shell/test_runner/web_view_test_proxy.h"
 #include "media/base/audio_latency.h"
 #include "media/base/mime_util.h"
 #include "media/media_buildflags.h"
@@ -94,7 +95,10 @@ void WebTestContentRendererClient::RenderFrameCreated(
     RenderFrame* render_frame) {
   // Intentionally doesn't call the base class, as we only use web test
   // observers.
-  new WebTestRenderFrameObserver(render_frame);
+
+  RenderView* render_view = render_frame->GetRenderView();
+  auto* view_proxy = static_cast<WebViewTestProxy*>(render_view);
+  new WebTestRenderFrameObserver(render_frame, view_proxy->blink_test_runner());
 }
 
 std::unique_ptr<content::WebSocketHandshakeThrottleProvider>

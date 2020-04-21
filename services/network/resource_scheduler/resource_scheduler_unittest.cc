@@ -102,7 +102,7 @@ class TestRequest {
         scheduled_request_(std::move(scheduled_request)),
         scheduler_(scheduler) {
     scheduled_request_->set_resume_callback(
-        base::BindRepeating(&TestRequest::Resume, base::Unretained(this)));
+        base::BindOnce(&TestRequest::Resume, base::Unretained(this)));
   }
   virtual ~TestRequest() {
     // The URLRequest must still be valid when the ScheduledResourceRequest is

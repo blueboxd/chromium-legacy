@@ -45,6 +45,7 @@
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
@@ -634,9 +635,7 @@ bool ThreadableLoader::RedirectReceived(
 
     probe::DidReceiveCorsRedirectResponse(
         execution_context_, resource->InspectorId(),
-        GetDocument() && GetDocument()->GetFrame()
-            ? GetDocument()->GetFrame()->Loader().GetDocumentLoader()
-            : nullptr,
+        GetFrame() ? GetFrame()->Loader().GetDocumentLoader() : nullptr,
         redirect_response_to_pass, resource);
 
     if (auto error_status = cors::CheckRedirectLocation(
@@ -778,7 +777,7 @@ void ThreadableLoader::HandlePreflightResponse(
 void ThreadableLoader::ReportResponseReceived(
     uint64_t identifier,
     const ResourceResponse& response) {
-  LocalFrame* frame = GetDocument() ? GetDocument()->GetFrame() : nullptr;
+  LocalFrame* frame = GetFrame();
   if (!frame)
     return;
   DocumentLoader* loader = frame->Loader().GetDocumentLoader();
@@ -1070,8 +1069,9 @@ const SecurityOrigin* ThreadableLoader::GetSecurityOrigin() const {
                                 .GetSecurityOrigin();
 }
 
-Document* ThreadableLoader::GetDocument() const {
-  return Document::DynamicFrom(execution_context_.Get());
+LocalFrame* ThreadableLoader::GetFrame() const {
+  auto* window = DynamicTo<LocalDOMWindow>(execution_context_.Get());
+  return window ? window->GetFrame() : nullptr;
 }
 
 void ThreadableLoader::Trace(Visitor* visitor) {

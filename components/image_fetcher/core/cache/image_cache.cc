@@ -224,7 +224,7 @@ void ImageCache::RunEvictionOnStartup() {
 
 void ImageCache::RunEvictionWhenFull() {
   // Storage is within limits, bail out.
-  if (metadata_store_->GetEstimatedSize(CacheStrategy::BEST_EFFORT) <
+  if (metadata_store_->GetEstimatedSize(CacheOption::kBestEffort) <
       kCacheMaxSize) {
     return;
   }

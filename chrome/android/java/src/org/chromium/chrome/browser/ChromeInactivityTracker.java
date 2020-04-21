@@ -22,18 +22,23 @@ public class ChromeInactivityTracker
     private static final long UNKNOWN_LAST_BACKGROUNDED_TIME = -1;
 
     private final String mPrefName;
-    private final ActivityLifecycleDispatcher mLifecycleDispatcher;
+    private ActivityLifecycleDispatcher mLifecycleDispatcher;
 
     /**
      * Creates an inactivity tracker without a timeout callback. This is useful if clients only
      * want to query the inactivity state manually.
      * @param prefName the location in shared preferences that the timestamp is stored.
+     */
+    public ChromeInactivityTracker(String prefName) {
+        mPrefName = prefName;
+    }
+
+    /**
+     * Registers to the given lifecycle dispatcher.
      * @param lifecycleDispatcher tracks the lifecycle of the Activity of interest, and calls
      *     observer methods on ChromeInactivityTracker.
      */
-    public ChromeInactivityTracker(
-            String prefName, ActivityLifecycleDispatcher lifecycleDispatcher) {
-        mPrefName = prefName;
+    public void register(ActivityLifecycleDispatcher lifecycleDispatcher) {
         mLifecycleDispatcher = lifecycleDispatcher;
         mLifecycleDispatcher.register(this);
     }

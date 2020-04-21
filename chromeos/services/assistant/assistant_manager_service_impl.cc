@@ -29,6 +29,7 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/util/version_loader.h"
+#include "chromeos/services/assistant/assistant_device_settings_delegate.h"
 #include "chromeos/services/assistant/assistant_manager_service_delegate.h"
 #include "chromeos/services/assistant/media_session/assistant_media_session.h"
 #include "chromeos/services/assistant/platform_api_impl.h"
@@ -45,7 +46,6 @@
 #include "libassistant/shared/public/media_manager.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/mojom/ax_assistant_structure.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -76,14 +76,7 @@ namespace {
 
 static bool is_first_init = true;
 
-constexpr char kWiFiDeviceSettingId[] = "WIFI";
-constexpr char kBluetoothDeviceSettingId[] = "BLUETOOTH";
-constexpr char kVolumeLevelDeviceSettingId[] = "VOLUME_LEVEL";
-constexpr char kScreenBrightnessDeviceSettingId[] = "BRIGHTNESS_LEVEL";
-constexpr char kDoNotDisturbDeviceSettingId[] = "DO_NOT_DISTURB";
-constexpr char kNightLightDeviceSettingId[] = "NIGHT_LIGHT_SWITCH";
 constexpr char kIntentActionView[] = "android.intent.action.VIEW";
-constexpr char kSwitchAccessDeviceSettingId[] = "SWITCH_ACCESS";
 
 constexpr base::Feature kChromeOSAssistantDogfood{
     "ChromeOSAssistantDogfood", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -98,8 +91,6 @@ constexpr char kPlayMediaClientOp[] = "media.PLAY_MEDIA";
 constexpr char kPrevTrackClientOp[] = "media.PREVIOUS";
 constexpr char kResumeTrackClientOp[] = "media.RESUME";
 constexpr char kStopTrackClientOp[] = "media.STOP";
-
-constexpr float kDefaultSliderStep = 0.1f;
 
 constexpr char kAndroidSettingsAppPackage[] = "com.android.settings";
 
@@ -177,6 +168,9 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
 
   platform_api_ = delegate_->CreatePlatformApi(
       media_session_.get(), background_thread_.task_runner());
+
+  settings_delegate_ =
+      std::make_unique<AssistantDeviceSettingsDelegate>(context);
 
   mojo::Remote<media_session::mojom::MediaControllerManager>
       media_controller_manager;
@@ -912,7 +906,7 @@ void AssistantManagerServiceImpl::OnMediaControlAction(
   }
 
   if (action_name == kStopTrackClientOp) {
-    media_controller_->Stop();
+    media_controller_->Suspend();
     return;
   }
   // TODO(llin): Handle media.SEEK_RELATIVE.
@@ -970,181 +964,20 @@ void AssistantManagerServiceImpl::OnSpeechLevelUpdated(
     it->OnSpeechLevelUpdated(speech_level);
 }
 
-void LogUnsupportedChange(api::client_op::ModifySettingArgs args) {
-  LOG(ERROR) << "Unsupported change operation: " << args.change()
-             << " for setting " << args.setting_id();
-}
-
-void HandleOnOffChange(api::client_op::ModifySettingArgs modify_setting_args,
-                       std::function<void(bool)> on_off_handler) {
-  switch (modify_setting_args.change()) {
-    case api::client_op::ModifySettingArgs_Change_ON:
-      on_off_handler(true);
-      return;
-    case api::client_op::ModifySettingArgs_Change_OFF:
-      on_off_handler(false);
-      return;
-
-    // Currently there are no use-cases for toggling.  This could change in the
-    // future.
-    case api::client_op::ModifySettingArgs_Change_TOGGLE:
-      break;
-
-    case api::client_op::ModifySettingArgs_Change_SET:
-    case api::client_op::ModifySettingArgs_Change_INCREASE:
-    case api::client_op::ModifySettingArgs_Change_DECREASE:
-    case api::client_op::ModifySettingArgs_Change_UNSPECIFIED:
-      // This shouldn't happen.
-      break;
-  }
-  LogUnsupportedChange(modify_setting_args);
-}
-
-// Helper function that converts a slider value sent from the server, either
-// absolute or a delta, from a given unit (e.g., STEP), to a percentage.
-double ConvertSliderValueToLevel(double value,
-                                 api::client_op::ModifySettingArgs_Unit unit,
-                                 double default_value) {
-  switch (unit) {
-    case api::client_op::ModifySettingArgs_Unit_RANGE:
-      // "set volume to 20%".
-      return value;
-    case api::client_op::ModifySettingArgs_Unit_STEP:
-      // "set volume to 20".  Treat the step as a percentage.
-      return value / 100.0f;
-
-    // Currently, factor (e.g., 'double the volume') and decibel units aren't
-    // handled by the backend.  This could change in the future.
-    case api::client_op::ModifySettingArgs_Unit_FACTOR:
-    case api::client_op::ModifySettingArgs_Unit_DECIBEL:
-      break;
-
-    case api::client_op::ModifySettingArgs_Unit_NATIVE:
-    case api::client_op::ModifySettingArgs_Unit_UNKNOWN_UNIT:
-      // This shouldn't happen.
-      break;
-  }
-  LOG(ERROR) << "Unsupported slider unit: " << unit;
-  return default_value;
-}
-
-void HandleSliderChange(api::client_op::ModifySettingArgs modify_setting_args,
-                        std::function<void(double)> set_value_handler,
-                        std::function<double()> get_value_handler) {
-  switch (modify_setting_args.change()) {
-    case api::client_op::ModifySettingArgs_Change_SET: {
-      // For unsupported units, set the value to the current value, for
-      // visual feedback.
-      double new_value = ConvertSliderValueToLevel(
-          modify_setting_args.numeric_value(), modify_setting_args.unit(),
-          get_value_handler());
-      set_value_handler(new_value);
-      return;
-    }
-
-    case api::client_op::ModifySettingArgs_Change_INCREASE:
-    case api::client_op::ModifySettingArgs_Change_DECREASE: {
-      double current_value = get_value_handler();
-      double step = kDefaultSliderStep;
-      if (modify_setting_args.numeric_value() != 0.0f) {
-        // For unsupported units, use the default step percentage.
-        step = ConvertSliderValueToLevel(modify_setting_args.numeric_value(),
-                                         modify_setting_args.unit(),
-                                         kDefaultSliderStep);
-      }
-      double new_value = (modify_setting_args.change() ==
-                          api::client_op::ModifySettingArgs_Change_INCREASE)
-                             ? std::min(current_value + step, 1.0)
-                             : std::max(current_value - step, 0.0);
-      set_value_handler(new_value);
-      return;
-    }
-
-    case api::client_op::ModifySettingArgs_Change_ON:
-    case api::client_op::ModifySettingArgs_Change_OFF:
-    case api::client_op::ModifySettingArgs_Change_TOGGLE:
-    case api::client_op::ModifySettingArgs_Change_UNSPECIFIED:
-      // This shouldn't happen.
-      break;
-  }
-  LogUnsupportedChange(modify_setting_args);
-}
-
 void AssistantManagerServiceImpl::OnModifyDeviceSetting(
     const api::client_op::ModifySettingArgs& modify_setting_args) {
   ENSURE_MAIN_THREAD(&AssistantManagerServiceImpl::OnModifyDeviceSetting,
                      modify_setting_args);
-  DCHECK(IsSettingSupported(modify_setting_args.setting_id()));
   receive_modify_settings_proto_response_ = true;
 
-  if (modify_setting_args.setting_id() == kWiFiDeviceSettingId) {
-    HandleOnOffChange(modify_setting_args, [&](bool enabled) {
-      this->device_actions()->SetWifiEnabled(enabled);
-    });
-  }
-
-  if (modify_setting_args.setting_id() == kBluetoothDeviceSettingId) {
-    HandleOnOffChange(modify_setting_args, [&](bool enabled) {
-      this->device_actions()->SetBluetoothEnabled(enabled);
-    });
-  }
-
-  if (modify_setting_args.setting_id() == kVolumeLevelDeviceSettingId) {
-    assistant_client::VolumeControl& volume_control =
-        this->platform_api_->GetAudioOutputProvider().GetVolumeControl();
-
-    HandleSliderChange(
-        modify_setting_args,
-        [&](double value) { volume_control.SetSystemVolume(value, true); },
-        [&]() { return volume_control.GetSystemVolume(); });
-  }
-
-  if (modify_setting_args.setting_id() == kScreenBrightnessDeviceSettingId) {
-    this->device_actions()->GetScreenBrightnessLevel(base::BindOnce(
-        [](base::WeakPtr<chromeos::assistant::AssistantManagerServiceImpl>
-               this_,
-           api::client_op::ModifySettingArgs modify_setting_args, bool success,
-           double current_value) {
-          if (!success || !this_) {
-            return;
-          }
-          HandleSliderChange(
-              modify_setting_args,
-              [&](double new_value) {
-                this_->device_actions()->SetScreenBrightnessLevel(new_value,
-                                                                  true);
-              },
-              [&]() { return current_value; });
-        },
-        weak_factory_.GetWeakPtr(), modify_setting_args));
-  }
-
-  if (modify_setting_args.setting_id() == kDoNotDisturbDeviceSettingId) {
-    HandleOnOffChange(modify_setting_args, [&](bool enabled) {
-      this->assistant_notification_controller()->SetQuietMode(enabled);
-    });
-  }
-
-  if (modify_setting_args.setting_id() == kNightLightDeviceSettingId) {
-    HandleOnOffChange(modify_setting_args, [&](bool enabled) {
-      this->device_actions()->SetNightLightEnabled(enabled);
-    });
-  }
-
-  if (modify_setting_args.setting_id() == kSwitchAccessDeviceSettingId) {
-    HandleOnOffChange(modify_setting_args, [&](bool enabled) {
-      this->device_actions()->SetSwitchAccessEnabled(enabled);
-    });
-  }
+  settings_delegate_->HandleModifyDeviceSetting(modify_setting_args);
 }
 
 void AssistantManagerServiceImpl::OnGetDeviceSettings(
     int interaction_id,
     const api::client_op::GetDeviceSettingsArgs& args) {
-  // Collect the required information.
-  std::vector<DeviceSetting> result;
-  for (const std::string& setting_id : args.setting_ids())
-    result.emplace_back(setting_id, IsSettingSupported(setting_id));
+  std::vector<DeviceSetting> result =
+      settings_delegate_->GetDeviceSettings(args);
 
   SendVoicelessInteraction(
       CreateGetDeviceSettingInteraction(interaction_id, result),
@@ -1156,18 +989,7 @@ bool AssistantManagerServiceImpl::IsSettingSupported(
     const std::string& setting_id) {
   DVLOG(2) << "IsSettingSupported=" << setting_id;
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kEnableExperimentalAccessibilitySwitchAccess) &&
-      setting_id == kSwitchAccessDeviceSettingId) {
-    return true;
-  }
-
-  return (setting_id == kWiFiDeviceSettingId ||
-          setting_id == kBluetoothDeviceSettingId ||
-          setting_id == kVolumeLevelDeviceSettingId ||
-          setting_id == kScreenBrightnessDeviceSettingId ||
-          setting_id == kDoNotDisturbDeviceSettingId ||
-          setting_id == kNightLightDeviceSettingId);
+  return settings_delegate_->IsSettingSupported(setting_id);
 }
 
 bool AssistantManagerServiceImpl::SupportsModifySettings() {

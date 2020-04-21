@@ -113,28 +113,30 @@ void ElementAnimations::Trace(Visitor* visitor) {
   visitor->Trace(worklet_animations_);
 }
 
-bool ElementAnimations::IsBaseComputedStyleUsable() const {
-  return !has_important_overrides_;
-}
-
 const ComputedStyle* ElementAnimations::BaseComputedStyle() const {
-  if (IsAnimationStyleChange() && IsBaseComputedStyleUsable())
+  if (IsAnimationStyleChange())
     return base_computed_style_.get();
   return nullptr;
 }
 
+const CSSBitset* ElementAnimations::BaseImportantSet() const {
+  if (IsAnimationStyleChange())
+    return base_important_set_.get();
+  return nullptr;
+}
+
 void ElementAnimations::UpdateBaseComputedStyle(
-    const ComputedStyle* computed_style) {
+    const ComputedStyle* computed_style,
+    std::unique_ptr<CSSBitset> base_important_set) {
   DCHECK(computed_style);
-  if (!IsAnimationStyleChange() || !IsBaseComputedStyleUsable()) {
-    base_computed_style_ = nullptr;
-    return;
-  }
+  DCHECK(IsAnimationStyleChange());
   base_computed_style_ = ComputedStyle::Clone(*computed_style);
+  base_important_set_ = std::move(base_important_set);
 }
 
 void ElementAnimations::ClearBaseComputedStyle() {
   base_computed_style_ = nullptr;
+  base_important_set_ = nullptr;
 }
 
 bool ElementAnimations::AnimationsPreserveAxisAlignment() const {

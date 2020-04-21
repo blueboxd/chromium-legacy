@@ -161,7 +161,7 @@ scoped_refptr<const NGLayoutResult> NGSimplifiedLayoutAlgorithm::Layout() {
 
     // Add the (potentially updated) layout result.
     scoped_refptr<const NGLayoutResult> result =
-        To<NGBlockNode>(child).SimplifiedLayout();
+        To<NGBlockNode>(child).SimplifiedLayout(**it);
 
     // The child may have failed "simplified" layout! (Due to adding/removing
     // scrollbars). In this case we also return a nullptr, indicating a full

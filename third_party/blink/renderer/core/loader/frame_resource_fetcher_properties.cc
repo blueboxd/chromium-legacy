@@ -8,6 +8,7 @@
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
@@ -43,7 +44,7 @@ FrameResourceFetcherProperties::FrameResourceFetcherProperties(
       document_(document),
       fetch_client_settings_object_(
           MakeGarbageCollected<FetchClientSettingsObjectImpl>(
-              *document.ToExecutionContext())),
+              *document.domWindow())),
       web_bundle_physical_url_(document_loader.WebBundlePhysicalUrl()) {}
 
 void FrameResourceFetcherProperties::Trace(Visitor* visitor) {

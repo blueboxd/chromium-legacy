@@ -864,7 +864,7 @@ void URLLoader::ScheduleStart() {
         resource_scheduler_client_->ScheduleRequest(
             !(options_ & mojom::kURLLoadOptionSynchronous), url_request_.get());
     resource_scheduler_request_handle_->set_resume_callback(
-        base::BindRepeating(&URLLoader::ResumeStart, base::Unretained(this)));
+        base::BindOnce(&URLLoader::ResumeStart, base::Unretained(this)));
     resource_scheduler_request_handle_->WillStartRequest(&defer);
   }
   if (defer)
@@ -1082,8 +1082,8 @@ void URLLoader::OnSSLCertificateError(net::URLRequest* request,
   network_context_client_->OnSSLCertificateError(
       factory_params_->process_id, render_frame_id_, url_request_->url(),
       net_error, ssl_info, fatal,
-      base::BindRepeating(&URLLoader::OnSSLCertificateErrorResponse,
-                          weak_ptr_factory_.GetWeakPtr(), ssl_info));
+      base::BindOnce(&URLLoader::OnSSLCertificateErrorResponse,
+                     weak_ptr_factory_.GetWeakPtr(), ssl_info));
 }
 
 void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {

@@ -57,9 +57,6 @@ class ExtensionKeybindingRegistryViews
   // accelerators with. Not owned by us.
   views::FocusManager* focus_manager_;
 
-  // The content notification registrar for listening to extension events.
-  content::NotificationRegistrar registrar_;
-
   DISALLOW_COPY_AND_ASSIGN(ExtensionKeybindingRegistryViews);
 };
 

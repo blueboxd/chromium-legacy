@@ -39,6 +39,9 @@ if (is_win || is_mac) {
       "crash_client.h",
       "crash_reporter.cc",
       "crash_reporter.h",
+      "external_constants.cc",
+      "external_constants.h",
+      "external_constants_impl.h",
       "patcher.cc",
       "patcher.h",
       "persisted_data.cc",
@@ -69,6 +72,15 @@ if (is_win || is_mac) {
       "//third_party/zlib/google:zip",
       "//url",
     ]
+
+    if (is_mac) {
+      sources += [ "external_constants_mac.mm" ]
+    }
+
+    if (is_win) {
+      sources += [ "external_constants_win.cc" ]
+      deps += [ "//chrome/updater/win:constants" ]
+    }
   }
 
   source_set("lib") {
@@ -186,6 +198,8 @@ if (is_win || is_mac) {
     testonly = true
 
     sources = [
+      "external_constants_unittest.cc",
+      "external_constants_unittest.h",
       "lib_util_unittest.cc",
       "persisted_data_unittest.cc",
       "policy_manager_unittest.cc",
@@ -208,15 +222,23 @@ if (is_win || is_mac) {
       "//base/test:test_support",
       "//chrome/common:constants",
       "//chrome/updater/test/test_app",
+      "//chrome/updater/tools:unittest",
       "//components/prefs:test_support",
       "//components/update_client",
       "//testing/gtest",
+      "//url",
     ]
 
     if (is_win) {
-      sources += [ "test/integration_tests_win.cc" ]
+      sources += [
+        "external_constants_win_unittest.cc",
+        "test/integration_tests_win.cc",
+      ]
 
-      deps += [ "//chrome/updater/win:updater_tests" ]
+      deps += [
+        "//chrome/updater/win:constants",
+        "//chrome/updater/win:updater_tests",
+      ]
 
       data_deps = [
         "//chrome/updater/win:updater",
@@ -225,7 +247,10 @@ if (is_win || is_mac) {
     }
 
     if (is_mac) {
-      sources += [ "test/integration_tests_mac.mm" ]
+      sources += [
+        "external_constants_mac_unittest.mm",
+        "test/integration_tests_mac.mm",
+      ]
 
       deps += [
         "//chrome/common/mac:launchd",
@@ -235,10 +260,6 @@ if (is_win || is_mac) {
       ]
 
       data_deps = [ "//chrome/updater/mac:updater_bundle" ]
-    }
-
-    if (is_win || is_mac) {
-      deps += [ "//chrome/updater/tools:unittest" ]
     }
   }
 }

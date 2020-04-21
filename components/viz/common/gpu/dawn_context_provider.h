@@ -5,10 +5,9 @@
 #ifndef COMPONENTS_VIZ_COMMON_GPU_DAWN_CONTEXT_PROVIDER_H_
 #define COMPONENTS_VIZ_COMMON_GPU_DAWN_CONTEXT_PROVIDER_H_
 
-#include <dawn_native/DawnNative.h>
-
 #include "base/macros.h"
 #include "components/viz/common/viz_dawn_context_provider_export.h"
+#include "third_party/dawn/src/include/dawn_native/DawnNative.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/dawn/GrDawnTypes.h"
 

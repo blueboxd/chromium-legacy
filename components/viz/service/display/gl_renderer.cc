@@ -88,21 +88,14 @@ namespace viz {
 namespace {
 
 Float4 UVTransform(const TextureDrawQuad* quad) {
-  gfx::PointF uv0 = quad->uv_top_left;
-  gfx::PointF uv1 = quad->uv_bottom_right;
-  gfx::PointF translation(
-      quad->visible_rect.origin().x() - quad->rect.origin().x(),
-      quad->visible_rect.origin().y() - quad->rect.origin().y());
-  DCHECK(quad->rect.right() && quad->rect.bottom());
-  translation.Scale(1.f / quad->rect.right(), 1.f / quad->rect.bottom());
+  gfx::RectF uv_rect =
+      gfx::BoundingRect(quad->uv_top_left, quad->uv_bottom_right);
+  gfx::RectF visible_uv_rect = cc::MathUtil::ScaleRectProportional(
+      uv_rect, gfx::RectF(quad->rect), gfx::RectF(quad->visible_rect));
 
-  gfx::PointF scale(
-      static_cast<float>(quad->visible_rect.width()) / quad->rect.width(),
-      static_cast<float>(quad->visible_rect.height()) / quad->rect.height());
-
-  Float4 xform = {{translation.x() + uv0.x(), translation.y() + uv0.y(),
-                   (uv1.x() - uv0.x()) * scale.x(),
-                   (uv1.y() - uv0.y()) * scale.y()}};
+  gfx::PointF uv0 = visible_uv_rect.origin();
+  gfx::PointF uv1 = visible_uv_rect.bottom_right();
+  Float4 xform = {{uv0.x(), uv0.y(), uv1.x() - uv0.x(), uv1.y() - uv0.y()}};
   if (quad->y_flipped) {
     xform.data[1] = 1.0f - xform.data[1];
     xform.data[3] = -xform.data[3];

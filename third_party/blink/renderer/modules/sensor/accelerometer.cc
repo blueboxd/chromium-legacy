@@ -57,21 +57,6 @@ base::Optional<double> Accelerometer::z() const {
   return base::nullopt;
 }
 
-double Accelerometer::x(bool& is_null) const {
-  INIT_IS_NULL_AND_RETURN(is_null, 0.0);
-  return GetReading().accel.x;
-}
-
-double Accelerometer::y(bool& is_null) const {
-  INIT_IS_NULL_AND_RETURN(is_null, 0.0);
-  return GetReading().accel.y;
-}
-
-double Accelerometer::z(bool& is_null) const {
-  INIT_IS_NULL_AND_RETURN(is_null, 0.0);
-  return GetReading().accel.z;
-}
-
 void Accelerometer::Trace(Visitor* visitor) {
   Sensor::Trace(visitor);
 }

@@ -590,9 +590,8 @@ void CastStreamingNativeHandler::StartCastRtpStream(
       base::BindOnce(&CastStreamingNativeHandler::CallStopCallback,
                      weak_factory_.GetWeakPtr(), transport_id);
   CastRtpStream::ErrorCallback error_callback =
-      base::Bind(&CastStreamingNativeHandler::CallErrorCallback,
-                 weak_factory_.GetWeakPtr(),
-                 transport_id);
+      base::BindRepeating(&CastStreamingNativeHandler::CallErrorCallback,
+                          weak_factory_.GetWeakPtr(), transport_id);
 
   // |transport_id| is a globally unique identifier for the RTP stream.
   transport->Start(transport_id, config, std::move(start_callback),

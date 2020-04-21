@@ -159,12 +159,11 @@ group("content_app_child_deps") {
   ]
 }
 
-# This includes the app sources for both the browser and child processes.
-implement_content_app("both") {
+implement_content_app("app") {
   # Only the public target should depend on this. All other targets (even
   # internal content ones) should depend on the public one.
   visibility = [
-    ":both_for_content_tests",  # See top of //content/BUILD.gn for why.
+    ":for_content_tests",  # See top of //content/BUILD.gn for why.
     "//content/public/app:*",
   ]
   deps = [
@@ -178,9 +177,9 @@ implement_content_app("both") {
 }
 
 # See comment at the top of //content/BUILD.gn for how this works.
-group("both_for_content_tests") {
+group("for_content_tests") {
   visibility = [ "//content/test/*" ]
   if (!is_component_build) {
-    public_deps = [ ":both" ]
+    public_deps = [ ":app" ]
   }
 }

@@ -55,9 +55,6 @@ class MODULES_EXPORT Sensor : public EventTargetWithInlineData,
   bool activated() const;
   bool hasReading() const;
   base::Optional<DOMHighResTimeStamp> timestamp(ScriptState*) const;
-  // TODO(crbug.com/1060971): Remove |is_null| version.
-  DOMHighResTimeStamp timestamp(ScriptState*,
-                                bool& is_null) const;  // DEPRECATED
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(reading, kReading)
@@ -134,12 +131,5 @@ class MODULES_EXPORT Sensor : public EventTargetWithInlineData,
 };
 
 }  // namespace blink
-
-// To be used in getters in concrete sensors
-// bindings code.
-#define INIT_IS_NULL_AND_RETURN(is_null, x) \
-  is_null = !hasReading();                  \
-  if (is_null)                              \
-  return (x)
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SENSOR_SENSOR_H_

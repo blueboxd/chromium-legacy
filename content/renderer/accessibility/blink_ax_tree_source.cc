@@ -17,7 +17,6 @@
 #include "build/build_config.h"
 #include "content/public/common/content_features.h"
 #include "content/renderer/accessibility/ax_image_annotator.h"
-#include "content/renderer/accessibility/blink_ax_enum_conversion.h"
 #include "content/renderer/accessibility/render_accessibility_impl.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_frame_proxy.h"
@@ -563,8 +562,12 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
   blink::WebDisallowTransitionScope disallow(&document);
 #endif
 
+  // TODO(crbug.com/1068668): AX onion soup - finish migrating the rest of
+  // this function inside of AXObject::Serialize and removing
+  // unneeded WebAXObject interfaces.
+  src.Serialize(dst);
+
   dst->role = src.Role();
-  AXStateFromBlink(src, dst);
   dst->id = src.AxID();
 
   TRACE_EVENT1("accessibility", "BlinkAXTreeSource::SerializeNode", "role",
@@ -962,7 +965,7 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
         dst->role == ax::mojom::Role::kSlider ||
         dst->role == ax::mojom::Role::kSpinButton ||
         (dst->role == ax::mojom::Role::kSplitter &&
-         src.CanSetFocusAttribute())) {
+         dst->HasState(ax::mojom::State::kFocusable))) {
       float value;
       if (src.ValueForRange(&value))
         dst->AddFloatAttribute(ax::mojom::FloatAttribute::kValueForRange,
@@ -1127,7 +1130,8 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
       if (src.IsEditableRoot())
         dst->AddBoolAttribute(ax::mojom::BoolAttribute::kEditableRoot, true);
 
-      if (src.IsControl() && !src.IsRichlyEditable()) {
+      if (src.IsControl() &&
+          !dst->HasState(ax::mojom::State::kRichlyEditable)) {
         // Only for simple input controls -- rich editable areas use AXTreeData.
           dst->AddIntAttribute(ax::mojom::IntAttribute::kTextSelStart,
                                src.SelectionStart());
@@ -1151,9 +1155,13 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
     if (src.HasAriaAttribute())
       dst->AddBoolAttribute(ax::mojom::BoolAttribute::kHasAriaAttribute, true);
 
-    // Frames and iframes.
+    // Frames and iframes:
+    // If there are children, the fallback content has been rendered and should
+    // be used instead. For example, the fallback content may be rendered if
+    // there was an error loading an <object>. In that case, only expose the
+    // children. A node should not have both children and a child tree.
     WebFrame* frame = WebFrame::FromFrameOwnerElement(element);
-    if (frame)
+    if (frame && !src.ChildCount())
       dst->child_routing_id = RenderFrame::GetRoutingIdForWebFrame(frame);
   }
 

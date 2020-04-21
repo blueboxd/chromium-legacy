@@ -516,10 +516,16 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
   return layout_result;
 }
 
-scoped_refptr<const NGLayoutResult> NGBlockNode::SimplifiedLayout() {
+scoped_refptr<const NGLayoutResult> NGBlockNode::SimplifiedLayout(
+    const NGPhysicalFragment& previous_fragment) {
   scoped_refptr<const NGLayoutResult> previous_result =
       box_->GetCachedLayoutResult();
   DCHECK(previous_result);
+
+  // We might be be trying to perform simplfied layout on a fragment in the
+  // "measure" cache slot, abort if this is the case.
+  if (&previous_result->PhysicalFragment() != &previous_fragment)
+    return nullptr;
 
   if (!box_->NeedsLayout())
     return previous_result;

@@ -61,9 +61,6 @@ class MODULES_EXPORT PaymentRequestEvent final : public ExtendableEvent {
   const ScriptValue paymentOptions(ScriptState*) const;
   base::Optional<HeapVector<Member<PaymentShippingOption>>> shippingOptions()
       const;
-  // TODO(crbug.com/1060971): Remove |is_null| version.
-  const HeapVector<Member<PaymentShippingOption>>& shippingOptions(
-      bool& is_null) const;  // DEPRECATED
 
   ScriptPromise openWindow(ScriptState*, const String& url);
   ScriptPromise changePaymentMethod(ScriptState*,

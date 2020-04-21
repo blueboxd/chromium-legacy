@@ -37,6 +37,8 @@ class ConnectorsManager {
                            AnalysisConnector connector,
                            AnalysisSettingsCallback callback);
 
+  bool DelayUntilVerdict(AnalysisConnector connector) const;
+
   // Public legacy functions.
   // These functions are used to interact with legacy policies and should only
   // be called while the connectors equivalent isn't available. They should be

@@ -58,6 +58,7 @@ cr.define('settings', function() {
       privacy: false,
       onStartup: false,
       reset: false,
+      safetyCheck: false,
       appearance: false,
       defaultBrowser: false,
       advancedSettings: false,
@@ -72,6 +73,7 @@ cr.define('settings', function() {
       people: false,
       onStartup: false,
       reset: false,
+      safetyCheck: false,
       appearance: {
         setTheme: false,
         homeButton: false,
@@ -99,6 +101,7 @@ cr.define('settings', function() {
       people: true,
       onStartup: true,
       reset: true,
+      safetyCheck: true,
       appearance: {
         setTheme: true,
         homeButton: true,

@@ -261,7 +261,7 @@ class TraceEventDataSourceTest : public testing::Test {
     if (base::trace_event::TraceLog::GetInstance()->IsEnabled()) {
       base::RunLoop wait_for_tracelog_flush;
 
-      TraceEventDataSource::GetInstance()->StopTracing(base::BindRepeating(
+      TraceEventDataSource::GetInstance()->StopTracing(base::BindOnce(
           [](const base::RepeatingClosure& quit_closure) {
             quit_closure.Run();
           },
@@ -485,7 +485,8 @@ class TraceEventDataSourceTest : public testing::Test {
                         uint64_t id = 0,
                         uint64_t absolute_timestamp = 0,
                         int32_t tid_override = 0,
-                        int32_t pid_override = 0) {
+                        int32_t pid_override = 0,
+                        const perfetto::Track& track = perfetto::Track()) {
     // All TrackEvents need incremental state for delta timestamps / interning.
     EXPECT_EQ(packet->sequence_flags(),
               static_cast<uint32_t>(perfetto::protos::pbzero::TracePacket::
@@ -560,22 +561,22 @@ class TraceEventDataSourceTest : public testing::Test {
             break;
 
           case TRACE_EVENT_SCOPE_THREAD:
-            if (!tid_override) {
+            if (!track) {
               // Default to thread track.
               EXPECT_FALSE(packet->track_event().has_track_uuid());
             } else {
-              EXPECT_EQ(packet->track_event().track_uuid(),
-                        perfetto::ThreadTrack::ForThread(tid_override).uuid);
+              EXPECT_TRUE(packet->track_event().has_track_uuid());
+              EXPECT_EQ(packet->track_event().track_uuid(), track.uuid);
             }
             break;
         }
       } else {
-        if (!tid_override) {
+        if (!track) {
           // Default to thread track.
           EXPECT_FALSE(packet->track_event().has_track_uuid());
         } else {
-          EXPECT_EQ(packet->track_event().track_uuid(),
-                    perfetto::ThreadTrack::ForThread(tid_override).uuid);
+          EXPECT_TRUE(packet->track_event().has_track_uuid());
+          EXPECT_EQ(packet->track_event().track_uuid(), track.uuid);
         }
       }
     } else {
@@ -895,7 +896,8 @@ TEST_F(TraceEventDataSourceTest, TimestampedTraceEvent) {
       e_packet, /*category_iid=*/1u, /*name_iid=*/1u,
       TRACE_EVENT_PHASE_ASYNC_BEGIN,
       TRACE_EVENT_FLAG_EXPLICIT_TIMESTAMP | TRACE_EVENT_FLAG_HAS_ID, /*id=*/42u,
-      /*absolute_timestamp=*/424242, /*tid_override=*/4242);
+      /*absolute_timestamp=*/424242, /*tid_override=*/4242, /*pid_override=*/0,
+      perfetto::ThreadTrack::ForThread(4242));
 
   ExpectEventCategories(e_packet, {{1u, kCategoryGroup}});
   ExpectEventNames(e_packet, {{1u, "bar"}});
@@ -1191,7 +1193,8 @@ TEST_F(TraceEventDataSourceTest, UpdateDurationOfCompleteEvent) {
   ExpectTraceEvent(
       b_packet, /*category_iid=*/1u, /*name_iid=*/1u, TRACE_EVENT_PHASE_BEGIN,
       TRACE_EVENT_FLAG_EXPLICIT_TIMESTAMP | TRACE_EVENT_FLAG_HAS_ID, /*id=*/0u,
-      /*absolute_timestamp=*/10, /*tid_override=*/1, /*pid_override=*/0);
+      /*absolute_timestamp=*/10, /*tid_override=*/1, /*pid_override=*/0,
+      perfetto::ThreadTrack::ForThread(1));
 
   // Updating the duration of the event as it goes out of scope results in the
   // corresponding END event being written. These END events don't contain any
@@ -1203,10 +1206,11 @@ TEST_F(TraceEventDataSourceTest, UpdateDurationOfCompleteEvent) {
       base::trace_event::ThreadInstructionCount());
 
   auto* e_packet = producer_client()->GetFinalizedPacket(packet_index++);
-  ExpectTraceEvent(
-      e_packet, /*category_iid=*/0u, /*name_iid=*/0u, TRACE_EVENT_PHASE_END,
-      TRACE_EVENT_FLAG_EXPLICIT_TIMESTAMP, /*id=*/0u,
-      /*absolute_timestamp=*/30, /*tid_override=*/1, /*pid_override=*/0);
+  ExpectTraceEvent(e_packet, /*category_iid=*/0u, /*name_iid=*/0u,
+                   TRACE_EVENT_PHASE_END, TRACE_EVENT_FLAG_EXPLICIT_TIMESTAMP,
+                   /*id=*/0u,
+                   /*absolute_timestamp=*/30, /*tid_override=*/1,
+                   /*pid_override=*/0, perfetto::ThreadTrack::ForThread(1));
 
   // Updating the duration of an event that wasn't added before tracing begun
   // will only emit an END event, again without category or name.
@@ -1218,10 +1222,130 @@ TEST_F(TraceEventDataSourceTest, UpdateDurationOfCompleteEvent) {
       base::trace_event::ThreadInstructionCount());
 
   auto* e2_packet = producer_client()->GetFinalizedPacket(packet_index++);
-  ExpectTraceEvent(
-      e2_packet, /*category_iid=*/0u, /*name_iid=*/0u, TRACE_EVENT_PHASE_END,
-      TRACE_EVENT_FLAG_EXPLICIT_TIMESTAMP, /*id=*/0u,
-      /*absolute_timestamp=*/40, /*tid_override=*/1, /*pid_override=*/0);
+  ExpectTraceEvent(e2_packet, /*category_iid=*/0u, /*name_iid=*/0u,
+                   TRACE_EVENT_PHASE_END, TRACE_EVENT_FLAG_EXPLICIT_TIMESTAMP,
+                   /*id=*/0u,
+                   /*absolute_timestamp=*/40, /*tid_override=*/1,
+                   /*pid_override=*/0, perfetto::ThreadTrack::ForThread(1));
+}
+
+TEST_F(TraceEventDataSourceTest, TrackSupportOnBeginAndEndWithLambda) {
+  CreateTraceEventDataSource();
+
+  auto track = perfetto::Track(1);
+  bool begin_called = false;
+  bool end_called = false;
+
+  TRACE_EVENT_BEGIN("browser", "bar", track,
+                    [&](perfetto::EventContext ctx) { begin_called = true; });
+  EXPECT_TRUE(begin_called);
+
+  TRACE_EVENT_END("browser", track,
+                  [&](perfetto::EventContext ctx) { end_called = true; });
+  EXPECT_TRUE(end_called);
+
+  size_t packet_index = ExpectStandardPreamble();
+
+  auto* b_packet = producer_client()->GetFinalizedPacket(packet_index++);
+  ExpectTraceEvent(b_packet, /*category_iid=*/1u, /*name_iid=*/1u,
+                   TRACE_EVENT_PHASE_BEGIN, /*flags=*/0, /*id=*/0,
+                   /*absolute_timestamp=*/0, /*tid_override=*/0,
+                   /*pid_override=*/0, track);
+
+  ExpectEventCategories(b_packet, {{1u, "browser"}});
+  ExpectEventNames(b_packet, {{1u, "bar"}});
+
+  auto* e_packet = producer_client()->GetFinalizedPacket(packet_index++);
+
+  ExpectTraceEvent(e_packet, /*category_iid=*/0, /*name_iid=*/0,
+                   TRACE_EVENT_PHASE_END, /*flags=*/0, /*id=*/0,
+                   /*absolute_timestamp=*/0, /*tid_override=*/0,
+                   /*pid_override=*/0, track);
+}
+
+TEST_F(TraceEventDataSourceTest, TrackSupportOnBeginAndEnd) {
+  CreateTraceEventDataSource();
+
+  auto track = perfetto::Track(1);
+
+  TRACE_EVENT_BEGIN("browser", "bar", track);
+  TRACE_EVENT_END("browser", track);
+
+  size_t packet_index = ExpectStandardPreamble();
+
+  auto* b_packet = producer_client()->GetFinalizedPacket(packet_index++);
+  ExpectTraceEvent(b_packet, /*category_iid=*/1u, /*name_iid=*/1u,
+                   TRACE_EVENT_PHASE_BEGIN, /*flags=*/0, /*id=*/0,
+                   /*absolute_timestamp=*/0, /*tid_override=*/0,
+                   /*pid_override=*/0, track);
+
+  ExpectEventCategories(b_packet, {{1u, "browser"}});
+  ExpectEventNames(b_packet, {{1u, "bar"}});
+
+  auto* e_packet = producer_client()->GetFinalizedPacket(packet_index++);
+
+  ExpectTraceEvent(e_packet, /*category_iid=*/0, /*name_iid=*/0,
+                   TRACE_EVENT_PHASE_END, /*flags=*/0, /*id=*/0,
+                   /*absolute_timestamp=*/0, /*tid_override=*/0,
+                   /*pid_override=*/0, track);
+}
+
+// TODO(ddrone): following tests should be re-enabled once we figure out how
+// tracks on scoped events supposed to work
+TEST_F(TraceEventDataSourceTest, DISABLED_TrackSupport) {
+  CreateTraceEventDataSource();
+
+  auto track = perfetto::Track(1);
+
+  { TRACE_EVENT("browser", "bar", track); }
+
+  size_t packet_index = ExpectStandardPreamble();
+
+  auto* b_packet = producer_client()->GetFinalizedPacket(packet_index++);
+  ExpectTraceEvent(b_packet, /*category_iid=*/1u, /*name_iid=*/1u,
+                   TRACE_EVENT_PHASE_BEGIN, /*flags=*/0, /*id=*/0,
+                   /*absolute_timestamp=*/0, /*tid_override=*/0,
+                   /*pid_override=*/0, track);
+
+  ExpectEventCategories(b_packet, {{1u, "browser"}});
+  ExpectEventNames(b_packet, {{1u, "bar"}});
+
+  auto* e_packet = producer_client()->GetFinalizedPacket(packet_index++);
+  ExpectTraceEvent(e_packet, /*category_iid=*/0, /*name_iid=*/0,
+                   TRACE_EVENT_PHASE_END, /*flags=*/0, /*id=*/0,
+                   /*absolute_timestamp=*/0, /*tid_override=*/0,
+                   /*pid_override=*/0, track);
+}
+
+TEST_F(TraceEventDataSourceTest, DISABLED_TrackSupportWithLambda) {
+  CreateTraceEventDataSource();
+
+  auto track = perfetto::Track(1);
+  bool lambda_called = false;
+
+  {
+    TRACE_EVENT("browser", "bar", track,
+                [&](perfetto::EventContext ctx) { lambda_called = true; });
+  }
+
+  EXPECT_TRUE(lambda_called);
+
+  size_t packet_index = ExpectStandardPreamble();
+
+  auto* b_packet = producer_client()->GetFinalizedPacket(packet_index++);
+  ExpectTraceEvent(b_packet, /*category_iid=*/1u, /*name_iid=*/1u,
+                   TRACE_EVENT_PHASE_BEGIN, /*flags=*/0, /*id=*/0,
+                   /*absolute_timestamp=*/0, /*tid_override=*/0,
+                   /*pid_override=*/0, track);
+
+  ExpectEventCategories(b_packet, {{1u, "browser"}});
+  ExpectEventNames(b_packet, {{1u, "bar"}});
+
+  auto* e_packet = producer_client()->GetFinalizedPacket(packet_index++);
+  ExpectTraceEvent(e_packet, /*category_iid=*/0, /*name_iid=*/0,
+                   TRACE_EVENT_PHASE_END, /*flags=*/0, /*id=*/0,
+                   /*absolute_timestamp=*/0, /*tid_override=*/0,
+                   /*pid_override=*/0, track);
 }
 
 // TODO(eseckler): Add a test with multiple events + same strings (cat, name,
@@ -1548,7 +1672,7 @@ TEST_F(TraceEventDataSourceTest, StartupTracingTimeout) {
   // Stop tracing must be called even if tracing is not started to clear the
   // pending task.
   base::RunLoop wait_for_stop;
-  data_source->StopTracing(base::BindRepeating(
+  data_source->StopTracing(base::BindOnce(
       [](const base::RepeatingClosure& quit_closure) { quit_closure.Run(); },
       wait_for_stop.QuitClosure()));
 

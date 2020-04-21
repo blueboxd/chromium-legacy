@@ -127,8 +127,7 @@ public class ChosenObjectSettings extends SiteSettingsPreferenceFragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.menu_id_targeted_help) {
-            getSiteSettingsClient().launchHelpAndFeedbackActivity(
-                    getActivity(), getString(R.string.help_context_settings));
+            getSiteSettingsClient().launchSettingsHelpAndFeedbackActivity(getActivity());
             return true;
         }
         return false;

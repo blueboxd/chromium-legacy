@@ -440,12 +440,12 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   if (!integrity_attr.IsEmpty()) {
     SubresourceIntegrity::IntegrityFeatures integrity_features =
         SubresourceIntegrityHelper::GetFeatures(
-            element_document.ToExecutionContext());
+            element_->GetDocument().GetExecutionContext());
     SubresourceIntegrity::ReportInfo report_info;
     SubresourceIntegrity::ParseIntegrityAttribute(
         integrity_attr, integrity_features, integrity_metadata, &report_info);
-    SubresourceIntegrityHelper::DoReport(*element_document.ToExecutionContext(),
-                                         report_info);
+    SubresourceIntegrityHelper::DoReport(
+        *element_->GetDocument().GetExecutionContext(), report_info);
   }
 
   // <spec step="20">Let referrer policy be the current state of the element's

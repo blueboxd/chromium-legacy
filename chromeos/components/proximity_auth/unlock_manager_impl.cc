@@ -183,7 +183,7 @@ UnlockManagerImpl::UnlockManagerImpl(
   chromeos::PowerManagerClient::Get()->AddObserver(this);
 
   if (device::BluetoothAdapterFactory::IsBluetoothSupported()) {
-    device::BluetoothAdapterFactory::GetAdapter(
+    device::BluetoothAdapterFactory::Get()->GetAdapter(
         base::BindOnce(&UnlockManagerImpl::OnBluetoothAdapterInitialized,
                        weak_ptr_factory_.GetWeakPtr()));
   }

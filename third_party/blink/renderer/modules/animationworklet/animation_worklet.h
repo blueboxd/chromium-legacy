@@ -14,7 +14,7 @@
 
 namespace blink {
 
-class Document;
+class LocalDOMWindow;
 
 // Represents the animation worklet on the main thread. All the logic for
 // loading a new source module is implemented in its parent class |Worklet|. The
@@ -23,7 +23,7 @@ class Document;
 // corresponding |AnimationWorkletGlobalScope| on the worklet thread.
 class MODULES_EXPORT AnimationWorklet final : public Worklet {
  public:
-  explicit AnimationWorklet(Document*);
+  explicit AnimationWorklet(LocalDOMWindow&);
   ~AnimationWorklet() override;
 
   WorkletAnimationId NextWorkletAnimationId();

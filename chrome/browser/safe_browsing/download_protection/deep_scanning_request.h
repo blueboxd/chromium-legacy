@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_DOWNLOAD_PROTECTION_DEEP_SCANNING_REQUEST_H_
 #define CHROME_BROWSER_SAFE_BROWSING_DOWNLOAD_PROTECTION_DEEP_SCANNING_REQUEST_H_
 
+#include "chrome/browser/enterprise/connectors/common.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
@@ -76,6 +77,11 @@ class DeepScanningRequest : public download::DownloadItem::Observer {
   // Callback for when |binary_upload_service_| finishes uploading.
   void OnScanComplete(BinaryUploadService::Result result,
                       DeepScanningClientResponse response);
+
+  // Callback for when analysis settings are required.
+  void OnGotAnalysisSettings(
+      BinaryUploadService::Result result,
+      base::Optional<enterprise_connectors::AnalysisSettings> settings);
 
   // Finishes the request, providing the result through |callback_| and
   // notifying |download_service_|.

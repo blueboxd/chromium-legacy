@@ -46,6 +46,7 @@ source_set("shell_encryption") {
     "glog/logging.h",
     "src/bits_util.h",
     "src/constants.h",
+    "src/context.h",
     "src/error_params.h",
     "src/galois_key.h",
     "src/int256.h",
@@ -68,6 +69,7 @@ source_set("shell_encryption") {
   ]
   sources = [
     "src/int256.cc",
+    "src/montgomery.cc",
     "src/ntt_parameters.cc",
     "src/prng/chacha_prng.cc",
     "src/prng/chacha_prng_util.cc",
@@ -96,6 +98,7 @@ test("shell_encryption_test") {
   public = [
     "src/testing/coefficient_polynomial.h",
     "src/testing/coefficient_polynomial_ciphertext.h",
+    "src/testing/parameter.h",
     "src/testing/protobuf_matchers.h",
     "src/testing/status_matchers.h",
     "src/testing/status_testing.h",
@@ -104,6 +107,7 @@ test("shell_encryption_test") {
   ]
   sources = [
     "src/bits_util_test.cc",
+    "src/context_test.cc",
     "src/error_params_test.cc",
     "src/galois_key_test.cc",
     "src/int256_test.cc",

@@ -102,9 +102,9 @@ PASS window.cached_screen.availTop is 0
 PASS window.cached_screen.availWidth is 0
 PASS window.cached_screen.colorDepth is 0
 PASS window.cached_screen.height is 0
+PASS window.cached_screen.id is ''
 PASS window.cached_screen.internal is false
 PASS window.cached_screen.left is 0
-PASS window.cached_screen.name is ''
 PASS window.cached_screen.pixelDepth is 0
 PASS window.cached_screen.primary is false
 PASS window.cached_screen.scaleFactor is 0

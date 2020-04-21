@@ -46,6 +46,9 @@ class WebGPUCommandSerializer final : public dawn_wire::CommandSerializer {
   void* GetCmdSpace(size_t size) final;
   bool Flush() final;
 
+  // Called upon context lost.
+  void HandleGpuControlLostContext();
+
   // For the WebGPUInterface implementation of WebGPUImplementation
   WGPUDevice GetDevice() const;
   ReservedTexture ReserveTexture();
@@ -61,7 +64,7 @@ class WebGPUCommandSerializer final : public dawn_wire::CommandSerializer {
   uint32_t c2s_buffer_default_size_ = 0;
   uint32_t c2s_put_offset_ = 0;
   std::unique_ptr<TransferBuffer> c2s_transfer_buffer_;
-  std::unique_ptr<ScopedTransferBufferPtr> c2s_buffer_;
+  ScopedTransferBufferPtr c2s_buffer_;
 };
 #endif
 

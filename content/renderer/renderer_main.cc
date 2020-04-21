@@ -36,7 +36,6 @@
 #include "mojo/public/cpp/bindings/mojo_buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/service_manager/sandbox/switches.h"
-#include "services/tracing/public/cpp/stack_sampling/tracing_sampler_profiler.h"
 #include "services/tracing/public/cpp/trace_startup.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/webrtc_overrides/init_webrtc.h"  // nogncheck
@@ -210,10 +209,6 @@ int RendererMain(const MainFunctionParams& parameters) {
                                true);
     }
 #endif  // OS_POSIX && !OS_ANDROID && !!OS_MACOSX
-
-    // Setup tracing sampler profiler as early as possible.
-    auto tracing_sampler_profiler =
-        tracing::TracingSamplerProfiler::CreateOnMainThread();
 
     if (need_sandbox)
       should_run_loop = platform.EnableSandbox();

@@ -23,8 +23,9 @@
 namespace content {
 
 WebTestRenderFrameObserver::WebTestRenderFrameObserver(
-    RenderFrame* render_frame)
-    : RenderFrameObserver(render_frame) {
+    RenderFrame* render_frame,
+    BlinkTestRunner* blink_test_runner)
+    : RenderFrameObserver(render_frame), blink_test_runner_(blink_test_runner) {
   TestRunner* test_runner = WebTestRenderThreadObserver::GetInstance()
                                 ->test_interfaces()
                                 ->GetTestRunner();
@@ -54,8 +55,7 @@ void WebTestRenderFrameObserver::DidCommitProvisionalLoad(
     render_frame()->GetRenderView()->GetWebView()->SetFocusedFrame(
         render_frame()->GetWebFrame());
   }
-  BlinkTestRunner::Get(render_frame()->GetRenderView())
-      ->DidCommitNavigationInMainFrame();
+  blink_test_runner_->DidCommitNavigationInMainFrame();
 }
 
 void WebTestRenderFrameObserver::OnDestruct() {
@@ -63,8 +63,7 @@ void WebTestRenderFrameObserver::OnDestruct() {
 }
 
 void WebTestRenderFrameObserver::CaptureDump(CaptureDumpCallback callback) {
-  BlinkTestRunner::Get(render_frame()->GetRenderView())
-      ->CaptureDump(std::move(callback));
+  blink_test_runner_->CaptureDump(std::move(callback));
 }
 
 void WebTestRenderFrameObserver::CompositeWithRaster(
@@ -86,40 +85,34 @@ void WebTestRenderFrameObserver::DumpFrameLayout(
 
 void WebTestRenderFrameObserver::ReplicateTestConfiguration(
     mojom::ShellTestConfigurationPtr config) {
-  BlinkTestRunner::Get(render_frame()->GetRenderView())
-      ->OnReplicateTestConfiguration(std::move(config));
+  blink_test_runner_->OnReplicateTestConfiguration(std::move(config));
 }
 
 void WebTestRenderFrameObserver::SetTestConfiguration(
     mojom::ShellTestConfigurationPtr config) {
-  BlinkTestRunner::Get(render_frame()->GetRenderView())
-      ->OnSetTestConfiguration(std::move(config));
+  blink_test_runner_->OnSetTestConfiguration(std::move(config));
 }
 
 void WebTestRenderFrameObserver::SetupRendererProcessForNonTestWindow() {
-  BlinkTestRunner::Get(render_frame()->GetRenderView())
-      ->OnSetupRendererProcessForNonTestWindow();
+  blink_test_runner_->OnSetupRendererProcessForNonTestWindow();
 }
 
 void WebTestRenderFrameObserver::Reset() {
-  BlinkTestRunner::Get(render_frame()->GetRenderView())->OnReset();
+  blink_test_runner_->OnReset();
 }
 
 void WebTestRenderFrameObserver::TestFinishedInSecondaryRenderer() {
-  BlinkTestRunner::Get(render_frame()->GetRenderView())
-      ->OnTestFinishedInSecondaryRenderer();
+  blink_test_runner_->OnTestFinishedInSecondaryRenderer();
 }
 
 void WebTestRenderFrameObserver::LayoutDumpCompleted(
     const std::string& completed_layout_dump) {
-  BlinkTestRunner::Get(render_frame()->GetRenderView())
-      ->OnLayoutDumpCompleted(completed_layout_dump);
+  blink_test_runner_->OnLayoutDumpCompleted(completed_layout_dump);
 }
 
 void WebTestRenderFrameObserver::ReplyBluetoothManualChooserEvents(
     const std::vector<std::string>& events) {
-  BlinkTestRunner::Get(render_frame()->GetRenderView())
-      ->OnReplyBluetoothManualChooserEvents(events);
+  blink_test_runner_->OnReplyBluetoothManualChooserEvents(events);
 }
 
 }  // namespace content

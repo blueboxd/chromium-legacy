@@ -287,7 +287,7 @@ void MessagePumpForUI::WaitForWork(Delegate::NextWorkInfo next_work_info) {
       }
 
       {
-        MSG msg = {0};
+        MSG msg;
         // Trace as in ProcessNextWindowsMessage().
         TRACE_EVENT0("base", "MessagePumpForUI::WaitForWork PeekMessage");
         if (::PeekMessage(&msg, nullptr, 0, 0, PM_NOREMOVE))

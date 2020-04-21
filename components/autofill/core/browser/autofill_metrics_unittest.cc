@@ -540,6 +540,35 @@ INSTANTIATE_TEST_SUITE_P(AutofillMetricsTest,
                          AutofillMetricsCompanyTest,
                          testing::Bool());
 
+// Test parameter indicates if surfacing server nickname is enabled. The
+// nickname-related metrics are always being logged when a server nickname is
+// available. Note that depending on the experimental setup, the user may not be
+// shown the nickname.
+class AutofillMetricsServerNicknameTest
+    : public AutofillMetricsTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  AutofillMetricsServerNicknameTest()
+      : is_surfacing_server_card_nickname_enabled_(GetParam()) {}
+
+  void SetUp() override {
+    scoped_feature_list_.InitWithFeatureState(
+        features::kAutofillEnableSurfacingServerCardNickname,
+        is_surfacing_server_card_nickname_enabled_);
+    AutofillMetricsTest::SetUp();
+  }
+
+ protected:
+  const bool is_surfacing_server_card_nickname_enabled_;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(AutofillMetricsTest,
+                         AutofillMetricsServerNicknameTest,
+                         testing::Bool());
+
 // Test that we log quality metrics appropriately.
 TEST_F(AutofillMetricsTest, QualityMetrics) {
   // Set up our form data.
@@ -5398,12 +5427,11 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardWillSubmitFormEvents) {
   }
 }
 
-// Test that we log form events for masked server card nickname.
-TEST_F(AutofillMetricsTest, LogServerNicknameFormEvents) {
-  // Enable surfacing server card nickname flag.
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillEnableSurfacingServerCardNickname);
-
+// Test that we log form events for masked server card nickname. When
+// surfacing-server-nickname flag is off (we won't display the nickname), we
+// still log when user has a masked server card with nickname in order to
+// compare the selection rate on the same group of user.
+TEST_P(AutofillMetricsServerNicknameTest, LogServerNicknameFormEvents) {
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
@@ -5432,7 +5460,7 @@ TEST_F(AutofillMetricsTest, LogServerNicknameFormEvents) {
   autofill_manager_->AddSeenForm(form, field_types, field_types);
 
   {
-    // Flag is on but no masked server card has nickname.
+    // A masked server card with nickname.
     // Simulating activating the autofill popup for the credit card field, new
     // popup being shown and filling a local card suggestion.
     base::HistogramTester histogram_tester;
@@ -5464,7 +5492,7 @@ TEST_F(AutofillMetricsTest, LogServerNicknameFormEvents) {
   autofill_manager_->AddSeenForm(form, field_types, field_types);
 
   {
-    // Flag is on and has a masked server card with nickname.
+    // A masked server card with nickname.
     // Simulating activating the autofill popup for the credit card field, new
     // popup being shown and filling a local card suggestion. Both general
     // histogram and nickname sub-histogram are logged.
@@ -5502,7 +5530,7 @@ TEST_F(AutofillMetricsTest, LogServerNicknameFormEvents) {
   autofill_manager_->AddSeenForm(form, field_types, field_types);
 
   {
-    // Flag is on and has a masked server card with nickname.
+    // A masked server card with nickname.
     // Simulating activating the autofill popup for the credit card field, new
     // popup being shown, selecting a masked card server suggestion and
     // submitting the form. Verify that all related form events are correctly
@@ -5545,41 +5573,204 @@ TEST_F(AutofillMetricsTest, LogServerNicknameFormEvents) {
         "Autofill.FormEvents.CreditCard.WithServerNickname",
         FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_SUBMITTED_ONCE, 1);
   }
+}
 
-  // Reset and disable the feature flag.
-  scoped_feature_list_.Reset();
-  scoped_feature_list_.InitAndDisableFeature(
-      features::kAutofillEnableSurfacingServerCardNickname);
-  // Reset the autofill manager state.
-  autofill_manager_->Reset();
+// Test that we log suggestion selection duration for masked server card
+// nickname. When surfacing-server-nickname flag is off (we won't display the
+// nickname), we still log when user has a masked server card with nickname in
+// order to compare the selection duration on the same group of user when server
+// nickname is displayed or not.
+TEST_P(AutofillMetricsServerNicknameTest, LogServerNicknameSelectionDuration) {
+  base::TimeTicks now = AutofillTickClock::NowTicks();
+  TestAutofillTickClock test_clock;
+  test_clock.SetNowTicks(now);
+
+  // Set up our form data.
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.url = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+  form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
+
+  FormFieldData field;
+  std::vector<ServerFieldType> field_types;
+  test::CreateTestFormField("Month", "card_month", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(CREDIT_CARD_EXP_MONTH);
+  test::CreateTestFormField("Year", "card_year", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(CREDIT_CARD_EXP_2_DIGIT_YEAR);
+  test::CreateTestFormField("Credit card", "card", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(CREDIT_CARD_NUMBER);
+
+  // Creating all kinds of cards. None of them have nicknames.
+  RecreateCreditCards(true /* include_local_credit_card */,
+                      true /* include_masked_server_credit_card */,
+                      true /* include_full_server_credit_card */);
+
+  // Simulate having seen this form on page load.
   autofill_manager_->AddSeenForm(form, field_types, field_types);
 
   {
-    // Flag is off (we won't display the nickname), we still log when user has a
-    // masked server card with nickname in order to compare the selection rate
-    // on the same group of user.
+    // No masked server card has nickname.
     // Simulating activating the autofill popup for the credit card field, new
     // popup being shown and filling a local card suggestion.
     base::HistogramTester histogram_tester;
     autofill_manager_->OnQueryFormFieldAutofill(
         0, form, field, gfx::RectF(), /*autoselect_first_suggestion=*/false);
     autofill_manager_->DidShowSuggestions(true /* is_new_popup */, form, field);
+    // Simulate choosing a suggestion after 1 second.
+    base::TimeDelta selection_delta = base::TimeDelta::FromSeconds(1);
+    test_clock.SetNowTicks(now + selection_delta);
     std::string guid("10000000-0000-0000-0000-000000000001");  // local card
     autofill_manager_->FillOrPreviewForm(
         AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, form.fields.front(),
         autofill_manager_->MakeFrontendIDForTest(guid, std::string()));
-    histogram_tester.ExpectBucketCount(
-        "Autofill.FormEvents.CreditCard.WithServerNickname",
-        FORM_EVENT_INTERACTED_ONCE, 1);
-    histogram_tester.ExpectBucketCount(
-        "Autofill.FormEvents.CreditCard.WithServerNickname",
-        FORM_EVENT_SUGGESTIONS_SHOWN, 1);
-    histogram_tester.ExpectBucketCount(
-        "Autofill.FormEvents.CreditCard.WithServerNickname",
-        FORM_EVENT_SUGGESTIONS_SHOWN_ONCE, 1);
-    histogram_tester.ExpectBucketCount(
-        "Autofill.FormEvents.CreditCard.WithServerNickname",
-        FORM_EVENT_LOCAL_SUGGESTION_FILLED, 1);
+    // Check that the nickname sub-histogram was not recorded.
+    histogram_tester.ExpectTotalCount(
+        "Autofill.FormEvents.CreditCard.WithServerNickname.SelectionDuration",
+        0);
+  }
+
+  // Add another masked server card with nickname.
+  AddMaskedServerCreditCardWithNickname();
+  // Reset the autofill manager state.
+  autofill_manager_->Reset();
+  autofill_manager_->AddSeenForm(form, field_types, field_types);
+
+  {
+    // A masked server card with nickname.
+    // Simulating activating the autofill popup for the credit card field, new
+    // popup being shown and filling a local card suggestion.
+    base::HistogramTester histogram_tester;
+    test_clock.SetNowTicks(now);
+    autofill_manager_->OnQueryFormFieldAutofill(
+        0, form, field, gfx::RectF(), /*autoselect_first_suggestion=*/false);
+    autofill_manager_->DidShowSuggestions(true /* is_new_popup */, form, field);
+    // Simulate choosing a suggestion after 1 second.
+    base::TimeDelta selection_delta = base::TimeDelta::FromSeconds(1);
+    test_clock.SetNowTicks(now + selection_delta);
+    // Select the local card, log nickname selection duration because user has
+    // another masked servr card with nickname.
+    std::string guid("10000000-0000-0000-0000-000000000001");
+    autofill_manager_->FillOrPreviewForm(
+        AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, form.fields.front(),
+        autofill_manager_->MakeFrontendIDForTest(guid, std::string()));
+    histogram_tester.ExpectTotalCount(
+        "Autofill.FormEvents.CreditCard.WithServerNickname.SelectionDuration",
+        1);
+    histogram_tester.ExpectTimeBucketCount(
+        "Autofill.FormEvents.CreditCard.WithServerNickname.SelectionDuration",
+        selection_delta, 1);
+  }
+
+  // Reset the autofill manager state.
+  autofill_manager_->Reset();
+  autofill_manager_->AddSeenForm(form, field_types, field_types);
+
+  {
+    // A masked server card with nickname.
+    // Simulating activating the autofill popup for the credit card field, new
+    // popup being shown and selecting a masked card server suggestion.
+    base::HistogramTester histogram_tester;
+    test_clock.SetNowTicks(now);
+    autofill_manager_->OnQueryFormFieldAutofill(
+        0, form, field, gfx::RectF(), /*autoselect_first_suggestion=*/false);
+    autofill_manager_->DidShowSuggestions(true /* is_new_popup */, form, field);
+    // Simulate choosing a suggestion after 1 second.
+    base::TimeDelta selection_delta = base::TimeDelta::FromSeconds(1);
+    test_clock.SetNowTicks(now + selection_delta);
+    // Select the masked server card without nickname, still log select
+    // duration, even though GetRealPan fails afterwards, because user has
+    // another masked server card with nickname.
+    std::string guid("10000000-0000-0000-0000-000000000002");
+    autofill_manager_->FillOrPreviewForm(
+        AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, form.fields.back(),
+        autofill_manager_->MakeFrontendIDForTest(guid, std::string()));
+    OnDidGetRealPan(AutofillClient::PERMANENT_FAILURE, std::string());
+    histogram_tester.ExpectTotalCount(
+        "Autofill.FormEvents.CreditCard.WithServerNickname.SelectionDuration",
+        1);
+    histogram_tester.ExpectTimeBucketCount(
+        "Autofill.FormEvents.CreditCard.WithServerNickname.SelectionDuration",
+        selection_delta, 1);
+  }
+
+  // Reset the autofill manager state.
+  autofill_manager_->Reset();
+  autofill_manager_->AddSeenForm(form, field_types, field_types);
+
+  {
+    // A masked server card with nickname.
+    // Simulating suggestions are shown twice, then choosing a local card.
+    base::HistogramTester histogram_tester;
+    test_clock.SetNowTicks(now);
+    autofill_manager_->OnQueryFormFieldAutofill(
+        0, form, field, gfx::RectF(), /*autoselect_first_suggestion=*/false);
+    autofill_manager_->DidShowSuggestions(true /* is_new_popup */, form, field);
+    // Simulate the first popup was dismissed and the second popup is shown
+    // after 1 second.
+    base::TimeDelta suggestion_delta = base::TimeDelta::FromSeconds(1);
+    test_clock.SetNowTicks(now + suggestion_delta);
+    autofill_manager_->DidShowSuggestions(true /* is_new_popup */, form, field);
+    // Simulate choosing a suggestion on the second popup after 2 seconds.
+    // The overall selection duration will be 3 seconds, between the first time
+    // suggestion was shown and the first card is chosen.
+    base::TimeDelta total_selection_delta =
+        suggestion_delta + base::TimeDelta::FromSeconds(2);
+    test_clock.SetNowTicks(now + total_selection_delta);
+    std::string guid("10000000-0000-0000-0000-000000000001");  // local card
+    autofill_manager_->FillOrPreviewForm(
+        AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, form.fields.back(),
+        autofill_manager_->MakeFrontendIDForTest(guid, std::string()));
+    histogram_tester.ExpectTotalCount(
+        "Autofill.FormEvents.CreditCard.WithServerNickname.SelectionDuration",
+        1);
+    histogram_tester.ExpectTimeBucketCount(
+        "Autofill.FormEvents.CreditCard.WithServerNickname.SelectionDuration",
+        total_selection_delta, 1);
+  }
+
+  // Reset the autofill manager state.
+  autofill_manager_->Reset();
+  autofill_manager_->AddSeenForm(form, field_types, field_types);
+
+  {
+    // A masked server card with nickname.
+    // Simulating suggestions being shown and selecting masked server card
+    // multiple times.
+    base::HistogramTester histogram_tester;
+    test_clock.SetNowTicks(now);
+    autofill_manager_->OnQueryFormFieldAutofill(
+        0, form, field, gfx::RectF(), /*autoselect_first_suggestion=*/false);
+    autofill_manager_->DidShowSuggestions(true /* is_new_popup */, form, field);
+    // Simulate the first selection happens 1 second after suggestion is shown.
+    base::TimeDelta first_suggestion_delta = base::TimeDelta::FromSeconds(1);
+    test_clock.SetNowTicks(now + first_suggestion_delta);
+    std::string guid1(
+        "10000000-0000-0000-0000-000000000002");  // masked server card
+    autofill_manager_->FillOrPreviewForm(
+        AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, form.fields.back(),
+        autofill_manager_->MakeFrontendIDForTest(guid1, std::string()));
+    // Simulate choosing another local card 2 seconds after user chooses the
+    // server card.
+    base::TimeDelta second_selection_delta =
+        first_suggestion_delta + base::TimeDelta::FromSeconds(2);
+    test_clock.SetNowTicks(now + second_selection_delta);
+    std::string guid2("10000000-0000-0000-0000-000000000001");  // local card
+    autofill_manager_->FillOrPreviewForm(
+        AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, form.fields.back(),
+        autofill_manager_->MakeFrontendIDForTest(guid2, std::string()));
+    // The selection duration should be only logged once.
+    histogram_tester.ExpectTotalCount(
+        "Autofill.FormEvents.CreditCard.WithServerNickname.SelectionDuration",
+        1);
+    // The logged selection duration should be 1 second, between the suggestion
+    // was shown and the first card is chosen.
+    histogram_tester.ExpectTimeBucketCount(
+        "Autofill.FormEvents.CreditCard.WithServerNickname.SelectionDuration",
+        first_suggestion_delta, 1);
   }
 }
 

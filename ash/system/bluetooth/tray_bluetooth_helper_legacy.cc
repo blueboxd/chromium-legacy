@@ -188,7 +188,7 @@ void TrayBluetoothHelperLegacy::InitializeOnAdapterReady(
 }
 
 void TrayBluetoothHelperLegacy::Initialize() {
-  device::BluetoothAdapterFactory::GetAdapter(
+  device::BluetoothAdapterFactory::Get()->GetAdapter(
       base::BindOnce(&TrayBluetoothHelperLegacy::InitializeOnAdapterReady,
                      weak_ptr_factory_.GetWeakPtr()));
 }

@@ -90,7 +90,7 @@ class GaloisKey {
   // 2^{log_decomposition_modulus}. Crashes for non-valid input parameters.
   static rlwe::StatusOr<GaloisKey> Deserialize(
       const SerializedGaloisKey& serialized,
-      typename ModularInt::Params* modulus_params,
+      const typename ModularInt::Params* modulus_params,
       const NttParameters<ModularInt>* ntt_params) {
     RLWE_ASSIGN_OR_RETURN(RelinearizationKey<ModularInt> key,
                           RelinearizationKey<ModularInt>::Deserialize(

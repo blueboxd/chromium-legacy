@@ -18,7 +18,7 @@
 # foo ->
 #   //content/public/app:child (group; "browser" and "both" ones look the same)
 #     //content (shared library) ->
-#       //content/public/app:both_sources (source set)
+#       //content/public/app:app_sources (source set)
 
 import("//build/config/chrome_build.gni")
 import("//build/config/ui.gni")
@@ -46,7 +46,7 @@ public_app_shared_deps = [
 ]
 
 if (is_component_build) {
-  source_set("both_sources") {
+  source_set("app_sources") {
     # Only the main content shared library can pull this in.
     visibility = [ "//content:content" ]
 
@@ -55,7 +55,7 @@ if (is_component_build) {
     configs += [ "//content:content_implementation" ]
 
     deps = public_app_shared_deps + [
-             "//content/app:both",
+             "//content/app",
              "//content/public/browser:browser_sources",
              "//content/public/gpu:gpu_sources",
              "//content/public/renderer:renderer_sources",
@@ -65,39 +65,20 @@ if (is_component_build) {
     allow_circular_includes_from = [
       # This target is a pair with the non-public version. They always go
       # together and include headers from each other.
-      "//content/app:both",
+      "//content/app",
     ]
   }
 
-  # These all just forward to content, which in turn depends on "both_sources".
-  group("browser") {
-    public_deps = [ "//content" ]
-  }
-  group("child") {
-    public_deps = [ "//content" ]
-  }
-  group("both") {
+  # This just forwards to content, which in turn depends on "app_sources".
+  group("app") {
     public_deps = [ "//content" ]
   }
 } else {
-  # content_main_delegate.cc conditionally includes content_browser_client.h
-  # from //content/public/browser when it's not the child build. However,
-  # the header checker doesn't know this doesn't apply and throws an error.
-  # So all of these targets set check_includes = false.
-  #
-  # TODO(brettw) either teach the header checker to understand simple
-  # ifdefs or split the file apart so we can enable header checking here.
-  # Furthermore, since this file exists in more than one target, they all
-  # have to opt-out of header checking (a file is checked once for all
-  # targets using a source file).
-
-  source_set("both") {
-    check_includes = false  # See comment above.
-
+  source_set("app") {
     sources = public_app_shared_sources
     configs += [ "//content:content_implementation" ]
     deps = public_app_shared_deps + [
-             "//content/app:both",
+             "//content/app",
              "//content/public/browser",
              "//content/public/common",
              "//content/public/gpu:gpu_sources",
@@ -108,13 +89,9 @@ if (is_component_build) {
     allow_circular_includes_from = [
       # This target is a pair with the non-public version. They always go
       # together and include headers from each other.
-      "//content/app:both",
+      "//content/app",
     ]
   }
-
-  # When the multi-DLL build is disabled, there is only one type of the
-  # "app" target, and "browser" and "child" are the same as "both".
-  # TODO(https://crbug.com/1056290): Remove these now that they are pointless.
 }
 
 source_set("content_browser_manifest") {

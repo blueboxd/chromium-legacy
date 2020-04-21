@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "cc/input/scroll_snap_data.h"
+
+#include "base/logging.h"
 #include "base/numerics/ranges.h"
 #include "cc/input/snap_selection_strategy.h"
 

@@ -29,7 +29,8 @@ class ContentLoadedEventListener final : public NativeEventListener {
       : callback_(std::move(callback)) {}
 
   void Invoke(ExecutionContext* execution_context, Event*) override {
-    std::move(callback_).Run(*Document::From(execution_context));
+    std::move(callback_).Run(
+        *To<LocalDOMWindow>(execution_context)->document());
   }
 
  private:

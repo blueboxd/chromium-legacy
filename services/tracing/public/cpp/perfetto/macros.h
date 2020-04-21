@@ -36,6 +36,12 @@ constexpr char kTraceEventEndName[] = "";
 // strings must be static constants. The track event is only recorded if
 // |category| is enabled for a tracing session.
 //
+// Rest of parameters can contain: a perfetto::Track object for asynchronous
+// events and a lambda used to fill typed event. Should be passed in that exact
+// order when both are used.
+//
+// When lambda is passed as an argument, it is executed synchronously.
+//
 // TODO(nuskos): Give a simple example once we have a typed event that doesn't
 // need interning.
 //   TRACE_EVENT_BEGIN("log", "LogMessage",
@@ -43,20 +49,23 @@ constexpr char kTraceEventEndName[] = "";
 //           auto* event = ctx.event();
 //           // Fill in some field in track_event.
 //       });
-//
-// When lambda is passed as an argument, it is executed synchronously.
 #define TRACE_EVENT_BEGIN(category, name, ...)                              \
   TRACING_INTERNAL_ADD_TRACE_EVENT(TRACE_EVENT_PHASE_BEGIN, category, name, \
                                    TRACE_EVENT_FLAG_NONE, ##__VA_ARGS__)
 
 // End a thread-scoped slice under |category|.
-#define TRACE_EVENT_END(category, ...)                                        \
-  TRACING_INTERNAL_ADD_TRACE_EVENT(TRACE_EVENT_PHASE_END, category,           \
-                                   kTraceEventEndName, TRACE_EVENT_FLAG_NONE, \
-                                   ##__VA_ARGS__)
+#define TRACE_EVENT_END(category, ...)                              \
+  TRACING_INTERNAL_ADD_TRACE_EVENT(TRACE_EVENT_PHASE_END, category, \
+                                   tracing::kTraceEventEndName,     \
+                                   TRACE_EVENT_FLAG_NONE, ##__VA_ARGS__)
 
 // Begin a thread-scoped slice which gets automatically closed when going out
 // of scope.
+//
+// BEWARE: similarly to TRACE_EVENT_BEGIN, this macro does accept a track, but
+// it does not work properly and should not be used.
+// TODO(b/154583431): figure out how to fix or disallow that and update the
+// comment.
 //
 // Similarly to TRACE_EVENT_BEGIN, when lambda is passed as an argument, it is
 // executed synchronously.

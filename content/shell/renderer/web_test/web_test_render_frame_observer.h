@@ -12,11 +12,13 @@
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 
 namespace content {
+class BlinkTestRunner;
 
 class WebTestRenderFrameObserver : public RenderFrameObserver,
                                    public mojom::BlinkTestControl {
  public:
-  explicit WebTestRenderFrameObserver(RenderFrame* render_frame);
+  explicit WebTestRenderFrameObserver(RenderFrame* render_frame,
+                                      BlinkTestRunner* blink_test_runner);
   ~WebTestRenderFrameObserver() override;
 
   WebTestRenderFrameObserver(const WebTestRenderFrameObserver&) = delete;
@@ -46,6 +48,7 @@ class WebTestRenderFrameObserver : public RenderFrameObserver,
   void BindReceiver(
       mojo::PendingAssociatedReceiver<mojom::BlinkTestControl> receiver);
 
+  BlinkTestRunner* const blink_test_runner_;
   mojo::AssociatedReceiver<mojom::BlinkTestControl> receiver_{this};
 };
 

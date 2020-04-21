@@ -120,11 +120,6 @@ class MODULES_EXPORT RTCQuicTransport final
   base::Optional<uint16_t> maxDatagramLength() const {
     return max_datagram_length_;
   }
-  // TODO(crbug.com/1060971): Remove |is_null| version.
-  uint16_t maxDatagramLength(bool& is_null) const {  // DEPRECATED
-    is_null = !max_datagram_length_.has_value();
-    return max_datagram_length_.value_or(0);
-  }
 
   String state() const;
   // Note: The listen/connect functions encourage an API user to connect()

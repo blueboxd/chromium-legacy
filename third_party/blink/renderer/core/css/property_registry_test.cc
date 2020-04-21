@@ -1,0 +1,212 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "third_party/blink/renderer/core/css/property_registry.h"
+#include "third_party/blink/renderer/core/css/css_test_helpers.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
+
+namespace blink {
+
+class PropertyRegistryTest : public PageTestBase,
+                             private ScopedCSSVariables2AtPropertyForTest {
+ public:
+  PropertyRegistryTest() : ScopedCSSVariables2AtPropertyForTest(true) {}
+
+  PropertyRegistry* Registry() { return GetDocument().GetPropertyRegistry(); }
+
+  const PropertyRegistration* Registration(AtomicString name) {
+    return Registry()->Registration(name);
+  }
+
+  const PropertyRegistration* RegisterProperty(AtomicString name) {
+    auto* registration = css_test_helpers::CreatePropertyRegistration(name);
+    Registry()->RegisterProperty(name, *registration);
+    return registration;
+  }
+
+  const PropertyRegistration* DeclareProperty(AtomicString name) {
+    auto* registration = css_test_helpers::CreatePropertyRegistration(name);
+    Registry()->DeclareProperty(name, *registration);
+    return registration;
+  }
+
+  HeapVector<Member<const PropertyRegistration>> AllRegistrations() {
+    HeapVector<Member<const PropertyRegistration>> vector;
+    for (auto entry : *Registry())
+      vector.push_back(entry.value);
+    return vector;
+  }
+};
+
+TEST_F(PropertyRegistryTest, RegisterProperty) {
+  EXPECT_FALSE(Registration("--x"));
+
+  auto* registered = RegisterProperty("--x");
+  EXPECT_EQ(registered, Registration("--x"));
+}
+
+TEST_F(PropertyRegistryTest, DeclareProperty) {
+  EXPECT_FALSE(Registration("--x"));
+
+  auto* declared = DeclareProperty("--x");
+  EXPECT_EQ(declared, Registration("--x"));
+}
+
+TEST_F(PropertyRegistryTest, DeclareThenRegisterProperty) {
+  auto* declared = DeclareProperty("--x");
+  EXPECT_EQ(declared, Registration("--x"));
+
+  auto* registered = RegisterProperty("--x");
+  EXPECT_EQ(registered, Registration("--x"));
+}
+
+TEST_F(PropertyRegistryTest, RegisterThenDeclareProperty) {
+  auto* registered = RegisterProperty("--x");
+  EXPECT_EQ(registered, Registration("--x"));
+
+  DeclareProperty("--x");
+  EXPECT_EQ(registered, Registration("--x"));
+}
+
+TEST_F(PropertyRegistryTest, RegisterAndDeclarePropertyNonOverlapping) {
+  auto* registered = RegisterProperty("--x");
+  EXPECT_EQ(registered, Registration("--x"));
+
+  auto* declared = DeclareProperty("--y");
+  EXPECT_EQ(declared, Registration("--y"));
+  EXPECT_EQ(registered, Registration("--x"));
+}
+
+TEST_F(PropertyRegistryTest, DeclareTwice) {
+  auto* declared1 = DeclareProperty("--x");
+  EXPECT_EQ(declared1, Registration("--x"));
+
+  auto* declared2 = DeclareProperty("--x");
+  EXPECT_EQ(declared2, Registration("--x"));
+}
+
+TEST_F(PropertyRegistryTest, RegistrationCount) {
+  EXPECT_EQ(0u, Registry()->RegistrationCount());
+
+  RegisterProperty("--a");
+  EXPECT_EQ(1u, Registry()->RegistrationCount());
+
+  RegisterProperty("--b");
+  EXPECT_EQ(2u, Registry()->RegistrationCount());
+
+  DeclareProperty("--a");
+  EXPECT_EQ(2u, Registry()->RegistrationCount());
+
+  DeclareProperty("--a");
+  EXPECT_EQ(2u, Registry()->RegistrationCount());
+
+  DeclareProperty("--c");
+  EXPECT_EQ(3u, Registry()->RegistrationCount());
+}
+
+TEST_F(PropertyRegistryTest, IsInRegisteredPropertySet) {
+  EXPECT_FALSE(Registry()->IsInRegisteredPropertySet("--x"));
+
+  RegisterProperty("--x");
+  EXPECT_TRUE(Registry()->IsInRegisteredPropertySet("--x"));
+  EXPECT_FALSE(Registry()->IsInRegisteredPropertySet("--y"));
+
+  DeclareProperty("--y");
+  EXPECT_TRUE(Registry()->IsInRegisteredPropertySet("--x"));
+  EXPECT_FALSE(Registry()->IsInRegisteredPropertySet("--y"));
+
+  RegisterProperty("--y");
+  EXPECT_TRUE(Registry()->IsInRegisteredPropertySet("--y"));
+  EXPECT_TRUE(Registry()->IsInRegisteredPropertySet("--y"));
+}
+
+TEST_F(PropertyRegistryTest, EmptyIterator) {
+  EXPECT_EQ(0u, AllRegistrations().size());
+}
+
+TEST_F(PropertyRegistryTest, IterateSingleRegistration) {
+  auto* reg1 = RegisterProperty("--x");
+  auto registrations = AllRegistrations();
+  EXPECT_EQ(1u, registrations.size());
+  EXPECT_TRUE(registrations.Contains(reg1));
+}
+
+TEST_F(PropertyRegistryTest, IterateDoubleRegistration) {
+  auto* reg1 = RegisterProperty("--x");
+  auto* reg2 = RegisterProperty("--y");
+
+  auto registrations = AllRegistrations();
+  EXPECT_EQ(2u, registrations.size());
+  EXPECT_TRUE(registrations.Contains(reg1));
+  EXPECT_TRUE(registrations.Contains(reg2));
+}
+
+TEST_F(PropertyRegistryTest, IterateSingleDeclaration) {
+  auto* reg1 = DeclareProperty("--x");
+  auto registrations = AllRegistrations();
+  EXPECT_EQ(1u, registrations.size());
+  EXPECT_TRUE(registrations.Contains(reg1));
+}
+
+TEST_F(PropertyRegistryTest, IterateDoubleDeclaration) {
+  auto* reg1 = DeclareProperty("--x");
+  auto* reg2 = DeclareProperty("--y");
+
+  auto registrations = AllRegistrations();
+  EXPECT_EQ(2u, registrations.size());
+  EXPECT_TRUE(registrations.Contains(reg1));
+  EXPECT_TRUE(registrations.Contains(reg2));
+}
+
+TEST_F(PropertyRegistryTest, IterateRegistrationAndDeclaration) {
+  auto* reg1 = RegisterProperty("--x");
+  auto* reg2 = DeclareProperty("--y");
+
+  auto registrations = AllRegistrations();
+  EXPECT_EQ(2u, registrations.size());
+  EXPECT_TRUE(registrations.Contains(reg1));
+  EXPECT_TRUE(registrations.Contains(reg2));
+}
+
+TEST_F(PropertyRegistryTest, IterateRegistrationAndDeclarationConflict) {
+  auto* reg1 = RegisterProperty("--x");
+  auto* reg2 = RegisterProperty("--y");
+  auto* reg3 = DeclareProperty("--y");
+  auto* reg4 = DeclareProperty("--z");
+
+  auto registrations = AllRegistrations();
+  EXPECT_EQ(3u, registrations.size());
+  EXPECT_TRUE(registrations.Contains(reg1));
+  EXPECT_TRUE(registrations.Contains(reg2));
+  EXPECT_FALSE(registrations.Contains(reg3));
+  EXPECT_TRUE(registrations.Contains(reg4));
+}
+
+TEST_F(PropertyRegistryTest, IterateFullOverlapSingle) {
+  auto* reg1 = DeclareProperty("--x");
+  auto* reg2 = RegisterProperty("--x");
+
+  auto registrations = AllRegistrations();
+  EXPECT_EQ(1u, registrations.size());
+  EXPECT_FALSE(registrations.Contains(reg1));
+  EXPECT_TRUE(registrations.Contains(reg2));
+}
+
+TEST_F(PropertyRegistryTest, IterateFullOverlapMulti) {
+  auto* reg1 = DeclareProperty("--x");
+  auto* reg2 = DeclareProperty("--y");
+  auto* reg3 = RegisterProperty("--x");
+  auto* reg4 = RegisterProperty("--y");
+
+  auto registrations = AllRegistrations();
+  EXPECT_EQ(2u, registrations.size());
+  EXPECT_FALSE(registrations.Contains(reg1));
+  EXPECT_FALSE(registrations.Contains(reg2));
+  EXPECT_TRUE(registrations.Contains(reg3));
+  EXPECT_TRUE(registrations.Contains(reg4));
+}
+
+}  // namespace blink

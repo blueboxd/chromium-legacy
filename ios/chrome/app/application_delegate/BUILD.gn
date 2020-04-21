@@ -2,6 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/buildflag_header.gni")
+import("//ios/chrome/features.gni")
+
+buildflag_header("ios_enable_metrickit_buildflags") {
+  header = "ios_enable_metrickit_buildflags.h"
+  flags = [ "IOS_ENABLE_METRICKIT=$ios_enable_metrickit" ]
+}
+
 source_set("application_delegate") {
   sources = [
     "memory_warning_helper.h",
@@ -23,6 +31,7 @@ source_set("unit_tests") {
   sources = [
     "app_state_unittest.mm",
     "memory_warning_helper_unittest.mm",
+    "metric_kit_subscriber_unittest.mm",
     "metrics_mediator_unittest.mm",
     "url_opener_unittest.mm",
     "user_activity_handler_unittest.mm",
@@ -30,6 +39,7 @@ source_set("unit_tests") {
   deps = [
     ":application_delegate",
     ":application_delegate_internal",
+    ":metric_kit_subscriber",
     ":tab_opening",
     ":test_support",
     "//base",
@@ -104,6 +114,21 @@ source_set("tab_opening") {
   ]
 }
 
+source_set("metric_kit_subscriber") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "metric_kit_subscriber.h",
+    "metric_kit_subscriber.mm",
+    "metric_kit_subscribing_util.h",
+    "metric_kit_subscribing_util.mm",
+  ]
+  libs = [ "MetricKit.framework" ]
+  deps = [
+    ":ios_enable_metrickit_buildflags",
+    "//base",
+  ]
+}
+
 source_set("application_delegate_internal") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
@@ -121,6 +146,7 @@ source_set("application_delegate_internal") {
   ]
   deps = [
     ":application_delegate",
+    ":ios_enable_metrickit_buildflags",
     ":tab_opening",
     "//base",
     "//build:branding_buildflags",
@@ -171,6 +197,9 @@ source_set("application_delegate_internal") {
     "//ui/base",
     "//url",
   ]
+  if (ios_enable_metrickit) {
+    deps += [ ":metric_kit_subscriber" ]
+  }
   libs = [
     "CoreSpotlight.framework",
     "UIKit.framework",

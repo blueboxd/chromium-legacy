@@ -196,8 +196,8 @@ public class InstantStartTest {
     @SmallTest
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
     // clang-format off
+    @EnableFeatures({ChromeFeatureList.TAB_SWITCHER_ON_RETURN + "<Study"})
     @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION,
-            "enable-features=" + ChromeFeatureList.TAB_SWITCHER_ON_RETURN + "<Study",
             "force-fieldtrials=Study/Group", IMMEDIATE_RETURN_PARAMS})
     public void layoutManagerChromePhonePreNativeTest() {
         // clang-format on

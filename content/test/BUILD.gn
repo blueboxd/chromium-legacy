@@ -355,7 +355,7 @@ jumbo_static_library("test_support") {
   public_deps = [
     "//components/download/public/common:test_support",
     "//components/services/storage/public/mojom",
-    "//content/public/app:both",
+    "//content/public/app",
     "//content/public/browser",
     "//content/public/common",
     "//ipc",
@@ -374,7 +374,7 @@ jumbo_static_library("test_support") {
     "//cc:test_support",
     "//components/viz/client",
     "//components/viz/host",
-    "//content/app:both_for_content_tests",
+    "//content/app:for_content_tests",
     "//content/browser:for_content_tests",
     "//content/browser/speech/proto",
     "//content/child:for_content_tests",
@@ -650,7 +650,7 @@ jumbo_static_library("browsertest_support") {
     "//base/test:test_config",
     "//base/test:test_support",
     "//components/network_session_configurator/common:common",
-    "//content/app:both_for_content_tests",
+    "//content/app:for_content_tests",
     "//content/browser:for_content_tests",
     "//content/shell:content_shell_app",
     "//content/shell:content_shell_lib",
@@ -666,7 +666,7 @@ jumbo_static_library("browsertest_support") {
   ]
 
   if (is_android) {
-    deps += [ "//content/public/app:both" ]
+    deps += [ "//content/public/app" ]
   } else {
     deps += [ "//content/public/browser" ]
   }
@@ -1160,7 +1160,7 @@ test("content_browsertests") {
     "//components/url_formatter:url_formatter",
     "//components/viz/host",
     "//components/viz/test:test_support",
-    "//content/app:both_for_content_tests",
+    "//content/app:for_content_tests",
     "//content/browser:for_content_tests",
     "//content/browser/background_sync:background_sync_proto",
     "//content/browser/resources/media:media_internals_resources_grit",
@@ -2043,7 +2043,7 @@ test("content_unittests") {
     "//components/viz/host",
     "//components/viz/service",
     "//components/viz/test:test_support",
-    "//content/app:both_for_content_tests",
+    "//content/app:for_content_tests",
     "//content/browser:for_content_tests",
     "//content/browser/background_fetch:background_fetch_proto",
     "//content/browser/cache_storage:cache_storage_proto",

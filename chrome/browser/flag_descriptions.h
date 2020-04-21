@@ -1574,6 +1574,9 @@ extern const char kAndroidNightModeTabReparentingDescription[];
 
 #else  // !defined(OS_ANDROID)
 
+extern const char kEnableAccessibilityLiveCaptionsName[];
+extern const char kEnableAccessibilityLiveCaptionsDescription[];
+
 extern const char kCastMediaRouteProviderName[];
 extern const char kCastMediaRouteProviderDescription[];
 

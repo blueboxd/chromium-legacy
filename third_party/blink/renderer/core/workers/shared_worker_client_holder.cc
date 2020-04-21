@@ -72,8 +72,8 @@ SharedWorkerClientHolder* SharedWorkerClientHolder::From(Document& document) {
 }
 
 SharedWorkerClientHolder::SharedWorkerClientHolder(Document& document)
-    : connector_(document.ToExecutionContext()),
-      client_receivers_(document.ToExecutionContext()),
+    : connector_(document.GetExecutionContext()),
+      client_receivers_(document.GetExecutionContext()),
       task_runner_(document.GetTaskRunner(blink::TaskType::kDOMManipulation)) {
   DCHECK(IsMainThread());
   document.GetBrowserInterfaceBroker().GetInterface(

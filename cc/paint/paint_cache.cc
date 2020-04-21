@@ -5,6 +5,7 @@
 #include "cc/paint/paint_cache.h"
 
 #include "base/containers/flat_set.h"
+#include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/synchronization/lock.h"
 

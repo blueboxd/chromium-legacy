@@ -40,7 +40,7 @@
 namespace blink {
 
 ScriptRunner::ScriptRunner(Document* document)
-    : ExecutionContextLifecycleStateObserver(document),
+    : ExecutionContextLifecycleStateObserver(document->GetExecutionContext()),
       document_(document),
       task_runner_(document->GetTaskRunner(TaskType::kNetworking)) {
   DCHECK(document);

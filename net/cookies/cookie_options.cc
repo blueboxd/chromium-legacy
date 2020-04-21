@@ -18,19 +18,9 @@ CookieOptions::SameSiteCookieContext::GetContextForCookieInclusion() const {
   return context_;
 }
 
-int64_t CookieOptions::SameSiteCookieContext::ConvertToMetricsValue() const {
-  if (cross_schemeness_ == CrossSchemeness::INSECURE_SECURE) {
-    return static_cast<int64_t>(context_) | kToSecureMask;
-  } else if (cross_schemeness_ == CrossSchemeness::SECURE_INSECURE) {
-    return static_cast<int64_t>(context_) | kToInsecureMask;
-  }
-  return static_cast<int64_t>(context_);
-}
-
 bool operator==(const CookieOptions::SameSiteCookieContext& lhs,
                 const CookieOptions::SameSiteCookieContext& rhs) {
-  return std::tie(lhs.context_, lhs.cross_schemeness_) ==
-         std::tie(rhs.context_, rhs.cross_schemeness_);
+  return std::tie(lhs.context_) == std::tie(rhs.context_);
 }
 
 bool operator!=(const CookieOptions::SameSiteCookieContext& lhs,

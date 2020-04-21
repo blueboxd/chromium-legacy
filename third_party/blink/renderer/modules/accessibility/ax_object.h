@@ -55,6 +55,10 @@
 
 class SkMatrix44;
 
+namespace ui {
+struct AXNodeData;
+}
+
 namespace blink {
 
 class AccessibleNodeList;
@@ -386,6 +390,12 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   void TokenVectorFromAttribute(Vector<String>&, const QualifiedName&) const;
 
   void GetSparseAXAttributes(AXSparseAttributeClient&) const;
+
+  // Serialize the properties of this node into |node_data|.
+  //
+  // TODO(crbug.com/1068668): AX onion soup - finish migrating
+  // BlinkAXTreeSource::SerializeNode into AXObject::Serialize.
+  void Serialize(ui::AXNodeData* node_data);
 
   // Determine subclass type.
   virtual bool IsAXNodeObject() const { return false; }
@@ -1150,6 +1160,12 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   const AtomicString& GetInternalsAttribute(Element&,
                                             const QualifiedName&) const;
   bool IsHiddenViaStyle() const;
+
+  // Returns an updated layout object to be used in a native scroll action. Note
+  // that this updates style for `GetNode()` as well as layout for any layout
+  // objects generated. Returns nullptr if a native scroll action to the node is
+  // not possible.
+  LayoutObject* GetLayoutObjectForNativeScrollAction() const;
 
   static unsigned number_of_live_ax_objects_;
 

@@ -44,10 +44,6 @@ class BluetoothAdvertisingEvent final : public Event {
   base::Optional<uint16_t> appearance() const { return appearance_; }
   base::Optional<int8_t> txPower() const { return txPower_; }
   base::Optional<int8_t> rssi() const { return rssi_; }
-  // TODO(crbug.com/1060971): Remove |is_null| version.
-  uint16_t appearance(bool& is_null) const;  // DEPRECATED
-  int8_t txPower(bool& is_null) const;       // DEPRECATED
-  int8_t rssi(bool& is_null) const;          // DEPRECATED
   BluetoothManufacturerDataMap* manufacturerData() const;
   BluetoothServiceDataMap* serviceData() const;
 

@@ -21,7 +21,7 @@
 #include <type_traits>
 #include <utility>
 
-#include "glog/logging.h"
+#include <glog/logging.h>
 #include <gtest/gtest.h>
 #include "absl/container/fixed_array.h"
 #include "absl/numeric/int128.h"

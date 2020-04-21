@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/inspector/console_message_storage.h"
 #include "third_party/blink/renderer/core/inspector/thread_debugger.h"
 #include "third_party/blink/renderer/core/script/script.h"
@@ -128,7 +129,7 @@ class DedicatedWorkerMessagingProxyForTest
         {"contentSecurityPolicy",
          network::mojom::ContentSecurityPolicyType::kReport}};
     auto worker_settings = std::make_unique<WorkerSettings>(
-        Document::From(GetExecutionContext())->GetSettings());
+        To<LocalDOMWindow>(GetExecutionContext())->GetFrame()->GetSettings());
     InitializeWorkerThread(
         std::make_unique<GlobalScopeCreationParams>(
             script_url, mojom::ScriptType::kClassic, "fake global scope name",
@@ -175,7 +176,7 @@ class DedicatedWorkerTest : public PageTestBase {
     PageTestBase::SetUp(IntSize());
     worker_messaging_proxy_ =
         MakeGarbageCollected<DedicatedWorkerMessagingProxyForTest>(
-            GetDocument().ToExecutionContext());
+            GetFrame().DomWindow());
   }
 
   void TearDown() override {

@@ -88,7 +88,7 @@ void BluetoothEventRouter::GetAdapter(
 
   // Note: On ChromeOS this will return an adapter that also supports Bluetooth
   // Low Energy.
-  device::BluetoothAdapterFactory::GetClassicAdapter(
+  device::BluetoothAdapterFactory::Get()->GetClassicAdapter(
       base::BindOnce(&BluetoothEventRouter::OnAdapterInitialized,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }

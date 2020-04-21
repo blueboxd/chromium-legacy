@@ -150,7 +150,7 @@ fuzzer_test("appcache_fuzzer") {
   deps = [
     ":appcache_fuzzer_proto",
     "//base/test:test_support",
-    "//content/app:both_for_content_tests",
+    "//content/app:for_content_tests",
     "//content/browser:browser",
     "//content/public/browser:browser_sources",
     "//content/test:test_support",
@@ -180,7 +180,7 @@ fuzzer_test("speech_audio_encoder_fuzzer") {
 fuzzer_test("browser_accessibility_fuzzer") {
   sources = [ "browser_accessibility_fuzzer.cc" ]
   deps = [
-    "//content/app:both_for_content_tests",
+    "//content/app:for_content_tests",
     "//content/browser:browser",
     "//content/browser:browser",
     "//content/public/browser:browser_sources",

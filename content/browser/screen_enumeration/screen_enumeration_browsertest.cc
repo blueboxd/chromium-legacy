@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -31,7 +32,7 @@ constexpr char kGetScreensScript[] = R"(
                     height: s.height,
                     internal: s.internal,
                     left: s.left,
-                    name: s.name,
+                    id: s.id,
                     orientation: s.orientation != null,
                     pixelDepth: s.pixelDepth,
                     primary: s.primary,
@@ -48,6 +49,7 @@ constexpr char kGetScreensScript[] = R"(
 base::ListValue GetExpectedScreens() {
   base::ListValue expected_screens;
   auto* screen = display::Screen::GetScreen();
+  size_t id = 0;
   for (const auto& d : screen->GetAllDisplays()) {
     base::DictionaryValue s;
     s.SetIntKey("availHeight", d.work_area().height());
@@ -58,7 +60,7 @@ base::ListValue GetExpectedScreens() {
     s.SetIntKey("height", d.bounds().height());
     s.SetBoolKey("internal", d.IsInternal());
     s.SetIntKey("left", d.bounds().x());
-    s.SetStringKey("name", "Generic Screen");
+    s.SetStringKey("id", base::NumberToString(id++));
     s.SetBoolKey("orientation", false);
     s.SetIntKey("pixelDepth", d.color_depth());
     s.SetBoolKey("primary", d.id() == screen->GetPrimaryDisplay().id());

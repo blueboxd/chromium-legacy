@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/css/css_property_value.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
+#include "third_party/blink/renderer/core/css/properties/css_bitset.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/css/resolver/cascade_filter.h"
 #include "third_party/blink/renderer/core/css/resolver/cascade_interpolations.h"
@@ -86,6 +87,14 @@ class CORE_EXPORT StyleCascade {
   // It is valid to call Apply multiple times (up to 15), and each call may
   // provide a different filter.
   void Apply(CascadeFilter = CascadeFilter());
+
+  // Returns a CSSBitset containing the !important declarations (analyzing
+  // if needed). If there are no !important declarations, returns nullptr.
+  //
+  // Note that this function does not return any set bits for -internal-visited-
+  // properties. Instead, !important -internal-visited-* declarations cause
+  // the corresponding unvisited properties to be set in the return value.
+  std::unique_ptr<CSSBitset> GetImportantSet();
 
   // Resets the cascade to its initial state. Note that this does not undo
   // any changes already applied to the StyleResolverState/ComputedStyle.

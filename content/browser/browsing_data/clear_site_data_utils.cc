@@ -63,7 +63,7 @@ class SiteDataClearer : public BrowsingDataRemover::Observer {
     // TODO(msramek): What about plugin data?
     if (clear_cookies_) {
       std::string domain = GetDomainAndRegistry(
-          origin_.host(),
+          origin_,
           net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
 
       if (domain.empty())

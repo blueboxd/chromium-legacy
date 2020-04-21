@@ -137,8 +137,15 @@ bool ShouldShowWarning(const DlpDeepScanningVerdict& verdict) {
 std::string GetFileMimeType(base::FilePath path) {
   // TODO(crbug.com/1013252): Obtain a more accurate MimeType by parsing the
   // file content.
+  base::FilePath::StringType ext = path.FinalExtension();
+  if (ext.empty())
+    return "";
+
+  if (ext[0] == FILE_PATH_LITERAL('.'))
+    ext = ext.substr(1);
+
   std::string mime_type;
-  net::GetMimeTypeFromFile(path, &mime_type);
+  net::GetMimeTypeFromExtension(ext, &mime_type);
   return mime_type;
 }
 

@@ -188,6 +188,7 @@ static_library("web_test_renderer") {
     "//skia:test_fonts",
     "//third_party/blink/public:blink_headers",
     "//third_party/blink/public:test_headers",
+    "//ui/accessibility:ax_base",
     "//ui/display",
     "//ui/events:dom_keycode_converter",
     "//ui/events:events_base",
@@ -231,7 +232,7 @@ static_library("content_shell_app") {
     ":content_shell_lib",
     ":web_test_common",
     ":web_test_renderer",
-    "//content/public/app:both",
+    "//content/public/app",
     "//v8",
   ]
   if (!is_fuchsia) {
@@ -390,7 +391,7 @@ static_library("content_shell_lib") {
     ":android_shell_descriptors",
 
     # content_shell_lib also exposes all public content APIs.
-    "//content/public/app:both",
+    "//content/public/app",
     "//content/public/browser",
     "//content/public/child",
     "//content/public/common",
@@ -739,7 +740,7 @@ if (is_android) {
       ":content_shell_app",
       ":pak",
       "//build/win:default_exe_manifest",
-      "//content/public/app:both",
+      "//content/public/app",
     ]
 
     data_deps = [
@@ -883,7 +884,7 @@ if (is_mac) {
       ":content_shell_framework_helpers",
       ":content_shell_framework_resources",
       ":content_shell_swiftshader_library",
-      "//content/public/app:both",
+      "//content/public/app",
       "//content/public/common",
       "//third_party/icu:icudata",
     ]

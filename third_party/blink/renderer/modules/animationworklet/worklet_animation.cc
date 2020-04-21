@@ -214,7 +214,7 @@ WorkletAnimation* WorkletAnimation::Create(
     return nullptr;
   }
 
-  Document& document = *Document::From(ExecutionContext::From(script_state));
+  Document& document = *LocalDOMWindow::From(script_state)->document();
   if (!document.GetWorkletAnimationController().IsAnimatorRegistered(
           animator_name)) {
     exception_state.ThrowDOMException(
@@ -351,20 +351,6 @@ base::Optional<double> WorkletAnimation::startTime() {
   if (!start_time_)
     return base::nullopt;
   return ToMilliseconds(start_time_.value());
-}
-
-double WorkletAnimation::currentTime(bool& is_null) {
-  base::Optional<base::TimeDelta> current_time = CurrentTime();
-  is_null = !current_time.has_value();
-  return ToMilliseconds(current_time);
-}
-
-double WorkletAnimation::startTime(bool& is_null) {
-  // The timeline may have become newly active or inactive, which then can cause
-  // the start time to change.
-  UpdateCurrentTimeIfNeeded();
-  is_null = !start_time_.has_value();
-  return ToMilliseconds(start_time_);
 }
 
 void WorkletAnimation::pause(ExceptionState& exception_state) {
@@ -807,19 +793,18 @@ base::Optional<base::TimeDelta> WorkletAnimation::CurrentTimeInternal() const {
   if (!IsTimelineActive())
     return base::nullopt;
 
-  bool is_null;
-  double timeline_time_ms = timeline_->currentTime(is_null);
   // Currently ScrollTimeline may return unresolved current time when:
   // - Current scroll offset is less than startScrollOffset and fill mode is
   //   none or forward.
   // OR
   // - Current scroll offset is greater than or equal to endScrollOffset and
   //   fill mode is none or backwards.
-  if (is_null)
+  base::Optional<double> timeline_time_ms = timeline_->currentTime();
+  if (!timeline_time_ms)
     return base::nullopt;
 
   base::TimeDelta timeline_time =
-      base::TimeDelta::FromMillisecondsD(timeline_time_ms);
+      base::TimeDelta::FromMillisecondsD(timeline_time_ms.value());
   DCHECK(start_time_);
   return (timeline_time - start_time_.value()) * playback_rate_;
 }

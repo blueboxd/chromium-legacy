@@ -113,24 +113,21 @@ template("fuchsia_package_runner") {
       data += [ "${aemu_root}/" ]
     }
 
-    if (host_os == "linux" && host_cpu == "x64" && target_cpu == "arm64") {
-      data += [
-        # Host tools for arm64 test bots.
-        "//third_party/fuchsia-sdk/sdk/tools/arm64/fvm",
-        "//third_party/fuchsia-sdk/sdk/tools/arm64/merkleroot",
-        "//third_party/fuchsia-sdk/sdk/tools/arm64/pm",
-        "//third_party/fuchsia-sdk/sdk/tools/arm64/symbolize",
-        "//third_party/fuchsia-sdk/sdk/tools/arm64/zbi",
-        "${qemu_arm64_root}/",
-      ]
+    # Ensure that the host tools required by runner scripts are in runtime deps.
+    # Note that these must be provided for the test host architecture, which
+    # currently always matches the |target_cpu|, rather than for the build host
+    # architecture.
+    data += [
+      "//third_party/fuchsia-sdk/sdk/tools/${target_cpu}/fvm",
+      "//third_party/fuchsia-sdk/sdk/tools/${target_cpu}/merkleroot",
+      "//third_party/fuchsia-sdk/sdk/tools/${target_cpu}/pm",
+      "//third_party/fuchsia-sdk/sdk/tools/${target_cpu}/symbolize",
+      "//third_party/fuchsia-sdk/sdk/tools/${target_cpu}/zbi",
+    ]
+    if (target_cpu == "arm64") {
+      data += [ "${qemu_arm64_root}/" ]
     } else {
       data += [
-        # Host tools for x64 test bots.
-        "//third_party/fuchsia-sdk/sdk/tools/x64/fvm",
-        "//third_party/fuchsia-sdk/sdk/tools/x64/merkleroot",
-        "//third_party/fuchsia-sdk/sdk/tools/x64/pm",
-        "//third_party/fuchsia-sdk/sdk/tools/x64/symbolize",
-        "//third_party/fuchsia-sdk/sdk/tools/x64/zbi",
         "${qemu_root}/",
         "//third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer",
       ]

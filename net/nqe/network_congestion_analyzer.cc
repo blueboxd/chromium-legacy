@@ -348,22 +348,6 @@ void NetworkCongestionAnalyzer::FinalizeCurrentMeasurementPeriod() {
         count_inflight_requests_for_peak_queueing_delay_;
   }
 
-  size_t peak_queueing_delay_level =
-      ComputePeakQueueingDelayLevel(peak_queueing_delay_);
-  DCHECK_GE(kQueueingDelayLevelMaxVal, peak_queueing_delay_level);
-
-  if (peak_queueing_delay_level >= kQueueingDelayLevelMinVal &&
-      peak_queueing_delay_level <= kQueueingDelayLevelMaxVal) {
-    // Records the count of in-flight requests causing the peak queueing delay
-    // within the current measurement period. These samples are bucketized
-    // into 10 peak queueing delay levels.
-    LOCAL_HISTOGRAM_COUNTS_100(
-        "NQE.CongestionAnalyzer.CountInflightRequestsForPeakQueueingDelay."
-        "Level" +
-            base::NumberToString(peak_queueing_delay_level),
-        count_inflight_requests_for_peak_queueing_delay_);
-  }
-
   UpdateRequestsCountAndPeakQueueingDelayMapping();
 }
 

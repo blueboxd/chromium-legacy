@@ -69,19 +69,4 @@ base::Optional<double> DeviceMotionEventRotationRate::gamma() const {
   return gamma_;
 }
 
-double DeviceMotionEventRotationRate::alpha(bool& is_null) const {
-  is_null = std::isnan(alpha_);
-  return alpha_;
-}
-
-double DeviceMotionEventRotationRate::beta(bool& is_null) const {
-  is_null = std::isnan(beta_);
-  return beta_;
-}
-
-double DeviceMotionEventRotationRate::gamma(bool& is_null) const {
-  is_null = std::isnan(gamma_);
-  return gamma_;
-}
-
 }  // namespace blink

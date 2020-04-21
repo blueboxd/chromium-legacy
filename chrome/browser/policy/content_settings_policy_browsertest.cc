@@ -165,7 +165,7 @@ IN_PROC_BROWSER_TEST_F(WebBluetoothPolicyTest, Block) {
       new testing::NiceMock<device::MockBluetoothAdapter>;
   EXPECT_CALL(*adapter, IsPresent()).WillRepeatedly(testing::Return(true));
   auto bt_global_values =
-      device::BluetoothAdapterFactory::Get().InitGlobalValuesForTesting();
+      device::BluetoothAdapterFactory::Get()->InitGlobalValuesForTesting();
   bt_global_values->SetLESupported(true);
   device::BluetoothAdapterFactory::SetAdapterForTesting(adapter);
 

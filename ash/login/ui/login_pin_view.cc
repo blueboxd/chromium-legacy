@@ -487,21 +487,6 @@ void LoginPinView::NotifyAccessibilityLocationChanged() {
 }
 
 void LoginPinView::OnPasswordTextChanged(bool is_empty) {
-  // Disabling the backspace button or the submit button will make it lose
-  // focus. The previous focusable view is a button in PIN keyboard, which is
-  // slightly more expected than the user menu.
-  if (is_empty) {
-    View* with_focus = nullptr;
-    if (backspace_->HasFocus())
-      with_focus = backspace_;
-    else if (submit_button_->HasFocus())
-      with_focus = submit_button_;
-    if (with_focus) {
-      View* previous = with_focus->GetPreviousFocusableView();
-      if (previous)
-        previous->RequestFocus();
-    }
-  }
   backspace_->SetEnabled(!is_empty);
   submit_button_->SetEnabled(!is_empty);
 }

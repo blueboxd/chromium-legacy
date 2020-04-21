@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fetch/request.h"
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
@@ -255,12 +256,12 @@ void DedicatedWorker::terminate() {
 
 BeginFrameProviderParams DedicatedWorker::CreateBeginFrameProviderParams() {
   DCHECK(GetExecutionContext()->IsContextThread());
-  // If we don't have a frame or we are not in Document, some of the SinkIds
+  // If we don't have a frame or we are not in window, some of the SinkIds
   // won't be initialized. If that's the case, the Worker will initialize it by
   // itself later.
   BeginFrameProviderParams begin_frame_provider_params;
-  if (auto* document = Document::DynamicFrom(GetExecutionContext())) {
-    LocalFrame* frame = document->GetFrame();
+  if (auto* window = DynamicTo<LocalDOMWindow>(GetExecutionContext())) {
+    LocalFrame* frame = window->GetFrame();
     if (frame) {
       WebFrameWidgetBase* widget =
           WebLocalFrameImpl::FromFrame(frame)->LocalRootFrameWidget();
@@ -322,9 +323,8 @@ void DedicatedWorker::DispatchErrorEventForScriptFetchFailure() {
 std::unique_ptr<WebContentSettingsClient>
 DedicatedWorker::CreateWebContentSettingsClient() {
   std::unique_ptr<WebContentSettingsClient> content_settings_client;
-  if (auto* document = Document::DynamicFrom(GetExecutionContext())) {
-    LocalFrame* frame = document->GetFrame();
-    return frame->Client()->CreateWorkerContentSettingsClient();
+  if (auto* window = DynamicTo<LocalDOMWindow>(GetExecutionContext())) {
+    return window->GetFrame()->Client()->CreateWorkerContentSettingsClient();
   } else if (GetExecutionContext()->IsWorkerGlobalScope()) {
     WebContentSettingsClient* web_worker_content_settings_client =
         To<WorkerGlobalScope>(GetExecutionContext())->ContentSettingsClient();
@@ -390,14 +390,14 @@ DedicatedWorker::CreateGlobalScopeCreationParams(
   base::UnguessableToken parent_devtools_token;
   std::unique_ptr<WorkerSettings> settings;
   UserAgentMetadata ua_metadata;
-  if (auto* document = Document::DynamicFrom(GetExecutionContext())) {
-    auto* frame = document->GetFrame();
+  if (auto* window = DynamicTo<LocalDOMWindow>(GetExecutionContext())) {
+    auto* frame = window->GetFrame();
     if (frame) {
       parent_devtools_token = frame->GetDevToolsFrameToken();
       ua_metadata = frame->Loader().UserAgentMetadata().value_or(
           blink::UserAgentMetadata());
     }
-    settings = std::make_unique<WorkerSettings>(document->GetSettings());
+    settings = std::make_unique<WorkerSettings>(frame->GetSettings());
   } else {
     WorkerGlobalScope* worker_global_scope =
         To<WorkerGlobalScope>(GetExecutionContext());
@@ -431,10 +431,10 @@ DedicatedWorker::CreateGlobalScopeCreationParams(
 
 scoped_refptr<WebWorkerFetchContext>
 DedicatedWorker::CreateWebWorkerFetchContext() {
-  // This worker is being created by the document.
-  if (auto* document = Document::DynamicFrom(GetExecutionContext())) {
+  // This worker is being created by the window.
+  if (auto* window = DynamicTo<LocalDOMWindow>(GetExecutionContext())) {
     scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context;
-    LocalFrame* frame = document->GetFrame();
+    LocalFrame* frame = window->GetFrame();
     if (base::FeatureList::IsEnabled(features::kPlzDedicatedWorker)) {
       web_worker_fetch_context =
           frame->Client()->CreateWorkerFetchContextForPlzDedicatedWorker(

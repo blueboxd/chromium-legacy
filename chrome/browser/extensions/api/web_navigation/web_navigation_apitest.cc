@@ -517,15 +517,7 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, PendingDeletion) {
   ASSERT_TRUE(RunExtensionTest("webnavigation/pendingDeletion")) << message_;
 }
 
-// TODO(jam): http://crbug.com/350550
-// TODO(crbug/974787): Flaky on Win7 debug builds.
-#if (defined(OS_CHROMEOS) && defined(ADDRESS_SANITIZER)) || \
-    (defined(OS_WIN) && !(defined(NDEBUG)))
-#define MAYBE_Crash DISABLED_Crash
-#else
-#define MAYBE_Crash Crash
-#endif
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_Crash) {
+IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, Crash) {
   content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
   ASSERT_TRUE(StartEmbeddedTestServer());
 
@@ -537,18 +529,17 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_Crash) {
 
   ResultCatcher catcher;
 
-  GURL url(base::StringPrintf(
-      "http://www.a.com:%u/"
-          "extensions/api_test/webnavigation/crash/a.html",
-      embedded_test_server()->port()));
+  GURL url(embedded_test_server()->GetURL(
+      "www.a.com", "/extensions/api_test/webnavigation/crash/a.html"));
   ui_test_utils::NavigateToURL(browser(), url);
 
+  content::RenderProcessHostWatcher process_watcher(
+      tab, content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
   ui_test_utils::NavigateToURL(browser(), GURL(content::kChromeUICrashURL));
+  process_watcher.Wait();
 
-  url = GURL(base::StringPrintf(
-      "http://www.a.com:%u/"
-          "extensions/api_test/webnavigation/crash/b.html",
-      embedded_test_server()->port()));
+  url = GURL(embedded_test_server()->GetURL(
+      "www.a.com", "/extensions/api_test/webnavigation/crash/b.html"));
   ui_test_utils::NavigateToURL(browser(), url);
 
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();

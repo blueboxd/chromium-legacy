@@ -9,7 +9,6 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.components.external_intents.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
@@ -135,8 +134,6 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
         int result = mExternalNavHandler.shouldOverrideUrlLoading(params);
         mLastOverrideUrlLoadingResult = result;
 
-        RecordHistogram.recordEnumeratedHistogram("Android.TabNavigationInterceptResult", result,
-                OverrideUrlLoadingResult.NUM_ENTRIES);
         switch (result) {
             case OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT:
                 assert mExternalNavHandler.canExternalAppHandleUrl(url);

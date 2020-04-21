@@ -354,7 +354,7 @@ MediaControlsImpl::MediaControlsImpl(HTMLMediaElement& media_element)
       is_mouse_over_controls_(false),
       is_paused_for_scrubbing_(false),
       resize_observer_(ResizeObserver::Create(
-          media_element.GetDocument(),
+          media_element.GetDocument().domWindow(),
           MakeGarbageCollected<MediaControlsResizeObserverDelegate>(this))),
       element_size_changed_timer_(
           media_element.GetDocument().GetTaskRunner(TaskType::kInternalMedia),
@@ -669,7 +669,7 @@ Node::InsertionNotificationRequest MediaControlsImpl::InsertedInto(
 
   if (!resize_observer_) {
     resize_observer_ = ResizeObserver::Create(
-        MediaElement().GetDocument(),
+        MediaElement().GetDocument().domWindow(),
         MakeGarbageCollected<MediaControlsResizeObserverDelegate>(this));
     HTMLMediaElement& html_media_element = MediaElement();
     resize_observer_->observe(&html_media_element);

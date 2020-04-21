@@ -43,6 +43,9 @@ class CORE_EXPORT CascadeMap {
   // corresponding high_priority_-bit to be set. This provides a fast way to
   // check which high-priority properties have been added (if any).
   uint64_t HighPriorityBits() const { return high_priority_; }
+  // True if any important declaration has been added.
+  bool HasImportant() const { return has_important_; }
+  const CSSBitset& NativeBitset() const { return native_properties_.Bits(); }
   // Remove all properties (both native and custom) from the CascadeMap.
   void Reset();
 
@@ -73,6 +76,7 @@ class CORE_EXPORT CascadeMap {
 
  private:
   uint64_t high_priority_ = 0;
+  bool has_important_ = false;
   NativeMap native_properties_;
   NativeMap native_ua_properties_;
   NativeMap native_user_properties_;

@@ -104,12 +104,10 @@ std::string CanonicalizeHost(const GURL& url) {
     return std::string(url::kFileScheme) + url::kStandardSchemeSeparator;
   }
 
+  std::string retval = net::registry_controlled_domains::GetDomainAndRegistry(
+      url, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
   std::string host = url.host();
-  std::string retval =
-      net::registry_controlled_domains::GetDomainAndRegistry(
-          host,
-          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-  if (!retval.length())  // Is an IP address or other special origin.
+  if (retval.empty())  // Is an IP address or other special origin.
     return host;
 
   std::string::size_type position = host.rfind(retval);

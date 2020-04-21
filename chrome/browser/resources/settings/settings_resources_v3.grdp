@@ -27,17 +27,16 @@
            use_base_dir="false"
            compress="false" type="BINDATA"
            preprocess="true" />
-  <include name="IDR_SETTINGS_APPEARANCE_PAGE_APPEARANCE_BROWSER_PROXY_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/appearance_page/appearance_browser_proxy.m.js"
-           use_base_dir="false"
+  <include name="IDR_SETTINGS_APPEARANCE_PAGE_APPEARANCE_BROWSER_PROXY_JS"
+           file="appearance_page/appearance_browser_proxy.js"
            preprocess="true"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_APPEARANCE_PAGE_APPEARANCE_FONTS_PAGE_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/appearance_page/appearance_fonts_page.m.js"
+  <include name="IDR_SETTINGS_APPEARANCE_PAGE_APPEARANCE_FONTS_PAGE_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/appearance_page/appearance_fonts_page.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_APPEARANCE_PAGE_APPEARANCE_PAGE_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/appearance_page/appearance_page.m.js"
+  <include name="IDR_SETTINGS_APPEARANCE_PAGE_APPEARANCE_PAGE_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/appearance_page/appearance_page.js"
            use_base_dir="false"
            preprocess="true"
            compress="false" type="BINDATA" />
@@ -45,8 +44,8 @@
            file="${root_gen_dir}/chrome/browser/resources/settings/appearance_page/fonts_browser_proxy.m.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_APPEARANCE_PAGE_HOME_URL_INPUT_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/appearance_page/home_url_input.m.js"
+  <include name="IDR_SETTINGS_APPEARANCE_PAGE_HOME_URL_INPUT_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/appearance_page/home_url_input.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
   <include name="IDR_SETTINGS_AUTOFILL_PAGE_AUTOFILL_PAGE_M_JS"

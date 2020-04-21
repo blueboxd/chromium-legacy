@@ -10,6 +10,7 @@
 // NOTE: This needs to be included *after* windows.h.
 #include <sddl.h>
 
+#include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"

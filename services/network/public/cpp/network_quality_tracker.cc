@@ -165,9 +165,9 @@ void NetworkQualityTracker::InitializeMojoChannel() {
 
   // base::Unretained is safe as destruction of the
   // NetworkQualityTracker will also destroy the |receiver_|.
-  receiver_.set_disconnect_handler(base::BindRepeating(
-      &NetworkQualityTracker::HandleNetworkServicePipeBroken,
-      base::Unretained(this)));
+  receiver_.set_disconnect_handler(
+      base::BindOnce(&NetworkQualityTracker::HandleNetworkServicePipeBroken,
+                     base::Unretained(this)));
 }
 
 void NetworkQualityTracker::HandleNetworkServicePipeBroken() {

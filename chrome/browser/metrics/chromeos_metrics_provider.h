@@ -18,10 +18,6 @@ namespace arc {
 struct ArcFeatures;
 }
 
-namespace device {
-class BluetoothAdapter;
-}
-
 namespace features {
 extern const base::Feature kUmaShortHWClass;
 }
@@ -62,10 +58,6 @@ class ChromeOSMetricsProvider : public metrics::MetricsProvider {
   // is run.
   void InitTaskGetFullHardwareClass(base::OnceClosure callback);
 
-  // Creates the Bluetooth adapter. When this task is complete, |callback| is
-  // run.
-  void InitTaskGetBluetoothAdapter(base::OnceClosure callback);
-
   // Retrieves ARC features using ArcFeaturesParser. When this task is complete,
   // |callback| is run.
   void InitTaskGetArcFeatures(base::OnceClosure callback);
@@ -90,11 +82,6 @@ class ChromeOSMetricsProvider : public metrics::MetricsProvider {
   void UpdateMultiProfileUserCount(
       metrics::SystemProfileProto* system_profile_proto);
 
-  // Sets the Bluetooth Adapter instance used for the WriteBluetoothProto()
-  // call and calls callback.
-  void SetBluetoothAdapter(base::OnceClosure callback,
-                           scoped_refptr<device::BluetoothAdapter> adapter);
-
   // Sets the full hardware class, then calls the callback.
   void SetFullHardwareClass(base::OnceClosure callback,
                             std::string full_hardware_class);
@@ -102,9 +89,6 @@ class ChromeOSMetricsProvider : public metrics::MetricsProvider {
   // Updates ARC-related system profile fields, then calls the callback.
   void OnArcFeaturesParsed(base::OnceClosure callback,
                            base::Optional<arc::ArcFeatures> features);
-
-  // Writes info about paired Bluetooth devices on this system.
-  void WriteBluetoothProto(metrics::SystemProfileProto* system_profile_proto);
 
   // Called from the ProvideCurrentSessionData(...) to record UserType.
   void UpdateUserTypeUMA();
@@ -118,9 +102,6 @@ class ChromeOSMetricsProvider : public metrics::MetricsProvider {
 
   // Use the first signed-in profile for profile-dependent metrics.
   std::unique_ptr<metrics::CachedMetricsProfile> cached_profile_;
-
-  // Bluetooth Adapter instance for collecting information about paired devices.
-  scoped_refptr<device::BluetoothAdapter> adapter_;
 
   // Whether the user count was registered at the last log initialization.
   bool registered_user_count_at_log_initialization_;

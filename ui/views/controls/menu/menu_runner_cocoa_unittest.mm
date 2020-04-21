@@ -299,7 +299,8 @@ class MenuRunnerCocoaTest : public ViewsTestBase,
   DISALLOW_COPY_AND_ASSIGN(MenuRunnerCocoaTest);
 };
 
-TEST_P(MenuRunnerCocoaTest, RunMenuAndCancel) {
+// Crashes frequently, https://crbug.com/1073069
+TEST_P(MenuRunnerCocoaTest, DISABLED_RunMenuAndCancel) {
   base::TimeTicks min_time = ui::EventTimeForNow();
 
   RunMenu(base::BindOnce(&MenuRunnerCocoaTest::MenuCancelCallback,

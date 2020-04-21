@@ -333,7 +333,7 @@ class WebBluetoothTest : public InProcessBrowserTest {
 
     adapter_ = base::MakeRefCounted<FakeBluetoothAdapter>();
     global_values_ =
-        device::BluetoothAdapterFactory::Get().InitGlobalValuesForTesting();
+        device::BluetoothAdapterFactory::Get()->InitGlobalValuesForTesting();
     global_values_->SetLESupported(true);
     device::BluetoothAdapterFactory::SetAdapterForTesting(adapter_);
   }

@@ -18,11 +18,11 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_bluetooth_advertising_event_init.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_bluetooth_le_scan_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_request_device_options.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/bluetooth/bluetooth_advertising_event.h"
@@ -255,8 +255,7 @@ ScriptPromise Bluetooth::requestDevice(ScriptState* script_state,
 
   // If the algorithm is not allowed to show a popup, reject promise with a
   // SecurityError and abort these steps.
-  auto& doc = *Document::From(context);
-  auto* frame = doc.GetFrame();
+  auto* frame = To<LocalDOMWindow>(context)->GetFrame();
   if (!frame) {
     exception_state.ThrowTypeError(kInactiveDocumentError);
     return ScriptPromise();
@@ -367,8 +366,7 @@ ScriptPromise Bluetooth::requestLEScan(ScriptState* script_state,
 
   // If the algorithm is not allowed to show a popup, reject promise with a
   // SecurityError and abort these steps.
-  auto& doc = *Document::From(context);
-  auto* frame = doc.GetFrame();
+  auto* frame = To<LocalDOMWindow>(context)->GetFrame();
   if (!frame) {
     exception_state.ThrowTypeError(kInactiveDocumentError);
     return ScriptPromise();
@@ -476,7 +474,8 @@ void Bluetooth::Trace(Visitor* visitor) {
 
 Bluetooth::Bluetooth(ExecutionContext* context)
     : ExecutionContextLifecycleObserver(context),
-      PageVisibilityObserver(Document::From(context)->GetPage()) {}
+      PageVisibilityObserver(
+          To<LocalDOMWindow>(context)->GetFrame()->GetPage()) {}
 
 Bluetooth::~Bluetooth() {
   DCHECK(client_receivers_.empty());

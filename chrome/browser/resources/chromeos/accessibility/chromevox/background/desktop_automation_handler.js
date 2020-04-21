@@ -57,6 +57,9 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
     /** @private {!Date} */
     this.lastHoverExit_ = new Date();
 
+    /** @private {!AutomationNode|undefined} */
+    this.lastHoverTarget_;
+
     this.addListener_(EventType.ALERT, this.onAlert);
     this.addListener_(EventType.BLUR, this.onBlur);
     this.addListener_(
@@ -94,6 +97,14 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
   /** @type {editing.TextEditHandler} */
   get textEditHandler() {
     return this.textEditHandler_;
+  }
+
+  /**
+   * @return {!AutomationNode|undefined} The target of the last observed hover
+   *     event.
+   */
+  get lastHoverTarget() {
+    return this.lastHoverTarget_;
   }
 
   /** @override */
@@ -151,6 +162,9 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
     }
 
     EventSourceState.set(EventSourceType.TOUCH_GESTURE);
+
+    // Save the last hover target for use by the gesture handler.
+    this.lastHoverTarget_ = evt.target;
 
     let target = evt.target;
     let targetLeaf = null;

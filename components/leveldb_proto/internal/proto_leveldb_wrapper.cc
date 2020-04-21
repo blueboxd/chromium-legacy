@@ -109,6 +109,8 @@ bool UpdateEntriesFromTaskRunner(
     std::unique_ptr<KeyValueVector> entries_to_save,
     std::unique_ptr<KeyVector> keys_to_remove,
     const std::string& client_id) {
+  DCHECK(entries_to_save);
+  DCHECK(keys_to_remove);
   leveldb::Status status;
   bool success = database->Save(*entries_to_save, *keys_to_remove, &status);
   ProtoLevelDBWrapperMetrics::RecordUpdate(client_id, success, status);
@@ -121,6 +123,7 @@ bool UpdateEntriesWithRemoveFilterFromTaskRunner(
     const KeyFilter& delete_key_filter,
     const std::string& target_prefix,
     const std::string& client_id) {
+  DCHECK(entries_to_save);
   leveldb::Status status;
   bool success = database->UpdateWithRemoveFilter(
       *entries_to_save, delete_key_filter, target_prefix, &status);

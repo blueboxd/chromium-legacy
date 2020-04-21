@@ -233,20 +233,28 @@ def Install(device, install_json, apk=None, enable_device_cache=False,
     target_sdk_version = int(apk.GetTargetSdkVersion())
     # Beta Q builds apply whitelist to targetSdk=28 as well.
     if target_sdk_version >= 28 and device.build_version_sdk >= 28:
+      # In P, there are two settings:
+      #  * hidden_api_policy_p_apps
+      #  * hidden_api_policy_pre_p_apps
+      # In Q, there is just one:
+      #  * hidden_api_policy
+      if device.build_version_sdk == 28:
+        setting_name = 'hidden_api_policy_p_apps'
+      else:
+        setting_name = 'hidden_api_policy'
       apis_allowed = ''.join(
-          device.RunShellCommand(
-              ['settings', 'get', 'global', 'hidden_api_policy'],
-              check_return=True))
+          device.RunShellCommand(['settings', 'get', 'global', setting_name],
+                                 check_return=True))
       if apis_allowed.strip() not in '01':
         msg = """\
-Cannot use incremental installs on Android Q+ without first enabling access to
+Cannot use incremental installs on Android P+ without first enabling access to
 non-SDK interfaces (https://developer.android.com/preview/non-sdk-q).
 
 To enable access:
-   adb -s {0} shell settings put global hidden_api_policy 0
+   adb -s {0} shell settings put global {1} 0
 To restore back to default:
-   adb -s {0} shell settings delete global hidden_api_policy"""
-        raise Exception(msg.format(device.serial))
+   adb -s {0} shell settings delete global {1}"""
+        raise Exception(msg.format(device.serial, setting_name))
 
   cache_path = _DeviceCachePath(device)
   def restore_cache():

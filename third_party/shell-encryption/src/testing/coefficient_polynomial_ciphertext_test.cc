@@ -21,6 +21,7 @@
 #include <gtest/gtest.h>
 #include "constants.h"
 #include "montgomery.h"
+#include "ntt_parameters.h"
 #include "polynomial.h"
 #include "symmetric_encryption.h"
 #include "testing/coefficient_polynomial.h"
@@ -57,15 +58,17 @@ class PolynomialCiphertextTest : public ::testing::Test {
   void SetUp() override {
     ASSERT_OK_AND_ASSIGN(params14_,
                          rlwe::testing::ConstructMontgomeryIntParams());
-    ASSERT_OK_AND_ASSIGN(ntt_params_,
+    ASSERT_OK_AND_ASSIGN(auto ntt_params,
                          rlwe::InitializeNttParameters<uint_m>(
                              rlwe::testing::kLogCoeffs, params14_.get()));
+    ntt_params_ = absl::make_unique<const rlwe::NttParameters<uint_m>>(
+        std::move(ntt_params));
     ASSERT_OK_AND_ASSIGN(
-        auto temp_error_params,
+        auto error_params,
         rlwe::ErrorParams<uint_m>::Create(kDefaultLogT, kDefaultVariance,
-                                          params14_.get(), &ntt_params_));
+                                          params14_.get(), ntt_params_.get()));
     error_params_ =
-        absl::make_unique<rlwe::ErrorParams<uint_m>>(temp_error_params);
+        absl::make_unique<const rlwe::ErrorParams<uint_m>>(error_params);
   }
 
   // Sample a random key.
@@ -75,7 +78,7 @@ class PolynomialCiphertextTest : public ::testing::Test {
                           rlwe::SingleThreadPrng::GenerateSeed());
     RLWE_ASSIGN_OR_RETURN(auto prng, rlwe::SingleThreadPrng::Create(prng_seed));
     return Key::Sample(kLogCoeffs, variance, log_t, params14_.get(),
-                       &ntt_params_, prng.get());
+                       ntt_params_.get(), prng.get());
   }
 
   // Encrypt a plaintext.
@@ -84,7 +87,7 @@ class PolynomialCiphertextTest : public ::testing::Test {
     RLWE_ASSIGN_OR_RETURN(auto mp, rlwe::testing::ConvertToMontgomery<uint_m>(
                                        plaintext, params14_.get()));
     auto plaintext_ntt =
-        Polynomial::ConvertToNtt(mp, ntt_params_, key.ModulusParams());
+        Polynomial::ConvertToNtt(mp, ntt_params_.get(), key.ModulusParams());
     RLWE_ASSIGN_OR_RETURN(std::string prng_seed,
                           rlwe::SingleThreadPrng::GenerateSeed());
     RLWE_ASSIGN_OR_RETURN(auto prng, rlwe::SingleThreadPrng::Create(prng_seed));
@@ -92,19 +95,19 @@ class PolynomialCiphertextTest : public ::testing::Test {
                                  prng.get());
   }
 
-  std::unique_ptr<uint_m::Params> params14_;
-  rlwe::NttParameters<uint_m> ntt_params_;
-  std::unique_ptr<rlwe::ErrorParams<uint_m>> error_params_;
+  std::unique_ptr<const uint_m::Params> params14_;
+  std::unique_ptr<const rlwe::NttParameters<uint_m>> ntt_params_;
+  std::unique_ptr<const rlwe::ErrorParams<uint_m>> error_params_;
 };
 
 TEST_F(PolynomialCiphertextTest, CanDecryptAfterConversion) {
   ASSERT_OK_AND_ASSIGN(auto key, SampleKey());
   auto plaintext = rlwe::testing::SamplePlaintext<uint_m>();
   ASSERT_OK_AND_ASSIGN(auto ciphertext, Encrypt(key, plaintext));
-  ASSERT_OK_AND_ASSIGN(
-      auto coefficient_ciphertext,
-      PolynomialCiphertext::ConvertToCoefficients(ciphertext, ntt_params_));
-  auto ntt_ciphertext = coefficient_ciphertext.ConvertToNtt(ntt_params_);
+  ASSERT_OK_AND_ASSIGN(auto coefficient_ciphertext,
+                       PolynomialCiphertext::ConvertToCoefficients(
+                           ciphertext, ntt_params_.get()));
+  auto ntt_ciphertext = coefficient_ciphertext.ConvertToNtt(ntt_params_.get());
   ASSERT_OK_AND_ASSIGN(auto coefficient_decrypted,
                        rlwe::Decrypt<uint_m>(key, ntt_ciphertext));
 
@@ -124,16 +127,16 @@ TEST_F(PolynomialCiphertextTest, CoefficientHomomorphicAdd) {
   ASSERT_OK_AND_ASSIGN(auto ciphertext2, Encrypt(key, plaintext2));
 
   // Homomorphic add in the polynomial domain.
-  ASSERT_OK_AND_ASSIGN(
-      auto polynomial1,
-      PolynomialCiphertext::ConvertToCoefficients(ciphertext1, ntt_params_));
-  ASSERT_OK_AND_ASSIGN(
-      auto polynomial2,
-      PolynomialCiphertext::ConvertToCoefficients(ciphertext2, ntt_params_));
+  ASSERT_OK_AND_ASSIGN(auto polynomial1,
+                       PolynomialCiphertext::ConvertToCoefficients(
+                           ciphertext1, ntt_params_.get()));
+  ASSERT_OK_AND_ASSIGN(auto polynomial2,
+                       PolynomialCiphertext::ConvertToCoefficients(
+                           ciphertext2, ntt_params_.get()));
   ASSERT_OK_AND_ASSIGN(auto polynomial3, polynomial1 + polynomial2);
 
   // Decrypt result.
-  auto ciphertext3 = polynomial3.ConvertToNtt(ntt_params_);
+  auto ciphertext3 = polynomial3.ConvertToNtt(ntt_params_.get());
   ASSERT_OK_AND_ASSIGN(std::vector<uint_m::Int> decrypted,
                        rlwe::Decrypt<uint_m>(key, ciphertext3));
 
@@ -168,14 +171,14 @@ TEST_F(PolynomialCiphertextTest, HomomorphicAddDifferentComponents) {
   // Homomorphic add in the polynomial domain.
   ASSERT_OK_AND_ASSIGN(auto polynomial1,
                        PolynomialCiphertext::ConvertToCoefficients(
-                           two_component_ciphertext, ntt_params_));
+                           two_component_ciphertext, ntt_params_.get()));
   ASSERT_OK_AND_ASSIGN(auto polynomial2,
                        PolynomialCiphertext::ConvertToCoefficients(
-                           three_component_ciphertext, ntt_params_));
+                           three_component_ciphertext, ntt_params_.get()));
   ASSERT_OK_AND_ASSIGN(auto polynomial3, polynomial1 + polynomial2);
 
   // Decrypt result.
-  auto ciphertext3 = polynomial3.ConvertToNtt(ntt_params_);
+  auto ciphertext3 = polynomial3.ConvertToNtt(ntt_params_.get());
   ASSERT_OK_AND_ASSIGN(std::vector<uint_m::Int> decrypted,
                        rlwe::Decrypt<uint_m>(key, ciphertext3));
 
@@ -196,7 +199,7 @@ TEST_F(PolynomialCiphertextTest, MonomialOutOfRange) {
   std::vector<uint_m::Int> plaintext = rlwe::testing::SamplePlaintext<uint_m>();
   ASSERT_OK_AND_ASSIGN(auto encrypt, Encrypt(key, plaintext));
   ASSERT_OK_AND_ASSIGN(auto coeffs, PolynomialCiphertext::ConvertToCoefficients(
-                                        encrypt, ntt_params_));
+                                        encrypt, ntt_params_.get()));
   EXPECT_THAT(coeffs.MonomialAbsorb(2 * key.Len()),
               StatusIs(::absl::StatusCode::kInvalidArgument,
                        HasSubstr("Monomial to absorb must have non-negative "
@@ -227,9 +230,9 @@ TEST_F(PolynomialCiphertextTest, CoefficientMonomialAbsorb) {
   // Encrypt and absorb in the polynomial domain, then decrypt.
   ASSERT_OK_AND_ASSIGN(auto encrypt, Encrypt(key, plaintext));
   ASSERT_OK_AND_ASSIGN(auto coeffs, PolynomialCiphertext::ConvertToCoefficients(
-                                        encrypt, ntt_params_));
+                                        encrypt, ntt_params_.get()));
   ASSERT_OK_AND_ASSIGN(auto polynomial, coeffs.MonomialAbsorb(monomial_index));
-  auto ciphertext = polynomial.ConvertToNtt(ntt_params_);
+  auto ciphertext = polynomial.ConvertToNtt(ntt_params_.get());
   ASSERT_OK_AND_ASSIGN(std::vector<uint_m::Int> decrypted,
                        rlwe::Decrypt<uint_m>(key, ciphertext));
 
@@ -254,10 +257,10 @@ TEST_F(PolynomialCiphertextTest, Substitution) {
   // Encrypt and substitute the ciphertext. Decrypt with a substituted key.
   ASSERT_OK_AND_ASSIGN(auto encrypt, Encrypt(key, plaintext));
   ASSERT_OK_AND_ASSIGN(auto coeffs, PolynomialCiphertext::ConvertToCoefficients(
-                                        encrypt, ntt_params_));
+                                        encrypt, ntt_params_.get()));
 
   ASSERT_OK_AND_ASSIGN(auto polynomial, coeffs.Substitute(subtitution_power));
-  auto ciphertext = polynomial.ConvertToNtt(ntt_params_);
+  auto ciphertext = polynomial.ConvertToNtt(ntt_params_.get());
   ASSERT_OK_AND_ASSIGN(auto sub_key, key.Substitute(subtitution_power));
   ASSERT_OK_AND_ASSIGN(std::vector<uint_m::Int> decrypted,
                        rlwe::Decrypt<uint_m>(sub_key, ciphertext));
@@ -272,7 +275,7 @@ TEST_F(PolynomialCiphertextTest, SubstitutionFailsOnEvenPower) {
 
   ASSERT_OK_AND_ASSIGN(auto encrypt, Encrypt(key, plaintext));
   ASSERT_OK_AND_ASSIGN(auto coeffs, PolynomialCiphertext::ConvertToCoefficients(
-                                        encrypt, ntt_params_));
+                                        encrypt, ntt_params_.get()));
   EXPECT_THAT(coeffs.Substitute(2),
               StatusIs(::absl::StatusCode::kInvalidArgument,
                        HasSubstr("power must be a non-negative odd integer")));
@@ -291,12 +294,12 @@ TEST_F(PolynomialCiphertextTest, PowersOfSMustMatchOnAdd) {
   ASSERT_OK_AND_ASSIGN(auto ciphertext2, Encrypt(key, plaintext2));
 
   // Add fails when only one ciphertext is substituted.
-  ASSERT_OK_AND_ASSIGN(
-      auto polynomial1,
-      PolynomialCiphertext::ConvertToCoefficients(ciphertext1, ntt_params_));
-  ASSERT_OK_AND_ASSIGN(
-      auto polynomial2,
-      PolynomialCiphertext::ConvertToCoefficients(ciphertext2, ntt_params_));
+  ASSERT_OK_AND_ASSIGN(auto polynomial1,
+                       PolynomialCiphertext::ConvertToCoefficients(
+                           ciphertext1, ntt_params_.get()));
+  ASSERT_OK_AND_ASSIGN(auto polynomial2,
+                       PolynomialCiphertext::ConvertToCoefficients(
+                           ciphertext2, ntt_params_.get()));
   ASSERT_OK_AND_ASSIGN(auto polynomial2_sub,
                        polynomial2.Substitute(subtitution_power));
 
@@ -332,21 +335,21 @@ TEST_F(PolynomialCiphertextTest, AddOnSubstitutedCiphertexts) {
   ASSERT_OK_AND_ASSIGN(auto ciphertext2, Encrypt(key, plaintext2));
 
   // Add succeeds and decrypts when both ciphertexts are substituted.
-  ASSERT_OK_AND_ASSIGN(
-      auto coeffs1,
-      PolynomialCiphertext::ConvertToCoefficients(ciphertext1, ntt_params_));
+  ASSERT_OK_AND_ASSIGN(auto coeffs1,
+                       PolynomialCiphertext::ConvertToCoefficients(
+                           ciphertext1, ntt_params_.get()));
   ASSERT_OK_AND_ASSIGN(auto polynomial1_sub,
                        coeffs1.Substitute(subtitution_power));
-  ASSERT_OK_AND_ASSIGN(
-      auto coeffs2,
-      PolynomialCiphertext::ConvertToCoefficients(ciphertext2, ntt_params_));
+  ASSERT_OK_AND_ASSIGN(auto coeffs2,
+                       PolynomialCiphertext::ConvertToCoefficients(
+                           ciphertext2, ntt_params_.get()));
   ASSERT_OK_AND_ASSIGN(auto polynomial2_sub,
                        coeffs2.Substitute(subtitution_power));
   ASSERT_OK_AND_ASSIGN(PolynomialCiphertext result,
                        polynomial1_sub + polynomial2_sub);
 
   // Decrypt result.
-  auto ciphertext_result = result.ConvertToNtt(ntt_params_);
+  auto ciphertext_result = result.ConvertToNtt(ntt_params_.get());
   ASSERT_OK_AND_ASSIGN(auto key_sub, key.Substitute(subtitution_power));
   ASSERT_OK_AND_ASSIGN(std::vector<uint_m::Int> decrypted,
                        rlwe::Decrypt<uint_m>(key_sub, ciphertext_result));
@@ -378,14 +381,14 @@ TEST_F(PolynomialCiphertextTest, AbsorbOnSubstitutedCiphertexts) {
   ASSERT_OK_AND_ASSIGN(auto ciphertext, Encrypt(key, plaintext));
 
   // Absorb x^monomial in the substituted ciphertext.
-  ASSERT_OK_AND_ASSIGN(
-      auto coeffs2,
-      PolynomialCiphertext::ConvertToCoefficients(ciphertext, ntt_params_));
+  ASSERT_OK_AND_ASSIGN(auto coeffs2,
+                       PolynomialCiphertext::ConvertToCoefficients(
+                           ciphertext, ntt_params_.get()));
   ASSERT_OK_AND_ASSIGN(auto sub_coeffs, coeffs2.Substitute(subtitution_power));
   ASSERT_OK_AND_ASSIGN(auto coeff_result, sub_coeffs.MonomialAbsorb(monomial));
 
   // Decrypt result.
-  auto ntt_result = coeff_result.ConvertToNtt(ntt_params_);
+  auto ntt_result = coeff_result.ConvertToNtt(ntt_params_.get());
   ASSERT_OK_AND_ASSIGN(auto key_sub, key.Substitute(subtitution_power));
   ASSERT_OK_AND_ASSIGN(std::vector<uint_m::Int> decrypted,
                        rlwe::Decrypt<uint_m>(key_sub, ntt_result));
@@ -404,7 +407,7 @@ TEST_F(PolynomialCiphertextTest, RepeatedSubstitution) {
   ASSERT_OK_AND_ASSIGN(auto encrypt, Encrypt(key, plaintext));
   ASSERT_OK_AND_ASSIGN(
       auto polynomial,
-      PolynomialCiphertext::ConvertToCoefficients(encrypt, ntt_params_));
+      PolynomialCiphertext::ConvertToCoefficients(encrypt, ntt_params_.get()));
 
   EXPECT_EQ(polynomial.PowerOfS(), 1);
 
@@ -418,7 +421,8 @@ TEST_F(PolynomialCiphertextTest, RepeatedSubstitution) {
   // Substitutes the inverse of 3 mod 1024 to retrieve an encryption of the
   // original polynomial: p((x^3)^683) =p(x).
   ASSERT_OK_AND_ASSIGN(auto polynomial_wraparound, polynomial3.Substitute(683));
-  auto ciphertext_wraparound = polynomial_wraparound.ConvertToNtt(ntt_params_);
+  auto ciphertext_wraparound =
+      polynomial_wraparound.ConvertToNtt(ntt_params_.get());
   ASSERT_OK_AND_ASSIGN(std::vector<uint_m::Int> decrypted,
                        rlwe::Decrypt<uint_m>(key, ciphertext_wraparound));
 
@@ -437,14 +441,15 @@ TEST_F(PolynomialCiphertextTest, NttConversionsPreservePowerOfS) {
   EXPECT_EQ(ciphertext.PowerOfS(), 1);
 
   ASSERT_OK_AND_ASSIGN(auto coeffs, PolynomialCiphertext::ConvertToCoefficients(
-                                        ciphertext, ntt_params_));
+                                        ciphertext, ntt_params_.get()));
   ASSERT_OK_AND_ASSIGN(auto polynomial, coeffs.Substitute(3));
 
   EXPECT_EQ(polynomial.PowerOfS(), 3);
 
-  ASSERT_OK_AND_ASSIGN(auto ntt_converted_polynomial,
-                       PolynomialCiphertext::ConvertToCoefficients(
-                           polynomial.ConvertToNtt(ntt_params_), ntt_params_));
+  ASSERT_OK_AND_ASSIGN(
+      auto ntt_converted_polynomial,
+      PolynomialCiphertext::ConvertToCoefficients(
+          polynomial.ConvertToNtt(ntt_params_.get()), ntt_params_.get()));
 
   EXPECT_EQ(ntt_converted_polynomial.PowerOfS(), 3);
 }
@@ -482,13 +487,13 @@ TEST_F(PolynomialCiphertextTest, SubstitutionCommutesWithAbsorb) {
   // Takes the ciphertext and FIRST applies the substitution, and then follows
   // with an absorb of the corresponding power.
   ASSERT_OK_AND_ASSIGN(auto coeffs, PolynomialCiphertext::ConvertToCoefficients(
-                                        ciphertext, ntt_params_));
+                                        ciphertext, ntt_params_.get()));
   ASSERT_OK_AND_ASSIGN(auto sub_coeffs, coeffs.Substitute(substitution_power));
   ASSERT_OK_AND_ASSIGN(auto coeff_result,
                        sub_coeffs.MonomialAbsorb(monomial_substituted));
 
   // Decrypt result.
-  auto ntt_result = coeff_result.ConvertToNtt(ntt_params_);
+  auto ntt_result = coeff_result.ConvertToNtt(ntt_params_.get());
   ASSERT_OK_AND_ASSIGN(auto sub_key, key.Substitute(substitution_power));
   ASSERT_OK_AND_ASSIGN(std::vector<uint_m::Int> decrypted,
                        rlwe::Decrypt<uint_m>(sub_key, ntt_result));

@@ -39826,6 +39826,7 @@ from previous Chrome versions.
   <int value="277565405" label="ContextualSearchDefinitions:disabled"/>
   <int value="278756320" label="disable-app-list-app-info"/>
   <int value="280644887" label="mash"/>
+  <int value="280925459" label="LiveCaption:disabled"/>
   <int value="282636212" label="VideoPlayerNativeControls:disabled"/>
   <int value="283182071" label="SecurityInterstitialsDarkMode:enabled"/>
   <int value="283232244" label="OmniboxUIExperimentNarrowDropdown:enabled"/>
@@ -40063,6 +40064,7 @@ from previous Chrome versions.
   <int value="542960889" label="HeavyAdIntervention:enabled"/>
   <int value="544443920" label="QuickAnswers:disabled"/>
   <int value="546043947" label="ImplicitRootScroller:enabled"/>
+  <int value="546464390" label="LiveCaption:enabled"/>
   <int value="546520086" label="enable-data-reduction-proxy-savings-promo"/>
   <int value="546710806" label="disable-easy-signin"/>
   <int value="547170394"
@@ -50565,6 +50567,9 @@ Called by update_net_trust_anchors.py.-->
              locally"/>
   <int value="10"
       label="Opened automatically / Notification about compromised passwords"/>
+  <int value="11"
+      label="Opened automatically / Proposal to move local password to
+             account store"/>
 </enum>
 
 <enum name="PasswordBubbleSignInPromoDismissalReason">
@@ -54177,6 +54182,11 @@ Called by update_net_trust_anchors.py.-->
   <int value="0" label="kUnknown"/>
   <int value="1" label="kShopping"/>
   <int value="2" label="kNews"/>
+  <int value="3" label="kArtsAndEntertainment"/>
+  <int value="4" label="kHealth"/>
+  <int value="5" label="kJobsAndEducation"/>
+  <int value="6" label="kScience"/>
+  <int value="7" label="kTravel"/>
 </enum>
 
 <enum name="ProactiveSuggestionsRequestResult">

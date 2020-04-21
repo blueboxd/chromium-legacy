@@ -6,6 +6,8 @@
 
 #include <algorithm>
 
+#include "base/logging.h"
+
 namespace mojo {
 
 StringDataSource::StringDataSource(base::StringPiece data,

@@ -21,6 +21,7 @@ extern const base::char16 kGlobalPrefix[];
 #define UPDATER_KEY COMPANY_KEY "Update\\"
 #define CLIENTS_KEY UPDATER_KEY "Clients\\"
 #define CLIENT_STATE_KEY UPDATER_KEY "ClientState\\"
+#define UPDATE_DEV_KEY COMPANY_KEY L"UpdateDev\\"
 
 extern const base::char16 kRegistryValuePV[];
 extern const base::char16 kRegistryValueName[];

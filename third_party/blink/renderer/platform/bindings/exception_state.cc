@@ -184,38 +184,65 @@ String ExceptionState::AddExceptionContext(const String& message) const {
   if (message.IsEmpty())
     return message;
 
-  String processed_message = message;
-  if (PropertyName() && InterfaceName() && context_ != kUnknownContext) {
-    if (context_ == kDeletionContext)
-      processed_message = ExceptionMessages::FailedToDelete(
-          PropertyName(), InterfaceName(), message);
-    else if (context_ == kExecutionContext)
-      processed_message = ExceptionMessages::FailedToExecute(
-          PropertyName(), InterfaceName(), message);
-    else if (context_ == kGetterContext)
-      processed_message = ExceptionMessages::FailedToGet(
-          PropertyName(), InterfaceName(), message);
-    else if (context_ == kSetterContext)
-      processed_message = ExceptionMessages::FailedToSet(
-          PropertyName(), InterfaceName(), message);
-  } else if (!PropertyName() && InterfaceName()) {
-    if (context_ == kConstructionContext)
-      processed_message =
-          ExceptionMessages::FailedToConstruct(InterfaceName(), message);
-    else if (context_ == kEnumerationContext)
-      processed_message =
-          ExceptionMessages::FailedToEnumerate(InterfaceName(), message);
-    else if (context_ == kIndexedDeletionContext)
-      processed_message =
-          ExceptionMessages::FailedToDeleteIndexed(InterfaceName(), message);
-    else if (context_ == kIndexedGetterContext)
-      processed_message =
-          ExceptionMessages::FailedToGetIndexed(InterfaceName(), message);
-    else if (context_ == kIndexedSetterContext)
-      processed_message =
-          ExceptionMessages::FailedToSetIndexed(InterfaceName(), message);
+  const char* i = InterfaceName();
+  const char* p = PropertyName();
+  const auto& m = message;
+
+  if (i && p) {
+    switch (context_) {
+      case kConstructionContext:
+        return ExceptionMessages::FailedToConstruct(i, m);
+      case kExecutionContext:
+        return ExceptionMessages::FailedToExecute(p, i, m);
+      case kDeletionContext:
+        return ExceptionMessages::FailedToDelete(p, i, m);
+      case kGetterContext:
+        return ExceptionMessages::FailedToGet(p, i, m);
+      case kSetterContext:
+        return ExceptionMessages::FailedToSet(p, i, m);
+      case kEnumerationContext:
+        return ExceptionMessages::FailedToEnumerate(i, m);
+      case kQueryContext:
+        break;
+      case kIndexedGetterContext:
+        return ExceptionMessages::FailedToGetIndexed(i, m);
+      case kIndexedSetterContext:
+        return ExceptionMessages::FailedToSetIndexed(i, m);
+      case kIndexedDeletionContext:
+        return ExceptionMessages::FailedToDeleteIndexed(i, m);
+      case kUnknownContext:
+        break;
+    }
   }
-  return processed_message;
+
+  if (i) {
+    switch (context_) {
+      case kConstructionContext:
+        return ExceptionMessages::FailedToConstruct(i, m);
+      case kExecutionContext:
+        break;
+      case kDeletionContext:
+        break;
+      case kGetterContext:
+        break;
+      case kSetterContext:
+        break;
+      case kEnumerationContext:
+        return ExceptionMessages::FailedToEnumerate(i, m);
+      case kQueryContext:
+        break;
+      case kIndexedGetterContext:
+        return ExceptionMessages::FailedToGetIndexed(i, m);
+      case kIndexedSetterContext:
+        return ExceptionMessages::FailedToSetIndexed(i, m);
+      case kIndexedDeletionContext:
+        return ExceptionMessages::FailedToDeleteIndexed(i, m);
+      case kUnknownContext:
+        break;
+    }
+  }
+
+  return message;
 }
 
 NonThrowableExceptionState::NonThrowableExceptionState()

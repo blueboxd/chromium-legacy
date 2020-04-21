@@ -57,6 +57,7 @@ class AssistantMediaSession;
 class CrosPlatformApi;
 class ServiceContext;
 class AssistantManagerServiceDelegate;
+class AssistantDeviceSettingsDelegate;
 
 // Enumeration of Assistant query response type, also recorded in histograms.
 // These values are persisted to logs. Entries should not be renumbered and
@@ -350,6 +351,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
   ServiceContext* const context_;
 
   std::unique_ptr<AssistantManagerServiceDelegate> delegate_;
+  std::unique_ptr<AssistantDeviceSettingsDelegate> settings_delegate_;
 
   bool spoken_feedback_enabled_ = false;
 

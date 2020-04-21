@@ -59,14 +59,14 @@ public class PromoCardViewRenderTest extends DummyUiActivityTestCase {
     public void setUpTest() throws Exception {
         super.setUpTest();
         Activity activity = getActivity();
-        mModel =
-                new PropertyModel.Builder(PromoCardProperties.ALL_KEYS)
-                        .with(PromoCardProperties.IMAGE, activity, R.drawable.logo_avatar_anonymous)
-                        .with(PromoCardProperties.TITLE, "Title for Promo Card.")
-                        .with(PromoCardProperties.DESCRIPTION, "Description for Promo Card.")
-                        .with(PromoCardProperties.PRIMARY_BUTTON_TEXT, "Primary button")
-                        .with(PromoCardProperties.SECONDARY_BUTTON_TEXT, "Secondary button")
-                        .build();
+        mModel = new PropertyModel.Builder(PromoCardProperties.ALL_KEYS)
+                         .with(PromoCardProperties.IMAGE, activity,
+                                 R.drawable.test_logo_avatar_anonymous)
+                         .with(PromoCardProperties.TITLE, "Title for Promo Card.")
+                         .with(PromoCardProperties.DESCRIPTION, "Description for Promo Card.")
+                         .with(PromoCardProperties.PRIMARY_BUTTON_TEXT, "Primary button")
+                         .with(PromoCardProperties.SECONDARY_BUTTON_TEXT, "Secondary button")
+                         .build();
         mPromoCardCoordinator = new PromoCardCoordinator(activity, mModel, "render-test");
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {

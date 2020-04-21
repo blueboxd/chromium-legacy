@@ -25,6 +25,10 @@ class Uri::Pim {
   // The map with pairs scheme -> default_port.
   static const std::map<std::string, int> kDefaultPorts;
 
+  Pim();
+  Pim(const Pim&);
+  ~Pim();
+
   // Resets the internal field |parser_error|.
   void ResetParserError() {
     parser_error_.parsed_chars = 0;

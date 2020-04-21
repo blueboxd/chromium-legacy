@@ -73,21 +73,6 @@ const HeapVector<StringOrUnsignedLong>& BluetoothAdvertisingEvent::uuids()
   return uuids_;
 }
 
-uint16_t BluetoothAdvertisingEvent::appearance(bool& is_null) const {
-  is_null = !appearance_.has_value();
-  return appearance_.value_or(0);
-}
-
-int8_t BluetoothAdvertisingEvent::txPower(bool& is_null) const {
-  is_null = !txPower_.has_value();
-  return txPower_.value_or(0);
-}
-
-int8_t BluetoothAdvertisingEvent::rssi(bool& is_null) const {
-  is_null = !rssi_.has_value();
-  return rssi_.value_or(0);
-}
-
 BluetoothManufacturerDataMap* BluetoothAdvertisingEvent::manufacturerData()
     const {
   return manufacturer_data_map_;

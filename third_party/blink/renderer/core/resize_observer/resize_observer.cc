@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_resize_observer_callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_resize_observer_options.h"
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
@@ -21,32 +22,38 @@ constexpr const char* kBoxOptionContentBox = "content-box";
 constexpr const char* kBoxOptionDevicePixelContentBox =
     "device-pixel-content-box";
 
-ResizeObserver* ResizeObserver::Create(Document& document,
+ResizeObserver* ResizeObserver::Create(ScriptState* script_state,
                                        V8ResizeObserverCallback* callback) {
-  return MakeGarbageCollected<ResizeObserver>(callback, document);
+  return MakeGarbageCollected<ResizeObserver>(
+      callback, LocalDOMWindow::From(script_state));
 }
 
-ResizeObserver* ResizeObserver::Create(Document& document, Delegate* delegate) {
-  return MakeGarbageCollected<ResizeObserver>(delegate, document);
+ResizeObserver* ResizeObserver::Create(LocalDOMWindow* window,
+                                       Delegate* delegate) {
+  return MakeGarbageCollected<ResizeObserver>(delegate, window);
 }
 
 ResizeObserver::ResizeObserver(V8ResizeObserverCallback* callback,
-                               Document& document)
-    : ExecutionContextClient(document.ToExecutionContext()),
+                               LocalDOMWindow* window)
+    : ExecutionContextClient(window),
       callback_(callback),
       skipped_observations_(false) {
   DCHECK(callback_);
-  controller_ = &document.EnsureResizeObserverController();
-  controller_->AddObserver(*this);
+  if (window) {
+    controller_ = ResizeObserverController::From(*window);
+    controller_->AddObserver(*this);
+  }
 }
 
-ResizeObserver::ResizeObserver(Delegate* delegate, Document& document)
-    : ExecutionContextClient(document.ToExecutionContext()),
+ResizeObserver::ResizeObserver(Delegate* delegate, LocalDOMWindow* window)
+    : ExecutionContextClient(window),
       delegate_(delegate),
       skipped_observations_(false) {
   DCHECK(delegate_);
-  controller_ = &document.EnsureResizeObserverController();
-  controller_->AddObserver(*this);
+  if (window) {
+    controller_ = ResizeObserverController::From(*window);
+    controller_->AddObserver(*this);
+  }
 }
 
 ResizeObserverBoxOptions ResizeObserver::ParseBoxOptions(

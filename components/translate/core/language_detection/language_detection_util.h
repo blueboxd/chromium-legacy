@@ -11,6 +11,12 @@
 
 namespace translate {
 
+// Returns the ISO 639 language code of the specified |text|, or
+// |translate::kUnknownLanguageCode| if it failed. |is_cld_reliable| will be
+// set as true if CLD says the detection is reliable.
+std::string DetermineTextLanguage(const base::string16& text,
+                                  bool* is_cld_reliable);
+
 // Determines content page language from Content-Language code and contents.
 std::string DeterminePageLanguage(const std::string& code,
                                   const std::string& html_lang,

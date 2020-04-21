@@ -113,7 +113,7 @@ class ArcBluetoothBridgeTest : public testing::Test {
         "CHROMEOS_ARC_ANDROID_SDK_VERSION=28", base::Time::Now());
     WaitForInstanceReady(arc_bridge_service_->bluetooth());
 
-    device::BluetoothAdapterFactory::GetAdapter(base::BindOnce(
+    device::BluetoothAdapterFactory::Get()->GetAdapter(base::BindOnce(
         &ArcBluetoothBridgeTest::OnAdapterInitialized, base::Unretained(this)));
     // We will quit the loop once we get the adapter.
     get_adapter_run_loop_.Run();

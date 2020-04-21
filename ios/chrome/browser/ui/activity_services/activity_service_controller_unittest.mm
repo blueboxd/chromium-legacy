@@ -351,7 +351,8 @@ TEST_F(ActivityServiceControllerTest, PresentAndDismissController) {
           initWithParentViewController:parentController];
   ActivityServiceController* activityController =
       [[ActivityServiceController alloc] init];
-  EXPECT_FALSE([activityController isActive]);
+  EXPECT_FALSE(provider.presentActivityServiceViewControllerWasCalled);
+  EXPECT_FALSE(provider.activityServiceDidEndPresentingWasCalled);
 
   // Test sharing.
   [activityController shareWithData:shareData_
@@ -362,13 +363,13 @@ TEST_F(ActivityServiceControllerTest, PresentAndDismissController) {
                presentationProvider:provider];
   EXPECT_TRUE(provider.presentActivityServiceViewControllerWasCalled);
   EXPECT_FALSE(provider.activityServiceDidEndPresentingWasCalled);
-  EXPECT_TRUE([activityController isActive]);
 
-  // Cancels sharing and isActive flag should be turned off.
+  // Mock that the VC was actually presented.
+  id controllerPartialMock = OCMPartialMock(activityController);
+  OCMStub([controllerPartialMock isActive]).andReturn(YES);
+
+  // Cancels sharing and activityServiceDidEndPresenting should be called.
   [activityController cancelShareAnimated:NO];
-  base::test::ios::WaitUntilCondition(^bool() {
-    return ![activityController isActive];
-  });
   EXPECT_TRUE(provider.activityServiceDidEndPresentingWasCalled);
 }
 
@@ -941,7 +942,8 @@ TEST_F(ActivityServiceControllerTest, PresentWhenOffTheRecord) {
           initWithParentViewController:parentController];
   ActivityServiceController* activityController =
       [[ActivityServiceController alloc] init];
-  EXPECT_FALSE([activityController isActive]);
+  EXPECT_FALSE(provider.presentActivityServiceViewControllerWasCalled);
+  EXPECT_FALSE(provider.activityServiceDidEndPresentingWasCalled);
 
   [activityController shareWithData:shareData_
                        browserState:chrome_browser_state_
@@ -951,7 +953,8 @@ TEST_F(ActivityServiceControllerTest, PresentWhenOffTheRecord) {
                    positionProvider:provider
                presentationProvider:provider];
 
-  EXPECT_TRUE([activityController isActive]);
+  EXPECT_TRUE(provider.presentActivityServiceViewControllerWasCalled);
+  EXPECT_FALSE(provider.activityServiceDidEndPresentingWasCalled);
 }
 
 // Tests that the QR Code generation activity is present when the flag is

@@ -99,7 +99,7 @@ class EasyUnlockService::BluetoothDetector
     if (!device::BluetoothAdapterFactory::IsBluetoothSupported())
       return;
 
-    device::BluetoothAdapterFactory::GetAdapter(
+    device::BluetoothAdapterFactory::Get()->GetAdapter(
         base::BindOnce(&BluetoothDetector::OnAdapterInitialized,
                        weak_ptr_factory_.GetWeakPtr()));
   }

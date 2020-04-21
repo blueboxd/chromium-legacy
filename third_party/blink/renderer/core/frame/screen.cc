@@ -173,11 +173,13 @@ void Screen::Trace(Visitor* visitor) {
 
 Screen::Screen(display::mojom::blink::DisplayPtr display,
                bool internal,
-               bool primary)
+               bool primary,
+               const String& id)
     : DOMWindowClient(static_cast<LocalFrame*>(nullptr)),
       display_(std::move(display)),
       internal_(internal),
-      primary_(primary) {}
+      primary_(primary),
+      id_(id) {}
 
 int Screen::left() const {
   if (display_) {
@@ -244,13 +246,13 @@ float Screen::scaleFactor() const {
   return GetScreenInfo(*frame).device_scale_factor;
 }
 
-const String Screen::name() const {
-  // TODO(http://crbug.com/994889): Implement this.
-  NOTIMPLEMENTED_LOG_ONCE();
+const String Screen::id() const {
   if (display_) {
     DCHECK(RuntimeEnabledFeatures::ScreenEnumerationEnabled());
-    return "Generic Screen";
+    return id_;
   }
+  // TODO(http://crbug.com/994889): Implement this for |window.screen|?
+  NOTIMPLEMENTED_LOG_ONCE();
   return String();
 }
 

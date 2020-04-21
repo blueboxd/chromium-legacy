@@ -84,96 +84,28 @@ using PropertySet = HashSet<const CSSProperty*>;
 
 namespace {
 
-StringKeyframeEffectModel* CreateKeyframeEffectModel(
-    StyleResolver* resolver,
-    const Element* animating_element,
-    Element& element,
-    const ComputedStyle* style,
+// Processes keyframe rules, extracting the timing function and properties being
+// animated for each keyframe. The extraction process is doing more work that
+// strictly required for the setup to step 5 in the spec
+// (https://drafts.csswg.org/css-animations-2/#keyframes) as an optimization
+// to avoid needing to process each rule multiple times to extract different
+// properties.
+// TODO(crbug.com/1070627): Remove property set parameters from this method.
+// The animated properties should be based on the longhand property names and
+// not include shorthand or logical names.
+StringKeyframeVector ProcessKeyframesRule(
+    const StyleRuleKeyframes* keyframes_rule,
+    const Element* element_for_scoping,
     const ComputedStyle* parent_style,
-    const AtomicString& name,
     TimingFunction* default_timing_function,
-    size_t animation_index) {
-  // The algorithm for constructing string keyframes for a CSS animation is
-  // covered in the following spec:
-  // https://drafts.csswg.org/css-animations-2/#keyframes
-
-  // For a given target (pseudo-)element, element, animation name, and
-  // position of the animation in element’s animation-name list, keyframe
-  // objects are generated as follows:
-
-  // 1. Let default timing function be the timing function at the position
-  //    of the resolved value of the animation-timing-function for element,
-  //    repeating the list as necessary as described in CSS Animations 1 §4.2
-  //    The animation-name property.
-
-  // 2. Find the last @keyframes at-rule in document order with <keyframes-name>
-  //    matching name.
-  //    If there is no @keyframes at-rule with <keyframes-name> matching name,
-  //    abort this procedure. In this case no animation is generated, and any
-  //    existing animation matching name is canceled.
-
-  // When the animating element is null, use its parent for scoping purposes.
-  const Element* element_for_scoping =
-      animating_element ? animating_element : &element;
-  const StyleRuleKeyframes* keyframes_rule =
-      resolver->FindKeyframesRule(element_for_scoping, name);
-  DCHECK(keyframes_rule);
+    PropertySet& animated_properties,
+    PropertySet& start_properties,
+    PropertySet& end_properties) {
+  StringKeyframeVector keyframes;
+  PropertySet specified_properties_for_use_counter;
   const HeapVector<Member<StyleRuleKeyframe>>& style_keyframes =
       keyframes_rule->Keyframes();
 
-  // 3. Let keyframes be an empty sequence of keyframe objects.
-  StringKeyframeVector keyframes;
-
-  // 4. Let animated properties be an empty set of longhand CSS property names.
-
-  // Start and end properties are also tracked to simplify the process of
-  // determining if the first and last keyframes are missing properties.
-  PropertySet specified_properties_for_use_counter;
-  PropertySet animated_properties;
-  PropertySet start_properties;
-  PropertySet end_properties;
-
-  // 5. Perform a stable sort of the keyframe blocks in the @keyframes rule by
-  //    the offset specified in the keyframe selector, and iterate over the
-  //    result in reverse applying the following steps:
-  //
-  // 5.1 Let keyframe offset be the value of the keyframe selector converted to
-  //     a value in the range 0 ≤ keyframe offset ≤ 1.
-  // 5.2 Let keyframe timing function be the value of the last valid
-  //     declaration of animation-timing-function specified on the keyframe
-  //     block, or, if there is no such valid declaration, default timing
-  //     function.
-  // 5.3 After converting keyframe timing function to its canonical form (e.g.
-  //     such that step-end becomes steps(1, end)) let keyframe refer to the
-  //     existing keyframe in keyframes with matching keyframe offset and timing
-  //     function, if any.
-  //     If there is no such existing keyframe, let keyframe be a new empty
-  //     keyframe with offset, keyframe offset, and timing function, keyframe
-  //     timing function, and prepend it to keyframes.
-  // 5.4 Iterate over all declarations in the keyframe block and add them to
-  //     keyframe such that:
-  //     * All variable references are resolved to their current values.
-  //     * Each shorthand property is expanded to its longhand subproperties.
-  //     * All logical properties are converted to their equivalent physical
-  //       properties.
-  //     * For any expanded physical longhand properties that appear more than
-  //       once, only the last declaration in source order is added.
-  //       Note, since multiple keyframe blocks may specify the same keyframe
-  //       offset, and since this algorithm iterates over these blocks in
-  //       reverse, this implies that if any properties are encountered that
-  //       have already added at this same keyframe offset, they should be
-  //       skipped.
-  //     * All property values are replaced with their computed values.
-  // 5.5 Add each physical longhand property name that was added to keyframe to
-  //     animated properties.
-
-  // TODO(crbug.com/1070627): Resolve implementation with spec.
-  // * Iterate in reverse order.
-  // * Expand shorthands.
-  // * Resolve logical properties.
-  // * Avoid separate duplicate pruning phase for keyframes.
-
-  // Construct and populate the style for each keyframe
   for (wtf_size_t i = 0; i < style_keyframes.size(); ++i) {
     const StyleRuleKeyframe* style_keyframe = style_keyframes[i].Get();
     auto* keyframe = MakeGarbageCollected<StringKeyframe>();
@@ -222,11 +154,105 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
         property->PropertyID());
   }
 
-  // Merge duplicate keyframes.
   std::stable_sort(keyframes.begin(), keyframes.end(),
                    [](const Member<Keyframe>& a, const Member<Keyframe>& b) {
                      return a->CheckedOffset() < b->CheckedOffset();
                    });
+  return keyframes;
+}
+
+StringKeyframeEffectModel* CreateKeyframeEffectModel(
+    StyleResolver* resolver,
+    const Element* animating_element,
+    Element& element,
+    const ComputedStyle* style,
+    const ComputedStyle* parent_style,
+    const AtomicString& name,
+    TimingFunction* default_timing_function,
+    size_t animation_index) {
+  // The algorithm for constructing string keyframes for a CSS animation is
+  // covered in the following spec:
+  // https://drafts.csswg.org/css-animations-2/#keyframes
+
+  // For a given target (pseudo-)element, element, animation name, and
+  // position of the animation in element’s animation-name list, keyframe
+  // objects are generated as follows:
+
+  // 1. Let default timing function be the timing function at the position
+  //    of the resolved value of the animation-timing-function for element,
+  //    repeating the list as necessary as described in CSS Animations 1 §4.2
+  //    The animation-name property.
+
+  // 2. Find the last @keyframes at-rule in document order with <keyframes-name>
+  //    matching name.
+  //    If there is no @keyframes at-rule with <keyframes-name> matching name,
+  //    abort this procedure. In this case no animation is generated, and any
+  //    existing animation matching name is canceled.
+
+  // When the animating element is null, use its parent for scoping purposes.
+  const Element* element_for_scoping =
+      animating_element ? animating_element : &element;
+  const StyleRuleKeyframes* keyframes_rule =
+      resolver->FindKeyframesRule(element_for_scoping, name);
+  DCHECK(keyframes_rule);
+
+  // 3. Let keyframes be an empty sequence of keyframe objects.
+  StringKeyframeVector keyframes;
+
+  // 4. Let animated properties be an empty set of longhand CSS property names.
+  PropertySet animated_properties;
+
+  // Start and end properties are also tracked to simplify the process of
+  // determining if the first and last keyframes are missing properties.
+  PropertySet start_properties;
+  PropertySet end_properties;
+
+  // 5. Perform a stable sort of the keyframe blocks in the @keyframes rule by
+  //    the offset specified in the keyframe selector, and iterate over the
+  //    result in reverse applying the following steps:
+  //
+  keyframes =
+      ProcessKeyframesRule(keyframes_rule, element_for_scoping, parent_style,
+                           default_timing_function, animated_properties,
+                           start_properties, end_properties);
+
+  // 5.1 Let keyframe offset be the value of the keyframe selector converted to
+  //     a value in the range 0 ≤ keyframe offset ≤ 1.
+  // 5.2 Let keyframe timing function be the value of the last valid
+  //     declaration of animation-timing-function specified on the keyframe
+  //     block, or, if there is no such valid declaration, default timing
+  //     function.
+  // 5.3 After converting keyframe timing function to its canonical form (e.g.
+  //     such that step-end becomes steps(1, end)) let keyframe refer to the
+  //     existing keyframe in keyframes with matching keyframe offset and timing
+  //     function, if any.
+  //     If there is no such existing keyframe, let keyframe be a new empty
+  //     keyframe with offset, keyframe offset, and timing function, keyframe
+  //     timing function, and prepend it to keyframes.
+  // 5.4 Iterate over all declarations in the keyframe block and add them to
+  //     keyframe such that:
+  //     * All variable references are resolved to their current values.
+  //     * Each shorthand property is expanded to its longhand subproperties.
+  //     * All logical properties are converted to their equivalent physical
+  //       properties.
+  //     * For any expanded physical longhand properties that appear more than
+  //       once, only the last declaration in source order is added.
+  //       Note, since multiple keyframe blocks may specify the same keyframe
+  //       offset, and since this algorithm iterates over these blocks in
+  //       reverse, this implies that if any properties are encountered that
+  //       have already added at this same keyframe offset, they should be
+  //       skipped.
+  //     * All property values are replaced with their computed values.
+  // 5.5 Add each physical longhand property name that was added to keyframe to
+  //     animated properties.
+
+  // TODO(crbug.com/1070627): Resolve implementation with spec.
+  // * Iterate in reverse order.
+  // * Expand shorthands.
+  // * Resolve logical properties.
+  // * Avoid separate duplicate pruning phase for keyframes.
+
+  // Merge duplicate keyframes.
   wtf_size_t target_index = 0;
   for (wtf_size_t i = 1; i < keyframes.size(); i++) {
     // TODO(crbug.com/1069639): Prevent merging of keyframes with differing
@@ -1573,6 +1599,16 @@ bool CSSAnimations::IsAnimatingCustomProperties(
   return element_animations &&
          element_animations->GetEffectStack().AffectsProperties(
              IsCustomPropertyHandle);
+}
+
+bool CSSAnimations::IsAnimatingStandardProperties(
+    const ElementAnimations* element_animations,
+    const CSSBitset* bitset,
+    KeyframeEffect::Priority priority) {
+  if (!element_animations || !bitset)
+    return false;
+  return element_animations->GetEffectStack().AffectsProperties(*bitset,
+                                                                priority);
 }
 
 bool CSSAnimations::IsAnimatingFontAffectingProperties(

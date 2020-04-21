@@ -42,7 +42,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterFactory {
 
   ~BluetoothAdapterFactory();
 
-  static BluetoothAdapterFactory& Get();
+  static BluetoothAdapterFactory* Get();
 
   // Returns true if the platform supports Bluetooth. It does not imply that
   // there is a Bluetooth radio. Use BluetoothAdapter::IsPresent to know
@@ -60,7 +60,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterFactory {
   // initializing it if necessary. |callback| is called with the adapter
   // instance passed only once the adapter is fully initialized and ready to
   // use.
-  static void GetAdapter(AdapterCallback callback);
+  void GetAdapter(AdapterCallback callback);
 
   // Returns the shared instance of the classic adapter, creating and
   // initializing it if necessary. |callback| is called with the adapter
@@ -68,7 +68,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterFactory {
   // use.
   // For all platforms except Windows this is equivalent to calling
   // GetAdapter(), as the default adapter already supports Bluetooth classic.
-  static void GetClassicAdapter(AdapterCallback callback);
+  void GetClassicAdapter(AdapterCallback callback);
 
 #if defined(OS_LINUX)
   // Calls |BluetoothAdapter::Shutdown| on the adapter if

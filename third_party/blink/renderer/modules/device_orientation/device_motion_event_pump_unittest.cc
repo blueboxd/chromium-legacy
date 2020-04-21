@@ -224,34 +224,24 @@ TEST_F(DeviceMotionEventPumpTest, AllSensorsAreActive) {
   const DeviceMotionData* received_data = controller()->data();
   EXPECT_TRUE(controller()->did_change_device_motion());
 
-  bool is_null;
   EXPECT_TRUE(
       received_data->GetAccelerationIncludingGravity()->HasAccelerationData());
-  EXPECT_EQ(1, received_data->GetAccelerationIncludingGravity()->x(is_null));
-  EXPECT_FALSE(is_null);
-  EXPECT_EQ(2, received_data->GetAccelerationIncludingGravity()->y(is_null));
-  EXPECT_FALSE(is_null);
-  EXPECT_EQ(3, received_data->GetAccelerationIncludingGravity()->z(is_null));
-  EXPECT_FALSE(is_null);
+  EXPECT_EQ(1, received_data->GetAccelerationIncludingGravity()->x().value());
+  EXPECT_EQ(2, received_data->GetAccelerationIncludingGravity()->y().value());
+  EXPECT_EQ(3, received_data->GetAccelerationIncludingGravity()->z().value());
 
   EXPECT_TRUE(received_data->GetAcceleration()->HasAccelerationData());
-  EXPECT_EQ(4, received_data->GetAcceleration()->x(is_null));
-  EXPECT_FALSE(is_null);
-  EXPECT_EQ(5, received_data->GetAcceleration()->y(is_null));
-  EXPECT_FALSE(is_null);
-  EXPECT_EQ(6, received_data->GetAcceleration()->z(is_null));
-  EXPECT_FALSE(is_null);
+  EXPECT_EQ(4, received_data->GetAcceleration()->x().value());
+  EXPECT_EQ(5, received_data->GetAcceleration()->y().value());
+  EXPECT_EQ(6, received_data->GetAcceleration()->z().value());
 
   EXPECT_TRUE(received_data->GetRotationRate()->HasRotationData());
   EXPECT_EQ(gfx::RadToDeg(7.0),
-            received_data->GetRotationRate()->alpha(is_null));
-  EXPECT_FALSE(is_null);
+            received_data->GetRotationRate()->alpha().value());
   EXPECT_EQ(gfx::RadToDeg(8.0),
-            received_data->GetRotationRate()->beta(is_null));
-  EXPECT_FALSE(is_null);
+            received_data->GetRotationRate()->beta().value());
   EXPECT_EQ(gfx::RadToDeg(9.0),
-            received_data->GetRotationRate()->gamma(is_null));
-  EXPECT_FALSE(is_null);
+            received_data->GetRotationRate()->gamma().value());
 
   controller()->motion_pump()->Stop();
 
@@ -278,33 +268,23 @@ TEST_F(DeviceMotionEventPumpTest, TwoSensorsAreActive) {
   const DeviceMotionData* received_data = controller()->data();
   EXPECT_TRUE(controller()->did_change_device_motion());
 
-  bool is_null;
   EXPECT_TRUE(
       received_data->GetAccelerationIncludingGravity()->HasAccelerationData());
-  EXPECT_EQ(1, received_data->GetAccelerationIncludingGravity()->x(is_null));
-  EXPECT_FALSE(is_null);
-  EXPECT_EQ(2, received_data->GetAccelerationIncludingGravity()->y(is_null));
-  EXPECT_FALSE(is_null);
-  EXPECT_EQ(3, received_data->GetAccelerationIncludingGravity()->z(is_null));
-  EXPECT_FALSE(is_null);
+  EXPECT_EQ(1, received_data->GetAccelerationIncludingGravity()->x().value());
+  EXPECT_EQ(2, received_data->GetAccelerationIncludingGravity()->y().value());
+  EXPECT_EQ(3, received_data->GetAccelerationIncludingGravity()->z().value());
 
-  received_data->GetAcceleration()->x(is_null);
-  EXPECT_TRUE(is_null);
-  received_data->GetAcceleration()->y(is_null);
-  EXPECT_TRUE(is_null);
-  received_data->GetAcceleration()->z(is_null);
-  EXPECT_TRUE(is_null);
+  EXPECT_FALSE(received_data->GetAcceleration()->x().has_value());
+  EXPECT_FALSE(received_data->GetAcceleration()->y().has_value());
+  EXPECT_FALSE(received_data->GetAcceleration()->z().has_value());
 
   EXPECT_TRUE(received_data->GetRotationRate()->HasRotationData());
   EXPECT_EQ(gfx::RadToDeg(7.0),
-            received_data->GetRotationRate()->alpha(is_null));
-  EXPECT_FALSE(is_null);
+            received_data->GetRotationRate()->alpha().value());
   EXPECT_EQ(gfx::RadToDeg(8.0),
-            received_data->GetRotationRate()->beta(is_null));
-  EXPECT_FALSE(is_null);
+            received_data->GetRotationRate()->beta().value());
   EXPECT_EQ(gfx::RadToDeg(9.0),
-            received_data->GetRotationRate()->gamma(is_null));
-  EXPECT_FALSE(is_null);
+            received_data->GetRotationRate()->gamma().value());
 
   controller()->motion_pump()->Stop();
 
@@ -330,30 +310,21 @@ TEST_F(DeviceMotionEventPumpTest, SomeSensorDataFieldsNotAvailable) {
   const DeviceMotionData* received_data = controller()->data();
   EXPECT_TRUE(controller()->did_change_device_motion());
 
-  bool is_null;
-  received_data->GetAccelerationIncludingGravity()->x(is_null);
-  EXPECT_TRUE(is_null);
-  EXPECT_EQ(2, received_data->GetAccelerationIncludingGravity()->y(is_null));
-  EXPECT_FALSE(is_null);
-  EXPECT_EQ(3, received_data->GetAccelerationIncludingGravity()->z(is_null));
-  EXPECT_FALSE(is_null);
+  EXPECT_FALSE(
+      received_data->GetAccelerationIncludingGravity()->x().has_value());
+  EXPECT_EQ(2, received_data->GetAccelerationIncludingGravity()->y().value());
+  EXPECT_EQ(3, received_data->GetAccelerationIncludingGravity()->z().value());
 
-  EXPECT_EQ(4, received_data->GetAcceleration()->x(is_null));
-  EXPECT_FALSE(is_null);
-  received_data->GetAcceleration()->y(is_null);
-  EXPECT_TRUE(is_null);
-  EXPECT_EQ(6, received_data->GetAcceleration()->z(is_null));
-  EXPECT_FALSE(is_null);
+  EXPECT_EQ(4, received_data->GetAcceleration()->x().value());
+  EXPECT_FALSE(received_data->GetAcceleration()->y().has_value());
+  EXPECT_EQ(6, received_data->GetAcceleration()->z().value());
 
   EXPECT_TRUE(received_data->GetAcceleration()->HasAccelerationData());
   EXPECT_EQ(gfx::RadToDeg(7.0),
-            received_data->GetRotationRate()->alpha(is_null));
-  EXPECT_FALSE(is_null);
+            received_data->GetRotationRate()->alpha().value());
   EXPECT_EQ(gfx::RadToDeg(8.0),
-            received_data->GetRotationRate()->beta(is_null));
-  EXPECT_FALSE(is_null);
-  received_data->GetRotationRate()->gamma(is_null);
-  EXPECT_TRUE(is_null);
+            received_data->GetRotationRate()->beta().value());
+  EXPECT_FALSE(received_data->GetRotationRate()->gamma().has_value());
 
   controller()->motion_pump()->Stop();
 

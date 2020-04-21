@@ -129,9 +129,9 @@ void BluetoothSystem::SetPowered(bool powered, SetPoweredCallback callback) {
   GetBluetoothAdapterClient()
       ->GetProperties(active_adapter_.value())
       ->powered.Set(powered,
-                    base::BindRepeating(&BluetoothSystem::OnSetPoweredFinished,
-                                        weak_ptr_factory_.GetWeakPtr(),
-                                        base::Passed(&callback)));
+                    base::BindOnce(&BluetoothSystem::OnSetPoweredFinished,
+                                   weak_ptr_factory_.GetWeakPtr(),
+                                   base::Passed(&callback)));
 }
 
 void BluetoothSystem::GetScanState(GetScanStateCallback callback) {

@@ -101,8 +101,8 @@ void ServiceKeepalive::ReleaseRef() {
   // doomsday clock!
   idle_timer_.emplace();
   idle_timer_->Start(FROM_HERE, *idle_timeout_,
-                     base::BindRepeating(&ServiceKeepalive::OnTimerExpired,
-                                         base::Unretained(this)));
+                     base::BindOnce(&ServiceKeepalive::OnTimerExpired,
+                                    base::Unretained(this)));
 }
 
 void ServiceKeepalive::OnTimerExpired() {

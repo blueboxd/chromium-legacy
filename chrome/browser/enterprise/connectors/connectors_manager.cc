@@ -68,6 +68,11 @@ void ConnectorsManager::GetAnalysisSettings(const GURL& url,
       GetAnalysisSettingsFromLegacyPolicies(url, connector));
 }
 
+bool ConnectorsManager::DelayUntilVerdict(AnalysisConnector connector) const {
+  bool upload = connector != AnalysisConnector::FILE_DOWNLOADED;
+  return LegacyBlockUntilVerdict(upload) == BlockUntilVerdict::BLOCK;
+}
+
 base::Optional<AnalysisSettings>
 ConnectorsManager::GetAnalysisSettingsFromLegacyPolicies(
     const GURL& url,

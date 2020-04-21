@@ -104,7 +104,7 @@ void ReportValidationErrorForMessage(mojo::Message* message,
                          is_response ? " response" : "");
   ValidationContext validation_context(nullptr, 0, 0, 0, message,
                                        description.c_str());
-  ReportValidationError(&validation_context, error, description.c_str());
+  ReportValidationError(&validation_context, error);
 }
 
 ScopedSuppressValidationErrorLoggingForTests

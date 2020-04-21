@@ -60,6 +60,8 @@ component("lib") {
 
   if (enable_cros_libassistant) {
     sources += [
+      "assistant_device_settings_delegate.cc",
+      "assistant_device_settings_delegate.h",
       "assistant_manager_service_delegate.h",
       "assistant_manager_service_delegate_impl.cc",
       "assistant_manager_service_delegate_impl.h",
@@ -163,6 +165,7 @@ source_set("tests") {
 
   if (enable_cros_libassistant) {
     sources += [
+      "assistant_device_settings_delegate_unittest.cc",
       "assistant_manager_service_impl_unittest.cc",
       "media_session/assistant_media_session_unittest.cc",
       "platform/audio_input_impl_unittest.cc",
@@ -174,6 +177,8 @@ source_set("tests") {
       "test_support/fake_assistant_manager_service_delegate.h",
       "test_support/fake_platform_api.cc",
       "test_support/fake_platform_api.h",
+      "test_support/fake_service_context.cc",
+      "test_support/fake_service_context.h",
       "test_support/mock_assistant_interaction_subscriber.cc",
       "test_support/mock_assistant_interaction_subscriber.h",
       "test_support/mock_media_manager.cc",

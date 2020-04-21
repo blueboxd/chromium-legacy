@@ -405,4 +405,86 @@ TEST_F(CheckTest, OstreamVsToString) {
                CHECK_EQ(g, h));
 }
 
+#define EXPECT_LOG_ERROR(msg, expr, expected_line)                             \
+  do {                                                                         \
+    static bool got_log_message = false;                                       \
+    ASSERT_EQ(logging::GetLogMessageHandler(), nullptr);                       \
+    logging::SetLogMessageHandler([](int severity, const char* file, int line, \
+                                     size_t message_start,                     \
+                                     const std::string& str) {                 \
+      EXPECT_FALSE(got_log_message);                                           \
+      got_log_message = true;                                                  \
+      EXPECT_EQ(severity, logging::LOG_ERROR);                                 \
+      EXPECT_EQ(str.substr(message_start), (msg));                             \
+      EXPECT_STREQ(__FILE__, file);                                            \
+      EXPECT_EQ(expected_line, line);                                          \
+      return true;                                                             \
+    });                                                                        \
+    expr;                                                                      \
+    EXPECT_TRUE(got_log_message);                                              \
+    logging::SetLogMessageHandler(nullptr);                                    \
+  } while (0)
+
+#define EXPECT_NO_LOG(expr)                                                    \
+  do {                                                                         \
+    ASSERT_EQ(logging::GetLogMessageHandler(), nullptr);                       \
+    logging::SetLogMessageHandler([](int severity, const char* file, int line, \
+                                     size_t message_start,                     \
+                                     const std::string& str) {                 \
+      EXPECT_TRUE(false) << "Unexpected log: " << str;                         \
+      return true;                                                             \
+    });                                                                        \
+    expr;                                                                      \
+    logging::SetLogMessageHandler(nullptr);                                    \
+  } while (0)
+
+TEST_F(CheckTest, NotReached) {
+#if BUILDFLAG(ENABLE_LOG_ERROR_NOT_REACHED)
+  // Expect LOG(ERROR) without the streamed params.
+  EXPECT_LOG_ERROR("NOTREACHED() hit.\n", NOTREACHED() << "foo", __LINE__);
+#else
+  // Expect a DCHECK with streamed params intact.
+  EXPECT_DCHECK("Check failed: false. foo", NOTREACHED() << "foo");
+#endif
+}
+
+TEST_F(CheckTest, NotImplemented) {
+#if defined(COMPILER_GCC)
+  static const std::string expected_msg =
+      std::string("Not implemented reached in ") + __PRETTY_FUNCTION__;
+#else
+  static const std::string expected_msg = "NOT IMPLEMENTED";
+#endif
+
+#if DCHECK_IS_ON()
+  // Expect LOG(ERROR) with streamed params intact.
+  EXPECT_LOG_ERROR(expected_msg + "foo\n", NOTIMPLEMENTED() << "foo", __LINE__);
+#else
+  // Expect nothing.
+  EXPECT_NO_LOG(NOTIMPLEMENTED() << "foo");
+#endif
+}
+
+void NiLogOnce() {
+  // Note: The stream param is not logged.
+  NOTIMPLEMENTED_LOG_ONCE() << "foo";
+}
+
+TEST_F(CheckTest, NotImplementedLogOnce) {
+#if defined(COMPILER_GCC)
+  static const std::string expected_msg =
+      "Not implemented reached in void (anonymous namespace)::NiLogOnce()\n";
+#else
+  static const std::string expected_msg = "NOT IMPLEMENTED\n";
+#endif
+
+#if DCHECK_IS_ON()
+  EXPECT_LOG_ERROR(expected_msg, NiLogOnce(), __LINE__ - 12);
+  EXPECT_NO_LOG(NiLogOnce());
+#else
+  EXPECT_NO_LOG(NiLogOnce());
+  EXPECT_NO_LOG(NiLogOnce());
+#endif
+}
+
 }  // namespace

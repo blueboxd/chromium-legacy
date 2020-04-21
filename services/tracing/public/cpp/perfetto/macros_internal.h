@@ -6,10 +6,8 @@
 #define SERVICES_TRACING_PUBLIC_CPP_PERFETTO_MACROS_INTERNAL_H_
 
 #include "build/build_config.h"
-
-namespace perfetto {
-class EventContext;
-}
+#include "third_party/perfetto/include/perfetto/tracing/event_context.h"
+#include "third_party/perfetto/include/perfetto/tracing/track.h"
 
 #if !defined(OS_IOS) && !defined(OS_NACL)
 
@@ -34,6 +32,7 @@ static inline base::trace_event::TraceEventHandle AddTraceEvent(
     const unsigned char* category_group_enabled,
     const char* name,
     unsigned int flags,
+    const perfetto::Track& track,
     TrackEventArgumentFunction argument_func) {
   base::trace_event::TraceEventHandle handle = {0, 0, 0};
   auto maybe_event =
@@ -43,9 +42,11 @@ static inline base::trace_event::TraceEventHandle AddTraceEvent(
   }
   TraceEventDataSource::OnAddTraceEvent(&maybe_event.value(),
                                         /* thread_will_flush = */ false,
-                                        nullptr, std::move(argument_func));
+                                        nullptr, track,
+                                        std::move(argument_func));
   return handle;
 }
+
 }  // namespace internal
 }  // namespace tracing
 
@@ -106,9 +107,11 @@ static inline base::trace_event::TraceEventHandle AddTraceEvent(
     const unsigned char*,
     const char*,
     unsigned int,
+    const perfetto::Track&,
     TrackEventArgumentFunction) {
   return {0, 0, 0};
 }
+
 }  // namespace internal
 }  // namespace tracing
 
@@ -119,5 +122,58 @@ static inline base::trace_event::TraceEventHandle AddTraceEvent(
   TRACING_INTERNAL_ADD_TRACE_EVENT('B', category, name, TRACE_EVENT_FLAG_NONE, \
                                    ##__VA_ARGS__);
 #endif  // else of !defined(OS_IOS) && !defined(OS_NACL)
+
+namespace tracing {
+namespace internal {
+
+// Copy of function with the same name from Perfetto client library.
+template <typename T>
+static constexpr bool IsValidTraceLambdaImpl(
+    typename std::enable_if<static_cast<bool>(
+        sizeof(std::declval<T>()(std::declval<perfetto::EventContext>()),
+               0))>::type* = nullptr) {
+  return true;
+}
+
+template <typename T>
+static constexpr bool IsValidTraceLambdaImpl(...) {
+  return false;
+}
+
+template <typename T>
+static constexpr bool IsValidTraceLambda() {
+  return IsValidTraceLambdaImpl<T>(nullptr);
+}
+
+template <
+    typename TrackEventArgumentFunction = void (*)(perfetto::EventContext),
+    typename ArgumentFunctionCheck = typename std::enable_if<
+        IsValidTraceLambda<TrackEventArgumentFunction>()>::type>
+static inline base::trace_event::TraceEventHandle AddTraceEvent(
+    char phase,
+    const unsigned char* category_group_enabled,
+    const char* name,
+    unsigned int flags,
+    TrackEventArgumentFunction argument_func) {
+  perfetto::Track track{};
+  return AddTraceEvent(phase, category_group_enabled, name, flags, track,
+                       argument_func);
+}
+
+template <typename TrackType,
+          typename TrackTypeCheck = typename std::enable_if<
+              std::is_convertible<TrackType, perfetto::Track>::value>::type>
+inline base::trace_event::TraceEventHandle AddTraceEvent(
+    char phase,
+    const unsigned char* category_group_enabled,
+    const char* name,
+    unsigned int flags,
+    const TrackType& track) {
+  return AddTraceEvent(phase, category_group_enabled, name, flags, track,
+                       [](perfetto::EventContext ctx) {});
+}
+
+}  // namespace internal
+}  // namespace tracing
 
 #endif  // SERVICES_TRACING_PUBLIC_CPP_PERFETTO_MACROS_INTERNAL_H_

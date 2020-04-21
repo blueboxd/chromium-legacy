@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/css/css_custom_ident_value.h"
 #include "third_party/blink/renderer/core/css/css_rule_list.h"
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
+#include "third_party/blink/renderer/core/css/css_syntax_string_parser.h"
 #include "third_party/blink/renderer/core/css/css_variable_data.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_local_context.h"
@@ -60,6 +61,14 @@ void TestStyleSheet::AddCSSRules(const String& css_text, bool is_empty_sheet) {
     ASSERT_GT(style_sheet_->length(), sheet_length);
   else
     ASSERT_EQ(style_sheet_->length(), sheet_length);
+}
+
+PropertyRegistration* CreatePropertyRegistration(const String& name) {
+  auto syntax_definition = CSSSyntaxStringParser("*").Parse();
+  DCHECK(syntax_definition);
+  return MakeGarbageCollected<PropertyRegistration>(
+      AtomicString(name), *syntax_definition, false /* inherits */,
+      nullptr /* initial */, nullptr /* initial_variable_data */);
 }
 
 void RegisterProperty(Document& document,

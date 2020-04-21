@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * Instrumentation tests for {@link MostVisitedSitesMetadataUtils}.
@@ -47,7 +48,7 @@ public class MostVisitedSitesMetadataUtilsTest {
 
     @Test
     @SmallTest
-    public void testSaveRestoreConsistency() {
+    public void testSaveRestoreConsistency() throws InterruptedException, IOException {
         mExpectedSiteSuggestions = createFakeSiteSuggestions();
 
         // Get old file and ensure to delete it.
@@ -55,20 +56,19 @@ public class MostVisitedSitesMetadataUtilsTest {
         assertTrue(oldFile.delete() && !oldFile.exists());
 
         // Save suggestion lists to file.
-        MostVisitedSitesMetadataUtils.saveSuggestionListsToFile(mExpectedSiteSuggestions, () -> {
-            // Restore list from file after saving finished.
-            List<SiteSuggestion> sitesAfterRestore = null;
+        final CountDownLatch latch = new CountDownLatch(1);
+        MostVisitedSitesMetadataUtils.saveSuggestionListsToFile(
+                mExpectedSiteSuggestions, latch::countDown);
 
-            try {
-                sitesAfterRestore =
-                        MostVisitedSitesMetadataUtils.restoreFileToSuggestionListsOnUiThread();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        // Wait util the file has been saved.
+        latch.await();
 
-            // Ensure that the new list equals to old list.
-            assertEquals(mExpectedSiteSuggestions, sitesAfterRestore);
-        });
+        // Restore list from file after saving finished.
+        List<SiteSuggestion> sitesAfterRestore =
+                MostVisitedSitesMetadataUtils.restoreFileToSuggestionLists();
+
+        // Ensure that the new list equals to old list.
+        assertEquals(mExpectedSiteSuggestions, sitesAfterRestore);
     }
 
     @Test(expected = IOException.class)

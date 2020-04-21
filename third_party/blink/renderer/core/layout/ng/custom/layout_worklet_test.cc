@@ -22,8 +22,8 @@ class LayoutWorkletTest : public PageTestBase {
  public:
   void SetUp() override {
     PageTestBase::SetUp(IntSize());
-    layout_worklet_ = MakeGarbageCollected<LayoutWorklet>(
-        GetDocument().domWindow()->GetFrame());
+    layout_worklet_ =
+        MakeGarbageCollected<LayoutWorklet>(*GetDocument().domWindow());
     proxy_ = layout_worklet_->CreateGlobalScope();
   }
 

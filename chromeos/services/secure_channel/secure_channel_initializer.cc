@@ -61,10 +61,12 @@ SecureChannelInitializer::SecureChannelInitializer(
   // device::BluetoothAdapterFactory::SetAdapterForTesting() causes the
   // GetAdapter() callback to return synchronously. Thus, post the GetAdapter()
   // call as a task to ensure that it is returned asynchronously, even in tests.
+  auto* factory = device::BluetoothAdapterFactory::Get();
   task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(
-          device::BluetoothAdapterFactory::GetAdapter,
+          &device::BluetoothAdapterFactory::GetAdapter,
+          base::Unretained(factory),
           base::Bind(&SecureChannelInitializer::OnBluetoothAdapterReceived,
                      weak_ptr_factory_.GetWeakPtr())));
 }

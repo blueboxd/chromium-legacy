@@ -307,6 +307,11 @@ class EmbeddedTestServer {
   // request has been received.
   bool HandleReadResult(HttpConnection* connection, int rv);
 
+  // Called when |connection| is finished writing the response and the socket
+  // can be closed, allowing for |connnection_listener_| to take it if the
+  // socket is still open.
+  void OnResponseCompleted(HttpConnection* connection);
+
   // Closes and removes the connection upon error or completion.
   void DidClose(HttpConnection* connection);
 

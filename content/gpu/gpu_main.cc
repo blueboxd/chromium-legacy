@@ -46,7 +46,6 @@
 #include "gpu/ipc/service/gpu_init.h"
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
 #include "media/gpu/buildflags.h"
-#include "services/tracing/public/cpp/stack_sampling/tracing_sampler_profiler.h"
 #include "services/tracing/public/cpp/trace_startup.h"
 #include "third_party/angle/src/gpu_info_util/SystemInfo.h"
 #include "ui/events/platform/platform_event_source.h"
@@ -388,10 +387,6 @@ int GpuMain(const MainFunctionParams& parameters) {
   if (parameters.zygote_child)
     tracing::EnableStartupTracingIfNeeded();
 #endif  // OS_POSIX && !OS_ANDROID && !!OS_MACOSX
-
-  // Setup tracing sampler profiler as early as possible.
-  std::unique_ptr<tracing::TracingSamplerProfiler> tracing_sampler_profiler =
-      tracing::TracingSamplerProfiler::CreateOnMainThread();
 
 #if defined(OS_MACOSX)
   // A GPUEjectPolicy of 'wait' is set in the Info.plist of the browser

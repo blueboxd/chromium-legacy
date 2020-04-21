@@ -260,8 +260,9 @@ BrowserAccessibility* BrowserAccessibility::PlatformGetChild(
   BrowserAccessibility* result = nullptr;
 
   if (HasStringAttribute(ax::mojom::StringAttribute::kChildTreeId)) {
-    // A node should not have both children and a child tree.
-    DCHECK_EQ(node_->children().size(), 0u);
+    DCHECK_EQ(node_->children().size(), 0u)
+        << "A node should not have both children and a child tree.";
+
     // child_trees do not have siblings.
     if (child_index == 0)
       result = PlatformGetRootOfChildTree();

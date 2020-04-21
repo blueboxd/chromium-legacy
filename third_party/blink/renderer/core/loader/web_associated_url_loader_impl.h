@@ -19,7 +19,7 @@ namespace blink {
 
 class ThreadableLoader;
 class WebAssociatedURLLoaderClient;
-class Document;
+class ExecutionContext;
 
 // This class is used to implement WebFrame::createAssociatedURLLoader.
 class CORE_EXPORT WebAssociatedURLLoaderImpl final
@@ -27,7 +27,8 @@ class CORE_EXPORT WebAssociatedURLLoaderImpl final
   USING_FAST_MALLOC(WebAssociatedURLLoaderImpl);
 
  public:
-  WebAssociatedURLLoaderImpl(Document*, const WebAssociatedURLLoaderOptions&);
+  WebAssociatedURLLoaderImpl(ExecutionContext*,
+                             const WebAssociatedURLLoaderOptions&);
   ~WebAssociatedURLLoaderImpl() override;
 
   void LoadAsynchronously(const WebURLRequest&,
@@ -36,10 +37,6 @@ class CORE_EXPORT WebAssociatedURLLoaderImpl final
   void SetDefersLoading(bool) override;
   void SetLoadingTaskRunner(base::SingleThreadTaskRunner*) override;
 
-  // Called by |observer_| to handle destruction of the Document associated
-  // with the frame given to the constructor.
-  void DocumentDestroyed();
-
   // Called by ClientAdapter to handle completion of loading.
   void ClientAdapterDone();
 
@@ -47,6 +44,7 @@ class CORE_EXPORT WebAssociatedURLLoaderImpl final
   class ClientAdapter;
   class Observer;
 
+  void ContextDestroyed();
   void CancelLoader();
   void DisposeObserver();
 
@@ -65,7 +63,7 @@ class CORE_EXPORT WebAssociatedURLLoaderImpl final
   Persistent<ThreadableLoader> loader_;
 
   // A ExecutionContextLifecycleObserver for cancelling |loader_| when the
-  // Document is detached.
+  // context is detached.
   Persistent<Observer> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(WebAssociatedURLLoaderImpl);

@@ -174,7 +174,7 @@ void ClientAppMetadataProviderService::GetClientAppMetadata(
   if (was_already_in_progress)
     return;
 
-  device::BluetoothAdapterFactory::GetAdapter(base::BindOnce(
+  device::BluetoothAdapterFactory::Get()->GetAdapter(base::BindOnce(
       &ClientAppMetadataProviderService::OnBluetoothAdapterFetched,
       weak_ptr_factory_.GetWeakPtr()));
 }

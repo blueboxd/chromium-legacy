@@ -106,6 +106,16 @@ using GetCertificatesCallback =
     base::Callback<void(std::unique_ptr<net::CertificateList> certs,
                         const std::string& error_message)>;
 
+// If the list of key pairs could be successfully retrieved, |error_message|
+// will be empty and |public_key_spki_der_list| will contain the list of
+// available key pairs (may be empty if no key pairs exist). Each available key
+// pair is represented as a DER-encoded SubjectPublicKeyInfo. If an error
+// occurred, |public_key_spki_der_list| will be empty and |error_message|
+// will be set to an error message.
+using GetAllKeysCallback =
+    base::OnceCallback<void(std::vector<std::string> public_key_spki_der_list,
+                            const std::string& error_message)>;
+
 // If an error occurred during import, |error_message| will be set to an error
 // message.
 using ImportCertificateCallback =
@@ -212,6 +222,13 @@ class PlatformKeysService : public KeyedService {
   virtual void GetCertificates(const std::string& token_id,
                                const GetCertificatesCallback& callback) = 0;
 
+  // Returns the list of all keys available from the given |token_id| as a list
+  // of der-encoded SubjectPublicKeyInfo strings. |callback| will be invoked on
+  // the UI thread with the list of available public keys, possibly with an
+  // error message. Must be called on the UI thread.
+  virtual void GetAllKeys(const std::string& token_id,
+                          GetAllKeysCallback callback) = 0;
+
   // Imports |certificate| to the given token if the certified key is already
   // stored in this token. Any intermediate of |certificate| will be ignored.
   // |token_id| specifies the token to store the certificate on and can
@@ -277,6 +294,8 @@ class PlatformKeysServiceImpl final : public PlatformKeysService {
       const SelectCertificatesCallback& callback) override;
   void GetCertificates(const std::string& token_id,
                        const GetCertificatesCallback& callback) override;
+  void GetAllKeys(const std::string& token_id,
+                  GetAllKeysCallback callback) override;
   void ImportCertificate(const std::string& token_id,
                          const scoped_refptr<net::X509Certificate>& certificate,
                          const ImportCertificateCallback& callback) override;

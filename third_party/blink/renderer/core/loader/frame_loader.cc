@@ -1633,7 +1633,7 @@ void FrameLoader::ModifyRequestForCSP(
 
   MixedContentChecker::UpgradeInsecureRequest(
       resource_request, fetch_client_settings_object,
-      document_for_logging ? document_for_logging->ToExecutionContext()
+      document_for_logging ? document_for_logging->GetExecutionContext()
                            : nullptr,
       frame_type, frame_->GetContentSettingsClient());
 }

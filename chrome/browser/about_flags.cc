@@ -1043,7 +1043,8 @@ const FeatureEntry::FeatureVariation kOmniboxRichAutocompletionVariations[] = {
 #endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 
 const FeatureEntry::FeatureParam kOmniboxOnFocusSuggestionsParamSERP[] = {
-    {"ZeroSuggestVariant:6:*", "RemoteSendUrl"}};
+    {"ZeroSuggestVariant:6:*", "RemoteSendUrl"},
+    {"ZeroSuggestVariant:9:*", "RemoteSendUrl"}};
 #if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam kOmniboxNTPZPSLocal[] = {
     {"ZeroSuggestVariant:1:*", "Local"},
@@ -3795,6 +3796,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAccessibilityExposeDisplayNoneName,
      flag_descriptions::kAccessibilityExposeDisplayNoneDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kEnableAccessibilityExposeDisplayNone)},
+
+#if !defined(OS_ANDROID)
+    {"enable-accessibility-live-captions",
+     flag_descriptions::kEnableAccessibilityLiveCaptionsName,
+     flag_descriptions::kEnableAccessibilityLiveCaptionsDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(media::kLiveCaption)},
+#endif  // !defined(OS_ANDROID)
 
     {"enable-accessibility-object-model",
      flag_descriptions::kEnableAccessibilityObjectModelName,

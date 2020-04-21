@@ -38,6 +38,7 @@ static_library("utility") {
     "//components/paint_preview/buildflags",
     "//components/safe_browsing:buildflags",
     "//components/search_engines",
+    "//components/services/language_detection",
     "//components/services/paint_preview_compositor",
     "//components/services/patch:lib",
     "//components/services/unzip:lib",

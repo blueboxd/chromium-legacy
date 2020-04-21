@@ -49,6 +49,7 @@
 #endif
 
 #if defined(OS_WIN)
+#include "base/win/scoped_com_initializer.h"
 #include "sandbox/win/src/sandbox.h"
 
 extern sandbox::TargetServices* g_utility_target_services;
@@ -94,6 +95,22 @@ class ContentCdmServiceClient final : public media::CdmService::Client {
 #endif  // BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
 };
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
+
+class UtilityThreadVideoCaptureServiceImpl final
+    : public video_capture::VideoCaptureServiceImpl {
+ public:
+  explicit UtilityThreadVideoCaptureServiceImpl(
+      mojo::PendingReceiver<video_capture::mojom::VideoCaptureService> receiver,
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
+      : VideoCaptureServiceImpl(std::move(receiver),
+                                std::move(ui_task_runner)) {}
+
+ private:
+#if defined(OS_WIN)
+  base::win::ScopedCOMInitializer com_initializer_{
+      base::win::ScopedCOMInitializer::kMTA};
+#endif
+};
 
 auto RunNetworkService(
     mojo::PendingReceiver<network::mojom::NetworkService> receiver) {
@@ -164,7 +181,7 @@ auto RunTracing(
 
 auto RunVideoCapture(
     mojo::PendingReceiver<video_capture::mojom::VideoCaptureService> receiver) {
-  return std::make_unique<video_capture::VideoCaptureServiceImpl>(
+  return std::make_unique<UtilityThreadVideoCaptureServiceImpl>(
       std::move(receiver), base::ThreadTaskRunnerHandle::Get());
 }
 

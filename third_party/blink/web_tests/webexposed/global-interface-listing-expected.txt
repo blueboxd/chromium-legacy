@@ -7889,9 +7889,9 @@ interface Screen
     getter availWidth
     getter colorDepth
     getter height
+    getter id
     getter internal
     getter left
-    getter name
     getter orientation
     getter pixelDepth
     getter primary

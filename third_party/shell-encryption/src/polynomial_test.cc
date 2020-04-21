@@ -85,12 +85,16 @@ class PolynomialTest : public ::testing::Test {
     q_.reset(new CoefficientPolynomial(q_coeffs, params14_.get()));
 
     // Acquire all of the NTT parameters.
-    ASSERT_OK_AND_ASSIGN(ntt_params_, rlwe::InitializeNttParameters<uint_m>(
-                                          log_n, params14_.get()));
+    ASSERT_OK_AND_ASSIGN(auto ntt_params, rlwe::InitializeNttParameters<uint_m>(
+                                              log_n, params14_.get()));
+    ntt_params_ =
+        absl::make_unique<rlwe::NttParameters<uint_m>>(std::move(ntt_params));
 
     // Put p and q in the NTT domain.
-    ntt_p_ = Polynomial::ConvertToNtt(p_coeffs, ntt_params_, params14_.get());
-    ntt_q_ = Polynomial::ConvertToNtt(q_coeffs, ntt_params_, params14_.get());
+    ntt_p_ =
+        Polynomial::ConvertToNtt(p_coeffs, ntt_params_.get(), params14_.get());
+    ntt_q_ =
+        Polynomial::ConvertToNtt(q_coeffs, ntt_params_.get(), params14_.get());
   }
 
   std::unique_ptr<Prng> MakePrng(absl::string_view seed) {
@@ -98,8 +102,8 @@ class PolynomialTest : public ::testing::Test {
     return prng;
   }
 
-  std::unique_ptr<uint_m::Params> params14_;
-  rlwe::NttParameters<uint_m> ntt_params_;
+  std::unique_ptr<const uint_m::Params> params14_;
+  std::unique_ptr<rlwe::NttParameters<uint_m>> ntt_params_;
   std::unique_ptr<CoefficientPolynomial> p_;
   std::unique_ptr<CoefficientPolynomial> q_;
   Polynomial ntt_p_;
@@ -132,8 +136,8 @@ TYPED_TEST(PolynomialTest, CoeffsCorrectlyReturnsCoefficients) {
       v.push_back(elt);
     }
 
-    Polynomial ntt_v =
-        Polynomial::ConvertToNtt(v, this->ntt_params_, this->params14_.get());
+    Polynomial ntt_v = Polynomial::ConvertToNtt(v, this->ntt_params_.get(),
+                                                this->params14_.get());
 
     for (int j = 0; j < n; j++) {
       EXPECT_EQ(ntt_v.Coeffs()[j].ExportInt(this->params14_.get()),
@@ -167,7 +171,7 @@ TYPED_TEST(PolynomialTest, Symmetry) {
     this->SetParams(1 << i, i);
     EXPECT_TRUE(this->ntt_p_.IsValid());
     CoefficientPolynomial p_prime(
-        this->ntt_p_.InverseNtt(this->ntt_params_, this->params14_.get()),
+        this->ntt_p_.InverseNtt(this->ntt_params_.get(), this->params14_.get()),
         this->params14_.get());
     EXPECT_EQ(*this->p_, p_prime);
   }
@@ -218,12 +222,12 @@ TYPED_TEST(PolynomialTest, BinopOfDifferentLengths) {
       std::vector<uint_m> x(1 << i, this->zero_);
       std::vector<uint_m> y(1 << j, this->zero_);
 
-      this->ntt_params_.bitrevs = rlwe::internal::BitrevArray(i);
-      Polynomial ntt_x =
-          Polynomial::ConvertToNtt(x, this->ntt_params_, this->params14_.get());
-      this->ntt_params_.bitrevs = rlwe::internal::BitrevArray(j);
-      Polynomial ntt_y =
-          Polynomial::ConvertToNtt(y, this->ntt_params_, this->params14_.get());
+      this->ntt_params_->bitrevs = rlwe::internal::BitrevArray(i);
+      Polynomial ntt_x = Polynomial::ConvertToNtt(x, this->ntt_params_.get(),
+                                                  this->params14_.get());
+      this->ntt_params_->bitrevs = rlwe::internal::BitrevArray(j);
+      Polynomial ntt_y = Polynomial::ConvertToNtt(y, this->ntt_params_.get(),
+                                                  this->params14_.get());
 
       EXPECT_TRUE(ntt_x.IsValid());
       EXPECT_TRUE(ntt_y.IsValid());
@@ -293,10 +297,10 @@ TYPED_TEST(PolynomialTest, Multiply) {
                          this->ntt_q_.Mul(this->ntt_p_, this->params14_.get()));
 
     CoefficientPolynomial res1(
-        ntt_res1.InverseNtt(this->ntt_params_, this->params14_.get()),
+        ntt_res1.InverseNtt(this->ntt_params_.get(), this->params14_.get()),
         this->params14_.get());
     CoefficientPolynomial res2(
-        ntt_res2.InverseNtt(this->ntt_params_, this->params14_.get()),
+        ntt_res2.InverseNtt(this->ntt_params_.get(), this->params14_.get()),
         this->params14_.get());
 
     ASSERT_OK_AND_ASSIGN(CoefficientPolynomial expected,
@@ -322,7 +326,7 @@ TYPED_TEST(PolynomialTest, ScalarMultiply) {
                          this->ntt_p_.Mul(scalar, this->params14_.get()));
 
     CoefficientPolynomial res(
-        ntt_res.InverseNtt(this->ntt_params_, this->params14_.get()),
+        ntt_res.InverseNtt(this->ntt_params_.get(), this->params14_.get()),
         this->params14_.get());
 
     CoefficientPolynomial expected = (*this->p_) * scalar;
@@ -337,9 +341,9 @@ TYPED_TEST(PolynomialTest, Negate) {
     this->SetParams(1 << i, i);
 
     // An NTT polynomial of all zeros.
-    Polynomial zeros_ntt =
-        Polynomial::ConvertToNtt(std::vector<uint_m>(1 << i, this->zero_),
-                                 this->ntt_params_, this->params14_.get());
+    Polynomial zeros_ntt = Polynomial::ConvertToNtt(
+        std::vector<uint_m>(1 << i, this->zero_), this->ntt_params_.get(),
+        this->params14_.get());
 
     auto minus_p = this->ntt_p_.Negate(this->params14_.get());
     ASSERT_OK_AND_ASSIGN(auto p0,
@@ -363,10 +367,10 @@ TYPED_TEST(PolynomialTest, Add) {
                          this->ntt_q_.Add(this->ntt_p_, this->params14_.get()));
 
     CoefficientPolynomial res1(
-        ntt_res1.InverseNtt(this->ntt_params_, this->params14_.get()),
+        ntt_res1.InverseNtt(this->ntt_params_.get(), this->params14_.get()),
         this->params14_.get());
     CoefficientPolynomial res2(
-        ntt_res2.InverseNtt(this->ntt_params_, this->params14_.get()),
+        ntt_res2.InverseNtt(this->ntt_params_.get(), this->params14_.get()),
         this->params14_.get());
 
     ASSERT_OK_AND_ASSIGN(CoefficientPolynomial expected,
@@ -391,10 +395,10 @@ TYPED_TEST(PolynomialTest, Sub) {
                          this->ntt_q_.Sub(this->ntt_p_, this->params14_.get()));
 
     CoefficientPolynomial res1(
-        ntt_res1.InverseNtt(this->ntt_params_, this->params14_.get()),
+        ntt_res1.InverseNtt(this->ntt_params_.get(), this->params14_.get()),
         this->params14_.get());
     CoefficientPolynomial res2(
-        ntt_res2.InverseNtt(this->ntt_params_, this->params14_.get()),
+        ntt_res2.InverseNtt(this->ntt_params_.get(), this->params14_.get()),
         this->params14_.get());
 
     ASSERT_OK_AND_ASSIGN(CoefficientPolynomial expected_res1,
@@ -413,18 +417,20 @@ TYPED_TEST(PolynomialTest, SubstitutionPowerMalformed) {
     this->SetParams(1 << i, i);
 
     EXPECT_THAT(
-        this->ntt_p_.Substitute(2, this->ntt_params_, this->params14_.get()),
+        this->ntt_p_.Substitute(2, this->ntt_params_.get(),
+                                this->params14_.get()),
         StatusIs(::absl::StatusCode::kInvalidArgument,
                  HasSubstr("must be a non-negative odd integer less than")));
 
     // Even when not in debugging mode, the following two tests will yield a
     // segmentation fault. We therefore only do the tests in debug mode.
     EXPECT_THAT(
-        this->ntt_p_.Substitute(-10, this->ntt_params_, this->params14_.get()),
+        this->ntt_p_.Substitute(-10, this->ntt_params_.get(),
+                                this->params14_.get()),
         StatusIs(::absl::StatusCode::kInvalidArgument,
                  HasSubstr("must be a non-negative odd integer less than")));
     EXPECT_THAT(
-        this->ntt_p_.Substitute(2 * (1 << i) + 1, this->ntt_params_,
+        this->ntt_p_.Substitute(2 * (1 << i) + 1, this->ntt_params_.get(),
                                 this->params14_.get()),
         StatusIs(::absl::StatusCode::kInvalidArgument,
                  HasSubstr("must be a non-negative odd integer less than")));
@@ -438,11 +444,11 @@ TYPED_TEST(PolynomialTest, Substitution) {
     int dimension = 1 << i;
     for (int k = 0; k < i; k++) {
       int power = (dimension >> k) + 1;
-      ASSERT_OK_AND_ASSIGN(auto ntt_res,
-                           this->ntt_p_.Substitute(power, this->ntt_params_,
-                                                   this->params14_.get()));
+      ASSERT_OK_AND_ASSIGN(
+          auto ntt_res, this->ntt_p_.Substitute(power, this->ntt_params_.get(),
+                                                this->params14_.get()));
       CoefficientPolynomial res(
-          ntt_res.InverseNtt(this->ntt_params_, this->params14_.get()),
+          ntt_res.InverseNtt(this->ntt_params_.get(), this->params14_.get()),
           this->params14_.get());
 
       ASSERT_OK_AND_ASSIGN(auto r, this->p_->Substitute(power));

@@ -13,6 +13,7 @@
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
@@ -42,7 +43,7 @@ TEST_F(PreviewsResourceLoadingHintsTest, NoPatterns) {
   Vector<WTF::String> subresources_to_block;
 
   PreviewsResourceLoadingHints* hints = PreviewsResourceLoadingHints::Create(
-      *dummy_page_holder_->GetDocument().ToExecutionContext(),
+      *dummy_page_holder_->GetFrame().DomWindow(),
       ukm::UkmRecorder::GetNewSourceID(), subresources_to_block);
   EXPECT_TRUE(hints->AllowLoad(ResourceType::kScript,
                                KURL("https://www.example.com/"),
@@ -54,7 +55,7 @@ TEST_F(PreviewsResourceLoadingHintsTest, OnePattern) {
   subresources_to_block.push_back("foo.jpg");
 
   PreviewsResourceLoadingHints* hints = PreviewsResourceLoadingHints::Create(
-      *dummy_page_holder_->GetDocument().ToExecutionContext(),
+      *dummy_page_holder_->GetFrame().DomWindow(),
       ukm::UkmRecorder::GetNewSourceID(), subresources_to_block);
 
   const struct {
@@ -117,7 +118,7 @@ TEST_F(PreviewsResourceLoadingHintsTest, MultiplePatterns) {
   subresources_to_block.push_back(".example2.com/baz.jpg");
 
   PreviewsResourceLoadingHints* hints = PreviewsResourceLoadingHints::Create(
-      *dummy_page_holder_->GetDocument().ToExecutionContext(),
+      *dummy_page_holder_->GetFrame().DomWindow(),
       ukm::UkmRecorder::GetNewSourceID(), subresources_to_block);
 
   const struct {
@@ -149,7 +150,7 @@ TEST_F(PreviewsResourceLoadingHintsTest, OnePatternHistogramChecker) {
   subresources_to_block.push_back("foo.jpg");
 
   PreviewsResourceLoadingHints* hints = PreviewsResourceLoadingHints::Create(
-      *dummy_page_holder_->GetDocument().ToExecutionContext(),
+      *dummy_page_holder_->GetFrame().DomWindow(),
       ukm::UkmRecorder::GetNewSourceID(), subresources_to_block);
 
   const struct {
@@ -210,7 +211,7 @@ TEST_F(PreviewsResourceLoadingHintsTest, MultiplePatternUKMChecker) {
   subresources_to_block.push_back(".example3.com/very_low_2_and_medium_3.jpg");
 
   PreviewsResourceLoadingHints* hints = PreviewsResourceLoadingHints::Create(
-      *dummy_page_holder_->GetDocument().ToExecutionContext(),
+      *dummy_page_holder_->GetFrame().DomWindow(),
       ukm::UkmRecorder::GetNewSourceID(), subresources_to_block);
 
   const struct {
@@ -301,7 +302,7 @@ TEST_F(PreviewsResourceLoadingHintsTestBlockImages,
   subresources_to_block.push_back("foo.jpg");
 
   PreviewsResourceLoadingHints* hints = PreviewsResourceLoadingHints::Create(
-      *dummy_page_holder_->GetDocument().ToExecutionContext(),
+      *dummy_page_holder_->GetFrame().DomWindow(),
       ukm::UkmRecorder::GetNewSourceID(), subresources_to_block);
 
   const struct {
@@ -357,7 +358,7 @@ TEST_F(PreviewsResourceLoadingHintsTestAllowCSS,
   subresources_to_block.push_back("foo.jpg");
 
   PreviewsResourceLoadingHints* hints = PreviewsResourceLoadingHints::Create(
-      *dummy_page_holder_->GetDocument().ToExecutionContext(),
+      *dummy_page_holder_->GetFrame().DomWindow(),
       ukm::UkmRecorder::GetNewSourceID(), subresources_to_block);
 
   const struct {

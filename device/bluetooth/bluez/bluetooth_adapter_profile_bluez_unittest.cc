@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -57,11 +58,15 @@ class BluetoothAdapterProfileBlueZTest : public testing::Test {
             new bluez::FakeBluetoothProfileManagerClient));
 
     // Grab a pointer to the adapter.
-    device::BluetoothAdapterFactory::GetAdapter(
-        base::BindOnce(&BluetoothAdapterProfileBlueZTest::AdapterCallback,
-                       base::Unretained(this)));
-    base::RunLoop().Run();
-    ASSERT_TRUE(adapter_.get() != nullptr);
+    base::RunLoop run_loop;
+    device::BluetoothAdapterFactory::Get()->GetAdapter(
+        base::BindLambdaForTesting(
+            [&](scoped_refptr<BluetoothAdapter> adapter) {
+              adapter_ = std::move(adapter);
+              run_loop.Quit();
+            }));
+    run_loop.Run();
+    ASSERT_TRUE(adapter_);
     ASSERT_TRUE(adapter_->IsInitialized());
     ASSERT_TRUE(adapter_->IsPresent());
 
@@ -74,12 +79,6 @@ class BluetoothAdapterProfileBlueZTest : public testing::Test {
     profile_.reset();
     adapter_ = nullptr;
     bluez::BluezDBusManager::Shutdown();
-  }
-
-  void AdapterCallback(scoped_refptr<BluetoothAdapter> adapter) {
-    adapter_ = adapter;
-    if (base::RunLoop::IsRunningOnCurrentThread())
-      base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
   class FakeDelegate : public bluez::BluetoothProfileServiceProvider::Delegate {

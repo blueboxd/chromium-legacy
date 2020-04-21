@@ -438,6 +438,13 @@ _CONFIG = [
             'ui::DomKey',
             'ui::KeycodeConverter',
 
+            # Accessibility base types and the non-Blink enums they
+            # depend on.
+            'ui::AXNodeData',
+            'ax::mojom::BoolAttribute',
+            'ax::mojom::HasPopup',
+            'ax::mojom::State',
+
             # Blink uses UKM for logging e.g. always-on leak detection (crbug/757374)
             'ukm::.+',
 

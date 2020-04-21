@@ -43,7 +43,8 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   // If layout is dirty, it will perform layout using the previous constraint
   // space used to generate the |NGLayoutResult|.
   // Otherwise it will simply return the previous layout result generated.
-  scoped_refptr<const NGLayoutResult> SimplifiedLayout();
+  scoped_refptr<const NGLayoutResult> SimplifiedLayout(
+      const NGPhysicalFragment& previous_fragment);
 
   // This method is just for use within the |NGOutOfFlowLayoutPart|.
   //

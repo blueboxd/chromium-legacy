@@ -21,6 +21,13 @@ enum class InitializationStatus {
   INIT_FAILURE,
 };
 
+// Controls how cached image fetcher manages disk cache files. Maps to
+// CacheStrategy in cached_image_metadata.proto.
+enum class CacheOption {
+  kBestEffort = 0,
+  kHoldUntilExpired = 1,
+};
+
 // Returns the resulting raw image data as a std::string. Data will be returned
 // using move semantics. If |needs_transcoding| is true, this data must be
 // decoded in a sandbox process.

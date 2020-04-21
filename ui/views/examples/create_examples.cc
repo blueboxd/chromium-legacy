@@ -39,8 +39,8 @@ namespace views {
 namespace examples {
 
 // Creates the default set of examples.
-ExampleVector CreateExamples() {
-  ExampleVector examples;
+ExampleVector CreateExamples(ExampleVector extra_examples) {
+  ExampleVector examples = std::move(extra_examples);
   examples.push_back(std::make_unique<AxExample>());
   examples.push_back(std::make_unique<BoxLayoutExample>());
   examples.push_back(std::make_unique<BubbleExample>());

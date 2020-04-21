@@ -48,7 +48,7 @@ class Polynomial {
 
   // Create an empty polynomial of the specified length. The length must be
   // a power of 2.
-  explicit Polynomial(int len, ModularIntParams* params)
+  explicit Polynomial(int len, const ModularIntParams* params)
       : Polynomial(
             std::vector<ModularInt>(len, ModularInt::ImportZero(params))) {}
 
@@ -77,8 +77,8 @@ class Polynomial {
   //  f mod (x^(n/2^(k+1))-psi^brv[2^k+1]), f mod (x^(n/2^(k+1))+psi^brv[2^k+1])
   // where brv maps a log(n)-bit number to its bitreversal.
   static Polynomial ConvertToNtt(std::vector<ModularInt> poly_coeffs,
-                                 const NttParameters<ModularInt>& ntt_params,
-                                 ModularIntParams* modular_params) {
+                                 const NttParameters<ModularInt>* ntt_params,
+                                 const ModularIntParams* modular_params) {
     // Check to ensure that the coefficient vector is of the correct length.
     int len = poly_coeffs.size();
     if (len <= 0 || (len & (len - 1)) != 0) {
@@ -87,9 +87,17 @@ class Polynomial {
     }
 
     Polynomial output(std::move(poly_coeffs));
-    output.IterativeCooleyTukey(ntt_params.psis_bitrev, modular_params);
+    output.IterativeCooleyTukey(ntt_params->psis_bitrev, modular_params);
 
     return output;
+  }
+
+  // Deprecated ConvertToNtt function taking NttParameters by constant reference
+  ABSL_DEPRECATED("Use ConvertToNtt function with NttParameters pointer above.")
+  static Polynomial ConvertToNtt(std::vector<ModularInt> poly_coeffs,
+                                 const NttParameters<ModularInt>& ntt_params,
+                                 const ModularIntParams* modular_params) {
+    return ConvertToNtt(std::move(poly_coeffs), &ntt_params, modular_params);
   }
 
   // The inverse NTT transform is computed similarly by iteratively inverting
@@ -105,18 +113,26 @@ class Polynomial {
   // n=2^log(n) (the factor 2 obtained at each level of the butterfly) is
   // required.
   std::vector<ModularInt> InverseNtt(
-      const NttParameters<ModularInt>& ntt_params,
-      ModularIntParams* modular_params) const {
+      const NttParameters<ModularInt>* ntt_params,
+      const ModularIntParams* modular_params) const {
     Polynomial copy(*this);
 
-    copy.IterativeGentlemanSande(ntt_params.psis_inv_bitrev, modular_params);
+    copy.IterativeGentlemanSande(ntt_params->psis_inv_bitrev, modular_params);
 
     // Normalize the result by multiplying by the inverse of n.
     for (auto& coeff : copy.coeffs_) {
-      coeff.MulInPlace(*ntt_params.n_inv_ptr, modular_params);
+      coeff.MulInPlace(ntt_params->n_inv_ptr.value(), modular_params);
     }
 
     return copy.coeffs_;
+  }
+
+  // Deprecated InverseNtt function taking NttParameters by constant reference
+  ABSL_DEPRECATED("Use InverseNtt function with NttParameters pointer above.")
+  std::vector<ModularInt> InverseNtt(
+      const NttParameters<ModularInt>& ntt_params,
+      const ModularIntParams* modular_params) const {
+    return InverseNtt(&ntt_params, modular_params);
   }
 
   // Specifies whether the Polynomial is valid.
@@ -124,7 +140,7 @@ class Polynomial {
 
   // Scalar multiply.
   rlwe::StatusOr<Polynomial> Mul(const ModularInt& scalar,
-                                 ModularIntParams* modular_params) const {
+                                 const ModularIntParams* modular_params) const {
     Polynomial output = *this;
     RLWE_RETURN_IF_ERROR(output.MulInPlace(scalar, modular_params));
     return output;
@@ -132,13 +148,13 @@ class Polynomial {
 
   // Scalar multiply in place.
   absl::Status MulInPlace(const ModularInt& scalar,
-                          ModularIntParams* modular_params) {
+                          const ModularIntParams* modular_params) {
     return ModularInt::BatchMulInPlace(&coeffs_, scalar, modular_params);
   }
 
   // Coordinate-wise multiplication.
   rlwe::StatusOr<Polynomial> Mul(const Polynomial& that,
-                                 ModularIntParams* modular_params) const {
+                                 const ModularIntParams* modular_params) const {
     Polynomial output = *this;
     RLWE_RETURN_IF_ERROR(output.MulInPlace(that, modular_params));
     return output;
@@ -146,7 +162,7 @@ class Polynomial {
 
   // Coordinate-wise multiplication in place.
   absl::Status MulInPlace(const Polynomial& that,
-                          ModularIntParams* modular_params) {
+                          const ModularIntParams* modular_params) {
     // If this operation is invalid, return an invalid error.
     if (Len() != that.Len()) {
       return absl::InvalidArgumentError(
@@ -156,14 +172,14 @@ class Polynomial {
   }
 
   // Negation.
-  Polynomial Negate(ModularIntParams* modular_params) const {
+  Polynomial Negate(const ModularIntParams* modular_params) const {
     Polynomial output = *this;
     output.NegateInPlace(modular_params);
     return output;
   }
 
   // Negation in place.
-  Polynomial& NegateInPlace(ModularIntParams* modular_params) {
+  Polynomial& NegateInPlace(const ModularIntParams* modular_params) {
     for (auto& coeff : coeffs_) {
       coeff.NegateInPlace(modular_params);
     }
@@ -173,7 +189,7 @@ class Polynomial {
 
   // Coordinate-wise addition.
   rlwe::StatusOr<Polynomial> Add(const Polynomial& that,
-                                 ModularIntParams* modular_params) const {
+                                 const ModularIntParams* modular_params) const {
     Polynomial output = *this;
     RLWE_RETURN_IF_ERROR(output.AddInPlace(that, modular_params));
     return output;
@@ -181,7 +197,7 @@ class Polynomial {
 
   // Coordinate-wise substraction.
   rlwe::StatusOr<Polynomial> Sub(const Polynomial& that,
-                                 ModularIntParams* modular_params) const {
+                                 const ModularIntParams* modular_params) const {
     Polynomial output = *this;
     RLWE_RETURN_IF_ERROR(output.SubInPlace(that, modular_params));
     return output;
@@ -189,7 +205,7 @@ class Polynomial {
 
   // Coordinate-wise addition in place.
   absl::Status AddInPlace(const Polynomial& that,
-                          ModularIntParams* modular_params) {
+                          const ModularIntParams* modular_params) {
     // If this operation is invalid, return an invalid error.
     if (Len() != that.Len()) {
       return absl::InvalidArgumentError(
@@ -201,7 +217,7 @@ class Polynomial {
 
   // Coordinate-wise substraction in place.
   absl::Status SubInPlace(const Polynomial& that,
-                          ModularIntParams* modular_params) {
+                          const ModularIntParams* modular_params) {
     // If this operation is invalid, return an invalid error.
     if (Len() != that.Len()) {
       return absl::InvalidArgumentError(
@@ -215,8 +231,8 @@ class Polynomial {
   // Polynomial representing p(x^power). Power must be an odd non-negative
   // integer less than 2 * Len().
   rlwe::StatusOr<Polynomial> Substitute(
-      const int power, const NttParameters<ModularInt>& ntt_params,
-      ModularIntParams* modulus_params) const {
+      const int power, const NttParameters<ModularInt>* ntt_params,
+      const ModularIntParams* modulus_params) const {
     // The NTT representation consists in the evaluations of the polynomial at
     // roots psi^brv[n/2], psi^brv[n/2+1], ..., psi^brv[n/2+n/2-1],
     //       psi^(n/2+brv[n/2+1]), ...,         psi^(n/2+brv[n/2+n/2-1]).
@@ -235,14 +251,22 @@ class Polynomial {
     // Update the coefficients one by one: remember that they are stored in
     // bitreversed order.
     for (int i = 0; i < Len(); i++) {
-      out.coeffs_[ntt_params.bitrevs[i]] =
-          coeffs_[ntt_params.bitrevs[psi_power_index]];
+      out.coeffs_[ntt_params->bitrevs[i]] =
+          coeffs_[ntt_params->bitrevs[psi_power_index]];
       // Each time the index increases by 1, the psi_power_index increases by
       // power mod the length.
       psi_power_index = (psi_power_index + power) % Len();
     }
 
     return out;
+  }
+
+  // Deprecated Substitute function taking NttParameters by constant reference
+  ABSL_DEPRECATED("Use Substitute function with NttParameters pointer above.")
+  rlwe::StatusOr<Polynomial> Substitute(
+      const int power, const NttParameters<ModularInt>& ntt_params,
+      const ModularIntParams* modulus_params) const {
+    return Substitute(power, &ntt_params, modulus_params);
   }
 
   // Boolean comparison.
@@ -267,7 +291,7 @@ class Polynomial {
   std::vector<ModularInt> Coeffs() const { return coeffs_; }
 
   rlwe::StatusOr<SerializedNttPolynomial> Serialize(
-      ModularIntParams* modular_params) const {
+      const ModularIntParams* modular_params) const {
     SerializedNttPolynomial output;
     RLWE_ASSIGN_OR_RETURN(*(output.mutable_coeffs()),
                           ModularInt::SerializeVector(coeffs_, modular_params));
@@ -277,7 +301,7 @@ class Polynomial {
 
   static rlwe::StatusOr<Polynomial> Deserialize(
       const SerializedNttPolynomial& serialized,
-      ModularIntParams* modular_params) {
+      const ModularIntParams* modular_params) {
     if (serialized.num_coeffs() <= 0) {
       return absl::InvalidArgumentError(
           "Number of serialized coefficients must be positive.");
@@ -301,7 +325,7 @@ class Polynomial {
 
   // Helper function: Perform iterations of the Cooley-Tukey butterfly.
   void IterativeCooleyTukey(const std::vector<ModularInt>& psis_bitrev,
-                            ModularIntParams* modular_params) {
+                            const ModularIntParams* modular_params) {
     int index_psi = 1;
     for (int i = log_len_ - 1; i >= 0; i--) {
       const unsigned int half_m = 1 << i;
@@ -322,7 +346,7 @@ class Polynomial {
 
   // Helper function: Perform iterations of the Gentleman-Sande butterfly.
   void IterativeGentlemanSande(const std::vector<ModularInt>& psis_inv_bitrev,
-                               ModularIntParams* modular_params) {
+                               const ModularIntParams* modular_params) {
     int index_psi_inv = 0;
     for (int i = 0; i < log_len_; i++) {
       const unsigned int half_m = 1 << i;
@@ -346,7 +370,8 @@ class Polynomial {
 
 template <typename ModularInt, typename Prng = rlwe::SecurePrng>
 rlwe::StatusOr<Polynomial<ModularInt>> SamplePolynomialFromPrng(
-    int num_coeffs, Prng* prng, typename ModularInt::Params* modulus_params) {
+    int num_coeffs, Prng* prng,
+    const typename ModularInt::Params* modulus_params) {
   // Sample a from the uniform distribution. Since a is uniformly distributed,
   // it can be generated directly in NTT form since the NTT transformation is
   // an automorphism.

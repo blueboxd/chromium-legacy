@@ -20,10 +20,10 @@ from fuzzer_helpers import FillInParameter
 import parameter_fuzzer
 import test_case_fuzzer
 
-JS_FILES_AND_PARAMETERS = (('testharness.js', 'INCLUDE_TESTHARNESS'),
-                           ('testharnessreport.js',
-                            'INCLUDE_REPORT'), ('bluetooth-helpers.js',
-                                                'INCLUDE_BLUETOOTH_HELPERS'))
+JS_FILES_AND_PARAMETERS = ((u'testharness.js', u'INCLUDE_TESTHARNESS'),
+                           (u'testharnessreport.js',
+                            u'INCLUDE_REPORT'), (u'bluetooth-helpers.js',
+                                                 u'INCLUDE_BLUETOOTH_HELPERS'))
 
 SCRIPT_PREFIX = '<script type="text/javascript">\n'
 SCRIPT_SUFFIX = '\n</script>\n'
@@ -97,7 +97,7 @@ def FuzzTemplate(template_path, resources_path):
     for (js_file_name, include_parameter) in JS_FILES_AND_PARAMETERS:
         # Read js file.
         js_file_handle = open(os.path.join(resources_path, js_file_name))
-        js_file_data = js_file_handle.read()
+        js_file_data = js_file_handle.read().decode('utf-8')
         js_file_handle.close()
 
         js_file_data = (SCRIPT_PREFIX + js_file_data + SCRIPT_SUFFIX)

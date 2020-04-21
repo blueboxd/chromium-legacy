@@ -65,12 +65,6 @@ base::Optional<double> AmbientLightSensor::illuminance() const {
   return base::nullopt;
 }
 
-double AmbientLightSensor::illuminance(bool& is_null) const {
-  INIT_IS_NULL_AND_RETURN(is_null, 0.0);
-  DCHECK(latest_reading_.has_value());
-  return RoundIlluminance(*latest_reading_);
-}
-
 // When the reading we get does not differ significantly from our current
 // value, we discard this reading and do not emit any events. This is a privacy
 // measure to avoid giving readings that are too specific.

@@ -61,11 +61,6 @@ base::Optional<double> XRRenderState::inlineVerticalFieldOfView() const {
   return inline_vertical_fov_;
 }
 
-double XRRenderState::inlineVerticalFieldOfView(bool& is_null) const {
-  is_null = immersive_ || !inline_vertical_fov_.has_value();
-  return is_null ? 0 : *inline_vertical_fov_;
-}
-
 void XRRenderState::Trace(Visitor* visitor) {
   visitor->Trace(base_layer_);
   visitor->Trace(inline_vertical_fov_);

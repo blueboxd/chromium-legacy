@@ -32,11 +32,6 @@ class MODULES_EXPORT EncodedVideoChunk final : public ScriptWrappable {
   String type() const;
   uint64_t timestamp() const;
   base::Optional<uint64_t> duration() const;
-  // TODO(crbug.com/1060971): Remove |is_null| version.
-  uint64_t duration(bool* is_null) const;   // DEPRECATED
-  uint64_t duration(bool& is_null) const {  // DEPRECATED
-    return duration(&is_null);
-  }
   DOMArrayBuffer* data() const;
 
   void Trace(Visitor* visitor) override {

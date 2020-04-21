@@ -1116,6 +1116,50 @@ TYPED_TEST(RendererPixelTest, TextureDrawQuadVisibleRectInsetTopLeft) {
       cc::FuzzyPixelOffByOneComparator(true)));
 }
 
+// This tests drawing a TextureDrawQuad with a visible_rect strictly included in
+// rect, custom UVs, and rect.origin() that is not in the origin.
+TYPED_TEST(RendererPixelTest,
+           TextureDrawQuadTranslatedAndVisibleRectInsetTopLeftAndCustomUV) {
+  gfx::Rect rect(this->device_viewport_size_);
+
+  int id = 1;
+  std::unique_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
+
+  SharedQuadState* texture_quad_state = CreateTestSharedQuadState(
+      gfx::Transform(), rect, pass.get(), gfx::RRectF());
+
+  CreateTestTwoColoredTextureDrawQuad(
+      this->use_gpu(), gfx::Rect(this->device_viewport_size_),
+      SkColorSetARGB(0, 120, 255, 255),  // Texel color 1.
+      SkColorSetARGB(204, 120, 0, 255),  // Texel color 2.
+      SK_ColorGREEN,                     // Background color.
+      true,                              // Premultiplied alpha.
+      false,                             // flipped_texture_quad.
+      false,                             // Half and half.
+      texture_quad_state, this->resource_provider_.get(),
+      this->child_resource_provider_.get(), this->shared_bitmap_manager_.get(),
+      this->child_context_provider_, pass.get());
+  auto* quad = static_cast<TextureDrawQuad*>(pass->quad_list.front());
+  quad->rect.Offset(10, 10);
+  quad->visible_rect.Offset(10, 10);
+  quad->visible_rect.Inset(30, 50, 12, 12);
+  quad->uv_top_left.SetPoint(.2, .3);
+  quad->uv_bottom_right.SetPoint(.4, .7);
+  quad->nearest_neighbor = true;  // To avoid bilinear filter differences.
+  SharedQuadState* color_quad_state = CreateTestSharedQuadState(
+      gfx::Transform(), rect, pass.get(), gfx::RRectF());
+  auto* color_quad = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+  color_quad->SetNew(color_quad_state, rect, rect, SK_ColorWHITE, false);
+
+  RenderPassList pass_list;
+  pass_list.push_back(std::move(pass));
+
+  EXPECT_TRUE(this->RunPixelTest(
+      &pass_list,
+      base::FilePath(FILE_PATH_LITERAL("offset_inset_top_left.png")),
+      cc::FuzzyPixelOffByOneComparator(true)));
+}
+
 TYPED_TEST(RendererPixelTest, TextureDrawQuadVisibleRectInsetBottomRight) {
   gfx::Rect rect(this->device_viewport_size_);
 

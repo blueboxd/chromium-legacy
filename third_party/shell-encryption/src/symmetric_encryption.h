@@ -68,7 +68,7 @@ class SymmetricRlweCiphertext {
 
  public:
   // Default and copy constructors.
-  explicit SymmetricRlweCiphertext(typename ModularInt::Params* params,
+  explicit SymmetricRlweCiphertext(const typename ModularInt::Params* params,
                                    const ErrorParams<ModularInt>* error_params)
       : modulus_params_(params),
         error_params_(error_params),
@@ -79,7 +79,7 @@ class SymmetricRlweCiphertext {
   // Create a ciphertext by supplying the vector of components.
   explicit SymmetricRlweCiphertext(std::vector<Polynomial<ModularInt>> c,
                                    int power_of_s, double error,
-                                   typename ModularInt::Params* params,
+                                   const typename ModularInt::Params* params,
                                    const ErrorParams<ModularInt>* error_params)
       : c_(std::move(c)),
         modulus_params_(params),
@@ -124,7 +124,7 @@ class SymmetricRlweCiphertext {
     }
 
     for (int i = 0; i < that.c_.size(); i++) {
-      c_[i].AddInPlace(that.c_[i], modulus_params_);
+      RLWE_RETURN_IF_ERROR(c_[i].AddInPlace(that.c_[i], modulus_params_));
     }
 
     error_ += that.error_;
@@ -168,7 +168,7 @@ class SymmetricRlweCiphertext {
     }
 
     for (int i = 0; i < that.c_.size(); i++) {
-      c_[i].SubInPlace(that.c_[i], modulus_params_);
+      RLWE_RETURN_IF_ERROR(c_[i].SubInPlace(that.c_[i], modulus_params_));
     }
 
     error_ += that.error_;
@@ -208,34 +208,36 @@ class SymmetricRlweCiphertext {
   // modulus / 2 is treated as a positive number for the purposes of the final
   // (mod t); any coefficient between modulus/2 and modulus is treated as
   // a negative number for the purposes of the final (mod t).
-  SymmetricRlweCiphertext operator*(const Polynomial<ModularInt>& that) const {
+  rlwe::StatusOr<SymmetricRlweCiphertext> operator*(
+      const Polynomial<ModularInt>& that) const {
     SymmetricRlweCiphertext out = *this;
-    out.AbsorbInPlace(that);
+    RLWE_RETURN_IF_ERROR(out.AbsorbInPlace(that));
     return out;
   }
 
-  void AbsorbInPlace(const Polynomial<ModularInt>& that) {
-    std::for_each(c_.begin(), c_.end(),
-                  [this, that](Polynomial<ModularInt>& component) {
-                    component.MulInPlace(that, modulus_params_);
-                  });
+  absl::Status AbsorbInPlace(const Polynomial<ModularInt>& that) {
+    for (auto& component : this->c_) {
+      RLWE_RETURN_IF_ERROR(component.MulInPlace(that, modulus_params_));
+    }
     error_ *= error_params_->B_plaintext();
+    return absl::OkStatus();
   }
 
   // Homomorphically absorb a plaintext scalar. This function is exactly like
   // homomorphic absorb above, except the plaintext is a constant.
-  SymmetricRlweCiphertext operator*(const ModularInt& that) const {
+  rlwe::StatusOr<SymmetricRlweCiphertext> operator*(
+      const ModularInt& that) const {
     SymmetricRlweCiphertext out = *this;
-    out.AbsorbInPlace(that);
+    RLWE_RETURN_IF_ERROR(out.AbsorbInPlace(that));
     return out;
   }
 
-  void AbsorbInPlace(const ModularInt& that) {
-    std::for_each(c_.begin(), c_.end(),
-                  [this, that](Polynomial<ModularInt>& component) {
-                    component.MulInPlace(that, modulus_params_);
-                  });
+  absl::Status AbsorbInPlace(const ModularInt& that) {
+    for (auto& component : this->c_) {
+      RLWE_RETURN_IF_ERROR(component.MulInPlace(that, modulus_params_));
+    }
     error_ *= static_cast<double>(that.ExportInt(modulus_params_));
+    return absl::OkStatus();
   }
 
   // Homomorphic multiply. Given two ciphertexts {m1}_s, {m2}_s containing
@@ -273,7 +275,7 @@ class SymmetricRlweCiphertext {
     for (int i = 0; i < c_.size(); i++) {
       for (int j = 0; j < that.c_.size(); j++) {
         RLWE_ASSIGN_OR_RETURN(temp, c_[i].Mul(that.c_[j], modulus_params_));
-        result[i + j].AddInPlace(temp, modulus_params_);
+        RLWE_RETURN_IF_ERROR(result[i + j].AddInPlace(temp, modulus_params_));
       }
     }
 
@@ -293,7 +295,7 @@ class SymmetricRlweCiphertext {
   template <typename ModularIntQ>
   rlwe::StatusOr<SymmetricRlweCiphertext<ModularIntQ>> SwitchModulus(
       const NttParameters<ModularInt>* ntt_params_p,
-      typename ModularIntQ::Params* modulus_params_q,
+      const typename ModularIntQ::Params* modulus_params_q,
       const NttParameters<ModularIntQ>* ntt_params_q,
       const ErrorParams<ModularIntQ>* error_params_q, const Int& t) {
     Int p = modulus_params_->modulus;
@@ -316,7 +318,7 @@ class SymmetricRlweCiphertext {
     for (const Polynomial<ModularInt>& c : c_) {
       // Extract each component of the ciphertext from NTT form.
       std::vector<ModularInt> coeffs_p =
-          c.InverseNtt(*ntt_params_p, modulus_params_);
+          c.InverseNtt(ntt_params_p, modulus_params_);
       std::vector<ModularIntQ> coeffs_q;
       coeffs_q.reserve(coeffs_p.size());
 
@@ -366,7 +368,7 @@ class SymmetricRlweCiphertext {
 
       // Convert back to NTT.
       output.c_.push_back(Polynomial<ModularIntQ>::ConvertToNtt(
-          std::move(coeffs_q), *ntt_params_q, modulus_params_q));
+          std::move(coeffs_q), ntt_params_q, modulus_params_q));
     }
 
     return output;
@@ -382,7 +384,7 @@ class SymmetricRlweCiphertext {
   // ciphertext into a query vector.
   rlwe::StatusOr<SymmetricRlweCiphertext> Substitute(
       int substitution_power,
-      const NttParameters<ModularInt>& ntt_params) const {
+      const NttParameters<ModularInt>* ntt_params) const {
     SymmetricRlweCiphertext output(modulus_params_, error_params_);
     output.c_.reserve(c_.size());
 
@@ -411,7 +413,7 @@ class SymmetricRlweCiphertext {
 
   static rlwe::StatusOr<SymmetricRlweCiphertext> Deserialize(
       const SerializedSymmetricRlweCiphertext& serialized,
-      typename ModularInt::Params* modulus_params,
+      const typename ModularInt::Params* modulus_params,
       const ErrorParams<ModularInt>* error_params) {
     SymmetricRlweCiphertext output(modulus_params, error_params);
     output.power_of_s_ = serialized.power_of_s();
@@ -444,7 +446,9 @@ class SymmetricRlweCiphertext {
     return c_[index];
   }
 
-  typename ModularInt::Params* ModulusParams() const { return modulus_params_; }
+  const typename ModularInt::Params* ModulusParams() const {
+    return modulus_params_;
+  }
   const rlwe::ErrorParams<ModularInt>* ErrorParams() const {
     return error_params_;
   }
@@ -457,7 +461,7 @@ class SymmetricRlweCiphertext {
   std::vector<Polynomial<ModularInt>> c_;
 
   // ModularInt parameters.
-  typename ModularInt::Params* modulus_params_;
+  const typename ModularInt::Params* modulus_params_;
 
   // Error parameters.
   const rlwe::ErrorParams<ModularInt>* error_params_;
@@ -493,32 +497,15 @@ class SymmetricRlweKey {
   // a power of two, which is enforced by the first argument.
   //
   // Does not take ownership of rand, modulus_params or ntt_params.
-  //
-  ABSL_DEPRECATED("Use factory function that specifies PRNG.")
-  static rlwe::StatusOr<SymmetricRlweKey> Sample(
-      unsigned int log_num_coeffs, Uint64 variance, Uint64 log_t,
-      typename ModularInt::Params* modulus_params,
-      const NttParameters<ModularInt>* ntt_params) {
-    RLWE_ASSIGN_OR_RETURN(std::string prng_seed,
-                          SingleThreadPrng::GenerateSeed());
-    RLWE_ASSIGN_OR_RETURN(auto prng, SingleThreadPrng::Create(prng_seed));
-    return Sample(log_num_coeffs, variance, log_t, modulus_params, prng.get());
-  }
-
-  // Static factory that samples a key from the error distribution. The
-  // polynomial representing the key must have a number of coefficients that is
-  // a power of two, which is enforced by the first argument.
-  //
-  // Does not take ownership of rand, modulus_params or ntt_params.
   static rlwe::StatusOr<SymmetricRlweKey> Sample(
       unsigned int log_num_coeffs, uint64_t variance, uint64_t log_t,
-      typename ModularInt::Params* modulus_params,
+      const typename ModularInt::Params* modulus_params,
       const NttParameters<ModularInt>* ntt_params, SecurePrng* prng) {
     RLWE_ASSIGN_OR_RETURN(
         auto error, SampleFromErrorDistribution<ModularInt>(
                         1 << log_num_coeffs, variance, prng, modulus_params));
     Polynomial<ModularInt> key = Polynomial<ModularInt>::ConvertToNtt(
-        std::move(error), *ntt_params, modulus_params);
+        std::move(error), ntt_params, modulus_params);
     RLWE_ASSIGN_OR_RETURN(
         auto t_mod, ModularInt::ImportInt((modulus_params->One() << log_t) +
                                               modulus_params->One(),
@@ -536,7 +523,7 @@ class SymmetricRlweKey {
   static rlwe::StatusOr<SymmetricRlweKey> Deserialize(
       Uint64 variance, Uint64 log_t,
       const SerializedNttPolynomial& serialized_key,
-      typename ModularInt::Params* modulus_params,
+      const typename ModularInt::Params* modulus_params,
       const NttParameters<ModularInt>* ntt_params) {
     return Deserialize(variance, log_t, serialized_key, modulus_params,
                        modulus_params, ntt_params);
@@ -545,8 +532,8 @@ class SymmetricRlweKey {
   static rlwe::StatusOr<SymmetricRlweKey> Deserialize(
       Uint64 variance, Uint64 log_t,
       const SerializedNttPolynomial& serialized_key,
-      typename ModularInt::Params* modulus_params,
-      typename ModularInt::Params* plaintext_modulus_params,
+      const typename ModularInt::Params* modulus_params,
+      const typename ModularInt::Params* plaintext_modulus_params,
       const NttParameters<ModularInt>* ntt_params) {
     // Check that log_t is no larger than the log_modulus - 1.
     if (log_t > modulus_params->log_modulus - 1) {
@@ -581,7 +568,7 @@ class SymmetricRlweKey {
   // ciphertexts.
   template <typename ModularIntQ>
   rlwe::StatusOr<SymmetricRlweKey<ModularIntQ>> SwitchModulus(
-      typename ModularIntQ::Params* modulus_params_q,
+      const typename ModularIntQ::Params* modulus_params_q,
       const NttParameters<ModularIntQ>* ntt_params_q) const {
     // Configuration failure.
     Int t = (modulus_params_q->One() << log_t_) + modulus_params_q->One();
@@ -592,7 +579,7 @@ class SymmetricRlweKey {
     typename ModularIntQ::Int p_mod_q =
         modulus_params_->modulus % modulus_params_q->modulus;
     std::vector<ModularInt> coeffs_p =
-        key_.InverseNtt(*ntt_params_, modulus_params_);
+        key_.InverseNtt(ntt_params_, modulus_params_);
     std::vector<ModularIntQ> coeffs_q;
 
     // Convert each coefficient of the polynomial from (mod p) to (mod q)
@@ -611,7 +598,7 @@ class SymmetricRlweKey {
 
     // Convert back to NTT.
     auto key_q = Polynomial<ModularIntQ>::ConvertToNtt(
-        std::move(coeffs_q), *ntt_params_q, modulus_params_q);
+        std::move(coeffs_q), ntt_params_q, modulus_params_q);
 
     RLWE_ASSIGN_OR_RETURN(
         auto t_mod, ModularInt::ImportInt((modulus_params_q->One() << log_t_) +
@@ -630,8 +617,8 @@ class SymmetricRlweKey {
         auto t_mod, ModularInt::ImportInt((modulus_params_->One() << log_t_) +
                                               modulus_params_->One(),
                                           modulus_params_));
-    RLWE_ASSIGN_OR_RETURN(
-        auto sub, key_.Substitute(power, *ntt_params_, modulus_params_));
+    RLWE_ASSIGN_OR_RETURN(auto sub,
+                          key_.Substitute(power, ntt_params_, modulus_params_));
     return SymmetricRlweKey(std::move(sub), variance_, log_t_, std::move(t_mod),
                             modulus_params_, plaintext_modulus_params_,
                             ntt_params_);
@@ -640,12 +627,14 @@ class SymmetricRlweKey {
   // Accessors.
   unsigned int Len() const { return key_.Len(); }
   const NttParameters<ModularInt>* NttParams() const { return ntt_params_; }
-  typename ModularInt::Params* ModulusParams() const { return modulus_params_; }
-  unsigned int BitsPerCoeff() const { return log_t_; }
-  Uint64 Variance() const { return variance_; }
-  unsigned int LogT() const { return log_t_; }
+  const typename ModularInt::Params* ModulusParams() const {
+    return modulus_params_;
+  }
+  const unsigned int BitsPerCoeff() const { return log_t_; }
+  const Uint64 Variance() const { return variance_; }
+  const unsigned int LogT() const { return log_t_; }
   const ModularInt& PlaintextModulus() const { return t_mod_; }
-  typename ModularInt::Params* PlaintextModulusParams() const {
+  const typename ModularInt::Params* PlaintextModulusParams() const {
     return plaintext_modulus_params_;
   }
   const Polynomial<ModularInt>& Key() const { return key_; }
@@ -701,7 +690,7 @@ class SymmetricRlweKey {
   // Static function to create a null key (with value 0).
   static rlwe::StatusOr<SymmetricRlweKey> NullKey(
       unsigned int log_num_coeffs, Uint64 variance, Uint64 log_t,
-      typename ModularInt::Params* modulus_params,
+      const typename ModularInt::Params* modulus_params,
       const NttParameters<ModularInt>* ntt_params) {
     Polynomial<ModularInt> zero(1 << log_num_coeffs, modulus_params);
     RLWE_ASSIGN_OR_RETURN(
@@ -729,14 +718,14 @@ class SymmetricRlweKey {
   const NttParameters<ModularInt>* ntt_params_;
 
   // ModularInt parameters.
-  typename ModularInt::Params* modulus_params_;
-  typename ModularInt::Params* plaintext_modulus_params_;
+  const typename ModularInt::Params* modulus_params_;
+  const typename ModularInt::Params* plaintext_modulus_params_;
 
   // A constructor. Does not take ownership of params.
   SymmetricRlweKey(Polynomial<ModularInt> key, Uint64 variance,
                    unsigned int log_t, ModularInt t_mod,
-                   typename ModularInt::Params* modulus_params,
-                   typename ModularInt::Params* plaintext_modulus_params,
+                   const typename ModularInt::Params* modulus_params,
+                   const typename ModularInt::Params* plaintext_modulus_params,
                    const NttParameters<ModularInt>* ntt_params)
       : key_(std::move(key)),
         variance_(variance),
@@ -827,7 +816,7 @@ rlwe::StatusOr<Polynomial<ModularInt>> Encrypt(
 
   // Create and return c0.
   auto e = Polynomial<ModularInt>::ConvertToNtt(
-      std::move(e_coeffs), *(key.NttParams()), key.ModulusParams());
+      std::move(e_coeffs), key.NttParams(), key.ModulusParams());
   RLWE_ASSIGN_OR_RETURN(Polynomial<ModularInt> temp,
                         a.Mul(key.Key(), key.ModulusParams()));
   RLWE_RETURN_IF_ERROR(
@@ -920,7 +909,7 @@ template <typename ModularInt>
 std::vector<typename ModularInt::Int> RemoveError(
     const std::vector<ModularInt>& error_and_message,
     const typename ModularInt::Int& q, const typename ModularInt::Int& t,
-    typename ModularInt::Params* modulus_params_q) {
+    const typename ModularInt::Params* modulus_params_q) {
   using Int = typename ModularInt::Int;
   Int q_mod_t = q % t;
   Int zero = modulus_params_q->Zero();
@@ -958,20 +947,23 @@ rlwe::StatusOr<std::vector<typename ModularInt::Int>> Decrypt(
 
     // Lazily increase the exponent of the key.
     if (i > 1) {
-      key_powers.MulInPlace(key.Key(), key.ModulusParams());
+      RLWE_RETURN_IF_ERROR(
+          key_powers.MulInPlace(key.Key(), key.ModulusParams()));
     }
 
     // Beyond c0, multiply the exponentiated key in.
     if (i > 0) {
-      ci.MulInPlace(key_powers, ciphertext.ModulusParams());
+      RLWE_RETURN_IF_ERROR(
+          ci.MulInPlace(key_powers, ciphertext.ModulusParams()));
     }
 
-    error_and_message_ntt.AddInPlace(ci, key.ModulusParams());
+    RLWE_RETURN_IF_ERROR(
+        error_and_message_ntt.AddInPlace(ci, key.ModulusParams()));
   }
 
   // Invert the NTT process.
   std::vector<ModularInt> error_and_message =
-      error_and_message_ntt.InverseNtt(*(key.NttParams()), key.ModulusParams());
+      error_and_message_ntt.InverseNtt(key.NttParams(), key.ModulusParams());
 
   // Extract the message.
   return RemoveError<ModularInt>(

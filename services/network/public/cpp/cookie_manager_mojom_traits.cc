@@ -196,47 +196,6 @@ bool EnumTraits<network::mojom::ContextType,
   return false;
 }
 
-network::mojom::CrossSchemeness
-EnumTraits<network::mojom::CrossSchemeness,
-           net::CookieOptions::SameSiteCookieContext::CrossSchemeness>::
-    ToMojom(net::CookieOptions::SameSiteCookieContext::CrossSchemeness input) {
-  switch (input) {
-    case net::CookieOptions::SameSiteCookieContext::CrossSchemeness::NONE:
-      return network::mojom::CrossSchemeness::NONE;
-    case net::CookieOptions::SameSiteCookieContext::CrossSchemeness::
-        INSECURE_SECURE:
-      return network::mojom::CrossSchemeness::INSECURE_SECURE;
-    case net::CookieOptions::SameSiteCookieContext::CrossSchemeness::
-        SECURE_INSECURE:
-      return network::mojom::CrossSchemeness::SECURE_INSECURE;
-    default:
-      NOTREACHED();
-      return network::mojom::CrossSchemeness::NONE;
-  }
-}
-
-bool EnumTraits<network::mojom::CrossSchemeness,
-                net::CookieOptions::SameSiteCookieContext::CrossSchemeness>::
-    FromMojom(
-        network::mojom::CrossSchemeness input,
-        net::CookieOptions::SameSiteCookieContext::CrossSchemeness* output) {
-  switch (input) {
-    case network::mojom::CrossSchemeness::NONE:
-      *output =
-          net::CookieOptions::SameSiteCookieContext::CrossSchemeness::NONE;
-      return true;
-    case network::mojom::CrossSchemeness::INSECURE_SECURE:
-      *output = net::CookieOptions::SameSiteCookieContext::CrossSchemeness::
-          INSECURE_SECURE;
-      return true;
-    case network::mojom::CrossSchemeness::SECURE_INSECURE:
-      *output = net::CookieOptions::SameSiteCookieContext::CrossSchemeness::
-          SECURE_INSECURE;
-      return true;
-  }
-  return false;
-}
-
 network::mojom::CookieChangeCause
 EnumTraits<network::mojom::CookieChangeCause, net::CookieChangeCause>::ToMojom(
     net::CookieChangeCause input) {
@@ -301,12 +260,7 @@ bool StructTraits<network::mojom::CookieSameSiteContextDataView,
   if (!mojo_context.ReadContext(&context_type))
     return false;
 
-  net::CookieOptions::SameSiteCookieContext::CrossSchemeness cross_schemeness;
-  if (!mojo_context.ReadCrossSchemeness(&cross_schemeness))
-    return false;
-
-  *context =
-      net::CookieOptions::SameSiteCookieContext(context_type, cross_schemeness);
+  *context = net::CookieOptions::SameSiteCookieContext(context_type);
 
   return true;
 }

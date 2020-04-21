@@ -47,7 +47,11 @@
 namespace arc {
 namespace {
 
+// The "_2d" in job names below corresponds to "-". Upstart escapes characters
+// that aren't valid in D-Bus object paths with underscore followed by its
+// ascii code in hex. So "arc_2dcreate_2ddata" becomes "arc-create-data".
 constexpr const char kArcCreateDataJobName[] = "arc_2dcreate_2ddata";
+constexpr const char kArcKeymasterJobName[] = "arc_2dkeymasterd";
 constexpr const char kArcVmServerProxyJobName[] = "arcvm_2dserver_2dproxy";
 constexpr const char kArcVmPerBoardFeaturesJobName[] =
     "arcvm_2dper_2dboard_2dfeatures";
@@ -459,10 +463,33 @@ class ArcVmClientAdapter : public ArcClientAdapter,
             << (result ? "stopped" : "not running?");
 
     should_notify_observers_ = true;
-    // Always run the |callback| with true ignoring the |result|. |result| can
-    // be false when the proxy job has already been stopped for other reasons,
-    // but it's not considered as an error.
-    std::move(callback).Run(true);
+
+    // Make sure to stop arc-keymasterd if it's already started. Always move
+    // |callback| as is and ignore |result|.
+    chromeos::UpstartClient::Get()->StopJob(
+        kArcKeymasterJobName, /*environment=*/{},
+        base::BindOnce(&ArcVmClientAdapter::OnArcKeymasterJobStopped,
+                       weak_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
+  void OnArcKeymasterJobStopped(chromeos::VoidDBusMethodCallback callback,
+                                bool result) {
+    VLOG(1) << "OnArcKeymasterJobStopped: arc-keymasterd job "
+            << (result ? "stopped" : "not running?");
+
+    // Start arc-keymasterd. Always move |callback| as is and ignore |result|.
+    VLOG(1) << "Starting arc-keymasterd";
+    chromeos::UpstartClient::Get()->StartJob(
+        kArcKeymasterJobName, /*environment=*/{},
+        base::BindOnce(&ArcVmClientAdapter::OnArcKeymasterJobStarted,
+                       weak_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
+  void OnArcKeymasterJobStarted(chromeos::VoidDBusMethodCallback callback,
+                                bool result) {
+    if (!result)
+      LOG(ERROR) << "Failed to start arc-keymasterd job";
+    std::move(callback).Run(result);
   }
 
   void OnConciergeStarted(UpgradeParams params,

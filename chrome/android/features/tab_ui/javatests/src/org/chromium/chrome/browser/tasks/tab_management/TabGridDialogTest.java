@@ -36,7 +36,8 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.c
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.createTabs;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.enterTabSwitcher;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.getSwipeToDismissAction;
-import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.isShowingPopupTabList;
+import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.isPopupTabListCompletelyHidden;
+import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.isPopupTabListCompletelyShowing;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.mergeAllNormalTabsToAGroup;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.prepareTabsWithThumbnail;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.rotateDeviceToOrientation;
@@ -596,7 +597,11 @@ public class TabGridDialogTest {
     }
 
     private boolean isDialogShowing(ChromeTabbedActivity cta) {
-        return isShowingPopupTabList(cta);
+        return isPopupTabListCompletelyShowing(cta);
+    }
+
+    private boolean isDialogHidden(ChromeTabbedActivity cta) {
+        return isPopupTabListCompletelyHidden(cta);
     }
 
     private void showDialogFromStrip(ChromeTabbedActivity cta) {
@@ -678,7 +683,7 @@ public class TabGridDialogTest {
     }
 
     private void waitForDialogHidingAnimation(ChromeTabbedActivity cta) {
-        CriteriaHelper.pollInstrumentationThread(() -> !isDialogShowing(cta));
+        CriteriaHelper.pollInstrumentationThread(() -> isDialogHidden(cta));
     }
 
     private void waitForDialogHidingAnimationInTabSwitcher(ChromeTabbedActivity cta) {

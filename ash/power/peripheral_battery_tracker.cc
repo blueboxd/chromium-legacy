@@ -15,7 +15,7 @@
 namespace ash {
 
 PeripheralBatteryTracker::PeripheralBatteryTracker() {
-  device::BluetoothAdapterFactory::GetAdapter(
+  device::BluetoothAdapterFactory::Get()->GetAdapter(
       base::BindOnce(&PeripheralBatteryTracker::InitializeOnBluetoothReady,
                      weak_ptr_factory_.GetWeakPtr()));
 }

@@ -61,6 +61,18 @@ using blink::WebAXObject;
 using blink::WebDocument;
 using testing::ElementsAre;
 
+namespace {
+
+#if !defined(OS_ANDROID)
+bool IsSelected(const WebAXObject& obj) {
+  ui::AXNodeData node_data;
+  obj.Serialize(&node_data);
+  return node_data.GetBoolAttribute(ax::mojom::BoolAttribute::kSelected);
+}
+#endif  // !defined(OS_ANDROID)
+
+}  // namespace
+
 class TestAXImageAnnotator : public AXImageAnnotator {
  public:
   TestAXImageAnnotator(
@@ -708,9 +720,9 @@ TEST_F(BlinkAXActionTargetTest, TestMethods) {
 
   // Android does not produce accessible items for option elements.
 #if !defined(OS_ANDROID)
-  EXPECT_EQ(blink::kWebAXSelectedStateFalse, option.IsSelected());
+  EXPECT_FALSE(IsSelected(option));
   EXPECT_TRUE(option_action_target->SetSelected(true));
-  EXPECT_EQ(blink::kWebAXSelectedStateTrue, option.IsSelected());
+  EXPECT_TRUE(IsSelected(option));
 #endif
 
   std::string value_to_set("test-value");

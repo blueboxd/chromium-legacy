@@ -46,12 +46,14 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
       add_to_existing_group_submenu_ =
           std::make_unique<ExistingTabGroupSubMenuModel>(delegate(), tab_strip,
                                                          index);
-      AddSubMenuWithStringId(TabStripModel::CommandAddToExistingGroup,
-                             IDS_TAB_CXMENU_ADD_TAB_TO_GROUP,
-                             add_to_existing_group_submenu_.get());
+      AddSubMenu(TabStripModel::CommandAddToExistingGroup,
+                 l10n_util::GetPluralStringFUTF16(
+                     IDS_TAB_CXMENU_ADD_TAB_TO_GROUP, num_affected_tabs),
+                 add_to_existing_group_submenu_.get());
     } else {
-      AddItemWithStringId(TabStripModel::CommandAddToNewGroup,
-                          IDS_TAB_CXMENU_ADD_TAB_TO_NEW_GROUP);
+      AddItem(TabStripModel::CommandAddToNewGroup,
+              l10n_util::GetPluralStringFUTF16(
+                  IDS_TAB_CXMENU_ADD_TAB_TO_NEW_GROUP, num_affected_tabs));
     }
 
     for (size_t index = 0; index < affected_indices.size(); index++) {

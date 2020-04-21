@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -57,19 +58,17 @@ class BluetoothAdvertisementBlueZTest : public testing::Test {
 
   // Gets the existing Bluetooth adapter.
   void GetAdapter() {
-    BluetoothAdapterFactory::GetAdapter(
-        base::BindOnce(&BluetoothAdvertisementBlueZTest::GetAdapterCallback,
-                       base::Unretained(this)));
-    base::RunLoop().Run();
-  }
-
-  // Called whenever BluetoothAdapter is retrieved successfully.
-  void GetAdapterCallback(scoped_refptr<BluetoothAdapter> adapter) {
-    adapter_ = adapter;
-    ASSERT_NE(adapter_.get(), nullptr);
+    base::RunLoop run_loop;
+    device::BluetoothAdapterFactory::Get()->GetAdapter(
+        base::BindLambdaForTesting(
+            [&](scoped_refptr<BluetoothAdapter> adapter) {
+              adapter_ = std::move(adapter);
+              run_loop.Quit();
+            }));
+    run_loop.Run();
+    ASSERT_TRUE(adapter_);
     ASSERT_TRUE(adapter_->IsInitialized());
-    if (base::RunLoop::IsRunningOnCurrentThread())
-      base::RunLoop::QuitCurrentWhenIdleDeprecated();
+    ASSERT_TRUE(adapter_->IsPresent());
   }
 
   std::unique_ptr<BluetoothAdvertisement::Data> CreateAdvertisementData() {

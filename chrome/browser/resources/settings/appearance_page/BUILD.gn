@@ -8,56 +8,7 @@ import("//ui/webui/resources/tools/js_modulizer.gni")
 import("../settings.gni")
 
 js_type_check("closure_compile") {
-  deps = [
-    ":appearance_browser_proxy",
-    ":appearance_fonts_page",
-    ":appearance_page",
-    ":fonts_browser_proxy",
-    ":home_url_input",
-  ]
-}
-
-js_library("appearance_fonts_page") {
-  deps = [
-    ":fonts_browser_proxy",
-    "../controls:settings_dropdown_menu",
-    "//ui/webui/resources/cr_elements/cr_slider:cr_slider",
-    "//ui/webui/resources/js:cr",
-    "//ui/webui/resources/js:i18n_behavior",
-    "//ui/webui/resources/js:web_ui_listener_behavior",
-  ]
-  externs_list = [ "$externs_path/chrome_send.js" ]
-}
-
-js_library("appearance_browser_proxy") {
-  deps = [
-    "//ui/webui/resources/js:assert",
-    "//ui/webui/resources/js:cr",
-    "//ui/webui/resources/js:load_time_data",
-  ]
-  externs_list = [
-    "$externs_path/chrome_send.js",
-    "$externs_path/management.js",
-    "$externs_path/settings_private.js",
-  ]
-}
-
-js_library("appearance_page") {
-  deps = [
-    ":appearance_browser_proxy",
-    "..:page_visibility",
-    "..:route",
-    "..:router",
-    "../controls:settings_dropdown_menu",
-    "../settings_page:settings_animated_pages",
-    "//ui/webui/resources/js:cr",
-    "//ui/webui/resources/js:i18n_behavior",
-    "//ui/webui/resources/js:load_time_data",
-  ]
-  externs_list = [
-    "$externs_path/settings_private.js",
-    "$externs_path/chrome_send.js",
-  ]
+  deps = [ ":fonts_browser_proxy" ]
 }
 
 js_library("fonts_browser_proxy") {
@@ -68,45 +19,30 @@ js_library("fonts_browser_proxy") {
   externs_list = [ "$externs_path/chrome_send.js" ]
 }
 
-js_library("home_url_input") {
-  deps = [
-    ":appearance_browser_proxy",
-    "../controls:pref_control_behavior",
-    "//ui/webui/resources/cr_elements/policy:cr_policy_indicator_behavior",
-    "//ui/webui/resources/cr_elements/policy:cr_policy_pref_behavior",
-    "//ui/webui/resources/js:assert",
-    "//ui/webui/resources/js:load_time_data",
-  ]
-  externs_list = [ "$externs_path/settings_private.js" ]
-}
-
 js_type_check("closure_compile_module") {
   is_polymer3 = true
+  closure_flags = settings_closure_flags
   deps = [
-    ":appearance_browser_proxy.m",
-    ":appearance_fonts_page.m",
-    ":appearance_page.m",
+    ":appearance_browser_proxy",
+    ":appearance_fonts_page",
+    ":appearance_page",
     ":fonts_browser_proxy.m",
-    ":home_url_input.m",
+    ":home_url_input",
   ]
 }
 
-js_library("appearance_browser_proxy.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/settings/appearance_page/appearance_browser_proxy.m.js" ]
+js_library("appearance_browser_proxy") {
   deps = [
     "//ui/webui/resources/js:cr.m",
     "//ui/webui/resources/js:load_time_data.m",
   ]
   externs_list = [
-    "$externs_path/chrome_send.js",
     "$externs_path/management.js",
     "$externs_path/settings_private.js",
   ]
-  extra_deps = [ ":modulize" ]
 }
 
-js_library("appearance_fonts_page.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/settings/appearance_page/appearance_fonts_page.m.js" ]
+js_library("appearance_fonts_page") {
   deps = [
     ":fonts_browser_proxy.m",
     "../controls:settings_dropdown_menu.m",
@@ -115,14 +51,11 @@ js_library("appearance_fonts_page.m") {
     "//ui/webui/resources/js:i18n_behavior.m",
     "//ui/webui/resources/js:web_ui_listener_behavior.m",
   ]
-  externs_list = [ "$externs_path/chrome_send.js" ]
-  extra_deps = [ ":appearance_fonts_page_module" ]
 }
 
-js_library("appearance_page.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/settings/appearance_page/appearance_page.m.js" ]
+js_library("appearance_page") {
   deps = [
-    ":appearance_browser_proxy.m",
+    ":appearance_browser_proxy",
     "..:page_visibility.m",
     "..:route.m",
     "..:router.m",
@@ -132,11 +65,6 @@ js_library("appearance_page.m") {
     "//ui/webui/resources/js:i18n_behavior.m",
     "//ui/webui/resources/js:load_time_data.m",
   ]
-  externs_list = [
-    "$externs_path/settings_private.js",
-    "$externs_path/chrome_send.js",
-  ]
-  extra_deps = [ ":appearance_page_module" ]
 }
 
 js_library("fonts_browser_proxy.m") {
@@ -145,10 +73,9 @@ js_library("fonts_browser_proxy.m") {
   extra_deps = [ ":modulize" ]
 }
 
-js_library("home_url_input.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/settings/appearance_page/home_url_input.m.js" ]
+js_library("home_url_input") {
   deps = [
-    ":appearance_browser_proxy.m",
+    ":appearance_browser_proxy",
     "../controls:pref_control_behavior.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements/policy:cr_policy_indicator_behavior.m",
@@ -156,7 +83,6 @@ js_library("home_url_input.m") {
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:load_time_data.m",
   ]
-  extra_deps = [ ":home_url_input_module" ]
 }
 
 group("polymer3_elements") {
@@ -171,45 +97,22 @@ group("polymer3_elements") {
 polymer_modulizer("appearance_fonts_page") {
   js_file = "appearance_fonts_page.js"
   html_file = "appearance_fonts_page.html"
-  html_type = "dom-module"
-  auto_imports = settings_auto_imports + [
-                   "ui/webui/resources/cr_elements/cr_slider/cr_slider.html|SliderTick",
-                   "chrome/browser/resources/settings/appearance_page/fonts_browser_proxy.html|FontsBrowserProxy, FontsBrowserProxyImpl, FontsData",
-                   "chrome/browser/resources/settings/controls/settings_dropdown_menu.html|DropdownMenuOptionList",
-                 ]
-  namespace_rewrites = settings_namespace_rewrites
+  html_type = "v3-ready"
 }
 
 polymer_modulizer("appearance_page") {
   js_file = "appearance_page.js"
   html_file = "appearance_page.html"
-  html_type = "dom-module"
-  auto_imports = settings_auto_imports + [
-                   "ui/webui/resources/html/assert.html|assert",
-                   "chrome/browser/resources/settings/appearance_page/appearance_browser_proxy.html|AppearanceBrowserProxy, AppearanceBrowserProxyImpl",
-                   "chrome/browser/resources/settings/controls/settings_dropdown_menu.html|DropdownMenuOptionList",
-                   "chrome/browser/resources/settings/page_visibility.html|AppearancePageVisibility",
-                   "chrome/browser/resources/settings/route.html|routes",
-                   "chrome/browser/resources/settings/router.html|Router",
-                 ]
-  namespace_rewrites = settings_namespace_rewrites
+  html_type = "v3-ready"
 }
 
 polymer_modulizer("home_url_input") {
   js_file = "home_url_input.js"
   html_file = "home_url_input.html"
-  html_type = "dom-module"
-  namespace_rewrites = settings_namespace_rewrites
-  auto_imports = settings_auto_imports + [
-                   "ui/webui/resources/html/assert.html|assert",
-                   "chrome/browser/resources/settings/appearance_page/appearance_browser_proxy.html|AppearanceBrowserProxy, AppearanceBrowserProxyImpl",
-                 ]
+  html_type = "v3-ready"
 }
 
 js_modulizer("modulize") {
-  input_files = [
-    "appearance_browser_proxy.js",
-    "fonts_browser_proxy.js",
-  ]
+  input_files = [ "fonts_browser_proxy.js" ]
   namespace_rewrites = settings_namespace_rewrites
 }

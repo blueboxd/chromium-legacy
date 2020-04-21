@@ -49,6 +49,7 @@ enum class SharingDevicePlatform {
   kLinux,
   kMac,
   kWindows,
+  kServer,
 };
 
 enum class SharingChannelType {

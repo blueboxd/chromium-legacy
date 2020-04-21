@@ -6,7 +6,7 @@
 
 #include "weblayer/browser/content_browser_client_impl.h"
 
-#include "weblayer/browser/content_settings_manager_impl.h"
+#include "weblayer/browser/content_settings_manager_delegate.h"
 
 namespace weblayer {
 
@@ -15,8 +15,9 @@ void ContentBrowserClientImpl::BindHostReceiverForRenderer(
     mojo::GenericPendingReceiver receiver) {
   if (auto host_receiver =
           receiver.As<content_settings::mojom::ContentSettingsManager>()) {
-    ContentSettingsManagerImpl::Create(render_process_host,
-                                       std::move(host_receiver));
+    content_settings::ContentSettingsManagerImpl::Create(
+        render_process_host, std::move(host_receiver),
+        std::make_unique<ContentSettingsManagerDelegate>());
     return;
   }
 }

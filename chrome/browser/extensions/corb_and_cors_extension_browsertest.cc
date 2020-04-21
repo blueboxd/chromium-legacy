@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -1601,8 +1602,17 @@ IN_PROC_BROWSER_TEST_P(CorbAndCorsExtensionBrowserTest,
   }
 }
 
+#if defined(OS_LINUX)
+// Flaky on Linux, especially under sanitizers: https://crbug.com/1073052
+#define MAYBE_FromBackgroundServiceWorker_NoSniffXml \
+  DISABLED_FromBackgroundServiceWorker_NoSniffXml
+#else
+#define MAYBE_FromBackgroundServiceWorker_NoSniffXml \
+  FromBackgroundServiceWorker_NoSniffXml
+#endif
+
 IN_PROC_BROWSER_TEST_P(CorbAndCorsExtensionBrowserTest,
-                       FromBackgroundServiceWorker_NoSniffXml) {
+                       MAYBE_FromBackgroundServiceWorker_NoSniffXml) {
   // Install the extension with a service worker that can be asked to start a
   // fetch to an arbitrary URL.
   const char kManifestTemplate[] = R"(

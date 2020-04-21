@@ -65,30 +65,6 @@ base::Optional<double> DeviceOrientationEvent::gamma() const {
   return base::nullopt;
 }
 
-double DeviceOrientationEvent::alpha(bool& is_null) const {
-  if (orientation_->CanProvideAlpha())
-    return orientation_->Alpha();
-
-  is_null = true;
-  return 0;
-}
-
-double DeviceOrientationEvent::beta(bool& is_null) const {
-  if (orientation_->CanProvideBeta())
-    return orientation_->Beta();
-
-  is_null = true;
-  return 0;
-}
-
-double DeviceOrientationEvent::gamma(bool& is_null) const {
-  if (orientation_->CanProvideGamma())
-    return orientation_->Gamma();
-
-  is_null = true;
-  return 0;
-}
-
 bool DeviceOrientationEvent::absolute() const {
   return orientation_->Absolute();
 }

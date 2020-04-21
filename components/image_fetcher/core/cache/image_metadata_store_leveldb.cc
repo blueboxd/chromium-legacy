@@ -33,6 +33,15 @@ int64_t ToDatabaseTime(base::Time time) {
   return time.since_origin().InMicroseconds();
 }
 
+CacheOption ToCacheOption(CacheStrategy cache_strategy) {
+  switch (cache_strategy) {
+    case CacheStrategy::BEST_EFFORT:
+      return CacheOption::kBestEffort;
+    case CacheStrategy::HOLD_UNTIL_EXPIRED:
+      return CacheOption::kHoldUntilExpired;
+  }
+}
+
 // The folder where the data will be stored on disk.
 const char kImageDatabaseFolder[] = "cached_image_fetcher_images";
 
@@ -125,9 +134,9 @@ void ImageMetadataStoreLevelDB::SaveImageMetadata(
     metadata_proto.set_cache_strategy(CacheStrategy::HOLD_UNTIL_EXPIRED);
     metadata_proto.set_expiration_interval(
         expiration_interval->InMicroseconds());
-    estimated_size_[CacheStrategy::HOLD_UNTIL_EXPIRED] += data_size;
+    estimated_size_[CacheOption::kHoldUntilExpired] += data_size;
   } else {
-    estimated_size_[CacheStrategy::BEST_EFFORT] += data_size;
+    estimated_size_[CacheOption::kBestEffort] += data_size;
   }
 
   auto entries_to_save = std::make_unique<MetadataKeyEntryVector>();
@@ -177,9 +186,8 @@ void ImageMetadataStoreLevelDB::GetAllKeys(KeysCallback callback) {
                                      std::move(callback)));
 }
 
-int64_t ImageMetadataStoreLevelDB::GetEstimatedSize(
-    CacheStrategy cache_strategy) {
-  return estimated_size_[cache_strategy];
+int64_t ImageMetadataStoreLevelDB::GetEstimatedSize(CacheOption cache_option) {
+  return estimated_size_[cache_option];
 }
 
 void ImageMetadataStoreLevelDB::EvictImageMetadata(base::Time expiration_time,
@@ -269,10 +277,10 @@ void ImageMetadataStoreLevelDB::EvictImageMetadataImpl(
   }
 
   std::vector<std::string> keys_to_remove;
-  std::map<CacheStrategy, std::vector<const CachedImageMetadataProto*>>
+  std::map<CacheOption, std::vector<const CachedImageMetadataProto*>>
       entries_map;
   for (const CachedImageMetadataProto& entry : *entries) {
-    entries_map[entry.cache_strategy()].push_back(&entry);
+    entries_map[ToCacheOption(entry.cache_strategy())].push_back(&entry);
   }
 
   for (auto& cache_strategy : entries_map) {
@@ -294,7 +302,7 @@ void ImageMetadataStoreLevelDB::EvictImageMetadataImpl(
 }
 
 void ImageMetadataStoreLevelDB::GetMetadataToRemove(
-    CacheStrategy cache_strategy,
+    CacheOption cache_option,
     std::vector<const CachedImageMetadataProto*> entries,
     base::Time expiration_time,
     const size_t bytes_left,
@@ -303,8 +311,8 @@ void ImageMetadataStoreLevelDB::GetMetadataToRemove(
   size_t total_bytes_stored = 0;
   int64_t expiration_database_time = ToDatabaseTime(expiration_time);
 
-  switch (cache_strategy) {
-    case CacheStrategy::BEST_EFFORT:
+  switch (cache_option) {
+    case CacheOption::kBestEffort:
       // Removes expired entries.
       for (const CachedImageMetadataProto* entry : entries) {
         DCHECK_EQ(entry->cache_strategy(), CacheStrategy::BEST_EFFORT);
@@ -327,9 +335,9 @@ void ImageMetadataStoreLevelDB::GetMetadataToRemove(
           total_bytes_stored -= entry->data_size();
         }
       }
-      estimated_size_[cache_strategy] = total_bytes_stored;
+      estimated_size_[cache_option] = total_bytes_stored;
       break;
-    case CacheStrategy::HOLD_UNTIL_EXPIRED:
+    case CacheOption::kHoldUntilExpired:
       int64_t now = ToDatabaseTime(clock_->Now());
       int64_t total_size = 0;
       for (const auto* entry : entries) {
@@ -341,7 +349,7 @@ void ImageMetadataStoreLevelDB::GetMetadataToRemove(
           total_size += entry->data_size();
         }
       }
-      estimated_size_[cache_strategy] = total_size;
+      estimated_size_[cache_option] = total_size;
       break;
   }
 }

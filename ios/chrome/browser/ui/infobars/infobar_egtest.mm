@@ -10,7 +10,6 @@
 #include "components/infobars/core/infobar_feature.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_constants.h"
 #import "ios/chrome/browser/ui/infobars/infobar_constants.h"
-#import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/ui/infobars/infobar_manager_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -91,7 +90,6 @@ void VerifyTestInfoBarVisibleForCurrentTab(bool visible, NSString* message) {
 - (AppLaunchConfiguration)appConfigurationForTestCase {
   AppLaunchConfiguration config;
   config.features_enabled.push_back(kIOSInfobarUIReboot);
-  config.features_disabled.push_back(kInfobarUIRebootOnlyiOS13);
   return config;
 }
 
@@ -201,9 +199,7 @@ void VerifyTestInfoBarVisibleForCurrentTab(bool visible, NSString* message) {
 - (void)testInfobarTopMostVisible {
 // Turn on Messages UI.
 #if defined(CHROME_EARL_GREY_1)
-  _featureList.InitWithFeatures(
-    /*enabled_features=*/{kIOSInfobarUIReboot},
-    /*disabled_features=*/{kInfobarUIRebootOnlyiOS13});
+  _featureList.InitAndEnableFeature(kIOSInfobarUIReboot);
 #endif
 
   // Open a new tab and navigate to the test page.
@@ -247,9 +243,7 @@ void VerifyTestInfoBarVisibleForCurrentTab(bool visible, NSString* message) {
 - (void)testInfobarTallerLayout {
   // Turn on Messages UI.
 #if defined(CHROME_EARL_GREY_1)
-  _featureList.InitWithFeatures(
-    /*enabled_features=*/{kIOSInfobarUIReboot},
-    /*disabled_features=*/{kInfobarUIRebootOnlyiOS13});
+  _featureList.InitAndEnableFeature(kIOSInfobarUIReboot);
 #endif
 
   // Open a new tab and navigate to the test page.

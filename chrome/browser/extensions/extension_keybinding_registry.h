@@ -13,10 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_source.h"
+#include "chrome/browser/extensions/api/commands/command_service.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "ui/base/accelerators/media_keys_listener.h"
@@ -37,7 +34,7 @@ class Extension;
 // The ExtensionKeybindingRegistry is a class that handles the cross-platform
 // logic for keyboard accelerators. See platform-specific implementations for
 // implementation details for each platform.
-class ExtensionKeybindingRegistry : public content::NotificationObserver,
+class ExtensionKeybindingRegistry : public CommandService::Observer,
                                     public ExtensionRegistryObserver,
                                     public ui::MediaKeysListener::Delegate {
  public:
@@ -134,10 +131,12 @@ class ExtensionKeybindingRegistry : public content::NotificationObserver,
   content::BrowserContext* browser_context() const { return browser_context_; }
 
  private:
-  // Overridden from content::NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  // extensions::CommandService::Observer:
+  void OnExtensionCommandAdded(const std::string& extension_id,
+                               const Command& command) override;
+  void OnExtensionCommandRemoved(const std::string& extension_id,
+                                 const Command& command) override;
+  void OnCommandServiceDestroying() override;
 
   // ExtensionRegistryObserver implementation.
   void OnExtensionLoaded(content::BrowserContext* browser_context,
@@ -162,9 +161,6 @@ class ExtensionKeybindingRegistry : public content::NotificationObserver,
   // Returns true if any media keys are registered.
   bool IsListeningToAnyMediaKeys() const;
 
-  // The content notification registrar for listening to extension events.
-  content::NotificationRegistrar registrar_;
-
   content::BrowserContext* browser_context_;
 
   // What extensions to register keybindings for.
@@ -187,6 +183,9 @@ class ExtensionKeybindingRegistry : public content::NotificationObserver,
   // Listen to extension load, unloaded notifications.
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_{this};
+
+  ScopedObserver<CommandService, CommandService::Observer>
+      command_service_observer_{this};
 
   // Keeps track of whether shortcut handling is currently suspended. Shortcuts
   // are suspended briefly while capturing which shortcut to assign to an

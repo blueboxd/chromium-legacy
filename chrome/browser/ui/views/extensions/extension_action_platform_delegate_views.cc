@@ -20,9 +20,6 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/extensions/command.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
-#include "extensions/browser/notification_types.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
 #include "ui/views/view.h"
@@ -39,14 +36,8 @@ ExtensionActionPlatformDelegate::Create(
 ExtensionActionPlatformDelegateViews::ExtensionActionPlatformDelegateViews(
     ExtensionActionViewController* controller)
     : controller_(controller) {
-  content::NotificationSource notification_source = content::Source<Profile>(
-      controller_->browser()->profile()->GetOriginalProfile());
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSION_COMMAND_ADDED,
-                 notification_source);
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSION_COMMAND_REMOVED,
-                 notification_source);
+  command_service_observer_.Add(
+      extensions::CommandService::Get(controller_->browser()->profile()));
 }
 
 ExtensionActionPlatformDelegateViews::~ExtensionActionPlatformDelegateViews() {
@@ -91,25 +82,42 @@ void ExtensionActionPlatformDelegateViews::ShowContextMenu() {
       view, view->GetKeyboardContextMenuLocation(), ui::MENU_SOURCE_NONE);
 }
 
-void ExtensionActionPlatformDelegateViews::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK(type == extensions::NOTIFICATION_EXTENSION_COMMAND_ADDED ||
-         type == extensions::NOTIFICATION_EXTENSION_COMMAND_REMOVED);
-  extensions::ExtensionCommandRemovedDetails* payload =
-      content::Details<extensions::ExtensionCommandRemovedDetails>(details)
-          .ptr();
-  if (controller_->extension()->id() == payload->extension_id &&
-      (payload->command_name ==
-           extensions::manifest_values::kBrowserActionCommandEvent ||
-       payload->command_name ==
-           extensions::manifest_values::kPageActionCommandEvent)) {
-    if (type == extensions::NOTIFICATION_EXTENSION_COMMAND_ADDED)
-      RegisterCommand();
-    else
-      UnregisterCommand(true);
+void ExtensionActionPlatformDelegateViews::OnExtensionCommandAdded(
+    const std::string& extension_id,
+    const extensions::Command& command) {
+  if (extension_id != controller_->extension()->id())
+    return;  // Not this action's extension.
+
+  if (command.command_name() !=
+          extensions::manifest_values::kBrowserActionCommandEvent &&
+      command.command_name() !=
+          extensions::manifest_values::kPageActionCommandEvent) {
+    // Not an action-related command.
+    return;
   }
+
+  RegisterCommand();
+}
+
+void ExtensionActionPlatformDelegateViews::OnExtensionCommandRemoved(
+    const std::string& extension_id,
+    const extensions::Command& command) {
+  if (extension_id != controller_->extension()->id())
+    return;
+
+  if (command.command_name() !=
+          extensions::manifest_values::kBrowserActionCommandEvent &&
+      command.command_name() !=
+          extensions::manifest_values::kPageActionCommandEvent) {
+    // Not an action-related command.
+    return;
+  }
+
+  UnregisterCommand(/*only_if_removed=*/true);
+}
+
+void ExtensionActionPlatformDelegateViews::OnCommandServiceDestroying() {
+  command_service_observer_.RemoveAll();
 }
 
 bool ExtensionActionPlatformDelegateViews::AcceleratorPressed(

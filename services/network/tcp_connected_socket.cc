@@ -142,7 +142,7 @@ void TCPConnectedSocket::ConnectWithSocket(
     socket_->SetBeforeConnectCallback(base::BindRepeating(
         &ConfigureSocket, socket_.get(), *tcp_connected_socket_options));
   }
-  int result = socket_->Connect(base::BindRepeating(
+  int result = socket_->Connect(base::BindOnce(
       &TCPConnectedSocket::OnConnectCompleted, base::Unretained(this)));
 
   if (result == net::ERR_IO_PENDING)

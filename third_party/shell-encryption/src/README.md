@@ -8,10 +8,6 @@ both add and multiply encrypted data. It uses modulus-switching to enable
 arbitrary-depth homomorphic encryption (provided sufficiently large parameters
 are set). RLWE is also believed to be secure in the face of quantum computers.
 
-This library is designed to be compact and readable. The library includes just
-1500 lines of heavily-commented source (700 lines of source, 600 lines of
-comments and 200 blank lines) and 900 lines of unit tests.
-
 We intend this project to be both a useful experimental library and a
 comprehensible tool for learning about and extending RLWE.
 
@@ -42,8 +38,7 @@ above, Alice can securely offload computation to another entity without worrying
 that doing so will reveal any of her private information. Among many other
 applications, it enables *private information retrieval* (PIR) - databases that
 can serve user requests without learning which pieces of data the users
-requested. (For more information on PIR, see [XPIR: Private Information
-Retrieval for Everyone](https://eprint.iacr.org/2014/1025.pdf).)
+requested. (For more information on PIR, see [Communication--Computation Trade-offs in PIR](https://eprint.iacr.org/2019/1483.pdf).)
 
 ## Ring Learning with Errors
 
@@ -56,7 +51,7 @@ hardness.
 The cryptosystem implemented in this library is from [Fully Homomorphic
 Encryption from Ring-LWE and Security for Key Dependent
 Messages](http://www.wisdom.weizmann.ac.il/~zvikab/localpapers/IdealHom.pdf).
-The cryptosystem works as follows:
+The cryptosystem works as follows.
 
 ### Preliminaries
 
@@ -72,7 +67,7 @@ We also need a modulus *t* that is much smaller than *q*. *log(t)* is the number
 of bits of plaintext information we are able to fit into each coefficient of a
 ciphertext polynomial. The importance of *t* will become apparent soon.
 
-Finally, we need two other components: a Gaussian distribution *Y* with mean 0
+Finally, we need two other components: a binomial distribution *Y* with mean 0
 and standard deviation *w*, where *w* is a parameter of the cryptosystem. The
 importance of this distribution will become apparent soon.
 
@@ -230,10 +225,10 @@ This library consists of four major components that form a RLWE stack.
 
 ### Montgomery Integers
 
-This library is implemented in `montgomery.h`. At the lowest level is a library
-that represents modular integers in Montgomery form, which speeds up the
-repeated use of the modulo operator. This library supports 64-bit integers,
-meaning that it can support a modulus of up to 30-bits. For larger modulus
+This library is implemented in `montgomery.(cch|h)`. At the lowest level is a 
+library that represents modular integers in Montgomery form, which speeds up the
+repeated use of the modulo operator. This library supports 128-bit integers,
+meaning that it can support a modulus of up to 126 bits. For larger modulus
 sizes, the higher levels of the stack can be parameterized with a different type
 (such as a BigInteger). Montgomery integers require several parameters in
 addition to the modulus to perform the modular operations efficiently. These
@@ -306,10 +301,10 @@ cd shell-encryption
 bazel build :all --cxxopt='-std=c++17'
 ```
 
-You may also run all tests using the following command:
+You may also run all tests (recursively) using the following command:
 
 ```bash
-bazel test :all --cxxopt='-std=c++17'
+bazel test ... --cxxopt='-std=c++17'
 ```
 
 If you get an error, you may need to build/test with the following flags:

@@ -39,7 +39,9 @@ enum MessageType {
 // Message for sending between devices in Sharing.
 // Next tag: 16
 message SharingMessage {
-  // Identifier of sender. required except for AckMessage.
+  // Identifier of sender. required unless any of the following is true:
+  // 1. payload is a AckMessage
+  // 2. ack_channel_configuration is a ServerChannelConfiguration
   string sender_guid = 1;
 
   // Payload of the message, contains one of the messages below. required.

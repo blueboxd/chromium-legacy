@@ -37,7 +37,8 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
   // If |compatible_with_win7| is true, MediaFoundationVideoEncoderAccelerator
   // works on Windows 7. Some attributes of the encoder are not supported on old
   // systems, which may impact the performance or quality of the output.
-  explicit MediaFoundationVideoEncodeAccelerator(bool compatible_with_win7);
+  explicit MediaFoundationVideoEncodeAccelerator(bool compatible_with_win7,
+                                                 bool enable_async_mft);
 
   // VideoEncodeAccelerator implementation.
   VideoEncodeAccelerator::SupportedProfiles GetSupportedProfiles() override;
@@ -48,7 +49,7 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
                                        uint32_t framerate) override;
   void Destroy() override;
 
-  // Preload dlls required for encoding. Returns true if all required dlls are
+  // Preloads dlls required for encoding. Returns true if all required dlls are
   // correctly loaded.
   static bool PreSandboxInitialization();
 
@@ -62,18 +63,18 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
   // Holds output buffers coming from the encoder.
   class EncodeOutput;
 
-  // Creates an hardware encoder backed IMFTransform instance on |encoder_|.
-  bool CreateHardwareEncoderMFT();
+  // Enumerates all hardware encoder backed IMFTransform instances.
+  uint32_t EnumerateHardwareEncoders(IMFActivate*** pp_activate);
 
-  // Initializes and allocates memory for input and output samples.
-  bool InitializeInputOutputSamples(VideoCodecProfile output_profile);
+  // Activates the asynchronous encoder instance |encoder_| according to codec
+  // merit.
+  bool ActivateAsyncEncoder(IMFActivate** pp_activate, uint32_t activate_count);
+
+  // Initializes and allocates memory for input and output parameters.
+  bool InitializeInputOutputParameters(VideoCodecProfile output_profile);
 
   // Initializes encoder parameters for real-time use.
   bool SetEncoderModes();
-
-  // Returns true if we can initialize input and output samples with the given
-  // frame size, otherwise false.
-  bool IsResolutionSupported(const gfx::Size& size);
 
   // Helper function to notify the client of an error on
   // |main_client_task_runner_|.
@@ -81,20 +82,26 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
 
   // Encoding tasks to be run on |encoder_thread_|.
   void EncodeTask(scoped_refptr<VideoFrame> frame, bool force_keyframe);
+  void AsyncEncodeTask(scoped_refptr<VideoFrame> frame, bool force_keyframe);
+  void SyncEncodeTask(scoped_refptr<VideoFrame> frame, bool force_keyframe);
+
+  // Processes the input video frame for the encoder.
+  HRESULT ProcessInput(scoped_refptr<VideoFrame> frame, bool force_keyframe);
 
   // Checks for and copies encoded output on |encoder_thread_|.
-  void ProcessOutput();
+  void ProcessOutputAsync();
+  void ProcessOutputSync();
+
+  // Tries to deliver the input frame to the encoder.
+  bool TryToDeliverInputFrame(scoped_refptr<VideoFrame> frame,
+                              bool force_keyframe);
+
+  // Tries to return a bitstream buffer to the client.
+  void TryToReturnBitstreamBuffer();
 
   // Inserts the output buffers for reuse on |encoder_thread_|.
   void UseOutputBitstreamBufferTask(
       std::unique_ptr<BitstreamBufferRef> buffer_ref);
-
-  // Copies EncodeOutput into a BitstreamBuffer and returns it to the
-  // |main_client_|.
-  void ReturnBitstreamBuffer(
-      std::unique_ptr<EncodeOutput> encode_output,
-      std::unique_ptr<MediaFoundationVideoEncodeAccelerator::BitstreamBufferRef>
-          buffer_ref);
 
   // Changes encode parameters on |encoder_thread_|.
   void RequestEncodingParametersChangeTask(uint32_t bitrate,
@@ -108,6 +115,12 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
 
   const bool compatible_with_win7_;
 
+  // Flag to enable the usage of MFTEnumEx.
+  const bool enable_async_mft_;
+
+  // Whether asynchronous hardware encoder enabled or not.
+  bool is_async_mft_;
+
   // Bitstream buffers ready to be used to return encoded output as a FIFO.
   base::circular_deque<std::unique_ptr<BitstreamBufferRef>>
       bitstream_buffer_queue_;
@@ -119,14 +132,11 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
   size_t bitstream_buffer_size_;
   uint32_t frame_rate_;
   uint32_t target_bitrate_;
-  size_t u_plane_offset_;
-  size_t v_plane_offset_;
-  size_t y_stride_;
-  size_t u_stride_;
-  size_t v_stride_;
 
+  Microsoft::WRL::ComPtr<IMFActivate> activate_;
   Microsoft::WRL::ComPtr<IMFTransform> encoder_;
   Microsoft::WRL::ComPtr<ICodecAPI> codec_api_;
+  Microsoft::WRL::ComPtr<IMFMediaEventGenerator> event_generator_;
 
   DWORD input_stream_id_;
   DWORD output_stream_id_;
@@ -134,6 +144,7 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
   Microsoft::WRL::ComPtr<IMFMediaType> imf_input_media_type_;
   Microsoft::WRL::ComPtr<IMFMediaType> imf_output_media_type_;
 
+  bool input_required_;
   Microsoft::WRL::ComPtr<IMFSample> input_sample_;
   Microsoft::WRL::ComPtr<IMFSample> output_sample_;
 

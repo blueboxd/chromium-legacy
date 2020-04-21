@@ -65,9 +65,7 @@ TEST(AmbientLightSensorTest, IlluminanceInStoppedSensor) {
   auto* sensor = AmbientLightSensor::Create(context.GetExecutionContext(),
                                             exception_state);
 
-  bool illuminance_is_null;
-  sensor->illuminance(illuminance_is_null);
-  EXPECT_TRUE(illuminance_is_null);
+  EXPECT_FALSE(sensor->illuminance().has_value());
   EXPECT_FALSE(sensor->hasReading());
 }
 
@@ -80,9 +78,7 @@ TEST(AmbientLightSensorTest, IlluminanceInSensorWithoutReading) {
   sensor->start();
   SensorTestUtils::WaitForEvent(sensor, event_type_names::kActivate);
 
-  bool illuminance_is_null;
-  sensor->illuminance(illuminance_is_null);
-  EXPECT_TRUE(illuminance_is_null);
+  EXPECT_FALSE(sensor->illuminance().has_value());
   EXPECT_FALSE(sensor->hasReading());
 }
 
@@ -109,8 +105,6 @@ TEST(AmbientLightSensorTest, IlluminanceRounding) {
   auto* mock_observer = MakeGarbageCollected<MockSensorProxyObserver>();
   sensor_proxy->AddObserver(mock_observer);
 
-  bool illuminance_is_null;
-
   auto* event_counter = MakeGarbageCollected<SensorTestUtils::EventCounter>();
   sensor->addEventListener(event_type_names::kReading, event_counter);
 
@@ -120,8 +114,8 @@ TEST(AmbientLightSensorTest, IlluminanceRounding) {
   mock_observer->WaitForOnSensorReadingChanged();
   SensorTestUtils::WaitForEvent(sensor, event_type_names::kReading);
   EXPECT_EQ(24, sensor->latest_reading_);
-  EXPECT_EQ(0, sensor->illuminance(illuminance_is_null));
-  EXPECT_FALSE(illuminance_is_null);
+  ASSERT_TRUE(sensor->illuminance().has_value());
+  EXPECT_EQ(0, sensor->illuminance().value());
 
   // Go from 24 to 35. The difference is not significant enough, so we will not
   // emit any "reading" event or store the new raw reading, as if the new
@@ -129,8 +123,8 @@ TEST(AmbientLightSensorTest, IlluminanceRounding) {
   context.sensor_provider()->UpdateAmbientLightSensorData(35);
   mock_observer->WaitForOnSensorReadingChanged();
   EXPECT_EQ(24, sensor->latest_reading_);
-  EXPECT_EQ(0, sensor->illuminance(illuminance_is_null));
-  EXPECT_FALSE(illuminance_is_null);
+  ASSERT_TRUE(sensor->illuminance().has_value());
+  EXPECT_EQ(0, sensor->illuminance().value());
 
   // Go from 24 to 49. The difference is significant enough, so we will emit a
   // new "reading" event, update our raw reading and return a rounded value of
@@ -139,8 +133,8 @@ TEST(AmbientLightSensorTest, IlluminanceRounding) {
   mock_observer->WaitForOnSensorReadingChanged();
   SensorTestUtils::WaitForEvent(sensor, event_type_names::kReading);
   EXPECT_EQ(49, sensor->latest_reading_);
-  EXPECT_EQ(50, sensor->illuminance(illuminance_is_null));
-  EXPECT_FALSE(illuminance_is_null);
+  ASSERT_TRUE(sensor->illuminance().has_value());
+  EXPECT_EQ(50, sensor->illuminance().value());
 
   // Go from 49 to 35. The difference is not significant enough, so we will not
   // emit any "reading" event or store the new raw reading, as if the new
@@ -148,8 +142,8 @@ TEST(AmbientLightSensorTest, IlluminanceRounding) {
   context.sensor_provider()->UpdateAmbientLightSensorData(35);
   mock_observer->WaitForOnSensorReadingChanged();
   EXPECT_EQ(49, sensor->latest_reading_);
-  EXPECT_EQ(50, sensor->illuminance(illuminance_is_null));
-  EXPECT_FALSE(illuminance_is_null);
+  ASSERT_TRUE(sensor->illuminance().has_value());
+  EXPECT_EQ(50, sensor->illuminance().value());
 
   // Go from 49 to 24. The difference is significant enough, so we will emit a
   // new "reading" event, update our raw reading and return a rounded value of
@@ -158,8 +152,8 @@ TEST(AmbientLightSensorTest, IlluminanceRounding) {
   mock_observer->WaitForOnSensorReadingChanged();
   SensorTestUtils::WaitForEvent(sensor, event_type_names::kReading);
   EXPECT_EQ(24, sensor->latest_reading_);
-  EXPECT_EQ(0, sensor->illuminance(illuminance_is_null));
-  EXPECT_FALSE(illuminance_is_null);
+  ASSERT_TRUE(sensor->illuminance().has_value());
+  EXPECT_EQ(0, sensor->illuminance().value());
 
   // Make sure there were no stray "reading" events besides those we expected
   // above.
@@ -181,8 +175,6 @@ TEST(AmbientLightSensorTest, PlatformSensorReadingsBeforeActivation) {
   auto* mock_observer = MakeGarbageCollected<MockSensorProxyObserver>();
   sensor_proxy->AddObserver(mock_observer);
 
-  bool illuminance_is_null;
-
   // Instead of waiting for SensorProxy::Observer::OnSensorReadingChanged(), we
   // wait for OnSensorInitialized(), which happens earlier. The platform may
   // start sending readings and calling OnSensorReadingChanged() at any moment
@@ -193,14 +185,13 @@ TEST(AmbientLightSensorTest, PlatformSensorReadingsBeforeActivation) {
   mock_observer->WaitForSensorInitialization();
   context.sensor_provider()->UpdateAmbientLightSensorData(42);
   ASSERT_FALSE(sensor->IsActivated());
-  EXPECT_EQ(0, sensor->illuminance(illuminance_is_null));
-  EXPECT_TRUE(illuminance_is_null);
+  EXPECT_FALSE(sensor->illuminance().has_value());
 
   SensorTestUtils::WaitForEvent(sensor, event_type_names::kReading);
 
   EXPECT_EQ(42, sensor->latest_reading_);
-  EXPECT_EQ(50, sensor->illuminance(illuminance_is_null));
-  EXPECT_FALSE(illuminance_is_null);
+  ASSERT_TRUE(sensor->illuminance().has_value());
+  EXPECT_EQ(50, sensor->illuminance().value());
 }
 
 }  // namespace blink

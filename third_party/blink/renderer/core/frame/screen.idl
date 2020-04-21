@@ -49,5 +49,5 @@
     [RuntimeEnabled=ScreenEnumeration] readonly attribute boolean internal;
     [RuntimeEnabled=ScreenEnumeration] readonly attribute boolean primary;
     [RuntimeEnabled=ScreenEnumeration] readonly attribute float scaleFactor;
-    [RuntimeEnabled=ScreenEnumeration] readonly attribute DOMString name;
+    [RuntimeEnabled=ScreenEnumeration] readonly attribute DOMString id;
 };

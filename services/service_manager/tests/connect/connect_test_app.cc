@@ -132,7 +132,7 @@ class ConnectTestApp : public Service,
     mojo::Remote<test::mojom::ConnectTestService> test_service;
     service_binding_.GetConnector()->Connect(
         "connect_test_a", test_service.BindNewPipeAndPassReceiver());
-    test_service.set_disconnect_handler(base::BindRepeating(
+    test_service.set_disconnect_handler(base::BindOnce(
         &ConnectTestApp::OnGotTitle, base::Unretained(this),
         base::Unretained(&callback), run_loop.QuitClosure(), "uninitialized"));
     test_service->GetTitle(

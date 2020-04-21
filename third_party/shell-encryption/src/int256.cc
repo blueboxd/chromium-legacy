@@ -19,7 +19,7 @@
 #include <iostream>
 #include <sstream>
 
-#include "glog/logging.h"
+#include <glog/logging.h>
 #include "absl/numeric/int128.h"
 
 namespace rlwe {

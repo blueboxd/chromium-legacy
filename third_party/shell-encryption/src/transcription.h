@@ -84,7 +84,7 @@ rlwe::StatusOr<std::vector<OutputInt>> TranscribeBits(
   // Iterate over the input elements and process each one completely before
   // moving to the next one. One or several output elements will be filled with
   // the entire input chunk considered.
-  OutputInt* output_ptr = &output[0];
+  OutputInt* output_ptr = output.data();
   int size_output_chunk =
       std::min(remaining_bits_in_input, output_bits_per_int);
   int number_output_bits_needed = size_output_chunk;

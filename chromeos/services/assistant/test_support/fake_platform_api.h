@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_SERVICES_ASSISTANT_TEST_SUPPORT_FAKE_PLATFORM_API_H_
 #define CHROMEOS_SERVICES_ASSISTANT_TEST_SUPPORT_FAKE_PLATFORM_API_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "chromeos/services/assistant/cros_platform_api.h"
 
@@ -12,12 +14,12 @@ namespace chromeos {
 namespace assistant {
 
 // Fake implementation of the |CrosPlatformApi| used during the unittests.
-// As of now the |assistant_client::PlatformApi| methods are not implemented
-// and will assert when called.
+// As of now most of the |assistant_client::PlatformApi| methods are not
+// implemented and will assert when called.
 class FakePlatformApi : public CrosPlatformApi {
  public:
-  FakePlatformApi() = default;
-  ~FakePlatformApi() override = default;
+  FakePlatformApi();
+  ~FakePlatformApi() override;
 
   // CrosPlatformApi overrides
   assistant_client::AudioInputProvider& GetAudioInputProvider() override;
@@ -33,6 +35,8 @@ class FakePlatformApi : public CrosPlatformApi {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakePlatformApi);
+
+  std::unique_ptr<assistant_client::AudioOutputProvider> audio_output_provider_;
 };
 
 }  // namespace assistant

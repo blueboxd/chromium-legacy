@@ -1,3 +1,19 @@
+/*
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #ifndef RLWE_STATUSOR_H_
 #define RLWE_STATUSOR_H_
 
@@ -16,7 +32,7 @@ class StatusOr {
   StatusOr();
 
   // Construct a new StatusOr with the given non-ok status. After calling
-  // this constructor, calls to ValueOrDie() will CHECK-fail.
+  // this constructor, calls to value() will CHECK-fail.
   //
   // NOTE: Not explicit - we want to use StatusOr<T> as a return
   // value, so it is convenient and sensible to be able to do 'return
@@ -29,7 +45,7 @@ class StatusOr {
 
   // Construct a new StatusOr with the given value. If T is a plain pointer,
   // value must not be NULL. After calling this constructor, calls to
-  // ValueOrDie() will succeed, and calls to status() will return OK.
+  // value() will succeed, and calls to status() will return OK.
   //
   // NOTE: Not explicit - we want to use StatusOr<T> as a return type
   // so it is convenient and sensible to be able to do 'return T()'
@@ -37,7 +53,7 @@ class StatusOr {
   //
   // REQUIRES: if T is a plain pointer, value != NULL. This requirement is
   // DCHECKed. In optimized builds, passing a NULL pointer here will have
-  // the effect of passing ::blinders::StatusCode::kInternal as a fallback.
+  // the effect of passing absl::StatusCode::kInternal as a fallback.
   StatusOr(const T& value);
 
   // Copy constructor.
@@ -67,6 +83,12 @@ class StatusOr {
   const T&& ValueOrDie() const&&;
   T&& ValueOrDie() &&;
 
+  // Returns a reference to our current value, or CHECK-fails if !this->ok().
+  const T& value() const&;
+  T& value() &;
+  const T&& value() const&&;
+  T&& value() &&;
+
   // Ignores any errors. This method does nothing except potentially suppress
   // complaints from any tools that are checking that errors are not dropped on
   // the floor.
@@ -84,9 +106,7 @@ class StatusOr {
   }
 
  private:
-  // absl::variant<Status, T> variant_;
   absl::Status status_;
-
   absl::optional<T> value_;
 };
 
@@ -192,6 +212,38 @@ inline const T&& StatusOr<T>::ValueOrDie() const&& {
 
 template <typename T>
 inline T&& StatusOr<T>::ValueOrDie() && {
+  if (!value_) {
+    internal::StatusOrHelper::Crash(status());
+  }
+  return std::move(value_.value());
+}
+
+template <typename T>
+inline const T& StatusOr<T>::value() const& {
+  if (!value_) {
+    internal::StatusOrHelper::Crash(status());
+  }
+  return value_.value();
+}
+
+template <typename T>
+inline T& StatusOr<T>::value() & {
+  if (!value_) {
+    internal::StatusOrHelper::Crash(status());
+  }
+  return value_.value();
+}
+
+template <typename T>
+inline const T&& StatusOr<T>::value() const&& {
+  if (!value_) {
+    internal::StatusOrHelper::Crash(status());
+  }
+  return std::move(value_.value());
+}
+
+template <typename T>
+inline T&& StatusOr<T>::value() && {
   if (!value_) {
     internal::StatusOrHelper::Crash(status());
   }

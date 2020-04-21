@@ -76,6 +76,14 @@ GestureCommandHandler.onAccessibilityGesture_ = function(gesture) {
     }
   }
 
+  if (!ChromeVoxState.instance.currentRange && commandData.shouldRecoverRange) {
+    const recoverTo = DesktopAutomationHandler.instance.lastHoverTarget;
+    if (recoverTo) {
+      ChromeVoxState.instance.setCurrentRange(
+          cursors.Range.fromNode(recoverTo));
+    }
+  }
+
   const command = commandData.command;
   if (command) {
     CommandHandler.onCommand(command);

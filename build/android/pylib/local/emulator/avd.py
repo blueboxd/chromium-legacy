@@ -265,11 +265,16 @@ class AvdConfig(object):
       instance = _AvdInstance(self._emulator_path, self._emulator_home,
                               self._config)
       # Enable debug for snapshot when it is set to True
-      debug_tags = 'snapshot' if snapshot else None
+      debug_tags = 'init,snapshot' if snapshot else None
       instance.Start(
           read_only=False, snapshot_save=snapshot, debug_tags=debug_tags)
+      # Android devices with full-disk encryption are encrypted on first boot,
+      # and then get decrypted to continue the boot process (See details in
+      # https://bit.ly/3agmjcM).
+      # Wait for this step to complete since it can take a while for old OSs
+      # like M, otherwise the avd may have "Encryption Unsuccessful" error.
       device_utils.DeviceUtils(instance.serial).WaitUntilFullyBooted(
-          timeout=180, retries=0)
+          decrypt=True, timeout=180, retries=0)
       instance.Stop()
 
       # The multiinstance lock file seems to interfere with the emulator's

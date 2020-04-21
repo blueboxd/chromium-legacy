@@ -66,6 +66,23 @@ void ApplyLanguageCodeCorrection(std::string* code) {
   language::ToTranslateLanguageSynonym(code);
 }
 
+// Checks if CLD can complement a sub code when the page language doesn't know
+// the sub code.
+bool CanCLDComplementSubCode(const std::string& page_language,
+                             const std::string& cld_language) {
+  // Translate server cannot treat general Chinese. If Content-Language and
+  // CLD agree that the language is Chinese and Content-Language doesn't know
+  // which dialect is used, CLD language has priority.
+  // TODO(hajimehoshi): How about the other dialects like zh-MO?
+  return page_language == "zh" &&
+         base::StartsWith(cld_language, "zh-",
+                          base::CompareCase::INSENSITIVE_ASCII);
+}
+
+}  // namespace
+
+namespace translate {
+
 // Returns the ISO 639 language code of the specified |text|, or 'unknown' if it
 // failed.
 // |is_cld_reliable| will be set as true if CLD says the detection is reliable.
@@ -128,23 +145,6 @@ std::string DetermineTextLanguage(const base::string16& text,
   VLOG(1) << "Detected language: " << language;
   return language;
 }
-
-// Checks if CLD can complement a sub code when the page language doesn't know
-// the sub code.
-bool CanCLDComplementSubCode(
-    const std::string& page_language, const std::string& cld_language) {
-  // Translate server cannot treat general Chinese. If Content-Language and
-  // CLD agree that the language is Chinese and Content-Language doesn't know
-  // which dialect is used, CLD language has priority.
-  // TODO(hajimehoshi): How about the other dialects like zh-MO?
-  return page_language == "zh" &&
-         base::StartsWith(cld_language, "zh-",
-                          base::CompareCase::INSENSITIVE_ASCII);
-}
-
-}  // namespace
-
-namespace translate {
 
 std::string DeterminePageLanguage(const std::string& code,
                                   const std::string& html_lang,

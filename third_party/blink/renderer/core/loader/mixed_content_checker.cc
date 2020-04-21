@@ -41,6 +41,7 @@
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -854,13 +855,13 @@ void MixedContentChecker::UpgradeInsecureRequest(
     // due to scheme not being http, so any redirects get upgraded.
     resource_request.SetUpgradeIfInsecure(true);
     if (resource_request.Url().ProtocolIs("http")) {
-      if (execution_context_for_logging->IsDocument()) {
-        Document* document = Document::From(execution_context_for_logging);
-        document->AddConsoleMessage(
+      if (auto* window =
+              DynamicTo<LocalDOMWindow>(execution_context_for_logging)) {
+        window->AddConsoleMessage(
             MixedContentChecker::CreateConsoleMessageAboutFetchAutoupgrade(
                 fetch_client_settings_object->GlobalObjectUrl(),
                 resource_request.Url()));
-        resource_request.SetUkmSourceId(document->UkmSourceID());
+        resource_request.SetUkmSourceId(window->document()->UkmSourceID());
       }
       resource_request.SetIsAutomaticUpgrade(true);
     } else {

@@ -183,12 +183,13 @@ void AppServiceAppWindowCrostiniTracker::OnAppLaunchRequested(
   // currently has open.
   activation_permissions_.clear();
   ash::ShelfModel* model = app_service_controller_->owner()->shelf_model();
-  if (model->ItemIndexByAppID(app_id) >=
-      static_cast<int>(model->items().size()))
+  int index = model->ItemIndexByAppID(app_id);
+  if (index >= static_cast<int>(model->items().size()) || index < 0)
     return;
+
   AppWindowLauncherItemController* launcher_item_controller =
-      model->GetAppWindowLauncherItemController(
-          model->items()[model->ItemIndexByAppID(app_id)].id);
+      model->GetAppWindowLauncherItemController(model->items()[index].id);
+
   // Apps run for the first time won't have a launcher controller yet, return
   // early because they won't have windows either so permissions aren't
   // necessary.

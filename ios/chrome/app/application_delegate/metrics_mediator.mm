@@ -18,6 +18,7 @@
 #include "components/metrics/metrics_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/ukm/ios/features.h"
+#import "ios/chrome/app/application_delegate/ios_enable_metrickit_buildflags.h"
 #import "ios/chrome/app/application_delegate/startup_information.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
@@ -38,6 +39,10 @@
 #include "ios/web/public/thread/web_thread.h"
 #import "ios/web/public/web_state.h"
 #include "url/gurl.h"
+
+#if BUILDFLAG(IOS_ENABLE_METRICKIT)
+#import "ios/chrome/app/application_delegate/metric_kit_subscribing_util.h"  // nogncheck
+#endif  // BUILDFLAG(IOS_ENABLE_METRICKIT)
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -222,6 +227,9 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
   [self setBreakpadEnabled:optIn withUploading:allowUploading];
   [self setWatchWWANEnabled:optIn];
   [self setAppGroupMetricsEnabled:optIn];
+#if BUILDFLAG(IOS_ENABLE_METRICKIT)
+  EnableMetricKitReportCollection();
+#endif
 }
 
 - (BOOL)areMetricsEnabled {

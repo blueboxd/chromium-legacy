@@ -1011,12 +1011,10 @@ CommandHandler.onCommand = function(command) {
 
       // Get unicode-aware array of characters.
       const characterArray = [...word];
-      // We currently only load phonetic data for the browser UI language.
       const language = chrome.i18n.getUILanguage();
       for (let i = 0; i < characterArray.length; ++i) {
         const character = characterArray[i];
-        const phoneticText =
-            PhoneticData.getPhoneticDisambiguation(language, character);
+        const phoneticText = PhoneticData.forCharacter(character, language);
         // Speak the character followed by its phonetic disambiguation, if it
         // was found.
         new Output()

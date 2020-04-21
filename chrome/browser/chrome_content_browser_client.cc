@@ -358,6 +358,8 @@
 
 #if defined(OS_WIN)
 #include "base/strings/string_tokenizer.h"
+#include "base/win/win_util.h"
+#include "base/win/windows_version.h"
 #include "chrome/browser/chrome_browser_main_win.h"
 #include "chrome/install_static/install_util.h"
 #include "sandbox/win/src/sandbox_policy.h"
@@ -922,6 +924,23 @@ mojo::PendingRemote<chrome::mojom::PrerenderCanceler> GetPrerenderCanceler(
   return canceler;
 }
 
+// Encapculates logic to determine if enterprise policies should be honored.
+// This is a copy of the code in policy_loader_win.cc but it's ok to duplicate
+// as a new central class to replace those checks is in the making.
+bool ShouldHonorPolicies() {
+#if defined(OS_WIN)
+  bool is_enterprise_version =
+      base::win::OSInfo::GetInstance()->version_type() != base::win::SUITE_HOME;
+  return base::win::IsEnrolledToDomain() ||
+         (base::win::IsDeviceRegisteredWithManagement() &&
+          is_enterprise_version);
+#else   // defined(OS_WIN)
+  // TODO(pastarmovj): Replace this with check for MacOS and the new management
+  // service once it is ready.
+  return true;
+#endif  // defined(OS_WIN)
+}
+
 void LaunchURL(const GURL& url,
                content::WebContents::OnceGetter web_contents_getter,
                ui::PageTransition page_transition,
@@ -954,7 +973,7 @@ void LaunchURL(const GURL& url,
   PolicyBlacklistService* service =
       PolicyBlacklistFactory::GetForBrowserContext(
           web_contents->GetBrowserContext());
-  if (service) {
+  if (ShouldHonorPolicies() && service) {
     const policy::URLBlacklist::URLBlacklistState url_state =
         service->GetURLBlacklistState(url);
     is_whitelisted =

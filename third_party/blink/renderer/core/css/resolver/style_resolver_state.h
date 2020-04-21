@@ -133,11 +133,10 @@ class CORE_EXPORT StyleResolverState {
 
   // Normally, we apply all active animation effects on top of the style created
   // by regular CSS declarations. However, !important declarations have a
-  // higher priority than animation effects [1]. If StyleCascade skipped
-  // application of some interpolation, it means something else in the cascade
-  // had a higher priority (i.e. it was !important). In this case, we can't
-  // use the base-computed-style optimization, since that code path is unable
-  // to skip any animation effects at all.
+  // higher priority than animation effects [1]. If we're currently animating
+  // (not transitioning) a property which was declared !important in the base
+  // style, this flag is set such that we can disable the base computed style
+  // optimization.
   //
   // [1] https://drafts.csswg.org/css-cascade-4/#cascade-origin
   bool HasImportantOverrides() const { return has_important_overrides_; }

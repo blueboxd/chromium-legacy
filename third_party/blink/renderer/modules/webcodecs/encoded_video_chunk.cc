@@ -48,15 +48,6 @@ base::Optional<uint64_t> EncodedVideoChunk::duration() const {
   return metadata_.duration->InMicroseconds();
 }
 
-uint64_t EncodedVideoChunk::duration(bool* is_null) const {
-  if (!metadata_.duration) {
-    *is_null = true;
-    return 0;
-  }
-  *is_null = false;
-  return metadata_.duration->InMicroseconds();
-}
-
 DOMArrayBuffer* EncodedVideoChunk::data() const {
   return buffer_;
 }

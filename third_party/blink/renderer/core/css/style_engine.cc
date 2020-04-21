@@ -1895,24 +1895,11 @@ void StyleEngine::AddPropertyRules(const RuleSet& rule_set) {
     return;
   const HeapVector<Member<StyleRuleProperty>> property_rules =
       rule_set.PropertyRules();
+  // TODO(andruud): Clear existing declared properties.
   for (unsigned i = 0; i < property_rules.size(); ++i) {
     StyleRuleProperty* rule = property_rules[i];
-
     AtomicString name(rule->GetName());
-
-    // For now, ignore silently if registration already exists.
-    // TODO(https://crbug.com/978781): Support unregistration.
-    if (registry->Registration(name))
-      continue;
-
-    PropertyRegistration* registration =
-        PropertyRegistration::MaybeCreate(GetDocument(), name, *rule);
-
-    if (!registration)
-      continue;
-
-    registry->RegisterProperty(name, *registration);
-    CustomPropertyRegistered();
+    PropertyRegistration::DeclareProperty(GetDocument(), name, *rule);
   }
 }
 

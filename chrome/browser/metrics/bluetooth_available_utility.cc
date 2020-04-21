@@ -31,7 +31,7 @@ void OnGetAdapter(scoped_refptr<device::BluetoothAdapter> adapter) {
     return;
   }
 
-  if (!device::BluetoothAdapterFactory::Get().IsLowEnergySupported()) {
+  if (!device::BluetoothAdapterFactory::Get()->IsLowEnergySupported()) {
     ReportAvailability(BLUETOOTH_AVAILABLE_WITHOUT_LE);
     return;
   }
@@ -65,12 +65,12 @@ void ReportBluetoothAvailability() {
     return;
 #endif  // defined(OS_LINUX)
 
-  if (!device::BluetoothAdapterFactory::Get().IsBluetoothSupported()) {
+  if (!device::BluetoothAdapterFactory::Get()->IsBluetoothSupported()) {
     ReportAvailability(BLUETOOTH_NOT_SUPPORTED);
     return;
   }
 
-  device::BluetoothAdapterFactory::Get().GetAdapter(
+  device::BluetoothAdapterFactory::Get()->GetAdapter(
       base::BindOnce(&OnGetAdapter));
 #endif
 }

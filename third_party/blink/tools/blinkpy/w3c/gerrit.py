@@ -135,7 +135,8 @@ class GerritCL(object):
 
     @property
     def current_revision_description(self):
-        return self.current_revision['description']
+        # A patchset may have no description.
+        return self.current_revision.get('description', '')
 
     @property
     def status(self):

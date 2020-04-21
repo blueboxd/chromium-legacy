@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
@@ -248,9 +249,10 @@ class AppLauncherHandler
   // refreshing. This is useful when making many batch updates to avoid flicker.
   bool ignore_changes_;
 
-  // When true, we have attempted to install a bookmark app, and are still
+  // When populated, we have attempted to install a bookmark app, and are still
   // waiting to hear about success or failure from the extensions system.
-  bool attempted_bookmark_app_install_;
+  base::Optional<syncer::StringOrdinal>
+      attempting_web_app_install_page_ordinal_;
 
   // True if we have executed HandleGetApps() at least once.
   bool has_loaded_apps_;

@@ -1984,12 +1984,6 @@ base::Optional<bool> RTCPeerConnection::canTrickleIceCandidates() const {
   return *can_trickle;
 }
 
-bool RTCPeerConnection::canTrickleIceCandidates(bool& is_null) const {
-  base::Optional<bool> result = canTrickleIceCandidates();
-  is_null = !result;
-  return result.value_or(false);
-}
-
 void RTCPeerConnection::restartIce() {
   if (closed_)
     return;

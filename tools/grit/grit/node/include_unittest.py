@@ -21,6 +21,22 @@ from grit.node import empty
 from grit import util
 
 
+def checkIsGzipped(filename, compress_attr):
+  test_data_root = util.PathFromRoot('grit/testdata')
+  root = util.ParseGrdForUnittest(
+      '''
+      <includes>
+        <include name="TEST_TXT" file="%s" %s type="BINDATA"/>
+      </includes>''' % (filename, compress_attr),
+      base_dir=test_data_root)
+  node, = root.GetChildrenOfType(include.IncludeNode)
+  compressed = node.GetDataPackValue(lang='en', encoding=util.BINARY)
+
+  decompressed_data = zlib.decompress(compressed, 16 + zlib.MAX_WBITS)
+  expected = util.ReadFile(os.path.join(test_data_root, filename), util.BINARY)
+  return expected == decompressed_data
+
+
 class IncludeNodeUnittest(unittest.TestCase):
   def testGetPath(self):
     root = misc.GritNode()
@@ -72,15 +88,18 @@ class IncludeNodeUnittest(unittest.TestCase):
                      expected_path)
 
   def testCompressGzip(self):
-    root = util.ParseGrdForUnittest('''
-        <includes>
-          <include name="TEST_TXT" file="test_text.txt"
-                   compress="gzip" type="BINDATA"/>
-        </includes>''', base_dir = util.PathFromRoot('grit/testdata'))
-    inc, = root.GetChildrenOfType(include.IncludeNode)
-    compressed = inc.GetDataPackValue(lang='en', encoding=util.BINARY)
+    self.assertTrue(checkIsGzipped('test_text.txt', 'compress="gzip"'))
 
-    decompressed_data = zlib.decompress(compressed, 16 + zlib.MAX_WBITS)
+  def testCompressGzipByDefault(self):
+    self.assertTrue(checkIsGzipped('test_html.html', ''))
+    self.assertTrue(checkIsGzipped('test_js.js', ''))
+    self.assertTrue(checkIsGzipped('test_css.css', ''))
+    self.assertTrue(checkIsGzipped('test_svg.svg', ''))
+
+    self.assertTrue(checkIsGzipped('test_html.html', 'compress="default"'))
+    self.assertTrue(checkIsGzipped('test_js.js', 'compress="default"'))
+    self.assertTrue(checkIsGzipped('test_css.css', 'compress="default"'))
+    self.assertTrue(checkIsGzipped('test_svg.svg', 'compress="default"'))
 
   def testSkipInResourceMap(self):
     root = util.ParseGrdForUnittest('''
@@ -97,11 +116,13 @@ class IncludeNodeUnittest(unittest.TestCase):
     self.assertTrue(inc[2].IsResourceMapSource())
 
   def testAcceptsPreprocess(self):
-    root = util.ParseGrdForUnittest('''
+    root = util.ParseGrdForUnittest(
+        '''
         <includes>
           <include name="PREPROCESS_TEST" file="preprocess_test.html"
-                   preprocess="true" type="chrome_html"/>
-        </includes>''', base_dir = util.PathFromRoot('grit/testdata'))
+                   preprocess="true" compress="false" type="chrome_html"/>
+        </includes>''',
+        base_dir=util.PathFromRoot('grit/testdata'))
     inc, = root.GetChildrenOfType(include.IncludeNode)
     result = inc.GetDataPackValue(lang='en', encoding=util.BINARY)
     self.assertIn(b'should be kept', result)

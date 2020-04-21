@@ -62,8 +62,6 @@ class IDBVersionChangeEvent final : public Event {
 
   uint64_t oldVersion() const { return old_version_; }
   base::Optional<uint64_t> newVersion() const { return new_version_; }
-  // TODO(crbug.com/1060971): Remove |is_null| version.
-  uint64_t newVersion(bool& is_null) const;  // DEPRECATED
 
   const AtomicString& dataLoss() const;
   const String& dataLossMessage() const { return data_loss_message_; }

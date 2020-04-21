@@ -49,7 +49,7 @@ BluetoothStringsProvider::BluetoothStringsProvider(Profile* profile,
     : OsSettingsPerPageStringsProvider(profile, per_page_delegate) {
   // Note: May be uninitialized in tests.
   if (bluez::BluezDBusManager::IsInitialized()) {
-    device::BluetoothAdapterFactory::GetAdapter(
+    device::BluetoothAdapterFactory::Get()->GetAdapter(
         base::Bind(&BluetoothStringsProvider::OnFetchBluetoothAdapter,
                    weak_ptr_factory_.GetWeakPtr()));
   }

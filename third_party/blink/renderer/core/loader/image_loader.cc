@@ -87,7 +87,7 @@ bool CheckForUnoptimizedImagePolicy(Document& document,
   // and are planned to be removed.
   if (RuntimeEnabledFeatures::DocumentPolicyEnabled(&document) &&
       !new_image->IsAcceptableCompressionRatio(
-          *document.ToExecutionContext())) {
+          *document.GetExecutionContext())) {
     return true;
   }
 
@@ -101,7 +101,7 @@ static ImageLoader::BypassMainWorldBehavior ShouldBypassMainWorldCSP(
   DCHECK(loader);
   DCHECK(loader->GetElement());
   if (ContentSecurityPolicy::ShouldBypassMainWorld(
-          loader->GetElement()->GetDocument().ToExecutionContext())) {
+          loader->GetElement()->GetExecutionContext())) {
     return ImageLoader::kBypassMainWorldCSP;
   }
   return ImageLoader::kDoNotBypassMainWorldCSP;
@@ -116,8 +116,7 @@ class ImageLoader::Task {
         should_bypass_main_world_csp_(ShouldBypassMainWorldCSP(loader)),
         update_behavior_(update_behavior),
         referrer_policy_(referrer_policy) {
-    ExecutionContext* context =
-        loader_->GetElement()->GetDocument().ToExecutionContext();
+    ExecutionContext* context = loader_->GetElement()->GetExecutionContext();
     probe::AsyncTaskScheduled(context, "Image", &async_task_id_);
     v8::Isolate* isolate = V8PerIsolateData::MainThreadIsolate();
     v8::HandleScope scope(isolate);
@@ -135,8 +134,7 @@ class ImageLoader::Task {
   void Run() {
     if (!loader_)
       return;
-    ExecutionContext* context =
-        loader_->GetElement()->GetDocument().ToExecutionContext();
+    ExecutionContext* context = loader_->GetElement()->GetExecutionContext();
     probe::AsyncTask async_task(context, &async_task_id_);
     if (script_state_ && script_state_->ContextIsValid()) {
       ScriptState::Scope scope(script_state_);

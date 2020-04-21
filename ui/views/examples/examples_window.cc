@@ -10,8 +10,11 @@
 #include <string>
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
+#include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"
@@ -29,21 +32,47 @@
 namespace views {
 namespace examples {
 
-using ExampleVector = std::vector<std::unique_ptr<ExampleBase>>;
-
 namespace {
 
-struct ExampleTitleCompare {
-  bool operator()(const std::unique_ptr<ExampleBase>& a,
-                  const std::unique_ptr<ExampleBase>& b) {
-    return a->example_title() < b->example_title();
-  }
-};
+const char kEnableExamples[] = "enable-examples";
 
-ExampleVector GetExamplesToShow(ExampleVector extra) {
-  ExampleVector examples = CreateExamples();
-  std::move(extra.begin(), extra.end(), std::back_inserter(examples));
-  std::sort(examples.begin(), examples.end(), ExampleTitleCompare());
+ExampleVector GetExamplesToShow(ExampleVector examples) {
+  using StringVector = std::vector<std::string>;
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+
+  std::sort(examples.begin(), examples.end(), [](const auto& a, const auto& b) {
+    return a->example_title() < b->example_title();
+  });
+
+  std::string enable_examples =
+      command_line->GetSwitchValueASCII(kEnableExamples);
+  if (!enable_examples.empty()) {
+    StringVector enabled =
+        base::SplitString(enable_examples, ";,", base::TRIM_WHITESPACE,
+                          base::SPLIT_WANT_NONEMPTY);
+
+    // Transform list of examples to just the list of names.
+    StringVector example_names;
+    std::transform(
+        examples.begin(), examples.end(), std::back_inserter(example_names),
+        [](const auto& example) { return example->example_title(); });
+
+    std::sort(enabled.begin(), enabled.end());
+
+    // Get an intersection of list of titles between the full list and the list
+    // from the command-line.
+    StringVector valid_examples =
+        base::STLSetIntersection<StringVector>(enabled, example_names);
+
+    // If there are still example names in the list, only include the examples
+    // from the list.
+    if (!valid_examples.empty()) {
+      base::EraseIf(examples, [valid_examples](auto& example) {
+        return std::find(valid_examples.begin(), valid_examples.end(),
+                         example->example_title()) == valid_examples.end();
+      });
+    }
+  }
 
   for (auto& example : examples)
     example->CreateExampleView(example->example_view());
@@ -104,7 +133,9 @@ class ExamplesWindowContents : public WidgetDelegateView,
     layout->StartRow(0 /* no expand */, 0);
     combobox_ = layout->AddView(std::move(combobox));
 
-    if (combobox_model_->GetItemCount() > 0) {
+    auto item_count = combobox_model_->GetItemCount();
+    if (item_count > 0) {
+      combobox_->SetVisible(item_count > 1);
       layout->StartRow(1, 0);
       auto example_shown = std::make_unique<View>();
       example_shown->SetLayoutManager(std::make_unique<FillLayout>());
@@ -176,12 +207,12 @@ class ExamplesWindowContents : public WidgetDelegateView,
 ExamplesWindowContents* ExamplesWindowContents::instance_ = nullptr;
 
 void ShowExamplesWindow(base::OnceClosure on_close,
-                        gfx::NativeWindow window_context,
-                        ExampleVector extra_examples) {
+                        ExampleVector examples,
+                        gfx::NativeWindow window_context) {
   if (ExamplesWindowContents::instance()) {
     ExamplesWindowContents::instance()->GetWidget()->Activate();
   } else {
-    ExampleVector examples = GetExamplesToShow(std::move(extra_examples));
+    examples = GetExamplesToShow(std::move(examples));
     Widget* widget = new Widget;
     Widget::InitParams params;
     params.delegate =

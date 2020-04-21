@@ -388,8 +388,8 @@ void EmbeddedTestServer::HandleRequest(HttpConnection* connection,
   response->SendResponse(
       base::BindRepeating(&HttpConnection::SendResponseBytes,
                           connection->GetWeakPtr()),
-      base::BindOnce(&EmbeddedTestServer::DidClose, weak_factory_.GetWeakPtr(),
-                     connection));
+      base::BindOnce(&EmbeddedTestServer::OnResponseCompleted,
+                     weak_factory_.GetWeakPtr(), connection));
 }
 
 GURL EmbeddedTestServer::GetURL(const std::string& relative_url) const {
@@ -640,6 +640,22 @@ bool EmbeddedTestServer::HandleReadResult(HttpConnection* connection, int rv) {
     return false;
 
   return true;
+}
+
+void EmbeddedTestServer::OnResponseCompleted(HttpConnection* connection) {
+  DCHECK(io_thread_->task_runner()->BelongsToCurrentThread());
+  DCHECK(connection);
+  DCHECK_EQ(1u, connections_.count(connection->socket_.get()));
+
+  std::unique_ptr<StreamSocket> socket = std::move(connection->socket_);
+  connections_.erase(socket.get());
+
+  // |connection| is now invalid, don't use it again.
+
+  // Only allow the connection listener to take the socket if it is still open.
+  if (socket->IsConnected() && connection_listener_) {
+    connection_listener_->OnResponseCompletedSuccessfully(std::move(socket));
+  }
 }
 
 void EmbeddedTestServer::DidClose(HttpConnection* connection) {

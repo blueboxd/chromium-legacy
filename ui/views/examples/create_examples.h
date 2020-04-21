@@ -14,10 +14,9 @@
 namespace views {
 namespace examples {
 
-using ExampleVector = std::vector<std::unique_ptr<ExampleBase>>;
-
 // Creates the default set of examples.
-ExampleVector VIEWS_EXAMPLES_EXPORT CreateExamples();
+ExampleVector VIEWS_EXAMPLES_EXPORT
+CreateExamples(ExampleVector extra_examples = ExampleVector());
 
 }  // namespace examples
 }  // namespace views

@@ -142,13 +142,6 @@ base::Optional<DOMHighResTimeStamp> Sensor::timestamp(
       base::TimeDelta::FromSecondsD(sensor_proxy_->GetReading().timestamp()));
 }
 
-DOMHighResTimeStamp Sensor::timestamp(ScriptState* script_state,
-                                      bool& is_null) const {
-  base::Optional<DOMHighResTimeStamp> result = timestamp(script_state);
-  is_null = !result;
-  return result.value_or(0);
-}
-
 void Sensor::Trace(Visitor* visitor) {
   visitor->Trace(sensor_proxy_);
   ActiveScriptWrappable::Trace(visitor);

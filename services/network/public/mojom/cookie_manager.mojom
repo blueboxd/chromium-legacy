@@ -80,16 +80,9 @@ enum ContextType {
   SAME_SITE_STRICT
 };
 
-enum CrossSchemeness {
-  NONE,
-  INSECURE_SECURE,
-  SECURE_INSECURE
-};
-
 // Keep defaults here in sync with net/cookies/cookie_options.h.
 struct CookieSameSiteContext {
   ContextType context = CROSS_SITE;
-  CrossSchemeness cross_schemeness = NONE;
 };
 
 // What rules to apply when determining whether access to a particular cookie is

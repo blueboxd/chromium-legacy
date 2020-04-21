@@ -157,6 +157,104 @@ TEST_F(StyleResolverTest, NoCrashWhenAnimatingWithoutCascade) {
   UpdateAllLifecyclePhasesForTest();
 }
 
+TEST_F(StyleResolverTest, AnimationNotMaskedByImportant) {
+  GetDocument().documentElement()->setInnerHTML(R"HTML(
+    <style>
+      div {
+        width: 10px;
+        height: 10px !important;
+      }
+    </style>
+    <div id=div></div>
+  )HTML");
+  UpdateAllLifecyclePhasesForTest();
+  Element* div = GetDocument().getElementById("div");
+
+  auto* effect = CreateSimpleKeyframeEffectForTest(div, CSSPropertyID::kWidth,
+                                                   "50px", "100px");
+  GetDocument().Timeline().Play(effect);
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_EQ("50px", ComputedValue("width", *StyleForId("div")));
+  EXPECT_EQ("10px", ComputedValue("height", *StyleForId("div")));
+
+  div->SetNeedsAnimationStyleRecalc();
+  StyleForId("div");
+
+  ASSERT_TRUE(div->GetElementAnimations());
+  const CSSBitset* bitset = div->GetElementAnimations()->BaseImportantSet();
+  EXPECT_FALSE(CSSAnimations::IsAnimatingStandardProperties(
+      div->GetElementAnimations(), bitset, KeyframeEffect::kDefaultPriority));
+  EXPECT_TRUE(div->GetElementAnimations()->BaseComputedStyle());
+  EXPECT_FALSE(bitset && bitset->Has(CSSPropertyID::kWidth));
+  EXPECT_TRUE(bitset && bitset->Has(CSSPropertyID::kHeight));
+}
+
+TEST_F(StyleResolverTest, AnimationNotMaskedWithoutElementAnimations) {
+  EXPECT_FALSE(CSSAnimations::IsAnimatingStandardProperties(
+      /* ElementAnimations */ nullptr, std::make_unique<CSSBitset>().get(),
+      KeyframeEffect::kDefaultPriority));
+}
+
+TEST_F(StyleResolverTest, AnimationNotMaskedWithoutBitset) {
+  GetDocument().documentElement()->setInnerHTML(R"HTML(
+    <style>
+      div {
+        width: 10px;
+        height: 10px !important;
+      }
+    </style>
+    <div id=div></div>
+  )HTML");
+  UpdateAllLifecyclePhasesForTest();
+  Element* div = GetDocument().getElementById("div");
+
+  auto* effect = CreateSimpleKeyframeEffectForTest(div, CSSPropertyID::kWidth,
+                                                   "50px", "100px");
+  GetDocument().Timeline().Play(effect);
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_EQ("50px", ComputedValue("width", *StyleForId("div")));
+  EXPECT_EQ("10px", ComputedValue("height", *StyleForId("div")));
+
+  div->SetNeedsAnimationStyleRecalc();
+  StyleForId("div");
+
+  ASSERT_TRUE(div->GetElementAnimations());
+  EXPECT_FALSE(CSSAnimations::IsAnimatingStandardProperties(
+      div->GetElementAnimations(), /* CSSBitset */ nullptr,
+      KeyframeEffect::kDefaultPriority));
+}
+
+TEST_F(StyleResolverTest, AnimationMaskedByImportant) {
+  GetDocument().documentElement()->setInnerHTML(R"HTML(
+    <style>
+      div {
+        width: 10px;
+        height: 10px !important;
+      }
+    </style>
+    <div id=div></div>
+  )HTML");
+  UpdateAllLifecyclePhasesForTest();
+  Element* div = GetDocument().getElementById("div");
+
+  auto* effect = CreateSimpleKeyframeEffectForTest(div, CSSPropertyID::kHeight,
+                                                   "50px", "100px");
+  GetDocument().Timeline().Play(effect);
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_EQ("10px", ComputedValue("width", *StyleForId("div")));
+  EXPECT_EQ("10px", ComputedValue("height", *StyleForId("div")));
+
+  div->SetNeedsAnimationStyleRecalc();
+  StyleForId("div");
+
+  ASSERT_TRUE(div->GetElementAnimations());
+  EXPECT_FALSE(div->GetElementAnimations()->BaseComputedStyle());
+  EXPECT_FALSE(div->GetElementAnimations()->BaseImportantSet());
+}
+
 class StyleResolverFontRelativeUnitTest
     : public testing::WithParamInterface<const char*>,
       public StyleResolverTest {};

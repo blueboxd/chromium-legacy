@@ -92,6 +92,7 @@ class COMPONENT_EXPORT(TRACING_CPP) TrackEventThreadLocalEventSink
       typename TrackEventArgumentFunction = void (*)(perfetto::EventContext)>
   void AddTraceEvent(base::trace_event::TraceEvent* trace_event,
                      base::trace_event::TraceEventHandle* handle,
+                     const perfetto::Track& track,
                      TrackEventArgumentFunction arg_func) {
     ResetIncrementalStateIfNeeded(trace_event);
 
@@ -100,6 +101,11 @@ class COMPONENT_EXPORT(TRACING_CPP) TrackEventThreadLocalEventSink
     // Note: Since |track_event| is a protozero message under |trace_packet|, we
     // can't modify |trace_packet| further until we're done with |track_event|.
     auto* track_event = PrepareTrackEvent(trace_event, handle, &trace_packet);
+
+    if (track) {
+      track_event->set_track_uuid(track.uuid);
+    }
+
     arg_func(perfetto::EventContext(track_event));
 
     if (!pending_interning_updates_.empty()) {

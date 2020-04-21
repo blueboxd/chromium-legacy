@@ -52,9 +52,6 @@ class RTCRtpReceiver final : public ScriptWrappable {
   RTCDtlsTransport* rtcpTransport();
   base::Optional<double> playoutDelayHint() const;
   void setPlayoutDelayHint(base::Optional<double>, ExceptionState&);
-  // TODO(crbug.com/1060971): Remove |is_null| version.
-  double playoutDelayHint(bool&);                           // DEPRECATED
-  void setPlayoutDelayHint(double, bool, ExceptionState&);  // DEPRECATED
   RTCRtpReceiveParameters* getParameters();
   HeapVector<Member<RTCRtpSynchronizationSource>> getSynchronizationSources();
   HeapVector<Member<RTCRtpContributingSource>> getContributingSources();

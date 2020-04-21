@@ -27,8 +27,6 @@
 #include "chrome/browser/browser_switcher/browser_switcher_sitelist.h"
 #include "chrome/browser/browser_switcher/ieem_sitelist_parser.h"
 #include "chrome/browser/profiles/profile.h"
-#include "content/public/browser/browser_task_traits.h"
-#include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_registry.h"
 
 namespace browser_switcher {
@@ -138,7 +136,9 @@ BrowserSwitcherServiceWin::BrowserSwitcherServiceWin(
       cache_dir_for_testing_(std::move(cache_dir_for_testing)),
       sequenced_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-           base::TaskShutdownBehavior::BLOCK_SHUTDOWN})) {}
+           base::TaskShutdownBehavior::BLOCK_SHUTDOWN})) {
+  UpdateAllCacheFiles();
+}
 
 BrowserSwitcherServiceWin::~BrowserSwitcherServiceWin() = default;
 
@@ -166,16 +166,14 @@ std::vector<RulesetSource> BrowserSwitcherServiceWin::GetRulesetSources() {
   return sources;
 }
 
-void BrowserSwitcherServiceWin::Init() {
-  BrowserSwitcherService::Init();
-  UpdateAllCacheFiles();
-}
-
 void BrowserSwitcherServiceWin::LoadRulesFromPrefs() {
   BrowserSwitcherService::LoadRulesFromPrefs();
   if (prefs().UseIeSitelist())
     sitelist()->SetIeemSitelist(
         ParsedXml(prefs().GetCachedIeemSitelist(), base::nullopt));
+  if (!prefs().IsEnabled())
+    return;
+  SavePrefsToFile();
 }
 
 base::FilePath BrowserSwitcherServiceWin::GetCacheDir() {
@@ -234,26 +232,16 @@ void BrowserSwitcherServiceWin::OnIeemSitelistParsed(ParsedXml xml) {
   }
 }
 
-void BrowserSwitcherServiceWin::CacheFileUpdated() {
-  if (cache_file_updated_callback_for_testing_)
-    std::move(cache_file_updated_callback_for_testing_).Run();
-}
-
-void BrowserSwitcherServiceWin::SitelistCacheFileUpdated() {
-  if (sitelist_cache_file_updated_callback_for_testing_)
-    std::move(sitelist_cache_file_updated_callback_for_testing_).Run();
-}
-
-void BrowserSwitcherServiceWin::OnCacheFileUpdatedForTesting(
-    base::OnceClosure cb) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  cache_file_updated_callback_for_testing_ = std::move(cb);
-}
-
-void BrowserSwitcherServiceWin::OnSitelistCacheFileUpdatedForTesting(
-    base::OnceClosure cb) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  sitelist_cache_file_updated_callback_for_testing_ = std::move(cb);
+void BrowserSwitcherServiceWin::SavePrefsToFile() {
+  DCHECK(prefs().IsEnabled());
+  base::FilePath path = GetCacheDir();
+  if (path.empty())
+    return;
+  path = path.AppendASCII("cache.dat");
+  sequenced_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&SaveDataToFile, SerializeCacheFile(prefs(), sitelist()),
+                     std::move(path)));
 }
 
 void BrowserSwitcherServiceWin::DeletePrefsFile() {
@@ -261,24 +249,8 @@ void BrowserSwitcherServiceWin::DeletePrefsFile() {
   if (path.empty())
     return;
   path = path.AppendASCII("cache.dat");
-  sequenced_task_runner_->PostTaskAndReply(
-      FROM_HERE, base::BindOnce(&RemoveFile, std::move(path)),
-      base::BindOnce(&BrowserSwitcherServiceWin::CacheFileUpdated,
-                     base::Unretained(this)));
-}
-
-void BrowserSwitcherServiceWin::SavePrefsToFile() {
-  DCHECK(prefs().IsEnabled());
-  base::FilePath path = GetCacheDir();
-  if (path.empty())
-    return;
-  path = path.AppendASCII("cache.dat");
-  sequenced_task_runner_->PostTaskAndReply(
-      FROM_HERE,
-      base::BindOnce(&SaveDataToFile, SerializeCacheFile(prefs(), sitelist()),
-                     std::move(path)),
-      base::BindOnce(&BrowserSwitcherServiceWin::CacheFileUpdated,
-                     base::Unretained(this)));
+  sequenced_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&RemoveFile, std::move(path)));
 }
 
 void BrowserSwitcherServiceWin::DeleteSitelistCacheFile() {
@@ -286,10 +258,8 @@ void BrowserSwitcherServiceWin::DeleteSitelistCacheFile() {
   if (path.empty())
     return;
   path = path.AppendASCII("sitelistcache.dat");
-  sequenced_task_runner_->PostTaskAndReply(
-      FROM_HERE, base::BindOnce(&RemoveFile, std::move(path)),
-      base::BindOnce(&BrowserSwitcherServiceWin::SitelistCacheFileUpdated,
-                     base::Unretained(this)));
+  sequenced_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&RemoveFile, std::move(path)));
 }
 
 void BrowserSwitcherServiceWin::UpdateAllCacheFiles() {

@@ -104,6 +104,10 @@ bool HasNonASCII(const std::string& str) {
 
 }  //  namespace
 
+Uri::Pim::Pim() = default;
+Uri::Pim::Pim(const Pim&) = default;
+Uri::Pim::~Pim() = default;
+
 Uri::Uri() : pim_(std::make_unique<Pim>()) {}
 
 Uri::Uri(const std::string& uri) : pim_(std::make_unique<Pim>()) {
@@ -178,6 +182,7 @@ std::string Uri::GetNormalized(bool always_print_port) const {
       out.push_back('@');
     }
     // Host.
+    enc.Disallow(":");
     enc.EncodeAndAppend(pim_->host(), &out);
     // Port.
     if (!port.empty()) {
@@ -187,7 +192,7 @@ std::string Uri::GetNormalized(bool always_print_port) const {
   }
 
   // Adds Path.
-  enc.Allow("@");
+  enc.Allow(":@");
   for (auto& segment : pim_->path()) {
     out.push_back('/');
     enc.EncodeAndAppend(segment, &out);

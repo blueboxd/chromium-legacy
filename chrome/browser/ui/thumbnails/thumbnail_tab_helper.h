@@ -29,7 +29,6 @@ class ThumbnailTabHelper
  private:
   class TabStateTracker;
   friend class content::WebContentsUserData<ThumbnailTabHelper>;
-  friend class TabStateTracker;
 
   // Metrics enums and helper functions:
   enum class CaptureType;
@@ -61,7 +60,7 @@ class ThumbnailTabHelper
   // before a page is frozen or swapped out.
   void StartVideoCapture();
   void StopVideoCapture();
-  void CaptureThumbnailOnTabSwitch();
+  void CaptureThumbnailOnTabHidden();
   void StoreThumbnailForTabSwitch(base::TimeTicks start_time,
                                   const SkBitmap& bitmap);
   void StoreThumbnail(CaptureType type, const SkBitmap& bitmap);

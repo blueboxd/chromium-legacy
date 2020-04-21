@@ -773,7 +773,7 @@ void TraceEventDataSource::StartTracingInternal(
     auto task_runner = base::GetRecordActionTaskRunner();
     if (task_runner) {
       task_runner->PostTask(
-          FROM_HERE, base::Bind([]() {
+          FROM_HERE, base::BindOnce([]() {
             base::AddActionCallback(
                 TraceEventDataSource::GetInstance()->user_action_callback_);
           }));
@@ -851,7 +851,7 @@ void TraceEventDataSource::StopTracing(
   auto task_runner = base::GetRecordActionTaskRunner();
   if (task_runner) {
     task_runner->PostTask(
-        FROM_HERE, base::Bind([]() {
+        FROM_HERE, base::BindOnce([]() {
           base::RemoveActionCallback(
               TraceEventDataSource::GetInstance()->user_action_callback_);
         }));
@@ -949,7 +949,7 @@ void TraceEventDataSource::OnAddTraceEvent(
     TraceEvent* trace_event,
     bool thread_will_flush,
     base::trace_event::TraceEventHandle* handle) {
-  OnAddTraceEvent(trace_event, thread_will_flush, handle,
+  OnAddTraceEvent(trace_event, thread_will_flush, handle, perfetto::Track(),
                   [](perfetto::EventContext) {});
 }
 

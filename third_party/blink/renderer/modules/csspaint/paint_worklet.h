@@ -34,7 +34,7 @@ class MODULES_EXPORT PaintWorklet : public Worklet,
   static const wtf_size_t kNumGlobalScopesPerThread;
   static PaintWorklet* From(LocalDOMWindow&);
 
-  explicit PaintWorklet(LocalFrame*);
+  explicit PaintWorklet(LocalDOMWindow&);
   ~PaintWorklet() override;
 
   void AddPendingGenerator(const String& name, CSSPaintImageGeneratorImpl*);

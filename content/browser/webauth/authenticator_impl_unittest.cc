@@ -534,7 +534,7 @@ class AuthenticatorImplTest : public AuthenticatorTestBase {
   base::Optional<base::test::ScopedFeatureList> scoped_feature_list_;
   std::unique_ptr<device::BluetoothAdapterFactory::GlobalValuesForTesting>
       bluetooth_global_values_ =
-          device::BluetoothAdapterFactory::Get().InitGlobalValuesForTesting();
+          device::BluetoothAdapterFactory::Get()->InitGlobalValuesForTesting();
   scoped_refptr<::testing::NiceMock<device::MockBluetoothAdapter>>
       mock_adapter_ = base::MakeRefCounted<
           ::testing::NiceMock<device::MockBluetoothAdapter>>();

@@ -498,8 +498,10 @@ void TetherService::GetBluetoothAdapter() {
   // GetAdapter() may call OnBluetoothAdapterFetched immediately which can cause
   // problems with the Fake implementation since the class is not fully
   // constructed yet. Post the GetAdapter call to avoid this.
+  auto* factory = device::BluetoothAdapterFactory::Get();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(device::BluetoothAdapterFactory::GetAdapter,
+      FROM_HERE, base::BindOnce(&device::BluetoothAdapterFactory::GetAdapter,
+                                base::Unretained(factory),
                                 base::BindRepeating(
                                     &TetherService::OnBluetoothAdapterFetched,
                                     weak_ptr_factory_.GetWeakPtr())));

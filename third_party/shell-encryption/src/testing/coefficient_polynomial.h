@@ -23,7 +23,7 @@
 #include <string>
 #include <vector>
 
-#include "glog/logging.h"
+#include <glog/logging.h>
 #include "absl/strings/str_cat.h"
 #include "status_macros.h"
 #include "statusor.h"
@@ -45,11 +45,12 @@ class CoefficientPolynomial {
 
   // Constructor. The polynomial is initialized to the values of a vector.
   CoefficientPolynomial(std::vector<ModularInt> coeffs,
-                        ModularIntParams* modulus_params)
+                        const ModularIntParams* modulus_params)
       : coeffs_(std::move(coeffs)), modulus_params_(modulus_params) {}
 
   // Constructs an empty CoefficientPolynomial.
-  explicit CoefficientPolynomial(int len, ModularIntParams* modulus_params)
+  explicit CoefficientPolynomial(int len,
+                                 const ModularIntParams* modulus_params)
       : CoefficientPolynomial(std::vector<ModularInt>(
                                   len, ModularInt::ImportZero(modulus_params)),
                               modulus_params) {}
@@ -61,7 +62,7 @@ class CoefficientPolynomial {
   std::vector<ModularInt> Coeffs() const { return coeffs_; }
 
   // Accessor for Modulus Params.
-  ModularIntParams* ModulusParams() const { return modulus_params_; }
+  const ModularIntParams* ModulusParams() const { return modulus_params_; }
 
   // Compute the degree.
   int Degree() const {
@@ -248,7 +249,7 @@ class CoefficientPolynomial {
 
   static rlwe::StatusOr<CoefficientPolynomial> Deserialize(
       const SerializedCoefficientPolynomial& serialized,
-      ModularIntParams* modulus_params) {
+      const ModularIntParams* modulus_params) {
     CoefficientPolynomial output(serialized.num_coeffs(), modulus_params);
     RLWE_ASSIGN_OR_RETURN(
         output.coeffs_,
@@ -260,7 +261,7 @@ class CoefficientPolynomial {
 
  private:
   std::vector<ModularInt> coeffs_;
-  ModularIntParams* modulus_params_;
+  const ModularIntParams* modulus_params_;
 };
 
 }  // namespace rlwe::testing

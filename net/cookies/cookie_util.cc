@@ -75,27 +75,6 @@ bool SaturatedTimeFromUTCExploded(const base::Time::Exploded& exploded,
   return false;
 }
 
-CookieOptions::SameSiteCookieContext::CrossSchemeness ComputeSchemeChange(
-    const GURL& url,
-    const SiteForCookies& site_for_cookies) {
-
-  CookieOptions::SameSiteCookieContext::CrossSchemeness cross_schemeness =
-      CookieOptions::SameSiteCookieContext::CrossSchemeness::NONE;
-  bool url_secure = url.SchemeIsCryptographic();
-  bool site_for_cookies_secure =
-      GURL::SchemeIsCryptographic(site_for_cookies.scheme());
-
-  if (url_secure && !site_for_cookies_secure) {
-    cross_schemeness =
-        CookieOptions::SameSiteCookieContext::CrossSchemeness::INSECURE_SECURE;
-  } else if (!url_secure && site_for_cookies_secure) {
-    cross_schemeness =
-        CookieOptions::SameSiteCookieContext::CrossSchemeness::SECURE_INSECURE;
-  }
-
-  return cross_schemeness;
-}
-
 CookieOptions::SameSiteCookieContext ComputeSameSiteContext(
     const GURL& url,
     const SiteForCookies& site_for_cookies,
@@ -114,8 +93,7 @@ CookieOptions::SameSiteCookieContext ComputeSameSiteContext(
           CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX);
     }
   }
-  same_site_type.set_cross_schemeness(
-      ComputeSchemeChange(url, site_for_cookies));
+
   return same_site_type;
 }
 
@@ -467,8 +445,6 @@ CookieOptions::SameSiteCookieContext ComputeSameSiteContextForRequest(
   if (attach_same_site_cookies) {
     same_site_context.set_context(
         CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_STRICT);
-    same_site_context.set_cross_schemeness(
-        ComputeSchemeChange(url, site_for_cookies));
     return same_site_context;
   }
 
@@ -494,8 +470,6 @@ ComputeSameSiteContextForScriptGet(const GURL& url,
   if (attach_same_site_cookies) {
     CookieOptions::SameSiteCookieContext same_site_context(
         CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_STRICT);
-    same_site_context.set_cross_schemeness(
-        ComputeSchemeChange(url, site_for_cookies));
     return same_site_context;
   }
   return ComputeSameSiteContext(url, site_for_cookies, initiator);
@@ -516,8 +490,6 @@ CookieOptions::SameSiteCookieContext ComputeSameSiteContextForResponse(
     same_site_context.set_context(
         CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE);
   }
-  same_site_context.set_cross_schemeness(
-      ComputeSchemeChange(url, site_for_cookies));
   return same_site_context;
 }
 
@@ -533,8 +505,6 @@ CookieOptions::SameSiteCookieContext ComputeSameSiteContextForScriptSet(
     same_site_context.set_context(
         CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE);
   }
-  same_site_context.set_cross_schemeness(
-      ComputeSchemeChange(url, site_for_cookies));
   return same_site_context;
 }
 
@@ -552,8 +522,6 @@ CookieOptions::SameSiteCookieContext ComputeSameSiteContextForSubresource(
     same_site_context.set_context(
         CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE);
   }
-  same_site_context.set_cross_schemeness(
-      ComputeSchemeChange(url, site_for_cookies));
   return same_site_context;
 }
 

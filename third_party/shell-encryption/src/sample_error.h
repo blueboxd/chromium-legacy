@@ -43,7 +43,7 @@ namespace rlwe {
 template <typename ModularInt>
 static rlwe::StatusOr<std::vector<ModularInt>> SampleFromErrorDistribution(
     unsigned int num_coeffs, Uint64 variance, SecurePrng* prng,
-    typename ModularInt::Params* modulus_params) {
+    const typename ModularInt::Params* modulus_params) {
   if (variance > kMaxVariance) {
     return absl::InvalidArgumentError(absl::StrCat(
         "The variance, ", variance, ", must be at most ", kMaxVariance, "."));
@@ -54,48 +54,46 @@ static rlwe::StatusOr<std::vector<ModularInt>> SampleFromErrorDistribution(
   // Sample from the centered binomial distribution. To do so, we sample k pairs
   // of bits (a, b), where k = 2 * variance. The sample of the binomial
   // distribution is the sum of the differences between each pair of bits.
-
-  // This is implemented by splitting k in words k', drawing 2*k' bits, and
-  // computing the difference of Hamming weight between the first k' bits and
-  // the last k' bits, where
   Uint64 k;
-  Uint64 coefficient_positive, coefficient_negative;
+  typename ModularInt::Int coefficient;
 
   for (int i = 0; i < num_coeffs; i++) {
-    coefficient_positive = 0;
-    coefficient_negative = 0;
+    coefficient = modulus_params->modulus;
     k = variance << 1;
 
     while (k > 0) {
       if (k >= 64) {
-        // Use all the bits
+        // Use 64 bits of randomness
         RLWE_ASSIGN_OR_RETURN(auto r64, prng->Rand64());
-        coefficient_positive += rlwe::internal::CountOnes64(r64);
+        coefficient += rlwe::internal::CountOnes64(r64);
         RLWE_ASSIGN_OR_RETURN(r64, prng->Rand64());
-        coefficient_negative += rlwe::internal::CountOnes64(r64);
+        coefficient -= rlwe::internal::CountOnes64(r64);
         k -= 64;
-      } else if (k > 8) {
-        Uint64 mask = (1ULL << k) - 1;
-        RLWE_ASSIGN_OR_RETURN(auto r64, prng->Rand64());
-        coefficient_positive += rlwe::internal::CountOnes64(r64 & mask);
-        RLWE_ASSIGN_OR_RETURN(r64, prng->Rand64());
-        coefficient_negative += rlwe::internal::CountOnes64(r64 & mask);
-        k = 0;
+      } else if (k >= 8) {
+        // Use 8 bits of randomness
+        RLWE_ASSIGN_OR_RETURN(auto r8, prng->Rand8());
+        coefficient += rlwe::internal::CountOnesInByte(r8);
+        RLWE_ASSIGN_OR_RETURN(r8, prng->Rand8());
+        coefficient -= rlwe::internal::CountOnesInByte(r8);
+        k -= 8;
       } else {
         Uint8 mask = (1 << k) - 1;
         RLWE_ASSIGN_OR_RETURN(auto r8, prng->Rand8());
-        coefficient_positive += rlwe::internal::CountOnesInByte(r8 & mask);
+        coefficient += rlwe::internal::CountOnesInByte(r8 & mask);
         RLWE_ASSIGN_OR_RETURN(r8, prng->Rand8());
-        coefficient_negative += rlwe::internal::CountOnesInByte(r8 & mask);
-        k = 0;
+        coefficient -= rlwe::internal::CountOnesInByte(r8 & mask);
+        break;  // all k remaining pairs have been sampled.
       }
     }
 
-    RLWE_ASSIGN_OR_RETURN(
-        coeffs[i], ModularInt::ImportInt(coefficient_positive, modulus_params));
-    RLWE_ASSIGN_OR_RETURN(
-        auto v, ModularInt::ImportInt(coefficient_negative, modulus_params));
-    coeffs[i].SubInPlace(v, modulus_params);
+    // coefficient is in the interval [modulus - 2k, modulus + 2k]. We reduce
+    // it in [0, modulus). Since ModularInt::Int is unsigned, we create a mask
+    // equal to 0xFF...FF when coefficient >= modulus, and equal to 0 otherwise.
+    typename ModularInt::Int mask = -(coefficient >= modulus_params->modulus);
+    coefficient -= mask & modulus_params->modulus;
+
+    RLWE_ASSIGN_OR_RETURN(coeffs[i],
+                          ModularInt::ImportInt(coefficient, modulus_params));
   }
 
   return coeffs;

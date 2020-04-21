@@ -412,6 +412,11 @@
       <message name="IDS_UNREACHABLE_NAVIGATION_WARNING" desc="Warning message added to dev tools console when navigation to a given URL is unreachable.">
         Navigation is unreachable: <ph name="URL">%1$s<ex>intent://abcd</ex></ph>
       </message>
+
+      <!-- Page Info popup -->
+      <message name="IDS_PAGE_INFO_DOMAIN_HIDDEN" desc="Message to display in the page info bubble when the domain is hidden.">
+        This content is from <ph name="DOMAIN_NAME">%1$s<ex>google.com</ex></ph>, delivered by Google.
+      </message>
     </messages>
   </release>
 </grit>

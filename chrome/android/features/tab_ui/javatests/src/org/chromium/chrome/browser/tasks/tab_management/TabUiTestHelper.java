@@ -225,23 +225,44 @@ public class TabUiTestHelper {
     }
 
     /**
-     * Check whether there is a tab list showing in a {@link android.widget.PopupWindow}. This can
-     * be used for tab grid dialog and tab group popup UI.
+     * Check whether the tab list in {@link android.widget.PopupWindow} is completely showing. This
+     * can be used for tab grid dialog and tab group popup UI.
      * @param cta  The current running activity.
-     * @return Whether there is a tab list showing in a popup component.
+     * @return Whether the tab list in a popup component is completely showing.
      */
-    static boolean isShowingPopupTabList(ChromeTabbedActivity cta) {
+    static boolean isPopupTabListCompletelyShowing(ChromeTabbedActivity cta) {
         boolean isShowing = true;
         try {
             onView(withId(R.id.tab_list_view))
                     .inRoot(withDecorView(not(cta.getWindow().getDecorView())))
-                    .check(matches(isDisplayed()));
-        } catch (NoMatchingRootException e) {
+                    .check(matches(isCompletelyDisplayed()))
+                    .check((v, e) -> assertEquals(1f, v.getAlpha(), 0.0));
+        } catch (NoMatchingRootException | AssertionError e) {
             isShowing = false;
         } catch (Exception e) {
             assert false : "error when inspecting pop up tab list.";
         }
         return isShowing;
+    }
+
+    /**
+     * Check whether the tab list in {@link android.widget.PopupWindow} is completely hidden. This
+     * can be used for tab grid dialog and tab group popup UI.
+     * @param cta  The current running activity.
+     * @return Whether the tab list in a popup component is completely hidden.
+     */
+    static boolean isPopupTabListCompletelyHidden(ChromeTabbedActivity cta) {
+        boolean isHidden = false;
+        try {
+            onView(withId(R.id.tab_list_view))
+                    .inRoot(withDecorView(not(cta.getWindow().getDecorView())))
+                    .check(matches(isDisplayed()));
+        } catch (NoMatchingRootException e) {
+            isHidden = true;
+        } catch (Exception e) {
+            assert false : "error when inspecting pop up tab list.";
+        }
+        return isHidden;
     }
 
     /**

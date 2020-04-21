@@ -78,9 +78,6 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   String playState();
   base::Optional<double> currentTime();
   base::Optional<double> startTime();
-  // TODO(crbug.com/1060971): Remove |is_null| version.
-  double currentTime(bool& is_null);  // DEPRECATED
-  double startTime(bool& is_null);    // DEPRECATED
 
   double playbackRate(ScriptState* script_state) const;
   void setPlaybackRate(ScriptState* script_state, double playback_rate);

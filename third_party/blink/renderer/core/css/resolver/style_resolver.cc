@@ -117,8 +117,6 @@ void SetAnimationUpdateIfNeeded(StyleResolverState& state, Element& element) {
     auto& element_animations = element.EnsureElementAnimations();
     element_animations.CssAnimations().SetPendingUpdate(
         state.AnimationUpdate());
-    if (state.HasImportantOverrides())
-      element_animations.SetHasImportantOverrides();
   }
 }
 
@@ -771,13 +769,15 @@ void StyleResolver::LoadPendingResources(StyleResolverState& state) {
   state.GetElementStyleResources().LoadPendingResources(state.Style());
 }
 
-static const ComputedStyle* CachedAnimationBaseComputedStyle(
-    StyleResolverState& state) {
+static ElementAnimations* GetElementAnimations(StyleResolverState& state) {
   if (!state.GetAnimatingElement())
     return nullptr;
+  return state.GetAnimatingElement()->GetElementAnimations();
+}
 
-  ElementAnimations* element_animations =
-      state.GetAnimatingElement()->GetElementAnimations();
+static const ComputedStyle* CachedAnimationBaseComputedStyle(
+    StyleResolverState& state) {
+  ElementAnimations* element_animations = GetElementAnimations(state);
   if (!element_animations)
     return nullptr;
 
@@ -802,22 +802,43 @@ static const ComputedStyle* CachedAnimationBaseComputedStyle(
     }
   }
 
+  if (CSSAnimations::IsAnimatingStandardProperties(
+          element_animations, element_animations->BaseImportantSet(),
+          KeyframeEffect::kDefaultPriority)) {
+    state.SetHasImportantOverrides();
+    return nullptr;
+  }
+
   return element_animations->BaseComputedStyle();
 }
 
-static void UpdateAnimationBaseComputedStyle(StyleResolverState& state) {
+static void UpdateAnimationBaseComputedStyle(StyleResolverState& state,
+                                             StyleCascade* cascade) {
   if (!state.GetAnimatingElement())
     return;
 
   ElementAnimations* element_animations =
       state.GetAnimatingElement()->GetElementAnimations();
   if (element_animations) {
-    if (state.IsAnimatingCustomProperties() || state.IsAnimatingRevert() ||
+    std::unique_ptr<CSSBitset> important_set;
+    if (!element_animations->BaseComputedStyle()) {
+      important_set = (cascade ? cascade->GetImportantSet() : nullptr);
+      if (CSSAnimations::IsAnimatingStandardProperties(
+              element_animations, important_set.get(),
+              KeyframeEffect::kDefaultPriority)) {
+        state.SetHasImportantOverrides();
+      }
+    }
+
+    if (!element_animations->IsAnimationStyleChange() ||
+        state.IsAnimatingCustomProperties() || state.IsAnimatingRevert() ||
+        state.HasImportantOverrides() ||
         (state.HasFontAffectingAnimation() &&
          state.Style()->HasFontRelativeUnits())) {
       element_animations->ClearBaseComputedStyle();
     } else {
-      element_animations->UpdateBaseComputedStyle(state.Style());
+      element_animations->UpdateBaseComputedStyle(state.Style(),
+                                                  std::move(important_set));
     }
   }
 }
@@ -1001,7 +1022,7 @@ void StyleResolver::ApplyBaseComputedStyle(
       DCHECK(ValidateBaseComputedStyle(animation_base_computed_style,
                                        *state.Style()));
       if (!animation_base_computed_style)
-        UpdateAnimationBaseComputedStyle(state);
+        UpdateAnimationBaseComputedStyle(state, cascade);
     }
   }
 
@@ -1141,7 +1162,7 @@ bool StyleResolver::PseudoStyleForElementInternal(
                                      *state.Style()));
 
     if (!animation_base_computed_style)
-      UpdateAnimationBaseComputedStyle(state);
+      UpdateAnimationBaseComputedStyle(state, &cascade);
   }
 
   if (animation_base_computed_style) {

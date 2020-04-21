@@ -77,7 +77,6 @@ import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.feed.FeedProcessScopeFactory;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.flags.ActivityType;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
@@ -971,7 +970,11 @@ public class ChromeTabbedActivity
 
         // Don't call setInitialOverviewState if we're waiting for the tab's creation or we risk
         // showing a glimpse of the tab selector during start up.
-        if (!mPendingInitialTabCreation) setInitialOverviewState();
+        if (!mPendingInitialTabCreation
+                && !TabUiFeatureUtilities.supportStartSurfaceInInstantStart(
+                        isTablet(), mInactivityTracker.getLastBackgroundedTimeMs())) {
+            setInitialOverviewState();
+        }
 
         resetSavedInstanceState();
     }
@@ -1146,9 +1149,7 @@ public class ChromeTabbedActivity
                 mTabModelSelectorImpl.loadState(ignoreIncognitoFiles);
             }
 
-            mInactivityTracker = new ChromeInactivityTracker(
-                    ChromePreferenceKeys.TABBED_ACTIVITY_LAST_BACKGROUNDED_TIME_MS_PREF,
-                    this.getLifecycleDispatcher());
+            mInactivityTracker.register(this.getLifecycleDispatcher());
             mIntentWithEffect = false;
             if (getSavedInstanceState() == null && intent != null) {
                 if (!mIntentHandler.shouldIgnoreIntent(intent)) {
@@ -1227,7 +1228,11 @@ public class ChromeTabbedActivity
 
         // If we didn't call setInitialOverviewState() in startWithNative() because
         // mPendingInitialTabCreation was true then do so now.
-        if (hasStartWithNativeBeenCalled()) setInitialOverviewState();
+        if (hasStartWithNativeBeenCalled()
+                && !TabUiFeatureUtilities.supportStartSurfaceInInstantStart(
+                        isTablet(), mInactivityTracker.getLastBackgroundedTimeMs())) {
+            setInitialOverviewState();
+        }
     }
 
     @Override
@@ -1563,10 +1568,13 @@ public class ChromeTabbedActivity
         mUndoBarPopupController =
                 new UndoBarController(this, mTabModelSelectorImpl, this::getSnackbarManager);
 
+        mInactivityTracker = new ChromeInactivityTracker(
+                ChromePreferenceKeys.TABBED_ACTIVITY_LAST_BACKGROUNDED_TIME_MS_PREF);
+
         // When the feature flag {@link ChromeFeatureList.INSTANT_START} turns on phones (not
         // tablet), a view-only start page created on Java will be shown before native is
         // initialized.
-        if (CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START) && !isTablet()) {
+        if (TabUiFeatureUtilities.supportInstantStart(isTablet())) {
             prepareToShowStartPagePreNative();
         }
     }
@@ -1576,10 +1584,18 @@ public class ChromeTabbedActivity
      * an LayoutManagerChrome object, add overview mode observer and so on.
      */
     private void prepareToShowStartPagePreNative() {
-        setupCompositorContentPreNativeForPhone();
-        getCompositorViewHolder().setLayoutManager(mLayoutManager);
-        mLayoutManager.setTabModelSelector(mTabModelSelectorImpl);
-        addOverviewModeObserverPreNative();
+        try (TraceEvent e =
+                        TraceEvent.scoped("ChromeTabbedActivity.prepareToShowStartPagePreNative")) {
+            setupCompositorContentPreNativeForPhone();
+            getCompositorViewHolder().setLayoutManager(mLayoutManager);
+            mLayoutManager.setTabModelSelector(mTabModelSelectorImpl);
+            addOverviewModeObserverPreNative();
+
+            if (TabUiFeatureUtilities.supportStartSurfaceInInstantStart(
+                        isTablet(), mInactivityTracker.getLastBackgroundedTimeMs())) {
+                setInitialOverviewState();
+            }
+        }
     }
 
     @Override

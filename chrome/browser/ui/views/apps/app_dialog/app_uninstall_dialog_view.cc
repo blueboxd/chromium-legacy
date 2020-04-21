@@ -204,7 +204,7 @@ void AppUninstallDialogView::InitializeCheckbox(const GURL& app_launch_url) {
     offset = offsets[offsets.size() - 1];
   } else {
     auto domain = net::registry_controlled_domains::GetDomainAndRegistry(
-        app_launch_url.host_piece(),
+        app_launch_url,
         net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
     DCHECK(!domain.empty());
     domain[0] = base::ToUpperASCII(domain[0]);

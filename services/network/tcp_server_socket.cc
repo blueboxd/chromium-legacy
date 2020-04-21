@@ -123,8 +123,8 @@ void TCPServerSocket::ProcessNextAccept() {
     return;
   int result =
       socket_->Accept(&accepted_socket_,
-                      base::BindRepeating(&TCPServerSocket::OnAcceptCompleted,
-                                          base::Unretained(this)),
+                      base::BindOnce(&TCPServerSocket::OnAcceptCompleted,
+                                     base::Unretained(this)),
                       &accepted_address_);
   if (result == net::ERR_IO_PENDING)
     return;

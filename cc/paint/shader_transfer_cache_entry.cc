@@ -4,6 +4,8 @@
 
 #include "cc/paint/shader_transfer_cache_entry.h"
 
+#include "base/logging.h"
+
 namespace cc {
 
 ServiceShaderTransferCacheEntry::ServiceShaderTransferCacheEntry(

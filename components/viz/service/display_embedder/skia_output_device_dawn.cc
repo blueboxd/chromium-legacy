@@ -11,11 +11,10 @@
 #include "ui/gfx/vsync_provider.h"
 
 #if defined(OS_WIN)
-#include <dawn_native/D3D12Backend.h>
-
+#include "third_party/dawn/src/include/dawn_native/D3D12Backend.h"
 #include "ui/gl/vsync_provider_win.h"
 #elif defined(OS_LINUX)
-#include <dawn_native/VulkanBackend.h>
+#include "third_party/dawn/src/include/dawn_native/VulkanBackend.h"
 #endif
 
 namespace viz {

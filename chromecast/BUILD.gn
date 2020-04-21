@@ -486,7 +486,7 @@ cast_executable("cast_shell") {
     ":cast_shell_lib",
     ":chromecast_locales_pak",
     "//chromecast/app",
-    "//content/public/app:both",
+    "//content/public/app",
   ]
 }
 

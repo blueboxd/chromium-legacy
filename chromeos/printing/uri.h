@@ -10,6 +10,8 @@
 #include <utility>
 #include <vector>
 
+#include "chromeos/chromeos_export.h"
+
 namespace chromeos {
 
 // This is a simple URI builder/parser.
@@ -206,7 +208,7 @@ namespace chromeos {
 // Case-sensitive      : YES
 //
 
-class Uri {
+class CHROMEOS_EXPORT Uri {
  public:
   enum class ParserStatus {
     kNoErrors,
@@ -236,6 +238,8 @@ class Uri {
   struct ParserError {
     ParserStatus status = ParserStatus::kNoErrors;
     // The position in the input string where the parser error occurred.
+    // When an error occurred for %-escaped character, it is the position of
+    // the corresponding '%' sign.
     // If |status| == kNoErrors, then this value is undefined.
     size_t parsed_chars = 0;
     // This field is relevant only for the methods SetQuery(...),
@@ -361,7 +365,7 @@ class Uri {
   bool operator!=(const Uri& uri) const { return !(*this == uri); }
 
  private:
-  struct Pim;
+  class Pim;
   std::unique_ptr<Pim> pim_;
 };
 

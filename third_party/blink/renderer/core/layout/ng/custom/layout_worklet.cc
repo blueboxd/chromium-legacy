@@ -22,15 +22,15 @@ LayoutWorklet* LayoutWorklet::From(LocalDOMWindow& window) {
   LayoutWorklet* supplement =
       Supplement<LocalDOMWindow>::From<LayoutWorklet>(window);
   if (!supplement && window.GetFrame()) {
-    supplement = MakeGarbageCollected<LayoutWorklet>(window.GetFrame());
+    supplement = MakeGarbageCollected<LayoutWorklet>(window);
     ProvideTo(window, supplement);
   }
   return supplement;
 }
 
-LayoutWorklet::LayoutWorklet(LocalFrame* frame)
-    : Worklet(frame->GetDocument()),
-      Supplement<LocalDOMWindow>(*frame->DomWindow()),
+LayoutWorklet::LayoutWorklet(LocalDOMWindow& window)
+    : Worklet(window),
+      Supplement<LocalDOMWindow>(window),
       pending_layout_registry_(MakeGarbageCollected<PendingLayoutRegistry>()) {}
 
 LayoutWorklet::~LayoutWorklet() = default;

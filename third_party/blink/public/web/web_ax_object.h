@@ -45,6 +45,10 @@ namespace gfx {
 class Point;
 }
 
+namespace ui {
+struct AXNodeData;
+}
+
 namespace blink {
 
 class AXObject;
@@ -126,27 +130,24 @@ class WebAXObject {
   // that apply to this object.
   BLINK_EXPORT void GetSparseAXAttributes(WebAXSparseAttributeClient&) const;
 
+  // Serialize the properties of this node into |node_data|.
+  //
+  // TODO(crbug.com/1068668): AX onion soup - finish migrating
+  // BlinkAXTreeSource::SerializeNode into AXObject::Serialize and removing
+  // the unneeded WebAXObject interfaces below.
+  BLINK_EXPORT void Serialize(ui::AXNodeData* node_data) const;
+
   BLINK_EXPORT bool IsAnchor() const;
-  BLINK_EXPORT bool IsAutofillAvailable() const;
   BLINK_EXPORT ax::mojom::CheckedState CheckedState() const;
   BLINK_EXPORT bool IsCheckable() const;
   BLINK_EXPORT bool IsClickable() const;
   BLINK_EXPORT bool IsControl() const;
-  BLINK_EXPORT bool IsDefault() const;
-  BLINK_EXPORT WebAXExpanded IsExpanded() const;
   BLINK_EXPORT bool IsFocused() const;
-  BLINK_EXPORT WebAXGrabbedState IsGrabbed() const;
-  BLINK_EXPORT bool IsHovered() const;
   BLINK_EXPORT bool IsLineBreakingObject() const;
   BLINK_EXPORT bool IsLinked() const;
   BLINK_EXPORT bool IsModal() const;
-  BLINK_EXPORT bool IsMultiSelectable() const;
   BLINK_EXPORT bool IsOffScreen() const;
-  BLINK_EXPORT bool IsPasswordField() const;
-  BLINK_EXPORT bool IsRequired() const;
-  BLINK_EXPORT WebAXSelectedState IsSelected() const;
   BLINK_EXPORT bool IsSelectedOptionActive() const;
-  BLINK_EXPORT bool IsVisible() const;
   BLINK_EXPORT bool IsVisited() const;
 
   BLINK_EXPORT bool HasAriaAttribute() const;
@@ -154,7 +155,6 @@ class WebAXObject {
   BLINK_EXPORT unsigned BackgroundColor() const;
   BLINK_EXPORT bool CanPress() const;
   BLINK_EXPORT bool CanSetValueAttribute() const;
-  BLINK_EXPORT bool CanSetFocusAttribute() const;
   BLINK_EXPORT unsigned GetColor() const;
   // Deprecated.
   BLINK_EXPORT void ColorValue(int& r, int& g, int& b) const;
@@ -162,11 +162,8 @@ class WebAXObject {
   BLINK_EXPORT WebAXObject AriaActiveDescendant() const;
   BLINK_EXPORT WebString AutoComplete() const;
   BLINK_EXPORT ax::mojom::AriaCurrentState AriaCurrentState() const;
-  BLINK_EXPORT ax::mojom::HasPopup HasPopup() const;
   BLINK_EXPORT bool IsEditableRoot() const;
   BLINK_EXPORT bool IsEditable() const;
-  BLINK_EXPORT bool IsMultiline() const;
-  BLINK_EXPORT bool IsRichlyEditable() const;
   BLINK_EXPORT bool AriaOwns(WebVector<WebAXObject>& owns_elements) const;
   BLINK_EXPORT WebString FontFamily() const;
   BLINK_EXPORT float FontSize() const;
@@ -187,7 +184,6 @@ class WebAXObject {
   BLINK_EXPORT WebString KeyboardShortcut() const;
   BLINK_EXPORT WebString Language() const;
   BLINK_EXPORT WebAXObject InPageLinkTarget() const;
-  BLINK_EXPORT WebAXOrientation Orientation() const;
   BLINK_EXPORT WebVector<WebAXObject> RadioButtonsInGroup() const;
   BLINK_EXPORT ax::mojom::Role Role() const;
   BLINK_EXPORT WebString StringValue() const;

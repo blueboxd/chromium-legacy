@@ -38,8 +38,12 @@ void DidGetDisplays(
   for (display::mojom::blink::DisplayPtr& backend_display : backend_displays) {
     const bool internal = backend_display->id == internal_id;
     const bool primary = backend_display->id == primary_id;
+    // TODO(http://crbug.com/994889): Implement temporary, generated per-origin
+    // unique device IDs that reset when cookies are deleted. See related:
+    // web_bluetooth_device_id.h, unguessable_token.h, and uuid.h
+    const String id = String::NumberToStringECMAScript(screens.size());
     screens.emplace_back(MakeGarbageCollected<Screen>(
-        std::move(backend_display), internal, primary));
+        std::move(backend_display), internal, primary, id));
   }
   resolver->Resolve(std::move(screens));
 }

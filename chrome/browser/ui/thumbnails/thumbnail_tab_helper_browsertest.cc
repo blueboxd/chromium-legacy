@@ -35,6 +35,7 @@ class ThumbnailWaiter : public ThumbnailImage::Observer {
     DCHECK(!thumbnail_);
     thumbnail_ = thumbnail;
     scoped_observer_.Add(thumbnail);
+    thumbnail_->RequestThumbnailImage();
     run_loop_.Run();
     return image_;
   }
@@ -185,9 +186,6 @@ IN_PROC_BROWSER_TEST_F(
   AddSomeTabs(browser2, kTabCount - browser2->tab_strip_model()->count());
   EXPECT_EQ(kTabCount, browser2->tab_strip_model()->count());
   CloseBrowserSynchronously(browser2);
-
-  // Limit the number of restored tabs that are loaded.
-  TabLoaderTester::SetMaxLoadedTabCountForTesting(2);
 
   // When the tab loader is created configure it for this test. This ensures
   // that no more than 1 loading slot is used for the test.

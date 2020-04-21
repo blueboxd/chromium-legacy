@@ -509,6 +509,9 @@ def fyi_builder(
       execution_timeout = execution_timeout,
       goma_backend = goma_backend,
       mastername = 'chromium.fyi',
+      resultdb_bigquery_exports = [resultdb.export_test_results(
+          bq_table = 'luci-resultdb.chromium.ci_test_results',
+      )],
       **kwargs
   )
 

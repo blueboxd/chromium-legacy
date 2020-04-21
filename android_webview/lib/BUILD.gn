@@ -31,7 +31,7 @@ source_set("lib") {
     "//components/version_info",
     "//components/version_info/android:channel_getter",
     "//components/viz/common",
-    "//content/public/app:both",
+    "//content/public/app",
     "//content/public/browser",
     "//content/public/common",
     "//content/public/common:content_descriptor_keys",

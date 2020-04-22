@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_LOCAL_FRAME_CLIENT_H_
 
 #include <memory>
+#include <utility>
 
 #include "base/i18n/rtl.h"
 #include "base/optional.h"
@@ -76,6 +77,7 @@
 #include "third_party/blink/public/web/web_navigation_policy.h"
 #include "third_party/blink/public/web/web_navigation_type.h"
 #include "ui/accessibility/ax_enums.mojom-shared.h"
+#include "ui/accessibility/ax_event.h"
 #include "ui/events/types/scroll_types.h"
 #include "v8/include/v8.h"
 
@@ -599,15 +601,14 @@ class BLINK_EXPORT WebLocalFrameClient {
   // header. An empty string indicates that no DNT header will be send.
   virtual WebString DoNotTrackValue() { return WebString(); }
 
+  //
   // Accessibility -------------------------------------------------------
+  //
 
-  // Notifies embedder about an accessibility event on a target WebAXObject for
-  // the ax::mojom::Event type and ax::mojom::EventFrom source.
-  virtual void PostAccessibilityEvent(const WebAXObject&,
-                                      ax::mojom::Event,
-                                      ax::mojom::EventFrom) {}
+  // Notifies the embedder about an accessibility event on a WebAXObject.
+  virtual void PostAccessibilityEvent(const ui::AXEvent& event) {}
 
-  // Notifies embedder that a WebAXObject is dirty and its state needs
+  // Notifies the embedder that a WebAXObject is dirty and its state needs
   // to be serialized again. If |subtree| is true, the entire subtree is
   // dirty.
   virtual void MarkWebAXObjectDirty(const WebAXObject&, bool subtree) {}

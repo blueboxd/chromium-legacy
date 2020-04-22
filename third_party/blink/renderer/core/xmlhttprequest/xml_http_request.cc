@@ -1158,7 +1158,7 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
                                                    resource_loader_options);
   loader_->SetTimeout(timeout_);
   base::TimeTicks start_time = base::TimeTicks::Now();
-  loader_->Start(request);
+  loader_->Start(std::move(request));
 
   if (!async_) {
     base::TimeDelta blocking_time = base::TimeTicks::Now() - start_time;

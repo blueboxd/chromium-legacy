@@ -35,7 +35,7 @@ void ManifestFetcher::Start(Document& document,
 
   loader_ = MakeGarbageCollected<ThreadableLoader>(
       *document.ToExecutionContext(), this, resource_loader_options);
-  loader_->Start(request);
+  loader_->Start(std::move(request));
 }
 
 void ManifestFetcher::Cancel() {

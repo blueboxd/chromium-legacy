@@ -16,6 +16,7 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
+#include "ui/accessibility/ax_event.h"
 
 namespace content {
 class RenderViewImpl;
@@ -65,9 +66,7 @@ class WebFrameTestProxy : public content::RenderFrameImpl {
   void DidDispatchPingLoader(const blink::WebURL& url) override;
   void WillSendRequest(blink::WebURLRequest& request) override;
   void BeginNavigation(std::unique_ptr<blink::WebNavigationInfo> info) override;
-  void PostAccessibilityEvent(const blink::WebAXObject& object,
-                              ax::mojom::Event event,
-                              ax::mojom::EventFrom event_from) override;
+  void PostAccessibilityEvent(const ui::AXEvent& event) override;
   void MarkWebAXObjectDirty(const blink::WebAXObject& object,
                             bool subtree) override;
   void CheckIfAudioSinkExistsAndIsAuthorized(

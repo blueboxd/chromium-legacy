@@ -7,11 +7,16 @@
 
 #import "ios/chrome/browser/ui/settings/privacy/cookies_consumer.h"
 
+@class TableViewItem;
+
 // Commands related to the Cookies state.
 @protocol PrivacyCookiesCommands
 
 // Updates Cookies settings with the given item type.
 - (void)selectedCookiesSettingType:(CookiesSettingType)settingType;
+
+// Deletes the site exception corresponding to the given TableViewItem.
+- (void)deleteSiteExceptionWithItem:(TableViewItem*)item;
 
 @end
 

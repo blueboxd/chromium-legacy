@@ -102,6 +102,8 @@ class UI_ANDROID_EXPORT WindowAndroid : public ViewAndroid {
   // See comment on WindowAndroid.getWindowIsWideColorGamut for details.
   display::Display GetDisplayWithWindowColorSpace();
 
+  void SetWideColorEnabled(bool enabled);
+
   void SetForce60HzRefreshRate();
 
   bool ApplyDisableSurfaceControlWorkaround();

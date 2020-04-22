@@ -88,25 +88,6 @@ TEST_F(PropertyRegistryTest, DeclareTwice) {
   EXPECT_EQ(declared2, Registration("--x"));
 }
 
-TEST_F(PropertyRegistryTest, RegistrationCount) {
-  EXPECT_EQ(0u, Registry()->RegistrationCount());
-
-  RegisterProperty("--a");
-  EXPECT_EQ(1u, Registry()->RegistrationCount());
-
-  RegisterProperty("--b");
-  EXPECT_EQ(2u, Registry()->RegistrationCount());
-
-  DeclareProperty("--a");
-  EXPECT_EQ(2u, Registry()->RegistrationCount());
-
-  DeclareProperty("--a");
-  EXPECT_EQ(2u, Registry()->RegistrationCount());
-
-  DeclareProperty("--c");
-  EXPECT_EQ(3u, Registry()->RegistrationCount());
-}
-
 TEST_F(PropertyRegistryTest, IsInRegisteredPropertySet) {
   EXPECT_FALSE(Registry()->IsInRegisteredPropertySet("--x"));
 
@@ -207,6 +188,37 @@ TEST_F(PropertyRegistryTest, IterateFullOverlapMulti) {
   EXPECT_FALSE(registrations.Contains(reg2));
   EXPECT_TRUE(registrations.Contains(reg3));
   EXPECT_TRUE(registrations.Contains(reg4));
+}
+
+TEST_F(PropertyRegistryTest, IsEmptyUntilRegisterProperty) {
+  EXPECT_TRUE(Registry()->IsEmpty());
+  RegisterProperty("--x");
+  EXPECT_FALSE(Registry()->IsEmpty());
+}
+
+TEST_F(PropertyRegistryTest, IsEmptyUntilDeclareProperty) {
+  EXPECT_TRUE(Registry()->IsEmpty());
+  DeclareProperty("--x");
+  EXPECT_FALSE(Registry()->IsEmpty());
+}
+
+TEST_F(PropertyRegistryTest, Version) {
+  EXPECT_EQ(0u, Registry()->Version());
+
+  RegisterProperty("--a");
+  EXPECT_EQ(1u, Registry()->Version());
+
+  RegisterProperty("--b");
+  EXPECT_EQ(2u, Registry()->Version());
+
+  DeclareProperty("--c");
+  EXPECT_EQ(3u, Registry()->Version());
+
+  DeclareProperty("--c");
+  EXPECT_EQ(4u, Registry()->Version());
+
+  DeclareProperty("--d");
+  EXPECT_EQ(5u, Registry()->Version());
 }
 
 }  // namespace blink

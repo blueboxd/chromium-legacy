@@ -157,7 +157,7 @@ void EventSource::Connect() {
   probe::WillSendEventSourceRequest(&execution_context);
   loader_ = MakeGarbageCollected<ThreadableLoader>(execution_context, this,
                                                    resource_loader_options);
-  loader_->Start(request);
+  loader_->Start(std::move(request));
 }
 
 void EventSource::NetworkRequestEnded() {

@@ -199,6 +199,12 @@ class CompositorImpl::AndroidHostDisplayClient : public viz::HostDisplayClient {
   void OnContextCreationResult(gpu::ContextResult context_result) override {
     compositor_->OnContextCreationResult(context_result);
   }
+  void SetWideColorEnabled(bool enabled) override {
+    // TODO(cblume): Add support for multiple compositors.
+    // If one goes wide, all should go wide.
+    if (compositor_->root_window_)
+      compositor_->root_window_->SetWideColorEnabled(enabled);
+  }
   void SetPreferredRefreshRate(float refresh_rate) override {
     if (compositor_->root_window_)
       compositor_->root_window_->SetPreferredRefreshRate(refresh_rate);

@@ -30,10 +30,9 @@
 // The visible URL of the page.
 @property(nonatomic, readonly) const GURL& visibleURL;
 
-// NSURL versions of 'shareURL' and 'passwordManagerURL'. Use only for passing
+// NSURL version of 'shareURL'. Use only for passing
 // to libraries that take NSURL.
 @property(nonatomic, readonly) NSURL* shareNSURL;
-@property(nonatomic, readonly) NSURL* passwordManagerNSURL;
 
 // Title to be shared (not nil).
 @property(nonatomic, readonly, copy) NSString* title;

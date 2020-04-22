@@ -5,6 +5,7 @@
 #include "content/shell/test_runner/web_frame_test_client.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
@@ -30,6 +31,7 @@
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/web/web_console_message.h"
+#include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_element.h"
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
@@ -153,12 +155,9 @@ std::string WebFrameTestClient::GetFrameDescription(
   return std::string("frame \"") + name + "\"";
 }
 
-void WebFrameTestClient::PostAccessibilityEvent(
-    const blink::WebAXObject& obj,
-    ax::mojom::Event event,
-    ax::mojom::EventFrom event_from) {
+void WebFrameTestClient::PostAccessibilityEvent(const ui::AXEvent& event) {
   const char* event_name = nullptr;
-  switch (event) {
+  switch (event.event_type) {
     case ax::mojom::Event::kActiveDescendantChanged:
       event_name = "ActiveDescendantChanged";
       break;
@@ -245,7 +244,10 @@ void WebFrameTestClient::PostAccessibilityEvent(
       break;
   }
 
-  HandleWebAccessibilityEvent(obj, event_name);
+  blink::WebDocument document =
+      web_frame_test_proxy_->GetWebFrame()->GetDocument();
+  auto object = blink::WebAXObject::FromWebDocumentByID(document, event.id);
+  HandleWebAccessibilityEvent(object, event_name);
 }
 
 void WebFrameTestClient::MarkWebAXObjectDirty(const blink::WebAXObject& obj,

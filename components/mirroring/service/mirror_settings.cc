@@ -6,6 +6,8 @@
 
 #include <algorithm>
 
+#include "base/command_line.h"
+#include "base/strings/string_number_conversions.h"
 #include "media/base/audio_parameters.h"
 
 using media::ResolutionChangePolicy;
@@ -17,20 +19,21 @@ namespace mirroring {
 
 namespace {
 
-// Starting end-to-end latency for animated content.
-constexpr base::TimeDelta kAnimatedPlayoutDelay =
+// Default end-to-end latency value
+constexpr base::TimeDelta kDefaultPlayoutDelay =
     base::TimeDelta::FromMilliseconds(400);
 
+// Starting end-to-end latency for animated content.
+constexpr base::TimeDelta kAnimatedPlayoutDelay = kDefaultPlayoutDelay;
+
 // Minimum end-to-end latency.
-constexpr base::TimeDelta kMinPlayoutDelay =
-    base::TimeDelta::FromMilliseconds(400);
+constexpr base::TimeDelta kMinPlayoutDelay = kDefaultPlayoutDelay;
 
 // Maximum end-to-end latency.  Currently, this is kMinPlayoutDelay, effectively
 // disabling adaptive latency control, because of audio playout regressions
 // (b/32876644).
 // TODO(openscreen/44): Re-enable in port to Open Screen.
-constexpr base::TimeDelta kMaxPlayoutDelay =
-    base::TimeDelta::FromMilliseconds(400);
+constexpr base::TimeDelta kMaxPlayoutDelay = kDefaultPlayoutDelay;
 
 constexpr int kAudioTimebase = 48000;
 constexpr int kVidoTimebase = 90000;
@@ -44,6 +47,34 @@ constexpr int kMaxWidth = 1920;    // Maximum video width in pixels.
 constexpr int kMaxHeight = 1080;   // Maximum video height in pixels.
 constexpr int kMinWidth = 180;     // Minimum video frame width in pixels.
 constexpr int kMinHeight = 180;    // Minimum video frame height in pixels.
+
+base::TimeDelta GetPlayoutDelayFromCommandLine() {
+  // Currently max and min playout delay are the same.
+  constexpr base::TimeDelta kDefaultPlayoutDelay = kMaxPlayoutDelay;
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+
+  constexpr char kPlayoutDelaySwitch[] = "mirroring-playout-delay";
+  if (!command_line->HasSwitch(kPlayoutDelaySwitch)) {
+    return kDefaultPlayoutDelay;
+  }
+
+  const std::string playout_delay_arg =
+      command_line->GetSwitchValueASCII(kPlayoutDelaySwitch);
+  if (playout_delay_arg.empty()) {
+    return kDefaultPlayoutDelay;
+  }
+
+  int playout_delay;
+  if (!base::StringToInt(playout_delay_arg, &playout_delay)) {
+    return kDefaultPlayoutDelay;
+  }
+  return base::TimeDelta::FromMilliseconds(playout_delay);
+}
+
+base::TimeDelta GetPlayoutDelay() {
+  static base::TimeDelta playout_delay = GetPlayoutDelayFromCommandLine();
+  return playout_delay;
+}
 
 }  // namespace
 
@@ -62,9 +93,9 @@ FrameSenderConfig MirrorSettings::GetDefaultAudioConfig(
   FrameSenderConfig config;
   config.sender_ssrc = 1;
   config.receiver_ssrc = 2;
-  config.min_playout_delay = kMinPlayoutDelay;
-  config.max_playout_delay = kMaxPlayoutDelay;
-  config.animated_playout_delay = kAnimatedPlayoutDelay;
+  config.min_playout_delay = GetPlayoutDelay();
+  config.max_playout_delay = GetPlayoutDelay();
+  config.animated_playout_delay = GetPlayoutDelay();
   config.rtp_payload_type = payload_type;
   config.rtp_timebase = kAudioTimebase;
   config.channels = kAudioChannels;
@@ -82,8 +113,8 @@ FrameSenderConfig MirrorSettings::GetDefaultVideoConfig(
   FrameSenderConfig config;
   config.sender_ssrc = 11;
   config.receiver_ssrc = 12;
-  config.min_playout_delay = kMinPlayoutDelay;
-  config.max_playout_delay = kMaxPlayoutDelay;
+  config.min_playout_delay = GetPlayoutDelay();
+  config.max_playout_delay = GetPlayoutDelay();
   config.animated_playout_delay = kAnimatedPlayoutDelay;
   config.rtp_payload_type = payload_type;
   config.rtp_timebase = kVidoTimebase;

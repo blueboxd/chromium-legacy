@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.app.flags;
 
+import android.text.TextUtils;
+
+import org.chromium.base.annotations.RemovableInRelease;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.firstrun.FirstRunUtils;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
@@ -16,6 +19,7 @@ import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarVariationManager;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -84,6 +88,7 @@ public class ChromeCachedFlags {
                 TabUiFeatureUtilities.TAB_GRID_LAYOUT_ANDROID_NEW_TAB_TILE,
                 TabUiFeatureUtilities.THUMBNAIL_ASPECT_RATIO);
         // clang-format on
+        tryToCatchMissingParameters(fieldTrialsToCache);
         CachedFeatureFlags.cacheFieldTrialParameters(fieldTrialsToCache);
 
         // TODO(crbug.com/1062013): Remove this after M85.
@@ -96,6 +101,22 @@ public class ChromeCachedFlags {
                 ChromePreferenceKeys.START_SURFACE_SINGLE_PANE_ENABLED_KEY);
 
         mIsFinishedCachingNativeFlags = true;
+    }
+
+    @RemovableInRelease
+    private void tryToCatchMissingParameters(List<CachedFieldTrialParameter> listed) {
+        // All instances of CachedFieldTrialParameter should be manually passed to
+        // CachedFeatureFlags.cacheFieldTrialParameters(). The following checking is a best-effort
+        // attempt to try to catch accidental omissions. It cannot replace the list because some
+        // instances might not be instantiated if the classes they belong to are not accessed yet.
+        List<String> omissions = new ArrayList<>();
+        for (CachedFieldTrialParameter trial : CachedFieldTrialParameter.getAllInstances()) {
+            if (listed.contains(trial)) continue;
+            omissions.add(trial.getFeatureName() + ":" + trial.getParameterName());
+        }
+        assert omissions.isEmpty()
+            : "The following trials are not correctly cached: "
+                + TextUtils.join(", ", omissions);
     }
 
     /**

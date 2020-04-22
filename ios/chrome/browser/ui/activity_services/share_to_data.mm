@@ -23,13 +23,6 @@
 
 @implementation ShareToData
 
-@synthesize title = _title;
-@synthesize thumbnailGenerator = _thumbnailGenerator;
-@synthesize isOriginalTitle = _isOriginalTitle;
-@synthesize isPagePrintable = _isPagePrintable;
-@synthesize isPageSearchable = _isPageSearchable;
-@synthesize userAgent = _userAgent;
-
 - (id)initWithShareURL:(const GURL&)shareURL
             visibleURL:(const GURL&)visibleURL
                  title:(NSString*)title
@@ -66,10 +59,6 @@
 
 - (NSURL*)shareNSURL {
   return net::NSURLWithGURL(_shareURL);
-}
-
-- (NSURL*)passwordManagerNSURL {
-  return net::NSURLWithGURL(_visibleURL);
 }
 
 @end

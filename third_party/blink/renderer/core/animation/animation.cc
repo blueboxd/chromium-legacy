@@ -270,13 +270,12 @@ Document* Animation::GetDocument() const {
 }
 
 base::Optional<double> Animation::TimelineTime() const {
-  return timeline_ ? timeline_->CurrentTime() : base::nullopt;
+  return timeline_ ? timeline_->currentTime() : base::nullopt;
 }
 
 // https://drafts.csswg.org/web-animations/#setting-the-current-time-of-an-animation.
-void Animation::setCurrentTimeForBinding(
-    base::Optional<double> new_current_time,
-    ExceptionState& exception_state) {
+void Animation::setCurrentTime(base::Optional<double> new_current_time,
+                               ExceptionState& exception_state) {
   // TODO(crbug.com/924159): Update this after we add support for inactive
   // timelines and unresolved timeline.currentTime
   if (!new_current_time) {
@@ -309,20 +308,9 @@ void Animation::setCurrentTimeForBinding(
   NotifyProbe();
 }
 
-void Animation::setCurrentTimeForBinding(double new_current_time,
-                                         bool is_null,
-                                         ExceptionState& exception_state) {
-  setCurrentTimeForBinding(
-      is_null ? base::nullopt : base::make_optional(new_current_time),
-      exception_state);
-}
-
-void Animation::setCurrentTime(double new_current_time,
-                               bool is_null,
-                               ExceptionState& exception_state) {
-  setCurrentTimeForBinding(
-      is_null ? base::nullopt : base::make_optional(new_current_time),
-      exception_state);
+void Animation::setCurrentTime(base::Optional<double> new_current_time) {
+  NonThrowableExceptionState exception_state;
+  setCurrentTime(new_current_time, exception_state);
 }
 
 // https://drafts.csswg.org/web-animations/#setting-the-current-time-of-an-animation
@@ -359,14 +347,8 @@ base::Optional<double> Animation::startTime() const {
              : base::nullopt;
 }
 
-double Animation::startTime(bool& is_null) const {
-  base::Optional<double> result = startTime();
-  is_null = !result;
-  return result.value_or(0);
-}
-
 // https://drafts.csswg.org/web-animations/#the-current-time-of-an-animation
-base::Optional<double> Animation::currentTimeForBinding() const {
+base::Optional<double> Animation::currentTime() const {
   // 1. If the animation’s hold time is resolved,
   //    The current time is the animation’s hold time.
   if (hold_time_.has_value())
@@ -391,22 +373,6 @@ base::Optional<double> Animation::currentTimeForBinding() const {
   double current_time =
       (timeline_time.value() - start_time_.value()) * playback_rate_;
   return SecondsToMilliseconds(current_time);
-}
-
-double Animation::currentTimeForBinding(bool& is_null) {
-  base::Optional<double> result = currentTimeForBinding();
-  is_null = !result;
-  return result.value_or(0);
-}
-
-double Animation::currentTime() const {
-  return currentTimeForBinding().value_or(Timing::NullValue());
-}
-
-double Animation::currentTime(bool& is_null) {
-  base::Optional<double> result = currentTimeForBinding();
-  is_null = !result;
-  return result.value_or(0);
 }
 
 base::Optional<double> Animation::CurrentTimeInternal() const {
@@ -797,11 +763,9 @@ void Animation::setStartTime(base::Optional<double> start_time_ms,
   NotifyProbe();
 }
 
-void Animation::setStartTime(double start_time_ms,
-                             bool is_null,
-                             ExceptionState& exception_state) {
-  setStartTime(is_null ? base::nullopt : base::make_optional(start_time_ms),
-               exception_state);
+void Animation::setStartTime(base::Optional<double> start_time_ms) {
+  NonThrowableExceptionState exception_state;
+  setStartTime(start_time_ms, exception_state);
 }
 
 // https://drafts.csswg.org/web-animations-1/#setting-the-associated-effect
@@ -1575,10 +1539,10 @@ void Animation::setPlaybackRate(double playback_rate,
   // 4. If previous time is resolved, set the current time of animation to
   //    previous time
   pending_playback_rate_ = base::nullopt;
-  double previous_current_time = currentTime();
+  double previous_current_time = currentTime().value_or(Timing::NullValue());
   playback_rate_ = playback_rate;
   if (!Timing::IsNull(previous_current_time)) {
-    setCurrentTime(previous_current_time, false, exception_state);
+    setCurrentTime(previous_current_time, exception_state);
   }
 
   // Adds a UseCounter to check if setting playbackRate causes a compensatory
@@ -1808,7 +1772,7 @@ bool Animation::Update(TimingUpdateReason reason) {
     UpdateFinishedState(UpdateType::kContinuous, NotificationType::kAsync);
 
   if (content_) {
-    base::Optional<double> inherited_time = idle || !timeline_->CurrentTime()
+    base::Optional<double> inherited_time = idle || !timeline_->currentTime()
                                                 ? base::nullopt
                                                 : CurrentTimeInternal();
 

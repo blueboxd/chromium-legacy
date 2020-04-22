@@ -151,6 +151,8 @@ class CORE_EXPORT FrameSelection final
   // layout.
   VisibleSelection ComputeVisibleSelectionInDOMTreeDeprecated() const;
 
+  bool HasActiveSelectionCaret();
+
   void SetSelection(const SelectionInDOMTree&, const SetSelectionOptions&);
   void SetSelectionAndEndTyping(const SelectionInDOMTree&);
   void SelectAll(SetSelectionBy);

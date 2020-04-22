@@ -435,7 +435,10 @@ export class Camera extends View {
         try {
           if (deviceOperator !== null) {
             assert(deviceId !== null);
-            await deviceOperator.setFpsRange(deviceId, constraints);
+            const optConfigs =
+                mode === Mode.VIDEO ? {} : {stillCaptureResolution: captureR};
+            await deviceOperator.setStreamConfig(
+                deviceId, constraints, optConfigs);
             await deviceOperator.setCaptureIntent(
                 deviceId, this.modes_.getCaptureIntent(mode));
           }

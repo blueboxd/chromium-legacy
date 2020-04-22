@@ -94,7 +94,7 @@ class AnimationAnimationTestNoCompositing : public RenderingTest {
     timeline = GetDocument().Timeline();
     timeline->ResetForTesting();
     animation = timeline->Play(nullptr);
-    animation->setStartTime(0, false);
+    animation->setStartTime(0);
     animation->setEffect(MakeAnimation());
   }
 
@@ -253,7 +253,7 @@ TEST_F(AnimationAnimationTestNoCompositing, InitialState) {
   EXPECT_TRUE(animation->pending());
   EXPECT_FALSE(animation->Paused());
   EXPECT_EQ(1, animation->playbackRate());
-  EXPECT_FALSE(animation->startTime());
+  EXPECT_FALSE(animation->startTime().has_value());
 
   StartTimeline();
   EXPECT_EQ("finished", animation->playState());
@@ -280,7 +280,7 @@ TEST_F(AnimationAnimationTestNoCompositing, CurrentTimeDoesNotSetOutdated) {
 
 TEST_F(AnimationAnimationTestNoCompositing, SetCurrentTime) {
   EXPECT_EQ("running", animation->playState());
-  animation->setCurrentTime(10000, false);
+  animation->setCurrentTime(10000);
   EXPECT_EQ("running", animation->playState());
   EXPECT_EQ(10000, animation->currentTime());
 
@@ -290,14 +290,14 @@ TEST_F(AnimationAnimationTestNoCompositing, SetCurrentTime) {
 }
 
 TEST_F(AnimationAnimationTestNoCompositing, SetCurrentTimeNegative) {
-  animation->setCurrentTime(-10000, false);
+  animation->setCurrentTime(-10000);
   EXPECT_EQ("running", animation->playState());
   EXPECT_EQ(-10000, animation->currentTime());
 
   SimulateFrame(20000);
   EXPECT_EQ(10000, animation->currentTime());
   animation->setPlaybackRate(-2);
-  animation->setCurrentTime(-10000, false);
+  animation->setCurrentTime(-10000);
   EXPECT_EQ("finished", animation->playState());
   // A seek can set current time outside the range [0, EffectEnd()].
   EXPECT_EQ(-10000, animation->currentTime());
@@ -325,12 +325,12 @@ TEST_F(AnimationAnimationTestNoCompositing,
   EXPECT_EQ(10000, animation->currentTime());
   EXPECT_EQ("running", animation->playState());
 
-  animation->setCurrentTime(-10000, false);
+  animation->setCurrentTime(-10000);
   EXPECT_EQ("finished", animation->playState());
 }
 
 TEST_F(AnimationAnimationTestNoCompositing, SetCurrentTimePastContentEnd) {
-  animation->setCurrentTime(50000, false);
+  animation->setCurrentTime(50000);
   EXPECT_EQ("finished", animation->playState());
   EXPECT_EQ(50000, animation->currentTime());
 
@@ -340,7 +340,7 @@ TEST_F(AnimationAnimationTestNoCompositing, SetCurrentTimePastContentEnd) {
   // Reversing the play direction changes the play state from finished to
   // running.
   animation->setPlaybackRate(-2);
-  animation->setCurrentTime(50000, false);
+  animation->setCurrentTime(50000);
   EXPECT_EQ("running", animation->playState());
   EXPECT_EQ(50000, animation->currentTime());
   SimulateAwaitReady();
@@ -352,16 +352,16 @@ TEST_F(AnimationAnimationTestNoCompositing, SetCurrentTimePastContentEnd) {
 
 TEST_F(AnimationAnimationTestNoCompositing, SetCurrentTimeMax) {
   double limit = std::numeric_limits<double>::max();
-  animation->setCurrentTime(limit, false);
-  ExpectRelativeErrorWithinEpsilon(limit, animation->currentTime());
+  animation->setCurrentTime(limit);
+  ExpectRelativeErrorWithinEpsilon(limit, animation->currentTime().value());
 
   SimulateFrame(100000);
-  ExpectRelativeErrorWithinEpsilon(limit, animation->currentTime());
+  ExpectRelativeErrorWithinEpsilon(limit, animation->currentTime().value());
 }
 
 TEST_F(AnimationAnimationTestNoCompositing, SetCurrentTimeSetsStartTime) {
   EXPECT_EQ(0, animation->startTime());
-  animation->setCurrentTime(1000, false);
+  animation->setCurrentTime(1000);
   EXPECT_EQ(-1000, animation->startTime());
 
   SimulateFrame(1000);
@@ -374,7 +374,7 @@ TEST_F(AnimationAnimationTestNoCompositing, SetStartTime) {
   EXPECT_EQ("running", animation->playState());
   EXPECT_EQ(0, animation->startTime());
   EXPECT_EQ(20000, animation->currentTime());
-  animation->setStartTime(10000, false);
+  animation->setStartTime(10000);
   EXPECT_EQ("running", animation->playState());
   EXPECT_EQ(10000, animation->startTime());
   EXPECT_EQ(10000, animation->currentTime());
@@ -382,20 +382,20 @@ TEST_F(AnimationAnimationTestNoCompositing, SetStartTime) {
   SimulateFrame(30000);
   EXPECT_EQ(10000, animation->startTime());
   EXPECT_EQ(20000, animation->currentTime());
-  animation->setStartTime(-20000, false);
+  animation->setStartTime(-20000);
   EXPECT_EQ("finished", animation->playState());
 }
 
 TEST_F(AnimationAnimationTestNoCompositing, SetStartTimeLimitsAnimation) {
   // Setting the start time is a seek operation, which is not constrained by the
   // normal limits on the animation.
-  animation->setStartTime(-50000, false);
+  animation->setStartTime(-50000);
   EXPECT_EQ("finished", animation->playState());
   EXPECT_TRUE(animation->Limited());
   EXPECT_EQ(50000, animation->currentTime());
   animation->setPlaybackRate(-1);
   EXPECT_EQ("running", animation->playState());
-  animation->setStartTime(-100000, false);
+  animation->setStartTime(-100000);
   EXPECT_EQ("finished", animation->playState());
   EXPECT_EQ(-100000, animation->currentTime());
   EXPECT_TRUE(animation->Limited());
@@ -405,14 +405,14 @@ TEST_F(AnimationAnimationTestNoCompositing, SetStartTimeOnLimitedAnimation) {
   // The setStartTime method is a seek and thus not constrained by the normal
   // limits on the animation.
   SimulateFrame(30000);
-  animation->setStartTime(-10000, false);
+  animation->setStartTime(-10000);
   EXPECT_EQ("finished", animation->playState());
   EXPECT_EQ(40000, animation->currentTime());
   EXPECT_TRUE(animation->Limited());
 
-  animation->setCurrentTime(50000, false);
+  animation->setCurrentTime(50000);
   EXPECT_EQ(50000, animation->currentTime());
-  animation->setStartTime(-40000, false);
+  animation->setStartTime(-40000);
   EXPECT_EQ(70000, animation->currentTime());
   EXPECT_EQ("finished", animation->playState());
   EXPECT_TRUE(animation->Limited());
@@ -425,7 +425,7 @@ TEST_F(AnimationAnimationTestNoCompositing, StartTimePauseFinish) {
   EXPECT_TRUE(animation->pending());
   SimulateAwaitReady();
   EXPECT_FALSE(animation->pending());
-  EXPECT_FALSE(animation->startTime());
+  EXPECT_FALSE(animation->startTime().has_value());
   animation->finish(exception_state);
   EXPECT_EQ("finished", animation->playState());
   EXPECT_FALSE(animation->pending());
@@ -454,14 +454,14 @@ TEST_F(AnimationAnimationTestNoCompositing, StartTimeFinishPause) {
   EXPECT_TRUE(animation->pending());
   SimulateAwaitReady();
   EXPECT_FALSE(animation->pending());
-  EXPECT_FALSE(animation->startTime());
+  EXPECT_FALSE(animation->startTime().has_value());
 }
 
 TEST_F(AnimationAnimationTestNoCompositing, StartTimeWithZeroPlaybackRate) {
   animation->setPlaybackRate(0);
   EXPECT_EQ("running", animation->playState());
   SimulateAwaitReady();
-  EXPECT_TRUE(animation->startTime());
+  EXPECT_TRUE(animation->startTime().has_value());
 
   SimulateFrame(10000);
   EXPECT_EQ("running", animation->playState());
@@ -494,12 +494,12 @@ TEST_F(AnimationAnimationTestNoCompositing, PausePlay) {
 
 TEST_F(AnimationAnimationTestNoCompositing, PlayRewindsToStart) {
   // Auto-replay when starting from limit.
-  animation->setCurrentTime(30000, false);
+  animation->setCurrentTime(30000);
   animation->play();
   EXPECT_EQ(0, animation->currentTime());
 
   // Auto-replay when starting past the upper bound.
-  animation->setCurrentTime(40000, false);
+  animation->setCurrentTime(40000);
   animation->play();
   EXPECT_EQ(0, animation->currentTime());
   EXPECT_EQ("running", animation->playState());
@@ -509,7 +509,7 @@ TEST_F(AnimationAnimationTestNoCompositing, PlayRewindsToStart) {
   // from a negative value of current time.
   SimulateFrame(10000);
   EXPECT_FALSE(animation->pending());
-  animation->setCurrentTime(-10000, false);
+  animation->setCurrentTime(-10000);
   EXPECT_EQ("running", animation->playState());
   EXPECT_FALSE(animation->pending());
   animation->play();
@@ -528,7 +528,7 @@ TEST_F(AnimationAnimationTestNoCompositing, PlayRewindsToEnd) {
   EXPECT_EQ(30000, animation->currentTime());
 
   // Snap to end if playing a reversed animation starting past the upper limit.
-  animation->setCurrentTime(40000, false);
+  animation->setCurrentTime(40000);
   EXPECT_EQ("running", animation->playState());
   EXPECT_TRUE(animation->pending());
   animation->play();
@@ -541,7 +541,7 @@ TEST_F(AnimationAnimationTestNoCompositing, PlayRewindsToEnd) {
 
   // Snap to the end if playing a reversed animation starting with a negative
   // value for current time.
-  animation->setCurrentTime(-10000, false);
+  animation->setCurrentTime(-10000);
   animation->play();
   EXPECT_EQ(30000, animation->currentTime());
   EXPECT_EQ("running", animation->playState());
@@ -560,11 +560,11 @@ TEST_F(AnimationAnimationTestNoCompositing,
   animation->play();
   EXPECT_EQ(0, animation->currentTime());
 
-  animation->setCurrentTime(40000, false);
+  animation->setCurrentTime(40000);
   animation->play();
   EXPECT_EQ(40000, animation->currentTime());
 
-  animation->setCurrentTime(-10000, false);
+  animation->setCurrentTime(-10000);
   animation->play();
   EXPECT_EQ(-10000, animation->currentTime());
 }
@@ -582,7 +582,7 @@ TEST_F(AnimationAnimationTestNoCompositing,
 }
 
 TEST_F(AnimationAnimationTestNoCompositing, Reverse) {
-  animation->setCurrentTime(10000, false);
+  animation->setCurrentTime(10000);
   animation->pause();
   animation->reverse();
   EXPECT_EQ("running", animation->playState());
@@ -599,7 +599,7 @@ TEST_F(AnimationAnimationTestNoCompositing, Reverse) {
 
 TEST_F(AnimationAnimationTestNoCompositing,
        ReverseHoldsCurrentTimeWithPlaybackRateZero) {
-  animation->setCurrentTime(10000, false);
+  animation->setCurrentTime(10000);
   animation->setPlaybackRate(0);
   animation->pause();
   animation->reverse();
@@ -613,27 +613,27 @@ TEST_F(AnimationAnimationTestNoCompositing,
 }
 
 TEST_F(AnimationAnimationTestNoCompositing, ReverseSeeksToStart) {
-  animation->setCurrentTime(-10000, false);
+  animation->setCurrentTime(-10000);
   animation->setPlaybackRate(-1);
   animation->reverse();
   EXPECT_EQ(0, animation->currentTime());
 }
 
 TEST_F(AnimationAnimationTestNoCompositing, ReverseSeeksToEnd) {
-  animation->setCurrentTime(40000, false);
+  animation->setCurrentTime(40000);
   animation->reverse();
   EXPECT_EQ(30000, animation->currentTime());
 }
 
 TEST_F(AnimationAnimationTestNoCompositing, ReverseBeyondLimit) {
-  animation->setCurrentTime(40000, false);
+  animation->setCurrentTime(40000);
   animation->setPlaybackRate(-1);
   animation->reverse();
   EXPECT_EQ("running", animation->playState());
   EXPECT_TRUE(animation->pending());
   EXPECT_EQ(0, animation->currentTime());
 
-  animation->setCurrentTime(-10000, false);
+  animation->setCurrentTime(-10000);
   animation->reverse();
   EXPECT_EQ("running", animation->playState());
   EXPECT_TRUE(animation->pending());
@@ -659,7 +659,7 @@ TEST_F(AnimationAnimationTestNoCompositing, Finish) {
 TEST_F(AnimationAnimationTestNoCompositing, FinishAfterEffectEnd) {
   NonThrowableExceptionState exception_state;
   // OK to set current time out of bounds.
-  animation->setCurrentTime(40000, false);
+  animation->setCurrentTime(40000);
   animation->finish(exception_state);
   // The finish method triggers a snap to the upper boundary.
   EXPECT_EQ(30000, animation->currentTime());
@@ -667,7 +667,7 @@ TEST_F(AnimationAnimationTestNoCompositing, FinishAfterEffectEnd) {
 
 TEST_F(AnimationAnimationTestNoCompositing, FinishBeforeStart) {
   NonThrowableExceptionState exception_state;
-  animation->setCurrentTime(-10000, false);
+  animation->setCurrentTime(-10000);
   animation->setPlaybackRate(-1);
   animation->finish(exception_state);
   EXPECT_EQ(0, animation->currentTime());
@@ -677,7 +677,7 @@ TEST_F(AnimationAnimationTestNoCompositing,
        FinishDoesNothingWithPlaybackRateZero) {
   // Cannot finish an animation that has a playback rate of zero.
   DummyExceptionStateForTesting exception_state;
-  animation->setCurrentTime(10000, false);
+  animation->setCurrentTime(10000);
   animation->setPlaybackRate(0);
   animation->finish(exception_state);
   EXPECT_EQ(10000, animation->currentTime());
@@ -692,7 +692,7 @@ TEST_F(AnimationAnimationTestNoCompositing, FinishRaisesException) {
   timing.iteration_count = std::numeric_limits<double>::infinity();
   animation->setEffect(MakeGarbageCollected<KeyframeEffect>(
       nullptr, MakeEmptyEffectModel(), timing));
-  animation->setCurrentTime(10000, false);
+  animation->setCurrentTime(10000);
 
   DummyExceptionStateForTesting exception_state;
   animation->finish(exception_state);
@@ -788,7 +788,7 @@ TEST_F(AnimationAnimationTestNoCompositing, SetPlaybackRateZero) {
 
   SimulateFrame(20000);
   EXPECT_EQ(10000, animation->currentTime());
-  animation->setCurrentTime(20000, false);
+  animation->setCurrentTime(20000);
   EXPECT_EQ(20000, animation->currentTime());
 }
 
@@ -862,13 +862,13 @@ TEST_F(AnimationAnimationTestNoCompositing, UpdatePlaybackRateWhileRunning) {
 
 TEST_F(AnimationAnimationTestNoCompositing, SetEffect) {
   animation = timeline->Play(nullptr);
-  animation->setStartTime(0, false);
+  animation->setStartTime(0);
   AnimationEffect* effect1 = MakeAnimation();
   AnimationEffect* effect2 = MakeAnimation();
   animation->setEffect(effect1);
   EXPECT_EQ(effect1, animation->effect());
   EXPECT_EQ(0, animation->currentTime());
-  animation->setCurrentTime(15000, false);
+  animation->setCurrentTime(15000);
   animation->setEffect(effect2);
   EXPECT_EQ(15000, animation->currentTime());
   EXPECT_EQ(nullptr, effect1->GetAnimationForTesting());
@@ -877,7 +877,7 @@ TEST_F(AnimationAnimationTestNoCompositing, SetEffect) {
 }
 
 TEST_F(AnimationAnimationTestNoCompositing, SetEffectLimitsAnimation) {
-  animation->setCurrentTime(20000, false);
+  animation->setCurrentTime(20000);
   animation->setEffect(MakeAnimation(10));
   EXPECT_EQ(20000, animation->currentTime());
   EXPECT_TRUE(animation->Limited());
@@ -886,7 +886,7 @@ TEST_F(AnimationAnimationTestNoCompositing, SetEffectLimitsAnimation) {
 }
 
 TEST_F(AnimationAnimationTestNoCompositing, SetEffectUnlimitsAnimation) {
-  animation->setCurrentTime(40000, false);
+  animation->setCurrentTime(40000);
   animation->setEffect(MakeAnimation(60));
   EXPECT_FALSE(animation->Limited());
   EXPECT_EQ(40000, animation->currentTime());
@@ -919,7 +919,7 @@ TEST_F(AnimationAnimationTestNoCompositing, AnimationsReturnTimeToNextEffect) {
   auto* keyframe_effect = MakeGarbageCollected<KeyframeEffect>(
       nullptr, MakeEmptyEffectModel(), timing);
   animation = timeline->Play(keyframe_effect);
-  animation->setStartTime(0, false);
+  animation->setStartTime(0);
 
   // Next effect change at end of start delay.
   SimulateFrame(0);
@@ -949,7 +949,7 @@ TEST_F(AnimationAnimationTestNoCompositing, AnimationsReturnTimeToNextEffect) {
   EXPECT_EQ(base::nullopt, animation->TimeToEffectChange());
 
   // Reset to start of animation. Next effect at the end of the start delay.
-  animation->setCurrentTime(0, false);
+  animation->setCurrentTime(0);
   SimulateFrame(3000);
   EXPECT_EQ(AnimationTimeDelta::FromSecondsD(1),
             animation->TimeToEffectChange());
@@ -966,7 +966,7 @@ TEST_F(AnimationAnimationTestNoCompositing, AnimationsReturnTimeToNextEffect) {
   EXPECT_EQ(base::nullopt, animation->TimeToEffectChange());
 
   // Reversed animation from end time. Next effect after end delay.
-  animation->setCurrentTime(3000, false);
+  animation->setCurrentTime(3000);
   animation->setPlaybackRate(-1);
   animation->Update(kTimingUpdateOnDemand);
   SimulateFrame(3000);
@@ -995,7 +995,7 @@ TEST_F(AnimationAnimationTestNoCompositing, TimeToNextEffectWhenPaused) {
 TEST_F(AnimationAnimationTestNoCompositing,
        TimeToNextEffectWhenCancelledBeforeStart) {
   EXPECT_EQ(AnimationTimeDelta(), animation->TimeToEffectChange());
-  animation->setCurrentTime(-8000, false);
+  animation->setCurrentTime(-8000);
   animation->setPlaybackRate(2);
   EXPECT_EQ("running", animation->playState());
   animation->cancel();
@@ -1010,7 +1010,7 @@ TEST_F(AnimationAnimationTestNoCompositing,
 TEST_F(AnimationAnimationTestNoCompositing,
        TimeToNextEffectWhenCancelledBeforeStartReverse) {
   EXPECT_EQ(AnimationTimeDelta(), animation->TimeToEffectChange());
-  animation->setCurrentTime(9000, false);
+  animation->setCurrentTime(9000);
   animation->setPlaybackRate(-3);
   EXPECT_EQ("running", animation->playState());
   animation->cancel();
@@ -1058,13 +1058,13 @@ TEST_F(AnimationAnimationTestNoCompositing, HasLowerCompositeOrdering) {
 TEST_F(AnimationAnimationTestNoCompositing, PlayAfterCancel) {
   animation->cancel();
   EXPECT_EQ("idle", animation->playState());
-  EXPECT_TRUE(std::isnan(animation->currentTime()));
-  EXPECT_FALSE(animation->startTime());
+  EXPECT_FALSE(animation->currentTime().has_value());
+  EXPECT_FALSE(animation->startTime().has_value());
   animation->play();
   EXPECT_EQ("running", animation->playState());
   EXPECT_TRUE(animation->pending());
   EXPECT_EQ(0, animation->currentTime());
-  EXPECT_FALSE(animation->startTime());
+  EXPECT_FALSE(animation->startTime().has_value());
   SimulateAwaitReady();
   EXPECT_FALSE(animation->pending());
   EXPECT_EQ(0, animation->currentTime());
@@ -1078,19 +1078,19 @@ TEST_F(AnimationAnimationTestNoCompositing, PlayAfterCancel) {
 
 TEST_F(AnimationAnimationTestNoCompositing, PlayBackwardsAfterCancel) {
   animation->setPlaybackRate(-1);
-  animation->setCurrentTime(15000, false);
+  animation->setCurrentTime(15000);
   animation->cancel();
   EXPECT_EQ("idle", animation->playState());
   EXPECT_FALSE(animation->pending());
-  EXPECT_TRUE(std::isnan(animation->currentTime()));
-  EXPECT_FALSE(animation->startTime());
+  EXPECT_FALSE(animation->currentTime().has_value());
+  EXPECT_FALSE(animation->startTime().has_value());
 
   // Snap to the end of the animation.
   animation->play();
   EXPECT_EQ("running", animation->playState());
   EXPECT_TRUE(animation->pending());
   EXPECT_EQ(30000, animation->currentTime());
-  EXPECT_FALSE(animation->startTime());
+  EXPECT_FALSE(animation->startTime().has_value());
   SimulateAwaitReady();
   EXPECT_FALSE(animation->pending());
   EXPECT_EQ(30000, animation->startTime());
@@ -1105,15 +1105,15 @@ TEST_F(AnimationAnimationTestNoCompositing, ReverseAfterCancel) {
   animation->cancel();
   EXPECT_EQ("idle", animation->playState());
   EXPECT_FALSE(animation->pending());
-  EXPECT_TRUE(std::isnan(animation->currentTime()));
-  EXPECT_FALSE(animation->startTime());
+  EXPECT_FALSE(animation->currentTime().has_value());
+  EXPECT_FALSE(animation->startTime().has_value());
 
   // Reverse snaps to the end of the animation.
   animation->reverse();
   EXPECT_EQ("running", animation->playState());
   EXPECT_TRUE(animation->pending());
   EXPECT_EQ(30000, animation->currentTime());
-  EXPECT_FALSE(animation->startTime());
+  EXPECT_FALSE(animation->startTime().has_value());
   SimulateAwaitReady();
   EXPECT_FALSE(animation->pending());
   EXPECT_EQ(30000, animation->startTime());
@@ -1128,8 +1128,8 @@ TEST_F(AnimationAnimationTestNoCompositing, FinishAfterCancel) {
   NonThrowableExceptionState exception_state;
   animation->cancel();
   EXPECT_EQ("idle", animation->playState());
-  EXPECT_TRUE(std::isnan(animation->currentTime()));
-  EXPECT_FALSE(animation->startTime());
+  EXPECT_FALSE(animation->currentTime().has_value());
+  EXPECT_FALSE(animation->startTime().has_value());
 
   animation->finish(exception_state);
   EXPECT_EQ("finished", animation->playState());
@@ -1140,17 +1140,17 @@ TEST_F(AnimationAnimationTestNoCompositing, FinishAfterCancel) {
 TEST_F(AnimationAnimationTestNoCompositing, PauseAfterCancel) {
   animation->cancel();
   EXPECT_EQ("idle", animation->playState());
-  EXPECT_TRUE(std::isnan(animation->currentTime()));
-  EXPECT_FALSE(animation->startTime());
+  EXPECT_FALSE(animation->currentTime().has_value());
+  EXPECT_FALSE(animation->startTime().has_value());
   animation->pause();
   EXPECT_EQ("paused", animation->playState());
   EXPECT_TRUE(animation->pending());
   EXPECT_EQ(0, animation->currentTime());
-  EXPECT_FALSE(animation->startTime());
+  EXPECT_FALSE(animation->startTime().has_value());
   SimulateAwaitReady();
   EXPECT_FALSE(animation->pending());
   EXPECT_EQ(0, animation->currentTime());
-  EXPECT_FALSE(animation->startTime());
+  EXPECT_FALSE(animation->startTime().has_value());
 }
 
 // crbug.com/1052217
@@ -1433,33 +1433,25 @@ TEST_F(AnimationAnimationTestNoCompositing, ScrollLinkedAnimationCreation) {
       Animation::Create(MakeAnimation(), scroll_timeline, exception_state);
 
   // Verify start and current times in Idle state.
-  bool is_null;
-  scroll_animation->startTime(is_null);
-  EXPECT_TRUE(is_null);
-  scroll_animation->currentTime(is_null);
-  EXPECT_TRUE(is_null);
+  EXPECT_FALSE(scroll_animation->startTime().has_value());
+  EXPECT_FALSE(scroll_animation->currentTime().has_value());
 
   scroll_animation->play();
 
   // Verify start and current times in Pending state.
-  scroll_animation->startTime(is_null);
-  EXPECT_TRUE(is_null);
-  EXPECT_EQ(20, scroll_animation->currentTime(is_null));
-  EXPECT_FALSE(is_null);
+  EXPECT_FALSE(scroll_animation->startTime().has_value());
+  EXPECT_EQ(20, scroll_animation->currentTime());
 
   UpdateAllLifecyclePhasesForTest();
   // Verify start and current times in Playing state.
-  EXPECT_EQ(0, scroll_animation->startTime(is_null));
-  EXPECT_FALSE(is_null);
-  EXPECT_EQ(20, scroll_animation->currentTime(is_null));
-  EXPECT_FALSE(is_null);
+  EXPECT_EQ(0, scroll_animation->startTime());
+  EXPECT_EQ(20, scroll_animation->currentTime());
 
   // Verify current time after scroll.
   scrollable_area->SetScrollOffset(ScrollOffset(0, 40),
                                    mojom::blink::ScrollType::kProgrammatic);
   SimulateFrameForScrollAnimations();
-  EXPECT_EQ(40, scroll_animation->currentTime(is_null));
-  EXPECT_FALSE(is_null);
+  EXPECT_EQ(40, scroll_animation->currentTime());
 }
 
 TEST_F(AnimationAnimationTestNoCompositing,
@@ -1491,7 +1483,7 @@ TEST_F(AnimationAnimationTestNoCompositing,
   EXPECT_TRUE(animation->Update(kTimingUpdateForAnimationFrame));
 
   // Asynchronous completion.
-  animation->setCurrentTime(50000, false);
+  animation->setCurrentTime(50000);
   EXPECT_EQ("finished", animation->playState());
   EXPECT_FALSE(animation->Update(kTimingUpdateForAnimationFrame));
 }
@@ -1511,7 +1503,7 @@ TEST_F(AnimationAnimationTestNoCompositing,
   EXPECT_TRUE(animation->HasPendingActivity());
 
   // Resolving the finished promise clears the pending activity.
-  animation->setCurrentTime(50000, false);
+  animation->setCurrentTime(50000);
   EXPECT_EQ("finished", animation->playState());
   SimulateMicrotask();
   EXPECT_FALSE(animation->Update(kTimingUpdateForAnimationFrame));
@@ -1562,7 +1554,7 @@ TEST_F(AnimationAnimationTestNoCompositing,
   EXPECT_TRUE(animation->HasPendingActivity());
 
   // Finishing the animation asynchronously clears the pending activity.
-  animation->setCurrentTime(50000, false);
+  animation->setCurrentTime(50000);
   EXPECT_EQ("finished", animation->playState());
   SimulateMicrotask();
   EXPECT_FALSE(animation->Update(kTimingUpdateForAnimationFrame));

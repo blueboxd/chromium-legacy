@@ -21,7 +21,6 @@
 #include "components/send_tab_to_self/target_device_info.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/passwords/password_form_filler.h"
 #include "ios/chrome/browser/policy/policy_features.h"
 #import "ios/chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
 #include "ios/chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
@@ -34,9 +33,7 @@
 #import "ios/chrome/browser/ui/activity_services/activities/request_desktop_or_mobile_site_activity.h"
 #import "ios/chrome/browser/ui/activity_services/activities/send_tab_to_self_activity.h"
 #import "ios/chrome/browser/ui/activity_services/activity_type_util.h"
-#import "ios/chrome/browser/ui/activity_services/appex_constants.h"
 #import "ios/chrome/browser/ui/activity_services/chrome_activity_item_source.h"
-#import "ios/chrome/browser/ui/activity_services/requirements/activity_service_password.h"
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_positioner.h"
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_presentation.h"
 #import "ios/chrome/browser/ui/activity_services/share_to_data.h"
@@ -69,7 +66,6 @@ bool IsEditBookmarksEnabledInPrefs(PrefService* prefs) {
 }  // namespace
 
 @interface ActivityServiceController () {
-  __weak id<ActivityServicePassword> _passwordProvider;
   __weak id<ActivityServicePresentation> _presentationProvider;
   UIActivityViewController* _activityViewController;
   __weak id<SnackbarCommands> _dispatcher;
@@ -94,12 +90,6 @@ bool IsEditBookmarksEnabledInPrefs(PrefService* prefs) {
                                      QRGenerationCommands>)commandHandler
                    bookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
                 canSendTabToSelf:(BOOL)canSendTabToSelf;
-// Processes |extensionItems| returned from App Extension invocation returning
-// the |activityType|. Calls shareDelegate_ with the processed returned items
-// and |result| of activity. Returns whether caller should reset UI.
-- (BOOL)processItemsReturnedFromActivity:(NSString*)activityType
-                                  status:(ShareTo::ShareResult)result
-                                   items:(NSArray*)extensionItems;
 @end
 
 @implementation ActivityServiceController
@@ -147,7 +137,6 @@ bool IsEditBookmarksEnabledInPrefs(PrefService* prefs) {
                              FindInPageCommands,
                              QRGenerationCommands,
                              SnackbarCommands>)dispatcher
-        passwordProvider:(id<ActivityServicePassword>)passwordProvider
         positionProvider:(id<ActivityServicePositioner>)positionProvider
     presentationProvider:(id<ActivityServicePresentation>)presentationProvider {
   DCHECK(data);
@@ -164,9 +153,7 @@ bool IsEditBookmarksEnabledInPrefs(PrefService* prefs) {
     DCHECK(inView);
   }
 
-  DCHECK(!_passwordProvider);
   DCHECK(!_presentationProvider);
-  _passwordProvider = passwordProvider;
   _presentationProvider = presentationProvider;
 
   _dispatcher = dispatcher;
@@ -222,7 +209,6 @@ bool IsEditBookmarksEnabledInPrefs(PrefService* prefs) {
 #pragma mark - Private
 
 - (void)resetUserInterface {
-  _passwordProvider = nil;
   _presentationProvider = nil;
   _activityViewController = nil;
 }
@@ -231,55 +217,34 @@ bool IsEditBookmarksEnabledInPrefs(PrefService* prefs) {
                             completed:(BOOL)completed
                         returnedItems:(NSArray*)returnedItems
                                 error:(NSError*)activityError {
-  DCHECK(_passwordProvider);
   DCHECK(_presentationProvider);
 
-  BOOL shouldResetUI = YES;
   if (activityType) {
     ShareTo::ShareResult shareResult = completed
                                            ? ShareTo::ShareResult::SHARE_SUCCESS
                                            : ShareTo::ShareResult::SHARE_CANCEL;
-    if (activity_type_util::TypeFromString(activityType) ==
-        activity_type_util::APPEX_PASSWORD_MANAGEMENT) {
-      // A compatible Password Management App Extension was invoked.
-      shouldResetUI = [self processItemsReturnedFromActivity:activityType
-                                                      status:shareResult
-                                                       items:returnedItems];
-    } else {
-      activity_type_util::ActivityType type =
-          activity_type_util::TypeFromString(activityType);
-      activity_type_util::RecordMetricForActivity(type);
-      NSString* completionMessage =
-          activity_type_util::CompletionMessageForActivity(type);
-      [self shareDidComplete:shareResult completionMessage:completionMessage];
-    }
+    activity_type_util::ActivityType type =
+        activity_type_util::TypeFromString(activityType);
+    activity_type_util::RecordMetricForActivity(type);
+    NSString* completionMessage =
+        activity_type_util::CompletionMessageForActivity(type);
+    [self shareDidComplete:shareResult completionMessage:completionMessage];
   } else {
     [self shareDidComplete:ShareTo::ShareResult::SHARE_CANCEL
          completionMessage:nil];
   }
-  if (shouldResetUI)
-    [self resetUserInterface];
+
+  [self resetUserInterface];
 }
 
 - (NSArray*)activityItemsForData:(ShareToData*)data {
-  NSMutableArray* activityItems = [NSMutableArray array];
-  // ShareToData object guarantees that there is a sharedNSURL and
-  // passwordManagerNSURL.
-  DCHECK(data.shareNSURL);
-  DCHECK(data.passwordManagerNSURL);
-
-  // In order to support find-login-action protocol, the provider object
-  // UIActivityURLSource supports both Password Management App Extensions
-  // (e.g. 1Password) and also provide a public.url UTType for Share Extensions
-  // (e.g. Facebook, Twitter).
-  UIActivityURLSource* loginActionProvider =
+  // The provider object UIActivityURLSource supports the public.url UTType for
+  // Share Extensions (e.g. Facebook, Twitter).
+  UIActivityURLSource* urlActivitySource =
       [[UIActivityURLSource alloc] initWithShareURL:data.shareNSURL
-                                 passwordManagerURL:data.passwordManagerNSURL
                                             subject:data.title
                                  thumbnailGenerator:data.thumbnailGenerator];
-  [activityItems addObject:loginActionProvider];
-
-  return activityItems;
+  return @[ urlActivitySource ];
 }
 
 - (NSString*)sendTabToSelfContextMenuTitleForDevice:(NSString*)device_name
@@ -364,104 +329,6 @@ bool IsEditBookmarksEnabledInPrefs(PrefService* prefs) {
   return applicationActivities;
 }
 
-- (BOOL)processItemsReturnedFromActivity:(NSString*)activityType
-                                  status:(ShareTo::ShareResult)result
-                                   items:(NSArray*)extensionItems {
-  NSItemProvider* itemProvider = nil;
-  if ([extensionItems count] > 0) {
-    // Based on calling convention described in
-    // https://github.com/AgileBits/onepassword-app-extension/blob/master/OnePasswordExtension.m
-    // the username/password is always in the first element of the returned
-    // item.
-    NSExtensionItem* extensionItem = extensionItems[0];
-    // Checks that there is at least one attachment and that the attachment
-    // is a property list which can be converted into a NSDictionary object.
-    // If not, early return.
-    if (extensionItem.attachments.count > 0) {
-      itemProvider = [extensionItem.attachments objectAtIndex:0];
-      if (![itemProvider
-              hasItemConformingToTypeIdentifier:(NSString*)kUTTypePropertyList])
-        itemProvider = nil;
-    }
-  }
-  if (!itemProvider) {
-    // The didFinish method must still be called on incorrect |extensionItems|.
-    [self passwordAppExDidFinish:ShareTo::ShareResult::SHARE_ERROR
-                        username:nil
-                        password:nil
-               completionMessage:nil];
-    return YES;
-  }
-
-  // |completionHandler| is the block that will be executed once the
-  // property list has been loaded from the attachment.
-  void (^completionHandler)(id, NSError*) = ^(id item, NSError* error) {
-    ShareTo::ShareResult activityResult = result;
-    NSString* username = nil;
-    NSString* password = nil;
-    NSString* message = nil;
-    NSDictionary* loginDictionary = base::mac::ObjCCast<NSDictionary>(item);
-    if (error || !loginDictionary) {
-      activityResult = ShareTo::ShareResult::SHARE_ERROR;
-    } else {
-      username = loginDictionary[activity_services::kPasswordAppExUsernameKey];
-      password = loginDictionary[activity_services::kPasswordAppExPasswordKey];
-      activity_type_util::ActivityType type =
-          activity_type_util::TypeFromString(activityType);
-      activity_type_util::RecordMetricForActivity(type);
-      message = activity_type_util::CompletionMessageForActivity(type);
-    }
-    // Password autofill uses JavaScript injection which must be executed on
-    // the main thread, however,
-    // loadItemForTypeIdentifier:options:completionHandler: documentation states
-    // that completion block "may  be executed on a background thread", so the
-    // code to do password filling must be re-dispatched back to main thread.
-    // Completion block intentionally retains |self|.
-    dispatch_async(dispatch_get_main_queue(), ^{
-      [self passwordAppExDidFinish:activityResult
-                          username:username
-                          password:password
-                 completionMessage:message];
-      // Controller state can be reset only after delegate has
-      // processed the item returned from the App Extension.
-      [self resetUserInterface];
-    });
-  };
-  [itemProvider loadItemForTypeIdentifier:(NSString*)kUTTypePropertyList
-                                  options:nil
-                        completionHandler:completionHandler];
-  return NO;
-}
-
-- (void)passwordAppExDidFinish:(ShareTo::ShareResult)shareStatus
-                      username:(NSString*)username
-                      password:(NSString*)password
-             completionMessage:(NSString*)message {
-  switch (shareStatus) {
-    case ShareTo::SHARE_SUCCESS: {
-      __weak ActivityServiceController* weakSelf = self;
-      // Flag to limit user feedback after form filled to just once.
-      __block BOOL shown = NO;
-      id<PasswordFormFiller> passwordFormFiller =
-          [_passwordProvider currentPasswordFormFiller];
-      [passwordFormFiller findAndFillPasswordForms:username
-                                          password:password
-                                 completionHandler:^(BOOL completed) {
-                                   if (shown || !completed || ![message length])
-                                     return;
-                                   [weakSelf shareDidComplete:shareStatus
-                                            completionMessage:message];
-                                   shown = YES;
-                                 }];
-      break;
-    }
-    default:
-      [self shareDidComplete:ShareTo::SHARE_UNKNOWN_RESULT
-           completionMessage:nil];
-      break;
-  }
-}
-
 - (void)shareDidComplete:(ShareTo::ShareResult)shareStatus
        completionMessage:(NSString*)message {
   switch (shareStatus) {
@@ -513,10 +380,8 @@ bool IsEditBookmarksEnabledInPrefs(PrefService* prefs) {
 
 #pragma mark - For Testing
 
-- (void)setProvidersForTesting:
-            (id<ActivityServicePassword, ActivityServicePresentation>)provider
+- (void)setProvidersForTesting:(id<ActivityServicePresentation>)provider
                     dispatcher:(id<SnackbarCommands>)dispatcher {
-  _passwordProvider = provider;
   _presentationProvider = provider;
   _dispatcher = dispatcher;
 }

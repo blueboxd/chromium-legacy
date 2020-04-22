@@ -128,7 +128,7 @@ void WorkerClassicScriptLoader::LoadSynchronously(
   threadable_loader_ = MakeGarbageCollected<ThreadableLoader>(
       execution_context, this, resource_loader_options,
       fetch_client_settings_object_fetcher);
-  threadable_loader_->Start(request);
+  threadable_loader_->Start(std::move(request));
 }
 
 void WorkerClassicScriptLoader::LoadTopLevelScriptAsynchronously(
@@ -175,7 +175,7 @@ void WorkerClassicScriptLoader::LoadTopLevelScriptAsynchronously(
   threadable_loader_ = MakeGarbageCollected<ThreadableLoader>(
       execution_context, this, resource_loader_options,
       fetch_client_settings_object_fetcher);
-  threadable_loader_->Start(request);
+  threadable_loader_->Start(std::move(request));
   if (failed_)
     NotifyFinished();
 }

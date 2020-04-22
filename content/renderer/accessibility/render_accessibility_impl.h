@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_ACCESSIBILITY_RENDER_ACCESSIBILITY_IMPL_H_
 #define CONTENT_RENDERER_ACCESSIBILITY_RENDER_ACCESSIBILITY_IMPL_H_
 
+#include <memory>
 #include <unordered_map>
 #include <vector>
 
@@ -21,6 +22,7 @@
 #include "third_party/blink/public/mojom/renderer_preference_watcher.mojom.h"
 #include "third_party/blink/public/web/web_ax_context.h"
 #include "third_party/blink/public/web/web_ax_object.h"
+#include "ui/accessibility/ax_event.h"
 #include "ui/accessibility/ax_relative_bounds.h"
 #include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_serializer.h"
@@ -132,16 +134,10 @@ class CONTENT_EXPORT RenderAccessibilityImpl
   void NotifyUpdate(blink::mojom::RendererPreferencesPtr new_prefs) override;
 
   // Called when an accessibility notification occurs in Blink.
-  void HandleWebAccessibilityEvent(const blink::WebAXObject& obj,
-                                   ax::mojom::Event event,
-                                   ax::mojom::EventFrom event_from);
+  void HandleWebAccessibilityEvent(const ui::AXEvent& event);
   void MarkWebAXObjectDirty(const blink::WebAXObject& obj, bool subtree);
 
-  void HandleAXEvent(
-      const blink::WebAXObject& obj,
-      ax::mojom::Event event,
-      ax::mojom::EventFrom event_from = ax::mojom::EventFrom::kNone,
-      int action_request_id = -1);
+  void HandleAXEvent(const ui::AXEvent& event);
 
   // Returns the main top-level document for this page, or NULL if there's
   // no view or frame.

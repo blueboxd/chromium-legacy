@@ -775,7 +775,7 @@ void FetchManager::Loader::PerformHTTPFetch(ExceptionState& exception_state) {
 
   threadable_loader_ = MakeGarbageCollected<ThreadableLoader>(
       *execution_context_, this, resource_loader_options);
-  threadable_loader_->Start(request);
+  threadable_loader_->Start(std::move(request));
 }
 
 // performDataFetch() is almost the same as performHTTPFetch(), except for:
@@ -803,7 +803,7 @@ void FetchManager::Loader::PerformDataFetch() {
 
   threadable_loader_ = MakeGarbageCollected<ThreadableLoader>(
       *execution_context_, this, resource_loader_options);
-  threadable_loader_->Start(request);
+  threadable_loader_->Start(std::move(request));
 }
 
 void FetchManager::Loader::Failed(const String& message,

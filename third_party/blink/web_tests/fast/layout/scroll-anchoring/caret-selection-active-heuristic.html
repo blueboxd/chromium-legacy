@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<style>
+#sample {
+  border: solid 1px green;
+  padding: 5px;
+  white-space: pre-wrap;
+  width: 500px;
+  height: 200px;
+  overflow-y: scroll;
+}
+</style>
+sample.scrollTop = <output id=output></output>
+<div id=sample contenteditable></div>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script>
+  let t = async_test("Caret presence should suppress anchor adjustment");
+
+  const selection = window.getSelection();
+  const sample = document.getElementById('sample');
+  sample.textContent = `top
+    ${'\n'.repeat(20)}
+    anchor
+    @
+    middle
+    ${'\n'.repeat(20)}
+    bottom`;
+
+  const textNode = sample.firstChild;
+  function forceLayout() { document.body.offsetTop; }
+  function revealSelection() {
+    if (window.internals)
+      window.internals.revealSelection();
+  }
+
+  const offset = textNode.nodeValue.indexOf('@');
+  selection.collapse(textNode, offset);
+  sample.focus();
+
+  const fns = [
+    () => {},
+    () => { sample.scroll(0, 300); },
+    () => {
+      const text1 = new Text(textNode.data.substring(0, offset) + 'newline');
+      const text2 = textNode;
+      sample.insertBefore(text1, text2);
+      text2.deleteData(0, offset);
+      sample.insertBefore(document.createElement('br'), text2);
+      revealSelection();
+     },
+  ];
+  function run() {
+    if (fns.length === 0) {
+      t.step(() => {
+        // Without a selection caret, the offset would have been 485,
+        // because scroll anchoring would have adjusted the scroll when the
+        // 'br' was inserted.
+        assert_equals(sample.scrollTop, 300);
+      });
+      t.done();
+      return;
+    }
+    fns.shift()();
+    output.value = sample.scrollTop;
+    requestAnimationFrame(run);
+  }
+  run();
+</script>

@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <set>
+#include <utility>
 
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
@@ -18,7 +19,6 @@
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_role_properties.h"
-#include "ui/accessibility/ax_text_utils.h"
 #include "ui/gfx/transform.h"
 
 namespace ui {
@@ -1021,9 +1021,9 @@ std::string AXNodeData::ToString() const {
     std::string value = base::NumberToString(int_attribute.second);
     switch (int_attribute.first) {
       case ax::mojom::IntAttribute::kDefaultActionVerb:
-        result += " action=" + base::UTF16ToUTF8(ActionVerbToUnlocalizedString(
-                                   static_cast<ax::mojom::DefaultActionVerb>(
-                                       int_attribute.second)));
+        result += std::string(" action=") +
+                  ui::ToString(static_cast<ax::mojom::DefaultActionVerb>(
+                      int_attribute.second));
         break;
       case ax::mojom::IntAttribute::kScrollX:
         result += " scroll_x=" + value;

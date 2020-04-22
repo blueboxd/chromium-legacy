@@ -35,9 +35,7 @@ class CORE_EXPORT AnimationTimeline : public ScriptWrappable {
   AnimationTimeline(Document*);
   ~AnimationTimeline() override = default;
 
-  double currentTime(bool& is_null);
-  double currentTime();
-  base::Optional<double> CurrentTime();
+  base::Optional<double> currentTime();
   base::Optional<double> CurrentTimeSeconds();
 
   String phase();

@@ -1999,6 +1999,7 @@ test("content_unittests") {
   if (use_atk) {
     sources += [
       "../browser/accessibility/browser_accessibility_auralinux_unittest.cc",
+      "../browser/accessibility/browser_accessibility_manager_auralinux_unittest.cc",
     ]
     configs += [ "//build/config/linux/atk" ]
   }
@@ -2160,6 +2161,7 @@ test("content_unittests") {
 
   if (enable_plugins) {
     sources += [
+      "../browser/plugin_content_origin_whitelist_unittest.cc",
       "../browser/plugin_service_impl_unittest.cc",
       "../browser/renderer_host/pepper/browser_ppapi_host_test.cc",
       "../browser/renderer_host/pepper/browser_ppapi_host_test.h",

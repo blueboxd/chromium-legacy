@@ -110,7 +110,7 @@ class CORE_EXPORT ThreadableLoader final
   CreateAccessControlPreflightRequestForTesting(const ResourceRequest&);
 
   // Must be called to actually begin the request.
-  void Start(const ResourceRequest&);
+  void Start(ResourceRequest);
 
   // A ThreadableLoader may have a timeout specified. It is possible, in some
   // cases, for the timeout to be overridden after the request is sent (for

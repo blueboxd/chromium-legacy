@@ -6,30 +6,38 @@
 #define UI_ACCESSIBILITY_AX_EVENT_H_
 
 #include <string>
+#include <vector>
 
-#include "ui/accessibility/ax_enums.mojom-forward.h"
-#include "ui/accessibility/ax_export.h"
+#include "ui/accessibility/ax_base_export.h"
+#include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_node_data.h"
 
 namespace ui {
 
-struct AX_EXPORT AXEvent {
+struct AX_BASE_EXPORT AXEvent {
   AXEvent();
+  AXEvent(AXNodeData::AXID id,
+          ax::mojom::Event event_type,
+          ax::mojom::EventFrom event_from = ax::mojom::EventFrom::kNone,
+          int action_request_id = -1);
   virtual ~AXEvent();
-
-  // The type of event.
-  ax::mojom::Event event_type;
+  AXEvent(const AXEvent& event);
+  AXEvent& operator=(const AXEvent& event);
 
   // The id of the node in the AXTree that the event should be fired on.
-  int id = -1;
+  AXNodeData::AXID id = AXNodeData::kInvalidAXID;
+
+  // The type of event.
+  ax::mojom::Event event_type = ax::mojom::Event::kNone;
 
   // The source of the event.
-  ax::mojom::EventFrom event_from;
+  ax::mojom::EventFrom event_from = ax::mojom::EventFrom::kNone;
 
   // The action request ID that was passed in if this event was fired in
   // direct response to a ax::mojom::Action.
   int action_request_id = -1;
 
-  // Return a string representation of this data, for debugging.
+  // Returns a string representation of this data, for debugging.
   std::string ToString() const;
 };
 

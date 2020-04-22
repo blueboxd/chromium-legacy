@@ -1252,6 +1252,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   FRIEND_TEST_ALL_PREFIXES(DevToolsProtocolTest, PageDisableWithOpenedDialog);
   FRIEND_TEST_ALL_PREFIXES(DevToolsProtocolTest,
                            PageDisableWithNoDialogManager);
+  FRIEND_TEST_ALL_PREFIXES(PluginContentOriginWhitelistTest,
+                           ClearAllowlistOnNavigate);
+  FRIEND_TEST_ALL_PREFIXES(PluginContentOriginWhitelistTest,
+                           SubframeInheritsAllowlist);
   FRIEND_TEST_ALL_PREFIXES(PointerLockBrowserTest,
                            PointerLockInnerContentsCrashes);
   FRIEND_TEST_ALL_PREFIXES(PointerLockBrowserTest, PointerLockOopifCrashes);

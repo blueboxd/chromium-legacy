@@ -17,7 +17,7 @@
 
 namespace blink {
 
-class ResourceRequest;
+class ResourceRequestHead;
 class SegmentReader;
 
 // Utility class for loading, decoding, and potentially rescaling an icon on a
@@ -37,7 +37,7 @@ class CORE_EXPORT ThreadedIconLoader final
   // If |resize_dimensions| is provided, the icon will will be downscaled to
   // those dimensions.
   void Start(ExecutionContext* execution_context,
-             const ResourceRequest& resource_request,
+             const ResourceRequestHead& resource_request,
              const base::Optional<gfx::Size>& resize_dimensions,
              IconCallback callback);
 

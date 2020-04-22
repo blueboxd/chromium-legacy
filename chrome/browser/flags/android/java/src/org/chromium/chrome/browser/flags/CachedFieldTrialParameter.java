@@ -7,10 +7,14 @@ package org.chromium.chrome.browser.flags;
 import androidx.annotation.IntDef;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.annotations.CheckDiscard;
+import org.chromium.base.annotations.RemovableInRelease;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * A field trial parameter in the variations framework that is cached by {@link CachedFeatureFlags}.
@@ -29,6 +33,9 @@ public abstract class CachedFieldTrialParameter {
         int DOUBLE = 3;
     }
 
+    @CheckDiscard("crbug.com/1067145")
+    private static Set<CachedFieldTrialParameter> sAllInstances;
+
     private final String mFeatureName;
     private final String mParameterName;
     private final @FieldTrialParameterType int mType;
@@ -40,6 +47,21 @@ public abstract class CachedFieldTrialParameter {
         mParameterName = parameterName;
         mType = type;
         mPreferenceKeyOverride = preferenceKeyOverride;
+
+        registerInstance();
+    }
+
+    @RemovableInRelease
+    private void registerInstance() {
+        if (sAllInstances == null) {
+            sAllInstances = new HashSet<>();
+        }
+        sAllInstances.add(this);
+    }
+
+    @CheckDiscard("crbug.com/1067145")
+    public static Set<CachedFieldTrialParameter> getAllInstances() {
+        return sAllInstances;
     }
 
     /**

@@ -425,7 +425,7 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
       new_request.ToMutableResourceRequest().SetRequestorOrigin(origin);
     }
 
-    const ResourceRequest& webcore_request = new_request.ToResourceRequest();
+    ResourceRequest& webcore_request = new_request.ToMutableResourceRequest();
     mojom::RequestContextType context = webcore_request.GetRequestContext();
     if (context == mojom::RequestContextType::UNSPECIFIED) {
       // TODO(yoav): We load URLs without setting a TargetType (and therefore a
@@ -447,7 +447,7 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
       loader_ = MakeGarbageCollected<ThreadableLoader>(
           *observer_->GetExecutionContext(), client_adapter_,
           resource_loader_options);
-      loader_->Start(webcore_request);
+      loader_->Start(std::move(webcore_request));
     }
   }
 

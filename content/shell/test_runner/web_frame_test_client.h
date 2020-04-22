@@ -9,7 +9,9 @@
 #include <string>
 
 #include "base/macros.h"
+#include "third_party/blink/public/web/web_ax_object.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
+#include "ui/accessibility/ax_event.h"
 
 namespace content {
 class BlinkTestRunner;
@@ -36,9 +38,7 @@ class WebFrameTestClient : public blink::WebLocalFrameClient {
   bool ShouldContinueNavigation(blink::WebNavigationInfo* info);
 
   // WebLocalFrameClient overrides needed by WebFrameTestProxy.
-  void PostAccessibilityEvent(const blink::WebAXObject& object,
-                              ax::mojom::Event event,
-                              ax::mojom::EventFrom event_from) override;
+  void PostAccessibilityEvent(const ui::AXEvent& event) override;
   void MarkWebAXObjectDirty(const blink::WebAXObject& obj,
                             bool subtree) override;
   void DidChangeSelection(bool is_selection_empty) override;

@@ -49,7 +49,8 @@ TEST_F(WKWebViewUtilTest, TestIsSafeBrowsingWarningDisplayedInWebView) {
                                         title:nil
                                       warning:nil
                                       details:nil
-                            completionHandler:nil];
+                            completionHandler:^(BOOL){
+                            }];
 
     EXPECT_TRUE(web::IsSafeBrowsingWarningDisplayedInWebView(web_view));
   }

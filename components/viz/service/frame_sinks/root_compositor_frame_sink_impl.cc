@@ -442,6 +442,13 @@ void RootCompositorFrameSinkImpl::DisplayDidCompleteSwapWithSize(
 #endif
 }
 
+void RootCompositorFrameSinkImpl::SetWideColorEnabled(bool enabled) {
+#if defined(OS_ANDROID)
+  if (display_client_)
+    display_client_->SetWideColorEnabled(enabled);
+#endif
+}
+
 void RootCompositorFrameSinkImpl::SetPreferredFrameInterval(
     base::TimeDelta interval) {
 #if defined(OS_ANDROID)

@@ -457,6 +457,8 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   void CacheHitTestResult(BrowserAccessibility* hit_test_result) const;
 
  protected:
+  FRIEND_TEST_ALL_PREFIXES(BrowserAccessibilityManagerTest,
+                           TestShouldFireEventForNode);
   explicit BrowserAccessibilityManager(BrowserAccessibilityDelegate* delegate);
 
   BrowserAccessibilityManager(const ui::AXTreeUpdate& initial_tree,
@@ -475,6 +477,8 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
       ui::AXTree* tree,
       const std::vector<ui::AXTreeObserver::Change>& changes,
       std::set<ui::AXPlatformNode*>* nodes_needing_update);
+
+  bool ShouldFireEventForNode(BrowserAccessibility* node) const;
 
   static void SetLastFocusedNode(BrowserAccessibility* node);
   static BrowserAccessibility* GetLastFocusedNode();

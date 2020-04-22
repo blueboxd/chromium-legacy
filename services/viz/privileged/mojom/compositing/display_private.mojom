@@ -96,6 +96,11 @@ interface DisplayClient {
   [EnableIf=is_android]
   OnContextCreationResult(gpu.mojom.ContextResult result);
 
+  // Notifies the AndroidWindow that wide color gamut is being enabled or
+  // disabled.
+  [EnableIf=is_android]
+  SetWideColorEnabled(bool enabled);
+
   [EnableIf=is_android]
   SetPreferredRefreshRate(float refresh_rate);
 };

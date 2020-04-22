@@ -100,6 +100,10 @@ cr-menu.files-menu > cr-menu-item > paper-ripple {
   z-index: 0;
 }
 
+html.files-ng cr-menu.files-menu > cr-menu-item {
+  padding: 0 16px;
+}
+
 html.files-ng cr-menu-item > paper-ripple {
   display: none;
 }

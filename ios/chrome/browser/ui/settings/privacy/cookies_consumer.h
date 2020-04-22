@@ -14,11 +14,16 @@ typedef NS_ENUM(NSInteger, CookiesSettingType) {
   SettingTypeBlockAllCookies,
 };
 
+@class TableViewItem;
+
 // A consumer for Cookies settings changes.
 @protocol PrivacyCookiesConsumer
 
 // Called when a cookie setting option was selected.
 - (void)cookiesSettingsOptionSelected:(CookiesSettingType)settingType;
+
+// Inserts site exceptions item into the model, previous items aren't deleted.
+- (void)insertSiteExceptionsItems:(NSArray<TableViewItem*>*)items;
 
 @end
 

@@ -86,12 +86,15 @@ interface CameraAppDevice {
       => (int32 status, media.mojom.Blob? blob);
 
   // Sets the fps range for upcoming configured camera stream.
-  // The caller sets the |fps_range| for target |resolution|.
+  // The caller sets the |fps_range|.
   // If the given fps range is valid and set successfully, |is_success| returns
   // true. If the given fps range is invalid, the fps range which is cached
   // previously will be cleared and |is_success| will return false.
-  SetFpsRange(gfx.mojom.Size resolution, gfx.mojom.Range fps_range)
-      => (bool is_success);
+  SetFpsRange(gfx.mojom.Range fps_range) => (bool is_success);
+
+  // Sets the |resolution| for still capture stream which should be
+  // configured later so that we can configure the most suitable properties.
+  SetStillCaptureResolution(gfx.mojom.Size resolution) => ();
 
   // Sets the intent for the upcoming capture session. The underlying video
   // capture device should configure the streams accordingly. Returns an empty

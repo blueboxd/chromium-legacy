@@ -349,7 +349,7 @@ class CONTENT_EXPORT RenderViewHostImpl
                              WebPreferences* prefs);
 
   // The RenderWidgetHost.
-  std::unique_ptr<RenderWidgetHostImpl> render_widget_host_;
+  const std::unique_ptr<RenderWidgetHostImpl> render_widget_host_;
 
   // Our delegate, which wants to know about changes in the RenderView.
   RenderViewHostDelegate* delegate_;

@@ -183,6 +183,10 @@ void FrameSelection::MoveCaretSelection(const IntPoint& point) {
                                     .Build());
 }
 
+bool FrameSelection::HasActiveSelectionCaret() {
+  return frame_caret_->IsActive();
+}
+
 void FrameSelection::SetSelection(const SelectionInDOMTree& selection,
                                   const SetSelectionOptions& data) {
   if (SetSelectionDeprecated(selection, data))

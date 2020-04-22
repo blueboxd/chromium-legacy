@@ -657,33 +657,6 @@ void BrowserAccessibilityManagerWin::OnAtomicUpdateFinished(
   }
 }
 
-bool BrowserAccessibilityManagerWin::ShouldFireEventForNode(
-    BrowserAccessibility* node) const {
-  if (!node || !node->CanFireEvents())
-    return false;
-
-  // If the root delegate isn't the main-frame, this may be a new frame that
-  // hasn't yet been swapped in or added to the frame tree. Suppress firing
-  // events until then.
-  BrowserAccessibilityDelegate* root_delegate = GetDelegateFromRootManager();
-  if (!root_delegate)
-    return false;
-  if (!root_delegate->AccessibilityIsMainFrame())
-    return false;
-
-  // Don't fire events when this document might be stale as the user has
-  // started navigating to a new document.
-  if (user_is_navigating_away_)
-    return false;
-
-  // Inline text boxes are an internal implementation detail, we don't
-  // expose them to Windows.
-  if (node->GetRole() == ax::mojom::Role::kInlineTextBox)
-    return false;
-
-  return true;
-}
-
 void BrowserAccessibilityManagerWin::HandleSelectedStateChanged(
     BrowserAccessibility* node) {
   const bool is_selected =

@@ -42,9 +42,9 @@ enum ReplaceState { "active", "removed", "persisted" };
     [Measure] attribute AnimationEffect? effect;
     // TODO(suzyh): Make timeline mutable.
     [RuntimeEnabled=WebAnimationsAPI] readonly attribute AnimationTimeline? timeline;
-    [Measure, RaisesException=Setter] attribute double?    startTime;
-    [Measure, RaisesException=Setter, ImplementedAs=currentTimeForBinding] attribute double? currentTime;
-    [Measure, RaisesException=Setter] attribute double     playbackRate;
+    [Measure, RaisesException=Setter] attribute double? startTime;
+    [Measure, RaisesException=Setter] attribute double? currentTime;
+    [Measure, RaisesException=Setter] attribute double playbackRate;
     [Measure] readonly attribute AnimationPlayState playState;
     [RuntimeEnabled=WebAnimationsAPI, Measure] readonly attribute ReplaceState replaceState;
     [Measure] readonly attribute boolean pending;

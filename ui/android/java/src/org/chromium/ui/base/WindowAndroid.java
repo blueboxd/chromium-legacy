@@ -12,6 +12,7 @@ import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Build;
@@ -863,6 +864,21 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
     @TargetApi(Build.VERSION_CODES.M)
     public void onDisplayModesChanged(List<Display.Mode> supportedModes) {
         recomputeSupportedRefreshRates();
+    }
+
+    @TargetApi(Build.VERSION_CODES.O)
+    @CalledByNative
+    public void setWideColorEnabled(boolean enabled) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            assert !enabled;
+            return;
+        }
+        Window window = getWindow();
+        if (window == null) return;
+
+        int colorMode = enabled ? ActivityInfo.COLOR_MODE_WIDE_COLOR_GAMUT
+                                : ActivityInfo.COLOR_MODE_DEFAULT;
+        ApiHelperForO.setColorMode(window, colorMode);
     }
 
     @SuppressLint("NewApi") // This should only be called if Display.Mode is available.

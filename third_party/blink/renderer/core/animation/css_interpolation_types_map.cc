@@ -368,10 +368,7 @@ const InterpolationTypes& CSSInterpolationTypesMap::Get(
 }
 
 size_t CSSInterpolationTypesMap::Version() const {
-  // Property registrations are never removed so the number of registered
-  // custom properties is equivalent to how many changes there have been to the
-  // property registry.
-  return registry_ ? registry_->RegistrationCount() : 0;
+  return registry_ ? registry_->Version() : 0;
 }
 
 static std::unique_ptr<CSSInterpolationType>

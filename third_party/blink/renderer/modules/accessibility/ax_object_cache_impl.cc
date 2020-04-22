@@ -88,6 +88,8 @@
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_elements_helper.h"
 #include "third_party/blink/renderer/modules/permissions/permission_utils.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "ui/accessibility/ax_enums.mojom-blink.h"
+#include "ui/accessibility/ax_event.h"
 
 // Prevent code that runs during the lifetime of the stack from altering the
 // document lifecycle. Usually doc is the same as document_, but it can be
@@ -608,7 +610,7 @@ AXObject* AXObjectCacheImpl::GetOrCreate(
   return new_obj;
 }
 
-AXObject* AXObjectCacheImpl::GetOrCreate(ax::mojom::Role role) {
+AXObject* AXObjectCacheImpl::GetOrCreate(ax::mojom::blink::Role role) {
   AXObject* obj = nullptr;
 
   switch (role) {
@@ -810,7 +812,6 @@ void AXObjectCacheImpl::DeferTreeUpdateInternal(Node* node,
           node->GetDocument().Lifecycle().StateAllowsDetach()))
       << "DeferTreeUpdateInternal should only be outside of the lifecycle or "
          "before the accessibility state.";
-
   tree_update_callback_queue_.push_back(MakeGarbageCollected<TreeUpdateParams>(
       node, ComputeEventFrom(), std::move(callback)));
 
@@ -1080,8 +1081,8 @@ void AXObjectCacheImpl::PostNotifications(Document& document) {
     if (obj->IsDetached())
       continue;
 
-    ax::mojom::Event event_type = params->event_type;
-    ax::mojom::EventFrom event_from = params->event_from;
+    ax::mojom::blink::Event event_type = params->event_type;
+    ax::mojom::blink::EventFrom event_from = params->event_from;
     if (obj->GetDocument() != &document) {
       notifications_to_post_.push_back(
           MakeGarbageCollected<AXEventParams>(obj, event_type, event_from));
@@ -1093,21 +1094,21 @@ void AXObjectCacheImpl::PostNotifications(Document& document) {
 }
 
 void AXObjectCacheImpl::PostNotification(LayoutObject* layout_object,
-                                         ax::mojom::Event notification) {
+                                         ax::mojom::blink::Event notification) {
   if (!layout_object)
     return;
   PostNotification(Get(layout_object), notification);
 }
 
 void AXObjectCacheImpl::PostNotification(Node* node,
-                                         ax::mojom::Event notification) {
+                                         ax::mojom::blink::Event notification) {
   if (!node)
     return;
   PostNotification(Get(node), notification);
 }
 
 void AXObjectCacheImpl::PostNotification(AXObject* object,
-                                         ax::mojom::Event notification) {
+                                         ax::mojom::blink::Event event_type) {
   if (!object || !object->AXObjectID() || object->IsDetached())
     return;
 
@@ -1118,12 +1119,12 @@ void AXObjectCacheImpl::PostNotification(AXObject* object,
   // immediately rather than deferring them.
   if (object->GetDocument()->Lifecycle().GetState() ==
       DocumentLifecycle::kInAccessibility) {
-    FireAXEventImmediately(object, notification, ComputeEventFrom());
+    FireAXEventImmediately(object, event_type, ComputeEventFrom());
     return;
   }
 
   notifications_to_post_.push_back(MakeGarbageCollected<AXEventParams>(
-      object, notification, ComputeEventFrom()));
+      object, event_type, ComputeEventFrom()));
 
   // These events are fired during DocumentLifecycle::kInAccessibility,
   // ensure there is a visual update scheduled.
@@ -1139,22 +1140,22 @@ void AXObjectCacheImpl::ScheduleVisualUpdate() {
   // If there was a document change that doesn't trigger a lifecycle update on
   // its own, (e.g. because it doesn't make layout dirty), make sure we run
   // lifecycle phases to update the computed accessibility tree.
-  auto* view = GetDocument().View();
-  auto* page = GetDocument().GetPage();
-  if (!view || !page)
+  LocalFrameView* frame_view = GetDocument().View();
+  Page* page = GetDocument().GetPage();
+  if (!frame_view || !page)
     return;
-  if (!view->CanThrottleRendering())
+  if (!frame_view->CanThrottleRendering())
     page->Animator().ScheduleVisualUpdate(GetDocument().GetFrame());
 }
 
 void AXObjectCacheImpl::FireTreeUpdatedEventImmediately(
     Node* node,
     base::OnceClosure callback,
-    ax::mojom::EventFrom event_from) {
+    ax::mojom::blink::EventFrom event_from) {
   DCHECK_EQ(node->GetDocument().Lifecycle().GetState(),
             DocumentLifecycle::kInAccessibility);
   bool saved_is_handling_action = is_handling_action_;
-  if (event_from == ax::mojom::EventFrom::kAction)
+  if (event_from == ax::mojom::blink::EventFrom::kAction)
     is_handling_action_ = true;
   std::move(callback).Run();
   is_handling_action_ = saved_is_handling_action;
@@ -1162,17 +1163,17 @@ void AXObjectCacheImpl::FireTreeUpdatedEventImmediately(
 
 void AXObjectCacheImpl::FireAXEventImmediately(
     AXObject* obj,
-    ax::mojom::Event event_type,
-    ax::mojom::EventFrom event_from) {
+    ax::mojom::blink::Event event_type,
+    ax::mojom::blink::EventFrom event_from) {
   DCHECK_EQ(obj->GetDocument()->Lifecycle().GetState(),
             DocumentLifecycle::kInAccessibility);
 
 #if DCHECK_IS_ON()
   // Make sure none of the layout views are in the process of being laid out.
   // Notifications should only be sent after the layoutObject has finished
-  auto* layout_obj = DynamicTo<AXLayoutObject>(obj);
-  if (layout_obj) {
-    LayoutObject* layout_object = layout_obj->GetLayoutObject();
+  auto* ax_layout_object = DynamicTo<AXLayoutObject>(obj);
+  if (ax_layout_object) {
+    LayoutObject* layout_object = ax_layout_object->GetLayoutObject();
     if (layout_object && layout_object->View())
       DCHECK(!layout_object->View()->GetLayoutState());
   }
@@ -1182,7 +1183,7 @@ void AXObjectCacheImpl::FireAXEventImmediately(
 
   PostPlatformNotification(obj, event_type, event_from);
 
-  if (event_type == ax::mojom::Event::kChildrenChanged &&
+  if (event_type == ax::mojom::blink::Event::kChildrenChanged &&
       obj->CachedParentObject()) {
     const bool was_ignored = obj->LastKnownIsIgnoredValue();
     const bool was_ignored_but_included_in_tree =
@@ -1716,17 +1717,23 @@ bool IsNodeAriaVisible(Node* node) {
 
 void AXObjectCacheImpl::PostPlatformNotification(
     AXObject* obj,
-    ax::mojom::Event notification,
-    ax::mojom::EventFrom event_from) {
+    ax::mojom::blink::Event event_type,
+    ax::mojom::blink::EventFrom event_from) {
   if (!document_ || !document_->View() ||
-      !document_->View()->GetFrame().GetPage())
+      !document_->View()->GetFrame().GetPage()) {
     return;
+  }
 
-  WebLocalFrameImpl* webframe =
+  WebLocalFrameImpl* web_frame =
       WebLocalFrameImpl::FromFrame(document_->AXObjectCacheOwner().GetFrame());
-  if (webframe && webframe->Client()) {
-    webframe->Client()->PostAccessibilityEvent(WebAXObject(obj), notification,
-                                               event_from);
+  if (web_frame && web_frame->Client()) {
+    ui::AXEvent event;
+    event.id = obj->AXObjectID();
+    event.event_type = event_type;
+    event.event_from = event_from;
+    event.action_request_id = -1;
+
+    web_frame->Client()->PostAccessibilityEvent(event);
   }
 }
 
@@ -2026,17 +2033,17 @@ void AXObjectCacheImpl::Trace(Visitor* visitor) {
   AXObjectCache::Trace(visitor);
 }
 
-ax::mojom::EventFrom AXObjectCacheImpl::ComputeEventFrom() {
+ax::mojom::blink::EventFrom AXObjectCacheImpl::ComputeEventFrom() {
   if (is_handling_action_)
-    return ax::mojom::EventFrom::kAction;
+    return ax::mojom::blink::EventFrom::kAction;
 
   if (document_ && document_->View() &&
       LocalFrame::HasTransientUserActivation(
           &(document_->View()->GetFrame()))) {
-    return ax::mojom::EventFrom::kUser;
+    return ax::mojom::blink::EventFrom::kUser;
   }
 
-  return ax::mojom::EventFrom::kPage;
+  return ax::mojom::blink::EventFrom::kPage;
 }
 
 WebAXAutofillState AXObjectCacheImpl::GetAutofillState(AXID id) const {

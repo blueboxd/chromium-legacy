@@ -38,21 +38,7 @@ bool CompareAnimations(const Member<Animation>& left,
       Animation::CompareAnimationsOrdering::kPointerOrder);
 }
 
-double AnimationTimeline::currentTime(bool& is_null) {
-  base::Optional<base::TimeDelta> result = CurrentPhaseAndTime().time;
-
-  is_null = !result.has_value();
-  return result ? result->InMillisecondsF()
-                : std::numeric_limits<double>::quiet_NaN();
-}
-
-double AnimationTimeline::currentTime() {
-  base::Optional<base::TimeDelta> result = CurrentPhaseAndTime().time;
-  return result ? result->InMillisecondsF()
-                : std::numeric_limits<double>::quiet_NaN();
-}
-
-base::Optional<double> AnimationTimeline::CurrentTime() {
+base::Optional<double> AnimationTimeline::currentTime() {
   base::Optional<base::TimeDelta> result = CurrentPhaseAndTime().time;
   return result ? base::make_optional(result->InMillisecondsF())
                 : base::nullopt;

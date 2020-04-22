@@ -506,6 +506,8 @@ class Internals final : public ScriptWrappable {
   //       gc() instead as it would trigger both Blink GC and V8 GC.
   void scheduleBlinkGC();
 
+  void revealSelection();
+
   String selectedHTMLForClipboard();
   String selectedTextForClipboard();
 

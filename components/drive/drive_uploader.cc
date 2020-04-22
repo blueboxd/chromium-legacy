@@ -315,9 +315,9 @@ void DriveUploader::CallUploadServiceAPINewFile(
     info_ptr->cancel_callback = service->MultipartUploadNewFile(
         info_ptr->content_type, info_ptr->content_length, parent_resource_id,
         title, info_ptr->file_path, options,
-        base::Bind(&DriveUploader::OnMultipartUploadComplete,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   base::Passed(&upload_file_info)),
+        base::BindOnce(&DriveUploader::OnMultipartUploadComplete,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       std::move(upload_file_info)),
         info_ptr->progress_callback);
   } else {
     RecordDriveUploadProtocol(UPLOAD_METHOD_RESUMABLE);
@@ -350,9 +350,9 @@ void DriveUploader::CallUploadServiceAPIExistingFile(
     info_ptr->cancel_callback = service->MultipartUploadExistingFile(
         info_ptr->content_type, info_ptr->content_length, resource_id,
         info_ptr->file_path, options,
-        base::Bind(&DriveUploader::OnMultipartUploadComplete,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   base::Passed(&upload_file_info)),
+        base::BindOnce(&DriveUploader::OnMultipartUploadComplete,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       std::move(upload_file_info)),
         info_ptr->progress_callback);
   } else {
     RecordDriveUploadProtocol(UPLOAD_METHOD_RESUMABLE);
@@ -392,11 +392,10 @@ void DriveUploader::StartGetUploadStatus(
 
   UploadFileInfo* info_ptr = upload_file_info.get();
   info_ptr->cancel_callback = drive_service_->GetUploadStatus(
-      info_ptr->upload_location,
-      info_ptr->content_length,
-      base::Bind(&DriveUploader::OnUploadRangeResponseReceived,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(&upload_file_info)));
+      info_ptr->upload_location, info_ptr->content_length,
+      base::BindOnce(&DriveUploader::OnUploadRangeResponseReceived,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(upload_file_info)));
 }
 
 void DriveUploader::UploadNextChunk(
@@ -419,20 +418,14 @@ void DriveUploader::UploadNextChunk(
 
   UploadFileInfo* info_ptr = upload_file_info.get();
   info_ptr->cancel_callback = drive_service_->ResumeUpload(
-      info_ptr->upload_location,
-      info_ptr->next_start_position,
-      end_position,
-      info_ptr->content_length,
-      info_ptr->content_type,
-      info_ptr->file_path,
-      base::Bind(&DriveUploader::OnUploadRangeResponseReceived,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(&upload_file_info)),
+      info_ptr->upload_location, info_ptr->next_start_position, end_position,
+      info_ptr->content_length, info_ptr->content_type, info_ptr->file_path,
+      base::BindOnce(&DriveUploader::OnUploadRangeResponseReceived,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(upload_file_info)),
       base::Bind(&DriveUploader::OnUploadProgress,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 info_ptr->progress_callback,
-                 info_ptr->next_start_position,
-                 info_ptr->content_length));
+                 weak_ptr_factory_.GetWeakPtr(), info_ptr->progress_callback,
+                 info_ptr->next_start_position, info_ptr->content_length));
 }
 
 void DriveUploader::OnUploadRangeResponseReceived(

@@ -193,7 +193,7 @@ InspectorAnimationAgent::BuildObjectForAnimation(blink::Animation& animation) {
           .setPlayState(animation.PlayStateString())
           .setPlaybackRate(animation.playbackRate())
           .setStartTime(NormalizedStartTime(animation))
-          .setCurrentTime(animation.currentTime())
+          .setCurrentTime(animation.currentTime().value_or(Timing::NullValue()))
           .setType(animation_type)
           .build();
   if (animation_type != AnimationType::WebAnimation)
@@ -225,10 +225,10 @@ Response InspectorAnimationAgent::getCurrentTime(const String& id,
     animation = id_to_animation_clone_.at(id);
 
   if (animation->Paused() || !animation->timeline()->IsActive()) {
-    *current_time = animation->currentTime();
+    *current_time = animation->currentTime().value_or(Timing::NullValue());
   } else {
     // Use startTime where possible since currentTime is limited.
-    base::Optional<double> timeline_time = animation->timeline()->CurrentTime();
+    base::Optional<double> timeline_time = animation->timeline()->currentTime();
     // TODO(crbug.com/916117): Handle NaN values for scroll linked animations.
     *current_time =
         timeline_time ? timeline_time.value() -
@@ -253,9 +253,9 @@ Response InspectorAnimationAgent::setPaused(
       // Ensure we restore a current time if the animation is limited.
       double current_time = 0;
       if (!clone->timeline()->IsActive()) {
-        current_time = clone->currentTime();
+        current_time = clone->currentTime().value_or(Timing::NullValue());
       } else {
-        base::Optional<double> timeline_time = clone->timeline()->CurrentTime();
+        base::Optional<double> timeline_time = clone->timeline()->currentTime();
         // TODO(crbug.com/916117): Handle NaN values.
         current_time =
             timeline_time ? timeline_time.value() -
@@ -263,7 +263,7 @@ Response InspectorAnimationAgent::setPaused(
                           : Timing::NullValue();
       }
       clone->pause();
-      clone->setCurrentTime(current_time, false);
+      clone->setCurrentTime(current_time);
     } else if (!paused && clone->Paused()) {
       clone->Unpause();
     }
@@ -310,8 +310,7 @@ blink::Animation* InspectorAnimationAgent::AnimationClone(
     id_to_animation_clone_.Set(id, clone);
     id_to_animation_.Set(String::Number(clone->SequenceNumber()), clone);
     clone->play();
-    clone->setStartTime(animation->startTime().value_or(Timing::NullValue()),
-                        false);
+    clone->setStartTime(animation->startTime().value_or(Timing::NullValue()));
 
     animation->SetEffectSuppressed(true);
   }
@@ -331,7 +330,7 @@ Response InspectorAnimationAgent::seekAnimations(
       return Response::ServerError("Failed to clone a detached animation.");
     if (!clone->Paused())
       clone->play();
-    clone->setCurrentTime(current_time, false);
+    clone->setCurrentTime(current_time);
   }
   return Response::Success();
 }
@@ -515,7 +514,8 @@ double InspectorAnimationAgent::NormalizedStartTime(
   if (document_timeline) {
     if (ReferenceTimeline().PlaybackRate() == 0) {
       time_ms +=
-          ReferenceTimeline().currentTime() - document_timeline->currentTime();
+          ReferenceTimeline().currentTime().value_or(Timing::NullValue()) -
+          document_timeline->currentTime().value_or(Timing::NullValue());
     } else {
       time_ms +=
           (document_timeline->ZeroTime() - ReferenceTimeline().ZeroTime())

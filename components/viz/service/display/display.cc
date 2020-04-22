@@ -23,6 +23,7 @@
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/common/quads/shared_quad_state.h"
+#include "components/viz/common/viz_utils.h"
 #include "components/viz/service/display/damage_frame_annotator.h"
 #include "components/viz/service/display/direct_renderer.h"
 #include "components/viz/service/display/display_client.h"
@@ -599,6 +600,16 @@ bool Display::DrawAndSwap(base::TimeTicks expected_display_time) {
         aggregator_->Aggregate(current_surface_id_, expected_display_time,
                                current_display_transform, ++swapped_trace_id_);
   }
+
+#if defined(OS_ANDROID)
+  bool wide_color_enabled = display_color_spaces_.GetOutputColorSpace(
+                                frame.metadata.content_color_usage, true) !=
+                            gfx::ColorSpace::CreateSRGB();
+  if (wide_color_enabled != last_wide_color_enabled_) {
+    client_->SetWideColorEnabled(wide_color_enabled);
+    last_wide_color_enabled_ = wide_color_enabled;
+  }
+#endif
 
   UMA_HISTOGRAM_COUNTS_1M("Compositing.SurfaceAggregator.AggregateUs",
                           aggregate_timer.Elapsed().InMicroseconds());

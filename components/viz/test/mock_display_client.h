@@ -33,6 +33,7 @@ class MockDisplayClient : public mojom::DisplayClient {
 #if defined(OS_ANDROID)
   MOCK_METHOD1(DidCompleteSwapWithSize, void(const gfx::Size&));
   MOCK_METHOD1(OnContextCreationResult, void(gpu::ContextResult));
+  MOCK_METHOD1(SetWideColorEnabled, void(bool enabled));
   MOCK_METHOD1(SetPreferredRefreshRate, void(float refresh_rate));
 #endif
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)

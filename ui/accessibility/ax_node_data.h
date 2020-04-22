@@ -34,6 +34,13 @@ AX_BASE_EXPORT bool IsNodeIdIntListAttribute(ax::mojom::IntListAttribute attr);
 // single accessible object, in a form that can be serialized and sent from
 // one process to another.
 struct AX_BASE_EXPORT AXNodeData {
+  // Defines the type used for AXNode IDs.
+  using AXID = int32_t;
+
+  // If a node is not yet or no longer valid, its ID should have a value of
+  // kInvalidAXID.
+  static constexpr AXID kInvalidAXID = 0;
+
   AXNodeData();
   virtual ~AXNodeData();
 

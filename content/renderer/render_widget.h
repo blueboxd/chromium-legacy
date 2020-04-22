@@ -682,7 +682,6 @@ class CONTENT_EXPORT RenderWidget
   void OnDragSourceEnded(const gfx::PointF& client_point,
                          const gfx::PointF& screen_point,
                          blink::WebDragOperation drag_operation);
-  void OnDragSourceSystemDragEnded();
   void OnOrientationChange();
   void OnWaitNextFrameForTests(int routing_id);
 

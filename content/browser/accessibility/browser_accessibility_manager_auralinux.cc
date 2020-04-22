@@ -118,8 +118,11 @@ void BrowserAccessibilityManagerAuraLinux::FireDescriptionChangedEvent(
 void BrowserAccessibilityManagerAuraLinux::FireSubtreeCreatedEvent(
     BrowserAccessibility* node) {
   // Sending events during a load would create a lot of spam, don't do that.
-  if (GetTreeData().loaded)
-    ToBrowserAccessibilityAuraLinux(node)->GetNode()->OnSubtreeCreated();
+  if (!GetTreeData().loaded)
+    return;
+  if (!CanEmitChildrenChanged(node))
+    return;
+  ToBrowserAccessibilityAuraLinux(node)->GetNode()->OnSubtreeCreated();
 }
 
 void BrowserAccessibilityManagerAuraLinux::FireGeneratedEvent(
@@ -198,6 +201,8 @@ void BrowserAccessibilityManagerAuraLinux::OnNodeDataWillChange(
     BrowserAccessibility* obj = GetFromID(old_node_data.id);
     if (obj && obj->GetParent()) {
       DCHECK(!obj->IsIgnored());
+      if (!CanEmitChildrenChanged(obj))
+        return;
       g_signal_emit_by_name(obj->GetParent(), "children-changed::remove",
                             obj->GetIndexInParent(),
                             obj->GetNativeViewAccessible());
@@ -213,8 +218,9 @@ void BrowserAccessibilityManagerAuraLinux::OnSubtreeWillBeDeleted(
     return;
 
   BrowserAccessibility* obj = GetFromAXNode(node);
-  if (obj)
-    ToBrowserAccessibilityAuraLinux(obj)->GetNode()->OnSubtreeWillBeDeleted();
+  if (!CanEmitChildrenChanged(obj))
+    return;
+  ToBrowserAccessibilityAuraLinux(obj)->GetNode()->OnSubtreeWillBeDeleted();
 }
 
 void BrowserAccessibilityManagerAuraLinux::OnAtomicUpdateFinished(
@@ -256,6 +262,16 @@ void BrowserAccessibilityManagerAuraLinux::OnFindInPageTermination() {
   static_cast<BrowserAccessibilityAuraLinux*>(GetRoot())
       ->GetNode()
       ->TerminateFindInPage();
+}
+
+bool BrowserAccessibilityManagerAuraLinux::CanEmitChildrenChanged(
+    BrowserAccessibility* node) const {
+  if (!node || !ShouldFireEventForNode(node))
+    return false;
+  BrowserAccessibility* parent = node->PlatformGetParent();
+  if (!parent || parent->PlatformIsLeaf())
+    return false;
+  return true;
 }
 
 }  // namespace content

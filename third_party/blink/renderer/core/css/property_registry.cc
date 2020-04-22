@@ -10,12 +10,14 @@ void PropertyRegistry::RegisterProperty(const AtomicString& name,
                                         PropertyRegistration& registration) {
   DCHECK(!IsInRegisteredPropertySet(name));
   registered_properties_.Set(name, &registration);
+  version_++;
 }
 
 void PropertyRegistry::DeclareProperty(const AtomicString& name,
                                        PropertyRegistration& registration) {
   DCHECK(RuntimeEnabledFeatures::CSSVariables2AtPropertyEnabled());
   declared_properties_.Set(name, &registration);
+  version_++;
 }
 
 const PropertyRegistration* PropertyRegistry::Registration(
@@ -29,15 +31,8 @@ const PropertyRegistration* PropertyRegistry::Registration(
   return declared_properties_.at(name);
 }
 
-size_t PropertyRegistry::RegistrationCount() const {
-  size_t size = declared_properties_.size();
-
-  for (auto entry : registered_properties_) {
-    if (!declared_properties_.Contains(entry.key))
-      size++;
-  }
-
-  return size;
+bool PropertyRegistry::IsEmpty() const {
+  return registered_properties_.IsEmpty() && declared_properties_.IsEmpty();
 }
 
 bool PropertyRegistry::IsInRegisteredPropertySet(

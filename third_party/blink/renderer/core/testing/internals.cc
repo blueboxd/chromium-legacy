@@ -3208,6 +3208,10 @@ void Internals::setScrollChain(ScrollState* scroll_state,
   scroll_state->SetScrollChain(scroll_chain);
 }
 
+void Internals::revealSelection() {
+  GetFrame()->Selection().RevealSelection(ScrollAlignment::ToEdgeIfNeeded());
+}
+
 void Internals::scheduleBlinkGC() {
   ThreadState::Current()->ScheduleForcedGCForTesting();
 }

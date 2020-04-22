@@ -243,6 +243,7 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   std::unique_ptr<DisplaySchedulerBase> scheduler_;
   std::unique_ptr<DisplayResourceProvider> resource_provider_;
   std::unique_ptr<SurfaceAggregator> aggregator_;
+  bool last_wide_color_enabled_ = false;
   std::unique_ptr<FrameRateDecider> frame_rate_decider_;
   // This may be null if the Display is on a thread without a MessageLoop.
   scoped_refptr<base::SingleThreadTaskRunner> current_task_runner_;

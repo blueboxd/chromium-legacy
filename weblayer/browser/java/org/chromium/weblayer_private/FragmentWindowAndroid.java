@@ -4,10 +4,12 @@
 
 package org.chromium.weblayer_private;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.os.Build;
 
 import org.chromium.ui.base.ActivityKeyboardVisibilityDelegate;
 import org.chromium.ui.base.IntentWindowAndroid;
@@ -54,5 +56,13 @@ public class FragmentWindowAndroid extends IntentWindowAndroid {
 
     public void setModalDialogManager(ModalDialogManager modalDialogManager) {
         mModalDialogManager = modalDialogManager;
+    }
+
+    @Override
+    @TargetApi(Build.VERSION_CODES.O)
+    public void setWideColorEnabled(boolean enabled) {
+        // WebLayer should not change its behavior when the content contains wide color.
+        // Rather, the app embedding the WebLayer gets to choose whether or not it is wide.
+        // So we should do nothing in this override.
     }
 }

@@ -222,6 +222,11 @@ void WindowAndroid::OnSupportedRefreshRatesUpdated(
   Force60HzRefreshRateIfNeeded();
 }
 
+void WindowAndroid::SetWideColorEnabled(bool enabled) {
+  JNIEnv* env = AttachCurrentThread();
+  Java_WindowAndroid_setWideColorEnabled(env, GetJavaObject(), enabled);
+}
+
 void WindowAndroid::SetForce60HzRefreshRate() {
   if (force_60hz_refresh_rate_)
     return;

@@ -621,25 +621,15 @@ void CameraDeviceDelegate::ConfigureStreams(
   int32_t blob_width = 0;
   int32_t blob_height = 0;
   if (require_photo) {
-    std::vector<gfx::Size> blob_resolutions;
-    GetStreamResolutions(
-        static_metadata_, cros::mojom::Camera3StreamType::CAMERA3_STREAM_OUTPUT,
-        cros::mojom::HalPixelFormat::HAL_PIXEL_FORMAT_BLOB, &blob_resolutions);
-    if (blob_resolutions.empty()) {
+    auto blob_resolution = GetBlobResolution(new_blob_resolution);
+    if (blob_resolution.IsEmpty()) {
       LOG(ERROR) << "Failed to configure streans: No BLOB resolution found.";
       return;
     }
 
-    if (new_blob_resolution.has_value() &&
-        std::find(blob_resolutions.begin(), blob_resolutions.end(),
-                  *new_blob_resolution) != blob_resolutions.end()) {
-      blob_width = new_blob_resolution->width();
-      blob_height = new_blob_resolution->height();
-    } else {
-      // Use the largest resolution as default.
-      blob_width = blob_resolutions.back().width();
-      blob_height = blob_resolutions.back().height();
-    }
+    blob_width = blob_resolution.width();
+    blob_height = blob_resolution.height();
+
     cros::mojom::Camera3StreamPtr still_capture_stream =
         cros::mojom::Camera3Stream::New();
     still_capture_stream->id = static_cast<uint64_t>(StreamType::kJpegOutput);
@@ -875,9 +865,7 @@ void CameraDeviceDelegate::OnConstructedDefaultPreviewRequestSettings(
   }
 
   if (camera_app_device_) {
-    OnGotFpsRange(std::move(settings),
-                  camera_app_device_->GetFpsRange(
-                      chrome_capture_params_.requested_format.frame_size));
+    OnGotFpsRange(std::move(settings), camera_app_device_->GetFpsRange());
   } else {
     OnGotFpsRange(std::move(settings), {});
   }
@@ -943,6 +931,35 @@ void CameraDeviceDelegate::OnGotFpsRange(
   if (set_photo_option_callback_) {
     std::move(set_photo_option_callback_).Run(true);
   }
+}
+
+gfx::Size CameraDeviceDelegate::GetBlobResolution(
+    base::Optional<gfx::Size> new_blob_resolution) {
+  std::vector<gfx::Size> blob_resolutions;
+  GetStreamResolutions(
+      static_metadata_, cros::mojom::Camera3StreamType::CAMERA3_STREAM_OUTPUT,
+      cros::mojom::HalPixelFormat::HAL_PIXEL_FORMAT_BLOB, &blob_resolutions);
+  if (blob_resolutions.empty()) {
+    return {};
+  }
+
+  // Try the given blob resolution first. If it is invalid, try the
+  // resolution specified through Mojo API as a fallback. If it fails too,
+  // use the largest resolution as default.
+  if (new_blob_resolution.has_value() &&
+      base::Contains(blob_resolutions, *new_blob_resolution)) {
+    return *new_blob_resolution;
+  }
+
+  if (camera_app_device_) {
+    auto specified_capture_resolution =
+        camera_app_device_->GetStillCaptureResolution();
+    if (!specified_capture_resolution.IsEmpty() &&
+        base::Contains(blob_resolutions, specified_capture_resolution)) {
+      return specified_capture_resolution;
+    }
+  }
+  return blob_resolutions.back();
 }
 
 void CameraDeviceDelegate::ProcessCaptureRequest(

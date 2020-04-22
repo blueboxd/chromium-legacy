@@ -4,6 +4,7 @@
 
 #include "content/browser/plugin_content_origin_whitelist.h"
 
+#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -11,27 +12,44 @@
 
 namespace content {
 
-PluginContentOriginWhitelist::PluginContentOriginWhitelist(
-    WebContents* web_contents)
-    : WebContentsObserver(web_contents) {
+PluginContentOriginWhitelist::DocumentPluginContentOriginAllowlist::
+    ~DocumentPluginContentOriginAllowlist() {}
+
+PluginContentOriginWhitelist::DocumentPluginContentOriginAllowlist::
+    DocumentPluginContentOriginAllowlist(RenderFrameHost* render_frame_host) {}
+
+void PluginContentOriginWhitelist::DocumentPluginContentOriginAllowlist::
+    InsertOrigin(const url::Origin& content_origin) {
+  origins_.insert(content_origin);
 }
 
-PluginContentOriginWhitelist::~PluginContentOriginWhitelist() {
-}
+RENDER_DOCUMENT_HOST_USER_DATA_KEY_IMPL(
+    PluginContentOriginWhitelist::DocumentPluginContentOriginAllowlist)
+
+PluginContentOriginWhitelist::PluginContentOriginWhitelist(
+    WebContents* web_contents)
+    : WebContentsObserver(web_contents) {}
+
+PluginContentOriginWhitelist::~PluginContentOriginWhitelist() {}
 
 void PluginContentOriginWhitelist::RenderFrameCreated(
     RenderFrameHost* render_frame_host) {
-  if (!whitelist_.empty()) {
-    render_frame_host->Send(new FrameMsg_UpdatePluginContentOriginWhitelist(
-        render_frame_host->GetRoutingID(), whitelist_));
-  }
+  // When RenderFrame is created inside the main frame,
+  DocumentPluginContentOriginAllowlist* allowlist =
+      DocumentPluginContentOriginAllowlist::GetForCurrentDocument(
+          render_frame_host->GetMainFrame());
+  if (!allowlist || allowlist->origins().empty())
+    return;
+  render_frame_host->Send(new FrameMsg_UpdatePluginContentOriginWhitelist(
+      render_frame_host->GetRoutingID(), allowlist->origins()));
 }
 
 bool PluginContentOriginWhitelist::OnMessageReceived(
     const IPC::Message& message,
     RenderFrameHost* render_frame_host) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(PluginContentOriginWhitelist, message)
+  IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(PluginContentOriginWhitelist, message,
+                                   render_frame_host)
     IPC_MESSAGE_HANDLER(FrameHostMsg_PluginContentOriginAllowed,
                         OnPluginContentOriginAllowed)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -40,25 +58,45 @@ bool PluginContentOriginWhitelist::OnMessageReceived(
   return handled;
 }
 
-void PluginContentOriginWhitelist::DidFinishNavigation(
-    NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame() ||
-      !navigation_handle->HasCommitted() ||
-      navigation_handle->IsSameDocument()) {
-    return;
-  }
+void PluginContentOriginWhitelist::OnPluginContentOriginAllowed(
+    RenderFrameHost* render_frame_host,
+    const url::Origin& content_origin) {
+  DocumentPluginContentOriginAllowlist* allowlist =
+      GetOrCreateAllowlistForFrame(render_frame_host);
+  allowlist->InsertOrigin(content_origin);
 
-  // We expect RenderFrames to clear their replicated whitelist independently.
-  whitelist_.clear();
+  // TODO(yuzus, crbug.com/1061899): This message should be sent to all the
+  // frames in the same frame tree as |render_frame_host|. When mojofying this
+  // IPC, this should use PageBroadcast interface and look up the correct set of
+  // RenderViewHosts from |render_frame_host| instead of getting them from
+  // |web_contents()|.
+  web_contents()->SendToAllFrames(
+      new FrameMsg_UpdatePluginContentOriginWhitelist(MSG_ROUTING_NONE,
+                                                      allowlist->origins()));
 }
 
-void PluginContentOriginWhitelist::OnPluginContentOriginAllowed(
-    const url::Origin& content_origin) {
-  whitelist_.insert(content_origin);
+PluginContentOriginWhitelist::DocumentPluginContentOriginAllowlist*
+PluginContentOriginWhitelist::GetOrCreateAllowlistForFrame(
+    RenderFrameHost* render_frame_host) {
+  RenderFrameHost* main_frame = render_frame_host->GetMainFrame();
+  if (!DocumentPluginContentOriginAllowlist::GetForCurrentDocument(
+          main_frame)) {
+    DocumentPluginContentOriginAllowlist::CreateForCurrentDocument(main_frame);
+  }
+  return DocumentPluginContentOriginAllowlist::GetForCurrentDocument(
+      main_frame);
+}
 
-  web_contents()->SendToAllFrames(
-      new FrameMsg_UpdatePluginContentOriginWhitelist(
-          MSG_ROUTING_NONE, whitelist_));
+bool PluginContentOriginWhitelist::IsOriginAllowlistedForFrameForTesting(
+    RenderFrameHost* render_frame_host,
+    const url::Origin& content_origin) {
+  DocumentPluginContentOriginAllowlist* allowlist =
+      DocumentPluginContentOriginAllowlist::GetForCurrentDocument(
+          render_frame_host->GetMainFrame());
+  if (!allowlist)
+    return false;
+  return allowlist->origins().find(content_origin) !=
+         allowlist->origins().end();
 }
 
 }  // namespace content

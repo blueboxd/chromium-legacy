@@ -171,7 +171,9 @@ class ThreadableLoaderTestHelper final {
         resource_loader_options);
   }
 
-  void StartLoader(const ResourceRequest& request) { loader_->Start(request); }
+  void StartLoader(ResourceRequest request) {
+    loader_->Start(std::move(request));
+  }
 
   void CancelLoader() { loader_->Cancel(); }
   void CancelAndClearLoader() {
@@ -212,7 +214,7 @@ class ThreadableLoaderTest : public testing::Test {
     request.SetRequestContext(mojom::RequestContextType::OBJECT);
     request.SetMode(request_mode);
     request.SetCredentialsMode(network::mojom::CredentialsMode::kOmit);
-    helper_->StartLoader(request);
+    helper_->StartLoader(std::move(request));
   }
 
   void CancelLoader() { helper_->CancelLoader(); }

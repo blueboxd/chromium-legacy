@@ -7,7 +7,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <memory>
+#include <algorithm>
+#include <set>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -207,8 +209,9 @@ RenderAccessibilityImpl::RenderAccessibilityImpl(
     // It's possible that the webview has already loaded a webpage without
     // accessibility being enabled. Initialize the browser's cached
     // accessibility tree by sending it a notification.
-    HandleAXEvent(WebAXObject::FromWebDocument(document),
-                  ax::mojom::Event::kLayoutComplete);
+    WebAXObject root_object = WebAXObject::FromWebDocument(document);
+    HandleAXEvent(
+        ui::AXEvent(root_object.AxID(), ax::mojom::Event::kLayoutComplete));
   }
 
   image_annotation_debugging_ =
@@ -281,11 +284,11 @@ void RenderAccessibilityImpl::AccessibilityModeChanged(const ui::AXMode& mode) {
     // If there are any events in flight, |HandleAXEvent| will refuse to process
     // our new event.
     pending_events_.clear();
-    auto webax_object = WebAXObject::FromWebDocument(document);
-    ax::mojom::Event event = webax_object.IsLoaded()
+    auto root_object = WebAXObject::FromWebDocument(document);
+    ax::mojom::Event event = root_object.IsLoaded()
                                  ? ax::mojom::Event::kLoadComplete
                                  : ax::mojom::Event::kLayoutComplete;
-    HandleAXEvent(webax_object, event);
+    HandleAXEvent(ui::AXEvent(root_object.AxID(), event));
   }
 }
 
@@ -317,8 +320,9 @@ void RenderAccessibilityImpl::HitTest(
   tree_source_.SerializeNode(ax_object, &data);
   if (data.child_routing_id == MSG_ROUTING_NONE) {
     // Otherwise, send an event on the node that was hit.
-    HandleAXEvent(ax_object, action_data.hit_test_event_to_fire,
-                  ax::mojom::EventFrom::kAction, action_data.request_id);
+    HandleAXEvent(
+        ui::AXEvent(ax_object.AxID(), action_data.hit_test_event_to_fire,
+                    ax::mojom::EventFrom::kAction, action_data.request_id));
 
     // The mojo message still needs a reply.
     std::move(callback).Run(/*child_frame_hit_test_info=*/nullptr);
@@ -411,7 +415,8 @@ void RenderAccessibilityImpl::PerformAction(const ui::AXActionData& data) {
     case ax::mojom::Action::kSetSelection:
       anchor->SetSelection(anchor.get(), data.anchor_offset, focus.get(),
                            data.focus_offset);
-      HandleAXEvent(root, ax::mojom::Event::kLayoutComplete);
+      HandleAXEvent(
+          ui::AXEvent(root.AxID(), ax::mojom::Event::kLayoutComplete));
       break;
     case ax::mojom::Action::kSetSequentialFocusNavigationStartingPoint:
       target->SetSequentialFocusNavigationStartingPoint();
@@ -454,7 +459,7 @@ void RenderAccessibilityImpl::PerformAction(const ui::AXActionData& data) {
       // Wait for 100ms to allow pending events to come in
       base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
 
-      HandleAXEvent(root, ax::mojom::Event::kEndOfTest);
+      HandleAXEvent(ui::AXEvent(root.AxID(), ax::mojom::Event::kEndOfTest));
       break;
     case ax::mojom::Action::kShowTooltip:
     case ax::mojom::Action::kHideTooltip:
@@ -472,11 +477,11 @@ void RenderAccessibilityImpl::Reset(int32_t reset_token) {
   if (!document.IsNull()) {
     // Tree-only mode gets used by the automation extension API which requires a
     // load complete event to invoke listener callbacks.
-    auto webax_object = WebAXObject::FromWebDocument(document);
-    ax::mojom::Event evt = webax_object.IsLoaded()
-                               ? ax::mojom::Event::kLoadComplete
-                               : ax::mojom::Event::kLayoutComplete;
-    HandleAXEvent(webax_object, evt);
+    auto root_object = WebAXObject::FromWebDocument(document);
+    ax::mojom::Event event = root_object.IsLoaded()
+                                 ? ax::mojom::Event::kLoadComplete
+                                 : ax::mojom::Event::kLayoutComplete;
+    HandleAXEvent(ui::AXEvent(root_object.AxID(), event));
   }
 }
 
@@ -488,10 +493,8 @@ void RenderAccessibilityImpl::NotifyUpdate(
 }
 
 void RenderAccessibilityImpl::HandleWebAccessibilityEvent(
-    const WebAXObject& obj,
-    ax::mojom::Event event,
-    ax::mojom::EventFrom event_from) {
-  HandleAXEvent(obj, event, event_from);
+    const ui::AXEvent& event) {
+  HandleAXEvent(event);
 }
 
 void RenderAccessibilityImpl::MarkWebAXObjectDirty(const WebAXObject& obj,
@@ -507,12 +510,13 @@ void RenderAccessibilityImpl::MarkWebAXObjectDirty(const WebAXObject& obj,
   ScheduleSendAccessibilityEventsIfNeeded();
 }
 
-void RenderAccessibilityImpl::HandleAXEvent(const WebAXObject& obj,
-                                            ax::mojom::Event event,
-                                            ax::mojom::EventFrom event_from,
-                                            int action_request_id) {
+void RenderAccessibilityImpl::HandleAXEvent(const ui::AXEvent& event) {
   const WebDocument& document = GetMainDocument();
   if (document.IsNull())
+    return;
+
+  auto obj = WebAXObject::FromWebDocumentByID(document, event.id);
+  if (obj.IsDetached())
     return;
 
   if (document.GetFrame()) {
@@ -524,10 +528,11 @@ void RenderAccessibilityImpl::HandleAXEvent(const WebAXObject& obj,
       // TODO(dmazzoni): remove this as soon as
       // https://bugs.webkit.org/show_bug.cgi?id=73460 is fixed.
       last_scroll_offset_ = scroll_offset;
-      auto webax_object = WebAXObject::FromWebDocument(document);
-      if (!obj.Equals(webax_object)) {
-        HandleAXEvent(webax_object, ax::mojom::Event::kLayoutComplete,
-                      event_from);
+      auto root_object = WebAXObject::FromWebDocument(document);
+      if (!obj.Equals(root_object)) {
+        HandleAXEvent(ui::AXEvent(root_object.AxID(),
+                                  ax::mojom::Event::kLayoutComplete,
+                                  event.event_from));
       }
     }
   }
@@ -535,47 +540,42 @@ void RenderAccessibilityImpl::HandleAXEvent(const WebAXObject& obj,
 #if defined(OS_ANDROID)
   // Force the newly focused node to be re-serialized so we include its
   // inline text boxes.
-  if (event == ax::mojom::Event::kFocus)
+  if (event.event_type == ax::mojom::Event::kFocus)
     serializer_.InvalidateSubtree(obj);
 #endif
 
   // If some cell IDs have been added or removed, we need to update the whole
   // table.
   if (obj.Role() == ax::mojom::Role::kRow &&
-      event == ax::mojom::Event::kChildrenChanged) {
+      event.event_type == ax::mojom::Event::kChildrenChanged) {
     WebAXObject table_like_object = obj.ParentObject();
     if (!table_like_object.IsDetached()) {
       serializer_.InvalidateSubtree(table_like_object);
-      HandleAXEvent(table_like_object, ax::mojom::Event::kChildrenChanged);
+      HandleAXEvent(ui::AXEvent(table_like_object.AxID(),
+                                ax::mojom::Event::kChildrenChanged));
     }
   }
 
   // If a select tag is opened or closed, all the children must be updated
   // because their visibility may have changed.
   if (obj.Role() == ax::mojom::Role::kMenuListPopup &&
-      event == ax::mojom::Event::kChildrenChanged) {
+      event.event_type == ax::mojom::Event::kChildrenChanged) {
     WebAXObject popup_like_object = obj.ParentObject();
     if (!popup_like_object.IsDetached()) {
       serializer_.InvalidateSubtree(popup_like_object);
-      HandleAXEvent(popup_like_object, ax::mojom::Event::kChildrenChanged);
+      HandleAXEvent(ui::AXEvent(popup_like_object.AxID(),
+                                ax::mojom::Event::kChildrenChanged));
     }
   }
 
-  // Add the accessibility object to our cache and ensure it's valid.
-  ui::AXEvent acc_event;
-  acc_event.id = obj.AxID();
-  acc_event.event_type = event;
-  acc_event.event_from = event_from;
-  acc_event.action_request_id = action_request_id;
-
   // Discard duplicate accessibility events.
-  for (uint32_t i = 0; i < pending_events_.size(); ++i) {
-    if (pending_events_[i].id == acc_event.id &&
-        pending_events_[i].event_type == acc_event.event_type) {
+  for (const ui::AXEvent& pending_event : pending_events_) {
+    if (pending_event.id == event.id &&
+        pending_event.event_type == event.event_type) {
       return;
     }
   }
-  pending_events_.push_back(acc_event);
+  pending_events_.push_back(event);
 
   ScheduleSendAccessibilityEventsIfNeeded();
 }
@@ -634,7 +634,8 @@ void RenderAccessibilityImpl::OnPluginRootNodeUpdated() {
     if (!node.IsNull() && node.IsElementNode()) {
       WebElement element = node.To<WebElement>();
       if (element.HasHTMLTagName("embed")) {
-        HandleAXEvent(obj, ax::mojom::Event::kChildrenChanged);
+        HandleAXEvent(
+            ui::AXEvent(obj.AxID(), ax::mojom::Event::kChildrenChanged));
         break;
       }
     }
@@ -948,7 +949,7 @@ void RenderAccessibilityImpl::OnLoadInlineTextBoxes(
   serializer_.InvalidateSubtree(obj);
 
   // Explicitly send a tree change update event now.
-  HandleAXEvent(obj, ax::mojom::Event::kTreeChanged);
+  HandleAXEvent(ui::AXEvent(obj.AxID(), ax::mojom::Event::kTreeChanged));
 }
 
 void RenderAccessibilityImpl::OnGetImageData(const ui::AXActionTarget* target,
@@ -971,7 +972,7 @@ void RenderAccessibilityImpl::OnGetImageData(const ui::AXActionTarget* target,
     return;
 
   serializer_.InvalidateSubtree(obj);
-  HandleAXEvent(obj, ax::mojom::Event::kImageFrameUpdated);
+  HandleAXEvent(ui::AXEvent(obj.AxID(), ax::mojom::Event::kImageFrameUpdated));
 }
 
 void RenderAccessibilityImpl::OnDestruct() {

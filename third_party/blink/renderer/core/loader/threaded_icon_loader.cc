@@ -26,7 +26,7 @@ namespace blink {
 
 void ThreadedIconLoader::Start(
     ExecutionContext* execution_context,
-    const ResourceRequest& resource_request,
+    const ResourceRequestHead& resource_request,
     const base::Optional<gfx::Size>& resize_dimensions,
     IconCallback callback) {
   DCHECK(!stopped_);
@@ -45,7 +45,7 @@ void ThreadedIconLoader::Start(
   threadable_loader_ = MakeGarbageCollected<ThreadableLoader>(
       *execution_context, this, resource_loader_options);
   threadable_loader_->SetTimeout(resource_request.TimeoutInterval());
-  threadable_loader_->Start(resource_request);
+  threadable_loader_->Start(ResourceRequest(resource_request));
 
   start_time_ = base::TimeTicks::Now();
 }

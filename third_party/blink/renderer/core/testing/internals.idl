@@ -328,6 +328,8 @@
     [RaisesException] void setScrollChain(ScrollState scrollState, sequence<Element> elements);
     void scheduleBlinkGC();
 
+    void revealSelection();
+
     DOMString selectedHTMLForClipboard();
     DOMString selectedTextForClipboard();
 

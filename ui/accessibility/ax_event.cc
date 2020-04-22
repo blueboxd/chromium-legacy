@@ -6,17 +6,25 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "ui/accessibility/ax_enum_util.h"
-#include "ui/accessibility/ax_enums.mojom.h"
 
 namespace ui {
 
-// Mojo enums are initialized here so the header can include the much smaller
-// mojom-forward.h header.
-AXEvent::AXEvent()
-    : event_type(ax::mojom::Event::kNone),
-      event_from(ax::mojom::EventFrom::kNone) {}
+AXEvent::AXEvent() = default;
+
+AXEvent::AXEvent(int32_t id,
+                 ax::mojom::Event event_type,
+                 ax::mojom::EventFrom event_from,
+                 int action_request_id)
+    : id(id),
+      event_type(event_type),
+      event_from(event_from),
+      action_request_id(action_request_id) {}
 
 AXEvent::~AXEvent() = default;
+
+AXEvent::AXEvent(const AXEvent& event) = default;
+
+AXEvent& AXEvent::operator=(const AXEvent& event) = default;
 
 std::string AXEvent::ToString() const {
   std::string result = "AXEvent";

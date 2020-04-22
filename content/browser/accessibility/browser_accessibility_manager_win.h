@@ -84,8 +84,6 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
       bool root_changed,
       const std::vector<ui::AXTreeObserver::Change>& changes) override;
 
-  bool ShouldFireEventForNode(BrowserAccessibility* node) const;
-
  private:
   void HandleSelectedStateChanged(BrowserAccessibility* node);
 

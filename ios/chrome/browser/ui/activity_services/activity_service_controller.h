@@ -8,7 +8,6 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-@protocol ActivityServicePassword;
 @protocol ActivityServicePositioner;
 @protocol ActivityServicePresentation;
 @protocol BrowserCommands;
@@ -57,7 +56,6 @@ extern NSString* const kActivityServicesSnackbarCategory;
 - (void)shareWithData:(ShareToData*)data
             browserState:(ChromeBrowserState*)browserState
               dispatcher:(id<BrowserCommands, SnackbarCommands>)dispatcher
-        passwordProvider:(id<ActivityServicePassword>)passwordProvider
         positionProvider:(id<ActivityServicePositioner>)positionProvider
     presentationProvider:(id<ActivityServicePresentation>)presentationProvider;
 

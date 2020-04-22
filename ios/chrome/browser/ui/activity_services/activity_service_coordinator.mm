@@ -8,10 +8,8 @@
 #include "base/time/time.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/main/browser.h"
-#import "ios/chrome/browser/passwords/password_tab_helper.h"
 #import "ios/chrome/browser/ui/activity_services/activity_service_controller.h"
 #import "ios/chrome/browser/ui/activity_services/canonical_url_retriever.h"
-#import "ios/chrome/browser/ui/activity_services/requirements/activity_service_password.h"
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_positioner.h"
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_presentation.h"
 #import "ios/chrome/browser/ui/activity_services/share_to_data.h"
@@ -34,8 +32,7 @@ namespace {
 const char kSharePageLatencyHistogram[] = "IOS.SharePageLatency";
 }  // namespace
 
-@interface ActivityServiceCoordinator () <ActivityServicePassword,
-                                          ActivityServicePresentation>
+@interface ActivityServiceCoordinator () <ActivityServicePresentation>
 
 @property(nonatomic, weak)
     id<ActivityServiceCommands, BrowserCommands, SnackbarCommands>
@@ -108,16 +105,6 @@ const char kSharePageLatencyHistogram[] = "IOS.SharePageLatency";
   [self.alertCoordinator start];
 }
 
-#pragma mark - Providers
-
-- (id<PasswordFormFiller>)currentPasswordFormFiller {
-  web::WebState* webState =
-      self.browser->GetWebStateList()->GetActiveWebState();
-  return webState ? PasswordTabHelper::FromWebState(webState)
-                        ->GetPasswordFormFiller()
-                  : nil;
-}
-
 #pragma mark - Private Methods
 
 // Shares the current page using the |canonicalURL|.
@@ -143,7 +130,6 @@ const char kSharePageLatencyHistogram[] = "IOS.SharePageLatency";
   [controller shareWithData:data
                browserState:self.browser->GetBrowserState()
                  dispatcher:self.handler
-           passwordProvider:self
            positionProvider:self.positionProvider
        presentationProvider:self];
 }

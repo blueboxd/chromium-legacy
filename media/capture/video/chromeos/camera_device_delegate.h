@@ -164,6 +164,8 @@ class CAPTURE_EXPORT CameraDeviceDelegate final {
   void OnGotFpsRange(cros::mojom::CameraMetadataPtr settings,
                      base::Optional<gfx::Range> specified_fps_range);
 
+  gfx::Size GetBlobResolution(base::Optional<gfx::Size> new_blob_resolution);
+
   // StreamCaptureInterface implementations.  These methods are called by
   // |stream_buffer_manager_| on |ipc_task_runner_|.
   void ProcessCaptureRequest(cros::mojom::Camera3CaptureRequestPtr request,

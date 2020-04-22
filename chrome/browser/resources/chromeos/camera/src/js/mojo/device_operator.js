@@ -263,47 +263,46 @@ export class DeviceOperator {
   }
 
   /**
-   * Sets the fps range for target device.
+   * Sets the stream configurations for target device.
    * @param {string} deviceId The renderer-facing device id of the target camera
    *     which could be retrieved from MediaDeviceInfo.deviceId.
    * @param {MediaStreamConstraints} constraints The constraints including fps
    *     range and the resolution. If frame rate range negotiation is needed,
    *     the caller should either set exact field or set both min and max fields
    *     for frame rate property.
+   * @param {{stillCaptureResolution: (!Resolution|undefined)}=} optConfig
+   *     Optional configurations for streams.
    * @throws {Error} Thrown when the input contains invalid values or the device
    *     operation is not supported.
    */
-  async setFpsRange(deviceId, constraints) {
-    let /** number */ streamWidth = 0;
-    let /** number */ streamHeight = 0;
+  async setStreamConfig(deviceId, constraints, optConfig = {}) {
     let /** number */ minFrameRate = 0;
     let /** number */ maxFrameRate = 0;
 
-    if (constraints && constraints.video && constraints.video.frameRate) {
-      const frameRate = constraints.video.frameRate;
-      if (frameRate.exact) {
-        minFrameRate = frameRate.exact;
-        maxFrameRate = frameRate.exact;
-      } else if (frameRate.min && frameRate.max) {
-        minFrameRate = frameRate.min;
-        maxFrameRate = frameRate.max;
-      }
-      // TODO(wtlee): To set the fps range to the default value, we should
-      // remove the frameRate from constraints instead of using incomplete
-      // range.
-
+    if (constraints && constraints.video) {
       // We only support number type for width and height. If width or height
       // is other than a number (e.g. ConstrainLong, undefined, etc.), we should
       // throw an error.
       if (typeof constraints.video.width !== 'number') {
         throw new Error('width in constraints is expected to be a number');
       }
-      streamWidth = constraints.video.width;
-
       if (typeof constraints.video.height !== 'number') {
         throw new Error('height in constraints is expected to be a number');
       }
-      streamHeight = constraints.video.height;
+
+      if (constraints.video.frameRate) {
+        const frameRate = constraints.video.frameRate;
+        if (frameRate.exact) {
+          minFrameRate = frameRate.exact;
+          maxFrameRate = frameRate.exact;
+        } else if (frameRate.min && frameRate.max) {
+          minFrameRate = frameRate.min;
+          maxFrameRate = frameRate.max;
+        }
+        // TODO(wtlee): To set the fps range to the default value, we should
+        // remove the frameRate from constraints instead of using incomplete
+        // range.
+      }
     }
 
     const hasSpecifiedFrameRateRange = minFrameRate > 0 && maxFrameRate > 0;
@@ -316,12 +315,17 @@ export class DeviceOperator {
     // We set the frame rate range to an invalid range (e.g. 0 fps) so that it
     // will fallback to use the default one.
     const device = await this.getDevice_(deviceId);
-    const {isSuccess} = await device.setFpsRange(
-        {'width': streamWidth, 'height': streamHeight},
-        {'start': minFrameRate, 'end': maxFrameRate});
 
+    const {isSuccess} =
+        await device.setFpsRange({start: minFrameRate, end: maxFrameRate});
     if (!isSuccess && hasSpecifiedFrameRateRange) {
       console.error('Failed to negotiate the frame rate range.');
+    }
+    if (optConfig.stillCaptureResolution !== undefined) {
+      await device.setStillCaptureResolution({
+        width: optConfig.stillCaptureResolution.width,
+        height: optConfig.stillCaptureResolution.height,
+      });
     }
   }
 

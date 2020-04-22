@@ -8,6 +8,8 @@
 #include <set>
 
 #include "base/macros.h"
+#include "content/common/content_export.h"
+#include "content/public/browser/render_document_host_user_data.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "url/origin.h"
 
@@ -15,32 +17,61 @@ namespace content {
 
 class WebContents;
 
-// This class manages the tab-wide list of temporarily whitelisted plugin
-// content origins that are exempt from power saving.
-//
-// RenderFrames report content origins that should be whitelisted via IPC.
-// This class aggregates those origins and broadcasts the total list to all
-// RenderFrames owned by the tab (WebContents). This class also sends these
-// origins to any newly created RenderFrames.
-//
-// Tab-wide whitelists are cleared by top-level navigation. RenderFrames that
-// persist across top level navigations are responsible for clearing their own
-// whitelists.
-class PluginContentOriginWhitelist : public WebContentsObserver {
+class CONTENT_EXPORT PluginContentOriginWhitelist : public WebContentsObserver {
+  // This class manages the lists of document-tied temporarily allowlisted
+  // plugin content origins that are exempt from power saving.
+  //
+  // RenderFrames report content origins that should be allowlisted via IPC.
+  // This class aggregates those origins and broadcasts the total list to all
+  // RenderFrames inside the same RenderView. This class also sends these
+  // origins to any newly created RenderFrames.
  public:
   explicit PluginContentOriginWhitelist(WebContents* web_contents);
   ~PluginContentOriginWhitelist() override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(PluginContentOriginWhitelistTest,
+                           ClearAllowlistOnNavigate);
+  FRIEND_TEST_ALL_PREFIXES(PluginContentOriginWhitelistTest,
+                           SubframeInheritsAllowlist);
+
+  class DocumentPluginContentOriginAllowlist
+      : public RenderDocumentHostUserData<
+            DocumentPluginContentOriginAllowlist> {
+    // This class manages the list of temporarily allowlisted plugin content
+    // origins that are exempt from power saving. The list is managed
+    // per-document and cleared upon document destruction, as this is part of
+    // the RenderDocumentHostUserData.
+   public:
+    ~DocumentPluginContentOriginAllowlist() override;
+    void InsertOrigin(const url::Origin& content_origin);
+    std::set<url::Origin> origins() { return origins_; }
+
+   private:
+    explicit DocumentPluginContentOriginAllowlist(
+        RenderFrameHost* render_frame_host);
+    friend class RenderDocumentHostUserData<
+        DocumentPluginContentOriginAllowlist>;
+
+    std::set<url::Origin> origins_;
+
+    RENDER_DOCUMENT_HOST_USER_DATA_KEY_DECL();
+  };
+
+  static DocumentPluginContentOriginAllowlist* GetOrCreateAllowlistForFrame(
+      RenderFrameHost* render_frame_host);
+
+  static bool IsOriginAllowlistedForFrameForTesting(
+      RenderFrameHost* render_frame_host,
+      const url::Origin& content_origin);
+
   // WebContentsObserver implementation.
   void RenderFrameCreated(RenderFrameHost* render_frame_host) override;
   bool OnMessageReceived(const IPC::Message& message,
                          RenderFrameHost* render_frame_host) override;
-  void DidFinishNavigation(NavigationHandle* navigation_handle) override;
 
-  void OnPluginContentOriginAllowed(const url::Origin& content_origin);
-
-  std::set<url::Origin> whitelist_;
+  void OnPluginContentOriginAllowed(RenderFrameHost* render_frame_host,
+                                    const url::Origin& content_origin);
 
   DISALLOW_COPY_AND_ASSIGN(PluginContentOriginWhitelist);
 };

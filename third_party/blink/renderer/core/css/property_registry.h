@@ -30,10 +30,11 @@ class CORE_EXPORT PropertyRegistry : public GarbageCollected<PropertyRegistry> {
   // https://drafts.css-houdini.org/css-properties-values-api-1/#determining-registration
   const PropertyRegistration* Registration(const AtomicString&) const;
 
-  // TODO(andruud): This is used by CSSInterpolationTypesMap::Version() in
-  // a way which isn't correct when registering via @property. Should probably
-  // rethink that use-case and remove this function.
-  size_t RegistrationCount() const;
+  bool IsEmpty() const;
+
+  // Returns a number that increases by one every time there's a change to the
+  // PropertyRegistry.
+  size_t Version() const { return version_; }
 
   // Returns true for properties registered with RegisterProperty/
   // (CSS.registerProperty). Ignores declared properties (@property).
@@ -89,6 +90,7 @@ class CORE_EXPORT PropertyRegistry : public GarbageCollected<PropertyRegistry> {
  private:
   RegistrationMap registered_properties_;
   RegistrationMap declared_properties_;
+  size_t version_ = 0;
 };
 
 }  // namespace blink

@@ -231,7 +231,7 @@ ThreadableLoader::ThreadableLoader(
   }
 }
 
-void ThreadableLoader::Start(const ResourceRequest& request) {
+void ThreadableLoader::Start(ResourceRequest request) {
   original_security_origin_ = security_origin_ = request.RequestorOrigin();
   // Setting an outgoing referer is only supported in the async code path.
   DCHECK(async_ ||
@@ -278,16 +278,13 @@ void ThreadableLoader::Start(const ResourceRequest& request) {
   request_headers_ = request.HttpHeaderFields();
   report_upload_progress_ = request.ReportUploadProgress();
 
-  ResourceRequest new_request;
-  new_request.CopyFrom(request);
-
   // Set the service worker mode to none if "bypass for network" in DevTools is
   // enabled.
   bool should_bypass_service_worker = false;
   probe::ShouldBypassServiceWorker(execution_context_,
                                    &should_bypass_service_worker);
   if (should_bypass_service_worker)
-    new_request.SetSkipServiceWorker(true);
+    request.SetSkipServiceWorker(true);
 
   // Process the CORS protocol inside the ThreadableLoader for the
   // following cases:
@@ -312,11 +309,11 @@ void ThreadableLoader::Start(const ResourceRequest& request) {
   const bool is_controlled_by_service_worker =
       resource_fetcher_->IsControlledByServiceWorker() ==
       blink::mojom::ControllerServiceWorkerMode::kControlled;
-  if (!async_ || new_request.GetSkipServiceWorker() ||
+  if (!async_ || request.GetSkipServiceWorker() ||
       !SchemeRegistry::ShouldTreatURLSchemeAsAllowingServiceWorkers(
-          new_request.Url().Protocol()) ||
+          request.Url().Protocol()) ||
       !is_controlled_by_service_worker) {
-    DispatchInitialRequest(new_request);
+    DispatchInitialRequest(request);
     return;
   }
 
@@ -330,7 +327,7 @@ void ThreadableLoader::Start(const ResourceRequest& request) {
     fallback_request_for_service_worker_.SetSkipServiceWorker(true);
   }
 
-  LoadRequest(new_request, resource_loader_options_);
+  LoadRequest(request, resource_loader_options_);
 }
 
 void ThreadableLoader::DispatchInitialRequest(ResourceRequest& request) {

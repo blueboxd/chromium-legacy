@@ -28,13 +28,6 @@ ReprocessTask::ReprocessTask(ReprocessTask&& other)
 
 ReprocessTask::~ReprocessTask() = default;
 
-bool CameraAppDeviceImpl::SizeComparator::operator()(
-    const gfx::Size& size_1,
-    const gfx::Size& size_2) const {
-  return size_1.width() < size_2.width() || (size_1.width() == size_2.width() &&
-                                             size_1.height() < size_2.height());
-}
-
 // static
 int CameraAppDeviceImpl::GetReprocessReturnCode(
     cros::mojom::Effect effect,
@@ -107,15 +100,16 @@ void CameraAppDeviceImpl::ConsumeReprocessOptions(
   std::move(consumption_callback).Run(std::move(result_task_queue));
 }
 
-base::Optional<gfx::Range> CameraAppDeviceImpl::GetFpsRange(
-    const gfx::Size& resolution) {
+base::Optional<gfx::Range> CameraAppDeviceImpl::GetFpsRange() {
   base::AutoLock lock(fps_ranges_lock_);
 
-  auto it = resolution_fps_range_map_.find(resolution);
-  if (it == resolution_fps_range_map_.end()) {
-    return {};
-  }
-  return it->second;
+  return specified_fps_range_;
+}
+
+gfx::Size CameraAppDeviceImpl::GetStillCaptureResolution() {
+  base::AutoLock lock(still_capture_resolution_lock_);
+
+  return still_capture_resolution_;
 }
 
 cros::mojom::CaptureIntent CameraAppDeviceImpl::GetCaptureIntent() {
@@ -169,8 +163,7 @@ void CameraAppDeviceImpl::SetReprocessOption(
   reprocess_task_queue_.push(std::move(task));
 }
 
-void CameraAppDeviceImpl::SetFpsRange(const gfx::Size& resolution,
-                                      const gfx::Range& fps_range,
+void CameraAppDeviceImpl::SetFpsRange(const gfx::Range& fps_range,
                                       SetFpsRangeCallback callback) {
   const int entry_length = 2;
 
@@ -194,19 +187,20 @@ void CameraAppDeviceImpl::SetFpsRange(const gfx::Size& resolution,
 
   base::AutoLock lock(fps_ranges_lock_);
 
-  if (!is_valid) {
-    // If the input range is invalid, we should still clear the cache range so
-    // that it will fallback to use default fps range rather than the cache one.
-    auto it = resolution_fps_range_map_.find(resolution);
-    if (it != resolution_fps_range_map_.end()) {
-      resolution_fps_range_map_.erase(it);
-    }
-    std::move(callback).Run(false);
-    return;
+  if (is_valid) {
+    specified_fps_range_ = fps_range;
+  } else {
+    specified_fps_range_ = {};
   }
+  std::move(callback).Run(is_valid);
+}
 
-  resolution_fps_range_map_[resolution] = fps_range;
-  std::move(callback).Run(true);
+void CameraAppDeviceImpl::SetStillCaptureResolution(
+    const gfx::Size& resolution,
+    SetStillCaptureResolutionCallback callback) {
+  base::AutoLock lock(still_capture_resolution_lock_);
+  still_capture_resolution_ = resolution;
+  std::move(callback).Run();
 }
 
 void CameraAppDeviceImpl::SetCaptureIntent(

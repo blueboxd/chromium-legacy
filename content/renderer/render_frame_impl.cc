@@ -4994,14 +4994,12 @@ bool RenderFrameImpl::AllowContentInitiatedDataUrlNavigations(
   return url.GetString() == kUnreachableWebDataURL;
 }
 
-void RenderFrameImpl::PostAccessibilityEvent(const blink::WebAXObject& obj,
-                                             ax::mojom::Event event,
-                                             ax::mojom::EventFrom event_from) {
+void RenderFrameImpl::PostAccessibilityEvent(const ui::AXEvent& event) {
   if (!IsAccessibilityEnabled())
     return;
 
   render_accessibility_manager_->GetRenderAccessibilityImpl()
-      ->HandleWebAccessibilityEvent(obj, event, event_from);
+      ->HandleWebAccessibilityEvent(event);
 }
 
 void RenderFrameImpl::MarkWebAXObjectDirty(const blink::WebAXObject& obj,

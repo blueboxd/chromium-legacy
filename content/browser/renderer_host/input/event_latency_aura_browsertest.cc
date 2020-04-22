@@ -114,7 +114,8 @@ IN_PROC_BROWSER_TEST_F(EventLatencyBrowserTest, KeyPressOnButton) {
 
 // Tests that if a key-press on a page with an animation causes a visual update,
 // appropriate event latency metrics are reported.
-IN_PROC_BROWSER_TEST_F(EventLatencyBrowserTest, KeyPressOnButtonWithAnimation) {
+IN_PROC_BROWSER_TEST_F(EventLatencyBrowserTest,
+                       DISABLED_KeyPressOnButtonWithAnimation) {
   base::HistogramTester histogram_tester;
 
   ASSERT_NO_FATAL_FAILURE(LoadTestPage());

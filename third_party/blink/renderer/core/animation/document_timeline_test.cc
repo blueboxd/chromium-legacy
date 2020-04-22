@@ -161,11 +161,11 @@ TEST_F(AnimationDocumentTimelineTest, EmptyKeyframeAnimation) {
   timeline->Play(keyframe_effect);
 
   UpdateClockAndService(0);
-  EXPECT_FLOAT_EQ(0, timeline->currentTime());
+  EXPECT_FLOAT_EQ(0, timeline->currentTime().value());
   EXPECT_FALSE(keyframe_effect->IsInEffect());
 
   UpdateClockAndService(1000);
-  EXPECT_FLOAT_EQ(1000, timeline->currentTime());
+  EXPECT_FLOAT_EQ(1000, timeline->currentTime().value());
 }
 
 TEST_F(AnimationDocumentTimelineTest, EmptyForwardsKeyframeAnimation) {
@@ -182,7 +182,7 @@ TEST_F(AnimationDocumentTimelineTest, EmptyForwardsKeyframeAnimation) {
   EXPECT_TRUE(keyframe_effect->IsInEffect());
 
   UpdateClockAndService(1000);
-  EXPECT_FLOAT_EQ(1000, timeline->currentTime());
+  EXPECT_FLOAT_EQ(1000, timeline->currentTime().value());
 }
 
 TEST_F(AnimationDocumentTimelineTest, ZeroTime) {
@@ -195,7 +195,7 @@ TEST_F(AnimationDocumentTimelineTest, ZeroTime) {
 
 TEST_F(AnimationDocumentTimelineTest, CurrentTimeSeconds) {
   GetAnimationClock().UpdateTime(TimeTicksFromMillisecondsD(2000));
-  EXPECT_EQ(2, timeline->CurrentTimeSeconds().value());
+  EXPECT_EQ(2, timeline->CurrentTimeSeconds());
   EXPECT_EQ(2000, timeline->currentTime());
 
   auto* document_without_frame = MakeGarbageCollected<Document>();
@@ -203,10 +203,7 @@ TEST_F(AnimationDocumentTimelineTest, CurrentTimeSeconds) {
       document_without_frame, base::TimeDelta(), platform_timing);
 
   EXPECT_FALSE(inactive_timeline->CurrentTimeSeconds());
-  EXPECT_NAN(inactive_timeline->currentTime());
-  bool is_null = false;
-  inactive_timeline->currentTime(is_null);
-  EXPECT_TRUE(is_null);
+  EXPECT_FALSE(inactive_timeline->currentTime());
 }
 
 TEST_F(AnimationDocumentTimelineTest, PlaybackRateNormal) {
@@ -363,8 +360,8 @@ TEST_F(AnimationDocumentTimelineTest, PauseForTesting) {
   Animation* animation2 = timeline->Play(anim2);
   timeline->PauseAnimationsForTesting(seek_time);
 
-  EXPECT_FLOAT_EQ(seek_time * 1000, animation1->currentTime());
-  EXPECT_FLOAT_EQ(seek_time * 1000, animation2->currentTime());
+  EXPECT_FLOAT_EQ(seek_time * 1000, animation1->currentTime().value());
+  EXPECT_FLOAT_EQ(seek_time * 1000, animation2->currentTime().value());
 }
 
 TEST_F(AnimationDocumentTimelineTest, DelayBeforeAnimationStart) {
@@ -398,7 +395,7 @@ TEST_F(AnimationDocumentTimelineTest, UseAnimationAfterTimelineDeref) {
   Animation* animation = timeline->Play(nullptr);
   timeline.Clear();
   // Test passes if this does not crash.
-  animation->setStartTime(0, false);
+  animation->setStartTime(0);
 }
 
 TEST_F(AnimationDocumentTimelineTest, PlayAfterDocumentDeref) {

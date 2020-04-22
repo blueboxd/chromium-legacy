@@ -1404,4 +1404,35 @@ TEST_F(BrowserAccessibilityManagerTest, TestHitTestScaled) {
                                 ax::mojom::StringAttribute::kName));
 }
 
+TEST_F(BrowserAccessibilityManagerTest, TestShouldFireEventForNode) {
+  ui::AXNodeData inline_text;
+  inline_text.id = 1111;
+  inline_text.role = ax::mojom::Role::kInlineTextBox;
+
+  ui::AXNodeData text;
+  text.id = 111;
+  text.role = ax::mojom::Role::kStaticText;
+  text.child_ids = {inline_text.id};
+
+  ui::AXNodeData paragraph;
+  paragraph.id = 11;
+  paragraph.role = ax::mojom::Role::kParagraph;
+  paragraph.child_ids = {text.id};
+
+  ui::AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kRootWebArea;
+  root.child_ids = {paragraph.id};
+
+  std::unique_ptr<BrowserAccessibilityManager> manager(
+      BrowserAccessibilityManager::Create(
+          MakeAXTreeUpdate(root, paragraph, text, inline_text),
+          test_browser_accessibility_delegate_.get()));
+
+  EXPECT_TRUE(manager->ShouldFireEventForNode(manager->GetFromID(1)));
+  EXPECT_TRUE(manager->ShouldFireEventForNode(manager->GetFromID(11)));
+  EXPECT_TRUE(manager->ShouldFireEventForNode(manager->GetFromID(111)));
+  EXPECT_FALSE(manager->ShouldFireEventForNode(manager->GetFromID(1111)));
+}
+
 }  // namespace content

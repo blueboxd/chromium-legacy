@@ -15,7 +15,6 @@
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#import "ios/chrome/browser/passwords/password_form_filler.h"
 #import "ios/chrome/browser/ui/activity_services/activities/bookmark_activity.h"
 #import "ios/chrome/browser/ui/activity_services/activities/find_in_page_activity.h"
 #import "ios/chrome/browser/ui/activity_services/activities/generate_qr_code_activity.h"
@@ -23,9 +22,7 @@
 #import "ios/chrome/browser/ui/activity_services/activities/request_desktop_or_mobile_site_activity.h"
 #import "ios/chrome/browser/ui/activity_services/activities/send_tab_to_self_activity.h"
 #import "ios/chrome/browser/ui/activity_services/activity_type_util.h"
-#import "ios/chrome/browser/ui/activity_services/appex_constants.h"
 #import "ios/chrome/browser/ui/activity_services/chrome_activity_item_source.h"
-#import "ios/chrome/browser/ui/activity_services/requirements/activity_service_password.h"
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_positioner.h"
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_presentation.h"
 #import "ios/chrome/browser/ui/activity_services/share_to_data.h"
@@ -48,33 +45,6 @@
 #error "This file requires ARC support."
 #endif
 
-@interface FakePasswordFormFiller : NSObject<PasswordFormFiller>
-
-// Stores the latest value passed to the invocation of the method
-// -findAndFillPasswordForms:password:completionHandler:.
-@property(nonatomic, readonly, copy) NSString* username;
-@property(nonatomic, readonly, copy) NSString* password;
-
-// YES if the method -findAndFillPasswordForms:password:completionHandler:
-// was called on this object, NO otherwise.
-@property(nonatomic, readonly, assign) BOOL methodCalled;
-
-@end
-
-@implementation FakePasswordFormFiller
-
-- (void)findAndFillPasswordForms:(NSString*)username
-                        password:(NSString*)password
-               completionHandler:(void (^)(BOOL))completionHandler {
-  _methodCalled = YES;
-  _username = [username copy];
-  _password = [password copy];
-  if (completionHandler)
-    completionHandler(YES);
-}
-
-@end
-
 @interface ActivityServiceController (CrVisibleForTesting)
 - (NSArray*)activityItemsForData:(ShareToData*)data;
 - (NSArray*)
@@ -85,27 +55,20 @@
                    bookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
                 canSendTabToSelf:(BOOL)canSendTabToSelf;
 
-- (BOOL)processItemsReturnedFromActivity:(NSString*)activityType
-                                  status:(ShareTo::ShareResult)result
-                                   items:(NSArray*)extensionItems;
 - (void)shareDidComplete:(ShareTo::ShareResult)shareStatus
        completionMessage:(NSString*)message;
 
 // Setter function for mocking during testing
-- (void)setProvidersForTesting:
-            (id<ActivityServicePassword, ActivityServicePresentation>)provider
+- (void)setProvidersForTesting:(id<ActivityServicePresentation>)provider
                     dispatcher:(id<SnackbarCommands>)dispatcher;
 @end
 
 @interface FakeActivityServiceControllerTestProvider
-    : NSObject<ActivityServicePassword,
-               ActivityServicePositioner,
-               ActivityServicePresentation,
-               SnackbarCommands>
+    : NSObject <ActivityServicePositioner,
+                ActivityServicePresentation,
+                SnackbarCommands>
 
 @property(nonatomic, readonly, strong) UIViewController* parentViewController;
-@property(nonatomic, readonly, strong)
-    FakePasswordFormFiller* fakePasswordFormFiller;
 
 // Tracks whether or not the associated provider methods were called.
 @property(nonatomic, readonly, assign)
@@ -128,15 +91,8 @@
 - (instancetype)initWithParentViewController:(UIViewController*)controller {
   if ((self = [super init])) {
     _parentViewController = controller;
-    _fakePasswordFormFiller = [[FakePasswordFormFiller alloc] init];
   }
   return self;
-}
-
-#pragma mark - ActivityServicePassword
-
-- (id<PasswordFormFiller>)currentPasswordFormFiller {
-  return _fakePasswordFormFiller;
 }
 
 #pragma mark - ActivityServicePresentation
@@ -298,35 +254,6 @@ class ActivityServiceControllerTest : public PlatformTest {
     return false;
   }
 
-  // Calls -processItemsReturnedFromActivity:status:items: with the provided
-  // |extensionItem| and expects failure.
-  void ProcessItemsReturnedFromActivityFailure(NSArray* extensionItems,
-                                               BOOL expectedResetUI) {
-    ActivityServiceController* activityController =
-        [[ActivityServiceController alloc] init];
-    FakeActivityServiceControllerTestProvider* provider =
-        [[FakeActivityServiceControllerTestProvider alloc]
-            initWithParentViewController:nil];
-    [activityController setProvidersForTesting:provider dispatcher:provider];
-
-    // The following call to |processItemsReturnedFromActivity| should not
-    // trigger any calls to the PasswordFormFiller.
-    EXPECT_TRUE(provider.fakePasswordFormFiller);
-    EXPECT_FALSE(provider.fakePasswordFormFiller.methodCalled);
-
-    // Sets up the returned item from a Password Management App Extension.
-    NSString* activityType = @"com.lastpass.ilastpass.LastPassExt";
-    ShareTo::ShareResult result = ShareTo::ShareResult::SHARE_SUCCESS;
-    BOOL resetUI =
-        [activityController processItemsReturnedFromActivity:activityType
-                                                      status:result
-                                                       items:extensionItems];
-    ASSERT_EQ(expectedResetUI, resetUI);
-
-    EXPECT_TRUE(provider.fakePasswordFormFiller);
-    EXPECT_FALSE(provider.fakePasswordFormFiller.methodCalled);
-  }
-
   // A state directory that outlives |task_environment_| is needed because
   // CreateHistoryService/CreateBookmarkModel use the directory to host
   // databases. See https://crbug.com/546640 for more details.
@@ -358,7 +285,6 @@ TEST_F(ActivityServiceControllerTest, PresentAndDismissController) {
   [activityController shareWithData:shareData_
                        browserState:chrome_browser_state_.get()
                          dispatcher:nil
-                   passwordProvider:provider
                    positionProvider:provider
                presentationProvider:provider];
   EXPECT_TRUE(provider.presentActivityServiceViewControllerWasCalled);
@@ -371,172 +297,6 @@ TEST_F(ActivityServiceControllerTest, PresentAndDismissController) {
   // Cancels sharing and activityServiceDidEndPresenting should be called.
   [activityController cancelShareAnimated:NO];
   EXPECT_TRUE(provider.activityServiceDidEndPresentingWasCalled);
-}
-
-// Verifies that when App Extension support is enabled, the URL string is
-// passed in a dictionary as part of the Activity Items to the App Extension.
-TEST_F(ActivityServiceControllerTest, ActivityItemsForDataWithPasswordAppEx) {
-  ActivityServiceController* activityController =
-      [[ActivityServiceController alloc] init];
-  ShareToData* data = [[ShareToData alloc]
-        initWithShareURL:GURL("https://chromium.org/login.html")
-              visibleURL:GURL("https://m.chromium.org/login.html")
-                   title:@"kung fu fighting"
-         isOriginalTitle:YES
-         isPagePrintable:YES
-        isPageSearchable:YES
-               userAgent:web::UserAgentType::DESKTOP
-      thumbnailGenerator:thumbnail_generator_];
-  NSArray* items = [activityController activityItemsForData:data];
-  NSString* findLoginAction =
-      (NSString*)activity_services::kUTTypeAppExtensionFindLoginAction;
-  // Gets the list of NSExtensionItem objects returned by the array of
-  // id<UIActivityItemSource> objects returned by -activityItemsForData:.
-  NSArray* extensionItems = FindItemsForActivityType(
-      items, @"com.agilebits.onepassword-ios.extension");
-  ASSERT_EQ(1U, [extensionItems count]);
-  NSExtensionItem* item = extensionItems[0];
-  EXPECT_EQ(1U, item.attachments.count);
-  NSItemProvider* itemProvider = item.attachments[0];
-  // Extracts the dictionary back from the ItemProvider and then check that
-  // it has the expected version and the page's URL.
-  __block NSDictionary* result;
-  [itemProvider
-      loadItemForTypeIdentifier:findLoginAction
-                        options:nil
-              completionHandler:^(id item, NSError* error) {
-                if (error || ![item isKindOfClass:[NSDictionary class]]) {
-                  result = @{};
-                } else {
-                  result = item;
-                }
-              }];
-  base::test::ios::WaitUntilCondition(^{
-    return result != nil;
-  });
-  EXPECT_EQ(2U, [result count]);
-  // Checks version.
-  NSNumber* version =
-      [result objectForKey:activity_services::kPasswordAppExVersionNumberKey];
-  EXPECT_NSEQ(activity_services::kPasswordAppExVersionNumber, version);
-  // Checks URL.
-  NSString* appExUrlString =
-      [result objectForKey:activity_services::kPasswordAppExURLStringKey];
-  EXPECT_NSEQ(@"https://m.chromium.org/login.html", appExUrlString);
-
-  // Checks that the list includes the page's title.
-  NSArray* sources = FindItemsOfClass(items, [UIActivityURLSource class]);
-  EXPECT_EQ(1U, [sources count]);
-  UIActivityURLSource* actionSource = sources[0];
-  id mockActivityViewController =
-      [OCMockObject niceMockForClass:[UIActivityViewController class]];
-  NSString* title = [actionSource
-      activityViewController:mockActivityViewController
-      subjectForActivityType:@"com.agilebits.onepassword-ios.extension"];
-  EXPECT_NSEQ(@"kung fu fighting", title);
-}
-
-// Verifies that a Share extension can fetch a URL when Password App Extension
-// is enabled.
-TEST_F(ActivityServiceControllerTest,
-       ActivityItemsForDataWithPasswordAppExReturnsURL) {
-  ActivityServiceController* activityController =
-      [[ActivityServiceController alloc] init];
-  ShareToData* data = [[ShareToData alloc]
-        initWithShareURL:GURL("https://chromium.org/login.html")
-              visibleURL:GURL("https://m.chromium.org/login.html")
-                   title:@"kung fu fighting"
-         isOriginalTitle:YES
-         isPagePrintable:YES
-        isPageSearchable:YES
-               userAgent:web::UserAgentType::DESKTOP
-      thumbnailGenerator:thumbnail_generator_];
-  NSArray* items = [activityController activityItemsForData:data];
-  NSString* shareAction = @"com.apple.UIKit.activity.PostToFacebook";
-  NSArray* urlItems =
-      FindItemsEqualsToUTType(items, shareAction, @"public.url");
-  ASSERT_EQ(1U, [urlItems count]);
-  id<UIActivityItemSource> itemSource = urlItems[0];
-  id mockActivityViewController =
-      [OCMockObject niceMockForClass:[UIActivityViewController class]];
-  id item = [itemSource activityViewController:mockActivityViewController
-                           itemForActivityType:shareAction];
-  ASSERT_TRUE([item isKindOfClass:[NSURL class]]);
-  EXPECT_NSEQ(@"https://chromium.org/login.html", [item absoluteString]);
-}
-
-// Verifies that -processItemsReturnedFromActivity:status:item: contains
-// the username and password.
-TEST_F(ActivityServiceControllerTest, ProcessItemsReturnedSuccessfully) {
-  ActivityServiceController* activityController =
-      [[ActivityServiceController alloc] init];
-
-  FakeActivityServiceControllerTestProvider* provider =
-      [[FakeActivityServiceControllerTestProvider alloc]
-          initWithParentViewController:nil];
-  ASSERT_TRUE([provider currentPasswordFormFiller]);
-  [activityController setProvidersForTesting:provider dispatcher:nil];
-
-  EXPECT_TRUE(provider.fakePasswordFormFiller);
-  EXPECT_FALSE(provider.fakePasswordFormFiller.methodCalled);
-
-  // Sets up expectations on the mock PasswordController to check that the
-  // callback function is called with the correct username and password.
-  NSString* const kSecretUsername = @"john.doe";
-  NSString* const kSecretPassword = @"super!secret";
-
-  // Sets up the returned item from a Password Management App Extension.
-  NSString* activityType = @"com.software.find-login-action.extension";
-  ShareTo::ShareResult result = ShareTo::ShareResult::SHARE_SUCCESS;
-  NSDictionary* dictionaryFromAppEx =
-      @{ @"username" : kSecretUsername,
-         @"password" : kSecretPassword };
-  NSItemProvider* itemProvider =
-      [[NSItemProvider alloc] initWithItem:dictionaryFromAppEx
-                            typeIdentifier:(NSString*)kUTTypePropertyList];
-  NSExtensionItem* extensionItem = [[NSExtensionItem alloc] init];
-  [extensionItem setAttachments:@[ itemProvider ]];
-
-  BOOL resetUI =
-      [activityController processItemsReturnedFromActivity:activityType
-                                                    status:result
-                                                     items:@[ extensionItem ]];
-  ASSERT_FALSE(resetUI);
-
-  // Wait for the -findAndFillPasswordForms:password:completionHandler: method
-  // to be called on the FakePasswordFormFiller.
-  base::test::ios::WaitUntilCondition(^bool() {
-    return provider.fakePasswordFormFiller.methodCalled;
-  });
-
-  EXPECT_NSEQ(kSecretUsername, provider.fakePasswordFormFiller.username);
-  EXPECT_NSEQ(kSecretPassword, provider.fakePasswordFormFiller.password);
-}
-
-// Verifies that -processItemsReturnedFromActivity:status:item: fails when
-// called with invalid NSExtensionItem.
-TEST_F(ActivityServiceControllerTest, ProcessItemsReturnedFailures) {
-  ProcessItemsReturnedFromActivityFailure(@[], YES);
-
-  // Extension Item is empty.
-  NSExtensionItem* extensionItem = [[NSExtensionItem alloc] init];
-  [extensionItem setAttachments:@[]];
-  ProcessItemsReturnedFromActivityFailure(@[ extensionItem ], YES);
-
-  // Extension Item does not have a property list provider as the first
-  // attachment.
-  NSItemProvider* itemProvider =
-      [[NSItemProvider alloc] initWithItem:@"some arbitrary garbage"
-                            typeIdentifier:(NSString*)kUTTypeText];
-  [extensionItem setAttachments:@[ itemProvider ]];
-  ProcessItemsReturnedFromActivityFailure(@[ extensionItem ], YES);
-
-  // Property list provider did not return a dictionary object.
-  itemProvider =
-      [[NSItemProvider alloc] initWithItem:@[ @"foo", @"bar" ]
-                            typeIdentifier:(NSString*)kUTTypePropertyList];
-  [extensionItem setAttachments:@[ itemProvider ]];
-  ProcessItemsReturnedFromActivityFailure(@[ extensionItem ], NO);
 }
 
 // Verifies that the PrintActivity is sent to the UIActivityViewController if
@@ -738,35 +498,6 @@ TEST_F(ActivityServiceControllerTest, RequestMobileDesktopSite) {
   EXPECT_OCMOCK_VERIFY(mockBrowserCommandHandler);
 }
 
-TEST_F(ActivityServiceControllerTest, FindLoginActionTypeConformsToPublicURL) {
-  // If this test fails, it is probably due to missing or incorrect
-  // UTImportedTypeDeclarations in Info.plist. Note that there are
-  // two Info.plist,
-  // - ios/chrome/app/resources/Info.plist for Chrome app
-  // - testing/gtest_ios/unittest-Info.plist for ios_chrome_unittests
-  // Both of them must be changed.
-
-  // 1Password defined the type @"org.appextension.find-login-action" so
-  // any app can launch the 1Password app extension to fill in username and
-  // password. This is being used by iOS native apps to launch 1Password app
-  // extension and show *only* 1Password app extension as an option.
-  // Therefore, this data type should *not* conform to public.url.
-  // During the transition period, this test:
-  // EXPECT_FALSE(UTTypeConformsTo(onePasswordFindLoginAction, kUTTypeURL));
-  // is not possible due to backward compatibility configurations.
-  CFStringRef onePasswordFindLoginAction =
-      reinterpret_cast<CFStringRef>(@"org.appextension.find-login-action");
-
-  // Chrome defines kUTTypeAppExtensionFindLoginAction which conforms to
-  // public.url UTType in order to allow Share actions (e.g. Facebook, Twitter,
-  // etc) to appear on UIActivityViewController opened by Chrome).
-  CFStringRef chromeFindLoginAction = reinterpret_cast<CFStringRef>(
-      activity_services::kUTTypeAppExtensionFindLoginAction);
-  EXPECT_TRUE(UTTypeConformsTo(chromeFindLoginAction, kUTTypeURL));
-  EXPECT_TRUE(
-      UTTypeConformsTo(chromeFindLoginAction, onePasswordFindLoginAction));
-}
-
 // Verifies that the snackbar provider is invoked to show the given success
 // message on receiving a -shareDidComplete callback for a successful share.
 TEST_F(ActivityServiceControllerTest, TestShareDidCompleteWithSuccess) {
@@ -949,7 +680,6 @@ TEST_F(ActivityServiceControllerTest, PresentWhenOffTheRecord) {
                        browserState:chrome_browser_state_
                                         ->GetOffTheRecordChromeBrowserState()
                          dispatcher:nil
-                   passwordProvider:provider
                    positionProvider:provider
                presentationProvider:provider];
 

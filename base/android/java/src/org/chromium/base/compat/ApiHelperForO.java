@@ -11,6 +11,7 @@ import android.content.res.Configuration;
 import android.os.Build;
 import android.view.Display;
 import android.view.View;
+import android.view.Window;
 
 import org.chromium.base.annotations.VerifiesOnO;
 
@@ -27,6 +28,11 @@ public final class ApiHelperForO {
     /** See {@link Display#isWideColorGamut() }. */
     public static boolean isWideColorGamut(Display display) {
         return display.isWideColorGamut();
+    }
+
+    /** See {@link Window#setColorMode(int) }. */
+    public static void setColorMode(Window window, int colorMode) {
+        window.setColorMode(colorMode);
     }
 
     /** See {@link Configuration#isScreenWideColorGamut() }. */

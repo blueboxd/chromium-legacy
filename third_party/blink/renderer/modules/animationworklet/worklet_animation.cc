@@ -166,7 +166,7 @@ base::Optional<base::TimeDelta> CalculateStartTime(
     base::TimeDelta current_time,
     double playback_rate,
     AnimationTimeline& timeline) {
-  base::Optional<double> timeline_current_time_ms = timeline.CurrentTime();
+  base::Optional<double> timeline_current_time_ms = timeline.currentTime();
   return base::TimeDelta::FromMillisecondsD(timeline_current_time_ms.value()) -
          (current_time / playback_rate);
 }
@@ -737,7 +737,7 @@ base::Optional<base::TimeDelta> WorkletAnimation::InitialCurrentTime() const {
 
   base::Optional<base::TimeDelta> starting_time =
       timeline_->InitialStartTimeForAnimations();
-  base::Optional<double> current_time = timeline_->CurrentTime();
+  base::Optional<double> current_time = timeline_->currentTime();
 
   if (!starting_time || !current_time) {
     return base::nullopt;

@@ -48,13 +48,6 @@ constexpr int32_t kReprocessSuccess = 0;
 // supported by Chrome API.
 class CAPTURE_EXPORT CameraAppDeviceImpl : public cros::mojom::CameraAppDevice {
  public:
-  struct SizeComparator {
-    bool operator()(const gfx::Size& size_1, const gfx::Size& size_2) const;
-  };
-
-  using ResolutionFpsRangeMap =
-      base::flat_map<gfx::Size, gfx::Range, SizeComparator>;
-
   // Retrieve the return code for reprocess |effect| from the |metadata|.
   static int GetReprocessReturnCode(
       cros::mojom::Effect effect,
@@ -82,8 +75,12 @@ class CAPTURE_EXPORT CameraAppDeviceImpl : public cros::mojom::CameraAppDevice {
       media::mojom::ImageCapture::TakePhotoCallback take_photo_callback,
       base::OnceCallback<void(ReprocessTaskQueue)> consumption_callback);
 
-  // Retrieves the corresponding fps range given by stream |resolution|.
-  base::Optional<gfx::Range> GetFpsRange(const gfx::Size& resolution);
+  // Retrieves the fps range if it is specified by the app.
+  base::Optional<gfx::Range> GetFpsRange();
+
+  // Retrieves the corresponding capture resolution which is specified by the
+  // app.
+  gfx::Size GetStillCaptureResolution();
 
   // Gets the capture intent which is specified by the app.
   cros::mojom::CaptureIntent GetCaptureIntent();
@@ -100,9 +97,11 @@ class CAPTURE_EXPORT CameraAppDeviceImpl : public cros::mojom::CameraAppDevice {
   void GetCameraInfo(GetCameraInfoCallback callback) override;
   void SetReprocessOption(cros::mojom::Effect effect,
                           SetReprocessOptionCallback callback) override;
-  void SetFpsRange(const gfx::Size& resolution,
-                   const gfx::Range& fps_range,
+  void SetFpsRange(const gfx::Range& fps_range,
                    SetFpsRangeCallback callback) override;
+  void SetStillCaptureResolution(
+      const gfx::Size& resolution,
+      SetStillCaptureResolutionCallback callback) override;
   void SetCaptureIntent(cros::mojom::CaptureIntent capture_intent,
                         SetCaptureIntentCallback callback) override;
   void AddResultMetadataObserver(
@@ -139,9 +138,14 @@ class CAPTURE_EXPORT CameraAppDeviceImpl : public cros::mojom::CameraAppDevice {
   base::queue<ReprocessTask> reprocess_task_queue_
       GUARDED_BY(reprocess_tasks_lock_);
 
-  // The map will be inserted and read from different threads.
+  // It will be inserted and read from different threads.
   base::Lock fps_ranges_lock_;
-  ResolutionFpsRangeMap resolution_fps_range_map_ GUARDED_BY(fps_ranges_lock_);
+  base::Optional<gfx::Range> specified_fps_range_ GUARDED_BY(fps_ranges_lock_);
+
+  // It will be inserted and read from different threads.
+  base::Lock still_capture_resolution_lock_;
+  gfx::Size still_capture_resolution_
+      GUARDED_BY(still_capture_resolution_lock_);
 
   // It will be modified and read from different threads.
   base::Lock capture_intent_lock_;

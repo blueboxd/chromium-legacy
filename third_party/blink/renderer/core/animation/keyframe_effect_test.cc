@@ -370,25 +370,25 @@ TEST_F(KeyframeEffectTest, TimeToEffectChange) {
             keyframe_effect->TimeToReverseEffectChange());
 
   // End of the before phase.
-  animation->setCurrentTime(100000, false);
+  animation->setCurrentTime(100000);
   EXPECT_EQ(AnimationTimeDelta::FromSecondsD(100),
             keyframe_effect->TimeToForwardsEffectChange());
   EXPECT_EQ(AnimationTimeDelta(), keyframe_effect->TimeToReverseEffectChange());
 
   // Nearing the end of the active phase.
-  animation->setCurrentTime(199000, false);
+  animation->setCurrentTime(199000);
   EXPECT_EQ(AnimationTimeDelta::FromSecondsD(1),
             keyframe_effect->TimeToForwardsEffectChange());
   EXPECT_EQ(AnimationTimeDelta(), keyframe_effect->TimeToReverseEffectChange());
 
   // End of the active phase.
-  animation->setCurrentTime(200000, false);
+  animation->setCurrentTime(200000);
   EXPECT_EQ(AnimationTimeDelta::FromSecondsD(100),
             keyframe_effect->TimeToForwardsEffectChange());
   EXPECT_EQ(AnimationTimeDelta(), keyframe_effect->TimeToReverseEffectChange());
 
   // End of the animation.
-  animation->setCurrentTime(300000, false);
+  animation->setCurrentTime(300000);
   EXPECT_EQ(AnimationTimeDelta::Max(),
             keyframe_effect->TimeToForwardsEffectChange());
   EXPECT_EQ(AnimationTimeDelta::FromSecondsD(100),

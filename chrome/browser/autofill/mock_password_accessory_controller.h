@@ -8,7 +8,7 @@
 #include <map>
 
 #include "base/macros.h"
-#include "chrome/browser/password_manager/password_accessory_controller.h"
+#include "chrome/browser/password_manager/android/password_accessory_controller.h"
 #include "components/autofill/core/browser/ui/accessory_sheet_data.h"
 #include "components/autofill/core/browser/ui/accessory_sheet_enums.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom-forward.h"

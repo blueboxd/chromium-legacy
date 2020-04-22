@@ -117,3 +117,34 @@ absl_source_set("compare") {
     "../meta:type_traits",
   ]
 }
+# TODO(mbonadei): On iOS, gtest doesn't support death tests. Fix upstream
+# Abseil to use EXPECT_DEATH_IF_SUPPORTED instead of EXPECT_DEATH.
+# absl_source_set("optional_test") {
+#   testonly = true
+#   sources = [ "optional_test.cc" ]
+#   deps = [
+#     ":optional",
+#     "../base:config",
+#     "../base:raw_logging_internal",
+#     "../meta:type_traits",
+#     "../strings",
+#     "//third_party/googletest:gtest",
+#   ]
+#   visibility = [ "*" ]
+# }
+#
+# absl_source_set("variant_test") {
+#   testonly = true
+#   sources = [ "variant_test.cc" ]
+#   cflags_cc = [ "-Wno-unused-function" ]
+#   deps = [
+#     ":variant",
+#     "../base:config",
+#     "../base:core_headers",
+#     "../memory",
+#     "../meta:type_traits",
+#     "../strings",
+#     "//third_party/googletest:gtest",
+#     "//third_party/googletest:gmock",
+#   ]
+# }

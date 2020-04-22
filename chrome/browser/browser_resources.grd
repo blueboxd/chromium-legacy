@@ -37,6 +37,8 @@
         <structure name="IDR_CUSTOM_ELEMENTS_LOGIN_JS" file="resources\chromeos\login\custom_elements_login.js" compress="gzip" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_ASSISTANT_OPTIN_HTML" file="resources\chromeos\assistant_optin\assistant_optin.html" compress="gzip" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
         <structure name="IDR_ASSISTANT_OPTIN_JS" file="resources\chromeos\assistant_optin\assistant_optin.js" compress="gzip" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
+        <structure name="IDR_OOBE_DEBUGGER_JS" file="resources\chromeos\login\debug\debug.js" compress="gzip" flattenhtml="true" type="chrome_html" />
+        <structure name="IDR_OOBE_DEBUGGER_STUB_JS" file="resources\chromeos\login\debug\no_debug.js" compress="gzip" flattenhtml="true" type="chrome_html" />
 
         <!-- Gesture Navigation animations. -->
         <structure type="chrome_html" name="IDR_GESTURE_NAVIGATION_GO_HOME_ANIMATION" file="resources\chromeos\login\images\gesture_go_home.json" compress="gzip" />

@@ -20,12 +20,15 @@
 
 namespace gcm {
 class GCMDriver;
-}
+}  // namespace gcm
+
+namespace syncer {
+class DeviceInfoTracker;
+}  // namespace syncer
 
 enum class SharingChannelType;
 class SharingFCMSender;
 class SharingHandlerRegistry;
-class SharingSyncPreference;
 
 enum class SharingDevicePlatform;
 
@@ -34,8 +37,8 @@ enum class SharingDevicePlatform;
 class SharingFCMHandler : public gcm::GCMAppHandler {
  public:
   SharingFCMHandler(gcm::GCMDriver* gcm_driver,
+                    syncer::DeviceInfoTracker* device_info_tracker,
                     SharingFCMSender* sharing_fcm_sender,
-                    SharingSyncPreference* sync_preference,
                     SharingHandlerRegistry* handler_registry);
   ~SharingFCMHandler() override;
 
@@ -71,6 +74,9 @@ class SharingFCMHandler : public gcm::GCMAppHandler {
   GetServerChannel(
       const chrome_browser_sharing::SharingMessage& original_message);
 
+  SharingDevicePlatform GetSenderPlatform(
+      const chrome_browser_sharing::SharingMessage& original_message);
+
   // Ack message sent back to the original sender of message.
   void SendAckMessage(
       std::string original_message_id,
@@ -93,8 +99,8 @@ class SharingFCMHandler : public gcm::GCMAppHandler {
       SharingChannelType channel_type);
 
   gcm::GCMDriver* const gcm_driver_;
+  syncer::DeviceInfoTracker* device_info_tracker_;
   SharingFCMSender* sharing_fcm_sender_;
-  SharingSyncPreference* sync_preference_;
   SharingHandlerRegistry* handler_registry_;
 
   bool is_listening_ = false;

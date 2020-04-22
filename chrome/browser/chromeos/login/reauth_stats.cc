@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/reauth_stats.h"
 
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/user_manager/known_user.h"
 

@@ -788,6 +788,7 @@ void InspectorNetworkAgent::WillSendRequestInternal(
     const ResourceResponse& redirect_response,
     const FetchInitiatorInfo& initiator_info,
     InspectorPageAgent::ResourceType type) {
+  CHECK_EQ(identifier, request.InspectorId());
   String loader_id = IdentifiersFactory::LoaderId(loader);
   String request_id = IdentifiersFactory::RequestId(loader, identifier);
   NetworkResourcesData::ResourceData const* data =

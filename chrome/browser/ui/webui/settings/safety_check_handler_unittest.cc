@@ -43,6 +43,7 @@
 #endif
 
 // Components for building event strings.
+constexpr char kParent[] = "parent";
 constexpr char kUpdates[] = "updates";
 constexpr char kPasswords[] = "passwords";
 constexpr char kSafeBrowsing[] = "safe-browsing";
@@ -1065,4 +1066,58 @@ TEST_F(SafetyCheckHandlerTest, CheckParentRanDisplayString) {
         safety_check_->GetStringForParentRan(time, system_time);
     EXPECT_EQ(base::UTF8ToUTF16(std::get<0>(tuple)), display_string);
   }
+}
+
+TEST_F(SafetyCheckHandlerTest, CheckSafetyCheckStartedWebUiEvents) {
+  safety_check_->PerformSafetyCheck();
+
+  // Check that all initial updates ("running" states) are sent.
+  const base::DictionaryValue* event_parent =
+      GetSafetyCheckStatusChangedWithDataIfExists(
+          kParent,
+          static_cast<int>(SafetyCheckHandler::ParentStatus::kChecking));
+  ASSERT_TRUE(event_parent);
+  VerifyDisplayString(event_parent, base::UTF8ToUTF16("Running…"));
+  const base::DictionaryValue* event_updates =
+      GetSafetyCheckStatusChangedWithDataIfExists(
+          kUpdates,
+          static_cast<int>(SafetyCheckHandler::UpdateStatus::kChecking));
+  ASSERT_TRUE(event_updates);
+  VerifyDisplayString(event_updates, base::UTF8ToUTF16(""));
+  const base::DictionaryValue* event_pws =
+      GetSafetyCheckStatusChangedWithDataIfExists(
+          kPasswords,
+          static_cast<int>(SafetyCheckHandler::PasswordsStatus::kChecking));
+  ASSERT_TRUE(event_pws);
+  VerifyDisplayString(event_pws, base::UTF8ToUTF16(""));
+  const base::DictionaryValue* event_sb =
+      GetSafetyCheckStatusChangedWithDataIfExists(
+          kSafeBrowsing,
+          static_cast<int>(SafetyCheckHandler::SafeBrowsingStatus::kChecking));
+  ASSERT_TRUE(event_sb);
+  VerifyDisplayString(event_sb, base::UTF8ToUTF16(""));
+  const base::DictionaryValue* event_extensions =
+      GetSafetyCheckStatusChangedWithDataIfExists(
+          kExtensions,
+          static_cast<int>(SafetyCheckHandler::ExtensionsStatus::kChecking));
+  ASSERT_TRUE(event_extensions);
+  VerifyDisplayString(event_extensions, base::UTF8ToUTF16(""));
+}
+
+TEST_F(SafetyCheckHandlerTest, CheckSafetyCheckCompletedWebUiEvents) {
+  // Mock safety check invocation.
+  safety_check_->PerformSafetyCheck();
+
+  // Password mocks need to be triggered with a non-checking state to fire.
+  // All other mocks fire automatically when invoked.
+  test_leak_service_->set_state_and_notify(
+      password_manager::BulkLeakCheckService::State::kSignedOut);
+
+  // Check that the parent update is sent after all children checks completed.
+  const base::DictionaryValue* event_parent =
+      GetSafetyCheckStatusChangedWithDataIfExists(
+          kParent, static_cast<int>(SafetyCheckHandler::ParentStatus::kAfter));
+  ASSERT_TRUE(event_parent);
+  VerifyDisplayString(event_parent,
+                      base::UTF8ToUTF16("Safety check ran a moment ago"));
 }

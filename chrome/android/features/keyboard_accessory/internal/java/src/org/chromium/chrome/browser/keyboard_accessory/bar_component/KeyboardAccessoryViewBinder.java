@@ -14,11 +14,9 @@ import static org.chromium.chrome.browser.keyboard_accessory.bar_component.Keybo
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.TAB_LAYOUT_ITEM;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.VISIBLE;
 
-import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewParent;
 import android.widget.TextView;
 
 import androidx.annotation.LayoutRes;
@@ -89,7 +87,6 @@ class KeyboardAccessoryViewBinder {
     static void bind(PropertyModel model, KeyboardAccessoryView view, PropertyKey propertyKey) {
         boolean wasBound = bindInternal(model, view, propertyKey);
         assert wasBound : "Every possible property update needs to be handled!";
-        requestLayoutPreKitkat(view);
     }
 
     /**
@@ -120,17 +117,5 @@ class KeyboardAccessoryViewBinder {
             return false;
         }
         return true;
-    }
-
-    protected static void requestLayoutPreKitkat(View view) {
-        // Layout requests happen automatically since Kitkat and redundant requests cause warnings.
-        if (view != null && Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
-            view.post(() -> {
-                ViewParent parent = view.getParent();
-                if (parent != null) {
-                    parent.requestLayout();
-                }
-            });
-        }
     }
 }

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SAML_PASSWORD_EXPIRY_NOTIFICATION_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SAML_PASSWORD_EXPIRY_NOTIFICATION_H_
 
+#include "base/strings/string16.h"
 #include "base/time/time.h"
 
 class Profile;

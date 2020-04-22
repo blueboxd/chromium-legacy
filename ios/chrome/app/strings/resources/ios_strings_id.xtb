@@ -116,6 +116,7 @@
 <translation id="2360196772093551345">Minta Situs Seluler</translation>
 <translation id="2381405137052800939">Dasar</translation>
 <translation id="2386793615875593361">1 dipilih</translation>
+<translation id="2421004566762153674">Memblokir cookie pihak ketiga</translation>
 <translation id="2421044535038393232">Terus Edit</translation>
 <translation id="2435457462613246316">Tampilkan sandi</translation>
 <translation id="2497852260688568942">Sinkronisasi dinonaktifkan oleh administrator</translation>
@@ -401,7 +402,7 @@ Handoff juga harus diaktifkan pada bagian General di Settings, dan perangkat And
 <translation id="6284652193729350524">Tawarkan untuk menerjemahkan bahasa <ph name="LANGUAGE" /></translation>
 <translation id="6303969859164067831">Logout dan nonaktifkan sinkronisasi</translation>
 <translation id="6308436439357671616">Hal ini memungkinkan Anda mengambil dan mengupload foto.</translation>
-<translation id="6324528485781869530">Beralih Akun Sinkronisasi</translation>
+<translation id="6324528485781869530">Ganti Akun Sinkronisasi</translation>
 <translation id="6324669097367352121">Setelan masuk</translation>
 <translation id="6337234675334993532">Enkripsi</translation>
 <translation id="633809752005859102">Ada yang tidak beres. Kami akan mengatasinya.</translation>
@@ -470,7 +471,7 @@ Data Anda dienkripsi dengan frasa sandi sinkronisasi pada tanggal <ph name="TIME
 <translation id="7015203776128479407">Penyiapan sinkronisasi awal belum selesai. Sinkronisasi nonaktif.</translation>
 <translation id="7029809446516969842">Sandi</translation>
 <translation id="7053983685419859001">Blokir</translation>
-<translation id="7062545763355031412">Terima dan beralih akun</translation>
+<translation id="7062545763355031412">Terima dan berganti akun</translation>
 <translation id="7099761977003084116">Tab Terbaru</translation>
 <translation id="7102005569666697658">Mendownload… <ph name="FILE_SIZE" /></translation>
 <translation id="7108338896283013870">Sembunyikan</translation>

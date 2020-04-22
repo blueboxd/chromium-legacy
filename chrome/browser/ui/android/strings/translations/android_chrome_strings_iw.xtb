@@ -54,6 +54,7 @@
 <translation id="1331212799747679585">‏לא ניתן לעדכן את Chrome. אפשרויות נוספות</translation>
 <translation id="1332501820983677155">‏מקשי קיצור לתכונות של Google Chrome‏</translation>
 <translation id="1360432990279830238">לצאת ולהשבית את הסנכרון?</translation>
+<translation id="1364532808393826295"><ph name="APP_NAME" /> ‏– <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">האתר <ph name="SITE_NAME" /> נוסף</translation>
 <translation id="1373696734384179344">אין מספיק זיכרון להורדת התוכן הנבחר.</translation>
 <translation id="1376578503827013741">מחשב...</translation>
@@ -140,6 +141,7 @@
 <translation id="2017836877785168846">ניקוי של ההיסטוריה וההשלמות האוטומטיות בשורת כתובת האתר</translation>
 <translation id="2021896219286479412">פקדי אתר במסך מלא</translation>
 <translation id="2025115093177348061">מציאות רבודה</translation>
+<translation id="2030769033451695672">כדי לחזור אל <ph name="URL_OF_THE_CURRENT_TAB" />, יש להקיש כאן</translation>
 <translation id="2038563949887743358">הפעל את 'בקש אתר עבור מחשב שולחני'</translation>
 <translation id="2041019821020695769">‏כדי לאפשר ל-Chrome לשלוח לך התראות, צריך להפעיל אותן גם ב<ph name="BEGIN_LINK" />הגדרות Android<ph name="END_LINK" />.</translation>
 <translation id="204321170514947529">‏ל-<ph name="APP_NAME" /> יש נתונים גם ב-Chrome</translation>
@@ -301,6 +303,7 @@
 <translation id="3207960819495026254">מסומן בסימניה</translation>
 <translation id="3211426585530211793">מועד המחיקה: <ph name="ITEM_TITLE" /></translation>
 <translation id="321773570071367578">אם שכחת את ביטוי הסיסמה או אם ברצונך לשנות את ההגדרה הזו, <ph name="BEGIN_LINK" />אפס את הסינכרון<ph name="END_LINK" /></translation>
+<translation id="3223655101706843289">‏פעולה זו תמחק את כל הנתונים וקובצי ה-Cookie שאוחסנו על ידי <ph name="ORIGIN" />. בנוסף, תימחק גם האפליקציה שלו שמופיעה במסך הבית.</translation>
 <translation id="3227137524299004712">מיקרופון</translation>
 <translation id="3232754137068452469">אפליקציית אינטרנט</translation>
 <translation id="3236059992281584593">נותרה דקה אחת</translation>
@@ -535,6 +538,7 @@
 <translation id="4943872375798546930">אין תוצאות</translation>
 <translation id="4961107849584082341">אפשר לתרגם את הדף הזה לשפה כלשהי</translation>
 <translation id="4962975101802056554">ביטול כל ההרשאות בשביל המכשיר</translation>
+<translation id="4964199952259983386">‏כדי לאפשר ל-Chrome להשתמש ב-AR, צריך גם להפעיל את המצלמה ב<ph name="BEGIN_LINK" />הגדרות Android<ph name="END_LINK" />.</translation>
 <translation id="4970824347203572753">האפשרות לא זמינה במיקום שלך</translation>
 <translation id="497421865427891073">המשך קדימה</translation>
 <translation id="4988210275050210843">מתבצעת הורדה של קובץ (<ph name="MEGABYTES" />).</translation>
@@ -634,6 +638,7 @@
 <translation id="5684874026226664614">אופס. לא ניתן היה לתרגם את הדף הזה.</translation>
 <translation id="5686790454216892815">שם הקובץ ארוך מדי</translation>
 <translation id="5689516760719285838">מיקום</translation>
+<translation id="5690795753582697420">‏המצלמה כבויה בהגדרות Android</translation>
 <translation id="5694049548840660018">חזרה לדף הבית בקלות</translation>
 <translation id="569536719314091526">דרך לחצן האפשרויות הנוספות אפשר לתרגם את הדף הזה לשפה כלשהי</translation>
 <translation id="5710871682236653961">‏הצגת שאלה לפני מתן הרשאה לאתרים לשלוח ולקבל מידע כשמקישים על מכשירי NFC (מומלץ)</translation>
@@ -665,6 +670,7 @@
 <translation id="5876056640971328065">השהיית הסרטון</translation>
 <translation id="5884076754568147479">‏כדי לעזור לך להשלים משימות, Google תקבל את כתובות ה-URL והתוכן של האתרים שבהם נעשה שימוש ב-Assistant, וכן את המידע שנשלח דרך Assistant</translation>
 <translation id="5919204609460789179">יש לעדכן את <ph name="PRODUCT_NAME" /> כדי להתחיל סנכרון</translation>
+<translation id="5922853908706496913">המערכת משתפת את המסך שלך</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> נחסכו</translation>
 <translation id="5939518447894949180">אפס</translation>
 <translation id="5942872142862698679">‏שימוש ב-Google לחיפוש</translation>
@@ -875,6 +881,7 @@
 <translation id="751961395872307827">לא ניתן להתחבר לאתר</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7542481630195938534">לא ניתן לקבל הצעות</translation>
+<translation id="7554752735887601236">אתר כלשהו משתמש במיקרופון שלך</translation>
 <translation id="7559975015014302720">מצב הטעינה המהירה מושבת</translation>
 <translation id="7562080006725997899">מנקה נתוני גלישה</translation>
 <translation id="756809126120519699">‏נתוני Chrome נוקו</translation>
@@ -911,7 +918,9 @@
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{‏<ph name="PAYMENT_METHOD_PREVIEW" />‎\u2026‎ ו-<ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> נוסף}two{‏<ph name="PAYMENT_METHOD_PREVIEW" />‎\u2026‎ ו-<ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> נוספים}many{‏<ph name="PAYMENT_METHOD_PREVIEW" />‎\u2026‎ ו-<ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> נוספים}other{‏<ph name="PAYMENT_METHOD_PREVIEW" />‎\u2026‎ ו-<ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> נוספים}}</translation>
 <translation id="7791543448312431591">הוספה</translation>
 <translation id="780301667611848630">לא תודה</translation>
+<translation id="7804248752222191302">אתר כלשהו משתמש במצלמה שלך</translation>
 <translation id="7810647596859435254">פתח באמצעות...</translation>
+<translation id="7817023149356982970">המערכת תוציא אותך מהאתר הזה.</translation>
 <translation id="7821588508402923572">ערכי החיסכון בנתונים יופיעו כאן</translation>
 <translation id="7828557259026017104">‏קובצי cookie נוצרים על ידי האתרים שביקרת בהם. האתרים משתמשים בהם כדי לזכור את ההעדפות שלך. קובצי cookie של צד שלישי נוצרים על-ידי אתרים אחרים. האתרים האלה הם הבעלים של חלק מהתוכן בדף האינטרנט שביקרת בו, למשל מודעות או תמונות.</translation>
 <translation id="783819812427904514">ביטול ההשתקה של הסרטון</translation>
@@ -990,8 +999,10 @@
 <translation id="8364299278605033898">הצגת אתרים פופולריים</translation>
 <translation id="8368027906805972958">מכשיר לא ידוע או שאינו נתמך (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">אפשר סנכרון ברקע לאתר ספציפי.</translation>
+<translation id="83792324527827022">אתר כלשהו משתמש במצלמה ובמיקרופון שלך</translation>
 <translation id="8380167699614421159">באתר הזה מוצגות מודעות מפריעות או מטעות</translation>
 <translation id="8393700583063109961">שלח הודעה</translation>
+<translation id="8394832520002899662">כדי לחזור לאתר, יש להקיש כאן</translation>
 <translation id="8413126021676339697">להצגת ההיסטוריה המלאה</translation>
 <translation id="8427875596167638501">כרטיסיית התצוגה המקדימה פתוחה בחצי גובה המסך</translation>
 <translation id="8428213095426709021">הגדרות</translation>
@@ -1034,6 +1045,8 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{רמת עוצמת אות: עמודה אחת}two{רמת עוצמת אות: שתי עמודות}many{רמת עוצמת אות: # עמודות}other{רמת עוצמת אות: # עמודות}}</translation>
 <translation id="868929229000858085">חיפוש באנשי הקשר</translation>
 <translation id="869891660844655955">תאריך תפוגה</translation>
+<translation id="8702612070107455751">המערכת תמחק את כל הנתונים ששמורים אופליין.</translation>
+<translation id="8737217482364735741">‏פעולה זו תמחק את כל הנתונים וקובצי ה-Cookie שאוחסנו על ידי <ph name="ORIGIN" />.</translation>
 <translation id="8748850008226585750">התוכן מוסתר</translation>
 <translation id="8751914237388039244">בחירת תמונה</translation>
 <translation id="8758557275681689734">צפייה בכל הכרטיסיות הפתוחות</translation>
@@ -1080,6 +1093,7 @@
 <translation id="9100610230175265781">יש להזין ביטוי סיסמה</translation>
 <translation id="9102803872260866941">כרטיסיית התצוגה המקדימה נפתחה</translation>
 <translation id="9104217018994036254">רשימת המכשירים שאפשר לשתף איתם כרטיסייה.</translation>
+<translation id="9108312223223904744">תמיכה בטלפון כמפתח אבטחה</translation>
 <translation id="9133397713400217035">הצעות לתוכן במצב לא מקוון</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">הצג מקור</translation>

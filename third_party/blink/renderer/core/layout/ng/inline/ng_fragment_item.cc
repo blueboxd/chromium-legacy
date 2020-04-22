@@ -403,6 +403,7 @@ PhysicalRect NGFragmentItem::LocalVisualRectFor(
 PhysicalRect NGFragmentItem::RecalcInkOverflowForCursor(
     NGInlineCursor* cursor) {
   DCHECK(cursor);
+  DCHECK(!cursor->Current() || cursor->IsAtFirst());
   PhysicalRect contents_ink_overflow;
   while (*cursor) {
     const NGFragmentItem* item = cursor->CurrentItem();
@@ -454,7 +455,7 @@ void NGFragmentItem::RecalcInkOverflow(
   // overflow to be stored in |LayoutBox|.
   if (LayoutBox* owner_box = MutableInkOverflowOwnerBox()) {
     DCHECK(!HasChildren());
-    cursor->MoveToNextSibling();
+    cursor->MoveToNextSkippingChildren();
     owner_box->RecalcNormalFlowChildVisualOverflowIfNeeded();
     *self_and_contents_rect_out = owner_box->PhysicalVisualOverflowRect();
     return;
@@ -462,7 +463,7 @@ void NGFragmentItem::RecalcInkOverflow(
 
   // Re-compute descendants, then compute the contents ink overflow from them.
   NGInlineCursor descendants_cursor = cursor->CursorForDescendants();
-  cursor->MoveToNextSibling();
+  cursor->MoveToNextSkippingChildren();
   PhysicalRect contents_rect = RecalcInkOverflowForCursor(&descendants_cursor);
 
   // |contents_rect| is relative to the inline formatting context. Make it

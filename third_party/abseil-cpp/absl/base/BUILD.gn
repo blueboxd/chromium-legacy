@@ -213,7 +213,7 @@ absl_source_set("pretty_function") {
 #     "../meta:type_traits",
 #     "../strings",
 #     "../utility",
-#     "//testing/gtest",
+#     "//third_party/googletest:gtest",
 #   ]
 # }
 
@@ -225,7 +225,7 @@ absl_source_set("spinlock_test_common") {
     ":base_internal",
     ":core_headers",
     "../synchronization",
-    "//testing/gtest",
+    "//third_party/googletest:gtest",
   ]
 }
 
@@ -283,8 +283,8 @@ absl_source_set("scoped_set_env") {
 }
 
 absl_source_set("strerror") {
-  sources = ["internal/strerror.cc"]
-  public = ["internal/strerror.h"]
+  sources = [ "internal/strerror.cc" ]
+  public = [ "internal/strerror.h" ]
   deps = [
     ":config",
     ":core_headers",
@@ -295,10 +295,18 @@ absl_source_set("strerror") {
 }
 
 absl_source_set("fast_type_id") {
-  public = ["internal/fast_type_id.h"]
-  deps = [
-    ":config",
-  ]
+  public = [ "internal/fast_type_id.h" ]
+  deps = [ ":config" ]
   visibility = []
   visibility += [ "../*" ]
+}
+
+absl_source_set("config_test") {
+  testonly = true
+  sources = [ "config_test.cc" ]
+  deps = [
+    ":config",
+    "../synchronization:thread_pool",
+    "//third_party/googletest:gtest",
+  ]
 }

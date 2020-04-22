@@ -15,10 +15,8 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
-import android.os.Build;
 import android.os.StrictMode;
 import android.provider.Browser;
-import android.provider.Telephony;
 import android.text.TextUtils;
 import android.view.WindowManager.BadTokenException;
 import android.webkit.MimeTypeMap;
@@ -495,12 +493,6 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
         Context context = getAvailableContext();
         if (!(context instanceof ChromeTabbedActivity2)) return;
         intent.putExtra(IntentHandler.EXTRA_WINDOW_ID, 2);
-    }
-
-    @Override
-    public String getDefaultSmsPackageName() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) return null;
-        return Telephony.Sms.getDefaultSmsPackage(mApplicationContext);
     }
 
     private void closeTab() {

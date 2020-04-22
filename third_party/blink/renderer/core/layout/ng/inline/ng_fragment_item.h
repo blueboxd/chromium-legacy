@@ -214,11 +214,6 @@ class CORE_EXPORT NGFragmentItem : public RefCounted<NGFragmentItem>,
   // Re-compute the ink overflow for the |cursor| until its end.
   static PhysicalRect RecalcInkOverflowForCursor(NGInlineCursor* cursor);
 
-  // Re-compute the ink overflow for this item. |cursor| should be at |this|,
-  // and is advanced to the next item on return.
-  void RecalcInkOverflow(NGInlineCursor* cursor,
-                         PhysicalRect* self_and_contents_rect_out);
-
   // Painters can use const methods only, except for these explicitly declared
   // methods.
   class MutableForPainting {
@@ -353,6 +348,11 @@ class CORE_EXPORT NGFragmentItem : public RefCounted<NGFragmentItem>,
 
   const LayoutBox* InkOverflowOwnerBox() const;
   LayoutBox* MutableInkOverflowOwnerBox();
+
+  // Re-compute the ink overflow for this item. |cursor| should be at |this|,
+  // and is advanced to the next item on return.
+  void RecalcInkOverflow(NGInlineCursor* cursor,
+                         PhysicalRect* self_and_contents_rect_out);
 
   const LayoutObject* layout_object_;
 

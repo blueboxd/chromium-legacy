@@ -16,7 +16,6 @@
 #include "chrome/common/pref_names.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/sync_device_info/device_info_sync_service.h"
-#include "components/sync_device_info/device_info_tracker.h"
 #include "components/sync_device_info/local_device_info_provider.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 
@@ -28,7 +27,6 @@ const char kVapidCreationTimestamp[] = "vapid_creation_timestamp";
 const char kDeviceFcmToken[] = "device_fcm_token";
 const char kDeviceP256dh[] = "device_p256dh";
 const char kDeviceAuthSecret[] = "device_auth_secret";
-const char kDeviceCapabilities[] = "device_capabilities";
 
 const char kRegistrationAuthorizedEntity[] = "registration_authorized_entity";
 const char kRegistrationTimestamp[] = "registration_timestamp";
@@ -36,12 +34,6 @@ const char kRegistrationTimestamp[] = "registration_timestamp";
 const char kSharingInfoVapidTargetInfo[] = "vapid_target_info";
 const char kSharingInfoSenderIdTargetInfo[] = "sender_id_target_info";
 const char kSharingInfoEnabledFeatures[] = "enabled_features";
-
-// Legacy value for enabled features on a device. These are stored in sync
-// preferences when the device is registered, and the values should never be
-// changed.
-constexpr int kClickToCall = 1 << 0;
-constexpr int kSharedClipboard = 1 << 1;
 
 base::DictionaryValue TargetInfoToValue(
     const syncer::DeviceInfo::SharingTargetInfo& target_info) {
@@ -77,38 +69,6 @@ base::Optional<syncer::DeviceInfo::SharingTargetInfo> ValueToTargetInfo(
                                                std::move(auth_secret)};
 }
 
-base::Value SharingInfoToValue(const syncer::DeviceInfo::SharingInfo& device) {
-  // For backward compatibility purposes, EnabledFeatures is converted to
-  // bit-mask to be readable by legacy devices. New features won't be included.
-  int capabilities = 0;
-  if (device.enabled_features.count(
-          sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2))
-    capabilities |= kClickToCall;
-  if (device.enabled_features.count(
-          sync_pb::SharingSpecificFields::SHARED_CLIPBOARD_V2))
-    capabilities |= kSharedClipboard;
-
-  base::Value result = TargetInfoToValue(device.vapid_target_info);
-  result.SetIntKey(kDeviceCapabilities, capabilities);
-  return result;
-}
-
-void FillVapidFCMChannel(
-    chrome_browser_sharing::FCMChannelConfiguration& fcm_configuration,
-    const syncer::DeviceInfo::SharingTargetInfo& target_info) {
-  fcm_configuration.set_vapid_fcm_token(target_info.fcm_token);
-  fcm_configuration.set_vapid_p256dh(target_info.p256dh);
-  fcm_configuration.set_vapid_auth_secret(target_info.auth_secret);
-}
-
-void FillSenderIdFCMChannel(
-    chrome_browser_sharing::FCMChannelConfiguration& fcm_configuration,
-    const syncer::DeviceInfo::SharingTargetInfo& target_info) {
-  fcm_configuration.set_sender_id_fcm_token(target_info.fcm_token);
-  fcm_configuration.set_sender_id_p256dh(target_info.p256dh);
-  fcm_configuration.set_sender_id_auth_secret(target_info.auth_secret);
-}
-
 }  // namespace
 
 using sync_pb::SharingSpecificFields;
@@ -121,8 +81,9 @@ SharingSyncPreference::FCMRegistration::FCMRegistration(
 SharingSyncPreference::FCMRegistration::FCMRegistration(
     FCMRegistration&& other) = default;
 
-SharingSyncPreference::FCMRegistration& SharingSyncPreference::FCMRegistration::
-operator=(FCMRegistration&& other) = default;
+SharingSyncPreference::FCMRegistration&
+SharingSyncPreference::FCMRegistration::operator=(FCMRegistration&& other) =
+    default;
 
 SharingSyncPreference::FCMRegistration::~FCMRegistration() = default;
 
@@ -132,7 +93,6 @@ SharingSyncPreference::SharingSyncPreference(
     : prefs_(prefs), device_info_sync_service_(device_info_sync_service) {
   DCHECK(prefs_);
   DCHECK(device_info_sync_service_);
-  device_info_tracker_ = device_info_sync_service_->GetDeviceInfoTracker();
   local_device_info_provider_ =
       device_info_sync_service_->GetLocalDeviceInfoProvider();
   pref_change_registrar_.Init(prefs);
@@ -144,18 +104,9 @@ SharingSyncPreference::~SharingSyncPreference() = default;
 void SharingSyncPreference::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(
-      prefs::kSharingSyncedDevices,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterDictionaryPref(
       prefs::kSharingVapidKey, user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterDictionaryPref(prefs::kSharingFCMRegistration);
   registry->RegisterDictionaryPref(prefs::kSharingLocalSharingInfo);
-}
-
-// static
-base::Optional<syncer::DeviceInfo::SharingInfo>
-SharingSyncPreference::GetLocalSharingInfoForSync(PrefService* prefs) {
-  return GetLocalSharingInfo(prefs);
 }
 
 base::Optional<std::vector<uint8_t>> SharingSyncPreference::GetVapidKey()
@@ -236,131 +187,11 @@ void SharingSyncPreference::ClearFCMRegistration() {
   prefs_->ClearPref(prefs::kSharingFCMRegistration);
 }
 
-std::set<sync_pb::SharingSpecificFields::EnabledFeatures>
-SharingSyncPreference::GetEnabledFeatures(
-    const syncer::DeviceInfo* device_info) const {
-  DCHECK(device_info);
-  if (device_info->sharing_info())
-    return device_info->sharing_info()->enabled_features;
-
-  // Fallback to read from prefs::kSharingSyncedDevices if reading from sync
-  // provider failed.
-  std::set<SharingSpecificFields::EnabledFeatures> enabled_features;
-  const base::DictionaryValue* devices_preferences =
-      prefs_->GetDictionary(prefs::kSharingSyncedDevices);
-  const base::Value* value = devices_preferences->FindKey(device_info->guid());
-  if (!value)
-    return enabled_features;
-
-  base::Optional<int> capabilities = value->FindIntKey(kDeviceCapabilities);
-  if (!capabilities)
-    return enabled_features;
-
-  // Legacy device store EnabledFeatures as bit-mask. They won't support new
-  // features.
-  if ((*capabilities & kClickToCall) == kClickToCall)
-    enabled_features.insert(SharingSpecificFields::CLICK_TO_CALL_V2);
-  if ((*capabilities & kSharedClipboard) == kSharedClipboard)
-    enabled_features.insert(SharingSpecificFields::SHARED_CLIPBOARD_V2);
-
-  return enabled_features;
-}
-
-base::Optional<chrome_browser_sharing::FCMChannelConfiguration>
-SharingSyncPreference::GetFCMChannel(const std::string& guid) const {
-  auto device_info = device_info_tracker_->GetDeviceInfo(guid);
-  if (!device_info)
-    return base::nullopt;
-
-  return GetFCMChannel(*device_info);
-}
-
-base::Optional<chrome_browser_sharing::FCMChannelConfiguration>
-SharingSyncPreference::GetFCMChannel(
-    const syncer::DeviceInfo& device_info) const {
-  if (device_info.sharing_info()) {
-    chrome_browser_sharing::FCMChannelConfiguration fcm_configuration;
-    FillVapidFCMChannel(fcm_configuration,
-                        device_info.sharing_info()->vapid_target_info);
-    FillSenderIdFCMChannel(fcm_configuration,
-                           device_info.sharing_info()->sender_id_target_info);
-    return fcm_configuration;
-  }
-
-  // Fallback to read from prefs::kSharingSyncedDevices if reading from sync
-  // provider failed.
-  const base::DictionaryValue* devices_preferences =
-      prefs_->GetDictionary(prefs::kSharingSyncedDevices);
-  const base::Value* value = devices_preferences->FindKey(device_info.guid());
-  if (!value)
-    return base::nullopt;
-
-  auto vapid_target_info = ValueToTargetInfo(*value);
-  if (!vapid_target_info)
-    return base::nullopt;
-
-  chrome_browser_sharing::FCMChannelConfiguration fcm_configuration;
-  FillVapidFCMChannel(fcm_configuration, *vapid_target_info);
-  return fcm_configuration;
-}
-
-SharingDevicePlatform SharingSyncPreference::GetDevicePlatform(
-    const std::string& guid) const {
-  auto device_info = device_info_tracker_->GetDeviceInfo(guid);
-  if (!device_info)
-    return SharingDevicePlatform::kUnknown;
-
-  switch (device_info->device_type()) {
-    case sync_pb::SyncEnums::DeviceType::SyncEnums_DeviceType_TYPE_CROS:
-      return SharingDevicePlatform::kChromeOS;
-    case sync_pb::SyncEnums::DeviceType::SyncEnums_DeviceType_TYPE_LINUX:
-      return SharingDevicePlatform::kLinux;
-    case sync_pb::SyncEnums::DeviceType::SyncEnums_DeviceType_TYPE_MAC:
-      return SharingDevicePlatform::kMac;
-    case sync_pb::SyncEnums::DeviceType::SyncEnums_DeviceType_TYPE_WIN:
-      return SharingDevicePlatform::kWindows;
-    case sync_pb::SyncEnums_DeviceType_TYPE_PHONE:
-    case sync_pb::SyncEnums_DeviceType_TYPE_TABLET:
-      if (device_info->hardware_info().manufacturer == "Apple Inc.")
-        return SharingDevicePlatform::kIOS;
-      return SharingDevicePlatform::kAndroid;
-    case sync_pb::SyncEnums::DeviceType::SyncEnums_DeviceType_TYPE_UNSET:
-    case sync_pb::SyncEnums::DeviceType::SyncEnums_DeviceType_TYPE_OTHER:
-      return SharingDevicePlatform::kUnknown;
-  }
-}
-
-base::Optional<syncer::DeviceInfo::SharingInfo>
-SharingSyncPreference::GetLocalSharingInfo() const {
-  return GetLocalSharingInfo(local_device_info_provider_->GetLocalDeviceInfo());
-}
-
-base::Optional<syncer::DeviceInfo::SharingInfo>
-SharingSyncPreference::GetLocalSharingInfo(
-    const syncer::DeviceInfo* device_info) const {
-  if (!device_info)
-    return base::nullopt;
-
-  const base::Optional<syncer::DeviceInfo::SharingInfo>& sharing_info =
-      device_info->sharing_info();
-  if (sharing_info)
-    return sharing_info;
-
-  // Fallback to read from cached value (prefs::kSharingLocalSharingInfo).
-  return GetLocalSharingInfo(prefs_);
-}
-
 void SharingSyncPreference::SetLocalSharingInfo(
     syncer::DeviceInfo::SharingInfo sharing_info) {
   auto* device_info = local_device_info_provider_->GetLocalDeviceInfo();
   if (!device_info)
     return;
-
-  // Update prefs::kSharingSyncedDevices for legacy devices.
-  DictionaryPrefUpdate synced_devices_update(prefs_,
-                                             prefs::kSharingSyncedDevices);
-  synced_devices_update->SetKey(device_info->guid(),
-                                SharingInfoToValue(sharing_info));
 
   // Update prefs::kSharingLocalSharingInfo to cache value locally.
   if (device_info->sharing_info() == sharing_info)
@@ -394,10 +225,6 @@ void SharingSyncPreference::ClearLocalSharingInfo() {
   if (!device_info)
     return;
 
-  // Update prefs::kSharingSyncedDevices for legacy devices.
-  DictionaryPrefUpdate update(prefs_, prefs::kSharingSyncedDevices);
-  update->RemoveKey(device_info->guid());
-
   // Update prefs::kSharingLocalSharingInfo to clear local cache.
   prefs_->ClearPref(prefs::kSharingLocalSharingInfo);
 
@@ -406,15 +233,9 @@ void SharingSyncPreference::ClearLocalSharingInfo() {
   }
 }
 
-void SharingSyncPreference::SetDeviceInfoTrackerForTesting(
-    syncer::DeviceInfoTracker* tracker) {
-  DCHECK(tracker);
-  device_info_tracker_ = tracker;
-}
-
 // static
 base::Optional<syncer::DeviceInfo::SharingInfo>
-SharingSyncPreference::GetLocalSharingInfo(PrefService* prefs) {
+SharingSyncPreference::GetLocalSharingInfoForSync(PrefService* prefs) {
   const base::DictionaryValue* registration =
       prefs->GetDictionary(prefs::kSharingLocalSharingInfo);
 

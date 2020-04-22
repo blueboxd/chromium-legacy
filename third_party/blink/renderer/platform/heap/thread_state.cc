@@ -1136,7 +1136,7 @@ void ThreadState::InvokePreFinalizers() {
   // The prefinalizer callback wrapper returns |true| when its associated
   // object is unreachable garbage and the prefinalizer callback has run.
   // The registered prefinalizer entry must then be removed and deleted.
-  LivenessBroker broker;
+  LivenessBroker broker = internal::LivenessBrokerFactory::Create();
   Deque<PreFinalizer> remaining_ordered_pre_finalizers;
   for (auto rit = ordered_pre_finalizers_.rbegin();
        rit != ordered_pre_finalizers_.rend(); ++rit) {

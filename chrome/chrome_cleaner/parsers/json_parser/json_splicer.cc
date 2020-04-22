@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/logging.h"
 #include "base/values.h"
 
 namespace chrome_cleaner {

@@ -5,6 +5,9 @@
       Si cette règle est définie sur une chaîne représentant un nom de domaine, <ph name="PRODUCT_OS_NAME" /> affiche une option de saisie semi-automatique lors de la procédure de connexion. Ceci permettra à l'utilisateur de ne saisir que son nom d'utilisateur sans préciser l'extension du nom de domaine.  L'utilisateur est autorisé à écraser cette extension du nom de domaine.
       Si la valeur de la règle n'est pas un domaine valide, la règle n'est pas appliquée.</translation>
 <translation id="1010151305531217567">Définir le bouton droit de la souris comme bouton principal</translation>
+<translation id="1011266755572744012">Indique le nombre maximal de feuilles que l'utilisateur est autorisé à imprimer par tâche d'impression.
+
+      Si cette règle n'est pas configurée, aucune limitation n'est appliquée et l'utilisateur peut imprimer n'importe quel document.</translation>
 <translation id="101438888985615157">Faire pivoter l'écran de 180 degrés</translation>
 <translation id="1016912092715201525">Configure les vérifications du navigateur par défaut dans <ph name="PRODUCT_NAME" /> et empêche les utilisateurs de les modifier.
 
@@ -156,6 +159,11 @@
 <translation id="1160939557934457296">Désactiver l'accès au site lors de l'affichage de la page d'avertissement par le service de navigation sécurisée</translation>
 <translation id="1163080558183062209">Permet de désactiver les types d'imprimantes figurant sur la liste deny</translation>
 <translation id="117059611145966538">Serveurs d'impression externes</translation>
+<translation id="1177624681620856105"> Cette règle permet de spécifier si la case "Toujours ouvrir" doit être affichée ou non dans une invite de confirmation du lancement d'un protocole externe.
+
+      Si cette règle est définie sur "True", lorsqu'une invite de confirmation de lancement d'un protocole externe s'affiche, l'utilisateur peut sélectionner l'option "Toujours autoriser" pour ignorer par la suite les invites de confirmation concernant son lancement.
+
+      Si cette règle est définie sur "False", la case "Toujours autoriser" n'est pas affichée, et l'utilisateur est invité à confirmer à chaque fois le lancement d'un protocole externe.</translation>
 <translation id="1194005076170619046">Si l'option est activée, un gros bouton rouge de déconnexion s'affiche dans la barre d'état système tant que la session est active et que l'écran n'est pas verrouillé.
 
       Si l'option est désactivée ou si elle n'est pas configurée, aucun gros bouton rouge de déconnexion ne s'affiche dans la barre d'état système.</translation>
@@ -604,6 +612,7 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent ouvrir normalement 
 
       Si cette règle n'est pas définie, aucune imprimante d'appareil n'est disponible et les autres règles <ph name="DEVICE_PRINTERS_POLICY_PATTERN" /> sont ignorées.
       </translation>
+<translation id="1930127294345368978">Nombre maximal de feuilles pouvant être imprimées par tâche d'impression</translation>
 <translation id="193259052151668190">Liste blanche d'appareils USB amovibles</translation>
 <translation id="1933378685401357864">Image de fond d'écran</translation>
 <translation id="1956493342242507974">Configurer la gestion de l'alimentation sur l'écran de connexion dans <ph name="PRODUCT_OS_NAME" />.
@@ -1078,6 +1087,17 @@ Cette règle n'est disponible que sur les instances Windows qui sont associées 
 <translation id="253135976343875019">Délai d'inactivité avant l'affichage d'un avertissement (en cas de connexion secteur)</translation>
 <translation id="2536525645274582300">L'utilisateur décide d'activer ou non les services de localisation Google</translation>
 <translation id="254653220329944566">Active la création de rapports dans le cloud pour <ph name="PRODUCT_NAME" /></translation>
+<translation id="2548397295248733155">Cette règle étant obsolète, elle sera supprimée dans la version 85 de <ph name="PRODUCT_OS_NAME" />. (Veuillez utiliser la règle <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.)
+
+          Elle permet de spécifier le délai d'inactivité de l'utilisateur au terme duquel l'écran est éteint (lorsque l'appareil fonctionne sur batterie).
+
+          Si cette règle est définie sur une valeur supérieure à zéro, <ph name="PRODUCT_OS_NAME" /> éteint l'écran au terme du délai d'inactivité de l'utilisateur.
+
+          Si cette règle est définie sur zéro, <ph name="PRODUCT_OS_NAME" /> n'éteint pas l'écran en cas d'inactivité de l'utilisateur.
+
+          Si cette règle n'est pas configurée, un délai par défaut est utilisé.
+
+          La valeur de la règle doit être indiquée en millisecondes. Elle doit également être inférieure ou égale au délai d'inactivité.</translation>
 <translation id="2548572254685798999">Enregistrer les informations de navigation sécurisée</translation>
 <translation id="2550593661567988768">Impression recto seulement</translation>
 <translation id="2551520365302988324">Envoyer les importations des utilisateurs pour analyse</translation>
@@ -1487,6 +1507,15 @@ Si cette règle n'est pas configurée, le paramètre "AllowJavaScript" est utili
 <translation id="3184161739683646075">Contrôle le mode DNS-over-HTTPS</translation>
 <translation id="3185009703220253572">depuis la version <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Les applications Android n'ont pas accès aux clés d'entreprise. Cette règle n'a aucun effet sur ces applications.</translation>
+<translation id="3196585866522778760">Cette règle étant obsolète, elle sera supprimée dans la version 85 de <ph name="PRODUCT_OS_NAME" />. (Veuillez utiliser la règle <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.)
+
+          Elle permet de spécifier le délai d'inactivité de l'utilisateur au terme duquel l'action à effectuer en cas d'inactivité est mise en œuvre (lorsque l'appareil fonctionne sur batterie).
+
+          Si cette règle est configurée, <ph name="PRODUCT_OS_NAME" /> met en œuvre l'action à effectuer en cas d'inactivité (laquelle peut être définie séparément) au terme du délai d'inactivité de l'utilisateur.
+
+          Si cette règle n'est pas configurée, un délai par défaut est utilisé.
+
+          La valeur de la règle doit être indiquée en millisecondes.</translation>
 <translation id="3205825995289802549">Agrandir la première fenêtre du navigateur à la première exécution</translation>
 <translation id="3211426942294667684">Paramètres de connexion au navigateur</translation>
 <translation id="3214164532079860003">Lorsqu'elle est activée, cette règle force l'importation de la page d'accueil à partir du navigateur par défaut actuel. 
@@ -1559,6 +1588,17 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 Si cette règle est définie sur "True" ou si elle n'est pas définie, <ph name="PRODUCT_NAME" /> est autorisé à utiliser les notifications natives.
 
 Si elle est définie sur "False", <ph name="PRODUCT_NAME" /> n'utilise pas les notifications natives. Le Centre de messagerie de <ph name="PRODUCT_NAME" /> sera utilisé à la place.</translation>
+<translation id="3360093276083825336">Cette règle étant obsolète, elle sera supprimée dans la version 85 de <ph name="PRODUCT_OS_NAME" />. (Veuillez utiliser la règle <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.)
+
+          Délai d'inactivité de l'utilisateur au terme duquel un message d'avertissement s'affiche (en cas d'utilisation de la batterie).
+
+          Si cette règle est configurée, <ph name="PRODUCT_OS_NAME" /> affiche un message d'avertissement pour signaler à l'utilisateur que l'action à effectuer en cas d'inactivité est sur le point d'être mise en œuvre au terme du délai d'inactivité.
+
+          Si cette règle n'est pas définie, aucun message d'avertissement ne s'affiche.
+
+          La valeur de la règle doit être indiquée en millisecondes. Elle doit également être inférieure ou égale au délai d'inactivité.
+
+          Le message d'avertissement ne s'affiche que si le dépassement du délai d'inactivité entraîne une déconnexion ou l'arrêt de l'appareil.</translation>
 <translation id="3373364525435227558">Définit une ou plusieurs langues recommandées pour une session gérée, permettant ainsi aux utilisateurs de choisir facilement l'une de ces langues.
 
       Les utilisateurs peuvent choisir une langue et une disposition de clavier avant de démarrer une session gérée. Par défaut, toutes les langues compatibles avec <ph name="PRODUCT_OS_NAME" /> sont répertoriées dans l'ordre alphabétique. Vous pouvez utiliser cette règle pour placer un ensemble de langues recommandées en haut de la liste.
@@ -1709,6 +1749,19 @@ Si elle est définie sur "False", <ph name="PRODUCT_NAME" /> n'utilise pas les n
       Si cette règle est définie sur "DeveloperToolsAllowed" (valeur 1), les outils pour les développeurs et la console JavaScript sont accessibles et utilisables dans tous les cas, y compris si des extensions ont été installées dans le cadre des règles de l'entreprise.
       Si cette règle est définie sur "DeveloperToolsDisallowed" (valeur 2), les outils pour les développeurs sont inaccessibles et les éléments de sites Web ne peuvent plus être examinés. En outre, les raccourcis clavier, ainsi que les entrées de menu ou de menu contextuel permettant d'ouvrir les outils pour les développeurs ou la console JavaScript sont désactivés.</translation>
 <translation id="3547954654003013442">Paramètres de proxy</translation>
+<translation id="3550122827225052130">Cette règle étant obsolète, elle sera supprimée dans la version 85 de <ph name="PRODUCT_OS_NAME" />. (Veuillez utiliser la règle <ph name="SCREEN_LOCK_DELAYS_POLICY_NAME" />.)
+
+          Elle permet de spécifier le délai d'inactivité de l'utilisateur au terme duquel l'écran est verrouillé (lorsque l'appareil fonctionne sur secteur).
+
+          Si cette règle est définie sur une valeur supérieure à zéro, la valeur correspond au délai d'inactivité au terme duquel <ph name="PRODUCT_OS_NAME" /> verrouille l'écran.
+
+          Si cette règle est définie sur zéro, <ph name="PRODUCT_OS_NAME" /> ne verrouille pas l'écran en cas d'inactivité de l'utilisateur.
+
+          Si cette règle n'est pas configurée, un délai par défaut est utilisé.
+
+          Pour verrouiller l'écran en cas d'inactivité, il est recommandé d'activer le verrouillage de l'écran lors de l'arrêt temporaire, et de configurer l'arrêt temporaire de <ph name="PRODUCT_OS_NAME" /> au terme du délai d'inactivité. Cette règle ne doit être utilisée que lorsque le verrouillage de l'écran doit intervenir bien avant l'arrêt temporaire de l'appareil ou lorsque l'utilisateur ne souhaite absolument pas que l'appareil soit arrêté temporairement en cas d'inactivité.
+
+          La valeur de la règle doit être indiquée en millisecondes. Elle doit également être inférieure au délai d'inactivité.</translation>
 <translation id="3550875587920006460">Permet de planifier de manière personnalisée la recherche de mises à jour. Cette règle s'applique à l'ensemble des utilisateurs et des interfaces de l'appareil. Une fois la règle définie, l'appareil recherche les mises à jour en fonction du calendrier établi. Pour annuler toute autre recherche planifiée de mises à jour, cette règle doit être supprimée.</translation>
 <translation id="355118380775352753">Sites Web à ouvrir dans le navigateur secondaire</translation>
 <translation id="3554498762428140109">Activer le recouvrement par la fenêtre native</translation>
@@ -2521,6 +2574,11 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
 
       REMARQUE : Cette règle ne s'applique pas à Android. Pour activer la règle SitePerProcess sur Android, utilisez le paramètre SitePerProcessAndroid.
       </translation>
+<translation id="4787763197941188108">Cette règle permet d'ignorer le format de la page d'impression par défaut.
+
+      La propriété <ph name="PAGE_SIZE_NAME" /> doit contenir l'un des formats répertoriés ou être définie sur "Personnalisé" si le format du papier requis ne figure pas dans la liste. Si elle est définie sur "Personnalisé", il est obligatoire de spécifier également la propriété <ph name="PAGE_SIZE_CUSTOM_SIZE" />. La hauteur et la largeur souhaitées sont exprimées en micromètres. Dans le cas contraire, la propriété <ph name="PAGE_SIZE_CUSTOM_SIZE" /> ne doit pas être renseignée. Toute règle qui ne respecte pas ces consignes sera ignorée.
+
+      Si la taille de la page n'est pas disponible pour l'imprimante sélectionnée, cette règle est ignorée.</translation>
 <translation id="4788252609789586009">Active la fonctionnalité de saisie automatique de <ph name="PRODUCT_NAME" />, qui permet à l'utilisateur de remplir automatiquement des formulaires Web à partir de données stockées précédemment, telles que des informations relatives à sa carte de crédit.
 
       Si ce paramètre est désactivé, ces informations ne sont jamais suggérées ni saisies automatiquement. De même, les informations complémentaires de carte de crédit que l'utilisateur est susceptible de fournir sur une page Web ne sont pas enregistrées.
@@ -3582,6 +3640,17 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
 <translation id="6315673513957120120">Chrome affiche une page d'avertissement lorsque les utilisateurs naviguent vers des sites présentant des erreurs SSL. Par défaut, ou quand cette règle est définie sur "True", les utilisateurs sont autorisés à poursuivre leur navigation vers la page concernée.
       Définir cette règle sur "False" empêche les utilisateurs de poursuivre leur navigation au-delà de la page d'avertissement.</translation>
 <translation id="6319198883324703402">Définir l'heure de la première notification de redémarrage adressée à l'utilisateur</translation>
+<translation id="6331167725613770725">Cette règle étant obsolète, elle sera supprimée dans la version 85 de <ph name="PRODUCT_OS_NAME" />. (Veuillez utiliser la règle <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.)
+
+          Elle permet de spécifier le délai d'inactivité de l'utilisateur au terme duquel un message d'avertissement s'affiche (lorsque l'appareil fonctionne sur secteur).
+
+          Si cette règle est configurée, <ph name="PRODUCT_OS_NAME" /> affiche un message d'avertissement pour signaler à l'utilisateur que l'action à effectuer en cas d'inactivité est sur le point d'être mise en œuvre au terme du délai d'inactivité.
+
+          Si cette règle n'est pas définie, aucun message d'avertissement ne s'affiche.
+
+          La valeur de la règle doit être indiquée en millisecondes. Elle doit également être inférieure ou égale au délai d'inactivité.
+
+          Le message d'avertissement ne s'affiche que si le dépassement du délai d'inactivité entraîne une déconnexion ou l'arrêt de l'appareil.</translation>
 <translation id="6342187235303612558">Empêcher les utilisateurs d'importer ou de télécharger des fichiers qui ne sont actuellement pas acceptés dans le cadre de la Protection contre la perte de données ou d'une analyse pour détecter d'éventuels logiciels malveillants.</translation>
 <translation id="6348718801326095108">Les cookies placés par les pages correspondant à ces formats d'URL sont limités à la session en cours. Autrement dit, ils sont supprimés lors de la fermeture du navigateur.
 
@@ -3690,6 +3759,19 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
       Si ce paramètre est activé, la fonctionnalité de navigation privée considère ces domaines comme fiables.
       Si ce paramètre est désactivé ou s'il n'est pas défini, la fonctionnalité de navigation privée applique son service de protection par défaut à toutes les ressources.
       Cette règle n'est disponible que sur les instances Windows qui sont associées à un domaine <ph name="MS_AD_NAME" />, ou sur les instances Windows 10 Pro ou Windows Enterprise qui sont enregistrées pour bénéficier de la gestion des appareils.</translation>
+<translation id="6495337487202227251">Cette règle étant obsolète, elle sera supprimée dans la version 85 de <ph name="PRODUCT_OS_NAME" />. (Veuillez utiliser la règle <ph name="SCREEN_LOCK_DELAYS_POLICY_NAME" />.)
+
+          Elle permet de spécifier le délai d'inactivité de l'utilisateur au terme duquel l'écran est verrouillé (lorsque l'appareil fonctionne sur batterie).
+
+          Si cette règle est définie sur une valeur supérieure à zéro, la valeur correspond au délai d'inactivité au terme duquel <ph name="PRODUCT_OS_NAME" /> verrouille l'écran.
+
+          Si cette règle est définie sur zéro, <ph name="PRODUCT_OS_NAME" /> ne verrouille pas l'écran en cas d'inactivité de l'utilisateur.
+
+          Si cette règle n'est pas configurée, un délai par défaut est utilisé.
+
+          Pour verrouiller l'écran en cas d'inactivité, il est recommandé d'activer le verrouillage de l'écran lors de l'arrêt temporaire, et de configurer l'arrêt temporaire de <ph name="PRODUCT_OS_NAME" /> au terme du délai d'inactivité. Cette règle ne doit être utilisée que lorsque le verrouillage de l'écran doit intervenir bien avant l'arrêt temporaire de l'appareil ou lorsque l'utilisateur ne souhaite absolument pas que l'appareil soit arrêté temporairement en cas d'inactivité.
+
+          La valeur de la règle doit être indiquée en millisecondes. Elle doit également être inférieure au délai d'inactivité.</translation>
 <translation id="6515357889978918016">Fichier image <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6520802717075138474">Importer les moteurs de recherche du navigateur par défaut à la première exécution</translation>
 <translation id="6525955212636890608">Si vous activez ce paramètre, tout le contenu Flash intégré aux sites Web qui ont été définis pour autoriser Flash dans les paramètres de contenu (soit par l'utilisateur, soit par la règle d'entreprise) sera exécuté, y compris le contenu provenant d'autres sources ou de petite taille.
@@ -4426,6 +4508,17 @@ Si ce paramètre est désactivé ou s'il n'est pas configuré, <ph name="PRODUCT
       Si la règle n'est pas configurée, elle est sans effet, et aucun redémarrage n'est imposé en cas de déconnexion d'utilisateur. Il en va de même lorsqu'elle est définie sur "Never".
       Cette règle n'a d'incidence que sur les utilisateurs non affiliés.
       </translation>
+<translation id="7679483888150212009">Cette règle étant obsolète, elle sera supprimée dans la version 85 de <ph name="PRODUCT_OS_NAME" />. (Veuillez utiliser la règle <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.)
+
+          Elle permet de spécifier le délai d'inactivité de l'utilisateur au terme duquel l'écran s'assombrit (lorsque l'appareil fonctionne sur secteur).
+
+          Si cette règle est définie sur une valeur supérieure à zéro, <ph name="PRODUCT_OS_NAME" /> assombrit l'écran au terme du délai d'inactivité de l'utilisateur.
+
+          Si cette règle est définie sur zéro, <ph name="PRODUCT_OS_NAME" /> n'assombrit pas l'écran en cas d'inactivité de l'utilisateur.
+
+          Si cette règle n'est pas configurée, un délai par défaut est utilisé.
+
+          La valeur de la règle doit être indiquée en millisecondes. Elle doit également être inférieure ou égale au délai d'arrêt de l'écran (le cas échéant) et au délai d'inactivité.</translation>
 <translation id="7683777542468165012">Actualisation dynamique des stratégies</translation>
 <translation id="7687943045976362719">Si cette règle est configurée, les types de contenus spécifiés sont traités par <ph name="PRODUCT_FRAME_NAME" />.
 
@@ -4573,6 +4666,13 @@ au maximum si un utilisateur se sert de l'appareil.
 
           Si cette règle est désactivée, les utilisateurs ne peuvent pas ajouter de comptes Kerberos. Ces derniers ne peuvent être ajoutés qu'avec la règle KerberosAccounts. C'est un moyen efficace de verrouiller des comptes.</translation>
 <translation id="7895553628261067384">Accès à distance</translation>
+<translation id="7898879331506985900">Cette règle permet d'assurer la transition vers la version M86, de laquelle elle sera supprimée.
+
+      La règle par défaut de Chrome en matière d'URL de provenance est renforcée. L'objectif est de favoriser une transition progressive de sa valeur actuelle (no-referrer-when-downgrade) à une nouvelle valeur plus sécurisée (strict-origin-when-cross-origin) afin d'obtenir une version M80 stable.
+
+      Avant le déploiement, cette règle n'a aucun d'effet. Après le déploiement, lorsque cette règle est activée, la règle par défaut de Chrome en matière d'URL de provenance reprend sa valeur antérieure à celle de la version M80 (no-referrer-when-downgrade).
+
+      Cette règle est désactivée par défaut.</translation>
 <translation id="7902040092815978832">Afficher le clavier numérique pour la saisie du mot de passe</translation>
 <translation id="7912255076272890813">Configurer les types d'applications ou d'extensions autorisés</translation>
 <translation id="7922358664346625612">Laisser le dernier onglet ouvert dans Chrome.</translation>
@@ -4610,6 +4710,17 @@ au maximum si un utilisateur se sert de l'appareil.
 <translation id="7956210013490975468">Configure le service proxy du système pour <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7958537754689366707">La saisie du mot de passe est requise toutes les 12 heures</translation>
 <translation id="7961779417826583251">Désactiver l'application des règles de transparence des certificats pour une liste d'autorités de certification héritées</translation>
+<translation id="7973609468423251675">Cette règle étant obsolète, elle sera supprimée dans la version 85 de <ph name="PRODUCT_OS_NAME" />. (Veuillez utiliser la règle <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.)
+
+          Elle permet de spécifier le délai d'inactivité de l'utilisation au terme duquel l'écran s'assombrit (lorsque l'appareil fonctionne sur batterie).
+
+          Si cette règle est définie sur une valeur supérieure à zéro, <ph name="PRODUCT_OS_NAME" /> assombrit l'écran au terme du délai d'inactivité de l'utilisateur.
+
+          Si cette règle est définie sur zéro, <ph name="PRODUCT_OS_NAME" /> n'assombrit pas l'écran en cas d'inactivité de l'utilisateur.
+
+          Si cette règle n'est pas configurée, un délai par défaut est utilisé.
+
+          La valeur de la règle doit être indiquée en millisecondes. Elle doit également être inférieure ou égale au délai d'arrêt de l'écran (le cas échéant) et au délai d'inactivité.</translation>
 <translation id="7974114691960514888">Cette règle n'est plus disponible. 
 Permet l'utilisation de serveurs STUN et relais lors de la connexion à un client distant. 
 
@@ -4622,6 +4733,17 @@ Si ce paramètre est désactivé et que les connexions UDP sortantes sont filtr�
 <translation id="798856998567564266">Si vous activez ce paramètre, il est possible d'ajouter, de supprimer ou de modifier des favoris. Ceci constitue l'option par défaut lorsque cette règle n'est pas définie.
 
       Si vous désactivez ce paramètre, il est impossible d'ajouter, de supprimer ou de modifier des favoris. Les favoris existants restent disponibles.</translation>
+<translation id="7991022023019679916">Cette règle étant obsolète, elle sera supprimée dans la version 85 de <ph name="PRODUCT_OS_NAME" />. (Veuillez utiliser la règle <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.)
+
+          Elle permet de spécifier le délai d'inactivité de l'utilisateur au terme duquel l'écran est éteint (lorsque l'appareil fonctionne sur secteur).
+
+          Si cette règle est définie sur une valeur supérieure à zéro, <ph name="PRODUCT_OS_NAME" /> éteint l'écran au terme du délai d'inactivité de l'utilisateur.
+
+          Si cette règle est définie sur zéro, <ph name="PRODUCT_OS_NAME" /> n'éteint pas l'écran en cas d'inactivité de l'utilisateur.
+
+          Si cette règle n'est pas configurée, un délai par défaut est utilisé.
+
+          La valeur de la règle doit être indiquée en millisecondes. Elle doit également être inférieure ou égale au délai d'inactivité.</translation>
 <translation id="7992136759457836904">Permet de définir si votre appareil Chrome OS peut exécuter ou non des machines virtuelles.
 
       Si cette règle est définie sur True, l'appareil est autorisé à exécuter des machines virtuelles.
@@ -4752,6 +4874,13 @@ Si cette règle n'est pas définie, l'écran de confidentialité est désactivé
 <translation id="8176035528522326671">Autoriser l'utilisateur d'entreprise à participer aux sessions à plusieurs profils en tant qu'utilisateur principal seulement (comportement par défaut pour les utilisateurs gérés par une entreprise)</translation>
 <translation id="8183108371184777472">Empêcher l'ouverture de la fenêtre du navigateur</translation>
 <translation id="8186911565834244165">Autoriser les commentaires des utilisateurs</translation>
+<translation id="8213770777756919897">Cette règle étant obsolète, elle sera supprimée dans la version 85 de <ph name="PRODUCT_OS_NAME" />. (Veuillez utiliser la règle <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.)
+
+          Si cette règle est configurée, <ph name="PRODUCT_OS_NAME" /> met en œuvre l'action à effectuer en cas d'inactivité de l'utilisateur (laquelle peut être définie séparément) au terme du délai d'inactivité de l'utilisateur.
+
+          Si cette règle n'est pas définie, l'action par défaut est effectuée, à savoir l'arrêt.
+
+          Dans ce cas, <ph name="PRODUCT_OS_NAME" /> peut être configuré séparément pour verrouiller ou non l'écran avant l'arrêt provisoire.</translation>
 <translation id="8214600119442850823">Configure le gestionnaire de mot de passe.</translation>
 <translation id="8217516105848565518">Cette règle est obsolète. Veuillez utiliser RemoteAccessHostDomainList.</translation>
 <translation id="8244171102276095471">Activer des suites de chiffrement RC4 dans TLS</translation>
@@ -4822,6 +4951,11 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
 <translation id="8331479227794770304">Activer les touches persistantes</translation>
 <translation id="8339420913453596618">Deuxième facteur désactivé</translation>
 <translation id="8344454543174932833">Importer les favoris du navigateur par défaut à la première exécution</translation>
+<translation id="8347993687936322631">Cette règle étant obsolète, elle sera supprimée dans la version 85 de <ph name="PRODUCT_OS_NAME" />. (Veuillez utiliser la règle <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.)
+
+          Cette règle fournit une valeur de secours pour les règles <ph name="IDLE_ACTION_AC_POLICY_NAME" /> et <ph name="IDLE_ACTION_BATTERY_POLICY_NAME" />, qui sont plus spécifiques. Si cette règle est configurée, sa valeur est utilisée si la règle correspondante plus spécifique ne l'est pas.
+
+          Si cette règle n'est pas définie, le comportement des règles plus spécifiques n'est pas modifié.</translation>
 <translation id="8351446723835838047">Permet de définir une liste de formats d'URL indiquant les sites autorisés à utiliser la génération de clé. Les formats d'URL inclus dans la règle "KeygenBlockedForUrls" dérogent à cette règle.
 
           Si cette règle n'est pas configurée, la valeur par défaut globale est utilisée pour tous les sites à partir de la règle "DefaultKeygenSetting" si celle-ci est définie ou, à défaut, à partir de la configuration personnelle de l'utilisateur.
@@ -4974,6 +5108,15 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
       Si cette règle est appliquée, toutes les imprimantes sont mises à la disposition de l'utilisateur excepté pour les ID répertoriés dans cette règle. Les ID doivent correspondre aux champs "id" ou "guid" du fichier spécifié dans <ph name="BULK_PRINTERS_POLICY" />.
       </translation>
 <translation id="8587229956764455752">Autoriser la création de comptes utilisateur</translation>
+<translation id="8591713876665299827">Cette règle étant obsolète, elle sera supprimée dans la version 85 de <ph name="PRODUCT_OS_NAME" />. (Veuillez utiliser la règle <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.)
+
+          Elle permet de spécifier le délai d'inactivité de l'utilisateur au terme duquel l'action à effectuer en cas d'inactivité est réalisée (lorsque l'appareil fonctionne sur secteur).
+
+          Si cette règle est configurée, <ph name="PRODUCT_OS_NAME" /> met en œuvre l'action à effectuer en cas d'inactivité (laquelle peut être définie séparément) au terme du délai d'inactivité de l'utilisateur.
+
+          Si cette règle n'est pas configurée, un délai par défaut est utilisé.
+
+          La valeur de la règle doit être indiquée en millisecondes.</translation>
 <translation id="8598350264853261122">Si cette règle est définie sur "false", les utilisateurs non affiliés n'ont pas accès à ARC.
 
       Si elle est définie sur "true" ou si elle n'est pas configurée, tous les utilisateurs ont accès à ARC (sauf si ARC est désactivé pour une raison quelconque).

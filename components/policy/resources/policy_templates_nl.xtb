@@ -741,7 +741,7 @@ Als je dit beleid uitschakelt, wordt op de webpagina naar specifieke tekstfragme
 <translation id="2166472654199325139">Sites niet filteren op content voor volwassenen</translation>
 <translation id="2166746572083670600">Hiermee wordt de directory geconfigureerd die <ph name="PRODUCT_NAME" /> gebruikt voor het opslaan van gebruikersgegevens.
 
-      Als je dit beleid instelt, gebruikt <ph name="PRODUCT_NAME" /> deze directory, ongeacht of de gebruiker de markering '--user-data-dir' heeft opgegeven. Ter voorkoming van gegevensverlies of andere onverwachte fouten moet je dit beleid niet instellen op een directory die wordt gebruikt voor andere doeleinden, omdat <ph name="PRODUCT_NAME" /> de content ervan beheert.
+      Als je dit beleid instelt, gebruikt <ph name="PRODUCT_NAME" /> deze directory, ongeacht of de gebruiker de markering '--user-data-dir' heeft opgegeven. Als je gegevensverlies of andere onverwachte fouten wilt voorkomen, moet je dit beleid niet instellen op een directory die wordt gebruikt voor andere doeleinden, omdat <ph name="PRODUCT_NAME" /> de content ervan beheert.
 
       Ga naar https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables voor een lijst met variabelen die je kunt gebruiken.
 
@@ -1541,6 +1541,7 @@ Als dit beleid niet is ingesteld, is het privacyscherm in eerste instantie uitge
 <translation id="3303653927512453822">Hiermee kun je alle cookies terugzetten op het verouderde gedrag van <ph name="ATTRIBUTE_SAMESITE_NAME" />. Als je het verouderde gedrag terugzet, worden cookies waarin geen <ph name="ATTRIBUTE_SAMESITE_NAME" />-kenmerk is opgegeven, als '<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />' behandeld en wordt de vereiste weggenomen dat cookies van '<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />' het kenmerk '<ph name="ATTRIBUTE_SECURE_NAME" />' bevatten. Zie https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies voor een volledige beschrijving.
 
           Als dit beleid niet is ingesteld, is het standaardgedrag van <ph name="ATTRIBUTE_SAMESITE_NAME" /> voor cookies waarin het kenmerk <ph name="ATTRIBUTE_SAMESITE_NAME" /> niet is opgegeven afhankelijk van de configuratie van de gebruiker voor de <ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES" />-functie. Deze functie kan worden ingesteld via een online test of door de markering <ph name="FLAG_NAME_SAMESITE_BY_DEFAULT_COOKIES" /> in of uit te schakelen.</translation>
+<translation id="3303911765031636277">Configuratiebeleid voor de Chrome Enterprise-connector OnFileAttached</translation>
 <translation id="3304662785258434098">Hiermee kun je instellen of gebruikers uitzonderingen kunnen toevoegen om gecombineerde content toe te staan voor specifieke sites.
 
           Dit beleid kan worden overschreven voor specifieke URL-patronen met het beleid 'InsecureContentAllowedForUrls' en 'InsecureContentBlockedForUrls'.
@@ -2161,6 +2162,7 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 
           Er zijn ook afzonderlijke instellingen voor wanneer het apparaat op netstroom of op de batterij werkt.
           </translation>
+<translation id="4147818922357566987">Varianten alleen inschakelen voor essentiële oplossingen</translation>
 <translation id="4150201353443180367">Weergave</translation>
 <translation id="4157003184375321727">Besturingssysteem- en firmwareversie rapporteren</translation>
 <translation id="4157594634940419685">Toegang verlenen aan systeemeigen CUPS-printers</translation>
@@ -2853,11 +2855,11 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 
       Dit beleid wordt opgegeven in milliseconden.</translation>
 <translation id="523505283826916779">Toegankelijkheidsinstellingen</translation>
-<translation id="5236004592041099233">Configureer de lijst met zakelijke login-URL's (alleen HTTP- en HTTPS-schema's). De wachtwoordbeveiligingsservice legt salted hashes van wachtwoorden op deze URL's vast en gebruikt ze om hergebruik van wachtwoorden te detecteren.
+<translation id="5236004592041099233">Configureer de lijst met zakelijke login-URL's (alleen HTTP- en HTTPS-schema's). De service voor wachtwoordbeveiliging legt salted hashes van wachtwoorden op deze URL's vast en gebruikt ze om hergebruik van wachtwoorden te detecteren.
       Als je er zeker van wilt zijn dat <ph name="PRODUCT_NAME" /> salted hashes van wachtwoorden correct vastlegt, moet je ervoor zorgen dat je inlogpagina's voldoen aan de richtlijnen op https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
 
-      Als deze instelling ingeschakeld is, legt de wachtwoordbeveiligingsservice salted hashes van wachtwoorden op deze URL's vast om hergebruik van wachtwoorden te detecteren.
-      Als deze instelling is uitgeschakeld of niet is ingesteld, legt de wachtwoordbeveiligingsservice alleen salted hashes van wachtwoorden op https://accounts.google.com vast.
+      Als deze instelling ingeschakeld is, legt de service voor wachtwoordbeveiliging salted hashes van wachtwoorden op deze URL's vast om hergebruik van wachtwoorden te detecteren.
+      Als deze instelling is uitgeschakeld of niet is ingesteld, legt de service voor wachtwoordbeveiliging alleen salted hashes van wachtwoorden op https://accounts.google.com vast.
       Dit beleid is alleen beschikbaar op Windows-instanties die zijn gekoppeld aan een <ph name="MS_AD_NAME" />-domein of op instanties van Windows 10 Pro of Enterprise die zijn ingeschreven voor apparaatbeheer.</translation>
 <translation id="5236882091572996759">Als dit beleid is ingesteld op 'true' of niet is ingesteld, wordt de gebruiker niet beschouwd als inactief terwijl de audio wordt afgespeeld. Hierdoor wordt voorkomen dat de inactieve time-out wordt bereikt en dat de inactieve actie wordt ondernomen. Dimmen van het scherm, scherm uitschakelen en schermvergrendeling worden echter uitgevoerd na de geconfigureerde time-outs, ongeacht de audioactiviteit.
 
@@ -3556,7 +3558,7 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 <translation id="6221175752766085998">Door lokale vertrouwde instanties uitgegeven certificaten zonder de extensie subjectAlternativeName toestaan</translation>
 <translation id="6224304369267200483">URL's/domeinen hebben rechtstreekse bevestiging van de beveiligingssleutel toegestaan</translation>
 <translation id="6233173491898450179">Downloaddirectory instellen</translation>
-<translation id="6234177445959386333">Configureer de lijst met zakelijke login-URL's waar de wachtwoordbeveiligingsservice salted hashes van wachtwoorden moet vastleggen.</translation>
+<translation id="6234177445959386333">Configureer de lijst met zakelijke login-URL's waar de service voor wachtwoordbeveiliging salted hashes van wachtwoorden moet vastleggen.</translation>
 <translation id="6242147107333796512">Informatie met betrekking tot crashrapporten rapporteren, zoals externe ID, tijdstempel van registratie en oorzaak.
 
       Als het beleid is ingesteld op False of niet is ingesteld, wordt informatie over crashrapporten niet gerapporteerd. Als het beleid is ingesteld op True, wordt informatie over crashrapporten gerapporteerd.</translation>
@@ -4020,11 +4022,11 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Als het beleid niet wordt ingesteld, wordt de plank standaard onderaan het scherm geplaatst en kan de gebruiker de positie van de plank zelf wijzigen.</translation>
 <translation id="7040229947030068419">Voorbeeldwaarde:</translation>
 <translation id="7044883996351280650">De Android-service 'Back-up maken en terugzetten' beheren</translation>
-<translation id="705089873294344912">Configureer de URL voor wachtwoordwijzigingen (alleen HTTP en HTTPS). De wachtwoordbeveiligingsservice leidt gebruikers naar deze URL om hun wachtwoord te wijzigen nadat ze een waarschuwing in de browser hebben gezien.
+<translation id="705089873294344912">Configureer de URL voor wachtwoordwijzigingen (alleen HTTP en HTTPS). De service voor wachtwoordbeveiliging leidt gebruikers naar deze URL om hun wachtwoord te wijzigen nadat ze een waarschuwing in de browser hebben gezien.
       Als je er zeker van wilt zijn dat <ph name="PRODUCT_NAME" /> de salted hash van het nieuwe wachtwoord correct vastlegt op deze pagina voor wachtwoordwijzigingen, moet je ervoor zorgen dat je pagina voor wachtwoordwijzigingen de richtlijnen op https://www.chromium.org/developers/design-documents/create-amazing-password-forms volgt.
 
-      Als deze instelling is ingeschakeld, leidt de wachtwoordbeveiligingsservice gebruikers naar deze URL om hun wachtwoord te wijzigen nadat ze een waarschuwing in hun browser hebben gezien.
-      Als deze instelling is uitgeschakeld of niet is ingesteld, leidt de wachtwoordbeveiligingsservice gebruikers naar https://myaccount.google.com om hun wachtwoord te wijzigen.
+      Als deze instelling is ingeschakeld, leidt de service voor wachtwoordbeveiliging gebruikers naar deze URL om hun wachtwoord te wijzigen nadat ze een waarschuwing in hun browser hebben gezien.
+      Als deze instelling is uitgeschakeld of niet is ingesteld, leidt de service voor wachtwoordbeveiliging gebruikers naar https://myaccount.google.com om hun wachtwoord te wijzigen.
       Dit beleid is alleen beschikbaar op Windows-instanties die zijn gekoppeld aan een <ph name="MS_AD_NAME" />-domein of op instanties van Windows 10 Pro of Enterprise die zijn ingeschreven voor apparaatbeheer.</translation>
 <translation id="7053678646221257043">Indien ingeschakeld, wordt met dit beleid afgedwongen dat bladwijzers worden geïmporteerd uit de huidige standaardbrowser. Als het beleid is ingeschakeld, is dit ook van invloed op het dialoogvenster voor importeren.
 
@@ -4131,6 +4133,15 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Dit beleid kan worden ingesteld op 'Conservative' (Conservatief) en 'Performance' (Prestaties), waarmee een taakplannerconfiguratie wordt gekozen die is afgestemd op respectievelijk stabiliteit of optimale prestaties.
 
       Als het beleid niet is ingesteld, kan de gebruiker zelf een keuze maken.</translation>
+<translation id="7144454922853468101">Als je dit beleid configureert, kun je opgeven welke varianten mogen worden toegepast in <ph name="PRODUCT_NAME" />.
+
+      Varianten vormen een manier om aanpassingen in <ph name="PRODUCT_NAME" /> aan te bieden zonder een nieuwe versie van de browser te publiceren. Hiervoor worden reeds bestaande functies selectief in- of uitgeschakeld.
+
+      Als je <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (waarde 0) instelt of het beleid niet instelt, mogen alle varianten worden toegepast op de browser.
+
+      Als je <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (waarde 1) instelt, mogen alleen varianten die worden beschouwd als essentiële beveiligings- of stabiliteitsoplossingen, worden toegepast op <ph name="PRODUCT_NAME" />.
+
+      Als je <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (waarde 2) instelt, mag geen van de varianten worden toegepast op de browser. Deze modus kan er potentieel voor zorgen dat <ph name="PRODUCT_NAME" />-ontwikkelaars essentiële beveiligingsoplossingen niet tijdig kunnen leveren en wordt dus niet aanbevolen.</translation>
 <translation id="7145335384492396213">Standaardmodus voor afdrukken met pincode</translation>
 <translation id="7149042336307555519"> De typen verbindingen die mogen worden gebruikt voor OS-updates. Grote OS-updates kunnen belastend zijn voor de verbinding, wat kan leiden tot extra kosten. Daarom zijn ze standaard uitgeschakeld voor verbindingstypen die als duur worden beschouwd (momenteel alleen verbindingen van het type 'mobiel').
 
@@ -4838,6 +4849,15 @@ Als dit beleid niet is ingesteld, wordt het privacyscherm in eerste instantie ui
 <translation id="8176035528522326671">Toestaan dat Enterprise-gebruiker alleen primair gebruiker van meerdere profielen is (standaardgedrag voor beheerde Enterprise-gebruikers)</translation>
 <translation id="8183108371184777472">Lancering van browservenster onderdrukken</translation>
 <translation id="8186911565834244165">Gebruikersfeedback toestaan</translation>
+<translation id="8196725647498287556">Als je dit beleid configureert, kun je opgeven welke varianten mogen worden toegepast op een zakelijk beheerd <ph name="PRODUCT_OS_NAME" />-apparaat.
+
+      Varianten vormen een manier om aanpassingen in <ph name="PRODUCT_OS_NAME" /> aan te bieden zonder een nieuwe versie te publiceren. Hiervoor worden reeds bestaande functies selectief in- of uitgeschakeld.
+
+      Als je <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (waarde 0) instelt of het beleid niet instelt, mogen alle varianten worden toegepast op <ph name="PRODUCT_OS_NAME" />.
+
+      Als je <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (waarde 1) instelt, mogen alleen varianten die worden beschouwd als essentiële beveiligings- of stabiliteitsoplossingen, worden toegepast op <ph name="PRODUCT_OS_NAME" />.
+
+      Als je <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (waarde 2) instelt, mag geen van de varianten op de browser worden toegepast op het inlogscherm. Deze modus kan er potentieel voor zorgen dat <ph name="PRODUCT_OS_NAME" />-ontwikkelaars essentiële beveiligingsoplossingen niet tijdig kunnen leveren en wordt dus niet aanbevolen.</translation>
 <translation id="8213770777756919897">Dit beleid is beëindigd en wordt verwijderd in <ph name="PRODUCT_OS_NAME" />-versie 85. Gebruik in plaats daarvan <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 
           Als dit beleid is ingesteld, specificeert het de actie die worden ondernomen door <ph name="PRODUCT_OS_NAME" /> als de gebruiker inactief is gedurende de tijdsduur die is opgegeven door de inactieve vertraging. Dit kan afzonderlijk worden geconfigureerd.
@@ -5397,6 +5417,19 @@ Dit beleid wordt verwijderd in M75.</translation>
           Als het apparaat het beleid wel ondersteunt, maar het beleid niet wordt ingesteld, wordt de standaard batterijoplaadmodus toegepast en kan de gebruiker de modus niet wijzigen.
 
           Opmerking: <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> overschrijft dit beleid als het is opgegeven.</translation>
+<translation id="9071472304496502510">Lijst met instellingen voor Chrome Enterprise-connectorservices die moeten worden toegepast op de Enterprise-connector <ph name="ON_FILE_ATTACHED_ENTERPRISE_CONNECTOR" />. De lijst wordt geactiveerd als een bestand wordt bijgevoegd in Chrome.
+
+      De velden <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" /> en <ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> worden gebruikt om te bepalen of de connector een bestand voor analyse moet sturen als het is bijgevoegd bij een specifieke pagina en welke tags moeten worden opgenomen in het analyseverzoek voor dat bestand. Een tag die overeenkomt met een 'enable'-patroon, wordt opgenomen in het analyseverzoek als de pagina-URL overeenkomt met een patroon dat is gekoppeld aan die tag, op voorwaarde dat er geen 'disable'-patroon met dezelfde tag overeenkomt met de pagina-URL. De analyse vindt plaats als er ten minste één tag moet worden opgenomen in het verzoek.
+
+      Het veld <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" /> geeft aan bij welke analyseserviceprovider de instellingen horen.
+
+      Als het veld <ph name="ENTERPRISE_CONNECTOR_BLOCK_UNTIL_VERDICT_FIELD" /> wordt ingesteld op 1, betekent dit dat Chrome wacht op een reactie van de analyseservice voordat de pagina toegang tot het bestand krijgt. Elke andere waarde met een geheel getal betekent dat Chrome de pagina onmiddellijk toegang tot het bestand geeft.
+
+      Het veld <ph name="ENTERPRISE_CONNECTOR_BLOCK_PASSWORD_PROTECTED_FIELD" /> bepaalt of Chrome bestanden die zijn beveiligd met een wachtwoord blokkeert of toestaat.
+
+      Het veld <ph name="ENTERPRISE_CONNECTOR_BLOCK_LARGE_FILES_FIELD" /> bepaalt of Chrome bestanden die te groot zijn om te worden geanalyseerd (meer dan 50 MB) blokkeert of toestaat.
+
+      Dit beleid kan alleen worden ingesteld via de Google Beheerdersconsole.</translation>
 <translation id="9077227880520270584">Timer voor automatisch inloggen op lokaal account op apparaat</translation>
 <translation id="9084985621503260744">Specificeer of videoactiviteit invloed heeft op stroombeheer</translation>
 <translation id="9088433379343318874">Contentprovider voor de gebruiker met beperkte rechten inschakelen</translation>

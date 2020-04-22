@@ -390,7 +390,7 @@ class PersistentBase {
 #endif
   }
 
-  static void HandleWeakPersistent(const LivenessBroker&,
+  static void HandleWeakPersistent(const LivenessBroker& broker,
                                    const void* persistent_pointer) {
     using Base =
         PersistentBase<typename std::remove_const<T>::type,
@@ -398,7 +398,7 @@ class PersistentBase {
     Base* persistent =
         reinterpret_cast<Base*>(const_cast<void*>(persistent_pointer));
     T* object = persistent->Get();
-    if (object && !ThreadHeap::IsHeapObjectAlive(object))
+    if (object && !broker.IsHeapObjectAlive(object))
       ClearWeakPersistent(persistent);
   }
 

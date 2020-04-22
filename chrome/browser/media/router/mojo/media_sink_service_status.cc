@@ -5,6 +5,7 @@
 #include "chrome/browser/media/router/mojo/media_sink_service_status.h"
 
 #include "base/json/json_string_value_serializer.h"
+#include "base/logging.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"

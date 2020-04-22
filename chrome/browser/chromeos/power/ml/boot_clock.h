@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POWER_ML_BOOT_CLOCK_H_
 #define CHROME_BROWSER_CHROMEOS_POWER_ML_BOOT_CLOCK_H_
 
+#include "base/macros.h"
 #include "base/time/time.h"
 
 namespace chromeos {

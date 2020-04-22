@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/extensions/printing_metrics/print_job_info_idl_conversions.h"
 
+#include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 
 namespace proto = chromeos::printing::proto;

@@ -43,10 +43,9 @@ void AccountSelectFillData::Add(
                           form_data.preferred_realm});
 
   for (const auto& username_password_and_realm : form_data.additional_logins) {
-    const base::string16& username = username_password_and_realm.first;
-    const base::string16& password =
-        username_password_and_realm.second.password;
-    const std::string& realm = username_password_and_realm.second.realm;
+    const base::string16& username = username_password_and_realm.username;
+    const base::string16& password = username_password_and_realm.password;
+    const std::string& realm = username_password_and_realm.realm;
     credentials_.push_back({username, password, realm});
   }
 }

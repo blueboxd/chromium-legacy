@@ -6,18 +6,15 @@
 
 #include "base/command_line.h"
 #include "base/fuchsia/default_context.h"
-#include "base/fuchsia/file_utils.h"
+#include "base/fuchsia/scoped_service_binding.h"
 #include "base/message_loop/message_pump_type.h"
-#include "base/no_destructor.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_executor.h"
 #include "base/values.h"
-#include "build/buildflag.h"
 #include "fuchsia/base/config_reader.h"
 #include "fuchsia/base/fuchsia_dir_scheme.h"
 #include "fuchsia/base/init_logging.h"
-#include "fuchsia/runners/buildflags.h"
 #include "fuchsia/runners/cast/cast_runner.h"
 
 namespace {
@@ -34,43 +31,6 @@ bool IsHeadless() {
   return false;
 }
 
-fuchsia::web::CreateContextParams CreateMainContextParams() {
-  fuchsia::web::ContextFeatureFlags features =
-      fuchsia::web::ContextFeatureFlags::NETWORK |
-      fuchsia::web::ContextFeatureFlags::AUDIO |
-      fuchsia::web::ContextFeatureFlags::WIDEVINE_CDM |
-      fuchsia::web::ContextFeatureFlags::LEGACYMETRICS;
-
-  if (IsHeadless()) {
-    LOG(WARNING) << "Running in headless mode.";
-    features |= fuchsia::web::ContextFeatureFlags::HEADLESS;
-  } else {
-    features |= fuchsia::web::ContextFeatureFlags::VULKAN |
-                fuchsia::web::ContextFeatureFlags::HARDWARE_VIDEO_DECODER |
-                fuchsia::web::ContextFeatureFlags::HARDWARE_VIDEO_DECODER_ONLY;
-  }
-
-  fuchsia::web::CreateContextParams create_context_params;
-  create_context_params.set_features(features);
-
-  const char kCastPlayreadyKeySystem[] = "com.chromecast.playready";
-  create_context_params.set_playready_key_system(kCastPlayreadyKeySystem);
-
-  // TODO(b/141956135): Use CrKey version provided by the Agent.
-  create_context_params.set_user_agent_product("CrKey");
-  create_context_params.set_user_agent_version("1.43.000000");
-
-  create_context_params.set_remote_debugging_port(
-      CastRunner::kRemoteDebuggingPort);
-
-  // TODO(crbug.com/1023514): Remove this switch when it is no longer
-  // necessary.
-  create_context_params.set_unsafely_treat_insecure_origins_as_secure(
-      {"allow-running-insecure-content"});
-
-  return create_context_params;
-}
-
 }  // namespace
 
 int main(int argc, char** argv) {
@@ -84,12 +44,10 @@ int main(int argc, char** argv) {
 
   cr_fuchsia::RegisterFuchsiaDirScheme();
 
-  WebContentRunner::GetContextParamsCallback get_context_params_callback =
-      base::BindRepeating(&CreateMainContextParams);
-
-  CastRunner runner(std::move(get_context_params_callback), IsHeadless());
-  runner.PublishRunnerService(
-      base::fuchsia::ComponentContextForCurrentProcess()->outgoing().get());
+  CastRunner runner(IsHeadless());
+  base::fuchsia::ScopedServiceBinding<fuchsia::sys::Runner> binding(
+      base::fuchsia::ComponentContextForCurrentProcess()->outgoing().get(),
+      &runner);
 
   base::fuchsia::ComponentContextForCurrentProcess()
       ->outgoing()

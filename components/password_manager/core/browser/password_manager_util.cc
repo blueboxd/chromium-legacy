@@ -514,8 +514,7 @@ bool ShouldShowAccountStorageOptIn(const PrefService* pref_service,
 
   // Show the opt-in if the user is eligible, but not yet opted in.
   return IsUserEligibleForAccountStorage(sync_service) &&
-         !IsOptedInForAccountStorage(pref_service, sync_service) &&
-         !sync_service->IsSyncFeatureEnabled();
+         !IsOptedInForAccountStorage(pref_service, sync_service);
 }
 
 void SetAccountStorageOptIn(PrefService* pref_service,
@@ -596,6 +595,12 @@ void ClearAccountStorageSettingsForAllUsers(PrefService* pref_service) {
 PasswordAccountStorageUserState ComputePasswordAccountStorageUserState(
     const PrefService* pref_service,
     const syncer::SyncService* sync_service) {
+  DCHECK(pref_service);
+  // The SyncService can be null in incognito, or due to a commandline flag. In
+  // those cases, simply consider the user as signed out.
+  if (!sync_service)
+    return PasswordAccountStorageUserState::kSignedOutUser;
+
   if (sync_service->IsSyncFeatureEnabled())
     return PasswordAccountStorageUserState::kSyncUser;
 

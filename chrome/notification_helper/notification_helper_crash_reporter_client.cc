@@ -8,6 +8,7 @@
 
 #include "base/debug/leak_annotations.h"
 #include "base/file_version_info.h"
+#include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_version.h"
 #include "chrome/install_static/install_util.h"

@@ -321,30 +321,6 @@ void ElementInternals::SetElementArrayAttribute(
   }
 }
 
-HeapVector<Member<Element>> ElementInternals::GetElementArrayAttribute(
-    const QualifiedName& name,
-    bool is_null) {
-  is_null = true;
-  auto iter = explicitly_set_attr_elements_map_.find(name);
-  if (iter != explicitly_set_attr_elements_map_.end()) {
-    is_null = false;
-    return *(iter->value);
-  }
-  return HeapVector<Member<Element>>();
-}
-
-void ElementInternals::SetElementArrayAttribute(
-    const QualifiedName& name,
-    HeapVector<Member<Element>> elements,
-    bool is_null) {
-  if (is_null) {
-    explicitly_set_attr_elements_map_.erase(name);
-    return;
-  }
-  explicitly_set_attr_elements_map_.Set(
-      name, MakeGarbageCollected<HeapVector<Member<Element>>>(elements));
-}
-
 bool ElementInternals::IsTargetFormAssociated() const {
   if (Target().IsFormAssociatedCustomElement())
     return true;

@@ -421,6 +421,11 @@
 <translation id="1555130319947370107">ਨੀਲਾ</translation>
 <translation id="1556537182262721003">ਐਕਸਟੈਂਸ਼ਨ ਡਾਇਰੈਕਟਰੀ 'ਚ ਪ੍ਰੋਫਾਈਲ ਦੀ ਹਲਚਲ ਨਹੀਂ ਕੀਤੀ ਜਾ ਸਕਦੀ।</translation>
 <translation id="155865706765934889">ਟਚਪੈਡ</translation>
+<translation id="1560763881671211335">'ਸਿੱਖਿਆ ਲਈ G Suite' ਪ੍ਰਸ਼ਾਸਕਾਂ ਵੱਲੋਂ ਇਹ ਨਿਰਧਾਰਿਤ ਕੀਤਾ ਜਾਂਦਾ ਹੈ ਕਿ G Suite ਵਿੱਚ ਸਿੱਖਿਆ ਖਾਤੇ ਲਈ ਸਾਈਨ-ਇਨ ਕਰਦੇ ਸਮੇਂ ਉਹਨਾਂ ਦੇ ਵਰਤੋਂਕਾਰ ਕਿਹੜੀਆਂ Google ਸੇਵਾਵਾਂ ਤੱਕ ਪਹੁੰਚ ਕਰ ਸਕਦੇ ਹਨ। ਸਕੂਲ ਪ੍ਰਸ਼ਾਸਕਾਂ ਨੂੰ ਉਹਨਾਂ ਦੇ ਨਾਬਾਲਗ ਵਰਤੋਂਕਾਰਾਂ ਵੱਲੋਂ ਸੇਵਾਵਾਂ ਦੀ ਵਰਤੋਂ ਲਈ ਸਹਿਮਤੀ ਮੁਹੱਈਆ ਕਰਵਾਉਣ ਜਾਂ ਪ੍ਰਾਪਤ ਕਰਨ ਦੀ ਲੋੜ ਹੁੰਦੀ ਹੈ।
+
+    ਬ੍ਰਾਊਜ਼ਿੰਗ ਡਾਟਾ (ਇਤਿਹਾਸ, ਬੁੱਕਮਾਰਕਾਂ ਅਤੇ ਪਾਸਵਰਡਾਂ ਸਮੇਤ) ਸਕੂਲ ਖਾਤੇ ਦੀ ਬਜਾਏ Family Link ਖਾਤੇ ਨਾਲ ਸਟੋਰ ਕੀਤਾ ਜਾਵੇਗਾ।
+
+    ਤੁਹਾਡੀਆਂ Family Link ਮਾਂ-ਪਿਓ ਸੈਟਿੰਗਾਂ ਹਾਲੇ ਵੀ ਲਾਗੂ ਹੋਣਗੀਆਂ। ਜੇ ਤੁਸੀਂ ਪਹਿਲਾਂ ਕੋਈ ਐਪ ਜਾਂ ਸਾਈਟ ਬਲਾਕ ਕੀਤੀ ਸੀ, ਤਾਂ ਤੁਹਾਨੂੰ ਇਹ ਦੁਬਾਰਾ ਕਰਨ ਦੀ ਲੋੜ ਨਹੀਂ ਹੋਵੇਗੀ।</translation>
 <translation id="1566049601598938765">ਵੈੱਬਸਾਈਟ</translation>
 <translation id="15662109988763471">ਚੁਣਿਆ ਗਿਆ ਪ੍ਰਿੰਟਰ ਉਪਲਬਧ ਨਹੀਂ ਹੈ ਜਾਂ ਸਹੀ ਢੰਗ ਨਾਲ ਸਥਾਪਤ ਨਹੀਂ ਕੀਤਾ ਗਿਆ ਹੈ। ਆਪਣੇ ਪ੍ਰਿੰਟਰ ਦੀ ਜਾਂਚ ਕਰੋ ਜਾਂ ਕੋਈ ਹੋਰ ਪ੍ਰਿੰਟਰ ਚੁਣਕੇ ਦੇਖੋ।</translation>
 <translation id="1567387640189251553">ਤੁਹਾਡੇ ਵੱਲੋਂ ਪਿਛਲੀ ਵਾਰ ਆਪਣਾ ਪਾਸਵਰਡ ਦਾਖਲ ਕਰਨ ਤੋਂ ਬਾਅਦ ਕੋਈ ਵੱਖਰਾ ਕੀ-ਬੋਰਡ ਕਨੈਕਟ ਕੀਤਾ ਗਿਆ ਹੈ। ਹੋ ਸਕਦਾ ਹੈ ਕਿ ਇਹ ਤੁਹਾਡੇ ਕੀਸਟ੍ਰੋਕ ਚੋਰੀ ਕਰਨ ਦੀ ਕੋਸ਼ਿਸ਼ ਕਰ ਰਿਹਾ ਹੋਵੇ।</translation>
@@ -1199,6 +1204,7 @@
 <translation id="258095186877893873">ਲੰਮਾ</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (ਪਲੇਟਫਾਰਮ <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Kerberos ਟਿਕਟ ਪ੍ਰਾਪਤ ਨਹੀਂ ਕੀਤੀ ਜਾ ਸਕੀ। ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ ਜਾਂ ਆਪਣੀ ਸੰਸਥਾ ਦੇ ਡੀਵਾਈਸ ਪ੍ਰਸ਼ਾਸਕ ਨੂੰ ਸੰਪਰਕ ਕਰੋ। (ਗੜਬੜ ਕੋਡ <ph name="ERROR_CODE" />)।</translation>
+<translation id="2585013490795742997"><ph name="QUERY" /> ਲਈ 1 ਖੋਜ ਨਤੀਜਾ ਦਿਖਾਇਆ ਜਾ ਰਿਹਾ ਹੈ</translation>
 <translation id="2585724835339714757">ਇਹ ਟੈਬ ਤੁਹਾਡੀ ਸਕ੍ਰੀਨ ਨੂੰ ਸਾਂਝਾ ਕਰ ਰਹੀ ਹੈ।</translation>
 <translation id="2586657967955657006">ਕਲਿੱਪਬੋਰਡ</translation>
 <translation id="2586672484245266891">ਕਿਰਪਾ ਕਰਕੇ ਇੱਕ ਵਧੇਰੇ ਛੋਟਾ URL ਦਾਖਲ ਕਰੋ</translation>
@@ -1884,6 +1890,7 @@
 <translation id="3498215018399854026">ਇਸ ਇਸ ਵੇਲੇ ਤੁਹਾਡੇ ਮਾਤਾ ਜਾਂ ਪਿਤਾ ਨਾਲ ਸੰਪਰਕ ਨਹੀਂ ਕਰ ਸਕੇ। ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।</translation>
 <translation id="3500417806337761827">ਸਾਂਝਾਕਰਨ ਮਾਊਂਟ ਕਰਨ ਵਿੱਚ ਗੜਬੜ ਹੋਈ। ਬਹੁਤ ਸਾਰੇ SMB ਸਾਂਝਾਕਰਨਾਂ ਨੂੰ ਪਹਿਲਾਂ ਹੀ ਮਾਊਂਟ ਕੀਤਾ ਜਾ ਚੁੱਕਿਆ ਹੈ।</translation>
 <translation id="3505030558724226696">ਡੀਵਾਈਸ ਪਹੁੰਚ ਰੱਦ ਕਰੋ</translation>
+<translation id="3507132249039706973">ਮਿਆਰੀ ਸੁਰੱਖਿਆ ਚਾਲੂ ਹੈ</translation>
 <translation id="3507421388498836150">"<ph name="EXTENSION_NAME" />" ਲਈ ਮੌਜੂਦਾ ਅਨੁਮਤੀਆਂ</translation>
 <translation id="3507888235492474624">ਬਲੂਟੁੱਥ ਡੀਵਾਈਸਾਂ ਲਈ ਮੁੜ-ਸਕੈਨ ਕਰੋ</translation>
 <translation id="3508492320654304609">ਤੁਹਾਡੇ ਸਾਈਨ-ਇਨ ਡਾਟੇ ਨੂੰ ਮਿਟਾਇਆ ਨਹੀਂ ਜਾ ਸਕਿਆ</translation>
@@ -3237,6 +3244,7 @@
 <translation id="5352033265844765294">ਸਮਾਂ ਸਟੈਂਪਿੰਗ</translation>
 <translation id="5353252989841766347">ਪਾਸਵਰਡਾਂ ਨੂੰ Chrome ਤੋਂ ਨਿਰਯਾਤ ਕਰੋ</translation>
 <translation id="5355099869024327351">'ਅਸਿਸਟੈਂਟ' ਨੂੰ ਤੁਹਾਨੂੰ ਸੂਚਨਾਵਾਂ ਦਿਖਾਉਣ ਦਿਓ</translation>
+<translation id="5355191726083956201">ਵਿਸਤ੍ਰਿਤ ਸੁਰੱਖਿਆ ਚਾਲੂ ਹੈ</translation>
 <translation id="5355926466126177564">ਐਕਸਟੈਂਸ਼ਨ "<ph name="EXTENSION_NAME" />" ਬਦਲਿਆ ਗਿਆ ਹੈ ਕਿ ਕਿਹੜਾ ਪੰਨਾ ਦਿਖਾਇਆ ਜਾਂਦਾ ਹੈ ਜਦੋਂ ਤੁਸੀਂ Omnibox ਤੋਂ ਖੋਜ ਕਰਦੇ ਹੋ।</translation>
 <translation id="5359910752122114278">1 ਨਤੀਜਾ</translation>
 <translation id="5360150013186312835">ਟੂਲਬਾਰ ਵਿੱਚ ਦਿਖਾਓ</translation>
@@ -3548,6 +3556,7 @@
 <translation id="577322787686508614">ਇਸ 'ਤੇ ਪੜ੍ਹਨ ਦੀ ਕਿਰਿਆ ਦੀ ਇਜਾਜ਼ਤ ਨਹੀਂ ਹੈ: "<ph name="DEVICE_NAME" />"।</translation>
 <translation id="5774295353725270860">Files ਐਪ ਖੋਲ੍ਹੋ</translation>
 <translation id="577624874850706961">ਕੁਕੀਜ਼ ਖੋਜੋ</translation>
+<translation id="5776858208024364029"><ph name="QUERY" /> ਦੇ ਲਈ <ph name="NUMBER" /> ਖੋਜ ਨਤੀਜਾ ਦਿਖਾਇਆ ਜਾ ਰਿਹਾ ਹੈ</translation>
 <translation id="5777468213129569553">Chrome ਖੋਲ੍ਹੋ</translation>
 <translation id="5778747455497889540">ਹੇਠਾਂ ਬੇਤਰਤੀਬੀ ਨਾਲ ਸਿਰਜਿਆ ਗਿਆ ਸੁਰੱਖਿਅਤ ਮਾਡਿਊਲ ਪਾਸਵਰਡ ਹੈ ਜੋ ਤੁਹਾਡੇ ਕੰਪਿਊਟਰ ਨੂੰ ਦਿੱਤਾ ਗਿਆ ਹੈ:</translation>
 <translation id="5780011244986845107">ਤੁਹਾਡੇ ਵੱਲੋਂ ਚੁਣੇ ਗਏ ਫੋਲਡਰ ਵਿੱਚ ਸੰਵੇਦਨਸ਼ੀਲ ਫ਼ਾਈਲਾਂ ਸ਼ਾਮਲ ਹਨ। ਕੀ ਤੁਸੀਂ ਪੱਕਾ "<ph name="APP_NAME" />" ਨੂੰ ਇਸ ਫੋਲਡਰ ਨੂੰ ਪੜ੍ਹਨ ਦੀ ਸਥਾਈ ਪਹੁੰਚ ਦੇਣੀ ਚਾਹੁੰਦੇ ਹੋ?</translation>
@@ -4104,6 +4113,7 @@
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
+<translation id="6520876759015997832"><ph name="LIST_SIZE" /> ਵਿੱਚੋਂ <ph name="LIST_POSITION" /> ਖੋਜ ਨਤੀਜਾ: <ph name="SEARCH_RESULT_TEXT" />। ਸੈਕਸ਼ਨ 'ਤੇ ਨੈਵੀਗੇਟ ਕਰਨ ਲਈ Enter ਦਬਾਓ।</translation>
 <translation id="652492607360843641">ਤੁਸੀਂ <ph name="NETWORK_TYPE" /> ਨੈੱਟਵਰਕ ਨਾਲ ਕਨੈਕਟ ਹੋ।</translation>
 <translation id="6527303717912515753">ਸ਼ੇਅਰ ਕਰੋ</translation>
 <translation id="6528513914570774834">ਇਸ ਡੀਵਾਈਸ ਦੇ ਹੋਰ ਵਰਤੋਂਕਾਰਾਂ ਨੂੰ ਇਸ ਨੈੱਟਵਰਕ ਦੀ ਵਰਤੋਂ ਕਰਨ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ</translation>
@@ -4115,6 +4125,7 @@
 <translation id="6532206849875187177">ਸੁਰੱਖਿਆ ਅਤੇ ਸਾਈਨ-ਇਨ</translation>
 <translation id="6532527800157340614">ਸਾਈਨ-ਇਨ ਅਸਫਲ ਰਿਹਾ ਕਿਉਂਕਿ ਤੁਹਾਡਾ ਪਹੁੰਚ ਟੋਕਨ ਪ੍ਰਾਪਤ ਨਹੀਂ ਹੋ ਸਕਿਆ। ਕਿਰਪਾ ਕਰਕੇ ਆਪਣੇ ਨੈੱਟਵਰਕ ਕਨੈਕਸ਼ਨ ਦੀ ਜਾਂਚ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।</translation>
 <translation id="6532663472409656417">ਐਂਟਰਪ੍ਰਾਈਜ਼ ਵਜੋਂ ਦਰਜ</translation>
+<translation id="6535331821390304775"><ph name="ORIGIN" /> ਨੂੰ ਇਸ ਕਿਸਮ ਦੇ ਲਿੰਕਾਂ ਨੂੰ ਹਮੇਸ਼ਾਂ ਕਿਸੇ ਸੰਬੰਧਿਤ ਐਪ ਵਿੱਚ ਖੋਲ੍ਹਣ ਦਿਓ</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />ਨੋਟ:<ph name="END_BOLD" /> ਸਿਰਫ਼ ਤਾਂ ਹੀ ਚਾਲੂ ਕਰੋ ਜੇਕਰ ਤੁਹਾਨੂੰ ਪਤਾ ਹੈ ਕਿ ਤੁਸੀਂ ਕੀ ਕਰ ਰਹੇੇ ਹੋ ਜਾਂ ਜੇਕਰ ਤੁਹਾਨੂੰ ਅਜਿਹਾ ਕਰਨ ਲਈ ਕਿਹਾ ਗਿਆ ਹੈ, ਕਿਉਂਕਿ ਡਾਟਾ ਦਾ ਇਕੱਤਰੀਕਰਨ ਕਾਰਗੁਜ਼ਾਰੀ ਘਟਾ ਸਕਦਾ ਹੈ।</translation>
 <translation id="6541638731489116978">ਇਸ ਸਾਈਟ ਨੂੰ ਤੁਹਾਡੇ ਗਤੀਸ਼ੀਲਤਾ ਸੈਂਸਰਾਂ ਤੱਕ ਪਹੁੰਚ ਕਰਨ ਤੋਂ ਬਲਾਕ ਕੀਤਾ ਗਿਆ ਹੈ।</translation>
 <translation id="6545665334409411530">ਦੁਹਰਾਉਣ ਦੀ ਦਰ</translation>
@@ -4244,6 +4255,7 @@
 <translation id="6727969043791803658">ਕਨੈਕਟ ਕੀਤਾ ਗਿਆ, <ph name="BATTERY_PERCENTAGE" />% ਬੈਟਰੀ</translation>
 <translation id="6732801395666424405">ਪ੍ਰਮਾਣ-ਪੱਤਰ ਲੋਡ ਨਹੀਂ ਕੀਤੇ ਗਏ</translation>
 <translation id="6732900235521116609">ਸ਼ਾਰਟਕੱਟ ਹਟਾਇਆ ਨਹੀਂ ਜਾ ਸਕਦਾ</translation>
+<translation id="6734468588183300211">ਇਨਕੋਗਨਿਟੋ ਵਿੱਚ ਹੋਣ ਦੌਰਾਨ, ਸਾਈਟਾਂ ਵੱਖ-ਵੱਖ ਸਾਈਟਾਂ ਵਿਚਲੀ ਤੁਹਾਡੀ ਬ੍ਰਾਊਜ਼ਿੰਗ ਸਰਗਰਮੀ ਦੇਖਣ ਲਈ ਕੁਕੀਜ਼ ਨੂੰ ਨਹੀਂ ਵਰਤ ਸਕਦੀਆਂ, ਉਦਾਹਰਨ ਲਈ, ਵਿਗਿਆਪਨਾਂ ਨੂੰ ਵਿਅਕਤੀਗਤ ਬਣਾਉਣ ਲਈ। ਸ਼ਾਇਦ ਕੁਝ ਸਾਈਟਾਂ 'ਤੇ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ ਠੀਕ ਤਰੀਕੇ ਨਾਲ ਕੰਮ ਨਾ ਕਰਨ।</translation>
 <translation id="6735304988756581115">ਕੁਕੀਜ਼ ਅਤੇ ਹੋਰ ਸਾਈਟ ਡਾਟਾ ਦਿਖਾਓ...</translation>
 <translation id="6736243959894955139">ਪਤਾ</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
@@ -4256,6 +4268,7 @@
 <translation id="674632704103926902">ਟੈਪ ਡ੍ਰੈਗਿੰਗ ਨੂੰ ਚਾਲੂ ਕਰੋ</translation>
 <translation id="6748217015615267851">ਰੈਂਡਰਰ: <ph name="RENDERER_URL" /></translation>
 <translation id="6748465660675848252">ਤੁਸੀਂ ਅੱਗੇ ਵੱਧ ਸਕਦੇ ਹੋ, ਪਰ ਸਿਰਫ਼ ਤੁਹਾਡਾ ਸਮਕਾਲੀਕਰਨ ਕੀਤਾ ਡਾਟਾ ਅਤੇ ਸੈੱਟਿੰਗਾਂ ਨੂੰ ਮੁੜ-ਬਹਾਲ ਕੀਤਾ ਜਾਵੇਗਾ। ਸਾਰਾ ਸਥਾਨਕ ਡਾਟਾ ਗੁਆਚ ਜਾਵੇਗਾ।</translation>
+<translation id="6749006854028927059">ਸਾਈਟਾਂ ਵੱਖ-ਵੱਖ ਸਾਈਟਾਂ ਵਿਚਲੀ ਤੁਹਾਡੀ ਬ੍ਰਾਊਜ਼ਿੰਗ ਸਰਗਰਮੀ ਦੇਖਣ ਲਈ ਕੁਕੀਜ਼ ਨੂੰ ਨਹੀਂ ਵਰਤ ਸਕਦੀਆਂ, ਉਦਾਹਰਨ ਲਈ, ਵਿਗਿਆਪਨਾਂ ਨੂੰ ਵਿਅਕਤੀਗਤ ਬਣਾਉਣ ਲਈ। ਸ਼ਾਇਦ ਕੁਝ ਸਾਈਟਾਂ 'ਤੇ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ ਠੀਕ ਤਰੀਕੇ ਨਾਲ ਕੰਮ ਨਾ ਕਰਨ।</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (ਗੁਮਨਾਮ)</translation>
 <translation id="6757101664402245801">URL ਕਾਪੀ ਕੀਤਾ ਗਿਆ</translation>
 <translation id="6758056191028427665">ਸਾਨੂੰ ਦੱਸੋ ਕਿ ਸਾਡਾ ਪ੍ਰਦਰਸ਼ਨ ਕਿਹੋ ਜਿਹਾ ਹੈ।</translation>
@@ -4347,6 +4360,7 @@
 <translation id="686664946474413495">ਰੰਗ ਤਾਪਮਾਨ</translation>
 <translation id="6871644448911473373">OCSP ਉੱਤਰਦਾਤਾ: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">ਤੁਹਾਡੇ ਵੱਲੋਂ ਦਾਖਲ ਕੀਤੇ ਪਾਸਵਰਡ ਨੂੰ ਸਰਵਰ ਨੇ ਅਸਵੀਕਾਰ ਕੀਤਾ।</translation>
+<translation id="6874170800191969835"><ph name="SEARCH_RESULT_TEXT" /> 'ਤੇ ਨੈਵੀਗੇਟ ਕੀਤਾ ਗਿਆ।</translation>
 <translation id="6876155724392614295">ਸਾਈਕਲ</translation>
 <translation id="6876469544038980967">ਲਾਹੇਵੰਦ ਨਹੀਂ</translation>
 <translation id="6878422606530379992">ਸੈਂਸਰ ਵਰਤਣ ਦਿੱਤੇ ਗਏ</translation>
@@ -4617,6 +4631,7 @@
 <translation id="7235737137505019098">ਤੁਹਾਡੀ ਸੁਰੱਖਿਆ ਕੁੰਜੀ ਵਿੱਚ ਕਿਸੇ ਵੀ ਹੋਰ ਖਾਤੇ ਲਈ ਲੋੜੀਂਦੀ ਜਗ੍ਹਾ ਨਹੀਂ ਹੈ।</translation>
 <translation id="7238643356913091553"><ph name="NETWORK_NAME" />, ਵੇਰਵੇ</translation>
 <translation id="7240339475467890413">ਨਵੇਂ ਹੌਟਸਪੌਟ ਨਾਲ ਕਨੈਕਟ ਕਰੀਏ?</translation>
+<translation id="7240847845291869311">ਤੁਹਾਡਾ ਬੱਚਾ ਇਸ ਡੀਵਾਈਸ 'ਤੇ ਇੱਕ 'ਸਿੱਖਿਆ ਲਈ G Suite' Google ਖਾਤਾ ਸ਼ਾਮਲ ਕਰਨਾ ਚਾਹੁੰਦਾ ਹੈ। <ph name="LINK_BEGIN" />ਸਿੱਖਿਆ ਲਈ G Suite ਪਰਦੇਦਾਰੀ ਨੋਟਿਸ<ph name="LINK_END" /> ਦਾ ਮਤਲਬ 'ਸਿੱਖਿਆ ਲਈ G Suite' ਵਰਤੋਂਕਾਰਾਂ ਅਤੇ ਮਾਂ-ਪਿਓ ਨੂੰ ਇਹ ਸਮਝਾਉਣ ਵਿੱਚ ਮਦਦ ਕਰਨਾ ਹੈ ਕਿ ਉਤਪਾਦ ਵੱਲੋਂ ਕਿਹੜਾ ਡਾਟਾ ਇਕੱਤਰ ਕੀਤਾ ਜਾਂਦਾ ਹੈ, ਕਿਉਂ ਇਕੱਤਰ ਕੀਤਾ ਜਾਂਦਾ ਹੈ ਅਤੇ ਇਸ ਨਾਲ ਕੀ ਕੀਤਾ ਜਾਂਦਾ ਹੈ।</translation>
 <translation id="7241389281993241388">ਕਿਰਪਾ ਕਰਕੇ ਕਲਾਈਂਟ ਪ੍ਰਮਾਣ-ਪੱਤਰ ਆਯਾਤ ਕਰਨ ਲਈ <ph name="TOKEN_NAME" /> 'ਤੇ ਸਾਈਨ-ਇਨ ਕਰੋ।</translation>
 <translation id="7241443820034350811">ਜੇ ਤੁਹਾਡੀ ਸੁਰੱਖਿਆ ਕੁੰਜੀ ਸੂਚੀਬੱਧ ਨਹੀਂ ਹੈ, ਤਾਂ ਇਸਦੇ ਬਟਨ ਨੂੰ ਘੱਟੋ-ਘੱਟ 5 ਸਕਿੰਟ ਲਈ ਦਬਾਓ।</translation>
 <translation id="7243632151880336635">ਸਾਫ਼ ਕਰੋ ਅਤੇ ਸਾਈਨ-ਆਊਟ ਕਰੋ</translation>
@@ -5198,6 +5213,7 @@
 <translation id="7987814697832569482">ਹਮੇਸ਼ਾਂ ਇਸ VPN ਰਾਹੀਂ ਕਨੈਕਟ ਕਰੋ</translation>
 <translation id="7988355189918024273">ਪਹੁੰਚਯੋਗਤਾ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ ਯੋਗ ਬਣਾਓ</translation>
 <translation id="7991296728590311172">ਸਵਿੱਚ ਪਹੁੰਚ ਸੈਟਿੰਗਾਂ</translation>
+<translation id="7992202128769240372"><ph name="SHEETS_LABEL" /> <ph name="NUMBER_OF_SHEETS" /> ਦੀ ਸੀਮਾ ਤੋਂ ਵੱਧ ਹੈ</translation>
 <translation id="7994350303002908848">Plugin VM ਨੂੰ ਸਥਾਪਤ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ। ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ ਜਾਂ ਆਪਣੀ ਸੰਸਥਾ ਦੇ ਡੀਵਾਈਸ ਪ੍ਰਸ਼ਾਸਕ ਨੂੰ ਸੰਪਰਕ ਕਰੋ। ਗੜਬੜ ਕੋਡ: <ph name="ERROR_CODE" />.</translation>
 <translation id="7994702968232966508">EAP ਵਿਧੀ</translation>
 <translation id="7997826902155442747">ਪ੍ਰਕਿਰਿਆ ਤਰਜੀਹ</translation>

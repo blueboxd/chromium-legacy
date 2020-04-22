@@ -445,7 +445,7 @@
         # These are very slow on the Chrome OS MSAN trybot for some reason.
         # crbug.com/865455
         'swarming': {
-          'shards': 30,
+          'shards': 32,
         },
       },
       'Linux Tests (dbg)(1)': {

@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "chromeos/printing/printer_configuration.h"
 
 namespace chromeos {

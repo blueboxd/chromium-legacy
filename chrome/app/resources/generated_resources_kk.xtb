@@ -418,6 +418,11 @@
 <translation id="1555130319947370107">Көк</translation>
 <translation id="1556537182262721003">Кеңейтім каталогін профиль ішіне жылжыту мүмкін емес.</translation>
 <translation id="155865706765934889">Сенсорлық тақта</translation>
+<translation id="1560763881671211335">G Suite for Education әкімшілері G Suite for Education есептік жазбасына кірген кезде пайдаланушылардың қандай Google қызметтерін қолдана алатынын анықтайды. Мектеп әкімшілерінен кәмелетке толмаған пайдаланушылардың қызметті қолдануына қатысты келісімді беруі не алуы талап етіледі.
+
+    Браузерді пайдалану деректері (тарих, бетбелгілер және құпия сөздер) оқу есептік жазбасында емес, Family Link есептік жазбасында сақталады.
+
+    Family Link қолданбасының ата-аналарға арналған параметрлері әлі де қолданылады. Бұрын тыйым салынған қолданбаға не сайтқа қайта тыйым салудың қажеті жоқ.</translation>
 <translation id="1566049601598938765">Вебсайт</translation>
 <translation id="15662109988763471">Таңдалған принтер қолжетімді емес немесе дұрыс орнатылмаған. Принтеріңізді тексеріңіз немесе басқа принтерді таңдап көріңіз.</translation>
 <translation id="1567387640189251553">Құпия сөз соңғы рет енгізілгеннен кейін, басқа пернетақта жалғанды. Ол басылған пернелерді "ұрлап алу" әрекетін жасауы мүмкін.</translation>
@@ -1197,6 +1202,7 @@
 <translation id="258095186877893873">Ұзақ</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (<ph name="PLATFORM_VERSION" /> платформасы) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Kerberos билетін алу мүмкін болмады. Қайталап көріңіз немесе ұйымыңыздың құрылғы әкімшісіне хабарласыңыз. (Қате коды: <ph name="ERROR_CODE" />)</translation>
+<translation id="2585013490795742997"><ph name="QUERY" /> бойынша 1 нәтиже бар.</translation>
 <translation id="2585724835339714757">Бұл қойынды экраныңызбен бөлісуде.</translation>
 <translation id="2586657967955657006">Буфер</translation>
 <translation id="2586672484245266891">Қысқа URL мекенжайын енгізіңіз</translation>
@@ -1883,6 +1889,7 @@
 <translation id="3498215018399854026">Қазір ата-анаңызбен байланысу мүмкін емес. Әрекетті қайталаңыз.</translation>
 <translation id="3500417806337761827">Бөлісу кезінде қате шықты. Тым көп SMB бөлісілген.</translation>
 <translation id="3505030558724226696">Құрылғыға кіру құқығын қайтарып алу</translation>
+<translation id="3507132249039706973">Стандартты қорғаныс қосулы.</translation>
 <translation id="3507421388498836150">Ағымдағы "<ph name="EXTENSION_NAME" />" рұқсаттары</translation>
 <translation id="3507888235492474624">Bluetooth құрылғыларын қайта іздеу</translation>
 <translation id="3508492320654304609">Кіру деректері жойылмады.</translation>
@@ -3236,6 +3243,7 @@
 <translation id="5352033265844765294">Уақыт белгілеу</translation>
 <translation id="5353252989841766347">Құпия сөздердерді Chrome жүйесінен экспорттау</translation>
 <translation id="5355099869024327351">Assistant қолданбасына хабарландыруларды көрсетуге рұқсат беріңіз</translation>
+<translation id="5355191726083956201">Жақсартылған қорғаныс қосулы.</translation>
 <translation id="5355926466126177564">«<ph name="EXTENSION_NAME" />» кеңейтімі Omnibox ішінен іздеген кезде көрсетілетін бетті өзгертті.</translation>
 <translation id="5359910752122114278">1 нәтиже</translation>
 <translation id="5360150013186312835">Құралдар тақтасында көрсету</translation>
@@ -3547,6 +3555,7 @@
 <translation id="577322787686508614">Келесі құрылғыдан оқуға рұқсат жоқ: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5774295353725270860">Файлдар қолданбасын ашу</translation>
 <translation id="577624874850706961">Cookie файлдарын іздеу</translation>
+<translation id="5776858208024364029"><ph name="QUERY" /> сұрауы бойынша іздеу нәтижесі: <ph name="NUMBER" /></translation>
 <translation id="5777468213129569553">Chrome браузерін ашу</translation>
 <translation id="5778747455497889540">Төменде қауіпсіздік модулінің компьютерге тағайындалған және еркін жасалған құпия сөзі берілген:</translation>
 <translation id="5780011244986845107">Сіз таңдаған қалтада құпия файлдар бар. "<ph name="APP_NAME" />" қолданбасына қалтадағы деректерді тұрақты оқу мүмкіндігін бергіңіз келе ме?</translation>
@@ -4103,6 +4112,7 @@
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
+<translation id="6520876759015997832"><ph name="LIST_POSITION" />/<ph name="LIST_SIZE" /> іздеу нәтижесі: <ph name="SEARCH_RESULT_TEXT" />. Бөлімге өту үшін Enter пернесін басыңыз.</translation>
 <translation id="652492607360843641"><ph name="NETWORK_TYPE" /> желісіне жалғандыңыз.</translation>
 <translation id="6527303717912515753">Бөлісу</translation>
 <translation id="6528513914570774834">Бұл құрылғының басқа пайдаланушыларына осы желіні пайдалануға рұқсат ету</translation>
@@ -4114,6 +4124,7 @@
 <translation id="6532206849875187177">Қауіпсіздік және есептік жазбаға кіру</translation>
 <translation id="6532527800157340614">Кіру токенін алу мүмкін болмағандықтан, жүйеге кіре алмадыңыз. Желі байланысын тексеріп, қайталап көріңіз.</translation>
 <translation id="6532663472409656417">Кәсіпорында тіркелген</translation>
+<translation id="6535331821390304775"><ph name="ORIGIN" /> бетіне осындай сілтемелерді байланыстырылған қолданбада әрдайым ашуға рұқсат етілсін.</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Ескертпе:<ph name="END_BOLD" /> не істеп жатқаныңызды білсеңіз немесе сізден орындауды сұраған болса ғана қосыңыз, себебі деректерді жинақтау өнімділікті нашарлатуы мүмкін.</translation>
 <translation id="6541638731489116978">Бұл сайттың қозғалыс датчиктеріңізді пайдалануына тыйым салынды.</translation>
 <translation id="6545665334409411530">Қайталау жиілігі</translation>
@@ -4243,6 +4254,7 @@
 <translation id="6727969043791803658">Жалғанды, батарея заряды: <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="6732801395666424405">Сертификаттар жүктелмеді</translation>
 <translation id="6732900235521116609">Таңбаша жойылмайды</translation>
+<translation id="6734468588183300211">Инкогнито режимінде болғанда, сайттар түрлі сайттардағы браузерді қолдану мәліметін көру үшін (мысалы, жарнамаларды жеке қажеттіліктерге бейімдеу мақсатында) cookie файлдарын пайдалана алмайды. Кейбір сайттарда функциялар дұрыс жұмыс істемеуі мүмкін.</translation>
 <translation id="6735304988756581115">Cookie файлдары мен басқа сайт деректерін көрсету…</translation>
 <translation id="6736243959894955139">Мекенжай</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
@@ -4255,6 +4267,7 @@
 <translation id="674632704103926902">Түртіп сүйреуді қосу</translation>
 <translation id="6748217015615267851">Рендеринг: <ph name="RENDERER_URL" /></translation>
 <translation id="6748465660675848252">Жалғастыруыңызға болады, бірақ тек синхрондалған деректер мен параметрлер қалпына келтіріледі. Барлық жергілікті деректер жойылады.</translation>
+<translation id="6749006854028927059">Сайттар түрлі сайттардағы браузерді қолдану мәліметін көру үшін (мысалы, жарнамаларды жеке қажеттіліктерге бейімдеу мақсатында) cookie файлдарын пайдалана алмайды. Кейбір сайттарда функциялар дұрыс жұмыс істемеуі мүмкін.</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (Инкогнито)</translation>
 <translation id="6757101664402245801">URL мекенжайы көшірілді</translation>
 <translation id="6758056191028427665">Қал-жағдайыңызды айтып беріңіз.</translation>
@@ -4346,6 +4359,7 @@
 <translation id="686664946474413495">Түс температурасы</translation>
 <translation id="6871644448911473373">OCSP жауапкері: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">Сіз терген құпия сөзді сервер қабылдамады.</translation>
+<translation id="6874170800191969835"><ph name="SEARCH_RESULT_TEXT" /> іздеу нәтижесіне өттіңіз.</translation>
 <translation id="6876155724392614295">Велосипед</translation>
 <translation id="6876469544038980967">Пайдалы емес</translation>
 <translation id="6878422606530379992">Датчиктерге рұқсат етілді</translation>
@@ -4616,6 +4630,7 @@
 <translation id="7235737137505019098">Басқа есептік жазбалар үшін қауіпсіздік кілтіндегі орын жеткіліксіз.</translation>
 <translation id="7238643356913091553"><ph name="NETWORK_NAME" />, Мәліметтер</translation>
 <translation id="7240339475467890413">Жаңа хотспотқа қосылу керек пе?</translation>
+<translation id="7240847845291869311">Балаңыз осы құрылғыға G Suite for Education Google есептік жазбасын енгізгісі келеді. <ph name="LINK_BEGIN" />G Suite for Education Құпия ақпаратқа қатысты ескертпесінде<ph name="LINK_END" /> қандай деректер жиналатыны, не үшін жиналатыны және қалай өңделетіні G Suite for Education пайдаланушылары мен ата-аналарға түсіндіріледі.</translation>
 <translation id="7241389281993241388">Клиент сертификатын импорттау үшін <ph name="TOKEN_NAME" /> жүйсіне кіріңіз.</translation>
 <translation id="7241443820034350811">Қауіпсіздік кілті тізімде болмаса, оның түймесін кемінде 5 секунд басып тұрыңыз.</translation>
 <translation id="7243632151880336635">Өшіру және шығу</translation>
@@ -4927,7 +4942,7 @@
 <translation id="7669825497510425694">{NUM_ATTEMPTS,plural, =1{PIN коды дұрыс емес. Сізде бір мүмкіндік қалды.}other{PIN коды дұрыс емес. Сізде # мүмкіндік қалды.}}</translation>
 <translation id="7671130400130574146">Жүйе тақырыбы жолағы мен шекараларын пайдалану</translation>
 <translation id="767127784612208024">Бастапқы күйге қайтару үшін түртіңіз</translation>
-<translation id="767147716926917172">Диагностика және пайдаланылуы туралы деректі Google-ға автоматты түрді жібереді.</translation>
+<translation id="767147716926917172">Диагностика және пайдаланылуы туралы деректі Google-ға автоматты түрде жібереді.</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" />, <ph name="PAGE_TITLE" /> қызметінде.</translation>
 <translation id="7676867886086876795">Мәтін өрісіне мәтінді дауыспен енгізу үшін Google қызметіне даусыңызды жіберіңіз.</translation>
 <translation id="7678280409648629969">Сіз инкогнито режимінен шыққаннан кейін де, есептік жазбаға кіру деректері Chrome браузерінде сақталады. Сайтқа қайта кіргенде, Touch ID мүмкіндігін пайдалана аласыз.</translation>
@@ -5198,6 +5213,7 @@
 <translation id="7987814697832569482">Үнемі осы VPN арқылы қосылу</translation>
 <translation id="7988355189918024273">Арнайы мүмкіндіктерді қосу</translation>
 <translation id="7991296728590311172">Switch Access параметрлері</translation>
+<translation id="7992202128769240372">Шектен асты (<ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" />)</translation>
 <translation id="7994350303002908848">Plugin VM орнатылмады. Әрекетті қайталаңыз немесе ұйымыңыздың құрылғы әкімшісіне хабарласыңыз. Қате коды: <ph name="ERROR_CODE" />.</translation>
 <translation id="7994702968232966508">EAP (кеңейтілген растау протоколы) әдісі</translation>
 <translation id="7997826902155442747">Өңдеу басымдығы</translation>

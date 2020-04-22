@@ -11,10 +11,8 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
-import android.os.Build;
 import android.os.StrictMode;
 import android.provider.Browser;
-import android.provider.Telephony;
 import android.text.TextUtils;
 import android.webkit.MimeTypeMap;
 
@@ -353,12 +351,6 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
 
     @Override
     public void maybeSetWindowId(Intent intent) {}
-
-    @Override
-    public String getDefaultSmsPackageName() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) return null;
-        return Telephony.Sms.getDefaultSmsPackage(mApplicationContext);
-    }
 
     private void closeTab() {
         // Closing of tabs as part of intent launching is not yet implemented in WebLayer, and

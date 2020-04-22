@@ -83,8 +83,8 @@
 #include "chrome/browser/autofill/mock_address_accessory_controller.h"
 #include "chrome/browser/autofill/mock_credit_card_accessory_controller.h"
 #include "chrome/browser/autofill/mock_manual_filling_view.h"
-#include "chrome/browser/password_manager/password_accessory_controller_impl.h"
-#include "chrome/browser/password_manager/password_generation_controller.h"
+#include "chrome/browser/password_manager/android/password_accessory_controller_impl.h"
+#include "chrome/browser/password_manager/android/password_generation_controller.h"
 #endif  // defined(OS_ANDROID)
 
 using autofill::PasswordForm;

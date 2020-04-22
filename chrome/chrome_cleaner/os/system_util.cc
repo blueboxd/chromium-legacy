@@ -11,6 +11,7 @@
 
 #include <vector>
 
+#include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/win/windows_version.h"
 

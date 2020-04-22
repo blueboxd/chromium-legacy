@@ -4,6 +4,7 @@
 
 #include "chrome/chrome_cleaner/engines/common/registry_util.h"
 
+#include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_util.h"
 #include "sandbox/win/src/win_utils.h"

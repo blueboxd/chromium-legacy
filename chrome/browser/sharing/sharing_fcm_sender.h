@@ -77,6 +77,10 @@ class SharingFCMSender : public SharingMessageSender::SendMessageDelegate {
   void SetWebPushSenderForTesting(
       std::unique_ptr<WebPushSender> web_push_sender);
 
+  // Used to inject fake SharingMessageBridge in integration tests.
+  void SetSharingMessageBridgeForTesting(
+      SharingMessageBridge* sharing_message_bridge);
+
  protected:
   // SharingMessageSender::SendMessageDelegate:
   void DoSendMessageToDevice(const syncer::DeviceInfo& device,

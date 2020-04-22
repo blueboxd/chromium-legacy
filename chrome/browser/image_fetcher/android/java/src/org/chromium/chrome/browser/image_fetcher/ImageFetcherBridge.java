@@ -28,7 +28,9 @@ public class ImageFetcherBridge {
     // throw an IllegalStateException.
     public static ImageFetcherBridge getInstance() {
         if (sImageFetcherBridge == null) {
-            Profile profile = Profile.getLastUsedProfile();
+            // TODO(https://crbug.com/1041781): Use the current profile (i.e., regular profile or
+            // incognito profile) instead of always using regular profile.
+            Profile profile = Profile.getLastUsedRegularProfile();
             sImageFetcherBridge = new ImageFetcherBridge(profile);
         }
 

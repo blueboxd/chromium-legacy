@@ -26,6 +26,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.AllOf.allOf;
@@ -1407,6 +1408,22 @@ public class AutofillAssistantCollectUserDataUiTest {
         onView(withText("Prepended section 1")).check(isAbove(withText("Prepended section 2")));
         onView(withText("Prepended section 2")).check(isAbove(withText("Appended section 1")));
         onView(withText("Appended section 1")).check(isAbove(withText("Appended section 2")));
+
+        // Unset additional sections and check that the number of dividers has decreased (see
+        // b/152500114).
+        AutofillAssistantCollectUserDataTestHelper
+                .ViewHolder viewHolder = TestThreadUtils.runOnUiThreadBlocking(
+                () -> new AutofillAssistantCollectUserDataTestHelper.ViewHolder(coordinator));
+        int numDividers = viewHolder.mDividers.size();
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            model.set(AssistantCollectUserDataModel.PREPENDED_SECTIONS, Collections.emptyList());
+            model.set(AssistantCollectUserDataModel.APPENDED_SECTIONS, Collections.emptyList());
+        });
+
+        viewHolder = TestThreadUtils.runOnUiThreadBlocking(
+                () -> new AutofillAssistantCollectUserDataTestHelper.ViewHolder(coordinator));
+        assertThat(viewHolder.mDividers.size(), lessThan(numDividers));
     }
 
     @Test

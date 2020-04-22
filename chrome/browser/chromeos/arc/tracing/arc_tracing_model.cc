@@ -7,6 +7,7 @@
 #include "chrome/browser/chromeos/arc/tracing/arc_tracing_model.h"
 
 #include "base/json/json_reader.h"
+#include "base/logging.h"
 #include "base/strings/string_split.h"
 #include "base/trace_event/common/trace_event_common.h"
 #include "chrome/browser/chromeos/arc/tracing/arc_tracing_event.h"

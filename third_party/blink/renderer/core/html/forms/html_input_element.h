@@ -185,20 +185,9 @@ class CORE_EXPORT HTMLInputElement
 
   base::Optional<uint32_t> selectionStartForBinding(ExceptionState&) const;
   base::Optional<uint32_t> selectionEndForBinding(ExceptionState&) const;
-  // TODO(crbug.com/1060971): Remove |is_null| version.
-  unsigned selectionStartForBinding(bool&,
-                                    ExceptionState&) const;       // DEPRECATED
-  unsigned selectionEndForBinding(bool&, ExceptionState&) const;  // DEPRECATED
   String selectionDirectionForBinding(ExceptionState&) const;
   void setSelectionStartForBinding(base::Optional<uint32_t>, ExceptionState&);
   void setSelectionEndForBinding(base::Optional<uint32_t>, ExceptionState&);
-  // TODO(crbug.com/1060971): Remove |is_null| version.
-  void setSelectionStartForBinding(unsigned,
-                                   bool is_null,
-                                   ExceptionState&);  // DEPRECATED
-  void setSelectionEndForBinding(unsigned,
-                                 bool is_null,
-                                 ExceptionState&);  // DEPRECATED
   void setSelectionDirectionForBinding(const String&, ExceptionState&);
   void setSelectionRangeForBinding(unsigned start,
                                    unsigned end,

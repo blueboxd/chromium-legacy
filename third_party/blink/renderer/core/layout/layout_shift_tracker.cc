@@ -554,6 +554,10 @@ void LayoutShiftTracker::SetLayoutShiftRects(const Vector<IntRect>& int_rects) {
   }
 }
 
+void LayoutShiftTracker::Trace(Visitor* visitor) {
+  visitor->Trace(frame_view_);
+}
+
 ReattachHook::Scope::Scope(const Node& node) : active_(node.GetLayoutObject()) {
   if (active_) {
     auto& hook = GetReattachHook();

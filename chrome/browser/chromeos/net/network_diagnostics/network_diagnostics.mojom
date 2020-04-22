@@ -15,6 +15,26 @@ enum RoutineVerdict {
   kNotRun,
 };
 
+// Messages related to the SignalStrength routine that may provide additional
+// insight along with the verdict.
+[Extensible]
+enum SignalStrengthProblem {
+  kSignalNotFound,
+  kWeakSignal,
+};
+
 // This interface is to be used by any clients that need to run specific
-// network-related diagnostics.
-interface NetworkDiagnosticsRoutines {};
+// network-related diagnostics. Expected clients of this interface are
+// NetworkHealth, cros_healthd, and a connectivity diagnostics Web UI (to name
+// a few). The bound implementation is intended to live in the browser process.
+interface NetworkDiagnosticsRoutines {
+  // Tests whether the device is connected to a LAN. It is possible that the
+  // device may be trapped in a captive portal yet pass this test successfully.
+  // Captive portal checks are done separately and are outside of the scope of
+  // this routine.
+  LanConnectivity() => (RoutineVerdict verdict);
+
+  // Tests whether there is an acceptable signal strength on wireless networks.
+  SignalStrength() => (RoutineVerdict verdict,
+                      array<SignalStrengthProblem> problems);
+};

@@ -225,32 +225,10 @@ class CastRunnerIntegrationTest : public testing::Test {
     EnsureFuchsiaDirSchemeInitialized();
 
     // Create the CastRunner, published into |outgoing_directory_|.
-    fuchsia::web::ContextFeatureFlags feature_flags =
-        fuchsia::web::ContextFeatureFlags::NETWORK |
-        fuchsia::web::ContextFeatureFlags::LEGACYMETRICS;
-    if (enable_headless) {
-      feature_flags |= fuchsia::web::ContextFeatureFlags::HEADLESS;
-    }
-    if (enable_vulkan) {
-      feature_flags |= fuchsia::web::ContextFeatureFlags::VULKAN;
-    }
-
-    WebContentRunner::GetContextParamsCallback get_context_params =
-        base::BindLambdaForTesting([feature_flags]() {
-          fuchsia::web::CreateContextParams create_context_params;
-          create_context_params.set_features(feature_flags);
-          create_context_params.set_service_directory(
-              base::fuchsia::OpenDirectory(
-                  base::FilePath(base::fuchsia::kServiceDirectoryPath)));
-          CHECK(create_context_params.service_directory());
-
-          create_context_params.set_remote_debugging_port(
-              CastRunner::kRemoteDebuggingPort);
-          return create_context_params;
-        });
-    cast_runner_ = std::make_unique<CastRunner>(std::move(get_context_params),
-                                                enable_headless);
-    cast_runner_->PublishRunnerService(&outgoing_directory_);
+    cast_runner_ = std::make_unique<CastRunner>(enable_headless);
+    if (!enable_vulkan)
+      cast_runner_->set_disable_vulkan_for_test();
+    cast_runner_binding_.emplace(&outgoing_directory_, cast_runner_.get());
 
     StartAndPublishWebEngine();
 
@@ -500,6 +478,8 @@ class CastRunnerIntegrationTest : public testing::Test {
   sys::OutgoingDirectory outgoing_directory_;
 
   std::unique_ptr<CastRunner> cast_runner_;
+  base::Optional<base::fuchsia::ScopedServiceBinding<fuchsia::sys::Runner>>
+      cast_runner_binding_;
   fuchsia::sys::RunnerPtr cast_runner_ptr_;
   base::TestComponentContextForProcess test_component_context_{
       base::TestComponentContextForProcess::InitialState::kCloneAll};
@@ -535,7 +515,8 @@ TEST_F(CastRunnerIntegrationTest, CanRecreateContext) {
     // Setup a loop to wait for Context destruction after WebEngine is killed
     // below.
     base::RunLoop context_lost_loop;
-    cast_runner_->SetOnContextLostCallback(context_lost_loop.QuitClosure());
+    cast_runner_->SetOnMainContextLostCallbackForTest(
+        context_lost_loop.QuitClosure());
 
     web_engine_controller_->Kill();
 

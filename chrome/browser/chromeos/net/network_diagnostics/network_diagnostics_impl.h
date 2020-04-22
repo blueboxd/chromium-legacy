@@ -24,6 +24,10 @@ class NetworkDiagnosticsImpl : public mojom::NetworkDiagnosticsRoutines {
   void BindReceiver(
       mojo::PendingReceiver<mojom::NetworkDiagnosticsRoutines> receiver);
 
+  // mojom::NetworkDiagnostics
+  void LanConnectivity(LanConnectivityCallback callback) override;
+  void SignalStrength(SignalStrengthCallback callback) override;
+
  private:
   mojo::ReceiverSet<mojom::NetworkDiagnosticsRoutines> receivers_;
   base::WeakPtrFactory<NetworkDiagnosticsImpl> weak_factory_{this};

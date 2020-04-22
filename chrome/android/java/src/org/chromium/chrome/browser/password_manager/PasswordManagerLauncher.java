@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.password_manager;
 
 import android.app.Activity;
-import android.os.Build;
 
 import com.google.android.gms.common.ConnectionResult;
 
@@ -91,8 +90,6 @@ public class PasswordManagerLauncher {
         GooglePasswordManagerUIProvider googlePasswordManagerUIProvider =
                 AppHooks.get().createGooglePasswordManagerUIProvider();
         if (googlePasswordManagerUIProvider == null) return false;
-
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return false;
 
         int minGooglePlayServicesVersion = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
                 GOOGLE_ACCOUNT_PWM_UI, MIN_GOOGLE_PLAY_SERVICES_VERSION_PARAM,

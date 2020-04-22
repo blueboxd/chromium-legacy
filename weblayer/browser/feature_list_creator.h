@@ -45,6 +45,10 @@ class FeatureListCreator {
 
   PrefService* local_state() const { return local_state_.get(); }
 
+  variations::VariationsService* variations_service() const {
+    return variations_service_.get();
+  }
+
  private:
   void SetUpFieldTrials();
 

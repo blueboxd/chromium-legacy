@@ -4,6 +4,7 @@
 
 #include "chrome/updater/win/ui/yes_no_dialog.h"
 
+#include "base/logging.h"
 #include "chrome/updater/win/ui/constants.h"
 #include "chrome/updater/win/ui/ui.h"
 #include "chrome/updater/win/ui/util.h"

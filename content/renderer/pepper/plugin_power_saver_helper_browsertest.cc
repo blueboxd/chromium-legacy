@@ -42,7 +42,7 @@ class PluginPowerSaverHelperTest : public RenderViewTest {
   DISALLOW_COPY_AND_ASSIGN(PluginPowerSaverHelperTest);
 };
 
-TEST_F(PluginPowerSaverHelperTest, TemporaryOriginWhitelist) {
+TEST_F(PluginPowerSaverHelperTest, TemporaryOriginAllowlist) {
   EXPECT_EQ(RenderFrame::CONTENT_STATUS_PERIPHERAL,
             frame()->GetPeripheralContentStatus(
                 url::Origin::Create(GURL("http://same.com")),
@@ -52,10 +52,10 @@ TEST_F(PluginPowerSaverHelperTest, TemporaryOriginWhitelist) {
   // Clear out other messages so we find just the plugin power saver IPCs.
   sink_->ClearMessages();
 
-  frame()->WhitelistContentOrigin(
+  frame()->AllowlistContentOrigin(
       url::Origin::Create(GURL("http://other.com")));
 
-  EXPECT_EQ(RenderFrame::CONTENT_STATUS_ESSENTIAL_CROSS_ORIGIN_WHITELISTED,
+  EXPECT_EQ(RenderFrame::CONTENT_STATUS_ESSENTIAL_CROSS_ORIGIN_ALLOWLISTED,
             frame()->GetPeripheralContentStatus(
                 url::Origin::Create(GURL("http://same.com")),
                 url::Origin::Create(GURL("http://other.com")),
@@ -72,25 +72,25 @@ TEST_F(PluginPowerSaverHelperTest, TemporaryOriginWhitelist) {
                   .IsSameOriginWith(std::get<0>(params)));
 }
 
-TEST_F(PluginPowerSaverHelperTest, UnthrottleOnExPostFactoWhitelist) {
+TEST_F(PluginPowerSaverHelperTest, UnthrottleOnExPostFactoAllowlist) {
   base::RunLoop loop;
   frame()->RegisterPeripheralPlugin(
       url::Origin::Create(GURL("http://other.com")), loop.QuitClosure());
 
-  std::set<url::Origin> origin_whitelist;
-  origin_whitelist.insert(url::Origin::Create(GURL("http://other.com")));
-  frame()->OnMessageReceived(FrameMsg_UpdatePluginContentOriginWhitelist(
-      frame()->GetRoutingID(), origin_whitelist));
+  std::set<url::Origin> origin_allowlist;
+  origin_allowlist.insert(url::Origin::Create(GURL("http://other.com")));
+  frame()->OnMessageReceived(FrameMsg_UpdatePluginContentOriginAllowlist(
+      frame()->GetRoutingID(), origin_allowlist));
 
   // Runs until the unthrottle closure is run.
   loop.Run();
 }
 
-TEST_F(PluginPowerSaverHelperTest, ClearWhitelistOnNavigate) {
-  frame()->WhitelistContentOrigin(
+TEST_F(PluginPowerSaverHelperTest, ClearAllowlistOnNavigate) {
+  frame()->AllowlistContentOrigin(
       url::Origin::Create(GURL("http://other.com")));
 
-  EXPECT_EQ(RenderFrame::CONTENT_STATUS_ESSENTIAL_CROSS_ORIGIN_WHITELISTED,
+  EXPECT_EQ(RenderFrame::CONTENT_STATUS_ESSENTIAL_CROSS_ORIGIN_ALLOWLISTED,
             frame()->GetPeripheralContentStatus(
                 url::Origin::Create(GURL("http://same.com")),
                 url::Origin::Create(GURL("http://other.com")),

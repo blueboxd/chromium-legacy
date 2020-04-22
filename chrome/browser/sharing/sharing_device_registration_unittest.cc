@@ -164,7 +164,8 @@ class SharingDeviceRegistrationTest : public testing::Test {
     sharing_device_registration_.RegisterDevice(
         base::BindLambdaForTesting([&](SharingDeviceRegistrationResult r) {
           result_ = r;
-          local_sharing_info_ = sync_prefs_.GetLocalSharingInfo();
+          local_sharing_info_ =
+              SharingSyncPreference::GetLocalSharingInfoForSync(&prefs_);
           fcm_registration_ = sync_prefs_.GetFCMRegistration();
           run_loop.Quit();
         }));
@@ -176,7 +177,8 @@ class SharingDeviceRegistrationTest : public testing::Test {
     sharing_device_registration_.UnregisterDevice(
         base::BindLambdaForTesting([&](SharingDeviceRegistrationResult r) {
           result_ = r;
-          local_sharing_info_ = sync_prefs_.GetLocalSharingInfo();
+          local_sharing_info_ =
+              SharingSyncPreference::GetLocalSharingInfoForSync(&prefs_);
           fcm_registration_ = sync_prefs_.GetFCMRegistration();
           run_loop.Quit();
         }));

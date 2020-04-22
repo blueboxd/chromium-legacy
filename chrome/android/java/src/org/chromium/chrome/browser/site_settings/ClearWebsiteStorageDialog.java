@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.site_settings;
 
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
@@ -22,6 +23,9 @@ public class ClearWebsiteStorageDialog extends PreferenceDialogFragmentCompat {
 
     private static Callback<Boolean> sCallback;
 
+    // The view containing the dialog ui elements.
+    private View mDialogView;
+
     public static ClearWebsiteStorageDialog newInstance(
             Preference preference, Callback<Boolean> callback) {
         ClearWebsiteStorageDialog fragment = new ClearWebsiteStorageDialog();
@@ -34,12 +38,24 @@ public class ClearWebsiteStorageDialog extends PreferenceDialogFragmentCompat {
 
     @Override
     protected void onBindDialogView(View view) {
+        mDialogView = view;
+
         TextView signedOutView = view.findViewById(R.id.signed_out_text);
         TextView offlineTextView = view.findViewById(R.id.offline_text);
         signedOutView.setText(ClearWebsiteStorage.getSignedOutText());
         offlineTextView.setText(ClearWebsiteStorage.getOfflineText());
 
         super.onBindDialogView(view);
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        if (mDialogView != null) {
+            // When the device switches to multi-window in landscape mode, the height of the
+            // offlineTextView is not calculated correctly (its height gets truncated) and a layout
+            // pass is needed to fix it. See https://crbug.com/1072922.
+            mDialogView.getHandler().post(mDialogView::requestLayout);
+        }
     }
 
     @Override

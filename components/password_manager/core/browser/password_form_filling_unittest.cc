@@ -149,11 +149,11 @@ TEST_F(PasswordFormFillingTest, Autofill) {
   // Check that information about non-preferred best matches is filled.
   ASSERT_EQ(1u, fill_data.additional_logins.size());
   EXPECT_EQ(another_saved_match.username_value,
-            fill_data.additional_logins.begin()->first);
+            fill_data.additional_logins.begin()->username);
   EXPECT_EQ(another_saved_match.password_value,
-            fill_data.additional_logins.begin()->second.password);
+            fill_data.additional_logins.begin()->password);
   // Realm is empty for non-psl match.
-  EXPECT_TRUE(fill_data.additional_logins.begin()->second.realm.empty());
+  EXPECT_TRUE(fill_data.additional_logins.begin()->realm.empty());
 }
 
 TEST_F(PasswordFormFillingTest, TestFillOnLoadSuggestion) {

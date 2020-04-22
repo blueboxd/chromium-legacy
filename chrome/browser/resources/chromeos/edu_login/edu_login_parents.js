@@ -92,11 +92,6 @@ Polymer({
    * @private
    */
   selectParent_(e) {
-    this.shadowRoot.querySelectorAll('.account-list-item')
-        .forEach(el => el.setAttribute('aria-selected', false));
-    this.$$(`#account-list-item-${e.model.index}`)
-        .setAttribute('aria-selected', true);
-
     this.selectedParent = e.model.item;
     this.fire('go-next');
   },

@@ -255,9 +255,8 @@ bool WebRtcAudioSink::Adapter::GetSignalLevel(int* level) {
   // Convert from float in range [0.0,1.0] to an int in range [0,32767].
   *level = static_cast<int>(signal_level * std::numeric_limits<int16_t>::max() +
                             0.5f /* rounding to nearest int */);
-  SendLogMessage(
-      base::StringPrintf("Adapter::GetSignalLevel([label=%s]) => (level=%d)",
-                         label_.c_str(), *level));
+  // TODO(crbug/1073391): possibly log the signal level but first check the
+  // calling frequency of this method to avoid creating too much data.
   return true;
 }
 

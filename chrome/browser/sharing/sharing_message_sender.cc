@@ -11,17 +11,14 @@
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_fcm_sender.h"
 #include "chrome/browser/sharing/sharing_metrics.h"
-#include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sharing/sharing_utils.h"
 #include "components/send_tab_to_self/target_device_info.h"
 #include "components/sync_device_info/local_device_info_provider.h"
 #include "content/public/browser/browser_task_traits.h"
 
 SharingMessageSender::SharingMessageSender(
-    SharingSyncPreference* sync_prefs,
     syncer::LocalDeviceInfoProvider* local_device_info_provider)
-    : sync_prefs_(sync_prefs),
-      local_device_info_provider_(local_device_info_provider) {}
+    : local_device_info_provider_(local_device_info_provider) {}
 
 SharingMessageSender::~SharingMessageSender() = default;
 
@@ -44,8 +41,7 @@ void SharingMessageSender::SendMessageToDevice(
   std::string message_guid = base::GenerateGUID();
   chrome_browser_sharing::MessageType message_type =
       SharingPayloadCaseToMessageType(message.payload_case());
-  SharingDevicePlatform receiver_device_platform =
-      sync_prefs_->GetDevicePlatform(device.guid());
+  SharingDevicePlatform receiver_device_platform = GetDevicePlatform(device);
   base::TimeDelta last_updated_age =
       base::Time::Now() - device.last_updated_timestamp();
 

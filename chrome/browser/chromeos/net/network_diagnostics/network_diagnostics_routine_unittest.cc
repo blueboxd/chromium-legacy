@@ -29,8 +29,6 @@ class NetworkDiagnosticsRoutineTest : public ::testing::Test {
     ~TestNetworkDiagnosticsRoutine() override {}
 
     // NetworkDiagnosticRoutine:
-    bool CanRun() override { return true; }
-    void RunTest(base::OnceCallback<void(mojom::RoutineVerdict)>) override {}
     void AnalyzeResultsAndExecuteCallback() override {}
   };
 

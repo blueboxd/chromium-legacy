@@ -14,6 +14,7 @@
 #include "base/base64.h"
 #include "base/containers/circular_deque.h"
 #include "base/lazy_instance.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/numerics/ranges.h"
 #include "base/rand_util.h"

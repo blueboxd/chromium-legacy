@@ -6,6 +6,7 @@
 
 #include <wrl/client.h>
 
+#include "base/logging.h"
 #include "base/win/scoped_hstring.h"
 #include "chrome/browser/notifications/win/notification_launch_id.h"
 #include "chrome/browser/notifications/win/notification_metrics.h"

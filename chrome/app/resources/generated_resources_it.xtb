@@ -92,6 +92,7 @@
 <translation id="1122198203221319518">S&amp;trumenti</translation>
 <translation id="1122242684574577509">Autenticazione non riuscita. Fai clic per visitare la pagina di accesso della rete Wi-Fi in uso (<ph name="NETWORK_ID" />).</translation>
 <translation id="1122960773616686544">Aggiungi il nome ai segnalibri</translation>
+<translation id="1123753900084781868">La funzionalità Sottotitoli in tempo reale non è al momento disponibile</translation>
 <translation id="1124772482545689468">Utente</translation>
 <translation id="1125550662859510761">Risoluzione di <ph name="WIDTH" /> x <ph name="HEIGHT" /> (nativa)</translation>
 <translation id="1126809382673880764">Non ti protegge da estensioni, download e siti web pericolosi. La protezione di Navigazione sicura, se disponibile, sarà ancora attiva in altri servizi Google, come Gmail e la Ricerca.</translation>
@@ -421,6 +422,11 @@
 <translation id="1555130319947370107">Blu</translation>
 <translation id="1556537182262721003">Impossibile spostare la directory dell'estensione nel profilo.</translation>
 <translation id="155865706765934889">Touchpad</translation>
+<translation id="1560763881671211335">Gli amministratori di G Suite for Education stabiliscono a quali servizi Google possono accedere i loro utenti quando sono collegati a un account G Suite for Education. Gli amministratori scolastici devono fornire o esprimere il loro consenso per l'utilizzo dei servizi da parte degli utenti minorenni.
+
+    I dati di navigazione (inclusi cronologia, preferiti e password) verranno memorizzati nell'account Family Link e non nell'account della scuola.
+
+    Le impostazioni genitore di Family Link continueranno a essere applicate. Se in precedenza hai bloccato un'app o un sito, non sarà necessario che tu lo faccia di nuovo.</translation>
 <translation id="1566049601598938765">Sito web</translation>
 <translation id="15662109988763471">La stampante selezionata non è disponibile o non è installata correttamente. Controlla la stampante o prova a selezionarne un'altra.</translation>
 <translation id="1567387640189251553">È stata collegata una tastiera diversa dall'ultimo inserimento della password. Potrebbe essere un tentativo di rubare i tasti premuti.</translation>
@@ -1199,6 +1205,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="258095186877893873">Lungo</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (piattaforma <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Impossibile recuperare la richiesta di Kerberos. Riprova o contatta l'amministratore del dispositivo dell'organizzazione. (Codice errore: <ph name="ERROR_CODE" />).</translation>
+<translation id="2585013490795742997">Visualizzazione di un risultato di ricerca per <ph name="QUERY" /></translation>
 <translation id="2585724835339714757">Questa scheda sta condividendo il tuo schermo.</translation>
 <translation id="2586657967955657006">Appunti</translation>
 <translation id="2586672484245266891">Inserisci un URL più breve</translation>
@@ -1885,6 +1892,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="3498215018399854026">In questo momento, non è possibile raggiungere il tuo genitore. Riprova.</translation>
 <translation id="3500417806337761827">Errore durante il montaggio della condivisione. Sono già montate troppe condivisioni SMB.</translation>
 <translation id="3505030558724226696">Revoca accesso ai dispositivi</translation>
+<translation id="3507132249039706973">Protezione standard è attiva</translation>
 <translation id="3507421388498836150">Autorizzazioni attuali di "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="3507888235492474624">Ripeti la ricerca di dispositivi Bluetooth</translation>
 <translation id="3508492320654304609">Impossibile eliminare i dati di accesso</translation>
@@ -3238,6 +3246,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="5352033265844765294">Timestamp</translation>
 <translation id="5353252989841766347">Esporta le password da Chrome</translation>
 <translation id="5355099869024327351">Consenti all'assistente di mostrarti le notifiche</translation>
+<translation id="5355191726083956201">Protezione avanzata è attiva</translation>
 <translation id="5355926466126177564">L'estensione "<ph name="EXTENSION_NAME" />" ha cambiato la pagina mostrata quando esegui ricerche dalla omnibox.</translation>
 <translation id="5359910752122114278">1 risultato</translation>
 <translation id="5360150013186312835">Mostra in barra degli strumenti</translation>
@@ -3549,6 +3558,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="577322787686508614">Lettura non consentita su: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5774295353725270860">Apri l'applicazione File</translation>
 <translation id="577624874850706961">Cerca cookie</translation>
+<translation id="5776858208024364029">Sono visualizzati <ph name="NUMBER" /> risultati di ricerca relativi a <ph name="QUERY" /></translation>
 <translation id="5777468213129569553">Apri Chrome</translation>
 <translation id="5778747455497889540">Di seguito viene indicata la password del modulo per la sicurezza generata in modo casuale che è stata assegnata al tuo computer:</translation>
 <translation id="5780011244986845107">La cartella che hai selezionato contiene file sensibili. Vuoi concedere a "<ph name="APP_NAME" />" accesso di lettura permanente a questa cartella?</translation>
@@ -4105,6 +4115,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
+<translation id="6520876759015997832">Risultato di ricerca <ph name="LIST_POSITION" /> di <ph name="LIST_SIZE" />: <ph name="SEARCH_RESULT_TEXT" />. Premi Invio per andare alla sezione.</translation>
 <translation id="652492607360843641">È attiva la connessione a una rete <ph name="NETWORK_TYPE" />.</translation>
 <translation id="6527303717912515753">Condividi</translation>
 <translation id="6528513914570774834">Consenti ad altri utenti del dispositivo di usare questa rete</translation>
@@ -4116,6 +4127,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="6532206849875187177">Sicurezza e accesso</translation>
 <translation id="6532527800157340614">Impossibile accedere perché non è stato possibile recuperare il token di accesso. Controlla la connessione di rete e riprova.</translation>
 <translation id="6532663472409656417">Dispositivo aziendale registrato</translation>
+<translation id="6535331821390304775">Consenti sempre a <ph name="ORIGIN" /> di aprire link di questo tipo nell'app associata</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Nota.<ph name="END_BOLD" /> Attiva questa opzione soltanto se sei sicuro di ciò che fai o se ti è stato chiesto di farlo perché la raccolta di dati potrebbe peggiorare il rendimento.</translation>
 <translation id="6541638731489116978">A questo sito è stato impedito l'accesso ai sensori di movimento.</translation>
 <translation id="6545665334409411530">Frequenza ripetizione</translation>
@@ -4245,6 +4257,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="6727969043791803658">Dispositivo connesso. Livello batteria: <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="6732801395666424405">Certificati non caricati</translation>
 <translation id="6732900235521116609">Impossibile rimuovere la scorciatoia</translation>
+<translation id="6734468588183300211">Con la modalità di navigazione in incognito, i siti non possono utilizzare i cookie per conoscere la tua attività di navigazione su siti diversi, ad esempio per personalizzare gli annunci. Le funzionalità su alcuni siti potrebbero non essere disponibili.</translation>
 <translation id="6735304988756581115">Mostra cookie e altri dati dei siti...</translation>
 <translation id="6736243959894955139">Indirizzo</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
@@ -4257,6 +4270,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="674632704103926902">Attiva trascinamento al tocco</translation>
 <translation id="6748217015615267851">Renderer: <ph name="RENDERER_URL" /></translation>
 <translation id="6748465660675848252">Puoi continuare, tuttavia verranno ripristinati soltanto le impostazioni e i dati sincronizzati. Tutti i dati locali andranno persi.</translation>
+<translation id="6749006854028927059">I siti non possono utilizzare i cookie per conoscere la tua attività di navigazione su diversi siti web, ad esempio per personalizzare gli annunci. Le funzionalità su alcuni siti potrebbero non essere disponibili.</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (In incognito)</translation>
 <translation id="6757101664402245801">URL copiato</translation>
 <translation id="6758056191028427665">Comunicaci la tua opinione sul nostro lavoro.</translation>
@@ -4348,6 +4362,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="686664946474413495">Temperatura del colore</translation>
 <translation id="6871644448911473373">Risponditore OCSP: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">La password inserita è stata rifiutata dal server.</translation>
+<translation id="6874170800191969835">Apertura di <ph name="SEARCH_RESULT_TEXT" />.</translation>
 <translation id="6876155724392614295">Bicicletta</translation>
 <translation id="6876469544038980967">Non utili</translation>
 <translation id="6878422606530379992">Sensori consentiti</translation>
@@ -4618,6 +4633,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="7235737137505019098">Sul token di sicurezza non c'è spazio a sufficienza per altri account.</translation>
 <translation id="7238643356913091553"><ph name="NETWORK_NAME" />, dettagli</translation>
 <translation id="7240339475467890413">Eseguire la connessione al nuovo hotspot?</translation>
+<translation id="7240847845291869311">Tuo figlio vuole aggiungere un Account Google G Suite for Education a questo dispositivo. L'<ph name="LINK_BEGIN" />Informativa sulla privacy di G Suite for Education<ph name="LINK_END" /> ha lo scopo di aiutare gli utenti di G Suite for Education e i genitori a comprendere quali dati vengono raccolti dal prodotto, perché vengono raccolti e come vengono utilizzati.</translation>
 <translation id="7241389281993241388">Accedi a <ph name="TOKEN_NAME" /> per importare il certificato client.</translation>
 <translation id="7241443820034350811">Se non vedi il tuo token di sicurezza, premi il pulsante del token per almeno cinque secondi.</translation>
 <translation id="7243632151880336635">Cancella ed esci</translation>
@@ -5200,6 +5216,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="7987814697832569482">Connettiti sempre tramite questa VPN</translation>
 <translation id="7988355189918024273">Attiva funzioni di accessibilità</translation>
 <translation id="7991296728590311172">Impostazioni Switch Access</translation>
+<translation id="7992202128769240372">Supera il limite di <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="7994350303002908848">Impossibile installare Plugin VM. Riprova o contatta l'amministratore del dispositivo dell'organizzazione. Codice di errore: <ph name="ERROR_CODE" />.</translation>
 <translation id="7994702968232966508">Metodo EAP</translation>
 <translation id="7997826902155442747">Priorità processo</translation>

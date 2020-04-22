@@ -164,10 +164,10 @@ void GetSuggestions(const autofill::PasswordFormFillData& fill_data,
                              suggestions);
 
   for (const auto& login : fill_data.additional_logins) {
-    AppendSuggestionIfMatching(login.first, current_username, custom_icon,
-                               login.second.realm, show_all, is_password_field,
-                               login.second.uses_account_store,
-                               login.second.password.size(), suggestions);
+    AppendSuggestionIfMatching(login.username, current_username, custom_icon,
+                               login.realm, show_all, is_password_field,
+                               login.uses_account_store, login.password.size(),
+                               suggestions);
   }
 
   // Prefix matches should precede other token matches.
@@ -687,6 +687,7 @@ bool PasswordAutofillManager::GetPasswordAndMetadataForUsername(
   // Look for any suitable matches to current field text.
   if (fill_data.username_field.value == current_username &&
       fill_data.uses_account_store == item_uses_account_store) {
+    password_and_meta_data->username = current_username;
     password_and_meta_data->password = fill_data.password_field.value;
     password_and_meta_data->realm = fill_data.preferred_realm;
     password_and_meta_data->uses_account_store = fill_data.uses_account_store;
@@ -694,11 +695,16 @@ bool PasswordAutofillManager::GetPasswordAndMetadataForUsername(
   }
 
   // Scan additional logins for a match.
-  auto iter = fill_data.additional_logins.find(current_username);
+  auto iter = std::find_if(
+      fill_data.additional_logins.begin(), fill_data.additional_logins.end(),
+      [&current_username,
+       &item_uses_account_store](const autofill::PasswordAndMetadata& login) {
+        return current_username == login.username &&
+               item_uses_account_store == login.uses_account_store;
+      });
   if (iter != fill_data.additional_logins.end()) {
-    *password_and_meta_data = iter->second;
-    return password_and_meta_data->uses_account_store ==
-           item_uses_account_store;
+    *password_and_meta_data = *iter;
+    return true;
   }
 
   return false;

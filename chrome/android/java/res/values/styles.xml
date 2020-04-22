@@ -592,10 +592,6 @@
         parent="TextAppearance.TextLarge.Primary">
         <item name="android:textSize">20sp</item>
     </style>
-    <style name="TextAppearance.ConnectionInfoHeadline" parent="TextAppearance.RobotoMediumStyle">
-        <item name="android:textColor">@color/default_text_color</item>
-        <item name="android:textSize">@dimen/text_size_large</item>
-    </style>
     <style name="TextAppearance.PageInfoPermissionSubtitle"
         parent="TextAppearance.TextMedium.Secondary">
         <item name="android:textColor">@color/secondary_text_default_material_light</item>

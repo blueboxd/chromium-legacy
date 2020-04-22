@@ -92,6 +92,7 @@
 <translation id="1122198203221319518">&amp;Extra</translation>
 <translation id="1122242684574577509">Verificatie mislukt. Klik om naar de loginpagina te gaan van het wifi-netwerk dat je gebruikt (<ph name="NETWORK_ID" />).</translation>
 <translation id="1122960773616686544">Naam van bladwijzer</translation>
+<translation id="1123753900084781868">Live ondertiteling is momenteel niet beschikbaar</translation>
 <translation id="1124772482545689468">Gebruiker</translation>
 <translation id="1125550662859510761">Ziet eruit als <ph name="WIDTH" /> x <ph name="HEIGHT" /> (systeemeigen resolutie)</translation>
 <translation id="1126809382673880764">Beschermt je niet tegen gevaarlijke websites, downloads en extensies. Je wordt voor andere services, zoals Gmail en Zoeken, nog steeds beschermd door Safe Browsing als dat beschikbaar is.</translation>
@@ -192,7 +193,7 @@
 <translation id="1241753985463165747">Al je gegevens op de huidige website lezen en wijzigen wanneer dit wordt aangeroepen</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> wil je instellingen resetten.</translation>
 <translation id="1243314992276662751">Uploaden</translation>
-<translation id="1243436884219965846">Wachtwoorden controleren</translation>
+<translation id="1243436884219965846">Wachtwoorden checken</translation>
 <translation id="1244265436519979884">Linux-herstel wordt momenteel uitgevoerd</translation>
 <translation id="1244303850296295656">Fout met extensie</translation>
 <translation id="1246158006305844142">Je apps en instellingen worden gesynchroniseerd voor alle Chrome OS-apparaten waarop je bent ingelogd met je Google-account. Ga naar de <ph name="LINK_BEGIN" />Chrome-instellingen<ph name="LINK_END" /> voor opties voor browsersynchronisatie.</translation>
@@ -4633,7 +4634,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="7235737137505019098">Je beveiligingssleutel heeft niet voldoende ruimte voor meer accounts.</translation>
 <translation id="7238643356913091553"><ph name="NETWORK_NAME" />, details</translation>
 <translation id="7240339475467890413">Verbinding maken met nieuwe hotspot?</translation>
-<translation id="7240847845291869311">Je kind wil een Google-account voor G Suite for Education toevoegen aan dit apparaat. De <ph name="LINK_BEGIN" />privacyverklaring van G Suite for Education<ph name="LINK_END" /> geeft G Suite for Education-gebruikers en ouders inzicht in de gegevens die het product verzamelt, waarom deze worden verzameld en wat ermee wordt gedaan.</translation>
+<translation id="7240847845291869311">Je kind wil een Google-account voor G Suite for Education toevoegen aan dit apparaat. De <ph name="LINK_BEGIN" />privacyverklaring van G Suite for Education<ph name="LINK_END" /> geeft G Suite for Education-gebruikers en ouders inzicht in de gegevens die het product verzamelt, waarom ze worden verzameld en wat ermee wordt gedaan.</translation>
 <translation id="7241389281993241388">Log in bij <ph name="TOKEN_NAME" /> om het klantcertificaat te importeren.</translation>
 <translation id="7241443820034350811">Als je beveiligingssleutel niet in de lijst staat, druk je minimaal vijf seconden op de knop.</translation>
 <translation id="7243632151880336635">Wissen en uitloggen</translation>

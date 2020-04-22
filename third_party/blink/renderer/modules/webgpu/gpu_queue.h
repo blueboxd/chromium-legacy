@@ -10,12 +10,15 @@
 
 namespace blink {
 
+class CanvasColorParams;
+class DawnTextureFromImageBitmap;
 class ExceptionState;
 class GPUCommandBuffer;
 class GPUFence;
 class GPUFenceDescriptor;
 class GPUImageBitmapCopyView;
 class GPUTextureCopyView;
+class StaticBitmapImage;
 class UnsignedLongSequenceOrGPUExtent3DDict;
 
 class GPUQueue : public DawnObject<WGPUQueue> {
@@ -35,6 +38,18 @@ class GPUQueue : public DawnObject<WGPUQueue> {
                                 ExceptionState& exception_state);
 
  private:
+  bool CopyContentFromCPU(StaticBitmapImage* image,
+                          const CanvasColorParams& color_params,
+                          const WGPUOrigin3D& origin,
+                          const WGPUExtent3D& copy_size,
+                          const WGPUTextureCopyView& destination);
+  bool CopyContentFromGPU(StaticBitmapImage* image,
+                          const WGPUOrigin3D& origin,
+                          const WGPUExtent3D& copy_size,
+                          const WGPUTextureCopyView& destination);
+
+  scoped_refptr<DawnTextureFromImageBitmap> produce_dawn_texture_handler_;
+
   DISALLOW_COPY_AND_ASSIGN(GPUQueue);
 };
 

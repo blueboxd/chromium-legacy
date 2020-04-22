@@ -5,6 +5,7 @@
 #include "chrome/browser/google/google_brand_code_map_chromeos.h"
 
 #include "base/containers/flat_map.h"
+#include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
 

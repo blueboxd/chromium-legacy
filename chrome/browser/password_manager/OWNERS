@@ -1,9 +1,4 @@
-dvadym@chromium.org
-jdoerrie@chromium.org
-kolos@chromium.org
-vasilii@chromium.org
-
-per-file generated_password_saved_infobar_delegate_android.*=rouslan@chromium.org
+file://components/password_manager/OWNERS
 
 # COMPONENT: UI>Browser>Passwords
 # TEAM: chromium-dev@chromium.org

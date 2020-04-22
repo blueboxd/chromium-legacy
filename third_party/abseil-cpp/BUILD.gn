@@ -7,6 +7,7 @@
 # without these options will be part of the same program.
 
 import("//build/toolchain/toolchain.gni")
+import("//testing/test.gni")
 
 group("default") {
   deps = [
@@ -74,4 +75,27 @@ config("absl_test_cflags_cc") {
       "/wd4101",  # unreferenced local variable
     ]
   }
+}
+
+test("absl_tests") {
+  testonly = true
+  deps = [
+    "absl/algorithm:algorithm_test",
+    "absl/algorithm:container_test",
+    "absl/base:config_test",
+    "absl/container:inlined_vector_test",
+    "absl/memory:memory_test",
+    "absl/meta:type_traits_test",
+    "absl/strings:ascii_test",
+    "absl/strings:match_test",
+    "absl/strings:str_replace_test",
+    "absl/strings:string_view_test",
+
+    # TODO(mbonadei): On iOS, gtest doesn't support death tests. Fix upstream
+    # Abseil to use EXPECT_DEATH_IF_SUPPORTED instead of EXPECT_DEATH.
+    # "absl/types:optional_test",
+    # "absl/types:variant_test",
+
+    "//third_party/googletest:gtest_main",
+  ]
 }

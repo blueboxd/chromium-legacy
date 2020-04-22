@@ -63,7 +63,12 @@ template("ios_remoting_app_tmpl") {
   }
 
   ios_app_bundle(target_name) {
-    output_name = invoker.output_name
+    forward_variables_from(invoker,
+                           [
+                             "bundle_deps",
+                             "deps",
+                             "output_name",
+                           ])
 
     entitlements_path = invoker.entitlements_path
     info_plist_target = ":$_info_plist_target_name"
@@ -97,9 +102,10 @@ template("ios_remoting_app_tmpl") {
       "SystemConfiguration.framework",
     ]
 
-    deps = invoker.deps
-
-    bundle_deps = [
+    if (!defined(bundle_deps)) {
+      bundle_deps = []
+    }
+    bundle_deps += [
       ":$_credits_bundle_target_name",
       ":$_launchscreen_storyboard_target_name",
     ]

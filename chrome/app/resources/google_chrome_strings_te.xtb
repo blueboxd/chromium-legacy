@@ -98,6 +98,7 @@
 <translation id="3735758079232443276"><ph name="EXTENSION_NAME" /> పొడిగింపు మీరు Chromeని ప్రారంభించినప్పుడు చూపబడే పేజీని మార్చింది.</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
 <translation id="386202838227397562">దయచేసి అన్ని Google Chrome విండోలను మూసివేసి, మళ్ళీ ప్రయత్నించండి.</translation>
+<translation id="3865754807470779944">Chrome వెర్షన్ <ph name="PRODUCT_VERSION" /> ఇన్‌స్టాల్ చేయబడింది</translation>
 <translation id="3873044882194371212">Chrome అ&amp;జ్ఞాత విండోలో లింక్‌ను తెరువు</translation>
 <translation id="3889417619312448367">Google Chromeను అన్‌ఇన్‌స్టాల్ చేయండి</translation>
 <translation id="4050175100176540509">ముఖ్యమైన భద్రతా మెరుగుదలలు మరియు కొత్త ఫీచర్‌లు తాజా వెర్షన్‌లో అందుబాటులో ఉన్నాయి.</translation>
@@ -119,7 +120,7 @@
 <translation id="4450664632294415862">Chrome - నెట్‌వర్క్ సైన్ ఇన్ - <ph name="PAGE_TITLE" /></translation>
 <translation id="4458462641685292929">Google Chromeలో మరొక వ్యవస్థాపన జరుగుతోంది. దయచేసి తర్వాత మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="4480040274068703980">సైన్ ఇన్ చేయడంలో ఎర్రర్ ఏర్పడినందున Chrome OS మీ డేటాను సింక్ చేయలేకపోయింది.</translation>
-<translation id="4521185804071812304">ఐచ్ఛికం: విశ్లేషణ మరియు వినియోగ డేటాను ఆటోమేటిక్‌గా Googleకు పంపడం ద్వారా Chrome OS ఫీచర్‌లు మరియు పనితీరును మెరుగుపరచడంలో సహాయపడండి.</translation>
+<translation id="4521185804071812304">ఆప్షనల్: విశ్లేషణ మరియు వినియోగ డేటాను ఆటోమేటిక్‌గా Googleకు పంపడం ద్వారా Chrome OS ఫీచర్‌లు మరియు పనితీరును మెరుగుపరచడంలో సహాయపడండి.</translation>
 <translation id="4561051373932531560">మీరు Google Chrome వెబ్‌లో ఫోన్ నంబర్ క్లిక్ చేసేలా అవ‌కాశం ఇస్తుంది మరియు Skypeతో కాల్ చేస్తుంది!</translation>
 <translation id="4567424176335768812">మీరు <ph name="USER_EMAIL_ADDRESS" />గా సైన్ ఇన్ చేసారు. ఇప్పుడు మీరు సైన్ ఇన్ చేసిన అన్ని పరికరాల్లో మీ బుక్‌మార్క్‌లు, చరిత్ర మరియు ఇతర సెట్టింగ్‌లను యాక్సెస్ చేయవచ్చు.</translation>
 <translation id="4571503333518166079">Chrome నోటిఫికేషన్ సెట్టింగ్‌లలోకి వెళ్లు</translation>
@@ -235,6 +236,7 @@
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8556340503434111824">Google Chrome యొక్క కొత్త వెర్షన్ అందుబాటులో ఉంది, ఇది మునుపటి కంటే వేగవంతంగా ఉంటుంది.</translation>
 <translation id="8614913330719544658">Google Chrome స్పందించడం లేదు. ఇప్పుడే పునఃప్రారంభించాలా?</translation>
+<translation id="861702415419836452">మీ పరిసరాల 3D మ్యాప్‌ను సృష్టించడానికి Chromeకు మీ కెమెరాను యాక్సెస్ చేసే అనుమతి కావాలి</translation>
 <translation id="8625237574518804553">{0,plural, =1{1 నిమిషంలో Chrome తిరిగి ప్రారంభించబడుతుంది}other{# నిమిషాల్లో Chrome తిరిగి ప్రారంభించబడుతుంది}}</translation>
 <translation id="8641606876632989680">చోరీకి గురైన పాస్‌వర్డ్‌తో మీరు సైన్ ఇన్ చేసినప్పుడు, Chrome తెలియజేస్తుంది</translation>
 <translation id="8669527147644353129">Google Chrome సహాయకారుడు</translation>

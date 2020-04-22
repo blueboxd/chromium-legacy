@@ -329,6 +329,11 @@ struct StructTraits<autofill::mojom::FormDataPredictionsDataView,
 template <>
 struct StructTraits<autofill::mojom::PasswordAndMetadataDataView,
                     autofill::PasswordAndMetadata> {
+  static const base::string16& username(
+      const autofill::PasswordAndMetadata& r) {
+    return r.username;
+  }
+
   static const base::string16& password(
       const autofill::PasswordAndMetadata& r) {
     return r.password;
@@ -386,7 +391,7 @@ struct StructTraits<autofill::mojom::PasswordFormFillDataDataView,
     return r.uses_account_store;
   }
 
-  static const std::map<base::string16, autofill::PasswordAndMetadata>&
+  static const autofill::PasswordFormFillData::LoginCollection&
   additional_logins(const autofill::PasswordFormFillData& r) {
     return r.additional_logins;
   }

@@ -23,14 +23,6 @@ namespace blink {
 ReadableStreamDefaultController::ReadableStreamDefaultController()
     : queue_(MakeGarbageCollected<QueueWithSizes>()) {}
 
-double ReadableStreamDefaultController::desiredSize(bool& is_null) const {
-  // https://streams.spec.whatwg.org/#rs-default-controller-desired-size
-  // 2. Return ! ReadableStreamDefaultControllerGetDesiredSize(this).
-  base::Optional<double> desired_size = GetDesiredSize();
-  is_null = !desired_size.has_value();
-  return is_null ? 0.0 : desired_size.value();
-}
-
 void ReadableStreamDefaultController::close(ScriptState* script_state,
                                             ExceptionState& exception_state) {
   // https://streams.spec.whatwg.org/#rs-default-controller-close

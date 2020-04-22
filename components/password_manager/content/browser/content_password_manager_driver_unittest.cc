@@ -134,7 +134,7 @@ MATCHER(WerePasswordsCleared, "Passwords not cleared") {
     return false;
 
   for (auto& credentials : arg.additional_logins)
-    if (!credentials.second.password.empty())
+    if (!credentials.password.empty())
       return false;
 
   return true;
@@ -217,7 +217,6 @@ TEST_P(ContentPasswordManagerDriverTest, SendLoggingStateAfterLogManagerReady) {
   EXPECT_TRUE(WasLoggingActivationMessageSent(&logging_activated));
   EXPECT_EQ(should_allow_logging, logging_activated);
 }
-
 
 TEST_F(ContentPasswordManagerDriverTest, ClearPasswordsOnAutofill) {
   std::unique_ptr<ContentPasswordManagerDriver> driver(

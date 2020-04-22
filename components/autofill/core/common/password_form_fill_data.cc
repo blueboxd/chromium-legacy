@@ -5,6 +5,7 @@
 #include "components/autofill/core/common/password_form_fill_data.h"
 
 #include <tuple>
+#include <unordered_set>
 
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -18,7 +19,47 @@ bool IsPublicSuffixMatchOrAffiliationBasedMatch(const PasswordForm& form) {
   return form.is_public_suffix_match || form.is_affiliation_based_match;
 }
 
+// Finds any suggestion in |login| whose username and password match the |form|.
+PasswordFormFillData::LoginCollection::iterator FindDuplicate(
+    PasswordFormFillData::LoginCollection* logins,
+    const PasswordForm& form) {
+  return std::find_if(logins->begin(), logins->end(),
+                      [&form](const PasswordAndMetadata& login) {
+                        return (form.username_value == login.username &&
+                                form.password_value == login.password);
+                      });
+}
+
+// This function takes a |duplicate_form| and the realm and uses_account_store
+// properties of an existing suggestion. Both suggestions have identical
+// username and password.
+// If the duplicate should replace the existing suggestion, this method
+// overrides the realm and uses_account_store properties to achieve that.
+void MaybeReplaceRealmAndStoreWithDuplicate(const PasswordForm& duplicate_form,
+                                            std::string* existing_realm,
+                                            bool* existing_uses_account_store) {
+  DCHECK(existing_realm);
+  DCHECK(existing_uses_account_store);
+  if (*existing_uses_account_store)
+    return;  // No need to replace existing account-stored suggestion.
+  if (!duplicate_form.IsUsingAccountStore())
+    return;  // No need to replace a local suggestion with identical other one.
+  if (IsPublicSuffixMatchOrAffiliationBasedMatch(duplicate_form))
+    return;  // Never replace a possibly exact match with a PSL match.
+  *existing_uses_account_store = duplicate_form.IsUsingAccountStore();
+  existing_realm->clear();  // Reset realm since form cannot be a psl match.
+}
+
 }  // namespace
+
+PasswordAndMetadata::PasswordAndMetadata() = default;
+PasswordAndMetadata::PasswordAndMetadata(const PasswordAndMetadata&) = default;
+PasswordAndMetadata::PasswordAndMetadata(PasswordAndMetadata&&) = default;
+PasswordAndMetadata& PasswordAndMetadata::operator=(
+    const PasswordAndMetadata&) = default;
+PasswordAndMetadata& PasswordAndMetadata::operator=(PasswordAndMetadata&&) =
+    default;
+PasswordAndMetadata::~PasswordAndMetadata() = default;
 
 PasswordFormFillData::PasswordFormFillData() = default;
 
@@ -67,13 +108,27 @@ PasswordFormFillData::PasswordFormFillData(
 
   // Copy additional username/value pairs.
   for (const PasswordForm* match : matches) {
-    if (match == &preferred_match)
+    // If any already retained suggestion matches the login, discard the login
+    // or override the existing duplicate with the account-stored match.
+    if (match->username_value == preferred_match.username_value &&
+        match->password_value == preferred_match.password_value) {
+      MaybeReplaceRealmAndStoreWithDuplicate(*match, &preferred_realm,
+                                             &uses_account_store);
       continue;
-    PasswordAndMetadata& value = additional_logins[match->username_value];
+    }
+    auto duplicate_iter = FindDuplicate(&additional_logins, *match);
+    if (duplicate_iter != additional_logins.end()) {
+      MaybeReplaceRealmAndStoreWithDuplicate(
+          *match, &duplicate_iter->realm, &duplicate_iter->uses_account_store);
+      continue;
+    }
+    PasswordAndMetadata value;
+    value.username = match->username_value;
     value.password = match->password_value;
     value.uses_account_store = match->IsUsingAccountStore();
     if (IsPublicSuffixMatchOrAffiliationBasedMatch(*match))
       value.realm = match->signon_realm;
+    additional_logins.push_back(std::move(value));
   }
 }
 
@@ -103,7 +158,7 @@ PasswordFormFillData MaybeClearPasswordValues(
   PasswordFormFillData result(data);
   result.password_field.value.clear();
   for (auto& credentials : result.additional_logins)
-    credentials.second.password.clear();
+    credentials.password.clear();
   return result;
 }
 

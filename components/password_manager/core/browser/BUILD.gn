@@ -175,6 +175,8 @@ jumbo_static_library("browser") {
     "password_save_manager.h",
     "password_save_manager_impl.cc",
     "password_save_manager_impl.h",
+    "password_session_durations_metrics_recorder.cc",
+    "password_session_durations_metrics_recorder.h",
     "password_store.cc",
     "password_store.h",
     "password_store_change.cc",

@@ -99,7 +99,7 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
     // Content is essential even though it's cross-origin, because it's large.
     CONTENT_STATUS_ESSENTIAL_CROSS_ORIGIN_BIG = 2,
     // Content is essential because there's large content from the same origin.
-    CONTENT_STATUS_ESSENTIAL_CROSS_ORIGIN_WHITELISTED = 3,
+    CONTENT_STATUS_ESSENTIAL_CROSS_ORIGIN_ALLOWLISTED = 3,
     // Content is tiny in size. These are usually blocked.
     CONTENT_STATUS_TINY = 4,
     // Deprecated, as now entirely obscured content is treated as tiny.
@@ -210,7 +210,7 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   // Registers a plugin that has been marked peripheral. If the origin
-  // whitelist is later updated and includes |content_origin|, then
+  // allowlist is later updated and includes |content_origin|, then
   // |unthrottle_callback| will be called.
   virtual void RegisterPeripheralPlugin(
       const url::Origin& content_origin,
@@ -238,9 +238,9 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
       const gfx::Size& unobscured_size,
       RecordPeripheralDecision record_decision) = 0;
 
-  // Whitelists a |content_origin| so its content will never be throttled in
-  // this RenderFrame. Whitelist is cleared by top level navigation.
-  virtual void WhitelistContentOrigin(const url::Origin& content_origin) = 0;
+  // Allowlists a |content_origin| so its content will never be throttled in
+  // this RenderFrame. Allowlist is cleared by top level navigation.
+  virtual void AllowlistContentOrigin(const url::Origin& content_origin) = 0;
 
   // Used by plugins that load data in this RenderFrame to update the loading
   // notifications.

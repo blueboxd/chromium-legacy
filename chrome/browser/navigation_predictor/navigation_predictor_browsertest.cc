@@ -242,17 +242,17 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
   ui_test_utils::NavigateToURL(browser(), url);
   WaitForLayout();
 
-  EXPECT_TRUE(content::ExecuteScript(
-      browser()->tab_strip_model()->GetActiveWebContents(),
-      "document.getElementById('google').click();"));
-  base::RunLoop().RunUntilIdle();
-
   // Same document anchor element should be removed after merge.
   histogram_tester.ExpectUniqueSample(
       "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 2, 1);
   histogram_tester.ExpectUniqueSample(
       "NavigationPredictor.OnNonDSE.ActionTaken",
       NavigationPredictor::Action::kPrefetch, 1);
+
+  EXPECT_TRUE(content::ExecuteScript(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      "document.getElementById('google').click();"));
+  base::RunLoop().RunUntilIdle();
 
   histogram_tester.ExpectUniqueSample(
       "NavigationPredictor.LinkClickedPrerenderResult",
@@ -410,28 +410,22 @@ IN_PROC_BROWSER_TEST_F(
 // Test that the action accuracy is properly recorded.
 // User clicks on an anchor element that points to same URL as the URL
 // prefetched.
-// https://crbug.com/1008307
-#if (defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_CHROMEOS))
-#define MAYBE_ActionAccuracy_SameOrigin DISABLED_ActionAccuracy_SameOrigin
-#else
-#define MAYBE_ActionAccuracy_SameOrigin ActionAccuracy_SameOrigin
-#endif
 IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
-                       MAYBE_ActionAccuracy_SameOrigin) {
+                       ActionAccuracy_SameOrigin) {
   base::HistogramTester histogram_tester;
 
   const GURL& url = GetTestURL("/page_with_same_host_anchor_element.html");
   ui_test_utils::NavigateToURL(browser(), url);
   WaitForLayout();
 
+  histogram_tester.ExpectUniqueSample(
+      "NavigationPredictor.OnNonDSE.ActionTaken",
+      NavigationPredictor::Action::kPrefetch, 1);
+
   EXPECT_TRUE(content::ExecuteScript(
       browser()->tab_strip_model()->GetActiveWebContents(),
       "document.getElementById('example').click();"));
   base::RunLoop().RunUntilIdle();
-
-  histogram_tester.ExpectUniqueSample(
-      "NavigationPredictor.OnNonDSE.ActionTaken",
-      NavigationPredictor::Action::kPrefetch, 1);
 
   histogram_tester.ExpectTotalCount(
       "NavigationPredictor.LinkClickedPrerenderResult", 1);

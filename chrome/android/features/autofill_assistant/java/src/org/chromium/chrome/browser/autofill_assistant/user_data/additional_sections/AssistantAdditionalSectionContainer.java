@@ -54,6 +54,7 @@ public class AssistantAdditionalSectionContainer {
                     sections.get(i).createSection(mContext, mParent, index, mDelegate);
             section.setDelegate(mDelegate);
             mSections.add(section);
+            mDividers.add(divider);
         }
         Collections.reverse(mSections);
     }

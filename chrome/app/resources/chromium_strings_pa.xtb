@@ -12,6 +12,7 @@
 <translation id="1414495520565016063">ਤੁਸੀਂ Chromium ਤੇ ਸਾਈਨ ਇਨ ਕੀਤਾ ਹੈ!</translation>
 <translation id="151962892725702025">Chromium OS ਤੁਹਾਡਾ ਡਾਟਾ ਸਿੰਕ ਨਹੀਂ ਕਰ ਸਕਿਆ ਕਿਉਂਕਿ ਸਿੰਕ ਤੁਹਾਡੇ ਡੋਮੇਨ ਲਈ ਉਪਲਬਧ ਨਹੀਂ ਹੈ।</translation>
 <translation id="1524282610922162960">ਕੋਈ Chromium ਟੈਬ ਸਾਂਝੀ ਕਰੋ</translation>
+<translation id="1553461853655228091">Chromium ਨੂੰ ਤੁਹਾਡੇ ਆਲੇ-ਦੁਆਲੇ ਦਾ 3D ਨਕਸ਼ਾ ਬਣਾਉਣ ਵਾਸਤੇ ਤੁਹਾਡੇ ਕੈਮਰੇ ਤੱਕ ਪਹੁੰਚ ਕਰਨ ਲਈ ਇਜਾਜ਼ਤ ਦੀ ਲੋੜ ਹੈ</translation>
 <translation id="1607715478322902680">{COUNT,plural, =0{ਤੁਹਾਡਾ ਪ੍ਰਸ਼ਾਸਕ ਚਾਹੁੰਦਾ ਹੈ ਕਿ ਤੁਸੀਂ ਅੱਪਡੇਟ ਲਾਗੂ ਕਰਨ ਲਈ Chromium ਨੂੰ ਮੁੜ-ਲਾਂਚ ਕਰੋ}=1{ਤੁਹਾਡਾ ਪ੍ਰਸ਼ਾਸਕ ਚਾਹੁੰਦਾ ਹੈ ਕਿ ਤੁਸੀਂ ਅੱਪਡੇਟ ਲਾਗੂ ਕਰਨ ਲਈ Chromium ਨੂੰ ਮੁੜ-ਲਾਂਚ ਕਰੋ। ਤੁਹਾਡੀ ਇਨਕੋਗਨਿਟੋ ਵਿੰਡੋ ਦੁਬਾਰਾ ਨਹੀਂ ਖੁੱਲ੍ਹੇਗੀ।}other{ਤੁਹਾਡਾ ਪ੍ਰਸ਼ਾਸਕ ਚਾਹੁੰਦਾ ਹੈ ਕਿ ਤੁਸੀਂ ਅੱਪਡੇਟ ਲਾਗੂ ਕਰਨ ਲਈ Chromium ਨੂੰ ਮੁੜ-ਲਾਂਚ ਕਰੋ। ਤੁਹਾਡੀਆਂ # ਇਨਕੋਗਨਿਟੋ ਵਿੰਡੋ ਦੁਬਾਰਾ ਨਹੀਂ ਖੁੱਲ੍ਹਣਗੀਆਂ।}}</translation>
 <translation id="1708666629004767631">Chromium ਦਾ ਇੱਕ ਨਵਾਂ, ਵੱਧ ਸੁਰੱਖਿਅਤ ਵਰਜਨ ਉਪਲਬਧ ਹੈ।</translation>
 <translation id="1774152462503052664">ਆਓ ਪਿਛੋਕੜ ਵਿੱਚ Chromium ਚਲਾਈਏ</translation>
@@ -57,6 +58,7 @@
 <translation id="3258596308407688501">Chromium ਆਪਣੀ ਡਾਟਾ ਡਾਇਰੈਕਟਰੀ ਨੂੰ ਪੜ੍ਹ ਅਤੇ ਲਿਖ ਨਹੀਂ ਸਕਦਾ: 
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
+<translation id="3283186697780795848">Chromium ਵਰਜਨ <ph name="PRODUCT_VERSION" /> ਨੂੰ ਸਥਾਪਤ ਕੀਤਾ ਗਿਆ</translation>
 <translation id="328888136576916638">Google API ਕੁੰਜੀਆਂ ਮੌਜੂਦ ਨਹੀਂ ਹਨ। Chromium ਦੀ ਕੁਝ ਫੰਕਸ਼ਨੈਲਿਟੀ ਬੰਦ ਕੀਤੀ ਜਾਵੇਗੀ।</translation>
 <translation id="3296368748942286671">ਪਿਛੋਕੜ ਐਪਸ ਚਲਾਉਣਾ ਜਾਰੀ ਰੱਖੋ ਜਦੋਂ Chromium ਨੂੰ ਬੰਦ ਕੀਤਾ ਜਾਏ</translation>
 <translation id="331951419404882060">Chromium OS ਸਾਈਨ-ਇਨ ਕਰਨ ਵੇਲੇ ਇੱਕ ਗੜਬੜ ਹੋਣ ਦੇ ਕਾਰਨ ਤੁਹਾਡਾ ਡਾਟਾ ਸਿੰਕ ਨਹੀਂ ਕਰ ਸਕਿਆ।</translation>

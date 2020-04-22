@@ -6,6 +6,7 @@
 
 #include <wrl/client.h>
 
+#include "base/logging.h"
 #include "base/strings/string_piece.h"
 #include "base/win/scoped_hstring.h"
 

@@ -33,7 +33,7 @@
 
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 
 namespace blink {
 
@@ -246,7 +246,7 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
 
  private:
   Settings* settings_;
-  UntracedMember<DevToolsEmulator> dev_tools_emulator_;
+  Persistent<DevToolsEmulator> dev_tools_emulator_;
   bool render_v_sync_notification_enabled_;
   bool auto_zoom_focused_node_to_legible_scale_;
   bool support_deprecated_target_density_dpi_;

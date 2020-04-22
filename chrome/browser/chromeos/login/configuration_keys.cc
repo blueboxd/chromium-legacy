@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/login/configuration_keys.h"
+#include "base/logging.h"
 
 namespace chromeos {
 namespace configuration {

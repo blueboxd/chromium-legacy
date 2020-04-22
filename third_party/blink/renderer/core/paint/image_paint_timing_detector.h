@@ -63,6 +63,8 @@ typedef std::pair<const LayoutObject*, const ImageResourceContent*> RecordId;
 // Node, LayoutObject, etc.
 class CORE_EXPORT ImageRecordsManager {
   friend class ImagePaintTimingDetectorTest;
+  DISALLOW_NEW();
+
   using NodesQueueComparator = bool (*)(const base::WeakPtr<ImageRecord>&,
                                         const base::WeakPtr<ImageRecord>&);
   using ImageRecordSet =
@@ -140,6 +142,8 @@ class CORE_EXPORT ImageRecordsManager {
     return images_queued_for_paint_time_.back()->frame_index;
   }
 
+  void Trace(Visitor* visitor);
+
  private:
   // Find the image record of an visible image.
   inline base::WeakPtr<ImageRecord> FindVisibleRecord(
@@ -171,9 +175,8 @@ class CORE_EXPORT ImageRecordsManager {
   // Map containing timestamps of when LayoutObject::ImageNotifyFinished is
   // first called.
   HashMap<RecordId, base::TimeTicks> image_finished_times_;
-  // ImageRecordsManager is always owned by ImagePaintTimingDetector, which
-  // contains the LocalFrameView as a Member.
-  UntracedMember<LocalFrameView> frame_view_;
+
+  Member<LocalFrameView> frame_view_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageRecordsManager);
 };

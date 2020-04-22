@@ -14,9 +14,11 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_restrictions.h"
@@ -28,12 +30,14 @@
 #include "chrome/browser/chromeos/login/signin_partition_manager.h"
 #include "chrome/browser/chromeos/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
+#include "chrome/browser/chromeos/login/test/https_forwarder.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
+#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
@@ -42,7 +46,9 @@
 #include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/ui/login/login_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/eula_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -71,11 +77,16 @@
 #include "crypto/nss_util.h"
 #include "crypto/nss_util_internal.h"
 #include "crypto/scoped_test_nss_db.h"
+#include "google_apis/gaia/gaia_urls.h"
 #include "media/base/media_switches.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "net/base/net_errors.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_util.h"
+#include "net/http/http_status_code.h"
 #include "net/test/cert_test_util.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/test/test_data_directory.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
@@ -186,6 +197,43 @@ void PrefChangeWatcher::OnPrefChange() {
   pref_changed_ = true;
   run_loop_.Quit();
 }
+
+// Observes OOBE screens and can be queried to see if the error screen has been
+// displayed since ErrorScreenWatcher has been constructed.
+class ErrorScreenWatcher : public OobeUI::Observer {
+ public:
+  ErrorScreenWatcher() {
+    OobeUI* oobe_ui = LoginDisplayHost::default_host()->GetOobeUI();
+    oobe_ui_observer_.Add(oobe_ui);
+
+    if (oobe_ui->current_screen() == ErrorScreenView::kScreenId)
+      has_error_screen_been_shown_ = true;
+  }
+
+  ErrorScreenWatcher(const ErrorScreenWatcher& other) = delete;
+  ErrorScreenWatcher& operator=(const ErrorScreenWatcher& other) = delete;
+
+  ~ErrorScreenWatcher() override = default;
+
+  bool has_error_screen_been_shown() const {
+    return has_error_screen_been_shown_;
+  }
+
+  // OobeUI::Observer:
+  void OnCurrentScreenChanged(OobeScreenId current_screen,
+                              OobeScreenId new_screen) override {
+    if (new_screen == ErrorScreenView::kScreenId)
+      has_error_screen_been_shown_ = true;
+  }
+
+  // OobeUI::Observer:
+  void OnDestroyingOobeUI() override {}
+
+ private:
+  ScopedObserver<OobeUI, OobeUI::Observer> oobe_ui_observer_{this};
+
+  bool has_error_screen_been_shown_ = false;
+};
 
 }  // namespace
 
@@ -371,6 +419,20 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, BackButton) {
   test::WaitForPrimaryUserSessionStart();
 }
 
+IN_PROC_BROWSER_TEST_F(WebviewLoginTest, ErrorScreenOnGaiaError) {
+  WaitForGaiaPageLoadAndPropertyUpdate();
+  ExpectIdentifierPage();
+
+  // Make gaia landing page unreachable
+  fake_gaia_.fake_gaia()->SetErrorResponse(
+      GaiaUrls::GetInstance()->embedded_setup_chromeos_url(2),
+      net::HTTP_NOT_FOUND);
+
+  // Click back to reload (unreachable) identifier page.
+  test::OobeJS().ClickOnPath({"gaia-signin", "signin-back-button"});
+  OobeScreenWaiter(ErrorScreenView::kScreenId).Wait();
+}
+
 // Create new account option should be available only if the settings allow it.
 IN_PROC_BROWSER_TEST_F(WebviewLoginTest, AllowNewUser) {
   WaitForGaiaPageLoad();
@@ -484,6 +546,111 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, RequestCamera) {
       &getUserMediaSuccess));
   EXPECT_FALSE(getUserMediaSuccess);
 }
+
+enum class FrameUrlOrigin { kSameOrigin, kDifferentOrigin };
+
+// Parametrized test fixture that configures FakeGaia to server an iframe in the
+// embedded ChromeOS setup response. If the parameter is
+// FrameUrlOrigin::kSameOrigin, the frame URL will be on the same origin as fake
+// gaia. If it's FrameUrlOrigin::kDifferentOrigin, it will be on a different
+// origin.
+// The frame URL serves an empty HTTP document with the X-Frame-Options header
+// set to SAMEORIGIN, so the frame load will fail when
+// FrameUrlOrigin::kDifferentOrigin is set as the parameter.
+class WebviewLoginWithIframeTest
+    : public WebviewLoginTest,
+      public ::testing::WithParamInterface<FrameUrlOrigin> {
+ public:
+  WebviewLoginWithIframeTest() = default;
+  ~WebviewLoginWithIframeTest() override = default;
+
+  WebviewLoginWithIframeTest(const WebviewLoginWithIframeTest& other) = delete;
+  WebviewLoginWithIframeTest& operator=(
+      const WebviewLoginWithIframeTest& other) = delete;
+
+  // WebviewLoginTest:
+  void RegisterAdditionalRequestHandlers() override {
+    WebviewLoginTest::RegisterAdditionalRequestHandlers();
+
+    embedded_test_server()->RegisterRequestHandler(base::BindLambdaForTesting(
+        [](const net::test_server::HttpRequest& request)
+            -> std::unique_ptr<net::test_server::HttpResponse> {
+          if (!base::EndsWith(request.relative_url, kFrameRelativePath,
+                              base::CompareCase::INSENSITIVE_ASCII)) {
+            return nullptr;
+          }
+          auto response =
+              std::make_unique<net::test_server::BasicHttpResponse>();
+          response->set_code(net::HTTP_OK);
+          response->set_content("<!DOCTYPE html>");
+          response->AddCustomHeader("X-Frame-Options", "SAMEORIGIN");
+          return response;
+        }));
+  }
+
+  void SetUpInProcessBrowserTestFixture() override {
+    WebviewLoginTest::SetUpInProcessBrowserTestFixture();
+
+    ASSERT_TRUE(other_origin_https_forwarder_.Initialize(
+        kOtherOriginHost, embedded_test_server()->base_url()));
+
+    // /frame_with_same_origin_requirement is reachable through both
+    // HTTPSForwarders (the one for fake gaia and the one for another origin),
+    // because they both eventually point to embedded_test_server().
+    // From chrome's perspective, they are a different origins.
+    switch (GetParam()) {
+      case FrameUrlOrigin::kSameOrigin:
+        frame_url_ = fake_gaia_.gaia_https_forwarder()->GetURLForSSLHost(
+            kFrameRelativePath);
+        break;
+      case FrameUrlOrigin::kDifferentOrigin:
+        frame_url_ =
+            other_origin_https_forwarder_.GetURLForSSLHost(kFrameRelativePath);
+        break;
+    }
+
+    fake_gaia_.fake_gaia()->SetIframeOnEmbeddedSetupChromeosUrl(frame_url_);
+  }
+
+ protected:
+  static constexpr const char* kOtherOriginHost = "other.example.com";
+  static constexpr const char* kFrameRelativePath =
+      "frame_with_same_origin_requirement";
+
+  HTTPSForwarder other_origin_https_forwarder_;
+  GURL frame_url_;
+};
+
+IN_PROC_BROWSER_TEST_P(WebviewLoginWithIframeTest, GaiaWithIframe) {
+  ErrorScreenWatcher error_screen_watcher;
+
+  content::TestNavigationObserver navigation_observer(frame_url_);
+  navigation_observer.set_ignore_other_urls(true);
+  navigation_observer.StartWatchingNewWebContents();
+
+  WaitForGaiaPageLoadAndPropertyUpdate();
+
+  navigation_observer.WaitForNavigationFinished();
+  EXPECT_EQ(navigation_observer.last_navigation_url(), frame_url_);
+  const net::Error expected_error = (GetParam() == FrameUrlOrigin::kSameOrigin)
+                                        ? net::OK
+                                        : net::ERR_BLOCKED_BY_RESPONSE;
+  EXPECT_EQ(navigation_observer.last_net_error_code(), expected_error);
+
+  ExpectIdentifierPage();
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
+  // Make sure that the error screen has not been shown in the meantime.
+  // It is not sufficient to just wait for the Gaia screen / check that the gaia
+  // screen is currently being replaced, because the error screen could have
+  // been shown in the meantime (and then exited again because the "device" has
+  // internet connectivity).
+  EXPECT_FALSE(error_screen_watcher.has_error_screen_been_shown());
+}
+
+INSTANTIATE_TEST_SUITE_P(WebviewLoginWithIframe,
+                         WebviewLoginWithIframeTest,
+                         testing::Values(FrameUrlOrigin::kSameOrigin,
+                                         FrameUrlOrigin::kDifferentOrigin));
 
 // Base class for tests of the client certificates in the sign-in frame.
 class WebviewClientCertsLoginTestBase : public WebviewLoginTest {

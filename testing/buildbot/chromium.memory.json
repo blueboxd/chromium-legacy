@@ -8533,7 +8533,7 @@
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 30
+          "shards": 32
         },
         "test": "browser_tests",
         "test_target": "//chrome/test:browser_tests"

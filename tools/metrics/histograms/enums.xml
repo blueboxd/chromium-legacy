@@ -48326,6 +48326,16 @@ Called by update_net_trust_anchors.py.-->
   <int value="4" label="Navigated Away Through Browser History"/>
 </enum>
 
+<enum name="OAuth2BadRequestError">
+  <int value="0" label="invalid_request"/>
+  <int value="1" label="invalid_client"/>
+  <int value="2" label="invalid_grant"/>
+  <int value="3" label="unauthorized_client"/>
+  <int value="4" label="unsupported_grant_type"/>
+  <int value="5" label="invalid_scope"/>
+  <int value="6" label="unknown error"/>
+</enum>
+
 <enum name="OAuth2LoginAccountRevokedMigrationState">
   <int value="0" label="Account ID migration not started"/>
   <int value="1" label="Account ID migration in progress"/>
@@ -50569,7 +50579,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="10"
       label="Opened automatically / Notification about compromised passwords"/>
   <int value="11"
-      label="Opened automatically / Proposal to move local password to
+      label="Opened automatically / Offering to move profile password to
              account store"/>
 </enum>
 
@@ -60982,6 +60992,13 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="1" label="Upgrade high risk (deprecated 07-2019)"/>
   <int value="2" label="Same account"/>
   <int value="3" label="Different account"/>
+</enum>
+
+<enum name="SigninIOSLoginMethodAndSyncState">
+  <int value="0" label="Client Login / Sync Off"/>
+  <int value="1" label="Client Login / Sync On"/>
+  <int value="2" label="Shared Authentication / Sync Off"/>
+  <int value="3" label="Shared Authentication / Sync On"/>
 </enum>
 
 <enum name="SigninLoadTokenFromDB">

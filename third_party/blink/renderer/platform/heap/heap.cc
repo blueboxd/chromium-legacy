@@ -459,7 +459,7 @@ void ThreadHeap::WeakProcessing(MarkingVisitor* visitor) {
 
   // Call weak callbacks on objects that may now be pointing to dead objects.
   CustomCallbackItem item;
-  LivenessBroker broker;
+  LivenessBroker broker = internal::LivenessBrokerFactory::Create();
   while (weak_callback_worklist_->Pop(WorklistTaskId::MutatorThread, &item)) {
     item.callback(broker, item.parameter);
   }

@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/files/file_util.h"
+#include "base/logging.h"
 
 namespace chromeos {
 namespace smb_client {

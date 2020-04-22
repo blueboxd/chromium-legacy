@@ -309,6 +309,15 @@ std::unique_ptr<net::test_server::HttpResponse> FakeGaia::HandleRequest(
   GURL request_url = GURL("http://localhost").Resolve(request.relative_url);
   std::string request_path = request_url.path();
   auto http_response = std::make_unique<BasicHttpResponse>();
+
+  ErrorResponseMap::const_iterator error_response =
+      error_responses_.find(request_path);
+  if (error_response != error_responses_.end() &&
+      error_response->second != net::HTTP_OK) {
+    http_response->set_code(error_response->second);
+    return std::move(http_response);
+  }
+
   RequestHandlerMap::iterator iter = request_handlers_.find(request_path);
   if (iter == request_handlers_.end()) {
     // If exact match yielded no handler, try to find one by prefix,
@@ -357,6 +366,11 @@ std::string FakeGaia::GetDeviceIdByRefreshToken(
   auto it = refresh_token_to_device_id_map_.find(refresh_token);
   return it != refresh_token_to_device_id_map_.end() ? it->second
                                                      : std::string();
+}
+
+void FakeGaia::SetErrorResponse(const GURL& gaia_url,
+                                net::HttpStatusCode http_status_code) {
+  error_responses_[gaia_url.path()] = http_status_code;
 }
 
 void FakeGaia::SetRefreshTokenToDeviceIdMap(
@@ -470,7 +484,7 @@ void FakeGaia::HandleEmbeddedSetupChromeos(const HttpRequest& request,
   GetQueryParameter(request_url.query(), "Email", &prefilled_email_);
 
   http_response->set_code(net::HTTP_OK);
-  http_response->set_content(embedded_setup_chromeos_response_);
+  http_response->set_content(GetEmbeddedSetupChromeosResponseContent());
   http_response->set_content_type("text/html");
 }
 
@@ -887,4 +901,19 @@ void FakeGaia::HandleMultilogin(const HttpRequest& request,
                                 merge_session_params_.session_lsid_cookie) +
       "]}");
   http_response->set_code(net::HTTP_OK);
+}
+
+std::string FakeGaia::GetEmbeddedSetupChromeosResponseContent() const {
+  if (embedded_setup_chromeos_iframe_url_.is_empty())
+    return embedded_setup_chromeos_response_;
+  const std::string iframe =
+      base::StringPrintf("<iframe src=\"%s\" style=\"%s\"></iframe>",
+                         embedded_setup_chromeos_iframe_url_.spec().c_str(),
+                         "width:0; height:0; border:none;");
+  // Insert the iframe right before </body>
+  std::string response_with_iframe = embedded_setup_chromeos_response_;
+  size_t pos_of_body_closing_tag = response_with_iframe.find("</body>");
+  CHECK(pos_of_body_closing_tag != std::string::npos);
+  response_with_iframe.insert(pos_of_body_closing_tag, iframe);
+  return response_with_iframe;
 }

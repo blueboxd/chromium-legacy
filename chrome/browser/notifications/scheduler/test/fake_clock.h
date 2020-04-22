@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_TEST_FAKE_CLOCK_H_
 #define CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_TEST_FAKE_CLOCK_H_
 
+#include "base/macros.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
 

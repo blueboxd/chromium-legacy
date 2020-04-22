@@ -637,6 +637,8 @@ class HeapVector : public Vector<T, inlineCapacity, HeapAllocator> {
                   "instead of HeapVector<>.");
     static_assert(!WTF::IsWeak<T>::value,
                   "Weak types are not allowed in HeapVector.");
+    static_assert(WTF::IsTraceableInCollectionTrait<VectorTraits<T>>::value,
+                  "Type must be traceable in collection");
   }
 
  public:

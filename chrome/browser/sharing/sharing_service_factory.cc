@@ -162,8 +162,8 @@ KeyedService* SharingServiceFactory::BuildServiceInstanceFor(
       vapid_key_manager.get(), gcm_driver, local_device_info_provider,
       sync_service);
 
-  auto sharing_message_sender = std::make_unique<SharingMessageSender>(
-      sync_prefs.get(), local_device_info_provider);
+  auto sharing_message_sender =
+      std::make_unique<SharingMessageSender>(local_device_info_provider);
   SharingFCMSender* fcm_sender_ptr = fcm_sender.get();
   sharing_message_sender->RegisterSendDelegate(
       SharingMessageSender::DelegateType::kFCM, std::move(fcm_sender));
@@ -171,8 +171,7 @@ KeyedService* SharingServiceFactory::BuildServiceInstanceFor(
   syncer::DeviceInfoTracker* device_info_tracker =
       device_info_sync_service->GetDeviceInfoTracker();
   auto device_source = std::make_unique<SharingDeviceSourceSync>(
-      sync_service, local_device_info_provider, device_info_tracker,
-      sync_prefs.get());
+      sync_service, local_device_info_provider, device_info_tracker);
 
   content::SmsFetcher* sms_fetcher = content::SmsFetcher::Get(context);
   SharingServiceHost* sharing_service_host_ptr =
@@ -184,7 +183,7 @@ KeyedService* SharingServiceFactory::BuildServiceInstanceFor(
       device_source.get(), sms_fetcher, sharing_service_host_ptr);
 
   auto fcm_handler = std::make_unique<SharingFCMHandler>(
-      gcm_driver, fcm_sender_ptr, sync_prefs.get(), handler_registry.get());
+      gcm_driver, device_info_tracker, fcm_sender_ptr, handler_registry.get());
 
   return new SharingService(
       std::move(sync_prefs), std::move(vapid_key_manager),

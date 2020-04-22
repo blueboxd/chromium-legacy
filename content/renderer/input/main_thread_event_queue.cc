@@ -96,11 +96,19 @@ class QueuedWebInputEvent : public ScopedWebInputEventWithLatencyInfo,
       return FilterResult::StopIterating;
     }
 
-    // If the other event was blocking store its callback to call later.
+    // If the other event was blocking store its callback to call later, but we
+    // also save the trace_id to ensure the flow events correct show the
+    // critical path.
+    //
+    // IMPORTANT: this if has to remain above CoalesceWith because that will
+    // overwrite other_event->latencyInfo() to be equal to |latency_| (including
+    //  trace_id).
     if (other_event->callback_) {
       blocking_coalesced_callbacks_.push_back(
-          std::move(other_event->callback_));
+          std::make_pair(std::move(other_event->callback_),
+                         other_event->latencyInfo().trace_id()));
     }
+
     known_by_scheduler_count_ += other_event->known_by_scheduler_count_;
     ScopedWebInputEventWithLatencyInfo::CoalesceWith(*other_event);
 
@@ -141,8 +149,9 @@ class QueuedWebInputEvent : public ScopedWebInputEventWithLatencyInfo,
       ui::LatencyInfo coalesced_latency_info = latency_info;
       coalesced_latency_info.set_coalesced();
       for (auto&& callback : blocking_coalesced_callbacks_) {
-        std::move(callback).Run(ack_result, coalesced_latency_info, nullptr,
-                                base::nullopt);
+        coalesced_latency_info.set_trace_id(callback.second);
+        std::move(callback.first)
+            .Run(ack_result, coalesced_latency_info, nullptr, base::nullopt);
       }
     }
 
@@ -186,8 +195,10 @@ class QueuedWebInputEvent : public ScopedWebInputEventWithLatencyInfo,
     }
   }
 
-  // Contains the pending callbacks to be called.
-  base::circular_deque<HandledEventCallback> blocking_coalesced_callbacks_;
+  // Contains the pending callbacks to be called, along with their associated
+  // trace_ids.
+  base::circular_deque<std::pair<HandledEventCallback, int64_t>>
+      blocking_coalesced_callbacks_;
   // Contains the number of non-blocking events coalesced.
 
   // Whether the received event was originally cancelable or not. The compositor

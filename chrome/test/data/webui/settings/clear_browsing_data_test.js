@@ -8,66 +8,13 @@
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // #import {isChromeOS} from 'chrome://resources/js/cr.m.js';
 // #import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
-// #import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+// #import {TestClearBrowsingDataBrowserProxy} from 'chrome://test/settings/test_clear_browsing_data_browser_proxy.m.js';
 // #import {TestSyncBrowserProxy} from 'chrome://test/settings/test_sync_browser_proxy.m.js';
 // #import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 // #import {isChildVisible, isVisible, whenAttributeIs} from 'chrome://test/test_util.m.js';
 // clang-format on
 
 cr.define('settings_clear_browsing_data_test', function() {
-  /** @implements {settings.ClearBrowsingDataBrowserProxy} */
-  class TestClearBrowsingDataBrowserProxy extends TestBrowserProxy {
-    constructor() {
-      super(['initialize', 'clearBrowsingData', 'getInstalledApps']);
-
-      /**
-       * The promise to return from |clearBrowsingData|.
-       * Allows testing code to test what happens after the call is made, and
-       * before the browser responds.
-       * @private {?Promise}
-       */
-      this.clearBrowsingDataPromise_ = null;
-
-      /**
-       * Response for |getInstalledApps|.
-       * @private {!Array<!InstalledApp>}
-       */
-      this.installedApps_ = [];
-    }
-
-    /** @param {!Promise} promise */
-    setClearBrowsingDataPromise(promise) {
-      this.clearBrowsingDataPromise_ = promise;
-    }
-
-    /** @override */
-    clearBrowsingData(dataTypes, timePeriod, installedApps) {
-      this.methodCalled(
-          'clearBrowsingData', [dataTypes, timePeriod, installedApps]);
-      cr.webUIListenerCallback('browsing-data-removing', true);
-      return this.clearBrowsingDataPromise_ !== null ?
-          this.clearBrowsingDataPromise_ :
-          Promise.resolve();
-    }
-
-    /** @param {!Array<!InstalledApp>} apps */
-    setInstalledApps(apps) {
-      this.installedApps_ = apps;
-    }
-
-    /** @override */
-    getInstalledApps(timePeriod) {
-      this.methodCalled('getInstalledApps');
-      return Promise.resolve(this.installedApps_);
-    }
-
-    /** @override */
-    initialize() {
-      this.methodCalled('initialize');
-      return Promise.resolve(false);
-    }
-  }
-
   function getClearBrowsingDataPrefs() {
     return {
       browser: {

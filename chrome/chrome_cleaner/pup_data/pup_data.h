@@ -17,6 +17,7 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "chrome/chrome_cleaner/chrome_utils/force_installed_extension.h"
 #include "chrome/chrome_cleaner/constants/uws_id.h"
 #include "chrome/chrome_cleaner/logging/proto/shared_data.pb.h"

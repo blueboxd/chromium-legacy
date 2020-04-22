@@ -32,7 +32,7 @@ bool PreferredRealmIsFromAndroid(const PasswordFormFillData& fill_data) {
 
 bool ContainsAndroidCredentials(const PasswordFormFillData& fill_data) {
   for (const auto& login : fill_data.additional_logins) {
-    if (FacetURI::FromPotentiallyInvalidSpec(login.second.realm)
+    if (FacetURI::FromPotentiallyInvalidSpec(login.realm)
             .IsValidAndroidFacetURI()) {
       return true;
     }

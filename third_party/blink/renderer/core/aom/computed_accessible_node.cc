@@ -202,10 +202,6 @@ base::Optional<float> ComputedAccessibleNode::valueNow() const {
   return GetFloatAttribute(WebAOMFloatAttribute::AOM_ATTR_VALUE_NOW);
 }
 
-bool ComputedAccessibleNode::atomic(bool& is_null) const {
-  return GetBoolAttribute(WebAOMBoolAttribute::AOM_ATTR_ATOMIC, is_null);
-}
-
 ScriptPromise ComputedAccessibleNode::ensureUpToDate(
     ScriptState* script_state) {
   AXObjectCache* cache = document_->ExistingAXObjectCache();
@@ -216,46 +212,6 @@ ScriptPromise ComputedAccessibleNode::ensureUpToDate(
   ScriptPromise promise = resolver->Promise();
   resolver->EnsureUpToDate();
   return promise;
-}
-
-bool ComputedAccessibleNode::busy(bool& is_null) const {
-  return GetBoolAttribute(WebAOMBoolAttribute::AOM_ATTR_BUSY, is_null);
-}
-
-bool ComputedAccessibleNode::disabled(bool& is_null) const {
-  return GetBoolAttribute(WebAOMBoolAttribute::AOM_ATTR_DISABLED, is_null);
-}
-
-bool ComputedAccessibleNode::expanded(bool& is_null) const {
-  return GetBoolAttribute(WebAOMBoolAttribute::AOM_ATTR_EXPANDED, is_null);
-}
-
-bool ComputedAccessibleNode::modal(bool& is_null) const {
-  return GetBoolAttribute(WebAOMBoolAttribute::AOM_ATTR_MODAL, is_null);
-}
-
-bool ComputedAccessibleNode::readOnly(bool& is_null) const {
-  return GetBoolAttribute(WebAOMBoolAttribute::AOM_ATTR_READONLY, is_null);
-}
-
-bool ComputedAccessibleNode::multiline(bool& is_null) const {
-  return GetBoolAttribute(blink::WebAOMBoolAttribute::AOM_ATTR_MULTILINE,
-                          is_null);
-}
-
-bool ComputedAccessibleNode::multiselectable(bool& is_null) const {
-  return GetBoolAttribute(blink::WebAOMBoolAttribute::AOM_ATTR_MULTISELECTABLE,
-                          is_null);
-}
-
-bool ComputedAccessibleNode::required(bool& is_null) const {
-  return GetBoolAttribute(blink::WebAOMBoolAttribute::AOM_ATTR_REQUIRED,
-                          is_null);
-}
-
-bool ComputedAccessibleNode::selected(bool& is_null) const {
-  return GetBoolAttribute(blink::WebAOMBoolAttribute::AOM_ATTR_SELECTED,
-                          is_null);
 }
 
 const String ComputedAccessibleNode::autocomplete() const {
@@ -294,55 +250,6 @@ const String ComputedAccessibleNode::roleDescription() const {
 
 const String ComputedAccessibleNode::valueText() const {
   return GetStringAttribute(WebAOMStringAttribute::AOM_ATTR_VALUE_TEXT);
-}
-
-int32_t ComputedAccessibleNode::colCount(bool& is_null) const {
-  return GetIntAttribute(WebAOMIntAttribute::AOM_ATTR_COLUMN_COUNT, is_null);
-}
-
-int32_t ComputedAccessibleNode::colIndex(bool& is_null) const {
-  return GetIntAttribute(WebAOMIntAttribute::AOM_ATTR_COLUMN_INDEX, is_null);
-}
-
-int32_t ComputedAccessibleNode::colSpan(bool& is_null) const {
-  return GetIntAttribute(WebAOMIntAttribute::AOM_ATTR_COLUMN_SPAN, is_null);
-}
-
-int32_t ComputedAccessibleNode::level(bool& is_null) const {
-  return GetIntAttribute(WebAOMIntAttribute::AOM_ATTR_HIERARCHICAL_LEVEL,
-                         is_null);
-}
-
-int32_t ComputedAccessibleNode::posInSet(bool& is_null) const {
-  return GetIntAttribute(WebAOMIntAttribute::AOM_ATTR_POS_IN_SET, is_null);
-}
-
-int32_t ComputedAccessibleNode::rowCount(bool& is_null) const {
-  return GetIntAttribute(WebAOMIntAttribute::AOM_ATTR_ROW_COUNT, is_null);
-}
-
-int32_t ComputedAccessibleNode::rowIndex(bool& is_null) const {
-  return GetIntAttribute(WebAOMIntAttribute::AOM_ATTR_ROW_INDEX, is_null);
-}
-
-int32_t ComputedAccessibleNode::rowSpan(bool& is_null) const {
-  return GetIntAttribute(WebAOMIntAttribute::AOM_ATTR_ROW_SPAN, is_null);
-}
-
-int32_t ComputedAccessibleNode::setSize(bool& is_null) const {
-  return GetIntAttribute(WebAOMIntAttribute::AOM_ATTR_SET_SIZE, is_null);
-}
-
-float ComputedAccessibleNode::valueMax(bool& is_null) const {
-  return GetFloatAttribute(WebAOMFloatAttribute::AOM_ATTR_VALUE_MAX, is_null);
-}
-
-float ComputedAccessibleNode::valueMin(bool& is_null) const {
-  return GetFloatAttribute(WebAOMFloatAttribute::AOM_ATTR_VALUE_MIN, is_null);
-}
-
-float ComputedAccessibleNode::valueNow(bool& is_null) const {
-  return GetFloatAttribute(WebAOMFloatAttribute::AOM_ATTR_VALUE_NOW, is_null);
 }
 
 ComputedAccessibleNode* ComputedAccessibleNode::parent() const {
@@ -407,36 +314,6 @@ base::Optional<float> ComputedAccessibleNode::GetFloatAttribute(
   if (tree_->GetFloatAttributeForAXNode(ax_id_, attr, &value))
     return value;
   return base::nullopt;
-}
-
-bool ComputedAccessibleNode::GetBoolAttribute(WebAOMBoolAttribute attr,
-                                              bool& is_null) const {
-  bool out;
-  is_null = true;
-  if (tree_->GetBoolAttributeForAXNode(ax_id_, attr, &out)) {
-    is_null = false;
-  }
-  return out;
-}
-
-float ComputedAccessibleNode::GetFloatAttribute(WebAOMFloatAttribute attr,
-                                                bool& is_null) const {
-  float out;
-  is_null = true;
-  if (tree_->GetFloatAttributeForAXNode(ax_id_, attr, &out)) {
-    is_null = false;
-  }
-  return out;
-}
-
-int32_t ComputedAccessibleNode::GetIntAttribute(WebAOMIntAttribute attr,
-                                                bool& is_null) const {
-  int32_t out = 0;
-  is_null = true;
-  if (tree_->GetIntAttributeForAXNode(ax_id_, attr, &out)) {
-    is_null = false;
-  }
-  return out;
 }
 
 const String ComputedAccessibleNode::GetStringAttribute(

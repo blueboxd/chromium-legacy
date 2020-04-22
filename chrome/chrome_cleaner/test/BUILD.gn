@@ -106,6 +106,7 @@ source_set("test_uws_catalog") {
   ]
 
   deps = [
+    "//base",
     "//chrome/chrome_cleaner/pup_data:dynamic_pup",
     "//chrome/chrome_cleaner/pup_data:pup_data_base",
     "//chrome/chrome_cleaner/pup_data:test_uws",

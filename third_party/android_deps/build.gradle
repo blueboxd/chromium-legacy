@@ -126,6 +126,8 @@ dependencies {
     compile "javax.annotation:jsr250-api:1.0"
     compile "javax.inject:javax.inject:1"
 
+    // Used by R8 to desugar library functions.
+    compile "com.android.tools:desugar_jdk_libs:1.0.5"
 
     // buildCompile targets have supports_android = false.
     buildCompile "com.google.guava:guava:27.0.1-jre"

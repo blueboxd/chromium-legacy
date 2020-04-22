@@ -79,6 +79,7 @@ group("gn_all") {
     "//services/service_manager/public/cpp",
     "//skia:skia_unittests",
     "//sql:sql_unittests",
+    "//third_party/abseil-cpp:absl_tests",
     "//third_party/flatbuffers:flatbuffers_unittests",
     "//tools/binary_size:binary_size_trybot_py",
     "//tools/ipc_fuzzer:ipc_fuzzer_all",

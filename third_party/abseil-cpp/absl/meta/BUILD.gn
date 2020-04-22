@@ -8,3 +8,13 @@ absl_source_set("type_traits") {
   public = [ "type_traits.h" ]
   deps = [ "../base:config" ]
 }
+
+absl_source_set("type_traits_test") {
+  testonly = true
+  sources = [ "type_traits_test.cc" ]
+  cflags_cc = [ "-Wno-unused-private-field" ]
+  deps = [
+    ":type_traits",
+    "//third_party/googletest:gtest",
+  ]
+}

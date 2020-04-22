@@ -74,14 +74,17 @@ IOSChromeTabRestoreServiceClient::FindLiveTabContextForTab(
     const sessions::LiveTab* tab) {
   const sessions::IOSLiveTab* requested_tab =
       static_cast<const sessions::IOSLiveTab*>(tab);
-
+  const web::WebState* web_state = requested_tab->GetWebState();
+  if (!web_state) {
+    return nullptr;
+  }
   return FindLiveTabContextWithCondition(base::Bind(
       [](const web::WebState* web_state, Browser* browser) {
         WebStateList* web_state_list = browser->GetWebStateList();
         const int index = web_state_list->GetIndexOfWebState(web_state);
         return index != WebStateList::kInvalidIndex;
       },
-      requested_tab->web_state()));
+      web_state));
 }
 
 sessions::LiveTabContext*

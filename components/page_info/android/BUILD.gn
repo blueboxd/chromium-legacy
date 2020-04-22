@@ -50,8 +50,10 @@ android_resources("java_resources") {
     "java/res/layout/cookie_controls_view.xml",
     "java/res/layout/page_info.xml",
     "java/res/layout/page_info_permission_row.xml",
+    "java/res/values/colors.xml",
     "java/res/values/dimens.xml",
     "java/res/values/ids.xml",
+    "java/res/values/styles.xml",
   ]
   custom_package = "org.chromium.components.page_info"
   deps = [

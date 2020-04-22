@@ -8,6 +8,7 @@
 
 #include "base/hash/md5.h"
 #include "base/json/json_string_value_serializer.h"
+#include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"

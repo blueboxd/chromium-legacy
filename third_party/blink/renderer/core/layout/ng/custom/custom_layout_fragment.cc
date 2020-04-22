@@ -38,11 +38,6 @@ const NGLayoutInputNode& CustomLayoutFragment::GetLayoutNode() const {
   return child_->GetLayoutNode();
 }
 
-double CustomLayoutFragment::baseline(bool& is_null) const {
-  is_null = !baseline_.has_value();
-  return baseline_.value_or(0.0);
-}
-
 ScriptValue CustomLayoutFragment::data(ScriptState* script_state) const {
   // "data" is *only* exposed to the LayoutWorkletGlobalScope, and we are able
   // to return the same deserialized object. We don't need to check which world

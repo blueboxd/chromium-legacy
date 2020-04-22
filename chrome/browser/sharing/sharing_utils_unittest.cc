@@ -5,12 +5,24 @@
 #include "chrome/browser/sharing/sharing_utils.h"
 
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/sharing/fake_device_info.h"
 #include "chrome/browser/sharing/features.h"
+#include "chrome/browser/sharing/proto/sharing_message.pb.h"
+#include "chrome/browser/sharing/sharing_constants.h"
 #include "components/sync/driver/test_sync_service.h"
 #include "components/sync_device_info/device_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
+
+const char kDeviceGuid[] = "test_guid";
+const char kDeviceName[] = "test_name";
+const char kVapidFCMToken[] = "test_vapid_fcm_token";
+const char kVapidP256dh[] = "test_vapid_p256_dh";
+const char kVapidAuthSecret[] = "test_vapid_auth_secret";
+const char kSenderIdFCMToken[] = "test_sender_id_fcm_token";
+const char kSenderIdP256dh[] = "test_sender_id_p256_dh";
+const char kSenderIdAuthSecret[] = "test_sender_id_auth_secret";
 
 class SharingUtilsTest : public testing::Test {
  public:
@@ -22,7 +34,6 @@ class SharingUtilsTest : public testing::Test {
 };
 
 }  // namespace
-
 
 TEST_F(SharingUtilsTest, SyncEnabled_SigninOnly) {
   // Enable transport mode required features.
@@ -95,4 +106,80 @@ TEST_F(SharingUtilsTest, SyncDisabled_Configuring) {
 
   EXPECT_FALSE(IsSyncEnabledForSharing(&test_sync_service_));
   EXPECT_FALSE(IsSyncDisabledForSharing(&test_sync_service_));
+}
+
+TEST_F(SharingUtilsTest, GetFCMChannel) {
+  std::unique_ptr<syncer::DeviceInfo> device_info = CreateFakeDeviceInfo(
+      kDeviceGuid, kDeviceName,
+      syncer::DeviceInfo::SharingInfo(
+          {kVapidFCMToken, kVapidP256dh, kVapidAuthSecret},
+          {kSenderIdFCMToken, kSenderIdP256dh, kSenderIdAuthSecret},
+          std::set<sync_pb::SharingSpecificFields::EnabledFeatures>()));
+
+  auto fcm_channel = GetFCMChannel(*device_info);
+
+  ASSERT_TRUE(fcm_channel);
+  EXPECT_EQ(fcm_channel->vapid_fcm_token(), kVapidFCMToken);
+  EXPECT_EQ(fcm_channel->vapid_p256dh(), kVapidP256dh);
+  EXPECT_EQ(fcm_channel->vapid_auth_secret(), kVapidAuthSecret);
+  EXPECT_EQ(fcm_channel->sender_id_fcm_token(), kSenderIdFCMToken);
+  EXPECT_EQ(fcm_channel->sender_id_p256dh(), kSenderIdP256dh);
+  EXPECT_EQ(fcm_channel->sender_id_auth_secret(), kSenderIdAuthSecret);
+}
+
+TEST_F(SharingUtilsTest, GetDevicePlatform) {
+  EXPECT_EQ(GetDevicePlatform(*CreateFakeDeviceInfo(
+                kDeviceGuid, kDeviceName, /*sharing_info=*/base::nullopt,
+                sync_pb::SyncEnums_DeviceType_TYPE_CROS)),
+            SharingDevicePlatform::kChromeOS);
+
+  EXPECT_EQ(GetDevicePlatform(*CreateFakeDeviceInfo(
+                kDeviceGuid, kDeviceName, /*sharing_info=*/base::nullopt,
+                sync_pb::SyncEnums_DeviceType_TYPE_LINUX)),
+            SharingDevicePlatform::kLinux);
+
+  EXPECT_EQ(GetDevicePlatform(*CreateFakeDeviceInfo(
+                kDeviceGuid, kDeviceName, /*sharing_info=*/base::nullopt,
+                sync_pb::SyncEnums_DeviceType_TYPE_MAC)),
+            SharingDevicePlatform::kMac);
+
+  EXPECT_EQ(GetDevicePlatform(*CreateFakeDeviceInfo(
+                kDeviceGuid, kDeviceName, /*sharing_info=*/base::nullopt,
+                sync_pb::SyncEnums_DeviceType_TYPE_WIN)),
+            SharingDevicePlatform::kWindows);
+
+  EXPECT_EQ(GetDevicePlatform(*CreateFakeDeviceInfo(
+                kDeviceGuid, kDeviceName, /*sharing_info=*/base::nullopt,
+                sync_pb::SyncEnums_DeviceType_TYPE_PHONE,
+                base::SysInfo::HardwareInfo(
+                    {"Apple Inc.", "iPhone 50", "serial_no"}))),
+            SharingDevicePlatform::kIOS);
+  EXPECT_EQ(
+      GetDevicePlatform(*CreateFakeDeviceInfo(
+          kDeviceGuid, kDeviceName, /*sharing_info=*/base::nullopt,
+          sync_pb::SyncEnums_DeviceType_TYPE_TABLET,
+          base::SysInfo::HardwareInfo({"Apple Inc.", "iPad 99", "serial_no"}))),
+      SharingDevicePlatform::kIOS);
+
+  EXPECT_EQ(
+      GetDevicePlatform(*CreateFakeDeviceInfo(
+          kDeviceGuid, kDeviceName, /*sharing_info=*/base::nullopt,
+          sync_pb::SyncEnums_DeviceType_TYPE_PHONE,
+          base::SysInfo::HardwareInfo({"Google", "Pixel 777", "serial_no"}))),
+      SharingDevicePlatform::kAndroid);
+  EXPECT_EQ(
+      GetDevicePlatform(*CreateFakeDeviceInfo(
+          kDeviceGuid, kDeviceName, /*sharing_info=*/base::nullopt,
+          sync_pb::SyncEnums_DeviceType_TYPE_TABLET,
+          base::SysInfo::HardwareInfo({"Google", "Pixel Z", "serial_no"}))),
+      SharingDevicePlatform::kAndroid);
+
+  EXPECT_EQ(GetDevicePlatform(*CreateFakeDeviceInfo(
+                kDeviceGuid, kDeviceName, /*sharing_info=*/base::nullopt,
+                sync_pb::SyncEnums_DeviceType_TYPE_UNSET)),
+            SharingDevicePlatform::kUnknown);
+  EXPECT_EQ(GetDevicePlatform(*CreateFakeDeviceInfo(
+                kDeviceGuid, kDeviceName, /*sharing_info=*/base::nullopt,
+                sync_pb::SyncEnums_DeviceType_TYPE_OTHER)),
+            SharingDevicePlatform::kUnknown);
 }

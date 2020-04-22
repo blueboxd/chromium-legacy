@@ -269,7 +269,7 @@ bool NGInlineCursor::IsLastLineInInlineBlock() const {
     return false;
   NGInlineCursor next_sibling(*this);
   for (;;) {
-    next_sibling.MoveToNextSibling();
+    next_sibling.MoveToNextSkippingChildren();
     if (!next_sibling)
       return true;
     if (next_sibling.Current().IsLineBox())
@@ -1028,6 +1028,14 @@ void NGInlineCursor::MoveToContainingLine() {
     return;
   }
   NOTREACHED();
+}
+
+bool NGInlineCursor::IsAtFirst() const {
+  if (const NGPaintFragment* paint_fragment = Current().PaintFragment())
+    return paint_fragment == root_paint_fragment_->FirstChild();
+  if (const NGFragmentItem* item = Current().Item())
+    return item == items_.front().get();
+  return false;
 }
 
 void NGInlineCursor::MoveToFirst() {

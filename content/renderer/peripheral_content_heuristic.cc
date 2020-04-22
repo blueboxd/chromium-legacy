@@ -40,7 +40,7 @@ bool IsTiny(const gfx::Size& unobscured_size) {
 // static
 RenderFrame::PeripheralContentStatus
 PeripheralContentHeuristic::GetPeripheralStatus(
-    const std::set<url::Origin>& origin_whitelist,
+    const std::set<url::Origin>& origin_allowlist,
     const url::Origin& main_frame_origin,
     const url::Origin& content_origin,
     const gfx::Size& unobscured_size) {
@@ -50,8 +50,8 @@ PeripheralContentHeuristic::GetPeripheralStatus(
   if (main_frame_origin.IsSameOriginWith(content_origin))
     return RenderFrame::CONTENT_STATUS_ESSENTIAL_SAME_ORIGIN;
 
-  if (origin_whitelist.count(content_origin))
-    return RenderFrame::CONTENT_STATUS_ESSENTIAL_CROSS_ORIGIN_WHITELISTED;
+  if (origin_allowlist.count(content_origin))
+    return RenderFrame::CONTENT_STATUS_ESSENTIAL_CROSS_ORIGIN_ALLOWLISTED;
 
   if (IsLargeContent(unobscured_size))
     return RenderFrame::CONTENT_STATUS_ESSENTIAL_CROSS_ORIGIN_BIG;

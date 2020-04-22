@@ -302,7 +302,8 @@ PhysicalRect NGPhysicalBoxFragment::ScrollableOverflowFromChildren() const {
 
   // Traverse child items.
   if (items) {
-    for (NGInlineCursor cursor(*items); cursor; cursor.MoveToNextSibling()) {
+    for (NGInlineCursor cursor(*items); cursor;
+         cursor.MoveToNextSkippingChildren()) {
       const NGFragmentItem* item = cursor.CurrentItem();
       if (item->Type() == NGFragmentItem::kLine) {
         context.AddLineBoxChild(*item, cursor);

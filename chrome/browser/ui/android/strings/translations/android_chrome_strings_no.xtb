@@ -54,6 +54,7 @@
 <translation id="1331212799747679585">Kan ikke oppdatere Chrome. Flere alternativer</translation>
 <translation id="1332501820983677155">Hurtigtaster for funksjoner i Google Chrome.</translation>
 <translation id="1360432990279830238">Vil du logge av og slå av synkronisering?</translation>
+<translation id="1364532808393826295"><ph name="APP_NAME" /> – <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">Nettstedet <ph name="SITE_NAME" /> er lagt til</translation>
 <translation id="1373696734384179344">Det er ikke nok ledig minne til å laste ned det valgte innholdet.</translation>
 <translation id="1376578503827013741">Beregner …</translation>
@@ -140,6 +141,7 @@
 <translation id="2017836877785168846">Tømmer loggen og fjerner automatiske fullføringer fra adressefeltet.</translation>
 <translation id="2021896219286479412">Navigering i full skjerm</translation>
 <translation id="2025115093177348061">Utvidet virkelighet</translation>
+<translation id="2030769033451695672">Trykk for å gå tilbake til <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2038563949887743358">Slå på Bruk skrivebordsversjon</translation>
 <translation id="2041019821020695769">For at Chrome skal kunne sende deg varsler, må du også slå på varsler i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" />.</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> har også data i Chrome</translation>
@@ -301,6 +303,7 @@ Trykk og hold inne på et ord for å søke. For å finstemme søket, merk flere 
 <translation id="3207960819495026254">Bokmerket</translation>
 <translation id="3211426585530211793">Slettet <ph name="ITEM_TITLE" /></translation>
 <translation id="321773570071367578">Hvis du har glemt passordfrasen din eller vil endre denne innstillingen, må du <ph name="BEGIN_LINK" />tilbakestille synkroniseringen<ph name="END_LINK" /></translation>
+<translation id="3223655101706843289">Dette sletter alle data og informasjonskapsler som er lagret av <ph name="ORIGIN" /> og den tilhørende appen på startskjermen.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3232754137068452469">Nettprogram</translation>
 <translation id="3236059992281584593">1 minutt igjen</translation>
@@ -535,6 +538,7 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="4943872375798546930">Ingen resultater</translation>
 <translation id="4961107849584082341">Oversett denne siden til hvilket som helst språk</translation>
 <translation id="4962975101802056554">Opphev alle tillatelser for enheten</translation>
+<translation id="4964199952259983386">For å la Chrome bruke AR, slå på kameraet i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" /> også.</translation>
 <translation id="4970824347203572753">Ikke tilgjengelig der du er</translation>
 <translation id="497421865427891073">Gå til neste</translation>
 <translation id="4988210275050210843">Laster ned fil (<ph name="MEGABYTES" />).</translation>
@@ -634,6 +638,7 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="5684874026226664614">Beklager. Denne siden kunne ikke oversettes.</translation>
 <translation id="5686790454216892815">Filnavnet er for langt</translation>
 <translation id="5689516760719285838">Sted</translation>
+<translation id="5690795753582697420">Kameraet er slått av i Android-innstillingene</translation>
 <translation id="5694049548840660018">Kom enkelt tilbake til start</translation>
 <translation id="569536719314091526">Oversett denne siden til hvilket som helst språk via Flere alternativer-knappen</translation>
 <translation id="5710871682236653961">Spør før nettsteder får tillatelse til å sende og motta info når du berører NFC-enheter (anbefales)</translation>
@@ -665,6 +670,7 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="5876056640971328065">Sett videoen på pause</translation>
 <translation id="5884076754568147479">For å hjelpe deg med å fullføre oppgaver mottar Google nettadressene til og innholdet på nettsteder der du bruker assistenten, i tillegg til informasjon som du sender inn gjennom assistenten</translation>
 <translation id="5919204609460789179">Oppdater <ph name="PRODUCT_NAME" /> for å starte synkroniseringen</translation>
+<translation id="5922853908706496913">Deler skjermen din</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> spart</translation>
 <translation id="5939518447894949180">Tilbakestill</translation>
 <translation id="5942872142862698679">Bruker Google til å søke</translation>
@@ -875,6 +881,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="751961395872307827">Kan ikke koble til nettstedet</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7542481630195938534">Kan ikke hente forslag</translation>
+<translation id="7554752735887601236">Et nettsted bruker mikrofonen din</translation>
 <translation id="7559975015014302720">Forenklet modus er av</translation>
 <translation id="7562080006725997899">Sletter nettlesingsdata</translation>
 <translation id="756809126120519699">Chrome-dataene er slettet</translation>
@@ -911,7 +918,9 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> til}other{<ph name="PAYMENT_METHOD_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> til}}</translation>
 <translation id="7791543448312431591">Legg til</translation>
 <translation id="780301667611848630">Nei takk</translation>
+<translation id="7804248752222191302">Et nettsted bruker kameraet ditt</translation>
 <translation id="7810647596859435254">Åpne med…</translation>
+<translation id="7817023149356982970">Du blir logget av dette nettstedet.</translation>
 <translation id="7821588508402923572">Datasparingen din vises her</translation>
 <translation id="7828557259026017104">Informasjonskapsler er filer som opprettes av nettsteder du besøker. Nettsteder bruker dem til å huske preferansene dine. Informasjonskapsler fra tredjeparter opprettes av andre nettsteder. Disse nettstedene eier noe av innholdet, for eksempel annonser eller bilder, som du ser på nettsiden du besøker.</translation>
 <translation id="783819812427904514">Slå på lyden i videoen</translation>
@@ -990,8 +999,10 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="8364299278605033898">Se populære nettsteder</translation>
 <translation id="8368027906805972958">Ukjent eller ikke-støttet enhet (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">Tillat bakgrunnssynkronisering for et bestemt nettsted.</translation>
+<translation id="83792324527827022">Et nettsted bruker kameraet ditt og mikrofonen din</translation>
 <translation id="8380167699614421159">Dette nettstedet viser forstyrrende eller villedende annonser</translation>
 <translation id="8393700583063109961">Send melding</translation>
+<translation id="8394832520002899662">Trykk for å gå tilbake til nettstedet</translation>
 <translation id="8413126021676339697">Vis fullstendig logg</translation>
 <translation id="8427875596167638501">Fanen for forhåndsvisning er halvveis åpnet</translation>
 <translation id="8428213095426709021">Innstillinger</translation>
@@ -1034,6 +1045,8 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="8687353297350450808">{N_BARS,plural, =1{Signalstyrkenivå: # stolpe}other{Signalstyrkenivå: # stolper}}</translation>
 <translation id="868929229000858085">Søk i kontaktene dine</translation>
 <translation id="869891660844655955">Utløpsdato</translation>
+<translation id="8702612070107455751">Eventuelle frakoblede data blir slettet.</translation>
+<translation id="8737217482364735741">Dette sletter alle data og informasjonskapsler som er lagret av <ph name="ORIGIN" />.</translation>
 <translation id="8748850008226585750">Innholdet er skjult</translation>
 <translation id="8751914237388039244">Velg et bilde</translation>
 <translation id="8758557275681689734">Se alle åpne faner</translation>
@@ -1080,6 +1093,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="9100610230175265781">Det kreves en passordfrase</translation>
 <translation id="9102803872260866941">Fanen for forhåndsvisning er åpnet</translation>
 <translation id="9104217018994036254">Liste over enheter du kan dele faner med.</translation>
+<translation id="9108312223223904744">Telefon som støtte for sikkerhetsnøkkel</translation>
 <translation id="9133397713400217035">Utforsk uten nett</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Vis original</translation>

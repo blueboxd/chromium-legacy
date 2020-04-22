@@ -8,6 +8,7 @@
 
 #include "base/base64url.h"
 #include "base/json/json_writer.h"
+#include "base/logging.h"
 #include "base/strings/strcat.h"
 #include "crypto/ec_private_key.h"
 #include "crypto/ec_signature_creator.h"

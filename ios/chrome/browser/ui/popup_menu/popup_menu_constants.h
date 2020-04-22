@@ -20,6 +20,8 @@ extern NSString* const kToolsMenuReload;
 extern NSString* const kToolsMenuStop;
 // New Tab item accessibility Identifier.
 extern NSString* const kToolsMenuNewTabId;
+// New Tab item accessibility Identifier.
+extern NSString* const kToolsMenuNewWindow;
 // New incognito Tab item accessibility Identifier.
 extern NSString* const kToolsMenuNewIncognitoTabId;
 // Close all Tabs item accessibility Identifier.

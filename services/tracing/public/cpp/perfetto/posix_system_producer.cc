@@ -16,7 +16,6 @@
 #include "services/tracing/public/cpp/traced_process_impl.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/commit_data_request.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/shared_memory_arbiter.h"
-#include "third_party/perfetto/include/perfetto/ext/tracing/core/startup_trace_writer_registry.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_writer.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/ipc/producer_ipc_client.h"
 #include "third_party/perfetto/include/perfetto/protozero/scattered_heap_buffer.h"

@@ -164,6 +164,7 @@ crbug.com/1068175 [ Linux ] virtual/omt-worker-fetch/external/wpt/referrer-polic
 
 # Sheriff 2020-04-20
 crbug.com/1071849 [ Linux ] virtual/site-isolated-code-cache/http/tests/devtools/isolated-code-cache/same-origin-module-test.js [ Pass Failure ]
+crbug.com/1071849 [ Linux ] http/tests/devtools/isolated-code-cache/same-origin-module-test.js [ Pass Failure ]
 
 ###########################################################################
 # WARNING: Memory leaks must be fixed asap. Sheriff is expected to revert #

@@ -6,6 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
+#include "base/logging.h"
 #include "base/scoped_native_library.h"
 
 namespace chrome_cleaner {

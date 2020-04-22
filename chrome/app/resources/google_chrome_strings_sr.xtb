@@ -102,6 +102,7 @@
 <translation id="3735758079232443276">Додатак „<ph name="EXTENSION_NAME" />“ је променио страницу која се приказује када покренете Chrome.</translation>
 <translation id="3780814664026482060">Chrome – <ph name="PAGE_TITLE" /></translation>
 <translation id="386202838227397562">Затворите све прозоре Google Chrome прегледача и покушајте поново.</translation>
+<translation id="3865754807470779944">Инсталирана је верзија Chrome-а <ph name="PRODUCT_VERSION" /></translation>
 <translation id="3873044882194371212">Отвори линк у Chrome прозору без архи&amp;вирања</translation>
 <translation id="3889417619312448367">Деинсталирај Google Chrome</translation>
 <translation id="4050175100176540509">Важна безбедносна побољшања и нове функције су доступни у најновијој верзији.</translation>
@@ -243,6 +244,7 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8556340503434111824">Доступна је нова верзија Google Chrome прегледача, бржа него икад пре.</translation>
 <translation id="8614913330719544658">Google Chrome не реагује. Желите ли да га одмах поново покренете?</translation>
+<translation id="861702415419836452">Chrome тражи дозволу да приступи камери да би направио 3D мапу окружења</translation>
 <translation id="8625237574518804553">{0,plural, =1{Поново ћемо покренути Chrome за 1 минут}one{Поново ћемо покренути Chrome за # минут}few{Поново ћемо покренути Chrome за # минута}other{Поново ћемо покренути Chrome за # минута}}</translation>
 <translation id="8641606876632989680">Chrome ће вас обавестити када се пријавите помоћу угрожене лозинке</translation>
 <translation id="8669527147644353129">Google Chrome помоћник</translation>

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chooser_controller/fake_bluetooth_chooser_controller.h"
 
+#include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"

@@ -5,6 +5,9 @@
       Ist diese Richtlinie auf einen String festgelegt, der einen Domainnamen darstellt, dann zeigt <ph name="PRODUCT_OS_NAME" /> beim Nutzeranmeldeprozess eine Option zum automatischen Vervollständigen an. In diesem Fall muss der Nutzer nur einen Nutzernamen eingeben und kann die Domainnamenserweiterung weglassen.  Der Nutzer kann diese Domainnamenserweiterung überschreiben.
       Ist der Wert der Richtlinie keine gültige Domain, dann wird die Richtlinie nicht angewendet.</translation>
 <translation id="1010151305531217567">Rechte Maustaste als primäre Maustaste festlegen</translation>
+<translation id="1011266755572744012">Gibt die maximal zulässige Anzahl an Blättern an, die der Nutzer während eines einzelnen Druckauftrags drucken kann.
+
+      Wenn diese Richtlinie nicht konfiguriert ist, gelten keine Einschränkungen und der Nutzer kann eine beliebige Anzahl an Dokumenten drucken.</translation>
 <translation id="101438888985615157">Bildschirm um 180 Grad drehen</translation>
 <translation id="1016912092715201525">Konfiguriert den Standardbrowser, führt in <ph name="PRODUCT_NAME" /> eine Überprüfung durch und verhindert, dass Nutzer die Einstellung ändern.
 
@@ -152,6 +155,11 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
 <translation id="1160939557934457296">Fortfahren von der Safe Browsing-Hinweisseite deaktivieren</translation>
 <translation id="1163080558183062209">Druckertypen auf der "Deny"-Liste deaktivieren</translation>
 <translation id="117059611145966538">Externe Druckserver</translation>
+<translation id="1177624681620856105"> Mit dieser Richtlinie kann festgelegt werden, ob das Kästchen für "Immer geöffnet" auf Bestätigungsaufforderungen beim Start externer Protokolle angezeigt werden soll.
+
+      Wenn diese Richtlinie auf "true" gesetzt oder nicht konfiguriert ist und eine Bestätigungsaufforderung für ein externes Protokoll angezeigt wird, kann der Nutzer "Immer zulassen" auswählen und das Protokoll auf dieser Website so in Zukunft ohne die Bestätigung öffnen.
+
+      Wird sie auf "false" gesetzt, wird das Kästchen für "Immer zulassen" nicht angezeigt und der Nutzer jedes Mal, wenn ein externes Protokoll aufgerufen wird, zur Bestätigung aufgefordert.</translation>
 <translation id="1194005076170619046">Wenn diese Richtlinie aktiviert wurde, wird während einer aktiven Sitzung und bei nicht gesperrtem Bildschirm in der Taskleiste eine große, rote Schaltfläche zum Abmelden angezeigt.
 
       Ist die Richtlinie deaktiviert oder nicht konfiguriert, befindet sich in der Taskleiste keine solche Schaltfläche.</translation>
@@ -588,6 +596,7 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
 
       Wenn diese Richtlinie nicht konfiguriert ist, gibt es keine an Geräte gebundenen Drucker und <ph name="DEVICE_PRINTERS_POLICY_PATTERN" />-Richtlinien werden ignoriert.
       </translation>
+<translation id="1930127294345368978">Maximal zulässige Anzahl Blätter für einen einzelnen Druckauftrag</translation>
 <translation id="193259052151668190">Whitelist mit trennbaren USB-Geräten</translation>
 <translation id="1933378685401357864">Hintergrundbild</translation>
 <translation id="1956493342242507974">Konfiguriert die Energieverwaltung auf dem Anmeldebildschirm in <ph name="PRODUCT_OS_NAME" />.
@@ -1053,6 +1062,17 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
 <translation id="253135976343875019">Inaktivitätsspanne bis zur Warnung im Netzbetrieb</translation>
 <translation id="2536525645274582300">Der Nutzer entscheidet, ob die Standortdienste von Google aktiviert werden sollen</translation>
 <translation id="254653220329944566">Cloud-Berichte für <ph name="PRODUCT_NAME" /> aktivieren</translation>
+<translation id="2548397295248733155">Diese Richtlinie ist veraltet und wird in Version 85 von <ph name="PRODUCT_OS_NAME" /> entfernt. Bitte verwenden Sie stattdessen die Richtlinie "<ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />".
+
+          Hiermit wird angegeben, nach welchem Zeitraum ohne Nutzereingabe der Bildschirm im Akkubetrieb abgeschaltet wird.
+
+          Wenn für diese Richtlinie ein höherer Wert als null festgelegt wird, gibt dieser an, wie lange ein Nutzer inaktiv sein muss, bevor <ph name="PRODUCT_OS_NAME" /> den Bildschirm abschaltet.
+
+          Ist die Richtlinie auf null gesetzt, wird der Bildschirm von <ph name="PRODUCT_OS_NAME" /> nicht abgeschaltet, wenn der Nutzer inaktiv wird.
+
+          Wenn die Richtlinie nicht konfiguriert ist, wird ein Standardwert verwendet.
+
+          Der Wert für die Richtlinie muss in Millisekunden angegeben werden. Werte müssen kleiner oder gleich dem Wert für die Inaktivitätsverzögerung sein.</translation>
 <translation id="2548572254685798999">Safe Browsing-Daten erfassen</translation>
 <translation id="2550593661567988768">Nur Simplexdruck</translation>
 <translation id="2551520365302988324">Nutzeruploads zum Scannen senden</translation>
@@ -1454,6 +1474,15 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
 <translation id="3184161739683646075">Steuert den DoH-Modus (DNS over HTTPS)</translation>
 <translation id="3185009703220253572">Ab Version <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Android-Apps können keinen Zugriff auf Schlüssel für die geschäftliche Nutzung erhalten. Sie sind von dieser Richtlinie nicht betroffen.</translation>
+<translation id="3196585866522778760">Diese Richtlinie ist veraltet und wird in Version 85 von <ph name="PRODUCT_OS_NAME" /> entfernt. Bitte verwenden Sie stattdessen die Richtlinie "<ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />".
+
+          Hiermit wird angegeben, nach welchem Zeitraum ohne Nutzereingabe im Akkubetrieb in den Inaktivitätsmodus gewechselt wird.
+
+          Wenn diese Richtlinie festgelegt ist, wird damit angegeben, wie lange ein Nutzer inaktiv sein muss, bevor <ph name="PRODUCT_OS_NAME" /> in den Inaktivitätsmodus wechselt. Dieser kann gesondert konfiguriert werden.
+
+          Wenn die Richtlinie nicht konfiguriert ist, wird ein Standardwert verwendet.
+
+          Der Wert für die Richtlinie muss in Millisekunden angegeben werden.</translation>
 <translation id="3205825995289802549">Erstes Browserfenster bei der ersten Ausführung maximieren</translation>
 <translation id="3211426942294667684">Einstellungen für die Anmeldung im Browser</translation>
 <translation id="3214164532079860003">Bei Aktivierung erzwingt diese Richtlinie, dass die Startseite vom aktuellen Standardbrowser importiert wird. Wenn sie deaktiviert ist, wird die Startseite nicht importiert. Sollte sie nicht konfiguriert sein, so wird der Nutzer gefragt, ob ein Import erfolgen soll, oder der Import findet automatisch statt.</translation>
@@ -1522,6 +1551,17 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
 Wird sie auf "True" gesetzt , kann <ph name="PRODUCT_NAME" /> native Benachrichtigungen verwenden.
 
 Wird die Richtlinie auf "False" gesetzt , verwendet <ph name="PRODUCT_NAME" /> keine nativen Benachrichtigungen. Das Message Center von <ph name="PRODUCT_NAME" /> wird als Fallback genutzt.</translation>
+<translation id="3360093276083825336">Diese Richtlinie ist veraltet und wird in Version 85 von <ph name="PRODUCT_OS_NAME" /> entfernt. Bitte verwenden Sie stattdessen die Richtlinie "<ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />".
+
+          Hiermit wird angegeben, nach welchem Zeitraum ohne Nutzereingabe im Akkubetrieb eine Warnung angezeigt wird.
+
+          Wird diese Richtlinie festgelegt, gibt sie an, wie lange der Nutzer inaktiv sein kann, bevor <ph name="PRODUCT_OS_NAME" /> in einer Warnung auf die bevorstehende Maßnahme hinweist.
+
+          Ist sie nicht festgelegt, erscheint keine Warnung.
+
+          Der Wert für die Richtlinie muss in Millisekunden angegeben werden. Werte müssen kleiner oder gleich dem Wert für die Inaktivitätsverzögerung sein.
+
+          Die Warnung wird nur eingeblendet, wenn infolge der Inaktivität der Nutzer abgemeldet oder das Gerät heruntergefahren wird.</translation>
 <translation id="3373364525435227558">Mit dieser Richtlinie werden ein oder mehrere empfohlene Sprachen für eine verwaltete Sitzung festgelegt. Nutzer können sich dann ganz einfach für eine entscheiden.
 
 Nutzer können eine Sprache und ein Tastaturlayout auswählen, bevor sie eine verwaltete Sitzung starten. Standardmäßig werden alle Sprachen in alphabetischer Reihenfolge aufgeführt, die von <ph name="PRODUCT_OS_NAME" /> unterstützt werden. Sie können diese Richtlinie verwenden, um eine Gruppe empfohlener Sprachen an den Anfang der Liste zu verschieben.
@@ -1672,6 +1712,19 @@ Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der einges
       Wenn diese Richtlinie auf "DeveloperToolsAllowed" (Wert 1), gesetzt ist, können die Entwicklertools und die JavaScript-Konsole in allen Kontexten aufgerufen und verwendet werden. Dies gilt auch für Erweiterungen, die über die Unternehmensrichtlinie installiert wurden.
       Wenn diese Richtlinie auf "DeveloperToolsDisallowed" (Wert 2) gesetzt ist, kann nicht auf die Entwicklertools zugegriffen werden und Websiteelemente können nicht mehr überprüft werden. Alle Tastenkombinationen und Menü- oder Kontextmenüeinträge, mit denen die Entwicklertools oder die JavaScript-Konsole aufgerufen werden, sind deaktiviert.</translation>
 <translation id="3547954654003013442">Proxy-Einstellungen</translation>
+<translation id="3550122827225052130">Diese Richtlinie ist veraltet und wird in Version 85 von <ph name="PRODUCT_OS_NAME" /> entfernt. Bitte verwenden Sie stattdessen die Richtlinie "<ph name="SCREEN_LOCK_DELAYS_POLICY_NAME" />".
+
+          Hiermit wird angegeben, nach welchem Zeitraum ohne Nutzereingabe der Bildschirm im Netzbetrieb gesperrt wird.
+
+          Wenn für diese Richtlinie ein höherer Wert als null festgelegt wird, gibt er an, wie lange ein Nutzer inaktiv sein muss, bevor <ph name="PRODUCT_OS_NAME" /> den Bildschirm sperrt.
+
+          Ist die Richtlinie auf null gesetzt, wird der Bildschirm von <ph name="PRODUCT_OS_NAME" /> nicht gesperrt, wenn der Nutzer inaktiv wird.
+
+          Wenn die Richtlinie nicht konfiguriert ist, wird ein Standardwert verwendet.
+
+          Die empfohlene Vorgehensweise ist, die Bildschirmsperre im Suspend-Modus zu aktivieren und <ph name="PRODUCT_OS_NAME" /> anzuweisen, nach der Inaktivitätsverzögerung in den Suspend-Modus zu wechseln. Diese Richtlinie sollte nur verwendet werden, wenn die Bildschirmsperre erheblich früher als der Suspend-Modus eintreten oder der Suspend-Modus bei Inaktivität gar nicht erfolgen soll.
+
+          Der Wert für die Richtlinie muss in Millisekunden angegeben werden. Werte müssen kleiner oder gleich dem Wert für die Inaktivitätsverzögerung sein.</translation>
 <translation id="3550875587920006460">Mit dieser Richtlinie kann ein benutzerdefinierter Zeitplan zum Prüfen auf Updates festgelegt werden. Er gilt für alle Nutzer und alle Oberflächen auf diesem Gerät. Wenn ein Zeitplan aktiviert wird, sucht das Gerät entsprechend nach Updates. Wenn geplante Prüfungen auf Updates nicht mehr durchgeführt werden sollen, muss die Richtlinie entfernt werden.</translation>
 <translation id="355118380775352753">Websites, die in einem alternativen Browser geöffnet werden sollen</translation>
 <translation id="3554498762428140109">Native Fenster-Okklusion aktivieren</translation>
@@ -2464,6 +2517,11 @@ Wenn die Richtlinie auf "FALSE" gesetzt oder nicht festgelegt wird, führt die T
 
       HINWEIS: Diese Richtlinie funktioniert nicht unter Android. Wenn "SitePerProcess" unter Android aktiviert werden soll, muss die Richtlinieneinstellung "SitePerProcessAndroid" verwendet werden.
       </translation>
+<translation id="4787763197941188108">Überschreibt die standardmäßige Druckseitengröße.
+
+      <ph name="PAGE_SIZE_NAME" /> sollte eines der aufgelisteten Formate oder "Benutzerdefiniert" enthalten, wenn sich die erforderliche Papiergröße nicht in der Liste befindet. Wenn der Wert "Benutzerdefiniert" angegeben wird, sollte die Property "<ph name="PAGE_SIZE_CUSTOM_SIZE" />" festgelegt werden. Sie beschreibt die gewünschte Höhe und Breite in Mikrometern. Andernfalls sollte die Property "<ph name="PAGE_SIZE_CUSTOM_SIZE" />" angegeben werden. Richtlinien, die gegen diese Regeln verstoßen, werden ignoriert.
+
+      Wenn die Seitengröße auf dem vom Nutzer gewählten Drucker nicht verfügbar ist, wird diese Richtlinie ignoriert.</translation>
 <translation id="4788252609789586009">Aktiviert die AutoFill-Funktion von <ph name="PRODUCT_NAME" /> und ermöglicht es Nutzern, Kreditkarteninformationen in Webformularen automatisch mit zuvor gespeicherten Informationen ausfüllen zu lassen.
 
       Wenn diese Einstellung deaktiviert ist, schlägt AutoFill weder Kreditkarteninformationen vor oder füllt sie automatisch aus noch werden zusätzliche Kreditkarteninformationen gespeichert, die der Nutzer während des Surfens im Web möglicherweise sendet.
@@ -3489,6 +3547,17 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
 <translation id="6315673513957120120">Chrome zeigt eine Seite mit einer Warnmeldung an, wenn Nutzer Websites aufrufen, die SSL-Fehler aufweisen. Standardmäßig oder bei Festlegung von "true" für diese Richtlinie ist es Nutzern gestattet, durch diese Seiten mit Warnmeldung zu klicken.
       Wenn für die Richtlinie "false" festgelegt wird, können Nutzer nicht mehr durch diese Seiten klicken.</translation>
 <translation id="6319198883324703402">Zeitpunkt der ersten Nutzerbenachrichtigung zum Neustart festlegen</translation>
+<translation id="6331167725613770725">Diese Richtlinie ist veraltet und wird in Version 85 von <ph name="PRODUCT_OS_NAME" /> entfernt. Bitte verwenden Sie stattdessen die Richtlinie "<ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />".
+
+          Hiermit wird angegeben, nach welchem Zeitraum ohne Nutzereingabe im Netzbetrieb eine Warnung angezeigt wird.
+
+          Wird diese Richtlinie festgelegt, gibt sie an, wie lange der Nutzer inaktiv sein kann, bevor <ph name="PRODUCT_OS_NAME" /> in einer Warnung auf die bevorstehende Maßnahme hinweist.
+
+          Ist sie nicht festgelegt, erscheint keine Warnung.
+
+          Der Wert für die Richtlinie muss in Millisekunden angegeben werden. Werte müssen kleiner oder gleich dem Wert für die Inaktivitätsverzögerung sein.
+
+          Die Warnung wird nur eingeblendet, wenn infolge der Inaktivität der Nutzer abgemeldet oder das Gerät heruntergefahren wird.</translation>
 <translation id="6342187235303612558">Nutzer am Hoch- oder Herunterladen von Dateien hindern, bei denen der Schutz vor Datenverlust oder der Malware-Scan nicht unterstützt wird.</translation>
 <translation id="6348718801326095108">Cookies, die von Seiten gesetzt werden, die diesen URL-Mustern entsprechen, sind auf die aktuelle Sitzung beschränkt. Sie werden also gelöscht, wenn der Browser geschlossen wird.
 
@@ -3598,6 +3667,19 @@ Wenn diese Richtlinie nicht konfiguriert ist, können die Nutzer selbst wählen,
       Wenn diese Einstellung aktiviert ist, stuft Safe Browsing diese Domains als vertrauenswürdig ein.
       Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird der Safe Browsing-Standardschutz auf alle Ressourcen angewendet.
       Diese Richtlinie steht nur bei Windows-Instanzen zur Verfügung, die Teil einer "<ph name="MS_AD_NAME" />"-Domain sind, oder bei Windows 10 Pro- oder Enterprise-Instanzen, für die eine Geräteverwaltung eingerichtet ist.</translation>
+<translation id="6495337487202227251">Diese Richtlinie ist veraltet und wird in Version 85 von <ph name="PRODUCT_OS_NAME" /> entfernt. Bitte verwenden Sie stattdessen die Richtlinie "<ph name="SCREEN_LOCK_DELAYS_POLICY_NAME" />".
+
+          Hiermit wird angegeben, nach welchem Zeitraum ohne Nutzereingabe der Bildschirm im Akkubetrieb gesperrt wird.
+
+          Wenn für diese Richtlinie ein höherer Wert als null festgelegt wird, gibt er an, wie lange ein Nutzer inaktiv sein muss, bevor <ph name="PRODUCT_OS_NAME" /> den Bildschirm sperrt.
+
+          Ist die Richtlinie auf null gesetzt, wird der Bildschirm von <ph name="PRODUCT_OS_NAME" /> nicht gesperrt, wenn der Nutzer inaktiv wird.
+
+          Wenn die Richtlinie nicht konfiguriert ist, wird ein Standardwert verwendet.
+
+          Die empfohlene Vorgehensweise ist, die Bildschirmsperre im Suspend-Modus zu aktivieren und <ph name="PRODUCT_OS_NAME" /> anzuweisen, nach der Inaktivitätsverzögerung in den Suspend-Modus zu wechseln. Diese Richtlinie sollte nur verwendet werden, wenn die Bildschirmsperre erheblich früher als der Suspend-Modus eintreten oder der Suspend-Modus bei Inaktivität gar nicht erfolgen soll.
+
+          Der Wert für die Richtlinie muss in Millisekunden angegeben werden. Werte müssen kleiner oder gleich dem Wert für die Inaktivitätsverzögerung sein.</translation>
 <translation id="6515357889978918016"><ph name="PLUGIN_VM_NAME" />-Bild</translation>
 <translation id="6520802717075138474">Suchmaschinen bei erster Ausführung aus Standardbrowser importieren</translation>
 <translation id="6525955212636890608">Wenn Sie diese Einstellung aktivieren, werden alle auf Websites eingebetteten Flash-Inhalte ausgeführt, sofern in den Inhaltseinstellungen der Websites Flash-Inhalte aktiviert wurden, entweder durch den Nutzer oder eine Unternehmensrichtlinie. Dies gilt auch für Inhalte aus anderen Quellen oder kleine Inhalte.
@@ -4322,6 +4404,17 @@ Die Richtlinienwerte sollten in % angegeben werden und zwischen 0 und 100 liegen
       Wenn die Richtlinie nicht konfiguriert ist, hat sie keine Auswirkung und es wird nach der Nutzerabmeldung kein Neustart erzwungen. Dasselbe gilt bei der Einstellung "Never".
       Diese Richtlinie wirkt sich nur auf nicht verknüpfte Nutzer aus.
       </translation>
+<translation id="7679483888150212009">Diese Richtlinie ist veraltet und wird in Version 85 von <ph name="PRODUCT_OS_NAME" /> entfernt. Bitte verwenden Sie stattdessen die Richtlinie "<ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />".
+
+          Hiermit wird angegeben, nach welchem Zeitraum ohne Nutzereingabe der Bildschirm im Netzbetrieb gedimmt wird.
+
+          Wenn für diese Richtlinie ein höherer Wert als null festgelegt wird, gibt dieser an, wie lange ein Nutzer inaktiv sein muss, bevor <ph name="PRODUCT_OS_NAME" /> den Bildschirm dimmt.
+
+          Ist die Richtlinie auf null gesetzt, wird der Bildschirm von <ph name="PRODUCT_OS_NAME" /> nicht gedimmt, wenn der Nutzer inaktiv wird.
+
+          Wenn die Richtlinie nicht konfiguriert ist, wird ein Standardwert verwendet.
+
+          Der Wert für die Richtlinie muss in Millisekunden angegeben werden. Werte müssen kleiner oder gleich dem Wert der Verzögerung für die Bildschirmabschaltung (falls angegeben) und der Inaktivitätsverzögerung sein.</translation>
 <translation id="7683777542468165012">Dynamische Richtlinienaktualisierung</translation>
 <translation id="7687943045976362719">Wenn diese Richtlinie konfiguriert ist, wird für alle angegebenen Inhaltstypen <ph name="PRODUCT_FRAME_NAME" /> verwendet.
 
@@ -4467,6 +4560,13 @@ Die Richtlinienwerte sollten in % angegeben werden und zwischen 0 und 100 liegen
 
           Wenn die Richtlinie deaktiviert ist, können Nutzer keine Kerberos-Konten hinzufügen. Dies ist dann nur über die Richtlinie "Kerberos-Konten konfigurieren" möglich. So lassen sich Konten effektiv sperren.</translation>
 <translation id="7895553628261067384">Remotezugriff</translation>
+<translation id="7898879331506985900">Diese Richtlinie kann nur übergangsweise verwendet werden und wird in M86 entfernt.
+
+      Die standardmäßige Verweisrichtlinie in Chrome wird verstärkt. Hierzu wird der Standardwert von "no-referrer-when-downgrade" zum sichereren Wert "strict-origin-when-cross-origin" geändert. Die Umstellung erfolgt graduell und soll mit M80 (stabil) abgeschlossen sein.
+
+      Bis zur Einführung hat diese Richtlinie keine Auswirkungen. Wird sie nach der Einführung aktiviert, wird die standardmäßige Verweisrichtlinie in Chrome auf den Wert aus den Versionen vor M80 zurückgesetzt, also auf "no-referrer-when-downgrade".
+
+      Diese Richtlinie ist standardmäßig deaktiviert.</translation>
 <translation id="7902040092815978832">Numerische Tastatur für Passwort anzeigen</translation>
 <translation id="7912255076272890813">Zulässige App- bzw. Erweiterungstypen konfigurieren</translation>
 <translation id="7922358664346625612">Letzten in Chrome geöffneten Tab beibehalten.</translation>
@@ -4504,6 +4604,17 @@ Die Richtlinienwerte sollten in % angegeben werden und zwischen 0 und 100 liegen
 <translation id="7956210013490975468">Konfiguriert den System-Proxy-Dienst für <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7958537754689366707">Passworteingabe alle zwölf Stunden erforderlich</translation>
 <translation id="7961779417826583251">Erzwingung der Zertifikatstransparenz für eine Liste alter Zertifizierungsstellen deaktivieren</translation>
+<translation id="7973609468423251675">Diese Richtlinie ist veraltet und wird in Version 85 von <ph name="PRODUCT_OS_NAME" /> entfernt. Bitte verwenden Sie stattdessen die Richtlinie "<ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />".
+
+          Hiermit wird angegeben, nach welchem Zeitraum ohne Nutzereingabe der Bildschirm im Akkubetrieb gedimmt wird.
+
+          Wenn für diese Richtlinie ein höherer Wert als null festgelegt wird, gibt dieser an, wie lange ein Nutzer inaktiv sein muss, bevor <ph name="PRODUCT_OS_NAME" /> den Bildschirm dimmt.
+
+          Ist die Richtlinie auf null gesetzt, wird der Bildschirm von <ph name="PRODUCT_OS_NAME" /> nicht gedimmt, wenn der Nutzer inaktiv wird.
+
+          Wenn die Richtlinie nicht konfiguriert ist, wird ein Standardwert verwendet.
+
+          Der Wert für die Richtlinie muss in Millisekunden angegeben werden. Werte müssen kleiner oder gleich dem Wert der Verzögerung für die Bildschirmabschaltung (falls angegeben) und der Inaktivitätsverzögerung sein.</translation>
 <translation id="7974114691960514888">Diese Richtlinie wird nicht mehr unterstützt. Sie aktiviert beim Verbinden zu einem Remote-Client den Einsatz von STUN und Relay-Servern. Wenn diese Einstellung aktiviert wird, kann dieser Computer Remote-Hostcomputer finden und eine Verbindung herstellen, selbst wenn sie sich hinter einer Firewall befinden. Sollte die Einstellung deaktiviert sein und ausgehende UDP-Verbindungen von der Firewall gefiltert werden, dann kann dieser Computer nur Verbindungen zu Hostcomputern innerhalb des lokalen Netzwerks aufbauen.</translation>
 <translation id="7976157349247117979">Name des <ph name="PRODUCT_NAME" />-Ziels</translation>
 <translation id="7980227303582973781">Keine besonderen Einschränkungen</translation>
@@ -4511,6 +4622,17 @@ Die Richtlinienwerte sollten in % angegeben werden und zwischen 0 und 100 liegen
 <translation id="798856998567564266">Wenn Sie diese Einstellung aktivieren, können Lesezeichen hinzugefügt, entfernt oder bearbeitet werden. Dies ist auch die Standardeinstellung, wenn die Richtlinie nicht konfiguriert ist.
 
       Wenn Sie diese Einstellung deaktivieren, können Lesezeichen weder hinzugefügt noch entfernt oder bearbeitet werden. Vorhandene Lesezeichen bleiben verfügbar.</translation>
+<translation id="7991022023019679916">Diese Richtlinie ist veraltet und wird in Version 85 von <ph name="PRODUCT_OS_NAME" /> entfernt. Bitte verwenden Sie stattdessen die Richtlinie "<ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />".
+
+          Hiermit wird angegeben, nach welchem Zeitraum ohne Nutzereingabe der Bildschirm im Netzbetrieb abgeschaltet wird.
+
+          Wenn für diese Richtlinie ein höherer Wert als null festgelegt wird, gibt dieser an, wie lange ein Nutzer inaktiv sein muss, bevor <ph name="PRODUCT_OS_NAME" /> den Bildschirm abschaltet.
+
+          Ist die Richtlinie auf null gesetzt, wird der Bildschirm von <ph name="PRODUCT_OS_NAME" /> nicht abgeschaltet, wenn der Nutzer inaktiv wird.
+
+          Wenn die Richtlinie nicht konfiguriert ist, wird ein Standardwert verwendet.
+
+          Der Wert für die Richtlinie muss in Millisekunden angegeben werden. Werte müssen kleiner oder gleich dem Wert für die Inaktivitätsverzögerung sein.</translation>
 <translation id="7992136759457836904">Mit dieser Richtlinie können Sie festlegen, ob virtuelle Maschinen unter Chrome OS ausgeführt werden dürfen.
 
 Wenn die Richtlinie auf "true" gesetzt ist, dürfen virtuelle Maschinen auf dem Gerät ausgeführt werden.
@@ -4641,6 +4763,13 @@ Wird diese Richtlinie nicht konfiguriert, ist der Datenschutzbildschirm anfangs 
 <translation id="8176035528522326671">Unternehmensnutzer nur als primären Nutzer mehrerer Profile zulassen (Standardverhalten für von Unternehmen verwaltete Nutzer)</translation>
 <translation id="8183108371184777472">Öffnen des Browserfensters verhindern</translation>
 <translation id="8186911565834244165">Nutzerfeedback zulassen</translation>
+<translation id="8213770777756919897">Diese Richtlinie ist veraltet und wird in Version 85 von <ph name="PRODUCT_OS_NAME" /> entfernt. Bitte verwenden Sie stattdessen die Richtlinie "<ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />".
+
+          Ist diese Richtlinie konfiguriert, wird damit festgelegt, was <ph name="PRODUCT_OS_NAME" /> tun soll, wenn der Nutzer für die Dauer der Inaktivitätsverzögerung inaktiv bleibt. Diese kann gesondert konfiguriert werden.
+
+          Wenn die Richtlinie nicht konfiguriert ist, wird das Gerät standardmäßig gesperrt.
+
+          Falls das Gerät gesperrt werden soll, kann separat konfiguriert werden, ob <ph name="PRODUCT_OS_NAME" /> den Bildschirm vorher sperren soll oder nicht.</translation>
 <translation id="8214600119442850823">Konfiguriert den Passwortmanager.</translation>
 <translation id="8217516105848565518">Diese Richtlinie wurde eingestellt. Bitte verwenden Sie stattdessen "RemoteAccessHostDomainList".</translation>
 <translation id="8244171102276095471">RC4-Verschlüsselungssammlungen in TLS aktivieren</translation>
@@ -4710,6 +4839,11 @@ Unter Windows ist es empfehlenswert, Richtlinien über Gruppenrichtlinienobjekte
 <translation id="8331479227794770304">Sticky Keys aktivieren</translation>
 <translation id="8339420913453596618">Zweiter Authentifizierungsfaktor deaktiviert</translation>
 <translation id="8344454543174932833">Lesezeichen bei erster Ausführung aus Standardbrowser importieren</translation>
+<translation id="8347993687936322631">Diese Richtlinie ist veraltet und wird in Version 85 von <ph name="PRODUCT_OS_NAME" /> entfernt. Bitte verwenden Sie stattdessen die Richtlinie "<ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />".
+
+          Sie bietet einen Ersatzwert für die spezifischeren Richtlinien "<ph name="IDLE_ACTION_AC_POLICY_NAME" />" und "<ph name="IDLE_ACTION_BATTERY_POLICY_NAME" />". Wenn die Richtlinie konfiguriert ist, wird ihr Wert verwendet, sofern die jeweilige spezifischere Richtlinie nicht festgelegt ist.
+
+          Ist sie nicht konfiguriert, bleibt das Verhalten der spezifischeren Richtlinien unverändert.</translation>
 <translation id="8351446723835838047">Mit dieser Richtlinie können Sie eine Liste mit URL-Mustern festlegen und so angeben, welche Websites die Schlüsselgenerierung verwenden dürfen. Wenn ein URL-Muster in "KeygenBlockedForUrls" angegeben ist, werden diese Ausnahmen dadurch überschrieben.
 
           Ist diese Richtlinie nicht konfiguriert, wird für alle Websites der globale Standardwert verwendet, entweder aus der Richtlinie "DefaultKeygenSetting", sofern diese konfiguriert ist, oder aus der persönlichen Konfiguration des Nutzers.
@@ -4862,6 +4996,15 @@ Ist die Richtlinie auf "false" gesetzt oder nicht konfiguriert, kann der Nutzer 
       Wenn diese Richtlinie verwendet wird, werden dem Nutzer alle Drucker mit Ausnahme der in dieser Richtlinie aufgeführten IDs zur Verfügung gestellt. Die IDs müssen den Feldern "id" oder "guid" in der Datei entsprechen, die in <ph name="BULK_PRINTERS_POLICY" /> angegeben ist.
       </translation>
 <translation id="8587229956764455752">Erstellung neuer Nutzerkonten erlauben</translation>
+<translation id="8591713876665299827">Diese Richtlinie ist veraltet und wird in Version 85 von <ph name="PRODUCT_OS_NAME" /> entfernt. Bitte verwenden Sie stattdessen die Richtlinie "<ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />".
+
+          Hiermit wird angegeben, nach welchem Zeitraum ohne Nutzereingabe im Netzbetrieb in den Inaktivitätsmodus gewechselt wird.
+
+          Wenn diese Richtlinie festgelegt ist, wird damit angegeben, wie lange ein Nutzer inaktiv sein muss, bevor <ph name="PRODUCT_OS_NAME" /> in den Inaktivitätsmodus wechselt. Dieser kann gesondert konfiguriert werden.
+
+          Wenn die Richtlinie nicht konfiguriert ist, wird ein Standardwert verwendet.
+
+          Der Wert für die Richtlinie muss in Millisekunden angegeben werden.</translation>
 <translation id="8598350264853261122">Wenn die Richtlinie auf "false" festgelegt ist, können nicht verknüpfte Nutzer ARC nicht verwenden.
 
       Wenn die Richtlinie nicht konfiguriert oder auf "true" festgelegt ist, können alle Nutzer ARC verwenden, es sei denn, ARC wurde anderweitig deaktiviert.

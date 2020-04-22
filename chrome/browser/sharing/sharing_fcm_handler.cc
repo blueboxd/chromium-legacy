@@ -16,8 +16,9 @@
 #include "chrome/browser/sharing/sharing_message_handler.h"
 #include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/sharing/sharing_service_factory.h"
-#include "chrome/browser/sharing/sharing_sync_preference.h"
+#include "chrome/browser/sharing/sharing_utils.h"
 #include "components/gcm_driver/gcm_driver.h"
+#include "components/sync_device_info/device_info_tracker.h"
 #include "third_party/re2/src/re2/re2.h"
 
 namespace {
@@ -50,13 +51,14 @@ std::string GetStrippedMessageId(const std::string& message_id) {
 
 }  // namespace
 
-SharingFCMHandler::SharingFCMHandler(gcm::GCMDriver* gcm_driver,
-                                     SharingFCMSender* sharing_fcm_sender,
-                                     SharingSyncPreference* sync_preference,
-                                     SharingHandlerRegistry* handler_registry)
+SharingFCMHandler::SharingFCMHandler(
+    gcm::GCMDriver* gcm_driver,
+    syncer::DeviceInfoTracker* device_info_tracker,
+    SharingFCMSender* sharing_fcm_sender,
+    SharingHandlerRegistry* handler_registry)
     : gcm_driver_(gcm_driver),
+      device_info_tracker_(device_info_tracker),
       sharing_fcm_sender_(sharing_fcm_sender),
-      sync_preference_(sync_preference),
       handler_registry_(handler_registry) {}
 
 SharingFCMHandler::~SharingFCMHandler() {
@@ -119,8 +121,7 @@ void SharingFCMHandler::OnMessage(const std::string& app_id,
       done_callback = base::BindOnce(
           &SharingFCMHandler::SendAckMessage, weak_ptr_factory_.GetWeakPtr(),
           std::move(message_id), message_type, GetFCMChannel(sharing_message),
-          GetServerChannel(sharing_message),
-          sync_preference_->GetDevicePlatform(sharing_message.sender_guid()),
+          GetServerChannel(sharing_message), GetSenderPlatform(sharing_message),
           message_received_time);
     }
 
@@ -149,10 +150,10 @@ void SharingFCMHandler::OnStoreReset() {
 base::Optional<chrome_browser_sharing::FCMChannelConfiguration>
 SharingFCMHandler::GetFCMChannel(
     const chrome_browser_sharing::SharingMessage& original_message) {
-  if (original_message.has_fcm_channel_configuration())
-    return original_message.fcm_channel_configuration();
+  if (!original_message.has_fcm_channel_configuration())
+    return base::nullopt;
 
-  return sync_preference_->GetFCMChannel(original_message.sender_guid());
+  return original_message.fcm_channel_configuration();
 }
 
 base::Optional<chrome_browser_sharing::ServerChannelConfiguration>
@@ -162,6 +163,16 @@ SharingFCMHandler::GetServerChannel(
     return base::nullopt;
 
   return original_message.server_channel_configuration();
+}
+
+SharingDevicePlatform SharingFCMHandler::GetSenderPlatform(
+    const chrome_browser_sharing::SharingMessage& original_message) {
+  auto device_info =
+      device_info_tracker_->GetDeviceInfo(original_message.sender_guid());
+  if (!device_info)
+    return SharingDevicePlatform::kUnknown;
+
+  return GetDevicePlatform(*device_info);
 }
 
 void SharingFCMHandler::SendAckMessage(

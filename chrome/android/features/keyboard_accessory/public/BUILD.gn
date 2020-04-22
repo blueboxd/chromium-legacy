@@ -23,7 +23,7 @@ android_library("public_java") {
 java_cpp_enum("java_enums_srcjar") {
   sources = [
     "//chrome/browser/autofill/manual_filling_view_interface.h",
-    "//chrome/browser/password_manager/password_accessory_metrics_util.h",
+    "//chrome/browser/password_manager/android/password_accessory_metrics_util.h",
   ]
   visibility = [ ":*" ]
 }

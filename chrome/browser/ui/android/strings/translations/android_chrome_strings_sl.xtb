@@ -54,6 +54,7 @@
 <translation id="1331212799747679585">Posodobitev Chroma ni mogoča. Več možnosti.</translation>
 <translation id="1332501820983677155">Bližnjice za funkcije Google Chroma</translation>
 <translation id="1360432990279830238">Odjava in izklop sinhronizacije?</translation>
+<translation id="1364532808393826295"><ph name="APP_NAME" /> – <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">Spletno mesto <ph name="SITE_NAME" /> je bilo dodano</translation>
 <translation id="1373696734384179344">Za prenos izbrane vsebine ni dovolj pomnilnika.</translation>
 <translation id="1376578503827013741">Računanje …</translation>
@@ -140,6 +141,7 @@
 <translation id="2017836877785168846">Izbriše zgodovino in samodokončanja v naslovni vrstici.</translation>
 <translation id="2021896219286479412">Kontrol. za mesto v celo. načinu</translation>
 <translation id="2025115093177348061">Razširjena resničnost</translation>
+<translation id="2030769033451695672">Dotaknite se, če se želite vrniti na <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2038563949887743358">Vklop možnosti »Zahteva za namizno spletno mesto«</translation>
 <translation id="2041019821020695769">Če želite, da vam Chrome pošilja obvestila, obvestila vklopite tudi v <ph name="BEGIN_LINK" />nastavitvah za Android<ph name="END_LINK" />.</translation>
 <translation id="204321170514947529">Aplikacija <ph name="APP_NAME" /> ima prav tako podatke v Chromu</translation>
@@ -301,6 +303,7 @@ Dotaknite se poljubne besede in jo pridržite, če želite iskati. Če želite i
 <translation id="3207960819495026254">Dodano med zaznamke</translation>
 <translation id="3211426585530211793">Izbrisano: <ph name="ITEM_TITLE" /></translation>
 <translation id="321773570071367578">Če ste pozabili geslo ali želite spremeniti to nastavitev, <ph name="BEGIN_LINK" />ponastavite sinhronizacijo<ph name="END_LINK" /></translation>
+<translation id="3223655101706843289">S tem boste izbrisali vse podatke in piškotke, ki sta jih na začetnem zaslonu shranila spletno mesto <ph name="ORIGIN" /> in njegova aplikacija.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3232754137068452469">Spletna aplikacija</translation>
 <translation id="3236059992281584593">Še 1 min</translation>
@@ -535,6 +538,7 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="4943872375798546930">Ni rezultatov</translation>
 <translation id="4961107849584082341">Prevedite to stran v kateri koli jezik</translation>
 <translation id="4962975101802056554">Umik vseh dovoljenj za napravo</translation>
+<translation id="4964199952259983386">Če želite Chromu dovoliti uporabo razširjene resničnosti, prav tako vklopite fotoaparat v <ph name="BEGIN_LINK" />nastavitvah za Android<ph name="END_LINK" />.</translation>
 <translation id="4970824347203572753">Ni na voljo na vaši lokaciji</translation>
 <translation id="497421865427891073">Pojdi naprej</translation>
 <translation id="4988210275050210843">Prenos datoteke (<ph name="MEGABYTES" />).</translation>
@@ -634,6 +638,7 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="5684874026226664614">Ojoj, te strani bi bilo mogoče prevesti.</translation>
 <translation id="5686790454216892815">Ime datoteke je predolgo</translation>
 <translation id="5689516760719285838">Lokacija</translation>
+<translation id="5690795753582697420">Fotoaparat je izklopljen v nastavitvah za Android</translation>
 <translation id="5694049548840660018">Preprosta vrnitev na domačo stran</translation>
 <translation id="569536719314091526">Prevedite to stran v kateri koli jezik z gumbom »Več možnosti«</translation>
 <translation id="5710871682236653961">Poziv, preden se spletnim mestom dovoli pošiljanje in prejemanje podatkov, ko se dotaknete naprav s tehnologijo NFC (priporočeno)</translation>
@@ -665,6 +670,7 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="5876056640971328065">Začasna zaustavitev videa</translation>
 <translation id="5884076754568147479">Zaradi zagotavljanja pomoči pri dokončanju opravil bo Google prejel URL-je in vsebino spletnih mest, na katerih uporabljate Pomočnika, ter podatke, ki jih pošljete prek Pomočnika.</translation>
 <translation id="5919204609460789179">Posodobite izdelek <ph name="PRODUCT_NAME" />, če želite začeti sinhronizacijo</translation>
+<translation id="5922853908706496913">Deljenje zaslona</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> prihranka pri količini prenesenih podatkov</translation>
 <translation id="5939518447894949180">Ponastavi</translation>
 <translation id="5942872142862698679">Uporaba iskalnika Google za iskanje</translation>
@@ -875,6 +881,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="751961395872307827">Povezave s spletnim mestom ni mogoče vzpostaviti</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7542481630195938534">Prejemanje predlogov ni mogoče</translation>
+<translation id="7554752735887601236">Spletno mesto uporablja mikrofon</translation>
 <translation id="7559975015014302720">Lahki način je izklopljen</translation>
 <translation id="7562080006725997899">Brisanje podatkov brskanja</translation>
 <translation id="756809126120519699">Chromovi podatki so izbrisani.</translation>
@@ -911,7 +918,9 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" /> \u2026 in še <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}one{<ph name="PAYMENT_METHOD_PREVIEW" /> \u2026 in še <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}two{<ph name="PAYMENT_METHOD_PREVIEW" /> \u2026 in še <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}few{<ph name="PAYMENT_METHOD_PREVIEW" /> \u2026 in še <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" /> \u2026 in še <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7791543448312431591">Dodaj</translation>
 <translation id="780301667611848630">Ne, hvala</translation>
+<translation id="7804248752222191302">Spletno mesto uporablja kamero</translation>
 <translation id="7810647596859435254">Odpiranje z aplikacijo …</translation>
+<translation id="7817023149356982970">Odjavljeni boste s tega spletnega mesta.</translation>
 <translation id="7821588508402923572">Prihranek pri količini prenesenih podatkov bo prikazan tukaj</translation>
 <translation id="7828557259026017104">Piškotki so datoteke, ki jih ustvarijo spletna mesta, ki jih obiščete. Spletna mesta jih uporabljajo, da si zapomnijo vaše nastavitve. Piškotke drugih spletnih mest ustvarijo druga spletna mesta. Ta spletna mesta imajo v lasti nekatero vsebino, na primer oglase ali slike, ki jo vidite na spletni strani, ki jo obiščete.</translation>
 <translation id="783819812427904514">Vklop videa</translation>
@@ -990,8 +999,10 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="8364299278605033898">Ogled priljubljenih spletnih mest</translation>
 <translation id="8368027906805972958">Neznana ali nepodprta naprava (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">Dovoli sinhroniziranje v ozadju za določeno spletno mesto.</translation>
+<translation id="83792324527827022">Spletno mesto uporablja kamero in mikrofon</translation>
 <translation id="8380167699614421159">To spletno mesto prikazuje vsiljive ali zavajajoče oglase</translation>
 <translation id="8393700583063109961">Pošlji sporočilo</translation>
+<translation id="8394832520002899662">Dotaknite se, če se želite vrniti na spletno mesto</translation>
 <translation id="8413126021676339697">Prikaži celotno zgodovino</translation>
 <translation id="8427875596167638501">Zavihek za predogled je napol odprt</translation>
 <translation id="8428213095426709021">Nastavitve</translation>
@@ -1034,6 +1045,8 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="8687353297350450808">{N_BARS,plural, =1{Moč signala: # črtica}one{Moč signala: # črtica}two{Moč signala: # črtici}few{Moč signala: # črtice}other{Moč signala: # črtic}}</translation>
 <translation id="868929229000858085">Iskanje po stikih</translation>
 <translation id="869891660844655955">Datum izteka</translation>
+<translation id="8702612070107455751">Morebitni podatki brez povezave bodo izbrisani.</translation>
+<translation id="8737217482364735741">S tem boste izbrisali vse podatke in piškotke, ki jih je shranilo spletno mesto <ph name="ORIGIN" />.</translation>
 <translation id="8748850008226585750">Vsebina je skrita</translation>
 <translation id="8751914237388039244">Izberite sliko</translation>
 <translation id="8758557275681689734">Ogled vseh odprtih zavihkov</translation>
@@ -1080,6 +1093,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="9100610230175265781">Zahtevano je geslo</translation>
 <translation id="9102803872260866941">Zavihek za predogled je odprt</translation>
 <translation id="9104217018994036254">Seznam naprav, s katerimi želite deliti zavihek.</translation>
+<translation id="9108312223223904744">Podpora za telefon kot varnostni ključ</translation>
 <translation id="9133397713400217035">Raziščite vsebino brez povezave</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Pokaži izvirno besedilo</translation>

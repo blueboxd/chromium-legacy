@@ -39,7 +39,7 @@ void LoadablePluginPlaceholder::BlockForPowerSaverPoster() {
       url::Origin::Create(GURL(GetPluginParams().url)),
       base::BindOnce(&LoadablePluginPlaceholder::MarkPluginEssential,
                      weak_factory_.GetWeakPtr(),
-                     PluginInstanceThrottler::UNTHROTTLE_METHOD_BY_WHITELIST));
+                     PluginInstanceThrottler::UNTHROTTLE_METHOD_BY_ALLOWLIST));
 }
 
 void LoadablePluginPlaceholder::SetPremadePlugin(
@@ -217,7 +217,7 @@ void LoadablePluginPlaceholder::OnUnobscuredRectUpdate(
 
     if (!heuristic_run_before_ &&
         status == RenderFrame::CONTENT_STATUS_ESSENTIAL_CROSS_ORIGIN_BIG) {
-      render_frame()->WhitelistContentOrigin(content_origin);
+      render_frame()->AllowlistContentOrigin(content_origin);
     }
 
     return;

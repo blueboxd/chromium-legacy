@@ -421,6 +421,11 @@
 <translation id="1555130319947370107">নীল</translation>
 <translation id="1556537182262721003">প্রোফাইলে এক্সটেনশন ডিরেক্টরি সরানো যায়নি৷</translation>
 <translation id="155865706765934889">টাচপ্যাড</translation>
+<translation id="1560763881671211335">G Suite for Education-এর অ্যাডমিনিস্ট্রেটর এটি নির্ধারণ করে যে কোনও G Suite for Education অ্যাকাউন্টে সাইন-ইন করে থাকার সময় তাদের ব্যবহারকারীরা কোন কোন Google পরিষেবা অ্যাক্সেস করতে পারবে। স্কুল অ্যাডমিনিস্ট্রেটরকে তাদের নাবালক ব্যবহারকারীদের জন্য বিভিন্ন পরিষেবা ব্যবহারের ক্ষেত্রে সম্মতি প্রদান বা অর্জন করতে হবে।
+
+    ব্রাউজিং ডেটা (ইতিহাস, বুকমার্ক ও পাসওয়ার্ড সহ) Family Link অ্যাকাউন্টে সেভ করা হবে। এটি স্কুল অ্যাকাউন্টে সেভ করা হবে না।
+
+    আপনার Family Link-এর অভিভাবকীয় সেটিংস এখনও প্রযোজ্য হবে। আগে কোনও অ্যাপ বা সাইট ব্লক করে থাকলে, আপনাকে সেটি আবার করতে হবে না।</translation>
 <translation id="1566049601598938765">ওয়েবসাইট</translation>
 <translation id="15662109988763471">বেছে নেওয়া প্রিন্টারটি উপলভ্য নয় অথবা সেটি ঠিকভাবে ইনস্টল করা নেই। আপনার প্রিন্টার পরীক্ষা করুন অথবা অন্য একটি প্রিন্টার বেছে নিন।</translation>
 <translation id="1567387640189251553">আপনি যখন শেষবার পাসওয়ার্ডটি লিখেছিলেন তার পরে অন্য একটি কীবোর্ডে কানেক্ট করা হয়েছিল। এটি আপনার পাসওয়ার্ড চুরি করার চেষ্টা করতে পারে।</translation>
@@ -1199,6 +1204,7 @@
 <translation id="258095186877893873">দীর্ঘ সময়</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (প্ল্যাটফর্ম <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Kerberos টিকিট পাওয়া যায়নি। আবার চেষ্টা করুন অথবা আপনার সংস্থার ডিভাইস অ্যাডমিনের সাথে যোগাযোগ করুন। (সমস্যার কোড <ph name="ERROR_CODE" />)।</translation>
+<translation id="2585013490795742997"><ph name="QUERY" />-এর জন্য ১টি সার্চের ফলাফল দেখানো হচ্ছে</translation>
 <translation id="2585724835339714757">এই ট্যাবটি আপনার স্ক্রিন শেয়ার করছে।</translation>
 <translation id="2586657967955657006">ক্লিপবোর্ড</translation>
 <translation id="2586672484245266891">এর থেকে ছোট URL লিখুন</translation>
@@ -1885,6 +1891,7 @@
 <translation id="3498215018399854026">আমরা এই মুহূর্তে আপনার পিতামাতার সাথে যোগাযোগ করতে পারিনি৷ অনুগ্রহ করে আবার চেষ্টা করুন৷</translation>
 <translation id="3500417806337761827">শেয়ার মাউন্ট করার সময় কোনও সমস্যা হয়েছে। অনেকগুলি SMB শেয়ার আগে থেকেই মাউন্ট করা হয়েছে।</translation>
 <translation id="3505030558724226696">ডিভাইসের অ্যাক্সেস প্রত্যাহার করুন</translation>
+<translation id="3507132249039706973">"স্ট্যান্ডার্ড সুরক্ষা" ফিচারটি চালু করা আছে</translation>
 <translation id="3507421388498836150">"<ph name="EXTENSION_NAME" />" এর জন্য বর্তমান অনুমতিগুলি</translation>
 <translation id="3507888235492474624">ব্লুটুথ ডিভাইস আবার স্ক্যান করুন</translation>
 <translation id="3508492320654304609">আপনার সাইন-ইন ডেটা মোছা যায়নি</translation>
@@ -3237,6 +3244,7 @@
 <translation id="5352033265844765294">Time Stamping</translation>
 <translation id="5353252989841766347">Chrome থেকে পাসওয়ার্ড রপ্তানি করুন</translation>
 <translation id="5355099869024327351">আপনাকে বিজ্ঞপ্তি দেখানোর জন্য অ্যাসিস্ট্যান্টকে অনুমতি দিন</translation>
+<translation id="5355191726083956201">"উন্নত সুরক্ষা" ফিচার চালু করা আছে</translation>
 <translation id="5355926466126177564">আপনি ওমনিবক্স থেকে সার্চ করলে কোন পৃষ্ঠা দেখানো হবে তা "<ph name="EXTENSION_NAME" />" এক্সটেনশনটি পরিবর্তন করেছে।</translation>
 <translation id="5359910752122114278">১টি ফলাফল</translation>
 <translation id="5360150013186312835">টুলবারের মধ্যে দেখুন</translation>
@@ -3549,6 +3557,7 @@
 <translation id="577322787686508614">"<ph name="DEVICE_NAME" />" এ পড়ার ক্রিয়াকলাপ অনুমোদিত নয়।</translation>
 <translation id="5774295353725270860">ফাইল অ্যাপ খুলুন</translation>
 <translation id="577624874850706961">কুকিজ খুঁজুন</translation>
+<translation id="5776858208024364029"><ph name="QUERY" /> এর জন্য <ph name="NUMBER" />টি সার্চের ফলাফল দেখানো হচ্ছে</translation>
 <translation id="5777468213129569553">Chrome খুলুন</translation>
 <translation id="5778747455497889540">আপনার কম্পিউটারের জন্য র‍্যান্ডম ভাবে জেনারেট করা নিরাপদ মডিউল পাসওয়ার্ডটি নিচে দেওয়া হল:</translation>
 <translation id="5780011244986845107">আপনি যে ফোল্ডার বেছে নিয়েছেন সেটিতে সংবেদনশীল ফাইল আছে। আপনি কি "<ph name="APP_NAME" />"-কে স্থায়ীভাবে পড়ার অ্যাক্সেস দেওয়ার ব্যাপারে নিশ্চিত?</translation>
@@ -4106,6 +4115,7 @@
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
+<translation id="6520876759015997832"><ph name="LIST_SIZE" />-এর মধ্যে <ph name="LIST_POSITION" /> নম্বর সার্চের ফলাফল: <ph name="SEARCH_RESULT_TEXT" />। বিভাগে যেতে "Enter" বোতামটি প্রেস করুন।</translation>
 <translation id="652492607360843641">আপনি <ph name="NETWORK_TYPE" /> নেটওয়ার্কে কানেক্ট করে রয়েছেন।</translation>
 <translation id="6527303717912515753">শেয়ার করুন</translation>
 <translation id="6528513914570774834">এই ডিভাইসের অন্যান্য ব্যবহারকারীদের এই নেটওয়ার্ক ব্যবহার করতে দিন</translation>
@@ -4117,6 +4127,7 @@
 <translation id="6532206849875187177">নিরাপত্তা ও সাইন-ইন করা</translation>
 <translation id="6532527800157340614">সাইন-ইন করা যাচ্ছে না, কারণ আপনার অ্যাক্সেস টোকেন পুনরুদ্ধার করা সম্ভব হয়নি। আপনার নেটওয়ার্কের কানেকশন চেক করে আবার চেষ্টা করে দেখুন।</translation>
 <translation id="6532663472409656417">এন্টারপ্রাইজ এনরোল করা হয়েছে</translation>
+<translation id="6535331821390304775">এই ধরনের লিঙ্ককে এর সাথে যুক্ত অ্যাপে <ph name="ORIGIN" />-কে সবসময় খোলার অনুমতি দিন</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />দ্রষ্টব্য:<ph name="END_BOLD" /> আপনি যদি জানেন যে আপনি কি করছেন তাহলে সক্ষম করুন বা যদি আপনাকে এমনটি করতে বলা হয়ে থাকে, তাহলে মনে রাখবেন যে ডেটা সংগ্রহ কর্মক্ষমতাকে হ্রাস করতে পারে৷</translation>
 <translation id="6541638731489116978">আপনার মোশন সেন্সর ব্যবহার করা থেকে এই সাইটকে ব্লক করা হয়েছে।</translation>
 <translation id="6545665334409411530">পুনরাবৃত্তির হার</translation>
@@ -4246,6 +4257,7 @@
 <translation id="6727969043791803658">কানেক্ট করা আছে, ব্যাটারিতে <ph name="BATTERY_PERCENTAGE" />% চার্জ আছে</translation>
 <translation id="6732801395666424405">শংসাপত্র লোড হয়নি</translation>
 <translation id="6732900235521116609">শর্টকাট সরানো যাচ্ছে না</translation>
+<translation id="6734468588183300211">ছদ্মবেশী মোড চালু থাকলে, কোনও সাইট আপনাকে পছন্দের বিজ্ঞাপন দেখানোর মতো কোনও উদ্দেশ্যে বিভিন্ন ওয়েবসাইট জুড়ে আপনার ব্রাউজিং অ্যাক্টিভিটি দেখার জন্য আপনার কুকি ব্যবহার করতে পারবে না। কিছু কিছু সাইটের ফিচার কাজ নাও করতে পারে।</translation>
 <translation id="6735304988756581115">কুকিজ এবং অন্য সাইট ডেটা দেখান...</translation>
 <translation id="6736243959894955139">ঠিকানা</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
@@ -4258,6 +4270,7 @@
 <translation id="674632704103926902">আলতো চেপে টেনে আনা সক্ষম করুন</translation>
 <translation id="6748217015615267851">রেন্ডার করছে: <ph name="RENDERER_URL" /></translation>
 <translation id="6748465660675848252">আপনি এগিয়ে যেতে পারেন, কিন্তু শুধুমাত্র আপনার সিঙ্ক হওয়া ডেটা এবং সেটিংস পুনরুদ্ধার করা হবে৷ সমস্ত স্থানীয় ডেটা হারিয়ে যাবে৷</translation>
+<translation id="6749006854028927059">কোনও সাইট আপনাকে পছন্দের বিজ্ঞাপন দেখানোর মতো কোনও উদ্দেশ্যে বিভিন্ন ওয়েবসাইট জুড়ে আপনার ব্রাউজিং অ্যাক্টিভিটি দেখার জন্য আপনার কুকি ব্যবহার করতে পারবে না। কিছু কিছু সাইটের ফিচার কাজ নাও করতে পারে।</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" />(ছদ্মবেশী)</translation>
 <translation id="6757101664402245801">URL কপি করা হয়েছে</translation>
 <translation id="6758056191028427665">আমাদের পরিষেবা কেমন লাগছে তা জানান।</translation>
@@ -4349,6 +4362,7 @@
 <translation id="686664946474413495">রঙের তাপমাত্রা</translation>
 <translation id="6871644448911473373">OCSP প্রতিক্রিয়াকারী: <ph name="LOCATION" /> </translation>
 <translation id="6872781471649843364">আপনার দেওয়া পাসওয়ার্ডটি সার্ভার থেকে প্রত্যাখ্যান করা হয়েছে।</translation>
+<translation id="6874170800191969835"><ph name="SEARCH_RESULT_TEXT" />-এ নেভিগেট করা হয়েছে।</translation>
 <translation id="6876155724392614295">সাইকেল</translation>
 <translation id="6876469544038980967">উপযোগী নয়</translation>
 <translation id="6878422606530379992">সেন্সর ব্যবহারের অনুমতি দেওয়া হয়েছে</translation>
@@ -4619,6 +4633,7 @@
 <translation id="7235737137505019098">আপনার নিরাপত্তা কীয়ে আরও অ্যাকাউন্টের জন্য যথেষ্ট জায়গা খালি নেই।</translation>
 <translation id="7238643356913091553"><ph name="NETWORK_NAME" />, বিবরণ</translation>
 <translation id="7240339475467890413">নতুন হটস্পটে সংযোগ করতে চান?</translation>
+<translation id="7240847845291869311">আপনার সন্তান এই ডিভাইসে একটি G Suite for Education Google অ্যাকাউন্ট যোগ করতে চাইছে। <ph name="LINK_BEGIN" />G Suite for Education-এর গোপনীয়তা বিজ্ঞপ্তি<ph name="LINK_END" /> G Suite for Education-এর ব্যবহারকারী ও অভিভাবককে এটি বুঝতে সাহায্য করে যে এই প্রোডাক্ট কী কী ডেটা সংগ্রহ করে ও কেন এবং এর সাথে কী করা হয়।</translation>
 <translation id="7241389281993241388">ক্লায়েন্ট সার্টিফিকেট ইমপোর্ট করতে অনুগ্রহ করে <ph name="TOKEN_NAME" />-এ সাইন-ইন করুন৷</translation>
 <translation id="7241443820034350811">আপনার নিরাপত্তা কী সূচিবদ্ধ করা না থাকলে, এর বোতামটি অন্তত ৫ সেকেন্ড টিপে ধরে থাকুন।</translation>
 <translation id="7243632151880336635">সাফ করে সাইন-আউট করুন</translation>
@@ -5200,6 +5215,7 @@
 <translation id="7987814697832569482">সবসময় এই ভিপিএনের মাধ্যমে কানেক্ট করুন</translation>
 <translation id="7988355189918024273">ব্যবহারযোগ্যতার বৈশিষ্ট্যগুলি চালু করুন</translation>
 <translation id="7991296728590311172">সুইচ অ্যাক্সেস সেটিংস</translation>
+<translation id="7992202128769240372"><ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" />-এর বেশি প্রিন্ট করা যাবে না</translation>
 <translation id="7994350303002908848">Plugin VM ইনস্টল করা যাচ্ছে না। প্রতিষ্ঠানের ডিভাইস অ্যাডমিনিস্ট্রেটরের সাথে যোগাযোগ করুন বা আবার চেষ্টা করুন। সমস্যার কোড: <ph name="ERROR_CODE" /></translation>
 <translation id="7994702968232966508">EAP পদ্ধতি</translation>
 <translation id="7997826902155442747">প্রক্রিয়ার অগ্রাধিকার</translation>

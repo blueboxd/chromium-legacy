@@ -305,7 +305,7 @@ void VizProcessTransportFactory::DisableGpuCompositing(
     LOG(FATAL) << "Software compositing fallback is unavailable. Goodbye.";
   }
 
-  DLOG(ERROR) << "Switching to software compositing.";
+  DVLOG(1) << "Switching to software compositing.";
 
   is_gpu_compositing_disabled_ = true;
 

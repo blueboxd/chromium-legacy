@@ -54,6 +54,7 @@
 <translation id="1331212799747679585">Chrome güncəllənmədi. Digər seçimlər</translation>
 <translation id="1332501820983677155">Google Chrome funksiya qısayolları</translation>
 <translation id="1360432990279830238">Sinxronizasiya deaktiv edilsin?</translation>
+<translation id="1364532808393826295"><ph name="APP_NAME" /> - <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676"><ph name="SITE_NAME" /> saytı əlavə edildi</translation>
 <translation id="1373696734384179344">Seçilmiş məzmunu endirmək üçün yaddaş çatmır.</translation>
 <translation id="1376578503827013741">Hesablanır...</translation>
@@ -140,6 +141,7 @@
 <translation id="2017836877785168846">Ünvan panelində tarixçə və avtomatik tamamlamaları silir.</translation>
 <translation id="2021896219286479412">Tam ekran sayt nəzarətləri</translation>
 <translation id="2025115093177348061">Artırılmış reallıq</translation>
+<translation id="2030769033451695672"><ph name="URL_OF_THE_CURRENT_TAB" /> bölməsinə qayıtmaq üçün toxunun</translation>
 <translation id="2038563949887743358">Əsas Versiya Sorğusunu aktiv edin</translation>
 <translation id="2041019821020695769">Həmçinin, Chrome'un bildirişlər göndərməsinə icazə vermək üçün <ph name="BEGIN_LINK" />Android Ayarlarında<ph name="END_LINK" /> bildirişləri aktiv edin.</translation>
 <translation id="204321170514947529">Həmçinin, <ph name="APP_NAME" /> tətbiqinin Chrome'da datası var</translation>
@@ -301,6 +303,7 @@ Axtarmaq üçün istənilən sözə toxunub saxlayın. Axtarışınızı dəqiql
 <translation id="3207960819495026254">Əlfəcinlənib</translation>
 <translation id="3211426585530211793">Silinmiş <ph name="ITEM_TITLE" /></translation>
 <translation id="321773570071367578">Əgər parol sözü unutmusunuzsa və ya bu ayarı dəyişmək istəyirsinizsə,  <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlayın<ph name="END_LINK" /></translation>
+<translation id="3223655101706843289">Bununla <ph name="ORIGIN" /> və onun Ana ekranınızdakı tətbiqi tərəfindən saxlanılan bütün data və kukilər silinəcək.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3232754137068452469">Veb Tətbiq</translation>
 <translation id="3236059992281584593">1 dəqiqə qaldı</translation>
@@ -535,6 +538,7 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="4943872375798546930">Nəticə yoxdur</translation>
 <translation id="4961107849584082341">Bu səhifəni istədiyiniz dilə tərcümə edin</translation>
 <translation id="4962975101802056554">Cihaz üçün bütün icazələri ləğv edin</translation>
+<translation id="4964199952259983386">Chrome'un artırılmış reallıqdan istifadə etməsi üçün <ph name="BEGIN_LINK" />Android Ayarlarında<ph name="END_LINK" /> kameranı da aktiv edin.</translation>
 <translation id="4970824347203572753">Ərazinizdə əlçatan deyil</translation>
 <translation id="497421865427891073">İrəli</translation>
 <translation id="4988210275050210843">Fayl (<ph name="MEGABYTES" />) endirilir</translation>
@@ -634,6 +638,7 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="5684874026226664614">Bu səhifə tərcümə edilə bilmir. Niyəsini bilmirik.</translation>
 <translation id="5686790454216892815">Fayl adı çox uzundur</translation>
 <translation id="5689516760719285838">Məkan</translation>
+<translation id="5690795753582697420">Kamera Android ayarlarında deaktiv edilib</translation>
 <translation id="5694049548840660018">Əsas səhifəyə asanlıqla qayıdın</translation>
 <translation id="569536719314091526">Əlavə seçimlər düyməsində bu səhifəni istədiyiniz dilə tərcümə edin</translation>
 <translation id="5710871682236653961">NFC cihazlarına toxunduqda saytların məlumat göndərməsi və almasına icazə verməzdən əvvəl soruşulsun (tövsiyə edilir)</translation>
@@ -665,6 +670,7 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="5876056640971328065">Videoya pauza verin</translation>
 <translation id="5884076754568147479">Tapşırıqları tamamlamaqda sizə kömək etmək üçün Google Assistentdən istifadə etdiyiniz saytların URL və məzmunlarını, eləcə də Assistent vasitəsilə təqdim etdiyiniz məlumatları əldə edəcək</translation>
 <translation id="5919204609460789179">Sinxronizasiyanı başlatmaq üçün <ph name="PRODUCT_NAME" /> məhsulunu yeniləyin</translation>
+<translation id="5922853908706496913">Ekranınız paylaşılır</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> istifadə edildi</translation>
 <translation id="5939518447894949180">Sıfırlayın</translation>
 <translation id="5942872142862698679">Axtarış üçün Google istifadə edilir</translation>
@@ -873,6 +879,7 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="751961395872307827">Sayta qoşulmaq mümkün deyil</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7542481630195938534">Təklifləri əldə etmək mümkün deyil</translation>
+<translation id="7554752735887601236">Sayt mikrofonunuzdan istifadə edir</translation>
 <translation id="7559975015014302720">Layt rejimi deaktivdir</translation>
 <translation id="7562080006725997899">Baxış datası silinir</translation>
 <translation id="756809126120519699">Chrome datası təmizləndi</translation>
@@ -909,7 +916,9 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 və <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> digəri}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 və <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> digəri}}</translation>
 <translation id="7791543448312431591">Əlavə etmək</translation>
 <translation id="780301667611848630">Yox, çox sağ olun</translation>
+<translation id="7804248752222191302">Sayt kameranızdan istifadə edir</translation>
 <translation id="7810647596859435254">Bununla açın...</translation>
+<translation id="7817023149356982970">Bu saytdan çıxacaqsınız.</translation>
 <translation id="7821588508402923572">Data istifadəsi burada görünəcək</translation>
 <translation id="7828557259026017104">Kukilər daxil olduğunuz veb saytların yaratdığı fayllardır. Saytlar tərcihlərinizi yadda saxlamaq üçün onlardan istifadə edir. Üçüncü tərəf kukiləri başqa saytlar tərəfindən yaradılır. Bu saytlar daxil olduğunuz veb səhifədə gördüyünüz reklam və ya şəkillər kimi bəzi məzmunların sahibidir.</translation>
 <translation id="783819812427904514">Videonu səssiz rejimdən çıxarın</translation>
@@ -988,8 +997,10 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="8364299278605033898">Populyar veb saytlara baxın</translation>
 <translation id="8368027906805972958">Naməlum və ya dəstəklənməyən cihaz (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">Xüsusi sayt üçün Arxa fon Sinxronizasiyasına icazə verin.</translation>
+<translation id="83792324527827022">Sayt kamera və mikrofonunuzdan istifadə edir</translation>
 <translation id="8380167699614421159">Bu sayt inadçı və ya aldadıcı reklamlar göstərir</translation>
 <translation id="8393700583063109961">Mesaj göndərin</translation>
+<translation id="8394832520002899662">Sayta qayıtmaq üçün toxunun</translation>
 <translation id="8413126021676339697">Tam tarixçəni göstərin</translation>
 <translation id="8427875596167638501">Önbaxış tabının yarısı açılıb</translation>
 <translation id="8428213095426709021">Ayarlar</translation>
@@ -1032,6 +1043,8 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="8687353297350450808">{N_BARS,plural, =1{Siqnal Gücü Səviyyəsi: # panel}other{Siqnal Gücü Səviyyəsi: # panel}}</translation>
 <translation id="868929229000858085">Kontaktlarda axtarın</translation>
 <translation id="869891660844655955">Bitmə tarixi</translation>
+<translation id="8702612070107455751">Bütün oflayn data silinəcək.</translation>
+<translation id="8737217482364735741">Bununla <ph name="ORIGIN" /> tərəfindən saxlanılan bütün data və kukilər silinəcək.</translation>
 <translation id="8748850008226585750">Məzmun gizlidir</translation>
 <translation id="8751914237388039244">Şəkil seçin</translation>
 <translation id="8758557275681689734">Bütün açıq tabellərinizə baxın</translation>
@@ -1078,6 +1091,7 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="9100610230175265781">Parol tələb olunur</translation>
 <translation id="9102803872260866941">Önbaxış tabı açıqdır</translation>
 <translation id="9104217018994036254">Tabı paylaşa biləcəyiniz cihazların siyahısı.</translation>
+<translation id="9108312223223904744">Təhlükəsizlik Açarı Dəstəyi kimi telefon</translation>
 <translation id="9133397713400217035">Oflayn araşdırın</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Originalı göstərin</translation>

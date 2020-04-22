@@ -57,8 +57,7 @@ TEST_F(DiskDataAllocatorTest, ReadWrite) {
   EXPECT_EQ(kSize, metadata->size());
 
   auto read_data = std::vector<char>(kSize);
-  bool ok = allocator.Read(*metadata, &read_data[0]);
-  EXPECT_TRUE(ok);
+  allocator.Read(*metadata, &read_data[0]);
 
   EXPECT_EQ(0, memcmp(&read_data[0], random_data.c_str(), kSize));
 }
@@ -83,8 +82,7 @@ TEST_F(DiskDataAllocatorTest, ReadWriteDiscardMultiple) {
   for (const auto& p : data_written) {
     size_t size = p.first->size();
     auto read_data = std::vector<char>(size);
-    bool ok = allocator.Read(*p.first, &read_data[0]);
-    EXPECT_TRUE(ok);
+    allocator.Read(*p.first, &read_data[0]);
 
     EXPECT_EQ(0, memcmp(&read_data[0], &p.second[0], size));
   }
@@ -257,8 +255,7 @@ TEST_F(DiskDataAllocatorTest, ProvideValidFile) {
   EXPECT_EQ(kSize, metadata->size());
 
   auto read_data = std::vector<char>(kSize);
-  bool ok = allocator.Read(*metadata, &read_data[0]);
-  EXPECT_TRUE(ok);
+  allocator.Read(*metadata, &read_data[0]);
 
   EXPECT_EQ(0, memcmp(&read_data[0], random_data.c_str(), kSize));
 }

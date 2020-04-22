@@ -104,7 +104,7 @@ class JavaScriptDialogNavigationDeferrer;
 class ManifestManagerHost;
 class MediaWebContentsObserver;
 class NFCHost;
-class PluginContentOriginWhitelist;
+class PluginContentOriginAllowlist;
 class Portal;
 class RenderFrameHost;
 class RenderViewHost;
@@ -1252,9 +1252,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   FRIEND_TEST_ALL_PREFIXES(DevToolsProtocolTest, PageDisableWithOpenedDialog);
   FRIEND_TEST_ALL_PREFIXES(DevToolsProtocolTest,
                            PageDisableWithNoDialogManager);
-  FRIEND_TEST_ALL_PREFIXES(PluginContentOriginWhitelistTest,
+  FRIEND_TEST_ALL_PREFIXES(PluginContentOriginAllowlistTest,
                            ClearAllowlistOnNavigate);
-  FRIEND_TEST_ALL_PREFIXES(PluginContentOriginWhitelistTest,
+  FRIEND_TEST_ALL_PREFIXES(PluginContentOriginAllowlistTest,
                            SubframeInheritsAllowlist);
   FRIEND_TEST_ALL_PREFIXES(PointerLockBrowserTest,
                            PointerLockInnerContentsCrashes);
@@ -1845,9 +1845,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   std::unique_ptr<BrowserPluginGuest> browser_plugin_guest_;
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-  // Manages the whitelist of plugin content origins exempt from power saving.
-  std::unique_ptr<PluginContentOriginWhitelist>
-      plugin_content_origin_whitelist_;
+  // Manages the allowlist of plugin content origins exempt from power saving.
+  std::unique_ptr<PluginContentOriginAllowlist>
+      plugin_content_origin_allowlist_;
 #endif
 
   // This must be at the end, or else we might get notifications and use other

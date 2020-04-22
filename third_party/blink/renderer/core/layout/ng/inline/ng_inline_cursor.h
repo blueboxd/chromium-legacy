@@ -221,6 +221,9 @@ class CORE_EXPORT NGInlineCursor {
   bool IsNotNull() const { return Current(); }
   operator bool() const { return Current(); }
 
+  // True if |Current()| is at the first fragment. See |MoveToFirst()|.
+  bool IsAtFirst() const;
+
   // True if fragment at the current position can have children.
   bool CanHaveChildren() const;
 

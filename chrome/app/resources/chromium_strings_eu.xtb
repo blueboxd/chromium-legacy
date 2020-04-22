@@ -12,6 +12,7 @@ Eginbide batzuk agian dira erabilgarri egongo eta hobespenei egindako aldaketak 
 <translation id="1414495520565016063">Chromium-en saioa hasi duzu.</translation>
 <translation id="151962892725702025">Chromium OS sistema eragileak ezin izan ditu sinkronizatu zure datuak sinkronizazioa ez dagoelako erabilgarri zure domeinuan.</translation>
 <translation id="1524282610922162960">Partekatu Chromium-eko fitxa bat</translation>
+<translation id="1553461853655228091">Chromium-ek kamera atzitzeko baimena behar du, ingurunearen hiru dimentsioko mapa bat sortzeko</translation>
 <translation id="1607715478322902680">{COUNT,plural, =0{Chromium berrabiaraz dezazun behar du administratzaileak, eguneratzea aplikatzeko}=1{Chromium berrabiaraz dezazun behar du administratzaileak, eguneratzea aplikatzeko. Ezkutuko moduko leihoa ez da berriro irekiko.}other{Chromium berrabiaraz dezazun behar du administratzaileak, eguneratzea aplikatzeko. Ezkutuko moduko # leihoak ez dira berriro irekiko.}}</translation>
 <translation id="1708666629004767631">Chromium-en bertsio berriagoa eta seguruagoa erabilgarri dago.</translation>
 <translation id="1774152462503052664">Onartu Chromium atzeko planoan abiaraztea</translation>
@@ -57,6 +58,7 @@ Eginbide batzuk agian dira erabilgarri egongo eta hobespenei egindako aldaketak 
 <translation id="3258596308407688501">Chromium-ek ezin du irakurri bere datu-direktorioa eta ezin du idatzi bertan:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
+<translation id="3283186697780795848">Chromium-en <ph name="PRODUCT_VERSION" /> bertsioa dago instalatuta</translation>
 <translation id="328888136576916638">Google API gakoak falta dira. Chromium-en funtzionalitate batzuk desgaituko dira.</translation>
 <translation id="3296368748942286671">Mantendu atzeko planoko aplikazioak abian Chromium ixten denean</translation>
 <translation id="331951419404882060">Saioa hastean gertatu den errore bat dela-eta, Chromium OS sistemak ezin izan ditu sinkronizatu zure datuak.</translation>

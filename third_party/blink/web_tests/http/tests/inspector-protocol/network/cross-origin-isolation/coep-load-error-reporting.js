@@ -15,7 +15,7 @@
 
     if (++numberOfMessages === expectedNumberOfMessages) {
       function compareInfo(a, b) {
-        return a.requestWillBeSent?.request?.url < b.requestWillBeSent?.request?.url;
+        return `${a.requestWillBeSent?.request?.url}`.localeCompare(`${b.requestWillBeSent?.request?.url}`);
       }
       const entries = Array.from(resources.values()).sort(compareInfo);
       for (const entry of entries) {

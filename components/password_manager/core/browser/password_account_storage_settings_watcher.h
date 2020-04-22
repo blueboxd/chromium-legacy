@@ -22,8 +22,9 @@ namespace password_manager {
 class PasswordAccountStorageSettingsWatcher
     : public syncer::SyncServiceObserver {
  public:
-  // |pref_service| and |sync_service| must not be null and must outlive this
-  // object.
+  // |pref_service| must not be null and must outlive this object.
+  // |sync_service| may be null (in incognito profiles or due to a commandline
+  // flag), but if non-null must outlive this object.
   // |change_callback| will be invoked whenever any password account storage
   // setting is changed (e.g. the opt-in state or the default storage location).
   PasswordAccountStorageSettingsWatcher(PrefService* pref_service,

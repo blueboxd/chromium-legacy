@@ -7,6 +7,7 @@
 #import "base/mac/foundation_util.h"
 #import "ios/chrome/common/credential_provider/credential.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/credential_provider_extension/ui/tooltip_view.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -121,56 +122,35 @@ typedef NS_ENUM(NSInteger, RowIdentifier) {
 
 - (void)tableView:(UITableView*)tableView
     didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
-  UIMenuController* menu = [UIMenuController sharedMenuController];
-  if (![menu isMenuVisible]) {
-    NSMutableArray<UIMenuItem*>* items = [[NSMutableArray alloc] init];
-    switch (indexPath.row) {
-      case RowIdentifier::RowIdentifierURL:
-        [items
-            addObject:[[UIMenuItem alloc]
-                          initWithTitle:
-                              NSLocalizedString(
-                                  @"IDS_IOS_CREDENTIAL_PROVIDER_DETAILS_COPY",
-                                  @"Copy")
-                                 action:@selector(copyURL)]];
-        break;
-      case RowIdentifier::RowIdentifierUsername:
-        [items
-            addObject:[[UIMenuItem alloc]
-                          initWithTitle:
-                              NSLocalizedString(
-                                  @"IDS_IOS_CREDENTIAL_PROVIDER_DETAILS_COPY",
-                                  @"Copy")
-                                 action:@selector(copyUsername)]];
-        break;
-      case RowIdentifier::RowIdentifierPassword:
-        if (self.clearPassword) {
-          [items
-              addObject:[[UIMenuItem alloc]
-                            initWithTitle:
-                                NSLocalizedString(
-                                    @"IDS_IOS_CREDENTIAL_PROVIDER_DETAILS_COPY",
-                                    @"Copy")
-                                   action:@selector(copyPassword)]];
-        }
-        break;
-      default:
-        break;
-    }
+  // Callout menu don't show up in the extension in iOS13, even
+  // though you can find it in the View Hierarchy. Using custom one.
+  UITableViewCell* cell = [tableView cellForRowAtIndexPath:indexPath];
 
-    if ([items count]) {
-      UITableViewCell* cell = [tableView cellForRowAtIndexPath:indexPath];
-      [menu setMenuItems:items];
-      [menu setTargetRect:cell.textLabel.frame inView:cell.textLabel];
-      [menu setMenuVisible:YES animated:YES];
-    }
+  switch (indexPath.row) {
+    case RowIdentifier::RowIdentifierURL:
+      [self showTootip:NSLocalizedString(
+                           @"IDS_IOS_CREDENTIAL_PROVIDER_DETAILS_COPY", @"Copy")
+            atBottomOf:cell.textLabel
+                action:@selector(copyURL)];
+      break;
+    case RowIdentifier::RowIdentifierUsername:
+      [self showTootip:NSLocalizedString(
+                           @"IDS_IOS_CREDENTIAL_PROVIDER_DETAILS_COPY", @"Copy")
+            atBottomOf:cell.textLabel
+                action:@selector(copyUsername)];
+      break;
+    case RowIdentifier::RowIdentifierPassword:
+      if (self.clearPassword) {
+        [self
+            showTootip:NSLocalizedString(
+                           @"IDS_IOS_CREDENTIAL_PROVIDER_DETAILS_COPY", @"Copy")
+            atBottomOf:cell.textLabel
+                action:@selector(copyPassword)];
+      }
+      break;
+    default:
+      break;
   }
-}
-
-#pragma mark - UIResponder
-
-- (BOOL)canBecomeFirstResponder {
-  return YES;
 }
 
 #pragma mark - Private
@@ -270,13 +250,7 @@ typedef NS_ENUM(NSInteger, RowIdentifier) {
 // Shows given message in a toast at the bottom.
 - (void)showToast:(NSString*)message {
   dispatch_async(dispatch_get_main_queue(), ^{
-    // Find top window/view without using UIApplication.
-    UIView* keyWindow = self.view;
-    while (keyWindow.superview) {
-      if ([keyWindow isKindOfClass:[UIWindow class]])
-        break;
-      keyWindow = keyWindow.superview;
-    }
+    UIView* keyWindow = self.keyWindow;
 
     CGSize labelSize = [message sizeWithAttributes:@{
       NSFontAttributeName :
@@ -363,6 +337,26 @@ typedef NS_ENUM(NSInteger, RowIdentifier) {
                          });
         }];
   });
+}
+
+// Find top window/view without using UIApplication.
+- (UIView*)keyWindow {
+  UIView* keyWindow = self.view;
+  while (keyWindow.superview) {
+    if ([keyWindow isKindOfClass:[UIWindow class]])
+      break;
+    keyWindow = keyWindow.superview;
+  }
+  return keyWindow;
+}
+
+- (void)showTootip:(NSString*)message
+        atBottomOf:(UIView*)view
+            action:(SEL)action {
+  TooltipView* tooltip = [[TooltipView alloc] initWithKeyWindow:self.view
+                                                         target:self
+                                                         action:action];
+  [tooltip showMessage:message atBottomOf:view];
 }
 
 @end

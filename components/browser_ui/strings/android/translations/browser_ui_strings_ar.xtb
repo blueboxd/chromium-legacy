@@ -55,7 +55,7 @@
 <translation id="6963642900430330478">تُعدُّ هذه الصفحة خطيرة. معلومات موقع الويب</translation>
 <translation id="6965382102122355670">حسنًا</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{تم اختيار عنصر واحد}zero{تم اختيار # عنصر}two{تم اختيار عنصرين (#)}few{تم اختيار # عناصر}many{تم اختيار # عنصرًا}other{تم اختيار # عنصر}}</translation>
-<translation id="7087918508125750058">تم تحديد <ph name="ITEM_COUNT" /> عنصر، ويمكنك الاطّلاع على الخيارات في الجزء العلوي من الشاشة.</translation>
+<translation id="7087918508125750058">تم اختيار <ph name="ITEM_COUNT" /> عنصر، ويمكنك الاطّلاع على الخيارات في الجزء العلوي من الشاشة.</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> كيلوبايت</translation>
 <translation id="7250468141469952378">تم اختيار <ph name="ITEM_COUNT" /> عنصراً</translation>
 <translation id="7649070708921625228">مساعدة</translation>

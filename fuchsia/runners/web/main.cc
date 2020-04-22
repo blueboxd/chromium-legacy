@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/fuchsia/default_context.h"
 #include "base/fuchsia/file_utils.h"
+#include "base/fuchsia/scoped_service_binding.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_executor.h"
@@ -58,8 +59,9 @@ int main(int argc, char** argv) {
       base::BindRepeating(&GetContextParams);
 
   WebContentRunner runner(std::move(get_context_params_callback));
-  runner.PublishRunnerService(
-      base::fuchsia::ComponentContextForCurrentProcess()->outgoing().get());
+  base::fuchsia::ScopedServiceBinding<fuchsia::sys::Runner> binding(
+      base::fuchsia::ComponentContextForCurrentProcess()->outgoing().get(),
+      &runner);
 
   base::fuchsia::ComponentContextForCurrentProcess()
       ->outgoing()

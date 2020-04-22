@@ -72,7 +72,7 @@
 #include "content/browser/media/capture/web_contents_audio_muter.h"
 #include "content/browser/media/media_web_contents_observer.h"
 #include "content/browser/media/session/media_session_impl.h"
-#include "content/browser/plugin_content_origin_whitelist.h"
+#include "content/browser/plugin_content_origin_allowlist.h"
 #include "content/browser/renderer_host/frame_token_message_queue.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
@@ -2106,8 +2106,8 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
   view_->CreateView(params.context);
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-  plugin_content_origin_whitelist_.reset(
-      new PluginContentOriginWhitelist(this));
+  plugin_content_origin_allowlist_.reset(
+      new PluginContentOriginAllowlist(this));
 #endif
 
   registrar_.Add(this,

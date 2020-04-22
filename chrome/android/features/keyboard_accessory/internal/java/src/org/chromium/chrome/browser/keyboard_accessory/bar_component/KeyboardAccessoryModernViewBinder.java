@@ -107,6 +107,5 @@ class KeyboardAccessoryModernViewBinder {
         } else {
             assert wasBound : "Every possible property update needs to be handled!";
         }
-        KeyboardAccessoryViewBinder.requestLayoutPreKitkat(modernView);
     }
 }

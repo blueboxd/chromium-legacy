@@ -10,6 +10,7 @@
 #include "chrome/browser/sharing/sharing_device_source.h"
 #include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
+#include "chrome/browser/sharing/sharing_utils.h"
 #include "chrome/browser/sharing/webrtc/sharing_mojo_service.h"
 #include "chrome/browser/sharing/webrtc/sharing_webrtc_connection_host.h"
 #include "chrome/browser/sharing/webrtc/webrtc_signalling_host_fcm.h"
@@ -187,7 +188,7 @@ void SharingServiceHost::DoSendMessageToDevice(
     return;
   }
 
-  auto fcm_configuration = sync_prefs_->GetFCMChannel(device);
+  auto fcm_configuration = GetFCMChannel(device);
   // Remote device must have a valid fcm config.
   if (!fcm_configuration || (!HasVapidInfo(*fcm_configuration) &&
                              !HasSenderIdInfo(*fcm_configuration))) {

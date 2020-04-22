@@ -449,20 +449,21 @@ class VectorBufferBase {
     // If the vector backing is garbage-collected and needs tracing or
     // finalizing, we clear out the unused slots so that the visitor or the
     // finalizer does not cause a problem when visiting the unused slots.
-    VectorUnusedSlotClearer<
-        Allocator::kIsGarbageCollected &&
-            (VectorTraits<T>::kNeedsDestruction ||
-             IsTraceableInCollectionTrait<VectorTraits<T>>::value),
-        T>::Clear(from, to);
+    static_assert(
+        !Allocator::kIsGarbageCollected ||
+            IsTraceableInCollectionTrait<VectorTraits<T>>::value,
+        "Type in garbage collected vectors should be traceable in collection");
+    VectorUnusedSlotClearer<Allocator::kIsGarbageCollected, T>::Clear(from, to);
   }
 
   void CheckUnusedSlots(const T* from, const T* to) {
 #if DCHECK_IS_ON() && !defined(ANNOTATE_CONTIGUOUS_CONTAINER)
-    VectorUnusedSlotClearer<
-        Allocator::kIsGarbageCollected &&
-            (VectorTraits<T>::kNeedsDestruction ||
-             IsTraceableInCollectionTrait<VectorTraits<T>>::value),
-        T>::CheckCleared(from, to);
+    static_assert(
+        !Allocator::kIsGarbageCollected ||
+            IsTraceableInCollectionTrait<VectorTraits<T>>::value,
+        "Type in garbage collected vectors should be traceable in collection");
+    VectorUnusedSlotClearer<Allocator::kIsGarbageCollected, T>::CheckCleared(
+        from, to);
 #endif
   }
 
@@ -621,15 +622,18 @@ class VectorBuffer : protected VectorBufferBase<T, Allocator> {
  public:
   using OffsetRange = typename Base::OffsetRange;
 
-  VectorBuffer() : Base(InlineBuffer(), inlineCapacity) {}
+  VectorBuffer() : Base(InlineBuffer(), inlineCapacity) { InitInlinedBuffer(); }
 
-  VectorBuffer(HashTableDeletedValueType value) : Base(value) {}
+  explicit VectorBuffer(HashTableDeletedValueType value) : Base(value) {
+    InitInlinedBuffer();
+  }
   bool IsHashTableDeletedValue() const {
     return Base::IsHashTableDeletedValue();
   }
 
   explicit VectorBuffer(wtf_size_t capacity)
       : Base(InlineBuffer(), inlineCapacity) {
+    InitInlinedBuffer();
     if (capacity > inlineCapacity)
       Base::AllocateBuffer(capacity);
   }
@@ -902,6 +906,13 @@ class VectorBuffer : protected VectorBufferBase<T, Allocator> {
   T* InlineBuffer() { return unsafe_reinterpret_cast_ptr<T*>(inline_buffer_); }
   const T* InlineBuffer() const {
     return unsafe_reinterpret_cast_ptr<const T*>(inline_buffer_);
+  }
+
+  template <bool = Allocator::kIsGarbageCollected>
+  void InitInlinedBuffer() {}
+  template <>
+  void InitInlinedBuffer<true>() {
+    memset(&inline_buffer_, 0, kInlineBufferSize);
   }
 
   alignas(T) char inline_buffer_[kInlineBufferSize];
@@ -2044,6 +2055,8 @@ Vector<T, inlineCapacity, Allocator>::Trace(VisitorDispatcher visitor) const {
 
   static_assert(Allocator::kIsGarbageCollected,
                 "Garbage collector must be enabled.");
+  static_assert(IsTraceableInCollectionTrait<VectorTraits<T>>::value,
+                "Type must be traceable in collection");
 
   const T* buffer = BufferSafe();
   if (Base::IsOutOfLineBuffer(buffer)) {
@@ -2057,12 +2070,10 @@ Vector<T, inlineCapacity, Allocator>::Trace(VisitorDispatcher visitor) const {
       return;
     // Inline buffer requires tracing immediately.
     const T* buffer_begin = buffer;
-    const T* buffer_end = buffer + size();
-    if (IsTraceableInCollectionTrait<VectorTraits<T>>::value) {
-      for (const T* buffer_entry = buffer_begin; buffer_entry != buffer_end;
-           buffer_entry++) {
-        Allocator::template Trace<T, VectorTraits<T>>(visitor, *buffer_entry);
-      }
+    const T* buffer_end = buffer + inlineCapacity;
+    for (const T* buffer_entry = buffer_begin; buffer_entry != buffer_end;
+         buffer_entry++) {
+      Allocator::template Trace<T, VectorTraits<T>>(visitor, *buffer_entry);
     }
   }
 }

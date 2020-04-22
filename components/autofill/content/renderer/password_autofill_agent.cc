@@ -148,8 +148,8 @@ bool CanShowUsernameSuggestion(const PasswordFormFillData& fill_data,
   }
 
   for (const auto& login : fill_data.additional_logins) {
-    if (base::StartsWith(base::i18n::ToLower(login.first), typed_username_lower,
-                         base::CompareCase::SENSITIVE)) {
+    if (base::StartsWith(base::i18n::ToLower(login.username),
+                         typed_username_lower, base::CompareCase::SENSITIVE)) {
       return true;
     }
   }
@@ -176,16 +176,17 @@ void FindMatchesByUsername(const PasswordFormFillData& fill_data,
   } else {
     // Scan additional logins for a match.
     for (const auto& it : fill_data.additional_logins) {
-      if (!it.second.realm.empty()) {
+      if (!it.realm.empty()) {
         // Non-empty realm means PSL match. Do not autofill PSL matched
         // credentials. The reason for this is that PSL matched sites are
         // different sites, so a password for a PSL matched site should be never
         // filled without explicit user selection.
         continue;
       }
-      if (DoUsernamesMatch(it.first, current_username, exact_username_match)) {
-        *username = it.first;
-        *password = it.second.password;
+      if (DoUsernamesMatch(it.username, current_username,
+                           exact_username_match)) {
+        *username = it.username;
+        *password = it.password;
         break;
       }
     }

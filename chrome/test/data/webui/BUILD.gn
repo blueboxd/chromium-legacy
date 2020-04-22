@@ -276,6 +276,7 @@ js2gtest("browser_tests_js_webui") {
     "$root_gen_dir/chrome/test/data/webui/settings/site_favicon_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/startup_urls_page_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/test_about_page_browser_proxy.m.js",
+    "$root_gen_dir/chrome/test/data/webui/settings/test_clear_browsing_data_browser_proxy.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/test_local_data_browser_proxy.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/test_metrics_browser_proxy.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/site_data_test.m.js",

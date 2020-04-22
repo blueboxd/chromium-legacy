@@ -438,6 +438,18 @@ NewWindowEvent.prototype.initialHeight;
 NewWindowEvent.prototype.name;
 
 
+/**
+ * @typedef {{
+ *   url: string,
+ *   isTopLevel: boolean,
+ *   code: number,
+ *   reason: string
+ * }}
+ * @see https://developer.chrome.com/apps/tags/webview#event-loadabort
+ */
+var WebviewLoadAbortEventData;
+
+
 /** @type {!ChromeEvent} */
 WebView.prototype.close;
 
@@ -456,7 +468,7 @@ WebView.prototype.exit;
 /** @type {!ChromeEvent} */
 WebView.prototype.findupdate;
 
-/** @type {!ChromeEvent} */
+/** @type {!ChromeBaseEvent<WebviewLoadAbortEventData>} */
 WebView.prototype.loadabort;
 
 /** @type {!ChromeEvent} */

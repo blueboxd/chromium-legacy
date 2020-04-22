@@ -421,6 +421,11 @@
 <translation id="1555130319947370107">Сіні</translation>
 <translation id="1556537182262721003">Не ўдалося перанесці каталог пашырэнняў у профіль.</translation>
 <translation id="155865706765934889">Сэнсарная панэль</translation>
+<translation id="1560763881671211335">Адміністратары G Suite for Education вызначаюць, да якіх сэрвісаў Google будуць мець доступ карыстальнікі, якія ўвайшлі ва ўліковы запіс G Suite for Education. Адміністратары навучальнай установы абавязаны даць або атрымаць згоду на выкарыстанне сэрвісаў непаўналетнімі.
+
+    Даныя прагляду сайтаў (уключаючы гісторыю, закладкі і паролі) будуць захоўвацца ва ўліковым запісе Family Link, а не ва ўліковым запісе навучальнай установы.
+
+    Налады бацькоўскага кантролю, зададзеныя з дапамогай сэрвісу Family Link, па-ранейшаму будуць працаваць. І калі вы раней заблакіравалі праграму або сайт, вам не трэба будзе рабіць гэта зноў.</translation>
 <translation id="1566049601598938765">Вэб-сайт</translation>
 <translation id="15662109988763471">Выбраны прынтар недаступны або ўсталяваны няправільна. Праверце прынтар або выберыце іншы.</translation>
 <translation id="1567387640189251553">З моманту апошняга ўводу пароля да прылады была падключана іншая клавіятура. Клавіятура можа спрабаваць адсочваць і перадаваць націсканні клавіш.</translation>
@@ -1200,6 +1205,7 @@
 <translation id="258095186877893873">Доўгая</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (платформа <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Не ўдалося атрымаць білет Kerberos. Паўтарыце спробу або звярніцеся да адміністратара прылад сваёй арганізацыі. (Код памылкі: <ph name="ERROR_CODE" />.)</translation>
+<translation id="2585013490795742997">Паказваецца 1 вынік па запыце "<ph name="QUERY" />"</translation>
 <translation id="2585724835339714757">Гэта ўкладка абагульвае ваш экран.</translation>
 <translation id="2586657967955657006">Буфер абмену</translation>
 <translation id="2586672484245266891">Увядзіце карацейшы URL-адрас</translation>
@@ -1886,6 +1892,7 @@
 <translation id="3498215018399854026">Не ўдалося звязацца з вашымі бацькамі. Паўтарыце спробу.</translation>
 <translation id="3500417806337761827">Не ўдалося падключыць абагулены рэсурс: падключана занадта шмат рэсурсаў SMB.</translation>
 <translation id="3505030558724226696">Забараніць доступ да прылады</translation>
+<translation id="3507132249039706973">Стандартная абарона ўключана</translation>
 <translation id="3507421388498836150">Бягучыя дазволы для пашырэння "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="3507888235492474624">Пашукаць прылады Bluetooth яшчэ раз</translation>
 <translation id="3508492320654304609">Не ўдалося выдаліць даныя для ўваходу</translation>
@@ -3239,6 +3246,7 @@
 <translation id="5352033265844765294">Меткі часу</translation>
 <translation id="5353252989841766347">Эспарт пароляў з Chrome</translation>
 <translation id="5355099869024327351">Дазволіць Памочніку паказваць вам апавяшчэнні</translation>
+<translation id="5355191726083956201">Палепшаная абарона ўключана</translation>
 <translation id="5355926466126177564">Пашырэнне "<ph name="EXTENSION_NAME" />" змяніла старонку, якая паказваецца, калі вы ажыццяўляеце пошук праз амнібокс.</translation>
 <translation id="5359910752122114278">1 вынік</translation>
 <translation id="5360150013186312835">Паказаць на панэлі інструментаў</translation>
@@ -3550,6 +3558,7 @@
 <translation id="577322787686508614">Аперацыя чытання забаронена на прыладзе "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5774295353725270860">Адкрыць праграму "Файлы"</translation>
 <translation id="577624874850706961">Шукаць у файлах cookie</translation>
+<translation id="5776858208024364029">Паказваюцца вынікі пошуку (<ph name="NUMBER" />) па запыце "<ph name="QUERY" />"</translation>
 <translation id="5777468213129569553">Адкрыць Chrome</translation>
 <translation id="5778747455497889540">Ніжэй паказаны аўтаматычна створаны пароль модуля бяспекі, прызначаны для вашага камп'ютара:</translation>
 <translation id="5780011244986845107">Выбраная папка змяшчае канфідэнцыяльныя файлы. Даць праграме "<ph name="APP_NAME" />" пастаянны доступ на чытанне гэтай папкі?</translation>
@@ -4106,6 +4115,7 @@
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
+<translation id="6520876759015997832">Вынік пошуку <ph name="LIST_POSITION" /> з <ph name="LIST_SIZE" />: <ph name="SEARCH_RESULT_TEXT" />. Каб перайсці да раздзела, націсніце Enter.</translation>
 <translation id="652492607360843641">Тып сеткі, да якой вы падключаны, – <ph name="NETWORK_TYPE" />.</translation>
 <translation id="6527303717912515753">Абагуліць</translation>
 <translation id="6528513914570774834">Дазволіць іншым карыстальнікам прылады выкарыстоўваць гэту сетку</translation>
@@ -4117,6 +4127,7 @@
 <translation id="6532206849875187177">Бяспека і ўваход</translation>
 <translation id="6532527800157340614">Уваход не выкананы: не ўдалося атрымаць токен доступу. Праверце падключэнне да сеткі і паўтарыце спробу.</translation>
 <translation id="6532663472409656417">Зарэгістравана карпарацыяй</translation>
+<translation id="6535331821390304775">Заўсёды дазваляць сайту <ph name="ORIGIN" /> адкрываць файлы гэтага тыпу ў звязанай з імі праграме</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Заўвага!<ph name="END_BOLD" /> Уключайце гэту наладу толькі тады, калі ведаеце, што робіце, або калі вас папрасілі гэта зрабіць, бо накапленне даных можа знізіць прадукцыйнасць.</translation>
 <translation id="6541638731489116978">Гэтаму сайту быў заблакіраваны доступ да датыкаў руху.</translation>
 <translation id="6545665334409411530">Частата паўтораў</translation>
@@ -4246,6 +4257,7 @@
 <translation id="6727969043791803658">Прылада падключана. Зарад акумулятара: <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="6732801395666424405">Сертыфікаты не загружаны</translation>
 <translation id="6732900235521116609">Не ўдалося выдаліць ярлык</translation>
+<translation id="6734468588183300211">У рэжыме інкогніта сайты не могуць выкарыстоўваць файлы cookie для адсочвання вашых дзеянняў у браўзеры на розных сайтах у мэтах персаналізацыі рэкламы. Функцыі на некаторых сайтах могуць перастаць працаваць.</translation>
 <translation id="6735304988756581115">Паказаць файлы cookie і іншыя даныя сайта...</translation>
 <translation id="6736243959894955139">Адрас</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
@@ -4258,6 +4270,7 @@
 <translation id="674632704103926902">Уключыць перацягванне дотыкам</translation>
 <translation id="6748217015615267851">Сродак візуалізацыі: <ph name="RENDERER_URL" /></translation>
 <translation id="6748465660675848252">Вы можаце працягнуць, але будуць адноўлены толькі сінхранізаваныя даныя і налады. Усе лакальныя даныя будуць страчаны.</translation>
+<translation id="6749006854028927059">Сайты не могуць выкарыстоўваць файлы cookie для адсочвання вашых дзеянняў у браўзеры на розных сайтах, напрыклад, каб персаналізаваць рэкламу. Функцыі на некаторых сайтах могуць перастаць працаваць.</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (інкогніта)</translation>
 <translation id="6757101664402245801">URL-адрас скапіраваны</translation>
 <translation id="6758056191028427665">Паведаміце нам, што вы думаеце пра наш прадукт.</translation>
@@ -4349,6 +4362,7 @@
 <translation id="686664946474413495">Тэмпература колеру</translation>
 <translation id="6871644448911473373">Адказчык OCSP: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">Уведзены пароль адхілены серверам.</translation>
+<translation id="6874170800191969835">Выкананы пераход па запыце "<ph name="SEARCH_RESULT_TEXT" />".</translation>
 <translation id="6876155724392614295">Веласіпед</translation>
 <translation id="6876469544038980967">Не дапамагло</translation>
 <translation id="6878422606530379992">Выкарыстанне датчыкаў дазволена</translation>
@@ -4619,6 +4633,7 @@
 <translation id="7235737137505019098">На вашым ключы бяспекі недастаткова месца для стварэння іншых уліковых запісаў.</translation>
 <translation id="7238643356913091553"><ph name="NETWORK_NAME" />, падрабязныя звесткі</translation>
 <translation id="7240339475467890413">Падключыцца да новага хот-спота?</translation>
+<translation id="7240847845291869311">Ваша дзіця хоча дадаць на гэту прыладу Уліковы запіс Google тыпу G Suite for Education. У <ph name="LINK_BEGIN" />Апавяшчэнні аб прыватнасці G Suite for Education<ph name="LINK_END" /> бацькам і карыстальнікам G Suite for Education тлумачыцца, якія даныя прадукт збірае і як і што з імі адбываецца.</translation>
 <translation id="7241389281993241388">Увайдзіце ў <ph name="TOKEN_NAME" />, каб імпартаваць кліенцкі сертыфікат.</translation>
 <translation id="7241443820034350811">Калі ваш ключ бяспекі не паказваецца, націсніце і трымайце кнопку на ім як мінімум 5 секунд.</translation>
 <translation id="7243632151880336635">Выдаліць і выйсці</translation>
@@ -5201,6 +5216,7 @@
 <translation id="7987814697832569482">Заўсёды падключацца праз гэты VPN</translation>
 <translation id="7988355189918024273">Уключыць спецыяльныя магчымасці</translation>
 <translation id="7991296728590311172">Налады доступу праз пераключальнікі</translation>
+<translation id="7992202128769240372">Ліміт складае <ph name="SHEETS_LABEL" /> <ph name="NUMBER_OF_SHEETS" />, і ён перавышаны</translation>
 <translation id="7994350303002908848">Не ўдалося ўсталяваць Plugin VM. Паўтарыце спробу або звярніцеся да адміністратара прылад сваёй арганізацыі. Код памылкі: <ph name="ERROR_CODE" />.</translation>
 <translation id="7994702968232966508">Метад EAP</translation>
 <translation id="7997826902155442747">Прыярытэт працэсу</translation>

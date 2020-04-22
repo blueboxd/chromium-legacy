@@ -4,7 +4,6 @@
     cursor: pointer;
     display: flex;
     min-height: 64px;
-    outline: none;
     transition: background 200ms;
   }
 
@@ -45,13 +44,11 @@
             src="chrome://theme/IDR_LOGO_GOOGLE_COLOR_90" alt="">
       </if>
       <h1>$i18n{parentsListTitle}</h1>
-      <p id="parentsListBody" aria-hidden="true"
-          class="secondary">$i18n{parentsListBody}
-      </p>
+      <p id="parentsListBody" class="secondary">$i18n{parentsListBody}</p>
     </div>
-    <div tabindex="0" role="listbox" aria-labelledby="parentsListBody">
+    <div>
       <template is="dom-repeat" items="[[parents_]]">
-        <div role="option" tabindex="0" aria-selected="false"
+        <div role="button" tabindex="0"
             id="account-list-item-[[index]]"
             aria-label$="[[item.displayName]] [[item.email]]"
             class$="account-list-item main-padding

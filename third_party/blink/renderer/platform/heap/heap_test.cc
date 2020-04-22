@@ -604,10 +604,11 @@ TEST_F(HeapTest, IsHeapObjectAliveForConstPointer) {
   // See http://crbug.com/661363.
   auto* object = MakeGarbageCollected<SimpleObject>();
   HeapObjectHeader* header = HeapObjectHeader::FromPayload(object);
+  LivenessBroker broker = internal::LivenessBrokerFactory::Create();
   EXPECT_TRUE(header->TryMark());
-  EXPECT_TRUE(ThreadHeap::IsHeapObjectAlive(object));
+  EXPECT_TRUE(broker.IsHeapObjectAlive(object));
   const SimpleObject* const_object = const_cast<const SimpleObject*>(object);
-  EXPECT_TRUE(ThreadHeap::IsHeapObjectAlive(const_object));
+  EXPECT_TRUE(broker.IsHeapObjectAlive(const_object));
 }
 
 class ClassWithMember : public GarbageCollected<ClassWithMember> {
@@ -5302,8 +5303,10 @@ TEST_F(HeapTest, GarbageCollectedMixinInConstruction) {
 
 TEST_F(HeapTest, GarbageCollectedMixinIsAliveDuringConstruction) {
   using O = ObjectWithMixinWithCallbackBeforeInitializer<IntWrapper>;
-  MakeGarbageCollected<O>(base::BindOnce(
-      [](O::Mixin* thiz) { CHECK(ThreadHeap::IsHeapObjectAlive(thiz)); }));
+  MakeGarbageCollected<O>(base::BindOnce([](O::Mixin* thiz) {
+    LivenessBroker broker = internal::LivenessBrokerFactory::Create();
+    CHECK(broker.IsHeapObjectAlive(thiz));
+  }));
 
   using P = HeapVector<Member<HeapLinkedHashSet<Member<IntWrapper>>>>;
   MakeGarbageCollected<P>();

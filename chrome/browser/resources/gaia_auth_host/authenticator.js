@@ -1236,6 +1236,14 @@ cr.define('cr.login', function() {
         return;
       }
 
+      // Ignore errors from subframe loads, as these should not cause an error
+      // screen to be displayed. When a subframe load is triggered, it means
+      // that the main frame load has succeeded, so the host is reachable in
+      // general.
+      if (!e.isTopLevel) {
+        return;
+      }
+
       this.dispatchEvent(new CustomEvent(
           'loadAbort', {detail: {error_code: e.code, src: e.url}}));
     }

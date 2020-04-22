@@ -41,9 +41,8 @@ absl_source_set("test_util") {
     ":time",
     "../base:raw_logging_internal",
     "../time/internal/cctz:time_zone",
-    "//testing/gmock",
-    "//testing/gtest",
-    "//third_party/googletest/:gmock",
+    "//third_party/googletest:gtest",
+    "//third_party/googletest:gmock",
   ]
   visibility = []
   visibility += [ "../time:*" ]

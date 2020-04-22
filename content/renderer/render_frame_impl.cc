@@ -2918,9 +2918,9 @@ RenderFrameImpl::GetPeripheralContentStatus(
       main_frame_origin, content_origin, unobscured_size, record_decision);
 }
 
-void RenderFrameImpl::WhitelistContentOrigin(
+void RenderFrameImpl::AllowlistContentOrigin(
     const url::Origin& content_origin) {
-  return plugin_power_saver_helper_->WhitelistContentOrigin(content_origin);
+  return plugin_power_saver_helper_->AllowlistContentOrigin(content_origin);
 }
 
 void RenderFrameImpl::PluginDidStartLoading() {

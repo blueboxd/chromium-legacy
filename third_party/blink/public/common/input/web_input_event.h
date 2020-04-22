@@ -35,6 +35,7 @@
 
 #include <memory>
 
+#include "base/logging.h"
 #include "base/time/time.h"
 #include "third_party/blink/public/common/common_export.h"
 #include "third_party/blink/public/mojom/input/input_event.mojom-shared.h"

@@ -67,13 +67,6 @@ class CORE_EXPORT ElementInternals : public ScriptWrappable,
   void SetElementArrayAttribute(
       const QualifiedName& name,
       const base::Optional<HeapVector<Member<Element>>>& elements);
-  // TODO(crbug.com/1060971): Remove |is_null| version.
-  HeapVector<Member<Element>> GetElementArrayAttribute(
-      const QualifiedName& name,
-      bool is_null);  // DEPRECATED
-  void SetElementArrayAttribute(const QualifiedName&,
-                                HeapVector<Member<Element>>,
-                                bool is_null);  // DEPRECATED
   bool HasAttribute(const QualifiedName& attribute) const;
   const HashMap<QualifiedName, AtomicString>& GetAttributes() const;
 

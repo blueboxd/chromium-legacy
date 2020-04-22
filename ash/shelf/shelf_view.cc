@@ -1227,7 +1227,7 @@ void ShelfView::LayoutToIdealBounds() {
 }
 
 bool ShelfView::IsItemPinned(const ShelfItem& item) const {
-  return item.type == TYPE_PINNED_APP || item.type == TYPE_BROWSER_SHORTCUT;
+  return IsPinnedShelfItemType(item.type);
 }
 
 void ShelfView::OnTabletModeChanged() {
@@ -1534,19 +1534,14 @@ ShelfView::RemovableState ShelfView::RemovableByRipOff(int index) const {
 }
 
 bool ShelfView::SameDragType(ShelfItemType typea, ShelfItemType typeb) const {
-  switch (typea) {
-    case TYPE_PINNED_APP:
-    case TYPE_BROWSER_SHORTCUT:
-      return (typeb == TYPE_PINNED_APP || typeb == TYPE_BROWSER_SHORTCUT);
-    case TYPE_APP:
-    case TYPE_DIALOG:
-      return typeb == typea;
-    case TYPE_UNDEFINED:
-      NOTREACHED() << "ShelfItemType must be set.";
-      return false;
+  if (IsPinnedShelfItemType(typea) && IsPinnedShelfItemType(typeb))
+    return true;
+  if (typea == TYPE_UNDEFINED || typeb == TYPE_UNDEFINED) {
+    NOTREACHED() << "ShelfItemType must be set.";
+    return false;
   }
-  NOTREACHED();
-  return false;
+  // Running app or dialog.
+  return typea == typeb;
 }
 
 bool ShelfView::ShouldFocusOut(bool reverse, views::View* button) {
@@ -1890,8 +1885,7 @@ void ShelfView::ShelfItemChanged(int model_index, const ShelfItem& old_item) {
       button->SchedulePaint();
       break;
     }
-
-    default:
+    case TYPE_UNDEFINED:
       break;
   }
 }

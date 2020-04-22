@@ -38,11 +38,10 @@ void SetPasswordFormFillData(const std::string& origin,
   form_data->password_field = password;
   if (additional_username) {
     autofill::PasswordAndMetadata additional_password_data;
+    additional_password_data.username = base::UTF8ToUTF16(additional_username);
     additional_password_data.password = base::UTF8ToUTF16(additional_password);
     additional_password_data.realm.clear();
-    form_data->additional_logins.insert(
-        std::pair<base::string16, autofill::PasswordAndMetadata>(
-            base::UTF8ToUTF16(additional_username), additional_password_data));
+    form_data->additional_logins.push_back(additional_password_data);
   }
   form_data->wait_for_username = wait_for_username;
 }

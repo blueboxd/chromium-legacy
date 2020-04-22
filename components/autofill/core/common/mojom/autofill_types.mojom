@@ -16,17 +16,17 @@ import "url/mojom/url.mojom";
 // submitted. Recorded into a UMA histogram, so order of enumerators should
 // not be changed.
 enum SubmissionIndicatorEvent {
-    NONE = 0,
-    HTML_FORM_SUBMISSION = 1,
-    SAME_DOCUMENT_NAVIGATION = 2,
-    XHR_SUCCEEDED = 3,
-    FRAME_DETACHED = 4,
-    // DEPRECATED_MANUAL_SAVE,
-    DOM_MUTATION_AFTER_XHR = 6,
-    PROVISIONALLY_SAVED_FORM_ON_START_PROVISIONAL_LOAD = 7,
-    // DEPRECATED_FILLED_FORM_ON_START_PROVISIONAL_LOAD,
-    // DEPRECATED_FILLED_INPUT_ELEMENTS_ON_START_PROVISIONAL_LOAD,
-    PROBABLE_FORM_SUBMISSION = 10,
+  NONE = 0,
+  HTML_FORM_SUBMISSION = 1,
+  SAME_DOCUMENT_NAVIGATION = 2,
+  XHR_SUCCEEDED = 3,
+  FRAME_DETACHED = 4,
+  // DEPRECATED_MANUAL_SAVE,
+  DOM_MUTATION_AFTER_XHR = 6,
+  PROVISIONALLY_SAVED_FORM_ON_START_PROVISIONAL_LOAD = 7,
+  // DEPRECATED_FILLED_FORM_ON_START_PROVISIONAL_LOAD,
+  // DEPRECATED_FILLED_INPUT_ELEMENTS_ON_START_PROVISIONAL_LOAD,
+  PROBABLE_FORM_SUBMISSION = 10,
 };
 
 // This enum lists form field types as understood by the password manager,
@@ -196,6 +196,7 @@ struct FormDataPredictions {
 
 // autofill::PasswordAndMetadata
 struct PasswordAndMetadata {
+  mojo_base.mojom.String16 username;
   mojo_base.mojom.String16 password;
   string realm;
   bool uses_account_store;
@@ -211,7 +212,7 @@ struct PasswordFormFillData {
   bool username_may_use_prefilled_placeholder;
   string preferred_realm;
   bool uses_account_store;
-  map<mojo_base.mojom.String16, PasswordAndMetadata> additional_logins;
+  array<PasswordAndMetadata> additional_logins;
   bool wait_for_username;
   bool has_renderer_ids;
 };

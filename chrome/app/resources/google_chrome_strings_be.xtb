@@ -102,6 +102,7 @@
 <translation id="3735758079232443276">Пашырэнне "<ph name="EXTENSION_NAME" />" змяніла старонку, якая паказваецца пры запуску Chrome.</translation>
 <translation id="3780814664026482060">Chrome – <ph name="PAGE_TITLE" /></translation>
 <translation id="386202838227397562">Закрыйце ўсе вокны Google Chrome і паўтарыце спробу.</translation>
+<translation id="3865754807470779944">Усталявана версія Chrome <ph name="PRODUCT_VERSION" /></translation>
 <translation id="3873044882194371212">Адкрыць спасылку ў акне &amp;інкогніта Chrome</translation>
 <translation id="3889417619312448367">Выдаленне Google Chrome</translation>
 <translation id="4050175100176540509">У апошняй версіі з'явіліся важныя паляпшэнні сістэмы бяспекі і новыя функцыі.</translation>
@@ -243,6 +244,7 @@
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8556340503434111824">Даступная новая версія Google Chrome. Яшчэ хутчэйшая.</translation>
 <translation id="8614913330719544658">Google Chrome не адказвае. Перазапусціць?</translation>
+<translation id="861702415419836452">Chrome запытвае дазвол на доступ да камеры, каб стварыць 3D-карту асяроддзя</translation>
 <translation id="8625237574518804553">{0,plural, =1{Chrome будзе перазапушчаны праз 1 хвіліну}one{Chrome будзе перазапушчаны праз # хвіліну}few{Chrome будзе перазапушчаны праз # хвіліны}many{Chrome будзе перазапушчаны праз # хвілін}other{Chrome будзе перазапушчаны праз # хвіліны}}</translation>
 <translation id="8641606876632989680">Chrome адправіць вам апавяшчэнне, калі вы ўвойдзеце ва ўліковы запіс, выкарыстаўшы раскрыты пароль</translation>
 <translation id="8669527147644353129">Памочнік Google Chrome</translation>

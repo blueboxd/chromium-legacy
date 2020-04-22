@@ -7,8 +7,8 @@
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
 #include "components/sessions/core/tab_restore_service.h"
-#include "components/sessions/ios/ios_live_tab.h"
 #include "components/sessions/ios/ios_restore_live_tab.h"
+#include "components/sessions/ios/ios_webstate_live_tab.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -90,7 +90,7 @@
   }
 
   _restoreService->CreateHistoricalTab(
-      sessions::IOSLiveTab::GetForWebState(webState), atIndex);
+      sessions::IOSWebStateLiveTab::GetForWebState(webState), atIndex);
 }
 
 @end

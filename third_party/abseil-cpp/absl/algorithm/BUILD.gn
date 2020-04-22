@@ -17,3 +17,27 @@ absl_source_set("container") {
     "../meta:type_traits",
   ]
 }
+
+absl_source_set("algorithm_test") {
+  testonly = true
+  sources = [ "algorithm_test.cc" ]
+  deps = [
+    ":algorithm",
+    "//third_party/googletest:gtest",
+    "//third_party/googletest:gmock",
+  ]
+}
+
+absl_source_set("container_test") {
+  testonly = true
+  sources = [ "container_test.cc" ]
+  deps = [
+    ":container",
+    "../base",
+    "../base:core_headers",
+    "../memory",
+    "../types:span",
+    "//third_party/googletest:gtest",
+    "//third_party/googletest:gmock",
+  ]
+}

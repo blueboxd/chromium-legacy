@@ -5,6 +5,7 @@
 #ifndef FUCHSIA_RUNNERS_CAST_CAST_RUNNER_H_
 #define FUCHSIA_RUNNERS_CAST_CAST_RUNNER_H_
 
+#include <chromium/cast/cpp/fidl.h>
 #include <fuchsia/legacymetrics/cpp/fidl.h>
 #include <fuchsia/sys/cpp/fidl.h>
 #include <fuchsia/web/cpp/fidl.h>
@@ -13,14 +14,12 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/fuchsia/startup_context.h"
-#include "base/macros.h"
-#include "fuchsia/fidl/chromium/cast/cpp/fidl.h"
 #include "fuchsia/runners/cast/cast_component.h"
 #include "fuchsia/runners/cast/pending_cast_component.h"
-#include "fuchsia/runners/common/web_content_runner.h"
 
 namespace base {
 namespace fuchsia {
@@ -28,27 +27,22 @@ class FilteredServiceDirectory;
 }  // namespace fuchsia
 }  // namespace base
 
+class WebContentRunner;
+
 // sys::Runner which instantiates Cast activities specified via cast/casts URIs.
-class CastRunner : public WebContentRunner,
+class CastRunner : public fuchsia::sys::Runner,
                    public PendingCastComponent::Delegate {
  public:
-  using OnDestructionCallback = base::OnceCallback<void(CastRunner*)>;
-
   static constexpr uint16_t kRemoteDebuggingPort = 9222;
 
-  // Creates a Runner for Cast components.
-  // |get_context_params_callback|: Returns the context parameters to use.
-  // |is_headless|: True if |get_context_params_callback| sets the HEADLESS
-  //     feature flag.
-  CastRunner(GetContextParamsCallback get_context_params_callback,
-             bool is_headless);
+  // Creates the Runner for Cast components.
+  // |is_headless|: True if this instance should create Contexts with the
+  //                HEADLESS feature set.
+  explicit CastRunner(bool is_headless);
   ~CastRunner() final;
 
   CastRunner(const CastRunner&) = delete;
   CastRunner& operator=(const CastRunner&) = delete;
-
-  // WebContentRunner implementation.
-  void DestroyComponent(WebComponent* component) final;
 
   // fuchsia::sys::Runner implementation.
   void StartComponent(fuchsia::sys::Package package,
@@ -56,47 +50,56 @@ class CastRunner : public WebContentRunner,
                       fidl::InterfaceRequest<fuchsia::sys::ComponentController>
                           controller_request) final;
 
-  // Returns true if this Runner is configured not to use Scenic.
-  bool is_headless() const { return is_headless_; }
+  void SetOnMainContextLostCallbackForTest(base::OnceClosure on_context_lost);
+
+  // Disables use of the VULKAN feature when creating Contexts. Must be set
+  // before calling StartComponent().
+  void set_disable_vulkan_for_test() { disable_vulkan_for_test_ = true; }
 
  private:
-  // Creates and returns the service directory that is passed to the main web
-  // context.
-  std::unique_ptr<base::fuchsia::FilteredServiceDirectory>
-  CreateServiceDirectory();
-
   // PendingCastComponent::Delegate implementation.
   void LaunchPendingComponent(PendingCastComponent* pending_component,
                               CastComponent::Params params) final;
   void CancelPendingComponent(PendingCastComponent* pending_component) final;
 
-  // Creates a component in this Runner, using the supplied |params|.
-  void CreateAndRegisterCastComponent(CastComponent::Params component_params);
+  // Handles component destruction.
+  void OnComponentDestroyed(CastComponent* component);
 
-  // Called when the isolated component in |runner| is ready to be destroyed.
-  void OnIsolatedRunnerEmpty(CastRunner* runner);
+  // Handlers used to provide parameters for main & isolated Contexts.
+  fuchsia::web::CreateContextParams GetCommonContextParams();
+  fuchsia::web::CreateContextParams GetMainContextParams();
+  fuchsia::web::CreateContextParams GetIsolatedContextParams(
+      std::vector<fuchsia::web::ContentDirectoryProvider> content_directories);
 
   // Creates a CastRunner configured to serve data from content directories in
-  // |params|.
-  CastRunner* CreateChildRunnerForIsolatedComponent(
+  // |component_params|.
+  WebContentRunner* CreateIsolatedContextForParams(
       CastComponent::Params* component_params);
 
-  // Handler for fuchsia.media.Audio requests in |service_directory_|.
-  void ConnectAudioProtocol(
+  // Called when an isolated component terminates, to allow the Context hosting
+  // it to be torn down.
+  void OnIsolatedContextEmpty(WebContentRunner* context);
+
+  // Connection handlers for redirected services.
+  void OnAudioServiceRequest(
       fidl::InterfaceRequest<fuchsia::media::Audio> request);
-
-  // Handler for fuchsia.legacymetrics.MetricsRecorder requests in
-  // |service_directory_|.
-  void ConnectMetricsRecorderProtocol(
+  void OnMetricsRecorderServiceRequest(
       fidl::InterfaceRequest<fuchsia::legacymetrics::MetricsRecorder> request);
-
-  // Returns the parameters with which the main context should be created.
-  fuchsia::web::CreateContextParams GetMainContextParams();
-
-  const WebContentRunner::GetContextParamsCallback get_context_params_callback_;
 
   // True if this Runner uses Context(s) with the HEADLESS feature set.
   const bool is_headless_;
+
+  // Holds the main fuchsia.web.Context used to host CastComponents.
+  // Note that although |main_context_| is actually a WebContentRunner, that is
+  // only being used to maintain the Context for the hosted components.
+  const std::unique_ptr<base::fuchsia::FilteredServiceDirectory> main_services_;
+  const std::unique_ptr<WebContentRunner> main_context_;
+
+  // Holds fuchsia.web.Contexts used to host isolated components.
+  const std::unique_ptr<base::fuchsia::FilteredServiceDirectory>
+      isolated_services_;
+  base::flat_set<std::unique_ptr<WebContentRunner>, base::UniquePtrComparator>
+      isolated_contexts_;
 
   // Temporarily holds a PendingCastComponent instance, responsible for fetching
   // the parameters required to launch the component, for each call to
@@ -105,21 +108,11 @@ class CastRunner : public WebContentRunner,
                  base::UniquePtrComparator>
       pending_components_;
 
-  // Invoked upon destruction of "isolated" runners, used to signal termination
-  // to parents.
-  OnDestructionCallback on_component_destroyed_callback_;
-
-  // Manages isolated CastRunners owned by |this| instance.
-  base::flat_set<std::unique_ptr<CastRunner>, base::UniquePtrComparator>
-      isolated_runners_;
-
-  // ServiceDirectory passed to the main Context, to allow Audio capturer
-  // service requests to be routed to the relevant Agent.
-  const std::unique_ptr<base::fuchsia::FilteredServiceDirectory>
-      service_directory_;
-
   // Last component that was created with permission to access MICROPHONE.
   CastComponent* audio_capturer_component_ = nullptr;
+
+  // True if Contexts should be created without VULKAN set.
+  bool disable_vulkan_for_test_ = false;
 };
 
 #endif  // FUCHSIA_RUNNERS_CAST_CAST_RUNNER_H_

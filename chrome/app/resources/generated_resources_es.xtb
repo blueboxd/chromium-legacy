@@ -421,6 +421,11 @@
 <translation id="1555130319947370107">Azul</translation>
 <translation id="1556537182262721003">No se ha podido mover el directorio de la extensión al perfil.</translation>
 <translation id="155865706765934889">Panel táctil</translation>
+<translation id="1560763881671211335">Los administradores de G Suite para Centros Educativos determinan a qué servicios de Google pueden acceder sus usuarios después de haber iniciado sesión en una cuenta de G Suite para Centros Educativos. Los administradores de centros educativos deben proporcionar u obtener el consentimiento para que los usuarios menores de edad puedan usar los servicios.
+
+    Los datos de navegación (incluidos el historial, los marcadores y las contraseñas) se guardarán con la cuenta de Family Link y no con la cuenta de centro educativo.
+
+    Tus ajustes de control parental de Family Link seguirán aplicándose. Si habías bloqueado una aplicación o un sitio web anteriormente, no tendrás que volver a hacerlo.</translation>
 <translation id="1566049601598938765">Sitio web</translation>
 <translation id="15662109988763471">La impresora seleccionada no se encuentra disponible o no se ha instalado correctamente. Comprueba tu impresora o prueba a seleccionar otra.</translation>
 <translation id="1567387640189251553">Se ha conectado otro teclado desde la última vez que introdujiste la contraseña. Es posible que esté intentando captar tus pulsaciones de teclas.</translation>
@@ -1200,6 +1205,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="258095186877893873">Largo</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (plataforma <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">No se ha podido obtener el ticket de Kerberos. Vuelve a intentarlo o ponte en contacto con el administrador de dispositivos de tu organización. Código de error: <ph name="ERROR_CODE" />.</translation>
+<translation id="2585013490795742997">Se muestra 1 resultado de búsqueda de <ph name="QUERY" /></translation>
 <translation id="2585724835339714757">Esta pestaña está compartiendo tu pantalla.</translation>
 <translation id="2586657967955657006">Portapapeles</translation>
 <translation id="2586672484245266891">Introduce una URL más corta</translation>
@@ -1886,6 +1892,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="3498215018399854026">No hemos podido contactar con tu padre/madre/tutor. Vuelve a intentarlo.</translation>
 <translation id="3500417806337761827">No se ha podido activar el sistema de archivos compartidos. Ya se han activado demasiados sistemas de archivos compartidos SMB.</translation>
 <translation id="3505030558724226696">Revocar acceso al dispositivo</translation>
+<translation id="3507132249039706973">La protección estándar está activada</translation>
 <translation id="3507421388498836150">Permisos actuales para <ph name="EXTENSION_NAME" /></translation>
 <translation id="3507888235492474624">Volver a buscar dispositivos Bluetooth</translation>
 <translation id="3508492320654304609">No se han podido eliminar tus datos de inicio de sesión</translation>
@@ -3238,6 +3245,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="5352033265844765294">Impresión de fecha</translation>
 <translation id="5353252989841766347">Exportar contraseñas de Chrome</translation>
 <translation id="5355099869024327351">Permitir que el Asistente te muestre notificaciones</translation>
+<translation id="5355191726083956201">La protección mejorada está activada</translation>
 <translation id="5355926466126177564">La extensión <ph name="EXTENSION_NAME" /> ha cambiado la página que se muestra al buscar en el omnibox.</translation>
 <translation id="5359910752122114278">1 resultado</translation>
 <translation id="5360150013186312835">Mostrar en la barra de herramientas</translation>
@@ -3549,6 +3557,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="577322787686508614">No se permite la operación de lectura en "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5774295353725270860">Abrir Archivos</translation>
 <translation id="577624874850706961">Buscar cookies</translation>
+<translation id="5776858208024364029">Mostrando <ph name="NUMBER" /> resultados de búsqueda de <ph name="QUERY" /></translation>
 <translation id="5777468213129569553">Abrir Chrome</translation>
 <translation id="5778747455497889540">Esta es la contraseña del módulo seguro generada aleatoriamente que se ha asignado a tu ordenador:</translation>
 <translation id="5780011244986845107">La carpeta que has seleccionado contiene archivos confidenciales. ¿Seguro que quieres conceder a "<ph name="APP_NAME" />" acceso de lectura permanente a esta carpeta?</translation>
@@ -4105,6 +4114,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
 <ph name="FILE_INFO" />
 <ph name="EVENT_NAME" /></translation>
+<translation id="6520876759015997832">Resultado de búsqueda <ph name="LIST_POSITION" /> de <ph name="LIST_SIZE" />: <ph name="SEARCH_RESULT_TEXT" />. Pulsa Intro para desplazarte a la sección.</translation>
 <translation id="652492607360843641">Estás conectado a una red <ph name="NETWORK_TYPE" />.</translation>
 <translation id="6527303717912515753">Compartir</translation>
 <translation id="6528513914570774834">Permitir que otros usuarios de este dispositivo usen esta red</translation>
@@ -4116,6 +4126,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6532206849875187177">Seguridad e inicio de sesión</translation>
 <translation id="6532527800157340614">Se ha producido un error al iniciar sesión porque no se ha podido recuperar tu token de acceso. Revisa tu conexión de red y vuelve a intentarlo.</translation>
 <translation id="6532663472409656417">Registrado en la empresa</translation>
+<translation id="6535331821390304775">Permitir siempre que <ph name="ORIGIN" /> abra este tipo de enlaces en la aplicación asociada</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Nota:<ph name="END_BOLD" /> Habilita esta opción solo si tienes conciencia de los efectos de esta acción o si se te ha pedido que lo hagas, ya que la recogida de datos puede reducir el rendimiento.</translation>
 <translation id="6541638731489116978">Este sitio web no tiene permiso para acceder a los sensores de movimiento.</translation>
 <translation id="6545665334409411530">Frecuencia de repetición</translation>
@@ -4245,6 +4256,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6727969043791803658">Conectado, <ph name="BATTERY_PERCENTAGE" /> % de batería</translation>
 <translation id="6732801395666424405">No se han cargado los certificados</translation>
 <translation id="6732900235521116609">No se ha podido retirar el acceso directo</translation>
+<translation id="6734468588183300211">Mientras estás en modo de incógnito, los sitios web no pueden usar tus cookies para ver tu actividad de navegación en otros sitios web con el objetivo de, por ejemplo, personalizar tus anuncios. Es posible que las funciones de algunos sitios web no funcionen correctamente.</translation>
 <translation id="6735304988756581115">Mostrar cookies y datos de otros sitios...</translation>
 <translation id="6736243959894955139">Dirección</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
@@ -4257,6 +4269,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="674632704103926902">Habilitar la función tocar y arrastrar</translation>
 <translation id="6748217015615267851">Procesador: <ph name="RENDERER_URL" /></translation>
 <translation id="6748465660675848252">Puedes continuar, pero solo se restaurarán tu configuración y tus datos sincronizados. Se perderán todos los datos locales.</translation>
+<translation id="6749006854028927059">Los sitios web no pueden usar cookies para ver tu actividad de navegación en otros sitios web con el objetivo de, por ejemplo, personalizar anuncios. Es posible que las funciones de algunos sitios web no funcionen correctamente.</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (incógnito)</translation>
 <translation id="6757101664402245801">URL copiada</translation>
 <translation id="6758056191028427665">Envíanos tu opinión sobre nuestro servicio.</translation>
@@ -4348,6 +4361,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="686664946474413495">Temperatura del color</translation>
 <translation id="6871644448911473373">Respuesta de OCSP: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">El servidor ha rechazado la contraseña que has introducido.</translation>
+<translation id="6874170800191969835">Se ha desplazado a <ph name="SEARCH_RESULT_TEXT" />.</translation>
 <translation id="6876155724392614295">Bici</translation>
 <translation id="6876469544038980967">No es útil</translation>
 <translation id="6878422606530379992">Sensores permitidos</translation>
@@ -4618,6 +4632,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7235737137505019098">Tu llave de seguridad no tiene suficiente espacio libre para más cuentas.</translation>
 <translation id="7238643356913091553"><ph name="NETWORK_NAME" />, detalles</translation>
 <translation id="7240339475467890413">¿Quieres conectarte a un nuevo punto de acceso?</translation>
+<translation id="7240847845291869311">Tu hijo/a quiere añadir en este dispositivo una cuenta de Google de G Suite para Centros Educativos. El objetivo del <ph name="LINK_BEGIN" />Aviso de Privacidad de G Suite para Centros Educativos<ph name="LINK_END" /> es informar a padres y usuarios de G Suite para Centros Educativos sobre los datos que recoge el producto, los motivos por los que se recogen y lo que se hace con ellos.</translation>
 <translation id="7241389281993241388">Inicia sesión en <ph name="TOKEN_NAME" /> para importar el certificado de cliente.</translation>
 <translation id="7241443820034350811">Si no aparece tu llave de seguridad, pulsa el botón de la llave durante al menos 5 segundos.</translation>
 <translation id="7243632151880336635">Borrar y cerrar sesión</translation>
@@ -5200,6 +5215,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7987814697832569482">Conectar siempre a través de esta VPN</translation>
 <translation id="7988355189918024273">Habilita las funciones de accesibilidad</translation>
 <translation id="7991296728590311172">Ajustes de accesibilidad mediante interruptores</translation>
+<translation id="7992202128769240372">Supera el límite de <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="7994350303002908848">No se ha podido instalar Plugin VM. Vuelve a intentarlo o ponte en contacto con el administrador de dispositivos de tu organización. Código de error: <ph name="ERROR_CODE" />.</translation>
 <translation id="7994702968232966508">Método EAP</translation>
 <translation id="7997826902155442747">Prioridad del proceso</translation>

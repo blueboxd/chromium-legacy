@@ -271,7 +271,7 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
       forced_layout_start_time_(base::TimeTicks()),
       paint_frame_count_(0),
       unique_id_(NewUniqueObjectId()),
-      layout_shift_tracker_(std::make_unique<LayoutShiftTracker>(this)),
+      layout_shift_tracker_(MakeGarbageCollected<LayoutShiftTracker>(this)),
       paint_timing_detector_(MakeGarbageCollected<PaintTimingDetector>(this))
 #if DCHECK_IS_ON()
       ,
@@ -301,6 +301,7 @@ void LocalFrameView::Trace(Visitor* visitor) {
   visitor->Trace(viewport_scrollable_area_);
   visitor->Trace(anchoring_adjustment_queue_);
   visitor->Trace(scroll_event_queue_);
+  visitor->Trace(layout_shift_tracker_);
   visitor->Trace(paint_timing_detector_);
   visitor->Trace(lifecycle_observers_);
 }

@@ -5,11 +5,16 @@
 #ifndef IOS_CHROME_CREDENTIAL_PROVIDER_EXTENSION_UI_CREDENTIAL_LIST_UI_HANDLER_H_
 #define IOS_CHROME_CREDENTIAL_PROVIDER_EXTENSION_UI_CREDENTIAL_LIST_UI_HANDLER_H_
 
+@protocol Credential;
+
 // Handler for presenting UI components for the credential list.
 @protocol CredentialListUIHandler <NSObject>
 
 // Asks the presenter to display the empty credentials view.
 - (void)showEmptyCredentials;
+
+// Asks the presenter to display the details for given |credential|.
+- (void)showDetailsForCredential:(id<Credential>)credential;
 
 @end
 

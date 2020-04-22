@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/test/chromedriver/chrome/scoped_temp_dir_with_retry.h"
+#include "base/logging.h"
 #include "base/threading/platform_thread.h"
 
 ScopedTempDirWithRetry::~ScopedTempDirWithRetry() {

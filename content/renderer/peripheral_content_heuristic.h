@@ -30,7 +30,7 @@ class CONTENT_EXPORT PeripheralContentHeuristic {
   //  - Cross-origin:  a.com -> b.com/iframe.html -> b.com/plugin.swf
   //  - Same-origin:   a.com -> b.com/iframe-to-a.html -> a.com/plugin.swf
   //
-  // |origin_whitelist| is the whitelist of content origins.
+  // |origin_allowlist| is the allowlist of content origins.
   //
   // |main_frame_origin| is the origin of the main frame.
   //
@@ -38,7 +38,7 @@ class CONTENT_EXPORT PeripheralContentHeuristic {
   //
   // |unobscured_size| is in zoom and device scale independent logical pixels.
   static RenderFrame::PeripheralContentStatus GetPeripheralStatus(
-      const std::set<url::Origin>& origin_whitelist,
+      const std::set<url::Origin>& origin_allowlist,
       const url::Origin& main_frame_origin,
       const url::Origin& content_origin,
       const gfx::Size& unobscured_size);

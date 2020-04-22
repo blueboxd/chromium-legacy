@@ -36,16 +36,6 @@ AnimationPlaybackEvent::AnimationPlaybackEvent(
 
 AnimationPlaybackEvent::~AnimationPlaybackEvent() = default;
 
-double AnimationPlaybackEvent::currentTime(bool& is_null) const {
-  is_null = !current_time_.has_value();
-  return current_time_.value_or(0);
-}
-
-double AnimationPlaybackEvent::timelineTime(bool& is_null) const {
-  is_null = !timeline_time_.has_value();
-  return timeline_time_.value_or(0);
-}
-
 const AtomicString& AnimationPlaybackEvent::InterfaceName() const {
   return event_interface_names::kAnimationPlaybackEvent;
 }

@@ -12,6 +12,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="1414495520565016063">Has iniciado sesión en Chromium</translation>
 <translation id="151962892725702025">Chromium OS no ha podido sincronizar los datos porque la función de sincronización no está disponible para tu dominio.</translation>
 <translation id="1524282610922162960">Compartir una pestaña de Chromium</translation>
+<translation id="1553461853655228091">Para crear un mapa 3D de tu entorno, Chromium necesita permiso para acceder a tu cámara</translation>
 <translation id="1607715478322902680">{COUNT,plural, =0{Tu administrador pide que reinicies Chromium para aplicar una actualización}=1{Tu administrador pide que reinicies Chromium para aplicar una actualización. La ventana de incógnito no se volverá a abrir.}other{Tu administrador pide que reinicies Chromium para aplicar una actualización. Las # ventanas de incógnito no se volverán a abrir.}}</translation>
 <translation id="1708666629004767631">Hay disponible una nueva versión más segura de Chromium.</translation>
 <translation id="1774152462503052664">Permitir que Chromium se ejecute en segundo plano</translation>
@@ -57,6 +58,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="3258596308407688501">Chromium no puede leer el directorio de datos ni escribir en él:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
+<translation id="3283186697780795848">Está instalada la versión <ph name="PRODUCT_VERSION" /> de Chromium</translation>
 <translation id="328888136576916638">Faltan las claves de la API de Google. Se inhabilitarán algunas funciones de Chromium.</translation>
 <translation id="3296368748942286671">Seguir ejecutando aplicaciones en segundo plano al cerrar Chromium</translation>
 <translation id="331951419404882060">Chromium OS no ha podido sincronizar los datos debido a un error de inicio de sesión.</translation>

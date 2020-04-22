@@ -54,6 +54,7 @@
 <translation id="1331212799747679585">Chrome 无法更新。更多选项</translation>
 <translation id="1332501820983677155">Google Chrome 功能快捷键</translation>
 <translation id="1360432990279830238">退出帐号并关闭同步功能？</translation>
+<translation id="1364532808393826295"><ph name="APP_NAME" /> - <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">网站 <ph name="SITE_NAME" /> 已添加</translation>
 <translation id="1373696734384179344">内存不足，无法下载所选内容。</translation>
 <translation id="1376578503827013741">正在计算…</translation>
@@ -140,6 +141,7 @@
 <translation id="2017836877785168846">清除历史记录和地址栏中的自动填充项。</translation>
 <translation id="2021896219286479412">全屏网站控件</translation>
 <translation id="2025115093177348061">增强现实</translation>
+<translation id="2030769033451695672">点按即可返回到 <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2038563949887743358">开启“请求切换到桌面版网站”</translation>
 <translation id="2041019821020695769">要让 Chrome 向您发送通知，您还需要在 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />中开启通知。</translation>
 <translation id="204321170514947529">Chrome 中也有<ph name="APP_NAME" />的数据</translation>
@@ -301,6 +303,7 @@
 <translation id="3207960819495026254">已加书签</translation>
 <translation id="3211426585530211793">已删除“<ph name="ITEM_TITLE" />”</translation>
 <translation id="321773570071367578">如果您忘记了密码或想更改此设置，请<ph name="BEGIN_LINK" />重置同步设置<ph name="END_LINK" /></translation>
+<translation id="3223655101706843289">这会清除 <ph name="ORIGIN" /> 及其在您的主屏幕中安装的应用存储的所有数据和 Cookie。</translation>
 <translation id="3227137524299004712">麦克风</translation>
 <translation id="3232754137068452469">网络应用</translation>
 <translation id="3236059992281584593">还剩 1 分钟</translation>
@@ -535,6 +538,7 @@
 <translation id="4943872375798546930">找不到结果</translation>
 <translation id="4961107849584082341">将此页面翻译成任何语言</translation>
 <translation id="4962975101802056554">撤消设备的所有权限</translation>
+<translation id="4964199952259983386">若要允许 Chrome 使用 AR 功能，您还需在 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />中开启摄像头。</translation>
 <translation id="4970824347203572753">无法在您所在的国家/地区使用</translation>
 <translation id="497421865427891073">前进</translation>
 <translation id="4988210275050210843">正在下载文件 (<ph name="MEGABYTES" />)。</translation>
@@ -634,6 +638,7 @@
 <translation id="5684874026226664614">糟糕，此网页内容无法翻译。</translation>
 <translation id="5686790454216892815">文件名过长</translation>
 <translation id="5689516760719285838">位置信息</translation>
+<translation id="5690795753582697420">已在 Android 设置中关闭摄像头</translation>
 <translation id="5694049548840660018">轻松访问主页</translation>
 <translation id="569536719314091526">通过“更多选项”按钮将此页面翻译成任何语言</translation>
 <translation id="5710871682236653961">（推荐）网站需先询问并获得您的许可，才能在您触碰 NFC 设备时发送和接收信息</translation>
@@ -665,6 +670,7 @@
 <translation id="5876056640971328065">暂停视频</translation>
 <translation id="5884076754568147479">为了帮助您执行各种操作，Google 将会收到您使用 Google 助理时所在网站的网址和内容，以及您通过 Google 助理提交的信息</translation>
 <translation id="5919204609460789179">需更新 <ph name="PRODUCT_NAME" />，才能开始同步</translation>
+<translation id="5922853908706496913">正在共享您的屏幕</translation>
 <translation id="5937580074298050696">已节省 <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">重置</translation>
 <translation id="5942872142862698679">目前使用的搜索引擎是 Google</translation>
@@ -875,6 +881,7 @@
 <translation id="751961395872307827">无法连接到该网站</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7542481630195938534">无法获取建议</translation>
+<translation id="7554752735887601236">有一个网站正在使用您的麦克风</translation>
 <translation id="7559975015014302720">精简模式已关闭</translation>
 <translation id="7562080006725997899">正在清除浏览数据</translation>
 <translation id="756809126120519699">已清除 Chrome 数据</translation>
@@ -911,7 +918,9 @@
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026以及另外 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> 种付款方式}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026以及另外 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> 种付款方式}}</translation>
 <translation id="7791543448312431591">添加</translation>
 <translation id="780301667611848630">不用了，谢谢</translation>
+<translation id="7804248752222191302">有一个网站正在使用您的摄像头</translation>
 <translation id="7810647596859435254">打开方式…</translation>
+<translation id="7817023149356982970">您将会退出此网站。</translation>
 <translation id="7821588508402923572">您的数据流量节省情况将显示在这里</translation>
 <translation id="7828557259026017104">Cookie 是由您访问过的网站创建的文件，供网站用来记住您的偏好；第三方 Cookie 是由其他网站创建而成，这些网站是您在所访问网页上看到的部分内容（比如广告或图片）的所有方。</translation>
 <translation id="783819812427904514">将视频取消静音</translation>
@@ -990,8 +999,10 @@
 <translation id="8364299278605033898">查看热门网站</translation>
 <translation id="8368027906805972958">未知或不支持的设备 (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">允许特定网站进行后台同步。</translation>
+<translation id="83792324527827022">有一个网站正在使用您的摄像头和麦克风</translation>
 <translation id="8380167699614421159">此网站会展示侵扰性或误导性广告</translation>
 <translation id="8393700583063109961">发送消息</translation>
+<translation id="8394832520002899662">点按即可返回到网站</translation>
 <translation id="8413126021676339697">显示全部历史记录</translation>
 <translation id="8427875596167638501">预览标签页已在下半屏中打开</translation>
 <translation id="8428213095426709021">设置</translation>
@@ -1034,6 +1045,8 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{信号强度：# 格}other{信号强度：# 格}}</translation>
 <translation id="868929229000858085">搜索联系人</translation>
 <translation id="869891660844655955">截止日期</translation>
+<translation id="8702612070107455751">所有离线数据都会遭到清除。</translation>
+<translation id="8737217482364735741">这会清除 <ph name="ORIGIN" /> 存储的所有数据和 Cookie。</translation>
 <translation id="8748850008226585750">内容已隐藏</translation>
 <translation id="8751914237388039244">选择图片</translation>
 <translation id="8758557275681689734">查看您已打开的所有标签页</translation>
@@ -1080,6 +1093,7 @@
 <translation id="9100610230175265781">必须提供密码</translation>
 <translation id="9102803872260866941">预览标签页已打开</translation>
 <translation id="9104217018994036254">要与之分享标签页的设备的列表。</translation>
+<translation id="9108312223223904744">支持使用手机作为安全密钥</translation>
 <translation id="9133397713400217035">离线浏览</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">显示原始网页</translation>

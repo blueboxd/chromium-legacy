@@ -11,6 +11,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/strings/string16.h"
 
 // Performs the calculation of similarity level between 2 strings. This class's
 // functionality is inspired by python's difflib.SequenceMatcher library.

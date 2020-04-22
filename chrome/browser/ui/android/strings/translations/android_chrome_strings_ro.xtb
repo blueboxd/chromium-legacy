@@ -54,6 +54,7 @@
 <translation id="1331212799747679585">Chrome nu se poate actualiza. Mai multe opțiuni</translation>
 <translation id="1332501820983677155">Comenzi rapide pentru funcțiile Google Chrome</translation>
 <translation id="1360432990279830238">Te deconectezi și dezactivezi sincronizarea?</translation>
+<translation id="1364532808393826295"><ph name="APP_NAME" /> – <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">Site-ul <ph name="SITE_NAME" /> a fost adăugat</translation>
 <translation id="1373696734384179344">Memorie insuficientă pentru descărcarea conținutului selectat.</translation>
 <translation id="1376578503827013741">Se calculează…</translation>
@@ -140,6 +141,7 @@
 <translation id="2017836877785168846">Șterge istoricul și completările automate din bara de adrese.</translation>
 <translation id="2021896219286479412">Comenzi site în ecran complet</translation>
 <translation id="2025115093177348061">Realitate augmentată</translation>
+<translation id="2030769033451695672">Atinge pentru a reveni la <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2038563949887743358">Activează opțiunea Versiune site pentru desktop</translation>
 <translation id="2041019821020695769">Pentru a permite Chrome să îți trimită notificări, activează notificările și în <ph name="BEGIN_LINK" />Setările Android<ph name="END_LINK" />.</translation>
 <translation id="204321170514947529">Și <ph name="APP_NAME" /> are date în Chrome</translation>
@@ -301,6 +303,7 @@ Atinge lung orice cuvânt pentru a-l căuta. Pentru a rafina căutarea, selectea
 <translation id="3207960819495026254">Marcată</translation>
 <translation id="3211426585530211793"><ph name="ITEM_TITLE" /> a fost șters</translation>
 <translation id="321773570071367578">Dacă ai uitat expresia de acces sau dorești să modifici această setare, <ph name="BEGIN_LINK" />resetează sincronizarea<ph name="END_LINK" /></translation>
+<translation id="3223655101706843289">Astfel, se vor șterge toate datele și cookie-urile stocate de <ph name="ORIGIN" /> și aplicația asociată de pe ecranul de pornire.</translation>
 <translation id="3227137524299004712">Microfon</translation>
 <translation id="3232754137068452469">Aplicație web</translation>
 <translation id="3236059992281584593">1 min. rămas</translation>
@@ -535,6 +538,7 @@ Pentru a modifica această setare, <ph name="BEGIN_LINK" />resetează sincroniza
 <translation id="4943872375798546930">Nu există rezultate</translation>
 <translation id="4961107849584082341">Tradu această pagină în orice limbă</translation>
 <translation id="4962975101802056554">Revocă toate permisiunile pentru dispozitiv</translation>
+<translation id="4964199952259983386">Pentru a permite ca Chrome să folosească RA, activează camera foto în <ph name="BEGIN_LINK" />Setările Android<ph name="END_LINK" />.</translation>
 <translation id="4970824347203572753">Nu este disponibil în locația ta</translation>
 <translation id="497421865427891073">Înainte</translation>
 <translation id="4988210275050210843">Fișierul se descarcă (<ph name="MEGABYTES" />).</translation>
@@ -634,6 +638,7 @@ Pentru a modifica această setare, <ph name="BEGIN_LINK" />resetează sincroniza
 <translation id="5684874026226664614">Hopa. Această pagină nu a putut fi tradusă.</translation>
 <translation id="5686790454216892815">Numele fișierului este prea lung</translation>
 <translation id="5689516760719285838">Locație</translation>
+<translation id="5690795753582697420">Camera foto este dezactivată în setările Android</translation>
 <translation id="5694049548840660018">Întoarce-te acasă cu ușurință</translation>
 <translation id="569536719314091526">Tradu această pagină în orice limbă folosind butonul Mai multe opțiuni</translation>
 <translation id="5710871682236653961">Întreabă înainte de a permite site-urilor să trimită și să primească informații când se ating dispozitive NFC (recomandat)</translation>
@@ -665,6 +670,7 @@ Pentru a modifica această setare, <ph name="BEGIN_LINK" />resetează sincroniza
 <translation id="5876056640971328065">Întrerupe videoclipul</translation>
 <translation id="5884076754568147479">Pentru a te ajuta să finalizezi sarcini, Google va primi adresele URL și conținutul site-urilor în care folosești Asistentul, precum și informațiile pe care le trimiți cu ajutorul Asistentului</translation>
 <translation id="5919204609460789179">Actualizează <ph name="PRODUCT_NAME" /> pentru a începe sincronizarea</translation>
+<translation id="5922853908706496913">Se permite accesul la ecran</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> salvați</translation>
 <translation id="5939518447894949180">Resetează</translation>
 <translation id="5942872142862698679">Pentru căutare se folosește Google</translation>
@@ -875,6 +881,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="751961395872307827">Nu se poate realiza conexiunea la site</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7542481630195938534">Nu se pot obține sugestii</translation>
+<translation id="7554752735887601236">Un site folosește microfonul</translation>
 <translation id="7559975015014302720">Modul Lite este dezactivat</translation>
 <translation id="7562080006725997899">Se șterg datele de navigare</translation>
 <translation id="756809126120519699">Datele Chrome au fost șterse</translation>
@@ -911,7 +918,9 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 și încă <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}few{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 și încă <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 și încă <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7791543448312431591">Adaugă</translation>
 <translation id="780301667611848630">Nu, mulțumesc</translation>
+<translation id="7804248752222191302">Un site folosește camera foto</translation>
 <translation id="7810647596859435254">Deschide cu…</translation>
+<translation id="7817023149356982970">Te vei deconecta de la acest site.</translation>
 <translation id="7821588508402923572">Economiile de date vor apărea aici</translation>
 <translation id="7828557259026017104">Cookie-urile sunt fișiere create de site-urile pe care le accesezi. Site-urile le folosesc pentru a-ți reține preferințele. Cookie-urile terță parte sunt create de alte site-uri. Aceste site-uri dețin o parte din conținut, cum ar fi anunțuri sau imagini, pe care le vezi pe pagina web pe care o accesezi.</translation>
 <translation id="783819812427904514">Activează sunetul videoclipului</translation>
@@ -990,8 +999,10 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="8364299278605033898">Vezi site-urile populare</translation>
 <translation id="8368027906805972958">Dispozitiv necunoscut sau neacceptat (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">Permite sincronizarea în fundal pentru un anumit site.</translation>
+<translation id="83792324527827022">Un site folosește camera foto și microfonul</translation>
 <translation id="8380167699614421159">Acest site afișează anunțuri deranjante sau înșelătoare</translation>
 <translation id="8393700583063109961">Trimite un mesaj</translation>
+<translation id="8394832520002899662">Atinge pentru a reveni la site</translation>
 <translation id="8413126021676339697">Afișează întregul istoric</translation>
 <translation id="8427875596167638501">Fila de previzualizare este pe jumătate deschisă</translation>
 <translation id="8428213095426709021">Setări</translation>
@@ -1034,6 +1045,8 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="8687353297350450808">{N_BARS,plural, =1{Nivelul puterii semnalului: # bară}few{Nivelul puterii semnalului: # bare}other{Nivelul puterii semnalului: # de bare}}</translation>
 <translation id="868929229000858085">Caută în agendă</translation>
 <translation id="869891660844655955">Dată de expirare</translation>
+<translation id="8702612070107455751">Toate datele offline vor fi șterse.</translation>
+<translation id="8737217482364735741">Astfel, se vor șterge toate datele și cookie-urile stocate de <ph name="ORIGIN" />.</translation>
 <translation id="8748850008226585750">Conținutul este ascuns</translation>
 <translation id="8751914237388039244">Selectează o imagine</translation>
 <translation id="8758557275681689734">Vezi toate filele deschise</translation>
@@ -1080,6 +1093,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="9100610230175265781">Este necesară o expresie de acces</translation>
 <translation id="9102803872260866941">Fila de previzualizare este deschisă</translation>
 <translation id="9104217018994036254">Lista de dispozitive pe care să trimiți o filă.</translation>
+<translation id="9108312223223904744">Compatibilitatea folosirii telefonului ca pe o cheie de securitate</translation>
 <translation id="9133397713400217035">Explorează offline</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Afișează originalul</translation>

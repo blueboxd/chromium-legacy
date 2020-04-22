@@ -647,6 +647,7 @@ source_set("unit_tests") {
     "model_impl/in_memory_metadata_change_list_unittest.cc",
     "model_impl/model_type_store_backend_unittest.cc",
     "model_impl/model_type_store_impl_unittest.cc",
+    "model_impl/processor_entity_tracker_unittest.cc",
     "model_impl/processor_entity_unittest.cc",
     "model_impl/syncable_service_based_bridge_unittest.cc",
     "nigori/cryptographer_impl_unittest.cc",

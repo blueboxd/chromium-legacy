@@ -82,20 +82,10 @@ suite(edu_login_parents_tests.suiteName, function() {
       flush();
       assertDeepEquals(getFakeParentsList(), parentsComponent.parents_);
       assertEquals(null, parentsComponent.selectedParent);
-      const accountListItems = getAccountListItems();
-      accountListItems.forEach(element => {
-        // No option should be selected.
-        assertEquals('false', element.getAttribute('aria-selected'));
-      });
       // Select the first parent from the list.
-      accountListItems[0].click();
+      getAccountListItems()[0].click();
       assertDeepEquals(
           getFakeParentsList()[0], parentsComponent.selectedParent);
-      accountListItems.forEach((element, index) => {
-        assertEquals(
-            index === 0 ? 'true' : 'false',
-            element.getAttribute('aria-selected'));
-      });
     });
   });
 });

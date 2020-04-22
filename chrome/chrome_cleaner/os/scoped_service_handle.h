@@ -7,6 +7,7 @@
 
 #include <windows.h>
 
+#include "base/logging.h"
 #include "base/win/scoped_handle.h"
 
 namespace chrome_cleaner {

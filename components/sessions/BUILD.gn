@@ -65,6 +65,8 @@ if (!is_ios) {
       "ios/ios_serialized_navigation_builder.mm",
       "ios/ios_serialized_navigation_driver.cc",
       "ios/ios_serialized_navigation_driver.h",
+      "ios/ios_webstate_live_tab.h",
+      "ios/ios_webstate_live_tab.mm",
     ]
 
     public_deps = [

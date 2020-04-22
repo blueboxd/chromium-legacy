@@ -131,34 +131,20 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorPreconnectClientBrowserTest,
   EXPECT_EQ(2, preresolve_done_count_);
 }
 
-#if defined(OS_MACOSX)
-#define MAYBE_PreconnectNotSearchBackgroundForeground \
-  DISABLED_PreconnectNotSearchBackgroundForeground
-#else
-#define MAYBE_PreconnectNotSearchBackgroundForeground \
-  PreconnectNotSearchBackgroundForeground
-#endif
 IN_PROC_BROWSER_TEST_F(NavigationPredictorPreconnectClientBrowserTest,
-                       MAYBE_PreconnectNotSearchBackgroundForeground) {
+                       PreconnectNotSearchBackgroundForeground) {
   const GURL& url = GetTestURL("/anchors_different_area.html");
 
-  browser()->tab_strip_model()->GetActiveWebContents()->WasHidden();
-
   ui_test_utils::NavigateToURL(browser(), url);
-
-  // There should be a navigational preconnect.
-  EXPECT_EQ(1, preresolve_done_count_);
-
-  // Change to visible.
-  browser()->tab_strip_model()->GetActiveWebContents()->WasShown();
-
-  // After showing the contents, there should be a preconnect client preconnect.
+  // There should be one preconnect from navigation and one from preconnect
+  // client.
   WaitForPreresolveCount(2);
   EXPECT_EQ(2, preresolve_done_count_);
 
   browser()->tab_strip_model()->GetActiveWebContents()->WasHidden();
 
   browser()->tab_strip_model()->GetActiveWebContents()->WasShown();
+
   // After showing the contents again, there should be another preconnect client
   // preconnect.
   WaitForPreresolveCount(3);

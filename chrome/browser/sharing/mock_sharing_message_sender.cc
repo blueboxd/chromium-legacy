@@ -6,7 +6,6 @@
 
 MockSharingMessageSender::MockSharingMessageSender()
     : SharingMessageSender(
-          /*sync_prefs=*/nullptr,
           /*local_device_info_provider=*/nullptr) {}
 
 MockSharingMessageSender::~MockSharingMessageSender() = default;

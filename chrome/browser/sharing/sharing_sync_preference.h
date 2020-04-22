@@ -18,13 +18,8 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/sync_device_info/device_info.h"
 
-namespace chrome_browser_sharing {
-class FCMChannelConfiguration;
-}  // namespace chrome_browser_sharing
-
 namespace syncer {
 class DeviceInfoSyncService;
-class DeviceInfoTracker;
 class LocalDeviceInfoProvider;
 }  // namespace syncer
 
@@ -88,43 +83,15 @@ class SharingSyncPreference {
 
   void ClearFCMRegistration();
 
-  // Returns eanbled feaures of device with specified |device_info|.
-  // |device_info| must not be nullptr.
-  std::set<sync_pb::SharingSpecificFields::EnabledFeatures> GetEnabledFeatures(
-      const syncer::DeviceInfo* device_info) const;
-
-  // Returns the FCMChannelConfiguration of device with specified |guid|.
-  base::Optional<chrome_browser_sharing::FCMChannelConfiguration> GetFCMChannel(
-      const std::string& guid) const;
-
-  // Returns the FCMChannelConfiguration of device with specified |device_info|.
-  base::Optional<chrome_browser_sharing::FCMChannelConfiguration> GetFCMChannel(
-      const syncer::DeviceInfo& device_info) const;
-
-  SharingDevicePlatform GetDevicePlatform(const std::string& guid) const;
-
-  base::Optional<syncer::DeviceInfo::SharingInfo> GetLocalSharingInfo() const;
-
-  base::Optional<syncer::DeviceInfo::SharingInfo> GetLocalSharingInfo(
-      const syncer::DeviceInfo* device_info) const;
-
   void SetLocalSharingInfo(syncer::DeviceInfo::SharingInfo sharing_info);
 
   void ClearLocalSharingInfo();
 
-  // Replaces DeviceInfoTracker for testing.
-  void SetDeviceInfoTrackerForTesting(syncer::DeviceInfoTracker* tracker);
-
  private:
   friend class SharingSyncPreferenceTest;
 
-  // Returns local SharingInfo stored in preferences.
-  static base::Optional<syncer::DeviceInfo::SharingInfo> GetLocalSharingInfo(
-      PrefService* prefs);
-
   PrefService* prefs_;
   syncer::DeviceInfoSyncService* device_info_sync_service_;
-  syncer::DeviceInfoTracker* device_info_tracker_;
   syncer::LocalDeviceInfoProvider* local_device_info_provider_;
   PrefChangeRegistrar pref_change_registrar_;
 

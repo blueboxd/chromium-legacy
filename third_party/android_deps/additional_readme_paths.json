@@ -102,6 +102,7 @@
     "libs/com_android_support_viewpager",
     "libs/com_android_tools_build_jetifier_jetifier_core",
     "libs/com_android_tools_build_jetifier_jetifier_processor",
+    "libs/com_android_tools_desugar_jdk_libs",
     "libs/com_github_ben_manes_caffeine_caffeine",
     "libs/com_github_kevinstern_software_and_algorithms",
     "libs/com_google_android_gms_play_services_auth",

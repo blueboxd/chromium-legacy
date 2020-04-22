@@ -46,10 +46,13 @@ bool CastComponent::Params::AreComplete() const {
   return true;
 }
 
-CastComponent::CastComponent(CastRunner* runner, CastComponent::Params params)
+CastComponent::CastComponent(WebContentRunner* runner,
+                             CastComponent::Params params,
+                             bool is_headless)
     : WebComponent(runner,
                    std::move(params.startup_context),
                    std::move(params.controller_request)),
+      is_headless_(is_headless),
       agent_manager_(std::move(params.agent_manager)),
       application_config_(std::move(params.application_config)),
       url_rewrite_rules_provider_(std::move(params.url_rewrite_rules_provider)),
@@ -63,6 +66,10 @@ CastComponent::CastComponent(CastRunner* runner, CastComponent::Params params)
 }
 
 CastComponent::~CastComponent() = default;
+
+void CastComponent::SetOnDestroyedCallback(base::OnceClosure on_destroyed) {
+  on_destroyed_ = std::move(on_destroyed);
+}
 
 void CastComponent::StartComponent() {
   if (application_config_.has_enable_remote_debugging() &&
@@ -116,13 +123,11 @@ void CastComponent::StartComponent() {
   }
 }
 
-CastRunner* CastComponent::runner() const {
-  return static_cast<CastRunner*>(WebComponent::runner());
-}
-
 void CastComponent::DestroyComponent(int termination_exit_code,
                                      fuchsia::sys::TerminationReason reason) {
   DCHECK(!constructor_active_);
+
+  std::move(on_destroyed_).Run();
 
   WebComponent::DestroyComponent(termination_exit_code, reason);
 }
@@ -147,7 +152,7 @@ void CastComponent::CreateView(
     zx::eventpair view_token,
     fidl::InterfaceRequest<fuchsia::sys::ServiceProvider> incoming_services,
     fidl::InterfaceHandle<fuchsia::sys::ServiceProvider> outgoing_services) {
-  if (runner()->is_headless()) {
+  if (is_headless_) {
     // For headless CastComponents, |view_token| does not actually connect to a
     // Scenic View. It is merely used as a conduit for propagating termination
     // signals.
@@ -167,7 +172,7 @@ void CastComponent::CreateView(
 void CastComponent::OnZxHandleSignalled(zx_handle_t handle,
                                         zx_signals_t signals) {
   DCHECK_EQ(signals, ZX_SOCKET_PEER_CLOSED);
-  DCHECK(runner()->is_headless());
+  DCHECK(is_headless_);
 
   frame()->DisableHeadlessRendering();
 }

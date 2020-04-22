@@ -23,6 +23,14 @@ struct ParsingResult {
 };
 
 struct PasswordAndMetadata {
+  PasswordAndMetadata();
+  PasswordAndMetadata(const PasswordAndMetadata&);
+  PasswordAndMetadata(PasswordAndMetadata&&);
+  PasswordAndMetadata& operator=(const PasswordAndMetadata&);
+  PasswordAndMetadata& operator=(PasswordAndMetadata&&);
+  ~PasswordAndMetadata();
+
+  base::string16 username;
   base::string16 password;
   std::string realm;
   bool uses_account_store = false;
@@ -32,7 +40,7 @@ struct PasswordAndMetadata {
 // struct are only set when the password's realm differs from the realm of the
 // form that we are filling.
 struct PasswordFormFillData {
-  using LoginCollection = std::map<base::string16, PasswordAndMetadata>;
+  using LoginCollection = std::vector<PasswordAndMetadata>;
 
   PasswordFormFillData();
 

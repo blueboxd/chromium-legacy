@@ -31,6 +31,12 @@ class ChromiumDepGraph {
     final def FALLBACK_PROPERTIES = [
         'androidx_multidex_multidex': new PropertyOverride(
             url: 'https://maven.google.com/androidx/multidex/multidex/2.0.0/multidex-2.0.0.aar'),
+        'com_android_tools_desugar_jdk_libs': new PropertyOverride(
+            licenseUrl: "https://raw.githubusercontent.com/google/desugar_jdk_libs/master/LICENSE",
+            generateTarget: false),
+        'com_android_tools_desugar_jdk_libs_configuration': new PropertyOverride(
+            // Configuration stored in //third_party/r8.
+            exclude: true),
         'com_github_kevinstern_software_and_algorithms': new PropertyOverride(
             licenseUrl: "https://raw.githubusercontent.com/KevinStern/software-and-algorithms/master/LICENSE"),
         'com_google_auto_auto_common': new PropertyOverride(
@@ -321,6 +327,12 @@ class ChromiumDepGraph {
             if (fallbackProperties.cipdSuffix != null) {
               dep.cipdSuffix = fallbackProperties.cipdSuffix
             }
+            if (fallbackProperties.generateTarget != null) {
+              dep.generateTarget = fallbackProperties.generateTarget
+            }
+            if (fallbackProperties.exclude != null) {
+              dep.exclude = fallbackProperties.exclude
+            }
         }
 
         if (skipLicenses) {
@@ -360,6 +372,7 @@ class ChromiumDepGraph {
         String licenseName, licenseUrl, licensePath
         String fileName
         boolean supportsAndroid, visible, exclude, testOnly, isShipped
+        boolean generateTarget = true
         boolean licenseAndroidCompatible
         ComponentIdentifier componentId
         List<String> children
@@ -371,5 +384,9 @@ class ChromiumDepGraph {
       String licenseName, licenseUrl, licensePath
       String cipdSuffix
       Boolean isShipped
+      // Set to true if this dependency is not needed.
+      Boolean exclude
+      // Set to false to skip creation of BUILD.gn target.
+      Boolean generateTarget
     }
 }

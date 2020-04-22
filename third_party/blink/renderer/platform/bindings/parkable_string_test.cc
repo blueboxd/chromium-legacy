@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
 #include <limits>
-#include <random>
 #include <thread>
 
+#include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -20,7 +21,9 @@
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string_manager.h"
+#include "third_party/blink/renderer/platform/disk_data_allocator_test_utils.h"
 #include "third_party/blink/renderer/platform/instrumentation/memory_pressure_listener.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 
 using ThreadPoolExecutionMode =
     base::test::TaskEnvironment::ThreadPoolExecutionMode;
@@ -72,6 +75,11 @@ class ParkableStringTest : public ::testing::Test {
     WaitForAging();
   }
 
+  void WaitForDiskWriting() {
+    WaitForAging();
+    WaitForAging();
+  }
+
   void CheckOnlyCpuCostTaskRemains() {
     unsigned expected_count = 0;
     if (ParkableStringManager::Instance()
@@ -82,7 +90,12 @@ class ParkableStringTest : public ::testing::Test {
               task_environment_.GetPendingMainThreadTaskCount());
   }
 
-  void SetUp() override { ParkableStringManager::Instance().ResetForTesting(); }
+  void SetUp() override {
+    auto& manager = ParkableStringManager::Instance();
+    manager.ResetForTesting();
+    manager.SetDataAllocatorForTesting(
+        std::make_unique<InMemoryDataAllocator>());
+  }
 
   void TearDown() override {
     // No leaks.
@@ -101,6 +114,10 @@ class ParkableStringTest : public ::testing::Test {
     WaitForDelayedParking();
     EXPECT_TRUE(parkable.Impl()->is_parked());
     return parkable;
+  }
+
+  void DisableOnDiskWriting() {
+    ParkableStringManager::Instance().SetDataAllocatorForTesting(nullptr);
   }
 
   base::test::TaskEnvironment task_environment_;
@@ -123,14 +140,7 @@ TEST_F(ParkableStringTest, DontCompressRandomString) {
   // gzip's header). Mersenne-Twister implementation is specified, making the
   // test deterministic.
   Vector<unsigned char> data(kSizeKb * 1000);
-  std::mt19937 engine(42);
-  // uniform_int_distribution<T> is undefined behavior for T = unsigned char.
-  std::uniform_int_distribution<int> dist(
-      0, std::numeric_limits<unsigned char>::max());
-
-  for (size_t i = 0; i < data.size(); ++i) {
-    data[i] = static_cast<unsigned char>(dist(engine));
-  }
+  base::RandBytes(data.data(), data.size());
   ParkableString parkable(String(data.data(), data.size()).ReleaseImpl());
 
   EXPECT_TRUE(
@@ -170,8 +180,10 @@ TEST_F(ParkableStringTest, DecompressUtf16String) {
 
   EXPECT_TRUE(
       parkable.Impl()->Park(ParkableStringImpl::ParkingMode::kCompress));
+  EXPECT_TRUE(parkable.Impl()->background_task_in_progress_for_testing());
   RunPostedTasks();
   EXPECT_TRUE(parkable.Impl()->is_parked());
+  EXPECT_FALSE(parkable.Impl()->background_task_in_progress_for_testing());
 
   // Decompression checks that the size is correct.
   String unparked = parkable.ToString();
@@ -569,6 +581,109 @@ TEST_F(ParkableStringTest, SynchronousCompression) {
   task_environment_.FastForwardUntilNoTasksRemain();
 }
 
+TEST_F(ParkableStringTest, ToAndFromDisk) {
+  ParkableString parkable(MakeLargeString('a').ReleaseImpl());
+  ParkableStringImpl* impl = parkable.Impl();
+
+  EXPECT_EQ(ParkableStringImpl::Age::kYoung, impl->age_for_testing());
+  WaitForAging();
+  EXPECT_EQ(ParkableStringImpl::Age::kOld, impl->age_for_testing());
+  WaitForAging();
+  EXPECT_EQ(ParkableStringImpl::Age::kOld, impl->age_for_testing());
+  parkable.Impl()->MaybeAgeOrParkString();
+  EXPECT_EQ(ParkableStringImpl::Age::kVeryOld, impl->age_for_testing());
+  impl->MaybeAgeOrParkString();
+  EXPECT_FALSE(impl->is_on_disk());
+  RunPostedTasks();
+  EXPECT_TRUE(impl->is_on_disk());
+
+  parkable.ToString();
+  EXPECT_FALSE(impl->is_on_disk());
+  EXPECT_EQ(ParkableStringImpl::Age::kYoung, impl->age_for_testing());
+}
+
+TEST_F(ParkableStringTest, UnparkWhileWritingToDisk) {
+  ParkableString parkable(MakeLargeString('a').ReleaseImpl());
+  ParkableStringImpl* impl = parkable.Impl();
+
+  EXPECT_EQ(ParkableStringImpl::Age::kYoung, impl->age_for_testing());
+  WaitForAging();
+  EXPECT_EQ(ParkableStringImpl::Age::kOld, impl->age_for_testing());
+  WaitForAging();
+  EXPECT_EQ(ParkableStringImpl::Age::kOld, impl->age_for_testing());
+  parkable.Impl()->MaybeAgeOrParkString();
+  EXPECT_EQ(ParkableStringImpl::Age::kVeryOld, impl->age_for_testing());
+  impl->MaybeAgeOrParkString();
+  EXPECT_FALSE(impl->is_on_disk());
+  EXPECT_TRUE(impl->background_task_in_progress_for_testing());
+
+  // Unparking cancels discarding to disk.
+  EXPECT_FALSE(parkable.ToString().IsNull());
+  EXPECT_TRUE(impl->background_task_in_progress_for_testing());
+  RunPostedTasks();
+  EXPECT_FALSE(impl->is_on_disk());
+  EXPECT_TRUE(impl->has_on_disk_data());
+  EXPECT_EQ(ParkableStringImpl::Age::kYoung, impl->age_for_testing());
+}
+
+TEST_F(ParkableStringTest, NoCompetingWritingToDisk) {
+  ParkableString parkable(MakeLargeString('a').ReleaseImpl());
+  ParkableStringImpl* impl = parkable.Impl();
+
+  EXPECT_EQ(ParkableStringImpl::Age::kYoung, impl->age_for_testing());
+  WaitForAging();
+  EXPECT_EQ(ParkableStringImpl::Age::kOld, impl->age_for_testing());
+  WaitForAging();
+  EXPECT_EQ(ParkableStringImpl::Age::kOld, impl->age_for_testing());
+  parkable.Impl()->MaybeAgeOrParkString();
+  EXPECT_EQ(ParkableStringImpl::Age::kVeryOld, impl->age_for_testing());
+  impl->MaybeAgeOrParkString();
+  EXPECT_FALSE(impl->is_on_disk());
+
+  // Unparking cancels discarding to disk.
+  EXPECT_FALSE(parkable.ToString().IsNull());
+  EXPECT_EQ(ParkableStringImpl::Age::kYoung, impl->age_for_testing());
+  // Until the writing is finished, the string cannot age again.
+  impl->MaybeAgeOrParkString();
+  EXPECT_EQ(ParkableStringImpl::Age::kYoung, impl->age_for_testing());
+
+  RunPostedTasks();
+  EXPECT_FALSE(impl->is_on_disk());
+  EXPECT_TRUE(impl->has_on_disk_data());
+  EXPECT_EQ(ParkableStringImpl::Age::kYoung, impl->age_for_testing());
+  // Aging is now possible again.
+  impl->MaybeAgeOrParkString();
+  EXPECT_EQ(ParkableStringImpl::Age::kOld, impl->age_for_testing());
+}
+
+TEST_F(ParkableStringTest, SynchronousToDisk) {
+  ParkableString parkable(MakeLargeString('a').ReleaseImpl());
+  ParkableStringImpl* impl = parkable.Impl();
+
+  WaitForDelayedParking();
+  EXPECT_EQ(ParkableStringImpl::Age::kOld, impl->age_for_testing());
+  WaitForAging();
+  EXPECT_EQ(ParkableStringImpl::Age::kVeryOld, impl->age_for_testing());
+  EXPECT_FALSE(impl->is_on_disk());
+
+  // Writing to disk is asynchronous.
+  impl->MaybeAgeOrParkString();
+  EXPECT_FALSE(impl->is_on_disk());
+  WaitForAging();
+  EXPECT_TRUE(impl->is_on_disk());
+
+  parkable.ToString();
+  EXPECT_FALSE(impl->is_on_disk());
+
+  impl->MaybeAgeOrParkString();
+  impl->MaybeAgeOrParkString();
+  impl->MaybeAgeOrParkString();
+
+  EXPECT_FALSE(impl->is_on_disk());
+  impl->MaybeAgeOrParkString();
+  EXPECT_TRUE(impl->is_on_disk());  // Synchronous writing.
+}
+
 TEST_F(ParkableStringTest, OnPurgeMemoryInBackground) {
   ParkableString parkable = CreateAndParkAll();
   ParkableStringManager::Instance().SetRendererBackgrounded(true);
@@ -592,7 +707,7 @@ TEST_F(ParkableStringTest, OnPurgeMemoryInForeground) {
 
   // Park everything.
   WaitForDelayedParking();
-  EXPECT_TRUE(parkable1.Impl()->is_parked());
+  EXPECT_TRUE(parkable1.Impl()->is_on_disk());
   EXPECT_TRUE(parkable2.Impl()->is_parked());
 
   // Different usage patterns:
@@ -605,7 +720,6 @@ TEST_F(ParkableStringTest, OnPurgeMemoryInForeground) {
   MemoryPressureListenerRegistry::Instance().OnPurgeMemory();
   EXPECT_TRUE(parkable1.Impl()->is_parked());  // Parked synchronously.
   EXPECT_FALSE(parkable2.Impl()->is_parked());
-  EXPECT_FALSE(parkable2.Impl()->has_compressed_data());  // Purged.
 
   parkable1.ToString();
   EXPECT_TRUE(parkable1.Impl()->has_compressed_data());
@@ -772,23 +886,26 @@ TEST_F(ParkableStringTest, AgingTicksStopsAndRestarts) {
   WaitForAging();
   EXPECT_GT(task_environment_.GetPendingMainThreadTaskCount(), 0u);
   WaitForAging();
-  // Nothing more to do, the tick is not re-scheduled.
+  EXPECT_TRUE(parkable.Impl()->is_parked());
+  WaitForDiskWriting();
+  EXPECT_TRUE(parkable.Impl()->is_on_disk());
   WaitForAging();
+  // Nothing more to do, the tick is not re-scheduled.
   CheckOnlyCpuCostTaskRemains();
 
   // Unparking, the tick restarts.
   parkable.ToString();
   EXPECT_GT(task_environment_.GetPendingMainThreadTaskCount(), 0u);
-  WaitForAging();
-  WaitForAging();
+  WaitForDelayedParking();
+  WaitForDiskWriting();
   // And stops again. 2 ticks to park the string (age, then park), and one
   // checking that there is nothing left to do.
   CheckOnlyCpuCostTaskRemains();
 
-  // New string, restarting the tick, temporarily.
+  // // New string, restarting the tick, temporarily.
   ParkableString parkable2(MakeLargeString().ReleaseImpl());
-  WaitForAging();
-  WaitForAging();
+  WaitForDelayedParking();
+  WaitForDiskWriting();
   WaitForAging();
   CheckOnlyCpuCostTaskRemains();
 }
@@ -810,6 +927,7 @@ TEST_F(ParkableStringTest, AgingTicksStopsWithNoProgress) {
   EXPECT_TRUE(parkable2.Impl()->is_parked());
   EXPECT_GT(task_environment_.GetPendingMainThreadTaskCount(), 0u);
   WaitForAging();
+  WaitForDiskWriting();
   // Once |parkable2| has been parked, back to the case where the only
   // remaining strings are referenced externally.
   CheckOnlyCpuCostTaskRemains();
@@ -820,10 +938,12 @@ TEST_F(ParkableStringTest, OnlyOneAgingTask) {
   ParkableString parkable2(MakeLargeString('b').ReleaseImpl());
 
   // Park both, and wait for the tick to stop.
-  WaitForAging();
-  WaitForAging();
+  WaitForDelayedParking();
   EXPECT_TRUE(parkable1.Impl()->is_parked());
   EXPECT_TRUE(parkable2.Impl()->is_parked());
+  WaitForDiskWriting();
+  EXPECT_TRUE(parkable1.Impl()->is_on_disk());
+  EXPECT_TRUE(parkable2.Impl()->is_on_disk());
   WaitForAging();
   CheckOnlyCpuCostTaskRemains();
 
@@ -837,6 +957,10 @@ TEST_F(ParkableStringTest, OnlyOneAgingTask) {
 TEST_F(ParkableStringTest, ReportTotalUnparkingTime) {
   base::ScopedMockElapsedTimersForTest mock_elapsed_timers;
   base::HistogramTester histogram_tester;
+
+  // Disable on disk parking to keep data merely compressed, and report
+  // compression metrics.
+  DisableOnDiskWriting();
 
   // On some platforms, initialization takes time, though it happens when
   // base::ThreadTicks is used. To prevent flakiness depending on test execution
@@ -852,15 +976,17 @@ TEST_F(ParkableStringTest, ReportTotalUnparkingTime) {
 
   ParkAndWait(parkable);
   const int kNumIterations = 10;
+  size_t compressed_size;
   for (int i = 0; i < kNumIterations; ++i) {
     parkable.ToString();
     ASSERT_FALSE(parkable.Impl()->is_parked());
-    WaitForAging();
-    WaitForAging();
+    WaitForDelayedParking();
     ASSERT_TRUE(parkable.Impl()->is_parked());
+    compressed_size = parkable.Impl()->compressed_size();
+    WaitForDiskWriting();
+    WaitForAging();
     CheckOnlyCpuCostTaskRemains();
   }
-  const size_t compressed_size = parkable.Impl()->compressed_size();
 
   task_environment_.FastForwardUntilNoTasksRemain();
 

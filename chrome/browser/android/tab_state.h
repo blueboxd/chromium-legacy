@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/android/scoped_java_ref.h"
+#include "base/callback.h"
 
 namespace sessions {
 class SerializedNavigationEntry;

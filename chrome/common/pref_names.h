@@ -1024,7 +1024,6 @@ extern const char kBuiltinCertificateVerifierEnabled[];
 #endif
 
 extern const char kSharingVapidKey[];
-extern const char kSharingSyncedDevices[];
 extern const char kSharingFCMRegistration[];
 extern const char kSharingLocalSharingInfo[];
 

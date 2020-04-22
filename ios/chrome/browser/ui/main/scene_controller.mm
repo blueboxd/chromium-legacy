@@ -783,7 +783,6 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
                                  completion:nil];
 }
 
-#if !defined(NDEBUG)
 - (void)openNewWindow {
   if (!IsMultiwindowSupported())
     return;  // silent no-op.
@@ -800,7 +799,6 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
                          errorHandler:nil];
   }
 }
-#endif  // !defined(NDEBUG)
 
 #pragma mark - ApplicationSettingsCommands
 

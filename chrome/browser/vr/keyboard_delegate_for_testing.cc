@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/vr/keyboard_ui_interface.h"
 #include "chrome/browser/vr/model/text_input_info.h"

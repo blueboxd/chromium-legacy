@@ -44,6 +44,7 @@
 #include "weblayer/browser/persistence/browser_persister.h"
 #include "weblayer/browser/profile_impl.h"
 #include "weblayer/browser/tab_specific_content_settings_delegate.h"
+#include "weblayer/browser/translate_client_impl.h"
 #include "weblayer/common/isolated_world_ids.h"
 #include "weblayer/public/fullscreen_delegate.h"
 #include "weblayer/public/new_tab_delegate.h"
@@ -208,6 +209,11 @@ TabImpl::TabImpl(ProfileImpl* profile,
 
   find_in_page::FindTabHelper::CreateForWebContents(web_contents_.get());
   GetFindTabHelper()->AddObserver(this);
+
+  // TODO(crbug.com/1072334): Resolve incorporation of translate in incognito
+  // mode.
+  if (!web_contents_->GetBrowserContext()->IsOffTheRecord())
+    TranslateClientImpl::CreateForWebContents(web_contents_.get());
 
   sessions::SessionTabHelper::CreateForWebContents(
       web_contents_.get(),

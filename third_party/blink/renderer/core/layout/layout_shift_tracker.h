@@ -26,12 +26,11 @@ class WebInputEvent;
 
 // Tracks "layout shifts" from layout objects changing their visual location
 // between animation frames. See https://github.com/WICG/layout-instability.
-class CORE_EXPORT LayoutShiftTracker {
-  USING_FAST_MALLOC(LayoutShiftTracker);
-
+class CORE_EXPORT LayoutShiftTracker final
+    : public GarbageCollected<LayoutShiftTracker> {
  public:
-  LayoutShiftTracker(LocalFrameView*);
-  ~LayoutShiftTracker() {}
+  explicit LayoutShiftTracker(LocalFrameView*);
+  ~LayoutShiftTracker() = default;
   // |paint_offset_diff| is an additional amount by which the paint offset
   // shifted that is not tracked in visual rects. Visual rects are in the
   // local transform space of the LayoutObject. Any time the transform space is
@@ -61,6 +60,7 @@ class CORE_EXPORT LayoutShiftTracker {
   base::TimeTicks MostRecentInputTimestamp() {
     return most_recent_input_timestamp_;
   }
+  void Trace(Visitor* visitor);
 
   // Saves and restores visual rects on layout objects when a layout tree is
   // rebuilt by Node::ReattachLayoutTree.
@@ -104,8 +104,7 @@ class CORE_EXPORT LayoutShiftTracker {
   LayoutShift::AttributionList CreateAttributionList() const;
   void SubmitPerformanceEntry(double score_delta, bool input_detected) const;
 
-  // This owns us.
-  UntracedMember<LocalFrameView> frame_view_;
+  Member<LocalFrameView> frame_view_;
 
   // The document cumulative layout shift (DCLS) score for this LocalFrame,
   // unweighted, with move distance applied.

@@ -104,16 +104,16 @@
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/autofill/manual_filling_controller.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/password_manager/account_chooser_dialog_android.h"
-#include "chrome/browser/password_manager/auto_signin_first_run_dialog_android.h"
-#include "chrome/browser/password_manager/auto_signin_prompt_controller.h"
-#include "chrome/browser/password_manager/generated_password_saved_infobar_delegate_android.h"
-#include "chrome/browser/password_manager/password_accessory_controller.h"
-#include "chrome/browser/password_manager/password_accessory_controller_impl.h"
-#include "chrome/browser/password_manager/password_generation_controller.h"
-#include "chrome/browser/password_manager/password_manager_launcher_android.h"
-#include "chrome/browser/password_manager/save_password_infobar_delegate_android.h"
-#include "chrome/browser/password_manager/update_password_infobar_delegate_android.h"
+#include "chrome/browser/password_manager/android/account_chooser_dialog_android.h"
+#include "chrome/browser/password_manager/android/auto_signin_first_run_dialog_android.h"
+#include "chrome/browser/password_manager/android/auto_signin_prompt_controller.h"
+#include "chrome/browser/password_manager/android/generated_password_saved_infobar_delegate_android.h"
+#include "chrome/browser/password_manager/android/password_accessory_controller.h"
+#include "chrome/browser/password_manager/android/password_accessory_controller_impl.h"
+#include "chrome/browser/password_manager/android/password_generation_controller.h"
+#include "chrome/browser/password_manager/android/password_manager_launcher_android.h"
+#include "chrome/browser/password_manager/android/save_password_infobar_delegate_android.h"
+#include "chrome/browser/password_manager/android/update_password_infobar_delegate_android.h"
 #include "chrome/browser/touch_to_fill/touch_to_fill_controller.h"
 #include "chrome/browser/ui/android/passwords/onboarding_dialog_view.h"
 #include "components/infobars/core/infobar.h"
@@ -131,7 +131,7 @@
 #if defined(ENABLE_PASSWORD_CHANGE)
 #include "chrome/browser/password_manager/credential_leak_password_change_controller_android.h"
 #else
-#include "chrome/browser/password_manager/credential_leak_controller_android.h"
+#include "chrome/browser/password_manager/android/credential_leak_controller_android.h"
 #endif
 using password_manager::CredentialCache;
 #endif

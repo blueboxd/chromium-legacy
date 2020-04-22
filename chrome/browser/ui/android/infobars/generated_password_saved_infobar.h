@@ -12,7 +12,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/password_manager/generated_password_saved_infobar_delegate_android.h"
+#include "chrome/browser/password_manager/android/generated_password_saved_infobar_delegate_android.h"
 #include "chrome/browser/ui/android/infobars/infobar_android.h"
 
 // The Android infobar that notifies that the generated password was saved.

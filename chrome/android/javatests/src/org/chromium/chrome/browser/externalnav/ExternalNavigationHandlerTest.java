@@ -135,16 +135,11 @@ public class ExternalNavigationHandlerTest {
 
     private Context mContext;
     private final TestExternalNavigationDelegate mDelegate;
-    private ExternalNavigationHandler mUrlHandler;
+    private ExternalNavigationHandlerForTesting mUrlHandler;
 
     public ExternalNavigationHandlerTest() {
         mDelegate = new TestExternalNavigationDelegate();
-        mUrlHandler = new ExternalNavigationHandler(mDelegate) {
-            @Override
-            public boolean blockExternalFormRedirectsWithoutGesture() {
-                return true;
-            }
-        };
+        mUrlHandler = new ExternalNavigationHandlerForTesting(mDelegate);
     }
 
     @Before
@@ -1134,7 +1129,7 @@ public class ExternalNavigationHandlerTest {
     public void testCreatesIntentsToOpenInNewTab() {
         mDelegate.add(new IntentActivity(YOUTUBE_MOBILE_URL, YOUTUBE_PACKAGE_NAME));
 
-        mUrlHandler = new ExternalNavigationHandler(mDelegate);
+        mUrlHandler = new ExternalNavigationHandlerForTesting(mDelegate);
         ExternalNavigationParams params =
                 new ExternalNavigationParams.Builder(YOUTUBE_MOBILE_URL, false)
                         .setOpenInNewTab(true)
@@ -1344,7 +1339,7 @@ public class ExternalNavigationHandlerTest {
         final String referer = "https://www.google.com/";
         mDelegate.add(new IntentActivity("sms", TEXT_APP_1_PACKAGE_NAME));
         mDelegate.add(new IntentActivity("sms", TEXT_APP_2_PACKAGE_NAME));
-        mDelegate.defaultSmsPackageName = TEXT_APP_2_PACKAGE_NAME;
+        mUrlHandler.defaultSmsPackageName = TEXT_APP_2_PACKAGE_NAME;
 
         checkUrl("sms:+012345678?body=hello%20there")
                 .withReferrer(referer)
@@ -1362,7 +1357,7 @@ public class ExternalNavigationHandlerTest {
         mDelegate.add(new IntentActivity("sms", TEXT_APP_1_PACKAGE_NAME));
         mDelegate.add(new IntentActivity("sms", TEXT_APP_2_PACKAGE_NAME));
         // Note that this package does not resolve the intent.
-        mDelegate.defaultSmsPackageName = "text_app_3";
+        mUrlHandler.defaultSmsPackageName = "text_app_3";
 
         checkUrl("sms:+012345678?body=hello%20there")
                 .withReferrer(referer)
@@ -1379,7 +1374,7 @@ public class ExternalNavigationHandlerTest {
         final String referer = "https://www.google.com/";
         mDelegate.add(new IntentActivity("sms", TEXT_APP_1_PACKAGE_NAME));
         mDelegate.add(new IntentActivity("sms", TEXT_APP_2_PACKAGE_NAME));
-        mDelegate.defaultSmsPackageName = TEXT_APP_2_PACKAGE_NAME;
+        mUrlHandler.defaultSmsPackageName = TEXT_APP_2_PACKAGE_NAME;
 
         checkUrl("intent://012345678?body=hello%20there/#Intent;scheme=sms;end")
                 .withReferrer(referer)
@@ -1674,6 +1669,24 @@ public class ExternalNavigationHandlerTest {
         }
     }
 
+    private static class ExternalNavigationHandlerForTesting extends ExternalNavigationHandler {
+        public String defaultSmsPackageName;
+
+        public ExternalNavigationHandlerForTesting(ExternalNavigationDelegate delegate) {
+            super(delegate);
+        }
+
+        @Override
+        public boolean blockExternalFormRedirectsWithoutGesture() {
+            return true;
+        }
+
+        @Override
+        protected String getDefaultSmsPackageNameFromSystem() {
+            return defaultSmsPackageName;
+        }
+    };
+
     private static class TestExternalNavigationDelegate implements ExternalNavigationDelegate {
         public List<ResolveInfo> queryIntentActivities(Intent intent) {
             List<ResolveInfo> list = new ArrayList<>();
@@ -1829,11 +1842,6 @@ public class ExternalNavigationHandlerTest {
         }
 
         @Override
-        public String getDefaultSmsPackageName() {
-            return defaultSmsPackageName;
-        }
-
-        @Override
         public boolean isPdfDownload(String url) {
             return url.endsWith(".pdf");
         }
@@ -1960,7 +1968,6 @@ public class ExternalNavigationHandlerTest {
         public boolean startIncognitoIntentCalled;
         public boolean maybeSetUserGestureCalled;
         public boolean startFileIntentCalled;
-        public String defaultSmsPackageName;
 
         private String mReferrerWebappPackageName;
 

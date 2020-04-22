@@ -92,6 +92,7 @@
 <translation id="1122198203221319518">&amp;Алатке</translation>
 <translation id="1122242684574577509">Потврда аутентичности није успела. Кликните да бисте посетили страницу за пријављивање за Wi-Fi мрежу коју користите (<ph name="NETWORK_ID" />).</translation>
 <translation id="1122960773616686544">Назив обележивача</translation>
+<translation id="1123753900084781868">Титл уживо тренутно није доступан</translation>
 <translation id="1124772482545689468">Корисник</translation>
 <translation id="1125550662859510761">Изгледа да је у питању <ph name="WIDTH" />×<ph name="HEIGHT" /> (основно)</translation>
 <translation id="1126809382673880764">Не штити вас од опасних веб-сајтова, преузимања и додатака. У другим Google услугама, као што су Gmail и Претрага, и даље ћете имати заштиту помоћу Безбедног прегледања када је доступна.</translation>
@@ -418,6 +419,11 @@
 <translation id="1555130319947370107">Плава</translation>
 <translation id="1556537182262721003">Каталог додатака није било могуће преместити у профил.</translation>
 <translation id="155865706765934889">Додирна табла</translation>
+<translation id="1560763881671211335">G Suite for Education администратори одређују којим Google услугама њихови корисници могу да приступају док су пријављени на G Suite for Education налог. Администратори у школама морају да наведу или добију сагласност када малолетни корисници користе услуге.
+
+    Подаци прегледања (укључујући историју, обележиваче и лозинке) се чувају на налогу за Family Link, а не на школском налогу.
+
+    И даље важе подешавања које је родитељ изабрао у Family Link-у. Ако сте раније блокирали апликацију или сајт, не морате то поново да радите.</translation>
 <translation id="1566049601598938765">Веб-сајт</translation>
 <translation id="15662109988763471">Изабрани штампач није доступан или није правилно инсталиран. Проверите штампач или изаберите неки други.</translation>
 <translation id="1567387640189251553">Нека друга тастатура је повезана откако сте последњи пут унели лозинку. Можда покушава да украде вашу комбинацију тастера.</translation>
@@ -1197,6 +1203,7 @@
 <translation id="258095186877893873">Дуго</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (Платформа <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Преузимање Kerberos тикета није успело. Пробајте поново или се обратите администратору уређаја у организацији. (Кôд грешке <ph name="ERROR_CODE" />)</translation>
+<translation id="2585013490795742997">Приказује се 1 резултат претраге за упит <ph name="QUERY" /></translation>
 <translation id="2585724835339714757">Ова картица дели екран.</translation>
 <translation id="2586657967955657006">Меморија</translation>
 <translation id="2586672484245266891">Унесите краћи URL</translation>
@@ -1883,6 +1890,7 @@
 <translation id="3498215018399854026">Тренутно не можемо да контактирамо родитеља. Пробај поново.</translation>
 <translation id="3500417806337761827">Грешка при инсталацији дељене ставке. Превише SMB дељених ставки је већ инсталирано.</translation>
 <translation id="3505030558724226696">Опозови приступ уређају</translation>
+<translation id="3507132249039706973">Стандардна заштита је укључена</translation>
 <translation id="3507421388498836150">Тренутне дозволе за „<ph name="EXTENSION_NAME" />“</translation>
 <translation id="3507888235492474624">Поново скенирајте Bluetooth уређаје</translation>
 <translation id="3508492320654304609">Брисање података за пријављивање није успело</translation>
@@ -3236,6 +3244,7 @@
 <translation id="5352033265844765294">Означавање времена</translation>
 <translation id="5353252989841766347">Извезите лозинке из Chrome-а</translation>
 <translation id="5355099869024327351">Омогућите Помоћнику да вам приказује обавештења</translation>
+<translation id="5355191726083956201">Побољшана заштита је укључена</translation>
 <translation id="5355926466126177564">Додатак „<ph name="EXTENSION_NAME" />“ је променио страницу која се приказује када претражујете из омнибокса.</translation>
 <translation id="5359910752122114278">1 резултат</translation>
 <translation id="5360150013186312835">Прикажи на траци с алаткама</translation>
@@ -3548,6 +3557,7 @@
 <translation id="577322787686508614">Операција читања није дозвољена на: „<ph name="DEVICE_NAME" />“.</translation>
 <translation id="5774295353725270860">Отварање апликације Датотеке</translation>
 <translation id="577624874850706961">Претражите колачиће</translation>
+<translation id="5776858208024364029">Приказују се резултати претраге (<ph name="NUMBER" />) за упит <ph name="QUERY" /></translation>
 <translation id="5777468213129569553">Отвори Chrome</translation>
 <translation id="5778747455497889540">У наставку је насумично генерисана лозинка за безбедносни модул која је додељена рачунару:</translation>
 <translation id="5780011244986845107">Директоријум који сте изабрали садржи осетљиве датотеке. Желите ли стварно да одобрите апликацији „<ph name="APP_NAME" />“ сталан приступ за читање за овај директоријум?</translation>
@@ -4104,6 +4114,7 @@
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
+<translation id="6520876759015997832"><ph name="LIST_POSITION" />. резултат претраге од <ph name="LIST_SIZE" />: <ph name="SEARCH_RESULT_TEXT" />. Притисните тастер Enter да бисте отворили тај одељак.</translation>
 <translation id="652492607360843641">Повезани сте на <ph name="NETWORK_TYPE" /> мрежу.</translation>
 <translation id="6527303717912515753">Дели</translation>
 <translation id="6528513914570774834">Дозволите другим корисницима овог уређаја да користе ову мрежу</translation>
@@ -4115,6 +4126,7 @@
 <translation id="6532206849875187177">Безбедност и пријављивање</translation>
 <translation id="6532527800157340614">Пријављивање није успело јер није преузета ознака приступа. Проверите мрежну везу и пробајте поново.</translation>
 <translation id="6532663472409656417">Регистровано за предузеће</translation>
+<translation id="6535331821390304775">Увек дозволи да <ph name="ORIGIN" /> отвара овај тип линкова у повезаној апликацији</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Напомена:<ph name="END_BOLD" /> Омогућите ово само ако знате шта радите или ако је то неко затражио од вас јер прикупљање података може да погорша учинак.</translation>
 <translation id="6541638731489116978">Овом сајту је забрањено да приступа сензорима за покрет.</translation>
 <translation id="6545665334409411530">Брзина понављања</translation>
@@ -4244,6 +4256,7 @@
 <translation id="6727969043791803658">Повезано, ниво батерије је <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="6732801395666424405">Сертификати нису отпремљени</translation>
 <translation id="6732900235521116609">Не можемо да уклонимо пречицу</translation>
+<translation id="6734468588183300211">Када сте у режиму без архивирања, сајтови не могу да користе колачиће да би видели ваше активности прегледања на различитим сајтовима, на пример, за персонализацију огласа. Функције на неким сајтовима могу да престану са радом.</translation>
 <translation id="6735304988756581115">Прикажи колачиће и остале податке са сајта...</translation>
 <translation id="6736243959894955139">Адреса</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
@@ -4256,6 +4269,7 @@
 <translation id="674632704103926902">Омогући превлачење додиром</translation>
 <translation id="6748217015615267851">Приказивач: <ph name="RENDERER_URL" /></translation>
 <translation id="6748465660675848252">Можете да наставите, али ће бити враћени само синхронизовани подаци и подешавања. Изгубићете све локалне податке.</translation>
+<translation id="6749006854028927059">Сајтови не могу да користе колачиће да би видели ваше активности прегледања на различитим сајтовима, на пример, за персонализацију огласа. Функције на неким сајтовима могу да престану са радом.</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (без архивирања)</translation>
 <translation id="6757101664402245801">URL је копиран</translation>
 <translation id="6758056191028427665">Поделите утиске о нашем учинку.</translation>
@@ -4347,6 +4361,7 @@
 <translation id="686664946474413495">Температура боја</translation>
 <translation id="6871644448911473373">OCSP одзивник: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">Сервер је одбио лозинку коју сте унели.</translation>
+<translation id="6874170800191969835">Отворили сте <ph name="SEARCH_RESULT_TEXT" />.</translation>
 <translation id="6876155724392614295">Бицикл</translation>
 <translation id="6876469544038980967">Није корисно</translation>
 <translation id="6878422606530379992">Приступ сензорима је дозвољен</translation>
@@ -4617,6 +4632,7 @@
 <translation id="7235737137505019098">На безбедносном кључу нема довољно простора за још налога.</translation>
 <translation id="7238643356913091553"><ph name="NETWORK_NAME" />, детаљи</translation>
 <translation id="7240339475467890413">Желите ли да се повежете на нови хотспот?</translation>
+<translation id="7240847845291869311">Дете жели да дода Google налог за G Suite for Education на овај уређај. <ph name="LINK_BEGIN" />Обавештење о приватности за G Suite for Education<ph name="LINK_END" /> треба да помогне корисницима производа G Suite for Education и родитељима да разумеју које податке производ прикупља, зашто их прикупља и шта ради са њима.</translation>
 <translation id="7241389281993241388">Пријавите се на <ph name="TOKEN_NAME" /> да бисте увезли сертификат клијента.</translation>
 <translation id="7241443820034350811">Ако безбедносни кључ није наведен, притисните његово дугме и задржите га најмање 5 секунди.</translation>
 <translation id="7243632151880336635">Обриши и одјави ме</translation>
@@ -5199,6 +5215,7 @@
 <translation id="7987814697832569482">Увек се повезуј преко овог VPN-а</translation>
 <translation id="7988355189918024273">Омогући функције приступачности</translation>
 <translation id="7991296728590311172">Подешавања приступа помоћу прекидача</translation>
+<translation id="7992202128769240372">Премашује ограничење од <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="7994350303002908848">Инсталирање Plugin VM-а није успело. Пробајте поново или се обратите администратору уређаја у организацији. Кôд грешке: <ph name="ERROR_CODE" />.</translation>
 <translation id="7994702968232966508">EAP метод</translation>
 <translation id="7997826902155442747">Приоритет процеса</translation>

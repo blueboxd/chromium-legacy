@@ -20,9 +20,6 @@
     <color name="tab_back">#F1F1F1</color>
     <color name="tab_back_incognito">#4F4F4F</color>
 
-    <!-- App banner colors -->
-    <color name="app_banner_install_button_bg">@color/default_green</color>
-
     <!-- App menu colors -->
     <color name="update_menu_item_text_color">@color/default_red</color>
 

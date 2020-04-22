@@ -48,7 +48,7 @@ absl_source_set("hash_testing") {
     "../meta:type_traits",
     "../strings",
     "../types:variant",
-    "//testing/gtest",
+    "//third_party/googletest:gtest",
   ]
 }
 

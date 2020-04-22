@@ -3,9 +3,10 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {CookieControlsMode, SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
+// #import {CookieControlsMode, ClearBrowsingDataBrowserProxyImpl, SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // #import {MetricsBrowserProxyImpl, PrivacyElementInteractions, PrivacyPageBrowserProxyImpl, SyncBrowserProxyImpl, HatsBrowserProxyImpl, Router, routes} from 'chrome://settings/settings.js';
+// #import {TestClearBrowsingDataBrowserProxy} from 'chrome://test/settings/test_clear_browsing_data_browser_proxy.m.js'
 // #import {TestMetricsBrowserProxy} from 'chrome://test/settings/test_metrics_browser_proxy.m.js';
 // #import {TestPrivacyPageBrowserProxy} from 'chrome://test/settings/test_privacy_page_browser_proxy.m.js';
 // #import {TestSyncBrowserProxy} from 'chrome://test/settings/test_sync_browser_proxy.m.js';
@@ -131,6 +132,9 @@ suite('PrivacyPage', function() {
   /** @type {SettingsPrivacyPageElement} */
   let page;
 
+  /** @type {settings.TestClearBrowsingDataBrowserProxy} */
+  let testClearBrowsingDataBrowserProxy;
+
   suiteSetup(function() {
     loadTimeData.overrideValues({
       privacySettingsRedesignEnabled: false,
@@ -141,6 +145,9 @@ suite('PrivacyPage', function() {
     PolymerTest.clearBody();
     /* #ignore */ await settings.forceLazyLoaded();
 
+    testClearBrowsingDataBrowserProxy = new TestClearBrowsingDataBrowserProxy();
+    settings.ClearBrowsingDataBrowserProxyImpl.instance_ =
+        testClearBrowsingDataBrowserProxy;
     const testBrowserProxy = new TestPrivacyPageBrowserProxy();
     settings.PrivacyPageBrowserProxyImpl.instance_ = testBrowserProxy;
     const testSyncBrowserProxy = new TestSyncBrowserProxy();
@@ -175,12 +182,6 @@ suite('PrivacyPage', function() {
 
     const dialog = page.$$('settings-clear-browsing-data-dialog');
     assertTrue(!!dialog);
-
-    // Ensure that the dialog is fully opened before returning from this
-    // test, otherwise asynchronous code run in attached() can cause flaky
-    // errors.
-    return test_util.whenAttributeIs(
-        dialog.$$('#clearBrowsingDataDialog'), 'open', '');
   });
 
   test('safeBrowsingReportingToggle', function() {
@@ -250,6 +251,7 @@ suite('PrivacyPage', function() {
     assertEquals(
         page.prefs.profile.cookie_controls_mode.value,
         settings.CookieControlsMode.DISABLED);
+
   });
 });
 

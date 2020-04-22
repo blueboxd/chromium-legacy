@@ -12,13 +12,19 @@
 namespace metrics {
 
 DesktopProfileSessionDurationsService::DesktopProfileSessionDurationsService(
+    PrefService* pref_service,
     syncer::SyncService* sync_service,
     signin::IdentityManager* identity_manager,
     DesktopSessionDurationTracker* tracker)
-    : metrics_recorder_(
+    : sync_metrics_recorder_(
           std::make_unique<syncer::SyncSessionDurationsMetricsRecorder>(
               sync_service,
               identity_manager)),
+      password_metrics_recorder_(
+          std::make_unique<
+              password_manager::PasswordSessionDurationsMetricsRecorder>(
+              pref_service,
+              sync_service)),
       session_duration_observer_(this) {
   session_duration_observer_.Add(tracker);
   if (tracker->in_session()) {
@@ -32,18 +38,21 @@ DesktopProfileSessionDurationsService::
     ~DesktopProfileSessionDurationsService() = default;
 
 void DesktopProfileSessionDurationsService::Shutdown() {
-  metrics_recorder_.reset();
+  password_metrics_recorder_.reset();
+  sync_metrics_recorder_.reset();
 }
 
 void DesktopProfileSessionDurationsService::OnSessionStarted(
     base::TimeTicks session_start) {
-  metrics_recorder_->OnSessionStarted(session_start);
+  sync_metrics_recorder_->OnSessionStarted(session_start);
+  password_metrics_recorder_->OnSessionStarted(session_start);
 }
 
 void DesktopProfileSessionDurationsService::OnSessionEnded(
     base::TimeDelta session_length,
     base::TimeTicks session_end) {
-  metrics_recorder_->OnSessionEnded(session_length);
+  sync_metrics_recorder_->OnSessionEnded(session_length);
+  password_metrics_recorder_->OnSessionEnded(session_length);
 }
 
 }  // namespace metrics

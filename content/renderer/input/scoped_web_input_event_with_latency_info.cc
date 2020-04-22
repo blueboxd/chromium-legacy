@@ -4,6 +4,8 @@
 
 #include "content/renderer/input/scoped_web_input_event_with_latency_info.h"
 
+#include "base/trace_event/trace_event.h"
+
 using blink::WebInputEvent;
 
 namespace content {
@@ -23,6 +25,9 @@ bool ScopedWebInputEventWithLatencyInfo::CanCoalesceWith(
 
 void ScopedWebInputEventWithLatencyInfo::CoalesceWith(
     const ScopedWebInputEventWithLatencyInfo& other) {
+  TRACE_EVENT2("input", "ScopedWebInputEventWithLatencyInfo::CoalesceWith",
+               "traceId", latency_.trace_id(), "coalescedTraceId",
+               other.latency_.trace_id());
   // |other| should be a newer event than |this|.
   if (other.latency_.trace_id() >= 0 && latency_.trace_id() >= 0)
     DCHECK_GT(other.latency_.trace_id(), latency_.trace_id());

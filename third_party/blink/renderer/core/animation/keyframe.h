@@ -78,7 +78,6 @@ class CORE_EXPORT Keyframe : public GarbageCollected<Keyframe> {
     return composite_.value();
   }
 
-  // TODO(smcgruer): The keyframe timing function should be immutable.
   void SetEasing(scoped_refptr<TimingFunction> easing) {
     if (easing)
       easing_ = std::move(easing);
@@ -86,6 +85,7 @@ class CORE_EXPORT Keyframe : public GarbageCollected<Keyframe> {
       easing_ = LinearTimingFunction::Shared();
   }
   TimingFunction& Easing() const { return *easing_; }
+  void CopyEasing(const Keyframe& other) { SetEasing(other.easing_); }
 
   // Returns a set of the properties represented in this keyframe.
   virtual PropertyHandleSet Properties() const = 0;

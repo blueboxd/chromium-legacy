@@ -11,6 +11,7 @@
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/logging.h"
 #include "base/path_service.h"
 #include "base/process/kill.h"
 #include "base/test/multiprocess_test.h"

@@ -121,11 +121,10 @@ using base::UserMetricsAction;
     case PopupMenuActionViewSource:
       [self.dispatcher viewSource];
       break;
+#endif  // !defined(NDEBUG)
     case PopupMenuActionOpenNewWindow:
       [self.dispatcher openNewWindow];
       break;
-#endif  // !defined(NDEBUG)
-
     case PopupMenuActionBookmarks:
       RecordAction(UserMetricsAction("MobileMenuAllBookmarks"));
       [self.dispatcher showBookmarksManager];

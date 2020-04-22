@@ -16,16 +16,13 @@ class SyncService;
 class DeviceInfoTracker;
 }  // namespace syncer
 
-class SharingSyncPreference;
-
 class SharingDeviceSourceSync : public SharingDeviceSource,
                                 public syncer::DeviceInfoTracker::Observer {
  public:
   SharingDeviceSourceSync(
       syncer::SyncService* sync_service,
       syncer::LocalDeviceInfoProvider* local_device_info_provider,
-      syncer::DeviceInfoTracker* device_info_tracker,
-      SharingSyncPreference* sync_prefs);
+      syncer::DeviceInfoTracker* device_info_tracker);
   ~SharingDeviceSourceSync() override;
 
   // SharingDeviceSource:
@@ -66,7 +63,6 @@ class SharingDeviceSourceSync : public SharingDeviceSource,
   syncer::DeviceInfoTracker* device_info_tracker_;
   std::unique_ptr<syncer::LocalDeviceInfoProvider::Subscription>
       local_device_info_ready_subscription_;
-  SharingSyncPreference* sync_prefs_;
 
   // The personalized name is stored for deduplicating devices running older
   // clients.

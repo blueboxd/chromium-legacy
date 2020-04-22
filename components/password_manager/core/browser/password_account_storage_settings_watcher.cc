@@ -18,9 +18,11 @@ PasswordAccountStorageSettingsWatcher::PasswordAccountStorageSettingsWatcher(
     base::RepeatingClosure change_callback)
     : sync_service_(sync_service),
       change_callback_(std::move(change_callback)) {
+  DCHECK(pref_service);
   // The opt-in state is per-account, so it can change whenever the state of the
   // account used by Sync changes.
-  sync_service_->AddObserver(this);
+  if (sync_service_)
+    sync_service_->AddObserver(this);
   // The opt-in state is stored in a pref, so changes to the pref might indicate
   // a change to the opt-in state.
   pref_change_registrar_.Init(pref_service);
@@ -31,7 +33,8 @@ PasswordAccountStorageSettingsWatcher::PasswordAccountStorageSettingsWatcher(
 
 PasswordAccountStorageSettingsWatcher::
     ~PasswordAccountStorageSettingsWatcher() {
-  sync_service_->RemoveObserver(this);
+  if (sync_service_)
+    sync_service_->RemoveObserver(this);
 }
 
 void PasswordAccountStorageSettingsWatcher::OnStateChanged(

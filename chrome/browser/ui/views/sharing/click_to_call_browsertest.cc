@@ -116,7 +116,7 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
 
   menu->ExecuteCommand(IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_SINGLE_DEVICE,
                        0);
-  CheckLastReceiver(devices[0]->guid());
+  CheckLastReceiver(*devices[0]);
   CheckLastSharingMessageSent(GetUnescapedURLContent(GURL(kTelUrl)));
 }
 
@@ -137,7 +137,7 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest, ContextMenu_NoDevicesAvailable) {
 
 IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
                        ContextMenu_DevicesAvailable_SyncTurnedOff) {
-  if (base::FeatureList::IsEnabled(kSharingDeriveVapidKey) &&
+  if (base::FeatureList::IsEnabled(kSharingSendViaSync) &&
       base::FeatureList::IsEnabled(switches::kSyncDeviceInfoInTransportMode)) {
     // Turning off sync will have no effect when Click to Call is available on
     // sign-in.
@@ -189,7 +189,7 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
               sub_menu_model->GetCommandIdAt(device_id));
     sub_menu_model->ActivatedAt(device_id);
 
-    CheckLastReceiver(device->guid());
+    CheckLastReceiver(*device);
     CheckLastSharingMessageSent(GetUnescapedURLContent(GURL(kTelUrl)));
     device_id++;
   }
@@ -222,7 +222,7 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
               sub_menu_model->GetCommandIdAt(device_id));
     sub_menu_model->ActivatedAt(device_id);
 
-    CheckLastReceiver(device->guid());
+    CheckLastReceiver(*device);
     base::Optional<std::string> expected_number =
         ExtractPhoneNumberForClickToCall(GetProfile(0), kTextWithPhoneNumber);
     ASSERT_TRUE(expected_number.has_value());
@@ -417,7 +417,7 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest, LeftClick_ChooseDevice) {
   // Choose first device.
   dialog->ButtonPressed(dialog->dialog_buttons_[0], event);
 
-  CheckLastReceiver(devices[0]->guid());
+  CheckLastReceiver(*devices[0]);
   // Defined in tel.html
   CheckLastSharingMessageSent("0123456789");
 }

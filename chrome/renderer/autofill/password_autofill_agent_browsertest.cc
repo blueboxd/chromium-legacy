@@ -367,13 +367,16 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
 
     PasswordAndMetadata password2;
     password2.password = password2_;
-    fill_data_.additional_logins[username2_] = password2;
+    password2.username = username2_;
+    fill_data_.additional_logins.push_back(std::move(password2));
     PasswordAndMetadata password3;
     password3.password = password3_;
-    fill_data_.additional_logins[username3_] = password3;
+    password3.username = username3_;
+    fill_data_.additional_logins.push_back(std::move(password3));
     PasswordAndMetadata password4;
     password3.password = password4_;
-    fill_data_.additional_logins[username4_] = password4;
+    password4.username = username4_;
+    fill_data_.additional_logins.push_back(std::move(password4));
 
     // We need to set the origin so it matches the frame URL and the action so
     // it matches the form action, otherwise we won't autocomplete.
@@ -3649,8 +3652,8 @@ TEST_F(PasswordAutofillAgentTest, PSLMatchedPasswordIsNotAutofill) {
   psl_credentials.password = ASCIIToUTF16("pslpassword");
   // Non-empty realm means PSL matched credentials.
   psl_credentials.realm = "example.com";
-  fill_data_.additional_logins[ASCIIToUTF16("prefilledusername")] =
-      psl_credentials;
+  psl_credentials.username = ASCIIToUTF16("prefilledusername");
+  fill_data_.additional_logins.push_back(std::move(psl_credentials));
 
   // Simulate the browser sending back the login info, it triggers the
   // autocomplete.

@@ -23,8 +23,6 @@ namespace cr_fuchsia {
 class AgentManager;
 }
 
-class CastRunner;
-
 FORWARD_DECLARE_TEST(HeadlessCastRunnerIntegrationTest, Headless);
 
 // A specialization of WebComponent which adds Cast-specific services.
@@ -62,11 +60,15 @@ class CastComponent : public WebComponent,
     base::Optional<uint64_t> media_session_id;
   };
 
-  CastComponent(CastRunner* runner, Params params);
+  CastComponent(WebContentRunner* runner, Params params, bool is_headless);
   ~CastComponent() final;
+
+  void SetOnDestroyedCallback(base::OnceClosure on_destroyed);
 
   // WebComponent overrides.
   void StartComponent() final;
+  void DestroyComponent(int termination_exit_code,
+                        fuchsia::sys::TerminationReason reason) final;
 
   const chromium::cast::ApplicationConfig& application_config() {
     return application_config_;
@@ -74,15 +76,9 @@ class CastComponent : public WebComponent,
 
   cr_fuchsia::AgentManager* agent_manager() { return agent_manager_.get(); }
 
-  CastRunner* runner() const;
-
  private:
   void OnRewriteRulesReceived(
       std::vector<fuchsia::web::UrlRequestRewriteRule> url_rewrite_rules);
-
-  // WebComponent overrides.
-  void DestroyComponent(int termination_exit_code,
-                        fuchsia::sys::TerminationReason reason) final;
 
   // fuchsia::web::NavigationEventListener implementation.
   // Triggers the injection of API channels into the page content.
@@ -100,6 +96,9 @@ class CastComponent : public WebComponent,
   // base::MessagePumpFuchsia::ZxHandleWatcher implementation.
   // Called when the headless "view" token is disconnected.
   void OnZxHandleSignalled(zx_handle_t handle, zx_signals_t signals) final;
+
+  const bool is_headless_;
+  base::OnceClosure on_destroyed_;
 
   std::unique_ptr<cr_fuchsia::AgentManager> agent_manager_;
   chromium::cast::ApplicationConfig application_config_;

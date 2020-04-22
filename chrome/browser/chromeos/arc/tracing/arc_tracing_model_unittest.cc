@@ -9,6 +9,7 @@
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/trace_event/common/trace_event_common.h"

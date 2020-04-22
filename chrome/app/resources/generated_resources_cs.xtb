@@ -92,6 +92,7 @@
 <translation id="1122198203221319518">&amp;Nástroje</translation>
 <translation id="1122242684574577509">Ověření selhalo. Kliknutím přejděte na přihlašovací stránku sítě Wi-Fi, kterou používáte (<ph name="NETWORK_ID" />).</translation>
 <translation id="1122960773616686544">Název záložky</translation>
+<translation id="1123753900084781868">Živý přepis teď není k dispozici</translation>
 <translation id="1124772482545689468">Uživatel</translation>
 <translation id="1125550662859510761">Vypadá jako <ph name="WIDTH" /> × <ph name="HEIGHT" /> (nativní)</translation>
 <translation id="1126809382673880764">Nebudete chráněni před nebezpečnými weby, soubory ke stažení a rozšířeními. V jiných službách Google, v nichž je ochrana pomocí Bezpečného prohlížení k dispozici (např. Gmail a Vyhledávání), ji budete mít i nadále.</translation>
@@ -4125,7 +4126,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="6532206849875187177">Bezpečnost a přihlášení</translation>
 <translation id="6532527800157340614">Přihlášení se nezdařilo, protože nebylo možné načíst přístupový token. Zkontrolujte připojení k síti a zkuste to znovu.</translation>
 <translation id="6532663472409656417">Registrováno v podniku</translation>
-<translation id="6535331821390304775">Vždy webu <ph name="ORIGIN" /> povolit otevřít odkazy tohoto typu v přidružené aplikaci</translation>
+<translation id="6535331821390304775">Vždy webu <ph name="ORIGIN" /> povolit otvírání odkazů tohoto typu v přidružené aplikaci</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Poznámka:<ph name="END_BOLD" /> Tuto možnost aktivujte pouze v případě, pokud máte jistotu, že to chcete udělat, nebo pokud jste k tomu byli vyzváni. Shromažďování dat může zhoršit výkon.</translation>
 <translation id="6541638731489116978">Tomuto webu byl zablokován přístup k senzorům pohybu.</translation>
 <translation id="6545665334409411530">Rychlost opakování</translation>

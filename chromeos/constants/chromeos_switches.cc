@@ -497,6 +497,10 @@ const char kRegulatoryLabelDir[] = "regulatory-label-dir";
 // This makes it easier to test layout logic.
 const char kShowLoginDevOverlay[] = "show-login-dev-overlay";
 
+// Enables OOBE UI Debugger for ease of navigation between screens during manual
+// testing. Limited to ChromeOS-on-linux and test images only.
+const char kShowOobeDevOverlay[] = "show-oobe-dev-overlay";
+
 // Enables testing for encryption migration UI.
 const char kTestEncryptionMigrationUI[] = "test-encryption-migration-ui";
 

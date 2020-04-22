@@ -575,9 +575,9 @@ IPC_MESSAGE_ROUTED2(FrameMsg_AdvanceFocus,
                     int32_t /* source_routing_id */)
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-// Notifies the renderer of updates to the Plugin Power Saver origin whitelist.
-IPC_MESSAGE_ROUTED1(FrameMsg_UpdatePluginContentOriginWhitelist,
-                    std::set<url::Origin> /* origin_whitelist */)
+// Notifies the renderer of updates to the Plugin Power Saver origin allowlist.
+IPC_MESSAGE_ROUTED1(FrameMsg_UpdatePluginContentOriginAllowlist,
+                    std::set<url::Origin> /* origin_allowlist */)
 
 // This message notifies that the frame that the volume of the Pepper instance
 // for |pp_instance| should be changed to |volume|.

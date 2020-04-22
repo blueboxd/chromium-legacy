@@ -3371,61 +3371,55 @@ void WebViewImpl::SetPageFrozen(bool frozen) {
 }
 
 void WebViewImpl::PutPageIntoBackForwardCache() {
+  DCHECK(GetPage());
+
   SetVisibilityState(PageVisibilityState::kHidden, /*is_initial_state=*/false);
 
-  Page* page = AsView().page;
-  if (page) {
-    for (Frame* frame = page->MainFrame(); frame;
-         frame = frame->Tree().TraverseNext()) {
-      if (frame->DomWindow() && frame->DomWindow()->IsLocalDOMWindow()) {
-        frame->DomWindow()->ToLocalDOMWindow()->DispatchPagehideEvent(
-            PageTransitionEventPersistence::kPageTransitionEventPersisted);
-      }
+  for (Frame* frame = GetPage()->MainFrame(); frame;
+       frame = frame->Tree().TraverseNext()) {
+    if (frame->DomWindow() && frame->DomWindow()->IsLocalDOMWindow()) {
+      frame->DomWindow()->ToLocalDOMWindow()->DispatchPagehideEvent(
+          PageTransitionEventPersistence::kPageTransitionEventPersisted);
     }
   }
 
   // Freeze the page.
   Scheduler()->SetPageFrozen(/*frozen =*/true);
   // Hook eviction.
-  if (page) {
-    for (Frame* frame = page->MainFrame(); frame;
-         frame = frame->Tree().TraverseNext()) {
-      auto* local_frame = DynamicTo<LocalFrame>(frame);
-      if (!local_frame)
-        continue;
-      local_frame->HookBackForwardCacheEviction();
-    }
+  for (Frame* frame = GetPage()->MainFrame(); frame;
+       frame = frame->Tree().TraverseNext()) {
+    auto* local_frame = DynamicTo<LocalFrame>(frame);
+    if (!local_frame)
+      continue;
+    local_frame->HookBackForwardCacheEviction();
   }
 }
 
 void WebViewImpl::RestorePageFromBackForwardCache(
     base::TimeTicks navigation_start) {
+  DCHECK(GetPage());
+
   // Unhook eviction.
-  Page* page = AsView().page;
-  if (page) {
-    for (Frame* frame = page->MainFrame(); frame;
-         frame = frame->Tree().TraverseNext()) {
-      auto* local_frame = DynamicTo<LocalFrame>(frame);
-      if (!local_frame)
-        continue;
-      local_frame->RemoveBackForwardCacheEviction();
-    }
+  for (Frame* frame = GetPage()->MainFrame(); frame;
+       frame = frame->Tree().TraverseNext()) {
+    auto* local_frame = DynamicTo<LocalFrame>(frame);
+    if (!local_frame)
+      continue;
+    local_frame->RemoveBackForwardCacheEviction();
   }
 
   // Resume the page.
   Scheduler()->SetPageFrozen(/*frozen =*/false);
-  if (page) {
-    for (Frame* frame = page->MainFrame(); frame;
-         frame = frame->Tree().TraverseNext()) {
-      if (frame->DomWindow() && frame->DomWindow()->IsLocalDOMWindow()) {
-        frame->DomWindow()->ToLocalDOMWindow()->DispatchPersistedPageshowEvent(
-            navigation_start);
-        if (frame->IsMainFrame()) {
-          UMA_HISTOGRAM_BOOLEAN(
-              "BackForwardCache.MainFrameHasPageshowListenersOnRestore",
-              frame->DomWindow()->ToLocalDOMWindow()->HasEventListeners(
-                  event_type_names::kPageshow));
-        }
+  for (Frame* frame = GetPage()->MainFrame(); frame;
+       frame = frame->Tree().TraverseNext()) {
+    if (frame->DomWindow() && frame->DomWindow()->IsLocalDOMWindow()) {
+      frame->DomWindow()->ToLocalDOMWindow()->DispatchPersistedPageshowEvent(
+          navigation_start);
+      if (frame->IsMainFrame()) {
+        UMA_HISTOGRAM_BOOLEAN(
+            "BackForwardCache.MainFrameHasPageshowListenersOnRestore",
+            frame->DomWindow()->ToLocalDOMWindow()->HasEventListeners(
+                event_type_names::kPageshow));
       }
     }
   }

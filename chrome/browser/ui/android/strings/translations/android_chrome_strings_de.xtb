@@ -54,6 +54,7 @@
 <translation id="1331212799747679585">Chrome kann nicht aktualisiert werden. Weitere Optionen</translation>
 <translation id="1332501820983677155">Tastenkombinationen für Google Chrome-Funktionen</translation>
 <translation id="1360432990279830238">Abmelden &amp; Synchronisierung deaktivieren?</translation>
+<translation id="1364532808393826295"><ph name="APP_NAME" /> – <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">Website "<ph name="SITE_NAME" />" hinzugefügt</translation>
 <translation id="1373696734384179344">Der Speicher reicht nicht aus, um den ausgewählten Inhalt herunterzuladen.</translation>
 <translation id="1376578503827013741">Berechnung läuft...</translation>
@@ -140,6 +141,7 @@
 <translation id="2017836877785168846">Löscht den Verlauf sowie Autovervollständigungen in der Adressleiste.</translation>
 <translation id="2021896219286479412">Vollbild-Steuerelemente</translation>
 <translation id="2025115093177348061">Augmented Reality</translation>
+<translation id="2030769033451695672">Tippen, um zu <ph name="URL_OF_THE_CURRENT_TAB" /> zurückzukehren</translation>
 <translation id="2038563949887743358">"Desktopversion ansehen" aktivieren</translation>
 <translation id="2041019821020695769">Aktivieren Sie Benachrichtigungen auch in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" />, damit Chrome Ihnen Benachrichtigungen senden kann.</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> hat auch Daten in Chrome</translation>
@@ -301,6 +303,7 @@ Berühren und halten Sie ein Wort, um eine Suche damit zu starten. Sie können I
 <translation id="3207960819495026254">Mit einem Lesezeichen versehen</translation>
 <translation id="3211426585530211793"><ph name="ITEM_TITLE" /> gelöscht</translation>
 <translation id="321773570071367578">Wenn Sie Ihre Passphrase vergessen oder diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie die Synchronisierung zurück<ph name="END_LINK" /></translation>
+<translation id="3223655101706843289">Dadurch werden alle Daten und Cookies gelöscht, die von <ph name="ORIGIN" /> und der zugehörigen App auf Ihrem Startbildschirm gespeichert wurden.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3232754137068452469">Web-App</translation>
 <translation id="3236059992281584593">1 Minute übrig</translation>
@@ -535,6 +538,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="4943872375798546930">Keine Ergebnisse</translation>
 <translation id="4961107849584082341">Lassen Sie sich diese Seite in eine beliebige Sprache übersetzen</translation>
 <translation id="4962975101802056554">Alle Berechtigungen für Gerät entziehen</translation>
+<translation id="4964199952259983386">Aktivieren Sie die Kamera auch in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" />, damit Chrome AR verwenden kann.</translation>
 <translation id="4970824347203572753">In Ihrem Land nicht verfügbar</translation>
 <translation id="497421865427891073">Weiter</translation>
 <translation id="4988210275050210843">Datei wird heruntergeladen (<ph name="MEGABYTES" />).</translation>
@@ -634,6 +638,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5684874026226664614">Hoppla! Diese Seite konnte nicht übersetzt werden.</translation>
 <translation id="5686790454216892815">Dateiname zu lang</translation>
 <translation id="5689516760719285838">Ort</translation>
+<translation id="5690795753582697420">Die Kamera wurde in den Android-Einstellungen deaktiviert</translation>
 <translation id="5694049548840660018">Ganz einfach zur Startseite zurückkehren</translation>
 <translation id="569536719314091526">Über die Schaltfläche "Weitere Optionen" können Sie sich diese Seite in eine beliebige Sprache übersetzen lassen</translation>
 <translation id="5710871682236653961">Fragen, bevor Websites erlaubt wird, Informationen zu senden und zu empfangen, wenn das Smartphone an NFC-Geräte gehalten wird (empfohlen)</translation>
@@ -665,6 +670,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5876056640971328065">Video anhalten</translation>
 <translation id="5884076754568147479">Wenn Sie in Chrome mit Assistant Aufgaben erledigen, werden die URLs und Inhalte der Websites, auf denen Sie Assistant verwenden, sowie die Daten, die Sie über Assistant weitergeben, an Google gesendet</translation>
 <translation id="5919204609460789179">Zur Synchronisierung müssen Sie <ph name="PRODUCT_NAME" /> aktualisieren</translation>
+<translation id="5922853908706496913">Bildschirmfreigabe läuft</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> gespeichert</translation>
 <translation id="5939518447894949180">Zurücksetzen</translation>
 <translation id="5942872142862698679">Suche erfolgt mit Google</translation>
@@ -875,6 +881,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="751961395872307827">Keine Verbindung zur Website möglich</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7542481630195938534">Vorschläge können nicht abgerufen werden</translation>
+<translation id="7554752735887601236">Eine Website verwendet Ihr Mikrofon</translation>
 <translation id="7559975015014302720">Lite-Modus ist deaktiviert</translation>
 <translation id="7562080006725997899">Browserdaten werden gelöscht</translation>
 <translation id="756809126120519699">Gelöschte Chrome-Daten</translation>
@@ -911,7 +918,9 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 und <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> weitere}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 und <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> weitere}}</translation>
 <translation id="7791543448312431591">Hinzufügen</translation>
 <translation id="780301667611848630">Kein Interesse</translation>
+<translation id="7804248752222191302">Eine Website verwendet Ihre Kamera</translation>
 <translation id="7810647596859435254">Öffnen mit…</translation>
+<translation id="7817023149356982970">Sie werden von dieser Website abgemeldet.</translation>
 <translation id="7821588508402923572">Ihre Einsparungen bei der Datennutzung werden hier angezeigt</translation>
 <translation id="7828557259026017104">Cookies sind Dateien, die von Websites erstellt werden, die Sie besuchen. Sie werden zum Speichern Ihrer Einstellungen verwendet. Drittanbieter-Cookies werden von anderen Websites erstellt. Diesen Websites gehören einige der Inhalte, wie z. B. Werbeanzeigen oder Bilder, die Sie auf der besuchten Webseite sehen.</translation>
 <translation id="783819812427904514">Stummschaltung des Videos aufheben</translation>
@@ -990,8 +999,10 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="8364299278605033898">Beliebte Websites ansehen</translation>
 <translation id="8368027906805972958">Unbekanntes oder nicht unterstütztes Gerät (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">Lässt die Hintergrundsynchronisierung für eine bestimmte Website zu.</translation>
+<translation id="83792324527827022">Eine Website verwendet Ihre Kamera und Ihr Mikrofon</translation>
 <translation id="8380167699614421159">Diese Website zeigt aufdringliche oder irreführende Werbung an</translation>
 <translation id="8393700583063109961">Nachricht senden</translation>
+<translation id="8394832520002899662">Tippen, um zur Website zurückzukehren</translation>
 <translation id="8413126021676339697">Gesamtverlauf anzeigen</translation>
 <translation id="8427875596167638501">Vorschau-Tab ist halb geöffnet</translation>
 <translation id="8428213095426709021">Einstellungen</translation>
@@ -1034,6 +1045,8 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="8687353297350450808">{N_BARS,plural, =1{Signalstärke: # Balken}other{Signalstärke: # Balken}}</translation>
 <translation id="868929229000858085">Kontakte durchsuchen</translation>
 <translation id="869891660844655955">Ablaufdatum</translation>
+<translation id="8702612070107455751">Alle Offlinedaten werden gelöscht.</translation>
+<translation id="8737217482364735741">Dadurch werden alle von <ph name="ORIGIN" /> gespeicherten Daten und Cookies gelöscht.</translation>
 <translation id="8748850008226585750">Inhalte ausgeblendet</translation>
 <translation id="8751914237388039244">Bild auswählen</translation>
 <translation id="8758557275681689734">Alle geöffneten Tabs ansehen</translation>
@@ -1080,6 +1093,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="9100610230175265781">Passphrase erforderlich</translation>
 <translation id="9102803872260866941">Vorschau-Tab ist geöffnet</translation>
 <translation id="9104217018994036254">Die Liste von Geräten, mit denen ein Tab geteilt werden kann.</translation>
+<translation id="9108312223223904744">Smartphone als Sicherheitsschlüssel</translation>
 <translation id="9133397713400217035">Offline entdecken</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Original anzeigen</translation>

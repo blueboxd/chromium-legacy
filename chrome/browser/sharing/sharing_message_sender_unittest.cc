@@ -137,7 +137,6 @@ class SharingMessageSenderTest : public testing::Test {
       &prefs_, &fake_device_info_sync_service_};
 
   SharingMessageSender sharing_message_sender_{
-      &sharing_sync_preference_,
       fake_device_info_sync_service_.GetLocalDeviceInfoProvider()};
   MockSharingFCMSender* mock_sharing_fcm_sender_;
 
@@ -334,7 +333,6 @@ TEST_F(SharingMessageSenderTest, MessageSent_AckReceivedBeforeMessageId) {
 
 TEST_F(SharingMessageSenderTest, NonExistingDelegate) {
   SharingMessageSender sharing_message_sender{
-      &sharing_sync_preference_,
       fake_device_info_sync_service_.GetLocalDeviceInfoProvider()};
 
   std::unique_ptr<syncer::DeviceInfo> device_info = CreateFakeDeviceInfo(

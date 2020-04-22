@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_ADD_SUPERVISION_ADD_SUPERVISION_METRICS_RECORDER_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_ADD_SUPERVISION_ADD_SUPERVISION_METRICS_RECORDER_H_
 
+#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/time/time.h"
 

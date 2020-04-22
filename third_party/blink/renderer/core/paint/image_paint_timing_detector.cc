@@ -181,9 +181,8 @@ void ImagePaintTimingDetector::RegisterNotifySwapTime() {
   num_pending_swap_callbacks_++;
 }
 
-void ImagePaintTimingDetector::ReportSwapTime(
-    unsigned last_queued_frame_index,
-    base::TimeTicks timestamp) {
+void ImagePaintTimingDetector::ReportSwapTime(unsigned last_queued_frame_index,
+                                              base::TimeTicks timestamp) {
   if (!is_recording_)
     return;
   // The callback is safe from race-condition only when running on main-thread.
@@ -342,7 +341,12 @@ ImageRecord* ImageRecordsManager::FindLargestPaintCandidate() const {
   return size_ordered_set_.begin()->get();
 }
 
+void ImageRecordsManager::Trace(Visitor* visitor) {
+  visitor->Trace(frame_view_);
+}
+
 void ImagePaintTimingDetector::Trace(Visitor* visitor) {
+  visitor->Trace(records_manager_);
   visitor->Trace(frame_view_);
   visitor->Trace(callback_manager_);
 }

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_QUICK_UNLOCK_FINGERPRINT_STORAGE_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_QUICK_UNLOCK_FINGERPRINT_STORAGE_H_
 
+#include "base/macros.h"
 #include "base/time/time.h"
 
 class PrefRegistrySimple;

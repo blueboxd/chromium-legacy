@@ -7,6 +7,7 @@
 #include <objbase.h>
 
 #include <utility>
+#include "base/logging.h"
 
 namespace {
 

@@ -10,7 +10,11 @@
 namespace weblayer {
 
 enum IsolatedWorldIDs {
+  // Isolated world ID for internal WebLayer features.
   ISOLATED_WORLD_ID_WEBLAYER = content::ISOLATED_WORLD_ID_CONTENT_END + 1,
+
+  // Isolated world ID for WebLayer translate.
+  ISOLATED_WORLD_ID_TRANSLATE,
 };
 
 }  // namespace weblayer

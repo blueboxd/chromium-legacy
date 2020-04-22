@@ -27,7 +27,6 @@ class LocalDeviceInfoProvider;
 
 enum class SharingChannelType;
 class SharingFCMSender;
-class SharingSyncPreference;
 enum class SharingDevicePlatform;
 enum class SharingSendMessageResult;
 
@@ -60,7 +59,6 @@ class SharingMessageSender {
   };
 
   SharingMessageSender(
-      SharingSyncPreference* sync_prefs,
       syncer::LocalDeviceInfoProvider* local_device_info_provider);
   SharingMessageSender(const SharingMessageSender&) = delete;
   SharingMessageSender& operator=(const SharingMessageSender&) = delete;
@@ -119,7 +117,6 @@ class SharingMessageSender {
       SharingSendMessageResult result,
       std::unique_ptr<chrome_browser_sharing::ResponseMessage> response);
 
-  SharingSyncPreference* sync_prefs_;
   syncer::LocalDeviceInfoProvider* local_device_info_provider_;
 
   // Map of random GUID to SentMessageMetadata.

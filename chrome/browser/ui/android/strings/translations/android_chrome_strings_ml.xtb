@@ -54,6 +54,7 @@
 <translation id="1331212799747679585">Chrome അപ്‌ഡേറ്റ് ചെയ്യാനാവില്ല. കൂടുതൽ ഓപ്‌ഷനുകൾ</translation>
 <translation id="1332501820983677155">Google Chrome ഫീച്ചർ കുറുക്കുവഴികൾ</translation>
 <translation id="1360432990279830238">സൈൻ ഔട്ട് ചെയ്‌ത് സമന്വയം ഓഫാക്കണോ?</translation>
+<translation id="1364532808393826295"><ph name="APP_NAME" /> - <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676"><ph name="SITE_NAME" /> എന്ന സൈറ്റ് ചേർത്തൂ</translation>
 <translation id="1373696734384179344">തിരഞ്ഞെടുത്ത ഉള്ളടക്കം ഡൗൺലോഡ് ചെയ്യുന്നതിന് ആവശ്യമായ മെമ്മറിയില്ല.</translation>
 <translation id="1376578503827013741">കണക്കാക്കുന്നു…</translation>
@@ -140,6 +141,7 @@
 <translation id="2017836877785168846">വിലാസ ബാറിലെ ചരിത്രവും സ്വയം പൂർത്തീകരണങ്ങളും മായ്ക്കുന്നു.</translation>
 <translation id="2021896219286479412">പൂർണ്ണ സ്ക്രീൻ സൈറ്റ് നിയന്ത്രണങ്ങൾ</translation>
 <translation id="2025115093177348061">അനുബന്ധയാഥാർത്ഥ്യം</translation>
+<translation id="2030769033451695672"><ph name="URL_OF_THE_CURRENT_TAB" /> എന്നതിലേക്ക് മടങ്ങാൻ ടാപ്പ് ചെയ്യുക</translation>
 <translation id="2038563949887743358">'ഡെസ്‌ക്‌ടോപ്പ് സൈറ്റ് അഭ്യർത്ഥിക്കുക' ഓണാക്കുക</translation>
 <translation id="2041019821020695769">അറിയിപ്പുകൾ അയയ്ക്കാൻ Chrome-നെ അനുവദിക്കുന്നതിന്, <ph name="BEGIN_LINK" />Android ക്രമീകരണത്തിൽ<ph name="END_LINK" /> അറിയിപ്പുകളും ഓണാക്കുക.</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> എന്നതിനും Chrome-ൽ ഡാറ്റയുണ്ടായിരുന്നു</translation>
@@ -301,6 +303,7 @@
 <translation id="3207960819495026254">ബുക്ക്‌മാർക്കുചെയ്‌തു</translation>
 <translation id="3211426585530211793"><ph name="ITEM_TITLE" /> ഇല്ലാതാക്കി</translation>
 <translation id="321773570071367578">നിങ്ങൾ പാസ്‌ഫ്രെയ്‌സ് മറന്നുപോയെങ്കിലോ ഈ ക്രമീകരണം മാറ്റണമെങ്കിലോ, <ph name="BEGIN_LINK" />സമന്വയം റീസെറ്റ് ചെയ്യുക<ph name="END_LINK" /></translation>
+<translation id="3223655101706843289">ഇത് <ph name="ORIGIN" /> നിങ്ങളുടെ ഹോം സ്ക്രീനിൽ സംഭരിച്ച എല്ലാ ഡാറ്റയും കുക്കികളും അതിന്റെ ആപ്പുകളും മായ്ക്കും.</translation>
 <translation id="3227137524299004712">മൈക്രോഫോൺ</translation>
 <translation id="3232754137068452469">വെബ് ആപ്പ്</translation>
 <translation id="3236059992281584593">ഒരു മിനിറ്റ് ശേഷിക്കുന്നു</translation>
@@ -535,6 +538,7 @@
 <translation id="4943872375798546930">ഫലങ്ങളൊന്നുമില്ല</translation>
 <translation id="4961107849584082341">ഈ പേജ് ഏത് ഭാഷയിലേക്കും വിവര്‍ത്തനം ചെയ്യുക</translation>
 <translation id="4962975101802056554">ഉപകരണത്തിനുള്ള എല്ലാ അനുമതികളും അസാധുവാക്കുക</translation>
+<translation id="4964199952259983386">Chrome-നെ AR ഉപയോഗിക്കാൻ അനുവദിക്കുന്നതിന് <ph name="BEGIN_LINK" />Android ക്രമീകരണത്തിൽ<ph name="END_LINK" /> ക്യാമറയും ഓണാക്കുക.</translation>
 <translation id="4970824347203572753">നിങ്ങളുടെ ലൊക്കേഷനിൽ ലഭ്യമല്ല</translation>
 <translation id="497421865427891073">മുന്നോട്ട് പോകുക</translation>
 <translation id="4988210275050210843">ഫയൽ ഡൗൺലോഡ് ചെയ്യുന്നു (<ph name="MEGABYTES" />).</translation>
@@ -634,6 +638,7 @@
 <translation id="5684874026226664614">ക്ഷമിക്കണം. ഈ പേജ് വിവർത്തനം ചെയ്യാനായില്ല.</translation>
 <translation id="5686790454216892815">ഫയലിന്റെ പേര് ദൈർഘ്യമേറിയതാണ്</translation>
 <translation id="5689516760719285838">ലൊക്കേഷൻ</translation>
+<translation id="5690795753582697420">Android ക്രമീകരണത്തിൽ ക്യാമറ ഓഫാക്കിയിരിക്കുന്നു</translation>
 <translation id="5694049548840660018">ഹോമിലേക്ക് എളുപ്പത്തിൽ മടങ്ങൂ</translation>
 <translation id="569536719314091526">'കൂടുതൽ ഓപ്‌ഷനുകൾ' ബട്ടണിൽ നിന്ന്, ഈ പേജ് ഏത് ഭാഷയിലേക്കും വിവർത്തനം ചെയ്യുക</translation>
 <translation id="5710871682236653961">നിങ്ങൾ NFC ഉപകരണങ്ങളിൽ ടാപ്പ് ചെയ്യുമ്പോൾ വിവരങ്ങൾ അയയ്‌ക്കാനും സ്വീകരിക്കാനും സൈറ്റുകളെ അനുവദിക്കുന്നതിന് മുമ്പ് ചോദിക്കുക (ശുപാർശ ചെയ്യുന്നത്)</translation>
@@ -665,6 +670,7 @@
 <translation id="5876056640971328065">വീഡിയോ താൽക്കാലികമായി നിർത്തുക</translation>
 <translation id="5884076754568147479">ടാസ്‌ക്കുകൾ പൂർത്തിയാക്കാൻ നിങ്ങളെ സഹായിക്കുന്നതിനായി, നിങ്ങൾ അസിസ്‌റ്റന്റ് ഉപയോഗിക്കുന്ന സൈറ്റുകളുടെ URL-കളും അവയുടെ ഉള്ളടക്കവും അസിസ്‌റ്റന്റിലൂടെ നിങ്ങൾ സമർപ്പിക്കുന്ന വിവരങ്ങളും Google-ന് ലഭിക്കും.</translation>
 <translation id="5919204609460789179">സമന്വയിപ്പിക്കാൻ തുടങ്ങുന്നതിന്, <ph name="PRODUCT_NAME" /> അപ്‌ഡേറ്റ് ചെയ്യുക</translation>
+<translation id="5922853908706496913">നിങ്ങളുടെ സ്‌ക്രീൻ പങ്കിടുന്നു</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> സംരക്ഷിച്ചു</translation>
 <translation id="5939518447894949180">റീസെറ്റ് ചെയ്യുക</translation>
 <translation id="5942872142862698679">തിരയാൻ Google ഉപയോഗിക്കുന്നു</translation>
@@ -875,6 +881,7 @@
 <translation id="751961395872307827">സൈറ്റിലേക്ക് കണ‌ക്‌റ്റ് ചെയ്യാനാവുന്നില്ല</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7542481630195938534">നിർദ്ദേശങ്ങൾ സ്വീകരിക്കാനാവില്ല</translation>
+<translation id="7554752735887601236">ഒരു സൈറ്റ് നിങ്ങളുടെ മൈക്രോഫോൺ ഉപയോഗിക്കുന്നു</translation>
 <translation id="7559975015014302720">ലൈറ്റ് മോഡ് ഓഫാണ്</translation>
 <translation id="7562080006725997899">ബ്രൗസിംഗ് ഡാറ്റ മായ്‌ക്കൽ</translation>
 <translation id="756809126120519699">Chrome ഡാറ്റ മായ്‌ച്ചു</translation>
@@ -911,7 +918,9 @@
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 എന്നതും ‌മറ്റ് <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> പേയ്‌മെന്റ് രീതികളും}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 എന്നതും ‌മറ്റ് <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> പേയ്‌മെന്റ് രീതികളും}}</translation>
 <translation id="7791543448312431591">ചേര്‍ക്കൂ</translation>
 <translation id="780301667611848630">വേണ്ട നന്ദി</translation>
+<translation id="7804248752222191302">ഒരു സൈറ്റ് നിങ്ങളുടെ ക്യാമറ ഉപയോഗിക്കുന്നു</translation>
 <translation id="7810647596859435254">ഇത് ഉപയോഗിച്ച് തുറക്കുക...</translation>
+<translation id="7817023149356982970">നിങ്ങൾ ഈ സൈറ്റിൽ നിന്ന് സൈൻ ഔട്ടാവും.</translation>
 <translation id="7821588508402923572">നിങ്ങൾ ലാഭിച്ച ഡാറ്റ ഇവിടെ ദൃശ്യമാവും</translation>
 <translation id="7828557259026017104">നിങ്ങൾ സന്ദർശിക്കുന്ന വെബ്‌സൈറ്റുകൾ സൃഷ്ടിക്കുന്ന ഫയലുകളാണ് കുക്കികൾ. നിങ്ങളുടെ മുൻ‌ഗണനകൾ ഓർമ്മിക്കാൻ സൈറ്റുകൾ അവ ഉപയോഗിക്കുന്നു. മൂന്നാം കക്ഷി കുക്കികളെ സൃഷ്ടിക്കുന്നത് മറ്റ് സൈറ്റുകളാണ്. നിങ്ങൾ സന്ദർശിക്കുന്ന വെബ്‌പേജിൽ കാണുന്ന പരസ്യങ്ങളോ ചിത്രങ്ങളോ പോലുള്ള ചില ഉള്ളടക്കം ഈ സൈറ്റുകളുടെ ഉടമസ്ഥതയിലാണ്.</translation>
 <translation id="783819812427904514">വീഡിയോ അൺ‌മ്യൂട്ട് ചെയ്യുക</translation>
@@ -990,8 +999,10 @@
 <translation id="8364299278605033898">ജനപ്രിയ വെബ്‌സൈറ്റുകൾ കാണുക</translation>
 <translation id="8368027906805972958">പരിചിതമല്ലാത്തതോ പിന്തുണയ്‌ക്കാത്തതോ ആയ ഉപകരണം (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">ഒരു പ്രത്യേക സൈറ്റിന് വേണ്ടി പശ്ചാത്തലം സമന്വയിപ്പിക്കൽ അനുവദിക്കുക.</translation>
+<translation id="83792324527827022">ഒരു സൈറ്റ് നിങ്ങളുടെ ക്യാമറയും മൈക്രോഫോണും ഉപയോഗിക്കുന്നു</translation>
 <translation id="8380167699614421159">ഈ സൈറ്റ്, അനാവശ്യമോ തെറ്റിദ്ധരിപ്പിക്കുന്നതോ ആയ പരസ്യങ്ങള്‍ കാണിക്കുന്നു</translation>
 <translation id="8393700583063109961">സന്ദേശം അയയ്ക്കുക</translation>
+<translation id="8394832520002899662">സൈറ്റിലേക്ക് മടങ്ങാൻ ടാപ്പ് ചെയ്യുക</translation>
 <translation id="8413126021676339697">മുഴുവന്‍ ചരിത്രവും കാണിക്കുക</translation>
 <translation id="8427875596167638501">പ്രിവ്യു ടാബ് പാതി തുറന്നിരിക്കുന്നു</translation>
 <translation id="8428213095426709021">ക്രമീകരണങ്ങള്‍</translation>
@@ -1034,6 +1045,8 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{സിഗ്‌നൽ സ്‌ട്രെംഗ്‌ത്ത് ലെവൽ # ബാർ}other{സിഗ്‌നൽ സ്‌ട്രെംഗ്‌ത്ത് ലെവൽ # ബാറുകൾ}}</translation>
 <translation id="868929229000858085">നിങ്ങളുടെ കോൺടാക്‌റ്റുകൾ തിരയുക</translation>
 <translation id="869891660844655955">കാലഹരണപ്പെടല്‍‌ തീയതി</translation>
+<translation id="8702612070107455751">എല്ലാ ഓഫ്‍ലൈൻ ഡാറ്റയും മായ്‌ക്കും.</translation>
+<translation id="8737217482364735741">ഇത് <ph name="ORIGIN" /> സംഭരിച്ച എല്ലാ ഡാറ്റയും കുക്കികളും മായ്ക്കും.</translation>
 <translation id="8748850008226585750">കോൺടാക്‌റ്റുകൾ മറച്ചു</translation>
 <translation id="8751914237388039244">ഒരു ചിത്രം തിരഞ്ഞെടുക്കുക</translation>
 <translation id="8758557275681689734">നിങ്ങളുടെ തുറന്നിരിക്കുന്ന ടാബുകൾ എല്ലാം കാണുക</translation>
@@ -1080,6 +1093,7 @@
 <translation id="9100610230175265781">പാസ്‌ഫ്രെയ്‌സ് ആവശ്യമാണ്</translation>
 <translation id="9102803872260866941">പ്രിവ്യു ടാബ് തുറന്നു</translation>
 <translation id="9104217018994036254">ടാബ് പങ്കിടാനാകുന്ന ഉപകരണങ്ങളുടെ ലിസ്‌റ്റ്.</translation>
+<translation id="9108312223223904744">സുരക്ഷാ കീയായി ഫോൺ</translation>
 <translation id="9133397713400217035">ഓഫ്‍ലൈൻ ഉള്ളടക്കങ്ങൾ അടുത്തറിയൂ</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">യഥാര്‍ത്ഥമായത് കാണിക്കുക</translation>

@@ -86,6 +86,6 @@ absl_source_set("per_thread_sem_test_common") {
     "../base",
     "../strings",
     "../time",
-    "//testing/gtest",
+    "//third_party/googletest:gtest",
   ]
 }

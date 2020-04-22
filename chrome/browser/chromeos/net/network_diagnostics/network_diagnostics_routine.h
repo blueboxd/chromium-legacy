@@ -31,40 +31,23 @@ class NetworkDiagnosticsRoutine {
   virtual ~NetworkDiagnosticsRoutine();
 
   // Determines whether this test is capable of being run.
-  virtual bool CanRun() = 0;
+  virtual bool CanRun();
 
-  // Runs the core logic of this routine. Takes in a callback that is invoked by
-  // ExecuteTestCompletedCallback() once the results are analyzed by
-  // AnalyzeResults().
-  virtual void RunTest(base::OnceCallback<void(mojom::RoutineVerdict)>) = 0;
-
-  // Determines the results gathered during the routine and populates
-  // |routine_result_|. Runs the callback to update the clients with a verdict
-  // (of type mojom::RoutineVerdict).
-  virtual void AnalyzeResultsAndExecuteCallback();
+  // Analyze the results gathered by the function and execute the callback.
+  virtual void AnalyzeResultsAndExecuteCallback() = 0;
 
  protected:
   void set_title(const std::string& title) { routine_result_.title = title; }
-  std::string title() const { return routine_result_.title; }
+  const std::string& title() const { return routine_result_.title; }
   void set_verdict(mojom::RoutineVerdict routine_verdict) {
     routine_result_.routine_verdict = routine_verdict;
   }
   mojom::RoutineVerdict verdict() const {
     return routine_result_.routine_verdict;
   }
-  void set_routine_completed_callback(
-      base::OnceCallback<void(mojom::RoutineVerdict)>&
-          routine_completed_callback) {
-    routine_completed_callback_ = std::move(routine_completed_callback);
-  }
-  const base::OnceCallback<void(mojom::RoutineVerdict)>&
-  routine_completed_callback() const {
-    return routine_completed_callback_;
-  }
 
  private:
   RoutineResult routine_result_;
-  base::OnceCallback<void(mojom::RoutineVerdict)> routine_completed_callback_;
   friend class NetworkDiagnosticsRoutineTest;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkDiagnosticsRoutine);

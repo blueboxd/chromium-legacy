@@ -162,6 +162,9 @@ enum ShelfItemType {
 // Returns true if |type| is a valid ShelfItemType.
 ASH_PUBLIC_EXPORT bool IsValidShelfItemType(int64_t type);
 
+// Returns true if |type| is a pinned type (i.e. not a running app or dialog).
+ASH_PUBLIC_EXPORT bool IsPinnedShelfItemType(ShelfItemType type);
+
 // Returns true if types |a| and |b| have the same pin state, i.e. if they
 // are both pinned apps (or a browser shortcut which is always pinned) or both
 // unpinned apps. Returns false if either a or b aren't an app type.

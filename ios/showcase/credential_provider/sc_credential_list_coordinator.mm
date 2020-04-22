@@ -109,17 +109,17 @@ NSArray<id<Credential>>* allPasswords = @[
   [self.viewController presentSuggestedPasswords:suggested allPasswords:all];
 }
 
+- (void)showDetailsForCredential:(id<Credential>)credential {
+  [self.detailsViewController presentCredential:credential];
+  [self.baseViewController pushViewController:self.detailsViewController
+                                     animated:YES];
+}
+
 #pragma mark - CredentialDetailsConsumerDelegate
 
 - (void)unlockPasswordForCredential:(id<Credential>)credential
                   completionHandler:(void (^)(NSString*))completionHandler {
   completionHandler(@"DreamOn");
-}
-
-- (void)showDetailsForCredential:(id<Credential>)credential {
-  [self.detailsViewController presentCredential:credential];
-  [self.baseViewController pushViewController:self.detailsViewController
-                                     animated:YES];
 }
 
 @end

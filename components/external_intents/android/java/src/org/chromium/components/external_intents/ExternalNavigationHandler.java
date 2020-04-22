@@ -12,8 +12,10 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
+import android.os.Build;
 import android.os.SystemClock;
 import android.provider.Browser;
+import android.provider.Telephony;
 import android.text.TextUtils;
 import android.util.Pair;
 import android.webkit.WebView;
@@ -1068,7 +1070,7 @@ public class ExternalNavigationHandler {
      * @param resolvingComponentNames The list of ComponentName that resolves the current intent.
      */
     private String getDefaultSmsPackageName(List<ResolveInfo> resolvingComponentNames) {
-        String defaultSmsPackageName = mDelegate.getDefaultSmsPackageName();
+        String defaultSmsPackageName = getDefaultSmsPackageNameFromSystem();
         if (defaultSmsPackageName == null) return null;
         // Makes sure that the default SMS app actually resolves the intent.
         for (ResolveInfo resolveInfo : resolvingComponentNames) {
@@ -1164,6 +1166,16 @@ public class ExternalNavigationHandler {
             return false;
         }
         return true;
+    }
+
+    /**
+     * @return Default SMS application's package name at the system level. Null if there isn't any.
+     */
+
+    @VisibleForTesting
+    protected String getDefaultSmsPackageNameFromSystem() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) return null;
+        return Telephony.Sms.getDefaultSmsPackage(ContextUtils.getApplicationContext());
     }
 
     private void recordIntentActionMetrics(Intent intent) {

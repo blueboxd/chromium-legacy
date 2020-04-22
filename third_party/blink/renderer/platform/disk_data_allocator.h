@@ -60,13 +60,13 @@ class PLATFORM_EXPORT DiskDataAllocator {
   // Note that this performs a blocking disk write.
   std::unique_ptr<Metadata> Write(const void* data, size_t size);
 
-  // Returns |false| in case of error.
+  // Reads data. A read failure is fatal.
   // Must be called from the main thread.
   // Can be called at any time before |Discard()| destroys |metadata|.
   //
   // |data| must point to an area large enough to fit a |metadata.size|-ed
   // array. Note that this performs a blocking disk read.
-  bool Read(const Metadata& metadata, void* data);
+  void Read(const Metadata& metadata, void* data);
 
   // Discards existing data pointed at by |metadata|.
   void Discard(std::unique_ptr<Metadata> metadata);

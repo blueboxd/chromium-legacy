@@ -2398,7 +2398,8 @@ void LayoutBlockFlow::AddVisualOverflowFromInlineChildren() {
     }
   } else if (const NGPhysicalBoxFragment* fragment = CurrentFragment()) {
     if (const NGFragmentItems* items = fragment->Items()) {
-      for (NGInlineCursor cursor(*items); cursor; cursor.MoveToNextSibling()) {
+      for (NGInlineCursor cursor(*items); cursor;
+           cursor.MoveToNextSkippingChildren()) {
         const NGFragmentItem* child = cursor.CurrentItem();
         DCHECK(child);
         if (child->HasSelfPaintingLayer())

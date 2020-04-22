@@ -92,6 +92,7 @@
 <translation id="1122198203221319518">&amp;Tööriistad</translation>
 <translation id="1122242684574577509">Autentimine ebaõnnestus. Klõpsake kasutatava WiFi-võrgu sisselogimislehe (<ph name="NETWORK_ID" />) külastamiseks.</translation>
 <translation id="1122960773616686544">Järjehoidja nimi</translation>
+<translation id="1123753900084781868">Reaalajas subtiitrid ei ole praegu saadaval</translation>
 <translation id="1124772482545689468">Kasutaja</translation>
 <translation id="1125550662859510761">Näib kui <ph name="WIDTH" /> × <ph name="HEIGHT" /> (loomulik eraldusvõime)</translation>
 <translation id="1126809382673880764">Ei kaitse teid ohtlike veebisaitide, allalaadimiste ega laienduste eest. Google'i ohutu sirvimine kaitseb teid siiski muudes Google'i teenustes, kus see saadaval on (nt Gmail ja Otsing).</translation>
@@ -421,6 +422,11 @@
 <translation id="1555130319947370107">Sinine</translation>
 <translation id="1556537182262721003">Laienduste kataloogi ei õnnestunud profiili teisaldada.</translation>
 <translation id="155865706765934889">Puuteplaat</translation>
+<translation id="1560763881671211335">G Suite for Educationi administraatorid määravad, millistele Google'i teenustele nende kasutajad juurde pääsevad, kui nad on G Suite for Educationi kontole sisse logitud. Kooli administraatorid peavad esitama või hankima nõusoleku, et alaealised tohivad neid teenuseid kasutada.
+
+    Sirvimisandmed (sh ajalugu, järjehoidjad ja paroolid) salvestatakse Family Linki kontole, mitte kooli kontole.
+
+    Teie Family Linki vanema seaded rakenduvad endiselt. Kui olete varem rakenduse või saidi blokeerinud, ei pea te seda uuesti tegema.</translation>
 <translation id="1566049601598938765">Veebisait</translation>
 <translation id="15662109988763471">Valitud printer pole saadaval või pole õigesti installitud. Kontrollige printerit või valige teine printer.</translation>
 <translation id="1567387640189251553">Pärast parooli viimast sisestamist on ühendatud teine klaviatuur. See võib üritada varastada teie klahvivajutusi.</translation>
@@ -1200,6 +1206,7 @@ Selle konto seadete haldamiseks installige oma seadmesse Family Link.  Saatsime 
 <translation id="258095186877893873">Pikk</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (platvorm <ph name="PLATFORM_VERSION" />), <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Kerberose pileti hankimine ebaõnnestus. Proovige uuesti või võtke ühendust oma organisatsiooni seadmete administraatoriga. (Veakood <ph name="ERROR_CODE" />).</translation>
+<translation id="2585013490795742997">Kuvatud on 1 otsingutulemus päringule <ph name="QUERY" /></translation>
 <translation id="2585724835339714757">See vaheleht jagab teie ekraani.</translation>
 <translation id="2586657967955657006">Lõikelaud</translation>
 <translation id="2586672484245266891">Sisestage lühem URL</translation>
@@ -1886,6 +1893,7 @@ Selle konto seadete haldamiseks installige oma seadmesse Family Link.  Saatsime 
 <translation id="3498215018399854026">Teie vanemaga ei õnnestunud praegu ühendust võtta. Proovige hiljem uuesti.</translation>
 <translation id="3500417806337761827">Viga ühiskasutusse andmisel. SMB on ühiskasutusse antud juba liiga paljudele kasutajatele.</translation>
 <translation id="3505030558724226696">Tühista juurdepääs seadmele</translation>
+<translation id="3507132249039706973">Tavakaitse on sisse lülitatud</translation>
 <translation id="3507421388498836150">Laiendi „<ph name="EXTENSION_NAME" />” praegused õigused</translation>
 <translation id="3507888235492474624">Otsi Bluetoothi seadmeid uuesti</translation>
 <translation id="3508492320654304609">Teie sisselogimisandmeid ei saanud kustutada</translation>
@@ -3239,6 +3247,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="5352033265844765294">Ajatempel</translation>
 <translation id="5353252989841766347">Paroolide eksportimine Chrome'ist</translation>
 <translation id="5355099869024327351">Luba assistendil märguandeid esitada</translation>
+<translation id="5355191726083956201">Täiustatud kaitse on sisse lülitatud</translation>
 <translation id="5355926466126177564">Laiendus „<ph name="EXTENSION_NAME" />” muutis seda, milline leht kuvatakse omnikastikeses otsingu tegemisel.</translation>
 <translation id="5359910752122114278">1 tulemus</translation>
 <translation id="5360150013186312835">Tööriistaribal kuvamine</translation>
@@ -3550,6 +3559,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="577322787686508614">Lugemistoiming pole seadmes „<ph name="DEVICE_NAME" />” lubatud.</translation>
 <translation id="5774295353725270860">Ava failirakendus</translation>
 <translation id="577624874850706961">Otsi küpsiseid</translation>
+<translation id="5776858208024364029">Kuvatud on päringu <ph name="QUERY" /> <ph name="NUMBER" /> otsingutulemust</translation>
 <translation id="5777468213129569553">Ava Chrome</translation>
 <translation id="5778747455497889540">All on juhuslikult loodud turvamooduli parool, mis on määratud teie arvutile:</translation>
 <translation id="5780011244986845107">Teie valitud kaust sisaldab tundlikke faile. Kas soovite kindlasti anda rakendusele „<ph name="APP_NAME" />” püsiva juurdepääsu selle kausta lugemiseks?</translation>
@@ -4106,6 +4116,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
+<translation id="6520876759015997832">Otsingutulemus <ph name="LIST_POSITION" />/<ph name="LIST_SIZE" />: <ph name="SEARCH_RESULT_TEXT" />. Jaotisse liikumiseks vajutage sisestusklahvi.</translation>
 <translation id="652492607360843641">Teil on ühendus võrguga <ph name="NETWORK_TYPE" />.</translation>
 <translation id="6527303717912515753">Jaga</translation>
 <translation id="6528513914570774834">Luba teistel selle seadme kasutajatel seda võrku kasutada</translation>
@@ -4117,6 +4128,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="6532206849875187177">Turvalisus ja sisselogimine</translation>
 <translation id="6532527800157340614">Sisselogimine ebaõnnestus, kuna teie juurdepääsuluba ei õnnestunud hankida. Kontrollige võrguühendust ja proovige uuesti.</translation>
 <translation id="6532663472409656417">Ettevõttes registreeritud</translation>
+<translation id="6535331821390304775">Luba teenusel <ph name="ORIGIN" /> seda tüüpi linke alati avada seotud rakenduses</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Märkus.<ph name="END_BOLD" /> Lubage see ainult siis, kui teate, mida teete, või kui teil paluti seda teha, sest andmete kogumine võib toimivust vähendada.</translation>
 <translation id="6541638731489116978">Sellel saidil on juurdepääs teie liikumisanduritele blokeeritud.</translation>
 <translation id="6545665334409411530">Kordussagedus</translation>
@@ -4246,6 +4258,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="6727969043791803658">Ühendatud, <ph name="BATTERY_PERCENTAGE" />% akut</translation>
 <translation id="6732801395666424405">Sertifikaate ei laaditud</translation>
 <translation id="6732900235521116609">Otseteed ei saa eemaldada</translation>
+<translation id="6734468588183300211">Inkognito režiimis ei saa saidid eri saitidel küpsisefailide kaudu teie sirvimistegevusi jälgida, näiteks selleks, et reklaame isikupärastada. Mõne saidi funktsioonid ei pruugi töötada.</translation>
 <translation id="6735304988756581115">Kuva küpsisefaile ja muid saidi andmeid...</translation>
 <translation id="6736243959894955139">Aadress</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
@@ -4258,6 +4271,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="674632704103926902">Luba puutega lohistamine</translation>
 <translation id="6748217015615267851">Renderdaja: <ph name="RENDERER_URL" /></translation>
 <translation id="6748465660675848252">Võite jätkata, kuid taastatakse ainult teie sünkroonitud andmed ja seaded. Kõik kohalikud andmed lähevad kaotsi.</translation>
+<translation id="6749006854028927059">Saidid ei saa reklaamide isikupärastamiseks küpsisefailide abil eri saitidel teie sirvimistegevust jälgida. Mõne saidi funktsioonid ei pruugi töötada.</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (Inkognito)</translation>
 <translation id="6757101664402245801">URL on kopeeritud</translation>
 <translation id="6758056191028427665">Andke teada, kuidas meil läheb.</translation>
@@ -4349,6 +4363,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="686664946474413495">Värvitemperatuur</translation>
 <translation id="6871644448911473373">OCSP vastaja: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">Server lükkas sisestatud parooli tagasi.</translation>
+<translation id="6874170800191969835">Navigeeriti üksuse <ph name="SEARCH_RESULT_TEXT" /> juurde.</translation>
 <translation id="6876155724392614295">Jalgratas</translation>
 <translation id="6876469544038980967">Ei ole kasulik</translation>
 <translation id="6878422606530379992">Andurid on lubatud</translation>
@@ -4619,6 +4634,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="7235737137505019098">Teie turvavõtmel pole muude kontode jaoks piisavalt ruumi.</translation>
 <translation id="7238643356913091553"><ph name="NETWORK_NAME" />, üksikasjad</translation>
 <translation id="7240339475467890413">Kas luua ühendus uue levialaga?</translation>
+<translation id="7240847845291869311">Teie laps soovib sellesse seadmesse lisada G Suite for Educationi Google'i konto. <ph name="LINK_BEGIN" />G Suite for Educationi privaatsusteatis<ph name="LINK_END" /> aitab G Suite for Educationi kasutajatel ja vanematel mõista, milliseid andmeid teenus kogub, miks neid kogutakse ning mida nendega tehakse.</translation>
 <translation id="7241389281993241388">Logige sisse rakendusse <ph name="TOKEN_NAME" /> kliendi sertifikaadi importimiseks.</translation>
 <translation id="7241443820034350811">Kui teie turvavõti puudub, hoidke selle nuppu vähemalt 5 sekundit all.</translation>
 <translation id="7243632151880336635">Kustuta ja logi välja</translation>
@@ -5201,6 +5217,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="7987814697832569482">Loo alati ühendus selle VPN-i kaudu</translation>
 <translation id="7988355189918024273">Luba juurdepääsetavuse funktsioonid</translation>
 <translation id="7991296728590311172">Lülitiga juurdepääsu seaded</translation>
+<translation id="7992202128769240372">Ületab piirangut <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="7994350303002908848">Plugin VM-i ei õnnestunud installida. Proovige uuesti või võtke ühendust organisatsiooni seadmeadministraatoriga. Veakood: <ph name="ERROR_CODE" />.</translation>
 <translation id="7994702968232966508">EAP meetod</translation>
 <translation id="7997826902155442747">Protsessi prioriteet</translation>

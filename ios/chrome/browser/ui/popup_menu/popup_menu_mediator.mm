@@ -801,22 +801,17 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
   return @[ openNewTabItem, self.openNewIncognitoTabItem ];
 }
 
-#if !defined(NDEBUG)
 - (NSArray<TableViewItem*>*)itemsForNewWindow {
   if (!IsMultiwindowSupported())
     return @[];
 
   // Create the menu item -- hardcoded string and no accessibility ID.
-  PopupMenuToolsItem* openNewWindowItem =
-      [[PopupMenuToolsItem alloc] initWithType:kItemTypeEnumZero];
-  openNewWindowItem.title = @"New Window";
-  openNewWindowItem.actionIdentifier = PopupMenuActionOpenNewWindow;
-  openNewWindowItem.image = [[UIImage imageNamed:@"popup_menu_new_tab"]
-      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+  PopupMenuToolsItem* openNewWindowItem = CreateTableViewItem(
+      IDS_IOS_TOOLS_MENU_NEW_WINDOW, PopupMenuActionOpenNewWindow,
+      @"popup_menu_new_tab", kToolsMenuNewWindow);
 
   return @[ openNewWindowItem ];
 }
-#endif  // !defined(NDEBUG)
 
 - (NSArray<TableViewItem*>*)actionItems {
   NSMutableArray* actionsArray = [NSMutableArray array];

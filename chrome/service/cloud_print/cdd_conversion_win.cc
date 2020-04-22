@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/logging.h"
 #include "base/memory/free_deleter.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/cloud_devices/common/printer_description.h"

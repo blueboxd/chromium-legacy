@@ -172,7 +172,7 @@
 <translation id="1652415888492971589">JIS B8</translation>
 <translation id="1656024727720460136">Chrome спрасціў гэту старонку для больш зручнага чытання. Ён атрымаў зыходную старонку па бяспечным падключэнні.</translation>
 <translation id="1656489000284462475">Прыняцце</translation>
-<translation id="1662550410081243962">Захаваць і запоўніць даныя спосабаў аплаты</translation>
+<translation id="1662550410081243962">Захоўваць і запаўняць даныя спосабаў аплаты</translation>
 <translation id="1663943134801823270">Даныя крэдытных картак і адрасы паходзяць з браўзера Chrome. Кіраваць імі можна ў <ph name="BEGIN_LINK" />Наладах<ph name="END_LINK" />.</translation>
 <translation id="1671391448414634642">Цяпер старонкі на мове <ph name="SOURCE_LANGUAGE" /> будуць перакладацца на мову <ph name="TARGET_LANGUAGE" />.</translation>
 <translation id="1676269943528358898"><ph name="SITE" /> звычайна выкарыстоўвае шыфраванне для абароны вашай інфармацыі. Пры спробе Google Chrome падключыцца да <ph name="SITE" />, вэб-сайт адправіў незнаёмыя і няправільныя ўліковыя даныя. Гэта можа адбывацца, калі зламыснік спрабуе выдаць сябе за <ph name="SITE" /> або экран уваходу ў сетцы Wi-Fi перарваў падключэнне. Ваша інфармацыя ўсё роўна абаронена, паколькі Google Chrome перарваў падключэнне да абмену данымі.</translation>
@@ -1438,7 +1438,7 @@
 <translation id="717330890047184534">Ідэнтыфікатар GAIA:</translation>
 <translation id="7174545416324379297">Аб'яднана</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> і яшчэ <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}one{<ph name="SHIPPING_OPTION_PREVIEW" /> і яшчэ <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}few{<ph name="SHIPPING_OPTION_PREVIEW" /> і яшчэ <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}many{<ph name="SHIPPING_OPTION_PREVIEW" /> і яшчэ <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> і яшчэ <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
-<translation id="7179323680825933600">Захаваць і запоўніць даныя спосабаў аплаты</translation>
+<translation id="7179323680825933600">Захоўваць і запаўняць даныя спосабаў аплаты</translation>
 <translation id="7180611975245234373">Абнавіць</translation>
 <translation id="7182878459783632708">Палітыкі не зададзены</translation>
 <translation id="7186367841673660872">Гэта старонка была перакладзена. Зыходная мова – <ph name="ORIGINAL_LANGUAGE" />, мова перакладу – <ph name="LANGUAGE_LANGUAGE" /></translation>

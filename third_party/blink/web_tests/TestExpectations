@@ -3191,6 +3191,10 @@ crbug.com/27659 external/wpt/css/css-ruby/ruby-line-breaking-003.html [ Failure 
 crbug.com/27659 external/wpt/css/css-ruby/ruby-whitespace-001.html [ Failure ]
 crbug.com/27659 external/wpt/css/css-ruby/ruby-whitespace-002.html [ Failure ]
 
+# WebRTC: Perfect Negotiation is flaky on all platform
+crbug.com/1072928 external/wpt/webrtc/RTCPeerConnection-perfect-negotiation.https.html [ Failure Timeout ]
+crbug.com/1072928 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-perfect-negotiation.https.html [ Failure Timeout ]
+
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 [ Linux ] external/wpt/content-security-policy/script-src/script-src-strict_dynamic_double_policy_honor_source_expressions.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/content-security-policy/script-src/script-src-strict_dynamic_double_policy_honor_source_expressions.html [ Timeout ]
@@ -3198,13 +3202,6 @@ crbug.com/626703 [ Win ] external/wpt/content-security-policy/script-src/script-
 crbug.com/626703 [ Linux ] external/wpt/uievents/order-of-events/focus-events/focus-management-expectations.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/uievents/order-of-events/focus-events/focus-management-expectations.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/uievents/order-of-events/focus-events/focus-management-expectations.html [ Timeout ]
-crbug.com/626703 [ Linux ] external/wpt/webrtc/RTCPeerConnection-perfect-negotiation.https.html [ Failure Timeout ]
-crbug.com/626703 [ Mac ] external/wpt/webrtc/RTCPeerConnection-perfect-negotiation.https.html [ Failure Timeout ]
-crbug.com/626703 [ Win10 ] external/wpt/webrtc/RTCPeerConnection-perfect-negotiation.https.html [ Failure Timeout ]
-crbug.com/626703 [ Win7 ] external/wpt/webrtc/RTCPeerConnection-perfect-negotiation.https.html [ Failure Timeout ]
-crbug.com/626703 [ Linux ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-perfect-negotiation.https.html [ Failure Timeout ]
-crbug.com/626703 [ Mac ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-perfect-negotiation.https.html [ Failure Timeout ]
-crbug.com/626703 [ Win ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-perfect-negotiation.https.html [ Failure Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/mathml/presentation-markup/operators/mo-form-dynamic-002.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/mathml/presentation-markup/operators/mo-form-dynamic-002.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/mathml/presentation-markup/operators/mo-form-dynamic-002.html [ Failure ]
@@ -6354,7 +6351,6 @@ crbug.com/1043675 [ Linux ] virtual/threaded-no-composited-antialiasing/animatio
 
 # Required to land DevTools change
 crbug.com/106759 http/tests/devtools/command-line-api-inspect.js [ Pass Failure ]
-crbug.com/106759 http/tests/devtools/sources/debugger-breakpoints/restore-locations-for-breakpoint-with-broken-source-map.js [ Pass Failure ]
 crbug.com/106759 http/tests/devtools/sources/debugger-console/debugger-command-line-api.js [ Pass Failure ]
 
 crbug.com/989665 [ Mac ] external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Crash Pass ]
@@ -6732,3 +6728,8 @@ crbug.com/1042694 virtual/form-controls-refresh-disabled/fast/forms/form-control
 
 # QUIC reordered versions to prefer IETF QUIC
 crbug.com/1070747 external/wpt/webrtc-quic/* [ Skip ]
+
+# Sheriff 2020-04-22
+# Flaky test.
+crbug.com/1073431 http/tests/streams/transferable/readable-stream.html [ Pass Failure ]
+crbug.com/1073460 external/wpt/css/CSS2/linebox/animations/line-height-interpolation.html [ Pass Timeout ]

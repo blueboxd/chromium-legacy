@@ -52,4 +52,8 @@ RestoreIOSLiveTab::GetUserAgentOverride() {
   return sessions::SerializedUserAgentOverride();
 }
 
+const web::WebState* RestoreIOSLiveTab::GetWebState() const {
+  return nullptr;
+}
+
 }  // namespace sessions

@@ -24,9 +24,9 @@
   let stopRequest;
   let sourceMapRequested;
   let sourceMapRequest = new Promise(resolve => sourceMapRequested = resolve);
-  Host.ResourceLoader.setLoad(function(url, headers, callback){
+  Host.ResourceLoader.setLoadForTest(function(url, headers, callback){
     if (url.endsWith('a.js.map')) {
-      stopRequest = () => callback(404);
+      stopRequest = () => callback(false, [], "", {message:"<error message>"});
       sourceMapRequested();
       return;
     }

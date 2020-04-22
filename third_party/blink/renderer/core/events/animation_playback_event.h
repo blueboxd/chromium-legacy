@@ -31,9 +31,6 @@ class AnimationPlaybackEvent final : public Event {
 
   base::Optional<double> currentTime() const { return current_time_; }
   base::Optional<double> timelineTime() const { return timeline_time_; }
-  // TODO(crbug.com/1060971): Remove |is_null| version.
-  double currentTime(bool& is_null) const;   // DEPRECATED
-  double timelineTime(bool& is_null) const;  // DEPRECATED
 
   const AtomicString& InterfaceName() const override;
 

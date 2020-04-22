@@ -19,6 +19,7 @@
 #include <vector>
 
 #include "base/containers/small_map.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"

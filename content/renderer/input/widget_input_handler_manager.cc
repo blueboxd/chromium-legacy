@@ -14,6 +14,7 @@
 #include "content/renderer/input/widget_input_handler_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_widget.h"
+#include "services/tracing/public/cpp/perfetto/flow_event_utils.h"
 #include "third_party/blink/public/common/input/web_input_event_attribution.h"
 #include "third_party/blink/public/common/input/web_keyboard_event.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -29,12 +30,18 @@
 #endif
 
 namespace content {
+
+using ::perfetto::protos::pbzero::ChromeLatencyInfo;
+using ::perfetto::protos::pbzero::TrackEvent;
+
 namespace {
 void CallCallback(mojom::WidgetInputHandler::DispatchEventCallback callback,
                   blink::mojom::InputEventResultState result_state,
                   const ui::LatencyInfo& latency_info,
                   std::unique_ptr<ui::DidOverscrollParams> overscroll_params,
                   base::Optional<cc::TouchAction> touch_action) {
+  ui::LatencyInfo::TraceIntermediateFlowEvents(
+      {latency_info}, ChromeLatencyInfo::STEP_HANDLED_INPUT_EVENT_IMPL);
   std::move(callback).Run(
       blink::mojom::InputEventResultSource::kMainThread, latency_info,
       result_state,
@@ -589,6 +596,8 @@ void WidgetInputHandlerManager::DidHandleInputEventAndOverscroll(
   TRACE_EVENT1("input",
                "WidgetInputHandlerManager::DidHandleInputEventAndOverscroll",
                "Disposition", event_disposition);
+  ui::LatencyInfo::TraceIntermediateFlowEvents(
+      {latency_info}, ChromeLatencyInfo::STEP_DID_HANDLE_INPUT_AND_OVERSCROLL);
 
   blink::mojom::InputEventResultState ack_state =
       InputEventDispositionToAck(event_disposition);
@@ -641,6 +650,8 @@ void WidgetInputHandlerManager::HandledInputEvent(
 
   TRACE_EVENT1("input", "WidgetInputHandlerManager::HandledInputEvent",
                "ack_state", ack_state);
+  ui::LatencyInfo::TraceIntermediateFlowEvents(
+      {latency_info}, ChromeLatencyInfo::STEP_HANDLED_INPUT_EVENT_MAIN_OR_IMPL);
 
   if (!touch_action.has_value()) {
     TRACE_EVENT_INSTANT0("input", "Using white_listed_touch_action",

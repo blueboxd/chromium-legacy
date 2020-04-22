@@ -107,7 +107,7 @@
 }
 
 - (void)showDetailsForCredential:(id<Credential>)credential {
-  // TODO(crbug.com/1052143): Implement this method.
+  [self.UIHandler showDetailsForCredential:credential];
 }
 
 @end

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/error_screens_histogram_helper.h"
 
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 
 namespace chromeos {

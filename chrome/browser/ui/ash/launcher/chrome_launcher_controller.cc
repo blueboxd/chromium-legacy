@@ -14,6 +14,7 @@
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_prefs.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/window_animation_types.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -115,8 +116,7 @@ void SelectItemWithSource(ash::ShelfItemDelegate* delegate,
 
 // Returns true if the given |item| has a pinned shelf item type.
 bool ItemTypeIsPinned(const ash::ShelfItem& item) {
-  return item.type == ash::TYPE_PINNED_APP ||
-         item.type == ash::TYPE_BROWSER_SHORTCUT;
+  return ash::IsPinnedShelfItemType(item.type);
 }
 
 // Returns the app_id of the crostini app that can handle the given web content.

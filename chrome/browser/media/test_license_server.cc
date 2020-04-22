@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/files/file_util.h"
+#include "base/logging.h"
 #include "base/optional.h"
 #include "base/process/launch.h"
 #include "base/threading/thread_restrictions.h"

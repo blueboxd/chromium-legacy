@@ -462,7 +462,7 @@ class CONTENT_EXPORT RenderFrameImpl
       const url::Origin& content_origin,
       const gfx::Size& unobscured_size,
       RecordPeripheralDecision record_decision) override;
-  void WhitelistContentOrigin(const url::Origin& content_origin) override;
+  void AllowlistContentOrigin(const url::Origin& content_origin) override;
   void PluginDidStartLoading() override;
   void PluginDidStopLoading() override;
 #endif

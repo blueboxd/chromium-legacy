@@ -14,7 +14,6 @@
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/sharing/features.h"
-#include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sharing/sharing_utils.h"
 #include "components/send_tab_to_self/target_device_info.h"
 #include "components/sync/driver/sync_service.h"
@@ -61,12 +60,10 @@ bool IsStale(const syncer::DeviceInfo& device) {
 SharingDeviceSourceSync::SharingDeviceSourceSync(
     syncer::SyncService* sync_service,
     syncer::LocalDeviceInfoProvider* local_device_info_provider,
-    syncer::DeviceInfoTracker* device_info_tracker,
-    SharingSyncPreference* sync_prefs)
+    syncer::DeviceInfoTracker* device_info_tracker)
     : sync_service_(sync_service),
       local_device_info_provider_(local_device_info_provider),
-      device_info_tracker_(device_info_tracker),
-      sync_prefs_(sync_prefs) {
+      device_info_tracker_(device_info_tracker) {
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
@@ -167,34 +164,34 @@ SharingDeviceSourceSync::FilterDeviceCandidates(
   bool can_send_via_vapid = CanSendViaVapid(sync_service_);
   bool can_send_via_sender_id = CanSendViaSenderID(sync_service_);
 
-  base::EraseIf(devices, [this, accepted_features, can_send_via_vapid,
+  base::EraseIf(devices, [accepted_features, can_send_via_vapid,
                           can_send_via_sender_id](const auto& device) {
     // Checks if |last_updated_timestamp| is not too old.
     if (IsStale(*device.get()))
       return true;
 
-    // Checks if device has fcm configuration.
-    auto fcm_configuration = sync_prefs_->GetFCMChannel(*device);
-    if (!fcm_configuration)
+    // Checks if device has SharingInfo.
+    if (!device->sharing_info())
       return true;
 
     // Checks if message can be sent via either VAPID or sender ID.
+    auto& vapid_target_info = device->sharing_info()->vapid_target_info;
+    auto& sender_id_target_info = device->sharing_info()->sender_id_target_info;
     bool vapid_channel_valid =
-        (can_send_via_vapid && !fcm_configuration->vapid_fcm_token().empty() &&
-         !fcm_configuration->vapid_p256dh().empty() &&
-         !fcm_configuration->vapid_auth_secret().empty());
+        (can_send_via_vapid && !vapid_target_info.fcm_token.empty() &&
+         !vapid_target_info.p256dh.empty() &&
+         !vapid_target_info.auth_secret.empty());
     bool sender_id_channel_valid =
-        (can_send_via_sender_id &&
-         !fcm_configuration->sender_id_fcm_token().empty() &&
-         !fcm_configuration->sender_id_p256dh().empty() &&
-         !fcm_configuration->sender_id_auth_secret().empty());
+        (can_send_via_sender_id && !sender_id_target_info.fcm_token.empty() &&
+         !sender_id_target_info.p256dh.empty() &&
+         !sender_id_target_info.auth_secret.empty());
     if (!vapid_channel_valid && !sender_id_channel_valid)
       return true;
 
     // Checks whether |device| supports any of |accepted_features|.
     return base::STLSetIntersection<
                std::vector<SharingSpecificFields::EnabledFeatures>>(
-               sync_prefs_->GetEnabledFeatures(device.get()), accepted_features)
+               device->sharing_info()->enabled_features, accepted_features)
         .empty();
   });
   return devices;

@@ -161,7 +161,7 @@ void PluginInstanceThrottlerImpl::Initialize(
         observer.OnPeripheralStateChange();
 
       if (status == RenderFrame::CONTENT_STATUS_ESSENTIAL_CROSS_ORIGIN_BIG)
-        frame->WhitelistContentOrigin(content_origin);
+        frame->AllowlistContentOrigin(content_origin);
 
       return;
     }
@@ -172,7 +172,7 @@ void PluginInstanceThrottlerImpl::Initialize(
         content_origin,
         base::BindOnce(&PluginInstanceThrottlerImpl::MarkPluginEssential,
                        weak_factory_.GetWeakPtr(),
-                       UNTHROTTLE_METHOD_BY_WHITELIST));
+                       UNTHROTTLE_METHOD_BY_ALLOWLIST));
   }
 }
 

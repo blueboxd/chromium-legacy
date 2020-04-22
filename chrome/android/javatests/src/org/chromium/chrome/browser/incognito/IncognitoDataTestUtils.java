@@ -100,6 +100,25 @@ public class IncognitoDataTestUtils {
                 return TestParams.getParameters(true, true);
             }
         }
+
+        public static class RegularToRegular implements ParameterProvider {
+            @Override
+            public List<ParameterSet> getParameters() {
+                return TestParams.getParameters(false, false);
+            }
+        }
+
+        public static class AllTypesToAllTypes implements ParameterProvider {
+            @Override
+            public List<ParameterSet> getParameters() {
+                List<ParameterSet> result = new ArrayList<>();
+                result.addAll(new TestParams.RegularToIncognito().getParameters());
+                result.addAll(new TestParams.IncognitoToRegular().getParameters());
+                result.addAll(new TestParams.IncognitoToIncognito().getParameters());
+                result.addAll(new TestParams.RegularToRegular().getParameters());
+                return result;
+            }
+        }
     }
 
     private static Tab launchUrlInTab(

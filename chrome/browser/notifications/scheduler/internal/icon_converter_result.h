@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/optional.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 

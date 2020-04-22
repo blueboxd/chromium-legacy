@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/authpolicy/data_pipe_utils.h"
 
 #include "base/files/file_util.h"
+#include "base/logging.h"
 
 namespace chromeos {
 namespace data_pipe_utils {

@@ -1,0 +1,22 @@
+This is a testharness.js-based test.
+PASS Missing arguments
+PASS Branding
+FAIL Zero initial assert_equals: Buffer before growing: constructor expected (undefined) undefined but got (boolean) false
+FAIL Zero initial with valueOf assert_equals: Buffer before growing: constructor expected (undefined) undefined but got (boolean) false
+FAIL Non-zero initial assert_equals: Buffer before growing: constructor expected (undefined) undefined but got (boolean) false
+FAIL Zero initial with respected maximum assert_equals: Buffer before growing: constructor expected (undefined) undefined but got (boolean) false
+FAIL Zero initial with respected maximum grown twice assert_equals: Buffer before growing: constructor expected (undefined) undefined but got (boolean) false
+FAIL Zero initial growing too much assert_equals: Buffer before growing: constructor expected (undefined) undefined but got (boolean) false
+PASS Out-of-range argument: undefined
+PASS Out-of-range argument: NaN
+PASS Out-of-range argument: Infinity
+PASS Out-of-range argument: -Infinity
+PASS Out-of-range argument: -1
+PASS Out-of-range argument: 4294967296
+PASS Out-of-range argument: 68719476736
+PASS Out-of-range argument: "0x100000000"
+PASS Out-of-range argument: object "[object Object]"
+FAIL Stray argument assert_equals: Buffer before growing: constructor expected (undefined) undefined but got (boolean) false
+PASS Growing shared memory does not detach old buffer
+Harness: the test ran to completion.
+

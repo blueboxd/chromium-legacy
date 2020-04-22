@@ -420,6 +420,11 @@
 <translation id="1555130319947370107">Синий</translation>
 <translation id="1556537182262721003">Не удалось переместить каталог расширений в профиль.</translation>
 <translation id="155865706765934889">Сенсорная панель</translation>
+<translation id="1560763881671211335">Администраторы G Suite for Education определяют, к каким сервисам Google есть доступ у пользователей, вошедших в аккаунты G Suite for Education. Администраторы учебного заведения должны получить согласие на использование сервисов несовершеннолетними и предоставить его Google.
+
+    Данные о работе в браузере, включая историю, закладки и пароли, будут храниться в аккаунте Family Link, а не в учебном аккаунте.
+
+    Настройки родительского контроля, заданные с помощью сервиса Family Link, по-прежнему будут действовать. Если вы ранее заблокировали приложение или сайт, вам не придется делать это снова.</translation>
 <translation id="1566049601598938765">Сайт</translation>
 <translation id="15662109988763471">Принтер недоступен или установлен неправильно. Проверьте его или выберите другой.</translation>
 <translation id="1567387640189251553">После ввода пароля была подключена другая клавиатура. Это может быть попыткой узнать, какие клавиши вы нажимаете.</translation>
@@ -1198,6 +1203,7 @@
 <translation id="258095186877893873">долгая</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (платформа <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Не удалось загрузить билет Kerberos. Повторите попытку или обратитесь к администратору устройства. Код ошибки: <ph name="ERROR_CODE" />.</translation>
+<translation id="2585013490795742997">Показан 1 результат поиска по запросу "<ph name="QUERY" />"</translation>
 <translation id="2585724835339714757">Эта вкладка открывает доступ к вашему экрану</translation>
 <translation id="2586657967955657006">Буфер обмена</translation>
 <translation id="2586672484245266891">Слишком длинный URL.</translation>
@@ -1884,6 +1890,7 @@
 <translation id="3498215018399854026">Не удалось связаться с вашими родителями. Повторите попытку.</translation>
 <translation id="3500417806337761827">Произошла ошибка. Подключено слишком много общих папок SMB.</translation>
 <translation id="3505030558724226696">Запретить доступ к устройствам</translation>
+<translation id="3507132249039706973">Стандартная защита включена.</translation>
 <translation id="3507421388498836150">Текущие разрешения расширения "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="3507888235492474624">Повторите поиск устройств Bluetooth</translation>
 <translation id="3508492320654304609">Невозможно удалить ваши учетные данные</translation>
@@ -3237,6 +3244,7 @@
 <translation id="5352033265844765294">Штамп времени</translation>
 <translation id="5353252989841766347">Экспорт паролей из Chrome</translation>
 <translation id="5355099869024327351">Разрешите Ассистенту показывать вам уведомления</translation>
+<translation id="5355191726083956201">Улучшенная защита включена.</translation>
 <translation id="5355926466126177564">Расширение "<ph name="EXTENSION_NAME" />" изменило поисковую систему, используемую по умолчанию при вводе запроса в омнибокс.</translation>
 <translation id="5359910752122114278">1 результат</translation>
 <translation id="5360150013186312835">Показывать на панели инструментов</translation>
@@ -3548,6 +3556,7 @@
 <translation id="577322787686508614">Чтение данных на устройстве <ph name="DEVICE_NAME" /> запрещено.</translation>
 <translation id="5774295353725270860">Открыть приложение "Файлы"</translation>
 <translation id="577624874850706961">Поиск файлов cookie</translation>
+<translation id="5776858208024364029">Показано результатов поиска по запросу "<ph name="QUERY" />": <ph name="NUMBER" /></translation>
 <translation id="5777468213129569553">Запустить Chrome</translation>
 <translation id="5778747455497889540">Безопасный модуль случайным образом сгенерировал для компьютера следующий пароль:</translation>
 <translation id="5780011244986845107">Выбранная папка содержит конфиденциальные файлы. Предоставить приложению "<ph name="APP_NAME" />" постоянный доступ для чтения данных?</translation>
@@ -4104,6 +4113,7 @@
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
+<translation id="6520876759015997832">Результат поиска <ph name="LIST_POSITION" /> из <ph name="LIST_SIZE" />: "<ph name="SEARCH_RESULT_TEXT" />". Чтобы перейти в этот раздел, нажмите Ввод.</translation>
 <translation id="652492607360843641">Вы подключены к следующему типу сети: <ph name="NETWORK_TYPE" />.</translation>
 <translation id="6527303717912515753">Поделиться</translation>
 <translation id="6528513914570774834">Предоставить другим пользователям устройства доступ к этой сети</translation>
@@ -4115,6 +4125,7 @@
 <translation id="6532206849875187177">Безопасность и вход</translation>
 <translation id="6532527800157340614">При выполнении входа произошла ошибка: не удалось получить токен доступа. Проверьте подключение к сети и повторите попытку.</translation>
 <translation id="6532663472409656417">Зарегистрировано в корпоративном домене</translation>
+<translation id="6535331821390304775">Всегда разрешать сайту <ph name="ORIGIN" /> открывать ссылки этого типа в связанном приложении</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Примечание.<ph name="END_BOLD" /> Данную функцию следует включать только при необходимости, поскольку сбор данных может замедлить работу системы.</translation>
 <translation id="6541638731489116978">Этому сайту закрыт доступ к датчикам движения.</translation>
 <translation id="6545665334409411530">Скорость повтора</translation>
@@ -4244,6 +4255,7 @@
 <translation id="6727969043791803658">Подключено, батарея заряжена на <ph name="BATTERY_PERCENTAGE" /> %</translation>
 <translation id="6732801395666424405">Сертификаты не загружены</translation>
 <translation id="6732900235521116609">Невозможно удалить ярлык</translation>
+<translation id="6734468588183300211">В режиме инкогнито сайты не могут использовать файлы cookie, чтобы видеть ваши действия в браузере, например, для показа персонализированной рекламы. Из-за этого некоторые функции на сайтах могут работать некорректно.</translation>
 <translation id="6735304988756581115">Показать cookie и другие данные...</translation>
 <translation id="6736243959894955139">Адрес</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
@@ -4256,6 +4268,7 @@
 <translation id="674632704103926902">Включить перетаскивание нажатием</translation>
 <translation id="6748217015615267851">Видеообработка: <ph name="RENDERER_URL" /></translation>
 <translation id="6748465660675848252">Если вы продолжите сейчас, восстановлены будут только синхронизированные, но не локальные данные.</translation>
+<translation id="6749006854028927059">Сайты не могут использовать файлы cookie, чтобы видеть ваши действия в браузере, например, для показа персонализированной рекламы. Из-за этого некоторые функции на сайтах могут работать некорректно.</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (инкогнито)</translation>
 <translation id="6757101664402245801">URL скопирован</translation>
 <translation id="6758056191028427665">Расскажите, как у вас дела.</translation>
@@ -4347,6 +4360,7 @@
 <translation id="686664946474413495">Цветовая температура</translation>
 <translation id="6871644448911473373">Ответчик OCSP: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">Сервер отклонил введенный пароль.</translation>
+<translation id="6874170800191969835">Вы перешли к результату поиска "<ph name="SEARCH_RESULT_TEXT" />".</translation>
 <translation id="6876155724392614295">Велосипед</translation>
 <translation id="6876469544038980967">Бесполезно</translation>
 <translation id="6878422606530379992">Использование датчиков разрешено</translation>
@@ -4617,6 +4631,7 @@
 <translation id="7235737137505019098">На электронном ключе не хватает места для нового аккаунта.</translation>
 <translation id="7238643356913091553"><ph name="NETWORK_NAME" />, подробная информация</translation>
 <translation id="7240339475467890413">Подключиться к новой точке доступа?</translation>
+<translation id="7240847845291869311">Ваш ребенок хочет добавить на это устройство аккаунт G Suite for Education. Информацию о том, какие данные собирает G Suite for Education, а также как и для чего они используются, можно найти в <ph name="LINK_BEGIN" />Примечании о конфиденциальности<ph name="LINK_END" />.</translation>
 <translation id="7241389281993241388">Войдите в <ph name="TOKEN_NAME" />, чтобы импортировать сертификат клиента.</translation>
 <translation id="7241443820034350811">Если электронного ключа нет в списке, нажмите и удерживайте его кнопку в течение пяти секунд.</translation>
 <translation id="7243632151880336635">Стереть данные и выйти</translation>
@@ -5199,6 +5214,7 @@
 <translation id="7987814697832569482">Всегда использовать эту VPN-сеть</translation>
 <translation id="7988355189918024273">Включить функции для людей с ограниченными возможностями</translation>
 <translation id="7991296728590311172">Настройки функции Switch Access</translation>
+<translation id="7992202128769240372">Превышено ограничение: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" />.</translation>
 <translation id="7994350303002908848">Не удалось установить Plugin VM. Повторите попытку или обратитесь к администратору устройства. Код ошибки: <ph name="ERROR_CODE" />.</translation>
 <translation id="7994702968232966508">Метод EAP</translation>
 <translation id="7997826902155442747">Приоритет процессов</translation>

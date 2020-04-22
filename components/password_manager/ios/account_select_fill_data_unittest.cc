@@ -145,7 +145,7 @@ TEST_F(AccountSelectFillDataTest, RetrievePSLMatchedSuggestions) {
 
   // Make logins to be PSL matched by setting non-empy realm.
   form_data_[0].preferred_realm = kRealm;
-  form_data_[0].additional_logins.begin()->second.realm = kAdditionalRealm;
+  form_data_[0].additional_logins.begin()->realm = kAdditionalRealm;
 
   account_select_fill_data.Add(form_data_[0]);
   std::vector<UsernameAndRealm> suggestions =

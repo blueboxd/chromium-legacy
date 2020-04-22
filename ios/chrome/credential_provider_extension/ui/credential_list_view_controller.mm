@@ -41,6 +41,7 @@ const CGFloat kHeaderHeight = 70;
   [super viewDidLoad];
   self.view.backgroundColor = [UIColor colorNamed:kBackgroundColor];
   self.navigationItem.rightBarButtonItem = [self navigationCancelButton];
+  self.tableView.tableFooterView = [[UIView alloc] initWithFrame:CGRectZero];
 
   self.searchController =
       [[UISearchController alloc] initWithSearchResultsController:nil];
@@ -57,7 +58,6 @@ const CGFloat kHeaderHeight = 70;
 
   [self.tableView registerClass:[UITableViewHeaderFooterView class]
       forHeaderFooterViewReuseIdentifier:kHeaderIdentifier];
-  self.tableView.sectionHeaderHeight = kHeaderHeight;
 }
 
 #pragma mark - CredentialListConsumer
@@ -77,7 +77,9 @@ const CGFloat kHeaderHeight = 70;
 
 - (NSInteger)tableView:(UITableView*)tableView
     numberOfRowsInSection:(NSInteger)section {
-  if ([self isSuggestedPasswordSection:section]) {
+  if ([self isEmptyTable]) {
+    return 0;
+  } else if ([self isSuggestedPasswordSection:section]) {
     return self.suggestedPasswords.count;
   } else {
     return self.allPasswords.count;
@@ -124,6 +126,7 @@ const CGFloat kHeaderHeight = 70;
   cell.detailTextLabel.text = credential.serviceName;
   cell.detailTextLabel.textColor = [UIColor colorNamed:kTextSecondaryColor];
   cell.selectionStyle = UITableViewCellSelectionStyleNone;
+
   return cell;
 }
 
@@ -143,6 +146,11 @@ const CGFloat kHeaderHeight = 70;
     accessoryButtonTappedForRowWithIndexPath:(NSIndexPath*)indexPath {
   id<Credential> credential = [self credentialForIndexPath:indexPath];
   [self.delegate showDetailsForCredential:credential];
+}
+
+- (CGFloat)tableView:(UITableView*)tableView
+    heightForHeaderInSection:(NSInteger)section {
+  return kHeaderHeight;
 }
 
 #pragma mark - UISearchResultsUpdating

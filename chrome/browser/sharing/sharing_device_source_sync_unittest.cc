@@ -14,7 +14,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/sharing/fake_device_info.h"
 #include "chrome/browser/sharing/features.h"
-#include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sharing/sharing_utils.h"
 #include "components/send_tab_to_self/features.h"
 #include "components/send_tab_to_self/target_device_info.h"
@@ -24,7 +23,6 @@
 #include "components/sync_device_info/fake_device_info_tracker.h"
 #include "components/sync_device_info/fake_local_device_info_provider.h"
 #include "components/sync_device_info/local_device_info_util.h"
-#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -67,16 +65,11 @@ std::unique_ptr<syncer::DeviceInfo> CreateDeviceInfo(
 
 class SharingDeviceSourceSyncTest : public testing::Test {
  public:
-  SharingDeviceSourceSyncTest()
-      : sharing_sync_preference_(&prefs_, &fake_device_info_sync_service_) {
-    SharingSyncPreference::RegisterProfilePrefs(prefs_.registry());
-  }
-
   std::unique_ptr<SharingDeviceSourceSync> CreateDeviceSource(
       bool wait_until_ready) {
     auto device_source = std::make_unique<SharingDeviceSourceSync>(
         &test_sync_service_, &fake_local_device_info_provider_,
-        &fake_device_info_tracker_, &sharing_sync_preference_);
+        &fake_device_info_tracker_);
     if (!wait_until_ready)
       return device_source;
 
@@ -98,9 +91,7 @@ class SharingDeviceSourceSyncTest : public testing::Test {
   base::test::ScopedFeatureList scoped_feature_list_;
 
   syncer::TestSyncService test_sync_service_;
-  sync_preferences::TestingPrefServiceSyncable prefs_;
   syncer::FakeDeviceInfoSyncService fake_device_info_sync_service_;
-  SharingSyncPreference sharing_sync_preference_;
   syncer::FakeLocalDeviceInfoProvider fake_local_device_info_provider_;
   syncer::FakeDeviceInfoTracker fake_device_info_tracker_;
   const syncer::DeviceInfo* local_device_info_ =

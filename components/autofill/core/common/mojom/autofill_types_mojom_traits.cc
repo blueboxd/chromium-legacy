@@ -199,6 +199,8 @@ bool StructTraits<autofill::mojom::PasswordAndMetadataDataView,
                   autofill::PasswordAndMetadata>::
     Read(autofill::mojom::PasswordAndMetadataDataView data,
          autofill::PasswordAndMetadata* out) {
+  if (!data.ReadUsername(&out->username))
+    return false;
   if (!data.ReadPassword(&out->password))
     return false;
   if (!data.ReadRealm(&out->realm))

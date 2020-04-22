@@ -10,7 +10,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "chrome/android/chrome_jni_headers/SavePasswordInfoBar_jni.h"
-#include "chrome/browser/password_manager/save_password_infobar_delegate_android.h"
+#include "chrome/browser/password_manager/android/save_password_infobar_delegate_android.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 
 using base::android::JavaParamRef;

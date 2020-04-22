@@ -5,7 +5,7 @@
 #ifndef CHROME_COMMON_MEDIA_ROUTER_MEDIA_SOURCE_H_
 #define CHROME_COMMON_MEDIA_ROUTER_MEDIA_SOURCE_H_
 
-#include <iosfwd>
+#include <ostream>
 #include <string>
 
 #include "base/hash/hash.h"

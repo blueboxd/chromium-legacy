@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string.h"
+#include "third_party/blink/renderer/platform/disk_data_allocator.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_functions.h"
@@ -23,6 +24,7 @@
 
 namespace blink {
 
+class DiskDataAllocator;
 class ParkableString;
 
 PLATFORM_EXPORT extern const base::Feature kCompressParkableStrings;
@@ -86,6 +88,8 @@ class PLATFORM_EXPORT ParkableStringManager {
   void Remove(ParkableStringImpl*);
 
   void OnParked(ParkableStringImpl*);
+  void OnWrittenToDisk(ParkableStringImpl*);
+  void OnReadFromDisk(ParkableStringImpl*);
   void OnUnparked(ParkableStringImpl*);
 
   void ParkAll(ParkableStringImpl::ParkingMode mode);
@@ -97,6 +101,18 @@ class PLATFORM_EXPORT ParkableStringManager {
     total_parking_thread_time_ += parking_thread_time;
   }
   Statistics ComputeStatistics() const;
+
+  DiskDataAllocator& data_allocator() const {
+    if (allocator_for_testing_)
+      return *allocator_for_testing_;
+
+    return DiskDataAllocator::Instance();
+  }
+
+  void SetDataAllocatorForTesting(
+      std::unique_ptr<DiskDataAllocator> allocator) {
+    allocator_for_testing_ = std::move(allocator);
+  }
 
   void ResetForTesting();
   ParkableStringManager();
@@ -110,6 +126,9 @@ class PLATFORM_EXPORT ParkableStringManager {
 
   StringMap unparked_strings_;
   StringMap parked_strings_;
+  StringMap on_disk_strings_;
+
+  std::unique_ptr<DiskDataAllocator> allocator_for_testing_;
 
   friend class ParkableStringTest;
   FRIEND_TEST_ALL_PREFIXES(ParkableStringTest, SynchronousCompression);

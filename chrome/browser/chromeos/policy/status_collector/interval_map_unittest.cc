@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/policy/status_collector/interval_map.h"

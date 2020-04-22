@@ -21,7 +21,6 @@ import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingTestHe
 import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingTestHelper.whenDisplayed;
 import static org.chromium.chrome.browser.keyboard_accessory.tab_layout_component.KeyboardAccessoryTabTestHelper.isKeyboardAccessoryTabLayout;
 
-import android.os.Build;
 import android.support.test.filters.SmallTest;
 
 import org.junit.After;
@@ -30,7 +29,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -47,7 +45,6 @@ import java.util.concurrent.TimeoutException;
  * Integration tests for password accessory views.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/958631")
 @RetryOnFailure
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class PasswordAccessoryIntegrationTest {
@@ -74,7 +71,6 @@ public class PasswordAccessoryIntegrationTest {
 
     @Test
     @SmallTest
-    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/958631")
     public void testPasswordSheetDisplaysProvidedItems() throws TimeoutException {
         mHelper.loadTestPage(false);
         mHelper.cacheCredentials("mayapark@gmail.com", "SomeHiddenPassword");

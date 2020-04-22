@@ -20,6 +20,11 @@ void PropertyRegistry::DeclareProperty(const AtomicString& name,
   version_++;
 }
 
+void PropertyRegistry::RemoveDeclaredProperties() {
+  declared_properties_.clear();
+  version_++;
+}
+
 const PropertyRegistration* PropertyRegistry::Registration(
     const AtomicString& name) const {
   // If a property is registered with both CSS.registerProperty and @property,

@@ -9,8 +9,9 @@
 
 @class ASCredentialServiceIdentifier;
 @class ASCredentialProviderExtensionContext;
-@class UIViewController;
 @protocol CredentialStore;
+@class ReauthenticationHandler;
+@class UIViewController;
 
 // This feature presents a list of credentials for the user to choose.
 @interface CredentialListCoordinator : NSObject
@@ -24,6 +25,7 @@
                        context:(ASCredentialProviderExtensionContext*)context
             serviceIdentifiers:
                 (NSArray<ASCredentialServiceIdentifier*>*)serviceIdentifiers
+       reauthenticationHandler:(ReauthenticationHandler*)reauthenticationHandler
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;

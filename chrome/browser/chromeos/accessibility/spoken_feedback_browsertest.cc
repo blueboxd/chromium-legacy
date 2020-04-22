@@ -20,6 +20,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/task/post_task.h"
+#include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
@@ -834,7 +835,13 @@ class OobeSpokenFeedbackTest : public OobeBaseTest {
   DISALLOW_COPY_AND_ASSIGN(OobeSpokenFeedbackTest);
 };
 
-IN_PROC_BROWSER_TEST_F(OobeSpokenFeedbackTest, SpokenFeedbackInOobe) {
+#if defined(MEMORY_SANITIZER)
+// Times out under MSan: https://crbug.com/1071693
+#define MAYBE_SpokenFeedbackInOobe DISABLED_SpokenFeedbackInOobe
+#else
+#define MAYBE_SpokenFeedbackInOobe SpokenFeedbackInOobe
+#endif
+IN_PROC_BROWSER_TEST_F(OobeSpokenFeedbackTest, MAYBE_SpokenFeedbackInOobe) {
   ui_controls::EnableUIControls();
   ASSERT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
   AccessibilityManager::Get()->EnableSpokenFeedback(true);

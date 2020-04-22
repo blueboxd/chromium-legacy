@@ -32,7 +32,6 @@
 - (void)verifyUserWithCompletionHandler:
             (void (^)(ReauthenticationResult))completionHandler
         presentReminderOnViewController:(UIViewController*)viewController {
-  DCHECK(viewController.extensionContext);
   if ([_weakReauthenticationModule canAttemptReauth]) {
     [_weakReauthenticationModule
         attemptReauthWithLocalizedReason:

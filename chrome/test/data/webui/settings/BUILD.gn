@@ -89,6 +89,7 @@ js_modulizer("modulize") {
     "sync_account_control_test.js",
     "sync_test_util.js",
     "test_about_page_browser_proxy.js",
+    "test_clear_browsing_data_browser_proxy.js",
     "test_extension_control_browser_proxy.js",
     "test_hats_browser_proxy.js",
     "test_languages_browser_proxy.js",

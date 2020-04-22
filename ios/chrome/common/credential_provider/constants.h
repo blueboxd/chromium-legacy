@@ -15,4 +15,8 @@ NSURL* CredentialProviderSharedArchivableStoreURL();
 // time sync have been completed.
 extern NSString* const kUserDefaultsCredentialProviderFirstTimeSyncCompleted;
 
+// Key for the app group user defaults indicating if the user has enabled and
+// given consent for the credential provider extension.
+extern NSString* const kUserDefaultsCredentialProviderConsentVerified;
+
 #endif  // IOS_CHROME_COMMON_CREDENTIAL_PROVIDER_CONSTANTS_H_

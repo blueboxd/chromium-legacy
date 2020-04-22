@@ -18,6 +18,7 @@
 #include <type_traits>
 
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/win/scoped_com_initializer.h"
 #include "chrome/elevation_service/elevated_recovery_impl.h"

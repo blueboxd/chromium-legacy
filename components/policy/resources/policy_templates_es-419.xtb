@@ -721,11 +721,11 @@ Si la inhabilitas, se inhabilitará el desplazamiento de la página web a fragme
 <translation id="2166472654199325139">No aplicar filtros de contenido para adultos a los sitios</translation>
 <translation id="2166746572083670600">Configura el directorio que <ph name="PRODUCT_NAME" /> usará para almacenar datos del usuario.
 
-      Si se establece esta política, <ph name="PRODUCT_NAME" /> usará el directorio independientemente de si el usuario ha especificado la función experimental "--user-data-dir" o no. Para evitar pérdida de datos u otros errores inesperados, no debe establecerse esta política en un directorio que se use para otros propósitos, porque <ph name="PRODUCT_NAME" /> administra su contenido.
+      Si se establece esta política, <ph name="PRODUCT_NAME" /> usará el directorio independientemente de si el usuario ha especificado la marca "--user-data-dir" o no. Para evitar pérdida de datos u otros errores inesperados, no debe establecerse esta política en un directorio que se use para otros propósitos, porque <ph name="PRODUCT_NAME" /> administra su contenido.
 
       Consulta https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables para ver una lista de las variables que se pueden usar.
 
-      Si no se establece esta política, se usará la ruta predeterminada de acceso al perfil, y el usuario podrá anularla con la función experimental de la línea de comandos "--user-data-dir".</translation>
+      Si no se establece esta política, se usará la ruta predeterminada de acceso al perfil, y el usuario podrá anularla con la marca de la línea de comandos "--user-data-dir".</translation>
 <translation id="2168397434410358693">Demora de inactividad con alimentación de CA</translation>
 <translation id="217013996107840632">Parámetros de la línea de comandos para cambiar del navegador alternativo</translation>
 <translation id="2170233653554726857">Habilitar optimización de WPAD</translation>
@@ -2755,7 +2755,7 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 
       Si se habilita esta configuración, el servicio de protección de contraseñas capturará los hash con sal de la contraseña en estas URL para detectar la reutilización de contraseñas.
       Si se inhabilita esta configuración o no se establece, el servicio de protección de contraseñas solo capturará los hash con sal de la contraseña en https://accounts.google.com.
-      Esta política solo está disponible en instancias de Windows conectadas a un dominio de <ph name="MS_AD_NAME" /> o instancias de Windows 10 Pro o Enterprise habilitadas para la administración de dispositivos.</translation>
+      Esta política solo está disponible en instancias de Windows vinculadas a un dominio de <ph name="MS_AD_NAME" /> o instancias de Windows 10 Pro o Enterprise habilitadas para la administración de dispositivos.</translation>
 <translation id="5236882091572996759">Si esta política se configura como verdadera o no se configura, el usuario no se considerará inactivo mientras se reproduce el audio. Esto evitará que se alcance el tiempo de espera de inactividad y se tome la medida de inactividad. Sin embargo, se realizará la atenuación de pantalla, la pantalla apagada y el bloqueo de pantalla luego de los tiempos de espera configurados, independientemente de la actividad de audio.
 
           Si esta política se configura como falsa, la actividad de audio no evitará que el usuario se considere inactivo.</translation>

@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <queue>
 
+#include "base/logging.h"
+
 namespace {
 using Match = SequenceMatcher::Match;
 using Matches = std::vector<Match>;

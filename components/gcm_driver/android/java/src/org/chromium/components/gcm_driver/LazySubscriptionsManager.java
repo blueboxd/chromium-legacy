@@ -16,7 +16,6 @@ import org.json.JSONObject;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StrictModeContext;
-import org.chromium.base.metrics.RecordHistogram;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -215,9 +214,6 @@ public class LazySubscriptionsManager {
             if (message.getCollapseKey() != null) {
                 queueJSON = filterMessageBasedOnCollapseKey(queueJSON, message.getCollapseKey());
             }
-
-            RecordHistogram.recordCount100Histogram(
-                    "PushMessaging.QueuedMessagesCount", queueJSON.length());
 
             // If the queue is full remove the oldest message.
             if (queueJSON.length() == MESSAGES_QUEUE_SIZE) {

@@ -26,8 +26,8 @@ typedef NS_ENUM(NSInteger, PopupMenuAction) {
   PopupMenuActionTextZoom,
 #if !defined(NDEBUG)
   PopupMenuActionViewSource,
-  PopupMenuActionOpenNewWindow,
 #endif  // !defined(NDEBUG)
+  PopupMenuActionOpenNewWindow,
   PopupMenuActionBookmarks,
   PopupMenuActionReadingList,
   PopupMenuActionRecentTabs,

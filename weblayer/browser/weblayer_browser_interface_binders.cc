@@ -6,12 +6,14 @@
 
 #include "base/bind.h"
 #include "build/build_config.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "third_party/blink/public/mojom/installedapp/installed_app_provider.mojom.h"
 #include "third_party/blink/public/mojom/installedapp/related_application.mojom.h"
+#include "weblayer/browser/translate_client_impl.h"
 #include "weblayer/browser/webui/weblayer_internals.mojom.h"
 #include "weblayer/browser/webui/weblayer_internals_ui.h"
 
@@ -21,6 +23,29 @@
 
 namespace weblayer {
 namespace {
+
+void BindContentTranslateDriver(
+    content::RenderFrameHost* host,
+    mojo::PendingReceiver<translate::mojom::ContentTranslateDriver> receiver) {
+  // Translation does not currently work in subframes.
+  // TODO(crbug.com/1073370): Transition WebLayer to per-frame translation
+  // architecture once it's ready.
+  if (host->GetParent())
+    return;
+
+  auto* contents = content::WebContents::FromRenderFrameHost(host);
+  if (!contents)
+    return;
+
+  // TODO(crbug.com/1072334): Resolve incorporation of translate in incognito
+  // mode.
+  if (contents->GetBrowserContext()->IsOffTheRecord())
+    return;
+
+  TranslateClientImpl* const translate_client =
+      TranslateClientImpl::FromWebContents(contents);
+  translate_client->translate_driver()->AddReceiver(std::move(receiver));
+}
 
 void BindPageHandler(
     content::RenderFrameHost* host,
@@ -74,6 +99,10 @@ void PopulateWebLayerFrameBinders(
     service_manager::BinderMapWithContext<content::RenderFrameHost*>* map) {
   map->Add<weblayer_internals::mojom::PageHandler>(
       base::BindRepeating(&BindPageHandler));
+
+  map->Add<translate::mojom::ContentTranslateDriver>(
+      base::BindRepeating(&BindContentTranslateDriver));
+
 #if defined(OS_ANDROID)
   // TODO(https://crbug.com/1037884): Remove this.
   map->Add<blink::mojom::InstalledAppProvider>(

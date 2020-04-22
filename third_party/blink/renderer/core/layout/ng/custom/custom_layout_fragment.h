@@ -53,8 +53,6 @@ class CustomLayoutFragment : public ScriptWrappable {
   void setBlockOffset(double block_offset) { block_offset_ = block_offset; }
 
   base::Optional<double> baseline() const { return baseline_; }
-  // TODO(crbug.com/1060971): Remove |is_null| version.
-  double baseline(bool& is_null) const;  // DEPRECATED
 
   ScriptValue data(ScriptState*) const;
 

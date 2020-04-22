@@ -4,10 +4,14 @@
 
 #import "ios/chrome/credential_provider_extension/credential_provider_view_controller.h"
 
+#import <Foundation/Foundation.h>
+
+#include "ios/chrome/common/app_group/app_group_constants.h"
 #import "ios/chrome/common/credential_provider/archivable_credential_store.h"
 #import "ios/chrome/common/credential_provider/constants.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
 #import "ios/chrome/credential_provider_extension/reauthentication_handler.h"
+#import "ios/chrome/credential_provider_extension/ui/consent_coordinator.h"
 #import "ios/chrome/credential_provider_extension/ui/credential_list_coordinator.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -21,6 +25,10 @@
 
 // List coordinator that shows the list of passwords when started.
 @property(nonatomic, strong) CredentialListCoordinator* listCoordinator;
+
+// Consent coordinator that shows a view requesting device auth in order to
+// enable the extension.
+@property(nonatomic, strong) ConsentCoordinator* consentCoordinator;
 
 // Date kept for ReauthenticationModule.
 @property(nonatomic, strong) NSDate* lastSuccessfulReauthTime;
@@ -45,7 +53,8 @@
           initWithBaseViewController:self
                      credentialStore:self.credentialStore
                              context:self.extensionContext
-                  serviceIdentifiers:serviceIdentifiers];
+                  serviceIdentifiers:serviceIdentifiers
+             reauthenticationHandler:self.reauthenticationHandler];
       [self.listCoordinator start];
 
     } else {
@@ -57,6 +66,19 @@
                                      userInfo:nil]];
     }
   }];
+}
+
+- (void)prepareInterfaceForExtensionConfiguration {
+  // Reset the consent if the extension was disabled and reenabled.
+  NSUserDefaults* shared_defaults = app_group::GetGroupUserDefaults();
+  [shared_defaults
+      removeObjectForKey:kUserDefaultsCredentialProviderConsentVerified];
+  self.consentCoordinator = [[ConsentCoordinator alloc]
+         initWithBaseViewController:self
+                            context:self.extensionContext
+            reauthenticationHandler:self.reauthenticationHandler
+      isInitialConfigurationRequest:YES];
+  [self.consentCoordinator start];
 }
 
 #pragma mark - Properties

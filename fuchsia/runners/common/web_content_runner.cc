@@ -41,26 +41,32 @@ WebContentRunner::WebContentRunner(
     GetContextParamsCallback get_context_params_callback)
     : get_context_params_callback_(std::move(get_context_params_callback)) {}
 
-WebContentRunner::~WebContentRunner() = default;
-
-void WebContentRunner::PublishRunnerService(
-    sys::OutgoingDirectory* outgoing_directory) {
-  service_binding_.emplace(outgoing_directory, this);
+WebContentRunner::WebContentRunner(
+    fuchsia::web::CreateContextParams context_params)
+    : context_(CreateWebContext(std::move(context_params))) {
+  context_.set_error_handler([](zx_status_t status) {
+    ZX_LOG(ERROR, status) << "Connection to one-shot Context lost.";
+  });
 }
 
-fuchsia::web::Context* WebContentRunner::GetContext() {
+WebContentRunner::~WebContentRunner() = default;
+
+fuchsia::web::FramePtr WebContentRunner::CreateFrame(
+    fuchsia::web::CreateFrameParams params) {
   if (!context_) {
+    DCHECK(get_context_params_callback_);
     context_ = CreateWebContext(get_context_params_callback_.Run());
     context_.set_error_handler([this](zx_status_t status) {
-      // If the browser instance died, then exit everything and do not attempt
-      // to recover. appmgr will relaunch the runner when it is needed again.
       ZX_LOG(ERROR, status) << "Connection to Context lost.";
       if (on_context_lost_callback_) {
         std::move(on_context_lost_callback_).Run();
       }
     });
   }
-  return context_.get();
+
+  fuchsia::web::FramePtr frame;
+  context_->CreateFrameWithParams(std::move(params), frame.NewRequest());
+  return frame;
 }
 
 void WebContentRunner::StartComponent(
@@ -95,6 +101,8 @@ WebComponent* WebContentRunner::GetAnyComponent() {
 
 void WebContentRunner::DestroyComponent(WebComponent* component) {
   components_.erase(components_.find(component));
+  if (components_.empty() && on_empty_callback_)
+    std::move(on_empty_callback_).Run();
 }
 
 void WebContentRunner::RegisterComponent(
@@ -102,6 +110,11 @@ void WebContentRunner::RegisterComponent(
   components_.insert(std::move(component));
 }
 
-void WebContentRunner::SetOnContextLostCallback(base::OnceClosure callback) {
+void WebContentRunner::SetOnEmptyCallback(base::OnceClosure on_empty) {
+  on_empty_callback_ = std::move(on_empty);
+}
+
+void WebContentRunner::SetOnContextLostCallbackForTest(
+    base::OnceClosure callback) {
   on_context_lost_callback_ = std::move(callback);
 }

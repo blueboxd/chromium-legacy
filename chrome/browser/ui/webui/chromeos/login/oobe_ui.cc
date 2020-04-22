@@ -18,6 +18,7 @@
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/system/sys_info.h"
 #include "base/values.h"
 #include "build/branding_buildflags.h"
 #include "chrome/browser/browser_process.h"
@@ -127,6 +128,7 @@ constexpr char kArcPlaystoreLogoPath[] = "playstore.svg";
 constexpr char kArcSupervisionIconPath[] = "supervision_icon.png";
 constexpr char kCustomElementsHTMLPath[] = "custom_elements.html";
 constexpr char kCustomElementsJSPath[] = "custom_elements.js";
+constexpr char kDebuggerJSPath[] = "debug.js";
 constexpr char kDiscoverJSPath[] = "discover_app.js";
 constexpr char kKeyboardUtilsJSPath[] = "keyboard_utils.js";
 constexpr char kLoginJSPath[] = "login.js";
@@ -243,6 +245,20 @@ void AddFingerprintResources(content::WebUIDataSource* source) {
   source->AddBoolean("useLottieAnimationForFingerprint", is_lottie_animation);
 }
 
+void AddDebuggerResources(content::WebUIDataSource* source) {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  bool enable_debugger =
+      command_line->HasSwitch(::chromeos::switches::kShowOobeDevOverlay);
+  // TODO(crbug.com/1073095): Also enable for ChromeOS test images.
+  // Enable for ChromeOS-on-linux for developers.
+  bool test_mode = !base::SysInfo::IsRunningOnChromeOS();
+  if (enable_debugger && test_mode) {
+    source->AddResourcePath(kDebuggerJSPath, IDR_OOBE_DEBUGGER_JS);
+  } else {
+    source->AddResourcePath(kDebuggerJSPath, IDR_OOBE_DEBUGGER_STUB_JS);
+  }
+}
+
 // Default and non-shared resource definition for kOobeDisplay display type.
 // chrome://oobe/oobe
 void AddOobeDisplayTypeDefaultResources(content::WebUIDataSource* source) {
@@ -304,6 +320,8 @@ content::WebUIDataSource* CreateOobeUIDataSource(
   AddAssistantScreensResources(source);
   AddGestureNavigationResources(source);
   AddMarketingOptInResources(source);
+
+  AddDebuggerResources(source);
 
   source->AddResourcePath(kKeyboardUtilsJSPath, IDR_KEYBOARD_UTILS_JS);
   source->OverrideContentSecurityPolicyObjectSrc(

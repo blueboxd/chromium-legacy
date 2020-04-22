@@ -12,5 +12,5 @@ interface SendStream {
   // inheriting from two mixins, causing diamond inheritance.
   readonly attribute WritableStream writable;
   readonly attribute Promise<StreamAbortInfo> writingAborted;
-  void abortWriting(optional StreamAbortInfo abortInfo);
+  void abortWriting(optional StreamAbortInfo abortInfo = {});
 };

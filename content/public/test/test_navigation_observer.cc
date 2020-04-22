@@ -203,6 +203,11 @@ void TestNavigationObserver::OnDidFinishNavigation(
     NavigationHandle* navigation_handle) {
   NavigationRequest* request = NavigationRequest::From(navigation_handle);
 
+  if (target_url_ != GURL() && ignore_other_urls_ &&
+      target_url_ != navigation_handle->GetURL()) {
+    return;
+  }
+
   last_navigation_url_ = navigation_handle->GetURL();
   last_initiator_origin_ = request->common_params().initiator_origin;
   last_navigation_succeeded_ = !navigation_handle->IsErrorPage();

@@ -102,6 +102,7 @@
 <translation id="3735758079232443276">നിങ്ങൾ Chrome ആരംഭിക്കുമ്പോൾ ദൃശ്യമാകുന്ന പേജിനെ "<ph name="EXTENSION_NAME" />" വിപുലീകരണം മാറ്റി.</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
 <translation id="386202838227397562">ദയവായി എല്ലാ Google Chrome വിന്‍‌ഡോകളും അടച്ച് വീണ്ടും ശ്രമിക്കുക.</translation>
+<translation id="3865754807470779944">Chrome പതിപ്പ് <ph name="PRODUCT_VERSION" /> ഇൻസ്റ്റാൾ ചെയ്തിരിക്കുന്നു</translation>
 <translation id="3873044882194371212">Chrome അദൃശ്യ വിൻഡോയിൽ ലിങ്ക് തുറക്കുക</translation>
 <translation id="3889417619312448367">Google Chrome അണ്‍‌ഇന്‍സ്റ്റാള്‍ ചെയ്യുക</translation>
 <translation id="4050175100176540509">ഏറ്റവും പുതിയ പതിപ്പിൽ പ്രധാനപ്പെട്ട സുരക്ഷാ മെച്ചപ്പെടുത്തലുകളും പുതിയ ഫീച്ചറുകളും ലഭ്യമാണ്.</translation>
@@ -123,7 +124,7 @@
 <translation id="4450664632294415862">Chrome - നെറ്റ്‌വർക്ക് സൈൻ ഇൻ - <ph name="PAGE_TITLE" /></translation>
 <translation id="4458462641685292929">Google Chrome-ലെ മറ്റൊരു പ്രവർത്തനം പുരോഗതിയിലാണ്. പിന്നീട് വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="4480040274068703980">സൈൻ ഇൻ ചെയ്യുന്നതിലെ പിശക് കാരണം Chrome OS-ന് നിങ്ങളുടെ ഡാറ്റ സമന്വയിപ്പിക്കാനായില്ല.</translation>
-<translation id="4521185804071812304">ഓപ്ഷണൽ: ഡയഗണോസ്റ്റിക്, ഉപയോഗ വിവരങ്ങൾ Google-ന് സ്വയമേവ അയച്ചുകൊണ്ട് Chrome OS ഫീച്ചറുകൾ മെച്ചപ്പെടുത്താൻ സഹായിക്കുക.</translation>
+<translation id="4521185804071812304">ഓപ്ഷണൽ: പ്രശ്‍നനിർണ്ണയ, ഉപയോഗ വിവരങ്ങൾ Google-ലേക്ക് സ്വയമേവ അയച്ചുകൊണ്ട് Chrome OS ഫീച്ചറുകൾ മെച്ചപ്പെടുത്താൻ സഹായിക്കുക.</translation>
 <translation id="4561051373932531560">വെബ്ബിലുള്ള ഒരു ഫോണ്‍ നമ്പരില്‍ ക്ലിക്ക് ചെയ്യുവാനും Skype ഉപയോഗിച്ച് വിളിക്കുവാനും Google Chrome നിങ്ങളെ അനുവദിക്കുന്നു!</translation>
 <translation id="4567424176335768812">നിങ്ങൾ <ph name="USER_EMAIL_ADDRESS" /> ആയി സൈൻ ഇൻ ചെയ്‌തിരിക്കുന്നു. സൈൻ ഇൻ ചെയ്‌തിരിക്കുന്ന എല്ലാ ഉപകരണങ്ങളിലും ബുക്ക്‌മാർക്കുകളും ചരിത്രവും മറ്റ് ക്രമീകരണങ്ങളും ആക്‌സസ് ചെയ്യാൻ ഇപ്പോൾ നിങ്ങൾക്കാകും.</translation>
 <translation id="4571503333518166079">Chrome അറിയിപ്പ് ക്രമീകരണത്തിലേക്ക് പോവുക</translation>
@@ -243,6 +244,7 @@
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8556340503434111824">Google Chrome-ന്റെ പുതിയ പതിപ്പ് ലഭ്യമാണ്, അത് മുമ്പത്തേക്കാൾ വേഗതയേറിയതാണ്.</translation>
 <translation id="8614913330719544658">Google Chrome പ്രതികരിക്കുന്നില്ല. ഇപ്പോള്‍ വീണ്ടും സമാരംഭിക്കണോ?</translation>
+<translation id="861702415419836452">നിങ്ങളുടെ ചുറ്റുപാടിന്റെ 3D മാപ്പ് സൃഷ്ടിക്കുന്നതിന് നിങ്ങളുടെ ക്യാമറ ആക്സസ് ചെയ്യാൻ Chrome-ന് അനുമതി ആവശ്യമാണ്</translation>
 <translation id="8625237574518804553">{0,plural, =1{ഒരു മിനിറ്റിൽ Chrome വീണ്ടും സമാരംഭിക്കും}other{# മിനിറ്റിൽ Chrome വീണ്ടും സമാരംഭിക്കും}}</translation>
 <translation id="8641606876632989680">അപഹരിക്കപ്പെട്ട പാസ്‌വേഡ് ഉപയോഗിച്ച് നിങ്ങൾ സൈൻ ഇൻ ചെയ്യുമ്പോൾ Chrome നിങ്ങളെ അറിയിക്കും</translation>
 <translation id="8669527147644353129">Google Chrome സഹായി</translation>

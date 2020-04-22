@@ -12,6 +12,7 @@
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_message_bridge.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
+#include "chrome/browser/sharing/sharing_utils.h"
 #include "chrome/browser/sharing/vapid_key_manager.h"
 #include "chrome/browser/sharing/web_push/web_push_sender.h"
 #include "components/gcm_driver/crypto/gcm_encryption_result.h"
@@ -43,7 +44,7 @@ void SharingFCMSender::DoSendMessageToDevice(const syncer::DeviceInfo& device,
                                              SendMessageCallback callback) {
   TRACE_EVENT0("sharing", "SharingFCMSender::DoSendMessageToDevice");
 
-  auto fcm_configuration = sync_preference_->GetFCMChannel(device);
+  auto fcm_configuration = GetFCMChannel(device);
   if (!fcm_configuration) {
     std::move(callback).Run(SharingSendMessageResult::kDeviceNotFound,
                             /*message_id=*/base::nullopt,
@@ -327,8 +328,7 @@ void SharingFCMSender::OnMessageSentViaSync(
 
 bool SharingFCMSender::SetMessageSenderInfo(SharingMessage* message) {
   base::Optional<syncer::DeviceInfo::SharingInfo> sharing_info =
-      sync_preference_->GetLocalSharingInfo(
-          local_device_info_provider_->GetLocalDeviceInfo());
+      local_device_info_provider_->GetLocalDeviceInfo()->sharing_info();
   if (!sharing_info)
     return false;
 
@@ -350,4 +350,9 @@ bool SharingFCMSender::SetMessageSenderInfo(SharingMessage* message) {
 void SharingFCMSender::SetWebPushSenderForTesting(
     std::unique_ptr<WebPushSender> web_push_sender) {
   web_push_sender_ = std::move(web_push_sender);
+}
+
+void SharingFCMSender::SetSharingMessageBridgeForTesting(
+    SharingMessageBridge* sharing_message_bridge) {
+  sharing_message_bridge_ = sharing_message_bridge;
 }

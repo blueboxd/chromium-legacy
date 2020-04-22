@@ -49,15 +49,15 @@ void PluginPowerSaverHelper::DidCommitProvisionalLoad(
   if (frame->Parent() || is_same_document_navigation)
     return;  // Not a top-level navigation.
 
-  origin_whitelist_.clear();
+  origin_allowlist_.clear();
 }
 
 bool PluginPowerSaverHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PluginPowerSaverHelper, message)
-  IPC_MESSAGE_HANDLER(FrameMsg_UpdatePluginContentOriginWhitelist,
-                      OnUpdatePluginContentOriginWhitelist)
-  IPC_MESSAGE_UNHANDLED(handled = false)
+    IPC_MESSAGE_HANDLER(FrameMsg_UpdatePluginContentOriginAllowlist,
+                        OnUpdatePluginContentOriginAllowlist)
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
 }
@@ -66,14 +66,14 @@ void PluginPowerSaverHelper::OnDestruct() {
   delete this;
 }
 
-void PluginPowerSaverHelper::OnUpdatePluginContentOriginWhitelist(
-    const std::set<url::Origin>& origin_whitelist) {
-  origin_whitelist_ = origin_whitelist;
+void PluginPowerSaverHelper::OnUpdatePluginContentOriginAllowlist(
+    const std::set<url::Origin>& origin_allowlist) {
+  origin_allowlist_ = origin_allowlist;
 
   // Check throttled plugin instances to see if any can be unthrottled.
   auto it = peripheral_plugins_.begin();
   while (it != peripheral_plugins_.end()) {
-    if (origin_whitelist.count(it->content_origin)) {
+    if (origin_allowlist.count(it->content_origin)) {
       // Because the unthrottle callback may register another peripheral plugin
       // and invalidate our iterator, we cannot run it synchronously.
       render_frame()
@@ -105,12 +105,12 @@ PluginPowerSaverHelper::GetPeripheralContentStatus(
   }
 
   return PeripheralContentHeuristic::GetPeripheralStatus(
-      origin_whitelist_, main_frame_origin, content_origin, unobscured_size);
+      origin_allowlist_, main_frame_origin, content_origin, unobscured_size);
 }
 
-void PluginPowerSaverHelper::WhitelistContentOrigin(
+void PluginPowerSaverHelper::AllowlistContentOrigin(
     const url::Origin& content_origin) {
-  if (origin_whitelist_.insert(content_origin).second) {
+  if (origin_allowlist_.insert(content_origin).second) {
     Send(new FrameHostMsg_PluginContentOriginAllowed(
         render_frame()->GetRoutingID(), content_origin));
   }

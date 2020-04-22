@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/thread_annotations.h"
+#include "third_party/blink/renderer/platform/disk_data_allocator.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
@@ -31,7 +32,7 @@
 namespace blink {
 
 class WebProcessMemoryDump;
-struct CompressionTaskParams;
+struct BackgroundTaskParams;
 
 // A parked string is parked by calling |Park()|, and unparked by calling
 // |ToString()| on a parked string.
@@ -41,12 +42,12 @@ struct CompressionTaskParams;
 class PLATFORM_EXPORT ParkableStringImpl final
     : public RefCounted<ParkableStringImpl> {
  public:
-  enum class ParkingMode { kSynchronousOnly, kCompress };
+  enum class ParkingMode { kSynchronousOnly, kCompress, kToDisk };
   enum class AgeOrParkResult {
     kSuccessOrTransientFailure,
     kNonTransientFailure
   };
-  enum class Age { kYoung = 0, kOld = 1 };
+  enum class Age { kYoung = 0, kOld = 1, kVeryOld = 2 };
 
   constexpr static size_t kDigestSize = 32;  // SHA256.
   using SecureDigest = Vector<uint8_t, kDigestSize>;
@@ -65,8 +66,6 @@ class PLATFORM_EXPORT ParkableStringImpl final
 
   void Lock();
   void Unlock();
-
-  void PurgeMemory();
 
   // The returned string may be used as a normal one, as long as the
   // returned value (or a copy of it) is alive.
@@ -100,6 +99,7 @@ class PLATFORM_EXPORT ParkableStringImpl final
   // Tries to either age or park a string:
   //
   // - If the string is already old, tries to park it.
+  // - If it is very old and parked, tries to write it to disk.
   // - Otherwise, tries to age it.
   //
   // The action doesn't necessarily succeed. either due to a temporary
@@ -122,9 +122,11 @@ class PLATFORM_EXPORT ParkableStringImpl final
 
   // Returns true if the string is parked.
   bool is_parked() const;
+  bool is_on_disk() const;
   // Returns whether synchronous parking is possible, that is the string was
   // parked in the past.
   bool has_compressed_data() const { return !!metadata_->compressed_; }
+  bool has_on_disk_data() const { return !!metadata_->on_disk_metadata_; }
 
   // Returns the compressed size, must not be called unless the string has a
   // compressed representation.
@@ -136,6 +138,10 @@ class PLATFORM_EXPORT ParkableStringImpl final
   Age age_for_testing() {
     MutexLocker locker(metadata_->mutex_);
     return metadata_->age_;
+  }
+
+  bool background_task_in_progress_for_testing() const {
+    return metadata_->background_task_in_progress_;
   }
 
   const SecureDigest* digest() const {
@@ -158,12 +164,11 @@ class PLATFORM_EXPORT ParkableStringImpl final
   // which |may_be_parked()| returns true. Otherwise, these will either trigger
   // a DCHECK() or crash.
 
-#if defined(ADDRESS_SANITIZER)
-  // See |CompressInBackground()|. Doesn't make the string young.
-  // May be called from any thread.
-  void LockWithoutMakingYoung();
-#endif  // defined(ADDRESS_SANITIZER)
-  // May be called from any thread.
+  // Doesn't make the string young. May be called from any thread.
+  void LockWithoutMakingYoung() {
+    MutexLocker locker(metadata_->mutex_);
+    metadata_->lock_depth_ += 1;
+  }
 
   void MakeYoung() EXCLUSIVE_LOCKS_REQUIRED(metadata_->mutex_) {
     metadata_->age_ = Age::kYoung;
@@ -178,7 +183,7 @@ class PLATFORM_EXPORT ParkableStringImpl final
   String UnparkInternal() EXCLUSIVE_LOCKS_REQUIRED(metadata_->mutex_);
 
   void PostBackgroundCompressionTask();
-  static void CompressInBackground(std::unique_ptr<CompressionTaskParams>);
+  static void CompressInBackground(std::unique_ptr<BackgroundTaskParams>);
   // Called on the main thread after compression is done.
   // |params| is the same as the one passed to
   // |PostBackgroundCompressionTask()|,
@@ -186,11 +191,21 @@ class PLATFORM_EXPORT ParkableStringImpl final
   // |parking_thread_time| is the CPU time used by the background compression
   // task.
   void OnParkingCompleteOnMainThread(
-      std::unique_ptr<CompressionTaskParams> params,
+      std::unique_ptr<BackgroundTaskParams> params,
       std::unique_ptr<Vector<uint8_t>> compressed,
       base::TimeDelta parking_thread_time);
 
+  void PostBackgroundWritingTask() EXCLUSIVE_LOCKS_REQUIRED(metadata_->mutex_);
+  static void WriteToDiskInBackground(std::unique_ptr<BackgroundTaskParams>);
+  // Called on the main thread after writing is done.
+  // |params| is the same as the one passed to PostBackgroundWritingTask()|,
+  // |metadata| is the on-disk metadata, nullptr if writing failed.
+  void OnWritingCompleteOnMainThread(
+      std::unique_ptr<BackgroundTaskParams> params,
+      std::unique_ptr<DiskDataAllocator::Metadata> metadata);
+
   void DiscardUncompressedData();
+  void DiscardCompressedData();
 
   int lock_depth_for_testing() {
     MutexLocker locker_(metadata_->mutex_);
@@ -206,16 +221,18 @@ class PLATFORM_EXPORT ParkableStringImpl final
 
     // Main thread only.
     State state_;
+    bool background_task_in_progress_;
     std::unique_ptr<Vector<uint8_t>> compressed_;
+    std::unique_ptr<DiskDataAllocator::Metadata> on_disk_metadata_;
     const SecureDigest digest_;
 
-    // A string can be young or old. It starts young, and ages with
+    // A string can be young, old or very old. It starts young, and ages with
     // |MaybeAgeOrParkString()|.
     //
     // Transitions are:
-    // Young -> Old: By calling |MaybeAgeOrParkString()|.
-    // Old -> Young: When the string is accessed, either by |Lock()|-ing it or
-    //               calling |ToString()|.
+    // Young -> Old -> Very old: By calling |MaybeAgeOrParkString()|.
+    // (Old | Very Old) -> Young: When the string is accessed, either by
+    //                            |Lock()|-ing it or calling |ToString()|.
     //
     // Thread safety: it is typically not safe to guard only one part of a
     // bitfield with a mutex, but this is correct here, as the other members are

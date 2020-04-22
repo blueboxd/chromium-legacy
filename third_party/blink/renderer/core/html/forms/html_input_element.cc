@@ -623,26 +623,6 @@ base::Optional<uint32_t> HTMLInputElement::selectionEndForBinding(
   return TextControlElement::selectionEnd();
 }
 
-unsigned HTMLInputElement::selectionStartForBinding(
-    bool& is_null,
-    ExceptionState& exception_state) const {
-  if (!input_type_->SupportsSelectionAPI()) {
-    is_null = true;
-    return 0;
-  }
-  return TextControlElement::selectionStart();
-}
-
-unsigned HTMLInputElement::selectionEndForBinding(
-    bool& is_null,
-    ExceptionState& exception_state) const {
-  if (!input_type_->SupportsSelectionAPI()) {
-    is_null = true;
-    return 0;
-  }
-  return TextControlElement::selectionEnd();
-}
-
 String HTMLInputElement::selectionDirectionForBinding(
     ExceptionState& exception_state) const {
   if (!input_type_->SupportsSelectionAPI()) {
@@ -675,34 +655,6 @@ void HTMLInputElement::setSelectionEndForBinding(
     return;
   }
   TextControlElement::setSelectionEnd(end.value_or(0));
-}
-
-void HTMLInputElement::setSelectionStartForBinding(
-    unsigned start,
-    bool is_null,
-    ExceptionState& exception_state) {
-  if (!input_type_->SupportsSelectionAPI()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "The input element's type ('" +
-                                          input_type_->FormControlType() +
-                                          "') does not support selection.");
-    return;
-  }
-  TextControlElement::setSelectionStart(start);
-}
-
-void HTMLInputElement::setSelectionEndForBinding(
-    unsigned end,
-    bool is_null,
-    ExceptionState& exception_state) {
-  if (!input_type_->SupportsSelectionAPI()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "The input element's type ('" +
-                                          input_type_->FormControlType() +
-                                          "') does not support selection.");
-    return;
-  }
-  TextControlElement::setSelectionEnd(end);
 }
 
 void HTMLInputElement::setSelectionDirectionForBinding(

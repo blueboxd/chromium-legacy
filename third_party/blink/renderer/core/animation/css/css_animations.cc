@@ -90,17 +90,11 @@ namespace {
 // (https://drafts.csswg.org/css-animations-2/#keyframes) as an optimization
 // to avoid needing to process each rule multiple times to extract different
 // properties.
-// TODO(crbug.com/1070627): Remove property set parameters from this method.
-// The animated properties should be based on the longhand property names and
-// not include shorthand or logical names.
 StringKeyframeVector ProcessKeyframesRule(
     const StyleRuleKeyframes* keyframes_rule,
     const Element* element_for_scoping,
     const ComputedStyle* parent_style,
-    TimingFunction* default_timing_function,
-    PropertySet& animated_properties,
-    PropertySet& start_properties,
-    PropertySet& end_properties) {
+    TimingFunction* default_timing_function) {
   StringKeyframeVector keyframes;
   PropertySet specified_properties_for_use_counter;
   const HeapVector<Member<StyleRuleKeyframe>>& style_keyframes =
@@ -133,11 +127,6 @@ StringKeyframeVector ProcessKeyframesRule(
       } else if (!CSSAnimations::IsAnimationAffectingProperty(property)) {
         keyframe->SetCSSPropertyValue(property,
                                       properties.PropertyAt(j).Value());
-        animated_properties.insert(&property);
-        if (keyframe->CheckedOffset() == 0)
-          start_properties.insert(&property);
-        else if (keyframe->CheckedOffset() == 1)
-          end_properties.insert(&property);
       }
     }
     keyframes.push_back(keyframe);
@@ -159,6 +148,26 @@ StringKeyframeVector ProcessKeyframesRule(
                      return a->CheckedOffset() < b->CheckedOffset();
                    });
   return keyframes;
+}
+
+// Tests conditions for inserting a bounding keyframe, which are outlined in
+// steps 6 and 7 of the spec for keyframe construction.
+// https://drafts.csswg.org/css-animations-2/#keyframes
+bool NeedsBoundaryKeyframe(StringKeyframe* candidate,
+                           double offset,
+                           const PropertySet& animated_properties,
+                           const PropertySet& bounding_properties,
+                           TimingFunction* default_timing_function) {
+  if (!candidate)
+    return true;
+
+  if (candidate->CheckedOffset() != offset)
+    return true;
+
+  if (bounding_properties.size() == animated_properties.size())
+    return false;
+
+  return candidate->Easing().ToString() != default_timing_function->ToString();
 }
 
 StringKeyframeEffectModel* CreateKeyframeEffectModel(
@@ -210,67 +219,81 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
   // 5. Perform a stable sort of the keyframe blocks in the @keyframes rule by
   //    the offset specified in the keyframe selector, and iterate over the
   //    result in reverse applying the following steps:
-  //
-  keyframes =
+  StringKeyframeVector sorted_keyframes =
       ProcessKeyframesRule(keyframes_rule, element_for_scoping, parent_style,
-                           default_timing_function, animated_properties,
-                           start_properties, end_properties);
+                           default_timing_function);
 
-  // 5.1 Let keyframe offset be the value of the keyframe selector converted to
-  //     a value in the range 0 ≤ keyframe offset ≤ 1.
-  // 5.2 Let keyframe timing function be the value of the last valid
-  //     declaration of animation-timing-function specified on the keyframe
-  //     block, or, if there is no such valid declaration, default timing
-  //     function.
-  // 5.3 After converting keyframe timing function to its canonical form (e.g.
-  //     such that step-end becomes steps(1, end)) let keyframe refer to the
-  //     existing keyframe in keyframes with matching keyframe offset and timing
-  //     function, if any.
-  //     If there is no such existing keyframe, let keyframe be a new empty
-  //     keyframe with offset, keyframe offset, and timing function, keyframe
-  //     timing function, and prepend it to keyframes.
-  // 5.4 Iterate over all declarations in the keyframe block and add them to
-  //     keyframe such that:
-  //     * All variable references are resolved to their current values.
-  //     * Each shorthand property is expanded to its longhand subproperties.
-  //     * All logical properties are converted to their equivalent physical
-  //       properties.
-  //     * For any expanded physical longhand properties that appear more than
-  //       once, only the last declaration in source order is added.
-  //       Note, since multiple keyframe blocks may specify the same keyframe
-  //       offset, and since this algorithm iterates over these blocks in
-  //       reverse, this implies that if any properties are encountered that
-  //       have already added at this same keyframe offset, they should be
-  //       skipped.
-  //     * All property values are replaced with their computed values.
-  // 5.5 Add each physical longhand property name that was added to keyframe to
-  //     animated properties.
+  for (wtf_size_t i = sorted_keyframes.size(); i > 0; --i) {
+    // 5.1 Let keyframe offset be the value of the keyframe selector converted
+    //     to a value in the range 0 ≤ keyframe offset ≤ 1.
+    StringKeyframe* rule_keyframe = sorted_keyframes[i - 1];
+    double keyframe_offset = rule_keyframe->CheckedOffset();
 
-  // TODO(crbug.com/1070627): Resolve implementation with spec.
-  // * Iterate in reverse order.
-  // * Expand shorthands.
-  // * Resolve logical properties.
-  // * Avoid separate duplicate pruning phase for keyframes.
+    // 5.2 Let keyframe timing function be the value of the last valid
+    //     declaration of animation-timing-function specified on the keyframe
+    //     block, or, if there is no such valid declaration, default timing
+    //     function.
+    const TimingFunction& easing = rule_keyframe->Easing();
 
-  // Merge duplicate keyframes.
-  wtf_size_t target_index = 0;
-  for (wtf_size_t i = 1; i < keyframes.size(); i++) {
-    // TODO(crbug.com/1069639): Prevent merging of keyframes with differing
-    // timing functions.
-    if (keyframes[i]->CheckedOffset() ==
-        keyframes[target_index]->CheckedOffset()) {
-      for (const auto& property : keyframes[i]->Properties()) {
-        keyframes[target_index]->SetCSSPropertyValue(
-            property.GetCSSProperty(),
-            keyframes[i]->CssPropertyValue(property));
-      }
-    } else {
-      target_index++;
-      keyframes[target_index] = keyframes[i];
+    // 5.3 After converting keyframe timing function to its canonical form (e.g.
+    //     such that step-end becomes steps(1, end)) let keyframe refer to the
+    //     existing keyframe in keyframes with matching keyframe offset and
+    //     timing function, if any.
+    //     If there is no such existing keyframe, let keyframe be a new empty
+    //     keyframe with offset, keyframe offset, and timing function, keyframe
+    //     timing function, and prepend it to keyframes.
+
+    // TODO(crbug.com/1070627): If strictly following the algorithm as specced,
+    // it would be possible to alter the override behavior when merging
+    // keyframes. By checking only the first keyframe, we ensure that override
+    // behavior is preserved at the potential cost of producing extra
+    // keyframes.  Clarify in spec.
+    StringKeyframe* keyframe = !keyframes.IsEmpty() ? keyframes[0] : nullptr;
+    if (!keyframe || keyframe->CheckedOffset() != keyframe_offset ||
+        keyframe->Easing().ToString() != easing.ToString()) {
+      keyframe = MakeGarbageCollected<StringKeyframe>();
+      keyframe->SetOffset(keyframe_offset);
+      keyframe->CopyEasing(*rule_keyframe);
+      keyframes.push_front(keyframe);
+    }
+
+    // 5.4 Iterate over all declarations in the keyframe block and add them to
+    //     keyframe such that:
+    //     * All variable references are resolved to their current values.
+    //     * Each shorthand property is expanded to its longhand subproperties.
+    //     * All logical properties are converted to their equivalent physical
+    //       properties.
+    //     * For any expanded physical longhand properties that appear more than
+    //       once, only the last declaration in source order is added.
+    //       Note, since multiple keyframe blocks may specify the same keyframe
+    //       offset, and since this algorithm iterates over these blocks in
+    //       reverse, this implies that if any properties are encountered that
+    //       have already added at this same keyframe offset, they should be
+    //       skipped.
+    //     * All property values are replaced with their computed values.
+    // 5.5 Add each physical longhand property name that was added to keyframe
+    //     to animated properties.
+
+    // TODO(crbug.com/1070627): Expand shorthand properties and convert
+    // logical properties.
+    for (const auto& property : rule_keyframe->Properties()) {
+      const CSSProperty& css_property = property.GetCSSProperty();
+      // Since processing keyframes in reverse order, skipping properties that
+      // have already been inserted prevents overwriting a later merged
+      // keyframe.
+      if (keyframe->Properties().Contains(property))
+        continue;
+
+      keyframe->SetCSSPropertyValue(css_property,
+                                    rule_keyframe->CssPropertyValue(property));
+
+      animated_properties.insert(&css_property);
+      if (keyframe_offset == 0)
+        start_properties.insert(&css_property);
+      else if (keyframe_offset == 1)
+        end_properties.insert(&css_property);
     }
   }
-  if (!keyframes.IsEmpty())
-    keyframes.Shrink(target_index + 1);
 
   // 6.  If there is no keyframe in keyframes with offset 0, or if amongst the
   //     keyframes in keyframes with offset 0 not all of the properties in
@@ -284,10 +307,9 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
   // 6.3 For each property in animated properties that is not present in some
   //     other keyframe with offset 0, add the computed value of that property
   //     for element to the keyframe.
-
   StringKeyframe* start_keyframe = keyframes.IsEmpty() ? nullptr : keyframes[0];
-  // TODO(crbug.com/1070627): Verify correct timing function.
-  if (!start_keyframe || keyframes[0]->CheckedOffset() != 0) {
+  if (NeedsBoundaryKeyframe(start_keyframe, 0, animated_properties,
+                            start_properties, default_timing_function)) {
     start_keyframe = MakeGarbageCollected<StringKeyframe>();
     start_keyframe->SetOffset(0);
     start_keyframe->SetEasing(default_timing_function);
@@ -309,10 +331,9 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
   // 7.3 For each property in animated properties that is not present in some
   //     other keyframe with offset 1, add the computed value of that property
   //     for element to the keyframe.
-
   StringKeyframe* end_keyframe = keyframes[keyframes.size() - 1];
-  // TODO(crbug.com/1070627): Verify correct timing function.
-  if (end_keyframe->CheckedOffset() != 1) {
+  if (NeedsBoundaryKeyframe(end_keyframe, 1, animated_properties,
+                            end_properties, default_timing_function)) {
     end_keyframe = MakeGarbageCollected<StringKeyframe>();
     end_keyframe->SetOffset(1);
     end_keyframe->SetEasing(default_timing_function);

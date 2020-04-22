@@ -21,7 +21,7 @@
 #include "chrome/browser/autofill/mock_credit_card_accessory_controller.h"
 #include "chrome/browser/autofill/mock_manual_filling_view.h"
 #include "chrome/browser/autofill/mock_password_accessory_controller.h"
-#include "chrome/browser/password_manager/password_accessory_controller.h"
+#include "chrome/browser/password_manager/android/password_accessory_controller.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/core/browser/ui/accessory_sheet_enums.h"
 #include "components/autofill/core/common/autofill_features.h"

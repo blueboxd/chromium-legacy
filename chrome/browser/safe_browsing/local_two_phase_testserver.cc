@@ -5,6 +5,7 @@
 #include "chrome/browser/safe_browsing/local_two_phase_testserver.h"
 
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"

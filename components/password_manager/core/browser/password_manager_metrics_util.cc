@@ -15,6 +15,29 @@ namespace password_manager {
 
 namespace metrics_util {
 
+std::string GetPasswordAccountStorageUserStateHistogramSuffix(
+    PasswordAccountStorageUserState user_state) {
+  switch (user_state) {
+    case PasswordAccountStorageUserState::kSignedOutUser:
+      return "SignedOutUser";
+    case PasswordAccountStorageUserState::kSignedOutAccountStoreUser:
+      return "SignedOutAccountStoreUser";
+    case PasswordAccountStorageUserState::kSignedInUser:
+      return "SignedInUser";
+    case PasswordAccountStorageUserState::kSignedInUserSavingLocally:
+      return "SignedInUserSavingLocally";
+    case PasswordAccountStorageUserState::kSignedInAccountStoreUser:
+      return "SignedInAccountStoreUser";
+    case PasswordAccountStorageUserState::
+        kSignedInAccountStoreUserSavingLocally:
+      return "SignedInAccountStoreUserSavingLocally";
+    case PasswordAccountStorageUserState::kSyncUser:
+      return "SyncUser";
+  }
+  NOTREACHED();
+  return std::string();
+}
+
 void LogGeneralUIDismissalReason(UIDismissalReason reason) {
   base::UmaHistogramEnumeration("PasswordManager.UIDismissalReason", reason,
                                 NUM_UI_RESPONSES);

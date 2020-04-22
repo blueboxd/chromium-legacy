@@ -421,6 +421,11 @@
 <translation id="1555130319947370107">Xanh lam</translation>
 <translation id="1556537182262721003">Không thể di chuyển thư mục tiện ích vào hồ sơ.</translation>
 <translation id="155865706765934889">Ô di chuột</translation>
+<translation id="1560763881671211335">Quản trị viên G Suite cho Giáo dục xác định người dùng có thể truy cập vào dịch vụ nào của Google khi họ đăng nhập vào tài khoản G Suite cho Giáo dục. Quản trị viên trường học phải đồng ý hoặc có được sự đồng ý nếu để người dùng là trẻ vị thành niên sử dụng các dịch vụ đó.
+
+    Dữ liệu duyệt web (bao gồm lịch sử hoạt động, dấu trang và mật khẩu) sẽ được lưu trữ với tài khoản Family Link chứ không phải với tài khoản trường học.
+
+    Các tùy chọn cài đặt Family Link của cha mẹ sẽ vẫn được áp dụng. Nếu trước đây đã chặn một ứng dụng hoặc trang web, thì bạn sẽ không phải chặn lại.</translation>
 <translation id="1566049601598938765">Trang web</translation>
 <translation id="15662109988763471">Máy in đã chọn không hoạt động hoặc được cài đặt không chính xác. Hãy kiểm tra máy in của bạn hoặc thử chọn một máy in khác.</translation>
 <translation id="1567387640189251553">Một bàn phím khác đã được kết nối kể từ lần gần đây nhất bạn nhập mật khẩu của mình. Bàn phím này có thể đang cố gắng đánh cắp thao tác nhấn phím của bạn.</translation>
@@ -1200,6 +1205,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="258095186877893873">Lâu</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (Nền tảng <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Không tìm thấy phiếu Kerberos. Hãy thử lại hoặc liên hệ với quản trị viên thiết bị của tổ chức bạn. (Mã lỗi <ph name="ERROR_CODE" />).</translation>
+<translation id="2585013490795742997">Đang hiển thị 1 kết quả tìm kiếm cho <ph name="QUERY" /></translation>
 <translation id="2585724835339714757">Tab này đang chia sẻ màn hình của bạn.</translation>
 <translation id="2586657967955657006">Khay nhớ tạm</translation>
 <translation id="2586672484245266891">Vui lòng nhập URL ngắn hơn</translation>
@@ -1886,6 +1892,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="3498215018399854026">Chúng tôi không thể liên lạc với cha mẹ của bạn vào thời điểm này. Vui lòng thử lại.</translation>
 <translation id="3500417806337761827">Lỗi kết nối mục chia sẻ. Đã có quá nhiều mục chia sẻ của doanh nghiệp vừa và nhỏ (SMB) được liên kết.</translation>
 <translation id="3505030558724226696">Thu hồi quyền truy cập thiết bị</translation>
+<translation id="3507132249039706973">Tính năng Bảo vệ thông thường đang bật</translation>
 <translation id="3507421388498836150">Quyền hiện tại cho "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="3507888235492474624">Quét lại các thiết bị Bluetooth</translation>
 <translation id="3508492320654304609">Không thể xóa dữ liệu đăng nhập của bạn</translation>
@@ -3239,6 +3246,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="5352033265844765294">Dấu Thời gian</translation>
 <translation id="5353252989841766347">Xuất mật khẩu từ Chrome</translation>
 <translation id="5355099869024327351">Cho phép Trợ lý hiển thị thông báo cho bạn</translation>
+<translation id="5355191726083956201">Tính năng Bảo vệ tăng cường đang bật</translation>
 <translation id="5355926466126177564">Tiện ích "<ph name="EXTENSION_NAME" />" đã thay đổi trang nào được hiển thị khi bạn tìm kiếm từ Thanh địa chỉ.</translation>
 <translation id="5359910752122114278">1 kết quả</translation>
 <translation id="5360150013186312835">Hiển thị trên thanh công cụ</translation>
@@ -3550,6 +3558,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="577322787686508614">Tác vụ đọc không được phép trên: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5774295353725270860">Mở ứng dụng tệp</translation>
 <translation id="577624874850706961">Tìm kiếm cookie</translation>
+<translation id="5776858208024364029">Đang hiển thị <ph name="NUMBER" /> kết quả tìm kiếm cho <ph name="QUERY" /></translation>
 <translation id="5777468213129569553">Mở Chrome</translation>
 <translation id="5778747455497889540">Dưới đây là mật khẩu mô-đun an toàn được tạo ngẫu nhiên đã gán cho máy tính của bạn:</translation>
 <translation id="5780011244986845107">Thư mục bạn đã chọn chứa các tệp nhạy cảm. Bạn có chắc chắn muốn cấp cho "<ph name="APP_NAME" />" quyền đọc thư mục này vĩnh viễn không?</translation>
@@ -4106,6 +4115,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
+<translation id="6520876759015997832">Kết quả tìm kiếm <ph name="LIST_POSITION" />/<ph name="LIST_SIZE" />: <ph name="SEARCH_RESULT_TEXT" />. Hãy nhấn phím Enter để chuyển tới phần đó.</translation>
 <translation id="652492607360843641">Bạn đang kết nối mạng <ph name="NETWORK_TYPE" />.</translation>
 <translation id="6527303717912515753">Chia sẻ</translation>
 <translation id="6528513914570774834">Cho phép người dùng khác của thiết bị sử dụng mạng này</translation>
@@ -4117,6 +4127,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="6532206849875187177">Bảo mật và đăng nhập</translation>
 <translation id="6532527800157340614">Không đăng nhập được do không thể lấy mã truy cập. Vui lòng kiểm tra kết nối mạng rồi thử lại.</translation>
 <translation id="6532663472409656417">Do doanh nghiệp đăng ký</translation>
+<translation id="6535331821390304775">Luôn cho phép <ph name="ORIGIN" /> mở loại đường liên kết này trong ứng dụng liên kết</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Lưu ý:<ph name="END_BOLD" /> Chỉ bật nếu bạn biết mình đang làm gì hoặc nếu bạn đã được yêu cầu bật vì việc thu thập dữ liệu có thể giảm hiệu suất hoạt động.</translation>
 <translation id="6541638731489116978">Trang web này đã bị chặn sử dụng cảm biến chuyển động.</translation>
 <translation id="6545665334409411530">Tốc độ lặp lại</translation>
@@ -4246,6 +4257,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="6727969043791803658">Đã kết nối, <ph name="BATTERY_PERCENTAGE" />% pin</translation>
 <translation id="6732801395666424405">Không tải được chứng chỉ</translation>
 <translation id="6732900235521116609">Không thể xóa lối tắt</translation>
+<translation id="6734468588183300211">Ở chế độ ẩn danh, các trang web không thể dùng cookie giám sát hoạt động duyệt web của bạn trên nhiều trang web để điều chỉnh quảng cáo cho phù hợp với bạn chẳng hạn. Do đó, các tính năng trên một số trang web có thể hoạt động không đúng cách.</translation>
 <translation id="6735304988756581115">Hiển thị cookie và dữ liệu trang web khác...</translation>
 <translation id="6736243959894955139">Địa chỉ</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
@@ -4258,6 +4270,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="674632704103926902">Bật tính năng kéo nhấn</translation>
 <translation id="6748217015615267851">Trình kết xuất: <ph name="RENDERER_URL" /></translation>
 <translation id="6748465660675848252">Bạn có thể tiến hành nhưng chỉ các cài đặt và dữ liệu đã đồng bộ hóa của bạn mới được lưu trữ. Tất cả dữ liệu cục bộ sẽ mất.</translation>
+<translation id="6749006854028927059">Các trang web không thể dùng cookie giám sát hoạt động duyệt web của bạn trên nhiều trang web để điều chỉnh quảng cáo cho phù hợp với bạn chẳng hạn. Do đó, các tính năng trên một số trang web có thể hoạt động không đúng cách.</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (Ẩn danh)</translation>
 <translation id="6757101664402245801">Đã sao chép URL</translation>
 <translation id="6758056191028427665">Hãy cho chúng tôi biết ý kiến của bạn về dịch vụ của chúng tôi.</translation>
@@ -4349,6 +4362,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="686664946474413495">Nhiệt độ màu</translation>
 <translation id="6871644448911473373">Phản hồi OCSP: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">Mật khẩu bạn nhập đã bị máy chủ từ chối.</translation>
+<translation id="6874170800191969835">Đã chuyển đến <ph name="SEARCH_RESULT_TEXT" />.</translation>
 <translation id="6876155724392614295">Xe đạp</translation>
 <translation id="6876469544038980967">Không hữu ích</translation>
 <translation id="6878422606530379992">Được phép sử dụng cảm biến</translation>
@@ -4619,6 +4633,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="7235737137505019098">Khóa bảo mật của bạn không có đủ dung lượng cho bất kỳ tài khoản nào khác nữa.</translation>
 <translation id="7238643356913091553"><ph name="NETWORK_NAME" />, Thông tin chi tiết</translation>
 <translation id="7240339475467890413">Kết nối với điểm phát sóng mới?</translation>
+<translation id="7240847845291869311">Con bạn muốn thêm một Tài khoản Google G Suite cho Giáo dục vào thiết bị này. <ph name="LINK_BEGIN" />Thông báo về quyền riêng tư của G Suite cho Giáo dục<ph name="LINK_END" /> nhằm giúp người dùng và cha mẹ sử dụng G Suite cho Giáo dục hiểu rõ những dữ liệu mà sản phẩm này thu thập, lý do thu thập cũng như những việc chúng tôi làm với dữ liệu đó.</translation>
 <translation id="7241389281993241388">Vui lòng đăng nhập vào <ph name="TOKEN_NAME" /> để nhập chứng chỉ ứng dụng khách.</translation>
 <translation id="7241443820034350811">Nếu khóa bảo mật của bạn không có trong danh sách, hãy nhấn nút trên khóa trong ít nhất 5 giây.</translation>
 <translation id="7243632151880336635">Xóa và đăng xuất</translation>
@@ -5201,6 +5216,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="7987814697832569482">Luôn kết nối qua VPN này</translation>
 <translation id="7988355189918024273">Bật các tính năng hỗ trợ tiếp cận</translation>
 <translation id="7991296728590311172">Tùy chọn cài đặt Tiếp cận bằng công tắc</translation>
+<translation id="7992202128769240372">Vượt quá giới hạn <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="7994350303002908848">Không cài đặt được Plugin VM. Vui lòng thử lại hoặc liên hệ với quản trị viên thiết bị của tổ chức bạn. Mã lỗi: <ph name="ERROR_CODE" />.</translation>
 <translation id="7994702968232966508">Phương pháp EAP</translation>
 <translation id="7997826902155442747">Mức độ ưu tiên quá trình</translation>

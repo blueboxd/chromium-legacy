@@ -419,6 +419,11 @@
 <translation id="1555130319947370107">Mavi</translation>
 <translation id="1556537182262721003">Artırmanı birbaşa qovluğa daşıya bilmədi.</translation>
 <translation id="155865706765934889">Taçped</translation>
+<translation id="1560763881671211335">İstifadəçilər G Suite for Education hesabına daxil olduqları zaman hansı Google xidmətlərinə giriş imkanlarının olacağını G Suite for Education administratorları müəyyənləşdirir. Məktəb administratorlarından azyaşlı istifadəçiləri tərəfindən xidmətlərin istifadəsi üzrə razılıq vermək və ya razılıq əldə etmək tələb edilir.
+
+    Baxış datası (tarixçə, əlfəcinlər və parollar daxil olmaqla) məktəb hesabı ilə deyil, Family Link hesabı ilə saxlanılacaq.
+
+    Family Link valideyn ayarlarınız yenə də tətbiq ediləcək. Əvvəlcədən tətbiq və ya sayt bloklamısınızsa, bunu yenidən edə bilməyəcəksiniz.</translation>
 <translation id="1566049601598938765">Veb səhifə</translation>
 <translation id="15662109988763471">Seçilmiş printer əlçatan deyil və ya düzgün quraşdırılmayıb. Printerinizi yoxlayın və ya başqa printer seçin.</translation>
 <translation id="1567387640189251553">Son aktiv olduğunuz vaxtdan sonra fərqli klaviatura qoşulub. O düymələrinizi oğurlaya bilər.</translation>
@@ -1195,6 +1200,7 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="258095186877893873">Uzun</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (Platform <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Kerberos bileti əldə edilmədi. Yenidən cəhd edin və ya cihaz admini ilə əlaqə saxlayın. (Xəta kodu <ph name="ERROR_CODE" />).</translation>
+<translation id="2585013490795742997"><ph name="QUERY" /> üçün 1 axtarış göstərilir</translation>
 <translation id="2585724835339714757">Tab ekranınızı paylaşır.</translation>
 <translation id="2586657967955657006">Mübadilə buferi</translation>
 <translation id="2586672484245266891">Qısa link daxil edin</translation>
@@ -1881,6 +1887,7 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="3498215018399854026">Hazırda valideyninizlə əlaqə yarada bilmədik. Yenidən cəhd edin.</translation>
 <translation id="3500417806337761827">Paylaşım əlavə edərkən xəta baş verdi. Hazırda həddindən çox SMB paylaşımı əlavə edilib.</translation>
 <translation id="3505030558724226696">Cihaz girişini ləğv edin</translation>
+<translation id="3507132249039706973">Standart Qoruma aktivdir</translation>
 <translation id="3507421388498836150">"<ph name="EXTENSION_NAME" />" üçün Cari İcazələr</translation>
 <translation id="3507888235492474624">Bluetooth cihazlarını yenidən skan edin</translation>
 <translation id="3508492320654304609">Giriş datanız silinmədi</translation>
@@ -3232,6 +3239,7 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="5352033265844765294">Zaman Möhürləməsi</translation>
 <translation id="5353252989841766347">Parolları Chrome'dan eksport edin</translation>
 <translation id="5355099869024327351">Assistentə bildirişləri göstərmək icazəsi verir</translation>
+<translation id="5355191726083956201">Qabaqcıl Qoruma aktivdir</translation>
 <translation id="5355926466126177564">"<ph name="EXTENSION_NAME" />" artırması Omnibox ilə axtardığınız zaman hansı səhifənin göstərildiyini dəyişdi.</translation>
 <translation id="5359910752122114278">1 nəticə</translation>
 <translation id="5360150013186312835">Alətlər panelində göstərin</translation>
@@ -3543,6 +3551,7 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="577322787686508614">Bu cihazda oxu əməliyyatına icazə verilmir: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5774295353725270860">Fayl tətbiqini açın</translation>
 <translation id="577624874850706961">Axtarış kukiləri</translation>
+<translation id="5776858208024364029"><ph name="QUERY" /> üçün <ph name="NUMBER" /> axtarış nəticəsi göstərilir</translation>
 <translation id="5777468213129569553">Chrome'u açın</translation>
 <translation id="5778747455497889540">Aşağıdakı kompüterə təyin olunaraq təsadüfən yaradılmış təhlükəsizlik modulu paroludur:</translation>
 <translation id="5780011244986845107">Seçdiyiniz qovluqda həssas fayllar var. "<ph name="APP_NAME" />" tətbiqi üçün bu qovluğa həmişəlik oxu girişi vermək istədiyinizə əminsiniz?</translation>
@@ -4097,6 +4106,7 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
+<translation id="6520876759015997832">Axtarış nəticəsi <ph name="LIST_POSITION" />/<ph name="LIST_SIZE" />: <ph name="SEARCH_RESULT_TEXT" />. Bölməyə keçmək üçün Enter üzərinə basın.</translation>
 <translation id="652492607360843641"><ph name="NETWORK_TYPE" /> şəbəkəsinə qoşulmusunuz.</translation>
 <translation id="6527303717912515753">Paylaşın</translation>
 <translation id="6528513914570774834">Bu cihazdakı digər istifadəçilərin şəbəkədən istifadə etmələrinə icazə verin</translation>
@@ -4108,6 +4118,7 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="6532206849875187177">Təhlükəsizlik və giriş</translation>
 <translation id="6532527800157340614">Giriş jetonunuzu əldə etmək mümkün olmadığı üçün giriş alınmadı. Şəbəkə bağlantınızı yoxlayın və yenidən cəhd edin.</translation>
 <translation id="6532663472409656417">Müəssisədə Qeydiyyatlı</translation>
+<translation id="6535331821390304775"><ph name="ORIGIN" /> saytına həmişə əlaqədar tətbiqdə bu cür keçidləri açmaq icazəsi verin</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Qeyd:<ph name="END_BOLD" /> Yalnız nə etdiyinizi bildiyiniz halda aktivləşdirin.</translation>
 <translation id="6541638731489116978">Bu saytın hərəkət sensorlarınıza girişini blok edilib.</translation>
 <translation id="6545665334409411530">Təkrar dərəcəsi</translation>
@@ -4237,6 +4248,7 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="6727969043791803658">Qoşuludur, <ph name="BATTERY_PERCENTAGE" />% batareya</translation>
 <translation id="6732801395666424405">Sertifikatlar yüklənilmədi</translation>
 <translation id="6732900235521116609">Qısayolu silmək alınmadı</translation>
+<translation id="6734468588183300211">Anonim rejimdə olduqda saytlar müxtəlif saytlarda baxış tarixçənizi görmək üçün kukilərinizdən istifadə edə bilmir (məsələn, reklamları fərdiləşdirmək üçün). Bəzi saytlarda xüsusiyyətlər işləməyə bilər.</translation>
 <translation id="6735304988756581115">Kukilər və sayt datasını göstərin</translation>
 <translation id="6736243959894955139">Ünvan:</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
@@ -4249,6 +4261,7 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="674632704103926902">Tıklama sürükləməsinə icazə verin</translation>
 <translation id="6748217015615267851">Renderer: <ph name="RENDERER_URL" /></translation>
 <translation id="6748465660675848252">Davam edə bilərsiniz, amma yalnız sinxronlaşmış datanız və ayarlarınız bərpa olunacaq. Bütün lokal data silinəcək.</translation>
+<translation id="6749006854028927059">Saytlar müxtəlif saytlarda baxış fəaliyyətinizi görmək üçün kukilərinizdən istifadə edə bilmir (məsələn, reklamları fərdiləşdirmək üçün). Bəzi saytlarda xüsusiyyətlər işləməyə bilər.</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (Inkoqnito)</translation>
 <translation id="6757101664402245801">URL kopyalandı</translation>
 <translation id="6758056191028427665">Necə işlədiyimizi bizə bildirin.</translation>
@@ -4340,6 +4353,7 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="686664946474413495">Rəng temperaturu</translation>
 <translation id="6871644448911473373">OCSP Cavablayıcı: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">Daxil etdiyiniz parol server tərəfindən rədd edildi.</translation>
+<translation id="6874170800191969835"><ph name="SEARCH_RESULT_TEXT" /> bölməsinə keçdi.</translation>
 <translation id="6876155724392614295">Velosiped</translation>
 <translation id="6876469544038980967">Faydalı deyil</translation>
 <translation id="6878422606530379992">Sensorlara icazə verilib</translation>
@@ -4610,6 +4624,7 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="7235737137505019098">Daha çox hesab əlavə etmək üçün güvənlik açarında kifayət qədər boş yer yoxdur.</translation>
 <translation id="7238643356913091553"><ph name="NETWORK_NAME" />, Detallar</translation>
 <translation id="7240339475467890413">Yeni hotspota qoşulsun?</translation>
+<translation id="7240847845291869311">Uşağınız bu cihaza G Suite for Education Google Hesabı əlavə etmək istəyir. <ph name="LINK_BEGIN" />G Suite for Education Məxfilik Bildirişi<ph name="LINK_END" /> G Suite for Education istifadəçilərinə və valideynlərə məhsulun hansı datanı topladığını, həmin datanın nəyə görə toplanıldığını və onunla nə edildiyini başa düşməkdə kömək etmək üçün nəzərdə tutulub.</translation>
 <translation id="7241389281993241388">Klient sertifikatını import etmək üçün <ph name="TOKEN_NAME" /> üzərinə daxil olun.</translation>
 <translation id="7241443820034350811">Təhlükəsizlik açarı siyahıda yoxdursa, ən azı 5 saniyə ərzində düyməyə basın.</translation>
 <translation id="7243632151880336635">Silin və çıxış edin</translation>
@@ -5192,6 +5207,7 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="7987814697832569482">Həmişə bu VPN ilə qoşulun</translation>
 <translation id="7988355189918024273">Əlçatımlılıq funksiyalarını aktiv edin</translation>
 <translation id="7991296728590311172">Keçid Düyməsi ayarları</translation>
+<translation id="7992202128769240372"><ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /> limitini keçir</translation>
 <translation id="7994350303002908848">Plugin VM'i quraşdırmaq mümkün olmadı. Yenidən cəhd edin və ya təşkilatınızın cihaz administratoru ilə əlaqə saxlayın. Xəta kodu: <ph name="ERROR_CODE" />.</translation>
 <translation id="7994702968232966508">EAP üsulu</translation>
 <translation id="7997826902155442747">Proses Prioriteti</translation>

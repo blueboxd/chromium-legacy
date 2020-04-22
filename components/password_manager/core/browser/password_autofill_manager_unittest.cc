@@ -392,7 +392,8 @@ TEST_F(PasswordAutofillManagerTest,
     duplicate.password = base::ASCIIToUTF16(kAliceAccountStoredPassword);
     duplicate.realm = data.preferred_realm;
     duplicate.uses_account_store = true;
-    data.additional_logins[data.username_field.value] = duplicate;
+    duplicate.username = data.username_field.value;
+    data.additional_logins.push_back(duplicate);
     favicon::MockFaviconService favicon_service;
     EXPECT_CALL(client, GetFaviconService()).WillOnce(Return(&favicon_service));
     EXPECT_CALL(favicon_service, GetFaviconImageForPageURL(data.origin, _, _))
@@ -788,8 +789,8 @@ TEST_F(PasswordAutofillManagerTest,
   new_data.uses_account_store = true;
   autofill::PasswordAndMetadata additional;
   additional.realm = "https://foobarrealm.org";
-  base::string16 additional_username(base::ASCIIToUTF16("bar.foo@example.com"));
-  new_data.additional_logins[additional_username] = additional;
+  additional.username = base::ASCIIToUTF16("bar.foo@example.com");
+  new_data.additional_logins.push_back(std::move(additional));
   EXPECT_CALL(autofill_client, GetPopupSuggestions())
       .WillRepeatedly(Return(CreateTestSuggestions(
           /*has_opt_in_and_fill=*/false, /*has_opt_in_and_generate*/ false,
@@ -820,8 +821,8 @@ TEST_F(PasswordAutofillManagerTest, ExtractSuggestions) {
 
   autofill::PasswordAndMetadata additional;
   additional.realm = "https://foobarrealm.org";
-  base::string16 additional_username(base::ASCIIToUTF16("John Foo"));
-  data.additional_logins[additional_username] = additional;
+  additional.username = base::ASCIIToUTF16("John Foo");
+  data.additional_logins.push_back(additional);
 
   password_autofill_manager_->OnAddPasswordFillData(data);
 
@@ -834,7 +835,7 @@ TEST_F(PasswordAutofillManagerTest, ExtractSuggestions) {
           element_bounds, _,
           testing::AllOf(
               SuggestionVectorValuesAre(testing::UnorderedElementsAre(
-                  test_username_, additional_username,
+                  test_username_, additional.username,
                   GetManagePasswordsTitle())),
               SuggestionVectorLabelsAre(testing::AllOf(
                   testing::Contains(base::UTF8ToUTF16("foo.com")),
@@ -848,9 +849,10 @@ TEST_F(PasswordAutofillManagerTest, ExtractSuggestions) {
       autofill_client,
       ShowAutofillPopup(element_bounds, _,
                         SuggestionVectorValuesAre(ElementsAre(
-                            additional_username, GetManagePasswordsTitle())),
+                            additional.username, GetManagePasswordsTitle())),
                         /*autoselect_first_suggestion=*/false,
                         PopupType::kPasswords, _));
+
   password_autofill_manager_->OnShowPasswordSuggestions(
       base::i18n::RIGHT_TO_LEFT, base::ASCIIToUTF16("John"), 0, element_bounds);
 
@@ -860,7 +862,7 @@ TEST_F(PasswordAutofillManagerTest, ExtractSuggestions) {
       ShowAutofillPopup(
           element_bounds, _,
           SuggestionVectorValuesAre(ElementsAre(
-              test_username_, additional_username, GetManagePasswordsTitle())),
+              test_username_, additional.username, GetManagePasswordsTitle())),
           /*autoselect_first_suggestion=*/false, PopupType::kPasswords, _));
   password_autofill_manager_->OnShowPasswordSuggestions(
       base::i18n::RIGHT_TO_LEFT, base::ASCIIToUTF16("xyz"), autofill::SHOW_ALL,
@@ -881,8 +883,8 @@ TEST_F(PasswordAutofillManagerTest, PrettifiedAndroidRealmsAreShownAsLabels) {
 
   autofill::PasswordAndMetadata additional;
   additional.realm = "android://hash@com.example2.android/";
-  base::string16 additional_username(base::ASCIIToUTF16("John Foo"));
-  data.additional_logins[additional_username] = additional;
+  additional.username = base::ASCIIToUTF16("John Foo");
+  data.additional_logins.push_back(std::move(additional));
 
   password_autofill_manager_->OnAddPasswordFillData(data);
 
@@ -909,8 +911,8 @@ TEST_F(PasswordAutofillManagerTest, FillSuggestionPasswordField) {
 
   autofill::PasswordAndMetadata additional;
   additional.realm = "https://foobarrealm.org";
-  base::string16 additional_username(base::ASCIIToUTF16("John Foo"));
-  data.additional_logins[additional_username] = additional;
+  additional.username = base::ASCIIToUTF16("John Foo");
+  data.additional_logins.push_back(std::move(additional));
 
   password_autofill_manager_->OnAddPasswordFillData(data);
 
@@ -945,8 +947,8 @@ TEST_F(PasswordAutofillManagerTest, DisplaySuggestionsWithMatchingTokens) {
 
   autofill::PasswordAndMetadata additional;
   additional.realm = "https://foobarrealm.org";
-  base::string16 additional_username(base::ASCIIToUTF16("bar.foo@example.com"));
-  data.additional_logins[additional_username] = additional;
+  additional.username = base::ASCIIToUTF16("bar.foo@example.com");
+  data.additional_logins.push_back(additional);
 
   password_autofill_manager_->OnAddPasswordFillData(data);
 
@@ -955,7 +957,7 @@ TEST_F(PasswordAutofillManagerTest, DisplaySuggestionsWithMatchingTokens) {
       ShowAutofillPopup(
           element_bounds, _,
           SuggestionVectorValuesAre(testing::UnorderedElementsAre(
-              username, additional_username, GetManagePasswordsTitle())),
+              username, additional.username, GetManagePasswordsTitle())),
           /*autoselect_first_suggestion=*/false, PopupType::kPasswords, _));
   password_autofill_manager_->OnShowPasswordSuggestions(
       base::i18n::RIGHT_TO_LEFT, base::ASCIIToUTF16("foo"), 0, element_bounds);
@@ -981,8 +983,8 @@ TEST_F(PasswordAutofillManagerTest, NoSuggestionForNonPrefixTokenMatch) {
 
   autofill::PasswordAndMetadata additional;
   additional.realm = "https://foobarrealm.org";
-  base::string16 additional_username(base::ASCIIToUTF16("bar.foo@example.com"));
-  data.additional_logins[additional_username] = additional;
+  additional.username = base::ASCIIToUTF16("bar.foo@example.com");
+  data.additional_logins.push_back(std::move(additional));
 
   password_autofill_manager_->OnAddPasswordFillData(data);
 
@@ -1013,8 +1015,8 @@ TEST_F(PasswordAutofillManagerTest,
 
   autofill::PasswordAndMetadata additional;
   additional.realm = "https://foobarrealm.org";
-  base::string16 additional_username(base::ASCIIToUTF16("bar.foo@example.com"));
-  data.additional_logins[additional_username] = additional;
+  additional.username = base::ASCIIToUTF16("bar.foo@example.com");
+  data.additional_logins.push_back(additional);
 
   password_autofill_manager_->OnAddPasswordFillData(data);
 
@@ -1022,7 +1024,7 @@ TEST_F(PasswordAutofillManagerTest,
       autofill_client,
       ShowAutofillPopup(element_bounds, _,
                         SuggestionVectorValuesAre(ElementsAre(
-                            additional_username, GetManagePasswordsTitle())),
+                            additional.username, GetManagePasswordsTitle())),
                         /*autoselect_first_suggestion=*/false,
                         PopupType::kPasswords, _));
   password_autofill_manager_->OnShowPasswordSuggestions(
@@ -1052,8 +1054,8 @@ TEST_F(PasswordAutofillManagerTest,
 
   autofill::PasswordAndMetadata additional;
   additional.realm = "https://foobarrealm.org";
-  base::string16 additional_username(base::ASCIIToUTF16("bar.foo@example.com"));
-  data.additional_logins[additional_username] = additional;
+  additional.username = base::ASCIIToUTF16("bar.foo@example.com");
+  data.additional_logins.push_back(additional);
 
   password_autofill_manager_->OnAddPasswordFillData(data);
 
@@ -1061,7 +1063,7 @@ TEST_F(PasswordAutofillManagerTest,
       autofill_client,
       ShowAutofillPopup(
           element_bounds, _,
-          SuggestionVectorValuesAre(ElementsAre(username, additional_username,
+          SuggestionVectorValuesAre(ElementsAre(username, additional.username,
                                                 GetManagePasswordsTitle())),
           /*autoselect_first_suggestion=*/false, PopupType::kPasswords, _));
   password_autofill_manager_->OnShowPasswordSuggestions(

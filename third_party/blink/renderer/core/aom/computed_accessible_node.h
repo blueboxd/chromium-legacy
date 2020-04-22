@@ -78,32 +78,6 @@ class ComputedAccessibleNode : public ScriptWrappable {
   base::Optional<float> valueMin() const;
   base::Optional<float> valueNow() const;
 
-  // TODO(crbug.com/1060971): Remove |is_null| version.
-  bool atomic(bool& is_null) const;           // DEPRECATED
-  bool busy(bool& is_null) const;             // DEPRECATED
-  bool disabled(bool& is_null) const;         // DEPRECATED
-  bool readOnly(bool& is_null) const;         // DEPRECATED
-  bool expanded(bool& is_null) const;         // DEPRECATED
-  bool modal(bool& is_null) const;            // DEPRECATED
-  bool multiline(bool& is_null) const;        // DEPRECATED
-  bool multiselectable(bool& is_null) const;  // DEPRECATED
-  bool required(bool& is_null) const;         // DEPRECATED
-  bool selected(bool& is_null) const;         // DEPRECATED
-
-  int32_t colCount(bool& is_null) const;  // DEPRECATED
-  int32_t colIndex(bool& is_null) const;  // DEPRECATED
-  int32_t colSpan(bool& is_null) const;   // DEPRECATED
-  int32_t level(bool& is_null) const;     // DEPRECATED
-  int32_t posInSet(bool& is_null) const;  // DEPRECATED
-  int32_t rowCount(bool& is_null) const;  // DEPRECATED
-  int32_t rowIndex(bool& is_null) const;  // DEPRECATED
-  int32_t rowSpan(bool& is_null) const;   // DEPRECATED
-  int32_t setSize(bool& is_null) const;   // DEPRECATED
-
-  float valueMax(bool& is_null) const;  // DEPRECATED
-  float valueMin(bool& is_null) const;  // DEPRECATED
-  float valueNow(bool& is_null) const;  // DEPRECATED
-
   const String autocomplete() const;
   const String checked() const;
   const String keyShortcuts() const;
@@ -125,10 +99,6 @@ class ComputedAccessibleNode : public ScriptWrappable {
   base::Optional<bool> GetBoolAttribute(WebAOMBoolAttribute) const;
   base::Optional<int32_t> GetIntAttribute(WebAOMIntAttribute) const;
   base::Optional<float> GetFloatAttribute(WebAOMFloatAttribute) const;
-  // TODO(crbug.com/1060971): Remove |is_null| version.
-  bool GetBoolAttribute(WebAOMBoolAttribute, bool& is_null) const;
-  int32_t GetIntAttribute(WebAOMIntAttribute, bool& is_null) const;
-  float GetFloatAttribute(WebAOMFloatAttribute, bool& is_null) const;
   const String GetStringAttribute(WebAOMStringAttribute) const;
 
   AXID ax_id_;

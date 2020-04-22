@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/arc/file_system_watcher/arc_file_system_watcher_util.h"
 
+#include "base/logging.h"
 #include "base/strings/string_util.h"
 
 namespace arc {

@@ -30,8 +30,7 @@ bool IsValidGURL(const GURL& url) {
 }
 
 bool IsValidFormFieldData(const FormFieldData& field) {
-  return IsValidString16(field.label) &&
-         IsValidString16(field.name) &&
+  return IsValidString16(field.label) && IsValidString16(field.name) &&
          IsValidString16(field.value) &&
          IsValidString(field.form_control_type) &&
          IsValidString(field.autocomplete_attribute) &&
@@ -63,9 +62,8 @@ bool IsValidPasswordFormFillData(const PasswordFormFillData& form) {
   }
 
   for (const auto& it : form.additional_logins) {
-    if (!IsValidString16(it.first) ||
-        !IsValidString16(it.second.password) ||
-        !IsValidString(it.second.realm))
+    if (!IsValidString16(it.username) || !IsValidString16(it.password) ||
+        !IsValidString(it.realm))
       return false;
   }
 

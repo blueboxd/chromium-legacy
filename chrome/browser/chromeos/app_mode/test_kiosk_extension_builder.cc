@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/logging.h"
 #include "base/values.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"

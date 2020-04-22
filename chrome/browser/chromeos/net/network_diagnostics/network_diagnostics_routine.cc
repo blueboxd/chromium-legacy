@@ -11,8 +11,8 @@ NetworkDiagnosticsRoutine::NetworkDiagnosticsRoutine() = default;
 
 NetworkDiagnosticsRoutine::~NetworkDiagnosticsRoutine() = default;
 
-void NetworkDiagnosticsRoutine::AnalyzeResultsAndExecuteCallback() {
-  std::move(routine_completed_callback_).Run(verdict());
+bool NetworkDiagnosticsRoutine::CanRun() {
+  return true;
 }
 
 }  // namespace network_diagnostics

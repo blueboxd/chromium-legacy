@@ -4,13 +4,10 @@
 
 package org.chromium.chrome.browser.password_manager.settings;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
-import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 
 import androidx.annotation.VisibleForTesting;
@@ -82,12 +79,7 @@ public class PasswordReauthenticationFragment extends Fragment {
         sPreventLockDevice = true;
     }
 
-    /**
-     * Should only be called on Lollipop or above devices.
-     */
-    @TargetApi(VERSION_CODES.LOLLIPOP)
     private void lockDevice() {
-        assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
         KeyguardManager keyguardManager =
                 (KeyguardManager) getActivity().getSystemService(Context.KEYGUARD_SERVICE);
         final int resourceId = getArguments().getInt(DESCRIPTION_ID, 0);

@@ -835,9 +835,6 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_AR_PERMISSION_TITLE" desc="Title of the permission to use Augmented Reality [CHAR-LIMIT=32]">
         Augmented reality
       </message>
-      <message name="IDS_COOKIES_TITLE" desc="Title for the Cookies settings screen [CHAR-LIMIT=32]">
-        Cookies
-      </message>
       <message name="IDS_BLOCK_THIRD_PARTY_COOKIES_TITLE" desc="Title for Block Third Party Cookies preference">
         Block third-party cookies
       </message>
@@ -2204,12 +2201,6 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_PAGE_INFO_SITE_SETTINGS_BUTTON" desc="Text in the button that opens a website's Site Settings from the Page Info dialog.">
         Site settings
       </message>
-      <message name="IDS_PAGE_INFO_PERMISSIONS_TITLE" desc="Label used in the Page Info dialog above the permissions list.">
-        Permissions
-      </message>
-      <message name="IDS_PAGE_INFO_INSTANT_APP_BUTTON" desc="Text in the button that opens an Android Instant app that is associated with the website's URL.">
-        Open Instant App
-      </message>
       <message name="IDS_PAGE_INFO_DSE_PERMISSION_ALLOWED" desc="The label used in the Page Info dialog to describe an allowed location permission for the current search engine. Eg: Location - Allowed for current search engine">
         Allowed for current search engine
       </message>
@@ -2245,9 +2236,6 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
       <message name="IDS_PAGE_INFO_OPEN_ONLINE_BUTTON" desc="Text in the button that attempts to open an online version of the offline website displayed in the tab.">
         Open Online
-      </message>
-      <message name="IDS_PAGE_INFO_PREVIEW_MESSAGE" desc="This text is displayed in the page info bubble when the currently viewed page has been modified by Google to be a lighter and faster version of the original page. The word 'Lite' should match the translation in TC ID 1019734090540434451">
-        Lite page provided by Google
       </message>
       <message name="IDS_PAGE_INFO_PREVIEW_LOAD_ORIGINAL" desc="This text, when clicked, loads the original page from its origin without any treatments. This text is shown in the page info bubble when the currently viewed page has been modified to be a lighter and faster version of the original page.">
         <ph name="BEGIN_LINK">&lt;link&gt;</ph>Load original page<ph name="END_LINK">&lt;/link&gt;</ph> from <ph name="DOMAIN_NAME">%1$s<ex>google.com</ex></ph>

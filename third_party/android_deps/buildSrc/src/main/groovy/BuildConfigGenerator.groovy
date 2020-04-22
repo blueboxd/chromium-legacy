@@ -158,7 +158,7 @@ class BuildConfigGenerator extends DefaultTask {
         }
 
         depGraph.dependencies.values().sort(dependencyComparator).each { dependency ->
-            if (excludeDependency(dependency, onlyPlayServices)) {
+            if (excludeDependency(dependency, onlyPlayServices) || !dependency.generateTarget) {
                 return
             }
             def depsStr = ""

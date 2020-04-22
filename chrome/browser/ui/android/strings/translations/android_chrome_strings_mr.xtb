@@ -54,6 +54,7 @@
 <translation id="1331212799747679585">Chrome अपडेट होऊ शकत नाही. आणखी पर्याय</translation>
 <translation id="1332501820983677155">Google Chrome वैशिष्ट्य शॉर्टकट</translation>
 <translation id="1360432990279830238">साइन आउट करून सिंक बंद करायचे आहे का?</translation>
+<translation id="1364532808393826295"><ph name="APP_NAME" /> - <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676"><ph name="SITE_NAME" /> साइट जोडली</translation>
 <translation id="1373696734384179344">निवडलेला आशय डाउनलोड करण्यासाठी अपुरी मेमरी.</translation>
 <translation id="1376578503827013741">गणना करत आहे...</translation>
@@ -140,6 +141,7 @@
 <translation id="2017836877785168846">ॲड्रेस बारमधील इतिहास आणि आपोआप पूर्ण केलेले साफ करते.</translation>
 <translation id="2021896219286479412">फुल स्क्रीन साइट नियंत्रणे</translation>
 <translation id="2025115093177348061">ऑगमेंटेड रीअ‍ॅलिटी</translation>
+<translation id="2030769033451695672"><ph name="URL_OF_THE_CURRENT_TAB" /> वर परत जाण्यासाठी टॅप करा</translation>
 <translation id="2038563949887743358">डेस्कटॉप साइट विनंती चालू करा</translation>
 <translation id="2041019821020695769">Chrome ने तुम्हाला सूचना पाठवण्यासाठी, <ph name="BEGIN_LINK" />Android सेटिंग्ज<ph name="END_LINK" /> मध्ये देखील सूचना सुरू करा.</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" />चा Chrome मध्ये देखील डेटा आहे</translation>
@@ -301,6 +303,7 @@
 <translation id="3207960819495026254">बुकमार्क केलेली</translation>
 <translation id="3211426585530211793"><ph name="ITEM_TITLE" /> हटवले</translation>
 <translation id="321773570071367578">तुमचा सांकेतिक पासफ्रेझ विसरल्यास किंवा हे सेटिंग बदलू इच्छित असल्यास, <ph name="BEGIN_LINK" />सिंक रीसेट करा<ph name="END_LINK" /></translation>
+<translation id="3223655101706843289">हे <ph name="ORIGIN" /> आणि तुमच्या होम स्क्रीनवरील त्याच्या अ‍ॅपने स्टोअर केलेला सर्व डेटा आणि कुकी साफ करेल.</translation>
 <translation id="3227137524299004712">मायक्रोफोन</translation>
 <translation id="3232754137068452469">वेब ॲप</translation>
 <translation id="3236059992281584593">1 मिनिट शिल्लक</translation>
@@ -535,6 +538,7 @@
 <translation id="4943872375798546930">परिणाम नाहीत</translation>
 <translation id="4961107849584082341">या पेजचे कोणत्याही भाषेत भाषांतर करा</translation>
 <translation id="4962975101802056554">डिव्हाइससाठीच्या सर्व परवानग्या रद्द करा</translation>
+<translation id="4964199952259983386">Chrome ला AR वापरू देण्यासाठी, <ph name="BEGIN_LINK" />Android सेटिंग्जमध्ये<ph name="END_LINK" /> कॅमेरादेखील सुरू करा.</translation>
 <translation id="4970824347203572753">तुमच्या स्थानामध्ये उपलब्ध नाही</translation>
 <translation id="497421865427891073">पुढे जा</translation>
 <translation id="4988210275050210843">(<ph name="MEGABYTES" />) ची फाइल डाउनलोड करत आहे.</translation>
@@ -634,6 +638,7 @@
 <translation id="5684874026226664614">अरेरे. हे पृष्‍ठ भाषांतरित केले जाऊ शकले नाही.</translation>
 <translation id="5686790454216892815">फाइलचे नाव खूप लांब आहे</translation>
 <translation id="5689516760719285838">स्थान</translation>
+<translation id="5690795753582697420">Android सेटिंग्जमध्ये कॅमेरा बंद केला आहे</translation>
 <translation id="5694049548840660018">होमवर सहजपणे परत जा</translation>
 <translation id="569536719314091526">अधिक पर्याय बटणावरून या पेजचे कोणत्याही भाषेत भाषांतर करा</translation>
 <translation id="5710871682236653961">तुम्ही NFC डिव्हाइसवर टॅप करता तेव्हा साइटना माहिती पाठवण्याची आणि मिळवण्याची अनुमती देण्यापूर्वी परवानगीची विनंती करा (शिफारस केलेले)</translation>
@@ -665,6 +670,7 @@
 <translation id="5876056640971328065">व्हिडिओ थांबवा</translation>
 <translation id="5884076754568147479">टास्क पूर्ण करण्यात तुम्हाला मदत व्हावी म्हणून Google ला तुम्ही Assistant वापरून सबमिट करता त्या माहितीच्या समावेशासह तुम्ही Assistant वापरता त्या साइटचा आशय आणि URL मिळतील</translation>
 <translation id="5919204609460789179">सिंक सुरू करण्यासाठी <ph name="PRODUCT_NAME" /> अपडेट करा</translation>
+<translation id="5922853908706496913">तुमची स्क्रीन शेअर करत आहे</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> वाचवला</translation>
 <translation id="5939518447894949180">रीसेट करा</translation>
 <translation id="5942872142862698679">शोध करण्‍यासाठी Google वापरत आहे</translation>
@@ -875,6 +881,7 @@
 <translation id="751961395872307827">साइटशी कनेक्ट करु शकत नाही</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7542481630195938534">सूचना मिळवू शकत नाही</translation>
+<translation id="7554752735887601236">साइट तुमचा मायक्रोफोन वापरत आहे</translation>
 <translation id="7559975015014302720">लाइट मोड बंद आहे</translation>
 <translation id="7562080006725997899">ब्राउझिंग डेटा साफ करत आहे</translation>
 <translation id="756809126120519699">Chrome डेटा साफ केला</translation>
@@ -911,7 +918,9 @@
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 आणि <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> अधिक}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 आणि <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> अधिक}}</translation>
 <translation id="7791543448312431591">जोडा</translation>
 <translation id="780301667611848630">नाही, नको</translation>
+<translation id="7804248752222191302">साइट तुमचा कॅमेरा वापरत आहे</translation>
 <translation id="7810647596859435254">यासह उघडा...</translation>
+<translation id="7817023149356982970">तुम्हाला या साइटमधून साइन आउट केले जाईल.</translation>
 <translation id="7821588508402923572">तुमची डेटा बचत येथे दिसेल</translation>
 <translation id="7828557259026017104">कुकी म्हणजे तुम्ही भेट देता त्या वेबसाइटनी तयार केलेल्या फाइल. तुमची प्राधान्ये लक्षात ठेवण्यासाठी साइट त्यांचा वापर करतात. तृतीय पक्ष कुकी इतर साइटकडून तयार केल्या जातात. या साइटमध्ये जाहिराती किंवा इमेज यांसारखा काही आशय असतो, जो तुम्ही भेट देत असलेल्या वेबपेजवर दिसतो.</translation>
 <translation id="783819812427904514">व्हिडिओ अनम्यूट करा</translation>
@@ -990,8 +999,10 @@
 <translation id="8364299278605033898">लोकप्रिय वेबसाइट पाहा</translation>
 <translation id="8368027906805972958">अज्ञात किंवा सपोर्ट नसलेले डिव्हाइस (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">विशिष्ट साइटसाठी पार्श्वभूमी संकालनासाठी अनुमती द्या.</translation>
+<translation id="83792324527827022">साइट तुमचा कॅमेरा आणि मायक्रोफोन वापरत आहे</translation>
 <translation id="8380167699614421159">ही साइट अनाहूत किंवा दिशाभूल करणाऱ्या जाहिराती दाखवते</translation>
 <translation id="8393700583063109961">संदेश पाठवा</translation>
+<translation id="8394832520002899662">साइटवर परत जाण्यासाठी टॅप करा</translation>
 <translation id="8413126021676339697">संपूर्ण इतिहास दर्शवा</translation>
 <translation id="8427875596167638501">पूर्वावलोकन टॅब अर्धा उघडा आहे</translation>
 <translation id="8428213095426709021">सेटिंग्ज</translation>
@@ -1034,6 +1045,8 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{सिग्नल क्षमता पातळी: # बार}other{सिग्नल क्षमता पातळी: # बार}}</translation>
 <translation id="868929229000858085">तुमचे संपर्क शोधा</translation>
 <translation id="869891660844655955">कालावधी समाप्ती तारीख</translation>
+<translation id="8702612070107455751">कोणताही ऑफलाइन डेटा साफ केला जाईल.</translation>
+<translation id="8737217482364735741">हे <ph name="ORIGIN" /> ने स्टोअर केलेला सर्व डेटा आणि कुकी साफ करेल.</translation>
 <translation id="8748850008226585750">सामग्री लपविली</translation>
 <translation id="8751914237388039244">इमेज निवडा</translation>
 <translation id="8758557275681689734">तुमचे सर्व उघडे टॅब पहा</translation>
@@ -1080,6 +1093,7 @@
 <translation id="9100610230175265781">सांकेतिक पासफ्रेझ आवश्यक</translation>
 <translation id="9102803872260866941">पूर्वावलोकन टॅब उघडला आहे</translation>
 <translation id="9104217018994036254">टॅबसह शेअर करण्यासाठी डिव्हाइसची सूची.</translation>
+<translation id="9108312223223904744">सिक्युरिटी की सपोर्ट म्हणून फोन वापरा</translation>
 <translation id="9133397713400217035">ऑफलाइन असताना एक्सप्लोर करा</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">मूळ दर्शवा</translation>

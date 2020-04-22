@@ -140,7 +140,6 @@ jumbo_static_library("renderer") {
     "//components/content_capture/renderer",
     "//components/content_settings/renderer",
     "//components/contextual_search/content:renderer",
-    "//components/data_reduction_proxy/content/common",
     "//components/data_reduction_proxy/core/common",
     "//components/dom_distiller/content/renderer",
     "//components/network_hints/renderer",
@@ -274,6 +273,7 @@ jumbo_static_library("renderer") {
       ]
       deps += [
         "//chrome/common/safe_browsing:proto",
+        "//components/safe_browsing/core:client_model_proto",
         "//components/safe_browsing/core:csd_proto",
         "//third_party/smhasher:murmurhash3",
       ]

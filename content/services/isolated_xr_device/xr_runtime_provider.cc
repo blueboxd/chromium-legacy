@@ -11,7 +11,6 @@
 #include "content/public/common/content_switches.h"
 #include "device/base/features.h"
 #include "device/vr/buildflags/buildflags.h"
-#include "device/vr/vr_device_base.h"
 
 #if BUILDFLAG(ENABLE_OPENVR)
 #include "device/vr/openvr/openvr_device.h"

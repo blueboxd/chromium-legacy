@@ -413,6 +413,9 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       base::BindRepeating(&WebMediaPlayerImpl::OnMainThreadMemoryDump,
                           weak_this_, media_log_->id()));
 
+  media_metrics_provider_->AcquirePlaybackEventsRecorder(
+      playback_events_recorder_.BindNewPipeAndPassReceiver());
+
 #if defined(OS_ANDROID)
   renderer_factory_selector_->SetRemotePlayStateChangeCB(
       BindToCurrentLoop(base::BindRepeating(
@@ -788,6 +791,9 @@ void WebMediaPlayerImpl::Play() {
   // Try to create the smoothness helper, in case we were paused before.
   UpdateSmoothnessHelper();
 
+  if (playback_events_recorder_)
+    playback_events_recorder_->OnPlaying();
+
   watch_time_reporter_->SetAutoplayInitiated(client_->WasAutoplayInitiated());
 
   // If we're seeking we'll trigger the watch time reporter upon seek completed;
@@ -838,6 +844,9 @@ void WebMediaPlayerImpl::Pause() {
 
   if (observer_)
     observer_->OnPaused();
+
+  if (playback_events_recorder_)
+    playback_events_recorder_->OnPaused();
 
   DCHECK(watch_time_reporter_);
   watch_time_reporter_->OnPaused();
@@ -893,6 +902,9 @@ void WebMediaPlayerImpl::DoSeek(base::TimeDelta time, bool time_updated) {
     }
     return;
   }
+
+  if (playback_events_recorder_)
+    playback_events_recorder_->OnSeeking();
 
   // Call this before setting |seeking_| so that the current media time can be
   // recorded by the reporter.
@@ -1590,6 +1602,8 @@ void WebMediaPlayerImpl::OnPipelineSeeked(bool time_updated) {
   } else {
     DCHECK(watch_time_reporter_);
     watch_time_reporter_->OnPlaying();
+    if (playback_events_recorder_)
+      playback_events_recorder_->OnPlaying();
   }
   if (time_updated)
     should_notify_time_changed_ = true;
@@ -1824,6 +1838,8 @@ void WebMediaPlayerImpl::OnError(PipelineStatus status) {
   simple_watch_timer_.Stop();
   media_log_->NotifyError(status);
   media_metrics_provider_->OnError(status);
+  if (playback_events_recorder_)
+    playback_events_recorder_->OnError(status);
   if (watch_time_reporter_)
     watch_time_reporter_->OnError(status);
 
@@ -1853,6 +1869,9 @@ void WebMediaPlayerImpl::OnEnded() {
 
   ended_ = true;
   client_->TimeChanged();
+
+  if (playback_events_recorder_)
+    playback_events_recorder_->OnEnded();
 
   // We don't actually want this to run until |client_| calls seek() or pause(),
   // but that should have already happened in timeChanged() and so this is
@@ -2139,6 +2158,9 @@ void WebMediaPlayerImpl::OnBufferingStateChangeInternal(
       watch_time_reporter_->OnUnderflowComplete(elapsed);
       underflow_timer_.reset();
     }
+
+    if (playback_events_recorder_)
+      playback_events_recorder_->OnBufferingComplete();
   } else {
     // Buffering has underflowed.
     DCHECK_EQ(state, BUFFERING_HAVE_NOTHING);
@@ -2150,6 +2172,9 @@ void WebMediaPlayerImpl::OnBufferingStateChangeInternal(
         !seeking_) {
       underflow_timer_ = std::make_unique<base::ElapsedTimer>();
       watch_time_reporter_->OnUnderflow();
+
+      if (playback_events_recorder_)
+        playback_events_recorder_->OnBuffering();
     }
 
     // It shouldn't be possible to underflow if we've not advanced past
@@ -3650,6 +3675,9 @@ void WebMediaPlayerImpl::RecordVideoNaturalSize(const gfx::Size& natural_size) {
     UMA_HISTOGRAM_VIDEO_HEIGHT("Media.VideoHeight.Initial.EME", height);
 
   UMA_HISTOGRAM_VIDEO_HEIGHT("Media.VideoHeight.Initial.All", height);
+
+  if (playback_events_recorder_)
+    playback_events_recorder_->OnNaturalSizeChanged(natural_size);
 }
 
 #undef UMA_HISTOGRAM_VIDEO_HEIGHT
@@ -3747,6 +3775,9 @@ void WebMediaPlayerImpl::MaybeUpdateBufferSizesForPlayback() {
 
 void WebMediaPlayerImpl::OnSimpleWatchTimerTick() {
   RecordSimpleWatchTimeUMA(reported_renderer_type_);
+
+  if (playback_events_recorder_)
+    playback_events_recorder_->OnPipelineStatistics(GetPipelineStatistics());
 }
 
 GURL WebMediaPlayerImpl::GetSrcAfterRedirects() {

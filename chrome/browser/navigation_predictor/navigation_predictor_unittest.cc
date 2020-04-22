@@ -204,7 +204,7 @@ TEST_F(NavigationPredictorTest, ReportAnchorElementMetricsOnLoad) {
   base::RunLoop().RunUntilIdle();
 
   histogram_tester.ExpectTotalCount(
-      "AnchorElementMetrics.Visible.HighestNavigationScore", 1);
+      "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 1);
 }
 
 // Test that if source/target url is not http or https, no score will be
@@ -219,7 +219,7 @@ TEST_F(NavigationPredictorTest,
   base::RunLoop().RunUntilIdle();
 
   histogram_tester.ExpectTotalCount(
-      "AnchorElementMetrics.Visible.HighestNavigationScore", 0);
+      "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 0);
 }
 
 // Test that if source/target url is not http or https, no navigation score will
@@ -237,7 +237,7 @@ TEST_F(NavigationPredictorTest,
   base::RunLoop().RunUntilIdle();
 
   histogram_tester.ExpectTotalCount(
-      "AnchorElementMetrics.Visible.HighestNavigationScore", 0);
+      "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 0);
 }
 
 // Test that if the target url is not https, no navigation score will
@@ -255,7 +255,7 @@ TEST_F(NavigationPredictorTest,
   base::RunLoop().RunUntilIdle();
 
   histogram_tester.ExpectTotalCount(
-      "AnchorElementMetrics.Visible.HighestNavigationScore", 0);
+      "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 0);
 }
 
 // Test that if the source url is not https, no navigation score will
@@ -273,7 +273,7 @@ TEST_F(NavigationPredictorTest,
   base::RunLoop().RunUntilIdle();
 
   histogram_tester.ExpectTotalCount(
-      "AnchorElementMetrics.Visible.HighestNavigationScore", 0);
+      "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 0);
 }
 
 TEST_F(NavigationPredictorTest, Merge_UniqueAnchorElements) {
@@ -299,9 +299,6 @@ TEST_F(NavigationPredictorTest, Merge_UniqueAnchorElements) {
   base::RunLoop().RunUntilIdle();
 
   histogram_tester.ExpectUniqueSample(
-      "AnchorElementMetrics.Visible.NumberOfAnchorElements",
-      number_of_metrics_sent, 1);
-  histogram_tester.ExpectUniqueSample(
       "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge",
       number_of_metrics_sent, 1);
 }
@@ -324,14 +321,9 @@ TEST_F(NavigationPredictorTest, Merge_DuplicateAnchorElements) {
   metrics.push_back(CreateMetricsPtr(source, href_query_1, 0.01));
   metrics.push_back(CreateMetricsPtr(source, href_query_ref, 0.01));
 
-  int number_of_metrics_sent = metrics.size();
   predictor_service()->ReportAnchorElementMetricsOnLoad(std::move(metrics),
                                                         GetDefaultViewport());
   base::RunLoop().RunUntilIdle();
-
-  histogram_tester.ExpectUniqueSample(
-      "AnchorElementMetrics.Visible.NumberOfAnchorElements",
-      number_of_metrics_sent, 1);
 
   // Only two anchor elements are unique: |href| and |href_query_1|.
   histogram_tester.ExpectUniqueSample(
@@ -356,14 +348,10 @@ TEST_F(NavigationPredictorTest, Merge_AnchorElementSameAsDocumentURL) {
   metrics.push_back(CreateMetricsPtr(source, href_query_1, 0.01));
   metrics.push_back(CreateMetricsPtr(source, href_query_ref, 0.01));
 
-  int number_of_metrics_sent = metrics.size();
   predictor_service()->ReportAnchorElementMetricsOnLoad(std::move(metrics),
                                                         GetDefaultViewport());
   base::RunLoop().RunUntilIdle();
 
-  histogram_tester.ExpectUniqueSample(
-      "AnchorElementMetrics.Visible.NumberOfAnchorElements",
-      number_of_metrics_sent, 1);
   // Only two anchor elements are unique and different from the document URL:
   // |href_ref_2| and |href_query_1|.
   histogram_tester.ExpectUniqueSample(
@@ -372,7 +360,7 @@ TEST_F(NavigationPredictorTest, Merge_AnchorElementSameAsDocumentURL) {
 
 // In this test, multiple anchor element metrics are sent to
 // ReportAnchorElementMetricsOnLoad. Test that CalculateAnchorNavigationScore
-// works, and that highest navigation score can be recorded correctly.
+// works.
 TEST_F(NavigationPredictorTest, MultipleAnchorElementMetricsOnLoad) {
   base::HistogramTester histogram_tester;
 
@@ -407,14 +395,6 @@ TEST_F(NavigationPredictorTest, MultipleAnchorElementMetricsOnLoad) {
   EXPECT_EQ(3, area_rank_map.find(GURL(href_small))->second);
   EXPECT_EQ(4, area_rank_map.find(GURL(href_xsmall))->second);
   EXPECT_EQ(area_rank_map.end(), area_rank_map.find(GURL(http_href_xsmall)));
-
-  // The highest score is 100 (scale factor) * 0.1 (largest area) = 10.
-  // After scaling the navigation score across all anchor elements, the score
-  // becomes 38.
-  histogram_tester.ExpectUniqueSample(
-      "AnchorElementMetrics.Visible.HighestNavigationScore", 38, 1);
-  histogram_tester.ExpectTotalCount("AnchorElementMetrics.Visible.RatioArea",
-                                    5);
 }
 
 // URL with highest prefetch score is from the same origin. Prefetch is done.

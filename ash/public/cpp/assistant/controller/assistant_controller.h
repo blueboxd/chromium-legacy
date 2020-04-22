@@ -12,11 +12,17 @@ class GURL;
 
 namespace ash {
 
+class AssistantControllerObserver;
+
 // The interface for the Assistant controller.
 class ASH_PUBLIC_EXPORT AssistantController {
  public:
   // Returns the singleton instance owned by Shell.
   static AssistantController* Get();
+
+  // Adds/removes the specified |observer|.
+  virtual void AddObserver(AssistantControllerObserver* observer) = 0;
+  virtual void RemoveObserver(AssistantControllerObserver* observer) = 0;
 
   // Opens the specified |url| in a new browser tab. Special handling is applied
   // to deep links which may cause deviation from this behavior.

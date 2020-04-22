@@ -760,7 +760,7 @@ void ChromePasswordManagerClient::OnInputEvent(
   // On Android, key down events are triggered if a user types in through a
   // number bar on Android keyboard. If text is typed in through other parts of
   // Android keyboard, ImeTextCommittedEvent is triggered instead.
-  if (event.GetType() != blink::WebInputEvent::kKeyDown)
+  if (event.GetType() != blink::WebInputEvent::Type::kKeyDown)
     return;
   const blink::WebKeyboardEvent& key_event =
       static_cast<const blink::WebKeyboardEvent&>(event);
@@ -768,7 +768,7 @@ void ChromePasswordManagerClient::OnInputEvent(
 #endif  // defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 
 #else   // !defined(OS_ANDROID)
-  if (event.GetType() != blink::WebInputEvent::kChar)
+  if (event.GetType() != blink::WebInputEvent::Type::kChar)
     return;
   const blink::WebKeyboardEvent& key_event =
       static_cast<const blink::WebKeyboardEvent&>(event);

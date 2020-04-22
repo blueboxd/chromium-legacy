@@ -321,7 +321,7 @@ IN_PROC_BROWSER_TEST_F(PrecisionTouchpadBrowserTest, PreventDefaultPinchZoom) {
   // ACK result itself isn't relevant in this test.
   auto input_msg_watcher = std::make_unique<InputMsgWatcher>(
       web_contents->GetRenderViewHost()->GetWidget(),
-      blink::WebInputEvent::kGesturePinchUpdate);
+      blink::WebInputEvent::Type::kGesturePinchUpdate);
 
   // First, test a standard zoom.
   UpdateContents(kInitialZoom, 0, 0);
@@ -405,7 +405,7 @@ IN_PROC_BROWSER_TEST_F(PrecisionTouchpadBrowserTest, PreventDefaultScroll) {
   // ACK result itself isn't relevant in this test.
   auto input_msg_watcher = std::make_unique<InputMsgWatcher>(
       web_contents->GetRenderViewHost()->GetWidget(),
-      blink::WebInputEvent::kMouseWheel);
+      blink::WebInputEvent::Type::kMouseWheel);
 
   // First, test scrolling vertically
   UpdateContents(1, 0, -kInitialScrollDistance);

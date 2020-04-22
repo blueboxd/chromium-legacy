@@ -115,13 +115,13 @@ class MainThreadEventQueueBrowserTest : public ContentBrowserTest {
     SimulateMouseClick(shell()->web_contents(), 0,
                        blink::WebPointerProperties::Button::kLeft);
     auto input_msg_watcher = std::make_unique<InputMsgWatcher>(
-        GetWidgetHost(), blink::WebInputEvent::kMouseMove);
+        GetWidgetHost(), blink::WebInputEvent::Type::kMouseMove);
     GetWidgetHost()->ForwardMouseEvent(SyntheticWebMouseEventBuilder::Build(
-        blink::WebInputEvent::kMouseMove, 10, 10, 0));
+        blink::WebInputEvent::Type::kMouseMove, 10, 10, 0));
     GetWidgetHost()->ForwardMouseEvent(SyntheticWebMouseEventBuilder::Build(
-        blink::WebInputEvent::kMouseMove, 15, 15, 0));
+        blink::WebInputEvent::Type::kMouseMove, 15, 15, 0));
     GetWidgetHost()->ForwardMouseEvent(SyntheticWebMouseEventBuilder::Build(
-        blink::WebInputEvent::kMouseMove, 20, 25, 0));
+        blink::WebInputEvent::Type::kMouseMove, 20, 25, 0));
 
     // Runs until we get the InputMsgAck callback.
     EXPECT_EQ(blink::mojom::InputEventResultState::kConsumed,
@@ -158,7 +158,7 @@ class MainThreadEventQueueBrowserTest : public ContentBrowserTest {
     SimulateMouseClick(shell()->web_contents(), 0,
                        blink::WebPointerProperties::Button::kLeft);
     auto input_msg_watcher = std::make_unique<InputMsgWatcher>(
-        GetWidgetHost(), blink::WebInputEvent::kTouchMove);
+        GetWidgetHost(), blink::WebInputEvent::Type::kTouchMove);
 
     auto* root_view = GetWidgetHost()->GetView();
     auto* input_event_router =

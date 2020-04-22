@@ -45,6 +45,7 @@
 #include "media/blink/webmediaplayer_params.h"
 #include "media/filters/pipeline_controller.h"
 #include "media/learning/common/media_learning_tasks.h"
+#include "media/mojo/mojom/playback_events_recorder.mojom.h"
 #include "media/renderers/paint_canvas_video_renderer.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/media_session/public/cpp/media_position.h"
@@ -1004,6 +1005,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   base::CancelableClosure update_background_status_cb_;
 
   mojo::Remote<mojom::MediaMetricsProvider> media_metrics_provider_;
+  mojo::Remote<mojom::PlaybackEventsRecorder> playback_events_recorder_;
 
   base::Optional<ReadyState> stale_state_override_for_testing_;
 

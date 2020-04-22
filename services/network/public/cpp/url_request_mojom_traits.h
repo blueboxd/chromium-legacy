@@ -163,10 +163,6 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
       const network::ResourceRequest& request) {
     return request.fetch_integrity;
   }
-  static int32_t fetch_request_context_type(
-      const network::ResourceRequest& request) {
-    return request.fetch_request_context_type;
-  }
   static network::mojom::RequestDestination destination(
       const network::ResourceRequest& request) {
     return request.destination;

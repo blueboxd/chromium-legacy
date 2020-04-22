@@ -25,8 +25,8 @@ namespace content {
 namespace {
 
 bool ShouldTouchTriggerTimeout(const WebTouchEvent& event) {
-  return (event.GetType() == WebInputEvent::kTouchStart ||
-          event.GetType() == WebInputEvent::kTouchMove) &&
+  return (event.GetType() == WebInputEvent::Type::kTouchStart ||
+          event.GetType() == WebInputEvent::Type::kTouchMove) &&
          event.dispatch_type == WebInputEvent::DispatchType::kBlocking;
 }
 

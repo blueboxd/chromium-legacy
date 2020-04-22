@@ -12,6 +12,7 @@ import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.RemoteException;
 import android.util.AndroidRuntimeException;
+import android.webkit.ValueCallback;
 
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
@@ -21,13 +22,16 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.weblayer_private.interfaces.IMediaCaptureCallbackClient;
+import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 
 import java.util.HashSet;
 import java.util.Set;
 
 /**
- * A per-tab object that manages notifications for ongoing media streams (microphone/camera). This
- * object is created by {@link TabImpl} and creates and destroys its native equivalent.
+ * A per-tab object that manages notifications for ongoing media capture streams
+ * (microphone/camera). This object is created by {@link TabImpl} and creates and destroys its
+ * native equivalent.
  */
 @JNINamespace("weblayer")
 public class MediaStreamManager {
@@ -46,6 +50,8 @@ public class MediaStreamManager {
      */
     private static final String PREF_ACTIVE_AV_STREAM_NOTIFICATION_IDS =
             WEBRTC_PREFIX + ".avstream_notifications";
+
+    private IMediaCaptureCallbackClient mClient;
 
     // The notification ID matches the tab ID, which uniquely identifies the notification when
     // paired with the tag.
@@ -105,6 +111,16 @@ public class MediaStreamManager {
     public void destroy() {
         cancelNotification();
         MediaStreamManagerJni.get().destroy(mNative);
+        mNative = 0;
+        mClient = null;
+    }
+
+    public void setClient(IMediaCaptureCallbackClient client) {
+        mClient = client;
+    }
+
+    public void stopStreaming() {
+        MediaStreamManagerJni.get().stopStreaming(mNative);
     }
 
     private void cancelNotification() {
@@ -112,7 +128,18 @@ public class MediaStreamManager {
         if (notificationManager != null) {
             notificationManager.cancel(AV_STREAM_TAG, mNotificationId);
         }
+        notifyClient(false, false);
         updateActiveNotifications(false);
+    }
+
+    private void notifyClient(boolean audio, boolean video) {
+        if (mClient != null) {
+            try {
+                mClient.onMediaCaptureStateChanged(audio, video);
+            } catch (RemoteException e) {
+                throw new AndroidRuntimeException(e);
+            }
+        }
     }
 
     /**
@@ -136,11 +163,32 @@ public class MediaStreamManager {
                 .apply();
     }
 
+    @CalledByNative
+    private void prepareToStream(boolean audio, boolean video, int requestId)
+            throws RemoteException {
+        if (mClient == null) {
+            respondToStreamRequest(requestId, true);
+        } else {
+            mClient.onMediaCaptureRequested(
+                    audio, video, ObjectWrapper.wrap(new ValueCallback<Boolean>() {
+                        @Override
+                        public void onReceiveValue(Boolean allowed) {
+                            respondToStreamRequest(requestId, allowed.booleanValue());
+                        }
+                    }));
+        }
+    }
+
+    private void respondToStreamRequest(int requestId, boolean allow) {
+        if (mNative == 0) return;
+        MediaStreamManagerJni.get().onClientReadyToStream(mNative, requestId, allow);
+    }
+
     /**
      * Called after the tab's media streaming state has changed.
      *
-     * A notification should be shown (or updated) iff one of the parameters is true, otherwise any
-     * existing notification will be removed.
+     * A notification should be shown (or updated) iff one of the parameters is true, otherwise
+     * any existing notification will be removed.
      *
      * @param audio true if the tab is streaming audio.
      * @param video true if the tab is streaming video.
@@ -177,6 +225,7 @@ public class MediaStreamManager {
                                         : audio ? "audio streamz" : "video streamz");
         notificationManager.notify(AV_STREAM_TAG, mNotificationId, builder.build());
         updateActiveNotifications(true);
+        notifyClient(audio, video);
     }
 
     private void createNotificationChannel() {
@@ -204,5 +253,7 @@ public class MediaStreamManager {
     interface Natives {
         long create(MediaStreamManager caller, WebContents webContents);
         void destroy(long manager);
+        void onClientReadyToStream(long nativeMediaStreamManager, int requestId, boolean allow);
+        void stopStreaming(long nativeMediaStreamManager);
     }
 }

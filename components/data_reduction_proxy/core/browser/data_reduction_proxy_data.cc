@@ -15,7 +15,6 @@ DataReductionProxyData::DataReductionProxyData()
     : used_data_reduction_proxy_(false),
       lite_page_received_(false),
       black_listed_(false),
-      was_cached_data_reduction_proxy_response_(false),
       effective_connection_type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
       connection_type_(net::NetworkChangeNotifier::CONNECTION_UNKNOWN) {}
 

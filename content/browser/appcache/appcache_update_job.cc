@@ -482,8 +482,6 @@ void AppCacheUpdateJob::HandleManifestFetchCompleted(URLFetcher* url_fetcher,
 
   std::unique_ptr<URLFetcher> manifest_fetcher = std::move(manifest_fetcher_);
   UpdateURLLoaderRequest* request = manifest_fetcher->request();
-  auto token_expires = storage_->GetOriginTrialExpiration(
-      request->GetURL(), request->GetResponseHeaders(), base::Time::Now());
 
   int response_code = -1;
   bool is_valid_response_code = false;
@@ -505,9 +503,9 @@ void AppCacheUpdateJob::HandleManifestFetchCompleted(URLFetcher* url_fetcher,
     manifest_response_info_ =
         std::make_unique<net::HttpResponseInfo>(request->GetResponseInfo());
     if (update_type_ == UPGRADE_ATTEMPT) {
-      CheckIfManifestChanged(token_expires);  // continues asynchronously
+      CheckIfManifestChanged();  // continues asynchronously
     } else {
-      HandleFetchedManifestChanged(token_expires);
+      HandleFetchedManifestChanged();
     }
     return;
   }
@@ -591,7 +589,7 @@ void AppCacheUpdateJob::HandleFetchedManifestIsUnchanged() {
   MaybeCompleteUpdate();  // if not done, run async 7.9.4 step 7 substeps
 }
 
-void AppCacheUpdateJob::HandleFetchedManifestChanged(base::Time token_expires) {
+void AppCacheUpdateJob::HandleFetchedManifestChanged() {
   DCHECK_EQ(internal_state_, AppCacheUpdateJobState::FETCH_MANIFEST);
 
   AppCacheManifest manifest;
@@ -626,7 +624,8 @@ void AppCacheUpdateJob::HandleFetchedManifestChanged(base::Time token_expires) {
   inprogress_cache_ =
       base::MakeRefCounted<AppCache>(storage_, storage_->NewCacheId());
   BuildUrlFileList(manifest);
-  inprogress_cache_->InitializeWithManifest(&manifest, token_expires);
+
+  inprogress_cache_->InitializeWithManifest(&manifest);
 
   // Associate all pending master hosts with the newly created cache.
   for (const auto& pair : pending_master_entries_) {
@@ -1202,7 +1201,7 @@ void AppCacheUpdateJob::OnServiceReinitialized(
     disabled_storage_reference_ = old_storage_ref;
 }
 
-void AppCacheUpdateJob::CheckIfManifestChanged(base::Time token_expires) {
+void AppCacheUpdateJob::CheckIfManifestChanged() {
   DCHECK_EQ(internal_state_, AppCacheUpdateJobState::FETCH_MANIFEST);
   DCHECK_EQ(update_type_, UPGRADE_ATTEMPT);
   AppCacheEntry* entry = nullptr;
@@ -1228,12 +1227,12 @@ void AppCacheUpdateJob::CheckIfManifestChanged(base::Time token_expires) {
   }
 
   if (fetched_manifest_scope_ != cached_manifest_scope_) {
-    HandleFetchedManifestChanged(token_expires);
+    HandleFetchedManifestChanged();
     return;
   }
 
   if (cached_manifest_parser_version_ < 1) {
-    HandleFetchedManifestChanged(token_expires);
+    HandleFetchedManifestChanged();
     return;
   }
 
@@ -1245,11 +1244,10 @@ void AppCacheUpdateJob::CheckIfManifestChanged(base::Time token_expires) {
   manifest_response_reader_->ReadData(
       read_manifest_buffer_.get(), kAppCacheFetchBufferSize,
       base::BindOnce(&AppCacheUpdateJob::OnManifestDataReadComplete,
-                     base::Unretained(this), token_expires));  // async read
+                     base::Unretained(this)));  // async read
 }
 
-void AppCacheUpdateJob::OnManifestDataReadComplete(base::Time token_expires,
-                                                   int result) {
+void AppCacheUpdateJob::OnManifestDataReadComplete(int result) {
   DCHECK_GE(cached_manifest_parser_version_, 1);
   DCHECK_EQ(fetched_manifest_scope_, cached_manifest_scope_);
   if (result > 0) {
@@ -1257,13 +1255,12 @@ void AppCacheUpdateJob::OnManifestDataReadComplete(base::Time token_expires,
     manifest_response_reader_->ReadData(
         read_manifest_buffer_.get(), kAppCacheFetchBufferSize,
         base::BindOnce(&AppCacheUpdateJob::OnManifestDataReadComplete,
-                       base::Unretained(this), token_expires));  // read more
+                       base::Unretained(this)));  // read more
   } else {
     read_manifest_buffer_ = nullptr;
     manifest_response_reader_.reset();
-    if (result < 0 || manifest_data_ != loaded_manifest_data_ ||
-        read_manifest_token_expires_ != token_expires) {
-      HandleFetchedManifestChanged(token_expires);
+    if (result < 0 || manifest_data_ != loaded_manifest_data_) {
+      HandleFetchedManifestChanged();
     } else {
       HandleFetchedManifestIsUnchanged();
     }
@@ -1325,12 +1322,7 @@ void AppCacheUpdateJob::OnManifestFromCacheDataReadComplete(int result) {
     manifest_data_ = loaded_manifest_data_;
     read_manifest_buffer_ = nullptr;
     manifest_response_reader_.reset();
-
-    // This path is only hit via a 304 response, where we are not expected
-    // to update the token expires, so pretend it hasn't been set.
-    base::Time token_expires;
-
-    HandleFetchedManifestChanged(token_expires);
+    HandleFetchedManifestChanged();
   }
 }
 

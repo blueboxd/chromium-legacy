@@ -51,8 +51,7 @@ component("lib") {
 
   public_deps = [
     "//ash/public/cpp:cpp",
-    "//chromeos/services/assistant/public:feature_flags",
-    "//chromeos/services/assistant/public/cpp:prefs",
+    "//chromeos/services/assistant/public/cpp",
     "//chromeos/services/assistant/public/mojom",
     "//mojo/public/cpp/bindings:bindings",
     "//services/audio/public/cpp:cpp",
@@ -142,7 +141,7 @@ source_set("tests") {
     "//chromeos/constants",
     "//chromeos/dbus:test_support",
     "//chromeos/dbus/power",
-    "//chromeos/services/assistant/public/cpp:prefs",
+    "//chromeos/services/assistant/public/cpp",
     "//chromeos/services/assistant/public/mojom",
     "//components/prefs:test_support",
     "//components/signin/public/identity_manager",
@@ -206,7 +205,7 @@ static_library("test_support") {
   ]
   deps = [
     "//base",
-    "//chromeos/services/assistant/public/cpp:prefs",
+    "//chromeos/services/assistant/public/cpp",
     "//chromeos/services/assistant/public/mojom",
     "//testing/gmock",
   ]

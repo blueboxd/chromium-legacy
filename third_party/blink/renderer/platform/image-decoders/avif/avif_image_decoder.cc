@@ -262,19 +262,19 @@ void AVIFImageDecoder::InitializeNewFrame(size_t index) {
   DCHECK_EQ(ret, AVIF_RESULT_OK);
   buffer.SetDuration(base::TimeDelta::FromSecondsD(timing.duration));
 
-  // TODO(wtc): Find out if disposal method and alpha blend source are specified
-  // in the file format.
-  buffer.SetDisposalMethod(ImageFrame::kDisposeKeep);
-
-  // TODO(dalecurtis): Is this right? Due to the progressive nature of AV1 video
-  // frames, it seems it should always be "blend atop background"
+  // The AVIF file format does not contain information equivalent to the
+  // disposal method or alpha blend source. Since the AVIF decoder handles frame
+  // dependence internally, set options that best correspond to "each frame is
+  // independent".
+  buffer.SetDisposalMethod(ImageFrame::kDisposeNotSpecified);
   buffer.SetAlphaBlendSource(ImageFrame::kBlendAtopBgcolor);
 
   if (decode_to_half_float_)
     buffer.SetPixelFormat(ImageFrame::PixelFormat::kRGBA_F16);
 
-  if (index > 0 && !avifDecoderIsKeyframe(decoder_.get(), index))
-    buffer.SetRequiredPreviousFrameIndex(index - 1);
+  // Leave all frames as being independent (the default) because we require all
+  // frames be the same size.
+  DCHECK_EQ(buffer.RequiredPreviousFrameIndex(), kNotFound);
 }
 
 void AVIFImageDecoder::Decode(size_t index) {
@@ -284,58 +284,60 @@ void AVIFImageDecoder::Decode(size_t index) {
   if (Failed() || !IsAllDataReceived())
     return;
 
-  // If we're just decoding metadata create an entry for the first image.
-  auto frames_to_decode = frame_buffer_cache_.IsEmpty()
-                              ? Vector<size_t>(1, 0)
-                              : FindFramesToDecode(index);
-
-  for (auto i : base::Reversed(frames_to_decode)) {
-    if (!DecodeImage(i)) {
-      SetFailed();
-      return;
-    }
-
-    if (frame_buffer_cache_.IsEmpty()) {
-      pending_decoded_image_ = true;
-      return;
-    }
-
-    pending_decoded_image_ = false;
-    ImageFrame& buffer = frame_buffer_cache_[i];
-    if (buffer.GetStatus() == ImageFrame::kFrameComplete)
-      continue;
-
-    const auto* image = decoder_->image;
-    buffer.SetHasAlpha(!!image->alphaPlane);
-    if (decode_to_half_float_)
-      buffer.SetPixelFormat(ImageFrame::PixelFormat::kRGBA_F16);
-
-    // Set color space information on the frame if appropriate.
-    gfx::ColorSpace frame_cs;
-    if (!IgnoresColorSpace())
-      frame_cs = GetColorSpace(image);
-    if (CanSetColorSpace()) {
-      last_color_space_ = frame_cs.GetAsFullRangeRGB();
-    } else {
-      // Just use whatever color space Skia wants us to use.
-    }
-
-    // TODO(wtc): This should use the value of |last_color_space_|. Implement
-    // it.
-    if (!InitFrameBuffer(i)) {
-      DVLOG(1) << "Failed to create frame buffer...";
-      SetFailed();
-      return;
-    }
-
-    if (!RenderImage(image, frame_cs, &buffer)) {
-      SetFailed();
-      return;
-    }
-
-    buffer.SetPixelsChanged(true);
-    buffer.SetStatus(ImageFrame::kFrameComplete);
+  if (!DecodeImage(index)) {
+    SetFailed();
+    return;
   }
+
+  if (frame_buffer_cache_.IsEmpty()) {
+    // We're just decoding metadata.
+    DCHECK_EQ(index, 0u);
+    pending_decoded_image_ = true;
+    return;
+  }
+
+  pending_decoded_image_ = false;
+  ImageFrame& buffer = frame_buffer_cache_[index];
+  DCHECK_NE(buffer.GetStatus(), ImageFrame::kFrameComplete);
+
+  const auto* image = decoder_->image;
+  buffer.SetHasAlpha(!!image->alphaPlane);
+  if (decode_to_half_float_)
+    buffer.SetPixelFormat(ImageFrame::PixelFormat::kRGBA_F16);
+
+  // Set color space information on the frame if appropriate.
+  gfx::ColorSpace frame_cs;
+  if (!IgnoresColorSpace())
+    frame_cs = GetColorSpace(image);
+  if (CanSetColorSpace()) {
+    last_color_space_ = frame_cs.GetAsFullRangeRGB();
+  } else {
+    // Just use whatever color space Skia wants us to use.
+  }
+
+  // TODO(wtc): This should use the value of |last_color_space_|. Implement it.
+  if (!InitFrameBuffer(index)) {
+    DVLOG(1) << "Failed to create frame buffer...";
+    SetFailed();
+    return;
+  }
+
+  if (!RenderImage(image, frame_cs, &buffer)) {
+    SetFailed();
+    return;
+  }
+
+  buffer.SetPixelsChanged(true);
+  buffer.SetStatus(ImageFrame::kFrameComplete);
+}
+
+bool AVIFImageDecoder::CanReusePreviousFrameBuffer(size_t index) const {
+  // (a) Technically we can reuse the bitmap of the previous frame because the
+  // AVIF decoder handles frame dependence internally and we never need to
+  // preserve previous frames to decode later ones, and (b) since this function
+  // will not currently be called, this is really more for the reader than any
+  // functional purpose.
+  return true;
 }
 
 void AVIFImageDecoder::MaybeCreateDemuxer() {

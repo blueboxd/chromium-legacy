@@ -228,7 +228,7 @@ void PointerEventManager::SendMouseAndPointerBoundaryEvents(
   // Mouse event type does not matter as this pointerevent will only be used
   // to create boundary pointer events and its type will be overridden in
   // |sendBoundaryEvents| function.
-  const WebPointerEvent web_pointer_event(WebInputEvent::kPointerMove,
+  const WebPointerEvent web_pointer_event(WebInputEvent::Type::kPointerMove,
                                           mouse_event);
   PointerEvent* dummy_pointer_event = pointer_event_factory_.Create(
       web_pointer_event, Vector<WebPointerEvent>(), Vector<WebPointerEvent>(),
@@ -345,7 +345,7 @@ bool PointerEventManager::ShouldAdjustPointerEvent(
   return RuntimeEnabledFeatures::UnifiedTouchAdjustmentEnabled() &&
          pointer_event.pointer_type ==
              WebPointerProperties::PointerType::kTouch &&
-         pointer_event.GetType() == WebInputEvent::kPointerDown &&
+         pointer_event.GetType() == WebInputEvent::Type::kPointerDown &&
          pointer_event_factory_.IsPrimary(pointer_event);
 }
 
@@ -418,7 +418,7 @@ PointerEventManager::ComputePointerEventTarget(
   // that will be capturing this event. |m_pointerCaptureTarget| may not
   // have this target yet since the processing of that will be done right
   // before firing the event.
-  if (web_pointer_event.GetType() == WebInputEvent::kPointerDown ||
+  if (web_pointer_event.GetType() == WebInputEvent::Type::kPointerDown ||
       !pending_pointer_capture_target_.Contains(pointer_id)) {
     HitTestRequest::HitTestRequestType hit_type =
         HitTestRequest::kTouchEvent | HitTestRequest::kReadOnly |
@@ -613,7 +613,7 @@ WebInputEventResult PointerEventManager::HandlePointerEvent(
     WebPointerEvent pointer_cancel_event;
     pointer_cancel_event.pointer_type = event.pointer_type;
     pointer_cancel_event.SetTimeStamp(event.TimeStamp());
-    pointer_cancel_event.SetType(WebInputEvent::kPointerCancel);
+    pointer_cancel_event.SetType(WebInputEvent::Type::kPointerCancel);
     touch_event_manager_->HandleTouchPoint(
         pointer_cancel_event, coalesced_events, pointer_event_target);
 
@@ -628,7 +628,7 @@ WebInputEventResult PointerEventManager::HandlePointerEvent(
   // For the rare case of multi-finger scenarios spanning documents, it
   // seems extremely unlikely to matter which document the gesture is
   // associated with so just pick the pointer event that comes.
-  if (event.GetType() == WebInputEvent::kPointerUp &&
+  if (event.GetType() == WebInputEvent::Type::kPointerUp &&
       !non_hovering_pointers_canceled_ && pointer_event_target.target_frame) {
     LocalFrame::NotifyUserActivation(pointer_event_target.target_frame);
   }
@@ -653,11 +653,11 @@ WebInputEventResult PointerEventManager::CreateAndDispatchPointerEvent(
   // TODO(crbug.com/665924): The following ifs skip the mouseover/leave cases,
   // we should fixed them when further merge the code path.
   if (mouse_event_name == event_type_names::kMousemove)
-    event_type = WebInputEvent::kPointerMove;
+    event_type = WebInputEvent::Type::kPointerMove;
   else if (mouse_event_name == event_type_names::kMousedown)
-    event_type = WebInputEvent::kPointerDown;
+    event_type = WebInputEvent::Type::kPointerDown;
   else if (mouse_event_name == event_type_names::kMouseup)
-    event_type = WebInputEvent::kPointerUp;
+    event_type = WebInputEvent::Type::kPointerUp;
   else
     return WebInputEventResult::kNotHandled;
 
@@ -721,9 +721,9 @@ WebInputEventResult PointerEventManager::SendMousePointerEvent(
     const Vector<WebMouseEvent>& coalesced_events,
     const Vector<WebMouseEvent>& predicted_events,
     bool skip_click_dispatch) {
-  DCHECK(event_type == WebInputEvent::kPointerDown ||
-         event_type == WebInputEvent::kPointerMove ||
-         event_type == WebInputEvent::kPointerUp);
+  DCHECK(event_type == WebInputEvent::Type::kPointerDown ||
+         event_type == WebInputEvent::Type::kPointerMove ||
+         event_type == WebInputEvent::Type::kPointerUp);
 
   const WebPointerEvent web_pointer_event(event_type, mouse_event);
   Vector<WebPointerEvent> pointer_coalesced_events;
@@ -748,10 +748,10 @@ WebInputEventResult PointerEventManager::SendMousePointerEvent(
                      WebInputEvent::Modifiers::kRelativeMotionEvent);
 
   // Fake events should only be move events.
-  DCHECK(!fake_event || event_type == WebInputEvent::kPointerMove);
+  DCHECK(!fake_event || event_type == WebInputEvent::Type::kPointerMove);
 
   // This is for when the mouse is released outside of the page.
-  if (!fake_event && event_type == WebInputEvent::kPointerMove &&
+  if (!fake_event && event_type == WebInputEvent::Type::kPointerMove &&
       !pointer_event->buttons()) {
     ReleasePointerCapture(pointer_event->pointerId());
     // Send got/lostpointercapture rightaway if necessary.
@@ -773,8 +773,8 @@ WebInputEventResult PointerEventManager::SendMousePointerEvent(
   Element* effective_target = GetEffectiveTargetForPointerEvent(
       pointer_event_target, pointer_event->pointerId());
 
-  if ((event_type == WebInputEvent::kPointerDown ||
-       event_type == WebInputEvent::kPointerUp) &&
+  if ((event_type == WebInputEvent::Type::kPointerDown ||
+       event_type == WebInputEvent::Type::kPointerUp) &&
       pointer_event->type() == event_type_names::kPointermove &&
       RuntimeEnabledFeatures::PointerRawUpdateEnabled() &&
       frame_->GetEventHandlerRegistry().HasEventHandlers(
@@ -800,7 +800,8 @@ WebInputEventResult PointerEventManager::SendMousePointerEvent(
   if (pointer_event->isPrimary() &&
       (!prevent_mouse_event_for_pointer_type_[ToPointerTypeIndex(
            mouse_event.pointer_type)] ||
-       (!skip_click_dispatch && event_type == WebInputEvent::kPointerUp))) {
+       (!skip_click_dispatch &&
+        event_type == WebInputEvent::Type::kPointerUp))) {
     Element* mouse_target = effective_target;
     // Event path could be null if the pointer event is not dispatched.
     if (!event_handling_util::IsInDocument(mouse_target) &&
@@ -823,7 +824,7 @@ WebInputEventResult PointerEventManager::SendMousePointerEvent(
               mouse_event, canvas_region_id, &last_mouse_position, nullptr));
     }
     if (!skip_click_dispatch && mouse_target &&
-        event_type == WebInputEvent::kPointerUp) {
+        event_type == WebInputEvent::Type::kPointerUp) {
       mouse_event_manager_->DispatchMouseClickIfNeeded(
           mouse_target, mouse_event, canvas_region_id,
           pointer_event->pointerId(), pointer_event->pointerType());
@@ -866,7 +867,7 @@ WebInputEventResult PointerEventManager::SendMousePointerEvent(
     }
   }
 
-  if (mouse_event.GetType() == WebInputEvent::kMouseLeave &&
+  if (mouse_event.GetType() == WebInputEvent::Type::kMouseLeave &&
       mouse_event.pointer_type == WebPointerProperties::PointerType::kPen) {
     pointer_event_factory_.Remove(pointer_event->pointerId());
   }

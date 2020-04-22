@@ -443,6 +443,10 @@ void BlobRegistryImpl::BlobUnderConstruction::TransportComplete(
   // try to delete |this| again afterwards.
   auto weak_this = weak_ptr_factory_.GetWeakPtr();
 
+  // Store the bad_message_callback_, so we can invoke it if needed, after
+  // notifying about the blob being finished.
+  auto bad_message_callback = std::move(bad_message_callback_);
+
   // The blob might no longer have any references, in which case it may no
   // longer exist. If that happens just skip calling Complete.
   // TODO(mek): Stop building sooner if a blob is no longer referenced.
@@ -456,7 +460,7 @@ void BlobRegistryImpl::BlobUnderConstruction::TransportComplete(
     // BlobTransportStrategy might have already reported a BadMessage on the
     // BytesProvider binding, but just to be safe, also report one on the
     // BlobRegistry binding itself.
-    std::move(bad_message_callback_)
+    std::move(bad_message_callback)
         .Run("Received invalid data while transporting blob");
   }
   if (weak_this)

@@ -27,6 +27,7 @@ source_set("lib") {
     "//content/public/common:common_sources",
     "//device/base",
     "//device/vr:vr",
+    "//device/vr:vr_base",
     "//device/vr/public/mojom",
     "//device/vr/public/mojom:test_mojom",
   ]

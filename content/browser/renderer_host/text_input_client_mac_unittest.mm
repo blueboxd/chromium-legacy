@@ -11,15 +11,19 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/frame_token_message_queue.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
+#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
-#include "content/browser/renderer_host/text_input_client_message_filter.h"
 #include "content/common/text_input_client_messages.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/browser_task_environment.h"
+#include "content/public/test/fake_local_frame.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
+#include "content/public/test/test_renderer_host.h"
 #include "content/test/mock_widget_impl.h"
 #include "ipc/ipc_test_sink.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -49,35 +53,55 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
   void SelectAll() override {}
 };
 
+// Stub out local frame mojo binding. Intercepts calls for text input
+// and marks the message as received. This class attaches to the first
+// RenderFrameHostImpl created.
+class TextInputClientLocalFrame : public content::FakeLocalFrame,
+                                  public WebContentsObserver {
+ public:
+  explicit TextInputClientLocalFrame(WebContents* web_contents)
+      : WebContentsObserver(web_contents) {}
+
+  void RenderFrameCreated(RenderFrameHost* render_frame_host) override {
+    if (!initialized_) {
+      initialized_ = true;
+      Init(render_frame_host->GetRemoteAssociatedInterfaces());
+    }
+  }
+
+  void GetCharacterIndexAtPoint(const gfx::Point& point) override {
+    if (completion_callback_)
+      std::move(completion_callback_).Run();
+  }
+
+  void SetCallback(base::OnceClosure callback) {
+    completion_callback_ = std::move(callback);
+  }
+
+ private:
+  bool initialized_ = false;
+  base::OnceClosure completion_callback_;
+};
+
 // This test does not test the WebKit side of the dictionary system (which
 // performs the actual data fetching), but rather this just tests that the
 // service's signaling system works.
-class TextInputClientMacTest : public testing::Test {
+class TextInputClientMacTest : public content::RenderViewHostTestHarness {
  public:
-  TextInputClientMacTest()
-      : browser_context_(),
-        process_factory_(),
-        delegate_(),
-        thread_("TextInputClientMacTestThread") {
-    RenderProcessHost* rph =
-        process_factory_.CreateRenderProcessHost(&browser_context_, nullptr);
-    int32_t routing_id = rph->GetNextRoutingID();
-    mojo::PendingRemote<mojom::Widget> widget;
-    mock_widget_impl_ = std::make_unique<MockWidgetImpl>(
-        widget.InitWithNewPipeAndPassReceiver());
+  TextInputClientMacTest() : thread_("TextInputClientMacTestThread") {}
 
-    widget_.reset(new RenderWidgetHostImpl(
-        &delegate_, rph, routing_id, std::move(widget), /*hidden=*/false,
-        std::make_unique<FrameTokenMessageQueue>()));
+  void SetUp() override {
+    content::RenderViewHostTestHarness::SetUp();
+    local_frame_ = std::make_unique<TextInputClientLocalFrame>(web_contents());
+    RenderViewHostTester::For(rvh())->CreateTestRenderView(
+        base::string16(), MSG_ROUTING_NONE, MSG_ROUTING_NONE, false);
+    widget_ = rvh()->GetWidget();
+    FocusWebContentsOnMainFrame();
   }
 
   void TearDown() override {
-    // |widget_| needs to be cleared before flushing the message loop, otherwise
-    // |widgets_|'s destructor calls MockRenderProcessHost::Cleanup, it
-    // schedules the MRPH deletion, and then MockRenderProcessHostFactory also
-    // deletes the MRPH before scheduled MRPH deletion is invoked.
-    widget_.reset();
     base::RunLoop().RunUntilIdle();
+    RenderViewHostTestHarness::TearDown();
   }
 
   // Accessor for the TextInputClientMac instance.
@@ -99,7 +123,8 @@ class TextInputClientMacTest : public testing::Test {
                                            std::move(task), delay);
   }
 
-  RenderWidgetHostImpl* widget() { return widget_.get(); }
+  RenderWidgetHost* widget() { return widget_; }
+  TextInputClientLocalFrame* local_frame() { return local_frame_.get(); }
 
   IPC::TestSink& ipc_sink() {
     return static_cast<MockRenderProcessHost*>(widget()->GetProcess())->sink();
@@ -108,16 +133,8 @@ class TextInputClientMacTest : public testing::Test {
  private:
   friend class ScopedTestingThread;
 
-  // ThreadPool is used by RenderWidgetHostImpl constructor.
-  BrowserTaskEnvironment task_environment_;
-
-  TestBrowserContext browser_context_;
-
-  // Gets deleted when the last RWH in the "process" gets destroyed.
-  MockRenderProcessHostFactory process_factory_;
-  MockRenderWidgetHostDelegate delegate_;
-  std::unique_ptr<RenderWidgetHostImpl> widget_;
-  std::unique_ptr<MockWidgetImpl> mock_widget_impl_;
+  RenderWidgetHost* widget_;
+  std::unique_ptr<TextInputClientLocalFrame> local_frame_;
 
   base::Thread thread_;
 };
@@ -139,13 +156,6 @@ class ScopedTestingThread {
   base::Thread& thread_;
 };
 
-// Adapter for OnMessageReceived to ignore return type so it can be posted
-// to a MessageLoop.
-void CallOnMessageReceived(scoped_refptr<TextInputClientMessageFilter> filter,
-                           const IPC::Message& message) {
-  filter->OnMessageReceived(message);
-}
-
 }  // namespace
 
 // Test Cases //////////////////////////////////////////////////////////////////
@@ -157,22 +167,23 @@ TEST_F(TextInputClientMacTest, GetCharacterIndex) {
   PostTask(FROM_HERE,
            base::BindOnce(&TextInputClientMac::SetCharacterIndexAndSignal,
                           base::Unretained(service()), kSuccessValue));
+  base::RunLoop run_loop;
+  local_frame()->SetCallback(run_loop.QuitClosure());
   NSUInteger index = service()->GetCharacterIndexAtPoint(
       widget(), gfx::Point(2, 2));
 
-  EXPECT_EQ(1U, ipc_sink().message_count());
-  EXPECT_TRUE(ipc_sink().GetUniqueMessageMatching(
-      TextInputClientMsg_CharacterIndexForPoint::ID));
   EXPECT_EQ(kSuccessValue, index);
+  run_loop.Run();
 }
 
 TEST_F(TextInputClientMacTest, TimeoutCharacterIndex) {
+  base::RunLoop run_loop;
+  local_frame()->SetCallback(run_loop.QuitClosure());
   uint32_t index =
       service()->GetCharacterIndexAtPoint(widget(), gfx::Point(2, 2));
-  EXPECT_EQ(1U, ipc_sink().message_count());
-  EXPECT_TRUE(ipc_sink().GetUniqueMessageMatching(
-      TextInputClientMsg_CharacterIndexForPoint::ID));
+
   EXPECT_EQ(UINT32_MAX, index);
+  run_loop.Run();
 }
 
 TEST_F(TextInputClientMacTest, NotFoundCharacterIndex) {
@@ -184,33 +195,30 @@ TEST_F(TextInputClientMacTest, NotFoundCharacterIndex) {
            base::BindOnce(&TextInputClientMac::SetCharacterIndexAndSignal,
                           base::Unretained(service()), kPreviousValue));
 
-  scoped_refptr<TextInputClientMessageFilter> filter(
-      new TextInputClientMessageFilter());
-  std::unique_ptr<IPC::Message> message(
-      new TextInputClientReplyMsg_GotCharacterIndexForPoint(
-          widget()->GetRoutingID(), UINT32_MAX));
-  // Set |WTF::notFound| to the index |kTaskDelayMs| after the previous
-  // setting.
-  PostTask(FROM_HERE, base::BindOnce(&CallOnMessageReceived, filter, *message),
+  // Set UINT32_MAX to the index |kTaskDelayMs| after the previous setting.
+  PostTask(FROM_HERE,
+           base::BindOnce(&TextInputClientMac::SetCharacterIndexAndSignal,
+                          base::Unretained(service()), UINT32_MAX),
            base::TimeDelta::FromMilliseconds(kTaskDelayMs) * 2);
 
+  base::RunLoop run_loop1;
+  local_frame()->SetCallback(run_loop1.QuitClosure());
   uint32_t index =
       service()->GetCharacterIndexAtPoint(widget(), gfx::Point(2, 2));
+  run_loop1.Run();
   EXPECT_EQ(kPreviousValue, index);
-  index = service()->GetCharacterIndexAtPoint(widget(), gfx::Point(2, 2));
-  EXPECT_EQ(UINT32_MAX, index);
 
-  EXPECT_EQ(2U, ipc_sink().message_count());
-  for (size_t i = 0; i < ipc_sink().message_count(); ++i) {
-    const IPC::Message* ipc_message = ipc_sink().GetMessageAt(i);
-    EXPECT_EQ(ipc_message->type(),
-              TextInputClientMsg_CharacterIndexForPoint::ID);
-  }
+  base::RunLoop run_loop2;
+  local_frame()->SetCallback(run_loop2.QuitClosure());
+  index = service()->GetCharacterIndexAtPoint(widget(), gfx::Point(2, 2));
+  run_loop2.Run();
+  EXPECT_EQ(UINT32_MAX, index);
 }
 
 TEST_F(TextInputClientMacTest, GetRectForRange) {
   ScopedTestingThread thread(this);
   const gfx::Rect kSuccessValue(42, 43, 44, 45);
+  size_t current_count = ipc_sink().message_count();
 
   PostTask(FROM_HERE,
            base::BindOnce(&TextInputClientMac::SetFirstRectAndSignal,
@@ -218,16 +226,17 @@ TEST_F(TextInputClientMacTest, GetRectForRange) {
   gfx::Rect rect =
       service()->GetFirstRectForRange(widget(), gfx::Range(NSMakeRange(0, 32)));
 
-  EXPECT_EQ(1U, ipc_sink().message_count());
+  EXPECT_EQ(1U, ipc_sink().message_count() - current_count);
   EXPECT_TRUE(ipc_sink().GetUniqueMessageMatching(
       TextInputClientMsg_FirstRectForCharacterRange::ID));
   EXPECT_EQ(kSuccessValue, rect);
 }
 
 TEST_F(TextInputClientMacTest, TimeoutRectForRange) {
+  size_t current_count = ipc_sink().message_count();
   gfx::Rect rect =
       service()->GetFirstRectForRange(widget(), gfx::Range(NSMakeRange(0, 32)));
-  EXPECT_EQ(1U, ipc_sink().message_count());
+  EXPECT_EQ(1U, ipc_sink().message_count() - current_count);
   EXPECT_TRUE(ipc_sink().GetUniqueMessageMatching(
       TextInputClientMsg_FirstRectForCharacterRange::ID));
   EXPECT_EQ(gfx::Rect(), rect);

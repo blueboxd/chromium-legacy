@@ -1254,14 +1254,6 @@ void WizardController::OnPackagedLicenseScreenExit(
 }
 
 void WizardController::OnOobeFlowFinished() {
-  if (!time_oobe_started_.is_null()) {
-    base::TimeDelta delta = base::Time::Now() - time_oobe_started_;
-    UMA_HISTOGRAM_CUSTOM_TIMES("OOBE.BootToSignInCompleted", delta,
-                               base::TimeDelta::FromMilliseconds(10),
-                               base::TimeDelta::FromMinutes(30), 100);
-    time_oobe_started_ = base::Time();
-  }
-
   SetCurrentScreen(nullptr);
 
   // Launch browser and delete login host controller.
@@ -1580,7 +1572,6 @@ void WizardController::AdvanceToScreen(OobeScreenId screen_id) {
     ShowSupervisionTransitionScreen();
   } else if (screen_id != OobeScreen::SCREEN_TEST_NO_WINDOW) {
     if (is_out_of_box_) {
-      time_oobe_started_ = base::Time::Now();
       if (CanShowHIDDetectionScreen()) {
         hid_screen_ = GetScreen(HIDDetectionView::kScreenId);
         base::Callback<void(bool)> on_check =

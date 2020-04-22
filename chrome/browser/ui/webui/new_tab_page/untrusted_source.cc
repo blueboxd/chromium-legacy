@@ -34,7 +34,9 @@ std::string FormatTemplate(int resource_id,
   base::RefCountedMemory* bytes = bundle.LoadDataResourceBytes(resource_id);
   base::StringPiece string_piece(reinterpret_cast<const char*>(bytes->front()),
                                  bytes->size());
-  return ui::ReplaceTemplateExpressions(string_piece, replacements);
+  return ui::ReplaceTemplateExpressions(
+      string_piece, replacements,
+      /* skip_unexpected_placeholder_check= */ true);
 }
 
 std::string ReadBackgroundImageData(const base::FilePath& profile_path) {

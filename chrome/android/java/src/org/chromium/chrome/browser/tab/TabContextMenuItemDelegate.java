@@ -228,12 +228,7 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
 
     @Override
     public void onOpenImageInNewTab(String url, Referrer referrer) {
-        boolean useOriginal = isSpdyProxyEnabledForUrl(url);
         LoadUrlParams loadUrlParams = new LoadUrlParams(url);
-        loadUrlParams.setVerbatimHeaders(useOriginal
-                        ? DataReductionProxySettings.getInstance()
-                                  .getDataReductionProxyPassThroughHeader()
-                        : null);
         loadUrlParams.setReferrer(referrer);
         mTab.getActivity().getTabModelSelector().openNewTab(
                 loadUrlParams, TabLaunchType.FROM_LONGPRESS_BACKGROUND, mTab, isIncognito());

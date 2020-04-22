@@ -286,11 +286,11 @@ bool DevToolsEventForwarder::ForwardEvent(
     const content::NativeWebKeyboardEvent& event) {
   std::string event_type;
   switch (event.GetType()) {
-    case WebInputEvent::kKeyDown:
-    case WebInputEvent::kRawKeyDown:
+    case WebInputEvent::Type::kKeyDown:
+    case WebInputEvent::Type::kRawKeyDown:
       event_type = kKeyDownEventName;
       break;
-    case WebInputEvent::kKeyUp:
+    case WebInputEvent::Type::kKeyUp:
       event_type = kKeyUpEventName;
       break;
     default:

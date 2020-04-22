@@ -1521,8 +1521,8 @@ local void fill_window_c(deflate_state *s);
 
 local void fill_window(deflate_state *s)
 {
-#ifdef ADLER32_SIMD_SSSE3
-    if (x86_cpu_enable_simd) {
+#ifdef DEFLATE_FILL_WINDOW_SSE2
+    if (x86_cpu_enable_sse2) {
         fill_window_sse(s);
         return;
     }

@@ -270,8 +270,8 @@ bool BrowserFrameMac::ExecuteCommand(
     // https://crbug.com/836947.
     // The function IsReservedCommandOrKey does not examine its event argument
     // on macOS.
-    content::NativeWebKeyboardEvent dummy_event(blink::WebInputEvent::kKeyDown,
-                                                0, base::TimeTicks());
+    content::NativeWebKeyboardEvent dummy_event(
+        blink::WebInputEvent::Type::kKeyDown, 0, base::TimeTicks());
     if (!browser->command_controller()->IsReservedCommandOrKey(command,
                                                                dummy_event)) {
       return false;

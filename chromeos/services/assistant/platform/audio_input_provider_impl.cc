@@ -4,7 +4,7 @@
 
 #include "chromeos/services/assistant/platform/audio_input_provider_impl.h"
 
-#include "chromeos/services/assistant/public/features.h"
+#include "chromeos/services/assistant/public/cpp/features.h"
 
 namespace chromeos {
 namespace assistant {

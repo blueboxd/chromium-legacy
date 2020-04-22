@@ -207,7 +207,7 @@ void SyntheticSmoothMoveGesture::ForwardMouseWheelInputEvents(
           if (!params_.prevent_fling && (params_.fling_velocity_x != 0 ||
                                          params_.fling_velocity_y != 0)) {
             ForwardFlingGestureEvent(
-                target, blink::WebGestureEvent::kGestureFlingStart);
+                target, blink::WebGestureEvent::Type::kGestureFlingStart);
           } else {
             // Forward a wheel event with phase ended and zero deltas.
             ForwardMouseWheelEvent(target, gfx::Vector2d(),

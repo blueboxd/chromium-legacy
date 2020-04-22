@@ -7,6 +7,7 @@ module media.mojom;
 import "media/learning/mojo/public/mojom/learning_task_controller.mojom";
 import "media/mojo/mojom/media_types.mojom";
 import "media/mojo/mojom/video_decode_stats_recorder.mojom";
+import "media/mojo/mojom/playback_events_recorder.mojom";
 import "media/mojo/mojom/watch_time_recorder.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
@@ -64,8 +65,13 @@ interface MediaMetricsProvider {
 
   // Returns a LearningTaskController for the given |taskName|.
   AcquireLearningTaskController(
-    string taskName,
-    pending_receiver<media.learning.mojom.LearningTaskController> controller);
+      string taskName,
+      pending_receiver<media.learning.mojom.LearningTaskController> controller);
+
+  // Returns a PlaybackEventsRecorder instance. Implementation may drop the
+  // |receiver| if it's not interested in recording playback events.
+  AcquirePlaybackEventsRecorder(
+       pending_receiver<PlaybackEventsRecorder> receiver);
 
   // Can be called multiple times to set properties about a playback.
   SetHasAudio(AudioCodec codec);

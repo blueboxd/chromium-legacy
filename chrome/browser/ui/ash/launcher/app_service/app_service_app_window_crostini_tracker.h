@@ -34,7 +34,6 @@ class AppServiceAppWindowCrostiniTracker {
 
   void OnWindowVisibilityChanged(aura::Window* window,
                                  const std::string& shelf_app_id);
-  void OnWindowDestroying(const std::string& app_id, aura::Window* window);
 
   // A Crostini app with |app_id| is requested to launch on display with
   // |display_id|.
@@ -57,12 +56,6 @@ class AppServiceAppWindowCrostiniTracker {
   // windows can activate themselves.
   base::flat_map<aura::Window*, std::unique_ptr<exo::Permission>>
       activation_permissions_;
-
-  // These two member variables track an app restart request. When
-  // app_id_to_restart_ is not empty the controller observes that app and
-  // relaunches it when all of its windows are closed.
-  std::string app_id_to_restart_;
-  int64_t display_id_to_restart_in_ = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_ASH_LAUNCHER_APP_SERVICE_APP_SERVICE_APP_WINDOW_CROSTINI_TRACKER_H_

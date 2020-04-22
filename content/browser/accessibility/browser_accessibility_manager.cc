@@ -1517,7 +1517,8 @@ void BrowserAccessibilityManager::CacheHitTestResult(
   last_hover_bounds_ = hit_test_result->GetClippedScreenBoundsRect();
 }
 
-void BrowserAccessibilityManager::OnPortalActivated() {
+void BrowserAccessibilityManager::DidActivatePortal(
+    WebContents* predecessor_contents) {
   if (GetTreeData().loaded) {
     FireGeneratedEvent(ui::AXEventGenerator::Event::PORTAL_ACTIVATED,
                        GetRoot());

@@ -1086,6 +1086,8 @@ if (!is_android) {
       "../browser/prefs/pref_service_browsertest.cc",
       "../browser/prefs/tracked/pref_hash_browsertest.cc",
       "../browser/prerender/isolated/isolated_prerender_browsertest.cc",
+      "../browser/prerender/isolated/isolated_prerender_test_utils.cc",
+      "../browser/prerender/isolated/isolated_prerender_test_utils.h",
       "../browser/prerender/prerender_browsertest.cc",
       "../browser/prerender/prerender_nostate_prefetch_browsertest.cc",
       "../browser/prerender/prerender_test_utils.cc",

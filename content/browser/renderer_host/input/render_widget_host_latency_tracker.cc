@@ -28,8 +28,8 @@ using ui::LatencyInfo;
 namespace content {
 namespace {
 const char* GetTraceNameFromType(blink::WebInputEvent::Type type) {
-#define CASE_TYPE(t)        \
-  case WebInputEvent::k##t: \
+#define CASE_TYPE(t)              \
+  case WebInputEvent::Type::k##t: \
     return "InputLatency::" #t
   switch (type) {
     CASE_TYPE(Undefined);
@@ -162,7 +162,7 @@ void RenderWidgetHostLatencyTracker::OnInputEvent(
 
   OnEventStart(latency);
 
-  if (event.GetType() == WebInputEvent::kTouchStart) {
+  if (event.GetType() == WebInputEvent::Type::kTouchStart) {
     const WebTouchEvent& touch_event =
         *static_cast<const WebTouchEvent*>(&event);
     DCHECK_GE(touch_event.touches_length, static_cast<unsigned>(1));
@@ -170,8 +170,8 @@ void RenderWidgetHostLatencyTracker::OnInputEvent(
   }
 
   if (latency->source_event_type() == ui::SourceEventType::KEY_PRESS) {
-    DCHECK(event.GetType() == WebInputEvent::kChar ||
-           event.GetType() == WebInputEvent::kRawKeyDown);
+    DCHECK(event.GetType() == WebInputEvent::Type::kChar ||
+           event.GetType() == WebInputEvent::Type::kRawKeyDown);
   }
 
   // This is the only place to add the BEGIN_RWH component. So this component
@@ -201,9 +201,10 @@ void RenderWidgetHostLatencyTracker::OnInputEvent(
       ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
       GetTraceNameFromType(event.GetType()));
 
-  if (event.GetType() == blink::WebInputEvent::kGestureScrollBegin) {
+  if (event.GetType() == blink::WebInputEvent::Type::kGestureScrollBegin) {
     has_seen_first_gesture_scroll_update_ = false;
-  } else if (event.GetType() == blink::WebInputEvent::kGestureScrollUpdate) {
+  } else if (event.GetType() ==
+             blink::WebInputEvent::Type::kGestureScrollUpdate) {
     // Make a copy of the INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT with a
     // different name INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT.
     // So we can track the latency specifically for scroll update events.
@@ -243,11 +244,11 @@ void RenderWidgetHostLatencyTracker::OnInputEventAck(
   if (WebInputEvent::IsTouchEventType(event.GetType())) {
     const WebTouchEvent& touch_event =
         *static_cast<const WebTouchEvent*>(&event);
-    if (event.GetType() == WebInputEvent::kTouchStart) {
+    if (event.GetType() == WebInputEvent::Type::kTouchStart) {
       touch_start_default_prevented_ =
           ack_result == blink::mojom::InputEventResultState::kConsumed;
-    } else if (event.GetType() == WebInputEvent::kTouchEnd ||
-               event.GetType() == WebInputEvent::kTouchCancel) {
+    } else if (event.GetType() == WebInputEvent::Type::kTouchEnd ||
+               event.GetType() == WebInputEvent::Type::kTouchCancel) {
       active_multi_finger_gesture_ = touch_event.touches_length > 2;
     }
   }
@@ -257,7 +258,7 @@ void RenderWidgetHostLatencyTracker::OnInputEventAck(
   // terminate it as well. We also exclude cases where we're against the scroll
   // extent from scrolling metrics.
   if (!rendering_scheduled || latency->coalesced() ||
-      (event.GetType() == WebInputEvent::kGestureScrollUpdate &&
+      (event.GetType() == WebInputEvent::Type::kGestureScrollUpdate &&
        ack_result == blink::mojom::InputEventResultState::kNoConsumerExists)) {
     latency->Terminate();
   }

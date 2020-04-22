@@ -376,10 +376,6 @@ class WizardController {
   // acceptance until the Sign-In screen is displayed.
   base::Time time_eula_accepted_;
 
-  // Time when OOBE was started. Used to measure the total time from boot to
-  // user Sign-In completed.
-  base::Time time_oobe_started_;
-
   // Whether OOBE has yet been marked as completed.
   bool oobe_marked_completed_ = false;
 

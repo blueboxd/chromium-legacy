@@ -17,6 +17,13 @@ constexpr char kDefaultGetQueryTilePath[] = "/v1/querytiles";
 // Default state of QueryTile feature.
 constexpr bool kDefaultQueryTileState = false;
 
+// Default expire duration.
+constexpr base::TimeDelta kDefaultExpireDuration =
+    base::TimeDelta::FromHours(48);
+
+// Default locale string.
+constexpr char kDefaultLocale[] = "en-US";
+
 const GURL BuildGetQueryTileURL(const GURL& base_url, const char* path) {
   GURL::Replacements replacements;
   replacements.SetPathStr(path);
@@ -25,21 +32,23 @@ const GURL BuildGetQueryTileURL(const GURL& base_url, const char* path) {
 
 }  // namespace
 
-std::unique_ptr<QueryTilesConfig> QueryTilesConfig::Create() {
-  return std::make_unique<QueryTilesConfig>();
+std::unique_ptr<TileConfig> TileConfig::Create() {
+  return std::make_unique<TileConfig>();
 }
 
-std::unique_ptr<QueryTilesConfig> QueryTilesConfig::CreateFromFinch() {
+std::unique_ptr<TileConfig> TileConfig::CreateFromFinch() {
   // TODO(hesen): Implement reading parameters from Finch.
-  return std::make_unique<QueryTilesConfig>();
+  return std::make_unique<TileConfig>();
 }
 
-QueryTilesConfig::QueryTilesConfig()
+TileConfig::TileConfig()
     : is_enabled(kDefaultQueryTileState),
       base_url(GURL(kDefaultBaseURL)),
       get_query_tile_url(
-          BuildGetQueryTileURL(base_url, kDefaultGetQueryTilePath)) {}
+          BuildGetQueryTileURL(base_url, kDefaultGetQueryTilePath)),
+      expire_duration(kDefaultExpireDuration),
+      locale(kDefaultLocale) {}
 
-QueryTilesConfig::~QueryTilesConfig() = default;
+TileConfig::~TileConfig() = default;
 
 }  // namespace upboarding

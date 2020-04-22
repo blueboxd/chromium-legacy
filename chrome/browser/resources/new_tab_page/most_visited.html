@@ -174,9 +174,8 @@
   <cr-dialog id="dialog" on-close="onDialogClose_">
     <div slot="title">[[dialogTitle_]]</div>
     <div slot="body">
-      <cr-input id="dialogInputName" class$="[[dialogTileTitleDirectionClass_]]"
-          label="$i18n{nameField}" value="{{dialogTileTitle_}}"
-          spellcheck="false" autofocus></cr-input>
+      <cr-input id="dialogInputName" label="$i18n{nameField}"
+          value="{{dialogTileTitle_}}" spellcheck="false" autofocus></cr-input>
       <cr-input id="dialogInputUrl" label="$i18n{urlField}"
           value="{{dialogTileUrl_}}" invalid="[[dialogTileUrlInvalid_]]"
           error-message="$i18n{invalidUrl}" spellcheck="false" type="url">

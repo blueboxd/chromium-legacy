@@ -206,7 +206,7 @@ bool PluginInstanceThrottlerImpl::ConsumeInputEvent(
     return false;
 
   if (state_ != THROTTLER_STATE_MARKED_ESSENTIAL &&
-      event.GetType() == blink::WebInputEvent::kMouseUp &&
+      event.GetType() == blink::WebInputEvent::Type::kMouseUp &&
       (event.GetModifiers() & blink::WebInputEvent::kLeftButtonDown)) {
     bool was_throttled = IsThrottled();
     MarkPluginEssential(UNTHROTTLE_METHOD_BY_CLICK);

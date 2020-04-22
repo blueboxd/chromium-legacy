@@ -112,7 +112,7 @@ class TextPaintTimingDetectorTest : public testing::Test {
   }
 
   void SimulateKeyUp() {
-    GetPaintTimingDetector().NotifyInputEvent(WebInputEvent::kKeyUp);
+    GetPaintTimingDetector().NotifyInputEvent(WebInputEvent::Type::kKeyUp);
   }
 
   void InvokeCallback() {

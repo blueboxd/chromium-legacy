@@ -49,13 +49,13 @@ void SendEvent(Scrollbar* scrollbar,
       blink::WebInputEvent::kScrollbarManipulationHandledOnCompositorThread,
       base::TimeTicks::Now());
   switch (type) {
-    case blink::WebInputEvent::kMouseDown:
+    case blink::WebInputEvent::Type::kMouseDown:
       scrollbar->MouseDown(web_mouse_event);
       break;
-    case blink::WebInputEvent::kMouseMove:
+    case blink::WebInputEvent::Type::kMouseMove:
       scrollbar->MouseMoved(web_mouse_event);
       break;
-    case blink::WebInputEvent::kMouseUp:
+    case blink::WebInputEvent::Type::kMouseUp:
       scrollbar->MouseUp(web_mouse_event);
       break;
     default:
@@ -149,13 +149,16 @@ TEST_F(ScrollbarThemeAuraTest, ScrollbarPartsInvalidationTest) {
   scrollbar->ClearTrackNeedsRepaint();
 
   // Tests that mousedown on the thumb causes an invalidation.
-  SendEvent(scrollbar, blink::WebInputEvent::kMouseMove, gfx::PointF(10, 20));
-  SendEvent(scrollbar, blink::WebInputEvent::kMouseDown, gfx::PointF(10, 20));
+  SendEvent(scrollbar, blink::WebInputEvent::Type::kMouseMove,
+            gfx::PointF(10, 20));
+  SendEvent(scrollbar, blink::WebInputEvent::Type::kMouseDown,
+            gfx::PointF(10, 20));
   EXPECT_TRUE(scrollbar->ThumbNeedsRepaint());
 
   // Tests that mouseup on the thumb causes an invalidation.
   scrollbar->ClearThumbNeedsRepaint();
-  SendEvent(scrollbar, blink::WebInputEvent::kMouseUp, gfx::PointF(10, 20));
+  SendEvent(scrollbar, blink::WebInputEvent::Type::kMouseUp,
+            gfx::PointF(10, 20));
   EXPECT_TRUE(scrollbar->ThumbNeedsRepaint());
 
   // Note that, since these tests run with the assumption that the compositor
@@ -189,13 +192,16 @@ TEST_F(ScrollbarThemeAuraTest, ScrollbarPartsInvalidationTest) {
 
   // Tests that mousedown on the arrow causes an invalidation.
   scrollbar->ClearTrackNeedsRepaint();
-  SendEvent(scrollbar, blink::WebInputEvent::kMouseMove, gfx::PointF(10, 760));
-  SendEvent(scrollbar, blink::WebInputEvent::kMouseDown, gfx::PointF(10, 760));
+  SendEvent(scrollbar, blink::WebInputEvent::Type::kMouseMove,
+            gfx::PointF(10, 760));
+  SendEvent(scrollbar, blink::WebInputEvent::Type::kMouseDown,
+            gfx::PointF(10, 760));
   EXPECT_TRUE(scrollbar->TrackNeedsRepaint());
 
   // Tests that mouseup on the arrow causes an invalidation.
   scrollbar->ClearTrackNeedsRepaint();
-  SendEvent(scrollbar, blink::WebInputEvent::kMouseUp, gfx::PointF(10, 760));
+  SendEvent(scrollbar, blink::WebInputEvent::Type::kMouseUp,
+            gfx::PointF(10, 760));
   EXPECT_TRUE(scrollbar->TrackNeedsRepaint());
 
   ThreadState::Current()->CollectAllGarbageForTesting();

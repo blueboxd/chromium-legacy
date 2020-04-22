@@ -158,7 +158,7 @@ void InputScrollElasticityController::ObserveGestureEventAndResult(
   base::TimeTicks event_timestamp = gesture_event.TimeStamp();
 
   switch (gesture_event.GetType()) {
-    case blink::WebInputEvent::kGestureScrollBegin: {
+    case blink::WebInputEvent::Type::kGestureScrollBegin: {
       received_overscroll_update_ = false;
       overscroll_behavior_ = cc::OverscrollBehavior();
       if (gesture_event.data.scroll_begin.synthetic)
@@ -175,7 +175,7 @@ void InputScrollElasticityController::ObserveGestureEventAndResult(
       ObserveRealScrollBegin(enter_momentum, leave_momentum);
       break;
     }
-    case blink::WebInputEvent::kGestureScrollUpdate: {
+    case blink::WebInputEvent::Type::kGestureScrollUpdate: {
       gfx::Vector2dF event_delta(-gesture_event.data.scroll_update.delta_x,
                                  -gesture_event.data.scroll_update.delta_y);
       bool has_momentum = gesture_event.data.scroll_update.inertial_phase ==
@@ -185,7 +185,7 @@ void InputScrollElasticityController::ObserveGestureEventAndResult(
                           has_momentum);
       break;
     }
-    case blink::WebInputEvent::kGestureScrollEnd: {
+    case blink::WebInputEvent::Type::kGestureScrollEnd: {
       if (gesture_event.data.scroll_end.synthetic)
         return;
       ObserveRealScrollEnd(event_timestamp);

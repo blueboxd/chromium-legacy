@@ -195,9 +195,9 @@ void WebApps::LoadIcon(const std::string& app_id,
   DCHECK(provider_);
 
   if (icon_key) {
-    LoadIconFromWebApp(
-        provider_->icon_manager(), icon_compression, size_hint_in_dip, app_id,
-        static_cast<IconEffects>(icon_key->icon_effects), std::move(callback));
+    LoadIconFromWebApp(profile_, icon_compression, size_hint_in_dip, app_id,
+                       static_cast<IconEffects>(icon_key->icon_effects),
+                       std::move(callback));
     return;
   }
   // On failure, we still run the callback, with the zero IconValue.

@@ -28,6 +28,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManager;
+import org.chromium.chrome.browser.ui.messages.infobar.SimpleConfirmInfoBarBuilder;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
@@ -109,8 +110,9 @@ public class InfoBarContainerTest {
 
         final TestListener testListener = new TestListener();
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
-            SimpleConfirmInfoBarBuilder.create(mActivityTestRule.getActivity().getActivityTab(),
-                    testListener, InfoBarIdentifier.TEST_INFOBAR, 0, MESSAGE_TEXT, null, null, null,
+            SimpleConfirmInfoBarBuilder.create(
+                    mActivityTestRule.getActivity().getActivityTab().getWebContents(), testListener,
+                    InfoBarIdentifier.TEST_INFOBAR, null, 0, MESSAGE_TEXT, null, null, null,
                     expires);
         });
         mListener.addInfoBarAnimationFinished("InfoBar not added.");

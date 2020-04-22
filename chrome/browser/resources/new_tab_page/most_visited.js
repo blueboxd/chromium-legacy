@@ -96,9 +96,6 @@ class MostVisitedElement extends PolymerElement {
       dialogTileTitle_: String,
 
       /** @private */
-      dialogTileTitleDirectionClass_: String,
-
-      /** @private */
       dialogTileUrl_: String,
 
       /** @private */
@@ -484,7 +481,6 @@ class MostVisitedElement extends PolymerElement {
   onAdd_() {
     this.dialogTitle_ = loadTimeData.getString('addLinkTitle');
     this.dialogTileTitle_ = '';
-    this.dialogTileTitleDirectionClass_ = '';
     this.dialogTileUrl_ = '';
     this.dialogTileUrlInvalid_ = false;
     this.adding_ = true;
@@ -585,8 +581,6 @@ class MostVisitedElement extends PolymerElement {
     this.dialogTitle_ = loadTimeData.getString('editLinkTitle');
     const tile = this.tiles_[this.actionMenuTargetIndex_];
     this.dialogTileTitle_ = tile.title;
-    this.dialogTileTitleDirectionClass_ =
-        this.getTileTitleDirectionClass_(tile);
     this.dialogTileUrl_ = tile.url.url;
     this.dialogTileUrlInvalid_ = false;
     this.$.dialog.showModal();

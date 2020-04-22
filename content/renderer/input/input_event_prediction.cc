@@ -65,9 +65,9 @@ void InputEventPrediction::HandleEvents(
     blink::WebCoalescedInputEvent& coalesced_event,
     base::TimeTicks frame_time) {
   switch (coalesced_event.Event().GetType()) {
-    case WebInputEvent::kMouseMove:
-    case WebInputEvent::kTouchMove:
-    case WebInputEvent::kPointerMove: {
+    case WebInputEvent::Type::kMouseMove:
+    case WebInputEvent::Type::kTouchMove:
+    case WebInputEvent::Type::kPointerMove: {
       size_t coalesced_size = coalesced_event.CoalescedEventSize();
       for (size_t i = 0; i < coalesced_size; i++)
         UpdatePrediction(coalesced_event.CoalescedEvent(i));
@@ -78,8 +78,8 @@ void InputEventPrediction::HandleEvents(
       AddPredictedEvents(coalesced_event);
       break;
     }
-    case WebInputEvent::kTouchScrollStarted:
-    case WebInputEvent::kPointerCausedUaAction:
+    case WebInputEvent::Type::kTouchScrollStarted:
+    case WebInputEvent::Type::kPointerCausedUaAction:
       pointer_id_predictor_map_.clear();
       break;
     default:
@@ -94,16 +94,17 @@ std::unique_ptr<ui::InputPredictor> InputEventPrediction::CreatePredictor()
 
 void InputEventPrediction::UpdatePrediction(const WebInputEvent& event) {
   if (WebInputEvent::IsTouchEventType(event.GetType())) {
-    DCHECK(event.GetType() == WebInputEvent::kTouchMove);
+    DCHECK(event.GetType() == WebInputEvent::Type::kTouchMove);
     const WebTouchEvent& touch_event = static_cast<const WebTouchEvent&>(event);
     for (unsigned i = 0; i < touch_event.touches_length; ++i) {
-      if (touch_event.touches[i].state == blink::WebTouchPoint::kStateMoved) {
+      if (touch_event.touches[i].state ==
+          blink::WebTouchPoint::State::kStateMoved) {
         UpdateSinglePointer(touch_event.touches[i], touch_event.TimeStamp());
       }
     }
   } else {
-    DCHECK(event.GetType() == WebInputEvent::kMouseMove ||
-           event.GetType() == WebInputEvent::kPointerMove);
+    DCHECK(event.GetType() == WebInputEvent::Type::kMouseMove ||
+           event.GetType() == WebInputEvent::Type::kPointerMove);
     UpdateSinglePointer(*ToWebPointerProperties(&event), event.TimeStamp());
   }
   last_event_timestamp_ = event.TimeStamp();
@@ -114,10 +115,11 @@ void InputEventPrediction::ApplyResampling(base::TimeTicks frame_time,
   base::TimeDelta prediction_delta = frame_time - event->TimeStamp();
   base::TimeTicks predict_time;
 
-  if (event->GetType() == WebInputEvent::kTouchMove) {
+  if (event->GetType() == WebInputEvent::Type::kTouchMove) {
     WebTouchEvent* touch_event = static_cast<WebTouchEvent*>(event);
     for (unsigned i = 0; i < touch_event->touches_length; ++i) {
-      if (touch_event->touches[i].state == blink::WebTouchPoint::kStateMoved) {
+      if (touch_event->touches[i].state ==
+          blink::WebTouchPoint::State::kStateMoved) {
         if (auto* predictor = GetPredictor(touch_event->touches[i])) {
           // When resampling, we don't want to predict too far away because the
           // result will likely be inaccurate in that case. We then cut off the
@@ -149,9 +151,10 @@ void InputEventPrediction::ResetPredictor(const WebInputEvent& event) {
   if (WebInputEvent::IsTouchEventType(event.GetType())) {
     const WebTouchEvent& touch_event = static_cast<const WebTouchEvent&>(event);
     for (unsigned i = 0; i < touch_event.touches_length; ++i) {
-      if (touch_event.touches[i].state != blink::WebTouchPoint::kStateMoved &&
+      if (touch_event.touches[i].state !=
+              blink::WebTouchPoint::State::kStateMoved &&
           touch_event.touches[i].state !=
-              blink::WebTouchPoint::kStateStationary)
+              blink::WebTouchPoint::State::kStateStationary)
         pointer_id_predictor_map_.erase(touch_event.touches[i].id);
     }
   } else if (WebInputEvent::IsMouseEventType(event.GetType())) {
@@ -170,7 +173,7 @@ void InputEventPrediction::AddPredictedEvents(
   while (success) {
     ui::WebScopedInputEvent predicted_event = coalesced_event.Event().Clone();
     success = false;
-    if (predicted_event->GetType() == WebInputEvent::kTouchMove) {
+    if (predicted_event->GetType() == WebInputEvent::Type::kTouchMove) {
       WebTouchEvent& touch_event =
           static_cast<WebTouchEvent&>(*predicted_event);
       // Average all touch intervals
@@ -183,7 +186,7 @@ void InputEventPrediction::AddPredictedEvents(
       if (predict_time <= max_prediction_timestamp) {
         for (unsigned i = 0; i < touch_event.touches_length; ++i) {
           if (touch_event.touches[i].state ==
-              blink::WebTouchPoint::kStateMoved) {
+              blink::WebTouchPoint::State::kStateMoved) {
             success =
                 GetPointerPrediction(predict_time, &touch_event.touches[i]);
           }

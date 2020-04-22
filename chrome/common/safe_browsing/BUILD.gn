@@ -7,10 +7,7 @@ import("//components/safe_browsing/buildflags.gni")
 import("//third_party/protobuf/proto_library.gni")
 
 proto_library("proto") {
-  sources = [
-    "client_model.proto",
-    "crx_info.proto",
-  ]
+  sources = [ "crx_info.proto" ]
 }
 
 if (is_win) {

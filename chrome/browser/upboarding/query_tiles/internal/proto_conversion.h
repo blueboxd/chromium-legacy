@@ -6,27 +6,25 @@
 #define CHROME_BROWSER_UPBOARDING_QUERY_TILES_INTERNAL_PROTO_CONVERSION_H_
 
 #include "chrome/browser/upboarding/query_tiles/internal/tile_group.h"
-#include "chrome/browser/upboarding/query_tiles/proto/query_tile_entry.pb.h"
-#include "chrome/browser/upboarding/query_tiles/query_tile_entry.h"
+#include "chrome/browser/upboarding/query_tiles/proto/tile.pb.h"
+#include "chrome/browser/upboarding/query_tiles/tile.h"
 
 namespace upboarding {
 
-// Converts a QueryTileEntry to proto.
-void QueryTileEntryToProto(
-    upboarding::QueryTileEntry* entry,
-    upboarding::query_tiles::proto::QueryTileEntry* proto);
+// Converts a Tile to proto.
+void TileToProto(upboarding::Tile* entry,
+                 upboarding::query_tiles::proto::Tile* proto);
 
-// Converts a proto to QueryTileEntry.
-void QueryTileEntryFromProto(
-    upboarding::query_tiles::proto::QueryTileEntry* proto,
-    upboarding::QueryTileEntry* entry);
+// Converts a proto to Tile.
+void TileFromProto(upboarding::query_tiles::proto::Tile* proto,
+                   upboarding::Tile* entry);
 
 // Converts a TileGroup to proto.
 void TileGroupToProto(TileGroup* group,
-                      upboarding::query_tiles::proto::QueryTileGroup* proto);
+                      upboarding::query_tiles::proto::TileGroup* proto);
 
 // Converts a proto to TileGroup.
-void TileGroupFromProto(upboarding::query_tiles::proto::QueryTileGroup* proto,
+void TileGroupFromProto(upboarding::query_tiles::proto::TileGroup* proto,
                         TileGroup* group);
 
 }  // namespace upboarding

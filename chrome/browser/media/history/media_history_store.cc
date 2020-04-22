@@ -654,6 +654,7 @@ void MediaHistoryStore::StoreMediaFeedFetchResult(
 
   int item_play_next_count = 0;
   int item_content_types = 0;
+  int item_safe_count = 0;
 
   for (auto& item : items) {
     // Save each item to the table.
@@ -670,13 +671,20 @@ void MediaHistoryStore::StoreMediaFeedFetchResult(
       item_play_next_count++;
     }
 
+    // If the item is marked as safe then we should add it to the safe count.
+    if (item->safe_search_result ==
+        media_feeds::mojom::SafeSearchResult::kSafe) {
+      item_safe_count++;
+    }
+
     item_content_types |= static_cast<int>(item->type);
   }
 
   // Update the metadata associated with this feed.
   if (!feeds_table_->UpdateFeedFromFetch(
           feed_id, result, was_fetched_from_cache, items.size(),
-          item_play_next_count, item_content_types, logos, display_name)) {
+          item_play_next_count, item_content_types, logos, display_name,
+          item_safe_count)) {
     DB()->RollbackTransaction();
     return;
   }
@@ -715,11 +723,24 @@ void MediaHistoryStore::StoreMediaFeedItemSafeSearchResults(
     return;
   }
 
-  if (!feed_items_table_)
+  if (!feeds_table_ || !feed_items_table_)
     return;
 
+  std::set<int64_t> feed_ids;
   for (auto& entry : results) {
-    if (!feed_items_table_->StoreSafeSearchResult(entry.first, entry.second)) {
+    auto feed_id =
+        feed_items_table_->StoreSafeSearchResult(entry.first, entry.second);
+
+    if (!feed_id.has_value()) {
+      DB()->RollbackTransaction();
+      return;
+    }
+
+    feed_ids.insert(*feed_id);
+  }
+
+  for (auto& feed_id : feed_ids) {
+    if (!feeds_table_->RecalculateSafeSearchItemCount(feed_id)) {
       DB()->RollbackTransaction();
       return;
     }

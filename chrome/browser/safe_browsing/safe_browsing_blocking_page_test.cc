@@ -1930,7 +1930,7 @@ class SafeBrowsingBlockingPageDelayedWarningBrowserTest
         browser->tab_strip_model()->GetActiveWebContents();
     content::TestNavigationObserver observer(contents);
     content::NativeWebKeyboardEvent event(
-        blink::WebKeyboardEvent::kRawKeyDown,
+        blink::WebKeyboardEvent::Type::kRawKeyDown,
         blink::WebInputEvent::kNoModifiers,
         blink::WebInputEvent::GetStaticTimeStampForTests());
     event.text[0] = 'a';
@@ -1944,7 +1944,8 @@ class SafeBrowsingBlockingPageDelayedWarningBrowserTest
 
   static void MouseClick(Browser* browser) {
     blink::WebMouseEvent event(
-        blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kNoModifiers,
+        blink::WebInputEvent::Type::kMouseDown,
+        blink::WebInputEvent::kNoModifiers,
         blink::WebInputEvent::GetStaticTimeStampForTests());
     event.button = blink::WebMouseEvent::Button::kLeft;
     event.SetPositionInWidget(100, 100);

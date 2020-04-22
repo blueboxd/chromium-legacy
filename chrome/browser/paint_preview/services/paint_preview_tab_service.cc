@@ -26,8 +26,6 @@ namespace paint_preview {
 
 namespace {
 
-constexpr size_t kMaxPerCaptureSizeBytes = 5 * 1000L * 1000L;  // 5 MB.
-
 #if defined(OS_ANDROID)
 void JavaBooleanCallbackAdapter(base::OnceCallback<void(bool)> callback,
                                 PaintPreviewTabService::Status status) {
@@ -206,7 +204,7 @@ void PaintPreviewTabService::CaptureTabInternal(
     return;
   }
   CapturePaintPreview(
-      contents, file_path.value(), gfx::Rect(), kMaxPerCaptureSizeBytes,
+      contents, file_path.value(), gfx::Rect(0, 0, 0, 0),
       base::BindOnce(&PaintPreviewTabService::OnCaptured,
                      weak_ptr_factory_.GetWeakPtr(), tab_id, key,
                      frame_tree_node_id, std::move(callback)));

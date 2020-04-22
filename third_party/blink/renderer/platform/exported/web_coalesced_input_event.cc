@@ -112,7 +112,7 @@ WebCoalescedInputEvent::MakeWebScopedInputEvent(
     return WebScopedInputEvent(new blink::WebTouchEvent(
         static_cast<const blink::WebTouchEvent&>(event)));
   }
-  if (event.GetType() == blink::WebInputEvent::kMouseWheel) {
+  if (event.GetType() == blink::WebInputEvent::Type::kMouseWheel) {
     return WebScopedInputEvent(new blink::WebMouseWheelEvent(
         static_cast<const blink::WebMouseWheelEvent&>(event)));
   }

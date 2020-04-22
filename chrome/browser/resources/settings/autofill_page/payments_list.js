@@ -7,13 +7,26 @@
  * cards etc.) to be shown in the settings page.
  */
 
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import '../settings_shared_css.m.js';
+import './passwords_shared_css.js';
+import './upi_id_list_entry.js';
+
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {loadTimeData} from '../i18n_setup.m.js';
+
+import {CreditCardEntry} from './credit_card_list_entry.js';
+
 Polymer({
   is: 'settings-payments-list',
+
+  _template: html`{__html_template__}`,
 
   properties: {
     /**
      * An array of all saved credit cards.
-     * @type {!Array<!settings.CreditCardEntry>}
+     * @type {!Array<!CreditCardEntry>}
      */
     creditCards: Array,
 

@@ -422,23 +422,24 @@ void LayoutShiftTracker::NotifyInput(const WebInputEvent& event) {
   const WebInputEvent::Type type = event.GetType();
   const bool saw_pointerdown = pointerdown_pending_data_.saw_pointerdown;
   const bool pointerdown_became_tap =
-      saw_pointerdown && type == WebInputEvent::kPointerUp;
+      saw_pointerdown && type == WebInputEvent::Type::kPointerUp;
   const bool event_type_stops_pointerdown_buffering =
-      type == WebInputEvent::kPointerUp ||
-      type == WebInputEvent::kPointerCausedUaAction ||
-      type == WebInputEvent::kPointerCancel;
+      type == WebInputEvent::Type::kPointerUp ||
+      type == WebInputEvent::Type::kPointerCausedUaAction ||
+      type == WebInputEvent::Type::kPointerCancel;
 
   // Only non-hovering pointerdown requires buffering.
   const bool is_hovering_pointerdown =
-      type == WebInputEvent::kPointerDown &&
+      type == WebInputEvent::Type::kPointerDown &&
       static_cast<const WebPointerEvent&>(event).hovering;
 
   const bool should_trigger_shift_exclusion =
-      type == WebInputEvent::kMouseDown || type == WebInputEvent::kKeyDown ||
-      type == WebInputEvent::kRawKeyDown ||
+      type == WebInputEvent::Type::kMouseDown ||
+      type == WebInputEvent::Type::kKeyDown ||
+      type == WebInputEvent::Type::kRawKeyDown ||
       // We need to explicitly include tap, as if there are no listeners, we
       // won't receive the pointer events.
-      type == WebInputEvent::kGestureTap || is_hovering_pointerdown ||
+      type == WebInputEvent::Type::kGestureTap || is_hovering_pointerdown ||
       pointerdown_became_tap;
 
   if (should_trigger_shift_exclusion) {
@@ -455,7 +456,7 @@ void LayoutShiftTracker::NotifyInput(const WebInputEvent& event) {
       ReportShift(score_delta, pointerdown_pending_data_.weighted_score_delta);
     pointerdown_pending_data_ = PointerdownPendingData();
   }
-  if (type == WebInputEvent::kPointerDown && !is_hovering_pointerdown)
+  if (type == WebInputEvent::Type::kPointerDown && !is_hovering_pointerdown)
     pointerdown_pending_data_.saw_pointerdown = true;
 }
 

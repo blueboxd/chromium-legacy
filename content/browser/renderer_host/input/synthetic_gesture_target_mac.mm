@@ -96,7 +96,7 @@ void SyntheticGestureTargetMac::DispatchWebGestureEventToPlatform(
                                                     toView:nil];
 
     switch (web_gesture.GetType()) {
-      case WebInputEvent::kGesturePinchBegin: {
+      case WebInputEvent::Type::kGesturePinchBegin: {
         id cocoa_event =
             [SyntheticPinchEvent eventWithMagnification:0.0f
                                        locationInWindow:location_in_window
@@ -105,7 +105,7 @@ void SyntheticGestureTargetMac::DispatchWebGestureEventToPlatform(
                          isSyntheticallyInjected:YES];
         return;
       }
-      case WebInputEvent::kGesturePinchEnd: {
+      case WebInputEvent::Type::kGesturePinchEnd: {
         id cocoa_event =
             [SyntheticPinchEvent eventWithMagnification:0.0f
                                        locationInWindow:location_in_window
@@ -113,7 +113,7 @@ void SyntheticGestureTargetMac::DispatchWebGestureEventToPlatform(
         [cocoa_view_ handleEndGestureWithEvent:cocoa_event];
         return;
       }
-      case WebInputEvent::kGesturePinchUpdate: {
+      case WebInputEvent::Type::kGesturePinchUpdate: {
         id cocoa_event = [SyntheticPinchEvent
             eventWithMagnification:web_gesture.data.pinch_update.scale - 1.0f
                   locationInWindow:location_in_window

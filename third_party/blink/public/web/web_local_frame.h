@@ -406,11 +406,6 @@ class WebLocalFrame : public WebFrame {
                                           unsigned length,
                                           WebRect&) const = 0;
 
-  // Returns the index of a character in the Frame's text stream at the given
-  // point. The point is in the viewport coordinate space. Will return
-  // WTF::notFound if the point is invalid.
-  virtual size_t CharacterIndexForPoint(const gfx::Point&) const = 0;
-
   // Supports commands like Undo, Redo, Cut, Copy, Paste, SelectAll,
   // Unselect, etc. See EditorCommand.cpp for the full list of supported
   // commands.

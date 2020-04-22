@@ -59,7 +59,7 @@ TEST_F(AutoscrollControllerTest,
   DCHECK(scrollable);
   DCHECK(scrollable->GetLayoutObject());
 
-  WebMouseEvent event(WebInputEvent::kMouseDown, gfx::PointF(5, 5),
+  WebMouseEvent event(WebInputEvent::Type::kMouseDown, gfx::PointF(5, 5),
                       gfx::PointF(5, 5), WebPointerProperties::Button::kLeft, 0,
                       WebInputEvent::Modifiers::kLeftButtonDown,
                       base::TimeTicks::Now());
@@ -111,7 +111,7 @@ TEST_F(AutoscrollControllerTest, ContinueAutoscrollAfterMouseLeaveEvent) {
 
   EXPECT_TRUE(controller.IsAutoscrolling());
 
-  WebMouseEvent mouse_leave_event(WebInputEvent::kMouseLeave,
+  WebMouseEvent mouse_leave_event(WebInputEvent::Type::kMouseLeave,
                                   WebInputEvent::kNoModifiers,
                                   base::TimeTicks::Now());
   mouse_leave_event.SetFrameScale(1);
@@ -153,7 +153,7 @@ TEST_F(AutoscrollControllerTest, StopAutoscrollOnResize) {
   // possible
   WebView().MainFrameWidget()->Resize(WebSize(840, 640));
 
-  WebMouseEvent mouse_move_event(WebInputEvent::kMouseMove,
+  WebMouseEvent mouse_move_event(WebInputEvent::Type::kMouseMove,
                                  WebInputEvent::kNoModifiers,
                                  base::TimeTicks::Now());
 
@@ -166,7 +166,7 @@ TEST_F(AutoscrollControllerTest, StopAutoscrollOnResize) {
   // again
   WebView().MainFrameWidget()->Resize(WebSize(800, 600));
 
-  WebMouseEvent mouse_move_event2(WebInputEvent::kMouseMove,
+  WebMouseEvent mouse_move_event2(WebInputEvent::Type::kMouseMove,
                                   WebInputEvent::kNoModifiers,
                                   base::TimeTicks::Now());
 

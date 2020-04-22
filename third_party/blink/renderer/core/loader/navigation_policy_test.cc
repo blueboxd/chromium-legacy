@@ -48,7 +48,7 @@ class NavigationPolicyTest : public testing::Test {
   NavigationPolicy GetPolicyForCreateWindow(int modifiers,
                                             WebMouseEvent::Button button,
                                             bool as_popup) {
-    WebMouseEvent event(WebInputEvent::kMouseUp, modifiers,
+    WebMouseEvent event(WebInputEvent::Type::kMouseUp, modifiers,
                         WebInputEvent::GetStaticTimeStampForTests());
     event.button = button;
     if (as_popup)
@@ -82,7 +82,7 @@ class NavigationPolicyTest : public testing::Test {
                                       WebMouseEvent::Button button,
                                       int user_modifiers,
                                       WebMouseEvent::Button user_button) {
-    WebMouseEvent event(WebInputEvent::kMouseUp, user_modifiers,
+    WebMouseEvent event(WebInputEvent::Type::kMouseUp, user_modifiers,
                         WebInputEvent::GetStaticTimeStampForTests());
     event.button = user_button;
     base::AutoReset<const WebInputEvent*> current_event_change(

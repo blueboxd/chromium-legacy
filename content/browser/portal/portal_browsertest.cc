@@ -403,10 +403,10 @@ IN_PROC_BROWSER_TEST_F(PortalHitTestBrowserTest, DispatchInputEvent) {
   gfx::Point root_location =
       portal_view->TransformPointToRootCoordSpace(gfx::Point(5, 5));
   InputEventAckWaiter waiter(main_frame->GetRenderWidgetHost(),
-                             blink::WebInputEvent::kMouseDown);
-  SimulateRoutedMouseEvent(web_contents_impl, blink::WebInputEvent::kMouseDown,
-                           blink::WebPointerProperties::Button::kLeft,
-                           root_location);
+                             blink::WebInputEvent::Type::kMouseDown);
+  SimulateRoutedMouseEvent(
+      web_contents_impl, blink::WebInputEvent::Type::kMouseDown,
+      blink::WebPointerProperties::Button::kLeft, root_location);
   waiter.Wait();
 
   // Check that the click event was only received by the main frame.
@@ -483,10 +483,10 @@ IN_PROC_BROWSER_TEST_F(PortalHitTestBrowserTest, NoInputToOOPIFInPortal) {
   gfx::Point root_location =
       oopif_view->TransformPointToRootCoordSpace(gfx::Point(5, 5));
   InputEventAckWaiter waiter(main_frame->GetRenderWidgetHost(),
-                             blink::WebInputEvent::kMouseDown);
-  SimulateRoutedMouseEvent(web_contents_impl, blink::WebInputEvent::kMouseDown,
-                           blink::WebPointerProperties::Button::kLeft,
-                           root_location);
+                             blink::WebInputEvent::Type::kMouseDown);
+  SimulateRoutedMouseEvent(
+      web_contents_impl, blink::WebInputEvent::Type::kMouseDown,
+      blink::WebPointerProperties::Button::kLeft, root_location);
   waiter.Wait();
 
   // Check that the click event was only received by the main frame.
@@ -598,9 +598,9 @@ IN_PROC_BROWSER_TEST_F(PortalHitTestBrowserTest,
   gfx::Point root_location =
       oopif_view->TransformPointToRootCoordSpace(gfx::Point(10, 10));
   InputEventAckWaiter waiter(oopif->GetRenderWidgetHost(),
-                             blink::WebInputEvent::kMouseDown);
+                             blink::WebInputEvent::Type::kMouseDown);
   SimulateRoutedMouseEvent(
-      shell()->web_contents(), blink::WebInputEvent::kMouseDown,
+      shell()->web_contents(), blink::WebInputEvent::Type::kMouseDown,
       blink::WebPointerProperties::Button::kLeft, root_location);
   waiter.Wait();
 

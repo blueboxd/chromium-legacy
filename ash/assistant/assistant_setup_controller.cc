@@ -8,12 +8,10 @@
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/assistant/util/i18n_util.h"
-#include "ash/public/cpp/assistant/controller/assistant_controller.h"
-#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
-#include "chromeos/services/assistant/public/features.h"
+#include "chromeos/services/assistant/public/cpp/features.h"
 
 namespace {
 
@@ -27,12 +25,10 @@ namespace ash {
 AssistantSetupController::AssistantSetupController(
     AssistantControllerImpl* assistant_controller)
     : assistant_controller_(assistant_controller) {
-  assistant_controller_->AddObserver(this);
+  assistant_controller_observer_.Add(AssistantController::Get());
 }
 
-AssistantSetupController::~AssistantSetupController() {
-  assistant_controller_->RemoveObserver(this);
-}
+AssistantSetupController::~AssistantSetupController() = default;
 
 void AssistantSetupController::OnAssistantControllerConstructed() {
   assistant_controller_->view_delegate()->AddObserver(this);

@@ -773,6 +773,36 @@ TEST_F(BlobRegistryImplTest, Register_ValidBytesAsReply) {
   EXPECT_EQ(0u, BlobsUnderConstruction());
 }
 
+TEST_F(BlobRegistryImplTest, Register_InvalidBytesAsReply) {
+  const std::string kId = "id";
+  const std::string kData = "hello";
+
+  std::vector<blink::mojom::DataElementPtr> elements;
+  elements.push_back(
+      blink::mojom::DataElement::NewBytes(blink::mojom::DataElementBytes::New(
+          kData.size(), base::nullopt, CreateBytesProvider(""))));
+
+  mojo::PendingRemote<blink::mojom::Blob> blob;
+  EXPECT_TRUE(registry_->Register(blob.InitWithNewPipeAndPassReceiver(), kId,
+                                  "", "", std::move(elements)));
+
+  std::unique_ptr<BlobDataHandle> handle = context_->GetBlobDataFromUUID(kId);
+  WaitForBlobCompletion(handle.get());
+
+  EXPECT_TRUE(handle->IsBroken());
+  ASSERT_EQ(BlobStatus::ERR_INVALID_CONSTRUCTION_ARGUMENTS,
+            handle->GetBlobStatus());
+
+  EXPECT_EQ(1u, reply_request_count_);
+  EXPECT_EQ(0u, stream_request_count_);
+  EXPECT_EQ(0u, file_request_count_);
+  EXPECT_EQ(0u, BlobsUnderConstruction());
+
+  // Expect 2 bad messages, one for the bad reply by the bytes provider, and one
+  // for the original register call.
+  EXPECT_EQ(2u, bad_messages_.size());
+}
+
 TEST_F(BlobRegistryImplTest, Register_ValidBytesAsStream) {
   const std::string kId = "id";
   const std::string kData =

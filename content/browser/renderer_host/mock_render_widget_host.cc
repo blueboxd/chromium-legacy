@@ -102,7 +102,7 @@ MockRenderWidgetHost::MockRenderWidgetHost(
       new_content_rendering_timeout_fired_(false),
       widget_impl_(std::move(widget_impl)),
       fling_scheduler_(std::make_unique<FlingScheduler>(this)) {
-  acked_touch_event_type_ = blink::WebInputEvent::kUndefined;
+  acked_touch_event_type_ = blink::WebInputEvent::Type::kUndefined;
 }
 
 }  // namespace content

@@ -1020,6 +1020,8 @@
   },
   'gin_unittests': {
     'remove_from': [
+      'Fuchsia ARM64',  # https://crbug.com/1072861
+      'Fuchsia x64',  # https://crbug.com/1072861
       'ToTLinuxASan',  # https://crbug.com/831667
       'Linux ASan LSan Tests (1)',  # https://crbug.com/831667
       'Linux Chromium OS ASan LSan Tests (1)',  # https://crbug.com/831667
@@ -1322,6 +1324,12 @@
         },
       },
     },
+  },
+  'media_blink_unittests': {
+    'remove_from': [
+      'Fuchsia ARM64',  # https://crbug.com/1072861
+      'Fuchsia x64',  # https://crbug.com/1072861
+    ],
   },
   'media_unittests': {
     'modifications': {

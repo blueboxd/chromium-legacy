@@ -40,7 +40,10 @@ Tile::Tile(TileManager* tile_manager,
       can_use_lcd_text_(can_use_lcd_text),
       id_(tile_manager->GetUniqueTileId()),
       invalidated_id_(0),
-      scheduled_priority_(0) {}
+      scheduled_priority_(0) {
+  raster_rects_.push_back(
+      std::make_pair(info.content_rect, info.raster_transform));
+}
 
 Tile::~Tile() {
   TRACE_EVENT_OBJECT_DELETED_WITH_ID(

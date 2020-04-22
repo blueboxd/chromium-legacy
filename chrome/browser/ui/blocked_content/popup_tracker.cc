@@ -136,7 +136,7 @@ void PopupTracker::DidGetUserInteraction(
   // but the initial ctrl key press is registered as a kRawKeyDown.
   num_interactions_++;
 
-  if (type == blink::WebInputEvent::kGestureScrollBegin) {
+  if (type == blink::WebInputEvent::Type::kGestureScrollBegin) {
     num_gesture_scroll_begin_events_++;
   } else {
     num_activation_events_++;

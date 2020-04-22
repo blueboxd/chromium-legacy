@@ -16,12 +16,12 @@ class PendingUserInputMonitorTest : public testing::Test {
 
 // Sanity check for discrete/continuous queues.
 TEST_F(PendingUserInputMonitorTest, QueuingSimple) {
-  monitor_.OnEnqueue(WebInputEvent::kMouseDown, {});
-  monitor_.OnEnqueue(WebInputEvent::kMouseMove, {});
-  monitor_.OnEnqueue(WebInputEvent::kMouseUp, {});
-  monitor_.OnDequeue(WebInputEvent::kMouseDown, {});
-  monitor_.OnDequeue(WebInputEvent::kMouseMove, {});
-  monitor_.OnDequeue(WebInputEvent::kMouseUp, {});
+  monitor_.OnEnqueue(WebInputEvent::Type::kMouseDown, {});
+  monitor_.OnEnqueue(WebInputEvent::Type::kMouseMove, {});
+  monitor_.OnEnqueue(WebInputEvent::Type::kMouseUp, {});
+  monitor_.OnDequeue(WebInputEvent::Type::kMouseDown, {});
+  monitor_.OnDequeue(WebInputEvent::Type::kMouseMove, {});
+  monitor_.OnDequeue(WebInputEvent::Type::kMouseUp, {});
 }
 
 // Basic test of continuous and discrete event detection.
@@ -34,49 +34,49 @@ TEST_F(PendingUserInputMonitorTest, EventDetection) {
   EXPECT_EQ(monitor_.Info(true).size(), 0U);
 
   // Verify that an event with invalid attribution is ignored.
-  monitor_.OnEnqueue(WebInputEvent::kKeyDown, {});
+  monitor_.OnEnqueue(WebInputEvent::Type::kKeyDown, {});
   EXPECT_EQ(monitor_.Info(false).size(), 0U);
   EXPECT_EQ(monitor_.Info(true).size(), 0U);
 
   // Discrete events with a unique attribution should increment the attribution
   // count.
-  monitor_.OnEnqueue(WebInputEvent::kMouseDown, focus);
+  monitor_.OnEnqueue(WebInputEvent::Type::kMouseDown, focus);
   EXPECT_EQ(monitor_.Info(false).size(), 1U);
   EXPECT_EQ(monitor_.Info(true).size(), 1U);
 
   // Multiple enqueued events with the same attribution target should not
   // return the attribution twice.
-  monitor_.OnEnqueue(WebInputEvent::kMouseUp, focus);
+  monitor_.OnEnqueue(WebInputEvent::Type::kMouseUp, focus);
   EXPECT_EQ(monitor_.Info(false).size(), 1U);
   EXPECT_EQ(monitor_.Info(true).size(), 1U);
 
   // Events with new attribution information should return a new attribution
   // (in this case, continuous).
-  monitor_.OnEnqueue(WebInputEvent::kMouseMove, frame);
+  monitor_.OnEnqueue(WebInputEvent::Type::kMouseMove, frame);
   EXPECT_EQ(monitor_.Info(false).size(), 1U);
   EXPECT_EQ(monitor_.Info(true).size(), 2U);
 
-  monitor_.OnEnqueue(WebInputEvent::kKeyDown, frame);
+  monitor_.OnEnqueue(WebInputEvent::Type::kKeyDown, frame);
   EXPECT_EQ(monitor_.Info(false).size(), 2U);
   EXPECT_EQ(monitor_.Info(true).size(), 2U);
 
-  monitor_.OnDequeue(WebInputEvent::kKeyDown, {});
+  monitor_.OnDequeue(WebInputEvent::Type::kKeyDown, {});
   EXPECT_EQ(monitor_.Info(false).size(), 2U);
   EXPECT_EQ(monitor_.Info(true).size(), 2U);
 
-  monitor_.OnDequeue(WebInputEvent::kMouseDown, focus);
+  monitor_.OnDequeue(WebInputEvent::Type::kMouseDown, focus);
   EXPECT_EQ(monitor_.Info(false).size(), 2U);
   EXPECT_EQ(monitor_.Info(true).size(), 2U);
 
-  monitor_.OnDequeue(WebInputEvent::kMouseUp, focus);
-  EXPECT_EQ(monitor_.Info(false).size(), 1U);
-  EXPECT_EQ(monitor_.Info(true).size(), 1U);
-
-  monitor_.OnDequeue(WebInputEvent::kMouseMove, frame);
+  monitor_.OnDequeue(WebInputEvent::Type::kMouseUp, focus);
   EXPECT_EQ(monitor_.Info(false).size(), 1U);
   EXPECT_EQ(monitor_.Info(true).size(), 1U);
 
-  monitor_.OnDequeue(WebInputEvent::kKeyDown, frame);
+  monitor_.OnDequeue(WebInputEvent::Type::kMouseMove, frame);
+  EXPECT_EQ(monitor_.Info(false).size(), 1U);
+  EXPECT_EQ(monitor_.Info(true).size(), 1U);
+
+  monitor_.OnDequeue(WebInputEvent::Type::kKeyDown, frame);
   EXPECT_EQ(monitor_.Info(false).size(), 0U);
   EXPECT_EQ(monitor_.Info(true).size(), 0U);
 }

@@ -126,7 +126,7 @@ int InspectTool::GetDataResourceId() {
 bool InspectTool::HandleInputEvent(LocalFrameView* frame_view,
                                    const WebInputEvent& input_event,
                                    bool* swallow_next_mouse_up) {
-  if (input_event.GetType() == WebInputEvent::kGestureTap) {
+  if (input_event.GetType() == WebInputEvent::Type::kGestureTap) {
     // We only have a use for gesture tap.
     WebGestureEvent transformed_event = TransformWebGestureEvent(
         frame_view, static_cast<const WebGestureEvent&>(input_event));
@@ -155,13 +155,13 @@ bool InspectTool::HandleInputEvent(LocalFrameView* frame_view,
 
 bool InspectTool::HandleMouseEvent(const WebMouseEvent& mouse_event,
                                    bool* swallow_next_mouse_up) {
-  if (mouse_event.GetType() == WebInputEvent::kMouseMove)
+  if (mouse_event.GetType() == WebInputEvent::Type::kMouseMove)
     return HandleMouseMove(mouse_event);
 
-  if (mouse_event.GetType() == WebInputEvent::kMouseDown)
+  if (mouse_event.GetType() == WebInputEvent::Type::kMouseDown)
     return HandleMouseDown(mouse_event, swallow_next_mouse_up);
 
-  if (mouse_event.GetType() == WebInputEvent::kMouseUp)
+  if (mouse_event.GetType() == WebInputEvent::Type::kMouseUp)
     return HandleMouseUp(mouse_event);
 
   return false;
@@ -714,7 +714,7 @@ void InspectorOverlayAgent::DispatchBufferedTouchEvents() {
 
 WebInputEventResult InspectorOverlayAgent::HandleInputEvent(
     const WebInputEvent& input_event) {
-  if (input_event.GetType() == WebInputEvent::kMouseUp &&
+  if (input_event.GetType() == WebInputEvent::Type::kMouseUp &&
       swallow_next_mouse_up_) {
     swallow_next_mouse_up_ = false;
     return WebInputEventResult::kHandledSuppressed;
@@ -742,7 +742,7 @@ WebInputEventResult InspectorOverlayAgent::HandleInputEvent(
   }
 
   // Exit tool upon unhandled Esc.
-  if (input_event.GetType() == WebInputEvent::kRawKeyDown) {
+  if (input_event.GetType() == WebInputEvent::Type::kRawKeyDown) {
     const WebKeyboardEvent& keyboard_event =
         static_cast<const WebKeyboardEvent&>(input_event);
     if (keyboard_event.windows_key_code == VKEY_ESCAPE) {
@@ -751,7 +751,7 @@ WebInputEventResult InspectorOverlayAgent::HandleInputEvent(
     }
   }
 
-  if (input_event.GetType() == WebInputEvent::kMouseMove &&
+  if (input_event.GetType() == WebInputEvent::Type::kMouseMove &&
       inspect_tool_->HideOnMouseMove()) {
     PickTheRightTool();
   }
@@ -761,14 +761,14 @@ WebInputEventResult InspectorOverlayAgent::HandleInputEvent(
 
 WebInputEventResult InspectorOverlayAgent::HandleInputEventInOverlay(
     const WebInputEvent& input_event) {
-  if (input_event.GetType() == WebInputEvent::kGestureTap) {
+  if (input_event.GetType() == WebInputEvent::Type::kGestureTap) {
     return OverlayMainFrame()->GetEventHandler().HandleGestureEvent(
         static_cast<const WebGestureEvent&>(input_event));
   }
 
   if (WebInputEvent::IsMouseEventType(input_event.GetType())) {
     WebMouseEvent mouse_event = static_cast<const WebMouseEvent&>(input_event);
-    if (mouse_event.GetType() == WebInputEvent::kMouseMove) {
+    if (mouse_event.GetType() == WebInputEvent::Type::kMouseMove) {
       return OverlayMainFrame()->GetEventHandler().HandleMouseMoveEvent(
           mouse_event,
           TransformWebMouseEventVector(frame_impl_->GetFrameView(),
@@ -776,11 +776,11 @@ WebInputEventResult InspectorOverlayAgent::HandleInputEventInOverlay(
           TransformWebMouseEventVector(frame_impl_->GetFrameView(),
                                        WebVector<const WebInputEvent*>()));
     }
-    if (mouse_event.GetType() == WebInputEvent::kMouseDown) {
+    if (mouse_event.GetType() == WebInputEvent::Type::kMouseDown) {
       return OverlayMainFrame()->GetEventHandler().HandleMousePressEvent(
           mouse_event);
     }
-    if (mouse_event.GetType() == WebInputEvent::kMouseUp) {
+    if (mouse_event.GetType() == WebInputEvent::Type::kMouseUp) {
       return OverlayMainFrame()->GetEventHandler().HandleMouseReleaseEvent(
           mouse_event);
     }
@@ -798,7 +798,7 @@ WebInputEventResult InspectorOverlayAgent::HandleInputEventInOverlay(
         static_cast<const WebKeyboardEvent&>(input_event));
   }
 
-  if (input_event.GetType() == WebInputEvent::kMouseWheel) {
+  if (input_event.GetType() == WebInputEvent::Type::kMouseWheel) {
     return OverlayMainFrame()->GetEventHandler().HandleWheelEvent(
         static_cast<const WebMouseWheelEvent&>(input_event));
   }

@@ -25,6 +25,9 @@ const base::Feature kCornerShortcuts{"CornerShortcuts",
 const base::Feature kContextualNudges{"ContextualNudges",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kDisplayAlignAssist{"DisplayAlignAssist",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kDisplayChangeModal{"DisplayChangeModal",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -256,6 +259,9 @@ bool IsWebUITabStripTabDragIntegrationEnabled() {
   return base::FeatureList::IsEnabled(kWebUITabStripTabDragIntegration);
 }
 
+bool IsDisplayAlignmentAssistanceEnabled() {
+  return base::FeatureList::IsEnabled(kDisplayAlignAssist);
+}
 namespace {
 
 // The boolean flag indicating if "WebUITabStrip" feature is enabled in Chrome.

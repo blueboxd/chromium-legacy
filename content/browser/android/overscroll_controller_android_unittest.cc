@@ -207,7 +207,7 @@ TEST_F(OverscrollControllerAndroidUnitTest,
   controller_->OnOverscrolled(params);
 
   // Generate a consumed scroll update.
-  blink::WebGestureEvent event(blink::WebInputEvent::kGestureScrollUpdate,
+  blink::WebGestureEvent event(blink::WebInputEvent::Type::kGestureScrollUpdate,
                                blink::WebInputEvent::kNoModifiers,
                                ui::EventTimeForNow());
   controller_->OnGestureEventAck(

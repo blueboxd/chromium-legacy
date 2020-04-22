@@ -591,20 +591,19 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         } else if (itemId == R.id.contextmenu_save_image) {
             recordContextMenuSelection(params, ContextMenuUma.Action.SAVE_IMAGE);
             if (mDelegate.startDownload(params.getSrcUrl(), false)) {
-                helper.startContextMenuDownload(
-                        false, mDelegate.isDataReductionProxyEnabledForURL(params.getSrcUrl()));
+                helper.startContextMenuDownload(false);
             }
         } else if (itemId == R.id.contextmenu_save_video) {
             recordContextMenuSelection(params, ContextMenuUma.Action.SAVE_VIDEO);
             if (mDelegate.startDownload(params.getSrcUrl(), false)) {
-                helper.startContextMenuDownload(false, false);
+                helper.startContextMenuDownload(false);
             }
         } else if (itemId == R.id.contextmenu_save_link_as) {
             recordContextMenuSelection(params, ContextMenuUma.Action.SAVE_LINK);
             String url = params.getUnfilteredLinkUrl();
             if (mDelegate.startDownload(url, true)) {
                 ContextMenuUma.recordSaveLinkTypes(url);
-                helper.startContextMenuDownload(true, false);
+                helper.startContextMenuDownload(true);
             }
         } else if (itemId == R.id.contextmenu_share_link) {
             recordContextMenuSelection(params, ContextMenuUma.Action.SHARE_LINK);

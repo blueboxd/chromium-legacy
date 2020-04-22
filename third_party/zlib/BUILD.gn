@@ -3,7 +3,10 @@
 # found in the LICENSE file.
 
 import("//build/config/compiler/compiler.gni")
-import("//testing/test.gni")
+
+if (build_with_chromium) {
+  import("//testing/test.gni")
+}
 
 if (current_cpu == "arm" || current_cpu == "arm64") {
   import("//build/config/arm.gni")
@@ -201,7 +204,10 @@ source_set("zlib_crc32_simd") {
 
 config("zlib_x86_simd_config") {
   if (use_x86_x64_optimizations) {
-    defines = [ "CRC32_SIMD_SSE42_PCLMUL" ]
+    defines = [
+      "CRC32_SIMD_SSE42_PCLMUL",
+      "DEFLATE_FILL_WINDOW_SSE2",
+    ]
   }
 }
 
@@ -322,6 +328,7 @@ component("zlib") {
 
   configs += [
     ":zlib_internal_config",
+
     # Must be after no_chromium_code for warning flags to be ordered correctly.
     ":zlib_warnings",
   ]
@@ -392,16 +399,18 @@ executable("zlib_bench") {
   configs += [ "//build/config/compiler:no_chromium_code" ]
 }
 
-test("zlib_unittests") {
-  sources = [
-    "contrib/tests/utils_unittest.cc",
-    "google/compression_utils_portable.cc",
-    "google/compression_utils_portable.h",
-  ]
+if (build_with_chromium) {
+  test("zlib_unittests") {
+    sources = [
+      "contrib/tests/utils_unittest.cc",
+      "google/compression_utils_portable.cc",
+      "google/compression_utils_portable.h",
+    ]
 
-  deps = [
-    ":zlib",
-    "//testing/gtest",
-    "//testing/gtest:gtest_main",
-  ]
+    deps = [
+      ":zlib",
+      "//testing/gtest",
+      "//testing/gtest:gtest_main",
+    ]
+  }
 }

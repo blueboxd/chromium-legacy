@@ -154,7 +154,9 @@ void LaunchTerminal(Profile* profile,
   crostini::ShowContainerTerminal(profile, launch_params, vsh_in_crosh_url,
                                   browser);
   RecordAppLaunchResultHistogram(crostini::CrostiniResult::SUCCESS);
-  std::move(callback).Run(true, "");
+  if (callback) {
+    std::move(callback).Run(true, "");
+  }
 }
 
 void LaunchApplication(

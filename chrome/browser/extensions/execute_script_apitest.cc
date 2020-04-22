@@ -62,14 +62,7 @@ IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, ExecuteScriptFragmentNavigation) {
   ASSERT_TRUE(RunExtensionTest(extension_name)) << message_;
 }
 
-// Fails often on Windows dbg bots. http://crbug.com/177163
-#if defined(OS_WIN)
-#define MAYBE_NavigationRaceExecuteScript DISABLED_NavigationRaceExecuteScript
-#else
-#define MAYBE_NavigationRaceExecuteScript NavigationRaceExecuteScript
-#endif  // defined(OS_WIN)
-IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest,
-                       MAYBE_NavigationRaceExecuteScript) {
+IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, NavigationRaceExecuteScript) {
   ASSERT_TRUE(RunExtensionSubtest("executescript/navigation_race",
                                   "execute_script.html")) << message_;
 }

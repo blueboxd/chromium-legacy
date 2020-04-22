@@ -1,42 +1,3 @@
-<link rel="import" href="chrome://resources/html/polymer.html">
-
-<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
-<link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
-<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
-<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
-<link rel="import" href="chrome://resources/html/assert.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
-<link rel="import" href="../appearance_page/appearance_page.html">
-<link rel="import" href="../privacy_page/privacy_page.html">
-<link rel="import" href="../safety_check_page/safety_check_page.html">
-<link rel="import" href="../autofill_page/autofill_page.html">
-<link rel="import" href="../controls/settings_idle_load.html">
-<link rel="import" href="../on_startup_page/on_startup_page.html">
-<link rel="import" href="../people_page/people_page.html">
-<link rel="import" href="../reset_page/reset_profile_banner.html">
-<link rel="import" href="../search_page/search_page.html">
-<link rel="import" href="../search_settings.html">
-<link rel="import" href="../settings_page/main_page_behavior.html">
-<link rel="import" href="../settings_page/settings_section.html">
-<link rel="import" href="../i18n_setup.html">
-<link rel="import" href="../page_visibility.html">
-<link rel="import" href="../route.html">
-<link rel="import" href="../router.html">
-<link rel="import" href="../settings_page_css.html">
-
-<if expr="chromeos">
-<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
-<link rel="import" href="../prefs/prefs_behavior.html">
-</if>
-
-<if expr="not chromeos">
-<link rel="import" href="../default_browser_page/default_browser_page.html">
-</if>
-
-<!-- TODO(michaelpg): Rename to something better than "basic" now that this page
-     includes both the basic and advanced settings. -->
-<dom-module id="settings-basic-page">
-  <template>
     <style include="cr-shared-style settings-page-styles cr-hidden-style iron-flex settings-shared">
       :host([is-subpage-animating]) {
         /* Prevent an unwanted horizontal scrollbar when transitioning back from
@@ -243,6 +204,3 @@
         </template>
       </settings-idle-load>
     </template>
-  </template>
-  <script src="basic_page.js"></script>
-</dom-module>

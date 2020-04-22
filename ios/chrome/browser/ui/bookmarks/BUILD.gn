@@ -62,6 +62,7 @@ source_set("bookmarks") {
     "//components/browser_sync",
     "//components/pref_registry",
     "//components/prefs",
+    "//components/prefs/ios",
     "//components/query_parser",
     "//components/signin/public/identity_manager",
     "//components/signin/public/identity_manager/objc",

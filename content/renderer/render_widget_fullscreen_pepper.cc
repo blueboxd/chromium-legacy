@@ -71,23 +71,23 @@ WebMouseEvent WebMouseEventFromGestureEvent(const WebGestureEvent& gesture) {
   if (gesture.SourceDevice() != blink::WebGestureDevice::kTouchscreen)
     return WebMouseEvent();
 
-  WebInputEvent::Type type = WebInputEvent::kUndefined;
+  WebInputEvent::Type type = WebInputEvent::Type::kUndefined;
   switch (gesture.GetType()) {
-    case WebInputEvent::kGestureScrollBegin:
-      type = WebInputEvent::kMouseDown;
+    case WebInputEvent::Type::kGestureScrollBegin:
+      type = WebInputEvent::Type::kMouseDown;
       break;
-    case WebInputEvent::kGestureScrollUpdate:
-      type = WebInputEvent::kMouseMove;
+    case WebInputEvent::Type::kGestureScrollUpdate:
+      type = WebInputEvent::Type::kMouseMove;
       break;
-    case WebInputEvent::kGestureFlingStart:
+    case WebInputEvent::Type::kGestureFlingStart:
       // A scroll gesture on the touchscreen may end with a GestureScrollEnd
       // when there is no velocity, or a GestureFlingStart when it has a
       // velocity. In both cases, it should end the drag that was initiated by
       // the GestureScrollBegin (and subsequent GestureScrollUpdate) events.
-      type = WebInputEvent::kMouseUp;
+      type = WebInputEvent::Type::kMouseUp;
       break;
-    case WebInputEvent::kGestureScrollEnd:
-      type = WebInputEvent::kMouseUp;
+    case WebInputEvent::Type::kGestureScrollEnd:
+      type = WebInputEvent::Type::kMouseUp;
       break;
     default:
       return WebMouseEvent();
@@ -97,8 +97,8 @@ WebMouseEvent WebMouseEventFromGestureEvent(const WebGestureEvent& gesture) {
                       gesture.GetModifiers() | WebInputEvent::kLeftButtonDown,
                       gesture.TimeStamp());
   mouse.button = WebMouseEvent::Button::kLeft;
-  mouse.click_count = (mouse.GetType() == WebInputEvent::kMouseDown ||
-                       mouse.GetType() == WebInputEvent::kMouseUp);
+  mouse.click_count = (mouse.GetType() == WebInputEvent::Type::kMouseDown ||
+                       mouse.GetType() == WebInputEvent::Type::kMouseUp);
 
   mouse.SetPositionInWidget(gesture.PositionInWidget());
   mouse.SetPositionInScreen(gesture.PositionInScreen());
@@ -311,8 +311,8 @@ WebInputEventResult RenderWidgetFullscreenPepper::ProcessInputEvent(
     const WebGestureEvent* gesture_event =
         static_cast<const WebGestureEvent*>(&event);
     switch (event.GetType()) {
-      case WebInputEvent::kGestureTap: {
-        WebMouseEvent mouse(WebInputEvent::kMouseMove,
+      case WebInputEvent::Type::kGestureTap: {
+        WebMouseEvent mouse(WebInputEvent::Type::kMouseMove,
                             gesture_event->GetModifiers(),
                             gesture_event->TimeStamp());
         mouse.SetPositionInWidget(gesture_event->PositionInWidget());
@@ -321,19 +321,19 @@ WebInputEventResult RenderWidgetFullscreenPepper::ProcessInputEvent(
         mouse.movement_y = 0;
         result |= plugin()->HandleInputEvent(mouse, &cursor);
 
-        mouse.SetType(WebInputEvent::kMouseDown);
+        mouse.SetType(WebInputEvent::Type::kMouseDown);
         mouse.button = WebMouseEvent::Button::kLeft;
         mouse.click_count = gesture_event->data.tap.tap_count;
         result |= plugin()->HandleInputEvent(mouse, &cursor);
 
-        mouse.SetType(WebInputEvent::kMouseUp);
+        mouse.SetType(WebInputEvent::Type::kMouseUp);
         result |= plugin()->HandleInputEvent(mouse, &cursor);
         break;
       }
 
       default: {
         WebMouseEvent mouse = WebMouseEventFromGestureEvent(*gesture_event);
-        if (mouse.GetType() != WebInputEvent::kUndefined)
+        if (mouse.GetType() != WebInputEvent::Type::kUndefined)
           result |= plugin()->HandleInputEvent(mouse, &cursor);
         break;
       }
@@ -355,22 +355,22 @@ WebInputEventResult RenderWidgetFullscreenPepper::ProcessInputEvent(
     // On Windows, we handle it on mouse up.
 #if defined(OS_WIN)
     send_context_menu_event =
-        mouse_event.GetType() == WebInputEvent::kMouseUp &&
+        mouse_event.GetType() == WebInputEvent::Type::kMouseUp &&
         mouse_event.button == WebMouseEvent::Button::kRight;
 #elif defined(OS_MACOSX)
     send_context_menu_event =
-        mouse_event.GetType() == WebInputEvent::kMouseDown &&
+        mouse_event.GetType() == WebInputEvent::Type::kMouseDown &&
         (mouse_event.button == WebMouseEvent::Button::kRight ||
          (mouse_event.button == WebMouseEvent::Button::kLeft &&
           mouse_event.GetModifiers() & WebMouseEvent::kControlKey));
 #else
     send_context_menu_event =
-        mouse_event.GetType() == WebInputEvent::kMouseDown &&
+        mouse_event.GetType() == WebInputEvent::Type::kMouseDown &&
         mouse_event.button == WebMouseEvent::Button::kRight;
 #endif
     if (send_context_menu_event) {
       WebMouseEvent context_menu_event(mouse_event);
-      context_menu_event.SetType(WebInputEvent::kContextMenu);
+      context_menu_event.SetType(WebInputEvent::Type::kContextMenu);
       plugin()->HandleInputEvent(context_menu_event, &cursor);
     }
   }

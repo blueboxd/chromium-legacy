@@ -31,6 +31,7 @@
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/pointer/touch_editing_controller.h"
+#include "ui/events/gesture_event_details.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/insets.h"
@@ -424,6 +425,10 @@ class VIEWS_EXPORT Textfield : public View,
   // Like RequestFocus, but explicitly states that the focus is triggered by
   // a pointer event.
   void RequestFocusWithPointer(ui::EventPointerType pointer_type);
+
+  // Like RequestFocus, but explicitly states that the focus is triggered by a
+  // gesture event.
+  void RequestFocusForGesture(const ui::GestureEventDetails& details);
 
  private:
   friend class TextfieldTestApi;

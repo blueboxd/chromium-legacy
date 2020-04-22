@@ -20,9 +20,11 @@ blink::WebMouseWheelEvent CreateSyntheticWheelFromTouchpadPinchEvent(
     const blink::WebGestureEvent& pinch_event,
     blink::WebMouseWheelEvent::Phase phase,
     bool cancelable) {
-  DCHECK(pinch_event.GetType() == blink::WebInputEvent::kGesturePinchUpdate ||
-         pinch_event.GetType() == blink::WebInputEvent::kGesturePinchEnd ||
-         pinch_event.GetType() == blink::WebInputEvent::kGestureDoubleTap);
+  DCHECK(
+      pinch_event.GetType() ==
+          blink::WebInputEvent::Type::kGesturePinchUpdate ||
+      pinch_event.GetType() == blink::WebInputEvent::Type::kGesturePinchEnd ||
+      pinch_event.GetType() == blink::WebInputEvent::Type::kGestureDoubleTap);
   float delta_y = 0.0f;
   float wheel_ticks_y = 0.0f;
 
@@ -36,7 +38,8 @@ blink::WebMouseWheelEvent CreateSyntheticWheelFromTouchpadPinchEvent(
   //  - a formula that's relatively easy to use from JavaScript
   // Note that 'wheel' event deltaY values have their sign inverted.  So to
   // convert a wheel deltaY back to a scale use Math.exp(-deltaY/100).
-  if (pinch_event.GetType() == blink::WebInputEvent::kGesturePinchUpdate) {
+  if (pinch_event.GetType() ==
+      blink::WebInputEvent::Type::kGesturePinchUpdate) {
     DCHECK_GT(pinch_event.data.pinch_update.scale, 0);
     delta_y = 100.0f * log(pinch_event.data.pinch_update.scale);
     wheel_ticks_y = pinch_event.data.pinch_update.scale > 1 ? 1 : -1;
@@ -47,7 +50,7 @@ blink::WebMouseWheelEvent CreateSyntheticWheelFromTouchpadPinchEvent(
   // modifier set when we see trackpad pinch gestures.  Ideally we'd someday get
   // a platform 'pinch' event and send that instead.
   blink::WebMouseWheelEvent wheel_event(
-      blink::WebInputEvent::kMouseWheel,
+      blink::WebInputEvent::Type::kMouseWheel,
       pinch_event.GetModifiers() | blink::WebInputEvent::kControlKey,
       pinch_event.TimeStamp());
   wheel_event.SetPositionInWidget(pinch_event.PositionInWidget());
@@ -110,7 +113,7 @@ void TouchpadPinchEventQueue::QueueEvent(
       event.latency.Terminate();
 
       last_event->CoalesceWith(event);
-      DCHECK_EQ(blink::WebInputEvent::kGesturePinchUpdate,
+      DCHECK_EQ(blink::WebInputEvent::Type::kGesturePinchUpdate,
                 last_event->event.GetType());
       TRACE_EVENT_INSTANT1("input",
                            "TouchpadPinchEventQueue::CoalescedPinchEvent",
@@ -133,7 +136,7 @@ void TouchpadPinchEventQueue::ProcessMouseWheelAck(
     return;
 
   if (pinch_event_awaiting_ack_->event.GetType() ==
-          blink::WebInputEvent::kGesturePinchUpdate &&
+          blink::WebInputEvent::Type::kGesturePinchUpdate &&
       !first_event_prevented_.has_value())
     first_event_prevented_ =
         (ack_result == blink::mojom::InputEventResultState::kConsumed);
@@ -157,7 +160,7 @@ void TouchpadPinchEventQueue::TryForwardNextEventToRenderer() {
   pinch_queue_.pop_front();
 
   if (pinch_event_awaiting_ack_->event.GetType() ==
-      blink::WebInputEvent::kGesturePinchBegin) {
+      blink::WebInputEvent::Type::kGesturePinchBegin) {
     client_->OnGestureEventForPinchAck(
         *pinch_event_awaiting_ack_,
         blink::mojom::InputEventResultSource::kBrowser,
@@ -172,17 +175,17 @@ void TouchpadPinchEventQueue::TryForwardNextEventToRenderer() {
   bool cancelable = true;
 
   if (pinch_event_awaiting_ack_->event.GetType() ==
-      blink::WebInputEvent::kGesturePinchEnd) {
+      blink::WebInputEvent::Type::kGesturePinchEnd) {
     first_event_prevented_.reset();
     phase = blink::WebMouseWheelEvent::kPhaseEnded;
     cancelable = false;
   } else if (pinch_event_awaiting_ack_->event.GetType() ==
-             blink::WebInputEvent::kGestureDoubleTap) {
+             blink::WebInputEvent::Type::kGestureDoubleTap) {
     phase = blink::WebMouseWheelEvent::kPhaseNone;
     cancelable = true;
   } else {
     DCHECK_EQ(pinch_event_awaiting_ack_->event.GetType(),
-              blink::WebInputEvent::kGesturePinchUpdate);
+              blink::WebInputEvent::Type::kGesturePinchUpdate);
     // The first pinch update event should send a synthetic wheel with phase
     // began.
     if (!first_event_prevented_.has_value()) {

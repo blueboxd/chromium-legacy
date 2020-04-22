@@ -95,40 +95,40 @@ static_assert(static_cast<int>(PP_INPUTEVENT_MODIFIER_ISRIGHT) ==
 
 PP_InputEvent_Type ConvertEventTypes(const WebInputEvent& event) {
   switch (event.GetType()) {
-    case WebInputEvent::kMouseDown:
+    case WebInputEvent::Type::kMouseDown:
       return PP_INPUTEVENT_TYPE_MOUSEDOWN;
-    case WebInputEvent::kMouseUp:
+    case WebInputEvent::Type::kMouseUp:
       return PP_INPUTEVENT_TYPE_MOUSEUP;
-    case WebInputEvent::kMouseMove:
+    case WebInputEvent::Type::kMouseMove:
       return PP_INPUTEVENT_TYPE_MOUSEMOVE;
-    case WebInputEvent::kMouseEnter:
+    case WebInputEvent::Type::kMouseEnter:
       return PP_INPUTEVENT_TYPE_MOUSEENTER;
-    case WebInputEvent::kMouseLeave:
+    case WebInputEvent::Type::kMouseLeave:
       return PP_INPUTEVENT_TYPE_MOUSELEAVE;
-    case WebInputEvent::kContextMenu:
+    case WebInputEvent::Type::kContextMenu:
       return PP_INPUTEVENT_TYPE_CONTEXTMENU;
-    case WebInputEvent::kMouseWheel:
+    case WebInputEvent::Type::kMouseWheel:
       return PP_INPUTEVENT_TYPE_WHEEL;
-    case WebInputEvent::kRawKeyDown:
+    case WebInputEvent::Type::kRawKeyDown:
       // In the past blink has always returned kKeyDown passed into plugins
       // although PPAPI had a RAWKEYDOWN definition. However implementations are
       // broken now that blink passes kRawKeyDown so convert it to a keydown.
       return PP_INPUTEVENT_TYPE_KEYDOWN;
-    case WebInputEvent::kKeyDown:
+    case WebInputEvent::Type::kKeyDown:
       return PP_INPUTEVENT_TYPE_KEYDOWN;
-    case WebInputEvent::kKeyUp:
+    case WebInputEvent::Type::kKeyUp:
       return PP_INPUTEVENT_TYPE_KEYUP;
-    case WebInputEvent::kChar:
+    case WebInputEvent::Type::kChar:
       return PP_INPUTEVENT_TYPE_CHAR;
-    case WebInputEvent::kTouchStart:
+    case WebInputEvent::Type::kTouchStart:
       return PP_INPUTEVENT_TYPE_TOUCHSTART;
-    case WebInputEvent::kTouchMove:
+    case WebInputEvent::Type::kTouchMove:
       return PP_INPUTEVENT_TYPE_TOUCHMOVE;
-    case WebInputEvent::kTouchEnd:
+    case WebInputEvent::Type::kTouchEnd:
       return PP_INPUTEVENT_TYPE_TOUCHEND;
-    case WebInputEvent::kTouchCancel:
+    case WebInputEvent::Type::kTouchCancel:
       return PP_INPUTEVENT_TYPE_TOUCHCANCEL;
-    case WebInputEvent::kUndefined:
+    case WebInputEvent::Type::kUndefined:
     default:
       return PP_INPUTEVENT_TYPE_UNDEFINED;
   }
@@ -220,9 +220,9 @@ void AppendMouseEvent(const WebInputEvent& event,
   const WebMouseEvent& mouse_event = static_cast<const WebMouseEvent&>(event);
   InputEventData result = GetEventWithCommonFieldsAndType(event);
   result.event_modifiers = ConvertEventModifiers(mouse_event.GetModifiers());
-  if (mouse_event.GetType() == WebInputEvent::kMouseDown ||
-      mouse_event.GetType() == WebInputEvent::kMouseMove ||
-      mouse_event.GetType() == WebInputEvent::kMouseUp) {
+  if (mouse_event.GetType() == WebInputEvent::Type::kMouseDown ||
+      mouse_event.GetType() == WebInputEvent::Type::kMouseMove ||
+      mouse_event.GetType() == WebInputEvent::Type::kMouseUp) {
     switch (mouse_event.button) {
       case WebMouseEvent::Button::kNoButton:
       case WebMouseEvent::Button::kLeft:
@@ -240,7 +240,7 @@ void AppendMouseEvent(const WebInputEvent& event,
   result.mouse_click_count = mouse_event.click_count;
 
   if (base::FeatureList::IsEnabled(features::kConsolidatedMovementXY)) {
-    if (mouse_event.GetType() == WebInputEvent::kMouseMove &&
+    if (mouse_event.GetType() == WebInputEvent::Type::kMouseMove &&
         *in_out_last_mouse_position) {
       result.mouse_movement.x = mouse_event.PositionInScreen().x() -
                                 (*in_out_last_mouse_position)->x();
@@ -292,13 +292,13 @@ void SetPPTouchPoints(const WebTouchPoint* touches,
   for (uint32_t i = 0; i < touches_length; i++) {
     const WebTouchPoint& touch_point = touches[i];
     if (included_types == ACTIVE &&
-        (touch_point.state == WebTouchPoint::kStateReleased ||
-         touch_point.state == WebTouchPoint::kStateCancelled)) {
+        (touch_point.state == WebTouchPoint::State::kStateReleased ||
+         touch_point.state == WebTouchPoint::State::kStateCancelled)) {
       continue;
     }
     if (included_types == CHANGED &&
-        (touch_point.state == WebTouchPoint::kStateUndefined ||
-         touch_point.state == WebTouchPoint::kStateStationary)) {
+        (touch_point.state == WebTouchPoint::State::kStateUndefined ||
+         touch_point.state == WebTouchPoint::State::kStateStationary)) {
       continue;
     }
     PP_TouchPoint pp_pt;
@@ -397,24 +397,24 @@ void SetWebTouchPointsIfNotYetSet(
 
 WebTouchEvent* BuildTouchEvent(const InputEventData& event) {
   WebTouchEvent* web_event = new WebTouchEvent();
-  WebTouchPoint::State state = WebTouchPoint::kStateUndefined;
-  WebInputEvent::Type type = WebInputEvent::kUndefined;
+  WebTouchPoint::State state = WebTouchPoint::State::kStateUndefined;
+  WebInputEvent::Type type = WebInputEvent::Type::kUndefined;
   switch (event.event_type) {
     case PP_INPUTEVENT_TYPE_TOUCHSTART:
-      type = WebInputEvent::kTouchStart;
-      state = WebTouchPoint::kStatePressed;
+      type = WebInputEvent::Type::kTouchStart;
+      state = WebTouchPoint::State::kStatePressed;
       break;
     case PP_INPUTEVENT_TYPE_TOUCHMOVE:
-      type = WebInputEvent::kTouchMove;
-      state = WebTouchPoint::kStateMoved;
+      type = WebInputEvent::Type::kTouchMove;
+      state = WebTouchPoint::State::kStateMoved;
       break;
     case PP_INPUTEVENT_TYPE_TOUCHEND:
-      type = WebInputEvent::kTouchEnd;
-      state = WebTouchPoint::kStateReleased;
+      type = WebInputEvent::Type::kTouchEnd;
+      state = WebTouchPoint::State::kStateReleased;
       break;
     case PP_INPUTEVENT_TYPE_TOUCHCANCEL:
-      type = WebInputEvent::kTouchCancel;
-      state = WebTouchPoint::kStateCancelled;
+      type = WebInputEvent::Type::kTouchCancel;
+      state = WebTouchPoint::State::kStateCancelled;
       break;
     default:
       NOTREACHED();
@@ -429,7 +429,8 @@ WebTouchEvent* BuildTouchEvent(const InputEventData& event) {
   // (stationary) touches.
   SetWebTouchPointsIfNotYetSet(event.changed_touches, state, web_event->touches,
                                &web_event->touches_length);
-  SetWebTouchPointsIfNotYetSet(event.touches, WebTouchPoint::kStateStationary,
+  SetWebTouchPointsIfNotYetSet(event.touches,
+                               WebTouchPoint::State::kStateStationary,
                                web_event->touches, &web_event->touches_length);
 
   return web_event;
@@ -439,13 +440,13 @@ WebKeyboardEvent* BuildKeyEvent(const InputEventData& event) {
   WebInputEvent::Type type = WebInputEvent::Type::kUndefined;
   switch (event.event_type) {
     case PP_INPUTEVENT_TYPE_RAWKEYDOWN:
-      type = WebInputEvent::kRawKeyDown;
+      type = WebInputEvent::Type::kRawKeyDown;
       break;
     case PP_INPUTEVENT_TYPE_KEYDOWN:
-      type = WebInputEvent::kKeyDown;
+      type = WebInputEvent::Type::kKeyDown;
       break;
     case PP_INPUTEVENT_TYPE_KEYUP:
-      type = WebInputEvent::kKeyUp;
+      type = WebInputEvent::Type::kKeyUp;
       break;
     default:
       NOTREACHED();
@@ -460,7 +461,7 @@ WebKeyboardEvent* BuildKeyEvent(const InputEventData& event) {
 
 WebKeyboardEvent* BuildCharEvent(const InputEventData& event) {
   WebKeyboardEvent* key_event = new WebKeyboardEvent(
-      WebInputEvent::kChar, event.event_modifiers,
+      WebInputEvent::Type::kChar, event.event_modifiers,
       base::TimeTicks() +
           base::TimeDelta::FromSecondsD(event.event_time_stamp));
 
@@ -477,25 +478,25 @@ WebKeyboardEvent* BuildCharEvent(const InputEventData& event) {
 }
 
 WebMouseEvent* BuildMouseEvent(const InputEventData& event) {
-  WebInputEvent::Type type = WebInputEvent::kUndefined;
+  WebInputEvent::Type type = WebInputEvent::Type::kUndefined;
   switch (event.event_type) {
     case PP_INPUTEVENT_TYPE_MOUSEDOWN:
-      type = WebInputEvent::kMouseDown;
+      type = WebInputEvent::Type::kMouseDown;
       break;
     case PP_INPUTEVENT_TYPE_MOUSEUP:
-      type = WebInputEvent::kMouseUp;
+      type = WebInputEvent::Type::kMouseUp;
       break;
     case PP_INPUTEVENT_TYPE_MOUSEMOVE:
-      type = WebInputEvent::kMouseMove;
+      type = WebInputEvent::Type::kMouseMove;
       break;
     case PP_INPUTEVENT_TYPE_MOUSEENTER:
-      type = WebInputEvent::kMouseEnter;
+      type = WebInputEvent::Type::kMouseEnter;
       break;
     case PP_INPUTEVENT_TYPE_MOUSELEAVE:
-      type = WebInputEvent::kMouseLeave;
+      type = WebInputEvent::Type::kMouseLeave;
       break;
     case PP_INPUTEVENT_TYPE_CONTEXTMENU:
-      type = WebInputEvent::kContextMenu;
+      type = WebInputEvent::Type::kContextMenu;
       break;
     default:
       NOTREACHED();
@@ -506,7 +507,7 @@ WebMouseEvent* BuildMouseEvent(const InputEventData& event) {
           base::TimeDelta::FromSecondsD(event.event_time_stamp));
   mouse_event->pointer_type = blink::WebPointerProperties::PointerType::kMouse;
   mouse_event->button = static_cast<WebMouseEvent::Button>(event.mouse_button);
-  if (mouse_event->GetType() == WebInputEvent::kMouseMove) {
+  if (mouse_event->GetType() == WebInputEvent::Type::kMouseMove) {
     if (mouse_event->GetModifiers() & WebInputEvent::kLeftButtonDown)
       mouse_event->button = WebMouseEvent::Button::kLeft;
     else if (mouse_event->GetModifiers() & WebInputEvent::kMiddleButtonDown)
@@ -524,7 +525,7 @@ WebMouseEvent* BuildMouseEvent(const InputEventData& event) {
 
 WebMouseWheelEvent* BuildMouseWheelEvent(const InputEventData& event) {
   WebMouseWheelEvent* mouse_wheel_event = new WebMouseWheelEvent(
-      WebInputEvent::kMouseWheel, event.event_modifiers,
+      WebInputEvent::Type::kMouseWheel, event.event_modifiers,
       base::TimeTicks() +
           base::TimeDelta::FromSecondsD(event.event_time_stamp));
   mouse_wheel_event->delta_x = event.wheel_delta.x;
@@ -630,32 +631,32 @@ void CreateInputEventData(
   result->clear();
 
   switch (event.GetType()) {
-    case WebInputEvent::kMouseDown:
-    case WebInputEvent::kMouseUp:
-    case WebInputEvent::kMouseMove:
-    case WebInputEvent::kMouseEnter:
-    case WebInputEvent::kMouseLeave:
-    case WebInputEvent::kContextMenu:
+    case WebInputEvent::Type::kMouseDown:
+    case WebInputEvent::Type::kMouseUp:
+    case WebInputEvent::Type::kMouseMove:
+    case WebInputEvent::Type::kMouseEnter:
+    case WebInputEvent::Type::kMouseLeave:
+    case WebInputEvent::Type::kContextMenu:
       AppendMouseEvent(event, in_out_last_mouse_position, result);
       break;
-    case WebInputEvent::kMouseWheel:
+    case WebInputEvent::Type::kMouseWheel:
       AppendMouseWheelEvent(event, result);
       break;
-    case WebInputEvent::kRawKeyDown:
-    case WebInputEvent::kKeyDown:
-    case WebInputEvent::kKeyUp:
+    case WebInputEvent::Type::kRawKeyDown:
+    case WebInputEvent::Type::kKeyDown:
+    case WebInputEvent::Type::kKeyUp:
       AppendKeyEvent(event, result);
       break;
-    case WebInputEvent::kChar:
+    case WebInputEvent::Type::kChar:
       AppendCharEvent(event, result);
       break;
-    case WebInputEvent::kTouchStart:
-    case WebInputEvent::kTouchMove:
-    case WebInputEvent::kTouchEnd:
-    case WebInputEvent::kTouchCancel:
+    case WebInputEvent::Type::kTouchStart:
+    case WebInputEvent::Type::kTouchMove:
+    case WebInputEvent::Type::kTouchEnd:
+    case WebInputEvent::Type::kTouchCancel:
       AppendTouchEvent(event, result);
       break;
-    case WebInputEvent::kUndefined:
+    case WebInputEvent::Type::kUndefined:
     default:
       break;
   }
@@ -729,7 +730,8 @@ std::vector<std::unique_ptr<WebInputEvent>> CreateSimulatedWebInputEvents(
           static_cast<blink::WebTouchEvent*>(original_event.get());
       for (unsigned i = 0; i < touch_event->touches_length; ++i) {
         const blink::WebTouchPoint& touch_point = touch_event->touches[i];
-        if (touch_point.state != blink::WebTouchPoint::kStateStationary) {
+        if (touch_point.state !=
+            blink::WebTouchPoint::State::kStateStationary) {
           events.push_back(
               std::make_unique<WebPointerEvent>(*touch_event, touch_point));
         }
@@ -750,8 +752,8 @@ std::vector<std::unique_ptr<WebInputEvent>> CreateSimulatedWebInputEvents(
 #if defined(OS_WIN)
       WebKeyboardEvent* web_keyboard_event =
           static_cast<WebKeyboardEvent*>(original_event.get());
-      if (web_keyboard_event->GetType() == WebInputEvent::kKeyDown)
-        web_keyboard_event->SetType(WebInputEvent::kRawKeyDown);
+      if (web_keyboard_event->GetType() == WebInputEvent::Type::kKeyDown)
+        web_keyboard_event->SetType(WebInputEvent::Type::kRawKeyDown);
 #endif
       events.push_back(std::move(original_event));
       break;
@@ -771,7 +773,7 @@ std::vector<std::unique_ptr<WebInputEvent>> CreateSimulatedWebInputEvents(
 
       // Synthesize key down and key up events in all cases.
       std::unique_ptr<WebKeyboardEvent> key_down_event(new WebKeyboardEvent(
-          WebInputEvent::kRawKeyDown,
+          WebInputEvent::Type::kRawKeyDown,
           needs_shift_modifier ? WebInputEvent::kShiftKey
                                : WebInputEvent::kNoModifiers,
           web_char_event->TimeStamp()));
@@ -791,11 +793,11 @@ std::vector<std::unique_ptr<WebInputEvent>> CreateSimulatedWebInputEvents(
       events.push_back(std::move(key_down_event));
 
       if (generate_char) {
-        web_char_event->SetType(WebInputEvent::kChar);
+        web_char_event->SetType(WebInputEvent::Type::kChar);
         events.push_back(std::move(original_event));
       }
 
-      key_up_event->SetType(WebInputEvent::kKeyUp);
+      key_up_event->SetType(WebInputEvent::Type::kKeyUp);
       events.push_back(std::move(key_up_event));
       break;
     }
@@ -808,26 +810,26 @@ std::vector<std::unique_ptr<WebInputEvent>> CreateSimulatedWebInputEvents(
 
 PP_InputEvent_Class ClassifyInputEvent(const WebInputEvent& event) {
   switch (event.GetType()) {
-    case WebInputEvent::kMouseDown:
-    case WebInputEvent::kMouseUp:
-    case WebInputEvent::kMouseMove:
-    case WebInputEvent::kMouseEnter:
-    case WebInputEvent::kMouseLeave:
-    case WebInputEvent::kContextMenu:
+    case WebInputEvent::Type::kMouseDown:
+    case WebInputEvent::Type::kMouseUp:
+    case WebInputEvent::Type::kMouseMove:
+    case WebInputEvent::Type::kMouseEnter:
+    case WebInputEvent::Type::kMouseLeave:
+    case WebInputEvent::Type::kContextMenu:
       return PP_INPUTEVENT_CLASS_MOUSE;
-    case WebInputEvent::kMouseWheel:
+    case WebInputEvent::Type::kMouseWheel:
       return PP_INPUTEVENT_CLASS_WHEEL;
-    case WebInputEvent::kRawKeyDown:
-    case WebInputEvent::kKeyDown:
-    case WebInputEvent::kKeyUp:
-    case WebInputEvent::kChar:
+    case WebInputEvent::Type::kRawKeyDown:
+    case WebInputEvent::Type::kKeyDown:
+    case WebInputEvent::Type::kKeyUp:
+    case WebInputEvent::Type::kChar:
       return PP_INPUTEVENT_CLASS_KEYBOARD;
-    case WebInputEvent::kTouchCancel:
-    case WebInputEvent::kTouchEnd:
-    case WebInputEvent::kTouchMove:
-    case WebInputEvent::kTouchStart:
+    case WebInputEvent::Type::kTouchCancel:
+    case WebInputEvent::Type::kTouchEnd:
+    case WebInputEvent::Type::kTouchMove:
+    case WebInputEvent::Type::kTouchStart:
       return PP_INPUTEVENT_CLASS_TOUCH;
-    case WebInputEvent::kTouchScrollStarted:
+    case WebInputEvent::Type::kTouchScrollStarted:
       return PP_InputEvent_Class(0);
     default:
       CHECK(WebInputEvent::IsGestureEventType(event.GetType()));

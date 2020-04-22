@@ -33,6 +33,11 @@ proto_library("webprotect_proto") {
   sources = [ "proto/webprotect.proto" ]
 }
 
+proto_library("client_model_proto") {
+  sources = [ "proto/client_model.proto" ]
+  deps = [ ":csd_proto" ]
+}
+
 static_library("ping_manager") {
   sources = [
     "ping_manager.cc",

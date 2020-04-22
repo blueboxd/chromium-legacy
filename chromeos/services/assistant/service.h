@@ -23,6 +23,7 @@
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/services/assistant/assistant_manager_service.h"
 #include "chromeos/services/assistant/assistant_state_proxy.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "chromeos/services/assistant/public/mojom/settings.mojom.h"
 #include "components/signin/public/identity_manager/account_info.h"
@@ -66,7 +67,7 @@ class ScopedAshSessionObserver;
 constexpr auto kUpdateAssistantManagerDelay = base::TimeDelta::FromSeconds(1);
 
 class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
-    : public mojom::AssistantService,
+    : public AssistantService,
       public chromeos::PowerManagerClient::Observer,
       public ash::SessionActivationObserver,
       public ash::AssistantStateObserver,
@@ -74,8 +75,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
       public AssistantManagerService::StateObserver,
       public ash::AmbientModeStateObserver {
  public:
-  Service(mojo::PendingReceiver<mojom::AssistantService> receiver,
-          std::unique_ptr<network::PendingSharedURLLoaderFactory>
+  Service(std::unique_ptr<network::PendingSharedURLLoaderFactory>
               pending_url_loader_factory,
           signin::IdentityManager* identity_manager,
           PrefService* profile_prefs);
@@ -99,18 +99,18 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
 
   AssistantStateProxy* GetAssistantStateProxyForTesting();
 
- private:
-  friend class AssistantServiceTest;
-
-  class Context;
-
-  // mojom::AssistantService overrides
+  // AssistantService overrides:
   void Init(mojo::PendingRemote<mojom::Client> client,
             mojo::PendingRemote<mojom::DeviceActions> device_actions) override;
   void BindAssistant(mojo::PendingReceiver<mojom::Assistant> receiver) override;
   void BindSettingsManager(
       mojo::PendingReceiver<mojom::AssistantSettingsManager> receiver) override;
   void Shutdown() override;
+
+ private:
+  friend class AssistantServiceTest;
+
+  class Context;
 
   // chromeos::PowerManagerClient::Observer overrides:
   void PowerChanged(const power_manager::PowerSupplyProperties& prop) override;
@@ -169,7 +169,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   // for the device.
   bool ShouldEnableHotword();
 
-  mojo::Receiver<mojom::AssistantService> receiver_;
   mojo::ReceiverSet<mojom::Assistant> assistant_receivers_;
 
   mojo::Remote<mojom::Client> client_;

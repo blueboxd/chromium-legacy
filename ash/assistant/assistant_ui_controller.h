@@ -10,14 +10,17 @@
 #include <string>
 
 #include "ash/ash_export.h"
-#include "ash/assistant/assistant_controller_observer.h"
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/highlighter/highlighter_controller.h"
+#include "ash/public/cpp/assistant/controller/assistant_controller.h"
+#include "ash/public/cpp/assistant/controller/assistant_controller_observer.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_observer.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/scoped_observer.h"
 
 namespace chromeos {
 namespace assistant {
@@ -94,6 +97,15 @@ class ASH_EXPORT AssistantUiController
   chromeos::assistant::mojom::Assistant* assistant_ = nullptr;
 
   AssistantUiModel model_;
+
+  ScopedObserver<AssistantController, AssistantControllerObserver>
+      assistant_controller_observer_{this};
+
+  ScopedObserver<HighlighterController, HighlighterController::Observer>
+      highlighter_controller_observer_{this};
+
+  ScopedObserver<OverviewController, OverviewObserver>
+      overview_controller_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AssistantUiController);
 };

@@ -96,7 +96,8 @@ TEST_F(ScrollbarThemeOverlayTest, PaintInvalidation) {
   mock_scrollable_area->ClearNeedsPaintInvalidationForScrollControls();
 
   // Pressing down should also cause an invalidation.
-  vertical_scrollbar->SetPressedPart(kThumbPart, WebInputEvent::kMouseDown);
+  vertical_scrollbar->SetPressedPart(kThumbPart,
+                                     WebInputEvent::Type::kMouseDown);
   EXPECT_TRUE(vertical_scrollbar->ThumbNeedsRepaint());
   EXPECT_TRUE(mock_scrollable_area->VerticalScrollbarNeedsPaintInvalidation());
 
@@ -104,7 +105,7 @@ TEST_F(ScrollbarThemeOverlayTest, PaintInvalidation) {
   mock_scrollable_area->ClearNeedsPaintInvalidationForScrollControls();
 
   // Release should cause invalidation.
-  vertical_scrollbar->SetPressedPart(kNoPart, WebInputEvent::kMouseDown);
+  vertical_scrollbar->SetPressedPart(kNoPart, WebInputEvent::Type::kMouseDown);
   EXPECT_TRUE(vertical_scrollbar->ThumbNeedsRepaint());
   EXPECT_TRUE(mock_scrollable_area->VerticalScrollbarNeedsPaintInvalidation());
 

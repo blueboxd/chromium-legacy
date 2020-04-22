@@ -2104,7 +2104,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsPixelOutputTests,
   DispatchAndWait("startTimeline");
 
   for (int i = 0; i < 3; ++i) {
-    SimulateMouseEvent(web_contents, blink::WebInputEvent::kMouseMove,
+    SimulateMouseEvent(web_contents, blink::WebInputEvent::Type::kMouseMove,
                        gfx::Point(30, 60));
     DispatchInPageAndWait("waitForEvent", "mousemove");
   }

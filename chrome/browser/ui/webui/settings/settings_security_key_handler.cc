@@ -733,6 +733,7 @@ void SecurityKeysBioEnrollmentHandler::OnEnrollmentFinished(
   DCHECK_EQ(state_, State::kEnrolling);
   DCHECK(!callback_id_.empty());
   if (code == device::CtapDeviceResponseCode::kCtap2ErrKeepAliveCancel) {
+    state_ = State::kReady;
     base::DictionaryValue d;
     d.SetIntKey("code", static_cast<int>(code));
     d.SetIntKey("remaining", 0);

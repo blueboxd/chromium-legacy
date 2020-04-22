@@ -629,7 +629,7 @@ bool RenderViewTest::SimulateElementClick(const std::string& element_id) {
 }
 
 void RenderViewTest::SimulatePointClick(const gfx::Point& point) {
-  WebMouseEvent mouse_event(WebInputEvent::kMouseDown,
+  WebMouseEvent mouse_event(WebInputEvent::Type::kMouseDown,
                             WebInputEvent::kNoModifiers, ui::EventTimeForNow());
   mouse_event.button = WebMouseEvent::Button::kLeft;
   mouse_event.SetPositionInWidget(point.x(), point.y());
@@ -638,7 +638,7 @@ void RenderViewTest::SimulatePointClick(const gfx::Point& point) {
   RenderWidget* widget = view->GetMainRenderFrame()->GetLocalRootRenderWidget();
   widget->HandleInputEvent(blink::WebCoalescedInputEvent(mouse_event),
                            ui::LatencyInfo(), HandledEventCallback());
-  mouse_event.SetType(WebInputEvent::kMouseUp);
+  mouse_event.SetType(WebInputEvent::Type::kMouseUp);
   widget->HandleInputEvent(blink::WebCoalescedInputEvent(mouse_event),
                            ui::LatencyInfo(), HandledEventCallback());
 }
@@ -653,7 +653,7 @@ bool RenderViewTest::SimulateElementRightClick(const std::string& element_id) {
 }
 
 void RenderViewTest::SimulatePointRightClick(const gfx::Point& point) {
-  WebMouseEvent mouse_event(WebInputEvent::kMouseDown,
+  WebMouseEvent mouse_event(WebInputEvent::Type::kMouseDown,
                             WebInputEvent::kNoModifiers, ui::EventTimeForNow());
   mouse_event.button = WebMouseEvent::Button::kRight;
   mouse_event.SetPositionInWidget(point.x(), point.y());
@@ -662,14 +662,14 @@ void RenderViewTest::SimulatePointRightClick(const gfx::Point& point) {
   RenderWidget* widget = view->GetMainRenderFrame()->GetLocalRootRenderWidget();
   widget->HandleInputEvent(blink::WebCoalescedInputEvent(mouse_event),
                            ui::LatencyInfo(), HandledEventCallback());
-  mouse_event.SetType(WebInputEvent::kMouseUp);
+  mouse_event.SetType(WebInputEvent::Type::kMouseUp);
   widget->HandleInputEvent(blink::WebCoalescedInputEvent(mouse_event),
                            ui::LatencyInfo(), HandledEventCallback());
 }
 
 void RenderViewTest::SimulateRectTap(const gfx::Rect& rect) {
   WebGestureEvent gesture_event(
-      WebInputEvent::kGestureTap, WebInputEvent::kNoModifiers,
+      WebInputEvent::Type::kGestureTap, WebInputEvent::kNoModifiers,
       ui::EventTimeForNow(), blink::WebGestureDevice::kTouchscreen);
   gesture_event.SetPositionInWidget(gfx::PointF(rect.CenterPoint()));
   gesture_event.data.tap.tap_count = 1;
@@ -734,16 +734,16 @@ void RenderViewTest::SimulateUserTypingASCIICharacter(char ascii_character,
     modifiers = blink::WebKeyboardEvent::kShiftKey;
   }
 
-  blink::WebKeyboardEvent event(blink::WebKeyboardEvent::kRawKeyDown, modifiers,
-                                ui::EventTimeForNow());
+  blink::WebKeyboardEvent event(blink::WebKeyboardEvent::Type::kRawKeyDown,
+                                modifiers, ui::EventTimeForNow());
   event.text[0] = ascii_character;
   ASSERT_TRUE(GetWindowsKeyCode(ascii_character, &event.windows_key_code));
   SendWebKeyboardEvent(event);
 
-  event.SetType(blink::WebKeyboardEvent::kChar);
+  event.SetType(blink::WebKeyboardEvent::Type::kChar);
   SendWebKeyboardEvent(event);
 
-  event.SetType(blink::WebKeyboardEvent::kKeyUp);
+  event.SetType(blink::WebKeyboardEvent::Type::kKeyUp);
   SendWebKeyboardEvent(event);
 
   if (flush_message_loop) {

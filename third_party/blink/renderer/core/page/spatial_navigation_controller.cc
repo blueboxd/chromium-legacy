@@ -539,7 +539,7 @@ void SpatialNavigationController::DispatchMouseMoveAt(Element* element) {
   FloatPoint event_position_screen = event_position;
   int click_count = 0;
   WebMouseEvent fake_mouse_move_event(
-      WebInputEvent::kMouseMove, event_position, event_position_screen,
+      WebInputEvent::Type::kMouseMove, event_position, event_position_screen,
       WebPointerProperties::Button::kNoButton, click_count,
       WebInputEvent::kRelativeMotionEvent, base::TimeTicks::Now());
   Vector<WebMouseEvent> coalesced_events, predicted_events;

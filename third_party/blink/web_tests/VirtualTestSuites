@@ -598,12 +598,6 @@
              "--enable-blink-features=CSSCascade,ForcedColors"]
   },
   {
-    "prefix": "at-property",
-    "bases": ["fast/css/css-properties-values-api",
-              "external/wpt/css/css-properties-values-api"],
-    "args": ["--enable-blink-features=CSSVariables2AtProperty"]
-  },
-  {
     "prefix": "cache-storage-sequence",
     "bases": ["external/wpt/service-workers"],
     "args": ["--enable-features=CacheStorageSequence"]

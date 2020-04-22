@@ -28,6 +28,7 @@ source_set("toolbar") {
     "//components/bookmarks/common",
     "//components/google/core/common",
     "//components/prefs",
+    "//components/prefs/ios",
     "//components/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/autocomplete",

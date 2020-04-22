@@ -1628,12 +1628,12 @@
   {
     "name": "enable-lazy-frame-loading",
     "owners": [ "//components/data_reduction_proxy/OWNERS" ],
-    "expiry_milestone": 84
+    "expiry_milestone": 90
   },
   {
     "name": "enable-lazy-image-loading",
     "owners": [ "//components/data_reduction_proxy/OWNERS" ],
-    "expiry_milestone": 84
+    "expiry_milestone": 90
   },
   {
     "name": "enable-lite-page-server-previews",
@@ -1677,7 +1677,7 @@
   {
     "name": "enable-media-internals-devtools",
     "owners": ["tmathmeyer"],
-    "expiry_milestone": 82
+    "expiry_milestone": 86
   },
   {
     "name": "enable-media-session-notifications",
@@ -1876,8 +1876,10 @@
   },
   {
     "name": "enable-reader-mode-in-cct",
-    "owners": [ "mdjones" ],
-    "expiry_milestone": 78
+    "owners": [ "mdjones", "wychen" ],
+    // This flag is a utility for disabling Reader Mode in CCT without using
+    // low-end devices.
+    "expiry_milestone": -1
   },
   {
     "name": "enable-removing-all-third-party-cookies",
@@ -4171,7 +4173,7 @@
   {
     "name": "web-bundles",
     "owners": [ "toyoshim", "ksakamoto", "horo", "kinuko" ],
-    "expiry_milestone": 83
+    "expiry_milestone": 87
   },
   {
     "name": "web-clear-browsing-data",

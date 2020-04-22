@@ -142,7 +142,7 @@ IN_PROC_BROWSER_TEST_F(TouchInputBrowserTest, TouchNoHandler) {
   // A press on |first| should be acked with NO_CONSUMER_EXISTS since there is
   // no touch-handler on it.
   touch.PressPoint(25, 25);
-  auto filter = AddFilter(WebInputEvent::kTouchStart);
+  auto filter = AddFilter(WebInputEvent::Type::kTouchStart);
   SendTouchEvent(&touch);
 
   EXPECT_EQ(blink::mojom::InputEventResultState::kNoConsumerExists,
@@ -161,12 +161,12 @@ IN_PROC_BROWSER_TEST_F(TouchInputBrowserTest, TouchHandlerNoConsume) {
   // Press on |second| should be acked with NOT_CONSUMED since there is a
   // touch-handler on |second|, but it doesn't consume the event.
   touch.PressPoint(125, 25);
-  auto filter = AddFilter(WebInputEvent::kTouchStart);
+  auto filter = AddFilter(WebInputEvent::Type::kTouchStart);
   SendTouchEvent(&touch);
   EXPECT_EQ(blink::mojom::InputEventResultState::kNotConsumed,
             filter->WaitForAck());
 
-  filter = AddFilter(WebInputEvent::kTouchEnd);
+  filter = AddFilter(WebInputEvent::Type::kTouchEnd);
   touch.ReleasePoint(0);
   SendTouchEvent(&touch);
   filter->WaitForAck();
@@ -179,13 +179,13 @@ IN_PROC_BROWSER_TEST_F(TouchInputBrowserTest, TouchHandlerConsume) {
   // Press on |third| should be acked with CONSUMED since the touch-handler on
   // |third| consimes the event.
   touch.PressPoint(25, 125);
-  auto filter = AddFilter(WebInputEvent::kTouchStart);
+  auto filter = AddFilter(WebInputEvent::Type::kTouchStart);
   SendTouchEvent(&touch);
   EXPECT_EQ(blink::mojom::InputEventResultState::kConsumed,
             filter->WaitForAck());
 
   touch.ReleasePoint(0);
-  filter = AddFilter(WebInputEvent::kTouchEnd);
+  filter = AddFilter(WebInputEvent::Type::kTouchEnd);
   SendTouchEvent(&touch);
   filter->WaitForAck();
 }
@@ -197,13 +197,13 @@ IN_PROC_BROWSER_TEST_F(TouchInputBrowserTest, MultiPointTouchPress) {
   // Press on |first|, which sould be acked with NO_CONSUMER_EXISTS. Then press
   // on |third|. That point should be acked with CONSUMED.
   touch.PressPoint(25, 25);
-  auto filter = AddFilter(WebInputEvent::kTouchStart);
+  auto filter = AddFilter(WebInputEvent::Type::kTouchStart);
   SendTouchEvent(&touch);
   EXPECT_EQ(blink::mojom::InputEventResultState::kNoConsumerExists,
             filter->WaitForAck());
 
   touch.PressPoint(25, 125);
-  filter = AddFilter(WebInputEvent::kTouchStart);
+  filter = AddFilter(WebInputEvent::Type::kTouchStart);
   SendTouchEvent(&touch);
   EXPECT_EQ(blink::mojom::InputEventResultState::kConsumed,
             filter->WaitForAck());

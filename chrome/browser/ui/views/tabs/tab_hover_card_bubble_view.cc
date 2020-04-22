@@ -717,9 +717,20 @@ void TabHoverCardBubbleView::UpdateTextFade(double percent) {
 }
 
 void TabHoverCardBubbleView::ClearPreviewImage() {
+  DCHECK(preview_image_)
+      << "This method should only be called when preview images are enabled.";
+
+  // This can return null if there is no associated widget, etc. In that case
+  // there is nothing to render, and we can't get theme default colors to render
+  // with anyway, so bail out. This should hopefully address crbug.com/1070980
+  // (Null dereference
+  const ui::ThemeProvider* const theme_provider = GetThemeProvider();
+  if (!theme_provider)
+    return;
+
   // Check the no-preview color and size to see if it needs to be
   // regenerated. DPI or theme change can cause a regeneration.
-  const SkColor foreground_color = GetThemeProvider()->GetColor(
+  const SkColor foreground_color = theme_provider->GetColor(
       ThemeProperties::COLOR_HOVER_CARD_NO_PREVIEW_FOREGROUND);
 
   // Set the no-preview placeholder image. All sizes are in DIPs.
@@ -734,7 +745,7 @@ void TabHoverCardBubbleView::ClearPreviewImage() {
   preview_image_->SetPreferredSize(TabStyle::GetPreviewImageSize());
 
   // Also possibly regenerate the background if it has changed.
-  const SkColor background_color = GetThemeProvider()->GetColor(
+  const SkColor background_color = theme_provider->GetColor(
       ThemeProperties::COLOR_HOVER_CARD_NO_PREVIEW_BACKGROUND);
   if (!preview_image_->background() ||
       preview_image_->background()->get_color() != background_color) {

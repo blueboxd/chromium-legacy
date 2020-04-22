@@ -748,6 +748,10 @@ chrome_internal_verifier(
 )
 
 chrome_internal_verifier(
+    builder = 'mac-chrome',
+)
+
+chrome_internal_verifier(
     builder = 'win_chrome_official',
 )
 

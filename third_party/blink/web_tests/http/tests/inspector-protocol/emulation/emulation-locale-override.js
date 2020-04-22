@@ -15,8 +15,8 @@
   testRunner.log('\nChecking locale after cross-origin navigation');
   await printLocaleSpecificData();
 
-  await dp.Emulation.setLocaleOverride({locale: 'zn_CN'});
-  testRunner.log('\nSet locale to zn-CN');
+  await dp.Emulation.setLocaleOverride({locale: 'zh_CN'});
+  testRunner.log('\nSet locale to zh-CN');
   await printLocaleSpecificData();
 
   const sencondSession = await page.createSession();

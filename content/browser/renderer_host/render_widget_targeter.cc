@@ -24,7 +24,7 @@ namespace {
 
 gfx::PointF ComputeEventLocation(const blink::WebInputEvent& event) {
   if (blink::WebInputEvent::IsMouseEventType(event.GetType()) ||
-      event.GetType() == blink::WebInputEvent::kMouseWheel) {
+      event.GetType() == blink::WebInputEvent::Type::kMouseWheel) {
     return static_cast<const blink::WebMouseEvent&>(event).PositionInWidget();
   }
   if (blink::WebInputEvent::IsTouchEventType(event.GetType())) {
@@ -183,7 +183,7 @@ void RenderWidgetTargeter::FindTargetAndDispatch(
     const blink::WebInputEvent& event,
     const ui::LatencyInfo& latency) {
   DCHECK(blink::WebInputEvent::IsMouseEventType(event.GetType()) ||
-         event.GetType() == blink::WebInputEvent::kMouseWheel ||
+         event.GetType() == blink::WebInputEvent::Type::kMouseWheel ||
          blink::WebInputEvent::IsTouchEventType(event.GetType()) ||
          (blink::WebInputEvent::IsGestureEventType(event.GetType()) &&
           (static_cast<const blink::WebGestureEvent&>(event).SourceDevice() ==

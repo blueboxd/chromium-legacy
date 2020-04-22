@@ -914,21 +914,6 @@ NetworkQualityEstimator::GetCappedECTBasedOnSignalStrength() const {
     return effective_connection_type_;
   }
 
-  if (current_network_id_.type == NetworkChangeNotifier::CONNECTION_WIFI) {
-    // The maximum signal strength level is 4.
-    UMA_HISTOGRAM_EXACT_LINEAR("NQE.WifiSignalStrength.AtECTComputation",
-                               current_network_id_.signal_strength, 4);
-  } else if (current_network_id_.type == NetworkChangeNotifier::CONNECTION_2G ||
-             current_network_id_.type == NetworkChangeNotifier::CONNECTION_3G ||
-             current_network_id_.type == NetworkChangeNotifier::CONNECTION_4G) {
-    // The maximum signal strength level is 4.
-    UMA_HISTOGRAM_EXACT_LINEAR("NQE.CellularSignalStrength.AtECTComputation",
-                               current_network_id_.signal_strength, 4);
-  } else {
-    NOTREACHED();
-    return effective_connection_type_;
-  }
-
   // Do not cap ECT if the signal strength is high.
   if (current_network_id_.signal_strength > 2)
     return effective_connection_type_;

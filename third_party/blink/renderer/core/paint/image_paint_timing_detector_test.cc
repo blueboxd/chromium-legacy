@@ -256,7 +256,7 @@ class ImagePaintTimingDetectorTest : public testing::Test,
   }
 
   void SimulateKeyUp() {
-    GetPaintTimingDetector().NotifyInputEvent(WebInputEvent::kKeyUp);
+    GetPaintTimingDetector().NotifyInputEvent(WebInputEvent::Type::kKeyUp);
   }
 
   scoped_refptr<base::TestMockTimeTaskRunner> test_task_runner_;

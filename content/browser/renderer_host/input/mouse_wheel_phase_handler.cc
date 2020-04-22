@@ -241,7 +241,7 @@ bool MouseWheelPhaseHandler::ShouldBreakLatchingDueToDirectionChange(
 void MouseWheelPhaseHandler::GestureEventAck(
     const blink::WebGestureEvent& event,
     blink::mojom::InputEventResultState ack_result) {
-  if (event.GetType() != blink::WebInputEvent::kGestureScrollUpdate ||
+  if (event.GetType() != blink::WebInputEvent::Type::kGestureScrollUpdate ||
       first_scroll_update_ack_state_ !=
           FirstScrollUpdateAckState::kNotArrived) {
     return;

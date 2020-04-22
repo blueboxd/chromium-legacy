@@ -131,7 +131,7 @@ bool SafeBrowsingUserInteractionObserver::HandleKeyPress(
 
 bool SafeBrowsingUserInteractionObserver::HandleMouseEvent(
     const blink::WebMouseEvent& event) {
-  if (event.GetType() != blink::WebInputEvent::kMouseDown) {
+  if (event.GetType() != blink::WebInputEvent::Type::kMouseDown) {
     return false;
   }
   // If warning isn't enabled for mouse clicks, still record the first time when

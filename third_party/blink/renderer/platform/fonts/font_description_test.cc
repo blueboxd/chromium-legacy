@@ -27,6 +27,7 @@
 
 #include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -190,6 +191,62 @@ TEST(FontDescriptionTest, ToString) {
       "slashed_zero=Off], variant_east_asian=[form=Normal, width=Normal, "
       "ruby=false], font_optical_sizing=Auto",
       description.ToString());
+}
+
+// Verifies the correctness of the default hash trait of FontDescription.
+TEST(FontDescriptionTest, DefaultHashTrait) {
+  HashMap<FontDescription, int> map;
+
+  FontDescription description1;
+
+  FontDescription description2;
+  description1.SetWeight(FontSelectionValue(100));
+
+  FontFamily family;
+  family.SetFamily("A");
+  scoped_refptr<SharedFontFamily> b_family = SharedFontFamily::Create();
+  b_family->SetFamily("B");
+  family.AppendFamily(b_family);
+  FontDescription description3;
+  description3.SetFamily(family);
+
+  EXPECT_TRUE(map.insert(description1, 1).is_new_entry);
+  EXPECT_FALSE(map.insert(description1, 1).is_new_entry);
+  EXPECT_EQ(1u, map.size());
+
+  EXPECT_TRUE(map.insert(description2, 2).is_new_entry);
+  EXPECT_FALSE(map.insert(description2, 2).is_new_entry);
+  EXPECT_EQ(2u, map.size());
+
+  EXPECT_TRUE(map.insert(description3, 3).is_new_entry);
+  EXPECT_FALSE(map.insert(description3, 3).is_new_entry);
+  EXPECT_EQ(3u, map.size());
+
+  EXPECT_EQ(1, map.at(description1));
+  EXPECT_EQ(2, map.at(description2));
+  EXPECT_EQ(3, map.at(description3));
+
+  FontDescription not_in_map;
+  not_in_map.SetWeight(FontSelectionValue(200));
+  EXPECT_FALSE(map.Contains(not_in_map));
+
+  map.erase(description2);
+  EXPECT_EQ(2u, map.size());
+  EXPECT_TRUE(map.Contains(description1));
+  EXPECT_FALSE(map.Contains(description2));
+  EXPECT_TRUE(map.Contains(description3));
+
+  map.erase(description3);
+  EXPECT_EQ(1u, map.size());
+  EXPECT_TRUE(map.Contains(description1));
+  EXPECT_FALSE(map.Contains(description2));
+  EXPECT_FALSE(map.Contains(description3));
+
+  map.erase(description1);
+  EXPECT_EQ(0u, map.size());
+  EXPECT_FALSE(map.Contains(description1));
+  EXPECT_FALSE(map.Contains(description2));
+  EXPECT_FALSE(map.Contains(description3));
 }
 
 }  // namespace blink

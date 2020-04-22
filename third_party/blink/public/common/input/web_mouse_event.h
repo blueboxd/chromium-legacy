@@ -42,8 +42,8 @@ class BLINK_COMMON_EXPORT WebMouseEvent : public WebInputEvent,
                              global_position),
         click_count(click_count_param),
         menu_source_type(menu_source_type_param) {
-    DCHECK_GE(type_param, kMouseTypeFirst);
-    DCHECK_LE(type_param, kMouseTypeLast);
+    DCHECK_GE(type_param, Type::kMouseTypeFirst);
+    DCHECK_LE(type_param, Type::kMouseTypeLast);
   }
 
   WebMouseEvent(Type type_param,

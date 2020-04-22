@@ -26,6 +26,7 @@
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/flags/android/cached_feature_flags.h"
 #include "chrome/browser/flags/android/chrome_feature_list.h"
+#include "chrome/browser/history/history_tab_helper.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/media/protected_media_identifier_permission_context.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
@@ -157,10 +158,12 @@ void TabWebContentsDelegateAndroid::PortalWebContentsCreated(
   // TODO(jbroman): This doesn't adequately handle all of the tab helpers that
   // might be wanted here, and there are also likely to be issues with tab
   // helpers that are unprepared for portal activation to transition them.
+  // See https://crbug.com/1042323
   autofill::ChromeAutofillClient::CreateForWebContents(portal_contents);
   ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
       portal_contents,
       autofill::ChromeAutofillClient::FromWebContents(portal_contents));
+  HistoryTabHelper::CreateForWebContents(portal_contents);
   InfoBarService::CreateForWebContents(portal_contents);
 }
 

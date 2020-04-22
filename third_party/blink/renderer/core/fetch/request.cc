@@ -911,7 +911,6 @@ mojom::blink::FetchAPIRequestPtr Request::CreateFetchAPIRequest() const {
   fetch_api_request->redirect_mode = request_->Redirect();
   fetch_api_request->integrity = request_->Integrity();
   fetch_api_request->is_history_navigation = request_->IsHistoryNavigation();
-  fetch_api_request->request_context_type = request_->Context();
   fetch_api_request->destination = request_->Destination();
 
   // Strip off the fragment part of URL. So far, all callers expect the fragment

@@ -114,7 +114,7 @@ void MouseWheelEventQueue::ProcessMouseWheelAck(
   // If event wasn't consumed then generate a gesture scroll for it.
   if (CanGenerateGestureScroll(ack_result)) {
     WebGestureEvent scroll_update(
-        WebInputEvent::kGestureScrollUpdate, WebInputEvent::kNoModifiers,
+        WebInputEvent::Type::kGestureScrollUpdate, WebInputEvent::kNoModifiers,
         event_sent_for_gesture_ack_->event.TimeStamp(),
         blink::WebGestureDevice::kTouchpad);
 
@@ -248,14 +248,14 @@ void MouseWheelEventQueue::ProcessMouseWheelAck(
 void MouseWheelEventQueue::OnGestureScrollEvent(
     const GestureEventWithLatencyInfo& gesture_event) {
   if (gesture_event.event.GetType() ==
-      blink::WebInputEvent::kGestureScrollBegin) {
+      blink::WebInputEvent::Type::kGestureScrollBegin) {
     scrolling_device_ = gesture_event.event.SourceDevice();
   } else if (scrolling_device_ == gesture_event.event.SourceDevice() &&
              gesture_event.event.GetType() ==
-                 blink::WebInputEvent::kGestureScrollEnd) {
+                 blink::WebInputEvent::Type::kGestureScrollEnd) {
     scrolling_device_ = blink::WebGestureDevice::kUninitialized;
   } else if (gesture_event.event.GetType() ==
-             blink::WebInputEvent::kGestureFlingStart) {
+             blink::WebInputEvent::Type::kGestureFlingStart) {
     // With browser side fling we shouldn't reset scrolling_device_ on GFS since
     // the fling_controller processes the GFS to generate and send GSU events.
   }
@@ -294,7 +294,7 @@ void MouseWheelEventQueue::SendScrollEnd(WebGestureEvent update_event,
 
   WebGestureEvent scroll_end(update_event);
   scroll_end.SetTimeStamp(ui::EventTimeForNow());
-  scroll_end.SetType(WebInputEvent::kGestureScrollEnd);
+  scroll_end.SetType(WebInputEvent::Type::kGestureScrollEnd);
   scroll_end.data.scroll_end.synthetic = synthetic;
   scroll_end.data.scroll_end.inertial_phase =
       update_event.data.scroll_update.inertial_phase;

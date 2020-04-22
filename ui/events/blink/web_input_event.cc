@@ -83,14 +83,14 @@ blink::WebMouseWheelEvent MakeUntranslatedWebMouseWheelEventFromNativeEvent(
 #endif  // defined(OS_WIN)
 
 blink::WebKeyboardEvent MakeWebKeyboardEventFromUiEvent(const KeyEvent& event) {
-  blink::WebInputEvent::Type type = blink::WebInputEvent::kUndefined;
+  blink::WebInputEvent::Type type = blink::WebInputEvent::Type::kUndefined;
   switch (event.type()) {
     case ET_KEY_PRESSED:
-      type = event.is_char() ? blink::WebInputEvent::kChar
-                             : blink::WebInputEvent::kRawKeyDown;
+      type = event.is_char() ? blink::WebInputEvent::Type::kChar
+                             : blink::WebInputEvent::Type::kRawKeyDown;
       break;
     case ET_KEY_RELEASED:
-      type = blink::WebInputEvent::kKeyUp;
+      type = blink::WebInputEvent::Type::kKeyUp;
       break;
     default:
       NOTREACHED();
@@ -118,7 +118,7 @@ blink::WebKeyboardEvent MakeWebKeyboardEventFromUiEvent(const KeyEvent& event) {
 blink::WebMouseWheelEvent MakeWebMouseWheelEventFromUiEvent(
     const ScrollEvent& event) {
   blink::WebMouseWheelEvent webkit_event(
-      blink::WebInputEvent::kMouseWheel,
+      blink::WebInputEvent::Type::kMouseWheel,
       EventFlagsToWebEventModifiers(event.flags()), event.time_stamp());
 
   webkit_event.button = blink::WebMouseEvent::Button::kNoButton;
@@ -186,13 +186,13 @@ blink::WebMouseWheelEvent MakeWebMouseWheelEventFromUiEvent(
 
 blink::WebGestureEvent MakeWebGestureEventFromUiEvent(
     const ScrollEvent& event) {
-  blink::WebInputEvent::Type type = blink::WebInputEvent::kUndefined;
+  blink::WebInputEvent::Type type = blink::WebInputEvent::Type::kUndefined;
   switch (event.type()) {
     case ET_SCROLL_FLING_START:
-      type = blink::WebInputEvent::kGestureFlingStart;
+      type = blink::WebInputEvent::Type::kGestureFlingStart;
       break;
     case ET_SCROLL_FLING_CANCEL:
-      type = blink::WebInputEvent::kGestureFlingCancel;
+      type = blink::WebInputEvent::Type::kGestureFlingCancel;
       break;
     case ET_SCROLL:
       NOTREACHED() << "Invalid gesture type: " << event.type();
@@ -373,7 +373,7 @@ blink::WebGestureEvent MakeWebGestureEvent(const ScrollEvent& event) {
 blink::WebGestureEvent MakeWebGestureEventFlingCancel(
     const blink::WebMouseWheelEvent& wheel_event) {
   blink::WebGestureEvent gesture_event(
-      blink::WebInputEvent::kGestureFlingCancel,
+      blink::WebInputEvent::Type::kGestureFlingCancel,
       blink::WebInputEvent::kNoModifiers, wheel_event.TimeStamp(),
       blink::WebGestureDevice::kTouchpad);
   // Coordinates need to be transferred to the fling cancel gesture only
@@ -386,15 +386,15 @@ blink::WebGestureEvent MakeWebGestureEventFlingCancel(
 }
 
 blink::WebMouseEvent MakeWebMouseEventFromUiEvent(const MouseEvent& event) {
-  blink::WebInputEvent::Type type = blink::WebInputEvent::kUndefined;
+  blink::WebInputEvent::Type type = blink::WebInputEvent::Type::kUndefined;
   int click_count = 0;
   switch (event.type()) {
     case ET_MOUSE_PRESSED:
-      type = blink::WebInputEvent::kMouseDown;
+      type = blink::WebInputEvent::Type::kMouseDown;
       click_count = event.GetClickCount();
       break;
     case ET_MOUSE_RELEASED:
-      type = blink::WebInputEvent::kMouseUp;
+      type = blink::WebInputEvent::Type::kMouseUp;
       click_count = event.GetClickCount();
       break;
     case ET_MOUSE_EXITED: {
@@ -402,19 +402,19 @@ blink::WebMouseEvent MakeWebMouseEventFromUiEvent(const MouseEvent& event) {
       // pointer crosses through, change these into mouse move events.
       const Event::Properties* props = event.properties();
       if (props && props->contains(kPropertyMouseCrossedIntermediateWindow)) {
-        type = blink::WebInputEvent::kMouseMove;
+        type = blink::WebInputEvent::Type::kMouseMove;
       } else {
         static bool s_send_leave =
             base::FeatureList::IsEnabled(features::kSendMouseLeaveEvents);
-        type = s_send_leave ? blink::WebInputEvent::kMouseLeave
-                            : blink::WebInputEvent::kMouseMove;
+        type = s_send_leave ? blink::WebInputEvent::Type::kMouseLeave
+                            : blink::WebInputEvent::Type::kMouseMove;
       }
       break;
     }
     case ET_MOUSE_ENTERED:
     case ET_MOUSE_MOVED:
     case ET_MOUSE_DRAGGED:
-      type = blink::WebInputEvent::kMouseMove;
+      type = blink::WebInputEvent::Type::kMouseMove;
       break;
     default:
       NOTIMPLEMENTED() << "Received unexpected event: " << event.type();
@@ -465,7 +465,7 @@ blink::WebMouseEvent MakeWebMouseEventFromUiEvent(const MouseEvent& event) {
 blink::WebMouseWheelEvent MakeWebMouseWheelEventFromUiEvent(
     const MouseWheelEvent& event) {
   blink::WebMouseWheelEvent webkit_event(
-      blink::WebInputEvent::kMouseWheel,
+      blink::WebInputEvent::Type::kMouseWheel,
       EventFlagsToWebEventModifiers(event.flags()), event.time_stamp());
 
   webkit_event.button = blink::WebMouseEvent::Button::kNoButton;

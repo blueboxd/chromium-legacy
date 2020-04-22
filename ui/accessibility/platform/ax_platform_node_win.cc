@@ -4731,8 +4731,10 @@ int AXPlatformNodeWin::MSAARole() {
 
   switch (GetData().role) {
     case ax::mojom::Role::kAlert:
-    case ax::mojom::Role::kAlertDialog:
       return ROLE_SYSTEM_ALERT;
+
+    case ax::mojom::Role::kAlertDialog:
+      return ROLE_SYSTEM_DIALOG;
 
     case ax::mojom::Role::kAnchor:
       return ROLE_SYSTEM_LINK;

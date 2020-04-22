@@ -336,7 +336,7 @@ bool BeginSmoothScroll(GpuBenchmarkingContext* context,
     // Ensure the mouse is visible and move to start position, in case it will
     // trigger any hover or mousemove effects.
     context->web_view()->SetIsActive(true);
-    blink::WebMouseEvent mouseMove(blink::WebInputEvent::kMouseMove,
+    blink::WebMouseEvent mouseMove(blink::WebInputEvent::Type::kMouseMove,
                                    blink::WebInputEvent::kNoModifiers,
                                    ui::EventTimeForNow());
     mouseMove.SetPositionInWidget(start_x, start_y);

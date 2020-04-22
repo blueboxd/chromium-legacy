@@ -47,14 +47,12 @@ class TestDataReductionProxyMetricsObserverBase
   TestDataReductionProxyMetricsObserverBase(
       content::WebContents* web_contents,
       bool data_reduction_proxy_used,
-      bool cached_data_reduction_proxy_used,
       bool lite_page_used,
       bool black_listed,
       std::string session_key,
       uint64_t page_id)
       : web_contents_(web_contents),
         data_reduction_proxy_used_(data_reduction_proxy_used),
-        cached_data_reduction_proxy_used_(cached_data_reduction_proxy_used),
         lite_page_used_(lite_page_used),
         black_listed_(black_listed),
         session_key_(session_key),
@@ -69,8 +67,6 @@ class TestDataReductionProxyMetricsObserverBase
         std::make_unique<data_reduction_proxy::DataReductionProxyData>();
     data->set_request_url(navigation_handle->GetURL());
     data->set_used_data_reduction_proxy(data_reduction_proxy_used_);
-    data->set_was_cached_data_reduction_proxy_response(
-        cached_data_reduction_proxy_used_);
     data->set_request_url(GURL(kDefaultTestUrl));
     data->set_lite_page_received(lite_page_used_);
     data->set_session_key(session_key_);
@@ -89,7 +85,6 @@ class TestDataReductionProxyMetricsObserverBase
  private:
   content::WebContents* web_contents_;
   bool data_reduction_proxy_used_;
-  bool cached_data_reduction_proxy_used_;
   bool lite_page_used_;
   bool black_listed_;
   std::string session_key_;
@@ -130,8 +125,7 @@ class DataReductionProxyMetricsObserverBaseTest
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
     tracker->AddObserver(
         std::make_unique<TestDataReductionProxyMetricsObserverBase>(
-            web_contents(), data_reduction_proxy_used(),
-            cached_data_reduction_proxy_used(), is_using_lite_page(),
+            web_contents(), data_reduction_proxy_used(), is_using_lite_page(),
             black_listed(), session_key(), page_id()));
   }
 };

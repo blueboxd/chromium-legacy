@@ -125,10 +125,10 @@ bool IsNavigationRequest(mojom::RequestContextFrameType frame_type) {
 }
 
 bool IsClientRequest(mojom::RequestContextFrameType frame_type,
-                     mojom::RequestContextType request_context) {
+                     network::mojom::RequestDestination destination) {
   return IsNavigationRequest(frame_type) ||
-         request_context == mojom::RequestContextType::SHARED_WORKER ||
-         request_context == mojom::RequestContextType::WORKER;
+         destination == network::mojom::RequestDestination::kSharedWorker ||
+         destination == network::mojom::RequestDestination::kWorker;
 }
 
 // Notifies the result of FetchDataLoader to |callback_|, the other endpoint
@@ -257,7 +257,7 @@ void FetchRespondWithObserver::OnResponseFulfilled(
     // FIXME: Set the request mode of client requests to "same-origin" and
     // remove this check when the spec will be updated.
     // Spec issue: https://github.com/whatwg/fetch/issues/101
-    if (IsClientRequest(frame_type_, request_context_)) {
+    if (IsClientRequest(frame_type_, request_destination_)) {
       OnResponseRejected(
           ServiceWorkerResponseError::kResponseTypeOpaqueForClientRequest);
       return;
@@ -398,7 +398,7 @@ FetchRespondWithObserver::FetchRespondWithObserver(
       request_mode_(request.mode),
       redirect_mode_(request.redirect_mode),
       frame_type_(request.frame_type),
-      request_context_(request.request_context_type),
+      request_destination_(request.destination),
       corp_checker_(std::move(corp_checker)),
       task_runner_(context->GetTaskRunner(TaskType::kNetworking)) {}
 

@@ -8,6 +8,7 @@
 #include <set>
 #include <string>
 #include <utility>
+#include "ui/events/gesture_event_details.h"
 
 #if defined(OS_WIN)
 #include <vector>
@@ -55,6 +56,7 @@
 #include "ui/views/painter.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/views_delegate.h"
+#include "ui/views/views_features.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
@@ -767,29 +769,27 @@ bool Textfield::OnKeyReleased(const ui::KeyEvent& event) {
 }
 
 void Textfield::OnGestureEvent(ui::GestureEvent* event) {
-  bool show_virtual_keyboard = true;
-#if defined(OS_WIN)
-  show_virtual_keyboard = event->details().primary_pointer_type() ==
-                              ui::EventPointerType::POINTER_TYPE_TOUCH ||
-                          event->details().primary_pointer_type() ==
-                              ui::EventPointerType::POINTER_TYPE_PEN;
-#endif
+  static const bool kTakeFocusOnTapUp =
+      base::FeatureList::IsEnabled(features::kTextfieldFocusOnTapUp);
+
   switch (event->type()) {
     case ui::ET_GESTURE_TAP_DOWN:
-      RequestFocusWithPointer(event->details().primary_pointer_type());
-      if (show_virtual_keyboard)
-        ShowVirtualKeyboardIfEnabled();
-      event->SetHandled();
+      if (!kTakeFocusOnTapUp) {
+        RequestFocusForGesture(event->details());
+        event->SetHandled();
+      }
       break;
     case ui::ET_GESTURE_TAP:
+      if (kTakeFocusOnTapUp)
+        RequestFocusForGesture(event->details());
       if (controller_ && controller_->HandleGestureEvent(this, *event)) {
         event->SetHandled();
         return;
       }
       if (event->details().tap_count() == 1) {
-        // If tap is on the selection and touch handles are not present, handles
-        // should be shown without changing selection. Otherwise, cursor should
-        // be moved to the tap location.
+        // If tap is on the selection and touch handles are not present,
+        // handles should be shown without changing selection. Otherwise,
+        // cursor should be moved to the tap location.
         if (touch_selection_controller_ ||
             !GetRenderText()->IsPointInSelection(event->location())) {
           OnBeforeUserAction();
@@ -816,15 +816,15 @@ void Textfield::OnGestureEvent(ui::GestureEvent* event) {
         SelectWordAt(event->location());
         OnAfterUserAction();
         CreateTouchSelectionControllerAndNotifyIt();
-        // If touch selection activated successfully, mark event as handled so
-        // that the regular context menu is not shown.
+        // If touch selection activated successfully, mark event as handled
+        // so that the regular context menu is not shown.
         if (touch_selection_controller_)
           event->SetHandled();
       } else {
-        // If long-press happens on the selection, deactivate touch selection
-        // and try to initiate drag-drop. If drag-drop is not enabled, context
-        // menu will be shown. Event is not marked as handled to let Views
-        // handle drag-drop or context menu.
+        // If long-press happens on the selection, deactivate touch
+        // selection and try to initiate drag-drop. If drag-drop is not
+        // enabled, context menu will be shown. Event is not marked as
+        // handled to let Views handle drag-drop or context menu.
         DestroyTouchSelection();
         initiating_drag_ = switches::IsTouchDragDropEnabled();
       }
@@ -837,29 +837,34 @@ void Textfield::OnGestureEvent(ui::GestureEvent* event) {
         event->SetHandled();
       break;
     case ui::ET_GESTURE_SCROLL_BEGIN:
-      touch_handles_hidden_due_to_scroll_ =
-          touch_selection_controller_ != nullptr;
-      DestroyTouchSelection();
-      drag_start_location_ = event->location();
-      drag_start_display_offset_ =
-          GetRenderText()->GetUpdatedDisplayOffset().x();
-      event->SetHandled();
+      if (HasFocus()) {
+        touch_handles_hidden_due_to_scroll_ =
+            touch_selection_controller_ != nullptr;
+        DestroyTouchSelection();
+        drag_start_location_ = event->location();
+        drag_start_display_offset_ =
+            GetRenderText()->GetUpdatedDisplayOffset().x();
+        event->SetHandled();
+      }
       break;
-    case ui::ET_GESTURE_SCROLL_UPDATE: {
-      int new_offset = drag_start_display_offset_ + event->location().x() -
-                       drag_start_location_.x();
-      GetRenderText()->SetDisplayOffset(new_offset);
-      SchedulePaint();
-      event->SetHandled();
+    case ui::ET_GESTURE_SCROLL_UPDATE:
+      if (HasFocus()) {
+        int new_offset = drag_start_display_offset_ + event->location().x() -
+                         drag_start_location_.x();
+        GetRenderText()->SetDisplayOffset(new_offset);
+        SchedulePaint();
+        event->SetHandled();
+      }
       break;
-    }
     case ui::ET_GESTURE_SCROLL_END:
     case ui::ET_SCROLL_FLING_START:
-      if (touch_handles_hidden_due_to_scroll_) {
-        CreateTouchSelectionControllerAndNotifyIt();
-        touch_handles_hidden_due_to_scroll_ = false;
+      if (HasFocus()) {
+        if (touch_handles_hidden_due_to_scroll_) {
+          CreateTouchSelectionControllerAndNotifyIt();
+          touch_handles_hidden_due_to_scroll_ = false;
+        }
+        event->SetHandled();
       }
-      event->SetHandled();
       break;
     default:
       return;
@@ -2068,6 +2073,20 @@ void Textfield::RequestFocusWithPointer(ui::EventPointerType pointer_type) {
   }
 
   View::RequestFocus();
+}
+
+void Textfield::RequestFocusForGesture(const ui::GestureEventDetails& details) {
+  bool show_virtual_keyboard = true;
+#if defined(OS_WIN)
+  show_virtual_keyboard =
+      details.primary_pointer_type() ==
+          ui::EventPointerType::POINTER_TYPE_TOUCH ||
+      details.primary_pointer_type() == ui::EventPointerType::POINTER_TYPE_PEN;
+#endif
+
+  RequestFocusWithPointer(details.primary_pointer_type());
+  if (show_virtual_keyboard)
+    ShowVirtualKeyboardIfEnabled();
 }
 
 views::PropertyChangedSubscription Textfield::AddTextChangedCallback(

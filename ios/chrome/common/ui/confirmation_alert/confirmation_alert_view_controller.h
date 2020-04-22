@@ -36,6 +36,9 @@ extern NSString* const kConfirmationAlertPrimaryActionAccessibilityIdentifier;
 // The image. Must be set before the view is loaded.
 @property(nonatomic, strong) UIImage* image;
 
+// Value to determine whether or not the image's size should be scaled.
+@property(nonatomic) BOOL imageHasFixedSize;
+
 // Controls if there is a help button in the view. Must be set before the
 // view is loaded.
 @property(nonatomic) BOOL helpButtonAvailable;

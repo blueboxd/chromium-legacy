@@ -13,8 +13,8 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_piece.h"
-#include "chrome/common/safe_browsing/client_model.pb.h"
 #include "chrome/renderer/safe_browsing/features.h"
+#include "components/safe_browsing/core/proto/client_model.pb.h"
 
 namespace {
 // Enum used to keep stats about the status of the Scorer creation.

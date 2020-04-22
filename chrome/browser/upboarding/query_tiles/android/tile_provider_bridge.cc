@@ -26,7 +26,7 @@ const char kTileProviderBridgeKey[] = "tile_provider_bridge";
 ScopedJavaLocalRef<jobject> createJavaTileAndMaybeAddToList(
     JNIEnv* env,
     ScopedJavaLocalRef<jobject> jlist,
-    QueryTileEntry* tile) {
+    Tile* tile) {
   ScopedJavaLocalRef<jobject> jchildren =
       Java_TileProviderBridge_createList(env);
 
@@ -40,19 +40,18 @@ ScopedJavaLocalRef<jobject> createJavaTileAndMaybeAddToList(
       ConvertUTF8ToJavaString(env, tile->query_text), jchildren);
 }
 
-ScopedJavaLocalRef<jobject> createJavaTiles(
-    JNIEnv* env,
-    const std::vector<QueryTileEntry*>& tiles) {
+ScopedJavaLocalRef<jobject> createJavaTiles(JNIEnv* env,
+                                            const std::vector<Tile*>& tiles) {
   ScopedJavaLocalRef<jobject> jlist = Java_TileProviderBridge_createList(env);
 
-  for (QueryTileEntry* tile : tiles)
+  for (Tile* tile : tiles)
     createJavaTileAndMaybeAddToList(env, jlist, tile);
 
   return jlist;
 }
 
 void RunGetTilesCallback(const JavaRef<jobject>& j_callback,
-                         const std::vector<QueryTileEntry*>& tiles) {
+                         const std::vector<Tile*>& tiles) {
   JNIEnv* env = AttachCurrentThread();
   RunObjectCallbackAndroid(j_callback, createJavaTiles(env, tiles));
 }

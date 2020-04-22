@@ -606,19 +606,17 @@ TEST_F(MediaFeedsConverterTest, FailsItemWithInvalidGenre) {
   EXPECT_TRUE(result.value().empty());
 }
 
-TEST_F(MediaFeedsConverterTest, SucceedsItemWithLiveDetails) {
-  EntityPtr item = ValidMediaFeedItem();
-
+TEST_F(MediaFeedsConverterTest, SucceedsBroadcastEvent) {
   EntityPtr publication = Entity::New();
   publication->type = schema_org::entity::kBroadcastEvent;
   publication->properties.push_back(
       CreateDateTimeProperty(schema_org::property::kStartDate, "2020-03-22"));
   publication->properties.push_back(
       CreateDateTimeProperty(schema_org::property::kEndDate, "2020-03-23"));
-  item->properties.push_back(CreateEntityProperty(
-      schema_org::property::kPublication, std::move(publication)));
+  publication->properties.push_back(CreateEntityProperty(
+      schema_org::property::kWorkPerformed, ValidMediaFeedItem()));
 
-  EntityPtr entity = AddItemToFeed(ValidMediaFeed(), std::move(item));
+  EntityPtr entity = AddItemToFeed(ValidMediaFeed(), std::move(publication));
 
   mojom::MediaFeedItemPtr expected_item = ExpectedFeedItem();
   expected_item->live = mojom::LiveDetails::New();
@@ -637,19 +635,17 @@ TEST_F(MediaFeedsConverterTest, SucceedsItemWithLiveDetails) {
 }
 
 // Fails because the end date is string type instead of date type.
-TEST_F(MediaFeedsConverterTest, FailsItemWithInvalidLiveDetails) {
-  EntityPtr item = ValidMediaFeedItem();
-
+TEST_F(MediaFeedsConverterTest, FailsItemWithInvalidBroadcastEvent) {
   EntityPtr publication = Entity::New();
   publication->type = schema_org::entity::kBroadcastEvent;
   publication->properties.push_back(
-      CreateDateTimeProperty(schema_org::property::kStartTime, "2020-03-22"));
+      CreateDateTimeProperty(schema_org::property::kStartDate, "2020-03-22"));
   publication->properties.push_back(
-      CreateStringProperty(schema_org::property::kEndTime, "2020-03-23"));
-  item->properties.push_back(CreateEntityProperty(
-      schema_org::property::kPublication, std::move(publication)));
+      CreateStringProperty(schema_org::property::kEndDate, "2020-03-23"));
+  publication->properties.push_back(CreateEntityProperty(
+      schema_org::property::kWorkPerformed, ValidMediaFeedItem()));
 
-  EntityPtr entity = AddItemToFeed(ValidMediaFeed(), std::move(item));
+  EntityPtr entity = AddItemToFeed(ValidMediaFeed(), std::move(publication));
 
   auto result = GetResults(std::move(entity));
 
@@ -686,7 +682,7 @@ TEST_F(MediaFeedsConverterTest, SucceedsItemWithIdentifier) {
   EXPECT_EQ(expected_item, result.value()[0]);
 }
 
-TEST_F(MediaFeedsConverterTest, SucceedsItemWithInvalidIdentifier) {
+TEST_F(MediaFeedsConverterTest, FailsItemWithInvalidIdentifier) {
   EntityPtr item = ValidMediaFeedItem();
 
   {
@@ -697,7 +693,7 @@ TEST_F(MediaFeedsConverterTest, SucceedsItemWithInvalidIdentifier) {
     identifier->properties.push_back(
         CreateStringProperty(schema_org::property::kValue, "1"));
     item->properties.push_back(CreateEntityProperty(
-        schema_org::property::kPublication, std::move(identifier)));
+        schema_org::property::kIdentifier, std::move(identifier)));
   }
 
   EntityPtr entity = AddItemToFeed(ValidMediaFeed(), std::move(item));

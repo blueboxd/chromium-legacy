@@ -52,6 +52,8 @@ namespace previews {
 
 namespace {
 
+const char kChromeProxyECTHeader[] = "chrome-proxy-ect";
+
 void RecordInterceptAttempt(bool attempted) {
   UMA_HISTOGRAM_BOOLEAN("Previews.ServerLitePage.URLLoader.Attempted",
                         attempted);
@@ -108,7 +110,7 @@ net::HttpRequestHeaders GetChromeProxyHeaders(
           &headers, page_id != 0U ? page_id : 1, header);
     }
 
-    headers.SetHeader(data_reduction_proxy::chrome_proxy_ect_header(),
+    headers.SetHeader(kChromeProxyECTHeader,
                       net::GetNameForEffectiveConnectionType(
                           settings->data_reduction_proxy_service()
                               ->GetEffectiveConnectionType()));

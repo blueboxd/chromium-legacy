@@ -366,6 +366,12 @@ TEST_F(PreviewsOptimizationGuideTest,
 
 TEST_F(PreviewsOptimizationGuideTest,
        CanApplyPreviewWithUnknownDecisionReturnsFalse) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeaturesAndParameters(
+      {{previews::features::kPreviews,
+        {{"apply_deferallscript_when_guide_decision_unknown", "false"}}}},
+      {});
+
   PreviewsOptimizationGuide guide(optimization_guide_decider());
   SeedOptimizationGuideDeciderWithDefaultResponses();
 

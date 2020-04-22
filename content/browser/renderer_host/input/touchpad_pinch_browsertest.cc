@@ -259,7 +259,7 @@ IN_PROC_BROWSER_TEST_P(TouchpadPinchBrowserTest,
   EnsureNoScaleChangeWhenCanceled(
       base::BindOnce([](WebContents* web_contents, gfx::PointF position) {
         blink::WebGestureEvent double_tap_zoom(
-            blink::WebInputEvent::kGestureDoubleTap,
+            blink::WebInputEvent::Type::kGestureDoubleTap,
             blink::WebInputEvent::kNoModifiers,
             blink::WebInputEvent::GetStaticTimeStampForTests(),
             blink::WebGestureDevice::kTouchpad);

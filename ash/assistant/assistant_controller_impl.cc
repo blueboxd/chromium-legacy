@@ -19,7 +19,7 @@
 #include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
-#include "chromeos/services/assistant/public/features.h"
+#include "chromeos/services/assistant/public/cpp/features.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "components/prefs/pref_registry_simple.h"
 
@@ -57,16 +57,6 @@ void AssistantControllerImpl::BindReceiver(
 void AssistantControllerImpl::BindReceiver(
     mojo::PendingReceiver<mojom::AssistantVolumeControl> receiver) {
   assistant_volume_control_receiver_.Bind(std::move(receiver));
-}
-
-void AssistantControllerImpl::AddObserver(
-    AssistantControllerObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void AssistantControllerImpl::RemoveObserver(
-    AssistantControllerObserver* observer) {
-  observers_.RemoveObserver(observer);
 }
 
 void AssistantControllerImpl::SetAssistant(
@@ -140,6 +130,16 @@ void AssistantControllerImpl::DownloadImage(
   AccountId account_id = user_session->user_info.account_id;
   AssistantImageDownloader::GetInstance()->Download(account_id, url,
                                                     std::move(callback));
+}
+
+void AssistantControllerImpl::AddObserver(
+    AssistantControllerObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void AssistantControllerImpl::RemoveObserver(
+    AssistantControllerObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void AssistantControllerImpl::OpenUrl(const GURL& url,

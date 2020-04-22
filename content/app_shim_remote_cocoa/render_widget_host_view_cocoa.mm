@@ -717,7 +717,7 @@ void ExtractUnderlines(NSAttributedString* string,
     if (!_mouseEventWasIgnored) {
       WebMouseEvent exitEvent =
           WebMouseEventBuilder::Build(theEvent, self, _pointerType);
-      exitEvent.SetType(WebInputEvent::kMouseLeave);
+      exitEvent.SetType(WebInputEvent::Type::kMouseLeave);
       exitEvent.button = WebMouseEvent::Button::kNoButton;
       _hostHelper->ForwardMouseEvent(exitEvent);
     }
@@ -731,7 +731,7 @@ void ExtractUnderlines(NSAttributedString* string,
     // due to the hitTest, send a mouse enter event to the host view.
     WebMouseEvent enterEvent =
         WebMouseEventBuilder::Build(theEvent, self, _pointerType);
-    enterEvent.SetType(WebInputEvent::kMouseMove);
+    enterEvent.SetType(WebInputEvent::Type::kMouseMove);
     enterEvent.button = WebMouseEvent::Button::kNoButton;
     _hostHelper->RouteOrProcessMouseEvent(enterEvent);
   }
@@ -954,8 +954,8 @@ void ExtractUnderlines(NSAttributedString* string,
   NativeWebKeyboardEvent event =
       NativeWebKeyboardEvent::CreateForRenderer(theEvent);
   ui::LatencyInfo latency_info;
-  if (event.GetType() == blink::WebInputEvent::kRawKeyDown ||
-      event.GetType() == blink::WebInputEvent::kChar) {
+  if (event.GetType() == blink::WebInputEvent::Type::kRawKeyDown ||
+      event.GetType() == blink::WebInputEvent::Type::kChar) {
     latency_info.set_source_event_type(ui::SourceEventType::KEY_PRESS);
   }
 
@@ -1111,7 +1111,7 @@ void ExtractUnderlines(NSAttributedString* string,
     // So before sending the real key down event, we need to send a fake key up
     // event to balance it.
     NativeWebKeyboardEvent fakeEvent = event;
-    fakeEvent.SetType(blink::WebInputEvent::kKeyUp);
+    fakeEvent.SetType(blink::WebInputEvent::Type::kKeyUp);
     fakeEvent.skip_in_browser = true;
     ui::LatencyInfo fake_event_latency_info = latency_info;
     fake_event_latency_info.set_source_event_type(ui::SourceEventType::OTHER);
@@ -1126,7 +1126,7 @@ void ExtractUnderlines(NSAttributedString* string,
     if (!textInserted && _textToBeInserted.length() == 1) {
       // If a single character was inserted, then we just send it as a keypress
       // event.
-      event.SetType(blink::WebInputEvent::kChar);
+      event.SetType(blink::WebInputEvent::Type::kChar);
       event.text[0] = _textToBeInserted[0];
       event.text[1] = 0;
       event.skip_in_browser = true;
@@ -1138,7 +1138,7 @@ void ExtractUnderlines(NSAttributedString* string,
       // We don't get insertText: calls if ctrl or cmd is down, or the key event
       // generates an insert command. So synthesize a keypress event for these
       // cases, unless the key event generated any other command.
-      event.SetType(blink::WebInputEvent::kChar);
+      event.SetType(blink::WebInputEvent::Type::kChar);
       event.skip_in_browser = true;
       _hostHelper->ForwardKeyboardEvent(event, latency_info);
     }
@@ -1197,7 +1197,7 @@ void ExtractUnderlines(NSAttributedString* string,
   if ([event type] == NSEventTypeMagnify ||
       [event type] == NSEventTypeEndGesture) {
     WebGestureEvent endEvent(WebGestureEventBuilder::Build(event, self));
-    endEvent.SetType(WebInputEvent::kGesturePinchEnd);
+    endEvent.SetType(WebInputEvent::Type::kGesturePinchEnd);
     endEvent.SetSourceDevice(blink::WebGestureDevice::kTouchpad);
     endEvent.SetNeedsWheelEvent(true);
     _hostHelper->GestureEnd(endEvent);
@@ -2055,8 +2055,8 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
   // If we switch windows (or are removed from the view hierarchy), cancel any
   // open mouse-downs.
   if (_hasOpenMouseDown) {
-    WebMouseEvent event(WebInputEvent::kMouseUp, WebInputEvent::kNoModifiers,
-                        ui::EventTimeForNow());
+    WebMouseEvent event(WebInputEvent::Type::kMouseUp,
+                        WebInputEvent::kNoModifiers, ui::EventTimeForNow());
     event.button = WebMouseEvent::Button::kLeft;
     _hostHelper->ForwardMouseEvent(event);
     _hasOpenMouseDown = NO;

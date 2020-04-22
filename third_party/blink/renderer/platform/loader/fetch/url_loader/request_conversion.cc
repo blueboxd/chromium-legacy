@@ -291,8 +291,7 @@ void PopulateResourceRequest(const ResourceRequestHead& src,
   mojom::ResourceType resource_type =
       RequestContextToResourceType(src.GetRequestContext());
 
-  // TODO(kinuko): Deprecate these.
-  dest->fetch_request_context_type = static_cast<int>(src.GetRequestContext());
+  // TODO(kinuko): Deprecate this.
   dest->resource_type = static_cast<int>(resource_type);
 
   if (resource_type == mojom::ResourceType::kXhr &&

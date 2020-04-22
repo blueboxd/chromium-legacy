@@ -54,13 +54,13 @@ import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
-import org.chromium.chrome.browser.infobar.SimpleConfirmInfoBarBuilder;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabUtils;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.ui.messages.infobar.SimpleConfirmInfoBarBuilder;
 import org.chromium.chrome.browser.webapps.WebappActivity;
 import org.chromium.content_public.browser.ScreenOrientationDelegate;
 import org.chromium.content_public.browser.ScreenOrientationProvider;
@@ -815,8 +815,8 @@ public class VrShellDelegate
             }
         };
 
-        SimpleConfirmInfoBarBuilder.create(tab, listener,
-                InfoBarIdentifier.VR_FEEDBACK_INFOBAR_ANDROID,
+        SimpleConfirmInfoBarBuilder.create(tab.getWebContents(), listener,
+                InfoBarIdentifier.VR_FEEDBACK_INFOBAR_ANDROID, tab.getContext(),
                 org.chromium.chrome.vr.R.drawable.vr_services,
                 ContextUtils.getApplicationContext().getString(
                         org.chromium.chrome.vr.R.string.vr_shell_feedback_infobar_description),
@@ -1009,8 +1009,8 @@ public class VrShellDelegate
                 return false;
             }
         };
-        SimpleConfirmInfoBarBuilder.create(tab, listener,
-                InfoBarIdentifier.VR_SERVICES_UPGRADE_ANDROID,
+        SimpleConfirmInfoBarBuilder.create(tab.getWebContents(), listener,
+                InfoBarIdentifier.VR_SERVICES_UPGRADE_ANDROID, mActivity,
                 org.chromium.chrome.vr.R.drawable.vr_services, infobarText, buttonText, null, null,
                 true);
     }

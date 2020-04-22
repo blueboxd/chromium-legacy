@@ -134,9 +134,9 @@ void AutofillUiTest::SendKeyToPopup(content::RenderFrameHost* render_frame_host,
       render_frame_host->GetView()->GetRenderWidgetHost();
 
   // Route popup-targeted key presses via the render view host.
-  content::NativeWebKeyboardEvent event(blink::WebKeyboardEvent::kRawKeyDown,
-                                        blink::WebInputEvent::kNoModifiers,
-                                        ui::EventTimeForNow());
+  content::NativeWebKeyboardEvent event(
+      blink::WebKeyboardEvent::Type::kRawKeyDown,
+      blink::WebInputEvent::kNoModifiers, ui::EventTimeForNow());
   event.windows_key_code = key_code;
   event.dom_code = static_cast<int>(code);
   event.dom_key = key;
@@ -164,9 +164,9 @@ void AutofillUiTest::SendKeyToPopupAndWait(
     std::list<ObservedUiEvents> expected_events,
     content::RenderWidgetHost* widget) {
   // Route popup-targeted key presses via the render view host.
-  content::NativeWebKeyboardEvent event(blink::WebKeyboardEvent::kRawKeyDown,
-                                        blink::WebInputEvent::kNoModifiers,
-                                        ui::EventTimeForNow());
+  content::NativeWebKeyboardEvent event(
+      blink::WebKeyboardEvent::Type::kRawKeyDown,
+      blink::WebInputEvent::kNoModifiers, ui::EventTimeForNow());
   event.windows_key_code = key_code;
   event.dom_code = static_cast<int>(code);
   event.dom_key = key;
@@ -197,9 +197,9 @@ void AutofillUiTest::SendKeyToDataListPopup(ui::DomKey key,
                                             ui::DomCode code,
                                             ui::KeyboardCode key_code) {
   // Route popup-targeted key presses via the render view host.
-  content::NativeWebKeyboardEvent event(blink::WebKeyboardEvent::kRawKeyDown,
-                                        blink::WebInputEvent::kNoModifiers,
-                                        ui::EventTimeForNow());
+  content::NativeWebKeyboardEvent event(
+      blink::WebKeyboardEvent::Type::kRawKeyDown,
+      blink::WebInputEvent::kNoModifiers, ui::EventTimeForNow());
   event.windows_key_code = key_code;
   event.dom_code = static_cast<int>(code);
   event.dom_key = key;

@@ -1052,9 +1052,14 @@ void AutofillMetrics::LogWebauthnResult(WebauthnFlowEvent event,
 }
 
 // static
-void AutofillMetrics::LogUnmaskPromptEvent(UnmaskPromptEvent event) {
-  UMA_HISTOGRAM_ENUMERATION("Autofill.UnmaskPrompt.Events", event,
-                            NUM_UNMASK_PROMPT_EVENTS);
+void AutofillMetrics::LogUnmaskPromptEvent(UnmaskPromptEvent event,
+                                           bool has_valid_nickname) {
+  base::UmaHistogramEnumeration("Autofill.UnmaskPrompt.Events", event,
+                                NUM_UNMASK_PROMPT_EVENTS);
+  if (has_valid_nickname) {
+    base::UmaHistogramEnumeration("Autofill.UnmaskPrompt.Events.WithNickname",
+                                  event, NUM_UNMASK_PROMPT_EVENTS);
+  }
 }
 
 // static
@@ -1079,37 +1084,51 @@ void AutofillMetrics::LogExpirationDateFixFlowPromptShown() {
 // static
 void AutofillMetrics::LogUnmaskPromptEventDuration(
     const base::TimeDelta& duration,
-    UnmaskPromptEvent close_event) {
+    UnmaskPromptEvent close_event,
+    bool has_valid_nickname) {
   std::string suffix;
   switch (close_event) {
     case UNMASK_PROMPT_CLOSED_NO_ATTEMPTS:
-      suffix = "NoAttempts";
+      suffix = ".NoAttempts";
       break;
     case UNMASK_PROMPT_CLOSED_FAILED_TO_UNMASK_RETRIABLE_FAILURE:
     case UNMASK_PROMPT_CLOSED_FAILED_TO_UNMASK_NON_RETRIABLE_FAILURE:
-      suffix = "Failure";
+      suffix = ".Failure";
       break;
     case UNMASK_PROMPT_CLOSED_ABANDON_UNMASKING:
-      suffix = "AbandonUnmasking";
+      suffix = ".AbandonUnmasking";
       break;
     case UNMASK_PROMPT_UNMASKED_CARD_FIRST_ATTEMPT:
     case UNMASK_PROMPT_UNMASKED_CARD_AFTER_FAILED_ATTEMPTS:
-      suffix = "Success";
+      suffix = ".Success";
       break;
     default:
       NOTREACHED();
       return;
   }
   base::UmaHistogramLongTimes("Autofill.UnmaskPrompt.Duration", duration);
-  base::UmaHistogramLongTimes("Autofill.UnmaskPrompt.Duration." + suffix,
+  base::UmaHistogramLongTimes("Autofill.UnmaskPrompt.Duration" + suffix,
                               duration);
+
+  if (has_valid_nickname) {
+    base::UmaHistogramLongTimes("Autofill.UnmaskPrompt.Duration.WithNickname",
+                                duration);
+    base::UmaHistogramLongTimes(
+        "Autofill.UnmaskPrompt.Duration" + suffix + ".WithNickname", duration);
+  }
 }
 
 // static
 void AutofillMetrics::LogTimeBeforeAbandonUnmasking(
-    const base::TimeDelta& duration) {
-  UMA_HISTOGRAM_LONG_TIMES("Autofill.UnmaskPrompt.TimeBeforeAbandonUnmasking",
-                           duration);
+    const base::TimeDelta& duration,
+    bool has_valid_nickname) {
+  base::UmaHistogramLongTimes(
+      "Autofill.UnmaskPrompt.TimeBeforeAbandonUnmasking", duration);
+  if (has_valid_nickname) {
+    base::UmaHistogramLongTimes(
+        "Autofill.UnmaskPrompt.TimeBeforeAbandonUnmasking.WithNickname",
+        duration);
+  }
 }
 
 // static

@@ -213,7 +213,7 @@ TEST_F(SelectionControllerTest,
 
   // Simulate a tap somewhere in the document
   blink::WebMouseEvent mouse_event(
-      blink::WebInputEvent::kMouseDown,
+      blink::WebInputEvent::Type::kMouseDown,
       blink::WebInputEvent::kIsCompatibilityEventForTouch,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   // Frame scale defaults to 0, which would cause a divide-by-zero problem.

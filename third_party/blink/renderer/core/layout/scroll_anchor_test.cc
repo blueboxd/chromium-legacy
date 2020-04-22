@@ -101,7 +101,7 @@ class ScrollAnchorTest : public testing::WithParamInterface<bool>,
                         ->ConvertFromScrollbarToContainingEmbeddedContentView(
                             *scrollbar, IntPoint(0, thumb_center)));
     scrollbar->MouseDown(blink::WebMouseEvent(
-        blink::WebInputEvent::kMouseDown, *scrollbar_drag_point_,
+        blink::WebInputEvent::Type::kMouseDown, *scrollbar_drag_point_,
         *scrollbar_drag_point_, blink::WebPointerProperties::Button::kLeft, 0,
         blink::WebInputEvent::kNoModifiers, base::TimeTicks::Now()));
   }
@@ -116,7 +116,7 @@ class ScrollAnchorTest : public testing::WithParamInterface<bool>,
                (scroller->MaximumScrollOffset().Height() -
                 scroller->MinimumScrollOffset().Height()));
     scrollbar->MouseMoved(blink::WebMouseEvent(
-        blink::WebInputEvent::kMouseMove, *scrollbar_drag_point_,
+        blink::WebInputEvent::Type::kMouseMove, *scrollbar_drag_point_,
         *scrollbar_drag_point_, blink::WebPointerProperties::Button::kLeft, 0,
         blink::WebInputEvent::kNoModifiers, base::TimeTicks::Now()));
   }
@@ -124,7 +124,7 @@ class ScrollAnchorTest : public testing::WithParamInterface<bool>,
   void MouseUpOnVerticalScrollbar(Scrollbar* scrollbar) {
     DCHECK(scrollbar_drag_point_);
     scrollbar->MouseDown(blink::WebMouseEvent(
-        blink::WebInputEvent::kMouseUp, *scrollbar_drag_point_,
+        blink::WebInputEvent::Type::kMouseUp, *scrollbar_drag_point_,
         *scrollbar_drag_point_, blink::WebPointerProperties::Button::kLeft, 0,
         blink::WebInputEvent::kNoModifiers, base::TimeTicks::Now()));
     scrollbar_drag_point_.reset();

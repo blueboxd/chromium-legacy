@@ -15,7 +15,7 @@ Recipes to help you work with Chrome UI.
 
 Details on Chrome UI.
 
-* [Coming Soon]
+* [Best Practices](/docs/ui/learn/index.md#best-practices)
 
 Processes
 

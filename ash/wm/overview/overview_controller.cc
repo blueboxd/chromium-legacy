@@ -507,6 +507,10 @@ void OverviewController::OnStartingAnimationComplete(bool canceled) {
 
   for (auto& observer : observers_)
     observer.OnOverviewModeStartingAnimationComplete(canceled);
+
+  // Observers should not do anything which may cause overview to quit
+  // explicitly (i.e. ToggleOverview()) or implicity (i.e. activation change).
+  DCHECK(overview_session_);
   overview_session_->OnStartingAnimationComplete(canceled,
                                                  should_focus_overview_);
   UnpauseOcclusionTracker(kOcclusionPauseDurationForStart);

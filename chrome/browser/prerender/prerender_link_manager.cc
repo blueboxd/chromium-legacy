@@ -41,25 +41,6 @@ using content::SessionStorageNamespace;
 
 namespace prerender {
 
-namespace {
-
-constexpr int kRelTypeHistogramEnumMax =
-    (blink::kPrerenderRelTypePrerender | blink::kPrerenderRelTypeNext) + 1;
-
-void RecordLinkManagerAdded(const uint32_t rel_types) {
-  UMA_HISTOGRAM_ENUMERATION("Prerender.RelTypesLinkAdded",
-                            rel_types & (kRelTypeHistogramEnumMax - 1),
-                            kRelTypeHistogramEnumMax);
-}
-
-void RecordLinkManagerStarting(const uint32_t rel_types) {
-  UMA_HISTOGRAM_ENUMERATION("Prerender.RelTypesLinkStarted",
-                            rel_types & (kRelTypeHistogramEnumMax - 1),
-                            kRelTypeHistogramEnumMax);
-}
-
-}  // namespace
-
 // Implementation of the interface used to control a requested prerender.
 class PrerenderLinkManager::PrerenderHandleProxy
     : public blink::mojom::PrerenderHandle {
@@ -243,8 +224,6 @@ bool PrerenderLinkManager::OnAddPrerender(
     return false;
   }
 
-  uint32_t rel_types = attributes->rel_types;
-
   auto prerender = std::make_unique<LinkPrerender>(
       launcher_render_process_id, launcher_render_view_id,
       std::move(attributes), std::move(handle_client),
@@ -268,7 +247,6 @@ bool PrerenderLinkManager::OnAddPrerender(
 
   prerenders_.push_back(std::move(prerender));
 
-  RecordLinkManagerAdded(rel_types);
   if (prerender_contents)
     pending_prerender_manager_->ObserveLauncher(prerender_contents);
   else
@@ -422,7 +400,6 @@ void PrerenderLinkManager::StartPrerenders() {
       ++total_started_prerender_count;
       pending_prerender->handle->SetObserver(this);
       OnPrerenderStart(pending_prerender->handle.get());
-      RecordLinkManagerStarting(pending_prerender->rel_types);
       running_launcher_and_render_view_routes.insert(
           launcher_and_render_view_route);
     } else {

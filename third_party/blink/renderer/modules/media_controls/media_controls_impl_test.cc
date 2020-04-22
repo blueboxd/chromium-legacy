@@ -313,7 +313,7 @@ class MediaControlsImplTest : public PageTestBase,
 };
 
 void MediaControlsImplTest::MouseDownAt(gfx::PointF pos) {
-  WebMouseEvent mouse_down_event(WebInputEvent::kMouseDown,
+  WebMouseEvent mouse_down_event(WebInputEvent::Type::kMouseDown,
                                  pos /* client pos */, pos /* screen pos */,
                                  WebPointerProperties::Button::kLeft, 1,
                                  WebInputEvent::Modifiers::kLeftButtonDown,
@@ -324,7 +324,7 @@ void MediaControlsImplTest::MouseDownAt(gfx::PointF pos) {
 }
 
 void MediaControlsImplTest::MouseMoveTo(gfx::PointF pos) {
-  WebMouseEvent mouse_move_event(WebInputEvent::kMouseMove,
+  WebMouseEvent mouse_move_event(WebInputEvent::Type::kMouseMove,
                                  pos /* client pos */, pos /* screen pos */,
                                  WebPointerProperties::Button::kLeft, 1,
                                  WebInputEvent::Modifiers::kLeftButtonDown,
@@ -336,7 +336,7 @@ void MediaControlsImplTest::MouseMoveTo(gfx::PointF pos) {
 
 void MediaControlsImplTest::MouseUpAt(gfx::PointF pos) {
   WebMouseEvent mouse_up_event(
-      WebMouseEvent::kMouseUp, pos /* client pos */, pos /* screen pos */,
+      WebMouseEvent::Type::kMouseUp, pos /* client pos */, pos /* screen pos */,
       WebPointerProperties::Button::kLeft, 1, WebInputEvent::kNoModifiers,
       WebInputEvent::GetStaticTimeStampForTests());
   mouse_up_event.SetFrameScale(1);
@@ -346,7 +346,7 @@ void MediaControlsImplTest::MouseUpAt(gfx::PointF pos) {
 
 void MediaControlsImplTest::GestureTapAt(gfx::PointF pos) {
   WebGestureEvent gesture_tap_event(
-      WebInputEvent::kGestureTap, WebInputEvent::kNoModifiers,
+      WebInputEvent::Type::kGestureTap, WebInputEvent::kNoModifiers,
       WebInputEvent::GetStaticTimeStampForTests());
 
   // Adjust |pos| by current frame scale.

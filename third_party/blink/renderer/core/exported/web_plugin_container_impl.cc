@@ -798,7 +798,7 @@ void WebPluginContainerImpl::HandleMouseEvent(MouseEvent& event) {
   // in this class.
   WebMouseEventBuilder transformed_event(parent, element_->GetLayoutObject(),
                                          event);
-  if (transformed_event.GetType() == WebInputEvent::kUndefined)
+  if (transformed_event.GetType() == WebInputEvent::Type::kUndefined)
     return;
 
   if (event.type() == event_type_names::kMousedown)
@@ -872,7 +872,7 @@ void WebPluginContainerImpl::HandleWheelEvent(WheelEvent& event) {
 
 void WebPluginContainerImpl::HandleKeyboardEvent(KeyboardEvent& event) {
   WebKeyboardEventBuilder web_event(event);
-  if (web_event.GetType() == WebInputEvent::kUndefined)
+  if (web_event.GetType() == WebInputEvent::Type::kUndefined)
     return;
 
   if (HandleCutCopyPasteKeyboardEvent(web_event)) {
@@ -896,8 +896,8 @@ void WebPluginContainerImpl::HandleKeyboardEvent(KeyboardEvent& event) {
 
 bool WebPluginContainerImpl::HandleCutCopyPasteKeyboardEvent(
     const WebKeyboardEvent& event) {
-  if (event.GetType() != WebInputEvent::kRawKeyDown &&
-      event.GetType() != WebInputEvent::kKeyDown) {
+  if (event.GetType() != WebInputEvent::Type::kRawKeyDown &&
+      event.GetType() != WebInputEvent::Type::kKeyDown) {
     return false;
   }
 
@@ -1005,9 +1005,9 @@ void WebPluginContainerImpl::HandleTouchEvent(TouchEvent& event) {
 }
 
 void WebPluginContainerImpl::HandleGestureEvent(GestureEvent& event) {
-  if (event.NativeEvent().GetType() == WebInputEvent::kUndefined)
+  if (event.NativeEvent().GetType() == WebInputEvent::Type::kUndefined)
     return;
-  if (event.NativeEvent().GetType() == WebInputEvent::kGestureTapDown)
+  if (event.NativeEvent().GetType() == WebInputEvent::Type::kGestureTapDown)
     FocusPlugin();
 
   // Take a copy of the event and translate it into the coordinate
@@ -1035,7 +1035,7 @@ void WebPluginContainerImpl::HandleGestureEvent(GestureEvent& event) {
 void WebPluginContainerImpl::SynthesizeMouseEventIfPossible(TouchEvent& event) {
   WebMouseEventBuilder web_event(ParentFrameView(), element_->GetLayoutObject(),
                                  event);
-  if (web_event.GetType() == WebInputEvent::kUndefined)
+  if (web_event.GetType() == WebInputEvent::Type::kUndefined)
     return;
 
   ui::Cursor dummy_cursor;

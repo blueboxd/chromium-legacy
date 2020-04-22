@@ -321,7 +321,7 @@ class TouchSelectionControllerClientAuraSiteIsolationTest
 
     GestureEventWaiter long_press_waiter(
         expected_target->GetRenderWidgetHost(),
-        blink::WebInputEvent::kGestureLongPress);
+        blink::WebInputEvent::Type::kGestureLongPress);
     SendTouch(main_view, ui::ET_TOUCH_PRESSED, point);
     // Wait until we see the out-bound LongPress on its way to the renderer, so
     // we know it's ok to send the TOUCH_RELEASED to end the sequence.
@@ -337,10 +337,11 @@ class TouchSelectionControllerClientAuraSiteIsolationTest
     // Get main frame view for event insertion.
     RenderWidgetHostViewAura* main_view = GetRenderWidgetHostViewAura();
 
-    GestureEventWaiter tap_down_waiter(expected_target->GetRenderWidgetHost(),
-                                       blink::WebInputEvent::kGestureTapDown);
+    GestureEventWaiter tap_down_waiter(
+        expected_target->GetRenderWidgetHost(),
+        blink::WebInputEvent::Type::kGestureTapDown);
     GestureEventWaiter tap_waiter(expected_target->GetRenderWidgetHost(),
-                                  blink::WebInputEvent::kGestureTap);
+                                  blink::WebInputEvent::Type::kGestureTap);
     SendTouch(main_view, ui::ET_TOUCH_PRESSED, point);
     tap_down_waiter.Wait();
     SendTouch(main_view, ui::ET_TOUCH_RELEASED, point);

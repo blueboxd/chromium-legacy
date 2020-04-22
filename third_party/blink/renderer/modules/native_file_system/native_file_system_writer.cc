@@ -174,36 +174,6 @@ class NativeFileSystemWriter::StreamWriterClient
   bool did_complete_ = false;
 };
 
-ScriptPromise NativeFileSystemWriter::WriteStream(
-    ScriptState* script_state,
-    uint64_t position,
-    ReadableStream* stream,
-    ExceptionState& exception_state) {
-  if (!writer_remote_.is_bound() || pending_operation_) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError, "");
-    return ScriptPromise();
-  }
-  DCHECK(!stream_loader_);
-
-  auto* consumer = MakeGarbageCollected<ReadableStreamBytesConsumer>(
-      script_state, stream, exception_state);
-  if (exception_state.HadException())
-    return ScriptPromise();
-
-  stream_loader_ = FetchDataLoader::CreateLoaderAsDataPipe(
-      ExecutionContext::From(script_state)
-          ->GetTaskRunner(TaskType::kInternalDefault));
-  pending_operation_ =
-      MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  ScriptPromise result = pending_operation_->Promise();
-  auto* client = MakeGarbageCollected<StreamWriterClient>(this);
-  stream_loader_->Start(consumer, client);
-  writer_remote_->WriteStream(
-      position, client->TakeDataPipe(),
-      WTF::Bind(&StreamWriterClient::WriteComplete, WrapPersistent(client)));
-  return result;
-}
-
 ScriptPromise NativeFileSystemWriter::truncate(
     ScriptState* script_state,
     uint64_t size,

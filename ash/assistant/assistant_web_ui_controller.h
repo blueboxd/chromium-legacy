@@ -8,15 +8,16 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/assistant/assistant_controller_observer.h"
 #include "ash/assistant/assistant_web_view_delegate_impl.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
+#include "ash/public/cpp/assistant/controller/assistant_controller.h"
+#include "ash/public/cpp/assistant/controller/assistant_controller_observer.h"
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "ui/views/widget/widget_observer.h"
 
 namespace ash {
 
-class AssistantControllerImpl;
 class AssistantWebContainerView;
 class AssistantWebContainerEventObserver;
 
@@ -25,8 +26,7 @@ class ASH_EXPORT AssistantWebUiController : public views::WidgetObserver,
                                             public AssistantControllerObserver,
                                             public AssistantStateObserver {
  public:
-  explicit AssistantWebUiController(
-      AssistantControllerImpl* assistant_controller);
+  AssistantWebUiController();
   ~AssistantWebUiController() override;
 
   // views::WidgetObserver:
@@ -54,8 +54,6 @@ class ASH_EXPORT AssistantWebUiController : public views::WidgetObserver,
   void CreateWebContainerView();
   void ResetWebContainerView();
 
-  AssistantControllerImpl* const assistant_controller_;  // Owned by Shell.
-
   AssistantWebViewDelegateImpl view_delegate_;
 
   // Owned by view hierarchy.
@@ -63,6 +61,9 @@ class ASH_EXPORT AssistantWebUiController : public views::WidgetObserver,
 
   // Observes key press events on the |web_container_view_|.
   std::unique_ptr<AssistantWebContainerEventObserver> event_observer_;
+
+  ScopedObserver<AssistantController, AssistantControllerObserver>
+      assistant_controller_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AssistantWebUiController);
 };

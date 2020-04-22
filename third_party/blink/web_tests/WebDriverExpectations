@@ -78,9 +78,9 @@ crbug.com/1020018 [ Linux ] external/wpt/webdriver/tests/get_active_element/get.
 crbug.com/1020018 [ Linux ] external/wpt/webdriver/tests/get_active_element/get.py>>test_sucess_input_non_interactable [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 [ Linux ] external/wpt/webdriver/tests/interface.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/webdriver/tests/interface.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/webdriver/tests/interface.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/webdriver/tests/idlharness.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/webdriver/tests/idlharness.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/webdriver/tests/idlharness.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/webdriver/tests/take_element_screenshot/iframe.py>>test_source_origin[cross_origin] [ Failure ]
 crbug.com/1023255 [ Linux ] external/wpt/webdriver/tests/take_element_screenshot/iframe.py>>test_source_origin[same_origin] [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/webdriver/tests/take_screenshot/iframe.py>>test_source_origin[cross_origin] [ Failure ]

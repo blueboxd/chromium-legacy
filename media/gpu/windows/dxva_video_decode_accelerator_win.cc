@@ -128,6 +128,12 @@ static const GUID DXVA2_Intel_ModeH264_E = {
     0x4c54,
     {0x88, 0xFE, 0xAB, 0xD2, 0x5C, 0x15, 0xB3, 0xD6}};
 
+static const CLSID CLSID_CAV1DecoderMFT = {
+    0xC843981A,
+    0x3359,
+    0x4721,
+    {0xB3, 0xF5, 0xD4, 0x84, 0xD8, 0x56, 0x1E, 0x47}};
+
 constexpr const wchar_t* const kMediaFoundationVideoDecoderDLLs[] = {
     L"mf.dll", L"mfplat.dll", L"msmpeg2vdec.dll",
 };
@@ -138,6 +144,23 @@ uint64_t GetCurrentQPC() {
   // memory in an exception handler;
   ::QueryPerformanceCounter(&perf_counter_now);
   return perf_counter_now.QuadPart;
+}
+
+HRESULT CreateAV1Decoder(const IID& iid, void** object) {
+  MFT_REGISTER_TYPE_INFO type_info = {MFMediaType_Video, MFVideoFormat_AV1};
+
+  base::win::ScopedCoMem<IMFActivate*> acts;
+  UINT32 acts_num;
+  HRESULT hr =
+      ::MFTEnumEx(MFT_CATEGORY_VIDEO_DECODER, MFT_ENUM_FLAG_SORTANDFILTER,
+                  &type_info, nullptr, &acts, &acts_num);
+  if (FAILED(hr))
+    return hr;
+
+  if (acts_num < 1)
+    return E_FAIL;
+
+  return acts[0]->ActivateObject(iid, object);
 }
 
 uint64_t g_last_process_output_time;
@@ -162,8 +185,9 @@ HRESULT g_last_device_removed_reason;
 namespace media {
 
 static const VideoCodecProfile kSupportedProfiles[] = {
-    H264PROFILE_BASELINE, H264PROFILE_MAIN,    H264PROFILE_HIGH,
-    VP8PROFILE_ANY,       VP9PROFILE_PROFILE0, VP9PROFILE_PROFILE2};
+    H264PROFILE_BASELINE,    H264PROFILE_MAIN,        H264PROFILE_HIGH,
+    VP8PROFILE_ANY,          VP9PROFILE_PROFILE0,     VP9PROFILE_PROFILE2,
+    AV1PROFILE_PROFILE_MAIN, AV1PROFILE_PROFILE_HIGH, AV1PROFILE_PROFILE_PRO};
 
 CreateDXGIDeviceManager
     DXVAVideoDecodeAccelerator::create_dxgi_device_manager_ = NULL;
@@ -1340,7 +1364,9 @@ DXVAVideoDecodeAccelerator::GetSupportedProfiles(
     const bool is_vp9 = supported_profile >= VP9PROFILE_MIN &&
                         supported_profile <= VP9PROFILE_MAX;
     const bool is_vp8 = supported_profile == VP8PROFILE_ANY;
-    DCHECK(is_h264 || is_vp9 || is_vp8);
+    const bool is_av1 = supported_profile >= AV1PROFILE_MIN &&
+                        supported_profile <= AV1PROFILE_MAX;
+    DCHECK(is_h264 || is_vp9 || is_vp8 || is_av1);
 
     ResolutionPair max_resolutions;
     if (is_h264) {
@@ -1351,6 +1377,17 @@ DXVAVideoDecodeAccelerator::GetSupportedProfiles(
       max_resolutions = max_vp9_profile2_resolutions;
     } else if (is_vp8) {
       max_resolutions = max_vp8_resolutions;
+    } else if (is_av1) {
+      if (!base::FeatureList::IsEnabled(kMediaFoundationAV1Decoding))
+        continue;
+
+      // TODO(dalecurtis): Update GetResolutionsForDecoders() to support AV1.
+      SupportedProfile profile;
+      profile.profile = supported_profile;
+      profile.min_resolution = gfx::Size();
+      profile.max_resolution = gfx::Size(8192, 8192);
+      profiles.push_back(profile);
+      continue;
     }
 
     // Skip adding VPx profiles if it's not supported or disabled.
@@ -1449,13 +1486,23 @@ bool DXVAVideoDecodeAccelerator::InitDecoder(VideoCodecProfile profile) {
       using_ms_vpx_mft_ = true;
   }
 
-  if (!decoder_dll) {
-    RETURN_ON_FAILURE(false, "Unsupported codec.", false);
-  }
+  if (base::FeatureList::IsEnabled(kMediaFoundationAV1Decoding) &&
+      (profile >= AV1PROFILE_MIN && profile <= AV1PROFILE_MAX)) {
+    codec_ = kCodecAV1;
+    clsid = CLSID_CAV1DecoderMFT;
 
-  HRESULT hr =
-      CreateCOMObjectFromDll(decoder_dll, clsid, IID_PPV_ARGS(&decoder_));
-  RETURN_ON_HR_FAILURE(hr, "Failed to create decoder instance", false);
+    // Since the AV1 decoder is a Windows Store package, it can't be created
+    // from a DLL file like the other codecs. Microsoft baked helper code into
+    // the OS for VP9 which is why it works and AV1 doesn't.
+    HRESULT hr = CreateAV1Decoder(IID_PPV_ARGS(&decoder_));
+    RETURN_ON_HR_FAILURE(hr, "Failed to create decoder instance", false);
+  } else {
+    if (!decoder_dll)
+      RETURN_ON_FAILURE(false, "Unsupported codec.", false);
+    HRESULT hr =
+        CreateCOMObjectFromDll(decoder_dll, clsid, IID_PPV_ARGS(&decoder_));
+    RETURN_ON_HR_FAILURE(hr, "Failed to create decoder instance", false);
+  }
 
   RETURN_ON_FAILURE(CheckDecoderDxvaSupport(),
                     "Failed to check decoder DXVA support", false);
@@ -1479,8 +1526,8 @@ bool DXVAVideoDecodeAccelerator::InitDecoder(VideoCodecProfile profile) {
     device_manager_to_use = reinterpret_cast<ULONG_PTR>(device_manager_.Get());
   }
 
-  hr = decoder_->ProcessMessage(MFT_MESSAGE_SET_D3D_MANAGER,
-                                device_manager_to_use);
+  HRESULT hr = decoder_->ProcessMessage(MFT_MESSAGE_SET_D3D_MANAGER,
+                                        device_manager_to_use);
   if (use_dx11_) {
     RETURN_ON_HR_FAILURE(hr, "Failed to pass DX11 manager to decoder", false);
   } else {
@@ -1632,6 +1679,8 @@ bool DXVAVideoDecodeAccelerator::SetDecoderInputMediaType() {
     hr = media_type->SetGUID(MF_MT_SUBTYPE, MEDIASUBTYPE_VP90);
   } else if (codec_ == kCodecVP8) {
     hr = media_type->SetGUID(MF_MT_SUBTYPE, MEDIASUBTYPE_VP80);
+  } else if (codec_ == kCodecAV1) {
+    hr = media_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_AV1);
   } else {
     NOTREACHED();
     RETURN_ON_FAILURE(false, "Unsupported codec on input media type.", false);
@@ -1705,29 +1754,35 @@ bool DXVAVideoDecodeAccelerator::GetStreamsInfoAndBufferReqs() {
 
   DVLOG(1) << "Input stream info: ";
   DVLOG(1) << "Max latency: " << input_stream_info_.hnsMaxLatency;
-  if (codec_ == kCodecH264) {
-    // There should be three flags, one for requiring a whole frame be in a
-    // single sample, one for requiring there be one buffer only in a single
-    // sample, and one that specifies a fixed sample size. (as in cbSize)
-    CHECK_EQ(input_stream_info_.dwFlags, 0x7u);
-  }
+
+  // There should be three flags, one for requiring a whole frame be in a
+  // single sample, one for requiring there be one buffer only in a single
+  // sample, and one that specifies a fixed sample size. (as in cbSize)
+  if (codec_ == kCodecH264 && input_stream_info_.dwFlags != 0x7u)
+    return false;
 
   DVLOG(1) << "Min buffer size: " << input_stream_info_.cbSize;
   DVLOG(1) << "Max lookahead: " << input_stream_info_.cbMaxLookahead;
   DVLOG(1) << "Alignment: " << input_stream_info_.cbAlignment;
 
   DVLOG(1) << "Output stream info: ";
+  DVLOG(1) << "Flags: " << std::hex << std::showbase
+           << output_stream_info_.dwFlags;
+  DVLOG(1) << "Min buffer size: " << output_stream_info_.cbSize;
+  DVLOG(1) << "Alignment: " << output_stream_info_.cbAlignment;
+
   // The flags here should be the same and mean the same thing, except when
   // DXVA is enabled, there is an extra 0x100 flag meaning decoder will
   // allocate its own sample.
-  DVLOG(1) << "Flags: " << std::hex << std::showbase
-           << output_stream_info_.dwFlags;
-  if (codec_ == kCodecH264) {
-    CHECK_EQ(output_stream_info_.dwFlags, 0x107u);
-  }
-  DVLOG(1) << "Min buffer size: " << output_stream_info_.cbSize;
-  DVLOG(1) << "Alignment: " << output_stream_info_.cbAlignment;
-  return true;
+  if (codec_ == kCodecH264 && output_stream_info_.dwFlags != 0x107u)
+    return false;
+
+  // We should fail above during MFT_MESSAGE_SET_D3D_MANAGER if the decoder
+  // doesn't allocate its own samples, but some MFTs are broken.
+  if (output_stream_info_.dwFlags & MFT_OUTPUT_STREAM_PROVIDES_SAMPLES)
+    return true;
+
+  return false;
 }
 
 void DXVAVideoDecodeAccelerator::DoDecode(const gfx::Rect& visible_rect,

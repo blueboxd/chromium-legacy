@@ -269,7 +269,8 @@ void WidgetInputHandlerManager::DidStartScrollingViewport() {
 void WidgetInputHandlerManager::GenerateScrollBeginAndSendToMainThread(
     const blink::WebGestureEvent& update_event,
     const blink::WebInputEventAttribution& attribution) {
-  DCHECK_EQ(update_event.GetType(), blink::WebInputEvent::kGestureScrollUpdate);
+  DCHECK_EQ(update_event.GetType(),
+            blink::WebInputEvent::Type::kGestureScrollUpdate);
   blink::WebGestureEvent scroll_begin =
       ui::ScrollBeginFromScrollUpdate(update_event);
 

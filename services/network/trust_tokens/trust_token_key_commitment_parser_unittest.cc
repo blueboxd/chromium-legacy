@@ -244,7 +244,6 @@ TEST(TrustTokenKeyCommitmentParser, AcceptsKeyWithExpiryAndBody) {
   ASSERT_TRUE(base::JSONReader::Read(input));
 
   auto my_key = mojom::TrustTokenVerificationKey::New();
-  my_key->label = 1;
   ASSERT_TRUE(base::Base64Decode("akey", &my_key->body));
   my_key->expiry = one_minute_from_now;
 
@@ -281,12 +280,10 @@ TEST(TrustTokenKeyCommitmentParser, AcceptsMultipleKeys) {
   ASSERT_TRUE(base::JSONReader::Read(input));
 
   auto a_key = mojom::TrustTokenVerificationKey::New();
-  a_key->label = 1;
   ASSERT_TRUE(base::Base64Decode("akey", &a_key->body));
   a_key->expiry = one_minute_from_now;
 
   auto another_key = mojom::TrustTokenVerificationKey::New();
-  another_key->label = 2;
   ASSERT_TRUE(base::Base64Decode("aaaa", &another_key->body));
   another_key->expiry = two_minutes_from_now;
 

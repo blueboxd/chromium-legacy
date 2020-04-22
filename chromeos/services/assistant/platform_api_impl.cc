@@ -12,7 +12,7 @@
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/services/assistant/media_session/assistant_media_session.h"
 #include "chromeos/services/assistant/platform/power_manager_provider_impl.h"
-#include "chromeos/services/assistant/public/features.h"
+#include "chromeos/services/assistant/public/cpp/features.h"
 #include "chromeos/services/assistant/utils.h"
 #include "libassistant/shared/public/assistant_export.h"
 #include "libassistant/shared/public/platform_api.h"

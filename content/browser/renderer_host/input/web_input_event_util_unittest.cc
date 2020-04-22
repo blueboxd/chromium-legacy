@@ -47,13 +47,13 @@ TEST(WebInputEventUtilTest, MotionEventConversion) {
     event.set_unique_event_id(123456U);
 
     WebTouchEvent expected_event(
-        WebInputEvent::kTouchStart,
+        WebInputEvent::Type::kTouchStart,
         WebInputEvent::kShiftKey | WebInputEvent::kAltKey,
         event.GetEventTime());
     expected_event.touches_length = 1;
     WebTouchPoint expected_pointer;
     expected_pointer.id = pointer.id;
-    expected_pointer.state = WebTouchPoint::kStatePressed;
+    expected_pointer.state = WebTouchPoint::State::kStatePressed;
     expected_pointer.SetPositionInWidget(pointer.x, pointer.y);
     expected_pointer.SetPositionInScreen(pointer.raw_x, pointer.raw_y);
     expected_pointer.radius_x = pointer.touch_major / 2.f;
@@ -109,7 +109,7 @@ TEST(WebInputEventUtilTest, ScrollUpdateConversion) {
 
   blink::WebGestureEvent web_event =
       ui::CreateWebGestureEventFromGestureEventData(event);
-  EXPECT_EQ(WebInputEvent::kGestureScrollUpdate, web_event.GetType());
+  EXPECT_EQ(WebInputEvent::Type::kGestureScrollUpdate, web_event.GetType());
   EXPECT_EQ(0, web_event.GetModifiers());
   EXPECT_EQ(timestamp, web_event.TimeStamp());
   EXPECT_EQ(pos, web_event.PositionInWidget());

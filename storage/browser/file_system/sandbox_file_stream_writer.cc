@@ -70,10 +70,14 @@ int SandboxFileStreamWriter::Write(net::IOBuffer* buf,
                                    net::CompletionOnceCallback callback) {
   DCHECK(!write_callback_);
   has_pending_operation_ = true;
-  write_callback_ = std::move(callback);
-  if (file_writer_)
-    return WriteInternal(buf, buf_len);
+  if (file_writer_) {
+    const int result = WriteInternal(buf, buf_len);
+    if (result == net::ERR_IO_PENDING)
+      write_callback_ = std::move(callback);
+    return result;
+  }
 
+  write_callback_ = std::move(callback);
   net::CompletionOnceCallback write_task = base::BindOnce(
       &SandboxFileStreamWriter::DidInitializeForWrite,
       weak_factory_.GetWeakPtr(), base::RetainedRef(buf), buf_len);
@@ -111,7 +115,7 @@ int SandboxFileStreamWriter::WriteInternal(net::IOBuffer* buf, int buf_len) {
                           base::BindOnce(&SandboxFileStreamWriter::DidWrite,
                                          weak_factory_.GetWeakPtr()));
   if (result != net::ERR_IO_PENDING)
-    has_pending_operation_ = false;
+    DidWrite(result);
   return result;
 }
 
@@ -210,8 +214,8 @@ void SandboxFileStreamWriter::DidInitializeForWrite(net::IOBuffer* buf,
   allowed_bytes_to_write_ = AdjustQuotaForOverlap(allowed_bytes_to_write_,
                                                   initial_offset_, file_size_);
   const int result = WriteInternal(buf, buf_len);
-  if (result != net::ERR_IO_PENDING)
-    std::move(write_callback_).Run(result);
+  if (result == net::ERR_IO_PENDING)
+    DCHECK(!write_callback_.is_null());
 }
 
 void SandboxFileStreamWriter::DidWrite(int write_response) {
@@ -236,7 +240,8 @@ void SandboxFileStreamWriter::DidWrite(int write_response) {
 
   if (CancelIfRequested())
     return;
-  std::move(write_callback_).Run(write_response);
+  if (write_callback_)
+    std::move(write_callback_).Run(write_response);
 }
 
 bool SandboxFileStreamWriter::CancelIfRequested() {

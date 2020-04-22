@@ -258,6 +258,10 @@ public class InstrumentationActivityTestRule extends ActivityTestRule<Instrument
         return mTestServerRule.getServer();
     }
 
+    public EmbeddedTestServerRule getTestServerRule() {
+        return mTestServerRule;
+    }
+
     public String getTestDataURL(String path) {
         return getTestServer().getURL("/weblayer/test/data/" + path);
     }

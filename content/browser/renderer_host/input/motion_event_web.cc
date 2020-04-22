@@ -21,23 +21,23 @@ namespace {
 ui::MotionEvent::Action GetActionFrom(const WebTouchEvent& event) {
   DCHECK(event.touches_length);
   switch (event.GetType()) {
-    case WebInputEvent::kTouchStart:
+    case WebInputEvent::Type::kTouchStart:
       if (WebTouchEventTraits::AllTouchPointsHaveState(
-              event, WebTouchPoint::kStatePressed))
+              event, WebTouchPoint::State::kStatePressed))
         return ui::MotionEvent::Action::DOWN;
       else
         return ui::MotionEvent::Action::POINTER_DOWN;
-    case WebInputEvent::kTouchEnd:
+    case WebInputEvent::Type::kTouchEnd:
       if (WebTouchEventTraits::AllTouchPointsHaveState(
-              event, WebTouchPoint::kStateReleased))
+              event, WebTouchPoint::State::kStateReleased))
         return ui::MotionEvent::Action::UP;
       else
         return ui::MotionEvent::Action::POINTER_UP;
-    case WebInputEvent::kTouchCancel:
+    case WebInputEvent::Type::kTouchCancel:
       DCHECK(WebTouchEventTraits::AllTouchPointsHaveState(
-          event, WebTouchPoint::kStateCancelled));
+          event, WebTouchPoint::State::kStateCancelled));
       return ui::MotionEvent::Action::CANCEL;
-    case WebInputEvent::kTouchMove:
+    case WebInputEvent::Type::kTouchMove:
       return ui::MotionEvent::Action::MOVE;
     default:
       break;
@@ -49,8 +49,8 @@ ui::MotionEvent::Action GetActionFrom(const WebTouchEvent& event) {
 
 int GetActionIndexFrom(const WebTouchEvent& event) {
   for (size_t i = 0; i < event.touches_length; ++i) {
-    if (event.touches[i].state != WebTouchPoint::kStateUndefined &&
-        event.touches[i].state != WebTouchPoint::kStateStationary)
+    if (event.touches[i].state != WebTouchPoint::State::kStateUndefined &&
+        event.touches[i].state != WebTouchPoint::State::kStateStationary)
       return i;
   }
   return -1;

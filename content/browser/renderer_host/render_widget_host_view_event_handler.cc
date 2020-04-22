@@ -84,8 +84,8 @@ bool ShouldGenerateAppCommand(const ui::MouseEvent* event) {
 // touchcancel.
 void MarkUnchangedTouchPointsAsStationary(blink::WebTouchEvent* event,
                                           int changed_touch_id) {
-  if (event->GetType() == blink::WebInputEvent::kTouchMove ||
-      event->GetType() == blink::WebInputEvent::kTouchCancel) {
+  if (event->GetType() == blink::WebInputEvent::Type::kTouchMove ||
+      event->GetType() == blink::WebInputEvent::Type::kTouchCancel) {
     for (size_t i = 0; i < event->touches_length; ++i) {
       if (event->touches[i].id != changed_touch_id)
         event->touches[i].state = blink::WebTouchPoint::kStateStationary;
@@ -579,7 +579,7 @@ void RenderWidgetHostViewEventHandler::OnGestureEvent(ui::GestureEvent* event) {
     // Webkit does not stop a fling-scroll on tap-down. So explicitly send an
     // event to stop any in-progress flings.
     blink::WebGestureEvent fling_cancel = gesture;
-    fling_cancel.SetType(blink::WebInputEvent::kGestureFlingCancel);
+    fling_cancel.SetType(blink::WebInputEvent::Type::kGestureFlingCancel);
     fling_cancel.SetSourceDevice(blink::WebGestureDevice::kTouchscreen);
     if (ShouldRouteEvents()) {
       host_->delegate()->GetInputEventRouter()->RouteGestureEvent(
@@ -590,7 +590,7 @@ void RenderWidgetHostViewEventHandler::OnGestureEvent(ui::GestureEvent* event) {
     }
   }
 
-  if (gesture.GetType() != blink::WebInputEvent::kUndefined) {
+  if (gesture.GetType() != blink::WebInputEvent::Type::kUndefined) {
     if (event->type() == ui::ET_GESTURE_SCROLL_BEGIN) {
       // If there is a current scroll going on and a new scroll that isn't
       // wheel based send a synthetic wheel event with kPhaseEnded to cancel
@@ -896,7 +896,7 @@ void RenderWidgetHostViewEventHandler::MoveCursorToCenter(
 
 bool RenderWidgetHostViewEventHandler::MatchesSynthesizedMovePosition(
     const blink::WebMouseEvent& event) {
-  if (event.GetType() == blink::WebInputEvent::kMouseMove &&
+  if (event.GetType() == blink::WebInputEvent::Type::kMouseMove &&
       synthetic_move_position_.has_value()) {
     if (IsFractionalScaleFactor(host_view_->current_device_scale_factor())) {
       // For fractional scale factors, the conversion from pixels to dip and

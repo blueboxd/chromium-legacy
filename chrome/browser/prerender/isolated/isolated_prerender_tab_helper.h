@@ -48,6 +48,16 @@ class IsolatedPrerenderTabHelper
   // A key to identify prefetching likely events to PLM.
   static const void* PrefetchingLikelyEventKey();
 
+  class Observer {
+   public:
+    // Called when a prefetch for |url| is completed successfully.
+    virtual void OnPrefetchCompletedSuccessfully(const GURL& url) {}
+
+    // Called when a prefetch for |url| is completed with an HTTP error code
+    // (non-2XX).
+    virtual void OnPrefetchCompletedWithError(const GURL& url, int code) {}
+  };
+
   // Container for several metrics which pertain to prefetching actions
   // on a Google SRP. RefCounted to allow TabHelper's friend classes to monitor
   // metrics without needing a callback for every event.
@@ -125,6 +135,9 @@ class IsolatedPrerenderTabHelper
   // Used by the URL Loader Interceptor to notify this class of a usage of a
   // prefetch.
   void OnPrefetchUsage(PrefetchUsage usage);
+
+  void AddObserverForTesting(Observer* observer);
+  void RemoveObserverForTesting(Observer* observer);
 
  protected:
   // Exposed for testing.
@@ -219,6 +232,8 @@ class IsolatedPrerenderTabHelper
 
   // Set if the current page load was loaded from a previous prefetched page.
   base::Optional<PrefetchUsage> prefetch_usage_;
+
+  base::ObserverList<Observer>::Unchecked observer_list_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

@@ -91,6 +91,24 @@ new_tab_page::mojom::ThemePtr MakeTheme(const NtpTheme& ntp_theme) {
   if (!ntp_theme.collection_id.empty()) {
     theme->daily_refresh_collection_id = ntp_theme.collection_id;
   }
+
+  auto search_box = new_tab_page::mojom::SearchBoxTheme::New();
+  search_box->bg = ntp_theme.search_box.bg;
+  search_box->icon = ntp_theme.search_box.icon;
+  search_box->icon_selected = ntp_theme.search_box.icon_selected;
+  search_box->placeholder = ntp_theme.search_box.placeholder;
+  search_box->results_bg = ntp_theme.search_box.results_bg;
+  search_box->results_bg_hovered = ntp_theme.search_box.results_bg_hovered;
+  search_box->results_bg_selected = ntp_theme.search_box.results_bg_selected;
+  search_box->results_dim = ntp_theme.search_box.results_dim;
+  search_box->results_dim_selected = ntp_theme.search_box.results_dim_selected;
+  search_box->results_text = ntp_theme.search_box.results_text;
+  search_box->results_text_selected =
+      ntp_theme.search_box.results_text_selected;
+  search_box->results_url_selected = ntp_theme.search_box.results_url_selected;
+  search_box->text = ntp_theme.search_box.text;
+  theme->search_box = std::move(search_box);
+
   return theme;
 }
 

@@ -149,12 +149,6 @@ void PendingScript::ExecuteScriptBlock(const KURL& document_url) {
   if (original_element_document_ != &element_->GetDocument()) {
     // Do not execute scripts if they are moved between element documents (under
     // the same context Document).
-
-    // We continue counting for a while to confirm that such cases are really
-    // rare on stable channel. https://crbug.com/721914
-    UseCounter::Count(context_document,
-                      WebFeature::kEvaluateScriptMovedBetweenElementDocuments);
-
     Dispose();
     return;
   }

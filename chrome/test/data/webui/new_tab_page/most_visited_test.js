@@ -673,12 +673,6 @@ suite('NewTabPageMostVisitedTest', () => {
     const [tile] = queryTiles();
     const titleElement = tile.querySelector('.tile-title');
     assertEquals('rtl', window.getComputedStyle(titleElement).direction);
-
-    tile.querySelector('cr-icon-button').click();
-    mostVisited.$.actionMenuEdit.click();
-    assertEquals(
-        'rtl',
-        window.getComputedStyle(mostVisited.$.dialogInputName).direction);
   });
 
   test('LEFT_TO_RIGHT tile title text direction', async () => {
@@ -697,12 +691,6 @@ suite('NewTabPageMostVisitedTest', () => {
     const [tile] = queryTiles();
     const titleElement = tile.querySelector('.tile-title');
     assertEquals('ltr', window.getComputedStyle(titleElement).direction);
-
-    tile.querySelector('cr-icon-button').click();
-    mostVisited.$.actionMenuEdit.click();
-    assertEquals(
-        'ltr',
-        window.getComputedStyle(mostVisited.$.dialogInputName).direction);
   });
 
   test('setting color styles tile color', () => {

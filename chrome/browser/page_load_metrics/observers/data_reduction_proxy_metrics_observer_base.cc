@@ -116,8 +116,7 @@ DataReductionProxyMetricsObserverBase::OnCommitCalled(
     data = settings->CreateDataFromNavigationHandle(
         navigation_handle, navigation_handle->GetResponseHeaders());
   }
-  if (!data || !(data->used_data_reduction_proxy() ||
-                 data->was_cached_data_reduction_proxy_response())) {
+  if (!data || !(data->used_data_reduction_proxy())) {
     return STOP_OBSERVING;
   }
   data_ = std::move(data);

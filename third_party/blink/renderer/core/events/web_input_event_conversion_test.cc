@@ -110,7 +110,7 @@ TEST(WebInputEventConversionTest, WebKeyboardEventBuilder) {
 TEST(WebInputEventConversionTest, WebMouseEventBuilder) {
   TouchEvent* event = TouchEvent::Create();
   WebMouseEventBuilder mouse(nullptr, nullptr, *event);
-  EXPECT_EQ(WebInputEvent::kUndefined, mouse.GetType());
+  EXPECT_EQ(WebInputEvent::Type::kUndefined, mouse.GetType());
 }
 
 TEST(WebInputEventConversionTest, InputEventsScaling) {
@@ -134,7 +134,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling) {
       To<LocalFrame>(web_view->GetPage()->MainFrame())->View();
 
   {
-    WebMouseEvent web_mouse_event(WebInputEvent::kMouseMove,
+    WebMouseEvent web_mouse_event(WebInputEvent::Type::kMouseMove,
                                   WebInputEvent::kNoModifiers,
                                   WebInputEvent::GetStaticTimeStampForTests());
     web_mouse_event.SetPositionInWidget(15, 15);
@@ -157,7 +157,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling) {
 
   {
     WebGestureEvent web_gesture_event(
-        WebInputEvent::kGestureScrollUpdate, WebInputEvent::kNoModifiers,
+        WebInputEvent::Type::kGestureScrollUpdate, WebInputEvent::kNoModifiers,
         WebInputEvent::GetStaticTimeStampForTests(),
         WebGestureDevice::kTouchscreen);
     web_gesture_event.SetPositionInWidget(gfx::PointF(15, 18));
@@ -189,7 +189,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling) {
 
   {
     WebGestureEvent web_gesture_event(
-        WebInputEvent::kGestureScrollEnd, WebInputEvent::kNoModifiers,
+        WebInputEvent::Type::kGestureScrollEnd, WebInputEvent::kNoModifiers,
         WebInputEvent::GetStaticTimeStampForTests(),
         WebGestureDevice::kTouchscreen);
     web_gesture_event.SetPositionInWidget(gfx::PointF(15, 18));
@@ -209,7 +209,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling) {
 
   {
     WebGestureEvent web_gesture_event(
-        WebInputEvent::kGestureTap, WebInputEvent::kNoModifiers,
+        WebInputEvent::Type::kGestureTap, WebInputEvent::kNoModifiers,
         WebInputEvent::GetStaticTimeStampForTests(),
         WebGestureDevice::kTouchscreen);
     web_gesture_event.data.tap.width = 15;
@@ -225,7 +225,8 @@ TEST(WebInputEventConversionTest, InputEventsScaling) {
 
   {
     WebGestureEvent web_gesture_event(
-        WebInputEvent::kGestureTapUnconfirmed, WebInputEvent::kNoModifiers,
+        WebInputEvent::Type::kGestureTapUnconfirmed,
+        WebInputEvent::kNoModifiers,
         WebInputEvent::GetStaticTimeStampForTests(),
         WebGestureDevice::kTouchscreen);
     web_gesture_event.data.tap.width = 30;
@@ -241,7 +242,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling) {
 
   {
     WebGestureEvent web_gesture_event(
-        WebInputEvent::kGestureTapDown, WebInputEvent::kNoModifiers,
+        WebInputEvent::Type::kGestureTapDown, WebInputEvent::kNoModifiers,
         WebInputEvent::GetStaticTimeStampForTests(),
         WebGestureDevice::kTouchscreen);
     web_gesture_event.data.tap_down.width = 9;
@@ -257,7 +258,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling) {
 
   {
     WebGestureEvent web_gesture_event(
-        WebInputEvent::kGestureShowPress, WebInputEvent::kNoModifiers,
+        WebInputEvent::Type::kGestureShowPress, WebInputEvent::kNoModifiers,
         WebInputEvent::GetStaticTimeStampForTests(),
         WebGestureDevice::kTouchscreen);
     web_gesture_event.data.show_press.width = 18;
@@ -273,7 +274,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling) {
 
   {
     WebGestureEvent web_gesture_event(
-        WebInputEvent::kGestureLongPress, WebInputEvent::kNoModifiers,
+        WebInputEvent::Type::kGestureLongPress, WebInputEvent::kNoModifiers,
         WebInputEvent::GetStaticTimeStampForTests(),
         WebGestureDevice::kTouchscreen);
     web_gesture_event.data.long_press.width = 15;
@@ -289,7 +290,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling) {
 
   {
     WebGestureEvent web_gesture_event(
-        WebInputEvent::kGestureTwoFingerTap, WebInputEvent::kNoModifiers,
+        WebInputEvent::Type::kGestureTwoFingerTap, WebInputEvent::kNoModifiers,
         WebInputEvent::GetStaticTimeStampForTests(),
         WebGestureDevice::kTouchscreen);
     web_gesture_event.data.two_finger_tap.first_finger_width = 15;
@@ -305,7 +306,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling) {
 
   {
     WebPointerEvent web_pointer_event(
-        WebInputEvent::kPointerDown,
+        WebInputEvent::Type::kPointerDown,
         WebPointerProperties(1, WebPointerProperties::PointerType::kTouch,
                              WebPointerProperties::Button::kLeft,
                              gfx::PointF(10.8f, 10.5f),
@@ -355,7 +356,7 @@ TEST(WebInputEventConversionTest, InputEventsTransform) {
       To<LocalFrame>(web_view->GetPage()->MainFrame())->View();
 
   {
-    WebMouseEvent web_mouse_event(WebInputEvent::kMouseMove,
+    WebMouseEvent web_mouse_event(WebInputEvent::Type::kMouseMove,
                                   WebInputEvent::kNoModifiers,
                                   WebInputEvent::GetStaticTimeStampForTests());
     web_mouse_event.SetPositionInWidget(90, 90);
@@ -376,7 +377,7 @@ TEST(WebInputEventConversionTest, InputEventsTransform) {
   }
 
   {
-    WebMouseEvent web_mouse_event1(WebInputEvent::kMouseMove,
+    WebMouseEvent web_mouse_event1(WebInputEvent::Type::kMouseMove,
                                    WebInputEvent::kNoModifiers,
                                    WebInputEvent::GetStaticTimeStampForTests());
     web_mouse_event1.SetPositionInWidget(90, 90);
@@ -420,7 +421,7 @@ TEST(WebInputEventConversionTest, InputEventsTransform) {
 
   {
     WebGestureEvent web_gesture_event(
-        WebInputEvent::kGestureScrollUpdate, WebInputEvent::kNoModifiers,
+        WebInputEvent::Type::kGestureScrollUpdate, WebInputEvent::kNoModifiers,
         WebInputEvent::GetStaticTimeStampForTests(),
         WebGestureDevice::kTouchscreen);
     web_gesture_event.SetPositionInWidget(gfx::PointF(90, 90));
@@ -442,7 +443,7 @@ TEST(WebInputEventConversionTest, InputEventsTransform) {
 
   {
     WebGestureEvent web_gesture_event(
-        WebInputEvent::kGestureTap, WebInputEvent::kNoModifiers,
+        WebInputEvent::Type::kGestureTap, WebInputEvent::kNoModifiers,
         WebInputEvent::GetStaticTimeStampForTests(),
         WebGestureDevice::kTouchscreen);
     web_gesture_event.data.tap.width = 30;
@@ -458,7 +459,8 @@ TEST(WebInputEventConversionTest, InputEventsTransform) {
 
   {
     WebGestureEvent web_gesture_event(
-        WebInputEvent::kGestureTapUnconfirmed, WebInputEvent::kNoModifiers,
+        WebInputEvent::Type::kGestureTapUnconfirmed,
+        WebInputEvent::kNoModifiers,
         WebInputEvent::GetStaticTimeStampForTests(),
         WebGestureDevice::kTouchscreen);
     web_gesture_event.data.tap.width = 30;
@@ -474,7 +476,7 @@ TEST(WebInputEventConversionTest, InputEventsTransform) {
 
   {
     WebGestureEvent web_gesture_event(
-        WebInputEvent::kGestureTapDown, WebInputEvent::kNoModifiers,
+        WebInputEvent::Type::kGestureTapDown, WebInputEvent::kNoModifiers,
         WebInputEvent::GetStaticTimeStampForTests(),
         WebGestureDevice::kTouchscreen);
     web_gesture_event.data.tap_down.width = 30;
@@ -490,7 +492,7 @@ TEST(WebInputEventConversionTest, InputEventsTransform) {
 
   {
     WebGestureEvent web_gesture_event(
-        WebInputEvent::kGestureShowPress, WebInputEvent::kNoModifiers,
+        WebInputEvent::Type::kGestureShowPress, WebInputEvent::kNoModifiers,
         WebInputEvent::GetStaticTimeStampForTests(),
         WebGestureDevice::kTouchscreen);
     web_gesture_event.data.show_press.width = 30;
@@ -506,7 +508,7 @@ TEST(WebInputEventConversionTest, InputEventsTransform) {
 
   {
     WebGestureEvent web_gesture_event(
-        WebInputEvent::kGestureLongPress, WebInputEvent::kNoModifiers,
+        WebInputEvent::Type::kGestureLongPress, WebInputEvent::kNoModifiers,
         WebInputEvent::GetStaticTimeStampForTests(),
         WebGestureDevice::kTouchscreen);
     web_gesture_event.data.long_press.width = 30;
@@ -522,7 +524,7 @@ TEST(WebInputEventConversionTest, InputEventsTransform) {
 
   {
     WebGestureEvent web_gesture_event(
-        WebInputEvent::kGestureTwoFingerTap, WebInputEvent::kNoModifiers,
+        WebInputEvent::Type::kGestureTwoFingerTap, WebInputEvent::kNoModifiers,
         WebInputEvent::GetStaticTimeStampForTests(),
         WebGestureDevice::kTouchscreen);
     web_gesture_event.data.two_finger_tap.first_finger_width = 30;
@@ -538,7 +540,7 @@ TEST(WebInputEventConversionTest, InputEventsTransform) {
 
   {
     WebPointerEvent web_pointer_event(
-        WebInputEvent::kPointerDown,
+        WebInputEvent::Type::kPointerDown,
         WebPointerProperties(1, WebPointerProperties::PointerType::kTouch,
                              WebPointerProperties::Button::kLeft,
                              gfx::PointF(90, 90), gfx::PointF(90, 90)),
@@ -558,14 +560,14 @@ TEST(WebInputEventConversionTest, InputEventsTransform) {
 
   {
     WebPointerEvent web_pointer_event1(
-        WebInputEvent::kPointerDown,
+        WebInputEvent::Type::kPointerDown,
         WebPointerProperties(1, WebPointerProperties::PointerType::kTouch,
                              WebPointerProperties::Button::kLeft,
                              gfx::PointF(90, 90), gfx::PointF(90, 90)),
         30, 30);
 
     WebPointerEvent web_pointer_event2(
-        WebInputEvent::kPointerDown,
+        WebInputEvent::Type::kPointerDown,
         WebPointerProperties(1, WebPointerProperties::PointerType::kTouch,
                              WebPointerProperties::Button::kLeft,
                              gfx::PointF(120, 90), gfx::PointF(120, 90)),
@@ -616,7 +618,7 @@ TEST(WebInputEventConversionTest, InputEventsConversions) {
       To<LocalFrame>(web_view->GetPage()->MainFrame())->View();
   {
     WebGestureEvent web_gesture_event(
-        WebInputEvent::kGestureTap, WebInputEvent::kNoModifiers,
+        WebInputEvent::Type::kGestureTap, WebInputEvent::kNoModifiers,
         WebInputEvent::GetStaticTimeStampForTests(),
         WebGestureDevice::kTouchscreen);
     web_gesture_event.SetPositionInWidget(gfx::PointF(10, 10));
@@ -660,7 +662,7 @@ TEST(WebInputEventConversionTest, VisualViewportOffset) {
       To<LocalFrame>(web_view->GetPage()->MainFrame())->View();
 
   {
-    WebMouseEvent web_mouse_event(WebInputEvent::kMouseMove,
+    WebMouseEvent web_mouse_event(WebInputEvent::Type::kMouseMove,
                                   WebInputEvent::kNoModifiers,
                                   WebInputEvent::GetStaticTimeStampForTests());
     web_mouse_event.SetPositionInWidget(10, 10);
@@ -678,7 +680,7 @@ TEST(WebInputEventConversionTest, VisualViewportOffset) {
 
   {
     WebMouseWheelEvent web_mouse_wheel_event(
-        WebInputEvent::kMouseWheel, WebInputEvent::kNoModifiers,
+        WebInputEvent::Type::kMouseWheel, WebInputEvent::kNoModifiers,
         WebInputEvent::GetStaticTimeStampForTests());
     web_mouse_wheel_event.SetPositionInWidget(10, 10);
     web_mouse_wheel_event.SetPositionInScreen(10, 10);
@@ -695,7 +697,7 @@ TEST(WebInputEventConversionTest, VisualViewportOffset) {
 
   {
     WebGestureEvent web_gesture_event(
-        WebInputEvent::kGestureScrollUpdate, WebInputEvent::kNoModifiers,
+        WebInputEvent::Type::kGestureScrollUpdate, WebInputEvent::kNoModifiers,
         WebInputEvent::GetStaticTimeStampForTests(),
         WebGestureDevice::kTouchscreen);
     web_gesture_event.SetPositionInWidget(gfx::PointF(10, 10));
@@ -713,7 +715,7 @@ TEST(WebInputEventConversionTest, VisualViewportOffset) {
 
   {
     WebPointerEvent web_pointer_event(
-        WebInputEvent::kPointerDown,
+        WebInputEvent::Type::kPointerDown,
         WebPointerProperties(1, WebPointerProperties::PointerType::kTouch,
                              WebPointerProperties::Button::kLeft,
                              gfx::PointF(10.6f, 10.4f),
@@ -760,7 +762,7 @@ TEST(WebInputEventConversionTest, ElasticOverscroll) {
 
   // Just elastic overscroll.
   {
-    WebMouseEvent web_mouse_event(WebInputEvent::kMouseMove,
+    WebMouseEvent web_mouse_event(WebInputEvent::Type::kMouseMove,
                                   WebInputEvent::kNoModifiers,
                                   WebInputEvent::GetStaticTimeStampForTests());
     web_mouse_event.SetPositionInWidget(10, 50);
@@ -789,7 +791,7 @@ TEST(WebInputEventConversionTest, ElasticOverscroll) {
   FloatPoint visual_offset(35, 60);
   web_view->GetPage()->GetVisualViewport().SetLocation(visual_offset);
   {
-    WebMouseEvent web_mouse_event(WebInputEvent::kMouseMove,
+    WebMouseEvent web_mouse_event(WebInputEvent::Type::kMouseMove,
                                   WebInputEvent::kNoModifiers,
                                   WebInputEvent::GetStaticTimeStampForTests());
     web_mouse_event.SetPositionInWidget(10, 10);
@@ -838,7 +840,7 @@ TEST(WebInputEventConversionTest, ElasticOverscrollWithPageReload) {
 
   // Just elastic overscroll.
   {
-    WebMouseEvent web_mouse_event(WebInputEvent::kMouseMove,
+    WebMouseEvent web_mouse_event(WebInputEvent::Type::kMouseMove,
                                   WebInputEvent::kNoModifiers,
                                   WebInputEvent::GetStaticTimeStampForTests());
     web_mouse_event.SetPositionInWidget(10, 50);

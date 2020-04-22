@@ -360,7 +360,7 @@ bool RenderViewHostImpl::CreateRenderView(
     DCHECK(main_rfh);
   }
 
-  GetWidget()->set_renderer_initialized(
+  GetWidget()->SetRendererInitialized(
       true, RenderWidgetHostImpl::RendererInitializer::kCreateRenderView);
 
   mojom::CreateViewParamsPtr params = mojom::CreateViewParams::New();
@@ -959,7 +959,7 @@ RenderViewHostImpl::GetAssociatedPageBroadcast() {
 
 void RenderViewHostImpl::RenderWidgetDidForwardMouseEvent(
     const blink::WebMouseEvent& mouse_event) {
-  if (mouse_event.GetType() == WebInputEvent::kMouseWheel &&
+  if (mouse_event.GetType() == WebInputEvent::Type::kMouseWheel &&
       GetWidget()->IsIgnoringInputEvents()) {
     delegate_->OnIgnoredUIEvent();
   }
@@ -968,7 +968,7 @@ void RenderViewHostImpl::RenderWidgetDidForwardMouseEvent(
 bool RenderViewHostImpl::MayRenderWidgetForwardKeyboardEvent(
     const NativeWebKeyboardEvent& key_event) {
   if (GetWidget()->IsIgnoringInputEvents()) {
-    if (key_event.GetType() == WebInputEvent::kRawKeyDown)
+    if (key_event.GetType() == WebInputEvent::Type::kRawKeyDown)
       delegate_->OnIgnoredUIEvent();
     return false;
   }

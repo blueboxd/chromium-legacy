@@ -131,15 +131,6 @@ class PrerenderContents::WebContentsDelegateImpl
     return false;
   }
 
-  void RegisterProtocolHandler(WebContents* web_contents,
-                               const std::string& protocol,
-                               const GURL& url,
-                               bool user_gesture) override {
-    // TODO(mmenke): Consider supporting this if it is a common case during
-    // prerenders.
-    prerender_contents_->Destroy(FINAL_STATUS_REGISTER_PROTOCOL_HANDLER);
-  }
-
   gfx::Size GetSizeForNewRenderView(WebContents* web_contents) override {
     // Have to set the size of the RenderView on initialization to be sure it is
     // set before the RenderView is hidden on all platforms (esp. Android).
@@ -673,7 +664,6 @@ void PrerenderContents::PrepareForUse() {
 
 void PrerenderContents::CancelPrerenderForUnsupportedScheme(const GURL& url) {
   Destroy(FINAL_STATUS_UNSUPPORTED_SCHEME);
-  ReportUnsupportedPrerenderScheme(url);
 }
 
 void PrerenderContents::AddPrerenderCancelerReceiver(

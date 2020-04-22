@@ -191,6 +191,10 @@ mojom("mojom_platform") {
     sources += [ "dwrite_font_proxy/dwrite_font_proxy.mojom" ]
   }
 
+  if (is_mac) {
+    sources += [ "input/text_input_host.mojom" ]
+  }
+
   public_deps = [
     ":android_mojo_bindings",
     ":authenticator_test_mojo_bindings",

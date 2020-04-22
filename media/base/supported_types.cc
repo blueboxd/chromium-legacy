@@ -44,6 +44,9 @@ bool IsSupportedHdrMetadata(const HdrMetadataType& hdr_metadata_type) {
     case HdrMetadataType::kSmpteSt2094_40:
       return false;
   }
+
+  NOTREACHED();
+  return false;
 }
 
 }  // namespace
@@ -199,6 +202,9 @@ bool IsAudioCodecProprietary(AudioCodec codec) {
     case kUnknownAudioCodec:
       return false;
   }
+
+  NOTREACHED();
+  return false;
 }
 
 bool IsDefaultSupportedAudioType(const AudioType& type) {
@@ -269,6 +275,9 @@ bool IsVideoCodecProprietary(VideoCodec codec) {
     case kCodecAV1:
       return false;
   }
+
+  NOTREACHED();
+  return false;
 }
 
 // TODO(chcunningham): Add platform specific logic for Android (move from

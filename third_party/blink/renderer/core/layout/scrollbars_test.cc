@@ -127,7 +127,7 @@ class ScrollbarsTest : public SimTest {
   }
 
   void HandleMouseMoveEvent(int x, int y) {
-    WebMouseEvent event(WebInputEvent::kMouseMove, gfx::PointF(x, y),
+    WebMouseEvent event(WebInputEvent::Type::kMouseMove, gfx::PointF(x, y),
                         gfx::PointF(x, y),
                         WebPointerProperties::Button::kNoButton, 0,
                         WebInputEvent::kNoModifiers, base::TimeTicks::Now());
@@ -137,7 +137,7 @@ class ScrollbarsTest : public SimTest {
   }
 
   void HandleMousePressEvent(int x, int y) {
-    WebMouseEvent event(WebInputEvent::kMouseDown, gfx::PointF(x, y),
+    WebMouseEvent event(WebInputEvent::Type::kMouseDown, gfx::PointF(x, y),
                         gfx::PointF(x, y), WebPointerProperties::Button::kLeft,
                         0, WebInputEvent::Modifiers::kLeftButtonDown,
                         base::TimeTicks::Now());
@@ -147,7 +147,7 @@ class ScrollbarsTest : public SimTest {
 
   void HandleContextMenuEvent(int x, int y) {
     WebMouseEvent event(
-        WebInputEvent::kMouseDown, gfx::PointF(x, y), gfx::PointF(x, y),
+        WebInputEvent::Type::kMouseDown, gfx::PointF(x, y), gfx::PointF(x, y),
         WebPointerProperties::Button::kNoButton, 0,
         WebInputEvent::Modifiers::kNoModifiers, base::TimeTicks::Now());
     event.SetFrameScale(1);
@@ -155,7 +155,7 @@ class ScrollbarsTest : public SimTest {
   }
 
   void HandleMouseReleaseEvent(int x, int y) {
-    WebMouseEvent event(WebInputEvent::kMouseUp, gfx::PointF(x, y),
+    WebMouseEvent event(WebInputEvent::Type::kMouseUp, gfx::PointF(x, y),
                         gfx::PointF(x, y), WebPointerProperties::Button::kLeft,
                         0, WebInputEvent::Modifiers::kNoModifiers,
                         base::TimeTicks::Now());
@@ -165,7 +165,7 @@ class ScrollbarsTest : public SimTest {
 
   void HandleMouseMiddlePressEvent(int x, int y) {
     WebMouseEvent event(
-        WebInputEvent::kMouseDown, gfx::PointF(x, y), gfx::PointF(x, y),
+        WebInputEvent::Type::kMouseDown, gfx::PointF(x, y), gfx::PointF(x, y),
         WebPointerProperties::Button::kMiddle, 0,
         WebInputEvent::Modifiers::kMiddleButtonDown, base::TimeTicks::Now());
     event.SetFrameScale(1);
@@ -174,7 +174,7 @@ class ScrollbarsTest : public SimTest {
 
   void HandleMouseMiddleReleaseEvent(int x, int y) {
     WebMouseEvent event(
-        WebInputEvent::kMouseUp, gfx::PointF(x, y), gfx::PointF(x, y),
+        WebInputEvent::Type::kMouseUp, gfx::PointF(x, y), gfx::PointF(x, y),
         WebPointerProperties::Button::kMiddle, 0,
         WebInputEvent::Modifiers::kMiddleButtonDown, base::TimeTicks::Now());
     event.SetFrameScale(1);
@@ -182,7 +182,7 @@ class ScrollbarsTest : public SimTest {
   }
 
   void HandleMouseLeaveEvent() {
-    WebMouseEvent event(WebInputEvent::kMouseLeave, gfx::PointF(1, 1),
+    WebMouseEvent event(WebInputEvent::Type::kMouseLeave, gfx::PointF(1, 1),
                         gfx::PointF(1, 1), WebPointerProperties::Button::kLeft,
                         0, WebInputEvent::Modifiers::kLeftButtonDown,
                         base::TimeTicks::Now());
@@ -228,10 +228,10 @@ class ScrollbarsTest : public SimTest {
 
     event.SetPositionInWidget(gfx::PointF(position.X(), position.Y()));
 
-    if (type == WebInputEvent::kGestureScrollUpdate) {
+    if (type == WebInputEvent::Type::kGestureScrollUpdate) {
       event.data.scroll_update.delta_x = offset.Width();
       event.data.scroll_update.delta_y = offset.Height();
-    } else if (type == WebInputEvent::kGestureScrollBegin) {
+    } else if (type == WebInputEvent::Type::kGestureScrollBegin) {
       event.data.scroll_begin.delta_x_hint = offset.Width();
       event.data.scroll_begin.delta_y_hint = offset.Height();
     }
@@ -630,7 +630,7 @@ TEST_F(ScrollbarsTest, scrollbarIsNotHandlingTouchpadScroll) {
       ToLayoutBox(scrollable->GetLayoutObject())->GetScrollableArea();
   DCHECK(scrollable_area->VerticalScrollbar());
   WebGestureEvent scroll_begin(
-      WebInputEvent::kGestureScrollBegin, WebInputEvent::kNoModifiers,
+      WebInputEvent::Type::kGestureScrollBegin, WebInputEvent::kNoModifiers,
       base::TimeTicks::Now(), WebGestureDevice::kTouchpad);
   scroll_begin.SetPositionInWidget(
       gfx::PointF(scrollable->OffsetLeft() + scrollable->OffsetWidth() - 2,
@@ -2350,7 +2350,7 @@ TEST_F(ScrollbarsTest, MiddleDownShouldNotAffectScrollbarPress) {
   EXPECT_EQ(scrollbar->PressedPart(), ScrollbarPart::kThumbPart);
 
   // Move mouse out of scrollbar with press.
-  WebMouseEvent event(WebInputEvent::kMouseMove, gfx::PointF(5, 5),
+  WebMouseEvent event(WebInputEvent::Type::kMouseMove, gfx::PointF(5, 5),
                       gfx::PointF(5, 5), WebPointerProperties::Button::kLeft, 0,
                       WebInputEvent::Modifiers::kLeftButtonDown,
                       base::TimeTicks::Now());
@@ -2397,13 +2397,13 @@ TEST_F(ScrollbarsTest, UseCounterNegativeWhenThumbIsNotScrolledWithMouse) {
 
   // Scrolling the page with a mouse wheel won't trigger the UseCounter.
   WebView().MainFrameWidget()->HandleInputEvent(
-      GenerateWheelGestureEvent(WebInputEvent::kGestureScrollBegin,
+      GenerateWheelGestureEvent(WebInputEvent::Type::kGestureScrollBegin,
                                 IntPoint(100, 100), ScrollOffset(0, -100)));
   WebView().MainFrameWidget()->HandleInputEvent(
-      GenerateWheelGestureEvent(WebInputEvent::kGestureScrollUpdate,
+      GenerateWheelGestureEvent(WebInputEvent::Type::kGestureScrollUpdate,
                                 IntPoint(100, 100), ScrollOffset(0, -100)));
   WebView().MainFrameWidget()->HandleInputEvent(GenerateWheelGestureEvent(
-      WebInputEvent::kGestureScrollEnd, IntPoint(100, 100)));
+      WebInputEvent::Type::kGestureScrollEnd, IntPoint(100, 100)));
   EXPECT_FALSE(GetDocument().IsUseCounted(
       WebFeature::kVerticalScrollbarThumbScrollingWithMouse));
 
@@ -2521,39 +2521,39 @@ TEST_F(ScrollbarsTest, UseCounterNegativeWhenThumbIsNotScrolledWithTouch) {
 
   // Tapping on the vertical scrollbar won't trigger the UseCounter.
   WebView().MainFrameWidget()->HandleInputEvent(GenerateTouchGestureEvent(
-      WebInputEvent::kGestureTapDown, IntPoint(195, 175)));
+      WebInputEvent::Type::kGestureTapDown, IntPoint(195, 175)));
   EXPECT_EQ(vertical_scrollbar->PressedPart(),
             ScrollbarPart::kForwardTrackPart);
   WebView().MainFrameWidget()->HandleInputEvent(GenerateTouchGestureEvent(
-      WebInputEvent::kGestureTapCancel, IntPoint(195, 175)));
+      WebInputEvent::Type::kGestureTapCancel, IntPoint(195, 175)));
   EXPECT_FALSE(GetDocument().IsUseCounted(
       WebFeature::kVerticalScrollbarThumbScrollingWithTouch));
 
   // Tapping on the horizontal scrollbar won't trigger the UseCounter.
   WebView().MainFrameWidget()->HandleInputEvent(GenerateTouchGestureEvent(
-      WebInputEvent::kGestureTapDown, IntPoint(175, 195)));
+      WebInputEvent::Type::kGestureTapDown, IntPoint(175, 195)));
   EXPECT_EQ(horizontal_scrollbar->PressedPart(),
             ScrollbarPart::kForwardTrackPart);
   WebView().MainFrameWidget()->HandleInputEvent(GenerateTouchGestureEvent(
-      WebInputEvent::kGestureTapCancel, IntPoint(175, 195)));
+      WebInputEvent::Type::kGestureTapCancel, IntPoint(175, 195)));
   EXPECT_FALSE(GetDocument().IsUseCounted(
       WebFeature::kHorizontalScrollbarThumbScrollingWithTouch));
 
   // Tapping outside the scrollbar and then releasing over the thumb of the
   // vertical scrollbar won't trigger the UseCounter.
   WebView().MainFrameWidget()->HandleInputEvent(GenerateTouchGestureEvent(
-      WebInputEvent::kGestureTapDown, IntPoint(50, 50)));
+      WebInputEvent::Type::kGestureTapDown, IntPoint(50, 50)));
   WebView().MainFrameWidget()->HandleInputEvent(GenerateTouchGestureEvent(
-      WebInputEvent::kGestureTapCancel, IntPoint(195, 5)));
+      WebInputEvent::Type::kGestureTapCancel, IntPoint(195, 5)));
   EXPECT_FALSE(GetDocument().IsUseCounted(
       WebFeature::kVerticalScrollbarThumbScrollingWithTouch));
 
   // Tapping outside the scrollbar and then releasing over the thumb of the
   // horizontal scrollbar won't trigger the UseCounter.
   WebView().MainFrameWidget()->HandleInputEvent(GenerateTouchGestureEvent(
-      WebInputEvent::kGestureTapDown, IntPoint(50, 50)));
+      WebInputEvent::Type::kGestureTapDown, IntPoint(50, 50)));
   WebView().MainFrameWidget()->HandleInputEvent(GenerateTouchGestureEvent(
-      WebInputEvent::kGestureTapCancel, IntPoint(5, 195)));
+      WebInputEvent::Type::kGestureTapCancel, IntPoint(5, 195)));
   EXPECT_FALSE(GetDocument().IsUseCounted(
       WebFeature::kHorizontalScrollbarThumbScrollingWithTouch));
 }
@@ -2587,19 +2587,19 @@ TEST_F(ScrollbarsTest, UseCounterPositiveWhenThumbIsScrolledWithTouch) {
 
   // Clicking the thumb on the vertical scrollbar will trigger the UseCounter.
   WebView().MainFrameWidget()->HandleInputEvent(GenerateTouchGestureEvent(
-      WebInputEvent::kGestureTapDown, IntPoint(195, 5)));
+      WebInputEvent::Type::kGestureTapDown, IntPoint(195, 5)));
   EXPECT_EQ(vertical_scrollbar->PressedPart(), ScrollbarPart::kThumbPart);
   WebView().MainFrameWidget()->HandleInputEvent(GenerateTouchGestureEvent(
-      WebInputEvent::kGestureTapCancel, IntPoint(195, 5)));
+      WebInputEvent::Type::kGestureTapCancel, IntPoint(195, 5)));
   EXPECT_TRUE(GetDocument().IsUseCounted(
       WebFeature::kVerticalScrollbarThumbScrollingWithTouch));
 
   // Clicking the thumb on the horizontal scrollbar will trigger the UseCounter.
   WebView().MainFrameWidget()->HandleInputEvent(GenerateTouchGestureEvent(
-      WebInputEvent::kGestureTapDown, IntPoint(5, 195)));
+      WebInputEvent::Type::kGestureTapDown, IntPoint(5, 195)));
   EXPECT_EQ(horizontal_scrollbar->PressedPart(), ScrollbarPart::kThumbPart);
   WebView().MainFrameWidget()->HandleInputEvent(GenerateTouchGestureEvent(
-      WebInputEvent::kGestureTapCancel, IntPoint(5, 195)));
+      WebInputEvent::Type::kGestureTapCancel, IntPoint(5, 195)));
   EXPECT_TRUE(GetDocument().IsUseCounted(
       WebFeature::kHorizontalScrollbarThumbScrollingWithTouch));
 }

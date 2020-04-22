@@ -33,7 +33,7 @@ class NET_EXPORT_PRIVATE QuicClientSessionCache : public quic::SessionCache {
   void Insert(const quic::QuicServerId& server_id,
               bssl::UniquePtr<SSL_SESSION> session,
               quic::TransportParameters* params,
-              std::vector<uint8_t>* application_states) override;
+              quic::ApplicationState* application_state) override;
 
   std::unique_ptr<quic::QuicResumptionState> Lookup(
       const quic::QuicServerId& server_id,
@@ -43,17 +43,40 @@ class NET_EXPORT_PRIVATE QuicClientSessionCache : public quic::SessionCache {
 
   size_t size() const { return cache_.size(); }
 
-  void Flush() { cache_.Clear(); }
+  void Flush();
 
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
 
  private:
-  void FlushExpiredStates();
+  struct Entry {
+    Entry();
+    Entry(Entry&&);
+    ~Entry();
+
+    // Adds a new |session| onto sessions, dropping the oldest one if two are
+    // already stored.
+    void PushSession(bssl::UniquePtr<SSL_SESSION> session);
+
+    // Retrieves the latest session from the entry, meanwhile removing it.
+    bssl::UniquePtr<SSL_SESSION> PopSession();
+
+    SSL_SESSION* PeekSession();
+
+    bssl::UniquePtr<SSL_SESSION> sessions[2];
+    std::unique_ptr<quic::TransportParameters> params;
+    std::unique_ptr<quic::ApplicationState> application_state;
+  };
+  void FlushInvalidEntries();
+
+  // Creates a new entry and insert into |cache_|.
+  void CreateAndInsertEntry(const quic::QuicServerId& server_id,
+                            bssl::UniquePtr<SSL_SESSION> session,
+                            quic::TransportParameters* params,
+                            quic::ApplicationState* application_state);
 
   base::Clock* clock_;
-  base::MRUCache<quic::QuicServerId, std::unique_ptr<quic::QuicResumptionState>>
-      cache_;
+  base::MRUCache<quic::QuicServerId, Entry> cache_;
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 };
 

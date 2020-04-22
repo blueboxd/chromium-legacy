@@ -170,7 +170,7 @@ function getBreadCrumbButtonState() {
 
   // Elider should only display for paths with more than 4 parts.
   if (!getBreadCrumbEliderButton().hasAttribute('hidden')) {
-    assertTrue(buttons.length > 4);
+    assertTrue(getBreadCrumb().parts.length > 4);
   }
 
   // The 'last' main button displayed should always be [disabled].

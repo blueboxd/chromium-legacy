@@ -151,7 +151,7 @@ void FullscreenControllerTest::LostMouseLock() {
 
 bool FullscreenControllerTest::SendEscapeToFullscreenController() {
   content::NativeWebKeyboardEvent event(
-      blink::WebInputEvent::kKeyDown, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::Type::kKeyDown, blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   event.windows_key_code = ui::VKEY_ESCAPE;
   return GetExclusiveAccessManager()->HandleUserKeyEvent(event);

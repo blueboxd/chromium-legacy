@@ -7,8 +7,27 @@
  * list of compromised passwords.
  */
 
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/cr_icons_css.m.js';
+import 'chrome://resources/js/action_link.js';
+import '../settings_shared_css.m.js';
+import '../site_favicon.m.js';
+import './passwords_shared_css.js';
+
+import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
+import {FocusRowBehavior} from 'chrome://resources/js/cr/ui/focus_row_behavior.m.js';
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {loadTimeData} from '../i18n_setup.m.js';
+import {OpenWindowProxyImpl} from '../open_window_proxy.m.js';
+
+import {PasswordManagerImpl, PasswordManagerProxy} from './password_manager_proxy.js';
+
 Polymer({
   is: 'password-check-list-item',
+
+  _template: html`{__html_template__}`,
 
   properties: {
     /**
@@ -71,7 +90,7 @@ Polymer({
     this.fire('change-password-clicked', {id: this.item.id});
 
     const url = assert(this.item.changePasswordUrl);
-    settings.OpenWindowProxyImpl.getInstance().openURL(url);
+    OpenWindowProxyImpl.getInstance().openURL(url);
 
     PasswordManagerImpl.getInstance().recordPasswordCheckInteraction(
         PasswordManagerProxy.PasswordCheckInteraction.CHANGE_PASSWORD);

@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-FAIL isSessionSupported resolves to true for immersive-ar on a supported device assert_true: expected true got false
-PASS isSessionSupported resolves to false for immersive-ar on an unsupported device
-Harness: the test ran to completion.
-

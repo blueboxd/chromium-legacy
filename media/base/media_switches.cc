@@ -563,10 +563,20 @@ const base::Feature kUsePooledSharedImageVideoProvider{
 const base::Feature kDelayCopyNV12Textures{"DelayCopyNV12Textures",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables DirectShow GetPhotoState implementation
+// Created to act as a kill switch by disabling it, in the case of the
+// resurgence of https://crbug.com/722038
+const base::Feature kDirectShowGetPhotoState{"DirectShowGetPhotoState",
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables asynchronous H264 HW encode acceleration using Media Foundation for
 // Windows.
 const base::Feature kMediaFoundationAsyncH264Encoding{
     "MediaFoundationAsyncH264Encoding", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables AV1 decode acceleration for Windows.
+const base::Feature MEDIA_EXPORT kMediaFoundationAV1Decoding{
+    "MediaFoundationAV1Decoding", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables MediaFoundation based video capture
 const base::Feature kMediaFoundationVideoCapture{
@@ -575,12 +585,6 @@ const base::Feature kMediaFoundationVideoCapture{
 // Enables VP8 decode acceleration for Windows.
 const base::Feature MEDIA_EXPORT kMediaFoundationVP8Decoding{
     "MediaFoundationVP8Decoding", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables DirectShow GetPhotoState implementation
-// Created to act as a kill switch by disabling it, in the case of the
-// resurgence of https://crbug.com/722038
-const base::Feature kDirectShowGetPhotoState{"DirectShowGetPhotoState",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 #endif  // defined(OS_WIN)
 

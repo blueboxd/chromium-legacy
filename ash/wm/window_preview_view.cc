@@ -15,9 +15,31 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
+#include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
+
+namespace {
+
+gfx::Rect GetClientAreaBoundsInScreen(aura::Window* window) {
+  const int inset = window->GetProperty(aura::client::kTopViewInset);
+  if (inset > 0) {
+    gfx::Rect bounds = window->GetBoundsInScreen();
+    bounds.Inset(0, inset, 0, 0);
+    return bounds;
+  }
+  // The source window may not have a widget in unit tests.
+  views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
+  if (!widget || !widget->client_view())
+    return gfx::Rect();
+  views::View* client_view = widget->client_view();
+  gfx::Rect bounds = client_view->GetLocalBounds();
+  views::View::ConvertRectToScreen(client_view, &bounds);
+  return bounds;
+}
+
+}  // namespace
 
 WindowPreviewView::WindowPreviewView(aura::Window* window,
                                      bool trilinear_filtering_on_init)
@@ -50,8 +72,7 @@ gfx::Size WindowPreviewView::CalculatePreferredSize() const {
   aura::Window* root = ::wm::GetTransientRoot(window_);
   DCHECK(root);
   const gfx::RectF union_rect = GetUnionRect();
-  gfx::RectF window_bounds(root->GetBoundsInScreen());
-  window_bounds.Inset(0, root->GetProperty(aura::client::kTopViewInset), 0, 0);
+  gfx::RectF window_bounds(GetClientAreaBoundsInScreen(root));
   gfx::SizeF window_size(1.f, 1.f);
   auto it = mirror_views_.find(root);
   if (it != mirror_views_.end())
@@ -72,7 +93,7 @@ void WindowPreviewView::Layout() {
   gfx::Vector2dF scale(local_bounds.width() / union_rect.width(),
                        local_bounds.height() / union_rect.height());
   for (auto entry : mirror_views_) {
-    const gfx::Rect bounds = entry.first->GetBoundsInScreen();
+    const gfx::Rect bounds(GetClientAreaBoundsInScreen(entry.first));
     gfx::Rect mirror_bounds;
     mirror_bounds.set_x(
         gfx::ToRoundedInt((bounds.x() - union_origin.x()) * scale.x()));
@@ -165,7 +186,7 @@ void WindowPreviewView::RemoveWindow(aura::Window* window) {
 gfx::RectF WindowPreviewView::GetUnionRect() const {
   gfx::Rect bounds;
   for (auto entry : mirror_views_)
-    bounds.Union(entry.first->GetBoundsInScreen());
+    bounds.Union(GetClientAreaBoundsInScreen(entry.first));
   return gfx::RectF(bounds);
 }
 

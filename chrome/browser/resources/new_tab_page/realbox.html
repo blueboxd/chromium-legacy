@@ -1,0 +1,118 @@
+<style>
+  :host {
+    --ntp-realbox-height: 44px;
+    border-radius: calc(0.5 * var(--ntp-realbox-height));
+    box-shadow: 0 1px 6px 0 rgba(32, 33, 36, .28);
+    height: var(--ntp-realbox-height);
+    width: 337px;
+  }
+
+  @media (min-width: 560px) {
+    :host {
+      width: 449px;
+    }
+  }
+
+  @media (min-width: 672px) {
+    :host {
+      width: 561px;
+    }
+  }
+
+  #realboxInputWrapper {
+    height: 100%;
+    position: relative;
+  }
+
+  input {
+    background-color: var(--search-box-bg, white);
+    border-radius: calc(0.5 * var(--ntp-realbox-height));
+    border: none;
+    color: var(--search-box-text, var(--ntp-primary-text-color));
+    font-size: 16px;
+    height: 100%;
+    outline: none;
+    padding-inline-end:  40px;
+    padding-inline-start: 52px;
+    width: 100%;
+  }
+
+  input::-webkit-search-decoration,
+  input::-webkit-search-cancel-button,
+  input::-webkit-search-results-button,
+  input::-webkit-search-results-decoration {
+    display: none;
+  }
+
+  input::placeholder {
+    color: var(--search-box-placeholder, var(--ntp-secondary-text-color));
+  }
+
+  input:focus::placeholder {
+    color: transparent;
+  }
+
+  input:focus {
+    background-color: var(--search-box-results-bg, white);
+  }
+
+  /* The realbox has a "search" icon by default. When a match with a different
+   * icon ("clock" for historical searches or "page" for URLs) or a favicon is
+   * selected, the realbox also gets that icon/favicon. Icons are rendered via
+   * webkit-mask-image + background-color and favicons are rendered via
+   * background-image set on #realboxIcon's style property in JS. */
+  #realboxIcon {
+    -webkit-mask-position: center;
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-size: 16px;
+    background-color: var(--search-box-icon, var(--ntp-secondary-text-color));
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 16px;
+    height: 100%;
+    left: 16px;
+    position: absolute;
+    width: 24px;
+  }
+
+  :host-context([dir='rtl']) #realboxIcon {
+    left: unset;
+    right: 16px;
+  }
+
+  #realboxIcon[data-icon='search'] {
+    -webkit-mask-image: url(chrome://resources/images/icon_search.svg);
+    -webkit-mask-size: 20px; /* "Search" icon is larger than the other icons. */
+  }
+
+  #voiceSearchButton {
+    background-size: 21px;
+    background: url(icons/googlemic_clr_24px.svg) no-repeat center;
+    border: none;
+    cursor: pointer;
+    height: 100%;
+    outline: none;
+    padding: 0;
+    position: absolute;
+    right: 16px;
+    width: 21px;
+  }
+
+  :host-context([dir='rtl']) #voiceSearchButton {
+    left: 16px;
+    right: unset;
+  }
+
+  :host-context(.focus-outline-visible) #voiceSearchButton:focus {
+    box-shadow: 0 0 0 2px var(--ntp-focus-shadow-color);
+  }
+</style>
+<div id="realboxInputWrapper">
+  <div id="realboxIcon" data-icon="search"></div>
+  <input type="search" autocomplete="off" spellcheck="false"
+      aria-live="polite" placeholder="$i18n{searchBoxHint}">
+  </input>
+  <button id="voiceSearchButton" on-click="onVoiceSearchClick_"
+      title="$i18n{voiceSearchButtonLabel}">
+  </button>
+</div>

@@ -14,6 +14,15 @@
 
 class GURL;
 
+namespace chromeos {
+namespace assistant {
+namespace mojom {
+enum class AssistantEntryPoint;
+enum class AssistantQuerySource;
+}  // namespace mojom
+}  // namespace assistant
+}  // namespace chromeos
+
 namespace ash {
 namespace assistant {
 namespace util {
@@ -45,14 +54,16 @@ enum class DeepLinkParam {
   kClientId,    // ga://reminders?action=edit&clientId=1
   kDurationMs,  // ga://alarm-timer?action=addTimeToTimer&durationMs=60000
   kEid,         // ga://lists?eid=1
-  kHref,      // ga://proactive-suggestions?action=cardClick&href=https://g.co/
-  kIndex,     // ga://proactive-suggestions?action=cardClick&index=1
-  kId,        // ga://alarm-timer?action=addTimeToTimer&id=1
-  kPage,      // ga://settings?page=googleAssistant
-  kQuery,     // ga://send-query?query=weather
-  kRelaunch,  // ga://onboarding?relaunch=true
-  kType,      // ga://lists?id=1&type=shopping
-  kVeId,      // ga://proactive-suggestions?action=cardClick&veId=1
+  kEntryPoint,  // ga://send-query?q=weather&entryPoint=11
+  kHref,   // ga://proactive-suggestions?action=cardClick&href=https://g.co/
+  kIndex,  // ga://proactive-suggestions?action=cardClick&index=1
+  kId,     // ga://alarm-timer?action=addTimeToTimer&id=1
+  kPage,   // ga://settings?page=googleAssistant
+  kQuery,  // ga://send-query?q=weather
+  kQuerySource,  // ga://send-query?q=weather&querySource=12
+  kRelaunch,     // ga://onboarding?relaunch=true
+  kType,         // ga://lists?id=1&type=shopping
+  kVeId,         // ga://proactive-suggestions?action=cardClick&veId=1
 };
 
 // Enumeration of alarm/timer deep link actions.
@@ -74,6 +85,20 @@ enum class ReminderAction {
   kCreate,
   kEdit,
 };
+
+// Returns a new deep link, having appended or replaced the entry point param
+// from the original |deep_link| with |entry_point|.
+COMPONENT_EXPORT(ASSISTANT_UTIL)
+GURL AppendOrReplaceEntryPointParam(
+    const GURL& deep_link,
+    chromeos::assistant::mojom::AssistantEntryPoint entry_point);
+
+// Returns a new deep link, having appended or replaced the query source param
+// from the original |deep_link| with |query_source|.
+COMPONENT_EXPORT(ASSISTANT_UTIL)
+GURL AppendOrReplaceQuerySourceParam(
+    const GURL& deep_link,
+    chromeos::assistant::mojom::AssistantQuerySource query_source);
 
 // Returns a deep link to perform an alarm/timer action.
 COMPONENT_EXPORT(ASSISTANT_UTIL)
@@ -119,6 +144,14 @@ base::Optional<bool> GetDeepLinkParamAsBool(
     const std::map<std::string, std::string>& params,
     DeepLinkParam param);
 
+// Returns a specific entry point |param| from the given parameters. If the
+// desired parameter is not found or is not mappable to an Assistant entry
+// point, an empty value is returned.
+COMPONENT_EXPORT(ASSISTANT_UTIL)
+base::Optional<chromeos::assistant::mojom::AssistantEntryPoint>
+GetDeepLinkParamAsEntryPoint(const std::map<std::string, std::string>& params,
+                             DeepLinkParam param);
+
 // Returns a specific GURL |param| from the given parameters. If the desired
 // parameter is not found, an absent value is returned.
 COMPONENT_EXPORT(ASSISTANT_UTIL)
@@ -148,6 +181,14 @@ base::Optional<ProactiveSuggestionsAction>
 GetDeepLinkParamAsProactiveSuggestionsAction(
     const std::map<std::string, std::string>& params,
     DeepLinkParam param);
+
+// Returns a specific query source |param| from the given parameters. If the
+// desired parameter is not found or is not mappable to an Assistant query
+// source, an empty value is returned.
+COMPONENT_EXPORT(ASSISTANT_UTIL)
+base::Optional<chromeos::assistant::mojom::AssistantQuerySource>
+GetDeepLinkParamAsQuerySource(const std::map<std::string, std::string>& params,
+                              DeepLinkParam param);
 
 // Returns a specific ReminderAction |param| from the given parameters. If the
 // desired parameter is not found, an empty value is returned.

@@ -159,6 +159,11 @@ class FakeMediaMetricsProvider
     }
     FAIL();
   }
+  void AcquirePlaybackEventsRecorder(
+      mojo::PendingReceiver<media::mojom::blink::PlaybackEventsRecorder>
+          receiver) override {
+    FAIL();
+  }
   void Initialize(bool is_mse,
                   media::mojom::MediaURLScheme url_scheme) override {}
   void OnError(media::mojom::PipelineStatus status) override {}

@@ -10,9 +10,6 @@ import("//mojo/public/tools/bindings/mojom.gni")
 template("common_tmpl") {
   static_library(target_name) {
     sources = [
-      "data_reduction_proxy_bypass_protocol.cc",
-      "data_reduction_proxy_bypass_protocol.h",
-      "data_reduction_proxy_bypass_type_list.h",
       "data_reduction_proxy_features.cc",
       "data_reduction_proxy_features.h",
       "data_reduction_proxy_headers.cc",
@@ -72,10 +69,7 @@ static_library("test_support") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "data_reduction_proxy_headers_unittest.cc",
-    "data_reduction_proxy_params_unittest.cc",
-  ]
+  sources = [ "data_reduction_proxy_params_unittest.cc" ]
 
   deps = [
     ":common",

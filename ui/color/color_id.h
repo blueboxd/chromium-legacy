@@ -86,8 +86,6 @@
   E(kColorTabSelectedForeground, \
     NativeTheme::kColorId_TabTitleColorActive) \
   E(kColorTableBackground, NativeTheme::kColorId_TableBackground) \
-  E(kColorTableBackgroundAlternate, \
-    NativeTheme::kColorId_TableBackgroundAlternate) \
   E(kColorTableForeground, NativeTheme::kColorId_TableText) \
   E(kColorTableGroupingIndicator, \
     NativeTheme::kColorId_TableGroupingIndicatorColor) \
@@ -165,10 +163,25 @@
   E(kColorNativeWindowText, COLOR_WINDOWTEXT)
 #endif
 
+#if defined(OS_MACOSX)
+#define MACOSX_COLOR_IDS \
+  /* TODO(https://crug.com/1071669): Paired with the comment above for */ \
+  /* kColorButtonPressedBackground, work out how to */ \
+  /* remove this or fit it into the color pipeline structures. */ \
+  E(kColorButtonPressedBackgroundShade, \
+    NativeTheme::kColorId_ButtonPressedShade) \
+  E(kColorTableBackgroundAlternate, \
+    NativeTheme::kColorId_TableBackgroundAlternate)
+#endif
+
 #if defined(OS_WIN)
 #define COLOR_IDS \
   CROSS_PLATFORM_COLOR_IDS \
   WIN_COLOR_IDS
+#elif defined(OS_MACOSX)
+#define COLOR_IDS \
+  CROSS_PLATFORM_COLOR_IDS \
+  MACOSX_COLOR_IDS
 #else
 #define COLOR_IDS CROSS_PLATFORM_COLOR_IDS
 #endif

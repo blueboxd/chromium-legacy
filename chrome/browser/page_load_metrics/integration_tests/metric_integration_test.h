@@ -91,6 +91,10 @@ class MetricIntegrationTest : public InProcessBrowserTest {
   void ExpectUKMPageLoadMetric(base::StringPiece metric_name,
                                int64_t expected_value);
 
+  void ExpectUKMPageLoadMetricNear(base::StringPiece metric_name,
+                                   double expected_value,
+                                   double epsilon);
+
  private:
   static std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
       const std::string& relative_url,

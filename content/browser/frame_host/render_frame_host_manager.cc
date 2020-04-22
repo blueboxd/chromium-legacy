@@ -822,6 +822,13 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
     if (render_frame_host_->render_view_host()
             ->GetWidget()
             ->renderer_initialized()) {
+      static auto* crash_key = base::debug::AllocateCrashKeyString(
+          "IsRenderFrameLive", base::debug::CrashKeySize::Size32);
+      std::string message = base::StringPrintf(
+          "rdu=%d", IsRendererDebugURL(request->common_params().url));
+      // This string is whitelisted for collection from Android Webview. It must
+      // only contain booleans to avoid leaking any PII.
+      base::debug::SetCrashKeyString(crash_key, message);
       base::debug::DumpWithoutCrashing();
       NOTREACHED();
     }

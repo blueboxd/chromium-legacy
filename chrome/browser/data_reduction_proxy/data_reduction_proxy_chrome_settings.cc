@@ -282,27 +282,6 @@ DataReductionProxyChromeSettings::CreateDataFromNavigationHandle(
   if (!headers || headers->IsRedirect(nullptr))
     return data;
 
-  if (handle->WasResponseCached() &&
-      (headers->HasHeader(data_reduction_proxy::chrome_proxy_header()) ||
-       // Check for via header since Chrome-Proxy header maybe missing in
-       // streamed responses.
-       data_reduction_proxy::HasDataReductionProxyViaHeader(*headers,
-                                                            nullptr)) &&
-      !handle->GetURL().SchemeIsCryptographic()) {
-    data->set_was_cached_data_reduction_proxy_response(true);
-  }
-
-  switch (data_reduction_proxy::ParseResponseTransform(*headers)) {
-    case data_reduction_proxy::TRANSFORM_LITE_PAGE:
-      data->set_lite_page_received(true);
-      break;
-    case data_reduction_proxy::TRANSFORM_IDENTITY:
-    case data_reduction_proxy::TRANSFORM_COMPRESSED_VIDEO:
-    case data_reduction_proxy::TRANSFORM_NONE:
-    case data_reduction_proxy::TRANSFORM_UNKNOWN:
-      break;
-  }
-
   const ChromeNavigationUIData* chrome_navigation_ui_data =
       static_cast<const ChromeNavigationUIData*>(handle->GetNavigationUIData());
   if (data_reduction_proxy::params::IsEnabledWithNetworkService() &&

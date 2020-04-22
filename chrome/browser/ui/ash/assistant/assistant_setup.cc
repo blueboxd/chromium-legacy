@@ -17,14 +17,13 @@
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_ui.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "chromeos/services/assistant/public/proto/settings_ui.pb.h"
 #include "components/prefs/pref_service.h"
 
 using chromeos::assistant::ConsentFlowUi;
 
-AssistantSetup::AssistantSetup(
-    chromeos::assistant::mojom::AssistantService* service)
-    : service_(service) {
+AssistantSetup::AssistantSetup() {
   ash::AssistantState::Get()->AddObserver(this);
 }
 
@@ -54,7 +53,8 @@ void AssistantSetup::OnAssistantStatusChanged(
 
 void AssistantSetup::SyncSettingsState() {
   // Set up settings mojom.
-  service_->BindSettingsManager(settings_manager_.BindNewPipeAndPassReceiver());
+  chromeos::assistant::AssistantService::Get()->BindSettingsManager(
+      settings_manager_.BindNewPipeAndPassReceiver());
 
   chromeos::assistant::SettingsUiSelector selector;
   chromeos::assistant::ConsentFlowUiSelector* consent_flow_ui =

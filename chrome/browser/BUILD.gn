@@ -6,6 +6,7 @@ import("//base/allocator/allocator.gni")
 import("//build/buildflag_header.gni")
 import("//build/config/buildflags_paint_preview.gni")
 import("//build/config/chrome_build.gni")
+import("//build/config/compiler/pgo/pgo.gni")
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/jumbo.gni")
@@ -69,7 +70,10 @@ if (is_win) {
 
 buildflag_header("buildflags") {
   header = "buildflags.h"
-  flags = [ "ENABLE_KALEIDOSCOPE=$enable_kaleidoscope" ]
+  flags = [
+    "CLANG_PGO=$chrome_pgo_phase",
+    "ENABLE_KALEIDOSCOPE=$enable_kaleidoscope",
+  ]
 }
 
 # This proto library is used for non-android NTPs below.
@@ -2033,7 +2037,6 @@ jumbo_static_library("browser") {
     "//components/contextual_search/core:browser",
     "//components/cookie_config",
     "//components/crx_file",
-    "//components/data_reduction_proxy/content/common",
     "//components/data_reduction_proxy/core/browser",
     "//components/data_use_measurement/core:ascriber",
     "//components/device_event_log",
@@ -3942,8 +3945,7 @@ jumbo_static_library("browser") {
       "//chromeos/components/account_manager",
       "//chromeos/components/quick_answers",
       "//chromeos/components/sync_wifi",
-      "//chromeos/services/assistant/public:feature_flags",
-      "//chromeos/services/assistant/public/cpp:prefs",
+      "//chromeos/services/assistant/public/cpp",
       "//chromeos/services/cellular_setup",
       "//chromeos/services/device_sync/public/mojom",
       "//chromeos/services/multidevice_setup",
@@ -5449,6 +5451,7 @@ jumbo_static_library("browser") {
     deps += [
       "//chrome/browser/vr:vr_common",
       "//device/vr",
+      "//device/vr/orientation",
       "//device/vr/public/cpp",
     ]
   }

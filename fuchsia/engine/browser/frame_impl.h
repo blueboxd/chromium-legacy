@@ -187,6 +187,12 @@ class FrameImpl : public fuchsia::web::Frame,
                           std::string web_origin,
                           fuchsia::web::PermissionState state) override;
   void SetBlockMediaLoading(bool blocked) override;
+  void MediaStartedPlaying(const MediaPlayerInfo& video_type,
+                           const content::MediaPlayerId& id) override;
+  void MediaStoppedPlaying(
+      const MediaPlayerInfo& video_type,
+      const content::MediaPlayerId& id,
+      WebContentsObserver::MediaStoppedReason reason) override;
 
   // content::WebContentsDelegate implementation.
   void CloseContents(content::WebContents* source) override;

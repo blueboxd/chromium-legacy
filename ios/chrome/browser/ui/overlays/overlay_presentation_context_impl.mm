@@ -158,7 +158,10 @@ bool OverlayPresentationContextImpl::CanShowUIForRequest(
 }
 
 bool OverlayPresentationContextImpl::IsShowingOverlayUI() const {
-  return !!request_;
+  // The UI for the active request is visible until its dismissal callback has
+  // been executed.
+  OverlayRequestUIState* state = GetRequestUIState(request_);
+  return state && state->has_callback();
 }
 
 void OverlayPresentationContextImpl::PrepareToShowOverlayUI(
@@ -270,8 +273,10 @@ UIViewController* OverlayPresentationContextImpl::GetBaseViewController(
 }
 
 OverlayRequestUIState* OverlayPresentationContextImpl::GetRequestUIState(
-    OverlayRequest* request) {
-  return request ? states_[request].get() : nullptr;
+    OverlayRequest* request) const {
+  if (!request || states_.find(request) == states_.end())
+    return nullptr;
+  return states_.at(request).get();
 }
 
 OverlayPresentationContext::UIPresentationCapabilities

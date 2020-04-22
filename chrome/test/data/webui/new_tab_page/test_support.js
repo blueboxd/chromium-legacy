@@ -68,3 +68,37 @@ export function createTestProxy() {
   testProxy.setResultFor('createUntrustedIframeSrc', '');
   return testProxy;
 }
+
+/** @return {!newTabPage.mojom.Theme} */
+export function createTheme() {
+  const searchBox = {
+    bg: {value: 0xff000000},
+    icon: {value: 0xff000001},
+    iconSelected: {value: 0xff000002},
+    placeholder: {value: 0xff000003},
+    resultsBg: {value: 0xff000004},
+    resultsBgHovered: {value: 0xff000005},
+    resultsBgSelected: {value: 0xff000006},
+    resultsDim: {value: 0xff000007},
+    resultsDimSelected: {value: 0xff000008},
+    resultsText: {value: 0xff000009},
+    resultsTextSelected: {value: 0xff00000a},
+    resultsUrlSelected: {value: 0xff00000b},
+    text: {value: 0xff00000c},
+  };
+  return {
+    type: newTabPage.mojom.ThemeType.DEFAULT,
+    info: {chromeThemeId: 0},
+    backgroundColor: {value: 0xffff0000},
+    shortcutBackgroundColor: {value: 0xff00ff00},
+    shortcutTextColor: {value: 0xff0000ff},
+    isDark: false,
+    logoColor: null,
+    backgroundImageUrl: null,
+    backgroundImageAttribution1: '',
+    backgroundImageAttribution2: '',
+    backgroundImageAttributionUrl: null,
+    dailyRefreshCollectionId: '',
+    searchBox: searchBox,
+  };
+}

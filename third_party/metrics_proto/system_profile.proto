@@ -209,7 +209,7 @@ message SystemProfileProto {
 
     // Information on the CPU obtained by CPUID.
     message CPU {
-      // A 12 character string naming the vendor, e.g. "GeniuneIntel".
+      // A 12 character string naming the vendor, e.g. "GenuineIntel".
       optional string vendor_name = 1;
 
       // The signature reported by CPUID (from EAX).
@@ -248,152 +248,9 @@ message SystemProfileProto {
     }
     optional Graphics gpu = 8;
 
-    // Information about Bluetooth devices paired with the system.
-    message Bluetooth {
-      // Whether Bluetooth is present on this system.
-      optional bool is_present = 1;
-
-      // Whether Bluetooth is enabled on this system.
-      optional bool is_enabled = 2;
-
-      // Describes a paired device.
-      message PairedDevice {
-        // Assigned class of the device. This is a bitfield according to the
-        // Bluetooth specification available at the following URL:
-        // https://www.bluetooth.org/en-us/specification/assigned-numbers-overview/baseband
-        optional uint32 bluetooth_class = 1;
-
-        // Decoded device type.
-        enum Type {
-          DEVICE_UNKNOWN = 0;
-          DEVICE_COMPUTER = 1;
-          DEVICE_PHONE = 2;
-          DEVICE_MODEM = 3;
-          DEVICE_AUDIO = 4;
-          DEVICE_CAR_AUDIO = 5;
-          DEVICE_VIDEO = 6;
-          DEVICE_PERIPHERAL = 7;
-          DEVICE_JOYSTICK = 8;
-          DEVICE_GAMEPAD = 9;
-          DEVICE_KEYBOARD = 10;
-          DEVICE_MOUSE = 11;
-          DEVICE_TABLET = 12;
-          DEVICE_KEYBOARD_MOUSE_COMBO = 13;
-        }
-        optional Type type = 2;
-
-        // Vendor prefix of the Bluetooth address, these are OUI registered by
-        // the IEEE and are encoded with the first byte in bits 16-23, the
-        // second byte in bits 8-15 and the third byte in bits 0-7.
-        //
-        // ie. Google's OUI (00:1A:11) is encoded as 0x00001A11
-        optional uint32 vendor_prefix = 4;
-
-        // The Vendor ID of a device, returned in vendor_id below, can be
-        // either allocated by the Bluetooth SIG or USB IF, providing two
-        // completely overlapping namespaces for identifiers.
-        //
-        // This field should be read along with vendor_id to correctly
-        // identify the vendor. For example Google is identified by either
-        // vendor_id_source = VENDOR_ID_BLUETOOTH, vendor_id = 0x00E0 or
-        // vendor_id_source = VENDOR_ID_USB, vendor_id = 0x18D1.
-        //
-        // If the device does not support the Device ID specification the
-        // unknown value will be set.
-        enum VendorIDSource {
-          VENDOR_ID_UNKNOWN = 0;
-          VENDOR_ID_BLUETOOTH = 1;
-          VENDOR_ID_USB = 2;
-        }
-        optional VendorIDSource vendor_id_source = 8;
-
-        // Vendor ID of the device, where available.
-        optional uint32 vendor_id = 5;
-
-        // Product ID of the device, where available.
-        optional uint32 product_id = 6;
-
-        // Device ID of the device, generally the release or version number in
-        // BCD format, where available.
-        optional uint32 device_id = 7;
-      }
-      repeated PairedDevice paired_device = 3;
-    }
-    optional Bluetooth bluetooth = 11;
-
-    // Information about connected USB devices on Chrome OS systems.
-    message USB {
-      // The number of USB buses on the system.
-      optional uint32 bus_count = 1;
-
-      // Describes an attached USB device.
-      message USBDevice {
-        // Vendor ID (assigned by USB-IF).
-        optional fixed32 vendor_id = 1;
-
-        // Product ID (assigned by manufacturer).
-        optional fixed32 product_id = 2;
-
-        // Base Class as defined by USB-IF.
-        optional uint32 device_class = 3;
-
-        // SubClass as defined by USB-IF.
-        optional uint32 device_subclass = 4;
-
-        // The device release number with the decimal shifted out. The bcdDevice
-        // field from which this value originates is a 2-byte BCD in the range
-        // [00.00 - 99.99]. This value is multiplied by 100 to remove the
-        // decimal (device_release_number = bcdDevice * 100).
-        optional uint32 device_release_number = 5;
-
-        // A subset of information from the interface descriptors.
-        message InterfaceDescriptor {
-          // Base Class as defined by USB-IF.
-          optional uint32 interface_class = 1;
-
-          // SubClass as defined by USB-IF.
-          optional uint32 interface_subclass = 2;
-
-          // The configuration value for the configuration that holds this
-          // interface. Typically, all interfaces will belong to the same
-          // configuration.
-          optional uint32 configuration_value = 3;
-        }
-        repeated InterfaceDescriptor interface_descriptors = 6;
-
-        // The number of hubs above this device, including the root hub.
-        optional uint32 hops_from_root = 7;
-
-        // The vendor ID of the parent hub, if present.
-        optional fixed32 parent_vendor_id = 8;
-
-        // The product ID of the parent hub, if present.
-        optional fixed32 parent_product_id = 9;
-
-        // If this device is a hub, the number of ports on this hub.
-        optional uint32 port_count = 10;
-      }
-      repeated USBDevice usb_devices = 2;
-    }
-    optional USB usb = 30;
-
     // Whether the internal display produces touch events. Omitted if unknown.
     // Logged on ChromeOS only.
     optional bool internal_display_supports_touch = 14;
-
-    // Vendor ids and product ids of external touchscreens.
-    // Deprecated as of 8/11/2017.
-    message DeprecatedTouchScreen {
-      // Touch screen vendor id.
-      optional uint32 vendor_id = 1;
-      // Touch screen product id.
-      optional uint32 product_id = 2;
-    }
-    // Lists vendor and product ids of external touchscreens.
-    // Logged on ChromeOS only.
-    // Deprecated as of 8/11/2017.
-    repeated DeprecatedTouchScreen deprecated_external_touchscreen = 15
-        [deprecated = true];
 
     // Drive messages are currently logged on Windows 7+, iOS, and Android.
     message Drive {
@@ -511,16 +368,6 @@ message SystemProfileProto {
       EFFECTIVE_CONNECTION_TYPE_3G = 5;
       EFFECTIVE_CONNECTION_TYPE_4G = 6;
     }
-
-    // Deprecated: The connection type according to
-    // net::NetworkQualityEstimator. EffectiveConnectionType is the connection
-    // type whose typical performance is most similar to the measured
-    // performance of the network in use. In many cases, the "effective"
-    // connection type and the actual type of connection in use are the same,
-    // but often a network connection performs significantly differently,
-    // usually worse, from its expected capabilities.
-    optional EffectiveConnectionType deprecated_effective_connection_type = 6
-        [deprecated = true];
 
     // The minimum and maximum values of the effective connection type enum
     // during the lifetime of the log according to net::NetworkQualityEstimator.
@@ -677,8 +524,6 @@ message SystemProfileProto {
     // |crash_count| in which we exclude unclean exits that are likely caused by
     // GMS Core updates.
     optional int32 crash_count_due_to_gms_core_update = 30;
-    // Historical, no longer recorded since 2018-09.
-    optional int32 crash_count_without_gms_core_update = 28 [deprecated = true];
 
     // The number of times the program began, but did not complete, the shutdown
     // process.  (For example, this may occur when Windows is shutting down, and
@@ -950,7 +795,8 @@ message SystemProfileProto {
   // Information about the current wireless access point. Collected directly
   // from the wireless access point via standard apis if the device is
   // connected to the Internet wirelessly. Introduced for Chrome on TV devices
-  // but also can be collected by ChromeOS, Android or other clients.
+  // but also can be collected by cast devices running Chrome OS and Android.
+  // Not logged by Chrome browser platforms.
   message ExternalAccessPoint {
     // The manufacturer name, for example "ASUSTeK Computer Inc.".
     optional string manufacturer = 1;

@@ -343,7 +343,7 @@ network::mojom::ReferrerPolicy LocalDOMWindow::GetReferrerPolicy() const {
 }
 
 CoreProbeSink* LocalDOMWindow::GetProbeSink() {
-  return document()->GetProbeSink();
+  return probe::ToCoreProbeSink(GetFrame());
 }
 
 BrowserInterfaceBrokerProxy& LocalDOMWindow::GetBrowserInterfaceBroker() {

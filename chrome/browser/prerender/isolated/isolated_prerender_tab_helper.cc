@@ -130,6 +130,14 @@ IsolatedPrerenderTabHelper::~IsolatedPrerenderTabHelper() {
   }
 }
 
+void IsolatedPrerenderTabHelper::AddObserverForTesting(Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void IsolatedPrerenderTabHelper::RemoveObserverForTesting(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
 void IsolatedPrerenderTabHelper::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -370,6 +378,9 @@ void IsolatedPrerenderTabHelper::HandlePrefetchResponse(
                            response_code);
 
   if (response_code < 200 || response_code >= 300) {
+    for (auto& observer : observer_list_) {
+      observer.OnPrefetchCompletedWithError(url, response_code);
+    }
     return;
   }
 
@@ -381,6 +392,10 @@ void IsolatedPrerenderTabHelper::HandlePrefetchResponse(
           isolation_info, std::move(head), std::move(body));
   page_->prefetched_responses_.emplace(url, std::move(response));
   page_->metrics_->prefetch_successful_count_++;
+
+  for (auto& observer : observer_list_) {
+    observer.OnPrefetchCompletedSuccessfully(url);
+  }
 }
 
 void IsolatedPrerenderTabHelper::OnPredictionUpdated(

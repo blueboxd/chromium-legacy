@@ -58,6 +58,20 @@ TEST(TemplateExpressionsTest, ReplaceTemplateExpressionsRaw) {
             ReplaceTemplateExpressions("$i18nRaw{rawSample}", substitutions));
 }
 
+TEST(TemplateExpressionsTest, ReplaceTemplateExpressionsSkipPlaceholderCheck) {
+  static TemplateReplacements substitutions;
+  substitutions["rawSample"] = "$1";
+  // Skips DCHECK if |skip_unexpected_placeholder_check| is true.
+  ReplaceTemplateExpressions("$i18nRaw{rawSample}", substitutions,
+                             /* skip_unexpected_placeholder_check= */ true);
+  EXPECT_DCHECK_DEATH(ReplaceTemplateExpressions(
+      "$i18nRaw{rawSample}", substitutions,
+      /* skip_unexpected_placeholder_check= */ false));
+  // |skip_unexpected_placeholder_check|'s default value is false.
+  EXPECT_DCHECK_DEATH(
+      ReplaceTemplateExpressions("$i18nRaw{rawSample}", substitutions));
+}
+
 TEST(TemplateExpressionsTest, ReplaceTemplateExpressionsPolymerQuoting) {
   static TemplateReplacements substitutions;
   substitutions["singleSample"] = "don't do it";

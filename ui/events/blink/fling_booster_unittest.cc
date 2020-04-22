@@ -36,8 +36,8 @@ class FlingBoosterTest : public testing::Test {
       const gfx::Vector2dF& velocity,
       int modifiers = 0,
       WebGestureDevice source_device = WebGestureDevice::kTouchscreen) {
-    WebGestureEvent fling_start(WebInputEvent::kGestureFlingStart, modifiers,
-                                event_time_, source_device);
+    WebGestureEvent fling_start(WebInputEvent::Type::kGestureFlingStart,
+                                modifiers, event_time_, source_device);
     fling_start.data.fling_start.velocity_x = velocity.x();
     fling_start.data.fling_start.velocity_y = velocity.y();
     return fling_start;
@@ -45,7 +45,7 @@ class FlingBoosterTest : public testing::Test {
 
   WebGestureEvent CreateFlingCancel(
       WebGestureDevice source_device = WebGestureDevice::kTouchscreen) {
-    WebGestureEvent fling_cancel(WebInputEvent::kGestureFlingCancel, 0,
+    WebGestureEvent fling_cancel(WebInputEvent::Type::kGestureFlingCancel, 0,
                                  event_time_, source_device);
     return fling_cancel;
   }
@@ -53,7 +53,7 @@ class FlingBoosterTest : public testing::Test {
   WebGestureEvent CreateScrollBegin(
       gfx::Vector2dF delta,
       WebGestureDevice source_device = WebGestureDevice::kTouchscreen) {
-    WebGestureEvent scroll_begin(WebInputEvent::kGestureScrollBegin, 0,
+    WebGestureEvent scroll_begin(WebInputEvent::Type::kGestureScrollBegin, 0,
                                  event_time_, source_device);
     scroll_begin.data.scroll_begin.delta_x_hint = delta.x();
     scroll_begin.data.scroll_begin.delta_y_hint = delta.y();
@@ -65,7 +65,7 @@ class FlingBoosterTest : public testing::Test {
   WebGestureEvent CreateScrollUpdate(
       gfx::Vector2dF delta,
       WebGestureDevice source_device = WebGestureDevice::kTouchscreen) {
-    WebGestureEvent scroll_update(WebInputEvent::kGestureScrollUpdate, 0,
+    WebGestureEvent scroll_update(WebInputEvent::Type::kGestureScrollUpdate, 0,
                                   event_time_, source_device);
     scroll_update.data.scroll_update.delta_x = delta.x();
     scroll_update.data.scroll_update.delta_y = delta.y();
@@ -76,8 +76,8 @@ class FlingBoosterTest : public testing::Test {
 
   WebGestureEvent CreateScrollEnd(
       WebGestureDevice source_device = WebGestureDevice::kTouchscreen) {
-    return WebGestureEvent(WebInputEvent::kGestureScrollEnd, 0, event_time_,
-                           source_device);
+    return WebGestureEvent(WebInputEvent::Type::kGestureScrollEnd, 0,
+                           event_time_, source_device);
   }
 
   Vector2dF DeltaFromVelocity(Vector2dF velocity, TimeDelta delta) {
@@ -88,7 +88,7 @@ class FlingBoosterTest : public testing::Test {
   }
 
   Vector2dF SendFlingStart(WebGestureEvent event) {
-    DCHECK_EQ(WebInputEvent::kGestureFlingStart, event.GetType());
+    DCHECK_EQ(WebInputEvent::Type::kGestureFlingStart, event.GetType());
 
     // The event will first be observed, then the FlingController will request
     // a possibly boosted velocity.

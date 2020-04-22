@@ -19,7 +19,7 @@
 #include "base/callback.h"
 #include "base/time/time.h"
 #include "cc/base/math_util.h"
-#include "chromeos/services/assistant/public/features.h"
+#include "chromeos/services/assistant/public/cpp/features.h"
 #include "ui/aura/window.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"

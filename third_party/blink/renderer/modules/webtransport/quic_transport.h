@@ -35,7 +35,7 @@ class WebTransportCloseInfo;
 class WritableStream;
 class ScriptPromise;
 class ScriptPromiseResolver;
-class WebTransportCloseProxy;
+class WebTransportStream;
 
 // https://wicg.github.io/web-transport/#quic-transport
 class MODULES_EXPORT QuicTransport final
@@ -129,7 +129,7 @@ class MODULES_EXPORT QuicTransport final
   // This doesn't support stream ids of 0xfffffffe or larger.
   // TODO(ricea): Find out if such large stream ids are possible.
   HeapHashMap<uint32_t,
-              Member<WebTransportCloseProxy>,
+              Member<WebTransportStream>,
               WTF::DefaultHash<uint32_t>::Hash,
               WTF::UnsignedWithZeroKeyHashTraits<uint32_t>>
       stream_map_;

@@ -219,7 +219,7 @@ TEST(WebInputEventBuilderAndroidTest, WebMouseEventCoordinates) {
       raw_offset_y, false, &p0, nullptr);
 
   WebMouseEvent web_event = content::WebMouseEventBuilder::Build(
-      motion_event, blink::WebInputEvent::kMouseDown, 1,
+      motion_event, blink::WebInputEvent::Type::kMouseDown, 1,
       ui::MotionEvent::BUTTON_PRIMARY);
   EXPECT_EQ(web_event.PositionInWidget().x(), p0.pos_x_pixels * kPixToDip);
   EXPECT_EQ(web_event.PositionInWidget().y(), p0.pos_y_pixels * kPixToDip);

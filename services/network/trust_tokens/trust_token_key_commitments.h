@@ -44,8 +44,13 @@ class TrustTokenKeyCommitments : public TrustTokenKeyCommitmentGetter {
   //
   // If |origin| is a suitable Trust Tokens origin (in the sense of
   // SuitableTrustTokenOrigin), searches for a key commitment result
-  // corresponding to |origin|. Returns nullptr if |origin| is not suitable, or
-  // if no commitment result is found.
+  // corresponding to |origin|.
+  //
+  // If |origin| is not suitable, or if no commitment result is found, returns
+  // nullptr. Otherwise, returns the key commitment result stored for |origin|,
+  // with its verification keys filtered to contain at most
+  // |kMaximumConcurrentlyValidTrustTokenVerificationKeys| keys, none of
+  // which has yet expired.
   //
   // If commitments for |origin| were passed both through a prior call to |Set|
   // and through the --additional-trust-token-key-commitments command-line

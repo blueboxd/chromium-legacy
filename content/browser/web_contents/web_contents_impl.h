@@ -1164,6 +1164,11 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void set_portal(Portal* portal) { portal_ = portal; }
   Portal* portal() const { return portal_; }
 
+  // Notifies observers that this WebContents was activated. This contents'
+  // former portal host, |predecessor_contents|, has become a portal pending
+  // adoption.
+  void DidActivatePortal(WebContents* predecessor_contents);
+
   // Sends a page message to notify every process in the frame tree if the
   // web contents is a portal web contents.
   void NotifyInsidePortal(bool inside_portal);

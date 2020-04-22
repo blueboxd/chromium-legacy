@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/public/cpp/window_properties.h"
 #include "ash/wm/window_preview_view.h"
 #include "ash/wm/wm_highlight_item_border.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -34,6 +35,15 @@ constexpr int kLabelFontDelta = 2;
 // Values of the backdrop.
 constexpr int kBackdropBorderRoundingDp = 4;
 constexpr SkColor kBackdropColor = SkColorSetA(SK_ColorWHITE, 0x24);
+
+base::string16 GetWindowTitle(aura::Window* window) {
+  aura::Window* transient_root = wm::GetTransientRoot(window);
+  const base::string16* overview_title =
+      transient_root->GetProperty(kWindowOverviewTitleKey);
+  return (overview_title && !overview_title->empty())
+             ? *overview_title
+             : transient_root->GetTitle();
+}
 
 }  // namespace
 
@@ -137,8 +147,8 @@ WindowMiniView::WindowMiniView(aura::Window* source_window)
           views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
           kHeaderPaddingDp));
 
-  title_label_ = header_view_->AddChildView(std::make_unique<views::Label>(
-      wm::GetTransientRoot(source_window_)->GetTitle()));
+  title_label_ = header_view_->AddChildView(
+      std::make_unique<views::Label>(GetWindowTitle(source_window_)));
   title_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title_label_->SetAutoColorReadabilityEnabled(false);
   title_label_->SetEnabledColor(kLabelColor);
@@ -192,7 +202,7 @@ void WindowMiniView::Layout() {
 
 void WindowMiniView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kWindow;
-  node_data->SetName(title_label_->GetText());
+  node_data->SetName(wm::GetTransientRoot(source_window_)->GetTitle());
 }
 
 void WindowMiniView::OnWindowPropertyChanged(aura::Window* window,
@@ -216,7 +226,7 @@ void WindowMiniView::OnWindowDestroying(aura::Window* window) {
 }
 
 void WindowMiniView::OnWindowTitleChanged(aura::Window* window) {
-  title_label_->SetText(wm::GetTransientRoot(window)->GetTitle());
+  title_label_->SetText(GetWindowTitle(window));
 }
 
 }  // namespace ash

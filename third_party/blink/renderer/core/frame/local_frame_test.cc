@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -13,6 +14,13 @@
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#if defined(OS_MACOSX)
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "third_party/blink/public/mojom/input/text_input_host.mojom-blink.h"
+#include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
+#endif
 
 namespace blink {
 
@@ -24,6 +32,49 @@ void DisableLazyLoadInSettings(Settings& settings) {
 void EnableLazyLoadInSettings(Settings& settings) {
   settings.SetLazyLoadEnabled(true);
 }
+
+#if defined(OS_MACOSX)
+void RegisterMockedHttpURLLoad(const std::string& base_url,
+                               const std::string& file_name) {
+  url_test_helpers::RegisterMockedURLLoadFromBase(
+      WebString::FromUTF8(base_url), test::CoreTestDataPath(),
+      WebString::FromUTF8(file_name));
+}
+
+class TestTextInputHostWaiter : public mojom::blink::TextInputHost {
+ public:
+  TestTextInputHostWaiter() = default;
+  ~TestTextInputHostWaiter() override = default;
+
+  void Init(base::OnceClosure callback,
+            blink::BrowserInterfaceBrokerProxy& provider) {
+    callback_ = std::move(callback);
+    provider.SetBinderForTesting(
+        mojom::blink::TextInputHost::Name_,
+        base::BindRepeating(&TestTextInputHostWaiter::BindTextInputHostReceiver,
+                            base::Unretained(this)));
+  }
+
+  void GotCharacterIndexAtPoint(uint32_t index) override {
+    index_ = index;
+    if (callback_)
+      std::move(callback_).Run();
+  }
+
+  void BindTextInputHostReceiver(
+      mojo::ScopedMessagePipeHandle message_pipe_handle) {
+    receiver_.Bind(mojo::PendingReceiver<mojom::blink::TextInputHost>(
+        std::move(message_pipe_handle)));
+  }
+
+  uint32_t index() { return index_; }
+
+ private:
+  mojo::Receiver<mojom::blink::TextInputHost> receiver_{this};
+  uint32_t index_;
+  base::OnceClosure callback_;
+};
+#endif
 
 }  // namespace
 
@@ -184,5 +235,36 @@ TEST_F(LocalFrameTest, ForceSynchronousDocumentInstall_XMLStyleSheet) {
   page_holder->GetFrame().ForceSynchronousDocumentInstall("text/xml", data);
   TestGreenDiv(*page_holder);
 }
+
+#if defined(OS_MACOSX)
+TEST_F(LocalFrameTest, CharacterIndexAtPointWithPinchZoom) {
+  RegisterMockedHttpURLLoad("http://internal.test/", "sometext.html");
+
+  frame_test_helpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad("http://internal.test/sometext.html");
+  web_view_helper.LoadAhem();
+  web_view_helper.Resize(WebSize(640, 480));
+
+  // Move the visual viewport to the start of the target div containing the
+  // text.
+  web_view_helper.GetWebView()->SetPageScaleFactor(2);
+  web_view_helper.GetWebView()->SetVisualViewportOffset(gfx::PointF(100, 50));
+
+  Page* page = web_view_helper.GetWebView()->GetPage();
+  LocalFrame* main_frame = DynamicTo<LocalFrame>(page->MainFrame());
+  main_frame->text_input_host_.reset();
+
+  base::RunLoop run_loop;
+  TestTextInputHostWaiter waiter;
+  waiter.Init(run_loop.QuitClosure(), main_frame->GetBrowserInterfaceBroker());
+  main_frame->GetBrowserInterfaceBroker().GetInterface(
+      main_frame->text_input_host_.BindNewPipeAndPassReceiver());
+  // Since we're zoomed in to 2X, each char of Ahem is 20px wide/tall in
+  // viewport space. We expect to hit the fifth char on the first line.
+  main_frame->GetCharacterIndexAtPoint(gfx::Point(100, 15));
+  run_loop.Run();
+  EXPECT_EQ(waiter.index(), 5ul);
+}
+#endif
 
 }  // namespace blink

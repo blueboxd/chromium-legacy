@@ -173,15 +173,10 @@ ContextMenuHelper::GetJavaWebContents(JNIEnv* env,
   return web_contents_->GetJavaWebContents();
 }
 
-void ContextMenuHelper::OnStartDownload(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    jboolean jis_link,
-    jboolean jis_data_reduction_proxy_enabled) {
+void ContextMenuHelper::OnStartDownload(JNIEnv* env,
+                                        const JavaParamRef<jobject>& obj,
+                                        jboolean jis_link) {
   std::string headers;
-  if (jis_data_reduction_proxy_enabled)
-    headers = data_reduction_proxy::chrome_proxy_pass_through_header();
-
   DownloadControllerBase::Get()->StartContextMenuDownload(
       context_menu_params_,
       web_contents_,

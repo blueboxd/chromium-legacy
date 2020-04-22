@@ -1138,7 +1138,7 @@ bool SelectionController::HandlePasteGlobalSelection(
   // down then the text is pasted just before the onclick handler runs and
   // clears the text box. So it's important this happens after the event
   // handlers have been fired.
-  if (mouse_event.GetType() != WebInputEvent::kMouseUp)
+  if (mouse_event.GetType() != WebInputEvent::Type::kMouseUp)
     return false;
 
   if (!frame_->GetPage())

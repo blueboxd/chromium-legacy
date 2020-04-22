@@ -85,8 +85,6 @@ void AnchorElementMetricsSender::AddAnchorElement(HTMLAnchorElement& element) {
     return;
 
   bool is_ad_frame_element = ShouldDiscardAnchorElement(element);
-  UMA_HISTOGRAM_BOOLEAN("AnchorElementMetrics.IsAdFrameElement",
-                        is_ad_frame_element);
 
   // We ignore anchor elements that are in ad frames.
   if (is_ad_frame_element)

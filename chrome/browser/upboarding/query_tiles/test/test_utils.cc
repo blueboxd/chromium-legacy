@@ -19,7 +19,7 @@ namespace {
 
 const char kTimeStr[] = "03/18/20 01:00:00 AM";
 
-void SerializeEntry(const QueryTileEntry* entry, std::stringstream& out) {
+void SerializeEntry(const Tile* entry, std::stringstream& out) {
   if (!entry)
     return;
   out << "entry id: " << entry->id << " query text: " << entry->query_text
@@ -33,13 +33,13 @@ void SerializeEntry(const QueryTileEntry* entry, std::stringstream& out) {
 
 }  // namespace
 
-std::string DebugString(const QueryTileEntry* root) {
+std::string DebugString(const Tile* root) {
   if (!root)
     return std::string();
   std::stringstream out;
   out << "Entries detail: \n";
   std::map<std::string, std::vector<std::string>> cache;
-  std::deque<const QueryTileEntry*> queue;
+  std::deque<const Tile*> queue;
   queue.emplace_back(root);
   while (!queue.empty()) {
     size_t size = queue.size();
@@ -79,7 +79,7 @@ std::string DebugString(const TileGroup* group) {
   return out.str();
 }
 
-void ResetTestEntry(QueryTileEntry* entry) {
+void ResetTestEntry(Tile* entry) {
   entry->id = "guid-1-1";
   entry->query_text = "test query str";
   entry->display_text = "test display text";
@@ -90,11 +90,11 @@ void ResetTestEntry(QueryTileEntry* entry) {
   entry->image_metadatas.emplace_back("image-test-id-2",
                                       GURL("http://www.fakeurl.com"));
 
-  auto entry1 = std::make_unique<QueryTileEntry>();
+  auto entry1 = std::make_unique<Tile>();
   entry1->id = "guid-2-1";
-  auto entry2 = std::make_unique<QueryTileEntry>();
+  auto entry2 = std::make_unique<Tile>();
   entry2->id = "guid-2-2";
-  auto entry3 = std::make_unique<QueryTileEntry>();
+  auto entry3 = std::make_unique<Tile>();
   entry3->id = "guid-3-1";
   entry1->sub_tiles.emplace_back(std::move(entry3));
   entry->sub_tiles.clear();
@@ -107,13 +107,13 @@ void ResetTestGroup(TileGroup* group) {
   group->locale = "en-US";
   DCHECK(base::Time::FromString(kTimeStr, &group->last_updated_ts));
   group->tiles.clear();
-  auto test_entry_1 = std::make_unique<QueryTileEntry>();
+  auto test_entry_1 = std::make_unique<Tile>();
   ResetTestEntry(test_entry_1.get());
-  auto test_entry_2 = std::make_unique<QueryTileEntry>();
+  auto test_entry_2 = std::make_unique<Tile>();
   test_entry_2->id = "guid-1-2";
-  auto test_entry_3 = std::make_unique<QueryTileEntry>();
+  auto test_entry_3 = std::make_unique<Tile>();
   test_entry_3->id = "guid-1-3";
-  auto test_entry_4 = std::make_unique<QueryTileEntry>();
+  auto test_entry_4 = std::make_unique<Tile>();
   test_entry_4->id = "guid-1-4";
   test_entry_3->sub_tiles.emplace_back(std::move(test_entry_4));
   group->tiles.emplace_back(std::move(test_entry_1));
@@ -127,11 +127,10 @@ bool AreTileGroupsIdentical(const TileGroup& lhs, const TileGroup& rhs) {
 
   for (const auto& it : lhs.tiles) {
     auto* target = it.get();
-    auto found =
-        std::find_if(rhs.tiles.begin(), rhs.tiles.end(),
-                     [&target](const std::unique_ptr<QueryTileEntry>& entry) {
-                       return entry->id == target->id;
-                     });
+    auto found = std::find_if(rhs.tiles.begin(), rhs.tiles.end(),
+                              [&target](const std::unique_ptr<Tile>& entry) {
+                                return entry->id == target->id;
+                              });
     if (found == rhs.tiles.end() || *target != *found->get())
       return false;
   }
@@ -139,7 +138,7 @@ bool AreTileGroupsIdentical(const TileGroup& lhs, const TileGroup& rhs) {
   return true;
 }
 
-bool AreTilesIdentical(const QueryTileEntry& lhs, const QueryTileEntry& rhs) {
+bool AreTilesIdentical(const Tile& lhs, const Tile& rhs) {
   if (lhs != rhs)
     return false;
 
@@ -153,15 +152,31 @@ bool AreTilesIdentical(const QueryTileEntry& lhs, const QueryTileEntry& rhs) {
 
   for (const auto& it : lhs.sub_tiles) {
     auto* target = it.get();
-    auto found =
-        std::find_if(rhs.sub_tiles.begin(), rhs.sub_tiles.end(),
-                     [&target](const std::unique_ptr<QueryTileEntry>& entry) {
-                       return entry->id == target->id;
-                     });
+    auto found = std::find_if(rhs.sub_tiles.begin(), rhs.sub_tiles.end(),
+                              [&target](const std::unique_ptr<Tile>& entry) {
+                                return entry->id == target->id;
+                              });
     if (found == rhs.sub_tiles.end() ||
         !AreTilesIdentical(*target, *found->get()))
       return false;
   }
+  return true;
+}
+
+bool AreTilesIdentical(std::vector<Tile*> lhs, std::vector<Tile*> rhs) {
+  if (lhs.size() != rhs.size())
+    return false;
+
+  auto entry_comparator = [](Tile* a, Tile* b) { return a->id < b->id; };
+
+  std::sort(lhs.begin(), lhs.end(), entry_comparator);
+  std::sort(rhs.begin(), rhs.end(), entry_comparator);
+
+  for (size_t i = 0; i < lhs.size(); i++) {
+    if (*lhs[i] != *rhs[i])
+      return false;
+  }
+
   return true;
 }
 

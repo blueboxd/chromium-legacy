@@ -427,7 +427,7 @@ WebInputEventResult WebPagePopupImpl::HandleKeyEvent(
   if (closing_)
     return WebInputEventResult::kNotHandled;
 
-  if (WebInputEvent::kRawKeyDown == event.GetType()) {
+  if (WebInputEvent::Type::kRawKeyDown == event.GetType()) {
     Element* focused_element = FocusedElement();
     if (event.windows_key_code == VKEY_TAB && focused_element &&
         focused_element->IsKeyboardFocusable()) {
@@ -464,8 +464,8 @@ WebInputEventResult WebPagePopupImpl::HandleGestureEvent(
     const WebGestureEvent& event) {
   if (closing_)
     return WebInputEventResult::kNotHandled;
-  if ((event.GetType() == WebInputEvent::kGestureTap ||
-       event.GetType() == WebInputEvent::kGestureTapDown) &&
+  if ((event.GetType() == WebInputEvent::Type::kGestureTap ||
+       event.GetType() == WebInputEvent::Type::kGestureTapDown) &&
       !IsViewportPointInWindow(event.PositionInWidget().x(),
                                event.PositionInWidget().y())) {
     Cancel();

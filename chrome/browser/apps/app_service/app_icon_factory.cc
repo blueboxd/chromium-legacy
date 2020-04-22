@@ -15,6 +15,7 @@
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/no_destructor.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -23,22 +24,32 @@
 #include "chrome/browser/apps/app_service/dip_px_util.h"
 #include "chrome/browser/extensions/chrome_app_icon.h"
 #include "chrome/browser/extensions/chrome_app_icon_loader.h"
+#include "chrome/browser/favicon/favicon_service_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/app_icon_manager.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
+#include "components/favicon/core/favicon_service.h"
+#include "components/favicon_base/favicon_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/component_extension_resource_manager.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/image_loader.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/grit/extensions_browser_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/favicon_size.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
+#include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/app_list/md_icon_normalizer.h"
@@ -128,6 +139,26 @@ base::OnceCallback<void(const gfx::Image&)> ImageToImageSkia(
       std::move(callback));
 }
 
+base::OnceCallback<void(const favicon_base::FaviconRawBitmapResult&)>
+FaviconResultToImageSkia(base::OnceCallback<void(gfx::ImageSkia)> callback) {
+  return base::BindOnce(
+      [](base::OnceCallback<void(gfx::ImageSkia)> callback,
+         const favicon_base::FaviconRawBitmapResult& result) {
+        if (!result.is_valid()) {
+          std::move(callback).Run(gfx::ImageSkia());
+          return;
+        }
+        // It would be nice to not do a memory copy here, but
+        // DecodeImageIsolated requires a std::vector, and RefCountedMemory
+        // doesn't supply that.
+        std::move(CompressedDataToImageSkiaCallback(std::move(callback)))
+            .Run(std::vector<uint8_t>(
+                result.bitmap_data->front(),
+                result.bitmap_data->front() + result.bitmap_data->size()));
+      },
+      std::move(callback));
+}
+
 // Loads the compressed data of an icon at the requested size (or larger) for
 // the given extension.
 void LoadCompressedDataFromExtension(
@@ -205,6 +236,8 @@ std::vector<uint8_t> EncodeImage(const gfx::ImageSkia image) {
 class IconLoadingPipeline : public base::RefCounted<IconLoadingPipeline> {
  public:
   static const int kInvalidIconResource = 0;
+  static const int kFaviconFallbackImagePx =
+      extension_misc::EXTENSION_ICON_BITTY;
 
   IconLoadingPipeline(apps::mojom::IconCompression icon_compression,
                       int size_hint_in_dip,
@@ -220,7 +253,9 @@ class IconLoadingPipeline : public base::RefCounted<IconLoadingPipeline> {
         callback_(std::move(callback)) {}
 
   void LoadWebAppIcon(const std::string& web_app_id,
-                      const web_app::AppIconManager& icon_manager);
+                      const GURL& launch_url,
+                      const web_app::AppIconManager& icon_manager,
+                      Profile* profile);
 
   void LoadExtensionIcon(const extensions::Extension* extension,
                          content::BrowserContext* context);
@@ -245,24 +280,41 @@ class IconLoadingPipeline : public base::RefCounted<IconLoadingPipeline> {
 
   void CompleteWithUncompressed(gfx::ImageSkia image);
 
-  void MaybeLoadFallbackIconFromResource();
+  void MaybeLoadFallbackOrCompleteEmpty();
 
   apps::mojom::IconCompression icon_compression_;
   int size_hint_in_dip_;
   bool is_placeholder_icon_;
   apps::IconEffects icon_effects_;
+
+  // If |fallback_favicon_url_| is populated, then the favicon service is the
+  // first fallback method attempted in MaybeLoadFallbackOrCompleteEmpty().
+  // These members are only populated from LoadWebAppIcon or LoadExtensionIcon.
+  GURL fallback_favicon_url_;
+  Profile* profile_ = nullptr;
+
+  // If |fallback_icon_resource_| is not |kInvalidIconResource|, then it is the
+  // second fallback method attempted in MaybeLoadFallbackOrCompleteEmpty()
+  // (after the favicon service).
   int fallback_icon_resource_;
+
   apps::mojom::Publisher::LoadIconCallback callback_;
+
+  base::CancelableTaskTracker cancelable_task_tracker_;
 };
 
 void IconLoadingPipeline::LoadWebAppIcon(
     const std::string& web_app_id,
-    const web_app::AppIconManager& icon_manager) {
+    const GURL& launch_url,
+    const web_app::AppIconManager& icon_manager,
+    Profile* profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   const int icon_size_in_px = apps_util::ConvertDipToPx(
       size_hint_in_dip_, /*quantize_to_supported_scale_factor=*/true);
 
+  fallback_favicon_url_ = launch_url;
+  profile_ = profile;
   if (icon_manager.HasSmallestIcon(web_app_id, icon_size_in_px)) {
     switch (icon_compression_) {
       case apps::mojom::IconCompression::kCompressed:
@@ -288,7 +340,7 @@ void IconLoadingPipeline::LoadWebAppIcon(
         break;
     }
   }
-  MaybeLoadFallbackIconFromResource();
+  MaybeLoadFallbackOrCompleteEmpty();
 }
 
 void IconLoadingPipeline::LoadExtensionIcon(
@@ -297,9 +349,13 @@ void IconLoadingPipeline::LoadExtensionIcon(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (!extension) {
-    MaybeLoadFallbackIconFromResource();
+    MaybeLoadFallbackOrCompleteEmpty();
     return;
   }
+
+  fallback_favicon_url_ =
+      extensions::AppLaunchInfo::GetFullLaunchURL(extension);
+  profile_ = Profile::FromBrowserContext(context);
   switch (icon_compression_) {
     case apps::mojom::IconCompression::kCompressed:
       // For compressed icons with no |icon_effects|, serve the
@@ -335,7 +391,7 @@ void IconLoadingPipeline::LoadExtensionIcon(
       break;
   }
 
-  MaybeLoadFallbackIconFromResource();
+  MaybeLoadFallbackOrCompleteEmpty();
 }
 
 void IconLoadingPipeline::LoadCompressedIconFromFile(
@@ -352,7 +408,7 @@ void IconLoadingPipeline::LoadCompressedIconFromFile(
 void IconLoadingPipeline::LoadIconFromResource(int icon_resource) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (icon_resource == kInvalidIconResource) {
-    MaybeLoadFallbackIconFromResource();
+    MaybeLoadFallbackOrCompleteEmpty();
     return;
   }
 
@@ -401,13 +457,13 @@ void IconLoadingPipeline::LoadIconFromResource(int icon_resource) {
     case apps::mojom::IconCompression::kUnknown:
       break;
   }
-  MaybeLoadFallbackIconFromResource();
+  MaybeLoadFallbackOrCompleteEmpty();
 }
 
 void IconLoadingPipeline::MaybeApplyEffectsAndComplete(
     const gfx::ImageSkia image) {
   if (image.isNull()) {
-    MaybeLoadFallbackIconFromResource();
+    MaybeLoadFallbackOrCompleteEmpty();
     return;
   }
   gfx::ImageSkia processed_image = image;
@@ -435,7 +491,7 @@ void IconLoadingPipeline::MaybeApplyEffectsAndComplete(
 void IconLoadingPipeline::CompleteWithCompressed(std::vector<uint8_t> data) {
   DCHECK_EQ(icon_compression_, apps::mojom::IconCompression::kCompressed);
   if (data.empty()) {
-    MaybeLoadFallbackIconFromResource();
+    MaybeLoadFallbackOrCompleteEmpty();
     return;
   }
   apps::mojom::IconValuePtr iv = apps::mojom::IconValue::New();
@@ -448,7 +504,7 @@ void IconLoadingPipeline::CompleteWithCompressed(std::vector<uint8_t> data) {
 void IconLoadingPipeline::CompleteWithUncompressed(gfx::ImageSkia image) {
   DCHECK_EQ(icon_compression_, apps::mojom::IconCompression::kUncompressed);
   if (image.isNull()) {
-    MaybeLoadFallbackIconFromResource();
+    MaybeLoadFallbackOrCompleteEmpty();
     return;
   }
   apps::mojom::IconValuePtr iv = apps::mojom::IconValue::New();
@@ -458,15 +514,38 @@ void IconLoadingPipeline::CompleteWithUncompressed(gfx::ImageSkia image) {
   std::move(callback_).Run(std::move(iv));
 }
 
-void IconLoadingPipeline::MaybeLoadFallbackIconFromResource() {
-  if (fallback_icon_resource_ == kInvalidIconResource) {
-    std::move(callback_).Run(apps::mojom::IconValue::New());
+void IconLoadingPipeline::MaybeLoadFallbackOrCompleteEmpty() {
+  const int icon_size_in_px = apps_util::ConvertDipToPx(
+      size_hint_in_dip_, /*quantize_to_supported_scale_factor=*/true);
+  if (fallback_favicon_url_.is_valid() &&
+      icon_size_in_px == kFaviconFallbackImagePx) {
+    GURL favicon_url = fallback_favicon_url_;
+    // Reset to avoid infinite loops.
+    fallback_favicon_url_ = GURL();
+    favicon::FaviconService* favicon_service =
+        FaviconServiceFactory::GetForProfile(
+            profile_, ServiceAccessType::EXPLICIT_ACCESS);
+    if (favicon_service) {
+      favicon_service->GetRawFaviconForPageURL(
+          favicon_url, {favicon_base::IconType::kFavicon}, gfx::kFaviconSize,
+          /*fallback_to_host=*/false,
+          FaviconResultToImageSkia(
+              base::BindOnce(&IconLoadingPipeline::MaybeApplyEffectsAndComplete,
+                             base::WrapRefCounted(this))),
+          &cancelable_task_tracker_);
+      return;
+    }
+  }
+
+  if (fallback_icon_resource_ != kInvalidIconResource) {
+    int icon_resource = fallback_icon_resource_;
+    // Resetting default icon resource to ensure no infinite loops.
+    fallback_icon_resource_ = kInvalidIconResource;
+    LoadIconFromResource(icon_resource);
     return;
   }
-  int icon_resource = fallback_icon_resource_;
-  // Resetting default icon resource to ensure no infinite loops.
-  fallback_icon_resource_ = kInvalidIconResource;
-  LoadIconFromResource(icon_resource);
+
+  std::move(callback_).Run(apps::mojom::IconValue::New());
 }
 
 }  // namespace
@@ -510,6 +589,12 @@ void ApplyIconEffects(IconEffects icon_effects,
   extensions::ChromeAppIcon::ApplyEffects(size_hint_in_dip, resize_function,
                                           app_launchable, from_bookmark,
                                           badge_type, image_skia);
+
+  if (icon_effects & IconEffects::kPendingLocalLaunch) {
+    color_utils::HSL shift = {-1, 0, 0.6};
+    *image_skia =
+        gfx::ImageSkiaOperations::CreateHSLShiftedImage(*image_skia, shift);
+  }
 }
 
 void LoadIconFromExtension(apps::mojom::IconCompression icon_compression,
@@ -531,20 +616,26 @@ void LoadIconFromExtension(apps::mojom::IconCompression icon_compression,
       context);
 }
 
-void LoadIconFromWebApp(const web_app::AppIconManager& icon_manager,
+void LoadIconFromWebApp(content::BrowserContext* context,
                         apps::mojom::IconCompression icon_compression,
                         int size_hint_in_dip,
                         const std::string& web_app_id,
                         IconEffects icon_effects,
                         apps::mojom::Publisher::LoadIconCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(context);
+  web_app::WebAppProvider* web_app_provider =
+      web_app::WebAppProvider::Get(Profile::FromBrowserContext(context));
 
+  DCHECK(web_app_provider);
   constexpr bool is_placeholder_icon = false;
   scoped_refptr<IconLoadingPipeline> icon_loader =
       base::MakeRefCounted<IconLoadingPipeline>(
           icon_compression, size_hint_in_dip, is_placeholder_icon, icon_effects,
           IDR_APP_DEFAULT_ICON, std::move(callback));
-  icon_loader->LoadWebAppIcon(web_app_id, icon_manager);
+  icon_loader->LoadWebAppIcon(
+      web_app_id, web_app_provider->registrar().GetAppLaunchURL(web_app_id),
+      web_app_provider->icon_manager(), Profile::FromBrowserContext(context));
 }
 
 void LoadIconFromFileWithFallback(

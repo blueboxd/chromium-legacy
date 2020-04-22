@@ -182,12 +182,10 @@ ax::mojom::AssistantStructurePtr CloneAssistantStructure(
 AssistantScreenContextController::AssistantScreenContextController(
     AssistantControllerImpl* assistant_controller)
     : assistant_controller_(assistant_controller) {
-  assistant_controller_->AddObserver(this);
+  assistant_controller_observer_.Add(AssistantController::Get());
 }
 
-AssistantScreenContextController::~AssistantScreenContextController() {
-  assistant_controller_->RemoveObserver(this);
-}
+AssistantScreenContextController::~AssistantScreenContextController() = default;
 
 void AssistantScreenContextController::BindReceiver(
     mojo::PendingReceiver<mojom::AssistantScreenContextController> receiver) {

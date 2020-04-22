@@ -318,7 +318,6 @@ class CORE_EXPORT Document : public ContainerNode,
   bool CanExecuteScripts(ReasonForCallingCanExecuteScripts);
   String OutgoingReferrer() const;
   network::mojom::ReferrerPolicy GetReferrerPolicy() const;
-  CoreProbeSink* GetProbeSink();
   BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker();
   FrameOrWorkerScheduler* GetScheduler();
   void CountPotentialFeaturePolicyViolation(

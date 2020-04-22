@@ -146,8 +146,7 @@ bool SortNamespacesByLength(
 }
 }
 
-void AppCache::InitializeWithManifest(AppCacheManifest* manifest,
-                                      base::Time token_expires) {
+void AppCache::InitializeWithManifest(AppCacheManifest* manifest) {
   DCHECK(manifest);
   manifest_parser_version_ = manifest->parser_version;
   manifest_scope_ = manifest->scope;
@@ -155,7 +154,7 @@ void AppCache::InitializeWithManifest(AppCacheManifest* manifest,
   fallback_namespaces_.swap(manifest->fallback_namespaces);
   online_whitelist_namespaces_.swap(manifest->online_whitelist_namespaces);
   online_whitelist_all_ = manifest->online_whitelist_all;
-  token_expires_ = token_expires;
+  token_expires_ = manifest->token_expires;
 
   // Sort the namespaces by url string length, longest to shortest,
   // since longer matches trump when matching a url to a namespace.

@@ -17,7 +17,7 @@ import time
 
 _SHUTDOWN_CMD = ['dm', 'poweroff']
 _ATTACH_RETRY_INTERVAL = 1
-_ATTACH_RETRY_SECONDS = 60
+_ATTACH_RETRY_SECONDS = 120
 
 # Amount of time to wait for Amber to complete package installation, as a
 # mitigation against hangs due to amber/network-related failures.

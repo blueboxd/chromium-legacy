@@ -38,6 +38,9 @@ message ChromeUserMetricsExtension {
     // UMA metrics from Android Webview.
     ANDROID_WEBVIEW = 20;
 
+    // Cast Assistant
+    CAST_ASSISTANT = 25;
+
     // Cast receivers, e.g. Chromecast
     CAST = 35;
 

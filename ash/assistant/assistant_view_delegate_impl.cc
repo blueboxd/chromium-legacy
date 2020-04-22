@@ -5,7 +5,6 @@
 #include "ash/assistant/assistant_view_delegate_impl.h"
 
 #include "ash/assistant/assistant_controller_impl.h"
-#include "ash/assistant/assistant_controller_observer.h"
 #include "ash/assistant/assistant_interaction_controller.h"
 #include "ash/assistant/assistant_notification_controller.h"
 #include "ash/assistant/model/assistant_interaction_model.h"

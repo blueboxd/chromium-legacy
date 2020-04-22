@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_SERVICES_ASSISTANT_PUBLIC_CPP_ASSISTANT_PREFS_H_
 #define CHROMEOS_SERVICES_ASSISTANT_PUBLIC_CPP_ASSISTANT_PREFS_H_
 
+#include "base/component_export.h"
+
 class PrefRegistrySimple;
 
 namespace chromeos {
@@ -28,16 +30,25 @@ enum ConsentStatus {
   kNotFound = 3,
 };
 
+COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 extern const char kAssistantConsentStatus[];
+COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 extern const char kAssistantContextEnabled[];
+COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 extern const char kAssistantDisabledByPolicy[];
+COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 extern const char kAssistantEnabled[];
+COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 extern const char kAssistantHotwordAlwaysOn[];
+COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 extern const char kAssistantHotwordEnabled[];
+COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 extern const char kAssistantLaunchWithMicOpen[];
+COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 extern const char kAssistantNotificationEnabled[];
 
 // Registers Assistant specific profile preferences for browser prefs.
+COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
 }  // namespace prefs

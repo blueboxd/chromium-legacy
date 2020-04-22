@@ -184,8 +184,8 @@ WebInputEventResult KeyboardEventManager::KeyEvent(
     DCHECK(RuntimeEnabledFeatures::MiddleClickAutoscrollEnabled());
     // If a key is pressed while the middleClickAutoscroll is in progress then
     // we want to stop.
-    if (initial_key_event.GetType() == WebInputEvent::kKeyDown ||
-        initial_key_event.GetType() == WebInputEvent::kRawKeyDown)
+    if (initial_key_event.GetType() == WebInputEvent::Type::kKeyDown ||
+        initial_key_event.GetType() == WebInputEvent::Type::kRawKeyDown)
       scroll_manager_->StopMiddleClickAutoscroll();
 
     // If we were in panscroll mode, we swallow the key event
@@ -205,8 +205,8 @@ WebInputEventResult KeyboardEventManager::KeyEvent(
       static_cast<ui::DomKey>(initial_key_event.dom_key));
 
   if (!is_modifier && initial_key_event.dom_key != ui::DomKey::ESCAPE &&
-      (initial_key_event.GetType() == WebInputEvent::kKeyDown ||
-       initial_key_event.GetType() == WebInputEvent::kRawKeyDown)) {
+      (initial_key_event.GetType() == WebInputEvent::Type::kKeyDown ||
+       initial_key_event.GetType() == WebInputEvent::Type::kRawKeyDown)) {
     LocalFrame::NotifyUserActivation(
         frame_,
         RuntimeEnabledFeatures::BrowserVerifiedUserActivationKeyboardEnabled());
@@ -222,7 +222,7 @@ WebInputEventResult KeyboardEventManager::KeyEvent(
   // currently match either Mac or Windows behavior, depending on whether they
   // send combined KeyDown events.
   bool matched_an_access_key = false;
-  if (initial_key_event.GetType() == WebInputEvent::kKeyDown)
+  if (initial_key_event.GetType() == WebInputEvent::Type::kKeyDown)
     matched_an_access_key = HandleAccessKey(initial_key_event);
 
   // Don't expose key events to pages while browsing on the drive-by web. This
@@ -271,8 +271,8 @@ WebInputEventResult KeyboardEventManager::KeyEvent(
 
   // TODO: it would be fair to let an input method handle KeyUp events
   // before DOM dispatch.
-  if (initial_key_event.GetType() == WebInputEvent::kKeyUp ||
-      initial_key_event.GetType() == WebInputEvent::kChar) {
+  if (initial_key_event.GetType() == WebInputEvent::Type::kKeyUp ||
+      initial_key_event.GetType() == WebInputEvent::Type::kChar) {
     KeyboardEvent* dom_event = KeyboardEvent::Create(
         initial_key_event, frame_->GetDocument()->domWindow(),
         event_cancellable);
@@ -284,8 +284,8 @@ WebInputEventResult KeyboardEventManager::KeyEvent(
   }
 
   WebKeyboardEvent key_down_event = initial_key_event;
-  if (key_down_event.GetType() != WebInputEvent::kRawKeyDown)
-    key_down_event.SetType(WebInputEvent::kRawKeyDown);
+  if (key_down_event.GetType() != WebInputEvent::Type::kRawKeyDown)
+    key_down_event.SetType(WebInputEvent::Type::kRawKeyDown);
   KeyboardEvent* keydown = KeyboardEvent::Create(
       key_down_event, frame_->GetDocument()->domWindow(), event_cancellable);
   if (matched_an_access_key)
@@ -311,7 +311,7 @@ WebInputEventResult KeyboardEventManager::KeyEvent(
   if (changed_focused_frame)
     return WebInputEventResult::kHandledSystem;
 
-  if (initial_key_event.GetType() == WebInputEvent::kRawKeyDown)
+  if (initial_key_event.GetType() == WebInputEvent::Type::kRawKeyDown)
     return WebInputEventResult::kNotHandled;
 
   // Focus may have changed during keydown handling, so refetch node.
@@ -333,7 +333,7 @@ WebInputEventResult KeyboardEventManager::KeyEvent(
 #endif
 
   WebKeyboardEvent key_press_event = initial_key_event;
-  key_press_event.SetType(WebInputEvent::kChar);
+  key_press_event.SetType(WebInputEvent::Type::kChar);
   if (key_press_event.text[0] == 0)
     return WebInputEventResult::kNotHandled;
   KeyboardEvent* keypress = KeyboardEvent::Create(

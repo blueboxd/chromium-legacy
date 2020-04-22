@@ -7,10 +7,29 @@
  * a saved password.
  */
 
-(function() {
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
+import 'chrome://resources/cr_elements/cr_icons_css.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import '../icons.m.js';
+import '../settings_shared_css.m.js';
+import '../settings_vars_css.m.js';
+import './passwords_shared_css.js';
+
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {PasswordManagerImpl, PasswordManagerProxy} from './password_manager_proxy.js';
+
 
 Polymer({
   is: 'settings-password-check-edit-dialog',
+
+  _template: html`{__html_template__}`,
 
   behaviors: [I18nBehavior],
 
@@ -39,7 +58,7 @@ Polymer({
     // Set the manager. These can be overridden by tests.
     this.passwordManager_ = PasswordManagerImpl.getInstance();
     this.$.dialog.showModal();
-    cr.ui.focusWithoutInk(this.$.cancel);
+    focusWithoutInk(this.$.cancel);
   },
 
   /** Closes the dialog. */
@@ -124,4 +143,3 @@ Polymer({
                                         'editCompromisedPasswordSite');
   }
 });
-})();

@@ -56,6 +56,9 @@ class HeapMojoReceiver {
     wrapper_->receiver().Bind(std::move(pending_receiver),
                               std::move(task_runner));
   }
+  bool WaitForIncomingCall() {
+    return wrapper_->receiver().WaitForIncomingCall();
+  }
 
   void Trace(Visitor* visitor) { visitor->Trace(wrapper_); }
 

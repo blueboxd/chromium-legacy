@@ -155,7 +155,7 @@ TEST_F(EventConversionTest, TouchCancel) {
 TEST_F(EventConversionTest, MouseMove) {
   std::unique_ptr<gfx::PointF> last_mouse_position;
   blink::WebMouseEvent mouse_event = SyntheticWebMouseEventBuilder::Build(
-      blink::WebInputEvent::kMouseMove, 100, 200, 0);
+      blink::WebInputEvent::Type::kMouseMove, 100, 200, 0);
 
   std::vector<ppapi::InputEventData> pp_events;
   CreateInputEventData(mouse_event, &last_mouse_position, &pp_events);
@@ -172,7 +172,7 @@ TEST_F(EventConversionTest, MouseMove) {
   }
 
   mouse_event = SyntheticWebMouseEventBuilder::Build(
-      blink::WebInputEvent::kMouseMove, 123, 188, 0);
+      blink::WebInputEvent::Type::kMouseMove, 123, 188, 0);
   CreateInputEventData(mouse_event, &last_mouse_position, &pp_events);
   ASSERT_EQ(PP_INPUTEVENT_TYPE_MOUSEMOVE, pp_event.event_type);
   ASSERT_EQ(pp_event.mouse_position.x, mouse_event.PositionInWidget().x());

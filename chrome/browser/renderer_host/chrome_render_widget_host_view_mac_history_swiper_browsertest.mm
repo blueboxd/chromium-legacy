@@ -755,7 +755,7 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderWidgetHostViewMacHistorySwiperTest,
       base::BindRepeating([](blink::mojom::InputEventResultSource,
                              blink::mojom::InputEventResultState,
                              const blink::WebInputEvent& event) {
-        return event.GetType() == blink::WebInputEvent::kMouseWheel &&
+        return event.GetType() == blink::WebInputEvent::Type::kMouseWheel &&
                static_cast<const blink::WebMouseWheelEvent&>(event).phase ==
                    blink::WebMouseWheelEvent::kPhaseEnded;
       }));

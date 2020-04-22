@@ -784,30 +784,145 @@ bool GetSeason(const Property& property,
   return true;
 }
 
-// Gets the broadcastEvent entity from the property and store the result in item
-// as LiveDetails. Returns true if the broadcastEven was valid.
-bool GetLiveDetails(const Property& property, mojom::MediaFeedItem* item) {
-  if (property.values->entity_values.empty())
-    return false;
-
-  EntityPtr& publication = property.values->entity_values[0];
-  if (publication->type != schema_org::entity::kBroadcastEvent)
-    return false;
-
-  item->live = mojom::LiveDetails::New();
+// Gets the broadcastEvent entity from the entity and store the result in item
+// as LiveDetails. Returns true if the broadcastEvent was valid.
+bool GetLiveDetails(const EntityPtr& broadcastEvent,
+                    mojom::MediaFeedItem* converted_item) {
+  converted_item->live = mojom::LiveDetails::New();
 
   auto* start_date =
-      GetProperty(publication.get(), schema_org::property::kStartDate);
+      GetProperty(broadcastEvent.get(), schema_org::property::kStartDate);
   if (!start_date || !IsDateOrDateTime(*start_date))
     return false;
-  item->live->start_time = start_date->values->date_time_values[0];
+  converted_item->live->start_time = start_date->values->date_time_values[0];
 
   auto* end_date =
-      GetProperty(publication.get(), schema_org::property::kEndDate);
+      GetProperty(broadcastEvent.get(), schema_org::property::kEndDate);
   if (end_date) {
     if (!IsDateOrDateTime(*end_date))
       return false;
-    item->live->end_time = end_date->values->date_time_values[0];
+    converted_item->live->end_time = end_date->values->date_time_values[0];
+  }
+
+  return true;
+}
+
+bool GetMediaFeedItem(const EntityPtr& item,
+                      mojom::MediaFeedItem* converted_item,
+                      base::flat_set<std::string>* item_ids) {
+  auto convert_property = base::BindRepeating(
+      &ConvertProperty<mojom::MediaFeedItem>, item.get(), converted_item);
+
+  auto type = GetMediaItemType(item->type);
+  if (!type.has_value())
+    return false;
+  converted_item->type = type.value();
+
+  // Check that the id is present and unique. This does not get converted.
+  if (item->id == "" || item_ids->find(item->id) != item_ids->end()) {
+    return false;
+  }
+  item_ids->insert(item->id);
+
+  auto* name = GetProperty(item.get(), schema_org::property::kName);
+  if (name && IsNonEmptyString(*name)) {
+    converted_item->name = base::ASCIIToUTF16(name->values->string_values[0]);
+  } else {
+    return false;
+  }
+
+  auto* date_published =
+      GetProperty(item.get(), schema_org::property::kDatePublished);
+  if (date_published && !date_published->values->date_time_values.empty()) {
+    converted_item->date_published =
+        date_published->values->date_time_values[0];
+  } else {
+    return false;
+  }
+
+  if (!convert_property.Run(schema_org::property::kIsFamilyFriendly, true,
+                            base::BindOnce(&GetIsFamilyFriendly))) {
+    return false;
+  }
+
+  auto* image = GetProperty(item.get(), schema_org::property::kImage);
+  if (!image)
+    return false;
+  auto converted_images = GetMediaImage(*image);
+  if (!converted_images.has_value())
+    return false;
+  converted_item->images = converted_images.value();
+
+  if (!convert_property.Run(schema_org::property::kInteractionStatistic, false,
+                            base::BindOnce(&GetInteractionStatistics))) {
+    return false;
+  }
+
+  if (!convert_property.Run(schema_org::property::kContentRating, false,
+                            base::BindOnce(&GetContentRatings))) {
+    return false;
+  }
+
+  auto* genre = GetProperty(item.get(), schema_org::property::kGenre);
+  if (genre) {
+    if (!IsNonEmptyString(*genre))
+      return false;
+    for (const auto& genre_value : genre->values->string_values) {
+      converted_item->genre.push_back(genre_value);
+      if (converted_item->genre.size() >= kMaxGenres)
+        return false;
+    }
+  }
+
+  if (!convert_property.Run(
+          schema_org::property::kIdentifier, false,
+          base::BindOnce(&GetIdentifiers<mojom::MediaFeedItem>))) {
+    return false;
+  }
+
+  if (converted_item->type == mojom::MediaFeedItemType::kVideo) {
+    if (!convert_property.Run(schema_org::property::kAuthor, true,
+                              base::BindOnce(&GetMediaItemAuthor))) {
+      return false;
+    }
+    if (!convert_property.Run(
+            schema_org::property::kDuration, !converted_item->live,
+            base::BindOnce(&GetDuration<mojom::MediaFeedItem>))) {
+      return false;
+    }
+  } else if (converted_item->type == mojom::MediaFeedItemType::kTVSeries) {
+    std::map<int, int> number_of_episodes;
+    auto* season =
+        GetProperty(item.get(), schema_org::property::kContainsSeason);
+    if (season && !GetSeason(*season, &number_of_episodes))
+      return false;
+    auto episodes = GetEpisodeCandidates(item.get());
+    if (!episodes.has_value())
+      return false;
+    auto main_episode = PickMainEpisode(episodes.value());
+    if (main_episode.has_value() &&
+        !GetEpisode(main_episode.value(), converted_item))
+      return false;
+    auto next_episode = PickPlayNextCandidate(episodes.value(), main_episode,
+                                              number_of_episodes);
+    if (next_episode.has_value() &&
+        !GetPlayNextCandidate(next_episode.value(), converted_item)) {
+      return false;
+    }
+  }
+
+  bool has_embedded_action =
+      item->type == schema_org::entity::kTVSeries && converted_item->action;
+  if (!has_embedded_action) {
+    auto action_status = GetActionStatus(item.get());
+    converted_item->action_status =
+        action_status.value_or(mojom::MediaFeedItemActionStatus::kUnknown);
+    if (!convert_property.Run(schema_org::property::kPotentialAction,
+                              !has_embedded_action,
+                              base::BindOnce(&GetAction<mojom::MediaFeedItem>,
+                                             converted_item->action_status))) {
+      return false;
+    }
   }
 
   return true;
@@ -826,131 +941,25 @@ void GetDataFeedItems(
 
   for (const auto& item : data_feed_items->values->entity_values) {
     mojom::MediaFeedItemPtr converted_item = mojom::MediaFeedItem::New();
-    auto convert_property =
-        base::BindRepeating(&ConvertProperty<mojom::MediaFeedItem>, item.get(),
-                            converted_item.get());
 
-    auto type = GetMediaItemType(item->type);
-    if (!type.has_value())
-      continue;
-    converted_item->type = type.value();
+    if (item->type == schema_org::entity::kBroadcastEvent) {
+      auto* embedded_item =
+          GetProperty(item.get(), schema_org::property::kWorkPerformed);
+      if (!embedded_item || embedded_item->values->entity_values.empty())
+        continue;
 
-    // Check that the id is present and unique. This does not get converted.
-    if (item->id == "" || item_ids.find(item->id) != item_ids.end()) {
-      continue;
-    }
-    item_ids.insert(item->id);
+      if (!GetMediaFeedItem(embedded_item->values->entity_values[0],
+                            converted_item.get(), &item_ids)) {
+        continue;
+      }
 
-    auto* name = GetProperty(item.get(), schema_org::property::kName);
-    if (name && IsNonEmptyString(*name)) {
-      converted_item->name = base::ASCIIToUTF16(name->values->string_values[0]);
+      if (!GetLiveDetails(item, converted_item.get()))
+        continue;
     } else {
-      continue;
+      if (!GetMediaFeedItem(item, converted_item.get(), &item_ids))
+        continue;
     }
 
-    auto* date_published =
-        GetProperty(item.get(), schema_org::property::kDatePublished);
-    if (date_published && !date_published->values->date_time_values.empty()) {
-      converted_item->date_published =
-          date_published->values->date_time_values[0];
-    } else {
-      continue;
-    }
-
-    if (!convert_property.Run(schema_org::property::kIsFamilyFriendly, true,
-                              base::BindOnce(&GetIsFamilyFriendly))) {
-      continue;
-    }
-
-    auto* image = GetProperty(item.get(), schema_org::property::kImage);
-    if (!image)
-      continue;
-    auto converted_images = GetMediaImage(*image);
-    if (!converted_images.has_value())
-      continue;
-    converted_item->images = converted_images.value();
-
-    if (!convert_property.Run(schema_org::property::kInteractionStatistic,
-                              false,
-                              base::BindOnce(&GetInteractionStatistics))) {
-      continue;
-    }
-
-    if (!convert_property.Run(schema_org::property::kContentRating, false,
-                              base::BindOnce(&GetContentRatings))) {
-      continue;
-    }
-
-    auto* genre = GetProperty(item.get(), schema_org::property::kGenre);
-    if (genre) {
-      if (!IsNonEmptyString(*genre))
-        continue;
-      for (const auto& genre_value : genre->values->string_values) {
-        converted_item->genre.push_back(genre_value);
-        if (converted_item->genre.size() >= kMaxGenres)
-          continue;
-      }
-    }
-
-    if (!convert_property.Run(
-            schema_org::property::kIdentifier, false,
-            base::BindOnce(&GetIdentifiers<mojom::MediaFeedItem>))) {
-      continue;
-    }
-
-    if (converted_item->type == mojom::MediaFeedItemType::kVideo) {
-      if (!convert_property.Run(schema_org::property::kAuthor, true,
-                                base::BindOnce(&GetMediaItemAuthor))) {
-        continue;
-      }
-      if (!convert_property.Run(schema_org::property::kPublication, false,
-                                base::BindOnce(&GetLiveDetails))) {
-        continue;
-      }
-      if (!convert_property.Run(
-              schema_org::property::kDuration, !converted_item->live,
-              base::BindOnce(&GetDuration<mojom::MediaFeedItem>))) {
-        continue;
-      }
-    } else if (converted_item->type == mojom::MediaFeedItemType::kMovie) {
-      if (!convert_property.Run(schema_org::property::kPublication, false,
-                                base::BindOnce(&GetLiveDetails))) {
-        continue;
-      }
-    } else if (converted_item->type == mojom::MediaFeedItemType::kTVSeries) {
-      std::map<int, int> number_of_episodes;
-      auto* season =
-          GetProperty(item.get(), schema_org::property::kContainsSeason);
-      if (season && !GetSeason(*season, &number_of_episodes))
-        continue;
-      auto episodes = GetEpisodeCandidates(item.get());
-      if (!episodes.has_value())
-        continue;
-      auto main_episode = PickMainEpisode(episodes.value());
-      if (main_episode.has_value() &&
-          !GetEpisode(main_episode.value(), converted_item.get()))
-        continue;
-      auto next_episode = PickPlayNextCandidate(episodes.value(), main_episode,
-                                                number_of_episodes);
-      if (next_episode.has_value() &&
-          !GetPlayNextCandidate(next_episode.value(), converted_item.get())) {
-        continue;
-      }
-    }
-
-    bool has_embedded_action =
-        item->type == schema_org::entity::kTVSeries && converted_item->action;
-    if (!has_embedded_action) {
-      auto action_status = GetActionStatus(item.get());
-      converted_item->action_status =
-          action_status.value_or(mojom::MediaFeedItemActionStatus::kUnknown);
-      if (!convert_property.Run(
-              schema_org::property::kPotentialAction, !has_embedded_action,
-              base::BindOnce(&GetAction<mojom::MediaFeedItem>,
-                             converted_item->action_status))) {
-        continue;
-      }
-    }
     converted_feed_items->push_back(std::move(converted_item));
   }
 }

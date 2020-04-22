@@ -118,17 +118,17 @@ void SiteEngagementService::Helper::InputTracker::DidGetUserInteraction(
   // of the values of the WebInputEvent::Type enum (hence it won't require the
   // compiler verifying that all cases are covered).
   switch (type) {
-    case blink::WebInputEvent::kRawKeyDown:
+    case blink::WebInputEvent::Type::kRawKeyDown:
       helper()->RecordUserInput(SiteEngagementService::ENGAGEMENT_KEYPRESS);
       break;
-    case blink::WebInputEvent::kMouseDown:
+    case blink::WebInputEvent::Type::kMouseDown:
       helper()->RecordUserInput(SiteEngagementService::ENGAGEMENT_MOUSE);
       break;
-    case blink::WebInputEvent::kTouchStart:
+    case blink::WebInputEvent::Type::kTouchStart:
       helper()->RecordUserInput(
           SiteEngagementService::ENGAGEMENT_TOUCH_GESTURE);
       break;
-    case blink::WebInputEvent::kGestureScrollBegin:
+    case blink::WebInputEvent::Type::kGestureScrollBegin:
       helper()->RecordUserInput(SiteEngagementService::ENGAGEMENT_SCROLL);
       break;
     default:

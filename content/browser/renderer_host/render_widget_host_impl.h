@@ -593,7 +593,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void RejectMouseLockOrUnlockIfNecessary(
       blink::mojom::PointerLockResult reason);
 
-  // The places in our codebase that call set_renderer_initialized or set the
+  // The places in our codebase that call SetRendererInitialized or set the
   // state to true directly.
   // TODO(https://crbug.com/1006814): Delete this.
   enum class RendererInitializer {
@@ -604,11 +604,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
     kWebContentsInit,
     kCreateRenderView,
   };
-  void set_renderer_initialized(bool renderer_initialized,
-                                RendererInitializer initializer) {
-    renderer_initialized_ = renderer_initialized;
-    initializer_ = initializer;
-  }
+  void SetRendererInitialized(bool renderer_initialized,
+                              RendererInitializer initializer);
   // TODO(https://crbug.com/1006814): Delete this.
   RendererInitializer get_initializer_for_crbug_1006814() {
     return initializer_;

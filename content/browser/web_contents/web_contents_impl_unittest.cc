@@ -53,6 +53,7 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/common/url_utils.h"
 #include "content/public/test/fake_local_frame.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/navigation_simulator.h"
@@ -579,6 +580,19 @@ TEST_F(WebContentsImplTest, NavigateToInvalidURL) {
   controller().LoadURL(
       GURL(), Referrer(), ui::PAGE_TRANSITION_GENERATED, std::string());
   EXPECT_NE(nullptr, controller().GetPendingEntry());
+}
+
+// Test that we reject NavigateToEntry if the url is a renderer debug URL
+// inside a view-source: URL. This verifies that the navigation is not allowed
+// to proceed after the view-source: URL rewriting logic has run.
+TEST_F(WebContentsImplTest, NavigateToViewSourceRendererDebugURL) {
+  const GURL renderer_debug_url(kChromeUIKillURL);
+  const GURL view_source_debug_url("view-source:" + renderer_debug_url.spec());
+  EXPECT_TRUE(IsRendererDebugURL(renderer_debug_url));
+  EXPECT_FALSE(IsRendererDebugURL(view_source_debug_url));
+  controller().LoadURL(view_source_debug_url, Referrer(),
+                       ui::PAGE_TRANSITION_GENERATED, std::string());
+  EXPECT_EQ(nullptr, controller().GetPendingEntry());
 }
 
 // Test that navigating across a site boundary creates a new RenderViewHost

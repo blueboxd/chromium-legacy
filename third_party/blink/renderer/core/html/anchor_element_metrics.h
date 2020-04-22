@@ -94,9 +94,6 @@ class CORE_EXPORT AnchorElementMetrics {
   // height.
   const float ratio_distance_root_bottom_;
 
-  // The hight of the root document, divided by the viewport height.
-  const float ratio_root_height_;
-
   // Whether the anchor element is within an iframe.
   const bool is_in_iframe_;
 
@@ -117,7 +114,6 @@ class CORE_EXPORT AnchorElementMetrics {
                               float ratio_distance_center_to_visible_top,
                               float ratio_distance_root_top,
                               float ratio_distance_root_bottom,
-                              float ratio_root_height,
                               bool is_in_iframe,
                               bool contains_image,
                               bool is_same_host,
@@ -130,7 +126,6 @@ class CORE_EXPORT AnchorElementMetrics {
             ratio_distance_center_to_visible_top),
         ratio_distance_root_top_(ratio_distance_root_top),
         ratio_distance_root_bottom_(ratio_distance_root_bottom),
-        ratio_root_height_(ratio_root_height),
         is_in_iframe_(is_in_iframe),
         contains_image_(contains_image),
         is_same_host_(is_same_host),

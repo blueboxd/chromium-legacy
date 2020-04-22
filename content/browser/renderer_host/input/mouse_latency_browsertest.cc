@@ -319,7 +319,7 @@ IN_PROC_BROWSER_TEST_F(MouseLatencyBrowserTest,
   LoadURL();
 
   auto filter = std::make_unique<InputMsgWatcher>(
-      GetWidgetHost(), blink::WebInputEvent::kMouseUp);
+      GetWidgetHost(), blink::WebInputEvent::Type::kMouseUp);
   StartTracing();
   DoSyncClick(gfx::PointF(100, 100));
   EXPECT_EQ(blink::mojom::InputEventResultState::kNotConsumed,

@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
+#include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page_handler.h"
@@ -50,6 +51,11 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
                              ->search_terms_data()
                              .GoogleBaseURLValue())
                         .spec());
+
+  source->AddBoolean("realboxEnabled", ntp_features::IsRealboxEnabled());
+  source->AddBoolean(
+      "realboxMatchOmniboxTheme",
+      base::FeatureList::IsEnabled(ntp_features::kRealboxMatchOmniboxTheme));
 
   static constexpr webui::LocalizedString kStrings[] = {
       {"doneButton", IDS_DONE},

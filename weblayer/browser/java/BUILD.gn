@@ -262,6 +262,7 @@ android_aidl("aidl") {
     "org/chromium/weblayer_private/interfaces/IErrorPageCallbackClient.aidl",
     "org/chromium/weblayer_private/interfaces/IFindInPageCallbackClient.aidl",
     "org/chromium/weblayer_private/interfaces/IFullscreenCallbackClient.aidl",
+    "org/chromium/weblayer_private/interfaces/IMediaCaptureCallbackClient.aidl",
     "org/chromium/weblayer_private/interfaces/INavigation.aidl",
     "org/chromium/weblayer_private/interfaces/INavigationController.aidl",
     "org/chromium/weblayer_private/interfaces/INavigationControllerClient.aidl",

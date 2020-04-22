@@ -23,23 +23,6 @@ import "ui/accessibility/mojom/ax_assistant_structure.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 import "url/mojom/url.mojom";
 
-// Main interface to the Assistant service.
-interface AssistantService {
-  // Initiates assistant and provides interfaces for assistant to call into the
-  // browser.
-  Init(pending_remote<Client> assistant_client_interface,
-       pending_remote<DeviceActions> device_actions_interface);
-
-  // Binds the main assistant backend interface.
-  BindAssistant(pending_receiver<Assistant> receiver);
-
-  // Binds an interface to control assistant settings.
-  BindSettingsManager(pending_receiver<AssistantSettingsManager> receiver);
-
-  // Signals system shutdown, the service could start cleaning up if needed.
-  Shutdown();
-};
-
 // Interface whose implementation is owned by Shell in Ash. This is used
 // primarily to provide Ash with an interface to the Assistant service.
 interface AssistantController {

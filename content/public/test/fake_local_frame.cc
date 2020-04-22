@@ -84,6 +84,10 @@ void FakeLocalFrame::DidUpdateFramePolicy(
 
 void FakeLocalFrame::OnScreensChange() {}
 
+#if defined(OS_MACOSX)
+void FakeLocalFrame::GetCharacterIndexAtPoint(const gfx::Point& point) {}
+#endif
+
 void FakeLocalFrame::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {
   receiver_.Bind(mojo::PendingAssociatedReceiver<blink::mojom::LocalFrame>(

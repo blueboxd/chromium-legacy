@@ -22,7 +22,7 @@ class HistoryTabHelper : public content::WebContentsObserver,
   ~HistoryTabHelper() override;
 
   // Updates history with the specified navigation. This is called by
-  // OnMsgNavigate to update history state.
+  // DidFinishNavigation to update history state.
   void UpdateHistoryForNavigation(
       const history::HistoryAddPageArgs& add_page_args);
 
@@ -41,6 +41,7 @@ class HistoryTabHelper : public content::WebContentsObserver,
   // content::WebContentsObserver implementation.
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
+  void DidActivatePortal(content::WebContents* predecessor_contents) override;
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override;
   void TitleWasSet(content::NavigationEntry* entry) override;

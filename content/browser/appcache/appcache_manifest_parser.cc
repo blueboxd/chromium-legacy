@@ -41,6 +41,8 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/appcache/appcache.h"
+#include "third_party/blink/public/common/origin_trials/trial_token.h"
+#include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -53,6 +55,7 @@ enum class Mode {
   kIntercept,       // In the CHROMIUM-INTERCEPT: section. (non-standard)
   kFallback,        // In the FALLBACK: section.
   kOnlineSafelist,  // In the NETWORK: section.
+  kOriginTrial,     // In the ORIGIN-TRIAL: section. (non-standard)
   kUnknown,         // Sections that are not covered by the spec.
 };
 
@@ -184,6 +187,10 @@ Mode ParseModeSettingLine(base::StringPiece line) {
   static constexpr base::StringPiece kInterceptLine("CHROMIUM-INTERCEPT:");
   if (line == kInterceptLine)
     return Mode::kIntercept;
+
+  static constexpr base::StringPiece kOriginTrialLine("ORIGIN-TRIAL:");
+  if (line == kOriginTrialLine)
+    return Mode::kOriginTrial;
 
   return Mode::kUnknown;
 }
@@ -324,6 +331,8 @@ class ParseMetricsRecorder {
 #endif  // DCHECK_IS_ON()
 };
 
+constexpr char kAppCacheOriginTrialName[] = "AppCache";
+
 }  // namespace
 
 AppCacheManifest::AppCacheManifest() = default;
@@ -457,6 +466,30 @@ bool ParseManifest(const GURL& manifest_url,
       continue;
     }
 
+    if (mode == Mode::kOriginTrial) {
+      // Only accept the first valid token.
+      if (manifest.token_expires != base::Time())
+        continue;
+
+      base::StringPiece origin_trial_token;
+      std::tie(origin_trial_token, line) = SplitLineToken(line);
+
+      if (!blink::TrialTokenValidator::IsTrialPossibleOnOrigin(manifest_url))
+        continue;
+
+      blink::TrialTokenValidator validator;
+      std::string token_feature;
+      base::Time expiry_time;
+      url::Origin origin = url::Origin::Create(manifest_url);
+      if (validator.ValidateToken(origin_trial_token, origin, base::Time::Now(),
+                                  &token_feature, &expiry_time) ==
+          blink::OriginTrialTokenStatus::kSuccess) {
+        if (token_feature == kAppCacheOriginTrialName)
+          manifest.token_expires = expiry_time;
+      }
+      continue;
+    }
+
     // Chrome does not implement the SETTINGS: section. If we ever decided to do
     // so, the implementation would go here.
 
@@ -572,6 +605,10 @@ bool ParseManifest(const GURL& manifest_url,
 
   parse_metrics.RecordParseSuccess();
   return true;
+}
+
+std::string GetAppCacheOriginTrialNameForTesting() {
+  return kAppCacheOriginTrialName;
 }
 
 }  // namespace content

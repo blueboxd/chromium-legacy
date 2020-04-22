@@ -204,7 +204,7 @@ content::KeyboardEventProcessingResult
 ExtensionViewHost::PreHandleKeyboardEvent(WebContents* source,
                                           const NativeWebKeyboardEvent& event) {
   if (extension_host_type() == VIEW_TYPE_EXTENSION_POPUP &&
-      event.GetType() == NativeWebKeyboardEvent::kRawKeyDown &&
+      event.GetType() == NativeWebKeyboardEvent::Type::kRawKeyDown &&
       event.windows_key_code == ui::VKEY_ESCAPE) {
     return content::KeyboardEventProcessingResult::NOT_HANDLED_IS_SHORTCUT;
   }
@@ -220,7 +220,7 @@ bool ExtensionViewHost::HandleKeyboardEvent(
     WebContents* source,
     const NativeWebKeyboardEvent& event) {
   if (extension_host_type() == VIEW_TYPE_EXTENSION_POPUP) {
-    if (event.GetType() == NativeWebKeyboardEvent::kRawKeyDown &&
+    if (event.GetType() == NativeWebKeyboardEvent::Type::kRawKeyDown &&
         event.windows_key_code == ui::VKEY_ESCAPE) {
       Close();
       return true;

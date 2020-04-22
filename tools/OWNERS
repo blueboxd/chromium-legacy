@@ -55,5 +55,5 @@ per-file sort-headers.py=satorux@chromium.org
 per-file sort-sources.py=satorux@chromium.org
 per-file yes_no.py=satorux@chromium.org
 
-per-file download_cros_provided_profile.py=gbiv@chromium.org
-per-file download_cros_provided_profile.py=tcwang@chromium.org
+per-file download_optimization_profile.py=gbiv@chromium.org
+per-file download_optimization_profile.py=tcwang@chromium.org

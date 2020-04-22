@@ -15,6 +15,7 @@ js_type_check("closure_compile") {
     ":fakebox",
     ":grid",
     ":logo",
+    ":realbox",
     ":theme_icon",
     ":untrusted_iframe",
     ":utils",
@@ -37,6 +38,7 @@ js_library("app") {
     ":most_visited",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:event_tracker.m",
+    "//ui/webui/resources/js:load_time_data.m",
   ]
 }
 
@@ -124,6 +126,15 @@ js_library("untrusted_iframe") {
 js_library("fakebox") {
   deps = [
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
+}
+
+js_library("realbox") {
+  deps = [
+    ":utils",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:load_time_data.m",
   ]
 }
 
@@ -217,6 +228,12 @@ polymer_modulizer("fakebox") {
   html_type = "v3-ready"
 }
 
+polymer_modulizer("realbox") {
+  js_file = "realbox.js"
+  html_file = "realbox.html"
+  html_type = "v3-ready"
+}
+
 polymer_modulizer("logo") {
   js_file = "logo.js"
   html_file = "logo.html"
@@ -242,6 +259,7 @@ group("polymer3_elements") {
     ":logo_module",
     ":mini_page_module",
     ":most_visited_module",
+    ":realbox_module",
     ":theme_icon_module",
     ":untrusted_iframe_module",
     ":voice_search_overlay_module",

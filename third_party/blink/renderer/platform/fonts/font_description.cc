@@ -62,6 +62,19 @@ TypesettingFeatures FontDescription::default_typesetting_features_ = 0;
 
 bool FontDescription::use_subpixel_text_positioning_ = false;
 
+// static
+FontDescription FontDescription::CreateHashTableEmptyValue() {
+  FontDescription result;
+  memset(&result, 0, sizeof(FontDescription));
+  DCHECK(result.IsHashTableEmptyValue());
+  return result;
+}
+
+FontDescription::FontDescription(WTF::HashTableDeletedValueType) {
+  memset(this, 0, sizeof(FontDescription));
+  fields_.hash_category_ = kHashDeletedValue;
+}
+
 FontDescription::FontDescription()
     : specified_size_(0),
       computed_size_(0),
@@ -94,6 +107,7 @@ FontDescription::FontDescription()
   fields_.variant_numeric_ = FontVariantNumeric().fields_as_unsigned_;
   fields_.subpixel_ascent_descent_ = false;
   fields_.font_optical_sizing_ = OpticalSizing::kAutoOpticalSizing;
+  fields_.hash_category_ = kHashRegularValue;
 }
 
 FontDescription::FontDescription(const FontDescription&) = default;
@@ -334,6 +348,17 @@ unsigned FontDescription::StyleHashWithoutFamilyList() const {
   WTF::AddIntToHash(hash, fields_as_unsigned_.parts[1]);
   WTF::AddIntToHash(hash, font_selection_request_.GetHash());
 
+  return hash;
+}
+
+unsigned FontDescription::GetHash() const {
+  unsigned hash = StyleHashWithoutFamilyList();
+  for (const FontFamily* family = &family_list_; family;
+       family = family->Next()) {
+    if (!family->Family().length())
+      continue;
+    WTF::AddIntToHash(hash, WTF::AtomicStringHash::GetHash(family->Family()));
+  }
   return hash;
 }
 

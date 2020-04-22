@@ -9,21 +9,22 @@
 #include <string>
 #include <utility>
 
+#include "base/time/time.h"
 #include "url/gurl.h"
 
 namespace upboarding {
 
-struct QueryTilesConfig {
-  // Creates a default QueryTilesConfig.
-  static std::unique_ptr<QueryTilesConfig> Create();
+struct TileConfig {
+  // Creates a default TileConfig.
+  static std::unique_ptr<TileConfig> Create();
 
-  // Creates a QueryTilesConfig that reads parameters from Finch.
-  static std::unique_ptr<QueryTilesConfig> CreateFromFinch();
+  // Creates a TileConfig that reads parameters from Finch.
+  static std::unique_ptr<TileConfig> CreateFromFinch();
 
-  QueryTilesConfig();
-  ~QueryTilesConfig();
-  QueryTilesConfig(const QueryTilesConfig& other) = delete;
-  QueryTilesConfig& operator=(const QueryTilesConfig& other) = delete;
+  TileConfig();
+  ~TileConfig();
+  TileConfig(const TileConfig& other) = delete;
+  TileConfig& operator=(const TileConfig& other) = delete;
 
   // Flag to tell whether query tiles is enabled or not.
   bool is_enabled;
@@ -33,6 +34,12 @@ struct QueryTilesConfig {
 
   // The URL for GetQueryTiles RPC.
   GURL get_query_tile_url;
+
+  // The maximum duration for holding current group's info and images.
+  base::TimeDelta expire_duration;
+
+  // Locale setting from operating system.
+  std::string locale;
 };
 
 }  // namespace upboarding

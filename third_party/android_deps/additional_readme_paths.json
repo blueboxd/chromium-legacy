@@ -57,6 +57,7 @@
     "libs/androidx_test_runner",
     "libs/androidx_test_uiautomator_uiautomator",
     "libs/androidx_transition_transition",
+    "libs/androidx_tvprovider_tvprovider",
     "libs/androidx_vectordrawable_vectordrawable",
     "libs/androidx_vectordrawable_vectordrawable_animated",
     "libs/androidx_versionedparcelable_versionedparcelable",

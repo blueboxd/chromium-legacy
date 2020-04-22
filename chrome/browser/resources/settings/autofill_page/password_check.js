@@ -2,12 +2,41 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-(function() {
+import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.m.js';
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import '../settings_shared_css.m.js';
+import 'chrome://resources/cr_elements/icons.m.js';
+import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
+import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
+import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
+import '../route.m.js';
+import '../prefs/prefs.m.js';
+import './password_check_edit_dialog.js';
+import './password_check_list_item.js';
+import './password_remove_confirmation_dialog.js';
+
+import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
+import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {loadTimeData} from '../i18n_setup.m.js';
+import {SyncBrowserProxyImpl, SyncPrefs, SyncStatus} from '../people_page/sync_browser_proxy.m.js';
+import {PluralStringProxyImpl} from '../plural_string_proxy.m.js';
+import {PrefsBehavior} from '../prefs/prefs_behavior.m.js';
+import {Router} from '../router.m.js';
+
+import {PasswordCheckBehavior} from './password_check_behavior.js';
+import {PasswordManagerImpl, PasswordManagerProxy} from './password_manager_proxy.js';
+
 
 const CheckState = chrome.passwordsPrivate.PasswordCheckState;
 
 Polymer({
   is: 'settings-password-check',
+
+  _template: html`{__html_template__}`,
 
   behaviors: [
     I18nBehavior,
@@ -45,10 +74,10 @@ Polymer({
       computed: 'computeIsButtonHidden_(status, isSignedOut_)',
     },
 
-    /** @private {settings.SyncPrefs} */
+    /** @private {SyncPrefs} */
     syncPrefs_: Object,
 
-    /** @private {settings.SyncStatus} */
+    /** @private {SyncStatus} */
     syncStatus_: Object,
 
     /** @private */
@@ -103,7 +132,7 @@ Polymer({
   /** @override */
   attached() {
     // Set the manager. These can be overridden by tests.
-    const syncBrowserProxy = settings.SyncBrowserProxyImpl.getInstance();
+    const syncBrowserProxy = SyncBrowserProxyImpl.getInstance();
 
     const syncStatusChanged = syncStatus => this.syncStatus_ = syncStatus;
     const syncPrefsChanged = syncPrefs => this.syncPrefs_ = syncPrefs;
@@ -123,7 +152,7 @@ Polymer({
     // </if>
 
     // Start the check if instructed to do so.
-    const router = settings.Router.getInstance();
+    const router = Router.getInstance();
     if (router.getQueryParameters().get('start') == 'true') {
       this.passwordManager.recordPasswordCheckInteraction(
           PasswordManagerProxy.PasswordCheckInteraction
@@ -217,14 +246,14 @@ Polymer({
   /** @private */
   onPasswordRemoveDialogClosed_() {
     this.showPasswordRemoveDialog_ = false;
-    cr.ui.focusWithoutInk(assert(this.activeDialogAnchor_));
+    focusWithoutInk(assert(this.activeDialogAnchor_));
     this.activeDialogAnchor_ = null;
   },
 
   /** @private */
   onPasswordEditDialogClosed_() {
     this.showPasswordEditDialog_ = false;
-    cr.ui.focusWithoutInk(assert(this.activeDialogAnchor_));
+    focusWithoutInk(assert(this.activeDialogAnchor_));
     this.activeDialogAnchor_ = null;
   },
 
@@ -532,4 +561,3 @@ Polymer({
     return this.clickedChangePasswordIds_.has(item.id);
   },
 });
-})();

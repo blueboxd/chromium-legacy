@@ -64,6 +64,11 @@ constexpr int kDefaultTrustTokenIssuanceBatchSize = 100;
 // an issuer).
 constexpr int kMaximumTrustTokenIssuanceBatchSize = 100;
 
+// When executing Trust Tokens issuance and redemption,
+// use at most |kMaximumConcurrentlyValidTrustTokenVerificationKeys| many
+// soonest-to-expire-but-unexpired keys from the available key commitments.
+constexpr int kMaximumConcurrentlyValidTrustTokenVerificationKeys = 3;
+
 }  // namespace network
 
 #endif  // SERVICES_NETWORK_TRUST_TOKENS_TRUST_TOKEN_PARAMETERIZATION_H_

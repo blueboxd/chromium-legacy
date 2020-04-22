@@ -44,8 +44,6 @@ bool TextInputClientObserver::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(TextInputClientObserver, message)
     IPC_MESSAGE_HANDLER(TextInputClientMsg_StringAtPoint,
                         OnStringAtPoint)
-    IPC_MESSAGE_HANDLER(TextInputClientMsg_CharacterIndexForPoint,
-                        OnCharacterIndexForPoint)
     IPC_MESSAGE_HANDLER(TextInputClientMsg_FirstRectForCharacterRange,
                         OnFirstRectForCharacterRange)
     IPC_MESSAGE_HANDLER(TextInputClientMsg_StringForRange, OnStringForRange)
@@ -97,15 +95,6 @@ void TextInputClientObserver::OnStringAtPoint(gfx::Point point) {
       mac::AttributedStringCoder::Encode(string));
   Send(new TextInputClientReplyMsg_GotStringAtPoint(
       MSG_ROUTING_NONE, *encoded.get(), baseline_point));
-}
-
-void TextInputClientObserver::OnCharacterIndexForPoint(gfx::Point point) {
-  uint32_t index = 0U;
-  if (auto* frame = GetFocusedFrame())
-    index = static_cast<uint32_t>(frame->CharacterIndexForPoint(point));
-
-  Send(new TextInputClientReplyMsg_GotCharacterIndexForPoint(MSG_ROUTING_NONE,
-                                                             index));
 }
 
 void TextInputClientObserver::OnFirstRectForCharacterRange(gfx::Range range) {

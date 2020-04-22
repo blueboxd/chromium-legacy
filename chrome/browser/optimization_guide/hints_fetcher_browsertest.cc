@@ -1629,8 +1629,8 @@ IN_PROC_BROWSER_TEST_F(
   WaitForPageLayout();
 
   RetryForHistogramUntilCountReached(
-      histogram_tester, "AnchorElementMetrics.Visible.HighestNavigationScore",
-      1);
+      histogram_tester,
+      "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 1);
 
   WaitUntilHintsFetcherRequestReceived();
   EXPECT_EQ(1u, count_hints_requests_received());

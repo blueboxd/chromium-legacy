@@ -1154,9 +1154,9 @@ void RenderWidgetHostViewMac::GestureEventAck(
 
   bool consumed = ack_result == blink::mojom::InputEventResultState::kConsumed;
   switch (event.GetType()) {
-    case WebInputEvent::kGestureScrollBegin:
-    case WebInputEvent::kGestureScrollUpdate:
-    case WebInputEvent::kGestureScrollEnd:
+    case WebInputEvent::Type::kGestureScrollBegin:
+    case WebInputEvent::Type::kGestureScrollUpdate:
+    case WebInputEvent::Type::kGestureScrollEnd:
       [GetInProcessNSView() processedGestureScrollEvent:event
                                                consumed:consumed];
       return;
@@ -1564,7 +1564,7 @@ void RenderWidgetHostViewMac::ForwardMouseEvent(
   if (host())
     host()->ForwardMouseEvent(web_event);
 
-  if (web_event.GetType() == WebInputEvent::kMouseLeave)
+  if (web_event.GetType() == WebInputEvent::Type::kMouseLeave)
     ns_view_->SetTooltipText(base::string16());
 }
 
@@ -1610,7 +1610,7 @@ void RenderWidgetHostViewMac::GestureUpdate(
     // finish scrolling.
     mouse_wheel_phase_handler_.DispatchPendingWheelEndEvent();
     WebGestureEvent begin_event(*gesture_begin_event_);
-    begin_event.SetType(WebInputEvent::kGesturePinchBegin);
+    begin_event.SetType(WebInputEvent::Type::kGesturePinchBegin);
     begin_event.SetSourceDevice(blink::WebGestureDevice::kTouchpad);
     begin_event.SetNeedsWheelEvent(true);
     SendTouchpadZoomEvent(&begin_event);
@@ -1938,7 +1938,8 @@ void RenderWidgetHostViewMac::RouteOrProcessTouchEvent(
 void RenderWidgetHostViewMac::RouteOrProcessWheelEvent(
     std::unique_ptr<InputEvent> input_event) {
   if (!input_event || !input_event->web_event ||
-      input_event->web_event->GetType() != blink::WebInputEvent::kMouseWheel) {
+      input_event->web_event->GetType() !=
+          blink::WebInputEvent::Type::kMouseWheel) {
     DLOG(ERROR) << "Absent or non-MouseWheel event.";
     return;
   }
@@ -1963,7 +1964,8 @@ void RenderWidgetHostViewMac::ForwardMouseEvent(
 void RenderWidgetHostViewMac::ForwardWheelEvent(
     std::unique_ptr<InputEvent> input_event) {
   if (!input_event || !input_event->web_event ||
-      input_event->web_event->GetType() != blink::WebInputEvent::kMouseWheel) {
+      input_event->web_event->GetType() !=
+          blink::WebInputEvent::Type::kMouseWheel) {
     DLOG(ERROR) << "Absent or non-MouseWheel event.";
     return;
   }
@@ -1984,7 +1986,7 @@ void RenderWidgetHostViewMac::GestureBegin(
   blink::WebGestureEvent gesture_event =
       *static_cast<const blink::WebGestureEvent*>(input_event->web_event.get());
   // Strip the gesture type, because it is not known.
-  gesture_event.SetType(blink::WebInputEvent::kUndefined);
+  gesture_event.SetType(blink::WebInputEvent::Type::kUndefined);
   GestureBegin(gesture_event, is_synthetically_injected);
 }
 

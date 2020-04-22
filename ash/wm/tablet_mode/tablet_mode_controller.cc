@@ -835,6 +835,14 @@ void TabletModeController::HandleHingeRotation(
   if (tablet_mode_switch_is_on_)
     return;
 
+  // Do not calculate lid angle when lid is closed to prevent the device
+  // accidentally entering tablet mode. The angle calculated when lid is closed
+  // is not accurate (the angle between the base and the lid might be a minus
+  // value when lid is closed, and since we do adjustment for minus values, the
+  // angle might be in the same range as tablet mode angle range).
+  if (lid_is_closed_)
+    return;
+
   // Ignore the component of acceleration parallel to the hinge for the purposes
   // of hinge angle calculation.
   gfx::Vector3dF base_flattened(base_smoothed_);

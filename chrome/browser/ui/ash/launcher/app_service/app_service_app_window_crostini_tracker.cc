@@ -161,20 +161,6 @@ void AppServiceAppWindowCrostiniTracker::OnWindowVisibilityChanged(
     MoveWindowFromOldDisplayToNewDisplay(window, old_display, new_display);
 }
 
-void AppServiceAppWindowCrostiniTracker::OnWindowDestroying(
-    const std::string& app_id,
-    aura::Window* window) {
-  if (app_id != app_id_to_restart_)
-    return;
-  crostini::LaunchCrostiniApp(ChromeLauncherController::instance()->profile(),
-                              app_id, display_id_to_restart_in_);
-  app_id_to_restart_.clear();
-
-  base::EraseIf(activation_permissions_, [&window](const auto& element) {
-    return element.first == window;
-  });
-}
-
 void AppServiceAppWindowCrostiniTracker::OnAppLaunchRequested(
     const std::string& app_id,
     int64_t display_id) {
@@ -201,13 +187,6 @@ void AppServiceAppWindowCrostiniTracker::OnAppLaunchRequested(
         exo::GrantPermissionToActivate(app_window->GetNativeWindow(),
                                        kSelfActivationTimeout));
   }
-}
-
-void AppServiceAppWindowCrostiniTracker::Restart(const ash::ShelfID& shelf_id,
-                                                 int64_t display_id) {
-  app_id_to_restart_ = shelf_id.app_id;
-  display_id_to_restart_in_ = display_id;
-  ChromeLauncherController::instance()->Close(shelf_id);
 }
 
 std::string AppServiceAppWindowCrostiniTracker::GetShelfAppId(

@@ -4,9 +4,9 @@
 
 // Subpages
 import './appearance_page/appearance_fonts_page.js';
-import './autofill_page/password_check.m.js';
-import './autofill_page/passwords_section.m.js';
-import './autofill_page/payments_section.m.js';
+import './autofill_page/password_check.js';
+import './autofill_page/passwords_section.js';
+import './autofill_page/payments_section.js';
 import './clear_browsing_data_dialog/clear_browsing_data_dialog.m.js';
 import './search_engines_page/search_engines_page.js';
 import './privacy_page/cookies_page.m.js';
@@ -51,12 +51,12 @@ import './languages_page/edit_dictionary_page.m.js';
 
 export {getToastManager} from 'chrome://resources/cr_elements/cr_toast/cr_toast_manager.m.js';
 export {FontsBrowserProxy, FontsBrowserProxyImpl} from './appearance_page/fonts_browser_proxy.m.js';
-export {CountryDetailManagerImpl} from './autofill_page/address_edit_dialog.m.js';
-export {AutofillManagerImpl} from './autofill_page/autofill_section.m.js';
+export {CountryDetailManagerImpl} from './autofill_page/address_edit_dialog.js';
+export {AutofillManagerImpl} from './autofill_page/autofill_section.js';
 // <if expr="chromeos">
-export {BlockingRequestManager} from './autofill_page/blocking_request_manager.m.js';
+export {BlockingRequestManager} from './autofill_page/blocking_request_manager.js';
 // </if>
-export {PaymentsManagerImpl} from './autofill_page/payments_section.m.js';
+export {PaymentsManagerImpl} from './autofill_page/payments_section.js';
 // <if expr="_google_chrome and is_win">
 export {ChromeCleanupIdleReason} from './chrome_cleanup_page/chrome_cleanup_page.js';
 export {ChromeCleanupProxyImpl} from './chrome_cleanup_page/chrome_cleanup_proxy.js';

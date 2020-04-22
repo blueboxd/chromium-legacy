@@ -62,8 +62,8 @@ void LinkSelectionTestBase::EmulateMouseDrag(const IntPoint& down_point,
                                              DragFlags drag_flags) {
   if (drag_flags & kSendDownEvent) {
     const auto& down_event = frame_test_helpers::CreateMouseEvent(
-        WebMouseEvent::kMouseDown, WebMouseEvent::Button::kLeft, down_point,
-        modifiers);
+        WebMouseEvent::Type::kMouseDown, WebMouseEvent::Button::kLeft,
+        down_point, modifiers);
     web_view_->MainFrameWidget()->HandleInputEvent(
         WebCoalescedInputEvent(down_event));
   }
@@ -75,15 +75,15 @@ void LinkSelectionTestBase::EmulateMouseDrag(const IntPoint& down_point,
     const auto& move_point =
         down_point + Scaled(up_down_vector, i * kMoveIncrementFraction);
     const auto& move_event = frame_test_helpers::CreateMouseEvent(
-        WebMouseEvent::kMouseMove, WebMouseEvent::Button::kLeft, move_point,
-        modifiers);
+        WebMouseEvent::Type::kMouseMove, WebMouseEvent::Button::kLeft,
+        move_point, modifiers);
     web_view_->MainFrameWidget()->HandleInputEvent(
         WebCoalescedInputEvent(move_event));
   }
 
   if (drag_flags & kSendUpEvent) {
     const auto& up_event = frame_test_helpers::CreateMouseEvent(
-        WebMouseEvent::kMouseUp, WebMouseEvent::Button::kLeft, up_point,
+        WebMouseEvent::Type::kMouseUp, WebMouseEvent::Button::kLeft, up_point,
         modifiers);
     web_view_->MainFrameWidget()->HandleInputEvent(
         WebCoalescedInputEvent(up_event));
@@ -95,10 +95,10 @@ void LinkSelectionTestBase::EmulateMouseClick(const IntPoint& click_point,
                                               int modifiers,
                                               int count) {
   auto event = frame_test_helpers::CreateMouseEvent(
-      WebMouseEvent::kMouseDown, button, click_point, modifiers);
+      WebMouseEvent::Type::kMouseDown, button, click_point, modifiers);
   event.click_count = count;
   web_view_->MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(event));
-  event.SetType(WebMouseEvent::kMouseUp);
+  event.SetType(WebMouseEvent::Type::kMouseUp);
   web_view_->MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(event));
 }
 
@@ -107,7 +107,7 @@ void LinkSelectionTestBase::EmulateMouseDown(const IntPoint& click_point,
                                              int modifiers,
                                              int count) {
   auto event = frame_test_helpers::CreateMouseEvent(
-      WebMouseEvent::kMouseDown, button, click_point, modifiers);
+      WebMouseEvent::Type::kMouseDown, button, click_point, modifiers);
   event.click_count = count;
   web_view_->MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(event));
 }

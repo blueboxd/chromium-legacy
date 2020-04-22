@@ -323,14 +323,20 @@ TEST_F(ToolbarMediatorTest, TestBookmarkDisabled) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(kEditBookmarksIOS);
 
+  OCMExpect([consumer_ setBookmarkEnabled:YES]);
   SetUpBookmarks();
-  prefs_->SetBoolean(bookmarks::prefs::kEditBookmarksEnabled, false);
-  OCMExpect([consumer_ setBookmarkEnabled:NO]);
-
   mediator_.consumer = consumer_;
-  [mediator_ setPrefService:prefs_.get()];
-
+  mediator_.prefService = prefs_.get();
   EXPECT_OCMOCK_VERIFY(consumer_);
+
+  OCMExpect([consumer_ setBookmarkEnabled:NO]);
+  prefs_->SetBoolean(bookmarks::prefs::kEditBookmarksEnabled, false);
+  EXPECT_OCMOCK_VERIFY(consumer_);
+
+  OCMExpect([consumer_ setBookmarkEnabled:YES]);
+  prefs_->SetBoolean(bookmarks::prefs::kEditBookmarksEnabled, true);
+  EXPECT_OCMOCK_VERIFY(consumer_);
+
   bookmark_model_->RemoveAllUserBookmarks();
 }
 

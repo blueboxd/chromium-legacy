@@ -52,13 +52,8 @@ class URLLoaderClientImplTest : public ::testing::Test,
  protected:
   URLLoaderClientImplTest() : dispatcher_(new ResourceDispatcher()) {
     auto request = std::make_unique<network::ResourceRequest>();
-    // Set request context type to fetch so that ResourceDispatcher doesn't
-    // install MimeSniffingThrottle, which makes URLLoaderThrottleLoader
-    // defer the request.
-    request->fetch_request_context_type =
-        static_cast<int>(blink::mojom::RequestContextType::FETCH);
     request_id_ = dispatcher_->StartAsync(
-        std::move(request), 0,
+        std::move(request), 0 /* loader_option */,
         blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
         TRAFFIC_ANNOTATION_FOR_TESTS, false,
         std::make_unique<TestRequestPeer>(dispatcher_.get(),

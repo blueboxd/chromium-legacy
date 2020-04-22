@@ -130,6 +130,27 @@ message ClientPhishingRequest {
 
   // Population that the reporting user is part of.
   optional ChromeUserPopulation population = 14;
+
+  // Server-side only fields.
+  reserved 15;
+  reserved 16;
+
+  // Basic visual information of the URL.
+  // This section will be filled for SBER users only.
+  optional bytes screenshot_digest = 17;
+  optional bytes screenshot_phash = 18;
+  optional int32 phash_dimension_size = 19;
+
+  // The visual feature match results.
+  // Allow multiple results if there are more than one matched target.
+  repeated VisionMatchResult vision_match = 20;
+}
+
+// Vision match result for one target image.
+message VisionMatchResult {
+  optional bytes matched_target_digest = 1;
+  optional double vision_matched_phash_score = 2;
+  optional double vision_matched_emd_score = 3;
 }
 
 message ClientPhishingResponse {

@@ -94,8 +94,10 @@ public class RevampedContextMenuRenderTest extends DummyUiActivityTestCase {
 
     @Override
     public void tearDownTest() throws Exception {
-        NightModeTestUtils.tearDownNightModeForDummyUiActivity();
-        TestThreadUtils.runOnUiThreadBlocking(() -> mListItems.clear());
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            NightModeTestUtils.tearDownNightModeForDummyUiActivity();
+            mListItems.clear();
+        });
         super.tearDownTest();
     }
 

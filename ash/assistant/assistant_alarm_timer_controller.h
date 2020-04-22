@@ -9,12 +9,14 @@
 #include <string>
 #include <vector>
 
-#include "ash/assistant/assistant_controller_observer.h"
 #include "ash/assistant/model/assistant_alarm_timer_model.h"
 #include "ash/assistant/model/assistant_alarm_timer_model_observer.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
+#include "ash/public/cpp/assistant/controller/assistant_controller.h"
+#include "ash/public/cpp/assistant/controller/assistant_controller_observer.h"
 #include "ash/public/mojom/assistant_controller.mojom.h"
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "base/timer/timer.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -90,6 +92,9 @@ class AssistantAlarmTimerController
 
   // Owned by AssistantController.
   chromeos::assistant::mojom::Assistant* assistant_;
+
+  ScopedObserver<AssistantController, AssistantControllerObserver>
+      assistant_controller_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AssistantAlarmTimerController);
 };

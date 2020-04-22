@@ -86,6 +86,8 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class ::CrashesDOMHandler;
   friend class ::FlashDOMHandler;
   friend class ChromeBrowserFieldTrials;
+  // For ClangPGO.
+  friend class ChromeBrowserMainExtraPartsMetrics;
   // For StackSamplingConfiguration.
   friend class ChromeBrowserMainParts;
   friend class ChromeContentBrowserClient;

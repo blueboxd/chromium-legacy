@@ -52,6 +52,7 @@ sql::InitStatus MediaHistoryFeedsTable::CreateTableIfNonExistent() {
                          "fetch_failed_count INTEGER, "
                          "last_fetch_time_not_cache_hit_s INTEGER, "
                          "last_fetch_item_count INTEGER, "
+                         "last_fetch_safe_item_count INTEGER, "
                          "last_fetch_play_next_count INTEGER, "
                          "last_fetch_content_types INTEGER, "
                          "logo BLOB, "
@@ -157,6 +158,7 @@ std::vector<media_feeds::mojom::MediaFeedPtr> MediaHistoryFeedsTable::GetRows(
       "mediaFeed.fetch_failed_count, "
       "mediaFeed.last_fetch_time_not_cache_hit_s, "
       "mediaFeed.last_fetch_item_count, "
+      "mediaFeed.last_fetch_safe_item_count, "
       "mediaFeed.last_fetch_play_next_count, "
       "mediaFeed.last_fetch_content_types, "
       "mediaFeed.logo, "
@@ -168,6 +170,8 @@ std::vector<media_feeds::mojom::MediaFeedPtr> MediaHistoryFeedsTable::GetRows(
     // table and LEFT JOIN mediaFeed. This means there should be a row for each
     // origin and if there is a media feed that will be included.
     sql.push_back(
+        ","
+        "origin.aggregate_watchtime_audio_video_s "
         "FROM origin "
         "LEFT JOIN mediaFeed "
         "ON origin.id = mediaFeed.origin_id");
@@ -175,18 +179,13 @@ std::vector<media_feeds::mojom::MediaFeedPtr> MediaHistoryFeedsTable::GetRows(
     // If we need to filter by |audio_video_watchtime_min| then we should join
     // the origin table to get the watchtime data.
     sql.push_back(
+        ","
+        "origin.aggregate_watchtime_audio_video_s "
         "FROM mediaFeed "
         "LEFT JOIN origin "
         "ON origin.id = mediaFeed.origin_id");
   } else {
     sql.push_back("FROM mediaFeed");
-  }
-
-  // If we need a minimum watchtime then we should add it.
-  if (request.audio_video_watchtime_min) {
-    sql.push_back(base::StringPrintf(
-        "WHERE origin.aggregate_watchtime_audio_video_s > %f",
-        request.audio_video_watchtime_min->InSecondsF()));
   }
 
   // Sorts the feeds in descending watchtime order. We also need the total count
@@ -205,12 +204,29 @@ std::vector<media_feeds::mojom::MediaFeedPtr> MediaHistoryFeedsTable::GetRows(
     sql.push_back("ORDER BY origin.aggregate_watchtime_audio_video_s DESC");
   }
 
-  // Add a SQL limit if we need one. If we are calculating the percentile then
-  // we should use a C++ limit since we might have rows that do not have an
-  // associated media feed.
-  if (request.limit.has_value() &&
-      !request.include_origin_watchtime_percentile_data) {
-    sql.push_back(base::StringPrintf("LIMIT %i", *request.limit));
+  // Apply any SQL filters and limits. If we have the watchtime data then these
+  // are implemented in C++ below since we need all the rows to calculate the
+  // rank.
+  if (!request.include_origin_watchtime_percentile_data) {
+    if (request.audio_video_watchtime_min.has_value()) {
+      sql.push_back(base::StringPrintf(
+          "WHERE origin.aggregate_watchtime_audio_video_s >= %f",
+          request.audio_video_watchtime_min->InSecondsF()));
+    }
+
+    if (request.fetched_items_min.has_value()) {
+      if (request.fetched_items_min_should_be_safe) {
+        sql.push_back(
+            base::StringPrintf("WHERE last_fetch_safe_item_count >= %i",
+                               *request.fetched_items_min));
+      } else {
+        sql.push_back(base::StringPrintf("WHERE last_fetch_item_count >= %i",
+                                         *request.fetched_items_min));
+      }
+    }
+
+    if (request.limit.has_value())
+      sql.push_back(base::StringPrintf("LIMIT %i", *request.limit));
   }
 
   sql::Statement statement(
@@ -224,6 +240,30 @@ std::vector<media_feeds::mojom::MediaFeedPtr> MediaHistoryFeedsTable::GetRows(
       continue;
 
     auto feed = media_feeds::mojom::MediaFeed::New();
+    feed->last_fetch_item_count = statement.ColumnInt64(8);
+    feed->last_fetch_safe_item_count = statement.ColumnInt64(9);
+
+    // Apply any C++ filters.
+    if (request.include_origin_watchtime_percentile_data) {
+      if (request.audio_video_watchtime_min.has_value()) {
+        auto agg_watchtime =
+            base::TimeDelta::FromSeconds(statement.ColumnInt64(15));
+
+        if (agg_watchtime < *request.audio_video_watchtime_min)
+          continue;
+      }
+
+      if (request.fetched_items_min.has_value()) {
+        if (request.fetched_items_min_should_be_safe) {
+          if (feed->last_fetch_safe_item_count < *request.fetched_items_min)
+            continue;
+        } else {
+          if (feed->last_fetch_item_count < *request.fetched_items_min)
+            continue;
+        }
+      }
+    }
+
     feed->user_status = static_cast<media_feeds::mojom::FeedUserStatus>(
         statement.ColumnInt64(4));
     feed->last_fetch_result =
@@ -241,9 +281,9 @@ std::vector<media_feeds::mojom::MediaFeedPtr> MediaHistoryFeedsTable::GetRows(
       continue;
     }
 
-    if (statement.GetColumnType(11) == sql::ColumnType::kBlob) {
+    if (statement.GetColumnType(12) == sql::ColumnType::kBlob) {
       media_feeds::ImageSet image_set;
-      if (!GetProto(statement, 11, image_set)) {
+      if (!GetProto(statement, 12, image_set)) {
         base::UmaHistogramEnumeration(kFeedReadResultHistogramName,
                                       FeedReadResult::kBadLogo);
 
@@ -274,15 +314,13 @@ std::vector<media_feeds::mojom::MediaFeedPtr> MediaHistoryFeedsTable::GetRows(
               base::TimeDelta::FromSeconds(statement.ColumnInt64(7)));
     }
 
-    feed->last_fetch_item_count = statement.ColumnInt64(8);
-    feed->last_fetch_play_next_count = statement.ColumnInt64(9);
-    feed->last_fetch_content_types = statement.ColumnInt64(10);
+    feed->last_fetch_play_next_count = statement.ColumnInt64(10);
+    feed->last_fetch_content_types = statement.ColumnInt64(11);
+    feed->display_name = statement.ColumnString(13);
 
-    feed->display_name = statement.ColumnString(12);
-
-    if (statement.GetColumnType(13) == sql::ColumnType::kInteger) {
+    if (statement.GetColumnType(14) == sql::ColumnType::kInteger) {
       feed->last_display_time = base::Time::FromDeltaSinceWindowsEpoch(
-          base::TimeDelta::FromSeconds(statement.ColumnInt64(13)));
+          base::TimeDelta::FromSeconds(statement.ColumnInt64(14)));
     }
 
     if (request.include_origin_watchtime_percentile_data && origin_count > 1) {
@@ -310,7 +348,8 @@ bool MediaHistoryFeedsTable::UpdateFeedFromFetch(
     const int item_play_next_count,
     const int item_content_types,
     const std::vector<media_session::MediaImage>& logos,
-    const std::string& display_name) {
+    const std::string& display_name,
+    const int item_safe_count) {
   DCHECK_LT(0, DB()->transaction_nesting());
   if (!CanAccessDatabase())
     return false;
@@ -339,14 +378,16 @@ bool MediaHistoryFeedsTable::UpdateFeedFromFetch(
         "UPDATE mediaFeed SET last_fetch_time_s = ?, last_fetch_result = ?, "
         "fetch_failed_count = ?, last_fetch_item_count = ?, "
         "last_fetch_play_next_count = ?, last_fetch_content_types = ?, "
-        "logo = ?, display_name = ?  WHERE id = ?"));
+        "logo = ?, display_name = ?, last_fetch_safe_item_count = ? WHERE id = "
+        "?"));
   } else {
     statement.Assign(DB()->GetCachedStatement(
         SQL_FROM_HERE,
         "UPDATE mediaFeed SET last_fetch_time_s = ?, last_fetch_result = ?, "
         "fetch_failed_count = ?, last_fetch_item_count = ?, "
         "last_fetch_play_next_count = ?, last_fetch_content_types = ?, "
-        "logo = ?, display_name = ?, last_fetch_time_not_cache_hit_s = ? WHERE "
+        "logo = ?, display_name = ?, last_fetch_safe_item_count = ?, "
+        "last_fetch_time_not_cache_hit_s = ? WHERE "
         "id = ?"));
   }
 
@@ -366,13 +407,14 @@ bool MediaHistoryFeedsTable::UpdateFeedFromFetch(
   }
 
   statement.BindString(7, display_name);
+  statement.BindInt64(8, item_safe_count);
 
   if (was_fetched_from_cache) {
-    statement.BindInt64(8, feed_id);
+    statement.BindInt64(9, feed_id);
   } else {
     statement.BindInt64(
-        8, base::Time::Now().ToDeltaSinceWindowsEpoch().InSeconds());
-    statement.BindInt64(9, feed_id);
+        9, base::Time::Now().ToDeltaSinceWindowsEpoch().InSeconds());
+    statement.BindInt64(10, feed_id);
   }
 
   return statement.Run() && DB()->GetLastChangeCount() == 1;
@@ -390,7 +432,20 @@ bool MediaHistoryFeedsTable::UpdateDisplayTime(const int64_t feed_id) {
   statement.BindInt64(0,
                       base::Time::Now().ToDeltaSinceWindowsEpoch().InSeconds());
   statement.BindInt64(1, feed_id);
+  return statement.Run() && DB()->GetLastChangeCount() == 1;
+}
 
+bool MediaHistoryFeedsTable::RecalculateSafeSearchItemCount(
+    const int64_t feed_id) {
+  sql::Statement statement(DB()->GetCachedStatement(
+      SQL_FROM_HERE,
+      "UPDATE mediaFeed SET last_fetch_safe_item_count = (SELECT COUNT(id) "
+      "FROM mediaFeedItem WHERE safe_search_result = ? AND feed_id = ?) WHERE "
+      "id = ?"));
+  statement.BindInt64(
+      0, static_cast<int>(media_feeds::mojom::SafeSearchResult::kSafe));
+  statement.BindInt64(1, feed_id);
+  statement.BindInt64(2, feed_id);
   return statement.Run() && DB()->GetLastChangeCount() == 1;
 }
 

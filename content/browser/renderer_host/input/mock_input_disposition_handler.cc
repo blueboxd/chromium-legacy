@@ -21,7 +21,7 @@ namespace content {
 MockInputDispositionHandler::MockInputDispositionHandler()
     : input_router_(nullptr),
       ack_count_(0),
-      ack_event_type_(WebInputEvent::kUndefined),
+      ack_event_type_(WebInputEvent::Type::kUndefined),
       ack_state_(blink::mojom::InputEventResultState::kUnknown) {}
 
 MockInputDispositionHandler::~MockInputDispositionHandler() {}

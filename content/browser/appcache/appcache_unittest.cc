@@ -125,8 +125,7 @@ TEST_F(AppCacheTest, InitializeWithManifest) {
       APPCACHE_NETWORK_NAMESPACE, GURL("http://w2.com"), GURL()));
   manifest.online_whitelist_all = true;
 
-  base::Time token_expires;
-  cache->InitializeWithManifest(&manifest, token_expires);
+  cache->InitializeWithManifest(&manifest);
   const std::vector<AppCacheNamespace>& fallbacks =
       cache->fallback_namespaces_;
   size_t expected = 1;
@@ -176,7 +175,6 @@ TEST_F(AppCacheTest, FindResponseForRequest) {
   const int64_t kForeignExplicitResponseId = 4;
   const int64_t kExplicitInOnlineNamespaceResponseId = 5;
   const int64_t kInterceptResponseId = 6;
-  const base::Time token_expires;
 
   AppCacheManifest manifest;
   manifest.online_whitelist_namespaces.push_back(AppCacheNamespace(
@@ -197,7 +195,7 @@ TEST_F(AppCacheTest, FindResponseForRequest) {
 
   // Create a cache with some namespaces and entries.
   auto cache = base::MakeRefCounted<AppCache>(service.storage(), 1234);
-  cache->InitializeWithManifest(&manifest, token_expires);
+  cache->InitializeWithManifest(&manifest);
   cache->AddEntry(
       kFallbackEntryUrl1,
       AppCacheEntry(AppCacheEntry::FALLBACK, kFallbackResponseId1));
@@ -377,7 +375,6 @@ TEST_F(AppCacheTest, ToFromDatabaseRecords) {
       "/patternwhitelist* isPattern\r"
       "/whitelist\r"
       "*\r");
-  const base::Time token_expires;
 
   MockAppCacheService service;
   auto cache = base::MakeRefCounted<AppCache>(service.storage(), kCacheId);
@@ -387,7 +384,7 @@ TEST_F(AppCacheTest, ToFromDatabaseRecords) {
   EXPECT_TRUE(
       ParseManifest(kManifestUrl, kManifestScope, kData.c_str(), kData.length(),
                     PARSE_MANIFEST_ALLOWING_DANGEROUS_FEATURES, manifest));
-  cache->InitializeWithManifest(&manifest, token_expires);
+  cache->InitializeWithManifest(&manifest);
   EXPECT_EQ(APPCACHE_NETWORK_NAMESPACE,
             cache->online_whitelist_namespaces_[0].type);
   EXPECT_EQ(kPatternWhitelistUrl,

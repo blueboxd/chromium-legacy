@@ -131,7 +131,8 @@ bool ReplaceTemplateExpressionsInternal(
     base::StringPiece source,
     const ui::TemplateReplacements& replacements,
     bool is_javascript,
-    std::string* formatted) {
+    std::string* formatted,
+    bool skip_unexpected_placeholder_check = false) {
   const size_t kValueLengthGuess = 16;
   formatted->reserve(source.length() + replacements.size() * kValueLengthGuess);
   // Two position markers are used as cursors through the |source|.
@@ -191,7 +192,7 @@ bool ReplaceTemplateExpressionsInternal(
 #if DCHECK_IS_ON()
     // Replacements in Polymer WebUI may invoke JavaScript to replace string
     // placeholders. In other contexts, placeholders should already be replaced.
-    if (context != "Polymer") {
+    if (!skip_unexpected_placeholder_check && context != "Polymer") {
       DCHECK(!HasUnexpectedPlaceholder(key, replacement))
           << "Dangling placeholder found in " << key;
     }
@@ -264,11 +265,12 @@ bool ReplaceTemplateExpressionsInJS(base::StringPiece source,
   return true;
 }
 
-std::string ReplaceTemplateExpressions(
-    base::StringPiece source,
-    const TemplateReplacements& replacements) {
+std::string ReplaceTemplateExpressions(base::StringPiece source,
+                                       const TemplateReplacements& replacements,
+                                       bool skip_unexpected_placeholder_check) {
   std::string formatted;
-  ReplaceTemplateExpressionsInternal(source, replacements, false, &formatted);
+  ReplaceTemplateExpressionsInternal(source, replacements, false, &formatted,
+                                     skip_unexpected_placeholder_check);
   return formatted;
 }
 }  // namespace ui

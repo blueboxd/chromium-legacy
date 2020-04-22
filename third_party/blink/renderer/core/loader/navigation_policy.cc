@@ -102,7 +102,7 @@ NavigationPolicy NavigationPolicyFromCurrentEvent() {
     return kNavigationPolicyCurrentTab;
 
   int16_t button = 0;
-  if (event->GetType() == WebInputEvent::kMouseUp) {
+  if (event->GetType() == WebInputEvent::Type::kMouseUp) {
     const WebMouseEvent* mouse_event = static_cast<const WebMouseEvent*>(event);
 
     switch (mouse_event->button) {

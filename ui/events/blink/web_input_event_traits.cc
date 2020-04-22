@@ -127,7 +127,7 @@ bool Apply(Operator op,
     return op.template Execute<WebPointerEvent>(arg_in, arg_out);
   else if (WebInputEvent::IsMouseEventType(type))
     return op.template Execute<WebMouseEvent>(arg_in, arg_out);
-  else if (type == WebInputEvent::kMouseWheel)
+  else if (type == WebInputEvent::Type::kMouseWheel)
     return op.template Execute<WebMouseWheelEvent>(arg_in, arg_out);
   else if (WebInputEvent::IsKeyboardEventType(type))
     return op.template Execute<WebKeyboardEvent>(arg_in, arg_out);
@@ -150,40 +150,40 @@ std::string WebInputEventTraits::ToString(const WebInputEvent& event) {
 
 bool WebInputEventTraits::ShouldBlockEventStream(const WebInputEvent& event) {
   switch (event.GetType()) {
-    case WebInputEvent::kContextMenu:
-    case WebInputEvent::kGestureScrollEnd:
-    case WebInputEvent::kGestureShowPress:
-    case WebInputEvent::kGestureTapUnconfirmed:
-    case WebInputEvent::kGestureTapDown:
-    case WebInputEvent::kGestureTapCancel:
-    case WebInputEvent::kGesturePinchBegin:
-    case WebInputEvent::kGesturePinchUpdate:
-    case WebInputEvent::kGesturePinchEnd:
+    case WebInputEvent::Type::kContextMenu:
+    case WebInputEvent::Type::kGestureScrollEnd:
+    case WebInputEvent::Type::kGestureShowPress:
+    case WebInputEvent::Type::kGestureTapUnconfirmed:
+    case WebInputEvent::Type::kGestureTapDown:
+    case WebInputEvent::Type::kGestureTapCancel:
+    case WebInputEvent::Type::kGesturePinchBegin:
+    case WebInputEvent::Type::kGesturePinchUpdate:
+    case WebInputEvent::Type::kGesturePinchEnd:
       return false;
 
-    case WebInputEvent::kGestureScrollBegin:
+    case WebInputEvent::Type::kGestureScrollBegin:
       return true;
 
     // TouchCancel and TouchScrollStarted should always be non-blocking.
-    case WebInputEvent::kTouchCancel:
-    case WebInputEvent::kTouchScrollStarted:
+    case WebInputEvent::Type::kTouchCancel:
+    case WebInputEvent::Type::kTouchScrollStarted:
       DCHECK_NE(WebInputEvent::DispatchType::kBlocking,
                 static_cast<const WebTouchEvent&>(event).dispatch_type);
       return false;
 
     // Touch start and touch end indicate whether they are non-blocking
     // (aka uncancelable) on the event.
-    case WebInputEvent::kTouchStart:
-    case WebInputEvent::kTouchEnd:
+    case WebInputEvent::Type::kTouchStart:
+    case WebInputEvent::Type::kTouchEnd:
       return static_cast<const WebTouchEvent&>(event).dispatch_type ==
              WebInputEvent::DispatchType::kBlocking;
 
-    case WebInputEvent::kTouchMove:
+    case WebInputEvent::Type::kTouchMove:
       // Non-blocking touch moves can be ack'd right away.
       return static_cast<const WebTouchEvent&>(event).dispatch_type ==
              WebInputEvent::DispatchType::kBlocking;
 
-    case WebInputEvent::kMouseWheel:
+    case WebInputEvent::Type::kMouseWheel:
       return static_cast<const WebMouseWheelEvent&>(event).dispatch_type ==
              WebInputEvent::DispatchType::kBlocking;
 
@@ -206,8 +206,8 @@ LatencyInfo WebInputEventTraits::CreateLatencyInfoForWebGestureEvent(
   SourceEventType source_event_type = SourceEventType::UNKNOWN;
   if (event.SourceDevice() == blink::WebGestureDevice::kTouchpad) {
     source_event_type = SourceEventType::WHEEL;
-    if (event.GetType() >= blink::WebInputEvent::kGesturePinchTypeFirst &&
-        event.GetType() <= blink::WebInputEvent::kGesturePinchTypeLast) {
+    if (event.GetType() >= blink::WebInputEvent::Type::kGesturePinchTypeFirst &&
+        event.GetType() <= blink::WebInputEvent::Type::kGesturePinchTypeLast) {
       source_event_type = SourceEventType::TOUCHPAD;
     }
   } else if (event.SourceDevice() == blink::WebGestureDevice::kTouchscreen) {
@@ -215,13 +215,13 @@ LatencyInfo WebInputEventTraits::CreateLatencyInfoForWebGestureEvent(
         blink::WebGestureEvent::InertialPhaseState::kUnknownMomentum;
 
     switch (event.GetType()) {
-      case blink::WebInputEvent::kGestureScrollBegin:
+      case blink::WebInputEvent::Type::kGestureScrollBegin:
         inertial_phase_state = event.data.scroll_begin.inertial_phase;
         break;
-      case blink::WebInputEvent::kGestureScrollUpdate:
+      case blink::WebInputEvent::Type::kGestureScrollUpdate:
         inertial_phase_state = event.data.scroll_update.inertial_phase;
         break;
-      case blink::WebInputEvent::kGestureScrollEnd:
+      case blink::WebInputEvent::Type::kGestureScrollEnd:
         inertial_phase_state = event.data.scroll_end.inertial_phase;
         break;
       default:

@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Immersive XRSession requests with no supported device should reject promise_test: Unhandled rejection with value: object "NotSupportedError: Failed to execute 'requestSession' on 'XRSystem': No XR hardware found."
-Harness: the test ran to completion.
-

@@ -141,7 +141,7 @@ class CONTENT_EXPORT AppCacheUpdateJob
   // new master entry.
   void FetchManifest();
   void HandleManifestFetchCompleted(URLFetcher* url_fetcher, int net_error);
-  void HandleFetchedManifestChanged(base::Time token_expires);
+  void HandleFetchedManifestChanged();
   void HandleFetchedManifestIsUnchanged();
 
   void HandleResourceFetchCompleted(URLFetcher* url_fetcher, int net_error);
@@ -169,8 +169,8 @@ class CONTENT_EXPORT AppCacheUpdateJob
 
   // Checks if manifest is byte for byte identical with the manifest
   // in the newest application cache.
-  void CheckIfManifestChanged(base::Time token_expires);
-  void OnManifestDataReadComplete(base::Time token_expires, int result);
+  void CheckIfManifestChanged();
+  void OnManifestDataReadComplete(int result);
 
   // Used to read a manifest from the cache in case of a 304 Not Modified HTTP
   // response.
@@ -304,7 +304,6 @@ class CONTENT_EXPORT AppCacheUpdateJob
   std::unique_ptr<net::HttpResponseInfo> manifest_response_info_;
   std::unique_ptr<AppCacheResponseWriter> manifest_response_writer_;
   scoped_refptr<net::IOBuffer> read_manifest_buffer_;
-  base::Time read_manifest_token_expires_;
   std::string loaded_manifest_data_;
   std::unique_ptr<AppCacheResponseReader> manifest_response_reader_;
   bool manifest_has_valid_mime_type_;

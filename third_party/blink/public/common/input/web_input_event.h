@@ -294,27 +294,27 @@ class BLINK_COMMON_EXPORT WebInputEvent {
 
   // Returns true if the WebInputEvent |type| is a mouse event.
   static bool IsMouseEventType(WebInputEvent::Type type) {
-    return kMouseTypeFirst <= type && type <= kMouseTypeLast;
+    return Type::kMouseTypeFirst <= type && type <= Type::kMouseTypeLast;
   }
 
   // Returns true if the WebInputEvent |type| is a keyboard event.
   static bool IsKeyboardEventType(WebInputEvent::Type type) {
-    return kKeyboardTypeFirst <= type && type <= kKeyboardTypeLast;
+    return Type::kKeyboardTypeFirst <= type && type <= Type::kKeyboardTypeLast;
   }
 
   // Returns true if the WebInputEvent |type| is a touch event.
   static bool IsTouchEventType(WebInputEvent::Type type) {
-    return kTouchTypeFirst <= type && type <= kTouchTypeLast;
+    return Type::kTouchTypeFirst <= type && type <= Type::kTouchTypeLast;
   }
 
   // Returns true if the WebInputEvent is a gesture event.
   static bool IsGestureEventType(WebInputEvent::Type type) {
-    return kGestureTypeFirst <= type && type <= kGestureTypeLast;
+    return Type::kGestureTypeFirst <= type && type <= Type::kGestureTypeLast;
   }
 
   // Returns true if the WebInputEvent |type| is a pointer event.
   static bool IsPointerEventType(WebInputEvent::Type type) {
-    return kPointerTypeFirst <= type && type <= kPointerTypeLast;
+    return Type::kPointerTypeFirst <= type && type <= Type::kPointerTypeLast;
   }
 
   bool IsSameEventClass(const WebInputEvent& other) const {
@@ -344,17 +344,19 @@ class BLINK_COMMON_EXPORT WebInputEvent {
 
   // Returns true if the WebInputEvent |type| is a pinch gesture event.
   static bool IsPinchGestureEventType(WebInputEvent::Type type) {
-    return kGesturePinchTypeFirst <= type && type <= kGesturePinchTypeLast;
+    return Type::kGesturePinchTypeFirst <= type &&
+           type <= Type::kGesturePinchTypeLast;
   }
 
   // Returns true if the WebInputEvent |type| is a fling gesture event.
   static bool IsFlingGestureEventType(WebInputEvent::Type type) {
-    return kGestureFlingStart <= type && type <= kGestureFlingCancel;
+    return Type::kGestureFlingStart <= type &&
+           type <= Type::kGestureFlingCancel;
   }
 
   static const char* GetName(WebInputEvent::Type type) {
-#define CASE_TYPE(t)        \
-  case WebInputEvent::k##t: \
+#define CASE_TYPE(t)              \
+  case WebInputEvent::Type::k##t: \
     return #t
     switch (type) {
       CASE_TYPE(Undefined);
@@ -446,7 +448,7 @@ class BLINK_COMMON_EXPORT WebInputEvent {
 
   // Event time since platform start with microsecond resolution.
   base::TimeTicks time_stamp_;
-  Type type_ = kUndefined;
+  Type type_ = Type::kUndefined;
   int modifiers_ = kNoModifiers;
 };
 

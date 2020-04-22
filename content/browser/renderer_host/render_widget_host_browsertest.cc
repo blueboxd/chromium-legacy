@@ -194,7 +194,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostTouchEmulatorBrowserTest,
         new SyntheticSmoothDragGesture(params));
 
     InputEventAckWaiter scroll_end_ack_waiter(
-        host(), blink::WebInputEvent::kGestureScrollEnd);
+        host(), blink::WebInputEvent::Type::kGestureScrollEnd);
     base::RunLoop run_loop;
     host()->QueueSyntheticGesture(
         std::move(gesture),
@@ -211,7 +211,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostTouchEmulatorBrowserTest,
     TestInputEventObserver::EventTypeVector dispatched_events =
         observer.GetAndResetDispatchedEventTypes();
     auto it_gse = std::find(dispatched_events.begin(), dispatched_events.end(),
-                            blink::WebInputEvent::kGestureScrollEnd);
+                            blink::WebInputEvent::Type::kGestureScrollEnd);
     EXPECT_NE(dispatched_events.end(), it_gse);
   } while (!touch_emulator->suppress_next_fling_cancel_for_testing());
 }
@@ -235,139 +235,163 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostTouchEmulatorBrowserTest,
 
   // Simulate a mouse move without any pressed buttons. This should not
   // generate any touch events.
-  SimulateRoutedMouseEvent(blink::WebInputEvent::kMouseMove, 10, 10, 0, false);
+  SimulateRoutedMouseEvent(blink::WebInputEvent::Type::kMouseMove, 10, 10, 0,
+                           false);
   TestInputEventObserver::EventTypeVector dispatched_events =
       observer.GetAndResetDispatchedEventTypes();
   EXPECT_EQ(0u, dispatched_events.size());
 
   // Mouse press becomes touch start which in turn becomes tap.
-  SimulateRoutedMouseEvent(blink::WebInputEvent::kMouseDown, 10, 10, 0, true);
-  WaitForAckWith(blink::WebInputEvent::kTouchStart);
-  EXPECT_EQ(blink::WebInputEvent::kTouchStart,
+  SimulateRoutedMouseEvent(blink::WebInputEvent::Type::kMouseDown, 10, 10, 0,
+                           true);
+  WaitForAckWith(blink::WebInputEvent::Type::kTouchStart);
+  EXPECT_EQ(blink::WebInputEvent::Type::kTouchStart,
             observer.acked_touch_event_type());
   dispatched_events = observer.GetAndResetDispatchedEventTypes();
   ASSERT_EQ(2u, dispatched_events.size());
-  EXPECT_EQ(blink::WebInputEvent::kTouchStart, dispatched_events[0]);
-  EXPECT_EQ(blink::WebInputEvent::kGestureTapDown, dispatched_events[1]);
+  EXPECT_EQ(blink::WebInputEvent::Type::kTouchStart, dispatched_events[0]);
+  EXPECT_EQ(blink::WebInputEvent::Type::kGestureTapDown, dispatched_events[1]);
 
   // Mouse drag generates touch move, cancels tap and starts scroll.
-  SimulateRoutedMouseEvent(blink::WebInputEvent::kMouseMove, 10, 30, 0, true);
+  SimulateRoutedMouseEvent(blink::WebInputEvent::Type::kMouseMove, 10, 30, 0,
+                           true);
   dispatched_events = observer.GetAndResetDispatchedEventTypes();
   ASSERT_EQ(4u, dispatched_events.size());
-  EXPECT_EQ(blink::WebInputEvent::kTouchMove, dispatched_events[0]);
-  EXPECT_EQ(blink::WebInputEvent::kGestureTapCancel, dispatched_events[1]);
-  EXPECT_EQ(blink::WebInputEvent::kGestureScrollBegin, dispatched_events[2]);
-  EXPECT_EQ(blink::WebInputEvent::kGestureScrollUpdate, dispatched_events[3]);
-  EXPECT_EQ(blink::WebInputEvent::kTouchMove,
+  EXPECT_EQ(blink::WebInputEvent::Type::kTouchMove, dispatched_events[0]);
+  EXPECT_EQ(blink::WebInputEvent::Type::kGestureTapCancel,
+            dispatched_events[1]);
+  EXPECT_EQ(blink::WebInputEvent::Type::kGestureScrollBegin,
+            dispatched_events[2]);
+  EXPECT_EQ(blink::WebInputEvent::Type::kGestureScrollUpdate,
+            dispatched_events[3]);
+  EXPECT_EQ(blink::WebInputEvent::Type::kTouchMove,
             observer.acked_touch_event_type());
   EXPECT_EQ(0u, observer.GetAndResetDispatchedEventTypes().size());
 
   // Mouse drag with shift becomes pinch.
-  SimulateRoutedMouseEvent(blink::WebInputEvent::kMouseMove, 10, 35,
+  SimulateRoutedMouseEvent(blink::WebInputEvent::Type::kMouseMove, 10, 35,
                            blink::WebInputEvent::kShiftKey, true);
-  EXPECT_EQ(blink::WebInputEvent::kTouchMove,
+  EXPECT_EQ(blink::WebInputEvent::Type::kTouchMove,
             observer.acked_touch_event_type());
 
   dispatched_events = observer.GetAndResetDispatchedEventTypes();
   ASSERT_EQ(2u, dispatched_events.size());
-  EXPECT_EQ(blink::WebInputEvent::kTouchMove, dispatched_events[0]);
-  EXPECT_EQ(blink::WebInputEvent::kGesturePinchBegin, dispatched_events[1]);
+  EXPECT_EQ(blink::WebInputEvent::Type::kTouchMove, dispatched_events[0]);
+  EXPECT_EQ(blink::WebInputEvent::Type::kGesturePinchBegin,
+            dispatched_events[1]);
 
-  SimulateRoutedMouseEvent(blink::WebInputEvent::kMouseMove, 10, 50,
+  SimulateRoutedMouseEvent(blink::WebInputEvent::Type::kMouseMove, 10, 50,
                            blink::WebInputEvent::kShiftKey, true);
-  EXPECT_EQ(blink::WebInputEvent::kTouchMove,
+  EXPECT_EQ(blink::WebInputEvent::Type::kTouchMove,
             observer.acked_touch_event_type());
 
   dispatched_events = observer.GetAndResetDispatchedEventTypes();
   ASSERT_EQ(2u, dispatched_events.size());
-  EXPECT_EQ(blink::WebInputEvent::kTouchMove, dispatched_events[0]);
-  EXPECT_EQ(blink::WebInputEvent::kGesturePinchUpdate, dispatched_events[1]);
+  EXPECT_EQ(blink::WebInputEvent::Type::kTouchMove, dispatched_events[0]);
+  EXPECT_EQ(blink::WebInputEvent::Type::kGesturePinchUpdate,
+            dispatched_events[1]);
 
   // Mouse drag without shift becomes scroll again.
-  SimulateRoutedMouseEvent(blink::WebInputEvent::kMouseMove, 10, 60, 0, true);
-  EXPECT_EQ(blink::WebInputEvent::kTouchMove,
+  SimulateRoutedMouseEvent(blink::WebInputEvent::Type::kMouseMove, 10, 60, 0,
+                           true);
+  EXPECT_EQ(blink::WebInputEvent::Type::kTouchMove,
             observer.acked_touch_event_type());
 
   dispatched_events = observer.GetAndResetDispatchedEventTypes();
   ASSERT_EQ(3u, dispatched_events.size());
-  EXPECT_EQ(blink::WebInputEvent::kTouchMove, dispatched_events[0]);
-  EXPECT_EQ(blink::WebInputEvent::kGesturePinchEnd, dispatched_events[1]);
-  EXPECT_EQ(blink::WebInputEvent::kGestureScrollUpdate, dispatched_events[2]);
+  EXPECT_EQ(blink::WebInputEvent::Type::kTouchMove, dispatched_events[0]);
+  EXPECT_EQ(blink::WebInputEvent::Type::kGesturePinchEnd, dispatched_events[1]);
+  EXPECT_EQ(blink::WebInputEvent::Type::kGestureScrollUpdate,
+            dispatched_events[2]);
 
-  SimulateRoutedMouseEvent(blink::WebInputEvent::kMouseMove, 10, 70, 0, true);
-  EXPECT_EQ(blink::WebInputEvent::kTouchMove,
+  SimulateRoutedMouseEvent(blink::WebInputEvent::Type::kMouseMove, 10, 70, 0,
+                           true);
+  EXPECT_EQ(blink::WebInputEvent::Type::kTouchMove,
             observer.acked_touch_event_type());
   dispatched_events = observer.GetAndResetDispatchedEventTypes();
   ASSERT_EQ(2u, dispatched_events.size());
-  EXPECT_EQ(blink::WebInputEvent::kTouchMove, dispatched_events[0]);
-  EXPECT_EQ(blink::WebInputEvent::kGestureScrollUpdate, dispatched_events[1]);
+  EXPECT_EQ(blink::WebInputEvent::Type::kTouchMove, dispatched_events[0]);
+  EXPECT_EQ(blink::WebInputEvent::Type::kGestureScrollUpdate,
+            dispatched_events[1]);
 
-  SimulateRoutedMouseEvent(blink::WebInputEvent::kMouseUp, 10, 70, 0, true);
-  EXPECT_EQ(blink::WebInputEvent::kTouchEnd, observer.acked_touch_event_type());
+  SimulateRoutedMouseEvent(blink::WebInputEvent::Type::kMouseUp, 10, 70, 0,
+                           true);
+  EXPECT_EQ(blink::WebInputEvent::Type::kTouchEnd,
+            observer.acked_touch_event_type());
   dispatched_events = observer.GetAndResetDispatchedEventTypes();
   ASSERT_EQ(2u, dispatched_events.size());
-  EXPECT_EQ(blink::WebInputEvent::kTouchEnd, dispatched_events[0]);
-  EXPECT_EQ(blink::WebInputEvent::kGestureScrollEnd, dispatched_events[1]);
+  EXPECT_EQ(blink::WebInputEvent::Type::kTouchEnd, dispatched_events[0]);
+  EXPECT_EQ(blink::WebInputEvent::Type::kGestureScrollEnd,
+            dispatched_events[1]);
 
   // Mouse move does nothing.
-  SimulateRoutedMouseEvent(blink::WebInputEvent::kMouseMove, 10, 80, 0, false);
+  SimulateRoutedMouseEvent(blink::WebInputEvent::Type::kMouseMove, 10, 80, 0,
+                           false);
   dispatched_events = observer.GetAndResetDispatchedEventTypes();
   EXPECT_EQ(0u, dispatched_events.size());
 
   // Another mouse down continues scroll.
-  SimulateRoutedMouseEvent(blink::WebInputEvent::kMouseDown, 10, 80, 0, true);
-  WaitForAckWith(blink::WebInputEvent::kTouchStart);
-  EXPECT_EQ(blink::WebInputEvent::kTouchStart,
+  SimulateRoutedMouseEvent(blink::WebInputEvent::Type::kMouseDown, 10, 80, 0,
+                           true);
+  WaitForAckWith(blink::WebInputEvent::Type::kTouchStart);
+  EXPECT_EQ(blink::WebInputEvent::Type::kTouchStart,
             observer.acked_touch_event_type());
   dispatched_events = observer.GetAndResetDispatchedEventTypes();
   ASSERT_EQ(2u, dispatched_events.size());
-  EXPECT_EQ(blink::WebInputEvent::kTouchStart, dispatched_events[0]);
-  EXPECT_EQ(blink::WebInputEvent::kGestureTapDown, dispatched_events[1]);
-  SimulateRoutedMouseEvent(blink::WebInputEvent::kMouseMove, 10, 100, 0, true);
-  EXPECT_EQ(blink::WebInputEvent::kTouchMove,
+  EXPECT_EQ(blink::WebInputEvent::Type::kTouchStart, dispatched_events[0]);
+  EXPECT_EQ(blink::WebInputEvent::Type::kGestureTapDown, dispatched_events[1]);
+  SimulateRoutedMouseEvent(blink::WebInputEvent::Type::kMouseMove, 10, 100, 0,
+                           true);
+  EXPECT_EQ(blink::WebInputEvent::Type::kTouchMove,
             observer.acked_touch_event_type());
   dispatched_events = observer.GetAndResetDispatchedEventTypes();
   ASSERT_EQ(4u, dispatched_events.size());
-  EXPECT_EQ(blink::WebInputEvent::kTouchMove, dispatched_events[0]);
-  EXPECT_EQ(blink::WebInputEvent::kGestureTapCancel, dispatched_events[1]);
-  EXPECT_EQ(blink::WebInputEvent::kGestureScrollBegin, dispatched_events[2]);
-  EXPECT_EQ(blink::WebInputEvent::kGestureScrollUpdate, dispatched_events[3]);
+  EXPECT_EQ(blink::WebInputEvent::Type::kTouchMove, dispatched_events[0]);
+  EXPECT_EQ(blink::WebInputEvent::Type::kGestureTapCancel,
+            dispatched_events[1]);
+  EXPECT_EQ(blink::WebInputEvent::Type::kGestureScrollBegin,
+            dispatched_events[2]);
+  EXPECT_EQ(blink::WebInputEvent::Type::kGestureScrollUpdate,
+            dispatched_events[3]);
   EXPECT_EQ(0u, observer.GetAndResetDispatchedEventTypes().size());
 
   // Another pinch.
-  SimulateRoutedMouseEvent(blink::WebInputEvent::kMouseMove, 10, 110,
+  SimulateRoutedMouseEvent(blink::WebInputEvent::Type::kMouseMove, 10, 110,
                            blink::WebInputEvent::kShiftKey, true);
-  EXPECT_EQ(blink::WebInputEvent::kTouchMove,
+  EXPECT_EQ(blink::WebInputEvent::Type::kTouchMove,
             observer.acked_touch_event_type());
   dispatched_events = observer.GetAndResetDispatchedEventTypes();
   EXPECT_EQ(2u, dispatched_events.size());
-  EXPECT_EQ(blink::WebInputEvent::kTouchMove, dispatched_events[0]);
-  EXPECT_EQ(blink::WebInputEvent::kGesturePinchBegin, dispatched_events[1]);
-  SimulateRoutedMouseEvent(blink::WebInputEvent::kMouseMove, 10, 120,
+  EXPECT_EQ(blink::WebInputEvent::Type::kTouchMove, dispatched_events[0]);
+  EXPECT_EQ(blink::WebInputEvent::Type::kGesturePinchBegin,
+            dispatched_events[1]);
+  SimulateRoutedMouseEvent(blink::WebInputEvent::Type::kMouseMove, 10, 120,
                            blink::WebInputEvent::kShiftKey, true);
-  EXPECT_EQ(blink::WebInputEvent::kTouchMove,
+  EXPECT_EQ(blink::WebInputEvent::Type::kTouchMove,
             observer.acked_touch_event_type());
   dispatched_events = observer.GetAndResetDispatchedEventTypes();
   EXPECT_EQ(2u, dispatched_events.size());
-  EXPECT_EQ(blink::WebInputEvent::kTouchMove, dispatched_events[0]);
-  EXPECT_EQ(blink::WebInputEvent::kGesturePinchUpdate, dispatched_events[1]);
+  EXPECT_EQ(blink::WebInputEvent::Type::kTouchMove, dispatched_events[0]);
+  EXPECT_EQ(blink::WebInputEvent::Type::kGesturePinchUpdate,
+            dispatched_events[1]);
 
   // Turn off emulation during a pinch.
   host()->GetTouchEmulator()->Disable();
-  EXPECT_EQ(blink::WebInputEvent::kTouchCancel,
+  EXPECT_EQ(blink::WebInputEvent::Type::kTouchCancel,
             observer.acked_touch_event_type());
   dispatched_events = observer.GetAndResetDispatchedEventTypes();
   ASSERT_EQ(3u, dispatched_events.size());
-  EXPECT_EQ(blink::WebInputEvent::kTouchCancel, dispatched_events[0]);
-  EXPECT_EQ(blink::WebInputEvent::kGesturePinchEnd, dispatched_events[1]);
-  EXPECT_EQ(blink::WebInputEvent::kGestureScrollEnd, dispatched_events[2]);
+  EXPECT_EQ(blink::WebInputEvent::Type::kTouchCancel, dispatched_events[0]);
+  EXPECT_EQ(blink::WebInputEvent::Type::kGesturePinchEnd, dispatched_events[1]);
+  EXPECT_EQ(blink::WebInputEvent::Type::kGestureScrollEnd,
+            dispatched_events[2]);
 
   // Mouse event should pass untouched.
-  SimulateRoutedMouseEvent(blink::WebInputEvent::kMouseMove, 10, 10,
+  SimulateRoutedMouseEvent(blink::WebInputEvent::Type::kMouseMove, 10, 10,
                            blink::WebInputEvent::kShiftKey, true);
   dispatched_events = observer.GetAndResetDispatchedEventTypes();
   ASSERT_EQ(1u, dispatched_events.size());
-  EXPECT_EQ(blink::WebInputEvent::kMouseMove, dispatched_events[0]);
+  EXPECT_EQ(blink::WebInputEvent::Type::kMouseMove, dispatched_events[0]);
 
   // Turn on emulation.
   host()->GetTouchEmulator()->Enable(
@@ -375,36 +399,42 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostTouchEmulatorBrowserTest,
       ui::GestureProviderConfigType::GENERIC_MOBILE);
 
   // Another touch.
-  SimulateRoutedMouseEvent(blink::WebInputEvent::kMouseDown, 10, 10, 0, true);
-  WaitForAckWith(blink::WebInputEvent::kTouchStart);
-  EXPECT_EQ(blink::WebInputEvent::kTouchStart,
+  SimulateRoutedMouseEvent(blink::WebInputEvent::Type::kMouseDown, 10, 10, 0,
+                           true);
+  WaitForAckWith(blink::WebInputEvent::Type::kTouchStart);
+  EXPECT_EQ(blink::WebInputEvent::Type::kTouchStart,
             observer.acked_touch_event_type());
   dispatched_events = observer.GetAndResetDispatchedEventTypes();
   ASSERT_EQ(2u, dispatched_events.size());
-  EXPECT_EQ(blink::WebInputEvent::kTouchStart, dispatched_events[0]);
-  EXPECT_EQ(blink::WebInputEvent::kGestureTapDown, dispatched_events[1]);
+  EXPECT_EQ(blink::WebInputEvent::Type::kTouchStart, dispatched_events[0]);
+  EXPECT_EQ(blink::WebInputEvent::Type::kGestureTapDown, dispatched_events[1]);
 
   // Scroll.
-  SimulateRoutedMouseEvent(blink::WebInputEvent::kMouseMove, 10, 30, 0, true);
-  EXPECT_EQ(blink::WebInputEvent::kTouchMove,
+  SimulateRoutedMouseEvent(blink::WebInputEvent::Type::kMouseMove, 10, 30, 0,
+                           true);
+  EXPECT_EQ(blink::WebInputEvent::Type::kTouchMove,
             observer.acked_touch_event_type());
   dispatched_events = observer.GetAndResetDispatchedEventTypes();
   ASSERT_EQ(4u, dispatched_events.size());
-  EXPECT_EQ(blink::WebInputEvent::kTouchMove, dispatched_events[0]);
-  EXPECT_EQ(blink::WebInputEvent::kGestureTapCancel, dispatched_events[1]);
-  EXPECT_EQ(blink::WebInputEvent::kGestureScrollBegin, dispatched_events[2]);
-  EXPECT_EQ(blink::WebInputEvent::kGestureScrollUpdate, dispatched_events[3]);
+  EXPECT_EQ(blink::WebInputEvent::Type::kTouchMove, dispatched_events[0]);
+  EXPECT_EQ(blink::WebInputEvent::Type::kGestureTapCancel,
+            dispatched_events[1]);
+  EXPECT_EQ(blink::WebInputEvent::Type::kGestureScrollBegin,
+            dispatched_events[2]);
+  EXPECT_EQ(blink::WebInputEvent::Type::kGestureScrollUpdate,
+            dispatched_events[3]);
   EXPECT_EQ(0u, observer.GetAndResetDispatchedEventTypes().size());
 
   // Turn off emulation during a scroll.
   host()->GetTouchEmulator()->Disable();
-  EXPECT_EQ(blink::WebInputEvent::kTouchCancel,
+  EXPECT_EQ(blink::WebInputEvent::Type::kTouchCancel,
             observer.acked_touch_event_type());
 
   dispatched_events = observer.GetAndResetDispatchedEventTypes();
   ASSERT_EQ(2u, dispatched_events.size());
-  EXPECT_EQ(blink::WebInputEvent::kTouchCancel, dispatched_events[0]);
-  EXPECT_EQ(blink::WebInputEvent::kGestureScrollEnd, dispatched_events[1]);
+  EXPECT_EQ(blink::WebInputEvent::Type::kTouchCancel, dispatched_events[0]);
+  EXPECT_EQ(blink::WebInputEvent::Type::kGestureScrollEnd,
+            dispatched_events[1]);
 
   host()->RemoveInputEventObserver(&observer);
 }
@@ -480,7 +510,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostSitePerProcessTest,
   // Open the <select> menu by focusing it and sending a space key
   // at the focused node. This creates a popup widget.
   NativeWebKeyboardEvent event(
-      blink::WebKeyboardEvent::kChar, blink::WebInputEvent::kNoModifiers,
+      blink::WebKeyboardEvent::Type::kChar, blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   event.text[0] = ' ';
 

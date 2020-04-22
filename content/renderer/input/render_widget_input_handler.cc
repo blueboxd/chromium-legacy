@@ -127,14 +127,14 @@ void LogAllPassiveEventListenersUma(const WebInputEvent& input_event,
   // TODO(dtapuska): Use the input_event.timeStampSeconds as the start
   // ideally this should be when the event was sent by the compositor to the
   // renderer. https://crbug.com/565348.
-  if (input_event.GetType() == WebInputEvent::kTouchStart ||
-      input_event.GetType() == WebInputEvent::kTouchMove ||
-      input_event.GetType() == WebInputEvent::kTouchEnd) {
+  if (input_event.GetType() == WebInputEvent::Type::kTouchStart ||
+      input_event.GetType() == WebInputEvent::Type::kTouchMove ||
+      input_event.GetType() == WebInputEvent::Type::kTouchEnd) {
     const WebTouchEvent& touch = static_cast<const WebTouchEvent&>(input_event);
 
     LogPassiveEventListenersUma(result, touch.dispatch_type,
                                 input_event.TimeStamp(), latency_info);
-  } else if (input_event.GetType() == WebInputEvent::kMouseWheel) {
+  } else if (input_event.GetType() == WebInputEvent::Type::kMouseWheel) {
     LogPassiveEventListenersUma(
         result,
         static_cast<const WebMouseWheelEvent&>(input_event).dispatch_type,
@@ -306,7 +306,7 @@ WebInputEventResult RenderWidgetInputHandler::HandleTouchEvent(
     const blink::WebCoalescedInputEvent& coalesced_event) {
   const WebInputEvent& input_event = coalesced_event.Event();
 
-  if (input_event.GetType() == WebInputEvent::kTouchScrollStarted) {
+  if (input_event.GetType() == WebInputEvent::Type::kTouchScrollStarted) {
     WebPointerEvent pointer_event =
         WebPointerEvent::CreatePointerCausesUaActionEvent(
             blink::WebPointerProperties::PointerType::kUnknown,
@@ -395,11 +395,11 @@ void RenderWidgetInputHandler::HandleInputEvent(
 
     // Reset the last known cursor if mouse has left this widget. So next
     // time that the mouse enters we always set the cursor accordingly.
-    if (mouse_event.GetType() == WebInputEvent::kMouseLeave)
+    if (mouse_event.GetType() == WebInputEvent::Type::kMouseLeave)
       current_cursor_.reset();
 
     if (mouse_event.button == WebPointerProperties::Button::kLeft &&
-        mouse_event.GetType() == WebInputEvent::kMouseUp) {
+        mouse_event.GetType() == WebInputEvent::Type::kMouseUp) {
       show_virtual_keyboard_for_mouse = true;
     }
   }
@@ -421,7 +421,7 @@ void RenderWidgetInputHandler::HandleInputEvent(
         widget_->GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE) {
       // Show the keyboard on keyup (not keydown) to match the behavior of
       // Android's TextView.
-      if (key_event.GetType() == WebInputEvent::kKeyUp)
+      if (key_event.GetType() == WebInputEvent::Type::kKeyUp)
         widget_->ShowVirtualKeyboardOnElementFocus();
       // Prevent default for both keydown and keyup (letting the keydown go
       // through to the web app would cause compatibility problems since
@@ -441,7 +441,7 @@ void RenderWidgetInputHandler::HandleInputEvent(
   WebInputEventResult processed = prevent_default
                                       ? WebInputEventResult::kHandledSuppressed
                                       : WebInputEventResult::kNotHandled;
-  if (input_event.GetType() != WebInputEvent::kChar ||
+  if (input_event.GetType() != WebInputEvent::Type::kChar ||
       !suppress_next_char_events_) {
     suppress_next_char_events_ = false;
     if (processed == WebInputEventResult::kNotHandled &&
@@ -477,7 +477,7 @@ void RenderWidgetInputHandler::HandleInputEvent(
   // it's not processed by webkit, then we need to suppress the upcoming Char
   // events.
   bool is_keyboard_shortcut =
-      input_event.GetType() == WebInputEvent::kRawKeyDown &&
+      input_event.GetType() == WebInputEvent::Type::kRawKeyDown &&
       static_cast<const WebKeyboardEvent&>(input_event).is_browser_shortcut;
   if (processed == WebInputEventResult::kNotHandled && is_keyboard_shortcut)
     suppress_next_char_events_ = true;
@@ -495,9 +495,9 @@ void RenderWidgetInputHandler::HandleInputEvent(
 
   // Send gesture scroll events and their dispositions to the compositor thread,
   // so that they can be used to produce the elastic overscroll effect on Mac.
-  if (input_event.GetType() == WebInputEvent::kGestureScrollBegin ||
-      input_event.GetType() == WebInputEvent::kGestureScrollEnd ||
-      input_event.GetType() == WebInputEvent::kGestureScrollUpdate) {
+  if (input_event.GetType() == WebInputEvent::Type::kGestureScrollBegin ||
+      input_event.GetType() == WebInputEvent::Type::kGestureScrollEnd ||
+      input_event.GetType() == WebInputEvent::Type::kGestureScrollUpdate) {
     const WebGestureEvent& gesture_event =
         static_cast<const WebGestureEvent&>(input_event);
     if (gesture_event.SourceDevice() == blink::WebGestureDevice::kTouchpad) {
@@ -527,7 +527,7 @@ void RenderWidgetInputHandler::HandleInputEvent(
   // Show the virtual keyboard if enabled and a user gesture triggers a focus
   // change.
   if ((processed != WebInputEventResult::kNotHandled &&
-       input_event.GetType() == WebInputEvent::kTouchEnd) ||
+       input_event.GetType() == WebInputEvent::Type::kTouchEnd) ||
       show_virtual_keyboard_for_mouse) {
     delegate_->ShowVirtualKeyboard();
   }
@@ -541,8 +541,8 @@ void RenderWidgetInputHandler::HandleInputEvent(
 #if !defined(OS_ANDROID)
   // Virtual keyboard is not supported, so react to focus change immediately.
   if ((processed != WebInputEventResult::kNotHandled &&
-       input_event.GetType() == WebInputEvent::kMouseDown) ||
-      input_event.GetType() == WebInputEvent::kGestureTap) {
+       input_event.GetType() == WebInputEvent::Type::kMouseDown) ||
+      input_event.GetType() == WebInputEvent::Type::kGestureTap) {
     delegate_->FocusChangeComplete();
   }
 #endif
@@ -723,7 +723,7 @@ bool RenderWidgetInputHandler::ProcessTouchAction(
     return false;
   // Ignore setTouchAction calls that result from synthetic touch events (eg.
   // when blink is emulating touch with mouse).
-  if (handling_input_state_->event_type != WebInputEvent::kTouchStart)
+  if (handling_input_state_->event_type != WebInputEvent::Type::kTouchStart)
     return false;
 
   handling_input_state_->touch_action = touch_action;

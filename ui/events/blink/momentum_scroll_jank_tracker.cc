@@ -33,7 +33,7 @@ void MomentumScrollJankTracker::OnDispatchedInputEvent(
     EventWithCallback* event_with_callback,
     const base::TimeTicks& now) {
   DCHECK_EQ(event_with_callback->event().GetType(),
-            blink::WebGestureEvent::kGestureScrollUpdate);
+            blink::WebGestureEvent::Type::kGestureScrollUpdate);
 
   const auto& gesture_event = ToWebGestureEvent(event_with_callback->event());
 

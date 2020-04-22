@@ -18,6 +18,8 @@
 
 #include "deflate.h"
 
+#ifdef CRC32_SIMD_SSE42_PCLMUL
+
 #include <inttypes.h>
 #include <emmintrin.h>
 #include <immintrin.h>
@@ -491,3 +493,5 @@ unsigned ZLIB_INTERNAL crc_fold_512to32(deflate_state *const s)
     return ~crc;
     CRC_SAVE(s)
 }
+
+#endif  /* CRC32_SIMD_SSE42_PCLMUL */

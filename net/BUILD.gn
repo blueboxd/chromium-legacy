@@ -4340,9 +4340,7 @@ test("net_unittests") {
     "quic/quic_chromium_client_session_test.cc",
     "quic/quic_chromium_client_stream_test.cc",
     "quic/quic_chromium_connection_helper_test.cc",
-
-    # Temporarily disabled due to version reordering.
-    # "quic/quic_client_session_cache_unittests.cc",
+    "quic/quic_client_session_cache_unittests.cc",
     "quic/quic_clock_skew_detector_test.cc",
     "quic/quic_connectivity_probing_manager_test.cc",
     "quic/quic_end_to_end_unittest.cc",

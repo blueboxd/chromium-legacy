@@ -142,8 +142,8 @@ void SearchingForNodeTool::Draw(float scale) {
 bool SearchingForNodeTool::HandleInputEvent(LocalFrameView* frame_view,
                                             const WebInputEvent& input_event,
                                             bool* swallow_next_mouse_up) {
-  if (input_event.GetType() == WebInputEvent::kGestureScrollBegin ||
-      input_event.GetType() == WebInputEvent::kGestureScrollUpdate) {
+  if (input_event.GetType() == WebInputEvent::Type::kGestureScrollBegin ||
+      input_event.GetType() == WebInputEvent::Type::kGestureScrollUpdate) {
     hovered_node_.Clear();
     event_target_node_.Clear();
     overlay_->ScheduleUpdate();

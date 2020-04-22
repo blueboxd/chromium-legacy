@@ -50,7 +50,7 @@ class ScrollPredictorTest : public testing::Test {
       WebGestureEvent::InertialPhaseState phase =
           WebGestureEvent::InertialPhaseState::kNonMomentum) {
     WebGestureEvent gesture(
-        WebInputEvent::kGestureScrollUpdate, WebInputEvent::kNoModifiers,
+        WebInputEvent::Type::kGestureScrollUpdate, WebInputEvent::kNoModifiers,
         WebInputEvent::GetStaticTimeStampForTests() +
             base::TimeDelta::FromMillisecondsD(time_delta_in_milliseconds),
         blink::WebGestureDevice::kTouchscreen);
@@ -70,7 +70,7 @@ class ScrollPredictorTest : public testing::Test {
   }
 
   void SendGestureScrollBegin() {
-    WebGestureEvent gesture_begin(WebInputEvent::kGestureScrollBegin,
+    WebGestureEvent gesture_begin(WebInputEvent::Type::kGestureScrollBegin,
                                   WebInputEvent::kNoModifiers,
                                   WebInputEvent::GetStaticTimeStampForTests(),
                                   blink::WebGestureDevice::kTouchscreen);
@@ -199,7 +199,7 @@ TEST_F(ScrollPredictorTest, ScrollResamplingStates) {
   EXPECT_FALSE(GetResamplingState());
 
   // after GSE
-  WebGestureEvent gesture_end(WebInputEvent::kGestureScrollEnd,
+  WebGestureEvent gesture_end(WebInputEvent::Type::kGestureScrollEnd,
                               WebInputEvent::kNoModifiers,
                               WebInputEvent::GetStaticTimeStampForTests(),
                               blink::WebGestureDevice::kTouchscreen);

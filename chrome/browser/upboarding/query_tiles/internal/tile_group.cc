@@ -18,7 +18,7 @@ void DeepCopyGroup(const TileGroup& input, TileGroup* output) {
   output->last_updated_ts = input.last_updated_ts;
   output->tiles.clear();
   for (const auto& tile : input.tiles)
-    output->tiles.emplace_back(std::make_unique<QueryTileEntry>(*tile.get()));
+    output->tiles.emplace_back(std::make_unique<Tile>(*tile.get()));
 }
 
 }  // namespace

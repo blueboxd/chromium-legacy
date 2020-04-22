@@ -22,7 +22,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
-#include "chrome/common/safe_browsing/client_model.pb.h"
+#include "components/safe_browsing/core/proto/client_model.pb.h"
 
 namespace safe_browsing {
 class FeatureMap;

@@ -39,7 +39,6 @@ class ExtensionActionTestHelperViews : public ExtensionActionTestHelper {
   gfx::Size GetMinPopupSize() override;
   gfx::Size GetMaxPopupSize() override;
   gfx::Size GetToolbarActionSize() override;
-  bool CanBeResized() override;
 
  private:
   friend class ExtensionActionTestHelper;

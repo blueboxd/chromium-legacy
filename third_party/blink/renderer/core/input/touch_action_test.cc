@@ -335,7 +335,7 @@ void TouchActionTest::RunTestOnTree(
           << ExternalRepresentation(root->GetDocument().GetFrame()).Utf8();
 
       // Now send the touch event and check any touch action result.
-      SendTouchEvent(web_view, WebInputEvent::kPointerDown, window_point);
+      SendTouchEvent(web_view, WebInputEvent::Type::kPointerDown, window_point);
 
       AtomicString expected_action = element->getAttribute("expected-action");
       // Should have received exactly one touch action, even for auto.
@@ -367,7 +367,8 @@ void TouchActionTest::RunTestOnTree(
 
       // Reset webview touch state.
       client.Reset();
-      SendTouchEvent(web_view, WebInputEvent::kPointerCancel, window_point);
+      SendTouchEvent(web_view, WebInputEvent::Type::kPointerCancel,
+                     window_point);
       EXPECT_EQ(0, client.TouchActionSetCount());
     }
   }
@@ -375,8 +376,8 @@ void TouchActionTest::RunTestOnTree(
 void TouchActionTest::SendTouchEvent(WebView* web_view,
                                      WebInputEvent::Type type,
                                      IntPoint client_point) {
-  ASSERT_TRUE(type == WebInputEvent::kPointerDown ||
-              type == WebInputEvent::kPointerCancel);
+  ASSERT_TRUE(type == WebInputEvent::Type::kPointerDown ||
+              type == WebInputEvent::Type::kPointerCancel);
 
   WebPointerEvent event(
       type,
@@ -385,7 +386,7 @@ void TouchActionTest::SendTouchEvent(WebView* web_view,
                            gfx::PointF(client_point.X(), client_point.Y()),
                            gfx::PointF(client_point.X(), client_point.Y())),
       10.0f, 10.0f);
-  if (type == WebInputEvent::kPointerCancel)
+  if (type == WebInputEvent::Type::kPointerCancel)
     event.dispatch_type = WebInputEvent::DispatchType::kEventNonBlocking;
 
   web_view->MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(event));

@@ -1375,7 +1375,7 @@ void EventSender::DoDragDrop(const WebDragData& drag_data,
   if (!MainFrameWidget())
     return;
 
-  WebMouseEvent event(WebInputEvent::kMouseDown,
+  WebMouseEvent event(WebInputEvent::Type::kMouseDown,
                       ModifiersForPointer(kRawMousePointerId),
                       GetCurrentEventTime());
   InitMouseEvent(current_pointer_state_[kRawMousePointerId].pressed_button_,
@@ -1431,8 +1431,8 @@ void EventSender::PointerDown(int button_number,
     UpdateClickCountForButton(button_type);
     click_count = click_count_;
   }
-  WebMouseEvent event(WebInputEvent::kMouseDown, ModifiersForPointer(pointerId),
-                      GetCurrentEventTime());
+  WebMouseEvent event(WebInputEvent::Type::kMouseDown,
+                      ModifiersForPointer(pointerId), GetCurrentEventTime());
   InitMouseEventGeneric(current_pointer_state_[pointerId].pressed_button_,
                         current_pointer_state_[pointerId].current_buttons_,
                         current_pointer_state_[pointerId].last_pos_,
@@ -1472,8 +1472,8 @@ void EventSender::PointerUp(int button_number,
     current_pointer_state_[pointerId].pressed_button_ =
         WebMouseEvent::Button::kNoButton;
 
-    WebMouseEvent event(WebInputEvent::kMouseUp, ModifiersForPointer(pointerId),
-                        GetCurrentEventTime());
+    WebMouseEvent event(WebInputEvent::Type::kMouseUp,
+                        ModifiersForPointer(pointerId), GetCurrentEventTime());
     int click_count = pointerType == WebPointerProperties::PointerType::kMouse
                           ? click_count_
                           : 0;
@@ -1695,7 +1695,7 @@ void EventSender::KeyDown(const std::string& code_str,
   // On Windows, we might also need to generate a char event to mimic the
   // Windows event flow; on other platforms we create a merged event and test
   // the event flow that that platform provides.
-  WebKeyboardEvent event_down(WebInputEvent::kRawKeyDown, modifiers,
+  WebKeyboardEvent event_down(WebInputEvent::Type::kRawKeyDown, modifiers,
                               GetCurrentEventTime());
   event_down.windows_key_code = code;
   event_down.dom_key =
@@ -1712,7 +1712,7 @@ void EventSender::KeyDown(const std::string& code_str,
     event_down.is_system_key = IsSystemKeyEvent(event_down);
 
   WebKeyboardEvent event_up = event_down;
-  event_up.SetType(WebInputEvent::kKeyUp);
+  event_up.SetType(WebInputEvent::Type::kKeyUp);
   // EventSender.m forces a layout here, with at least one
   // test (fast/forms/focus-control-to-page.html) relying on this.
   if (force_layout_on_events_)
@@ -1729,7 +1729,7 @@ void EventSender::KeyDown(const std::string& code_str,
   HandleInputEventOnViewOrPopup(event_down);
 
   if (code == ui::VKEY_ESCAPE && !current_drag_data_.IsNull()) {
-    WebMouseEvent event(WebInputEvent::kMouseDown,
+    WebMouseEvent event(WebInputEvent::Type::kMouseDown,
                         ModifiersForPointer(kRawMousePointerId),
                         GetCurrentEventTime());
     InitMouseEvent(current_pointer_state_[kRawMousePointerId].pressed_button_,
@@ -1743,7 +1743,7 @@ void EventSender::KeyDown(const std::string& code_str,
 
   if (generate_char) {
     WebKeyboardEvent event_char = event_up;
-    event_char.SetType(WebInputEvent::kChar);
+    event_char.SetType(WebInputEvent::Type::kChar);
     HandleInputEventOnViewOrPopup(event_char);
   }
 
@@ -1780,7 +1780,7 @@ std::vector<std::string> EventSender::ContextClick() {
         GetWebMouseEventModifierForButton(
             current_pointer_state_[kRawMousePointerId].pressed_button_);
   }
-  WebMouseEvent event(WebInputEvent::kMouseDown,
+  WebMouseEvent event(WebInputEvent::Type::kMouseDown,
                       ModifiersForPointer(kRawMousePointerId),
                       GetCurrentEventTime());
   InitMouseEvent(WebMouseEvent::Button::kRight,
@@ -1795,7 +1795,7 @@ std::vector<std::string> EventSender::ContextClick() {
   current_pointer_state_[kRawMousePointerId].pressed_button_ =
       WebMouseEvent::Button::kNoButton;
 
-  WebMouseEvent mouseUpEvent(WebInputEvent::kMouseUp,
+  WebMouseEvent mouseUpEvent(WebInputEvent::Type::kMouseUp,
                              ModifiersForPointer(kRawMousePointerId),
                              GetCurrentEventTime());
   InitMouseEvent(WebMouseEvent::Button::kRight,
@@ -1953,19 +1953,19 @@ void EventSender::GestureScrollFirstPoint(float x, float y) {
 }
 
 void EventSender::TouchStart(gin::Arguments* args) {
-  SendCurrentTouchEvent(WebInputEvent::kTouchStart, args);
+  SendCurrentTouchEvent(WebInputEvent::Type::kTouchStart, args);
 }
 
 void EventSender::TouchMove(gin::Arguments* args) {
-  SendCurrentTouchEvent(WebInputEvent::kTouchMove, args);
+  SendCurrentTouchEvent(WebInputEvent::Type::kTouchMove, args);
 }
 
 void EventSender::TouchCancel(gin::Arguments* args) {
-  SendCurrentTouchEvent(WebInputEvent::kTouchCancel, args);
+  SendCurrentTouchEvent(WebInputEvent::Type::kTouchCancel, args);
 }
 
 void EventSender::TouchEnd(gin::Arguments* args) {
-  SendCurrentTouchEvent(WebInputEvent::kTouchEnd, args);
+  SendCurrentTouchEvent(WebInputEvent::Type::kTouchEnd, args);
 }
 
 void EventSender::NotifyStartOfTouchScroll() {
@@ -2087,52 +2087,52 @@ void EventSender::AddTouchPoint(float x, float y, gin::Arguments* args) {
 
 void EventSender::GestureScrollBegin(blink::WebLocalFrame* frame,
                                      gin::Arguments* args) {
-  GestureEvent(WebInputEvent::kGestureScrollBegin, frame, args);
+  GestureEvent(WebInputEvent::Type::kGestureScrollBegin, frame, args);
 }
 
 void EventSender::GestureScrollEnd(blink::WebLocalFrame* frame,
                                    gin::Arguments* args) {
-  GestureEvent(WebInputEvent::kGestureScrollEnd, frame, args);
+  GestureEvent(WebInputEvent::Type::kGestureScrollEnd, frame, args);
 }
 
 void EventSender::GestureScrollUpdate(blink::WebLocalFrame* frame,
                                       gin::Arguments* args) {
-  GestureEvent(WebInputEvent::kGestureScrollUpdate, frame, args);
+  GestureEvent(WebInputEvent::Type::kGestureScrollUpdate, frame, args);
 }
 
 void EventSender::GestureTap(blink::WebLocalFrame* frame,
                              gin::Arguments* args) {
-  GestureEvent(WebInputEvent::kGestureTap, frame, args);
+  GestureEvent(WebInputEvent::Type::kGestureTap, frame, args);
 }
 
 void EventSender::GestureTapDown(blink::WebLocalFrame* frame,
                                  gin::Arguments* args) {
-  GestureEvent(WebInputEvent::kGestureTapDown, frame, args);
+  GestureEvent(WebInputEvent::Type::kGestureTapDown, frame, args);
 }
 
 void EventSender::GestureShowPress(blink::WebLocalFrame* frame,
                                    gin::Arguments* args) {
-  GestureEvent(WebInputEvent::kGestureShowPress, frame, args);
+  GestureEvent(WebInputEvent::Type::kGestureShowPress, frame, args);
 }
 
 void EventSender::GestureTapCancel(blink::WebLocalFrame* frame,
                                    gin::Arguments* args) {
-  GestureEvent(WebInputEvent::kGestureTapCancel, frame, args);
+  GestureEvent(WebInputEvent::Type::kGestureTapCancel, frame, args);
 }
 
 void EventSender::GestureLongPress(blink::WebLocalFrame* frame,
                                    gin::Arguments* args) {
-  GestureEvent(WebInputEvent::kGestureLongPress, frame, args);
+  GestureEvent(WebInputEvent::Type::kGestureLongPress, frame, args);
 }
 
 void EventSender::GestureLongTap(blink::WebLocalFrame* frame,
                                  gin::Arguments* args) {
-  GestureEvent(WebInputEvent::kGestureLongTap, frame, args);
+  GestureEvent(WebInputEvent::Type::kGestureLongTap, frame, args);
 }
 
 void EventSender::GestureTwoFingerTap(blink::WebLocalFrame* frame,
                                       gin::Arguments* args) {
-  GestureEvent(WebInputEvent::kGestureTwoFingerTap, frame, args);
+  GestureEvent(WebInputEvent::Type::kGestureTwoFingerTap, frame, args);
 }
 
 void EventSender::MouseScrollBy(gin::Arguments* args,
@@ -2143,7 +2143,7 @@ void EventSender::MouseScrollBy(gin::Arguments* args,
   bool send_gestures = true;
   WebMouseWheelEvent wheel_event =
       GetMouseWheelEvent(args, scroll_type, &send_gestures);
-  if (wheel_event.GetType() != WebInputEvent::kUndefined &&
+  if (wheel_event.GetType() != WebInputEvent::Type::kUndefined &&
       HandleInputEventOnViewOrPopup(wheel_event) ==
           WebInputEventResult::kNotHandled &&
       send_gestures) {
@@ -2208,7 +2208,7 @@ void EventSender::MouseMoveTo(blink::WebLocalFrame* frame,
   } else {
     current_pointer_state_[pointerId].last_pos_ = gfx::PointF(x, y);
     current_pointer_state_[pointerId].modifiers_ = modifiers;
-    WebMouseEvent event(WebInputEvent::kMouseMove,
+    WebMouseEvent event(WebInputEvent::Type::kMouseMove,
                         ModifiersForPointer(pointerId), GetCurrentEventTime());
     int click_count = pointerType == WebPointerProperties::PointerType::kMouse
                           ? click_count_
@@ -2230,7 +2230,7 @@ void EventSender::MouseLeave(
   if (force_layout_on_events_)
     UpdateLifecycleToPrePaint();
 
-  WebMouseEvent event(WebInputEvent::kMouseLeave,
+  WebMouseEvent event(WebInputEvent::Type::kMouseLeave,
                       ModifiersForPointer(pointerId), GetCurrentEventTime());
   InitMouseEventGeneric(WebMouseEvent::Button::kNoButton, 0,
                         current_pointer_state_[kRawMousePointerId].last_pos_,
@@ -2303,8 +2303,8 @@ void EventSender::SendCurrentTouchEvent(WebInputEvent::Type type,
       pointer_event.SetTimeStamp(time_stamp);
       pointer_event.SetModifiers(touch_modifiers_);
       pointer_event.button =
-          (pointer_event.GetType() == WebInputEvent::kPointerDown ||
-           pointer_event.GetType() == WebInputEvent::kPointerUp)
+          (pointer_event.GetType() == WebInputEvent::Type::kPointerDown ||
+           pointer_event.GetType() == WebInputEvent::Type::kPointerUp)
               ? WebPointerProperties::Button::kLeft
               : WebPointerProperties::Button::kNoButton;
 
@@ -2380,7 +2380,7 @@ void EventSender::GestureEvent(WebInputEvent::Type type,
   y += frame->GetPositionInViewportForTesting().y();
 
   switch (type) {
-    case WebInputEvent::kGestureScrollUpdate: {
+    case WebInputEvent::Type::kGestureScrollUpdate: {
       if (!GetScrollUnits(args, &event.data.scroll_update.delta_units))
         return;
 
@@ -2391,15 +2391,15 @@ void EventSender::GestureEvent(WebInputEvent::Type type,
                                        event.data.scroll_update.delta_y);
       break;
     }
-    case WebInputEvent::kGestureScrollBegin:
+    case WebInputEvent::Type::kGestureScrollBegin:
       current_gesture_location_ = gfx::PointF(x, y);
       event.SetPositionInWidget(current_gesture_location_);
       break;
-    case WebInputEvent::kGestureScrollEnd:
-    case WebInputEvent::kGestureFlingStart:
+    case WebInputEvent::Type::kGestureScrollEnd:
+    case WebInputEvent::Type::kGestureFlingStart:
       event.SetPositionInWidget(current_gesture_location_);
       break;
-    case WebInputEvent::kGestureTap: {
+    case WebInputEvent::Type::kGestureTap: {
       float tap_count = 1;
       float width = 30;
       float height = 30;
@@ -2427,7 +2427,7 @@ void EventSender::GestureEvent(WebInputEvent::Type type,
       event.SetPositionInWidget(gfx::PointF(x, y));
       break;
     }
-    case WebInputEvent::kGestureTapUnconfirmed:
+    case WebInputEvent::Type::kGestureTapUnconfirmed:
       if (!args->PeekNext().IsEmpty()) {
         float tap_count;
         if (!args->GetNext(&tap_count)) {
@@ -2440,7 +2440,7 @@ void EventSender::GestureEvent(WebInputEvent::Type type,
       }
       event.SetPositionInWidget(gfx::PointF(x, y));
       break;
-    case WebInputEvent::kGestureTapDown: {
+    case WebInputEvent::Type::kGestureTapDown: {
       float width = 30;
       float height = 30;
       if (!args->PeekNext().IsEmpty()) {
@@ -2460,7 +2460,7 @@ void EventSender::GestureEvent(WebInputEvent::Type type,
       event.data.tap_down.height = height;
       break;
     }
-    case WebInputEvent::kGestureShowPress: {
+    case WebInputEvent::Type::kGestureShowPress: {
       float width = 30;
       float height = 30;
       if (!args->PeekNext().IsEmpty()) {
@@ -2480,11 +2480,11 @@ void EventSender::GestureEvent(WebInputEvent::Type type,
       event.data.show_press.height = height;
       break;
     }
-    case WebInputEvent::kGestureTapCancel:
+    case WebInputEvent::Type::kGestureTapCancel:
       event.SetPositionInWidget(gfx::PointF(x, y));
       break;
-    case WebInputEvent::kGestureLongPress:
-    case WebInputEvent::kGestureLongTap:
+    case WebInputEvent::Type::kGestureLongPress:
+    case WebInputEvent::Type::kGestureLongTap:
       event.SetPositionInWidget(gfx::PointF(x, y));
       if (!args->PeekNext().IsEmpty()) {
         float width;
@@ -2503,7 +2503,7 @@ void EventSender::GestureEvent(WebInputEvent::Type type,
         }
       }
       break;
-    case WebInputEvent::kGestureTwoFingerTap:
+    case WebInputEvent::Type::kGestureTwoFingerTap:
       event.SetPositionInWidget(gfx::PointF(x, y));
       if (!args->PeekNext().IsEmpty()) {
         float first_finger_width;
@@ -2538,9 +2538,9 @@ void EventSender::GestureEvent(WebInputEvent::Type type,
   WebInputEventResult result = HandleInputEventOnViewOrPopup(event);
 
   // Long press might start a drag drop session. Complete it if so.
-  if (type == WebInputEvent::kGestureLongPress &&
+  if (type == WebInputEvent::Type::kGestureLongPress &&
       !current_drag_data_.IsNull()) {
-    WebMouseEvent mouse_event(WebInputEvent::kMouseDown,
+    WebMouseEvent mouse_event(WebInputEvent::Type::kMouseDown,
                               ModifiersForPointer(kRawMousePointerId),
                               GetCurrentEventTime());
 
@@ -2627,7 +2627,7 @@ WebMouseWheelEvent EventSender::GetMouseWheelEvent(gin::Arguments* args,
   }
 
   current_pointer_state_[kRawMousePointerId].modifiers_ = modifiers;
-  WebMouseWheelEvent event(WebInputEvent::kMouseWheel,
+  WebMouseWheelEvent event(WebInputEvent::Type::kMouseWheel,
                            ModifiersForPointer(kRawMousePointerId),
                            GetCurrentEventTime());
   InitMouseEvent(current_pointer_state_[kRawMousePointerId].pressed_button_,
@@ -2764,7 +2764,7 @@ void EventSender::ReplaySavedEvents() {
     switch (e.type) {
       case SavedEvent::TYPE_MOUSE_MOVE: {
         current_pointer_state_[kRawMousePointerId].modifiers_ = e.modifiers;
-        WebMouseEvent event(WebInputEvent::kMouseMove,
+        WebMouseEvent event(WebInputEvent::Type::kMouseMove,
                             ModifiersForPointer(kRawMousePointerId),
                             GetCurrentEventTime());
         InitMouseEvent(
@@ -2787,7 +2787,7 @@ void EventSender::ReplaySavedEvents() {
             WebMouseEvent::Button::kNoButton;
         current_pointer_state_[kRawMousePointerId].modifiers_ = e.modifiers;
 
-        WebMouseEvent event(WebInputEvent::kMouseUp,
+        WebMouseEvent event(WebInputEvent::Type::kMouseUp,
                             ModifiersForPointer(kRawMousePointerId),
                             GetCurrentEventTime());
         InitMouseEvent(
@@ -2820,7 +2820,7 @@ WebInputEventResult EventSender::HandleInputEventOnViewOrPopup(
 
 void EventSender::SendGesturesForMouseWheelEvent(
     const WebMouseWheelEvent wheel_event) {
-  WebGestureEvent begin_event(WebInputEvent::kGestureScrollBegin,
+  WebGestureEvent begin_event(WebInputEvent::Type::kGestureScrollBegin,
                               wheel_event.GetModifiers(), GetCurrentEventTime(),
                               blink::WebGestureDevice::kTouchpad);
   InitGestureEventFromMouseWheel(wheel_event, &begin_event);
@@ -2844,7 +2844,7 @@ void EventSender::SendGesturesForMouseWheelEvent(
   HandleInputEventOnViewOrPopup(begin_event);
 
   WebGestureEvent update_event(
-      WebInputEvent::kGestureScrollUpdate, wheel_event.GetModifiers(),
+      WebInputEvent::Type::kGestureScrollUpdate, wheel_event.GetModifiers(),
       GetCurrentEventTime(), blink::WebGestureDevice::kTouchpad);
   InitGestureEventFromMouseWheel(wheel_event, &update_event);
   update_event.data.scroll_update.delta_x =
@@ -2858,7 +2858,7 @@ void EventSender::SendGesturesForMouseWheelEvent(
     UpdateLifecycleToPrePaint();
   HandleInputEventOnViewOrPopup(update_event);
 
-  WebGestureEvent end_event(WebInputEvent::kGestureScrollEnd,
+  WebGestureEvent end_event(WebInputEvent::Type::kGestureScrollEnd,
                             wheel_event.GetModifiers(), GetCurrentEventTime(),
                             blink::WebGestureDevice::kTouchpad);
   InitGestureEventFromMouseWheel(wheel_event, &end_event);

@@ -57,7 +57,7 @@ namespace {
 cc::ScrollState CreateScrollStateForGesture(const WebGestureEvent& event) {
   cc::ScrollStateData scroll_state_data;
   switch (event.GetType()) {
-    case WebInputEvent::kGestureScrollBegin:
+    case WebInputEvent::Type::kGestureScrollBegin:
       scroll_state_data.position_x = event.PositionInWidget().x();
       scroll_state_data.position_y = event.PositionInWidget().y();
       scroll_state_data.delta_x_hint = -event.data.scroll_begin.delta_x_hint;
@@ -71,7 +71,7 @@ cc::ScrollState CreateScrollStateForGesture(const WebGestureEvent& event) {
       scroll_state_data.delta_granularity =
           event.data.scroll_begin.delta_hint_units;
       break;
-    case WebInputEvent::kGestureScrollUpdate:
+    case WebInputEvent::Type::kGestureScrollUpdate:
       scroll_state_data.delta_x = -event.data.scroll_update.delta_x;
       scroll_state_data.delta_y = -event.data.scroll_update.delta_y;
       scroll_state_data.velocity_x = event.data.scroll_update.velocity_x;
@@ -82,7 +82,7 @@ cc::ScrollState CreateScrollStateForGesture(const WebGestureEvent& event) {
       scroll_state_data.delta_granularity =
           event.data.scroll_update.delta_units;
       break;
-    case WebInputEvent::kGestureScrollEnd:
+    case WebInputEvent::Type::kGestureScrollEnd:
       scroll_state_data.is_ending = true;
       break;
     default:
@@ -122,11 +122,11 @@ cc::ScrollInputType GestureScrollInputType(blink::WebGestureDevice device) {
 cc::SnapFlingController::GestureScrollType GestureScrollEventType(
     WebInputEvent::Type web_event_type) {
   switch (web_event_type) {
-    case WebInputEvent::kGestureScrollBegin:
+    case WebInputEvent::Type::kGestureScrollBegin:
       return cc::SnapFlingController::GestureScrollType::kBegin;
-    case WebInputEvent::kGestureScrollUpdate:
+    case WebInputEvent::Type::kGestureScrollUpdate:
       return cc::SnapFlingController::GestureScrollType::kUpdate;
-    case WebInputEvent::kGestureScrollEnd:
+    case WebInputEvent::Type::kGestureScrollEnd:
       return cc::SnapFlingController::GestureScrollType::kEnd;
     default:
       NOTREACHED();
@@ -273,12 +273,14 @@ void InputHandlerProxy::HandleInputEventWithLatencyInfo(
   const auto& gesture_event = ToWebGestureEvent(event_with_callback->event());
   const bool is_first_gesture_scroll_update =
       !has_seen_first_gesture_scroll_update_after_begin_ &&
-      gesture_event.GetType() == blink::WebGestureEvent::kGestureScrollUpdate;
+      gesture_event.GetType() ==
+          blink::WebGestureEvent::Type::kGestureScrollUpdate;
 
-  if (gesture_event.GetType() == blink::WebGestureEvent::kGestureScrollBegin) {
+  if (gesture_event.GetType() ==
+      blink::WebGestureEvent::Type::kGestureScrollBegin) {
     has_seen_first_gesture_scroll_update_after_begin_ = false;
   } else if (gesture_event.GetType() ==
-             blink::WebGestureEvent::kGestureScrollUpdate) {
+             blink::WebGestureEvent::Type::kGestureScrollUpdate) {
     has_seen_first_gesture_scroll_update_after_begin_ = true;
   }
 
@@ -288,7 +290,8 @@ void InputHandlerProxy::HandleInputEventWithLatencyInfo(
         gesture_event.is_source_touch_event_set_non_blocking;
     bool is_scroll_end_from_wheel =
         gesture_event.SourceDevice() == blink::WebGestureDevice::kTouchpad &&
-        gesture_event.GetType() == blink::WebGestureEvent::kGestureScrollEnd;
+        gesture_event.GetType() ==
+            blink::WebGestureEvent::Type::kGestureScrollEnd;
     bool scroll_update_has_blocking_wheel_source =
         gesture_event.SourceDevice() == blink::WebGestureDevice::kTouchpad &&
         is_first_gesture_scroll_update;
@@ -347,15 +350,15 @@ void InputHandlerProxy::DispatchSingleInputEvent(
   const blink::WebInputEvent& event = event_with_callback->event();
   const blink::WebGestureEvent::Type type = event.GetType();
   switch (type) {
-    case blink::WebGestureEvent::kGestureScrollBegin:
-    case blink::WebGestureEvent::kGesturePinchBegin:
+    case blink::WebGestureEvent::Type::kGestureScrollBegin:
+    case blink::WebGestureEvent::Type::kGesturePinchBegin:
       if (disposition == DID_HANDLE || disposition == DID_HANDLE_SHOULD_BUBBLE)
         currently_active_gesture_device_ =
             static_cast<const WebGestureEvent&>(event).SourceDevice();
       break;
 
-    case blink::WebGestureEvent::kGestureScrollEnd:
-    case blink::WebGestureEvent::kGesturePinchEnd:
+    case blink::WebGestureEvent::Type::kGestureScrollEnd:
+    case blink::WebGestureEvent::Type::kGesturePinchEnd:
       if (!handling_gesture_on_impl_thread_)
         currently_active_gesture_device_ = base::nullopt;
       break;
@@ -366,11 +369,11 @@ void InputHandlerProxy::DispatchSingleInputEvent(
   // Handle jank tracking during the momentum phase of a scroll gesture. The
   // class filters non-momentum events internally.
   switch (type) {
-    case blink::WebGestureEvent::kGestureScrollBegin:
+    case blink::WebGestureEvent::Type::kGestureScrollBegin:
       momentum_scroll_jank_tracker_ =
           std::make_unique<MomentumScrollJankTracker>();
       break;
-    case blink::WebGestureEvent::kGestureScrollUpdate:
+    case blink::WebGestureEvent::Type::kGestureScrollUpdate:
       // It's possible to get a scroll update without a begin. Ignore these
       // cases.
       if (momentum_scroll_jank_tracker_) {
@@ -378,7 +381,7 @@ void InputHandlerProxy::DispatchSingleInputEvent(
             event_with_callback.get(), now);
       }
       break;
-    case blink::WebGestureEvent::kGestureScrollEnd:
+    case blink::WebGestureEvent::Type::kGestureScrollEnd:
       momentum_scroll_jank_tracker_.reset();
       break;
     default:
@@ -495,28 +498,28 @@ InputHandlerProxy::RouteToTypeSpecificHandler(
   }
 
   switch (event.GetType()) {
-    case WebInputEvent::kMouseWheel:
+    case WebInputEvent::Type::kMouseWheel:
       return HandleMouseWheel(static_cast<const WebMouseWheelEvent&>(event));
 
-    case WebInputEvent::kGestureScrollBegin:
+    case WebInputEvent::Type::kGestureScrollBegin:
       return HandleGestureScrollBegin(
           static_cast<const WebGestureEvent&>(event));
 
-    case WebInputEvent::kGestureScrollUpdate:
+    case WebInputEvent::Type::kGestureScrollUpdate:
       return HandleGestureScrollUpdate(
           static_cast<const WebGestureEvent&>(event), original_attribution);
 
-    case WebInputEvent::kGestureScrollEnd:
+    case WebInputEvent::Type::kGestureScrollEnd:
       return HandleGestureScrollEnd(static_cast<const WebGestureEvent&>(event));
 
-    case WebInputEvent::kGesturePinchBegin: {
+    case WebInputEvent::Type::kGesturePinchBegin: {
       DCHECK(!gesture_pinch_in_progress_);
       input_handler_->PinchGestureBegin();
       gesture_pinch_in_progress_ = true;
       return DID_HANDLE;
     }
 
-    case WebInputEvent::kGesturePinchEnd: {
+    case WebInputEvent::Type::kGesturePinchEnd: {
       DCHECK(gesture_pinch_in_progress_);
       gesture_pinch_in_progress_ = false;
       const WebGestureEvent& gesture_event =
@@ -527,7 +530,7 @@ InputHandlerProxy::RouteToTypeSpecificHandler(
       return DID_HANDLE;
     }
 
-    case WebInputEvent::kGesturePinchUpdate: {
+    case WebInputEvent::Type::kGesturePinchUpdate: {
       DCHECK(gesture_pinch_in_progress_);
       const WebGestureEvent& gesture_event =
           static_cast<const WebGestureEvent&>(event);
@@ -537,16 +540,16 @@ InputHandlerProxy::RouteToTypeSpecificHandler(
       return DID_HANDLE;
     }
 
-    case WebInputEvent::kTouchStart:
+    case WebInputEvent::Type::kTouchStart:
       return HandleTouchStart(static_cast<const WebTouchEvent&>(event));
 
-    case WebInputEvent::kTouchMove:
+    case WebInputEvent::Type::kTouchMove:
       return HandleTouchMove(static_cast<const WebTouchEvent&>(event));
 
-    case WebInputEvent::kTouchEnd:
+    case WebInputEvent::Type::kTouchEnd:
       return HandleTouchEnd(static_cast<const WebTouchEvent&>(event));
 
-    case WebInputEvent::kMouseDown: {
+    case WebInputEvent::Type::kMouseDown: {
       // Only for check scrollbar captured
       const WebMouseEvent& mouse_event =
           static_cast<const WebMouseEvent&>(event);
@@ -607,7 +610,7 @@ InputHandlerProxy::RouteToTypeSpecificHandler(
 
       return DID_NOT_HANDLE;
     }
-    case WebInputEvent::kMouseUp: {
+    case WebInputEvent::Type::kMouseUp: {
       // Only for release scrollbar captured
       const WebMouseEvent& mouse_event =
           static_cast<const WebMouseEvent&>(event);
@@ -631,7 +634,7 @@ InputHandlerProxy::RouteToTypeSpecificHandler(
       }
       return DID_NOT_HANDLE;
     }
-    case WebInputEvent::kMouseMove: {
+    case WebInputEvent::Type::kMouseMove: {
       const WebMouseEvent& mouse_event =
           static_cast<const WebMouseEvent&>(event);
       // TODO(davemoore): This should never happen, but bug #326635 showed some
@@ -658,15 +661,15 @@ InputHandlerProxy::RouteToTypeSpecificHandler(
       }
       return DID_NOT_HANDLE;
     }
-    case WebInputEvent::kMouseLeave: {
+    case WebInputEvent::Type::kMouseLeave: {
       CHECK(input_handler_);
       input_handler_->MouseLeave();
       return DID_NOT_HANDLE;
     }
     // Fling gestures are handled only in the browser process and not sent to
     // the renderer.
-    case WebInputEvent::kGestureFlingStart:
-    case WebInputEvent::kGestureFlingCancel:
+    case WebInputEvent::Type::kGestureFlingStart:
+    case WebInputEvent::Type::kGestureFlingCancel:
       NOTREACHED();
       break;
 
@@ -684,7 +687,7 @@ blink::WebInputEventAttribution InputHandlerProxy::PerformEventAttribution(
     return blink::WebInputEventAttribution(
         blink::WebInputEventAttribution::kFocusedFrame);
   } else if (blink::WebInputEvent::IsMouseEventType(event.GetType()) ||
-             event.GetType() == WebInputEvent::kMouseWheel) {
+             event.GetType() == WebInputEvent::Type::kMouseWheel) {
     // Mouse events are dispatched based on their location in the DOM tree.
     // Perform frame attribution via cc.
     // TODO(acomminos): handle pointer locks, or provide a hint to the renderer
@@ -1029,8 +1032,8 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HitTestTouchEvent(
     else
       DCHECK(!white_listed_touch_action);
 
-    if (touch_event.GetType() == WebInputEvent::kTouchStart &&
-        touch_event.touches[i].state != WebTouchPoint::kStatePressed) {
+    if (touch_event.GetType() == WebInputEvent::Type::kTouchStart &&
+        touch_event.touches[i].state != WebTouchPoint::State::kStatePressed) {
       continue;
     }
 
@@ -1110,7 +1113,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HitTestTouchEvent(
   if (result == DROP_EVENT &&
       (skip_touch_filter_all_ ||
        (skip_touch_filter_discrete_ &&
-        touch_event.GetType() == WebInputEvent::kTouchStart))) {
+        touch_event.GetType() == WebInputEvent::Type::kTouchStart))) {
     TRACE_EVENT_INSTANT0("input", "Non blocking due to skip filter",
                          TRACE_EVENT_SCOPE_THREAD);
     result = DID_HANDLE_NON_BLOCKING;

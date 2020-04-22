@@ -838,27 +838,23 @@ enum MoveDirection {
   kNone = kForward
 };
 
-// Describes the edit command that resulted in a text changed event.
-enum EditCommand {
+// Describes the edit or selection command that resulted in a selection or a
+// text changed event.
+enum Command {
+  kClearSelection,
   kCut,
   kDelete,
   kDictate,
-  kFormat,  // Only the text attributes, such as font size, have changed.
+  kExtendSelection,
+  kFormat,  // The text attributes, such as font size, have changed.
   kInsert,
-  kMarker,  // Only a document marker has been added or removed.
+  kMarker,  // A document marker has been added or removed.
   kPaste,
   kReplace,
+  kSetSelection,  // A completely new selection has been set.
+  kShrinkSelection,
   kType,
   kNone = kType
-};
-
-// Describes the selection command that resulted in a selection changed event.
-enum SelectionCommand {
-  kClear,
-  kShrink,
-  kExtend,
-  kSet,  // Sets a completely new selection.
-  kNone = kSet
 };
 
 // Defines a set of text boundaries in the accessibility tree.

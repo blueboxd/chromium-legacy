@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/callback_forward.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/threading/simple_thread.h"
 #include "build/build_config.h"
@@ -37,8 +38,9 @@ static constexpr mojom::SensorType kOrientationSensorType =
 #endif
 
 // This class connects the orientation sensor events to the Web VR apis.
-class DEVICE_VR_EXPORT VROrientationDevice : public VRDeviceBase,
-                                             public mojom::SensorClient {
+class COMPONENT_EXPORT(VR_ORIENTATION) VROrientationDevice
+    : public VRDeviceBase,
+      public mojom::SensorClient {
  public:
   VROrientationDevice(mojom::SensorProvider* sensor_provider,
                       base::OnceClosure ready_callback);

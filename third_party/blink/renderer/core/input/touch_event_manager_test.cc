@@ -61,19 +61,19 @@ TEST_F(TouchEventManagerTest, LostTouchDueToInnerIframeRemove) {
                                          callback);
 
   GetEventHandler().HandlePointerEvent(
-      CreateTouchPointerEvent(WebInputEvent::kPointerDown),
+      CreateTouchPointerEvent(WebInputEvent::Type::kPointerDown),
       Vector<WebPointerEvent>(), Vector<WebPointerEvent>());
   GetEventHandler().DispatchBufferedTouchEvents();
 
   GetDocument().getElementById("target")->remove();
 
   GetEventHandler().HandlePointerEvent(
-      CreateTouchPointerEvent(WebInputEvent::kPointerUp),
+      CreateTouchPointerEvent(WebInputEvent::Type::kPointerUp),
       Vector<WebPointerEvent>(), Vector<WebPointerEvent>());
   GetEventHandler().DispatchBufferedTouchEvents();
 
   GetEventHandler().HandlePointerEvent(
-      CreateTouchPointerEvent(WebInputEvent::kPointerDown),
+      CreateTouchPointerEvent(WebInputEvent::Type::kPointerDown),
       Vector<WebPointerEvent>(), Vector<WebPointerEvent>());
   GetEventHandler().DispatchBufferedTouchEvents();
 
@@ -94,7 +94,7 @@ TEST_F(TouchEventManagerTest, AbosolutePosWithScrollAndZoom) {
   Window().scrollTo(100, 100);
 
   GetEventHandler().HandlePointerEvent(
-      CreateTouchPointerEvent(WebInputEvent::kPointerDown),
+      CreateTouchPointerEvent(WebInputEvent::Type::kPointerDown),
       Vector<WebPointerEvent>(), Vector<WebPointerEvent>());
   GetEventHandler().DispatchBufferedTouchEvents();
 

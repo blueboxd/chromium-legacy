@@ -546,7 +546,7 @@ TEST_F(BlockTabUnderTest, TabUnderWithSubsequentGesture_IsNotBlocked) {
   // members.
   static_cast<content::WebContentsObserver*>(
       PopupOpenerTabHelper::FromWebContents(web_contents()))
-      ->DidGetUserInteraction(blink::WebInputEvent::kMouseDown);
+      ->DidGetUserInteraction(blink::WebInputEvent::Type::kMouseDown);
 
   // A subsequent navigation should be allowed, even if it is classified as a
   // suspicious redirect.

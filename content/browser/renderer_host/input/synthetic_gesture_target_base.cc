@@ -60,7 +60,7 @@ void SyntheticGestureTargetBase::DispatchInputEventToPlatform(
       }
     }
     DispatchWebTouchEventToPlatform(web_touch, latency_info);
-  } else if (event.GetType() == WebInputEvent::kMouseWheel) {
+  } else if (event.GetType() == WebInputEvent::Type::kMouseWheel) {
     const WebMouseWheelEvent& web_wheel =
         static_cast<const WebMouseWheelEvent&>(event);
     if (!PointIsWithinContents(web_wheel.PositionInWidget())) {
@@ -84,7 +84,7 @@ void SyntheticGestureTargetBase::DispatchInputEventToPlatform(
   } else if (WebInputEvent::IsMouseEventType(event.GetType())) {
     const WebMouseEvent& web_mouse =
         static_cast<const WebMouseEvent&>(event);
-    if (event.GetType() == WebInputEvent::kMouseDown &&
+    if (event.GetType() == WebInputEvent::Type::kMouseDown &&
         !PointIsWithinContents(web_mouse.PositionInWidget())) {
       LOG(WARNING)
           << "Mouse pointer is not within content bounds on MouseDown.";
@@ -96,7 +96,7 @@ void SyntheticGestureTargetBase::DispatchInputEventToPlatform(
         static_cast<const WebGestureEvent&>(event);
     // Touchscreen pinches should be injected as touch events.
     DCHECK_EQ(blink::WebGestureDevice::kTouchpad, web_pinch.SourceDevice());
-    if (event.GetType() == WebInputEvent::kGesturePinchBegin &&
+    if (event.GetType() == WebInputEvent::Type::kGesturePinchBegin &&
         !PointIsWithinContents(web_pinch.PositionInWidget())) {
       LOG(WARNING)
           << "Pinch coordinates are not within content bounds on PinchBegin.";
@@ -108,7 +108,7 @@ void SyntheticGestureTargetBase::DispatchInputEventToPlatform(
         static_cast<const WebGestureEvent&>(event);
     // Touchscreen swipe should be injected as touch events.
     DCHECK_EQ(blink::WebGestureDevice::kTouchpad, web_fling.SourceDevice());
-    if (event.GetType() == WebInputEvent::kGestureFlingStart &&
+    if (event.GetType() == WebInputEvent::Type::kGestureFlingStart &&
         !PointIsWithinContents(web_fling.PositionInWidget())) {
       LOG(WARNING)
           << "Fling coordinates are not within content bounds on FlingStart.";

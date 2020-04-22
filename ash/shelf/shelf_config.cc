@@ -313,7 +313,7 @@ float ShelfConfig::drag_hide_ratio_threshold() const {
   return kDragHideRatioThreshold;
 }
 
-void ShelfConfig::UpdateConfig(bool app_list_visible) {
+void ShelfConfig::UpdateConfig(bool new_is_app_list_visible) {
   const gfx::Rect screen_size =
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
 
@@ -339,24 +339,24 @@ void ShelfConfig::UpdateConfig(bool app_list_visible) {
   // If the virtual keyboard is shown, the back button and in-app shelf should
   // be shown so users can exit the keyboard. SystemTrayModel may be null in
   // tests.
-  const bool virtual_keyboard_shown =
+  const bool new_is_virtual_keyboard_shown =
       Shell::Get()->system_tray_model()
           ? Shell::Get()->system_tray_model()->virtual_keyboard()->visible()
           : false;
 
   in_tablet_mode_ = in_tablet_mode;
 
-  if (new_is_dense == is_dense_ &&
+  if (is_dense_ == new_is_dense &&
       shelf_controls_shown_ == new_shelf_controls_shown &&
-      is_virtual_keyboard_shown_ == virtual_keyboard_shown &&
-      is_app_list_visible_ == app_list_visible) {
+      is_virtual_keyboard_shown_ == new_is_virtual_keyboard_shown &&
+      is_app_list_visible_ == new_is_app_list_visible) {
     return;
   }
 
   is_dense_ = new_is_dense;
   shelf_controls_shown_ = new_shelf_controls_shown;
-  is_virtual_keyboard_shown_ = virtual_keyboard_shown;
-  is_app_list_visible_ = app_list_visible;
+  is_virtual_keyboard_shown_ = new_is_virtual_keyboard_shown;
+  is_app_list_visible_ = new_is_app_list_visible;
 
   OnShelfConfigUpdated();
 }

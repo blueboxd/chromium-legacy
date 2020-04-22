@@ -139,18 +139,25 @@ class MediaHistoryKeyedService : public KeyedService,
   // and we will also populate the |origin_audio_video_watchtime_percentile|
   // field in |MediaFeedPtr|. If |limit| is specified then we will limit the
   // number of results to this. If |audio_video_watchtime_min| is specified then
-  // this will require a minimum watchtime for feeds to be returned.
+  // this will require a minimum watchtime for feeds to be returned. If
+  // |fetched_items_min| is specified then we will require a minimum number
+  // of fetched items. If |fetched_items_min_should_be_safe| is true then
+  // the fetched items must have been confirmed by Safe Search to be safe.
   struct GetMediaFeedsRequest {
     GetMediaFeedsRequest(
         bool include_origin_watchtime_percentile_data,
         base::Optional<unsigned> limit,
-        base::Optional<base::TimeDelta> audio_video_watchtime_min);
+        base::Optional<base::TimeDelta> audio_video_watchtime_min,
+        base::Optional<int> fetched_items_min,
+        bool fetched_items_min_should_be_safe);
     GetMediaFeedsRequest();
     GetMediaFeedsRequest(const GetMediaFeedsRequest& t);
 
     bool include_origin_watchtime_percentile_data = false;
     base::Optional<unsigned> limit;
     base::Optional<base::TimeDelta> audio_video_watchtime_min;
+    base::Optional<int> fetched_items_min;
+    bool fetched_items_min_should_be_safe = false;
   };
   void GetMediaFeeds(
       const GetMediaFeedsRequest& request,

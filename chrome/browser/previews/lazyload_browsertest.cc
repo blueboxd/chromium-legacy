@@ -118,23 +118,9 @@ class LazyLoadBrowserTest : public InProcessBrowserTest {
     ASSERT_TRUE(embedded_test_server()->Start());
   }
 
-  void SetUpURLMonitor() {
-    embedded_test_server()->RegisterRequestMonitor(base::Bind(
-        [](std::vector<std::string>* request_paths,
-           const net::test_server::HttpRequest& request) {
-          request_paths->push_back(request.relative_url);
-        },
-        &request_paths_));
-  }
-
-  const std::vector<std::string>& request_paths() const {
-    return request_paths_;
-  }
-
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
   net::EmbeddedTestServer cross_origin_server_;
-  std::vector<std::string> request_paths_;
 };
 
 IN_PROC_BROWSER_TEST_F(LazyLoadBrowserTest, CSSBackgroundImageDeferred) {
@@ -399,58 +385,43 @@ IN_PROC_BROWSER_TEST_F(LazyLoadDisabledBrowserTest,
                               ExpectedLazyLoadAction::kExplicitOnly);
 }
 
-class LazyLoadPrerenderBrowserTest : public LazyLoadBrowserTest {
+class LazyLoadPrerenderBrowserTest
+    : public prerender::test_utils::PrerenderInProcessBrowserTest {
  public:
   void SetUpOnMainThread() override {
-    LazyLoadBrowserTest::SetUpOnMainThread();
-
+    prerender::test_utils::PrerenderInProcessBrowserTest::SetUpOnMainThread();
     prerender::PrerenderManager::SetMode(
         prerender::PrerenderManager::PRERENDER_MODE_NOSTATE_PREFETCH);
   }
+  void EnableDataSaver(bool enabled) {
+    data_reduction_proxy::DataReductionProxySettings::
+        SetDataSaverEnabledForTesting(browser()->profile()->GetPrefs(),
+                                      enabled);
+    base::RunLoop().RunUntilIdle();
+  }
 };
 
-IN_PROC_BROWSER_TEST_F(LazyLoadPrerenderBrowserTest, DISABLED_ImagesIgnored) {
+IN_PROC_BROWSER_TEST_F(LazyLoadPrerenderBrowserTest, ImagesIgnored) {
   EnableDataSaver(true);
-  SetUpURLMonitor();
-  ASSERT_TRUE(embedded_test_server()->Start());
-  GURL test_url(embedded_test_server()->GetURL("/lazyload/img.html"));
-
-  prerender::PrerenderManager* prerender_manager =
-      prerender::PrerenderManagerFactory::GetForBrowserContext(
-          browser()->profile());
-  ASSERT_TRUE(prerender_manager);
-
-  prerender::test_utils::TestPrerenderContentsFactory*
-      prerender_contents_factory =
-          new prerender::test_utils::TestPrerenderContentsFactory();
-  prerender_manager->SetPrerenderContentsFactoryForTest(
-      prerender_contents_factory);
-
-  content::SessionStorageNamespace* storage_namespace =
-      browser()
-          ->tab_strip_model()
-          ->GetActiveWebContents()
-          ->GetController()
-          .GetDefaultSessionStorageNamespace();
-  ASSERT_TRUE(storage_namespace);
+  UseHttpsSrcServer();
 
   std::unique_ptr<prerender::test_utils::TestPrerender> test_prerender =
-      prerender_contents_factory->ExpectPrerenderContents(
+      prerender_contents_factory()->ExpectPrerenderContents(
           prerender::FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
 
   std::unique_ptr<prerender::PrerenderHandle> prerender_handle =
-      prerender_manager->AddPrerenderFromOmnibox(test_url, storage_namespace,
-                                                 gfx::Size(640, 480));
+      GetPrerenderManager()->AddPrerenderFromOmnibox(
+          src_server()->GetURL("/lazyload/img.html"),
+          GetSessionStorageNamespace(), gfx::Size(640, 480));
 
   ASSERT_EQ(prerender_handle->contents(), test_prerender->contents());
 
   test_prerender->WaitForStop();
-  EXPECT_THAT(request_paths(),
-              testing::UnorderedElementsAre(
-                  "/lazyload/img.html", "/lazyload/images/fruit1.jpg?auto",
-                  "/lazyload/images/fruit1.jpg?lazy",
-                  "/lazyload/images/fruit1.jpg?eager",
-                  "/lazyload/images/fruit2.jpg?auto",
-                  "/lazyload/images/fruit2.jpg?lazy",
-                  "/lazyload/images/fruit2.jpg?eager"));
+  for (const auto* url :
+       {"/lazyload/img.html", "/lazyload/images/fruit1.jpg?auto",
+        "/lazyload/images/fruit1.jpg?lazy", "/lazyload/images/fruit1.jpg?eager",
+        "/lazyload/images/fruit2.jpg?auto", "/lazyload/images/fruit2.jpg?lazy",
+        "/lazyload/images/fruit2.jpg?eager"}) {
+    WaitForRequestCount(src_server()->GetURL(url), 1);
+  }
 }

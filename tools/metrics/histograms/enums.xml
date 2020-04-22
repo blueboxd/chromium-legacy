@@ -33669,6 +33669,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="3" label="PERSONAL_PHONE_NUMBER"/>
   <int value="4" label="PERSONAL_NAME"/>
   <int value="5" label="EMOJI"/>
+  <int value="6" label="ASSISTIVE_AUTOCORRECT"/>
 </enum>
 
 <enum name="IMECommitType">

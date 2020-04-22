@@ -11,6 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "net/base/escape.h"
 #include "net/base/url_util.h"
 #include "url/gurl.h"
@@ -21,6 +22,9 @@ namespace util {
 
 namespace {
 
+using chromeos::assistant::mojom::AssistantEntryPoint;
+using chromeos::assistant::mojom::AssistantQuerySource;
+
 // Supported deep link param keys. These values must be kept in sync with the
 // server. See more details at go/cros-assistant-deeplink.
 constexpr char kActionParamKey[] = "action";
@@ -28,10 +32,12 @@ constexpr char kCategoryParamKey[] = "category";
 constexpr char kClientIdParamKey[] = "clientId";
 constexpr char kDurationMsParamKey[] = "durationMs";
 constexpr char kEidParamKey[] = "eid";
+constexpr char kEntryPointParamKey[] = "entryPoint";
 constexpr char kHrefParamKey[] = "href";
 constexpr char kIdParamKey[] = "id";
 constexpr char kIndexParamKey[] = "index";
 constexpr char kQueryParamKey[] = "q";
+constexpr char kQuerySourceParamKey[] = "querySource";
 constexpr char kPageParamKey[] = "page";
 constexpr char kRelaunchParamKey[] = "relaunch";
 constexpr char kSourceParamKey[] = "source";
@@ -71,9 +77,70 @@ constexpr char kAssistantTaskManagerPrefix[] = "googleassistant://task-manager";
 constexpr char kAssistantWhatsOnMyScreenPrefix[] =
     "googleassistant://whats-on-my-screen";
 
+// Helpers ---------------------------------------------------------------------
+
+std::string GetDeepLinkParamKey(DeepLinkParam param) {
+  switch (param) {
+    case DeepLinkParam::kAction:
+      return kActionParamKey;
+    case DeepLinkParam::kCategory:
+      return kCategoryParamKey;
+    case DeepLinkParam::kClientId:
+      return kClientIdParamKey;
+    case DeepLinkParam::kDurationMs:
+      return kDurationMsParamKey;
+    case DeepLinkParam::kEid:
+      return kEidParamKey;
+    case DeepLinkParam::kEntryPoint:
+      return kEntryPointParamKey;
+    case DeepLinkParam::kHref:
+      return kHrefParamKey;
+    case DeepLinkParam::kId:
+      return kIdParamKey;
+    case DeepLinkParam::kIndex:
+      return kIndexParamKey;
+    case DeepLinkParam::kPage:
+      return kPageParamKey;
+    case DeepLinkParam::kQuery:
+      return kQueryParamKey;
+    case DeepLinkParam::kQuerySource:
+      return kQuerySourceParamKey;
+    case DeepLinkParam::kRelaunch:
+      return kRelaunchParamKey;
+    case DeepLinkParam::kType:
+      return kTypeParamKey;
+    case DeepLinkParam::kVeId:
+      return kVeIdParamKey;
+  }
+  NOTREACHED();
+  return std::string();
+}
+
+GURL AppendOrReplaceDeepLinkParam(const GURL& deep_link,
+                                  DeepLinkParam param,
+                                  const std::string& value) {
+  DCHECK(IsDeepLinkUrl(deep_link));
+  const std::string key = GetDeepLinkParamKey(param);
+  return net::AppendOrReplaceQueryParameter(deep_link, key, value);
+}
+
 }  // namespace
 
 // Utilities -------------------------------------------------------------------
+
+GURL AppendOrReplaceEntryPointParam(const GURL& deep_link,
+                                    AssistantEntryPoint entry_point) {
+  return AppendOrReplaceDeepLinkParam(
+      deep_link, DeepLinkParam::kEntryPoint,
+      base::NumberToString(static_cast<int>(entry_point)));
+}
+
+GURL AppendOrReplaceQuerySourceParam(const GURL& deep_link,
+                                     AssistantQuerySource query_source) {
+  return AppendOrReplaceDeepLinkParam(
+      deep_link, DeepLinkParam::kQuerySource,
+      base::NumberToString(static_cast<int>(query_source)));
+}
 
 base::Optional<GURL> CreateAlarmTimerDeepLink(
     AlarmTimerAction action,
@@ -151,23 +218,7 @@ std::map<std::string, std::string> GetDeepLinkParams(const GURL& deep_link) {
 base::Optional<std::string> GetDeepLinkParam(
     const std::map<std::string, std::string>& params,
     DeepLinkParam param) {
-  // Map of supported deep link params to their keys.
-  static const std::map<DeepLinkParam, std::string> kDeepLinkParamKeys = {
-      {DeepLinkParam::kAction, kActionParamKey},
-      {DeepLinkParam::kCategory, kCategoryParamKey},
-      {DeepLinkParam::kClientId, kClientIdParamKey},
-      {DeepLinkParam::kDurationMs, kDurationMsParamKey},
-      {DeepLinkParam::kEid, kEidParamKey},
-      {DeepLinkParam::kHref, kHrefParamKey},
-      {DeepLinkParam::kId, kIdParamKey},
-      {DeepLinkParam::kIndex, kIndexParamKey},
-      {DeepLinkParam::kPage, kPageParamKey},
-      {DeepLinkParam::kQuery, kQueryParamKey},
-      {DeepLinkParam::kRelaunch, kRelaunchParamKey},
-      {DeepLinkParam::kType, kTypeParamKey},
-      {DeepLinkParam::kVeId, kVeIdParamKey}};
-
-  const std::string& key = kDeepLinkParamKeys.at(param);
+  const std::string key = GetDeepLinkParamKey(param);
   const auto it = params.find(key);
   return it != params.end()
              ? base::Optional<std::string>(net::UnescapeBinaryURLComponent(
@@ -202,6 +253,17 @@ base::Optional<bool> GetDeepLinkParamAsBool(
     return false;
 
   return base::nullopt;
+}
+
+base::Optional<AssistantEntryPoint> GetDeepLinkParamAsEntryPoint(
+    const std::map<std::string, std::string>& params,
+    DeepLinkParam param) {
+  const base::Optional<int> value = GetDeepLinkParamAsInt(params, param);
+  if (!value.has_value() || (value.value() < 0) ||
+      (value.value() > static_cast<int>(AssistantEntryPoint::kMaxValue))) {
+    return base::nullopt;
+  }
+  return static_cast<AssistantEntryPoint>(value.value());
 }
 
 base::Optional<GURL> GetDeepLinkParamAsGURL(
@@ -251,6 +313,17 @@ GetDeepLinkParamAsProactiveSuggestionsAction(
   if (value == kViewImpression)
     return ProactiveSuggestionsAction::kViewImpression;
   return base::nullopt;
+}
+
+base::Optional<AssistantQuerySource> GetDeepLinkParamAsQuerySource(
+    const std::map<std::string, std::string>& params,
+    DeepLinkParam param) {
+  const base::Optional<int> value = GetDeepLinkParamAsInt(params, param);
+  if (!value.has_value() || (value.value() < 0) ||
+      (value.value() > static_cast<int>(AssistantQuerySource::kMaxValue))) {
+    return base::nullopt;
+  }
+  return static_cast<AssistantQuerySource>(value.value());
 }
 
 base::Optional<ReminderAction> GetDeepLinkParamAsRemindersAction(

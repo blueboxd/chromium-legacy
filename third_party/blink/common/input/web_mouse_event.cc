@@ -20,8 +20,8 @@ WebMouseEvent::WebMouseEvent(WebInputEvent::Type type,
                            WebPointerProperties::PointerType::kMouse,
                            button_param),
       click_count(click_count_param) {
-  DCHECK_GE(type, kMouseTypeFirst);
-  DCHECK_LE(type, kMouseTypeLast);
+  DCHECK_GE(type, Type::kMouseTypeFirst);
+  DCHECK_LE(type, Type::kMouseTypeLast);
   SetPositionInWidget(gesture_event.PositionInWidget());
   SetPositionInScreen(gesture_event.PositionInScreen());
   SetFrameScale(gesture_event.FrameScale());
@@ -52,15 +52,15 @@ void WebMouseEvent::FlattenTransformSelf() {
 
 void WebMouseEvent::SetMenuSourceType(WebInputEvent::Type type) {
   switch (type) {
-    case kGestureTapDown:
-    case kGestureTap:
-    case kGestureDoubleTap:
+    case Type::kGestureTapDown:
+    case Type::kGestureTap:
+    case Type::kGestureDoubleTap:
       menu_source_type = kMenuSourceTouch;
       break;
-    case kGestureLongPress:
+    case Type::kGestureLongPress:
       menu_source_type = kMenuSourceLongPress;
       break;
-    case kGestureLongTap:
+    case Type::kGestureLongTap:
       menu_source_type = kMenuSourceLongTap;
       break;
     default:

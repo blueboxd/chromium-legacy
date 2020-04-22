@@ -294,9 +294,6 @@ class LEVELDB_EXPORT DBTracker {
       base::trace_event::ProcessMemoryDump* pmd,
       leveldb::Env* tracked_memenv);
 
-  // Report counts to UMA.
-  void UpdateHistograms();
-
   // Provides extra information about a tracked database.
   class TrackedDB : public leveldb::DB {
    public:

@@ -209,7 +209,6 @@ class MEDIA_EXPORT VideoFrameMetadata {
   void SetTimeTicks(Key key, const base::TimeTicks& value);
   void SetUnguessableToken(Key key, const base::UnguessableToken& value);
   void SetRect(Key key, const gfx::Rect& value);
-  void SetValue(Key key, std::unique_ptr<base::Value> value);
 
   // Getters.  Returns true if |key| is present, and its value has been set.
   bool GetBoolean(Key key, bool* value) const WARN_UNUSED_RESULT;
@@ -222,16 +221,11 @@ class MEDIA_EXPORT VideoFrameMetadata {
   bool GetUnguessableToken(Key key, base::UnguessableToken* value) const
       WARN_UNUSED_RESULT;
   bool GetRect(Key key, gfx::Rect* value) const WARN_UNUSED_RESULT;
-  // Returns null if |key| was not present or value was not a ListValue.
-  const base::ListValue* GetList(Key key) const WARN_UNUSED_RESULT;
-  // Returns null if |key| was not present.
-  const base::Value* GetValue(Key key) const WARN_UNUSED_RESULT;
 
   // Convenience method that returns true if |key| exists and is set to true.
   bool IsTrue(Key key) const WARN_UNUSED_RESULT;
 
   // For serialization.
-  std::unique_ptr<base::DictionaryValue> CopyInternalValues() const;
   void MergeInternalValuesFrom(const base::Value& in);
   const base::Value& GetInternalValues() const { return dictionary_; }
 
@@ -239,8 +233,6 @@ class MEDIA_EXPORT VideoFrameMetadata {
   void MergeMetadataFrom(const VideoFrameMetadata* metadata_source);
 
  private:
-  const base::Value* GetBinaryValue(Key key) const;
-
   base::DictionaryValue dictionary_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoFrameMetadata);

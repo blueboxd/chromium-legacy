@@ -334,6 +334,7 @@ test("device_unittests") {
     deps += [
       "//device/vr",
       "//device/vr:vr_fakes",
+      "//device/vr/orientation",
       "//device/vr/public/mojom",
       "//services/device/public/cpp/generic_sensor",
       "//ui/display",

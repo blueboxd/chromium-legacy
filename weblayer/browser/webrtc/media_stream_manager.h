@@ -5,6 +5,7 @@
 #ifndef WEBLAYER_BROWSER_WEBRTC_MEDIA_STREAM_MANAGER_H_
 #define WEBLAYER_BROWSER_WEBRTC_MEDIA_STREAM_MANAGER_H_
 
+#include <map>
 #include <set>
 
 #include "base/android/scoped_java_ref.h"
@@ -21,6 +22,12 @@ namespace weblayer {
 // On Android, this class tracks active media streams and updates the Java
 // object of the same name as streams come and go. The class is created and
 // destroyed by the Java object.
+//
+// When a site requests a new stream, this class passes off the request to
+// MediaStreamDevicesController, which handles Android permissions as well as
+// per-site permissions. If that succeeds, the request is passed off to the
+// embedder by way of MediaCaptureCallback, at which point the response is
+// returned in |OnClientReadyToStream|.
 class MediaStreamManager {
  public:
   // It's expected that |j_web_contents| outlasts |this|.
@@ -38,6 +45,12 @@ class MediaStreamManager {
   void RequestMediaAccessPermission(const content::MediaStreamRequest& request,
                                     content::MediaResponseCallback callback);
 
+  // The embedder has responded to the stream request.
+  void OnClientReadyToStream(JNIEnv* env, int request_id, bool allowed);
+
+  // The embedder has requested all streams be stopped.
+  void StopStreaming(JNIEnv* env);
+
  private:
   class StreamUi;
 
@@ -54,6 +67,25 @@ class MediaStreamManager {
   void Update();
 
   std::set<StreamUi*> active_streams_;
+
+  // Represents a user-approved request for which we're waiting on embedder
+  // approval.
+  struct RequestPendingClientApproval {
+    RequestPendingClientApproval();
+    RequestPendingClientApproval(content::MediaResponseCallback callback,
+                                 const blink::MediaStreamDevices& devices,
+                                 blink::mojom::MediaStreamRequestResult result);
+    ~RequestPendingClientApproval();
+
+    RequestPendingClientApproval& operator=(
+        RequestPendingClientApproval&& other);
+
+    content::MediaResponseCallback callback;
+    blink::MediaStreamDevices devices;
+    blink::mojom::MediaStreamRequestResult result;
+  };
+  std::map<int, RequestPendingClientApproval> requests_pending_client_approval_;
+  int next_request_id_ = 0;
 
   base::android::ScopedJavaGlobalRef<jobject> j_object_;
 

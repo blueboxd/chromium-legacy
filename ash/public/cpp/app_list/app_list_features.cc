@@ -60,6 +60,8 @@ const base::Feature kEnableExactMatchForNonLatinLocale{
     "EnableExactMatchForNonLatinLocale", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableAggregatedMlSearchRanking{
     "EnableAggregatedMlSearchRanking", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kNewDragSpecInLauncher{"NewDragSpecInLauncher",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsAnswerCardEnabled() {
   // Not using local static variable to allow tests to change this value.
@@ -147,6 +149,10 @@ bool IsExactMatchForNonLatinLocaleEnabled() {
 
 bool IsAggregatedMlSearchRankingEnabled() {
   return base::FeatureList::IsEnabled(kEnableAggregatedMlSearchRanking);
+}
+
+bool IsNewDragSpecInLauncherEnabled() {
+  return base::FeatureList::IsEnabled(kNewDragSpecInLauncher);
 }
 
 std::string AnswerServerUrl() {

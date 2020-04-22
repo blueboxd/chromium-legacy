@@ -10,7 +10,9 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service_factory.h"
 #include "chrome/browser/chromeos/certificate_provider/pin_dialog_manager.h"
@@ -30,6 +32,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/login/auth/user_context.h"
+#include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_names.h"
@@ -255,7 +258,13 @@ void LoginDisplayHostMojo::OnStartAppLaunch() {
 }
 
 void LoginDisplayHostMojo::OnBrowserCreated() {
-  NOTIMPLEMENTED();
+  base::TimeTicks startup_time = startup_metric_utils::MainEntryPointTicks();
+  if (startup_time.is_null())
+    return;
+  base::TimeDelta delta = base::TimeTicks::Now() - startup_time;
+  UMA_HISTOGRAM_CUSTOM_TIMES("OOBE.BootToSignInCompleted", delta,
+                             base::TimeDelta::FromMilliseconds(10),
+                             base::TimeDelta::FromMinutes(30), 100);
 }
 
 void LoginDisplayHostMojo::ShowGaiaDialog(const AccountId& prefilled_account) {

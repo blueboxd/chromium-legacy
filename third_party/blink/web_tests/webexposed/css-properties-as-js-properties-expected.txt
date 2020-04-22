@@ -191,6 +191,8 @@ height
 hyphens
 imageOrientation
 imageRendering
+inherits
+initialValue
 inlineSize
 inset
 insetBlock
@@ -354,6 +356,7 @@ strokeMiterlimit
 strokeOpacity
 strokeWidth
 subtreeVisibility
+syntax
 tabSize
 tableLayout
 textAlign

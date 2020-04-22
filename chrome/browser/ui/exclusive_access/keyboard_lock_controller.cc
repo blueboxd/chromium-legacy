@@ -119,14 +119,15 @@ bool KeyboardLockController::HandleKeyEvent(
 
   // Note: This logic handles exiting fullscreen but the UI feedback element is
   // created and managed by the FullscreenControlHost class.
-  if (event.GetType() == content::NativeWebKeyboardEvent::kKeyUp &&
+  if (event.GetType() == content::NativeWebKeyboardEvent::Type::kKeyUp &&
       hold_timer_.IsRunning()) {
     // Seeing a key up event on Esc with the hold timer running cancels the
     // timer and doesn't exit. This means the user pressed Esc, but not long
     // enough to trigger an exit
     hold_timer_.Stop();
     ReShowExitBubbleIfNeeded();
-  } else if (event.GetType() == content::NativeWebKeyboardEvent::kRawKeyDown &&
+  } else if (event.GetType() ==
+                 content::NativeWebKeyboardEvent::Type::kRawKeyDown &&
              !hold_timer_.IsRunning()) {
     // Seeing a key down event on Esc when the hold timer is stopped starts
     // the timer. When the timer fires, the callback will trigger an exit from

@@ -111,7 +111,7 @@ class RenderWidgetHostNSViewBridgeOwner
                     bool is_synthetically_injected) override {
     // The gesture type is not yet known, but assign a type to avoid
     // serialization asserts (the type will be stripped on the other side).
-    begin_event.SetType(blink::WebInputEvent::kGestureScrollBegin);
+    begin_event.SetType(blink::WebInputEvent::Type::kGestureScrollBegin);
     host_->GestureBegin(TranslateEvent(begin_event), is_synthetically_injected);
   }
   void GestureUpdate(blink::WebGestureEvent update_event) override {

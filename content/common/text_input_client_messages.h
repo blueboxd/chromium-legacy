@@ -25,10 +25,6 @@
 // corresponding reply message.
 ////////////////////////////////////////////////////////////////////////////////
 
-// Tells the renderer to send back the character index for a point.
-IPC_MESSAGE_ROUTED1(TextInputClientMsg_CharacterIndexForPoint,
-                    gfx::Point)
-
 // Tells the renderer to send back the rectangle for a given character range.
 IPC_MESSAGE_ROUTED1(TextInputClientMsg_FirstRectForCharacterRange,
                     gfx::Range)
@@ -46,10 +42,6 @@ IPC_MESSAGE_ROUTED1(TextInputClientMsg_StringAtPoint, gfx::Point)
 // Renderer -> Browser Replies /////////////////////////////////////////////////
 // These messages are sent in reply to the above messages.
 ////////////////////////////////////////////////////////////////////////////////
-
-// Reply message for TextInputClientMsg_CharacterIndexForPoint.
-IPC_MESSAGE_ROUTED1(TextInputClientReplyMsg_GotCharacterIndexForPoint,
-                    uint32_t /* character index */)
 
 // Reply message for TextInputClientMsg_FirstRectForCharacterRange.
 IPC_MESSAGE_ROUTED1(TextInputClientReplyMsg_GotFirstRectForRange,

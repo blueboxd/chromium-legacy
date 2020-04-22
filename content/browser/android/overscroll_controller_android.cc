@@ -151,23 +151,23 @@ bool OverscrollControllerAndroid::WillHandleGestureEvent(
 
   bool handled = false;
   switch (event.GetType()) {
-    case blink::WebInputEvent::kGestureScrollBegin:
+    case blink::WebInputEvent::Type::kGestureScrollBegin:
       refresh_effect_->OnScrollBegin(
           gfx::ScalePoint(event.PositionInWidget(), dpi_scale_));
       break;
 
-    case blink::WebInputEvent::kGestureScrollUpdate: {
+    case blink::WebInputEvent::Type::kGestureScrollUpdate: {
       gfx::Vector2dF scroll_delta(event.data.scroll_update.delta_x,
                                   event.data.scroll_update.delta_y);
       scroll_delta.Scale(dpi_scale_);
       handled = refresh_effect_->WillHandleScrollUpdate(scroll_delta);
     } break;
 
-    case blink::WebInputEvent::kGestureScrollEnd:
+    case blink::WebInputEvent::Type::kGestureScrollEnd:
       refresh_effect_->OnScrollEnd(gfx::Vector2dF());
       break;
 
-    case blink::WebInputEvent::kGestureFlingStart: {
+    case blink::WebInputEvent::Type::kGestureFlingStart: {
       if (refresh_effect_->IsActive()) {
         gfx::Vector2dF scroll_velocity(event.data.fling_start.velocity_x,
                                        event.data.fling_start.velocity_y);
@@ -187,7 +187,7 @@ bool OverscrollControllerAndroid::WillHandleGestureEvent(
       }
     } break;
 
-    case blink::WebInputEvent::kGesturePinchBegin:
+    case blink::WebInputEvent::Type::kGesturePinchBegin:
       refresh_effect_->ReleaseWithoutActivation();
       break;
 
@@ -206,12 +206,12 @@ void OverscrollControllerAndroid::OnGestureEventAck(
 
   // The overscroll effect requires an explicit release signal that may not be
   // sent from the renderer compositor.
-  if (event.GetType() == blink::WebInputEvent::kGestureScrollEnd ||
-      event.GetType() == blink::WebInputEvent::kGestureFlingStart) {
+  if (event.GetType() == blink::WebInputEvent::Type::kGestureScrollEnd ||
+      event.GetType() == blink::WebInputEvent::Type::kGestureFlingStart) {
     OnOverscrolled(DidOverscrollParams());
   }
 
-  if (event.GetType() == blink::WebInputEvent::kGestureScrollUpdate &&
+  if (event.GetType() == blink::WebInputEvent::Type::kGestureScrollUpdate &&
       refresh_effect_) {
     // The effect should only be allowed if the scroll events go unconsumed.
     if (refresh_effect_->IsAwaitingScrollUpdateAck() &&

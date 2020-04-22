@@ -248,6 +248,7 @@ jumbo_static_library("safe_browsing") {
         "//components/content_settings/core/browser",
         "//components/language/core/common",
         "//components/prefs",
+        "//components/safe_browsing/core:client_model_proto",
         "//components/safe_browsing/core:webprotect_proto",
         "//components/safe_browsing/core/db",
         "//components/security_interstitials/content:security_interstitial_page",

@@ -276,7 +276,7 @@ void CreateAndHandleKeyboardEvent(WebElement* plugin_container_one_element,
                                   WebInputEvent::Modifiers modifier_key,
                                   int key_code) {
   WebKeyboardEvent web_keyboard_event(
-      WebInputEvent::kRawKeyDown, modifier_key,
+      WebInputEvent::Type::kRawKeyDown, modifier_key,
       WebInputEvent::GetStaticTimeStampForTests());
   web_keyboard_event.windows_key_code = key_code;
   KeyboardEvent* key_event = KeyboardEvent::Create(web_keyboard_event, nullptr);
@@ -287,7 +287,7 @@ void CreateAndHandleKeyboardEvent(WebElement* plugin_container_one_element,
 void ExecuteContextMenuCommand(WebViewImpl* web_view,
                                const WebString& command_name) {
   auto event = frame_test_helpers::CreateMouseEvent(
-      WebMouseEvent::kMouseDown, WebMouseEvent::Button::kRight,
+      WebMouseEvent::Type::kMouseDown, WebMouseEvent::Button::kRight,
       IntPoint(30, 30), 0);
   event.click_count = 1;
 
@@ -406,7 +406,7 @@ TEST_F(WebPluginContainerTest, CopyFromContextMenu) {
   ClearClipboardBuffer(*local_frame);
 
   auto event = frame_test_helpers::CreateMouseEvent(
-      WebMouseEvent::kMouseDown, WebMouseEvent::Button::kRight,
+      WebMouseEvent::Type::kMouseDown, WebMouseEvent::Button::kRight,
       IntPoint(30, 30), 0);
   event.click_count = 1;
 
@@ -642,7 +642,7 @@ class EventTestPlugin : public FakeWebPlugin {
  public:
   explicit EventTestPlugin(const WebPluginParams& params)
       : FakeWebPlugin(params),
-        last_event_type_(WebInputEvent::kUndefined),
+        last_event_type_(WebInputEvent::Type::kUndefined),
         last_event_modifiers_(WebInputEvent::kNoModifiers) {}
 
   WebInputEventResult HandleInputEvent(
@@ -653,7 +653,7 @@ class EventTestPlugin : public FakeWebPlugin {
     last_event_type_ = event.GetType();
     last_event_modifiers_ = event.GetModifiers();
     if (WebInputEvent::IsMouseEventType(event.GetType()) ||
-        event.GetType() == WebInputEvent::kMouseWheel) {
+        event.GetType() == WebInputEvent::Type::kMouseWheel) {
       const WebMouseEvent& mouse_event =
           static_cast<const WebMouseEvent&>(event);
       last_event_location_ = IntPoint(mouse_event.PositionInWidget().x(),
@@ -678,7 +678,9 @@ class EventTestPlugin : public FakeWebPlugin {
 
   int GetLastEventModifiers() { return last_event_modifiers_; }
 
-  void ClearLastEventType() { last_event_type_ = WebInputEvent::kUndefined; }
+  void ClearLastEventType() {
+    last_event_type_ = WebInputEvent::Type::kUndefined;
+  }
 
   size_t GetCoalescedEventCount() { return coalesced_event_count_; }
 
@@ -708,7 +710,7 @@ TEST_F(WebPluginContainerTest, GestureLongPressReachesPlugin) {
                           ->Plugin();
   EventTestPlugin* test_plugin = static_cast<EventTestPlugin*>(plugin);
 
-  WebGestureEvent event(WebInputEvent::kGestureLongPress,
+  WebGestureEvent event(WebInputEvent::Type::kGestureLongPress,
                         WebInputEvent::kNoModifiers,
                         WebInputEvent::GetStaticTimeStampForTests(),
                         WebGestureDevice::kTouchscreen);
@@ -720,7 +722,8 @@ TEST_F(WebPluginContainerTest, GestureLongPressReachesPlugin) {
   web_view->MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(event));
   RunPendingTasks();
 
-  EXPECT_EQ(WebInputEvent::kUndefined, test_plugin->GetLastInputEventType());
+  EXPECT_EQ(WebInputEvent::Type::kUndefined,
+            test_plugin->GetLastInputEventType());
 
   // Next, send an event that does hit the plugin, and verify it does receive
   // it.
@@ -731,7 +734,7 @@ TEST_F(WebPluginContainerTest, GestureLongPressReachesPlugin) {
   web_view->MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(event));
   RunPendingTasks();
 
-  EXPECT_EQ(WebInputEvent::kGestureLongPress,
+  EXPECT_EQ(WebInputEvent::Type::kGestureLongPress,
             test_plugin->GetLastInputEventType());
 }
 
@@ -753,7 +756,7 @@ TEST_F(WebPluginContainerTest, MouseEventButtons) {
   EventTestPlugin* test_plugin = static_cast<EventTestPlugin*>(plugin);
 
   WebMouseEvent event = frame_test_helpers::CreateMouseEvent(
-      WebMouseEvent::kMouseMove, WebMouseEvent::Button::kNoButton,
+      WebMouseEvent::Type::kMouseMove, WebMouseEvent::Button::kNoButton,
       IntPoint(30, 30),
       WebInputEvent::kMiddleButtonDown | WebInputEvent::kShiftKey);
 
@@ -763,7 +766,8 @@ TEST_F(WebPluginContainerTest, MouseEventButtons) {
   web_view->MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(event));
   RunPendingTasks();
 
-  EXPECT_EQ(WebInputEvent::kMouseMove, test_plugin->GetLastInputEventType());
+  EXPECT_EQ(WebInputEvent::Type::kMouseMove,
+            test_plugin->GetLastInputEventType());
   EXPECT_EQ(WebInputEvent::kMiddleButtonDown | WebInputEvent::kShiftKey,
             test_plugin->GetLastEventModifiers());
 }
@@ -785,7 +789,7 @@ TEST_F(WebPluginContainerTest, MouseWheelEventTranslated) {
                           ->Plugin();
   EventTestPlugin* test_plugin = static_cast<EventTestPlugin*>(plugin);
 
-  WebMouseWheelEvent event(WebInputEvent::kMouseWheel,
+  WebMouseWheelEvent event(WebInputEvent::Type::kMouseWheel,
                            WebInputEvent::kNoModifiers,
                            WebInputEvent::GetStaticTimeStampForTests());
 
@@ -795,7 +799,8 @@ TEST_F(WebPluginContainerTest, MouseWheelEventTranslated) {
   web_view->MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(event));
   RunPendingTasks();
 
-  EXPECT_EQ(WebInputEvent::kMouseWheel, test_plugin->GetLastInputEventType());
+  EXPECT_EQ(WebInputEvent::Type::kMouseWheel,
+            test_plugin->GetLastInputEventType());
   EXPECT_EQ(rect.width / 2, test_plugin->GetLastEventLocation().X());
   EXPECT_EQ(rect.height / 2, test_plugin->GetLastEventLocation().Y());
 }
@@ -824,7 +829,7 @@ TEST_F(WebPluginContainerTest, TouchEventScrolled) {
 
   WebRect rect = plugin_container_one_element.BoundsInViewport();
   WebPointerEvent event(
-      WebInputEvent::kPointerDown,
+      WebInputEvent::Type::kPointerDown,
       WebPointerProperties(
           1, WebPointerProperties::PointerType::kTouch,
           WebPointerProperties::Button::kLeft,
@@ -836,7 +841,8 @@ TEST_F(WebPluginContainerTest, TouchEventScrolled) {
   web_view->MainFrameWidget()->DispatchBufferedTouchEvents();
   RunPendingTasks();
 
-  EXPECT_EQ(WebInputEvent::kTouchStart, test_plugin->GetLastInputEventType());
+  EXPECT_EQ(WebInputEvent::Type::kTouchStart,
+            test_plugin->GetLastInputEventType());
   EXPECT_EQ(rect.width / 2, test_plugin->GetLastEventLocation().X());
   EXPECT_EQ(rect.height / 2, test_plugin->GetLastEventLocation().Y());
 }
@@ -866,7 +872,7 @@ TEST_F(WebPluginContainerTest, TouchEventScrolledWithCoalescedTouches) {
   {
     WebRect rect = plugin_container_one_element.BoundsInViewport();
     WebPointerEvent event(
-        WebInputEvent::kPointerDown,
+        WebInputEvent::Type::kPointerDown,
         WebPointerProperties(
             1, WebPointerProperties::PointerType::kTouch,
             WebPointerProperties::Button::kLeft,
@@ -882,7 +888,8 @@ TEST_F(WebPluginContainerTest, TouchEventScrolledWithCoalescedTouches) {
 
     EXPECT_EQ(static_cast<const size_t>(1),
               test_plugin->GetCoalescedEventCount());
-    EXPECT_EQ(WebInputEvent::kTouchStart, test_plugin->GetLastInputEventType());
+    EXPECT_EQ(WebInputEvent::Type::kTouchStart,
+              test_plugin->GetLastInputEventType());
     EXPECT_EQ(rect.width / 2, test_plugin->GetLastEventLocation().X());
     EXPECT_EQ(rect.height / 2, test_plugin->GetLastEventLocation().Y());
   }
@@ -890,7 +897,7 @@ TEST_F(WebPluginContainerTest, TouchEventScrolledWithCoalescedTouches) {
   {
     WebRect rect = plugin_container_one_element.BoundsInViewport();
     WebPointerEvent event1(
-        WebInputEvent::kPointerMove,
+        WebInputEvent::Type::kPointerMove,
         WebPointerProperties(1, WebPointerProperties::PointerType::kTouch,
                              WebPointerProperties::Button::kLeft,
                              gfx::PointF(rect.x + rect.width / 2 + 1,
@@ -902,7 +909,7 @@ TEST_F(WebPluginContainerTest, TouchEventScrolledWithCoalescedTouches) {
     WebCoalescedInputEvent coalesced_event(event1);
 
     WebPointerEvent event2(
-        WebInputEvent::kPointerMove,
+        WebInputEvent::Type::kPointerMove,
         WebPointerProperties(1, WebPointerProperties::PointerType::kTouch,
                              WebPointerProperties::Button::kLeft,
                              gfx::PointF(rect.x + rect.width / 2 + 2,
@@ -911,7 +918,7 @@ TEST_F(WebPluginContainerTest, TouchEventScrolledWithCoalescedTouches) {
                                          rect.y + rect.height / 2 + 2)),
         1.0f, 1.0f);
     WebPointerEvent event3(
-        WebInputEvent::kPointerMove,
+        WebInputEvent::Type::kPointerMove,
         WebPointerProperties(1, WebPointerProperties::PointerType::kTouch,
                              WebPointerProperties::Button::kLeft,
                              gfx::PointF(rect.x + rect.width / 2 + 3,
@@ -929,7 +936,8 @@ TEST_F(WebPluginContainerTest, TouchEventScrolledWithCoalescedTouches) {
 
     EXPECT_EQ(static_cast<const size_t>(3),
               test_plugin->GetCoalescedEventCount());
-    EXPECT_EQ(WebInputEvent::kTouchMove, test_plugin->GetLastInputEventType());
+    EXPECT_EQ(WebInputEvent::Type::kTouchMove,
+              test_plugin->GetLastInputEventType());
     EXPECT_EQ(rect.width / 2 + 1, test_plugin->GetLastEventLocation().X());
     EXPECT_EQ(rect.height / 2 + 1, test_plugin->GetLastEventLocation().Y());
   }
@@ -957,7 +965,7 @@ TEST_F(WebPluginContainerTest, MouseWheelEventScrolled) {
                           ->Plugin();
   EventTestPlugin* test_plugin = static_cast<EventTestPlugin*>(plugin);
 
-  WebMouseWheelEvent event(WebInputEvent::kMouseWheel,
+  WebMouseWheelEvent event(WebInputEvent::Type::kMouseWheel,
                            WebInputEvent::kNoModifiers,
                            WebInputEvent::GetStaticTimeStampForTests());
 
@@ -967,7 +975,8 @@ TEST_F(WebPluginContainerTest, MouseWheelEventScrolled) {
   web_view->MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(event));
   RunPendingTasks();
 
-  EXPECT_EQ(WebInputEvent::kMouseWheel, test_plugin->GetLastInputEventType());
+  EXPECT_EQ(WebInputEvent::Type::kMouseWheel,
+            test_plugin->GetLastInputEventType());
   EXPECT_EQ(rect.width / 2, test_plugin->GetLastEventLocation().X());
   EXPECT_EQ(rect.height / 2, test_plugin->GetLastEventLocation().Y());
 }
@@ -994,7 +1003,8 @@ TEST_F(WebPluginContainerTest, MouseEventScrolled) {
                           ->Plugin();
   EventTestPlugin* test_plugin = static_cast<EventTestPlugin*>(plugin);
 
-  WebMouseEvent event(WebInputEvent::kMouseMove, WebInputEvent::kNoModifiers,
+  WebMouseEvent event(WebInputEvent::Type::kMouseMove,
+                      WebInputEvent::kNoModifiers,
                       WebInputEvent::GetStaticTimeStampForTests());
 
   WebRect rect = plugin_container_one_element.BoundsInViewport();
@@ -1003,7 +1013,8 @@ TEST_F(WebPluginContainerTest, MouseEventScrolled) {
   web_view->MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(event));
   RunPendingTasks();
 
-  EXPECT_EQ(WebInputEvent::kMouseMove, test_plugin->GetLastInputEventType());
+  EXPECT_EQ(WebInputEvent::Type::kMouseMove,
+            test_plugin->GetLastInputEventType());
   EXPECT_EQ(rect.width / 2, test_plugin->GetLastEventLocation().X());
   EXPECT_EQ(rect.height / 2, test_plugin->GetLastEventLocation().Y());
 }
@@ -1033,7 +1044,8 @@ TEST_F(WebPluginContainerTest, MouseEventZoomed) {
                           ->Plugin();
   EventTestPlugin* test_plugin = static_cast<EventTestPlugin*>(plugin);
 
-  WebMouseEvent event(WebInputEvent::kMouseMove, WebInputEvent::kNoModifiers,
+  WebMouseEvent event(WebInputEvent::Type::kMouseMove,
+                      WebInputEvent::kNoModifiers,
                       WebInputEvent::GetStaticTimeStampForTests());
 
   WebRect rect = plugin_container_one_element.BoundsInViewport();
@@ -1044,7 +1056,8 @@ TEST_F(WebPluginContainerTest, MouseEventZoomed) {
 
   // rect.width/height divided by 4 because the rect is in viewport bounds and
   // there is a scale of 2 set.
-  EXPECT_EQ(WebInputEvent::kMouseMove, test_plugin->GetLastInputEventType());
+  EXPECT_EQ(WebInputEvent::Type::kMouseMove,
+            test_plugin->GetLastInputEventType());
   EXPECT_EQ(rect.width / 4, test_plugin->GetLastEventLocation().X());
   EXPECT_EQ(rect.height / 4, test_plugin->GetLastEventLocation().Y());
 }
@@ -1074,7 +1087,7 @@ TEST_F(WebPluginContainerTest, MouseWheelEventZoomed) {
                           ->Plugin();
   EventTestPlugin* test_plugin = static_cast<EventTestPlugin*>(plugin);
 
-  WebMouseWheelEvent event(WebInputEvent::kMouseWheel,
+  WebMouseWheelEvent event(WebInputEvent::Type::kMouseWheel,
                            WebInputEvent::kNoModifiers,
                            WebInputEvent::GetStaticTimeStampForTests());
 
@@ -1086,7 +1099,8 @@ TEST_F(WebPluginContainerTest, MouseWheelEventZoomed) {
 
   // rect.width/height divided by 4 because the rect is in viewport bounds and
   // there is a scale of 2 set.
-  EXPECT_EQ(WebInputEvent::kMouseWheel, test_plugin->GetLastInputEventType());
+  EXPECT_EQ(WebInputEvent::Type::kMouseWheel,
+            test_plugin->GetLastInputEventType());
   EXPECT_EQ(rect.width / 4, test_plugin->GetLastEventLocation().X());
   EXPECT_EQ(rect.height / 4, test_plugin->GetLastEventLocation().Y());
 }
@@ -1118,7 +1132,7 @@ TEST_F(WebPluginContainerTest, TouchEventZoomed) {
 
   WebRect rect = plugin_container_one_element.BoundsInViewport();
   WebPointerEvent event(
-      WebInputEvent::kPointerDown,
+      WebInputEvent::Type::kPointerDown,
       WebPointerProperties(
           1, WebPointerProperties::PointerType::kTouch,
           WebPointerProperties::Button::kLeft,
@@ -1132,7 +1146,8 @@ TEST_F(WebPluginContainerTest, TouchEventZoomed) {
 
   // rect.width/height divided by 4 because the rect is in viewport bounds and
   // there is a scale of 2 set.
-  EXPECT_EQ(WebInputEvent::kTouchStart, test_plugin->GetLastInputEventType());
+  EXPECT_EQ(WebInputEvent::Type::kTouchStart,
+            test_plugin->GetLastInputEventType());
   EXPECT_EQ(rect.width / 4, test_plugin->GetLastEventLocation().X());
   EXPECT_EQ(rect.height / 4, test_plugin->GetLastEventLocation().Y());
 }

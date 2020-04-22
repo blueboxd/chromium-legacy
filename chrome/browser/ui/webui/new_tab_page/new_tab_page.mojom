@@ -84,6 +84,23 @@ union ThemeInfo {
   ThirdPartyThemeInfo third_party_theme_info;
 };
 
+// Theme settings for the NTP realbox.
+struct SearchBoxTheme {
+  skia.mojom.SkColor bg;
+  skia.mojom.SkColor icon;
+  skia.mojom.SkColor icon_selected;
+  skia.mojom.SkColor placeholder;
+  skia.mojom.SkColor results_bg;
+  skia.mojom.SkColor results_bg_hovered;
+  skia.mojom.SkColor results_bg_selected;
+  skia.mojom.SkColor results_dim;
+  skia.mojom.SkColor results_dim_selected;
+  skia.mojom.SkColor results_text;
+  skia.mojom.SkColor results_text_selected;
+  skia.mojom.SkColor results_url_selected;
+  skia.mojom.SkColor text;
+};
+
 // A generic theme.
 struct Theme {
   // The theme's type (e.g. default or third-party).
@@ -109,6 +126,9 @@ struct Theme {
   // type. That should be optional since only some themes require it. However,
   // making this field optional crashes JS.
   ThemeInfo info;
+
+  // Theme settings for the NTP realbox. Matching those of the Omnibox.
+  SearchBoxTheme search_box;
 };
 
 // Specifies look of the doodle share button.

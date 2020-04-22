@@ -144,13 +144,6 @@ DataReductionProxySettingsAndroid::GetDailyReceivedContentLengths(
       env, data_reduction_proxy::prefs::kDailyHttpReceivedContentLength);
 }
 
-ScopedJavaLocalRef<jstring>
-DataReductionProxySettingsAndroid::GetDataReductionProxyPassThroughHeader(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return ConvertUTF8ToJavaString(
-      env, data_reduction_proxy::chrome_proxy_pass_through_header());
-}
 
 jboolean DataReductionProxySettingsAndroid::IsDataReductionProxyUnreachable(
     JNIEnv* env,

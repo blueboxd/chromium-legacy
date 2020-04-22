@@ -15,6 +15,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/keyword_search_term.h"
 #include "components/history/core/browser/url_database.h"
@@ -90,6 +91,7 @@ class LocalHistoryZeroSuggestProviderTest
   void TearDown() override {
     provider_ = nullptr;
     client_.reset();
+    scoped_feature_list_.reset();
     task_environment_.RunUntilIdle();
   }
 
@@ -275,7 +277,13 @@ TEST_F(LocalHistoryZeroSuggestProviderTest, Incognito) {
 
 // Tests that suggestions are returned only if ZeroSuggestVariant is configured
 // to return local history suggestions in the NTP.
-TEST_F(LocalHistoryZeroSuggestProviderTest, ZeroSuggestVariant) {
+#if defined(OS_IOS)
+// Flaky thread check failure: https://crbug.com/1071877
+#define MAYBE_ZeroSuggestVariant DISABLED_ZeroSuggestVariant
+#else
+#define MAYBE_ZeroSuggestVariant ZeroSuggestVariant
+#endif
+TEST_F(LocalHistoryZeroSuggestProviderTest, MAYBE_ZeroSuggestVariant) {
   LoadURLs({
       {default_search_provider(), "hello world", "&foo=bar", 1},
   });

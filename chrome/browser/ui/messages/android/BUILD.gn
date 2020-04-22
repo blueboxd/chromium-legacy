@@ -5,6 +5,7 @@ import("//build/config/android/rules.gni")
 
 android_resources("java_resources") {
   custom_package = "org.chromium.chrome.ui.messages"
+
   sources = [
     "java/res/drawable-hdpi/infobar_shadow_left.9.png",
     "java/res/drawable-hdpi/infobar_shadow_top.png",
@@ -27,6 +28,7 @@ android_resources("java_resources") {
     "java/res/values/dimens.xml",
     "java/res/values/ids.xml",
   ]
+
   deps = [
     "//chrome/browser/ui/android/strings:ui_strings_grd",
     "//components/browser_ui/strings/android:browser_ui_strings_grd",
@@ -43,14 +45,17 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/ui/messages/infobar/InfoBarLayout.java",
     "java/src/org/chromium/chrome/browser/ui/messages/infobar/InfoBarMessageView.java",
     "java/src/org/chromium/chrome/browser/ui/messages/infobar/InfoBarUiItem.java",
+    "java/src/org/chromium/chrome/browser/ui/messages/infobar/SimpleConfirmInfoBarBuilder.java",
     "java/src/org/chromium/chrome/browser/ui/messages/snackbar/Snackbar.java",
     "java/src/org/chromium/chrome/browser/ui/messages/snackbar/SnackbarCollection.java",
     "java/src/org/chromium/chrome/browser/ui/messages/snackbar/SnackbarManager.java",
     "java/src/org/chromium/chrome/browser/ui/messages/snackbar/SnackbarView.java",
   ]
+
   deps = [
     ":java_resources",
     "//base:base_java",
+    "//base:jni_java",
     "//chrome/browser/util:java",
     "//components/browser_ui/styles/android:java_resources",
     "//components/browser_ui/widget/android:java",
@@ -60,13 +65,22 @@ android_library("java") {
     "//ui/android:ui_full_java",
     "//ui/android:ui_utils_java",
   ]
+
+  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
+}
+
+generate_jni("jni_headers") {
+  sources = [ "java/src/org/chromium/chrome/browser/ui/messages/infobar/SimpleConfirmInfoBarBuilder.java" ]
 }
 
 java_library("junit") {
   # Skip platform checks since Robolectric depends on requires_android targets.
   bypass_platform_checks = true
+
   testonly = true
+
   sources = [ "java/src/org/chromium/chrome/browser/ui/messages/snackbar/SnackbarCollectionUnitTest.java" ]
+
   deps = [
     ":java",
     "//base:base_java_test_support",
@@ -77,10 +91,12 @@ java_library("junit") {
 
 android_library("javatests") {
   testonly = true
+
   sources = [
     "java/src/org/chromium/chrome/browser/ui/messages/infobar/InfoBarControlLayoutTest.java",
     "java/src/org/chromium/chrome/browser/ui/messages/snackbar/SnackbarTest.java",
   ]
+
   deps = [
     ":java",
     "//base:base_java",

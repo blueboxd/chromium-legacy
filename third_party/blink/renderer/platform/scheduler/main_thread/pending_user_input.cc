@@ -12,8 +12,8 @@ namespace scheduler {
 void PendingUserInput::Monitor::OnEnqueue(
     WebInputEvent::Type type,
     const WebInputEventAttribution& attribution) {
-  DCHECK_NE(type, WebInputEvent::kUndefined);
-  DCHECK_LE(type, WebInputEvent::kTypeLast);
+  DCHECK_NE(type, WebInputEvent::Type::kUndefined);
+  DCHECK_LE(type, WebInputEvent::Type::kTypeLast);
 
   // Ignore events without attribution information.
   if (attribution.type() == WebInputEventAttribution::kUnknown)
@@ -32,8 +32,8 @@ void PendingUserInput::Monitor::OnEnqueue(
 void PendingUserInput::Monitor::OnDequeue(
     WebInputEvent::Type type,
     const WebInputEventAttribution& attribution) {
-  DCHECK_NE(type, WebInputEvent::kUndefined);
-  DCHECK_LE(type, WebInputEvent::kTypeLast);
+  DCHECK_NE(type, WebInputEvent::Type::kUndefined);
+  DCHECK_LE(type, WebInputEvent::Type::kTypeLast);
 
   if (attribution.type() == WebInputEventAttribution::kUnknown)
     return;
@@ -69,11 +69,11 @@ Vector<WebInputEventAttribution> PendingUserInput::Monitor::Info(
 
 bool PendingUserInput::IsContinuousEventType(WebInputEvent::Type type) {
   switch (type) {
-    case WebInputEvent::kMouseMove:
-    case WebInputEvent::kMouseWheel:
-    case WebInputEvent::kTouchMove:
-    case WebInputEvent::kPointerMove:
-    case WebInputEvent::kPointerRawUpdate:
+    case WebInputEvent::Type::kMouseMove:
+    case WebInputEvent::Type::kMouseWheel:
+    case WebInputEvent::Type::kTouchMove:
+    case WebInputEvent::Type::kPointerMove:
+    case WebInputEvent::Type::kPointerRawUpdate:
       return true;
     default:
       return false;

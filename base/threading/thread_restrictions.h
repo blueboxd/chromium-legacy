@@ -539,6 +539,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {
   // Not used in production yet, https://crbug.com/844078.
   friend class service_manager::ServiceProcessLauncher;
   friend class ui::WindowResizeHelperMac;  // http://crbug.com/902829
+  friend class content::TextInputClientMac;  // http://crbug.com/121917
 
   ScopedAllowBaseSyncPrimitivesOutsideBlockingScope(
       const Location& from_here = Location::Current());

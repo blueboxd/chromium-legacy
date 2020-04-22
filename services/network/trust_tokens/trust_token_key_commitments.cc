@@ -10,8 +10,11 @@
 #include "base/optional.h"
 #include "base/values.h"
 #include "services/network/public/cpp/network_switches.h"
+#include "services/network/public/mojom/trust_tokens.mojom-forward.h"
 #include "services/network/trust_tokens/suitable_trust_token_origin.h"
 #include "services/network/trust_tokens/trust_token_key_commitment_parser.h"
+#include "services/network/trust_tokens/trust_token_key_filtering.h"
+#include "services/network/trust_tokens/trust_token_parameterization.h"
 
 namespace network {
 
@@ -41,6 +44,19 @@ ParseCommitmentsFromCommandLine() {
         << raw_commitments;
   }
   return {};
+}
+
+// Filters |result->keys| to contain only a small number of
+// soon-to-expire-but-not-yet-expired keys, then passes |result| to |done|.
+void ReturnCommitmentsAfterFiltering(
+    base::OnceCallback<void(mojom::TrustTokenKeyCommitmentResultPtr)> done,
+    mojom::TrustTokenKeyCommitmentResultPtr result) {
+  if (result) {
+    RetainSoonestToExpireTrustTokenKeys(
+        &result->keys, kMaximumConcurrentlyValidTrustTokenVerificationKeys);
+  }
+
+  std::move(done).Run(std::move(result));
 }
 
 }  // namespace
@@ -99,7 +115,7 @@ void TrustTokenKeyCommitments::Get(
   if (!additional_commitments_from_command_line_.empty()) {
     auto it = additional_commitments_from_command_line_.find(*suitable_origin);
     if (it != commitments_.end()) {
-      std::move(done).Run(it->second->Clone());
+      ReturnCommitmentsAfterFiltering(std::move(done), it->second->Clone());
       return;
     }
   }
@@ -110,7 +126,7 @@ void TrustTokenKeyCommitments::Get(
     return;
   }
 
-  std::move(done).Run(it->second->Clone());
+  ReturnCommitmentsAfterFiltering(std::move(done), it->second->Clone());
 }
 
 }  // namespace network

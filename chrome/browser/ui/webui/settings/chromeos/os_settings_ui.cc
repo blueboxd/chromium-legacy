@@ -287,7 +287,7 @@ void OSSettingsUI::InitOSWebUIHandlers(content::WebUIDataSource* html_source) {
   web_ui()->AddMessageHandler(
       std::make_unique<chromeos::settings::FingerprintHandler>(profile));
   web_ui()->AddMessageHandler(
-      std::make_unique<chromeos::settings::GoogleAssistantHandler>(profile));
+      std::make_unique<chromeos::settings::GoogleAssistantHandler>());
 
   std::unique_ptr<chromeos::settings::KerberosAccountsHandler>
       kerberos_accounts_handler =

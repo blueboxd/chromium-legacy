@@ -11,6 +11,7 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/user_metrics.h"
 #include "base/path_service.h"
@@ -862,20 +863,22 @@ bool SupervisedUserService::MustRemainDisabled(
   bool must_remain_disabled = state == ExtensionState::REQUIRE_APPROVAL;
 
   if (must_remain_disabled) {
+    if (base::Contains(approved_extensions_map_, extension->id())) {
+      // The parent has approved this extension in the past, so the child can
+      // approve a new version (as long as
+      // kSupervisedUserExtensionsMayRequestPermissions is true, but that's
+      // enforced elsewhere).
+      // TODO(crbug/1072857): Get rid of all the version information from
+      // approved_extensions_map_. Just store a set of approved extension ids.
+      return false;
+    }
+    if (reason) {
+      // Otherwise, the parent has not approved this extension yet, so ask for
+      // parent approval.
+      *reason = extensions::disable_reason::DISABLE_CUSTODIAN_APPROVAL_REQUIRED;
+    }
     if (error)
       *error = GetExtensionsLockedMessage();
-    // If the extension must remain disabled due to permission increase, then we
-    // do nothing and we don't add an extra disable reason.
-    ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(profile_);
-    if (extension_prefs->HasDisableReason(
-            extension->id(),
-            extensions::disable_reason::DISABLE_PERMISSIONS_INCREASE)) {
-      if (reason)
-        *reason = extensions::disable_reason::DISABLE_PERMISSIONS_INCREASE;
-      return true;
-    }
-    if (reason)
-      *reason = extensions::disable_reason::DISABLE_CUSTODIAN_APPROVAL_REQUIRED;
   }
   return must_remain_disabled;
 }

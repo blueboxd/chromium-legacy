@@ -85,9 +85,9 @@ class FlingSchedulerTest : public testing::Test,
   }
 
   void SimulateFlingStart(const gfx::Vector2dF& velocity) {
-    blink::WebGestureEvent fling_start(blink::WebInputEvent::kGestureFlingStart,
-                                       0, base::TimeTicks::Now(),
-                                       blink::WebGestureDevice::kTouchscreen);
+    blink::WebGestureEvent fling_start(
+        blink::WebInputEvent::Type::kGestureFlingStart, 0,
+        base::TimeTicks::Now(), blink::WebGestureDevice::kTouchscreen);
     fling_start.data.fling_start.velocity_x = velocity.x();
     fling_start.data.fling_start.velocity_y = velocity.y();
     GestureEventWithLatencyInfo fling_start_with_latency(fling_start);
@@ -97,8 +97,8 @@ class FlingSchedulerTest : public testing::Test,
 
   void SimulateFlingCancel() {
     blink::WebGestureEvent fling_cancel(
-        blink::WebInputEvent::kGestureFlingCancel, 0, base::TimeTicks::Now(),
-        blink::WebGestureDevice::kTouchscreen);
+        blink::WebInputEvent::Type::kGestureFlingCancel, 0,
+        base::TimeTicks::Now(), blink::WebGestureDevice::kTouchscreen);
     fling_cancel.data.fling_cancel.prevent_boosting = true;
     GestureEventWithLatencyInfo fling_cancel_with_latency(fling_cancel);
     fling_controller_->ObserveAndMaybeConsumeGestureEvent(

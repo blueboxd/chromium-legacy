@@ -15,9 +15,9 @@ SyntheticPenDriver::~SyntheticPenDriver() {}
 void SyntheticPenDriver::Leave(int index) {
   DCHECK_EQ(index, 0);
   mouse_event_ = SyntheticWebMouseEventBuilder::Build(
-      blink::WebInputEvent::kMouseLeave, mouse_event_.PositionInWidget().x(),
-      mouse_event_.PositionInWidget().y(), last_modifiers_,
-      mouse_event_.pointer_type);
+      blink::WebInputEvent::Type::kMouseLeave,
+      mouse_event_.PositionInWidget().x(), mouse_event_.PositionInWidget().y(),
+      last_modifiers_, mouse_event_.pointer_type);
 }
 
 }  // namespace content

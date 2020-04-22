@@ -41,6 +41,7 @@ source_set("chromeos") {
     "//chromeos/strings",
     "//components/policy/proto",
     "//components/signin/core/browser",
+    "//components/startup_metric_utils/browser:browser",
     "//content/app/resources",
     "//mojo/public/cpp/bindings",
     "//ui/accessibility/mojom",
@@ -159,7 +160,7 @@ source_set("chromeos") {
     "//chromeos/login/login_state",
     "//chromeos/login/session",
     "//chromeos/network",
-    "//chromeos/services/assistant/public/cpp:prefs",
+    "//chromeos/services/assistant/public/cpp",
     "//chromeos/services/cros_healthd/public/cpp",
     "//chromeos/services/cros_healthd/public/mojom",
     "//chromeos/services/device_sync",
@@ -282,7 +283,6 @@ source_set("chromeos") {
 
     # TODO: care about enable_basic_printing and enable_print_preview.
     "//ash/keyboard/ui",
-    "//chromeos/services/assistant/public/cpp:interaction_subscriber",
     "//printing",
     "//remoting/host/it2me:chrome_os_host",
     "//services/audio/public/cpp",

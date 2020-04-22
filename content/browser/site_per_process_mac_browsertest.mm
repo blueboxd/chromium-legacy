@@ -157,7 +157,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessMacBrowserTest,
       child_rwh, base::BindRepeating([](blink::mojom::InputEventResultSource,
                                         blink::mojom::InputEventResultState,
                                         const blink::WebInputEvent& event) {
-        return event.GetType() == blink::WebInputEvent::kGestureScrollBegin &&
+        return event.GetType() ==
+                   blink::WebInputEvent::Type::kGestureScrollBegin &&
                !static_cast<const blink::WebGestureEvent&>(event)
                     .data.scroll_begin.synthetic;
       }));
@@ -165,7 +166,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessMacBrowserTest,
       child_rwh, base::BindRepeating([](blink::mojom::InputEventResultSource,
                                         blink::mojom::InputEventResultState,
                                         const blink::WebInputEvent& event) {
-        return event.GetType() == blink::WebInputEvent::kGestureScrollEnd &&
+        return event.GetType() ==
+                   blink::WebInputEvent::Type::kGestureScrollEnd &&
                !static_cast<const blink::WebGestureEvent&>(event)
                     .data.scroll_end.synthetic;
       }));
@@ -174,7 +176,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessMacBrowserTest,
       static_cast<RenderWidgetHostViewBase*>(child_rwh->GetView());
 
   blink::WebMouseWheelEvent scroll_event(
-      blink::WebInputEvent::kMouseWheel, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::Type::kMouseWheel,
+      blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   scroll_event.SetPositionInWidget(1, 1);
   scroll_event.delta_units = ui::ScrollGranularity::kScrollByPrecisePixel;
@@ -270,7 +273,7 @@ void SendMacTouchpadPinchSequenceWithExpectedTarget(
   // isn't sent until the first PinchUpdate.
 
   InputEventAckWaiter waiter(expected_target->GetRenderWidgetHost(),
-                             blink::WebInputEvent::kGesturePinchBegin);
+                             blink::WebInputEvent::Type::kGesturePinchBegin);
   NSEvent* pinchUpdateEvent =
       MockGestureEvent(NSEventTypeMagnify, 0.25, gesture_point.x(),
                        gesture_point.y(), NSEventPhaseChanged);

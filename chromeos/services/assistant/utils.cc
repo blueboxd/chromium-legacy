@@ -18,7 +18,7 @@
 #include "chromeos/assistant/internal/internal_constants.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/util/version_loader.h"
-#include "chromeos/services/assistant/public/features.h"
+#include "chromeos/services/assistant/public/cpp/features.h"
 
 namespace chromeos {
 namespace assistant {

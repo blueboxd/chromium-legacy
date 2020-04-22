@@ -48,9 +48,8 @@ blink::mojom::FetchAPIRequestPtr BackgroundFetchSettledFetch::CloneRequest(
   if (request.is_null())
     return nullptr;
   return blink::mojom::FetchAPIRequest::New(
-      request->mode, request->is_main_resource_load,
-      request->request_context_type, request->destination, request->frame_type,
-      request->url, request->method, request->headers,
+      request->mode, request->is_main_resource_load, request->destination,
+      request->frame_type, request->url, request->method, request->headers,
       CloneSerializedBlob(request->blob), request->body,
       request->referrer.Clone(), request->credentials_mode, request->cache_mode,
       request->redirect_mode, request->integrity, request->priority,

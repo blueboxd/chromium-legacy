@@ -48,7 +48,7 @@ class TypeAheadTest : public ::testing::Test {
 
 TEST_F(TypeAheadTest, HasActiveSessionAtStart) {
   WebKeyboardEvent web_event(
-      WebInputEvent::kChar, 0,
+      WebInputEvent::Type::kChar, 0,
       base::TimeTicks() + base::TimeDelta::FromMilliseconds(500));
   web_event.text[0] = ' ';
   auto& event = *KeyboardEvent::Create(web_event, nullptr);
@@ -59,7 +59,7 @@ TEST_F(TypeAheadTest, HasActiveSessionAtStart) {
 TEST_F(TypeAheadTest, HasActiveSessionAfterHandleEvent) {
   {
     WebKeyboardEvent web_event(
-        WebInputEvent::kChar, 0,
+        WebInputEvent::Type::kChar, 0,
         base::TimeTicks() + base::TimeDelta::FromMilliseconds(500));
     web_event.text[0] = ' ';
     auto& event = *KeyboardEvent::Create(web_event, nullptr);
@@ -73,7 +73,7 @@ TEST_F(TypeAheadTest, HasActiveSessionAfterHandleEvent) {
   {
     // Should still be active after 1 second elapses.
     WebKeyboardEvent web_event(
-        WebInputEvent::kChar, 0,
+        WebInputEvent::Type::kChar, 0,
         base::TimeTicks() + base::TimeDelta::FromMilliseconds(1500));
     web_event.text[0] = ' ';
     auto& event = *KeyboardEvent::Create(web_event, nullptr);
@@ -83,7 +83,7 @@ TEST_F(TypeAheadTest, HasActiveSessionAfterHandleEvent) {
   {
     // But more than 1 second should be considered inactive.
     WebKeyboardEvent web_event(
-        WebInputEvent::kChar, 0,
+        WebInputEvent::Type::kChar, 0,
         base::TimeTicks() + base::TimeDelta::FromMilliseconds(1501));
     web_event.text[0] = ' ';
     auto& event = *KeyboardEvent::Create(web_event, nullptr);
@@ -93,7 +93,7 @@ TEST_F(TypeAheadTest, HasActiveSessionAfterHandleEvent) {
 
 TEST_F(TypeAheadTest, HasActiveSessionAfterResetSession) {
   WebKeyboardEvent web_event(
-      WebInputEvent::kChar, 0,
+      WebInputEvent::Type::kChar, 0,
       base::TimeTicks() + base::TimeDelta::FromMilliseconds(500));
   web_event.text[0] = ' ';
   auto& event = *KeyboardEvent::Create(web_event, nullptr);

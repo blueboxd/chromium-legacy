@@ -2711,10 +2711,8 @@ TEST_F(ExtensionServiceTestSupervised,
   EXPECT_FALSE(registry()->enabled_extensions().Contains(id));
   EXPECT_TRUE(IsPendingCustodianApproval(id));
   int disable_reasons = ExtensionPrefs::Get(profile())->GetDisableReasons(id);
-  EXPECT_EQ(
-      disable_reasons,
-      extensions::disable_reason::DISABLE_PERMISSIONS_INCREASE |
-          extensions::disable_reason::DISABLE_CUSTODIAN_APPROVAL_REQUIRED);
+  EXPECT_EQ(disable_reasons,
+            extensions::disable_reason::DISABLE_PERMISSIONS_INCREASE);
 }
 
 // Tests that extension installation is blocked for child accounts without any

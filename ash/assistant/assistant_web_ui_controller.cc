@@ -4,7 +4,6 @@
 
 #include "ash/assistant/assistant_web_ui_controller.h"
 
-#include "ash/assistant/assistant_controller_impl.h"
 #include "ash/assistant/ui/assistant_web_container_view.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/multi_user/multi_user_window_manager_impl.h"
@@ -66,14 +65,11 @@ class AssistantWebContainerEventObserver : public ui::EventObserver {
 // -----------------------------------------------------------------------------
 // AssistantWebUiController:
 
-AssistantWebUiController::AssistantWebUiController(
-    AssistantControllerImpl* assistant_controller)
-    : assistant_controller_(assistant_controller) {
-  assistant_controller_->AddObserver(this);
+AssistantWebUiController::AssistantWebUiController() {
+  assistant_controller_observer_.Add(AssistantController::Get());
 }
 
 AssistantWebUiController::~AssistantWebUiController() {
-  assistant_controller_->RemoveObserver(this);
   CloseUi();
 }
 
@@ -82,11 +78,11 @@ void AssistantWebUiController::OnWidgetDestroying(views::Widget* widget) {
 }
 
 void AssistantWebUiController::OnAssistantControllerConstructed() {
-  assistant_controller_->state_controller()->AddObserver(this);
+  AssistantState::Get()->AddObserver(this);
 }
 
 void AssistantWebUiController::OnAssistantControllerDestroying() {
-  assistant_controller_->state_controller()->RemoveObserver(this);
+  AssistantState::Get()->RemoveObserver(this);
 }
 
 void AssistantWebUiController::OnDeepLinkReceived(

@@ -27,7 +27,7 @@
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/modules/webtransport/receive_stream.h"
 #include "third_party/blink/renderer/modules/webtransport/send_stream.h"
-#include "third_party/blink/renderer/modules/webtransport/web_transport_close_proxy.h"
+#include "third_party/blink/renderer/modules/webtransport/web_transport_stream.h"
 #include "third_party/blink/renderer/platform/bindings/exception_code.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
@@ -217,8 +217,7 @@ class QuicTransport::ReceivedStreamsUnderlyingSource final
     receive_stream->Init();
     // 0xfffffffe and 0xffffffff are reserved values in stream_map_.
     CHECK_LT(stream_id, 0xfffffffe);
-    quic_transport_->stream_map_.insert(
-        stream_id, receive_stream->GetWebTransportCloseProxy());
+    quic_transport_->stream_map_.insert(stream_id, receive_stream);
 
     Controller()->Enqueue(receive_stream);
   }
@@ -390,12 +389,19 @@ void QuicTransport::OnIncomingStreamClosed(uint32_t stream_id,
                                            bool fin_received) {
   DVLOG(1) << "QuicTransport::OnIncomingStreamClosed(" << stream_id << ", "
            << fin_received << ") this=" << this;
-  WebTransportCloseProxy* stream = stream_map_.Take(stream_id);
+  WebTransportStream* stream = stream_map_.at(stream_id);
+  DCHECK(stream);
   stream->OnIncomingStreamClosed(fin_received);
 }
 
 void QuicTransport::ContextDestroyed() {
   DVLOG(1) << "QuicTransport::ContextDestroyed() this=" << this;
+  // Child streams must be reset first to ensure that garbage collection
+  // ordering is safe. ContextDestroyed() is required not to execute JavaScript,
+  // so this loop will not be re-entered.
+  for (WebTransportStream* stream : stream_map_.Values()) {
+    stream->ContextDestroyed();
+  }
   Dispose();
 }
 
@@ -530,10 +536,10 @@ void QuicTransport::ResetAll() {
 
 void QuicTransport::Dispose() {
   DVLOG(1) << "QuicTransport::Dispose() this=" << this;
+  stream_map_.clear();
   quic_transport_.reset();
   handshake_client_receiver_.reset();
   client_receiver_.reset();
-  stream_map_.clear();
 }
 
 void QuicTransport::OnConnectionError() {
@@ -597,7 +603,7 @@ void QuicTransport::OnCreateStreamResponse(
 
   // 0xfffffffe and 0xffffffff are reserved values in stream_map_.
   CHECK_LT(stream_id, 0xfffffffe);
-  stream_map_.insert(stream_id, send_stream->GetWebTransportCloseProxy());
+  stream_map_.insert(stream_id, send_stream);
 
   resolver->Resolve(send_stream);
 }

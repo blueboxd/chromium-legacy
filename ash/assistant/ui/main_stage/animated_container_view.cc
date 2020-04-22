@@ -4,11 +4,13 @@
 
 #include "ash/assistant/ui/main_stage/animated_container_view.h"
 
+#include <utility>
+
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "ash/assistant/model/assistant_response.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/ui/main_stage/element_animator.h"
-#include "chromeos/services/assistant/public/features.h"
+#include "chromeos/services/assistant/public/cpp/features.h"
 #include "ui/compositor/callback_layer_animation_observer.h"
 #include "ui/compositor/layer_animator.h"
 
@@ -24,7 +26,7 @@ using chromeos::assistant::features::IsResponseProcessingV2Enabled;
 
 class AnimatedContainerView::ScopedDisablePreferredSizeChanged {
  public:
-  ScopedDisablePreferredSizeChanged(AnimatedContainerView* view)
+  explicit ScopedDisablePreferredSizeChanged(AnimatedContainerView* view)
       : view_(view), original_value_(view_->propagate_preferred_size_changed_) {
     view_->SetPropagatePreferredSizeChanged(false);
   }

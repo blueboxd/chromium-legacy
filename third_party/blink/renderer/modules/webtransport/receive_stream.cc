@@ -7,53 +7,45 @@
 #include <utility>
 
 #include "third_party/blink/renderer/modules/webtransport/quic_transport.h"
-#include "third_party/blink/renderer/modules/webtransport/web_transport_close_proxy.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
-
-namespace {
-
-class CloseProxy : public WebTransportCloseProxy {
- public:
-  CloseProxy(QuicTransport* quic_transport,
-             IncomingStream* incoming_stream,
-             uint32_t stream_id)
-      : quic_transport_(quic_transport),
-        incoming_stream_(incoming_stream),
-        stream_id_(stream_id) {}
-
-  void OnIncomingStreamClosed(bool fin_received) override {
-    incoming_stream_->OnIncomingStreamClosed(fin_received);
-  }
-
-  void SendFin() override { NOTREACHED(); }
-
-  void ForgetStream() override { quic_transport_->ForgetStream(stream_id_); }
-
-  void Reset() override { incoming_stream_->Reset(); }
-
-  void Trace(Visitor* visitor) override {
-    visitor->Trace(quic_transport_);
-    visitor->Trace(incoming_stream_);
-    WebTransportCloseProxy::Trace(visitor);
-  }
-
- private:
-  const Member<QuicTransport> quic_transport_;
-  const Member<IncomingStream> incoming_stream_;
-  const uint32_t stream_id_;
-};
-
-}  // namespace
 
 ReceiveStream::ReceiveStream(ScriptState* script_state,
                              QuicTransport* quic_transport,
                              uint32_t stream_id,
                              mojo::ScopedDataPipeConsumerHandle handle)
-    : IncomingStream(
+    : incoming_stream_(MakeGarbageCollected<IncomingStream>(
           script_state,
-          MakeGarbageCollected<CloseProxy>(quic_transport, this, stream_id),
-          std::move(handle)) {}
+          WTF::Bind(&ReceiveStream::ForgetStream, WrapWeakPersistent(this)),
+          std::move(handle))),
+      quic_transport_(quic_transport),
+      stream_id_(stream_id) {}
+
+void ReceiveStream::OnIncomingStreamClosed(bool fin_received) {
+  incoming_stream_->OnIncomingStreamClosed(fin_received);
+}
+
+void ReceiveStream::Reset() {
+  incoming_stream_->Reset();
+}
+
+void ReceiveStream::ContextDestroyed() {
+  incoming_stream_->ContextDestroyed();
+}
+
+void ReceiveStream::Trace(Visitor* visitor) {
+  visitor->Trace(incoming_stream_);
+  visitor->Trace(quic_transport_);
+  ScriptWrappable::Trace(visitor);
+  WebTransportStream::Trace(visitor);
+}
+
+void ReceiveStream::ForgetStream() {
+  quic_transport_->ForgetStream(stream_id_);
+}
 
 }  // namespace blink

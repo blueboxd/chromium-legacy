@@ -354,13 +354,10 @@ struct HistoryAddPageArgs {
   // The default constructor is equivalent to:
   //
   //   HistoryAddPageArgs(
-  //       GURL(), base::Time(), NULL, 0, GURL(),
+  //       GURL(), base::Time(), nullptr, 0, GURL(),
   //       RedirectList(), ui::PAGE_TRANSITION_LINK,
   //       false, SOURCE_BROWSED, false, true,
   //       base::nullopt)
-  //
-  // TODO(avi): Is ContextID needed, now that we have a globally-unique
-  // nav_entry_id? https://crbug.com/859902
   HistoryAddPageArgs();
   HistoryAddPageArgs(const GURL& url,
                      base::Time time,

@@ -38,7 +38,7 @@ void ScopedWebInputEventWithLatencyInfo::CoalesceWith(
   // since it will represent the longest latency. If it's a GestureScrollUpdate
   // event, update the old event's last timestamp and scroll delta using the
   // newer event's latency info.
-  if (event().GetType() == WebInputEvent::kGestureScrollUpdate)
+  if (event().GetType() == WebInputEvent::Type::kGestureScrollUpdate)
     latency_.CoalesceScrollUpdateWith(other.latency_);
   other.latency_ = latency_;
   other.latency_.set_coalesced();

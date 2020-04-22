@@ -114,6 +114,7 @@ TEST(ServiceWorkerRequestTest, FromAndToFetchAPIRequest) {
   EXPECT_EQ(kCredentialsMode, second_fetch_api_request->credentials_mode);
   EXPECT_EQ(kCacheMode, second_fetch_api_request->cache_mode);
   EXPECT_EQ(kRedirectMode, second_fetch_api_request->redirect_mode);
+  EXPECT_EQ(kDestination, second_fetch_api_request->destination);
   EXPECT_EQ(referrer, second_fetch_api_request->referrer->url);
   EXPECT_EQ(network::mojom::ReferrerPolicy::kAlways,
             second_fetch_api_request->referrer->policy);

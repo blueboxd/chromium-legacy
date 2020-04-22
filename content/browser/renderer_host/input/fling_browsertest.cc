@@ -144,12 +144,12 @@ class BrowserSideFlingBrowserTest : public ContentBrowserTest {
         parent_render_widget_host
             ? std::make_unique<InputMsgWatcher>(
                   parent_render_widget_host,
-                  blink::WebInputEvent::kGestureScrollBegin)
+                  blink::WebInputEvent::Type::kGestureScrollBegin)
             : std::make_unique<InputMsgWatcher>(
                   render_widget_host,
-                  blink::WebInputEvent::kGestureScrollBegin);
+                  blink::WebInputEvent::Type::kGestureScrollBegin);
     blink::WebGestureEvent gesture_scroll_begin(
-        blink::WebGestureEvent::kGestureScrollBegin,
+        blink::WebGestureEvent::Type::kGestureScrollBegin,
         blink::WebInputEvent::kNoModifiers, ui::EventTimeForNow());
     gesture_scroll_begin.SetSourceDevice(blink::WebGestureDevice::kTouchscreen);
     gesture_scroll_begin.data.scroll_begin.delta_hint_units =
@@ -172,7 +172,7 @@ class BrowserSideFlingBrowserTest : public ContentBrowserTest {
 
     //  Send a GFS.
     blink::WebGestureEvent gesture_fling_start(
-        blink::WebGestureEvent::kGestureFlingStart,
+        blink::WebGestureEvent::Type::kGestureFlingStart,
         blink::WebInputEvent::kNoModifiers, ui::EventTimeForNow());
     gesture_fling_start.SetSourceDevice(blink::WebGestureDevice::kTouchscreen);
     gesture_fling_start.data.fling_start.velocity_x = fling_velocity.x();
@@ -193,10 +193,10 @@ class BrowserSideFlingBrowserTest : public ContentBrowserTest {
         parent_render_widget_host
             ? std::make_unique<InputMsgWatcher>(
                   parent_render_widget_host,
-                  blink::WebInputEvent::kGestureScrollBegin)
+                  blink::WebInputEvent::Type::kGestureScrollBegin)
             : std::make_unique<InputMsgWatcher>(
                   render_widget_host,
-                  blink::WebInputEvent::kGestureScrollBegin);
+                  blink::WebInputEvent::Type::kGestureScrollBegin);
     blink::WebMouseWheelEvent wheel_event =
         SyntheticWebMouseWheelEventBuilder::Build(
             10, 10, fling_velocity.x() / 1000, fling_velocity.y() / 1000, 0,
@@ -218,7 +218,7 @@ class BrowserSideFlingBrowserTest : public ContentBrowserTest {
 
     //  Send a GFS.
     blink::WebGestureEvent gesture_fling_start(
-        blink::WebGestureEvent::kGestureFlingStart,
+        blink::WebGestureEvent::Type::kGestureFlingStart,
         blink::WebInputEvent::kNoModifiers, ui::EventTimeForNow());
     gesture_fling_start.SetSourceDevice(blink::WebGestureDevice::kTouchpad);
     gesture_fling_start.data.fling_start.velocity_x = fling_velocity.x();
@@ -311,7 +311,7 @@ IN_PROC_BROWSER_TEST_F(
   // Fling upward and wait for the generated GSE to arrive. Then check that the
   // RWHV has stopped the fling.
   auto input_msg_watcher = std::make_unique<InputMsgWatcher>(
-      GetWidgetHost(), blink::WebInputEvent::kGestureScrollEnd);
+      GetWidgetHost(), blink::WebInputEvent::Type::kGestureScrollEnd);
   gfx::Vector2d fling_velocity(0, 2000);
   SimulateTouchscreenFling(
       GetWidgetHost(), nullptr /*parent_render_widget_host*/, fling_velocity);
@@ -326,7 +326,7 @@ IN_PROC_BROWSER_TEST_F(
   // Fling upward and wait for the generated GSE to arrive. Then check that the
   // RWHV has stopped the fling.
   auto input_msg_watcher = std::make_unique<InputMsgWatcher>(
-      GetWidgetHost(), blink::WebInputEvent::kGestureScrollEnd);
+      GetWidgetHost(), blink::WebInputEvent::Type::kGestureScrollEnd);
   gfx::Vector2d fling_velocity(0, 2000);
   SimulateTouchpadFling(GetWidgetHost(), nullptr /*parent_render_widget_host*/,
                         fling_velocity);
@@ -430,9 +430,9 @@ IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest,
 
   // Send a GFC to the child and wait for the Generated GSE to get bubbled.
   auto input_msg_watcher = std::make_unique<InputMsgWatcher>(
-      GetWidgetHost(), blink::WebInputEvent::kGestureScrollEnd);
+      GetWidgetHost(), blink::WebInputEvent::Type::kGestureScrollEnd);
   blink::WebGestureEvent gesture_fling_cancel(
-      blink::WebGestureEvent::kGestureFlingCancel,
+      blink::WebGestureEvent::Type::kGestureFlingCancel,
       blink::WebInputEvent::kNoModifiers, ui::EventTimeForNow());
   gesture_fling_cancel.SetSourceDevice(blink::WebGestureDevice::kTouchscreen);
 
@@ -470,7 +470,7 @@ IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest,
 
   // Fling and wait for the parent to scroll up.
   auto input_msg_watcher = std::make_unique<InputMsgWatcher>(
-      GetWidgetHost(), blink::WebInputEvent::kGestureScrollEnd);
+      GetWidgetHost(), blink::WebInputEvent::Type::kGestureScrollEnd);
   SyntheticSmoothScrollGestureParams params;
   params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
   const gfx::PointF location_in_widget(10, 10);

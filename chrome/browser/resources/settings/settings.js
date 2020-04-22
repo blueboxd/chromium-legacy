@@ -6,7 +6,7 @@ import './settings_ui/settings_ui.m.js';
 
 export {AboutPageBrowserProxy, AboutPageBrowserProxyImpl, UpdateStatus} from './about_page/about_page_browser_proxy.m.js';
 export {AppearanceBrowserProxy, AppearanceBrowserProxyImpl} from './appearance_page/appearance_browser_proxy.js';
-export {PasswordManagerImpl, PasswordManagerProxy} from './autofill_page/password_manager_proxy.m.js';
+export {PasswordManagerImpl, PasswordManagerProxy} from './autofill_page/password_manager_proxy.js';
 // <if expr="not chromeos">
 export {DefaultBrowserBrowserProxyImpl} from './default_browser_page/default_browser_browser_proxy.m.js';
 // </if>
@@ -35,6 +35,6 @@ export {PrivacyPageBrowserProxyImpl, SecureDnsMode, SecureDnsUiManagementMode} f
 export {ResetBrowserProxyImpl} from './reset_page/reset_browser_proxy.js';
 export {buildRouter, routes} from './route.m.js';
 export {Route, Router} from './router.m.js';
-export {SafetyCheckBrowserProxy, SafetyCheckBrowserProxyImpl, SafetyCheckCallbackConstants, SafetyCheckExtensionsStatus, SafetyCheckParentStatus, SafetyCheckPasswordsStatus, SafetyCheckSafeBrowsingStatus, SafetyCheckUpdatesStatus} from './safety_check_page/safety_check_browser_proxy.m.js';
+export {SafetyCheckBrowserProxy, SafetyCheckBrowserProxyImpl, SafetyCheckCallbackConstants, SafetyCheckExtensionsStatus, SafetyCheckParentStatus, SafetyCheckPasswordsStatus, SafetyCheckSafeBrowsingStatus, SafetyCheckUpdatesStatus} from './safety_check_page/safety_check_browser_proxy.js';
 export {SearchEnginesBrowserProxyImpl} from './search_engines_page/search_engines_browser_proxy.m.js';
 export {getSearchManager, SearchRequest, setSearchManagerForTesting} from './search_settings.m.js';

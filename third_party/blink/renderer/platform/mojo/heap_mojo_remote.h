@@ -62,6 +62,10 @@ class HeapMojoRemote {
     DCHECK(task_runner);
     wrapper_->remote().Bind(std::move(pending_remote), std::move(task_runner));
   }
+  void PauseReceiverUntilFlushCompletes(mojo::PendingFlush flush) {
+    wrapper_->remote().PauseReceiverUntilFlushCompletes(std::move(flush));
+  }
+  mojo::PendingFlush FlushAsync() { return wrapper_->remote().FlushAsync(); }
   void FlushForTesting() { return wrapper_->remote().FlushForTesting(); }
 
   void Trace(Visitor* visitor) { visitor->Trace(wrapper_); }

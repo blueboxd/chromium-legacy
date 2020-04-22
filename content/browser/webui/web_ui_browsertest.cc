@@ -288,11 +288,14 @@ IN_PROC_BROWSER_TEST_F(WebUIRequiringGestureBrowserTest,
                        MessageRequiringGestureIgnoresNonInteractiveEvents) {
   // Mouse enter / mouse move / mouse leave should not be considered input
   // events that interact with the page.
-  content::SimulateMouseEvent(web_contents(), blink::WebInputEvent::kMouseEnter,
+  content::SimulateMouseEvent(web_contents(),
+                              blink::WebInputEvent::Type::kMouseEnter,
                               gfx::Point(50, 50));
-  content::SimulateMouseEvent(web_contents(), blink::WebInputEvent::kMouseMove,
+  content::SimulateMouseEvent(web_contents(),
+                              blink::WebInputEvent::Type::kMouseMove,
                               gfx::Point(50, 50));
-  content::SimulateMouseEvent(web_contents(), blink::WebInputEvent::kMouseLeave,
+  content::SimulateMouseEvent(web_contents(),
+                              blink::WebInputEvent::Type::kMouseLeave,
                               gfx::Point(50, 50));
   // Nor should mouse wheel.
   content::SimulateMouseWheelEvent(web_contents(), gfx::Point(50, 50),

@@ -2228,10 +2228,9 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       break;
 
     case IDC_CONTENT_CONTEXT_OPEN_ORIGINAL_IMAGE_NEW_TAB:
-      OpenURLWithExtraHeaders(
-          params_.src_url, GetDocumentURL(params_),
-          WindowOpenDisposition::NEW_BACKGROUND_TAB, ui::PAGE_TRANSITION_LINK,
-          data_reduction_proxy::chrome_proxy_pass_through_header(), false);
+      OpenURLWithExtraHeaders(params_.src_url, GetDocumentURL(params_),
+                              WindowOpenDisposition::NEW_BACKGROUND_TAB,
+                              ui::PAGE_TRANSITION_LINK, std::string(), false);
       break;
 
     case IDC_CONTENT_CONTEXT_LOAD_IMAGE:
@@ -2843,16 +2842,7 @@ void RenderViewContextMenu::ExecSaveAs() {
     RecordDownloadSource(DOWNLOAD_INITIATED_BY_CONTEXT_MENU);
     const GURL& url = params_.src_url;
     content::Referrer referrer = CreateReferrer(url, params_);
-
     std::string headers;
-    DataReductionProxyChromeSettings* settings =
-        DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
-            browser_context_);
-    if (params_.media_type == ContextMenuDataMediaType::kImage && settings &&
-        settings->CanUseDataReductionProxy(params_.src_url)) {
-      headers = data_reduction_proxy::chrome_proxy_pass_through_header();
-    }
-
     source_web_contents_->SaveFrameWithHeaders(url, referrer, headers,
                                                params_.suggested_filename);
   }

@@ -255,7 +255,7 @@ void WebFrameWidgetBase::DragSourceEndedAt(const gfx::PointF& point_in_viewport,
           FloatPoint(point_in_viewport)));
 
   WebMouseEvent fake_mouse_move(
-      WebInputEvent::kMouseMove, point_in_root_frame, screen_point,
+      WebInputEvent::Type::kMouseMove, point_in_root_frame, screen_point,
       WebPointerProperties::Button::kLeft, 0, WebInputEvent::kNoModifiers,
       base::TimeTicks::Now());
   fake_mouse_move.SetFrameScale(1);
@@ -555,7 +555,7 @@ void WebFrameWidgetBase::PointerLockMouseEvent(
 
   AtomicString event_type;
   switch (input_event.GetType()) {
-    case WebInputEvent::kMouseDown:
+    case WebInputEvent::Type::kMouseDown:
       event_type = event_type_names::kMousedown;
       if (!GetPage() || !GetPage()->GetPointerLockController().GetElement())
         break;
@@ -565,10 +565,10 @@ void WebFrameWidgetBase::PointerLockMouseEvent(
                                            ->GetDocument()
                                            .GetFrame());
       break;
-    case WebInputEvent::kMouseUp:
+    case WebInputEvent::Type::kMouseUp:
       event_type = event_type_names::kMouseup;
       break;
-    case WebInputEvent::kMouseMove:
+    case WebInputEvent::Type::kMouseMove:
       event_type = event_type_names::kMousemove;
       break;
     default:

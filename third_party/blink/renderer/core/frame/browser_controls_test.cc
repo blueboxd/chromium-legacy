@@ -113,10 +113,10 @@ class BrowserControlsTest : public testing::Test,
                           WebInputEvent::GetStaticTimeStampForTests(),
                           WebGestureDevice::kTouchscreen);
     event.SetPositionInWidget(FloatPoint(100, 100));
-    if (type == WebInputEvent::kGestureScrollUpdate) {
+    if (type == WebInputEvent::Type::kGestureScrollUpdate) {
       event.data.scroll_update.delta_x = delta_x;
       event.data.scroll_update.delta_y = delta_y;
-    } else if (type == WebInputEvent::kGestureScrollBegin) {
+    } else if (type == WebInputEvent::Type::kGestureScrollBegin) {
       event.data.scroll_begin.delta_x_hint = delta_x;
       event.data.scroll_begin.delta_y_hint = delta_y;
     }
@@ -125,11 +125,11 @@ class BrowserControlsTest : public testing::Test,
 
   void VerticalScroll(float delta_y) {
     GetWebView()->MainFrameWidget()->HandleInputEvent(
-        GenerateEvent(WebInputEvent::kGestureScrollBegin, 0, delta_y));
+        GenerateEvent(WebInputEvent::Type::kGestureScrollBegin, 0, delta_y));
     GetWebView()->MainFrameWidget()->HandleInputEvent(
-        GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, delta_y));
+        GenerateEvent(WebInputEvent::Type::kGestureScrollUpdate, 0, delta_y));
     GetWebView()->MainFrameWidget()->HandleInputEvent(
-        GenerateEvent(WebInputEvent::kGestureScrollEnd));
+        GenerateEvent(WebInputEvent::Type::kGestureScrollEnd));
   }
 
   Element* GetElementById(const WebString& id) {
@@ -182,10 +182,10 @@ class BrowserControlsSimTest : public SimTest {
                           WebInputEvent::GetStaticTimeStampForTests(),
                           WebGestureDevice::kTouchscreen);
     event.SetPositionInWidget(FloatPoint(100, 100));
-    if (type == WebInputEvent::kGestureScrollUpdate) {
+    if (type == WebInputEvent::Type::kGestureScrollUpdate) {
       event.data.scroll_update.delta_x = delta_x;
       event.data.scroll_update.delta_y = delta_y;
-    } else if (type == WebInputEvent::kGestureScrollBegin) {
+    } else if (type == WebInputEvent::Type::kGestureScrollBegin) {
       event.data.scroll_begin.delta_x_hint = delta_x;
       event.data.scroll_begin.delta_y_hint = delta_y;
     }
@@ -194,11 +194,11 @@ class BrowserControlsSimTest : public SimTest {
 
   void VerticalScroll(float delta_y) {
     WebView().MainFrameWidget()->HandleInputEvent(
-        GenerateEvent(WebInputEvent::kGestureScrollBegin, 0, delta_y));
+        GenerateEvent(WebInputEvent::Type::kGestureScrollBegin, 0, delta_y));
     WebView().MainFrameWidget()->HandleInputEvent(
-        GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, delta_y));
+        GenerateEvent(WebInputEvent::Type::kGestureScrollUpdate, 0, delta_y));
     WebView().MainFrameWidget()->HandleInputEvent(
-        GenerateEvent(WebInputEvent::kGestureScrollEnd));
+        GenerateEvent(WebInputEvent::Type::kGestureScrollEnd));
   }
 };
 
@@ -220,12 +220,12 @@ TEST_F(BrowserControlsTest, MAYBE(HideOnScrollDown)) {
   web_view->GetBrowserControls().SetShownRatio(1, 1);
 
   web_view->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollBegin));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollBegin));
   EXPECT_FLOAT_EQ(50.f, web_view->GetBrowserControls().ContentOffset());
 
   // Browser controls should be scrolled partially and page should not scroll.
   web_view->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, -25.f));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollUpdate, 0, -25.f));
   EXPECT_FLOAT_EQ(25.f, web_view->GetBrowserControls().ContentOffset());
   EXPECT_EQ(ScrollOffset(0, 0),
             GetFrame()->View()->LayoutViewport()->GetScrollOffset());
@@ -234,14 +234,14 @@ TEST_F(BrowserControlsTest, MAYBE(HideOnScrollDown)) {
   // should be
   // consumed by the page.
   web_view->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, -40.f));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollUpdate, 0, -40.f));
   EXPECT_FLOAT_EQ(0.f, web_view->GetBrowserControls().ContentOffset());
   EXPECT_EQ(ScrollOffset(0, 15),
             GetFrame()->View()->LayoutViewport()->GetScrollOffset());
 
   // Only page should consume scroll
   web_view->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, -20.f));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollUpdate, 0, -20.f));
   EXPECT_FLOAT_EQ(0.f, web_view->GetBrowserControls().ContentOffset());
   EXPECT_EQ(ScrollOffset(0, 35),
             GetFrame()->View()->LayoutViewport()->GetScrollOffset());
@@ -256,13 +256,13 @@ TEST_F(BrowserControlsTest, MAYBE(HideBottomControlsOnScrollDown)) {
   web_view->GetBrowserControls().SetShownRatio(0.0, 1);
 
   web_view->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollBegin));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollBegin));
   EXPECT_FLOAT_EQ(0.f, web_view->GetBrowserControls().ContentOffset());
 
   // Bottom controls and page content should both scroll and there should be
   // no content offset.
   web_view->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, -25.f));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollUpdate, 0, -25.f));
   EXPECT_FLOAT_EQ(0.f, web_view->GetBrowserControls().ContentOffset());
   EXPECT_FLOAT_EQ(0.5f, web_view->GetBrowserControls().BottomShownRatio());
   EXPECT_EQ(ScrollOffset(0, 25.f),
@@ -270,11 +270,11 @@ TEST_F(BrowserControlsTest, MAYBE(HideBottomControlsOnScrollDown)) {
 
   // Browser controls should become completely hidden.
   web_view->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollBegin));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollBegin));
   web_view->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, -40.f));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollUpdate, 0, -40.f));
   web_view->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollEnd));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollEnd));
   EXPECT_FLOAT_EQ(0.f, web_view->GetBrowserControls().ContentOffset());
   EXPECT_FLOAT_EQ(0.f, web_view->GetBrowserControls().BottomShownRatio());
   EXPECT_EQ(ScrollOffset(0, 65.f),
@@ -290,17 +290,17 @@ TEST_F(BrowserControlsTest, MAYBE(ShowOnScrollUp)) {
   web_view->GetBrowserControls().SetShownRatio(0, 0);
 
   web_view->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollBegin));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollBegin));
   EXPECT_FLOAT_EQ(0.f, web_view->GetBrowserControls().ContentOffset());
 
   web_view->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, 10.f));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollUpdate, 0, 10.f));
   EXPECT_FLOAT_EQ(10.f, web_view->GetBrowserControls().ContentOffset());
   EXPECT_EQ(ScrollOffset(0, 0),
             GetFrame()->View()->LayoutViewport()->GetScrollOffset());
 
   web_view->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, 50.f));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollUpdate, 0, 50.f));
   EXPECT_FLOAT_EQ(50.f, web_view->GetBrowserControls().ContentOffset());
   EXPECT_EQ(ScrollOffset(0, 0),
             GetFrame()->View()->LayoutViewport()->GetScrollOffset());
@@ -315,25 +315,25 @@ TEST_F(BrowserControlsTest, MAYBE(ShowBottomControlsOnScrollUp)) {
   web_view->GetBrowserControls().SetShownRatio(0, 0);
 
   web_view->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollBegin));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollBegin));
   EXPECT_FLOAT_EQ(0.f, web_view->GetBrowserControls().ContentOffset());
 
   // Allow some space to scroll up.
   web_view->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollBegin));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollBegin));
   web_view->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, -50.f));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollUpdate, 0, -50.f));
   web_view->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollEnd));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollEnd));
 
   web_view->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollBegin));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollBegin));
   web_view->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, 25.f));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollUpdate, 0, 25.f));
   EXPECT_FLOAT_EQ(0.5f, web_view->GetBrowserControls().BottomShownRatio());
 
   web_view->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollEnd));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollEnd));
   EXPECT_FLOAT_EQ(0.f, web_view->GetBrowserControls().ContentOffset());
   EXPECT_FLOAT_EQ(1.f, web_view->GetBrowserControls().BottomShownRatio());
   EXPECT_EQ(ScrollOffset(0, 25),
@@ -352,13 +352,13 @@ TEST_F(BrowserControlsTest, MAYBE(ScrollDownThenUp)) {
       ScrollOffset(0, 100), mojom::blink::ScrollType::kProgrammatic);
 
   web_view->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollBegin));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollBegin));
   EXPECT_FLOAT_EQ(50.f, web_view->GetBrowserControls().ContentOffset());
 
   // Scroll down to completely hide browser controls. Excess deltaY (100px)
   // should be consumed by the page.
   web_view->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, -150.f));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollUpdate, 0, -150.f));
   EXPECT_FLOAT_EQ(0.f, web_view->GetBrowserControls().ContentOffset());
   EXPECT_EQ(ScrollOffset(0, 200),
             GetFrame()->View()->LayoutViewport()->GetScrollOffset());
@@ -366,13 +366,13 @@ TEST_F(BrowserControlsTest, MAYBE(ScrollDownThenUp)) {
   // Scroll up and ensure the browser controls does not move until we recover
   // 100px previously scrolled.
   web_view->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, 40.f));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollUpdate, 0, 40.f));
   EXPECT_FLOAT_EQ(0.f, web_view->GetBrowserControls().ContentOffset());
   EXPECT_EQ(ScrollOffset(0, 160),
             GetFrame()->View()->LayoutViewport()->GetScrollOffset());
 
   web_view->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, 60.f));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollUpdate, 0, 60.f));
   EXPECT_FLOAT_EQ(0.f, web_view->GetBrowserControls().ContentOffset());
   EXPECT_EQ(ScrollOffset(0, 100),
             GetFrame()->View()->LayoutViewport()->GetScrollOffset());
@@ -380,14 +380,14 @@ TEST_F(BrowserControlsTest, MAYBE(ScrollDownThenUp)) {
   // Now we have hit the threshold so further scroll up should be consumed by
   // browser controls.
   web_view->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, 30.f));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollUpdate, 0, 30.f));
   EXPECT_FLOAT_EQ(30.f, web_view->GetBrowserControls().ContentOffset());
   EXPECT_EQ(ScrollOffset(0, 100),
             GetFrame()->View()->LayoutViewport()->GetScrollOffset());
 
   // Once top control is fully shown then page should consume any excess scroll.
   web_view->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, 70.f));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollUpdate, 0, 70.f));
   EXPECT_FLOAT_EQ(50.f, web_view->GetBrowserControls().ContentOffset());
   EXPECT_EQ(ScrollOffset(0, 50),
             GetFrame()->View()->LayoutViewport()->GetScrollOffset());
@@ -405,26 +405,26 @@ TEST_F(BrowserControlsTest, MAYBE(ScrollUpThenDown)) {
       ScrollOffset(0, 100), mojom::blink::ScrollType::kProgrammatic);
 
   web_view->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollBegin));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollBegin));
   EXPECT_FLOAT_EQ(0.f, web_view->GetBrowserControls().ContentOffset());
 
   // Scroll up to completely show browser controls. Excess deltaY (50px) should
   // be consumed by the page.
   web_view->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, 100.f));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollUpdate, 0, 100.f));
   EXPECT_FLOAT_EQ(50.f, web_view->GetBrowserControls().ContentOffset());
   EXPECT_EQ(ScrollOffset(0, 50),
             GetFrame()->View()->LayoutViewport()->GetScrollOffset());
 
   // Scroll down and ensure only browser controls is scrolled
   web_view->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, -40.f));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollUpdate, 0, -40.f));
   EXPECT_FLOAT_EQ(10.f, web_view->GetBrowserControls().ContentOffset());
   EXPECT_EQ(ScrollOffset(0, 50),
             GetFrame()->View()->LayoutViewport()->GetScrollOffset());
 
   web_view->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, -60.f));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollUpdate, 0, -60.f));
   EXPECT_FLOAT_EQ(0.f, web_view->GetBrowserControls().ContentOffset());
   EXPECT_EQ(ScrollOffset(0, 100),
             GetFrame()->View()->LayoutViewport()->GetScrollOffset());
@@ -439,18 +439,18 @@ TEST_F(BrowserControlsTest, MAYBE(HorizontalScroll)) {
   web_view->GetBrowserControls().SetShownRatio(1, 1);
 
   web_view->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollBegin));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollBegin));
   EXPECT_FLOAT_EQ(50.f, web_view->GetBrowserControls().ContentOffset());
 
   // Browser controls should not consume horizontal scroll.
   web_view->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollUpdate, -110.f, -100.f));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollUpdate, -110.f, -100.f));
   EXPECT_FLOAT_EQ(0.f, web_view->GetBrowserControls().ContentOffset());
   EXPECT_EQ(ScrollOffset(110, 50),
             GetFrame()->View()->LayoutViewport()->GetScrollOffset());
 
   web_view->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollUpdate, -40.f, 0));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollUpdate, -40.f, 0));
   EXPECT_FLOAT_EQ(0.f, web_view->GetBrowserControls().ContentOffset());
   EXPECT_EQ(ScrollOffset(150, 50),
             GetFrame()->View()->LayoutViewport()->GetScrollOffset());
@@ -468,12 +468,12 @@ TEST_F(BrowserControlsTest, MAYBE(PageScaleHasNoImpact)) {
   web_view->GetBrowserControls().SetShownRatio(1, 1);
 
   web_view->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollBegin));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollBegin));
   EXPECT_FLOAT_EQ(50.f, web_view->GetBrowserControls().ContentOffset());
 
   // Browser controls should be scrolled partially and page should not scroll.
   web_view->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, -20.f));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollUpdate, 0, -20.f));
   EXPECT_FLOAT_EQ(30.f, web_view->GetBrowserControls().ContentOffset());
   EXPECT_EQ(ScrollOffset(0, 0),
             GetFrame()->View()->GetScrollableArea()->GetScrollOffset());
@@ -481,32 +481,32 @@ TEST_F(BrowserControlsTest, MAYBE(PageScaleHasNoImpact)) {
   // Browser controls should consume 30px and become hidden. Excess scroll
   // should be consumed by the page at 2x scale.
   web_view->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, -70.f));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollUpdate, 0, -70.f));
   EXPECT_FLOAT_EQ(0.f, web_view->GetBrowserControls().ContentOffset());
   EXPECT_EQ(ScrollOffset(0, 20),
             GetFrame()->View()->GetScrollableArea()->GetScrollOffset());
 
   web_view->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollEnd));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollEnd));
 
   // Change page scale and test.
   web_view->SetPageScaleFactor(0.5);
 
   web_view->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollBegin));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollBegin));
   EXPECT_FLOAT_EQ(0.f, web_view->GetBrowserControls().ContentOffset());
   EXPECT_EQ(ScrollOffset(0, 20),
             GetFrame()->View()->GetScrollableArea()->GetScrollOffset());
 
   web_view->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, 50.f));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollUpdate, 0, 50.f));
   EXPECT_FLOAT_EQ(50.f, web_view->GetBrowserControls().ContentOffset());
   EXPECT_EQ(ScrollOffset(0, 20),
             GetFrame()->View()->GetScrollableArea()->GetScrollOffset());
 
   // At 0.5x scale scrolling 10px should take us to the top of the page.
   web_view->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, 10.f));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollUpdate, 0, 10.f));
   EXPECT_FLOAT_EQ(50.f, web_view->GetBrowserControls().ContentOffset());
   EXPECT_EQ(ScrollOffset(0, 0),
             GetFrame()->View()->GetScrollableArea()->GetScrollOffset());
@@ -557,18 +557,18 @@ TEST_F(BrowserControlsTest, MAYBE(ScrollableSubregionScrollFirst)) {
   // Now scroll down should start hiding browser controls but main frame
   // should not scroll.
   GetWebView()->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollBegin, 0, -40.f));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollBegin, 0, -40.f));
   GetWebView()->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, -40.f));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollUpdate, 0, -40.f));
   EXPECT_FLOAT_EQ(10.f, web_view->GetBrowserControls().ContentOffset());
   EXPECT_EQ(ScrollOffset(0, 50),
             GetFrame()->View()->LayoutViewport()->GetScrollOffset());
 
   // Continued scroll down should scroll down the main frame
   GetWebView()->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, -40.f));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollUpdate, 0, -40.f));
   GetWebView()->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollEnd));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollEnd));
   EXPECT_FLOAT_EQ(0.f, web_view->GetBrowserControls().ContentOffset());
   EXPECT_EQ(ScrollOffset(0, 80),
             GetFrame()->View()->LayoutViewport()->GetScrollOffset());
@@ -583,18 +583,18 @@ TEST_F(BrowserControlsTest, MAYBE(ScrollableSubregionScrollFirst)) {
   // Now scroll up should start showing browser controls but main frame
   // should not scroll.
   GetWebView()->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollBegin, 0, 40.f));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollBegin, 0, 40.f));
   GetWebView()->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, 40.f));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollUpdate, 0, 40.f));
   EXPECT_FLOAT_EQ(40.f, web_view->GetBrowserControls().ContentOffset());
   EXPECT_EQ(ScrollOffset(0, 80),
             GetFrame()->View()->LayoutViewport()->GetScrollOffset());
 
   // Continued scroll up scroll up the main frame
   GetWebView()->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, 40.f));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollUpdate, 0, 40.f));
   GetWebView()->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollEnd));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollEnd));
   EXPECT_FLOAT_EQ(50.f, web_view->GetBrowserControls().ContentOffset());
   EXPECT_EQ(ScrollOffset(0, 50),
             GetFrame()->View()->LayoutViewport()->GetScrollOffset());
@@ -620,18 +620,18 @@ TEST_F(BrowserControlsTest, MAYBE(ScrollableIframeScrollFirst)) {
   // Now scroll down should start hiding browser controls but main frame
   // should not scroll.
   GetWebView()->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollBegin, 0, -40.f));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollBegin, 0, -40.f));
   GetWebView()->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, -40.f));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollUpdate, 0, -40.f));
   EXPECT_FLOAT_EQ(10.f, web_view->GetBrowserControls().ContentOffset());
   EXPECT_EQ(ScrollOffset(0, 50),
             GetFrame()->View()->LayoutViewport()->GetScrollOffset());
 
   // Continued scroll down should scroll down the main frame
   GetWebView()->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, -40.f));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollUpdate, 0, -40.f));
   GetWebView()->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollEnd));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollEnd));
   EXPECT_FLOAT_EQ(0.f, web_view->GetBrowserControls().ContentOffset());
   EXPECT_EQ(ScrollOffset(0, 80),
             GetFrame()->View()->LayoutViewport()->GetScrollOffset());
@@ -646,18 +646,18 @@ TEST_F(BrowserControlsTest, MAYBE(ScrollableIframeScrollFirst)) {
   // Now scroll up should start showing browser controls but main frame
   // should not scroll.
   GetWebView()->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollBegin, 0, 40.f));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollBegin, 0, 40.f));
   GetWebView()->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, 40.f));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollUpdate, 0, 40.f));
   EXPECT_FLOAT_EQ(40.f, web_view->GetBrowserControls().ContentOffset());
   EXPECT_EQ(ScrollOffset(0, 80),
             GetFrame()->View()->LayoutViewport()->GetScrollOffset());
 
   // Continued scroll up scroll up the main frame
   GetWebView()->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, 40.f));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollUpdate, 0, 40.f));
   GetWebView()->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollEnd));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollEnd));
   EXPECT_FLOAT_EQ(50.f, web_view->GetBrowserControls().ContentOffset());
   EXPECT_EQ(ScrollOffset(0, 50),
             GetFrame()->View()->LayoutViewport()->GetScrollOffset());
@@ -728,13 +728,13 @@ TEST_F(BrowserControlsTest, MAYBE(ScrollUpPastLimitDoesNotHide)) {
   web_view->MainFrameImpl()->SetScrollOffset(WebSize(0, 10000));
   GetVisualViewport().SetLocation(FloatPoint(0, 0));
   GetWebView()->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollBegin, 0, -10.f));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollBegin, 0, -10.f));
   GetWebView()->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, -10.f));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollUpdate, 0, -10.f));
   EXPECT_FLOAT_EQ(40, web_view->GetBrowserControls().ContentOffset());
 
   GetWebView()->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollEnd));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollEnd));
   EXPECT_FLOAT_EQ(50, web_view->GetBrowserControls().ContentOffset());
 
   web_view->GetBrowserControls().SetShownRatio(1, 1);
@@ -742,13 +742,13 @@ TEST_F(BrowserControlsTest, MAYBE(ScrollUpPastLimitDoesNotHide)) {
   web_view->MainFrameImpl()->SetScrollOffset(WebSize(0, 0));
   GetVisualViewport().SetLocation(FloatPoint(0, 10000));
   GetWebView()->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollBegin, 0, -20.f));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollBegin, 0, -20.f));
   GetWebView()->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, -20.f));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollUpdate, 0, -20.f));
   EXPECT_FLOAT_EQ(30, web_view->GetBrowserControls().ContentOffset());
 
   GetWebView()->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollEnd));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollEnd));
   EXPECT_FLOAT_EQ(50, web_view->GetBrowserControls().ContentOffset());
 
   web_view->GetBrowserControls().SetShownRatio(1, 1);
@@ -835,13 +835,13 @@ TEST_F(BrowserControlsSimTest, MAYBE(StateConstraints)) {
 
   // Setting permitted state to "both" should not change an in-flight offset.
   WebView().MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollBegin, 0, 20.f));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollBegin, 0, 20.f));
   WebView().MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, 20.f));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollUpdate, 0, 20.f));
   EXPECT_FLOAT_EQ(20, WebView().GetBrowserControls().ContentOffset());
 
   WebView().MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollEnd));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollEnd));
   EXPECT_FLOAT_EQ(0, WebView().GetBrowserControls().ContentOffset());
   Compositor().layer_tree_host()->UpdateBrowserControlsState(
       cc::BrowserControlsState::kBoth, cc::BrowserControlsState::kBoth, false);
@@ -1310,9 +1310,9 @@ TEST_F(BrowserControlsTest,
   web_view->SetPageScaleFactor(page_scale);
   {
     web_view->MainFrameWidget()->HandleInputEvent(
-        GenerateEvent(WebInputEvent::kGestureScrollBegin));
+        GenerateEvent(WebInputEvent::Type::kGestureScrollBegin));
     web_view->MainFrameWidget()->HandleInputEvent(
-        GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, -10000));
+        GenerateEvent(WebInputEvent::Type::kGestureScrollUpdate, 0, -10000));
 
     ASSERT_EQ(0.f, web_view->GetBrowserControls().ContentOffset());
 
@@ -1323,7 +1323,7 @@ TEST_F(BrowserControlsTest,
     EXPECT_EQ(expected_root_offset, root_viewport->GetScrollOffset().Height());
 
     web_view->MainFrameWidget()->HandleInputEvent(
-        GenerateEvent(WebInputEvent::kGestureScrollEnd));
+        GenerateEvent(WebInputEvent::Type::kGestureScrollEnd));
   }
 
   // Commit the browser controls resize so that the browser controls do not
@@ -1346,9 +1346,9 @@ TEST_F(BrowserControlsTest,
   // to the document (i.e. the user shouldn't see a movement).
   {
     web_view->MainFrameWidget()->HandleInputEvent(
-        GenerateEvent(WebInputEvent::kGestureScrollBegin));
+        GenerateEvent(WebInputEvent::Type::kGestureScrollBegin));
     web_view->MainFrameWidget()->HandleInputEvent(
-        GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, 80));
+        GenerateEvent(WebInputEvent::Type::kGestureScrollUpdate, 0, 80));
 
     GetVisualViewport().ClampToBoundaries();
     view->LayoutViewport()->SetScrollOffset(
@@ -1359,7 +1359,7 @@ TEST_F(BrowserControlsTest,
     EXPECT_EQ(expected_root_offset, root_viewport->GetScrollOffset().Height());
 
     web_view->MainFrameWidget()->HandleInputEvent(
-        GenerateEvent(WebInputEvent::kGestureScrollEnd));
+        GenerateEvent(WebInputEvent::Type::kGestureScrollEnd));
   }
 }
 
@@ -1557,9 +1557,9 @@ TEST_F(BrowserControlsTest, MAYBE(ScrollWithMinHeightSetForTopControlsOnly)) {
       {top_height, 20, bottom_height, 0, false, true});
   // Scroll down to hide the controls.
   web_view->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollBegin));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollBegin));
   web_view->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, -100));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollUpdate, 0, -100));
 
   // The bottom controls should be completely hidden while the top controls are
   // at the minimum height.
@@ -1569,7 +1569,7 @@ TEST_F(BrowserControlsTest, MAYBE(ScrollWithMinHeightSetForTopControlsOnly)) {
 
   // Scrolling back up should bring the browser controls shown ratios back to 1.
   web_view->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, 100));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollUpdate, 0, 100));
   EXPECT_EQ(1.f, web_view->GetBrowserControls().BottomShownRatio());
   EXPECT_EQ(1.f, web_view->GetBrowserControls().TopShownRatio());
   EXPECT_EQ(top_height, web_view->GetBrowserControls().ContentOffset());
@@ -1587,11 +1587,11 @@ TEST_F(BrowserControlsTest, MAYBE(ScrollWithMinHeightSet)) {
       {top_height, 20, bottom_height, 10, false, true});
 
   web_view->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollBegin));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollBegin));
   web_view->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, -100));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollUpdate, 0, -100));
   web_view->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollEnd));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollEnd));
 
   // Browser controls don't scroll off completely, and stop scrolling at the min
   // height.
@@ -1600,19 +1600,19 @@ TEST_F(BrowserControlsTest, MAYBE(ScrollWithMinHeightSet)) {
 
   // Ending the scroll then scrolling again shouldn't make any difference.
   web_view->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollBegin));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollBegin));
   web_view->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, -50));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollUpdate, 0, -50));
   web_view->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollEnd));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollEnd));
   EXPECT_EQ(20, web_view->GetBrowserControls().ContentOffset());
   EXPECT_EQ(10, web_view->GetBrowserControls().BottomContentOffset());
 
   // Finally, scroll back up to show the controls completely.
   web_view->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollBegin));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollBegin));
   web_view->MainFrameWidget()->HandleInputEvent(
-      GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, 100));
+      GenerateEvent(WebInputEvent::Type::kGestureScrollUpdate, 0, 100));
   EXPECT_EQ(top_height, web_view->GetBrowserControls().ContentOffset());
   EXPECT_EQ(bottom_height,
             web_view->GetBrowserControls().BottomContentOffset());

@@ -213,10 +213,10 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
      * Starts a download based on the current {@link ContextMenuParams}.
      * @param isLink Whether or not the download target is a link.
      */
-    public void startContextMenuDownload(boolean isLink, boolean isDataReductionProxyEnabled) {
+    public void startContextMenuDownload(boolean isLink) {
         if (mNativeContextMenuHelper != 0) {
-            ContextMenuHelperJni.get().onStartDownload(mNativeContextMenuHelper,
-                    ContextMenuHelper.this, isLink, isDataReductionProxyEnabled);
+            ContextMenuHelperJni.get().onStartDownload(
+                    mNativeContextMenuHelper, ContextMenuHelper.this, isLink);
         }
     }
 
@@ -372,8 +372,8 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
 
     @NativeMethods
     interface Natives {
-        void onStartDownload(long nativeContextMenuHelper, ContextMenuHelper caller, boolean isLink,
-                boolean isDataReductionProxyEnabled);
+        void onStartDownload(
+                long nativeContextMenuHelper, ContextMenuHelper caller, boolean isLink);
         void searchForImage(long nativeContextMenuHelper, ContextMenuHelper caller);
         void retrieveImageForShare(long nativeContextMenuHelper, ContextMenuHelper caller,
                 Callback<ImageCallbackResult> callback, int maxWidthPx, int maxHeightPx,

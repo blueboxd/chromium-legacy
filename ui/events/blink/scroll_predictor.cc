@@ -48,7 +48,7 @@ ScrollPredictor::ScrollPredictor() {
 ScrollPredictor::~ScrollPredictor() = default;
 
 void ScrollPredictor::ResetOnGestureScrollBegin(const WebGestureEvent& event) {
-  DCHECK(event.GetType() == WebInputEvent::kGestureScrollBegin);
+  DCHECK(event.GetType() == WebInputEvent::Type::kGestureScrollBegin);
   // Only do resampling for scroll on touchscreen.
   if (event.SourceDevice() == blink::WebGestureDevice::kTouchscreen) {
     should_resample_scroll_events_ = true;
@@ -66,7 +66,7 @@ std::unique_ptr<EventWithCallback> ScrollPredictor::ResampleScrollEvents(
       event_with_callback->original_events();
 
   if (event_with_callback->event().GetType() ==
-      WebInputEvent::kGestureScrollUpdate) {
+      WebInputEvent::Type::kGestureScrollUpdate) {
     // TODO(eirage): When scroll events are coalesced with pinch, we can have
     // empty original event list. In that case, we can't use the original events
     // to update the prediction. We don't want to use the aggregated event to
@@ -84,7 +84,7 @@ std::unique_ptr<EventWithCallback> ScrollPredictor::ResampleScrollEvents(
     metrics_handler_.EvaluatePrediction();
 
   } else if (event_with_callback->event().GetType() ==
-             WebInputEvent::kGestureScrollEnd) {
+             WebInputEvent::Type::kGestureScrollEnd) {
     should_resample_scroll_events_ = false;
   }
 
@@ -102,7 +102,7 @@ void ScrollPredictor::Reset() {
 
 void ScrollPredictor::UpdatePrediction(const WebScopedInputEvent& event,
                                        base::TimeTicks frame_time) {
-  DCHECK(event->GetType() == WebInputEvent::kGestureScrollUpdate);
+  DCHECK(event->GetType() == WebInputEvent::Type::kGestureScrollUpdate);
   const WebGestureEvent& gesture_event =
       static_cast<const WebGestureEvent&>(*event);
   // When fling, GSU is sending per frame, resampling is not needed.
@@ -128,7 +128,7 @@ void ScrollPredictor::UpdatePrediction(const WebScopedInputEvent& event,
 void ScrollPredictor::ResampleEvent(base::TimeTicks frame_time,
                                     WebInputEvent* event,
                                     LatencyInfo* latency_info) {
-  DCHECK(event->GetType() == WebInputEvent::kGestureScrollUpdate);
+  DCHECK(event->GetType() == WebInputEvent::Type::kGestureScrollUpdate);
   WebGestureEvent* gesture_event = static_cast<WebGestureEvent*>(event);
 
   TRACE_EVENT_BEGIN1("input", "ScrollPredictor::ResampleScrollEvents",

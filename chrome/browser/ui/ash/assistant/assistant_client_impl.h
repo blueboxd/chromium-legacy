@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/ash/assistant/device_actions.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom-forward.h"
+#include "chromeos/services/assistant/service.h"
 #include "components/session_manager/core/session_manager_observer.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/notification_observer.h"
@@ -110,6 +111,7 @@ class AssistantClientImpl : public ash::AssistantClient,
   mojo::Receiver<chromeos::assistant::mojom::Client> client_receiver_{this};
 
   std::unique_ptr<DeviceActions> device_actions_;
+  std::unique_ptr<chromeos::assistant::Service> service_;
   std::unique_ptr<AssistantImageDownloader> assistant_image_downloader_;
   std::unique_ptr<AssistantSetup> assistant_setup_;
   std::unique_ptr<AssistantWebViewFactoryImpl> assistant_web_view_factory_;

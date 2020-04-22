@@ -129,7 +129,8 @@ WebMouseEvent WebMouseEventBuilder::Build(
   int button = action_button;
   // For events other than MouseDown/Up, action_button is not defined. So we are
   // determining |button| value from |modifiers| as is done in other platforms.
-  if (type != WebInputEvent::kMouseDown && type != WebInputEvent::kMouseUp) {
+  if (type != WebInputEvent::Type::kMouseDown &&
+      type != WebInputEvent::Type::kMouseUp) {
     if (modifiers & ui::EF_LEFT_MOUSE_BUTTON)
       button = ui::MotionEvent::BUTTON_PRIMARY;
     else if (modifiers & ui::EF_MIDDLE_MOUSE_BUTTON)
@@ -152,7 +153,7 @@ WebMouseEvent WebMouseEventBuilder::Build(
 
 WebMouseWheelEvent WebMouseWheelEventBuilder::Build(
     const ui::MotionEventAndroid& motion_event) {
-  WebMouseWheelEvent result(WebInputEvent::kMouseWheel,
+  WebMouseWheelEvent result(WebInputEvent::Type::kMouseWheel,
                             WebInputEvent::kNoModifiers,
                             motion_event.GetEventTime());
   result.SetPositionInWidget(motion_event.GetX(0), motion_event.GetY(0));

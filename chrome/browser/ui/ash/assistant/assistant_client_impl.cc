@@ -15,7 +15,6 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/ash/assistant/assistant_context_util.h"
 #include "chrome/browser/ui/ash/assistant/assistant_image_downloader.h"
-#include "chrome/browser/ui/ash/assistant/assistant_service_connection.h"
 #include "chrome/browser/ui/ash/assistant/assistant_setup.h"
 #include "chrome/browser/ui/ash/assistant/assistant_web_view_factory_impl.h"
 #include "chrome/browser/ui/ash/assistant/conversation_starters_client_impl.h"
@@ -23,7 +22,7 @@
 #include "chrome/browser/ui/ash/assistant/proactive_suggestions_client_impl.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "chromeos/services/assistant/public/features.h"
+#include "chromeos/services/assistant/public/cpp/features.h"
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/audio_service.h"
 #include "content/public/browser/browser_context.h"
@@ -74,13 +73,14 @@ void AssistantClientImpl::MaybeInit(Profile* profile) {
   device_actions_ = std::make_unique<DeviceActions>(
       std::make_unique<DeviceActionsDelegateImpl>());
 
-  auto* service =
-      AssistantServiceConnection::GetForProfile(profile_)->service();
-  service->Init(client_receiver_.BindNewPipeAndPassRemote(),
-                device_actions_->AddReceiver());
+  service_ = std::make_unique<chromeos::assistant::Service>(
+      profile->GetURLLoaderFactory()->Clone(),
+      IdentityManagerFactory::GetForProfile(profile), profile->GetPrefs());
+  service_->Init(client_receiver_.BindNewPipeAndPassRemote(),
+                 device_actions_->AddReceiver());
 
   assistant_image_downloader_ = std::make_unique<AssistantImageDownloader>();
-  assistant_setup_ = std::make_unique<AssistantSetup>(service);
+  assistant_setup_ = std::make_unique<AssistantSetup>();
   assistant_web_view_factory_ =
       std::make_unique<AssistantWebViewFactoryImpl>(profile_);
 
@@ -95,7 +95,7 @@ void AssistantClientImpl::MaybeInit(Profile* profile) {
   }
 
   for (auto& receiver : pending_assistant_receivers_)
-    service->BindAssistant(std::move(receiver));
+    service_->BindAssistant(std::move(receiver));
   pending_assistant_receivers_.clear();
 }
 
@@ -113,7 +113,7 @@ void AssistantClientImpl::BindAssistant(
     return;
   }
 
-  AssistantServiceConnection::GetForProfile(profile_)->service()->BindAssistant(
+  chromeos::assistant::AssistantService::Get()->BindAssistant(
       std::move(receiver));
 }
 
@@ -124,7 +124,7 @@ void AssistantClientImpl::Observe(int type,
   if (!initialized_)
     return;
 
-  AssistantServiceConnection::GetForProfile(profile_)->service()->Shutdown();
+  chromeos::assistant::AssistantService::Get()->Shutdown();
 }
 
 void AssistantClientImpl::RequestAssistantStructure(

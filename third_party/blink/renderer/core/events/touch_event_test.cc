@@ -65,7 +65,7 @@ class TouchEventTest : public PageTestBase {
   LocalDOMWindow& Window() { return *GetFrame().DomWindow(); }
 
   TouchEvent* EventWithDispatchType(WebInputEvent::DispatchType dispatch_type) {
-    WebTouchEvent web_touch_event(WebInputEvent::kTouchStart, 0,
+    WebTouchEvent web_touch_event(WebInputEvent::Type::kTouchStart, 0,
                                   base::TimeTicks());
     web_touch_event.dispatch_type = dispatch_type;
     return TouchEvent::Create(WebCoalescedInputEvent(web_touch_event), nullptr,

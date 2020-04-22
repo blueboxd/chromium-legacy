@@ -41,7 +41,7 @@ import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
-import org.chromium.chrome.browser.infobar.SimpleConfirmInfoBarBuilder;
+import org.chromium.chrome.browser.ui.messages.infobar.SimpleConfirmInfoBarBuilder;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -327,7 +327,8 @@ public class ManualFillingIntegrationTest {
         mActivityTestRule.getInfoBarContainer().addAnimationListener(listener);
         final String kInfoBarText = "SomeInfoBar";
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
-            SimpleConfirmInfoBarBuilder.create(mActivityTestRule.getActivity().getActivityTab(),
+            SimpleConfirmInfoBarBuilder.create(
+                    mActivityTestRule.getActivity().getActivityTab().getWebContents(),
                     InfoBarIdentifier.DUPLICATE_DOWNLOAD_INFOBAR_DELEGATE_ANDROID, kInfoBarText,
                     false);
         });
@@ -366,7 +367,8 @@ public class ManualFillingIntegrationTest {
         mActivityTestRule.getInfoBarContainer().addAnimationListener(listener);
         final String kInfoBarText = "SomeInfoBar";
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
-            SimpleConfirmInfoBarBuilder.create(mActivityTestRule.getActivity().getActivityTab(),
+            SimpleConfirmInfoBarBuilder.create(
+                    mActivityTestRule.getActivity().getActivityTab().getWebContents(),
                     InfoBarIdentifier.DUPLICATE_DOWNLOAD_INFOBAR_DELEGATE_ANDROID, kInfoBarText,
                     false);
         });
@@ -446,7 +448,8 @@ public class ManualFillingIntegrationTest {
         mActivityTestRule.getInfoBarContainer().addAnimationListener(listener);
         final String kInfoBarText = "SomeInfoBar";
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
-            SimpleConfirmInfoBarBuilder.create(mActivityTestRule.getActivity().getActivityTab(),
+            SimpleConfirmInfoBarBuilder.create(
+                    mActivityTestRule.getActivity().getActivityTab().getWebContents(),
                     InfoBarIdentifier.DUPLICATE_DOWNLOAD_INFOBAR_DELEGATE_ANDROID, kInfoBarText,
                     false);
         });

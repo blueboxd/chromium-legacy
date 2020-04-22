@@ -27,7 +27,6 @@
 #include "base/task_runner_util.h"
 #include "base/time/default_tick_clock.h"
 #include "build/build_config.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_bypass_protocol.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/variations/variations_associated_data.h"

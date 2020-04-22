@@ -1053,6 +1053,12 @@ LocalFrame::LocalFrame(LocalFrameClient* client,
   Initialize();
 
   probe::FrameAttachedToParent(this);
+#if defined(OS_MACOSX)
+  // It should be bound before accessing TextInputHost which is the interface to
+  // respond to GetCharacterIndexAtPoint.
+  GetBrowserInterfaceBroker().GetInterface(
+      text_input_host_.BindNewPipeAndPassReceiver());
+#endif
 }
 
 FrameScheduler* LocalFrame::GetFrameScheduler() {
@@ -2131,6 +2137,17 @@ void LocalFrame::ZoomToFindInPageRect(const gfx::Rect& rect_in_root_frame) {
       WebRect(rect_in_root_frame));
 }
 
+#if defined(OS_MACOSX)
+void LocalFrame::GetCharacterIndexAtPoint(const gfx::Point& point) {
+  HitTestLocation location(View()->ViewportToFrame(IntPoint(point)));
+  HitTestResult result = GetEventHandler().HitTestResultAtLocation(
+      location, HitTestRequest::kReadOnly | HitTestRequest::kActive);
+  uint32_t index =
+      Selection().CharacterIndexForPoint(result.RoundedPointInInnerNodeFrame());
+  GetTextInputHost().GotCharacterIndexAtPoint(index);
+}
+#endif
+
 HitTestResult LocalFrame::HitTestResultForVisualViewportPos(
     const IntPoint& pos_in_viewport) {
   IntPoint root_frame_point(
@@ -2539,6 +2556,13 @@ bool LocalFrame::ShouldThrottleDownload() {
   num_burst_download_requests_++;
   return false;
 }
+
+#if defined(OS_MACOSX)
+mojom::blink::TextInputHost& LocalFrame::GetTextInputHost() {
+  DCHECK(text_input_host_);
+  return *text_input_host_.get();
+}
+#endif
 
 void LocalFrame::BindToReceiver(
     blink::LocalFrame* frame,

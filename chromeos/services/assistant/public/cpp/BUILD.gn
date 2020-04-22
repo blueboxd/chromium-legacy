@@ -2,23 +2,26 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("prefs") {
+# C++ headers and sources that can be used outside assistant.
+component("cpp") {
+  output_name = "assistant_service_public"
+
+  defines = [ "IS_ASSISTANT_SERVICE_PUBLIC_IMPL" ]
+
   sources = [
     "assistant_prefs.cc",
     "assistant_prefs.h",
-  ]
-
-  deps = [ "//components/prefs" ]
-}
-
-source_set("interaction_subscriber") {
-  sources = [
+    "assistant_service.cc",
+    "assistant_service.h",
     "default_assistant_interaction_subscriber.cc",
     "default_assistant_interaction_subscriber.h",
+    "features.cc",
+    "features.h",
   ]
 
   deps = [
     "//chromeos/services/assistant/public/mojom",
+    "//components/prefs",
     "//mojo/public/cpp/bindings",
   ]
 }

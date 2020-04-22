@@ -83,13 +83,13 @@ class TouchEventObserver
     if (blink::WebInputEvent::IsTouchEventType(event.GetType())) {
       const blink::WebTouchEvent& web_touch =
           static_cast<const blink::WebTouchEvent&>(event);
-      if (event.GetType() == blink::WebInputEvent::kTouchStart) {
+      if (event.GetType() == blink::WebInputEvent::Type::kTouchStart) {
         for (unsigned i = 0; i < web_touch.touches_length; i++) {
           const blink::WebTouchPoint& touch_point = web_touch.touches[i];
           const gfx::Point location(
               static_cast<int>(touch_point.PositionInWidget().x()),
               static_cast<int>(touch_point.PositionInWidget().y()));
-          if (touch_point.state == blink::WebTouchPoint::kStatePressed &&
+          if (touch_point.state == blink::WebTouchPoint::State::kStatePressed &&
               location == expected_location_) {
             quit_closure_.Run();
           }

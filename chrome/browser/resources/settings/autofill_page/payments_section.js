@@ -7,7 +7,30 @@
  * credit cards for use in autofill and payments APIs.
  */
 
-cr.define('settings', function() {
+import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.m.js';
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.m.js';
+import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
+import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
+import {loadTimeData} from '../i18n_setup.m.js';
+import {MetricsBrowserProxyImpl, PrivacyElementInteractions} from '../metrics_browser_proxy.m.js';
+import '../settings_shared_css.m.js';
+import '../controls/settings_toggle_button.m.js';
+import '../prefs/prefs.m.js';
+import {AutofillManager} from './autofill_section.js';
+import './credit_card_edit_dialog.js';
+import {CreditCardEntry} from './credit_card_list_entry.js';
+import './passwords_shared_css.js';
+import './payments_list.js';
+
   /**
    * Interface for all callbacks to the payments autofill API.
    * @interface
@@ -15,21 +38,21 @@ cr.define('settings', function() {
   class PaymentsManager {
     /**
      * Add an observer to the list of personal data.
-     * @param {function(!Array<!settings.AutofillManager.AddressEntry>,
-     *   !Array<!settings.CreditCardEntry>):void} listener
+     * @param {function(!Array<!AutofillManager.AddressEntry>,
+     *   !Array<!CreditCardEntry>):void} listener
      */
     setPersonalDataManagerListener(listener) {}
 
     /**
      * Remove an observer from the list of personal data.
-     * @param {function(!Array<!settings.AutofillManager.AddressEntry>,
-     *     !Array<!settings.CreditCardEntry>):void} listener
+     * @param {function(!Array<!AutofillManager.AddressEntry>,
+     *     !Array<!CreditCardEntry>):void} listener
      */
     removePersonalDataManagerListener(listener) {}
 
     /**
      * Request the list of credit cards.
-     * @param {function(!Array<!settings.CreditCardEntry>):void}
+     * @param {function(!Array<!CreditCardEntry>):void}
      *     callback
      */
     getCreditCardList(callback) {}
@@ -44,7 +67,7 @@ cr.define('settings', function() {
 
     /**
      * Saves the given credit card.
-     * @param {!settings.CreditCardEntry} creditCard
+     * @param {!CreditCardEntry} creditCard
      */
     saveCreditCard(creditCard) {}
 
@@ -72,9 +95,9 @@ cr.define('settings', function() {
 
   /**
    * Implementation that accesses the private API.
-   * @implements {settings.PaymentsManager}
+   * @implements {PaymentsManager}
    */
-  /* #export */ class PaymentsManagerImpl {
+  export class PaymentsManagerImpl {
     /** @override */
     setPersonalDataManagerListener(listener) {
       chrome.autofillPrivate.onPersonalDataChanged.addListener(listener);
@@ -126,10 +149,12 @@ cr.define('settings', function() {
     }
   }
 
-  cr.addSingletonGetter(PaymentsManagerImpl);
+  addSingletonGetter(PaymentsManagerImpl);
 
   Polymer({
     is: 'settings-payments-section',
+
+    _template: html`{__html_template__}`,
 
     behaviors: [
       WebUIListenerBehavior,
@@ -139,7 +164,7 @@ cr.define('settings', function() {
     properties: {
       /**
        * An array of all saved credit cards.
-       * @type {!Array<!settings.CreditCardEntry>}
+       * @type {!Array<!CreditCardEntry>}
        */
       creditCards: {
         type: Array,
@@ -217,14 +242,14 @@ cr.define('settings', function() {
     activeDialogAnchor_: null,
 
     /**
-     * @type {settings.PaymentsManager}
+     * @type {PaymentsManager}
      * @private
      */
     PaymentsManager_: null,
 
     /**
-     * @type {?function(!Array<!settings.AutofillManager.AddressEntry>,
-     *     !Array<!settings.CreditCardEntry>)}
+     * @type {?function(!Array<!AutofillManager.AddressEntry>,
+     *     !Array<!CreditCardEntry>)}
      * @private
      */
     setPersonalDataListener_: null,
@@ -232,7 +257,7 @@ cr.define('settings', function() {
     /** @override */
     attached() {
       // Create listener function.
-      /** @type {function(!Array<!settings.CreditCardEntry>)} */
+      /** @type {function(!Array<!CreditCardEntry>)} */
       const setCreditCardsListener = cardList => {
         this.creditCards = cardList;
       };
@@ -248,8 +273,8 @@ cr.define('settings', function() {
       }
 
       /**
-       * @type {function(!Array<!settings.AutofillManager.AddressEntry>,
-       *     !Array<!settings.CreditCardEntry>)}
+       * @type {function(!Array<!AutofillManager.AddressEntry>,
+       *     !Array<!CreditCardEntry>)}
        */
       const setPersonalDataListener = (addressList, cardList) => {
         this.creditCards = cardList;
@@ -282,8 +307,8 @@ cr.define('settings', function() {
     detached() {
       this.paymentsManager_.removePersonalDataManagerListener(
           /**
-             @type {function(!Array<!settings.AutofillManager.AddressEntry>,
-                 !Array<!settings.CreditCardEntry>)}
+             @type {function(!Array<!AutofillManager.AddressEntry>,
+                 !Array<!CreditCardEntry>)}
            */
           (this.setPersonalDataListener_));
     },
@@ -325,7 +350,7 @@ cr.define('settings', function() {
     /** @private */
     onCreditCardDialogClose_() {
       this.showCreditCardDialog_ = false;
-      cr.ui.focusWithoutInk(assert(this.activeDialogAnchor_));
+      focusWithoutInk(assert(this.activeDialogAnchor_));
       this.activeDialogAnchor_ = null;
       this.activeCreditCard = null;
     },
@@ -390,9 +415,9 @@ cr.define('settings', function() {
      * @private
      */
     onCanMakePaymentChange_() {
-      settings.MetricsBrowserProxyImpl.getInstance()
+      MetricsBrowserProxyImpl.getInstance()
           .recordSettingsPageHistogram(
-              settings.PrivacyElementInteractions.PAYMENT_METHOD);
+              PrivacyElementInteractions.PAYMENT_METHOD);
     },
 
     /**
@@ -424,7 +449,7 @@ cr.define('settings', function() {
     },
 
     /**
-     * @param {!Array<!settings.CreditCardEntry>} creditCards
+     * @param {!Array<!CreditCardEntry>} creditCards
      * @param {boolean} creditCardEnabled
      * @return {boolean} Whether to show the migration button.
      * @private
@@ -458,9 +483,3 @@ cr.define('settings', function() {
 
   });
 
-  // #cr_define_end
-  return {
-    PaymentsManager,
-    PaymentsManagerImpl,
-  };
-});

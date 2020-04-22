@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// #import {PasswordManagerImpl, PasswordManagerProxy} from './password_manager_proxy.m.js';
-// #import {PluralStringProxyImpl} from '../plural_string_proxy.m.js';
-// #import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+
+import {PluralStringProxyImpl} from '../plural_string_proxy.m.js';
+
+import {PasswordManagerImpl, PasswordManagerProxy} from './password_manager_proxy.js';
 
 /**
  * This behavior bundles functionality required to get compromised credentials
@@ -15,7 +17,7 @@
  * @polymerBehavior
  */
 
-/* #export */ const PasswordCheckBehavior = {
+export const PasswordCheckBehavior = {
 
   properties: {
     /**
@@ -61,7 +63,7 @@
     this.leakedCredentialsListener_ = compromisedCredentials => {
       this.updateCompromisedPasswordList(compromisedCredentials);
 
-      settings.PluralStringProxyImpl.getInstance()
+      PluralStringProxyImpl.getInstance()
           .getPluralString('compromisedPasswords', this.leakedPasswords.length)
           .then(count => {
             this.compromisedPasswordsCount = count;

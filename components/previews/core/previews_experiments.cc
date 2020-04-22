@@ -555,7 +555,7 @@ bool OverrideShouldShowPreviewCheck() {
 bool ApplyDeferWhenOptimizationGuideDecisionUnknown() {
   return base::GetFieldTrialParamByFeatureAsBool(
       features::kPreviews, "apply_deferallscript_when_guide_decision_unknown",
-      false);
+      true);
 }
 
 }  // namespace params

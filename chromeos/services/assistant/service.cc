@@ -30,7 +30,7 @@
 #include "chromeos/services/assistant/fake_assistant_manager_service_impl.h"
 #include "chromeos/services/assistant/fake_assistant_settings_manager_impl.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
-#include "chromeos/services/assistant/public/features.h"
+#include "chromeos/services/assistant/public/cpp/features.h"
 #include "chromeos/services/assistant/service_context.h"
 #include "components/signin/public/identity_manager/access_token_fetcher.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
@@ -196,13 +196,11 @@ class Service::Context : public ServiceContext {
   DISALLOW_COPY_AND_ASSIGN(Context);
 };
 
-Service::Service(mojo::PendingReceiver<mojom::AssistantService> receiver,
-                 std::unique_ptr<network::PendingSharedURLLoaderFactory>
+Service::Service(std::unique_ptr<network::PendingSharedURLLoaderFactory>
                      pending_url_loader_factory,
                  signin::IdentityManager* identity_manager,
                  PrefService* profile_prefs)
-    : receiver_(this, std::move(receiver)),
-      identity_manager_(identity_manager),
+    : identity_manager_(identity_manager),
       token_refresh_timer_(std::make_unique<base::OneShotTimer>()),
       main_task_runner_(base::SequencedTaskRunnerHandle::Get()),
       context_(std::make_unique<Context>(this)),

@@ -1,0 +1,17 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module blink.mojom;
+
+// Implemented in Browser, this interface defines methods that will be invoked
+// from the render process for the reply to TextInputClientMac.
+//
+// Note that due to implementation details of TextInputClient on Mac this has
+// stricter threading requirements. Also read the comment at the implementation
+// (i.e. TextInputHostImpl).
+interface TextInputHost {
+  // Reply for QueryGetCharacterIndexAtPoint from LocalFrame.
+  // [EnableIf=is_mac]
+  GotCharacterIndexAtPoint(uint32 index);
+};

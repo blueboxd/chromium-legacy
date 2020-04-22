@@ -70,7 +70,7 @@ void OverscrollBehaviorTest::SetInnerOverscrollBehavior(EOverscrollBehavior x,
 }
 
 void OverscrollBehaviorTest::ScrollBegin(double hint_x, double hint_y) {
-  WebGestureEvent event(WebInputEvent::kGestureScrollBegin,
+  WebGestureEvent event(WebInputEvent::Type::kGestureScrollBegin,
                         WebInputEvent::kNoModifiers, base::TimeTicks::Now(),
                         WebGestureDevice::kTouchscreen);
   event.SetPositionInWidget(gfx::PointF(20, 20));
@@ -83,7 +83,7 @@ void OverscrollBehaviorTest::ScrollBegin(double hint_x, double hint_y) {
 }
 
 void OverscrollBehaviorTest::ScrollUpdate(double delta_x, double delta_y) {
-  WebGestureEvent event(WebInputEvent::kGestureScrollUpdate,
+  WebGestureEvent event(WebInputEvent::Type::kGestureScrollUpdate,
                         WebInputEvent::kNoModifiers, base::TimeTicks::Now(),
                         WebGestureDevice::kTouchscreen);
   event.SetPositionInWidget(gfx::PointF(20, 20));
@@ -95,7 +95,7 @@ void OverscrollBehaviorTest::ScrollUpdate(double delta_x, double delta_y) {
 }
 
 void OverscrollBehaviorTest::ScrollEnd() {
-  WebGestureEvent event(WebInputEvent::kGestureScrollEnd,
+  WebGestureEvent event(WebInputEvent::Type::kGestureScrollEnd,
                         WebInputEvent::kNoModifiers, base::TimeTicks::Now(),
                         WebGestureDevice::kTouchscreen);
   event.SetPositionInWidget(gfx::PointF(20, 20));

@@ -12,12 +12,10 @@
 #include "base/util/type_safety/strong_alias.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
-#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 
 namespace v8 {
@@ -28,55 +26,58 @@ namespace blink {
 
 class ScriptState;
 class StreamAbortInfo;
-class WebTransportCloseProxy;
 class WritableStream;
 class WritableStreamDefaultController;
 
 // Implementation of the OutgoingStream mixin from the standard. SendStream and
-// BidirectionalStream inherit from this.
-class MODULES_EXPORT OutgoingStream
-    : public ScriptWrappable,
-      public ActiveScriptWrappable<OutgoingStream>,
-      public ExecutionContextLifecycleObserver {
-  DEFINE_WRAPPERTYPEINFO();
+// BidirectionalStream delegate to this.
+class MODULES_EXPORT OutgoingStream final
+    : public GarbageCollected<OutgoingStream> {
   USING_PRE_FINALIZER(OutgoingStream, Dispose);
-  USING_GARBAGE_COLLECTED_MIXIN(OutgoingStream);
 
  public:
-  OutgoingStream(ScriptState*,
-                 WebTransportCloseProxy*,
-                 mojo::ScopedDataPipeProducerHandle);
-  ~OutgoingStream() override;
+  // An interface for SendStream and BidirectionalStream to implement when using
+  // this class. At most one of these methods will be called.
+  class Client : public GarbageCollectedMixin {
+   public:
+    virtual ~Client() = default;
+
+    // Request that a Fin message for this stream be sent to the server, and
+    // that the QuicTransport object drop its reference to the stream.
+    virtual void SendFin() = 0;
+
+    // Request that the QuicTransport object drop its reference to the stream.
+    virtual void ForgetStream() = 0;
+  };
+
+  OutgoingStream(ScriptState*, Client*, mojo::ScopedDataPipeProducerHandle);
+  ~OutgoingStream();
 
   // Init() must be called before the stream is used.
-  virtual void Init();
+  void Init();
 
-  WebTransportCloseProxy* GetWebTransportCloseProxy() { return close_proxy_; }
-
-  // Implementation of outgoing_stream.idl.
-  WritableStream* writable() const {
+  // Implementation of OutgoingStream IDL, used by client classes to implement
+  // it. https://wicg.github.io/web-transport/#outgoing-stream
+  WritableStream* Writable() const {
     DVLOG(1) << "OutgoingStream::writable() called";
 
     return writable_;
   }
 
-  ScriptPromise writingAborted() const { return writing_aborted_; }
+  ScriptPromise WritingAborted() const { return writing_aborted_; }
 
-  void abortWriting();
-  void abortWriting(StreamAbortInfo*);
+  void AbortWriting(StreamAbortInfo*);
 
-  // Called via WebTransportCloseProxy. Expects a JavaScript scope to be
-  // entered.
+  // Called from QuicTransport via a WebTransportStream. Expects a JavaScript
+  // scope to be entered.
   void Reset();
 
-  // OutgoingStream cannot be collected until it is explicitly closed, either
-  // remotely or locally.
-  bool HasPendingActivity() const final { return writing_aborted_resolver_; }
+  // Called from QuicTransport rather than using
+  // ExecutionContextLifecycleObserver to ensure correct destruction order.
+  // Does not execute JavaScript.
+  void ContextDestroyed();
 
-  // Implementation of ExecutionContextLifecycleObserver.
-  void ContextDestroyed() override;
-
-  void Trace(Visitor*) override;
+  void Trace(Visitor*);
 
  private:
   class UnderlyingSink;
@@ -145,7 +146,7 @@ class MODULES_EXPORT OutgoingStream
   };
 
   const Member<ScriptState> script_state_;
-  const Member<WebTransportCloseProxy> close_proxy_;
+  Member<Client> client_;
   mojo::ScopedDataPipeProducerHandle data_pipe_;
 
   // Only armed when we need to write something.

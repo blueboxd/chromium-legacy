@@ -27,39 +27,39 @@ namespace {
 
 int ToGestureEventType(WebInputEvent::Type type) {
   switch (type) {
-    case WebInputEvent::kGestureScrollBegin:
+    case WebInputEvent::Type::kGestureScrollBegin:
       return ui::GESTURE_EVENT_TYPE_SCROLL_START;
-    case WebInputEvent::kGestureScrollEnd:
+    case WebInputEvent::Type::kGestureScrollEnd:
       return ui::GESTURE_EVENT_TYPE_SCROLL_END;
-    case WebInputEvent::kGestureScrollUpdate:
+    case WebInputEvent::Type::kGestureScrollUpdate:
       return ui::GESTURE_EVENT_TYPE_SCROLL_BY;
-    case WebInputEvent::kGestureFlingStart:
+    case WebInputEvent::Type::kGestureFlingStart:
       return ui::GESTURE_EVENT_TYPE_FLING_START;
-    case WebInputEvent::kGestureFlingCancel:
+    case WebInputEvent::Type::kGestureFlingCancel:
       return ui::GESTURE_EVENT_TYPE_FLING_CANCEL;
-    case WebInputEvent::kGestureShowPress:
+    case WebInputEvent::Type::kGestureShowPress:
       return ui::GESTURE_EVENT_TYPE_SHOW_PRESS;
-    case WebInputEvent::kGestureTap:
+    case WebInputEvent::Type::kGestureTap:
       return ui::GESTURE_EVENT_TYPE_SINGLE_TAP_CONFIRMED;
-    case WebInputEvent::kGestureTapUnconfirmed:
+    case WebInputEvent::Type::kGestureTapUnconfirmed:
       return ui::GESTURE_EVENT_TYPE_SINGLE_TAP_UNCONFIRMED;
-    case WebInputEvent::kGestureTapDown:
+    case WebInputEvent::Type::kGestureTapDown:
       return ui::GESTURE_EVENT_TYPE_TAP_DOWN;
-    case WebInputEvent::kGestureTapCancel:
+    case WebInputEvent::Type::kGestureTapCancel:
       return ui::GESTURE_EVENT_TYPE_TAP_CANCEL;
-    case WebInputEvent::kGestureDoubleTap:
+    case WebInputEvent::Type::kGestureDoubleTap:
       return ui::GESTURE_EVENT_TYPE_DOUBLE_TAP;
-    case WebInputEvent::kGestureLongPress:
+    case WebInputEvent::Type::kGestureLongPress:
       return ui::GESTURE_EVENT_TYPE_LONG_PRESS;
-    case WebInputEvent::kGestureLongTap:
+    case WebInputEvent::Type::kGestureLongTap:
       return ui::GESTURE_EVENT_TYPE_LONG_TAP;
-    case WebInputEvent::kGesturePinchBegin:
+    case WebInputEvent::Type::kGesturePinchBegin:
       return ui::GESTURE_EVENT_TYPE_PINCH_BEGIN;
-    case WebInputEvent::kGesturePinchEnd:
+    case WebInputEvent::Type::kGesturePinchEnd:
       return ui::GESTURE_EVENT_TYPE_PINCH_END;
-    case WebInputEvent::kGesturePinchUpdate:
+    case WebInputEvent::Type::kGesturePinchUpdate:
       return ui::GESTURE_EVENT_TYPE_PINCH_BY;
-    case WebInputEvent::kGestureTwoFingerTap:
+    case WebInputEvent::Type::kGestureTwoFingerTap:
     default:
       NOTREACHED() << "Invalid source gesture type: "
                    << WebInputEvent::GetName(type);
@@ -162,10 +162,10 @@ void GestureListenerManager::DidStopFlinging() {
 }
 
 bool GestureListenerManager::FilterInputEvent(const WebInputEvent& event) {
-  if (event.GetType() != WebInputEvent::kGestureTap &&
-      event.GetType() != WebInputEvent::kGestureLongTap &&
-      event.GetType() != WebInputEvent::kGestureLongPress &&
-      event.GetType() != WebInputEvent::kMouseDown)
+  if (event.GetType() != WebInputEvent::Type::kGestureTap &&
+      event.GetType() != WebInputEvent::Type::kGestureLongTap &&
+      event.GetType() != WebInputEvent::Type::kGestureLongPress &&
+      event.GetType() != WebInputEvent::Type::kMouseDown)
     return false;
 
   JNIEnv* env = AttachCurrentThread();
@@ -175,7 +175,7 @@ bool GestureListenerManager::FilterInputEvent(const WebInputEvent& event) {
 
   web_contents_->GetNativeView()->RequestFocus();
 
-  if (event.GetType() == WebInputEvent::kMouseDown)
+  if (event.GetType() == WebInputEvent::Type::kMouseDown)
     return false;
 
   const WebGestureEvent& gesture = static_cast<const WebGestureEvent&>(event);

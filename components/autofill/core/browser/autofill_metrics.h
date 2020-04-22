@@ -1167,7 +1167,8 @@ class AutofillMetrics {
                                 WebauthnResultMetric metric);
 
   // Logs |event| to the unmask prompt events histogram.
-  static void LogUnmaskPromptEvent(UnmaskPromptEvent event);
+  static void LogUnmaskPromptEvent(UnmaskPromptEvent event,
+                                   bool has_valid_nickname);
 
   // Logs |event| to cardholder name fix flow prompt events histogram.
   static void LogCardholderNameFixFlowPromptEvent(
@@ -1183,12 +1184,14 @@ class AutofillMetrics {
   // Logs the time elapsed between the unmask prompt being shown and it
   // being closed.
   static void LogUnmaskPromptEventDuration(const base::TimeDelta& duration,
-                                           UnmaskPromptEvent close_event);
+                                           UnmaskPromptEvent close_event,
+                                           bool has_valid_nickname);
 
   // Logs the time elapsed between the user clicking Verify and
   // hitting cancel when abandoning a pending unmasking operation
   // (aka GetRealPan).
-  static void LogTimeBeforeAbandonUnmasking(const base::TimeDelta& duration);
+  static void LogTimeBeforeAbandonUnmasking(const base::TimeDelta& duration,
+                                            bool has_valid_nickname);
 
   // Logs |result| to the get real pan result histogram.
   static void LogRealPanResult(AutofillClient::PaymentsRpcResult result);

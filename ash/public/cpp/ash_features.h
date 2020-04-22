@@ -27,6 +27,9 @@ ASH_PUBLIC_EXPORT extern const base::Feature kContextualNudges;
 // Enables shortcuts on corners of the display.
 ASH_PUBLIC_EXPORT extern const base::Feature kCornerShortcuts;
 
+// Enables indicators to hint where displays are connected.
+ASH_PUBLIC_EXPORT extern const base::Feature kDisplayAlignAssist;
+
 // Enables a modal dialog when resolution or refresh rate change.
 ASH_PUBLIC_EXPORT extern const base::Feature kDisplayChangeModal;
 
@@ -217,6 +220,8 @@ ASH_PUBLIC_EXPORT bool IsSystemTrayMicGainSettingEnabled();
 ASH_PUBLIC_EXPORT bool IsDisplayIdentificationEnabled();
 
 ASH_PUBLIC_EXPORT bool IsWebUITabStripTabDragIntegrationEnabled();
+
+ASH_PUBLIC_EXPORT bool IsDisplayAlignmentAssistanceEnabled();
 
 // These two functions are supposed to be temporary functions to set or get
 // whether "WebUITabStrip" feature is enabled from Chrome.

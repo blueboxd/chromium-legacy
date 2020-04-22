@@ -1167,7 +1167,7 @@ TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult_MultipleFeeds) {
     // Check the feeds limit function works.
     auto feeds = GetMediaFeedsSync(
         service(), MediaHistoryKeyedService::GetMediaFeedsRequest(
-                       false, 1, base::nullopt));
+                       false, 1, base::nullopt, base::nullopt, false));
 
     if (IsReadOnly()) {
       EXPECT_TRUE(feeds.empty());
@@ -1608,14 +1608,19 @@ TEST_P(MediaHistoryStoreFeedsTest, SafeSearchCheck) {
   WaitForDB();
 
   std::map<int64_t, media_feeds::mojom::SafeSearchResult> found_ids;
+  std::map<int64_t, media_feeds::mojom::SafeSearchResult> found_ids_unsafe;
 
   {
     // Media items from all feeds should be in the pending items list.
     auto pending_items = GetPendingSafeSearchCheckMediaFeedItemsSync(service());
+    auto feeds = GetMediaFeedsSync(
+        service(), MediaHistoryKeyedService::GetMediaFeedsRequest());
 
     if (IsReadOnly()) {
       EXPECT_TRUE(pending_items.empty());
+      EXPECT_TRUE(feeds.empty());
     } else {
+      ASSERT_EQ(2u, feeds.size());
       EXPECT_EQ(2u, pending_items.size());
 
       std::set<GURL> found_urls;
@@ -1623,6 +1628,8 @@ TEST_P(MediaHistoryStoreFeedsTest, SafeSearchCheck) {
         EXPECT_NE(0, item->id);
         found_ids.emplace(item->id,
                           media_feeds::mojom::SafeSearchResult::kSafe);
+        found_ids_unsafe.emplace(item->id,
+                                 media_feeds::mojom::SafeSearchResult::kUnsafe);
 
         for (auto& url : item->urls) {
           found_urls.insert(url);
@@ -1634,6 +1641,9 @@ TEST_P(MediaHistoryStoreFeedsTest, SafeSearchCheck) {
       expected_urls.insert(GURL("https://www.example.com/next"));
       expected_urls.insert(GURL("https://www.example.com/action-alt"));
       EXPECT_EQ(expected_urls, found_urls);
+
+      EXPECT_EQ(1, feeds[0]->last_fetch_safe_item_count);
+      EXPECT_EQ(0, feeds[1]->last_fetch_safe_item_count);
     }
   }
 
@@ -1641,13 +1651,50 @@ TEST_P(MediaHistoryStoreFeedsTest, SafeSearchCheck) {
   WaitForDB();
 
   {
-    // The pending item list should be empty.
+    // The pending item list should be empty and the safe counters should be
+    // set.
     EXPECT_TRUE(GetPendingSafeSearchCheckMediaFeedItemsSync(service()).empty());
+
+    auto feeds = GetMediaFeedsSync(
+        service(), MediaHistoryKeyedService::GetMediaFeedsRequest());
+
+    if (IsReadOnly()) {
+      EXPECT_TRUE(feeds.empty());
+    } else {
+      ASSERT_EQ(2u, feeds.size());
+
+      EXPECT_EQ(feed_id_a, feeds[0]->id);
+      EXPECT_EQ(2, feeds[0]->last_fetch_safe_item_count);
+
+      EXPECT_EQ(feed_id_b, feeds[1]->id);
+      EXPECT_EQ(1, feeds[1]->last_fetch_safe_item_count);
+    }
+  }
+
+  service()->StoreMediaFeedItemSafeSearchResults(found_ids_unsafe);
+  WaitForDB();
+
+  {
+    auto feeds = GetMediaFeedsSync(
+        service(), MediaHistoryKeyedService::GetMediaFeedsRequest());
+
+    if (IsReadOnly()) {
+      EXPECT_TRUE(feeds.empty());
+    } else {
+      ASSERT_EQ(2u, feeds.size());
+
+      EXPECT_EQ(feed_id_a, feeds[0]->id);
+      EXPECT_EQ(1, feeds[0]->last_fetch_safe_item_count);
+
+      EXPECT_EQ(feed_id_b, feeds[1]->id);
+      EXPECT_EQ(0, feeds[1]->last_fetch_safe_item_count);
+    }
   }
 }
 
 TEST_P(MediaHistoryStoreFeedsTest, GetMediaFeedsSortByWatchtimePercentile) {
-  // We add 111 origins with watchtime and feeds for all but one of these.
+  // We add 111 origins with watchtime and feeds for all but one of these. Half
+  // of the feeds will have items.
   const unsigned kNumberOfOrigins = 111;
   const unsigned kNumberOfFeeds = 110;
 
@@ -1671,8 +1718,25 @@ TEST_P(MediaHistoryStoreFeedsTest, GetMediaFeedsSortByWatchtimePercentile) {
 
     service()->SavePlayback(watch_time);
 
-    if (i < kNumberOfFeeds)
+    if (i < kNumberOfFeeds) {
       service()->DiscoverMediaFeed(url);
+
+      if (i == 0) {
+        service()->StoreMediaFeedFetchResult(
+            i + 1, GetExpectedItems(),
+            media_feeds::mojom::FetchResult::kSuccess,
+            /* was_fetched_from_cache= */ false,
+            std::vector<media_session::MediaImage>(), std::string(),
+            base::DoNothing());
+      } else if (i % 2 == 0) {
+        service()->StoreMediaFeedFetchResult(
+            i + 1, GetAltExpectedItems(),
+            media_feeds::mojom::FetchResult::kSuccess,
+            /* was_fetched_from_cache= */ false,
+            std::vector<media_session::MediaImage>(), std::string(),
+            base::DoNothing());
+      }
+    }
   }
 
   WaitForDB();
@@ -1708,8 +1772,9 @@ TEST_P(MediaHistoryStoreFeedsTest, GetMediaFeedsSortByWatchtimePercentile) {
   {
     // Check the media feed sorting by sort_by_audio_video_watchtime_desc works.
     auto feeds = GetMediaFeedsSync(
-        service(), MediaHistoryKeyedService::GetMediaFeedsRequest(
-                       true, base::nullopt, base::nullopt));
+        service(),
+        MediaHistoryKeyedService::GetMediaFeedsRequest(
+            true, base::nullopt, base::nullopt, base::nullopt, false));
 
     if (IsReadOnly()) {
       EXPECT_TRUE(feeds.empty());
@@ -1725,16 +1790,6 @@ TEST_P(MediaHistoryStoreFeedsTest, GetMediaFeedsSortByWatchtimePercentile) {
 
         EXPECT_EQ(count, feed->id);
         EXPECT_EQ(url, feed->url);
-        EXPECT_FALSE(feed->last_fetch_time.has_value());
-        EXPECT_EQ(media_feeds::mojom::FetchResult::kNone,
-                  feed->last_fetch_result);
-        EXPECT_EQ(0, feed->fetch_failed_count);
-        EXPECT_FALSE(feed->last_fetch_time_not_cache_hit.has_value());
-        EXPECT_EQ(0, feed->last_fetch_item_count);
-        EXPECT_EQ(0, feed->last_fetch_play_next_count);
-        EXPECT_EQ(0, feed->last_fetch_content_types);
-        EXPECT_TRUE(feed->logos.empty());
-        EXPECT_TRUE(feed->display_name.empty());
         EXPECT_NEAR(percentile, feed->origin_audio_video_watchtime_percentile,
                     1);
         EXPECT_GT(last_percentile,
@@ -1752,7 +1807,7 @@ TEST_P(MediaHistoryStoreFeedsTest, GetMediaFeedsSortByWatchtimePercentile) {
     // with a limit applied.
     auto feeds = GetMediaFeedsSync(
         service(), MediaHistoryKeyedService::GetMediaFeedsRequest(
-                       true, 10, base::nullopt));
+                       true, 10, base::nullopt, base::nullopt, false));
 
     if (IsReadOnly()) {
       EXPECT_TRUE(feeds.empty());
@@ -1785,12 +1840,13 @@ TEST_P(MediaHistoryStoreFeedsTest, GetMediaFeedsSortByWatchtimePercentile) {
     // with a minimum watchtime requirement and ranking.
     auto feeds = GetMediaFeedsSync(
         service(), MediaHistoryKeyedService::GetMediaFeedsRequest(
-                       true, base::nullopt, base::TimeDelta::FromMinutes(30)));
+                       true, base::nullopt, base::TimeDelta::FromMinutes(30),
+                       base::nullopt, false));
 
     if (IsReadOnly()) {
       EXPECT_TRUE(feeds.empty());
     } else {
-      EXPECT_EQ(79u, feeds.size());
+      EXPECT_EQ(80u, feeds.size());
 
       unsigned count = kNumberOfFeeds;
       double percentile = kStartingPercentile;
@@ -1817,8 +1873,9 @@ TEST_P(MediaHistoryStoreFeedsTest, GetMediaFeedsSortByWatchtimePercentile) {
     // Check the media feed sorting by sort_by_audio_video_watchtime_desc works
     // with a minimum watchtime requirement, ranking and limit.
     auto feeds = GetMediaFeedsSync(
-        service(), MediaHistoryKeyedService::GetMediaFeedsRequest(
-                       true, 10, base::TimeDelta::FromMinutes(30)));
+        service(),
+        MediaHistoryKeyedService::GetMediaFeedsRequest(
+            true, 10, base::TimeDelta::FromMinutes(30), base::nullopt, false));
 
     if (IsReadOnly()) {
       EXPECT_TRUE(feeds.empty());
@@ -1851,14 +1908,15 @@ TEST_P(MediaHistoryStoreFeedsTest, GetMediaFeedsSortByWatchtimePercentile) {
     // percentile data.
     auto feeds = GetMediaFeedsSync(
         service(), MediaHistoryKeyedService::GetMediaFeedsRequest(
-                       false, base::nullopt, base::TimeDelta::FromMinutes(30)));
+                       false, base::nullopt, base::TimeDelta::FromMinutes(30),
+                       base::nullopt, false));
 
     if (IsReadOnly()) {
       EXPECT_TRUE(feeds.empty());
     } else {
-      EXPECT_EQ(79u, feeds.size());
+      EXPECT_EQ(80u, feeds.size());
 
-      unsigned count = 32;
+      unsigned count = 31;
       for (auto& feed : feeds) {
         GURL url(
             base::StringPrintf("https://www.google%i.com/feed", count - 1));
@@ -1868,6 +1926,58 @@ TEST_P(MediaHistoryStoreFeedsTest, GetMediaFeedsSortByWatchtimePercentile) {
 
         count++;
       }
+    }
+  }
+
+  {
+    // Check the media feed fetched items min works without the percentile.
+    auto feeds = GetMediaFeedsSync(
+        service(), MediaHistoryKeyedService::GetMediaFeedsRequest(
+                       false, base::nullopt, base::nullopt, 1, false));
+
+    if (IsReadOnly()) {
+      EXPECT_TRUE(feeds.empty());
+    } else {
+      EXPECT_EQ(55u, feeds.size());
+    }
+  }
+
+  {
+    // Check the media feed fetched items min works with the percentile.
+    auto feeds = GetMediaFeedsSync(
+        service(), MediaHistoryKeyedService::GetMediaFeedsRequest(
+                       true, base::nullopt, base::nullopt, 1, false));
+
+    if (IsReadOnly()) {
+      EXPECT_TRUE(feeds.empty());
+    } else {
+      EXPECT_EQ(55u, feeds.size());
+    }
+  }
+
+  {
+    // Check the media feed safe fetched items min works without the percentile.
+    auto feeds = GetMediaFeedsSync(
+        service(), MediaHistoryKeyedService::GetMediaFeedsRequest(
+                       false, base::nullopt, base::nullopt, 1, true));
+
+    if (IsReadOnly()) {
+      EXPECT_TRUE(feeds.empty());
+    } else {
+      EXPECT_EQ(1u, feeds.size());
+    }
+  }
+
+  {
+    // Check the media feed safe fetched items min works with the percentile.
+    auto feeds = GetMediaFeedsSync(
+        service(), MediaHistoryKeyedService::GetMediaFeedsRequest(
+                       true, base::nullopt, base::nullopt, 1, true));
+
+    if (IsReadOnly()) {
+      EXPECT_TRUE(feeds.empty());
+    } else {
+      EXPECT_EQ(1u, feeds.size());
     }
   }
 }

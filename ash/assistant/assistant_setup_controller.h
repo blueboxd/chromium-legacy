@@ -8,11 +8,13 @@
 #include <map>
 #include <string>
 
-#include "ash/assistant/assistant_controller_observer.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/public/cpp/assistant/assistant_setup.h"
+#include "ash/public/cpp/assistant/controller/assistant_controller.h"
+#include "ash/public/cpp/assistant/controller/assistant_controller_observer.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 
 namespace ash {
 
@@ -41,6 +43,9 @@ class AssistantSetupController : public AssistantControllerObserver,
   void OnOptInFlowFinished(bool relaunch, bool completed);
 
   AssistantControllerImpl* const assistant_controller_;  // Owned by Shell.
+
+  ScopedObserver<AssistantController, AssistantControllerObserver>
+      assistant_controller_observer_{this};
 
   base::WeakPtrFactory<AssistantSetupController> weak_ptr_factory_{this};
 

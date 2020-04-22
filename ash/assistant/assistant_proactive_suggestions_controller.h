@@ -8,11 +8,13 @@
 #include <memory>
 #include <set>
 
-#include "ash/assistant/assistant_controller_observer.h"
 #include "ash/assistant/model/assistant_suggestions_model_observer.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
+#include "ash/public/cpp/assistant/controller/assistant_controller.h"
+#include "ash/public/cpp/assistant/controller/assistant_controller_observer.h"
 #include "ash/public/cpp/assistant/proactive_suggestions_client.h"
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "base/timer/timer.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -107,6 +109,9 @@ class AssistantProactiveSuggestionsController
   // measure user engagement the first time the entry point is presented in
   // comparison to follow up presentations of the same content.
   std::set<size_t> proactive_suggestions_seen_by_user_;
+
+  ScopedObserver<AssistantController, AssistantControllerObserver>
+      assistant_controller_observer_{this};
 
   base::WeakPtrFactory<AssistantProactiveSuggestionsController> weak_factory_{
       this};

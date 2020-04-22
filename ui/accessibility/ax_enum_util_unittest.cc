@@ -4,6 +4,9 @@
 
 #include "ui/accessibility/ax_enum_util.h"
 
+#include <string>
+#include <vector>
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -157,12 +160,8 @@ TEST(AXEnumUtilTest, MoveDirection) {
   TestEnumStringConversion<ax::mojom::MoveDirection>(ParseMoveDirection);
 }
 
-TEST(AXEnumUtilTest, EditCommand) {
-  TestEnumStringConversion<ax::mojom::EditCommand>(ParseEditCommand);
-}
-
-TEST(AXEnumUtilTest, SelectionCommand) {
-  TestEnumStringConversion<ax::mojom::SelectionCommand>(ParseSelectionCommand);
+TEST(AXEnumUtilTest, Command) {
+  TestEnumStringConversion<ax::mojom::Command>(ParseCommand);
 }
 
 TEST(AXEnumUtilTest, TextBoundary) {

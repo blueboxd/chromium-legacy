@@ -13,9 +13,9 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
-import org.chromium.chrome.browser.infobar.SimpleConfirmInfoBarBuilder;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabUtils;
+import org.chromium.chrome.browser.ui.messages.infobar.SimpleConfirmInfoBarBuilder;
 
 /**
  * Installs AR DFM and ArCore runtimes.
@@ -155,7 +155,8 @@ public class ArCoreInstallUtils {
             }
         };
         // TODO(ijamardo, https://crbug.com/838833): Add icon for AR info bar.
-        SimpleConfirmInfoBarBuilder.create(tab, listener, InfoBarIdentifier.AR_CORE_UPGRADE_ANDROID,
+        SimpleConfirmInfoBarBuilder.create(tab.getWebContents(), listener,
+                InfoBarIdentifier.AR_CORE_UPGRADE_ANDROID, tab.getContext(),
                 R.drawable.ic_error_outline_googblue_24dp, infobarText, buttonText, null, null,
                 true);
     }

@@ -55,7 +55,6 @@ PreviewsLitePageRedirectMetricsObserver::OnCommitCalled(
   data->set_request_url(handle->GetURL());
   data->set_black_listed(previews_data->black_listed_for_lite_page());
   data->set_used_data_reduction_proxy(true);
-  data->set_was_cached_data_reduction_proxy_response(false);
 
   DCHECK_NE(info->status, previews::ServerLitePageStatus::kUnknown);
 

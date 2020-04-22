@@ -184,7 +184,7 @@ void PostingYieldingTestTask(MainThreadSchedulerImpl* scheduler,
   task_runner->PostTask(FROM_HERE, base::BindOnce(NullTask));
   if (simulate_input) {
     scheduler->DidHandleInputEventOnCompositorThread(
-        FakeInputEvent(blink::WebInputEvent::kTouchMove),
+        FakeInputEvent(blink::WebInputEvent::Type::kTouchMove),
         InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
   }
   *should_yield_after = scheduler->ShouldYieldForHighPriorityWork();
@@ -209,25 +209,25 @@ void AnticipationTestTask(MainThreadSchedulerImpl* scheduler,
 
     case SimulateInputType::kTouchStart:
       scheduler->DidHandleInputEventOnCompositorThread(
-          FakeTouchEvent(blink::WebInputEvent::kTouchStart),
+          FakeTouchEvent(blink::WebInputEvent::Type::kTouchStart),
           InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
       break;
 
     case SimulateInputType::kTouchEnd:
       scheduler->DidHandleInputEventOnCompositorThread(
-          FakeInputEvent(blink::WebInputEvent::kTouchEnd),
+          FakeInputEvent(blink::WebInputEvent::Type::kTouchEnd),
           InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
       break;
 
     case SimulateInputType::kGestureScrollBegin:
       scheduler->DidHandleInputEventOnCompositorThread(
-          FakeInputEvent(blink::WebInputEvent::kGestureScrollBegin),
+          FakeInputEvent(blink::WebInputEvent::Type::kGestureScrollBegin),
           InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
       break;
 
     case SimulateInputType::kGestureScrollEnd:
       scheduler->DidHandleInputEventOnCompositorThread(
-          FakeInputEvent(blink::WebInputEvent::kGestureScrollEnd),
+          FakeInputEvent(blink::WebInputEvent::Type::kGestureScrollEnd),
           InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
       break;
   }
@@ -454,10 +454,10 @@ class MainThreadSchedulerImplTest : public testing::Test {
 
   void ForceBlockingInputToBeExpectedSoon() {
     scheduler_->DidHandleInputEventOnCompositorThread(
-        FakeInputEvent(blink::WebInputEvent::kGestureScrollUpdate),
+        FakeInputEvent(blink::WebInputEvent::Type::kGestureScrollUpdate),
         InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
     scheduler_->DidHandleInputEventOnCompositorThread(
-        FakeInputEvent(blink::WebInputEvent::kGestureScrollEnd),
+        FakeInputEvent(blink::WebInputEvent::Type::kGestureScrollEnd),
         InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
     test_task_runner_->AdvanceMockTickClock(
         priority_escalation_after_input_duration() * 2);
@@ -485,20 +485,20 @@ class MainThreadSchedulerImplTest : public testing::Test {
   void SimulateCompositorGestureStart(TouchEventPolicy touch_event_policy) {
     if (touch_event_policy == TouchEventPolicy::kSendTouchStart) {
       scheduler_->DidHandleInputEventOnCompositorThread(
-          FakeTouchEvent(blink::WebInputEvent::kTouchStart),
+          FakeTouchEvent(blink::WebInputEvent::Type::kTouchStart),
           InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
       scheduler_->DidHandleInputEventOnCompositorThread(
-          FakeInputEvent(blink::WebInputEvent::kTouchMove),
+          FakeInputEvent(blink::WebInputEvent::Type::kTouchMove),
           InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
       scheduler_->DidHandleInputEventOnCompositorThread(
-          FakeInputEvent(blink::WebInputEvent::kTouchMove),
+          FakeInputEvent(blink::WebInputEvent::Type::kTouchMove),
           InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
     }
     scheduler_->DidHandleInputEventOnCompositorThread(
-        FakeInputEvent(blink::WebInputEvent::kGestureScrollBegin),
+        FakeInputEvent(blink::WebInputEvent::Type::kGestureScrollBegin),
         InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
     scheduler_->DidHandleInputEventOnCompositorThread(
-        FakeInputEvent(blink::WebInputEvent::kGestureScrollUpdate),
+        FakeInputEvent(blink::WebInputEvent::Type::kGestureScrollUpdate),
         InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
   }
 
@@ -508,16 +508,16 @@ class MainThreadSchedulerImplTest : public testing::Test {
   // driven gesture.
   void SimulateMainThreadGestureWithoutScrollUpdates() {
     scheduler_->DidHandleInputEventOnCompositorThread(
-        FakeTouchEvent(blink::WebInputEvent::kTouchStart),
+        FakeTouchEvent(blink::WebInputEvent::Type::kTouchStart),
         InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
     scheduler_->DidHandleInputEventOnCompositorThread(
-        FakeInputEvent(blink::WebInputEvent::kTouchMove),
+        FakeInputEvent(blink::WebInputEvent::Type::kTouchMove),
         InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
     scheduler_->DidHandleInputEventOnCompositorThread(
-        FakeInputEvent(blink::WebInputEvent::kGestureScrollBegin),
+        FakeInputEvent(blink::WebInputEvent::Type::kGestureScrollBegin),
         InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
     scheduler_->DidHandleInputEventOnCompositorThread(
-        FakeInputEvent(blink::WebInputEvent::kTouchMove),
+        FakeInputEvent(blink::WebInputEvent::Type::kTouchMove),
         InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
   }
 
@@ -527,7 +527,7 @@ class MainThreadSchedulerImplTest : public testing::Test {
   // scheduled.
   void SimulateMainThreadGestureWithoutPreventDefault() {
     scheduler_->DidHandleInputEventOnCompositorThread(
-        FakeTouchEvent(blink::WebInputEvent::kTouchStart),
+        FakeTouchEvent(blink::WebInputEvent::Type::kTouchStart),
         InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
 
     // Touchstart policy update.
@@ -536,13 +536,13 @@ class MainThreadSchedulerImplTest : public testing::Test {
     EXPECT_FALSE(scheduler_->PolicyNeedsUpdateForTesting());
 
     scheduler_->DidHandleInputEventOnCompositorThread(
-        FakeInputEvent(blink::WebInputEvent::kTouchMove),
+        FakeInputEvent(blink::WebInputEvent::Type::kTouchMove),
         InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
     scheduler_->DidHandleInputEventOnCompositorThread(
-        FakeInputEvent(blink::WebInputEvent::kGestureTapCancel),
+        FakeInputEvent(blink::WebInputEvent::Type::kGestureTapCancel),
         InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
     scheduler_->DidHandleInputEventOnCompositorThread(
-        FakeInputEvent(blink::WebInputEvent::kGestureScrollBegin),
+        FakeInputEvent(blink::WebInputEvent::Type::kGestureScrollBegin),
         InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
 
     // Main thread gesture policy update.
@@ -552,13 +552,13 @@ class MainThreadSchedulerImplTest : public testing::Test {
     EXPECT_FALSE(scheduler_->PolicyNeedsUpdateForTesting());
 
     scheduler_->DidHandleInputEventOnCompositorThread(
-        FakeInputEvent(blink::WebInputEvent::kGestureScrollUpdate),
+        FakeInputEvent(blink::WebInputEvent::Type::kGestureScrollUpdate),
         InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
     scheduler_->DidHandleInputEventOnCompositorThread(
-        FakeInputEvent(blink::WebInputEvent::kTouchScrollStarted),
+        FakeInputEvent(blink::WebInputEvent::Type::kTouchScrollStarted),
         InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
     scheduler_->DidHandleInputEventOnCompositorThread(
-        FakeInputEvent(blink::WebInputEvent::kTouchMove),
+        FakeInputEvent(blink::WebInputEvent::Type::kTouchMove),
         InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
 
     // Compositor thread gesture policy update.
@@ -572,27 +572,27 @@ class MainThreadSchedulerImplTest : public testing::Test {
                                       blink::WebInputEvent::Type gesture_type) {
     if (touch_event_policy == TouchEventPolicy::kSendTouchStart) {
       scheduler_->DidHandleInputEventOnCompositorThread(
-          FakeTouchEvent(blink::WebInputEvent::kTouchStart),
+          FakeTouchEvent(blink::WebInputEvent::Type::kTouchStart),
           InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
       scheduler_->DidHandleInputEventOnMainThread(
-          FakeTouchEvent(blink::WebInputEvent::kTouchStart),
+          FakeTouchEvent(blink::WebInputEvent::Type::kTouchStart),
           WebInputEventResult::kHandledSystem);
 
       scheduler_->DidHandleInputEventOnCompositorThread(
-          FakeInputEvent(blink::WebInputEvent::kTouchMove),
+          FakeInputEvent(blink::WebInputEvent::Type::kTouchMove),
           InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
       scheduler_->DidHandleInputEventOnMainThread(
-          FakeInputEvent(blink::WebInputEvent::kTouchMove),
+          FakeInputEvent(blink::WebInputEvent::Type::kTouchMove),
           WebInputEventResult::kHandledSystem);
 
       scheduler_->DidHandleInputEventOnCompositorThread(
-          FakeInputEvent(blink::WebInputEvent::kTouchMove),
+          FakeInputEvent(blink::WebInputEvent::Type::kTouchMove),
           InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
       scheduler_->DidHandleInputEventOnMainThread(
-          FakeInputEvent(blink::WebInputEvent::kTouchMove),
+          FakeInputEvent(blink::WebInputEvent::Type::kTouchMove),
           WebInputEventResult::kHandledSystem);
     }
-    if (gesture_type != blink::WebInputEvent::kUndefined) {
+    if (gesture_type != blink::WebInputEvent::Type::kUndefined) {
       scheduler_->DidHandleInputEventOnCompositorThread(
           FakeInputEvent(gesture_type),
           InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
@@ -604,11 +604,11 @@ class MainThreadSchedulerImplTest : public testing::Test {
   void SimulateMainThreadInputHandlingCompositorTask(
       base::TimeDelta begin_main_frame_duration) {
     scheduler_->DidHandleInputEventOnCompositorThread(
-        FakeInputEvent(blink::WebInputEvent::kTouchMove),
+        FakeInputEvent(blink::WebInputEvent::Type::kTouchMove),
         InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
     test_task_runner_->AdvanceMockTickClock(begin_main_frame_duration);
     scheduler_->DidHandleInputEventOnMainThread(
-        FakeInputEvent(blink::WebInputEvent::kTouchMove),
+        FakeInputEvent(blink::WebInputEvent::Type::kTouchMove),
         WebInputEventResult::kHandledApplication);
     scheduler_->DidCommitFrameToCompositor();
   }
@@ -1092,7 +1092,7 @@ TEST_F(MainThreadSchedulerImplTest,
   // gesture is long enough, compositor tasks get prioritized again.
   while (Now() < loop_end_time) {
     scheduler_->DidHandleInputEventOnCompositorThread(
-        FakeInputEvent(blink::WebInputEvent::kTouchMove),
+        FakeInputEvent(blink::WebInputEvent::Type::kTouchMove),
         InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
     test_task_runner_->AdvanceMockTickClock(
         base::TimeDelta::FromMilliseconds(16));
@@ -1127,14 +1127,15 @@ TEST_F(MainThreadSchedulerImplTest,
 
   scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
   EnableIdleTasks();
-  SimulateMainThreadGestureStart(TouchEventPolicy::kSendTouchStart,
-                                 blink::WebInputEvent::kGestureScrollBegin);
+  SimulateMainThreadGestureStart(
+      TouchEventPolicy::kSendTouchStart,
+      blink::WebInputEvent::Type::kGestureScrollBegin);
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(run_order,
               testing::ElementsAre("C1", "C2", "L1", "D1", "D2", "I1"));
   EXPECT_EQ(UseCase::kMainThreadCustomInputHandling, CurrentUseCase());
   scheduler_->DidHandleInputEventOnMainThread(
-      FakeInputEvent(blink::WebInputEvent::kGestureFlingStart),
+      FakeInputEvent(blink::WebInputEvent::Type::kGestureFlingStart),
       WebInputEventResult::kHandledSystem);
 }
 
@@ -1144,14 +1145,15 @@ TEST_F(MainThreadSchedulerImplTest,
   PostTestTasks(&run_order, "L1 I1 D1 C1 D2 C2");
 
   EnableIdleTasks();
-  SimulateMainThreadGestureStart(TouchEventPolicy::kDontSendTouchStart,
-                                 blink::WebInputEvent::kGestureScrollBegin);
+  SimulateMainThreadGestureStart(
+      TouchEventPolicy::kDontSendTouchStart,
+      blink::WebInputEvent::Type::kGestureScrollBegin);
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(run_order,
               testing::ElementsAre("C1", "C2", "L1", "D1", "D2", "I1"));
   EXPECT_EQ(UseCase::kMainThreadCustomInputHandling, CurrentUseCase());
   scheduler_->DidHandleInputEventOnMainThread(
-      FakeInputEvent(blink::WebInputEvent::kGestureFlingStart),
+      FakeInputEvent(blink::WebInputEvent::Type::kGestureFlingStart),
       WebInputEventResult::kHandledSystem);
 }
 
@@ -1163,10 +1165,10 @@ TEST_F(MainThreadSchedulerImplTest,
   scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
   EnableIdleTasks();
   scheduler_->DidHandleInputEventOnCompositorThread(
-      FakeTouchEvent(blink::WebInputEvent::kTouchStart),
+      FakeTouchEvent(blink::WebInputEvent::Type::kTouchStart),
       InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
   scheduler_->DidHandleInputEventOnMainThread(
-      FakeTouchEvent(blink::WebInputEvent::kTouchStart),
+      FakeTouchEvent(blink::WebInputEvent::Type::kTouchStart),
       WebInputEventResult::kHandledApplication);
   base::RunLoop().RunUntilIdle();
   // Because the main thread is performing custom input handling, we let all
@@ -1185,10 +1187,10 @@ TEST_F(
   scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
   EnableIdleTasks();
   scheduler_->DidHandleInputEventOnCompositorThread(
-      FakeTouchEvent(blink::WebInputEvent::kTouchStart),
+      FakeTouchEvent(blink::WebInputEvent::Type::kTouchStart),
       InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
   scheduler_->DidHandleInputEventOnMainThread(
-      FakeTouchEvent(blink::WebInputEvent::kTouchStart),
+      FakeTouchEvent(blink::WebInputEvent::Type::kTouchStart),
       WebInputEventResult::kHandledSystem);
   base::RunLoop().RunUntilIdle();
   // Because we are still waiting for the touchstart to be processed,
@@ -1222,8 +1224,9 @@ TEST_F(MainThreadSchedulerImplTest, Navigation_ResetsTaskCostEstimations) {
   // A navigation occurs which creates a new Document thus resetting the task
   // cost estimations.
   scheduler_->DidStartProvisionalLoad(true);
-  SimulateMainThreadGestureStart(TouchEventPolicy::kSendTouchStart,
-                                 blink::WebInputEvent::kGestureScrollUpdate);
+  SimulateMainThreadGestureStart(
+      TouchEventPolicy::kSendTouchStart,
+      blink::WebInputEvent::Type::kGestureScrollUpdate);
 
   PostTestTasks(&run_order, "C1 T1");
 
@@ -1239,7 +1242,7 @@ TEST_F(MainThreadSchedulerImplTest, TestTouchstartPolicy_Compositor) {
   // Observation of touchstart should defer execution of timer, idle and loading
   // tasks.
   scheduler_->DidHandleInputEventOnCompositorThread(
-      FakeTouchEvent(blink::WebInputEvent::kTouchStart),
+      FakeTouchEvent(blink::WebInputEvent::Type::kTouchStart),
       InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
   EnableIdleTasks();
   base::RunLoop().RunUntilIdle();
@@ -1250,10 +1253,10 @@ TEST_F(MainThreadSchedulerImplTest, TestTouchstartPolicy_Compositor) {
   run_order.clear();
   scheduler_->DidAnimateForInputOnCompositorThread();
   scheduler_->DidHandleInputEventOnCompositorThread(
-      FakeInputEvent(blink::WebInputEvent::kGestureFlingCancel),
+      FakeInputEvent(blink::WebInputEvent::Type::kGestureFlingCancel),
       InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
   scheduler_->DidHandleInputEventOnCompositorThread(
-      FakeInputEvent(blink::WebInputEvent::kGestureTapDown),
+      FakeInputEvent(blink::WebInputEvent::Type::kGestureTapDown),
       InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(run_order, testing::ElementsAre());
@@ -1262,7 +1265,7 @@ TEST_F(MainThreadSchedulerImplTest, TestTouchstartPolicy_Compositor) {
   // allowing service of the timer, loading and idle queues.
   run_order.clear();
   scheduler_->DidHandleInputEventOnCompositorThread(
-      FakeInputEvent(blink::WebInputEvent::kGestureScrollBegin),
+      FakeInputEvent(blink::WebInputEvent::Type::kGestureScrollBegin),
       InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
   base::RunLoop().RunUntilIdle();
 
@@ -1276,10 +1279,10 @@ TEST_F(MainThreadSchedulerImplTest, TestTouchstartPolicy_MainThread) {
   // Observation of touchstart should defer execution of timer, idle and loading
   // tasks.
   scheduler_->DidHandleInputEventOnCompositorThread(
-      FakeTouchEvent(blink::WebInputEvent::kTouchStart),
+      FakeTouchEvent(blink::WebInputEvent::Type::kTouchStart),
       InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
   scheduler_->DidHandleInputEventOnMainThread(
-      FakeTouchEvent(blink::WebInputEvent::kTouchStart),
+      FakeTouchEvent(blink::WebInputEvent::Type::kTouchStart),
       WebInputEventResult::kHandledSystem);
   EnableIdleTasks();
   base::RunLoop().RunUntilIdle();
@@ -1288,16 +1291,16 @@ TEST_F(MainThreadSchedulerImplTest, TestTouchstartPolicy_MainThread) {
   // Meta events like TapDown/FlingCancel shouldn't affect the priority.
   run_order.clear();
   scheduler_->DidHandleInputEventOnCompositorThread(
-      FakeInputEvent(blink::WebInputEvent::kGestureFlingCancel),
+      FakeInputEvent(blink::WebInputEvent::Type::kGestureFlingCancel),
       InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
   scheduler_->DidHandleInputEventOnMainThread(
-      FakeInputEvent(blink::WebInputEvent::kGestureFlingCancel),
+      FakeInputEvent(blink::WebInputEvent::Type::kGestureFlingCancel),
       WebInputEventResult::kHandledSystem);
   scheduler_->DidHandleInputEventOnCompositorThread(
-      FakeInputEvent(blink::WebInputEvent::kGestureTapDown),
+      FakeInputEvent(blink::WebInputEvent::Type::kGestureTapDown),
       InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
   scheduler_->DidHandleInputEventOnMainThread(
-      FakeInputEvent(blink::WebInputEvent::kGestureTapDown),
+      FakeInputEvent(blink::WebInputEvent::Type::kGestureTapDown),
       WebInputEventResult::kHandledSystem);
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(run_order, testing::ElementsAre());
@@ -1306,10 +1309,10 @@ TEST_F(MainThreadSchedulerImplTest, TestTouchstartPolicy_MainThread) {
   // allowing service of the timer, loading and idle queues.
   run_order.clear();
   scheduler_->DidHandleInputEventOnCompositorThread(
-      FakeInputEvent(blink::WebInputEvent::kGestureScrollBegin),
+      FakeInputEvent(blink::WebInputEvent::Type::kGestureScrollBegin),
       InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
   scheduler_->DidHandleInputEventOnMainThread(
-      FakeInputEvent(blink::WebInputEvent::kGestureScrollBegin),
+      FakeInputEvent(blink::WebInputEvent::Type::kGestureScrollBegin),
       WebInputEventResult::kHandledSystem);
   base::RunLoop().RunUntilIdle();
 
@@ -1394,7 +1397,7 @@ TEST_F(MainThreadSchedulerImplTest,
 
   EnableIdleTasks();
   scheduler_->DidHandleInputEventOnCompositorThread(
-      FakeInputEvent(blink::WebInputEvent::kMouseMove),
+      FakeInputEvent(blink::WebInputEvent::Type::kMouseMove),
       InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
   base::RunLoop().RunUntilIdle();
   // Note compositor tasks are not prioritized.
@@ -1411,7 +1414,7 @@ TEST_F(MainThreadSchedulerImplTest,
 
   EnableIdleTasks();
   scheduler_->DidHandleInputEventOnCompositorThread(
-      FakeInputEvent(blink::WebInputEvent::kMouseMove),
+      FakeInputEvent(blink::WebInputEvent::Type::kMouseMove),
       InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
   base::RunLoop().RunUntilIdle();
   // Note compositor tasks are not prioritized.
@@ -1428,7 +1431,7 @@ TEST_F(MainThreadSchedulerImplTest,
   // but this test reflects what should happen if that was the case.
   EnableIdleTasks();
   scheduler_->DidHandleInputEventOnCompositorThread(
-      FakeInputEvent(blink::WebInputEvent::kMouseMove,
+      FakeInputEvent(blink::WebInputEvent::Type::kMouseMove,
                      blink::WebInputEvent::kLeftButtonDown),
       InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
   base::RunLoop().RunUntilIdle();
@@ -1444,14 +1447,14 @@ TEST_F(MainThreadSchedulerImplTest,
 
   EnableIdleTasks();
   scheduler_->DidHandleInputEventOnCompositorThread(
-      FakeInputEvent(blink::WebInputEvent::kMouseMove,
+      FakeInputEvent(blink::WebInputEvent::Type::kMouseMove,
                      blink::WebInputEvent::kLeftButtonDown),
       InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
   base::RunLoop().RunUntilIdle();
   // Note compositor tasks are prioritized.
   EXPECT_THAT(run_order, testing::ElementsAre("C1", "C2", "D1", "D2", "I1"));
   scheduler_->DidHandleInputEventOnMainThread(
-      FakeInputEvent(blink::WebInputEvent::kMouseMove,
+      FakeInputEvent(blink::WebInputEvent::Type::kMouseMove,
                      blink::WebInputEvent::kLeftButtonDown),
       WebInputEventResult::kHandledSystem);
 }
@@ -1459,8 +1462,9 @@ TEST_F(MainThreadSchedulerImplTest,
 TEST_F(MainThreadSchedulerImplTest,
        EventForwardedToMainThread_MouseMove_WhenMouseDown_AfterMouseWheel) {
   // Simulate a main thread driven mouse wheel scroll gesture.
-  SimulateMainThreadGestureStart(TouchEventPolicy::kSendTouchStart,
-                                 blink::WebInputEvent::kGestureScrollUpdate);
+  SimulateMainThreadGestureStart(
+      TouchEventPolicy::kSendTouchStart,
+      blink::WebInputEvent::Type::kGestureScrollUpdate);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(BlockingInputExpectedSoon());
   EXPECT_EQ(UseCase::kMainThreadGesture, CurrentUseCase());
@@ -1472,11 +1476,11 @@ TEST_F(MainThreadSchedulerImplTest,
   EnableIdleTasks();
 
   scheduler_->DidHandleInputEventOnCompositorThread(
-      FakeInputEvent(blink::WebInputEvent::kMouseDown,
+      FakeInputEvent(blink::WebInputEvent::Type::kMouseDown,
                      blink::WebInputEvent::kLeftButtonDown),
       InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
   scheduler_->DidHandleInputEventOnCompositorThread(
-      FakeInputEvent(blink::WebInputEvent::kMouseMove,
+      FakeInputEvent(blink::WebInputEvent::Type::kMouseMove,
                      blink::WebInputEvent::kLeftButtonDown),
       InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
   base::RunLoop().RunUntilIdle();
@@ -1496,11 +1500,11 @@ TEST_F(MainThreadSchedulerImplTest, EventForwardedToMainThread_MouseClick) {
   EnableIdleTasks();
 
   scheduler_->DidHandleInputEventOnCompositorThread(
-      FakeInputEvent(blink::WebInputEvent::kMouseDown,
+      FakeInputEvent(blink::WebInputEvent::Type::kMouseDown,
                      blink::WebInputEvent::kLeftButtonDown),
       InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
   scheduler_->DidHandleInputEventOnCompositorThread(
-      FakeInputEvent(blink::WebInputEvent::kMouseUp,
+      FakeInputEvent(blink::WebInputEvent::Type::kMouseUp,
                      blink::WebInputEvent::kLeftButtonDown),
       InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
   base::RunLoop().RunUntilIdle();
@@ -1518,7 +1522,7 @@ TEST_F(MainThreadSchedulerImplTest,
 
   EnableIdleTasks();
   scheduler_->DidHandleInputEventOnCompositorThread(
-      FakeMouseWheelEvent(blink::WebInputEvent::kMouseWheel),
+      FakeMouseWheelEvent(blink::WebInputEvent::Type::kMouseWheel),
       InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
   base::RunLoop().RunUntilIdle();
   // Note compositor tasks are not prioritized.
@@ -1533,7 +1537,7 @@ TEST_F(MainThreadSchedulerImplTest,
 
   EnableIdleTasks();
   scheduler_->DidHandleInputEventOnCompositorThread(
-      FakeMouseWheelEvent(blink::WebInputEvent::kMouseWheel),
+      FakeMouseWheelEvent(blink::WebInputEvent::Type::kMouseWheel),
       InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
   base::RunLoop().RunUntilIdle();
   // Note compositor tasks are prioritized (since they are fast).
@@ -1548,16 +1552,16 @@ TEST_F(MainThreadSchedulerImplTest,
 
   EnableIdleTasks();
   scheduler_->DidHandleInputEventOnCompositorThread(
-      FakeMouseWheelEvent(blink::WebInputEvent::kMouseWheel),
+      FakeMouseWheelEvent(blink::WebInputEvent::Type::kMouseWheel),
       InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
   scheduler_->DidHandleInputEventOnCompositorThread(
-      FakeInputEvent(blink::WebInputEvent::kGestureScrollBegin),
+      FakeInputEvent(blink::WebInputEvent::Type::kGestureScrollBegin),
       InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
   scheduler_->DidHandleInputEventOnCompositorThread(
-      FakeInputEvent(blink::WebInputEvent::kGestureScrollUpdate),
+      FakeInputEvent(blink::WebInputEvent::Type::kGestureScrollUpdate),
       InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
   scheduler_->DidHandleInputEventOnCompositorThread(
-      FakeInputEvent(blink::WebInputEvent::kGestureScrollUpdate),
+      FakeInputEvent(blink::WebInputEvent::Type::kGestureScrollUpdate),
       InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
   base::RunLoop().RunUntilIdle();
   // Note compositor tasks are prioritized.
@@ -1573,16 +1577,16 @@ TEST_F(
 
   EnableIdleTasks();
   scheduler_->DidHandleInputEventOnCompositorThread(
-      FakeMouseWheelEvent(blink::WebInputEvent::kMouseWheel),
+      FakeMouseWheelEvent(blink::WebInputEvent::Type::kMouseWheel),
       InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
   scheduler_->DidHandleInputEventOnCompositorThread(
-      FakeInputEvent(blink::WebInputEvent::kGestureScrollBegin),
+      FakeInputEvent(blink::WebInputEvent::Type::kGestureScrollBegin),
       InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
   scheduler_->DidHandleInputEventOnCompositorThread(
-      FakeInputEvent(blink::WebInputEvent::kGestureScrollUpdate),
+      FakeInputEvent(blink::WebInputEvent::Type::kGestureScrollUpdate),
       InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
   scheduler_->DidHandleInputEventOnCompositorThread(
-      FakeInputEvent(blink::WebInputEvent::kGestureScrollUpdate),
+      FakeInputEvent(blink::WebInputEvent::Type::kGestureScrollUpdate),
       InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
   base::RunLoop().RunUntilIdle();
   // Note compositor tasks are not prioritized.
@@ -1599,7 +1603,7 @@ TEST_F(MainThreadSchedulerImplTest,
 
   EnableIdleTasks();
   scheduler_->DidHandleInputEventOnCompositorThread(
-      FakeInputEvent(blink::WebInputEvent::kKeyDown),
+      FakeInputEvent(blink::WebInputEvent::Type::kKeyDown),
       InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
   base::RunLoop().RunUntilIdle();
   // Note compositor tasks are not prioritized.
@@ -1616,7 +1620,7 @@ TEST_F(MainThreadSchedulerImplTest,
 
   EnableIdleTasks();
   scheduler_->DidHandleInputEventOnCompositorThread(
-      FakeInputEvent(blink::WebInputEvent::kKeyDown),
+      FakeInputEvent(blink::WebInputEvent::Type::kKeyDown),
       InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
   base::RunLoop().RunUntilIdle();
   // Note compositor tasks are not prioritized.
@@ -1624,14 +1628,15 @@ TEST_F(MainThreadSchedulerImplTest,
   EXPECT_EQ(UseCase::kNone, CurrentUseCase());
   // Note compositor tasks are not prioritized.
   scheduler_->DidHandleInputEventOnMainThread(
-      FakeInputEvent(blink::WebInputEvent::kKeyDown),
+      FakeInputEvent(blink::WebInputEvent::Type::kKeyDown),
       WebInputEventResult::kHandledSystem);
 }
 
 TEST_F(MainThreadSchedulerImplTest,
        TestMainthreadScrollingUseCaseDoesNotStarveDefaultTasks) {
-  SimulateMainThreadGestureStart(TouchEventPolicy::kDontSendTouchStart,
-                                 blink::WebInputEvent::kGestureScrollBegin);
+  SimulateMainThreadGestureStart(
+      TouchEventPolicy::kDontSendTouchStart,
+      blink::WebInputEvent::Type::kGestureScrollBegin);
   EnableIdleTasks();
 
   Vector<String> run_order;
@@ -1643,7 +1648,7 @@ TEST_F(MainThreadSchedulerImplTest,
   PostTestTasks(&run_order, "C2");
 
   scheduler_->DidHandleInputEventOnCompositorThread(
-      FakeInputEvent(blink::WebInputEvent::kGestureFlingStart),
+      FakeInputEvent(blink::WebInputEvent::Type::kGestureFlingStart),
       InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
   base::RunLoop().RunUntilIdle();
 
@@ -1662,8 +1667,9 @@ TEST_F(MainThreadSchedulerImplTest,
 
 TEST_F(MainThreadSchedulerImplTest,
        TestCompositorPolicyEnds_MainThreadHandlesInput) {
-  SimulateMainThreadGestureStart(TouchEventPolicy::kDontSendTouchStart,
-                                 blink::WebInputEvent::kGestureScrollBegin);
+  SimulateMainThreadGestureStart(
+      TouchEventPolicy::kDontSendTouchStart,
+      blink::WebInputEvent::Type::kGestureScrollBegin);
   EXPECT_EQ(UseCase::kMainThreadCustomInputHandling,
             ForceUpdatePolicyAndGetCurrentUseCase());
 
@@ -1676,7 +1682,7 @@ TEST_F(MainThreadSchedulerImplTest, TestTouchstartPolicyEndsAfterTimeout) {
   PostTestTasks(&run_order, "L1 D1 C1 D2 C2");
 
   scheduler_->DidHandleInputEventOnCompositorThread(
-      FakeTouchEvent(blink::WebInputEvent::kTouchStart),
+      FakeTouchEvent(blink::WebInputEvent::Type::kTouchStart),
       InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(run_order, testing::ElementsAre("C1", "C2", "D1", "D2"));
@@ -1700,7 +1706,7 @@ TEST_F(MainThreadSchedulerImplTest,
 
   // Observation of touchstart should defer execution of idle and loading tasks.
   scheduler_->DidHandleInputEventOnCompositorThread(
-      FakeTouchEvent(blink::WebInputEvent::kTouchStart),
+      FakeTouchEvent(blink::WebInputEvent::Type::kTouchStart),
       InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(run_order, testing::ElementsAre("C1", "C2", "D1", "D2"));
@@ -1708,7 +1714,7 @@ TEST_F(MainThreadSchedulerImplTest,
   // Receiving the first touchmove will not affect scheduler priority.
   run_order.clear();
   scheduler_->DidHandleInputEventOnCompositorThread(
-      FakeInputEvent(blink::WebInputEvent::kTouchMove),
+      FakeInputEvent(blink::WebInputEvent::Type::kTouchMove),
       InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(run_order, testing::ElementsAre());
@@ -1716,7 +1722,7 @@ TEST_F(MainThreadSchedulerImplTest,
   // Receiving the second touchmove will kick us back into compositor priority.
   run_order.clear();
   scheduler_->DidHandleInputEventOnCompositorThread(
-      FakeInputEvent(blink::WebInputEvent::kTouchMove),
+      FakeInputEvent(blink::WebInputEvent::Type::kTouchMove),
       InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(run_order, testing::ElementsAre("L1"));
@@ -1829,7 +1835,7 @@ TEST_F(MainThreadSchedulerImplTest, TestShouldYield_TouchStart) {
   // there's no immediately pending work in the compositor queue.
   EXPECT_FALSE(scheduler_->ShouldYieldForHighPriorityWork());
   scheduler_->DidHandleInputEventOnCompositorThread(
-      FakeTouchEvent(blink::WebInputEvent::kTouchStart),
+      FakeTouchEvent(blink::WebInputEvent::Type::kTouchStart),
       InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
   EXPECT_TRUE(scheduler_->ShouldYieldForHighPriorityWork());
   base::RunLoop().RunUntilIdle();
@@ -1840,7 +1846,7 @@ TEST_F(MainThreadSchedulerImplTest, SlowMainThreadInputEvent) {
 
   // An input event should bump us into input priority.
   scheduler_->DidHandleInputEventOnCompositorThread(
-      FakeInputEvent(blink::WebInputEvent::kGestureFlingStart),
+      FakeInputEvent(blink::WebInputEvent::Type::kGestureFlingStart),
       InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(UseCase::kMainThreadCustomInputHandling, CurrentUseCase());
@@ -1850,7 +1856,7 @@ TEST_F(MainThreadSchedulerImplTest, SlowMainThreadInputEvent) {
   test_task_runner_->AdvanceMockTickClock(
       priority_escalation_after_input_duration() * 2);
   scheduler_->DidHandleInputEventOnMainThread(
-      FakeInputEvent(blink::WebInputEvent::kGestureFlingStart),
+      FakeInputEvent(blink::WebInputEvent::Type::kGestureFlingStart),
       WebInputEventResult::kHandledSystem);
   base::RunLoop().RunUntilIdle();
 
@@ -1896,14 +1902,14 @@ TEST_F(MainThreadSchedulerImplTest, UpdatePolicyCountTriggeredByOneInputEvent) {
   // We expect DidHandleInputEventOnCompositorThread to post an urgent policy
   // update.
   scheduler_->DidHandleInputEventOnCompositorThread(
-      FakeTouchEvent(blink::WebInputEvent::kTouchStart),
+      FakeTouchEvent(blink::WebInputEvent::Type::kTouchStart),
       InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
   EXPECT_EQ(0, scheduler_->update_policy_count_);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, scheduler_->update_policy_count_);
 
   scheduler_->DidHandleInputEventOnMainThread(
-      FakeTouchEvent(blink::WebInputEvent::kTouchStart),
+      FakeTouchEvent(blink::WebInputEvent::Type::kTouchStart),
       WebInputEventResult::kHandledSystem);
   EXPECT_EQ(1, scheduler_->update_policy_count_);
 
@@ -1918,7 +1924,7 @@ TEST_F(MainThreadSchedulerImplTest,
   // We expect DidHandleInputEventOnCompositorThread to post
   // an urgent policy update.
   scheduler_->DidHandleInputEventOnCompositorThread(
-      FakeTouchEvent(blink::WebInputEvent::kTouchStart,
+      FakeTouchEvent(blink::WebInputEvent::Type::kTouchStart,
                      blink::WebInputEvent::DispatchType::kEventNonBlocking),
       InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
   EXPECT_EQ(0, scheduler_->update_policy_count_);
@@ -1926,28 +1932,28 @@ TEST_F(MainThreadSchedulerImplTest,
   EXPECT_EQ(1, scheduler_->update_policy_count_);
 
   scheduler_->DidHandleInputEventOnMainThread(
-      FakeTouchEvent(blink::WebInputEvent::kTouchStart),
+      FakeTouchEvent(blink::WebInputEvent::Type::kTouchStart),
       WebInputEventResult::kHandledSystem);
   EXPECT_EQ(1, scheduler_->update_policy_count_);
 
   // The second call to DidHandleInputEventOnCompositorThread should not post
   // a policy update because we are already in compositor priority.
   scheduler_->DidHandleInputEventOnCompositorThread(
-      FakeInputEvent(blink::WebInputEvent::kTouchMove),
+      FakeInputEvent(blink::WebInputEvent::Type::kTouchMove),
       InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, scheduler_->update_policy_count_);
 
   // We expect DidHandleInputEvent to trigger a policy update.
   scheduler_->DidHandleInputEventOnMainThread(
-      FakeInputEvent(blink::WebInputEvent::kTouchMove),
+      FakeInputEvent(blink::WebInputEvent::Type::kTouchMove),
       WebInputEventResult::kHandledSystem);
   EXPECT_EQ(1, scheduler_->update_policy_count_);
 
   // The third call to DidHandleInputEventOnCompositorThread should post a
   // policy update because the awaiting_touch_start_response_ flag changed.
   scheduler_->DidHandleInputEventOnCompositorThread(
-      FakeInputEvent(blink::WebInputEvent::kTouchMove),
+      FakeInputEvent(blink::WebInputEvent::Type::kTouchMove),
       InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
   EXPECT_EQ(1, scheduler_->update_policy_count_);
   base::RunLoop().RunUntilIdle();
@@ -1955,7 +1961,7 @@ TEST_F(MainThreadSchedulerImplTest,
 
   // We expect DidHandleInputEvent to trigger a policy update.
   scheduler_->DidHandleInputEventOnMainThread(
-      FakeInputEvent(blink::WebInputEvent::kTouchMove),
+      FakeInputEvent(blink::WebInputEvent::Type::kTouchMove),
       WebInputEventResult::kHandledSystem);
   EXPECT_EQ(2, scheduler_->update_policy_count_);
   test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
@@ -1968,7 +1974,7 @@ TEST_F(MainThreadSchedulerImplTest,
   // We expect DidHandleInputEventOnCompositorThread to post an urgent policy
   // update.
   scheduler_->DidHandleInputEventOnCompositorThread(
-      FakeTouchEvent(blink::WebInputEvent::kTouchStart,
+      FakeTouchEvent(blink::WebInputEvent::Type::kTouchStart,
                      blink::WebInputEvent::DispatchType::kEventNonBlocking),
       InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
   EXPECT_EQ(0, scheduler_->update_policy_count_);
@@ -1976,7 +1982,7 @@ TEST_F(MainThreadSchedulerImplTest,
   EXPECT_EQ(1, scheduler_->update_policy_count_);
 
   scheduler_->DidHandleInputEventOnMainThread(
-      FakeTouchEvent(blink::WebInputEvent::kTouchStart),
+      FakeTouchEvent(blink::WebInputEvent::Type::kTouchStart),
       WebInputEventResult::kHandledSystem);
   EXPECT_EQ(1, scheduler_->update_policy_count_);
   test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
@@ -1986,14 +1992,14 @@ TEST_F(MainThreadSchedulerImplTest,
   // We expect the second call to DidHandleInputEventOnCompositorThread to post
   // an urgent policy update because we are no longer in compositor priority.
   scheduler_->DidHandleInputEventOnCompositorThread(
-      FakeInputEvent(blink::WebInputEvent::kTouchMove),
+      FakeInputEvent(blink::WebInputEvent::Type::kTouchMove),
       InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
   EXPECT_EQ(2, scheduler_->update_policy_count_);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(3, scheduler_->update_policy_count_);
 
   scheduler_->DidHandleInputEventOnMainThread(
-      FakeInputEvent(blink::WebInputEvent::kTouchMove),
+      FakeInputEvent(blink::WebInputEvent::Type::kTouchMove),
       WebInputEventResult::kHandledSystem);
   EXPECT_EQ(3, scheduler_->update_policy_count_);
   test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
@@ -2024,23 +2030,23 @@ TEST_F(MainThreadSchedulerImplTest, EnsureUpdatePolicyNotTriggeredTooOften) {
   scheduler_->ShouldYieldForHighPriorityWork();
 
   scheduler_->DidHandleInputEventOnCompositorThread(
-      FakeInputEvent(blink::WebInputEvent::kGestureScrollEnd),
+      FakeInputEvent(blink::WebInputEvent::Type::kGestureScrollEnd),
       InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
   scheduler_->DidHandleInputEventOnCompositorThread(
-      FakeInputEvent(blink::WebInputEvent::kTouchEnd),
+      FakeInputEvent(blink::WebInputEvent::Type::kTouchEnd),
       InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
 
   scheduler_->DidHandleInputEventOnMainThread(
-      FakeTouchEvent(blink::WebInputEvent::kTouchStart),
+      FakeTouchEvent(blink::WebInputEvent::Type::kTouchStart),
       WebInputEventResult::kHandledSystem);
   scheduler_->DidHandleInputEventOnMainThread(
-      FakeInputEvent(blink::WebInputEvent::kTouchMove),
+      FakeInputEvent(blink::WebInputEvent::Type::kTouchMove),
       WebInputEventResult::kHandledSystem);
   scheduler_->DidHandleInputEventOnMainThread(
-      FakeInputEvent(blink::WebInputEvent::kTouchMove),
+      FakeInputEvent(blink::WebInputEvent::Type::kTouchMove),
       WebInputEventResult::kHandledSystem);
   scheduler_->DidHandleInputEventOnMainThread(
-      FakeInputEvent(blink::WebInputEvent::kTouchEnd),
+      FakeInputEvent(blink::WebInputEvent::Type::kTouchEnd),
       WebInputEventResult::kHandledSystem);
 
   EXPECT_EQ(2, scheduler_->update_policy_count_);
@@ -2218,7 +2224,7 @@ TEST_F(MainThreadSchedulerImplTest, TestLongIdlePeriodInTouchStartPolicy) {
 
   // Observation of touchstart should defer the start of the long idle period.
   scheduler_->DidHandleInputEventOnCompositorThread(
-      FakeTouchEvent(blink::WebInputEvent::kTouchStart),
+      FakeTouchEvent(blink::WebInputEvent::Type::kTouchStart),
       InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
   scheduler_->BeginFrameNotExpectedSoon();
   base::RunLoop().RunUntilIdle();
@@ -2413,7 +2419,7 @@ TEST_F(MainThreadSchedulerImplTest, MismatchedDidHandleInputEventOnMainThread) {
   // reasons for the compositor to not be there and we don't want to make
   // debugging impossible.
   scheduler_->DidHandleInputEventOnMainThread(
-      FakeInputEvent(blink::WebInputEvent::kGestureFlingStart),
+      FakeInputEvent(blink::WebInputEvent::Type::kGestureFlingStart),
       WebInputEventResult::kHandledSystem);
 }
 
@@ -2478,8 +2484,9 @@ TEST_F(MainThreadSchedulerImplTest,
 
 TEST_F(MainThreadSchedulerImplTest,
        EstimateLongestJankFreeTaskDuration_UseCase_MAIN_THREAD_GESTURE) {
-  SimulateMainThreadGestureStart(TouchEventPolicy::kSendTouchStart,
-                                 blink::WebInputEvent::kGestureScrollUpdate);
+  SimulateMainThreadGestureStart(
+      TouchEventPolicy::kSendTouchStart,
+      blink::WebInputEvent::Type::kGestureScrollUpdate);
   viz::BeginFrameArgs begin_frame_args = viz::BeginFrameArgs::Create(
       BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, Now(),
       base::TimeTicks(), base::TimeDelta::FromMilliseconds(16),
@@ -2610,7 +2617,7 @@ TEST_F(MainThreadSchedulerImplTest,
     begin_frame_args.on_critical_path = true;
     scheduler_->WillBeginFrame(begin_frame_args);
     scheduler_->DidHandleInputEventOnCompositorThread(
-        FakeInputEvent(blink::WebInputEvent::kGestureScrollUpdate),
+        FakeInputEvent(blink::WebInputEvent::Type::kGestureScrollUpdate),
         InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
 
     compositor_task_runner_->PostTask(
@@ -2663,7 +2670,7 @@ TEST_F(MainThreadSchedulerImplTest,
     begin_frame_args.on_critical_path = true;
     scheduler_->WillBeginFrame(begin_frame_args);
     scheduler_->DidHandleInputEventOnCompositorThread(
-        FakeInputEvent(blink::WebInputEvent::kGestureScrollUpdate),
+        FakeInputEvent(blink::WebInputEvent::Type::kGestureScrollUpdate),
         InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
 
     compositor_task_runner_->PostTask(
@@ -2684,7 +2691,7 @@ TEST_F(MainThreadSchedulerImplTest,
 
 TEST_F(MainThreadSchedulerImplTest, DenyLongIdleDuringTouchStart) {
   scheduler_->DidHandleInputEventOnCompositorThread(
-      FakeTouchEvent(blink::WebInputEvent::kTouchStart),
+      FakeTouchEvent(blink::WebInputEvent::Type::kTouchStart),
       InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
   EXPECT_EQ(UseCase::kTouchstart, ForceUpdatePolicyAndGetCurrentUseCase());
 
@@ -2713,7 +2720,7 @@ TEST_F(MainThreadSchedulerImplTest,
 
   // Make sure TouchStart causes a policy change.
   scheduler_->DidHandleInputEventOnCompositorThread(
-      FakeTouchEvent(blink::WebInputEvent::kTouchStart),
+      FakeTouchEvent(blink::WebInputEvent::Type::kTouchStart),
       InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
   EXPECT_EQ(UseCase::kTouchstart, ForceUpdatePolicyAndGetCurrentUseCase());
 }
@@ -2736,7 +2743,7 @@ TEST_F(MainThreadSchedulerImplTest, SYNCHRONIZED_GESTURE_CompositingExpensive) {
     begin_frame_args.on_critical_path = true;
     scheduler_->WillBeginFrame(begin_frame_args);
     scheduler_->DidHandleInputEventOnCompositorThread(
-        FakeInputEvent(blink::WebInputEvent::kGestureScrollUpdate),
+        FakeInputEvent(blink::WebInputEvent::Type::kGestureScrollUpdate),
         InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
 
     compositor_task_runner_->PostTask(
@@ -2758,8 +2765,9 @@ TEST_F(MainThreadSchedulerImplTest, SYNCHRONIZED_GESTURE_CompositingExpensive) {
 }
 
 TEST_F(MainThreadSchedulerImplTest, MAIN_THREAD_CUSTOM_INPUT_HANDLING) {
-  SimulateMainThreadGestureStart(TouchEventPolicy::kSendTouchStart,
-                                 blink::WebInputEvent::kGestureScrollBegin);
+  SimulateMainThreadGestureStart(
+      TouchEventPolicy::kSendTouchStart,
+      blink::WebInputEvent::Type::kGestureScrollBegin);
 
   // With the compositor task taking 20ms, there is not enough time to run
   // other tasks in the same 16ms frame. To avoid starvation, compositing tasks
@@ -2776,7 +2784,7 @@ TEST_F(MainThreadSchedulerImplTest, MAIN_THREAD_CUSTOM_INPUT_HANDLING) {
     begin_frame_args.on_critical_path = true;
     scheduler_->WillBeginFrame(begin_frame_args);
     scheduler_->DidHandleInputEventOnCompositorThread(
-        FakeInputEvent(blink::WebInputEvent::kTouchMove),
+        FakeInputEvent(blink::WebInputEvent::Type::kTouchMove),
         InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
 
     compositor_task_runner_->PostTask(
@@ -2799,8 +2807,9 @@ TEST_F(MainThreadSchedulerImplTest, MAIN_THREAD_CUSTOM_INPUT_HANDLING) {
 }
 
 TEST_F(MainThreadSchedulerImplTest, MAIN_THREAD_GESTURE) {
-  SimulateMainThreadGestureStart(TouchEventPolicy::kDontSendTouchStart,
-                                 blink::WebInputEvent::kGestureScrollBegin);
+  SimulateMainThreadGestureStart(
+      TouchEventPolicy::kDontSendTouchStart,
+      blink::WebInputEvent::Type::kGestureScrollBegin);
 
   // With the compositor task taking 20ms, there is not enough time to run
   // other tasks in the same 16ms frame. However because this is a main thread
@@ -2818,7 +2827,7 @@ TEST_F(MainThreadSchedulerImplTest, MAIN_THREAD_GESTURE) {
     begin_frame_args.on_critical_path = true;
     scheduler_->WillBeginFrame(begin_frame_args);
     scheduler_->DidHandleInputEventOnCompositorThread(
-        FakeInputEvent(blink::WebInputEvent::kGestureScrollUpdate),
+        FakeInputEvent(blink::WebInputEvent::Type::kGestureScrollUpdate),
         InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
 
     compositor_task_runner_->PostTask(
@@ -2906,10 +2915,10 @@ TEST_F(MainThreadSchedulerImplTest, InputTerminatesLoadRAILMode) {
   EXPECT_EQ(RAILMode::kLoad, GetRAILMode());
   EXPECT_EQ(UseCase::kEarlyLoading, ForceUpdatePolicyAndGetCurrentUseCase());
   scheduler_->DidHandleInputEventOnCompositorThread(
-      FakeInputEvent(blink::WebInputEvent::kGestureScrollBegin),
+      FakeInputEvent(blink::WebInputEvent::Type::kGestureScrollBegin),
       InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
   scheduler_->DidHandleInputEventOnCompositorThread(
-      FakeInputEvent(blink::WebInputEvent::kGestureScrollUpdate),
+      FakeInputEvent(blink::WebInputEvent::Type::kGestureScrollUpdate),
       InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
   EXPECT_EQ(UseCase::kCompositorGesture,
             ForceUpdatePolicyAndGetCurrentUseCase());
@@ -2944,7 +2953,7 @@ TEST_F(MainThreadSchedulerImplTest, UnthrottledTaskRunner) {
     begin_frame_args.on_critical_path = true;
     scheduler_->WillBeginFrame(begin_frame_args);
     scheduler_->DidHandleInputEventOnCompositorThread(
-        FakeInputEvent(blink::WebInputEvent::kGestureScrollUpdate),
+        FakeInputEvent(blink::WebInputEvent::Type::kGestureScrollUpdate),
         InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
 
     compositor_task_runner_->PostTask(
@@ -3690,8 +3699,9 @@ TEST_F(VeryHighPriorityForCompositingWhenFastExperimentTest,
 
   scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
   EnableIdleTasks();
-  SimulateMainThreadGestureStart(TouchEventPolicy::kSendTouchStart,
-                                 blink::WebInputEvent::kGestureScrollBegin);
+  SimulateMainThreadGestureStart(
+      TouchEventPolicy::kSendTouchStart,
+      blink::WebInputEvent::Type::kGestureScrollBegin);
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(run_order,
               testing::ElementsAre("C1", "P1", "C2", "L1", "D1", "D2", "I1"));
@@ -3726,8 +3736,9 @@ TEST_F(VeryHighPriorityForCompositingAlternatingExperimentTest,
 
   scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
   EnableIdleTasks();
-  SimulateMainThreadGestureStart(TouchEventPolicy::kSendTouchStart,
-                                 blink::WebInputEvent::kGestureScrollBegin);
+  SimulateMainThreadGestureStart(
+      TouchEventPolicy::kSendTouchStart,
+      blink::WebInputEvent::Type::kGestureScrollBegin);
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(run_order,
               testing::ElementsAre("C1", "C2", "C3", "D1", "D2", "D3"));

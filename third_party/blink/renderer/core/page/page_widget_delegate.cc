@@ -120,66 +120,66 @@ WebInputEventResult PageWidgetDelegate::HandleInputEvent(
     // interested in whether keyboard events are processed).
     // FIXME: Why do we return HandleSuppressed when there is no root or
     // the root is detached?
-    case WebInputEvent::kMouseMove:
+    case WebInputEvent::Type::kMouseMove:
       if (!root || !root->View())
         return WebInputEventResult::kHandledSuppressed;
       handler.HandleMouseMove(*root, static_cast<const WebMouseEvent&>(event),
                               coalesced_event.GetCoalescedEventsPointers(),
                               coalesced_event.GetPredictedEventsPointers());
       return WebInputEventResult::kHandledSystem;
-    case WebInputEvent::kMouseLeave:
+    case WebInputEvent::Type::kMouseLeave:
       if (!root || !root->View())
         return WebInputEventResult::kHandledSuppressed;
       handler.HandleMouseLeave(*root, static_cast<const WebMouseEvent&>(event));
       return WebInputEventResult::kHandledSystem;
-    case WebInputEvent::kMouseDown:
+    case WebInputEvent::Type::kMouseDown:
       if (!root || !root->View())
         return WebInputEventResult::kHandledSuppressed;
       handler.HandleMouseDown(*root, static_cast<const WebMouseEvent&>(event));
       return WebInputEventResult::kHandledSystem;
-    case WebInputEvent::kMouseUp:
+    case WebInputEvent::Type::kMouseUp:
       if (!root || !root->View())
         return WebInputEventResult::kHandledSuppressed;
       return handler.HandleMouseUp(*root,
                                    static_cast<const WebMouseEvent&>(event));
-    case WebInputEvent::kMouseWheel:
+    case WebInputEvent::Type::kMouseWheel:
       if (!root || !root->View())
         return WebInputEventResult::kNotHandled;
       return handler.HandleMouseWheel(
           *root, static_cast<const WebMouseWheelEvent&>(event));
 
-    case WebInputEvent::kRawKeyDown:
-    case WebInputEvent::kKeyDown:
-    case WebInputEvent::kKeyUp:
+    case WebInputEvent::Type::kRawKeyDown:
+    case WebInputEvent::Type::kKeyDown:
+    case WebInputEvent::Type::kKeyUp:
       return handler.HandleKeyEvent(
           static_cast<const WebKeyboardEvent&>(event));
 
-    case WebInputEvent::kChar:
+    case WebInputEvent::Type::kChar:
       return handler.HandleCharEvent(
           static_cast<const WebKeyboardEvent&>(event));
-    case WebInputEvent::kGestureScrollBegin:
-    case WebInputEvent::kGestureScrollEnd:
-    case WebInputEvent::kGestureScrollUpdate:
-    case WebInputEvent::kGestureFlingStart:
-    case WebInputEvent::kGestureFlingCancel:
-    case WebInputEvent::kGestureTap:
-    case WebInputEvent::kGestureTapUnconfirmed:
-    case WebInputEvent::kGestureTapDown:
-    case WebInputEvent::kGestureShowPress:
-    case WebInputEvent::kGestureTapCancel:
-    case WebInputEvent::kGestureDoubleTap:
-    case WebInputEvent::kGestureTwoFingerTap:
-    case WebInputEvent::kGestureLongPress:
-    case WebInputEvent::kGestureLongTap:
+    case WebInputEvent::Type::kGestureScrollBegin:
+    case WebInputEvent::Type::kGestureScrollEnd:
+    case WebInputEvent::Type::kGestureScrollUpdate:
+    case WebInputEvent::Type::kGestureFlingStart:
+    case WebInputEvent::Type::kGestureFlingCancel:
+    case WebInputEvent::Type::kGestureTap:
+    case WebInputEvent::Type::kGestureTapUnconfirmed:
+    case WebInputEvent::Type::kGestureTapDown:
+    case WebInputEvent::Type::kGestureShowPress:
+    case WebInputEvent::Type::kGestureTapCancel:
+    case WebInputEvent::Type::kGestureDoubleTap:
+    case WebInputEvent::Type::kGestureTwoFingerTap:
+    case WebInputEvent::Type::kGestureLongPress:
+    case WebInputEvent::Type::kGestureLongTap:
       return handler.HandleGestureEvent(
           static_cast<const WebGestureEvent&>(event));
 
-    case WebInputEvent::kPointerDown:
-    case WebInputEvent::kPointerUp:
-    case WebInputEvent::kPointerMove:
-    case WebInputEvent::kPointerRawUpdate:
-    case WebInputEvent::kPointerCancel:
-    case WebInputEvent::kPointerCausedUaAction:
+    case WebInputEvent::Type::kPointerDown:
+    case WebInputEvent::Type::kPointerUp:
+    case WebInputEvent::Type::kPointerMove:
+    case WebInputEvent::Type::kPointerRawUpdate:
+    case WebInputEvent::Type::kPointerCancel:
+    case WebInputEvent::Type::kPointerCausedUaAction:
       if (!root || !root->View())
         return WebInputEventResult::kNotHandled;
       return handler.HandlePointerEvent(
@@ -187,20 +187,20 @@ WebInputEventResult PageWidgetDelegate::HandleInputEvent(
           coalesced_event.GetCoalescedEventsPointers(),
           coalesced_event.GetPredictedEventsPointers());
 
-    case WebInputEvent::kTouchStart:
-    case WebInputEvent::kTouchMove:
-    case WebInputEvent::kTouchEnd:
-    case WebInputEvent::kTouchCancel:
-    case WebInputEvent::kTouchScrollStarted:
+    case WebInputEvent::Type::kTouchStart:
+    case WebInputEvent::Type::kTouchMove:
+    case WebInputEvent::Type::kTouchEnd:
+    case WebInputEvent::Type::kTouchCancel:
+    case WebInputEvent::Type::kTouchScrollStarted:
       NOTREACHED();
       return WebInputEventResult::kNotHandled;
 
-    case WebInputEvent::kGesturePinchBegin:
+    case WebInputEvent::Type::kGesturePinchBegin:
       // Gesture pinch events are handled entirely on the compositor.
       DLOG(INFO) << "Gesture pinch ignored by main thread.";
       FALLTHROUGH;
-    case WebInputEvent::kGesturePinchEnd:
-    case WebInputEvent::kGesturePinchUpdate:
+    case WebInputEvent::Type::kGesturePinchEnd:
+    case WebInputEvent::Type::kGesturePinchUpdate:
       return WebInputEventResult::kNotHandled;
     default:
       return WebInputEventResult::kNotHandled;

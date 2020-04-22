@@ -53,7 +53,7 @@ class TouchpadPinchEventQueueTest : public testing::TestWithParam<bool>,
 
   void QueuePinchBegin() {
     blink::WebGestureEvent event(
-        blink::WebInputEvent::kGesturePinchBegin,
+        blink::WebInputEvent::Type::kGesturePinchBegin,
         blink::WebInputEvent::kNoModifiers,
         blink::WebInputEvent::GetStaticTimeStampForTests(),
         blink::WebGestureDevice::kTouchpad);
@@ -65,7 +65,7 @@ class TouchpadPinchEventQueueTest : public testing::TestWithParam<bool>,
 
   void QueuePinchEnd() {
     blink::WebGestureEvent event(
-        blink::WebInputEvent::kGesturePinchEnd,
+        blink::WebInputEvent::Type::kGesturePinchEnd,
         blink::WebInputEvent::kNoModifiers,
         blink::WebInputEvent::GetStaticTimeStampForTests(),
         blink::WebGestureDevice::kTouchpad);
@@ -77,7 +77,7 @@ class TouchpadPinchEventQueueTest : public testing::TestWithParam<bool>,
 
   void QueuePinchUpdate(float scale, bool zoom_disabled) {
     blink::WebGestureEvent event(
-        blink::WebInputEvent::kGesturePinchUpdate,
+        blink::WebInputEvent::Type::kGesturePinchUpdate,
         blink::WebInputEvent::kNoModifiers,
         blink::WebInputEvent::GetStaticTimeStampForTests(),
         blink::WebGestureDevice::kTouchpad);
@@ -91,7 +91,7 @@ class TouchpadPinchEventQueueTest : public testing::TestWithParam<bool>,
 
   void QueueDoubleTap() {
     blink::WebGestureEvent event(
-        blink::WebInputEvent::kGestureDoubleTap,
+        blink::WebInputEvent::Type::kGestureDoubleTap,
         blink::WebInputEvent::kNoModifiers,
         blink::WebInputEvent::GetStaticTimeStampForTests(),
         blink::WebGestureDevice::kTouchpad);
@@ -181,7 +181,7 @@ TEST_P(TouchpadPinchEventQueueTest, Basic) {
   ::testing::InSequence sequence;
   EXPECT_CALL(mock_client_,
               OnGestureEventForPinchAck(
-                  EventHasType(blink::WebInputEvent::kGesturePinchBegin),
+                  EventHasType(blink::WebInputEvent::Type::kGesturePinchBegin),
                   blink::mojom::InputEventResultSource::kBrowser,
                   blink::mojom::InputEventResultState::kIgnored));
   EXPECT_CALL(mock_client_,
@@ -189,7 +189,7 @@ TEST_P(TouchpadPinchEventQueueTest, Basic) {
                   ::testing::AllOf(EventHasCtrlModifier(), EventIsBlocking())));
   EXPECT_CALL(mock_client_,
               OnGestureEventForPinchAck(
-                  EventHasType(blink::WebInputEvent::kGesturePinchUpdate),
+                  EventHasType(blink::WebInputEvent::Type::kGesturePinchUpdate),
                   blink::mojom::InputEventResultSource::kCompositorThread,
                   blink::mojom::InputEventResultState::kNoConsumerExists));
   EXPECT_CALL(mock_client_,
@@ -197,7 +197,7 @@ TEST_P(TouchpadPinchEventQueueTest, Basic) {
                   EventHasCtrlModifier(), ::testing::Not(EventIsBlocking()))));
   EXPECT_CALL(mock_client_,
               OnGestureEventForPinchAck(
-                  EventHasType(blink::WebInputEvent::kGesturePinchEnd),
+                  EventHasType(blink::WebInputEvent::Type::kGesturePinchEnd),
                   blink::mojom::InputEventResultSource::kBrowser,
                   blink::mojom::InputEventResultState::kIgnored));
 
@@ -215,7 +215,7 @@ TEST_P(TouchpadPinchEventQueueTest, MouseWheelPhase) {
   ::testing::InSequence sequence;
   EXPECT_CALL(mock_client_,
               OnGestureEventForPinchAck(
-                  EventHasType(blink::WebInputEvent::kGesturePinchBegin),
+                  EventHasType(blink::WebInputEvent::Type::kGesturePinchBegin),
                   blink::mojom::InputEventResultSource::kBrowser,
                   blink::mojom::InputEventResultState::kIgnored));
   EXPECT_CALL(mock_client_,
@@ -223,7 +223,7 @@ TEST_P(TouchpadPinchEventQueueTest, MouseWheelPhase) {
                   EventHasPhase(blink::WebMouseWheelEvent::kPhaseBegan)));
   EXPECT_CALL(mock_client_,
               OnGestureEventForPinchAck(
-                  EventHasType(blink::WebInputEvent::kGesturePinchUpdate),
+                  EventHasType(blink::WebInputEvent::Type::kGesturePinchUpdate),
                   blink::mojom::InputEventResultSource::kCompositorThread,
                   blink::mojom::InputEventResultState::kNoConsumerExists));
   EXPECT_CALL(mock_client_,
@@ -231,14 +231,14 @@ TEST_P(TouchpadPinchEventQueueTest, MouseWheelPhase) {
                   EventHasPhase(blink::WebMouseWheelEvent::kPhaseChanged)));
   EXPECT_CALL(mock_client_,
               OnGestureEventForPinchAck(
-                  EventHasType(blink::WebInputEvent::kGesturePinchUpdate),
+                  EventHasType(blink::WebInputEvent::Type::kGesturePinchUpdate),
                   testing::_, testing::_));
   EXPECT_CALL(mock_client_,
               SendMouseWheelEventForPinchImmediately(
                   EventHasPhase(blink::WebMouseWheelEvent::kPhaseEnded)));
   EXPECT_CALL(mock_client_,
               OnGestureEventForPinchAck(
-                  EventHasType(blink::WebInputEvent::kGesturePinchEnd),
+                  EventHasType(blink::WebInputEvent::Type::kGesturePinchEnd),
                   blink::mojom::InputEventResultSource::kBrowser,
                   blink::mojom::InputEventResultState::kIgnored));
 
@@ -265,7 +265,7 @@ TEST_P(TouchpadPinchEventQueueTest, Consumed) {
   ::testing::InSequence sequence;
   EXPECT_CALL(mock_client_,
               OnGestureEventForPinchAck(
-                  EventHasType(blink::WebInputEvent::kGesturePinchBegin),
+                  EventHasType(blink::WebInputEvent::Type::kGesturePinchBegin),
                   blink::mojom::InputEventResultSource::kBrowser,
                   blink::mojom::InputEventResultState::kIgnored));
   EXPECT_CALL(mock_client_,
@@ -273,7 +273,7 @@ TEST_P(TouchpadPinchEventQueueTest, Consumed) {
                   ::testing::AllOf(EventHasCtrlModifier(), EventIsBlocking())));
   EXPECT_CALL(mock_client_,
               OnGestureEventForPinchAck(
-                  EventHasType(blink::WebInputEvent::kGesturePinchUpdate),
+                  EventHasType(blink::WebInputEvent::Type::kGesturePinchUpdate),
                   blink::mojom::InputEventResultSource::kMainThread,
                   blink::mojom::InputEventResultState::kConsumed));
 
@@ -283,7 +283,7 @@ TEST_P(TouchpadPinchEventQueueTest, Consumed) {
 
   EXPECT_CALL(mock_client_,
               OnGestureEventForPinchAck(
-                  EventHasType(blink::WebInputEvent::kGesturePinchEnd),
+                  EventHasType(blink::WebInputEvent::Type::kGesturePinchEnd),
                   blink::mojom::InputEventResultSource::kBrowser,
                   blink::mojom::InputEventResultState::kIgnored));
 
@@ -302,7 +302,7 @@ TEST_P(TouchpadPinchEventQueueTest, ZoomDisabled) {
   ::testing::InSequence sequence;
   EXPECT_CALL(mock_client_,
               OnGestureEventForPinchAck(
-                  EventHasType(blink::WebInputEvent::kGesturePinchBegin),
+                  EventHasType(blink::WebInputEvent::Type::kGesturePinchBegin),
                   blink::mojom::InputEventResultSource::kBrowser,
                   blink::mojom::InputEventResultState::kIgnored));
   EXPECT_CALL(mock_client_,
@@ -310,7 +310,7 @@ TEST_P(TouchpadPinchEventQueueTest, ZoomDisabled) {
                   ::testing::AllOf(EventHasCtrlModifier(), EventIsBlocking())));
   EXPECT_CALL(mock_client_,
               OnGestureEventForPinchAck(
-                  EventHasType(blink::WebInputEvent::kGesturePinchUpdate),
+                  EventHasType(blink::WebInputEvent::Type::kGesturePinchUpdate),
                   blink::mojom::InputEventResultSource::kCompositorThread,
                   blink::mojom::InputEventResultState::kNoConsumerExists));
 
@@ -320,7 +320,7 @@ TEST_P(TouchpadPinchEventQueueTest, ZoomDisabled) {
 
   EXPECT_CALL(mock_client_,
               OnGestureEventForPinchAck(
-                  EventHasType(blink::WebInputEvent::kGesturePinchEnd),
+                  EventHasType(blink::WebInputEvent::Type::kGesturePinchEnd),
                   blink::mojom::InputEventResultSource::kBrowser,
                   blink::mojom::InputEventResultState::kIgnored));
 
@@ -336,7 +336,7 @@ TEST_P(TouchpadPinchEventQueueTest, ZoomDisabled) {
 TEST_P(TouchpadPinchEventQueueTest, MultipleSequences) {
   EXPECT_CALL(mock_client_,
               OnGestureEventForPinchAck(
-                  EventHasType(blink::WebInputEvent::kGesturePinchBegin),
+                  EventHasType(blink::WebInputEvent::Type::kGesturePinchBegin),
                   blink::mojom::InputEventResultSource::kBrowser,
                   blink::mojom::InputEventResultState::kIgnored))
       .Times(2);
@@ -344,13 +344,13 @@ TEST_P(TouchpadPinchEventQueueTest, MultipleSequences) {
       .Times(4);
   EXPECT_CALL(mock_client_,
               OnGestureEventForPinchAck(
-                  EventHasType(blink::WebInputEvent::kGesturePinchUpdate),
+                  EventHasType(blink::WebInputEvent::Type::kGesturePinchUpdate),
                   blink::mojom::InputEventResultSource::kCompositorThread,
                   blink::mojom::InputEventResultState::kNoConsumerExists))
       .Times(2);
   EXPECT_CALL(mock_client_,
               OnGestureEventForPinchAck(
-                  EventHasType(blink::WebInputEvent::kGesturePinchEnd),
+                  EventHasType(blink::WebInputEvent::Type::kGesturePinchEnd),
                   blink::mojom::InputEventResultSource::kBrowser,
                   blink::mojom::InputEventResultState::kIgnored))
       .Times(2);
@@ -377,7 +377,7 @@ TEST_P(TouchpadPinchEventQueueTest, MultipleSequences) {
 TEST_P(TouchpadPinchEventQueueTest, MultipleQueuedSequences) {
   EXPECT_CALL(mock_client_,
               OnGestureEventForPinchAck(
-                  EventHasType(blink::WebInputEvent::kGesturePinchBegin),
+                  EventHasType(blink::WebInputEvent::Type::kGesturePinchBegin),
                   blink::mojom::InputEventResultSource::kBrowser,
                   blink::mojom::InputEventResultState::kIgnored));
   EXPECT_CALL(mock_client_, SendMouseWheelEventForPinchImmediately(testing::_));
@@ -397,17 +397,17 @@ TEST_P(TouchpadPinchEventQueueTest, MultipleQueuedSequences) {
 
   EXPECT_CALL(mock_client_,
               OnGestureEventForPinchAck(
-                  EventHasType(blink::WebInputEvent::kGesturePinchUpdate),
+                  EventHasType(blink::WebInputEvent::Type::kGesturePinchUpdate),
                   blink::mojom::InputEventResultSource::kCompositorThread,
                   blink::mojom::InputEventResultState::kNoConsumerExists));
   EXPECT_CALL(mock_client_,
               OnGestureEventForPinchAck(
-                  EventHasType(blink::WebInputEvent::kGesturePinchEnd),
+                  EventHasType(blink::WebInputEvent::Type::kGesturePinchEnd),
                   blink::mojom::InputEventResultSource::kBrowser,
                   blink::mojom::InputEventResultState::kIgnored));
   EXPECT_CALL(mock_client_,
               OnGestureEventForPinchAck(
-                  EventHasType(blink::WebInputEvent::kGesturePinchBegin),
+                  EventHasType(blink::WebInputEvent::Type::kGesturePinchBegin),
                   blink::mojom::InputEventResultSource::kBrowser,
                   blink::mojom::InputEventResultState::kIgnored));
   EXPECT_CALL(mock_client_, SendMouseWheelEventForPinchImmediately(testing::_))
@@ -423,12 +423,12 @@ TEST_P(TouchpadPinchEventQueueTest, MultipleQueuedSequences) {
 
   EXPECT_CALL(mock_client_,
               OnGestureEventForPinchAck(
-                  EventHasType(blink::WebInputEvent::kGesturePinchUpdate),
+                  EventHasType(blink::WebInputEvent::Type::kGesturePinchUpdate),
                   blink::mojom::InputEventResultSource::kCompositorThread,
                   blink::mojom::InputEventResultState::kNoConsumerExists));
   EXPECT_CALL(mock_client_,
               OnGestureEventForPinchAck(
-                  EventHasType(blink::WebInputEvent::kGesturePinchEnd),
+                  EventHasType(blink::WebInputEvent::Type::kGesturePinchEnd),
                   blink::mojom::InputEventResultSource::kBrowser,
                   blink::mojom::InputEventResultState::kIgnored));
   EXPECT_CALL(mock_client_, SendMouseWheelEventForPinchImmediately(testing::_));
@@ -443,7 +443,7 @@ TEST_P(TouchpadPinchEventQueueTest, MultipleQueuedSequences) {
 TEST_P(TouchpadPinchEventQueueTest, MultipleUpdatesInSequence) {
   EXPECT_CALL(mock_client_,
               OnGestureEventForPinchAck(
-                  EventHasType(blink::WebInputEvent::kGesturePinchBegin),
+                  EventHasType(blink::WebInputEvent::Type::kGesturePinchBegin),
                   blink::mojom::InputEventResultSource::kBrowser,
                   blink::mojom::InputEventResultState::kIgnored));
   if (async_events_enabled_) {
@@ -468,28 +468,31 @@ TEST_P(TouchpadPinchEventQueueTest, MultipleUpdatesInSequence) {
             EventHasCtrlModifier(), ::testing::Not(EventIsBlocking()))));
   }
   if (async_events_enabled_) {
-    EXPECT_CALL(mock_client_,
-                OnGestureEventForPinchAck(
-                    EventHasType(blink::WebInputEvent::kGesturePinchUpdate),
-                    blink::mojom::InputEventResultSource::kCompositorThread,
-                    blink::mojom::InputEventResultState::kNoConsumerExists));
-    EXPECT_CALL(mock_client_,
-                OnGestureEventForPinchAck(
-                    EventHasType(blink::WebInputEvent::kGesturePinchUpdate),
-                    blink::mojom::InputEventResultSource::kBrowser,
-                    blink::mojom::InputEventResultState::kIgnored))
+    EXPECT_CALL(
+        mock_client_,
+        OnGestureEventForPinchAck(
+            EventHasType(blink::WebInputEvent::Type::kGesturePinchUpdate),
+            blink::mojom::InputEventResultSource::kCompositorThread,
+            blink::mojom::InputEventResultState::kNoConsumerExists));
+    EXPECT_CALL(
+        mock_client_,
+        OnGestureEventForPinchAck(
+            EventHasType(blink::WebInputEvent::Type::kGesturePinchUpdate),
+            blink::mojom::InputEventResultSource::kBrowser,
+            blink::mojom::InputEventResultState::kIgnored))
         .Times(2);
   } else {
-    EXPECT_CALL(mock_client_,
-                OnGestureEventForPinchAck(
-                    EventHasType(blink::WebInputEvent::kGesturePinchUpdate),
-                    blink::mojom::InputEventResultSource::kCompositorThread,
-                    blink::mojom::InputEventResultState::kNoConsumerExists))
+    EXPECT_CALL(
+        mock_client_,
+        OnGestureEventForPinchAck(
+            EventHasType(blink::WebInputEvent::Type::kGesturePinchUpdate),
+            blink::mojom::InputEventResultSource::kCompositorThread,
+            blink::mojom::InputEventResultState::kNoConsumerExists))
         .Times(3);
   }
   EXPECT_CALL(mock_client_,
               OnGestureEventForPinchAck(
-                  EventHasType(blink::WebInputEvent::kGesturePinchEnd),
+                  EventHasType(blink::WebInputEvent::Type::kGesturePinchEnd),
                   blink::mojom::InputEventResultSource::kBrowser,
                   blink::mojom::InputEventResultState::kIgnored));
 
@@ -522,7 +525,7 @@ TEST_P(TouchpadPinchEventQueueTest, MultipleUpdatesInSequence) {
 TEST_P(TouchpadPinchEventQueueTest, MultipleUpdatesCoalesced) {
   EXPECT_CALL(mock_client_,
               OnGestureEventForPinchAck(
-                  EventHasType(blink::WebInputEvent::kGesturePinchBegin),
+                  EventHasType(blink::WebInputEvent::Type::kGesturePinchBegin),
                   blink::mojom::InputEventResultSource::kBrowser,
                   blink::mojom::InputEventResultState::kIgnored));
   if (async_events_enabled_) {
@@ -547,27 +550,30 @@ TEST_P(TouchpadPinchEventQueueTest, MultipleUpdatesCoalesced) {
             EventHasCtrlModifier(), ::testing::Not(EventIsBlocking()))));
   }
   if (async_events_enabled_) {
-    EXPECT_CALL(mock_client_,
-                OnGestureEventForPinchAck(
-                    EventHasType(blink::WebInputEvent::kGesturePinchUpdate),
-                    blink::mojom::InputEventResultSource::kCompositorThread,
-                    blink::mojom::InputEventResultState::kNoConsumerExists));
-    EXPECT_CALL(mock_client_,
-                OnGestureEventForPinchAck(
-                    EventHasType(blink::WebInputEvent::kGesturePinchUpdate),
-                    blink::mojom::InputEventResultSource::kBrowser,
-                    blink::mojom::InputEventResultState::kIgnored));
+    EXPECT_CALL(
+        mock_client_,
+        OnGestureEventForPinchAck(
+            EventHasType(blink::WebInputEvent::Type::kGesturePinchUpdate),
+            blink::mojom::InputEventResultSource::kCompositorThread,
+            blink::mojom::InputEventResultState::kNoConsumerExists));
+    EXPECT_CALL(
+        mock_client_,
+        OnGestureEventForPinchAck(
+            EventHasType(blink::WebInputEvent::Type::kGesturePinchUpdate),
+            blink::mojom::InputEventResultSource::kBrowser,
+            blink::mojom::InputEventResultState::kIgnored));
   } else {
-    EXPECT_CALL(mock_client_,
-                OnGestureEventForPinchAck(
-                    EventHasType(blink::WebInputEvent::kGesturePinchUpdate),
-                    blink::mojom::InputEventResultSource::kCompositorThread,
-                    blink::mojom::InputEventResultState::kNoConsumerExists))
+    EXPECT_CALL(
+        mock_client_,
+        OnGestureEventForPinchAck(
+            EventHasType(blink::WebInputEvent::Type::kGesturePinchUpdate),
+            blink::mojom::InputEventResultSource::kCompositorThread,
+            blink::mojom::InputEventResultState::kNoConsumerExists))
         .Times(2);
   }
   EXPECT_CALL(mock_client_,
               OnGestureEventForPinchAck(
-                  EventHasType(blink::WebInputEvent::kGesturePinchEnd),
+                  EventHasType(blink::WebInputEvent::Type::kGesturePinchEnd),
                   blink::mojom::InputEventResultSource::kBrowser,
                   blink::mojom::InputEventResultState::kIgnored));
 
@@ -603,7 +609,7 @@ TEST_P(TouchpadPinchEventQueueTest, MultipleUpdatesCoalesced) {
 TEST_P(TouchpadPinchEventQueueTest, MultipleCanceledUpdatesInSequence) {
   EXPECT_CALL(mock_client_,
               OnGestureEventForPinchAck(
-                  EventHasType(blink::WebInputEvent::kGesturePinchBegin),
+                  EventHasType(blink::WebInputEvent::Type::kGesturePinchBegin),
                   blink::mojom::InputEventResultSource::kBrowser,
                   blink::mojom::InputEventResultState::kIgnored));
   EXPECT_CALL(mock_client_,
@@ -612,7 +618,7 @@ TEST_P(TouchpadPinchEventQueueTest, MultipleCanceledUpdatesInSequence) {
       .Times(3);
   EXPECT_CALL(mock_client_,
               OnGestureEventForPinchAck(
-                  EventHasType(blink::WebInputEvent::kGesturePinchUpdate),
+                  EventHasType(blink::WebInputEvent::Type::kGesturePinchUpdate),
                   blink::mojom::InputEventResultSource::kMainThread,
                   blink::mojom::InputEventResultState::kConsumed))
       .Times(3);
@@ -621,7 +627,7 @@ TEST_P(TouchpadPinchEventQueueTest, MultipleCanceledUpdatesInSequence) {
                   EventHasCtrlModifier(), ::testing::Not(EventIsBlocking()))));
   EXPECT_CALL(mock_client_,
               OnGestureEventForPinchAck(
-                  EventHasType(blink::WebInputEvent::kGesturePinchEnd),
+                  EventHasType(blink::WebInputEvent::Type::kGesturePinchEnd),
                   blink::mojom::InputEventResultSource::kBrowser,
                   blink::mojom::InputEventResultState::kIgnored));
 
@@ -651,7 +657,7 @@ TEST_P(TouchpadPinchEventQueueTest, DoubleTap) {
                   EventHasScale(1.0f))));
   EXPECT_CALL(mock_client_,
               OnGestureEventForPinchAck(
-                  EventHasType(blink::WebInputEvent::kGestureDoubleTap),
+                  EventHasType(blink::WebInputEvent::Type::kGestureDoubleTap),
                   blink::mojom::InputEventResultSource::kMainThread,
                   blink::mojom::InputEventResultState::kConsumed));
 
@@ -666,7 +672,7 @@ TEST_P(TouchpadPinchEventQueueTest, IgnoreNonMatchingEvents) {
   ::testing::InSequence sequence;
   EXPECT_CALL(mock_client_,
               OnGestureEventForPinchAck(
-                  EventHasType(blink::WebInputEvent::kGesturePinchBegin),
+                  EventHasType(blink::WebInputEvent::Type::kGesturePinchBegin),
                   blink::mojom::InputEventResultSource::kBrowser,
                   blink::mojom::InputEventResultState::kIgnored));
   EXPECT_CALL(mock_client_,
@@ -674,7 +680,7 @@ TEST_P(TouchpadPinchEventQueueTest, IgnoreNonMatchingEvents) {
                   ::testing::AllOf(EventHasCtrlModifier(), EventIsBlocking())));
   EXPECT_CALL(mock_client_,
               OnGestureEventForPinchAck(
-                  EventHasType(blink::WebInputEvent::kGesturePinchUpdate),
+                  EventHasType(blink::WebInputEvent::Type::kGesturePinchUpdate),
                   blink::mojom::InputEventResultSource::kMainThread,
                   blink::mojom::InputEventResultState::kConsumed));
 
@@ -684,7 +690,7 @@ TEST_P(TouchpadPinchEventQueueTest, IgnoreNonMatchingEvents) {
 
   EXPECT_CALL(mock_client_,
               OnGestureEventForPinchAck(
-                  EventHasType(blink::WebInputEvent::kGesturePinchEnd),
+                  EventHasType(blink::WebInputEvent::Type::kGesturePinchEnd),
                   blink::mojom::InputEventResultSource::kBrowser,
                   blink::mojom::InputEventResultState::kIgnored));
 

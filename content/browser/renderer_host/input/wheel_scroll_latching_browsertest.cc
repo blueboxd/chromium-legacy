@@ -153,7 +153,7 @@ IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest, MAYBE_WheelEventTarget) {
       shell()->web_contents()->GetRenderViewHost()->GetWidget());
 
   auto input_msg_watcher = std::make_unique<InputMsgWatcher>(
-      GetWidgetHost(), blink::WebInputEvent::kMouseWheel);
+      GetWidgetHost(), blink::WebInputEvent::Type::kMouseWheel);
 
   float scrollable_div_top = ExecuteScriptAndExtractDouble(
       "scrollableDiv.getBoundingClientRect().top");
@@ -207,7 +207,7 @@ IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest,
   EXPECT_EQ(0, ExecuteScriptAndExtractInt("scrollableDivWheelEventCounter"));
 
   auto update_msg_watcher = std::make_unique<InputMsgWatcher>(
-      GetWidgetHost(), blink::WebInputEvent::kGestureScrollUpdate);
+      GetWidgetHost(), blink::WebInputEvent::Type::kGestureScrollUpdate);
 
   float scrollable_div_top = ExecuteScriptAndExtractDouble(
       "scrollableDiv.getBoundingClientRect().top");
@@ -287,7 +287,7 @@ IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest,
 #endif
   // Send a GSB event to start scrolling the scrollableDiv.
   blink::WebGestureEvent gesture_scroll_begin(
-      blink::WebGestureEvent::kGestureScrollBegin,
+      blink::WebGestureEvent::Type::kGestureScrollBegin,
       blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests(),
       blink::WebGestureDevice::kTouchpad);
@@ -302,7 +302,8 @@ IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest,
 
   // Send the first GSU event.
   blink::WebGestureEvent gesture_scroll_update(gesture_scroll_begin);
-  gesture_scroll_update.SetType(blink::WebGestureEvent::kGestureScrollUpdate);
+  gesture_scroll_update.SetType(
+      blink::WebGestureEvent::Type::kGestureScrollUpdate);
   gesture_scroll_update.data.scroll_update.delta_units =
       precise ? ui::ScrollGranularity::kScrollByPrecisePixel
               : ui::ScrollGranularity::kScrollByPixel;
@@ -380,7 +381,7 @@ IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest,
 
   // Send the first wheel event.
   auto wheel_msg_watcher = std::make_unique<InputMsgWatcher>(
-      GetWidgetHost(), blink::WebInputEvent::kMouseWheel);
+      GetWidgetHost(), blink::WebInputEvent::Type::kMouseWheel);
   blink::WebMouseWheelEvent wheel_event =
       SyntheticWebMouseWheelEventBuilder::Build(
           x, y, x, y, 1, 1, 0, ui::ScrollGranularity::kScrollByPrecisePixel);
@@ -395,7 +396,7 @@ IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest,
 
   // Send the second wheel event.
   wheel_msg_watcher = std::make_unique<InputMsgWatcher>(
-      GetWidgetHost(), blink::WebInputEvent::kMouseWheel);
+      GetWidgetHost(), blink::WebInputEvent::Type::kMouseWheel);
   wheel_event.phase = blink::WebMouseWheelEvent::kPhaseChanged;
   GetRouter()->RouteMouseWheelEvent(GetRootView(), &wheel_event,
                                     ui::LatencyInfo());

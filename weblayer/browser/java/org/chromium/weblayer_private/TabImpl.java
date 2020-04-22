@@ -47,6 +47,7 @@ import org.chromium.weblayer_private.interfaces.IDownloadCallbackClient;
 import org.chromium.weblayer_private.interfaces.IErrorPageCallbackClient;
 import org.chromium.weblayer_private.interfaces.IFindInPageCallbackClient;
 import org.chromium.weblayer_private.interfaces.IFullscreenCallbackClient;
+import org.chromium.weblayer_private.interfaces.IMediaCaptureCallbackClient;
 import org.chromium.weblayer_private.interfaces.INavigationControllerClient;
 import org.chromium.weblayer_private.interfaces.IObjectWrapper;
 import org.chromium.weblayer_private.interfaces.ITab;
@@ -277,8 +278,7 @@ public final class TabImpl extends ITab.Stub {
     public void onDidGainActive(long topControlsContainerViewHandle) {
         // attachToFragment() must be called before activate().
         assert mBrowser != null;
-        TabImplJni.get().setTopControlsContainerView(
-                mNativeTab, TabImpl.this, topControlsContainerViewHandle);
+        TabImplJni.get().setTopControlsContainerView(mNativeTab, topControlsContainerViewHandle);
         updateWebContentsVisibility();
         mWebContents.onShow();
     }
@@ -290,7 +290,7 @@ public final class TabImpl extends ITab.Stub {
         hideFindInPageUiAndNotifyClient();
         mWebContents.onHide();
         updateWebContentsVisibility();
-        TabImplJni.get().setTopControlsContainerView(mNativeTab, TabImpl.this, 0);
+        TabImplJni.get().setTopControlsContainerView(mNativeTab, 0);
     }
 
     /**
@@ -545,6 +545,16 @@ public final class TabImpl extends ITab.Stub {
         }
     }
 
+    @Override
+    public void setMediaCaptureCallbackClient(IMediaCaptureCallbackClient client) {
+        mMediaStreamManager.setClient(client);
+    }
+
+    @Override
+    public void stopMediaCapturing() {
+        mMediaStreamManager.stopStreaming();
+    }
+
     @CalledByNative
     private void handleCloseFromWebContents() throws RemoteException {
         // On clients < 84 WebContents-initiated tab closing was delegated to the client; this flow
@@ -664,8 +674,7 @@ public final class TabImpl extends ITab.Stub {
         long createTab(long profile, TabImpl caller);
         void setJavaImpl(long nativeTabImpl, TabImpl impl);
         void onAutofillProviderChanged(long nativeTabImpl, AutofillProvider autofillProvider);
-        void setTopControlsContainerView(
-                long nativeTabImpl, TabImpl caller, long nativeTopControlsContainerView);
+        void setTopControlsContainerView(long nativeTabImpl, long nativeTopControlsContainerView);
         void deleteTab(long tab);
         WebContents getWebContents(long nativeTabImpl, TabImpl caller);
         void executeScript(long nativeTabImpl, String script, boolean useSeparateIsolate,

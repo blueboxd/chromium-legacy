@@ -7,76 +7,68 @@
 
 #include <stdint.h>
 
+#include "base/callback.h"
+#include "base/logging.h"
 #include "base/optional.h"
 #include "base/util/type_safety/strong_alias.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
-#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
-#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 
 namespace blink {
 
 class ScriptState;
 class StreamAbortInfo;
-class WebTransportCloseProxy;
 class ReadableStream;
 class ReadableStreamDefaultControllerWithScriptScope;
 class Visitor;
 
 // Implementation of the IncomingStream mixin from the standard:
 // https://wicg.github.io/web-transport/#incoming-stream. ReceiveStream and
-// BidirectionalStream inherit from this.
-class MODULES_EXPORT IncomingStream
-    : public ScriptWrappable,
-      public ActiveScriptWrappable<IncomingStream>,
-      public ExecutionContextLifecycleObserver {
-  DEFINE_WRAPPERTYPEINFO();
+// BidirectionalStream delegate to this to implement the functionality.
+class MODULES_EXPORT IncomingStream final
+    : public GarbageCollected<IncomingStream> {
   USING_PRE_FINALIZER(IncomingStream, Dispose);
-  USING_GARBAGE_COLLECTED_MIXIN(IncomingStream);
 
  public:
   IncomingStream(ScriptState*,
-                 WebTransportCloseProxy*,
+                 base::OnceClosure forget_stream,
                  mojo::ScopedDataPipeConsumerHandle);
-  ~IncomingStream() override;
+  ~IncomingStream();
 
   // Init() must be called before the stream is used.
   void Init();
 
-  WebTransportCloseProxy* GetWebTransportCloseProxy() { return close_proxy_; }
-
-  // Implementation of incoming_stream.idl.
-  ReadableStream* readable() const {
+  // Methods from the IncomingStream IDL:
+  // https://wicg.github.io/web-transport/#incoming-stream
+  ReadableStream* Readable() const {
     DVLOG(1) << "IncomingStream::readable() called";
 
     return readable_;
   }
 
-  ScriptPromise readingAborted() const { return reading_aborted_; }
+  ScriptPromise ReadingAborted() const { return reading_aborted_; }
 
-  void abortReading(StreamAbortInfo*);
+  void AbortReading(StreamAbortInfo*);
 
-  // Called via WebTransportCloseProxy.
+  // Called from QuicTransport via a WebTransportStream class. May execute
+  // JavaScript.
   void OnIncomingStreamClosed(bool fin_received);
 
-  // Called via WebTransportCloseProxy. Expects a JavaScript scope to have been
-  // entered.
+  // Called via QuicTransport via a WebTransportStream class. Expects a
+  // JavaScript scope to have been entered.
   void Reset();
 
-  // IncomingStream cannot be collected until it is explicitly closed, either
-  // remotely or locally.
-  bool HasPendingActivity() const final { return reading_aborted_resolver_; }
+  // Called from QuicTransport rather than using
+  // ExecutionContextLifecycleObserver to ensure correct destruction order.
+  // Does not execute JavaScript.
+  void ContextDestroyed();
 
-  // Implementation of ContextLifecycleObserver.
-  void ContextDestroyed() override;
-
-  void Trace(Visitor*) override;
+  void Trace(Visitor*);
 
  private:
   class UnderlyingSource;
@@ -127,10 +119,7 @@ class MODULES_EXPORT IncomingStream
 
   const Member<ScriptState> script_state_;
 
-  // Used to call SendFin() to cause the QuicTransport object to drop its
-  // reference to us. Set to nullptr when there is no longer any need to call
-  // SendFin().
-  Member<WebTransportCloseProxy> close_proxy_;
+  base::OnceClosure forget_stream_;
 
   mojo::ScopedDataPipeConsumerHandle data_pipe_;
 

@@ -246,6 +246,10 @@ class MediaFeedsTableDelegate {
       // Format identifiers.
       td.textContent = formatIdentifiers(
           /** @type {Array<mediaFeeds.mojom.Identifier>} */ (data));
+    } else if (key === 'lastFetchItemCount') {
+      // Format the fetch item count.
+      td.textContent =
+          data + ' (' + dataRow.lastFetchSafeItemCount + ' confirmed as safe)';
     } else {
       td.textContent = data;
     }

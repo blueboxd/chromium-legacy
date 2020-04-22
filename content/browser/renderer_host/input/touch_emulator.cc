@@ -185,7 +185,7 @@ bool TouchEmulator::HandleMouseEvent(const WebMouseEvent& mouse_event,
   UpdateCursor();
 
   if (mouse_event.button == WebMouseEvent::Button::kRight &&
-      mouse_event.GetType() == WebInputEvent::kMouseDown) {
+      mouse_event.GetType() == WebInputEvent::Type::kMouseDown) {
     client_->ShowContextMenuAtPoint(
         gfx::Point(mouse_event.PositionInWidget().x(),
                    mouse_event.PositionInWidget().y()),
@@ -195,7 +195,7 @@ bool TouchEmulator::HandleMouseEvent(const WebMouseEvent& mouse_event,
   if (mouse_event.button != WebMouseEvent::Button::kLeft)
     return true;
 
-  if (mouse_event.GetType() == WebInputEvent::kMouseMove) {
+  if (mouse_event.GetType() == WebInputEvent::Type::kMouseMove) {
     if (last_mouse_event_was_move_ &&
         mouse_event.TimeStamp() <
             last_mouse_move_timestamp_ + kMouseMoveDropInterval)
@@ -207,17 +207,17 @@ bool TouchEmulator::HandleMouseEvent(const WebMouseEvent& mouse_event,
     last_mouse_event_was_move_ = false;
   }
 
-  if (mouse_event.GetType() == WebInputEvent::kMouseDown)
+  if (mouse_event.GetType() == WebInputEvent::Type::kMouseDown)
     mouse_pressed_ = true;
-  else if (mouse_event.GetType() == WebInputEvent::kMouseUp)
+  else if (mouse_event.GetType() == WebInputEvent::Type::kMouseUp)
     mouse_pressed_ = false;
 
   UpdateShiftPressed((mouse_event.GetModifiers() & WebInputEvent::kShiftKey) !=
                      0);
 
-  if (mouse_event.GetType() != WebInputEvent::kMouseDown &&
-      mouse_event.GetType() != WebInputEvent::kMouseMove &&
-      mouse_event.GetType() != WebInputEvent::kMouseUp) {
+  if (mouse_event.GetType() != WebInputEvent::Type::kMouseDown &&
+      mouse_event.GetType() != WebInputEvent::Type::kMouseMove &&
+      mouse_event.GetType() != WebInputEvent::Type::kMouseUp) {
     return true;
   }
 
@@ -346,7 +346,7 @@ bool TouchEmulator::HandleTouchEventAck(
 
 void TouchEmulator::OnGestureEventAck(const WebGestureEvent& event,
                                       RenderWidgetHostViewBase*) {
-  if (event.GetType() != WebInputEvent::kGestureTap)
+  if (event.GetType() != WebInputEvent::Type::kGestureTap)
     return;
   if (pending_taps_count_) {
     pending_taps_count_--;
@@ -369,19 +369,19 @@ void TouchEmulator::OnGestureEvent(const ui::GestureEventData& gesture) {
   DCHECK(gesture_event.unique_touch_event_id);
 
   switch (gesture_event.GetType()) {
-    case WebInputEvent::kUndefined:
+    case WebInputEvent::Type::kUndefined:
       NOTREACHED() << "Undefined WebInputEvent type";
       // Bail without sending the junk event to the client.
       return;
 
-    case WebInputEvent::kGestureScrollBegin:
+    case WebInputEvent::Type::kGestureScrollBegin:
       client_->ForwardEmulatedGestureEvent(gesture_event);
       // PinchBegin must always follow ScrollBegin.
       if (InPinchGestureMode())
         PinchBegin(gesture_event);
       break;
 
-    case WebInputEvent::kGestureScrollUpdate:
+    case WebInputEvent::Type::kGestureScrollUpdate:
       if (InPinchGestureMode()) {
         // Convert scrolls to pinches while shift is pressed.
         if (!pinch_gesture_active_)
@@ -396,14 +396,14 @@ void TouchEmulator::OnGestureEvent(const ui::GestureEventData& gesture) {
       }
       break;
 
-    case WebInputEvent::kGestureScrollEnd:
+    case WebInputEvent::Type::kGestureScrollEnd:
       // PinchEnd must precede ScrollEnd.
       if (pinch_gesture_active_)
         PinchEnd(gesture_event);
       client_->ForwardEmulatedGestureEvent(gesture_event);
       break;
 
-    case WebInputEvent::kGestureFlingStart:
+    case WebInputEvent::Type::kGestureFlingStart:
       // PinchEnd must precede FlingStart.
       if (pinch_gesture_active_)
         PinchEnd(gesture_event);
@@ -417,14 +417,14 @@ void TouchEmulator::OnGestureEvent(const ui::GestureEventData& gesture) {
       }
       break;
 
-    case WebInputEvent::kGestureFlingCancel:
+    case WebInputEvent::Type::kGestureFlingCancel:
       // If fling start was suppressed, we should not send fling cancel either.
       if (!suppress_next_fling_cancel_)
         client_->ForwardEmulatedGestureEvent(gesture_event);
       suppress_next_fling_cancel_ = false;
       break;
 
-    case WebInputEvent::kGestureTap:
+    case WebInputEvent::Type::kGestureTap:
       pending_taps_count_++;
       client_->ForwardEmulatedGestureEvent(gesture_event);
       break;
@@ -464,7 +464,7 @@ void TouchEmulator::CancelTouch() {
   }
 
   WebTouchEventTraits::ResetTypeAndTouchStates(
-      WebInputEvent::kTouchCancel, ui::EventTimeForNow(), &touch_event_);
+      WebInputEvent::Type::kTouchCancel, ui::EventTimeForNow(), &touch_event_);
   DCHECK(gesture_provider_);
   if (gesture_provider_->GetCurrentDownEvent())
     HandleEmulatedTouchEvent(touch_event_, last_emulated_start_target_);
@@ -492,7 +492,7 @@ void TouchEmulator::PinchBegin(const WebGestureEvent& event) {
   pinch_anchor_ = event.PositionInWidget();
   pinch_scale_ = 1.f;
   WebGestureEvent pinch_event =
-      GetPinchGestureEvent(WebInputEvent::kGesturePinchBegin, event);
+      GetPinchGestureEvent(WebInputEvent::Type::kGesturePinchBegin, event);
   client_->ForwardEmulatedGestureEvent(pinch_event);
 }
 
@@ -501,7 +501,7 @@ void TouchEmulator::PinchUpdate(const WebGestureEvent& event) {
   float dy = pinch_anchor_.y() - event.PositionInWidget().y();
   float scale = exp(dy * 0.002f);
   WebGestureEvent pinch_event =
-      GetPinchGestureEvent(WebInputEvent::kGesturePinchUpdate, event);
+      GetPinchGestureEvent(WebInputEvent::Type::kGesturePinchUpdate, event);
   pinch_event.data.pinch_update.scale = scale / pinch_scale_;
   client_->ForwardEmulatedGestureEvent(pinch_event);
   pinch_scale_ = scale;
@@ -511,14 +511,15 @@ void TouchEmulator::PinchEnd(const WebGestureEvent& event) {
   DCHECK(pinch_gesture_active_);
   pinch_gesture_active_ = false;
   WebGestureEvent pinch_event =
-      GetPinchGestureEvent(WebInputEvent::kGesturePinchEnd, event);
+      GetPinchGestureEvent(WebInputEvent::Type::kGesturePinchEnd, event);
   client_->ForwardEmulatedGestureEvent(pinch_event);
 }
 
 void TouchEmulator::ScrollEnd(const WebGestureEvent& event) {
-  WebGestureEvent scroll_event(
-      WebInputEvent::kGestureScrollEnd, ModifiersWithoutMouseButtons(event),
-      event.TimeStamp(), blink::WebGestureDevice::kTouchscreen);
+  WebGestureEvent scroll_event(WebInputEvent::Type::kGestureScrollEnd,
+                               ModifiersWithoutMouseButtons(event),
+                               event.TimeStamp(),
+                               blink::WebGestureDevice::kTouchscreen);
   scroll_event.unique_touch_event_id = event.unique_touch_event_id;
   client_->ForwardEmulatedGestureEvent(scroll_event);
 }
@@ -538,17 +539,17 @@ void TouchEmulator::FillTouchEventAndPoint(const WebMouseEvent& mouse_event,
                                            const gfx::PointF& pos_in_root) {
   WebInputEvent::Type eventType;
   switch (mouse_event.GetType()) {
-    case WebInputEvent::kMouseDown:
-      eventType = WebInputEvent::kTouchStart;
+    case WebInputEvent::Type::kMouseDown:
+      eventType = WebInputEvent::Type::kTouchStart;
       break;
-    case WebInputEvent::kMouseMove:
-      eventType = WebInputEvent::kTouchMove;
+    case WebInputEvent::Type::kMouseMove:
+      eventType = WebInputEvent::Type::kTouchMove;
       break;
-    case WebInputEvent::kMouseUp:
-      eventType = WebInputEvent::kTouchEnd;
+    case WebInputEvent::Type::kMouseUp:
+      eventType = WebInputEvent::Type::kTouchEnd;
       break;
     default:
-      eventType = WebInputEvent::kUndefined;
+      eventType = WebInputEvent::Type::kUndefined;
       NOTREACHED() << "Invalid event for touch emulation: "
                    << mouse_event.GetType();
   }
@@ -560,7 +561,7 @@ void TouchEmulator::FillTouchEventAndPoint(const WebMouseEvent& mouse_event,
   point.id = 0;
   point.radius_x = 0.5f * cursor_size_.width();
   point.radius_y = 0.5f * cursor_size_.height();
-  point.force = eventType == WebInputEvent::kTouchEnd ? 0.f : 1.f;
+  point.force = eventType == WebInputEvent::Type::kTouchEnd ? 0.f : 1.f;
   point.rotation_angle = 0.f;
   // We need to convert this to the root-view's coord space, otherwise the
   // GestureRecognizer will potentially receive events for a moving widget,

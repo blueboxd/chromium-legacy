@@ -11,11 +11,11 @@ std::unique_ptr<WebInputEvent> WebGestureEvent::Clone() const {
 }
 
 float WebGestureEvent::DeltaXInRootFrame() const {
-  float delta_x = (type_ == WebInputEvent::kGestureScrollBegin)
+  float delta_x = (type_ == WebInputEvent::Type::kGestureScrollBegin)
                       ? data.scroll_begin.delta_x_hint
                       : data.scroll_update.delta_x;
 
-  bool is_percent = (type_ == WebInputEvent::kGestureScrollBegin)
+  bool is_percent = (type_ == WebInputEvent::Type::kGestureScrollBegin)
                         ? data.scroll_begin.delta_hint_units ==
                               ui::ScrollGranularity::kScrollByPercentage
                         : data.scroll_update.delta_units ==
@@ -25,11 +25,11 @@ float WebGestureEvent::DeltaXInRootFrame() const {
 }
 
 float WebGestureEvent::DeltaYInRootFrame() const {
-  float delta_y = (type_ == WebInputEvent::kGestureScrollBegin)
+  float delta_y = (type_ == WebInputEvent::Type::kGestureScrollBegin)
                       ? data.scroll_begin.delta_y_hint
                       : data.scroll_update.delta_y;
 
-  bool is_percent = (type_ == WebInputEvent::kGestureScrollBegin)
+  bool is_percent = (type_ == WebInputEvent::Type::kGestureScrollBegin)
                         ? data.scroll_begin.delta_hint_units ==
                               ui::ScrollGranularity::kScrollByPercentage
                         : data.scroll_update.delta_units ==
@@ -39,61 +39,61 @@ float WebGestureEvent::DeltaYInRootFrame() const {
 }
 
 ui::ScrollGranularity WebGestureEvent::DeltaUnits() const {
-  if (type_ == WebInputEvent::kGestureScrollBegin)
+  if (type_ == WebInputEvent::Type::kGestureScrollBegin)
     return data.scroll_begin.delta_hint_units;
-  if (type_ == WebInputEvent::kGestureScrollUpdate)
+  if (type_ == WebInputEvent::Type::kGestureScrollUpdate)
     return data.scroll_update.delta_units;
-  DCHECK(type_ == WebInputEvent::kGestureScrollEnd);
+  DCHECK(type_ == WebInputEvent::Type::kGestureScrollEnd);
   return data.scroll_end.delta_units;
 }
 
 WebGestureEvent::InertialPhaseState WebGestureEvent::InertialPhase() const {
-  if (type_ == WebInputEvent::kGestureScrollBegin)
+  if (type_ == WebInputEvent::Type::kGestureScrollBegin)
     return data.scroll_begin.inertial_phase;
-  if (type_ == WebInputEvent::kGestureScrollUpdate)
+  if (type_ == WebInputEvent::Type::kGestureScrollUpdate)
     return data.scroll_update.inertial_phase;
-  DCHECK(type_ == WebInputEvent::kGestureScrollEnd);
+  DCHECK(type_ == WebInputEvent::Type::kGestureScrollEnd);
   return data.scroll_end.inertial_phase;
 }
 
 bool WebGestureEvent::Synthetic() const {
-  if (type_ == WebInputEvent::kGestureScrollBegin)
+  if (type_ == WebInputEvent::Type::kGestureScrollBegin)
     return data.scroll_begin.synthetic;
-  DCHECK(type_ == WebInputEvent::kGestureScrollEnd);
+  DCHECK(type_ == WebInputEvent::Type::kGestureScrollEnd);
   return data.scroll_end.synthetic;
 }
 
 float WebGestureEvent::VelocityX() const {
-  if (type_ == WebInputEvent::kGestureScrollUpdate)
+  if (type_ == WebInputEvent::Type::kGestureScrollUpdate)
     return data.scroll_update.velocity_x;
-  DCHECK(type_ == WebInputEvent::kGestureFlingStart);
+  DCHECK(type_ == WebInputEvent::Type::kGestureFlingStart);
   return data.fling_start.velocity_x;
 }
 
 float WebGestureEvent::VelocityY() const {
-  if (type_ == WebInputEvent::kGestureScrollUpdate)
+  if (type_ == WebInputEvent::Type::kGestureScrollUpdate)
     return data.scroll_update.velocity_y;
-  DCHECK(type_ == WebInputEvent::kGestureFlingStart);
+  DCHECK(type_ == WebInputEvent::Type::kGestureFlingStart);
   return data.fling_start.velocity_y;
 }
 
 gfx::SizeF WebGestureEvent::TapAreaInRootFrame() const {
-  if (type_ == WebInputEvent::kGestureTwoFingerTap) {
+  if (type_ == WebInputEvent::Type::kGestureTwoFingerTap) {
     return gfx::SizeF(data.two_finger_tap.first_finger_width / frame_scale_,
                       data.two_finger_tap.first_finger_height / frame_scale_);
-  } else if (type_ == WebInputEvent::kGestureLongPress ||
-             type_ == WebInputEvent::kGestureLongTap) {
+  } else if (type_ == WebInputEvent::Type::kGestureLongPress ||
+             type_ == WebInputEvent::Type::kGestureLongTap) {
     return gfx::SizeF(data.long_press.width / frame_scale_,
                       data.long_press.height / frame_scale_);
-  } else if (type_ == WebInputEvent::kGestureTap ||
-             type_ == WebInputEvent::kGestureTapUnconfirmed ||
-             type_ == WebInputEvent::kGestureDoubleTap) {
+  } else if (type_ == WebInputEvent::Type::kGestureTap ||
+             type_ == WebInputEvent::Type::kGestureTapUnconfirmed ||
+             type_ == WebInputEvent::Type::kGestureDoubleTap) {
     return gfx::SizeF(data.tap.width / frame_scale_,
                       data.tap.height / frame_scale_);
-  } else if (type_ == WebInputEvent::kGestureTapDown) {
+  } else if (type_ == WebInputEvent::Type::kGestureTapDown) {
     return gfx::SizeF(data.tap_down.width / frame_scale_,
                       data.tap_down.height / frame_scale_);
-  } else if (type_ == WebInputEvent::kGestureShowPress) {
+  } else if (type_ == WebInputEvent::Type::kGestureShowPress) {
     return gfx::SizeF(data.show_press.width / frame_scale_,
                       data.show_press.height / frame_scale_);
   }
@@ -108,7 +108,7 @@ gfx::PointF WebGestureEvent::PositionInRootFrame() const {
 }
 
 int WebGestureEvent::TapCount() const {
-  DCHECK(type_ == WebInputEvent::kGestureTap);
+  DCHECK(type_ == WebInputEvent::Type::kGestureTap);
   return data.tap.tap_count;
 }
 
@@ -126,40 +126,40 @@ void WebGestureEvent::ApplyTouchAdjustment(
 void WebGestureEvent::FlattenTransform() {
   if (frame_scale_ != 1) {
     switch (type_) {
-      case WebInputEvent::kGestureScrollBegin:
+      case WebInputEvent::Type::kGestureScrollBegin:
         if (data.scroll_begin.delta_hint_units !=
             ui::ScrollGranularity::kScrollByPercentage) {
           data.scroll_begin.delta_x_hint /= frame_scale_;
           data.scroll_begin.delta_y_hint /= frame_scale_;
         }
         break;
-      case WebInputEvent::kGestureScrollUpdate:
+      case WebInputEvent::Type::kGestureScrollUpdate:
         if (data.scroll_update.delta_units !=
             ui::ScrollGranularity::kScrollByPercentage) {
           data.scroll_update.delta_x /= frame_scale_;
           data.scroll_update.delta_y /= frame_scale_;
         }
         break;
-      case WebInputEvent::kGestureTwoFingerTap:
+      case WebInputEvent::Type::kGestureTwoFingerTap:
         data.two_finger_tap.first_finger_width /= frame_scale_;
         data.two_finger_tap.first_finger_height /= frame_scale_;
         break;
-      case WebInputEvent::kGestureLongPress:
-      case WebInputEvent::kGestureLongTap:
+      case WebInputEvent::Type::kGestureLongPress:
+      case WebInputEvent::Type::kGestureLongTap:
         data.long_press.width /= frame_scale_;
         data.long_press.height /= frame_scale_;
         break;
-      case WebInputEvent::kGestureTap:
-      case WebInputEvent::kGestureTapUnconfirmed:
-      case WebInputEvent::kGestureDoubleTap:
+      case WebInputEvent::Type::kGestureTap:
+      case WebInputEvent::Type::kGestureTapUnconfirmed:
+      case WebInputEvent::Type::kGestureDoubleTap:
         data.tap.width /= frame_scale_;
         data.tap.height /= frame_scale_;
         break;
-      case WebInputEvent::kGestureTapDown:
+      case WebInputEvent::Type::kGestureTapDown:
         data.tap_down.width /= frame_scale_;
         data.tap_down.height /= frame_scale_;
         break;
-      case WebInputEvent::kGestureShowPress:
+      case WebInputEvent::Type::kGestureShowPress:
         data.show_press.width /= frame_scale_;
         data.show_press.height /= frame_scale_;
         break;

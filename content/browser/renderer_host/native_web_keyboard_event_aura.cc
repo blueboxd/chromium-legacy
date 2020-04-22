@@ -60,11 +60,11 @@ class TranslatedKeyEvent : public ui::KeyEvent {
   static TranslatedKeyEvent* Create(const blink::WebKeyboardEvent& web_event) {
     ui::EventType type = ui::ET_KEY_RELEASED;
     bool is_char = false;
-    if (web_event.GetType() == blink::WebInputEvent::kChar) {
+    if (web_event.GetType() == blink::WebInputEvent::Type::kChar) {
       is_char = true;
       type = ui::ET_KEY_PRESSED;
-    } else if (web_event.GetType() == blink::WebInputEvent::kRawKeyDown ||
-               web_event.GetType() == blink::WebInputEvent::kKeyDown) {
+    } else if (web_event.GetType() == blink::WebInputEvent::Type::kRawKeyDown ||
+               web_event.GetType() == blink::WebInputEvent::Type::kKeyDown) {
       type = ui::ET_KEY_PRESSED;
     }
     // look up the DomCode in the table because we can't trust the
@@ -130,7 +130,7 @@ NativeWebKeyboardEvent::NativeWebKeyboardEvent(const ui::KeyEvent& key_event,
     : WebKeyboardEvent(ui::MakeWebKeyboardEvent(key_event)),
       os_event(nullptr),
       skip_in_browser(false) {
-  type_ = blink::WebInputEvent::kChar;
+  type_ = blink::WebInputEvent::Type::kChar;
   windows_key_code = character;
   text[0] = character;
   unmodified_text[0] = character;

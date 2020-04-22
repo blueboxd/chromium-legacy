@@ -56,6 +56,12 @@ class PLATFORM_EXPORT FontDescription {
   USING_FAST_MALLOC(FontDescription);
 
  public:
+  enum HashCategory {
+    kHashEmptyValue = 0,
+    kHashDeletedValue,
+    kHashRegularValue
+  };
+
   enum GenericFamilyType {
     kNoFamily,
     kStandardFamily,
@@ -90,6 +96,9 @@ class PLATFORM_EXPORT FontDescription {
 
   FontDescription();
   FontDescription(const FontDescription&);
+
+  static FontDescription CreateHashTableEmptyValue();
+  explicit FontDescription(WTF::HashTableDeletedValueType);
 
   FontDescription& operator=(const FontDescription&);
 
@@ -336,10 +345,28 @@ class PLATFORM_EXPORT FontDescription {
     return fields_.subpixel_ascent_descent_;
   }
 
+  void SetHashCategory(HashCategory category) {
+    fields_.hash_category_ = category;
+  }
+
+  HashCategory GetHashCategory() const {
+    return static_cast<HashCategory>(fields_.hash_category_);
+  }
+
+  bool IsHashTableEmptyValue() const {
+    return GetHashCategory() == kHashEmptyValue;
+  }
+
+  bool IsHashTableDeletedValue() const {
+    return GetHashCategory() == kHashDeletedValue;
+  }
+
   static void SetDefaultTypesettingFeatures(TypesettingFeatures);
   static TypesettingFeatures DefaultTypesettingFeatures();
 
   unsigned StyleHashWithoutFamilyList() const;
+  unsigned GetHash() const;
+
   // TODO(drott): We should not expose internal structure here, but rather
   // introduce a hash function here.
   unsigned BitmapFields() const { return fields_as_unsigned_.parts[0]; }
@@ -422,6 +449,8 @@ class PLATFORM_EXPORT FontDescription {
     unsigned variant_east_asian_ : 6;
     unsigned subpixel_ascent_descent_ : 1;
     unsigned font_optical_sizing_ : 1;
+
+    unsigned hash_category_ : 2;  // HashCategory
   };
 
   static_assert(sizeof(BitFields) == sizeof(FieldsAsUnsignedType),
@@ -436,6 +465,47 @@ class PLATFORM_EXPORT FontDescription {
   static bool use_subpixel_text_positioning_;
 };
 
+struct FontDescriptionHash {
+  STATIC_ONLY(FontDescriptionHash);
+
+  static unsigned GetHash(const FontDescription& description) {
+    return description.GetHash();
+  }
+
+  static bool Equal(const FontDescription& a, const FontDescription& b) {
+    return a == b;
+  }
+
+  // Empty and deleted FontDescriptions have different HashCategory flag values
+  // from all regular FontDescriptions.
+  static const bool safe_to_compare_to_empty_or_deleted = true;
+};
+
 }  // namespace blink
+
+namespace WTF {
+
+template <typename T>
+struct DefaultHash;
+template <>
+struct DefaultHash<blink::FontDescription> {
+  using Hash = blink::FontDescriptionHash;
+};
+
+template <typename T>
+struct HashTraits;
+template <>
+struct HashTraits<blink::FontDescription>
+    : SimpleClassHashTraits<blink::FontDescription> {
+  // FontDescription default constructor creates a regular value instead of the
+  // empty value.
+  static const blink::FontDescription& EmptyValue() {
+    DEFINE_STATIC_LOCAL(blink::FontDescription, empty_value,
+                        (blink::FontDescription::CreateHashTableEmptyValue()));
+    return empty_value;
+  }
+};
+
+}  // namespace WTF
 
 #endif

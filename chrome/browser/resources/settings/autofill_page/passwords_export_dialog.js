@@ -7,7 +7,21 @@
  * passwords.
  */
 
-(function() {
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
+import 'chrome://resources/polymer/v3_0/paper-progress/paper-progress.js';
+import '../settings_shared_css.m.js';
+
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+// <if expr="chromeos">
+import {BlockingRequestManager} from './blocking_request_manager.js';
+// </if>
+import {PasswordManagerImpl, PasswordManagerProxy} from './password_manager_proxy.js';
+
 
 /**
  * The states of the export passwords dialog.
@@ -37,6 +51,8 @@ const progressBarBlockMs = 1000;
 Polymer({
   is: 'passwords-export-dialog',
 
+  _template: html`{__html_template__}`,
+
   behaviors: [I18nBehavior],
 
   properties: {
@@ -53,7 +69,7 @@ Polymer({
     showErrorDialog_: Boolean,
 
     // <if expr="chromeos">
-    /** @type settings.BlockingRequestManager */
+    /** @type BlockingRequestManager */
     tokenRequestManager: Object
     // </if>
   },
@@ -265,4 +281,3 @@ Polymer({
     this.close();
   },
 });
-})();

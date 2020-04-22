@@ -31,9 +31,10 @@ const char* enum_names[] = {
 int main(int argc, const char* argv[]) {
   const auto add_mixers = [](ui::ColorProvider* provider, bool dark_window) {
     // TODO(pkasting): Use standard provider setup functions once those exist.
-    ui::AddCoreDefaultColorMixers(provider, dark_window);
-    ui::AddNativeColorMixers(provider);
-    ui::AddUiColorMixers(provider);
+    ui::AddCoreDefaultColorMixer(provider, dark_window);
+    ui::AddNativeCoreColorMixer(provider, dark_window);
+    ui::AddUiColorMixer(provider);
+    ui::AddNativeUiColorMixer(provider, dark_window);
     AddChromeColorMixers(provider);
     AddOmniboxColorMixers(provider, false);
   };

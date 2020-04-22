@@ -2114,12 +2114,14 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionHitTestTest, DISABLED_MouseLeave) {
       "});"));
 
   // Inject some MouseMoves to invoke a MouseLeave in the PDF.
+  content::SimulateRoutedMouseEvent(embedder_contents,
+                                    blink::WebInputEvent::Type::kMouseMove,
+                                    point_in_parent);
   content::SimulateRoutedMouseEvent(
-      embedder_contents, blink::WebInputEvent::kMouseMove, point_in_parent);
-  content::SimulateRoutedMouseEvent(
-      embedder_contents, blink::WebInputEvent::kMouseMove, point_in_pdf);
-  content::SimulateRoutedMouseEvent(
-      embedder_contents, blink::WebInputEvent::kMouseMove, point_in_parent);
+      embedder_contents, blink::WebInputEvent::Type::kMouseMove, point_in_pdf);
+  content::SimulateRoutedMouseEvent(embedder_contents,
+                                    blink::WebInputEvent::Type::kMouseMove,
+                                    point_in_parent);
 
   // Verify MouseEnter, MouseLeave received.
   int leave_count = 0;

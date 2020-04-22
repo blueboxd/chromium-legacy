@@ -22,16 +22,18 @@ source_set("internal") {
     "image_loader.h",
     "proto_conversion.cc",
     "proto_conversion.h",
-    "query_tile_store.cc",
-    "query_tile_store.h",
-    "query_tile_types.h",
     "store.h",
+    "tile_fetcher.cc",
+    "tile_fetcher.h",
     "tile_group.cc",
     "tile_group.h",
-    "tile_info_fetcher.cc",
-    "tile_info_fetcher.h",
+    "tile_manager.cc",
+    "tile_manager.h",
     "tile_service_impl.cc",
     "tile_service_impl.h",
+    "tile_store.cc",
+    "tile_store.h",
+    "tile_types.h",
   ]
 
   deps = [
@@ -56,9 +58,9 @@ source_set("unit_tests") {
     "cached_image_loader_unittest.cc",
     "image_decoder_unittest.cc",
     "proto_conversion_unittest.cc",
-    "query_tile_store_unittest.cc",
+    "tile_fetcher_unittest.cc",
     "tile_group_unittest.cc",
-    "tile_info_fetcher_unittest.cc",
+    "tile_store_unittest.cc",
   ]
 
   deps = [

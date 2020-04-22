@@ -12,7 +12,7 @@ import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/js/search_highlight_utils.m.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import '../about_page/about_page.js';
-import '../basic_page/basic_page.m.js';
+import '../basic_page/basic_page.js';
 import '../prefs/prefs.m.js';
 import '../search_settings.m.js';
 import '../settings_shared_css.m.js';

@@ -58,7 +58,7 @@ ColorMixer& AddMixerForLightMode(ColorProvider* provider) {
 
 }  // namespace
 
-void AddCoreDefaultColorMixers(ColorProvider* provider, bool dark_window) {
+void AddCoreDefaultColorMixer(ColorProvider* provider, bool dark_window) {
   ColorMixer& mixer = dark_window ? AddMixerForDarkMode(provider)
                                   : AddMixerForLightMode(provider);
   mixer[kColorDisabledForeground] = BlendForMinContrast(

@@ -128,7 +128,7 @@ void SyntheticGestureTargetAura::DispatchWebGestureEventToPlatform(
   }
 
   ui::EventMomentumPhase momentum_phase =
-      web_gesture.GetType() == blink::WebInputEvent::kGestureFlingStart
+      web_gesture.GetType() == blink::WebInputEvent::Type::kGestureFlingStart
           ? ui::EventMomentumPhase::BEGAN
           : ui::EventMomentumPhase::END;
   ui::ScrollEvent scroll_event(event_type, web_gesture.PositionInWidget(),

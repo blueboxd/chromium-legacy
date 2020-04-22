@@ -16,6 +16,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.TraceEvent;
 import org.chromium.components.background_task_scheduler.TaskInfo;
 
@@ -143,12 +144,14 @@ public class BackgroundTaskSchedulerPrefs {
 
         @Override
         public void visit(TaskInfo.OneOffInfo oneOffInfo) {
-            ScheduledTaskProto.ScheduledTask scheduledTask =
-                    ScheduledTaskProto.ScheduledTask.newBuilder()
-                            .setType(ScheduledTaskProto.ScheduledTask.Type.ONE_OFF)
-                            .build();
-            mSerializedScheduledTask =
-                    Base64.encodeToString(scheduledTask.toByteArray(), Base64.DEFAULT);
+            try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
+                ScheduledTaskProto.ScheduledTask scheduledTask =
+                        ScheduledTaskProto.ScheduledTask.newBuilder()
+                                .setType(ScheduledTaskProto.ScheduledTask.Type.ONE_OFF)
+                                .build();
+                mSerializedScheduledTask =
+                        Base64.encodeToString(scheduledTask.toByteArray(), Base64.DEFAULT);
+            }
         }
 
         @Override

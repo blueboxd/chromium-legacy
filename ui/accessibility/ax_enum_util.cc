@@ -6,6 +6,9 @@
 
 #include "ui/accessibility/ax_enums.mojom.h"
 
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/strings/grit/ui_strings.h"
+
 namespace ui {
 
 const char* ToString(ax::mojom::Event event) {
@@ -1376,6 +1379,31 @@ ax::mojom::DefaultActionVerb ParseDefaultActionVerb(
   return ax::mojom::DefaultActionVerb::kNone;
 }
 
+base::string16 ToLocalizedString(ax::mojom::DefaultActionVerb action_verb) {
+  switch (action_verb) {
+    case ax::mojom::DefaultActionVerb::kNone:
+      return base::string16();
+    case ax::mojom::DefaultActionVerb::kActivate:
+      return l10n_util::GetStringUTF16(IDS_AX_ACTIVATE_ACTION_VERB);
+    case ax::mojom::DefaultActionVerb::kCheck:
+      return l10n_util::GetStringUTF16(IDS_AX_CHECK_ACTION_VERB);
+    case ax::mojom::DefaultActionVerb::kClick:
+      return l10n_util::GetStringUTF16(IDS_AX_CLICK_ACTION_VERB);
+    case ax::mojom::DefaultActionVerb::kClickAncestor:
+      return l10n_util::GetStringUTF16(IDS_AX_CLICK_ANCESTOR_ACTION_VERB);
+    case ax::mojom::DefaultActionVerb::kJump:
+      return l10n_util::GetStringUTF16(IDS_AX_JUMP_ACTION_VERB);
+    case ax::mojom::DefaultActionVerb::kOpen:
+      return l10n_util::GetStringUTF16(IDS_AX_OPEN_ACTION_VERB);
+    case ax::mojom::DefaultActionVerb::kPress:
+      return l10n_util::GetStringUTF16(IDS_AX_PRESS_ACTION_VERB);
+    case ax::mojom::DefaultActionVerb::kSelect:
+      return l10n_util::GetStringUTF16(IDS_AX_SELECT_ACTION_VERB);
+    case ax::mojom::DefaultActionVerb::kUncheck:
+      return l10n_util::GetStringUTF16(IDS_AX_UNCHECK_ACTION_VERB);
+  }
+}
+
 const char* ToString(ax::mojom::Mutation mutation) {
   switch (mutation) {
     case ax::mojom::Mutation::kNone:
@@ -2088,79 +2116,69 @@ ax::mojom::MoveDirection ParseMoveDirection(const char* move_direction) {
   return ax::mojom::MoveDirection::kForward;
 }
 
-const char* ToString(ax::mojom::EditCommand edit_command) {
-  switch (edit_command) {
-    case ax::mojom::EditCommand::kType:
-      return "type";
-    case ax::mojom::EditCommand::kCut:
+const char* ToString(ax::mojom::Command command) {
+  switch (command) {
+    case ax::mojom::Command::kClearSelection:
+      return "clearSelection";
+    case ax::mojom::Command::kCut:
       return "cut";
-    case ax::mojom::EditCommand::kDelete:
+    case ax::mojom::Command::kDelete:
       return "delete";
-    case ax::mojom::EditCommand::kDictate:
+    case ax::mojom::Command::kDictate:
       return "dictate";
-    case ax::mojom::EditCommand::kFormat:
+    case ax::mojom::Command::kExtendSelection:
+      return "extendSelection";
+    case ax::mojom::Command::kFormat:
       return "format";
-    case ax::mojom::EditCommand::kInsert:
+    case ax::mojom::Command::kInsert:
       return "insert";
-    case ax::mojom::EditCommand::kMarker:
+    case ax::mojom::Command::kMarker:
       return "marker";
-    case ax::mojom::EditCommand::kPaste:
+    case ax::mojom::Command::kPaste:
       return "paste";
-    case ax::mojom::EditCommand::kReplace:
+    case ax::mojom::Command::kReplace:
       return "replace";
+    case ax::mojom::Command::kSetSelection:
+      return "setSelection";
+    case ax::mojom::Command::kShrinkSelection:
+      return "shrinkSelection";
+    case ax::mojom::Command::kType:
+      return "type";
   }
 
   return "";
 }
 
-ax::mojom::EditCommand ParseEditCommand(const char* edit_command) {
-  if (0 == strcmp(edit_command, "type"))
-    return ax::mojom::EditCommand::kType;
-  if (0 == strcmp(edit_command, "cut"))
-    return ax::mojom::EditCommand::kCut;
-  if (0 == strcmp(edit_command, "delete"))
-    return ax::mojom::EditCommand::kDelete;
-  if (0 == strcmp(edit_command, "dictate"))
-    return ax::mojom::EditCommand::kDictate;
-  if (0 == strcmp(edit_command, "format"))
-    return ax::mojom::EditCommand::kFormat;
-  if (0 == strcmp(edit_command, "insert"))
-    return ax::mojom::EditCommand::kInsert;
-  if (0 == strcmp(edit_command, "marker"))
-    return ax::mojom::EditCommand::kMarker;
-  if (0 == strcmp(edit_command, "paste"))
-    return ax::mojom::EditCommand::kPaste;
-  if (0 == strcmp(edit_command, "replace"))
-    return ax::mojom::EditCommand::kReplace;
-  return ax::mojom::EditCommand::kType;
-}
+ax::mojom::Command ParseCommand(const char* command) {
+  if (0 == strcmp(command, "clearSelection"))
+    return ax::mojom::Command::kClearSelection;
+  if (0 == strcmp(command, "cut"))
+    return ax::mojom::Command::kCut;
+  if (0 == strcmp(command, "delete"))
+    return ax::mojom::Command::kDelete;
+  if (0 == strcmp(command, "dictate"))
+    return ax::mojom::Command::kDictate;
+  if (0 == strcmp(command, "extendSelection"))
+    return ax::mojom::Command::kExtendSelection;
+  if (0 == strcmp(command, "format"))
+    return ax::mojom::Command::kFormat;
+  if (0 == strcmp(command, "insert"))
+    return ax::mojom::Command::kInsert;
+  if (0 == strcmp(command, "marker"))
+    return ax::mojom::Command::kMarker;
+  if (0 == strcmp(command, "paste"))
+    return ax::mojom::Command::kPaste;
+  if (0 == strcmp(command, "replace"))
+    return ax::mojom::Command::kReplace;
+  if (0 == strcmp(command, "setSelection"))
+    return ax::mojom::Command::kSetSelection;
+  if (0 == strcmp(command, "shrinkSelection"))
+    return ax::mojom::Command::kShrinkSelection;
+  if (0 == strcmp(command, "type"))
+    return ax::mojom::Command::kType;
 
-const char* ToString(ax::mojom::SelectionCommand selection_command) {
-  switch (selection_command) {
-    case ax::mojom::SelectionCommand::kSet:
-      return "set";
-    case ax::mojom::SelectionCommand::kClear:
-      return "clear";
-    case ax::mojom::SelectionCommand::kShrink:
-      return "shrink";
-    case ax::mojom::SelectionCommand::kExtend:
-      return "extend";
-  }
-
-  return "";
-}
-
-ax::mojom::SelectionCommand ParseSelectionCommand(
-    const char* selection_command) {
-  if (0 == strcmp(selection_command, "set"))
-    return ax::mojom::SelectionCommand::kSet;
-  if (0 == strcmp(selection_command, "clear"))
-    return ax::mojom::SelectionCommand::kClear;
-  if (0 == strcmp(selection_command, "shrink"))
-    return ax::mojom::SelectionCommand::kShrink;
-  if (0 == strcmp(selection_command, "extend"))
-    return ax::mojom::SelectionCommand::kExtend;
-  return ax::mojom::SelectionCommand::kSet;
+  // Return the default command.
+  return ax::mojom::Command::kType;
 }
 
 const char* ToString(ax::mojom::TextBoundary text_boundary) {

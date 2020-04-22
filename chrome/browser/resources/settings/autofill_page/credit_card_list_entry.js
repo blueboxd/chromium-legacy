@@ -7,12 +7,22 @@
  * the settings page.
  */
 
-cr.define('settings', function() {
+import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import '../i18n_setup.m.js';
+import '../settings_shared_css.m.js';
+import './passwords_shared_css.js';
+
   /** @typedef {chrome.autofillPrivate.CreditCardEntry} */
-  /* #export */ let CreditCardEntry;
+  export let CreditCardEntry;
 
   Polymer({
     is: 'settings-credit-card-list-entry',
+
+    _template: html`{__html_template__}`,
 
     behaviors: [
       I18nBehavior,
@@ -21,7 +31,7 @@ cr.define('settings', function() {
     properties: {
       /**
        * A saved credit card.
-       * @type {!settings.CreditCardEntry}
+       * @type {!CreditCardEntry}
        */
       creditCard: Object,
     },
@@ -54,6 +64,3 @@ cr.define('settings', function() {
     },
   });
 
-  // #cr_define_end
-  return {CreditCardEntry: CreditCardEntry};
-});

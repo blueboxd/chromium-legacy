@@ -17,10 +17,11 @@
 #include "third_party/blink/renderer/core/streams/writable_stream.h"
 #include "third_party/blink/renderer/core/streams/writable_stream_default_writer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
-#include "third_party/blink/renderer/modules/webtransport/mock_web_transport_close_proxy.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "v8/include/v8.h"
 
 namespace blink {
 
@@ -29,38 +30,60 @@ namespace {
 using ::testing::ElementsAre;
 using ::testing::StrictMock;
 
-class OutgoingStreamTest : public ::testing::Test {
+class MockClient : public GarbageCollected<MockClient>,
+                   public OutgoingStream::Client {
+  USING_GARBAGE_COLLECTED_MIXIN(MockClient);
+
  public:
+  MOCK_METHOD0(SendFin, void());
+  MOCK_METHOD0(ForgetStream, void());
+};
+
+// The purpose of this class is to ensure that the data pipe is reset before the
+// V8TestingScope is destroyed, so that the OutgoingStream object doesn't try to
+// create a DOMException after the ScriptState has gone away.
+class StreamCreator {
+  STACK_ALLOCATED();
+
+ public:
+  StreamCreator() = default;
+  ~StreamCreator() {
+    Reset();
+
+    // Let the OutgoingStream object respond to the closure if it needs to.
+    test::RunPendingTasks();
+  }
+
   // The default value of |capacity| means some sensible value selected by mojo.
-  void CreateDataPipe(uint32_t capacity = 0) {
+  OutgoingStream* Create(const V8TestingScope& scope, uint32_t capacity = 0) {
     MojoCreateDataPipeOptions options;
     options.struct_size = sizeof(MojoCreateDataPipeOptions);
     options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
     options.element_num_bytes = 1;
     options.capacity_num_bytes = capacity;
 
-    MojoResult result = mojo::CreateDataPipe(&options, &data_pipe_producer_,
+    mojo::ScopedDataPipeProducerHandle data_pipe_producer;
+    MojoResult result = mojo::CreateDataPipe(&options, &data_pipe_producer,
                                              &data_pipe_consumer_);
     if (result != MOJO_RESULT_OK) {
       ADD_FAILURE() << "CreateDataPipe() returned " << result;
     }
-  }
 
-  OutgoingStream* CreateOutgoingStream(const V8TestingScope& scope,
-                                       uint32_t capacity = 0) {
-    CreateDataPipe(capacity);
     auto* script_state = scope.GetScriptState();
-    DCHECK(!mock_close_proxy_);
-    mock_close_proxy_ =
-        MakeGarbageCollected<StrictMock<MockWebTransportCloseProxy>>();
+    mock_client_ = MakeGarbageCollected<StrictMock<MockClient>>();
     auto* outgoing_stream = MakeGarbageCollected<OutgoingStream>(
-        script_state, mock_close_proxy_, std::move(data_pipe_producer_));
+        script_state, mock_client_, std::move(data_pipe_producer));
     outgoing_stream->Init();
     return outgoing_stream;
   }
 
-  // Reads everything from data_pipe_consumer_ and returns it in a
-  // vector.
+  // Closes the pipe.
+  void Reset() { data_pipe_consumer_.reset(); }
+
+  // This is for use in EXPECT_CALL(), which is why it returns a reference.
+  MockClient& GetMockClient() { return *mock_client_; }
+
+  // Reads everything from |data_pipe_consumer_| and returns it in a vector.
   Vector<uint8_t> ReadAllPendingData() {
     Vector<uint8_t> data;
     const void* buffer = nullptr;
@@ -85,28 +108,34 @@ class OutgoingStreamTest : public ::testing::Test {
     return data;
   }
 
-  Persistent<MockWebTransportCloseProxy> mock_close_proxy_;
-  mojo::ScopedDataPipeProducerHandle data_pipe_producer_;
+  Persistent<StrictMock<MockClient>> mock_client_;
   mojo::ScopedDataPipeConsumerHandle data_pipe_consumer_;
 };
 
-TEST_F(OutgoingStreamTest, Create) {
+TEST(OutgoingStreamTest, Create) {
   V8TestingScope scope;
-  auto* outgoing_stream = CreateOutgoingStream(scope);
-  EXPECT_TRUE(outgoing_stream->writable());
+  StreamCreator stream_creator;
+  auto* outgoing_stream = stream_creator.Create(scope);
+  EXPECT_TRUE(outgoing_stream->Writable());
+
+  EXPECT_CALL(stream_creator.GetMockClient(), ForgetStream());
 }
 
-TEST_F(OutgoingStreamTest, AbortWriting) {
+TEST(OutgoingStreamTest, AbortWriting) {
   V8TestingScope scope;
-  auto* outgoing_stream = CreateOutgoingStream(scope);
+  StreamCreator stream_creator;
+
+  auto* outgoing_stream = stream_creator.Create(scope);
   auto* script_state = scope.GetScriptState();
   auto* writer =
-      outgoing_stream->writable()->getWriter(script_state, ASSERT_NO_EXCEPTION);
+      outgoing_stream->Writable()->getWriter(script_state, ASSERT_NO_EXCEPTION);
   ScriptPromise closed_promise = writer->closed(script_state);
 
-  ScriptPromise writing_aborted = outgoing_stream->writingAborted();
+  ScriptPromise writing_aborted = outgoing_stream->WritingAborted();
 
-  outgoing_stream->abortWriting();
+  EXPECT_CALL(stream_creator.GetMockClient(), ForgetStream());
+
+  outgoing_stream->AbortWriting(nullptr);
 
   ScriptPromiseTester abort_tester(script_state, writing_aborted);
   abort_tester.WaitUntilSettled();
@@ -122,12 +151,13 @@ TEST_F(OutgoingStreamTest, AbortWriting) {
   EXPECT_EQ(closed_exception->message(), "The stream was aborted locally");
 }
 
-TEST_F(OutgoingStreamTest, WriteArrayBuffer) {
+TEST(OutgoingStreamTest, WriteArrayBuffer) {
   V8TestingScope scope;
-  auto* outgoing_stream = CreateOutgoingStream(scope);
+  StreamCreator stream_creator;
+  auto* outgoing_stream = stream_creator.Create(scope);
   auto* script_state = scope.GetScriptState();
   auto* writer =
-      outgoing_stream->writable()->getWriter(script_state, ASSERT_NO_EXCEPTION);
+      outgoing_stream->Writable()->getWriter(script_state, ASSERT_NO_EXCEPTION);
   auto* chunk = DOMArrayBuffer::Create("A", 1);
   ScriptPromise result =
       writer->write(script_state, ScriptValue::From(script_state, chunk),
@@ -135,15 +165,18 @@ TEST_F(OutgoingStreamTest, WriteArrayBuffer) {
   ScriptPromiseTester tester(scope.GetScriptState(), result);
   tester.WaitUntilSettled();
   EXPECT_TRUE(tester.IsFulfilled());
-  EXPECT_THAT(ReadAllPendingData(), ElementsAre('A'));
+  EXPECT_THAT(stream_creator.ReadAllPendingData(), ElementsAre('A'));
+
+  EXPECT_CALL(stream_creator.GetMockClient(), ForgetStream());
 }
 
-TEST_F(OutgoingStreamTest, WriteArrayBufferView) {
+TEST(OutgoingStreamTest, WriteArrayBufferView) {
   V8TestingScope scope;
-  auto* outgoing_stream = CreateOutgoingStream(scope);
+  StreamCreator stream_creator;
+  auto* outgoing_stream = stream_creator.Create(scope);
   auto* script_state = scope.GetScriptState();
   auto* writer =
-      outgoing_stream->writable()->getWriter(script_state, ASSERT_NO_EXCEPTION);
+      outgoing_stream->Writable()->getWriter(script_state, ASSERT_NO_EXCEPTION);
   auto* buffer = DOMArrayBuffer::Create("*B", 2);
   // Create a view into the buffer with offset 1, ie. "B".
   auto* chunk = DOMUint8Array::Create(buffer, 1, 1);
@@ -153,23 +186,26 @@ TEST_F(OutgoingStreamTest, WriteArrayBufferView) {
   ScriptPromiseTester tester(scope.GetScriptState(), result);
   tester.WaitUntilSettled();
   EXPECT_TRUE(tester.IsFulfilled());
-  EXPECT_THAT(ReadAllPendingData(), ElementsAre('B'));
+  EXPECT_THAT(stream_creator.ReadAllPendingData(), ElementsAre('B'));
+
+  EXPECT_CALL(stream_creator.GetMockClient(), ForgetStream());
 }
 
 bool IsAllNulls(base::span<const uint8_t> data) {
   return std::all_of(data.begin(), data.end(), [](uint8_t c) { return !c; });
 }
 
-TEST_F(OutgoingStreamTest, AsyncWrite) {
+TEST(OutgoingStreamTest, AsyncWrite) {
   V8TestingScope scope;
+  StreamCreator stream_creator;
   // Set a large pipe capacity, so any platform-specific excess is dwarfed in
   // size.
   constexpr uint32_t kPipeCapacity = 512u * 1024u;
-  auto* outgoing_stream = CreateOutgoingStream(scope, kPipeCapacity);
+  auto* outgoing_stream = stream_creator.Create(scope, kPipeCapacity);
 
   auto* script_state = scope.GetScriptState();
   auto* writer =
-      outgoing_stream->writable()->getWriter(script_state, ASSERT_NO_EXCEPTION);
+      outgoing_stream->Writable()->getWriter(script_state, ASSERT_NO_EXCEPTION);
 
   // Write a chunk that definitely will not fit in the pipe.
   const size_t kChunkSize = kPipeCapacity * 3;
@@ -187,7 +223,7 @@ TEST_F(OutgoingStreamTest, AsyncWrite) {
   EXPECT_FALSE(tester.IsFulfilled());
 
   // Read the first part of the data.
-  auto data1 = ReadAllPendingData();
+  auto data1 = stream_creator.ReadAllPendingData();
   EXPECT_LT(data1.size(), kChunkSize);
 
   // Verify the data wasn't corrupted.
@@ -197,13 +233,13 @@ TEST_F(OutgoingStreamTest, AsyncWrite) {
   test::RunPendingTasks();
 
   // Read the second part of the data.
-  auto data2 = ReadAllPendingData();
+  auto data2 = stream_creator.ReadAllPendingData();
   EXPECT_TRUE(IsAllNulls(data2));
 
   test::RunPendingTasks();
 
   // Read the final part of the data.
-  auto data3 = ReadAllPendingData();
+  auto data3 = stream_creator.ReadAllPendingData();
   EXPECT_TRUE(IsAllNulls(data3));
   EXPECT_EQ(data1.size() + data2.size() + data3.size(), kChunkSize);
 
@@ -212,23 +248,26 @@ TEST_F(OutgoingStreamTest, AsyncWrite) {
   EXPECT_TRUE(tester.IsFulfilled());
 
   // Nothing should be left to read.
-  EXPECT_THAT(ReadAllPendingData(), ElementsAre());
+  EXPECT_THAT(stream_creator.ReadAllPendingData(), ElementsAre());
+
+  EXPECT_CALL(stream_creator.GetMockClient(), ForgetStream());
 }
 
 // Writing immediately followed by closing should not lose data.
-TEST_F(OutgoingStreamTest, WriteThenClose) {
+TEST(OutgoingStreamTest, WriteThenClose) {
   V8TestingScope scope;
+  StreamCreator stream_creator;
 
-  auto* outgoing_stream = CreateOutgoingStream(scope);
+  auto* outgoing_stream = stream_creator.Create(scope);
   auto* script_state = scope.GetScriptState();
   auto* writer =
-      outgoing_stream->writable()->getWriter(script_state, ASSERT_NO_EXCEPTION);
+      outgoing_stream->Writable()->getWriter(script_state, ASSERT_NO_EXCEPTION);
   auto* chunk = DOMArrayBuffer::Create("D", 1);
   ScriptPromise write_promise =
       writer->write(script_state, ScriptValue::From(script_state, chunk),
                     ASSERT_NO_EXCEPTION);
 
-  EXPECT_CALL(*mock_close_proxy_, SendFin());
+  EXPECT_CALL(stream_creator.GetMockClient(), SendFin());
 
   ScriptPromise close_promise =
       writer->close(script_state, ASSERT_NO_EXCEPTION);
@@ -244,91 +283,28 @@ TEST_F(OutgoingStreamTest, WriteThenClose) {
   close_tester.WaitUntilSettled();
   EXPECT_TRUE(close_tester.IsFulfilled());
 
-  EXPECT_THAT(ReadAllPendingData(), ElementsAre('D'));
+  EXPECT_THAT(stream_creator.ReadAllPendingData(), ElementsAre('D'));
 }
 
-// A live stream will be kept alive even if there is no explicit reference.
-// When the underlying connection is shut down, the connection will be swept.
-TEST_F(OutgoingStreamTest, GarbageCollection) {
+TEST(OutgoingStreamTest, DataPipeClosed) {
   V8TestingScope scope;
+  StreamCreator stream_creator;
 
-  WeakPersistent<OutgoingStream> outgoing_stream;
-
-  {
-    // The writable stream created when creating a OutgoingStream creates some
-    // v8 handles. To ensure these are collected, we need to create a handle
-    // scope. This is not a problem for garbage collection in normal operation.
-    v8::HandleScope handle_scope(scope.GetIsolate());
-
-    outgoing_stream = CreateOutgoingStream(scope);
-  }
-
-  // Pretend the stack is empty. This will avoid accidentally treating any
-  // copies of the |outgoing_stream| pointer as references.
-  V8GCController::CollectAllGarbageForTesting(
-      scope.GetIsolate(), v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
-
-  ASSERT_TRUE(outgoing_stream);
-
+  auto* outgoing_stream = stream_creator.Create(scope);
   auto* script_state = scope.GetScriptState();
 
-  EXPECT_CALL(*mock_close_proxy_, SendFin());
-
-  ScriptPromise close_promise =
-      outgoing_stream->writable()->close(script_state, ASSERT_NO_EXCEPTION);
-  ScriptPromiseTester tester(script_state, close_promise);
-  tester.WaitUntilSettled();
-  EXPECT_TRUE(tester.IsFulfilled());
-
-  V8GCController::CollectAllGarbageForTesting(
-      scope.GetIsolate(), v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
-
-  EXPECT_FALSE(outgoing_stream);
-}
-
-TEST_F(OutgoingStreamTest, GarbageCollectionRemoteClose) {
-  V8TestingScope scope;
-
-  WeakPersistent<OutgoingStream> outgoing_stream;
-
-  {
-    v8::HandleScope handle_scope(scope.GetIsolate());
-
-    outgoing_stream = CreateOutgoingStream(scope);
-  }
-
-  V8GCController::CollectAllGarbageForTesting(
-      scope.GetIsolate(), v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
-
-  ASSERT_TRUE(outgoing_stream);
-
-  // Close the other end of the pipe.
-  data_pipe_consumer_.reset();
-
-  test::RunPendingTasks();
-
-  V8GCController::CollectAllGarbageForTesting(
-      scope.GetIsolate(), v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
-
-  EXPECT_FALSE(outgoing_stream);
-}
-
-TEST_F(OutgoingStreamTest, DataPipeClosed) {
-  V8TestingScope scope;
-
-  auto* outgoing_stream = CreateOutgoingStream(scope);
-  auto* script_state = scope.GetScriptState();
-
-  ScriptPromise writing_aborted = outgoing_stream->writingAborted();
+  ScriptPromise writing_aborted = outgoing_stream->WritingAborted();
   ScriptPromiseTester writing_aborted_tester(script_state, writing_aborted);
 
   auto* writer =
-      outgoing_stream->writable()->getWriter(script_state, ASSERT_NO_EXCEPTION);
+      outgoing_stream->Writable()->getWriter(script_state, ASSERT_NO_EXCEPTION);
   ScriptPromise closed = writer->closed(script_state);
   ScriptPromiseTester closed_tester(script_state, closed);
 
+  EXPECT_CALL(stream_creator.GetMockClient(), ForgetStream());
+
   // Close the other end of the pipe.
-  data_pipe_consumer_.reset();
+  stream_creator.Reset();
 
   writing_aborted_tester.WaitUntilSettled();
   EXPECT_TRUE(writing_aborted_tester.IsFulfilled());
@@ -360,19 +336,20 @@ TEST_F(OutgoingStreamTest, DataPipeClosed) {
             "The stream was aborted by the remote server");
 }
 
-TEST_F(OutgoingStreamTest, DataPipeClosedDuringAsyncWrite) {
+TEST(OutgoingStreamTest, DataPipeClosedDuringAsyncWrite) {
   V8TestingScope scope;
+  StreamCreator stream_creator;
 
   constexpr uint32_t kPipeCapacity = 512 * 1024;
-  auto* outgoing_stream = CreateOutgoingStream(scope, kPipeCapacity);
+  auto* outgoing_stream = stream_creator.Create(scope, kPipeCapacity);
 
   auto* script_state = scope.GetScriptState();
 
-  ScriptPromise writing_aborted = outgoing_stream->writingAborted();
+  ScriptPromise writing_aborted = outgoing_stream->WritingAborted();
   ScriptPromiseTester writing_aborted_tester(script_state, writing_aborted);
 
   auto* writer =
-      outgoing_stream->writable()->getWriter(script_state, ASSERT_NO_EXCEPTION);
+      outgoing_stream->Writable()->getWriter(script_state, ASSERT_NO_EXCEPTION);
 
   const size_t kChunkSize = kPipeCapacity * 2;
   auto* chunk = DOMArrayBuffer::Create(kChunkSize, 1);
@@ -384,8 +361,10 @@ TEST_F(OutgoingStreamTest, DataPipeClosedDuringAsyncWrite) {
   ScriptPromise closed = writer->closed(script_state);
   ScriptPromiseTester closed_tester(script_state, closed);
 
+  EXPECT_CALL(stream_creator.GetMockClient(), ForgetStream());
+
   // Close the other end of the pipe.
-  data_pipe_consumer_.reset();
+  stream_creator.Reset();
 
   write_tester.WaitUntilSettled();
 

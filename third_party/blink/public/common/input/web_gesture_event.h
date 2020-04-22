@@ -228,23 +228,23 @@ class BLINK_COMMON_EXPORT WebGestureEvent : public WebInputEvent {
 
   bool IsScrollEvent() const {
     switch (type_) {
-      case kGestureScrollBegin:
-      case kGestureScrollEnd:
-      case kGestureScrollUpdate:
-      case kGestureFlingStart:
-      case kGestureFlingCancel:
-      case kGesturePinchBegin:
-      case kGesturePinchEnd:
-      case kGesturePinchUpdate:
+      case Type::kGestureScrollBegin:
+      case Type::kGestureScrollEnd:
+      case Type::kGestureScrollUpdate:
+      case Type::kGestureFlingStart:
+      case Type::kGestureFlingCancel:
+      case Type::kGesturePinchBegin:
+      case Type::kGesturePinchEnd:
+      case Type::kGesturePinchUpdate:
         return true;
-      case kGestureTap:
-      case kGestureTapUnconfirmed:
-      case kGestureTapDown:
-      case kGestureShowPress:
-      case kGestureTapCancel:
-      case kGestureTwoFingerTap:
-      case kGestureLongPress:
-      case kGestureLongTap:
+      case Type::kGestureTap:
+      case Type::kGestureTapUnconfirmed:
+      case Type::kGestureTapDown:
+      case Type::kGestureShowPress:
+      case Type::kGestureTapCancel:
+      case Type::kGestureTwoFingerTap:
+      case Type::kGestureLongPress:
+      case Type::kGestureLongTap:
         return false;
       default:
         NOTREACHED();
@@ -254,11 +254,11 @@ class BLINK_COMMON_EXPORT WebGestureEvent : public WebInputEvent {
 
   bool IsTargetViewport() const {
     switch (type_) {
-      case kGestureScrollBegin:
+      case Type::kGestureScrollBegin:
         return data.scroll_begin.target_viewport;
-      case kGestureFlingStart:
+      case Type::kGestureFlingStart:
         return data.fling_start.target_viewport;
-      case kGestureFlingCancel:
+      case Type::kGestureFlingCancel:
         return data.fling_cancel.target_viewport;
       default:
         return false;
@@ -270,19 +270,19 @@ class BLINK_COMMON_EXPORT WebGestureEvent : public WebInputEvent {
     // pinch gesture.
     return source_device_ == mojom::GestureDevice::kTouchpad &&
            (WebInputEvent::IsPinchGestureEventType(type_) ||
-            type_ == kGestureDoubleTap);
+            type_ == Type::kGestureDoubleTap);
   }
 
   bool NeedsWheelEvent() const {
     DCHECK(IsTouchpadZoomEvent());
     switch (type_) {
-      case kGesturePinchBegin:
+      case Type::kGesturePinchBegin:
         return data.pinch_begin.needs_wheel_event;
-      case kGesturePinchUpdate:
+      case Type::kGesturePinchUpdate:
         return data.pinch_update.needs_wheel_event;
-      case kGesturePinchEnd:
+      case Type::kGesturePinchEnd:
         return data.pinch_end.needs_wheel_event;
-      case kGestureDoubleTap:
+      case Type::kGestureDoubleTap:
         return data.tap.needs_wheel_event;
       default:
         NOTREACHED();
@@ -293,16 +293,16 @@ class BLINK_COMMON_EXPORT WebGestureEvent : public WebInputEvent {
   void SetNeedsWheelEvent(bool needs_wheel_event) {
     DCHECK(!needs_wheel_event || IsTouchpadZoomEvent());
     switch (type_) {
-      case kGesturePinchBegin:
+      case Type::kGesturePinchBegin:
         data.pinch_begin.needs_wheel_event = needs_wheel_event;
         break;
-      case kGesturePinchUpdate:
+      case Type::kGesturePinchUpdate:
         data.pinch_update.needs_wheel_event = needs_wheel_event;
         break;
-      case kGesturePinchEnd:
+      case Type::kGesturePinchEnd:
         data.pinch_end.needs_wheel_event = needs_wheel_event;
         break;
-      case kGestureDoubleTap:
+      case Type::kGestureDoubleTap:
         data.tap.needs_wheel_event = needs_wheel_event;
         break;
       default:

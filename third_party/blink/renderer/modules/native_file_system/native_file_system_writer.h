@@ -17,7 +17,6 @@ namespace blink {
 class Blob;
 class ExceptionState;
 class FetchDataLoader;
-class ReadableStream;
 class ScriptPromise;
 class ScriptPromiseResolver;
 class ScriptState;
@@ -47,10 +46,6 @@ class NativeFileSystemWriter final : public ScriptWrappable {
                           uint64_t position,
                           Blob*,
                           ExceptionState&);
-  ScriptPromise WriteStream(ScriptState*,
-                            uint64_t position,
-                            ReadableStream* stream,
-                            ExceptionState&);
 
   void WriteComplete(mojom::blink::NativeFileSystemErrorPtr result,
                      uint64_t bytes_written);

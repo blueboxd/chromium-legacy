@@ -15,13 +15,13 @@ LOGGER = logging.getLogger(__name__)
 # //build/scripts/slave/recipe_modules/ios/api.py
 
 TEST_NAMES_DEBUG_APP_PATTERN = re.compile(
-    'imp (?:0[xX][0-9a-fA-F]+ )?-\[(?P<testSuite>[A-Za-z_][A-Za-z0-9_]'
+    'imp +(?:0[xX][0-9a-fA-F]+ )?-\[(?P<testSuite>[A-Za-z_][A-Za-z0-9_]'
     '*Test[Case]*) (?P<testMethod>test[A-Za-z0-9_]*)\]')
 TEST_CLASS_RELEASE_APP_PATTERN = re.compile(
-    r'name 0[xX]\w+ '
+    r'name +0[xX]\w+ '
     '(?P<testSuite>[A-Za-z_][A-Za-z0-9_]*Test(?:Case|))\n')
 TEST_NAME_RELEASE_APP_PATTERN = re.compile(
-    r'name 0[xX]\w+ (?P<testCase>test[A-Za-z0-9_]+)\n')
+    r'name +0[xX]\w+ (?P<testCase>test[A-Za-z0-9_]+)\n')
 # 'ChromeTestCase' and 'BaseEarlGreyTestCase' are parent classes
 # of all EarlGrey/EarlGrey2 test classes. They have no real tests.
 IGNORED_CLASSES = ['BaseEarlGreyTestCase', 'ChromeTestCase']

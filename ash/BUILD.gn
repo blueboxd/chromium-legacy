@@ -194,7 +194,6 @@ component("ash") {
     "assistant/assistant_alarm_timer_controller.h",
     "assistant/assistant_controller_impl.cc",
     "assistant/assistant_controller_impl.h",
-    "assistant/assistant_controller_observer.h",
     "assistant/assistant_interaction_controller.cc",
     "assistant/assistant_interaction_controller.h",
     "assistant/assistant_notification_controller.cc",
@@ -1528,8 +1527,7 @@ component("ash") {
 
     # TODO(https://crbug.com/644355): Remove Shill dependencies.
     "//chromeos/network",
-    "//chromeos/services/assistant/public:feature_flags",
-    "//chromeos/services/assistant/public/cpp:prefs",
+    "//chromeos/services/assistant/public/cpp",
     "//chromeos/services/assistant/public/mojom",
     "//chromeos/services/multidevice_setup/public/mojom",
     "//chromeos/services/network_config/public/cpp",
@@ -2168,7 +2166,6 @@ test("ash_unittests") {
     "//base/util/values:values_util",
     "//build:branding_buildflags",
     "//chromeos:test_support",
-    "//chromeos/services/assistant/public/cpp:interaction_subscriber",
     "//chromeos/strings:strings_grit",
 
     # TODO(https://crbug.com/644336): Make CrasAudioHandler Chrome or Ash only.
@@ -2183,8 +2180,7 @@ test("ash_unittests") {
     # TODO(https://crbug.com/644355): Remove Shill dependencies.
     "//chromeos/network:test_support",
     "//chromeos/services/assistant:test_support",
-    "//chromeos/services/assistant/public:feature_flags",
-    "//chromeos/services/assistant/public/cpp:prefs",
+    "//chromeos/services/assistant/public/cpp",
     "//chromeos/services/assistant/public/mojom",
     "//chromeos/services/multidevice_setup/public/cpp:test_support",
     "//chromeos/services/multidevice_setup/public/mojom",
@@ -2510,8 +2506,7 @@ static_library("test_support") {
     "//base:i18n",
     "//base/test:test_support",
     "//cc:test_support",
-    "//chromeos/services/assistant/public/cpp:interaction_subscriber",
-    "//chromeos/services/assistant/public/cpp:prefs",
+    "//chromeos/services/assistant/public/cpp",
     "//ui/platform_window/common",
 
     # TODO(https://crbug.com/644336): Make CrasAudioHandler Chrome or Ash only.

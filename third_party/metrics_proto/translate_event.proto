@@ -148,7 +148,7 @@ message TranslateEventProto {
   // Event received from translate UI.
   optional EventType event_type = 10;
 
-  // Decisions that have been overriden by translate ranker (e.g.
+  // Decisions that have been overridden by translate ranker (e.g.
   // LANGUAGE_DISABLED_BY_AUTO_BLACKLIST).
   repeated EventType decision_overrides = 15;
 

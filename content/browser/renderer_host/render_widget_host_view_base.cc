@@ -99,12 +99,12 @@ void RenderWidgetHostViewBase::StopFlingingIfNecessary(
     blink::mojom::InputEventResultState ack_result) {
   // Reset view_stopped_flinging_for_test_ at the beginning of the scroll
   // sequence.
-  if (event.GetType() == blink::WebInputEvent::kGestureScrollBegin)
+  if (event.GetType() == blink::WebInputEvent::Type::kGestureScrollBegin)
     view_stopped_flinging_for_test_ = false;
 
   bool processed = blink::mojom::InputEventResultState::kConsumed == ack_result;
   if (!processed &&
-      event.GetType() == blink::WebInputEvent::kGestureScrollUpdate &&
+      event.GetType() == blink::WebInputEvent::Type::kGestureScrollUpdate &&
       event.data.scroll_update.inertial_phase ==
           blink::WebGestureEvent::InertialPhaseState::kMomentum &&
       event.SourceDevice() != blink::WebGestureDevice::kSyntheticAutoscroll) {
@@ -380,13 +380,13 @@ void RenderWidgetHostViewBase::ForwardTouchpadZoomEventIfNecessary(
     return;
 
   switch (event.GetType()) {
-    case blink::WebInputEvent::kGesturePinchBegin:
+    case blink::WebInputEvent::Type::kGesturePinchBegin:
       // Don't send the begin event until we get the first unconsumed update, so
       // that we elide pinch gesture steams consisting of only a begin and end.
       pending_touchpad_pinch_begin_ = event;
       pending_touchpad_pinch_begin_->SetNeedsWheelEvent(false);
       break;
-    case blink::WebInputEvent::kGesturePinchUpdate:
+    case blink::WebInputEvent::Type::kGesturePinchUpdate:
       if (ack_result != blink::mojom::InputEventResultState::kConsumed &&
           !event.data.pinch_update.zoom_disabled) {
         if (pending_touchpad_pinch_begin_) {
@@ -400,7 +400,7 @@ void RenderWidgetHostViewBase::ForwardTouchpadZoomEventIfNecessary(
         host()->ForwardGestureEvent(pinch_event);
       }
       break;
-    case blink::WebInputEvent::kGesturePinchEnd:
+    case blink::WebInputEvent::Type::kGesturePinchEnd:
       if (pending_touchpad_pinch_begin_) {
         pending_touchpad_pinch_begin_.reset();
       } else {
@@ -409,7 +409,7 @@ void RenderWidgetHostViewBase::ForwardTouchpadZoomEventIfNecessary(
         host()->ForwardGestureEvent(pinch_end_event);
       }
       break;
-    case blink::WebInputEvent::kGestureDoubleTap:
+    case blink::WebInputEvent::Type::kGestureDoubleTap:
       if (ack_result != blink::mojom::InputEventResultState::kConsumed) {
         blink::WebGestureEvent double_tap(event);
         double_tap.SetNeedsWheelEvent(false);

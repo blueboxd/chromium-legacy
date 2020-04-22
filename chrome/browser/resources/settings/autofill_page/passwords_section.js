@@ -14,7 +14,48 @@ let PasswordUiEntryEvent;
 /** @typedef {!{model: !{item: !chrome.passwordsPrivate.ExceptionEntry}}} */
 let ExceptionEntryEntryEvent;
 
-(function() {
+import {afterNextRender, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.m.js';
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.m.js';
+import {getToastManager} from 'chrome://resources/cr_elements/cr_toast/cr_toast_manager.m.js';
+import 'chrome://resources/cr_elements/icons.m.js';
+import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {ListPropertyUpdateBehavior} from 'chrome://resources/js/list_property_update_behavior.m.js';
+import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
+import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
+import {IronA11yKeysBehavior} from 'chrome://resources/polymer/v3_0/iron-a11y-keys-behavior/iron-a11y-keys-behavior.js';
+import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
+import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
+import '../controls/extension_controlled_indicator.m.js';
+import '../controls/settings_toggle_button.m.js';
+import {GlobalScrollTargetBehavior} from '../global_scroll_target_behavior.m.js';
+import {loadTimeData} from '../i18n_setup.m.js';
+import {SyncBrowserProxyImpl, SyncPrefs, SyncStatus} from '../people_page/sync_browser_proxy.m.js';
+import {PluralStringProxyImpl} from '../plural_string_proxy.m.js';
+import '../prefs/prefs.m.js';
+import {PrefsBehavior} from '../prefs/prefs_behavior.m.js';
+import {routes} from '../route.m.js';
+import {Router} from '../router.m.js';
+import '../settings_shared_css.m.js';
+import '../site_favicon.m.js';
+import {PasswordCheckBehavior} from './password_check_behavior.js';
+import './password_edit_dialog.js';
+import './password_list_item.js';
+import {PasswordManagerImpl, PasswordManagerProxy} from './password_manager_proxy.js';
+import './passwords_export_dialog.js';
+import './passwords_shared_css.js';
+// <if expr="chromeos">
+import '../controls/password_prompt_dialog.m.js';
+import {BlockingRequestManager} from './blocking_request_manager.js';
+// </if>
+
 
 /**
  * Checks if an HTML element is an editable. An editable is either a text
@@ -33,13 +74,15 @@ function isEditable(element) {
 Polymer({
   is: 'passwords-section',
 
+  _template: html`{__html_template__}`,
+
   behaviors: [
     I18nBehavior,
     WebUIListenerBehavior,
     ListPropertyUpdateBehavior,
     PasswordCheckBehavior,
-    Polymer.IronA11yKeysBehavior,
-    settings.GlobalScrollTargetBehavior,
+    IronA11yKeysBehavior,
+    GlobalScrollTargetBehavior,
     PrefsBehavior,
   ],
 
@@ -76,7 +119,7 @@ Polymer({
     /** @override */
     subpageRoute: {
       type: Object,
-      value: settings.routes.PASSWORDS,
+      value: routes.PASSWORDS,
     },
 
     /**
@@ -166,10 +209,10 @@ Polymer({
     /** @private */
     isOptedInForAccountStorage_: Boolean,
 
-    /** @private {settings.SyncPrefs} */
+    /** @private {SyncPrefs} */
     syncPrefs_: Object,
 
-    /** @private {settings.SyncStatus} */
+    /** @private {SyncStatus} */
     syncStatus_: Object,
 
     /** Filter on the saved passwords and exceptions. */
@@ -188,7 +231,7 @@ Polymer({
     /** @private */
     showPasswordPromptDialog_: Boolean,
 
-    /** @private {settings.BlockingRequestManager} */
+    /** @private {BlockingRequestManager} */
     tokenRequestManager_: Object
     // </if>
   },
@@ -271,10 +314,10 @@ Polymer({
     // is no additional security so |tokenRequestManager_| will immediately
     // resolve requests.
     if (loadTimeData.getBoolean('userCannotManuallyEnterPassword')) {
-      this.tokenRequestManager_ = new settings.BlockingRequestManager();
+      this.tokenRequestManager_ = new BlockingRequestManager();
     } else {
-      this.tokenRequestManager_ = new settings.BlockingRequestManager(
-          this.openPasswordPromptDialog_.bind(this));
+      this.tokenRequestManager_ =
+          new BlockingRequestManager(this.openPasswordPromptDialog_.bind(this));
     }
     // </if>
 
@@ -294,7 +337,7 @@ Polymer({
 
     this.notifySplices('savedPasswords', []);
 
-    const syncBrowserProxy = settings.SyncBrowserProxyImpl.getInstance();
+    const syncBrowserProxy = SyncBrowserProxyImpl.getInstance();
 
     const syncStatusChanged = syncStatus => this.syncStatus_ = syncStatus;
     syncBrowserProxy.getSyncStatus().then(syncStatusChanged);
@@ -311,8 +354,8 @@ Polymer({
     this.addWebUIListener('stored-accounts-updated', storedAccountsChanged);
     // </if>
 
-    Polymer.RenderStatus.afterNextRender(this, function() {
-      Polymer.IronA11yAnnouncer.requestAvailability();
+    afterNextRender(this, function() {
+      IronA11yAnnouncer.requestAvailability();
     });
   },
 
@@ -325,8 +368,8 @@ Polymer({
     this.passwordManager_.removeAccountStorageOptInStateListener(
         assert(this.setIsOptedInForAccountStorageListener_));
 
-    if (cr.toastManager.getToastManager().isToastOpen) {
-      cr.toastManager.getToastManager().hide();
+    if (getToastManager().isToastOpen) {
+      getToastManager().hide();
     }
   },
 
@@ -335,8 +378,8 @@ Polymer({
    * @private
    */
   onCheckPasswordsClick_() {
-    settings.Router.getInstance().navigateTo(
-        settings.routes.CHECK_PASSWORDS, new URLSearchParams('start=true'));
+    Router.getInstance().navigateTo(
+        routes.CHECK_PASSWORDS, new URLSearchParams('start=true'));
     this.passwordManager_.recordPasswordCheckReferrer(
         PasswordManagerProxy.PasswordCheckReferrer.PASSWORD_SETTINGS);
   },
@@ -364,7 +407,7 @@ Polymer({
 
   onPasswordPromptClosed_() {
     this.showPasswordPromptDialog_ = false;
-    cr.ui.focusWithoutInk(assert(this.activeDialogAnchorStack_.pop()));
+    focusWithoutInk(assert(this.activeDialogAnchorStack_.pop()));
   },
 
   openPasswordPromptDialog_() {
@@ -387,7 +430,7 @@ Polymer({
   /** @private */
   onPasswordEditDialogClosed_() {
     this.showPasswordEditDialog_ = false;
-    cr.ui.focusWithoutInk(assert(this.activeDialogAnchorStack_.pop()));
+    focusWithoutInk(assert(this.activeDialogAnchorStack_.pop()));
 
     // Trigger a re-evaluation of the activePassword as the visibility state of
     // the password might have changed.
@@ -454,7 +497,7 @@ Polymer({
   onMenuRemovePasswordTap_() {
     this.passwordManager_.removeSavedPassword(
         this.activePassword.item.entry.id);
-    cr.toastManager.getToastManager().show(this.i18n('passwordDeleted'));
+    getToastManager().show(this.i18n('passwordDeleted'));
     this.fire('iron-announce', {
       text: this.i18n('undoDescription'),
     });
@@ -483,7 +526,7 @@ Polymer({
     const activeElement = getDeepActiveElement();
     if (!activeElement || !isEditable(activeElement)) {
       this.passwordManager_.undoRemoveSavedPasswordOrException();
-      cr.toastManager.getToastManager().hide();
+      getToastManager().hide();
       // Preventing the default is necessary to not conflict with a possible
       // search action.
       event.preventDefault();
@@ -493,7 +536,7 @@ Polymer({
   /** @private */
   onUndoButtonClick_() {
     this.passwordManager_.undoRemoveSavedPasswordOrException();
-    cr.toastManager.getToastManager().hide();
+    getToastManager().hide();
   },
 
   /**
@@ -554,7 +597,7 @@ Polymer({
   /** @private */
   onPasswordsExportDialogClosed_() {
     this.showPasswordsExportDialog_ = false;
-    cr.ui.focusWithoutInk(assert(this.activeDialogAnchorStack_.pop()));
+    focusWithoutInk(assert(this.activeDialogAnchorStack_.pop()));
   },
 
   /** @private */
@@ -628,4 +671,3 @@ Polymer({
     return !this.status.elapsedTimeSinceLastCheck;
   },
 });
-})();

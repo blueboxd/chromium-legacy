@@ -75,7 +75,7 @@ void ForwardMouseToExtension(const ui::MouseEvent& mouse_event,
 
   const blink::WebMouseEvent& web_event = ui::MakeWebMouseEvent(mouse_event);
 
-  if (web_event.GetType() == blink::WebInputEvent::kUndefined) {
+  if (web_event.GetType() == blink::WebInputEvent::Type::kUndefined) {
     VLOG(3) << "Couldn't forward unsupported mouse event to extension";
     return;
   }

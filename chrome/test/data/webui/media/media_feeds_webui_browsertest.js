@@ -159,7 +159,9 @@ TEST_F('MediaFeedsWebUIBrowserTest', 'All', function() {
     assertEquals('Success', feedsContents.childNodes[6].textContent.trim());
     assertEquals('0', feedsContents.childNodes[7].textContent.trim());
     assertNotEquals('', feedsContents.childNodes[8].textContent.trim());
-    assertEquals('1', feedsContents.childNodes[9].textContent.trim());
+    assertEquals(
+        '1 (1 confirmed as safe)',
+        feedsContents.childNodes[9].textContent.trim());
     assertEquals('1', feedsContents.childNodes[10].textContent.trim());
     assertEquals('Movie', feedsContents.childNodes[11].textContent.trim());
     assertNotEquals('', feedsContents.childNodes[12].textContent.trim());

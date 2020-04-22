@@ -194,7 +194,10 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   virtual void UserIsReloading();
   void NavigationSucceeded();
   void NavigationFailed();
+
+  // WebContentsObserver overrides
   void DidStopLoading() override;
+  void DidActivatePortal(WebContents* predecessor_contents) override;
 
   // Keep track of if this page is hidden by an interstitial, in which case
   // we need to suppress all events.
@@ -452,10 +455,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   // Called in response to a hover event, caches the result for the next
   // call to CachingAsyncHitTest().
   void CacheHitTestResult(BrowserAccessibility* hit_test_result) const;
-
-  // Called when |this| is an accessibility manager for a portal's main frame,
-  // and when that portal is activated.
-  void OnPortalActivated();
 
  protected:
   explicit BrowserAccessibilityManager(BrowserAccessibilityDelegate* delegate);

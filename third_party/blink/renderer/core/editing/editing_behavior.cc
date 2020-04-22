@@ -236,7 +236,7 @@ const char* EditingBehavior::InterpretKeyEvent(
   unsigned modifiers =
       key_event->GetModifiers() & (kShiftKey | kAltKey | kCtrlKey | kMetaKey);
 
-  if (key_event->GetType() == WebInputEvent::kRawKeyDown) {
+  if (key_event->GetType() == WebInputEvent::Type::kRawKeyDown) {
     int map_key = modifiers << 16 | event.keyCode();
     const char* name = map_key ? key_down_commands_map->at(map_key) : nullptr;
     if (!name)

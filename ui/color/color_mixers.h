@@ -11,20 +11,30 @@ namespace ui {
 
 class ColorProvider;
 
-// Adds color mixers to |provider| that provide kColorSetNative, as well as
-// mappings from this set to cross-platform IDs.  This function should be
-// implemented on a per-platform basis in relevant subdirectories.
-COMPONENT_EXPORT(COLOR) void AddNativeColorMixers(ColorProvider* provider);
+// The ordering of the mixer functions below reflects the
+// order in which they are added to the providers.
 
-// Adds color mixers to |provider| that provide kColorSetCoreDefaults.
+// Adds a color mixer to |provider| that provide kColorSetCoreDefaults.
 // |dark window| should be set if the window for this provider is "dark themed",
 // e.g. system native dark mode is enabled or the window is incognito.
 COMPONENT_EXPORT(COLOR)
-void AddCoreDefaultColorMixers(ColorProvider* provider, bool dark_window);
+void AddCoreDefaultColorMixer(ColorProvider* provider, bool dark_window);
 
-// Adds color mixers to |provider| that combine the above color sets with
+// Adds a color mixer to |provider| that provide kColorSetNative.
+// This function should be implemented on a per-platform basis in
+// relevant subdirectories.
+COMPONENT_EXPORT(COLOR)
+void AddNativeCoreColorMixer(ColorProvider* provider, bool dark_window);
+
+// Adds a color mixer to |provider| that combine the above color sets with
 // recipes as necessary to produce all colors needed by ui/.
-COMPONENT_EXPORT(COLOR) void AddUiColorMixers(ColorProvider* provider);
+COMPONENT_EXPORT(COLOR) void AddUiColorMixer(ColorProvider* provider);
+
+// Adds a color mixer to |provider| that can add to kColorSetNative.
+// Intended for colors needed by ui/ that this platform overrides but
+// are outside the set defined in the core mixer.
+COMPONENT_EXPORT(COLOR)
+void AddNativeUiColorMixer(ColorProvider* provider, bool dark_window);
 
 }  // namespace ui
 

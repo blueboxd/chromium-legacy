@@ -64,13 +64,13 @@ bool HasTouchHandlers(const EventHandlerRegistry& registry) {
 const AtomicString& TouchEventNameForPointerEventType(
     WebInputEvent::Type type) {
   switch (type) {
-    case WebInputEvent::kPointerUp:
+    case WebInputEvent::Type::kPointerUp:
       return event_type_names::kTouchend;
-    case WebInputEvent::kPointerCancel:
+    case WebInputEvent::Type::kPointerCancel:
       return event_type_names::kTouchcancel;
-    case WebInputEvent::kPointerDown:
+    case WebInputEvent::Type::kPointerDown:
       return event_type_names::kTouchstart;
-    case WebInputEvent::kPointerMove:
+    case WebInputEvent::Type::kPointerMove:
       return event_type_names::kTouchmove;
     default:
       NOTREACHED();
@@ -82,19 +82,19 @@ WebTouchPoint::State TouchPointStateFromPointerEventType(
     WebInputEvent::Type type,
     bool stale) {
   if (stale)
-    return WebTouchPoint::kStateStationary;
+    return WebTouchPoint::State::kStateStationary;
   switch (type) {
     case WebInputEvent::Type::kPointerUp:
-      return WebTouchPoint::kStateReleased;
+      return WebTouchPoint::State::kStateReleased;
     case WebInputEvent::Type::kPointerCancel:
-      return WebTouchPoint::kStateCancelled;
+      return WebTouchPoint::State::kStateCancelled;
     case WebInputEvent::Type::kPointerDown:
-      return WebTouchPoint::kStatePressed;
+      return WebTouchPoint::State::kStatePressed;
     case WebInputEvent::Type::kPointerMove:
-      return WebTouchPoint::kStateMoved;
+      return WebTouchPoint::State::kStateMoved;
     default:
       NOTREACHED();
-      return WebTouchPoint::kStateUndefined;
+      return WebTouchPoint::State::kStateUndefined;
   }
 }
 
@@ -233,7 +233,7 @@ WebCoalescedInputEvent TouchEventManager::GenerateWebCoalescedInputEvent() {
                                                 first_touch_pointer_event);
   SetWebTouchEventAttributesFromWebPointerEvent(&last_coalesced_touch_event_,
                                                 first_touch_pointer_event);
-  WebInputEvent::Type touch_event_type = WebInputEvent::kTouchMove;
+  WebInputEvent::Type touch_event_type = WebInputEvent::Type::kTouchMove;
   Vector<WebPointerEvent> all_coalesced_events;
   Vector<int> available_ids;
   for (const auto& id : touch_attribute_map_.Keys())
@@ -256,13 +256,14 @@ WebCoalescedInputEvent TouchEventManager::GenerateWebCoalescedInputEvent() {
     // TODO(crbug.com/732842): Note that event sender API allows sending any
     // mix of input and as long as we don't crash or anything we should be good
     // for now.
-    if (touch_event_type == WebInputEvent::kTouchMove) {
-      if (touch_pointer_event.GetType() == WebInputEvent::kPointerDown)
-        touch_event_type = WebInputEvent::kTouchStart;
-      else if (touch_pointer_event.GetType() == WebInputEvent::kPointerCancel)
-        touch_event_type = WebInputEvent::kTouchCancel;
-      else if (touch_pointer_event.GetType() == WebInputEvent::kPointerUp)
-        touch_event_type = WebInputEvent::kTouchEnd;
+    if (touch_event_type == WebInputEvent::Type::kTouchMove) {
+      if (touch_pointer_event.GetType() == WebInputEvent::Type::kPointerDown)
+        touch_event_type = WebInputEvent::Type::kTouchStart;
+      else if (touch_pointer_event.GetType() ==
+               WebInputEvent::Type::kPointerCancel)
+        touch_event_type = WebInputEvent::Type::kTouchCancel;
+      else if (touch_pointer_event.GetType() == WebInputEvent::Type::kPointerUp)
+        touch_event_type = WebInputEvent::Type::kTouchEnd;
     }
 
     for (const WebPointerEvent& coalesced_event :
@@ -283,7 +284,7 @@ WebCoalescedInputEvent TouchEventManager::GenerateWebCoalescedInputEvent() {
             timestamp_based_event_comparison);
   WebCoalescedInputEvent result(event, {}, {});
   for (const auto& web_pointer_event : all_coalesced_events) {
-    if (web_pointer_event.GetType() == WebInputEvent::kPointerDown) {
+    if (web_pointer_event.GetType() == WebInputEvent::Type::kPointerDown) {
       // TODO(crbug.com/732842): Technically we should never receive the
       // pointerdown twice for the same touch point. But event sender API allows
       // that. So we should handle it gracefully.
@@ -331,9 +332,9 @@ WebCoalescedInputEvent TouchEventManager::GenerateWebCoalescedInputEvent() {
           for (unsigned j = 0; j < last_coalesced_touch_event_.touches_length;
                j++) {
             if (last_coalesced_touch_event_.touches[j].state !=
-                    WebTouchPoint::kStateCancelled &&
+                    WebTouchPoint::State::kStateCancelled &&
                 last_coalesced_touch_event_.touches[j].state !=
-                    WebTouchPoint::kStateReleased) {
+                    WebTouchPoint::State::kStateReleased) {
               last_coalesced_touch_event_.touches[result_size++] =
                   last_coalesced_touch_event_.touches[j];
             }
@@ -345,7 +346,7 @@ WebCoalescedInputEvent TouchEventManager::GenerateWebCoalescedInputEvent() {
     }
 
     for (unsigned i = 0; i < event.touches_length; ++i) {
-      event.touches[i].state = blink::WebTouchPoint::kStateStationary;
+      event.touches[i].state = blink::WebTouchPoint::State::kStateStationary;
       event.touches[i].movement_x = 0;
       event.touches[i].movement_y = 0;
     }
@@ -368,10 +369,10 @@ TouchEventManager::DispatchTouchEventFromAccumulatdTouchPoints() {
   for (const auto& attr : touch_attribute_map_.Values()) {
     if (!attr->stale_)
       new_touch_point_since_last_dispatch = true;
-    if (attr->event_.GetType() == WebInputEvent::kPointerUp ||
-        attr->event_.GetType() == WebInputEvent::kPointerCancel)
+    if (attr->event_.GetType() == WebInputEvent::Type::kPointerUp ||
+        attr->event_.GetType() == WebInputEvent::Type::kPointerCancel)
       any_touch_canceled_or_ended = true;
-    if (attr->event_.GetType() != WebInputEvent::kPointerDown)
+    if (attr->event_.GetType() != WebInputEvent::Type::kPointerDown)
       all_touch_points_pressed = false;
   }
 
@@ -387,7 +388,7 @@ TouchEventManager::DispatchTouchEventFromAccumulatdTouchPoints() {
     DCHECK_EQ(1U, touch_attribute_map_.size());
     const auto& touch_point_attribute = touch_attribute_map_.begin()->value;
     if (touch_point_attribute->event_.GetType() ==
-        WebInputEvent::kPointerMove) {
+        WebInputEvent::Type::kPointerMove) {
       if (!touch_point_attribute->event_.moved_beyond_slop_region)
         return WebInputEventResult::kHandledSuppressed;
       suppressing_touchmoves_within_slop_ = false;
@@ -403,8 +404,8 @@ TouchEventManager::DispatchTouchEventFromAccumulatdTouchPoints() {
   TargetTouchesHeapMap touches_by_target;
 
   // Array of touches per state, used to assemble the |changedTouches| list.
-  ChangedTouches changed_touches[WebInputEvent::kPointerTypeLast -
-                                 WebInputEvent::kPointerTypeFirst + 1];
+  ChangedTouches changed_touches[WebInputEvent::Type::kPointerTypeLast -
+                                 WebInputEvent::Type::kPointerTypeFirst + 1];
 
   Vector<int> available_ids;
   for (const auto& id : touch_attribute_map_.Keys())
@@ -430,8 +431,8 @@ TouchEventManager::DispatchTouchEventFromAccumulatdTouchPoints() {
     // |touches| and |targetTouches| should only contain information about
     // touches still on the screen, so if this point is released or
     // cancelled it will only appear in the |changedTouches| list.
-    if (event_type != WebInputEvent::kPointerUp &&
-        event_type != WebInputEvent::kPointerCancel) {
+    if (event_type != WebInputEvent::Type::kPointerUp &&
+        event_type != WebInputEvent::Type::kPointerCancel) {
       touches->Append(touch);
       target_touches_iterator->value->Append(touch);
     }
@@ -443,7 +444,8 @@ TouchEventManager::DispatchTouchEventFromAccumulatdTouchPoints() {
     // explicitly here. See https://bugs.webkit.org/show_bug.cgi?id=37609
     // for further discussion about the TouchStationary state.
     if (!touch_point_attribute->stale_ && known_target) {
-      size_t event_type_idx = event_type - WebInputEvent::kPointerTypeFirst;
+      size_t event_type_idx =
+          event_type - WebInputEvent::Type::kPointerTypeFirst;
       if (!changed_touches[event_type_idx].touches_)
         changed_touches[event_type_idx].touches_ = TouchList::Create();
       changed_touches[event_type_idx].touches_->Append(touch);
@@ -459,9 +461,9 @@ TouchEventManager::DispatchTouchEventFromAccumulatdTouchPoints() {
 
   // Now iterate through the |changedTouches| list and |m_targets| within it,
   // sending TouchEvents to the targets as required.
-  for (unsigned action = WebInputEvent::kPointerTypeFirst;
-       action <= WebInputEvent::kPointerTypeLast; ++action) {
-    size_t action_idx = action - WebInputEvent::kPointerTypeFirst;
+  for (unsigned action = WebInputEvent::Type::kPointerTypeFirst;
+       action <= WebInputEvent::Type::kPointerTypeLast; ++action) {
+    size_t action_idx = action - WebInputEvent::Type::kPointerTypeFirst;
     if (!changed_touches[action_idx].touches_)
       continue;
 
@@ -505,7 +507,7 @@ void TouchEventManager::UpdateTouchAttributeMapsForPointerDown(
   // active/hover states themselves (Gesture events do). So we only need
   // to hit-test on touchstart and when the target could be different than
   // the corresponding pointer event target.
-  DCHECK(event.GetType() == WebInputEvent::kPointerDown);
+  DCHECK(event.GetType() == WebInputEvent::Type::kPointerDown);
   // Ideally we'd DCHECK(!touch_attribute_map_.Contains(event.id))
   // since we shouldn't get a touchstart for a touch that's already
   // down. However EventSender allows this to be violated and there's
@@ -595,9 +597,9 @@ void TouchEventManager::HandleTouchPoint(
     const WebPointerEvent& event,
     const Vector<WebPointerEvent>& coalesced_events,
     const event_handling_util::PointerEventTarget& pointer_event_target) {
-  DCHECK_GE(event.GetType(), WebInputEvent::kPointerTypeFirst);
-  DCHECK_LE(event.GetType(), WebInputEvent::kPointerTypeLast);
-  DCHECK_NE(event.GetType(), WebInputEvent::kPointerCausedUaAction);
+  DCHECK_GE(event.GetType(), WebInputEvent::Type::kPointerTypeFirst);
+  DCHECK_LE(event.GetType(), WebInputEvent::Type::kPointerTypeLast);
+  DCHECK_NE(event.GetType(), WebInputEvent::Type::kPointerCausedUaAction);
 
   if (touch_attribute_map_.IsEmpty()) {
     // Ideally we'd DCHECK(!m_touchSequenceDocument) here since we should
@@ -624,7 +626,7 @@ void TouchEventManager::HandleTouchPoint(
 
   // In touch event model only touch starts can set the target and after that
   // the touch event always goes to that target.
-  if (event.GetType() == WebInputEvent::kPointerDown) {
+  if (event.GetType() == WebInputEvent::Type::kPointerDown) {
     UpdateTouchAttributeMapsForPointerDown(event, pointer_event_target);
   }
 
@@ -660,8 +662,8 @@ WebInputEventResult TouchEventManager::FlushEvents() {
   // touch points.
   Vector<int> released_canceled_points;
   for (auto& attributes : touch_attribute_map_.Values()) {
-    if (attributes->event_.GetType() == WebInputEvent::kPointerUp ||
-        attributes->event_.GetType() == WebInputEvent::kPointerCancel) {
+    if (attributes->event_.GetType() == WebInputEvent::Type::kPointerUp ||
+        attributes->event_.GetType() == WebInputEvent::Type::kPointerCancel) {
       released_canceled_points.push_back(attributes->event_.id);
     } else {
       attributes->stale_ = true;

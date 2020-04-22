@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/modules/webtransport/send_stream.h"
 #include "third_party/blink/renderer/platform/bindings/exception_code.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -192,8 +193,9 @@ class QuicTransportTest : public ::testing::Test {
   SendStream* CreateSendStreamSuccessfully(const V8TestingScope& scope,
                                            QuicTransport* quic_transport) {
     EXPECT_CALL(*mock_quic_transport_, CreateStream(_, _, _))
-        .WillOnce([this](Unused, Unused,
+        .WillOnce([this](mojo::ScopedDataPipeConsumerHandle handle, Unused,
                          base::OnceCallback<void(bool, uint32_t)> callback) {
+          send_stream_consumer_handle_ = std::move(handle);
           std::move(callback).Run(true, next_stream_id_++);
         });
 
@@ -279,6 +281,7 @@ class QuicTransportTest : public ::testing::Test {
   std::unique_ptr<MockQuicTransport> mock_quic_transport_;
   mojo::Remote<network::mojom::blink::QuicTransportClient> client_remote_;
   uint32_t next_stream_id_ = 0;
+  mojo::ScopedDataPipeConsumerHandle send_stream_consumer_handle_;
 
   base::WeakPtrFactory<QuicTransportTest> weak_ptr_factory_{this};
 };
@@ -843,6 +846,207 @@ TEST_F(QuicTransportTest, SendStreamGarbageCollection) {
 
   EXPECT_FALSE(quic_transport);
   EXPECT_FALSE(send_stream);
+}
+
+// A live stream will be kept alive even if there is no explicit reference.
+// When the underlying connection is shut down, the connection will be swept.
+TEST_F(QuicTransportTest, SendStreamGarbageCollectionLocalClose) {
+  V8TestingScope scope;
+
+  WeakPersistent<SendStream> send_stream;
+
+  {
+    // The writable stream created when creating a SendStream creates some
+    // v8 handles. To ensure these are collected, we need to create a handle
+    // scope. This is not a problem for garbage collection in normal operation.
+    v8::HandleScope handle_scope(scope.GetIsolate());
+
+    auto* quic_transport =
+        CreateAndConnectSuccessfully(scope, "quic-transport://example.com");
+    send_stream = CreateSendStreamSuccessfully(scope, quic_transport);
+  }
+
+  // Pretend the stack is empty. This will avoid accidentally treating any
+  // copies of the |send_stream| pointer as references.
+  V8GCController::CollectAllGarbageForTesting(
+      scope.GetIsolate(), v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
+
+  ASSERT_TRUE(send_stream);
+
+  auto* script_state = scope.GetScriptState();
+
+  ScriptPromise close_promise =
+      send_stream->writable()->close(script_state, ASSERT_NO_EXCEPTION);
+  ScriptPromiseTester tester(script_state, close_promise);
+  tester.WaitUntilSettled();
+  EXPECT_TRUE(tester.IsFulfilled());
+
+  V8GCController::CollectAllGarbageForTesting(
+      scope.GetIsolate(), v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
+
+  EXPECT_FALSE(send_stream);
+}
+
+TEST_F(QuicTransportTest, SendStreamGarbageCollectionRemoteClose) {
+  V8TestingScope scope;
+
+  WeakPersistent<SendStream> send_stream;
+
+  {
+    v8::HandleScope handle_scope(scope.GetIsolate());
+
+    auto* quic_transport =
+        CreateAndConnectSuccessfully(scope, "quic-transport://example.com");
+    send_stream = CreateSendStreamSuccessfully(scope, quic_transport);
+  }
+
+  V8GCController::CollectAllGarbageForTesting(
+      scope.GetIsolate(), v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
+
+  ASSERT_TRUE(send_stream);
+
+  // Close the other end of the pipe.
+  send_stream_consumer_handle_.reset();
+
+  test::RunPendingTasks();
+
+  V8GCController::CollectAllGarbageForTesting(
+      scope.GetIsolate(), v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
+
+  EXPECT_FALSE(send_stream);
+}
+
+// A live stream will be kept alive even if there is no explicit reference.
+// When the underlying connection is shut down, the connection will be swept.
+TEST_F(QuicTransportTest, ReceiveStreamGarbageCollectionCancel) {
+  V8TestingScope scope;
+
+  WeakPersistent<ReceiveStream> receive_stream;
+  mojo::ScopedDataPipeProducerHandle producer;
+
+  {
+    // The readable stream created when creating a ReceiveStream creates some
+    // v8 handles. To ensure these are collected, we need to create a handle
+    // scope. This is not a problem for garbage collection in normal operation.
+    v8::HandleScope handle_scope(scope.GetIsolate());
+
+    auto* quic_transport =
+        CreateAndConnectSuccessfully(scope, "quic-transport://example.com");
+
+    producer = DoAcceptUnidirectionalStream();
+    receive_stream = ReadReceiveStream(scope, quic_transport);
+  }
+
+  // Pretend the stack is empty. This will avoid accidentally treating any
+  // copies of the |receive_stream| pointer as references.
+  V8GCController::CollectAllGarbageForTesting(
+      scope.GetIsolate(), v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
+
+  ASSERT_TRUE(receive_stream);
+
+  auto* script_state = scope.GetScriptState();
+
+  ScriptPromise cancel_promise;
+  {
+    // Cancelling also creates v8 handles, so we need a new handle scope as
+    // above.
+    v8::HandleScope handle_scope(scope.GetIsolate());
+    cancel_promise =
+        receive_stream->readable()->cancel(script_state, ASSERT_NO_EXCEPTION);
+  }
+
+  ScriptPromiseTester tester(script_state, cancel_promise);
+  tester.WaitUntilSettled();
+  EXPECT_TRUE(tester.IsFulfilled());
+
+  V8GCController::CollectAllGarbageForTesting(
+      scope.GetIsolate(), v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
+
+  EXPECT_FALSE(receive_stream);
+}
+
+TEST_F(QuicTransportTest, ReceiveStreamGarbageCollectionRemoteClose) {
+  V8TestingScope scope;
+
+  WeakPersistent<ReceiveStream> receive_stream;
+  mojo::ScopedDataPipeProducerHandle producer;
+
+  {
+    v8::HandleScope handle_scope(scope.GetIsolate());
+
+    auto* quic_transport =
+        CreateAndConnectSuccessfully(scope, "quic-transport://example.com");
+    producer = DoAcceptUnidirectionalStream();
+    receive_stream = ReadReceiveStream(scope, quic_transport);
+  }
+
+  V8GCController::CollectAllGarbageForTesting(
+      scope.GetIsolate(), v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
+
+  ASSERT_TRUE(receive_stream);
+
+  // Close the other end of the pipe.
+  producer.reset();
+
+  test::RunPendingTasks();
+
+  V8GCController::CollectAllGarbageForTesting(
+      scope.GetIsolate(), v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
+
+  ASSERT_TRUE(receive_stream);
+
+  receive_stream->OnIncomingStreamClosed(false);
+
+  test::RunPendingTasks();
+
+  V8GCController::CollectAllGarbageForTesting(
+      scope.GetIsolate(), v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
+
+  EXPECT_FALSE(receive_stream);
+}
+
+// This is the same test as ReceiveStreamGarbageCollectionRemoteClose, except
+// that the order of the data pipe being reset and the OnIncomingStreamClosed
+// message is reversed. It is important that the object is not collected until
+// both events have happened.
+TEST_F(QuicTransportTest, ReceiveStreamGarbageCollectionRemoteCloseReverse) {
+  V8TestingScope scope;
+
+  WeakPersistent<ReceiveStream> receive_stream;
+  mojo::ScopedDataPipeProducerHandle producer;
+
+  {
+    v8::HandleScope handle_scope(scope.GetIsolate());
+
+    QuicTransport* quic_transport =
+        CreateAndConnectSuccessfully(scope, "quic-transport://example.com");
+
+    producer = DoAcceptUnidirectionalStream();
+    receive_stream = ReadReceiveStream(scope, quic_transport);
+  }
+
+  V8GCController::CollectAllGarbageForTesting(
+      scope.GetIsolate(), v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
+
+  ASSERT_TRUE(receive_stream);
+
+  receive_stream->OnIncomingStreamClosed(false);
+
+  test::RunPendingTasks();
+
+  V8GCController::CollectAllGarbageForTesting(
+      scope.GetIsolate(), v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
+
+  ASSERT_TRUE(receive_stream);
+
+  producer.reset();
+
+  test::RunPendingTasks();
+
+  V8GCController::CollectAllGarbageForTesting(
+      scope.GetIsolate(), v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
+
+  EXPECT_FALSE(receive_stream);
 }
 
 TEST_F(QuicTransportTest, CreateSendStreamAbortedByClose) {

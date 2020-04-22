@@ -9,6 +9,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/devtools/devtools_window_testing.h"
+#include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/history/history_test_utils.h"
 #include "chrome/browser/interstitials/security_interstitial_page_test_utils.h"
 #include "chrome/browser/pdf/pdf_extension_test_util.h"
 #include "chrome/browser/task_manager/providers/task.h"
@@ -319,4 +321,47 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, ShowSubFrameErrorPage) {
   ASSERT_EQ(true, content::EvalJs(
                       portal_contents,
                       "document.documentElement.hasAttribute('subframe');"));
+}
+
+IN_PROC_BROWSER_TEST_F(PortalBrowserTest, BrowserHistoryUpdatesOnActivation) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  Profile* profile = browser()->profile();
+  ASSERT_TRUE(profile);
+  ui_test_utils::WaitForHistoryToLoad(HistoryServiceFactory::GetForProfile(
+      profile, ServiceAccessType::EXPLICIT_ACCESS));
+
+  GURL url1(embedded_test_server()->GetURL("/title1.html"));
+  ui_test_utils::NavigateToURL(browser(), url1);
+  WaitForHistoryBackendToRun(profile);
+  EXPECT_TRUE(
+      base::Contains(ui_test_utils::HistoryEnumerator(profile).urls(), url1));
+
+  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+  GURL url2(embedded_test_server()->GetURL("/title2.html"));
+  ASSERT_EQ(true,
+            content::EvalJs(
+                contents, content::JsReplace(
+                              "new Promise((resolve) => {"
+                              "  let portal = document.createElement('portal');"
+                              "  portal.src = $1;"
+                              "  portal.onload = () => { resolve(true); };"
+                              "  document.body.appendChild(portal);"
+                              "});",
+                              url2)));
+  WaitForHistoryBackendToRun(profile);
+  // Content loaded in a portal should not be considered a page visit by the
+  // user.
+  EXPECT_FALSE(
+      base::Contains(ui_test_utils::HistoryEnumerator(profile).urls(), url2));
+
+  ASSERT_EQ(true,
+            content::EvalJs(contents,
+                            "let portal = document.querySelector('portal');"
+                            "portal.activate().then(() => { return true; });"));
+  WaitForHistoryBackendToRun(profile);
+  // Now that the portal has activated, its contents are presented to the user
+  // as a navigation in the tab, so this should be considered a page visit.
+  EXPECT_TRUE(
+      base::Contains(ui_test_utils::HistoryEnumerator(profile).urls(), url2));
 }

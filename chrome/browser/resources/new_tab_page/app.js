@@ -8,12 +8,14 @@ import './customize_dialog.js';
 import './voice_search_overlay.js';
 import './untrusted_iframe.js';
 import './fakebox.js';
+import './realbox.js';
 import './logo.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BrowserProxy} from './browser_proxy.js';
@@ -118,6 +120,12 @@ class AppElement extends PolymerElement {
         computed: 'computeSingleColoredLogo_(theme_, backgroundSelection_)',
         type: Boolean,
       },
+
+      /** @private */
+      realboxEnabled_: {
+        type: Boolean,
+        value: () => loadTimeData.getBoolean('realboxEnabled'),
+      }
     };
   }
 

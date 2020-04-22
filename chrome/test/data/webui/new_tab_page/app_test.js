@@ -6,26 +6,9 @@ import 'chrome://new-tab-page/app.js';
 
 import {BrowserProxy} from 'chrome://new-tab-page/browser_proxy.js';
 import {BackgroundSelectionType} from 'chrome://new-tab-page/customize_dialog.js';
-import {assertNotStyle, assertStyle, createTestProxy} from 'chrome://test/new_tab_page/test_support.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {assertNotStyle, assertStyle, createTestProxy, createTheme} from 'chrome://test/new_tab_page/test_support.js';
 import {flushTasks} from 'chrome://test/test_util.m.js';
-
-/** @return {!newTabPage.mojom.Theme} */
-function createTheme() {
-  return {
-    type: newTabPage.mojom.ThemeType.DEFAULT,
-    info: {chromeThemeId: 0},
-    backgroundColor: {value: 0xffff0000},
-    shortcutBackgroundColor: {value: 0xff00ff00},
-    shortcutTextColor: {value: 0xff0000ff},
-    isDark: false,
-    logoColor: null,
-    backgroundImageUrl: null,
-    backgroundImageAttribution1: '',
-    backgroundImageAttribution2: '',
-    backgroundImageAttributionUrl: null,
-    dailyRefreshCollectionId: '',
-  };
-}
 
 suite('NewTabPageAppTest', () => {
   /** @type {!AppElement} */
@@ -36,6 +19,12 @@ suite('NewTabPageAppTest', () => {
    * @extends {TestBrowserProxy}
    */
   let testProxy;
+
+  suiteSetup(() => {
+    loadTimeData.overrideValues({
+      realboxEnabled: false,
+    });
+  });
 
   setup(async () => {
     PolymerTest.clearBody();
@@ -107,6 +96,12 @@ suite('NewTabPageAppTest', () => {
     assertStyle(app.$.backgroundImageAttribution2, 'display', 'none');
     assertTrue(app.$.logo.doodleAllowed);
     assertFalse(app.$.logo.singleColored);
+  });
+
+  test('realbox is not visible by default', async () => {
+    // Assert.
+    assertNotStyle(app.$.fakebox, 'display', 'none');
+    assertStyle(app.$.realbox, 'display', 'none');
   });
 
   test('open voice search event opens voice search overlay', async () => {

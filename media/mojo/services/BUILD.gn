@@ -109,6 +109,10 @@ jumbo_component("services") {
     ]
   }
 
+  if (is_fuchsia) {
+    deps += [ "//media/fuchsia/metrics" ]
+  }
+
   if (enable_media_drm_storage) {
     sources += [
       "mojo_media_drm_storage.cc",

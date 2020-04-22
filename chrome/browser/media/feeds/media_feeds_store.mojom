@@ -56,6 +56,10 @@ struct MediaFeed {
 
   // The last time this feed was displayed in the UI.
   mojo_base.mojom.Time? last_display_time;
+
+  // The number of items in the last feed fetch that has been confirmed as
+  // safe by the Safe Search API.
+  int64 last_fetch_safe_item_count;
 };
 
 // The result of fetching the feed. This enum is committed to storage so do not

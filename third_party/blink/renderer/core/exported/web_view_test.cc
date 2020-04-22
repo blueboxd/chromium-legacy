@@ -218,10 +218,10 @@ class TapHandlingWebWidgetClient
   // WebWidgetClient overrides.
   void DidHandleGestureEvent(const WebGestureEvent& event,
                              bool event_cancelled) override {
-    if (event.GetType() == WebInputEvent::kGestureTap) {
+    if (event.GetType() == WebInputEvent::Type::kGestureTap) {
       tap_x_ = event.PositionInWidget().x();
       tap_y_ = event.PositionInWidget().y();
-    } else if (event.GetType() == WebInputEvent::kGestureLongPress) {
+    } else if (event.GetType() == WebInputEvent::Type::kGestureLongPress) {
       longpress_x_ = event.PositionInWidget().x();
       longpress_y_ = event.PositionInWidget().y();
     }
@@ -1214,10 +1214,10 @@ TEST_F(WebViewTest, LongPressOutsideInputShouldNotSelectPlaceholderText) {
   WebString input_id = WebString::FromUTF8("input");
 
   // Focus in input.
-  EXPECT_TRUE(TapElementById(WebInputEvent::kGestureTap, input_id));
+  EXPECT_TRUE(TapElementById(WebInputEvent::Type::kGestureTap, input_id));
 
   // Long press below input.
-  WebGestureEvent event(WebInputEvent::kGestureLongPress,
+  WebGestureEvent event(WebInputEvent::Type::kGestureLongPress,
                         WebInputEvent::kNoModifiers,
                         WebInputEvent::GetStaticTimeStampForTests(),
                         WebGestureDevice::kTouchscreen);
@@ -2731,7 +2731,8 @@ TEST_F(WebViewTest, ClientTapHandling) {
   TapHandlingWebWidgetClient client;
   WebView* web_view = web_view_helper_.InitializeAndLoad("about:blank", nullptr,
                                                          nullptr, &client);
-  WebGestureEvent event(WebInputEvent::kGestureTap, WebInputEvent::kNoModifiers,
+  WebGestureEvent event(WebInputEvent::Type::kGestureTap,
+                        WebInputEvent::kNoModifiers,
                         WebInputEvent::GetStaticTimeStampForTests(),
                         WebGestureDevice::kTouchscreen);
   event.SetPositionInWidget(gfx::PointF(3, 8));
@@ -2740,7 +2741,7 @@ TEST_F(WebViewTest, ClientTapHandling) {
   EXPECT_EQ(3, client.TapX());
   EXPECT_EQ(8, client.TapY());
   client.Reset();
-  event.SetType(WebInputEvent::kGestureLongPress);
+  event.SetType(WebInputEvent::Type::kGestureLongPress);
   event.SetPositionInWidget(gfx::PointF(25, 7));
   web_view->MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(event));
   RunPendingTasks();
@@ -2770,7 +2771,8 @@ TEST_F(WebViewTest, ClientTapHandlingNullWebViewClient) {
       CrossVariantMojoAssociatedRemote<mojom::WidgetHostInterfaceBase>(),
       CrossVariantMojoAssociatedReceiver<mojom::WidgetInterfaceBase>());
 
-  WebGestureEvent event(WebInputEvent::kGestureTap, WebInputEvent::kNoModifiers,
+  WebGestureEvent event(WebInputEvent::Type::kGestureTap,
+                        WebInputEvent::kNoModifiers,
                         WebInputEvent::GetStaticTimeStampForTests(),
                         WebGestureDevice::kTouchscreen);
   event.SetPositionInWidget(gfx::PointF(3, 8));
@@ -2790,7 +2792,7 @@ TEST_F(WebViewTest, LongPressEmptyDiv) {
   UpdateAllLifecyclePhases();
   RunPendingTasks();
 
-  WebGestureEvent event(WebInputEvent::kGestureLongPress,
+  WebGestureEvent event(WebInputEvent::Type::kGestureLongPress,
                         WebInputEvent::kNoModifiers,
                         WebInputEvent::GetStaticTimeStampForTests(),
                         WebGestureDevice::kTouchscreen);
@@ -2811,7 +2813,7 @@ TEST_F(WebViewTest, LongPressEmptyDivAlwaysShow) {
   UpdateAllLifecyclePhases();
   RunPendingTasks();
 
-  WebGestureEvent event(WebInputEvent::kGestureLongPress,
+  WebGestureEvent event(WebInputEvent::Type::kGestureLongPress,
                         WebInputEvent::kNoModifiers,
                         WebInputEvent::GetStaticTimeStampForTests(),
                         WebGestureDevice::kTouchscreen);
@@ -2832,7 +2834,7 @@ TEST_F(WebViewTest, LongPressObject) {
   UpdateAllLifecyclePhases();
   RunPendingTasks();
 
-  WebGestureEvent event(WebInputEvent::kGestureLongPress,
+  WebGestureEvent event(WebInputEvent::Type::kGestureLongPress,
                         WebInputEvent::kNoModifiers,
                         WebInputEvent::GetStaticTimeStampForTests(),
                         WebGestureDevice::kTouchscreen);
@@ -2857,7 +2859,7 @@ TEST_F(WebViewTest, LongPressObjectFallback) {
   UpdateAllLifecyclePhases();
   RunPendingTasks();
 
-  WebGestureEvent event(WebInputEvent::kGestureLongPress,
+  WebGestureEvent event(WebInputEvent::Type::kGestureLongPress,
                         WebInputEvent::kNoModifiers,
                         WebInputEvent::GetStaticTimeStampForTests(),
                         WebGestureDevice::kTouchscreen);
@@ -2882,7 +2884,7 @@ TEST_F(WebViewTest, LongPressImage) {
   UpdateAllLifecyclePhases();
   RunPendingTasks();
 
-  WebGestureEvent event(WebInputEvent::kGestureLongPress,
+  WebGestureEvent event(WebInputEvent::Type::kGestureLongPress,
                         WebInputEvent::kNoModifiers,
                         WebInputEvent::GetStaticTimeStampForTests(),
                         WebGestureDevice::kTouchscreen);
@@ -2907,7 +2909,7 @@ TEST_F(WebViewTest, LongPressVideo) {
   UpdateAllLifecyclePhases();
   RunPendingTasks();
 
-  WebGestureEvent event(WebInputEvent::kGestureLongPress,
+  WebGestureEvent event(WebInputEvent::Type::kGestureLongPress,
                         WebInputEvent::kNoModifiers,
                         WebInputEvent::GetStaticTimeStampForTests(),
                         WebGestureDevice::kTouchscreen);
@@ -2928,7 +2930,7 @@ TEST_F(WebViewTest, LongPressLink) {
   UpdateAllLifecyclePhases();
   RunPendingTasks();
 
-  WebGestureEvent event(WebInputEvent::kGestureLongPress,
+  WebGestureEvent event(WebInputEvent::Type::kGestureLongPress,
                         WebInputEvent::kNoModifiers,
                         WebInputEvent::GetStaticTimeStampForTests(),
                         WebGestureDevice::kTouchscreen);
@@ -2955,7 +2957,7 @@ TEST_F(WebViewTest, TouchCancelOnStartDragging) {
   RunPendingTasks();
 
   WebPointerEvent pointer_down(
-      WebInputEvent::kPointerDown,
+      WebInputEvent::Type::kPointerDown,
       WebPointerProperties(1, WebPointerProperties::PointerType::kTouch), 5, 5);
   pointer_down.SetPositionInWidget(250, 8);
   web_view->MainFrameWidget()->HandleInputEvent(
@@ -2965,12 +2967,13 @@ TEST_F(WebViewTest, TouchCancelOnStartDragging) {
   WebString target_id = WebString::FromUTF8("target");
 
   // Send long press to start dragging
-  EXPECT_TRUE(TapElementById(WebInputEvent::kGestureLongPress, target_id));
+  EXPECT_TRUE(
+      TapElementById(WebInputEvent::Type::kGestureLongPress, target_id));
   EXPECT_EQ("dragstart", web_view->MainFrameImpl()->GetDocument().Title());
 
   // Check pointer cancel is sent to dom.
   WebPointerEvent pointer_cancel(
-      WebInputEvent::kPointerCancel,
+      WebInputEvent::Type::kPointerCancel,
       WebPointerProperties(1, WebPointerProperties::PointerType::kTouch), 5, 5);
   pointer_cancel.SetPositionInWidget(250, 8);
   EXPECT_NE(WebInputEventResult::kHandledSuppressed,
@@ -2997,11 +3000,13 @@ TEST_F(WebViewTest, showContextMenuOnLongPressingLinks) {
   WebString anchor_tag_id = WebString::FromUTF8("anchorTag");
   WebString image_tag_id = WebString::FromUTF8("imageTag");
 
-  EXPECT_TRUE(TapElementById(WebInputEvent::kGestureLongPress, anchor_tag_id));
+  EXPECT_TRUE(
+      TapElementById(WebInputEvent::Type::kGestureLongPress, anchor_tag_id));
   EXPECT_EQ("anchor contextmenu",
             web_view->MainFrameImpl()->GetDocument().Title());
 
-  EXPECT_TRUE(TapElementById(WebInputEvent::kGestureLongPress, image_tag_id));
+  EXPECT_TRUE(
+      TapElementById(WebInputEvent::Type::kGestureLongPress, image_tag_id));
   EXPECT_EQ("image contextmenu",
             web_view->MainFrameImpl()->GetDocument().Title());
 }
@@ -3016,7 +3021,7 @@ TEST_F(WebViewTest, LongPressEmptyEditableSelection) {
   UpdateAllLifecyclePhases();
   RunPendingTasks();
 
-  WebGestureEvent event(WebInputEvent::kGestureLongPress,
+  WebGestureEvent event(WebInputEvent::Type::kGestureLongPress,
                         WebInputEvent::kNoModifiers,
                         WebInputEvent::GetStaticTimeStampForTests(),
                         WebGestureDevice::kTouchscreen);
@@ -3036,7 +3041,7 @@ TEST_F(WebViewTest, LongPressEmptyNonEditableSelection) {
   UpdateAllLifecyclePhases();
   RunPendingTasks();
 
-  WebGestureEvent event(WebInputEvent::kGestureLongPress,
+  WebGestureEvent event(WebInputEvent::Type::kGestureLongPress,
                         WebInputEvent::kNoModifiers,
                         WebInputEvent::GetStaticTimeStampForTests(),
                         WebGestureDevice::kTouchscreen);
@@ -3062,10 +3067,10 @@ TEST_F(WebViewTest, LongPressSelection) {
   WebString onselectstartfalse = WebString::FromUTF8("onselectstartfalse");
   WebLocalFrameImpl* frame = web_view->MainFrameImpl();
 
-  EXPECT_TRUE(
-      TapElementById(WebInputEvent::kGestureLongPress, onselectstartfalse));
+  EXPECT_TRUE(TapElementById(WebInputEvent::Type::kGestureLongPress,
+                             onselectstartfalse));
   EXPECT_EQ("", frame->SelectionAsText().Utf8());
-  EXPECT_TRUE(TapElementById(WebInputEvent::kGestureLongPress, target));
+  EXPECT_TRUE(TapElementById(WebInputEvent::Type::kGestureLongPress, target));
   EXPECT_EQ("testword", frame->SelectionAsText().Utf8());
 }
 
@@ -3082,7 +3087,7 @@ TEST_F(WebViewTest, FinishComposingTextDoesNotDismissHandles) {
   WebLocalFrameImpl* frame = web_view->MainFrameImpl();
   WebInputMethodController* active_input_method_controller =
       frame->FrameWidget()->GetActiveWebInputMethodController();
-  EXPECT_TRUE(TapElementById(WebInputEvent::kGestureTap, target));
+  EXPECT_TRUE(TapElementById(WebInputEvent::Type::kGestureTap, target));
   WebVector<WebImeTextSpan> empty_ime_text_spans;
   frame->SetEditableSelectionOffsets(8, 8);
   EXPECT_TRUE(active_input_method_controller->SetComposition(
@@ -3092,7 +3097,7 @@ TEST_F(WebViewTest, FinishComposingTextDoesNotDismissHandles) {
   EXPECT_FALSE(frame->GetFrame()->Selection().IsHandleVisible());
   EXPECT_TRUE(frame->GetFrame()->GetInputMethodController().HasComposition());
 
-  EXPECT_TRUE(TapElementById(WebInputEvent::kGestureLongPress, target));
+  EXPECT_TRUE(TapElementById(WebInputEvent::Type::kGestureLongPress, target));
   EXPECT_EQ("testword12345", frame->SelectionAsText().Utf8());
   EXPECT_TRUE(frame->GetFrame()->Selection().IsHandleVisible());
   EXPECT_TRUE(frame->GetFrame()->GetInputMethodController().HasComposition());
@@ -3117,12 +3122,13 @@ TEST_F(WebViewTest, TouchDoesntSelectEmptyTextarea) {
   WebLocalFrameImpl* frame = web_view->MainFrameImpl();
 
   // Long-press on carriage returns.
-  EXPECT_TRUE(
-      TapElementById(WebInputEvent::kGestureLongPress, blanklinestextbox));
+  EXPECT_TRUE(TapElementById(WebInputEvent::Type::kGestureLongPress,
+                             blanklinestextbox));
   EXPECT_TRUE(frame->SelectionAsText().IsEmpty());
 
   // Double-tap on carriage returns.
-  WebGestureEvent event(WebInputEvent::kGestureTap, WebInputEvent::kNoModifiers,
+  WebGestureEvent event(WebInputEvent::Type::kGestureTap,
+                        WebInputEvent::kNoModifiers,
                         WebInputEvent::GetStaticTimeStampForTests(),
                         WebGestureDevice::kTouchscreen);
   event.SetPositionInWidget(gfx::PointF(100, 25));
@@ -3137,8 +3143,8 @@ TEST_F(WebViewTest, TouchDoesntSelectEmptyTextarea) {
   text_area_element->setValue("hello");
 
   // Long-press past last word of textbox.
-  EXPECT_TRUE(
-      TapElementById(WebInputEvent::kGestureLongPress, blanklinestextbox));
+  EXPECT_TRUE(TapElementById(WebInputEvent::Type::kGestureLongPress,
+                             blanklinestextbox));
   EXPECT_TRUE(frame->SelectionAsText().IsEmpty());
 
   // Double-tap past last word of textbox.
@@ -3158,7 +3164,7 @@ TEST_F(WebViewTest, LongPressImageTextarea) {
 
   WebString image = WebString::FromUTF8("purpleimage");
 
-  EXPECT_TRUE(TapElementById(WebInputEvent::kGestureLongPress, image));
+  EXPECT_TRUE(TapElementById(WebInputEvent::Type::kGestureLongPress, image));
   WebRange range = web_view->MainFrameImpl()
                        ->GetInputMethodController()
                        ->GetSelectionOffsets();
@@ -3179,7 +3185,7 @@ TEST_F(WebViewTest, BlinkCaretAfterLongPress) {
   WebString target = WebString::FromUTF8("target");
   WebLocalFrameImpl* main_frame = web_view->MainFrameImpl();
 
-  EXPECT_TRUE(TapElementById(WebInputEvent::kGestureLongPress, target));
+  EXPECT_TRUE(TapElementById(WebInputEvent::Type::kGestureLongPress, target));
   EXPECT_FALSE(main_frame->GetFrame()->Selection().IsCaretBlinkingSuspended());
 }
 
@@ -3194,7 +3200,7 @@ TEST_F(WebViewTest, BlinkCaretOnClosingContextMenu) {
   // We suspend caret blinking when pressing with mouse right button.
   // Note that we do not send MouseUp event here since it will be consumed
   // by the context menu once it shows up.
-  WebMouseEvent mouse_event(WebInputEvent::kMouseDown,
+  WebMouseEvent mouse_event(WebInputEvent::Type::kMouseDown,
                             WebInputEvent::kNoModifiers,
                             WebInputEvent::GetStaticTimeStampForTests());
 
@@ -3248,7 +3254,7 @@ TEST_F(WebViewTest, KeyDownScrollsHandled) {
   UpdateAllLifecyclePhases();
   RunPendingTasks();
 
-  WebKeyboardEvent key_event(WebInputEvent::kRawKeyDown,
+  WebKeyboardEvent key_event(WebInputEvent::Type::kRawKeyDown,
                              WebInputEvent::kNoModifiers,
                              WebInputEvent::GetStaticTimeStampForTests());
 
@@ -3257,70 +3263,70 @@ TEST_F(WebViewTest, KeyDownScrollsHandled) {
   EXPECT_EQ(WebInputEventResult::kHandledSystem,
             web_view->MainFrameWidget()->HandleInputEvent(
                 WebCoalescedInputEvent(key_event)));
-  key_event.SetType(WebInputEvent::kKeyUp);
+  key_event.SetType(WebInputEvent::Type::kKeyUp);
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event));
 
   // Coalesced KeyDown arrow-down should be handled.
   key_event.windows_key_code = VKEY_DOWN;
-  key_event.SetType(WebInputEvent::kKeyDown);
+  key_event.SetType(WebInputEvent::Type::kKeyDown);
   EXPECT_EQ(WebInputEventResult::kHandledSystem,
             web_view->MainFrameWidget()->HandleInputEvent(
                 WebCoalescedInputEvent(key_event)));
-  key_event.SetType(WebInputEvent::kKeyUp);
+  key_event.SetType(WebInputEvent::Type::kKeyUp);
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event));
 
   // Ctrl-Home should be handled...
   key_event.windows_key_code = VKEY_HOME;
   key_event.SetModifiers(WebInputEvent::kControlKey);
-  key_event.SetType(WebInputEvent::kRawKeyDown);
+  key_event.SetType(WebInputEvent::Type::kRawKeyDown);
   EXPECT_EQ(WebInputEventResult::kNotHandled,
             web_view->MainFrameWidget()->HandleInputEvent(
                 WebCoalescedInputEvent(key_event)));
-  key_event.SetType(WebInputEvent::kKeyUp);
+  key_event.SetType(WebInputEvent::Type::kKeyUp);
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event));
 
   // But Ctrl-Down should not.
   key_event.windows_key_code = VKEY_DOWN;
   key_event.SetModifiers(WebInputEvent::kControlKey);
-  key_event.SetType(WebInputEvent::kRawKeyDown);
+  key_event.SetType(WebInputEvent::Type::kRawKeyDown);
   EXPECT_EQ(WebInputEventResult::kNotHandled,
             web_view->MainFrameWidget()->HandleInputEvent(
                 WebCoalescedInputEvent(key_event)));
-  key_event.SetType(WebInputEvent::kKeyUp);
+  key_event.SetType(WebInputEvent::Type::kKeyUp);
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event));
 
   // Shift, meta, and alt should not be handled.
   key_event.windows_key_code = VKEY_NEXT;
   key_event.SetModifiers(WebInputEvent::kShiftKey);
-  key_event.SetType(WebInputEvent::kRawKeyDown);
+  key_event.SetType(WebInputEvent::Type::kRawKeyDown);
   EXPECT_EQ(WebInputEventResult::kNotHandled,
             web_view->MainFrameWidget()->HandleInputEvent(
                 WebCoalescedInputEvent(key_event)));
-  key_event.SetType(WebInputEvent::kKeyUp);
+  key_event.SetType(WebInputEvent::Type::kKeyUp);
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event));
 
   key_event.windows_key_code = VKEY_NEXT;
   key_event.SetModifiers(WebInputEvent::kMetaKey);
-  key_event.SetType(WebInputEvent::kRawKeyDown);
+  key_event.SetType(WebInputEvent::Type::kRawKeyDown);
   EXPECT_EQ(WebInputEventResult::kNotHandled,
             web_view->MainFrameWidget()->HandleInputEvent(
                 WebCoalescedInputEvent(key_event)));
-  key_event.SetType(WebInputEvent::kKeyUp);
+  key_event.SetType(WebInputEvent::Type::kKeyUp);
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event));
 
   key_event.windows_key_code = VKEY_NEXT;
   key_event.SetModifiers(WebInputEvent::kAltKey);
-  key_event.SetType(WebInputEvent::kRawKeyDown);
+  key_event.SetType(WebInputEvent::Type::kRawKeyDown);
   EXPECT_EQ(WebInputEventResult::kNotHandled,
             web_view->MainFrameWidget()->HandleInputEvent(
                 WebCoalescedInputEvent(key_event)));
-  key_event.SetType(WebInputEvent::kKeyUp);
+  key_event.SetType(WebInputEvent::Type::kKeyUp);
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event));
 
@@ -3330,22 +3336,22 @@ TEST_F(WebViewTest, KeyDownScrollsHandled) {
   key_event.windows_key_code = VKEY_DOWN;
   key_event.SetModifiers(WebInputEvent::kAltKey);
   key_event.is_system_key = true;
-  key_event.SetType(WebInputEvent::kRawKeyDown);
+  key_event.SetType(WebInputEvent::Type::kRawKeyDown);
   EXPECT_EQ(WebInputEventResult::kNotHandled,
             web_view->MainFrameWidget()->HandleInputEvent(
                 WebCoalescedInputEvent(key_event)));
-  key_event.SetType(WebInputEvent::kKeyUp);
+  key_event.SetType(WebInputEvent::Type::kKeyUp);
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event));
 
   key_event.windows_key_code = VKEY_DOWN;
   key_event.SetModifiers(WebInputEvent::kAltKey);
   key_event.is_system_key = false;
-  key_event.SetType(WebInputEvent::kRawKeyDown);
+  key_event.SetType(WebInputEvent::Type::kRawKeyDown);
   EXPECT_EQ(WebInputEventResult::kHandledSystem,
             web_view->MainFrameWidget()->HandleInputEvent(
                 WebCoalescedInputEvent(key_event)));
-  key_event.SetType(WebInputEvent::kKeyUp);
+  key_event.SetType(WebInputEvent::Type::kKeyUp);
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event));
 }
@@ -3406,7 +3412,7 @@ TEST_F(WebViewTest, MiddleClickAutoscrollCursor) {
     PageTestBase::MockClipboardHostProvider mock_clip_host_provider(
         local_frame->GetBrowserInterfaceBroker());
 
-    WebMouseEvent mouse_event(WebInputEvent::kMouseDown,
+    WebMouseEvent mouse_event(WebInputEvent::Type::kMouseDown,
                               WebInputEvent::kNoModifiers,
                               WebInputEvent::GetStaticTimeStampForTests());
     mouse_event.button = WebMouseEvent::Button::kMiddle;
@@ -3416,7 +3422,7 @@ TEST_F(WebViewTest, MiddleClickAutoscrollCursor) {
     // Start middle-click autoscroll.
     web_view->MainFrameWidget()->HandleInputEvent(
         WebCoalescedInputEvent(mouse_event));
-    mouse_event.SetType(WebInputEvent::kMouseUp);
+    mouse_event.SetType(WebInputEvent::Type::kMouseUp);
     web_view->MainFrameWidget()->HandleInputEvent(
         WebCoalescedInputEvent(mouse_event));
 
@@ -3429,10 +3435,10 @@ TEST_F(WebViewTest, MiddleClickAutoscrollCursor) {
     EXPECT_EQ(current_test.expected_cursor, client.GetLastCursorType());
 
     // End middle-click autoscroll.
-    mouse_event.SetType(WebInputEvent::kMouseDown);
+    mouse_event.SetType(WebInputEvent::Type::kMouseDown);
     web_view->MainFrameWidget()->HandleInputEvent(
         WebCoalescedInputEvent(mouse_event));
-    mouse_event.SetType(WebInputEvent::kMouseUp);
+    mouse_event.SetType(WebInputEvent::Type::kMouseUp);
     web_view->MainFrameWidget()->HandleInputEvent(
         WebCoalescedInputEvent(mouse_event));
 
@@ -3465,7 +3471,7 @@ TEST_F(WebViewTest, ShowPressOnTransformedLink) {
       "highlight</a>",
       base_url);
 
-  WebGestureEvent event(WebInputEvent::kGestureShowPress,
+  WebGestureEvent event(WebInputEvent::Type::kGestureShowPress,
                         WebInputEvent::kNoModifiers,
                         WebInputEvent::GetStaticTimeStampForTests(),
                         WebGestureDevice::kTouchscreen);
@@ -3573,7 +3579,7 @@ TEST_F(WebViewTest, CompositionNotCancelledByBackspace) {
 
     // Press Backspace and verify composition didn't get cancelled. This is to
     // verify the fix for crbug.com/429916.
-    WebKeyboardEvent key_event(WebInputEvent::kRawKeyDown,
+    WebKeyboardEvent key_event(WebInputEvent::Type::kRawKeyDown,
                                WebInputEvent::kNoModifiers,
                                WebInputEvent::GetStaticTimeStampForTests());
     key_event.dom_key = ui::DomKey::BACKSPACE;
@@ -3588,7 +3594,7 @@ TEST_F(WebViewTest, CompositionNotCancelledByBackspace) {
     VerifySelectionAndComposition(web_view, 10, 10, 6, 10,
                                   "after pressing Backspace");
 
-    key_event.SetType(WebInputEvent::kKeyUp);
+    key_event.SetType(WebInputEvent::Type::kKeyUp);
     web_view->MainFrameWidget()->HandleInputEvent(
         WebCoalescedInputEvent(key_event));
 
@@ -3826,7 +3832,7 @@ static void OpenDateTimeChooser(WebView* web_view,
                                 HTMLInputElement* input_element) {
   input_element->focus();
 
-  WebKeyboardEvent key_event(WebInputEvent::kRawKeyDown,
+  WebKeyboardEvent key_event(WebInputEvent::Type::kRawKeyDown,
                              WebInputEvent::kNoModifiers,
                              WebInputEvent::GetStaticTimeStampForTests());
   key_event.dom_key = ui::DomKey::FromCharacter(' ');
@@ -3834,7 +3840,7 @@ static void OpenDateTimeChooser(WebView* web_view,
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event));
 
-  key_event.SetType(WebInputEvent::kKeyUp);
+  key_event.SetType(WebInputEvent::Type::kKeyUp);
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event));
 }
@@ -4313,14 +4319,14 @@ TEST_F(WebViewTest, FirstUserGestureObservedKeyEvent) {
 
   EXPECT_EQ(0, client.GetUserGestureNotificationsCount());
 
-  WebKeyboardEvent key_event(WebInputEvent::kRawKeyDown,
+  WebKeyboardEvent key_event(WebInputEvent::Type::kRawKeyDown,
                              WebInputEvent::kNoModifiers,
                              WebInputEvent::GetStaticTimeStampForTests());
   key_event.dom_key = ui::DomKey::FromCharacter(' ');
   key_event.windows_key_code = VKEY_SPACE;
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event));
-  key_event.SetType(WebInputEvent::kKeyUp);
+  key_event.SetType(WebInputEvent::Type::kKeyUp);
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event));
 
@@ -4339,7 +4345,7 @@ TEST_F(WebViewTest, FirstUserGestureObservedMouseEvent) {
 
   EXPECT_EQ(0, client.GetUserGestureNotificationsCount());
 
-  WebMouseEvent mouse_event(WebInputEvent::kMouseDown,
+  WebMouseEvent mouse_event(WebInputEvent::Type::kMouseDown,
                             WebInputEvent::kNoModifiers,
                             WebInputEvent::GetStaticTimeStampForTests());
   mouse_event.button = WebMouseEvent::Button::kLeft;
@@ -4347,7 +4353,7 @@ TEST_F(WebViewTest, FirstUserGestureObservedMouseEvent) {
   mouse_event.click_count = 1;
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(mouse_event));
-  mouse_event.SetType(WebInputEvent::kMouseUp);
+  mouse_event.SetType(WebInputEvent::Type::kMouseUp);
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(mouse_event));
 
@@ -4630,7 +4636,7 @@ class ShowUnhandledTapTest : public WebViewTest {
   // Tap on the given element by ID.
   void Tap(const String& element_id) {
     mock_notifier_.Reset();
-    EXPECT_TRUE(TapElementById(WebInputEvent::kGestureTap, element_id));
+    EXPECT_TRUE(TapElementById(WebInputEvent::Type::kGestureTap, element_id));
   }
 
   // Set up a test script for the given |operation| with the given |handler|.
@@ -5442,7 +5448,7 @@ TEST_F(WebViewTest, FirstInputDelayReported) {
 
   EXPECT_FALSE(interactive_detector->GetFirstInputDelay().has_value());
 
-  WebKeyboardEvent key_event1(WebInputEvent::kRawKeyDown,
+  WebKeyboardEvent key_event1(WebInputEvent::Type::kRawKeyDown,
                               WebInputEvent::kNoModifiers,
                               WebInputEvent::GetStaticTimeStampForTests());
   key_event1.dom_key = ui::DomKey::FromCharacter(' ');
@@ -5460,7 +5466,7 @@ TEST_F(WebViewTest, FirstInputDelayReported) {
                     .InMillisecondsF());
 
   // Sending a second event won't change the FirstInputDelay.
-  WebKeyboardEvent key_event2(WebInputEvent::kRawKeyDown,
+  WebKeyboardEvent key_event2(WebInputEvent::Type::kRawKeyDown,
                               WebInputEvent::kNoModifiers,
                               WebInputEvent::GetStaticTimeStampForTests());
   key_event2.dom_key = ui::DomKey::FromCharacter(' ');
@@ -5497,7 +5503,7 @@ TEST_F(WebViewTest, LongestInputDelayReported) {
 
   EXPECT_FALSE(interactive_detector->GetLongestInputDelay().has_value());
 
-  WebKeyboardEvent key_event1(WebInputEvent::kRawKeyDown,
+  WebKeyboardEvent key_event1(WebInputEvent::Type::kRawKeyDown,
                               WebInputEvent::kNoModifiers,
                               WebInputEvent::GetStaticTimeStampForTests());
   key_event1.dom_key = ui::DomKey::FromCharacter(' ');
@@ -5509,7 +5515,7 @@ TEST_F(WebViewTest, LongestInputDelayReported) {
 
   base::TimeTicks longest_input_timestamp = test_task_runner_->NowTicks();
 
-  WebKeyboardEvent key_event2(WebInputEvent::kRawKeyDown,
+  WebKeyboardEvent key_event2(WebInputEvent::Type::kRawKeyDown,
                               WebInputEvent::kNoModifiers,
                               WebInputEvent::GetStaticTimeStampForTests());
   key_event2.dom_key = ui::DomKey::FromCharacter(' ');
@@ -5519,7 +5525,7 @@ TEST_F(WebViewTest, LongestInputDelayReported) {
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event2));
 
-  WebKeyboardEvent key_event3(WebInputEvent::kRawKeyDown,
+  WebKeyboardEvent key_event3(WebInputEvent::Type::kRawKeyDown,
                               WebInputEvent::kNoModifiers,
                               WebInputEvent::GetStaticTimeStampForTests());
   key_event3.dom_key = ui::DomKey::FromCharacter(' ');
@@ -5555,7 +5561,7 @@ TEST_F(WebViewTest, InputDelayReported) {
   test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(70));
 
   HistogramTester histogram_tester;
-  WebKeyboardEvent key_event1(WebInputEvent::kRawKeyDown,
+  WebKeyboardEvent key_event1(WebInputEvent::Type::kRawKeyDown,
                               WebInputEvent::kNoModifiers,
                               WebInputEvent::GetStaticTimeStampForTests());
   key_event1.dom_key = ui::DomKey::FromCharacter(' ');
@@ -5565,7 +5571,7 @@ TEST_F(WebViewTest, InputDelayReported) {
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event1));
 
-  WebKeyboardEvent key_event2(WebInputEvent::kRawKeyDown,
+  WebKeyboardEvent key_event2(WebInputEvent::Type::kRawKeyDown,
                               WebInputEvent::kNoModifiers,
                               WebInputEvent::GetStaticTimeStampForTests());
   key_event2.dom_key = ui::DomKey::FromCharacter(' ');
@@ -5575,7 +5581,7 @@ TEST_F(WebViewTest, InputDelayReported) {
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event2));
 
-  WebKeyboardEvent key_event3(WebInputEvent::kRawKeyDown,
+  WebKeyboardEvent key_event3(WebInputEvent::Type::kRawKeyDown,
                               WebInputEvent::kNoModifiers,
                               WebInputEvent::GetStaticTimeStampForTests());
   key_event3.dom_key = ui::DomKey::FromCharacter(' ');
@@ -5623,7 +5629,7 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedDuringQueuing) {
 
   EXPECT_FALSE(interactive_detector->GetLongestInputDelay().has_value());
 
-  WebKeyboardEvent key_event1(WebInputEvent::kRawKeyDown,
+  WebKeyboardEvent key_event1(WebInputEvent::Type::kRawKeyDown,
                               WebInputEvent::kNoModifiers,
                               WebInputEvent::GetStaticTimeStampForTests());
   key_event1.dom_key = ui::DomKey::FromCharacter(' ');
@@ -5634,7 +5640,7 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedDuringQueuing) {
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event1));
 
-  WebKeyboardEvent key_event2(WebInputEvent::kRawKeyDown,
+  WebKeyboardEvent key_event2(WebInputEvent::Type::kRawKeyDown,
                               WebInputEvent::kNoModifiers,
                               WebInputEvent::GetStaticTimeStampForTests());
   key_event2.dom_key = ui::DomKey::FromCharacter(' ');
@@ -5679,7 +5685,7 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedAtNavStart) {
   InteractiveDetector* interactive_detector =
       GetTestInteractiveDetector(*document);
 
-  WebKeyboardEvent key_event(WebInputEvent::kRawKeyDown,
+  WebKeyboardEvent key_event(WebInputEvent::Type::kRawKeyDown,
                              WebInputEvent::kNoModifiers,
                              WebInputEvent::GetStaticTimeStampForTests());
   key_event.dom_key = ui::DomKey::FromCharacter(' ');
@@ -5722,7 +5728,7 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedNotDuringQueuing) {
                                /*initial_state=*/false);
   test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(1));
 
-  WebKeyboardEvent key_event(WebInputEvent::kRawKeyDown,
+  WebKeyboardEvent key_event(WebInputEvent::Type::kRawKeyDown,
                              WebInputEvent::kNoModifiers,
                              WebInputEvent::GetStaticTimeStampForTests());
   key_event.dom_key = ui::DomKey::FromCharacter(' ');
@@ -5766,7 +5772,7 @@ TEST_F(WebViewTest, PointerDownUpFirstInputDelay) {
       GetTestInteractiveDetector(*document);
 
   WebPointerEvent pointer_down(
-      WebInputEvent::kPointerDown,
+      WebInputEvent::Type::kPointerDown,
       WebPointerProperties(1, WebPointerProperties::PointerType::kTouch), 5, 5);
   pointer_down.SetTimeStamp(test_task_runner_->NowTicks());
   // Set this to the left button, needed for testing to behave properly.
@@ -5782,7 +5788,7 @@ TEST_F(WebViewTest, PointerDownUpFirstInputDelay) {
 
   // When we receive a pointer up, we report the delay of the pointer down.
   WebPointerEvent pointer_up(
-      WebInputEvent::kPointerUp,
+      WebInputEvent::Type::kPointerUp,
       WebPointerProperties(1, WebPointerProperties::PointerType::kTouch), 5, 5);
   test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(60));
   pointer_up.SetTimeStamp(test_task_runner_->NowTicks());
@@ -5846,7 +5852,7 @@ TEST_F(WebViewTest, FirstInputDelayExcludesProcessingTime) {
   InteractiveDetector* interactive_detector =
       GetTestInteractiveDetector(*document);
 
-  WebKeyboardEvent key_event(WebInputEvent::kRawKeyDown,
+  WebKeyboardEvent key_event(WebInputEvent::Type::kRawKeyDown,
                              WebInputEvent::kNoModifiers,
                              WebInputEvent::GetStaticTimeStampForTests());
   key_event.dom_key = ui::DomKey::FromCharacter(' ');
@@ -5892,7 +5898,7 @@ TEST_F(WebViewTest, LongestInputDelayExcludesProcessingTime) {
   InteractiveDetector* interactive_detector =
       GetTestInteractiveDetector(*document);
 
-  WebKeyboardEvent key_event(WebInputEvent::kRawKeyDown,
+  WebKeyboardEvent key_event(WebInputEvent::Type::kRawKeyDown,
                              WebInputEvent::kNoModifiers,
                              WebInputEvent::GetStaticTimeStampForTests());
   key_event.dom_key = ui::DomKey::FromCharacter(' ');
@@ -5994,7 +6000,7 @@ TEST_F(WebViewTest, LongPressImageAndThenLongTapImage) {
   UpdateAllLifecyclePhases();
   RunPendingTasks();
 
-  WebGestureEvent event(WebInputEvent::kGestureLongPress,
+  WebGestureEvent event(WebInputEvent::Type::kGestureLongPress,
                         WebInputEvent::kNoModifiers,
                         WebInputEvent::GetStaticTimeStampForTests(),
                         WebGestureDevice::kTouchscreen);
@@ -6008,7 +6014,7 @@ TEST_F(WebViewTest, LongPressImageAndThenLongTapImage) {
           .page->GetContextMenuController()
           .ContextMenuNodeForFrame(web_view->MainFrameImpl()->GetFrame()));
 
-  WebGestureEvent tap_event(WebInputEvent::kGestureLongTap,
+  WebGestureEvent tap_event(WebInputEvent::Type::kGestureLongTap,
                             WebInputEvent::kNoModifiers,
                             WebInputEvent::GetStaticTimeStampForTests(),
                             WebGestureDevice::kTouchscreen);

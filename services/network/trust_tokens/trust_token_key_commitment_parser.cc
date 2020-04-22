@@ -19,15 +19,14 @@ namespace network {
 namespace {
 
 // Parses a single key label. If |in| is the string representation of an integer
-// in in the representable range of uint32_t, sets |*out| to that integer value
-// and returns true. Otherwise, returns false.
-bool ParseSingleKeyLabel(base::StringPiece in, uint32_t* out) {
+// in in the representable range of uint32_t, returns true. Otherwise, returns
+// false.
+bool ParseSingleKeyLabel(base::StringPiece in) {
   uint64_t key_label_in_uint64;
   if (!base::StringToUint64(in, &key_label_in_uint64))
     return false;
   if (!base::IsValueInRangeForNumericType<uint32_t>(key_label_in_uint64))
     return false;
-  *out = base::checked_cast<uint32_t>(key_label_in_uint64);
   return true;
 }
 
@@ -109,7 +108,7 @@ mojom::TrustTokenKeyCommitmentResultPtr ParseSingleIssuer(
 
     auto key = mojom::TrustTokenVerificationKey::New();
 
-    if (!ParseSingleKeyLabel(kv.first, &key->label))
+    if (!ParseSingleKeyLabel(kv.first))
       return nullptr;
 
     switch (ParseSingleKeyExceptLabel(item, key.get())) {
@@ -153,7 +152,8 @@ const char kTrustTokenKeyCommitmentKeyField[] = "Y";
 //   "srrkey" : ...,    // Required Signed Redemption Record (SRR)
 //                      // verification key, in base64.
 //
-//   "1" : {            // Key label, a number in uint32_t range.
+//   "1" : {            // Key label, a number in uint32_t range; ignored except
+//                      // for checking that it is present and type-safe.
 //     "Y" : ...,       // Required token issuance verification key, in
 //                      // base64.
 //     "expiry" : ...,  // Required token issuance key expiry time, in

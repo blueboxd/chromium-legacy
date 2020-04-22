@@ -7,8 +7,28 @@
  * 'settings-autofill-page' is the settings page containing settings for
  * passwords, payment methods and addresses.
  */
+import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import '../prefs/prefs.m.js';
+import '../settings_page/settings_animated_pages.m.js';
+import '../settings_page/settings_subpage.m.js';
+import '../settings_shared_css.m.js';
+
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {loadTimeData} from '../i18n_setup.m.js';
+import {OpenWindowProxyImpl} from '../open_window_proxy.m.js';
+import {PrefsBehavior} from '../prefs/prefs_behavior.m.js';
+import {routes} from '../route.m.js';
+import {Router} from '../router.m.js';
+
+import {PasswordCheckBehavior} from './password_check_behavior.js';
+import {PasswordManagerImpl} from './password_manager_proxy.js';
+
 Polymer({
   is: 'settings-autofill-page',
+
+  _template: html`{__html_template__}`,
 
   behaviors: [
     PrefsBehavior,
@@ -24,14 +44,14 @@ Polymer({
       type: Object,
       value() {
         const map = new Map();
-        if (settings.routes.PASSWORDS) {
-          map.set(settings.routes.PASSWORDS.path, '#passwordManagerButton');
+        if (routes.PASSWORDS) {
+          map.set(routes.PASSWORDS.path, '#passwordManagerButton');
         }
-        if (settings.routes.PAYMENTS) {
-          map.set(settings.routes.PAYMENTS.path, '#paymentManagerButton');
+        if (routes.PAYMENTS) {
+          map.set(routes.PAYMENTS.path, '#paymentManagerButton');
         }
-        if (settings.routes.ADDRESSES) {
-          map.set(settings.routes.ADDRESSES.path, '#addressesManagerButton');
+        if (routes.ADDRESSES) {
+          map.set(routes.ADDRESSES.path, '#addressesManagerButton');
         }
 
         return map;
@@ -51,7 +71,7 @@ Polymer({
    * @private
    */
   onAddressesClick_(event) {
-    settings.Router.getInstance().navigateTo(settings.routes.ADDRESSES);
+    Router.getInstance().navigateTo(routes.ADDRESSES);
   },
 
   /**
@@ -59,7 +79,7 @@ Polymer({
    * @private
    */
   onPaymentsClick_() {
-    settings.Router.getInstance().navigateTo(settings.routes.PAYMENTS);
+    Router.getInstance().navigateTo(routes.PAYMENTS);
   },
 
   /**
@@ -70,9 +90,9 @@ Polymer({
   onPasswordsClick_() {
     PasswordManagerImpl.getInstance().recordPasswordsPageAccessInSettings();
     loadTimeData.getBoolean('navigateToGooglePasswordManager') ?
-        settings.OpenWindowProxyImpl.getInstance().openURL(
+        OpenWindowProxyImpl.getInstance().openURL(
             loadTimeData.getString('googlePasswordManagerUrl')) :
-        settings.Router.getInstance().navigateTo(settings.routes.PASSWORDS);
+        Router.getInstance().navigateTo(routes.PASSWORDS);
   },
 
   /**

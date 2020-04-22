@@ -12,20 +12,31 @@ namespace net {
 namespace {
 
 const size_t kDefaultMaxEntries = 1024;
-// Check whether the SSL session inside |state| is expired at |now|.
-bool IsExpired(quic::QuicResumptionState* state, time_t now) {
-  if (now < 0)
-    return true;
+// Returns false if the SSL |session| doesn't exist or it is expired at |now|.
+bool IsValid(SSL_SESSION* session, time_t now) {
+  if (!session)
+    return false;
 
-  SSL_SESSION* session = state->tls_session.get();
+  if (now < 0)
+    return false;
+
   uint64_t now_u64 = static_cast<uint64_t>(now);
 
   // now_u64 may be slightly behind because of differences in how
   // time is calculated at this layer versus BoringSSL.
   // Add a second of wiggle room to account for this.
-  return now_u64 < SSL_SESSION_get_time(session) - 1 ||
-         now_u64 >=
-             SSL_SESSION_get_time(session) + SSL_SESSION_get_timeout(session);
+  return !(now_u64 < SSL_SESSION_get_time(session) - 1 ||
+           now_u64 >= SSL_SESSION_get_time(session) +
+                          SSL_SESSION_get_timeout(session));
+}
+
+bool DoApplicationStatesMatch(quic::ApplicationState* state,
+                              quic::ApplicationState* other) {
+  if ((state && !other) || (!state && other))
+    return false;
+  if ((!state && !other) || *state == *other)
+    return true;
+  return false;
 }
 
 }  // namespace
@@ -47,11 +58,29 @@ QuicClientSessionCache::~QuicClientSessionCache() {
 void QuicClientSessionCache::Insert(const quic::QuicServerId& server_id,
                                     bssl::UniquePtr<SSL_SESSION> session,
                                     quic::TransportParameters* params,
-                                    std::vector<uint8_t>* application_states) {
-  auto state = std::make_unique<quic::QuicResumptionState>();
-  state->tls_session = std::move(session);
-  // TODO: Do something with TransportParams and application_states.
-  cache_.Put(server_id, std::move(state));
+                                    quic::ApplicationState* application_state) {
+  DCHECK(session) << "TLS session is not inserted into client cache.";
+  DCHECK(params) << "Transport Parameters is not inserted into client cache.";
+  auto iter = cache_.Get(server_id);
+  if (iter == cache_.end()) {
+    CreateAndInsertEntry(server_id, std::move(session), params,
+                         application_state);
+    return;
+  }
+
+  DCHECK(iter->second.params);
+  // The states are both the same, so only need to insert sessions.
+  if (*params == *iter->second.params &&
+      DoApplicationStatesMatch(application_state,
+                               iter->second.application_state.get())) {
+    iter->second.PushSession(std::move(session));
+    return;
+  }
+  // Erase the existing entry because this Insert call must come from a
+  // different QUIC session.
+  cache_.Erase(iter);
+  CreateAndInsertEntry(server_id, std::move(session), params,
+                       application_state);
 }
 
 std::unique_ptr<quic::QuicResumptionState> QuicClientSessionCache::Lookup(
@@ -62,18 +91,23 @@ std::unique_ptr<quic::QuicResumptionState> QuicClientSessionCache::Lookup(
     return nullptr;
 
   time_t now = clock_->Now().ToTimeT();
-  std::unique_ptr<quic::QuicResumptionState> state = std::move(iter->second);
-  cache_.Erase(iter);
-  if (IsExpired(state.get(), now))
-    state = nullptr;
+  if (!IsValid(iter->second.PeekSession(), now)) {
+    cache_.Erase(iter);
+    return nullptr;
+  }
+  auto state = std::make_unique<quic::QuicResumptionState>();
+  state->tls_session = iter->second.PopSession();
+  state->transport_params = iter->second.params.get();
+  state->application_state = iter->second.application_state.get();
+
   return state;
 }
 
-void QuicClientSessionCache::FlushExpiredStates() {
+void QuicClientSessionCache::FlushInvalidEntries() {
   time_t now = clock_->Now().ToTimeT();
   auto iter = cache_.begin();
   while (iter != cache_.end()) {
-    if (IsExpired(iter->second.get(), now)) {
+    if (!IsValid(iter->second.PeekSession(), now)) {
       iter = cache_.Erase(iter);
     } else {
       ++iter;
@@ -87,12 +121,56 @@ void QuicClientSessionCache::OnMemoryPressure(
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE:
       break;
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
-      FlushExpiredStates();
+      FlushInvalidEntries();
       break;
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL:
       Flush();
       break;
   }
+}
+
+void QuicClientSessionCache::Flush() {
+  cache_.Clear();
+}
+
+void QuicClientSessionCache::CreateAndInsertEntry(
+    const quic::QuicServerId& server_id,
+    bssl::UniquePtr<SSL_SESSION> session,
+    quic::TransportParameters* params,
+    quic::ApplicationState* application_state) {
+  Entry entry;
+  entry.PushSession(std::move(session));
+  entry.params = std::make_unique<quic::TransportParameters>(*params);
+  if (application_state) {
+    entry.application_state =
+        std::make_unique<quic::ApplicationState>(*application_state);
+  }
+  cache_.Put(server_id, std::move(entry));
+}
+
+QuicClientSessionCache::Entry::Entry() = default;
+QuicClientSessionCache::Entry::Entry(Entry&&) = default;
+QuicClientSessionCache::Entry::~Entry() = default;
+
+void QuicClientSessionCache::Entry::PushSession(
+    bssl::UniquePtr<SSL_SESSION> session) {
+  if (sessions[0] != nullptr) {
+    sessions[1] = std::move(sessions[0]);
+  }
+  sessions[0] = std::move(session);
+}
+
+bssl::UniquePtr<SSL_SESSION> QuicClientSessionCache::Entry::PopSession() {
+  if (sessions[0] == nullptr)
+    return nullptr;
+  bssl::UniquePtr<SSL_SESSION> session = std::move(sessions[0]);
+  sessions[0] = std::move(sessions[1]);
+  sessions[1] = nullptr;
+  return session;
+}
+
+SSL_SESSION* QuicClientSessionCache::Entry::PeekSession() {
+  return sessions[0].get();
 }
 
 }  // namespace net

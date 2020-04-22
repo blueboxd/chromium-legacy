@@ -438,24 +438,18 @@ void Portal::Activate(blink::TransferableMessage data,
 
   // These pointers are cleared so that they don't dangle in the event this
   // object isn't immediately deleted. It isn't done sooner because
-  // SwapWebContents misbehaves if the WebContents doesn't appear to be a portal
-  // at that time.
+  // ActivatePortalWebContents misbehaves if the WebContents doesn't appear to
+  // be a portal at that time.
   portal_contents_.Clear();
 
   successor_contents_raw->GetMainFrame()->OnPortalActivated(
       std::move(predecessor_web_contents), std::move(data),
       std::move(callback));
-  successor_contents_raw->NotifyInsidePortal(false);
-
-  // This happens later than SwapWebContents so that the delegate can observe it
-  // happening after predecessor_web_contents has been moved into a portal.
-  successor_contents_raw->GetDelegate()->WebContentsBecamePortal(
-      outer_contents);
-
-  BrowserAccessibilityManager* manager =
-      successor_contents_raw->GetMainFrame()->browser_accessibility_manager();
-  if (manager)
-    manager->OnPortalActivated();
+  // Notifying of activation happens later than ActivatePortalWebContents so
+  // that it is observed after predecessor_web_contents has been moved into a
+  // portal.
+  DCHECK(outer_contents->IsPortal());
+  successor_contents_raw->DidActivatePortal(outer_contents);
 }
 
 void Portal::PostMessageToGuest(

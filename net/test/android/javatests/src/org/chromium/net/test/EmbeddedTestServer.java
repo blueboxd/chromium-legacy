@@ -494,6 +494,7 @@ public class EmbeddedTestServer {
             synchronized (mImplMonitor) {
                 checkServiceLocked();
                 mImpl.destroy();
+                mImpl = null;
             }
         } catch (RemoteException e) {
             throw new EmbeddedTestServerFailure("Failed to destroy native server.", e);

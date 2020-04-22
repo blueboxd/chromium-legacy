@@ -138,7 +138,7 @@ WebMouseEvent TransformWebMouseEvent(LocalFrameView* frame_view,
 
   // TODO(dtapuska): Perhaps the event should be constructed correctly?
   // crbug.com/686200
-  if (event.GetType() == WebInputEvent::kMouseUp) {
+  if (event.GetType() == WebInputEvent::Type::kMouseUp) {
     result.SetModifiers(event.GetModifiers() &
                         ~ToWebInputEventModifierFrom(event.button));
   }
@@ -178,17 +178,17 @@ WebMouseEventBuilder::WebMouseEventBuilder(const LocalFrameView* plugin_parent,
   // other frames; but for now we allow the fallback to generate
   // WebMouseEvents from synthetic events.
   if (event.type() == event_type_names::kMousemove)
-    type_ = WebInputEvent::kMouseMove;
+    type_ = WebInputEvent::Type::kMouseMove;
   else if (event.type() == event_type_names::kMouseout)
-    type_ = WebInputEvent::kMouseLeave;
+    type_ = WebInputEvent::Type::kMouseLeave;
   else if (event.type() == event_type_names::kMouseover)
-    type_ = WebInputEvent::kMouseEnter;
+    type_ = WebInputEvent::Type::kMouseEnter;
   else if (event.type() == event_type_names::kMousedown)
-    type_ = WebInputEvent::kMouseDown;
+    type_ = WebInputEvent::Type::kMouseDown;
   else if (event.type() == event_type_names::kMouseup)
-    type_ = WebInputEvent::kMouseUp;
+    type_ = WebInputEvent::Type::kMouseUp;
   else if (event.type() == event_type_names::kContextmenu)
-    type_ = WebInputEvent::kContextMenu;
+    type_ = WebInputEvent::Type::kContextMenu;
   else
     return;  // Skip all other mouse events.
 
@@ -263,11 +263,11 @@ WebMouseEventBuilder::WebMouseEventBuilder(const LocalFrameView* plugin_parent,
     return;
 
   if (event.type() == event_type_names::kTouchstart)
-    type_ = kMouseDown;
+    type_ = WebInputEvent::Type::kMouseDown;
   else if (event.type() == event_type_names::kTouchmove)
-    type_ = kMouseMove;
+    type_ = WebInputEvent::Type::kMouseMove;
   else if (event.type() == event_type_names::kTouchend)
-    type_ = kMouseUp;
+    type_ = WebInputEvent::Type::kMouseUp;
   else
     return;
 
@@ -290,7 +290,8 @@ WebMouseEventBuilder::WebMouseEventBuilder(const LocalFrameView* plugin_parent,
 
   button = WebMouseEvent::Button::kLeft;
   modifiers_ |= WebInputEvent::kLeftButtonDown;
-  click_count = (type_ == kMouseDown || type_ == kMouseUp);
+  click_count = (type_ == WebInputEvent::Type::kMouseDown ||
+                 type_ == WebInputEvent::Type::kMouseUp);
 
   FloatPoint local_point = ConvertAbsoluteLocationForLayoutObjectFloat(
       DoublePoint(touch->AbsoluteLocation()), layout_object);
@@ -306,11 +307,11 @@ WebKeyboardEventBuilder::WebKeyboardEventBuilder(const KeyboardEvent& event) {
   }
 
   if (event.type() == event_type_names::kKeydown)
-    type_ = kKeyDown;
+    type_ = WebInputEvent::Type::kKeyDown;
   else if (event.type() == event_type_names::kKeyup)
-    type_ = WebInputEvent::kKeyUp;
+    type_ = WebInputEvent::Type::kKeyUp;
   else if (event.type() == event_type_names::kKeypress)
-    type_ = WebInputEvent::kChar;
+    type_ = WebInputEvent::Type::kChar;
   else
     return;  // Skip all other keyboard events.
 

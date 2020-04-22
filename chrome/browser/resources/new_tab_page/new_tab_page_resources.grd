@@ -98,6 +98,9 @@
       <include name="IDR_NEW_TAB_PAGE_DOODLE_SHARE_DIALOG_JS"
           file="${root_gen_dir}/chrome/browser/resources/new_tab_page/doodle_share_dialog.js"
           use_base_dir="false" type="BINDATA" compress="gzip" />
+      <include name="IDR_NEW_TAB_PAGE_REALBOX_JS"
+          file="${root_gen_dir}/chrome/browser/resources/new_tab_page/realbox.js"
+          use_base_dir="false" type="BINDATA" compress="gzip" />
     </includes>
     <structures>
       <structure name="IDR_NEW_TAB_PAGE_NEW_TAB_PAGE_HTML"

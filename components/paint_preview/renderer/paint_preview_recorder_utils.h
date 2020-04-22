@@ -26,17 +26,15 @@ void ParseGlyphs(const cc::PaintOpBuffer* buffer, PaintPreviewTracker* tracker);
 // Serializes |record| to |file| as an SkPicture of size |dimensions|. |tracker|
 // supplies metadata required during serialization. |max_size| is a limit on the
 // total serialized size although 0 means the size is unrestricted. If
-// |max_size| is exceeded the serialization will fail. The size of the
-// serialized output is set as |serialized_size|.
+// |max_size| is exceeded the serialization will fail.
 bool SerializeAsSkPicture(sk_sp<const cc::PaintRecord> record,
                           PaintPreviewTracker* tracker,
                           const gfx::Rect& dimensions,
                           base::File file,
-                          size_t max_size,
-                          size_t* serialized_size);
+                          size_t max_size);
 
 // Builds a mojom::PaintPreviewCaptureResponse |response| using the data
-// contained in |tracker|.
+// contained in |tracker|. Returns true on success.
 // NOTE: |tracker| is effectively const here despite being passed by pointer.
 void BuildResponse(PaintPreviewTracker* tracker,
                    mojom::PaintPreviewCaptureResponse* response);

@@ -8,7 +8,6 @@ import("//build/config/android/rules.gni")
 android_library("weblayer_java_tests") {
   testonly = true
   sources = [
-    "src/org/chromium/weblayer/test/BoundedCountDownLatch.java",
     "src/org/chromium/weblayer/test/BrowserFragmentLifecycleTest.java",
     "src/org/chromium/weblayer/test/CookieManagerTest.java",
     "src/org/chromium/weblayer/test/CrashReporterTest.java",
@@ -22,9 +21,7 @@ android_library("weblayer_java_tests") {
     "src/org/chromium/weblayer/test/FindInPageTest.java",
     "src/org/chromium/weblayer/test/FullscreenCallbackTest.java",
     "src/org/chromium/weblayer/test/InputTypesTest.java",
-    "src/org/chromium/weblayer/test/InstrumentationActivityTestRule.java",
     "src/org/chromium/weblayer/test/NavigationTest.java",
-    "src/org/chromium/weblayer/test/NavigationWaiter.java",
     "src/org/chromium/weblayer/test/NewTabCallbackImpl.java",
     "src/org/chromium/weblayer/test/NewTabCallbackTest.java",
     "src/org/chromium/weblayer/test/OnTabRemovedTabListCallbackImpl.java",
@@ -36,11 +33,11 @@ android_library("weblayer_java_tests") {
     "src/org/chromium/weblayer/test/TabTest.java",
     "src/org/chromium/weblayer/test/TestFullscreenCallback.java",
     "src/org/chromium/weblayer/test/TopControlsTest.java",
-    "src/org/chromium/weblayer/test/WebLayerJUnit4ClassRunner.java",
     "src/org/chromium/weblayer/test/WebLayerLoadingTest.java",
     "src/org/chromium/weblayer/test/WebViewCompatibilityTest.java",
   ]
   deps = [
+    ":weblayer_java_test_support",
     "//base:base_java",
     "//base:base_java_test_support",
     "//components/safe_browsing/android:safe_browsing_java",
@@ -51,7 +48,6 @@ android_library("weblayer_java_tests") {
     "//third_party/android_deps:com_android_support_support_fragment_java",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
-    "//third_party/hamcrest:hamcrest_java",
     "//third_party/junit:junit",
     "//weblayer/browser/java:interfaces_java",
     "//weblayer/public/java",
@@ -64,13 +60,12 @@ android_library("weblayer_private_java_tests") {
   testonly = true
   sources = [
     "src/org/chromium/weblayer/test/GeolocationTest.java",
-    "src/org/chromium/weblayer/test/InstrumentationActivityTestRule.java",
-    "src/org/chromium/weblayer/test/NavigationWaiter.java",
+    "src/org/chromium/weblayer/test/MediaCaptureTest.java",
     "src/org/chromium/weblayer/test/NetworkChangeNotifierTest.java",
     "src/org/chromium/weblayer/test/ResourceLoadingTest.java",
-    "src/org/chromium/weblayer/test/WebLayerJUnit4ClassRunner.java",
   ]
   deps = [
+    ":weblayer_java_test_support",
     "//base:base_java",
     "//base:base_java_test_support",
     "//content/public/test/android:content_java_test_support",
@@ -78,10 +73,29 @@ android_library("weblayer_private_java_tests") {
     "//third_party/android_deps:com_android_support_support_fragment_java",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
-    "//third_party/hamcrest:hamcrest_java",
     "//third_party/junit:junit",
     "//weblayer/public/java",
     "//weblayer/public/javatestutil:test_java",
+    "//weblayer/shell/android:weblayer_shell_java",
+  ]
+}
+
+android_library("weblayer_java_test_support") {
+  testonly = true
+  sources = [
+    "src/org/chromium/weblayer/test/BoundedCountDownLatch.java",
+    "src/org/chromium/weblayer/test/InstrumentationActivityTestRule.java",
+    "src/org/chromium/weblayer/test/NavigationWaiter.java",
+    "src/org/chromium/weblayer/test/WebLayerJUnit4ClassRunner.java",
+  ]
+  deps = [
+    "//base:base_java",
+    "//base:base_java_test_support",
+    "//content/public/test/android:content_java_test_support",
+    "//net/android:net_java_test_support",
+    "//third_party/android_deps:androidx_core_core_java",
+    "//third_party/hamcrest:hamcrest_java",
+    "//weblayer/public/java",
     "//weblayer/shell/android:weblayer_shell_java",
   ]
 }

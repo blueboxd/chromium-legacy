@@ -178,7 +178,7 @@ class IdentityManager : public KeyedService,
       ConsentLevel consent = ConsentLevel::kSync) const;
 
   // Returns whether the user's primary account is available. If consent is
-  // |ConsentLevel::kSyn| then true implies that the user has blessed this
+  // |ConsentLevel::kSync| then true implies that the user has blessed this
   // account for sync.
   bool HasPrimaryAccount(ConsentLevel consent = ConsentLevel::kSync) const;
 

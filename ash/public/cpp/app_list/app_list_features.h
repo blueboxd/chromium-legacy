@@ -90,6 +90,11 @@ ASH_PUBLIC_EXPORT extern const base::Feature kScalableAppList;
 // non empty queries.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableAggregatedMlSearchRanking;
 
+// Enables the new app dragging in the launcher. When the users drags an app
+// within the launcher, this flag will enable the new cardified state, where
+// apps grid pages are scaled down and shown a background card.
+ASH_PUBLIC_EXPORT extern const base::Feature kNewDragSpecInLauncher;
+
 bool ASH_PUBLIC_EXPORT IsAnswerCardEnabled();
 bool ASH_PUBLIC_EXPORT IsPlayStoreAppSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsAppDataSearchEnabled();
@@ -112,6 +117,7 @@ bool ASH_PUBLIC_EXPORT IsFuzzyAppSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsExactMatchForNonLatinLocaleEnabled();
 bool ASH_PUBLIC_EXPORT IsLauncherSettingsSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsAggregatedMlSearchRankingEnabled();
+bool ASH_PUBLIC_EXPORT IsNewDragSpecInLauncherEnabled();
 
 std::string ASH_PUBLIC_EXPORT AnswerServerUrl();
 std::string ASH_PUBLIC_EXPORT AnswerServerQuerySuffix();

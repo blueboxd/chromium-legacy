@@ -96,45 +96,6 @@ struct EnumArray {
   VALUE array[static_cast<size_t>(KEY::COUNT)];
 };
 
-// NSColor has a number of methods that return system colors (i.e. controlled by
-// user preferences). This function converts the color given by an NSColor class
-// method to an SkColor. Official documentation suggests developers only rely on
-// +[NSColor selectedTextBackgroundColor] and +[NSColor selectedControlColor],
-// but other colors give a good baseline. For many, a gradient is involved; the
-// palette chosen based on the enum value given by +[NSColor currentColorTint].
-// Apple's documentation also suggests to use NSColorList, but the system color
-// list is just populated with class methods on NSColor.
-SkColor NSSystemColorToSkColor(NSColor* color) {
-  // System colors use the an NSNamedColorSpace called "System", so first step
-  // is to convert the color into something that can be worked with.
-  NSColor* device_color =
-      [color colorUsingColorSpace:[NSColorSpace deviceRGBColorSpace]];
-  if (device_color)
-    return skia::NSDeviceColorToSkColor(device_color);
-
-  // Sometimes the conversion is not possible, but we can get an approximation
-  // by going through a CGColorRef. Note that simply using NSColor methods for
-  // accessing components for system colors results in exceptions like
-  // "-numberOfComponents not valid for the NSColor NSNamedColorSpace System
-  // windowBackgroundColor; need to first convert colorspace." Hence the
-  // conversion first to CGColor.
-  CGColorRef cg_color = (CGColorRef)color;//[color CGColor];
-  const size_t component_count = CGColorGetNumberOfComponents(cg_color);
-  if (component_count == 4)
-    return skia::CGColorRefToSkColor(cg_color);
-
-  CHECK(component_count == 1 || component_count == 2);
-  // 1-2 components means a grayscale channel and maybe an alpha channel, which
-  // CGColorRefToSkColor will not like. But RGB is additive, so the conversion
-  // is easy (RGB to grayscale is less easy).
-  const CGFloat* components = CGColorGetComponents(cg_color);
-  CGFloat alpha = component_count == 2 ? components[1] : 1.0;
-  return SkColorSetARGB(SkScalarRoundToInt(255.0 * alpha),
-                        SkScalarRoundToInt(255.0 * components[0]),
-                        SkScalarRoundToInt(255.0 * components[0]),
-                        SkScalarRoundToInt(255.0 * components[0]));
-}
-
 // Converts an SkColor to grayscale by using luminance for all three components.
 // Experimentally, this seems to produce a better result than a flat average or
 // a min/max average for UI controls.
@@ -193,7 +154,17 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id,
   if (color_scheme == ColorScheme::kDefault)
     color_scheme = GetDefaultSystemColorScheme();
 
-  if ((color_scheme == ColorScheme::kDark) != IsDarkMode())
+  // The first check makes sure that when we are using the color providers that
+  // we actually go to the providers instead of just returning the  colors
+  // below. The second check is to make sure that when not using color
+  // providers, we only skip the rest of the method when we are in an incognito
+  // window.
+  // TODO(http://crbug.com/1057754): Remove the && kPlatformHighContrast
+  // once NativeTheme.cc handles kColorProviderReirection and
+  // kPlatformHighContrast both being on.
+  if ((base::FeatureList::IsEnabled(features::kColorProviderRedirection) &&
+       color_scheme != ColorScheme::kPlatformHighContrast) ||
+      should_only_use_dark_colors_)
     return NativeTheme::GetSystemColor(color_id, color_scheme);
 
   // Empirically, currentAppearance is incorrect when switching
@@ -222,9 +193,9 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id,
   // Mac has a couple of specific color overrides, documented below.
   switch (color_id) {
     case kColorId_EnabledMenuItemForegroundColor:
-      return NSSystemColorToSkColor([NSColor controlTextColor]);
+      return skia::NSSystemColorToSkColor([NSColor controlTextColor]);
     case kColorId_DisabledMenuItemForegroundColor:
-      return NSSystemColorToSkColor([NSColor disabledControlTextColor]);
+      return skia::NSSystemColorToSkColor([NSColor disabledControlTextColor]);
     case kColorId_MenuSeparatorColor:
       return color_scheme == ColorScheme::kDark
                  ? SkColorSetA(gfx::kGoogleGrey800, 0xCC)
@@ -243,19 +214,20 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id,
     // and propagate it to the View hierarchy.
     case kColorId_LabelTextSelectionBackgroundFocused:
     case kColorId_TextfieldSelectionBackgroundFocused:
-      return NSSystemColorToSkColor([NSColor selectedTextBackgroundColor]);
+      return skia::NSSystemColorToSkColor(
+          [NSColor selectedTextBackgroundColor]);
 
     case kColorId_FocusedBorderColor:
       return SkColorSetA(
-          NSSystemColorToSkColor([NSColor keyboardFocusIndicatorColor]),
+          skia::NSSystemColorToSkColor([NSColor keyboardFocusIndicatorColor]),
           0x66);
 
     case kColorId_TableBackgroundAlternate:
       if (@available(macOS 10.14, *)) {
-        return NSSystemColorToSkColor(
+        return skia::NSSystemColorToSkColor(
             NSColor.alternatingContentBackgroundColors[1]);
       }
-      return NSSystemColorToSkColor(
+      return skia::NSSystemColorToSkColor(
           NSColor.controlAlternatingRowBackgroundColors[1]);
 
     default:
@@ -301,7 +273,8 @@ void NativeThemeMac::PaintMenuItemBackground(
 
 NativeThemeMac::NativeThemeMac(bool configure_web_instance,
                                bool should_only_use_dark_colors)
-    : NativeThemeBase(should_only_use_dark_colors) {
+    : NativeThemeBase(should_only_use_dark_colors),
+      should_only_use_dark_colors_(should_only_use_dark_colors) {
   if (!should_only_use_dark_colors)
     InitializeDarkModeStateAndObserver();
 

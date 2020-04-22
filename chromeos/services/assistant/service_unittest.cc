@@ -139,14 +139,13 @@ class AssistantServiceTest : public testing::Test {
     identity_test_env_.MakeUnconsentedPrimaryAccountAvailable(kEmailAddress);
 
     service_ = std::make_unique<Service>(
-        remote_service_.BindNewPipeAndPassReceiver(),
         shared_url_loader_factory_->Clone(),
         identity_test_env_.identity_manager(), &pref_service_);
     service_->SetAssistantManagerServiceForTesting(
         std::make_unique<FakeAssistantManagerServiceImpl>());
 
-    remote_service_->Init(fake_assistant_client_.MakeRemote(),
-                          fake_device_actions_.CreatePendingRemoteAndBind());
+    service_->Init(fake_assistant_client_.MakeRemote(),
+                   fake_device_actions_.CreatePendingRemoteAndBind());
     // Wait for AssistantManagerService to be set.
     base::RunLoop().RunUntilIdle();
 
@@ -207,7 +206,6 @@ class AssistantServiceTest : public testing::Test {
   base::test::ScopedFeatureList scoped_feature_list_;
 
   std::unique_ptr<Service> service_;
-  mojo::Remote<mojom::AssistantService> remote_service_;
 
   FullyInitializedAssistantState assistant_state_;
   signin::IdentityTestEnvironment identity_test_env_;

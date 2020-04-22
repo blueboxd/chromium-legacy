@@ -213,7 +213,7 @@ void Scrollbar::AutoscrollPressedPart(base::TimeDelta delay) {
   }
 
   // Handle the arrows and track by injecting a scroll update.
-  InjectScrollGestureForPressedPart(WebInputEvent::kGestureScrollUpdate);
+  InjectScrollGestureForPressedPart(WebInputEvent::Type::kGestureScrollUpdate);
 
   // Always start timer when user press on button since scrollable area maybe
   // infinite scrolling.
@@ -357,7 +357,7 @@ bool Scrollbar::GestureEvent(const WebGestureEvent& evt,
                              bool* should_update_capture) {
   DCHECK(should_update_capture);
   switch (evt.GetType()) {
-    case WebInputEvent::kGestureTapDown: {
+    case WebInputEvent::Type::kGestureTapDown: {
       IntPoint position = FlooredIntPoint(evt.PositionInRootFrame());
       SetPressedPart(GetTheme().HitTestRootFramePosition(*this, position),
                      evt.GetType());
@@ -367,12 +367,12 @@ bool Scrollbar::GestureEvent(const WebGestureEvent& evt,
       *should_update_capture = true;
       return true;
     }
-    case WebInputEvent::kGestureTapCancel:
+    case WebInputEvent::Type::kGestureTapCancel:
       if (pressed_part_ != kThumbPart)
         return false;
       scroll_pos_ = pressed_pos_;
       return true;
-    case WebInputEvent::kGestureScrollBegin:
+    case WebInputEvent::Type::kGestureScrollBegin:
       switch (evt.SourceDevice()) {
         case WebGestureDevice::kSyntheticAutoscroll:
         case WebGestureDevice::kTouchpad:
@@ -392,7 +392,7 @@ bool Scrollbar::GestureEvent(const WebGestureEvent& evt,
           return true;
       }
       break;
-    case WebInputEvent::kGestureScrollUpdate:
+    case WebInputEvent::Type::kGestureScrollUpdate:
       switch (evt.SourceDevice()) {
         case WebGestureDevice::kSyntheticAutoscroll:
         case WebGestureDevice::kTouchpad:
@@ -410,19 +410,19 @@ bool Scrollbar::GestureEvent(const WebGestureEvent& evt,
           return true;
       }
       break;
-    case WebInputEvent::kGestureScrollEnd:
+    case WebInputEvent::Type::kGestureScrollEnd:
       // If we see a GSE targeted at the scrollbar, clear the state that
       // says we injected GestureScrollBegin, since we no longer need to inject
       // a GSE ourselves.
       injected_gesture_scroll_begin_ = false;
       FALLTHROUGH;
-    case WebInputEvent::kGestureLongPress:
-    case WebInputEvent::kGestureFlingStart:
+    case WebInputEvent::Type::kGestureLongPress:
+    case WebInputEvent::Type::kGestureFlingStart:
       scroll_pos_ = 0;
       pressed_pos_ = 0;
       SetPressedPart(kNoPart, evt.GetType());
       return false;
-    case WebInputEvent::kGestureTap:
+    case WebInputEvent::Type::kGestureTap:
       return HandleTapGesture();
     default:
       // By default, we assume that gestures don't deselect the scrollbar.
@@ -438,9 +438,11 @@ bool Scrollbar::HandleTapGesture() {
       // Taps perform a single scroll begin/update/end sequence of gesture
       // events. There's no autoscroll timer since long press is not treated
       // the same as holding a mouse down.
-      InjectScrollGestureForPressedPart(WebInputEvent::kGestureScrollBegin);
-      InjectScrollGestureForPressedPart(WebInputEvent::kGestureScrollUpdate);
-      InjectScrollGestureForPressedPart(WebInputEvent::kGestureScrollEnd);
+      InjectScrollGestureForPressedPart(
+          WebInputEvent::Type::kGestureScrollBegin);
+      InjectScrollGestureForPressedPart(
+          WebInputEvent::Type::kGestureScrollUpdate);
+      InjectScrollGestureForPressedPart(WebInputEvent::Type::kGestureScrollEnd);
 
       return true;
     }
@@ -542,7 +544,7 @@ void Scrollbar::MouseUp(const WebMouseEvent& mouse_event) {
       scrollable_area_->MouseExitedScrollbar(*this);
     }
 
-    InjectScrollGestureForPressedPart(WebInputEvent::kGestureScrollEnd);
+    InjectScrollGestureForPressedPart(WebInputEvent::Type::kGestureScrollEnd);
   }
 }
 

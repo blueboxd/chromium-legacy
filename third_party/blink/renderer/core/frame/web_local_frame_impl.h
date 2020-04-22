@@ -190,7 +190,6 @@ class CORE_EXPORT WebLocalFrameImpl final
   bool FirstRectForCharacterRange(unsigned location,
                                   unsigned length,
                                   WebRect&) const override;
-  size_t CharacterIndexForPoint(const gfx::Point&) const override;
   bool ExecuteCommand(const WebString&) override;
   bool ExecuteCommand(const WebString&, const WebString& value) override;
   bool IsCommandEnabled(const WebString&) const override;

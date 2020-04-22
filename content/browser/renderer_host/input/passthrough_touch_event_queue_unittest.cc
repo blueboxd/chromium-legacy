@@ -133,14 +133,14 @@ class PassthroughTouchEventQueueTest : public testing::Test,
       event.moved_beyond_slop_region = false;
       if (WebTouchEventTraits::IsTouchSequenceStart(event))
         anchor_ = event.touches[0].PositionInWidget();
-      if (event.GetType() == WebInputEvent::kTouchMove) {
+      if (event.GetType() == WebInputEvent::Type::kTouchMove) {
         gfx::Vector2dF delta = anchor_ - event.touches[0].PositionInWidget();
         if (delta.LengthSquared() > slop_length_dips_ * slop_length_dips_)
           event.moved_beyond_slop_region = true;
       }
     } else {
       event.moved_beyond_slop_region =
-          event.GetType() == WebInputEvent::kTouchMove;
+          event.GetType() == WebInputEvent::Type::kTouchMove;
     }
     queue_->QueueEvent(TouchEventWithLatencyInfo(event, ui::LatencyInfo()));
   }
@@ -223,9 +223,9 @@ class PassthroughTouchEventQueueTest : public testing::Test,
     WebTouchPoint& point = touch_event_.touches[index];
     point.radius_x = radius_x;
     point.radius_y = radius_y;
-    touch_event_.touches[index].state = WebTouchPoint::kStateMoved;
+    touch_event_.touches[index].state = WebTouchPoint::State::kStateMoved;
     touch_event_.moved_beyond_slop_region = true;
-    WebTouchEventTraits::ResetType(WebInputEvent::kTouchMove,
+    WebTouchEventTraits::ResetType(WebInputEvent::Type::kTouchMove,
                                    touch_event_.TimeStamp(), &touch_event_);
     SendTouchEvent();
   }
@@ -235,9 +235,9 @@ class PassthroughTouchEventQueueTest : public testing::Test,
     CHECK_LT(index, touch_event_.kTouchesLengthCap);
     WebTouchPoint& point = touch_event_.touches[index];
     point.rotation_angle = rotation_angle;
-    touch_event_.touches[index].state = WebTouchPoint::kStateMoved;
+    touch_event_.touches[index].state = WebTouchPoint::State::kStateMoved;
     touch_event_.moved_beyond_slop_region = true;
-    WebTouchEventTraits::ResetType(WebInputEvent::kTouchMove,
+    WebTouchEventTraits::ResetType(WebInputEvent::Type::kTouchMove,
                                    touch_event_.TimeStamp(), &touch_event_);
     SendTouchEvent();
   }
@@ -247,9 +247,9 @@ class PassthroughTouchEventQueueTest : public testing::Test,
     CHECK_LT(index, touch_event_.kTouchesLengthCap);
     WebTouchPoint& point = touch_event_.touches[index];
     point.force = force;
-    touch_event_.touches[index].state = WebTouchPoint::kStateMoved;
+    touch_event_.touches[index].state = WebTouchPoint::State::kStateMoved;
     touch_event_.moved_beyond_slop_region = true;
-    WebTouchEventTraits::ResetType(WebInputEvent::kTouchMove,
+    WebTouchEventTraits::ResetType(WebInputEvent::Type::kTouchMove,
                                    touch_event_.TimeStamp(), &touch_event_);
     SendTouchEvent();
   }
@@ -378,7 +378,7 @@ TEST_F(PassthroughTouchEventQueueTest, Basic) {
   EXPECT_EQ(1U, queued_event_count());
   EXPECT_EQ(0U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
-  EXPECT_EQ(WebInputEvent::kTouchStart, acked_event().GetType());
+  EXPECT_EQ(WebInputEvent::Type::kTouchStart, acked_event().GetType());
   EXPECT_EQ(WebInputEvent::DispatchType::kBlocking,
             acked_event().dispatch_type);
 
@@ -387,7 +387,7 @@ TEST_F(PassthroughTouchEventQueueTest, Basic) {
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_EQ(0U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
-  EXPECT_EQ(WebInputEvent::kTouchMove, acked_event().GetType());
+  EXPECT_EQ(WebInputEvent::Type::kTouchMove, acked_event().GetType());
   EXPECT_EQ(WebInputEvent::DispatchType::kBlocking,
             acked_event().dispatch_type);
 }
@@ -657,7 +657,7 @@ TEST_F(PassthroughTouchEventQueueTest, NoConsumer) {
   // Send a release event. This should reach the renderer.
   ReleaseTouchPoint(0);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
-  EXPECT_EQ(WebInputEvent::kTouchMove, acked_event().GetType());
+  EXPECT_EQ(WebInputEvent::Type::kTouchMove, acked_event().GetType());
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
 
   // Send a press-event, followed by a move should be sent.
@@ -690,7 +690,7 @@ TEST_F(PassthroughTouchEventQueueTest, AckTouchEventInReverse) {
   EXPECT_EQ(4U, queued_event_count());
 
   SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
-  EXPECT_EQ(WebInputEvent::kTouchStart, acked_event().GetType());
+  EXPECT_EQ(WebInputEvent::Type::kTouchStart, acked_event().GetType());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
   EXPECT_EQ(3U, queued_event_count());
 
@@ -699,7 +699,7 @@ TEST_F(PassthroughTouchEventQueueTest, AckTouchEventInReverse) {
   EXPECT_EQ(3U, queued_event_count());
 
   SendTouchEventAckLast(blink::mojom::InputEventResultState::kConsumed);
-  EXPECT_EQ(WebInputEvent::kTouchEnd, acked_event().GetType());
+  EXPECT_EQ(WebInputEvent::Type::kTouchEnd, acked_event().GetType());
   EXPECT_EQ(3U, GetAndResetAckedEventCount());
   EXPECT_EQ(0U, queued_event_count());
 }
@@ -714,12 +714,12 @@ TEST_F(PassthroughTouchEventQueueTest, AckWithFollowupEvents) {
 
   // Create a touch event that will be queued synchronously by a touch ack.
   // Note, this will be triggered by all subsequent touch acks.
-  WebTouchEvent followup_event(WebInputEvent::kTouchMove,
+  WebTouchEvent followup_event(WebInputEvent::Type::kTouchMove,
                                WebInputEvent::kNoModifiers,
                                ui::EventTimeForNow());
   followup_event.touches_length = 1;
   followup_event.touches[0].id = 0;
-  followup_event.touches[0].state = WebTouchPoint::kStateMoved;
+  followup_event.touches[0].state = WebTouchPoint::State::kStateMoved;
   SetFollowupEvent(followup_event);
 
   // Receive an ACK for the press. This should cause the followup touch-move to
@@ -730,7 +730,7 @@ TEST_F(PassthroughTouchEventQueueTest, AckWithFollowupEvents) {
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
   EXPECT_EQ(blink::mojom::InputEventResultState::kConsumed,
             acked_event_state());
-  EXPECT_EQ(WebInputEvent::kTouchStart, acked_event().GetType());
+  EXPECT_EQ(WebInputEvent::Type::kTouchStart, acked_event().GetType());
 
   // Queue another event.
   MoveTouchPoint(0, 2, 2);
@@ -802,13 +802,13 @@ TEST_F(PassthroughTouchEventQueueTest, SynchronousAcksInOrder) {
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
 
   // Create a touch event that will be queued synchronously by a touch ack.
-  WebTouchEvent followup_event(WebInputEvent::kTouchMove,
+  WebTouchEvent followup_event(WebInputEvent::Type::kTouchMove,
                                WebInputEvent::kNoModifiers,
                                ui::EventTimeForNow());
   followup_event.touches_length = 1;
   followup_event.touches[0].id = 0;
   followup_event.unique_touch_event_id = 100;
-  followup_event.touches[0].state = WebTouchPoint::kStateMoved;
+  followup_event.touches[0].state = WebTouchPoint::State::kStateMoved;
   SetFollowupEvent(followup_event);
   SetSyncAckResult(blink::mojom::InputEventResultState::kConsumed);
 
@@ -825,23 +825,23 @@ TEST_F(PassthroughTouchEventQueueTest, SynchronousAcksInOrder) {
 // TouchEventQueue::QueueEvent() are properly handled.
 TEST_F(PassthroughTouchEventQueueTest, ImmediateAckWithFollowupEvents) {
   // Create a touch event that will be queued synchronously by a touch ack.
-  WebTouchEvent followup_event(WebInputEvent::kTouchStart,
+  WebTouchEvent followup_event(WebInputEvent::Type::kTouchStart,
                                WebInputEvent::kNoModifiers,
                                ui::EventTimeForNow());
   followup_event.touches_length = 1;
   followup_event.touches[0].id = 1;
-  followup_event.touches[0].state = WebTouchPoint::kStatePressed;
+  followup_event.touches[0].state = WebTouchPoint::State::kStatePressed;
   SetFollowupEvent(followup_event);
 
   // Now, enqueue a stationary touch that will not be forwarded.  This should be
   // immediately ack'ed with "NO_CONSUMER_EXISTS".  The followup event should
   // then be enqueued and immediately sent to the renderer.
-  WebTouchEvent stationary_event(WebInputEvent::kTouchMove,
+  WebTouchEvent stationary_event(WebInputEvent::Type::kTouchMove,
                                  WebInputEvent::kNoModifiers,
                                  ui::EventTimeForNow());
   stationary_event.touches_length = 1;
   stationary_event.touches[0].id = 1;
-  stationary_event.touches[0].state = WebTouchPoint::kStateStationary;
+  stationary_event.touches[0].state = WebTouchPoint::State::kStateStationary;
   SendTouchEvent(stationary_event);
 
   EXPECT_EQ(1U, queued_event_count());
@@ -849,7 +849,7 @@ TEST_F(PassthroughTouchEventQueueTest, ImmediateAckWithFollowupEvents) {
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
   EXPECT_EQ(blink::mojom::InputEventResultState::kNoConsumerExists,
             acked_event_state());
-  EXPECT_EQ(WebInputEvent::kTouchMove, acked_event().GetType());
+  EXPECT_EQ(WebInputEvent::Type::kTouchMove, acked_event().GetType());
 }
 
 // Tests that basic TouchEvent forwarding suppression has been disabled.
@@ -994,7 +994,7 @@ TEST_F(PassthroughTouchEventQueueTest, TouchTimeoutBasic) {
   // Ack'ing the original event should trigger a cancel event.
   SendTouchEventAck(blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_FALSE(IsTimeoutRunning());
-  EXPECT_EQ(WebInputEvent::kTouchCancel, sent_event().GetType());
+  EXPECT_EQ(WebInputEvent::Type::kTouchCancel, sent_event().GetType());
   EXPECT_NE(WebInputEvent::DispatchType::kBlocking, sent_event().dispatch_type);
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
@@ -1016,7 +1016,7 @@ TEST_F(PassthroughTouchEventQueueTest, TouchTimeoutBasic) {
 
   // Subsequent events should be handled normally.
   PressTouchPoint(0, 1);
-  EXPECT_EQ(WebInputEvent::kTouchStart, sent_event().GetType());
+  EXPECT_EQ(WebInputEvent::Type::kTouchStart, sent_event().GetType());
   EXPECT_EQ(WebInputEvent::DispatchType::kBlocking, sent_event().dispatch_type);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
@@ -1161,7 +1161,7 @@ TEST_F(PassthroughTouchEventQueueTest, TouchTimeoutWithFollowupGesture) {
   EXPECT_EQ(1U, GetAndResetSentEventCount());
 
   // The cancelled sequence may turn into a scroll gesture.
-  WebGestureEvent followup_scroll(WebInputEvent::kGestureScrollBegin,
+  WebGestureEvent followup_scroll(WebInputEvent::Type::kGestureScrollBegin,
                                   WebInputEvent::kNoModifiers,
                                   ui::EventTimeForNow());
   SetFollowupEvent(followup_scroll);
@@ -1198,7 +1198,7 @@ TEST_F(PassthroughTouchEventQueueTest, TouchTimeoutWithFollowupGesture) {
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
   // Now end the scroll sequence.
-  SendGestureEvent(blink::WebInputEvent::kGestureScrollEnd);
+  SendGestureEvent(blink::WebInputEvent::Type::kGestureScrollEnd);
   PressTouchPoint(0, 1);
   EXPECT_TRUE(IsTimeoutRunning());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
@@ -1218,7 +1218,7 @@ TEST_F(PassthroughTouchEventQueueTest,
   EXPECT_EQ(1U, GetAndResetSentEventCount());
 
   // The cancelled sequence may turn into a scroll gesture.
-  WebGestureEvent followup_scroll(WebInputEvent::kGestureScrollBegin,
+  WebGestureEvent followup_scroll(WebInputEvent::Type::kGestureScrollBegin,
                                   WebInputEvent::kNoModifiers,
                                   ui::EventTimeForNow());
   SetFollowupEvent(followup_scroll);
@@ -1242,7 +1242,7 @@ TEST_F(PassthroughTouchEventQueueTest,
 
   // Now end the scroll sequence.  Events will not be forwarded until the two
   // outstanding touch acks are received.
-  SendGestureEvent(blink::WebInputEvent::kGestureScrollEnd);
+  SendGestureEvent(blink::WebInputEvent::Type::kGestureScrollEnd);
   MoveTouchPoint(0, 2, 2);
   ReleaseTouchPoint(0);
   EXPECT_FALSE(IsTimeoutRunning());
@@ -1424,7 +1424,7 @@ TEST_F(PassthroughTouchEventQueueTest,
   ASSERT_EQ(1U, GetAndResetSentEventCount());
   ASSERT_EQ(1U, GetAndResetAckedEventCount());
 
-  WebGestureEvent followup_scroll(WebInputEvent::kGestureScrollBegin,
+  WebGestureEvent followup_scroll(WebInputEvent::Type::kGestureScrollBegin,
                                   WebInputEvent::kNoModifiers,
                                   WebInputEvent::GetStaticTimeStampForTests());
   SetFollowupEvent(followup_scroll);
@@ -1456,7 +1456,7 @@ TEST_F(PassthroughTouchEventQueueTest, TouchAbsorptionWithConsumedFirstMove) {
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
   MoveTouchPoint(0, 20, 5);
-  SendGestureEvent(blink::WebInputEvent::kGestureScrollBegin);
+  SendGestureEvent(blink::WebInputEvent::Type::kGestureScrollBegin);
   SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_EQ(2U, GetAndResetSentEventCount());
@@ -1470,12 +1470,12 @@ TEST_F(PassthroughTouchEventQueueTest, TouchAbsorptionWithConsumedFirstMove) {
   EXPECT_EQ(1U, GetAndResetSentEventCount());
 
   MoveTouchPoint(0, 20, 5);
-  WebGestureEvent followup_scroll(WebInputEvent::kGestureScrollUpdate,
+  WebGestureEvent followup_scroll(WebInputEvent::Type::kGestureScrollUpdate,
                                   WebInputEvent::kNoModifiers,
                                   WebInputEvent::GetStaticTimeStampForTests());
   SetFollowupEvent(followup_scroll);
   SendTouchEventAck(blink::mojom::InputEventResultState::kNotConsumed);
-  SendGestureEventAck(WebInputEvent::kGestureScrollUpdate,
+  SendGestureEventAck(WebInputEvent::Type::kGestureScrollUpdate,
                       blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_EQ(WebInputEvent::DispatchType::kBlocking, sent_event().dispatch_type);
@@ -1497,8 +1497,8 @@ TEST_F(PassthroughTouchEventQueueTest, TouchStartCancelableDuringScroll) {
 
   MoveTouchPoint(0, 20, 5);
   EXPECT_EQ(WebInputEvent::DispatchType::kBlocking, sent_event().dispatch_type);
-  SendGestureEvent(blink::WebInputEvent::kGestureScrollBegin);
-  SendGestureEvent(blink::WebInputEvent::kGestureScrollUpdate);
+  SendGestureEvent(blink::WebInputEvent::Type::kGestureScrollBegin);
+  SendGestureEvent(blink::WebInputEvent::Type::kGestureScrollUpdate);
   SendTouchEventAck(blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_EQ(WebInputEvent::DispatchType::kBlocking, sent_event().dispatch_type);
   ASSERT_EQ(1U, GetAndResetSentEventCount());
@@ -1531,7 +1531,7 @@ TEST_F(PassthroughTouchEventQueueTest, TouchStartCancelableDuringScroll) {
   // will restore async touch dispatch.
   MoveTouchPoint(0, 25, 5);
   SendTouchEventAck(blink::mojom::InputEventResultState::kNotConsumed);
-  SendGestureEvent(blink::WebInputEvent::kGestureScrollUpdate);
+  SendGestureEvent(blink::WebInputEvent::Type::kGestureScrollUpdate);
   EXPECT_EQ(WebInputEvent::DispatchType::kBlocking, sent_event().dispatch_type);
   ASSERT_EQ(1U, GetAndResetSentEventCount());
   AdvanceTouchTime(kMinSecondsBetweenThrottledTouchmoves + 0.1);
@@ -1600,11 +1600,11 @@ TEST_F(PassthroughTouchEventQueueTest, PointerStatesInTouchMove) {
 
   // Test current touches state before sending TouchMoves.
   const WebTouchEvent& event1 = sent_event();
-  EXPECT_EQ(WebInputEvent::kTouchStart, event1.GetType());
-  EXPECT_EQ(WebTouchPoint::kStateStationary, event1.touches[0].state);
-  EXPECT_EQ(WebTouchPoint::kStateStationary, event1.touches[1].state);
-  EXPECT_EQ(WebTouchPoint::kStateStationary, event1.touches[2].state);
-  EXPECT_EQ(WebTouchPoint::kStatePressed, event1.touches[3].state);
+  EXPECT_EQ(WebInputEvent::Type::kTouchStart, event1.GetType());
+  EXPECT_EQ(WebTouchPoint::State::kStateStationary, event1.touches[0].state);
+  EXPECT_EQ(WebTouchPoint::State::kStateStationary, event1.touches[1].state);
+  EXPECT_EQ(WebTouchPoint::State::kStateStationary, event1.touches[2].state);
+  EXPECT_EQ(WebTouchPoint::State::kStatePressed, event1.touches[3].state);
 
   // Move x-position for 1st touch, y-position for 2nd touch
   // and do not move other touches.
@@ -1617,11 +1617,11 @@ TEST_F(PassthroughTouchEventQueueTest, PointerStatesInTouchMove) {
 
   // 1st TouchMove is sent. Test for touches state.
   const WebTouchEvent& event2 = sent_event();
-  EXPECT_EQ(WebInputEvent::kTouchMove, event2.GetType());
-  EXPECT_EQ(WebTouchPoint::kStateMoved, event2.touches[0].state);
-  EXPECT_EQ(WebTouchPoint::kStateMoved, event2.touches[1].state);
-  EXPECT_EQ(WebTouchPoint::kStateStationary, event2.touches[2].state);
-  EXPECT_EQ(WebTouchPoint::kStateStationary, event2.touches[3].state);
+  EXPECT_EQ(WebInputEvent::Type::kTouchMove, event2.GetType());
+  EXPECT_EQ(WebTouchPoint::State::kStateMoved, event2.touches[0].state);
+  EXPECT_EQ(WebTouchPoint::State::kStateMoved, event2.touches[1].state);
+  EXPECT_EQ(WebTouchPoint::State::kStateStationary, event2.touches[2].state);
+  EXPECT_EQ(WebTouchPoint::State::kStateStationary, event2.touches[3].state);
 
   // Move only 4th touch but not others.
   MoveTouchPoints(0, 1.1f, 1.f, 1, 2.f, 20.001f);
@@ -1632,11 +1632,11 @@ TEST_F(PassthroughTouchEventQueueTest, PointerStatesInTouchMove) {
 
   // 2nd TouchMove is sent. Test for touches state.
   const WebTouchEvent& event3 = sent_event();
-  EXPECT_EQ(WebInputEvent::kTouchMove, event3.GetType());
-  EXPECT_EQ(WebTouchPoint::kStateStationary, event3.touches[0].state);
-  EXPECT_EQ(WebTouchPoint::kStateStationary, event3.touches[1].state);
-  EXPECT_EQ(WebTouchPoint::kStateStationary, event3.touches[2].state);
-  EXPECT_EQ(WebTouchPoint::kStateMoved, event3.touches[3].state);
+  EXPECT_EQ(WebInputEvent::Type::kTouchMove, event3.GetType());
+  EXPECT_EQ(WebTouchPoint::State::kStateStationary, event3.touches[0].state);
+  EXPECT_EQ(WebTouchPoint::State::kStateStationary, event3.touches[1].state);
+  EXPECT_EQ(WebTouchPoint::State::kStateStationary, event3.touches[2].state);
+  EXPECT_EQ(WebTouchPoint::State::kStateMoved, event3.touches[3].state);
 }
 
 // Tests that touch point state is correct in TouchMove events
@@ -1656,8 +1656,8 @@ TEST_F(PassthroughTouchEventQueueTest,
 
   // TouchMove is sent. Test for pointer state.
   const WebTouchEvent& event1 = sent_event();
-  EXPECT_EQ(WebInputEvent::kTouchMove, event1.GetType());
-  EXPECT_EQ(WebTouchPoint::kStateMoved, event1.touches[0].state);
+  EXPECT_EQ(WebInputEvent::Type::kTouchMove, event1.GetType());
+  EXPECT_EQ(WebTouchPoint::State::kStateMoved, event1.touches[0].state);
 
   // Change touch point force.
   ChangeTouchPointForce(0, 0.9f);
@@ -1665,8 +1665,8 @@ TEST_F(PassthroughTouchEventQueueTest,
 
   // TouchMove is sent. Test for pointer state.
   const WebTouchEvent& event2 = sent_event();
-  EXPECT_EQ(WebInputEvent::kTouchMove, event2.GetType());
-  EXPECT_EQ(WebTouchPoint::kStateMoved, event2.touches[0].state);
+  EXPECT_EQ(WebInputEvent::Type::kTouchMove, event2.GetType());
+  EXPECT_EQ(WebTouchPoint::State::kStateMoved, event2.touches[0].state);
 
   // Change touch point rotationAngle.
   ChangeTouchPointRotationAngle(0, 1.1f);
@@ -1674,8 +1674,8 @@ TEST_F(PassthroughTouchEventQueueTest,
 
   // TouchMove is sent. Test for pointer state.
   const WebTouchEvent& event3 = sent_event();
-  EXPECT_EQ(WebInputEvent::kTouchMove, event3.GetType());
-  EXPECT_EQ(WebTouchPoint::kStateMoved, event3.touches[0].state);
+  EXPECT_EQ(WebInputEvent::Type::kTouchMove, event3.GetType());
+  EXPECT_EQ(WebTouchPoint::State::kStateMoved, event3.touches[0].state);
 
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_EQ(4U, GetAndResetSentEventCount());
@@ -1698,9 +1698,9 @@ TEST_F(PassthroughTouchEventQueueTest, FilterTouchMovesWhenNoPointerChanged) {
 
   // TouchMove should be allowed and test for touches state.
   const WebTouchEvent& event1 = sent_event();
-  EXPECT_EQ(WebInputEvent::kTouchMove, event1.GetType());
-  EXPECT_EQ(WebTouchPoint::kStateMoved, event1.touches[0].state);
-  EXPECT_EQ(WebTouchPoint::kStateStationary, event1.touches[1].state);
+  EXPECT_EQ(WebInputEvent::Type::kTouchMove, event1.GetType());
+  EXPECT_EQ(WebTouchPoint::State::kStateMoved, event1.touches[0].state);
+  EXPECT_EQ(WebTouchPoint::State::kStateStationary, event1.touches[1].state);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
 
@@ -1730,9 +1730,9 @@ TEST_F(PassthroughTouchEventQueueTest, FilterTouchMovesWhenNoPointerChanged) {
 
   // TouchMove should be allowed and test for touches state.
   const WebTouchEvent& event2 = sent_event();
-  EXPECT_EQ(WebInputEvent::kTouchMove, event2.GetType());
-  EXPECT_EQ(WebTouchPoint::kStateStationary, event2.touches[0].state);
-  EXPECT_EQ(WebTouchPoint::kStateMoved, event2.touches[1].state);
+  EXPECT_EQ(WebInputEvent::Type::kTouchMove, event2.GetType());
+  EXPECT_EQ(WebTouchPoint::State::kStateStationary, event2.touches[0].state);
+  EXPECT_EQ(WebTouchPoint::State::kStateMoved, event2.touches[1].state);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 }
@@ -1770,8 +1770,9 @@ TEST_F(PassthroughTouchEventQueueTest,
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
   EXPECT_EQ(0U, queued_event_count());
 
-  EXPECT_EQ(WebInputEvent::kTouchStart, all_sent_events()[0].GetType());
-  EXPECT_EQ(WebInputEvent::kTouchScrollStarted, all_sent_events()[1].GetType());
+  EXPECT_EQ(WebInputEvent::Type::kTouchStart, all_sent_events()[0].GetType());
+  EXPECT_EQ(WebInputEvent::Type::kTouchScrollStarted,
+            all_sent_events()[1].GetType());
   EXPECT_EQ(2U, GetAndResetSentEventCount());
 }
 
@@ -1780,28 +1781,28 @@ TEST_F(PassthroughTouchEventQueueTest,
 TEST_F(PassthroughTouchEventQueueTest, TouchStartOrFirstTouchMove) {
   PressTouchPoint(1, 1);
   SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
-  EXPECT_EQ(WebInputEvent::kTouchStart, sent_event().GetType());
+  EXPECT_EQ(WebInputEvent::Type::kTouchStart, sent_event().GetType());
   EXPECT_TRUE(sent_event().touch_start_or_first_touch_move);
 
   MoveTouchPoint(0, 5, 5);
   SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
-  EXPECT_EQ(WebInputEvent::kTouchMove, sent_event().GetType());
+  EXPECT_EQ(WebInputEvent::Type::kTouchMove, sent_event().GetType());
   EXPECT_TRUE(sent_event().touch_start_or_first_touch_move);
 
   MoveTouchPoint(0, 15, 15);
   SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
-  EXPECT_EQ(WebInputEvent::kTouchMove, sent_event().GetType());
+  EXPECT_EQ(WebInputEvent::Type::kTouchMove, sent_event().GetType());
   EXPECT_FALSE(sent_event().touch_start_or_first_touch_move);
 
   ReleaseTouchPoint(0);
   SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
-  EXPECT_EQ(WebInputEvent::kTouchEnd, sent_event().GetType());
+  EXPECT_EQ(WebInputEvent::Type::kTouchEnd, sent_event().GetType());
   EXPECT_FALSE(sent_event().touch_start_or_first_touch_move);
 }
 
 TEST_F(PassthroughTouchEventQueueTest, TouchScrollStartedUnfiltered) {
   SyntheticWebTouchEvent event;
-  event.SetType(WebInputEvent::kTouchScrollStarted);
+  event.SetType(WebInputEvent::Type::kTouchScrollStarted);
   EXPECT_EQ(PassthroughTouchEventQueue::PreFilterResult::kUnfiltered,
             FilterBeforeForwarding(event));
 }

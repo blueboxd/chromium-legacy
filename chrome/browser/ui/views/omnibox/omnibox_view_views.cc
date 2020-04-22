@@ -78,6 +78,7 @@
 #include "ui/views/border.h"
 #include "ui/views/button_drag_utils.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/views_features.h"
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
 
@@ -1165,7 +1166,14 @@ void OmniboxViewViews::OnMouseReleased(const ui::MouseEvent& event) {
 }
 
 void OmniboxViewViews::OnGestureEvent(ui::GestureEvent* event) {
-  if (!HasFocus() && event->type() == ui::ET_GESTURE_TAP_DOWN) {
+  static const bool kTakeFocusOnTapUp =
+      base::FeatureList::IsEnabled(views::features::kTextfieldFocusOnTapUp);
+
+  const bool gesture_should_take_focus =
+      !HasFocus() &&
+      event->type() ==
+          (kTakeFocusOnTapUp ? ui::ET_GESTURE_TAP : ui::ET_GESTURE_TAP_DOWN);
+  if (gesture_should_take_focus) {
     select_all_on_gesture_tap_ = true;
 
     // If we're trying to select all on tap, invalidate any saved selection lest
@@ -1174,9 +1182,9 @@ void OmniboxViewViews::OnGestureEvent(ui::GestureEvent* event) {
   }
 
   // Show on-focus suggestions if either:
-  //  - The textfield doesn't already have focus.
-  //  - Or if the textfield is empty, to cover the NTP ZeroSuggest case.
-  if (!HasFocus() || GetText().empty())
+  //  - The textfield is taking focus.
+  //  - The textfield is focused but empty, to cover the NTP ZeroSuggest case.
+  if (gesture_should_take_focus || (HasFocus() && GetText().empty()))
     model()->ShowOnFocusSuggestionsIfAutocompleteIdle();
 
   views::Textfield::OnGestureEvent(event);

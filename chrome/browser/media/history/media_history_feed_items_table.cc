@@ -212,8 +212,9 @@ sql::InitStatus MediaHistoryFeedItemsTable::CreateTableIfNonExistent() {
 
   if (success) {
     success = DB()->Execute(
-        "CREATE INDEX IF NOT EXISTS mediaFeedItem_safe_search_result_index ON "
-        "mediaFeedItem (safe_search_result)");
+        "CREATE INDEX IF NOT EXISTS "
+        "mediaFeedItem_safe_search_result_feed_id_index ON "
+        "mediaFeedItem (safe_search_result, feed_id)");
   }
 
   if (!success) {
@@ -708,7 +709,7 @@ MediaHistoryFeedItemsTable::GetPendingSafeSearchCheckItems() {
   return items;
 }
 
-bool MediaHistoryFeedItemsTable::StoreSafeSearchResult(
+base::Optional<int64_t> MediaHistoryFeedItemsTable::StoreSafeSearchResult(
     int64_t feed_item_id,
     media_feeds::mojom::SafeSearchResult result) {
   sql::Statement statement(DB()->GetCachedStatement(
@@ -716,7 +717,21 @@ bool MediaHistoryFeedItemsTable::StoreSafeSearchResult(
       "UPDATE mediaFeedItem SET safe_search_result = ? WHERE id = ?"));
   statement.BindInt64(0, static_cast<int>(result));
   statement.BindInt64(1, feed_item_id);
-  return statement.Run() && DB()->GetLastChangeCount() == 1;
+
+  if (!statement.Run())
+    return base::nullopt;
+
+  {
+    // Get the feed that was affected.
+    sql::Statement statement(DB()->GetCachedStatement(
+        SQL_FROM_HERE, "SELECT feed_id FROM mediaFeedItem WHERE id = ?"));
+    statement.BindInt64(0, feed_item_id);
+
+    while (statement.Step())
+      return statement.ColumnInt64(0);
+  }
+
+  return base::nullopt;
 }
 
 }  // namespace media_history

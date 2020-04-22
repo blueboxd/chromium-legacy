@@ -407,7 +407,7 @@ TEST_F(DragControllerTest, DragImageOffsetWithPageScaleFactor) {
   GetFrame().GetPage()->SetPageScaleFactor(page_scale_factor);
   GetFrame().Selection().SelectAll();
 
-  WebMouseEvent mouse_event(WebInputEvent::kMouseDown,
+  WebMouseEvent mouse_event(WebInputEvent::Type::kMouseDown,
                             WebInputEvent::kNoModifiers,
                             WebInputEvent::GetStaticTimeStampForTests());
   mouse_event.button = WebMouseEvent::Button::kRight;
@@ -452,7 +452,7 @@ TEST_F(DragControllerTest, DragLinkWithPageScaleFactor) {
   GetFrame().GetPage()->SetPageScaleFactor(page_scale_factor);
   GetFrame().Selection().SelectAll();
 
-  WebMouseEvent mouse_event(WebInputEvent::kMouseDown,
+  WebMouseEvent mouse_event(WebInputEvent::Type::kMouseDown,
                             WebInputEvent::kNoModifiers,
                             WebInputEvent::GetStaticTimeStampForTests());
   mouse_event.button = WebMouseEvent::Button::kRight;

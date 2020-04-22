@@ -733,8 +733,6 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::Run() {
     }
   }
 
-  cache_record_.token_expires = group_record_.token_expires;
-
   success_ =
       success_ &&
       database_->InsertCache(&cache_record_) &&

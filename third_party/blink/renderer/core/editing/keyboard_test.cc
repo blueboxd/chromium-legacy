@@ -80,30 +80,31 @@ class KeyboardTest : public testing::Test {
     WebInputEvent::Modifiers os_modifier = WebInputEvent::kControlKey;
 #endif
     return InterpretKeyEvent(CreateFakeKeyboardEvent(
-        key_code, os_modifier, WebInputEvent::kRawKeyDown));
+        key_code, os_modifier, WebInputEvent::Type::kRawKeyDown));
   }
 
   // Like interpretKeyEvent, but with pressing down ctrl+|keyCode|.
   const char* InterpretCtrlKeyPress(char key_code) {
-    return InterpretKeyEvent(CreateFakeKeyboardEvent(
-        key_code, WebInputEvent::kControlKey, WebInputEvent::kRawKeyDown));
+    return InterpretKeyEvent(
+        CreateFakeKeyboardEvent(key_code, WebInputEvent::kControlKey,
+                                WebInputEvent::Type::kRawKeyDown));
   }
 
   // Like interpretKeyEvent, but with typing a tab.
   const char* InterpretTab(int modifiers) {
     return InterpretKeyEvent(
-        CreateFakeKeyboardEvent('\t', modifiers, WebInputEvent::kChar));
+        CreateFakeKeyboardEvent('\t', modifiers, WebInputEvent::Type::kChar));
   }
 
   // Like interpretKeyEvent, but with typing a newline.
   const char* InterpretNewLine(int modifiers) {
     return InterpretKeyEvent(
-        CreateFakeKeyboardEvent('\r', modifiers, WebInputEvent::kChar));
+        CreateFakeKeyboardEvent('\r', modifiers, WebInputEvent::Type::kChar));
   }
 
   const char* InterpretDomKey(const char* key) {
     return InterpretKeyEvent(CreateFakeKeyboardEvent(
-        0, kNoModifiers, WebInputEvent::kRawKeyDown, key));
+        0, kNoModifiers, WebInputEvent::Type::kRawKeyDown, key));
   }
 
   // A name for "no modifiers set".
@@ -152,7 +153,7 @@ TEST_F(KeyboardTest, TestOSModifierV) {
 
 TEST_F(KeyboardTest, TestEscape) {
   const char* result = InterpretKeyEvent(CreateFakeKeyboardEvent(
-      VKEY_ESCAPE, kNoModifiers, WebInputEvent::kRawKeyDown));
+      VKEY_ESCAPE, kNoModifiers, WebInputEvent::Type::kRawKeyDown));
   EXPECT_STREQ("Cancel", result);
 }
 

@@ -429,7 +429,7 @@ ExtensionFunction::ResponseAction ManagementSetEnabledFunction::Run() {
   if (!target_extension || !target_extension->ShouldExposeViaManagementAPI())
     return RespondNow(Error(keys::kNoExtensionError, extension_id_));
 
-  bool enabled = params->enabled;
+  bool should_enable = params->enabled;
 
   const SupervisedUserServiceDelegate* supervised_user_service_delegate =
       ManagementAPI::GetFactoryInstance()
@@ -450,15 +450,15 @@ ExtensionFunction::ResponseAction ManagementSetEnabledFunction::Run() {
     return RespondNow(Error(keys::kUserCantModifyError, extension_id_));
   }
 
-  disable_reason::DisableReason reason;
+  disable_reason::DisableReason reason = disable_reason::DISABLE_NONE;
   bool disallow_enable =
-      enabled && policy->MustRemainDisabled(target_extension, &reason, nullptr);
+      should_enable &&
+      policy->MustRemainDisabled(target_extension, &reason, nullptr);
 
   // Figure out if we should prompt for parental approval.
   bool prompt_parent_for_approval =
       disallow_enable && is_supervised_child_who_may_install_extensions &&
-      reason ==
-          disable_reason::DisableReason::DISABLE_CUSTODIAN_APPROVAL_REQUIRED;
+      reason == disable_reason::DISABLE_CUSTODIAN_APPROVAL_REQUIRED;
 
   // If the extension can't be enabled, only continue if we plan to prompt for
   // parental approval.
@@ -472,9 +472,10 @@ ExtensionFunction::ResponseAction ManagementSetEnabledFunction::Run() {
       registry->enabled_extensions().Contains(extension_id_) ||
       registry->terminated_extensions().Contains(extension_id_);
 
-  if (!currently_enabled && enabled) {
+  if (!currently_enabled && should_enable) {
     ExtensionPrefs* prefs = ExtensionPrefs::Get(browser_context());
-    if (prefs->DidExtensionEscalatePermissions(extension_id_)) {
+    if (!prompt_parent_for_approval &&
+        prefs->DidExtensionEscalatePermissions(extension_id_)) {
       if (!user_gesture())
         return RespondNow(Error(keys::kGestureNeededForEscalationError));
 
@@ -494,8 +495,8 @@ ExtensionFunction::ResponseAction ManagementSetEnabledFunction::Run() {
                          this));  // This bind creates a reference.
       return RespondLater();
     }
-    // Handle parental approval for child accounts that have the
-    // ability to install extensions.
+    // Handle parental approval for child accounts that have the ability to
+    // install extensions.
     if (prompt_parent_for_approval &&
         // Don't re-prompt the parent for extensions that have already been
         // approved for a child.

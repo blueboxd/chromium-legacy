@@ -112,10 +112,10 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
   if (has_deferred_events_) {
     TRACE_EVENT_INSTANT0("input", "Has Deferred", TRACE_EVENT_SCOPE_THREAD);
     WebInputEvent::Type type = gesture_event->GetType();
-    if (type == WebInputEvent::kGestureScrollBegin ||
-        type == WebInputEvent::kGestureScrollUpdate) {
+    if (type == WebInputEvent::Type::kGestureScrollBegin ||
+        type == WebInputEvent::Type::kGestureScrollUpdate) {
       ReportGestureEventFilterResults(
-          type == WebInputEvent::kGestureScrollBegin, false,
+          type == WebInputEvent::Type::kGestureScrollBegin, false,
           FilterGestureEventResult::kFilterGestureEventDelayed);
     }
     return FilterGestureEventResult::kFilterGestureEventDelayed;
@@ -142,7 +142,7 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
   // Filter for allowable touch actions first (eg. before the TouchEventQueue
   // can decide to send a touch cancel event).
   switch (gesture_event->GetType()) {
-    case WebInputEvent::kGestureScrollBegin: {
+    case WebInputEvent::Type::kGestureScrollBegin: {
       // In VR or virtual keyboard (https://crbug.com/880701),
       // GestureScrollBegin could come without GestureTapDown.
       // TODO(bokan): This can also happen due to the fling controller
@@ -181,7 +181,7 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
       return res;
     }
 
-    case WebInputEvent::kGestureScrollUpdate: {
+    case WebInputEvent::Type::kGestureScrollUpdate: {
       if (drop_scroll_events_) {
         TRACE_EVENT_INSTANT0("input", "Drop Events", TRACE_EVENT_SCOPE_THREAD);
         ReportGestureEventFilterResults(
@@ -232,13 +232,13 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
       break;
     }
 
-    case WebInputEvent::kGestureFlingStart:
+    case WebInputEvent::Type::kGestureFlingStart:
       // Fling controller processes FlingStart event, and we should never get
       // it here.
       NOTREACHED();
       break;
 
-    case WebInputEvent::kGestureScrollEnd:
+    case WebInputEvent::Type::kGestureScrollEnd:
       if (gesture_sequence_.size() >= 1000)
         gesture_sequence_.erase(gesture_sequence_.begin(),
                                 gesture_sequence_.end() - 250);
@@ -252,11 +252,11 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
 
     // Evaluate the |drop_pinch_events_| here instead of GSB because pinch
     // events could arrive without GSB, e.g. double-tap-drag.
-    case WebInputEvent::kGesturePinchBegin:
+    case WebInputEvent::Type::kGesturePinchBegin:
       drop_pinch_events_ = (touch_action & cc::TouchAction::kPinchZoom) ==
                            cc::TouchAction::kNone;
       FALLTHROUGH;
-    case WebInputEvent::kGesturePinchUpdate:
+    case WebInputEvent::Type::kGesturePinchUpdate:
       gesture_sequence_.append("P");
       if (!drop_pinch_events_)
         return FilterGestureEventResult::kFilterGestureEventAllowed;
@@ -265,7 +265,7 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
         return FilterGestureEventResult::kFilterGestureEventDelayed;
       }
       return FilterGestureEventResult::kFilterGestureEventFiltered;
-    case WebInputEvent::kGesturePinchEnd:
+    case WebInputEvent::Type::kGesturePinchEnd:
       ReportGestureEventFiltered(drop_pinch_events_);
       return FilterPinchEventAndResetState();
 
@@ -278,32 +278,32 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
     // followed by GestureTap.  See crbug.com/874474#c47 for a repro.  We don't
     // know of any bug resulting from it, but it's better to fix the broken
     // assumption here at least to avoid introducing new bugs in future.
-    case WebInputEvent::kGestureDoubleTap:
+    case WebInputEvent::Type::kGestureDoubleTap:
       gesture_sequence_in_progress_ = false;
       gesture_sequence_.append("D");
       DCHECK_EQ(1, gesture_event->data.tap.tap_count);
       if (!allow_current_double_tap_event_) {
-        gesture_event->SetType(WebInputEvent::kGestureTap);
+        gesture_event->SetType(WebInputEvent::Type::kGestureTap);
         gesture_event->data.tap.tap_count = 2;
       }
       allow_current_double_tap_event_ = true;
       break;
 
     // If double tap is disabled, there's no reason for the tap delay.
-    case WebInputEvent::kGestureTapUnconfirmed: {
+    case WebInputEvent::Type::kGestureTapUnconfirmed: {
       DCHECK_EQ(1, gesture_event->data.tap.tap_count);
       gesture_sequence_.append("C");
       allow_current_double_tap_event_ =
           (touch_action & cc::TouchAction::kDoubleTapZoom) !=
           cc::TouchAction::kNone;
       if (!allow_current_double_tap_event_) {
-        gesture_event->SetType(WebInputEvent::kGestureTap);
+        gesture_event->SetType(WebInputEvent::Type::kGestureTap);
         drop_current_tap_ending_event_ = true;
       }
       break;
     }
 
-    case WebInputEvent::kGestureTap:
+    case WebInputEvent::Type::kGestureTap:
       gesture_sequence_in_progress_ = false;
       gesture_sequence_.append("A");
       if (drop_current_tap_ending_event_) {
@@ -312,7 +312,7 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
       }
       break;
 
-    case WebInputEvent::kGestureTapCancel:
+    case WebInputEvent::Type::kGestureTapCancel:
       gesture_sequence_.append("K");
       if (drop_current_tap_ending_event_) {
         drop_current_tap_ending_event_ = false;
@@ -320,7 +320,7 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
       }
       break;
 
-    case WebInputEvent::kGestureTapDown:
+    case WebInputEvent::Type::kGestureTapDown:
       gesture_sequence_in_progress_ = true;
       if (allowed_touch_action_.has_value())
         gesture_sequence_.append("AY");
@@ -340,8 +340,8 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
       DCHECK(!drop_current_tap_ending_event_);
       break;
 
-    case WebInputEvent::kGestureLongTap:
-    case WebInputEvent::kGestureTwoFingerTap:
+    case WebInputEvent::Type::kGestureLongTap:
+    case WebInputEvent::Type::kGestureTwoFingerTap:
       gesture_sequence_.append("G");
       gesture_sequence_in_progress_ = false;
       break;
@@ -495,7 +495,7 @@ void TouchActionFilter::OnSetWhiteListedTouchAction(
 bool TouchActionFilter::ShouldSuppressScrolling(
     const blink::WebGestureEvent& gesture_event,
     cc::TouchAction touch_action) {
-  DCHECK(gesture_event.GetType() == WebInputEvent::kGestureScrollBegin);
+  DCHECK(gesture_event.GetType() == WebInputEvent::Type::kGestureScrollBegin);
 
   if (gesture_event.data.scroll_begin.pointer_count >= 2) {
     // Any GestureScrollBegin with more than one fingers is like a pinch-zoom

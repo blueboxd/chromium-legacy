@@ -115,12 +115,6 @@ IN_PROC_BROWSER_TEST_F(MetricsBrowserTest, ProtoHasExpectedFields) {
   EXPECT_TRUE(system_profile.hardware().gpu().has_driver_version());
   EXPECT_TRUE(system_profile.hardware().gpu().has_gl_vendor());
   EXPECT_TRUE(system_profile.hardware().gpu().has_gl_renderer());
-
-  // We assert we do *not* log data which is deemed to be privacy sensitive.
-  // It's OK to reverse these test conditions, but only if we log these fields
-  // in a manner which is approved to preserve user privacy.
-  EXPECT_FALSE(system_profile.hardware().has_bluetooth());
-  EXPECT_FALSE(system_profile.hardware().has_usb());
 }
 
 IN_PROC_BROWSER_TEST_F(MetricsBrowserTest, PageLoadsEnableMultipleUploads) {

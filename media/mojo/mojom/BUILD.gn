@@ -32,6 +32,7 @@ mojom("mojom") {
     "media_types.mojom",
     "output_protection.mojom",
     "platform_verification.mojom",
+    "playback_events_recorder.mojom",
     "provision_fetcher.mojom",
     "renderer.mojom",
     "renderer_extensions.mojom",

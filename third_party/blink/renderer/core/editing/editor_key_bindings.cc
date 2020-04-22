@@ -45,7 +45,7 @@ bool Editor::HandleEditingKeyboardEvent(KeyboardEvent* evt) {
   String command_name = Behavior().InterpretKeyEvent(*evt);
   const EditorCommand command = this->CreateCommand(command_name);
 
-  if (key_event->GetType() == WebInputEvent::kRawKeyDown) {
+  if (key_event->GetType() == WebInputEvent::Type::kRawKeyDown) {
     // WebKit doesn't have enough information about mode to decide how
     // commands that just insert text if executed via Editor should be treated,
     // so we leave it upon WebCore to either handle them immediately

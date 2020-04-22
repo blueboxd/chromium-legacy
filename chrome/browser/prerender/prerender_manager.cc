@@ -949,10 +949,6 @@ void PrerenderManager::PeriodicCleanup() {
   for (auto* contents : prerender_contents)
     contents->DestroyWhenUsingTooManyResources();
 
-  // Measure how long the resource checks took. http://crbug.com/305419.
-  UMA_HISTOGRAM_TIMES("Prerender.PeriodicCleanupResourceCheckTime",
-                      resource_timer.Elapsed());
-
   base::ElapsedTimer cleanup_timer;
 
   // Perform deferred cleanup work.
@@ -964,10 +960,6 @@ void PrerenderManager::PeriodicCleanup() {
   DeleteToDeletePrerenders();
 
   CleanUpOldNavigations(&prefetches_, base::TimeDelta::FromMinutes(30));
-
-  // Measure how long a the various cleanup tasks took. http://crbug.com/305419.
-  UMA_HISTOGRAM_TIMES("Prerender.PeriodicCleanupDeleteContentsTime",
-                      cleanup_timer.Elapsed());
 }
 
 void PrerenderManager::PostCleanupTask() {

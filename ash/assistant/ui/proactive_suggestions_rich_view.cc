@@ -4,13 +4,15 @@
 
 #include "ash/assistant/ui/proactive_suggestions_rich_view.h"
 
+#include <string>
+
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/public/cpp/assistant/assistant_web_view_factory.h"
 #include "ash/public/cpp/assistant/controller/assistant_controller.h"
 #include "ash/public/cpp/assistant/proactive_suggestions.h"
 #include "ash/public/cpp/view_shadow.h"
 #include "base/base64.h"
-#include "chromeos/services/assistant/public/features.h"
+#include "chromeos/services/assistant/public/cpp/features.h"
 #include "ui/aura/window.h"
 #include "ui/views/background.h"
 #include "ui/views/event_monitor.h"

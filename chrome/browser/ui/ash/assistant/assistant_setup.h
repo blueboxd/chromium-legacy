@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_ASH_ASSISTANT_ASSISTANT_SETUP_H_
 #define CHROME_BROWSER_UI_ASH_ASSISTANT_ASSISTANT_SETUP_H_
 
+#include <string>
+
 #include "ash/public/cpp/assistant/assistant_setup.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "base/macros.h"
@@ -17,8 +19,7 @@
 class AssistantSetup : public ash::AssistantSetup,
                        public ash::AssistantStateObserver {
  public:
-  explicit AssistantSetup(
-      chromeos::assistant::mojom::AssistantService* service);
+  AssistantSetup();
   ~AssistantSetup() override;
 
   // ash::AssistantSetup:
@@ -38,7 +39,6 @@ class AssistantSetup : public ash::AssistantSetup,
   void SyncSettingsState();
   void OnGetSettingsResponse(const std::string& settings);
 
-  chromeos::assistant::mojom::AssistantService* const service_;
   mojo::Remote<chromeos::assistant::mojom::AssistantSettingsManager>
       settings_manager_;
 

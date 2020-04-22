@@ -13,7 +13,6 @@
 #include "ash/accessibility/accessibility_observer.h"
 #include "ash/ash_export.h"
 #include "ash/assistant/assistant_alarm_timer_controller.h"
-#include "ash/assistant/assistant_controller_observer.h"
 #include "ash/assistant/assistant_interaction_controller.h"
 #include "ash/assistant/assistant_notification_controller.h"
 #include "ash/assistant/assistant_screen_context_controller.h"
@@ -27,6 +26,7 @@
 #include "ash/public/cpp/assistant/assistant_image_downloader.h"
 #include "ash/public/cpp/assistant/assistant_interface_binder.h"
 #include "ash/public/cpp/assistant/controller/assistant_controller.h"
+#include "ash/public/cpp/assistant/controller/assistant_controller_observer.h"
 #include "ash/public/mojom/assistant_volume_control.mojom.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -66,10 +66,6 @@ class ASH_EXPORT AssistantControllerImpl
   void BindReceiver(
       mojo::PendingReceiver<mojom::AssistantVolumeControl> receiver);
 
-  // Adds/removes the specified |observer|.
-  void AddObserver(AssistantControllerObserver* observer);
-  void RemoveObserver(AssistantControllerObserver* observer);
-
   // Downloads the image found at the specified |url|. On completion, the
   // supplied |callback| will be run with the downloaded image. If the download
   // attempt is unsuccessful, a NULL image is returned.
@@ -77,6 +73,8 @@ class ASH_EXPORT AssistantControllerImpl
                      AssistantImageDownloader::DownloadCallback callback);
 
   // AssistantController:
+  void AddObserver(AssistantControllerObserver* observer) override;
+  void RemoveObserver(AssistantControllerObserver* observer) override;
   void OpenUrl(const GURL& url, bool in_background, bool from_server) override;
   base::WeakPtr<ash::AssistantController> GetWeakPtr() override;
 
@@ -196,7 +194,7 @@ class ASH_EXPORT AssistantControllerImpl
   AssistantSetupController assistant_setup_controller_{this};
   AssistantSuggestionsControllerImpl assistant_suggestions_controller_{this};
   AssistantUiController assistant_ui_controller_{this};
-  AssistantWebUiController assistant_web_ui_controller_{this};
+  AssistantWebUiController assistant_web_ui_controller_;
 
   AssistantViewDelegateImpl view_delegate_{this};
 

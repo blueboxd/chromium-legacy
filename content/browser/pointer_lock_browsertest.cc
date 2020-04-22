@@ -269,7 +269,8 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, MAYBE_PointerLockEventRouting) {
 
   // Send a mouse move to root frame before lock to set last mouse position.
   blink::WebMouseEvent mouse_event(
-      blink::WebInputEvent::kMouseMove, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::Type::kMouseMove,
+      blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   mouse_event.pointer_type = blink::WebPointerProperties::PointerType::kMouse;
   mouse_event.SetPositionInWidget(6, 7);
@@ -524,7 +525,8 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest,
 
   // Send a mouse move to root frame before lock to set last mouse position.
   blink::WebMouseEvent mouse_event(
-      blink::WebInputEvent::kMouseMove, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::Type::kMouseMove,
+      blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   mouse_event.pointer_type = blink::WebPointerProperties::PointerType::kMouse;
   mouse_event.SetPositionInWidget(6, 7);
@@ -556,7 +558,8 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest,
   root_observer.Wait();
 
   blink::WebMouseWheelEvent wheel_event(
-      blink::WebInputEvent::kMouseWheel, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::Type::kMouseWheel,
+      blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   wheel_event.SetPositionInScreen(10, 11);
   wheel_event.delta_x = -12;
@@ -759,7 +762,8 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTestWithOptions,
 
   // Send a mouse move to root frame before lock.
   blink::WebMouseEvent mouse_event(
-      blink::WebInputEvent::kMouseMove, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::Type::kMouseMove,
+      blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   mouse_event.pointer_type = blink::WebPointerProperties::PointerType::kMouse;
   mouse_event.SetPositionInWidget(6, 7);

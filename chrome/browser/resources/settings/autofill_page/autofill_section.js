@@ -7,36 +7,52 @@
  * addresses for use in autofill and payments APIs.
  */
 
-cr.define('settings', function() {
+import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.m.js';
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
+import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
+import {loadTimeData} from '../i18n_setup.m.js';
+import '../settings_shared_css.m.js';
+import '../controls/extension_controlled_indicator.m.js';
+import '../controls/settings_toggle_button.m.js';
+import '../prefs/prefs.m.js';
+import './address_edit_dialog.js';
+import {CreditCardEntry} from './credit_card_list_entry.js';
+import './passwords_shared_css.js';
+
   /**
    * Interface for all callbacks to the autofill API.
    * @interface
    */
-  /* #export */ class AutofillManager {
+  export class AutofillManager {
     /**
      * Add an observer to the list of personal data.
-     * @param {function(!Array<!settings.AutofillManager.AddressEntry>,
-     *     !Array<!settings.CreditCardEntry>):void} listener
+     * @param {function(!Array<!AutofillManager.AddressEntry>,
+     *     !Array<!CreditCardEntry>):void} listener
      */
     setPersonalDataManagerListener(listener) {}
 
     /**
      * Remove an observer from the list of personal data.
-     * @param {function(!Array<!settings.AutofillManager.AddressEntry>,
-     *     !Array<!settings.CreditCardEntry>):void} listener
+     * @param {function(!Array<!AutofillManager.AddressEntry>,
+     *     !Array<!CreditCardEntry>):void} listener
      */
     removePersonalDataManagerListener(listener) {}
 
     /**
      * Request the list of addresses.
-     * @param {function(!Array<!settings.AutofillManager.AddressEntry>):void}
+     * @param {function(!Array<!AutofillManager.AddressEntry>):void}
      *     callback
      */
     getAddressList(callback) {}
 
     /**
      * Saves the given address.
-     * @param {!settings.AutofillManager.AddressEntry} address
+     * @param {!AutofillManager.AddressEntry} address
      */
     saveAddress(address) {}
 
@@ -49,9 +65,9 @@ cr.define('settings', function() {
 
   /**
    * Implementation that accesses the private API.
-   * @implements {settings.AutofillManager}
+   * @implements {AutofillManager}
    */
-  /* #export */ class AutofillManagerImpl {
+  export class AutofillManagerImpl {
     /** @override */
     setPersonalDataManagerListener(listener) {
       chrome.autofillPrivate.onPersonalDataChanged.addListener(listener);
@@ -78,15 +94,17 @@ cr.define('settings', function() {
     }
   }
 
-  cr.addSingletonGetter(AutofillManagerImpl);
+  addSingletonGetter(AutofillManagerImpl);
 
   Polymer({
     is: 'settings-autofill-section',
 
+    _template: html`{__html_template__}`,
+
     properties: {
       /**
        * An array of saved addresses.
-       * @type {!Array<!settings.AutofillManager.AddressEntry>}
+       * @type {!Array<!AutofillManager.AddressEntry>}
        */
       addresses: Array,
 
@@ -112,14 +130,14 @@ cr.define('settings', function() {
     activeDialogAnchor_: null,
 
     /**
-     * @type {settings.AutofillManager}
+     * @type {AutofillManager}
      * @private
      */
     autofillManager_: null,
 
     /**
-     * @type {?function(!Array<!settings.AutofillManager.AddressEntry>,
-     *     !Array<!settings.CreditCardEntry>)}
+     * @type {?function(!Array<!AutofillManager.AddressEntry>,
+     *     !Array<!CreditCardEntry>)}
      * @private
      */
     setPersonalDataListener_: null,
@@ -127,14 +145,14 @@ cr.define('settings', function() {
     /** @override */
     attached() {
       // Create listener functions.
-      /** @type {function(!Array<!settings.AutofillManager.AddressEntry>)} */
+      /** @type {function(!Array<!AutofillManager.AddressEntry>)} */
       const setAddressesListener = addressList => {
         this.addresses = addressList;
       };
 
       /**
-       * @type {function(!Array<!settings.AutofillManager.AddressEntry>,
-       *     !Array<!settings.CreditCardEntry>)}
+       * @type {function(!Array<!AutofillManager.AddressEntry>,
+       *     !Array<!CreditCardEntry>)}
        */
       const setPersonalDataListener = (addressList, cardList) => {
         this.addresses = addressList;
@@ -161,8 +179,8 @@ cr.define('settings', function() {
     detached() {
       this.autofillManager_.removePersonalDataManagerListener(
           /**
-             @type {function(!Array<!settings.AutofillManager.AddressEntry>,
-                 !Array<!settings.CreditCardEntry>)}
+             @type {function(!Array<!AutofillManager.AddressEntry>,
+                 !Array<!CreditCardEntry>)}
            */
           (this.setPersonalDataListener_));
     },
@@ -201,7 +219,7 @@ cr.define('settings', function() {
     /** @private */
     onAddressDialogClose_() {
       this.showAddressDialog_ = false;
-      cr.ui.focusWithoutInk(assert(this.activeDialogAnchor_));
+      focusWithoutInk(assert(this.activeDialogAnchor_));
       this.activeDialogAnchor_ = null;
     },
 
@@ -251,9 +269,3 @@ cr.define('settings', function() {
     },
   });
 
-  // #cr_define_end
-  return {
-    AutofillManager,
-    AutofillManagerImpl,
-  };
-});

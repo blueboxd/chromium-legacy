@@ -7,13 +7,15 @@
 
 #include <memory>
 
-#include "ash/assistant/assistant_controller_observer.h"
 #include "ash/assistant/assistant_proactive_suggestions_controller.h"
 #include "ash/assistant/model/assistant_suggestions_model.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
+#include "ash/public/cpp/assistant/controller/assistant_controller.h"
+#include "ash/public/cpp/assistant/controller/assistant_controller_observer.h"
 #include "ash/public/cpp/assistant/controller/assistant_suggestions_controller.h"
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 
 namespace ash {
 
@@ -70,6 +72,9 @@ class AssistantSuggestionsControllerImpl
       proactive_suggestions_controller_;
 
   AssistantSuggestionsModel model_;
+
+  ScopedObserver<AssistantController, AssistantControllerObserver>
+      assistant_controller_observer_{this};
 
   // A WeakPtrFactory used to manage lifecycle of conversation starter requests
   // to the server (via the dedicated ConversationStartersClient).

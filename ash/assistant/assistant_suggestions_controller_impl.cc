@@ -22,7 +22,7 @@
 #include "base/stl_util.h"
 #include "base/unguessable_token.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
-#include "chromeos/services/assistant/public/features.h"
+#include "chromeos/services/assistant/public/cpp/features.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -88,14 +88,11 @@ AssistantSuggestionsControllerImpl::AssistantSuggestionsControllerImpl(
   if (!IsConversationStartersV2Enabled())
     UpdateConversationStarters();
 
-  assistant_controller_->AddObserver(this);
-  AssistantState::Get()->AddObserver(this);
+  assistant_controller_observer_.Add(AssistantController::Get());
 }
 
-AssistantSuggestionsControllerImpl::~AssistantSuggestionsControllerImpl() {
-  assistant_controller_->RemoveObserver(this);
-  AssistantState::Get()->RemoveObserver(this);
-}
+AssistantSuggestionsControllerImpl::~AssistantSuggestionsControllerImpl() =
+    default;
 
 const AssistantSuggestionsModel* AssistantSuggestionsControllerImpl::GetModel()
     const {
@@ -114,9 +111,11 @@ void AssistantSuggestionsControllerImpl::RemoveModelObserver(
 
 void AssistantSuggestionsControllerImpl::OnAssistantControllerConstructed() {
   assistant_controller_->ui_controller()->AddModelObserver(this);
+  AssistantState::Get()->AddObserver(this);
 }
 
 void AssistantSuggestionsControllerImpl::OnAssistantControllerDestroying() {
+  AssistantState::Get()->RemoveObserver(this);
   assistant_controller_->ui_controller()->RemoveModelObserver(this);
 }
 

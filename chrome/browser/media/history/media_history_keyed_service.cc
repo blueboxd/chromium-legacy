@@ -320,11 +320,15 @@ void MediaHistoryKeyedService::PostTaskToDBForTest(base::OnceClosure callback) {
 MediaHistoryKeyedService::GetMediaFeedsRequest::GetMediaFeedsRequest(
     bool include_origin_watchtime_percentile_data,
     base::Optional<unsigned> limit,
-    base::Optional<base::TimeDelta> audio_video_watchtime_min)
+    base::Optional<base::TimeDelta> audio_video_watchtime_min,
+    base::Optional<int> fetched_items_min,
+    bool fetched_items_min_should_be_safe)
     : include_origin_watchtime_percentile_data(
           include_origin_watchtime_percentile_data),
       limit(limit),
-      audio_video_watchtime_min(audio_video_watchtime_min) {}
+      audio_video_watchtime_min(audio_video_watchtime_min),
+      fetched_items_min(fetched_items_min),
+      fetched_items_min_should_be_safe(fetched_items_min_should_be_safe) {}
 
 MediaHistoryKeyedService::GetMediaFeedsRequest::GetMediaFeedsRequest() =
     default;

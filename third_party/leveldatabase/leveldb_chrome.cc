@@ -111,10 +111,6 @@ class Globals {
   void DumpAllTrackedEnvs(const MemoryDumpArgs& dump_args,
                           base::trace_event::ProcessMemoryDump* pmd);
 
-  void UpdateHistograms() {
-    leveldb_env::DBTracker::GetInstance()->UpdateHistograms();
-  }
-
  private:
   // Instances are never destroyed.
   // If this destructor needs to exist in the future, the callback given to
@@ -315,10 +311,6 @@ std::unique_ptr<leveldb::Env> NewMemEnv(const std::string& name,
   if (!base_env)
     base_env = leveldb::Env::Default();
   return std::make_unique<ChromeMemEnv>(base_env, name);
-}
-
-void UpdateHistograms() {
-  return Globals::GetInstance()->UpdateHistograms();
 }
 
 bool ParseFileName(const std::string& filename,

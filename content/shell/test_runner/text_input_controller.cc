@@ -371,7 +371,7 @@ std::vector<int> TextInputController::FirstRectForCharacterRange(
 void TextInputController::SetComposition(const std::string& text) {
   // Sends a keydown event with key code = 0xE5 to emulate input method
   // behavior.
-  blink::WebKeyboardEvent key_down(blink::WebInputEvent::kRawKeyDown,
+  blink::WebKeyboardEvent key_down(blink::WebInputEvent::Type::kRawKeyDown,
                                    blink::WebInputEvent::kNoModifiers,
                                    ui::EventTimeForNow());
 

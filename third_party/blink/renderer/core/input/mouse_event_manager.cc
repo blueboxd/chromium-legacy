@@ -74,7 +74,8 @@ void UpdateMouseMovementXY(const WebMouseEvent& mouse_event,
                            MouseEventInit* initializer) {
   if (RuntimeEnabledFeatures::ConsolidatedMovementXYEnabled() &&
       !mouse_event.is_raw_movement_event &&
-      mouse_event.GetType() == WebInputEvent::kMouseMove && last_position) {
+      mouse_event.GetType() == WebInputEvent::Type::kMouseMove &&
+      last_position) {
     // TODO(crbug.com/907309): Current movementX/Y is in physical pixel when
     // zoom-for-dsf is enabled. Here we apply the device-scale-factor to align
     // with the current behavior. We need to figure out what is the best
@@ -462,7 +463,7 @@ void MouseEventManager::RecomputeMouseHoverState() {
     button = WebPointerProperties::Button::kLeft;
     modifiers |= WebInputEvent::kLeftButtonDown;
   }
-  WebMouseEvent fake_mouse_move_event(WebInputEvent::kMouseMove,
+  WebMouseEvent fake_mouse_move_event(WebInputEvent::Type::kMouseMove,
                                       last_known_mouse_position_,
                                       last_known_mouse_screen_position_, button,
                                       0, modifiers, base::TimeTicks::Now());
@@ -673,7 +674,8 @@ FloatPoint MouseEventManager::LastKnownMouseScreenPosition() {
 }
 
 void MouseEventManager::SetLastKnownMousePosition(const WebMouseEvent& event) {
-  is_mouse_position_unknown_ = event.GetType() == WebInputEvent::kMouseLeave;
+  is_mouse_position_unknown_ =
+      event.GetType() == WebInputEvent::Type::kMouseLeave;
   last_known_mouse_position_ = FloatPoint(event.PositionInWidget());
   last_known_mouse_screen_position_ = FloatPoint(event.PositionInScreen());
 }
@@ -775,7 +777,7 @@ bool MouseEventManager::HandleDragDropIfPossible(
     // TODO(mustaq): Suppressing long-tap MouseEvents could break
     // drag-drop. Will do separately because of the risk. crbug.com/606938.
     WebMouseEvent mouse_down_event(
-        WebInputEvent::kMouseDown, gesture_event,
+        WebInputEvent::Type::kMouseDown, gesture_event,
         WebPointerProperties::Button::kLeft, 1,
         modifiers | WebInputEvent::Modifiers::kLeftButtonDown |
             WebInputEvent::Modifiers::kIsCompatibilityEventForTouch,
@@ -783,7 +785,7 @@ bool MouseEventManager::HandleDragDropIfPossible(
     mouse_down_ = mouse_down_event;
 
     WebMouseEvent mouse_drag_event(
-        WebInputEvent::kMouseMove, gesture_event,
+        WebInputEvent::Type::kMouseMove, gesture_event,
         WebPointerProperties::Button::kLeft, 1,
         modifiers | WebInputEvent::Modifiers::kLeftButtonDown |
             WebInputEvent::Modifiers::kIsCompatibilityEventForTouch,
@@ -831,7 +833,8 @@ WebInputEventResult MouseEventManager::HandleMouseDraggedEvent(
 
   //  When pressing Esc key while dragging and the object is outside of the
   //  we get a mouse leave event here.
-  if (!mouse_pressed_ || event.Event().GetType() == WebInputEvent::kMouseLeave)
+  if (!mouse_pressed_ ||
+      event.Event().GetType() == WebInputEvent::Type::kMouseLeave)
     return WebInputEventResult::kNotHandled;
 
   // We disable the drag and drop actions on pen input on windows.
@@ -891,7 +894,7 @@ WebInputEventResult MouseEventManager::HandleMouseDraggedEvent(
 
 bool MouseEventManager::HandleDrag(const MouseEventWithHitTestResults& event,
                                    DragInitiator initiator) {
-  DCHECK(event.Event().GetType() == WebInputEvent::kMouseMove);
+  DCHECK(event.Event().GetType() == WebInputEvent::Type::kMouseMove);
   // Callers must protect the reference to LocalFrameView, since this function
   // may dispatch DOM events, causing page/LocalFrameView to go away.
   DCHECK(frame_);

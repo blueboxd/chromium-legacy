@@ -146,26 +146,33 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
     self.primaryActionButton = primaryActionButton;
   }
 
-  // Constraing the image to the scroll view size and its aspect ratio.
-  [self.imageView
-      setContentCompressionResistancePriority:UILayoutPriorityDefaultLow
-                                      forAxis:UILayoutConstraintAxisHorizontal];
-  [self.imageView
-      setContentCompressionResistancePriority:UILayoutPriorityDefaultLow
-                                      forAxis:UILayoutConstraintAxisVertical];
-  CGFloat imageAspectRatio =
-      self.imageView.image.size.width / self.imageView.image.size.height;
   self.scrollViewBottomVerticalConstraint = [scrollView.bottomAnchor
       constraintLessThanOrEqualToAnchor:scrollViewBottomAnchor];
 
   [NSLayoutConstraint activateConstraints:@[
-    [self.imageView.widthAnchor
-        constraintEqualToAnchor:self.imageView.heightAnchor
-                     multiplier:imageAspectRatio],
     [scrollView.topAnchor
         constraintGreaterThanOrEqualToAnchor:topToolbar.bottomAnchor],
     self.scrollViewBottomVerticalConstraint,
   ]];
+
+  if (!self.imageHasFixedSize) {
+    // Constrain the image to the scroll view size and its aspect ratio.
+    [self.imageView
+        setContentCompressionResistancePriority:UILayoutPriorityDefaultLow
+                                        forAxis:
+                                            UILayoutConstraintAxisHorizontal];
+    [self.imageView
+        setContentCompressionResistancePriority:UILayoutPriorityDefaultLow
+                                        forAxis:UILayoutConstraintAxisVertical];
+    CGFloat imageAspectRatio =
+        self.imageView.image.size.width / self.imageView.image.size.height;
+
+    [NSLayoutConstraint activateConstraints:@[
+      [self.imageView.widthAnchor
+          constraintEqualToAnchor:self.imageView.heightAnchor
+                       multiplier:imageAspectRatio],
+    ]];
+  }
 }
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
@@ -343,8 +350,14 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
       [[UIStackView alloc] initWithArrangedSubviews:subviews];
   [stackView setCustomSpacing:kStackViewSpacingAfterIllustration
                     afterView:self.imageView];
+
+  if (self.imageHasFixedSize) {
+    stackView.alignment = UIStackViewAlignmentCenter;
+  } else {
+    stackView.alignment = UIStackViewAlignmentFill;
+  }
+
   stackView.axis = UILayoutConstraintAxisVertical;
-  stackView.alignment = UIStackViewAlignmentFill;
   stackView.translatesAutoresizingMaskIntoConstraints = NO;
   stackView.spacing = kStackViewSpacing;
   return stackView;

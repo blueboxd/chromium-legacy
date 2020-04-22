@@ -3,14 +3,13 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {addSingletonGetter,sendWithPromise} from 'chrome://resources/js/cr.m.js';
+import {addSingletonGetter,sendWithPromise} from 'chrome://resources/js/cr.m.js';
 // clang-format on
 
 /**
  * @fileoverview A helper object used by the "SafetyCheck" to interact with
  * the browser.
  */
-cr.define('settings', function() {
   /**
    * Constants used in safety check C++ to JS communication.
    * Their values need be kept in sync with their counterparts in
@@ -18,7 +17,7 @@ cr.define('settings', function() {
    * chrome/browser/ui/webui/settings/safety_check_handler.cc
    * @enum {string}
    */
-  /* #export */ const SafetyCheckCallbackConstants = {
+  export const SafetyCheckCallbackConstants = {
     PARENT_CHANGED: 'safety-check-parent-status-changed',
     UPDATES_CHANGED: 'safety-check-updates-status-changed',
     PASSWORDS_CHANGED: 'safety-check-passwords-status-changed',
@@ -32,7 +31,7 @@ cr.define('settings', function() {
    * chrome/browser/ui/webui/settings/safety_check_handler.h
    * @enum {number}
    */
-  /* #export */
+  export
   const SafetyCheckParentStatus = {
     BEFORE: 0,
     CHECKING: 1,
@@ -45,7 +44,7 @@ cr.define('settings', function() {
    * chrome/browser/ui/webui/settings/safety_check_handler.h
    * @enum {number}
    */
-  /* #export */ const SafetyCheckUpdatesStatus = {
+  export const SafetyCheckUpdatesStatus = {
     CHECKING: 0,
     UPDATED: 1,
     UPDATING: 2,
@@ -62,7 +61,7 @@ cr.define('settings', function() {
    * chrome/browser/ui/webui/settings/safety_check_handler.h
    * @enum {number}
    */
-  /* #export */ const SafetyCheckPasswordsStatus = {
+  export const SafetyCheckPasswordsStatus = {
     CHECKING: 0,
     SAFE: 1,
     COMPROMISED: 2,
@@ -79,7 +78,7 @@ cr.define('settings', function() {
    * chrome/browser/ui/webui/settings/safety_check_handler.h
    * @enum {number}
    */
-  /* #export */ const SafetyCheckSafeBrowsingStatus = {
+  export const SafetyCheckSafeBrowsingStatus = {
     CHECKING: 0,
     // Enabled is deprecated; kept not to break old UMA metrics (enums.xml).
     ENABLED: 1,
@@ -96,7 +95,7 @@ cr.define('settings', function() {
    * chrome/browser/ui/webui/settings/safety_check_handler.h
    * @enum {number}
    */
-  /* #export */ const SafetyCheckExtensionsStatus = {
+  export const SafetyCheckExtensionsStatus = {
     CHECKING: 0,
     ERROR: 1,
     NO_BLOCKLISTED_EXTENSIONS: 2,
@@ -107,7 +106,7 @@ cr.define('settings', function() {
   };
 
   /** @interface */
-  /* #export */ class SafetyCheckBrowserProxy {
+  export class SafetyCheckBrowserProxy {
     /** Run the safety check. */
     runSafetyCheck() {}
 
@@ -119,8 +118,8 @@ cr.define('settings', function() {
     getParentRanDisplayString() {}
   }
 
-  /** @implements {settings.SafetyCheckBrowserProxy} */
-  /* #export */ class SafetyCheckBrowserProxyImpl {
+  /** @implements {SafetyCheckBrowserProxy} */
+  export class SafetyCheckBrowserProxyImpl {
     /** @override */
     runSafetyCheck() {
       chrome.send('performSafetyCheck');
@@ -128,21 +127,9 @@ cr.define('settings', function() {
 
     /** @override */
     getParentRanDisplayString() {
-      return cr.sendWithPromise('getSafetyCheckRanDisplayString');
+      return sendWithPromise('getSafetyCheckRanDisplayString');
     }
   }
 
-  cr.addSingletonGetter(SafetyCheckBrowserProxyImpl);
+  addSingletonGetter(SafetyCheckBrowserProxyImpl);
 
-  // #cr_define_end
-  return {
-    SafetyCheckCallbackConstants,
-    SafetyCheckParentStatus,
-    SafetyCheckUpdatesStatus,
-    SafetyCheckPasswordsStatus,
-    SafetyCheckSafeBrowsingStatus,
-    SafetyCheckExtensionsStatus,
-    SafetyCheckBrowserProxy,
-    SafetyCheckBrowserProxyImpl,
-  };
-});

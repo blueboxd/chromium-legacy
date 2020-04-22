@@ -10,11 +10,11 @@
 namespace upboarding {
 namespace {
 
-void TestQueryTileEntryConversion(QueryTileEntry& expected) {
-  upboarding::query_tiles::proto::QueryTileEntry proto;
-  QueryTileEntry actual;
-  QueryTileEntryToProto(&expected, &proto);
-  QueryTileEntryFromProto(&proto, &actual);
+void TestTileConversion(Tile& expected) {
+  upboarding::query_tiles::proto::Tile proto;
+  Tile actual;
+  TileToProto(&expected, &proto);
+  TileFromProto(&proto, &actual);
   EXPECT_TRUE(test::AreTilesIdentical(expected, actual))
       << "actual: \n"
       << test::DebugString(&actual) << "expected: \n"
@@ -22,7 +22,7 @@ void TestQueryTileEntryConversion(QueryTileEntry& expected) {
 }
 
 void TestTileGroupConversion(TileGroup& expected) {
-  upboarding::query_tiles::proto::QueryTileGroup proto;
+  upboarding::query_tiles::proto::TileGroup proto;
   TileGroup actual;
   TileGroupToProto(&expected, &proto);
   TileGroupFromProto(&proto, &actual);
@@ -32,13 +32,13 @@ void TestTileGroupConversion(TileGroup& expected) {
       << test::DebugString(&expected);
 }
 
-TEST(QueryTileProtoConversionTest, ConvertTileEntryGroudtrip) {
-  QueryTileEntry entry;
+TEST(TileProtoConversionTest, ConvertTileGroudtrip) {
+  Tile entry;
   test::ResetTestEntry(&entry);
-  TestQueryTileEntryConversion(entry);
+  TestTileConversion(entry);
 }
 
-TEST(QueryTileProtoConversionTest, ConvertTileGroupRoundtrip) {
+TEST(TileProtoConversionTest, ConvertTileGroupRoundtrip) {
   TileGroup group;
   test::ResetTestGroup(&group);
   TestTileGroupConversion(group);

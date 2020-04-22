@@ -40,7 +40,6 @@ class CONTENT_EXPORT TextInputClientMessageFilter
   void OnGotStringAtPoint(
       const mac::AttributedStringCoder::EncodedString& encoded_string,
       const gfx::Point& point);
-  void OnGotCharacterIndexForPoint(uint32_t index);
   void OnGotFirstRectForRange(const gfx::Rect& rect);
   void OnGotStringFromRange(
       const mac::AttributedStringCoder::EncodedString& string,

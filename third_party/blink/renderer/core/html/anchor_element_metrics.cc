@@ -143,7 +143,7 @@ base::Optional<AnchorElementMetrics> AnchorElementMetrics::Create(
     return base::nullopt;
 
   AnchorElementMetrics anchor_metrics(
-      anchor_element, 0, 0, 0, 0, 0, 0, 0, IsInIFrame(*anchor_element),
+      anchor_element, 0, 0, 0, 0, 0, 0, IsInIFrame(*anchor_element),
       ContainsImage(*anchor_element), IsSameHost(*anchor_element),
       IsUrlIncrementedByOne(*anchor_element));
 
@@ -191,7 +191,6 @@ base::Optional<AnchorElementMetrics> AnchorElementMetrics::Create(
                         ->GetScrollableArea()
                         ->ContentsSize()
                         .Height();
-  float ratio_root_height = root_height / base_height;
 
   int root_scrolled =
       root_frame_view->LayoutViewport()->ScrollOffsetInt().Height();
@@ -211,7 +210,7 @@ base::Optional<AnchorElementMetrics> AnchorElementMetrics::Create(
   return AnchorElementMetrics(
       anchor_element, ratio_area, ratio_visible_area,
       ratio_distance_top_to_visible_top, ratio_distance_center_to_visible_top,
-      ratio_distance_root_top, ratio_distance_root_bottom, ratio_root_height,
+      ratio_distance_root_top, ratio_distance_root_bottom,
       IsInIFrame(*anchor_element), ContainsImage(*anchor_element),
       IsSameHost(*anchor_element), IsUrlIncrementedByOne(*anchor_element));
 }
@@ -230,7 +229,7 @@ AnchorElementMetrics::MaybeReportClickedMetricsOnClick(
   // Create metrics that don't have sizes set. The browser only records
   // metrics unrelated to sizes.
   AnchorElementMetrics anchor_metrics(
-      anchor_element, 0, 0, 0, 0, 0, 0, 0, IsInIFrame(*anchor_element),
+      anchor_element, 0, 0, 0, 0, 0, 0, IsInIFrame(*anchor_element),
       ContainsImage(*anchor_element), IsSameHost(*anchor_element),
       IsUrlIncrementedByOne(*anchor_element));
 
@@ -343,45 +342,8 @@ mojom::blink::AnchorElementMetricsPtr AnchorElementMetrics::CreateMetricsPtr()
 }
 
 void AnchorElementMetrics::RecordMetricsOnClick() const {
-  UMA_HISTOGRAM_PERCENTAGE("AnchorElementMetrics.Clicked.RatioArea",
-                           static_cast<int>(ratio_area_ * 100));
-
-  UMA_HISTOGRAM_PERCENTAGE("AnchorElementMetrics.Clicked.RatioVisibleArea",
-                           static_cast<int>(ratio_visible_area_ * 100));
-
-  UMA_HISTOGRAM_PERCENTAGE(
-      "AnchorElementMetrics.Clicked.RatioDistanceTopToVisibleTop",
-      static_cast<int>(std::min(ratio_distance_top_to_visible_top_, 1.0f) *
-                       100));
-
-  UMA_HISTOGRAM_PERCENTAGE(
-      "AnchorElementMetrics.Clicked.RatioDistanceCenterToVisibleTop",
-      static_cast<int>(std::min(ratio_distance_center_to_visible_top_, 1.0f) *
-                       100));
-
-  UMA_HISTOGRAM_COUNTS_10000(
-      "AnchorElementMetrics.Clicked.RatioDistanceRootTop",
-      static_cast<int>(std::min(ratio_distance_root_top_, 100.0f) * 100));
-
-  UMA_HISTOGRAM_COUNTS_10000(
-      "AnchorElementMetrics.Clicked.RatioDistanceRootBottom",
-      static_cast<int>(std::min(ratio_distance_root_bottom_, 100.0f) * 100));
-
-  UMA_HISTOGRAM_COUNTS_10000(
-      "AnchorElementMetrics.Clicked.RatioRootHeight",
-      static_cast<int>(std::min(ratio_root_height_, 100.0f) * 100));
-
-  UMA_HISTOGRAM_BOOLEAN("AnchorElementMetrics.Clicked.IsInIFrame",
-                        is_in_iframe_);
-
-  UMA_HISTOGRAM_BOOLEAN("AnchorElementMetrics.Clicked.ContainsImage",
-                        contains_image_);
-
   UMA_HISTOGRAM_BOOLEAN("AnchorElementMetrics.Clicked.IsSameHost",
                         is_same_host_);
-
-  UMA_HISTOGRAM_BOOLEAN("AnchorElementMetrics.Clicked.IsUrlIncrementedByOne",
-                        is_url_incremented_by_one_);
 }
 
 }  // namespace blink

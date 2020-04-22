@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/time/time.h"
-#include "chrome/browser/upboarding/query_tiles/query_tile_entry.h"
+#include "chrome/browser/upboarding/query_tiles/tile.h"
 
 namespace upboarding {
 
@@ -38,7 +38,7 @@ struct TileGroup {
   base::Time last_updated_ts;
 
   // Top level tiles.
-  std::vector<std::unique_ptr<QueryTileEntry>> tiles;
+  std::vector<std::unique_ptr<Tile>> tiles;
 };
 
 }  // namespace upboarding

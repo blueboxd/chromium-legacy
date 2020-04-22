@@ -5,6 +5,9 @@
 #ifndef CHROMEOS_SERVICES_ASSISTANT_PUBLIC_CPP_DEFAULT_ASSISTANT_INTERACTION_SUBSCRIBER_H_
 #define CHROMEOS_SERVICES_ASSISTANT_PUBLIC_CPP_DEFAULT_ASSISTANT_INTERACTION_SUBSCRIBER_H_
 
+#include <string>
+#include <vector>
+
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -17,7 +20,8 @@ namespace assistant {
 // This reduces the clutter if a derived class only cares about a few of the
 // methods.
 // It also contains a |mojo::Receiver| as every derived class needs this anyway.
-class DefaultAssistantInteractionSubscriber
+class COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
+    DefaultAssistantInteractionSubscriber
     : public mojom::AssistantInteractionSubscriber {
  public:
   DefaultAssistantInteractionSubscriber();

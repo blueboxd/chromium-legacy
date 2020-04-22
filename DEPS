@@ -175,11 +175,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'efb2133b0dd34e6d2719f83b7f9485523382cdb1',
+  'skia_revision': 'e9663db508df1a6c4c64bbc44b8ddb9c80c086b9',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'e981e9f0b6c271088b324240ebe84112b56ee377',
+  'v8_revision': '2412e23c79eabb2d2aa7a79c69d71bb91dd87c4f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -187,11 +187,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'ad85cd0040ffb184a2f738dc99c2eba38c6c9e97',
+  'angle_revision': 'b7d6949b91122ba44322ab52d9de47d15a2ef569',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': 'ff772a7bcc9872e034210ad226ea9f94556a3dc8',
+  'swiftshader_revision': 'ceb6258ae1016ebaffb7036561e0cba14c8cc2a7',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -222,7 +222,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling NaCl
   # and whatever else without interference from each other.
-  'nacl_revision': 'd304d90ecc17351ce0fdab3e7452052a469c0976',
+  'nacl_revision': 'b599fb88f59e617bfed2cf03729f24be5c378e2c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
@@ -246,7 +246,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '09e523d4093e70e6bf92a1e5bc0e3871c5f7a8a5',
+  'devtools_frontend_revision': 'a646d243441dd8409d21d62b216ea0e0b8b3567f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -298,7 +298,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'fee2783cb0b7b0a03b55e2543513b07c6fba7095',
+  'dawn_revision': '64fcf3909ac97155713542fea091e3498fef0596',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -868,7 +868,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'b009c0643f55b2612350fe6fc2f4ee961805771d',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '0e7788d16b77ddd9006896288f06b2464f2b11b8',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1522,7 +1522,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@05c794377143df8d6f44436c901c79b9d69d8bc2',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@1796f8561b19133f574e757f5a3b0e6334a46527',
     'condition': 'checkout_src_internal',
   },
 
@@ -2176,6 +2176,17 @@ deps = {
           {
               'package': 'chromium/third_party/android_deps/libs/androidx_transition_transition',
               'version': 'version:1.0.0-rc02-cr0',
+          },
+      ],
+      'condition': 'checkout_android',
+      'dep_type': 'cipd',
+  },
+
+  'src/third_party/android_deps/libs/androidx_tvprovider_tvprovider': {
+      'packages': [
+          {
+              'package': 'chromium/third_party/android_deps/libs/androidx_tvprovider_tvprovider',
+              'version': 'version:1.0.0-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -4064,7 +4075,7 @@ hooks = [
     'pattern': '.',
     'condition': 'checkout_android or checkout_linux',
     'action': [ 'vpython',
-                'src/tools/download_cros_provided_profile.py',
+                'src/tools/download_optimization_profile.py',
                 '--newest_state=src/chrome/android/profiles/newest.txt',
                 '--local_state=src/chrome/android/profiles/local.txt',
                 '--output_name=src/chrome/android/profiles/afdo.prof',
@@ -4235,7 +4246,7 @@ hooks = [
     'pattern': '.',
     'condition': 'checkout_chromeos or checkout_simplechrome',
     'action': [ 'vpython',
-                'src/tools/download_cros_provided_profile.py',
+                'src/tools/download_optimization_profile.py',
                 '--newest_state=src/chromeos/profiles/orderfile.newest.txt',
                 '--local_state=src/chromeos/profiles/orderfile.local.txt',
                 '--output_name=src/chromeos/profiles/chromeos.orderfile.txt',
@@ -4248,7 +4259,7 @@ hooks = [
     'pattern': '.',
     'condition': 'checkout_chromeos or checkout_simplechrome',
     'action': [ 'vpython',
-                'src/tools/download_cros_provided_profile.py',
+                'src/tools/download_optimization_profile.py',
                 '--newest_state=src/chromeos/profiles/silvermont.afdo.newest.txt',
                 '--local_state=src/chromeos/profiles/silvermont.afdo.local.txt',
                 '--output_name=src/chromeos/profiles/silvermont.afdo.prof',
@@ -4260,7 +4271,7 @@ hooks = [
     'pattern': '.',
     'condition': 'checkout_chromeos or checkout_simplechrome',
     'action': [ 'vpython',
-                'src/tools/download_cros_provided_profile.py',
+                'src/tools/download_optimization_profile.py',
                 '--newest_state=src/chromeos/profiles/airmont.afdo.newest.txt',
                 '--local_state=src/chromeos/profiles/airmont.afdo.local.txt',
                 '--output_name=src/chromeos/profiles/airmont.afdo.prof',
@@ -4272,7 +4283,7 @@ hooks = [
     'pattern': '.',
     'condition': 'checkout_chromeos or checkout_simplechrome',
     'action': [ 'vpython',
-                'src/tools/download_cros_provided_profile.py',
+                'src/tools/download_optimization_profile.py',
                 '--newest_state=src/chromeos/profiles/broadwell.afdo.newest.txt',
                 '--local_state=src/chromeos/profiles/broadwell.afdo.local.txt',
                 '--output_name=src/chromeos/profiles/broadwell.afdo.prof',

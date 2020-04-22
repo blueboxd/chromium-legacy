@@ -459,27 +459,6 @@ TEST_F(RenderViewContextMenuPrefsTest,
   EXPECT_FALSE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_CUSTOM_FIRST));
 }
 
-// Verify that request headers specify that data reduction proxy should return
-// the original non compressed resource when "Save Image As..." is used with
-// Data Saver enabled.
-TEST_F(RenderViewContextMenuPrefsTest, DataSaverEnabledSaveImageAs) {
-  data_reduction_proxy::DataReductionProxySettings::
-      SetDataSaverEnabledForTesting(profile()->GetPrefs(), true);
-
-  content::ContextMenuParams params = CreateParams(MenuItem::IMAGE);
-  params.unfiltered_link_url = params.link_url;
-  auto menu = std::make_unique<TestRenderViewContextMenu>(
-      web_contents()->GetMainFrame(), params);
-
-  menu->ExecuteCommand(IDC_CONTENT_CONTEXT_SAVEIMAGEAS, 0);
-
-  const std::string& headers =
-      content::WebContentsTester::For(web_contents())->GetSaveFrameHeaders();
-  EXPECT_TRUE(headers.find(
-      "Chrome-Proxy-Accept-Transform: identity") != std::string::npos);
-  EXPECT_TRUE(headers.find("Cache-Control: no-cache") != std::string::npos);
-}
-
 // Verify that request headers do not specify pass through when "Save Image
 // As..." is used with Data Saver disabled.
 TEST_F(RenderViewContextMenuPrefsTest, DataSaverDisabledSaveImageAs) {

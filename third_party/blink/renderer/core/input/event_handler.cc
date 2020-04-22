@@ -809,8 +809,9 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
     frame_->Selection().SetCaretBlinkingSuspended(true);
 
   WebInputEventResult event_result = DispatchMousePointerEvent(
-      WebInputEvent::kPointerDown, mev.InnerElement(), mev.CanvasRegionId(),
-      mev.Event(), Vector<WebMouseEvent>(), Vector<WebMouseEvent>());
+      WebInputEvent::Type::kPointerDown, mev.InnerElement(),
+      mev.CanvasRegionId(), mev.Event(), Vector<WebMouseEvent>(),
+      Vector<WebMouseEvent>());
 
   // Disabled form controls still need to resize the scrollable area.
   if ((event_result == WebInputEventResult::kNotHandled ||
@@ -880,7 +881,7 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
 
   if (mev.GetHitTestResult().InnerNode() &&
       mouse_event.button == WebPointerProperties::Button::kLeft) {
-    DCHECK_EQ(WebInputEvent::kMouseDown, mouse_event.GetType());
+    DCHECK_EQ(WebInputEvent::Type::kMouseDown, mouse_event.GetType());
     HitTestResult result = mev.GetHitTestResult();
     result.SetToShadowHostIfInRestrictedShadowRoot();
     frame_->GetChromeClient().OnMouseDown(*result.InnerNode());
@@ -894,7 +895,7 @@ WebInputEventResult EventHandler::HandleMouseMoveEvent(
     const Vector<WebMouseEvent>& coalesced_events,
     const Vector<WebMouseEvent>& predicted_events) {
   TRACE_EVENT0("blink", "EventHandler::handleMouseMoveEvent");
-  DCHECK(event.GetType() == WebInputEvent::kMouseMove);
+  DCHECK(event.GetType() == WebInputEvent::Type::kMouseMove);
   HitTestResult hovered_node_result;
   HitTestLocation location;
   WebInputEventResult result =
@@ -921,7 +922,7 @@ WebInputEventResult EventHandler::HandleMouseMoveEvent(
 
 void EventHandler::HandleMouseLeaveEvent(const WebMouseEvent& event) {
   TRACE_EVENT0("blink", "EventHandler::handleMouseLeaveEvent");
-  DCHECK(event.GetType() == WebInputEvent::kMouseLeave);
+  DCHECK(event.GetType() == WebInputEvent::Type::kMouseLeave);
 
   Page* page = frame_->GetPage();
   if (page)
@@ -939,8 +940,8 @@ WebInputEventResult EventHandler::HandleMouseMoveOrLeaveEvent(
     HitTestLocation* hit_test_location) {
   DCHECK(frame_);
   DCHECK(frame_->View());
-  DCHECK(mouse_event.GetType() == WebInputEvent::kMouseMove ||
-         mouse_event.GetType() == WebInputEvent::kMouseLeave);
+  DCHECK(mouse_event.GetType() == WebInputEvent::Type::kMouseMove ||
+         mouse_event.GetType() == WebInputEvent::Type::kMouseLeave);
   mouse_event_manager_->SetLastKnownMousePosition(mouse_event);
 
   hover_timer_.Stop();
@@ -970,8 +971,8 @@ WebInputEventResult EventHandler::HandleMouseMoveOrLeaveEvent(
 
   if (frame_set_being_resized_) {
     return DispatchMousePointerEvent(
-        WebInputEvent::kPointerMove, frame_set_being_resized_.Get(), String(),
-        mouse_event, coalesced_events, predicted_events);
+        WebInputEvent::Type::kPointerMove, frame_set_being_resized_.Get(),
+        String(), mouse_event, coalesced_events, predicted_events);
   }
 
   // Send events right to a scrollbar if the mouse is pressed.
@@ -989,7 +990,7 @@ WebInputEventResult EventHandler::HandleMouseMoveOrLeaveEvent(
   // Treat any mouse move events as readonly if the user is currently touching
   // the screen.
   if (pointer_event_manager_->IsAnyTouchActive() &&
-      mouse_event.GetType() == WebInputEvent::kMouseMove) {
+      mouse_event.GetType() == WebInputEvent::Type::kMouseMove) {
     hit_type |= HitTestRequest::kActive | HitTestRequest::kReadOnly;
   }
   HitTestRequest request(hit_type);
@@ -1001,7 +1002,7 @@ WebInputEventResult EventHandler::HandleMouseMoveOrLeaveEvent(
   // might actually be some other frame above this one at the specified
   // coordinate. So we avoid the hit test but still clear the hover/active
   // state.
-  if (mouse_event.GetType() == WebInputEvent::kMouseLeave) {
+  if (mouse_event.GetType() == WebInputEvent::Type::kMouseLeave) {
     frame_->GetDocument()->UpdateHoverActiveState(request.Active(),
                                                   /*update_active_chain=*/false,
                                                   nullptr);
@@ -1041,7 +1042,7 @@ WebInputEventResult EventHandler::HandleMouseMoveOrLeaveEvent(
       last_mouse_move_event_subframe_->Tree().IsDescendantOf(frame_) &&
       last_mouse_move_event_subframe_ != current_subframe) {
     WebMouseEvent event = mev.Event();
-    event.SetType(WebInputEvent::kMouseLeave);
+    event.SetType(WebInputEvent::Type::kMouseLeave);
     last_mouse_move_event_subframe_->GetEventHandler().HandleMouseLeaveEvent(
         event);
     last_mouse_move_event_subframe_->GetEventHandler()
@@ -1084,8 +1085,8 @@ WebInputEventResult EventHandler::HandleMouseMoveOrLeaveEvent(
     return event_result;
 
   event_result = DispatchMousePointerEvent(
-      WebInputEvent::kPointerMove, mev.InnerElement(), mev.CanvasRegionId(),
-      mev.Event(), coalesced_events, predicted_events);
+      WebInputEvent::Type::kPointerMove, mev.InnerElement(),
+      mev.CanvasRegionId(), mev.Event(), coalesced_events, predicted_events);
   // TODO(crbug.com/346473): Since there is no default action for the mousemove
   // event we should consider doing drag&drop even when js cancels the
   // mouse move event.
@@ -1145,9 +1146,9 @@ WebInputEventResult EventHandler::HandleMouseReleaseEvent(
       ReleaseMouseCaptureFromLocalRoot();
     }
     return DispatchMousePointerEvent(
-        WebInputEvent::kPointerUp, mouse_event_manager_->GetElementUnderMouse(),
-        String(), mouse_event, Vector<WebMouseEvent>(),
-        Vector<WebMouseEvent>());
+        WebInputEvent::Type::kPointerUp,
+        mouse_event_manager_->GetElementUnderMouse(), String(), mouse_event,
+        Vector<WebMouseEvent>(), Vector<WebMouseEvent>());
   }
 
   // Mouse events simulated from touch should not hit-test again.
@@ -1169,8 +1170,9 @@ WebInputEventResult EventHandler::HandleMouseReleaseEvent(
     event_result = WebInputEventResult::kHandledSuppressed;
   } else {
     event_result = DispatchMousePointerEvent(
-        WebInputEvent::kPointerUp, mev.InnerElement(), mev.CanvasRegionId(),
-        mev.Event(), Vector<WebMouseEvent>(), Vector<WebMouseEvent>(),
+        WebInputEvent::Type::kPointerUp, mev.InnerElement(),
+        mev.CanvasRegionId(), mev.Event(), Vector<WebMouseEvent>(),
+        Vector<WebMouseEvent>(),
         (GetSelectionController().HasExtendedSelection() &&
          IsSelectionOverLink(mev)));
   }
@@ -1553,12 +1555,13 @@ WebInputEventResult EventHandler::HandleGestureEvent(
   // etc.
   DCHECK(!targeted_event.Event().IsScrollEvent());
 
-  if (targeted_event.Event().GetType() == WebInputEvent::kGestureShowPress)
+  if (targeted_event.Event().GetType() ==
+      WebInputEvent::Type::kGestureShowPress)
     last_show_press_timestamp_ = base::TimeTicks::Now();
 
   // Update mouseout/leave/over/enter events before jumping directly to the
   // inner most frame.
-  if (targeted_event.Event().GetType() == WebInputEvent::kGestureTap)
+  if (targeted_event.Event().GetType() == WebInputEvent::Type::kGestureTap)
     UpdateGestureTargetNodeForMouseEvent(targeted_event);
 
   // Route to the correct frame.
@@ -1623,7 +1626,7 @@ bool EventHandler::GestureCorrespondsToAdjustedTouch(
   // Gesture events start with a GestureTapDown. If GestureTapDown's unique id
   // matches stored adjusted touchstart event id, then we can use the stored
   // result for following gesture event.
-  if (event.GetType() == WebInputEvent::kGestureTapDown) {
+  if (event.GetType() == WebInputEvent::Type::kGestureTapDown) {
     should_use_touch_event_adjusted_point_ =
         (event.unique_touch_event_id != 0 &&
          event.unique_touch_event_id ==
@@ -1827,7 +1830,7 @@ void EventHandler::UpdateGestureTargetNodeForMouseEvent(
   const WebGestureEvent& gesture_event = targeted_event.Event();
   unsigned modifiers = gesture_event.GetModifiers();
   WebMouseEvent fake_mouse_move(
-      WebInputEvent::kMouseMove, gesture_event,
+      WebInputEvent::Type::kMouseMove, gesture_event,
       WebPointerProperties::Button::kNoButton,
       /* clickCount */ 0,
       modifiers | WebInputEvent::Modifiers::kIsCompatibilityEventForTouch,
@@ -1870,7 +1873,7 @@ GestureEventWithHitTestResults EventHandler::TargetGestureEvent(
   bool should_keep_active_for_min_interval = false;
   if (read_only) {
     hit_type |= HitTestRequest::kReadOnly;
-  } else if (gesture_event.GetType() == WebInputEvent::kGestureTap &&
+  } else if (gesture_event.GetType() == WebInputEvent::Type::kGestureTap &&
              last_show_press_timestamp_) {
     // If the Tap is received very shortly after ShowPress, we want to
     // delay clearing of the active state so that it's visible to the user
@@ -1982,16 +1985,16 @@ void EventHandler::ApplyTouchAdjustment(WebGestureEvent* gesture_event,
       FlooredIntPoint(gesture_event->PositionInRootFrame());
   bool adjusted = false;
   switch (gesture_event->GetType()) {
-    case WebInputEvent::kGestureTap:
-    case WebInputEvent::kGestureTapUnconfirmed:
-    case WebInputEvent::kGestureTapDown:
-    case WebInputEvent::kGestureShowPress:
+    case WebInputEvent::Type::kGestureTap:
+    case WebInputEvent::Type::kGestureTapUnconfirmed:
+    case WebInputEvent::Type::kGestureTapDown:
+    case WebInputEvent::Type::kGestureShowPress:
       adjusted = BestClickableNodeForHitTestResult(
           location, *hit_test_result, adjusted_point, adjusted_node);
       break;
-    case WebInputEvent::kGestureLongPress:
-    case WebInputEvent::kGestureLongTap:
-    case WebInputEvent::kGestureTwoFingerTap:
+    case WebInputEvent::Type::kGestureLongPress:
+    case WebInputEvent::Type::kGestureLongTap:
+    case WebInputEvent::Type::kGestureTwoFingerTap:
       adjusted = BestContextMenuNodeForHitTestResult(
           location, *hit_test_result, adjusted_point, adjusted_node);
       break;
@@ -2156,10 +2159,10 @@ WebInputEventResult EventHandler::ShowNonLocatedContextMenu(
 
   // The contextmenu event is a mouse event even when invoked using the
   // keyboard.  This is required for web compatibility.
-  WebInputEvent::Type event_type = WebInputEvent::kMouseDown;
+  WebInputEvent::Type event_type = WebInputEvent::Type::kMouseDown;
   if (frame_->GetSettings() &&
       frame_->GetSettings()->GetShowContextMenuOnMouseUp())
-    event_type = WebInputEvent::kMouseUp;
+    event_type = WebInputEvent::Type::kMouseUp;
 
   WebMouseEvent mouse_event(
       event_type,
@@ -2421,7 +2424,7 @@ MouseEventWithHitTestResults EventHandler::GetMouseEventTarget(
 
   // TODO(eirage): This does not handle chorded buttons yet.
   if (RuntimeEnabledFeatures::UnifiedPointerCaptureInBlinkEnabled() &&
-      event.GetType() != WebInputEvent::kMouseDown) {
+      event.GetType() != WebInputEvent::Type::kMouseDown) {
     HitTestResult result(request, HitTestLocation(document_point));
 
     Element* capture_target;

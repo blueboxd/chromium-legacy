@@ -150,12 +150,6 @@ interface HasTrustTokensAnswerer {
 struct TrustTokenVerificationKey {
   string body;
   mojo_base.mojom.Time expiry;
-  // Key labels are opaque values provided by the trust token issuer,
-  // constrained to be in the representable range of uint32. We keep track of
-  // them in order to provide them in Trust Tokens redemption requests, at which
-  // point the label of a token's verification key becomes bound to the token's
-  // redemption.
-  uint32 label;
 };
 
 // This is a wrapper struct that exists in order to make the batch size

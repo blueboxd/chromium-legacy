@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/containers/span.h"
+#include "components/openscreen_platform/network_context.h"
 #include "components/openscreen_platform/network_util.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/address_family.h"
@@ -25,9 +26,24 @@ ErrorOr<std::unique_ptr<UdpSocket>> UdpSocket::Create(
     TaskRunner* task_runner,
     Client* client,
     const IPEndpoint& local_endpoint) {
-  // TODO(btolsch): Replace initialization code with NetworkContext follow-up
-  // patch.
-  return Error::Code::kInitializationFailure;
+  network::mojom::NetworkContext* const network_context =
+      openscreen_platform::GetNetworkContext();
+  if (!network_context) {
+    return Error::Code::kInitializationFailure;
+  }
+
+  mojo::PendingRemote<network::mojom::UDPSocketListener> listener_remote;
+  mojo::PendingReceiver<network::mojom::UDPSocketListener> pending_listener =
+      listener_remote.InitWithNewPipeAndPassReceiver();
+
+  mojo::Remote<network::mojom::UDPSocket> socket;
+  network_context->CreateUDPSocket(socket.BindNewPipeAndPassReceiver(),
+                                   std::move(listener_remote));
+
+  return ErrorOr<std::unique_ptr<UdpSocket>>(
+      std::make_unique<openscreen_platform::UdpSocket>(
+          client, local_endpoint, std::move(socket),
+          std::move(pending_listener)));
 }
 
 }  // namespace openscreen

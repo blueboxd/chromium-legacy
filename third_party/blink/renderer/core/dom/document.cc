@@ -8191,13 +8191,6 @@ void Document::MaybeQueueSendDidEditFieldInInsecureContext() {
                 WrapWeakPersistent(this)));
 }
 
-CoreProbeSink* Document::GetProbeSink() {
-  LocalFrame* frame = GetFrame();
-  if (!frame && TemplateDocumentHost())
-    frame = TemplateDocumentHost()->GetFrame();
-  return probe::ToCoreProbeSink(frame);
-}
-
 BrowserInterfaceBrokerProxy& Document::GetBrowserInterfaceBroker() {
   if (!GetFrame())
     return GetEmptyBrowserInterfaceBroker();

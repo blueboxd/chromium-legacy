@@ -5,6 +5,7 @@
 #ifndef UI_ACCESSIBILITY_AX_ENUM_UTIL_H_
 #define UI_ACCESSIBILITY_AX_ENUM_UTIL_H_
 
+#include "base/strings/string16.h"
 #include "ui/accessibility/ax_base_export.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
 
@@ -36,6 +37,10 @@ AX_BASE_EXPORT const char* ToString(
     ax::mojom::DefaultActionVerb default_action_verb);
 AX_BASE_EXPORT ax::mojom::DefaultActionVerb ParseDefaultActionVerb(
     const char* default_action_verb);
+
+// Returns a localized string that corresponds to the name of the given action.
+AX_BASE_EXPORT base::string16 ToLocalizedString(
+    ax::mojom::DefaultActionVerb action_verb);
 
 // ax::mojom::Mutation
 AX_BASE_EXPORT const char* ToString(ax::mojom::Mutation mutation);
@@ -87,16 +92,9 @@ AX_BASE_EXPORT const char* ToString(ax::mojom::MoveDirection move_direction);
 AX_BASE_EXPORT ax::mojom::MoveDirection ParseMoveDirection(
     const char* move_direction);
 
-// ax::mojom::EditCommand
-AX_BASE_EXPORT const char* ToString(ax::mojom::EditCommand edit_command);
-AX_BASE_EXPORT ax::mojom::EditCommand ParseEditCommand(
-    const char* edit_command);
-
-// ax::mojom::SelectionCommand
-AX_BASE_EXPORT const char* ToString(
-    ax::mojom::SelectionCommand selection_command);
-AX_BASE_EXPORT ax::mojom::SelectionCommand ParseSelectionCommand(
-    const char* selection_command);
+// ax::mojom::Command
+AX_BASE_EXPORT const char* ToString(ax::mojom::Command command);
+AX_BASE_EXPORT ax::mojom::Command ParseCommand(const char* command);
 
 // ax::mojom::TextBoundary
 AX_BASE_EXPORT const char* ToString(ax::mojom::TextBoundary text_boundary);

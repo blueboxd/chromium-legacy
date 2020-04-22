@@ -328,8 +328,8 @@ std::unique_ptr<const char* []> StringVectorToArgArray(
 // for things like screen brightness and volume control.
 bool IsReservedSystemInputEvent(const blink::WebInputEvent& event) {
 #if defined(OS_CHROMEOS)
-  if (event.GetType() != WebInputEvent::kKeyDown &&
-      event.GetType() != WebInputEvent::kKeyUp)
+  if (event.GetType() != WebInputEvent::Type::kKeyDown &&
+      event.GetType() != WebInputEvent::Type::kKeyUp)
     return false;
   const blink::WebKeyboardEvent& key_event =
       static_cast<const blink::WebKeyboardEvent&>(event);
@@ -1109,7 +1109,7 @@ bool PepperPluginInstanceImpl::HandleInputEvent(
     return false;
 
   if (!has_been_clicked_ && is_flash_plugin_ &&
-      event.GetType() == blink::WebInputEvent::kMouseDown &&
+      event.GetType() == blink::WebInputEvent::Type::kMouseDown &&
       (event.GetModifiers() & blink::WebInputEvent::kLeftButtonDown)) {
     has_been_clicked_ = true;
   }

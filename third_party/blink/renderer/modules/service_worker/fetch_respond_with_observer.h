@@ -53,7 +53,7 @@ class MODULES_EXPORT FetchRespondWithObserver : public RespondWithObserver {
   const network::mojom::RequestMode request_mode_;
   const network::mojom::RedirectMode redirect_mode_;
   const mojom::RequestContextFrameType frame_type_;
-  const mojom::RequestContextType request_context_;
+  const network::mojom::RequestDestination request_destination_;
   base::WeakPtr<CrossOriginResourcePolicyChecker> corp_checker_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };

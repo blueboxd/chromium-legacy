@@ -16,8 +16,8 @@ namespace protocol {
 gfx::NativeEvent NativeInputEventBuilder::CreateEvent(
     const NativeWebKeyboardEvent& event) {
   NSEventType type = NSKeyUp;
-  if (event.GetType() == blink::WebInputEvent::kRawKeyDown ||
-      event.GetType() == blink::WebInputEvent::kKeyDown)
+  if (event.GetType() == blink::WebInputEvent::Type::kRawKeyDown ||
+      event.GetType() == blink::WebInputEvent::Type::kKeyDown)
     type = NSKeyDown;
   const base::char16* textStartAddr = &event.text[0];
   const int textLength =

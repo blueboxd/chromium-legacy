@@ -16,11 +16,10 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/toast/toast_manager_impl.h"
-#include "ash/wm/overview/overview_controller.h"
 #include "base/bind.h"
 #include "base/optional.h"
 #include "chromeos/constants/chromeos_features.h"
-#include "chromeos/services/assistant/public/features.h"
+#include "chromeos/services/assistant/public/cpp/features.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -50,15 +49,12 @@ AssistantUiController::AssistantUiController(
     AssistantControllerImpl* assistant_controller)
     : assistant_controller_(assistant_controller) {
   AddModelObserver(this);
-  assistant_controller_->AddObserver(this);
-  Shell::Get()->highlighter_controller()->AddObserver(this);
-  Shell::Get()->overview_controller()->AddObserver(this);
+  assistant_controller_observer_.Add(AssistantController::Get());
+  highlighter_controller_observer_.Add(Shell::Get()->highlighter_controller());
+  overview_controller_observer_.Add(Shell::Get()->overview_controller());
 }
 
 AssistantUiController::~AssistantUiController() {
-  Shell::Get()->overview_controller()->RemoveObserver(this);
-  Shell::Get()->highlighter_controller()->RemoveObserver(this);
-  assistant_controller_->RemoveObserver(this);
   RemoveModelObserver(this);
 }
 

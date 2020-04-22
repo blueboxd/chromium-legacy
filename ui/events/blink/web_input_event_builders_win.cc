@@ -44,7 +44,7 @@ WebMouseEvent WebMouseEventBuilder::Build(
   WebMouseEvent::Button button = WebMouseEvent::Button::kNoButton;
   switch (message) {
     case WM_MOUSEMOVE:
-      type = WebInputEvent::kMouseMove;
+      type = WebInputEvent::Type::kMouseMove;
       if (wparam & MK_LBUTTON)
         button = WebMouseEvent::Button::kLeft;
       else if (wparam & MK_MBUTTON)
@@ -58,7 +58,7 @@ WebMouseEvent WebMouseEventBuilder::Build(
     case WM_NCMOUSELEAVE:
       // TODO(rbyers): This should be MouseLeave but is disabled temporarily.
       // See http://crbug.com/450631
-      type = WebInputEvent::kMouseMove;
+      type = WebInputEvent::Type::kMouseMove;
       button = WebMouseEvent::Button::kNoButton;
       // set the current mouse position (relative to the client area of the
       // current window) since none is specified for this event
@@ -66,41 +66,41 @@ WebMouseEvent WebMouseEventBuilder::Build(
       break;
     case WM_LBUTTONDOWN:
     case WM_LBUTTONDBLCLK:
-      type = WebInputEvent::kMouseDown;
+      type = WebInputEvent::Type::kMouseDown;
       button = WebMouseEvent::Button::kLeft;
       break;
     case WM_MBUTTONDOWN:
     case WM_MBUTTONDBLCLK:
-      type = WebInputEvent::kMouseDown;
+      type = WebInputEvent::Type::kMouseDown;
       button = WebMouseEvent::Button::kMiddle;
       break;
     case WM_RBUTTONDOWN:
     case WM_RBUTTONDBLCLK:
-      type = WebInputEvent::kMouseDown;
+      type = WebInputEvent::Type::kMouseDown;
       button = WebMouseEvent::Button::kRight;
       break;
     case WM_XBUTTONDOWN:
     case WM_XBUTTONDBLCLK:
-      type = WebInputEvent::kMouseDown;
+      type = WebInputEvent::Type::kMouseDown;
       if ((HIWORD(wparam) & XBUTTON1))
         button = WebMouseEvent::Button::kBack;
       else if ((HIWORD(wparam) & XBUTTON2))
         button = WebMouseEvent::Button::kForward;
       break;
     case WM_LBUTTONUP:
-      type = WebInputEvent::kMouseUp;
+      type = WebInputEvent::Type::kMouseUp;
       button = WebMouseEvent::Button::kLeft;
       break;
     case WM_MBUTTONUP:
-      type = WebInputEvent::kMouseUp;
+      type = WebInputEvent::Type::kMouseUp;
       button = WebMouseEvent::Button::kMiddle;
       break;
     case WM_RBUTTONUP:
-      type = WebInputEvent::kMouseUp;
+      type = WebInputEvent::Type::kMouseUp;
       button = WebMouseEvent::Button::kRight;
       break;
     case WM_XBUTTONUP:
-      type = WebInputEvent::kMouseUp;
+      type = WebInputEvent::Type::kMouseUp;
       if ((HIWORD(wparam) & XBUTTON1))
         button = WebMouseEvent::Button::kBack;
       else if ((HIWORD(wparam) & XBUTTON2))
@@ -162,7 +162,7 @@ WebMouseEvent WebMouseEventBuilder::Build(
       ((current_time - g_last_click_time).InMilliseconds() >
        ::GetDoubleClickTime());
 
-  if (result.GetType() == WebInputEvent::kMouseDown) {
+  if (result.GetType() == WebInputEvent::Type::kMouseDown) {
     if (!cancel_previous_click && (result.button == last_click_button)) {
       ++g_last_click_count;
     } else {
@@ -172,8 +172,8 @@ WebMouseEvent WebMouseEventBuilder::Build(
     }
     g_last_click_time = current_time;
     last_click_button = result.button;
-  } else if (result.GetType() == WebInputEvent::kMouseMove ||
-             result.GetType() == WebInputEvent::kMouseLeave) {
+  } else if (result.GetType() == WebInputEvent::Type::kMouseMove ||
+             result.GetType() == WebInputEvent::Type::kMouseLeave) {
     if (cancel_previous_click) {
       g_last_click_count = 0;
       last_click_position_x = 0;
@@ -196,7 +196,7 @@ WebMouseWheelEvent WebMouseWheelEventBuilder::Build(
     base::TimeTicks time_stamp,
     blink::WebPointerProperties::PointerType pointer_type) {
   WebMouseWheelEvent result(
-      WebInputEvent::kMouseWheel,
+      WebInputEvent::Type::kMouseWheel,
       ui::EventFlagsToWebEventModifiers(ui::GetModifiersFromKeyState()),
       time_stamp);
 

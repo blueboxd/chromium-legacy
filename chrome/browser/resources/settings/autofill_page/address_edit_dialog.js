@@ -6,9 +6,25 @@
  * @fileoverview 'address-edit-dialog' is the dialog that allows editing a saved
  * address.
  */
-cr.define('settings.address', function() {
+import {html, flush, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
+import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
+import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import {assertNotReached} from 'chrome://resources/js/assert.m.js';
+import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import 'chrome://resources/cr_elements/md_select_css.m.js';
+import '../settings_shared_css.m.js';
+import '../settings_vars_css.m.js';
+import '../controls/settings_textarea.m.js';
+
   Polymer({
     is: 'settings-address-edit-dialog',
+
+    _template: html`{__html_template__}`,
 
     behaviors: [
       I18nBehavior,
@@ -33,7 +49,7 @@ cr.define('settings.address', function() {
         observer: 'onUpdateCountryCode_',
       },
 
-      /** @private {!Array<!Array<!settings.address.AddressComponentUI>>} */
+      /** @private {!Array<!Array<!AddressComponentUI>>} */
       addressWrapper_: Object,
 
       /** @private */
@@ -49,7 +65,7 @@ cr.define('settings.address', function() {
     /** @override */
     attached() {
       this.countryInfo =
-          settings.address.CountryDetailManagerImpl.getInstance();
+          CountryDetailManagerImpl.getInstance();
       this.countryInfo.getCountryList().then(countryList => {
         this.countries_ = countryList;
 
@@ -78,7 +94,7 @@ cr.define('settings.address', function() {
 
     /**
      * Returns a class to denote how long this entry is.
-     * @param {settings.address.AddressComponentUI} setting
+     * @param {AddressComponentUI} setting
      * @return {string}
      */
     long_(setting) {
@@ -95,10 +111,10 @@ cr.define('settings.address', function() {
       this.countryInfo.getAddressFormat(countryCode).then(format => {
         this.addressWrapper_ = format.components.map(
             component => component.row.map(
-                c => new settings.address.AddressComponentUI(this.address, c)));
+                c => new AddressComponentUI(this.address, c)));
 
         // Flush dom before resize and savability updates.
-        Polymer.dom.flush();
+        flush();
 
         this.updateCanSave_();
 
@@ -316,9 +332,9 @@ cr.define('settings.address', function() {
 
   /**
    * Default implementation. Override for testing.
-   * @implements {settings.address.CountryDetailManager}
+   * @implements {CountryDetailManager}
    */
-  /* #export */ class CountryDetailManagerImpl {
+  export class CountryDetailManagerImpl {
     /** @override */
     getCountryList() {
       return new Promise(function(callback) {
@@ -334,12 +350,5 @@ cr.define('settings.address', function() {
     }
   }
 
-  cr.addSingletonGetter(CountryDetailManagerImpl);
+  addSingletonGetter(CountryDetailManagerImpl);
 
-  // #cr_define_end
-  return {
-    AddressComponentUI: AddressComponentUI,
-    CountryDetailManager: CountryDetailManager,
-    CountryDetailManagerImpl: CountryDetailManagerImpl,
-  };
-});

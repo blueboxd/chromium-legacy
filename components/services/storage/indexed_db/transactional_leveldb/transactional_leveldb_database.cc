@@ -105,16 +105,12 @@ TransactionalLevelDBDatabase::~TransactionalLevelDBDatabase() {
 
 leveldb::Status TransactionalLevelDBDatabase::Put(const StringPiece& key,
                                                   std::string* value) {
-  base::TimeTicks begin_time = base::TimeTicks::Now();
-
   leveldb::WriteOptions write_options;
   write_options.sync = kSyncWrites;
 
   const leveldb::Status s =
       db()->Put(write_options, leveldb_env::MakeSlice(key),
                 leveldb_env::MakeSlice(*value));
-  UMA_HISTOGRAM_TIMES("WebCore.IndexedDB.LevelDB.PutTime",
-                      base::TimeTicks::Now() - begin_time);
   EvictAllIterators();
   last_modified_ = clock_->Now();
   return s;

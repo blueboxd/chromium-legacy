@@ -976,11 +976,11 @@ void RenderWidgetHostViewAura::GestureEventAck(
     const blink::WebGestureEvent& event,
     blink::mojom::InputEventResultState ack_result) {
   const blink::WebInputEvent::Type event_type = event.GetType();
-  if (event_type == blink::WebGestureEvent::kGestureScrollBegin ||
-      event_type == blink::WebGestureEvent::kGestureScrollEnd) {
+  if (event_type == blink::WebGestureEvent::Type::kGestureScrollBegin ||
+      event_type == blink::WebGestureEvent::Type::kGestureScrollEnd) {
     if (host()->delegate()) {
       host()->delegate()->SetTopControlsGestureScrollInProgress(
-          event_type == blink::WebGestureEvent::kGestureScrollBegin);
+          event_type == blink::WebGestureEvent::Type::kGestureScrollBegin);
     }
   }
 
@@ -994,7 +994,7 @@ void RenderWidgetHostViewAura::GestureEventAck(
     // action would complete at the end of the active fling progress which
     // causes noticeable delay in cases that the fling velocity is large.
     // https://crbug.com/797855
-    if (event_type == blink::WebInputEvent::kGestureScrollUpdate &&
+    if (event_type == blink::WebInputEvent::Type::kGestureScrollUpdate &&
         event.data.scroll_update.inertial_phase ==
             blink::WebGestureEvent::InertialPhaseState::kMomentum &&
         overscroll_controller_->overscroll_mode() != OVERSCROLL_NONE) {
@@ -1021,7 +1021,8 @@ void RenderWidgetHostViewAura::ProcessAckedTouchEvent(
 
   // The TouchScrollStarted event is generated & consumed downstream from the
   // TouchEventQueue. So we don't expect an ACK up here.
-  DCHECK(touch.event.GetType() != blink::WebInputEvent::kTouchScrollStarted);
+  DCHECK(touch.event.GetType() !=
+         blink::WebInputEvent::Type::kTouchScrollStarted);
 
   ui::EventResult result =
       (ack_result == blink::mojom::InputEventResultState::kConsumed)
@@ -1030,16 +1031,16 @@ void RenderWidgetHostViewAura::ProcessAckedTouchEvent(
 
   blink::WebTouchPoint::State required_state;
   switch (touch.event.GetType()) {
-    case blink::WebInputEvent::kTouchStart:
+    case blink::WebInputEvent::Type::kTouchStart:
       required_state = blink::WebTouchPoint::kStatePressed;
       break;
-    case blink::WebInputEvent::kTouchEnd:
+    case blink::WebInputEvent::Type::kTouchEnd:
       required_state = blink::WebTouchPoint::kStateReleased;
       break;
-    case blink::WebInputEvent::kTouchMove:
+    case blink::WebInputEvent::Type::kTouchMove:
       required_state = blink::WebTouchPoint::kStateMoved;
       break;
-    case blink::WebInputEvent::kTouchCancel:
+    case blink::WebInputEvent::Type::kTouchCancel:
       required_state = blink::WebTouchPoint::kStateCancelled;
       break;
     default:
@@ -1079,7 +1080,7 @@ RenderWidgetHostViewAura::CreateSyntheticGestureTarget() {
 blink::mojom::InputEventResultState RenderWidgetHostViewAura::FilterInputEvent(
     const blink::WebInputEvent& input_event) {
   bool consumed = false;
-  if (input_event.GetType() == WebInputEvent::kGestureFlingStart) {
+  if (input_event.GetType() == WebInputEvent::Type::kGestureFlingStart) {
     const WebGestureEvent& gesture_event =
         static_cast<const WebGestureEvent&>(input_event);
     // Zero-velocity touchpad flings are an Aura-specific signal that the
@@ -1099,7 +1100,7 @@ blink::mojom::InputEventResultState RenderWidgetHostViewAura::FilterInputEvent(
     return blink::mojom::InputEventResultState::kNotConsumed;
 
   if (consumed &&
-      input_event.GetType() == blink::WebInputEvent::kGestureFlingStart) {
+      input_event.GetType() == blink::WebInputEvent::Type::kGestureFlingStart) {
     // Here we indicate that there was no consumer for this event, as
     // otherwise the fling animation system will try to run an animation
     // and will also expect a notification when the fling ends. Since

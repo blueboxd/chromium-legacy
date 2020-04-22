@@ -24,8 +24,8 @@ group("query_tiles") {
 
 source_set("public") {
   sources = [
-    "query_tile_entry.cc",
-    "query_tile_entry.h",
+    "tile.cc",
+    "tile.h",
     "tile_service.h",
   ]
 
@@ -111,7 +111,7 @@ if (is_android) {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [ "query_tile_entry_unittest.cc" ]
+  sources = [ "tile_unittest.cc" ]
   visibility = [ "//chrome/browser/upboarding:unit_tests" ]
   deps = [
     ":public",

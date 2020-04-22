@@ -228,7 +228,7 @@ class InteractiveRenderWidget : public RenderWidget {
   // Overridden from RenderWidget:
   bool WillHandleGestureEvent(const blink::WebGestureEvent& event) override {
     if (always_overscroll_ &&
-        event.GetType() == blink::WebInputEvent::kGestureScrollUpdate) {
+        event.GetType() == blink::WebInputEvent::Type::kGestureScrollUpdate) {
       DidOverscroll(gfx::Vector2dF(event.data.scroll_update.delta_x,
                                    event.data.scroll_update.delta_y),
                     gfx::Vector2dF(event.data.scroll_update.delta_x,
@@ -405,9 +405,9 @@ TEST_F(RenderWidgetExternalWidgetUnittest, EventOverscroll) {
       .WillRepeatedly(
           ::testing::Return(blink::WebInputEventResult::kNotHandled));
 
-  blink::WebGestureEvent scroll(blink::WebInputEvent::kGestureScrollUpdate,
-                                blink::WebInputEvent::kNoModifiers,
-                                ui::EventTimeForNow());
+  blink::WebGestureEvent scroll(
+      blink::WebInputEvent::Type::kGestureScrollUpdate,
+      blink::WebInputEvent::kNoModifiers, ui::EventTimeForNow());
   scroll.SetPositionInWidget(gfx::PointF(-10, 0));
   scroll.data.scroll_update.delta_y = 10;
   MockHandledEventCallback handled_event;

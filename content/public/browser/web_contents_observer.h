@@ -607,6 +607,12 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   virtual void AudioContextPlaybackStopped(
       const AudioContextId& audio_context_id) {}
 
+  // Called after the contents replaces the |predecessor_contents| in its
+  // container due to portal activation. The |predecessor_contents| is now a
+  // portal pending adoption. |predecessor_contents| is non-null, but may
+  // subsequently be destroyed if it is not adopted.
+  virtual void DidActivatePortal(WebContents* predecessor_contents) {}
+
   // IPC::Listener implementation.
   // DEPRECATED: Use (i.e. override) the other overload instead:
   //     virtual bool OnMessageReceived(const IPC::Message& message,

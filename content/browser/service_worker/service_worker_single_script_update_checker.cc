@@ -172,12 +172,8 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
     resource_request.credentials_mode =
         network::mojom::CredentialsMode::kSameOrigin;
 
-    // |fetch_request_context_type| and |resource_type| roughly correspond to
-    // the request's |destination| in the Fetch spec.
-    // The destination is "serviceworker" for the main script.
+    // The request's destination is "serviceworker" for the main script.
     // https://w3c.github.io/ServiceWorker/#update-algorithm
-    resource_request.fetch_request_context_type =
-        static_cast<int>(blink::mojom::RequestContextType::SERVICE_WORKER);
     resource_request.destination =
         network::mojom::RequestDestination::kServiceWorker;
     resource_request.resource_type =
@@ -194,12 +190,8 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
     // https://html.spec.whatwg.org/C/#fetch-a-classic-worker-imported-script
     DCHECK_EQ(network::mojom::RequestMode::kNoCors, resource_request.mode);
 
-    // |fetch_request_context_type| and |resource_type| roughly correspond to
-    // the request's |destination| in the Fetch spec.
-    // The destination is "script" for the imported script.
+    // The request's destination is "script" for the imported script.
     // https://w3c.github.io/ServiceWorker/#update-algorithm
-    resource_request.fetch_request_context_type =
-        static_cast<int>(blink::mojom::RequestContextType::SCRIPT);
     resource_request.destination = network::mojom::RequestDestination::kScript;
     resource_request.resource_type =
         static_cast<int>(blink::mojom::ResourceType::kScript);

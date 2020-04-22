@@ -631,7 +631,7 @@ class DownloadProtectionServiceTest : public ChromeRenderViewHostTestHarness {
   // browser/renderer navigations.
   void SimulateLinkClick(const GURL& url) {
     content::WebContentsTester::For(web_contents())
-        ->TestDidReceiveInputEvent(blink::WebInputEvent::kMouseDown);
+        ->TestDidReceiveInputEvent(blink::WebInputEvent::Type::kMouseDown);
     std::unique_ptr<content::NavigationSimulator> navigation =
         content::NavigationSimulator::CreateRendererInitiated(
             url, web_contents()->GetMainFrame());

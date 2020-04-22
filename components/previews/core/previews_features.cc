@@ -47,11 +47,7 @@ const base::Feature kStalePreviewsTimestamp{"StalePreviewsTimestamp",
 // loading resources which includes a base feature and a UserConsistent-specific
 // experiment feature.
 const base::FeatureState kResourceLoadingHintsDefaultFeatureState =
-#if defined(OS_ANDROID)
-    base::FEATURE_ENABLED_BY_DEFAULT;
-#else   // !defined(OS_ANDROID)
     base::FEATURE_DISABLED_BY_DEFAULT;
-#endif  // defined(OS_ANDROID)
 const base::Feature kResourceLoadingHints{
     "ResourceLoadingHints", kResourceLoadingHintsDefaultFeatureState};
 const base::Feature kResourceLoadingHintsUserConsistentStudy{

@@ -317,6 +317,11 @@ void BrowserNonClientFrameViewAsh::UpdateWindowIcon() {
 void BrowserNonClientFrameViewAsh::UpdateWindowTitle() {
   if (!frame()->IsFullscreen() && frame_header_)
     frame_header_->SchedulePaintForTitle();
+
+  frame()->GetNativeWindow()->SetProperty(
+      ash::kWindowOverviewTitleKey,
+      browser_view()->browser()->GetWindowTitleForCurrentTab(
+          /*include_app_name=*/false));
 }
 
 void BrowserNonClientFrameViewAsh::SizeConstraintsChanged() {}

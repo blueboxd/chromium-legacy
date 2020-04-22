@@ -23,6 +23,9 @@ import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.history.BrowsingHistoryBridge;
+import org.chromium.chrome.browser.history.HistoryItem;
+import org.chromium.chrome.browser.history.TestBrowsingHistoryObserver;
 import org.chromium.chrome.browser.login.ChromeHttpAuthHandler;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -38,6 +41,7 @@ import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Tests for the chrome/ layer support of the HTML portal element.
@@ -116,6 +120,17 @@ public class PortalsTest {
         int currSwapCount = swapWaiter.getCallCount();
         JavaScriptUtils.executeJavaScript(tab.getWebContents(), code);
         swapWaiter.waitForCallback(currSwapCount, 1);
+    }
+
+    private List<HistoryItem> getBrowsingHistory() throws TimeoutException {
+        TestBrowsingHistoryObserver observer = new TestBrowsingHistoryObserver();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            BrowsingHistoryBridge provider = new BrowsingHistoryBridge(/* isIncognito */ false);
+            provider.setObserver(observer);
+            provider.queryHistory(/* query */ "");
+        });
+        observer.getQueryCallback().waitForCallback(0);
+        return observer.getHistoryQueryResults();
     }
 
     /**
@@ -416,5 +431,41 @@ public class PortalsTest {
         CriteriaHelper.pollUiThread(Criteria.equals(true, authHandler::isShowingAuthDialog));
         ThreadUtils.runOnUiThread(() -> authHandler.proceed("basicuser", "secret"));
         CriteriaHelper.pollUiThread(Criteria.equals("basicuser/secret", portalContents::getTitle));
+    }
+
+    /**
+     * Tests that content in a portal is considered a page visit in browser history upon activation.
+     */
+    @Test
+    @MediumTest
+    @Feature({"Portals"})
+    public void testBrowserHistoryUpdatesOnActivation() throws Exception {
+        String mainUrl = mTestServer.getURL(
+                "/chrome/test/data/android/portals/portal-to-basic-content.html");
+        String mainTitle = "Test Portal";
+        String portalUrl =
+                mTestServer.getURL("/chrome/test/data/android/portals/basic-content.html");
+        String portalTitle = "Test Portal Content";
+
+        mActivityTestRule.startMainActivityWithURL(mainUrl);
+        Tab tab = mActivityTestRule.getActivity().getActivityTab();
+
+        // Content loaded in a portal should not be considered a page visit by the
+        // user.
+        List<HistoryItem> history = getBrowsingHistory();
+        Assert.assertEquals(1, history.size());
+        Assert.assertEquals(mainUrl, history.get(0).getUrl());
+        Assert.assertEquals(mainTitle, history.get(0).getTitle());
+
+        executeScriptAndAwaitSwap(tab, "activatePortal();");
+
+        // Now that the portal has activated, its contents are presented to the user
+        // as a navigation in the tab, so this should be considered a page visit.
+        history = getBrowsingHistory();
+        Assert.assertEquals(2, history.size());
+        Assert.assertEquals(portalUrl, history.get(0).getUrl());
+        Assert.assertEquals(portalTitle, history.get(0).getTitle());
+        Assert.assertEquals(mainUrl, history.get(1).getUrl());
+        Assert.assertEquals(mainTitle, history.get(1).getTitle());
     }
 }

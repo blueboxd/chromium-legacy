@@ -191,10 +191,11 @@ MEDIA_EXPORT extern const base::Feature kUsePooledSharedImageVideoProvider;
 
 #if defined(OS_WIN)
 MEDIA_EXPORT extern const base::Feature kDelayCopyNV12Textures;
+MEDIA_EXPORT extern const base::Feature kDirectShowGetPhotoState;
 MEDIA_EXPORT extern const base::Feature kMediaFoundationAsyncH264Encoding;
+MEDIA_EXPORT extern const base::Feature kMediaFoundationAV1Decoding;
 MEDIA_EXPORT extern const base::Feature kMediaFoundationVideoCapture;
 MEDIA_EXPORT extern const base::Feature kMediaFoundationVP8Decoding;
-MEDIA_EXPORT extern const base::Feature kDirectShowGetPhotoState;
 #endif  // defined(OS_WIN)
 
 // Based on a |command_line| and the current platform, returns the effective

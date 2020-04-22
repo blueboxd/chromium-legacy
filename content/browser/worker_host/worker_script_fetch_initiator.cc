@@ -153,14 +153,10 @@ void WorkerScriptFetchInitiator::Start(
 
   switch (resource_type) {
     case blink::mojom::ResourceType::kWorker:
-      resource_request->fetch_request_context_type =
-          static_cast<int>(blink::mojom::RequestContextType::WORKER);
       resource_request->destination =
           network::mojom::RequestDestination::kWorker;
       break;
     case blink::mojom::ResourceType::kSharedWorker:
-      resource_request->fetch_request_context_type =
-          static_cast<int>(blink::mojom::RequestContextType::SHARED_WORKER);
       resource_request->destination =
           network::mojom::RequestDestination::kSharedWorker;
       break;

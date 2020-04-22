@@ -8,53 +8,50 @@
 
 #include "base/logging.h"
 #include "third_party/blink/renderer/modules/webtransport/quic_transport.h"
-#include "third_party/blink/renderer/modules/webtransport/web_transport_close_proxy.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 
 namespace blink {
-
-namespace {
-
-class CloseProxy : public WebTransportCloseProxy {
- public:
-  CloseProxy(QuicTransport* quic_transport,
-             OutgoingStream* outgoing_stream,
-             uint32_t stream_id)
-      : quic_transport_(quic_transport),
-        outgoing_stream_(outgoing_stream),
-        stream_id_(stream_id) {}
-
-  void OnIncomingStreamClosed(bool fin_received) override {
-    // OnIncomingStreamClosed only applies to IncomingStreams.
-  }
-
-  void SendFin() override { quic_transport_->SendFin(stream_id_); }
-
-  void ForgetStream() override { NOTREACHED(); }
-
-  void Reset() override { outgoing_stream_->Reset(); }
-
-  void Trace(Visitor* visitor) override {
-    visitor->Trace(quic_transport_);
-    visitor->Trace(outgoing_stream_);
-    WebTransportCloseProxy::Trace(visitor);
-  }
-
- private:
-  const Member<QuicTransport> quic_transport_;
-  const Member<OutgoingStream> outgoing_stream_;
-  const uint32_t stream_id_;
-};
-
-}  // namespace
 
 SendStream::SendStream(ScriptState* script_state,
                        QuicTransport* quic_transport,
                        uint32_t stream_id,
                        mojo::ScopedDataPipeProducerHandle handle)
-    : OutgoingStream(
-          script_state,
-          MakeGarbageCollected<CloseProxy>(quic_transport, this, stream_id),
-          std::move(handle)) {}
+    : outgoing_stream_(MakeGarbageCollected<OutgoingStream>(script_state,
+                                                            this,
+                                                            std::move(handle))),
+      quic_transport_(quic_transport),
+      stream_id_(stream_id) {}
+
+SendStream::~SendStream() = default;
+
+void SendStream::OnIncomingStreamClosed(bool fin_received) {
+  // SendStream is not an IncomingStream, so this shouldn't be called.
+  NOTREACHED();
+}
+
+void SendStream::Reset() {
+  outgoing_stream_->Reset();
+}
+
+void SendStream::ContextDestroyed() {
+  outgoing_stream_->ContextDestroyed();
+}
+
+void SendStream::SendFin() {
+  quic_transport_->SendFin(stream_id_);
+}
+
+void SendStream::ForgetStream() {
+  quic_transport_->ForgetStream(stream_id_);
+}
+
+void SendStream::Trace(Visitor* visitor) {
+  visitor->Trace(outgoing_stream_);
+  visitor->Trace(quic_transport_);
+  ScriptWrappable::Trace(visitor);
+  WebTransportStream::Trace(visitor);
+  OutgoingStream::Client::Trace(visitor);
+}
 
 }  // namespace blink

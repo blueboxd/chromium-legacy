@@ -47,6 +47,7 @@ class PLATFORM_EXPORT AVIFImageDecoder final : public ImageDecoder {
   size_t DecodeFrameCount() override;
   void InitializeNewFrame(size_t) override;
   void Decode(size_t) override;
+  bool CanReusePreviousFrameBuffer(size_t) const override;
 
   // Creates |decoder_| and decodes the first frame.
   void MaybeCreateDemuxer();

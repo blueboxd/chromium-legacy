@@ -34,6 +34,7 @@
 #include "base/macros.h"
 #include "base/time/default_tick_clock.h"
 #include "base/unguessable_token.h"
+#include "build/build_config.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
@@ -64,6 +65,9 @@
 #include "third_party/blink/renderer/platform/loader/fetch/client_hints_preferences.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
+#if defined(OS_MACOSX)
+#include "third_party/blink/public/mojom/input/text_input_host.mojom-blink.h"
+#endif
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -553,6 +557,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void SetInitialFocus(bool reverse) override;
   void EnablePreferredSizeChangedMode() override;
   void ZoomToFindInPageRect(const gfx::Rect& rect_in_root_frame) override;
+#if defined(OS_MACOSX)
+  void GetCharacterIndexAtPoint(const gfx::Point& point) final;
+#endif
 
   SystemClipboard* GetSystemClipboard();
   RawSystemClipboard* GetRawSystemClipboard();
@@ -566,6 +573,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
  private:
   friend class FrameNavigationDisabler;
+  FRIEND_TEST_ALL_PREFIXES(LocalFrameTest, CharacterIndexAtPointWithPinchZoom);
 
   // Frame protected overrides:
   void DetachImpl(FrameDetachType) override;
@@ -618,6 +626,10 @@ class CORE_EXPORT LocalFrame final : public Frame,
       const IntPoint& pos_in_viewport);
 
   bool ShouldThrottleDownload();
+
+#if defined(OS_MACOSX)
+  mojom::blink::TextInputHost& GetTextInputHost();
+#endif
 
   static void BindToReceiver(
       blink::LocalFrame* frame,
@@ -674,6 +686,10 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // This is declared mutable so that the service endpoint can be cached by
   // const methods.
   mutable mojo::Remote<mojom::blink::ReportingServiceProxy> reporting_service_;
+
+#if defined(OS_MACOSX)
+  mojo::Remote<mojom::blink::TextInputHost> text_input_host_;
+#endif
 
   ViewportIntersectionState intersection_state_;
 

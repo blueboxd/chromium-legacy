@@ -28,5 +28,11 @@ const base::Feature kEnablePlatformHighContrastInkDrop{
 const base::Feature kEnableViewPaintOptimization{
     "EnableViewPaintOptimization", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Change views::Textfield to take focus on a completed tap, rather than
+// immediately on tap down. This only affects touch input. See
+// https://crbug.com/1069634.
+const base::Feature kTextfieldFocusOnTapUp{"TextfieldFocusOnTapUp",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace views

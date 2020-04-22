@@ -849,6 +849,18 @@ void FrameImpl::SetMediaSessionId(uint64_t session_id) {
   media_session_id_ = session_id;
 }
 
+void FrameImpl::MediaStartedPlaying(const MediaPlayerInfo& video_type,
+                                    const content::MediaPlayerId& id) {
+  base::RecordComputedAction("MediaPlay");
+}
+
+void FrameImpl::MediaStoppedPlaying(
+    const MediaPlayerInfo& video_type,
+    const content::MediaPlayerId& id,
+    WebContentsObserver::MediaStoppedReason reason) {
+  base::RecordComputedAction("MediaPause");
+}
+
 void FrameImpl::ForceContentDimensions(
     std::unique_ptr<fuchsia::ui::gfx::vec2> web_dips) {
   if (!web_dips) {

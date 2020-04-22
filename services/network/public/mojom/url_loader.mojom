@@ -260,12 +260,6 @@ struct URLRequest {
   // The integrity used in Fetch API.
   string fetch_integrity;
 
-  // The request context passed to the ServiceWorker.
-  // Note: this is an enum of type content::RequestContextType.
-  // TODO(jam): remove this from the struct since network service shouldn't know
-  // about this.
-  int32 fetch_request_context_type;
-
   // https://fetch.spec.whatwg.org/#concept-request-destiantion
   RequestDestination destination;
 

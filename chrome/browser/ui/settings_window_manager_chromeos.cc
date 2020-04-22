@@ -148,14 +148,19 @@ Browser* SettingsWindowManager::FindBrowserForProfile(Profile* profile) {
 }
 
 bool SettingsWindowManager::IsSettingsBrowser(Browser* browser) const {
+  DCHECK(browser);
+
   Profile* profile = browser->profile();
   if (web_app::SystemWebAppManager::IsEnabled()) {
+    if (!browser->app_controller() || !browser->app_controller()->HasAppId())
+      return false;
+
     // TODO(calamity): Determine whether, during startup, we need to wait for
     // app install and then provide a valid answer here.
     base::Optional<std::string> settings_app_id =
         web_app::GetAppIdForSystemWebApp(profile,
                                          web_app::SystemAppType::SETTINGS);
-    return settings_app_id && browser->app_controller() &&
+    return settings_app_id &&
            browser->app_controller()->GetAppId() == settings_app_id.value();
   } else {
     auto iter = settings_session_map_.find(profile);

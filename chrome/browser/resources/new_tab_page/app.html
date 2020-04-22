@@ -57,7 +57,8 @@
     margin-bottom: 8px;
   }
 
-  ntp-fakebox {
+  ntp-fakebox,
+  ntp-realbox {
     margin-bottom: 32px;
   }
 
@@ -210,8 +211,12 @@
       <ntp-logo id="logo" doodle-allowed$="[[doodleAllowed_]]"
           single-colored$="[[singleColoredLogo_]]">
       </ntp-logo>
-      <ntp-fakebox id="fakebox" on-open-voice-search="onVoiceSearchClick_">
+      <ntp-fakebox id="fakebox" on-open-voice-search="onVoiceSearchClick_"
+          hidden$="[[realboxEnabled_]]">
       </ntp-fakebox>
+      <ntp-realbox id="realbox" on-open-voice-search="onVoiceSearchClick_"
+          theme="[[theme_.searchBox]]" hidden$="[[!realboxEnabled_]]">
+      </ntp-realbox>
       <ntp-most-visited id="mostVisited" dark$="[[theme_.isDark]]">
       </ntp-most-visited>
       <dom-if if="[[showCustomizeDialog_]]" restamp>

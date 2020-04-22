@@ -125,7 +125,7 @@ BOOL forceMagicMouse = NO;
 - (void)rendererHandledGestureScrollEvent:(const blink::WebGestureEvent&)event
                                  consumed:(BOOL)consumed {
   switch (event.GetType()) {
-    case blink::WebInputEvent::kGestureScrollBegin:
+    case blink::WebInputEvent::Type::kGestureScrollBegin:
       if (event.data.scroll_begin.synthetic ||
           event.data.scroll_begin.inertial_phase ==
               blink::WebGestureEvent::InertialPhaseState::kMomentum) {
@@ -133,7 +133,7 @@ BOOL forceMagicMouse = NO;
       }
       _waitingForFirstGestureScroll = YES;
       break;
-    case blink::WebInputEvent::kGestureScrollUpdate:
+    case blink::WebInputEvent::Type::kGestureScrollUpdate:
       if (_waitingForFirstGestureScroll)
         _firstScrollUnconsumed = !consumed;
       _waitingForFirstGestureScroll = NO;

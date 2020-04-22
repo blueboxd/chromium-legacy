@@ -61,15 +61,15 @@ uint16_t ButtonToButtonsBitfield(WebPointerProperties::Button button) {
 
 const AtomicString& PointerEventNameForEventType(WebInputEvent::Type type) {
   switch (type) {
-    case WebInputEvent::kPointerDown:
+    case WebInputEvent::Type::kPointerDown:
       return event_type_names::kPointerdown;
-    case WebInputEvent::kPointerUp:
+    case WebInputEvent::Type::kPointerUp:
       return event_type_names::kPointerup;
-    case WebInputEvent::kPointerMove:
+    case WebInputEvent::Type::kPointerMove:
       return event_type_names::kPointermove;
-    case WebInputEvent::kPointerRawUpdate:
+    case WebInputEvent::Type::kPointerRawUpdate:
       return event_type_names::kPointerrawupdate;
-    case WebInputEvent::kPointerCancel:
+    case WebInputEvent::Type::kPointerCancel:
       return event_type_names::kPointercancel;
     default:
       NOTREACHED();
@@ -100,8 +100,8 @@ void UpdateCommonPointerEventInit(const WebPointerEvent& web_pointer_event,
       web_pointer_event_in_root_frame, dom_window, pointer_event_init);
   if (RuntimeEnabledFeatures::ConsolidatedMovementXYEnabled() &&
       !web_pointer_event.is_raw_movement_event &&
-      (web_pointer_event.GetType() == WebInputEvent::kPointerMove ||
-       web_pointer_event.GetType() == WebInputEvent::kPointerRawUpdate)) {
+      (web_pointer_event.GetType() == WebInputEvent::Type::kPointerMove ||
+       web_pointer_event.GetType() == WebInputEvent::Type::kPointerRawUpdate)) {
     // TODO(crbug.com/907309): Current movementX/Y is in physical pixel when
     // zoom-for-dsf is enabled. Here we apply the device-scale-factor to align
     // with the current behavior. We need to figure out what is the best
@@ -233,8 +233,8 @@ PointerEventInit* PointerEventFactory::ConvertIdTypeButtonsEvent(
     // touching the screen. This misconception comes from the touch devices and
     // is not correct for stylus.
     buttons = static_cast<unsigned>(
-        (web_pointer_event.GetType() == WebInputEvent::kPointerUp ||
-         web_pointer_event.GetType() == WebInputEvent::kPointerCancel)
+        (web_pointer_event.GetType() == WebInputEvent::Type::kPointerUp ||
+         web_pointer_event.GetType() == WebInputEvent::Type::kPointerCancel)
             ? WebPointerProperties::Buttons::kNoButton
             : WebPointerProperties::Buttons::kLeft);
   }
@@ -285,18 +285,18 @@ PointerEvent* PointerEventFactory::Create(
     const Vector<WebPointerEvent>& predicted_events,
     LocalDOMWindow* view) {
   const WebInputEvent::Type event_type = web_pointer_event.GetType();
-  DCHECK(event_type == WebInputEvent::kPointerDown ||
-         event_type == WebInputEvent::kPointerUp ||
-         event_type == WebInputEvent::kPointerMove ||
-         event_type == WebInputEvent::kPointerRawUpdate ||
-         event_type == WebInputEvent::kPointerCancel);
+  DCHECK(event_type == WebInputEvent::Type::kPointerDown ||
+         event_type == WebInputEvent::Type::kPointerUp ||
+         event_type == WebInputEvent::Type::kPointerMove ||
+         event_type == WebInputEvent::Type::kPointerRawUpdate ||
+         event_type == WebInputEvent::Type::kPointerCancel);
 
   PointerEventInit* pointer_event_init =
       ConvertIdTypeButtonsEvent(web_pointer_event);
 
   AtomicString type = PointerEventNameForEventType(event_type);
-  if (event_type == WebInputEvent::kPointerDown ||
-      event_type == WebInputEvent::kPointerUp) {
+  if (event_type == WebInputEvent::Type::kPointerDown ||
+      event_type == WebInputEvent::Type::kPointerUp) {
     WebPointerProperties::Button button = web_pointer_event.button;
     // TODO(mustaq): Fix when the spec starts supporting hovering erasers.
     if (web_pointer_event.pointer_type ==
@@ -306,10 +306,10 @@ PointerEvent* PointerEventFactory::Create(
     pointer_event_init->setButton(static_cast<int>(button));
 
     // Make sure chorded buttons fire pointermove instead of pointerup/down.
-    if ((event_type == WebInputEvent::kPointerDown &&
+    if ((event_type == WebInputEvent::Type::kPointerDown &&
          (pointer_event_init->buttons() & ~ButtonToButtonsBitfield(button)) !=
              0) ||
-        (event_type == WebInputEvent::kPointerUp &&
+        (event_type == WebInputEvent::Type::kPointerUp &&
          pointer_event_init->buttons() != 0))
       type = event_type_names::kPointermove;
   } else {
@@ -353,7 +353,7 @@ PointerEvent* PointerEventFactory::Create(
 void PointerEventFactory::SetLastPosition(int pointer_id,
                                           const FloatPoint& position_in_screen,
                                           WebInputEvent::Type event_type) {
-  if (event_type == WebInputEvent::kPointerRawUpdate)
+  if (event_type == WebInputEvent::Type::kPointerRawUpdate)
     pointerrawupdate_last_position_mapping_.Set(pointer_id, position_in_screen);
   else
     pointer_id_last_position_mapping_.Set(pointer_id, position_in_screen);
@@ -368,7 +368,7 @@ FloatPoint PointerEventFactory::GetLastPointerPosition(
     int pointer_id,
     const WebPointerProperties& event,
     WebInputEvent::Type event_type) const {
-  if (event_type == WebInputEvent::kPointerRawUpdate) {
+  if (event_type == WebInputEvent::Type::kPointerRawUpdate) {
     if (pointerrawupdate_last_position_mapping_.Contains(pointer_id))
       return pointerrawupdate_last_position_mapping_.at(pointer_id);
   } else {

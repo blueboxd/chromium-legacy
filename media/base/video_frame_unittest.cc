@@ -682,29 +682,44 @@ TEST(VideoFrameMetadata, SetAndThenGetAllKeysForAllTypes) {
     metadata.Clear();
 
     EXPECT_FALSE(metadata.HasKey(key));
-    metadata.SetTimeDelta(key, base::TimeDelta::FromInternalValue(42 + i));
+    base::TimeDelta reference_delta = base::TimeDelta::FromMilliseconds(42 + i);
+    metadata.SetTimeDelta(key, reference_delta);
     EXPECT_TRUE(metadata.HasKey(key));
     base::TimeDelta delta_value;
     EXPECT_TRUE(metadata.GetTimeDelta(key, &delta_value));
-    EXPECT_EQ(base::TimeDelta::FromInternalValue(42 + i), delta_value);
+    EXPECT_EQ(reference_delta, delta_value);
     metadata.Clear();
 
     EXPECT_FALSE(metadata.HasKey(key));
-    metadata.SetTimeTicks(key, base::TimeTicks::FromInternalValue(~(0LL) + i));
+    base::TimeTicks reference_ticks =
+        base::TimeTicks() + base::TimeDelta::FromMilliseconds(1234 + i);
+    metadata.SetTimeTicks(key, reference_ticks);
     EXPECT_TRUE(metadata.HasKey(key));
     base::TimeTicks ticks_value;
     EXPECT_TRUE(metadata.GetTimeTicks(key, &ticks_value));
-    EXPECT_EQ(base::TimeTicks::FromInternalValue(~(0LL) + i), ticks_value);
+    EXPECT_EQ(reference_ticks, ticks_value);
     metadata.Clear();
 
     EXPECT_FALSE(metadata.HasKey(key));
-    metadata.SetValue(key, std::make_unique<base::Value>());
+    gfx::Rect reference_rect = gfx::Rect(3, 5, 240, 360);
+    metadata.SetRect(key, reference_rect);
     EXPECT_TRUE(metadata.HasKey(key));
-    const base::Value* const null_value = metadata.GetValue(key);
-    EXPECT_TRUE(null_value);
-    EXPECT_EQ(base::Value::Type::NONE, null_value->type());
+    gfx::Rect rect_value;
+    EXPECT_TRUE(metadata.GetRect(key, &rect_value));
+    EXPECT_EQ(reference_rect, rect_value);
     metadata.Clear();
   }
+
+  // The Get/SetRotation methods only accept ROTATION as a key.
+  auto rot_key = VideoFrameMetadata::Key::ROTATION;
+  EXPECT_FALSE(metadata.HasKey(rot_key));
+  VideoRotation reference_rot = VideoRotation::VIDEO_ROTATION_270;
+  metadata.SetRotation(rot_key, reference_rot);
+  EXPECT_TRUE(metadata.HasKey(rot_key));
+  VideoRotation rot_value;
+  EXPECT_TRUE(metadata.GetRotation(rot_key, &rot_value));
+  EXPECT_EQ(reference_rot, rot_value);
+  metadata.Clear();
 }
 
 TEST(VideoFrameMetadata, PassMetadataViaIntermediary) {
@@ -716,6 +731,16 @@ TEST(VideoFrameMetadata, PassMetadataViaIntermediary) {
 
   VideoFrameMetadata result;
   result.MergeMetadataFrom(&expected);
+
+  for (int i = 0; i < VideoFrameMetadata::NUM_KEYS; ++i) {
+    const VideoFrameMetadata::Key key = static_cast<VideoFrameMetadata::Key>(i);
+    int value = -1;
+    EXPECT_TRUE(result.GetInteger(key, &value));
+    EXPECT_EQ(i, value);
+  }
+
+  result.Clear();
+  result.MergeInternalValuesFrom(expected.GetInternalValues());
 
   for (int i = 0; i < VideoFrameMetadata::NUM_KEYS; ++i) {
     const VideoFrameMetadata::Key key = static_cast<VideoFrameMetadata::Key>(i);

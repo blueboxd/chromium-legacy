@@ -347,7 +347,7 @@ class SpuriousMouseMoveEventObserver
   }
 
   void OnInputEvent(const blink::WebInputEvent& event) override {
-    EXPECT_NE(blink::WebInputEvent::kMouseMove, event.GetType())
+    EXPECT_NE(blink::WebInputEvent::Type::kMouseMove, event.GetType())
         << "Unexpected mouse move event.";
   }
 
@@ -392,7 +392,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
   SpuriousMouseMoveEventObserver mouse_observer(GetRenderWidgetHost());
 
   blink::WebGestureEvent gesture_scroll_begin(
-      blink::WebGestureEvent::kGestureScrollBegin,
+      blink::WebGestureEvent::Type::kGestureScrollBegin,
       blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests(),
       blink::WebGestureDevice::kTouchscreen);
@@ -403,7 +403,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
   GetRenderWidgetHost()->ForwardGestureEvent(gesture_scroll_begin);
 
   blink::WebGestureEvent gesture_scroll_update(
-      blink::WebGestureEvent::kGestureScrollUpdate,
+      blink::WebGestureEvent::Type::kGestureScrollUpdate,
       blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests(),
       blink::WebGestureDevice::kTouchscreen);
@@ -877,7 +877,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
         base::BindRepeating([](blink::mojom::InputEventResultSource,
                                blink::mojom::InputEventResultState state,
                                const blink::WebInputEvent& event) {
-          return event.GetType() == blink::WebGestureEvent::kTouchStart &&
+          return event.GetType() == blink::WebGestureEvent::Type::kTouchStart &&
                  state == blink::mojom::InputEventResultState::kNotConsumed;
         }));
     // Send touch press.
@@ -895,7 +895,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
         base::BindRepeating([](blink::mojom::InputEventResultSource,
                                blink::mojom::InputEventResultState state,
                                const blink::WebInputEvent& event) {
-          return event.GetType() == blink::WebGestureEvent::kTouchMove &&
+          return event.GetType() == blink::WebGestureEvent::Type::kTouchMove &&
                  state == blink::mojom::InputEventResultState::kNotConsumed;
         }));
     GetRenderWidgetHost()->ForwardTouchEventWithLatencyInfo(touch,
@@ -933,9 +933,9 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
                                                             ui::LatencyInfo());
     WaitAFrame();
 
-    blink::WebGestureEvent scroll_end(blink::WebInputEvent::kGestureScrollEnd,
-                                      blink::WebInputEvent::kNoModifiers,
-                                      ui::EventTimeForNow());
+    blink::WebGestureEvent scroll_end(
+        blink::WebInputEvent::Type::kGestureScrollEnd,
+        blink::WebInputEvent::kNoModifiers, ui::EventTimeForNow());
     GetRenderWidgetHost()->ForwardGestureEventWithLatencyInfo(
         scroll_end, ui::LatencyInfo());
     WaitAFrame();

@@ -35,7 +35,7 @@ class TextFragmentAnchorMetricsTest : public SimTest {
   }
 
   void SimulateClick(int x, int y) {
-    WebMouseEvent event(WebInputEvent::kMouseDown, gfx::PointF(x, y),
+    WebMouseEvent event(WebInputEvent::Type::kMouseDown, gfx::PointF(x, y),
                         gfx::PointF(x, y), WebPointerProperties::Button::kLeft,
                         0, WebInputEvent::Modifiers::kLeftButtonDown,
                         base::TimeTicks::Now());

@@ -42,6 +42,7 @@ public class Tab {
     private ITab mImpl;
     private final NavigationController mNavigationController;
     private final FindInPageController mFindInPageController;
+    private final MediaCaptureController mMediaCaptureController;
     private final ObserverList<TabCallback> mCallbacks;
     private Browser mBrowser;
     private Profile.DownloadCallbackClientImpl mDownloadCallbackClient;
@@ -55,6 +56,7 @@ public class Tab {
         mImpl = null;
         mNavigationController = null;
         mFindInPageController = null;
+        mMediaCaptureController = null;
         mCallbacks = null;
         mId = 0;
     }
@@ -72,6 +74,7 @@ public class Tab {
         mCallbacks = new ObserverList<TabCallback>();
         mNavigationController = NavigationController.create(mImpl);
         mFindInPageController = new FindInPageController(mImpl);
+        mMediaCaptureController = new MediaCaptureController(mImpl);
         registerTab(this);
     }
 
@@ -265,6 +268,12 @@ public class Tab {
     public FindInPageController getFindInPageController() {
         ThreadCheck.ensureOnUiThread();
         return mFindInPageController;
+    }
+
+    @NonNull
+    public MediaCaptureController getMediaCaptureController() {
+        ThreadCheck.ensureOnUiThread();
+        return mMediaCaptureController;
     }
 
     public void registerTabCallback(@Nullable TabCallback callback) {

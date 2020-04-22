@@ -74,10 +74,11 @@ class MediaHistoryFeedItemsTable : public MediaHistoryTableBase {
   MediaHistoryKeyedService::PendingSafeSearchCheckList
   GetPendingSafeSearchCheckItems();
 
-  // Stores the safe search result for |feed_item_id| and returns true if
-  // successful.
-  bool StoreSafeSearchResult(int64_t feed_item_id,
-                             media_feeds::mojom::SafeSearchResult result);
+  // Stores the safe search result for |feed_item_id| and returns the ID of the
+  // feed if successful.
+  base::Optional<int64_t> StoreSafeSearchResult(
+      int64_t feed_item_id,
+      media_feeds::mojom::SafeSearchResult result);
 };
 
 }  // namespace media_history

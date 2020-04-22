@@ -224,8 +224,8 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
 
   // Updates |is_dense_|, |is_app_list_visible_|, and |shelf_controls_shown_|
   // and notifies all observers of the update if the state changes.
-  // |app_list_visible| - The new app list visibility state.
-  void UpdateConfig(bool app_list_visible);
+  // |new_is_app_list_visible| - The new app list visibility state.
+  void UpdateConfig(bool new_is_app_list_visible);
 
   // Gets the current shelf size.
   // |ignore_in_app_state| - Whether the returned shelf size should be

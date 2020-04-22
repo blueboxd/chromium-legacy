@@ -187,12 +187,6 @@ gfx::Size ExtensionsMenuTestUtil::GetToolbarActionSize() {
   return extensions_container_->GetToolbarActionSize();
 }
 
-bool ExtensionsMenuTestUtil::CanBeResized() {
-  // TODO(https://crbug.com/984654): Implement this.
-  NOTREACHED();
-  return false;
-}
-
 ExtensionsMenuItemView* ExtensionsMenuTestUtil::GetMenuItemViewAtIndex(
     int index) {
   std::vector<ExtensionsMenuItemView*> menu_items =

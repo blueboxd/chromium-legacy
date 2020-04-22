@@ -772,19 +772,19 @@ TEST_P(SpatialNavigationWithFocuslessModeTest, PressEnterKeyActiveElement) {
   Element* b = GetDocument().getElementById("b");
 
   // Move interest to button.
-  WebKeyboardEvent arrow_down{WebInputEvent::kRawKeyDown,
+  WebKeyboardEvent arrow_down{WebInputEvent::Type::kRawKeyDown,
                               WebInputEvent::kNoModifiers,
                               WebInputEvent::GetStaticTimeStampForTests()};
   arrow_down.dom_key = ui::DomKey::ARROW_DOWN;
   GetDocument().GetFrame()->GetEventHandler().KeyEvent(arrow_down);
 
-  arrow_down.SetType(WebInputEvent::kKeyUp);
+  arrow_down.SetType(WebInputEvent::Type::kKeyUp);
   GetDocument().GetFrame()->GetEventHandler().KeyEvent(arrow_down);
 
   EXPECT_FALSE(b->IsActive());
 
   // Enter key down add :active state to element.
-  WebKeyboardEvent enter{WebInputEvent::kRawKeyDown,
+  WebKeyboardEvent enter{WebInputEvent::Type::kRawKeyDown,
                          WebInputEvent::kNoModifiers,
                          WebInputEvent::GetStaticTimeStampForTests()};
   enter.dom_key = ui::DomKey::ENTER;
@@ -792,7 +792,7 @@ TEST_P(SpatialNavigationWithFocuslessModeTest, PressEnterKeyActiveElement) {
   EXPECT_TRUE(b->IsActive());
 
   // Enter key up remove :active state to element.
-  enter.SetType(WebInputEvent::kKeyUp);
+  enter.SetType(WebInputEvent::Type::kKeyUp);
   GetDocument().GetFrame()->GetEventHandler().KeyEvent(enter);
   EXPECT_FALSE(b->IsActive());
 }
@@ -807,7 +807,7 @@ class FocuslessSpatialNavigationSimTest : public SimTest {
   }
 
   void SimulateKeyPress(int dom_key) {
-    WebKeyboardEvent event{WebInputEvent::kRawKeyDown,
+    WebKeyboardEvent event{WebInputEvent::Type::kRawKeyDown,
                            WebInputEvent::kNoModifiers,
                            WebInputEvent::GetStaticTimeStampForTests()};
     event.dom_key = dom_key;
@@ -815,12 +815,12 @@ class FocuslessSpatialNavigationSimTest : public SimTest {
         WebCoalescedInputEvent(event));
 
     if (dom_key == ui::DomKey::ENTER) {
-      event.SetType(WebInputEvent::kChar);
+      event.SetType(WebInputEvent::Type::kChar);
       WebView().MainFrameWidget()->HandleInputEvent(
           WebCoalescedInputEvent(event));
     }
 
-    event.SetType(WebInputEvent::kKeyUp);
+    event.SetType(WebInputEvent::Type::kKeyUp);
     WebView().MainFrameWidget()->HandleInputEvent(
         WebCoalescedInputEvent(event));
   }

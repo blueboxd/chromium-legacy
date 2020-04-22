@@ -84,14 +84,15 @@ jumbo_component("mixers") {
   public_deps = [ "//base" ]
 
   if (is_chromeos) {
-    sources += [ "cros/native_color_mixer.cc" ]
+    sources += [ "cros/native_color_mixers.cc" ]
   } else if (is_fuchsia) {
-    sources += [ "fuchsia/native_color_mixer.cc" ]
+    sources += [ "fuchsia/native_color_mixers.cc" ]
   } else if (is_linux) {
-    sources += [ "linux/native_color_mixer.cc" ]
+    sources += [ "linux/native_color_mixers.cc" ]
   } else if (is_mac) {
-    sources += [ "mac/native_color_mixer.cc" ]
+    libs = [ "AppKit.framework" ]
+    sources += [ "mac/native_color_mixers.mm" ]
   } else if (is_win) {
-    sources += [ "win/native_color_mixer.cc" ]
+    sources += [ "win/native_color_mixers.cc" ]
   }
 }

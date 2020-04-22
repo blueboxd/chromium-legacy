@@ -18,7 +18,7 @@ SyntheticTouchDriver::~SyntheticTouchDriver() {}
 void SyntheticTouchDriver::DispatchEvent(SyntheticGestureTarget* target,
                                          const base::TimeTicks& timestamp) {
   touch_event_.SetTimeStamp(timestamp);
-  if (touch_event_.GetType() != blink::WebInputEvent::kUndefined)
+  if (touch_event_.GetType() != blink::WebInputEvent::Type::kUndefined)
     target->DispatchInputEventToPlatform(touch_event_);
   touch_event_.ResetPoints();
   ResetPointerIdIndexMap();
@@ -118,7 +118,7 @@ void SyntheticTouchDriver::ResetPointerIdIndexMap() {
     if (free_index >= touch_event_.touches_length)
       break;
     if (touch_event_.touches[i].state !=
-        blink::WebTouchPoint::kStateUndefined) {
+        blink::WebTouchPoint::State::kStateUndefined) {
       touch_event_.touches[free_index] = touch_event_.touches[i];
       if (free_index != i)
         touch_event_.touches[i] = blink::WebTouchPoint();

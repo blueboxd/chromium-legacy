@@ -91,6 +91,9 @@ const char* GetStatusString(
     case DecoderStream<StreamType>::DECODE_ERROR:
       return "decode_error";
   }
+
+  NOTREACHED();
+  return "";
 }
 
 template <DemuxerStream::Type StreamType>

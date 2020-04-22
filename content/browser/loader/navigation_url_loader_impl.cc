@@ -291,8 +291,6 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
 
   new_request->credentials_mode = network::mojom::CredentialsMode::kInclude;
   new_request->redirect_mode = network::mojom::RedirectMode::kManual;
-  new_request->fetch_request_context_type =
-      static_cast<int>(request_info->begin_params->request_context_type);
   new_request->upgrade_if_insecure = request_info->upgrade_if_insecure;
   new_request->throttling_profile_id = request_info->devtools_frame_token;
   new_request->transition_type = request_info->common_params->transition;

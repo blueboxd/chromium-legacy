@@ -61,7 +61,7 @@ FlingController::~FlingController() = default;
 bool FlingController::ObserveAndFilterForTapSuppression(
     const GestureEventWithLatencyInfo& gesture_event) {
   switch (gesture_event.event.GetType()) {
-    case WebInputEvent::kGestureFlingCancel:
+    case WebInputEvent::Type::kGestureFlingCancel:
       // The controllers' state is affected by the cancel event and assumes
       // it's actually stopping an ongoing fling.
       DCHECK(fling_curve_);
@@ -74,15 +74,15 @@ bool FlingController::ObserveAndFilterForTapSuppression(
         touchpad_tap_suppression_controller_.GestureFlingCancelStoppedFling();
       }
       return false;
-    case WebInputEvent::kGestureTapDown:
-    case WebInputEvent::kGestureShowPress:
-    case WebInputEvent::kGestureTapUnconfirmed:
-    case WebInputEvent::kGestureTapCancel:
-    case WebInputEvent::kGestureTap:
-    case WebInputEvent::kGestureDoubleTap:
-    case WebInputEvent::kGestureLongPress:
-    case WebInputEvent::kGestureLongTap:
-    case WebInputEvent::kGestureTwoFingerTap:
+    case WebInputEvent::Type::kGestureTapDown:
+    case WebInputEvent::Type::kGestureShowPress:
+    case WebInputEvent::Type::kGestureTapUnconfirmed:
+    case WebInputEvent::Type::kGestureTapCancel:
+    case WebInputEvent::Type::kGestureTap:
+    case WebInputEvent::Type::kGestureDoubleTap:
+    case WebInputEvent::Type::kGestureLongPress:
+    case WebInputEvent::Type::kGestureLongTap:
+    case WebInputEvent::Type::kGestureTwoFingerTap:
       if (gesture_event.event.SourceDevice() ==
           blink::WebGestureDevice::kTouchscreen) {
         return touchscreen_tap_suppression_controller_.FilterTapEvent(
@@ -101,7 +101,8 @@ bool FlingController::ObserveAndMaybeConsumeGestureEvent(
   // whether there is an ongoing fling. These can affect state so if there's no
   // on-going fling we should just discard these without letting the rest of
   // the fling system see it.
-  if (gesture_event.event.GetType() == WebInputEvent::kGestureFlingCancel &&
+  if (gesture_event.event.GetType() ==
+          WebInputEvent::Type::kGestureFlingCancel &&
       !fling_curve_) {
     TRACE_EVENT_INSTANT0("input", "NoActiveFling", TRACE_EVENT_SCOPE_THREAD);
     return true;
@@ -112,12 +113,13 @@ bool FlingController::ObserveAndMaybeConsumeGestureEvent(
                          TRACE_EVENT_SCOPE_THREAD);
     return true;
   }
-  if (gesture_event.event.GetType() == WebInputEvent::kGestureScrollUpdate) {
+  if (gesture_event.event.GetType() ==
+      WebInputEvent::Type::kGestureScrollUpdate) {
     last_seen_scroll_update_ = gesture_event.event.TimeStamp();
   } else if (gesture_event.event.GetType() ==
-                 WebInputEvent::kGestureScrollEnd ||
+                 WebInputEvent::Type::kGestureScrollEnd ||
              gesture_event.event.GetType() ==
-                 WebInputEvent::kGestureScrollBegin) {
+                 WebInputEvent::Type::kGestureScrollBegin) {
     // TODO(bokan): We reset this on Begin as well as End since there appear to
     // be cases where we see an invalid event sequence:
     // https://crbug.com/928569.
@@ -130,14 +132,16 @@ bool FlingController::ObserveAndMaybeConsumeGestureEvent(
   // not sent to the renderer, the controller processes the fling and generates
   // fling progress events (wheel events for touchpad and GSU events for
   // touchscreen and autoscroll) which are handled normally.
-  if (gesture_event.event.GetType() == WebInputEvent::kGestureFlingStart) {
+  if (gesture_event.event.GetType() ==
+      WebInputEvent::Type::kGestureFlingStart) {
     ProcessGestureFlingStart(gesture_event);
     return true;
   }
 
   // If the GestureFlingStart event is processed by the fling_controller_, the
   // GestureFlingCancel event should be the same.
-  if (gesture_event.event.GetType() == WebInputEvent::kGestureFlingCancel) {
+  if (gesture_event.event.GetType() ==
+      WebInputEvent::Type::kGestureFlingCancel) {
     ProcessGestureFlingCancel(gesture_event);
     return true;
   }
@@ -260,7 +264,7 @@ void FlingController::GenerateAndSendWheelEvents(
     const gfx::Vector2dF& delta,
     blink::WebMouseWheelEvent::Phase phase) {
   MouseWheelEventWithLatencyInfo synthetic_wheel(
-      WebInputEvent::kMouseWheel, current_fling_parameters_.modifiers,
+      WebInputEvent::Type::kMouseWheel, current_fling_parameters_.modifiers,
       current_time, ui::LatencyInfo(ui::SourceEventType::WHEEL));
   synthetic_wheel.event.delta_units =
       ui::ScrollGranularity::kScrollByPrecisePixel;
@@ -292,13 +296,13 @@ void FlingController::GenerateAndSendGestureScrollEvents(
       blink::WebPointerProperties::PointerType::kTouch;
   synthetic_gesture.event.SetSourceDevice(
       current_fling_parameters_.source_device);
-  if (type == WebInputEvent::kGestureScrollUpdate) {
+  if (type == WebInputEvent::Type::kGestureScrollUpdate) {
     synthetic_gesture.event.data.scroll_update.delta_x = delta.x();
     synthetic_gesture.event.data.scroll_update.delta_y = delta.y();
     synthetic_gesture.event.data.scroll_update.inertial_phase =
         WebGestureEvent::InertialPhaseState::kMomentum;
   } else {
-    DCHECK_EQ(WebInputEvent::kGestureScrollEnd, type);
+    DCHECK_EQ(WebInputEvent::Type::kGestureScrollEnd, type);
     synthetic_gesture.event.data.scroll_end.inertial_phase =
         WebGestureEvent::InertialPhaseState::kMomentum;
     synthetic_gesture.event.data.scroll_end.generated_by_fling_controller =
@@ -321,7 +325,7 @@ void FlingController::GenerateAndSendFlingProgressEvents(
     case blink::WebGestureDevice::kTouchscreen:
     case blink::WebGestureDevice::kSyntheticAutoscroll:
       GenerateAndSendGestureScrollEvents(
-          current_time, WebInputEvent::kGestureScrollUpdate, delta);
+          current_time, WebInputEvent::Type::kGestureScrollUpdate, delta);
       break;
     case blink::WebGestureDevice::kUninitialized:
     case blink::WebGestureDevice::kScrollbar:
@@ -341,8 +345,8 @@ void FlingController::GenerateAndSendFlingEndEvents(
       break;
     case blink::WebGestureDevice::kTouchscreen:
     case blink::WebGestureDevice::kSyntheticAutoscroll:
-      GenerateAndSendGestureScrollEvents(current_time,
-                                         WebInputEvent::kGestureScrollEnd);
+      GenerateAndSendGestureScrollEvents(
+          current_time, WebInputEvent::Type::kGestureScrollEnd);
       break;
     case blink::WebGestureDevice::kUninitialized:
     case blink::WebGestureDevice::kScrollbar:
@@ -368,7 +372,8 @@ void FlingController::EndCurrentFling(base::TimeTicks current_time) {
 
 bool FlingController::UpdateCurrentFlingState(
     const WebGestureEvent& fling_start_event) {
-  DCHECK_EQ(WebInputEvent::kGestureFlingStart, fling_start_event.GetType());
+  DCHECK_EQ(WebInputEvent::Type::kGestureFlingStart,
+            fling_start_event.GetType());
 
   const gfx::Vector2dF velocity =
       fling_booster_.GetVelocityForFlingStart(fling_start_event);

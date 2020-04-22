@@ -237,8 +237,15 @@ public class ArImmersiveOverlay
                 // Remember primary pointer's ID. The start of the gesture is the only time when the
                 // primary pointer is set.
                 mPrimaryPointerId = pointerId;
-                mPointerIdToData.put(
+                PointerData previousData = mPointerIdToData.put(
                         mPrimaryPointerId, new PointerData(ev.getX(0), ev.getY(0), true));
+
+                if (previousData != null) {
+                    // Not much we can do here, just log and continue.
+                    Log.w(TAG,
+                            "New pointer with ID " + pointerId
+                                    + " introduced by ACTION_DOWN when old pointer with the same ID already exists.");
+                }
 
                 // Send the events to the device.
                 // This needs to happen after we have updated the state.
@@ -264,8 +271,15 @@ public class ArImmersiveOverlay
 
                 if (DEBUG_LOGS) Log.i(TAG, "New pointer, ID=" + pointerId);
 
-                mPointerIdToData.put(pointerId,
+                PointerData previousData = mPointerIdToData.put(pointerId,
                         new PointerData(ev.getX(pointerIndex), ev.getY(pointerIndex), true));
+
+                if (previousData != null) {
+                    // Not much we can do here, just log and continue.
+                    Log.w(TAG,
+                            "New pointer with ID " + pointerId
+                                    + " introduced by ACTION_POINTER_DOWN when old pointer with the same ID already exists.");
+                }
 
                 if (DEBUG_LOGS) {
                     Log.i(TAG, "Known pointer IDs after ACTION_POINTER_DOWN:");
@@ -284,17 +298,26 @@ public class ArImmersiveOverlay
                 int pointerIndex = ev.getActionIndex();
                 int pointerId = ev.getPointerId(pointerIndex);
 
-                // Send the events to the device.
-                // The pointer that was raised needs to no longer be `touching`.
-                mPointerIdToData.get(pointerId).touching = false;
-                sendMotionEvents(false);
+                if (!mPointerIdToData.containsKey(pointerId)) {
+                    // The pointer with ID that was not previously known has been somehow introduced
+                    // outside of ACTION_DOWN / ACTION_POINTER_DOWN - this should never happen!
+                    // Nevertheless, it happens in the wild, so ignore the pointer to prevent crash.
+                    Log.w(TAG,
+                            "Pointer with ID " + pointerId
+                                    + " not found in mPointerIdToData, ignoring ACTION_POINTER_UP for it.");
+                } else {
+                    // Send the events to the device.
+                    // The pointer that was raised needs to no longer be `touching`.
+                    mPointerIdToData.get(pointerId).touching = false;
+                    sendMotionEvents(false);
 
-                // If it so happened that it was a primary pointer, we need to remember that there
-                // is no primary pointer anymore.
-                if (mPrimaryPointerId != null && mPrimaryPointerId == pointerId) {
-                    mPrimaryPointerId = null;
+                    // If it so happened that it was a primary pointer, we need to remember that
+                    // there is no primary pointer anymore.
+                    if (mPrimaryPointerId != null && mPrimaryPointerId == pointerId) {
+                        mPrimaryPointerId = null;
+                    }
+                    mPointerIdToData.remove(pointerId);
                 }
-                mPointerIdToData.remove(pointerId);
             }
 
             if (action == MotionEvent.ACTION_MOVE) {
@@ -304,16 +327,26 @@ public class ArImmersiveOverlay
 
                     // If pointer data is null for the given pointer id, then something is wrong
                     // with the code's assumption - new pointers can only appear due to ACTION_DOWN
-                    // and ACTION_POINTER_DOWN, but it did not seem to happen in this case. If we
-                    // did get null, we want to crash on NullPointerException when accessing data
-                    // below. In case logs are enabled, log this information.
+                    // and ACTION_POINTER_DOWN, but it did not seem to happen in this case. In case
+                    // logs are enabled, log this information.
                     if (DEBUG_LOGS && pd == null) {
                         Log.i(TAG,
-                                "Pointer with ID " + i
-                                        + " not found in mPointerIdToData. Known pointer IDs:");
+                                "Pointer with ID " + pointerId + " (index " + i
+                                        + ") not found in mPointerIdToData. Known pointer IDs:");
                         for (Map.Entry<Integer, PointerData> entry : mPointerIdToData.entrySet()) {
                             Log.i(TAG, "ID=" + entry.getKey());
                         }
+                    }
+
+                    if (pd == null) {
+                        // The pointer with ID that was not previously known has been somehow
+                        // introduced outside of ACTION_DOWN / ACTION_POINTER_DOWN - this should
+                        // never happen! Nevertheless, it happens in the wild, so ignore the pointer
+                        // to prevent crash.
+                        Log.w(TAG,
+                                "Pointer with ID " + pointerId + "(index " + i
+                                        + ") not found in mPointerIdToData, ignoring ACTION_MOVE for it.");
+                        continue;
                     }
 
                     pd.x = ev.getX(i);

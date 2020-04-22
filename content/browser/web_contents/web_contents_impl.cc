@@ -250,10 +250,10 @@ RenderFrameHostImpl* FindOpenerRFH(const WebContents::CreateParams& params) {
 bool IsUserInteractionInputType(blink::WebInputEvent::Type type) {
   // Ideally, this list would be based more off of
   // https://whatwg.org/C/interaction.html#triggered-by-user-activation.
-  return type == blink::WebInputEvent::kMouseDown ||
-         type == blink::WebInputEvent::kGestureScrollBegin ||
-         type == blink::WebInputEvent::kTouchStart ||
-         type == blink::WebInputEvent::kRawKeyDown;
+  return type == blink::WebInputEvent::Type::kMouseDown ||
+         type == blink::WebInputEvent::Type::kGestureScrollBegin ||
+         type == blink::WebInputEvent::Type::kTouchStart ||
+         type == blink::WebInputEvent::Type::kRawKeyDown;
 }
 
 // Ensures that OnDialogClosed is only called once.
@@ -1942,6 +1942,14 @@ void WebContentsImpl::ReattachToOuterWebContentsFrame() {
   GetMainFrame()->UpdateAXTreeData();
 }
 
+void WebContentsImpl::DidActivatePortal(WebContents* predecessor_contents) {
+  DCHECK(predecessor_contents);
+  NotifyInsidePortal(false);
+  GetDelegate()->WebContentsBecamePortal(predecessor_contents);
+  for (auto& observer : observers_)
+    observer.DidActivatePortal(predecessor_contents);
+}
+
 void WebContentsImpl::NotifyInsidePortal(bool inside_portal) {
   SendPageMessage(new PageMsg_SetInsidePortal(MSG_ROUTING_NONE, inside_portal));
 }
@@ -2126,7 +2134,7 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
   // corresponding RenderView and main RenderFrame have already been created.
   // Ensure observers are notified about this.
   if (params.renderer_initiated_creation) {
-    GetRenderViewHost()->GetWidget()->set_renderer_initialized(
+    GetRenderViewHost()->GetWidget()->SetRendererInitialized(
         true, RenderWidgetHostImpl::RendererInitializer::kWebContentsInit);
     GetRenderViewHost()->DispatchRenderViewCreated();
     GetRenderManager()->current_frame_host()->SetRenderFrameCreated(true);
@@ -6479,7 +6487,7 @@ void WebContentsImpl::DidReceiveInputEvent(
   if (!HasMatchingWidgetHost(&frame_tree_, render_widget_host))
     return;
 
-  if (type != blink::WebInputEvent::kGestureScrollBegin)
+  if (type != blink::WebInputEvent::Type::kGestureScrollBegin)
     last_interactive_input_event_time_ = ui::EventTimeForNow();
 
   for (auto& observer : observers_)

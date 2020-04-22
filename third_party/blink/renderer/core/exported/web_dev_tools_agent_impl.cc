@@ -385,7 +385,7 @@ void WebDevToolsAgentImpl::InspectElement(
       HitTestRequest::kMove | HitTestRequest::kReadOnly |
       HitTestRequest::kAllowChildFrameContent;
   HitTestRequest request(hit_type);
-  WebMouseEvent dummy_event(WebInputEvent::kMouseDown,
+  WebMouseEvent dummy_event(WebInputEvent::Type::kMouseDown,
                             WebInputEvent::kNoModifiers,
                             base::TimeTicks::Now());
   dummy_event.SetPositionInWidget(point);

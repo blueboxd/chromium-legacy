@@ -205,9 +205,21 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, MultipleWindows) {
 IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, HighlightMode) {
   LoadExtensions();
 
+  BrowserActionsContainer* const container =
+      BrowserView::GetBrowserViewForBrowser(browser())
+          ->toolbar_button_provider()
+          ->GetBrowserActionsContainer();
+  auto container_can_be_resized = [container]() {
+    // The container can only be resized if we can start a drag for the view.
+    EXPECT_GE(container->num_toolbar_actions(), 1u);
+    ToolbarActionView* action_view = container->GetToolbarActionViewAt(0);
+    gfx::Point point(action_view->x(), action_view->y());
+    return container->CanStartDragForView(action_view, point, point);
+  };
+
   EXPECT_EQ(3, browser_actions_bar()->VisibleBrowserActions());
   EXPECT_EQ(3, browser_actions_bar()->NumberOfBrowserActions());
-  EXPECT_TRUE(browser_actions_bar()->CanBeResized());
+  EXPECT_TRUE(container_can_be_resized());
 
   std::vector<std::string> action_ids;
   action_ids.push_back(extension_a()->id());
@@ -220,13 +232,13 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, HighlightMode) {
   EXPECT_EQ(2, browser_actions_bar()->NumberOfBrowserActions());
 
   // We shouldn't be able to drag in highlight mode.
-  EXPECT_FALSE(browser_actions_bar()->CanBeResized());
+  EXPECT_FALSE(container_can_be_resized());
 
   // We should go back to normal after leaving highlight mode.
   toolbar_model()->StopHighlighting();
   EXPECT_EQ(3, browser_actions_bar()->VisibleBrowserActions());
   EXPECT_EQ(3, browser_actions_bar()->NumberOfBrowserActions());
-  EXPECT_TRUE(browser_actions_bar()->CanBeResized());
+  EXPECT_TRUE(container_can_be_resized());
 }
 
 namespace {

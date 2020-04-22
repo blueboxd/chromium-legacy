@@ -43,16 +43,6 @@ class DataReductionProxyData : public base::SupportsUserData::Data {
     lite_page_received_ = lite_page_received;
   }
 
-  // This response was fetched from cache, but the original request used DRP.
-  bool was_cached_data_reduction_proxy_response() const {
-    return was_cached_data_reduction_proxy_response_;
-  }
-  void set_was_cached_data_reduction_proxy_response(
-      bool was_cached_data_reduction_proxy_response) {
-    was_cached_data_reduction_proxy_response_ =
-        was_cached_data_reduction_proxy_response;
-  }
-
   // The session key used for this request. Only set for main frame requests.
   std::string session_key() const { return session_key_; }
   void set_session_key(const std::string& session_key) {
@@ -111,9 +101,6 @@ class DataReductionProxyData : public base::SupportsUserData::Data {
 
   // Whether the blacklist prevented a preview.
   bool black_listed_;
-
-  // This response was fetched from cache, but the original request used DRP.
-  bool was_cached_data_reduction_proxy_response_;
 
   // The session key used for this request or navigation.
   std::string session_key_;

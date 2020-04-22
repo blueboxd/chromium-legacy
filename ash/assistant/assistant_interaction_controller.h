@@ -10,15 +10,18 @@
 #include <string>
 #include <vector>
 
-#include "ash/assistant/assistant_controller_observer.h"
 #include "ash/assistant/model/assistant_interaction_model.h"
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/highlighter/highlighter_controller.h"
+#include "ash/public/cpp/assistant/controller/assistant_controller.h"
+#include "ash/public/cpp/assistant/controller/assistant_controller_observer.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 
@@ -168,6 +171,15 @@ class AssistantInteractionController
   // booted).
   // Might overflow so do not use for super critical things.
   int number_of_times_shown_ = 0;
+
+  ScopedObserver<AssistantController, AssistantControllerObserver>
+      assistant_controller_observer_{this};
+
+  ScopedObserver<HighlighterController, HighlighterController::Observer>
+      highlighter_controller_observer_{this};
+
+  ScopedObserver<TabletModeController, TabletModeObserver>
+      tablet_mode_controller_observer_{this};
 
   base::WeakPtrFactory<AssistantInteractionController>
       screen_context_request_factory_{this};

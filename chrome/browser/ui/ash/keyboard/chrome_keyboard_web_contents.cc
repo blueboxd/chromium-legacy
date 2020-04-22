@@ -105,11 +105,11 @@ class ChromeKeyboardContentsDelegate : public content::WebContentsDelegate,
     switch (event.GetType()) {
       // Scroll events are not suppressed because the menu to select IME should
       // be scrollable.
-      case blink::WebInputEvent::kGestureScrollBegin:
-      case blink::WebInputEvent::kGestureScrollEnd:
-      case blink::WebInputEvent::kGestureScrollUpdate:
-      case blink::WebInputEvent::kGestureFlingStart:
-      case blink::WebInputEvent::kGestureFlingCancel:
+      case blink::WebInputEvent::Type::kGestureScrollBegin:
+      case blink::WebInputEvent::Type::kGestureScrollEnd:
+      case blink::WebInputEvent::Type::kGestureScrollUpdate:
+      case blink::WebInputEvent::Type::kGestureFlingStart:
+      case blink::WebInputEvent::Type::kGestureFlingCancel:
         return false;
       default:
         // Stop gesture events from being passed to renderer to suppress the

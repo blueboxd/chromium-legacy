@@ -57,7 +57,7 @@ class ScrollBeginEventBuilder : public WebGestureEvent {
   ScrollBeginEventBuilder(FloatPoint position,
                           FloatPoint delta,
                           WebGestureDevice device)
-      : WebGestureEvent(WebInputEvent::kGestureScrollBegin,
+      : WebGestureEvent(WebInputEvent::Type::kGestureScrollBegin,
                         WebInputEvent::kNoModifiers,
                         base::TimeTicks::Now(),
                         device) {
@@ -71,7 +71,7 @@ class ScrollBeginEventBuilder : public WebGestureEvent {
 class ScrollUpdateEventBuilder : public WebGestureEvent {
  public:
   ScrollUpdateEventBuilder() : WebGestureEvent() {
-    type_ = WebInputEvent::kGestureScrollUpdate;
+    type_ = WebInputEvent::Type::kGestureScrollUpdate;
     data.scroll_update.delta_x = 0.0f;
     data.scroll_update.delta_y = 1.0f;
     data.scroll_update.velocity_x = 0;
@@ -83,7 +83,7 @@ class ScrollUpdateEventBuilder : public WebGestureEvent {
 class ScrollEndEventBuilder : public WebGestureEvent {
  public:
   ScrollEndEventBuilder() : WebGestureEvent() {
-    type_ = WebInputEvent::kGestureScrollEnd;
+    type_ = WebInputEvent::Type::kGestureScrollEnd;
     frame_scale_ = 1;
   }
 };

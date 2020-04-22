@@ -20,7 +20,11 @@
 
 #if !defined(OS_ANDROID)
 #include "media/filters/decrypting_video_decoder.h"
-#endif
+#endif  // !defined(OS_ANDROID)
+
+#if defined(OS_FUCHSIA)
+#include "media/fuchsia/metrics/fuchsia_playback_events_recorder.h"
+#endif  // defined(OS_FUCHSIA)
 
 namespace media {
 
@@ -288,6 +292,13 @@ void MediaMetricsProvider::AcquireVideoDecodeStatsRecorder(
       std::make_unique<VideoDecodeStatsRecorder>(save_cb_, source_id_, origin_,
                                                  is_top_frame_, player_id_),
       std::move(receiver));
+}
+
+void MediaMetricsProvider::AcquirePlaybackEventsRecorder(
+    mojo::PendingReceiver<mojom::PlaybackEventsRecorder> receiver) {
+#if defined(OS_FUCHSIA)
+  FuchsiaPlaybackEventsRecorder::Create(std::move(receiver));
+#endif
 }
 
 void MediaMetricsProvider::AcquireLearningTaskController(

@@ -57,13 +57,13 @@ void PremultiplyAlpha(const uint8_t color_in[3],
 
 const char* PointState(blink::WebTouchPoint::State state) {
   switch (state) {
-    case blink::WebTouchPoint::kStateReleased:
+    case blink::WebTouchPoint::State::kStateReleased:
       return "Released";
-    case blink::WebTouchPoint::kStatePressed:
+    case blink::WebTouchPoint::State::kStatePressed:
       return "Pressed";
-    case blink::WebTouchPoint::kStateMoved:
+    case blink::WebTouchPoint::State::kStateMoved:
       return "Moved";
-    case blink::WebTouchPoint::kStateCancelled:
+    case blink::WebTouchPoint::State::kStateCancelled:
       return "Cancelled";
     default:
       return "Unknown";
@@ -87,7 +87,7 @@ void PrintEventDetails(BlinkTestRunner* blink_test_runner,
         static_cast<const blink::WebTouchEvent&>(event);
     PrintTouchList(blink_test_runner, touch.touches, touch.touches_length);
   } else if (blink::WebInputEvent::IsMouseEventType(event.GetType()) ||
-             event.GetType() == blink::WebInputEvent::kMouseWheel) {
+             event.GetType() == blink::WebInputEvent::Type::kMouseWheel) {
     const blink::WebMouseEvent& mouse =
         static_cast<const blink::WebMouseEvent&>(event);
     blink_test_runner->PrintMessage(

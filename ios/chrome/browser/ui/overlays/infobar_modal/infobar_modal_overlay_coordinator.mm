@@ -66,8 +66,19 @@
 #pragma mark - InfobarModalPositioner
 
 - (CGFloat)modalHeightForWidth:(CGFloat)width {
-  CGSize layoutBoundsSize = CGSizeMake(width, CGFLOAT_MAX);
-  return [self.modalViewController.view sizeThatFits:layoutBoundsSize].height +
+  UIView* modalView = self.modalViewController.view;
+  CGSize modalContentSize = CGSizeZero;
+  if (UIScrollView* scrollView = base::mac::ObjCCast<UIScrollView>(modalView)) {
+    CGRect layoutFrame = self.baseViewController.view.bounds;
+    layoutFrame.size.width = width;
+    scrollView.frame = layoutFrame;
+    [scrollView setNeedsLayout];
+    [scrollView layoutIfNeeded];
+    modalContentSize = scrollView.contentSize;
+  } else {
+    modalContentSize = [modalView sizeThatFits:CGSizeMake(width, CGFLOAT_MAX)];
+  }
+  return modalContentSize.height +
          CGRectGetHeight(self.modalNavController.navigationBar.bounds);
 }
 

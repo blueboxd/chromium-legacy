@@ -227,7 +227,8 @@ void NavigateNamedFrame(const ToRenderFrameHost& caller_frame,
 // hit-testing.
 void SimulateMouseClick(RenderWidgetHost* rwh, int x, int y) {
   blink::WebMouseEvent mouse_event(
-      blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::Type::kMouseDown,
+      blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   mouse_event.button = blink::WebPointerProperties::Button::kLeft;
   mouse_event.SetPositionInWidget(x, y);
@@ -570,7 +571,7 @@ void LayoutNonRecursiveForTestingViewportIntersection(
 
 void GenerateTapDownGesture(RenderWidgetHost* rwh) {
   blink::WebGestureEvent gesture_tap_down(
-      blink::WebGestureEvent::kGestureTapDown,
+      blink::WebGestureEvent::Type::kGestureTapDown,
       blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests(),
       blink::WebGestureDevice::kTouchscreen);
@@ -1507,7 +1508,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ViewBoundsInNestedFrameTest) {
   // Scroll the parent frame downward to verify that the child rect gets updated
   // correctly.
   blink::WebMouseWheelEvent scroll_event(
-      blink::WebInputEvent::kMouseWheel, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::Type::kMouseWheel,
+      blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
 
   scroll_event.SetPositionInWidget(
@@ -1549,7 +1551,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // The fling start won't bubble since its corresponding GSB hasn't bubbled.
   InputEventAckWaiter gesture_fling_start_ack_observer(
-      child_rwh, blink::WebInputEvent::kGestureFlingStart);
+      child_rwh, blink::WebInputEvent::Type::kGestureFlingStart);
 
   WaitForHitTestData(child_iframe_node->current_frame_host());
 
@@ -1559,7 +1561,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Send a GSB, GSU, GFS sequence and verify that the GFS bubbles.
   blink::WebGestureEvent gesture_scroll_begin(
-      blink::WebGestureEvent::kGestureScrollBegin,
+      blink::WebGestureEvent::Type::kGestureScrollBegin,
       blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests(),
       blink::WebGestureDevice::kTouchscreen);
@@ -1571,7 +1573,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   child_rwh->ForwardGestureEvent(gesture_scroll_begin);
 
   blink::WebGestureEvent gesture_scroll_update(
-      blink::WebGestureEvent::kGestureScrollUpdate,
+      blink::WebGestureEvent::Type::kGestureScrollUpdate,
       blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests(),
       blink::WebGestureDevice::kTouchscreen);
@@ -1584,7 +1586,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   child_rwh->ForwardGestureEvent(gesture_scroll_update);
 
   blink::WebGestureEvent gesture_fling_start(
-      blink::WebGestureEvent::kGestureFlingStart,
+      blink::WebGestureEvent::Type::kGestureFlingStart,
       blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests(),
       blink::WebGestureDevice::kTouchscreen);
@@ -1631,7 +1633,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollBubblingFromOOPIFTest) {
 
   InputEventAckWaiter ack_observer(
       parent_iframe_node->current_frame_host()->GetRenderWidgetHost(),
-      blink::WebInputEvent::kGestureScrollEnd);
+      blink::WebInputEvent::Type::kGestureScrollEnd);
 
   // Navigate the nested frame to a page large enough to have scrollbars.
   FrameTreeNode* nested_iframe_node = parent_iframe_node->child_at(0);
@@ -1670,7 +1672,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollBubblingFromOOPIFTest) {
 
   // Scroll the parent frame downward.
   blink::WebMouseWheelEvent scroll_event(
-      blink::WebInputEvent::kMouseWheel, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::Type::kMouseWheel,
+      blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   scroll_event.SetPositionInWidget(1, 1);
   // Use precise pixels to keep these events off the animated scroll pathways,
@@ -1764,7 +1767,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollBubblingFromOOPIFTest) {
   // Scroll down the nested iframe via gesture. This requires 3 separate input
   // events.
   blink::WebGestureEvent gesture_event(
-      blink::WebGestureEvent::kGestureScrollBegin,
+      blink::WebGestureEvent::Type::kGestureScrollBegin,
       blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests(),
       blink::WebGestureDevice::kTouchpad);
@@ -1774,7 +1777,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollBubblingFromOOPIFTest) {
   rwhv_nested->GetRenderWidgetHost()->ForwardGestureEvent(gesture_event);
 
   gesture_event =
-      blink::WebGestureEvent(blink::WebGestureEvent::kGestureScrollUpdate,
+      blink::WebGestureEvent(blink::WebGestureEvent::Type::kGestureScrollUpdate,
                              blink::WebInputEvent::kNoModifiers,
                              blink::WebInputEvent::GetStaticTimeStampForTests(),
                              blink::WebGestureDevice::kTouchpad);
@@ -1786,7 +1789,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollBubblingFromOOPIFTest) {
   rwhv_nested->GetRenderWidgetHost()->ForwardGestureEvent(gesture_event);
 
   gesture_event =
-      blink::WebGestureEvent(blink::WebGestureEvent::kGestureScrollEnd,
+      blink::WebGestureEvent(blink::WebGestureEvent::Type::kGestureScrollEnd,
                              blink::WebInputEvent::kNoModifiers,
                              blink::WebInputEvent::GetStaticTimeStampForTests(),
                              blink::WebGestureDevice::kTouchpad);
@@ -1873,7 +1876,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_DOUBLE_EQ(0.0, initial_y);
 
   NativeWebKeyboardEvent key_event(
-      blink::WebKeyboardEvent::kRawKeyDown, blink::WebInputEvent::kNoModifiers,
+      blink::WebKeyboardEvent::Type::kRawKeyDown,
+      blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   key_event.windows_key_code = ui::VKEY_DOWN;
   key_event.native_key_code =
@@ -1883,7 +1887,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   rwhv_child->GetRenderWidgetHost()->ForwardKeyboardEvent(key_event);
 
-  key_event.SetType(blink::WebKeyboardEvent::kKeyUp);
+  key_event.SetType(blink::WebKeyboardEvent::Type::kKeyUp);
   rwhv_child->GetRenderWidgetHost()->ForwardKeyboardEvent(key_event);
 
   double scrolled_y = 0.0;
@@ -1917,7 +1921,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   GenerateTapDownGesture(child_rwh);
   // Send a GSB to start scrolling sequence.
   blink::WebGestureEvent gesture_scroll_begin(
-      blink::WebGestureEvent::kGestureScrollBegin,
+      blink::WebGestureEvent::Type::kGestureScrollBegin,
       blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   gesture_scroll_begin.SetSourceDevice(blink::WebGestureDevice::kTouchscreen);
@@ -1930,10 +1934,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Send a GFS and wait for the ack of the first GSU generated from progressing
   // the fling on the browser.
   InputEventAckWaiter gesture_scroll_update_ack_observer(
-      child_rwh, blink::WebInputEvent::kGestureScrollUpdate);
+      child_rwh, blink::WebInputEvent::Type::kGestureScrollUpdate);
   gesture_scroll_update_ack_observer.Reset();
   blink::WebGestureEvent gesture_fling_start(
-      blink::WebGestureEvent::kGestureFlingStart,
+      blink::WebGestureEvent::Type::kGestureFlingStart,
       blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   gesture_fling_start.SetSourceDevice(blink::WebGestureDevice::kTouchscreen);
@@ -1961,9 +1965,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, TouchpadGestureFlingStart) {
 
   // Send a wheel event with phaseBegan to start scrolling sequence.
   InputEventAckWaiter gesture_scroll_begin_ack_observer(
-      child_rwh, blink::WebInputEvent::kGestureScrollBegin);
+      child_rwh, blink::WebInputEvent::Type::kGestureScrollBegin);
   blink::WebMouseWheelEvent scroll_event(
-      blink::WebInputEvent::kMouseWheel, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::Type::kMouseWheel,
+      blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   scroll_event.delta_units = ui::ScrollGranularity::kScrollByPrecisePixel;
   scroll_event.delta_x = 0.0f;
@@ -1975,10 +1980,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, TouchpadGestureFlingStart) {
   // Send a GFS and wait for the ack of the first GSU generated from progressing
   // the fling on the browser.
   InputEventAckWaiter gesture_scroll_update_ack_observer(
-      child_rwh, blink::WebInputEvent::kGestureScrollUpdate);
+      child_rwh, blink::WebInputEvent::Type::kGestureScrollUpdate);
   gesture_scroll_update_ack_observer.Reset();
   blink::WebGestureEvent gesture_fling_start(
-      blink::WebGestureEvent::kGestureFlingStart,
+      blink::WebGestureEvent::Type::kGestureFlingStart,
       blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   gesture_fling_start.SetSourceDevice(blink::WebGestureDevice::kTouchpad);
@@ -1996,12 +2001,13 @@ class ScrollObserver : public RenderWidgetHost::InputEventObserver {
   ~ScrollObserver() override {}
 
   void OnInputEvent(const blink::WebInputEvent& event) override {
-    if (event.GetType() == blink::WebInputEvent::kGestureScrollUpdate) {
+    if (event.GetType() == blink::WebInputEvent::Type::kGestureScrollUpdate) {
       blink::WebGestureEvent received_update =
           *static_cast<const blink::WebGestureEvent*>(&event);
       remaining_delta_x_ -= received_update.data.scroll_update.delta_x;
       remaining_delta_y_ -= received_update.data.scroll_update.delta_y;
-    } else if (event.GetType() == blink::WebInputEvent::kGestureScrollEnd) {
+    } else if (event.GetType() ==
+               blink::WebInputEvent::Type::kGestureScrollEnd) {
       if (message_loop_runner_->loop_running())
         message_loop_runner_->Quit();
       DCHECK_EQ(0, remaining_delta_x_);
@@ -2077,7 +2083,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   InputEventAckWaiter ack_observer(
       root->current_frame_host()->GetRenderWidgetHost(),
-      blink::WebInputEvent::kGestureScrollBegin);
+      blink::WebInputEvent::Type::kGestureScrollBegin);
 
   std::unique_ptr<ScrollObserver> scroll_observer;
 
@@ -2091,7 +2097,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Now scroll the nested frame upward, this must bubble all the way up to the
   // root.
   blink::WebMouseWheelEvent scroll_event(
-      blink::WebInputEvent::kMouseWheel, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::Type::kMouseWheel,
+      blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   gfx::Rect bounds = rwhv_nested->GetViewBounds();
   float scale_factor =
@@ -2150,7 +2157,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Now scroll the nested frame downward, this must bubble to the root since
   // the iframe source body is not scrollable.
   blink::WebMouseWheelEvent scroll_event(
-      blink::WebInputEvent::kMouseWheel, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::Type::kMouseWheel,
+      blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   gfx::Rect bounds = child_view->GetViewBounds();
   float scale_factor =
@@ -2223,7 +2231,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollLocalSubframeInOOPIF) {
       base::BindRepeating([](blink::mojom::InputEventResultSource,
                              blink::mojom::InputEventResultState state,
                              const blink::WebInputEvent& event) {
-        return event.GetType() == blink::WebGestureEvent::kGestureScrollBegin &&
+        return event.GetType() ==
+                   blink::WebGestureEvent::Type::kGestureScrollBegin &&
                state == blink::mojom::InputEventResultState::kConsumed;
       }));
 
@@ -2234,7 +2243,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollLocalSubframeInOOPIF) {
 
   // Now scroll the inner frame downward.
   blink::WebMouseWheelEvent scroll_event(
-      blink::WebInputEvent::kMouseWheel, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::Type::kMouseWheel,
+      blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   scroll_event.SetPositionInWidget(90, 110);
   scroll_event.delta_units = ui::ScrollGranularity::kScrollByPrecisePixel;
@@ -8171,7 +8181,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Wait for and then drop the ViewHostMsg_ShowWidget messages, so that both
   // widgets are left in pending-but-not-shown state.
   NativeWebKeyboardEvent event(
-      blink::WebKeyboardEvent::kChar, blink::WebInputEvent::kNoModifiers,
+      blink::WebKeyboardEvent::Type::kChar, blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   event.text[0] = ' ';
 
@@ -10959,7 +10969,7 @@ IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAndroidSiteIsolationTest,
   auto* host =
       static_cast<RenderWidgetHostImpl*>(root_rwhv()->GetRenderWidgetHost());
   InputEventAckWaiter gesture_pinch_end_waiter(
-      host, blink::WebInputEvent::kGesturePinchEnd);
+      host, blink::WebInputEvent::Type::kGesturePinchEnd);
   host->QueueSyntheticGesture(
       std::move(synthetic_pinch_gesture),
       base::BindOnce(&TouchSelectionControllerClientAndroidSiteIsolationTest::
@@ -11068,11 +11078,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   child_host->AddInputEventObserver(&child_touch_event_observer);
 
   InputEventAckWaiter root_ack_waiter(root_host,
-                                      blink::WebInputEvent::kTouchEnd);
+                                      blink::WebInputEvent::Type::kTouchEnd);
   InputEventAckWaiter child_ack_waiter(child_host,
-                                       blink::WebInputEvent::kTouchEnd);
+                                       blink::WebInputEvent::Type::kTouchEnd);
   InputEventAckWaiter child_gesture_tap_ack_waiter(
-      child_host, blink::WebInputEvent::kGestureTap);
+      child_host, blink::WebInputEvent::Type::kGestureTap);
 
   // Create GestureTap for child.
   gfx::PointF child_tap_point;
@@ -11218,7 +11228,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 #endif
 
   // Send pinch gesture and verify we receive the ack.
-  InputEventAckWaiter ack_waiter(host, blink::WebInputEvent::kGesturePinchEnd);
+  InputEventAckWaiter ack_waiter(host,
+                                 blink::WebInputEvent::Type::kGesturePinchEnd);
   host->QueueSyntheticGesture(
       std::move(synthetic_pinch_gesture),
       base::BindOnce([](SyntheticGesture::Result result) {
@@ -12650,7 +12661,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // listener manager records that its in a scroll.
   {
     blink::WebGestureEvent gesture_scroll_begin(
-        blink::WebGestureEvent::kGestureScrollBegin,
+        blink::WebGestureEvent::Type::kGestureScrollBegin,
         blink::WebInputEvent::kNoModifiers,
         blink::WebInputEvent::GetStaticTimeStampForTests(),
         blink::WebGestureDevice::kTouchscreen);
@@ -12662,7 +12673,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     gesture_scroll_begin.data.scroll_begin.delta_y_hint = -5.f;
 
     blink::WebMouseEvent mouse_move(
-        blink::WebInputEvent::kMouseMove, blink::WebInputEvent::kNoModifiers,
+        blink::WebInputEvent::Type::kMouseMove,
+        blink::WebInputEvent::kNoModifiers,
         blink::WebInputEvent::GetStaticTimeStampForTests());
 
     // We wait for the dummy mouse move event since the GestureScrollEnd ACK is
@@ -12671,8 +12683,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     // Thus we send a second event and when it's ACK'd we know the first has
     // already been processed (we do the same thing above but with a
     // ScrollUpdate).
-    InputEventAckWaiter mouse_move_waiter(child_rwh,
-                                          blink::WebInputEvent::kMouseMove);
+    InputEventAckWaiter mouse_move_waiter(
+        child_rwh, blink::WebInputEvent::Type::kMouseMove);
 
     child_rwh->ForwardGestureEvent(gesture_scroll_begin);
     child_rwh->ForwardMouseEvent(mouse_move);
@@ -12685,18 +12697,19 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Finish the scroll, ensure the gesture manager sees the scroll end.
   {
     blink::WebGestureEvent gesture_scroll_end(
-        blink::WebGestureEvent::kGestureScrollEnd,
+        blink::WebGestureEvent::Type::kGestureScrollEnd,
         blink::WebInputEvent::kNoModifiers,
         blink::WebInputEvent::GetStaticTimeStampForTests(),
         blink::WebGestureDevice::kTouchscreen);
 
     // See comment above for why this is sent.
     blink::WebMouseEvent mouse_move(
-        blink::WebInputEvent::kMouseMove, blink::WebInputEvent::kNoModifiers,
+        blink::WebInputEvent::Type::kMouseMove,
+        blink::WebInputEvent::kNoModifiers,
         blink::WebInputEvent::GetStaticTimeStampForTests());
 
-    InputEventAckWaiter mouse_move_waiter(child_rwh,
-                                          blink::WebInputEvent::kMouseMove);
+    InputEventAckWaiter mouse_move_waiter(
+        child_rwh, blink::WebInputEvent::Type::kMouseMove);
 
     child_rwh->ForwardGestureEvent(gesture_scroll_end);
     child_rwh->ForwardMouseEvent(mouse_move);
@@ -12958,9 +12971,9 @@ class SitePerProcessBrowserTouchActionTest : public SitePerProcessBrowserTest {
         base::BindRepeating([](blink::mojom::InputEventResultSource source,
                                blink::mojom::InputEventResultState state,
                                const blink::WebInputEvent& event) {
-          return event.GetType() == blink::WebGestureEvent::kTouchStart ||
-                 event.GetType() == blink::WebGestureEvent::kTouchMove ||
-                 event.GetType() == blink::WebGestureEvent::kTouchEnd;
+          return event.GetType() == blink::WebGestureEvent::Type::kTouchStart ||
+                 event.GetType() == blink::WebGestureEvent::Type::kTouchMove ||
+                 event.GetType() == blink::WebGestureEvent::Type::kTouchEnd;
         }));
 
     InputRouterImpl* input_router = static_cast<InputRouterImpl*>(
@@ -14409,7 +14422,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Queue the event and wait for it to be acked.
   InputEventAckWaiter ack_waiter(
       child_b->current_frame_host()->GetRenderWidgetHost(),
-      blink::WebInputEvent::kGestureDoubleTap);
+      blink::WebInputEvent::Type::kGestureDoubleTap);
   auto* host = static_cast<RenderWidgetHostImpl*>(
       root->current_frame_host()->GetRenderWidgetHost());
   host->QueueSyntheticGesture(
@@ -15043,8 +15056,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Send pinch gesture and verify we receive the ack.
   {
-    InputEventAckWaiter ack_waiter(host,
-                                   blink::WebInputEvent::kGesturePinchEnd);
+    InputEventAckWaiter ack_waiter(
+        host, blink::WebInputEvent::Type::kGesturePinchEnd);
     host->QueueSyntheticGesture(
         std::move(synthetic_pinch_gesture),
         base::BindOnce([](SyntheticGesture::Result result) {
@@ -15109,8 +15122,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   {
     auto* child_host = static_cast<RenderWidgetHostImpl*>(
         child->current_frame_host()->GetRenderWidgetHost());
-    InputEventAckWaiter ack_waiter(child_host,
-                                   blink::WebInputEvent::kGestureScrollEnd);
+    InputEventAckWaiter ack_waiter(
+        child_host, blink::WebInputEvent::Type::kGestureScrollEnd);
     host->QueueSyntheticGesture(
         std::move(synthetic_scroll_gesture),
         base::BindOnce([](SyntheticGesture::Result result) {

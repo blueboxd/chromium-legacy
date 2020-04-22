@@ -30,7 +30,7 @@ class LayoutShiftTrackerTest : public RenderingTest {
 
   void SimulateInput() {
     GetLayoutShiftTracker().NotifyInput(WebMouseEvent(
-        WebInputEvent::kMouseDown, gfx::PointF(), gfx::PointF(),
+        WebInputEvent::Type::kMouseDown, gfx::PointF(), gfx::PointF(),
         WebPointerProperties::Button::kLeft, 0,
         WebInputEvent::Modifiers::kLeftButtonDown, base::TimeTicks::Now()));
   }
@@ -232,7 +232,8 @@ void LayoutShiftTrackerPointerdownTest::RunTest(
       1 /* PointerId */, WebPointerProperties::PointerType::kTouch,
       WebPointerProperties::Button::kLeft);
 
-  WebPointerEvent event1(WebInputEvent::kPointerDown, pointer_properties, 5, 5);
+  WebPointerEvent event1(WebInputEvent::Type::kPointerDown, pointer_properties,
+                         5, 5);
   WebPointerEvent event2(completion_type, pointer_properties, 5, 5);
 
   // Coordinates inside #box.
@@ -265,15 +266,16 @@ void LayoutShiftTrackerPointerdownTest::RunTest(
 }
 
 TEST_F(LayoutShiftTrackerPointerdownTest, PointerdownBecomesTap) {
-  RunTest(WebInputEvent::kPointerUp, true /* expect_exclusion */);
+  RunTest(WebInputEvent::Type::kPointerUp, true /* expect_exclusion */);
 }
 
 TEST_F(LayoutShiftTrackerPointerdownTest, PointerdownCancelled) {
-  RunTest(WebInputEvent::kPointerCancel, false /* expect_exclusion */);
+  RunTest(WebInputEvent::Type::kPointerCancel, false /* expect_exclusion */);
 }
 
 TEST_F(LayoutShiftTrackerPointerdownTest, PointerdownBecomesScroll) {
-  RunTest(WebInputEvent::kPointerCausedUaAction, false /* expect_exclusion */);
+  RunTest(WebInputEvent::Type::kPointerCausedUaAction,
+          false /* expect_exclusion */);
 }
 
 TEST_F(LayoutShiftTrackerTest, StableCompositingChanges) {

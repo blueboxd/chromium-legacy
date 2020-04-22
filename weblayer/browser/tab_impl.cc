@@ -399,7 +399,6 @@ ScopedJavaLocalRef<jobject> TabImpl::GetWebContents(
 
 void TabImpl::SetTopControlsContainerView(
     JNIEnv* env,
-    const JavaParamRef<jobject>& caller,
     jlong native_top_controls_container_view) {
   top_controls_container_view_ = reinterpret_cast<TopControlsContainerView*>(
       native_top_controls_container_view);

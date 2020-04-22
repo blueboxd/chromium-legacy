@@ -264,8 +264,7 @@ class ResponsesAccumulator : public RefCounted<ResponsesAccumulator> {
       // a body.
       DCHECK(!request->blob && !request->body);
       auto request_clone_without_body = mojom::blink::FetchAPIRequest::New(
-          request->mode, request->is_main_resource_load,
-          request->request_context_type, request->destination,
+          request->mode, request->is_main_resource_load, request->destination,
           request->frame_type, request->url, request->method, request->headers,
           nullptr /* blob */, nullptr /* body */, request->referrer.Clone(),
           request->credentials_mode, request->cache_mode,

@@ -8,6 +8,9 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
+#include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service.h"
+#include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service_factory.h"
+#include "chrome/browser/navigation_predictor/search_engine_preconnector.h"
 #include "chrome/browser/predictors/loading_predictor.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
 #include "chrome/browser/predictors/preconnect_manager.h"
@@ -306,17 +309,16 @@ class NavigationPredictorPreconnectClientBrowserTestWithSearch
  public:
   NavigationPredictorPreconnectClientBrowserTestWithSearch()
       : NavigationPredictorPreconnectClientBrowserTest() {
-    feature_list_.InitAndEnableFeature(kPreconnectToSearchTest);
+    feature_list_.InitWithFeatures(
+        {kPreconnectToSearchTest, features::kPreconnectToSearchNonGoogle}, {});
   }
 
  private:
   base::test::ScopedFeatureList feature_list_;
 };
 
-// TODO(https://crbug.com/1039813): Test fails consistently on MacOS 10.13
-// TODO(https://crbug.com/1040153): Test fails consistently on Win 7 as well.
 IN_PROC_BROWSER_TEST_F(NavigationPredictorPreconnectClientBrowserTestWithSearch,
-                       DISABLED_PreconnectSearchWithFeature) {
+                       PreconnectSearchWithFeature) {
   static const char kShortName[] = "test";
   static const char kSearchURL[] =
       "/anchors_different_area.html?q={searchTerms}";
@@ -335,6 +337,11 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorPreconnectClientBrowserTestWithSearch,
   ASSERT_TRUE(template_url);
   model->SetUserSelectedDefaultSearchProvider(template_url);
   const GURL& url = GetTestURL("/anchors_different_area.html?q=cats");
+
+  NavigationPredictorKeyedServiceFactory::GetForProfile(
+      Profile::FromBrowserContext(browser()->profile()))
+      ->search_engine_preconnector()
+      ->StartPreconnecting(/*with_startup_delay=*/false);
 
   // There should be 2 DSE preconnects (2 NIKs).
   WaitForPreresolveCount(2);

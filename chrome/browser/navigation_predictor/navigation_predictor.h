@@ -286,10 +286,6 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   // DidStartNavigation).
   bool next_navigation_started_ = false;
 
-  // Timing of document loaded and last click.
-  base::TimeTicks document_loaded_timing_;
-  base::TimeTicks last_click_timing_;
-
   // True if the source webpage (i.e., the page on which we are trying to
   // predict the next navigation) is a page from user's default search engine.
   bool source_is_default_search_engine_page_ = false;

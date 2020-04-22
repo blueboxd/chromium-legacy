@@ -6,7 +6,43 @@
  * @fileoverview
  * 'settings-basic-page' is the settings page containing the actual settings.
  */
-(function() {
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/hidden_style_css.m.js';
+import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
+import '../appearance_page/appearance_page.js';
+import '../privacy_page/privacy_page.m.js';
+import '../safety_check_page/safety_check_page.js';
+import '../autofill_page/autofill_page.js';
+import '../controls/settings_idle_load.m.js';
+import '../on_startup_page/on_startup_page.js';
+import '../people_page/people_page.m.js';
+import '../reset_page/reset_profile_banner.js';
+import '../search_page/search_page.js';
+import '../settings_page/settings_section.m.js';
+import '../settings_page_css.m.js';
+// <if expr="chromeos">
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+// </if>
+
+// <if expr="not chromeos">
+import '../default_browser_page/default_browser_page.m.js';
+// </if>
+
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {beforeNextRender, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {loadTimeData} from '../i18n_setup.m.js';
+import {PageVisibility} from '../page_visibility.m.js';
+// <if expr="chromeos">
+import {PrefsBehavior} from '../prefs/prefs_behavior.m.js';
+// </if>
+import {routes} from '../route.m.js';
+import {Route, RouteObserverBehavior, Router} from '../router.m.js';
+import {getSearchManager, SearchResult} from '../search_settings.m.js';
+import {MainPageBehavior} from '../settings_page/main_page_behavior.m.js';
+
 // <if expr="chromeos">
 const OS_BANNER_INTERACTION_METRIC_NAME =
     'ChromeOS.Settings.OsBannerInteraction';
@@ -27,9 +63,11 @@ const CrosSettingsOsBannerInteraction = {
 Polymer({
   is: 'settings-basic-page',
 
+  _template: html`{__html_template__}`,
+
   behaviors: [
-    settings.MainPageBehavior,
-    settings.RouteObserverBehavior,
+    MainPageBehavior,
+    RouteObserverBehavior,
     // <if expr="chromeos">
     PrefsBehavior,
     // </if>
@@ -90,7 +128,7 @@ Polymer({
     },
     // </if>
 
-    /** @private {!settings.Route|undefined} */
+    /** @private {!Route|undefined} */
     currentRoute_: Object,
   },
 
@@ -115,18 +153,17 @@ Polymer({
 
   /** @override */
   attached() {
-    this.currentRoute_ = settings.Router.getInstance().getCurrentRoute();
+    this.currentRoute_ = Router.getInstance().getCurrentRoute();
   },
 
   /**
-   * @param {!settings.Route} newRoute
-   * @param {settings.Route} oldRoute
+   * @param {!Route} newRoute
+   * @param {Route} oldRoute
    */
   currentRouteChanged(newRoute, oldRoute) {
     this.currentRoute_ = newRoute;
 
-    if (settings.routes.ADVANCED &&
-        settings.routes.ADVANCED.contains(newRoute)) {
+    if (routes.ADVANCED && routes.ADVANCED.contains(newRoute)) {
       this.advancedToggleExpanded = true;
     }
 
@@ -140,14 +177,13 @@ Polymer({
       assert(!this.hasExpandedSection_);
     }
 
-    settings.MainPageBehavior.currentRouteChanged.call(
-        this, newRoute, oldRoute);
+    MainPageBehavior.currentRouteChanged.call(this, newRoute, oldRoute);
   },
 
-  // Override settings.MainPageBehavior method.
+  // Override MainPageBehavior method.
   containsRoute(route) {
-    return !route || settings.routes.BASIC.contains(route) ||
-        settings.routes.ADVANCED.contains(route);
+    return !route || routes.BASIC.contains(route) ||
+        routes.ADVANCED.contains(route);
   },
 
   /**
@@ -173,18 +209,18 @@ Polymer({
    * Queues a task to search the basic sections, then another for the advanced
    * sections.
    * @param {string} query The text to search for.
-   * @return {!Promise<!settings.SearchResult>} A signal indicating that
+   * @return {!Promise<!SearchResult>} A signal indicating that
    *     searching finished.
    */
   searchContents(query) {
     const whenSearchDone = [
-      settings.getSearchManager().search(query, assert(this.$$('#basicPage'))),
+      getSearchManager().search(query, assert(this.$$('#basicPage'))),
     ];
 
     if (this.pageVisibility.advancedSettings !== false) {
       whenSearchDone.push(
           this.$$('#advancedPageTemplate').get().then(function(advancedPage) {
-            return settings.getSearchManager().search(query, advancedPage);
+            return getSearchManager().search(query, advancedPage);
           }));
     }
 
@@ -276,8 +312,8 @@ Polymer({
     }
 
     // In Polymer2, async() does not wait long enough for layout to complete.
-    // Polymer.RenderStatus.beforeNextRender() must be used instead.
-    Polymer.RenderStatus.beforeNextRender(this, () => {
+    // beforeNextRender() must be used instead.
+    beforeNextRender(this, () => {
       this.$$('#advancedPageTemplate').get();
     });
   },
@@ -323,7 +359,7 @@ Polymer({
   },
 
   /**
-   * @param {!settings.Route} currentRoute
+   * @param {!Route} currentRoute
    * @param {boolean} inSearchMode
    * @param {boolean} hasExpandedSection
    * @return {boolean} Whether to show the basic page, taking into account
@@ -331,11 +367,11 @@ Polymer({
    * @private
    */
   showBasicPage_(currentRoute, inSearchMode, hasExpandedSection) {
-    return !hasExpandedSection || settings.routes.BASIC.contains(currentRoute);
+    return !hasExpandedSection || routes.BASIC.contains(currentRoute);
   },
 
   /**
-   * @param {!settings.Route} currentRoute
+   * @param {!Route} currentRoute
    * @param {boolean} inSearchMode
    * @param {boolean} hasExpandedSection
    * @param {boolean} advancedToggleExpanded
@@ -346,8 +382,7 @@ Polymer({
   showAdvancedPage_(
       currentRoute, inSearchMode, hasExpandedSection, advancedToggleExpanded) {
     return hasExpandedSection ?
-        (settings.routes.ADVANCED &&
-         settings.routes.ADVANCED.contains(currentRoute)) :
+        (routes.ADVANCED && routes.ADVANCED.contains(currentRoute)) :
         advancedToggleExpanded || inSearchMode;
   },
 
@@ -378,4 +413,3 @@ Polymer({
     return bool.toString();
   },
 });
-})();

@@ -756,8 +756,8 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, MAYBE_ScrollbarEndToEndHistograms) {
   contents()->NavigateAndCommit(url);
   ResetHistograms();
   {
-    auto mouse_move =
-        SyntheticWebMouseEventBuilder::Build(blink::WebMouseEvent::kMouseMove);
+    auto mouse_move = SyntheticWebMouseEventBuilder::Build(
+        blink::WebMouseEvent::Type::kMouseMove);
     base::TimeTicks now = base::TimeTicks::Now();
 
     const ui::LatencyComponentType scroll_components[] = {
@@ -851,8 +851,8 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
   }
 
   {
-    auto mouse_move =
-        SyntheticWebMouseEventBuilder::Build(blink::WebMouseEvent::kMouseMove);
+    auto mouse_move = SyntheticWebMouseEventBuilder::Build(
+        blink::WebMouseEvent::Type::kMouseMove);
     ui::LatencyInfo mouse_latency;
     AddFakeComponents(*tracker(), &mouse_latency);
     tracker()->OnInputEvent(mouse_move, &mouse_latency);
@@ -863,8 +863,8 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
   }
 
   {
-    auto key_event =
-        SyntheticWebKeyboardEventBuilder::Build(blink::WebKeyboardEvent::kChar);
+    auto key_event = SyntheticWebKeyboardEventBuilder::Build(
+        blink::WebKeyboardEvent::Type::kChar);
     ui::LatencyInfo key_latency;
     key_latency.set_source_event_type(ui::SourceEventType::KEY_PRESS);
     AddFakeComponents(*tracker(), &key_latency);
@@ -1144,7 +1144,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, KeyBlockingAndQueueingTime) {
        {blink::mojom::InputEventResultState::kNotConsumed,
         blink::mojom::InputEventResultState::kConsumed}) {
     {
-      NativeWebKeyboardEvent event(blink::WebKeyboardEvent::kRawKeyDown,
+      NativeWebKeyboardEvent event(blink::WebKeyboardEvent::Type::kRawKeyDown,
                                    blink::WebInputEvent::kNoModifiers,
                                    base::TimeTicks::Now());
       ui::LatencyInfo latency_info;

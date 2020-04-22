@@ -220,7 +220,7 @@ IN_PROC_BROWSER_TEST_F(ScrollLatencyBrowserTest,
                        ScrollLatencyNotRecordedIfGSUIgnored) {
   LoadURL();
   auto scroll_update_watcher = std::make_unique<InputMsgWatcher>(
-      GetWidgetHost(), blink::WebInputEvent::kGestureScrollUpdate);
+      GetWidgetHost(), blink::WebInputEvent::Type::kGestureScrollUpdate);
 
   // Try to scroll upward, the GSU(s) will get ignored since the scroller is at
   // its extent.
@@ -278,7 +278,7 @@ IN_PROC_BROWSER_TEST_F(ScrollThroughputBrowserTest,
                        MAYBE_ScrollThroughputMetrics) {
   LoadURL();
   auto scroll_update_watcher = std::make_unique<InputMsgWatcher>(
-      GetWidgetHost(), blink::WebInputEvent::kGestureScrollEnd);
+      GetWidgetHost(), blink::WebInputEvent::Type::kGestureScrollEnd);
 
   SyntheticSmoothScrollGestureParams params;
   params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
@@ -359,13 +359,13 @@ class ScrollLatencyScrollbarBrowserTest : public ScrollLatencyBrowserTest {
     // scrollbar scroll.
     gfx::PointF scrollbar_forward_button(795, 595);
     blink::WebMouseEvent mouse_event = SyntheticWebMouseEventBuilder::Build(
-        blink::WebInputEvent::kMouseDown, scrollbar_forward_button.x(),
+        blink::WebInputEvent::Type::kMouseDown, scrollbar_forward_button.x(),
         scrollbar_forward_button.y(), 0);
     mouse_event.button = blink::WebMouseEvent::Button::kLeft;
     mouse_event.SetTimeStamp(base::TimeTicks::Now());
     GetWidgetHost()->ForwardMouseEvent(mouse_event);
 
-    mouse_event.SetType(blink::WebInputEvent::kMouseUp);
+    mouse_event.SetType(blink::WebInputEvent::Type::kMouseUp);
     GetWidgetHost()->ForwardMouseEvent(mouse_event);
 
     RunUntilInputProcessed(GetWidgetHost());
@@ -400,7 +400,7 @@ class ScrollLatencyScrollbarBrowserTest : public ScrollLatencyBrowserTest {
     // thread scrollbar ScrollBegin and ScrollUpdate.
     gfx::PointF scrollbar_thumb(795, 30);
     blink::WebMouseEvent mouse_down = SyntheticWebMouseEventBuilder::Build(
-        blink::WebInputEvent::kMouseDown, scrollbar_thumb.x(),
+        blink::WebInputEvent::Type::kMouseDown, scrollbar_thumb.x(),
         scrollbar_thumb.y(), 0);
     mouse_down.button = blink::WebMouseEvent::Button::kLeft;
     mouse_down.SetTimeStamp(base::TimeTicks::Now());
@@ -416,7 +416,7 @@ class ScrollLatencyScrollbarBrowserTest : public ScrollLatencyBrowserTest {
     RunUntilInputProcessed(GetWidgetHost());
 
     blink::WebMouseEvent mouse_move = SyntheticWebMouseEventBuilder::Build(
-        blink::WebInputEvent::kMouseMove, scrollbar_thumb.x(),
+        blink::WebInputEvent::Type::kMouseMove, scrollbar_thumb.x(),
         scrollbar_thumb.y() + 10, 0);
     mouse_move.button = blink::WebMouseEvent::Button::kLeft;
     mouse_move.SetTimeStamp(base::TimeTicks::Now());
@@ -431,7 +431,7 @@ class ScrollLatencyScrollbarBrowserTest : public ScrollLatencyBrowserTest {
     RunUntilInputProcessed(GetWidgetHost());
 
     blink::WebMouseEvent mouse_up = SyntheticWebMouseEventBuilder::Build(
-        blink::WebInputEvent::kMouseUp, scrollbar_thumb.x(),
+        blink::WebInputEvent::Type::kMouseUp, scrollbar_thumb.x(),
         scrollbar_thumb.y() + 20, 0);
     mouse_up.button = blink::WebMouseEvent::Button::kLeft;
     mouse_up.SetTimeStamp(base::TimeTicks::Now());

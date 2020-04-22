@@ -1177,7 +1177,7 @@ TEST_F(PreviewsDeciderImplTest,
       static_cast<int>(PreviewsEligibilityReason::ALLOWED), 2);
 }
 
-TEST_F(PreviewsDeciderImplTest, ResourceLoadingHintsAllowedByDefault) {
+TEST_F(PreviewsDeciderImplTest, ResourceLoadingHintsNotAllowedByDefault) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kPreviews);
   InitializeUIService();
@@ -1187,15 +1187,9 @@ TEST_F(PreviewsDeciderImplTest, ResourceLoadingHintsAllowedByDefault) {
   content::MockNavigationHandle navigation_handle;
   navigation_handle.set_url(GURL("https://www.google.com"));
 
-#if defined(OS_ANDROID)
-  bool expected = true;
-#else   // !defined(OS_ANDROID)
-  bool expected = false;
-#endif  // defined(OS_ANDROID)
-  EXPECT_EQ(expected,
-            previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
-                &user_data, &navigation_handle, false,
-                PreviewsType::RESOURCE_LOADING_HINTS));
+  EXPECT_FALSE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
+      &user_data, &navigation_handle, false,
+      PreviewsType::RESOURCE_LOADING_HINTS));
 }
 
 TEST_F(PreviewsDeciderImplTest,

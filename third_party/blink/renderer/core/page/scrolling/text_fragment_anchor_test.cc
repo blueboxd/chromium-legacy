@@ -56,7 +56,7 @@ class TextFragmentAnchorTest : public SimTest {
   }
 
   void SimulateClick(int x, int y) {
-    WebMouseEvent event(WebInputEvent::kMouseDown, gfx::PointF(x, y),
+    WebMouseEvent event(WebInputEvent::Type::kMouseDown, gfx::PointF(x, y),
                         gfx::PointF(x, y), WebPointerProperties::Button::kLeft,
                         0, WebInputEvent::Modifiers::kLeftButtonDown,
                         base::TimeTicks::Now());
@@ -65,7 +65,7 @@ class TextFragmentAnchorTest : public SimTest {
   }
 
   void SimulateTap(int x, int y) {
-    WebGestureEvent event(WebInputEvent::kGestureTap,
+    WebGestureEvent event(WebInputEvent::Type::kGestureTap,
                           WebInputEvent::kNoModifiers, base::TimeTicks::Now(),
                           WebGestureDevice::kTouchscreen);
     event.SetPositionInWidget(gfx::PointF(x, y));

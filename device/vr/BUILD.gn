@@ -9,17 +9,39 @@ if (is_android) {
 }
 
 if (enable_vr) {
+  # TODO(https://crbug.com/1073113): Flesh out and cleanup this target.
+  component("vr_base") {
+    visibility = [
+      # TODO(https://crbug.com/843374): Move arcore_device
+      "//chrome/browser/android/vr/*",
+      "//content/services/isolated_xr_device/*",
+      "//device/vr/*",
+    ]
+
+    output_name = "device_vr_base"
+
+    defines = [ "IS_DEVICE_VR_BASE_IMPL" ]
+    sources = [
+      "vr_device.h",
+      "vr_device_base.cc",
+      "vr_device_base.h",
+    ]
+
+    public_deps = [
+      "//device/vr/public/cpp",
+      "//device/vr/public/mojom",
+    ]
+    deps = [
+      "//base",
+      "//mojo/public/cpp/bindings",
+    ]
+  }
+
   component("vr") {
     output_name = "device_vr"
 
     defines = [ "DEVICE_VR_IMPLEMENTATION" ]
     sources = [
-      "orientation/orientation_device.cc",
-      "orientation/orientation_device.h",
-      "orientation/orientation_device_provider.cc",
-      "orientation/orientation_device_provider.h",
-      "orientation/orientation_session.cc",
-      "orientation/orientation_session.h",
       "util/fps_meter.cc",
       "util/fps_meter.h",
       "util/gamepad_builder.cc",
@@ -34,14 +56,12 @@ if (enable_vr) {
       "util/transform_utils.h",
       "util/xr_standard_gamepad_builder.cc",
       "util/xr_standard_gamepad_builder.h",
-      "vr_device.h",
-      "vr_device_base.cc",
-      "vr_device_base.h",
       "vr_export.h",
     ]
 
     public_deps = [ "//device/vr/public/cpp" ]
     deps = [
+      ":vr_base",
       "//base",
       "//components/ukm:ukm",
       "//device/base",
@@ -267,7 +287,9 @@ if (enable_vr) {
 
     public_deps = [
       ":vr",
+      ":vr_base",
       "//base",
+      "//device/vr/orientation",
       "//device/vr/public/mojom",
       "//mojo/public/cpp/bindings",
       "//services/device/public/cpp/generic_sensor",

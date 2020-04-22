@@ -31,6 +31,7 @@
 #include "content/browser/appcache/appcache_response_info.h"
 #include "content/browser/appcache/appcache_update_url_loader_request.h"
 #include "content/browser/appcache/mock_appcache_service.h"
+#include "content/browser/appcache/test_origin_trial_policy.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/url_loader_factory_getter.h"
@@ -56,43 +57,20 @@
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 
-// TODO(enne): consolidate multiple TestOriginTrialPolicy implementations
 namespace {
-const char* kTestAppCacheOriginTrialToken =
-    "AnIRfMbu5xrUEIBGno19QnlNiW7gZgKrkLaCysH+/"
-    "XU2FEpF+"
-    "TLisekclfG9xOkjQgTEllip14FPATbapHAH5ggAAABNeyJvcmlnaW4iOiAiaHR0cDovL21vY2t"
-    "ob3N0OjgwIiwgImZlYXR1cmUiOiAiQXBwQ2FjaGUiLCAiZXhwaXJ5IjogMTU4ODM1OTM5NH0=";
+#define APPCACHE_ORIGIN_TRIAL_TOKEN                                            \
+  "AnIRfMbu5xrUEIBGno19QnlNiW7gZgKrkLaCysH+/"                                  \
+  "XU2FEpF+"                                                                   \
+  "TLisekclfG9xOkjQgTEllip14FPATbapHAH5ggAAABNeyJvcmlnaW4iOiAiaHR0cDovL21vY2t" \
+  "ob3N0OjgwIiwgImZlYXR1cmUiOiAiQXBwQ2FjaGUiLCAiZXhwaXJ5IjogMTU4ODM1OTM5NH0="
 
-const uint8_t kTestPublicKey[] = {
-    0x75, 0x10, 0xac, 0xf9, 0x3a, 0x1c, 0xb8, 0xa9, 0x28, 0x70, 0xd2,
-    0x9a, 0xd0, 0x0b, 0x59, 0xe1, 0xac, 0x2b, 0xb7, 0xd5, 0xca, 0x1f,
-    0x64, 0x90, 0x08, 0x8e, 0xa8, 0xe0, 0x56, 0x3a, 0x04, 0xd0,
-};
-
-class TestOriginTrialPolicy : public blink::OriginTrialPolicy {
- public:
-  TestOriginTrialPolicy() {
-    public_keys_.push_back(
-        base::StringPiece(reinterpret_cast<const char*>(kTestPublicKey),
-                          base::size(kTestPublicKey)));
-  }
-
-  bool IsOriginTrialsSupported() const override { return true; }
-  std::vector<base::StringPiece> GetPublicKeys() const override {
-    return public_keys_;
-  }
-  bool IsOriginSecure(const GURL& url) const override { return true; }
-
- private:
-  std::vector<base::StringPiece> public_keys_;
-};
-
-static TestOriginTrialPolicy g_origin_trial_policy;
+const char* kTestAppCacheOriginTrialToken = APPCACHE_ORIGIN_TRIAL_TOKEN;
 
 }  // namespace
 
 namespace content {
+static TestOriginTrialPolicy g_origin_trial_policy;
+
 namespace appcache_update_job_unittest {
 
 class AppCacheUpdateJobTest;
@@ -133,6 +111,20 @@ const char kManifest2Contents[] =
     "CHROMIUM-INTERCEPT:\n"
     "intercept1 return intercept1a\n"
     "/bar/intercept2 return intercept2a\n"
+    "FALLBACK:\n"
+    "fallback1 fallback1a\n"
+    "/bar/fallback2 fallback2a\n"
+    "NETWORK:\n"
+    "*\n";
+
+const char kManifest2OriginTrialContents[] =
+    "CACHE MANIFEST\n"
+    "explicit1\n"
+    "CHROMIUM-INTERCEPT:\n"
+    "intercept1 return intercept1a\n"
+    "/bar/intercept2 return intercept2a\n"
+    "ORIGIN-TRIAL:\n" APPCACHE_ORIGIN_TRIAL_TOKEN
+    "\n"
     "FALLBACK:\n"
     "fallback1 fallback1a\n"
     "/bar/fallback2 fallback2a\n"
@@ -189,8 +181,7 @@ class MockHttpServer {
 
   static void GetMockResponse(const std::string& path,
                               std::string* headers,
-                              std::string* body,
-                              bool append_origin_trial_header) {
+                              std::string* body) {
     const char ok_headers[] =
         "HTTP/1.1 200 OK\n"
         "\n";
@@ -260,6 +251,9 @@ class MockHttpServer {
     } else if (path == "/files/manifest2") {
       (*headers) = std::string(manifest_headers, base::size(manifest_headers));
       (*body) = kManifest2Contents;
+    } else if (path == "/files/manifest2-origin-trial") {
+      (*headers) = std::string(manifest_headers, base::size(manifest_headers));
+      (*body) = kManifest2OriginTrialContents;
     } else if (path == "/files/manifest2-with-root-override") {
       (*headers) = GetManifestHeaders(/*ok=*/true, /*scope=*/"/");
       (*body) = kManifest2Contents;
@@ -374,25 +368,6 @@ class MockHttpServer {
       (*headers) =
           std::string(not_found_headers, base::size(not_found_headers));
       (*body) = "";
-    }
-
-    // Do some hacky string editing to conditionally edit in the
-    // origin trial header if requested.
-    if (append_origin_trial_header) {
-      int insert_idx = 0;
-      size_t len = headers->length();
-      for (size_t i = len - 1; i > 0; --i) {
-        char c = (*headers)[i];
-        if (c != '\0' && c != '\n') {
-          insert_idx = i + 1;
-          break;
-        }
-      }
-      CHECK_GT(insert_idx, 0);
-      headers->erase(insert_idx, len - insert_idx);
-      (*headers) += "\nOrigin-Trial: ";
-      (*headers) += kTestAppCacheOriginTrialToken;
-      (*headers) += "\n\n";
     }
   }
 };
@@ -725,8 +700,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     if (RetryRequestTestJob::IsRetryUrl(url_request.url)) {
       RetryRequestTestJob::GetResponseForURL(url_request.url, &headers, &body);
     } else {
-      MockHttpServer::GetMockResponse(url_request.url.path(), &headers, &body,
-                                      append_origin_trial_header_to_responses_);
+      MockHttpServer::GetMockResponse(url_request.url.path(), &headers, &body);
     }
 
     net::HttpResponseInfo info;
@@ -3985,13 +3959,15 @@ class AppCacheUpdateJobTest : public testing::Test,
                     kTestAppCacheOriginTrialToken, MockHttpServer::GetOrigin(),
                     base::Time::Now(), &token_feature, &expect_token_expires_),
                 blink::OriginTrialTokenStatus::kSuccess);
-      EXPECT_EQ(AppCacheStorage::GetOriginTrialNameForTesting(), token_feature);
+      EXPECT_EQ(GetAppCacheOriginTrialNameForTesting(), token_feature);
       EXPECT_NE(base::Time(), expect_token_expires_);
     }
 
     MakeService();
+    tested_manifest_path_override_ = "files/manifest2-origin-trial";
     group_ = base::MakeRefCounted<AppCacheGroup>(
-        service_->storage(), MockHttpServer::GetMockUrl("files/manifest2"),
+        service_->storage(),
+        MockHttpServer::GetMockUrl(tested_manifest_path_override_),
         service_->storage()->NewGroupId());
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
@@ -4008,7 +3984,6 @@ class AppCacheUpdateJobTest : public testing::Test,
     host1->AssociateCompleteCache(cache);
 
     // Set up checks for when update job finishes.
-    append_origin_trial_header_to_responses_ = true;
     do_checks_after_update_finished_ = true;
     expect_group_obsolete_ = false;
     expect_group_has_cache_ = true;
@@ -4941,8 +4916,6 @@ class AppCacheUpdateJobTest : public testing::Test,
   const char* tested_manifest_path_override_;
   AppCache::EntryMap expect_extra_entries_;
   std::map<GURL, int64_t> expect_response_ids_;
-
-  bool append_origin_trial_header_to_responses_ = false;
 
   content::TestBrowserContext browser_context_;
   URLLoaderInterceptor interceptor_;

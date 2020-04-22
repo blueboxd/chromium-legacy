@@ -24,8 +24,6 @@ bool TextInputClientMessageFilter::OnMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(TextInputClientMessageFilter, message)
     IPC_MESSAGE_HANDLER(TextInputClientReplyMsg_GotStringAtPoint,
                         OnGotStringAtPoint)
-    IPC_MESSAGE_HANDLER(TextInputClientReplyMsg_GotCharacterIndexForPoint,
-                        OnGotCharacterIndexForPoint)
     IPC_MESSAGE_HANDLER(TextInputClientReplyMsg_GotFirstRectForRange,
                         OnGotFirstRectForRange)
     IPC_MESSAGE_HANDLER(TextInputClientReplyMsg_GotStringForRange,
@@ -53,11 +51,6 @@ void TextInputClientMessageFilter::OnGotStringAtPoint(
     const gfx::Point& point) {
   TextInputClientMac* service = TextInputClientMac::GetInstance();
   service->GetStringAtPointReply(encoded_string, point);
-}
-
-void TextInputClientMessageFilter::OnGotCharacterIndexForPoint(uint32_t index) {
-  TextInputClientMac* service = TextInputClientMac::GetInstance();
-  service->SetCharacterIndexAndSignal(index);
 }
 
 void TextInputClientMessageFilter::OnGotFirstRectForRange(

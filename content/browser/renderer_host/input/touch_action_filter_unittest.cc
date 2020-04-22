@@ -51,9 +51,9 @@ class TouchActionFilterTest : public testing::Test {
                float expected_dx,
                float expected_dy) {
     WebGestureEvent tap_down = SyntheticWebGestureEventBuilder::Build(
-        WebInputEvent::kGestureTapDown, kSourceDevice);
+        WebInputEvent::Type::kGestureTapDown, kSourceDevice);
     WebGestureEvent scroll_end = SyntheticWebGestureEventBuilder::Build(
-        WebInputEvent::kGestureScrollEnd, kSourceDevice);
+        WebInputEvent::Type::kGestureScrollEnd, kSourceDevice);
 
     {
       // Scrolls with no direction hint are permitted in the |action| direction.
@@ -152,9 +152,9 @@ class TouchActionFilterTest : public testing::Test {
                                            float scroll_x,
                                            float scroll_y) {
     WebGestureEvent tap_down = SyntheticWebGestureEventBuilder::Build(
-        WebInputEvent::kGestureTapDown, kSourceDevice);
+        WebInputEvent::Type::kGestureTapDown, kSourceDevice);
     WebGestureEvent scroll_end = SyntheticWebGestureEventBuilder::Build(
-        WebInputEvent::kGestureScrollEnd, kSourceDevice);
+        WebInputEvent::Type::kGestureScrollEnd, kSourceDevice);
 
     {
       // Scrolls towards the touch-action direction are permitted.
@@ -232,7 +232,7 @@ class TouchActionFilterTest : public testing::Test {
 
 TEST_F(TouchActionFilterTest, SimpleFilter) {
   WebGestureEvent tap_down = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGestureTapDown, kSourceDevice);
+      WebInputEvent::Type::kGestureTapDown, kSourceDevice);
   WebGestureEvent scroll_begin =
       SyntheticWebGestureEventBuilder::BuildScrollBegin(2, 3, kSourceDevice);
   const float kDeltaX = 5;
@@ -241,7 +241,7 @@ TEST_F(TouchActionFilterTest, SimpleFilter) {
       SyntheticWebGestureEventBuilder::BuildScrollUpdate(kDeltaX, kDeltaY, 0,
                                                          kSourceDevice);
   WebGestureEvent scroll_end = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGestureScrollEnd, kSourceDevice);
+      WebInputEvent::Type::kGestureScrollEnd, kSourceDevice);
 
   // cc::TouchAction::kAuto doesn't cause any filtering.
   ResetTouchAction();
@@ -400,9 +400,9 @@ TEST_F(TouchActionFilterTest, PanXY) {
   const float kDX = 5;
   const float kDY = 10;
   WebGestureEvent tap_down = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGestureTapDown, kSourceDevice);
+      WebInputEvent::Type::kGestureTapDown, kSourceDevice);
   WebGestureEvent scroll_end = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGestureScrollEnd, kSourceDevice);
+      WebInputEvent::Type::kGestureScrollEnd, kSourceDevice);
 
   {
     // Scrolls hinted in the X axis are permitted and unmodified.
@@ -498,7 +498,7 @@ TEST_F(TouchActionFilterTest, BitMath) {
 
 TEST_F(TouchActionFilterTest, MultiTouch) {
   WebGestureEvent tap_down = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGestureTapDown, kSourceDevice);
+      WebInputEvent::Type::kGestureTapDown, kSourceDevice);
   WebGestureEvent scroll_begin =
       SyntheticWebGestureEventBuilder::BuildScrollBegin(2, 3, kSourceDevice);
   const float kDeltaX = 5;
@@ -507,7 +507,7 @@ TEST_F(TouchActionFilterTest, MultiTouch) {
       SyntheticWebGestureEventBuilder::BuildScrollUpdate(kDeltaX, kDeltaY, 0,
                                                          kSourceDevice);
   WebGestureEvent scroll_end = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGestureScrollEnd, kSourceDevice);
+      WebInputEvent::Type::kGestureScrollEnd, kSourceDevice);
 
   // For multiple points, the intersection is what matters.
   ResetTouchAction();
@@ -554,19 +554,19 @@ class TouchActionFilterPinchTest : public testing::Test {
     filter_.SetForceEnableZoom(force_enable_zoom);
 
     WebGestureEvent tap_down = SyntheticWebGestureEventBuilder::Build(
-        WebInputEvent::kGestureTapDown, kSourceDevice);
+        WebInputEvent::Type::kGestureTapDown, kSourceDevice);
     WebGestureEvent scroll_begin =
         SyntheticWebGestureEventBuilder::BuildScrollBegin(2, 3, kSourceDevice,
                                                           2);
     WebGestureEvent pinch_begin = SyntheticWebGestureEventBuilder::Build(
-        WebInputEvent::kGesturePinchBegin, kSourceDevice);
+        WebInputEvent::Type::kGesturePinchBegin, kSourceDevice);
     WebGestureEvent pinch_update =
         SyntheticWebGestureEventBuilder::BuildPinchUpdate(1.2f, 5, 5, 0,
                                                           kSourceDevice);
     WebGestureEvent pinch_end = SyntheticWebGestureEventBuilder::Build(
-        WebInputEvent::kGesturePinchEnd, kSourceDevice);
+        WebInputEvent::Type::kGesturePinchEnd, kSourceDevice);
     WebGestureEvent scroll_end = SyntheticWebGestureEventBuilder::Build(
-        WebInputEvent::kGestureScrollEnd, kSourceDevice);
+        WebInputEvent::Type::kGestureScrollEnd, kSourceDevice);
 
     // Pinch is allowed with touch-action: auto.
     filter_.ResetTouchAction();
@@ -750,13 +750,13 @@ TEST_F(TouchActionFilterPinchTest, ForceEnableZoom) {
 
 TEST_F(TouchActionFilterTest, DoubleTapWithTouchActionAuto) {
   WebGestureEvent tap_down = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGestureTapDown, kSourceDevice);
+      WebInputEvent::Type::kGestureTapDown, kSourceDevice);
   WebGestureEvent unconfirmed_tap = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGestureTapUnconfirmed, kSourceDevice);
+      WebInputEvent::Type::kGestureTapUnconfirmed, kSourceDevice);
   WebGestureEvent tap_cancel = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGestureTapCancel, kSourceDevice);
+      WebInputEvent::Type::kGestureTapCancel, kSourceDevice);
   WebGestureEvent double_tap = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGestureDoubleTap, kSourceDevice);
+      WebInputEvent::Type::kGestureDoubleTap, kSourceDevice);
 
   // Double tap is allowed with touch action auto.
   ResetTouchAction();
@@ -765,7 +765,8 @@ TEST_F(TouchActionFilterTest, DoubleTapWithTouchActionAuto) {
             FilterGestureEventResult::kFilterGestureEventAllowed);
   EXPECT_EQ(filter_.FilterGestureEvent(&unconfirmed_tap),
             FilterGestureEventResult::kFilterGestureEventAllowed);
-  EXPECT_EQ(unconfirmed_tap.GetType(), WebInputEvent::kGestureTapUnconfirmed);
+  EXPECT_EQ(unconfirmed_tap.GetType(),
+            WebInputEvent::Type::kGestureTapUnconfirmed);
   // The tap cancel will come as part of the next touch sequence.
   ResetTouchAction();
   // Changing the touch action for the second tap doesn't effect the behaviour
@@ -781,13 +782,13 @@ TEST_F(TouchActionFilterTest, DoubleTapWithTouchActionAuto) {
 
 TEST_F(TouchActionFilterTest, DoubleTap) {
   WebGestureEvent tap_down = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGestureTapDown, kSourceDevice);
+      WebInputEvent::Type::kGestureTapDown, kSourceDevice);
   WebGestureEvent unconfirmed_tap = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGestureTapUnconfirmed, kSourceDevice);
+      WebInputEvent::Type::kGestureTapUnconfirmed, kSourceDevice);
   WebGestureEvent tap_cancel = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGestureTapCancel, kSourceDevice);
+      WebInputEvent::Type::kGestureTapCancel, kSourceDevice);
   WebGestureEvent double_tap = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGestureDoubleTap, kSourceDevice);
+      WebInputEvent::Type::kGestureDoubleTap, kSourceDevice);
 
   // Double tap is disabled with any touch action other than auto.
   ResetTouchAction();
@@ -797,7 +798,7 @@ TEST_F(TouchActionFilterTest, DoubleTap) {
             FilterGestureEventResult::kFilterGestureEventAllowed);
   EXPECT_EQ(filter_.FilterGestureEvent(&unconfirmed_tap),
             FilterGestureEventResult::kFilterGestureEventAllowed);
-  EXPECT_EQ(WebInputEvent::kGestureTap, unconfirmed_tap.GetType());
+  EXPECT_EQ(WebInputEvent::Type::kGestureTap, unconfirmed_tap.GetType());
   // Changing the touch action for the second tap doesn't effect the behaviour
   // of the event. The tap cancel will come as part of the next touch sequence.
   ResetTouchAction();
@@ -808,18 +809,18 @@ TEST_F(TouchActionFilterTest, DoubleTap) {
             FilterGestureEventResult::kFilterGestureEventAllowed);
   EXPECT_EQ(filter_.FilterGestureEvent(&double_tap),
             FilterGestureEventResult::kFilterGestureEventAllowed);
-  EXPECT_EQ(WebInputEvent::kGestureTap, double_tap.GetType());
+  EXPECT_EQ(WebInputEvent::Type::kGestureTap, double_tap.GetType());
   EXPECT_EQ(2, double_tap.data.tap.tap_count);
   filter_.DecreaseActiveTouches();
 }
 
 TEST_F(TouchActionFilterTest, SingleTapWithTouchActionAuto) {
   WebGestureEvent tap_down = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGestureTapDown, kSourceDevice);
+      WebInputEvent::Type::kGestureTapDown, kSourceDevice);
   WebGestureEvent unconfirmed_tap1 = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGestureTapUnconfirmed, kSourceDevice);
+      WebInputEvent::Type::kGestureTapUnconfirmed, kSourceDevice);
   WebGestureEvent tap = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGestureTap, kSourceDevice);
+      WebInputEvent::Type::kGestureTap, kSourceDevice);
 
   // Single tap is allowed with touch action auto.
   ResetTouchAction();
@@ -828,18 +829,19 @@ TEST_F(TouchActionFilterTest, SingleTapWithTouchActionAuto) {
             FilterGestureEventResult::kFilterGestureEventAllowed);
   EXPECT_EQ(filter_.FilterGestureEvent(&unconfirmed_tap1),
             FilterGestureEventResult::kFilterGestureEventAllowed);
-  EXPECT_EQ(WebInputEvent::kGestureTapUnconfirmed, unconfirmed_tap1.GetType());
+  EXPECT_EQ(WebInputEvent::Type::kGestureTapUnconfirmed,
+            unconfirmed_tap1.GetType());
   EXPECT_EQ(filter_.FilterGestureEvent(&tap),
             FilterGestureEventResult::kFilterGestureEventAllowed);
 }
 
 TEST_F(TouchActionFilterTest, SingleTap) {
   WebGestureEvent tap_down = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGestureTapDown, kSourceDevice);
+      WebInputEvent::Type::kGestureTapDown, kSourceDevice);
   WebGestureEvent unconfirmed_tap1 = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGestureTapUnconfirmed, kSourceDevice);
+      WebInputEvent::Type::kGestureTapUnconfirmed, kSourceDevice);
   WebGestureEvent tap = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGestureTap, kSourceDevice);
+      WebInputEvent::Type::kGestureTap, kSourceDevice);
 
   // With touch action other than auto, tap unconfirmed is turned into tap.
   ResetTouchAction();
@@ -849,7 +851,7 @@ TEST_F(TouchActionFilterTest, SingleTap) {
             FilterGestureEventResult::kFilterGestureEventAllowed);
   EXPECT_EQ(filter_.FilterGestureEvent(&unconfirmed_tap1),
             FilterGestureEventResult::kFilterGestureEventAllowed);
-  EXPECT_EQ(WebInputEvent::kGestureTap, unconfirmed_tap1.GetType());
+  EXPECT_EQ(WebInputEvent::Type::kGestureTap, unconfirmed_tap1.GetType());
   EXPECT_EQ(filter_.FilterGestureEvent(&tap),
             FilterGestureEventResult::kFilterGestureEventFiltered);
   filter_.DecreaseActiveTouches();
@@ -857,13 +859,13 @@ TEST_F(TouchActionFilterTest, SingleTap) {
 
 TEST_F(TouchActionFilterTest, TouchActionResetsOnResetTouchAction) {
   WebGestureEvent tap_down = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGestureTapDown, kSourceDevice);
+      WebInputEvent::Type::kGestureTapDown, kSourceDevice);
   WebGestureEvent tap = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGestureTap, kSourceDevice);
+      WebInputEvent::Type::kGestureTap, kSourceDevice);
   WebGestureEvent scroll_begin =
       SyntheticWebGestureEventBuilder::BuildScrollBegin(2, 3, kSourceDevice);
   WebGestureEvent scroll_end = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGestureScrollEnd, kSourceDevice);
+      WebInputEvent::Type::kGestureScrollEnd, kSourceDevice);
 
   ResetTouchAction();
   filter_.OnSetTouchAction(cc::TouchAction::kNone);
@@ -898,18 +900,18 @@ TEST_F(TouchActionFilterTest, TouchActionResetsOnResetTouchAction) {
 TEST_F(TouchActionFilterTest, TouchActionResetMidSequence) {
   filter_.OnHasTouchEventHandlers(true);
   WebGestureEvent tap_down = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGestureTapDown, kSourceDevice);
+      WebInputEvent::Type::kGestureTapDown, kSourceDevice);
   WebGestureEvent scroll_begin =
       SyntheticWebGestureEventBuilder::BuildScrollBegin(2, 3, kSourceDevice);
   WebGestureEvent pinch_begin = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGesturePinchBegin, kSourceDevice);
+      WebInputEvent::Type::kGesturePinchBegin, kSourceDevice);
   WebGestureEvent pinch_update =
       SyntheticWebGestureEventBuilder::BuildPinchUpdate(1.2f, 5, 5, 0,
                                                         kSourceDevice);
   WebGestureEvent pinch_end = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGesturePinchEnd, kSourceDevice);
+      WebInputEvent::Type::kGesturePinchEnd, kSourceDevice);
   WebGestureEvent scroll_end = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGestureScrollEnd, kSourceDevice);
+      WebInputEvent::Type::kGestureScrollEnd, kSourceDevice);
 
   filter_.OnSetTouchAction(cc::TouchAction::kNone);
   filter_.IncreaseActiveTouches();
@@ -964,14 +966,14 @@ TEST_F(TouchActionFilterTest, TouchActionNotResetWithinGestureSequence) {
   filter_.OnSetTouchAction(cc::TouchAction::kPanY);
 
   WebGestureEvent tap_down = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGestureTapDown, kSourceDevice);
+      WebInputEvent::Type::kGestureTapDown, kSourceDevice);
   WebGestureEvent scroll_begin =
       SyntheticWebGestureEventBuilder::BuildScrollBegin(1, 3, kSourceDevice);
   WebGestureEvent scroll_update =
       SyntheticWebGestureEventBuilder::BuildScrollUpdate(1, 5, 0,
                                                          kSourceDevice);
   WebGestureEvent scroll_end = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGestureScrollEnd, kSourceDevice);
+      WebInputEvent::Type::kGestureScrollEnd, kSourceDevice);
 
   filter_.IncreaseActiveTouches();
   EXPECT_EQ(filter_.FilterGestureEvent(&tap_down),
@@ -1006,7 +1008,7 @@ TEST_F(TouchActionFilterTest, OnHasTouchEventHandlersReceivedDuringTap) {
   filter_.OnHasTouchEventHandlers(false);
 
   WebGestureEvent tap_down = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGestureTapDown, kSourceDevice);
+      WebInputEvent::Type::kGestureTapDown, kSourceDevice);
   EXPECT_EQ(filter_.FilterGestureEvent(&tap_down),
             FilterGestureEventResult::kFilterGestureEventAllowed);
   filter_.OnHasTouchEventHandlers(true);
@@ -1015,7 +1017,7 @@ TEST_F(TouchActionFilterTest, OnHasTouchEventHandlersReceivedDuringTap) {
   filter_.OnSetTouchAction(cc::TouchAction::kPan);
   // Simulate a simple tap gesture.
   WebGestureEvent tap = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGestureTap, kSourceDevice);
+      WebInputEvent::Type::kGestureTap, kSourceDevice);
   EXPECT_EQ(filter_.FilterGestureEvent(&tap),
             FilterGestureEventResult::kFilterGestureEventAllowed);
   // Gesture tap indicates that there is no scroll in progress, so this should
@@ -1028,11 +1030,11 @@ TEST_F(TouchActionFilterTest, OnHasTouchEventHandlersReceivedDuringDoubleTap) {
   filter_.OnHasTouchEventHandlers(false);
 
   WebGestureEvent tap_down = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGestureTapDown, kSourceDevice);
+      WebInputEvent::Type::kGestureTapDown, kSourceDevice);
   WebGestureEvent tap_cancel = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGestureTapCancel, kSourceDevice);
+      WebInputEvent::Type::kGestureTapCancel, kSourceDevice);
   WebGestureEvent double_tap = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGestureDoubleTap, kSourceDevice);
+      WebInputEvent::Type::kGestureDoubleTap, kSourceDevice);
 
   // Simulate a double tap gesture: GTD-->GTC-->GTD-->GTC-->GDT.
   filter_.IncreaseActiveTouches();
@@ -1058,16 +1060,16 @@ TEST_F(TouchActionFilterTest, OnHasTouchEventHandlersReceivedDuringScroll) {
   filter_.OnHasTouchEventHandlers(false);
 
   WebGestureEvent tap_down = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGestureTapDown, kSourceDevice);
+      WebInputEvent::Type::kGestureTapDown, kSourceDevice);
   WebGestureEvent tap_cancel = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGestureTapCancel, kSourceDevice);
+      WebInputEvent::Type::kGestureTapCancel, kSourceDevice);
   WebGestureEvent scroll_begin =
       SyntheticWebGestureEventBuilder::BuildScrollBegin(5, 0, kSourceDevice);
   WebGestureEvent scroll_update =
       SyntheticWebGestureEventBuilder::BuildScrollUpdate(5, 0, 0,
                                                          kSourceDevice);
   WebGestureEvent scroll_end = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGestureScrollEnd, kSourceDevice);
+      WebInputEvent::Type::kGestureScrollEnd, kSourceDevice);
 
   // Simulate a gesture scroll: GTD-->GTC-->GSB-->GSU-->GSE.
   EXPECT_EQ(filter_.FilterGestureEvent(&tap_down),
@@ -1092,11 +1094,11 @@ TEST_F(TouchActionFilterTest,
   filter_.OnHasTouchEventHandlers(false);
 
   WebGestureEvent tap_down = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGestureTapDown, kSourceDevice);
+      WebInputEvent::Type::kGestureTapDown, kSourceDevice);
   WebGestureEvent tap_cancel = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGestureTapCancel, kSourceDevice);
+      WebInputEvent::Type::kGestureTapCancel, kSourceDevice);
   WebGestureEvent long_tap = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGestureLongTap, kSourceDevice);
+      WebInputEvent::Type::kGestureLongTap, kSourceDevice);
   EXPECT_EQ(filter_.FilterGestureEvent(&tap_down),
             FilterGestureEventResult::kFilterGestureEventAllowed);
   EXPECT_EQ(filter_.FilterGestureEvent(&tap_cancel),
@@ -1110,7 +1112,7 @@ TEST_F(TouchActionFilterTest,
 
   filter_.OnHasTouchEventHandlers(false);
   WebGestureEvent two_finger_tap = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGestureTwoFingerTap, kSourceDevice);
+      WebInputEvent::Type::kGestureTwoFingerTap, kSourceDevice);
 
   EXPECT_EQ(filter_.FilterGestureEvent(&tap_down),
             FilterGestureEventResult::kFilterGestureEventAllowed);
@@ -1172,7 +1174,7 @@ TEST_F(TouchActionFilterTest, ResetTouchActionWithActiveTouch) {
 // the gestures.
 TEST_F(TouchActionFilterTest, GestureArrivesBeforeHasHandlerSet) {
   WebGestureEvent tap_down = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGestureTapDown, kSourceDevice);
+      WebInputEvent::Type::kGestureTapDown, kSourceDevice);
   EXPECT_EQ(filter_.FilterGestureEvent(&tap_down),
             FilterGestureEventResult::kFilterGestureEventAllowed);
 }
@@ -1185,12 +1187,12 @@ TEST_F(TouchActionFilterTest, PinchGesturesAllowedByWhiteListedTouchAction) {
   // white listed touch action has a default value of Auto, and pinch related
   // gestures should be allowed.
   WebGestureEvent pinch_begin = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGesturePinchBegin, kSourceDevice);
+      WebInputEvent::Type::kGesturePinchBegin, kSourceDevice);
   WebGestureEvent pinch_update =
       SyntheticWebGestureEventBuilder::BuildPinchUpdate(1.2f, 5, 5, 0,
                                                         kSourceDevice);
   WebGestureEvent pinch_end = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGesturePinchEnd, kSourceDevice);
+      WebInputEvent::Type::kGesturePinchEnd, kSourceDevice);
   EXPECT_EQ(filter_.FilterGestureEvent(&pinch_begin),
             FilterGestureEventResult::kFilterGestureEventAllowed);
   EXPECT_EQ(filter_.FilterGestureEvent(&pinch_update),
@@ -1214,7 +1216,7 @@ TEST_F(TouchActionFilterTest, FilterWithWhiteListedTouchAction) {
       SyntheticWebGestureEventBuilder::BuildScrollUpdate(dx, dy, 0,
                                                          kSourceDevice);
   WebGestureEvent scroll_end = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGestureScrollEnd, kSourceDevice);
+      WebInputEvent::Type::kGestureScrollEnd, kSourceDevice);
 
   filter_.OnSetWhiteListedTouchAction(cc::TouchAction::kPan);
   EXPECT_EQ(filter_.white_listed_touch_action(), cc::TouchAction::kPan);
@@ -1233,12 +1235,12 @@ TEST_F(TouchActionFilterTest, FilterWithWhiteListedTouchAction) {
   filter_.OnSetWhiteListedTouchAction(cc::TouchAction::kPan);
   EXPECT_EQ(filter_.white_listed_touch_action(), cc::TouchAction::kPan);
   WebGestureEvent pinch_begin = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGesturePinchBegin, kSourceDevice);
+      WebInputEvent::Type::kGesturePinchBegin, kSourceDevice);
   WebGestureEvent pinch_update =
       SyntheticWebGestureEventBuilder::BuildPinchUpdate(1.2f, 5, 5, 0,
                                                         kSourceDevice);
   WebGestureEvent pinch_end = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGesturePinchEnd, kSourceDevice);
+      WebInputEvent::Type::kGesturePinchEnd, kSourceDevice);
   EXPECT_EQ(filter_.FilterGestureEvent(&pinch_begin),
             FilterGestureEventResult::kFilterGestureEventDelayed);
   EXPECT_EQ(filter_.FilterGestureEvent(&pinch_update),
@@ -1320,7 +1322,7 @@ TEST_F(TouchActionFilterTest, ResetBeforeHasHandlerSet) {
   // This should not crash, and should set touch action to auto.
   ResetTouchAction();
   WebGestureEvent tap_down = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGestureTapDown, kSourceDevice);
+      WebInputEvent::Type::kGestureTapDown, kSourceDevice);
   EXPECT_EQ(filter_.FilterGestureEvent(&tap_down),
             FilterGestureEventResult::kFilterGestureEventAllowed);
 }
@@ -1339,7 +1341,7 @@ TEST_F(TouchActionFilterTest,
       SyntheticWebGestureEventBuilder::BuildScrollUpdate(dx, dy, 0,
                                                          kSourceDevice);
   WebGestureEvent scroll_end = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGestureScrollEnd, kSourceDevice);
+      WebInputEvent::Type::kGestureScrollEnd, kSourceDevice);
 
   SetGestureSequenceInProgress();
   EXPECT_EQ(filter_.FilterGestureEvent(&scroll_begin),
@@ -1386,7 +1388,7 @@ TEST_F(TouchActionFilterTest, TapDownWithZeroNumOfActiveTouches) {
   EXPECT_FALSE(filter_.allowed_touch_action().has_value());
 
   WebGestureEvent tap_down = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGestureTapDown, kSourceDevice);
+      WebInputEvent::Type::kGestureTapDown, kSourceDevice);
   EXPECT_EQ(filter_.FilterGestureEvent(&tap_down),
             FilterGestureEventResult::kFilterGestureEventAllowed);
   EXPECT_TRUE(ActiveTouchAction().has_value());
@@ -1405,14 +1407,14 @@ TEST_F(TouchActionFilterTest, PinchZoomStartsWithOneFingerPanDisallowed) {
       SyntheticWebGestureEventBuilder::BuildScrollUpdate(5, 10, 0,
                                                          kSourceDevice);
   WebGestureEvent pinch_begin = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGesturePinchBegin, kSourceDevice);
+      WebInputEvent::Type::kGesturePinchBegin, kSourceDevice);
   WebGestureEvent pinch_update =
       SyntheticWebGestureEventBuilder::BuildPinchUpdate(1.2f, 5, 5, 0,
                                                         kSourceDevice);
   WebGestureEvent pinch_end = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGesturePinchEnd, kSourceDevice);
+      WebInputEvent::Type::kGesturePinchEnd, kSourceDevice);
   WebGestureEvent scroll_end = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGestureScrollEnd, kSourceDevice);
+      WebInputEvent::Type::kGestureScrollEnd, kSourceDevice);
   EXPECT_EQ(filter_.FilterGestureEvent(&scroll_begin),
             FilterGestureEventResult::kFilterGestureEventAllowed);
   EXPECT_EQ(filter_.FilterGestureEvent(&scroll_update),

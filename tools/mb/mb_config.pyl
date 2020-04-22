@@ -779,6 +779,7 @@
       'chromeos-kevin-compile-chrome': 'chromeos_kevin_include_unwind_tables_official',
       'linux-chrome': 'official_goma',
       'linux-chromeos-chrome': 'official_goma_chromeos_include_unwind_tables',
+      'mac-chrome': 'official_goma',
       'win64-chrome': 'official_goma_x64',
       'win_chrome_official': 'official_goma_x86',
       'win-celab-try-rel': 'official_celab_release_bot',

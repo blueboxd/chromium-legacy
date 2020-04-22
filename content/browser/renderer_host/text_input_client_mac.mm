@@ -4,10 +4,17 @@
 
 #import "content/browser/renderer_host/text_input_client_mac.h"
 
+#include "base/bind.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
+#include "content/browser/frame_host/frame_tree.h"
+#include "content/browser/frame_host/frame_tree_node.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/renderer_host/render_view_host_delegate.h"
+#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/text_input_client_messages.h"
@@ -32,6 +39,22 @@ bool SendMessageToRenderWidget(RenderWidgetHostImpl* widget,
 
   DCHECK_EQ(widget->GetRoutingID(), message->routing_id());
   return widget->Send(message);
+}
+
+bool IsFullScreenRenderWidget(RenderWidgetHost* widget) {
+  RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(widget);
+  if (!rwhi->delegate() ||
+      rwhi == rwhi->delegate()->GetFullscreenRenderWidgetHost()) {
+    return true;
+  }
+  return false;
+}
+
+RenderFrameHostImpl* GetFocusedRenderFrameHostImpl(RenderWidgetHost* widget) {
+  RenderViewHostImpl* rvhi = RenderViewHostImpl::From(widget);
+  FrameTreeNode* frame_tree_node =
+      rvhi->GetDelegate()->GetFrameTree()->GetFocusedFrame();
+  return frame_tree_node ? frame_tree_node->current_frame_host() : nullptr;
 }
 }
 
@@ -94,19 +117,23 @@ void TextInputClientMac::GetStringFromRangeReply(
 
 uint32_t TextInputClientMac::GetCharacterIndexAtPoint(RenderWidgetHost* rwh,
                                                       const gfx::Point& point) {
-  RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(rwh);
-  if (!SendMessageToRenderWidget(rwhi,
-                                 new TextInputClientMsg_CharacterIndexForPoint(
-                                     rwhi->GetRoutingID(), point))) {
+  if (IsFullScreenRenderWidget(rwh))
     return UINT32_MAX;
-  }
+
+  RenderFrameHostImpl* rfhi = GetFocusedRenderFrameHostImpl(rwh);
+  // If it doesn't have a focused frame, it calls
+  // SetCharacterIndexAndSignal() with index 0.
+  if (!rfhi)
+    return 0;
+
+  rfhi->GetAssociatedLocalFrame()->GetCharacterIndexAtPoint(point);
 
   base::TimeTicks start = base::TimeTicks::Now();
 
   BeforeRequest();
 
   // http://crbug.com/121917
-  base::ScopedAllowBaseSyncPrimitives allow_wait;
+  base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
   condition_.TimedWait(base::TimeDelta::FromMilliseconds(kWaitTimeout));
   AfterRequest();
 

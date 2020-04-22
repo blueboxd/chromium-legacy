@@ -1057,19 +1057,6 @@ bool WebLocalFrameImpl::FirstRectForCharacterRange(
   return true;
 }
 
-size_t WebLocalFrameImpl::CharacterIndexForPoint(
-    const gfx::Point& point_in_viewport) const {
-  if (!GetFrame())
-    return kNotFound;
-
-  HitTestLocation location(
-      GetFrame()->View()->ViewportToFrame(IntPoint(point_in_viewport)));
-  HitTestResult result = GetFrame()->GetEventHandler().HitTestResultAtLocation(
-      location, HitTestRequest::kReadOnly | HitTestRequest::kActive);
-  return GetFrame()->Selection().CharacterIndexForPoint(
-      result.RoundedPointInInnerNodeFrame());
-}
-
 bool WebLocalFrameImpl::ExecuteCommand(const WebString& name) {
   DCHECK(GetFrame());
 

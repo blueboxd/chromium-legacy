@@ -7,15 +7,25 @@
 #include "base/base64.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_command_line.h"
+#include "base/test/task_environment.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/mojom/trust_tokens.mojom-forward.h"
 #include "services/network/public/mojom/trust_tokens.mojom.h"
 #include "services/network/trust_tokens/suitable_trust_token_origin.h"
+#include "services/network/trust_tokens/trust_token_parameterization.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
 namespace network {
+
+namespace {
+
+using ::testing::AllOf;
+using ::testing::Truly;
+
+}  // namespace
 
 mojom::TrustTokenKeyCommitmentResultPtr GetCommitmentForOrigin(
     const TrustTokenKeyCommitments& commitments,
@@ -161,6 +171,51 @@ TEST(TrustTokenKeyCommitments, KeysFromCommandLine) {
       *SuitableTrustTokenOrigin::Create(GURL("https://issuer.example")));
   ASSERT_TRUE(result);
   EXPECT_EQ(result->signed_redemption_record_verification_key, expected_srrkey);
+}
+
+TEST(TrustTokenKeyCommitments, FiltersKeys) {
+  base::test::TaskEnvironment env(
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME);
+
+  TrustTokenKeyCommitments commitments;
+
+  auto origin =
+      *SuitableTrustTokenOrigin::Create(GURL("https://an-origin.example"));
+  auto commitment_result = mojom::TrustTokenKeyCommitmentResult::New();
+  auto expired_key = mojom::TrustTokenVerificationKey::New();
+  expired_key->expiry = base::Time::Now() - base::TimeDelta::FromMinutes(1);
+  commitment_result->keys.push_back(std::move(expired_key));
+
+  static_assert(kMaximumConcurrentlyValidTrustTokenVerificationKeys < 100,
+                "If the constant grows large, consider rewriting this test.");
+  for (size_t i = 0; i < kMaximumConcurrentlyValidTrustTokenVerificationKeys;
+       ++i) {
+    auto not_expired_key = mojom::TrustTokenVerificationKey::New();
+    not_expired_key->expiry =
+        base::Time::Now() + base::TimeDelta::FromMinutes(1);
+    commitment_result->keys.push_back(std::move(not_expired_key));
+  }
+
+  auto late_to_expire_key = mojom::TrustTokenVerificationKey::New();
+  late_to_expire_key->expiry =
+      base::Time::Now() + base::TimeDelta::FromMinutes(2);
+
+  // We expect to get rid of the expired key and the farthest-in-the-future key
+  // (since there are more than kMaximum... many keys yet to expire).
+  base::flat_map<url::Origin, mojom::TrustTokenKeyCommitmentResultPtr> to_set;
+  to_set.insert_or_assign(origin.origin(), commitment_result.Clone());
+  commitments.Set(std::move(to_set));
+
+  auto result = GetCommitmentForOrigin(commitments, origin);
+  EXPECT_EQ(
+      result->keys.size(),
+      static_cast<size_t>(kMaximumConcurrentlyValidTrustTokenVerificationKeys));
+  EXPECT_TRUE(std::all_of(result->keys.begin(), result->keys.end(),
+                          [](const mojom::TrustTokenVerificationKeyPtr& key) {
+                            return key->expiry ==
+                                   base::Time::Now() +
+                                       base::TimeDelta::FromMinutes(1);
+                          }));
 }
 
 }  // namespace network

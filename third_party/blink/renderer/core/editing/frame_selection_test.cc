@@ -606,7 +606,7 @@ TEST_F(FrameSelectionTest, FocusingButtonHidesRangeInDisabledTextControl) {
   // FrameSelection::SelectAll (= textarea.select() in JavaScript) would have
   // been shorter, but currently that doesn't work on a *disabled* text control.
   const IntRect elem_bounds = textarea->BoundsInViewport();
-  WebMouseEvent double_click(WebMouseEvent::kMouseDown, 0,
+  WebMouseEvent double_click(WebMouseEvent::Type::kMouseDown, 0,
                              WebInputEvent::GetStaticTimeStampForTests());
   double_click.SetPositionInWidget(elem_bounds.X(), elem_bounds.Y());
   double_click.SetPositionInScreen(elem_bounds.X(), elem_bounds.Y());

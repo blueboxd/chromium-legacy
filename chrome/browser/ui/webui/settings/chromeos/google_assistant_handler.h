@@ -12,15 +12,13 @@
 #include "chromeos/services/assistant/public/mojom/settings.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
-class Profile;
-
 namespace chromeos {
 namespace settings {
 
 class GoogleAssistantHandler : public ::settings::SettingsPageUIHandler,
                                chromeos::CrasAudioHandler::AudioObserver {
  public:
-  explicit GoogleAssistantHandler(Profile* profile);
+  GoogleAssistantHandler();
   ~GoogleAssistantHandler() override;
 
   void RegisterMessages() override;
@@ -42,8 +40,6 @@ class GoogleAssistantHandler : public ::settings::SettingsPageUIHandler,
 
   // Bind to assistant settings manager.
   void BindAssistantSettingsManager();
-
-  Profile* const profile_;
 
   mojo::Remote<assistant::mojom::AssistantSettingsManager> settings_manager_;
 

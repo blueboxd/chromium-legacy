@@ -527,9 +527,11 @@ TEST_F(TabMetricsTest, InputEvents) {
   // Fake some input events.
   content::RenderWidgetHost* widget_1 =
       test_contents_1->GetRenderViewHost()->GetWidget();
-  widget_1->ForwardMouseEvent(CreateMouseEvent(WebInputEvent::kMouseDown));
-  widget_1->ForwardMouseEvent(CreateMouseEvent(WebInputEvent::kMouseUp));
-  widget_1->ForwardMouseEvent(CreateMouseEvent(WebInputEvent::kMouseMove));
+  widget_1->ForwardMouseEvent(
+      CreateMouseEvent(WebInputEvent::Type::kMouseDown));
+  widget_1->ForwardMouseEvent(CreateMouseEvent(WebInputEvent::Type::kMouseUp));
+  widget_1->ForwardMouseEvent(
+      CreateMouseEvent(WebInputEvent::Type::kMouseMove));
   expected_metrics_1[TabManager_TabMetrics::kMouseEventCountName] = 3;
 
   // Switch to the background tab. The current tab is deactivated and logged.
@@ -542,7 +544,8 @@ TEST_F(TabMetricsTest, InputEvents) {
   // The second tab's counts are independent of the other's.
   content::RenderWidgetHost* widget_2 =
       test_contents_2->GetRenderViewHost()->GetWidget();
-  widget_2->ForwardMouseEvent(CreateMouseEvent(WebInputEvent::kMouseMove));
+  widget_2->ForwardMouseEvent(
+      CreateMouseEvent(WebInputEvent::Type::kMouseMove));
   expected_metrics_2[TabManager_TabMetrics::kMouseEventCountName] = 1;
 
   // Switch back to the first tab to log the second tab.
@@ -553,8 +556,10 @@ TEST_F(TabMetricsTest, InputEvents) {
   }
 
   // New events are added to the first tab's existing counts.
-  widget_1->ForwardMouseEvent(CreateMouseEvent(WebInputEvent::kMouseMove));
-  widget_1->ForwardMouseEvent(CreateMouseEvent(WebInputEvent::kMouseMove));
+  widget_1->ForwardMouseEvent(
+      CreateMouseEvent(WebInputEvent::Type::kMouseMove));
+  widget_1->ForwardMouseEvent(
+      CreateMouseEvent(WebInputEvent::Type::kMouseMove));
   expected_metrics_1[TabManager_TabMetrics::kMouseEventCountName] = 5;
   tab_activity_simulator_.SwitchToTabAt(tab_strip_model, 1);
   {
@@ -571,7 +576,8 @@ TEST_F(TabMetricsTest, InputEvents) {
   WebContentsTester::For(test_contents_1)->NavigateAndCommit(TestUrls()[2]);
   // The widget may have been invalidated by the navigation.
   widget_1 = test_contents_1->GetRenderViewHost()->GetWidget();
-  widget_1->ForwardMouseEvent(CreateMouseEvent(WebInputEvent::kMouseMove));
+  widget_1->ForwardMouseEvent(
+      CreateMouseEvent(WebInputEvent::Type::kMouseMove));
   expected_metrics_1[TabManager_TabMetrics::kMouseEventCountName] = 1;
   tab_activity_simulator_.SwitchToTabAt(tab_strip_model, 1);
   {

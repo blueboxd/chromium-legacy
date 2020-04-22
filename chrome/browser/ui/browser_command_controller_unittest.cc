@@ -380,7 +380,7 @@ TEST_F(BrowserCommandControllerFullscreenTest,
     // clang-format on
   };
   const content::NativeWebKeyboardEvent key_event(
-      blink::WebInputEvent::kUndefined, 0,
+      blink::WebInputEvent::Type::kUndefined, 0,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   // Defaults for a tabbed browser.
   for (size_t i = 0; i < base::size(commands); i++) {

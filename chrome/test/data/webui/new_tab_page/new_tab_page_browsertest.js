@@ -148,6 +148,18 @@ TEST_F('NewTabPageFakeboxTest', 'All', function() {
 });
 
 // eslint-disable-next-line no-var
+var NewTabPageRealboxTest = class extends NewTabPageBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/realbox_test.js';
+  }
+};
+
+TEST_F('NewTabPageRealboxTest', 'All', function() {
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
 var NewTabPageLogoTest = class extends NewTabPageBrowserTest {
   /** @override */
   get browsePreload() {

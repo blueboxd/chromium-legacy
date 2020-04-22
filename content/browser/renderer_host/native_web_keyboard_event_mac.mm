@@ -53,9 +53,9 @@ NativeWebKeyboardEvent::NativeWebKeyboardEvent(
     : WebKeyboardEvent(web_event), os_event(nullptr), skip_in_browser(false) {
   NSEventType type = NSKeyUp;
   int flags = modifiersForEvent(web_event.GetModifiers());
-  if (web_event.GetType() == blink::WebInputEvent::kChar ||
-      web_event.GetType() == blink::WebInputEvent::kRawKeyDown ||
-      web_event.GetType() == blink::WebInputEvent::kKeyDown) {
+  if (web_event.GetType() == blink::WebInputEvent::Type::kChar ||
+      web_event.GetType() == blink::WebInputEvent::Type::kRawKeyDown ||
+      web_event.GetType() == blink::WebInputEvent::Type::kKeyDown) {
     type = NSKeyDown;
   }
   size_t text_length = WebKeyboardEventTextLength(web_event.text);

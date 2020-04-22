@@ -20,7 +20,6 @@
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer/array_buffer_contents.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
-#include "third_party/blink/renderer/modules/webtransport/web_transport_close_proxy.h"
 #include "third_party/blink/renderer/platform/bindings/exception_code.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
@@ -66,11 +65,10 @@ class IncomingStream::UnderlyingSource final : public UnderlyingSourceBase {
 };
 
 IncomingStream::IncomingStream(ScriptState* script_state,
-                               WebTransportCloseProxy* close_proxy,
+                               base::OnceClosure forget_stream,
                                mojo::ScopedDataPipeConsumerHandle handle)
-    : ExecutionContextLifecycleObserver(ExecutionContext::From(script_state)),
-      script_state_(script_state),
-      close_proxy_(close_proxy),
+    : script_state_(script_state),
+      forget_stream_(std::move(forget_stream)),
       data_pipe_(std::move(handle)),
       read_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL),
       close_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC) {}
@@ -109,10 +107,6 @@ void IncomingStream::OnIncomingStreamClosed(bool fin_received) {
 
   fin_received_ = fin_received;
 
-  // QuicTransport has already dropped its reference to us, so we don't need to
-  // ForgetStream() any more.
-  close_proxy_ = nullptr;
-
   // Wait until HandlePipeClosed() has also been called before processing the
   // close.
   if (is_pipe_closed_) {
@@ -123,7 +117,7 @@ void IncomingStream::OnIncomingStreamClosed(bool fin_received) {
   }
 }
 
-void IncomingStream::abortReading(StreamAbortInfo*) {
+void IncomingStream::AbortReading(StreamAbortInfo*) {
   DVLOG(1) << "IncomingStream::abortReading() this=" << this;
 
   CloseAbortAndReset();
@@ -132,8 +126,8 @@ void IncomingStream::abortReading(StreamAbortInfo*) {
 void IncomingStream::Reset() {
   DVLOG(1) << "IncomingStream::Reset() this=" << this;
 
-  // We no longer need to call ForgetStream().
-  close_proxy_ = nullptr;
+  // We no longer need to call |forget_stream_|.
+  forget_stream_.Reset();
 
   ErrorStreamAbortAndReset(CreateAbortException(IsLocalAbort(false)));
 }
@@ -141,10 +135,9 @@ void IncomingStream::Reset() {
 void IncomingStream::ContextDestroyed() {
   DVLOG(1) << "IncomingStream::ContextDestroyed() this=" << this;
 
-  if (close_proxy_) {
+  if (forget_stream_) {
     // Make QuicTransport drop its reference to us.
-    close_proxy_->ForgetStream();
-    close_proxy_ = nullptr;
+    std::move(forget_stream_).Run();
   }
 
   ResetPipe();
@@ -152,13 +145,10 @@ void IncomingStream::ContextDestroyed() {
 
 void IncomingStream::Trace(Visitor* visitor) {
   visitor->Trace(script_state_);
-  visitor->Trace(close_proxy_);
   visitor->Trace(readable_);
   visitor->Trace(controller_);
   visitor->Trace(reading_aborted_);
   visitor->Trace(reading_aborted_resolver_);
-  ScriptWrappable::Trace(visitor);
-  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 void IncomingStream::OnHandleReady(MojoResult result,
@@ -324,10 +314,9 @@ void IncomingStream::AbortAndReset() {
     reading_aborted_resolver_ = nullptr;
   }
 
-  if (close_proxy_) {
+  if (forget_stream_) {
     // Cause QuicTransport to drop its reference to us.
-    close_proxy_->ForgetStream();
-    close_proxy_ = nullptr;
+    std::move(forget_stream_).Run();
   }
 
   ResetPipe();

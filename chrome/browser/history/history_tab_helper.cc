@@ -52,7 +52,7 @@ void HistoryTabHelper::UpdateHistoryForNavigation(
     const history::HistoryAddPageArgs& add_page_args) {
   history::HistoryService* hs = GetHistoryService();
   if (hs)
-    GetHistoryService()->AddPage(add_page_args);
+    hs->AddPage(add_page_args);
 }
 
 history::HistoryAddPageArgs
@@ -137,6 +137,11 @@ void HistoryTabHelper::DidFinishNavigation(
   if (!navigation_handle->ShouldUpdateHistory())
     return;
 
+  // Navigations in portals don't appear in history until the portal is
+  // activated.
+  if (navigation_handle->GetWebContents()->IsPortal())
+    return;
+
   // Most of the time, the displayURL matches the loaded URL, but for about:
   // URLs, we use a data: URL as the real value.  We actually want to save the
   // about: URL to the history db and keep the data: URL hidden. This is what
@@ -175,6 +180,36 @@ void HistoryTabHelper::DidFinishNavigation(
 #endif
 
   UpdateHistoryForNavigation(add_page_args);
+}
+
+// We update history upon the associated WebContents becoming the top level
+// contents of a tab from portal activation.
+// TODO(mcnee): Investigate whether the early return cases in
+// DidFinishNavigation apply to portal activation. See https://crbug.com/1072762
+void HistoryTabHelper::DidActivatePortal(
+    content::WebContents* predecessor_contents) {
+  history::HistoryService* hs = GetHistoryService();
+  if (!hs)
+    return;
+
+  content::NavigationEntry* last_committed_entry =
+      web_contents()->GetController().GetLastCommittedEntry();
+
+  // TODO(1058504): Update this when portal activations can be done with
+  // replacement.
+  const bool did_replace_entry = false;
+
+  const history::HistoryAddPageArgs add_page_args(
+      last_committed_entry->GetVirtualURL(),
+      last_committed_entry->GetTimestamp(),
+      history::ContextIDForWebContents(web_contents()),
+      last_committed_entry->GetUniqueID(),
+      last_committed_entry->GetReferrer().url,
+      /* redirects */ {}, ui::PAGE_TRANSITION_LINK,
+      /* hidden */ false, history::SOURCE_BROWSED, did_replace_entry,
+      /* consider_for_ntp_most_visited */ true,
+      last_committed_entry->GetTitle());
+  hs->AddPage(add_page_args);
 }
 
 void HistoryTabHelper::DidFinishLoad(

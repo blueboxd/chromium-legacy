@@ -26,6 +26,26 @@ DEBUG_APP_OTOOL_OUTPUT = '\n'.join([
     'imp 0x1075e6887 -[ToolBarTestCase testH]', 'version 0'
 ])
 
+# Debug app otool output format in Xcode 11.4 toolchain.
+DEBUG_APP_OTOOL_OUTPUT_114 = '\n'.join([
+    'Meta Class', 'name        0x1064b8438 CacheTestCase',
+    'baseMethods    0x1068586d8 (struct method_list_t *)',
+    '    imp     0x1075e6887 -[CacheTestCase testA]', '    types   0x1064cc3e1',
+    '    imp     0x1075e6887 -[CacheTestCase testB]',
+    '    imp     0x1075e6887 -[CacheTestCase testc]',
+    '    name    0x1064b8438 TabUITestCase',
+    'baseMethods    0x1068586d8 (struct method_list_t *)',
+    '    imp     0x1075e6887 -[TabUITestCase testD]',
+    '    types   0x1064cc3e1 v16@0:8',
+    '    imp     0x1075e6887 -[TabUITestCase testE]',
+    '    name    0x1064b8438 KeyboardTestCase',
+    '    imp     0x1075e6887 -[KeyboardTestCase testF]',
+    '    name    0x1064b8438 PasswordsTestCase',
+    '    imp     0x1075e6887 -[PasswordsTestCase testG]',
+    '    name    0x1064b8438 ToolBarTestCase',
+    '    imp     0x1075e6887 -[ToolBarTestCase testH]', 'version 0'
+])
+
 RELEASE_APP_OTOOL_OUTPUT = '\n'.join([
     'Meta Class', 'name 0x1064b8438 CacheTestCase',
     'baseMethods 0x1068586d8 (struct method_list_t *)',
@@ -40,6 +60,23 @@ RELEASE_APP_OTOOL_OUTPUT = '\n'.join([
     'baseProtocols 0x0', 'name 0x1064b8438 ToolBarTestCase',
     'name 0x1075e6887 testG', 'name 0x1075e6887 testH', 'baseProtocols 0x0',
     'version 0'
+])
+
+# Release app otool output format in Xcode 11.4 toolchain.
+RELEASE_APP_OTOOL_OUTPUT_114 = '\n'.join([
+    'Meta Class', 'name          0x1064b8438 CacheTestCase',
+    'baseMethods   0x1068586d8 (struct method_list_t *)',
+    '    name    0x1075e6887 testA', '    types   0x1064cc3e1',
+    '    name    0x1075e6887 testB', '    name    0x1075e6887 testc',
+    'baseProtocols 0x0', 'Meta Class', '    name    0x1064b8438 TabUITestCase',
+    'baseMethods   0x1068586d8 (struct method_list_t *)',
+    '    name    0x1064b8438 KeyboardTest', '    name    0x1075e6887 testD',
+    '    types   0x1064cc3e1 v16@0:8', '    name    0x1075e6887 testE',
+    '    name    0x1075e6887 testF', 'baseProtocols 0x0',
+    '    name    0x1064b8438 ChromeTestCase', '    name    0x1064b8438 setUp',
+    'baseProtocols 0x0', '    name    0x1064b8438 ToolBarTestCase',
+    '    name    0x1075e6887 testG', '    name    0x1075e6887 testH',
+    'baseProtocols 0x0', 'version 0'
 ])
 
 
@@ -103,6 +140,51 @@ class TestShardUtil(unittest.TestCase):
   def test_fetch_test_counts_release(self):
     """Ensures that the release output is formatted correctly"""
     resp = shard_util.fetch_test_names_for_release(RELEASE_APP_OTOOL_OUTPUT)
+    self.assertEqual(len(resp), 8)
+
+    expected_test_names = [('CacheTestCase', 'testA'), ('CacheTestCase',
+                                                        'testB'),
+                           ('CacheTestCase', 'testc'), ('KeyboardTest',
+                                                        'testD'),
+                           ('KeyboardTest', 'testE'), ('KeyboardTest', 'testF'),
+                           ('ToolBarTestCase', 'testG'),
+                           ('ToolBarTestCase', 'testH')]
+    for test_name in expected_test_names:
+      self.assertTrue(test_name in resp)
+
+    test_cases = map(lambda (test_case, test_method): test_case, resp)
+    # ({'KeyboardTest': 3, 'CacheTestCase': 3,
+    # 'ToolBarTestCase': 2})
+    counts = collections.Counter(test_cases).most_common()
+    name, _ = counts[0]
+    self.assertEqual(name, 'KeyboardTest')
+
+  def test_fetch_test_names_debug_114(self):
+    """Test the debug output from otool in Xcode 11.4"""
+    resp = shard_util.fetch_test_names_for_debug(DEBUG_APP_OTOOL_OUTPUT_114)
+    self.assertEqual(len(resp), 8)
+    expected_test_names = [('CacheTestCase', 'testA'), ('CacheTestCase',
+                                                        'testB'),
+                           ('CacheTestCase', 'testc'), ('TabUITestCase',
+                                                        'testD'),
+                           ('TabUITestCase', 'testE'),
+                           ('KeyboardTestCase', 'testF'),
+                           ('PasswordsTestCase', 'testG'),
+                           ('ToolBarTestCase', 'testH')]
+    for test_name in expected_test_names:
+      self.assertTrue(test_name in resp)
+
+    test_cases = map(lambda (test_case, test_method): test_case, resp)
+
+    # ({'CacheTestCase': 3, 'TabUITestCase': 2, 'PasswordsTestCase': 1,
+    # 'KeyboardTestCase': 1, 'ToolBarTestCase': 1})
+    counts = collections.Counter(test_cases).most_common()
+    name, _ = counts[0]
+    self.assertEqual(name, 'CacheTestCase')
+
+  def test_fetch_test_counts_release_114(self):
+    """Test the release output from otool in Xcode 11.4"""
+    resp = shard_util.fetch_test_names_for_release(RELEASE_APP_OTOOL_OUTPUT_114)
     self.assertEqual(len(resp), 8)
 
     expected_test_names = [('CacheTestCase', 'testA'), ('CacheTestCase',

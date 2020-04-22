@@ -105,10 +105,10 @@ InputRouterImpl::~InputRouterImpl() {}
 void InputRouterImpl::SendMouseEvent(
     const MouseEventWithLatencyInfo& mouse_event,
     MouseEventCallback event_result_callback) {
-  if ((mouse_event.event.GetType() == WebInputEvent::kMouseDown &&
+  if ((mouse_event.event.GetType() == WebInputEvent::Type::kMouseDown &&
        gesture_event_queue_.GetTouchpadTapSuppressionController()
            ->ShouldSuppressMouseDown(mouse_event)) ||
-      (mouse_event.event.GetType() == WebInputEvent::kMouseUp &&
+      (mouse_event.event.GetType() == WebInputEvent::Type::kMouseUp &&
        gesture_event_queue_.GetTouchpadTapSuppressionController()
            ->ShouldSuppressMouseUp())) {
     std::move(event_result_callback)
@@ -183,11 +183,11 @@ void InputRouterImpl::SendGestureEventWithoutQueueing(
   if (gesture_event.event.SourceDevice() ==
       blink::WebGestureDevice::kTouchscreen) {
     if (gesture_event.event.GetType() ==
-        blink::WebInputEvent::kGestureScrollBegin) {
+        blink::WebInputEvent::Type::kGestureScrollBegin) {
       touch_scroll_started_sent_ = false;
     } else if (!touch_scroll_started_sent_ &&
                gesture_event.event.GetType() ==
-                   blink::WebInputEvent::kGestureScrollUpdate) {
+                   blink::WebInputEvent::Type::kGestureScrollUpdate) {
       // A touch scroll hasn't really started until the first
       // GestureScrollUpdate event.  Eg. if the page consumes all touchmoves
       // then no scrolling really ever occurs (even though we still send
@@ -674,7 +674,7 @@ void InputRouterImpl::GestureEventHandled(
     client_->DecrementInFlightEventCount(source);
 
   if (overscroll) {
-    DCHECK_EQ(WebInputEvent::kGestureScrollUpdate,
+    DCHECK_EQ(WebInputEvent::Type::kGestureScrollUpdate,
               gesture_event.event.GetType());
     DidOverscroll(overscroll.value());
   }

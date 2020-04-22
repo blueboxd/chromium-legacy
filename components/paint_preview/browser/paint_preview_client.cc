@@ -102,9 +102,8 @@ PaintPreviewClient::PaintPreviewData::PaintPreviewData() = default;
 
 PaintPreviewClient::PaintPreviewData::~PaintPreviewData() = default;
 
-PaintPreviewClient::PaintPreviewData&
-PaintPreviewClient::PaintPreviewData::operator=(PaintPreviewData&& rhs) =
-    default;
+PaintPreviewClient::PaintPreviewData& PaintPreviewClient::PaintPreviewData::
+operator=(PaintPreviewData&& rhs) = default;
 
 PaintPreviewClient::PaintPreviewData::PaintPreviewData(
     PaintPreviewData&& other) noexcept = default;
@@ -213,7 +212,6 @@ mojom::PaintPreviewCaptureParamsPtr PaintPreviewClient::CreateMojoParams(
   mojo_params->clip_rect = params.clip_rect;
   mojo_params->is_main_frame = params.is_main_frame;
   mojo_params->file = std::move(file);
-  mojo_params->max_capture_size = params.max_per_capture_size;
   return mojo_params;
 }
 

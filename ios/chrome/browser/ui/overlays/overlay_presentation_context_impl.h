@@ -116,7 +116,7 @@ class OverlayPresentationContextImpl : public OverlayPresentationContext {
   UIViewController* GetBaseViewController(OverlayRequest* request) const;
 
   // Returns the UI state for |request|.
-  OverlayRequestUIState* GetRequestUIState(OverlayRequest* request);
+  OverlayRequestUIState* GetRequestUIState(OverlayRequest* request) const;
 
   // Returns the presentation capabilities required to show |request|.
   UIPresentationCapabilities GetRequiredPresentationCapabilities(

@@ -15,7 +15,7 @@
 namespace upboarding {
 namespace {
 
-TEST(QueryTileGroupTest, CompareOperators) {
+TEST(TileGroupTest, CompareOperators) {
   TileGroup lhs, rhs;
   test::ResetTestGroup(&lhs);
   test::ResetTestGroup(&rhs);
@@ -37,7 +37,7 @@ TEST(QueryTileGroupTest, CompareOperators) {
   EXPECT_NE(lhs, rhs);
 }
 
-TEST(QueryTileGroupTest, DeepCompareOperators) {
+TEST(TileGroupTest, DeepCompareOperators) {
   TileGroup lhs, rhs;
   test::ResetTestGroup(&lhs);
   test::ResetTestGroup(&rhs);
@@ -53,14 +53,14 @@ TEST(QueryTileGroupTest, DeepCompareOperators) {
   EXPECT_FALSE(test::AreTileGroupsIdentical(lhs, rhs));
 }
 
-TEST(QueryTileGroupTest, CopyOperator) {
+TEST(TileGroupTest, CopyOperator) {
   TileGroup lhs;
   test::ResetTestGroup(&lhs);
   TileGroup rhs = lhs;
   EXPECT_TRUE(test::AreTileGroupsIdentical(lhs, rhs));
 }
 
-TEST(QueryTileGroupTest, MoveOperator) {
+TEST(TileGroupTest, MoveOperator) {
   TileGroup lhs;
   test::ResetTestGroup(&lhs);
   TileGroup rhs = std::move(lhs);

@@ -101,20 +101,20 @@ inline CoreProbeSink* ToCoreProbeSink(LocalFrame* frame) {
   return frame ? frame->GetProbeSink() : nullptr;
 }
 
+inline CoreProbeSink* ToCoreProbeSink(ExecutionContext* context) {
+  return context ? context->GetProbeSink() : nullptr;
+}
+
 inline CoreProbeSink* ToCoreProbeSink(Document& document) {
-  return document.GetProbeSink();
+  return ToCoreProbeSink(document.GetExecutionContext());
 }
 
 inline CoreProbeSink* ToCoreProbeSink(Document* document) {
-  return document ? ToCoreProbeSink(*document) : nullptr;
+  return document ? ToCoreProbeSink(document->GetExecutionContext()) : nullptr;
 }
 
 inline CoreProbeSink* ToCoreProbeSink(CoreProbeSink* sink) {
   return sink;
-}
-
-inline CoreProbeSink* ToCoreProbeSink(ExecutionContext* context) {
-  return context ? context->GetProbeSink() : nullptr;
 }
 
 inline CoreProbeSink* ToCoreProbeSink(Node* node) {

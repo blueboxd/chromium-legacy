@@ -35,7 +35,8 @@ UI_BASE_EXPORT void TemplateReplacementsFromDictionaryValue(
 // be unaltered.
 UI_BASE_EXPORT std::string ReplaceTemplateExpressions(
     base::StringPiece source,
-    const TemplateReplacements& replacements);
+    const TemplateReplacements& replacements,
+    bool skip_unexpected_placeholder_check = false);
 
 // Replace $i18n*{foo} in the HTML template contained in |source| with the
 // value for the foo key in |replacements| and return the result in |output|.

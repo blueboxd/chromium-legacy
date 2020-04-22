@@ -1253,9 +1253,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractivePDFTest,
   };
 
   send_right_mouse_event(child_view->GetRenderWidgetHost(), 10, 20,
-                         blink::WebInputEvent::kMouseDown);
+                         blink::WebInputEvent::Type::kMouseDown);
   send_right_mouse_event(child_view->GetRenderWidgetHost(), 10, 20,
-                         blink::WebInputEvent::kMouseUp);
+                         blink::WebInputEvent::Type::kMouseUp);
   menu_waiter.WaitForMenuOpenAndClose();
 
   gfx::Point point_in_root_window =
@@ -1559,7 +1559,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
     event.button = blink::WebMouseEvent::Button::kLeft;
 
     // Send a mouse down event.
-    event.SetType(blink::WebInputEvent::kMouseDown);
+    event.SetType(blink::WebInputEvent::Type::kMouseDown);
     child_widget_host->ForwardMouseEvent(event);
 
     base::RunLoop run_loop;
@@ -1568,7 +1568,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
     run_loop.Run();
 
     // Now send a mouse up event.
-    event.SetType(blink::WebMouseEvent::kMouseUp);
+    event.SetType(blink::WebMouseEvent::Type::kMouseUp);
     child_widget_host->ForwardMouseEvent(event);
 
     // Wait until the popup disappears and we go back to the normal

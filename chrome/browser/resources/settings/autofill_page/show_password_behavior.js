@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 // <if expr="chromeos">
-// #import {BlockingRequestManager} from './blocking_request_manager.m.js';
+import {BlockingRequestManager} from './blocking_request_manager.js';
 // </if>
-// #import {PasswordManagerImpl} from './password_manager_proxy.m.js';
+import {PasswordManagerImpl} from './password_manager_proxy.js';
 
 /**
  * This behavior bundles functionality required to show a password to the user.
@@ -13,7 +13,7 @@
  *
  * @polymerBehavior
  */
-/* #export */ const ShowPasswordBehavior = {
+export const ShowPasswordBehavior = {
 
   properties: {
     /**
@@ -23,7 +23,7 @@
     item: Object,
 
     // <if expr="chromeos">
-    /** @type settings.BlockingRequestManager */
+    /** @type BlockingRequestManager */
     tokenRequestManager: Object
     // </if>
   },

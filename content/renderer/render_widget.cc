@@ -1730,10 +1730,6 @@ void RenderWidget::Close(std::unique_ptr<RenderWidget> widget) {
   // is being destroyed.
   input_event_queue_->ClearClient();
 
-  // |layer_tree_host_| is valid only when |webwidget_| is valid, so
-  // clear it before calling Close.
-  layer_tree_host_ = nullptr;
-
   // The |widget_input_handler_manager_| needs to outlive the LayerTreeHost,
   // which is destroyed asynchronously by Close(). We pass ownership of it to
   // Close() for it to destroy the LayerTreeHost and
@@ -1743,6 +1739,11 @@ void RenderWidget::Close(std::unique_ptr<RenderWidget> widget) {
       base::BindOnce([](scoped_refptr<WidgetInputHandlerManager> manager) {},
                      std::move(widget_input_handler_manager_)));
   webwidget_ = nullptr;
+
+  // |layer_tree_host_| is valid only when |webwidget_| is valid. Close may
+  // use the WebWidgetClient while unloading the Frame so we clear this
+  // after.
+  layer_tree_host_ = nullptr;
 
   // Note the ACK is a control message going to the RenderProcessHost.
   RenderThread::Get()->Send(new WidgetHostMsg_Close_ACK(routing_id()));
@@ -2520,9 +2521,9 @@ void RenderWidget::DidHandleGestureEvent(const WebGestureEvent& event,
   }
 
 #if defined(OS_ANDROID) || defined(USE_AURA)
-  if (event.GetType() == WebInputEvent::kGestureTap) {
+  if (event.GetType() == WebInputEvent::Type::kGestureTap) {
     ShowVirtualKeyboard();
-  } else if (event.GetType() == WebInputEvent::kGestureLongPress) {
+  } else if (event.GetType() == WebInputEvent::Type::kGestureLongPress) {
     DCHECK(GetWebWidget());
     blink::WebInputMethodController* controller = GetInputMethodController();
     if (!controller || controller->TextInputInfo().value.IsEmpty())

@@ -8,6 +8,7 @@ import org.chromium.weblayer_private.interfaces.IDownloadCallbackClient;
 import org.chromium.weblayer_private.interfaces.IErrorPageCallbackClient;
 import org.chromium.weblayer_private.interfaces.IFindInPageCallbackClient;
 import org.chromium.weblayer_private.interfaces.IFullscreenCallbackClient;
+import org.chromium.weblayer_private.interfaces.IMediaCaptureCallbackClient;
 import org.chromium.weblayer_private.interfaces.INavigationController;
 import org.chromium.weblayer_private.interfaces.INavigationControllerClient;
 import org.chromium.weblayer_private.interfaces.IObjectWrapper;
@@ -44,4 +45,7 @@ interface ITab {
   boolean dismissTransientUi() = 12;
 
   String getGuid() = 13;
+
+  void setMediaCaptureCallbackClient(in IMediaCaptureCallbackClient client) = 14;
+  void stopMediaCapturing() = 15;
 }

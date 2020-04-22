@@ -134,6 +134,11 @@
 #include "media/mojo/mojom/remoting.mojom-forward.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "content/browser/renderer_host/text_input_host_impl.h"
+#include "third_party/blink/public/mojom/input/text_input_host.mojom.h"
+#endif
+
 namespace content {
 namespace internal {
 
@@ -177,6 +182,15 @@ void BindTextDetection(
     mojo::PendingReceiver<shape_detection::mojom::TextDetection> receiver) {
   GetShapeDetectionService()->BindTextDetection(std::move(receiver));
 }
+
+#if defined(OS_MACOSX)
+void BindTextInputHost(
+    mojo::PendingReceiver<blink::mojom::TextInputHost> receiver) {
+  base::PostTask(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(&TextInputHostImpl::Create, std::move(receiver)));
+}
+#endif
 
 void BindBadgeServiceForServiceWorkerOnUI(
     int service_worker_process_id,
@@ -650,6 +664,11 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
   map->Add<blink::mojom::SerialService>(base::BindRepeating(
       &RenderFrameHostImpl::BindSerialService, base::Unretained(host)));
 #endif  // !defined(OS_ANDROID)
+
+#if defined(OS_MACOSX)
+  map->Add<blink::mojom::TextInputHost>(
+      base::BindRepeating(&BindTextInputHost));
+#endif
 }
 
 void PopulateBinderMapWithContext(

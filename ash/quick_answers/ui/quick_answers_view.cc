@@ -10,6 +10,7 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "base/containers/adapters.h"
 #include "chromeos/components/quick_answers/quick_answers_model.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -109,6 +110,7 @@ View* AddHorizontalUiElements(
 
 // This class handles mouse events, and update background color or
 // dismiss quick answers view.
+// TODO (siabhijeet): Migrate to using two-phased event dispatching.
 class QuickAnswersViewHandler : public ui::EventHandler {
  public:
   explicit QuickAnswersViewHandler(QuickAnswersView* quick_answers_view)
@@ -132,42 +134,69 @@ class QuickAnswersViewHandler : public ui::EventHandler {
     if (!event->IsLocatedEvent())
       return;
 
-    // Clone event and forward down the event-hierarchy.
-    ui::LocatedEvent* clone =
-        ui::Event::Clone(*event).release()->AsLocatedEvent();
-    ui::Event::DispatcherApi(clone).set_target(event->target());
-    DoDispatchEvent(quick_answers_view_, clone);
+    // Clone event to forward down the view-hierarchy.
+    auto clone = ui::Event::Clone(*event);
+    ui::Event::DispatcherApi(clone.get()).set_target(event->target());
+    auto* to_dispatch = clone->AsLocatedEvent();
+    auto location = to_dispatch->target()->GetScreenLocation(*to_dispatch);
+
+    // `ET_MOUSE_MOVED` events outside the top-view's bounds are also dispatched
+    // to clear any set hover-state.
+    bool dispatch_event =
+        (quick_answers_view_->GetBoundsInScreen().Contains(location) ||
+         to_dispatch->type() == ui::EventType::ET_MOUSE_MOVED);
+    if (dispatch_event) {
+      // Convert to local coordinates and forward to the top-view.
+      views::View::ConvertPointFromScreen(quick_answers_view_, &location);
+      to_dispatch->set_location(location);
+      ui::Event::DispatcherApi(to_dispatch).set_target(quick_answers_view_);
+      DoDispatchEvent(quick_answers_view_, to_dispatch);
+
+      // Prevent the currently shown context-menu from receiving click events
+      // (which are outside its bounds) and thus getting dismissed.
+      if (event->type() == ui::EventType::ET_MOUSE_PRESSED)
+        event->StopPropagation();
+    }
 
     // Show tooltips.
     auto* tooltip_manager =
         quick_answers_view_->GetWidget()->GetTooltipManager();
     if (tooltip_manager)
       tooltip_manager->UpdateTooltip();
-
-    // Do not dismiss context menu for clicks inside the view.
-    auto location = clone->target()->GetScreenLocation(*clone);
-    if (quick_answers_view_->GetBoundsInScreen().Contains(location))
-      event->StopPropagation();
   }
 
  private:
+  // Returns true if event was consumed by |view| or its children.
   bool DoDispatchEvent(views::View* view, ui::LocatedEvent* event) {
-    if (event->handled())
-      return true;
+    DCHECK(view && event);
 
-    // Convert |event| to local coordinates of |view|.
-    gfx::Point location = event->target()->GetScreenLocation(*event);
-    views::View::ConvertPointFromScreen(view, &location);
-    event->set_location(location);
-    ui::Event::DispatcherApi(event).set_target(view);
-
-    // Process event and dispatch on children recursively.
-    view->OnEvent(event);
-    for (auto* child : view->children()) {
-      if (DoDispatchEvent(child, event))
+    // Post-order dispatch the event on child views in reverse Z-order.
+    auto children = view->GetChildrenInZOrder();
+    for (auto* child : base::Reversed(children)) {
+      // Dispatch a fresh event to preserve the |event| for the parent target.
+      std::unique_ptr<ui::Event> to_dispatch;
+      if (event->IsMouseEvent()) {
+        to_dispatch = std::make_unique<ui::MouseEvent>(*event->AsMouseEvent(),
+                                                       view, child);
+      } else if (event->IsGestureEvent()) {
+        to_dispatch = std::make_unique<ui::GestureEvent>(
+            *event->AsGestureEvent(), view, child);
+      } else {
+        return false;
+      }
+      ui::Event::DispatcherApi(to_dispatch.get()).set_target(child);
+      if (DoDispatchEvent(child, to_dispatch.get()->AsLocatedEvent()))
         return true;
     }
-    return false;
+    view->OnEvent(event);
+
+    // The deepest button explicitly consumes the events to avoid simultaneous
+    // firing of any enclosing buttons, since the |event| may not always be set
+    // as handled (like for `ET_MOUSE_RELEASED`).
+    // TODO (siabhijeet): Avoid housing a button inside another altogether.
+    bool button_pressed =
+        views::Button::AsButton(view) && view->HitTestPoint(event->location());
+    return (event->handled() || button_pressed);
   }
 
   QuickAnswersView* const quick_answers_view_;

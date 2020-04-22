@@ -198,8 +198,10 @@ void PaintTimingDetector::OnInputOrScroll() {
 void PaintTimingDetector::NotifyInputEvent(WebInputEvent::Type type) {
   // A single keyup event should be ignored. It could be caused by user actions
   // such as refreshing via Ctrl+R.
-  if (type == WebInputEvent::kMouseMove || type == WebInputEvent::kMouseEnter ||
-      type == WebInputEvent::kMouseLeave || type == WebInputEvent::kKeyUp ||
+  if (type == WebInputEvent::Type::kMouseMove ||
+      type == WebInputEvent::Type::kMouseEnter ||
+      type == WebInputEvent::Type::kMouseLeave ||
+      type == WebInputEvent::Type::kKeyUp ||
       WebInputEvent::IsPinchGestureEventType(type)) {
     return;
   }

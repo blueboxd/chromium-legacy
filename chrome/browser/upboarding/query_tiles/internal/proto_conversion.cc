@@ -26,9 +26,8 @@ base::Time MillisecondsToTime(int64_t serialized_time_ms) {
 
 }  // namespace
 
-void QueryTileEntryToProto(
-    upboarding::QueryTileEntry* entry,
-    upboarding::query_tiles::proto::QueryTileEntry* proto) {
+void TileToProto(upboarding::Tile* entry,
+                 upboarding::query_tiles::proto::Tile* proto) {
   DCHECK(entry);
   DCHECK(proto);
   proto->set_id(entry->id);
@@ -45,13 +44,12 @@ void QueryTileEntryToProto(
 
   // Set children.
   for (auto& subtile : entry->sub_tiles) {
-    QueryTileEntryToProto(subtile.get(), proto->add_sub_tiles());
+    TileToProto(subtile.get(), proto->add_sub_tiles());
   }
 }
 
-void QueryTileEntryFromProto(
-    upboarding::query_tiles::proto::QueryTileEntry* proto,
-    upboarding::QueryTileEntry* entry) {
+void TileFromProto(upboarding::query_tiles::proto::Tile* proto,
+                   upboarding::Tile* entry) {
   DCHECK(entry);
   DCHECK(proto);
   entry->id = proto->id();
@@ -65,31 +63,31 @@ void QueryTileEntryFromProto(
 
   for (int i = 0; i < proto->sub_tiles_size(); i++) {
     auto sub_tile_proto = proto->sub_tiles(i);
-    auto child = std::make_unique<QueryTileEntry>();
-    QueryTileEntryFromProto(&sub_tile_proto, child.get());
+    auto child = std::make_unique<Tile>();
+    TileFromProto(&sub_tile_proto, child.get());
     entry->sub_tiles.emplace_back(std::move(child));
   }
 }
 
 void TileGroupToProto(TileGroup* group,
-                      upboarding::query_tiles::proto::QueryTileGroup* proto) {
+                      upboarding::query_tiles::proto::TileGroup* proto) {
   proto->set_id(group->id);
   proto->set_locale(group->locale);
   proto->set_last_updated_time_ms(TimeToMilliseconds(group->last_updated_ts));
   for (auto& tile : group->tiles) {
-    QueryTileEntryToProto(tile.get(), proto->add_tiles());
+    TileToProto(tile.get(), proto->add_tiles());
   }
 }
 
-void TileGroupFromProto(upboarding::query_tiles::proto::QueryTileGroup* proto,
+void TileGroupFromProto(upboarding::query_tiles::proto::TileGroup* proto,
                         TileGroup* group) {
   group->id = proto->id();
   group->locale = proto->locale();
   group->last_updated_ts = MillisecondsToTime(proto->last_updated_time_ms());
   for (int i = 0; i < proto->tiles().size(); i++) {
     auto entry_proto = proto->tiles(i);
-    auto child = std::make_unique<QueryTileEntry>();
-    QueryTileEntryFromProto(&entry_proto, child.get());
+    auto child = std::make_unique<Tile>();
+    TileFromProto(&entry_proto, child.get());
     group->tiles.emplace_back(std::move(child));
   }
 }

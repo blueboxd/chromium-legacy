@@ -77,7 +77,7 @@ class WheelEventListenerBrowserTest : public ContentBrowserTest {
   void ScrollByMouseWheel() {
     // Send a wheel event and wait for its ack.
     auto wheel_msg_watcher = std::make_unique<InputMsgWatcher>(
-        GetWidgetHost(), blink::WebInputEvent::kMouseWheel);
+        GetWidgetHost(), blink::WebInputEvent::Type::kMouseWheel);
     double x = 10;
     double y = 10;
     blink::WebMouseWheelEvent wheel_event =

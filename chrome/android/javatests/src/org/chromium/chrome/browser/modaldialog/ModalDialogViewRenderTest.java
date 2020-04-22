@@ -78,7 +78,8 @@ public class ModalDialogViewRenderTest extends DummyUiActivityTestCase {
 
     @Override
     public void tearDownTest() throws Exception {
-        NightModeTestUtils.tearDownNightModeForDummyUiActivity();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { NightModeTestUtils.tearDownNightModeForDummyUiActivity(); });
         super.tearDownTest();
     }
 

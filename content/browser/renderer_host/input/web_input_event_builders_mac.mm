@@ -258,8 +258,8 @@ blink::WebKeyboardEvent WebKeyboardEventBuilder::Build(NSEvent* event,
     modifiers |= blink::WebInputEvent::kIsAutoRepeat;
 
   blink::WebKeyboardEvent result(
-      ui::IsKeyUpEvent(event) ? blink::WebInputEvent::kKeyUp
-                              : blink::WebInputEvent::kRawKeyDown,
+      ui::IsKeyUpEvent(event) ? blink::WebInputEvent::Type::kKeyUp
+                              : blink::WebInputEvent::Type::kRawKeyDown,
       modifiers, ui::EventTimeStampFromSeconds([event timestamp]));
   result.windows_key_code =
       ui::LocatedToNonLocatedKeyboardCode(ui::KeyboardCodeFromNSEvent(event));
@@ -326,53 +326,53 @@ blink::WebMouseEvent WebMouseEventBuilder::Build(
   NSEventType type = [event type];
   switch (type) {
     case NSMouseExited:
-      event_type = blink::WebInputEvent::kMouseLeave;
+      event_type = blink::WebInputEvent::Type::kMouseLeave;
       break;
     case NSLeftMouseDown:
-      event_type = blink::WebInputEvent::kMouseDown;
+      event_type = blink::WebInputEvent::Type::kMouseDown;
       click_count = [event clickCount];
       button = blink::WebMouseEvent::Button::kLeft;
       break;
     case NSOtherMouseDown:
-      event_type = blink::WebInputEvent::kMouseDown;
+      event_type = blink::WebInputEvent::Type::kMouseDown;
       click_count = [event clickCount];
       button = ButtonFromButtonNumber(event);
       break;
     case NSRightMouseDown:
-      event_type = blink::WebInputEvent::kMouseDown;
+      event_type = blink::WebInputEvent::Type::kMouseDown;
       click_count = [event clickCount];
       button = blink::WebMouseEvent::Button::kRight;
       break;
     case NSLeftMouseUp:
-      event_type = blink::WebInputEvent::kMouseUp;
+      event_type = blink::WebInputEvent::Type::kMouseUp;
       click_count = [event clickCount];
       button = blink::WebMouseEvent::Button::kLeft;
       break;
     case NSOtherMouseUp:
-      event_type = blink::WebInputEvent::kMouseUp;
+      event_type = blink::WebInputEvent::Type::kMouseUp;
       click_count = [event clickCount];
       button = ButtonFromButtonNumber(event);
       break;
     case NSRightMouseUp:
-      event_type = blink::WebInputEvent::kMouseUp;
+      event_type = blink::WebInputEvent::Type::kMouseUp;
       click_count = [event clickCount];
       button = blink::WebMouseEvent::Button::kRight;
       break;
     case NSMouseMoved:
     case NSMouseEntered:
-      event_type = blink::WebInputEvent::kMouseMove;
+      event_type = blink::WebInputEvent::Type::kMouseMove;
       button = ButtonFromPressedMouseButtons();
       break;
     case NSLeftMouseDragged:
-      event_type = blink::WebInputEvent::kMouseMove;
+      event_type = blink::WebInputEvent::Type::kMouseMove;
       button = blink::WebMouseEvent::Button::kLeft;
       break;
     case NSOtherMouseDragged:
-      event_type = blink::WebInputEvent::kMouseMove;
+      event_type = blink::WebInputEvent::Type::kMouseMove;
       button = blink::WebMouseEvent::Button::kMiddle;
       break;
     case NSRightMouseDragged:
-      event_type = blink::WebInputEvent::kMouseMove;
+      event_type = blink::WebInputEvent::Type::kMouseMove;
       button = blink::WebMouseEvent::Button::kRight;
       break;
     default:
@@ -414,8 +414,8 @@ blink::WebMouseEvent WebMouseEventBuilder::Build(
     result.twist = twist;
   } else {
     event_type = [event isEnteringProximity]
-                     ? blink::WebInputEvent::kMouseMove
-                     : blink::WebInputEvent::kMouseLeave;
+                     ? blink::WebInputEvent::Type::kMouseMove
+                     : blink::WebInputEvent::Type::kMouseLeave;
     result.SetType(event_type);
   }
   return result;
@@ -438,7 +438,7 @@ blink::WebMouseWheelEvent WebMouseWheelEventBuilder::Build(
       base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromSeconds(60),
       50);
   blink::WebMouseWheelEvent result(
-      blink::WebInputEvent::kMouseWheel, ModifiersFromEvent(event),
+      blink::WebInputEvent::Type::kMouseWheel, ModifiersFromEvent(event),
       ui::EventTimeStampFromSeconds([event timestamp]));
   result.button = blink::WebMouseEvent::Button::kNoButton;
 
@@ -601,7 +601,7 @@ blink::WebGestureEvent WebGestureEventBuilder::Build(NSEvent* event,
       // We don't need to set the type based on |[event phase]| as the caller
       // must set the begin and end types in order to support older Mac
       // versions.
-      result.SetType(blink::WebInputEvent::kGesturePinchUpdate);
+      result.SetType(blink::WebInputEvent::Type::kGesturePinchUpdate);
       result.data.pinch_update.scale = [event magnification] + 1.0;
       result.SetNeedsWheelEvent(true);
       break;
@@ -610,7 +610,7 @@ blink::WebGestureEvent WebGestureEventBuilder::Build(NSEvent* event,
       // GestureDoubleTap, because the effect is similar to single-finger
       // double-tap zoom on mobile platforms. Note that tapCount is set to 1
       // because the gesture type already encodes that information.
-      result.SetType(blink::WebInputEvent::kGestureDoubleTap);
+      result.SetType(blink::WebInputEvent::Type::kGestureDoubleTap);
       result.data.tap.tap_count = 1;
       result.SetNeedsWheelEvent(true);
       break;
@@ -643,11 +643,11 @@ blink::WebTouchEvent WebTouchEventBuilder::Build(NSEvent* event, NSView* view) {
   blink::WebTouchPoint::State state = blink::WebTouchPoint::kStateUndefined;
   switch (type) {
     case NSLeftMouseDown:
-      event_type = blink::WebInputEvent::kTouchStart;
+      event_type = blink::WebInputEvent::Type::kTouchStart;
       state = blink::WebTouchPoint::kStatePressed;
       break;
     case NSLeftMouseUp:
-      event_type = blink::WebInputEvent::kTouchEnd;
+      event_type = blink::WebInputEvent::Type::kTouchEnd;
       state = blink::WebTouchPoint::kStateReleased;
       break;
     case NSLeftMouseDragged:
@@ -658,7 +658,7 @@ blink::WebTouchEvent WebTouchEventBuilder::Build(NSEvent* event, NSView* view) {
     case NSOtherMouseDown:
     case NSRightMouseUp:
     case NSOtherMouseUp:
-      event_type = blink::WebInputEvent::kTouchMove;
+      event_type = blink::WebInputEvent::Type::kTouchMove;
       state = blink::WebTouchPoint::kStateMoved;
       break;
     default:
@@ -680,7 +680,7 @@ blink::WebTouchEvent WebTouchEventBuilder::Build(NSEvent* event, NSView* view) {
         50);
   }
   ui::ComputeEventLatencyOS(event);
-  result.hovering = event_type == blink::WebInputEvent::kTouchEnd;
+  result.hovering = event_type == blink::WebInputEvent::Type::kTouchEnd;
   result.unique_touch_event_id = ui::GetNextTouchEventId();
   result.touches_length = 1;
 

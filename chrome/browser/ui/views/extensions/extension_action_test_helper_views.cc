@@ -169,16 +169,6 @@ gfx::Size ExtensionActionTestHelperViews::GetToolbarActionSize() {
   return GetToolbarActionsBar()->GetViewSize();
 }
 
-bool ExtensionActionTestHelperViews::CanBeResized() {
-  // The container can only be resized if we can start a drag for the view.
-  DCHECK_LE(1u, browser_actions_container_->num_toolbar_actions());
-  ToolbarActionView* action_view =
-      browser_actions_container_->GetToolbarActionViewAt(0);
-  gfx::Point point(action_view->x(), action_view->y());
-  return browser_actions_container_->CanStartDragForView(action_view, point,
-                                                         point);
-}
-
 ExtensionActionTestHelperViews::ExtensionActionTestHelperViews(
     BrowserActionsContainer* browser_actions_container)
     : browser_actions_container_(browser_actions_container) {}

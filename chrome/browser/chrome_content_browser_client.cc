@@ -957,7 +957,6 @@ void LaunchURL(const GURL& url,
       prerender::PrerenderContents::FromWebContents(web_contents);
   if (prerender_contents) {
     prerender_contents->Destroy(prerender::FINAL_STATUS_UNSUPPORTED_SCHEME);
-    prerender::ReportPrerenderExternalURL();
     return;
   }
 
@@ -4716,8 +4715,10 @@ bool ChromeContentBrowserClient::ShouldForceDownloadResource(
 void ChromeContentBrowserClient::CreateWebUsbService(
     content::RenderFrameHost* render_frame_host,
     mojo::PendingReceiver<blink::mojom::WebUsbService> receiver) {
-  if (!base::FeatureList::IsEnabled(features::kWebUsb))
+  if (!base::FeatureList::IsEnabled(features::kWebUsb)) {
+    LOG(INFO) << "WebUSB feature flag is disabled.";
     return;
+  }
 
   CHECK(render_frame_host);
   FrameUsbServices::CreateFrameUsbServices(render_frame_host,

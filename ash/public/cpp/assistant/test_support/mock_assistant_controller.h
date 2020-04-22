@@ -18,6 +18,10 @@ class MockAssistantController : public AssistantController {
   MockAssistantController& operator=(const MockAssistantController&) = delete;
   ~MockAssistantController() override;
 
+  MOCK_METHOD(void, AddObserver, (AssistantControllerObserver*), (override));
+
+  MOCK_METHOD(void, RemoveObserver, (AssistantControllerObserver*), (override));
+
   MOCK_METHOD(void,
               OpenUrl,
               (const GURL& url, bool in_background, bool from_server),

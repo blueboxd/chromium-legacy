@@ -268,6 +268,18 @@ bool IsValidURLForNavigation(bool is_main_frame,
     return false;
   }
 
+  // Reject renderer debug URLs because they should have been handled before
+  // we get to this point. This check handles renderer debug URLs
+  // that are inside a view-source: URL (e.g. view-source:chrome://kill) and
+  // provides defense-in-depth if a renderer debug URL manages to get here via
+  // some other path. We want to reject the navigation here so it doesn't
+  // violate assumptions in downstream code.
+  if (IsRendererDebugURL(dest_url)) {
+    LOG(WARNING) << "Refusing to load renderer debug URL: "
+                 << dest_url.possibly_invalid_spec();
+    return false;
+  }
+
   return true;
 }
 

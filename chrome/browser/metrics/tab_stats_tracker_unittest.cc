@@ -373,7 +373,7 @@ TEST_F(TabStatsTrackerTest, TabUsageGetsReported) {
   // Simulate an interaction on a tab, we should now see 3 tabs being marked as
   // used.
   content::WebContentsTester::For(web_contentses[2].get())
-      ->TestDidReceiveInputEvent(blink::WebInputEvent::kMouseDown);
+      ->TestDidReceiveInputEvent(blink::WebInputEvent::Type::kMouseDown);
   tab_stats_tracker_->OnInterval(kValidLongInterval, interval_map);
   histogram_tester_.ExpectBucketCount(
       TestUmaStatsReportingDelegate::GetIntervalHistogramName(
@@ -401,7 +401,7 @@ TEST_F(TabStatsTrackerTest, TabUsageGetsReported) {
   // We need to re-interact with the WebContents as each call to |OnInterval|
   // reset the interval and clear the interaction bit.
   content::WebContentsTester::For(web_contentses.back().get())
-      ->TestDidReceiveInputEvent(blink::WebInputEvent::kMouseDown);
+      ->TestDidReceiveInputEvent(blink::WebInputEvent::Type::kMouseDown);
   web_contentses.pop_back();
   tab_stats_tracker_->OnInterval(kValidLongInterval, interval_map);
   histogram_tester_.ExpectBucketCount(

@@ -81,16 +81,16 @@ void SyntheticGestureTargetAndroid::DispatchWebTouchEventToPlatform(
     const ui::LatencyInfo&) {
   MotionEventAction action = MOTION_EVENT_ACTION_INVALID;
   switch (web_touch.GetType()) {
-    case WebInputEvent::kTouchStart:
+    case WebInputEvent::Type::kTouchStart:
       action = MOTION_EVENT_ACTION_START;
       break;
-    case WebInputEvent::kTouchMove:
+    case WebInputEvent::Type::kTouchMove:
       action = MOTION_EVENT_ACTION_MOVE;
       break;
-    case WebInputEvent::kTouchCancel:
+    case WebInputEvent::Type::kTouchCancel:
       action = MOTION_EVENT_ACTION_CANCEL;
       break;
-    case WebInputEvent::kTouchEnd:
+    case WebInputEvent::Type::kTouchEnd:
       action = MOTION_EVENT_ACTION_END;
       break;
     default:

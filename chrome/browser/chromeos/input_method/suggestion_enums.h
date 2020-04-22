@@ -20,7 +20,8 @@ enum class AssistiveType {
   kPersonalPhoneNumber = 3,
   kPersonalName = 4,
   kEmoji = 5,
-  kMaxValue = kEmoji,
+  kAssistiveAutocorrect = 6,
+  kMaxValue = kAssistiveAutocorrect,
 };
 
 enum class SuggestionStatus {

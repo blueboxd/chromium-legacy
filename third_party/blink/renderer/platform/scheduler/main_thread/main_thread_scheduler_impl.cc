@@ -170,10 +170,10 @@ TaskQueue::QueuePriority StringToTaskQueuePriority(
 
 bool IsBlockingEvent(const blink::WebInputEvent& web_input_event) {
   blink::WebInputEvent::Type type = web_input_event.GetType();
-  DCHECK(type == blink::WebInputEvent::kTouchStart ||
-         type == blink::WebInputEvent::kMouseWheel);
+  DCHECK(type == blink::WebInputEvent::Type::kTouchStart ||
+         type == blink::WebInputEvent::Type::kMouseWheel);
 
-  if (type == blink::WebInputEvent::kTouchStart) {
+  if (type == blink::WebInputEvent::Type::kTouchStart) {
     const WebTouchEvent& touch_event =
         static_cast<const WebTouchEvent&>(web_input_event);
     return touch_event.dispatch_type ==
@@ -606,7 +606,7 @@ MainThreadSchedulerImpl::SchedulingSettings::SchedulingSettings() {
 MainThreadSchedulerImpl::AnyThread::~AnyThread() = default;
 
 MainThreadSchedulerImpl::CompositorThreadOnly::CompositorThreadOnly()
-    : last_input_type(blink::WebInputEvent::kUndefined) {}
+    : last_input_type(blink::WebInputEvent::Type::kUndefined) {}
 
 MainThreadSchedulerImpl::CompositorThreadOnly::~CompositorThreadOnly() =
     default;
@@ -1089,8 +1089,8 @@ bool MainThreadSchedulerImpl::ShouldPrioritizeInputEvent(
     const blink::WebInputEvent& web_input_event) {
   // We regard MouseMove events with the left mouse button down as a signal
   // that the user is doing something requiring a smooth frame rate.
-  if ((web_input_event.GetType() == blink::WebInputEvent::kMouseDown ||
-       web_input_event.GetType() == blink::WebInputEvent::kMouseMove) &&
+  if ((web_input_event.GetType() == blink::WebInputEvent::Type::kMouseDown ||
+       web_input_event.GetType() == blink::WebInputEvent::Type::kMouseMove) &&
       (web_input_event.GetModifiers() &
        blink::WebInputEvent::kLeftButtonDown)) {
     return true;
@@ -1166,7 +1166,7 @@ void MainThreadSchedulerImpl::UpdateForInputEventOnCompositorThread(
     any_thread().user_model.DidFinishProcessingInputEvent(now);
 
   switch (type) {
-    case blink::WebInputEvent::kTouchStart:
+    case blink::WebInputEvent::Type::kTouchStart:
       any_thread().awaiting_touch_start_response = true;
       // This is just a fail-safe to reset the state of
       // |last_gesture_was_compositor_driven| to the default. We don't know
@@ -1179,7 +1179,7 @@ void MainThreadSchedulerImpl::UpdateForInputEventOnCompositorThread(
       if (IsBlockingEvent(web_input_event))
         any_thread().have_seen_a_blocking_gesture = true;
       break;
-    case blink::WebInputEvent::kTouchMove:
+    case blink::WebInputEvent::Type::kTouchMove:
       // Observation of consecutive touchmoves is a strong signal that the
       // page is consuming the touch sequence, in which case touchstart
       // response prioritization is no longer necessary. Otherwise, the
@@ -1187,13 +1187,13 @@ void MainThreadSchedulerImpl::UpdateForInputEventOnCompositorThread(
       // state.
       if (any_thread().awaiting_touch_start_response &&
           GetCompositorThreadOnly().last_input_type ==
-              blink::WebInputEvent::kTouchMove) {
+              blink::WebInputEvent::Type::kTouchMove) {
         any_thread().awaiting_touch_start_response = false;
       }
       break;
 
-    case blink::WebInputEvent::kGesturePinchUpdate:
-    case blink::WebInputEvent::kGestureScrollUpdate:
+    case blink::WebInputEvent::Type::kGesturePinchUpdate:
+    case blink::WebInputEvent::Type::kGestureScrollUpdate:
       // If we see events for an established gesture, we can lock it to the
       // appropriate thread as the gesture can no longer be cancelled.
       any_thread().last_gesture_was_compositor_driven =
@@ -1202,24 +1202,24 @@ void MainThreadSchedulerImpl::UpdateForInputEventOnCompositorThread(
       any_thread().default_gesture_prevented = false;
       break;
 
-    case blink::WebInputEvent::kGestureFlingCancel:
+    case blink::WebInputEvent::Type::kGestureFlingCancel:
       any_thread().fling_compositor_escalation_deadline = base::TimeTicks();
       break;
 
-    case blink::WebInputEvent::kGestureTapDown:
-    case blink::WebInputEvent::kGestureShowPress:
-    case blink::WebInputEvent::kGestureScrollEnd:
+    case blink::WebInputEvent::Type::kGestureTapDown:
+    case blink::WebInputEvent::Type::kGestureShowPress:
+    case blink::WebInputEvent::Type::kGestureScrollEnd:
       // With no observable effect, these meta events do not indicate a
       // meaningful touchstart response and should not impact task priority.
       break;
 
-    case blink::WebInputEvent::kMouseDown:
+    case blink::WebInputEvent::Type::kMouseDown:
       // Reset tracking state at the start of a new mouse drag gesture.
       any_thread().last_gesture_was_compositor_driven = false;
       any_thread().default_gesture_prevented = true;
       break;
 
-    case blink::WebInputEvent::kMouseMove:
+    case blink::WebInputEvent::Type::kMouseMove:
       // Consider mouse movement with the left button held down (see
       // ShouldPrioritizeInputEvent) similarly to a touch gesture.
       any_thread().last_gesture_was_compositor_driven =
@@ -1227,7 +1227,7 @@ void MainThreadSchedulerImpl::UpdateForInputEventOnCompositorThread(
       any_thread().awaiting_touch_start_response = false;
       break;
 
-    case blink::WebInputEvent::kMouseWheel:
+    case blink::WebInputEvent::Type::kMouseWheel:
       any_thread().last_gesture_was_compositor_driven =
           input_event_state == InputEventState::EVENT_CONSUMED_BY_COMPOSITOR;
       any_thread().awaiting_touch_start_response = false;
@@ -1238,7 +1238,7 @@ void MainThreadSchedulerImpl::UpdateForInputEventOnCompositorThread(
       if (IsBlockingEvent(web_input_event))
         any_thread().have_seen_a_blocking_gesture = true;
       break;
-    case blink::WebInputEvent::kUndefined:
+    case blink::WebInputEvent::Type::kUndefined:
       break;
 
     default:

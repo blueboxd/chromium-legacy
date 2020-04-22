@@ -126,6 +126,7 @@ static_library("vr_android") {
     "//content/public/browser",
     "//content/public/common",
     "//device/vr",
+    "//device/vr:vr_base",
     "//device/vr/buildflags:buildflags",
     "//services/device/public/mojom",
     "//services/metrics/public/cpp:ukm_builders",

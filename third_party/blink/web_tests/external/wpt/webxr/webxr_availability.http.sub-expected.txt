@@ -1,6 +1,0 @@
-This is a testharness.js-based test.
-Harness Error. harness_status.status = 1 , harness_status.message = Unhandled rejection: Cannot set property 'test' of undefined
-PASS Test webxr not available in insecure context
-PASS Test webxr not available in secure context in insecure context
-Harness: the test ran to completion.
-

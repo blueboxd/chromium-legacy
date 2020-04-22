@@ -4,6 +4,11 @@
 
 #include "ash/assistant/assistant_proactive_suggestions_controller.h"
 
+#include <map>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "ash/assistant/assistant_controller_impl.h"
 #include "ash/assistant/assistant_suggestions_controller_impl.h"
 #include "ash/assistant/assistant_ui_controller.h"
@@ -11,13 +16,12 @@
 #include "ash/assistant/ui/proactive_suggestions_simple_view.h"
 #include "ash/assistant/ui/proactive_suggestions_view.h"
 #include "ash/assistant/util/deep_link_util.h"
-#include "ash/public/cpp/assistant/controller/assistant_controller.h"
 #include "ash/public/cpp/assistant/controller/assistant_suggestions_controller.h"
 #include "ash/public/cpp/assistant/proactive_suggestions.h"
 #include "ash/public/cpp/assistant/util/histogram_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
-#include "chromeos/services/assistant/public/features.h"
+#include "chromeos/services/assistant/public/cpp/features.h"
 #include "components/viz/common/vertical_scroll_direction.h"
 #include "ui/views/widget/widget.h"
 
@@ -32,7 +36,7 @@ AssistantProactiveSuggestionsController::
         AssistantControllerImpl* assistant_controller)
     : assistant_controller_(assistant_controller) {
   DCHECK(chromeos::assistant::features::IsProactiveSuggestionsEnabled());
-  assistant_controller_->AddObserver(this);
+  assistant_controller_observer_.Add(AssistantController::Get());
 }
 
 AssistantProactiveSuggestionsController::
@@ -42,8 +46,6 @@ AssistantProactiveSuggestionsController::
   auto* client = ProactiveSuggestionsClient::Get();
   if (client)
     client->SetDelegate(nullptr);
-
-  assistant_controller_->RemoveObserver(this);
 }
 
 void AssistantProactiveSuggestionsController::

@@ -10,7 +10,7 @@
 
 #include "base/callback.h"
 #include "base/supports_user_data.h"
-#include "chrome/browser/upboarding/query_tiles/query_tile_entry.h"
+#include "chrome/browser/upboarding/query_tiles/tile.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace gfx {
@@ -19,8 +19,7 @@ class Image;
 
 namespace upboarding {
 
-using GetTilesCallback =
-    base::OnceCallback<void(const std::vector<QueryTileEntry*>&)>;
+using GetTilesCallback = base::OnceCallback<void(const std::vector<Tile*>&)>;
 using VisualsCallback = base::OnceCallback<void(const gfx::Image&)>;
 
 // The central class on chrome client responsible for fetching, storing,

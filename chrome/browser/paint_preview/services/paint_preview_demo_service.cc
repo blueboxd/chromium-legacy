@@ -103,7 +103,7 @@ void PaintPreviewDemoService::CaptureTabInternal(
   }
 
   PaintPreviewBaseService::CapturePaintPreview(
-      web_contents, file_path.value(), gfx::Rect(), /*max_per_capture_size=*/0,
+      web_contents, file_path.value(), gfx::Rect(),
       base::BindOnce(&PaintPreviewDemoService::OnCaptured,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback), key));
 }

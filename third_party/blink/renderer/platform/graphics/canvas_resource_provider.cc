@@ -776,7 +776,6 @@ const Vector<CanvasResourceType>& GetResourceTypeFallbackList(
 
 }  // unnamed namespace
 
-
 std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
     const IntSize& size,
     ResourceUsage usage,
@@ -938,7 +937,9 @@ CanvasResourceProvider::CreateSharedImageProvider(
     return nullptr;
   }
 
-  if (!IsGMBAllowed(size, color_params, caps))
+  bool can_use_overlays =
+      IsGMBAllowed(size, color_params, caps) && caps.texture_storage_image;
+  if (!can_use_overlays)
     shared_image_usage_flags &= ~gpu::SHARED_IMAGE_USAGE_SCANOUT;
 
   auto provider = std::make_unique<CanvasResourceProviderSharedImage>(

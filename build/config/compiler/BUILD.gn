@@ -107,11 +107,6 @@ declare_args() {
   # Turn this on to have the compiler output extra timing information.
   compiler_timing = false
 
-  # Set to true to pass --no-rosegment to lld. This is a workaround
-  # for a KI issue in Valgrind,
-  # https://bugs.kde.org/show_bug.cgi?id=384727
-  ro_segment_workaround_for_valgrind = false
-
   # Turn this on to use ghash feature of lld for faster debug link on Windows.
   # http://blog.llvm.org/2018/01/improving-link-time-on-windows-with.html
   use_ghash = true
@@ -697,11 +692,9 @@ config("compiler") {
     }
   }
 
-  # Pass flag to LLD to work around issue in Valgrind related to
-  # location of debug symbols. This is also enabled for Android
-  # builds to allow debuggerd to properly symbolize stack crashes
-  # on this platform (http://crbug.com/919499).
-  if (use_lld && (ro_segment_workaround_for_valgrind || is_android)) {
+  # Pass flag to LLD so Android builds can allow debuggerd to properly symbolize
+  # stack crashes (http://crbug.com/919499).
+  if (use_lld && is_android) {
     ldflags += [ "-Wl,--no-rosegment" ]
   }
 

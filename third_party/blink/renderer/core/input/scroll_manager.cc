@@ -42,11 +42,11 @@ namespace {
 cc::SnapFlingController::GestureScrollType ToGestureScrollType(
     WebInputEvent::Type web_event_type) {
   switch (web_event_type) {
-    case WebInputEvent::kGestureScrollBegin:
+    case WebInputEvent::Type::kGestureScrollBegin:
       return cc::SnapFlingController::GestureScrollType::kBegin;
-    case WebInputEvent::kGestureScrollUpdate:
+    case WebInputEvent::Type::kGestureScrollUpdate:
       return cc::SnapFlingController::GestureScrollType::kUpdate;
-    case WebInputEvent::kGestureScrollEnd:
+    case WebInputEvent::Type::kGestureScrollEnd:
       return cc::SnapFlingController::GestureScrollType::kEnd;
     default:
       NOTREACHED();
@@ -527,7 +527,7 @@ WebInputEventResult ScrollManager::HandleGestureScrollBegin(
 WebInputEventResult ScrollManager::HandleGestureScrollUpdate(
     const WebGestureEvent& gesture_event) {
   TRACE_EVENT0("input", "ScrollManager::handleGestureScrollUpdate");
-  DCHECK_EQ(gesture_event.GetType(), WebInputEvent::kGestureScrollUpdate);
+  DCHECK_EQ(gesture_event.GetType(), WebInputEvent::Type::kGestureScrollUpdate);
 
   Node* node = scroll_gesture_handling_node_.Get();
   if (!node || !node->GetLayoutObject()) {
@@ -908,10 +908,11 @@ WebInputEventResult ScrollManager::HandleGestureScrollEvent(
 
   Node* event_target = nullptr;
   Scrollbar* scrollbar = nullptr;
-  if (gesture_event.GetType() != WebInputEvent::kGestureScrollBegin) {
+  if (gesture_event.GetType() != WebInputEvent::Type::kGestureScrollBegin) {
     scrollbar = scrollbar_handling_scroll_gesture_.Get();
     event_target = scroll_gesture_handling_node_.Get();
-  } else if (gesture_event.GetType() == WebInputEvent::kGestureScrollBegin &&
+  } else if (gesture_event.GetType() ==
+                 WebInputEvent::Type::kGestureScrollBegin &&
              gesture_event.data.scroll_begin.scrollable_area_element_id) {
     CompositorElementId element_id = CompositorElementId(
         gesture_event.data.scroll_begin.scrollable_area_element_id);
@@ -1008,14 +1009,14 @@ WebInputEventResult ScrollManager::HandleGestureScrollEvent(
     }
   }
   switch (gesture_event.GetType()) {
-    case WebInputEvent::kGestureScrollBegin:
+    case WebInputEvent::Type::kGestureScrollBegin:
       return HandleGestureScrollBegin(gesture_event);
-    case WebInputEvent::kGestureScrollUpdate:
+    case WebInputEvent::Type::kGestureScrollUpdate:
       return HandleGestureScrollUpdate(gesture_event);
-    case WebInputEvent::kGestureScrollEnd:
+    case WebInputEvent::Type::kGestureScrollEnd:
       return HandleGestureScrollEnd(gesture_event);
-    case WebInputEvent::kGestureFlingStart:
-    case WebInputEvent::kGestureFlingCancel:
+    case WebInputEvent::Type::kGestureFlingStart:
+    case WebInputEvent::Type::kGestureFlingCancel:
       return WebInputEventResult::kNotHandled;
     default:
       NOTREACHED();
@@ -1085,7 +1086,7 @@ bool ScrollManager::HandleScrollGestureOnResizer(
   if (gesture_event.SourceDevice() != WebGestureDevice::kTouchscreen)
     return false;
 
-  if (gesture_event.GetType() == WebInputEvent::kGestureScrollBegin) {
+  if (gesture_event.GetType() == WebInputEvent::Type::kGestureScrollBegin) {
     PaintLayer* layer = event_target->GetLayoutObject()
                             ? event_target->GetLayoutObject()->EnclosingLayer()
                             : nullptr;
@@ -1100,7 +1101,8 @@ bool ScrollManager::HandleScrollGestureOnResizer(
           LayoutSize(resize_scrollable_area_->OffsetFromResizeCorner(p));
       return true;
     }
-  } else if (gesture_event.GetType() == WebInputEvent::kGestureScrollUpdate) {
+  } else if (gesture_event.GetType() ==
+             WebInputEvent::Type::kGestureScrollUpdate) {
     if (resize_scrollable_area_ && resize_scrollable_area_->InResizeMode()) {
       IntPoint pos =
           RoundedIntPoint(FloatPoint(gesture_event.PositionInRootFrame()));
@@ -1109,7 +1111,8 @@ bool ScrollManager::HandleScrollGestureOnResizer(
       resize_scrollable_area_->Resize(pos, offset_from_resize_corner_);
       return true;
     }
-  } else if (gesture_event.GetType() == WebInputEvent::kGestureScrollEnd) {
+  } else if (gesture_event.GetType() ==
+             WebInputEvent::Type::kGestureScrollEnd) {
     if (resize_scrollable_area_ && resize_scrollable_area_->InResizeMode()) {
       resize_scrollable_area_->SetInResizeMode(false);
       resize_scrollable_area_ = nullptr;
@@ -1125,7 +1128,7 @@ bool ScrollManager::InResizeMode() const {
 }
 
 void ScrollManager::Resize(const WebMouseEvent& evt) {
-  if (evt.GetType() == WebInputEvent::kMouseMove) {
+  if (evt.GetType() == WebInputEvent::Type::kMouseMove) {
     if (!frame_->GetEventHandler().MousePressed())
       return;
     resize_scrollable_area_->Resize(FlooredIntPoint(evt.PositionInRootFrame()),
@@ -1167,9 +1170,9 @@ bool ScrollManager::CanHandleGestureEvent(
 
 WebGestureEvent ScrollManager::SynthesizeGestureScrollBegin(
     const WebGestureEvent& update_event) {
-  DCHECK_EQ(update_event.GetType(), WebInputEvent::kGestureScrollUpdate);
+  DCHECK_EQ(update_event.GetType(), WebInputEvent::Type::kGestureScrollUpdate);
   WebGestureEvent scroll_begin(update_event);
-  scroll_begin.SetType(WebInputEvent::kGestureScrollBegin);
+  scroll_begin.SetType(WebInputEvent::Type::kGestureScrollBegin);
   scroll_begin.data.scroll_begin.delta_x_hint =
       update_event.data.scroll_update.delta_x;
   scroll_begin.data.scroll_begin.delta_y_hint =

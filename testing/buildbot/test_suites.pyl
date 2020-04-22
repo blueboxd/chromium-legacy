@@ -1298,10 +1298,12 @@
       'crypto_unittests': {},
       'events_unittests': {},
       'gfx_unittests': {},
+      'gin_unittests': {},
       'google_apis_unittests': {},
       'gpu_unittests': {},
       'http_service_tests': {},
       'ipc_tests': {},
+      'media_blink_unittests': {},
       'media_unittests': {},
       'mojo_unittests': {
         'args': [

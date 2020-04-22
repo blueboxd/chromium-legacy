@@ -188,7 +188,7 @@ class ChromiumSequentialFile : public leveldb::SequentialFile {
 
 void RemoveFile(const Slice& key, void* value) {
   delete static_cast<base::File*>(value);
-};
+}
 
 Status ReadFromFileToScratch(uint64_t offset,
                              size_t n,
@@ -1399,10 +1399,6 @@ class DBTracker::MemoryDumpProvider
     DCHECK_GE(database_use_count_[database->block_cache_type()], 0);
   }
 
-  int database_use_count(SharedReadCacheUse cache) {
-    return database_use_count_[cache];
-  }
-
  private:
   void DumpVisitor(ProcessMemoryDump* pmd, TrackedDB* db);
 
@@ -1498,25 +1494,6 @@ MemoryAllocatorDump* DBTracker::GetOrCreateAllocatorDump(
     leveldb::Env* tracked_memenv) {
   GetInstance()->mdp_->DumpAllDatabases(pmd);
   return leveldb_chrome::GetEnvAllocatorDump(pmd, tracked_memenv);
-}
-
-void DBTracker::UpdateHistograms() {
-  base::AutoLock lock(databases_lock_);
-  if (leveldb_chrome::GetSharedWebBlockCache() ==
-      leveldb_chrome::GetSharedBrowserBlockCache()) {
-    UMA_HISTOGRAM_COUNTS_100(
-        "LevelDB.SharedCache.DBCount.Unified",
-        mdp_->database_use_count(SharedReadCacheUse_Unified));
-  } else {
-    UMA_HISTOGRAM_COUNTS_100("LevelDB.SharedCache.DBCount.Web",
-                             mdp_->database_use_count(SharedReadCacheUse_Web));
-    UMA_HISTOGRAM_COUNTS_100(
-        "LevelDB.SharedCache.DBCount.Browser",
-        mdp_->database_use_count(SharedReadCacheUse_Browser));
-  }
-  UMA_HISTOGRAM_COUNTS_100(
-      "LevelDB.SharedCache.DBCount.InMemory",
-      mdp_->database_use_count(SharedReadCacheUse_InMemory));
 }
 
 bool DBTracker::IsTrackedDB(const leveldb::DB* db) const {

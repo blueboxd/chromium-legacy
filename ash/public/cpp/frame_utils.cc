@@ -66,9 +66,17 @@ int FrameBorderNonClientHitTest(views::NonClientFrameView* view,
 
 void ResolveInferredOpacity(views::Widget::InitParams* params) {
   DCHECK_EQ(params->opacity, WindowOpacity::kInferred);
-  params->init_properties_container.SetProperty(
-      ash::kWindowManagerManagesOpacityKey, true);
-  params->opacity = WindowOpacity::kTranslucent;
+  if (params->type == views::Widget::InitParams::TYPE_WINDOW &&
+      params->layer_type == ui::LAYER_TEXTURED) {
+    // A framed window may have a rounded corner which requires the
+    // window to be transparent. WindowManager controls the actual
+    // opaque-ness of the window depending on its window state.
+    params->init_properties_container.SetProperty(
+        ash::kWindowManagerManagesOpacityKey, true);
+    params->opacity = WindowOpacity::kTranslucent;
+  } else {
+    params->opacity = WindowOpacity::kOpaque;
+  }
 }
 
 }  // namespace ash

@@ -60,9 +60,6 @@ AXTreeSourceArc::~AXTreeSourceArc() {
 }
 
 void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
-  tree_map_.clear();
-  parent_map_.clear();
-  cached_computed_bounds_.clear();
   root_id_.reset();
 
   window_id_ = event_data->window_id;
@@ -126,11 +123,11 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
   // bounds.
   for (int i = event_data->node_data.size() - 1; i >= 0; --i) {
     int32_t id = event_data->node_data[i]->id;
-    cached_computed_bounds_[id] = ComputeEnclosingBounds(tree_map_[id].get());
+    computed_bounds_[id] = ComputeEnclosingBounds(tree_map_[id].get());
   }
   for (int i = event_data->window_data->size() - 1; i >= 0; --i) {
     int32_t id = event_data->window_data->at(i)->window_id;
-    cached_computed_bounds_[id] = ComputeEnclosingBounds(tree_map_[id].get());
+    computed_bounds_[id] = ComputeEnclosingBounds(tree_map_[id].get());
   }
 
   // Calculate the focused ID.
@@ -226,20 +223,12 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
     event.event_from = ax::mojom::EventFrom::kAction;
   }
 
-  if ((event_data->event_type == AXEventType::WINDOW_CONTENT_CHANGED ||
-       event_data->event_type == AXEventType::VIEW_SCROLLED) &&
-      chrome_focused_id_ && chrome_focused_bounds_) {
-    AccessibilityInfoDataWrapper* chrome_focused_node =
-        GetFromId(*chrome_focused_id_);
-    if (chrome_focused_node &&
-        chrome_focused_bounds_ != chrome_focused_node->GetBounds()) {
-      // Notify ChromeVox that the accessibility focus location changed.
-      event_bundle.events.emplace_back();
-      ui::AXEvent& additional_event = event_bundle.events.back();
-      additional_event.event_type = ax::mojom::Event::kLocationChanged;
-      additional_event.id = *chrome_focused_id_;
-      chrome_focused_bounds_ = chrome_focused_node->GetBounds();
-    }
+  if (ShouldDispatchFocusLocationChange()) {
+    // Notify that the accessibility focus location changed.
+    event_bundle.events.emplace_back();
+    ui::AXEvent& additional_event = event_bundle.events.back();
+    additional_event.event_type = ax::mojom::Event::kLocationChanged;
+    additional_event.id = *chrome_focused_id_;
   }
 
   HandleLiveRegions(&event_bundle.events);
@@ -260,6 +249,23 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
                                              &event_bundle.updates.back());
 
   GetAutomationEventRouter()->DispatchAccessibilityEvents(event_bundle);
+
+  previous_raw_bounds_.clear();
+  for (size_t i = 0; i < event_data->node_data.size(); ++i) {
+    AXNodeInfoData* node = event_data->node_data[i].get();
+    if (IsImportantInAndroid(node)) {
+      previous_raw_bounds_[node->id] = node->bounds_in_screen;
+    }
+  }
+  for (size_t i = 0; i < event_data->window_data->size(); ++i) {
+    AXWindowInfoData* window = event_data->window_data->at(i).get();
+    previous_raw_bounds_[window->window_id] = window->bounds_in_screen;
+  }
+
+  // Clear maps in order to prevent invalid access from dead pointers.
+  tree_map_.clear();
+  parent_map_.clear();
+  computed_bounds_.clear();
 }
 
 void AXTreeSourceArc::NotifyActionResult(const ui::AXActionData& data,
@@ -274,11 +280,7 @@ void AXTreeSourceArc::NotifyGetTextLocationDataResult(
 }
 
 void AXTreeSourceArc::UpdateAccessibilityFocusLocation(int32_t id) {
-  AccessibilityInfoDataWrapper* node = GetFromId(id);
-  if (!IsValid(node))
-    return;
   chrome_focused_id_ = id;
-  chrome_focused_bounds_ = node->GetBounds();
 }
 
 void AXTreeSourceArc::InvalidateTree() {
@@ -358,8 +360,8 @@ gfx::Rect AXTreeSourceArc::ComputeEnclosingBounds(
 void AXTreeSourceArc::ComputeEnclosingBoundsInternal(
     AccessibilityInfoDataWrapper* info_data,
     gfx::Rect& computed_bounds) const {
-  auto cached_bounds = cached_computed_bounds_.find(info_data->GetId());
-  if (cached_bounds != cached_computed_bounds_.end()) {
+  auto cached_bounds = computed_bounds_.find(info_data->GetId());
+  if (cached_bounds != computed_bounds_.end()) {
     computed_bounds.Union(cached_bounds->second);
     return;
   }
@@ -618,8 +620,8 @@ void AXTreeSourceArc::HandleLiveRegions(std::vector<ui::AXEvent>* events) {
 
   // Compare to the previous one, and add an event if needed.
   for (const auto& it : new_live_region_map) {
-    auto prev_it = live_region_name_cache_.find(it.first);
-    if (prev_it == live_region_name_cache_.end())
+    auto prev_it = previous_live_region_name_.find(it.first);
+    if (prev_it == previous_live_region_name_.end())
       continue;
 
     if (prev_it->second != it.second) {
@@ -630,13 +632,30 @@ void AXTreeSourceArc::HandleLiveRegions(std::vector<ui::AXEvent>* events) {
     }
   }
 
-  std::swap(live_region_name_cache_, new_live_region_map);
+  std::swap(previous_live_region_name_, new_live_region_map);
+}
+
+bool AXTreeSourceArc::ShouldDispatchFocusLocationChange() const {
+  if (!chrome_focused_id_)
+    return false;
+
+  AccessibilityInfoDataWrapper* chrome_focused_node =
+      GetFromId(*chrome_focused_id_);
+
+  if (!chrome_focused_node)
+    return false;
+
+  auto chrome_focused_bounds = previous_raw_bounds_.find(*chrome_focused_id_);
+  if (chrome_focused_bounds == previous_raw_bounds_.end())
+    return false;
+
+  return chrome_focused_node->GetBounds() != chrome_focused_bounds->second;
 }
 
 void AXTreeSourceArc::Reset() {
   tree_map_.clear();
   parent_map_.clear();
-  cached_computed_bounds_.clear();
+  computed_bounds_.clear();
   current_tree_serializer_.reset(new AXTreeArcSerializer(this));
   root_id_.reset();
   window_id_.reset();

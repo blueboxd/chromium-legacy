@@ -28,6 +28,12 @@ const char kAutofillEnableCompanyNameName[] =
 const char kAutofillEnableCompanyNameDescription[] =
     "When enabled, Company Name fields will be auto filled";
 
+const char kAutofillEnableGoogleIssuedCardName[] =
+    "Enable Autofill Google-issued card";
+const char kAutofillEnableGoogleIssuedCardDescription[] =
+    "When enabled, Google-issued cards will be available in the autofill "
+    "suggestions.";
+
 const char kAutofillEnableSurfacingServerCardNicknameName[] =
     "Enable surfacing masked server card nicknames";
 const char kAutofillEnableSurfacingServerCardNicknameDescription[] =

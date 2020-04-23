@@ -43,14 +43,12 @@ class HandsOffEnrollmentTest : public MixinBasedInProcessBrowserTest {
   // InProcessBrowserTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     MixinBasedInProcessBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendArg(switches::kLoginManager);
     command_line->AppendSwitchASCII(
         switches::kEnterpriseEnableZeroTouchEnrollment, "hands-off");
   }
 
   void SetUpOnMainThread() override {
     MixinBasedInProcessBrowserTest::SetUpOnMainThread();
-    ShowLoginWizard(OobeScreen::SCREEN_TEST_NO_WINDOW);
 
     // Set official build so EULA screen is not skipped by default.
     branded_build_override_ = WizardController::ForceBrandedBuildForTesting();
@@ -99,10 +97,7 @@ IN_PROC_BROWSER_TEST_F(HandsOffEnrollmentTest, NetworkConnectionReady) {
 
   SimulateNetworkConnected();
 
-  WizardController::default_controller()->AdvanceToScreen(
-      WelcomeView::kScreenId);
-
-  OobeScreenWaiter(NetworkScreenView::kScreenId).Wait();
+  ShowLoginWizard(OobeScreen::SCREEN_UNKNOWN);
 
   OobeScreenWaiter(EnrollmentScreenView::kScreenId).Wait();
 
@@ -119,8 +114,7 @@ IN_PROC_BROWSER_TEST_F(HandsOffEnrollmentTest, WaitForNetworkConnection) {
   enrollment_helper_.ExpectAttestationEnrollmentSuccess();
   enrollment_helper_.DisableAttributePromptUpdate();
   enrollment_helper_.SetupClearAuth();
-  WizardController::default_controller()->AdvanceToScreen(
-      WelcomeView::kScreenId);
+  ShowLoginWizard(OobeScreen::SCREEN_UNKNOWN);
 
   OobeScreenWaiter(NetworkScreenView::kScreenId).Wait();
 
@@ -149,8 +143,7 @@ IN_PROC_BROWSER_TEST_F(HandsOffEnrollmentTest, EnrollmentError) {
 
   SimulateNetworkConnected();
 
-  WizardController::default_controller()->AdvanceToScreen(
-      WelcomeView::kScreenId);
+  ShowLoginWizard(OobeScreen::SCREEN_UNKNOWN);
 
   OobeScreenWaiter screen_waiter(NetworkScreenView::kScreenId);
   // WebUI window is not visible until the screen animation finishes.

@@ -147,10 +147,12 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   bool ShouldBlockWebSocketByMixedContentCheck(const KURL&) const override;
   std::unique_ptr<WebSocketHandshakeThrottle> CreateWebSocketHandshakeThrottle()
       override;
-  bool ShouldBlockFetchByMixedContentCheck(mojom::RequestContextType,
-                                           ResourceRequest::RedirectStatus,
-                                           const KURL&,
-                                           ReportingDisposition) const override;
+  bool ShouldBlockFetchByMixedContentCheck(
+      mojom::blink::RequestContextType request_context,
+      ResourceRequest::RedirectStatus redirect_status,
+      const KURL& url,
+      ReportingDisposition reporting_disposition,
+      const base::Optional<String>& devtools_id) const override;
   bool ShouldBlockFetchAsCredentialedSubresource(const ResourceRequest&,
                                                  const KURL&) const override;
 

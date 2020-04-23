@@ -34,11 +34,10 @@ PermissionRequestImpl::PermissionRequestImpl(
       content_settings_type_(content_settings_type),
       has_gesture_(has_gesture),
       permission_decided_callback_(std::move(permission_decided_callback)),
-      delete_callback_(std::move(delete_callback)),
-      is_finished_(false) {}
+      delete_callback_(std::move(delete_callback)) {}
 
 PermissionRequestImpl::~PermissionRequestImpl() {
-  DCHECK(is_finished_);
+  DCHECK(delete_callback_.is_null());
 }
 
 PermissionRequest::IconId PermissionRequestImpl::GetIconId() const {
@@ -271,7 +270,6 @@ void PermissionRequestImpl::Cancelled() {
 }
 
 void PermissionRequestImpl::RequestFinished() {
-  is_finished_ = true;
   std::move(delete_callback_).Run();
 }
 

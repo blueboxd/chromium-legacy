@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/widget/desktop_aura/x11_topmost_window_finder.h"
+#include "ui/platform_window/x11/x11_topmost_window_finder.h"
 
 #include <stddef.h>
 
@@ -148,14 +148,14 @@ class X11TopmostWindowFinderTest : public test::DesktopWidgetTestInteractive {
 
   // Returns the topmost X window at the passed in screen position.
   XID FindTopmostXWindowAt(int screen_x, int screen_y) {
-    X11TopmostWindowFinder finder;
+    ui::X11TopmostWindowFinder finder;
     return finder.FindWindowAt(gfx::Point(screen_x, screen_y));
   }
 
   // Returns the topmost aura::Window at the passed in screen position. Returns
   // NULL if the topmost window does not have an associated aura::Window.
   aura::Window* FindTopmostLocalProcessWindowAt(int screen_x, int screen_y) {
-    X11TopmostWindowFinder finder;
+    ui::X11TopmostWindowFinder finder;
     auto widget =
         finder.FindLocalProcessWindowAt(gfx::Point(screen_x, screen_y), {});
     return widget ? DesktopWindowTreeHostLinux::GetContentWindowForWidget(
@@ -172,7 +172,7 @@ class X11TopmostWindowFinderTest : public test::DesktopWidgetTestInteractive {
       aura::Window* ignore_window) {
     std::set<gfx::AcceleratedWidget> ignore;
     ignore.insert(ignore_window->GetHost()->GetAcceleratedWidget());
-    X11TopmostWindowFinder finder;
+    ui::X11TopmostWindowFinder finder;
     auto widget =
         finder.FindLocalProcessWindowAt(gfx::Point(screen_x, screen_y), ignore);
     return widget ? DesktopWindowTreeHostLinux::GetContentWindowForWidget(

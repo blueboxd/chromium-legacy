@@ -22,6 +22,74 @@ namespace base {
 
 typedef void (*OomFunction)(size_t);
 
+// PartitionAlloc supports setting hooks to observe allocations/frees as they
+// occur as well as 'override' hooks that allow overriding those operations.
+class BASE_EXPORT PartitionAllocHooks {
+ public:
+  // Log allocation and free events.
+  typedef void AllocationObserverHook(void* address,
+                                      size_t size,
+                                      const char* type_name);
+  typedef void FreeObserverHook(void* address);
+
+  // If it returns true, the allocation has been overridden with the pointer in
+  // *out.
+  typedef bool AllocationOverrideHook(void** out,
+                                      int flags,
+                                      size_t size,
+                                      const char* type_name);
+  // If it returns true, then the allocation was overridden and has been freed.
+  typedef bool FreeOverrideHook(void* address);
+  // If it returns true, the underlying allocation is overridden and *out holds
+  // the size of the underlying allocation.
+  typedef bool ReallocOverrideHook(size_t* out, void* address);
+
+  // To unhook, call Set*Hooks with nullptrs.
+  static void SetObserverHooks(AllocationObserverHook* alloc_hook,
+                               FreeObserverHook* free_hook);
+  static void SetOverrideHooks(AllocationOverrideHook* alloc_hook,
+                               FreeOverrideHook* free_hook,
+                               ReallocOverrideHook realloc_hook);
+
+  // Helper method to check whether hooks are enabled. This is an optimization
+  // so that if a function needs to call observer and override hooks in two
+  // different places this value can be cached and only loaded once.
+  static bool AreHooksEnabled() {
+    return hooks_enabled_.load(std::memory_order_relaxed);
+  }
+
+  static void AllocationObserverHookIfEnabled(void* address,
+                                              size_t size,
+                                              const char* type_name);
+  static bool AllocationOverrideHookIfEnabled(void** out,
+                                              int flags,
+                                              size_t size,
+                                              const char* type_name);
+
+  static void FreeObserverHookIfEnabled(void* address);
+  static bool FreeOverrideHookIfEnabled(void* address);
+
+  static void ReallocObserverHookIfEnabled(void* old_address,
+                                           void* new_address,
+                                           size_t size,
+                                           const char* type_name);
+  static bool ReallocOverrideHookIfEnabled(size_t* out, void* address);
+
+ private:
+  // Single bool that is used to indicate whether observer or allocation hooks
+  // are set to reduce the numbers of loads required to check whether hooking is
+  // enabled.
+  static std::atomic<bool> hooks_enabled_;
+
+  // Lock used to synchronize Set*Hooks calls.
+  static std::atomic<AllocationObserverHook*> allocation_observer_hook_;
+  static std::atomic<FreeObserverHook*> free_observer_hook_;
+
+  static std::atomic<AllocationOverrideHook*> allocation_override_hook_;
+  static std::atomic<FreeOverrideHook*> free_override_hook_;
+  static std::atomic<ReallocOverrideHook*> realloc_override_hook_;
+};
+
 namespace internal {
 
 template <bool thread_safe>
@@ -54,9 +122,7 @@ class LOCKABLE MaybeSpinLock<ThreadSafe> {
   void Lock() EXCLUSIVE_LOCK_FUNCTION() { lock_->Acquire(); }
   void Unlock() UNLOCK_FUNCTION() { lock_->Release(); }
   void AssertAcquired() const ASSERT_EXCLUSIVE_LOCK() {
-#if DCHECK_IS_ON()
     lock_->AssertAcquired();
-#endif
   }
 
  private:
@@ -144,6 +210,7 @@ struct BASE_EXPORT PartitionRootBase {
   // Note the matching Free() functions are in PartitionPage.
   ALWAYS_INLINE void* AllocFromBucket(Bucket* bucket, int flags, size_t size)
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
+  ALWAYS_INLINE void Free(void* ptr);
 
   ALWAYS_INLINE static bool IsValidPage(Page* page);
   ALWAYS_INLINE static PartitionRootBase* FromPage(Page* page);
@@ -230,6 +297,35 @@ ALWAYS_INLINE void* PartitionRootBase<thread_safety>::AllocFromBucket(
 #endif
 
   return ret;
+}
+
+template <bool thread_safety>
+ALWAYS_INLINE void PartitionRootBase<thread_safety>::Free(void* ptr) {
+#if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
+  free(ptr);
+#else
+  DCHECK(initialized);
+
+  if (UNLIKELY(!ptr))
+    return;
+
+  if (PartitionAllocHooks::AreHooksEnabled()) {
+    PartitionAllocHooks::FreeObserverHookIfEnabled(ptr);
+    if (PartitionAllocHooks::FreeOverrideHookIfEnabled(ptr))
+      return;
+  }
+
+  ptr = internal::PartitionCookieFreePointerAdjust(ptr);
+  Page* page = Page::FromPointer(ptr);
+  // TODO(palmer): See if we can afford to make this a CHECK.
+  DCHECK(IsValidPage(page));
+  internal::DeferredUnmap deferred_unmap;
+  {
+    ScopedGuard guard{lock_};
+    deferred_unmap = page->Free(ptr);
+  }
+  deferred_unmap.Run();
+#endif
 }
 
 template <bool thread_safety>

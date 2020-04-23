@@ -16,15 +16,17 @@
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
+#include "chrome/browser/chromeos/login/test/oobe_base_test.h"
+#include "chrome/browser/chromeos/login/test/oobe_screen_exit_waiter.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/assistant_optin_flow_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/services/assistant/assistant_settings_manager.h"
@@ -56,11 +58,6 @@ constexpr char kTestUser[] = "test-user1@gmail.com";
 
 constexpr char kAssistantConsentToken[] = "consent_token";
 constexpr char kAssistantUiAuditKey[] = "ui_audit_key";
-
-chromeos::OobeUI* GetOobeUI() {
-  auto* host = chromeos::LoginDisplayHost::default_host();
-  return host ? host->GetOobeUI() : nullptr;
-}
 
 class FakeAssistantSettings
     : public chromeos::assistant::AssistantSettingsManager {
@@ -321,76 +318,53 @@ class FakeAssistantSettings
 
 }  // namespace
 
-class AssistantOptInFlowTest : public MixinBasedInProcessBrowserTest {
+class AssistantOptInFlowTest : public OobeBaseTest {
  public:
-  AssistantOptInFlowTest() = default;
+  AssistantOptInFlowTest() {
+    // To reuse existing wizard controller in the flow.
+    feature_list_.InitAndEnableFeature(
+        chromeos::features::kOobeScreensPriority);
+  }
   ~AssistantOptInFlowTest() override = default;
 
-  void SetUp() override {
-    base::FilePath test_data_dir;
-    base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
-    https_server_.ServeFilesFromDirectory(test_data_dir);
-
-    https_server_.RegisterRequestHandler(base::BindRepeating(
+  void RegisterAdditionalRequestHandlers() override {
+    embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
         &AssistantOptInFlowTest::HandleRequest, base::Unretained(this)));
-
-    // Don't spin up the IO thread yet since no threads are allowed while
-    // spawning sandbox host process. See crbug.com/322732.
-    ASSERT_TRUE(https_server_.InitializeAndListen());
-
-    MixinBasedInProcessBrowserTest::SetUp();
   }
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    MixinBasedInProcessBrowserTest::SetUpCommandLine(command_line);
-    // This prevents assistant setup flow dialog popping up immediately on user
-    // start - the test will show a different dialog once the setup is done.
-    command_line->AppendSwitch(switches::kOobeSkipPostLogin);
-  }
   void SetUpOnMainThread() override {
-    https_server_.StartAcceptingConnections();
-
-    login_manager_.LoginAndWaitForActiveSession(
-        LoginManagerMixin::CreateDefaultUserContext(test_user_));
+    OobeBaseTest::SetUpOnMainThread();
+    force_lib_assistant_enabled_ =
+        AssistantOptInFlowScreen::ForceLibAssistantEnabledForTesting();
 
     assistant_settings_ = std::make_unique<FakeAssistantSettings>();
-
-    ShowLoginWizard(OobeScreen::SCREEN_TEST_NO_WINDOW);
-
-    WizardController::default_controller()
-        ->screen_manager()
-        ->DeleteScreenForTesting(AssistantOptInFlowScreenView::kScreenId);
-    auto assistant_optin_flow_screen =
-        std::make_unique<AssistantOptInFlowScreen>(
-            GetOobeUI()->GetView<AssistantOptInFlowScreenHandler>(),
-            base::BindRepeating(&AssistantOptInFlowTest::HandleScreenExit,
-                                base::Unretained(this)));
-    assistant_optin_flow_screen_ = assistant_optin_flow_screen.get();
-    WizardController::default_controller()
-        ->screen_manager()
-        ->SetScreenForTesting(std::move(assistant_optin_flow_screen));
-
-    MixinBasedInProcessBrowserTest::SetUpOnMainThread();
+    assistant_optin_flow_screen_ = AssistantOptInFlowScreen::Get(
+        WizardController::default_controller()->screen_manager());
+    assistant_optin_flow_screen_->set_exit_callback_for_testing(
+        base::BindRepeating(&AssistantOptInFlowTest::HandleScreenExit,
+                            base::Unretained(this)));
   }
 
   void TearDownOnMainThread() override {
-    EXPECT_TRUE(https_server_.ShutdownAndWaitUntilComplete());
     assistant_settings_.reset();
-    MixinBasedInProcessBrowserTest::TearDownOnMainThread();
+    OobeBaseTest::TearDownOnMainThread();
   }
 
-  // Waits for the OOBE UI to complete initialization, and overrides:
+  void ShowAssistantOptInFlowScreen() {
+    login_manager_.LoginAsNewReguarUser();
+    OobeScreenExitWaiter(GaiaView::kScreenId).Wait();
+    LoginDisplayHost::default_host()->StartWizard(
+        AssistantOptInFlowScreenView::kScreenId);
+  }
+
+  // Overrides:
   // *   the assistant value prop webview URL with the one provided by embedded
   //     https proxy.
   // *   the timeout delay for sending done user action from voice match screen.
   void SetUpAssistantScreensForTest() {
-    base::RunLoop oobe_ready_waiter;
-    if (!GetOobeUI()->IsJSReady(oobe_ready_waiter.QuitClosure())) {
-      oobe_ready_waiter.Run();
-    }
-
-    std::string url_template =
-        https_server_.GetURL("/test_assistant/$/value_prop.html").spec();
+    std::string url_template = embedded_test_server()
+                                   ->GetURL("/test_assistant/$/value_prop.html")
+                                   .spec();
     test::OobeJS().Evaluate(
         test::GetOobeElementPath({"assistant-optin-flow-card", "value-prop"}) +
         ".setUrlTemplateForTesting('" + url_template + "')");
@@ -474,11 +448,11 @@ class AssistantOptInFlowTest : public MixinBasedInProcessBrowserTest {
   bool screen_exited_ = false;
   base::OnceClosure screen_exit_callback_;
 
-  net::EmbeddedTestServer https_server_{net::EmbeddedTestServer::TYPE_HTTPS};
+  base::test::ScopedFeatureList feature_list_;
 
-  const LoginManagerMixin::TestUserInfo test_user_{
-      AccountId::FromUserEmailGaiaId(kTestUser, kTestUser)};
-  LoginManagerMixin login_manager_{&mixin_host_, {test_user_}};
+  std::unique_ptr<base::AutoReset<bool>> force_lib_assistant_enabled_;
+
+  LoginManagerMixin login_manager_{&mixin_host_};
 };
 
 IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, Basic) {
@@ -486,7 +460,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, Basic) {
       ash::mojom::AssistantState::READY);
 
   SetUpAssistantScreensForTest();
-  assistant_optin_flow_screen_->Show();
+  ShowAssistantOptInFlowScreen();
 
   OobeScreenWaiter screen_waiter(AssistantOptInFlowScreenView::kScreenId);
   screen_waiter.set_assert_next_screen();
@@ -522,7 +496,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, DisableScreenContext) {
       ash::mojom::AssistantState::READY);
 
   SetUpAssistantScreensForTest();
-  assistant_optin_flow_screen_->Show();
+  ShowAssistantOptInFlowScreen();
 
   OobeScreenWaiter screen_waiter(AssistantOptInFlowScreenView::kScreenId);
   screen_waiter.set_assert_next_screen();
@@ -559,7 +533,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, DisableScreenContext) {
 
 IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, AssistantStateUpdateAfterShow) {
   SetUpAssistantScreensForTest();
-  assistant_optin_flow_screen_->Show();
+  ShowAssistantOptInFlowScreen();
 
   OobeScreenWaiter screen_waiter(AssistantOptInFlowScreenView::kScreenId);
   screen_waiter.set_assert_next_screen();
@@ -599,7 +573,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, RetryOnWebviewLoadFail) {
   SetUpAssistantScreensForTest();
   fail_next_value_prop_url_request_ = true;
 
-  assistant_optin_flow_screen_->Show();
+  ShowAssistantOptInFlowScreen();
 
   ash::AssistantState::Get()->NotifyStatusChanged(
       ash::mojom::AssistantState::READY);
@@ -640,7 +614,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, RejectValueProp) {
   ash::AssistantState::Get()->NotifyStatusChanged(
       ash::mojom::AssistantState::READY);
 
-  assistant_optin_flow_screen_->Show();
+  ShowAssistantOptInFlowScreen();
 
   OobeScreenWaiter screen_waiter(AssistantOptInFlowScreenView::kScreenId);
   screen_waiter.set_assert_next_screen();
@@ -666,7 +640,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, AskEmailOptIn_NotChecked) {
       ash::mojom::AssistantState::READY);
 
   SetUpAssistantScreensForTest();
-  assistant_optin_flow_screen_->Show();
+  ShowAssistantOptInFlowScreen();
 
   OobeScreenWaiter screen_waiter(AssistantOptInFlowScreenView::kScreenId);
   screen_waiter.set_assert_next_screen();
@@ -707,7 +681,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, AskEmailOptIn_Accepted) {
       ash::mojom::AssistantState::READY);
 
   SetUpAssistantScreensForTest();
-  assistant_optin_flow_screen_->Show();
+  ShowAssistantOptInFlowScreen();
 
   OobeScreenWaiter screen_waiter(AssistantOptInFlowScreenView::kScreenId);
   screen_waiter.set_assert_next_screen();
@@ -752,7 +726,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, SkipShowingValueProp) {
   ash::AssistantState::Get()->NotifyStatusChanged(
       ash::mojom::AssistantState::READY);
 
-  assistant_optin_flow_screen_->Show();
+  ShowAssistantOptInFlowScreen();
 
   OobeScreenWaiter screen_waiter(AssistantOptInFlowScreenView::kScreenId);
   screen_waiter.set_assert_next_screen();
@@ -787,7 +761,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest,
   ash::AssistantState::Get()->NotifyStatusChanged(
       ash::mojom::AssistantState::READY);
 
-  assistant_optin_flow_screen_->Show();
+  ShowAssistantOptInFlowScreen();
 
   OobeScreenWaiter screen_waiter(AssistantOptInFlowScreenView::kScreenId);
   screen_waiter.set_assert_next_screen();
@@ -820,7 +794,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, SpeakerIdEnrollment) {
   ash::AssistantState::Get()->NotifyStatusChanged(
       ash::mojom::AssistantState::READY);
 
-  assistant_optin_flow_screen_->Show();
+  ShowAssistantOptInFlowScreen();
 
   OobeScreenWaiter screen_waiter(AssistantOptInFlowScreenView::kScreenId);
   screen_waiter.set_assert_next_screen();
@@ -910,7 +884,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest,
   ash::AssistantState::Get()->NotifyStatusChanged(
       ash::mojom::AssistantState::READY);
 
-  assistant_optin_flow_screen_->Show();
+  ShowAssistantOptInFlowScreen();
 
   OobeScreenWaiter screen_waiter(AssistantOptInFlowScreenView::kScreenId);
   screen_waiter.set_assert_next_screen();
@@ -962,7 +936,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest,
   ash::AssistantState::Get()->NotifyStatusChanged(
       ash::mojom::AssistantState::READY);
 
-  assistant_optin_flow_screen_->Show();
+  ShowAssistantOptInFlowScreen();
 
   OobeScreenWaiter screen_waiter(AssistantOptInFlowScreenView::kScreenId);
   screen_waiter.set_assert_next_screen();
@@ -1013,7 +987,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, WAADisabledByPolicy) {
   ash::AssistantState::Get()->NotifyStatusChanged(
       ash::mojom::AssistantState::READY);
   SetUpAssistantScreensForTest();
-  assistant_optin_flow_screen_->Show();
+  ShowAssistantOptInFlowScreen();
 
   WaitForScreenExit();
 
@@ -1031,7 +1005,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, AssistantDisabledByPolicy) {
   ash::AssistantState::Get()->NotifyStatusChanged(
       ash::mojom::AssistantState::READY);
   SetUpAssistantScreensForTest();
-  assistant_optin_flow_screen_->Show();
+  ShowAssistantOptInFlowScreen();
 
   WaitForScreenExit();
 

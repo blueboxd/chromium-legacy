@@ -147,6 +147,9 @@ class CreditCard : public AutofillDataModel {
   Issuer card_issuer() const { return card_issuer_; }
   void set_card_issuer(Issuer card_issuer) { card_issuer_ = card_issuer; }
 
+  // Return true if card_issuer_ is set to Issuer::GOOGLE.
+  bool IsGoogleIssuedCard() const;
+
   // For use in STL containers.
   void operator=(const CreditCard& credit_card);
 
@@ -248,17 +251,22 @@ class CreditCard : public AutofillDataModel {
   base::string16 NetworkForDisplay() const;
   // A label for this card formatted as '****2345'.
   base::string16 ObfuscatedLastFourDigits() const;
+  // The string used to represent the icon to be used for the autofill
+  // suggestion. For ex: visaCC, googleIssuedCC, americanExpressCC, etc.
+  std::string CardIconStringForAutofillSuggestion() const;
   // A label for this card formatted as 'IssuerNetwork - ****2345'.
   base::string16 NetworkAndLastFourDigits() const;
   // A label for this card formatted as 'Nickname - ****2345' if nickname is
-  // available and valid; otherwise, formatted as 'IssuerNetwork - ****2345'.
-  base::string16 NicknameOrNetworkAndLastFourDigits() const;
+  // available and valid;  otherwise, formatted as 'IssuerNetwork - ****2345'.
+  // Google-issued cards have their own specific identifier, instead of
+  // displaying the issuer network name.
+  base::string16 CardIdentifierStringForAutofillDisplay() const;
   // A label for this card formatted as 'Nickname - ****2345, expires on MM/YY'
   // if nickname experiment is turned on and nickname is available; otherwise,
   // formatted as 'IssuerNetwork - ****2345, expires on MM/YY'.
   // This label is used as a second line label when the cardholder
   // name/expiration date field is selected.
-  base::string16 NicknameOrNetworkLastFourDigitsAndDescriptiveExpiration(
+  base::string16 CardIdentifierStringAndDescriptiveExpiration(
       const std::string& app_locale) const;
   // A label for this card formatted as 'Expires on MM/YY'.
   // This label is used as a second line label when the autofill dropdown
@@ -368,6 +376,7 @@ extern const char kDinersCard[];
 extern const char kDiscoverCard[];
 extern const char kEloCard[];
 extern const char kGenericCard[];
+extern const char kGoogleIssuedCard[];
 extern const char kJCBCard[];
 extern const char kMasterCard[];
 extern const char kMirCard[];

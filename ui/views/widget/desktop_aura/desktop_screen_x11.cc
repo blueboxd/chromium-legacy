@@ -21,9 +21,9 @@
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/switches.h"
+#include "ui/platform_window/x11/x11_topmost_window_finder.h"
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"
-#include "ui/views/widget/desktop_aura/x11_topmost_window_finder.h"
 
 namespace views {
 
@@ -60,7 +60,7 @@ bool DesktopScreenX11::IsWindowUnderCursor(gfx::NativeWindow window) {
 
 gfx::NativeWindow DesktopScreenX11::GetWindowAtScreenPoint(
     const gfx::Point& point) {
-  auto widget = X11TopmostWindowFinder().FindLocalProcessWindowAt(
+  auto widget = ui::X11TopmostWindowFinder().FindLocalProcessWindowAt(
       gfx::ConvertPointToPixel(GetXDisplayScaleFactor(), point), {});
   return widget ? views::DesktopWindowTreeHostLinux::GetContentWindowForWidget(
                       static_cast<gfx::AcceleratedWidget>(widget))

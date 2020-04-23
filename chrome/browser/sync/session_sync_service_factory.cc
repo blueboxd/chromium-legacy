@@ -57,11 +57,6 @@ class SyncSessionsClientImpl : public sync_sessions::SyncSessionsClient {
   ~SyncSessionsClientImpl() override {}
 
   // SyncSessionsClient implementation.
-  favicon::FaviconService* GetFaviconService() override {
-    return FaviconServiceFactory::GetForProfile(
-        profile_, ServiceAccessType::IMPLICIT_ACCESS);
-  }
-
   history::HistoryService* GetHistoryService() override {
     return HistoryServiceFactory::GetForProfile(
         profile_, ServiceAccessType::EXPLICIT_ACCESS);

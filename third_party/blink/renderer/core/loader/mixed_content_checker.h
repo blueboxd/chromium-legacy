@@ -33,6 +33,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_mixed_content_context_type.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -69,12 +70,13 @@ class CORE_EXPORT MixedContentChecker final {
   DISALLOW_NEW();
 
  public:
-  static bool ShouldBlockFetch(
-      LocalFrame*,
-      mojom::RequestContextType,
-      ResourceRequest::RedirectStatus,
-      const KURL&,
-      ReportingDisposition = ReportingDisposition::kReport);
+  static bool ShouldBlockFetch(LocalFrame* frame,
+                               mojom::blink::RequestContextType request_context,
+                               ResourceRequest::RedirectStatus redirect_status,
+                               const KURL& url,
+                               const base::Optional<String>& devtools_id,
+                               ReportingDisposition reporting_disposition =
+                                   ReportingDisposition::kReport);
 
   static bool ShouldBlockFetchOnWorker(const WorkerFetchContext&,
                                        mojom::RequestContextType,

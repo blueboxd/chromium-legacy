@@ -48,8 +48,6 @@ namespace {
 constexpr char kTestKioskAppId[] = "ggaeimfdpnmlhdhpcikgoblffmkckdmn";
 constexpr char kTestKioskAccountId[] = "enterprise-kiosk-app@localhost";
 
-constexpr char kTestUser[] = "test-user1@gmail.com";
-
 constexpr char kWifiServiceName[] = "stub_wifi";
 constexpr char kWifiNetworkName[] = "wifi-test-network";
 
@@ -207,9 +205,7 @@ class GuestErrorScreenTest : public MixinBasedInProcessBrowserTest {
   }
 
  protected:
-  const LoginManagerMixin::TestUserInfo test_user_{
-      AccountId::FromUserEmailGaiaId(kTestUser, kTestUser)};
-  LoginManagerMixin login_manager_{&mixin_host_, {test_user_}};
+  LoginManagerMixin login_manager_{&mixin_host_};
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GuestErrorScreenTest);
@@ -218,7 +214,6 @@ class GuestErrorScreenTest : public MixinBasedInProcessBrowserTest {
 // Test that guest signin option is shown when enabled and that clicking on it
 // starts a guest session.
 IN_PROC_BROWSER_TEST_F(GuestErrorScreenTest, PRE_GuestLogin) {
-  ShowLoginWizard(OobeScreen::SCREEN_TEST_NO_WINDOW);
   GetScreen()->AllowGuestSignin(true);
   GetScreen()->SetUIState(NetworkError::UI_STATE_UPDATE);
   GetScreen()->Show();

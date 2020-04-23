@@ -495,6 +495,10 @@ void CreditCard::SetNickname(const base::string16& nickname) {
   base::TrimString(nickname_, base::ASCIIToUTF16(" "), &nickname_);
 }
 
+bool CreditCard::IsGoogleIssuedCard() const {
+  return card_issuer_ == CreditCard::Issuer::GOOGLE;
+}
+
 void CreditCard::operator=(const CreditCard& credit_card) {
   set_use_count(credit_card.use_count());
   set_use_date(credit_card.use_date());
@@ -759,7 +763,8 @@ const std::pair<base::string16, base::string16> CreditCard::LabelPieces()
   if (number().empty())
     return std::make_pair(name_on_card_, base::string16());
 
-  base::string16 obfuscated_cc_number = NicknameOrNetworkAndLastFourDigits();
+  base::string16 obfuscated_cc_number =
+      CardIdentifierStringForAutofillDisplay();
   // No expiration date set.
   if (!expiration_month_ || !expiration_year_)
     return std::make_pair(obfuscated_cc_number, base::string16());
@@ -788,6 +793,14 @@ base::string16 CreditCard::ObfuscatedLastFourDigits() const {
   return internal::GetObfuscatedStringForCardDigits(LastFourDigits());
 }
 
+std::string CreditCard::CardIconStringForAutofillSuggestion() const {
+  if (base::FeatureList::IsEnabled(features::kAutofillEnableGoogleIssuedCard) &&
+      IsGoogleIssuedCard()) {
+    return kGoogleIssuedCard;
+  }
+  return network_;
+}
+
 base::string16 CreditCard::NetworkAndLastFourDigits() const {
   const base::string16 network = NetworkForDisplay();
   // TODO(crbug.com/734197): truncate network.
@@ -803,21 +816,25 @@ base::string16 CreditCard::NetworkAndLastFourDigits() const {
                          : network + ASCIIToUTF16("  ") + obfuscated_string;
 }
 
-base::string16 CreditCard::NicknameOrNetworkAndLastFourDigits() const {
+base::string16 CreditCard::CardIdentifierStringForAutofillDisplay() const {
   if (base::FeatureList::IsEnabled(
           features::kAutofillEnableSurfacingServerCardNickname) &&
       HasValidNickname()) {
     return NicknameAndLastFourDigits();
   }
+  // Return a Google-specific string for Google-issued cards.
+  if (base::FeatureList::IsEnabled(features::kAutofillEnableGoogleIssuedCard) &&
+      IsGoogleIssuedCard()) {
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_GOOGLE_ISSUED);
+  }
   return NetworkAndLastFourDigits();
 }
 
-base::string16
-CreditCard::NicknameOrNetworkLastFourDigitsAndDescriptiveExpiration(
+base::string16 CreditCard::CardIdentifierStringAndDescriptiveExpiration(
     const std::string& app_locale) const {
   return l10n_util::GetStringFUTF16(
       IDS_AUTOFILL_CREDIT_CARD_TWO_LINE_LABEL_FROM_NAME,
-      NicknameOrNetworkAndLastFourDigits(),
+      CardIdentifierStringForAutofillDisplay(),
       GetInfo(AutofillType(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR), app_locale));
 }
 
@@ -1011,6 +1028,7 @@ const char kDinersCard[] = "dinersCC";
 const char kDiscoverCard[] = "discoverCC";
 const char kEloCard[] = "eloCC";
 const char kGenericCard[] = "genericCC";
+const char kGoogleIssuedCard[] = "googleIssuedCC";
 const char kJCBCard[] = "jcbCC";
 const char kMasterCard[] = "masterCardCC";
 const char kMirCard[] = "mirCC";

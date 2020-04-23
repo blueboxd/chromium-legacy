@@ -1826,7 +1826,7 @@ void HTMLMediaElement::SetReadyState(ReadyState state) {
           current_src_after_redirects_ == current_src_
               ? ResourceRequest::RedirectStatus::kNoRedirect
               : ResourceRequest::RedirectStatus::kFollowedRedirect,
-          current_src_after_redirects_);
+          current_src_after_redirects_, /* devtools_id= */ base::nullopt);
     }
 
     // Prior to kHaveMetadata |network_state_| may be inaccurate to avoid side

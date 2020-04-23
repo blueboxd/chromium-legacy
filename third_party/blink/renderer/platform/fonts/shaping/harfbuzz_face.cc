@@ -62,7 +62,9 @@
 
 namespace blink {
 
-static scoped_refptr<HbFontCacheEntry> CreateHbFontCacheEntry(hb_face_t*);
+static scoped_refptr<HbFontCacheEntry> CreateHbFontCacheEntry(
+    hb_face_t*,
+    SkTypeface* typefaces);
 
 HarfBuzzFace::HarfBuzzFace(FontPlatformData* platform_data, uint64_t unique_id)
     : platform_data_(platform_data), unique_id_(unique_id) {
@@ -70,7 +72,8 @@ HarfBuzzFace::HarfBuzzFace(FontPlatformData* platform_data, uint64_t unique_id)
       FontGlobalContext::GetHarfBuzzFontCache()->insert(unique_id_, nullptr);
   if (result.is_new_entry) {
     HbScoped<hb_face_t> face(CreateFace());
-    result.stored_value->value = CreateHbFontCacheEntry(face.get());
+    result.stored_value->value =
+        CreateHbFontCacheEntry(face.get(), platform_data->Typeface());
   }
   result.stored_value->value->AddRef();
   unscaled_font_ = result.stored_value->value->HbFont();
@@ -366,9 +369,23 @@ hb_face_t* HarfBuzzFace::CreateFace() {
   return face;
 }
 
-scoped_refptr<HbFontCacheEntry> CreateHbFontCacheEntry(hb_face_t* face) {
+scoped_refptr<HbFontCacheEntry> CreateHbFontCacheEntry(hb_face_t* face,
+                                                       SkTypeface* typeface) {
   HbScoped<hb_font_t> ot_font(hb_font_create(face));
   hb_ot_font_set_funcs(ot_font.get());
+
+  int axis_count = typeface->getVariationDesignPosition(nullptr, 0);
+  if (axis_count > 0) {
+    Vector<SkFontArguments::VariationPosition::Coordinate> axis_values;
+    axis_values.resize(axis_count);
+    if (typeface->getVariationDesignPosition(axis_values.data(),
+                                             axis_values.size()) > 0) {
+      hb_font_set_variations(
+          ot_font.get(), reinterpret_cast<hb_variation_t*>(axis_values.data()),
+          axis_values.size());
+    }
+  }
+
   // Creating a sub font means that non-available functions
   // are found from the parent.
   hb_font_t* unscaled_font = hb_font_create_sub_font(ot_font.get());
@@ -406,19 +423,6 @@ hb_font_t* HarfBuzzFace::GetScaledFont(
   // meaning of HarfBuzz' hb_font_set_ptem API was changed to expect the
   // equivalent of CSS pixels here.
   hb_font_set_ptem(unscaled_font_, platform_data_->size());
-
-  SkTypeface* typeface = harfbuzz_font_data_->font_.getTypeface();
-  int axis_count = typeface->getVariationDesignPosition(nullptr, 0);
-  if (axis_count > 0) {
-    Vector<SkFontArguments::VariationPosition::Coordinate> axis_values;
-    axis_values.resize(axis_count);
-    if (typeface->getVariationDesignPosition(axis_values.data(),
-                                             axis_values.size()) > 0) {
-      hb_font_set_variations(
-          unscaled_font_, reinterpret_cast<hb_variation_t*>(axis_values.data()),
-          axis_values.size());
-    }
-  }
 
   return unscaled_font_;
 }

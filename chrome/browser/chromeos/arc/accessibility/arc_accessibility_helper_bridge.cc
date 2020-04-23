@@ -886,8 +886,12 @@ void ArcAccessibilityHelperBridge::HandleFilterTypeAllEvent(
   if (is_focus_highlight_enabled_ &&
       event_data->event_type ==
           arc::mojom::AccessibilityEventType::VIEW_FOCUSED) {
-    DispatchFocusChange(
-        tree_source->GetFromId(event_data->source_id)->GetNode(), profile_);
+    for (size_t i = 0; i < event_data->node_data.size(); ++i) {
+      if (event_data->node_data[i]->id == event_data->source_id) {
+        DispatchFocusChange(event_data->node_data[i].get(), profile_);
+        break;
+      }
+    }
   }
 }
 

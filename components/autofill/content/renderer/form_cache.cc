@@ -213,8 +213,6 @@ std::vector<FormData> FormCache::ExtractNewForms(
 
   initial_checked_state_.clear();
   initial_select_values_.clear();
-  WebVector<WebFormElement> web_forms;
-  document.Forms(web_forms);
 
   std::set<FieldRendererId> observed_unique_renderer_ids;
 
@@ -227,7 +225,7 @@ std::vector<FormData> FormCache::ExtractNewForms(
                                           form_util::EXTRACT_OPTIONS);
 
   size_t num_fields_seen = 0;
-  for (const WebFormElement& form_element : web_forms) {
+  for (const WebFormElement& form_element : document.Forms()) {
     std::vector<WebFormControlElement> control_elements =
         form_util::ExtractAutofillableElementsInForm(form_element);
 
@@ -433,10 +431,8 @@ bool FormCache::ShowPredictions(const FormDataPredictions& form,
   if (!found_synthetic_form) {
     // Find the real form by searching through the WebDocuments.
     bool found_form = false;
-    WebVector<WebFormElement> web_forms;
-    frame_->GetDocument().Forms(web_forms);
 
-    for (const WebFormElement& form_element : web_forms) {
+    for (const WebFormElement& form_element : frame_->GetDocument().Forms()) {
       // To match two forms, we look for the form's name and the number of
       // fields on that form. (Form names may not be unique.)
       // Note: WebString() == WebString(string16()) does not evaluate to |true|

@@ -228,6 +228,8 @@ ALWAYS_INLINE size_t PartitionPage<thread_safe>::get_raw_size() const {
 template <bool thread_safe>
 ALWAYS_INLINE DeferredUnmap PartitionPage<thread_safe>::Free(void* ptr) {
 #if DCHECK_IS_ON()
+  PartitionRootBase<thread_safe>::FromPage(this)->lock_.AssertAcquired();
+
   size_t slot_size = bucket->slot_size;
   const size_t raw_size = get_raw_size();
   if (raw_size) {

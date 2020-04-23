@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/screens/app_downloading_screen.h"
 
+#include "chrome/browser/chromeos/login/screen_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_downloading_screen_handler.h"
 
 namespace chromeos {
@@ -15,6 +16,12 @@ constexpr const char kUserActionButtonContinueSetup[] =
     "appDownloadingContinueSetup";
 
 }  // namespace
+
+// static
+AppDownloadingScreen* AppDownloadingScreen::Get(ScreenManager* manager) {
+  return static_cast<AppDownloadingScreen*>(
+      manager->GetScreen(AppDownloadingScreenView::kScreenId));
+}
 
 AppDownloadingScreen::AppDownloadingScreen(
     AppDownloadingScreenView* view,

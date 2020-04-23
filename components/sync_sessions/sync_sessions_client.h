@@ -12,10 +12,6 @@
 
 class GURL;
 
-namespace favicon {
-class FaviconService;
-}
-
 namespace history {
 class HistoryService;
 }
@@ -34,7 +30,8 @@ class SyncSessionsClient {
   virtual ~SyncSessionsClient();
 
   // Getters for services that sessions depends on.
-  virtual favicon::FaviconService* GetFaviconService() = 0;
+  // TODO(crbug.com/978775): Find a new location for ClearAllOnDemandFavicons()
+  // and remove this getter.
   virtual history::HistoryService* GetHistoryService() = 0;
   virtual SessionSyncPrefs* GetSessionSyncPrefs() = 0;
   virtual syncer::RepeatingModelTypeStoreFactory GetStoreFactory() = 0;

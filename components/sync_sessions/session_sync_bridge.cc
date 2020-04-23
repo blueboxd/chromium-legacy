@@ -38,9 +38,6 @@ using syncer::MetadataChangeList;
 using syncer::ModelTypeStore;
 using syncer::ModelTypeSyncBridge;
 
-// Maximum number of favicon mappings to keep in memory.
-const int kMaxFaviconMappings = 200;
-
 // Default time without activity after which a session is considered stale and
 // becomes a candidate for garbage collection.
 const base::TimeDelta kStaleSessionThreshold = base::TimeDelta::FromDays(14);
@@ -108,10 +105,7 @@ SessionSyncBridge::SessionSyncBridge(
       notify_foreign_session_updated_cb_(notify_foreign_session_updated_cb),
       sessions_client_(sessions_client),
       local_session_event_router_(
-          sessions_client->GetLocalSessionEventRouter()),
-      favicon_cache_(sessions_client->GetFaviconService(),
-                     sessions_client->GetHistoryService(),
-                     kMaxFaviconMappings) {
+          sessions_client->GetLocalSessionEventRouter()) {
   DCHECK(sessions_client_);
   DCHECK(local_session_event_router_);
 }
@@ -120,10 +114,6 @@ SessionSyncBridge::~SessionSyncBridge() {
   if (syncing_) {
     local_session_event_router_->Stop();
   }
-}
-
-FaviconCache* SessionSyncBridge::GetFaviconCache() {
-  return &favicon_cache_;
 }
 
 SessionsGlobalIdMapper* SessionSyncBridge::GetGlobalIdMapper() {

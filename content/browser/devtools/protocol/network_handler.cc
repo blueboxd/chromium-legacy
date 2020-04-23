@@ -1532,20 +1532,21 @@ Maybe<String> GetBlockedReasonFor(
     const network::URLLoaderCompletionStatus& status) {
   if (status.blocked_by_response_reason) {
     switch (*status.blocked_by_response_reason) {
-      case network::BlockedByResponseReason::kCoepFrameResourceNeedsCoepHeader:
+      case network::mojom::BlockedByResponseReason::
+          kCoepFrameResourceNeedsCoepHeader:
         return {protocol::Network::BlockedReasonEnum::
                     CoepFrameResourceNeedsCoepHeader};
-      case network::BlockedByResponseReason::
+      case network::mojom::BlockedByResponseReason::
           kCoopSandboxedIFrameCannotNavigateToCoopPage:
         return {protocol::Network::BlockedReasonEnum::
                     CoopSandboxedIframeCannotNavigateToCoopPage};
-      case network::BlockedByResponseReason::
+      case network::mojom::BlockedByResponseReason::
           kCorpNotSameOriginAfterDefaultedToSameOriginByCoep:
         return {protocol::Network::BlockedReasonEnum::
                     CorpNotSameOriginAfterDefaultedToSameOriginByCoep};
-      case network::BlockedByResponseReason::kCorpNotSameOrigin:
+      case network::mojom::BlockedByResponseReason::kCorpNotSameOrigin:
         return {protocol::Network::BlockedReasonEnum::CorpNotSameOrigin};
-      case network::BlockedByResponseReason::kCorpNotSameSite:
+      case network::mojom::BlockedByResponseReason::kCorpNotSameSite:
         return {protocol::Network::BlockedReasonEnum::CorpNotSameSite};
     }
     NOTREACHED();

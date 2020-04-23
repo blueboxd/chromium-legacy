@@ -624,14 +624,20 @@ IN_PROC_BROWSER_TEST_P(SelectFileDialogExtensionFlagTest, DialogColoredTitle) {
       dialog_->GetRenderViewHost()->GetMainFrame();
   aura::Window* dialog_window =
       frame_host->GetNativeView()->GetToplevelWindow();
-  SkColor value = dialog_window->GetProperty(ash::kFrameActiveColorKey);
+  SkColor active_color = dialog_window->GetProperty(ash::kFrameActiveColorKey);
+  SkColor inactive_color =
+      dialog_window->GetProperty(ash::kFrameInactiveColorKey);
 
+  constexpr SkColor kFilesNgTitleColor = SkColorSetRGB(0xDB, 0xE2, 0xED);
   if (GetParam()) {
-    // FilesNG enabled the title should be grey.
-    EXPECT_EQ(value, gfx::kGoogleGrey300);
+    // FilesNG enabled the title should be blue-ish grey.
+    EXPECT_EQ(active_color, kFilesNgTitleColor);
+    // Active and Inactive should have the same color.
+    EXPECT_EQ(active_color, inactive_color);
   } else {
     // FilesNG disabled the title should be the original color.
-    EXPECT_NE(value, gfx::kGoogleGrey300);
+    EXPECT_NE(active_color, kFilesNgTitleColor);
+    EXPECT_NE(inactive_color, kFilesNgTitleColor);
   }
 
   CloseDialog(DIALOG_BTN_CANCEL, owning_window);

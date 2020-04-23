@@ -101,6 +101,10 @@
            file="${root_gen_dir}/chrome/browser/resources/settings/autofill_page/password_check_edit_dialog.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
+  <include name="IDR_SETTINGS_AUTOFILL_PAGE_PASSWORD_CHECK_EDIT_DISCLAIMER_DIALOG_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/autofill_page/password_check_edit_disclaimer_dialog.js"
+           use_base_dir="false"
+           compress="false" type="BINDATA" />
   <include name="IDR_SETTINGS_AUTOFILL_PAGE_PASSWORD_CHECK_LIST_ITEM_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/autofill_page/password_check_list_item.js"
            use_base_dir="false"

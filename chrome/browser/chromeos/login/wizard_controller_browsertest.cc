@@ -66,6 +66,7 @@
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
@@ -73,7 +74,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -357,23 +357,10 @@ Mock* MockScreenExpectLifecycle(std::unique_ptr<Mock> mock) {
 
 }  // namespace
 
-class WizardControllerTest : public MixinBasedInProcessBrowserTest {
+class WizardControllerTest : public OobeBaseTest {
  protected:
   WizardControllerTest() = default;
   ~WizardControllerTest() override = default;
-
-  // MixinBasedInProcessBrowserTest:
-  void SetUpOnMainThread() override {
-    MixinBasedInProcessBrowserTest::SetUpOnMainThread();
-    AccessibilityManager::Get()->SetProfileForTest(
-        ProfileHelper::GetSigninProfile());
-    ShowLoginWizard(OobeScreen::SCREEN_TEST_NO_WINDOW);
-  }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    MixinBasedInProcessBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kLoginManager);
-  }
 
   ErrorScreen* GetErrorScreen() { return GetOobeUI()->GetErrorScreen(); }
 
@@ -421,8 +408,12 @@ class WizardControllerTest : public MixinBasedInProcessBrowserTest {
   }
 
   void CheckCurrentScreen(OobeScreenId screen) {
-    EXPECT_EQ(WizardController::default_controller()->GetScreen(screen),
-              WizardController::default_controller()->current_screen());
+    BaseScreen* current_screen =
+        WizardController::default_controller()->current_screen();
+    const std::string actual_screen =
+        current_screen ? current_screen->screen_id().name : "nullptr";
+    const std::string expected_screen = screen.name;
+    EXPECT_EQ(actual_screen, expected_screen);
   }
 
   WrongHWIDScreen* GetWrongHWIDScreen() {
@@ -516,6 +507,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
 
     WizardController* wizard_controller =
         WizardController::default_controller();
+    wizard_controller->SetCurrentScreen(nullptr);
     wizard_controller->SetSharedURLLoaderFactoryForTesting(
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &test_url_loader_factory_));
@@ -1011,17 +1003,18 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
 // after the OOBE is marked complete.
 class WizardControllerUpdateAfterCompletedOobeTest
     : public WizardControllerFlowTest,
-      public testing::WithParamInterface<UpdateScreen::Result> {
+      public testing::WithParamInterface<UpdateScreen::Result>,
+      public LocalStateMixin::Delegate {
  protected:
   WizardControllerUpdateAfterCompletedOobeTest() = default;
 
-  // WizardControllerFlowTest:
-  void SetUpOnMainThread() override {
+  // LocalStateMixin::Delegate:
+  void SetUpLocalState() override {
     StartupUtils::MarkOobeCompleted();  // Pretend OOBE was complete.
-    WizardControllerFlowTest::SetUpOnMainThread();
   }
 
  private:
+  LocalStateMixin local_state_mixin_{&mixin_host_, this};
   DISALLOW_COPY_AND_ASSIGN(WizardControllerUpdateAfterCompletedOobeTest);
 };
 
@@ -1267,12 +1260,7 @@ class WizardControllerDeviceStateExplicitRequirementTest
     : public WizardControllerDeviceStateTest,
       public testing::WithParamInterface<bool /* fre_explicitly_required */> {
  protected:
-  WizardControllerDeviceStateExplicitRequirementTest() {}
-
-  // WizardControllerDeviceStateTest:
-  void SetUpOnMainThread() override {
-    WizardControllerDeviceStateTest::SetUpOnMainThread();
-
+  WizardControllerDeviceStateExplicitRequirementTest() {
     if (IsFREExplicitlyRequired()) {
       fake_statistics_provider_.SetMachineStatistic(
           chromeos::system::kCheckEnrollmentKey, "1");
@@ -1474,12 +1462,6 @@ IN_PROC_BROWSER_TEST_P(WizardControllerDeviceStateExplicitRequirementTest,
     EXPECT_EQ(0, FakeSessionManagerClient::Get()
                      ->clear_forced_re_enrollment_vpd_call_count());
   } else {
-    // Don't expect that the auto enrollment screen will be hidden, because
-    // OOBE is exited from the auto enrollment screen. Instead only expect
-    // that the sign-in screen is reached.
-    content::WindowedNotificationObserver login_screen_waiter(
-        chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
-        content::NotificationService::AllSources());
 
     // Make AutoEnrollmentClient notify the controller that a server error
     // occurred.
@@ -1488,7 +1470,10 @@ IN_PROC_BROWSER_TEST_P(WizardControllerDeviceStateExplicitRequirementTest,
     base::RunLoop().RunUntilIdle();
 
     EXPECT_TRUE(StartupUtils::IsOobeCompleted());
-    login_screen_waiter.Wait();
+    // Don't expect that the auto enrollment screen will be hidden, because
+    // OOBE is exited from the auto enrollment screen. Instead only expect
+    // that the sign-in screen is reached.
+    OobeScreenWaiter(GaiaView::kScreenId).Wait();
     EXPECT_EQ(
         0, FakeCryptohomeClient::Get()
                ->remove_firmware_management_parameters_from_tpm_call_count());
@@ -2078,21 +2063,16 @@ class WizardControllerBrokenLocalStateTest : public WizardControllerTest {
   ~WizardControllerBrokenLocalStateTest() override = default;
 
   // WizardControllerTest:
-  void SetUpOnMainThread() override {
+  void SetUpInProcessBrowserTestFixture() override {
+    WizardControllerTest::SetUpInProcessBrowserTestFixture();
     PrefServiceFactory factory;
     factory.set_user_prefs(base::MakeRefCounted<PrefStoreStub>());
     local_state_ = factory.Create(new PrefRegistrySimple());
     WizardController::set_local_state_for_testing(local_state_.get());
-
-    WizardControllerTest::SetUpOnMainThread();
-
-    // Make sure that OOBE is run as an "official" build.
-    branded_build_override_ = WizardController::ForceBrandedBuildForTesting();
   }
 
  private:
   std::unique_ptr<PrefService> local_state_;
-  std::unique_ptr<base::AutoReset<bool>> branded_build_override_;
 
   DISALLOW_COPY_AND_ASSIGN(WizardControllerBrokenLocalStateTest);
 };
@@ -2153,8 +2133,9 @@ class WizardControllerProxyAuthOnSigninTest : public WizardControllerTest {
   DISALLOW_COPY_AND_ASSIGN(WizardControllerProxyAuthOnSigninTest);
 };
 
+// Enable after http://crrev.com/c/2161086 lands.
 IN_PROC_BROWSER_TEST_F(WizardControllerProxyAuthOnSigninTest,
-                       ProxyAuthDialogOnSigninScreen) {
+                       DISABLED_ProxyAuthDialogOnSigninScreen) {
   content::WindowedNotificationObserver auth_needed_waiter(
       chrome::NOTIFICATION_AUTH_NEEDED,
       content::NotificationService::AllSources());
@@ -2169,7 +2150,7 @@ class WizardControllerKioskFlowTest : public WizardControllerFlowTest {
  protected:
   WizardControllerKioskFlowTest() {}
 
-  // MixinBasedInProcessBrowserTest:
+  // WizardControllerFlowTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     WizardControllerFlowTest::SetUpCommandLine(command_line);
     base::FilePath test_data_dir;
@@ -2831,6 +2812,7 @@ class WizardControllerOobeResumeTest : public WizardControllerTest {
 
     WizardController* wizard_controller =
         WizardController::default_controller();
+    wizard_controller->SetCurrentScreen(nullptr);
 
     // Clear portal list (as it is by default in OOBE).
     NetworkHandler::Get()->network_state_handler()->SetCheckPortalList("");

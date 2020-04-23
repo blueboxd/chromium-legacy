@@ -42,8 +42,8 @@
 #include "net/base/proxy_server.h"
 #include "net/dns/public/resolve_error_info.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-#include "services/network/public/cpp/blocked_by_response_reason.h"
 #include "services/network/public/cpp/origin_policy.h"
+#include "services/network/public/mojom/blocked_by_response_reason.mojom-shared.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/scoped_java_ref.h"
@@ -895,7 +895,7 @@ class CONTENT_EXPORT NavigationRequest
 
   void CreateCoepReporter(StoragePartition* storage_partition);
 
-  base::Optional<network::BlockedByResponseReason> IsBlockedByCorp();
+  base::Optional<network::mojom::BlockedByResponseReason> IsBlockedByCorp();
 
   FrameTreeNode* frame_tree_node_;
 

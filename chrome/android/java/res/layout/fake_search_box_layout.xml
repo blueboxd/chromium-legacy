@@ -22,22 +22,36 @@
     android:paddingStart="@dimen/location_bar_lateral_padding" >
 
     <!-- TODO(crbug.com/900912): Fix and remove lint ignore -->
-    <EditText
-        tools:ignore="Autofill,LabelFor"
-        style="@style/TextAppearance.NewTabPageSearchBoxText"
-        android:id="@+id/search_box_text"
+    <RelativeLayout
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_marginEnd="12dp"
         android:layout_weight="1"
-        android:background="@null"
-        android:ellipsize="end"
-        android:focusableInTouchMode="false"
-        android:focusable="false"
-        android:gravity="center_vertical"
-        android:inputType="text"
-        android:singleLine="true"
-        android:hint="@string/search_or_type_web_address" />
+        android:gravity="center_vertical">
+        <EditText
+            tools:ignore="Autofill,LabelFor"
+            style="@style/TextAppearance.NewTabPageSearchBoxText"
+            android:id="@+id/search_box_text"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@null"
+            android:ellipsize="end"
+            android:focusableInTouchMode="false"
+            android:focusable="false"
+            android:inputType="text"
+            android:singleLine="true"
+            android:hint="@string/search_or_type_web_address" />
+
+        <!-- TODO(shaktisahu): Create a QueryTileChip view with rounded image and X button. -->
+        <org.chromium.ui.widget.ChipView
+            android:id="@+id/query_tiles_chip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:visibility="gone"
+            style="@style/SuggestionChipContacts" />
+    </RelativeLayout>
+
     <!-- Padding start is applied so that microphone icon appears in the same location as it
         does in the main url bar. The microphone button in the url bar is 48dp wide with 4dp
         start padding. -->

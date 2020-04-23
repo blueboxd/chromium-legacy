@@ -303,6 +303,36 @@ class ServiceWorkerStorageControlImplTest : public testing::Test {
     return out_status;
   }
 
+  DatabaseStatus UpdateNavigationPreloadEnabled(int64_t registration_id,
+                                                const GURL& origin,
+                                                bool enable) {
+    DatabaseStatus out_status;
+    base::RunLoop loop;
+    storage()->UpdateNavigationPreloadEnabled(
+        registration_id, origin, enable,
+        base::BindLambdaForTesting([&](DatabaseStatus status) {
+          out_status = status;
+          loop.Quit();
+        }));
+    loop.Run();
+    return out_status;
+  }
+
+  DatabaseStatus UpdateNavigationPreloadHeader(int64_t registration_id,
+                                               const GURL& origin,
+                                               const std::string& value) {
+    DatabaseStatus out_status;
+    base::RunLoop loop;
+    storage()->UpdateNavigationPreloadHeader(
+        registration_id, origin, value,
+        base::BindLambdaForTesting([&](DatabaseStatus status) {
+          out_status = status;
+          loop.Quit();
+        }));
+    loop.Run();
+    return out_status;
+  }
+
   int64_t GetNewRegistrationId() {
     int64_t return_value;
     base::RunLoop loop;
@@ -710,6 +740,49 @@ TEST_F(ServiceWorkerStorageControlImplTest, UpdateLastUpdateCheckTime) {
         FindRegistrationForId(registration_id, kScope.GetOrigin());
     ASSERT_EQ(result->status, DatabaseStatus::kOk);
     EXPECT_EQ(result->registration->last_update_check, now);
+  }
+}
+
+TEST_F(ServiceWorkerStorageControlImplTest, Update) {
+  const GURL kScope("https://www.example.com/");
+  const GURL kScriptUrl("https://www.example.com/sw.js");
+  const int64_t kScriptSize = 10;
+
+  LazyInitializeForTest();
+
+  // Preparation: Store a registration.
+  const int64_t registration_id = GetNewRegistrationId();
+  const int64_t version_id = GetNewVersionId();
+  DatabaseStatus status = CreateAndStoreRegistration(
+      registration_id, version_id, kScope, kScriptUrl, kScriptSize);
+  ASSERT_EQ(status, DatabaseStatus::kOk);
+
+  // Check the stored registration has default navigation preload fields.
+  {
+    FindRegistrationResult result =
+        FindRegistrationForId(registration_id, kScope.GetOrigin());
+    ASSERT_EQ(result->status, DatabaseStatus::kOk);
+    EXPECT_FALSE(result->registration->navigation_preload_state->enabled);
+    EXPECT_EQ(result->registration->navigation_preload_state->header, "true");
+  }
+
+  // Update navigation preload fields.
+  const std::string header_value = "my-header";
+  status =
+      UpdateNavigationPreloadEnabled(registration_id, kScope.GetOrigin(), true);
+  ASSERT_EQ(status, DatabaseStatus::kOk);
+  status = UpdateNavigationPreloadHeader(registration_id, kScope.GetOrigin(),
+                                         header_value);
+  ASSERT_EQ(status, DatabaseStatus::kOk);
+
+  // Check navigation preload fields are updated.
+  {
+    FindRegistrationResult result =
+        FindRegistrationForId(registration_id, kScope.GetOrigin());
+    ASSERT_EQ(result->status, DatabaseStatus::kOk);
+    EXPECT_TRUE(result->registration->navigation_preload_state->enabled);
+    EXPECT_EQ(result->registration->navigation_preload_state->header,
+              header_value);
   }
 }
 

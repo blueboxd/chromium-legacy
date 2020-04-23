@@ -129,7 +129,7 @@ void X11Window::Initialize(PlatformWindowInitProperties properties) {
   config.bounds.set_size(adjusted_size_in_pixels);
   config.override_redirect =
       properties.x11_extension_delegate &&
-      properties.x11_extension_delegate->IsOverrideRedirect();
+      properties.x11_extension_delegate->IsOverrideRedirect(IsWmTiling());
 
   workspace_extension_delegate_ = properties.workspace_extension_delegate;
   x11_extension_delegate_ = properties.x11_extension_delegate;

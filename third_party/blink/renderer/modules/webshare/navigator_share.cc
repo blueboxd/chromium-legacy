@@ -160,11 +160,14 @@ NavigatorShare& NavigatorShare::From(Navigator& navigator) {
 }
 
 void NavigatorShare::Trace(Visitor* visitor) {
+  visitor->Trace(service_remote_);
   visitor->Trace(clients_);
   Supplement<Navigator>::Trace(visitor);
 }
 
-NavigatorShare::NavigatorShare() = default;
+NavigatorShare::NavigatorShare()
+    :  // |NavigatorShare| is not ExecutionContext-associated.
+      service_remote_(nullptr) {}
 
 const char NavigatorShare::kSupplementName[] = "NavigatorShare";
 
@@ -209,14 +212,14 @@ ScriptPromise NavigatorShare::share(ScriptState* script_state,
     return ScriptPromise();
   }
 
-  if (!service_remote_) {
+  if (!service_remote_.is_bound()) {
     // See https://bit.ly/2S0zRAS for task types.
     window->GetFrame()->GetBrowserInterfaceBroker().GetInterface(
         service_remote_.BindNewPipeAndPassReceiver(
             window->GetTaskRunner(TaskType::kMiscPlatformAPI)));
     service_remote_.set_disconnect_handler(WTF::Bind(
         &NavigatorShare::OnConnectionError, WrapWeakPersistent(this)));
-    DCHECK(service_remote_);
+    DCHECK(service_remote_.is_bound());
   }
 
   bool has_files = HasFiles(*share_data);

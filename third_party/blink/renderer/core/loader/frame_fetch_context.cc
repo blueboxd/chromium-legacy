@@ -843,13 +843,15 @@ bool FrameFetchContext::ShouldBlockFetchByMixedContentCheck(
     mojom::RequestContextType request_context,
     ResourceRequest::RedirectStatus redirect_status,
     const KURL& url,
-    ReportingDisposition reporting_disposition) const {
+    ReportingDisposition reporting_disposition,
+    const base::Optional<String>& devtools_id) const {
   if (GetResourceFetcherProperties().IsDetached()) {
     // TODO(yhirano): Implement the detached case.
     return false;
   }
   return MixedContentChecker::ShouldBlockFetch(
-      GetFrame(), request_context, redirect_status, url, reporting_disposition);
+      GetFrame(), request_context, redirect_status, url, devtools_id,
+      reporting_disposition);
 }
 
 bool FrameFetchContext::ShouldBlockFetchAsCredentialedSubresource(

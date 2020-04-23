@@ -116,6 +116,9 @@ class LoginManagerMixin : public InProcessBrowserTestMixin,
   // Returns whether the newly logged in user is active when the method exits.
   bool LoginAndWaitForActiveSession(const UserContext& user_context);
 
+  // Logs in a user using with CreateDefaultUserContext(user_info) context.
+  void LoginWithDefaultContext(const TestUserInfo& user_info);
+
   // Logs in as a regular user with default user context. Should be used for
   // proceeding into the session from the login screen.
   void LoginAsNewReguarUser();

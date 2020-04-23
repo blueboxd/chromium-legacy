@@ -1,43 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>RTCPeerConnection.getRemoteStreams</title>
+<title>RTCPeerConnection Insertable Streams Audio</title>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
-<script src="../../external/wpt/webrtc/RTCPeerConnection-helper.js">
-</script></head>
+<script src="../../external/wpt/webrtc/RTCPeerConnection-helper.js"></script>
+<script src="./RTCPeerConnection-insertable-streams.js"></script>
+</head>
 <body>
 <script>
-function areArrayBuffersEqual(buffer1, buffer2)
-{
-    if (buffer1.byteLength != buffer2.byteLength)
-      return false;
-    let array1 = new Int8Array(buffer1);
-    var array2 = new Int8Array(buffer2);
-    for (let i = 0 ; i < buffer1.byteLength ; ++i) {
-      if (array1[i] != array2[i])
-        return false;
-    }
-    return true;
-}
-
-function areFrameInfosEqual(frame1, frame2) {
-  return frame1.type === frame2.type &&
-          frame1.synchronizationSource === frame2.synchronizationSource &&
-          frame1.timestamp === frame2.timestamp &&
-          areArrayBuffersEqual(frame1.data, frame2.data);
-}
-
-async function doInverseSignalingHandshake(pc1, pc2) {
-  const offer = await pc2.createOffer({offerToReceiveAudio: true, offerToReceiveVideo: true});
-  await pc1.setRemoteDescription(offer);
-  await pc2.setLocalDescription(offer);
-
-  const answer = await pc1.createAnswer();
-  await pc2.setRemoteDescription(answer);
-  await pc1.setLocalDescription(answer);
-}
-
 async function testAudioFlow(t, negotiationFunction) {
   const caller = new RTCPeerConnection({forceEncodedAudioInsertableStreams:true});
   t.add_cleanup(() => caller.close());

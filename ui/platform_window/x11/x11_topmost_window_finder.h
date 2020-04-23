@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_WIDGET_DESKTOP_AURA_X11_TOPMOST_WINDOW_FINDER_H_
-#define UI_VIEWS_WIDGET_DESKTOP_AURA_X11_TOPMOST_WINDOW_FINDER_H_
+#ifndef UI_PLATFORM_WINDOW_X11_X11_TOPMOST_WINDOW_FINDER_H_
+#define UI_PLATFORM_WINDOW_X11_X11_TOPMOST_WINDOW_FINDER_H_
 
 #include <set>
 
@@ -13,24 +13,23 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/x/x11.h"
-#include "ui/views/views_export.h"
+#include "ui/platform_window/x11/x11_window_export.h"
 
 namespace ui {
-class X11Window;
-}
 
-namespace views {
+class X11Window;
 
 // Utility class for finding the topmost window at a given screen position.
-class VIEWS_EXPORT X11TopmostWindowFinder : public ui::EnumerateWindowsDelegate,
-                                            public ui::XTopmostWindowFinder {
+class X11_WINDOW_EXPORT X11TopmostWindowFinder
+    : public ui::EnumerateWindowsDelegate,
+      public ui::XTopmostWindowFinder {
  public:
   X11TopmostWindowFinder();
   ~X11TopmostWindowFinder() override;
 
   // Returns the topmost window at |screen_loc_in_pixels|, ignoring the windows
-  // in |ignore|. Returns NULL if the topmost window at |screen_loc_in_pixels|
-  // does not belong to Chrome.
+  // in |ignore|. Returns null widget if the topmost window at
+  // |screen_loc_in_pixels| does not belong to Chrome.
   XID FindLocalProcessWindowAt(const gfx::Point& screen_loc_in_pixels,
                                const std::set<gfx::AcceleratedWidget>& ignore);
 
@@ -52,6 +51,6 @@ class VIEWS_EXPORT X11TopmostWindowFinder : public ui::EnumerateWindowsDelegate,
   DISALLOW_COPY_AND_ASSIGN(X11TopmostWindowFinder);
 };
 
-}  // namespace views
+}  // namespace ui
 
-#endif  // UI_VIEWS_WIDGET_DESKTOP_AURA_X11_TOPMOST_WINDOW_FINDER_H_
+#endif  // UI_PLATFORM_WINDOW_X11_X11_TOPMOST_WINDOW_FINDER_H_

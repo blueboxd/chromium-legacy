@@ -17,15 +17,16 @@
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/network_portal_detector_mixin.h"
+#include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/version_updater/version_updater.h"
+#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_required_screen_handler.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_update_engine_client.h"
@@ -79,38 +80,28 @@ void SetConnected(const std::string& service_path) {
 
 }  // namespace
 
-class UpdateRequiredScreenTest : public MixinBasedInProcessBrowserTest {
+class UpdateRequiredScreenTest : public OobeBaseTest {
  public:
   UpdateRequiredScreenTest() = default;
   ~UpdateRequiredScreenTest() override = default;
   UpdateRequiredScreenTest(const UpdateRequiredScreenTest&) = delete;
   UpdateRequiredScreenTest& operator=(const UpdateRequiredScreenTest&) = delete;
 
-  // InProcessBrowserTest:
-  void SetUpInProcessBrowserTestFixture() override {
-    MixinBasedInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
-
-    fake_update_engine_client_ = new FakeUpdateEngineClient();
-    chromeos::DBusThreadManager::GetSetterForTesting()->SetUpdateEngineClient(
-        std::unique_ptr<UpdateEngineClient>(fake_update_engine_client_));
-  }
-
+  // OobeBaseTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    OobeBaseTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(chromeos::switches::kShillStub,
                                     "clear=1, cellular=1, wifi=1");
   }
-
   void SetUpOnMainThread() override {
-    MixinBasedInProcessBrowserTest::SetUpOnMainThread();
-
-    ShowLoginWizard(OobeScreen::SCREEN_TEST_NO_WINDOW);
+    OobeBaseTest::SetUpOnMainThread();
 
     tick_clock_.Advance(base::TimeDelta::FromMinutes(1));
     clock_ = std::make_unique<base::SimpleTestClock>();
 
     error_screen_ = GetOobeUI()->GetErrorScreen();
-    update_required_screen_ = std::make_unique<UpdateRequiredScreen>(
-        GetOobeUI()->GetView<UpdateRequiredScreenHandler>(), error_screen_);
+    update_required_screen_ = UpdateRequiredScreen::Get(
+        WizardController::default_controller()->screen_manager());
     update_required_screen_->SetClockForTesting(clock_.get());
 
     version_updater_ = update_required_screen_->GetVersionUpdaterForTesting();
@@ -124,22 +115,16 @@ class UpdateRequiredScreenTest : public MixinBasedInProcessBrowserTest {
     // Fake networks have been set up. Connect to WiFi network.
     SetConnected(kWifiServicePath);
   }
-
   void TearDownOnMainThread() override {
-    update_required_screen_.reset();
     network_state_test_helper_.reset();
 
-    base::RunLoop run_loop;
-    LoginDisplayHost::default_host()->Finalize(run_loop.QuitClosure());
-    run_loop.Run();
-
-    MixinBasedInProcessBrowserTest::TearDownOnMainThread();
+    OobeBaseTest::TearDownOnMainThread();
   }
 
   void SetEolDateUTC(const char* utc_date_string) {
     base::Time utc_date;
     ASSERT_TRUE(base::Time::FromUTCString(utc_date_string, &utc_date));
-    fake_update_engine_client_->set_eol_date(utc_date);
+    update_engine_client()->set_eol_date(utc_date);
   }
 
   void SetCurrentTimeUTC(const char* utc_date_string) {
@@ -151,8 +136,8 @@ class UpdateRequiredScreenTest : public MixinBasedInProcessBrowserTest {
   void SetUpdateEngineStatus(update_engine::Operation operation) {
     update_engine::StatusResult status;
     status.set_current_operation(operation);
-    fake_update_engine_client_->set_default_status(status);
-    fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+    update_engine_client()->set_default_status(status);
+    update_engine_client()->NotifyObserversThatStatusChanged(status);
   }
 
   void SetNetworkState(const std::string& service_path,
@@ -162,7 +147,8 @@ class UpdateRequiredScreenTest : public MixinBasedInProcessBrowserTest {
   }
 
   void ShowUpdateRequiredScreen() {
-    update_required_screen_->Show();
+    WizardController::default_controller()->AdvanceToScreen(
+        UpdateRequiredView::kScreenId);
 
     OobeScreenWaiter update_screen_waiter(UpdateRequiredView::kScreenId);
     update_screen_waiter.set_assert_next_screen();
@@ -172,11 +158,9 @@ class UpdateRequiredScreenTest : public MixinBasedInProcessBrowserTest {
   }
 
  protected:
-  std::unique_ptr<UpdateRequiredScreen> update_required_screen_;
+  UpdateRequiredScreen* update_required_screen_;
   // Error screen - owned by OobeUI.
   ErrorScreen* error_screen_ = nullptr;
-  // Fake update engine for testing
-  FakeUpdateEngineClient* fake_update_engine_client_ = nullptr;  // Unowned.
   // Version updater - owned by |update_required_screen_|.
   VersionUpdater* version_updater_ = nullptr;
   // For testing captive portal
@@ -289,7 +273,7 @@ IN_PROC_BROWSER_TEST_F(UpdateRequiredScreenTest, TestUpdateOverMeteredNetwork) {
 
   SetUpdateEngineStatus(update_engine::Operation::UPDATED_NEED_REBOOT);
   // UpdateStatusChanged(status) calls RebootAfterUpdate().
-  EXPECT_EQ(1, fake_update_engine_client_->reboot_after_update_call_count());
+  EXPECT_EQ(1, update_engine_client()->reboot_after_update_call_count());
 }
 
 // This tests the state of update required screen when the device is initially
@@ -322,7 +306,7 @@ IN_PROC_BROWSER_TEST_F(UpdateRequiredScreenTest, TestUpdateRequiredNoNetwork) {
 
   SetUpdateEngineStatus(update_engine::Operation::UPDATED_NEED_REBOOT);
   // UpdateStatusChanged(status) calls RebootAfterUpdate().
-  EXPECT_EQ(1, fake_update_engine_client_->reboot_after_update_call_count());
+  EXPECT_EQ(1, update_engine_client()->reboot_after_update_call_count());
 }
 
 // This tests the condition when the user switches to a metered network during
@@ -376,7 +360,7 @@ IN_PROC_BROWSER_TEST_F(UpdateRequiredScreenTest,
 
   SetUpdateEngineStatus(update_engine::Operation::UPDATED_NEED_REBOOT);
   // UpdateStatusChanged(status) calls RebootAfterUpdate().
-  EXPECT_EQ(1, fake_update_engine_client_->reboot_after_update_call_count());
+  EXPECT_EQ(1, update_engine_client()->reboot_after_update_call_count());
 }
 
 // This tests the state of update required screen when the device is initially
@@ -413,7 +397,7 @@ IN_PROC_BROWSER_TEST_F(UpdateRequiredScreenTest,
   SetUpdateEngineStatus(update_engine::Operation::DOWNLOADING);
   SetUpdateEngineStatus(update_engine::Operation::UPDATED_NEED_REBOOT);
   // UpdateStatusChanged(status) calls RebootAfterUpdate().
-  EXPECT_EQ(1, fake_update_engine_client_->reboot_after_update_call_count());
+  EXPECT_EQ(1, update_engine_client()->reboot_after_update_call_count());
 }
 
 // This tests the update process initiated from update required screen.
@@ -464,7 +448,7 @@ IN_PROC_BROWSER_TEST_F(UpdateRequiredScreenTest, TestUpdateProcess) {
       {kUpdateRequiredScreen, kUpdateProcess, kUpdateProcessUpdating});
 
   // UpdateStatusChanged(status) calls RebootAfterUpdate().
-  EXPECT_EQ(1, fake_update_engine_client_->reboot_after_update_call_count());
+  EXPECT_EQ(1, update_engine_client()->reboot_after_update_call_count());
 }
 
 }  // namespace chromeos

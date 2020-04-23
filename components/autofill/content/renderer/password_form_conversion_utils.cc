@@ -91,10 +91,7 @@ bool IsGaiaReauthenticationForm(const blink::WebFormElement& form) {
   bool has_rart_field = false;
   bool has_continue_field = false;
 
-  blink::WebVector<WebFormControlElement> web_control_elements;
-  form.GetFormControlElements(web_control_elements);
-
-  for (const WebFormControlElement& element : web_control_elements) {
+  for (const WebFormControlElement& element : form.GetFormControlElements()) {
     // We're only interested in the presence
     // of <input type="hidden" /> elements.
     static base::NoDestructor<WebString> kHidden("hidden");
@@ -142,8 +139,8 @@ std::unique_ptr<FormData> CreateFormDataFromWebForm(
       IsGaiaWithSkipSavePasswordForm(web_form) ||
       IsGaiaReauthenticationForm(web_form);
 
-  blink::WebVector<WebFormControlElement> control_elements;
-  web_form.GetFormControlElements(control_elements);
+  blink::WebVector<WebFormControlElement> control_elements =
+      web_form.GetFormControlElements();
   if (control_elements.empty())
     return nullptr;
 

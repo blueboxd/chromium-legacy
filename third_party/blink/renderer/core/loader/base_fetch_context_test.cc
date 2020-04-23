@@ -88,7 +88,8 @@ class MockBaseFetchContext final : public BaseFetchContext {
       mojom::RequestContextType,
       ResourceRequest::RedirectStatus,
       const KURL&,
-      ReportingDisposition) const override {
+      ReportingDisposition,
+      const base::Optional<String>&) const override {
     return false;
   }
   bool ShouldBlockFetchAsCredentialedSubresource(const ResourceRequest&,

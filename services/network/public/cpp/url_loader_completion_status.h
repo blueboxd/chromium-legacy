@@ -14,8 +14,8 @@
 #include "net/base/proxy_server.h"
 #include "net/dns/public/resolve_error_info.h"
 #include "net/ssl/ssl_info.h"
-#include "services/network/public/cpp/blocked_by_response_reason.h"
 #include "services/network/public/cpp/cors/cors_error_status.h"
+#include "services/network/public/mojom/blocked_by_response_reason.mojom-shared.h"
 #include "services/network/public/mojom/cors.mojom-shared.h"
 #include "services/network/public/mojom/trust_tokens.mojom-shared.h"
 
@@ -39,7 +39,8 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) URLLoaderCompletionStatus {
   // Sets ERR_BLOCKED_BY_RESPONSE to |error_code|, |reason| to
   // |blocked_by_response_reason|, and base::TimeTicks::Now() to
   // |completion_time|.
-  explicit URLLoaderCompletionStatus(const BlockedByResponseReason& reason);
+  explicit URLLoaderCompletionStatus(
+      const mojom::BlockedByResponseReason& reason);
 
   ~URLLoaderCompletionStatus();
 
@@ -87,7 +88,7 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) URLLoaderCompletionStatus {
 
   // More detailed reason for failing the response with
   // ERR_net::ERR_BLOCKED_BY_RESPONSE |error_code|.
-  base::Optional<BlockedByResponseReason> blocked_by_response_reason;
+  base::Optional<mojom::BlockedByResponseReason> blocked_by_response_reason;
 
   // Set when response blocked by CORB needs to be reported to the DevTools
   // console.

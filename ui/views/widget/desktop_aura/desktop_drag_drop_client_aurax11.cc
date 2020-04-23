@@ -32,9 +32,9 @@
 #include "ui/events/event_utils.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/x/x11.h"
+#include "ui/platform_window/x11/x11_topmost_window_finder.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/widget/desktop_aura/desktop_native_cursor_manager.h"
-#include "ui/views/widget/desktop_aura/x11_topmost_window_finder.h"
 #include "ui/views/widget/widget.h"
 
 using aura::client::DragDropDelegate;
@@ -329,7 +329,7 @@ void DesktopDragDropClientAuraX11::NotifyDragLeave() {
 
 std::unique_ptr<ui::XTopmostWindowFinder>
 DesktopDragDropClientAuraX11::CreateWindowFinder() {
-  return std::make_unique<X11TopmostWindowFinder>();
+  return std::make_unique<ui::X11TopmostWindowFinder>();
 }
 
 int DesktopDragDropClientAuraX11::UpdateDrag(const gfx::Point& screen_point) {

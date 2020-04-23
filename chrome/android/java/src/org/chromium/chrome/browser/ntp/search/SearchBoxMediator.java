@@ -6,10 +6,14 @@ package org.chromium.chrome.browser.ntp.search;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
+import android.text.TextUtils;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 
 import androidx.annotation.ColorRes;
+import androidx.core.graphics.drawable.RoundedBitmapDrawable;
 
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.gsa.GSAState;
@@ -19,6 +23,7 @@ import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
 import org.chromium.chrome.browser.omnibox.voice.AssistantVoiceSearchService;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.components.browser_ui.styles.ChromeColors;
+import org.chromium.ui.base.ViewUtils;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
@@ -29,8 +34,10 @@ class SearchBoxMediator
     private final ViewGroup mView;
     private ActivityLifecycleDispatcher mActivityLifecycleDispatcher;
     private AssistantVoiceSearchService mAssistantVoiceSearchService;
+    private SearchBoxChipDelegate mChipDelegate;
 
-    public SearchBoxMediator(Context context, PropertyModel model, ViewGroup view) {
+    /** Constructor. */
+    SearchBoxMediator(Context context, PropertyModel model, ViewGroup view) {
         mContext = context;
         mModel = model;
         mView = view;
@@ -44,7 +51,7 @@ class SearchBoxMediator
      *
      * @param activityLifecycleDispatcher Used to register for lifecycle events.
      */
-    public void initialize(ActivityLifecycleDispatcher activityLifecycleDispatcher) {
+    void initialize(ActivityLifecycleDispatcher activityLifecycleDispatcher) {
         assert mActivityLifecycleDispatcher == null;
         mActivityLifecycleDispatcher = activityLifecycleDispatcher;
         mActivityLifecycleDispatcher.register(this);
@@ -87,5 +94,50 @@ class SearchBoxMediator
         ColorStateList colorStateList =
                 mAssistantVoiceSearchService.getMicButtonColorStateList(primaryColor, mContext);
         mModel.set(SearchBoxProperties.VOICE_SEARCH_COLOR_STATE_LIST, colorStateList);
+    }
+
+    /** Called to set a click listener for the search box. */
+    void setSearchBoxClickListener(OnClickListener listener) {
+        mModel.set(SearchBoxProperties.SEARCH_BOX_CLICK_CALLBACK, v -> {
+            boolean isChipVisible = mModel.get(SearchBoxProperties.CHIP_VISIBILITY);
+            if (isChipVisible) {
+                String chipText = mModel.get(SearchBoxProperties.CHIP_TEXT);
+                mModel.set(SearchBoxProperties.SEARCH_TEXT, chipText);
+                mChipDelegate.onCancelClicked();
+            }
+            listener.onClick(v);
+        });
+    }
+
+    /**
+     * Called to set or clear a chip on the search box.
+     * @param chipText The text to be shown on the chip.
+     */
+    void setChipText(String chipText) {
+        boolean chipVisible = !TextUtils.isEmpty(chipText);
+        mModel.set(SearchBoxProperties.CHIP_VISIBILITY, chipVisible);
+        mModel.set(SearchBoxProperties.SEARCH_HINT_VISIBILITY, !chipVisible);
+        mModel.set(SearchBoxProperties.CHIP_TEXT, chipText);
+    }
+
+    /**
+     * Called to set a delegate for handling the interactions between the chip and the embedder.
+     * @param chipDelegate A {@link SearchBoxChipDelegate}.
+     */
+    void setChipDelegate(SearchBoxChipDelegate chipDelegate) {
+        mChipDelegate = chipDelegate;
+        mModel.set(SearchBoxProperties.CHIP_CLICK_CALLBACK, v -> chipDelegate.onChipClicked());
+        mModel.set(SearchBoxProperties.CHIP_CANCEL_CALLBACK, v -> chipDelegate.onCancelClicked());
+        mChipDelegate.getChipIcon(bitmap -> {
+            mModel.set(SearchBoxProperties.CHIP_DRAWABLE, getRoundedDrawable(bitmap));
+        });
+    }
+
+    private Drawable getRoundedDrawable(Bitmap bitmap) {
+        if (bitmap == null) return null;
+        RoundedBitmapDrawable roundedBitmapDrawable =
+                ViewUtils.createRoundedBitmapDrawable(mContext.getResources(), bitmap, 0);
+        roundedBitmapDrawable.setCircular(true);
+        return roundedBitmapDrawable;
     }
 }

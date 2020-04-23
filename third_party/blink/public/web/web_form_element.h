@@ -65,7 +65,7 @@ class BLINK_EXPORT WebFormElement final : public WebElement {
   // overflow.
   unsigned UniqueRendererFormId() const;
 
-  void GetFormControlElements(WebVector<WebFormControlElement>&) const;
+  WebVector<WebFormControlElement> GetFormControlElements() const;
 
 #if INSIDE_BLINK
   WebFormElement(HTMLFormElement*);

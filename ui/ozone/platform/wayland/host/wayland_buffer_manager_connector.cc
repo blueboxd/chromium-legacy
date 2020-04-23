@@ -11,27 +11,6 @@
 
 namespace ui {
 
-namespace {
-
-// TODO(msisov): In the future when GpuProcessHost is moved to vizhost, remove
-// this utility code.
-using BinderCallback = ui::GpuPlatformSupportHost::GpuHostBindInterfaceCallback;
-
-void BindInterfaceInGpuProcess(const std::string& interface_name,
-                               mojo::ScopedMessagePipeHandle interface_pipe,
-                               const BinderCallback& binder_callback) {
-  return binder_callback.Run(interface_name, std::move(interface_pipe));
-}
-
-template <typename Interface>
-void BindInterfaceInGpuProcess(mojo::PendingReceiver<Interface> request,
-                               const BinderCallback& binder_callback) {
-  BindInterfaceInGpuProcess(Interface::Name_, std::move(request.PassPipe()),
-                            binder_callback);
-}
-
-}  // namespace
-
 WaylandBufferManagerConnector::WaylandBufferManagerConnector(
     WaylandBufferManagerHost* buffer_manager_host)
     : buffer_manager_host_(buffer_manager_host) {
@@ -106,8 +85,9 @@ void WaylandBufferManagerConnector::OnBufferManagerHostPtrBinded(
   DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
 
   mojo::Remote<ozone::mojom::WaylandBufferManagerGpu> buffer_manager_gpu_remote;
-  auto receiver = buffer_manager_gpu_remote.BindNewPipeAndPassReceiver();
-  BindInterfaceInGpuProcess(std::move(receiver), binder_);
+  binder_.Run(
+      ozone::mojom::WaylandBufferManagerGpu::Name_,
+      buffer_manager_gpu_remote.BindNewPipeAndPassReceiver().PassPipe());
   DCHECK(buffer_manager_gpu_remote);
 
   wl::BufferFormatsWithModifiersMap buffer_formats_with_modifiers =

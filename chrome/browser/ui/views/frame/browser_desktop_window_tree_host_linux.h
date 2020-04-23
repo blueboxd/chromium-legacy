@@ -58,7 +58,7 @@ class BrowserDesktopWindowTreeHostLinux
   void CloseNow() override;
 
   // ui::X11ExtensionDelegate:
-  bool IsOverrideRedirect() const override;
+  bool IsOverrideRedirect(bool is_tiling_wm) const override;
 
   BrowserView* browser_view_ = nullptr;
   BrowserFrame* browser_frame_ = nullptr;

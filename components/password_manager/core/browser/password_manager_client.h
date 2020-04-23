@@ -76,6 +76,8 @@ enum SyncState {
   NOT_SYNCING,
   SYNCING_NORMAL_ENCRYPTION,
   SYNCING_WITH_CUSTOM_PASSPHRASE,
+  // Sync is disabled but the user is signed in and opted in to passwords
+  // account storage.
   ACCOUNT_PASSWORDS_ACTIVE_NORMAL_ENCRYPTION
 };
 

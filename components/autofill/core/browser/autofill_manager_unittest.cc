@@ -1678,6 +1678,116 @@ TEST_P(CreditCardSuggestionTest, GetCreditCardSuggestions_NonCCNumber) {
                               autofill_manager_->GetPackedCreditCardID(5)));
 }
 
+TEST_F(AutofillManagerTest,
+       GetCreditCardSuggestions_GoogleIssuedCard_CCNumber) {
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(
+      autofill::features::kAutofillEnableGoogleIssuedCard);
+  personal_data_.ClearCreditCards();
+  // Add a Google Issued Card.
+  CreditCard google_issued_card;
+  test::SetCreditCardInfo(&google_issued_card, "Lorem Ispium",
+                          "5555555555554444",  // Mastercard
+                          "10", "2998", "1");
+  google_issued_card.set_guid("00000000-0000-0000-0000-000000000007");
+  google_issued_card.set_record_type(
+      CreditCard::RecordType::MASKED_SERVER_CARD);
+  google_issued_card.set_card_issuer(CreditCard::Issuer::GOOGLE);
+  personal_data_.AddServerCreditCard(google_issued_card);
+  // Set up our form data.
+  FormData form;
+  CreateTestCreditCardFormData(&form, true, false);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+  // Set the field being edited to CC field.
+  const FormFieldData& credit_card_number_field = form.fields[1];
+  const std::string google_issued_card_value = "Google";
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  const std::string google_issued_card_label = std::string("10/98");
+#else
+  const std::string google_issued_card_label = std::string("Expires on 10/98");
+#endif
+
+  GetAutofillSuggestions(form, credit_card_number_field);
+
+  CheckSuggestions(kDefaultPageID,
+                   Suggestion(google_issued_card_value,
+                              google_issued_card_label, kGoogleIssuedCard,
+                              autofill_manager_->GetPackedCreditCardID(7)));
+}
+
+TEST_F(AutofillManagerTest,
+       GetCreditCardSuggestions_GoogleIssuedCard_NonCCNumber) {
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(
+      autofill::features::kAutofillEnableGoogleIssuedCard);
+  personal_data_.ClearCreditCards();
+  // Add a Google Issued Card.
+  CreditCard google_issued_card;
+  test::SetCreditCardInfo(&google_issued_card, "Lorem Ispium",
+                          "5555555555554444",  // Mastercard
+                          "10", "2998", "1");
+  google_issued_card.set_guid("00000000-0000-0000-0000-000000000007");
+  google_issued_card.set_record_type(
+      CreditCard::RecordType::MASKED_SERVER_CARD);
+  google_issued_card.set_card_issuer(CreditCard::Issuer::GOOGLE);
+  personal_data_.AddServerCreditCard(google_issued_card);
+  // Set up our form data.
+  FormData form;
+  CreateTestCreditCardFormData(&form, true, false);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+  // Set the field being edited to the cardholder name field.
+  const FormFieldData& cardholder_name_field = form.fields[0];
+#if defined(OS_ANDROID)
+  const std::string google_issued_card_label = std::string("Google");
+#elif defined(OS_IOS)
+  const std::string google_issued_card_label =
+      test::ObfuscatedCardDigitsAsUTF8("4444");
+#else
+  const std::string google_issued_card_label =
+      std::string("Google, expires on 10/98");
+#endif
+
+  GetAutofillSuggestions(form, cardholder_name_field);
+
+  CheckSuggestions(
+      kDefaultPageID,
+      Suggestion("Lorem Ispium", google_issued_card_label, kGoogleIssuedCard,
+                 autofill_manager_->GetPackedCreditCardID(7)));
+}
+
+TEST_F(AutofillManagerTest,
+       GetCreditCardSuggestions_GoogleIssuedCardNotPresent_ExpOff) {
+  base::test::ScopedFeatureList features;
+  features.InitAndDisableFeature(
+      autofill::features::kAutofillEnableGoogleIssuedCard);
+  // Add 2 Server cards.
+  CreateTestServerCreditCards();
+  // Add a Google Issued Card.
+  CreditCard google_issued_card;
+  test::SetCreditCardInfo(&google_issued_card, "Lorem Ispium",
+                          "5555555555554444",  // Mastercard
+                          "10", "2998", "1");
+  google_issued_card.set_guid("00000000-0000-0000-0000-000000000007");
+  google_issued_card.set_record_type(
+      CreditCard::RecordType::MASKED_SERVER_CARD);
+  google_issued_card.set_card_issuer(CreditCard::Issuer::GOOGLE);
+  personal_data_.AddServerCreditCard(google_issued_card);
+  // Set up our form data.
+  FormData form;
+  CreateTestCreditCardFormData(&form, true, false);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+  // Set the field being edited to CC field.
+  const FormFieldData& credit_card_number_field = form.fields[1];
+
+  GetAutofillSuggestions(form, credit_card_number_field);
+
+  // Assert that there are only two credit card suggestions returned.
+  external_delegate_->CheckSuggestionCount(kDefaultPageID, 2);
+}
+
 // Test that we will eventually return the credit card signin promo when there
 // are no credit card suggestions and the promo is active. See the tests in
 // AutofillExternalDelegateTest that test whether the promo is added.

@@ -185,7 +185,7 @@ class PartitionAllocTest : public testing::Test {
     for (size_t i = 0; i < kMaxFreeableSpans; ++i) {
       void* ptr = allocator.root()->Alloc(size, type_name);
       EXPECT_EQ(1, bucket->active_pages_head->num_allocated_slots);
-      PartitionFree(ptr);
+      allocator.root()->Free(ptr);
       EXPECT_EQ(0, bucket->active_pages_head->num_allocated_slots);
       EXPECT_NE(-1, bucket->active_pages_head->empty_cache_index);
     }
@@ -294,7 +294,7 @@ class PartitionAllocDeathTest : public PartitionAllocTest {};
 
 namespace {
 
-void FreeFullPage(PartitionRoot::Page* page) {
+void FreeFullPage(PartitionRoot* root, PartitionRoot::Page* page) {
   size_t size = page->bucket->slot_size;
   size_t num_slots =
       (page->bucket->num_system_pages_per_slot_span * kSystemPageSize) / size;
@@ -302,7 +302,7 @@ void FreeFullPage(PartitionRoot::Page* page) {
   char* ptr = reinterpret_cast<char*>(PartitionRoot::Page::ToPointer(page));
   size_t i;
   for (i = 0; i < num_slots; ++i) {
-    PartitionFree(ptr + kPointerOffset);
+    root->Free(ptr + kPointerOffset);
     ptr += size;
   }
 }
@@ -392,7 +392,7 @@ TEST_F(PartitionAllocTest, Basic) {
   EXPECT_EQ(kPartitionPageSize + kPointerOffset,
             reinterpret_cast<size_t>(ptr) & kSuperPageOffsetMask);
 
-  PartitionFree(ptr);
+  allocator.root()->Free(ptr);
   // Expect that the last active page gets noticed as empty but doesn't get
   // decommitted.
   EXPECT_TRUE(bucket->empty_pages_head);
@@ -411,13 +411,13 @@ TEST_F(PartitionAllocTest, MultiAlloc) {
   EXPECT_EQ(static_cast<ptrdiff_t>(kRealAllocSize), diff);
 
   // Check that we re-use the just-freed slot.
-  PartitionFree(ptr2);
+  allocator.root()->Free(ptr2);
   ptr2 = reinterpret_cast<char*>(
       allocator.root()->Alloc(kTestAllocSize, type_name));
   EXPECT_TRUE(ptr2);
   diff = ptr2 - ptr1;
   EXPECT_EQ(static_cast<ptrdiff_t>(kRealAllocSize), diff);
-  PartitionFree(ptr1);
+  allocator.root()->Free(ptr1);
   ptr1 = reinterpret_cast<char*>(
       allocator.root()->Alloc(kTestAllocSize, type_name));
   EXPECT_TRUE(ptr1);
@@ -430,9 +430,9 @@ TEST_F(PartitionAllocTest, MultiAlloc) {
   diff = ptr3 - ptr1;
   EXPECT_EQ(static_cast<ptrdiff_t>(kRealAllocSize * 2), diff);
 
-  PartitionFree(ptr1);
-  PartitionFree(ptr2);
-  PartitionFree(ptr3);
+  allocator.root()->Free(ptr1);
+  allocator.root()->Free(ptr2);
+  allocator.root()->Free(ptr3);
 }
 
 // Test a bucket with multiple pages.
@@ -441,7 +441,7 @@ TEST_F(PartitionAllocTest, MultiPages) {
       &allocator.root()->buckets()[kTestBucketIndex];
 
   PartitionRoot::Page* page = GetFullPage(kTestAllocSize);
-  FreeFullPage(page);
+  FreeFullPage(allocator.root(), page);
   EXPECT_TRUE(bucket->empty_pages_head);
   EXPECT_EQ(PartitionRoot::Page::get_sentinel_page(),
             bucket->active_pages_head);
@@ -460,7 +460,7 @@ TEST_F(PartitionAllocTest, MultiPages) {
 
   // Fully free the non-current page. This will leave us with no current
   // active page because one is empty and the other is full.
-  FreeFullPage(page);
+  FreeFullPage(allocator.root(), page);
   EXPECT_EQ(0, page->num_allocated_slots);
   EXPECT_TRUE(bucket->empty_pages_head);
   EXPECT_EQ(PartitionPage<base::internal::NotThreadSafe>::get_sentinel_page(),
@@ -471,8 +471,8 @@ TEST_F(PartitionAllocTest, MultiPages) {
   EXPECT_FALSE(bucket->empty_pages_head);
   EXPECT_EQ(page, bucket->active_pages_head);
 
-  FreeFullPage(page);
-  FreeFullPage(page2);
+  FreeFullPage(allocator.root(), page);
+  FreeFullPage(allocator.root(), page2);
   EXPECT_EQ(0, page->num_allocated_slots);
   EXPECT_EQ(0, page2->num_allocated_slots);
   EXPECT_EQ(0, page2->num_unprovisioned_slots);
@@ -494,7 +494,7 @@ TEST_F(PartitionAllocTest, PageTransitions) {
   // Bounce page1 back into the non-full list then fill it up again.
   char* ptr = reinterpret_cast<char*>(PartitionRoot::Page::ToPointer(page1)) +
               kPointerOffset;
-  PartitionFree(ptr);
+  allocator.root()->Free(ptr);
   EXPECT_EQ(page1, bucket->active_pages_head);
   (void)allocator.root()->Alloc(kTestAllocSize, type_name);
   EXPECT_EQ(page1, bucket->active_pages_head);
@@ -510,7 +510,7 @@ TEST_F(PartitionAllocTest, PageTransitions) {
   // Work out a pointer into page2 and free it.
   ptr = reinterpret_cast<char*>(PartitionRoot::Page::ToPointer(page2)) +
         kPointerOffset;
-  PartitionFree(ptr);
+  allocator.root()->Free(ptr);
   // Trying to allocate at this time should cause us to cycle around to page2
   // and find the recently freed slot.
   char* new_ptr = reinterpret_cast<char*>(
@@ -523,7 +523,7 @@ TEST_F(PartitionAllocTest, PageTransitions) {
   // back into the list of available pages.
   ptr = reinterpret_cast<char*>(PartitionRoot::Page::ToPointer(page1)) +
         kPointerOffset;
-  PartitionFree(ptr);
+  allocator.root()->Free(ptr);
   // This allocation should be satisfied by page1.
   new_ptr = reinterpret_cast<char*>(
       allocator.root()->Alloc(kTestAllocSize, type_name));
@@ -531,14 +531,14 @@ TEST_F(PartitionAllocTest, PageTransitions) {
   EXPECT_EQ(page1, bucket->active_pages_head);
   EXPECT_EQ(page2, page1->next_page);
 
-  FreeFullPage(page3);
-  FreeFullPage(page2);
-  FreeFullPage(page1);
+  FreeFullPage(allocator.root(), page3);
+  FreeFullPage(allocator.root(), page2);
+  FreeFullPage(allocator.root(), page1);
 
   // Allocating whilst in this state exposed a bug, so keep the test.
   ptr = reinterpret_cast<char*>(
       allocator.root()->Alloc(kTestAllocSize, type_name));
-  PartitionFree(ptr);
+  allocator.root()->Free(ptr);
 }
 
 // Test some corner cases relating to page transitions in the internal
@@ -561,7 +561,7 @@ TEST_F(PartitionAllocTest, FreePageListPageTransitions) {
   }
   EXPECT_EQ(pages[num_to_fill_free_list_page - 1], bucket->active_pages_head);
   for (i = 0; i < num_to_fill_free_list_page; ++i)
-    FreeFullPage(pages[i]);
+    FreeFullPage(allocator.root(), pages[i]);
   EXPECT_EQ(PartitionRoot::Page::get_sentinel_page(),
             bucket->active_pages_head);
   EXPECT_TRUE(bucket->empty_pages_head);
@@ -571,8 +571,8 @@ TEST_F(PartitionAllocTest, FreePageListPageTransitions) {
   // active page and not get freed.
   PartitionRoot::Page* page1 = GetFullPage(kTestAllocSize * 2);
   PartitionRoot::Page* page2 = GetFullPage(kTestAllocSize * 2);
-  FreeFullPage(page1);
-  FreeFullPage(page2);
+  FreeFullPage(allocator.root(), page1);
+  FreeFullPage(allocator.root(), page2);
 
   for (i = 0; i < num_to_fill_free_list_page; ++i) {
     pages[i] = GetFullPage(kTestAllocSize);
@@ -580,7 +580,7 @@ TEST_F(PartitionAllocTest, FreePageListPageTransitions) {
   EXPECT_EQ(pages[num_to_fill_free_list_page - 1], bucket->active_pages_head);
 
   for (i = 0; i < num_to_fill_free_list_page; ++i)
-    FreeFullPage(pages[i]);
+    FreeFullPage(allocator.root(), pages[i]);
   EXPECT_EQ(PartitionRoot::Page::get_sentinel_page(),
             bucket->active_pages_head);
   EXPECT_TRUE(bucket->empty_pages_head);
@@ -617,7 +617,7 @@ TEST_F(PartitionAllocTest, MultiPageAllocs) {
     }
   }
   for (i = 0; i < num_pages_needed; ++i)
-    FreeFullPage(pages[i]);
+    FreeFullPage(allocator.root(), pages[i]);
 }
 
 // Test the generic allocation functions that can handle arbitrary sizes and
@@ -981,16 +981,16 @@ TEST_F(PartitionAllocTest, PartialPageFreelists) {
   EXPECT_EQ(1, page2->num_allocated_slots);
 
   // Churn things a little whilst there's a partial page freelist.
-  PartitionFree(ptr);
+  allocator.root()->Free(ptr);
   ptr = allocator.root()->Alloc(big_size, type_name);
   void* ptr6 = allocator.root()->Alloc(big_size, type_name);
 
-  PartitionFree(ptr);
-  PartitionFree(ptr2);
-  PartitionFree(ptr3);
-  PartitionFree(ptr4);
-  PartitionFree(ptr5);
-  PartitionFree(ptr6);
+  allocator.root()->Free(ptr);
+  allocator.root()->Free(ptr2);
+  allocator.root()->Free(ptr3);
+  allocator.root()->Free(ptr4);
+  allocator.root()->Free(ptr5);
+  allocator.root()->Free(ptr6);
   EXPECT_NE(-1, page->empty_cache_index);
   EXPECT_NE(-1, page2->empty_cache_index);
   EXPECT_TRUE(page2->freelist_head);
@@ -1015,7 +1015,7 @@ TEST_F(PartitionAllocTest, PartialPageFreelists) {
   EXPECT_EQ(2u, first_page_slots);
   EXPECT_EQ(total_slots - first_page_slots, page->num_unprovisioned_slots);
 
-  PartitionFree(ptr);
+  allocator.root()->Free(ptr);
 
   size_t smallSize = (kSystemPageSize / 4) - kExtraAllocSize;
   bucket_index = (smallSize + kExtraAllocSize) >> kBucketShift;
@@ -1033,7 +1033,7 @@ TEST_F(PartitionAllocTest, PartialPageFreelists) {
   first_page_slots = kSystemPageSize / (smallSize + kExtraAllocSize);
   EXPECT_EQ(total_slots - first_page_slots, page->num_unprovisioned_slots);
 
-  PartitionFree(ptr);
+  allocator.root()->Free(ptr);
   EXPECT_TRUE(page->freelist_head);
   EXPECT_EQ(0, page->num_allocated_slots);
 
@@ -1053,7 +1053,7 @@ TEST_F(PartitionAllocTest, PartialPageFreelists) {
   first_page_slots = kSystemPageSize / (verySmallSize + kExtraAllocSize);
   EXPECT_EQ(total_slots - first_page_slots, page->num_unprovisioned_slots);
 
-  PartitionFree(ptr);
+  allocator.root()->Free(ptr);
   EXPECT_TRUE(page->freelist_head);
   EXPECT_EQ(0, page->num_allocated_slots);
 
@@ -1107,10 +1107,10 @@ TEST_F(PartitionAllocTest, PageRefilling) {
   // Work out a pointer into page2 and free it; and then page1 and free it.
   char* ptr2 = reinterpret_cast<char*>(PartitionRoot::Page::ToPointer(page1)) +
                kPointerOffset;
-  PartitionFree(ptr2);
+  allocator.root()->Free(ptr2);
   ptr2 = reinterpret_cast<char*>(PartitionRoot::Page::ToPointer(page2)) +
          kPointerOffset;
-  PartitionFree(ptr2);
+  allocator.root()->Free(ptr2);
 
   // If we perform two allocations from the same bucket now, we expect to
   // refill both the nearly full pages.
@@ -1118,9 +1118,9 @@ TEST_F(PartitionAllocTest, PageRefilling) {
   (void)allocator.root()->Alloc(kTestAllocSize, type_name);
   EXPECT_EQ(1, page->num_allocated_slots);
 
-  FreeFullPage(page2);
-  FreeFullPage(page1);
-  PartitionFree(ptr);
+  FreeFullPage(allocator.root(), page2);
+  FreeFullPage(allocator.root(), page1);
+  allocator.root()->Free(ptr);
 }
 
 // Basic tests to ensure that allocations work for partial page buckets.
@@ -1139,8 +1139,8 @@ TEST_F(PartitionAllocTest, PartialPages) {
 
   PartitionRoot::Page* page1 = GetFullPage(size);
   PartitionRoot::Page* page2 = GetFullPage(size);
-  FreeFullPage(page2);
-  FreeFullPage(page1);
+  FreeFullPage(allocator.root(), page2);
+  FreeFullPage(allocator.root(), page1);
 }
 
 // Test correct handling if our mapping collides with another.
@@ -1221,10 +1221,10 @@ TEST_F(PartitionAllocTest, MappingCollision) {
                 PartitionRoot::Page::ToPointer(page_in_third_super_page)) &
                 kSuperPageBaseMask);
 
-  FreeFullPage(page_in_third_super_page);
+  FreeFullPage(allocator.root(), page_in_third_super_page);
   for (i = 0; i < num_partition_pages_needed; ++i) {
-    FreeFullPage(first_super_page_pages[i]);
-    FreeFullPage(second_super_page_pages[i]);
+    FreeFullPage(allocator.root(), first_super_page_pages[i]);
+    FreeFullPage(allocator.root(), second_super_page_pages[i]);
   }
 }
 
@@ -1245,7 +1245,7 @@ TEST_F(PartitionAllocTest, FreeCache) {
   EXPECT_EQ(1, page->num_allocated_slots);
   EXPECT_EQ(kPartitionPageSize,
             allocator.root()->total_size_of_committed_pages);
-  PartitionFree(ptr);
+  allocator.root()->Free(ptr);
   EXPECT_EQ(0, page->num_allocated_slots);
   EXPECT_NE(-1, page->empty_cache_index);
   EXPECT_TRUE(page->freelist_head);
@@ -1266,14 +1266,14 @@ TEST_F(PartitionAllocTest, FreeCache) {
   // as the active pages head).
   ptr = allocator.root()->Alloc(big_size, type_name);
   EXPECT_FALSE(bucket->empty_pages_head);
-  PartitionFree(ptr);
+  allocator.root()->Free(ptr);
 
   // Also check that a page that is bouncing immediately between empty and
   // used does not get freed.
   for (size_t i = 0; i < kMaxFreeableSpans * 2; ++i) {
     ptr = allocator.root()->Alloc(big_size, type_name);
     EXPECT_TRUE(page->freelist_head);
-    PartitionFree(ptr);
+    allocator.root()->Free(ptr);
     EXPECT_TRUE(page->freelist_head);
   }
   EXPECT_EQ(kPartitionPageSize,
@@ -1511,7 +1511,7 @@ TEST_F(PartitionAllocTest, DumpMemoryStats) {
     allocator.root()->DumpStats("mock_allocator", false /* detailed dump */,
                                 &mock_stats_dumper);
     EXPECT_TRUE(mock_stats_dumper.IsMemoryAllocationRecorded());
-    PartitionFree(ptr);
+    allocator.root()->Free(ptr);
   }
 
   // This series of tests checks the active -> empty -> decommitted states.

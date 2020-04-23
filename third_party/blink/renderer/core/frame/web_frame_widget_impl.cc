@@ -832,14 +832,14 @@ WebInputEventResult WebFrameWidgetImpl::HandleGestureEvent(
             TransformWebGestureEvent(frame->View(), event);
         IntPoint pos_in_local_frame_root =
             FlooredIntPoint(scaled_event.PositionInRootFrame());
-        WebRect block_bounds =
-            ComputeBlockBound(pos_in_local_frame_root, false);
+        auto block_bounds =
+            gfx::Rect(ComputeBlockBound(pos_in_local_frame_root, false));
 
         // This sends the tap point and bounds to the main frame renderer via
         // the browser, where their coordinates will be transformed into the
         // main frame's coordinate space.
-        Client()->AnimateDoubleTapZoomInMainFrame(pos_in_local_frame_root,
-                                                  block_bounds);
+        GetAssociatedFrameWidgetHost()->AnimateDoubleTapZoomInMainFrame(
+            pos_in_local_frame_root, block_bounds);
       }
       event_result = WebInputEventResult::kHandledSystem;
       Client()->DidHandleGestureEvent(event, event_cancelled);

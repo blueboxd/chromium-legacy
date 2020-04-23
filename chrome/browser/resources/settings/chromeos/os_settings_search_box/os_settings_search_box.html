@@ -121,13 +121,14 @@
             iron-dropdown's open() is called on the JS side. -->
       <div slot="dropdown-content">
         <div class="separator"></div>
-        <iron-list id="searchResultList" selection-enabled
+        <iron-list id="searchResultList" selection-enabled risk-selection
             items="[[searchResults_]]" selected-item="{{selectedItem_}}"
             on-selected-item-changed="onSelectedItemChanged_">
           <!-- TODO(crbug/1056909): Use template dom-if if searchResults_ is
                empty, show 'No Results' UI -->
           <template>
             <os-search-result-row actionable search-result="[[item]]"
+                search-query="[[getCurrentQuery_(searchResults_)]]"
                 selected="[[isItemSelected_(item, selectedItem_)]]"
                 tabindex$="[[getRowTabIndex_(item, selectedItem_,
                     shouldShowDropdown_)]]"

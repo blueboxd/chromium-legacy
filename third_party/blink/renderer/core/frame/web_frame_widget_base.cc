@@ -371,6 +371,11 @@ Page* WebFrameWidgetBase::GetPage() const {
   return View()->GetPage();
 }
 
+const mojo::AssociatedRemote<mojom::blink::FrameWidgetHost>&
+WebFrameWidgetBase::GetAssociatedFrameWidgetHost() const {
+  return frame_widget_host_;
+}
+
 void WebFrameWidgetBase::DidAcquirePointerLock() {
   GetPage()->GetPointerLockController().DidAcquirePointerLock();
 

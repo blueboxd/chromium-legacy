@@ -1203,22 +1203,17 @@ void AutofillAgent::ReplaceElementIfNowInvalid(const FormData& original_form) {
   if (element_.GetDocument().IsNull())
     return;
 
-  WebVector<WebFormElement> forms;
-  WebVector<WebFormControlElement> elements;
-
   const auto original_element = element_;
   WebFormControlElement matching_element;
   bool potential_match_encountered = false;
 
   if (original_form.name.empty()) {
     // If the form has no name, check all the forms.
-    element_.GetDocument().Forms(forms);
-    for (const WebFormElement& form : forms) {
-      form.GetFormControlElements(elements);
+    for (const WebFormElement& form : element_.GetDocument().Forms()) {
       // If finding a unique element is impossible, don't look further.
       if (!FindTheUniqueNewVersionOfOldElement(
-              elements, potential_match_encountered, matching_element,
-              original_element))
+              form.GetFormControlElements(), potential_match_encountered,
+              matching_element, original_element))
         return;
     }
     // If the element is not found, we should still check for unowned elements.
@@ -1228,21 +1223,18 @@ void AutofillAgent::ReplaceElementIfNowInvalid(const FormData& original_form) {
     }
   }
 
-  if (!element_.Form().IsNull()) {
-    // If |element_|'s parent form has no elements, |element_| is now invalid
-    // and should be updated.
-    WebVector<WebFormControlElement> form_elements;
-    element_.Form().GetFormControlElements(form_elements);
-    if (!form_elements.empty())
-      return;
+  // If |element_|'s parent form has no elements, |element_| is now invalid
+  // and should be updated.
+  if (!element_.Form().IsNull() &&
+      element_.Form().GetFormControlElements().empty()) {
+    return;
   }
 
   WebFormElement form_element;
   bool form_is_found = false;
   if (!original_form.name.empty()) {
     // Try to find the new version of the form.
-    element_.GetDocument().Forms(forms);
-    for (const WebFormElement& form : forms) {
+    for (const WebFormElement& form : element_.GetDocument().Forms()) {
       if (original_form.name == form.GetName().Utf16() ||
           original_form.name == form.GetAttribute("id").Utf16()) {
         if (!form_is_found)
@@ -1256,8 +1248,9 @@ void AutofillAgent::ReplaceElementIfNowInvalid(const FormData& original_form) {
   if (form_element.IsNull()) {
     // Could not find the new version of the form, get all the unowned elements.
     std::vector<WebElement> fieldsets;
-    elements = form_util::GetUnownedAutofillableFormFieldElements(
-        element_.GetDocument().All(), &fieldsets);
+    WebVector<WebFormControlElement> elements =
+        form_util::GetUnownedAutofillableFormFieldElements(
+            element_.GetDocument().All(), &fieldsets);
     // If a unique match was found.
     if (FindTheUniqueNewVersionOfOldElement(
             elements, potential_match_encountered, matching_element,
@@ -1269,9 +1262,9 @@ void AutofillAgent::ReplaceElementIfNowInvalid(const FormData& original_form) {
   }
   // This is the case for owned fields that belong to the right named form.
   // Get all the elements of the new version of the form.
-  form_element.GetFormControlElements(elements);
   // If a unique match was found.
-  if (FindTheUniqueNewVersionOfOldElement(elements, potential_match_encountered,
+  if (FindTheUniqueNewVersionOfOldElement(form_element.GetFormControlElements(),
+                                          potential_match_encountered,
                                           matching_element, original_element) &&
       !matching_element.IsNull()) {
     element_ = matching_element;

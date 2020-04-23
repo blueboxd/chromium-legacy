@@ -7,6 +7,7 @@
 
 #include <unordered_map>
 #include <utility>
+#include <vector>
 
 #include "base/containers/circular_deque.h"
 #include "base/gtest_prod_util.h"

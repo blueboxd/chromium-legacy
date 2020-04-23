@@ -68,6 +68,11 @@ class TileListView {
         return mView;
     }
 
+    /** Scrolls the recycler view to the given {@code position}. */
+    public void scrollToPosition(int position) {
+        mView.getLayoutManager().scrollToPosition(0);
+    }
+
     private class ItemDecorationImpl extends ItemDecoration {
         private final int mInterCellPadding;
 

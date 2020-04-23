@@ -52,7 +52,9 @@
 #include "third_party/blink/renderer/modules/webdatabase/storage_log.h"
 #include "third_party/blink/renderer/modules/webdatabase/web_database_host.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/scheduler/public/scheduling_policy.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
@@ -232,7 +234,13 @@ Database::Database(DatabaseContext* database_context,
       new_(false),
       database_authorizer_(kInfoTableName),
       transaction_in_progress_(false),
-      is_transaction_queue_enabled_(true) {
+      is_transaction_queue_enabled_(true),
+      feature_handle_for_scheduler_(
+          database_context->GetExecutionContext()
+              ->GetScheduler()
+              ->RegisterFeature(
+                  SchedulingPolicy::Feature::kWebDatabase,
+                  {SchedulingPolicy::RecordMetricsForBackForwardCache()})) {
   DCHECK(IsMainThread());
   context_thread_security_origin_ =
       database_context_->GetSecurityOrigin()->IsolatedCopy();

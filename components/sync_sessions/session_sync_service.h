@@ -21,10 +21,9 @@ class ModelTypeControllerDelegate;
 
 namespace sync_sessions {
 
-class FaviconCache;
 class OpenTabsUIDelegate;
 
-// KeyedService responsible session sync (aka tab sync), including favicon sync.
+// KeyedService responsible session sync (aka tab sync).
 // This powers things like the history UI, where "Tabs from other devices"
 // exists, as well as the uploading counterpart for other devices to see our
 // local tabs.
@@ -47,10 +46,6 @@ class SessionSyncService : public KeyedService {
   // For ProfileSyncService to initialize the controller for SESSIONS.
   virtual base::WeakPtr<syncer::ModelTypeControllerDelegate>
   GetControllerDelegate() = 0;
-
-  // For ProfileSyncService to initialize the controller for FAVICON_IMAGES and
-  // FAVICON_TRACKING.
-  virtual FaviconCache* GetFaviconCache() = 0;
 
   // Intended to be used by ProxyDataTypeController: influences whether
   // GetOpenTabsUIDelegate() returns null or not.

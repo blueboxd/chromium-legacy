@@ -1314,8 +1314,8 @@ class MetaBuildWrapper(object):
         rpaths = [
             target + '.runtime_deps',
             stamp_runtime_deps]
-      elif (target_type == 'script' or
-            isolate_map[target].get('label_type') == 'group'):
+      elif (target_type == 'script' or target_type == 'windowed_script'
+            or isolate_map[target].get('label_type') == 'group'):
         # For script targets, the build target is usually a group,
         # for which gn generates the runtime_deps next to the stamp file
         # for the label, which lives under the obj/ directory, but it may

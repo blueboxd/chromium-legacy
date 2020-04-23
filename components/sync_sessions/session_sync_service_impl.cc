@@ -10,7 +10,6 @@
 #include "base/bind_helpers.h"
 #include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/model_impl/client_tag_based_model_type_processor.h"
-#include "components/sync_sessions/favicon_cache.h"
 #include "components/sync_sessions/session_sync_bridge.h"
 #include "components/sync_sessions/session_sync_prefs.h"
 #include "components/sync_sessions/sync_sessions_client.h"
@@ -54,10 +53,6 @@ SessionSyncServiceImpl::SubscribeToForeignSessionsChanged(
 base::WeakPtr<syncer::ModelTypeControllerDelegate>
 SessionSyncServiceImpl::GetControllerDelegate() {
   return bridge_->change_processor()->GetControllerDelegate();
-}
-
-FaviconCache* SessionSyncServiceImpl::GetFaviconCache() {
-  return bridge_->GetFaviconCache();
 }
 
 void SessionSyncServiceImpl::ProxyTabsStateChanged(

@@ -1555,10 +1555,6 @@
         "prefs": { "default_search_provider_data.template_url_data": {} }
       },
       {
-        "policies": { "DefaultSearchProviderEnabled": false },
-        "prefs": { "default_search_provider_data.template_url_data": {} }
-      },
-      {
         "policies": {
           "DefaultSearchProviderEnabled": true,
           "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}",

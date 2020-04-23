@@ -278,6 +278,9 @@ class CORE_EXPORT WebFrameWidgetBase
   // the page is shutting down, but will be valid at all other times.
   Page* GetPage() const;
 
+  const mojo::AssociatedRemote<mojom::blink::FrameWidgetHost>&
+  GetAssociatedFrameWidgetHost() const;
+
   // Helper function to process events while pointer locked.
   void PointerLockMouseEvent(const WebCoalescedInputEvent&);
 

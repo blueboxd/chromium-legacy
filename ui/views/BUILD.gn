@@ -765,13 +765,11 @@ jumbo_component("views") {
           "widget/desktop_aura/desktop_drag_drop_client_aurax11.h",
           "widget/desktop_aura/desktop_screen_x11.h",
           "widget/desktop_aura/desktop_window_tree_host_x11.h",
-          "widget/desktop_aura/x11_topmost_window_finder.h",
         ]
         sources += [
           "widget/desktop_aura/desktop_drag_drop_client_aurax11.cc",
           "widget/desktop_aura/desktop_screen_x11.cc",
           "widget/desktop_aura/desktop_window_tree_host_x11.cc",
-          "widget/desktop_aura/x11_topmost_window_finder.cc",
         ]
       } else if (is_win) {
         public += [ "widget/desktop_aura/desktop_window_tree_host_win.h" ]
@@ -1372,7 +1370,10 @@ source_set("views_interactive_ui_tests") {
       "widget/desktop_aura/desktop_window_tree_host_x11_interactive_uitest.cc",
       "widget/desktop_aura/x11_topmost_window_finder_interactive_uitest.cc",
     ]
-    deps += [ "//ui/events/platform/x11:x11" ]
+    deps += [
+      "//ui/events/platform/x11:x11",
+      "//ui/platform_window/x11",
+    ]
   }
 
   if (is_chromeos) {

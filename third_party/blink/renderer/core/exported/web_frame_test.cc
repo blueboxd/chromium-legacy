@@ -662,8 +662,8 @@ TEST_F(WebFrameTest, FormWithNullFrame) {
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "form.html");
 
-  WebVector<WebFormElement> forms;
-  web_view_helper.LocalMainFrame()->GetDocument().Forms(forms);
+  WebVector<WebFormElement> forms =
+      web_view_helper.LocalMainFrame()->GetDocument().Forms();
   web_view_helper.Reset();
 
   EXPECT_EQ(forms.size(), 1U);

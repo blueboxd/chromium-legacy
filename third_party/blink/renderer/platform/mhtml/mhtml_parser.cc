@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/platform/mhtml/mhtml_parser.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/mhtml/archive_resource.h"
@@ -150,7 +151,9 @@ static KeyValueMap RetrieveKeyValuePairs(SharedBufferChunkReader* buffer) {
   while (!(line = buffer->NextChunkAsUTF8StringWithLatin1Fallback()).IsNull()) {
     if (line.IsEmpty())
       break;  // Empty line means end of key/value section.
-    if (line[0] == '\t') {
+    // RFC822 continuation: A line that starts with LWSP is a continuation of
+    // the prior line.
+    if ((line[0] == '\t') || (line[0] == ' ')) {
       value.Append(line.Substring(1));
       continue;
     }

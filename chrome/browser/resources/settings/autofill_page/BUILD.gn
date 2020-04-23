@@ -19,6 +19,7 @@ js_type_check("closure_compile_module") {
     ":password_check",
     ":password_check_behavior",
     ":password_check_edit_dialog",
+    ":password_check_edit_disclaimer_dialog",
     ":password_check_list_item",
     ":password_edit_dialog",
     ":password_list_item",
@@ -119,6 +120,13 @@ js_library("password_check_edit_dialog") {
     ":password_manager_proxy",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:i18n_behavior.m",
+  ]
+}
+
+js_library("password_check_edit_disclaimer_dialog") {
+  deps = [
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:i18n_behavior.m",
   ]
 }
@@ -248,6 +256,7 @@ group("polymer3_elements") {
     ":credit_card_edit_dialog_module",
     ":credit_card_list_entry_module",
     ":password_check_edit_dialog_module",
+    ":password_check_edit_disclaimer_dialog_module",
     ":password_check_list_item_module",
     ":password_check_module",
     ":password_edit_dialog_module",
@@ -301,6 +310,12 @@ polymer_modulizer("password_check") {
 polymer_modulizer("password_check_edit_dialog") {
   js_file = "password_check_edit_dialog.js"
   html_file = "password_check_edit_dialog.html"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("password_check_edit_disclaimer_dialog") {
+  js_file = "password_check_edit_disclaimer_dialog.js"
+  html_file = "password_check_edit_disclaimer_dialog.html"
   html_type = "v3-ready"
 }
 

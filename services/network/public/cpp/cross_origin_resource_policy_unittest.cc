@@ -192,20 +192,21 @@ TEST(CrossOriginResourcePolicyTest, WithCOEP) {
     const RequestMode request_mode;
     const url::Origin origin;
     mojom::URLResponseHeadPtr response_info;
-    const base::Optional<BlockedByResponseReason> expectation_with_coep_none;
-    const base::Optional<BlockedByResponseReason>
+    const base::Optional<mojom::BlockedByResponseReason>
+        expectation_with_coep_none;
+    const base::Optional<mojom::BlockedByResponseReason>
         expectation_with_coep_require_corp;
   } test_cases[] = {
       // We don't have a cross-origin-resource-policy header on a response. That
       // leads to blocking when COEP: kRequireCorp is used.
       {RequestMode::kNoCors, another_origin, corp_none.Clone(), kAllow,
-       BlockedByResponseReason::
+       mojom::BlockedByResponseReason::
            kCorpNotSameOriginAfterDefaultedToSameOriginByCoep},
       // We have "cross-origin-resource-policy: same-origin", so regardless of
       // COEP the response is blocked.
       {RequestMode::kNoCors, another_origin, corp_same_origin.Clone(),
-       BlockedByResponseReason::kCorpNotSameOrigin,
-       BlockedByResponseReason::kCorpNotSameOrigin},
+       mojom::BlockedByResponseReason::kCorpNotSameOrigin,
+       mojom::BlockedByResponseReason::kCorpNotSameOrigin},
       // We have "cross-origin-resource-policy: cross-origin", so regardless of
       // COEP the response is allowed.
       {RequestMode::kNoCors, another_origin, corp_cross_origin.Clone(), kAllow,
@@ -324,19 +325,20 @@ TEST(CrossOriginResourcePolicyTest, NavigationWithCOEP) {
   struct TestCase {
     const url::Origin origin;
     mojom::URLResponseHeadPtr response_info;
-    const base::Optional<BlockedByResponseReason> expectation_with_coep_none;
-    const base::Optional<BlockedByResponseReason>
+    const base::Optional<mojom::BlockedByResponseReason>
+        expectation_with_coep_none;
+    const base::Optional<mojom::BlockedByResponseReason>
         expectation_with_coep_require_corp;
   } test_cases[] = {
       // We don't have a cross-origin-resource-policy header on a response. That
       // leads to blocking when COEP: kRequireCorp is used.
       {another_origin, corp_none.Clone(), kAllow,
-       BlockedByResponseReason::
+       mojom::BlockedByResponseReason::
            kCorpNotSameOriginAfterDefaultedToSameOriginByCoep},
       // We have "cross-origin-resource-policy: same-origin",
       // COEP the response is blocked.
       {another_origin, corp_same_origin.Clone(), kAllow,
-       BlockedByResponseReason::kCorpNotSameOrigin},
+       mojom::BlockedByResponseReason::kCorpNotSameOrigin},
       // We have "cross-origin-resource-policy: cross-origin", so regardless of
       // COEP the response is allowed.
       {another_origin, corp_cross_origin.Clone(), kAllow, kAllow},

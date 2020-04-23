@@ -193,14 +193,10 @@ std::vector<FormInputCollection> ExtractFormsForAnalysis(
   std::set<WebFormControlElement> inputs_with_forms;
   std::map<std::string, std::vector<WebNode>> nodes_for_id;
 
-  WebVector<WebFormElement> forms;
-  document.Forms(forms);
-  for (const WebFormElement& form : forms) {
+  for (const WebFormElement& form : document.Forms()) {
     form_input_collections.push_back(FormInputCollection{form});
     // Collect all the inputs in the form.
-    WebVector<WebFormControlElement> form_control_elements;
-    form.GetFormControlElements(form_control_elements);
-    for (const WebFormControlElement& input : form_control_elements) {
+    for (const WebFormControlElement& input : form.GetFormControlElements()) {
       if (TrackElementByRendererIdIfUntracked(
               input, input.UniqueRendererFormControlId(), skip_control_ids,
               &nodes_for_id))

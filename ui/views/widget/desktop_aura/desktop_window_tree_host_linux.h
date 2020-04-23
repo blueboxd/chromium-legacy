@@ -121,7 +121,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
 #if BUILDFLAG(USE_ATK)
   bool OnAtkKeyEvent(AtkKeyEventStruct* atk_key_event) override;
 #endif
-  bool IsOverrideRedirect() const override;
+  bool IsOverrideRedirect(bool is_tiling_wm) const override;
 
   // Enables event listening after closing |dialog|.
   void EnableEventListening();

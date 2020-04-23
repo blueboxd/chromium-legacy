@@ -7,8 +7,12 @@
 
 #include <map>
 
+#include "base/callback.h"
+#include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequenced_task_runner.h"
 #include "chrome/services/app_service/public/cpp/preferred_apps_list.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -27,7 +31,7 @@ namespace apps {
 // See chrome/services/app_service/README.md.
 class AppServiceImpl : public apps::mojom::AppService {
  public:
-  explicit AppServiceImpl(PrefService* profile_prefs);
+  AppServiceImpl(PrefService* profile_prefs, const base::FilePath& profile_dir);
   ~AppServiceImpl() override;
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
@@ -100,11 +104,19 @@ class AppServiceImpl : public apps::mojom::AppService {
   // Retern the preferred_apps_ for testing.
   PreferredAppsList& GetPreferredAppsForTesting();
 
+  void SetWriteCompletedCallbackForTesting(base::OnceClosure testing_callback);
+
  private:
   void OnPublisherDisconnected(apps::mojom::AppType app_type);
 
   // Initialize the preferred apps from disk.
   void InitializePreferredApps();
+
+  // Write the preferred apps to a json file.
+  void WriteToJSON(const base::FilePath& profile_dir,
+                   const apps::PreferredAppsList& preferred_apps);
+
+  void WriteCompleted();
 
   // publishers_ is a std::map, not a mojo::RemoteSet, since we want to
   // be able to find *the* publisher for a given apps::mojom::AppType.
@@ -119,6 +131,21 @@ class AppServiceImpl : public apps::mojom::AppService {
   PrefService* const pref_service_;
 
   PreferredAppsList preferred_apps_;
+
+  base::FilePath profile_dir_;
+
+  // True if need to write preferred apps to file after the current write is
+  // completed.
+  bool should_write_preferred_apps_to_file_;
+
+  // True if it is currently writing preferred apps to file.
+  bool writing_preferred_apps_;
+
+  // Task runner where the file operations takes place. This is to make sure the
+  // write operation will be operated in sequence.
+  scoped_refptr<base::SequencedTaskRunner> const task_runner_;
+
+  base::OnceClosure write_completed_for_testing_;
 
   base::WeakPtrFactory<AppServiceImpl> weak_ptr_factory_{this};
 

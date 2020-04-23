@@ -87,6 +87,8 @@ struct ClientSettings {
 
   void UpdateFromProto(const ClientSettingsProto& proto);
 
+  float talkback_sheet_size_fraction = 0.5f;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ClientSettings);
 };

@@ -224,10 +224,6 @@ class WebWidgetClient {
                              const SkBitmap& drag_image,
                              const gfx::Point& drag_image_offset) {}
 
-  // Double tap zooms a rect in the main-frame renderer.
-  virtual void AnimateDoubleTapZoomInMainFrame(const gfx::Point& point,
-                                               const blink::WebRect& bounds) {}
-
   // Find in page zooms a rect in the main-frame renderer.
   virtual void ZoomToFindInPageRectInMainFrame(const blink::WebRect& rect) {}
 

@@ -90,12 +90,10 @@ void BrowserDesktopWindowTreeHostLinux::CloseNow() {
   DesktopWindowTreeHostLinuxImpl::CloseNow();
 }
 
-bool BrowserDesktopWindowTreeHostLinux::IsOverrideRedirect() const {
-  if (browser_frame_->tab_drag_kind() != TabDragKind::kAllTabs)
-    return false;
-
-  auto* x11_extension = GetX11Extension();
-  return x11_extension && x11_extension->IsWmTiling();
+bool BrowserDesktopWindowTreeHostLinux::IsOverrideRedirect(
+    bool is_tiling_wm) const {
+  return (browser_frame_->tab_drag_kind() == TabDragKind::kAllTabs) &&
+         is_tiling_wm;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

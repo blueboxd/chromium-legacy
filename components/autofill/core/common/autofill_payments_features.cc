@@ -47,6 +47,10 @@ const base::Feature kAutofillCreditCardAuthentication{
 const base::Feature kAutofillCreditCardUploadFeedback{
     "AutofillCreditCardUploadFeedback", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether we show a Google-issued card in the suggestions list.
+const base::Feature kAutofillEnableGoogleIssuedCard{
+    "AutofillEnableGoogleIssuedCard", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // When enabled, enable local card migration flow for user who has signed in but
 // has not turned on sync.
 const base::Feature kAutofillEnableLocalCardMigrationForNonSyncUser{
@@ -106,7 +110,7 @@ const base::Feature kAutofillUpstream{"AutofillUpstream",
 const base::Feature kAutofillUpstreamAllowAllEmailDomains{
     "AutofillUpstreamAllowAllEmailDomains", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kAutofillUpstreamEditableExpirationDate{
+const base::Feature kAutofillUpstreamEditableExpirationDate {
   "AutofillUpstreamEditableExpirationDate",
 #if defined(OS_ANDROID)
       base::FEATURE_ENABLED_BY_DEFAULT

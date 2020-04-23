@@ -122,6 +122,16 @@ interface ServiceWorkerStorageControl {
                             url.mojom.Url origin,
                             mojo_base.mojom.Time last_update_check_time) =>
       (ServiceWorkerDatabaseStatus status);
+  // Updates the registration's navigation preload enabled flag in storage.
+  UpdateNavigationPreloadEnabled(int64 registration_id,
+                                 url.mojom.Url origin,
+                                 bool enable) =>
+      (ServiceWorkerDatabaseStatus status);
+  // Updates the registration's navigation preload header in storage.
+  UpdateNavigationPreloadHeader(int64 registration_id,
+                                url.mojom.Url origin,
+                                string value) =>
+      (ServiceWorkerDatabaseStatus status);
 
   // Returns a new registration id which is guaranteed to be unique in the
   // storage. Returns blink::mojom::kInvalidServiceWorkerRegistrationId if the

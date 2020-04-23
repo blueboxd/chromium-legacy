@@ -1221,6 +1221,37 @@ cr.define('settings_passwords_check', function() {
       Polymer.dom.flush();
       assertTrue(isElementVisible(passwordCheckListItem.$$('#alreadyChanged')));
     });
+
+    // Verify if clicking "Edit password" in edit disclaimer opens edit dialog
+    test('testEditDisclaimer', async function() {
+      passwordManager.data.leakedCredentials =
+          [autofill_test_util.makeCompromisedCredential(
+              'google.com', 'jdoerrie', 'LEAKED')];
+      passwordManager.setPlaintextPassword('password');
+
+      const checkPasswordSection = createCheckPasswordSection();
+      await passwordManager.whenCalled('getCompromisedCredentials');
+
+      Polymer.dom.flush();
+      const listElements = checkPasswordSection.$.leakedPasswordList;
+      const node = listElements.children[1];
+      // Clicking change password to show "Already changed password" link
+      node.$$('#changePasswordButton').click();
+      Polymer.dom.flush();
+      // Clicking "Already changed password" to open edit disclaimer
+      node.$$('#alreadyChanged').click();
+      Polymer.dom.flush();
+
+      assertTrue(isElementVisible(
+          checkPasswordSection.$$('settings-password-edit-disclaimer-dialog')));
+      checkPasswordSection.$$('settings-password-edit-disclaimer-dialog')
+          .$.edit.click();
+
+      await passwordManager.whenCalled('getPlaintextCompromisedPassword');
+      Polymer.dom.flush();
+      assertTrue(isElementVisible(
+          checkPasswordSection.$$('settings-password-check-edit-dialog')));
+    });
   });
   // #cr_define_end
 });

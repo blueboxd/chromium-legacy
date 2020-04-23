@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/widget/desktop_aura/x11_topmost_window_finder.h"
+#include "ui/platform_window/x11/x11_topmost_window_finder.h"
 
 #include <stddef.h>
 
@@ -11,7 +11,7 @@
 #include "ui/platform_window/x11/x11_window.h"
 #include "ui/platform_window/x11/x11_window_manager.h"
 
-namespace views {
+namespace ui {
 
 X11TopmostWindowFinder::X11TopmostWindowFinder() = default;
 
@@ -23,30 +23,30 @@ XID X11TopmostWindowFinder::FindLocalProcessWindowAt(
   screen_loc_in_pixels_ = screen_loc_in_pixels;
   ignore_ = ignore;
 
-  std::vector<ui::X11Window*> local_process_windows =
-      ui::X11WindowManager::GetInstance()->GetAllOpenWindows();
+  std::vector<X11Window*> local_process_windows =
+      X11WindowManager::GetInstance()->GetAllOpenWindows();
   if (std::none_of(local_process_windows.cbegin(), local_process_windows.cend(),
                    [this](auto* window) {
                      return ShouldStopIteratingAtLocalProcessWindow(window);
                    }))
     return gfx::kNullAcceleratedWidget;
 
-  ui::EnumerateTopLevelWindows(this);
+  EnumerateTopLevelWindows(this);
   return toplevel_;
 }
 
 XID X11TopmostWindowFinder::FindWindowAt(
     const gfx::Point& screen_loc_in_pixels) {
   screen_loc_in_pixels_ = screen_loc_in_pixels;
-  ui::EnumerateTopLevelWindows(this);
+  EnumerateTopLevelWindows(this);
   return toplevel_;
 }
 
 bool X11TopmostWindowFinder::ShouldStopIterating(XID xid) {
-  if (!ui::IsWindowVisible(xid))
+  if (!IsWindowVisible(xid))
     return false;
 
-  auto* window = ui::X11WindowManager::GetInstance()->GetWindow(xid);
+  auto* window = X11WindowManager::GetInstance()->GetWindow(xid);
   if (window) {
     if (ShouldStopIteratingAtLocalProcessWindow(window)) {
       toplevel_ = xid;
@@ -55,7 +55,7 @@ bool X11TopmostWindowFinder::ShouldStopIterating(XID xid) {
     return false;
   }
 
-  if (ui::WindowContainsPoint(xid, screen_loc_in_pixels_)) {
+  if (WindowContainsPoint(xid, screen_loc_in_pixels_)) {
     toplevel_ = xid;
     return true;
   }
@@ -63,7 +63,7 @@ bool X11TopmostWindowFinder::ShouldStopIterating(XID xid) {
 }
 
 bool X11TopmostWindowFinder::ShouldStopIteratingAtLocalProcessWindow(
-    ui::X11Window* window) {
+    X11Window* window) {
   if (ignore_.find(window->GetWidget()) != ignore_.end())
     return false;
 
@@ -81,4 +81,4 @@ bool X11TopmostWindowFinder::ShouldStopIteratingAtLocalProcessWindow(
   return window->ContainsPointInXRegion(window_point);
 }
 
-}  // namespace views
+}  // namespace ui

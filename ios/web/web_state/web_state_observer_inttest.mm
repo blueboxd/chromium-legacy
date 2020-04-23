@@ -78,7 +78,7 @@ CRWSessionStorage* GetTestSessionStorage(const GURL& testUrl) {
   CRWSessionStorage* result = [[CRWSessionStorage alloc] init];
   result.lastCommittedItemIndex = 0;
   CRWNavigationItemStorage* item = [[CRWNavigationItemStorage alloc] init];
-  [item setVirtualURL:testUrl];
+  [item setURL:testUrl];
   [result setItemStorages:@[ item ]];
   return result;
 }
@@ -2349,77 +2349,6 @@ TEST_F(WebStateObserverTest, NewPageLoadDestroysForwardItems) {
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
   ASSERT_TRUE(LoadUrl(url));
-}
-
-// Verifies that WebState::CreateWithStorageSession does not call any
-// WebStateObserver callbacks.
-// TODO(crbug.com/738020): Remove this test after deprecating legacy navigation
-// manager. Restore session in slim navigation manager is better tested in
-// RestoreSessionOnline.
-TEST_F(WebStateObserverTest, RestoreSession) {
-  // Create session storage.
-  CRWNavigationItemStorage* item = [[CRWNavigationItemStorage alloc] init];
-  GURL url(test_server_->GetURL("/echo"));
-  item.virtualURL = url;
-  NSArray<CRWNavigationItemStorage*>* item_storages = @[ item ];
-
-  // Create the session with storage and add observer.
-  WebState::CreateParams params(GetBrowserState());
-  CRWSessionStorage* session_storage = [[CRWSessionStorage alloc] init];
-  session_storage.itemStorages = item_storages;
-  auto web_state = WebState::CreateWithStorageSession(params, session_storage);
-  web_state->SetKeepRenderProcessAlive(true);
-
-  StrictMock<WebStateObserverMock> observer;
-  ScopedObserver<WebState, WebStateObserver> scoped_observer(&observer);
-  scoped_observer.Add(web_state.get());
-
-  NavigationContext* context = nullptr;
-  int32_t nav_id = 0;
-  // Load restore_session.html with session history.
-  EXPECT_CALL(observer, DidStartLoading(web_state.get()));
-  EXPECT_CALL(observer, DidStopLoading(web_state.get()));
-  // Load restore_session.html with targetUrl=|url|.
-  EXPECT_CALL(observer, DidStartLoading(web_state.get()));
-  EXPECT_CALL(observer, DidStopLoading(web_state.get()));
-  // Load restored |url|.
-  EXPECT_CALL(observer, DidStartLoading(web_state.get()));
-
-  EXPECT_CALL(observer, DidStartNavigation(web_state.get(), _))
-      .WillOnce(VerifyRestorationStartedContext(web_state.get(), url, &context,
-                                                &nav_id));
-
-  EXPECT_CALL(observer, DidFinishNavigation(web_state.get(), _))
-      .WillOnce(VerifyRestorationFinishedContext(
-          web_state.get(), url, kExpectedMimeType, &context, &nav_id));
-  EXPECT_CALL(observer, TitleWasSet(web_state.get()))
-      .WillOnce(VerifyTitle(url.GetContent()));
-  EXPECT_CALL(observer, DidStopLoading(web_state.get()));
-
-  __block bool page_loaded = false;
-  EXPECT_CALL(observer,
-              PageLoaded(web_state.get(), PageLoadCompletionStatus::SUCCESS))
-      .WillOnce(::testing::Assign(&page_loaded, true));
-
-  // Trigger the session restoration.
-  NavigationManager* navigation_manager = web_state->GetNavigationManager();
-  // TODO(crbug.com/873729): The session will not be restored until
-  // LoadIfNecessary call. Fix the bug and replace this call with
-  // SessionStorageBuilder::ExtractSessionState().
-  navigation_manager->LoadIfNecessary();
-
-  // Wait until the session is restored.
-  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
-    return navigation_manager->GetItemCount() == 1;
-  }));
-  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
-    web::NavigationItem* item = navigation_manager->GetLastCommittedItem();
-    return item && item->GetURL() == url;
-  }));
-
-  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
-    return page_loaded;
-  }));
 }
 
 // Tests callbacks for restoring session and subsequently going back to

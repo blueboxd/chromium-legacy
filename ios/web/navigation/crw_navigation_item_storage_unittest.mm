@@ -28,7 +28,8 @@ class CRWNavigationItemStorageTest : public PlatformTest {
   CRWNavigationItemStorageTest()
       : item_storage_([[CRWNavigationItemStorage alloc] init]) {
     // Set up |item_storage_|.
-    [item_storage_ setVirtualURL:GURL("http://init.test")];
+    [item_storage_ setURL:GURL("http://url.test")];
+    [item_storage_ setVirtualURL:GURL("http://virtual.test")];
     [item_storage_ setReferrer:web::Referrer(GURL("http://referrer.url"),
                                              web::ReferrerPolicyDefault)];
     [item_storage_ setTimestamp:base::Time::Now()];
@@ -61,4 +62,29 @@ TEST_F(CRWNavigationItemStorageTest, EncodeDecode) {
   unarchiver.requiresSecureCoding = NO;
   id decoded = [unarchiver decodeObjectForKey:NSKeyedArchiveRootObjectKey];
   EXPECT_TRUE(web::ItemStoragesAreEqual(item_storage(), decoded));
+}
+
+// Tests that unarchiving CRWNavigationItemStorage data with the URL key being
+// removed is working.
+// TODO(crbug.com/1073378): this is a temporary workaround added in M84 to
+// support old client that don't have the kNavigationItemStorageURLKey. It
+// should be removed once enough time has passed.
+TEST_F(CRWNavigationItemStorageTest, EncodeDecodeNoURL) {
+  NSKeyedArchiver* archiver =
+      [[NSKeyedArchiver alloc] initRequiringSecureCoding:NO];
+  std::string virtualURL = item_storage().virtualURL.spec();
+  [archiver encodeBytes:reinterpret_cast<const uint8_t*>(virtualURL.data())
+                 length:virtualURL.size()
+                 forKey:web::kNavigationItemStorageVirtualURLKey];
+
+  NSKeyedUnarchiver* unarchiver =
+      [[NSKeyedUnarchiver alloc] initForReadingFromData:archiver.encodedData
+                                                  error:nil];
+  unarchiver.requiresSecureCoding = NO;
+  CRWNavigationItemStorage* decoded =
+      [[CRWNavigationItemStorage alloc] initWithCoder:unarchiver];
+
+  // If the URL isn't encoded, the virtual URL is used.
+  EXPECT_EQ(item_storage().virtualURL, decoded.URL);
+  EXPECT_EQ(item_storage().virtualURL, decoded.virtualURL);
 }

@@ -117,6 +117,9 @@ extern const char kAutofillCacheQueryResponsesDescription[];
 extern const char kAutofillEnableCompanyNameName[];
 extern const char kAutofillEnableCompanyNameDescription[];
 
+extern const char kAutofillEnableGoogleIssuedCardName[];
+extern const char kAutofillEnableGoogleIssuedCardDescription[];
+
 extern const char kAutofillEnableLocalCardMigrationForNonSyncUserName[];
 extern const char kAutofillEnableLocalCardMigrationForNonSyncUserDescription[];
 

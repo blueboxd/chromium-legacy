@@ -62,8 +62,8 @@ unsigned WebFormElement::UniqueRendererFormId() const {
   return ConstUnwrap<HTMLFormElement>()->UniqueRendererFormId();
 }
 
-void WebFormElement::GetFormControlElements(
-    WebVector<WebFormControlElement>& result) const {
+WebVector<WebFormControlElement> WebFormElement::GetFormControlElements()
+    const {
   const HTMLFormElement* form = ConstUnwrap<HTMLFormElement>();
   Vector<WebFormControlElement> form_control_elements;
   for (const auto& element : form->ListedElements()) {
@@ -73,7 +73,7 @@ void WebFormElement::GetFormControlElements(
     }
   }
 
-  result.Assign(form_control_elements);
+  return form_control_elements;
 }
 
 WebFormElement::WebFormElement(HTMLFormElement* e) : WebElement(e) {}

@@ -111,7 +111,7 @@
 #include "ui/gfx/gdi_util.h"
 #endif
 
-#if defined(USE_X11)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #include "content/browser/accessibility/browser_accessibility_auralinux.h"
 #endif
 
@@ -557,7 +557,7 @@ gfx::NativeViewAccessible RenderWidgetHostViewAura::GetNativeViewAccessible() {
   if (manager)
     return ToBrowserAccessibilityWin(manager->GetRoot())->GetCOM();
 
-#elif defined(USE_X11)
+#elif defined(OS_LINUX) && !defined(OS_CHROMEOS)
   BrowserAccessibilityManager* manager =
       host()->GetOrCreateRootBrowserAccessibilityManager();
   if (manager && manager->GetRoot())

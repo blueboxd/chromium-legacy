@@ -293,7 +293,7 @@ TEST_F(WebStateTest, RestoreLargeSession) {
       [NSMutableArray arrayWithCapacity:kItemCount];
   for (unsigned int i = 0; i < kItemCount; i++) {
     CRWNavigationItemStorage* item = [[CRWNavigationItemStorage alloc] init];
-    item.virtualURL = GURL(base::StringPrintf("http://www.%u.com", i));
+    item.URL = GURL(base::StringPrintf("http://www.%u.com", i));
     item.title = base::ASCIIToUTF16(base::StringPrintf("Test%u", i));
     [item_storages addObject:item];
   }
@@ -539,7 +539,7 @@ TEST_F(WebStateTest, RestorePageTitles) {
       [NSMutableArray arrayWithCapacity:kItemCount];
   for (unsigned int i = 0; i < kItemCount; i++) {
     CRWNavigationItemStorage* item = [[CRWNavigationItemStorage alloc] init];
-    item.virtualURL = GURL(base::StringPrintf("http://www.%u.com", i));
+    item.URL = GURL(base::StringPrintf("http://www.%u.com", i));
     item.title = base::ASCIIToUTF16(base::StringPrintf("Test%u", i));
     [item_storages addObject:item];
   }

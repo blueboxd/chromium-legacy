@@ -16,7 +16,8 @@
 namespace web {
 
 // Keys used to serialize navigation properties.
-NSString* const kNavigationItemStorageURLKey = @"virtualUrlString";
+NSString* const kNavigationItemStorageURLKey = @"urlString";
+NSString* const kNavigationItemStorageVirtualURLKey = @"virtualUrlString";
 NSString* const kNavigationItemStorageReferrerURLKey = @"referrerUrlString";
 NSString* const kNavigationItemStorageReferrerURLDeprecatedKey = @"referrer";
 NSString* const kNavigationItemStorageReferrerPolicyKey = @"referrerPolicy";
@@ -33,22 +34,12 @@ NSString* const kNavigationItemStorageUserAgentTypeKey = @"userAgentType";
 
 @implementation CRWNavigationItemStorage
 
-@synthesize virtualURL = _virtualURL;
-@synthesize referrer = _referrer;
-@synthesize timestamp = _timestamp;
-@synthesize title = _title;
-@synthesize displayState = _displayState;
-@synthesize shouldSkipRepostFormConfirmation =
-    _shouldSkipRepostFormConfirmation;
-@synthesize userAgentType = _userAgentType;
-@synthesize POSTData = _POSTData;
-@synthesize HTTPRequestHeaders = _HTTPRequestHeaders;
-
 #pragma mark - NSObject
 
 - (NSString*)description {
   NSMutableString* description =
       [NSMutableString stringWithString:[super description]];
+  [description appendFormat:@"URL : %s, ", _URL.spec().c_str()];
   [description appendFormat:@"virtualURL : %s, ", _virtualURL.spec().c_str()];
   [description appendFormat:@"referrer : %s, ", _referrer.url.spec().c_str()];
   [description appendFormat:@"timestamp : %f, ", _timestamp.ToCFAbsoluteTime()];
@@ -71,10 +62,21 @@ NSString* const kNavigationItemStorageUserAgentTypeKey = @"userAgentType";
   self = [super init];
   if (self) {
     // Desktop chrome only persists virtualUrl_ and uses it to feed the url
-    // when creating a NavigationEntry.
-    if ([aDecoder containsValueForKey:web::kNavigationItemStorageURLKey]) {
+    // when creating a NavigationEntry. Chrome on iOS is also storing _url.
+    if ([aDecoder
+            containsValueForKey:web::kNavigationItemStorageVirtualURLKey]) {
       _virtualURL = GURL(web::nscoder_util::DecodeString(
+          aDecoder, web::kNavigationItemStorageVirtualURLKey));
+    }
+
+    if ([aDecoder containsValueForKey:web::kNavigationItemStorageURLKey]) {
+      _URL = GURL(web::nscoder_util::DecodeString(
           aDecoder, web::kNavigationItemStorageURLKey));
+    } else {
+      // TODO(crbug.com/1073378): this is a temporary workaround added in M84 to
+      // support old client that don't have the kNavigationItemStorageURLKey. It
+      // should be removed once enough time has passed.
+      _URL = _virtualURL;
     }
 
     if ([aDecoder
@@ -135,9 +137,11 @@ NSString* const kNavigationItemStorageUserAgentTypeKey = @"userAgentType";
 
 - (void)encodeWithCoder:(NSCoder*)aCoder {
   // Desktop Chrome doesn't persist |url_| or |originalUrl_|, only
-  // |virtualUrl_|.
+  // |virtualUrl_|. Chrome on iOS is persisting |url_|.
+  web::nscoder_util::EncodeString(
+      aCoder, web::kNavigationItemStorageVirtualURLKey, _virtualURL.spec());
   web::nscoder_util::EncodeString(aCoder, web::kNavigationItemStorageURLKey,
-                                  _virtualURL.spec());
+                                  _URL.spec());
   web::nscoder_util::EncodeString(
       aCoder, web::kNavigationItemStorageReferrerURLKey, _referrer.url.spec());
   [aCoder encodeInt:_referrer.policy

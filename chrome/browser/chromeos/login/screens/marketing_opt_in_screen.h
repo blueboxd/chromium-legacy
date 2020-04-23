@@ -39,11 +39,11 @@ class MarketingOptInScreen : public BaseScreen {
     CA,
   };
 
+  static MarketingOptInScreen* Get(ScreenManager* manager);
+
   MarketingOptInScreen(MarketingOptInScreenView* view,
                        const base::RepeatingClosure& exit_callback);
   ~MarketingOptInScreen() override;
-
-  static MarketingOptInScreen* Get(ScreenManager* manager);
 
   // On "Get Started" button pressed.
   void OnGetStarted(bool chromebook_email_opt_in);

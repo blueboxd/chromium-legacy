@@ -612,7 +612,7 @@ TEST_F(PermissionManagerTest, PermissionIgnoredCleanup) {
 
   NavigateAndCommit(GURL("https://foobar.com"));
 
-  EXPECT_FALSE(callback_called());
+  EXPECT_TRUE(callback_called());
   EXPECT_TRUE(PendingRequestsEmpty());
 }
 

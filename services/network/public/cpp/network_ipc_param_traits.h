@@ -31,6 +31,7 @@
 #include "services/network/public/cpp/origin_policy.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
+#include "services/network/public/mojom/blocked_by_response_reason.mojom-shared.h"
 #include "services/network/public/mojom/cors.mojom-shared.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "services/network/public/mojom/trust_tokens.mojom-shared.h"
@@ -92,8 +93,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::RequestMode,
 IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::CorsPreflightPolicy,
                           network::mojom::CorsPreflightPolicy::kMaxValue)
 
-IPC_ENUM_TRAITS_MAX_VALUE(network::BlockedByResponseReason,
-                          network::BlockedByResponseReason::kMaxValue)
+IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::BlockedByResponseReason,
+                          network::mojom::BlockedByResponseReason::kMaxValue)
 
 IPC_STRUCT_TRAITS_BEGIN(network::CorsErrorStatus)
   IPC_STRUCT_TRAITS_MEMBER(cors_error)

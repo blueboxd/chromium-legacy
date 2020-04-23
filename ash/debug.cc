@@ -69,7 +69,8 @@ void PrintWindowHierarchy(const aura::Window* active_window,
     *out << " " << WindowState::Get(window)->GetStateType();
   *out << ((window == active_window) ? " [active]" : "")
        << ((window == focused_window) ? " [focused]" : "")
-       << (window->IsVisible() ? " visible" : "") << " "
+       << (window->transparent() ? " [transparent]" : "")
+       << (window->IsVisible() ? " [visible]" : "") << " "
        << (window->occlusion_state() != aura::Window::OcclusionState::UNKNOWN
                ? aura::Window::OcclusionStateToString(window->occlusion_state())
                : "")

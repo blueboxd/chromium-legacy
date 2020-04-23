@@ -44,6 +44,11 @@
         margin: var(--cr-toolbar-icon-margin);
         width: var(--cr-toolbar-icon-container-size);
       }
+
+      /* Bolding occurs in the JS. */
+      b {
+        color: var(--cr-primary-text-color);
+      }
     </style>
     <div focus-row-container>
       <!-- The focus-row-control is aria-disabled because the aria-label of
@@ -58,8 +63,8 @@
           selectable>
         <iron-icon id="resultIcon" icon="[[getResultIcon_(searchResult)]]">
         </iron-icon>
-        <div id="resultText" aria-hidden="true">
-          [[resultText_]]
+        <div id="resultText" aria-hidden="true"
+            inner-h-t-m-l="[[getResultInnerHtml_(searchResult)]]">
         </div>
         <iron-icon id="actionTypeIcon" icon="cr:arrow-forward">
         </iron-icon>

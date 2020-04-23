@@ -4,6 +4,8 @@
 
 module blink.mojom;
 
+import "ui/gfx/geometry/mojom/geometry.mojom";
+
 // Implemented in Blink, this interface defines frame-widget-specific methods that
 // will be invoked from the browser process (e.g. blink::WebFrameWidget).
 interface FrameWidget {
@@ -17,7 +19,11 @@ interface FrameWidget {
 // Implemented in Browser, this interface defines frame-widget-specific methods that
 // will be invoked from the render process (e.g. content::RenderWidgetHostImpl).
 interface FrameWidgetHost {
-  //TODO(dtapuska): Implement more methods.
+  // Sent by a widget to the browser to request a page scale animation in the
+  // main-frame's widget.
+  AnimateDoubleTapZoomInMainFrame(
+                    gfx.mojom.Point tap_point,
+                    gfx.mojom.Rect rect_to_zoom);
 };
 
 // Implemented in Blink, this interface defines widget-specific methods that

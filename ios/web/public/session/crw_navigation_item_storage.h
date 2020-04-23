@@ -21,6 +21,8 @@ namespace web {
 
 // Current URL (std::string).
 extern NSString* const kNavigationItemStorageURLKey;
+// Current URL (std::string).
+extern NSString* const kNavigationItemStorageVirtualURLKey;
 // Page referrer URL (std::string).
 extern NSString* const kNavigationItemStorageReferrerURLKey;
 // Page referrer URL (NSURL). Deprecated, used for backward compatibility.
@@ -50,6 +52,7 @@ extern NSString* const kNavigationItemStorageUserAgentTypeKey;
 // properties.
 @interface CRWNavigationItemStorage : NSObject <NSCoding>
 
+@property(nonatomic, assign) GURL URL;
 @property(nonatomic, assign) GURL virtualURL;
 @property(nonatomic, assign) web::Referrer referrer;
 @property(nonatomic, assign) base::Time timestamp;

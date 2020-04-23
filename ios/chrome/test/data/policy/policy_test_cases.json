@@ -46,6 +46,207 @@
     ]
   },
 
+  "DefaultSearchProviderEnabled": {
+    "os": [ "ios" ],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "DefaultSearchProviderEnabled": false },
+        "prefs": { "default_search_provider_data.template_url_data": {} }
+      },
+      {
+        "policies": {
+          "DefaultSearchProviderEnabled": true,
+          "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}",
+          "DefaultSearchProviderKeyword": "google"
+        },
+        "prefs": { "default_search_provider_data.template_url_data": {} }
+      }
+    ]
+  },
+
+  "DefaultSearchProviderName": {
+    "os": [ "ios" ],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "DefaultSearchProviderEnabled": true,
+          "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}",
+          "DefaultSearchProviderKeyword": "google",
+          "DefaultSearchProviderName": "google.com"
+        },
+        "prefs": { "default_search_provider_data.template_url_data": {} }
+      }
+    ]
+  },
+
+  "DefaultSearchProviderKeyword": {
+    "os": [ "ios" ],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "DefaultSearchProviderEnabled": true,
+          "DefaultSearchProviderKeyword": "google",
+          "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}"
+        },
+        "prefs": { "default_search_provider_data.template_url_data": {} }
+      }
+    ]
+  },
+
+  "DefaultSearchProviderSearchURL": {
+    "os": [ "ios" ],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "DefaultSearchProviderEnabled": true,
+          "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}",
+          "DefaultSearchProviderKeyword": "google"
+        },
+        "prefs": { "default_search_provider_data.template_url_data": {} }
+      }
+    ]
+  },
+
+  "DefaultSearchProviderSuggestURL": {
+    "os": [ "ios" ],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "DefaultSearchProviderEnabled": true,
+          "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}",
+          "DefaultSearchProviderKeyword": "google",
+          "DefaultSearchProviderSuggestURL": "http://www.google.com/suggest?q={searchTerms}"
+        },
+        "prefs": { "default_search_provider_data.template_url_data": {} }
+      }
+    ]
+  },
+
+  "DefaultSearchProviderIconURL": {
+    "os": [ "ios" ],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "DefaultSearchProviderEnabled": true,
+          "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}",
+          "DefaultSearchProviderKeyword": "google",
+          "DefaultSearchProviderIconURL": "http://www.google.com/favicon.ico"
+        },
+        "prefs": { "default_search_provider_data.template_url_data": {} }
+      }
+    ]
+  },
+
+  "DefaultSearchProviderEncodings": {
+    "os": [ "ios" ],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "DefaultSearchProviderEnabled": true,
+          "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}",
+          "DefaultSearchProviderKeyword": "google",
+          "DefaultSearchProviderEncodings": [
+            "UTF-8"
+          ]
+        },
+        "prefs": { "default_search_provider_data.template_url_data": {} }
+      }
+    ]
+  },
+
+  "DefaultSearchProviderAlternateURLs": {
+    "os": [ "ios" ],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "DefaultSearchProviderEnabled": true,
+          "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}",
+          "DefaultSearchProviderKeyword": "google",
+          "DefaultSearchProviderAlternateURLs": [
+            "http://www.google.com/#q={searchTerms}",
+            "http://www.google.com/search#q={searchTerms}"
+          ]
+        },
+        "prefs": { "default_search_provider_data.template_url_data": {} }
+      }
+    ]
+  },
+
+  "DefaultSearchProviderImageURL": {
+    "os": [ "ios" ],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "DefaultSearchProviderEnabled": true,
+          "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}",
+          "DefaultSearchProviderKeyword": "google",
+          "DefaultSearchProviderImageURL": "http://www.google.com/searchbyimage/upload"
+        },
+        "prefs": { "default_search_provider_data.template_url_data": {} }
+      }
+    ]
+  },
+
+  "DefaultSearchProviderNewTabURL": {
+    "os": [ "ios" ],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "DefaultSearchProviderEnabled": true,
+          "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}",
+          "DefaultSearchProviderKeyword": "google",
+          "DefaultSearchProviderNewTabURL": "http://www.google.com/newtab"
+        },
+        "prefs": { "default_search_provider_data.template_url_data": {} }
+      }
+    ]
+  },
+
+  "DefaultSearchProviderSearchURLPostParams": {
+    "os": [ "ios" ],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "DefaultSearchProviderEnabled": true,
+          "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}",
+          "DefaultSearchProviderKeyword": "google",
+          "DefaultSearchProviderSearchURLPostParams": ""
+        },
+        "prefs": { "default_search_provider_data.template_url_data": {} }
+      }
+    ]
+  },
+
+  "DefaultSearchProviderSuggestURLPostParams": {
+    "os": [ "ios" ],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "DefaultSearchProviderEnabled": true,
+          "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}",
+          "DefaultSearchProviderKeyword": "google",
+          "DefaultSearchProviderSuggestURLPostParams": ""
+        },
+        "prefs": { "default_search_provider_data.template_url_data": {}}
+      }
+    ]
+  },
+
+  "DefaultSearchProviderImageURLPostParams": {
+    "os": [ "ios" ],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "DefaultSearchProviderEnabled": true,
+          "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}",
+          "DefaultSearchProviderKeyword": "google",
+          "DefaultSearchProviderImageURLPostParams": "image_content={imageThumbnail},image_url={imageURL},sbisrc={imageSearchSource}"
+        },
+        "prefs": { "default_search_provider_data.template_url_data": {} }
+      }
+    ]
+  },
+
   "EditBookmarksEnabled": {
     "os": [ "ios" ],
     "policy_pref_mapping_test": [
@@ -114,7 +315,5 @@
   },
 
   "DefaultPopupsSetting": {},
-  "DefaultSearchProviderEnabled": {},
-  "DefaultSearchProviderName": {},
   "ManagedBookmarks": {}
 }

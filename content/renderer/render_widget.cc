@@ -3065,15 +3065,6 @@ void RenderWidget::SetNeedsUnbufferedInputForDebugger(bool unbuffered) {
   input_event_queue_->SetNeedsUnbufferedInputForDebugger(unbuffered);
 }
 
-void RenderWidget::AnimateDoubleTapZoomInMainFrame(
-    const gfx::Point& point,
-    const blink::WebRect& rect_to_zoom) {
-  // Only oopif subframes should be sending this message.
-  DCHECK(!delegate());
-  Send(new WidgetHostMsg_AnimateDoubleTapZoomInMainFrame(routing_id(), point,
-                                                         rect_to_zoom));
-}
-
 void RenderWidget::ZoomToFindInPageRectInMainFrame(
     const blink::WebRect& rect_to_zoom) {
   // Only oopif subframes should be sending this message.

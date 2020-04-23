@@ -172,6 +172,7 @@ void StorageNamespace::RemoveInspectorStorageAgent(
 
 void StorageNamespace::Trace(Visitor* visitor) {
   visitor->Trace(inspector_agents_);
+  visitor->Trace(namespace_);
   Supplement<Page>::Trace(visitor);
 }
 
@@ -207,7 +208,7 @@ void StorageNamespace::ResetStorageAreaAndNamespaceConnections() {
 
 void StorageNamespace::EnsureConnected() {
   DCHECK(IsSessionStorage());
-  if (namespace_)
+  if (namespace_.is_bound())
     return;
   controller_->dom_storage()->BindSessionStorageNamespace(
       namespace_id_,

@@ -163,8 +163,12 @@ Polymer({
     }
   },
 
-  /** @private */
-  onAlreadyChangedClick_(e) {
-    e.preventDefault();
+  /**
+   * @param {!Event} event
+   * @private
+   */
+  onAlreadyChangedClick_(event) {
+    event.preventDefault();
+    this.fire('already-changed-password-click', event.target);
   },
 });

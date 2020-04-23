@@ -2754,6 +2754,7 @@ jumbo_static_library("ui") {
       sources += [ "views/tabs/window_finder_chromeos.cc" ]
     } else if (use_x11) {
       sources += [ "views/tabs/window_finder_x11.cc" ]
+      deps += [ "//ui/platform_window/x11" ]
     } else {
       assert(use_ozone)
       sources += [ "views/tabs/window_finder_ozone.cc" ]

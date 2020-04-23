@@ -2075,6 +2075,30 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithAppBanner,
       blink::scheduler::WebSchedulerTrackedFeature::kAppBanner, FROM_HERE);
 }
 
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, DoesNotCacheIfWebDatabase) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // 1) Navigate to a page with WebDatabase usage.
+  GURL url(embedded_test_server()->GetURL("/simple_database.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver deleted(rfh_a);
+
+  // 2) Navigate away.
+  shell()->LoadURL(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  // The page uses WebDatabase so it should be deleted.
+  deleted.WaitUntilDeleted();
+
+  // 3) Go back to the page with WebDatabase.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  ExpectNotRestored(
+      {BackForwardCacheMetrics::NotRestoredReason::kBlocklistedFeatures},
+      FROM_HERE);
+  ExpectBlocklistedFeature(
+      blink::scheduler::WebSchedulerTrackedFeature::kWebDatabase, FROM_HERE);
+}
+
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
                        DoesNotCacheIfPageUnreachable) {
   ASSERT_TRUE(embedded_test_server()->Start());

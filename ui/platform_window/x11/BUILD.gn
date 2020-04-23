@@ -33,6 +33,8 @@ jumbo_component("x11") {
   defines = [ "X11_WINDOW_IMPLEMENTATION" ]
 
   sources = [
+    "x11_topmost_window_finder.cc",
+    "x11_topmost_window_finder.h",
     "x11_window.cc",
     "x11_window.h",
     "x11_window_export.h",

@@ -75,7 +75,7 @@ public class CriteriaHelper {
      */
     public static void pollInstrumentationThread(
             Runnable criteria, long maxTimeoutMs, long checkIntervalMs) {
-        AssertionError assertionError = null;
+        AssertionError assertionError;
         try {
             criteria.run();
             return;

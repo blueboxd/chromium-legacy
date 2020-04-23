@@ -17,7 +17,6 @@ class MockSyncSessionsClient : public SyncSessionsClient {
   MockSyncSessionsClient();
   ~MockSyncSessionsClient() override;
 
-  MOCK_METHOD0(GetFaviconService, favicon::FaviconService*());
   MOCK_METHOD0(GetHistoryService, history::HistoryService*());
   MOCK_METHOD0(GetSessionSyncPrefs, SessionSyncPrefs*());
   MOCK_METHOD0(GetStoreFactory, syncer::RepeatingModelTypeStoreFactory());

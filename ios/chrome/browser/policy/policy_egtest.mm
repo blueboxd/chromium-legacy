@@ -110,6 +110,14 @@ void VerifyBoolPolicy(const std::string& policy_key,
                                                     IDS_POLICY_SHOW_UNSET)];
 }
 
+// Tests for the DefaultSearchProviderEnabled policy.
+- (void)testDefaultSearchProviderEnabled {
+  // Disable default search provider via policy and make sure it does not crash
+  // the omnibox UI.
+  SetPolicy(false, policy::key::kDefaultSearchProviderEnabled);
+  [ChromeEarlGrey loadURL:GURL("chrome://policy")];
+}
+
 // Tests for the PasswordManagerEnabled policy.
 - (void)testPasswordManagerEnabled {
   VerifyBoolPolicy(policy::key::kPasswordManagerEnabled,

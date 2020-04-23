@@ -319,7 +319,7 @@ bool DesktopWindowTreeHostLinux::OnAtkKeyEvent(AtkKeyEventStruct* atk_event) {
 }
 #endif
 
-bool DesktopWindowTreeHostLinux::IsOverrideRedirect() const {
+bool DesktopWindowTreeHostLinux::IsOverrideRedirect(bool is_tiling_wm) const {
   // BrowserDesktopWindowTreeHostLinux implements this for browser windows.
   return false;
 }

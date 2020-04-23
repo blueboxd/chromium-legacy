@@ -21,12 +21,12 @@ PasswordFeatureManagerImpl::PasswordFeatureManagerImpl(
 bool PasswordFeatureManagerImpl::IsGenerationEnabled() const {
   switch (password_manager_util::GetPasswordSyncState(sync_service_)) {
     case NOT_SYNCING:
-      return password_manager_util::ShouldShowAccountStorageOptIn(
-          pref_service_, sync_service_);
+      return ShouldShowAccountStorageOptIn();
     case SYNCING_WITH_CUSTOM_PASSPHRASE:
     case SYNCING_NORMAL_ENCRYPTION:
-    case ACCOUNT_PASSWORDS_ACTIVE_NORMAL_ENCRYPTION:
       return true;
+    case ACCOUNT_PASSWORDS_ACTIVE_NORMAL_ENCRYPTION:
+      return GetDefaultPasswordStore() == PasswordForm::Store::kAccountStore;
   }
 }
 

@@ -232,11 +232,16 @@ void ExtensionDialog::InitWindow(gfx::NativeWindow parent,
   window->SetBounds(bounds);
 
 #if defined(OS_CHROMEOS)
+  aura::Window* native_view = window->GetNativeWindow();
   if (init_params.title_color) {
-    aura::Window* native_view = window->GetNativeWindow();
     // Frame active color changes the title color when dialog is active.
     native_view->SetProperty(ash::kFrameActiveColorKey,
                              init_params.title_color.value());
+  }
+  if (init_params.title_inactive_color) {
+    // Frame inactive color changes the title color when dialog is inactive.
+    native_view->SetProperty(ash::kFrameInactiveColorKey,
+                             init_params.title_inactive_color.value());
   }
 #endif
 

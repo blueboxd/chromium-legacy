@@ -4,19 +4,19 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 </head>
-<body id="body">
-
-<div role="listbox">
-<div role="option" tabindex="-1">option 1</div>
-<div role="option" aria-label="label 2">option 2</div>
+<body>
+  <div id="container">
+    <div role="listbox">
+      <div role="option" tabindex="-1">option 1</div>
+      <div role="option" aria-label="label 2">option 2</div>
+    </div>
+  </div>
 </div>
 
 <script>
 test((t) => {
-    var body = document.getElementById("body");
-    body.focus();
-
-    var listBox = accessibilityController.focusedElement.childAtIndex(0).childAtIndex(0);
+    var container = accessibilityController.accessibleElementById("container");
+    var listBox = container.childAtIndex(0);
     assert_equals(listBox.role, "AXRole: AXListBox");
 
     var firstChild = listBox.childAtIndex(0);

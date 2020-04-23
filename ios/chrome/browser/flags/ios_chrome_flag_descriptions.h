@@ -23,6 +23,11 @@ extern const char kAutofillCreditCardUploadDescription[];
 extern const char kAutofillEnableCompanyNameName[];
 extern const char kAutofillEnableCompanyNameDescription[];
 
+// Title and description for the flag to control enabling Google-issued cards in
+// autofill suggestions.
+extern const char kAutofillEnableGoogleIssuedCardName[];
+extern const char kAutofillEnableGoogleIssuedCardDescription[];
+
 // Title and description for the flag to control surfacing server card nickname.
 extern const char kAutofillEnableSurfacingServerCardNicknameName[];
 extern const char kAutofillEnableSurfacingServerCardNicknameDescription[];

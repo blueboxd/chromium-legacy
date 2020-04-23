@@ -309,6 +309,27 @@ class AutofillAssistantUiTestUtil {
         };
     }
 
+    static Matcher<View> fullyCovers(Rect rect) {
+        return new TypeSafeMatcher<View>() {
+            @Override
+            protected boolean matchesSafely(View view) {
+                Rect viewRect = new Rect();
+                if (!view.getGlobalVisibleRect(viewRect)) {
+                    throw new AssertionError("Expected view to be visible.");
+                }
+
+                return rect.left >= viewRect.left && rect.right <= viewRect.right
+                        && rect.top >= viewRect.top && rect.bottom <= viewRect.bottom;
+            }
+
+            @Override
+            public void describeTo(Description description) {
+                description.appendText("fully covering [" + rect.left + ", " + rect.top + ", "
+                        + rect.right + ", " + rect.bottom + "]");
+            }
+        };
+    }
+
     static ViewAction openTextLink(String textLink) {
         return new ViewAction() {
             @Override

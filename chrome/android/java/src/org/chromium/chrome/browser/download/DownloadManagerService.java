@@ -38,7 +38,6 @@ import org.chromium.chrome.browser.download.DownloadManagerBridge.DownloadEnqueu
 import org.chromium.chrome.browser.download.DownloadNotificationUmaHelper.UmaBackgroundDownload;
 import org.chromium.chrome.browser.download.DownloadNotificationUmaHelper.UmaDownloadResumption;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
-import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -52,6 +51,7 @@ import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.components.browser_ui.util.ConversionUtils;
 import org.chromium.components.download.DownloadCollectionBridge;
 import org.chromium.components.download.DownloadState;
+import org.chromium.components.external_intents.ExternalNavigationHandler;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.offline_items_collection.ContentId;
@@ -842,8 +842,7 @@ public class DownloadManagerService implements DownloadController.Observer,
         Intent intent = getLaunchIntentForDownload(download.getDownloadInfo().getFilePath(),
                 download.getSystemDownloadId(), isSupportedMimeType, null, null,
                 download.getDownloadInfo().getMimeType());
-        return (intent == null) ? false
-                                : ExternalNavigationDelegateImpl.resolveIntent(intent, true);
+        return (intent == null) ? false : ExternalNavigationHandler.resolveIntent(intent, true);
     }
 
     /** See {@link #openDownloadedContent(Context, String, boolean, boolean, String, long)}. */
@@ -884,7 +883,7 @@ public class DownloadManagerService implements DownloadController.Observer,
             @Override
             protected void onPostExecute(Intent intent) {
                 boolean didLaunchIntent = intent != null
-                        && ExternalNavigationDelegateImpl.resolveIntent(intent, true)
+                        && ExternalNavigationHandler.resolveIntent(intent, true)
                         && DownloadUtils.fireOpenIntentForDownload(context, intent);
 
                 if (!didLaunchIntent) {

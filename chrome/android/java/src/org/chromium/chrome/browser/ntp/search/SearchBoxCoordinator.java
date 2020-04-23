@@ -61,7 +61,7 @@ public class SearchBoxCoordinator {
     }
 
     public void setSearchBoxClickListener(OnClickListener listener) {
-        mModel.set(SearchBoxProperties.SEARCH_BOX_CLICK_CALLBACK, listener);
+        mMediator.setSearchBoxClickListener(listener);
     }
 
     public void setSearchBoxTextWatcher(TextWatcher textWatcher) {
@@ -78,5 +78,13 @@ public class SearchBoxCoordinator {
 
     public void setVoiceSearchButtonClickListener(OnClickListener listener) {
         mModel.set(SearchBoxProperties.VOICE_SEARCH_CLICK_CALLBACK, listener);
+    }
+
+    public void setChipText(String chipText) {
+        mMediator.setChipText(chipText);
+    }
+
+    public void setChipDelegate(SearchBoxChipDelegate chipDelegate) {
+        mMediator.setChipDelegate(chipDelegate);
     }
 }

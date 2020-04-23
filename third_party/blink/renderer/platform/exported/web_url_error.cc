@@ -30,7 +30,7 @@ WebURLError::WebURLError(int reason,
   DCHECK_NE(reason_, 0);
 }
 
-WebURLError::WebURLError(network::BlockedByResponseReason blocked_reason,
+WebURLError::WebURLError(network::mojom::BlockedByResponseReason blocked_reason,
                          net::ResolveErrorInfo resolve_error_info,
                          HasCopyInCache has_copy_in_cache,
                          const WebURL& url)

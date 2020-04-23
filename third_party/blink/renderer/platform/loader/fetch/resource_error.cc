@@ -201,22 +201,23 @@ namespace {
 
 blink::ResourceRequestBlockedReason
 BlockedByResponseReasonToResourceRequestBlockedReason(
-    network::BlockedByResponseReason reason) {
+    network::mojom::BlockedByResponseReason reason) {
   switch (reason) {
-    case network::BlockedByResponseReason::kCoepFrameResourceNeedsCoepHeader:
+    case network::mojom::BlockedByResponseReason::
+        kCoepFrameResourceNeedsCoepHeader:
       return blink::ResourceRequestBlockedReason::
           kCoepFrameResourceNeedsCoepHeader;
-    case network::BlockedByResponseReason::
+    case network::mojom::BlockedByResponseReason::
         kCoopSandboxedIFrameCannotNavigateToCoopPage:
       return blink::ResourceRequestBlockedReason::
           kCoopSandboxedIFrameCannotNavigateToCoopPage;
-    case network::BlockedByResponseReason::kCorpNotSameOrigin:
+    case network::mojom::BlockedByResponseReason::kCorpNotSameOrigin:
       return blink::ResourceRequestBlockedReason::kCorpNotSameOrigin;
-    case network::BlockedByResponseReason::
+    case network::mojom::BlockedByResponseReason::
         kCorpNotSameOriginAfterDefaultedToSameOriginByCoep:
       return blink::ResourceRequestBlockedReason::
           kCorpNotSameOriginAfterDefaultedToSameOriginByCoep;
-    case network::BlockedByResponseReason::kCorpNotSameSite:
+    case network::mojom::BlockedByResponseReason::kCorpNotSameSite:
       return blink::ResourceRequestBlockedReason::kCorpNotSameSite;
   }
   NOTREACHED();

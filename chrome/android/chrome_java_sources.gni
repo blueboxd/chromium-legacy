@@ -1054,6 +1054,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/ntp/cards/StatusItem.java",
   "java/src/org/chromium/chrome/browser/ntp/cards/SuggestionsCategoryInfo.java",
   "java/src/org/chromium/chrome/browser/ntp/cards/SuggestionsSection.java",
+  "java/src/org/chromium/chrome/browser/ntp/search/SearchBoxChipDelegate.java",
   "java/src/org/chromium/chrome/browser/ntp/search/SearchBoxContainerView.java",
   "java/src/org/chromium/chrome/browser/ntp/search/SearchBoxCoordinator.java",
   "java/src/org/chromium/chrome/browser/ntp/search/SearchBoxMediator.java",

@@ -63,6 +63,16 @@ class CONTENT_EXPORT ServiceWorkerStorageControlImpl
       const GURL& origin,
       base::Time last_update_check_time,
       UpdateLastUpdateCheckTimeCallback callback) override;
+  void UpdateNavigationPreloadEnabled(
+      int64_t registration_id,
+      const GURL& origin,
+      bool enable,
+      UpdateNavigationPreloadEnabledCallback callback) override;
+  void UpdateNavigationPreloadHeader(
+      int64_t registration_id,
+      const GURL& origin,
+      const std::string& value,
+      UpdateNavigationPreloadHeaderCallback callback) override;
   void GetNewRegistrationId(GetNewRegistrationIdCallback callback) override;
   void GetNewVersionId(GetNewVersionIdCallback callback) override;
   void GetNewResourceId(GetNewResourceIdCallback callback) override;

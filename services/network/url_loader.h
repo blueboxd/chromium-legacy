@@ -305,7 +305,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   void CompleteBlockedResponse(
       int error_code,
       bool should_report_corb_blocking,
-      base::Optional<BlockedByResponseReason> reason = base::nullopt);
+      base::Optional<mojom::BlockedByResponseReason> reason = base::nullopt);
 
   enum BlockResponseForCorbResult {
     // Returned when caller of BlockResponseForCorb doesn't need to continue,

@@ -8,6 +8,7 @@
 #include "base/component_export.h"
 #include "base/gtest_prod_util.h"
 #include "base/optional.h"
+#include "services/network/public/mojom/blocked_by_response_reason.mojom.h"
 #include "services/network/public/mojom/cross_origin_embedder_policy.mojom-forward.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -38,7 +39,7 @@ class COMPONENT_EXPORT(NETWORK_CPP) CrossOriginResourcePolicy {
   // For kNoCors fetches, the IsBlocked method checks whether the response has
   // a Cross-Origin-Resource-Policy header which says the response should not be
   // delivered to a cross-origin or cross-site context.
-  static base::Optional<BlockedByResponseReason> IsBlocked(
+  static base::Optional<mojom::BlockedByResponseReason> IsBlocked(
       const GURL& request_url,
       const GURL& original_url,
       const base::Optional<url::Origin>& request_initiator,
@@ -51,7 +52,7 @@ class COMPONENT_EXPORT(NETWORK_CPP) CrossOriginResourcePolicy {
 
   // Same as IsBlocked(), but this method can take a raw value of
   // Cross-Origin-Resource-Policy header instead of using a URLResponseHead.
-  static base::Optional<BlockedByResponseReason> IsBlockedByHeaderValue(
+  static base::Optional<mojom::BlockedByResponseReason> IsBlockedByHeaderValue(
       const GURL& request_url,
       const GURL& original_url,
       const base::Optional<url::Origin>& request_initiator,
@@ -64,7 +65,7 @@ class COMPONENT_EXPORT(NETWORK_CPP) CrossOriginResourcePolicy {
 
   // The CORP check for navigation requests. This is expected to be called
   // from the navigation algorithm.
-  static base::Optional<BlockedByResponseReason> IsNavigationBlocked(
+  static base::Optional<mojom::BlockedByResponseReason> IsNavigationBlocked(
       const GURL& request_url,
       const GURL& original_url,
       const base::Optional<url::Origin>& request_initiator,

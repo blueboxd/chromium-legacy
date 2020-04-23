@@ -36,5 +36,6 @@ class TileCoordinatorImpl implements ImageTileCoordinator {
     @Override
     public void setTiles(List<ImageTile> tiles) {
         mModel.set(tiles);
+        mView.scrollToPosition(0);
     }
 }

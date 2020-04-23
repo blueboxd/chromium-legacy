@@ -34,8 +34,8 @@
 #include "base/logging.h"
 #include "base/optional.h"
 #include "net/dns/public/resolve_error_info.h"
-#include "services/network/public/cpp/blocked_by_response_reason.h"
 #include "services/network/public/cpp/cors/cors_error_status.h"
+#include "services/network/public/mojom/blocked_by_response_reason.mojom-shared.h"
 #include "services/network/public/mojom/trust_tokens.mojom-shared.h"
 #include "third_party/blink/public/platform/web_url.h"
 
@@ -64,7 +64,7 @@ struct WebURLError {
                                     IsWebSecurityViolation,
                                     const WebURL&);
   BLINK_PLATFORM_EXPORT WebURLError(
-      network::BlockedByResponseReason blocked_reason,
+      network::mojom::BlockedByResponseReason blocked_reason,
       net::ResolveErrorInfo resolve_error_info,
       HasCopyInCache,
       const WebURL&);
@@ -93,7 +93,7 @@ struct WebURLError {
   const base::Optional<network::CorsErrorStatus> cors_error_status() const {
     return cors_error_status_;
   }
-  const base::Optional<network::BlockedByResponseReason>
+  const base::Optional<network::mojom::BlockedByResponseReason>
   blocked_by_response_reason() const {
     return blocked_by_response_reason_;
   }
@@ -128,7 +128,8 @@ struct WebURLError {
 
   // More detailed reason for failing the response with
   // ERR_net::ERR_BLOCKED_BY_RESPONSE |error_code|.
-  base::Optional<network::BlockedByResponseReason> blocked_by_response_reason_;
+  base::Optional<network::mojom::BlockedByResponseReason>
+      blocked_by_response_reason_;
 
   // More detailed reason for failing the response with
   // net::ERR_TRUST_TOKEN_OPERATION_FAILED or

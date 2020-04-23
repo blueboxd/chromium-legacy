@@ -64,7 +64,6 @@ class PermissionRequestImpl : public PermissionRequest {
   // Called when the request is no longer in use so it can be deleted by the
   // caller.
   base::OnceClosure delete_callback_;
-  bool is_finished_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionRequestImpl);
 };

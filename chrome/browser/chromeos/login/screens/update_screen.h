@@ -92,6 +92,10 @@ class UpdateScreen : public BaseScreen, public VersionUpdater::Delegate {
       const VersionUpdater::UpdateInfo& update_info) override;
   void FinishExitUpdate(VersionUpdater::Result result) override;
 
+  void set_exit_callback_for_testing(ScreenExitCallback exit_callback) {
+    exit_callback_ = exit_callback;
+  }
+
  protected:
   // BaseScreen:
   void ShowImpl() override;

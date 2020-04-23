@@ -5326,6 +5326,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableExperimentalCookieFeaturesDescription, kOsAll,
      MULTI_VALUE_TYPE(kEnableExperimentalCookieFeaturesChoices)},
 
+    {"autofill-enable-google-issued-card",
+     flag_descriptions::kAutofillEnableGoogleIssuedCardName,
+     flag_descriptions::kAutofillEnableGoogleIssuedCardDescription, kOsAll,
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillEnableGoogleIssuedCard)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
@@ -5410,8 +5415,8 @@ bool SkipConditionalFeatureEntry(const FeatureEntry& entry) {
 #endif  // OS_WIN
 
   if (!strcmp("dns-over-https", entry.internal_name) &&
-      (SystemNetworkContextManager::GetStubResolverConfigReader()->
-          ShouldDisableDohForManaged() ||
+      (SystemNetworkContextManager::GetStubResolverConfigReader()
+           ->ShouldDisableDohForManaged() ||
        features::kDnsOverHttpsShowUiParam.Get())) {
     return true;
   }

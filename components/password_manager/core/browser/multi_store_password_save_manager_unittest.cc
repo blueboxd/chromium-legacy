@@ -371,6 +371,55 @@ TEST_F(MultiStorePasswordSaveManagerTest, UpdateInBothStores) {
   password_save_manager()->Save(observed_form_, parsed_submitted_form_);
 }
 
+TEST_F(MultiStorePasswordSaveManagerTest, AutomaticSaveInBothStores) {
+  SetAccountStoreEnabled(/*is_enabled=*/true);
+
+  PasswordForm saved_match_in_profile_store(saved_match_);
+  saved_match_in_profile_store.username_value =
+      parsed_submitted_form_.username_value;
+  saved_match_in_profile_store.password_value =
+      parsed_submitted_form_.password_value;
+  saved_match_in_profile_store.in_store = PasswordForm::Store::kProfileStore;
+
+  PasswordForm saved_match_in_account_store(saved_match_in_profile_store);
+  saved_match_in_account_store.in_store = PasswordForm::Store::kAccountStore;
+
+  SetNonFederatedAndNotifyFetchCompleted(
+      {&saved_match_in_profile_store, &saved_match_in_account_store});
+
+  password_save_manager()->CreatePendingCredentials(
+      parsed_submitted_form_, observed_form_, submitted_form_,
+      /*is_http_auth=*/false,
+      /*is_credential_api_save=*/false);
+
+  // No save or update prompts should be shown.
+  EXPECT_FALSE(password_save_manager()->IsNewLogin());
+  EXPECT_FALSE(password_save_manager()->IsPasswordUpdate());
+
+  // We still should update both credentials to update the |date_last_used| and
+  // |times_used|. Note that |in_store| is irrelevant since it's not persisted.
+  PasswordForm expected_profile_update_form(saved_match_in_profile_store);
+  expected_profile_update_form.times_used++;
+  expected_profile_update_form.date_last_used =
+      password_save_manager()->GetPendingCredentials().date_last_used;
+  expected_profile_update_form.in_store =
+      password_save_manager()->GetPendingCredentials().in_store;
+
+  PasswordForm expected_account_update_form(saved_match_in_account_store);
+  expected_account_update_form.times_used++;
+  expected_account_update_form.date_last_used =
+      password_save_manager()->GetPendingCredentials().date_last_used;
+  expected_account_update_form.in_store =
+      password_save_manager()->GetPendingCredentials().in_store;
+
+  EXPECT_CALL(*mock_profile_form_saver(),
+              Update(expected_profile_update_form, _, _));
+  EXPECT_CALL(*mock_account_form_saver(),
+              Update(expected_account_update_form, _, _));
+
+  password_save_manager()->Save(observed_form_, parsed_submitted_form_);
+}
+
 // Since conflicts in the profile store should not be taken into account during
 // generation, below is a parameterized fixture to run the same tests for all 4
 // combinations that can exist there (no matches, same username match, empty

@@ -11,6 +11,7 @@ import android.view.ViewGroup.LayoutParams;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.ntp.search.SearchBoxChipDelegate;
 import org.chromium.chrome.browser.ntp.search.SearchBoxCoordinator;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.browser_ui.widget.image_tiles.ImageTile;
@@ -56,22 +57,47 @@ public class QueryTileSection {
                 tileConfig, this::onTileClicked, this::getVisuals);
         mQueryTileSectionView.addView(mTileCoordinator.getView(),
                 new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
-        onTileClicked(null);
+        reloadTiles();
     }
 
     private void onTileClicked(ImageTile tile) {
         QueryTile queryTile = (QueryTile) tile;
-        if (queryTile == null) {
-            mTileProvider.getQueryTiles(this::setTiles);
-        } else {
-            boolean isLastLevelTile = queryTile.children.isEmpty();
-            setTiles(queryTile.children);
-            if (isLastLevelTile) {
-                mSubmitQueryCallback.onResult(queryTile.queryText);
-            } else {
-                // TODO(shaktisahu): Show chip on fakebox;
-            }
+        boolean isLastLevelTile = queryTile.children.isEmpty();
+        if (isLastLevelTile) {
+            mSubmitQueryCallback.onResult(queryTile.queryText);
+            return;
         }
+
+        setTiles(queryTile.children);
+        showQueryChip(queryTile);
+    }
+
+    private void showQueryChip(QueryTile queryTile) {
+        mSearchBoxCoordinator.setChipText(queryTile.queryText);
+        mSearchBoxCoordinator.setChipDelegate(new SearchBoxChipDelegate() {
+            @Override
+            public void onChipClicked() {
+                mSubmitQueryCallback.onResult(queryTile.queryText);
+            }
+
+            @Override
+            public void onCancelClicked() {
+                mSearchBoxCoordinator.setChipText(null);
+                reloadTiles();
+            }
+
+            @Override
+            public void getChipIcon(Callback<Bitmap> callback) {
+                mTileProvider.getVisuals(queryTile.id, bitmaps -> {
+                    Bitmap bitmap = bitmaps != null && !bitmaps.isEmpty() ? bitmaps.get(0) : null;
+                    callback.onResult(bitmap);
+                });
+            }
+        });
+    }
+
+    private void reloadTiles() {
+        mTileProvider.getQueryTiles(this::setTiles);
     }
 
     private void setTiles(List<QueryTile> tiles) {

@@ -36,7 +36,6 @@
 #include "components/sync/driver/sync_util.h"
 #include "components/sync/engine/passive_model_worker.h"
 #include "components/sync_preferences/pref_service_syncable.h"
-#include "components/sync_sessions/favicon_cache.h"
 #include "components/sync_sessions/session_sync_service.h"
 #include "components/sync_user_events/user_event_service.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"

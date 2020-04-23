@@ -149,7 +149,10 @@ public class IntentHandler {
 
     /**
      * The scheme for referrer coming from an application.
+    // TODO(crbug.com/1071390): Eliminate this constant once downstream is transitioned to use the
+    // one in IntentUtils.java.
      */
+    @Deprecated
     public static final String ANDROID_APP_REFERRER_SCHEME = "android-app";
 
     /**
@@ -575,7 +578,7 @@ public class IntentHandler {
     private static boolean isValidReferrerHeader(Uri referrer) {
         if (referrer == null) return false;
         Uri normalized = referrer.normalizeScheme();
-        return TextUtils.equals(normalized.getScheme(), ANDROID_APP_REFERRER_SCHEME)
+        return TextUtils.equals(normalized.getScheme(), IntentUtils.ANDROID_APP_REFERRER_SCHEME)
                 && !TextUtils.isEmpty(normalized.getHost());
     }
 
@@ -587,7 +590,7 @@ public class IntentHandler {
     public static Referrer constructValidReferrerForAuthority(String authority) {
         if (TextUtils.isEmpty(authority)) return null;
         return new Referrer(new Uri.Builder()
-                                    .scheme(ANDROID_APP_REFERRER_SCHEME)
+                                    .scheme(IntentUtils.ANDROID_APP_REFERRER_SCHEME)
                                     .authority(authority)
                                     .build()
                                     .toString(),

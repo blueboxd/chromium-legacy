@@ -26,6 +26,7 @@ source_set("policy") {
     "//components/password_manager/core/common",
     "//components/policy:generated",
     "//components/policy/core/common",
+    "//components/search_engines",
     "//ios/chrome/browser",
     "//ios/chrome/browser:pref_names",
     "//ios/chrome/browser/browser_state",

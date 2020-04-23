@@ -264,6 +264,11 @@
     "expiry_milestone": 73
   },
   {
+    "name": "autofill-enable-google-issued-card",
+    "owners": [ "siashah" ],
+    "expiry_milestone": 92
+  },
+  {
     "name": "autofill-enable-local-card-migration-for-non-sync-user",
     "owners": [ "siyua" ],
     "expiry_milestone": 83

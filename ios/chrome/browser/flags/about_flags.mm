@@ -616,6 +616,11 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPointerSupportDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kPointerSupport)},
 #endif  // defined(__IPHONE_13_4)
+    {"autofill-enable-google-issued-card",
+     flag_descriptions::kAutofillEnableGoogleIssuedCardName,
+     flag_descriptions::kAutofillEnableGoogleIssuedCardDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillEnableGoogleIssuedCard)},
 };
 
 // Add all switches from experimental flags to |command_line|.

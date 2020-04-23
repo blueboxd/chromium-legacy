@@ -177,6 +177,12 @@ bool LoginManagerMixin::LoginAndWaitForActiveSession(
          active_user->GetAccountId() == user_context.GetAccountId();
 }
 
+void LoginManagerMixin::LoginWithDefaultContext(const TestUserInfo& user_info) {
+  UserContext user_context = CreateDefaultUserContext(user_info);
+  AttemptLoginUsingAuthenticator(
+      user_context, std::make_unique<StubAuthenticatorBuilder>(user_context));
+}
+
 void LoginManagerMixin::LoginAsNewReguarUser() {
   ASSERT_FALSE(session_manager::SessionManager::Get()->IsSessionStarted());
   const std::string email = "test_user" + std::string(kGmailDomain);

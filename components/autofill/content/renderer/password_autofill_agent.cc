@@ -320,9 +320,7 @@ WebInputElement FindUsernameElementPrecedingPasswordElement(
     elements = form_util::GetUnownedAutofillableFormFieldElements(
         frame->GetDocument().All(), nullptr);
   } else {
-    WebVector<WebFormControlElement> web_control_elements;
-    password_element.Form().GetFormControlElements(web_control_elements);
-    elements.assign(web_control_elements.begin(), web_control_elements.end());
+    elements = password_element.Form().GetFormControlElements().ReleaseVector();
   }
 
   auto iter = std::find(elements.begin(), elements.end(), password_element);
@@ -1007,8 +1005,7 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
     return;
   }
 
-  WebVector<WebFormElement> forms;
-  frame->GetDocument().Forms(forms);
+  WebVector<WebFormElement> forms = frame->GetDocument().Forms();
 
   if (IsShowAutofillSignaturesEnabled())
     AnnotateFormsAndFieldsWithSignatures(frame, &forms);
@@ -1047,11 +1044,8 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
       continue;
     }
 
-    WebVector<WebFormControlElement> control_elements_vector;
-    form.GetFormControlElements(control_elements_vector);
-
     std::vector<WebFormControlElement> control_elements =
-        control_elements_vector.ReleaseVector();
+        form.GetFormControlElements().ReleaseVector();
     // Sometimes JS can change autofilled forms. In this case we try to restore
     // values for the changed elements.
     TryFixAutofilledForm(&control_elements);

@@ -158,7 +158,6 @@ struct BASE_EXPORT PartitionRootGeneric
 
   ALWAYS_INLINE void* Alloc(size_t size, const char* type_name);
   ALWAYS_INLINE void* AllocFlags(int flags, size_t size, const char* type_name);
-  ALWAYS_INLINE void Free(void* ptr);
   NOINLINE void* Realloc(void* ptr, size_t new_size, const char* type_name);
   // Overload that may return nullptr if reallocation isn't possible. In this
   // case, |ptr| remains valid.
@@ -220,74 +219,6 @@ class BASE_EXPORT PartitionStatsDumper {
 };
 
 BASE_EXPORT void PartitionAllocGlobalInit(OomFunction on_out_of_memory);
-
-// PartitionAlloc supports setting hooks to observe allocations/frees as they
-// occur as well as 'override' hooks that allow overriding those operations.
-class BASE_EXPORT PartitionAllocHooks {
- public:
-  // Log allocation and free events.
-  typedef void AllocationObserverHook(void* address,
-                                      size_t size,
-                                      const char* type_name);
-  typedef void FreeObserverHook(void* address);
-
-  // If it returns true, the allocation has been overridden with the pointer in
-  // *out.
-  typedef bool AllocationOverrideHook(void** out,
-                                      int flags,
-                                      size_t size,
-                                      const char* type_name);
-  // If it returns true, then the allocation was overridden and has been freed.
-  typedef bool FreeOverrideHook(void* address);
-  // If it returns true, the underlying allocation is overridden and *out holds
-  // the size of the underlying allocation.
-  typedef bool ReallocOverrideHook(size_t* out, void* address);
-
-  // To unhook, call Set*Hooks with nullptrs.
-  static void SetObserverHooks(AllocationObserverHook* alloc_hook,
-                               FreeObserverHook* free_hook);
-  static void SetOverrideHooks(AllocationOverrideHook* alloc_hook,
-                               FreeOverrideHook* free_hook,
-                               ReallocOverrideHook realloc_hook);
-
-  // Helper method to check whether hooks are enabled. This is an optimization
-  // so that if a function needs to call observer and override hooks in two
-  // different places this value can be cached and only loaded once.
-  static bool AreHooksEnabled() {
-    return hooks_enabled_.load(std::memory_order_relaxed);
-  }
-
-  static void AllocationObserverHookIfEnabled(void* address,
-                                              size_t size,
-                                              const char* type_name);
-  static bool AllocationOverrideHookIfEnabled(void** out,
-                                              int flags,
-                                              size_t size,
-                                              const char* type_name);
-
-  static void FreeObserverHookIfEnabled(void* address);
-  static bool FreeOverrideHookIfEnabled(void* address);
-
-  static void ReallocObserverHookIfEnabled(void* old_address,
-                                           void* new_address,
-                                           size_t size,
-                                           const char* type_name);
-  static bool ReallocOverrideHookIfEnabled(size_t* out, void* address);
-
- private:
-  // Single bool that is used to indicate whether observer or allocation hooks
-  // are set to reduce the numbers of loads required to check whether hooking is
-  // enabled.
-  static std::atomic<bool> hooks_enabled_;
-
-  // Lock used to synchronize Set*Hooks calls.
-  static std::atomic<AllocationObserverHook*> allocation_observer_hook_;
-  static std::atomic<FreeObserverHook*> free_observer_hook_;
-
-  static std::atomic<AllocationOverrideHook*> allocation_override_hook_;
-  static std::atomic<FreeOverrideHook*> free_override_hook_;
-  static std::atomic<ReallocOverrideHook*> realloc_override_hook_;
-};
 
 ALWAYS_INLINE void* PartitionRoot::Alloc(size_t size, const char* type_name) {
   return AllocFlags(0, size, type_name);
@@ -351,27 +282,6 @@ ALWAYS_INLINE size_t PartitionAllocGetSize(void* ptr) {
   DCHECK(internal::PartitionRootBase<internal::ThreadSafe>::IsValidPage(page));
   size_t size = page->bucket->slot_size;
   return internal::PartitionCookieSizeAdjustSubtract(size);
-}
-
-ALWAYS_INLINE void PartitionFree(void* ptr) {
-#if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
-  free(ptr);
-#else
-  // TODO(palmer): Check ptr alignment before continuing. Shall we do the check
-  // inside PartitionCookieFreePointerAdjust?
-  if (PartitionAllocHooks::AreHooksEnabled()) {
-    PartitionAllocHooks::FreeObserverHookIfEnabled(ptr);
-    if (PartitionAllocHooks::FreeOverrideHookIfEnabled(ptr))
-      return;
-  }
-
-  ptr = internal::PartitionCookieFreePointerAdjust(ptr);
-  PartitionRoot::Page* page = PartitionRoot::Page::FromPointer(ptr);
-  // TODO(palmer): See if we can afford to make this a CHECK.
-  DCHECK(PartitionRoot::IsValidPage(page));
-  internal::DeferredUnmap deferred_unmap = page->Free(ptr);
-  deferred_unmap.Run();
-#endif
 }
 
 ALWAYS_INLINE internal::PartitionBucket<internal::ThreadSafe>*
@@ -444,34 +354,6 @@ ALWAYS_INLINE void* PartitionRootGeneric::AllocFlags(int flags,
                                                      size_t size,
                                                      const char* type_name) {
   return PartitionAllocGenericFlags(this, flags, size, type_name);
-}
-
-ALWAYS_INLINE void PartitionRootGeneric::Free(void* ptr) {
-#if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
-  free(ptr);
-#else
-  DCHECK(initialized);
-
-  if (UNLIKELY(!ptr))
-    return;
-
-  if (PartitionAllocHooks::AreHooksEnabled()) {
-    PartitionAllocHooks::FreeObserverHookIfEnabled(ptr);
-    if (PartitionAllocHooks::FreeOverrideHookIfEnabled(ptr))
-      return;
-  }
-
-  ptr = internal::PartitionCookieFreePointerAdjust(ptr);
-  Page* page = Page::FromPointer(ptr);
-  // TODO(palmer): See if we can afford to make this a CHECK.
-  DCHECK(IsValidPage(page));
-  internal::DeferredUnmap deferred_unmap;
-  {
-    ScopedGuard guard{lock_};
-    deferred_unmap = page->Free(ptr);
-  }
-  deferred_unmap.Run();
-#endif
 }
 
 BASE_EXPORT void* PartitionReallocGenericFlags(PartitionRootGeneric* root,

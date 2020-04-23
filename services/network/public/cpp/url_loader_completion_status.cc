@@ -22,7 +22,7 @@ URLLoaderCompletionStatus::URLLoaderCompletionStatus(
 }
 
 URLLoaderCompletionStatus::URLLoaderCompletionStatus(
-    const BlockedByResponseReason& reason)
+    const mojom::BlockedByResponseReason& reason)
     : URLLoaderCompletionStatus(net::ERR_BLOCKED_BY_RESPONSE) {
   blocked_by_response_reason = reason;
 }

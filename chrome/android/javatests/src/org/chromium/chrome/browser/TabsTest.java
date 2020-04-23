@@ -1232,97 +1232,72 @@ public class TabsTest {
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @MediumTest
     @Feature({"Android-TabSwitcher"})
-    public void testSwitchTabStackWithoutClosingTabsInPortrait() throws InterruptedException {
+    public void testSwitchTabStackWithoutClosingTabsInPortrait() {
         mActivityTestRule.getActivity().setRequestedOrientation(
                 ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        mActivityTestRule.newIncognitoTabFromMenu();
-        ChromeTabUtils.newTabFromMenu(
-                InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
-
-        showOverviewAndWaitForAnimation();
-        UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
-        final int normalTabCount = getLayoutTabInStackCount(false);
-        final int incognitoTabCount = getLayoutTabInStackCount(true);
-
         LayoutManagerChrome layoutManager = updateTabsViewSize();
-
-        // Swipe to Incognito Tabs.
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(
+        SimulateTabSwipeOnMainThread swipeToIncognito =
                 new SimulateTabSwipeOnMainThread(layoutManager, mTabsViewWidthDp - 20,
-                        mTabsViewHeightDp / 2, SWIPE_TO_LEFT_DIRECTION * mTabsViewWidthDp, 0));
-        UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
-        Assert.assertTrue("Tabs Stack should have been changed to incognito.",
-                mActivityTestRule.getActivity().getCurrentTabModel().isIncognito());
-        Assert.assertEquals(
-                "Normal tabs count should be unchanged while switching to incognito tabs.",
-                normalTabCount, getLayoutTabInStackCount(false));
-
-        // Swipe to regular Tabs.
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(
-                new SimulateTabSwipeOnMainThread(layoutManager, 20, mTabsViewHeightDp / 2,
-                        SWIPE_TO_RIGHT_DIRECTION * mTabsViewWidthDp, 0));
-        UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
-        Assert.assertEquals(
-                "Incognito tabs count should be unchanged while switching back to normal "
-                        + "tab stack.",
-                incognitoTabCount, getLayoutTabInStackCount(true));
-        Assert.assertFalse("Tabs Stack should have been changed to regular tabs.",
-                mActivityTestRule.getActivity().getCurrentTabModel().isIncognito());
-        Assert.assertEquals(
-                "Normal tabs count should be unchanged while switching back to normal tabs.",
-                normalTabCount, getLayoutTabInStackCount(false));
+                        mTabsViewHeightDp / 2, SWIPE_TO_LEFT_DIRECTION * mTabsViewWidthDp, 0);
+        SimulateTabSwipeOnMainThread swipeToNormal = new SimulateTabSwipeOnMainThread(layoutManager,
+                20, mTabsViewHeightDp / 2, SWIPE_TO_RIGHT_DIRECTION * mTabsViewWidthDp, 0);
+        testSwitchTabStackWithoutClosingTabs(swipeToIncognito, swipeToNormal);
     }
 
     /**
      * Simple swipe gesture should not close tabs when two Tabstacks are open in Overview mode.
      * Test in Landscape Mode.
      */
-    /*
-        @MediumTest
-        @Feature({"Android-TabSwitcher"})
-     */
     @Test
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
-    @DisabledTest(message = "crbug.com/157259")
-    public void testSwitchTabStackWithoutClosingTabsInLandscape() throws InterruptedException {
+    @MediumTest
+    @Feature({"Android-TabSwitcher"})
+    public void testSwitchTabStackWithoutClosingTabsInLandscape() {
         mActivityTestRule.getActivity().setRequestedOrientation(
                 ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-        mActivityTestRule.newIncognitoTabFromMenu();
-        ChromeTabUtils.newTabFromMenu(
-                InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
+        LayoutManagerChrome layoutManager = updateTabsViewSize();
+        SimulateTabSwipeOnMainThread swipeToIncognito =
+                new SimulateTabSwipeOnMainThread(layoutManager, mTabsViewWidthDp / 2,
+                        mTabsViewHeightDp - 20, 0, SWIPE_TO_LEFT_DIRECTION * mTabsViewWidthDp);
+        SimulateTabSwipeOnMainThread swipeToNormal = new SimulateTabSwipeOnMainThread(layoutManager,
+                mTabsViewWidthDp / 2, 20, 0, SWIPE_TO_RIGHT_DIRECTION * mTabsViewWidthDp);
+        testSwitchTabStackWithoutClosingTabs(swipeToIncognito, swipeToNormal);
+    }
 
+    private void testSwitchTabStackWithoutClosingTabs(SimulateTabSwipeOnMainThread swipeToIncognito,
+            SimulateTabSwipeOnMainThread swipeToNormal) {
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        final TabModelSelector tabModelSelector = cta.getTabModelSelector();
+        final StackLayout layout = (StackLayout) cta.getLayoutManager().getOverviewLayout();
+
+        mActivityTestRule.newIncognitoTabFromMenu();
+        ChromeTabUtils.newTabFromMenu(InstrumentationRegistry.getInstrumentation(), cta);
         showOverviewAndWaitForAnimation();
-        UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
         final int normalTabCount = getLayoutTabInStackCount(false);
         final int incognitoTabCount = getLayoutTabInStackCount(true);
+        Assert.assertEquals(2, normalTabCount);
+        Assert.assertEquals(1, incognitoTabCount);
 
-        LayoutManagerChrome layoutManager = updateTabsViewSize();
-
-        // Swipe to Incognito Tabs.
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(
-                new SimulateTabSwipeOnMainThread(layoutManager, mTabsViewWidthDp / 2,
-                        mTabsViewHeightDp - 20, 0, SWIPE_TO_LEFT_DIRECTION * mTabsViewWidthDp));
-        UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
-        Assert.assertTrue("Tabs Stack should have been changed to incognito.",
-                mActivityTestRule.getActivity().getCurrentTabModel().isIncognito());
-        Assert.assertEquals(
-                "Normal tabs count should be unchanged while switching to incognito tabs.",
-                normalTabCount, getLayoutTabInStackCount(false));
-
-        // Swipe to regular Tabs.
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(
-                new SimulateTabSwipeOnMainThread(layoutManager, mTabsViewWidthDp / 2, 20, 0,
-                        SWIPE_TO_RIGHT_DIRECTION * mTabsViewWidthDp));
-        UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
-        Assert.assertEquals(
-                "Incognito tabs count should be unchanged while switching back to normal "
-                        + "tab stack.",
-                incognitoTabCount, getLayoutTabInStackCount(true));
-        Assert.assertFalse("Tabs Stack should have been changed to regular tabs.",
-                mActivityTestRule.getActivity().getCurrentTabModel().isIncognito());
-        Assert.assertEquals(
-                "Normal tabs count should be unchanged while switching back to normal tabs.",
-                normalTabCount, getLayoutTabInStackCount(false));
+        // Swipe to switch between normal and incognito tab model for 20 times.
+        boolean shouldSwipeToIncognito = true;
+        for (int i = 0; i < 20; i++) {
+            SimulateTabSwipeOnMainThread swipe =
+                    shouldSwipeToIncognito ? swipeToIncognito : swipeToNormal;
+            int tabCount = shouldSwipeToIncognito ? incognitoTabCount : normalTabCount;
+            Assert.assertNotEquals("Tab model has not been changed before swipe",
+                    shouldSwipeToIncognito, tabModelSelector.isIncognitoSelected());
+            Assert.assertNotEquals("Tab count has not been changed before swipe", tabCount,
+                    tabModelSelector.getCurrentModel().getCount());
+            // Swipe to switch tab model.
+            TestThreadUtils.runOnUiThreadBlocking(swipe);
+            CriteriaHelper.pollUiThread(() -> !layout.isLayoutAnimating());
+            Assert.assertEquals("Tab model should be changed by swipe.", shouldSwipeToIncognito,
+                    tabModelSelector.isIncognitoSelected());
+            Assert.assertEquals("Tab count should be changed by swipe.", tabCount,
+                    tabModelSelector.getCurrentModel().getCount());
+            // Flip the swipe direction.
+            shouldSwipeToIncognito = !shouldSwipeToIncognito;
+        }
     }
 
     /**

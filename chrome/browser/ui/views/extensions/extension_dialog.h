@@ -59,6 +59,9 @@ class ExtensionDialog : public views::DialogDelegate,
 #if defined(OS_CHROMEOS)
     // |title_color| customizes the color of the window title.
     base::Optional<SkColor> title_color;
+    // |title_inactive_color| customizes the color of the window title when
+    // window is inactive.
+    base::Optional<SkColor> title_inactive_color;
 #endif
   };
   // Create and show a dialog with |url| centered over the provided window.

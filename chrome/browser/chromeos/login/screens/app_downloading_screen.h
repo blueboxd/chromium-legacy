@@ -14,14 +14,21 @@
 namespace chromeos {
 
 class AppDownloadingScreenView;
+class ScreenManager;
 
 // This is App Downloading screen that tells the user the selected Android apps
 // are being downloaded.
 class AppDownloadingScreen : public BaseScreen {
  public:
+  static AppDownloadingScreen* Get(ScreenManager* manager);
+
   AppDownloadingScreen(AppDownloadingScreenView* view,
                        const base::RepeatingClosure& exit_callback);
   ~AppDownloadingScreen() override;
+
+  void set_exit_callback_for_testing(base::RepeatingClosure exit_callback) {
+    exit_callback_ = exit_callback;
+  }
 
  protected:
   // BaseScreen:

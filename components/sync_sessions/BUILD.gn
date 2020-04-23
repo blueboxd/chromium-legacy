@@ -4,8 +4,6 @@
 
 static_library("sync_sessions") {
   sources = [
-    "favicon_cache.cc",
-    "favicon_cache.h",
     "local_session_event_handler_impl.cc",
     "local_session_event_handler_impl.h",
     "local_session_event_router.h",
@@ -96,7 +94,6 @@ static_library("test_support") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "favicon_cache_unittest.cc",
     "local_session_event_handler_impl_unittest.cc",
     "open_tabs_ui_delegate_impl_unittest.cc",
     "session_store_unittest.cc",

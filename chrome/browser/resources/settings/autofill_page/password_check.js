@@ -12,6 +12,7 @@ import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
 import '../route.m.js';
 import '../prefs/prefs.m.js';
 import './password_check_edit_dialog.js';
+import './password_check_edit_disclaimer_dialog.js';
 import './password_check_list_item.js';
 import './password_remove_confirmation_dialog.js';
 
@@ -85,6 +86,9 @@ Polymer({
 
     /** @private */
     showPasswordRemoveDialog_: Boolean,
+
+    /** @private */
+    showPasswordEditDisclaimer_: Boolean,
 
     /**
      * The password that the user is interacting with now.
@@ -219,7 +223,7 @@ Polymer({
   },
 
   /** @private */
-  onMenuEditPasswordClick_() {
+  onEditPasswordClick_() {
     this.passwordManager
         .getPlaintextCompromisedPassword(
             assert(this.activePassword_),
@@ -257,6 +261,30 @@ Polymer({
     this.activeDialogAnchor_ = null;
   },
 
+  /**
+   * @param {!CustomEvent<!HTMLElement>} event
+   * @private
+   */
+  onAlreadyChangedClick_(event) {
+    const target = event.detail;
+    // Setting required properties for Password Check Edit dialog
+    this.activeDialogAnchor_ = target;
+    this.activeListItem_ = event.target;
+    this.activePassword_ = event.target.item;
+
+    this.showPasswordEditDisclaimer_ = true;
+  },
+
+  /** @private */
+  onEditDisclaimerClosed_() {
+    this.showPasswordEditDisclaimer_ = false;
+    focusWithoutInk(assert(this.activeDialogAnchor_));
+  },
+
+  /**
+   * @return {string}
+   * @private
+   */
   computeShowHideMenuTitle() {
     return this.i18n(
         this.activeListItem_.isPasswordVisible_ ? 'hideCompromisedPassword' :

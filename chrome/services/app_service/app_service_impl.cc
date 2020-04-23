@@ -7,14 +7,24 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/files/file_util.h"
+#include "base/json/json_string_value_serializer.h"
+#include "base/task/post_task.h"
+#include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/token.h"
+#include "chrome/services/app_service/public/cpp/preferred_apps_converter.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace {
 
 const char kAppServicePreferredApps[] = "app_service.preferred_apps";
+const base::FilePath::CharType kPreferredAppsDirname[] =
+    FILE_PATH_LITERAL("PreferredApps");
 
 void Connect(apps::mojom::Publisher* publisher,
              apps::mojom::Subscriber* subscriber) {
@@ -24,12 +34,31 @@ void Connect(apps::mojom::Publisher* publisher,
   publisher->Connect(std::move(clone), nullptr);
 }
 
+// Performs blocking I/O. Called on another thread.
+void WriteDataBlocking(const base::FilePath& preferred_apps_file,
+                       const std::string& preferred_apps) {
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
+  if (base::WriteFile(preferred_apps_file, preferred_apps.c_str(),
+                      preferred_apps.size()) == -1) {
+    DVLOG(0) << "Fail to write preferred apps to " << preferred_apps_file;
+  }
+}
+
 }  // namespace
 
 namespace apps {
 
-AppServiceImpl::AppServiceImpl(PrefService* profile_prefs)
-    : pref_service_(profile_prefs) {
+AppServiceImpl::AppServiceImpl(PrefService* profile_prefs,
+                               const base::FilePath& profile_dir)
+    : pref_service_(profile_prefs),
+      profile_dir_(profile_dir),
+      should_write_preferred_apps_to_file_(false),
+      writing_preferred_apps_(false),
+      task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::BEST_EFFORT,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {
   DCHECK(pref_service_);
   InitializePreferredApps();
 }
@@ -222,7 +251,7 @@ void AppServiceImpl::AddPreferredApp(apps::mojom::AppType app_type,
   apps::mojom::ReplacedAppPreferencesPtr replaced_app_preferences =
       preferred_apps_.AddPreferredApp(app_id, intent_filter);
 
-  // TODO(crbug.com/853604): Write the data to the disk.
+  WriteToJSON(profile_dir_, preferred_apps_);
 
   for (auto& subscriber : subscribers_) {
     subscriber->OnPreferredAppSet(app_id, intent_filter->Clone());
@@ -251,7 +280,7 @@ void AppServiceImpl::RemovePreferredApp(apps::mojom::AppType app_type,
 
   preferred_apps_.DeleteAppId(app_id);
 
-  // TODO(crbug.com/853604): Write the data to the disk.
+  WriteToJSON(profile_dir_, preferred_apps_);
 }
 
 void AppServiceImpl::RemovePreferredAppForFilter(
@@ -262,7 +291,7 @@ void AppServiceImpl::RemovePreferredAppForFilter(
 
   preferred_apps_.DeletePreferredApp(app_id, intent_filter);
 
-  // TODO(crbug.com/853604): Write the data to the disk.
+  WriteToJSON(profile_dir_, preferred_apps_);
 
   for (auto& subscriber : subscribers_) {
     subscriber->OnPreferredAppRemoved(app_id, intent_filter->Clone());
@@ -271,6 +300,11 @@ void AppServiceImpl::RemovePreferredAppForFilter(
 
 PreferredAppsList& AppServiceImpl::GetPreferredAppsForTesting() {
   return preferred_apps_;
+}
+
+void AppServiceImpl::SetWriteCompletedCallbackForTesting(
+    base::OnceClosure testing_callback) {
+  write_completed_for_testing_ = std::move(testing_callback);
 }
 
 void AppServiceImpl::OnPublisherDisconnected(apps::mojom::AppType app_type) {
@@ -283,6 +317,50 @@ void AppServiceImpl::InitializePreferredApps() {
   for (auto& subscriber : subscribers_) {
     subscriber->InitializePreferredApps(preferred_apps_.GetValue());
   }
+}
+
+void AppServiceImpl::WriteToJSON(
+    const base::FilePath& profile_dir,
+    const apps::PreferredAppsList& preferred_apps) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  // If currently is writing preferred apps to file, set a flag to write after
+  // the current write completed.
+  if (writing_preferred_apps_) {
+    should_write_preferred_apps_to_file_ = true;
+    return;
+  }
+
+  writing_preferred_apps_ = true;
+
+  auto preferred_apps_value =
+      apps::ConvertPreferredAppsToValue(preferred_apps.GetReference());
+
+  std::string json_string;
+  JSONStringValueSerializer serializer(&json_string);
+  serializer.Serialize(preferred_apps_value);
+
+  task_runner_->PostTaskAndReply(
+      FROM_HERE,
+      base::BindOnce(&WriteDataBlocking,
+                     profile_dir.Append(kPreferredAppsDirname), json_string),
+      base::BindOnce(&AppServiceImpl::WriteCompleted,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void AppServiceImpl::WriteCompleted() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  writing_preferred_apps_ = false;
+  if (!should_write_preferred_apps_to_file_) {
+    // Call the testing callback if it is set.
+    if (write_completed_for_testing_) {
+      std::move(write_completed_for_testing_).Run();
+    }
+    return;
+  }
+  // If need to perform another write, write the most up to date preferred apps
+  // from memory to file.
+  should_write_preferred_apps_to_file_ = false;
+  WriteToJSON(profile_dir_, preferred_apps_);
 }
 
 }  // namespace apps

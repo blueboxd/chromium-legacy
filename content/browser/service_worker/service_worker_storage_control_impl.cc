@@ -185,6 +185,24 @@ void ServiceWorkerStorageControlImpl::UpdateLastUpdateCheckTime(
       registration_id, origin, last_update_check_time, std::move(callback));
 }
 
+void ServiceWorkerStorageControlImpl::UpdateNavigationPreloadEnabled(
+    int64_t registration_id,
+    const GURL& origin,
+    bool enable,
+    UpdateNavigationPreloadEnabledCallback callback) {
+  storage_->UpdateNavigationPreloadEnabled(registration_id, origin, enable,
+                                           std::move(callback));
+}
+
+void ServiceWorkerStorageControlImpl::UpdateNavigationPreloadHeader(
+    int64_t registration_id,
+    const GURL& origin,
+    const std::string& value,
+    UpdateNavigationPreloadHeaderCallback callback) {
+  storage_->UpdateNavigationPreloadHeader(registration_id, origin, value,
+                                          std::move(callback));
+}
+
 void ServiceWorkerStorageControlImpl::GetNewRegistrationId(
     GetNewRegistrationIdCallback callback) {
   storage_->GetNewRegistrationId(std::move(callback));

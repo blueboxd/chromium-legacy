@@ -61,6 +61,9 @@
   <message name="IDS_AUTOFILL_CC_ELO" desc="Elo credit card name.">
     Elo
   </message>
+  <message name="IDS_AUTOFILL_CC_GOOGLE_ISSUED" desc="Google issued card name" formatter_data="android_java">
+    Google
+  </message>
   <message name="IDS_AUTOFILL_CC_GOOGLE_PAY" desc="Google pay brand name">
     Google Pay
   </message>

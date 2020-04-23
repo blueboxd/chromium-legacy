@@ -275,6 +275,7 @@ mojom("websocket_mojom") {
 mojom("mojom") {
   generate_java = true
   sources = [
+    "blocked_by_response_reason.mojom",
     "content_security_policy.mojom",
     "cookie_manager.mojom",
     "cors.mojom",

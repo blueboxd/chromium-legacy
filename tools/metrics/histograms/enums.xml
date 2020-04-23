@@ -39032,6 +39032,7 @@ from previous Chrome versions.
       label="OmniboxUIExperimentShowSuggestionFavicons:enabled"/>
   <int value="-757379927" label="Canvas2DImageChromium:enabled"/>
   <int value="-757282194" label="EnableFilesystemInIncognito:enabled"/>
+  <int value="-752321357" label="AutofillEnableGoogleIssuedCard:enabled"/>
   <int value="-750175757" label="ClientLoFi:enabled"/>
   <int value="-749048160" label="enable-panels"/>
   <int value="-748571227"
@@ -40689,6 +40690,7 @@ from previous Chrome versions.
   <int value="1226624874" label="Mus:disabled"/>
   <int value="1228115769" label="SiteCharacteristicsDatabase:disabled"/>
   <int value="1229299518" label="SingleTabMode:disabled"/>
+  <int value="1229388323" label="AutofillEnableGoogleIssuedCard:disabled"/>
   <int value="1230018793" label="enable-dom-distiller"/>
   <int value="1234601252" label="ForceUseAPDownloadProtection:enabled"/>
   <int value="1235800887" label="V8Ignition:enabled"/>
@@ -69828,6 +69830,7 @@ Called by update_scheduler_enums.py.-->
   <int value="41" label="OutstandingNetworkRequestXHR"/>
   <int value="42" label="AppBanner"/>
   <int value="43" label="Printing"/>
+  <int value="44" label="WebDatabase"/>
 </enum>
 
 <enum name="WebShareMethod">

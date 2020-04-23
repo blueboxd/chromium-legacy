@@ -9,8 +9,8 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/point_conversions.h"
+#include "ui/platform_window/x11/x11_topmost_window_finder.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_linux.h"
-#include "ui/views/widget/desktop_aura/x11_topmost_window_finder.h"
 
 namespace {
 
@@ -34,7 +34,7 @@ gfx::NativeWindow WindowFinder::GetLocalProcessWindowAtPoint(
     ignore_top_level.emplace(window->GetHost()->GetAcceleratedWidget());
 
   // The X11 server is the canonical state of what the window stacking order is.
-  views::X11TopmostWindowFinder finder;
+  ui::X11TopmostWindowFinder finder;
   auto accelerated_widget = finder.FindLocalProcessWindowAt(
       DIPToPixelPoint(screen_point), ignore_top_level);
   return accelerated_widget

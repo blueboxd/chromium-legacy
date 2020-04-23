@@ -25,7 +25,9 @@
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/grit/components_scaled_resources.h"
+#include "components/strings/grit/components_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using base::ASCIIToUTF16;
 using base::UTF8ToUTF16;
@@ -227,7 +229,7 @@ TEST(CreditCardTest, NicknameAndLastFourDigitsStrings) {
       credit_card2.NicknameAndLastFourDigits());
 }
 
-TEST(CreditCardTest, NicknameOrNetworkAndLastFourDigitsStrings) {
+TEST(CreditCardTest, CardIdentifierStringsForAutofillDisplay) {
   base::test::ScopedFeatureList scoped_feature_list;
   base::string16 valid_nickname = ASCIIToUTF16("My Visa Card");
   base::string16 invalid_nickname =
@@ -245,7 +247,7 @@ TEST(CreditCardTest, NicknameOrNetworkAndLastFourDigitsStrings) {
   EXPECT_FALSE(credit_card1.HasValidNickname());
   EXPECT_EQ(UTF8ToUTF16(std::string("Mastercard  ") +
                         test::ObfuscatedCardDigitsAsUTF8("5100")),
-            credit_card1.NicknameOrNetworkAndLastFourDigits());
+            credit_card1.CardIdentifierStringForAutofillDisplay());
 
   // Case 2: Experiment is on and nickname is valid -> show nickname.
   CreditCard credit_card2(base::GenerateGUID(), "https://www.example.com/");
@@ -257,7 +259,7 @@ TEST(CreditCardTest, NicknameOrNetworkAndLastFourDigitsStrings) {
   EXPECT_EQ(
       valid_nickname + UTF8ToUTF16(std::string("  ") +
                                    test::ObfuscatedCardDigitsAsUTF8("5100")),
-      credit_card2.NicknameOrNetworkAndLastFourDigits());
+      credit_card2.CardIdentifierStringForAutofillDisplay());
 
   // Case 3: Experiment off -> show network name.
   // Reset and disable the feature flag.
@@ -272,7 +274,123 @@ TEST(CreditCardTest, NicknameOrNetworkAndLastFourDigitsStrings) {
   EXPECT_TRUE(credit_card3.HasValidNickname());
   EXPECT_EQ(UTF8ToUTF16(std::string("Mastercard  ") +
                         test::ObfuscatedCardDigitsAsUTF8("5100")),
-            credit_card3.NicknameOrNetworkAndLastFourDigits());
+            credit_card3.CardIdentifierStringForAutofillDisplay());
+}
+
+TEST(CreditCardTest, CardIdentifierStringForIssuedCard) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  // Enable the flag.
+  scoped_feature_list.InitWithFeatures(
+      /*enable_features=*/{features::kAutofillEnableGoogleIssuedCard,
+                           features::
+                               kAutofillEnableSurfacingServerCardNickname},
+      /*disable_features=*/{});
+  // Case 1: Card Issuer set to GOOGLE with no nickname.
+  CreditCard credit_card1(base::GenerateGUID(), "https://www.example.com/");
+  credit_card1.set_card_issuer(CreditCard::Issuer::GOOGLE);
+  test::SetCreditCardInfo(&credit_card1, "John Dillinger",
+                          "5105 1051 0510 5100" /* Mastercard */, "01", "2020",
+                          "1");
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_GOOGLE_ISSUED),
+            credit_card1.CardIdentifierStringForAutofillDisplay());
+
+  // Case 2: Card Issuer set to GOOGLE with nickname.
+  base::string16 valid_nickname = ASCIIToUTF16("My Visa Card");
+  credit_card1.SetNickname(valid_nickname);
+  EXPECT_EQ(
+      valid_nickname + UTF8ToUTF16(std::string("  ") +
+                                   test::ObfuscatedCardDigitsAsUTF8("5100")),
+      credit_card1.CardIdentifierStringForAutofillDisplay());
+
+  // Case 3: Card Issuer set to ISSUER_UNKNOWN and no nickname.
+  CreditCard credit_card2(base::GenerateGUID(), "https://www.example.com/");
+  test::SetCreditCardInfo(&credit_card2, "John Dillinger",
+                          "5105 1051 0510 5100" /* Mastercard */, "01", "2020",
+                          "1");
+  credit_card2.set_card_issuer(CreditCard::Issuer::ISSUER_UNKNOWN);
+  EXPECT_EQ(UTF8ToUTF16(std::string("Mastercard  ") +
+                        test::ObfuscatedCardDigitsAsUTF8("5100")),
+            credit_card2.CardIdentifierStringForAutofillDisplay());
+}
+
+TEST(CreditCardTest, CardIdentifierStringForIssuedCardExpOff) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  // Disable the flag.
+  scoped_feature_list.InitWithFeatures(
+      /*enable_features=*/{features::
+                               kAutofillEnableSurfacingServerCardNickname},
+      /*disable_features=*/{features::kAutofillEnableGoogleIssuedCard});
+  // Case 1: Card Issuer set to GOOGLE with no nickname.
+  CreditCard credit_card1(base::GenerateGUID(), "https://www.example.com/");
+  credit_card1.set_card_issuer(CreditCard::Issuer::GOOGLE);
+  test::SetCreditCardInfo(&credit_card1, "John Dillinger",
+                          "5105 1051 0510 5100" /* Mastercard */, "01", "2020",
+                          "1");
+  EXPECT_EQ(UTF8ToUTF16(std::string("Mastercard  ") +
+                        test::ObfuscatedCardDigitsAsUTF8("5100")),
+            credit_card1.CardIdentifierStringForAutofillDisplay());
+
+  // Case 2: Card Issuer set to GOOGLE with nickname.
+  base::string16 valid_nickname = ASCIIToUTF16("My Visa Card");
+  credit_card1.SetNickname(valid_nickname);
+  EXPECT_EQ(
+      valid_nickname + UTF8ToUTF16(std::string("  ") +
+                                   test::ObfuscatedCardDigitsAsUTF8("5100")),
+      credit_card1.CardIdentifierStringForAutofillDisplay());
+
+  // Case 3: Card Issuer set to ISSUER_UNKNOWN and no nickname.
+  CreditCard credit_card2(base::GenerateGUID(), "https://www.example.com/");
+  test::SetCreditCardInfo(&credit_card2, "John Dillinger",
+                          "5105 1051 0510 5100" /* Mastercard */, "01", "2020",
+                          "1");
+  credit_card2.set_card_issuer(CreditCard::Issuer::ISSUER_UNKNOWN);
+  EXPECT_EQ(UTF8ToUTF16(std::string("Mastercard  ") +
+                        test::ObfuscatedCardDigitsAsUTF8("5100")),
+            credit_card2.CardIdentifierStringForAutofillDisplay());
+}
+
+TEST(CreditCardTest, CardIconStringForGoogleIssuedCard) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  // Enable the flag.
+  scoped_feature_list.InitAndEnableFeature(
+      features::kAutofillEnableGoogleIssuedCard);
+  // Case 1: Card Issuer set to GOOGLE.
+  CreditCard credit_card1(base::GenerateGUID(), "https://www.example.com/");
+  credit_card1.set_card_issuer(CreditCard::Issuer::GOOGLE);
+  test::SetCreditCardInfo(&credit_card1, "John Dillinger", "", "01", "2020",
+                          "1");
+  EXPECT_EQ(kGoogleIssuedCard,
+            credit_card1.CardIconStringForAutofillSuggestion());
+
+  // Case 2: Card Issuer set to ISSUER_UNKNOWN.
+  CreditCard credit_card2(base::GenerateGUID(), "https://www.example.com/");
+  test::SetCreditCardInfo(&credit_card2, "John Dillinger",
+                          "5105 1051 0510 5100" /* Mastercard */, "01", "2020",
+                          "1");
+  credit_card2.set_card_issuer(CreditCard::Issuer::ISSUER_UNKNOWN);
+  EXPECT_EQ(kMasterCard, credit_card2.CardIconStringForAutofillSuggestion());
+}
+
+TEST(CreditCardTest, CardIconStringForGoogleIssuedCardExpOff) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  // Enable the flag.
+  scoped_feature_list.InitAndDisableFeature(
+      features::kAutofillEnableGoogleIssuedCard);
+  // Case 1: Card Issuer set to GOOGLE.
+  CreditCard credit_card1(base::GenerateGUID(), "https://www.example.com/");
+  credit_card1.set_card_issuer(CreditCard::Issuer::GOOGLE);
+  test::SetCreditCardInfo(&credit_card1, "John Dillinger",
+                          "5105 1051 0510 5100" /* Mastercard */, "01", "2020",
+                          "1");
+  EXPECT_EQ(kMasterCard, credit_card1.CardIconStringForAutofillSuggestion());
+
+  // Case 2: Card Issuer set to ISSUER_UNKNOWN.
+  CreditCard credit_card2(base::GenerateGUID(), "https://www.example.com/");
+  test::SetCreditCardInfo(&credit_card2, "John Dillinger",
+                          "5105 1051 0510 5100" /* Mastercard */, "01", "2020",
+                          "1");
+  credit_card2.set_card_issuer(CreditCard::Issuer::ISSUER_UNKNOWN);
+  EXPECT_EQ(kMasterCard, credit_card2.CardIconStringForAutofillSuggestion());
 }
 
 TEST(CreditCardTest, AssignmentOperator) {

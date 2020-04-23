@@ -241,4 +241,69 @@ suite('OSSettingsSearchBox', () => {
     assertEquals(router.getCurrentRoute().path, '/networks');
     assertEquals(router.getQueryParameters().get('type'), 'WiFi');
   });
+
+  test('Tokenize and match result text to query text', async () => {
+    settingsSearchHandler.setFakeResults([fakeResult('Search and Assistant')]);
+    await simulateSearch(`Assistant Search`);
+    await waitForListUpdate();
+    assertEquals(
+        searchBox.getSelectedOsSearchResultRow_().$.resultText.innerHTML,
+        `<b>Search</b> and <b>Assistant</b>`);
+  });
+
+  test('Bold result text to matching query', async () => {
+    settingsSearchHandler.setFakeResults([fakeResult('Search and Assistant')]);
+    await simulateSearch(`a`);
+    await waitForListUpdate();
+    assertEquals(
+        searchBox.getSelectedOsSearchResultRow_().$.resultText.innerHTML,
+        `Se<b>a</b>rch <b>a</b>nd <b>A</b>ssist<b>a</b>nt`);
+  });
+
+  test('Bold result including ignored characters', async () => {
+    settingsSearchHandler.setFakeResults([fakeResult('Turn on Wi-Fi')]);
+    await simulateSearch(`wif`);
+    await waitForListUpdate();
+    assertEquals(
+        searchBox.getSelectedOsSearchResultRow_().$.resultText.innerHTML,
+        `Turn on <b>Wi-F</b>i`);
+  });
+
+  test('Test query longer than result blocks', async () => {
+    settingsSearchHandler.setFakeResults([fakeResult('Turn on Wi-Fi')]);
+    await simulateSearch(`onwifi`);
+    await waitForListUpdate();
+    assertEquals(
+        searchBox.getSelectedOsSearchResultRow_().$.resultText.innerHTML,
+        `Turn <b>on</b> <b>Wi-Fi</b>`);
+  });
+
+  test('Test bolding of accented characters', async () => {
+    settingsSearchHandler.setFakeResults([fakeResult('Crème Brûlée')]);
+    await simulateSearch(`E U`);
+    await waitForListUpdate();
+    assertEquals(
+        searchBox.getSelectedOsSearchResultRow_().$.resultText.innerHTML,
+        `Cr<b>è</b>me Br<b>û</b>l<b>é</b>e`);
+  });
+
+  test('Test no spaces nor characters that have upper/lower case', async () => {
+    settingsSearchHandler.setFakeResults([fakeResult('キーボード設定---')]);
+    await simulateSearch(`キー設`);
+    await waitForListUpdate();
+    assertEquals(
+        searchBox.getSelectedOsSearchResultRow_().$.resultText.innerHTML,
+        `<b>キ</b><b>ー</b>ボ<b>ー</b>ド<b>設</b>定---`);
+  });
+
+  test('Test blankspace types in result maintained', async () => {
+    const resultText = 'Turn\xa0on  \xa0Wi-Fi ';
+
+    settingsSearchHandler.setFakeResults([fakeResult(resultText)]);
+    await simulateSearch(`wif`);
+    await waitForListUpdate();
+    assertEquals(
+        searchBox.getSelectedOsSearchResultRow_().$.resultText.innerHTML,
+        `Turn&nbsp;on  &nbsp;<b>Wi-F</b>i `);
+  });
 });

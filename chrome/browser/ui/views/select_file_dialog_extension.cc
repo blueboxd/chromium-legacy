@@ -65,6 +65,12 @@ const int kFileManagerHeight = 640;  // pixels
 const int kFileManagerMinimumWidth = 640;  // pixels
 const int kFileManagerMinimumHeight = 240;  // pixels
 
+// Specific color for File Picker (Files app).
+// TODO(crbug/1072904): Get these colors from ui::NativeTheme.
+constexpr SkColor kFilePickerBlueishGrey = SkColorSetRGB(0xDB, 0xE2, 0xED);
+constexpr SkColor kFilePickerActiveTitleColor = kFilePickerBlueishGrey;
+constexpr SkColor kFilePickerInactiveTitleColor = kFilePickerBlueishGrey;
+
 // Holds references to file manager dialogs that have callbacks pending
 // to their listeners.
 class PendingDialog {
@@ -413,7 +419,8 @@ void SelectFileDialogExtension::SelectFileWithFileManagerParams(
   dialog_params.title = file_manager::util::GetSelectFileDialogTitle(type);
 #if defined(OS_CHROMEOS)
   if (base::FeatureList::IsEnabled(chromeos::features::kFilesNG)) {
-    dialog_params.title_color = gfx::kGoogleGrey300;
+    dialog_params.title_color = kFilePickerActiveTitleColor;
+    dialog_params.title_inactive_color = kFilePickerInactiveTitleColor;
   }
 #endif
 

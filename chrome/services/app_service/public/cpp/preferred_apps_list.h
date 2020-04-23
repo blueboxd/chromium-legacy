@@ -77,7 +77,7 @@ class PreferredAppsList {
 
   bool IsInitialized();
 
-  const PreferredApps& GetReference();
+  const PreferredApps& GetReference() const;
 
  private:
   PreferredApps preferred_apps_;

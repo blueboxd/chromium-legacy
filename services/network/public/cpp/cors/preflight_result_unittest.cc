@@ -29,7 +29,7 @@ struct TestCase {
   const base::Optional<CorsErrorStatus> expected_result;
 };
 
-const TestCase method_cases[] = {
+const TestCase kMethodCases[] = {
     // Found in the preflight response.
     {"OPTIONS", "", mojom::CredentialsMode::kOmit, "OPTIONS", "",
      mojom::CredentialsMode::kOmit, base::nullopt},
@@ -42,6 +42,10 @@ const TestCase method_cases[] = {
     {"PUT", "", mojom::CredentialsMode::kOmit, "PUT", "",
      mojom::CredentialsMode::kOmit, base::nullopt},
     {"DELETE", "", mojom::CredentialsMode::kOmit, "DELETE", "",
+     mojom::CredentialsMode::kOmit, base::nullopt},
+    // Access-Control-Allow-Methods = #method, method = token.
+    // So a non-standard method is accepted as well.
+    {"FOOBAR", "", mojom::CredentialsMode::kOmit, "FOOBAR", "",
      mojom::CredentialsMode::kOmit, base::nullopt},
 
     // Found in the safe list.
@@ -64,7 +68,7 @@ const TestCase method_cases[] = {
     {"GET, PUT, DELETE", "", mojom::CredentialsMode::kOmit, "DELETE", "",
      mojom::CredentialsMode::kOmit, base::nullopt},
 
-    // Not found in the preflight response and the safe lit.
+    // Not found in the preflight response or the safe list.
     {"", "", mojom::CredentialsMode::kOmit, "OPTIONS", "",
      mojom::CredentialsMode::kOmit,
      CorsErrorStatus(mojom::CorsError::kMethodDisallowedByPreflightResponse,
@@ -86,6 +90,20 @@ const TestCase method_cases[] = {
      CorsErrorStatus(mojom::CorsError::kMethodDisallowedByPreflightResponse,
                      "PUT")},
 
+    // Empty entries in the allow_methods list are ignored.
+    {"GET,,PUT", "", mojom::CredentialsMode::kOmit, "", "",
+     mojom::CredentialsMode::kOmit,
+     CorsErrorStatus(mojom::CorsError::kMethodDisallowedByPreflightResponse,
+                     "")},
+    {"GET, ,PUT", "", mojom::CredentialsMode::kOmit, " ", "",
+     mojom::CredentialsMode::kOmit,
+     CorsErrorStatus(mojom::CorsError::kMethodDisallowedByPreflightResponse,
+                     " ")},
+    // A valid list can contain empty entries so the remaining non-empty
+    // entries are accepted.
+    {"GET, ,PUT", "", mojom::CredentialsMode::kOmit, "PUT", "",
+     mojom::CredentialsMode::kOmit, base::nullopt},
+
     // Request method is normalized to upper-case, but allowed methods is not.
     // Comparison is in case-sensitive, that means allowed methods should be in
     // upper case.
@@ -104,7 +122,7 @@ const TestCase method_cases[] = {
      mojom::CredentialsMode::kOmit, base::nullopt},
 };
 
-const TestCase header_cases[] = {
+const TestCase kHeaderCases[] = {
     // Found in the preflight response.
     {"GET", "X-MY-HEADER", mojom::CredentialsMode::kOmit, "GET",
      "X-MY-HEADER:t", mojom::CredentialsMode::kOmit, base::nullopt},
@@ -169,7 +187,7 @@ TEST_F(PreflightResultTest, MaxAge) {
 }
 
 TEST_F(PreflightResultTest, EnsureMethods) {
-  for (const auto& test : method_cases) {
+  for (const auto& test : kMethodCases) {
     std::unique_ptr<PreflightResult> result =
         PreflightResult::Create(test.cache_credentials_mode, test.allow_methods,
                                 test.allow_headers, base::nullopt, nullptr);
@@ -180,7 +198,7 @@ TEST_F(PreflightResultTest, EnsureMethods) {
 }
 
 TEST_F(PreflightResultTest, EnsureHeaders) {
-  for (const auto& test : header_cases) {
+  for (const auto& test : kHeaderCases) {
     std::unique_ptr<PreflightResult> result =
         PreflightResult::Create(test.cache_credentials_mode, test.allow_methods,
                                 test.allow_headers, base::nullopt, nullptr);
@@ -193,7 +211,7 @@ TEST_F(PreflightResultTest, EnsureHeaders) {
 }
 
 TEST_F(PreflightResultTest, EnsureRequest) {
-  for (const auto& test : method_cases) {
+  for (const auto& test : kMethodCases) {
     std::unique_ptr<PreflightResult> result =
         PreflightResult::Create(test.cache_credentials_mode, test.allow_methods,
                                 test.allow_headers, base::nullopt, nullptr);
@@ -207,7 +225,7 @@ TEST_F(PreflightResultTest, EnsureRequest) {
                                      test.request_method, headers, false));
   }
 
-  for (const auto& test : header_cases) {
+  for (const auto& test : kHeaderCases) {
     std::unique_ptr<PreflightResult> result =
         PreflightResult::Create(test.cache_credentials_mode, test.allow_methods,
                                 test.allow_headers, base::nullopt, nullptr);

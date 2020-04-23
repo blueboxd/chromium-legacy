@@ -892,9 +892,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void OnFirstVisuallyNonEmptyPaint();
   void OnHasTouchEventHandlers(bool has_handlers);
   void OnIntrinsicSizingInfoChanged(blink::WebIntrinsicSizingInfo info);
-  void OnAnimateDoubleTapZoomInMainFrame(const gfx::Point& point,
-                                         const gfx::Rect& rect_to_zoom);
   void OnZoomToFindInPageRectInMainFrame(const gfx::Rect& rect_to_zoom);
+
+  // blink::mojom::FrameWidgetHost overrides.
+  void AnimateDoubleTapZoomInMainFrame(const gfx::Point& tap_point,
+                                       const gfx::Rect& rect_to_zoom) override;
 
   // When the RenderWidget is destroyed and recreated, this resets states in the
   // browser to match the clean start for the renderer side.

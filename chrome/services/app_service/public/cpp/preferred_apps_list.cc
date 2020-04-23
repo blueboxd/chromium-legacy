@@ -156,7 +156,8 @@ bool PreferredAppsList::IsInitialized() {
   return initialized_;
 }
 
-const PreferredAppsList::PreferredApps& PreferredAppsList::GetReference() {
+const PreferredAppsList::PreferredApps& PreferredAppsList::GetReference()
+    const {
   return preferred_apps_;
 }
 

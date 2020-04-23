@@ -8,5 +8,5 @@
     if (++count === 2) // page context + frame context.
       testRunner.completeTest();
   });
-  await page.navigate('https://devtools.test:8443/inspector-protocol/resources/mixed-content.html');
+  await page.navigate('https://devtools.test:8443/inspector-protocol/resources/mixed-content-iframe.html');
 })

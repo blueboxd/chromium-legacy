@@ -18,6 +18,7 @@ CRWNavigationItemStorage* NavigationItemStorageBuilder::BuildStorage(
   DCHECK(navigation_item);
   CRWNavigationItemStorage* storage = [[CRWNavigationItemStorage alloc] init];
   storage.virtualURL = navigation_item->GetVirtualURL();
+  storage.URL = navigation_item->GetURL();
   storage.referrer = navigation_item->GetReferrer();
   storage.timestamp = navigation_item->GetTimestamp();
   storage.title = navigation_item->GetTitle();
@@ -38,8 +39,9 @@ NavigationItemStorageBuilder::BuildNavigationItemImpl(
   // and the non-virtual URL to be set upon NavigationItem creation.  Since
   // GetVirtualURL() returns |url_| for the non-overridden case, this will also
   // update the virtual URL reported by this object.
-  item->original_request_url_ = navigation_item_storage.virtualURL;
-  item->SetURL(navigation_item_storage.virtualURL);
+  item->original_request_url_ = navigation_item_storage.URL;
+  item->SetURL(navigation_item_storage.URL);
+  item->SetVirtualURL(navigation_item_storage.virtualURL);
   item->referrer_ = navigation_item_storage.referrer;
   item->timestamp_ = navigation_item_storage.timestamp;
   item->title_ = navigation_item_storage.title;

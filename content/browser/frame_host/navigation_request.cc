@@ -1901,7 +1901,7 @@ void NavigationRequest::OnResponseStarted(
                                                /*report_only=*/false);
         }
         OnRequestFailedInternal(network::URLLoaderCompletionStatus(
-                                    network::BlockedByResponseReason::
+                                    network::mojom::BlockedByResponseReason::
                                         kCoepFrameResourceNeedsCoepHeader),
                                 false /* skip_throttles */,
                                 base::nullopt /* error_page_content */,
@@ -1933,7 +1933,7 @@ void NavigationRequest::OnResponseStarted(
          network::mojom::WebSandboxFlags::kNone)) {
       OnRequestFailedInternal(
           network::URLLoaderCompletionStatus(
-              network::BlockedByResponseReason::
+              network::mojom::BlockedByResponseReason::
                   kCoopSandboxedIFrameCannotNavigateToCoopPage),
           false /* skip_throttles */, base::nullopt /* error_page_content */,
           false /* collapse_frame */);
@@ -4130,7 +4130,7 @@ void NavigationRequest::ForceEnableOriginTrials(
   commit_params_->force_enabled_origin_trials = trials;
 }
 
-base::Optional<network::BlockedByResponseReason>
+base::Optional<network::mojom::BlockedByResponseReason>
 NavigationRequest::IsBlockedByCorp() {
   if (!base::FeatureList::IsEnabled(
           network::features::kCrossOriginEmbedderPolicy)) {

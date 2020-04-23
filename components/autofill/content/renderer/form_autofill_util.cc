@@ -1561,9 +1561,7 @@ bool IsSomeControlElementVisible(
 }
 
 bool AreFormContentsVisible(const WebFormElement& form) {
-  WebVector<WebFormControlElement> control_elements;
-  form.GetFormControlElements(control_elements);
-  return IsSomeControlElementVisible(control_elements);
+  return IsSomeControlElementVisible(form.GetFormControlElements());
 }
 
 GURL GetCanonicalActionForForm(const WebFormElement& form) {
@@ -1664,10 +1662,8 @@ std::vector<blink::WebFormControlElement> ExtractAutofillableElementsFromSet(
 
 std::vector<WebFormControlElement> ExtractAutofillableElementsInForm(
     const WebFormElement& form_element) {
-  WebVector<WebFormControlElement> control_elements;
-  form_element.GetFormControlElements(control_elements);
-
-  return ExtractAutofillableElementsFromSet(control_elements);
+  return ExtractAutofillableElementsFromSet(
+      form_element.GetFormControlElements());
 }
 
 void WebFormControlElementToFormField(
@@ -1840,13 +1836,11 @@ bool WebFormElementToFormData(
   if (!form->action.is_valid())
     form->action = GURL(blink::WebStringToGURL(form_element.Action()));
 
-  WebVector<WebFormControlElement> control_elements;
-  form_element.GetFormControlElements(control_elements);
-
   std::vector<blink::WebElement> dummy_fieldset;
   return FormOrFieldsetsToFormData(
-      &form_element, &form_control_element, dummy_fieldset, control_elements,
-      field_data_manager, extract_mask, form, field);
+      &form_element, &form_control_element, dummy_fieldset,
+      form_element.GetFormControlElements(), field_data_manager, extract_mask,
+      form, field);
 }
 
 std::vector<WebFormControlElement> GetUnownedFormFieldElements(
@@ -2190,10 +2184,7 @@ ButtonTitleList InferButtonTitlesForTesting(const WebElement& form_element) {
 
 WebFormElement FindFormByUniqueRendererId(WebDocument doc,
                                           FormRendererId form_renderer_id) {
-  blink::WebVector<WebFormElement> forms;
-  doc.Forms(forms);
-
-  for (const auto& form : forms) {
+  for (const auto& form : doc.Forms()) {
     if (FormRendererId(form.UniqueRendererFormId()) == form_renderer_id)
       return form;
   }
@@ -2260,9 +2251,7 @@ std::vector<WebFormControlElement> FindFormControlElementsByUniqueRendererId(
   for (size_t i = 0; i < form_control_renderer_ids.size(); i++)
     renderer_id_to_index[form_control_renderer_ids[i]] = i;
 
-  WebVector<WebFormControlElement> fields;
-  form.GetFormControlElements(fields);
-  for (const auto& field : fields) {
+  for (const auto& field : form.GetFormControlElements()) {
     auto it = renderer_id_to_index.find(
         FieldRendererId(field.UniqueRendererFormControlId()));
     if (it == renderer_id_to_index.end())

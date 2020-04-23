@@ -17,16 +17,17 @@
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/network_portal_detector_mixin.h"
+#include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/version_updater/version_updater.h"
+#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_screen_handler.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_update_engine_client.h"
 #include "chromeos/network/network_connection_handler.h"
@@ -84,7 +85,7 @@ chromeos::OobeUI* GetOobeUI() {
 
 }  // namespace
 
-class UpdateScreenTest : public MixinBasedInProcessBrowserTest {
+class UpdateScreenTest : public OobeBaseTest {
  public:
   UpdateScreenTest() = default;
   ~UpdateScreenTest() override = default;
@@ -94,39 +95,20 @@ class UpdateScreenTest : public MixinBasedInProcessBrowserTest {
   void CheckUpdatingDialogComponents(const int updating_progress_value,
                                      const std::string& progress_message_value);
 
-  // InProcessBrowserTest:
-  void SetUpInProcessBrowserTestFixture() override {
-    fake_update_engine_client_ = new FakeUpdateEngineClient();
-    chromeos::DBusThreadManager::GetSetterForTesting()->SetUpdateEngineClient(
-        std::unique_ptr<UpdateEngineClient>(fake_update_engine_client_));
-
-    MixinBasedInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
-  }
-
+  // OobeBaseTest:
   void SetUpOnMainThread() override {
-    ShowLoginWizard(OobeScreen::SCREEN_TEST_NO_WINDOW);
+    OobeBaseTest::SetUpOnMainThread();
 
     tick_clock_.Advance(kTimeAdvanceSeconds60);
 
     error_screen_ = GetOobeUI()->GetErrorScreen();
-    update_screen_ = std::make_unique<UpdateScreen>(
-        GetOobeUI()->GetView<UpdateScreenHandler>(), error_screen_,
-        base::BindRepeating(&UpdateScreenTest::HandleScreenExit,
-                            base::Unretained(this)));
+    update_screen_ = UpdateScreen::Get(
+        WizardController::default_controller()->screen_manager());
+    update_screen_->set_exit_callback_for_testing(base::BindRepeating(
+        &UpdateScreenTest::HandleScreenExit, base::Unretained(this)));
     version_updater_ = update_screen_->GetVersionUpdaterForTesting();
     version_updater_->set_tick_clock_for_testing(&tick_clock_);
 
-    MixinBasedInProcessBrowserTest::SetUpOnMainThread();
-  }
-
-  void TearDownOnMainThread() override {
-    MixinBasedInProcessBrowserTest::TearDownOnMainThread();
-
-    update_screen_.reset();
-
-    base::RunLoop run_loop;
-    LoginDisplayHost::default_host()->Finalize(run_loop.QuitClosure());
-    run_loop.Run();
   }
 
  protected:
@@ -139,15 +121,18 @@ class UpdateScreenTest : public MixinBasedInProcessBrowserTest {
     run_loop.Run();
   }
 
+  void ShowUpdateScreen() {
+    WizardController::default_controller()->AdvanceToScreen(
+        UpdateView::kScreenId);
+  }
+
   NetworkPortalDetectorMixin network_portal_detector_{&mixin_host_};
 
-  std::unique_ptr<UpdateScreen> update_screen_;
+  UpdateScreen* update_screen_ = nullptr;
   // Version updater - owned by |update_screen_|.
   VersionUpdater* version_updater_ = nullptr;
   // Error screen - owned by OobeUI.
   ErrorScreen* error_screen_ = nullptr;
-
-  FakeUpdateEngineClient* fake_update_engine_client_ = nullptr;  // Unowned.
 
   base::SimpleTestTickClock tick_clock_;
 
@@ -188,7 +173,7 @@ void UpdateScreenTest::CheckUpdatingDialogComponents(
 }
 
 IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateCheckDoneBeforeShow) {
-  update_screen_->Show();
+  ShowUpdateScreen();
   // For this test, the show timer is expected not to fire - cancel it
   // immediately.
   EXPECT_TRUE(update_screen_->GetShowTimerForTesting()->IsRunning());
@@ -196,16 +181,16 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateCheckDoneBeforeShow) {
 
   update_engine::StatusResult status;
   status.set_current_operation(update_engine::Operation::IDLE);
-  fake_update_engine_client_->set_default_status(status);
-  fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
 
   status.set_current_operation(update_engine::Operation::CHECKING_FOR_UPDATE);
-  fake_update_engine_client_->set_default_status(status);
-  fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
 
   status.set_current_operation(update_engine::Operation::IDLE);
-  fake_update_engine_client_->set_default_status(status);
-  fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
 
   ASSERT_TRUE(last_screen_result_.has_value());
   EXPECT_EQ(UpdateScreen::Result::UPDATE_NOT_REQUIRED,
@@ -221,17 +206,17 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateCheckDoneBeforeShow) {
 }
 
 IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateNotFoundAfterScreenShow) {
-  update_screen_->Show();
+  ShowUpdateScreen();
   EXPECT_TRUE(update_screen_->GetShowTimerForTesting()->IsRunning());
 
   update_engine::StatusResult status;
   status.set_current_operation(update_engine::Operation::IDLE);
-  fake_update_engine_client_->set_default_status(status);
-  fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
 
   status.set_current_operation(update_engine::Operation::CHECKING_FOR_UPDATE);
-  fake_update_engine_client_->set_default_status(status);
-  fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
 
   update_screen_->GetShowTimerForTesting()->FireNow();
 
@@ -247,8 +232,8 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateNotFoundAfterScreenShow) {
   status.set_current_operation(update_engine::Operation::IDLE);
   // GetLastStatus() will be called via ExitUpdate() called from
   // UpdateStatusChanged().
-  fake_update_engine_client_->set_default_status(status);
-  fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
 
   ASSERT_TRUE(last_screen_result_.has_value());
   EXPECT_EQ(UpdateScreen::Result::UPDATE_NOT_REQUIRED,
@@ -258,14 +243,14 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateNotFoundAfterScreenShow) {
 IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateAvailable) {
 
   update_screen_->set_ignore_update_deadlines_for_testing(true);
-  update_screen_->Show();
+  ShowUpdateScreen();
 
   update_engine::StatusResult status;
   status.set_current_operation(update_engine::Operation::CHECKING_FOR_UPDATE);
   status.set_new_version("latest and greatest");
   status.set_new_size(1'000'000'000);
-  fake_update_engine_client_->set_default_status(status);
-  fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
 
   update_screen_->GetShowTimerForTesting()->FireNow();
 
@@ -281,13 +266,13 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateAvailable) {
 
   status.set_current_operation(update_engine::Operation::UPDATE_AVAILABLE);
   status.set_progress(0.0);
-  fake_update_engine_client_->set_default_status(status);
-  fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
 
   status.set_current_operation(update_engine::Operation::DOWNLOADING);
   status.set_progress(0.0);
-  fake_update_engine_client_->set_default_status(status);
-  fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
 
   test::OobeJS().CreateVisibilityWaiter(true, kUpdatingDialogPath)->Wait();
   test::OobeJS().ExpectHiddenPath(kCheckingForUpdatesDialogPath);
@@ -299,8 +284,8 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateAvailable) {
 
   tick_clock_.Advance(kTimeAdvanceSeconds60);
   status.set_progress(0.01);
-  fake_update_engine_client_->set_default_status(status);
-  fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
 
   CheckUpdatingDialogComponents(
       kUpdateCheckProgress,
@@ -308,8 +293,8 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateAvailable) {
 
   tick_clock_.Advance(kTimeAdvanceSeconds60);
   status.set_progress(0.08);
-  fake_update_engine_client_->set_default_status(status);
-  fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
 
   CheckUpdatingDialogComponents(
       GetDownloadingProgress(0.08),
@@ -317,8 +302,8 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateAvailable) {
 
   tick_clock_.Advance(kTimeAdvanceSeconds10);
   status.set_progress(0.7);
-  fake_update_engine_client_->set_default_status(status);
-  fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
 
   CheckUpdatingDialogComponents(
       GetDownloadingProgress(0.7),
@@ -326,8 +311,8 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateAvailable) {
 
   tick_clock_.Advance(kTimeAdvanceSeconds10);
   status.set_progress(0.9);
-  fake_update_engine_client_->set_default_status(status);
-  fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
 
   CheckUpdatingDialogComponents(
       GetDownloadingProgress(0.9),
@@ -336,30 +321,30 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateAvailable) {
   tick_clock_.Advance(kTimeAdvanceSeconds10);
   status.set_current_operation(update_engine::Operation::VERIFYING);
   status.set_progress(1.0);
-  fake_update_engine_client_->set_default_status(status);
-  fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
 
   CheckUpdatingDialogComponents(kVerifyingProgress,
                                 l10n_util::GetStringUTF8(IDS_UPDATE_VERIFYING));
 
   tick_clock_.Advance(kTimeAdvanceSeconds10);
   status.set_current_operation(update_engine::Operation::FINALIZING);
-  fake_update_engine_client_->set_default_status(status);
-  fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
 
   CheckUpdatingDialogComponents(
       kFinalizingProgress, l10n_util::GetStringUTF8(IDS_UPDATE_FINALIZING));
 
   tick_clock_.Advance(kTimeAdvanceSeconds10);
   status.set_current_operation(update_engine::Operation::UPDATED_NEED_REBOOT);
-  fake_update_engine_client_->set_default_status(status);
-  fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
 
   CheckUpdatingDialogComponents(
       kUpdateCompleteProgress, l10n_util::GetStringUTF8(IDS_UPDATE_FINALIZING));
 
   // UpdateStatusChanged(status) calls RebootAfterUpdate().
-  EXPECT_EQ(1, fake_update_engine_client_->reboot_after_update_call_count());
+  EXPECT_EQ(1, update_engine_client()->reboot_after_update_call_count());
 
   // Simulate the situation where reboot does not happen in time.
   ASSERT_TRUE(version_updater_->GetRebootTimerForTesting()->IsRunning());
@@ -370,9 +355,9 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateAvailable) {
 }
 
 IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestErrorIssuingUpdateCheck) {
-  fake_update_engine_client_->set_update_check_result(
+  update_engine_client()->set_update_check_result(
       chromeos::UpdateEngineClient::UPDATE_RESULT_FAILED);
-  update_screen_->Show();
+  ShowUpdateScreen();
 
   ASSERT_TRUE(last_screen_result_.has_value());
   EXPECT_EQ(UpdateScreen::Result::UPDATE_NOT_REQUIRED,
@@ -382,13 +367,13 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestErrorIssuingUpdateCheck) {
 }
 
 IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestErrorCheckingForUpdate) {
-  update_screen_->Show();
+  ShowUpdateScreen();
 
   update_engine::StatusResult status;
   status.set_current_operation(update_engine::Operation::ERROR);
   // GetLastStatus() will be called via ExitUpdate() called from
   // UpdateStatusChanged().
-  fake_update_engine_client_->set_default_status(status);
+  update_engine_client()->set_default_status(status);
   version_updater_->UpdateStatusChangedForTesting(status);
 
   ASSERT_TRUE(last_screen_result_.has_value());
@@ -399,14 +384,14 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestErrorCheckingForUpdate) {
 }
 
 IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestErrorUpdating) {
-  update_screen_->Show();
+  ShowUpdateScreen();
 
   update_engine::StatusResult status;
   status.set_current_operation(update_engine::Operation::ERROR);
   status.set_new_version("latest and greatest");
 
-  fake_update_engine_client_->set_default_status(status);
-  fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
 
   ASSERT_TRUE(last_screen_result_.has_value());
   EXPECT_EQ(UpdateScreen::Result::UPDATE_NOT_REQUIRED,
@@ -420,7 +405,7 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestTemporaryPortalNetwork) {
   network_portal_detector_.SimulateDefaultNetworkState(
       NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL);
 
-  update_screen_->Show();
+  ShowUpdateScreen();
 
   // If the network is a captive portal network, error message is shown with a
   // delay.
@@ -435,14 +420,14 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestTemporaryPortalNetwork) {
 
   update_engine::StatusResult status;
   status.set_current_operation(update_engine::Operation::CHECKING_FOR_UPDATE);
-  fake_update_engine_client_->set_default_status(status);
-  fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
 
   EXPECT_TRUE(update_screen_->GetShowTimerForTesting()->IsRunning());
 
   status.set_current_operation(update_engine::Operation::UPDATE_AVAILABLE);
-  fake_update_engine_client_->set_default_status(status);
-  fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
 
   EXPECT_FALSE(update_screen_->GetShowTimerForTesting()->IsRunning());
 
@@ -457,8 +442,8 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestTemporaryPortalNetwork) {
   test::OobeJS().ExpectHiddenPath(kUpdatingDialogPath);
 
   status.set_current_operation(update_engine::Operation::IDLE);
-  fake_update_engine_client_->set_default_status(status);
-  fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
 
   ASSERT_TRUE(last_screen_result_.has_value());
   EXPECT_EQ(UpdateScreen::Result::UPDATE_NOT_REQUIRED,
@@ -469,7 +454,7 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestTwoOfflineNetworks) {
   // Change ethernet state to portal.
   network_portal_detector_.SimulateDefaultNetworkState(
       NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL);
-  update_screen_->Show();
+  ShowUpdateScreen();
 
   // Update screen will delay error message about portal state because
   // ethernet is behind captive portal. Simulate the delay timing out.
@@ -508,7 +493,7 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestVoidNetwork) {
 
   // First portal detection attempt returns NULL network and undefined
   // results, so detection is restarted.
-  update_screen_->Show();
+  ShowUpdateScreen();
 
   EXPECT_FALSE(update_screen_->GetErrorMessageTimerForTesting()->IsRunning());
 
@@ -539,7 +524,7 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestAPReselection) {
   network_portal_detector_.SimulateDefaultNetworkState(
       NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL);
 
-  update_screen_->Show();
+  ShowUpdateScreen();
 
   // Force timer expiration.
   EXPECT_TRUE(update_screen_->GetErrorMessageTimerForTesting()->IsRunning());
@@ -575,10 +560,10 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, UpdateOverCellularAccepted) {
       update_engine::Operation::NEED_PERMISSION_TO_UPDATE);
   status.set_new_version("latest and greatest");
 
-  update_screen_->Show();
+  ShowUpdateScreen();
 
-  fake_update_engine_client_->set_default_status(status);
-  fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
 
   EXPECT_FALSE(update_screen_->GetShowTimerForTesting()->IsRunning());
 
@@ -606,7 +591,7 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, UpdateOverCellularAccepted) {
   version_updater_->UpdateStatusChangedForTesting(status);
 
   // UpdateStatusChanged(status) calls RebootAfterUpdate().
-  EXPECT_EQ(1, fake_update_engine_client_->reboot_after_update_call_count());
+  EXPECT_EQ(1, update_engine_client()->reboot_after_update_call_count());
   ASSERT_FALSE(last_screen_result_.has_value());
 }
 
@@ -618,10 +603,10 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, UpdateOverCellularRejected) {
       update_engine::Operation::NEED_PERMISSION_TO_UPDATE);
   status.set_new_version("latest and greatest");
 
-  update_screen_->Show();
+  ShowUpdateScreen();
 
-  fake_update_engine_client_->set_default_status(status);
-  fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
 
   EXPECT_FALSE(update_screen_->GetShowTimerForTesting()->IsRunning());
 

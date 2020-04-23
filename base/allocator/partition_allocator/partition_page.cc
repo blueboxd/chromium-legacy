@@ -59,6 +59,7 @@ ALWAYS_INLINE void PartitionRegisterEmptyPage(
   DCHECK(page->is_empty());
   PartitionRootBase<thread_safe>* root =
       PartitionRootBase<thread_safe>::FromPage(page);
+  root->lock_.AssertAcquired();
 
   // If the page is already registered as empty, give it another life.
   if (page->empty_cache_index != -1) {

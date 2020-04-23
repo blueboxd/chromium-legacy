@@ -175,7 +175,7 @@ ScriptPromise FontFaceSet::load(ScriptState* script_state,
   }
 
   FontFaceCache* font_face_cache = GetFontSelector()->GetFontFaceCache();
-  FontFaceArray faces;
+  FontFaceArray* faces = MakeGarbageCollected<FontFaceArray>();
   for (const FontFamily* f = &font.GetFontDescription().Family(); f;
        f = f->Next()) {
     CSSSegmentedFontFace* segmented_font_face =

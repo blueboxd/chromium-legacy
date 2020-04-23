@@ -29,6 +29,11 @@ public class IntentUtils {
     private static final String TAG = "IntentUtils";
 
     /**
+     * The scheme for referrer coming from an application.
+     */
+    public static final String ANDROID_APP_REFERRER_SCHEME = "android-app";
+
+    /**
      * Just like {@link Intent#hasExtra(String)} but doesn't throw exceptions.
      */
     public static boolean safeHasExtra(Intent intent, String name) {

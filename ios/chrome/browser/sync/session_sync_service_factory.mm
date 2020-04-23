@@ -69,12 +69,6 @@ class SyncSessionsClientImpl : public sync_sessions::SyncSessionsClient {
   ~SyncSessionsClientImpl() override {}
 
   // SyncSessionsClient implementation.
-  favicon::FaviconService* GetFaviconService() override {
-    DCHECK_CURRENTLY_ON(web::WebThread::UI);
-    return ios::FaviconServiceFactory::GetForBrowserState(
-        browser_state_, ServiceAccessType::IMPLICIT_ACCESS);
-  }
-
   history::HistoryService* GetHistoryService() override {
     DCHECK_CURRENTLY_ON(web::WebThread::UI);
     return ios::HistoryServiceFactory::GetForBrowserState(

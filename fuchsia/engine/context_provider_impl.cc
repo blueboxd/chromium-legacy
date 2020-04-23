@@ -303,7 +303,7 @@ void ContextProviderImpl::Create(
   fidl::InterfaceHandle<::fuchsia::io::Directory> service_directory =
       std::move(*params.mutable_service_directory());
   if (!service_directory) {
-    DLOG(WARNING) << "Invalid |service_directory| in CreateContextParams.";
+    DLOG(ERROR) << "Invalid |service_directory| in CreateContextParams.";
     context_request.Close(ZX_ERR_INVALID_ARGS);
     return;
   }
@@ -335,6 +335,7 @@ void ContextProviderImpl::Create(
     base::FilePath data_path;
     if (!base::PathService::Get(base::DIR_APP_DATA, &data_path)) {
       DLOG(ERROR) << "Failed to get data directory service path.";
+      context_request.Close(ZX_ERR_INTERNAL);
       return;
     }
     launch_options.paths_to_transfer.push_back(
@@ -347,6 +348,7 @@ void ContextProviderImpl::Create(
   zx_status_t status = zx::job::create(*base::GetDefaultJob(), 0, &job);
   if (status != ZX_OK) {
     ZX_LOG(ERROR, status) << "zx_job_create";
+    context_request.Close(ZX_ERR_INTERNAL);
     return;
   }
   launch_options.job_handle = job.get();
@@ -402,27 +404,32 @@ void ContextProviderImpl::Create(
     launch_command.AppendSwitch(switches::kUseLegacyMetricsService);
   }
 
-  bool enable_vulkan = (features & fuchsia::web::ContextFeatureFlags::VULKAN) ==
-                       fuchsia::web::ContextFeatureFlags::VULKAN;
+  const bool enable_vulkan =
+      (features & fuchsia::web::ContextFeatureFlags::VULKAN) ==
+      fuchsia::web::ContextFeatureFlags::VULKAN;
   bool enable_widevine =
       (features & fuchsia::web::ContextFeatureFlags::WIDEVINE_CDM) ==
       fuchsia::web::ContextFeatureFlags::WIDEVINE_CDM;
-  if (enable_widevine && !IsFuchsiaCdmSupported()) {
-    LOG(WARNING) << "Widevine is not supported on this device.";
-    enable_widevine = false;
+  bool enable_playready = params.has_playready_key_system();
+
+  // VULKAN is required for DRM-protected video playback. Allow DRM to also be
+  // enabled for HEADLESS Contexts, since Vulkan is never required for audio.
+  if ((enable_widevine || enable_playready) && !enable_vulkan && !is_headless) {
+    DLOG(ERROR) << "WIDEVINE_CDM and PLAYREADY_CDM features require VULKAN or "
+                   "HEADLESS.";
+    context_request.Close(ZX_ERR_NOT_SUPPORTED);
+    return;
   }
 
-  bool enable_playready = params.has_playready_key_system();
+  // If the system doesn't actually support DRM then disable it. This may result
+  // in the Context being able to run without using protected buffers.
   if (enable_playready && !IsFuchsiaCdmSupported()) {
     LOG(WARNING) << "PlayReady is not supported on this device.";
     enable_playready = false;
   }
-
-  bool enable_drm = enable_widevine || enable_playready;
-  if (enable_drm && !enable_vulkan && !is_headless) {
-    DLOG(ERROR) << "WIDEVINE_CDM and PLAYREADY_CDM features require VULKAN.";
-    context_request.Close(ZX_ERR_INVALID_ARGS);
-    return;
+  if (enable_widevine && !IsFuchsiaCdmSupported()) {
+    LOG(WARNING) << "Widevine is not supported on this device.";
+    enable_widevine = false;
   }
 
   bool allow_protected_graphics =
@@ -432,7 +439,8 @@ void ContextProviderImpl::Create(
       web_engine_config.FindBoolPath("force-protected-graphics")
           .value_or(false);
   bool enable_protected_graphics =
-      (enable_drm && allow_protected_graphics) || force_protected_graphics;
+      ((enable_playready || enable_widevine) && allow_protected_graphics) ||
+      force_protected_graphics;
 
   if (enable_protected_graphics) {
     launch_command.AppendSwitch(switches::kEnforceVulkanProtectedMemory);
@@ -447,12 +455,12 @@ void ContextProviderImpl::Create(
 
   if (enable_vulkan) {
     if (is_headless) {
-      LOG(ERROR) << "VULKAN and HEADLESS features cannot be used together.";
-      context_request.Close(ZX_ERR_INVALID_ARGS);
+      DLOG(ERROR) << "VULKAN and HEADLESS features cannot be used together.";
+      context_request.Close(ZX_ERR_NOT_SUPPORTED);
       return;
     }
 
-    DLOG(ERROR) << "Enabling Vulkan GPU acceleration.";
+    VLOG(1) << "Enabling Vulkan GPU acceleration.";
     // Vulkan requires use of SkiaRenderer, configured to a use Vulkan context.
     launch_command.AppendSwitch(switches::kUseVulkan);
     const std::vector<base::StringPiece> enabled_features = {
@@ -476,7 +484,7 @@ void ContextProviderImpl::Create(
                                        gl::kGLImplementationStubName);
     }
   } else {
-    DLOG(ERROR) << "Disabling GPU acceleration.";
+    VLOG(1) << "Disabling GPU acceleration.";
     // Disable use of Vulkan GPU, and use of the software-GL rasterizer. The
     // Context will still run a GPU process, but will not support WebGL.
     launch_command.AppendSwitch(switches::kDisableGpu);
@@ -490,7 +498,7 @@ void ContextProviderImpl::Create(
   if (enable_playready) {
     const std::string& key_system = params.playready_key_system();
     if (key_system == kWidevineKeySystem || media::IsClearKey(key_system)) {
-      DLOG(ERROR)
+      LOG(ERROR)
           << "Invalid value for CreateContextParams/playready_key_system: "
           << key_system;
       context_request.Close(ZX_ERR_INVALID_ARGS);
@@ -522,14 +530,14 @@ void ContextProviderImpl::Create(
   // the Context to include in the UserAgent.
   if (params.has_user_agent_product()) {
     if (!net::HttpUtil::IsToken(params.user_agent_product())) {
-      DLOG(ERROR) << "Invalid embedder product.";
+      LOG(ERROR) << "Invalid embedder product.";
       context_request.Close(ZX_ERR_INVALID_ARGS);
       return;
     }
     std::string product_tag(params.user_agent_product());
     if (params.has_user_agent_version()) {
       if (!net::HttpUtil::IsToken(params.user_agent_version())) {
-        DLOG(ERROR) << "Invalid embedder version.";
+        LOG(ERROR) << "Invalid embedder version.";
         context_request.Close(ZX_ERR_INVALID_ARGS);
         return;
       }
@@ -538,7 +546,7 @@ void ContextProviderImpl::Create(
     launch_command.AppendSwitchNative(switches::kUserAgentProductAndVersion,
                                       std::move(product_tag));
   } else if (params.has_user_agent_version()) {
-    DLOG(ERROR) << "Embedder version without product.";
+    LOG(ERROR) << "Embedder version without product.";
     context_request.Close(ZX_ERR_INVALID_ARGS);
     return;
   }
@@ -547,6 +555,7 @@ void ContextProviderImpl::Create(
       !SetContentDirectoriesInCommandLine(
           std::move(*params.mutable_content_directories()), &launch_command,
           &launch_options)) {
+    LOG(ERROR) << "Invalid content directories specified.";
     context_request.Close(ZX_ERR_INVALID_ARGS);
     return;
   }
@@ -591,8 +600,8 @@ base::Value ContextProviderImpl::LoadConfig() {
 
   const base::Optional<base::Value>& config = cr_fuchsia::LoadPackageConfig();
   if (!config) {
-    DLOG(WARNING) << "Configuration data not found. Using default "
-                     "WebEngine configuration.";
+    LOG(WARNING) << "Configuration data not found. Using default "
+                    "WebEngine configuration.";
     return base::Value(base::Value::Type::DICTIONARY);
   }
 

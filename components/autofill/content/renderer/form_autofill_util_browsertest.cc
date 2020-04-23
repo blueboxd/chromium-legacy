@@ -489,8 +489,7 @@ TEST_F(FormAutofillUtilsTest, IsFocusable) {
 TEST_F(FormAutofillUtilsTest, FindFormByUniqueId) {
   LoadHTML("<body><form id='form1'></form><form id='form2'></form></body>");
   WebDocument doc = GetMainFrame()->GetDocument();
-  WebVector<WebFormElement> forms;
-  doc.Forms(forms);
+  WebVector<WebFormElement> forms = doc.Forms();
 
   for (const auto& form : forms) {
     EXPECT_EQ(form, FindFormByUniqueRendererId(

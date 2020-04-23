@@ -15,7 +15,7 @@ implements web platform features should live in Blink.
 - [`common/`](common/README.md): code that can run in the browser process
   or renderer process.
 - [`public/`](public/README.md): the Blink Public API, used primarily by
-  the [content module](/content/README.md).
+  the [content module](../../content/README.md).
 - [`renderer/`](renderer/README.md): code that runs in the renderer process
   (most of Blink).
 - [`web_tests/`](web_tests/README.md): integration tests called "web tests".

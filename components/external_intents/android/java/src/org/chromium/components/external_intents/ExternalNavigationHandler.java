@@ -6,6 +6,7 @@ package org.chromium.components.external_intents;
 
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
@@ -65,6 +66,7 @@ public class ExternalNavigationHandler {
     private static final String PLAY_APP_PATH = "/store/apps/details";
     private static final String PLAY_HOSTNAME = "play.google.com";
 
+    private static final String PDF_VIEWER = "com.google.android.apps.docs";
     private static final String PDF_MIME = "application/pdf";
     private static final String PDF_SUFFIX = ".pdf";
 
@@ -1126,13 +1128,70 @@ public class ExternalNavigationHandler {
                         || intent.getSelector().filterEquals(other.getSelector()));
     }
 
-    // TODO(crbug.com/1071390): Make this method private if/once its consumers have been moved into
-    // this class.
-    public static boolean isPdfIntent(Intent intent) {
+    private static boolean isPdfIntent(Intent intent) {
         if (intent == null || intent.getData() == null) return false;
         String filename = intent.getData().getLastPathSegment();
         return (filename != null && filename.endsWith(PDF_SUFFIX))
                 || PDF_MIME.equals(intent.getType());
+    }
+
+    /**
+     * If the intent is for a pdf, resolves intent handlers to find the platform pdf viewer if
+     * it is available and force is for the provided |intent| so that the user doesn't need to
+     * choose it from Intent picker.
+     *
+     * @param intent Intent to open.
+     */
+    public static void forcePdfViewerAsIntentHandlerIfNeeded(Intent intent) {
+        if (intent == null || !isPdfIntent(intent)) return;
+        resolveIntent(intent, true /* allowSelfOpen (ignored) */);
+    }
+
+    /**
+     * Retrieve the best activity for the given intent. If a default activity is provided,
+     * choose the default one. Otherwise, return the Intent picker if there are more than one
+     * capable activities. If the intent is pdf type, return the platform pdf viewer if
+     * it is available so user don't need to choose it from Intent picker.
+     *
+     * Note this function is slow on Android versions less than Lollipop.
+     *
+     * @param intent Intent to open.
+     * @param allowSelfOpen Whether chrome itself is allowed to open the intent.
+     * @return true if the intent can be resolved, or false otherwise.
+     */
+    public static boolean resolveIntent(Intent intent, boolean allowSelfOpen) {
+        Context context = ContextUtils.getApplicationContext();
+        ResolveInfo info = PackageManagerUtils.resolveActivity(intent, 0);
+        if (info == null) return false;
+
+        final String packageName = context.getPackageName();
+        if (info.match != 0) {
+            // There is a default activity for this intent, use that.
+            return allowSelfOpen || !packageName.equals(info.activityInfo.packageName);
+        }
+        List<ResolveInfo> handlers = PackageManagerUtils.queryIntentActivities(
+                intent, PackageManager.MATCH_DEFAULT_ONLY);
+        if (handlers == null || handlers.isEmpty()) return false;
+        boolean canSelfOpen = false;
+        boolean hasPdfViewer = false;
+        for (ResolveInfo resolveInfo : handlers) {
+            String pName = resolveInfo.activityInfo.packageName;
+            if (packageName.equals(pName)) {
+                canSelfOpen = true;
+            } else if (PDF_VIEWER.equals(pName)) {
+                if (isPdfIntent(intent)) {
+                    intent.setClassName(pName, resolveInfo.activityInfo.name);
+                    Uri referrer = new Uri.Builder()
+                                           .scheme(IntentUtils.ANDROID_APP_REFERRER_SCHEME)
+                                           .authority(packageName)
+                                           .build();
+                    intent.putExtra(Intent.EXTRA_REFERRER, referrer);
+                    hasPdfViewer = true;
+                    break;
+                }
+            }
+        }
+        return !canSelfOpen || allowSelfOpen || hasPdfViewer;
     }
 
     // TODO(crbug.com/1071390): Make this method private once its consumers have been moved into

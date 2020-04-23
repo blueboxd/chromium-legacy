@@ -46,15 +46,12 @@ import java.util.List;
  * WebLayer's implementation of the {@link ExternalNavigationDelegate}.
  */
 public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegate {
-    private static final String PDF_VIEWER = "com.google.android.apps.docs";
     private static final String PDF_EXTENSION = "pdf";
 
     protected final Context mApplicationContext;
     private final TabImpl mTab;
     private boolean mTabDestroyed;
 
-    // TODO(crbug.com/1031465): Componentize IntentHandler's constant to dedupe this.
-    private static final String ANDROID_APP_REFERRER_SCHEME = "android-app";
     // TODO(crbug.com/1031465): Componentize IntentHandler's constant to dedupe this.
     /**
      * Records package names of other applications in the system that could have handled
@@ -83,67 +80,6 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
         Context activityContext = ContextUtils.activityFromContext(mTab.getBrowser().getContext());
         if (activityContext == null) return mApplicationContext;
         return activityContext;
-    }
-
-    /**
-     * If the intent is for a pdf, resolves intent handlers to find the platform pdf viewer if
-     * it is available and force is for the provided |intent| so that the user doesn't need to
-     * choose it from Intent picker.
-     *
-     * @param intent Intent to open.
-     */
-    public static void forcePdfViewerAsIntentHandlerIfNeeded(Intent intent) {
-        if (intent == null || !ExternalNavigationHandler.isPdfIntent(intent)) return;
-        resolveIntent(intent, true /* allowSelfOpen (ignored) */);
-    }
-
-    /**
-     * Retrieve the best activity for the given intent. If a default activity is provided,
-     * choose the default one. Otherwise, return the Intent picker if there are more than one
-     * capable activities. If the intent is pdf type, return the platform pdf viewer if
-     * it is available so user don't need to choose it from Intent picker.
-     *
-     * Note this function is slow on Android versions less than Lollipop.
-     *
-     * @param intent Intent to open.
-     * @param allowSelfOpen Whether chrome itself is allowed to open the intent.
-     * @return true if the intent can be resolved, or false otherwise.
-     */
-    public static boolean resolveIntent(Intent intent, boolean allowSelfOpen) {
-        Context context = ContextUtils.getApplicationContext();
-        ResolveInfo info = PackageManagerUtils.resolveActivity(intent, 0);
-        if (info == null) return false;
-
-        final String packageName = context.getPackageName();
-        if (info.match != 0) {
-            // There is a default activity for this intent, use that.
-            return allowSelfOpen || !packageName.equals(info.activityInfo.packageName);
-        }
-        List<ResolveInfo> handlers = PackageManagerUtils.queryIntentActivities(
-                intent, PackageManager.MATCH_DEFAULT_ONLY);
-        if (handlers == null || handlers.isEmpty()) return false;
-        boolean canSelfOpen = false;
-        boolean hasPdfViewer = false;
-        for (ResolveInfo resolveInfo : handlers) {
-            String pName = resolveInfo.activityInfo.packageName;
-            if (packageName.equals(pName)) {
-                canSelfOpen = true;
-            } else if (PDF_VIEWER.equals(pName)) {
-                if (ExternalNavigationHandler.isPdfIntent(intent)) {
-                    intent.setClassName(pName, resolveInfo.activityInfo.name);
-                    // TODO(crbug.com/1031465): Use IntentHandler.java's version of this constant
-                    // once it's componentized.
-                    Uri referrer = new Uri.Builder()
-                                           .scheme(ANDROID_APP_REFERRER_SCHEME)
-                                           .authority(packageName)
-                                           .build();
-                    intent.putExtra(Intent.EXTRA_REFERRER, referrer);
-                    hasPdfViewer = true;
-                    break;
-                }
-            }
-        }
-        return !canSelfOpen || allowSelfOpen || hasPdfViewer;
     }
 
     @Override
@@ -208,7 +144,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
         assert !proxy
             : "|proxy| should be true only for instant apps, which WebLayer doesn't handle";
         try {
-            forcePdfViewerAsIntentHandlerIfNeeded(intent);
+            ExternalNavigationHandler.forcePdfViewerAsIntentHandlerIfNeeded(intent);
             Context context = getAvailableContext();
             if (!(context instanceof Activity)) intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(intent);
@@ -227,7 +163,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
         // Only touches disk on Kitkat. See http://crbug.com/617725 for more context.
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
         try {
-            forcePdfViewerAsIntentHandlerIfNeeded(intent);
+            ExternalNavigationHandler.forcePdfViewerAsIntentHandlerIfNeeded(intent);
             Context context = getAvailableContext();
             if (context instanceof Activity) {
                 activityWasLaunched = ((Activity) context).startActivityIfNeeded(intent, -1);

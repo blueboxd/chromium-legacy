@@ -3166,6 +3166,21 @@
       },
     },
 
+    'perfetto_gtests': {
+      'base_unittests': {},
+      'content_browsertests': {
+        'args': [
+          '--gtest_filter=*Tracing*:*MemoryInstrumentation*',
+        ],
+      },
+      'perfetto_unittests': {},
+      'services_unittests': {
+        'args': [
+          '--gtest_filter=*Trace*:*Tracing*:*Perfetto*:*StackUnwinder*:*Hprof*',
+        ],
+      },
+    },
+
     'performance_smoke_test_isolated_scripts': {
       'performance_test_suite': {
         'args': [

@@ -5672,16 +5672,23 @@ void RenderFrameImpl::BeginNavigation(
   // See http://crbug.com/93517.
   GURL old_url(frame_->GetDocumentLoader()->GetUrl());
 
-  // All navigations from DevTools URLs must be handled by the browser
-  // process (see also DevToolsSanityTest.TestDevToolsExternalNavigation and
-  // https://crbug.com/180555).
-  //
-  // TODO(lukasza): https://crbug.com/883549: Remove the remaining call to
-  // OpenURL below.
-  if (!url.is_empty() && !url.SchemeIs(url::kAboutScheme) &&
-      old_url.SchemeIs(kChromeDevToolsScheme)) {
-    OpenURL(std::move(info));
-    return;  // Suppress the load here.
+  // Detect when we're crossing a permission-based boundary (e.g. into or out of
+  // an extension or app origin, leaving a WebUI page, etc). We only care about
+  // top-level navigations (not iframes). But we sometimes navigate to
+  // about:blank to clear a tab, and we want to still allow that.
+  if (!frame_->Parent() && !url.SchemeIs(url::kAboutScheme) &&
+      !url.is_empty()) {
+    // All navigations to or from WebUI URLs or within WebUI-enabled
+    // RenderProcesses must be handled by the browser process so that the
+    // correct bindings and data sources can be registered.
+    // All frames in a WebUI process must have the same enabled_bindings_, so
+    // we can do a per-frame check here rather than a process-wide check.
+    bool should_fork = HasWebUIScheme(url) || HasWebUIScheme(old_url) ||
+                       (enabled_bindings_ & kWebUIBindingsPolicyMask);
+    if (should_fork) {
+      OpenURL(std::move(info));
+      return;  // Suppress the load here.
+    }
   }
 
   if (info->navigation_policy == blink::kWebNavigationPolicyCurrentTab) {

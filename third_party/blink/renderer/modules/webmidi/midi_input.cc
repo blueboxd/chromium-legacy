@@ -30,7 +30,6 @@
 
 #include "third_party/blink/renderer/modules/webmidi/midi_input.h"
 
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/modules/webmidi/midi_access.h"
 #include "third_party/blink/renderer/modules/webmidi/midi_message_event.h"
@@ -95,8 +94,7 @@ void MIDIInput::DidReceiveMIDIData(unsigned port_index,
       DOMUint8Array::Create(data, SafeCast<unsigned>(length));
   DispatchEvent(*MakeGarbageCollected<MIDIMessageEvent>(time_stamp, array));
 
-  UseCounter::Count(*Document::From(GetExecutionContext()),
-                    WebFeature::kMIDIMessageEvent);
+  UseCounter::Count(GetExecutionContext(), WebFeature::kMIDIMessageEvent);
 }
 
 void MIDIInput::Trace(Visitor* visitor) {

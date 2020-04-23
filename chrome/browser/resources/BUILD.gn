@@ -100,7 +100,7 @@ if (!is_android) {
     } else {
       source = "bookmarks/bookmarks_resources.grd"
 
-      deps = [ "//chrome/browser/resources/bookmarks:polymer3_elements" ]
+      deps = [ "//chrome/browser/resources/bookmarks:web_components" ]
     }
 
     defines = chrome_grit_defines
@@ -121,7 +121,7 @@ if (!is_android) {
       "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
     ]
 
-    deps = [ "//chrome/browser/resources/pdf/elements:polymer3_elements" ]
+    deps = [ "//chrome/browser/resources/pdf/elements:web_components" ]
 
     defines = chrome_grit_defines
     if (enable_hangout_services_extension) {
@@ -169,7 +169,7 @@ if (!is_android) {
     } else {
       source = "history/history_resources.grd"
 
-      deps = [ "//chrome/browser/resources/history:polymer3_elements" ]
+      deps = [ "//chrome/browser/resources/history:web_components" ]
     }
 
     defines = chrome_grit_defines
@@ -196,7 +196,7 @@ if (!is_android) {
     source = "new_tab_page/new_tab_page_resources.grd"
 
     deps = [
-      "//chrome/browser/resources/new_tab_page:polymer3_elements",
+      "//chrome/browser/resources/new_tab_page:web_components",
       "//chrome/browser/ui/webui/new_tab_page:mojo_bindings_js",
       "//skia/public/mojom:mojom_js",
     ]
@@ -249,7 +249,7 @@ if (!is_android) {
     } else {
       source = "downloads/downloads_resources.grd"
 
-      deps = [ "//chrome/browser/resources/downloads:polymer3_elements" ]
+      deps = [ "//chrome/browser/resources/downloads:web_components" ]
     }
     deps += [ "//chrome/browser/ui/webui/downloads:mojo_bindings_js" ]
 
@@ -307,7 +307,7 @@ if (!is_android && !is_chromeos) {
   grit("welcome_resources") {
     source = "welcome/welcome_resources.grd"
 
-    deps = [ "//chrome/browser/resources/welcome:polymer3_elements" ]
+    deps = [ "//chrome/browser/resources/welcome:web_components" ]
     grit_flags = [
       "-E",
       "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
@@ -337,7 +337,7 @@ if (enable_extensions) {
     } else {
       source = "extensions/extensions_resources.grd"
 
-      deps = [ "//chrome/browser/resources/extensions:polymer3_elements" ]
+      deps = [ "//chrome/browser/resources/extensions:web_components" ]
     }
 
     defines = chrome_grit_defines
@@ -374,7 +374,7 @@ if (enable_print_preview) {
       deps = [ "//chrome/browser/resources/print_preview:build" ]
     } else {
       source = "print_preview/print_preview_resources.grd"
-      deps = [ "//chrome/browser/resources/print_preview/ui:polymer3_elements" ]
+      deps = [ "//chrome/browser/resources/print_preview/ui:web_components" ]
     }
 
     defines = chrome_grit_defines
@@ -392,7 +392,7 @@ if (enable_webui_tab_strip) {
   grit("tab_strip_resources") {
     source = "tab_strip/tab_strip_resources.grd"
     defines = chrome_grit_defines
-    deps = [ "tab_strip:tab_strip_modules" ]
+    deps = [ "tab_strip:web_components" ]
     outputs = [
       "grit/tab_strip_resources.h",
       "grit/tab_strip_resources_map.cc",

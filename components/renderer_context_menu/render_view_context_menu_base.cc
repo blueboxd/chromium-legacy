@@ -371,6 +371,10 @@ void RenderViewContextMenuBase::ExecuteCommand(int id, int event_flags) {
   command_executed_ = true;
   RecordUsedItem(id);
 
+  // Notify all observers the command to be executed.
+  for (auto& observer : observers_)
+    observer.CommandWillBeExecuted(id);
+
   // If this command is is added by one of our observers, we dispatch
   // it to the observer.
   for (auto& observer : observers_) {

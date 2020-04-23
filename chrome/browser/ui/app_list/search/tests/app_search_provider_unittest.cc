@@ -137,7 +137,7 @@ class AppSearchProviderTest : public AppListTestBase {
     open_tabs_ui_delegate_ =
         std::make_unique<sync_sessions::OpenTabsUIDelegateImpl>(
             &mock_sync_sessions_client_, session_tracker_.get(),
-            /*favicon_cache=*/nullptr, base::DoNothing());
+            base::DoNothing());
     app_search_->set_open_tabs_ui_delegate_for_testing(
         open_tabs_ui_delegate_.get());
   }

@@ -37,7 +37,6 @@
 <translation id="1041263367839475438">Dostupni uređaji</translation>
 <translation id="1042174272890264476">Uz računar takođe dobijate ugrađenu RLZ biblioteku proizvoda <ph name="SHORT_PRODUCT_NAME" />. RLZ dodeljuje nejedinstvenu oznaku pomoću koje vas nije moguće lično identifikovati da bi izmerio pretrage i korišćenje proizvoda <ph name="SHORT_PRODUCT_NAME" /> koji su podstaknuti određenom promotivnom kampanjom. Te oznake se ponekad prikazuju u upitima Google pretrage u proizvodu <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1043818413152647937">Želite i da obrišete podatke iz ovih aplikacija?</translation>
-<translation id="1045448422538531528">Dodajte u grupu</translation>
 <translation id="1046635659603195359">Izgleda da ste već podesili Voice Match sa Google pomoćnikom na nekom drugom uređaju. Ovi prethodni snimci mogu da se koriste za pravljenje glasovnog modela na ovom uređaju. To bi trebalo da traje manje od jednog minuta.</translation>
 <translation id="104710386808485638">Želite li da restartujete Linux?</translation>
 <translation id="1047431265488717055">Kopiraj tek&amp;st linka</translation>
@@ -405,7 +404,6 @@
 <translation id="1536754031901697553">Veza se prekida...</translation>
 <translation id="15373452373711364">Veliki kursor</translation>
 <translation id="1540605929960647700">Omogućite režim demonstracije</translation>
-<translation id="1541396123399225659">Dodaj u novu grupu</translation>
 <translation id="1542514202066550870">VR sadržaj ove kartice prikazuje se preko hedseta.</translation>
 <translation id="1543284117603151572">Uvezeni iz Edge-a</translation>
 <translation id="1545177026077493356">Automatski režim kioska</translation>
@@ -1903,7 +1901,6 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="3514373592552233661">Željene mreže će imati prioritet u odnosu na druge poznate mreže ako je dostupno više njih</translation>
 <translation id="3515983984924808886">Dodirnite ponovo bezbednosni ključ da biste potvrdili resetovanje. Sve informacije sačuvane na bezbednosnom ključu, uključujući njegov PIN, biće obrisane.</translation>
 <translation id="3518985090088779359">Prihvati i nastavi</translation>
-<translation id="351952459507671940">Dodaj u novu grupu</translation>
 <translation id="3521606918211282604">Promenite veličinu diska</translation>
 <translation id="3523642406908660543">Pitaj kada sajt želi da pristupi mom računaru pomoću dodatne komponente (preporučeno)</translation>
 <translation id="3524965460886318643">Izvezi aktivnosti</translation>
@@ -2893,7 +2890,6 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="4871322859485617074">PIN sadrži nevažeće znakove</translation>
 <translation id="4871370605780490696">Dodavanje obeleživača</translation>
 <translation id="4871719318659334896">Zatvori grupu</translation>
-<translation id="4871852311166078968">Dodajte u grupu</translation>
 <translation id="4873312501243535625">Provera medijskih datoteka</translation>
 <translation id="4876273079589074638">Pomozite inženjerima da istraže i reše probleme sa otkazivanjem. Navedite tačne korake ako možete. Nijedan detalj nije nevažan!</translation>
 <translation id="4876895919560854374">Zaključavanje i otključavanje ekrana</translation>

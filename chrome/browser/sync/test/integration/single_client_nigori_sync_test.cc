@@ -359,39 +359,6 @@ IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithUssTests,
                   .Wait());
 }
 
-IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithUssTests,
-                       ShouldExposeExperimentalAuthenticationKey) {
-  const std::vector<std::vector<uint8_t>>& keystore_keys =
-      GetFakeServer()->GetKeystoreKeys();
-  ASSERT_THAT(keystore_keys, SizeIs(1));
-  const KeyParamsForTesting kKeystoreKeyParams =
-      Pbkdf2KeyParamsForTesting(keystore_keys.back());
-  SetNigoriInFakeServer(BuildKeystoreNigoriSpecifics(
-                            /*keybag_keys_params=*/{kKeystoreKeyParams},
-                            /*keystore_decryptor_params=*/kKeystoreKeyParams,
-                            /*keystore_key_params=*/kKeystoreKeyParams),
-                        GetFakeServer());
-
-  ASSERT_TRUE(SetupSync());
-
-  // WARNING: Do *NOT* change these values since the authentication key should
-  // be stable across different browser versions.
-
-  // Default birthday determined by LoopbackServer.
-  const std::string kDefaultBirthday = GetFakeServer()->GetStoreBirthday();
-  const std::string kSeparator("|");
-  const std::string base64_encoded_keystore_key =
-      base::Base64Encode(keystore_keys.back());
-  const std::string authentication_id_before_hashing =
-      std::string("gaia_id_for_user_gmail.com") + kSeparator +
-      kDefaultBirthday + kSeparator + base64_encoded_keystore_key;
-
-  EXPECT_EQ(
-      GetSyncService(/*index=*/0)->GetExperimentalAuthenticationSecretForTest(),
-      authentication_id_before_hashing);
-  EXPECT_TRUE(GetSyncService(/*index=*/0)->GetExperimentalAuthenticationKey());
-}
-
 // Tests that client can decrypt |pending_keys| with implicit passphrase in
 // backward-compatible keystore mode, when |keystore_decryptor_token| is
 // non-decryptable (corrupted). Additionally verifies that there is no

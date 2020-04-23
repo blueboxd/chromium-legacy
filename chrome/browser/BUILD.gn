@@ -475,6 +475,8 @@ jumbo_static_library("browser") {
     "engagement/site_engagement_service.h",
     "engagement/site_engagement_service_factory.cc",
     "engagement/site_engagement_service_factory.h",
+    "enterprise/util/managed_browser_utils.cc",
+    "enterprise/util/managed_browser_utils.h",
     "expired_flags_list.h",
     "external_protocol/external_protocol_handler.cc",
     "external_protocol/external_protocol_handler.h",
@@ -1373,6 +1375,7 @@ jumbo_static_library("browser") {
     "prerender/prerender_util.h",
     "previews/previews_content_util.cc",
     "previews/previews_content_util.h",
+    "previews/previews_https_notification_infobar_decider.cc",
     "previews/previews_https_notification_infobar_decider.h",
     "previews/previews_lite_page_infobar_delegate.cc",
     "previews/previews_lite_page_infobar_delegate.h",
@@ -2143,6 +2146,7 @@ jumbo_static_library("browser") {
     "//components/signin/public/base:signin_buildflags",
     "//components/signin/public/identity_manager",
     "//components/signin/public/webdata",
+    "//components/site_isolation",
     "//components/spellcheck:buildflags",
     "//components/sqlite_proto",
     "//components/ssl_errors",
@@ -2823,6 +2827,7 @@ jumbo_static_library("browser") {
       "download/android/service/download_background_task.cc",
       "download/android/service/download_task_scheduler.cc",
       "download/android/service/download_task_scheduler.h",
+      "download/android/string_utils.cc",
       "engagement/site_engagement_service_android.cc",
       "engagement/site_engagement_service_android.h",
       "first_run/android/first_run_utils.cc",
@@ -5427,32 +5432,16 @@ jumbo_static_library("browser") {
       deps += [ "//device/vr/public/mojom" ]
     }
 
-    if (!is_android) {
-      sources += [
-        "vr/service/isolated_device_provider.cc",
-        "vr/service/isolated_device_provider.h",
-      ]
-    }
-
     sources += [
       "component_updater/vr_assets_component_installer.cc",
       "component_updater/vr_assets_component_installer.h",
       "vr/chrome_xr_integration_client.cc",
       "vr/chrome_xr_integration_client.h",
-      "vr/service/browser_xr_runtime_impl.cc",
-      "vr/service/browser_xr_runtime_impl.h",
-      "vr/service/vr_service_impl.cc",
-      "vr/service/vr_service_impl.h",
-      "vr/service/xr_runtime_manager_impl.cc",
-      "vr/service/xr_runtime_manager_impl.h",
-      "vr/xr_runtime_manager_statics.h",
     ]
 
     deps += [
       "//chrome/browser/vr:vr_common",
       "//device/vr",
-      "//device/vr/orientation",
-      "//device/vr/public/cpp",
     ]
   }
 
@@ -5612,7 +5601,7 @@ grit("resources") {
 
   deps = [
     ":chrome_internal_resources_gen",
-    "//chrome/browser/resources/browser_switch:app_module",
+    "//chrome/browser/resources/browser_switch:web_components",
     "//chrome/browser/ui/webui/usb_internals:mojo_bindings_js",
     "//device/bluetooth/public/mojom:deprecated_experimental_interfaces_js",
     "//device/bluetooth/public/mojom:mojom_js",
@@ -5641,8 +5630,8 @@ grit("resources") {
     deps += [
       "//chrome/browser/resources/discards:discards_resources_gen",
       "//chrome/browser/resources/gaia_auth_host:modulize",
-      "//chrome/browser/resources/management:polymer3_elements",
-      "//chrome/browser/resources/signin:polymer3_elements",
+      "//chrome/browser/resources/management:web_components",
+      "//chrome/browser/resources/signin:web_components",
       "//chrome/browser/ui/webui/discards:mojo_bindings_js",
       "//services/resource_coordinator/public/mojom:mojom_js",
     ]

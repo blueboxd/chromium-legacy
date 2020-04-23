@@ -134,8 +134,10 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
 
     @Override
     public void cleanupWebContents(WebContents webContents) {
-        mObserver.destroy();
-        mObserver = null;
+        if (mObserver != null) {
+            mObserver.destroy();
+            mObserver = null;
+        }
     }
 
     @VisibleForTesting

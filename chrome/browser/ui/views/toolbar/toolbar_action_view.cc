@@ -190,7 +190,12 @@ void ToolbarActionView::ButtonPressed(views::Button* sender,
   } else {
     base::RecordAction(base::UserMetricsAction(
         "Extensions.Toolbar.ExtensionActivatedFromToolbar"));
-    view_controller_->ExecuteAction(true);
+    auto source =
+        delegate_->ShownInsideMenu()
+            ? ToolbarActionViewController::InvocationSource::
+                  kLegacyOverflowedEntry
+            : ToolbarActionViewController::InvocationSource::kToolbarButton;
+    view_controller_->ExecuteAction(true, source);
   }
 }
 

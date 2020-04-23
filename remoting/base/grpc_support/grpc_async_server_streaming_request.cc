@@ -5,6 +5,7 @@
 #include "remoting/base/grpc_support/grpc_async_server_streaming_request.h"
 
 #include "base/bind.h"
+#include "base/logging.h"
 
 namespace remoting {
 

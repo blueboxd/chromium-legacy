@@ -37,7 +37,6 @@
 <translation id="1041263367839475438">Appareils accessibles</translation>
 <translation id="1042174272890264476">Votre ordinateur est fourni avec la bibliothèque RLZ de <ph name="SHORT_PRODUCT_NAME" />. RLZ attribue une étiquette non unique et qui ne permet pas d'identifier des internautes afin de mesurer les recherches et l'utilisation de <ph name="SHORT_PRODUCT_NAME" /> générées par une campagne de promotion particulière. Ces étiquettes s'affichent parfois dans les requêtes de recherche Google dans <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1043818413152647937">Effacer également les données issues de ces applications?</translation>
-<translation id="1045448422538531528">Ajouter au groupe</translation>
 <translation id="1046635659603195359">Il semble que vous avez déjà configuré la fonction Voice Match avec l'Assistant Google sur un autre appareil. Ces enregistrements précédents peuvent être utilisés pour créer un modèle vocal sur cet appareil. L'opération devrait prendre moins d'une minute.</translation>
 <translation id="104710386808485638">Redémarrer Linux?</translation>
 <translation id="1047431265488717055">Copier le texte du lien</translation>
@@ -408,7 +407,6 @@
 <translation id="1536754031901697553">Déconnexion en cours…</translation>
 <translation id="15373452373711364">Grand curseur</translation>
 <translation id="1540605929960647700">Activer le mode Démonstration</translation>
-<translation id="1541396123399225659">Ajouter au nouveau groupe</translation>
 <translation id="1542514202066550870">Cet onglet présente du contenu RV dans un casque.</translation>
 <translation id="1543284117603151572">Importé à partir d'Edge</translation>
 <translation id="1545177026077493356">Mode kiosque automatique</translation>
@@ -1907,7 +1905,6 @@ https://support.google.com/chrome/?p=applescript</translation>
 <translation id="3514373592552233661">Si plusieurs réseaux sont disponibles, les réseaux préférés seront prioritaires par rapport aux autres réseaux connus</translation>
 <translation id="3515983984924808886">Touchez votre clé de sécurité à nouveau pour confirmer la réinitialisation. Toutes les données stockées sur la clé de sécurité, y compris son NIP, seront supprimées.</translation>
 <translation id="3518985090088779359">Accepter et continuer</translation>
-<translation id="351952459507671940">Ajouter au nouveau groupe</translation>
 <translation id="3521606918211282604">Modifier la taille du disque</translation>
 <translation id="3523642406908660543">Demander une autorisation lorsqu’un site souhaite utiliser un plugiciel pour accéder à mon ordinateur (recommandé)</translation>
 <translation id="3524965460886318643">Activités d'exportation</translation>
@@ -2897,7 +2894,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4871322859485617074">Le NIP contient des caractères incorrects</translation>
 <translation id="4871370605780490696">Ajouter aux favoris</translation>
 <translation id="4871719318659334896">Fermer le groupe</translation>
-<translation id="4871852311166078968">Ajouter au groupe</translation>
 <translation id="4873312501243535625">Vérificateur de fichier multimédia</translation>
 <translation id="4876273079589074638">Aidez nos ingénieurs à enquêter sur ce plantage et à le corriger. Indiquez les étapes exactes, si vous le pouvez. Tous les détails comptent!</translation>
 <translation id="4876895919560854374">Verrouiller et déverrouiller l'écran</translation>

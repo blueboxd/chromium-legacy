@@ -141,29 +141,6 @@ std::string SchemeFromPrefetchScheme(
   }
 }
 
-net::ProxyServer::Scheme SchemeFromProxyScheme(
-    ProxyServer_ProxyScheme proxy_scheme) {
-  switch (proxy_scheme) {
-    case ProxyServer_ProxyScheme_HTTP:
-      return net::ProxyServer::SCHEME_HTTP;
-    case ProxyServer_ProxyScheme_HTTPS:
-      return net::ProxyServer::SCHEME_HTTPS;
-    default:
-      return net::ProxyServer::SCHEME_INVALID;
-  }
-}
-
-ProxyServer_ProxyScheme ProxySchemeFromScheme(net::ProxyServer::Scheme scheme) {
-  switch (scheme) {
-    case net::ProxyServer::SCHEME_HTTP:
-      return ProxyServer_ProxyScheme_HTTP;
-    case net::ProxyServer::SCHEME_HTTPS:
-      return ProxyServer_ProxyScheme_HTTPS;
-    default:
-      return ProxyServer_ProxyScheme_UNSPECIFIED;
-  }
-}
-
 void TimeDeltaToDuration(const base::TimeDelta& time_delta,
                          Duration* duration) {
   duration->set_seconds(time_delta.InSeconds());

@@ -14,9 +14,9 @@
   // https://github.com/immersive-web/real-world-geometry/blob/master/plane-detection-explainer.md
   [RuntimeEnabled=WebXRIncubations] readonly attribute XRWorldInformation worldInformation;
 
-  [RuntimeEnabled=WebXRIncubations]
+  [RuntimeEnabled=WebXRAnchors]
   readonly attribute XRAnchorSet trackedAnchors;
-  [RuntimeEnabled=WebXRIncubations, CallWith=ScriptState, RaisesException]
+  [RuntimeEnabled=WebXRAnchors, CallWith=ScriptState, RaisesException, MeasureAs=XRFrameCreateAnchor]
   Promise<XRAnchor> createAnchor(XRRigidTransform initial_pose, XRSpace space);
 
   [RaisesException] XRViewerPose? getViewerPose(XRReferenceSpace referenceSpace);
@@ -26,4 +26,7 @@
   FrozenArray<XRHitTestResult> getHitTestResults(XRHitTestSource hitTestSource);
   [RuntimeEnabled=WebXRHitTest, RaisesException]
   FrozenArray<XRTransientInputHitTestResult> getHitTestResultsForTransientInput(XRTransientInputHitTestSource hitTestSource);
+
+  [RuntimeEnabled=WebXRLightEstimation, RaisesException]
+  XRLightEstimate? getLightEstimate(XRLightProbe lightProbe);
 };

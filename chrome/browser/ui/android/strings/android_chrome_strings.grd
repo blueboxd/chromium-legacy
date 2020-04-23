@@ -2308,15 +2308,6 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_DOWNLOAD_STARTED" desc="Message to show when download has started [CHAR LIMIT=30]">
         Downloading…
       </message>
-      <message name="IDS_FILE_SIZE_DOWNLOADED_KB" desc="Notification message showing how many KBs have been downloaded.">
-        Downloaded <ph name="KBS">%1$.1f<ex>10.1</ex></ph> KB
-      </message>
-      <message name="IDS_FILE_SIZE_DOWNLOADED_MB" desc="Notification message showing how many MBs have been downloaded.">
-        Downloaded <ph name="MBS">%1$.1f<ex>10.1</ex></ph> MB
-      </message>
-      <message name="IDS_FILE_SIZE_DOWNLOADED_GB" desc="Notification message showing how many GBs have been downloaded.">
-        Downloaded <ph name="GBS">%1$.1f<ex>10.1</ex></ph> GB
-      </message>
       <message name="IDS_ONE_FILE_LEFT" desc="Message showing 1 file left">
         1 file left
       </message>

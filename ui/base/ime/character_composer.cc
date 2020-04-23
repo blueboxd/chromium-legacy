@@ -8,6 +8,7 @@
 #include <iterator>
 #include <string>
 
+#include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversion_utils.h"
 #include "base/strings/utf_string_conversions.h"

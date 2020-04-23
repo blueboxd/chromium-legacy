@@ -15,8 +15,7 @@
 #include "components/security_interstitials/core/ssl_error_ui.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/interstitials/ios_chrome_controller_client.h"
-#include "ios/chrome/browser/interstitials/ios_chrome_metrics_helper.h"
+#include "ios/components/security_interstitials/ios_blocking_page_controller_client.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #include "ios/web/public/security/ssl_status.h"
@@ -33,38 +32,24 @@
 using security_interstitials::SSLErrorOptionsMask;
 using security_interstitials::SSLErrorUI;
 
-namespace {
-IOSChromeMetricsHelper* CreateMetricsHelper(web::WebState* web_state,
-                                            const GURL& request_url,
-                                            bool overridable) {
-  // Set up the metrics helper for the SSLErrorUI.
-  security_interstitials::MetricsHelper::ReportDetails reporting_info;
-  reporting_info.metric_prefix =
-      overridable ? "ssl_overridable" : "ssl_nonoverridable";
-  return new IOSChromeMetricsHelper(web_state, request_url, reporting_info);
-}
-
-}  // namespace
-
 // Note that we always create a navigation entry with SSL errors.
 // No error happening loading a sub-resource triggers an interstitial so far.
-IOSSSLBlockingPage::IOSSSLBlockingPage(web::WebState* web_state,
-                                       int cert_error,
-                                       const net::SSLInfo& ssl_info,
-                                       const GURL& request_url,
-                                       int options_mask,
-                                       const base::Time& time_triggered,
-                                       base::OnceCallback<void(bool)> callback)
-    : IOSSecurityInterstitialPage(web_state, request_url),
+IOSSSLBlockingPage::IOSSSLBlockingPage(
+    web::WebState* web_state,
+    int cert_error,
+    const net::SSLInfo& ssl_info,
+    const GURL& request_url,
+    int options_mask,
+    const base::Time& time_triggered,
+    base::OnceCallback<void(bool)> callback,
+    std::unique_ptr<security_interstitials::IOSBlockingPageControllerClient>
+        client)
+    : IOSSecurityInterstitialPage(web_state, request_url, client.get()),
       web_state_(web_state),
       callback_(std::move(callback)),
       ssl_info_(ssl_info),
       overridable_(IsOverridable(options_mask)),
-      controller_(new IOSChromeControllerClient(
-          web_state,
-          base::WrapUnique(CreateMetricsHelper(web_state,
-                                               request_url,
-                                               IsOverridable(options_mask))))) {
+      controller_(std::move(client)) {
   DCHECK(web_state_);
   // Override prefs for the SSLErrorUI.
   if (overridable_)

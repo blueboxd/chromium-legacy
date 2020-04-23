@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_macros_local.h"
 #include "base/strings/stringprintf.h"
 
 namespace net {
@@ -54,9 +55,9 @@ void HistogramAlternateProtocolUsage(AlternateProtocolUsage usage,
                                      bool proxy_server_used) {
   if (proxy_server_used) {
     DCHECK_LE(usage, ALTERNATE_PROTOCOL_USAGE_LOST_RACE);
-    UMA_HISTOGRAM_ENUMERATION("Net.QuicAlternativeProxy.Usage",
-                              ConvertProtocolUsageToProxyUsage(usage),
-                              ALTERNATIVE_PROXY_USAGE_MAX);
+    LOCAL_HISTOGRAM_ENUMERATION("Net.QuicAlternativeProxy.Usage",
+                                ConvertProtocolUsageToProxyUsage(usage),
+                                ALTERNATIVE_PROXY_USAGE_MAX);
   } else {
     UMA_HISTOGRAM_ENUMERATION("Net.AlternateProtocolUsage", usage,
                               ALTERNATE_PROTOCOL_USAGE_MAX);

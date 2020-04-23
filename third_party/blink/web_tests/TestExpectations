@@ -1069,9 +1069,9 @@ crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/mult
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-children-height-008.html [ Failure ]
 crbug.com/994172 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-dynamic-add-007.html [ Pass Crash ]
 crbug.com/924142 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-dynamic-add-010.html [ Crash Pass ]
-crbug.com/874051 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-fieldset-001.html [ Failure ]
-crbug.com/874051 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-fieldset-002.html [ Failure ]
-crbug.com/874051 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-fieldset-003.html [ Failure ]
+crbug.com/874051 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-fieldset-001.html [ Crash Failure ]
+crbug.com/874051 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-fieldset-002.html [ Crash Failure ]
+crbug.com/874051 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-fieldset-003.html [ Crash Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-list-item-001.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-margin-001.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-margin-002.xht [ Failure ]
@@ -1162,13 +1162,13 @@ crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/float-content-break.
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/float-edge.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/float-margin-at-row-boundary.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/float-margin-at-row-boundary-fixed-multicol-height.html [ Failure ]
-crbug.com/954171 virtual/layout_ng_block_frag/fast/multicol/float-moved-by-child-line-and-unbreakable.html [ Failure Crash ]
+crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/float-moved-by-child-line-and-unbreakable.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/float-paginate-empty-lines.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/float-paginate.html [ Failure ]
-crbug.com/954171 virtual/layout_ng_block_frag/fast/multicol/float-with-margin-moved-by-child-block-and-unbreakable.html [ Failure Crash ]
-crbug.com/954171 virtual/layout_ng_block_frag/fast/multicol/float-with-margin-moved-by-child-block.html [ Failure Crash Timeout ]
-crbug.com/954171 virtual/layout_ng_block_frag/fast/multicol/float-with-margin-moved-by-child-line-and-unbreakable.html [ Failure Crash ]
-crbug.com/954171 virtual/layout_ng_block_frag/fast/multicol/float-with-margin-moved-by-child-line.html [ Failure Crash ]
+crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/float-with-margin-moved-by-child-block-and-unbreakable.html [ Failure ]
+crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/float-with-margin-moved-by-child-block.html [ Failure Timeout ]
+crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/float-with-margin-moved-by-child-line-and-unbreakable.html [ Failure ]
+crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/float-with-margin-moved-by-child-line.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/forced-break-after-empty-block-after-spanner.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/forced-break-in-nested-columns.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/forced-break-too-short-column.html [ Failure ]
@@ -1623,12 +1623,6 @@ crbug.com/6606 external/wpt/mathml/presentation-markup/operators/mo-paint-lspace
 crbug.com/6606 external/wpt/mathml/presentation-markup/operators/operator-dictionary-001.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/operators/operator-dictionary-002.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/radicals/root-parameters-1.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/presentation-markup/scripts/subsup-1.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/presentation-markup/scripts/subsup-2.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/presentation-markup/scripts/subsup-3.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/presentation-markup/scripts/subsup-5.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/presentation-markup/scripts/subsup-parameters-1.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/presentation-markup/scripts/subsup-parameters-2.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/scripts/underover-parameters-2.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/scripts/underover-parameters-3.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/scripts/underover-parameters-4.html [ Failure ]
@@ -3208,9 +3202,6 @@ crbug.com/626703 [ Win ] external/wpt/mathml/presentation-markup/operators/mo-fo
 crbug.com/626703 [ Linux ] external/wpt/mathml/presentation-markup/operators/mo-lspace-rspace-dynamic.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/mathml/presentation-markup/operators/mo-lspace-rspace-dynamic.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/mathml/presentation-markup/operators/mo-lspace-rspace-dynamic.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/mathml/relations/css-styling/color-002.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/mathml/relations/css-styling/color-002.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/mathml/relations/css-styling/color-002.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-images/image-orientation/image-orientation-list-style-image.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-images/image-orientation/image-orientation-list-style-image.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-images/image-orientation/image-orientation-list-style-image.html [ Failure ]
@@ -3324,9 +3315,6 @@ crbug.com/626703 [ Win ] virtual/omt-worker-fetch/external/wpt/workers/abrupt-co
 crbug.com/626703 [ Linux ] external/wpt/workers/abrupt-completion.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/workers/abrupt-completion.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/workers/abrupt-completion.html [ Timeout ]
-crbug.com/626703 [ Linux ] external/wpt/webaudio/the-audio-api/the-audioworklet-interface/process-parameters.https.html [ Timeout ]
-crbug.com/626703 [ Mac ] external/wpt/webaudio/the-audio-api/the-audioworklet-interface/process-parameters.https.html [ Timeout ]
-crbug.com/626703 [ Win ] external/wpt/webaudio/the-audio-api/the-audioworklet-interface/process-parameters.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/eventsource/eventsource-constructor-url-bogus.any.html [ Failure Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/webrtc/RTCPeerConnection-createDataChannel.html [ Failure Crash ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/html/webappapis/scripting/events/event-handler-attributes-body-window.html [ Failure Timeout ]
@@ -6562,9 +6550,6 @@ crbug.com/1025274 http/tests/security/mixedContent/insecure-audio-video-in-main-
 crbug.com/1042877 virtual/autoupgrade-optionally-blockable-mixed-content/http/tests/mixed-autoupgrade/optionally/image-upgrade-console-message.https.html [ Failure ]
 crbug.com/1042877 virtual/autoupgrade-optionally-blockable-mixed-content/http/tests/mixed-autoupgrade/optionally/image-upgrade.https.html [ Failure ]
 
-# temporary due to changes in DevTools
-crbug.com/1072952 http/tests/devtools/elements/styles-3/spectrum.js [ Skip ]
-
 # DevTools roll
 crbug.com/1006759 http/tests/devtools/profiler/agents-disabled-check.js [ Skip ]
 
@@ -6617,7 +6602,7 @@ crbug.com/1056879 [ Win7 ] external/wpt/webxr/xrSession_requestAnimationFrame_ge
 crbug.com/1053861 http/tests/devtools/network/network-initiator-chain.js [ Pass Failure ]
 crbug.com/1047648 external/wpt/offscreen-canvas/the-offscreen-canvas/offscreencanvas.resize.html [ Pass Failure ]
 
-crbug.com/1057822 http/tests/misc/synthetic-gesture-initiated-in-cross-origin-frame.html [ Pass Failure ]
+crbug.com/1057822 http/tests/misc/synthetic-gesture-initiated-in-cross-origin-frame.html [ Pass Failure Crash ]
 crbug.com/1057807 http/tests/misc/destroy-middle-click-locked-target-crash.html [ Pass Timeout ]
 crbug.com/1057351 virtual/threaded-no-composited-antialiasing/animations/responsive/interpolation/offset-rotate-responsive.html [ Pass Failure ]
 crbug.com/1057351 virtual/threaded-no-composited-antialiasing/animations/stability/empty-keyframes.html [ Pass Failure ]
@@ -6729,7 +6714,16 @@ crbug.com/1042694 virtual/form-controls-refresh-disabled/fast/forms/form-control
 # QUIC reordered versions to prefer IETF QUIC
 crbug.com/1070747 external/wpt/webrtc-quic/* [ Skip ]
 
+# Web Audio active processing tests
+crbug.com/1073247 external/wpt/webaudio/the-audio-api/the-audiobuffersourcenode-interface/active-processing.https.html [ Pass Failure ]
+crbug.com/1073247 external/wpt/webaudio/the-audio-api/the-channelmergernode-interface/active-processing.https.html [ Pass Failure ]
+crbug.com/1073247 external/wpt/webaudio/the-audio-api/the-convolvernode-interface/active-processing.https.html [ Pass Failure ]
+
 # Sheriff 2020-04-22
 # Flaky test.
 crbug.com/1073431 http/tests/streams/transferable/readable-stream.html [ Pass Failure ]
 crbug.com/1073460 external/wpt/css/CSS2/linebox/animations/line-height-interpolation.html [ Pass Timeout ]
+crbug.com/1073505 [ Mac10.13 ] external/wpt/html/semantics/scripting-1/the-script-element/moving-between-documents [ Pass Failure ]
+crbug.com/1073505 [ Mac10.13 ] virtual/web-components-v0-disabled/external/wpt/html/semantics/scripting-1/the-script-element/moving-between-documents [ Pass Failure ]
+crbug.com/1073505 [ Mac10.13 ] external/wpt/html/semantics/scripting-1/the-script-element/moving-between-documents/before-prepare-iframe-success-external-module.html [ Pass Failure ]
+crbug.com/1073505 [ Mac10.13 ] external/wpt/html/semantics/scripting-1/the-script-element/moving-between-documents/before-prepare-iframe-fetch-error-external-module.html [ Pass Failure ]

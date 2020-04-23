@@ -6,4 +6,5 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Qr code scanner camera preview overlay colors -->
     <color name="overlay_mask">@color/black_alpha_65</color>
+    <color name="camera_background">@color/modern_grey_100</color>
 </resources>

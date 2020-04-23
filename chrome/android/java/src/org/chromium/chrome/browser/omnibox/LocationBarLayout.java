@@ -33,7 +33,6 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.ObserverList;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.WindowDelegate;
@@ -59,7 +58,6 @@ import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
 import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
-import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
@@ -74,7 +72,6 @@ import org.chromium.content_public.common.ResourceRequestBody;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
-import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.util.ColorUtils;
 
 import java.util.ArrayList;
@@ -287,8 +284,6 @@ public class LocationBarLayout extends FrameLayout
     @Override
     public void initializeControls(WindowDelegate windowDelegate, WindowAndroid windowAndroid,
             ActivityTabProvider activityTabProvider,
-            Supplier<ModalDialogManager> modalDialogManagerSupplier,
-            Supplier<ShareDelegate> shareDelegateSupplier,
             IncognitoStateProvider incognitoStateProvider) {
         mWindowDelegate = windowDelegate;
         mWindowAndroid = windowAndroid;
@@ -296,9 +291,7 @@ public class LocationBarLayout extends FrameLayout
         mUrlCoordinator.setWindowDelegate(windowDelegate);
         mAutocompleteCoordinator.setWindowAndroid(windowAndroid);
         mAutocompleteCoordinator.setActivityTabProvider(activityTabProvider);
-        mAutocompleteCoordinator.setShareDelegateSupplier(shareDelegateSupplier);
         mStatusViewCoordinator.setIncognitoStateProvider(incognitoStateProvider);
-        mStatusViewCoordinator.setModalDialogManagerSupplier(modalDialogManagerSupplier);
     }
 
     /**

@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cmath>
 
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/ranges.h"
 

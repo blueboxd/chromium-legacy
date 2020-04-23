@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 import("//third_party/closure_compiler/compile_js.gni")
-import("//tools/polymer/polymer.gni")
+import("//tools/polymer/html_to_js.gni")
 
 js_type_check("closure_compile") {
   uses_js_modules = true
@@ -109,42 +109,12 @@ js_library("tab_strip_options") {
 js_library("tab_swiper") {
 }
 
-group("tab_strip_modules") {
-  public_deps = [
-    ":alert_indicator_module",
-    ":alert_indicators_module",
-    ":tab_group_module",
-    ":tab_list_module",
-    ":tab_module",
+html_to_js("web_components") {
+  js_files = [
+    "alert_indicator.js",
+    "alert_indicators.js",
+    "tab_group.js",
+    "tab_list.js",
+    "tab.js",
   ]
-}
-
-polymer_modulizer("alert_indicator") {
-  js_file = "alert_indicator.js"
-  html_file = "alert_indicator.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("alert_indicators") {
-  js_file = "alert_indicators.js"
-  html_file = "alert_indicators.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("tab") {
-  js_file = "tab.js"
-  html_file = "tab.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("tab_group") {
-  js_file = "tab_group.js"
-  html_file = "tab_group.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("tab_list") {
-  js_file = "tab_list.js"
-  html_file = "tab_list.html"
-  html_type = "v3-ready"
 }

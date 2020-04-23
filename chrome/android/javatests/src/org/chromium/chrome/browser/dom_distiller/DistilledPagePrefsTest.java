@@ -17,7 +17,6 @@ import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
@@ -74,14 +73,12 @@ public class DistilledPagePrefsTest {
     @Test
     @SmallTest
     @Feature({"DomDistiller"})
-    @DisabledTest(message = "Test Suite flaky: crbug.com/1065452")
     public void testSingleObserverTheme() throws InterruptedException {
         TestingObserver testObserver = new TestingObserver();
         mDistilledPagePrefs.addObserver(testObserver);
 
-        setTheme(Theme.DARK);
-        // Assumes that callback does not occur immediately.
         Assert.assertEquals(Theme.LIGHT, testObserver.getTheme());
+        setTheme(Theme.DARK);
         UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
         // Check that testObserver's theme has been updated,
         Assert.assertEquals(Theme.DARK, testObserver.getTheme());
@@ -126,16 +123,14 @@ public class DistilledPagePrefsTest {
     @Test
     @SmallTest
     @Feature({"DomDistiller"})
-    @DisabledTest(message = "Test Suite flaky: crbug.com/1065452")
     public void testSingleObserverFontFamily() throws InterruptedException {
         TestingObserver testObserver = new TestingObserver();
         mDistilledPagePrefs.addObserver(testObserver);
 
-        setFontFamily(FontFamily.SERIF);
-        // Assumes that callback does not occur immediately.
         Assert.assertEquals(FontFamily.SANS_SERIF, testObserver.getFontFamily());
+        setFontFamily(FontFamily.SERIF);
         UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
-        // Check that testObserver's font family has been updated,
+        // Check that testObserver's font family has been updated.
         Assert.assertEquals(FontFamily.SERIF, testObserver.getFontFamily());
         mDistilledPagePrefs.removeObserver(testObserver);
     }
@@ -178,16 +173,14 @@ public class DistilledPagePrefsTest {
     @Test
     @SmallTest
     @Feature({"DomDistiller"})
-    @DisabledTest(message = "Test Suite flaky: crbug.com/1065452")
     public void testSingleObserverFontScaling() throws InterruptedException {
         TestingObserver testObserver = new TestingObserver();
         mDistilledPagePrefs.addObserver(testObserver);
 
+        Assert.assertNotEquals(1.1, testObserver.getFontScaling(), EPSILON);
         setFontScaling(1.1f);
-        // Assumes that callback does not occur immediately.
-        Assert.assertEquals(0, testObserver.getFontScaling(), EPSILON);
         UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
-        // Check that testObserver's font scaling has been updated,
+        // Check that testObserver's font scaling has been updated.
         Assert.assertEquals(1.1, testObserver.getFontScaling(), EPSILON);
         mDistilledPagePrefs.removeObserver(testObserver);
     }

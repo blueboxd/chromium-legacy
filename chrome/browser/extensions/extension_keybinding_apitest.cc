@@ -4,6 +4,8 @@
 
 #include "base/macros.h"
 #include "base/stl_util.h"
+#include "base/strings/strcat.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -23,6 +25,7 @@
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/browser/ui/ui_features.h"
+#include "chrome/common/extensions/api/extension_action/action_info_test_util.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/sessions/content/session_tab_helper.h"
@@ -37,6 +40,7 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
+#include "extensions/test/test_extension_dir.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 using content::WebContents;
@@ -164,6 +168,7 @@ void SetActionVisibleOnTab(Profile* profile,
 void SendKeyPressToAction(Browser* browser,
                           const Extension& extension,
                           ui::KeyboardCode keyboard_code,
+                          const char* event_name,
                           bool expect_dispatch) {
   ExtensionTestMessageListener click_listener("clicked",
                                               false);  // Won't reply.
@@ -180,8 +185,8 @@ void SendKeyPressToAction(Browser* browser,
   }
   base::RunLoop().RunUntilIdle();
   // Check that the event was dispatched if and only if we expected it to be.
-  EXPECT_EQ(expect_dispatch, base::Contains(event_tracker.dispatched_events(),
-                                            "pageAction.onClicked"));
+  EXPECT_EQ(expect_dispatch,
+            base::Contains(event_tracker.dispatched_events(), event_name));
 
   // Do a round-trip to the extension renderer. This serves as a pseudo-
   // RunUntilIdle()-type of method for the extension renderer itself, since
@@ -202,7 +207,25 @@ void SendKeyPressToAction(Browser* browser,
   EXPECT_EQ(expect_dispatch, click_listener.was_satisfied());
 }
 
-} // namespace
+// Given an |action_type|, returns the corresponding command key.
+const char* GetCommandKeyForActionType(ActionInfo::Type action_type) {
+  const char* command_key = nullptr;
+  switch (action_type) {
+    case ActionInfo::TYPE_BROWSER:
+      command_key = manifest_values::kBrowserActionCommandEvent;
+      break;
+    case ActionInfo::TYPE_PAGE:
+      command_key = manifest_values::kPageActionCommandEvent;
+      break;
+    case ActionInfo::TYPE_ACTION:
+      // TODO(devlin): Add support for the "action" key.
+      break;
+  }
+
+  return command_key;
+}
+
+}  // namespace
 
 class CommandsApiTest : public ExtensionApiTest {
  public:
@@ -233,6 +256,29 @@ class CommandsApiTest : public ExtensionApiTest {
         APIPermission::kTab);
   }
 
+  // Returns true if the extension with the given |extension_id| has an active
+  // command associated with an action of the given |action_type|.
+  bool HasActiveActionCommand(const ExtensionId& extension_id,
+                              ActionInfo::Type action_type) {
+    bool active = false;
+    Command command;
+    CommandService* const command_service =
+        CommandService::Get(browser()->profile());
+    bool found_command = command_service->GetExtensionActionCommand(
+        extension_id, action_type, CommandService::ALL, &command, &active);
+    return found_command && active;
+  }
+
+  // Navigates to a test URL and return the ID of the navigated tab.
+  int NavigateToTestURLAndReturnTabId() {
+    ui_test_utils::NavigateToURL(
+        browser(), embedded_test_server()->GetURL("/extensions/test_file.txt"));
+    return sessions::SessionTabHelper::FromWebContents(
+               browser()->tab_strip_model()->GetActiveWebContents())
+        ->session_id()
+        .id();
+  }
+
 #if defined(OS_CHROMEOS)
   void RunChromeOSConversionTest(const std::string& extension_path) {
     // Setup the environment.
@@ -261,6 +307,11 @@ class CommandsApiTest : public ExtensionApiTest {
 
 class IncognitoCommandsApiTest : public CommandsApiTest,
                                  public testing::WithParamInterface<bool> {};
+
+// A parameterized version to allow testing with different action types.
+class ActionCommandsApiTest
+    : public CommandsApiTest,
+      public testing::WithParamInterface<ActionInfo::Type> {};
 
 // Test the basic functionality of the Keybinding API:
 // - That pressing the shortcut keys should perform actions (activate the
@@ -311,38 +362,13 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, Basic) {
   EXPECT_EQ(std::string(kBasicsShortcutCommandName), test_listener.message());
 }
 
-IN_PROC_BROWSER_TEST_F(CommandsApiTest, PageAction) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-  ASSERT_TRUE(RunExtensionTest("keybinding/page_action")) << message_;
-  const Extension* extension = GetSingleLoadedExtension();
-  ASSERT_TRUE(extension) << message_;
-
-  ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL("/extensions/test_file.txt"));
-  int tab_id = sessions::SessionTabHelper::FromWebContents(
-                   browser()->tab_strip_model()->GetActiveWebContents())
-                   ->session_id()
-                   .id();
-
-  SetActionVisibleOnTab(profile(), *extension, tab_id);
-  ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
-
-  bool expect_dispatch = true;
-  SendKeyPressToAction(browser(), *extension, ui::VKEY_F, expect_dispatch);
-}
-
 IN_PROC_BROWSER_TEST_F(CommandsApiTest, InactivePageActionDoesntTrigger) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(RunExtensionTest("keybinding/page_action")) << message_;
   const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension) << message_;
 
-  ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL("/extensions/test_file.txt"));
-  int tab_id = sessions::SessionTabHelper::FromWebContents(
-                   browser()->tab_strip_model()->GetActiveWebContents())
-                   ->session_id()
-                   .id();
+  const int tab_id = NavigateToTestURLAndReturnTabId();
 
   ExtensionActionManager* action_manager =
       ExtensionActionManager::Get(profile());
@@ -353,7 +379,8 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, InactivePageActionDoesntTrigger) {
 
   // If the page action is disabled / hidden, the event shouldn't be dispatched.
   bool expect_dispatch = false;
-  SendKeyPressToAction(browser(), *extension, ui::VKEY_F, expect_dispatch);
+  SendKeyPressToAction(browser(), *extension, ui::VKEY_F,
+                       "pageAction.onClicked", expect_dispatch);
 }
 
 // Tests that a page action that is overflowed will still properly trigger when
@@ -377,18 +404,14 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, OverflowedPageActionTriggers) {
       ExtensionActionTestHelper::Create(browser());
   EXPECT_EQ(0, test_helper->VisibleBrowserActions());
 
-  ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL("/extensions/test_file.txt"));
-  const int tab_id = sessions::SessionTabHelper::FromWebContents(
-                         browser()->tab_strip_model()->GetActiveWebContents())
-                         ->session_id()
-                         .id();
+  const int tab_id = NavigateToTestURLAndReturnTabId();
   SetActionVisibleOnTab(profile(), *extension, tab_id);
 
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
 
   constexpr bool kExpectDispatch = true;
-  SendKeyPressToAction(browser(), *extension, ui::VKEY_F, kExpectDispatch);
+  SendKeyPressToAction(browser(), *extension, ui::VKEY_F,
+                       "pageAction.onClicked", kExpectDispatch);
 }
 
 IN_PROC_BROWSER_TEST_F(CommandsApiTest, PageActionKeyUpdated) {
@@ -402,18 +425,14 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, PageActionKeyUpdated) {
   command_service->UpdateKeybindingPrefs(
       extension->id(), manifest_values::kPageActionCommandEvent, kAltShiftG);
 
-  ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL("/extensions/test_file.txt"));
-  int tab_id = sessions::SessionTabHelper::FromWebContents(
-                   browser()->tab_strip_model()->GetActiveWebContents())
-                   ->session_id()
-                   .id();
+  const int tab_id = NavigateToTestURLAndReturnTabId();
 
   SetActionVisibleOnTab(profile(), *extension, tab_id);
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
 
   bool expect_dispatch = true;
-  SendKeyPressToAction(browser(), *extension, ui::VKEY_G, expect_dispatch);
+  SendKeyPressToAction(browser(), *extension, ui::VKEY_G,
+                       "pageAction.onClicked", expect_dispatch);
 }
 
 IN_PROC_BROWSER_TEST_F(CommandsApiTest, PageActionOverrideChromeShortcut) {
@@ -433,12 +452,7 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, PageActionOverrideChromeShortcut) {
       extension->id(), manifest_values::kPageActionCommandEvent,
       print_shortcut);
 
-  ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL("/extensions/test_file.txt"));
-  int tab_id = sessions::SessionTabHelper::FromWebContents(
-                   browser()->tab_strip_model()->GetActiveWebContents())
-                   ->session_id()
-                   .id();
+  const int tab_id = NavigateToTestURLAndReturnTabId();
 
   SetActionVisibleOnTab(profile(), *extension, tab_id);
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
@@ -1033,6 +1047,136 @@ IN_PROC_BROWSER_TEST_P(IncognitoCommandsApiTest, IncognitoMode) {
       is_incognito_enabled,
       base::Contains(test_observer.dispatched_events(), "commands.onCommand"));
 }
+
+IN_PROC_BROWSER_TEST_P(ActionCommandsApiTest,
+                       TriggeringCommandTriggersListener) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const ActionInfo::Type action_type = GetParam();
+  std::unique_ptr<ScopedCurrentChannel> override_channel =
+      GetOverrideChannelForActionType(GetParam());
+
+  // Load a test extension that has a command that invokes the action, and sends
+  // a message when the action is invoked.
+  constexpr char kManifestTemplate[] = R"(
+    {
+      "name": "Extension Action Listener Test",
+      "manifest_version": 2,
+      "version": "0.1",
+      "commands": {
+        "%s": {
+          "suggested_key": {
+            "default": "Alt+Shift+U"
+          }
+        }
+      },
+      "%s": {},
+      "background": {"scripts": ["background.js"]}
+    }
+  )";
+  constexpr char kBackgroundScriptTemplate[] = R"(
+      chrome.%s.onClicked.addListener(() => {
+        chrome.test.sendMessage('clicked');
+      });
+  )";
+
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(base::StringPrintf(
+      kManifestTemplate, GetCommandKeyForActionType(action_type),
+      GetManifestKeyForActionType(action_type)));
+  test_dir.WriteFile(FILE_PATH_LITERAL("background.js"),
+                     base::StringPrintf(kBackgroundScriptTemplate,
+                                        GetAPINameForActionType(action_type)));
+
+  const Extension* extension = LoadExtension(test_dir.UnpackedPath());
+  ASSERT_TRUE(extension);
+  ASSERT_TRUE(HasActiveActionCommand(extension->id(), action_type));
+
+  const int tab_id = NavigateToTestURLAndReturnTabId();
+
+  // If the action is a page action, it's hidden by default. Show it.
+  if (action_type == ActionInfo::TYPE_PAGE) {
+    SetActionVisibleOnTab(profile(), *extension, tab_id);
+    ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
+  }
+
+  bool expect_dispatch = true;
+  std::string event_name =
+      base::StrCat({GetAPINameForActionType(action_type), ".onClicked"});
+  // Send a keypress, and expect the action to be invoked.
+  SendKeyPressToAction(browser(), *extension, ui::VKEY_U, event_name.c_str(),
+                       expect_dispatch);
+}
+
+// Tests that triggering a command associated with an action opens an
+// extension's popup.
+IN_PROC_BROWSER_TEST_P(ActionCommandsApiTest, TriggeringCommandTriggersPopup) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const ActionInfo::Type action_type = GetParam();
+  std::unique_ptr<ScopedCurrentChannel> override_channel =
+      GetOverrideChannelForActionType(GetParam());
+
+  // Load an extension that specifies a command to invoke the action, and has
+  // a default popup.
+  constexpr char kManifestTemplate[] = R"(
+    {
+      "name": "Extension Action Listener Test",
+      "manifest_version": 2,
+      "version": "0.1",
+      "commands": {
+        "%s": {
+          "suggested_key": {
+            "default": "Alt+Shift+U"
+          }
+        }
+      },
+      "%s": {"default_popup": "popup.html"}
+    }
+  )";
+  constexpr char kPopupHtml[] = R"(
+      <!doctype html>
+      <html>
+        <script src="popup.js"></script>
+      </html>
+  )";
+  constexpr char kPopupJs[] = "chrome.test.notifyPass();";
+
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(base::StringPrintf(
+      kManifestTemplate, GetCommandKeyForActionType(action_type),
+      GetManifestKeyForActionType(action_type)));
+  test_dir.WriteFile(FILE_PATH_LITERAL("popup.html"), kPopupHtml);
+  test_dir.WriteFile(FILE_PATH_LITERAL("popup.js"), kPopupJs);
+
+  const Extension* extension = LoadExtension(test_dir.UnpackedPath());
+  ASSERT_TRUE(extension);
+  ASSERT_TRUE(HasActiveActionCommand(extension->id(), action_type));
+
+  const int tab_id = NavigateToTestURLAndReturnTabId();
+
+  if (action_type == ActionInfo::TYPE_PAGE) {
+    // Note: We don't use SetActionVisibleOnTab() here because it relies on a
+    // background page, which this extension doesn't have.
+    ExtensionActionManager::Get(profile())
+        ->GetExtensionAction(*extension)
+        ->SetIsVisible(tab_id, true);
+    ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
+  }
+
+  ResultCatcher catcher;
+  // Invoke the action, and wait for the popup to show.
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_U, false,
+                                              true, true, false));
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+  EXPECT_TRUE(ExtensionActionTestHelper::Create(browser())->HasPopup());
+}
+
+// TODO(devlin): Add ActionInfo::TYPE_ACTION support here.
+INSTANTIATE_TEST_SUITE_P(All,
+                         ActionCommandsApiTest,
+                         testing::Values(ActionInfo::TYPE_BROWSER,
+                                         ActionInfo::TYPE_PAGE));
 
 INSTANTIATE_TEST_SUITE_P(All, IncognitoCommandsApiTest, testing::Bool());
 

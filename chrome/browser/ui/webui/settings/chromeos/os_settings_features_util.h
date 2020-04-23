@@ -17,6 +17,10 @@ bool IsGuestModeActive();
 // shown for |profile|.
 bool ShouldShowParentalControlSettings(const Profile* profile);
 
+// Determines whether the External Storage section of Device settings should be
+// shown for |profile|.
+bool ShouldShowExternalStorageSettings(const Profile* profile);
+
 }  // namespace features
 }  // namespace settings
 }  // namespace chromeos

@@ -25,7 +25,7 @@ WebLayerInternalsUI::WebLayerInternalsUI(content::WebUI* web_ui)
                                 source);
 }
 
-WebLayerInternalsUI::~WebLayerInternalsUI() {}
+WebLayerInternalsUI::~WebLayerInternalsUI() = default;
 
 #if defined(OS_ANDROID)
 void WebLayerInternalsUI::GetRemoteDebuggingEnabled(

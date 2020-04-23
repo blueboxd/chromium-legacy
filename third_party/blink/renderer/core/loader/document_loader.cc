@@ -648,6 +648,9 @@ void DocumentLoader::BodyLoadingFinished(
         completion_time, total_encoded_data_length, total_decoded_body_length,
         should_report_corb_blocking);
     if (response_.IsHTTP()) {
+      // The response is being copied here to pass the Encoded and Decoded
+      // sizes.
+      // TODO(yoav): copy the sizes info directly.
       navigation_timing_info_->SetFinalResponse(response_);
       navigation_timing_info_->AddFinalTransferSize(
           total_encoded_data_length == -1 ? 0 : total_encoded_data_length);
@@ -907,6 +910,12 @@ void DocumentLoader::CommitNavigation() {
   DCHECK(frame_->GetPage());
 
   InstallNewDocument(Url(), initiator_origin, owner_document, MimeType());
+
+  if (response_.IsHTTP() && navigation_timing_info_) {
+    // The response is being copied here to pass the ServerTiming info.
+    // TODO(yoav): copy the ServerTiming info directly.
+    navigation_timing_info_->SetFinalResponse(response_);
+  }
 }
 
 void DocumentLoader::CommitData(const char* bytes, size_t length) {

@@ -7,6 +7,7 @@
 #include <cmath>
 
 #include "base/lazy_instance.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/numerics/math_constants.h"
 

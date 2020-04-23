@@ -107,10 +107,11 @@ bool FrameView::UpdateViewportIntersection(unsigned flags,
         owner_layout_object->PhysicalContentBoxOffset();
 
     if (NeedsViewportOffset() || !can_skip_sticky_frame_tracking) {
-      viewport_offset =
-          RoundedIntPoint(owner_layout_object->LocalToAbsolutePoint(
-              content_box_offset,
-              kTraverseDocumentBoundaries | kApplyRemoteRootFrameOffset));
+      viewport_offset = -RoundedIntPoint(
+          owner_layout_object->AbsoluteToLocalPoint(
+              PhysicalOffset(),
+              kTraverseDocumentBoundaries | kApplyRemoteRootFrameOffset) -
+          content_box_offset);
       if (!can_skip_sticky_frame_tracking) {
         // If the frame is small, skip tracking this frame and its subframes.
         if (frame.GetMainFrameViewportSize().IsEmpty() ||

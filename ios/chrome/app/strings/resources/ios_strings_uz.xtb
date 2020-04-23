@@ -196,7 +196,6 @@
 <translation id="3469166899695866866">Yuklab olish to‘xtatilsinmi?</translation>
 <translation id="3470502288861289375">Nusxa olinmoqda...</translation>
 <translation id="3474624961160222204"><ph name="NAME" /> sifatida davom etish</translation>
-<translation id="3474649192738347024">Shakllar to‘ldirildi.</translation>
 <translation id="3478058380795961209">Oy (muddat)</translation>
 <translation id="3482959374254649722">Tablar sinxronlanmoqda...</translation>
 <translation id="3484946776651937681">Yuklanmalar jildini ochish</translation>
@@ -420,7 +419,7 @@ Handoff funksiyasini faqatgina Chrome sozlamalarida emas, balki qurilma sozlamal
 
 Ma’lumotlaringiz <ph name="TIME" /> sanasida kodli ibora bilan shifrlangan. Sinxronlashuvni boshlash uchun uni kiriting.</translation>
 <translation id="6418346271604475326">PDF tayyorlanmoqda</translation>
-<translation id="6426067060178468363">Cookie fayllariga ruxsat berish</translation>
+<translation id="6426067060178468363">Cookie fayllar uchun ruxsat</translation>
 <translation id="6434591244308415567">Xatolik yuz berdi. Keyinroq urining.</translation>
 <translation id="6445051938772793705">Mamlakat</translation>
 <translation id="6445981559479772097">Xabar yuborildi.</translation>
@@ -466,7 +465,7 @@ Ma’lumotlaringiz <ph name="TIME" /> sanasida kodli ibora bilan shifrlangan. Si
 <translation id="6988572888918530647">Google hisobingizni boshqaring</translation>
 <translation id="6995899638241819463">Parolim oshkor etilganda ogohlantirilsin</translation>
 <translation id="6998989275928107238">Host</translation>
-<translation id="7004499039102548441">Yaqinda ochilgan ichki oynalar</translation>
+<translation id="7004499039102548441">Yaqinda ochilgan varaqlar</translation>
 <translation id="7006788746334555276">Kontent sozlamalari</translation>
 <translation id="7015203776128479407">Dastlabki sinxronizatsiya sozlanishi oxiriga yetmagan. Sinxronizatsiya yoqilmagan.</translation>
 <translation id="7029809446516969842">Parollar</translation>
@@ -479,6 +478,7 @@ Ma’lumotlaringiz <ph name="TIME" /> sanasida kodli ibora bilan shifrlangan. Si
 <translation id="7136892417564438900">Kamera ish faoliyatida emas</translation>
 <translation id="7159472599653637159">Mobil versiya</translation>
 <translation id="7173114856073700355">Sozlamalarni ochish</translation>
+<translation id="7189598951263744875">Ulashish…</translation>
 <translation id="7192050974311852563">Yozib olishni boshlash</translation>
 <translation id="7203585745079012652">Qidiruv natijalari o‘qilsin</translation>
 <translation id="7265758999917665941">Bu saytda hech qachon</translation>
@@ -546,7 +546,7 @@ Hisobingiz <ph name="HOSTED_DOMAIN" /> domenida boshqariladi, undan chiqsangiz, 
 <translation id="8076014560081431679">Saytlarda saqlangan ma’lumotlar tozalanmaydi va brauzer faoliyatiga ta’sir qilmaydi. <ph name="BEGIN_LINK" />Batafsil<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">Faylni yuklab olish mumkin. Qo‘shimcha amallar ekranning pastki qismida.</translation>
 <translation id="8131740175452115882">Tasdiqlash</translation>
-<translation id="8174524257672181687">Barcha cookie fayllarini taqiqlash (tavsiya etilmaydi)</translation>
+<translation id="8174524257672181687">Barcha cookie fayllarni taqiqlash (tavsiya etilmaydi)</translation>
 <translation id="8197543752516192074">Sahifani tarjima qilish</translation>
 <translation id="8205564605687841303">Bekor qilish</translation>
 <translation id="8225985093977202398">Keshdagi tasvir va fayllar</translation>
@@ -587,7 +587,7 @@ Hisobingiz <ph name="HOSTED_DOMAIN" /> domenida boshqariladi, undan chiqsangiz, 
 <translation id="8741995161408053644">Google hisobingiz orqali bajargan internetdagi faoliyatingizni <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> orqali ko‘rishingiz mumkin.</translation>
 <translation id="8756969031206844760">Parolni yangilash</translation>
 <translation id="8775144690796719618">URL manzil yaroqsiz</translation>
-<translation id="8820817407110198400">Xatcho‘plar</translation>
+<translation id="8820817407110198400">Bukmarklar</translation>
 <translation id="8840513115188359703">Google hisobingizdan chiqmaysiz.</translation>
 <translation id="8870413625673593573">Yaqinda yopilganlar</translation>
 <translation id="8881801611828450202">Bu rasmni <ph name="SEARCH_ENGINE" /> orqali qidirish</translation>

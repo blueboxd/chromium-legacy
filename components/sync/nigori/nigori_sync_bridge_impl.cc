@@ -686,16 +686,6 @@ KeystoreKeysHandler* NigoriSyncBridgeImpl::GetKeystoreKeysHandler() {
   return this;
 }
 
-std::string NigoriSyncBridgeImpl::GetLastKeystoreKey() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  const std::vector<std::string> keystore_keys =
-      state_.keystore_keys_cryptographer->keystore_keys();
-  if (keystore_keys.empty()) {
-    return std::string();
-  }
-  return keystore_keys.back();
-}
-
 bool NigoriSyncBridgeImpl::NeedKeystoreKey() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Explicitly asks the server for keystore keys if it's first-time sync, i.e.

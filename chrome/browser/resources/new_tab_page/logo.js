@@ -49,7 +49,7 @@ class LogoElement extends PolymerElement {
       /** @private */
       loaded_: Boolean,
 
-      /** @private */
+      /** @private {newTabPage.mojom.Doodle} */
       doodle_: Object,
 
       /** @private */

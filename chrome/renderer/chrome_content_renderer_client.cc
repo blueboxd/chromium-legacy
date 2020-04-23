@@ -66,6 +66,7 @@
 #include "chrome/renderer/websocket_handshake_throttle_provider_impl.h"
 #include "chrome/renderer/worker_content_settings_client.h"
 #include "components/autofill/content/renderer/autofill_agent.h"
+#include "components/autofill/content/renderer/autofill_assistant_agent.h"
 #include "components/autofill/content/renderer/password_autofill_agent.h"
 #include "components/autofill/content/renderer/password_generation_agent.h"
 #include "components/content_capture/common/content_capture_features.h"
@@ -216,6 +217,7 @@
 #endif
 
 using autofill::AutofillAgent;
+using autofill::AutofillAssistantAgent;
 using autofill::PasswordAutofillAgent;
 using autofill::PasswordGenerationAgent;
 using base::ASCIIToUTF16;
@@ -565,8 +567,11 @@ void ChromeContentRendererClient::RenderFrameCreated(
   PasswordGenerationAgent* password_generation_agent =
       new PasswordGenerationAgent(render_frame, password_autofill_agent,
                                   associated_interfaces);
+  AutofillAssistantAgent* autofill_assistant_agent =
+      new AutofillAssistantAgent(render_frame);
   new AutofillAgent(render_frame, password_autofill_agent,
-                    password_generation_agent, associated_interfaces);
+                    password_generation_agent, autofill_assistant_agent,
+                    associated_interfaces);
 
   if (content_capture::features::IsContentCaptureEnabled()) {
     new content_capture::ContentCaptureSender(render_frame,

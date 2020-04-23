@@ -9,19 +9,9 @@
 
 namespace blink {
 
-static MathMLUnderOverElement::ScriptType scriptTypeOf(
-    const QualifiedName& tagName) {
-  if (tagName == mathml_names::kMunderTag)
-    return MathMLUnderOverElement::ScriptType::kUnder;
-  if (tagName == mathml_names::kMoverTag)
-    return MathMLUnderOverElement::ScriptType::kOver;
-  DCHECK_EQ(tagName, mathml_names::kMunderoverTag);
-  return MathMLUnderOverElement::ScriptType::kUnderOver;
-}
-
 MathMLUnderOverElement::MathMLUnderOverElement(const QualifiedName& tagName,
                                                Document& document)
-    : MathMLElement(tagName, document), script_type_(scriptTypeOf(tagName)) {}
+    : MathMLScriptsElement(tagName, document) {}
 
 LayoutObject* MathMLUnderOverElement::CreateLayoutObject(
     const ComputedStyle& style,

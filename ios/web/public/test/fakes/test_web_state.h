@@ -10,6 +10,7 @@
 #include <memory>
 #include <string>
 
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "ios/web/public/deprecated/url_verification_constants.h"
@@ -31,6 +32,8 @@ class TestWebState : public WebState {
   ~TestWebState() override;
 
   // WebState implementation.
+  Getter CreateDefaultGetter() override;
+  OnceGetter CreateDefaultOnceGetter() override;
   WebStateDelegate* GetDelegate() override;
   void SetDelegate(WebStateDelegate* delegate) override;
   bool IsWebUsageEnabled() const override;
@@ -159,6 +162,8 @@ class TestWebState : public WebState {
   // All the WebStatePolicyDeciders asked for navigation decision. Weak
   // references.
   base::ObserverList<WebStatePolicyDecider, true>::Unchecked policy_deciders_;
+
+  base::WeakPtrFactory<TestWebState> weak_factory_{this};
 };
 
 }  // namespace web

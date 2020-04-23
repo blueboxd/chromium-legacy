@@ -15,7 +15,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/browser/data_store.h"
@@ -70,32 +69,28 @@ namespace data_reduction_proxy {
 
 TestDataReductionProxyRequestOptions::TestDataReductionProxyRequestOptions(
     Client client,
-    const std::string& version,
-    DataReductionProxyConfig* config)
-    : DataReductionProxyRequestOptions(client, version, config) {}
+    const std::string& version)
+    : DataReductionProxyRequestOptions(client, version) {}
 
 std::string TestDataReductionProxyRequestOptions::GetDefaultKey() const {
   return kTestKey;
 }
 
 MockDataReductionProxyRequestOptions::MockDataReductionProxyRequestOptions(
-    Client client,
-    DataReductionProxyConfig* config)
-    : TestDataReductionProxyRequestOptions(client, "1.2.3.4", config) {}
+    Client client)
+    : TestDataReductionProxyRequestOptions(client, "1.2.3.4") {}
 
 MockDataReductionProxyRequestOptions::~MockDataReductionProxyRequestOptions() {}
 
 TestDataReductionProxyConfigServiceClient::
     TestDataReductionProxyConfigServiceClient(
         DataReductionProxyRequestOptions* request_options,
-        DataReductionProxyConfig* config,
         DataReductionProxyService* service,
         network::NetworkConnectionTracker* network_connection_tracker,
         ConfigStorer config_storer,
         const net::BackoffEntry::Policy& backoff_policy)
     : DataReductionProxyConfigServiceClient(backoff_policy,
                                             request_options,
-                                            config,
                                             service,
                                             network_connection_tracker,
                                             config_storer),
@@ -374,28 +369,23 @@ DataReductionProxyTestContext::Builder::Build() {
             test_url_loader_factory.get());
   }
 
-  std::unique_ptr<TestDataReductionProxyConfig> config;
   std::unique_ptr<DataReductionProxyConfigServiceClient> config_client;
   if (use_config_client_) {
     test_context_flags |= USE_CONFIG_CLIENT;
-    config.reset(new TestDataReductionProxyConfig());
   } else if (use_mock_config_) {
     test_context_flags |= USE_MOCK_CONFIG;
-    config.reset(new MockDataReductionProxyConfig());
   } else {
     test_context_flags ^= USE_MOCK_CONFIG;
-    config.reset(new TestDataReductionProxyConfig());
   }
 
   std::unique_ptr<TestDataReductionProxyRequestOptions> request_options;
 
   if (use_mock_request_options_) {
     test_context_flags |= USE_MOCK_REQUEST_OPTIONS;
-    request_options.reset(
-        new MockDataReductionProxyRequestOptions(client_, config.get()));
+    request_options.reset(new MockDataReductionProxyRequestOptions(client_));
   } else {
-    request_options.reset(new TestDataReductionProxyRequestOptions(
-        client_, "1.2.3.4", config.get()));
+    request_options.reset(
+        new TestDataReductionProxyRequestOptions(client_, "1.2.3.4"));
   }
 
   if (!settings_)
@@ -425,21 +415,20 @@ DataReductionProxyTestContext::Builder::Build() {
   if (use_test_config_client_) {
     test_context_flags |= USE_TEST_CONFIG_CLIENT;
     config_client.reset(new TestDataReductionProxyConfigServiceClient(
-        request_options.get(), config.get(), service.get(),
-        test_network_connection_tracker,
+        request_options.get(), service.get(), test_network_connection_tracker,
         base::BindRepeating(&TestConfigStorer::StoreSerializedConfig,
                             base::Unretained(config_storer.get())),
         GetTestBackoffPolicy()));
   } else if (use_config_client_) {
     config_client.reset(new DataReductionProxyConfigServiceClient(
-        GetBackoffPolicy(), request_options.get(), config.get(), service.get(),
+        GetBackoffPolicy(), request_options.get(), service.get(),
         test_network_connection_tracker,
         base::BindRepeating(&TestConfigStorer::StoreSerializedConfig,
                             base::Unretained(config_storer.get()))));
   }
 
-  service->SetDependenciesForTesting(
-      std::move(config), std::move(request_options), std::move(config_client));
+  service->SetDependenciesForTesting(std::move(request_options),
+                                     std::move(config_client));
 
   std::unique_ptr<DataReductionProxyTestContext> test_context(
       new DataReductionProxyTestContext(
@@ -554,12 +543,6 @@ void DataReductionProxyTestContext::
 }
 
 
-MockDataReductionProxyConfig* DataReductionProxyTestContext::mock_config()
-    const {
-  DCHECK(test_context_flags_ & USE_MOCK_CONFIG);
-  return reinterpret_cast<MockDataReductionProxyConfig*>(
-      data_reduction_proxy_service()->config());
-}
 
 DataReductionProxyService*
 DataReductionProxyTestContext::data_reduction_proxy_service() const {
@@ -587,12 +570,6 @@ DataReductionProxyTestContext::mock_request_options() const {
   return reinterpret_cast<MockDataReductionProxyRequestOptions*>(
       data_reduction_proxy_service()->request_options());
 }
-
-TestDataReductionProxyConfig* DataReductionProxyTestContext::config() const {
-  return reinterpret_cast<TestDataReductionProxyConfig*>(
-      data_reduction_proxy_service()->config());
-}
-
 
 TestDataReductionProxyConfigServiceClient*
 DataReductionProxyTestContext::test_config_client() {

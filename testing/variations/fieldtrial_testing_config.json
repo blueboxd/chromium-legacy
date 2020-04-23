@@ -2119,6 +2119,22 @@
             ]
         }
     ],
+    "EduCoexistence": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "EduCoexistence",
+                        "EduCoexistenceConsentLog"
+                    ]
+                }
+            ]
+        }
+    ],
     "EnableCsrssLockdown": [
         {
             "platforms": [
@@ -2292,6 +2308,29 @@
                     "name": "Enabled",
                     "enable_features": [
                         "FilterAdsOnAbusiveSites"
+                    ]
+                }
+            ]
+        }
+    ],
+    "FontPreloadingDelaysRendering": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledWithDelay150ms",
+                    "params": {
+                        "delay-in-ms": "150"
+                    },
+                    "enable_features": [
+                        "FontPreloadingDelaysRendering"
                     ]
                 }
             ]
@@ -3962,6 +4001,26 @@
             ]
         }
     ],
+    "PasswordCheck": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "PasswordCheck",
+                        "PrivacySettingsRedesign",
+                        "SafeBrowsingEnhancedProtection"
+                    ]
+                }
+            ]
+        }
+    ],
     "PaymentRequestAlwaysAllowJustInTimePaymentApp": [
         {
             "platforms": [
@@ -5049,6 +5108,21 @@
                     },
                     "enable_features": [
                         "SafeBrowsingRealTimeUrlLookupEnabled"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SafeBrowsingRealTimeUrlLookupEnabledAndroidAllDevices": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SafeBrowsingRealTimeUrlLookupEnabledForAllAndroidDevices"
                     ]
                 }
             ]

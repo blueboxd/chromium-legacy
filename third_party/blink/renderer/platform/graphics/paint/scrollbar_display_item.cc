@@ -34,9 +34,6 @@ ScrollbarDisplayItem::ScrollbarDisplayItem(
 }
 
 sk_sp<const PaintRecord> ScrollbarDisplayItem::Paint() const {
-  // We are painting a non-composited scrollbar, so we don't need layer_.
-  layer_ = nullptr;
-
   if (record_) {
     DCHECK(!scrollbar_->NeedsRepaintPart(cc::TRACK_BUTTONS_TICKMARKS));
     DCHECK(!scrollbar_->NeedsRepaintPart(cc::THUMB));
@@ -55,52 +52,29 @@ sk_sp<const PaintRecord> ScrollbarDisplayItem::Paint() const {
   return record_;
 }
 
-scoped_refptr<cc::ScrollbarLayerBase> ScrollbarDisplayItem::GetLayer() const {
+scoped_refptr<cc::ScrollbarLayerBase> ScrollbarDisplayItem::CreateOrReuseLayer(
+    cc::ScrollbarLayerBase* existing_layer) const {
   // This function is called when the scrollbar is composited. We don't need
   // record_ which is for non-composited scrollbars.
   record_ = nullptr;
 
-  if (!layer_ || layer_->is_left_side_vertical_scrollbar() !=
-                     scrollbar_->IsLeftSideVerticalScrollbar())
-    layer_ = CreateLayer();
-
-  layer_->SetOffsetToTransformParent(
-      gfx::Vector2dF(FloatPoint(rect_.Location())));
-  layer_->SetBounds(gfx::Size(rect_.Size()));
-
-  if (scrollbar_->NeedsRepaintPart(cc::THUMB) ||
-      scrollbar_->NeedsRepaintPart(cc::TRACK_BUTTONS_TICKMARKS))
-    layer_->SetNeedsDisplay();
-  return layer_;
-}
-
-scoped_refptr<cc::ScrollbarLayerBase> ScrollbarDisplayItem::CreateLayer()
-    const {
-  scoped_refptr<cc::ScrollbarLayerBase> layer;
-  if (scrollbar_->IsSolidColor()) {
-    DCHECK(scrollbar_->IsOverlay());
-    bool is_horizontal = scrollbar_->Orientation() == cc::HORIZONTAL;
-    gfx::Rect thumb_rect = scrollbar_->ThumbRect();
-    int thumb_thickness =
-        is_horizontal ? thumb_rect.height() : thumb_rect.width();
-    gfx::Rect track_rect = scrollbar_->TrackRect();
-    int track_start = is_horizontal ? track_rect.x() : track_rect.y();
-    layer = cc::SolidColorScrollbarLayer::Create(
-        scrollbar_->Orientation(), thumb_thickness, track_start,
-        scrollbar_->IsLeftSideVerticalScrollbar());
-  } else if (scrollbar_->UsesNinePatchThumbResource()) {
-    DCHECK(scrollbar_->IsOverlay());
-    layer = cc::PaintedOverlayScrollbarLayer::Create(scrollbar_);
-  } else {
-    layer = cc::PaintedScrollbarLayer::Create(scrollbar_);
-  }
-
+  auto layer =
+      cc::ScrollbarLayerBase::CreateOrReuse(scrollbar_, existing_layer);
   layer->SetIsDrawable(true);
+  if (!scrollbar_->IsSolidColor())
+    layer->SetHitTestable(true);
   layer->SetElementId(element_id_);
   layer->SetScrollElementId(
       scroll_translation_
           ? scroll_translation_->ScrollNode()->GetCompositorElementId()
           : CompositorElementId());
+  layer->SetOffsetToTransformParent(
+      gfx::Vector2dF(FloatPoint(rect_.Location())));
+  layer->SetBounds(gfx::Size(rect_.Size()));
+
+  if (scrollbar_->NeedsRepaintPart(cc::THUMB) ||
+      scrollbar_->NeedsRepaintPart(cc::TRACK_BUTTONS_TICKMARKS))
+    layer->SetNeedsDisplay();
   return layer;
 }
 

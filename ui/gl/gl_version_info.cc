@@ -4,6 +4,7 @@
 
 #include "ui/gl/gl_version_info.h"
 
+#include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_split.h"

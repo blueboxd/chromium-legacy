@@ -359,14 +359,6 @@ void MediaInterfaceProxy::CreateCdm(
     factory->CreateCdm(key_system, std::move(receiver));
 }
 
-void MediaInterfaceProxy::CreateDecryptor(
-    int cdm_id,
-    mojo::PendingReceiver<media::mojom::Decryptor> receiver) {
-  InterfaceFactory* factory = media_interface_factory_ptr_->Get();
-  if (factory)
-    factory->CreateDecryptor(cdm_id, std::move(receiver));
-}
-
 mojo::PendingRemote<media::mojom::FrameInterfaceFactory>
 MediaInterfaceProxy::GetFrameServices(const base::Token& cdm_guid,
                                       const std::string& cdm_file_system_id) {

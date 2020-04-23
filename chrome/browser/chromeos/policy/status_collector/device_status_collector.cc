@@ -1108,8 +1108,7 @@ DeviceStatusCollector::DeviceStatusCollector(
   if (crash_report_info_fetcher_.is_null())
     crash_report_info_fetcher_ = base::BindRepeating(&ReadCrashReportInfo);
 
-  idle_poll_timer_.Start(FROM_HERE,
-                         TimeDelta::FromSeconds(kIdlePollIntervalSeconds), this,
+  idle_poll_timer_.Start(FROM_HERE, kIdlePollInterval, this,
                          &DeviceStatusCollector::CheckIdleState);
   resource_usage_sampling_timer_.Start(
       FROM_HERE, TimeDelta::FromSeconds(kResourceUsageSampleIntervalSeconds),
@@ -1211,6 +1210,9 @@ DeviceStatusCollector::DeviceStatusCollector(
 DeviceStatusCollector::~DeviceStatusCollector() {
   power_manager_->RemoveObserver(this);
 }
+
+// static
+constexpr base::TimeDelta DeviceStatusCollector::kIdlePollInterval;
 
 // static
 void DeviceStatusCollector::RegisterPrefs(PrefRegistrySimple* registry) {
@@ -1332,7 +1334,7 @@ void DeviceStatusCollector::ProcessIdleState(ui::IdleState state) {
   if (!report_activity_times_)
     return;
 
-  Time now = GetCurrentTime();
+  Time now = clock_->Now();
 
   // For kiosk apps we report total uptime instead of active time.
   if (state == ui::IDLE_STATE_ACTIVE || IsKioskApp()) {
@@ -1340,15 +1342,15 @@ void DeviceStatusCollector::ProcessIdleState(ui::IdleState state) {
     // If it's been too long since the last report, or if the activity is
     // negative (which can happen when the clock changes), assume a single
     // interval of activity.
-    int active_seconds = (now - last_idle_check_).InSeconds();
-    if (active_seconds < 0 ||
-        active_seconds >= static_cast<int>((2 * kIdlePollIntervalSeconds))) {
-      activity_storage_->AddActivityPeriod(
-          now - TimeDelta::FromSeconds(kIdlePollIntervalSeconds), now,
-          user_email);
+    TimeDelta active_seconds = now - last_idle_check_;
+    Time start;
+    if (active_seconds < base::TimeDelta::FromSeconds(0) ||
+        active_seconds >= 2 * kIdlePollInterval || last_idle_check_.is_null()) {
+      start = now - kIdlePollInterval;
     } else {
-      activity_storage_->AddActivityPeriod(last_idle_check_, now, user_email);
+      start = last_idle_check_;
     }
+    activity_storage_->AddActivityPeriod(start, now, user_email);
 
     activity_storage_->PruneActivityPeriods(
         now, max_stored_past_activity_interval_,

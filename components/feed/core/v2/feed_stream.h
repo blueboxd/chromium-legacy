@@ -106,6 +106,7 @@ class FeedStream : public FeedStreamApi,
   void ReportNavigationDone() override;
   void ReportOpenAction() override;
   void ReportOpenInNewTabAction() override;
+  void ReportOpenInNewIncognitoTabAction() override;
   void ReportSendFeedbackAction() override;
   void ReportLearnMoreAction() override;
   void ReportDownloadAction() override;

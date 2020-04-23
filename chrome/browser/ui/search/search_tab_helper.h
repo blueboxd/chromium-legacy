@@ -20,7 +20,6 @@
 #include "chrome/browser/search/instant_service_observer.h"
 #include "chrome/browser/ui/omnibox/omnibox_tab_helper.h"
 #include "chrome/browser/ui/search/search_ipc_router.h"
-#include "chrome/common/search.mojom-forward.h"
 #include "chrome/common/search/instant_types.h"
 #include "chrome/common/search/ntp_logging_events.h"
 #include "components/ntp_tiles/ntp_tile_impression.h"

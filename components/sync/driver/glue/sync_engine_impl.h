@@ -126,8 +126,7 @@ class SyncEngineImpl : public SyncEngine, public InvalidationHandler {
       const WeakHandle<DataTypeDebugInfoListener> debug_info_listener,
       std::unique_ptr<ModelTypeConnector> model_type_connector,
       const std::string& birthday,
-      const std::string& bag_of_chips,
-      const std::string& last_keystore_key);
+      const std::string& bag_of_chips);
 
   // Forwards a ProtocolEvent to the host. Will not be called unless a call to
   // SetForwardProtocolEvents() explicitly requested that we start forwarding
@@ -171,8 +170,7 @@ class SyncEngineImpl : public SyncEngine, public InvalidationHandler {
   // Called from SyncEngineBackend::OnSyncCycleCompleted to handle updating
   // frontend thread components.
   void HandleSyncCycleCompletedOnFrontendLoop(
-      const SyncCycleSnapshot& snapshot,
-      const std::string& last_keystore_key);
+      const SyncCycleSnapshot& snapshot);
 
   // Let the front end handle the actionable error event.
   void HandleActionableErrorEventOnFrontendLoop(

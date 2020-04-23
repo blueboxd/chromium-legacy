@@ -37,7 +37,6 @@
 <translation id="1041263367839475438">Rendelkezésre álló eszközök</translation>
 <translation id="1042174272890264476">Számítógépe a <ph name="SHORT_PRODUCT_NAME" /> RLZ-könyvtárát is tartalmazza beépítve. Az RLZ egy nem egyedi, személy szerinti azonosításra nem alkalmas címkét rendel hozzá a keresések és a <ph name="SHORT_PRODUCT_NAME" /> használatának egy adott promóciós kampány keretein belüli felméréséhez. Ezek a címkék időnként a <ph name="PRODUCT_NAME" /> Google-keresési lekérdezéseiben is feltűnnek.</translation>
 <translation id="1043818413152647937">Ezekből az alkalmazásokból is törli az adatokat?</translation>
-<translation id="1045448422538531528">Hozzáadás csoporthoz</translation>
 <translation id="1046635659603195359">Úgy tűnik, hogy Google Segédjéhez már beállította a Voice Match funkciót valamelyik másik eszközön. Korábbi felvételeiből ezen az eszközön is létrehozhat hangmintát. Ez legfeljebb egy percet vesz igénybe.</translation>
 <translation id="104710386808485638">Újraindítja a Linuxot?</translation>
 <translation id="1047431265488717055">Link szövegének má&amp;solása</translation>
@@ -408,7 +407,6 @@
 <translation id="1536754031901697553">Kapcsolat bontása...</translation>
 <translation id="15373452373711364">Nagy egérmutató</translation>
 <translation id="1540605929960647700">Demó mód engedélyezése</translation>
-<translation id="1541396123399225659">Hozzáadás új csoporthoz</translation>
 <translation id="1542514202066550870">Ez a lap VR-tartalmat jelenít meg egy headseten.</translation>
 <translation id="1543284117603151572">Az Edge böngészőből importálva</translation>
 <translation id="1545177026077493356">Automatikus kioszk mód</translation>
@@ -1906,7 +1904,6 @@ Ha kezelni szeretné a fiók beállításait, telepítse eszközére a Family Li
 <translation id="3514373592552233661">Ha egynél több hálózat áll rendelkezésre, a rendszer a preferált hálózatokat részesíti előnyben más ismert hálózatokkal szemben</translation>
 <translation id="3515983984924808886">A visszaállítás megerősítéséhez érintse meg újra a biztonsági hardverkulcsot. Ezzel törli a biztonsági hardverkulcson tárolt összes adatot, köztük a PIN-kódot is.</translation>
 <translation id="3518985090088779359">Elfogadás és tovább</translation>
-<translation id="351952459507671940">Hozzáadás új csoporthoz</translation>
 <translation id="3521606918211282604">Lemezméret módosítása</translation>
 <translation id="3523642406908660543">Kérdezzen rá, ha egy webhely beépülő modul segítségével akar hozzáférni a számítógéphez (ajánlott)</translation>
 <translation id="3524965460886318643">Tevékenységek exportálása</translation>
@@ -2895,7 +2892,6 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="4871322859485617074">A PIN-kód érvénytelen karaktereket tartalmaz</translation>
 <translation id="4871370605780490696">Könyvjelzõ hozzáadása</translation>
 <translation id="4871719318659334896">Csoport bezárása</translation>
-<translation id="4871852311166078968">Hozzáadás csoporthoz</translation>
 <translation id="4873312501243535625">Médiafájl-ellenőrző</translation>
 <translation id="4876273079589074638">Segítse mérnökeinket az összeomlás kivizsgálásában és kijavításában. Ha lehet, adja meg a pontos lépéseket. Nem létezik túl apró részlet!</translation>
 <translation id="4876895919560854374">A képernyő feloldása és zárolása</translation>

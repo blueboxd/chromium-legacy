@@ -1067,6 +1067,7 @@
       'policies': [
         'VoiceInteractionContextEnabled',
         'VoiceInteractionHotwordEnabled',
+        'VoiceInteractionQuickAnswersEnabled',
       ]
     },
     {
@@ -18129,6 +18130,26 @@
       ''',
     },
     {
+      'name': 'VoiceInteractionQuickAnswersEnabled',
+      'owners': ['llin@google.com'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:84-'],
+      'tags' : ['google-sharing'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 694,
+      'caption': '''"Allow Quick Answers to access selected content"''',
+      'desc': '''This policy gives Quick Answers permission to access selected content and send the info to server.
+
+      If the policy is enabled, Quick Answers will be allowed to access selected content.
+      If the policy is disabled, Quick Answers will not be allowed to access selected content.
+      If the policy is not set, users can decide whether to allow Quick Answers to access selected content.''',
+    },
+    {
       'name': 'DeviceWilcoDtcAllowed',
       'owners': ['pbond@chromium.org', 'lamzin@google.com'],
       'type': 'main',
@@ -21568,6 +21589,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 693,
+  'highest_id_currently_used': 694,
   'highest_atomic_group_id_currently_used': 38
 }

@@ -37,7 +37,6 @@
 <translation id="1041263367839475438">Peranti yang tersedia</translation>
 <translation id="1042174272890264476">Komputer anda juga disertakan dengan pustaka RLZ <ph name="SHORT_PRODUCT_NAME" /> terbina dalam. RLZ memperuntukkan tanda nama tidak unik yang tidak boleh mengenal pasti secara peribadi untuk mengukur carian dan penggunaan <ph name="SHORT_PRODUCT_NAME" /> yang didorong oleh kempen galakan tertentu. Label ini kadangkala dipaparkan dalam pertanyaan Carian Google dalam <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1043818413152647937">Kosongkan data daripada apl ini juga?</translation>
-<translation id="1045448422538531528">Tambahkan pada kumpulan</translation>
 <translation id="1046635659603195359">Nampaknya anda telah menyediakan Voice Match dengan Google Assistant anda pada peranti lain. Rakaman terdahulu ini boleh digunakan untuk membuat model suara pada peranti ini. Proses ini mengambil masa tidak sampai seminit.</translation>
 <translation id="104710386808485638">Mulakan semula Linux?</translation>
 <translation id="1047431265488717055">Salin Te&amp;ks Pautan</translation>
@@ -408,7 +407,6 @@
 <translation id="1536754031901697553">Memutuskan sambungan...</translation>
 <translation id="15373452373711364">Kursor tetikus besar</translation>
 <translation id="1540605929960647700">Dayakan mod tunjuk cara</translation>
-<translation id="1541396123399225659">Tambahkan pada Kumpulan Baharu</translation>
 <translation id="1542514202066550870">Tab ini menayangkan kandungan VR ke set kepala.</translation>
 <translation id="1543284117603151572">Diimport Daripada Edge</translation>
 <translation id="1545177026077493356">Mod Kios Automatik</translation>
@@ -1906,7 +1904,6 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="3514373592552233661">Rangkaian pilihan akan diutamakan berbanding rangkaian lain yang diketahui jika terdapat lebih daripada satu rangkaian</translation>
 <translation id="3515983984924808886">Sentuh kunci keselamatan anda sekali lagi untuk mengesahkan penetapan semula. Semua maklumat yang disimpan pada kunci keselamatan, termasuk PIN kunci keselamatan akan dipadamkan.</translation>
 <translation id="3518985090088779359">Terima &amp; teruskan</translation>
-<translation id="351952459507671940">Tambahkan pada kumpulan baharu</translation>
 <translation id="3521606918211282604">Tukar saiz cakera</translation>
 <translation id="3523642406908660543">Tanya apabila tapak ingin menggunakan pemalam untuk mengakses komputer anda (disyorkan)</translation>
 <translation id="3524965460886318643">Eksport Aktiviti</translation>
@@ -2896,7 +2893,6 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="4871322859485617074">PIN mengandungi aksara tidak sah</translation>
 <translation id="4871370605780490696">Tambah penanda halaman</translation>
 <translation id="4871719318659334896">Tutup kumpulan</translation>
-<translation id="4871852311166078968">Tambahkan pada Kumpulan</translation>
 <translation id="4873312501243535625">Penyemak Fail Media</translation>
 <translation id="4876273079589074638">Bantu jurutera kami menyiasat dan menyelesaikan ranap ini. Senaraikan langkah sebenar jika boleh. Setiap butiran penting!</translation>
 <translation id="4876895919560854374">Kunci dan buka kunci skrin</translation>

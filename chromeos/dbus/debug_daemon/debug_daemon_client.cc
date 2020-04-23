@@ -520,15 +520,18 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   }
 
   void StartPluginVmDispatcher(const std::string& owner_id,
+                               const std::string& lang,
                                PluginVmDispatcherCallback callback) override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kStartVmPluginDispatcher);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(owner_id);
-    debugdaemon_proxy_->CallMethod(
+    writer.AppendString(lang);
+    debugdaemon_proxy_->CallMethodWithErrorResponse(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&DebugDaemonClientImpl::OnStartPluginVmDispatcher,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                       owner_id));
   }
 
   void StopPluginVmDispatcher(PluginVmDispatcherCallback callback) override {
@@ -862,7 +865,34 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   }
 
   void OnStartPluginVmDispatcher(PluginVmDispatcherCallback callback,
-                                 dbus::Response* response) {
+                                 std::string owner_id,
+                                 dbus::Response* response,
+                                 dbus::ErrorResponse* error) {
+    if (error) {
+      // Older versions of Chrome OS do not handle the |lang| arg, call again
+      // with just |owner_id| for now.
+      // TODO(crbug.com/1072082): Remove once new CrOS code is in Beta.
+      if (error->GetErrorName() == DBUS_ERROR_INVALID_ARGS &&
+          !owner_id.empty()) {
+        LOG(ERROR) << "Failed to start dispatcher due to invalid arguments in "
+                      "DBus call, retrying without language argument";
+        dbus::MethodCall method_call(debugd::kDebugdInterface,
+                                     debugd::kStartVmPluginDispatcher);
+        dbus::MessageWriter writer(&method_call);
+        writer.AppendString(owner_id);
+        debugdaemon_proxy_->CallMethodWithErrorResponse(
+            &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+            base::BindOnce(&DebugDaemonClientImpl::OnStartPluginVmDispatcher,
+                           weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                           std::string()));
+        return;
+      }
+      LOG(ERROR) << "Failed to start dispatcher, DBus error "
+                 << error->GetErrorName();
+      std::move(callback).Run(false);
+      return;
+    }
+
     bool result = false;
     if (response) {
       dbus::MessageReader reader(response);

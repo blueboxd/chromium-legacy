@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/input/stylus_text_selector.h"
 
+#include "base/logging.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/gesture_detection/gesture_detector.h"
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"

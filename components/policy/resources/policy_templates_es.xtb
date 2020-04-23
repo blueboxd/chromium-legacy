@@ -1551,6 +1551,7 @@ Si no se le asigna ningún valor, la pantalla de privacidad se inhabilitará ini
 <translation id="3303653927512453822">Te permite restablecer la antigua configuración de comportamiento de cookies de <ph name="ATTRIBUTE_SAMESITE_NAME" />. Si restableces la configuración de comportamiento antigua, las cookies que no especifiquen ningún atributo <ph name="ATTRIBUTE_SAMESITE_NAME" /> se tratarán como si tuvieran "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />" y las cookies "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />" no necesitarán tener el atributo "<ph name="ATTRIBUTE_SECURE_NAME" />". Para ver la descripción completa, consulta https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies
 
           Si no se define esta política, el comportamiento predeterminado de <ph name="ATTRIBUTE_SAMESITE_NAME" /> para las cookies que no especifiquen ningún atributo <ph name="ATTRIBUTE_SAMESITE_NAME" /> dependerá de la configuración personal del usuario para la función <ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES" />, que puede definirse mediante una prueba pública o bien habilitando o inhabilitando el indicador <ph name="FLAG_NAME_SAMESITE_BY_DEFAULT_COOKIES" />.</translation>
+<translation id="3303911765031636277">Política de configuración para el conector OnFileAttached de Chrome Enterprise</translation>
 <translation id="3304662785258434098">Permite especificar si los usuarios pueden añadir excepciones para permitir el contenido mixto en determinados sitios web.
 
           Es posible anular la aplicación de esta política en patrones de URL concretos usando las políticas "InsecureContentAllowedForUrls" e "InsecureContentBlockedForUrls".
@@ -2180,6 +2181,7 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
 
           Además, existen opciones independientes para la conexión a la red eléctrica y la batería.
           </translation>
+<translation id="4147818922357566987">Habilitar variaciones referentes solo a correcciones críticas</translation>
 <translation id="4150201353443180367">Pantalla</translation>
 <translation id="4157003184375321727">Informar de la versión del firmware y del sistema operativo</translation>
 <translation id="4157594634940419685">Permitir el acceso a impresoras CUPS nativas</translation>
@@ -4176,6 +4178,15 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
       A esta política se le puede asignar el valor "Conservative" o "Performance", que selecciona las configuraciones del programador de tareas que están ajustadas para ofrecer estabilidad o rendimiento máximo, respectivamente.
 
       Si no se asigna ningún valor a esta política, el usuario podrá elegirlo.</translation>
+<translation id="7144454922853468101">Configura esta política para especificar qué variaciones pueden aplicarse a <ph name="PRODUCT_NAME" />.
+
+      Con las variaciones puede modificarse <ph name="PRODUCT_NAME" /> sin enviar una nueva versión del navegador, ya que permiten habilitar o inhabilitar de forma selectiva las funciones existentes.
+
+      Si se establece la opción <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (valor 0) o no se le asigna ningún valor a la política, se permitirá que se apliquen todas las variaciones al navegador.
+
+      Si se establece la opción <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (valor 1), solo se permitirá que se apliquen las variaciones que se consideren correcciones críticas de seguridad o de estabilidad a <ph name="PRODUCT_NAME" />.
+
+      Si se establece la opción <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (valor 2), no se permitirá aplicar ninguna variación al navegador. Ten en cuenta que este modo puede evitar que los desarrolladores de <ph name="PRODUCT_NAME" /> proporcionen correcciones críticas de seguridad a su debido tiempo y, por lo tanto, no se recomienda su uso.</translation>
 <translation id="7145335384492396213">Modo predeterminado de impresión con PIN</translation>
 <translation id="7149042336307555519"> Indica los tipos de conexiones que se pueden utilizar para actualizar el sistema operativo. Estas actualizaciones pueden constituir un lastre para la conexión debido a su tamaño y pueden suponer costes adicionales. Por tanto, están inhabilitadas de forma predeterminada en los tipos de conexión que se consideran más costosos (actualmente, solo las redes móviles).
 
@@ -4884,6 +4895,15 @@ Si no se le asigna ningún valor, la pantalla de privacidad se inhabilitará ini
 <translation id="8176035528522326671">Permitir que el usuario de empresa sea solo un usuario principal de varios perfiles (comportamiento predeterminado para usuarios administrados por empresas)</translation>
 <translation id="8183108371184777472">Impide que se abra la ventana del navegador</translation>
 <translation id="8186911565834244165">Permitir comentarios de los usuarios</translation>
+<translation id="8196725647498287556">Configura esta política para especificar qué variaciones pueden aplicarse a un dispositivo <ph name="PRODUCT_OS_NAME" /> gestionado por una empresa.
+
+      Con las variaciones puede modificarse <ph name="PRODUCT_OS_NAME" /> sin enviar una nueva versión, ya que permiten habilitar o inhabilitar de forma selectiva las funciones existentes.
+
+      Si se establece la opción <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (valor 0) o no se le asigna ningún valor a la política, se permitirá que se apliquen todas las variaciones a <ph name="PRODUCT_OS_NAME" />.
+
+      Si se establece la opción <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (valor 1), solo se permitirá que se apliquen las variaciones que se consideren correcciones críticas de seguridad o de estabilidad a <ph name="PRODUCT_OS_NAME" />.
+
+      Si se establece la opción <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (valor 2), no se permitirá aplicar ninguna variación al navegador en la pantalla de inicio de sesión. Ten en cuenta que este modo puede evitar que los desarrolladores de <ph name="PRODUCT_OS_NAME" /> proporcionen correcciones críticas de seguridad a su debido tiempo y, por lo tanto, no se recomienda su uso.</translation>
 <translation id="8213770777756919897">Ten en cuenta que esta política está obsoleta y se eliminará de la versión 85 de <ph name="PRODUCT_OS_NAME" />. Utiliza <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" /> en su lugar.
 
           Cuando se configura esta política, se especifica la acción que realiza <ph name="PRODUCT_OS_NAME" /> cuando el usuario permanece inactivo durante el periodo de tiempo indicado por el retraso de inactividad, que puede configurarse por separado.
@@ -5451,6 +5471,19 @@ Los usuarios no pueden cambiar ni anular esta opción.</translation>
           Si no se le asigna ningún valor y el dispositivo admite esta política, se aplicará el modo estándar de carga de la batería y el usuario no podrá cambiarlo.
 
           Nota: <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> anula esta política si se especifica la anterior.</translation>
+<translation id="9071472304496502510">Lista con los ajustes de los servicios de conectores de Chrome Enterprise que van a aplicarse al conector de empresa <ph name="ON_FILE_ATTACHED_ENTERPRISE_CONNECTOR" />, que se activa cuando se adjunta un archivo a Chrome.
+
+      Los campos <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" /> y <ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> se usan para determinar si el conector debe enviar un archivo para su análisis cuando se adjunte a una página específica y qué etiquetas se van a incluir en la solicitud de análisis del archivo. Se incluirá en la solicitud de análisis una etiqueta correspondiente a un patrón "enable" si la URL de la página coincide con un patrón asociado a esta etiqueta, siempre y cuando no se encuentre una misma etiqueta que coincida con la URL de la página con el patrón "disable". El análisis se realiza si se debe incluir al menos 1 etiqueta en la solicitud.
+
+      El campo <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" /> identifica a qué proveedor de servicios de análisis corresponde la configuración.
+
+      Si se establece el valor 1 al campo <ph name="ENTERPRISE_CONNECTOR_BLOCK_UNTIL_VERDICT_FIELD" />, Chrome esperará hasta obtener una respuesta del servicio de análisis antes de permitir a la página acceder al archivo. Si se establece cualquier otro valor entero, Chrome permitirá a la página acceder de forma inmediata al archivo.
+
+      El campo <ph name="ENTERPRISE_CONNECTOR_BLOCK_PASSWORD_PROTECTED_FIELD" /> controla si Chrome bloquea o permite archivos protegidos con contraseña.
+
+      El campo <ph name="ENTERPRISE_CONNECTOR_BLOCK_LARGE_FILES_FIELD" /> controla si Chrome bloquea o permite archivos demasiado grandes para ser analizados (más de 50 MB).
+
+      Esta política solo se puede establecer desde la consola de administración de Google.</translation>
 <translation id="9077227880520270584">Temporizador de inicio automático de la cuenta local del dispositivo</translation>
 <translation id="9084985621503260744">Especificar si la actividad de vídeo afecta a la administración de energía</translation>
 <translation id="9088433379343318874">Habilitar el proveedor de contenido de usuarios supervisados</translation>

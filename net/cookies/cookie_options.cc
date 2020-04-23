@@ -6,21 +6,36 @@
 
 #include "net/cookies/cookie_options.h"
 
+#include "net/cookies/cookie_util.h"
+
 namespace net {
 
 CookieOptions::SameSiteCookieContext
 CookieOptions::SameSiteCookieContext::MakeInclusive() {
-  return SameSiteCookieContext(ContextType::SAME_SITE_STRICT);
+  return SameSiteCookieContext(ContextType::SAME_SITE_STRICT,
+                               ContextType::SAME_SITE_STRICT);
+}
+
+CookieOptions::SameSiteCookieContext
+CookieOptions::SameSiteCookieContext::MakeInclusiveForSet() {
+  return SameSiteCookieContext(ContextType::SAME_SITE_LAX,
+                               ContextType::SAME_SITE_LAX);
 }
 
 CookieOptions::SameSiteCookieContext::ContextType
 CookieOptions::SameSiteCookieContext::GetContextForCookieInclusion() const {
+  DCHECK_LE(schemeful_context_, context_);
+
+  if (cookie_util::IsSchemefulSameSiteEnabled())
+    return schemeful_context_;
+
   return context_;
 }
 
 bool operator==(const CookieOptions::SameSiteCookieContext& lhs,
                 const CookieOptions::SameSiteCookieContext& rhs) {
-  return std::tie(lhs.context_) == std::tie(rhs.context_);
+  return std::tie(lhs.context_, lhs.schemeful_context_) ==
+         std::tie(rhs.context_, rhs.schemeful_context_);
 }
 
 bool operator!=(const CookieOptions::SameSiteCookieContext& lhs,

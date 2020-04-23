@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 import("//third_party/closure_compiler/compile_js.gni")
-import("//tools/polymer/polymer.gni")
+import("//tools/polymer/html_to_js.gni")
 
 js_type_check("closure_compile") {
   is_polymer3 = true
@@ -41,56 +41,14 @@ js_library("step_indicator") {
   ]
 }
 
-polymer_modulizer("animations_css") {
-  js_file = "animations_css.js"
-  html_file = "animations_css.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("chooser_shared_css") {
-  js_file = "chooser_shared_css.js"
-  html_file = "chooser_shared_css.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("navi_colors_css") {
-  js_file = "navi_colors_css.js"
-  html_file = "navi_colors_css.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("action_link_style_css") {
-  js_file = "action_link_style_css.js"
-  html_file = "action_link_style_css.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("splash_pages_shared_css") {
-  js_file = "splash_pages_shared_css.js"
-  html_file = "splash_pages_shared_css.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("onboarding_background") {
-  js_file = "onboarding_background.js"
-  html_file = "onboarding_background.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("step_indicator") {
-  js_file = "step_indicator.js"
-  html_file = "step_indicator.html"
-  html_type = "v3-ready"
-}
-
-group("polymer3_elements") {
-  public_deps = [
-    ":action_link_style_css_module",
-    ":animations_css_module",
-    ":chooser_shared_css_module",
-    ":navi_colors_css_module",
-    ":onboarding_background_module",
-    ":splash_pages_shared_css_module",
-    ":step_indicator_module",
+html_to_js("web_components") {
+  js_files = [
+    "action_link_style_css.js",
+    "animations_css.js",
+    "chooser_shared_css.js",
+    "navi_colors_css.js",
+    "onboarding_background.js",
+    "splash_pages_shared_css.js",
+    "step_indicator.js",
   ]
 }

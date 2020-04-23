@@ -164,7 +164,7 @@ void Initialize(Platform* platform,
                 mojo::BinderMap* binders,
                 scheduler::WebThreadScheduler* main_thread_scheduler) {
   DCHECK(binders);
-  Platform::Initialize(platform, main_thread_scheduler);
+  Platform::InitializeMainThread(platform, main_thread_scheduler);
   InitializeCommon(platform, binders);
 }
 

@@ -331,7 +331,7 @@ def _rewrite_namespaces(string):
   return string
 
 
-def _process_v3_ready(js_file, html_file):
+def process_v3_ready(js_file, html_file):
   # Extract HTML template and place in JS file.
   html_template = _extract_template(html_file, 'v3-ready')
 
@@ -554,7 +554,7 @@ def main(argv):
   elif args.html_type == 'iron-iconset':
     result = _process_iron_iconset(js_file, html_file)
   elif args.html_type == 'v3-ready':
-    result = _process_v3_ready(js_file, html_file)
+    result = process_v3_ready(js_file, html_file)
 
   # Reconstruct file.
   # Specify the newline character so that the exact same file is generated

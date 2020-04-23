@@ -9,6 +9,7 @@
 #include "base/json/json_reader.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/common/pref_names.h"
@@ -20,6 +21,7 @@
 #include "components/content_settings/core/test/content_settings_mock_provider.h"
 #include "components/content_settings/core/test/content_settings_test_utils.h"
 #include "components/permissions/chooser_context_base.h"
+#include "components/permissions/permission_decision_auto_blocker.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/browser_task_environment.h"
@@ -33,6 +35,8 @@ namespace site_settings {
 
 namespace {
 constexpr ContentSettingsType kContentType = ContentSettingsType::GEOLOCATION;
+constexpr ContentSettingsType kContentTypeNotifications =
+    ContentSettingsType::NOTIFICATIONS;
 }
 
 class SiteSettingsHelperTest : public testing::Test {
@@ -69,6 +73,180 @@ class SiteSettingsHelperTest : public testing::Test {
   content::BrowserTaskEnvironment task_environment_;
 };
 
+TEST_F(SiteSettingsHelperTest, ExceptionListShowsIncognitoEmbargoed) {
+  TestingProfile profile;
+  constexpr char kOriginToBlock[] = "https://www.blocked.com:443";
+  constexpr char kOriginToEmbargo[] = "https://embargoed.co.uk:443";
+  constexpr char kOriginToEmbargoIncognito[] =
+      "https://embargoed.incognito.co.uk:443";
+
+  // Add an origin under embargo for non incognito profile.
+  {
+    auto* auto_blocker =
+        PermissionDecisionAutoBlockerFactory::GetForProfile(&profile);
+    for (size_t i = 0; i < 3; ++i) {
+      auto_blocker->RecordDismissAndEmbargo(GURL(kOriginToEmbargo),
+                                            kContentTypeNotifications, false);
+    }
+
+    // Check that origin is under embargo.
+    ASSERT_EQ(CONTENT_SETTING_BLOCK,
+              auto_blocker
+                  ->GetEmbargoResult(GURL(kOriginToEmbargo),
+                                     kContentTypeNotifications)
+                  .content_setting);
+  }
+
+  // Check there is 1 embargoed origin for a non-incognito profile.
+  {
+    base::ListValue exceptions;
+    site_settings::GetExceptionsForContentType(
+        kContentTypeNotifications, &profile, /*extension_registry=*/nullptr,
+        /*web_ui=*/nullptr,
+        /*incognito=*/false, &exceptions);
+    ASSERT_EQ(1U, exceptions.GetSize());
+  }
+
+  TestingProfile* incognito_profile =
+      TestingProfile::Builder().BuildIncognito(&profile);
+
+  // Check there are no blocked origins for an incognito profile.
+  {
+    base::ListValue exceptions;
+    site_settings::GetExceptionsForContentType(kContentTypeNotifications,
+                                               incognito_profile,
+                                               /*extension_registry=*/nullptr,
+                                               /*web_ui=*/nullptr,
+                                               /*incognito=*/true, &exceptions);
+    ASSERT_EQ(0U, exceptions.GetSize());
+  }
+
+  {
+    auto* incognito_map =
+        HostContentSettingsMapFactory::GetForProfile(incognito_profile);
+    incognito_map->SetContentSettingDefaultScope(
+        GURL(kOriginToBlock), GURL(kOriginToBlock), kContentTypeNotifications,
+        std::string(), CONTENT_SETTING_BLOCK);
+  }
+
+  // Check there is only 1 blocked origin for an incognito profile.
+  {
+    base::ListValue exceptions;
+    site_settings::GetExceptionsForContentType(kContentTypeNotifications,
+                                               incognito_profile,
+                                               /*extension_registry=*/nullptr,
+                                               /*web_ui=*/nullptr,
+                                               /*incognito=*/true, &exceptions);
+    // The exceptions size should be 1 because previously embargoed origin
+    // was for a non-incognito profile.
+    ASSERT_EQ(1U, exceptions.GetSize());
+  }
+
+  // Add an origin under embargo for incognito profile.
+  {
+    auto* incognito_auto_blocker =
+        PermissionDecisionAutoBlockerFactory::GetForProfile(incognito_profile);
+    for (size_t i = 0; i < 3; ++i) {
+      incognito_auto_blocker->RecordDismissAndEmbargo(
+          GURL(kOriginToEmbargoIncognito), kContentTypeNotifications, false);
+    }
+    EXPECT_EQ(CONTENT_SETTING_BLOCK,
+              incognito_auto_blocker
+                  ->GetEmbargoResult(GURL(kOriginToEmbargoIncognito),
+                                     kContentTypeNotifications)
+                  .content_setting);
+  }
+
+  // Check there are 2 blocked or embargoed origins for an incognito profile.
+  {
+    base::ListValue exceptions;
+    site_settings::GetExceptionsForContentType(kContentTypeNotifications,
+                                               incognito_profile,
+                                               /*extension_registry=*/nullptr,
+                                               /*web_ui=*/nullptr,
+                                               /*incognito=*/true, &exceptions);
+    ASSERT_EQ(2U, exceptions.GetSize());
+  }
+}
+
+TEST_F(SiteSettingsHelperTest, ExceptionListShowsEmbargoed) {
+  TestingProfile profile;
+  constexpr char kOriginToBlock[] = "https://www.blocked.com:443";
+  constexpr char kOriginToEmbargo[] = "https://embargoed.co.uk:443";
+
+  // Check there is no blocked origins.
+  {
+    base::ListValue exceptions;
+    site_settings::GetExceptionsForContentType(
+        kContentTypeNotifications, &profile, /*extension_registry=*/nullptr,
+        /*web_ui=*/nullptr,
+        /*incognito=*/false, &exceptions);
+    ASSERT_EQ(0U, exceptions.GetSize());
+  }
+
+  auto* map = HostContentSettingsMapFactory::GetForProfile(&profile);
+  map->SetContentSettingDefaultScope(GURL(kOriginToBlock), GURL(kOriginToBlock),
+                                     kContentTypeNotifications, std::string(),
+                                     CONTENT_SETTING_BLOCK);
+  {
+    // Check there is 1 blocked origin.
+    base::ListValue exceptions;
+    site_settings::GetExceptionsForContentType(
+        kContentTypeNotifications, &profile, /*extension_registry=*/nullptr,
+        /*web_ui=*/nullptr,
+        /*incognito=*/false, &exceptions);
+    ASSERT_EQ(1U, exceptions.GetSize());
+  }
+
+  // Add an origin under embargo.
+  auto* auto_blocker =
+      PermissionDecisionAutoBlockerFactory::GetForProfile(&profile);
+  const GURL origin_to_embargo(kOriginToEmbargo);
+  for (size_t i = 0; i < 3; ++i) {
+    auto_blocker->RecordDismissAndEmbargo(origin_to_embargo,
+                                          kContentTypeNotifications, false);
+  }
+
+  // Check that origin is under embargo.
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            auto_blocker
+                ->GetEmbargoResult(origin_to_embargo, kContentTypeNotifications)
+                .content_setting);
+
+  // Check there are 2 blocked origins.
+  {
+    base::ListValue exceptions;
+    site_settings::GetExceptionsForContentType(
+        kContentTypeNotifications, &profile, /*extension_registry=*/nullptr,
+        /*web_ui=*/nullptr,
+        /*incognito=*/false, &exceptions);
+    // The size should be 2, 1st is blocked origin, 2nd is embargoed origin.
+    ASSERT_EQ(2U, exceptions.GetSize());
+
+    // Fetch and check the first origin.
+    const base::DictionaryValue* dictionary;
+    std::string primary_pattern, display_name;
+    ASSERT_TRUE(exceptions.GetDictionary(0, &dictionary));
+    ASSERT_TRUE(
+        dictionary->GetString(site_settings::kOrigin, &primary_pattern));
+    ASSERT_TRUE(
+        dictionary->GetString(site_settings::kDisplayName, &display_name));
+
+    EXPECT_EQ(kOriginToBlock, primary_pattern);
+    EXPECT_EQ(kOriginToBlock, display_name);
+
+    // Fetch and check the second origin.
+    ASSERT_TRUE(exceptions.GetDictionary(1, &dictionary));
+    ASSERT_TRUE(
+        dictionary->GetString(site_settings::kOrigin, &primary_pattern));
+    ASSERT_TRUE(
+        dictionary->GetString(site_settings::kDisplayName, &display_name));
+
+    EXPECT_EQ(kOriginToEmbargo, primary_pattern);
+    EXPECT_EQ(kOriginToEmbargo, display_name);
+  }
+}
+
 TEST_F(SiteSettingsHelperTest, CheckExceptionOrder) {
   TestingProfile profile;
   HostContentSettingsMap* map =
@@ -76,9 +254,10 @@ TEST_F(SiteSettingsHelperTest, CheckExceptionOrder) {
 
   base::ListValue exceptions;
   // Check that the initial state of the map is empty.
-  GetExceptionsFromHostContentSettingsMap(
-      map, kContentType, /*extension_registry=*/nullptr, /*web_ui=*/nullptr,
-      /*incognito=*/false, /*filter=*/nullptr, &exceptions);
+  GetExceptionsForContentType(kContentType, &profile,
+                              /*extension_registry=*/nullptr,
+                              /*web_ui=*/nullptr,
+                              /*incognito=*/false, &exceptions);
   EXPECT_EQ(0u, exceptions.GetSize());
 
   map->SetDefaultContentSetting(kContentType, CONTENT_SETTING_ALLOW);
@@ -114,9 +293,10 @@ TEST_F(SiteSettingsHelperTest, CheckExceptionOrder) {
       HostContentSettingsMap::CUSTOM_EXTENSION_PROVIDER);
 
   exceptions.Clear();
-  GetExceptionsFromHostContentSettingsMap(
-      map, kContentType, /*extension_registry=*/nullptr, /*web_ui=*/nullptr,
-      /*incognito=*/false, /*filter=*/nullptr, &exceptions);
+  GetExceptionsForContentType(kContentType, &profile,
+                              /*extension_registry=*/nullptr,
+                              /*web_ui=*/nullptr,
+                              /*incognito=*/false, &exceptions);
 
   EXPECT_EQ(5u, exceptions.GetSize());
 

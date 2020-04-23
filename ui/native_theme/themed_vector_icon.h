@@ -23,7 +23,7 @@ class NATIVE_THEME_EXPORT ThemedVectorIcon {
   ThemedVectorIcon();
   explicit ThemedVectorIcon(
       const gfx::VectorIcon* icon,
-      NativeTheme::ColorId color_id = NativeTheme::kColorId_DefaultIconColor,
+      NativeTheme::ColorId color_id = NativeTheme::kColorId_MenuIconColor,
       int icon_size = 0);
   explicit ThemedVectorIcon(const VectorIconModel& vector_icon_model);
   // TODO (kylixrd): Remove this once all the hard-coded uses of color are

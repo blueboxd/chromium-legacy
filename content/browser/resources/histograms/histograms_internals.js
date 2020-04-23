@@ -24,9 +24,12 @@ function addHistograms(histograms) {
     htmlOutput += histogram;
   }
 
-  // NOTE: This is generally unsafe due to XSS attacks. Make sure |htmlOutput|
-  // cannot be modified by an external party.
-  $('histograms').innerHTML = htmlOutput;
+  // The following HTML tags are coming from
+  // |HistogramsMessageHandler::HandleRequestHistograms|.
+  const sanitizedHTML = parseHtmlSubset(`<span>${htmlOutput}</span>`, [
+                          'PRE', 'H4', 'BR', 'HR'
+                        ]).firstChild.innerHTML;
+  $('histograms').innerHTML = sanitizedHTML;
 }
 
 /**

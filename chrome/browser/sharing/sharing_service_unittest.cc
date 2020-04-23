@@ -357,13 +357,13 @@ TEST_F(SharingServiceTest, DeviceRegistrationPreferenceNotAvailable) {
 TEST_F(SharingServiceTest, DeviceRegistrationTransportMode) {
   // Enable the transport mode required features.
   scoped_feature_list_.InitWithFeatures(
-      /*enabled_features=*/{kSharingDeriveVapidKey},
+      /*enabled_features=*/{kSharingSendViaSync},
       /*disabled_features=*/{});
+
   test_sync_service_.SetTransportState(
       syncer::SyncService::TransportState::ACTIVE);
-  test_sync_service_.SetActiveDataTypes(syncer::DEVICE_INFO);
-  test_sync_service_.SetExperimentalAuthenticationKey(
-      crypto::ECPrivateKey::Create());
+  test_sync_service_.SetActiveDataTypes(
+      {syncer::DEVICE_INFO, syncer::SHARING_MESSAGE});
 
   EXPECT_EQ(SharingService::State::DISABLED,
             GetSharingService()->GetStateForTesting());
@@ -374,15 +374,6 @@ TEST_F(SharingServiceTest, DeviceRegistrationTransportMode) {
   EXPECT_CALL(*fcm_handler_, StartListening()).Times(1);
   test_sync_service_.FireStateChanged();
   EXPECT_EQ(1, sharing_device_registration_->registration_attempts());
-  EXPECT_EQ(SharingService::State::ACTIVE,
-            GetSharingService()->GetStateForTesting());
-
-  // Registration will be attempeted as sync auth id has changed.
-  EXPECT_CALL(*fcm_handler_, StartListening()).Times(0);
-  test_sync_service_.SetExperimentalAuthenticationKey(
-      crypto::ECPrivateKey::Create());
-  test_sync_service_.FireSyncCycleCompleted();
-  EXPECT_EQ(2, sharing_device_registration_->registration_attempts());
   EXPECT_EQ(SharingService::State::ACTIVE,
             GetSharingService()->GetStateForTesting());
 }
@@ -419,23 +410,6 @@ TEST_F(SharingServiceTest, DeviceRegistrationTransientError) {
 TEST_F(SharingServiceTest, DeviceUnregistrationSyncDisabled) {
   test_sync_service_.SetTransportState(
       syncer::SyncService::TransportState::DISABLED);
-
-  // Create new SharingService instance with sync disabled at constructor.
-  GetSharingService();
-  EXPECT_EQ(1, sharing_device_registration_->unregistration_attempts());
-  EXPECT_EQ(SharingService::State::DISABLED,
-            GetSharingService()->GetStateForTesting());
-}
-
-TEST_F(SharingServiceTest, DeviceUnregistrationLocalSyncEnabled) {
-  // Enable the transport mode required features.
-  scoped_feature_list_.InitWithFeatures(
-      /*enabled_features=*/{kSharingDeriveVapidKey},
-      /*disabled_features=*/{});
-  test_sync_service_.SetTransportState(
-      syncer::SyncService::TransportState::ACTIVE);
-  test_sync_service_.SetActiveDataTypes({syncer::DEVICE_INFO});
-  test_sync_service_.SetLocalSyncEnabled(true);
 
   // Create new SharingService instance with sync disabled at constructor.
   GetSharingService();

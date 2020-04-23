@@ -178,21 +178,6 @@ void InterfaceFactoryImpl::CreateCdm(
 #endif  // BUILDFLAG(ENABLE_MOJO_CDM)
 }
 
-void InterfaceFactoryImpl::CreateDecryptor(
-    int cdm_id,
-    mojo::PendingReceiver<mojom::Decryptor> receiver) {
-  DVLOG(2) << __func__;
-  auto mojo_decryptor_service =
-      MojoDecryptorService::Create(cdm_id, &cdm_service_context_);
-  if (!mojo_decryptor_service) {
-    DLOG(ERROR) << "MojoDecryptorService creation failed.";
-    return;
-  }
-
-  decryptor_receivers_.Add(std::move(mojo_decryptor_service),
-                           std::move(receiver));
-}
-
 void InterfaceFactoryImpl::OnDestroyPending(base::OnceClosure destroy_cb) {
   DVLOG(1) << __func__;
   destroy_cb_ = std::move(destroy_cb);

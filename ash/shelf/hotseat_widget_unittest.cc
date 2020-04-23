@@ -10,6 +10,7 @@
 #include "ash/home_screen/drag_window_from_shelf_controller_test_api.h"
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "ash/public/cpp/test/assistant_test_api.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/shelf/home_button.h"
@@ -114,7 +115,7 @@ class HotseatWidgetTest
     // directly; otherwise, simulate the long press on the home button,
     if (!navigation_buttons_shown_in_tablet_mode_ &&
         Shell::Get()->tablet_mode_controller()->InTabletMode()) {
-      Shell::Get()->assistant_controller()->ui_controller()->ShowUi(
+      AssistantUiController::Get()->ShowUi(
           chromeos::assistant::mojom::AssistantEntryPoint::kLongPressLauncher);
       return;
     }

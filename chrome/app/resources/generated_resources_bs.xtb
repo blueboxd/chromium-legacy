@@ -37,7 +37,6 @@
 <translation id="1041263367839475438">Dostupni uređaji</translation>
 <translation id="1042174272890264476">Vaš računar također ima ugrađenu RLZ biblioteku proizvoda <ph name="SHORT_PRODUCT_NAME" />. RLZ dodjeljuje nejedinstvenu oznaku koja ne može poslužiti za ličnu identifikaciju za mjerenje pretraživanja i korištenje proizvoda <ph name="SHORT_PRODUCT_NAME" /> do kojeg je došlo putem određene promotivne kampanje. Te oznake se nekada pojavljuju u upitima Google Pretraživanja u proizvodu <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1043818413152647937">Obrisati i podatke iz ovih aplikacija?</translation>
-<translation id="1045448422538531528">Dodajte u grupu</translation>
 <translation id="1046635659603195359">Izgleda da ste već postavili Voice Match s Google Asistentom na drugom uređaju. Ti prethodni snimci se mogu iskoristiti za izradu modela glasa na ovom uređaju. To ne bi trebalo trajati duže od jedne minute.</translation>
 <translation id="104710386808485638">Ponovno pokrenuti Linux?</translation>
 <translation id="1047431265488717055">Kopiraj tekst linka</translation>
@@ -408,7 +407,6 @@ da li    proksi server funkcionira. Ako smatrate da ne trebate koristiti
 <translation id="1536754031901697553">Prekidanje veze…</translation>
 <translation id="15373452373711364">Veliki kursor miša</translation>
 <translation id="1540605929960647700">Omogućite demo-način</translation>
-<translation id="1541396123399225659">Dodaj u novu grupu</translation>
 <translation id="1542514202066550870">Ova kartica prikazuje VR sadržaj u virtuelnim naočalama.</translation>
 <translation id="1543284117603151572">Uvezeno iz preglednika Edge</translation>
 <translation id="1545177026077493356">Automatski način rada za kiosk</translation>
@@ -1906,7 +1904,6 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="3514373592552233661">Preferirane mreže će imati prednost u odnosu na druge poznate mreže ako je dostupno više od jedne mreže</translation>
 <translation id="3515983984924808886">Dodirnite ponovo svoj sigurnosni ključ da potvrdite vraćanje na zadano. Izbrisat će se sve informacije koje su pohranjene na sigurnosnom ključu, uključujući njegov PIN.</translation>
 <translation id="3518985090088779359">Prihvati i nastavi</translation>
-<translation id="351952459507671940">Dodaj u novu grupu</translation>
 <translation id="3521606918211282604">Promijeni veličinu diska</translation>
 <translation id="3523642406908660543">Pitaj kada web lokacija želi koristiti dodatak za pristup vašem računaru (preporučeno)</translation>
 <translation id="3524965460886318643">Izvezi aktivnosti</translation>
@@ -2896,7 +2893,6 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="4871322859485617074">PIN sadrži nevažeće znakove</translation>
 <translation id="4871370605780490696">Dodavanje oznake</translation>
 <translation id="4871719318659334896">Zatvori grupu</translation>
-<translation id="4871852311166078968">Dodajte u grupu</translation>
 <translation id="4873312501243535625">Provjera medijskih fajlova</translation>
 <translation id="4876273079589074638">Pomozite našim inženjerima da istraže i poprave pad aplikacije. Navedite tačne korake, ako možete. Nijedan detalj nije nebitan!</translation>
 <translation id="4876895919560854374">Zaključati i otključati ekran</translation>

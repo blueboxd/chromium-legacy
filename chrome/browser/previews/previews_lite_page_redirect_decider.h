@@ -17,7 +17,6 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/availability/availability_prober.h"
-#include "chrome/browser/previews/previews_https_notification_infobar_decider.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "net/http/http_request_headers.h"
 
@@ -37,7 +36,6 @@ class PrefRegistrySyncable;
 // This class manages the triggering logic for Lite Page Redirect previews.
 class PreviewsLitePageRedirectDecider
     : public AvailabilityProber::Delegate,
-      public PreviewsHTTPSNotificationInfoBarDecider,
       public data_reduction_proxy::DataReductionProxySettingsObserver {
  public:
   explicit PreviewsLitePageRedirectDecider(
@@ -67,13 +65,6 @@ class PreviewsLitePageRedirectDecider
 
   // Clears all single bypasses and the host blacklist for testing.
   void ClearStateForTesting();
-
-  // Sets that the user has seen the UI notification.
-  void SetUserHasSeenUINotification();
-
-  // PreviewsHTTPSNotificationInfoBarDecider:
-  bool NeedsToNotifyUser() override;
-  void NotifyUser(content::WebContents* web_contents) override;
 
   // Used to notify that the Previews Server should not be sent anymore requests
   // until after the given duration.
@@ -120,7 +111,6 @@ class PreviewsLitePageRedirectDecider
   // data_reduction_proxy::DataReductionProxySettingsObserver:
   void OnProxyRequestHeadersChanged(
       const net::HttpRequestHeaders& headers) override;
-  void OnSettingsInitialized() override;
 
   bool has_drp_headers() const { return drp_headers_valid_; }
 
@@ -155,10 +145,6 @@ class PreviewsLitePageRedirectDecider
 
   // A reference to the profile's |PrefService|.
   PrefService* pref_service_;
-
-  // Whether the notification infobar needs to be shown to the user in order to
-  // use this preview.
-  bool need_to_show_notification_;
 
   // A dictionary of host string to base::Time. If a hostname is a member of
   // this dictionary, that host should be blacklisted from this preview until

@@ -449,12 +449,9 @@ InstallIntoSysroot() {
     dpkg-deb -e ${package} ${INSTALL_ROOT}/debian/${base_package}/DEBIAN
   done
 
-  # Prune /usr/share, leaving only pkgconfig
-  for name in ${INSTALL_ROOT}/usr/share/*; do
-    if [ "${name}" != "${INSTALL_ROOT}/usr/share/pkgconfig" ]; then
-      rm -r ${name}
-    fi
-  done
+  # Prune /usr/share, leaving only pkgconfig and xcb.
+  ls -d ${INSTALL_ROOT}/usr/share/* | \
+      grep -v "/\(pkgconfig\|xcb\)$" | xargs rm -r
 }
 
 

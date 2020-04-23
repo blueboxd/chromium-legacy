@@ -32,7 +32,6 @@ class SimpleURLLoader;
 namespace data_reduction_proxy {
 
 class ClientConfig;
-class DataReductionProxyConfig;
 class DataReductionProxyService;
 class DataReductionProxyRequestOptions;
 
@@ -79,7 +78,6 @@ class DataReductionProxyConfigServiceClient
   DataReductionProxyConfigServiceClient(
       const net::BackoffEntry::Policy& backoff_policy,
       DataReductionProxyRequestOptions* request_options,
-      DataReductionProxyConfig* config,
       DataReductionProxyService* service,
       network::NetworkConnectionTracker* network_connection_tracker,
       ConfigStorer config_storer);
@@ -177,9 +175,6 @@ class DataReductionProxyConfigServiceClient
 
   // The caller must ensure that the |request_options_| outlives this instance.
   DataReductionProxyRequestOptions* request_options_;
-
-  // The caller must ensure that the |config_| outlives this instance.
-  DataReductionProxyConfig* config_;
 
   // The caller must ensure that the |service_| outlives this instance.
   DataReductionProxyService* service_;

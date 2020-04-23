@@ -59,14 +59,16 @@ const char* const kInvalidNumbers[] = {
 };
 
 const char* const kValidNicknames[] = {
-    "Grocery Card", "2% Cashback online",
-    "Mastercard \\ud83d\\udcb3", /* Nickname with UTF encoded emoji */
+    "Grocery Card", "Two percent Cashback",
+    "Mastercard \xF0\x9F\x92\xB3", /* Nickname with UTF-8 hex encoded emoji */
 };
 
 const char* const kInvalidNicknames[] = {
     "",                                      /* empty */
     "Nickname length exceeds 25 characters", /* too long */
     "\t\r\n  ",                              /* empty after SetNickname */
+    "CVC: 123",                              /* contains digits */
+    "1% cashback",                           /* contains digits */
 };
 
 // Time moves on. Today is yesterday's tomorrow. Tests don't like time moving

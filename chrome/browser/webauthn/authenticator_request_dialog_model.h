@@ -418,10 +418,11 @@ class AuthenticatorRequestDialogModel {
   }
   base::Optional<int> pin_attempts() const { return pin_attempts_; }
 
-  void StartInlineBioEnrollment(int max_bio_samples);
+  void StartInlineBioEnrollment(base::OnceClosure next_callback);
   void OnSampleCollected(int bio_samples_remaining);
-  int max_bio_samples() { return *max_bio_samples_; }
-  int bio_samples_remaining() { return *bio_samples_remaining_; }
+  void OnBioEnrollmentDone();
+  base::Optional<int> max_bio_samples() { return max_bio_samples_; }
+  base::Optional<int> bio_samples_remaining() { return bio_samples_remaining_; }
 
   // Flags the authenticator's internal user verification as locked.
   void set_internal_uv_locked() { uv_attempts_ = 0; }
@@ -523,6 +524,7 @@ class AuthenticatorRequestDialogModel {
 
   base::Optional<int> max_bio_samples_;
   base::Optional<int> bio_samples_remaining_;
+  base::OnceClosure bio_enrollment_callback_;
 
   base::OnceCallback<void(std::string)> pin_callback_;
   base::Optional<int> pin_attempts_;

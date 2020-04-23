@@ -76,7 +76,14 @@ std::string SiteForCookies::ToDebugString() const {
 }
 
 bool SiteForCookies::IsFirstParty(const GURL& url) const {
-  if (cookie_util::IsSchemefulSameSiteEnabled())
+  return IsFirstPartyWithSchemefulMode(
+      url, cookie_util::IsSchemefulSameSiteEnabled());
+}
+
+bool SiteForCookies::IsFirstPartyWithSchemefulMode(
+    const GURL& url,
+    bool compute_schemefully) const {
+  if (compute_schemefully)
     return IsSchemefullyFirstParty(url);
 
   return IsSchemelesslyFirstParty(url);
@@ -132,29 +139,6 @@ bool SiteForCookies::IsNull() const {
   return scheme_.empty();
 }
 
-bool SiteForCookies::IsSchemefullyFirstParty(const GURL& url) const {
-  // Can't use IsNull() as we want the same behavior regardless of
-  // SchemefulSameSite feature status.
-  if (scheme_.empty() || !schemefully_same_ || !url.is_valid())
-    return false;
-
-  return CompatibleScheme(url.scheme()) && IsSchemelesslyFirstParty(url);
-}
-
-bool SiteForCookies::IsSchemelesslyFirstParty(const GURL& url) const {
-  // Can't use IsNull() as we want the same behavior regardless of
-  // SchemefulSameSite feature status.
-  if (scheme_.empty() || !url.is_valid())
-    return false;
-
-  std::string other_registrable_domain = RegistrableDomainOrHost(url.host());
-
-  if (registrable_domain_.empty())
-    return other_registrable_domain.empty() && (scheme_ == url.scheme());
-
-  return registrable_domain_ == other_registrable_domain;
-}
-
 SiteForCookies::SiteForCookies(const std::string& scheme,
                                const std::string& host)
     : scheme_(scheme),
@@ -182,6 +166,29 @@ bool SiteForCookies::CompatibleScheme(const std::string& other_scheme) const {
   }
 
   return false;
+}
+
+bool SiteForCookies::IsSchemefullyFirstParty(const GURL& url) const {
+  // Can't use IsNull() as we want the same behavior regardless of
+  // SchemefulSameSite feature status.
+  if (scheme_.empty() || !schemefully_same_ || !url.is_valid())
+    return false;
+
+  return CompatibleScheme(url.scheme()) && IsSchemelesslyFirstParty(url);
+}
+
+bool SiteForCookies::IsSchemelesslyFirstParty(const GURL& url) const {
+  // Can't use IsNull() as we want the same behavior regardless of
+  // SchemefulSameSite feature status.
+  if (scheme_.empty() || !url.is_valid())
+    return false;
+
+  std::string other_registrable_domain = RegistrableDomainOrHost(url.host());
+
+  if (registrable_domain_.empty())
+    return other_registrable_domain.empty() && (scheme_ == url.scheme());
+
+  return registrable_domain_ == other_registrable_domain;
 }
 
 }  // namespace net

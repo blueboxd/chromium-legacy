@@ -448,7 +448,7 @@
       },
       'KitKat Phone Tester (dbg)': {
         'mixins': [
-          'kitkat',
+          'kitkat_or_lollipop',
           'hammerhead',
         ],
         'test_suites': {
@@ -596,7 +596,7 @@
       },
       'android-cronet-arm-dbg': {
         'mixins': [
-          'kitkat',
+          'kitkat_or_lollipop',
           'hammerhead',
         ],
         'additional_compile_targets': [
@@ -651,7 +651,7 @@
       },
       'android-cronet-asan-arm-rel': {
         'mixins': [
-          'kitkat',
+          'kitkat_or_lollipop',
           'hammerhead',
         ],
         'additional_compile_targets': [
@@ -733,7 +733,7 @@
       },
       'android-kitkat-arm-rel': {
         'mixins': [
-          'kitkat',
+          'kitkat_or_lollipop',
           'hammerhead',
         ],
         'additional_compile_targets': [
@@ -871,7 +871,7 @@
       },
       'android-bfcache-rel': {
         'mixins': [
-          'kitkat',
+          'kitkat_or_lollipop',
           'hammerhead',
         ],
         'os_type': 'android',
@@ -1033,7 +1033,7 @@
       },
       'ToTAndroid': {
         'mixins': [
-          'kitkat',
+          'kitkat_or_lollipop',
           'hammerhead',
         ],
         'additional_compile_targets': [
@@ -1291,7 +1291,7 @@
           'all'
         ],
         'mixins': [
-          'mac_10.14',
+          'mac_10.14_and_15',
           'mac_toolchain',
           'out_dir_arg',
           'xcode_11c29',
@@ -1321,7 +1321,7 @@
           'url_unittests'
         ],
         'mixins': [
-          'mac_10.14',
+          'mac_10.14_and_15',
           'mac_toolchain',
           'out_dir_arg',
           'xcode_11c29',
@@ -1551,7 +1551,7 @@
       'android-kitkat-arm-rel-swarming': {
         'mixins': [
           'chromium-template-pool',
-          'kitkat',
+          'kitkat_or_lollipop',
           'hammerhead',
         ],
         'test_suites': {
@@ -1952,7 +1952,6 @@
         'mixins': [
           'arm64',
           'docker',
-          'fuchsia_system_log',
           'linux-xenial',
         ],
       },
@@ -1961,7 +1960,6 @@
           'all',
         ],
         'mixins': [
-          'fuchsia_system_log',
           'linux-xenial',
         ],
         'swarming': {
@@ -1982,7 +1980,6 @@
         'browser_config': 'web-engine-shell',
         'os_type': 'linux',
         'mixins': [
-          'fuchsia_system_log',
           'linux-xenial',
         ],
         'swarming': {
@@ -2001,7 +1998,7 @@
       'ios-simulator-code-coverage': {
         'mixins': [
           'code-coverage',
-          'mac_10.14',
+          'mac_10.14_and_15',
           'mac_toolchain',
           'out_dir_arg',
           'xcode_11c29'
@@ -2012,7 +2009,7 @@
       },
       'ios-simulator-cronet': {
         'mixins': [
-          'mac_10.14',
+          'mac_10.14_and_15',
           'mac_toolchain',
           'out_dir_arg',
           'xcode_11c29'
@@ -2024,7 +2021,7 @@
       'ios-webkit-tot': {
         'mixins': [
           'ios_custom_webkit',
-          'mac_10.14',
+          'mac_10.14_and_15',
           'mac_toolchain',
           'out_dir_arg',
           'xcode_11c29'
@@ -2038,7 +2035,7 @@
           'all',
         ],
         'mixins': [
-          'mac_10.14',
+          'mac_10.14_and_15',
           'mac_toolchain',
           'out_dir_arg',
           'xcode_11c29',
@@ -2175,6 +2172,15 @@
         ],
         'test_suites': {
           'gtest_tests': 'fieldtrial_browser_tests',
+        },
+      },
+      'linux-perfetto-rel': {
+        'additional_compile_targets': [ 'chrome' ],
+        'mixins': [
+          'linux-xenial',
+        ],
+        'test_suites': {
+          'gtest_tests': 'perfetto_gtests',
         },
       },
       'linux-upload-perfetto': {
@@ -4212,6 +4218,9 @@
         'additional_compile_targets': [
           'pdf_fuzzers',
         ],
+        'test_suites': {
+          'scripts': 'chromium_mac_scripts',
+        },
       },
       'Mac Builder (dbg)': {
         'additional_compile_targets': [
@@ -4263,7 +4272,6 @@
         'test_suites': {
           'gtest_tests': 'chromium_mac_gtests',
           'isolated_scripts': 'chromium_mac_rel_isolated_scripts',
-          'scripts': 'chromium_mac_scripts',
         },
       },
       'Mac10.13 Tests (dbg)': {
@@ -4285,7 +4293,6 @@
         'test_suites': {
           'gtest_tests': 'chromium_mac_gtests',
           'isolated_scripts': 'chromium_mac_rel_isolated_scripts',
-          'scripts': 'chromium_mac_scripts',
         },
       },
       'Mac10.14 Tests': {
@@ -4296,7 +4303,6 @@
         'test_suites': {
           'gtest_tests': 'chromium_mac_gtests',
           'isolated_scripts': 'chromium_mac_rel_isolated_scripts',
-          'scripts': 'chromium_mac_scripts',
         },
       },
       'WebKit Mac10.13 (retina)': {
@@ -4324,7 +4330,7 @@
           'all',
         ],
         'mixins': [
-          'mac_10.14',
+          'mac_10.14_and_15',
           'mac_toolchain',
           'out_dir_arg',
           'xcode_11c29',
@@ -4338,7 +4344,7 @@
           'all'
         ],
         'mixins': [
-          'mac_10.14',
+          'mac_10.14_and_15',
           'mac_toolchain',
           'out_dir_arg',
           'xcode_11c29',
@@ -4484,7 +4490,7 @@
         },
         'mixins': [
           'hammerhead',
-          'kitkat',
+          'kitkat_or_lollipop',
         ],
         'os_type': 'android',
       },
@@ -4716,7 +4722,7 @@
       'WebRTC Chromium FYI Android Tests (dbg) (K Nexus5)': {
         'os_type': 'android',
         'mixins': [
-          'kitkat_generic',
+          'kitkat_or_lollipop_generic',
           'hammerhead',
         ],
         'test_suites': {
@@ -5162,7 +5168,7 @@
     'machines': {
       'android-opus-kitkat-arm-rel': {
         'mixins': [
-          'kitkat',
+          'kitkat_or_lollipop',
           'hammerhead',
         ],
         'test_suites': {
@@ -5172,7 +5178,7 @@
       },
       'android_blink_rel': {
         'mixins': [
-          'kitkat',
+          'kitkat_or_lollipop',
           'hammerhead',
         ],
         'test_suites': {

@@ -26,9 +26,9 @@ import org.chromium.chrome.browser.omnibox.suggestions.SuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionHost;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewDelegate;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
-import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.ui.favicon.LargeIconBridge;
 import org.chromium.ui.base.Clipboard;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -69,9 +69,6 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
     /** The delegate for accessing the location bar for observation and modification. */
     private final LocationBarDelegate mLocationBarDelegate;
 
-    /** The delegate for accessing the sharing feature. */
-    private final Supplier<ShareDelegate> mShareDelegateSupplier;
-
     /** A means of accessing the activity's tab. */
     private ActivityTabProvider mTabProvider;
 
@@ -103,8 +100,7 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
      * @param locationBarDelegate A means of modifying the location bar.
      */
     public EditUrlSuggestionProcessor(Context context, SuggestionHost suggestionHost,
-            LocationBarDelegate locationBarDelegate, Supplier<LargeIconBridge> iconBridgeSupplier,
-            Supplier<ShareDelegate> shareDelegateSupplier) {
+            LocationBarDelegate locationBarDelegate, Supplier<LargeIconBridge> iconBridgeSupplier) {
         mMinViewHeight = context.getResources().getDimensionPixelSize(
                 R.dimen.omnibox_suggestion_comfortable_height);
         mLocationBarDelegate = locationBarDelegate;
@@ -112,7 +108,6 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
                 R.dimen.omnibox_suggestion_favicon_size);
         mSuggestionHost = suggestionHost;
         mIconBridgeSupplier = iconBridgeSupplier;
-        mShareDelegateSupplier = shareDelegateSupplier;
     }
 
     /**
@@ -240,7 +235,11 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
             mLocationBarDelegate.clearOmniboxFocus();
             // TODO(mdjones): This should only share the displayed URL instead of the background
             //                tab.
-            mShareDelegateSupplier.get().share(activityTab, false);
+            ((TabImpl) activityTab)
+                    .getActivity()
+                    .getShareDelegateSupplier()
+                    .get()
+                    .share(activityTab, false);
         } else if (R.id.url_edit_icon == view.getId()) {
             recordSuggestionAction(SuggestionAction.EDIT);
             RecordUserAction.record("Omnibox.EditUrlSuggestion.Edit");

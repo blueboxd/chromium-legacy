@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/buffer_format_util.h"

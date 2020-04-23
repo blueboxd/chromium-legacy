@@ -141,8 +141,6 @@ class ASH_EXPORT NightLightControllerImpl
     return ambient_rgb_scaling_factors_;
   }
 
-  // Get the NightLight settings stored in the current active user prefs.
-  bool GetEnabled() const;
   float GetColorTemperature() const;
   ScheduleType GetScheduleType() const;
   TimeOfDay GetCustomStartTime() const;
@@ -180,6 +178,7 @@ class ASH_EXPORT NightLightControllerImpl
 
   // ash::NightLightController:
   void SetCurrentGeoposition(const SimpleGeoposition& position) override;
+  bool GetEnabled() const override;
 
   // chromeos::PowerManagerClient::Observer:
   void SuspendDone(const base::TimeDelta& sleep_duration) override;

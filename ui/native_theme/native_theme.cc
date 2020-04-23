@@ -63,6 +63,7 @@ NativeThemeColorIdToColorIdMap() {
         {NTCID::kColorId_FocusedBorderColor, kColorFocusableBorderFocused},
         {NTCID::kColorId_UnfocusedBorderColor,
           kColorFocusableBorderUnfocused},
+        {NTCID::kColorId_MenuIconColor, kColorMenuIcon},
         {NTCID::kColorId_DefaultIconColor, kColorIcon},
         {NTCID::kColorId_LabelDisabledColor, kColorLabelDisabledForeground},
         {NTCID::kColorId_LabelEnabledColor, kColorLabelForeground},

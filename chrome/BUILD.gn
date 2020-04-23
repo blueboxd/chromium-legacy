@@ -1405,11 +1405,6 @@ group("strings") {
 }
 
 if (is_android) {
-  java_cpp_enum("cookie_controls_mode_javagen") {
-    sources =
-        [ "../components/content_settings/core/browser/cookie_settings.h" ]
-  }
-
   java_cpp_enum("assist_ranker_prediction_enum_javagen") {
     sources = [
       "browser/android/contextualsearch/contextual_search_ranker_logger_impl.h",

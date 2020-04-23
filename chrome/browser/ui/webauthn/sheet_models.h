@@ -424,9 +424,11 @@ class AuthenticatorBioEnrollmentSheetModel
       AuthenticatorRequestDialogModel* dialog_model);
   ~AuthenticatorBioEnrollmentSheetModel() override;
 
-  int max_bio_samples() { return dialog_model()->max_bio_samples(); }
+  int max_bio_samples() {
+    return dialog_model()->max_bio_samples().value_or(1);
+  }
   int bio_samples_remaining() {
-    return dialog_model()->bio_samples_remaining();
+    return dialog_model()->bio_samples_remaining().value_or(1);
   }
 
  private:
@@ -441,6 +443,8 @@ class AuthenticatorBioEnrollmentSheetModel
   base::string16 GetAcceptButtonLabel() const override;
   bool IsCancelButtonVisible() const override;
   base::string16 GetCancelButtonLabel() const override;
+  void OnAccept() override;
+  void OnCancel() override;
 };
 
 class AuthenticatorRetryUvSheetModel : public AuthenticatorSheetModelBase {

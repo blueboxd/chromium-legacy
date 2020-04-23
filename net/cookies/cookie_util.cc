@@ -28,6 +28,8 @@ namespace cookie_util {
 
 namespace {
 
+using ContextType = CookieOptions::SameSiteCookieContext::ContextType;
+
 base::Time MinNonNullTime() {
   return base::Time::FromInternalValue(1);
 }
@@ -75,26 +77,45 @@ bool SaturatedTimeFromUTCExploded(const base::Time::Exploded& exploded,
   return false;
 }
 
-CookieOptions::SameSiteCookieContext ComputeSameSiteContext(
-    const GURL& url,
-    const SiteForCookies& site_for_cookies,
-    const base::Optional<url::Origin>& initiator) {
-  CookieOptions::SameSiteCookieContext same_site_type(
-      CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE);
-  if (site_for_cookies.IsFirstParty(url)) {
+ContextType ComputeSameSiteContext(const GURL& url,
+                                   const SiteForCookies& site_for_cookies,
+                                   const base::Optional<url::Origin>& initiator,
+                                   bool compute_schemefully) {
+  if (site_for_cookies.IsFirstPartyWithSchemefulMode(url,
+                                                     compute_schemefully)) {
     // Create a SiteForCookies object from the initiator so that we can reuse
-    // IsFirstParty().
+    // IsFirstPartyWithSchemefulMode().
     if (!initiator ||
-        SiteForCookies::FromOrigin(initiator.value()).IsFirstParty(url)) {
-      same_site_type.set_context(
-          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_STRICT);
+        SiteForCookies::FromOrigin(initiator.value())
+            .IsFirstPartyWithSchemefulMode(url, compute_schemefully)) {
+      return ContextType::SAME_SITE_STRICT;
     } else {
-      same_site_type.set_context(
-          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX);
+      return ContextType::SAME_SITE_LAX;
     }
   }
+  return ContextType::CROSS_SITE;
+}
 
-  return same_site_type;
+CookieOptions::SameSiteCookieContext ComputeSameSiteContextForSet(
+    const GURL& url,
+    const SiteForCookies& site_for_cookies,
+    bool attach_same_site_cookies) {
+  if (attach_same_site_cookies)
+    return CookieOptions::SameSiteCookieContext::MakeInclusiveForSet();
+
+  // Schemeless check
+  if (!site_for_cookies.IsFirstPartyWithSchemefulMode(url, false)) {
+    return CookieOptions::SameSiteCookieContext(ContextType::CROSS_SITE,
+                                                ContextType::CROSS_SITE);
+  }
+
+  // Schemeful check
+  if (!site_for_cookies.IsFirstPartyWithSchemefulMode(url, true)) {
+    return CookieOptions::SameSiteCookieContext(ContextType::SAME_SITE_LAX,
+                                                ContextType::CROSS_SITE);
+  }
+
+  return CookieOptions::SameSiteCookieContext::MakeInclusiveForSet();
 }
 
 }  // namespace
@@ -440,23 +461,27 @@ CookieOptions::SameSiteCookieContext ComputeSameSiteContextForRequest(
   //   but appear like cross-site ones.
   //
   // * Otherwise, do not include same-site cookies.
+
+  if (attach_same_site_cookies)
+    return CookieOptions::SameSiteCookieContext::MakeInclusive();
+
   CookieOptions::SameSiteCookieContext same_site_context;
 
-  if (attach_same_site_cookies) {
-    same_site_context.set_context(
-        CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_STRICT);
-    return same_site_context;
-  }
-
-  same_site_context = ComputeSameSiteContext(url, site_for_cookies, initiator);
+  same_site_context.set_context(
+      ComputeSameSiteContext(url, site_for_cookies, initiator, false));
+  same_site_context.set_schemeful_context(
+      ComputeSameSiteContext(url, site_for_cookies, initiator, true));
 
   // If the method is safe, the context is Lax. Otherwise, make a note that
   // the method is unsafe.
-  if (same_site_context.context() ==
-          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX &&
-      !net::HttpUtil::IsMethodSafe(http_method)) {
-    same_site_context.set_context(CookieOptions::SameSiteCookieContext::
-                                      ContextType::SAME_SITE_LAX_METHOD_UNSAFE);
+  if (!net::HttpUtil::IsMethodSafe(http_method)) {
+    if (same_site_context.context() == ContextType::SAME_SITE_LAX) {
+      same_site_context.set_context(ContextType::SAME_SITE_LAX_METHOD_UNSAFE);
+    }
+    if (same_site_context.schemeful_context() == ContextType::SAME_SITE_LAX) {
+      same_site_context.set_schemeful_context(
+          ContextType::SAME_SITE_LAX_METHOD_UNSAFE);
+    }
   }
 
   return same_site_context;
@@ -467,12 +492,17 @@ ComputeSameSiteContextForScriptGet(const GURL& url,
                                    const SiteForCookies& site_for_cookies,
                                    const base::Optional<url::Origin>& initiator,
                                    bool attach_same_site_cookies) {
-  if (attach_same_site_cookies) {
-    CookieOptions::SameSiteCookieContext same_site_context(
-        CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_STRICT);
-    return same_site_context;
-  }
-  return ComputeSameSiteContext(url, site_for_cookies, initiator);
+  if (attach_same_site_cookies)
+    return CookieOptions::SameSiteCookieContext::MakeInclusive();
+
+  CookieOptions::SameSiteCookieContext same_site_context;
+
+  same_site_context.set_context(
+      ComputeSameSiteContext(url, site_for_cookies, initiator, false));
+  same_site_context.set_schemeful_context(
+      ComputeSameSiteContext(url, site_for_cookies, initiator, true));
+
+  return same_site_context;
 }
 
 CookieOptions::SameSiteCookieContext ComputeSameSiteContextForResponse(
@@ -480,49 +510,44 @@ CookieOptions::SameSiteCookieContext ComputeSameSiteContextForResponse(
     const SiteForCookies& site_for_cookies,
     const base::Optional<url::Origin>& initiator,
     bool attach_same_site_cookies) {
-  CookieOptions::SameSiteCookieContext same_site_context;
   // |initiator| is here in case it'll be decided to ignore |site_for_cookies|
   // for entirely browser-side requests (see https://crbug.com/958335).
-  if (attach_same_site_cookies || site_for_cookies.IsFirstParty(url)) {
-    same_site_context.set_context(
-        CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX);
-  } else {
-    same_site_context.set_context(
-        CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE);
-  }
-  return same_site_context;
+
+  return ComputeSameSiteContextForSet(url, site_for_cookies,
+                                      attach_same_site_cookies);
 }
 
 CookieOptions::SameSiteCookieContext ComputeSameSiteContextForScriptSet(
     const GURL& url,
     const SiteForCookies& site_for_cookies,
     bool attach_same_site_cookies) {
-  CookieOptions::SameSiteCookieContext same_site_context;
-  if (attach_same_site_cookies || site_for_cookies.IsFirstParty(url)) {
-    same_site_context.set_context(
-        CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX);
-  } else {
-    same_site_context.set_context(
-        CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE);
-  }
-  return same_site_context;
+  return ComputeSameSiteContextForSet(url, site_for_cookies,
+                                      attach_same_site_cookies);
 }
 
 CookieOptions::SameSiteCookieContext ComputeSameSiteContextForSubresource(
     const GURL& url,
     const SiteForCookies& site_for_cookies,
     bool attach_same_site_cookies) {
-  CookieOptions::SameSiteCookieContext same_site_context;
+  if (attach_same_site_cookies)
+    return CookieOptions::SameSiteCookieContext::MakeInclusive();
+
   // If the URL is same-site as site_for_cookies it's same-site as all frames
   // in the tree from the initiator frame up --- including the initiator frame.
-  if (attach_same_site_cookies || site_for_cookies.IsFirstParty(url)) {
-    same_site_context.set_context(
-        CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_STRICT);
-  } else {
-    same_site_context.set_context(
-        CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE);
+
+  // Schemeless check
+  if (!site_for_cookies.IsFirstPartyWithSchemefulMode(url, false)) {
+    return CookieOptions::SameSiteCookieContext(ContextType::CROSS_SITE,
+                                                ContextType::CROSS_SITE);
   }
-  return same_site_context;
+
+  // Schemeful check
+  if (!site_for_cookies.IsFirstPartyWithSchemefulMode(url, true)) {
+    return CookieOptions::SameSiteCookieContext(ContextType::SAME_SITE_STRICT,
+                                                ContextType::CROSS_SITE);
+  }
+
+  return CookieOptions::SameSiteCookieContext::MakeInclusive();
 }
 
 bool IsSameSiteByDefaultCookiesEnabled() {

@@ -19,7 +19,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
-#include "base/strings/strcat.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread.h"
@@ -52,7 +51,6 @@
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/user_share.h"
 #include "components/version_info/version_info_values.h"
-#include "crypto/ec_private_key.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if defined(OS_CHROMEOS)
@@ -750,7 +748,6 @@ void ProfileSyncService::ShutdownImpl(ShutdownReason reason) {
   crypto_.Reset();
   expect_sync_configuration_aborted_ = false;
   last_snapshot_ = SyncCycleSnapshot();
-  last_keystore_key_.clear();
 
   if (!IsLocalSyncEnabled()) {
     auth_manager_->ConnectionClosed();
@@ -971,7 +968,6 @@ void ProfileSyncService::OnEngineInitialized(
     const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
     const std::string& birthday,
     const std::string& bag_of_chips,
-    const std::string& last_keystore_key,
     bool success) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -1000,8 +996,6 @@ void ProfileSyncService::OnEngineInitialized(
   // Save initialization data to preferences.
   sync_prefs_.SetBirthday(birthday);
   sync_prefs_.SetBagOfChips(bag_of_chips);
-
-  last_keystore_key_ = last_keystore_key;
 
   if (protocol_event_observers_.might_have_observers()) {
     engine_->RequestBufferedProtocolEventsAndEnableForwarding();
@@ -1051,12 +1045,10 @@ void ProfileSyncService::OnEngineInitialized(
 }
 
 void ProfileSyncService::OnSyncCycleCompleted(
-    const SyncCycleSnapshot& snapshot,
-    const std::string& last_keystore_key) {
+    const SyncCycleSnapshot& snapshot) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   last_snapshot_ = snapshot;
-  last_keystore_key_ = last_keystore_key;
 
   UpdateLastSyncedTime();
   if (!snapshot.poll_finish_time().is_null())
@@ -1256,17 +1248,6 @@ base::Time ProfileSyncService::GetAuthErrorTime() const {
 
 bool ProfileSyncService::RequiresClientUpgrade() const {
   return last_actionable_error_.action == UPGRADE_CLIENT;
-}
-
-std::unique_ptr<crypto::ECPrivateKey>
-ProfileSyncService::GetExperimentalAuthenticationKey() const {
-  std::string secret = GetExperimentalAuthenticationSecret();
-  if (secret.empty()) {
-    return nullptr;
-  }
-
-  return crypto::ECPrivateKey::DeriveFromSecret(
-      base::as_bytes(base::make_span(secret)));
 }
 
 bool ProfileSyncService::CanConfigureDataTypes(
@@ -2118,32 +2099,6 @@ void ProfileSyncService::ReconfigureDueToPassphrase(ConfigureReason reason) {
   // IsSetupInProgress() case where the UI needs to be updated to reflect that
   // the passphrase was accepted (https://crbug.com/870256).
   NotifyObservers();
-}
-
-std::string ProfileSyncService::GetExperimentalAuthenticationSecretForTest()
-    const {
-  return GetExperimentalAuthenticationSecret();
-}
-
-std::string ProfileSyncService::GetExperimentalAuthenticationSecret() const {
-  // Dependent fields are first populated when the sync engine is initialized,
-  // when usually all except keystore keys are guaranteed to be available.
-  // Keystore keys are usually available initially too, but in rare cases they
-  // should arrive in later sync cycles.
-  // GAIA ID is not available with local sync enabled.
-  if (last_keystore_key_.empty() || IsLocalSyncEnabled()) {
-    return std::string();
-  }
-
-  // A separator is not strictly needed but it's adopted here as good practice.
-  const std::string kSeparator("|");
-  const std::string gaia_id = GetAuthenticatedAccountInfo().gaia;
-  const std::string birthday = sync_prefs_.GetBirthday();
-  DCHECK(!gaia_id.empty());
-  DCHECK(!birthday.empty());
-
-  return base::StrCat(
-      {gaia_id, kSeparator, birthday, kSeparator, last_keystore_key_});
 }
 
 }  // namespace syncer

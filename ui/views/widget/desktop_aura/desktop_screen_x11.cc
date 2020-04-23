@@ -60,8 +60,11 @@ bool DesktopScreenX11::IsWindowUnderCursor(gfx::NativeWindow window) {
 
 gfx::NativeWindow DesktopScreenX11::GetWindowAtScreenPoint(
     const gfx::Point& point) {
-  return X11TopmostWindowFinder().FindLocalProcessWindowAt(
+  auto widget = X11TopmostWindowFinder().FindLocalProcessWindowAt(
       gfx::ConvertPointToPixel(GetXDisplayScaleFactor(), point), {});
+  return widget ? views::DesktopWindowTreeHostLinux::GetContentWindowForWidget(
+                      static_cast<gfx::AcceleratedWidget>(widget))
+                : nullptr;
 }
 
 int DesktopScreenX11::GetNumDisplays() const {

@@ -142,7 +142,7 @@ const CSSValue* ConsumeSyntaxComponent(const CSSSyntaxComponent& syntax,
 const CSSValue* CSSSyntaxDefinition::Parse(CSSParserTokenRange range,
                                            const CSSParserContext& context,
                                            bool is_animation_tainted) const {
-  if (IsTokenStream()) {
+  if (IsUniversal()) {
     // TODO(crbug.com/579788): Implement 'revert'.
     // TODO(crbug.com/882285): Make 'default' invalid as <custom-ident>.
     if (CouldConsumeReservedKeyword(range))

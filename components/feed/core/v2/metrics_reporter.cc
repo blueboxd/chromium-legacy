@@ -7,29 +7,14 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 
 namespace feed {
 namespace {
 using feed::internal::FeedEngagementType;
-
-// This enum must match FeedUserActionType in enums.xml.
-// TODO(harringtond): Add user actions for most of these.
-enum class FeedUserActionType {
-  kTappedOnCard = 0,
-  kShownCard = 1,
-  kTappedSendFeedback = 2,
-  kTappedLearnMore = 3,
-  kTappedHideStory = 4,
-  kTappedNotInterestedIn = 5,
-  kTappedManageInterests = 6,
-  kTappedDownload = 7,
-  kTappedOpenInNewTab = 8,
-  kOpenedContextMenu = 9,
-  kOpenedFeedSurface = 10,
-  kMaxValue = kOpenedFeedSurface,
-};
+using feed::internal::FeedUserActionType;
 
 void ReportEngagementTypeHistogram(FeedEngagementType engagement_type) {
   UMA_HISTOGRAM_ENUMERATION("ContentSuggestions.Feed.EngagementType",
@@ -102,26 +87,43 @@ void MetricsReporter::ContentSliceViewed(int index_in_stream) {
 
 void MetricsReporter::OpenAction() {
   ReportUserActionHistogram(FeedUserActionType::kTappedOnCard);
+  base::RecordAction(
+      base::UserMetricsAction("ContentSuggestions.Feed.CardAction.Open"));
   RecordInteraction();
 }
 
 void MetricsReporter::OpenInNewTabAction() {
   ReportUserActionHistogram(FeedUserActionType::kTappedOpenInNewTab);
+  base::RecordAction(base::UserMetricsAction(
+      "ContentSuggestions.Feed.CardAction.OpenInNewTab"));
+  RecordInteraction();
+}
+
+void MetricsReporter::OpenInNewIncognitoTabAction() {
+  ReportUserActionHistogram(FeedUserActionType::kTappedOpenInNewIncognitoTab);
+  base::RecordAction(base::UserMetricsAction(
+      "ContentSuggestions.Feed.CardAction.OpenInNewIncognitoTab"));
   RecordInteraction();
 }
 
 void MetricsReporter::SendFeedbackAction() {
   ReportUserActionHistogram(FeedUserActionType::kTappedSendFeedback);
+  base::RecordAction(base::UserMetricsAction(
+      "ContentSuggestions.Feed.CardAction.SendFeedback"));
   RecordInteraction();
 }
 
 void MetricsReporter::DownloadAction() {
   ReportUserActionHistogram(FeedUserActionType::kTappedDownload);
+  base::RecordAction(
+      base::UserMetricsAction("ContentSuggestions.Feed.CardAction.Download"));
   RecordInteraction();
 }
 
 void MetricsReporter::LearnMoreAction() {
   ReportUserActionHistogram(FeedUserActionType::kTappedLearnMore);
+  base::RecordAction(
+      base::UserMetricsAction("ContentSuggestions.Feed.CardAction.LearnMore"));
   RecordInteraction();
 }
 
@@ -135,21 +137,29 @@ void MetricsReporter::NavigationDone() {
 
 void MetricsReporter::RemoveAction() {
   ReportUserActionHistogram(FeedUserActionType::kTappedHideStory);
+  base::RecordAction(
+      base::UserMetricsAction("ContentSuggestions.Feed.CardAction.HideStory"));
   RecordInteraction();
 }
 
 void MetricsReporter::NotInterestedInAction() {
   ReportUserActionHistogram(FeedUserActionType::kTappedNotInterestedIn);
+  base::RecordAction(base::UserMetricsAction(
+      "ContentSuggestions.Feed.CardAction.NotInterestedIn"));
   RecordInteraction();
 }
 
 void MetricsReporter::ManageInterestsAction() {
   ReportUserActionHistogram(FeedUserActionType::kTappedManageInterests);
+  base::RecordAction(base::UserMetricsAction(
+      "ContentSuggestions.Feed.CardAction.ManageInterests"));
   RecordInteraction();
 }
 
 void MetricsReporter::ContextMenuOpened() {
   ReportUserActionHistogram(FeedUserActionType::kOpenedContextMenu);
+  base::RecordAction(base::UserMetricsAction(
+      "ContentSuggestions.Feed.CardAction.ContextMenu"));
 }
 
 void MetricsReporter::SurfaceOpened() {

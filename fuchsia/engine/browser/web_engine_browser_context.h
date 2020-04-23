@@ -42,10 +42,13 @@ class WebEngineBrowserContext : public content::BrowserContext {
   content::BackgroundSyncController* GetBackgroundSyncController() override;
   content::BrowsingDataRemoverDelegate* GetBrowsingDataRemoverDelegate()
       override;
+  media::VideoDecodePerfHistory* GetVideoDecodePerfHistory() override;
 
  private:
   // Contains URLRequestContextGetter required for resource loading.
   class ResourceContext;
+
+  media::VideoDecodePerfHistory* GetInMemoryVideoDecodePerfHistory();
 
   base::FilePath data_dir_path_;
 

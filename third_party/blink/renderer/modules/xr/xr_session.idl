@@ -37,7 +37,7 @@ enum XRInteractionMode {
   [RuntimeEnabled=WebXRARModule] readonly attribute XRInteractionMode interactionMode;
   readonly attribute XRVisibilityState visibilityState;
   [SameObject] readonly attribute XRRenderState renderState;
-  [MeasureAs=XRSessionGetInputSources, SameObject] readonly attribute XRInputSourceArray inputSources;
+  [CallWith=ScriptState, MeasureAs=XRSessionGetInputSources, SameObject] readonly attribute XRInputSourceArray inputSources;
   [SameObject] readonly attribute XRDOMOverlayState domOverlayState;
 
   attribute EventHandler onend;
@@ -68,4 +68,7 @@ enum XRInteractionMode {
   Promise<XRHitTestSource> requestHitTestSource(XRHitTestOptionsInit options);
   [RuntimeEnabled=WebXRHitTest, CallWith=ScriptState, MeasureAs=XRSessionRequestHitTestSourceForTransientInput, RaisesException]
   Promise<XRTransientInputHitTestSource> requestHitTestSourceForTransientInput(XRTransientInputHitTestOptionsInit options);
+
+  [RuntimeEnabled=WebXRLightEstimation, CallWith=ScriptState, RaisesException]
+  Promise<XRLightProbe> requestLightProbe();
 };

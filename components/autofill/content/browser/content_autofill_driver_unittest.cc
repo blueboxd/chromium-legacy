@@ -219,6 +219,8 @@ class FakeAutofillAgent : public mojom::AutofillAgent {
       const std::vector<std::string>& selectors,
       GetElementFormAndFieldDataCallback callback) override {}
 
+  void SetAssistantActionState(bool running) override {}
+
   mojo::AssociatedReceiverSet<mojom::AutofillAgent> receivers_;
 
   base::OnceClosure quit_closure_;

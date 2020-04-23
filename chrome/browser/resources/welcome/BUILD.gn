@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 import("//third_party/closure_compiler/compile_js.gni")
-import("//tools/polymer/polymer.gni")
+import("//tools/polymer/html_to_js.gni")
 
 group("closure_compile") {
   deps = [
@@ -81,32 +81,20 @@ js_library("welcome_browser_proxy") {
   externs_list = [ "$externs_path/chrome_send.js" ]
 }
 
-polymer_modulizer("welcome_app") {
-  js_file = "welcome_app.js"
-  html_file = "welcome_app.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("landing_view") {
-  js_file = "landing_view.js"
-  html_file = "landing_view.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("signin_view") {
-  js_file = "signin_view.js"
-  html_file = "signin_view.html"
-  html_type = "v3-ready"
-}
-
-group("polymer3_elements") {
+group("web_components") {
   public_deps = [
-    ":landing_view_module",
-    ":signin_view_module",
-    ":welcome_app_module",
-    "./google_apps:nux_google_apps_module",
-    "./ntp_background:nux_ntp_background_module",
-    "./set_as_default:nux_set_as_default_module",
-    "./shared:polymer3_elements",
+    ":web_components_local",
+    "./google_apps:web_components",
+    "./ntp_background:web_components",
+    "./set_as_default:web_components",
+    "./shared:web_components",
+  ]
+}
+
+html_to_js("web_components_local") {
+  js_files = [
+    "landing_view.js",
+    "signin_view.js",
+    "welcome_app.js",
   ]
 }

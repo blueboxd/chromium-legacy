@@ -10,7 +10,6 @@
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
@@ -79,7 +78,6 @@ void DataReductionProxySettingsTestBase::ResetSettings(base::Clock* clock) {
     settings->data_reduction_proxy_service_ = test_context_->TakeService();
   }
   settings->data_reduction_proxy_service_->SetSettingsForTesting(settings);
-  settings->config_ = test_context_->config();
   settings->prefs_ = test_context_->pref_service();
   if (clock)
     settings->clock_ = clock;

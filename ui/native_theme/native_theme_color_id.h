@@ -51,6 +51,8 @@
   OP(kColorId_MenuSeparatorColor),                                             \
   OP(kColorId_MenuBackgroundColor),                                            \
   OP(kColorId_MenuBorderColor),                                                \
+  /* Colors for icons displayed in a menu context. */                          \
+  OP(kColorId_MenuIconColor),                                                  \
   OP(kColorId_HighlightedMenuItemBackgroundColor),                             \
   OP(kColorId_HighlightedMenuItemForegroundColor),                             \
   OP(kColorId_MenuItemInitialAlertBackgroundColor),                            \
@@ -144,7 +146,7 @@
   OP(kColorId_AlertSeverityLow),                                               \
   OP(kColorId_AlertSeverityMedium),                                            \
   OP(kColorId_AlertSeverityHigh),                                              \
-  /* Colors for icons in secondary UI (content settings, help button, etc). */ \
+  /* Colors for icons in non-menu contexts. */                                 \
   OP(kColorId_DefaultIconColor)
 
 // clang-format on

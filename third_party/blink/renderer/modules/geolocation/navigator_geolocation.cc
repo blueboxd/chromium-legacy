@@ -23,7 +23,7 @@
 
 #include "third_party/blink/renderer/modules/geolocation/navigator_geolocation.h"
 
-#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/modules/geolocation/geolocation.h"
@@ -51,10 +51,8 @@ Geolocation* NavigatorGeolocation::geolocation(Navigator& navigator) {
 }
 
 Geolocation* NavigatorGeolocation::geolocation() {
-  if (!geolocation_ && GetSupplementable()->GetFrame()) {
-    geolocation_ = Geolocation::Create(
-        GetSupplementable()->GetFrame()->GetDocument()->ToExecutionContext());
-  }
+  if (!geolocation_ && GetSupplementable()->DomWindow())
+    geolocation_ = Geolocation::Create(GetSupplementable()->DomWindow());
   return geolocation_;
 }
 

@@ -174,12 +174,21 @@ const CGFloat kOmniboxIconSize = 16;
     }
   }
 
+  const TemplateURL* defaultProvider =
+      self.templateURLService
+          ? self.templateURLService->GetDefaultSearchProvider()
+          : nullptr;
+
+  if (!defaultProvider) {
+    // Service isn't available or default provider is disabled - either way we
+    // can't get the icon.
+    return;
+  }
+
   // When the DSE is Google, use the bundled icon.
-  if (self.templateURLService &&
-      self.templateURLService->GetDefaultSearchProvider() &&
-      self.templateURLService->GetDefaultSearchProvider()->GetEngineType(
-          self.templateURLService->search_terms_data()) ==
-          SEARCH_ENGINE_GOOGLE) {
+  if (defaultProvider && defaultProvider->GetEngineType(
+                             self.templateURLService->search_terms_data()) ==
+                             SEARCH_ENGINE_GOOGLE) {
     UIImage* bundledLogo = ios::GetChromeBrowserProvider()
                                ->GetBrandedImageProvider()
                                ->GetOmniboxAnswerIcon();
@@ -195,9 +204,6 @@ const CGFloat kOmniboxIconSize = 16;
 
   // Can't load favicons without a favicon loader.
   DCHECK(self.faviconLoader);
-
-  const TemplateURL* defaultProvider =
-      self.templateURLService->GetDefaultSearchProvider();
 
   __weak __typeof(self) weakSelf = self;
   self.latestDefaultSearchEngine = defaultProvider;

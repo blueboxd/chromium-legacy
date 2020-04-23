@@ -155,7 +155,7 @@ void QuickAnswersMenuObserver::OnMenuClosed() {
   if (!is_eligible_ || !quick_answers_controller_)
     return;
 
-  quick_answers_controller_->DismissQuickAnswers();
+  quick_answers_controller_->DismissQuickAnswers(!is_other_command_executed_);
 }
 
 bool QuickAnswersMenuObserver::IsCommandIdSupported(int command_id) {
@@ -182,6 +182,11 @@ void QuickAnswersMenuObserver::ExecuteCommand(int command_id) {
     quick_answers_client_->OnQuickAnswerClick(
         quick_answer_ ? quick_answer_->result_type : ResultType::kNoResult);
   }
+}
+
+void QuickAnswersMenuObserver::CommandWillBeExecuted(int command_id) {
+  is_other_command_executed_ =
+      command_id != IDC_CONTENT_CONTEXT_QUICK_ANSWERS_INLINE_QUERY;
 }
 
 void QuickAnswersMenuObserver::OnQuickAnswerReceived(

@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 import("//third_party/closure_compiler/compile_js.gni")
-import("//tools/polymer/polymer.gni")
+import("//tools/polymer/html_to_js.gni")
 
 js_type_check("closure_compile_module") {
   is_polymer3 = true
@@ -481,273 +481,45 @@ js_library("highlight_utils") {
   ]
 }
 
-group("polymer3_elements") {
-  public_deps = [
-    ":advanced_options_settings_module",
-    ":advanced_settings_dialog_module",
-    ":advanced_settings_item_module",
-    ":app_module",
-    ":button_strip_module",
-    ":color_settings_module",
-    ":copies_settings_module",
-    ":destination_dialog_module",
-    ":destination_list_item_module",
-    ":destination_list_module",
-    ":destination_select_module",
-    ":destination_settings_module",
-    ":dpi_settings_module",
-    ":duplex_settings_module",
-    ":header_module",
-    ":icons_module",
-    ":layout_settings_module",
-    ":link_container_module",
-    ":margin_control_container_module",
-    ":margin_control_module",
-    ":margins_settings_module",
-    ":media_size_settings_module",
-    ":more_settings_module",
-    ":number_settings_section_module",
-    ":other_options_settings_module",
-    ":pages_per_sheet_settings_module",
-    ":pages_settings_module",
-    ":pin_settings_module",
-    ":preview_area_module",
-    ":print_preview_search_box_module",
-    ":print_preview_shared_css_module",
-    ":print_preview_vars_css_module",
-    ":provisional_destination_resolver_module",
-    ":scaling_settings_module",
-    ":settings_section_module",
-    ":settings_select_module",
-    ":sidebar_module",
-    ":throbber_css_module",
+html_to_js("web_components") {
+  js_files = [
+    "advanced_options_settings.js",
+    "advanced_settings_dialog.js",
+    "advanced_settings_item.js",
+    "app.js",
+    "button_strip.js",
+    "color_settings.js",
+    "copies_settings.js",
+    "destination_dialog.js",
+    "destination_list_item.js",
+    "destination_list.js",
+    "destination_select.js",
+    "destination_settings.js",
+    "dpi_settings.js",
+    "duplex_settings.js",
+    "header.js",
+    "icons.js",
+    "layout_settings.js",
+    "link_container.js",
+    "margin_control_container.js",
+    "margin_control.js",
+    "margins_settings.js",
+    "media_size_settings.js",
+    "more_settings.js",
+    "number_settings_section.js",
+    "other_options_settings.js",
+    "pages_per_sheet_settings.js",
+    "pages_settings.js",
+    "pin_settings.js",
+    "preview_area.js",
+    "print_preview_search_box.js",
+    "print_preview_shared_css.js",
+    "print_preview_vars_css.js",
+    "provisional_destination_resolver.js",
+    "scaling_settings.js",
+    "settings_section.js",
+    "settings_select.js",
+    "sidebar.js",
+    "throbber_css.js",
   ]
-}
-
-polymer_modulizer("advanced_options_settings") {
-  html_file = "advanced_options_settings.html"
-  js_file = "advanced_options_settings.js"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("advanced_settings_dialog") {
-  html_file = "advanced_settings_dialog.html"
-  js_file = "advanced_settings_dialog.js"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("advanced_settings_item") {
-  html_file = "advanced_settings_item.html"
-  js_file = "advanced_settings_item.js"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("app") {
-  html_file = "app.html"
-  js_file = "app.js"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("button_strip") {
-  html_file = "button_strip.html"
-  js_file = "button_strip.js"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("color_settings") {
-  html_file = "color_settings.html"
-  js_file = "color_settings.js"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("copies_settings") {
-  html_file = "copies_settings.html"
-  js_file = "copies_settings.js"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("destination_dialog") {
-  html_file = "destination_dialog.html"
-  js_file = "destination_dialog.js"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("destination_list") {
-  html_file = "destination_list.html"
-  js_file = "destination_list.js"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("destination_list_item") {
-  html_file = "destination_list_item.html"
-  js_file = "destination_list_item.js"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("destination_select") {
-  html_file = "destination_select.html"
-  js_file = "destination_select.js"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("destination_settings") {
-  html_file = "destination_settings.html"
-  js_file = "destination_settings.js"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("dpi_settings") {
-  html_file = "dpi_settings.html"
-  js_file = "dpi_settings.js"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("duplex_settings") {
-  html_file = "duplex_settings.html"
-  js_file = "duplex_settings.js"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("header") {
-  html_file = "header.html"
-  js_file = "header.js"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("layout_settings") {
-  html_file = "layout_settings.html"
-  js_file = "layout_settings.js"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("link_container") {
-  html_file = "link_container.html"
-  js_file = "link_container.js"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("margin_control_container") {
-  html_file = "margin_control_container.html"
-  js_file = "margin_control_container.js"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("margin_control") {
-  html_file = "margin_control.html"
-  js_file = "margin_control.js"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("margins_settings") {
-  html_file = "margins_settings.html"
-  js_file = "margins_settings.js"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("media_size_settings") {
-  html_file = "media_size_settings.html"
-  js_file = "media_size_settings.js"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("more_settings") {
-  html_file = "more_settings.html"
-  js_file = "more_settings.js"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("number_settings_section") {
-  html_file = "number_settings_section.html"
-  js_file = "number_settings_section.js"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("other_options_settings") {
-  html_file = "other_options_settings.html"
-  js_file = "other_options_settings.js"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("pages_per_sheet_settings") {
-  html_file = "pages_per_sheet_settings.html"
-  js_file = "pages_per_sheet_settings.js"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("pages_settings") {
-  html_file = "pages_settings.html"
-  js_file = "pages_settings.js"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("pin_settings") {
-  html_file = "pin_settings.html"
-  js_file = "pin_settings.js"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("preview_area") {
-  html_file = "preview_area.html"
-  js_file = "preview_area.js"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("print_preview_search_box") {
-  html_file = "print_preview_search_box.html"
-  js_file = "print_preview_search_box.js"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("provisional_destination_resolver") {
-  html_file = "provisional_destination_resolver.html"
-  js_file = "provisional_destination_resolver.js"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("scaling_settings") {
-  html_file = "scaling_settings.html"
-  js_file = "scaling_settings.js"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("settings_section") {
-  html_file = "settings_section.html"
-  js_file = "settings_section.js"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("settings_select") {
-  html_file = "settings_select.html"
-  js_file = "settings_select.js"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("sidebar") {
-  html_file = "sidebar.html"
-  js_file = "sidebar.js"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("print_preview_shared_css") {
-  html_file = "print_preview_shared_css.html"
-  js_file = "print_preview_shared_css.js"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("throbber_css") {
-  html_file = "throbber_css.html"
-  js_file = "throbber_css.js"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("print_preview_vars_css") {
-  html_file = "print_preview_vars_css.html"
-  js_file = "print_preview_vars_css.js"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("icons") {
-  html_file = "icons.html"
-  js_file = "icons.js"
-  html_type = "v3-ready"
 }

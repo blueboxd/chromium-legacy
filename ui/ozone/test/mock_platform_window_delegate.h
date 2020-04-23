@@ -5,6 +5,7 @@
 #ifndef UI_OZONE_TEST_MOCK_PLATFORM_WINDOW_DELEGATE_H_
 #define UI_OZONE_TEST_MOCK_PLATFORM_WINDOW_DELEGATE_H_
 
+#include "base/macros.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/platform_window/platform_window_delegate.h"

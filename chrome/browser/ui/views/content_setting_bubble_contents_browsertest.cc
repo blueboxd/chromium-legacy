@@ -33,8 +33,9 @@ class ContentSettingBubbleContentsBrowserTest : public InProcessBrowserTest {
   }
 };
 
+// Flaky: https://crbug.com/1073516
 IN_PROC_BROWSER_TEST_F(ContentSettingBubbleContentsBrowserTest,
-                       HidesAtWebContentsClose) {
+                       DISABLED_HidesAtWebContentsClose) {
   // Create a second tab, so closing the test tab doesn't close the browser.
   chrome::NewTab(browser());
 

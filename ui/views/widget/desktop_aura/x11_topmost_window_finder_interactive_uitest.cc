@@ -21,6 +21,7 @@
 #include "ui/views/test/widget_test.h"
 #include "ui/views/test/x11_property_change_waiter.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
+#include "ui/views/widget/desktop_aura/desktop_window_tree_host_linux.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
@@ -155,8 +156,11 @@ class X11TopmostWindowFinderTest : public test::DesktopWidgetTestInteractive {
   // NULL if the topmost window does not have an associated aura::Window.
   aura::Window* FindTopmostLocalProcessWindowAt(int screen_x, int screen_y) {
     X11TopmostWindowFinder finder;
-    return finder.FindLocalProcessWindowAt(gfx::Point(screen_x, screen_y),
-                                           std::set<aura::Window*>());
+    auto widget =
+        finder.FindLocalProcessWindowAt(gfx::Point(screen_x, screen_y), {});
+    return widget ? DesktopWindowTreeHostLinux::GetContentWindowForWidget(
+                        static_cast<gfx::AcceleratedWidget>(widget))
+                  : nullptr;
   }
 
   // Returns the topmost aura::Window at the passed in screen position ignoring
@@ -166,11 +170,14 @@ class X11TopmostWindowFinderTest : public test::DesktopWidgetTestInteractive {
       int screen_x,
       int screen_y,
       aura::Window* ignore_window) {
-    std::set<aura::Window*> ignore;
-    ignore.insert(ignore_window);
+    std::set<gfx::AcceleratedWidget> ignore;
+    ignore.insert(ignore_window->GetHost()->GetAcceleratedWidget());
     X11TopmostWindowFinder finder;
-    return finder.FindLocalProcessWindowAt(gfx::Point(screen_x, screen_y),
-                                           ignore);
+    auto widget =
+        finder.FindLocalProcessWindowAt(gfx::Point(screen_x, screen_y), ignore);
+    return widget ? DesktopWindowTreeHostLinux::GetContentWindowForWidget(
+                        static_cast<gfx::AcceleratedWidget>(widget))
+                  : nullptr;
   }
 
  private:

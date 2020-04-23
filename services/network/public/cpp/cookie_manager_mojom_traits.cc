@@ -260,8 +260,16 @@ bool StructTraits<network::mojom::CookieSameSiteContextDataView,
   if (!mojo_context.ReadContext(&context_type))
     return false;
 
-  *context = net::CookieOptions::SameSiteCookieContext(context_type);
+  net::CookieOptions::SameSiteCookieContext::ContextType schemeful_context;
+  if (!mojo_context.ReadSchemefulContext(&schemeful_context))
+    return false;
 
+  // schemeful_context must be <= context.
+  if (schemeful_context > context_type)
+    return false;
+
+  *context = net::CookieOptions::SameSiteCookieContext(context_type,
+                                                       schemeful_context);
   return true;
 }
 

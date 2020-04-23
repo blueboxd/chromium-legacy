@@ -66,6 +66,7 @@ CONTENT_EXPORT extern const base::Feature kHistoryManipulationIntervention;
 CONTENT_EXPORT extern const base::Feature kHistoryPreventSandboxedNavigation;
 CONTENT_EXPORT extern const base::Feature kIdleDetection;
 CONTENT_EXPORT extern const base::Feature kInputPredictorTypeChoice;
+CONTENT_EXPORT extern const base::Feature kInstalledApp;
 CONTENT_EXPORT extern const base::Feature kInstalledAppProvider;
 CONTENT_EXPORT extern const base::Feature kInstalledAppsInCbd;
 CONTENT_EXPORT extern const base::Feature kIsolateOrigins;

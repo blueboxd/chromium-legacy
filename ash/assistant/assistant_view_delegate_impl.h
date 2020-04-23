@@ -21,25 +21,17 @@ class AssistantViewDelegateImpl : public AssistantViewDelegate {
 
   // AssistantViewDelegate:
   const AssistantAlarmTimerModel* GetAlarmTimerModel() const override;
-  const AssistantInteractionModel* GetInteractionModel() const override;
   const AssistantNotificationModel* GetNotificationModel() const override;
-  const AssistantUiModel* GetUiModel() const override;
   void AddObserver(AssistantViewDelegateObserver* observer) override;
   void RemoveObserver(AssistantViewDelegateObserver* observer) override;
   void AddAlarmTimerModelObserver(
       AssistantAlarmTimerModelObserver* observer) override;
   void RemoveAlarmTimerModelObserver(
       AssistantAlarmTimerModelObserver* observer) override;
-  void AddInteractionModelObserver(
-      AssistantInteractionModelObserver* observer) override;
-  void RemoveInteractionModelObserver(
-      AssistantInteractionModelObserver* observer) override;
   void AddNotificationModelObserver(
       AssistantNotificationModelObserver* observer) override;
   void RemoveNotificationModelObserver(
       AssistantNotificationModelObserver* observer) override;
-  void AddUiModelObserver(AssistantUiModelObserver* observer) override;
-  void RemoveUiModelObserver(AssistantUiModelObserver* observer) override;
   void DownloadImage(
       const GURL& url,
       AssistantImageDownloader::DownloadCallback callback) override;

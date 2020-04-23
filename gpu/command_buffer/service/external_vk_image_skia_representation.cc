@@ -27,7 +27,7 @@ ExternalVkImageSkiaRepresentation::ExternalVkImageSkiaRepresentation(
 ExternalVkImageSkiaRepresentation::~ExternalVkImageSkiaRepresentation() {
   DCHECK_EQ(access_mode_, kNone) << "Previoud access hasn't end yet.";
   DCHECK(end_access_semaphore_ == VK_NULL_HANDLE);
-  surface_ = nullptr;
+  backing_impl()->context_state()->EraseCachedSkSurface(this);
 }
 
 sk_sp<SkSurface> ExternalVkImageSkiaRepresentation::BeginWriteAccess(
@@ -53,29 +53,33 @@ sk_sp<SkSurface> ExternalVkImageSkiaRepresentation::BeginWriteAccess(
     return nullptr;
   }
 
+  auto surface = backing_impl()->context_state()->GetCachedSkSurface(this);
+
   // If surface properties are different from the last access, then we cannot
   // reuse the cached SkSurface.
-  if (!surface_ || surface_props != surface_->props() ||
+  if (!surface || surface_props != surface->props() ||
       final_msaa_count != surface_msaa_count_) {
     SkColorType sk_color_type = viz::ResourceFormatToClosestSkColorType(
         true /* gpu_compositing */, format());
-    surface_ = SkSurface::MakeFromBackendTextureAsRenderTarget(
+    surface = SkSurface::MakeFromBackendTextureAsRenderTarget(
         gr_context, promise_texture->backendTexture(), kTopLeft_GrSurfaceOrigin,
         final_msaa_count, sk_color_type,
         backing_impl()->color_space().ToSkColorSpace(), &surface_props);
-    if (!surface_) {
+    if (!surface) {
       LOG(ERROR) << "MakeFromBackendTextureAsRenderTarget() failed.";
+      backing_impl()->context_state()->EraseCachedSkSurface(this);
       return nullptr;
     }
     surface_msaa_count_ = final_msaa_count;
+    backing_impl()->context_state()->CacheSkSurface(this, surface);
   }
 
-  int count = surface_->getCanvas()->save();
+  int count = surface->getCanvas()->save();
   DCHECK_EQ(count, 1);
   ALLOW_UNUSED_LOCAL(count);
 
   access_mode_ = kWrite;
-  return surface_;
+  return surface;
 }
 
 void ExternalVkImageSkiaRepresentation::EndWriteAccess(
@@ -84,10 +88,9 @@ void ExternalVkImageSkiaRepresentation::EndWriteAccess(
     LOG(DFATAL) << "BeginWriteAccess is not called mode=" << access_mode_;
     return;
   }
-
+  surface->getCanvas()->restoreToCount(1);
   surface = nullptr;
-  DCHECK(surface_->unique());
-  surface_->getCanvas()->restoreToCount(1);
+  DCHECK(backing_impl()->context_state()->CachedSkSurfaceIsUnique(this));
   EndAccess(false /* readonly */);
   access_mode_ = kNone;
 }

@@ -30,6 +30,15 @@ std::unique_ptr<LayerImpl> PaintedOverlayScrollbarLayer::CreateLayerImpl(
 }
 
 scoped_refptr<PaintedOverlayScrollbarLayer>
+PaintedOverlayScrollbarLayer::CreateOrReuse(
+    scoped_refptr<Scrollbar> scrollbar,
+    PaintedOverlayScrollbarLayer* existing_layer) {
+  if (existing_layer && existing_layer->scrollbar_->IsSame(*scrollbar))
+    return existing_layer;
+  return Create(std::move(scrollbar));
+}
+
+scoped_refptr<PaintedOverlayScrollbarLayer>
 PaintedOverlayScrollbarLayer::Create(scoped_refptr<Scrollbar> scrollbar) {
   return base::WrapRefCounted(
       new PaintedOverlayScrollbarLayer(std::move(scrollbar)));
@@ -180,7 +189,7 @@ bool PaintedOverlayScrollbarLayer::PaintTickmarks() {
 }
 
 ScrollbarLayerBase::ScrollbarLayerType
-PaintedOverlayScrollbarLayer::ScrollbarLayerTypeForTesting() const {
+PaintedOverlayScrollbarLayer::GetScrollbarLayerType() const {
   return kPaintedOverlay;
 }
 

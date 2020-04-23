@@ -770,3 +770,98 @@ TEST_F(DisabledStrictOriginIsolationFieldTrialTest,
 
   EXPECT_TRUE(content::SiteIsolationPolicy::IsStrictOriginIsolationEnabled());
 }
+
+// The following tests verify that the list of Android's built-in isolated
+// origins takes effect. This list is only used in official builds, and only
+// when above the memory threshold.
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OS_ANDROID)
+class BuiltInIsolatedOriginsTest : public SiteIsolationPolicyTest {
+ public:
+  BuiltInIsolatedOriginsTest() {}
+
+ protected:
+  void SetUp() override {
+    // Simulate a 512MB device.
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableLowEndDeviceMode);
+    EXPECT_EQ(512, base::SysInfo::AmountOfPhysicalMemoryMB());
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BuiltInIsolatedOriginsTest);
+};
+
+// Check that the list of preloaded isolated origins is properly applied when
+// device RAM is above the site isolation memory threshold.
+TEST_F(BuiltInIsolatedOriginsTest, DefaultThreshold) {
+  if (ShouldSkipBecauseOfConflictingCommandLineSwitches())
+    return;
+
+  // Define a memory threshold at 128MB.  This is below the 512MB of physical
+  // memory that this test simulates, so preloaded isolated origins should take
+  // effect.
+  base::test::ScopedFeatureList memory_feature;
+  memory_feature.InitAndEnableFeatureWithParameters(
+      features::kSitePerProcessOnlyForHighMemoryClients,
+      {{features::kSitePerProcessOnlyForHighMemoryClientsParamName, "128"}});
+
+  // Ensure that isolated origins that are normally loaded on browser
+  // startup are applied.
+  content::SiteIsolationPolicy::ApplyGlobalIsolatedOrigins();
+
+  EXPECT_TRUE(
+      content::SiteIsolationPolicy::ArePreloadedIsolatedOriginsEnabled());
+
+  auto* cpsp = content::ChildProcessSecurityPolicy::GetInstance();
+  std::vector<url::Origin> isolated_origins = cpsp->GetIsolatedOrigins(
+      content::ChildProcessSecurityPolicy::IsolatedOriginSource::BUILT_IN);
+
+  // The list of built-in origins is fairly large; we don't want to hardcode
+  // the size here as it might change, so just check that there are at least 10
+  // origins.
+  EXPECT_GT(isolated_origins.size(), 10u);
+
+  // Check that a couple of well-known origins are on the list.
+  EXPECT_THAT(
+      isolated_origins,
+      ::testing::Contains(url::Origin::Create(GURL("https://google.com/"))));
+  EXPECT_THAT(
+      isolated_origins,
+      ::testing::Contains(url::Origin::Create(GURL("https://amazon.com/"))));
+  EXPECT_THAT(
+      isolated_origins,
+      ::testing::Contains(url::Origin::Create(GURL("https://facebook.com/"))));
+
+  cpsp->ClearIsolatedOriginsForTesting();
+}
+
+TEST_F(BuiltInIsolatedOriginsTest, BelowThreshold) {
+  if (ShouldSkipBecauseOfConflictingCommandLineSwitches())
+    return;
+
+  // Define a memory threshold at 768MB.  This is above the 512MB of physical
+  // memory that this test simulates, so preloaded isolated origins shouldn't
+  // take effect.
+  base::test::ScopedFeatureList memory_feature;
+  memory_feature.InitAndEnableFeatureWithParameters(
+      features::kSitePerProcessOnlyForHighMemoryClients,
+      {{features::kSitePerProcessOnlyForHighMemoryClientsParamName, "768"}});
+
+  // Ensure that isolated origins that are normally loaded on browser
+  // startup are applied.
+  content::SiteIsolationPolicy::ApplyGlobalIsolatedOrigins();
+
+  EXPECT_FALSE(
+      content::SiteIsolationPolicy::ArePreloadedIsolatedOriginsEnabled());
+
+  auto* cpsp = content::ChildProcessSecurityPolicy::GetInstance();
+  std::vector<url::Origin> isolated_origins = cpsp->GetIsolatedOrigins(
+      content::ChildProcessSecurityPolicy::IsolatedOriginSource::BUILT_IN);
+
+  // There shouldn't be any built-in origins on Android. (Note that desktop has
+  // some built-in origins that are applied regardless of memory threshold.)
+  EXPECT_EQ(isolated_origins.size(), 0u);
+
+  cpsp->ClearIsolatedOriginsForTesting();
+}
+#endif

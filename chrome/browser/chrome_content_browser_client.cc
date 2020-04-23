@@ -198,7 +198,6 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
 #include "components/content_settings/core/common/pref_names.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
@@ -250,6 +249,7 @@
 #include "components/security_interstitials/content/ssl_error_handler.h"
 #include "components/security_interstitials/content/ssl_error_navigation_throttle.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/site_isolation/preloaded_isolated_origins.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
 #include "components/translate/core/common/translate_switches.h"
 #include "components/ukm/app_source_url_recorder.h"
@@ -280,6 +280,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_context.h"
+#include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/tts_controller.h"
 #include "content/public/browser/tts_platform.h"
@@ -1858,6 +1859,14 @@ ChromeContentBrowserClient::GetOriginsRequiringDedicatedProcess() {
             std::end(origins_from_extensions),
             std::back_inserter(isolated_origin_list));
 #endif
+
+  // Include additional origins preloaded with specific browser configurations,
+  // if any.  For example, this is used on Google Chrome for Android to preload
+  // a list of important sites to isolate.
+  auto built_in_origins =
+      site_isolation::GetBrowserSpecificBuiltInIsolatedOrigins();
+  std::move(std::begin(built_in_origins), std::end(built_in_origins),
+            std::back_inserter(isolated_origin_list));
 
   return isolated_origin_list;
 }

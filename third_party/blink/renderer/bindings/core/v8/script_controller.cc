@@ -49,6 +49,7 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -258,7 +259,7 @@ void ScriptController::ExecuteJavaScriptURL(
   script_source = script_source.Substring(kJavascriptSchemeLength);
   if (!should_bypass_main_world_content_security_policy) {
     script_source = TrustedTypesCheckForJavascriptURLinNavigation(
-        script_source, GetFrame()->GetDocument());
+        script_source, GetFrame()->DomWindow());
     if (script_source.IsEmpty())
       return;
   }

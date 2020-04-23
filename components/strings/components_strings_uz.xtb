@@ -1775,7 +1775,6 @@ Batafsil axborot:
 <translation id="860043288473659153">Karta egasining ismi</translation>
 <translation id="8606726445206553943">MIDI qurilmalaridan foydalanish</translation>
 <translation id="861775596732816396">Hajmi: 4</translation>
-<translation id="8622276957756667304">Parollar mos emas. Saqlangan barcha parollarni boshqarish.</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">Kartani bu qurilmaga saqlash</translation>
 <translation id="8663226718884576429">Buyurtma axboroti, <ph name="TOTAL_LABEL" />, Batafsil</translation>
@@ -1810,7 +1809,7 @@ Batafsil axborot:
 <translation id="8800988563907321413">Siz uchun maxsus takliflar shu yerda ko‘rsatiladi</translation>
 <translation id="8805819170075074995">“<ph name="LANGUAGE_ID" />” tili: Bu til SpellcheckLanguage parametrida borligi uchun inkor etildi.</translation>
 <translation id="8807160976559152894">Har bir sahifa chekkasini qirqish</translation>
-<translation id="8820817407110198400">Xatcho‘plar</translation>
+<translation id="8820817407110198400">Bukmarklar</translation>
 <translation id="883848425547221593">Boshqa xatcho‘plar</translation>
 <translation id="884264119367021077">Yetkazib berish manzili</translation>
 <translation id="884923133447025588">Javob mexanizmi topilmadi.</translation>

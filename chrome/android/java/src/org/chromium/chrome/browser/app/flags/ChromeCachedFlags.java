@@ -56,6 +56,7 @@ public class ChromeCachedFlags {
                 ChromeFeatureList.CHROME_DUET_LABELED,
                 ChromeFeatureList.CLOSE_TAB_SUGGESTIONS,
                 ChromeFeatureList.DOWNLOADS_AUTO_RESUMPTION_NATIVE,
+                ChromeFeatureList.DUET_TABSTRIP_INTEGRATION_ANDROID,
                 ChromeFeatureList.HOMEPAGE_LOCATION_POLICY,
                 ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS,
                 ChromeFeatureList.IMMERSIVE_UI_MODE,
@@ -64,11 +65,12 @@ public class ChromeCachedFlags {
                 ChromeFeatureList.INSTANT_START,
                 ChromeFeatureList.START_SURFACE_ANDROID,
                 ChromeFeatureList.SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT,
+                ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
+                ChromeFeatureList.TAB_GROUPS_ANDROID,
                 ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID,
                 ChromeFeatureList.TAB_TO_GTS_ANIMATION);
         // clang-format on
         CachedFeatureFlags.cacheNativeFlags(featuresToCache);
-        CachedFeatureFlags.cacheNativeFlags(TabUiFeatureUtilities.getFeaturesToCache());
         CachedFeatureFlags.cacheAdditionalNativeFlags();
 
         // clang-format off

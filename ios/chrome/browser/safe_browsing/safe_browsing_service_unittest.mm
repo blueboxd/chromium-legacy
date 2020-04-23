@@ -19,6 +19,7 @@
 #include "components/safe_browsing/core/db/v4_get_hash_protocol_manager.h"
 #include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/core/db/v4_test_util.h"
+#import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/web_task_environment.h"
 #include "ios/web/public/thread/web_task_traits.h"
 #include "ios/web/public/thread/web_thread.h"
@@ -48,7 +49,7 @@ class TestUrlCheckerClient {
   void CheckUrl(const GURL& url) {
     result_pending_ = true;
     url_checker_ = safe_browsing_service_->CreateUrlChecker(
-        safe_browsing::ResourceType::kMainFrame);
+        safe_browsing::ResourceType::kMainFrame, &web_state_);
     base::PostTask(FROM_HERE, {web::WebThread::IO},
                    base::BindOnce(&TestUrlCheckerClient::CheckUrlOnIOThread,
                                   base::Unretained(this), url));
@@ -91,6 +92,7 @@ class TestUrlCheckerClient {
   bool result_pending_ = false;
   bool url_is_unsafe_ = false;
   SafeBrowsingService* safe_browsing_service_;
+  web::TestWebState web_state_;
   std::unique_ptr<safe_browsing::SafeBrowsingUrlCheckerImpl> url_checker_;
 };
 

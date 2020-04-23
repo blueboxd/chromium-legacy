@@ -38,16 +38,12 @@ class TabStripLayoutHelper {
 
   TabStripLayoutHelper(const TabStripController* controller,
                        GetTabsCallback get_tabs_callback,
-                       GetGroupHeadersCallback get_group_headers_callback,
-                       base::RepeatingClosure on_animation_progressed);
+                       GetGroupHeadersCallback get_group_headers_callback);
   ~TabStripLayoutHelper();
 
   // Returns a vector of all tabs in the strip, including both closing tabs
   // and tabs still in the model.
   std::vector<Tab*> GetTabs();
-
-  // Returns whether any animations for tabs or group headers are in progress.
-  bool IsAnimating() const;
 
   int active_tab_width() { return active_tab_width_; }
   int inactive_tab_width() { return inactive_tab_width_; }
@@ -63,28 +59,12 @@ class TabStripLayoutHelper {
     return group_header_ideal_bounds_;
   }
 
-  // Inserts a new tab at |index|, without animation. |tab_removed_callback|
-  // will be invoked if the tab is removed at the end of a remove animation.
-  void InsertTabAtNoAnimation(int model_index,
-                              Tab* tab,
-                              base::OnceClosure tab_removed_callback,
-                              TabPinned pinned);
+  // Inserts a new tab at |index|.
+  void InsertTabAt(int model_index, Tab* tab, TabPinned pinned);
 
-  // Inserts a new tab at |index|, with animation. |tab_removed_callback| will
-  // be invoked if the tab is removed at the end of a remove animation.
-  void InsertTabAt(int model_index,
-                   Tab* tab,
-                   base::OnceClosure tab_removed_callback,
-                   TabPinned pinned);
-
-  // Marks the tab at |model_index| as closed without animating it. Use when
-  // the tab has been removed from the model but the old animation style owns
-  // animating it.
-  // TODO(958173): Remove this when the old animation style is removed.
-  void RemoveTabNoAnimation(int model_index, Tab* tab);
-
-  // Marks the tab at |model_index| as closing and animates it closed.
-  void RemoveTab(int model_index, Tab* tab);
+  // Marks the tab at |model_index| as closing, but does not remove it from
+  // |slots_|.
+  void RemoveTabAt(int model_index, Tab* tab);
 
   // Called when the tabstrip enters tab closing mode, wherein tabs should
   // resize differently to control which tab ends up under the cursor.
@@ -111,11 +91,8 @@ class TabStripLayoutHelper {
   // Sets the tab at |index|'s pinned state to |pinned|.
   void SetTabPinned(int model_index, TabPinned pinned);
 
-  // Inserts a new group header for |group|. |header_removed_callback| will be
-  // invoked if the group is removed at the end of a remove animation.
-  void InsertGroupHeader(tab_groups::TabGroupId group,
-                         TabGroupHeader* header,
-                         base::OnceClosure header_removed_callback);
+  // Inserts a new group header for |group|.
+  void InsertGroupHeader(tab_groups::TabGroupId group, TabGroupHeader* header);
 
   // Removes the group header for |group|.
   void RemoveGroupHeader(tab_groups::TabGroupId group);
@@ -128,26 +105,21 @@ class TabStripLayoutHelper {
   // Changes the active tab from |prev_active_index| to |new_active_index|.
   void SetActiveTab(int prev_active_index, int new_active_index);
 
-  // Finishes all in-progress animations.
-  void CompleteAnimations();
+  // Calculates the smallest width the tabs can occupy.
+  int CalculateMinimumWidth();
 
-  // TODO(958173): Temporary method that completes running animations
-  // without invoking the callback to destroy removed tabs. Use to hand
-  // off animation (and removed tab destruction) responsibilities from
-  // this animator to elsewhere without teleporting tabs or destroying
-  // the same tab more than once.
-  void CompleteAnimationsWithoutDestroyingTabs();
+  // Calculates the width the tabs would occupy if they have enough space.
+  int CalculatePreferredWidth();
 
   // Generates and sets the ideal bounds for the views in |tabs| and
   // |group_headers|. Updates the cached widths in |active_tab_width_| and
-  // |inactive_tab_width_|.
-  // TODO(958173): The notion of ideal bounds is going away. Delete this.
-  void UpdateIdealBounds(int available_width);
+  // |inactive_tab_width_|. Returns the total width occupied by the new ideal
+  // bounds.
+  int UpdateIdealBounds(int available_width);
 
   // Generates and sets the ideal bounds for |tabs|. Updates
   // the cached values in |first_non_pinned_tab_index_| and
   // |first_non_pinned_tab_x_|.
-  // TODO(958173): The notion of ideal bounds is going away. Delete this.
   void UpdateIdealBoundsForPinnedTabs();
 
   // Lays out tabs and group headers to their current bounds. Returns the
@@ -156,6 +128,11 @@ class TabStripLayoutHelper {
 
  private:
   struct TabSlot;
+
+  // Calculates the bounds each tab should occupy, subject to the provided
+  // width constraint.
+  std::vector<gfx::Rect> CalculateIdealBounds(
+      base::Optional<int> available_width);
 
   // Given a tab's |model_index| and |group|, returns the index of its
   // corresponding TabSlot in |slots_|.
@@ -169,15 +146,6 @@ class TabStripLayoutHelper {
 
   // Returns the current width constraints for each View.
   std::vector<TabWidthConstraints> GetCurrentTabWidthConstraints() const;
-
-  // Runs an animation for the View at |slot_index| towards |target_state|.
-  void AnimateSlot(int slot_index, TabAnimationState target_state);
-
-  // Called when animations progress.
-  void TickAnimations();
-
-  // Deletes the data in |slots_| corresponding to fully closed tabs.
-  void RemoveClosedTabs();
 
   // Recalculate |cached_slots_|, called whenever state changes.
   void UpdateCachedTabSlots();
@@ -204,12 +172,6 @@ class TabStripLayoutHelper {
   // Callbacks to get the necessary View objects from the owning tabstrip.
   GetTabsCallback get_tabs_callback_;
   GetGroupHeadersCallback get_group_headers_callback_;
-
-  // Timer used to run animations on Views..
-  base::RepeatingTimer animation_timer_;
-
-  // Called when animations progress.
-  base::RepeatingClosure on_animation_progressed_;
 
   // Current collation of tabs and group headers, along with necessary data to
   // run layout and animations for those Views.

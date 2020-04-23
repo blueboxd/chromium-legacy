@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/space_split_string.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/modules/mediastream/media_constraints_impl.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream.h"
 #include "third_party/blink/renderer/modules/mediastream/overconstrained_error.h"
@@ -467,27 +468,26 @@ bool UserMediaRequest::ShouldDisableHardwareNoiseSuppression() const {
 }
 
 bool UserMediaRequest::IsSecureContextUse(String& error_message) {
-  Document* document = OwnerDocument();
+  LocalDOMWindow* window = GetWindow();
 
-  if (document->IsSecureContext(error_message)) {
-    UseCounter::Count(document, WebFeature::kGetUserMediaSecureOrigin);
-    document->CountUseOnlyInCrossOriginIframe(
+  if (window->IsSecureContext(error_message)) {
+    UseCounter::Count(window, WebFeature::kGetUserMediaSecureOrigin);
+    window->document()->CountUseOnlyInCrossOriginIframe(
         WebFeature::kGetUserMediaSecureOriginIframe);
 
     // Feature policy deprecation messages.
     if (Audio()) {
-      if (!document->IsFeatureEnabled(
+      if (!window->IsFeatureEnabled(
               mojom::blink::FeaturePolicyFeature::kMicrophone,
               ReportOptions::kReportOnFailure)) {
         UseCounter::Count(
-            document, WebFeature::kMicrophoneDisabledByFeaturePolicyEstimate);
+            window, WebFeature::kMicrophoneDisabledByFeaturePolicyEstimate);
       }
     }
     if (Video()) {
-      if (!document->IsFeatureEnabled(
-              mojom::blink::FeaturePolicyFeature::kCamera,
-              ReportOptions::kReportOnFailure)) {
-        UseCounter::Count(document,
+      if (!window->IsFeatureEnabled(mojom::blink::FeaturePolicyFeature::kCamera,
+                                    ReportOptions::kReportOnFailure)) {
+        UseCounter::Count(window,
                           WebFeature::kCameraDisabledByFeaturePolicyEstimate);
       }
     }
@@ -497,15 +497,15 @@ bool UserMediaRequest::IsSecureContextUse(String& error_message) {
 
   // While getUserMedia is blocked on insecure origins, we still want to
   // count attempts to use it.
-  Deprecation::CountDeprecation(document,
+  Deprecation::CountDeprecation(window,
                                 WebFeature::kGetUserMediaInsecureOrigin);
   Deprecation::CountDeprecationCrossOriginIframe(
-      *document, WebFeature::kGetUserMediaInsecureOriginIframe);
+      *window->document(), WebFeature::kGetUserMediaInsecureOriginIframe);
   return false;
 }
 
-Document* UserMediaRequest::OwnerDocument() {
-  return Document::From(GetExecutionContext());
+LocalDOMWindow* UserMediaRequest::GetWindow() {
+  return To<LocalDOMWindow>(GetExecutionContext());
 }
 
 void UserMediaRequest::Start() {

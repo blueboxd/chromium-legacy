@@ -196,7 +196,6 @@
 <translation id="3469166899695866866">Vill du avbryta nedladdningen?</translation>
 <translation id="3470502288861289375">Kopierar ...</translation>
 <translation id="3474624961160222204">Fortsätt som <ph name="NAME" /></translation>
-<translation id="3474649192738347024">Formulären har fyllts i.</translation>
 <translation id="3478058380795961209">Sista giltighetsmånad</translation>
 <translation id="3482959374254649722">Flikarna synkroniseras ...</translation>
 <translation id="3484946776651937681">Öppna i Nedladdningar</translation>
@@ -479,6 +478,7 @@ Din data krypterades med lösenfrasen den <ph name="TIME" />. Ange den om du vil
 <translation id="7136892417564438900">Kameran är inte tillgänglig</translation>
 <translation id="7159472599653637159">Använd mobilversion</translation>
 <translation id="7173114856073700355">Inställningar</translation>
+<translation id="7189598951263744875">Dela ...</translation>
 <translation id="7192050974311852563">Starta loggning</translation>
 <translation id="7203585745079012652">Läs upp svaren</translation>
 <translation id="7265758999917665941">Aldrig på den här webbplatsen</translation>

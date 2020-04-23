@@ -37,7 +37,6 @@
 <translation id="1041263367839475438">Tæki í boði</translation>
 <translation id="1042174272890264476">RLZ-safn <ph name="SHORT_PRODUCT_NAME" /> er einnig innbyggt í tölvuna. RLZ úthlutar merki sem er ekki einkvæmt og ekki persónugreinanlegt til að mæla leitarvirkni og notkun <ph name="SHORT_PRODUCT_NAME" /> hjá tiltekinni auglýsingaherferð. Þessi merki birtast stundum í leitarfyrirspurnum á Google í <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1043818413152647937">Viltu líka hreinsa gögn úr þessum forritum?</translation>
-<translation id="1045448422538531528">Setja í hóp</translation>
 <translation id="1046635659603195359">Þú virðist þegar hafa sett upp Voice Match með Google hjálparanum í öðru tæki. Hægt er að nota þessar upptökur til að búa til raddlíkan í þessu tæki. Þetta ætti að taka innan við mínútu.</translation>
 <translation id="104710386808485638">Viltu endurræsa Linux?</translation>
 <translation id="1047431265488717055">Afrita tenglate&amp;xta</translation>
@@ -408,7 +407,6 @@
 <translation id="1536754031901697553">Aftengir ...</translation>
 <translation id="15373452373711364">Stór músarbendill</translation>
 <translation id="1540605929960647700">Kveikja á prufustillingu</translation>
-<translation id="1541396123399225659">Bæta við nýjan hóp</translation>
 <translation id="1542514202066550870">Þessi flipi kynnir sýndarveruleika í höfuðtólum.</translation>
 <translation id="1543284117603151572">Flutt inn frá Edge</translation>
 <translation id="1545177026077493356">Sjálfvirk sjálfsalastilling</translation>
@@ -1906,7 +1904,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="3514373592552233661">Kjörnetkerfi verða valin frekar en önnur þekkt netkerfi ef fleiri en eitt eru í boði</translation>
 <translation id="3515983984924808886">Snertu öryggislykilinn aftur til að staðfesta endurstillinguna. Öllum upplýsingum verður eytt af öryggislyklinum, þar á meðal PIN-númerinu.</translation>
 <translation id="3518985090088779359">Samþykkja og áfram</translation>
-<translation id="351952459507671940">Bæta við nýjan hóp</translation>
 <translation id="3521606918211282604">Breyta diskstærð</translation>
 <translation id="3523642406908660543">Spyrja þegar vefsvæði vill nota viðbót til að fá aðgang að tölvunni þinni (ráðlagt)</translation>
 <translation id="3524965460886318643">Flytja út aðgerðir</translation>
@@ -2896,7 +2893,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="4871322859485617074">PIN-númerið inniheldur ógilda stafi</translation>
 <translation id="4871370605780490696">Bæta við bókamerki</translation>
 <translation id="4871719318659334896">Loka hópi</translation>
-<translation id="4871852311166078968">Setja í hóp</translation>
 <translation id="4873312501243535625">Athugun efnisskráa</translation>
 <translation id="4876273079589074638">Hjálpaðu hugbúnaðarverkfræðingum okkar að rannsaka og lagfæra ástæðu þess að þetta hrun átti sér stað. Lýstu nákvæmum skrefum eins vel og þú getur. Lýsingin getur ekki verið of ítarleg!</translation>
 <translation id="4876895919560854374">Læsa skjánum og taka hann úr lás</translation>

@@ -133,8 +133,8 @@ jumbo_static_library("renderer") {
     "//chrome:strings",
     "//chrome/common",
     "//chrome/common:mojo_bindings",
-    "//chrome/common:search_mojom",
     "//chrome/common/net",
+    "//chrome/common/search:mojo_bindings",
     "//components/autofill/content/renderer",
     "//components/cdm/renderer",
     "//components/content_capture/renderer",
@@ -458,7 +458,7 @@ jumbo_static_library("test_support") {
 
   deps = [
     ":renderer",
-    "//chrome/common:search_mojom",
+    "//chrome/common/search:mojo_bindings",
     "//content/test:test_support",
     "//extensions/buildflags",
     "//testing/gmock",

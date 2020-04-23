@@ -1048,7 +1048,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   int GetDOMNodeId() const;
 
   // Returns a string representation of this object.
-  String ToString() const;
+  String ToString(bool verbose = false) const;
 
  protected:
   AXID id_;

@@ -1,3 +1,7 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 #include "chrome/browser/policy/policy_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -86,6 +90,47 @@ IN_PROC_BROWSER_TEST_F(AssistantPolicyTest, AssistantHotwordEnabled) {
                     false);
   EXPECT_TRUE(
       prefs->GetBoolean(chromeos::assistant::prefs::kAssistantHotwordEnabled));
+}
+
+IN_PROC_BROWSER_TEST_F(AssistantPolicyTest, AssistantQuickAnswersEnabled) {
+  PrefService* prefs = browser()->profile()->GetPrefs();
+  EXPECT_FALSE(prefs->IsManagedPreference(
+      chromeos::assistant::prefs::kAssistantQuickAnswersEnabled));
+  EXPECT_TRUE(prefs->GetBoolean(
+      chromeos::assistant::prefs::kAssistantQuickAnswersEnabled));
+  prefs->SetBoolean(chromeos::assistant::prefs::kAssistantQuickAnswersEnabled,
+                    false);
+  EXPECT_FALSE(prefs->GetBoolean(
+      chromeos::assistant::prefs::kAssistantQuickAnswersEnabled));
+
+  // Verifies that the Quick Answers setting can be forced to always disabled.
+  PolicyMap policies;
+  policies.Set(key::kVoiceInteractionQuickAnswersEnabled,
+               POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(false), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_TRUE(prefs->IsManagedPreference(
+      chromeos::assistant::prefs::kAssistantQuickAnswersEnabled));
+  EXPECT_FALSE(prefs->GetBoolean(
+      chromeos::assistant::prefs::kAssistantQuickAnswersEnabled));
+  prefs->SetBoolean(chromeos::assistant::prefs::kAssistantQuickAnswersEnabled,
+                    true);
+  EXPECT_FALSE(prefs->GetBoolean(
+      chromeos::assistant::prefs::kAssistantQuickAnswersEnabled));
+
+  // Verifies that the Quick Answers setting can be forced to always enabled.
+  policies.Set(key::kVoiceInteractionQuickAnswersEnabled,
+               POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(true), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_TRUE(prefs->IsManagedPreference(
+      chromeos::assistant::prefs::kAssistantQuickAnswersEnabled));
+  EXPECT_TRUE(prefs->GetBoolean(
+      chromeos::assistant::prefs::kAssistantQuickAnswersEnabled));
+  prefs->SetBoolean(chromeos::assistant::prefs::kAssistantQuickAnswersEnabled,
+                    false);
+  EXPECT_TRUE(prefs->GetBoolean(
+      chromeos::assistant::prefs::kAssistantQuickAnswersEnabled));
 }
 
 }  // namespace policy

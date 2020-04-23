@@ -29,8 +29,11 @@ class RequestInit;
 
 using RequestInfo = RequestOrUSVString;
 
-class CORE_EXPORT Request final : public Body {
+class CORE_EXPORT Request final : public ScriptWrappable,
+                                  public ActiveScriptWrappable<Request>,
+                                  public Body {
   DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(Request);
 
  public:
   using ForServiceWorkerFetchEvent =
@@ -84,6 +87,11 @@ class CORE_EXPORT Request final : public Body {
   // From Request.idl:
   // This function must be called with entering an appropriate V8 context.
   Request* clone(ScriptState*, ExceptionState&);
+
+  // ScriptWrappable override
+  bool HasPendingActivity() const override {
+    return Body::HasPendingActivity();
+  }
 
   FetchRequestData* PassRequestData(ScriptState*, ExceptionState&);
   mojom::blink::FetchAPIRequestPtr CreateFetchAPIRequest() const;

@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"

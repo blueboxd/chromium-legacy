@@ -13,8 +13,10 @@
 #include "base/time/time.h"
 #include "base/version.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chromeos/dbus/update_engine_client.h"
 
 namespace base {
+class Clock;
 class DictionaryValue;
 }
 
@@ -40,11 +42,33 @@ class MinimumVersionPolicyHandler {
    public:
     virtual ~Delegate() {}
 
-    // Check if the user is logged in as any kiosk app.
+    // Checks if the user is logged in as any kiosk app.
     virtual bool IsKioskMode() const = 0;
 
-    // Check if the device is enterprise managed.
+    // Checks if the device is enterprise managed.
     virtual bool IsEnterpriseManaged() const = 0;
+
+    // Checks if a user is logged in.
+    virtual bool IsUserLoggedIn() const = 0;
+
+    // Checks if the user logged in is a managed user.
+    virtual bool IsUserManaged() const = 0;
+
+    // Checks if we are currently on the login screen.
+    virtual bool IsLoginSessionState() const = 0;
+
+    // Checks if login is in progress before starting user session.
+    virtual bool IsLoginInProgress() const = 0;
+
+    // Shows the update required screen.
+    virtual void ShowUpdateRequiredScreen() = 0;
+
+    // Terminates the current session and restarts Chrome to show the login
+    // screen.
+    virtual void RestartToLoginScreen() = 0;
+
+    // Hides update required screen and shows the login screen.
+    virtual void HideUpdateRequiredScreenIfShown() = 0;
 
     virtual const base::Version& GetCurrentVersion() const = 0;
   };
@@ -96,11 +120,28 @@ class MinimumVersionPolicyHandler {
  private:
   void OnPolicyChanged();
 
-  void NotifyMinimumVersionStateChanged();
-
   bool IsPolicyApplicable();
 
   void Reset();
+
+  // Handles the state when update is required as per the policy. If on the
+  // login screen, update required screen is shown, else the user is logged out
+  // if the device is not updated within the given |warning_time|. The
+  // |warning_time| is supplied by the policy.
+  void HandleUpdateRequired(base::TimeDelta warning_time);
+
+  void HandleUpdateNotRequired();
+
+  // Invokes update_engine_client to fetch the end-of-life status of the device.
+  void FetchEolInfo();
+
+  // Callback after fetching end-of-life info from the update_engine_client.
+  void OnFetchEolInfo(const chromeos::UpdateEngineClient::EolInfo info);
+
+  // Called when the warning time to apply updates has expired. If the user on
+  // the login screen, the update required screen is shown else the current user
+  // session is terminated to bring the user back to the login screen.
+  void OnDeadlineReached();
 
   // This delegate instance is owned by the owner of
   // MinimumVersionPolicyHandler. The owner is responsible to make sure that the
@@ -115,9 +156,13 @@ class MinimumVersionPolicyHandler {
 
   bool requirements_met_ = true;
 
+  base::Time update_required_time_;
+
   // Non-owning reference to CrosSettings. This class have shorter lifetime than
   // CrosSettings.
   chromeos::CrosSettings* cros_settings_;
+
+  base::Clock* const clock_;
 
   std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       policy_subscription_;

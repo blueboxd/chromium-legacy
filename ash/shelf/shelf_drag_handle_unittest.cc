@@ -6,6 +6,7 @@
 #include "ash/home_screen/drag_window_from_shelf_controller.h"
 #include "ash/home_screen/drag_window_from_shelf_controller_test_api.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/contextual_tooltip.h"
 #include "ash/shelf/drag_handle.h"
@@ -60,6 +61,17 @@ class DragHandleContextualNudgeTest : public ShelfLayoutManagerTestBase {
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 };
+
+class DragHandleContextualNudgeTestA11yPrefs
+    : public DragHandleContextualNudgeTest,
+      public ::testing::WithParamInterface<std::string> {};
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    DragHandleContextualNudgeTestA11yPrefs,
+    testing::Values(prefs::kAccessibilityAutoclickEnabled,
+                    prefs::kAccessibilitySpokenFeedbackEnabled,
+                    prefs::kAccessibilitySwitchAccessEnabled));
 
 TEST_F(DragHandleContextualNudgeTest, ShowDragHandleNudgeWithTimer) {
   // Creates a widget to put shelf into in-app state.
@@ -704,6 +716,59 @@ TEST_F(DragHandleContextualNudgeTest, DragHandleTapShowNudgeInOverview) {
   GetEventGenerator()->GestureTapAt(
       drag_handle->GetBoundsInScreen().CenterPoint());
   EXPECT_TRUE(drag_handle->gesture_nudge_target_visibility());
+}
+
+TEST_P(DragHandleContextualNudgeTestA11yPrefs, HideNudgesForShelfControls) {
+  SCOPED_TRACE(testing::Message() << "Pref=" << GetParam());
+  // Creates a widget to put shelf into in-app state.
+  views::Widget* widget = CreateTestWidget();
+  widget->Maximize();
+  TabletModeControllerTestApi().EnterTabletMode();
+  EXPECT_EQ(ShelfBackgroundType::kInApp, GetShelfWidget()->GetBackgroundType());
+
+  // The drag handle should be showing but the nudge should not. A timer to show
+  // the nudge should be initialized.
+  EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->GetVisible());
+  EXPECT_FALSE(
+      GetShelfWidget()->GetDragHandle()->gesture_nudge_target_visibility());
+  // Firing the timer should show the drag handle nudge.
+  GetShelfWidget()->GetDragHandle()->fire_show_drag_handle_timer_for_testing();
+  EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->GetVisible());
+  EXPECT_TRUE(
+      GetShelfWidget()->GetDragHandle()->gesture_nudge_target_visibility());
+
+  // Enabling accessibility auto click disables gestures and enables shelf
+  // control buttons. In app to home nudge should be hidden.
+  Shell::Get()
+      ->session_controller()
+      ->GetLastActiveUserPrefService()
+      ->SetBoolean(GetParam(), true);
+  EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->GetVisible());
+  EXPECT_FALSE(
+      GetShelfWidget()->GetDragHandle()->gesture_nudge_target_visibility());
+}
+
+TEST_P(DragHandleContextualNudgeTestA11yPrefs, DisableNudgesForShelfControls) {
+  SCOPED_TRACE(testing::Message() << "Pref=" << GetParam());
+  // Turn on accessibility settings to enable shelf controls.
+  Shell::Get()
+      ->session_controller()
+      ->GetLastActiveUserPrefService()
+      ->SetBoolean(GetParam(), true);
+
+  // Creates a widget to put shelf into in-app state.
+  views::Widget* widget = CreateTestWidget();
+  widget->Maximize();
+  TabletModeControllerTestApi().EnterTabletMode();
+  EXPECT_EQ(ShelfBackgroundType::kInApp, GetShelfWidget()->GetBackgroundType());
+  // The drag handle should be showing but the nudge should not. A timer to show
+  // the nudge should not be initialized because shelf controls are on.
+  EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->GetVisible());
+  EXPECT_FALSE(
+      GetShelfWidget()->GetDragHandle()->gesture_nudge_target_visibility());
+  EXPECT_FALSE(GetShelfWidget()
+                   ->GetDragHandle()
+                   ->has_show_drag_handle_timer_for_testing());
 }
 
 }  // namespace ash

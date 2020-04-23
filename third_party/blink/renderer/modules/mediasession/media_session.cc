@@ -13,8 +13,8 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_session_action_details.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_session_action_handler.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_session_seek_to_action_details.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/modules/mediasession/media_metadata.h"
@@ -334,15 +334,10 @@ mojom::blink::MediaSessionService* MediaSession::GetService() {
   if (!GetExecutionContext())
     return nullptr;
 
-  Document* document = Document::From(GetExecutionContext());
-  LocalFrame* frame = document->GetFrame();
-  if (!frame)
-    return nullptr;
-
   // See https://bit.ly/2S0zRAS for task types.
   auto task_runner =
       GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
-  frame->GetBrowserInterfaceBroker().GetInterface(
+  GetExecutionContext()->GetBrowserInterfaceBroker().GetInterface(
       service_.BindNewPipeAndPassReceiver());
   if (service_.get())
     service_->SetClient(client_receiver_.BindNewPipeAndPassRemote(task_runner));
@@ -353,8 +348,10 @@ mojom::blink::MediaSessionService* MediaSession::GetService() {
 void MediaSession::DidReceiveAction(
     media_session::mojom::blink::MediaSessionAction action,
     mojom::blink::MediaSessionActionDetailsPtr details) {
-  Document* document = Document::From(GetExecutionContext());
-  LocalFrame::NotifyUserActivation(document ? document->GetFrame() : nullptr);
+  if (!GetExecutionContext())
+    return;
+  LocalFrame::NotifyUserActivation(
+      To<LocalDOMWindow>(GetExecutionContext())->GetFrame());
 
   auto& name = MojomActionToActionName(action);
 

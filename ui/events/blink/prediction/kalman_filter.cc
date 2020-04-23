@@ -4,6 +4,8 @@
 
 #include "ui/events/blink/prediction/kalman_filter.h"
 
+#include "base/check_op.h"
+
 namespace {
 constexpr uint32_t kStableIterNum = 4;
 

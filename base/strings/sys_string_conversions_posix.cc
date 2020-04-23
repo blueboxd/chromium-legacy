@@ -5,6 +5,7 @@
 #include "base/strings/sys_string_conversions.h"
 
 #include <stddef.h>
+#include <string.h>
 #include <wchar.h>
 
 #include "base/strings/string_piece.h"

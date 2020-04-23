@@ -196,7 +196,6 @@
 <translation id="3469166899695866866">Želite ustaviti prenos?</translation>
 <translation id="3470502288861289375">Kopiranje ...</translation>
 <translation id="3474624961160222204">Nadaljuj kot <ph name="NAME" /></translation>
-<translation id="3474649192738347024">Forms filled.</translation>
 <translation id="3478058380795961209">Expiration Month</translation>
 <translation id="3482959374254649722">Syncing your tabs...</translation>
 <translation id="3484946776651937681">Odpri v mapi »Prenosi«</translation>
@@ -479,6 +478,7 @@ Podatki so bili šifrirani z vašim geslom za sinhronizacijo <ph name="TIME" />.
 <translation id="7136892417564438900">Fotoaparat ni na voljo</translation>
 <translation id="7159472599653637159">Zahtevaj spletno mesto za mob. napravo</translation>
 <translation id="7173114856073700355">Odpri nastavitve</translation>
+<translation id="7189598951263744875">Deli z drugimi</translation>
 <translation id="7192050974311852563">Začni pisanje dnevnika</translation>
 <translation id="7203585745079012652">Izgovorjava odgovorov</translation>
 <translation id="7265758999917665941">Nikoli za to spletno mesto</translation>

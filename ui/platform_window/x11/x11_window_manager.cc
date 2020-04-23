@@ -100,4 +100,11 @@ void X11WindowManager::MouseOnWindow(X11Window* window) {
   window->OnMouseEnter();
 }
 
+std::vector<X11Window*> X11WindowManager::GetAllOpenWindows() const {
+  std::vector<X11Window*> all_windows;
+  for (const auto& item : windows_)
+    all_windows.push_back(item.second);
+  return all_windows;
+}
+
 }  // namespace ui

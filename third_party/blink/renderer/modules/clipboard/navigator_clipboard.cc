@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/modules/clipboard/navigator_clipboard.h"
 
-#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/clipboard/clipboard.h"
 
@@ -37,11 +37,11 @@ NavigatorClipboard::NavigatorClipboard(Navigator& navigator)
     : Supplement<Navigator>(navigator) {
   // TODO(crbug.com/1028591): Figure out how navigator.clipboard is supposed to
   // behave in a detached execution context.
-  if (!GetSupplementable()->GetFrame())
+  if (!GetSupplementable()->DomWindow())
     return;
 
-  clipboard_ = MakeGarbageCollected<Clipboard>(
-      GetSupplementable()->GetFrame()->GetDocument()->ToExecutionContext());
+  clipboard_ =
+      MakeGarbageCollected<Clipboard>(GetSupplementable()->DomWindow());
 }
 
 }  // namespace blink

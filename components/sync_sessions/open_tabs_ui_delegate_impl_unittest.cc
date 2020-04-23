@@ -42,7 +42,6 @@ class OpenTabsUIDelegateImplTest : public testing::Test {
       : session_tracker_(&mock_sync_sessions_client_),
         delegate_(&mock_sync_sessions_client_,
                   &session_tracker_,
-                  /*favicon_cache=*/nullptr,
                   base::BindRepeating(&IngnoreForeignSessionDeletion)) {}
 
   testing::NiceMock<MockSyncSessionsClient> mock_sync_sessions_client_;

@@ -1,0 +1,9 @@
+This is a testharness.js-based test.
+FAIL Respective horizontal positions assert_less_than_equal: 1 expected a number less than or equal to 38 but got 68
+PASS Alignment of the base on the baseline
+FAIL Vertical position of scripts assert_approx_equals: script is placed at the bottom of the base expected 46 +/- 3 but got 51
+FAIL Width of scripted elements assert_approx_equals: width is determined by the left/right sides of base/script (+ some space after script) expected 10 +/- 3 but got 30
+FAIL Height of scripted elements assert_approx_equals: msup height is determined by the top/bottom sides of base/scripts expected 30 +/- 3 but got 40
+PASS Size of empty elements
+Harness: the test ran to completion.
+

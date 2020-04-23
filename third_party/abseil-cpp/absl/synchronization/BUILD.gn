@@ -8,23 +8,23 @@ absl_source_set("graphcycles_internal") {
   sources = [ "internal/graphcycles.cc" ]
   public = [ "internal/graphcycles.h" ]
   deps = [
-    "../base",
-    "../base:base_internal",
-    "../base:config",
-    "../base:core_headers",
-    "../base:malloc_internal",
-    "../base:raw_logging_internal",
+    "//third_party/abseil-cpp/absl/base",
+    "//third_party/abseil-cpp/absl/base:base_internal",
+    "//third_party/abseil-cpp/absl/base:config",
+    "//third_party/abseil-cpp/absl/base:core_headers",
+    "//third_party/abseil-cpp/absl/base:malloc_internal",
+    "//third_party/abseil-cpp/absl/base:raw_logging_internal",
   ]
   visibility = []
-  visibility += [ "../*" ]
+  visibility += [ "//third_party/abseil-cpp/absl/*" ]
 }
 
 absl_source_set("kernel_timeout_internal") {
   public = [ "internal/kernel_timeout.h" ]
   deps = [
-    "../base:core_headers",
-    "../base:raw_logging_internal",
-    "../time",
+    "//third_party/abseil-cpp/absl/base:core_headers",
+    "//third_party/abseil-cpp/absl/base:raw_logging_internal",
+    "//third_party/abseil-cpp/absl/time",
   ]
   visibility = []
   visibility += [ ":*" ]
@@ -53,17 +53,17 @@ absl_source_set("synchronization") {
   deps = [
     ":graphcycles_internal",
     ":kernel_timeout_internal",
-    "../base",
-    "../base:atomic_hook",
-    "../base:base_internal",
-    "../base:config",
-    "../base:core_headers",
-    "../base:dynamic_annotations",
-    "../base:malloc_internal",
-    "../base:raw_logging_internal",
-    "../debugging:stacktrace",
-    "../debugging:symbolize",
-    "../time",
+    "//third_party/abseil-cpp/absl/base",
+    "//third_party/abseil-cpp/absl/base:atomic_hook",
+    "//third_party/abseil-cpp/absl/base:base_internal",
+    "//third_party/abseil-cpp/absl/base:config",
+    "//third_party/abseil-cpp/absl/base:core_headers",
+    "//third_party/abseil-cpp/absl/base:dynamic_annotations",
+    "//third_party/abseil-cpp/absl/base:malloc_internal",
+    "//third_party/abseil-cpp/absl/base:raw_logging_internal",
+    "//third_party/abseil-cpp/absl/debugging:stacktrace",
+    "//third_party/abseil-cpp/absl/debugging:symbolize",
+    "//third_party/abseil-cpp/absl/time",
   ]
 }
 
@@ -72,10 +72,10 @@ absl_source_set("thread_pool") {
   public = [ "internal/thread_pool.h" ]
   deps = [
     ":synchronization",
-    "../base:core_headers",
+    "//third_party/abseil-cpp/absl/base:core_headers",
   ]
   visibility = []
-  visibility += [ "../*" ]
+  visibility += [ "//third_party/abseil-cpp/absl/*" ]
 }
 
 absl_source_set("per_thread_sem_test_common") {
@@ -83,9 +83,9 @@ absl_source_set("per_thread_sem_test_common") {
   sources = [ "internal/per_thread_sem_test.cc" ]
   deps = [
     ":synchronization",
-    "../base",
-    "../strings",
-    "../time",
+    "//third_party/abseil-cpp/absl/base",
+    "//third_party/abseil-cpp/absl/strings",
+    "//third_party/abseil-cpp/absl/time",
     "//third_party/googletest:gtest",
   ]
 }

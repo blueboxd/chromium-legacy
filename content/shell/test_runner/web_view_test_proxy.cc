@@ -95,7 +95,6 @@ void WebViewTestProxy::Reset() {
 void WebViewTestProxy::Install(blink::WebLocalFrame* frame) {
   accessibility_controller_.Install(frame);
   text_input_controller_.Install(frame);
-  view_test_runner_.Install(frame);
 }
 
 WebViewTestProxy::~WebViewTestProxy() {

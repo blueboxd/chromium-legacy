@@ -37,7 +37,6 @@
 <translation id="1041263367839475438">Dispositivos disponibles</translation>
 <translation id="1042174272890264476">El ordenador también incluye la biblioteca RLZ de <ph name="SHORT_PRODUCT_NAME" />. RLZ asigna una etiqueta identificable, no exclusiva y no personal para medir las búsquedas y el uso de <ph name="SHORT_PRODUCT_NAME" /> derivados de una determinada campaña promocional. Estas etiquetas aparecen a veces en las consultas de la Búsqueda de Google realizadas en <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1043818413152647937">¿Quieres borrar también los datos de estas aplicaciones?</translation>
-<translation id="1045448422538531528">Añadir a grupo</translation>
 <translation id="1046635659603195359">Parece que ya has configurado Voice Match con el Asistente de Google en otro dispositivo. Esas grabaciones anteriores pueden servir para crear un modelo de voz en este dispositivo. No debería llevar más de un minuto.</translation>
 <translation id="104710386808485638">¿Quieres reiniciar Linux?</translation>
 <translation id="1047431265488717055">Copiar te&amp;xto de enlace</translation>
@@ -92,6 +91,7 @@
 <translation id="1122198203221319518">&amp;Herramientas</translation>
 <translation id="1122242684574577509">Error de autenticación. Haz clic para acceder a la página de inicio de sesión de la red Wi-Fi que estés utilizando (<ph name="NETWORK_ID" />).</translation>
 <translation id="1122960773616686544">Nombre de marcador</translation>
+<translation id="1123753900084781868">La función Subtítulos instantáneos no está disponible en estos momentos</translation>
 <translation id="1124772482545689468">Usuario</translation>
 <translation id="1125550662859510761">Resolución de <ph name="WIDTH" />x<ph name="HEIGHT" /> (nativa)</translation>
 <translation id="1126809382673880764">No te protege frente a descargas, extensiones ni sitios web peligrosos. Seguirás disfrutando de protección con la función Navegación Segura, si está disponible, en otros servicios de Google, como Gmail y la Búsqueda.</translation>
@@ -407,7 +407,6 @@
 <translation id="1536754031901697553">Desconectando...</translation>
 <translation id="15373452373711364">Cursor del ratón grande</translation>
 <translation id="1540605929960647700">Habilitar modo de demostración</translation>
-<translation id="1541396123399225659">Añadir a un grupo nuevo</translation>
 <translation id="1542514202066550870">Esta pestaña está proyectando contenido de realidad virtual a un visor.</translation>
 <translation id="1543284117603151572">Importado desde Edge</translation>
 <translation id="1545177026077493356">Modo kiosco automático</translation>
@@ -1905,7 +1904,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="3514373592552233661">Las redes preferidas se utilizarán en lugar de otras redes conocidas si hay más de una disponible</translation>
 <translation id="3515983984924808886">Vuelve a tocar tu llave de seguridad para confirmar el restablecimiento. Se eliminará toda la información guardada en la llave de seguridad, incluido el PIN.</translation>
 <translation id="3518985090088779359">Aceptar y continuar</translation>
-<translation id="351952459507671940">Añadir a un nuevo grupo</translation>
 <translation id="3521606918211282604">Cambiar tamaño de disco</translation>
 <translation id="3523642406908660543">Preguntar cuando un sitio quiera utilizar un complemento para acceder a tu ordenador (recomendado)</translation>
 <translation id="3524965460886318643">Exportar actividades</translation>
@@ -2894,7 +2892,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="4871322859485617074">El PIN contiene caracteres no válidos</translation>
 <translation id="4871370605780490696">Añadir marcador</translation>
 <translation id="4871719318659334896">Cerrar grupo</translation>
-<translation id="4871852311166078968">Añadir a grupo</translation>
 <translation id="4873312501243535625">Comprobador de archivos multimedia</translation>
 <translation id="4876273079589074638">Cuéntanos lo que ocurrió paso a paso para que nuestros ingenieros puedan investigar y solucionar el error. Cualquier detalle es importante.</translation>
 <translation id="4876895919560854374">Bloquear y desbloquear la pantalla</translation>

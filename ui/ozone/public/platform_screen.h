@@ -5,7 +5,10 @@
 #ifndef UI_OZONE_PUBLIC_PLATFORM_SCREEN_H_
 #define UI_OZONE_PUBLIC_PLATFORM_SCREEN_H_
 
+#include <string>
+
 #include "base/component_export.h"
+#include "base/macros.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace display {

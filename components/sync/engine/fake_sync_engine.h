@@ -25,7 +25,6 @@ namespace syncer {
 class FakeSyncEngine : public SyncEngine {
  public:
   static constexpr char kTestBirthday[] = "1";
-  static constexpr char kTestKeystoreKey[] = "test-keystore-key";
 
   FakeSyncEngine();
   ~FakeSyncEngine() override;

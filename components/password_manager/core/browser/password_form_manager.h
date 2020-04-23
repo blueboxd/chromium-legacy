@@ -158,6 +158,7 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   void PermanentlyBlacklist() override;
   void OnPasswordsRevealed() override;
   void MoveCredentialsToAccountStore() override;
+  void BlockMovingCredentialsToAccountStore() override;
 
   bool IsNewLogin() const;
   FormFetcher* GetFormFetcher();

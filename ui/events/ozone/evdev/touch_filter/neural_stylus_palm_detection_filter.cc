@@ -14,6 +14,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/logging.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
 #include "ui/events/ozone/evdev/touch_filter/neural_stylus_palm_detection_filter_model.h"
 #include "ui/events/ozone/evdev/touch_filter/neural_stylus_palm_detection_filter_util.h"

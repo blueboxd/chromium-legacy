@@ -162,7 +162,7 @@
 <translation id="117059611145966538">Máy chủ máy in bên ngoài</translation>
 <translation id="1177624681620856105"> Chính sách này kiểm soát việc hộp đánh dấu "Luôn mở" có hiển thị trên lời nhắc xác nhận chạy giao thức bên ngoài hay không.
 
-      Nếu bạn không đặt hoặc đặt chính sách này thành True, thì một lời nhắc xác nhận giao thức bên ngoài sẽ hiển thị, người dùng có thể chọn "Luôn cho phép" để bỏ qua mọi lời nhắc xác nhận trong tương lai cho giao thức trên trang web này.
+      Nếu bạn đặt chính sách này thành True hoặc không đặt chính sách này, thì một lời nhắc xác nhận giao thức bên ngoài sẽ hiển thị, người dùng có thể chọn "Luôn cho phép" để bỏ qua mọi lời nhắc xác nhận trong tương lai cho giao thức trên trang web này.
 
       Nếu bạn đặt chính sách này thành False, thì hộp đánh dấu "Luôn cho phép" sẽ không hiển thị và người dùng sẽ nhận được lời nhắc mỗi khi hệ thống gọi giao thức bên ngoài.</translation>
 <translation id="1194005076170619046">Nếu bạn bật chính sách này, một nút đăng xuất lớn, màu đỏ sẽ hiển thị trong khay hệ thống khi một phiên đang hoạt động và màn hình không khóa.
@@ -1549,6 +1549,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="3303653927512453822">Cho phép bạn đưa tất cả các cookie quay lại về hành vi <ph name="ATTRIBUTE_SAMESITE_NAME" /> cũ. Việc quay lại về hành vi cũ sẽ khiến những cookie không chỉ định thuộc tính <ph name="ATTRIBUTE_SAMESITE_NAME" /> sẽ được xử lý như thể là "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />" và loại bỏ yêu cầu cookie "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />" phải mang thuộc tính "<ph name="ATTRIBUTE_SECURE_NAME" />". Để xem thông tin chi tiết, vui lòng truy cập https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies.
 
           Khi bạn không đặt chính sách này, thì hành vi <ph name="ATTRIBUTE_SAMESITE_NAME" /> mặc định đối với các cookie không chỉ định thuộc tính <ph name="ATTRIBUTE_SAMESITE_NAME" /> sẽ phụ thuộc vào cấu hình cá nhân của người dùng dành cho tính năng <ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES" />. Bạn có thể đặt tính năng này trong giai đoạn thử nghiệm hiện trường hoặc bằng cách bật hay tắt cờ <ph name="FLAG_NAME_SAMESITE_BY_DEFAULT_COOKIES" />.</translation>
+<translation id="3303911765031636277">Chính sách cấu hình cho Trình kết nối OnFileAttached của Chrome Enterprise</translation>
 <translation id="3304662785258434098">Cho phép bạn đặt chính sách quyết định việc người dùng có thể thêm trường hợp ngoại lệ để cho phép nội dung hỗn hợp trên các trang cụ thể hay không.
 
           Bạn có thể ghi đè chính sách này cho các mẫu URL cụ thể bằng chính sách 'InsecureContentAllowedForUrls' và 'InsecureContentBlockedForUrls'.
@@ -2179,6 +2180,7 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 
           Ngoài ra còn có các tùy chọn cài đặt riêng cho nguồn AC và pin.
           </translation>
+<translation id="4147818922357566987">Chỉ bật các biến thể liên quan đến những bản sửa lỗi quan trọng</translation>
 <translation id="4150201353443180367">Hiển thị</translation>
 <translation id="4157003184375321727">Báo cáo phiên bản hệ điều hành và chương trình cơ sở</translation>
 <translation id="4157594634940419685">Cho phép truy cập vào các máy in gốc sử dụng hệ thống in Unix chung (CUPS)</translation>
@@ -4173,6 +4175,15 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
       Bạn có thể đặt chính sách này là "conservative" (duy trì) và "performance" (hiệu suất), tương ứng với cấu hình thiên về sự ổn định và cấu hình thiên về hiệu suất tối đa.
 
       Nếu bạn không đặt chính sách này, thì người dùng có thể tùy ý lựa chọn.</translation>
+<translation id="7144454922853468101">Việc định cấu hình chính sách này sẽ cho phép chỉ định những biến thể được phép áp dụng trong <ph name="PRODUCT_NAME" />.
+
+      Biến thể là phương tiện để sửa đổi <ph name="PRODUCT_NAME" /> mà không cần gửi phiên bản mới của trình duyệt bằng cách bật hoặc tắt những tính năng đã có một cách chọn lọc.
+
+      Việc đặt <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (giá trị 0) hoặc không đặt chính sách này sẽ cho phép áp dụng tất cả các biến thể cho trình duyệt.
+
+      Việc đặt <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (giá trị 1) sẽ chỉ cho phép áp dụng những biến thể được xem là bản sửa lỗi quan trọng về độ bảo mật hoặc độ ổn định cho <ph name="PRODUCT_NAME" />.
+
+      Việc đặt <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (giá trị 2) sẽ không cho phép áp dụng tất cả các biến thể cho trình duyệt. Xin lưu ý rằng chế độ này có thể khiến nhà phát triển <ph name="PRODUCT_NAME" /> không thể cung cấp kịp thời các bản sửa lỗi bảo mật quan trọng nên không được khuyên dùng.</translation>
 <translation id="7145335384492396213">Chế độ in mã PIN mặc định</translation>
 <translation id="7149042336307555519"> Các loại kết nối được phép dùng để cập nhật hệ điều hành. Quá trình cập nhật hệ điều hành có thể khiến kết nối bị quá tải do kích thước liên quan, đồng thời có thể phát sinh thêm chi phí. Do đó, tùy chọn cập nhật hệ điều hành sẽ bị tắt theo mặc định đối với các loại kết nối được coi là tốn chi phí (hiện chỉ có "cellular").
 
@@ -4872,6 +4883,15 @@ Nếu bạn không đặt chính sách này, thì màn hình bảo vệ quyền 
 <translation id="8176035528522326671">Cho phép người dùng doanh nghiệp trở thành người dùng chính duy nhất có nhiều hồ sơ (Hành vi mặc định cho người dùng do doanh nghiệp quản lý)</translation>
 <translation id="8183108371184777472">Ngăn cửa sổ trình duyệt chạy</translation>
 <translation id="8186911565834244165">Cho phép người dùng phản hồi</translation>
+<translation id="8196725647498287556">Việc định cấu hình chính sách này sẽ cho phép chỉ định những biến thể được phép áp dụng trên thiết bị <ph name="PRODUCT_OS_NAME" /> do doanh nghiệp quản lý.
+
+      Biến thể là phương tiện để sửa đổi <ph name="PRODUCT_OS_NAME" /> mà không cần gửi phiên bản mới bằng cách bật hoặc tắt những tính năng đã có một cách chọn lọc.
+
+      Việc đặt <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (giá trị 0) hoặc không đặt chính sách này sẽ cho phép áp dụng tất cả các biến thể cho <ph name="PRODUCT_OS_NAME" />.
+
+      Việc đặt <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (giá trị 1) sẽ chỉ cho phép áp dụng những biến thể được xem là bản sửa lỗi quan trọng về độ bảo mật hoặc độ ổn định cho <ph name="PRODUCT_OS_NAME" />.
+
+      Việc đặt <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (giá trị 2) sẽ không cho phép áp dụng tất cả các biến thể cho trình duyệt trên màn hình đăng nhập. Xin lưu ý rằng chế độ này có thể khiến nhà phát triển <ph name="PRODUCT_OS_NAME" /> không thể cung cấp kịp thời các bản sửa lỗi bảo mật quan trọng nên không được khuyên dùng.</translation>
 <translation id="8213770777756919897">Lưu ý rằng chúng tôi không dùng chính sách này nữa và sẽ xóa khỏi <ph name="PRODUCT_OS_NAME" /> phiên bản 85. Thay vào đó, vui lòng sử dụng <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 
           Khi bạn đặt, chính sách này sẽ chỉ định hành động mà <ph name="PRODUCT_OS_NAME" /> thực hiện khi người dùng tạm vắng trong khoảng thời gian cho trước theo thời gian chờ khi tạm vắng. Bạn có thể định cấu hình riêng biệt khoảng thời gian này.
@@ -5450,6 +5470,19 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
           Nếu bạn không đặt chính sách này và chính sách được thiết bị hỗ trợ, thì chế độ sạc pin tiêu chuẩn sẽ được áp dụng và người dùng không thể thay đổi được.
 
           Lưu ý: <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> (nếu đã được chỉ định) sẽ ghi đè chính sách này.</translation>
+<translation id="9071472304496502510">Danh sách các tùy chọn cài đặt dịch vụ Trình kết nối của Chrome Enterprise sẽ áp dụng cho Trình kết nối <ph name="ON_FILE_ATTACHED_ENTERPRISE_CONNECTOR" /> của Chrome Enterprise. Trình kết nối này sẽ chạy khi tệp được đính kèm vào Chrome.
+
+      Các trường <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" /> và <ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> dùng để xác định xem trình kết nối có gửi tệp đi phân tích hay không khi tệp được đính kèm vào một trang cụ thể, cũng như thẻ nào cần thêm vào yêu cầu phân tích cho tệp đó. Nếu URL của trang khớp với mẫu liên kết với thẻ đó, thì hệ thống sẽ thêm một thẻ tương ứng với mẫu 'enable' vào yêu cầu phân tích chừng nào không còn mẫu 'disable' có thẻ như vậy khớp với URL của trang. Quá trình phân tích sẽ diễn ra nếu hệ thống thêm ít nhất 1 thẻ vào yêu cầu.
+
+      Trường <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" /> xác định nhà cung cấp dịch vụ phân tích nào tương ứng với các tùy chọn cài đặt.
+
+      Nếu bạn đặt trường <ph name="ENTERPRISE_CONNECTOR_BLOCK_UNTIL_VERDICT_FIELD" /> thành 1, thì Chrome sẽ đợi để nhận phản hồi từ dịch vụ phân tích rồi mới cho phép trang này truy cập vào tệp đó. Nếu bạn đặt trường đó thành bất kỳ giá trị số nguyên nào khác, thì Chrome sẽ cho phép trang này truy cập vào tệp đó ngay lập tức.
+
+      Trường <ph name="ENTERPRISE_CONNECTOR_BLOCK_PASSWORD_PROTECTED_FIELD" /> sẽ kiểm soát việc Chrome chặn hay cho phép tệp được bảo vệ bằng mật khẩu.
+
+      Trường <ph name="ENTERPRISE_CONNECTOR_BLOCK_LARGE_FILES_FIELD" /> sẽ kiểm soát việc Chrome chặn hay cho phép phân tích những tệp quá lớn (trên 50 MB).
+
+      Bạn chỉ có thể đặt chính sách này trên Bảng điều khiển dành cho quản trị viên Google.</translation>
 <translation id="9077227880520270584">Hẹn giờ tự động đăng nhập vào tài khoản trên thiết bị</translation>
 <translation id="9084985621503260744">Chỉ định xem hoạt động video có ảnh hưởng đến việc quản lý nguồn không</translation>
 <translation id="9088433379343318874">Cho phép nhà cung cấp nội dung của người dùng được giám sát</translation>

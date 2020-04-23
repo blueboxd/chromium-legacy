@@ -128,9 +128,8 @@ void RemoteFrameView::UpdateCompositingRect() {
   // being compared to the frame size.
   PhysicalRect viewport_rect =
       remote_frame_->OwnerLayoutObject()->AncestorToLocalRect(
-          local_root_view->GetLayoutView(),
-          PhysicalRect(PhysicalOffset(), PhysicalSize(viewport_size)),
-          kTraverseDocumentBoundaries);
+          nullptr, PhysicalRect(PhysicalOffset(), PhysicalSize(viewport_size)),
+          kApplyRemoteRootFrameOffset | kTraverseDocumentBoundaries);
   compositing_rect_ = EnclosingIntRect(viewport_rect);
   IntSize frame_size = Size();
 

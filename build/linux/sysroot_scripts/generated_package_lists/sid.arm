@@ -328,6 +328,8 @@ https://snapshot.debian.org/archive/debian/20191212T145612Z/pool/main/w/wayland/
 https://snapshot.debian.org/archive/debian/20191212T145612Z/pool/main/w/wayland/libwayland-egl1_1.17.0-1_armhf.deb
 https://snapshot.debian.org/archive/debian/20191212T145612Z/pool/main/w/wayland/libwayland-server0_1.17.0-1_armhf.deb
 https://snapshot.debian.org/archive/debian/20191212T145612Z/pool/main/w/wayland-protocols/wayland-protocols_1.18-1_all.deb
+https://snapshot.debian.org/archive/debian/20191212T145612Z/pool/main/x/xcb-proto/python-xcbgen_1.13-1_all.deb
+https://snapshot.debian.org/archive/debian/20191212T145612Z/pool/main/x/xcb-proto/xcb-proto_1.13-1_all.deb
 https://snapshot.debian.org/archive/debian/20191212T145612Z/pool/main/x/xft/libxft2_2.3.2-2_armhf.deb
 https://snapshot.debian.org/archive/debian/20191212T145612Z/pool/main/x/xorgproto/x11proto-composite-dev_2018.4-4_all.deb
 https://snapshot.debian.org/archive/debian/20191212T145612Z/pool/main/x/xorgproto/x11proto-damage-dev_2018.4-4_all.deb

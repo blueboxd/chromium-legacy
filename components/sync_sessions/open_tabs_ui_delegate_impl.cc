@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "components/sync_sessions/favicon_cache.h"
 #include "components/sync_sessions/sync_sessions_client.h"
 #include "components/sync_sessions/synced_session_tracker.h"
 
@@ -32,11 +31,9 @@ bool SessionsRecencyComparator(const SyncedSession* s1,
 OpenTabsUIDelegateImpl::OpenTabsUIDelegateImpl(
     const SyncSessionsClient* sessions_client,
     const SyncedSessionTracker* session_tracker,
-    const FaviconCache* favicon_cache,
     const DeleteForeignSessionCallback& delete_foreign_session_cb)
     : sessions_client_(sessions_client),
       session_tracker_(session_tracker),
-      favicon_cache_(favicon_cache),
       delete_foreign_session_cb_(delete_foreign_session_cb) {}
 
 OpenTabsUIDelegateImpl::~OpenTabsUIDelegateImpl() {}
@@ -97,10 +94,6 @@ bool OpenTabsUIDelegateImpl::GetLocalSession(
     const SyncedSession** local_session) {
   *local_session = session_tracker_->LookupLocalSession();
   return *local_session != nullptr;
-}
-
-GURL OpenTabsUIDelegateImpl::GetIconUrlForPageUrl(const GURL& page_url) {
-  return favicon_cache_->GetIconUrlForPageUrl(page_url);
 }
 
 }  // namespace sync_sessions

@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/logging.h"
 #include "base/time/time.h"
 #include "ui/events/devices/x11/touch_factory_x11.h"
 #include "ui/events/event.h"

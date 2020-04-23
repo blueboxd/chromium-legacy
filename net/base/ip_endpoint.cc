@@ -13,6 +13,8 @@
 #include <netinet/in.h>
 #endif
 
+#include <string.h>
+
 #include <tuple>
 
 #include "base/logging.h"

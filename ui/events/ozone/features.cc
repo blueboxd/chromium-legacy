@@ -9,6 +9,9 @@ namespace ui {
 const base::Feature kEnableHeuristicPalmDetectionFilter{
     "EnableHeuristicPalmDetectionFilter", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kEnableHighResolutionMouseScrolling{
+    "EnableHighResolutionMouseScrolling", base::FEATURE_ENABLED_BY_DEFAULT};
+
 const base::Feature kEnableNeuralPalmDetectionFilter{
     "EnableNeuralPalmDetectionFilter", base::FEATURE_DISABLED_BY_DEFAULT};
 

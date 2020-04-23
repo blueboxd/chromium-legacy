@@ -14,17 +14,18 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/device_event_log/device_event_log.h"
 #include "crypto/random.h"
+#include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
 #include "device/bluetooth/public/cpp/bluetooth_uuid.h"
 #include "device/fido/ble/fido_ble_uuids.h"
-#include "device/fido/cable/fido_cable_device.h"
 #include "device/fido/cable/fido_cable_handshake_handler.h"
 #include "device/fido/features.h"
 #include "device/fido/fido_parsing_utils.h"
@@ -389,7 +390,7 @@ FidoCableDiscovery::FidoCableDiscovery(
     base::Optional<
         base::RepeatingCallback<void(std::unique_ptr<CableDiscoveryData>)>>
         pairing_callback)
-    : FidoBleDiscoveryBase(
+    : FidoDeviceDiscovery(
           FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy),
       discovery_data_(std::move(discovery_data)),
       qr_generator_key_(std::move(qr_generator_key)),
@@ -419,6 +420,9 @@ FidoCableDiscovery::~FidoCableDiscovery() {
   for (auto advertisement : advertisements_) {
     advertisement.second->Unregister(base::DoNothing(), base::DoNothing());
   }
+
+  if (adapter_)
+    adapter_->RemoveObserver(this);
 }
 
 base::Optional<std::unique_ptr<FidoCableHandshakeHandler>>
@@ -466,6 +470,65 @@ FidoCableDiscovery::CreateHandshakeHandler(
   return handler;
 }
 
+// static
+const BluetoothUUID& FidoCableDiscovery::CableAdvertisementUUID() {
+  static const base::NoDestructor<BluetoothUUID> service_uuid(
+      kCableAdvertisementUUID128);
+  return *service_uuid;
+}
+
+// static
+bool FidoCableDiscovery::IsCableDevice(const BluetoothDevice* device) {
+  const auto& uuid = CableAdvertisementUUID();
+  return base::Contains(device->GetServiceData(), uuid) ||
+         base::Contains(device->GetUUIDs(), uuid);
+}
+
+void FidoCableDiscovery::OnGetAdapter(scoped_refptr<BluetoothAdapter> adapter) {
+  if (!adapter->IsPresent()) {
+    FIDO_LOG(DEBUG) << "No BLE adapter present";
+    NotifyDiscoveryStarted(false);
+    return;
+  }
+
+  if (has_v1_discovery_data_) {
+    RecordCableV1DiscoveryEventOnce(CableV1DiscoveryEvent::kAdapterPresent);
+    if (adapter->IsPowered()) {
+      RecordCableV1DiscoveryEventOnce(
+          CableV1DiscoveryEvent::kAdapterAlreadyPowered);
+    }
+  }
+
+  DCHECK(!adapter_);
+  adapter_ = std::move(adapter);
+  DCHECK(adapter_);
+  FIDO_LOG(DEBUG) << "BLE adapter address " << adapter_->GetAddress();
+
+  adapter_->AddObserver(this);
+  if (adapter_->IsPowered()) {
+    OnSetPowered();
+  }
+
+  // FidoCableDiscovery blocks its transport availability callback on the
+  // DiscoveryStarted() calls of all instantiated discoveries. Hence, this call
+  // must not be put behind the BLE adapter getting powered on (which is
+  // dependent on the UI), or else the UI and this discovery will wait on each
+  // other indefinitely (see crbug.com/1018416).
+  NotifyDiscoveryStarted(true);
+}
+
+void FidoCableDiscovery::OnSetPowered() {
+  DCHECK(adapter());
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&FidoCableDiscovery::StartCableDiscovery,
+                                weak_factory_.GetWeakPtr()));
+}
+
+void FidoCableDiscovery::SetDiscoverySession(
+    std::unique_ptr<BluetoothDiscoverySession> discovery_session) {
+  discovery_session_ = std::move(discovery_session);
+}
+
 void FidoCableDiscovery::DeviceAdded(BluetoothAdapter* adapter,
                                      BluetoothDevice* device) {
   if (!IsCableDevice(device))
@@ -487,7 +550,7 @@ void FidoCableDiscovery::DeviceRemoved(BluetoothAdapter* adapter,
   if (IsCableDevice(device) && GetCableDiscoveryData(device)) {
     const auto& device_address = device->GetAddress();
     FIDO_LOG(DEBUG) << "caBLE device removed: " << device_address;
-    RemoveDevice(FidoBleDevice::GetIdForAddress(device_address));
+    RemoveDevice(FidoCableDevice::GetIdForAddress(device_address));
   }
 }
 
@@ -526,28 +589,8 @@ void FidoCableDiscovery::AdapterPoweredChanged(BluetoothAdapter* adapter,
 #endif  // defined(OS_WIN)
 }
 
-void FidoCableDiscovery::OnGetAdapter(scoped_refptr<BluetoothAdapter> adapter) {
-  if (has_v1_discovery_data_) {
-    if (adapter->IsPresent()) {
-      RecordCableV1DiscoveryEventOnce(CableV1DiscoveryEvent::kAdapterPresent);
-    }
-    if (adapter->IsPowered()) {
-      RecordCableV1DiscoveryEventOnce(
-          CableV1DiscoveryEvent::kAdapterAlreadyPowered);
-    }
-  }
-  FidoBleDiscoveryBase::OnGetAdapter(std::move(adapter));
-}
-
-void FidoCableDiscovery::OnSetPowered() {
-  DCHECK(adapter());
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&FidoCableDiscovery::StartCableDiscovery,
-                                weak_factory_.GetWeakPtr()));
-}
-
-void FidoCableDiscovery::FidoBleDeviceConnected(FidoBleDevice* device,
-                                                bool success) {
+void FidoCableDiscovery::FidoCableDeviceConnected(FidoCableDevice* device,
+                                                  bool success) {
   if (!success || !IsObservedV1Device(device->GetAddress())) {
     return;
   }
@@ -555,7 +598,7 @@ void FidoCableDiscovery::FidoBleDeviceConnected(FidoBleDevice* device,
       CableV1DiscoveryEvent::kFirstCableDeviceGATTConnected);
 }
 
-void FidoCableDiscovery::FidoBleDeviceTimeout(FidoBleDevice* device) {
+void FidoCableDiscovery::FidoCableDeviceTimeout(FidoCableDevice* device) {
   if (!IsObservedV1Device(device->GetAddress())) {
     return;
   }
@@ -564,8 +607,6 @@ void FidoCableDiscovery::FidoBleDeviceTimeout(FidoBleDevice* device) {
 }
 
 void FidoCableDiscovery::StartCableDiscovery() {
-  // Error callback OnStartDiscoverySessionError() is defined in the base class
-  // FidoBleDiscoveryBase.
   adapter()->StartDiscoverySessionWithFilter(
       std::make_unique<BluetoothDiscoveryFilter>(
           BluetoothTransport::BLUETOOTH_TRANSPORT_LE),
@@ -910,6 +951,11 @@ void FidoCableDiscovery::RecordCableV1DiscoveryEventOnce(
                                 event);
 }
 
+void FidoCableDiscovery::StartInternal() {
+  BluetoothAdapterFactory::Get()->GetAdapter(base::BindOnce(
+      &FidoCableDiscovery::OnGetAdapter, weak_factory_.GetWeakPtr()));
+}
+
 // static
 std::string FidoCableDiscovery::ResultDebugString(
     const CableEidArray& eid,
@@ -976,7 +1022,7 @@ std::string FidoCableDiscovery::ResultDebugString(
 }
 
 bool FidoCableDiscovery::MaybeStop() {
-  if (!FidoBleDiscoveryBase::MaybeStop()) {
+  if (!FidoDeviceDiscovery::MaybeStop()) {
     NOTREACHED();
   }
   StopAdvertisements(base::DoNothing());

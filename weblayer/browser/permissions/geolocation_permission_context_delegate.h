@@ -28,9 +28,6 @@ class GeolocationPermissionContextDelegate
       bool user_gesture,
       permissions::BrowserPermissionCallback* callback,
       permissions::GeolocationPermissionContext* context) override;
-  void UpdateTabContext(const permissions::PermissionRequestID& id,
-                        const GURL& requesting_frame,
-                        bool allowed) override;
 #if defined(OS_ANDROID)
   bool IsInteractable(content::WebContents* web_contents) override;
   PrefService* GetPrefs(content::BrowserContext* browser_context) override;

@@ -4,12 +4,19 @@
 
 #include "chrome/browser/upboarding/query_tiles/internal/tile_service_impl.h"
 
+#include <string>
+#include <utility>
+
 #include "ui/gfx/image/image.h"
 
 namespace upboarding {
 
-TileServiceImpl::TileServiceImpl(std::unique_ptr<ImageLoader> image_loader)
-    : image_loader_(std::move(image_loader)) {}
+TileServiceImpl::TileServiceImpl(std::unique_ptr<ImageLoader> image_loader,
+                                 std::unique_ptr<TileManager> tile_manager,
+                                 std::unique_ptr<TileConfig> config)
+    : image_loader_(std::move(image_loader)),
+      tile_manager_(std::move(tile_manager)),
+      config_(std::move(config)) {}
 
 TileServiceImpl::~TileServiceImpl() = default;
 

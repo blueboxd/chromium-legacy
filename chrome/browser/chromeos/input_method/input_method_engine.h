@@ -33,6 +33,7 @@ class InputMethodEngineBase;
 }  // namespace input_method
 
 namespace chromeos {
+struct AssistiveWindowProperties;
 
 class InputMethodEngine : public ::input_method::InputMethodEngineBase {
  public:
@@ -131,6 +132,12 @@ class InputMethodEngine : public ::input_method::InputMethodEngineBase {
 
   // Commit the suggestion and hide the window.
   bool AcceptSuggestion(int context_id, std::string* error);
+
+  // Show/Hide given assistive window.
+  bool SetAssistiveWindowProperties(
+      int context_id,
+      const AssistiveWindowProperties& assistive_window,
+      std::string* error);
 
   // Set the list of items that appears in the language menu when this IME is
   // active.

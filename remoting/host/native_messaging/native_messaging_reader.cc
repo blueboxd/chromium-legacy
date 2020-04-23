@@ -12,6 +12,7 @@
 #include "base/files/file.h"
 #include "base/json/json_reader.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/sequenced_task_runner.h"

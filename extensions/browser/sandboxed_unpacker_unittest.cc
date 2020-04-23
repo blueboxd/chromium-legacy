@@ -466,7 +466,7 @@ TEST_F(SandboxedUnpackerTest, InvalidMessagesFile) {
   EXPECT_FALSE(base::PathExists(install_path));
   EXPECT_TRUE(base::MatchPattern(
       GetInstallErrorMessage(),
-      base::ASCIIToUTF16("*_locales?en_US?messages.json': Line: 2, column: 10,"
+      base::ASCIIToUTF16("*_locales?en_US?messages.json': Line: 4, column: 1,"
                          " Syntax error.'.")))
       << GetInstallErrorMessage();
   ASSERT_EQ(CrxInstallErrorType::SANDBOXED_UNPACKER_FAILURE,

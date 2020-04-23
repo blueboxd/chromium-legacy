@@ -48,7 +48,6 @@ import org.chromium.chrome.browser.omnibox.suggestions.entity.EntitySuggestionPr
 import org.chromium.chrome.browser.omnibox.suggestions.tail.TailSuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.ui.favicon.LargeIconBridge;
@@ -185,7 +184,6 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
     private WindowAndroid mWindowAndroid;
     private ActivityLifecycleDispatcher mLifecycleDispatcher;
     private ActivityTabTabObserver mTabObserver;
-    private Supplier<ShareDelegate> mShareDelegateSupplier;
 
     private ImageFetcher mImageFetcher;
     private LargeIconBridge mIconBridge;
@@ -222,8 +220,8 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
 
         SuggestionHost host = this::createSuggestionViewDelegate;
 
-        mEditUrlProcessor = new EditUrlSuggestionProcessor(
-                mContext, host, mDelegate, iconBridgeSupplier, mShareDelegateSupplier);
+        mEditUrlProcessor =
+                new EditUrlSuggestionProcessor(mContext, host, mDelegate, iconBridgeSupplier);
         registerSuggestionProcessor(new AnswerSuggestionProcessor(
                 mContext, host, mUrlBarEditingTextProvider, imageFetcherSupplier));
         registerSuggestionProcessor(
@@ -530,10 +528,6 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
                 }
             };
         }
-    }
-
-    void setShareDelegateSupplier(Supplier<ShareDelegate> shareDelegateSupplier) {
-        mShareDelegateSupplier = shareDelegateSupplier;
     }
 
     /** @see org.chromium.chrome.browser.omnibox.UrlFocusChangeListener#onUrlFocusChange(boolean) */

@@ -332,6 +332,10 @@ class XRSystem final : public EventTargetWithInlineData,
     DISALLOW_COPY_AND_ASSIGN(OverlayFullscreenExitObserver);
   };
 
+  // Helper, logs message to the console as well as DVLOGs.
+  void AddConsoleMessage(mojom::blink::ConsoleMessageLevel error_level,
+                         const String& message);
+
   ScriptPromise InternalIsSessionSupported(ScriptState*,
                                            const String&,
                                            ExceptionState& exception_state,

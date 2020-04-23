@@ -11,7 +11,6 @@
 #include "chrome/browser/engagement/site_engagement_score.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/previews/previews_https_notification_infobar_decider.h"
-#include "chrome/browser/previews/previews_lite_page_redirect_decider.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/previews/previews_ui_tab_helper.h"
@@ -207,10 +206,9 @@ TEST_F(OptimizationGuideTopHostProviderTest,
   // Make sure infobar not shown.
   PreviewsService* previews_service = PreviewsServiceFactory::GetForProfile(
       Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
-  PreviewsLitePageRedirectDecider* decider =
-      previews_service->previews_lite_page_redirect_decider();
-  // Initialize settings here so Lite Pages Decider checks for the Data Saver
-  // bit.
+  PreviewsHTTPSNotificationInfoBarDecider* decider =
+      previews_service->previews_https_notification_infobar_decider();
+  // Initialize settings here so |decider| checks for the Data Saver bit.
   decider->OnSettingsInitialized();
   EXPECT_TRUE(decider->NeedsToNotifyUser());
 

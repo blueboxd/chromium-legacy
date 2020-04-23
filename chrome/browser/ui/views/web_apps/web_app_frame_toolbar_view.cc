@@ -76,10 +76,6 @@
 #include "ui/views/window/custom_frame_view.h"
 #include "ui/views/window/hit_test_utils.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/ui/views/frame/terminal_system_app_menu_button_chromeos.h"
-#endif
-
 namespace {
 
 bool g_animation_disabled_for_testing = false;
@@ -682,19 +678,8 @@ WebAppFrameToolbarView::ToolbarButtonContainer::ToolbarButtonContainer(
   }
 
   if (app_controller->HasTitlebarMenuButton()) {
-// TODO(crbug.com/998900): Create AppControllerUi class to contain this logic.
-#if defined(OS_CHROMEOS)
-    if (app_controller->UseTitlebarTerminalSystemAppMenu()) {
-      web_app_menu_button_ = AddChildView(
-          std::make_unique<TerminalSystemAppMenuButton>(browser_view_));
-    } else {
-      web_app_menu_button_ =
-          AddChildView(std::make_unique<WebAppMenuButton>(browser_view_));
-    }
-#else
     web_app_menu_button_ =
         AddChildView(std::make_unique<WebAppMenuButton>(browser_view_));
-#endif
     web_app_menu_button_->SetID(VIEW_ID_APP_MENU);
     const bool is_browser_focus_mode =
         browser_view_->browser()->is_focus_mode();

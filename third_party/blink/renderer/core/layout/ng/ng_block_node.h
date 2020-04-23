@@ -25,6 +25,8 @@ struct MinMaxSizes;
 struct NGBoxStrut;
 struct NGLayoutAlgorithmParams;
 
+enum class MathScriptType;
+
 // Represents a node to be laid out.
 class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   friend NGLayoutInputNode;
@@ -130,6 +132,10 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   // Returns true if the custom layout node is in its loaded state (all script
   // for the web-developer defined layout is ready).
   bool IsCustomLayoutLoaded() const;
+
+  // Get script type for scripts (msub, msup, msubsup, munder, mover and
+  // munderover).
+  MathScriptType ScriptType() const;
 
   // Layout an atomic inline; e.g., inline block.
   scoped_refptr<const NGLayoutResult> LayoutAtomicInline(

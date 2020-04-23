@@ -113,17 +113,23 @@ SafeBrowsingUrlCheckerImpl::SafeBrowsingUrlCheckerImpl(
       database_manager_(url_checker_delegate_->GetDatabaseManager()),
       real_time_lookup_enabled_(real_time_lookup_enabled),
       enhanced_protection_enabled_(enhanced_protection_enabled),
-      url_lookup_service_on_ui_(url_lookup_service_on_ui) {}
+      url_lookup_service_on_ui_(url_lookup_service_on_ui) {
+  DCHECK(!web_contents_getter_.is_null());
+}
 
 SafeBrowsingUrlCheckerImpl::SafeBrowsingUrlCheckerImpl(
     ResourceType resource_type,
-    scoped_refptr<UrlCheckerDelegate> url_checker_delegate)
+    scoped_refptr<UrlCheckerDelegate> url_checker_delegate,
+    const base::RepeatingCallback<web::WebState*()>& web_state_getter)
     : load_flags_(0),
       resource_type_(resource_type),
       has_user_gesture_(false),
+      web_state_getter_(web_state_getter),
       url_checker_delegate_(url_checker_delegate),
       database_manager_(url_checker_delegate_->GetDatabaseManager()),
-      real_time_lookup_enabled_(false) {}
+      real_time_lookup_enabled_(false) {
+  DCHECK(!web_state_getter_.is_null());
+}
 
 SafeBrowsingUrlCheckerImpl::~SafeBrowsingUrlCheckerImpl() {
   DCHECK(CurrentlyOnThread(ThreadID::IO));
@@ -171,6 +177,7 @@ SafeBrowsingUrlCheckerImpl::MakeUnsafeResource(const GURL& url,
   resource.callback_thread =
       base::CreateSingleThreadTaskRunner(CreateTaskTraits(ThreadID::IO));
   resource.web_contents_getter = web_contents_getter_;
+  resource.web_state_getter = web_state_getter_;
   resource.threat_source = database_manager_->GetThreatSource();
   return resource;
 }

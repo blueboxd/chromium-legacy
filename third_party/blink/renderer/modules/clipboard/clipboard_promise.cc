@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/clipboard/clipboard_reader.h"
 #include "third_party/blink/renderer/modules/permissions/permission_utils.h"
@@ -339,16 +340,16 @@ void ClipboardPromise::RequestPermission(
   ExecutionContext* context = GetExecutionContext();
   if (!context)
     return;
-  const Document& document = *Document::From(context);
-  DCHECK(document.IsSecureContext());  // [SecureContext] in IDL
+  const LocalDOMWindow& window = *To<LocalDOMWindow>(context);
+  DCHECK(window.IsSecureContext());  // [SecureContext] in IDL
 
-  if (!document.hasFocus()) {
+  if (!window.document()->hasFocus()) {
     script_promise_resolver_->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotAllowedError, "Document is not focused."));
     return;
   }
 
-  if (!document.IsFeatureEnabled(
+  if (!window.IsFeatureEnabled(
           mojom::blink::FeaturePolicyFeature::kClipboard,
           ReportOptions::kReportOnFailure,
           "The Clipboard API has been blocked because of a Feature Policy "
@@ -387,7 +388,7 @@ LocalFrame* ClipboardPromise::GetLocalFrame() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   ExecutionContext* context = GetExecutionContext();
   DCHECK(context);
-  LocalFrame* local_frame = Document::From(context)->GetFrame();
+  LocalFrame* local_frame = To<LocalDOMWindow>(context)->GetFrame();
   return local_frame;
 }
 

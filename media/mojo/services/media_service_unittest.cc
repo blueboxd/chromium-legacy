@@ -61,14 +61,6 @@ const char kInvalidKeySystem[] = "invalid.key.system";
 
 const char kSecurityOrigin[] = "https://foo.com";
 
-// Returns a trivial encrypted DecoderBuffer.
-scoped_refptr<DecoderBuffer> CreateEncryptedBuffer() {
-  scoped_refptr<DecoderBuffer> encrypted_buffer(new DecoderBuffer(100));
-  encrypted_buffer->set_decrypt_config(
-      DecryptConfig::CreateCencConfig("dummy_key_id", "0123456789ABCDEF", {}));
-  return encrypted_buffer;
-}
-
 class MockRendererClient : public mojom::RendererClient {
  public:
   MockRendererClient() = default;
@@ -155,29 +147,6 @@ class MediaServiceTest : public testing::Test {
     return cdm_id;
   }
 
-  MOCK_METHOD2(OnDecrypted,
-               void(Decryptor::Status, scoped_refptr<DecoderBuffer>));
-
-  void CreateDecryptor(int cdm_id, bool expected_result) {
-    base::RunLoop run_loop;
-    mojo::PendingRemote<mojom::Decryptor> decryptor_remote;
-    interface_factory_->CreateDecryptor(
-        cdm_id, decryptor_remote.InitWithNewPipeAndPassReceiver());
-    MojoDecryptor mojo_decryptor(std::move(decryptor_remote));
-
-    // In the success case, there's no decryption key to decrypt the buffer so
-    // we would expect no-key.
-    auto expected_status =
-        expected_result ? Decryptor::kNoKey : Decryptor::kError;
-
-    EXPECT_CALL(*this, OnDecrypted(expected_status, _))
-        .WillOnce(QuitLoop(&run_loop));
-    mojo_decryptor.Decrypt(
-        Decryptor::kVideo, CreateEncryptedBuffer(),
-        base::BindOnce(&MediaServiceTest::OnDecrypted, base::Unretained(this)));
-    run_loop.Run();
-  }
-
   MOCK_METHOD1(OnRendererInitialized, void(bool));
 
   void InitializeRenderer(const VideoDecoderConfig& video_config,
@@ -249,11 +218,6 @@ TEST_F(MediaServiceTest, InitializeCdm_Success) {
 TEST_F(MediaServiceTest, InitializeCdm_InvalidKeySystem) {
   InitializeCdm(kInvalidKeySystem, false);
 }
-
-TEST_F(MediaServiceTest, Decryptor_WithCdm) {
-  int cdm_id = InitializeCdm(kClearKeyKeySystem, true);
-  CreateDecryptor(cdm_id, true);
-}
 #endif  // BUILDFLAG(ENABLE_MOJO_CDM) && !defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_MOJO_RENDERER)
@@ -261,11 +225,6 @@ TEST_F(MediaServiceTest, InitializeRenderer) {
   InitializeRenderer(TestVideoConfig::Normal(), true);
 }
 #endif  // BUILDFLAG(ENABLE_MOJO_RENDERER)
-
-TEST_F(MediaServiceTest, Decryptor_WithoutCdm) {
-  // Creating decryptor without creating CDM.
-  CreateDecryptor(1, false);
-}
 
 TEST_F(MediaServiceTest, InterfaceFactoryPreventsIdling) {
   // The service should not idle during this operation.

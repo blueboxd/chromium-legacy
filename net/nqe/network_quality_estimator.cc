@@ -17,6 +17,7 @@
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_macros_local.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -1426,8 +1427,9 @@ void NetworkQualityEstimator::AddAndNotifyObserversOfThroughput(
   ++new_throughput_observations_since_last_ect_computation_;
   http_downstream_throughput_kbps_observations_.AddObservation(observation);
 
-  UMA_HISTOGRAM_ENUMERATION("NQE.Kbps.ObservationSource", observation.source(),
-                            NETWORK_QUALITY_OBSERVATION_SOURCE_MAX);
+  LOCAL_HISTOGRAM_ENUMERATION("NQE.Kbps.ObservationSource",
+                              observation.source(),
+                              NETWORK_QUALITY_OBSERVATION_SOURCE_MAX);
 
   // Maybe recompute the effective connection type since a new throughput
   // observation is available.

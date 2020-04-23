@@ -283,7 +283,7 @@
 <translation id="3208346789712025453">Keyingi boshqaruv elementi mavjud emas</translation>
 <translation id="321072937702597574">Orxideyarang</translation>
 <translation id="3218691001991391708">joylash: <ph name="TEXT" />.</translation>
-<translation id="3223701887221307104">“<ph name="NAME" />” ichki oynasi</translation>
+<translation id="3223701887221307104"><ph name="NAME" />, varaq</translation>
 <translation id="3223779237381380437">Chizilgan qator emas</translation>
 <translation id="3226035351387556942">chk</translation>
 <translation id="3232388865800379423">Qalqib chiquvchi tugma</translation>
@@ -527,7 +527,7 @@
 <translation id="5263344797180442561">h2</translation>
 <translation id="528468243742722775">Tugatish</translation>
 <translation id="5302089807023311274">Bibliografiya havolasi</translation>
-<translation id="5304943142864553931"><ph name="TITLE" /> ichki oynasi</translation>
+<translation id="5304943142864553931"><ph name="TITLE" />, varaq</translation>
 <translation id="5308380583665731573">Ulanish</translation>
 <translation id="5310788376443009632">olib tashlandi:</translation>
 <translation id="5320727453979144100">Yopishqoq rejim yoniq</translation>
@@ -907,6 +907,7 @@
 <translation id="8428603554127842284"><ph name="DEPTH" />inchi daraja</translation>
 <translation id="8430049249787218991">mnubr</translation>
 <translation id="8446884382197647889">Batafsil</translation>
+<translation id="8448196839635577295">ChromeVox hozir fokusda emas. Elementlarni topish uchun tanishuv ustiga bosing.</translation>
 <translation id="8455868257606149352">Maks <ph name="X" /></translation>
 <translation id="84575901236241018"><ph name="KEY" /> ruxsat kaliti bor</translation>
 <translation id="8463645336674919227">Grammatik xatoni qoldirish</translation>

@@ -5,7 +5,6 @@
 #include "device/fido/make_credential_request_handler.h"
 
 #include <set>
-#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -18,7 +17,6 @@
 #include "device/fido/fido_parsing_utils.h"
 #include "device/fido/fido_transport_protocol.h"
 #include "device/fido/make_credential_task.h"
-#include "device/fido/pin.h"
 
 #if defined(OS_WIN)
 #include "device/fido/win/authenticator.h"
@@ -707,7 +705,65 @@ void MakeCredentialRequestHandler::OnHavePINToken(
     return;
   }
 
+  using BioAvailability =
+      AuthenticatorSupportedOptions::BioEnrollmentAvailability;
+  if (authenticator_->Options()->bio_enrollment_availability ==
+          BioAvailability::kSupportedButUnprovisioned ||
+      authenticator_->Options()->bio_enrollment_availability_preview ==
+          BioAvailability::kSupportedButUnprovisioned) {
+    // Authenticator supports biometric enrollment but is not enrolled, offer
+    // enrollment with the request.
+    state_ = State::kBioEnrollment;
+    bio_enroller_ =
+        std::make_unique<BioEnroller>(this, authenticator_, *response);
+    observer()->StartBioEnrollment(
+        base::BindOnce(&MakeCredentialRequestHandler::OnEnrollmentDismissed,
+                       weak_factory_.GetWeakPtr()));
+    return;
+  }
+
   DispatchRequestWithToken(std::move(*response));
+}
+
+void MakeCredentialRequestHandler::OnSampleCollected(
+    BioEnrollmentSampleStatus status,
+    int samples_remaining) {
+  observer()->OnSampleCollected(samples_remaining);
+}
+
+void MakeCredentialRequestHandler::OnEnrollmentDone(
+    base::Optional<std::vector<uint8_t>> template_id) {
+  if (state_ == State::kBioEnrollmentDone) {
+    // Enrollment was skipped by the user before completion.
+    auto token = bio_enroller_->token();
+    bio_enroller_.reset();
+    DispatchRequestWithToken(std::move(token));
+    return;
+  }
+  state_ = State::kBioEnrollmentDone;
+}
+
+void MakeCredentialRequestHandler::OnEnrollmentError(
+    CtapDeviceResponseCode status) {
+  bio_enroller_.reset();
+  state_ = State::kFinished;
+  std::move(completion_callback_)
+      .Run(MakeCredentialStatus::kAuthenticatorResponseInvalid, base::nullopt,
+           nullptr);
+}
+
+void MakeCredentialRequestHandler::OnEnrollmentDismissed() {
+  if (state_ == State::kBioEnrollmentDone) {
+    auto token = bio_enroller_->token();
+    bio_enroller_.reset();
+    DispatchRequestWithToken(std::move(token));
+    return;
+  }
+
+  // There is still an inflight enrollment request. Cancel it,
+  // |OnEnrollmentDone| will dispatch the request.
+  state_ = State::kBioEnrollmentDone;
+  bio_enroller_->Cancel();
 }
 
 void MakeCredentialRequestHandler::OnUvRetriesResponse(

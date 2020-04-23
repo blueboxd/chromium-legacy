@@ -31,6 +31,8 @@ enum class InIncognito { kNo, kYes };
 
 enum class SignedIn { kNo, kYes };
 
+extern const char kClientDataHeader[];
+
 // Adds Chrome experiment and metrics state as custom headers to |request|.
 // The content of the headers will depend on |incognito| and |signed_in|
 // parameters. It is fine to pass SignedIn::NO if the state is not known to the

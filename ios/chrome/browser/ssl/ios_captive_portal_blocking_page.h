@@ -6,14 +6,15 @@
 #define IOS_CHROME_BROWSER_SSL_IOS_CAPTIVE_PORTAL_BLOCKING_PAGE_H_
 
 #include "base/callback.h"
-#include "ios/chrome/browser/interstitials/ios_security_interstitial_page.h"
+#include "ios/components/security_interstitials/ios_security_interstitial_page.h"
 #include "url/gurl.h"
 
 // This class is responsible for showing/hiding the interstitial page that is
 // shown when a certificate error is caused by the user being behind a captive
 // portal.
 // It deletes itself when the interstitial page is closed.
-class IOSCaptivePortalBlockingPage : public IOSSecurityInterstitialPage {
+class IOSCaptivePortalBlockingPage
+    : public security_interstitials::IOSSecurityInterstitialPage {
  public:
   ~IOSCaptivePortalBlockingPage() override;
 
@@ -24,10 +25,12 @@ class IOSCaptivePortalBlockingPage : public IOSSecurityInterstitialPage {
   // the web page which allows the user to complete their connection to the
   // network. |callback| will be called after the user is done interacting with
   // this interstitial.
-  IOSCaptivePortalBlockingPage(web::WebState* web_state,
-                               const GURL& request_url,
-                               const GURL& landing_url,
-                               base::OnceCallback<void(bool)> callback);
+  IOSCaptivePortalBlockingPage(
+      web::WebState* web_state,
+      const GURL& request_url,
+      const GURL& landing_url,
+      base::OnceCallback<void(bool)> callback,
+      security_interstitials::IOSBlockingPageControllerClient* client);
 
  private:
   // IOSSecurityInterstitialPage overrides:

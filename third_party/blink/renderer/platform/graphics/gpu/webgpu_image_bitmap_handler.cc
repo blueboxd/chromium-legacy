@@ -4,9 +4,6 @@
 
 #include "third_party/blink/renderer/platform/graphics/gpu/webgpu_image_bitmap_handler.h"
 
-#include "gpu/command_buffer/client/shared_image_interface.h"
-#include "gpu/command_buffer/client/webgpu_interface.h"
-#include "gpu/command_buffer/common/shared_image_usage.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 
 namespace blink {
@@ -63,7 +60,6 @@ bool CopyBytesFromImageBitmapForWebGPU(scoped_refptr<StaticBitmapImage> image,
           : kRGBA_8888_SkColorType;
 
   // Read pixel request dst info.
-  // TODO(shaobo.yan@intel.com): Use Skia to do transform and color conversion.
   SkImageInfo info = SkImageInfo::Make(
       rect.Width(), rect.Height(), color_type, kUnpremul_SkAlphaType,
       color_params.GetSkColorSpaceForSkSurfaces());
@@ -83,54 +79,4 @@ bool CopyBytesFromImageBitmapForWebGPU(scoped_refptr<StaticBitmapImage> image,
   return true;
 }
 
-DawnTextureFromImageBitmap::DawnTextureFromImageBitmap(
-    scoped_refptr<DawnControlClientHolder> dawn_control_client,
-    uint64_t device_client_id)
-    : dawn_control_client_(dawn_control_client),
-      device_client_id_(device_client_id) {}
-
-DawnTextureFromImageBitmap::~DawnTextureFromImageBitmap() {
-  // Ensure calls to ProduceDawnTextureFromImageBitmap
-  // and FinishDawnTextureFromImageBitmapAccess are matched.
-  DCHECK_EQ(wire_texture_id_, 0u);
-  DCHECK_EQ(wire_texture_generation_, 0u);
-
-  device_client_id_ = 0;
-  dawn_control_client_.reset();
-}
-
-WGPUTexture DawnTextureFromImageBitmap::ProduceDawnTextureFromImageBitmap(
-    scoped_refptr<StaticBitmapImage> image) {
-  DCHECK(!dawn_control_client_->IsDestroyed());
-
-  gpu::Mailbox image_bitmap_mailbox = image->GetMailboxHolder().mailbox;
-
-  // Produce and inject image to WebGPU texture
-  gpu::webgpu::WebGPUInterface* webgpu = dawn_control_client_->GetInterface();
-  gpu::webgpu::ReservedTexture reservation =
-      webgpu->ReserveTexture(device_client_id_);
-  DCHECK(reservation.texture);
-
-  wire_texture_id_ = reservation.id;
-  wire_texture_generation_ = reservation.generation;
-
-  // This may fail because gl_backing resource cannot produce dawn
-  // representation.
-  webgpu->AssociateMailbox(device_client_id_, 0, wire_texture_id_,
-                           wire_texture_generation_, WGPUTextureUsage_CopySrc,
-                           reinterpret_cast<GLbyte*>(&image_bitmap_mailbox));
-
-  return reservation.texture;
-}
-
-void DawnTextureFromImageBitmap::FinishDawnTextureFromImageBitmapAccess() {
-  DCHECK(!dawn_control_client_->IsDestroyed());
-  DCHECK_NE(wire_texture_id_, 0u);
-
-  gpu::webgpu::WebGPUInterface* webgpu = dawn_control_client_->GetInterface();
-  webgpu->DissociateMailbox(device_client_id_, wire_texture_id_,
-                            wire_texture_generation_);
-  wire_texture_id_ = 0;
-  wire_texture_generation_ = 0;
-}
 }  // namespace blink

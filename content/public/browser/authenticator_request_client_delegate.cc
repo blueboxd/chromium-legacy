@@ -176,6 +176,12 @@ void AuthenticatorRequestClientDelegate::CollectPIN(
   NOTREACHED();
 }
 
+void AuthenticatorRequestClientDelegate::StartBioEnrollment(
+    base::OnceClosure next_callback) {}
+
+void AuthenticatorRequestClientDelegate::OnSampleCollected(
+    int bio_samples_remaining) {}
+
 void AuthenticatorRequestClientDelegate::FinishCollectToken() {
   NOTREACHED();
 }

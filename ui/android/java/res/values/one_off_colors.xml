@@ -8,6 +8,8 @@
     <!-- Warning: One off below, do not use for other purpose.
          Ask for a UX approval before adding a new one.
     -->
+
+    <!-- Illustration colors -->
     <color name="signin_header_animation_bg_dark" tools:ignore="UnusedResources">#28282B</color>
 
     <!-- TODO(https://crbug.com/1020436): Update the highlight colors to meet accessibility

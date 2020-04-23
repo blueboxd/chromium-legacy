@@ -303,7 +303,7 @@
 <translation id="3207960819495026254">ዕልባት ተደርጎበታል</translation>
 <translation id="3211426585530211793"><ph name="ITEM_TITLE" /> ተሰርዟል</translation>
 <translation id="321773570071367578">የእርስዎን የይለፍሐረግ ከረሱት ወይም ይህን ቅንብር መለወጥ ከፈለጉ <ph name="BEGIN_LINK" />ስምረትን ዳግም ያስጀምሩ<ph name="END_LINK" /></translation>
-<translation id="3223655101706843289">ይህ በ<ph name="ORIGIN" /> የተከማቹ እና በመነሻ ገጽዎ ላይ ያሉ መተግበሪያዎች ሁሉንም ውሂብ እና ኩኪዎች ያጠፋል።</translation>
+<translation id="3223655101706843289">ይህ በ<ph name="ORIGIN" /> የተከማቹ እና በመነሻ ገጽዎ ላይ ያሉ መተግበሪያዎቹን ሁሉንም ውሂብ እና ኩኪዎች ያጠፋል።</translation>
 <translation id="3227137524299004712">ማይክሮፎን</translation>
 <translation id="3232754137068452469">የድር መተግበሪያ</translation>
 <translation id="3236059992281584593">1 ደቂቃ ይቀራል</translation>
@@ -538,7 +538,7 @@
 <translation id="4943872375798546930">ውጤቶች የሉም</translation>
 <translation id="4961107849584082341">ይህን ገጽ ወደ ማንኛውም ቋንቋ ያስተርጉሙ</translation>
 <translation id="4962975101802056554">ሁሉንም የመሣሪያ ፈቃዶች ይሻሩ</translation>
-<translation id="4964199952259983386">Chrome ኤአርን እንዲጠቀም ለማስቻል እንዲሁም በ<ph name="BEGIN_LINK" />የAndroid ቅንብሮች<ph name="END_LINK" /> ውስጥ ካሜራውን ያብሩ።</translation>
+<translation id="4964199952259983386">Chrome ኤአርን እንዲጠቀም ለማስቻል፣ እንዲሁም በ<ph name="BEGIN_LINK" />የAndroid ቅንብሮች<ph name="END_LINK" /> ውስጥ ካሜራውን ያብሩ።</translation>
 <translation id="4970824347203572753">በአካባቢዎ ውስጥ አይገኝም</translation>
 <translation id="497421865427891073">ወደ ፊት ሂድ</translation>
 <translation id="4988210275050210843">ፋይልን በማውረድ ላይ (<ph name="MEGABYTES" />)።</translation>
@@ -963,7 +963,6 @@
 <translation id="8073388330009372546">ምስሉን በአዲስ ትር ውስጥ ክፈት</translation>
 <translation id="8076492880354921740">ትሮች</translation>
 <translation id="8084114998886531721">የተቀመጠ ይለፍ ቃል</translation>
-<translation id="8087000398470557479">ይህ ይዘት ከ<ph name="DOMAIN_NAME" /> የመጣ ነው፣ የተላከው በGoogle ነው።</translation>
 <translation id="8103578431304235997">ማንነት የማያሳውቅ ትር</translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8109613176066109935">የእርስዎን ዕልባቶች በሁሉም መሣሪያዎችዎ ላይ ስምረትን ማብራት ለማግኘት</translation>
@@ -1002,7 +1001,7 @@
 <translation id="83792324527827022">አንድ ጣቢያ የእርስዎን ካሜራ እና ማይክሮፎን እየተጠቀመ ነው</translation>
 <translation id="8380167699614421159">ይህ ጣቢያ ረባሽ ወይም አሳሳች ማስታወቂያዎችን ያሳያል</translation>
 <translation id="8393700583063109961">መልዕክት ይላኩ</translation>
-<translation id="8394832520002899662">ወደ ጣቢያው ለመመለስ መታ ያዳርጉ</translation>
+<translation id="8394832520002899662">ወደ ጣቢያው ለመመለስ መታ ያድርጉ</translation>
 <translation id="8413126021676339697">ሙሉ ታሪክ አሳይ</translation>
 <translation id="8427875596167638501">የቅድመ-እይታ ትር ግማሽ ተከፍቷል</translation>
 <translation id="8428213095426709021">ቅንብሮች</translation>

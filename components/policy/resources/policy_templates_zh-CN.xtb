@@ -1480,6 +1480,7 @@
 <translation id="3303653927512453822">允许您将所有 Cookie 都恢复为旧版 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 行为。恢复为旧版行为会导致未指定 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 属性的 Cookie 被当作“<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />”Cookie 来处理，并会撤消“<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />”Cookie 必须附带“<ph name="ATTRIBUTE_SECURE_NAME" />”属性的要求。要查看完整说明，请参阅 https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies。
 
           如果未设置此政策，未指定 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 属性的 Cookie 的默认 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 行为将取决于用户针对 <ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES" /> 功能（此功能可通过现场试验来设置，也可通过启用或停用 <ph name="FLAG_NAME_SAMESITE_BY_DEFAULT_COOKIES" /> 标记来设置）指定的个人配置。</translation>
+<translation id="3303911765031636277">OnFileAttached Chrome 企业版连接器的配置政策</translation>
 <translation id="3304662785258434098">让您能够设置用户可否添加例外情况以允许在特定网站中显示混合内容。
 
           您可以使用“InsecureContentAllowedForUrls”和“InsecureContentBlockedForUrls”政策为特定网址格式覆盖此政策。
@@ -2091,6 +2092,7 @@
 
           此外还有分别针对交流电源和电池的设置。
           </translation>
+<translation id="4147818922357566987">仅启用与重要修复程序有关的变体</translation>
 <translation id="4150201353443180367">显示</translation>
 <translation id="4157003184375321727">报告操作系统和固件版本</translation>
 <translation id="4157594634940419685">允许访问本机 CUPS 打印机</translation>
@@ -4001,6 +4003,15 @@
       您可以将此政策设置为“conservative”和"performance”，这将分别选择以稳定性和最佳性能为目标进行优化的任务调度程序配置。
 
       如果未设置此政策，则用户可以自行选择。</translation>
+<translation id="7144454922853468101">配置此政策可指定允许在 <ph name="PRODUCT_NAME" /> 中应用哪些变体。
+
+      通过有选择地启用/停用现有功能，变体让我们无需推出新版浏览器即可实现对 <ph name="PRODUCT_NAME" /> 的修改。
+
+      设置 <ph name="VARIATIONS_ENABLED_OPTION_NAME" />（值为 0）或不设置此政策会允许将所有变体应用于该浏览器。
+
+      设置 <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" />（值为 1）会仅允许将那些被视为重要的安全性或稳定性修复程序的变体应用于 <ph name="PRODUCT_NAME" />。
+
+      设置 <ph name="VARIATIONS_DISABLED_OPTION_NAME" />（值为 2）会阻止将任何变体应用于该浏览器。请注意，我们不建议您使用此模式，因为它可能会妨碍 <ph name="PRODUCT_NAME" /> 开发者及时提供重要的安全性修复程序。</translation>
 <translation id="7145335384492396213">默认 PIN 码打印模式</translation>
 <translation id="7149042336307555519"> 指定可使用哪些连接类型来更新操作系统。由于规模庞大，操作系统更新可能会对连接造成沉重负荷，也可能会产生额外费用。所以，在默认情况下，当用户使用较为昂贵的连接类型（目前仅包括“cellular”）时，系统不会启用操作系统更新。
 
@@ -4696,6 +4707,15 @@
 <translation id="8176035528522326671">只允许企业用户以主用户的身份登录多个人资料会话（企业托管用户的默认行为）</translation>
 <translation id="8183108371184777472">禁止启动浏览器窗口</translation>
 <translation id="8186911565834244165">允许用户提供反馈</translation>
+<translation id="8196725647498287556">配置此政策可指定允许在受企业管理的 <ph name="PRODUCT_OS_NAME" />设备上应用哪些变体。
+
+      通过有选择地启用/停用现有功能，变体让我们无需推出新版本即可实现对 <ph name="PRODUCT_OS_NAME" />的修改。
+
+      设置 <ph name="VARIATIONS_ENABLED_OPTION_NAME" />（值为 0）或不设置此政策会允许将所有变体应用于 <ph name="PRODUCT_OS_NAME" />。
+
+      设置 <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" />（值为 1）会仅允许将那些被视为重要的安全性或稳定性修复程序的变体应用于 <ph name="PRODUCT_OS_NAME" />。
+
+      设置 <ph name="VARIATIONS_DISABLED_OPTION_NAME" />（值为 2）会禁止在登录屏幕上将任何变体应用于该浏览器。请注意，我们不建议您使用此模式，因为它可能会妨碍 <ph name="PRODUCT_OS_NAME" />开发者及时提供重要的安全性修复程序。</translation>
 <translation id="8213770777756919897">请注意，我们已弃用此政策，并将在 <ph name="PRODUCT_OS_NAME" />版本 85 中移除它。请改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
 
           如果您设置了此政策，即是指定了当设备闲置时长超过所设的闲置延迟时间后 <ph name="PRODUCT_OS_NAME" />会执行的操作；闲置延迟时间可另行配置。
@@ -5228,6 +5248,19 @@
           如果未设置此政策，并且相应设备支持此政策，则会应用标准电池充电模式，而且无法由用户更改。
 
           注意：<ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" />（若已指定）会覆盖此政策。</translation>
+<translation id="9071472304496502510">让您能够指定一系列 Chrome 企业版连接器服务设置，以应用于会在文件附加到 Chrome 时触发的 <ph name="ON_FILE_ATTACHED_ENTERPRISE_CONNECTOR" /> 企业版连接器。
+
+      <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />、<ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />、<ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" /> 和 <ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> 字段用于确定当某个文件附加到特定网页后，该连接器是否应发送此文件以供分析，以及要将哪些标记添加到针对此文件的分析请求中。如果相应的网页网址与“enable”格式所对应的某个标记相匹配，那么只要所有包含这个标记的“disable”格式与此网页网址都不匹配，该连接器便会将这个标记添加到分析请求中。如果该连接器向分析请求中添加了至少 1 个标记，分析服务便会分析附加的文件。
+
+      <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" /> 字段用于确定您指定的设置是与哪个分析服务提供商对应。
+
+      如果您将 <ph name="ENTERPRISE_CONNECTOR_BLOCK_UNTIL_VERDICT_FIELD" /> 字段设为 1，Chrome 将需要等到分析服务发来响应，才能确定是否要向相应网页授予文件访问权限。如果您将该字段设为任何其他整数值，Chrome 就会立即向相应网页授予文件访问权限。
+
+      <ph name="ENTERPRISE_CONNECTOR_BLOCK_PASSWORD_PROTECTED_FIELD" /> 字段用于控制 Chrome 是会禁止访问还是会允许访问受密码保护的文件。
+
+      <ph name="ENTERPRISE_CONNECTOR_BLOCK_LARGE_FILES_FIELD" /> 字段用于控制 Chrome 是会禁止访问还是会允许访问过大 (50+ MB) 的文件。
+
+      此政策只能通过 Google 管理控制台进行设置。</translation>
 <translation id="9077227880520270584">设备本地帐号自动登录计时器</translation>
 <translation id="9084985621503260744">指定视频活动是否影响电源管理</translation>
 <translation id="9088433379343318874">启用受监管用户内容提供方</translation>

@@ -8,9 +8,9 @@
 
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
@@ -23,16 +23,8 @@ namespace blink {
 namespace {
 
 Settings* GetSettings(ExecutionContext* execution_context) {
-  if (!execution_context)
-    return nullptr;
-
-  auto* document = Document::DynamicFrom(execution_context);
-  if (!document)
-    return nullptr;
-
-  // |document| is guaranteed to be non-null since |execution_context| is
-  // non-null.
-  return document->GetSettings();
+  auto* window = DynamicTo<LocalDOMWindow>(execution_context);
+  return window ? window->GetFrame()->GetSettings() : nullptr;
 }
 
 bool IsInDataSaverHoldbackWebApi(ExecutionContext* execution_context) {

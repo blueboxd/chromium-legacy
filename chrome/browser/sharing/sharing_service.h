@@ -137,7 +137,6 @@ class SharingService : public KeyedService, public syncer::SyncServiceObserver {
   // Overrides for syncer::SyncServiceObserver.
   void OnSyncShutdown(syncer::SyncService* sync) override;
   void OnStateChanged(syncer::SyncService* sync) override;
-  void OnSyncCycleCompleted(syncer::SyncService* sync) override;
 
   void RefreshVapidKey();
   void RegisterDevice();

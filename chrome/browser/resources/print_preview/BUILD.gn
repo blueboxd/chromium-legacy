@@ -43,7 +43,7 @@ if (optimize_webui) {
       "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
     ]
 
-    deps = [ "ui:polymer3_elements" ]
+    deps = [ "ui:web_components" ]
     defines = chrome_grit_defines
     outputs = [
       "grit/print_preview_resources.h",

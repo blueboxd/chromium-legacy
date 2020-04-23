@@ -89,7 +89,7 @@ Polymer({
   },
 
   listeners: {
-    blur: 'hideRipple_',
+    blur: 'onBlur_',
     click: 'onClick_',
     down: 'showRipple_',
     focus: 'showRipple_',
@@ -98,6 +98,17 @@ Polymer({
     pointerdown: 'ensureRipple',
     up: 'hideRipple_',
   },
+
+  /**
+   * It is possible to activate a tab when the space key is pressed down. When
+   * this element has focus, the keyup event for the space key should not
+   * perform a 'click'. |spaceKeyDown_| tracks when a space pressed and handled
+   * by this element. Space keyup will only result in a 'click' when
+   * |spaceKeyDown_| is true. |spaceKeyDown_| is set to false when element loses
+   * focus.
+   * @private {boolean}
+   */
+  spaceKeyDown_: false,
 
   /** @private */
   hideRipple_() {
@@ -141,6 +152,12 @@ Polymer({
       value = this.disabled ? -1 : 0;
     }
     this.setAttribute('tabindex', value);
+  },
+
+  /** @private */
+  onBlur_() {
+    this.spaceKeyDown_ = false;
+    this.hideRipple_();
   },
 
   /**
@@ -192,6 +209,8 @@ Polymer({
 
     if (e.key === 'Enter') {
       this.click();
+    } else if (e.key === ' ') {
+      this.spaceKeyDown_ = true;
     }
   },
 
@@ -205,7 +224,8 @@ Polymer({
       e.stopPropagation();
     }
 
-    if (e.key === ' ') {
+    if (this.spaceKeyDown_ && e.key === ' ') {
+      this.spaceKeyDown_ = false;
       this.click();
     }
   },

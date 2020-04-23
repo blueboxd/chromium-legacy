@@ -12,7 +12,7 @@ source_set("unit_tests") {
     "//components/safe_browsing/core/browser",
     "//components/safe_browsing/core/common",
     "//components/safe_browsing/core/common:unit_tests",
-    "//components/safe_browsing/core/db",
+    "//components/safe_browsing/core/db:unit_tests_local_db",
     "//components/safe_browsing/core/realtime:unit_tests",
   ]
 }

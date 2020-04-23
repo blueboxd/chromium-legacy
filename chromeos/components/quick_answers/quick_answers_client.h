@@ -89,6 +89,9 @@ class QuickAnswersClient : public ash::AssistantStateObserver,
   // User clicks on the Quick Answers result. Virtual for testing.
   virtual void OnQuickAnswerClick(ResultType result_type);
 
+  // Quick Answers is dismissed. Virtual for testing.
+  virtual void OnQuickAnswersDismissed(ResultType result_type, bool is_active);
+
   static void SetResultLoaderFactoryForTesting(
       ResultLoaderFactoryCallback* factory);
 
@@ -100,6 +103,7 @@ class QuickAnswersClient : public ash::AssistantStateObserver,
   void IntentGeneratorCallback(const QuickAnswersRequest& quick_answers_request,
                                const std::string& intent_text,
                                IntentType intent_type);
+  base::TimeDelta GetImpressionDuration() const;
 
   network::mojom::URLLoaderFactory* url_loader_factory_ = nullptr;
   ash::AssistantState* assistant_state_ = nullptr;

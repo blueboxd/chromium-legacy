@@ -14,11 +14,11 @@
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_multi_cache_query_options.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fetch/request.h"
 #include "third_party/blink/renderer/core/fetch/response.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/cache_storage/cache_storage_blob_client_list.h"
@@ -65,23 +65,14 @@ namespace {
 bool IsCacheStorageAllowed(ScriptState* script_state) {
   ExecutionContext* context = ExecutionContext::From(script_state);
 
-  if (auto* document = Document::DynamicFrom(context)) {
-    LocalFrame* frame = document->GetFrame();
-    if (!frame)
-      return false;
-    if (auto* settings_client = frame->GetContentSettingsClient()) {
-      // This triggers a sync IPC.
-      return settings_client->AllowCacheStorage();
-    }
-    return true;
-  }
+  WebContentSettingsClient* settings_client = nullptr;
+  if (auto* window = DynamicTo<LocalDOMWindow>(context))
+    settings_client = window->GetFrame()->GetContentSettingsClient();
+  else
+    settings_client = To<WorkerGlobalScope>(context)->ContentSettingsClient();
 
-  WebContentSettingsClient* content_settings_client =
-      To<WorkerGlobalScope>(context)->ContentSettingsClient();
-  if (!content_settings_client)
-    return true;
   // This triggers a sync IPC.
-  return content_settings_client->AllowCacheStorage();
+  return settings_client ? settings_client->AllowCacheStorage() : true;
 }
 
 }  // namespace

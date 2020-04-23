@@ -221,10 +221,6 @@ const char kEnableClipboardProviderImageSuggestionsName[] =
 const char kEnableClipboardProviderImageSuggestionsDescription[] =
     "Enable suggesting a search for the image copied to the clipboard";
 
-const char kUseJSForErrorPageName[] = "Enable new error page workflow";
-const char kUseJSForErrorPageDescription[] =
-    "Use JavaScript for the error pages";
-
 const char kEnablePersistentDownloadsName[] = "Enable persistent downloads";
 const char kEnablePersistentDownloadsDescription[] =
     "Enables the new, experimental implementation of persistent downloads";
@@ -241,6 +237,11 @@ const char kEnableSyncUSSNigoriDescription[] =
 const char kFindInPageiFrameName[] = "Find in Page in iFrames.";
 const char kFindInPageiFrameDescription[] =
     "When enabled, Find In Page will search in iFrames.";
+
+const char kForceStartupSigninPromoName[] = "Display the startup sign-in promo";
+const char kForceStartupSigninPromoDescription[] =
+    "When enabled, the startup sign-in promo is always displayed when starting "
+    "Chrome.";
 
 const char kForceUnstackedTabstripName[] = "Force unstacked tabstrip.";
 const char kForceUnstackedTabstripDescription[] =
@@ -305,6 +306,11 @@ const char kMobileGoogleSRPDescription[] =
     "Request the Mobile version of Google SRP by default when the desktop mode "
     "is requested by default.";
 
+const char kNewSigninArchitectureName[] = "Enable new sign-in architecture";
+const char kNewSigninArchitectureDescription[] =
+    "When enabled uses the new sign-in architecture based on core Bling "
+    "design paradigms.";
+
 const char kOmniboxPreserveDefaultMatchAgainstAsyncUpdateName[] =
     "Omnibox Preserve Default Match Against Async Update";
 const char kOmniboxPreserveDefaultMatchAgainstAsyncUpdateDescription[] =
@@ -345,6 +351,12 @@ const char kPageInfoChromeGuardDescription[] =
 const char kPageInfoRefactoringName[] = "New design of the page info";
 const char kPageInfoRefactoringDescription[] =
     "Uses the new design for the page security info.";
+
+#if defined(__IPHONE_13_4)
+const char kPointerSupportName[] = "Enables pointer support on tablets";
+const char kPointerSupportDescription[] =
+    "Enables pointer support on tablets on iOS 13.4 and above.";
+#endif  // defined(__IPHONE_13_4)
 
 const char kQRCodeGenerationName[] = "QR Code Generation";
 const char kQRCodeGenerationDescription[] =
@@ -399,16 +411,6 @@ const char kSSLCommittedInterstitialsDescription[] =
     "When enabled, SSL interstitial pages will be committed rather than using "
     "an overlay on the page.";
 
-const char kForceStartupSigninPromoName[] = "Display the startup sign-in promo";
-const char kForceStartupSigninPromoDescription[] =
-    "When enabled, the startup sign-in promo is always displayed when starting "
-    "Chrome.";
-
-const char kNewSigninArchitectureName[] = "Enable new sign-in architecture";
-const char kNewSigninArchitectureDescription[] =
-    "When enabled uses the new sign-in architecture based on core Bling "
-    "design paradigms.";
-
 const char kSyncDeviceInfoInTransportModeName[] =
     "Enable syncing DeviceInfo in transport-only sync mode.";
 const char kSyncDeviceInfoInTransportModeDescription[] =
@@ -433,6 +435,10 @@ const char kURLBlocklistIOSName[] = "URL Blocklist Policy";
 const char kURLBlocklistIOSDescription[] =
     "When enabled, URLs can be blocked/allowed by the URLBlocklist/URLAllowlist"
     "enterprise policies.";
+
+const char kUseJSForErrorPageName[] = "Enable new error page workflow";
+const char kUseJSForErrorPageDescription[] =
+    "Use JavaScript for the error pages";
 
 const char kWalletServiceUseSandboxName[] = "Use Google Payments sandbox";
 const char kWalletServiceUseSandboxDescription[] =

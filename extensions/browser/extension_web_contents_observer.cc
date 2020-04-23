@@ -16,6 +16,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extensions_browser_client.h"
+#include "extensions/browser/kiosk/kiosk_delegate.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/renderer_startup_helper.h"
 #include "extensions/browser/url_loader_factory_manager.h"
@@ -24,6 +25,9 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/view_type.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/mojom/autoplay/autoplay.mojom.h"
 #include "url/origin.h"
 
 namespace extensions {
@@ -151,6 +155,32 @@ void ExtensionWebContentsObserver::RenderFrameDeleted(
 void ExtensionWebContentsObserver::ReadyToCommitNavigation(
     content::NavigationHandle* navigation_handle) {
   URLLoaderFactoryManager::ReadyToCommitNavigation(navigation_handle);
+
+  const ExtensionRegistry* const registry =
+      ExtensionRegistry::Get(browser_context_);
+
+  const Extension* const extension =
+      GetExtensionFromFrame(web_contents()->GetMainFrame(), false);
+  KioskDelegate* const kiosk_delegate =
+      ExtensionsBrowserClient::Get()->GetKioskDelegate();
+  DCHECK(kiosk_delegate);
+  bool is_kiosk =
+      extension && kiosk_delegate->IsAutoLaunchedKioskApp(extension->id());
+
+  // If the top most frame is an extension, packaged app, hosted app, etc. then
+  // the main frame and all iframes should be able to autoplay without
+  // restriction. <webview> should still have autoplay blocked though.
+  GURL url = navigation_handle->IsInMainFrame()
+                 ? navigation_handle->GetURL()
+                 : navigation_handle->GetWebContents()->GetLastCommittedURL();
+  if (is_kiosk || registry->enabled_extensions().GetExtensionOrAppByURL(url)) {
+    mojo::AssociatedRemote<blink::mojom::AutoplayConfigurationClient> client;
+    navigation_handle->GetRenderFrameHost()
+        ->GetRemoteAssociatedInterfaces()
+        ->GetInterface(&client);
+    client->AddAutoplayFlags(url::Origin::Create(navigation_handle->GetURL()),
+                             blink::mojom::kAutoplayFlagForceAllow);
+  }
 }
 
 void ExtensionWebContentsObserver::DidFinishNavigation(

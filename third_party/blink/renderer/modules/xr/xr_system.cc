@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/fullscreen/scoped_allow_fullscreen.h"
@@ -121,9 +122,12 @@ base::Optional<device::mojom::XRSessionFeature> StringToXRSessionFeature(
   } else if (RuntimeEnabledFeatures::WebXRHitTestEnabled(doc) &&
              feature_string == "hit-test") {
     return device::mojom::XRSessionFeature::HIT_TEST;
+  } else if (RuntimeEnabledFeatures::WebXRAnchorsEnabled(doc) &&
+             feature_string == "anchors") {
+    return device::mojom::XRSessionFeature::ANCHORS;
   } else if (feature_string == "dom-overlay") {
     return device::mojom::XRSessionFeature::DOM_OVERLAY;
-  } else if (RuntimeEnabledFeatures::WebXRIncubationsEnabled(doc) &&
+  } else if (RuntimeEnabledFeatures::WebXRLightEstimationEnabled(doc) &&
              feature_string == "light-estimation") {
     return device::mojom::XRSessionFeature::LIGHT_ESTIMATION;
   }
@@ -144,6 +148,7 @@ bool IsFeatureValidForMode(device::mojom::XRSessionFeature feature,
     case device::mojom::XRSessionFeature::REF_SPACE_BOUNDED_FLOOR:
     case device::mojom::XRSessionFeature::REF_SPACE_UNBOUNDED:
     case device::mojom::XRSessionFeature::HIT_TEST:
+    case device::mojom::XRSessionFeature::ANCHORS:
       return mode == device::mojom::blink::XRSessionMode::kImmersiveVr ||
              mode == device::mojom::blink::XRSessionMode::kImmersiveAr;
     case device::mojom::XRSessionFeature::DOM_OVERLAY:
@@ -177,6 +182,7 @@ bool HasRequiredFeaturePolicy(const Document* doc,
     case device::mojom::XRSessionFeature::DOM_OVERLAY:
     case device::mojom::XRSessionFeature::HIT_TEST:
     case device::mojom::XRSessionFeature::LIGHT_ESTIMATION:
+    case device::mojom::XRSessionFeature::ANCHORS:
       return doc->IsFeatureEnabled(mojom::blink::FeaturePolicyFeature::kWebXr,
                                    ReportOptions::kReportOnFailure);
   }
@@ -694,7 +700,7 @@ device::mojom::blink::XRSessionOptionsPtr XRSystem::XRSessionOptionsFromQuery(
 }
 
 XRSystem::XRSystem(LocalFrame& frame, int64_t ukm_source_id)
-    : ExecutionContextLifecycleObserver(frame.GetDocument()),
+    : ExecutionContextLifecycleObserver(frame.DomWindow()),
       FocusChangedObserver(frame.GetPage()),
       ukm_source_id_(ukm_source_id),
       navigation_start_(
@@ -825,6 +831,15 @@ ScriptPromise XRSystem::isSessionSupported(ScriptState* script_state,
                                            const String& mode,
                                            ExceptionState& exception_state) {
   return InternalIsSessionSupported(script_state, mode, exception_state, false);
+}
+
+void XRSystem::AddConsoleMessage(mojom::blink::ConsoleMessageLevel error_level,
+                                 const String& message) {
+  DVLOG(2) << __func__ << ": error_level=" << error_level
+           << ", message=" << message;
+
+  GetExecutionContext()->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+      mojom::blink::ConsoleMessageSource::kJavaScript, error_level, message));
 }
 
 ScriptPromise XRSystem::InternalIsSessionSupported(
@@ -1014,6 +1029,8 @@ XRSystem::RequestedXRSessionFeatureSet XRSystem::ParseRequestedFeatures(
     const device::mojom::blink::XRSessionMode& session_mode,
     XRSessionInit* session_init,
     mojom::blink::ConsoleMessageLevel error_level) {
+  DVLOG(2) << __func__ << ": features.size()=" << features.size()
+           << ", session_mode=" << session_mode;
   RequestedXRSessionFeatureSet result;
 
   // Iterate over all requested features, even if intermediate
@@ -1024,39 +1041,35 @@ XRSystem::RequestedXRSessionFeatureSet XRSystem::ParseRequestedFeatures(
       auto feature_enum = StringToXRSessionFeature(doc, feature_string);
 
       if (!feature_enum) {
-        GetExecutionContext()->AddConsoleMessage(
-            MakeGarbageCollected<ConsoleMessage>(
-                mojom::blink::ConsoleMessageSource::kJavaScript, error_level,
-                "Unrecognized feature requested: " + feature_string));
+        AddConsoleMessage(error_level,
+                          "Unrecognized feature requested: " + feature_string);
         result.invalid_features = true;
       } else if (!IsFeatureValidForMode(feature_enum.value(), session_mode,
                                         session_init, GetExecutionContext(),
                                         error_level)) {
-        GetExecutionContext()->AddConsoleMessage(
-            MakeGarbageCollected<ConsoleMessage>(
-                mojom::blink::ConsoleMessageSource::kJavaScript, error_level,
-                "Feature '" + feature_string + "' is not supported for mode: " +
-                    SessionModeToString(session_mode)));
+        AddConsoleMessage(error_level, "Feature '" + feature_string +
+                                           "' is not supported for mode: " +
+                                           SessionModeToString(session_mode));
         result.invalid_features = true;
       } else if (!HasRequiredFeaturePolicy(doc, feature_enum.value())) {
-        GetExecutionContext()->AddConsoleMessage(
-            MakeGarbageCollected<ConsoleMessage>(
-                mojom::blink::ConsoleMessageSource::kJavaScript, error_level,
-                "Feature '" + feature_string +
-                    "' is not permitted by feature policy"));
+        AddConsoleMessage(error_level,
+                          "Feature '" + feature_string +
+                              "' is not permitted by feature policy");
         result.invalid_features = true;
       } else {
+        DVLOG(3) << __func__ << ": Adding feature " << feature_string
+                 << " to valid_features.";
         result.valid_features.insert(feature_enum.value());
       }
     } else {
-      GetExecutionContext()->AddConsoleMessage(
-          MakeGarbageCollected<ConsoleMessage>(
-              mojom::blink::ConsoleMessageSource::kJavaScript, error_level,
-              "Unrecognized feature value"));
+      AddConsoleMessage(error_level, "Unrecognized feature value");
       result.invalid_features = true;
     }
   }
 
+  DVLOG(2) << __func__
+           << ": result.invalid_features=" << result.invalid_features
+           << ", result.valid_features.size()=" << result.valid_features.size();
   return result;
 }
 
@@ -1132,6 +1145,9 @@ ScriptPromise XRSystem::requestSession(ScriptState* script_state,
     if (HasRequiredFeaturePolicy(doc, feature)) {
       required_features.valid_features.insert(feature);
     } else {
+      DVLOG(2) << __func__
+               << ": feature policy not satisfied for a default feature: "
+               << feature;
       required_features.invalid_features = true;
     }
   }
@@ -1231,10 +1247,7 @@ void XRSystem::OnRequestSessionReturned(
     String error_message =
         String::Format("Could not create a session because: %s",
                        GetConsoleMessage(result->get_failure_reason()));
-    GetExecutionContext()->AddConsoleMessage(
-        MakeGarbageCollected<ConsoleMessage>(
-            mojom::blink::ConsoleMessageSource::kJavaScript,
-            mojom::blink::ConsoleMessageLevel::kError, error_message));
+    AddConsoleMessage(mojom::blink::ConsoleMessageLevel::kError, error_message);
     query->RejectWithDOMException(DOMExceptionCode::kNotSupportedError,
                                   kSessionNotSupported, nullptr);
     return;
@@ -1267,6 +1280,7 @@ void XRSystem::OnRequestSessionReturned(
 
   XRSessionFeatureSet enabled_features;
   for (const auto& feature : session_ptr->enabled_features) {
+    DVLOG(2) << __func__ << ": feature " << feature << " will be enabled";
     enabled_features.insert(feature);
   }
 

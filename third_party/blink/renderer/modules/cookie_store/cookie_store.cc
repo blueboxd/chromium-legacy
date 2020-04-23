@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_cookie_store_set_options.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/modules/cookie_store/cookie_change_event.h"
 #include "third_party/blink/renderer/modules/event_modules.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
@@ -174,8 +175,8 @@ base::Optional<CanonicalCookie> ToCanonicalCookie(
 const KURL DefaultCookieURL(ExecutionContext* execution_context) {
   DCHECK(execution_context);
 
-  if (auto* document = Document::DynamicFrom(execution_context))
-    return document->CookieURL();
+  if (auto* window = DynamicTo<LocalDOMWindow>(execution_context))
+    return window->document()->CookieURL();
 
   return KURL(To<ServiceWorkerGlobalScope>(execution_context)
                   ->serviceWorker()
@@ -194,8 +195,8 @@ KURL CookieUrlForRead(const CookieStoreGetOptions* options,
 
   KURL cookie_url = KURL(default_cookie_url, options->url());
 
-  if (context->IsDocument()) {
-    DCHECK_EQ(default_cookie_url, Document::From(context)->CookieURL());
+  if (auto* window = DynamicTo<LocalDOMWindow>(context)) {
+    DCHECK_EQ(default_cookie_url, window->document()->CookieURL());
 
     if (cookie_url.GetString() != default_cookie_url.GetString()) {
       exception_state.ThrowTypeError("URL must match the document URL");
@@ -219,8 +220,8 @@ KURL CookieUrlForRead(const CookieStoreGetOptions* options,
 net::SiteForCookies DefaultSiteForCookies(ExecutionContext* execution_context) {
   DCHECK(execution_context);
 
-  if (auto* document = Document::DynamicFrom(execution_context))
-    return document->SiteForCookies();
+  if (auto* window = DynamicTo<LocalDOMWindow>(execution_context))
+    return window->document()->SiteForCookies();
 
   auto* scope = To<ServiceWorkerGlobalScope>(execution_context);
   return net::SiteForCookies::FromUrl(scope->Url());
@@ -230,10 +231,10 @@ scoped_refptr<SecurityOrigin> DefaultTopFrameOrigin(
     ExecutionContext* execution_context) {
   DCHECK(execution_context);
 
-  if (auto* document = Document::DynamicFrom(execution_context)) {
+  if (auto* window = DynamicTo<LocalDOMWindow>(execution_context)) {
     // Can we avoid the copy? TopFrameOrigin is returned as const& but we need
     // a scoped_refptr.
-    return document->TopFrameOrigin()->IsolatedCopy();
+    return window->document()->TopFrameOrigin()->IsolatedCopy();
   }
 
   auto* scope = To<ServiceWorkerGlobalScope>(execution_context);

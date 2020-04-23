@@ -221,6 +221,7 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
       request_info->common_params->referrer->policy);
   new_request->headers.AddHeadersFromString(
       request_info->begin_params->headers);
+  new_request->cors_exempt_headers = request_info->cors_exempt_headers;
 
   new_request->resource_type = static_cast<int>(
       request_info->is_main_frame ? blink::mojom::ResourceType::kMainFrame

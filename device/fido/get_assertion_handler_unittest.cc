@@ -800,6 +800,8 @@ class TestObserver : public FidoRequestHandlerBase::Observer {
       base::OnceCallback<void(std::string)> provide_pin_cb) override {
     NOTREACHED();
   }
+  void StartBioEnrollment(base::OnceClosure next_callback) override {}
+  void OnSampleCollected(int bio_samples_remaining) override {}
   void FinishCollectToken() override { NOTREACHED(); }
   void OnRetryUserVerification(int attempts) override {}
   void OnInternalUserVerificationLocked() override {}

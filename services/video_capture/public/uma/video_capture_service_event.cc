@@ -4,6 +4,7 @@
 
 #include "services/video_capture/public/uma/video_capture_service_event.h"
 
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 
 namespace video_capture {

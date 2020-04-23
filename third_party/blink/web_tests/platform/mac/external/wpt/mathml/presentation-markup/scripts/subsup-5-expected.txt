@@ -1,0 +1,6 @@
+This is a testharness.js-based test.
+PASS Alignment on the baseline with different and large script heights
+FAIL Tall subscripts/superscripts are not placed too high/low assert_less_than: mmultiscripts: postsupscript is above the bottom of the base expected a number less than 184.578125 but got 434.578125
+FAIL No collisions for tall subscripts and superscripts assert_greater_than: mmultiscripts: presubscript is below the presuperscript expected a number greater than 684.578125 but got 434.578125
+Harness: the test ran to completion.
+

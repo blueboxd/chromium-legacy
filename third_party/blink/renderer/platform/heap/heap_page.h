@@ -135,6 +135,7 @@ constexpr uint8_t kReuseForbiddenZapValue = 0x2c;
 class NormalPageArena;
 class PageMemory;
 class BaseArena;
+class ThreadHeap;
 
 // HeapObjectHeader is a 32-bit object that has the following layout:
 //
@@ -499,6 +500,18 @@ class BasePage {
   virtual void VerifyMarking() = 0;
 
  private:
+  void SynchronizedLoad() {
+#if defined(THREAD_SANITIZER)
+    WTF::AsAtomicPtr(&page_type_)->load(std::memory_order_acquire);
+#endif
+  }
+  void SynchronizedStore() {
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+#if defined(THREAD_SANITIZER)
+    WTF::AsAtomicPtr(&page_type_)->store(page_type_, std::memory_order_release);
+#endif
+  }
+
   PageMemory* const storage_;
   BaseArena* const arena_;
   ThreadState* const thread_state_;
@@ -511,6 +524,7 @@ class BasePage {
   PageType page_type_;
 
   friend class BaseArena;
+  friend class ThreadHeap;
 };
 
 class PageStack : Vector<BasePage*> {
@@ -991,6 +1005,9 @@ class PLATFORM_EXPORT BaseArena {
   PageStackThreadSafe swept_unfinalized_pages_;
   // Pages that have been swept and need to be removed from the heap.
   PageStackThreadSafe swept_unfinalized_empty_pages_;
+
+ protected:
+  void SynchronizedStore(BasePage* page) { page->SynchronizedStore(); }
 
  private:
   virtual Address LazySweepPages(size_t, size_t gc_info_index) = 0;

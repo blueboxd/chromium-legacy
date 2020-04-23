@@ -10,6 +10,7 @@
 #include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/html/html_link_element.h"
@@ -50,7 +51,7 @@ void ManifestManager::ProvideTo(LocalFrame& frame) {
 
 ManifestManager::ManifestManager(LocalFrame& frame)
     : Supplement<LocalFrame>(frame),
-      ExecutionContextLifecycleObserver(frame.GetDocument()),
+      ExecutionContextLifecycleObserver(frame.DomWindow()),
       may_have_manifest_(false),
       manifest_dirty_(true),
       receivers_(this, GetExecutionContext()) {
@@ -106,12 +107,12 @@ bool ManifestManager::CanFetchManifest() {
   if (!GetSupplementable())
     return false;
   // Do not fetch the manifest if we are on an opaque origin.
-  return !GetSupplementable()->GetDocument()->GetSecurityOrigin()->IsOpaque();
+  return !GetSupplementable()->DomWindow()->GetSecurityOrigin()->IsOpaque();
 }
 
 void ManifestManager::RequestManifestImpl(
     InternalRequestManifestCallback callback) {
-  if (!GetSupplementable() || !GetSupplementable()->GetDocument() ||
+  if (!GetSupplementable() || !GetSupplementable()->DomWindow() ||
       !GetSupplementable()->IsAttached()) {
     std::move(callback).Run(KURL(), mojom::blink::ManifestPtr(), nullptr);
     return;
@@ -166,11 +167,11 @@ void ManifestManager::FetchManifest() {
     return;
   }
 
-  Document& document = *GetSupplementable()->GetDocument();
+  LocalDOMWindow& window = *GetSupplementable()->DomWindow();
   fetcher_ = MakeGarbageCollected<ManifestFetcher>(manifest_url_);
-  fetcher_->Start(document, ManifestUseCredentials(),
+  fetcher_->Start(window, ManifestUseCredentials(),
                   WTF::Bind(&ManifestManager::OnManifestFetchComplete,
-                            WrapWeakPersistent(this), document.Url()));
+                            WrapWeakPersistent(this), window.Url()));
 }
 
 void ManifestManager::OnManifestFetchComplete(const KURL& document_url,
@@ -259,8 +260,7 @@ void ManifestManager::BindReceiver(
     mojo::PendingReceiver<mojom::blink::ManifestManager> receiver) {
   receivers_.Add(
       std::move(receiver),
-      GetSupplementable()->GetDocument()->ToExecutionContext()->GetTaskRunner(
-          TaskType::kNetworking));
+      GetSupplementable()->DomWindow()->GetTaskRunner(TaskType::kNetworking));
 }
 
 void ManifestManager::ContextDestroyed() {

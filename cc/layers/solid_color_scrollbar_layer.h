@@ -17,6 +17,10 @@ class CC_EXPORT SolidColorScrollbarLayer : public ScrollbarLayerBase {
  public:
   std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
 
+  static scoped_refptr<SolidColorScrollbarLayer> CreateOrReuse(
+      scoped_refptr<Scrollbar>,
+      SolidColorScrollbarLayer* existing_layer);
+
   static scoped_refptr<SolidColorScrollbarLayer> Create(
       ScrollbarOrientation orientation,
       int thumb_thickness,
@@ -35,7 +39,7 @@ class CC_EXPORT SolidColorScrollbarLayer : public ScrollbarLayerBase {
   int thumb_thickness() const { return thumb_thickness_; }
   int track_start() const { return track_start_; }
 
-  ScrollbarLayerType ScrollbarLayerTypeForTesting() const override;
+  ScrollbarLayerType GetScrollbarLayerType() const override;
 
  private:
   SolidColorScrollbarLayer(ScrollbarOrientation orientation,

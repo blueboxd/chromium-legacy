@@ -10,6 +10,7 @@
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_key_system_media_capability.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/encryptedmedia/encrypted_media_utils.h"
@@ -220,7 +221,7 @@ void MediaKeySystemAccessInitializerBase::GenerateWarningAndReportMetrics()
   if (!IsExecutionContextValid())
     return;
 
-  Document* document = GetDocument();
+  Document* document = To<LocalDOMWindow>(GetExecutionContext())->document();
   LocalFrame* frame = GetFrame();
   if (!document || !frame)
     return;

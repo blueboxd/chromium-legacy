@@ -4,6 +4,7 @@
 
 #include "remoting/host/desktop_display_info.h"
 
+#include "base/logging.h"
 #include "build/build_config.h"
 #include "remoting/base/constants.h"
 

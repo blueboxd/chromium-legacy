@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/files/file.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/single_thread_task_runner.h"

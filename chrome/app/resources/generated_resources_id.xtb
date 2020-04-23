@@ -37,7 +37,6 @@
 <translation id="1041263367839475438">Perangkat yang tersedia</translation>
 <translation id="1042174272890264476">Komputer Anda juga dilengkapi dengan perpustakaan RLZ <ph name="SHORT_PRODUCT_NAME" /> yang tertanam di dalamnya. RLZ menetapkan tag tak unik dan tidak dapat diidentifikasi secara pribadi untuk mengukur penelusuran dan penggunaan <ph name="SHORT_PRODUCT_NAME" /> yang didorong oleh kampanye promosi tertentu. Biasanya label ini muncul di kueri Google Penelusuran di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1043818413152647937">Hapus data dari aplikasi ini juga?</translation>
-<translation id="1045448422538531528">Tambahkan ke grup</translation>
 <translation id="1046635659603195359">Sepertinya Anda sudah menyiapkan Voice Match dengan Asisten Google di perangkat lainnya. Rekaman sebelumnya tersebut dapat digunakan untuk membuat model suara di perangkat ini. Tindakan ini perlu waktu kurang dari satu menit.</translation>
 <translation id="104710386808485638">Mulai ulang Linux?</translation>
 <translation id="1047431265488717055">Salin Te&amp;ks Tautan</translation>
@@ -92,6 +91,7 @@
 <translation id="1122198203221319518">&amp;Alat</translation>
 <translation id="1122242684574577509">Autentikasi gagal. Klik untuk mengunjungi halaman masuk untuk jaringan Wi-Fi yang Anda gunakan (<ph name="NETWORK_ID" />).</translation>
 <translation id="1122960773616686544">Nama bookmark</translation>
+<translation id="1123753900084781868">Teks Otomatis tidak tersedia untuk saat ini</translation>
 <translation id="1124772482545689468">Pengguna</translation>
 <translation id="1125550662859510761">Sepertinya <ph name="WIDTH" /> x <ph name="HEIGHT" /> (Asli)</translation>
 <translation id="1126809382673880764">Tidak melindungi Anda terhadap situs, download, dan ekstensi berbahaya. Anda akan tetap mendapatkan perlindungan Safe Browsing, jika tersedia, di layanan Google lainnya, seperti Gmail dan Penelusuran.</translation>
@@ -407,7 +407,6 @@
 <translation id="1536754031901697553">Memutuskan sambungan...</translation>
 <translation id="15373452373711364">Kursor mouse besar</translation>
 <translation id="1540605929960647700">Aktifkan mode demo</translation>
-<translation id="1541396123399225659">Tambahkan ke Grup Baru</translation>
 <translation id="1542514202066550870">Tab ini menyajikan konten VR ke headset.</translation>
 <translation id="1543284117603151572">Diimpor Dari Edge</translation>
 <translation id="1545177026077493356">Mode Kios Otomatis</translation>
@@ -1903,7 +1902,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="3514373592552233661">Jika ada beberapa jaringan yang tersedia, jaringan pilihan akan lebih diprioritaskan dari jaringan yang dikenal lainnya.</translation>
 <translation id="3515983984924808886">Sentuh kunci keamanan Anda sekali lagi untuk mengonfirmasi penyetelan ulang. Semua informasi yang tersimpan di kunci keamanan, termasuk PIN-nya, akan dihapus.</translation>
 <translation id="3518985090088779359">Terima &amp; lanjutkan</translation>
-<translation id="351952459507671940">Tambahkan ke grup baru</translation>
 <translation id="3521606918211282604">Ubah ukuran disk</translation>
 <translation id="3523642406908660543">Tanyakan saat situs ingin menggunakan plugin untuk mengakses komputer Anda (disarankan)</translation>
 <translation id="3524965460886318643">Ekspor Aktivitas</translation>
@@ -2893,7 +2891,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="4871322859485617074">PIN berisi karakter yang tidak valid</translation>
 <translation id="4871370605780490696">Tambahkan bookmark</translation>
 <translation id="4871719318659334896">Tutup grup</translation>
-<translation id="4871852311166078968">Tambahkan ke Grup</translation>
 <translation id="4873312501243535625">Pemeriksa File Media</translation>
 <translation id="4876273079589074638">Bantu engineer kami menyelidiki dan memperbaiki error ini. Cantumkan langkah-langkah yang tepat jika Anda bisa. Tidak ada detail yang sepele.</translation>
 <translation id="4876895919560854374">Kunci dan buka kunci layar</translation>

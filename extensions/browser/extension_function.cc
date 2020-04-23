@@ -225,10 +225,10 @@ class ErrorWithArgumentsResponseValue : public ArgumentListResponseValue {
 
 class ErrorResponseValue : public ExtensionFunction::ResponseValueObject {
  public:
-  ErrorResponseValue(ExtensionFunction* function, const std::string& error) {
+  ErrorResponseValue(ExtensionFunction* function, std::string error) {
     // It would be nice to DCHECK(!error.empty()) but too many legacy extension
     // function implementations don't set error but signal failure.
-    SetFunctionError(function, error);
+    SetFunctionError(function, std::move(error));
   }
 
   ~ErrorResponseValue() override {}
@@ -334,10 +334,10 @@ void ExtensionFunction::ResponseValueObject::SetFunctionResults(
 
 void ExtensionFunction::ResponseValueObject::SetFunctionError(
     ExtensionFunction* function,
-    const std::string& error) {
+    std::string error) {
   DCHECK(function->error_.empty()) << "Function " << function->name_
                                    << "already has an error.";
-  function->error_ = error;
+  function->error_ = std::move(error);
 }
 
 // static
@@ -407,8 +407,8 @@ bool ExtensionFunction::HasPermission() const {
   return availability.is_available();
 }
 
-void ExtensionFunction::RespondWithError(const std::string& error) {
-  Respond(Error(error));
+void ExtensionFunction::RespondWithError(std::string error) {
+  Respond(Error(std::move(error)));
 }
 
 bool ExtensionFunction::PreRunValidation(std::string* error) {
@@ -446,8 +446,8 @@ bool ExtensionFunction::ShouldSkipQuotaLimiting() const {
   return false;
 }
 
-void ExtensionFunction::OnQuotaExceeded(const std::string& violation_error) {
-  RespondWithError(violation_error);
+void ExtensionFunction::OnQuotaExceeded(std::string violation_error) {
+  RespondWithError(std::move(violation_error));
 }
 
 void ExtensionFunction::SetArgs(base::Value args) {
@@ -537,9 +537,8 @@ ExtensionFunction::ResponseValue ExtensionFunction::ArgumentList(
   return ResponseValue(new ArgumentListResponseValue(this, std::move(args)));
 }
 
-ExtensionFunction::ResponseValue ExtensionFunction::Error(
-    const std::string& error) {
-  return ResponseValue(new ErrorResponseValue(this, error));
+ExtensionFunction::ResponseValue ExtensionFunction::Error(std::string error) {
+  return ResponseValue(new ErrorResponseValue(this, std::move(error)));
 }
 
 ExtensionFunction::ResponseValue ExtensionFunction::Error(

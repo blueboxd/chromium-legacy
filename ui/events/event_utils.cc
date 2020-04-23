@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "ui/display/display.h"

@@ -43,7 +43,8 @@ class WrappedSkImage : public ClearTrackingSharedImageBacking {
  public:
   ~WrappedSkImage() override {
     promise_texture_.reset();
-    surface_.reset();
+    context_state_->EraseCachedSkSurface(this);
+
     if (backend_texture_.isValid())
       DeleteGrBackendTexture(context_state_, &backend_texture_);
 
@@ -86,25 +87,26 @@ class WrappedSkImage : public ClearTrackingSharedImageBacking {
       return nullptr;
     DCHECK(context_state_->IsCurrent(nullptr));
 
-    if (!surface_ || final_msaa_count != surface_msaa_count_ ||
-        surface_props != surface_->props()) {
-      surface_ = SkSurface::MakeFromBackendTexture(
+    auto surface = context_state_->GetCachedSkSurface(this);
+    if (!surface || final_msaa_count != surface_msaa_count_ ||
+        surface_props != surface->props()) {
+      surface = SkSurface::MakeFromBackendTexture(
           context_state_->gr_context(), backend_texture_,
           kTopLeft_GrSurfaceOrigin, final_msaa_count, GetSkColorType(),
           color_space().ToSkColorSpace(), &surface_props);
-      if (!surface_) {
+      if (!surface) {
         LOG(ERROR) << "MakeFromBackendTexture() failed.";
+        context_state_->EraseCachedSkSurface(this);
         return nullptr;
       }
       surface_msaa_count_ = final_msaa_count;
+      context_state_->CacheSkSurface(this, surface);
     }
-    return surface_;
+    return surface;
   }
 
   bool SkSurfaceUnique() {
-    if (!surface_)
-      return false;
-    return surface_->unique();
+    return context_state_->CachedSkSurfaceIsUnique(this);
   }
 
   sk_sp<SkPromiseImageTexture> promise_texture() { return promise_texture_; }
@@ -232,7 +234,6 @@ class WrappedSkImage : public ClearTrackingSharedImageBacking {
 
   GrBackendTexture backend_texture_;
   sk_sp<SkPromiseImageTexture> promise_texture_;
-  sk_sp<SkSurface> surface_;
   int surface_msaa_count_ = 0;
 
   uint64_t tracing_id_ = 0;

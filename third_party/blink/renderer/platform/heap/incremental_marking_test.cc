@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/test/scoped_feature_list.h"
-#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
@@ -1652,16 +1651,7 @@ TEST_F(IncrementalMarkingTest, StepDuringObjectConstruction) {
   PreciselyCollectGarbage();
 }
 
-#if defined(OS_LINUX) && defined(THREAD_SANITIZER)
-// Flaky under linux tsan: https://crbug.com/1073157
-#define MAYBE_StepDuringMixinObjectConstruction \
-  DISABLED_StepDuringMixinObjectConstruction
-#else
-#define MAYBE_StepDuringMixinObjectConstruction \
-  StepDuringMixinObjectConstruction
-#endif
-
-TEST_F(IncrementalMarkingTest, MAYBE_StepDuringMixinObjectConstruction) {
+TEST_F(IncrementalMarkingTest, StepDuringMixinObjectConstruction) {
   // Test ensures that mixin objects in construction are delayed for processing
   // to allow omitting write barriers on initializing stores.
 

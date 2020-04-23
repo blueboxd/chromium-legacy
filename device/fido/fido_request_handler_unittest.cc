@@ -163,6 +163,10 @@ class TestObserver : public FidoRequestHandlerBase::Observer {
 
   void OnInternalUserVerificationLocked() override {}
 
+  void StartBioEnrollment(base::OnceClosure next_callback) override {}
+
+  void OnSampleCollected(int remaining_samples) override {}
+
   void FinishCollectToken() override { NOTREACHED(); }
 
  private:

@@ -48,7 +48,6 @@ class GPUSwapChain : public ScriptWrappable,
   Member<GPUDevice> device_;
   Member<GPUCanvasContext> context_;
   WGPUTextureUsage usage_;
-  WGPUTextureFormat swap_chain_format_;
 
   Member<GPUTexture> texture_;
 };

@@ -14,6 +14,7 @@
 #include "content/common/navigation_params.mojom.h"
 #include "content/public/common/referrer.h"
 #include "net/base/isolation_info.h"
+#include "net/http/http_request_headers.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -39,7 +40,8 @@ struct CONTENT_EXPORT NavigationRequestInfo {
                             blob_url_loader_factory,
                         const base::UnguessableToken& devtools_navigation_token,
                         const base::UnguessableToken& devtools_frame_token,
-                        bool obey_origin_policy);
+                        bool obey_origin_policy,
+                        net::HttpRequestHeaders cors_exempt_headers);
   NavigationRequestInfo(const NavigationRequestInfo& other) = delete;
   ~NavigationRequestInfo();
 
@@ -85,6 +87,8 @@ struct CONTENT_EXPORT NavigationRequestInfo {
   // policy, if necessary, and attach it to the ResourceResponseHead.
   // Spec: https://wicg.github.io/origin-policy/
   const bool obey_origin_policy;
+
+  const net::HttpRequestHeaders cors_exempt_headers;
 };
 
 }  // namespace content

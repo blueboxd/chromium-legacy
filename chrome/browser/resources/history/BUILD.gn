@@ -5,7 +5,7 @@
 import("//chrome/common/features.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/grit/grit_rule.gni")
-import("//tools/polymer/polymer.gni")
+import("//tools/polymer/html_to_js.gni")
 import("../optimize_webui.gni")
 
 if (optimize_webui) {
@@ -47,7 +47,7 @@ if (optimize_webui) {
       "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
     ]
 
-    deps = [ ":polymer3_elements" ]
+    deps = [ ":web_components" ]
     defines = chrome_grit_defines
     outputs = [
       "grit/history_resources.h",
@@ -213,77 +213,17 @@ js_library("synced_device_manager") {
   ]
 }
 
-group("polymer3_elements") {
-  public_deps = [
-    ":app_module",
-    ":history_item_module",
-    ":history_list_module",
-    ":history_toolbar_module",
-    ":router_module",
-    ":shared_style_module",
-    ":shared_vars_module",
-    ":side_bar_module",
-    ":synced_device_card_module",
-    ":synced_device_manager_module",
+html_to_js("web_components") {
+  js_files = [
+    "app.js",
+    "history_item.js",
+    "history_list.js",
+    "history_toolbar.js",
+    "router.js",
+    "shared_style.js",
+    "shared_vars.js",
+    "side_bar.js",
+    "synced_device_card.js",
+    "synced_device_manager.js",
   ]
-}
-
-polymer_modulizer("app") {
-  html_file = "app.html"
-  js_file = "app.js"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("history_item") {
-  html_file = "history_item.html"
-  js_file = "history_item.js"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("history_list") {
-  html_file = "history_list.html"
-  js_file = "history_list.js"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("history_toolbar") {
-  html_file = "history_toolbar.html"
-  js_file = "history_toolbar.js"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("router") {
-  html_file = "router.html"
-  js_file = "router.js"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("shared_style") {
-  html_file = "shared_style.html"
-  js_file = "shared_style.js"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("shared_vars") {
-  html_file = "shared_vars.html"
-  js_file = "shared_vars.js"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("side_bar") {
-  html_file = "side_bar.html"
-  js_file = "side_bar.js"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("synced_device_card") {
-  html_file = "synced_device_card.html"
-  js_file = "synced_device_card.js"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("synced_device_manager") {
-  html_file = "synced_device_manager.html"
-  js_file = "synced_device_manager.js"
-  html_type = "v3-ready"
 }

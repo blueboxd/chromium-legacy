@@ -3902,6 +3902,12 @@
   <message name="IDS_ASSISTANT_OOBE_USER_IMAGE" desc="Image label for the user image.">
     User image
   </message>
+  <message name="IDS_ASSISTANT_QUICK_ANSWERS_SETTING_TITLE" desc="Title for a toggle that allows showing related info when user right clicks or long press on content.">
+    Quick Answers
+  </message>
+  <message name="IDS_ASSISTANT_QUICK_ANSWERS_SETTING_DESC" desc="Description for a toggle that allows showing related info when user right clicks or long press on content.">
+    Show related info when you right click or long press on content
+  </message>
   <message name="IDS_ASSISTANT_SCREEN_CONTEXT_TITLE" desc="Title for assistant screen context optin. This is also used as the title for a toggle that lets the assistant use whats on the screen in Assistant settings page.">
     Related info
   </message>

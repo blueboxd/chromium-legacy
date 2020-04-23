@@ -5,6 +5,7 @@
 #ifndef CONTENT_SHELL_RENDERER_WEB_TEST_BLINK_TEST_HELPERS_H_
 #define CONTENT_SHELL_RENDERER_WEB_TEST_BLINK_TEST_HELPERS_H_
 
+#include "base/strings/string_piece.h"
 #include "third_party/blink/public/platform/web_url.h"
 
 #include <string>
@@ -23,10 +24,14 @@ struct WebPreferences;
 void ExportWebTestSpecificPreferences(const TestPreferences& from,
                                       WebPreferences* to);
 
-// Replaces file:///tmp/web_tests/ with the actual path to the
-// web_tests directory, or rewrite URLs generated from absolute
-// path links in web-platform-tests.
-blink::WebURL RewriteWebTestsURL(const std::string& utf8_url, bool is_wpt_mode);
+// Replaces file:///tmp/web_tests/ with the actual path to the web_tests
+// directory, or rewrite URLs generated from absolute path links in
+// web-platform-tests.
+blink::WebURL RewriteWebTestsURL(base::StringPiece utf8_url, bool is_wpt_mode);
+
+// The same as RewriteWebTestsURL() unless the resource is a path starting
+// with /tmp/, then return a file URL to a temporary file.
+blink::WebURL RewriteFileURLToLocalResource(base::StringPiece resource);
 
 // Get the color space for a given name string. This is not in the ColorSpace
 // class to avoid bloating the shipping build.

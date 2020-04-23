@@ -292,6 +292,13 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // view hierarchy.
   const AppListConfig& GetAppListConfig() const;
 
+  // Helper functions to toggle the Apps Grid Cardified state. The cardified
+  // state scales down apps and is shown when the user drags an app in the
+  // AppList.
+  void StartAppsGridCardifiedView();
+  void EndAppsGridCardifiedView();
+  void AnimateCardifiedState();
+
   // Return the view model.
   views::ViewModelT<AppListItemView>* view_model() { return &view_model_; }
 
@@ -842,6 +849,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   // If true, Layout() does nothing. See where set for details.
   bool ignore_layout_ = false;
+
+  // True if the AppList is in cardified state.
+  bool cardified_state_ = false;
 
   // Records smoothness of pagination animation.
   std::unique_ptr<AppListAnimationMetricsRecorder> pagination_metrics_recorder_;

@@ -866,13 +866,24 @@ bool CreditCard::HasNameOnCard() const {
 }
 
 bool CreditCard::HasValidNickname() const {
-  // Valid nickname: 1) Non-empty 2) Doesn't exceed max length 3) Doesn't
-  // contain newline or tab or carriage return characters (even though we
-  // already enforced this when we set the nickname).
-  return !nickname_.empty() && nickname_.size() <= kMaxNicknameLength &&
-         nickname_.find('\n') == base::string16::npos &&
-         nickname_.find('\r') == base::string16::npos &&
-         nickname_.find('\t') == base::string16::npos;
+  // Valid nickname must not be empty.
+  if (nickname_.empty())
+    return false;
+  // Must not exceed max length.
+  if (nickname_.size() > kMaxNicknameLength)
+    return false;
+  // Must not contain newlines, tabs, or carriage returns.
+  if (nickname_.find('\n') != base::string16::npos ||
+      nickname_.find('\r') != base::string16::npos ||
+      nickname_.find('\t') != base::string16::npos) {
+    return false;
+  }
+  // Must not contain digits.
+  for (char c : nickname_) {
+    if (base::IsAsciiDigit(c))
+      return false;
+  }
+  return true;
 }
 
 base::string16 CreditCard::Expiration2DigitYearAsString() const {

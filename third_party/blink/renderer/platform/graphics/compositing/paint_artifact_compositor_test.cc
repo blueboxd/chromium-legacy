@@ -162,20 +162,27 @@ class PaintArtifactCompositorTest : public testing::Test,
   // CompositeAfterPaint creates scroll hit test data (which create scroll hit
   // test layers in PaintArtifactCompositor) whereas before CompositeAfterPaint,
   // scrollable foreign layers are created in ScrollingCoordinator and passed
-  // to PaintArtifactCompositor. This function is used to create a chunk
-  // representing the scrollable layer in either of these modes.
-  void CreateScrollableChunk(TestPaintArtifact& artifact,
-                             const TransformPaintPropertyNode& scroll_offset,
-                             const ClipPaintPropertyNode& clip,
-                             const EffectPaintPropertyNode& effect) {
+  // to PaintArtifactCompositor.
+  void CreateScrollableChunk(
+      TestPaintArtifact& artifact,
+      const TransformPaintPropertyNode& scroll_translation,
+      const ClipPaintPropertyNode& clip,
+      const EffectPaintPropertyNode& effect) {
+    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+      artifact.Chunk(*scroll_translation.Parent(), clip, effect)
+          .ScrollHitTest(&scroll_translation);
+      return;
+    }
+
     // Create a foreign layer for scrolling, roughly matching the layer
     // created by ScrollingCoordinator.
-    const auto* scroll_node = scroll_offset.ScrollNode();
-    scoped_refptr<cc::Layer> layer = cc::Layer::Create();
+    const auto* scroll_node = scroll_translation.ScrollNode();
     auto rect = scroll_node->ContainerRect();
+    scoped_refptr<cc::Layer> layer = cc::Layer::Create();
     layer->SetBounds(gfx::Size(rect.Size()));
     layer->SetElementId(scroll_node->GetCompositorElementId());
-    artifact.Chunk(scroll_offset, clip, effect)
+    layer->SetHitTestable(true);
+    artifact.Chunk(scroll_translation, clip, effect)
         .ForeignLayer(layer, FloatPoint(rect.Location()));
   }
 
@@ -1081,11 +1088,12 @@ static void CheckCcScrollNode(const ScrollPaintPropertyNode& blink_scroll,
             cc_scroll.main_thread_scrolling_reasons);
 }
 
-TEST_P(PaintArtifactCompositorTest, OneScrollNode) {
+TEST_P(PaintArtifactCompositorTest, OneScrollNodeComposited) {
   CompositorElementId scroll_element_id = ScrollElementId(2);
   auto scroll = CreateScroll(ScrollPaintPropertyNode::Root(), ScrollState1(),
                              kNotScrollingOnMain, scroll_element_id);
-  auto scroll_translation = CreateScrollTranslation(t0(), 7, 9, *scroll);
+  auto scroll_translation =
+      CreateCompositedScrollTranslation(t0(), 7, 9, *scroll);
 
   TestPaintArtifact artifact;
   CreateScrollableChunk(artifact, *scroll_translation, c0(), e0());
@@ -1143,6 +1151,30 @@ TEST_P(PaintArtifactCompositorTest, OneScrollNode) {
       scroll_node.element_id, true);
 }
 
+TEST_P(PaintArtifactCompositorTest, OneScrollNodeNonComposited) {
+  // In pre-CompositeAfterPaint, PaintArtifactCompositor doesn't see
+  // non-composited scroll node.
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+
+  CompositorElementId scroll_element_id = ScrollElementId(2);
+  auto scroll = CreateScroll(ScrollPaintPropertyNode::Root(), ScrollState1(),
+                             kNotScrollingOnMain, scroll_element_id);
+  auto scroll_translation = CreateScrollTranslation(t0(), 7, 9, *scroll);
+
+  TestPaintArtifact artifact;
+  CreateScrollableChunk(artifact, *scroll_translation, c0(), e0());
+  artifact.Chunk(*scroll_translation, c0(), e0())
+      .RectDrawing(IntRect(-110, 12, 170, 19), Color::kWhite);
+
+  Update(artifact.Build());
+  // Node #0 reserved for null; #1 for root render surface. Blink nodes are all
+  // decomposited.
+  EXPECT_EQ(2u, GetPropertyTrees().scroll_tree.size());
+  EXPECT_EQ(2u, GetPropertyTrees().transform_tree.size());
+  EXPECT_EQ(1u, LayerCount());
+}
+
 TEST_P(PaintArtifactCompositorTest, TransformUnderScrollNode) {
   auto scroll = CreateScroll(ScrollPaintPropertyNode::Root(), ScrollState1());
   auto scroll_translation = CreateScrollTranslation(t0(), 7, 9, *scroll);
@@ -1197,14 +1229,14 @@ TEST_P(PaintArtifactCompositorTest, NestedScrollNodes) {
       ScrollPaintPropertyNode::Root(), ScrollState1(),
       cc::MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects,
       scroll_element_id_a);
-  auto scroll_translation_a = CreateScrollTranslation(
-      t0(), 11, 13, *scroll_a, CompositingReason::kLayerForScrollingContents);
+  auto scroll_translation_a =
+      CreateCompositedScrollTranslation(t0(), 11, 13, *scroll_a);
 
   CompositorElementId scroll_element_id_b = ScrollElementId(3);
   auto scroll_b = CreateScroll(*scroll_a, ScrollState2(), kNotScrollingOnMain,
                                scroll_element_id_b);
-  auto scroll_translation_b =
-      CreateScrollTranslation(*scroll_translation_a, 37, 41, *scroll_b);
+  auto scroll_translation_b = CreateCompositedScrollTranslation(
+      *scroll_translation_a, 37, 41, *scroll_b);
   TestPaintArtifact artifact;
   artifact.Chunk(*scroll_translation_a, c0(), *effect)
       .RectDrawing(IntRect(7, 11, 13, 17), Color::kWhite);
@@ -1274,6 +1306,7 @@ TEST_P(PaintArtifactCompositorTest, ScrollHitTestLayerOrder) {
       scroll_tree.Node(ScrollableLayerAt(0)->scroll_tree_index());
   ASSERT_EQ(scroll_element_id, scroll_node->element_id);
   EXPECT_EQ(scroll_element_id, ScrollableLayerAt(0)->element_id());
+  EXPECT_TRUE(ScrollableLayerAt(0)->HitTestable());
 
   // The second content layer should appear after the first.
   EXPECT_LT(LayerIndex(ScrollableLayerAt(0)),
@@ -1331,6 +1364,9 @@ TEST_P(PaintArtifactCompositorTest, NestedScrollableLayerOrder) {
   // The non-scrollable content layer should be after the second scroll layer.
   EXPECT_LT(LayerIndex(ScrollableLayerAt(1)),
             LayerIndex(NonScrollableLayerAt(0)));
+
+  EXPECT_TRUE(ScrollableLayerAt(0)->HitTestable());
+  EXPECT_TRUE(ScrollableLayerAt(1)->HitTestable());
 }
 
 // If a scroll node is encountered before its parent, ensure the parent scroll
@@ -3102,6 +3138,8 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipRotatedNotSupported) {
   EXPECT_TRUE(mask_isolation_0.HasRenderSurface());
 
   EXPECT_EQ(SynthesizedClipLayerAt(0), clip_mask0);
+  EXPECT_TRUE(clip_mask0->DrawsContent());
+  EXPECT_TRUE(clip_mask0->HitTestable());
   EXPECT_EQ(gfx::Size(300, 200), clip_mask0->bounds());
   EXPECT_EQ(c1_id, clip_mask0->clip_tree_index());
   int mask_effect_0_id = clip_mask0->effect_tree_index();
@@ -3196,6 +3234,8 @@ TEST_P(PaintArtifactCompositorTest,
   EXPECT_TRUE(mask_isolation_0.HasRenderSurface());
 
   EXPECT_EQ(SynthesizedClipLayerAt(0), clip_mask0);
+  EXPECT_TRUE(clip_mask0->DrawsContent());
+  EXPECT_TRUE(clip_mask0->HitTestable());
   EXPECT_EQ(gfx::Size(300, 200), clip_mask0->bounds());
   EXPECT_EQ(c1_id, clip_mask0->clip_tree_index());
   int mask_effect_0_id = clip_mask0->effect_tree_index();

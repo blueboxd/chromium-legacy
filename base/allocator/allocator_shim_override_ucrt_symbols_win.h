@@ -5,9 +5,7 @@
 // This header defines symbols to override the same functions in the Visual C++
 // CRT implementation.
 
-#ifdef BASE_ALLOCATOR_ALLOCATOR_SHIM_OVERRIDE_UCRT_SYMBOLS_WIN_H_
-#error This header is meant to be included only once by allocator_shim.cc
-#endif
+#ifndef BASE_ALLOCATOR_ALLOCATOR_SHIM_OVERRIDE_UCRT_SYMBOLS_WIN_H_
 #define BASE_ALLOCATOR_ALLOCATOR_SHIM_OVERRIDE_UCRT_SYMBOLS_WIN_H_
 
 #include <malloc.h>
@@ -147,28 +145,6 @@ __declspec(restrict) void* _aligned_offset_recalloc(void* address,
   __builtin_unreachable();
 }
 
-// The symbols
-//   * __acrt_heap
-//   * __acrt_initialize_heap
-//   * __acrt_uninitialize_heap
-//   * _get_heap_handle
-// must be overridden all or none, as they are otherwise supplied
-// by heap_handle.obj in the ucrt.lib file.
-HANDLE __acrt_heap = nullptr;
-
-bool __acrt_initialize_heap() {
-  __acrt_heap = ::HeapCreate(0, 0, 0);
-  return true;
-}
-
-bool __acrt_uninitialize_heap() {
-  ::HeapDestroy(__acrt_heap);
-  __acrt_heap = nullptr;
-  return true;
-}
-
-intptr_t _get_heap_handle(void) {
-  return reinterpret_cast<intptr_t>(__acrt_heap);
-}
-
 }  // extern "C"
+
+#endif  // BASE_ALLOCATOR_ALLOCATOR_SHIM_OVERRIDE_UCRT_SYMBOLS_WIN_H_

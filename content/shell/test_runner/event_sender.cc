@@ -1056,7 +1056,7 @@ void EventSenderBindings::ScheduleAsynchronousClick(gin::Arguments* args) {
     if (!args->PeekNext().IsEmpty())
       modifiers = GetKeyModifiersFromV8(args->isolate(), args->PeekNext());
   }
-  sender_->ScheduleAsynchronousClick(button_number, modifiers);
+  sender_->ScheduleAsynchronousClick(frame_, button_number, modifiers);
 }
 
 void EventSenderBindings::ScheduleAsynchronousKeyDown(gin::Arguments* args) {
@@ -1074,7 +1074,7 @@ void EventSenderBindings::ScheduleAsynchronousKeyDown(gin::Arguments* args) {
     if (!args->PeekNext().IsEmpty())
       args->GetNext(&location);
   }
-  sender_->ScheduleAsynchronousKeyDown(code_str, modifiers,
+  sender_->ScheduleAsynchronousKeyDown(frame_, code_str, modifiers,
                                        static_cast<KeyLocationCode>(location));
 }
 
@@ -2239,21 +2239,27 @@ void EventSender::MouseLeave(
   HandleInputEventOnViewOrPopup(event);
 }
 
-void EventSender::ScheduleAsynchronousClick(int button_number, int modifiers) {
-  blink_test_runner()->PostTask(base::BindOnce(&EventSender::MouseDown,
-                                               weak_factory_.GetWeakPtr(),
-                                               button_number, modifiers));
-  blink_test_runner()->PostTask(base::BindOnce(&EventSender::MouseUp,
-                                               weak_factory_.GetWeakPtr(),
-                                               button_number, modifiers));
+void EventSender::ScheduleAsynchronousClick(WebLocalFrame* frame,
+                                            int button_number,
+                                            int modifiers) {
+  frame->GetTaskRunner(blink::TaskType::kInternalTest)
+      ->PostTask(FROM_HERE, base::BindOnce(&EventSender::MouseDown,
+                                           weak_factory_.GetWeakPtr(),
+                                           button_number, modifiers));
+  frame->GetTaskRunner(blink::TaskType::kInternalTest)
+      ->PostTask(FROM_HERE, base::BindOnce(&EventSender::MouseUp,
+                                           weak_factory_.GetWeakPtr(),
+                                           button_number, modifiers));
 }
 
-void EventSender::ScheduleAsynchronousKeyDown(const std::string& code_str,
+void EventSender::ScheduleAsynchronousKeyDown(blink::WebLocalFrame* frame,
+                                              const std::string& code_str,
                                               int modifiers,
                                               KeyLocationCode location) {
-  blink_test_runner()->PostTask(base::BindOnce(&EventSender::KeyDown,
-                                               weak_factory_.GetWeakPtr(),
-                                               code_str, modifiers, location));
+  frame->GetTaskRunner(blink::TaskType::kInternalTest)
+      ->PostTask(FROM_HERE, base::BindOnce(&EventSender::KeyDown,
+                                           weak_factory_.GetWeakPtr(), code_str,
+                                           modifiers, location));
 }
 
 void EventSender::ConsumeUserActivation() {

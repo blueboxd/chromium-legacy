@@ -3,9 +3,11 @@ Document
 ++++Group IsControlElement=false
 ++++++Group IsControlElement=false
 ++++++++Text Name='a'
+++++++Group IsControlElement=false
 ++++++++Text Name='2'
 ++++++Group IsControlElement=false
 ++++++++Text Name='+'
 ++++++Group IsControlElement=false
 ++++++++Text Name='b'
+++++++Group IsControlElement=false
 ++++++++Text Name='2'

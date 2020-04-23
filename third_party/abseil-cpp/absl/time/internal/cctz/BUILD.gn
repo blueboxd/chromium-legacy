@@ -10,7 +10,7 @@ absl_source_set("civil_time") {
     "include/cctz/civil_time.h",
     "include/cctz/civil_time_detail.h",
   ]
-  deps = [ "../../../base:config" ]
+  deps = [ "//third_party/abseil-cpp/absl/base:config" ]
 }
 
 absl_source_set("time_zone") {
@@ -41,6 +41,6 @@ absl_source_set("time_zone") {
   }
   deps = [
     ":civil_time",
-    "../../../base:config",
+    "//third_party/abseil-cpp/absl/base:config",
   ]
 }

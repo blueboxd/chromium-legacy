@@ -82,10 +82,15 @@ void WebWidgetTestProxy::ScheduleAnimationInternal(bool do_raster) {
 
   if (!animation_scheduled_) {
     animation_scheduled_ = true;
-    GetWebViewTestProxy()->blink_test_runner()->PostDelayedTask(
-        base::BindOnce(&WebWidgetTestProxy::AnimateNow,
-                       weak_factory_.GetWeakPtr()),
-        base::TimeDelta::FromMilliseconds(1));
+
+    auto* web_widget = static_cast<blink::WebFrameWidget*>(GetWebWidget());
+    blink::WebLocalFrame* frame = web_widget->LocalRoot();
+
+    frame->GetTaskRunner(blink::TaskType::kInternalTest)
+        ->PostDelayedTask(FROM_HERE,
+                          base::BindOnce(&WebWidgetTestProxy::AnimateNow,
+                                         weak_factory_.GetWeakPtr()),
+                          base::TimeDelta::FromMilliseconds(1));
   }
 }
 

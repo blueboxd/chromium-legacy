@@ -20,7 +20,6 @@ class AssistantKeyboardCoordinator {
     private final CompositorViewHolder mCompositorViewHolder;
     private final KeyboardVisibilityListener mKeyboardVisibilityListener =
             this::onKeyboardVisibilityChanged;
-    private boolean mAllowShowingSoftKeyboard = true;
     private Delegate mDelegate;
 
     interface Delegate {
@@ -42,8 +41,6 @@ class AssistantKeyboardCoordinator {
                 } else {
                     enableListenForKeyboardVisibility(false);
                 }
-            } else if (AssistantModel.ALLOW_SOFT_KEYBOARD == propertyKey) {
-                allowShowingSoftKeyboard(model.get(AssistantModel.ALLOW_SOFT_KEYBOARD));
             }
         });
     }
@@ -66,16 +63,6 @@ class AssistantKeyboardCoordinator {
     }
 
     /**
-     * Enable or disable the soft keyboard.
-     */
-    private void allowShowingSoftKeyboard(boolean allowed) {
-        mAllowShowingSoftKeyboard = allowed;
-        if (!allowed) {
-            mKeyboardDelegate.hideKeyboard(mCompositorViewHolder);
-        }
-    }
-
-    /**
      * Start or stop listening for keyboard visibility changes.
      */
     private void enableListenForKeyboardVisibility(boolean enabled) {
@@ -86,12 +73,7 @@ class AssistantKeyboardCoordinator {
         }
     }
 
-    // TODO(crbug.com/806868): Current solution only hides the keyboard once it has been already
-    // shown. We should improve it and prevent from the showing in the first place.
     private void onKeyboardVisibilityChanged(boolean isShowing) {
         mDelegate.onKeyboardVisibilityChanged(isShowing);
-        if (isShowing && !mAllowShowingSoftKeyboard) {
-            hideKeyboard();
-        }
     }
 }

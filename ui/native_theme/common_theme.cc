@@ -197,6 +197,7 @@ base::Optional<SkColor> GetDarkSchemeColor(NativeTheme::ColorId color_id) {
     case NativeTheme::kColorId_AlertSeverityHigh:
       return gfx::kGoogleRed300;
 
+    case NativeTheme::kColorId_MenuIconColor:
     case NativeTheme::kColorId_DefaultIconColor:
       return gfx::kGoogleGrey500;
     default:
@@ -524,6 +525,7 @@ SkColor GetDefaultColor(NativeTheme::ColorId color_id,
     case NativeTheme::kColorId_FootnoteContainerBorder:
       return gfx::kGoogleGrey200;
 
+    case NativeTheme::kColorId_MenuIconColor:
     case NativeTheme::kColorId_DefaultIconColor:
       return gfx::kGoogleGrey700;
 

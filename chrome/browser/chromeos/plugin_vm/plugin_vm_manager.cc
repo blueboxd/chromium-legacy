@@ -7,6 +7,7 @@
 #include "ash/public/cpp/notification_utils.h"
 #include "base/bind_helpers.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_share_path.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_engagement_metrics_service.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_files.h"
@@ -268,10 +269,11 @@ void PluginVmManager::UpdateVmState(
   chromeos::DBusThreadManager::Get()
       ->GetDebugDaemonClient()
       ->StartPluginVmDispatcher(
-          owner_id_, base::BindOnce(&PluginVmManager::OnStartDispatcher,
-                                    weak_ptr_factory_.GetWeakPtr(),
-                                    std::move(success_callback),
-                                    std::move(error_callback)));
+          owner_id_, g_browser_process->GetApplicationLocale(),
+          base::BindOnce(&PluginVmManager::OnStartDispatcher,
+                         weak_ptr_factory_.GetWeakPtr(),
+                         std::move(success_callback),
+                         std::move(error_callback)));
 }
 
 void PluginVmManager::OnStartDispatcher(

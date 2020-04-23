@@ -25,11 +25,11 @@
 
 namespace variations {
 
-namespace {
-
 // The name string for the header for variations information.
 // Note that prior to M33 this header was named X-Chrome-Variations.
 const char kClientDataHeader[] = "X-Client-Data";
+
+namespace {
 
 // The result of checking if a URL should have variations headers appended.
 // This enum is used to record UMA histogram values, and should not be

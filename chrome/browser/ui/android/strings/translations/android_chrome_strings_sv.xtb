@@ -638,7 +638,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5684874026226664614">Det gick inte att översätta sidan.</translation>
 <translation id="5686790454216892815">Filnamnet är för långt</translation>
 <translation id="5689516760719285838">Plats</translation>
-<translation id="5690795753582697420">Kamera har inaktiverats i inställningarna för Android</translation>
+<translation id="5690795753582697420">Kameran har inaktiverats i inställningarna för Android</translation>
 <translation id="5694049548840660018">Kom tillbaka till startsidan snabbt</translation>
 <translation id="569536719314091526">Översätt den här sidan till vilket språk som helst via knappen Fler alternativ</translation>
 <translation id="5710871682236653961">Fråga innan webbplatser tillåts att skicka och ta emot uppgifter när du snuddar vid NFC-enheter (rekommenderas)</translation>
@@ -963,7 +963,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8073388330009372546">Öppna bild i ny flik</translation>
 <translation id="8076492880354921740">Flikar</translation>
 <translation id="8084114998886531721">Sparat lösenord</translation>
-<translation id="8087000398470557479">Innehållet kommer från <ph name="DOMAIN_NAME" /> via Google.</translation>
 <translation id="8103578431304235997">Inkognitoflik</translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8109613176066109935">Aktivera synkronisering om du vill ha dina bokmärken tillgängliga på alla enheter</translation>

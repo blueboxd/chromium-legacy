@@ -11,6 +11,7 @@ component("chromeos") {
   sources = [
     "devicetype_utils.cc",
     "devicetype_utils.h",
+    "ime/assistive_delegate.h",
     "ime/candidate_view.cc",
     "ime/candidate_view.h",
     "ime/candidate_window_constants.h",
@@ -26,6 +27,8 @@ component("chromeos") {
     "ime/suggestion_view.h",
     "ime/suggestion_window_view.cc",
     "ime/suggestion_window_view.h",
+    "ime/undo_window.cc",
+    "ime/undo_window.h",
     "user_activity_power_manager_notifier.cc",
     "user_activity_power_manager_notifier.h",
   ]

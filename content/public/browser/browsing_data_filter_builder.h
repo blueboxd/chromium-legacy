@@ -28,7 +28,7 @@ namespace content {
 // entries can be origins or registrable domains.
 //
 // This class defines interface to build filters for various kinds of browsing
-// data. |BuildGeneralFilter()| is useful for most browsing data storage
+// data. |BuildUrlFilter()| is useful for most browsing data storage
 // backends, but some backends, such as website settings and cookies, use
 // other formats of filter.
 class CONTENT_EXPORT BrowsingDataFilterBuilder {
@@ -63,7 +63,7 @@ class CONTENT_EXPORT BrowsingDataFilterBuilder {
 
   // Builds a filter that matches URLs that are in the whitelist,
   // or aren't in the blacklist.
-  virtual base::RepeatingCallback<bool(const GURL&)> BuildGeneralFilter() = 0;
+  virtual base::RepeatingCallback<bool(const GURL&)> BuildUrlFilter() = 0;
 
   // Builds a filter that can be used with the network service. This uses a Mojo
   // struct rather than a predicate function (as used by the rest of the filters

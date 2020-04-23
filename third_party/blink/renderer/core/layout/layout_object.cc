@@ -547,7 +547,10 @@ bool LayoutObject::IsRenderedLegendInternal() const {
   const auto* parent = Parent();
   if (RuntimeEnabledFeatures::LayoutNGFieldsetEnabled()) {
     // If there is a rendered legend, it will be found inside the anonymous
-    // fieldset wrapper.
+    // fieldset wrapper. If the anonymous fieldset wrapper is a multi-column,
+    // the rendered legend will be found inside the multi-column flow thread.
+    if (parent->IsLayoutFlowThread())
+      parent = parent->Parent();
     if (parent->IsAnonymous() && parent->Parent()->IsLayoutNGFieldset())
       parent = parent->Parent();
   }
@@ -1995,11 +1998,12 @@ StyleDifference LayoutObject::AdjustStyleDifference(
         StyleRef().HasBackgroundRelatedColorReferencingCurrentColor() ||
         // Skip any text nodes that do not contain text boxes. Whitespace cannot
         // be skipped or we will miss invalidating decorations (e.g.,
-        // underlines).
+        // underlines). MathML elements are not skipped either as some of them
+        // do special painting (e.g. fraction bar).
         (IsText() && !IsBR() && ToLayoutText(this)->HasInlineFragments()) ||
         (IsSVG() && StyleRef().SvgStyle().IsFillColorCurrentColor()) ||
         (IsSVG() && StyleRef().SvgStyle().IsStrokeColorCurrentColor()) ||
-        IsListMarker() || IsDetailsMarker())
+        IsListMarker() || IsDetailsMarker() || IsMathML())
       diff.SetNeedsPaintInvalidation();
   }
 

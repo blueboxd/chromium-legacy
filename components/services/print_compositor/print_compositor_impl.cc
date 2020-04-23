@@ -12,6 +12,7 @@
 #include "base/memory/discardable_memory.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/discardable_memory/client/client_discardable_shared_memory_manager.h"
@@ -161,6 +162,7 @@ void PrintCompositorImpl::CompositePageToPdf(
     base::ReadOnlySharedMemoryRegion serialized_content,
     const ContentToFrameMap& subframe_content_map,
     mojom::PrintCompositor::CompositePageToPdfCallback callback) {
+  TRACE_EVENT0("print", "PrintCompositorImpl::CompositePageToPdf");
   if (docinfo_)
     docinfo_->pages_provided++;
   HandleCompositionRequest(frame_guid, std::move(serialized_content),
@@ -172,6 +174,7 @@ void PrintCompositorImpl::CompositeDocumentToPdf(
     base::ReadOnlySharedMemoryRegion serialized_content,
     const ContentToFrameMap& subframe_content_map,
     mojom::PrintCompositor::CompositeDocumentToPdfCallback callback) {
+  TRACE_EVENT0("print", "PrintCompositorImpl::CompositeDocumentToPdf");
   DCHECK(!docinfo_);
   HandleCompositionRequest(frame_guid, std::move(serialized_content),
                            subframe_content_map, std::move(callback));
@@ -325,6 +328,8 @@ mojom::PrintCompositor::Status PrintCompositorImpl::CompositeToPdf(
     base::ReadOnlySharedMemoryMapping shared_mem,
     const ContentToFrameMap& subframe_content_map,
     base::ReadOnlySharedMemoryRegion* region) {
+  TRACE_EVENT0("print", "PrintCompositorImpl::CompositeToPdf");
+
   if (!shared_mem.IsValid()) {
     DLOG(ERROR) << "CompositeToPdf: Invalid input.";
     return mojom::PrintCompositor::Status::kHandleMapError;
@@ -353,6 +358,7 @@ mojom::PrintCompositor::Status PrintCompositorImpl::CompositeToPdf(
       MakePdfDocument(creator_, ui::AXTreeUpdate(), &wstream);
 
   for (const auto& page : pages) {
+    TRACE_EVENT0("print", "PrintCompositorImpl::CompositeToPdf draw page");
     SkCanvas* canvas = doc->beginPage(page.fSize.width(), page.fSize.height());
     canvas->drawPicture(page.fPicture);
     doc->endPage();

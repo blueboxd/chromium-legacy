@@ -34,7 +34,7 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "cc/input/main_thread_scrolling_reason.h"
-#include "cc/layers/scrollbar_layer_base.h"
+#include "cc/layers/solid_color_scrollbar_layer.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -630,9 +630,6 @@ void VisualViewport::UpdateScrollbarLayer(ScrollbarOrientation orientation) {
   scoped_refptr<cc::ScrollbarLayerBase>& scrollbar_layer =
       is_horizontal ? scrollbar_layer_horizontal_ : scrollbar_layer_vertical_;
   if (!scrollbar_layer) {
-    ScrollingCoordinator* coordinator = GetPage().GetScrollingCoordinator();
-    DCHECK(coordinator);
-
     auto& theme = ScrollbarThemeOverlayMobile::GetInstance();
     int thumb_thickness = clampTo<int>(
         std::floor(GetPage().GetChromeClient().WindowToViewportScalar(
@@ -640,9 +637,12 @@ void VisualViewport::UpdateScrollbarLayer(ScrollbarOrientation orientation) {
     int scrollbar_margin = clampTo<int>(
         std::floor(GetPage().GetChromeClient().WindowToViewportScalar(
             MainFrame(), theme.ScrollbarMargin())));
-    scrollbar_layer = coordinator->CreateSolidColorScrollbarLayer(
-        orientation, thumb_thickness, scrollbar_margin, false,
-        GetScrollbarElementId(orientation));
+    cc::ScrollbarOrientation cc_orientation =
+        orientation == kHorizontalScrollbar ? cc::HORIZONTAL : cc::VERTICAL;
+    scrollbar_layer = cc::SolidColorScrollbarLayer::Create(
+        cc_orientation, thumb_thickness, scrollbar_margin,
+        /*is_left_side_vertical_scrollbar*/ false);
+    scrollbar_layer->SetElementId(GetScrollbarElementId(orientation));
     scrollbar_layer->SetScrollElementId(scroll_layer_->element_id());
     scrollbar_layer->SetIsDrawable(true);
   }

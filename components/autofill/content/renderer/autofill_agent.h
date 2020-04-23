@@ -41,6 +41,7 @@ class WebVector;
 namespace autofill {
 
 struct FormData;
+class AutofillAssistantAgent;
 class PasswordAutofillAgent;
 class PasswordGenerationAgent;
 class FieldDataManager;
@@ -58,11 +59,12 @@ class AutofillAgent : public content::RenderFrameObserver,
                       public mojom::AutofillAgent {
  public:
   // PasswordAutofillAgent is guaranteed to outlive AutofillAgent.
-  // PasswordGenerationAgent may be NULL. If it is not, then it is also
-  // guaranteed to outlive AutofillAgent.
+  // PasswordGenerationAgent and AutofillAssistantAgent may be nullptr. If they
+  // are not, then they are also guaranteed to outlive AutofillAgent.
   AutofillAgent(content::RenderFrame* render_frame,
                 PasswordAutofillAgent* password_autofill_manager,
                 PasswordGenerationAgent* password_generation_agent,
+                AutofillAssistantAgent* autofill_assistant_agent,
                 blink::AssociatedInterfaceRegistry* registry);
   ~AutofillAgent() override;
 
@@ -96,6 +98,7 @@ class AutofillAgent : public content::RenderFrameObserver,
   void GetElementFormAndFieldData(
       const std::vector<std::string>& selectors,
       GetElementFormAndFieldDataCallback callback) override;
+  void SetAssistantActionState(bool running) override;
 
   void FormControlElementClicked(const blink::WebFormControlElement& element,
                                  bool was_focused);
@@ -292,6 +295,7 @@ class AutofillAgent : public content::RenderFrameObserver,
 
   PasswordAutofillAgent* password_autofill_agent_;      // Weak reference.
   PasswordGenerationAgent* password_generation_agent_;  // Weak reference.
+  AutofillAssistantAgent* autofill_assistant_agent_;    // Weak reference.
 
   // The ID of the last request sent for form field Autofill.  Used to ignore
   // out of date responses.

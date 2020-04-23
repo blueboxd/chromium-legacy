@@ -122,8 +122,8 @@
 // Sets whether the UI is displaying incognito content.
 - (void)setIncognitoContentVisible:(BOOL)incognitoContentVisible;
 
-// Open a new window.
-- (void)openNewWindow;
+// Open a new window with |userActivity|
+- (void)openNewWindowWithActivity:(NSUserActivity*)userActivity;
 
 @end
 

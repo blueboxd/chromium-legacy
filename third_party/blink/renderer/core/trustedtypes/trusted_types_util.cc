@@ -10,9 +10,8 @@
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_html_or_trusted_script_or_trusted_script_url.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
-#include "third_party/blink/renderer/bindings/core/v8/window_proxy_manager.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
-#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/script/script_element_base.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_html.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_script.h"
@@ -178,18 +177,16 @@ TrustedTypePolicy* GetDefaultPolicy(const ExecutionContext* execution_context) {
 // for each case.
 String GetStringFromScriptHelper(
     const String& script,
-    Document* doc,
+    ExecutionContext* context,
 
     // Parameters to customize error messages:
     const char* element_name_for_exception,
     const char* attribute_name_for_exception,
     TrustedTypeViolationKind violation_kind,
     TrustedTypeViolationKind violation_kind_when_default_policy_failed) {
-  if (!doc)
+  if (!context)
     return script;
-  bool require_trusted_type =
-      RequireTrustedTypesCheck(doc->ToExecutionContext());
-  if (!require_trusted_type)
+  if (!RequireTrustedTypesCheck(context))
     return script;
 
   // Set up JS context & friends.
@@ -206,21 +203,16 @@ String GetStringFromScriptHelper(
   //   Unlike the various ScriptController::Execute* and ..::Eval* methods,
   //   we are not executing a source String, but an already compiled callback
   //   function.
-  v8::HandleScope handle_scope(doc->GetIsolate());
+  v8::HandleScope handle_scope(context->GetIsolate());
   ScriptState::Scope script_state_scope(
-      ScriptState::From(static_cast<LocalWindowProxyManager*>(
-                            doc->GetFrame()->GetWindowProxyManager())
-                            ->MainWorldProxy()
-                            ->ContextIfInitialized()));
+      ToScriptState(context, DOMWrapperWorld::MainWorld()));
   ExceptionState exception_state(
-      doc->GetIsolate(), ExceptionState::kUnknownContext,
+      context->GetIsolate(), ExceptionState::kUnknownContext,
       element_name_for_exception, attribute_name_for_exception);
 
-  TrustedTypePolicy* default_policy =
-      GetDefaultPolicy(doc->ToExecutionContext());
+  TrustedTypePolicy* default_policy = GetDefaultPolicy(context);
   if (!default_policy) {
-    if (TrustedTypeFail(violation_kind, doc->ToExecutionContext(),
-                        exception_state, script)) {
+    if (TrustedTypeFail(violation_kind, context, exception_state, script)) {
       exception_state.ClearException();
       return String();
     }
@@ -228,8 +220,8 @@ String GetStringFromScriptHelper(
   }
 
   TrustedScript* result = default_policy->CreateScript(
-      doc->GetIsolate(), script,
-      GetDefaultCallbackArgs(doc->GetIsolate(), "TrustedScript",
+      context->GetIsolate(), script,
+      GetDefaultCallbackArgs(context->GetIsolate(), "TrustedScript",
                              exception_state),
       exception_state);
   if (exception_state.HadException()) {
@@ -238,8 +230,8 @@ String GetStringFromScriptHelper(
   }
 
   if (result->toString().IsNull()) {
-    if (TrustedTypeFail(violation_kind_when_default_policy_failed,
-                        doc->ToExecutionContext(), exception_state, script)) {
+    if (TrustedTypeFail(violation_kind_when_default_policy_failed, context,
+                        exception_state, script)) {
       exception_state.ClearException();
       return String();
     }
@@ -299,14 +291,6 @@ String TrustedTypesCheckForHTML(const String& html,
   }
 
   return result->toString();
-}
-
-String TrustedTypesCheckForHTML(const String& html,
-                                const Document* document,
-                                ExceptionState& exception_state) {
-  return TrustedTypesCheckForHTML(
-      html, document ? document->GetExecutionContext() : nullptr,
-      exception_state);
 }
 
 String TrustedTypesCheckForScript(const String& script,
@@ -477,17 +461,17 @@ String TrustedTypesCheckFor(SpecificTrustedType type,
 String CORE_EXPORT
 GetStringForScriptExecution(const String& script,
                             const ScriptElementBase::Type type,
-                            Document* doc) {
-  return GetStringFromScriptHelper(script, doc, GetElementName(type), "text",
-                                   kScriptExecution,
+                            ExecutionContext* context) {
+  return GetStringFromScriptHelper(script, context, GetElementName(type),
+                                   "text", kScriptExecution,
                                    kScriptExecutionAndDefaultPolicyFailed);
 }
 
 String TrustedTypesCheckForJavascriptURLinNavigation(
     const String& javascript_url,
-    Document* doc) {
+    ExecutionContext* context) {
   return GetStringFromScriptHelper(
-      javascript_url, doc, "Location", "href", kNavigateToJavascriptURL,
+      javascript_url, context, "Location", "href", kNavigateToJavascriptURL,
       kNavigateToJavascriptURLAndDefaultPolicyFailed);
 }
 

@@ -18,6 +18,10 @@ namespace content {
 class WebContents;
 }  // namespace content
 
+namespace web {
+class WebState;
+}  // namespace web
+
 namespace security_interstitials {
 
 // Structure that passes parameters between the IO and UI thread when
@@ -56,7 +60,12 @@ struct UnsafeResource {
   safe_browsing::ResourceType resource_type;
   UrlCheckCallback callback;  // This is called back on |callback_thread|.
   scoped_refptr<base::SingleThreadTaskRunner> callback_thread;
+  // TODO(crbug.com/1073315): |web_state_getter| is only used on iOS, and
+  // |web_contents_getter| is used on all other platforms.  This struct should
+  // be refactored to use only the common functionality can be shared across
+  // platforms.
   base::RepeatingCallback<content::WebContents*(void)> web_contents_getter;
+  base::RepeatingCallback<web::WebState*(void)> web_state_getter;
   safe_browsing::ThreatSource threat_source;
   // |token| field is only set if |threat_type| is
   // SB_THREAT_TYPE_*_PASSWORD_REUSE.

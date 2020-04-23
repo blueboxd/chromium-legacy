@@ -196,7 +196,6 @@
 <translation id="3469166899695866866">Leállítja a letöltést?</translation>
 <translation id="3470502288861289375">Másolás...</translation>
 <translation id="3474624961160222204">Folytatás mint <ph name="NAME" /></translation>
-<translation id="3474649192738347024">Mezők kitöltve.</translation>
 <translation id="3478058380795961209">Lejárat hónapja</translation>
 <translation id="3482959374254649722">Lapok szinkronizálása…</translation>
 <translation id="3484946776651937681">Megnyitás a Letöltések mappában</translation>
@@ -479,6 +478,7 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="7136892417564438900">A kamera nem áll rendelkezésre</translation>
 <translation id="7159472599653637159">Mobilwebhely kérése</translation>
 <translation id="7173114856073700355">Beállítások megnyitása</translation>
+<translation id="7189598951263744875">Megosztás...</translation>
 <translation id="7192050974311852563">Naplózás indítása</translation>
 <translation id="7203585745079012652">Mondja ki a válaszokat</translation>
 <translation id="7265758999917665941">Ezen a webhelyen soha</translation>

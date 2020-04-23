@@ -22,6 +22,7 @@
 #import "ios/chrome/browser/ui/popup_menu/public/cells/popup_menu_item.h"
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_table_view_controller.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/browser/window_activities/window_activity_helpers.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -123,7 +124,7 @@ using base::UserMetricsAction;
       break;
 #endif  // !defined(NDEBUG)
     case PopupMenuActionOpenNewWindow:
-      [self.dispatcher openNewWindow];
+      [self.dispatcher openNewWindowWithActivity:ActivityToOpenNewTab(false)];
       break;
     case PopupMenuActionBookmarks:
       RecordAction(UserMetricsAction("MobileMenuAllBookmarks"));

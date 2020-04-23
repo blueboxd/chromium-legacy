@@ -6,16 +6,21 @@
 #define CHROME_BROWSER_UPBOARDING_QUERY_TILES_INTERNAL_TILE_SERVICE_IMPL_H_
 
 #include <memory>
+#include <string>
 
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/upboarding/query_tiles/internal/config.h"
 #include "chrome/browser/upboarding/query_tiles/internal/image_loader.h"
+#include "chrome/browser/upboarding/query_tiles/internal/tile_manager.h"
 #include "chrome/browser/upboarding/query_tiles/tile_service.h"
 
 namespace upboarding {
 
 class TileServiceImpl : public TileService {
  public:
-  explicit TileServiceImpl(std::unique_ptr<ImageLoader> image_loader);
+  TileServiceImpl(std::unique_ptr<ImageLoader> image_loader,
+                  std::unique_ptr<TileManager> tile_manager,
+                  std::unique_ptr<TileConfig> config);
   ~TileServiceImpl() override;
 
   // Disallow copy/assign.
@@ -30,6 +35,12 @@ class TileServiceImpl : public TileService {
 
   // Used to load tile images.
   std::unique_ptr<ImageLoader> image_loader_;
+
+  // Manages in memory tile group and coordinates with TileStore.
+  std::unique_ptr<TileManager> tile_manager_;
+
+  // Config for the feature.
+  std::unique_ptr<TileConfig> config_;
 
   base::WeakPtrFactory<TileServiceImpl> weak_ptr_factory_{this};
 };

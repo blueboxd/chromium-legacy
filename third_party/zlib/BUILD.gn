@@ -171,6 +171,11 @@ source_set("zlib_inflate_chunk_simd") {
 
   configs += [ ":zlib_internal_config" ]
 
+  # Needed for MSVC, which is still supported by V8 and PDFium. zlib uses K&R C
+  # style function declarations, which triggers warning C4131.
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
+
   public_configs = [ ":zlib_inflate_chunk_simd_config" ]
 }
 

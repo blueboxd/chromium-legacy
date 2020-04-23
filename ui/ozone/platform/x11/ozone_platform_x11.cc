@@ -18,7 +18,6 @@
 #include "ui/events/ozone/layout/stub/stub_keyboard_layout_engine.h"
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/x/x11_connection.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/ozone/common/stub_overlay_manager.h"
 #include "ui/ozone/platform/x11/gl_egl_utility_x11.h"
@@ -192,11 +191,6 @@ class OzonePlatformX11 : public OzonePlatform {
   void InitializeCommon(const InitParams& params) {
     if (common_initialized_)
       return;
-
-    // Always initialize in multi-thread mode, since this is used only during
-    // development.
-    // TODO(crbug.com/1024477): Initialize Xlib threads only when required
-    gfx::InitializeThreadedX11();
 
     // If XOpenDisplay() failed there is nothing we can do. Crash here instead
     // of crashing later. If you are crashing here, make sure there is an X

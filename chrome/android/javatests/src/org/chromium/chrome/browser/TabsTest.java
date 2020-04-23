@@ -6,9 +6,14 @@ package org.chromium.chrome.browser;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
+import static android.support.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 
+import static org.hamcrest.Matchers.allOf;
+
 import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
+import static org.chromium.chrome.test.util.ViewUtils.onViewWaiting;
 
 import android.content.pm.ActivityInfo;
 import android.graphics.Point;
@@ -33,6 +38,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
@@ -91,6 +97,7 @@ import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.test.util.UiDisableIf;
 import org.chromium.ui.test.util.UiRestriction;
 
 import java.io.File;
@@ -516,29 +523,33 @@ public class TabsTest {
 
     /**
      * Verify that the provided click position closes a tab.
+     * TODO(yuezhanggg@): The hard-coded coordinates are not a good way to verify the position of
+     * the closing button. Should be replaced by render tests.
      */
     private void checkCloseTabAtPosition(final float x, final float y) {
-        mActivityTestRule.getActivity();
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
 
-        int initialTabCount = mActivityTestRule.getActivity().getCurrentTabModel().getCount();
-        ChromeTabUtils.fullyLoadUrlInNewTab(InstrumentationRegistry.getInstrumentation(),
-                mActivityTestRule.getActivity(), UrlConstants.CHROME_BLANK_URL, false);
+        int initialTabCount = cta.getCurrentTabModel().getCount();
+        ChromeTabUtils.fullyLoadUrlInNewTab(InstrumentationRegistry.getInstrumentation(), cta,
+                UrlConstants.CHROME_BLANK_URL, false);
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> { mActivityTestRule.getActivity().getLayoutManager().showOverview(false); });
+                () -> { cta.getLayoutManager().showOverview(false); });
 
-        Assert.assertTrue("Expected: " + (initialTabCount + 1) + " tab Got: "
-                        + mActivityTestRule.getActivity().getCurrentTabModel().getCount(),
-                (initialTabCount + 1)
-                        == mActivityTestRule.getActivity().getCurrentTabModel().getCount());
+        Assert.assertTrue("Expected: " + (initialTabCount + 1)
+                        + " tab Got: " + cta.getCurrentTabModel().getCount(),
+                (initialTabCount + 1) == cta.getCurrentTabModel().getCount());
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         final LayoutManagerChrome layoutManager = updateTabsViewSize();
-        ChromeTabUtils.closeTabWithAction(InstrumentationRegistry.getInstrumentation(),
-                mActivityTestRule.getActivity(),
-                () -> InstrumentationRegistry.getInstrumentation().runOnMainSync(
+        StackLayout layout = (StackLayout) layoutManager.getOverviewLayout();
+        Assert.assertTrue("Position is not in the active area of the close button",
+                layout.getTabStackAtIndex(0).getTabs()[0].getLayoutTab().checkCloseHitTest(x, y));
+        ChromeTabUtils.closeTabWithAction(InstrumentationRegistry.getInstrumentation(), cta,
+                ()
+                        -> InstrumentationRegistry.getInstrumentation().runOnMainSync(
                                 new SimulateClickOnMainThread(layoutManager, x, y)));
-        Assert.assertTrue("Expected: " + initialTabCount + " tab Got: "
-                        + mActivityTestRule.getActivity().getCurrentTabModel().getCount(),
-                initialTabCount == mActivityTestRule.getActivity().getCurrentTabModel().getCount());
+        Assert.assertTrue(
+                "Expected: " + initialTabCount + " tab Got: " + cta.getCurrentTabModel().getCount(),
+                initialTabCount == cta.getCurrentTabModel().getCount());
     }
 
     /**
@@ -565,18 +576,18 @@ public class TabsTest {
     /**
      * Verify close button works in the TabSwitcher in landscape mode.
      * This code does not handle properly different screen densities.
-     * @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
-     * @LargeTest
-     * @Feature({"Android-TabSwitcher"})
      */
     @Test
-    @FlakyTest(message = "crbug.com/170179")
+    @LargeTest
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Feature({"Android-TabSwitcher"})
+    @RetryOnFailure
     public void testTabSwitcherLandscapeCloseButton() {
         mActivityTestRule.getActivity().setRequestedOrientation(
                 ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         // Hard-coded coordinates of the close button on the bottom left of the screen.
         // If the coordinates need to be updated, the easiest is to take a screenshot and measure.
-        checkCloseTabAtPosition(31 * mPxToDp, 31 * mPxToDp);
+        checkCloseTabAtPosition(74 * mPxToDp, 216 * mPxToDp);
     }
 
     /**
@@ -988,7 +999,7 @@ public class TabsTest {
         final int[] count = new int[1];
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Stack stack = getStack(layoutManager, isIncognito);
-            count[0] = stack.getTabs().length;
+            count[0] = stack.getCount();
         });
         return count[0];
     }
@@ -1497,6 +1508,7 @@ public class TabsTest {
     @MediumTest
     @Feature({"Android-TabSwitcher"})
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    @DisableIf.Device(type = {UiDisableIf.TABLET}) // https://crbug.com/1073535
     public void testToolbarSwipeNextThenPrevTab() throws TimeoutException {
         initToolbarSwipeTest(true, 0, false);
 
@@ -1513,6 +1525,7 @@ public class TabsTest {
     @MediumTest
     @Feature({"Android-TabSwitcher"})
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    @DisableIf.Device(type = {UiDisableIf.TABLET}) // https://crbug.com/1073535
     public void testToolbarSwipeNextThenPrevTabIncognito() throws TimeoutException {
         initToolbarSwipeTest(true, 0, true);
 
@@ -1873,6 +1886,95 @@ public class TabsTest {
         mActivityTestRule.startMainActivityOnBlankPage();
         assertFileExists(normalTabFile, true);
         assertFileExists(incognitoTabFile, false);
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"Android-TabSwitcher"})
+    public void testUndoNormalTabClosure() {
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        TabModel normalTabModel = cta.getTabModelSelector().getModel(false);
+        for (int i = 0; i < 3; i++) {
+            ChromeTabUtils.newTabFromMenu(InstrumentationRegistry.getInstrumentation(), cta);
+        }
+        showOverviewAndWaitForAnimation();
+        CriteriaHelper.pollUiThread(Criteria.equals(4, () -> getLayoutTabInStackCount(false)));
+        Assert.assertEquals(4, normalTabModel.getCount());
+        // Close two normal tabs.
+        swipeToCloseNTabs(2, false, false, SWIPE_TO_LEFT_DIRECTION);
+        CriteriaHelper.pollUiThread(Criteria.equals(2, () -> getLayoutTabInStackCount(false)));
+        Assert.assertEquals(2, normalTabModel.getCount());
+        // Click the undo button on snackbar twice to undo two closures.
+        verifyUndoBarShowingAndClickUndo();
+        CriteriaHelper.pollUiThread(Criteria.equals(3, () -> getLayoutTabInStackCount(false)));
+        Assert.assertEquals(3, normalTabModel.getCount());
+        verifyUndoBarShowingAndClickUndo();
+        CriteriaHelper.pollUiThread(Criteria.equals(4, () -> getLayoutTabInStackCount(false)));
+        Assert.assertEquals(4, normalTabModel.getCount());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"Android-TabSwitcher"})
+    public void testUndoIncognitoTabClosure() {
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        TabModel incognitoTabModel = cta.getTabModelSelector().getModel(true);
+        for (int i = 0; i < 4; i++) {
+            mActivityTestRule.newIncognitoTabFromMenu();
+        }
+        showOverviewAndWaitForAnimation();
+        CriteriaHelper.pollUiThread(Criteria.equals(4, () -> getLayoutTabInStackCount(true)));
+        Assert.assertEquals(4, incognitoTabModel.getCount());
+        // Close one incognito tab.
+        swipeToCloseNTabs(1, false, true, SWIPE_TO_LEFT_DIRECTION);
+        CriteriaHelper.pollUiThread(Criteria.equals(3, () -> getLayoutTabInStackCount(true)));
+        Assert.assertEquals(3, incognitoTabModel.getCount());
+        // The undo snackbar should never show.
+        onView(withId(R.id.snackbar_button)).check(doesNotExist());
+        Assert.assertFalse(cta.getSnackbarManager().isShowing());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"Android-TabSwitcher"})
+    // This test fails on API 23 emulators because the snack bar animation is not playing properly.
+    public void testUndoAllTabsClosure() throws InterruptedException {
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        TabModel normalTabModel = cta.getTabModelSelector().getModel(false);
+        TabModel incognitoTabModel = cta.getTabModelSelector().getModel(true);
+        for (int i = 0; i < 2; i++) {
+            ChromeTabUtils.newTabFromMenu(InstrumentationRegistry.getInstrumentation(), cta);
+        }
+        for (int i = 0; i < 2; i++) {
+            mActivityTestRule.newIncognitoTabFromMenu();
+        }
+        showOverviewAndWaitForAnimation();
+        CriteriaHelper.pollUiThread(Criteria.equals(3, () -> getLayoutTabInStackCount(false)));
+        CriteriaHelper.pollUiThread(Criteria.equals(2, () -> getLayoutTabInStackCount(true)));
+        Assert.assertEquals(3, normalTabModel.getCount());
+        Assert.assertEquals(2, incognitoTabModel.getCount());
+        // Close all tabs through menu option.
+        MenuUtils.invokeCustomMenuActionSync(
+                InstrumentationRegistry.getInstrumentation(), cta, R.id.close_all_tabs_menu_id);
+        CriteriaHelper.pollUiThread(Criteria.equals(0, () -> getLayoutTabInStackCount(false)));
+        CriteriaHelper.pollUiThread(Criteria.equals(0, () -> getLayoutTabInStackCount(true)));
+        Assert.assertEquals(0, normalTabModel.getCount());
+        Assert.assertEquals(0, incognitoTabModel.getCount());
+        // Click the undo button on snackbar and should only undo closure of normal tabs.
+        verifyUndoBarShowingAndClickUndo();
+        CriteriaHelper.pollUiThread(Criteria.equals(3, () -> getLayoutTabInStackCount(false)));
+        CriteriaHelper.pollUiThread(Criteria.equals(0, () -> getLayoutTabInStackCount(true)));
+        Assert.assertEquals(3, normalTabModel.getCount());
+        Assert.assertEquals(0, incognitoTabModel.getCount());
+    }
+
+    /**
+     * Verify that the snack bar is showing and click on the snack bar button. Right now it is only
+     * used for undoing a tab closure.
+     */
+    private void verifyUndoBarShowingAndClickUndo() {
+        onViewWaiting(allOf(withId(R.id.snackbar), isCompletelyDisplayed()));
+        onView(withId(R.id.snackbar_button)).perform(click());
     }
 
     /**

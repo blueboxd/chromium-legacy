@@ -6,6 +6,7 @@
 
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "net/base/features.h"
 #include "services/network/public/cpp/features.h"
 #include "ui/base/ui_base_features.h"
 
@@ -23,6 +24,7 @@ GetSwitchDependentFeatureOverrides(const base::CommandLine& command_line) {
     // State to override the feature with.
     base::FeatureList::OverrideState override_state;
   } override_info[] = {
+      // Overrides for --enable-experimental-web-platform-features.
       {switches::kEnableExperimentalWebPlatformFeatures,
        std::cref(features::kCookieDeprecationMessages),
        base::FeatureList::OVERRIDE_ENABLE_FEATURE},
@@ -47,20 +49,24 @@ GetSwitchDependentFeatureOverrides(const base::CommandLine& command_line) {
       {switches::kEnableExperimentalWebPlatformFeatures,
        std::cref(features::kOriginIsolationHeader),
        base::FeatureList::OVERRIDE_ENABLE_FEATURE},
+
+      // Overrides for --use-legacy-form-controls.
       {switches::kUseLegacyFormControls,
        std::cref(features::kFormControlsRefresh),
        base::FeatureList::OVERRIDE_DISABLE_FEATURE},
-  };
 
-  // TODO(chlily): There are currently a few places where, to check if some
-  // functionality should be enabled, we check base::FeatureList::IsEnabled on
-  // some base::Feature and then also check whether the CommandLine for the
-  // current process has the switch kEnableExperimentalWebPlatformFeatures. It
-  // would be nice to have those features get set up here as switch-dependent
-  // feature overrides. That way, we could eliminate directly checking the
-  // command line for --enable-experimental-web-platform-features, and would
-  // have the base::Feature corresponding to that functionality correctly
-  // reflect whether it should be enabled.
+      // Overrides for --enable-experimental-cookie-features.
+      {switches::kEnableExperimentalCookieFeatures,
+       std::cref(net::features::kCookiesWithoutSameSiteMustBeSecure),
+       base::FeatureList::OVERRIDE_ENABLE_FEATURE},
+      {switches::kEnableExperimentalCookieFeatures,
+       std::cref(net::features::kSameSiteByDefaultCookies),
+       base::FeatureList::OVERRIDE_ENABLE_FEATURE},
+      {switches::kEnableExperimentalCookieFeatures,
+       std::cref(net::features::kSameSiteDefaultChecksMethodRigorously),
+       base::FeatureList::OVERRIDE_ENABLE_FEATURE},
+      // TODO(crbug.com/1030938): Add Schemeful Same-Site.
+  };
 
   std::vector<base::FeatureList::FeatureOverrideInfo> overrides;
   for (const auto& info : override_info) {

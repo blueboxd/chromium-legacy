@@ -72,7 +72,7 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
         nullptr /* blob_url_loader_factory */,
         base::UnguessableToken::Create() /* devtools_navigation_token */,
         base::UnguessableToken::Create() /* devtools_frame_token */,
-        false /* obey_origin_policy */);
+        false /* obey_origin_policy */, {} /* cors_exempt_headers */);
     std::unique_ptr<NavigationLoaderInterceptor> interceptor =
         ServiceWorkerRequestHandler::CreateForNavigation(
             gurl, navigation_handle->AsWeakPtr(), request_info);

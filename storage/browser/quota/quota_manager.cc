@@ -450,11 +450,6 @@ class QuotaManager::EvictionRoundInfoHelper : public QuotaTask {
   void OnGotGlobalUsage(int64_t usage, int64_t unlimited_usage) {
     global_usage_ = std::max(INT64_C(0), usage - unlimited_usage);
     global_usage_is_complete_ = true;
-    if (total_space_ > 0) {
-      UMA_HISTOGRAM_PERCENTAGE("Quota.PercentUsedForTemporaryStorage",
-          std::min(100,
-              static_cast<int>((global_usage_ * 100) / total_space_)));
-    }
     CallCompleted();
   }
 

@@ -7,6 +7,7 @@
 #include "base/android/java_heap_dump_generator.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/logging.h"
 #include "services/tracing/public/cpp/perfetto/java_heap_profiler/hprof_buffer_android.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

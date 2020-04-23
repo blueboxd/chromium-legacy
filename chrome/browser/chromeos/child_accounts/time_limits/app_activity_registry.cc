@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_notification_delegate.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_policy_helpers.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/persisted_app_info.h"
+#include "chrome/browser/chromeos/child_accounts/time_limits/web_time_limit_enforcer.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -514,6 +515,14 @@ bool AppActivityRegistry::SetAppLimit(
     const AppId& app_id,
     const base::Optional<AppLimit>& app_limit) {
   DCHECK(base::Contains(activity_registry_, app_id));
+
+  // If app_id is a web app or a chrome app then we will have to check if web
+  // time limit is enabled.
+  if (!WebTimeLimitEnforcer::IsEnabled() &&
+      (app_id == GetChromeAppId() ||
+       app_id.app_type() == apps::mojom::AppType::kWeb)) {
+    return false;
+  }
 
   // If an application is not installed but present in the registry return
   // early.

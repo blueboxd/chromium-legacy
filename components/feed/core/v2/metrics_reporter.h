@@ -25,6 +25,29 @@ enum class FeedEngagementType {
   kFeedScrolled = 3,
   kMaxValue = FeedEngagementType::kFeedScrolled,
 };
+
+// This enum must match FeedUserActionType in enums.xml.
+// Note that most of these have a corresponding UserMetricsAction reported here.
+// Exceptions are described below.
+enum class FeedUserActionType {
+  kTappedOnCard = 0,
+  // This is not an actual user action, so there will be no UserMetricsAction
+  // reported for this.
+  kShownCard = 1,
+  kTappedSendFeedback = 2,
+  kTappedLearnMore = 3,
+  kTappedHideStory = 4,
+  kTappedNotInterestedIn = 5,
+  kTappedManageInterests = 6,
+  kTappedDownload = 7,
+  kTappedOpenInNewTab = 8,
+  kOpenedContextMenu = 9,
+  // User action not reported here. See Suggestions.SurfaceVisible.
+  kOpenedFeedSurface = 10,
+  kTappedOpenInNewIncognitoTab = 11,
+  kMaxValue = kTappedOpenInNewIncognitoTab,
+};
+
 }  // namespace internal
 
 // Reports UMA metrics for feed.
@@ -41,6 +64,7 @@ class MetricsReporter {
   virtual void ContentSliceViewed(int index_in_stream);
   void OpenAction();
   void OpenInNewTabAction();
+  void OpenInNewIncognitoTabAction();
   void SendFeedbackAction();
   void LearnMoreAction();
   void DownloadAction();

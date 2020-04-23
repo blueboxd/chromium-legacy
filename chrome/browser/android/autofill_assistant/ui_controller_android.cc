@@ -393,19 +393,16 @@ void UiControllerAndroid::SetupForState() {
   switch (state) {
     case AutofillAssistantState::STARTING:
       SetOverlayState(OverlayState::FULL);
-      AllowShowingSoftKeyboard(false);
       SetSpinPoodle(true);
       return;
 
     case AutofillAssistantState::RUNNING:
       SetOverlayState(OverlayState::FULL);
-      AllowShowingSoftKeyboard(false);
       SetSpinPoodle(true);
       return;
 
     case AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT:
       SetOverlayState(OverlayState::HIDDEN);
-      AllowShowingSoftKeyboard(true);
       SetSpinPoodle(false);
 
       if (should_prompt_action_expand_sheet)
@@ -414,7 +411,6 @@ void UiControllerAndroid::SetupForState() {
 
     case AutofillAssistantState::PROMPT:
       SetOverlayState(OverlayState::PARTIAL);
-      AllowShowingSoftKeyboard(true);
       SetSpinPoodle(false);
 
       if (should_prompt_action_expand_sheet)
@@ -423,19 +419,16 @@ void UiControllerAndroid::SetupForState() {
 
     case AutofillAssistantState::BROWSE:
       SetOverlayState(OverlayState::HIDDEN);
-      AllowShowingSoftKeyboard(true);
       SetSpinPoodle(false);
       return;
 
     case AutofillAssistantState::MODAL_DIALOG:
       SetOverlayState(OverlayState::FULL);
-      AllowShowingSoftKeyboard(true);
       SetSpinPoodle(true);
       return;
 
     case AutofillAssistantState::STOPPED:
       SetOverlayState(OverlayState::HIDDEN);
-      AllowShowingSoftKeyboard(true);
       SetSpinPoodle(false);
 
       // Make sure the user sees the error message.
@@ -445,7 +438,6 @@ void UiControllerAndroid::SetupForState() {
 
     case AutofillAssistantState::TRACKING:
       SetOverlayState(OverlayState::HIDDEN);
-      AllowShowingSoftKeyboard(true);
       SetSpinPoodle(false);
 
       Java_AssistantModel_setVisible(AttachCurrentThread(), GetModel(), false);
@@ -516,11 +508,6 @@ void UiControllerAndroid::OnOverlayColorsChanged(
   Java_AssistantOverlayModel_setHighlightBorderColor(
       env, overlay_model,
       ui_controller_android_utils::GetJavaColor(env, colors.highlight_border));
-}
-
-void UiControllerAndroid::AllowShowingSoftKeyboard(bool enabled) {
-  Java_AssistantModel_setAllowSoftKeyboard(AttachCurrentThread(), GetModel(),
-                                           enabled);
 }
 
 void UiControllerAndroid::ShowContentAndExpandBottomSheet() {

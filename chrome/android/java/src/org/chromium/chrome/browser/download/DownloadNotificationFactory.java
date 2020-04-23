@@ -124,13 +124,13 @@ public final class DownloadNotificationFactory {
 
                 if (downloadUpdate.getIsDownloadPending()) {
                     contentText =
-                            DownloadUtils.getPendingStatusString(downloadUpdate.getPendingState());
+                            StringUtils.getPendingStatusForUi(downloadUpdate.getPendingState());
                 } else {
                     // Incognito mode should hide download progress details like file size.
                     OfflineItem.Progress progress = downloadUpdate.getIsOffTheRecord()
                             ? OfflineItem.Progress.createIndeterminateProgress()
                             : downloadUpdate.getProgress();
-                    contentText = DownloadUtils.getProgressTextForNotification(progress);
+                    contentText = StringUtils.getProgressTextForUi(progress);
                 }
 
                 iconId = downloadUpdate.getIsDownloadPending()
@@ -188,7 +188,7 @@ public final class DownloadNotificationFactory {
                         && !downloadUpdate.getIsOffTheRecord()
                         && downloadUpdate.getTimeRemainingInMillis() >= 0
                         && !LegacyHelpers.isLegacyOfflinePage(downloadUpdate.getContentId())) {
-                    String subText = DownloadUtils.formatRemainingTime(
+                    String subText = StringUtils.timeLeftForUi(
                             context, downloadUpdate.getTimeRemainingInMillis());
                     setSubText(builder, subText);
                 }
@@ -300,7 +300,7 @@ public final class DownloadNotificationFactory {
                 break;
             case DownloadNotificationService.DownloadStatus.FAILED:
                 iconId = android.R.drawable.stat_sys_download_done;
-                contentText = DownloadUtils.getFailStatusString(downloadUpdate.getFailState());
+                contentText = StringUtils.getFailStatusForUi(downloadUpdate.getFailState());
                 break;
             default:
                 iconId = -1;
@@ -321,7 +321,7 @@ public final class DownloadNotificationFactory {
 
         // Don't show file name in incognito mode.
         if (downloadUpdate.getFileName() != null && !downloadUpdate.getIsOffTheRecord()) {
-            builder.setContentTitle(DownloadUtils.getAbbreviatedFileName(
+            builder.setContentTitle(StringUtils.getAbbreviatedFileName(
                     downloadUpdate.getFileName(), MAX_FILE_NAME_LENGTH));
         }
 

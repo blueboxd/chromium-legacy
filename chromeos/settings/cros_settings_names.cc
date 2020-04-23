@@ -361,9 +361,9 @@ const char kDeviceNativePrintersWhitelist[] =
 // functionality.
 const char kTPMFirmwareUpdateSettings[] = "cros.tpm_firmware_update_settings";
 
-// String indicating what is the minimum version of Chrome required to
-// allow user sign in or stay in session. If the string is empty or blank no
-// restrictions will be applied.
+// A list of entries in JSON form representing the minimum version of Chrome
+// along with warning times required to allow user sign in or stay in session.
+// If the list is empty no restrictions will be applied.
 const char kMinimumChromeVersionEnforced[] = "cros.min_version_enforced.chrome";
 
 // String indicating what name should be advertised for casting to.

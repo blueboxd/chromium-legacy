@@ -24,6 +24,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/autofill/content/renderer/autofill_assistant_agent.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/content/renderer/form_tracker.h"
 #include "components/autofill/content/renderer/password_autofill_agent.h"
@@ -137,11 +138,13 @@ AutofillAgent::ShowSuggestionsOptions::ShowSuggestionsOptions()
 AutofillAgent::AutofillAgent(content::RenderFrame* render_frame,
                              PasswordAutofillAgent* password_autofill_agent,
                              PasswordGenerationAgent* password_generation_agent,
+                             AutofillAssistantAgent* autofill_assistant_agent,
                              blink::AssociatedInterfaceRegistry* registry)
     : content::RenderFrameObserver(render_frame),
       form_cache_(render_frame->GetWebFrame()),
       password_autofill_agent_(password_autofill_agent),
       password_generation_agent_(password_generation_agent),
+      autofill_assistant_agent_(autofill_assistant_agent),
       autofill_query_id_(0),
       query_node_autofill_state_(WebAutofillState::kNotFilled),
       is_popup_possibly_visible_(false),
@@ -759,6 +762,15 @@ blink::WebElement AutofillAgent::FindUniqueWebElement(
   return query_element;
 }
 
+void AutofillAgent::SetAssistantActionState(bool running) {
+  DCHECK(autofill_assistant_agent_);
+  if (running) {
+    autofill_assistant_agent_->DisableKeyboard();
+  } else {
+    autofill_assistant_agent_->EnableKeyboard();
+  }
+}
+
 void AutofillAgent::QueryAutofillSuggestions(
     const WebFormControlElement& element,
     bool autoselect_first_suggestion) {
@@ -921,9 +933,10 @@ void AutofillAgent::SelectFieldOptionsChanged(
 
 bool AutofillAgent::ShouldSuppressKeyboard(
     const WebFormControlElement& element) {
-  // Note: This is currently only implemented for passwords. Consider supporting
-  // other autofill types in the future as well.
-  return password_autofill_agent_->ShouldSuppressKeyboard();
+  // Note: Consider supporting other autofill types in the future as well.
+  return password_autofill_agent_->ShouldSuppressKeyboard() ||
+         (autofill_assistant_agent_ &&
+          autofill_assistant_agent_->ShouldSuppressKeyboard());
 }
 
 void AutofillAgent::SelectWasUpdated(

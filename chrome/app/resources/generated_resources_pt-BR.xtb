@@ -37,7 +37,6 @@
 <translation id="1041263367839475438">Dispositivos disponíveis</translation>
 <translation id="1042174272890264476">Seu computador já vem com a biblioteca RLZ do <ph name="SHORT_PRODUCT_NAME" /> integrada. O RLZ atribui uma tag não exclusiva e sem identificação pessoal para medir as pesquisas e o uso do <ph name="SHORT_PRODUCT_NAME" /> gerados por uma campanha promocional específica. Esses marcadores às vezes aparecem em consultas da Pesquisa Google no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1043818413152647937">Limpar também os dados desses apps?</translation>
-<translation id="1045448422538531528">Adicionar ao grupo</translation>
 <translation id="1046635659603195359">Parece que você já configurou o "Voice Match" com seu Google Assistente em outro dispositivo. Essas gravações anteriores podem ser usadas para criar um modelo de voz neste dispositivo. Isso levará menos de um minuto.</translation>
 <translation id="104710386808485638">Reiniciar Linux?</translation>
 <translation id="1047431265488717055">Copiar te&amp;xto do link</translation>
@@ -408,7 +407,6 @@
 <translation id="1536754031901697553">Desconectando…</translation>
 <translation id="15373452373711364">Cursor grande do mouse</translation>
 <translation id="1540605929960647700">Ativar modo de demonstração</translation>
-<translation id="1541396123399225659">Adicionar a um novo grupo</translation>
 <translation id="1542514202066550870">Esta guia está apresentando conteúdo de RV em um headset.</translation>
 <translation id="1543284117603151572">Importados do Edge</translation>
 <translation id="1545177026077493356">Modo de quiosque automático</translation>
@@ -1906,7 +1904,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="3514373592552233661">Se mais de uma rede estiver disponível, as preferenciais terão precedência sobre outras redes conhecidas</translation>
 <translation id="3515983984924808886">Toque na sua chave de segurança novamente para confirmar a redefinição. Todas as informações armazenadas na chave de segurança, inclusive o PIN, serão excluídas.</translation>
 <translation id="3518985090088779359">Aceitar e continuar</translation>
-<translation id="351952459507671940">Adicionar ao novo grupo</translation>
 <translation id="3521606918211282604">Mudar tamanho do disco</translation>
 <translation id="3523642406908660543">Perguntar quando um site quiser usar um plug-in para acessar seu computador (recomendado)</translation>
 <translation id="3524965460886318643">Exportar atividades</translation>
@@ -2896,7 +2893,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4871322859485617074">O PIN contém caracteres inválidos</translation>
 <translation id="4871370605780490696">Adicionar favorito</translation>
 <translation id="4871719318659334896">Fechar grupo</translation>
-<translation id="4871852311166078968">Adicionar ao grupo</translation>
 <translation id="4873312501243535625">Verificador de arquivo de mídia</translation>
 <translation id="4876273079589074638">Ajude nossos engenheiros a investigar e corrigir a falha. Indique as etapas exatas, se possível. Nenhum detalhe é irrelevante.</translation>
 <translation id="4876895919560854374">Bloquear e desbloquear a tela</translation>

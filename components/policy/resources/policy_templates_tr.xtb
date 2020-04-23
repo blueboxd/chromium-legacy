@@ -745,7 +745,7 @@ Bu politikayı devre dışı bırakırsanız web sayfasını URL yoluyla belirli
 
       Kullanılabilecek değişkenlerin listesi için https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables adresine bakın.
 
-      Bu politika ayarlanmadan bırakılırsa varsayılan profil dizini kullanılır. Kullanıcı, "--disk-cache-dir" komut satırı işaretiyle bu politikayı geçersiz kılabilir.</translation>
+      Bu politika ayarlanmadan bırakılırsa varsayılan profil yolu kullanılır. Kullanıcı, "--user-data-dir" komut satırı işaretiyle bu politikayı geçersiz kılabilir.</translation>
 <translation id="2168397434410358693">AC güçle çalışırken boşta kalma gecikmesi</translation>
 <translation id="217013996107840632">Alternatif tarayıcıdan geçiş yapmak için komut satırı parametreleri.</translation>
 <translation id="2170233653554726857">WPAD optimizasyonunu etkinleştir</translation>
@@ -1544,6 +1544,7 @@ Bu politika ayarlanmazsa <ph name="PRODUCT_NAME" /> varsayılan 10.000 milisaniy
 <translation id="3303653927512453822">Tüm çerezleri eski <ph name="ATTRIBUTE_SAMESITE_NAME" /> davranışına geri döndürmenize olanak tanır. Eski davranışa geri dönmek, bir <ph name="ATTRIBUTE_SAMESITE_NAME" /> özelliği belirtmeyen çerezlerin "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />" gibi değerlendirilmesine neden olur ve "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />" çerezlerinin "<ph name="ATTRIBUTE_SECURE_NAME" />" özelliğini taşıma şartını ortadan kaldırır. Tam açıklama için https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies adresine bakın.
 
           Bu politika ayarlanmadığında, bir <ph name="ATTRIBUTE_SAMESITE_NAME" /> özelliği belirtmeyen çerezler için varsayılan <ph name="ATTRIBUTE_SAMESITE_NAME" /> davranışı, kullanıcının <ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES" /> özelliğini yapılandırma şekline bağlı olacaktır. Bu yapılandırma, saha denemesi ile veya <ph name="FLAG_NAME_SAMESITE_BY_DEFAULT_COOKIES" /> anahtarını etkinleştirip devre dışı bırakarak ayarlanabilir.</translation>
+<translation id="3303911765031636277">OnFileAttached Chrome Enterprise Bağlayıcı için yapılandırma politikası</translation>
 <translation id="3304662785258434098">Belirli sitelerle ilgili karma içeriğe izin vermek için kullanıcıların istisnalar ekleyip ekleyemeceklerini ayarlamanıza olanak tanır.
 
           Bu politika "InsecureContentAllowedForUrls" ve "InsecureContentBlockedForUrls" politikaları kullanılarak belirli URL kalıpları için geçersiz kılınabilir.
@@ -2168,6 +2169,7 @@ False (yanlış) olarak ayarlanırsa veya hiç ayarlanmazsa, hiçbir sertifika o
 
           Ayrıca AC gücü ve pil için farklı ayarlar vardır.
           </translation>
+<translation id="4147818922357566987">Yalnızca önemli düzeltmelerle ilgili varyasyonları etkinleştir</translation>
 <translation id="4150201353443180367">Ekran</translation>
 <translation id="4157003184375321727">İşletim sistemi ve donanım yazılımı sürümünü rapor et</translation>
 <translation id="4157594634940419685">Yerel CUPS yazıcılarına erişim izni ver</translation>
@@ -4139,6 +4141,15 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
       Bu politika "güvenli" ve "performans" değerlerine ayarlanabilir. Bu değerler sırasıyla kararlılık ve maksimum performans için ayarlanmış görev planlayıcı yapılandırmalarını seçer.
 
       Bu politika ayarlanmadan bırakılırsa, kullanıcı kendi seçimini yapabilir.</translation>
+<translation id="7144454922853468101">Bu politikanın yapılandırılması, <ph name="PRODUCT_NAME" /> ürününde hangi varyasyonların uygulanmasına izin verileceğini belirtmeye olanak tanır.
+
+      Varyasyonlar, halihazırda varolan özellikler arasından seçilenleri etkinleştirerek veya devre dışı bırakarak tarayıcının yeni bir sürümünü göndermeden <ph name="PRODUCT_NAME" /> ürününde değişiklikler sunmanın bir yolunu sağlar.
+
+      <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (0 değeri) ayarlanırsa veya politika ayarlanmadan bırakılırsa tarayıcı için tüm varyasyonların geçerli olması sağlanır.
+
+      <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (1 değeri) ayarlanırsa <ph name="PRODUCT_NAME" /> ürününe sadece önemli güvenlik veya sağlamlık düzeltmelerinin uygulanması sağlanır.
+
+      <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (2 değeri) ayarlanırsa tarayıcıya hiçbir varyasyonun uygulanmasına izin verilmez. Bu modun, <ph name="PRODUCT_NAME" /> geliştiricilerinin kritik güvenlik düzeltmelerini zamanında sağlamalarını engelleyebileceğini ve dolayısıyla önerilmediğini lütfen unutmayın.</translation>
 <translation id="7145335384492396213">Varsayılan PIN ile yazdırma modu</translation>
 <translation id="7149042336307555519"> OS güncellemeleri için kullanılmasına izin verilen bağlantı türleri. OS güncellemeleri, boyutları nedeniyle muhtemelen bağlantı üzerine ağır yük getirir ve ek maliyete neden olabilir. Bu nedenle, pahalı kabul edilen bağlantı türleri için (şu anda yalnızca "hücresel" bağlantı) varsayılan olarak etkin değildir.
 
@@ -4847,6 +4858,15 @@ Bu politika ayarlanmadan bırakılırsa gizlilik ekranı başta devre dışı b�
 <translation id="8176035528522326671">Kurumsal kullanıcının sadece birincil çok profilli kullanıcı olmasına izin ver (Kurumsal olarak yönetilen kullanıcılar için varsayılan çalışma biçimidir)</translation>
 <translation id="8183108371184777472">Tarayıcı penceresini başlatmayı engelleme</translation>
 <translation id="8186911565834244165">Kullanıcı geri bildirimine izin ver</translation>
+<translation id="8196725647498287556">Bu politikanın yapılandırılması, kuruluş tarafından yönetilen <ph name="PRODUCT_OS_NAME" /> cihazda hangi varyasyonların uygulanmasına izin verileceğini belirlemeye olanak sağlar.
+
+      Varyasyonlar, halihazırda varolan özellikler arasından seçilenleri etkinleştirerek veya devre dışı bırakarak yeni bir sürüm göndermeden <ph name="PRODUCT_OS_NAME" /> cihazda değişiklikler sunmanın bir yolunu sağlar.
+
+      <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (0 değeri) ayarlanırsa veya politika ayarlamadan bırakılırsa varyasyonların <ph name="PRODUCT_OS_NAME" /> cihazda uygulanmasına olanak sağlar.
+
+      <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (1 değeri) ayarlanırsa <ph name="PRODUCT_OS_NAME" /> cihaza sadece önemli güvenlik veya kararlılık düzeltmelerinin uygulanması sağlanır.
+
+      <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (2 değeri) ayarlanırsa giriş ekranında tarayıcıya hiçbir varyasyonun uygulanmasına izin verilmez. Bu modun, <ph name="PRODUCT_OS_NAME" /> geliştiricilerinin kritik güvenlik düzeltmelerini zamanında sağlamalarını engelleyebileceğini ve dolayısıyla önerilmediğini lütfen unutmayın.</translation>
 <translation id="8213770777756919897">Bu politikanın artık kullanılmadığını ve <ph name="PRODUCT_OS_NAME" /> sürüm 85'te kaldırılacağını unutmayın. Lütfen bunun yerine <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" /> politikasını kullanın.
 
           Bu politika ayarlandığında, kullanıcı boşta kalma gecikmesiyle belirtilen süre (ayrı olarak yapılandırılabilir) boyunca boşta kaldığında, <ph name="PRODUCT_OS_NAME" /> tarafından uygulanacak işlemi belirtir.
@@ -5391,6 +5411,19 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
           Bu politika ayarlanmadan bırakılmış ve politika cihazda destekleniyorsa standart pil şarj modu uygulanır ve kullanıcı tarafından değiştirilemez.
 
           Not: <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> belirtilmişse bu politikayı geçersiz kılar.</translation>
+<translation id="9071472304496502510">Chrome'a bir dosya eklendiğinde tetiklenen <ph name="ON_FILE_ATTACHED_ENTERPRISE_CONNECTOR" /> Enterprise Bağlayıcı'ya uygulanacak Chrome Enterprise Bağlayıcılar hizmetleri ayarlarının listesidir.
+
+      <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" /> ve <ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> alanları, bağlayıcı belirli bir sayfaya eklendiğinde analiz için dosya gönderip göndermemesi gerektiğini ve bu dosyanın analiz isteğine hangi etiketlerin dahil edileceğini belirlemek üzere kullanılır. Sayfa URL'si etiketle ilişkilendirilen desenle eşleşirse "etkinleştir" desenine karşılık gelen bu etiket analiz isteğine dahil edilir. Bu, aynı etikete sahip "devre dışı bırak" deseni sayfa URL'si ile eşleşirse gerçekleşmez. Analiz, isteğe en az 1 etiket dahil edilecekse gerçekleşir.
+
+      <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" /> alanı, ayarların hangi analiz servis sağlayıcısına karşılık geldiğini tanımlar.
+
+      <ph name="ENTERPRISE_CONNECTOR_BLOCK_UNTIL_VERDICT_FIELD" /> alanının 1 değerine ayarlanması, Chrome'un sayfaya dosyaya erişim izni vermeden önce analiz hizmetinden yanıt almak için bekleyeceği anlamına gelir. Başka herhangi bir tam sayı değeri, Chrome'un sayfaya dosyaya erişim iznini hemen vereceği anlamına gelir.
+
+      <ph name="ENTERPRISE_CONNECTOR_BLOCK_PASSWORD_PROTECTED_FIELD" /> alanı, Chrome'un şifre korumalı dosyaları engelleyeceğini mi yoksa izin mi vereceğini kontrol eder.
+
+      <ph name="ENTERPRISE_CONNECTOR_BLOCK_LARGE_FILES_FIELD" /> alanı, Chrome'un analiz edilemeyecek kadar büyük dosyaları (50 MB'tan büyük) engelleyeceğini mi yoksa izin mi vereceğini kontrol eder.
+
+      Bu politika yalnızca Google Yönetici konsolundan ayarlanabilir.</translation>
 <translation id="9077227880520270584">Cihaz yerel hesabına otomatik giriş zamanlayıcısı</translation>
 <translation id="9084985621503260744">Video etkinliğinin güç yönetimini etkileyip etkilemeyeceğini belirtme</translation>
 <translation id="9088433379343318874">Denetlenen kullanıcı içerik sağlayıcısını etkinleştirme</translation>

@@ -424,6 +424,7 @@ bool ThreadHeap::AdvanceConcurrentMarking(ConcurrentMarkingVisitor* visitor,
         [visitor](const MarkingItem& item) {
           HeapObjectHeader* header =
               HeapObjectHeader::FromPayload(item.base_object_payload);
+          PageFromObject(header)->SynchronizedLoad();
           DCHECK(!ConcurrentMarkingVisitor::IsInConstruction(header));
           item.callback(visitor, item.base_object_payload);
           visitor->AccountMarkedBytesSafe(header);
@@ -435,6 +436,7 @@ bool ThreadHeap::AdvanceConcurrentMarking(ConcurrentMarkingVisitor* visitor,
     finished = DrainWorklistWithDeadline(
         deadline, write_barrier_worklist_.get(),
         [visitor](HeapObjectHeader* header) {
+          PageFromObject(header)->SynchronizedLoad();
           DCHECK(!ConcurrentMarkingVisitor::IsInConstruction(header));
           GCInfo::From(header->GcInfoIndex()).trace(visitor, header->Payload());
           visitor->AccountMarkedBytesSafe(header);

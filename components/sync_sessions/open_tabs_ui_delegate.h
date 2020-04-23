@@ -56,10 +56,6 @@ class OpenTabsUIDelegate {
   // local machine.
   virtual bool GetLocalSession(const SyncedSession** local) = 0;
 
-  // Returns the foreign icon url associated with |page_url| if such exists,
-  // otherwise returns the empty GURL.
-  virtual GURL GetIconUrlForPageUrl(const GURL& page_url) = 0;
-
  protected:
   virtual ~OpenTabsUIDelegate();
 };

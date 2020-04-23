@@ -29,6 +29,7 @@
 #include "mojo/public/cpp/bindings/binder_map.h"
 #include "net/cookies/cookie_monster.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_connection_type.h"
@@ -136,6 +137,7 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport(
   gin::V8Initializer::LoadV8Snapshot(kSnapshotType);
 #endif
 
+  blink::Platform::InitializeBlink();
   scoped_refptr<base::SingleThreadTaskRunner> dummy_task_runner;
   std::unique_ptr<base::ThreadTaskRunnerHandle> dummy_task_runner_handle;
   if (scheduler_type == SchedulerType::kMockScheduler) {

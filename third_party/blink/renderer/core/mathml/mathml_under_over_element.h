@@ -5,25 +5,17 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_MATHML_MATHML_UNDER_OVER_ELEMENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_MATHML_MATHML_UNDER_OVER_ELEMENT_H_
 
-#include "third_party/blink/renderer/core/mathml/mathml_element.h"
+#include "third_party/blink/renderer/core/mathml/mathml_scripts_element.h"
 
 namespace blink {
 
 class Document;
 
-class CORE_EXPORT MathMLUnderOverElement final : public MathMLElement {
+class CORE_EXPORT MathMLUnderOverElement final : public MathMLScriptsElement {
  public:
   MathMLUnderOverElement(const QualifiedName& tagName, Document& document);
 
-  enum class ScriptType {
-    kUnder,
-    kOver,
-    kUnderOver,
-  };
-  ScriptType scriptType() const { return script_type_; }
-
  private:
-  const ScriptType script_type_;
   LayoutObject* CreateLayoutObject(const ComputedStyle&,
                                    LegacyLayout legacy) override;
 };

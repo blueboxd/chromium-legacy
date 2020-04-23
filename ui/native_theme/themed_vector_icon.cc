@@ -25,7 +25,7 @@ ThemedVectorIcon::ThemedVectorIcon(const VectorIconModel& vector_icon_model)
     color_id_ =
         static_cast<ui::NativeTheme::ColorId>(vector_icon_model.color_id());
   } else {
-    color_id_ = ui::NativeTheme::kColorId_DefaultIconColor;
+    color_id_ = ui::NativeTheme::kColorId_MenuIconColor;
   }
 }
 

@@ -128,6 +128,9 @@ public class RenderTestRule extends TestWatcher {
     /**
      * This is a list of model-SDK version identifiers for devices we maintain golden images for.
      * If render tests are being run on a device of a model-sdk on this list, goldens should exist.
+     *
+     * This should be kept in sync with the RENDER_TEST_MODEL_SDK_CONFIGS dict in
+     * local_device_instrumentation_test_run.py.
      * TODO(https://crbug.com/1060245): Re-add Nexus_5-19 when chrome_public_test_apk is back on the
      *      KitKat bot on the CQ.
      */
@@ -160,6 +163,7 @@ public class RenderTestRule extends TestWatcher {
     private String mSkiaGoldCorpus;
     private int mSkiaGoldRevision;
     private String mSkiaGoldRevisionDescription;
+    private boolean mFailOnUnsupportedConfigs;
 
     @StringDef({Corpus.ANDROID_RENDER_TESTS, Corpus.ANDROID_VR_RENDER_TESTS})
     @Retention(RetentionPolicy.SOURCE)
@@ -192,13 +196,15 @@ public class RenderTestRule extends TestWatcher {
     // Note that each corpus/description combination results in some additional initialization
     // on the host (~250 ms), so consider whether adding unique descriptions is necessary before
     // adding them to a bunch of test classes.
-    protected RenderTestRule(int revision, @Corpus String corpus, String description) {
+    protected RenderTestRule(int revision, @Corpus String corpus, String description,
+            boolean failOnUnsupportedConfigs) {
         assert revision >= 0;
 
         mUseSkiaGold = true;
         mSkiaGoldCorpus = (corpus == null) ? Corpus.ANDROID_RENDER_TESTS : corpus;
         mSkiaGoldRevisionDescription = description;
         mSkiaGoldRevision = revision;
+        mFailOnUnsupportedConfigs = failOnUnsupportedConfigs;
 
         // The output folder can be overridden with the --render-test-output-dir command.
         mOutputFolder = CommandLine.getInstance().getSwitchValue("render-test-output-dir");
@@ -280,6 +286,7 @@ public class RenderTestRule extends TestWatcher {
             if (!TextUtils.isEmpty(mSkiaGoldRevisionDescription)) {
                 goldKeys.put("revision_description", mSkiaGoldRevisionDescription);
             }
+            goldKeys.put("fail_on_unsupported_configs", String.valueOf(mFailOnUnsupportedConfigs));
         } catch (JSONException e) {
             Assert.fail("Failed to create Skia Gold JSON keys: " + e.toString());
         }
@@ -517,24 +524,45 @@ public class RenderTestRule extends TestWatcher {
         private int mRevision;
         private @Corpus String mCorpus;
         private String mDescription;
+        private boolean mFailOnUnsupportedConfigs;
 
+        /**
+         * Sets the revision that will be appended to the test name reported to Gold. This should
+         * be incremented anytime output changes significantly enough that previous baselines
+         * should be considered invalid.
+         */
         public SkiaGoldBuilder setRevision(int revision) {
             mRevision = revision;
             return this;
         }
 
+        /**
+         * Sets the corpus in the Gold instance that images belong to.
+         */
         public SkiaGoldBuilder setCorpus(@Corpus String corpus) {
             mCorpus = corpus;
             return this;
         }
 
+        /**
+         * Sets the optional description that will be shown alongside the image in the Gold web UI.
+         */
         public SkiaGoldBuilder setDescription(String description) {
             mDescription = description;
             return this;
         }
 
+        /**
+         * Sets whether failures should still be reported on unsupported hardware/software configs.
+         * Supported configurations are listed under RENDER_TEST_MODEL_SDK_PAIRS.
+         */
+        public SkiaGoldBuilder setFailOnUnsupportedConfigs(boolean fail) {
+            mFailOnUnsupportedConfigs = fail;
+            return this;
+        }
+
         public RenderTestRule build() {
-            return new RenderTestRule(mRevision, mCorpus, mDescription);
+            return new RenderTestRule(mRevision, mCorpus, mDescription, mFailOnUnsupportedConfigs);
         }
     }
 

@@ -22,6 +22,8 @@ class XRAnchorSet;
 class XRHitTestResult;
 class XRHitTestSource;
 class XRInputSource;
+class XRLightEstimate;
+class XRLightProbe;
 class XRPose;
 class XRReferenceSpace;
 class XRRigidTransform;
@@ -44,6 +46,7 @@ class XRFrame final : public ScriptWrappable {
   XRPose* getPose(XRSpace*, XRSpace*, ExceptionState&);
   XRWorldInformation* worldInformation() const { return world_information_; }
   XRAnchorSet* trackedAnchors() const;
+  XRLightEstimate* getLightEstimate(XRLightProbe*, ExceptionState&) const;
 
   void Trace(Visitor*) override;
 

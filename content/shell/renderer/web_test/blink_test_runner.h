@@ -65,9 +65,6 @@ class BlinkTestRunner {
   // Add a message to the text dump for the web test.
   void PrintMessage(const std::string& message);
 
-  void PostTask(base::OnceClosure task);
-  void PostDelayedTask(base::OnceClosure task, base::TimeDelta delay);
-
   // Register a new isolated filesystem with the given files, and return the
   // new filesystem id.
   blink::WebString RegisterIsolatedFileSystem(
@@ -75,12 +72,6 @@ class BlinkTestRunner {
 
   // Convert the provided relative path into an absolute path.
   blink::WebString GetAbsoluteWebStringFromUTF8Path(const std::string& path);
-
-  // Replaces file:///tmp/web_tests/ with the actual path to the
-  // web_tests directory, or rewrite URLs generated from absolute
-  // path links in web-platform-tests.
-  blink::WebURL RewriteWebTestsURL(const std::string& utf8_url,
-                                   bool is_wpt_mode);
 
   // Manages the settings to used for web tests.
   TestPreferences* Preferences();
@@ -144,10 +135,6 @@ class BlinkTestRunner {
   // Controls whether all cookies should be accepted or writing cookies in a
   // third-party context is blocked.
   void SetBlockThirdPartyCookies(bool block);
-
-  // The same as RewriteWebTestsURL unless the resource is a path starting
-  // with /tmp/, then return a file URL to a temporary file.
-  std::string PathToLocalResource(const std::string& resource);
 
   // Sets the POSIX locale of the current process.
   void SetLocale(const std::string& locale);
@@ -253,8 +240,6 @@ class BlinkTestRunner {
   void CaptureLocalAudioDump();
   void CaptureLocalLayoutDump();
   void CaptureLocalPixelsDump();
-
-  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner();
 
   mojom::WebTestBluetoothFakeAdapterSetter& GetBluetoothFakeAdapterSetter();
   mojo::Remote<mojom::WebTestBluetoothFakeAdapterSetter>

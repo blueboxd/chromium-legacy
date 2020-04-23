@@ -65,18 +65,19 @@ class HTMLCanvasElementModuleTest : public ::testing::Test,
     canvas_element_ = To<HTMLCanvasElement>(GetDocument().getElementById("c"));
   }
 
-  Document& GetDocument() const {
-    return *web_view_helper_.GetWebView()
-                ->MainFrameImpl()
-                ->GetFrame()
-                ->DomWindow()
-                ->document();
+  LocalDOMWindow* GetWindow() const {
+    return web_view_helper_.GetWebView()
+        ->MainFrameImpl()
+        ->GetFrame()
+        ->DomWindow();
   }
+
+  Document& GetDocument() const { return *GetWindow()->document(); }
 
   HTMLCanvasElement& canvas_element() const { return *canvas_element_; }
   OffscreenCanvas* TransferControlToOffscreen(ExceptionState& exception_state) {
     return HTMLCanvasElementModule::TransferControlToOffscreenInternal(
-        GetDocument().ToExecutionContext(), canvas_element(), exception_state);
+        GetWindow(), canvas_element(), exception_state);
   }
 
   frame_test_helpers::WebViewHelper web_view_helper_;

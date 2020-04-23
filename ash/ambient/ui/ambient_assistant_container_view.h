@@ -6,7 +6,9 @@
 #define ASH_AMBIENT_UI_AMBIENT_ASSISTANT_CONTAINER_VIEW_H_
 
 #include "ash/assistant/model/assistant_ui_model_observer.h"
+#include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "ui/views/view.h"
 
 namespace views {
@@ -47,6 +49,12 @@ class AmbientAssistantContainerView : public views::View,
   AssistantResponseContainerView* assistant_response_container_view_ = nullptr;
   views::ImageView* avatar_view_ = nullptr;
   views::Label* greeting_label_ = nullptr;
+
+  ScopedObserver<AssistantUiController,
+                 AssistantUiModelObserver,
+                 &AssistantUiController::AddModelObserver,
+                 &AssistantUiController::RemoveModelObserver>
+      assistant_ui_model_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AmbientAssistantContainerView);
 };

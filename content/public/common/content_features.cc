@@ -269,6 +269,10 @@ const base::Feature kIdleDetection{"IdleDetection",
 const base::Feature kInputPredictorTypeChoice{
     "InputPredictorTypeChoice", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Kill switch for the GetInstalledRelatedApps API.
+const base::Feature kInstalledApp{"InstalledApp",
+                                  base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Allow Windows specific implementation for the GetInstalledRelatedApps API.
 const base::Feature kInstalledAppProvider{"InstalledAppProvider",
                                           base::FEATURE_DISABLED_BY_DEFAULT};

@@ -108,6 +108,7 @@ include_rules = [
   "+google_apis",
   "+ios/chrome/app",
   "+ios/components/io_thread",
+  "+ios/components/security_interstitials",
   "+ios/components/ui_util",
   "+ios/components/webui",
   "+ios/net",

@@ -11,12 +11,12 @@
 
 #include "ash/assistant/assistant_controller_impl.h"
 #include "ash/assistant/assistant_suggestions_controller_impl.h"
-#include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/ui/proactive_suggestions_rich_view.h"
 #include "ash/assistant/ui/proactive_suggestions_simple_view.h"
 #include "ash/assistant/ui/proactive_suggestions_view.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/public/cpp/assistant/controller/assistant_suggestions_controller.h"
+#include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "ash/public/cpp/assistant/proactive_suggestions.h"
 #include "ash/public/cpp/assistant/util/histogram_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -227,7 +227,7 @@ void AssistantProactiveSuggestionsController::
 
   // Clicking on the proactive suggestions view causes the user to enter
   // Assistant UI where a proactive suggestions interaction will be initiated.
-  assistant_controller_->ui_controller()->ShowUi(
+  AssistantUiController::Get()->ShowUi(
       chromeos::assistant::mojom::AssistantEntryPoint::kProactiveSuggestions);
 }
 
@@ -310,7 +310,7 @@ void AssistantProactiveSuggestionsController::OnEntryPointClickDeepLinkReceived(
   // When no |kHref| is specified, we handle this as a normal click on the entry
   // point to open the set of proactive suggestions inline in Assistant UI.
   CloseUi(ProactiveSuggestionsShowResult::kClick);
-  assistant_controller_->ui_controller()->ShowUi(
+  AssistantUiController::Get()->ShowUi(
       chromeos::assistant::mojom::AssistantEntryPoint::kProactiveSuggestions);
 }
 

@@ -51,7 +51,7 @@ namespace mojom {
 enum class PermissionStatus;
 }  // namespace mojom
 
-class Document;
+class LocalDOMWindow;
 class LocalFrame;
 class ExecutionContext;
 
@@ -74,7 +74,7 @@ class MODULES_EXPORT Geolocation final
   // PageVisibilityObserver.
   void ContextDestroyed() override;
 
-  Document* GetDocument() const;
+  LocalDOMWindow* GetWindow() const;
   LocalFrame* GetFrame() const;
 
   // Creates a oneshot and attempts to obtain a position that meets the

@@ -16,6 +16,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/logging.h"
 #include "ui/events/ozone/evdev/touch_filter/palm_model/onedevice_train_palm_detection_filter_inference.h"
 #define USE_EIGEN 0
 

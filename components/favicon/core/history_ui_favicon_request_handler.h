@@ -7,8 +7,7 @@
 
 #include "components/favicon_base/favicon_callback.h"
 #include "components/keyed_service/core/keyed_service.h"
-
-class GURL;
+#include "url/gurl.h"
 
 namespace favicon {
 
@@ -39,7 +38,7 @@ class HistoryUiFaviconRequestHandler : public KeyedService {
       int desired_size_in_pixel,
       favicon_base::FaviconRawBitmapCallback callback,
       HistoryUiFaviconRequestOrigin request_origin_for_uma,
-      const GURL& icon_url_for_uma) = 0;
+      const GURL& icon_url_for_uma = GURL()) = 0;
 
   // Requests favicon image at |page_url|. The same fallback considerations for
   // GetRawFaviconForPageURL apply.
@@ -49,7 +48,7 @@ class HistoryUiFaviconRequestHandler : public KeyedService {
       const GURL& page_url,
       favicon_base::FaviconImageCallback callback,
       HistoryUiFaviconRequestOrigin request_origin_for_uma,
-      const GURL& icon_url_for_uma) = 0;
+      const GURL& icon_url_for_uma = GURL()) = 0;
 };
 
 }  // namespace favicon

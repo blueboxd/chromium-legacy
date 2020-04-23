@@ -196,7 +196,6 @@
 <translation id="3469166899695866866">Arrêter le téléchargement ?</translation>
 <translation id="3470502288861289375">Copie en cours…</translation>
 <translation id="3474624961160222204">Continuer en tant que <ph name="NAME" /></translation>
-<translation id="3474649192738347024">Formulaires remplis.</translation>
 <translation id="3478058380795961209">Mois d'expiration</translation>
 <translation id="3482959374254649722">Synchronisation de vos onglets en cours…</translation>
 <translation id="3484946776651937681">Ouvrir dans le dossier "Téléchargements"</translation>
@@ -479,6 +478,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="7136892417564438900">Appareil photo non disponible</translation>
 <translation id="7159472599653637159">Voir version mobile</translation>
 <translation id="7173114856073700355">Paramètres</translation>
+<translation id="7189598951263744875">Partager…</translation>
 <translation id="7192050974311852563">Démarrer la journalisation</translation>
 <translation id="7203585745079012652">Énoncer les réponses</translation>
 <translation id="7265758999917665941">Jamais pour ce site</translation>

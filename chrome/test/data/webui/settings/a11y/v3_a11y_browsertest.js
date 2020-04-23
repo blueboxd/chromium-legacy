@@ -8,6 +8,7 @@ GEN_INCLUDE([
 ]);
 
 GEN('#include "build/branding_buildflags.h"');
+GEN('#include "chrome/common/chrome_features.h"');
 
 // TODO(crbug.com/1002627): This block prevents generation of a
 // link-in-text-block browser-test. This can be removed once the bug is
@@ -66,6 +67,11 @@ function defineTest(testName, module, config) {
     get browsePreload() {
       return `chrome://settings/test_loader.html?module=settings/a11y/${
           module}`;
+    }
+
+    /** @override */
+    get featureListInternal() {
+      return {disabled: ['features::kPrivacySettingsRedesign']};
     }
   };
 

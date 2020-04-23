@@ -11,11 +11,8 @@
 #import "ios/chrome/browser/procedural_block_types.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_switcher.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
-#import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 
-@class BrowserViewWrangler;
-
-@protocol SceneControllerGuts <WebStateListObserving>
+@protocol SceneControllerGuts
 
 - (void)dismissModalsAndOpenSelectedTabInMode:
             (ApplicationModeForTabOpening)targetMode

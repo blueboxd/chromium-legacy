@@ -325,7 +325,8 @@ class BasePreviewsLitePageRedirectServerBrowserTest
         PreviewsServiceFactory::GetForProfile(browser()->profile());
     PreviewsLitePageRedirectDecider* decider =
         previews_service->previews_lite_page_redirect_decider();
-    decider->SetUserHasSeenUINotification();
+    previews_service->previews_https_notification_infobar_decider()
+        ->SetUserHasSeenUINotification();
 
     decider->BlacklistBypassedHost(kBlacklistedHost,
                                    base::TimeDelta::FromHours(1));
@@ -922,10 +923,9 @@ class PreviewsLitePageRedirectServerBrowserTest
 };
 
 // Param is true if DRP holdback should be enabled.
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    PreviewsLitePageRedirectServerBrowserTest,
-    ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         PreviewsLitePageRedirectServerBrowserTest,
+                         ::testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageRedirectServerBrowserTest,
@@ -1644,10 +1644,9 @@ class PreviewsLitePageRedirectServerTimeoutBrowserTest
 };
 
 // Param is true if DRP holdback should be enabled.
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    PreviewsLitePageRedirectServerTimeoutBrowserTest,
-    ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         PreviewsLitePageRedirectServerTimeoutBrowserTest,
+                         ::testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(PreviewsLitePageRedirectServerTimeoutBrowserTest,
                        DISABLE_ON_WIN_MAC_CHROMEOS(LitePagePreviewsTimeout)) {
@@ -1712,10 +1711,9 @@ class PreviewsLitePageRedirectServerBadServerBrowserTest
 };
 
 // Param is true if DRP holdback should be enabled.
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    PreviewsLitePageRedirectServerBadServerBrowserTest,
-    ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         PreviewsLitePageRedirectServerBadServerBrowserTest,
+                         ::testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(PreviewsLitePageRedirectServerBadServerBrowserTest,
                        DISABLE_ON_WIN_MAC_CHROMEOS(LitePagePreviewsBadServer)) {
@@ -1758,10 +1756,9 @@ class PreviewsLitePageRedirectServerDataSaverBrowserTest
 };
 
 // Param is true if DRP holdback should be enabled.
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    PreviewsLitePageRedirectServerDataSaverBrowserTest,
-    ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         PreviewsLitePageRedirectServerDataSaverBrowserTest,
+                         ::testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageRedirectServerDataSaverBrowserTest,
@@ -1896,10 +1893,9 @@ class PreviewsLitePageRedirectDSDisabledBrowserTest
 };
 
 // Param is true if DRP holdback should be enabled.
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    PreviewsLitePageRedirectDSDisabledBrowserTest,
-    ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         PreviewsLitePageRedirectDSDisabledBrowserTest,
+                         ::testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageRedirectDSDisabledBrowserTest,
@@ -1928,10 +1924,9 @@ class PreviewsLitePageRedirectControlBrowserTest
 };
 
 // Param is true if DRP holdback should be enabled.
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    PreviewsLitePageRedirectControlBrowserTest,
-    ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         PreviewsLitePageRedirectControlBrowserTest,
+                         ::testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageRedirectControlBrowserTest,
@@ -2060,10 +2055,9 @@ class PreviewsLitePageRedirectAndPageHintsBrowserTest
 };
 
 // Param is true if DRP holdback should be enabled.
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    PreviewsLitePageRedirectAndPageHintsBrowserTest,
-    ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         PreviewsLitePageRedirectAndPageHintsBrowserTest,
+                         ::testing::Bool());
 
 // Regression test for crbug.com/954554.
 IN_PROC_BROWSER_TEST_P(

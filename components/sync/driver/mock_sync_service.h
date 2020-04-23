@@ -15,7 +15,6 @@
 #include "components/sync/driver/sync_token_status.h"
 #include "components/sync/driver/sync_user_settings_mock.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
-#include "crypto/ec_private_key.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace syncer {
@@ -42,8 +41,6 @@ class MockSyncService : public SyncService {
   MOCK_CONST_METHOD0(GetAuthError, GoogleServiceAuthError());
   MOCK_CONST_METHOD0(GetAuthErrorTime, base::Time());
   MOCK_CONST_METHOD0(RequiresClientUpgrade, bool());
-  MOCK_CONST_METHOD0(GetExperimentalAuthenticationKey,
-                     std::unique_ptr<crypto::ECPrivateKey>());
   MOCK_METHOD0(GetSetupInProgressHandle,
                std::unique_ptr<SyncSetupInProgressHandle>());
   MOCK_CONST_METHOD0(IsSetupInProgress, bool());

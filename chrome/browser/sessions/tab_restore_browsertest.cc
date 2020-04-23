@@ -52,6 +52,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "ui/gfx/animation/animation_test_api.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
@@ -60,7 +61,10 @@
 
 class TabRestoreTest : public InProcessBrowserTest {
  public:
-  TabRestoreTest() : active_browser_list_(NULL) {
+  TabRestoreTest()
+      : active_browser_list_(nullptr),
+        animation_mode_reset_(gfx::AnimationTestApi::SetRichAnimationRenderMode(
+            gfx::Animation::RichAnimationRenderMode::FORCE_DISABLED)) {
     url1_ = ui_test_utils::GetTestUrl(
         base::FilePath().AppendASCII("session_history"),
         base::FilePath().AppendASCII("bot1.html"));
@@ -188,6 +192,9 @@ class TabRestoreTest : public InProcessBrowserTest {
   const BrowserList* active_browser_list_;
 
  private:
+  std::unique_ptr<base::AutoReset<gfx::Animation::RichAnimationRenderMode>>
+      animation_mode_reset_;
+
   DISALLOW_COPY_AND_ASSIGN(TabRestoreTest);
 };
 
@@ -414,12 +421,12 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWindowBounds) {
 
   // Deliberately change the bounds of the first window to something different.
   gfx::Rect bounds = browser()->window()->GetBounds();
-  bounds.set_width(640);
+  bounds.set_width(700);
   bounds.set_height(480);
   bounds.Offset(20, 20);
   browser()->window()->SetBounds(bounds);
   gfx::Rect bounds2 = browser()->window()->GetBounds();
-  EXPECT_EQ(bounds, bounds2);
+  ASSERT_EQ(bounds, bounds2);
 
   // Close the first window.
   CloseBrowserSynchronously(browser());

@@ -9,6 +9,8 @@ source_set("test") {
     "alert_overlay_mediator_test.mm",
     "fake_alert_overlay_mediator.h",
     "fake_alert_overlay_mediator.mm",
+    "fake_alert_overlay_mediator_data_source.h",
+    "fake_alert_overlay_mediator_data_source.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]

@@ -54,6 +54,7 @@
 <translation id="1331212799747679585">Chrome ଅପ୍‌ଡେଟ୍ ହୋଇପାରିବ ନାହିଁ। ଅଧିକ ବିକଳ୍ପ</translation>
 <translation id="1332501820983677155">Google Chrome ବୈଶିଷ୍ଟ୍ୟ ସର୍ଟକଟ୍</translation>
 <translation id="1360432990279830238">ସିଙ୍କ ସାଇନ୍‌ ଆଉଟ୍‍ ଏବଂ ବନ୍ଦ କରିବେ?</translation>
+<translation id="1364532808393826295"><ph name="APP_NAME" /> - <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676"><ph name="SITE_NAME" /> ସାଇଟ୍ ଯୋଗ କରାଗଲା</translation>
 <translation id="1373696734384179344">ଚୟନ କରାଯାଇଥିବା ବିଷୟବସ୍ତୁ ଡାଉନ୍‌ଲୋଡ୍ କରିବା ପାଇଁ ପର୍ଯ୍ୟାପ୍ତ ମେମୋରୀ ନାହିଁ।</translation>
 <translation id="1376578503827013741">ଗଣନା ହେଉଛି…</translation>
@@ -140,6 +141,7 @@
 <translation id="2017836877785168846">ଠିକଣା ବାର୍‌ରେ ଥିବା ଇତିବୃତ୍ତି ଓ ଅଟୋକମ୍ପ୍ଲିସେନ୍‍ଗୁଡ଼ିକୁ ଖାଲି କରନ୍ତୁ।</translation>
 <translation id="2021896219286479412">ପୂର୍ଣ୍ଣ-ସ୍କ୍ରିନ୍ ସାଇଟ୍ ନିୟନ୍ତ୍ରଣ</translation>
 <translation id="2025115093177348061">ଅଗମେଣ୍ଟେଡ୍ ରିଆଲିଟୀ</translation>
+<translation id="2030769033451695672"><ph name="URL_OF_THE_CURRENT_TAB" />କୁ ଫେରିବା ପାଇଁ ଟାପ୍ କରନ୍ତୁ</translation>
 <translation id="2038563949887743358">ଅନୁରୋଧ ଡେକ୍ସଟପ୍ ସାଇଟ୍ ଚାଲୁ କରନ୍ତୁ</translation>
 <translation id="2041019821020695769">Chrome, ଆପଣଙ୍କୁ ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକ ପଠାଇବାକୁ ଦେବା ପାଇଁ <ph name="BEGIN_LINK" />Android ସେଟିଂସ୍ <ph name="END_LINK" />ରେ ମଧ୍ୟ ଯାଇ ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକ ଚାଲୁ କରନ୍ତୁ।</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" />ର ମଧ୍ୟ Chromeରେ ଡାଟା ଅଛି</translation>
@@ -301,6 +303,7 @@
 <translation id="3207960819495026254">ବୁକ୍‍ମାର୍କ କରାଯାଇଛି</translation>
 <translation id="3211426585530211793"><ph name="ITEM_TITLE" />କୁ ଡିଲିଟ୍ କରାଗଲା।</translation>
 <translation id="321773570071367578">ଯଦି ଆପଣ ନିଜର ପାସ୍‌ଫ୍ରେଜ୍ ଭୁଲିଯାଇଛନ୍ତି କିମ୍ବା ଏହି ସେଟିଂ ପରିବର୍ତ୍ତନ କରିବାକୁ ଚାହୁଁଛନ୍ତି, ତେବେ <ph name="BEGIN_LINK" />ସିଙ୍କ୍ ରିସେଟ୍ କରନ୍ତୁ<ph name="END_LINK" />।</translation>
+<translation id="3223655101706843289">ଏହା ଆପଣଙ୍କ ମୂଳ ସ୍କ୍ରିନରେ <ph name="ORIGIN" /> ଏବଂ ଏହାର ଆପ ଦ୍ୱାରା ଷ୍ଟୋର୍ କରାଯାଇଥିବା ସମସ୍ତ ଡାଟା ଓ କୁକୀକୁ ଖାଲି କରିଦେବ।</translation>
 <translation id="3227137524299004712">ମାଇକ୍ରୋଫୋନ୍</translation>
 <translation id="3232754137068452469">ୱେବ୍ ଆପ୍</translation>
 <translation id="3236059992281584593">ଅବଶିଷ୍ଟ 1 ମିନଟ୍‌ ଅଛି</translation>
@@ -535,6 +538,7 @@
 <translation id="4943872375798546930">କୌଣସି ଫଳାଫଳ ନାହିଁ</translation>
 <translation id="4961107849584082341">ଏହି ପୃଷ୍ଠାକୁ ଯେକୌଣସି ଭାଷାରେ ଅନୁବାଦ କରନ୍ତୁ</translation>
 <translation id="4962975101802056554">ଡିଭାଇସ୍‌ପାଇଁ ଥିବା ସମସ୍ତ ଅନୁମତିଗୁଡ଼ିକ ପ୍ରତ୍ୟାହାର କରନ୍ତୁ</translation>
+<translation id="4964199952259983386">Chromeକୁ AR ବ୍ୟବହାର କରିବାକୁ ଦେବା ନିମନ୍ତେ, <ph name="BEGIN_LINK" />Android ସେଟିଂସ<ph name="END_LINK" />ରେ କ୍ୟାମେରା ମଧ୍ୟ ଚାଲୁ କରନ୍ତୁ।</translation>
 <translation id="4970824347203572753">ଆପଣଙ୍କର ଲୋକେସନ୍‌ରେ ଉପଲବ୍ଧ ନାହିଁ</translation>
 <translation id="497421865427891073">ଆଗକୁ ଯାଆନ୍ତୁ</translation>
 <translation id="4988210275050210843">ଫାଇଲ୍‌ ଡାଉନ୍‌ଲୋଡ୍‌ ହେଉଛି(<ph name="MEGABYTES" />)।</translation>
@@ -634,6 +638,7 @@
 <translation id="5684874026226664614">ଓହୋଃ! ଏହି ପୃଷ୍ଠା ଅନୁବାଦ କରାଯାଇପାରିଲା ନାହିଁ।</translation>
 <translation id="5686790454216892815">ଫାଇଲ୍‍ର ନାମ ବହୁତ ଲମ୍ବା ଅଟେ</translation>
 <translation id="5689516760719285838">ଲୋକେସନ୍</translation>
+<translation id="5690795753582697420">Android ସେଟିଂସରେ କ୍ୟାମେରା ବନ୍ଦ କରାଯାଇଛି</translation>
 <translation id="5694049548840660018">ମୂଳପୃଷ୍ଠାକୁ ସହଜରେ ଫେରନ୍ତୁ</translation>
 <translation id="569536719314091526">ଅଧିକ ବିକଳ୍ପ ବଟନ୍‍ରୁ ଏହି ପୃଷ୍ଠାର ଅନୁବାଦ ଯେକୌଣସି ଭାଷାରେ କରନ୍ତୁ</translation>
 <translation id="5710871682236653961">ଆପଣ NFC ଡିଭାଇସ୍‍ଗୁଡ଼ିକରେ ଟାପ୍ କଲେ ସାଇଟ୍‍ଗୁଡ଼ିକୁ ସୂଚନା ପଠାଇବା ଏବଂ ପ୍ରାପ୍ତ କରିବାକୁ ଅନୁମତି ଦେବା ପୂର୍ବରୁ ପଚାରନ୍ତୁ (ସୁପାରିଶ କରାଯାଇଛି)</translation>
@@ -665,6 +670,7 @@
 <translation id="5876056640971328065">ଭିଡିଓ ବିରତ କରନ୍ତୁ</translation>
 <translation id="5884076754568147479">କାର୍ଯ୍ୟଗୁଡ଼ିକୁ ସମ୍ପୂର୍ଣ୍ଣ କରିବାରେ ଆପଣଙ୍କୁ ସାହାଯ୍ୟ କରିବା ନିମନ୍ତେ, ଆପଣ Assistant ବ୍ୟବହାର କରିଥିବା ସାଇଟଗୁଡ଼ିକର URL ଏବଂ ବିଷୟବସ୍ତୁଗୁଡ଼ିକ ସହିତ Assistant ମାଧ୍ୟମରେ ଆପଣ ଦାଖଲ କରିଥିବା ସୂଚନା Google ପ୍ରାପ୍ତ କରିବ</translation>
 <translation id="5919204609460789179">ସିଙ୍କ ଆରମ୍ଭ କରିବା ପାଇଁ <ph name="PRODUCT_NAME" /> ଅପ୍‍‍ଡେଟ୍ କରନ୍ତୁ</translation>
+<translation id="5922853908706496913">ଆପଣଙ୍କ ସ୍କ୍ରିନ୍ ସେୟାର୍ କରାଯାଉଛି</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" />କୁ ସେଭ୍ କରାଗଲା</translation>
 <translation id="5939518447894949180">ପୁନଃସେଟ୍</translation>
 <translation id="5942872142862698679">ସନ୍ଧାନ ପାଇଁ Google ବ୍ୟବହାର କରାଯାଉଛି</translation>
@@ -875,6 +881,7 @@
 <translation id="751961395872307827">ସାଇଟ୍‍କୁ ସଂଯୋଗ କରିପାରିବ ନାହିଁ।</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7542481630195938534">ପରାମର୍ଶ ପ୍ରାପ୍ତ କରିପାରିଲା ନାହିଁ</translation>
+<translation id="7554752735887601236">କୌଣସି ସାଇଟ୍ ଆପଣଙ୍କ ମାଇକ୍ରୋଫୋନକୁ ବ୍ୟବହାର କରୁଛି</translation>
 <translation id="7559975015014302720">ଲାଇଟ୍ ମୋଡ୍ ବନ୍ଦ ଅଛି</translation>
 <translation id="7562080006725997899">ବ୍ରାଇଜିଂ ଡାଟା ଖାଲି ହେଉଛି</translation>
 <translation id="756809126120519699">Chrome ଡାଟା ଖାଲି କରାଯାଇଛି</translation>
@@ -911,7 +918,9 @@
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ଓ <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ଅଧିକ}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ଓ <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ଅଧିକ}}</translation>
 <translation id="7791543448312431591">ଯୋଡନ୍ତୁ</translation>
 <translation id="780301667611848630">ନାଁ, ଥାଉ</translation>
+<translation id="7804248752222191302">କୌଣସି ସାଇଟ୍ ଆପଣଙ୍କ କ୍ୟାମେରା ବ୍ୟବହାର କରୁଛି</translation>
 <translation id="7810647596859435254">ଏଥିରେ ଖୋଲନ୍ତୁ…</translation>
+<translation id="7817023149356982970">ଏହି ସାଇଟରୁ ଆପଣଙ୍କୁ ସାଇନ୍ ଆଉଟ୍ କରିଦିଆଯିବ।</translation>
 <translation id="7821588508402923572">ଆପଣଙ୍କର ଡାଟା ସେଭିଂ ଏଠାରେ ଦେଖାଯିବ</translation>
 <translation id="7828557259026017104">କୁକୀଗୁଡ଼ିକ ହେଉଛି ଆପଣ ୱେବସାଇଟଗୁଡ଼ିକୁ ଭିଜିଟ୍ କଲେ ତିଆରି ହେଉଥିବା ଫାଇଲଗୁଡ଼ିକ। ଆପଣଙ୍କ ପସନ୍ଦଗୁଡ଼ିକ ମନେରଖିବାକୁ ସାଇଟଗୁଡ଼ିକ ସେଗୁଡ଼ିକୁ ବ୍ୟବହାର କରେ। ଅନ୍ୟ ସାଇଟଗୁଡ଼ିକ ଦ୍ୱାରା ତୃତୀୟ-ପକ୍ଷ କୁକୀଗୁଡ଼ିକ ତିଆରି କରାଯାଇଛି। ବିଜ୍ଞାପନ କିମ୍ବା ଛବିଗୁଡ଼ିକ ପରି କିଛି ବିଷୟବସ୍ତୁ ଉପରେ ଏହି ସାଇଟଗୁଡ଼ିକର ମାଲିକାନା ଅଛି, ଯାହାକୁ ଆପଣ ଭିଜିଟ୍ କରୁଥିବା ୱେବପୃଷ୍ଠାରେ ଦେଖନ୍ତି।</translation>
 <translation id="783819812427904514">ଭିଡିଓ ଅନମ୍ୟୁଟ୍ କରନ୍ତୁ</translation>
@@ -954,7 +963,6 @@
 <translation id="8073388330009372546">ନୂତନ ଟାବ୍‌ରେ ଛବି ଖୋଲନ୍ତୁ</translation>
 <translation id="8076492880354921740">ଟାବ୍</translation>
 <translation id="8084114998886531721">ସେଭ୍‌ ହୋ‍ଇଥିବା ପାସ୍‌ୱର୍ଡ</translation>
-<translation id="8087000398470557479">ଏହି ବିଷୟବସ୍ତୁ Google ଦ୍ଵାରା ବିତରଣ କରାଯାଇଥିବା <ph name="DOMAIN_NAME" />ରୁ ଆସିଛି।</translation>
 <translation id="8103578431304235997">ଇନ୍‌କଗ୍ନିଟୋ ଟାବ୍</translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8109613176066109935">ଆପଣଙ୍କ ସମସ୍ତ ଡିଭାଇସ୍‍‍ରେ ଆପଣଙ୍କର ବୁକ୍‍ମାର୍କଗୁଡ଼ିକୁ ପ୍ରାପ୍ତ କରିବା ପାଇଁ, ସିଙ୍କ୍‍କୁ ଚାଲୁ କରନ୍ତୁ</translation>
@@ -990,8 +998,10 @@
 <translation id="8364299278605033898">ଲୋକପ୍ରିୟ ୱେବ୍‍ସାଇଟ୍‌ଗୁଡ଼ିକ ଦେଖନ୍ତୁ</translation>
 <translation id="8368027906805972958">ଅଜଣା କିମ୍ବା ଅସମର୍ଥିତ ଡିଭାଇସ୍ (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">ଏକ ନିର୍ଦ୍ଦିଷ୍ଟ ସାଇଟ୍ ପାଇଁ ପୃଷ୍ଟପଟ ସିଙ୍କ୍‌କୁ ଅନୁମତି ଦିଅନ୍ତୁ।</translation>
+<translation id="83792324527827022">କୌଣସି ସାଇଟ୍ ଆପଣଙ୍କ କ୍ୟାମେରା ଏବଂ ମାଇକ୍ରୋଫୋନକୁ ବ୍ୟବହାର କରୁଛି</translation>
 <translation id="8380167699614421159">ଏହି ସାଇଟ୍, ଅନଧିକାର ପ୍ରବେଶ କରିଥିବା କିମ୍ବା ବିଭ୍ରାନ୍ତିକର ବିଜ୍ଞାପନ ଦେଖାଉଛି</translation>
 <translation id="8393700583063109961">ମେସେଜ୍‌ ପଠାନ୍ତୁ</translation>
+<translation id="8394832520002899662">ସାଇଟକୁ ଫେରିବାକୁ ଟାପ୍ କରନ୍ତୁ</translation>
 <translation id="8413126021676339697">ସମ୍ପୂର୍ଣ୍ଣ ଇତିବୃତ୍ତି ଦେଖାନ୍ତୁ</translation>
 <translation id="8427875596167638501">ପ୍ରିଭ୍ୟୁ ଟାବ୍ ଅଧା ଖୋଲା ଅଛି</translation>
 <translation id="8428213095426709021">ସେଟିଂସ୍</translation>
@@ -1034,6 +1044,8 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{ସିଗ୍‍ନାଲ୍‌ ଦକ୍ଷତାର ସ୍ତର: #ଟି ବାର୍‍}other{ସିଗ୍‍ନାଲ୍‌ ଦକ୍ଷତାର ସ୍ତର: #ଟି ବାର୍‍}}</translation>
 <translation id="868929229000858085">ଆପଣଙ୍କର ଯୋଗାଯୋଗ ସନ୍ଧାନ କରନ୍ତୁ</translation>
 <translation id="869891660844655955">ମିଆଦ ଶେଷ ହେଉଥିବା ତାରିଖ</translation>
+<translation id="8702612070107455751">ଯେ କୌଣସି ଅଫଲାଇନ୍ ଡାଟା ଖାଲି ହୋଇଯିବ।</translation>
+<translation id="8737217482364735741">ଏହା <ph name="ORIGIN" /> ଦ୍ୱାରା ଷ୍ଟୋର୍ କରାଯାଇଥିବା ସମସ୍ତ ଡାଟା ଏବଂ କୁକୀକୁ ଖାଲି କରିଦେବ।</translation>
 <translation id="8748850008226585750">ଲୁଚାଯାଇଥିବା ବିଷୟବସ୍ତୁ</translation>
 <translation id="8751914237388039244">ଗୋଟିଏ ଛବି ଚୟନ କରନ୍ତୁ</translation>
 <translation id="8758557275681689734">ଆପଣଙ୍କର ଖୋଲା ଥିବା ସମସ୍ତ ଟାବ୍ ଦେଖନ୍ତୁ</translation>
@@ -1080,6 +1092,7 @@
 <translation id="9100610230175265781">ପାସଫ୍ରେଜ୍ ଆବଶ୍ୟକ ଅଟେ</translation>
 <translation id="9102803872260866941">ପ୍ରିଭ୍ୟୁ ଟାବ୍ ଖୋଲାଯାଇଛି</translation>
 <translation id="9104217018994036254">ଏକ ଟାବ୍ ସେୟାର୍ କରିବା ପାଇଁ ଡିଭାଇସ୍‌ଗୁଡ଼ିକର ତାଲିକା।</translation>
+<translation id="9108312223223904744">ଏକ ସୁରକ୍ଷା କୀ ସପୋର୍ଟ ଭାବେ ଫୋନର ବ୍ୟବହାର</translation>
 <translation id="9133397713400217035">ଅଫ୍‌ଲାଇନ୍‌ରେ ଏକ୍ସପ୍ଲୋର୍ କରନ୍ତୁ</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">ମୂଳ ଲେଖା ଦେଖାନ୍ତୁ</translation>

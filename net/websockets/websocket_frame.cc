@@ -5,6 +5,8 @@
 #include "net/websockets/websocket_frame.h"
 
 #include <stddef.h>
+#include <string.h>
+
 #include <algorithm>
 
 #include "base/big_endian.h"

@@ -70,10 +70,6 @@ void VideoDecoderProxy::CreateCdm(
     const std::string& key_system,
     mojo::PendingReceiver<media::mojom::ContentDecryptionModule> receiver) {}
 
-void VideoDecoderProxy::CreateDecryptor(
-    int cdm_id,
-    mojo::PendingReceiver<media::mojom::Decryptor> receiver) {}
-
 media::mojom::InterfaceFactory* VideoDecoderProxy::GetMediaInterfaceFactory() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 

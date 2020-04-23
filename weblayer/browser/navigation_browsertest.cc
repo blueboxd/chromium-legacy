@@ -7,9 +7,13 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/test/bind_test_util.h"
+#include "components/variations/net/variations_http_headers.h"
+#include "components/variations/variations_http_header_provider.h"
 #include "content/public/test/url_loader_interceptor.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "weblayer/public/navigation.h"
 #include "weblayer/public/navigation_controller.h"
 #include "weblayer/public/navigation_observer.h"
@@ -269,6 +273,35 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
   EXPECT_EQ(final_url, controller->GetNavigationEntryDisplayURL(1));
 }
 
+// Verifies calling Navigate() from NavigationRedirected() works.
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, NavigateFromRedirect) {
+  net::test_server::ControllableHttpResponse response_1(embedded_test_server(),
+                                                        "", true);
+  net::test_server::ControllableHttpResponse response_2(embedded_test_server(),
+                                                        "", true);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  NavigationObserverImpl observer(GetNavigationController());
+  bool got_redirect = false;
+  const GURL url_to_load_on_redirect =
+      embedded_test_server()->GetURL("/url_to_load_on_redirect.html");
+  observer.SetRedirectedCallback(
+      base::BindLambdaForTesting([&](Navigation* navigation) {
+        shell()->LoadURL(url_to_load_on_redirect);
+        got_redirect = true;
+      }));
+
+  shell()->LoadURL(embedded_test_server()->GetURL("/initial_url.html"));
+  response_1.WaitForRequest();
+  response_1.Send(
+      "HTTP/1.1 302 Moved Temporarily\r\nLocation: /redirect_dest_url\r\n\r\n");
+  response_1.Done();
+  response_2.WaitForRequest();
+  response_2.Done();
+  EXPECT_EQ(url_to_load_on_redirect, response_2.http_request()->GetURL());
+  EXPECT_TRUE(got_redirect);
+}
+
 IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, SetRequestHeader) {
   net::test_server::ControllableHttpResponse response_1(embedded_test_server(),
                                                         "", true);
@@ -298,7 +331,12 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, SetRequestHeader) {
   EXPECT_EQ(header_value, response_2.http_request()->headers.at(header_name));
 }
 
-IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, SetRequestHeaderInRedirect) {
+// TODO(sky): this is disabled until
+// https://chromium-review.googlesource.com/c/chromium/src/+/2129787 lands and
+// NavigationRequest is updated to use |cors_exempt_headers| for redirects.
+// See crbug.com/1065536.
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
+                       DISABLED_SetRequestHeaderInRedirect) {
   net::test_server::ControllableHttpResponse response_1(embedded_test_server(),
                                                         "", true);
   net::test_server::ControllableHttpResponse response_2(embedded_test_server(),
@@ -325,7 +363,156 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, SetRequestHeaderInRedirect) {
   response_2.WaitForRequest();
 
   // Header should be in redirect.
+  ASSERT_TRUE(base::Contains(response_2.http_request()->headers, header_name));
   EXPECT_EQ(header_value, response_2.http_request()->headers.at(header_name));
+}
+
+class NavigationBrowserTest2 : public NavigationBrowserTest {
+ public:
+  void SetUp() override {
+    // HTTPS server only serves a valid cert for localhost, so this is needed to
+    // load pages from "www.google.com" without an interstitial.
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        "ignore-certificate-errors");
+
+    NavigationBrowserTest::SetUp();
+  }
+  void SetUpOnMainThread() override {
+    NavigationBrowserTest::SetUpOnMainThread();
+    https_server_ = std::make_unique<net::EmbeddedTestServer>(
+        net::EmbeddedTestServer::TYPE_HTTPS);
+    // The test makes requests to google.com which we want to redirect to the
+    // test server.
+    host_resolver()->AddRule("*", "127.0.0.1");
+
+    // Forces variations code to set the header.
+    auto* variations_provider =
+        variations::VariationsHttpHeaderProvider::GetInstance();
+    variations_provider->ForceVariationIds({"12", "456", "t789"}, "");
+  }
+
+  net::EmbeddedTestServer* https_server() { return https_server_.get(); }
+
+ private:
+  std::unique_ptr<net::EmbeddedTestServer> https_server_;
+};
+
+// This test verifies the embedder can replace the X-Client-Data header that
+// is also set by //components/variations.
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest2, ReplaceXClientDataHeader) {
+  std::unique_ptr<base::RunLoop> run_loop = std::make_unique<base::RunLoop>();
+  std::string last_header_value;
+  https_server()->RegisterRequestHandler(base::BindLambdaForTesting(
+      [&](const net::test_server::HttpRequest& request)
+          -> std::unique_ptr<net::test_server::HttpResponse> {
+        auto iter = request.headers.find(variations::kClientDataHeader);
+        if (iter != request.headers.end())
+          last_header_value = iter->second;
+        run_loop->Quit();
+        return std::make_unique<net::test_server::BasicHttpResponse>();
+      }));
+  ASSERT_TRUE(https_server()->Start());
+
+  // Verify the header is set by default.
+  const GURL url = https_server()->GetURL("www.google.com", "/");
+  shell()->LoadURL(url);
+  run_loop->Run();
+  EXPECT_FALSE(last_header_value.empty());
+
+  // Repeat, but clobber the header when navigating.
+  const std::string header_value = "value";
+  EXPECT_NE(last_header_value, header_value);
+  last_header_value.clear();
+  run_loop = std::make_unique<base::RunLoop>();
+  NavigationObserverImpl observer(GetNavigationController());
+  observer.SetStartedCallback(
+      base::BindLambdaForTesting([&](Navigation* navigation) {
+        navigation->SetRequestHeader(variations::kClientDataHeader,
+                                     header_value);
+      }));
+
+  shell()->LoadURL(https_server()->GetURL("www.google.com", "/foo"));
+  run_loop->Run();
+  EXPECT_EQ(header_value, last_header_value);
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest2,
+                       SetXClientDataHeaderCarriesThroughToRedirect) {
+  std::unique_ptr<base::RunLoop> run_loop = std::make_unique<base::RunLoop>();
+  std::string last_header_value;
+  bool should_redirect = true;
+  https_server()->RegisterRequestHandler(base::BindLambdaForTesting(
+      [&](const net::test_server::HttpRequest& request)
+          -> std::unique_ptr<net::test_server::HttpResponse> {
+        auto response = std::make_unique<net::test_server::BasicHttpResponse>();
+        if (should_redirect) {
+          should_redirect = false;
+          response->set_code(net::HTTP_MOVED_PERMANENTLY);
+          response->AddCustomHeader(
+              "Location",
+              https_server()->GetURL("www.google.com", "/redirect").spec());
+        } else {
+          auto iter = request.headers.find(variations::kClientDataHeader);
+          last_header_value = iter->second;
+          run_loop->Quit();
+        }
+        return response;
+      }));
+  ASSERT_TRUE(https_server()->Start());
+
+  const std::string header_value = "value";
+  run_loop = std::make_unique<base::RunLoop>();
+  NavigationObserverImpl observer(GetNavigationController());
+  observer.SetStartedCallback(
+      base::BindLambdaForTesting([&](Navigation* navigation) {
+        navigation->SetRequestHeader(variations::kClientDataHeader,
+                                     header_value);
+      }));
+
+  shell()->LoadURL(https_server()->GetURL("www.google.com", "/foo"));
+  run_loop->Run();
+  EXPECT_EQ(header_value, last_header_value);
+}
+
+// TODO(sky): this is disabled until
+// https://chromium-review.googlesource.com/c/chromium/src/+/2129787 lands and
+// NavigationRequest is updated to use |cors_exempt_headers| for redirects.
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest2,
+                       DISABLED_SetXClientDataHeaderInRedirect) {
+  std::unique_ptr<base::RunLoop> run_loop = std::make_unique<base::RunLoop>();
+  std::string last_header_value;
+  bool should_redirect = true;
+  https_server()->RegisterRequestHandler(base::BindLambdaForTesting(
+      [&](const net::test_server::HttpRequest& request)
+          -> std::unique_ptr<net::test_server::HttpResponse> {
+        auto response = std::make_unique<net::test_server::BasicHttpResponse>();
+        if (should_redirect) {
+          should_redirect = false;
+          response->set_code(net::HTTP_MOVED_PERMANENTLY);
+          response->AddCustomHeader(
+              "Location",
+              https_server()->GetURL("www.google.com", "/redirect").spec());
+        } else {
+          auto iter = request.headers.find(variations::kClientDataHeader);
+          last_header_value = iter->second;
+          run_loop->Quit();
+        }
+        return response;
+      }));
+  ASSERT_TRUE(https_server()->Start());
+
+  const std::string header_value = "value";
+  run_loop = std::make_unique<base::RunLoop>();
+  NavigationObserverImpl observer(GetNavigationController());
+  observer.SetRedirectedCallback(
+      base::BindLambdaForTesting([&](Navigation* navigation) {
+        navigation->SetRequestHeader(variations::kClientDataHeader,
+                                     header_value);
+      }));
+
+  shell()->LoadURL(https_server()->GetURL("www.google.com", "/foo"));
+  run_loop->Run();
+  EXPECT_EQ(header_value, last_header_value);
 }
 
 }  // namespace weblayer

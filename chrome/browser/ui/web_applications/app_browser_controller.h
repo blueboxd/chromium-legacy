@@ -78,11 +78,6 @@ class AppBrowserController : public TabStripModelObserver,
   // Whether to show content settings in the titlebar toolbar.
   virtual bool HasTitlebarContentSettings() const;
 
-#if defined(OS_CHROMEOS)
-  // Whether to use the Terminal System App menu rather than the default menu.
-  virtual bool UseTitlebarTerminalSystemAppMenu() const;
-#endif
-
   // Whether to show the Back and Refresh buttons in the web app toolbar.
   virtual bool HasMinimalUiButtons() const = 0;
 

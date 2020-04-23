@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observer.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observer_entry.h"
@@ -37,6 +38,7 @@
 #include "third_party/blink/renderer/modules/xr/xr_hit_test_source.h"
 #include "third_party/blink/renderer/modules/xr/xr_input_source_event.h"
 #include "third_party/blink/renderer/modules/xr/xr_input_sources_change_event.h"
+#include "third_party/blink/renderer/modules/xr/xr_light_probe.h"
 #include "third_party/blink/renderer/modules/xr/xr_plane.h"
 #include "third_party/blink/renderer/modules/xr/xr_ray.h"
 #include "third_party/blink/renderer/modules/xr/xr_reference_space.h"
@@ -80,9 +82,13 @@ const char kUnableToRetrieveNativeOrigin[] =
     "The operation was unable to retrieve the native origin from XRSpace and "
     "could not be completed.";
 
-const char kHitTestFeatureNotSupported[] = "Hit test feature is not supported.";
+const char kHitTestFeatureNotSupported[] =
+    "Hit test feature is not supported by the session.";
 
 const char kHitTestSubscriptionFailed[] = "Hit test subscription failed.";
+
+const char kLightEstimationFeatureNotSupported[] =
+    "Light estimation feature is not supported.";
 
 const char kEntityTypesNotSpecified[] =
     "No entityTypes specified: the array cannot be empty!";
@@ -239,6 +245,7 @@ bool ValidateHitTestSourceExistsHelper(
 constexpr char XRSession::kNoRigidTransformSpecified[];
 constexpr char XRSession::kUnableToRetrieveMatrix[];
 constexpr char XRSession::kNoSpaceSpecified[];
+constexpr char XRSession::kAnchorsFeatureNotSupported[];
 
 class XRSession::XRSessionResizeObserverDelegate final
     : public ResizeObserver::Delegate {
@@ -296,6 +303,7 @@ void XRSession::MetricsReporter::ReportFeatureUsed(
     case XRSessionFeature::DOM_OVERLAY:
     case XRSessionFeature::HIT_TEST:
     case XRSessionFeature::LIGHT_ESTIMATION:
+    case XRSessionFeature::ANCHORS:
       // Not recording metrics for these features currently.
       break;
   }
@@ -694,12 +702,11 @@ void XRSession::cancelAnimationFrame(int id) {
   callback_collection_->CancelCallback(id);
 }
 
-XRInputSourceArray* XRSession::inputSources() const {
-  Document* doc = Document::From(GetExecutionContext());
-  if (!did_log_getInputSources_ && doc) {
+XRInputSourceArray* XRSession::inputSources(ScriptState* script_state) const {
+  if (!did_log_getInputSources_ && script_state->ContextIsValid()) {
     ukm::builders::XR_WebXR(xr_->GetSourceId())
         .SetDidGetXRInputSources(1)
-        .Record(doc->UkmRecorder());
+        .Record(LocalDOMWindow::From(script_state)->document()->UkmRecorder());
     did_log_getInputSources_ = true;
   }
 
@@ -1092,6 +1099,32 @@ void XRSession::ProcessHitTestData(
   }
 }
 
+ScriptPromise XRSession::requestLightProbe(ScriptState* script_state,
+                                           ExceptionState& exception_state) {
+  if (ended_) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kSessionEnded);
+    return ScriptPromise();
+  }
+
+  if (!IsFeatureEnabled(device::mojom::XRSessionFeature::LIGHT_ESTIMATION)) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                      kLightEstimationFeatureNotSupported);
+    return {};
+  }
+
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromise promise = resolver->Promise();
+
+  if (!world_light_probe_) {
+    world_light_probe_ = MakeGarbageCollected<XRLightProbe>(this);
+  }
+
+  resolver->Resolve(world_light_probe_);
+
+  return promise;
+}
+
 ScriptPromise XRSession::end(ScriptState* script_state,
                              ExceptionState& exception_state) {
   DVLOG(2) << __func__;
@@ -1454,10 +1487,20 @@ void XRSession::UpdateWorldUnderstandingStateForFrame(
         frame_data->detected_planes_data.get(), timestamp);
     ProcessAnchorsData(frame_data->anchors_data.get(), timestamp);
     ProcessHitTestData(frame_data->hit_test_subscription_results.get());
+
+    const device::mojom::blink::XRLightEstimationData* light_data =
+        frame_data->light_estimation_data.get();
+    if (world_light_probe_ && light_data) {
+      world_light_probe_->ProcessLightEstimationData(light_data, timestamp);
+    }
   } else {
     world_information_->ProcessPlaneInformation(nullptr, timestamp);
     ProcessAnchorsData(nullptr, timestamp);
     ProcessHitTestData(nullptr);
+
+    if (world_light_probe_) {
+      world_light_probe_->ProcessLightEstimationData(nullptr, timestamp);
+    }
   }
 }
 
@@ -1556,13 +1599,13 @@ void XRSession::OnFrame(
 }
 
 void XRSession::LogGetPose() const {
-  Document* doc = Document::From(GetExecutionContext());
-  if (!did_log_getViewerPose_ && doc) {
+  LocalDOMWindow* window = To<LocalDOMWindow>(GetExecutionContext());
+  if (!did_log_getViewerPose_ && window) {
     did_log_getViewerPose_ = true;
 
     ukm::builders::XR_WebXR(xr_->GetSourceId())
         .SetDidRequestPose(1)
-        .Record(doc->UkmRecorder());
+        .Record(window->document()->UkmRecorder());
   }
 }
 
@@ -1915,6 +1958,7 @@ void XRSession::Trace(Visitor* visitor) {
   visitor->Trace(render_state_);
   visitor->Trace(world_tracking_state_);
   visitor->Trace(world_information_);
+  visitor->Trace(world_light_probe_);
   visitor->Trace(pending_render_state_);
   visitor->Trace(end_session_resolver_);
   visitor->Trace(input_sources_);

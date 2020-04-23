@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_MHTML_GENERATION_RESULT_H_
 #define CONTENT_PUBLIC_BROWSER_MHTML_GENERATION_RESULT_H_
 
+#include "base/callback_forward.h"
 #include "base/optional.h"
 #include "content/common/content_export.h"
 

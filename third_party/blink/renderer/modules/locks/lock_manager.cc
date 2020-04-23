@@ -16,8 +16,8 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_lock_info.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_lock_manager_snapshot.h"
 #include "third_party/blink/renderer/core/dom/abort_signal.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
@@ -446,8 +446,8 @@ bool LockManager::AllowLocks(ScriptState* script_state) {
     DCHECK(execution_context->IsContextThread());
     SECURITY_DCHECK(execution_context->IsDocument() ||
                     execution_context->IsWorkerGlobalScope());
-    if (auto* document = Document::DynamicFrom(execution_context)) {
-      LocalFrame* frame = document->GetFrame();
+    if (auto* window = DynamicTo<LocalDOMWindow>(execution_context)) {
+      LocalFrame* frame = window->GetFrame();
       if (!frame) {
         cached_allowed_ = false;
       } else if (auto* settings_client = frame->GetContentSettingsClient()) {

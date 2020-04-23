@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <utility>
 
 #include "base/big_endian.h"
 #include "base/optional.h"
@@ -785,8 +786,11 @@ TEST(RecordRdataTest, AddOptToOptRecord) {
 // Test that for arbitrary IntegrityRecordRdata r, Parse(Serialize(r)) == r.
 TEST(RecordRdataTest, IntegrityParseSerializeInverseProperty) {
   IntegrityRecordRdata record(IntegrityRecordRdata::Random());
+
+  EXPECT_TRUE(record.IsIntact());
   base::Optional<std::vector<uint8_t>> serialized = record.Serialize();
   EXPECT_TRUE(serialized);
+
   std::unique_ptr<IntegrityRecordRdata> reparsed =
       IntegrityRecordRdata::Create(MakeStringPiece(*serialized));
   EXPECT_TRUE(reparsed);
@@ -796,22 +800,28 @@ TEST(RecordRdataTest, IntegrityParseSerializeInverseProperty) {
 TEST(RecordRdataTest, IntegrityEmptyNonceCornerCase) {
   const IntegrityRecordRdata::Nonce empty_nonce;
   IntegrityRecordRdata record(empty_nonce);
+  EXPECT_TRUE(record.IsIntact());
 
   base::Optional<std::vector<uint8_t>> serialized = record.Serialize();
   EXPECT_TRUE(serialized);
   std::unique_ptr<IntegrityRecordRdata> reparsed =
       IntegrityRecordRdata::Create(MakeStringPiece(*serialized));
   EXPECT_TRUE(reparsed);
+  EXPECT_TRUE(reparsed->IsIntact());
   EXPECT_TRUE(reparsed->IsEqual(&record));
   EXPECT_EQ(reparsed->nonce().size(), 0u);
 }
 
 TEST(RecordRdataTest, IntegrityMoveConstructor) {
   IntegrityRecordRdata record_a(IntegrityRecordRdata::Random());
-  std::vector<uint8_t> serialized_a = record_a.Serialize();
+  EXPECT_TRUE(record_a.IsIntact());
+  base::Optional<std::vector<uint8_t>> serialized_a = record_a.Serialize();
+  EXPECT_TRUE(serialized_a);
 
   IntegrityRecordRdata record_b = std::move(record_a);
-  std::vector<uint8_t> serialized_b = record_b.Serialize();
+  EXPECT_TRUE(record_b.IsIntact());
+  base::Optional<std::vector<uint8_t>> serialized_b = record_b.Serialize();
+  EXPECT_TRUE(serialized_b);
 
   EXPECT_EQ(serialized_a, serialized_b);
 }
@@ -824,6 +834,7 @@ TEST(RecordRdataTest, IntegrityRandomRecordsDiffer) {
 
 TEST(RecordRdataTest, IntegritySerialize) {
   IntegrityRecordRdata record({'A'});
+  EXPECT_TRUE(record.IsIntact());
   const base::Optional<std::vector<uint8_t>> serialized = record.Serialize();
   EXPECT_TRUE(serialized);
 
@@ -850,6 +861,14 @@ TEST(RecordRdataTest, IntegrityParse) {
   };
   auto record = IntegrityRecordRdata::Create(MakeStringPiece(serialized));
   EXPECT_TRUE(record);
+  EXPECT_TRUE(record->IsIntact());
+}
+
+TEST(RecordRdataTest, IntegrityBadParseEmptyRdata) {
+  const std::vector<uint8_t> serialized = {};
+  auto record = IntegrityRecordRdata::Create(MakeStringPiece(serialized));
+  EXPECT_TRUE(record);
+  EXPECT_FALSE(record->IsIntact());
 }
 
 TEST(RecordRdataTest, IntegrityBadParseTruncatedNonce) {
@@ -857,7 +876,8 @@ TEST(RecordRdataTest, IntegrityBadParseTruncatedNonce) {
       0, 6, 'f', 'o', 'o'  // Length prefix and truncated nonce
   };
   auto record = IntegrityRecordRdata::Create(MakeStringPiece(serialized));
-  EXPECT_EQ(record, nullptr);
+  EXPECT_TRUE(record);
+  EXPECT_FALSE(record->IsIntact());
 }
 
 TEST(RecordRdataTest, IntegrityBadParseTruncatedDigest) {
@@ -869,7 +889,8 @@ TEST(RecordRdataTest, IntegrityBadParseTruncatedDigest) {
       0x4a,  // End digest
   };
   auto record = IntegrityRecordRdata::Create(MakeStringPiece(serialized));
-  EXPECT_EQ(record, nullptr);
+  EXPECT_TRUE(record);
+  EXPECT_FALSE(record->IsIntact());
 }
 
 TEST(RecordRdataTest, IntegrityBadParseExtraBytes) {
@@ -882,7 +903,8 @@ TEST(RecordRdataTest, IntegrityBadParseExtraBytes) {
       'e', 'x', 't', 'r', 'a'                          // Trailing bytes
   };
   auto record = IntegrityRecordRdata::Create(MakeStringPiece(serialized));
-  EXPECT_EQ(record, nullptr);
+  EXPECT_TRUE(record);
+  EXPECT_FALSE(record->IsIntact());
 }
 
 TEST(RecordRdataTest, IntegrityCorruptedDigest) {
@@ -894,7 +916,8 @@ TEST(RecordRdataTest, IntegrityCorruptedDigest) {
       0xf2,  // End digest
   };
   auto record = IntegrityRecordRdata::Create(MakeStringPiece(serialized));
-  EXPECT_FALSE(record);
+  EXPECT_TRUE(record);
+  EXPECT_FALSE(record->IsIntact());
 }
 
 }  // namespace

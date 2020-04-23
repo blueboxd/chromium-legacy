@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 import("//third_party/closure_compiler/compile_js.gni")
-import("//tools/polymer/polymer.gni")
+import("//tools/polymer/html_to_js.gni")
 
 js_type_check("closure_compile") {
   is_polymer3 = true
@@ -98,109 +98,25 @@ js_library("viewer-zoom-button") {
   deps = []
 }
 
-polymer_modulizer("viewer-bookmark") {
-  js_file = "viewer-bookmark.js"
-  html_file = "viewer-bookmark.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("viewer-error-screen") {
-  js_file = "viewer-error-screen.js"
-  html_file = "viewer-error-screen.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("viewer-form-warning") {
-  js_file = "viewer-form-warning.js"
-  html_file = "viewer-form-warning.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("viewer-ink-host") {
-  js_file = "viewer-ink-host.js"
-  html_file = "viewer-ink-host.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("viewer-page-indicator") {
-  js_file = "viewer-page-indicator.js"
-  html_file = "viewer-page-indicator.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("viewer-page-selector") {
-  js_file = "viewer-page-selector.js"
-  html_file = "viewer-page-selector.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("viewer-password-screen") {
-  js_file = "viewer-password-screen.js"
-  html_file = "viewer-password-screen.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("viewer-pdf-toolbar") {
-  js_file = "viewer-pdf-toolbar.js"
-  html_file = "viewer-pdf-toolbar.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("viewer-pen-options") {
-  js_file = "viewer-pen-options.js"
-  html_file = "viewer-pen-options.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("viewer-toolbar-dropdown") {
-  js_file = "viewer-toolbar-dropdown.js"
-  html_file = "viewer-toolbar-dropdown.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("viewer-zoom-button") {
-  js_file = "viewer-zoom-button.js"
-  html_file = "viewer-zoom-button.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("viewer-zoom-toolbar") {
-  js_file = "viewer-zoom-toolbar.js"
-  html_file = "viewer-zoom-toolbar.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("shared-vars") {
-  js_file = "shared-vars.js"
-  html_file = "shared-vars.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("icons") {
-  js_file = "icons.js"
-  html_file = "icons.html"
-  html_type = "v3-ready"
-}
-
-group("polymer3_elements") {
-  public_deps = [
-    ":icons_module",
-    ":shared-vars_module",
-    ":viewer-bookmark_module",
-    ":viewer-error-screen_module",
-    ":viewer-page-indicator_module",
-    ":viewer-page-selector_module",
-    ":viewer-password-screen_module",
-    ":viewer-pdf-toolbar_module",
-    ":viewer-toolbar-dropdown_module",
-    ":viewer-zoom-button_module",
-    ":viewer-zoom-toolbar_module",
+html_to_js("web_components") {
+  js_files = [
+    "icons.js",
+    "shared-vars.js",
+    "viewer-bookmark.js",
+    "viewer-error-screen.js",
+    "viewer-page-indicator.js",
+    "viewer-page-selector.js",
+    "viewer-password-screen.js",
+    "viewer-pdf-toolbar.js",
+    "viewer-toolbar-dropdown.js",
+    "viewer-zoom-button.js",
+    "viewer-zoom-toolbar.js",
   ]
   if (is_chromeos) {
-    public_deps += [
-      ":viewer-form-warning_module",
-      ":viewer-ink-host_module",
-      ":viewer-pen-options_module",
+    js_files += [
+      "viewer-form-warning.js",
+      "viewer-ink-host.js",
+      "viewer-pen-options.js",
     ]
   }
 }

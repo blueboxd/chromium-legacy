@@ -13,7 +13,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import org.chromium.chrome.browser.share.qrcode.R;
+import org.chromium.chrome.browser.share.R;
 
 /**
  * Manages the Android View representing the QrCode share panel.

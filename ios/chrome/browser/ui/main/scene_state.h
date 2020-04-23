@@ -54,6 +54,9 @@ typedef NS_ENUM(NSUInteger, SceneActivationLevel) {
 
 @property(nonatomic, strong) UIWindowScene* scene API_AVAILABLE(ios(13));
 
+@property(nonatomic, strong)
+    UISceneConnectionOptions* connectionOptions API_AVAILABLE(ios(13));
+
 // The interface provider associated with this scene.
 @property(nonatomic, strong, readonly) id<BrowserInterfaceProvider>
     interfaceProvider;

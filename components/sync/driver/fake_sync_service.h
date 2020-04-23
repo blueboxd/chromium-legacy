@@ -48,8 +48,6 @@ class FakeSyncService : public SyncService {
   GoogleServiceAuthError GetAuthError() const override;
   base::Time GetAuthErrorTime() const override;
   bool RequiresClientUpgrade() const override;
-  std::unique_ptr<crypto::ECPrivateKey> GetExperimentalAuthenticationKey()
-      const override;
   UserShare* GetUserShare() const override;
   void DataTypePreconditionChanged(syncer::ModelType type) override;
   SyncTokenStatus GetSyncTokenStatusForDebugging() const override;

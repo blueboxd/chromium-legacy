@@ -79,6 +79,12 @@ constexpr int kPageFlipDelayInMsFullscreen = 500;
 // The drag and drop proxy should get scaled by this factor.
 constexpr float kDragAndDropProxyScale = 1.2f;
 
+// The apps grid should be scaled down by this factor.
+constexpr float kCardifiedScale = 0.84f;
+
+// Left padding of the apps grid page when it is in cardified state.
+constexpr int kCardifiedPaddingLeft = 16;
+
 // Delays in milliseconds to show re-order preview.
 constexpr int kReorderDelay = 120;
 
@@ -87,6 +93,13 @@ constexpr int kFolderItemReparentDelay = 50;
 
 // Maximum vertical and horizontal spacing between tiles.
 constexpr int kMaximumTileSpacing = 96;
+
+// The duration in ms for most of the apps grid view animations.
+constexpr int kDefaultAnimationDuration = 200;
+
+// The duration in ms for the animation that ends the cardified state of the
+// apps grid view.
+constexpr int kEndCardifiedAnimationDuration = 350;
 
 // Animation curve used for fading in the target page when opening or closing
 // a folder.
@@ -183,6 +196,67 @@ class ItemRemoveAnimationDelegate : public views::AnimationDelegateViews {
   std::unique_ptr<views::View> view_;
 
   DISALLOW_COPY_AND_ASSIGN(ItemRemoveAnimationDelegate);
+};
+
+// CardifiedAnimationDelegate is used to animate toggling the cardified state of
+// the apps grid view. This happens when a user drags an app within the
+// launcher. App icons are scaled down to 84% and bounds are adjusted to
+// maintain proportional padding.
+class CardifiedAnimationDelegate : public views::AnimationDelegateViews {
+ public:
+  CardifiedAnimationDelegate(AppListItemView* view,
+                             ui::Layer* layer,
+                             const gfx::Rect& layer_target,
+                             bool cardified)
+      : views::AnimationDelegateViews(view),
+        view_(view),
+        layer_(layer),
+        layer_start_(layer ? layer->bounds() : gfx::Rect()),
+        layer_target_(layer_target),
+        cardified_(cardified) {
+    layer_target_.set_size(
+        gfx::ScaleToRoundedSize(layer_target_.size(), kCardifiedScale));
+  }
+  ~CardifiedAnimationDelegate() override {}
+
+  // views::AnimationDelegateViews:
+  void AnimationProgressed(const gfx::Animation* animation) override {
+    view_->layer()->SetOpacity(animation->GetCurrentValue());
+    view_->layer()->ScheduleDraw();
+
+    if (layer_) {
+      layer_->SetOpacity(1 - animation->GetCurrentValue());
+      layer_->SetBounds(
+          animation->CurrentValueBetween(layer_start_, layer_target_));
+      layer_->ScheduleDraw();
+    }
+  }
+  void AnimationEnded(const gfx::Animation* animation) override {
+    if (layer_)
+      view_->layer()->SetOpacity(1.0f);
+    if (cardified_)
+      view_->SetCardifyUIState();
+    else
+      view_->SetNormalUIState();
+  }
+  void AnimationCanceled(const gfx::Animation* animation) override {
+    if (layer_)
+      view_->layer()->SetOpacity(1.0f);
+    if (cardified_)
+      view_->SetCardifyUIState();
+    else
+      view_->SetNormalUIState();
+  }
+
+ private:
+  // The view that needs to be wrapped. Owned by views hierarchy.
+  AppListItemView* view_;
+  std::unique_ptr<ui::Layer> layer_;
+  const gfx::Rect layer_start_;
+  gfx::Rect layer_target_;
+  bool cardified_;
+
+  DISALLOW_COPY_AND_ASSIGN(CardifiedAnimationDelegate);
 };
 
 // ItemMoveAnimationDelegate observes when an item finishes animating when it is
@@ -592,6 +666,9 @@ bool AppsGridView::UpdateDragFromItem(Pointer pointer,
   if (!drag_view_)
     return false;  // Drag canceled.
 
+  if (!cardified_state_)
+    StartAppsGridCardifiedView();
+
   gfx::Point drag_point_in_grid_view;
   ExtractDragLocation(event.root_location(), &drag_point_in_grid_view);
   UpdateDrag(pointer, drag_point_in_grid_view);
@@ -800,6 +877,7 @@ void AppsGridView::EndDrag(bool cancel) {
   // within |apps_grid_view_|.
   BeginHideCurrentGhostImageView();
   StopPageFlipTimer();
+  EndAppsGridCardifiedView();
 }
 
 void AppsGridView::StopPageFlipTimer() {
@@ -2144,6 +2222,62 @@ const AppListConfig& AppsGridView::GetAppListConfig() const {
   return contents_view_->app_list_view()->GetAppListConfig();
 }
 
+void AppsGridView::StartAppsGridCardifiedView() {
+  if (!app_list_features::IsNewDragSpecInLauncherEnabled())
+    return;
+  if (folder_delegate_)
+    return;
+  DCHECK(!cardified_state_);
+  cardified_state_ = true;
+  AnimateCardifiedState();
+}
+
+void AppsGridView::EndAppsGridCardifiedView() {
+  if (!app_list_features::IsNewDragSpecInLauncherEnabled())
+    return;
+  if (folder_delegate_)
+    return;
+  DCHECK(cardified_state_);
+  cardified_state_ = false;
+  AnimateCardifiedState();
+}
+
+void AppsGridView::AnimateCardifiedState() {
+  if (GetWidget()) {
+    // Normally Layout() cancels any animations. At this point there may be a
+    // pending Layout(), force it now so that one isn't triggered part way
+    // through the animation. Further, ignore this layout so that the position
+    // isn't reset.
+    DCHECK(!ignore_layout_);
+    base::AutoReset<bool> auto_reset(&ignore_layout_, true);
+    GetWidget()->LayoutRootViewIfNecessary();
+  }
+  UpdateTilePadding();
+  CalculateIdealBoundsForFolder();
+  for (int i = 0; i < view_model_.view_size(); ++i) {
+    AppListItemView* entry_view = view_model_.view_at(i);
+    if (entry_view != drag_view_) {
+      entry_view->EnsureLayer();
+      std::unique_ptr<ui::Layer> layer;
+      if (entry_view->layer()) {
+        layer = entry_view->RecreateLayer();
+        layer->SuppressPaint();
+
+        entry_view->layer()->SetFillsBoundsOpaquely(false);
+        entry_view->layer()->SetOpacity(0.f);
+      }
+      bounds_animator_->AnimateViewTo(entry_view, view_model_.ideal_bounds(i));
+      bounds_animator_->SetAnimationDelegate(
+          entry_view, std::make_unique<CardifiedAnimationDelegate>(
+                          entry_view, layer.release(),
+                          view_model_.ideal_bounds(i), cardified_state_));
+      if (!cardified_state_)
+        bounds_animator_->SetAnimationDuration(
+            base::TimeDelta::FromMilliseconds(kEndCardifiedAnimationDuration));
+    }
+  }
+}
+
 bool AppsGridView::FirePageFlipTimerForTest() {
   if (!page_flip_timer_.IsRunning())
     return false;
@@ -2914,6 +3048,8 @@ void AppsGridView::OnBoundsAnimatorDone(views::BoundsAnimator* animator) {
     return;
   for (const auto& entry : view_model_.entries())
     entry.view->DestroyLayer();
+  bounds_animator_->SetAnimationDuration(
+      base::TimeDelta::FromMilliseconds(kDefaultAnimationDuration));
 }
 
 GridIndex AppsGridView::GetNearestTileIndexForPoint(
@@ -2946,10 +3082,13 @@ gfx::Rect AppsGridView::GetExpectedTileBounds(const GridIndex& index) const {
   bounds.Inset(GetTilePadding());
   int row = index.slot / cols_;
   int col = index.slot % cols_;
+  // We add 16px of padding to the left so that the apps grid is centered.
+  int padding_left = cardified_state_ ? kCardifiedPaddingLeft : 0;
   const gfx::Size total_tile_size = GetTotalTileSize();
-  gfx::Rect tile_bounds(gfx::Point(bounds.x() + col * total_tile_size.width(),
-                                   bounds.y() + row * total_tile_size.height()),
-                        total_tile_size);
+  gfx::Rect tile_bounds(
+      gfx::Point(bounds.x() + col * total_tile_size.width() + padding_left,
+                 bounds.y() + row * total_tile_size.height()),
+      total_tile_size);
   tile_bounds.Inset(-GetTilePadding());
   return tile_bounds;
 }
@@ -3384,11 +3523,15 @@ void AppsGridView::UpdateTilePadding() {
       cols_ > 1 ? (content_size.width() - cols_ * tile_size.width()) /
                       ((cols_ - 1) * 2)
                 : 0;
+  horizontal_tile_padding_ =
+      horizontal_tile_padding_ * (cardified_state_ ? kCardifiedScale : 1.0f);
   vertical_tile_padding_ =
       rows_per_page_ > 1
           ? (content_size.height() - rows_per_page_ * tile_size.height()) /
                 ((rows_per_page_ - 1) * 2)
           : 0;
+  vertical_tile_padding_ =
+      vertical_tile_padding_ * (cardified_state_ ? kCardifiedScale : 1.0f);
 }
 
 int AppsGridView::GetItemsNumOfPage(int page) const {

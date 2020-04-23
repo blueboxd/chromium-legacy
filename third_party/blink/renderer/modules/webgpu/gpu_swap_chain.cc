@@ -18,12 +18,11 @@ GPUSwapChain::GPUSwapChain(GPUCanvasContext* context,
     : DawnObjectBase(descriptor->device()->GetDawnControlClient()),
       device_(descriptor->device()),
       context_(context),
-      usage_(AsDawnEnum<WGPUTextureUsage>(descriptor->usage())),
-      swap_chain_format_(AsDawnEnum<WGPUTextureFormat>(descriptor->format())) {
+      usage_(AsDawnEnum<WGPUTextureUsage>(descriptor->usage())) {
   // TODO: Use label from GPUObjectDescriptorBase.
   swap_buffers_ = base::AdoptRef(new WebGPUSwapBufferProvider(
       this, GetDawnControlClient(), device_->GetClientID(), usage_,
-      swap_chain_format_));
+      AsDawnEnum<WGPUTextureFormat>(descriptor->format())));
 }
 
 GPUSwapChain::~GPUSwapChain() {
@@ -70,8 +69,7 @@ GPUTexture* GPUSwapChain::getCurrentTexture() {
   WGPUTexture dawn_client_texture =
       swap_buffers_->GetNewTexture(context_->CanvasSize());
   DCHECK(dawn_client_texture);
-  texture_ = MakeGarbageCollected<GPUTexture>(device_, dawn_client_texture,
-                                              swap_chain_format_);
+  texture_ = MakeGarbageCollected<GPUTexture>(device_, dawn_client_texture);
   return texture_;
 }
 

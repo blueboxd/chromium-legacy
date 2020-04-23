@@ -38,9 +38,9 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_encoding_configuration.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_key_system_configuration.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_key_system_media_capability.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/encryptedmedia/encrypted_media_utils.h"
@@ -858,33 +858,32 @@ ScriptPromise MediaCapabilities::GetEmeSupport(
   DVLOG(3) << __func__;
   DCHECK(configuration->hasKeySystemConfiguration());
 
+  // Calling context must have a real window bound to a Page. This check is
+  // ported from rMKSA (see http://crbug.com/456720).
+  if (!script_state->ContextIsValid()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "The context provided is not associated with a page.");
+    return ScriptPromise();
+  }
+
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   DCHECK(execution_context);
-  Document* document = Document::From(execution_context);
 
   // See context here:
   // https://sites.google.com/a/chromium.org/dev/Home/chromium-security/deprecating-permissions-in-cross-origin-iframes
-  if (!document->IsFeatureEnabled(
+  if (!execution_context->IsFeatureEnabled(
           mojom::blink::FeaturePolicyFeature::kEncryptedMedia,
           ReportOptions::kReportOnFailure)) {
-    UseCounter::Count(document,
+    UseCounter::Count(execution_context,
                       WebFeature::kEncryptedMediaDisabledByFeaturePolicy);
-    document->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+    execution_context->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kJavaScript,
         mojom::ConsoleMessageLevel::kWarning,
         kEncryptedMediaFeaturePolicyConsoleWarning));
     exception_state.ThrowSecurityError(
         "decodingInfo(): Creating MediaKeySystemAccess is disabled by feature "
         "policy.");
-    return ScriptPromise();
-  }
-
-  // Calling context must have a real Document bound to a Page. This check is
-  // ported from rMKSA (see http://crbug.com/456720).
-  if (!document->GetPage()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidStateError,
-        "The context provided is not associated with a page.");
     return ScriptPromise();
   }
 
@@ -985,7 +984,8 @@ ScriptPromise MediaCapabilities::GetEmeSupport(
   // undefined. See comment above Promise() in script_promise_resolver.h
   ScriptPromise promise = initializer->Promise();
 
-  MediaKeysController::From(document->GetPage())
+  Page* page = To<LocalDOMWindow>(execution_context)->GetFrame()->GetPage();
+  MediaKeysController::From(page)
       ->EncryptedMediaClient(execution_context)
       ->RequestMediaKeySystemAccess(WebEncryptedMediaRequest(initializer));
 

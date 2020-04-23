@@ -88,9 +88,7 @@ NGMathUnderOverLayoutAlgorithm::NGMathUnderOverLayoutAlgorithm(
 void NGMathUnderOverLayoutAlgorithm::GatherChildren(NGBlockNode* base,
                                                     NGBlockNode* over,
                                                     NGBlockNode* under) {
-  auto script_type =
-      DynamicTo<MathMLUnderOverElement>(Node().GetLayoutBox()->GetNode())
-          ->scriptType();
+  auto script_type = Node().ScriptType();
   for (NGLayoutInputNode child = Node().FirstChild(); child;
        child = child.NextSibling()) {
     NGBlockNode block_child = To<NGBlockNode>(child);
@@ -105,15 +103,15 @@ void NGMathUnderOverLayoutAlgorithm::GatherChildren(NGBlockNode* base,
       continue;
     }
     switch (script_type) {
-      case MathMLUnderOverElement::ScriptType::kUnder:
+      case MathScriptType::kUnder:
         DCHECK(!*under);
         *under = block_child;
         break;
-      case MathMLUnderOverElement::ScriptType::kOver:
+      case MathScriptType::kOver:
         DCHECK(!*over);
         *over = block_child;
         break;
-      case MathMLUnderOverElement::ScriptType::kUnderOver:
+      case MathScriptType::kUnderOver:
         if (!*under) {
           *under = block_child;
           continue;
@@ -129,7 +127,7 @@ void NGMathUnderOverLayoutAlgorithm::GatherChildren(NGBlockNode* base,
 
 scoped_refptr<const NGLayoutResult> NGMathUnderOverLayoutAlgorithm::Layout() {
   DCHECK(!BreakToken());
-  DCHECK(IsValidMathMLUnderOver(Node()));
+  DCHECK(IsValidMathMLScript(Node()));
 
   NGBlockNode base = nullptr;
   NGBlockNode over = nullptr;
@@ -257,7 +255,7 @@ scoped_refptr<const NGLayoutResult> NGMathUnderOverLayoutAlgorithm::Layout() {
 
 base::Optional<MinMaxSizes> NGMathUnderOverLayoutAlgorithm::ComputeMinMaxSizes(
     const MinMaxSizesInput& input) const {
-  DCHECK(IsValidMathMLUnderOver(Node()));
+  DCHECK(IsValidMathMLScript(Node()));
 
   base::Optional<MinMaxSizes> sizes =
       CalculateMinMaxSizesIgnoringChildren(Node(), border_scrollbar_padding_);

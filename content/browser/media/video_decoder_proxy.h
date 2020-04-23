@@ -63,9 +63,6 @@ class CONTENT_EXPORT VideoDecoderProxy : public media::mojom::InterfaceFactory {
   void CreateCdm(const std::string& key_system,
                  mojo::PendingReceiver<media::mojom::ContentDecryptionModule>
                      receiver) final;
-  void CreateDecryptor(
-      int cdm_id,
-      mojo::PendingReceiver<media::mojom::Decryptor> receiver) final;
 
  private:
   media::mojom::InterfaceFactory* GetMediaInterfaceFactory();

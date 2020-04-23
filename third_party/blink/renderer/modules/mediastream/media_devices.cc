@@ -13,10 +13,10 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_stream_constraints.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_track_supported_constraints.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/mediastream/input_device_info.h"
 #include "third_party/blink/renderer/modules/mediastream/media_error_state.h"
@@ -69,9 +69,7 @@ MediaDevices::~MediaDevices() = default;
 ScriptPromise MediaDevices::enumerateDevices(ScriptState* script_state,
                                              ExceptionState& exception_state) {
   UpdateWebRTCMethodCount(RTCAPIName::kEnumerateDevices);
-  LocalFrame* frame =
-      Document::From(ExecutionContext::From(script_state))->GetFrame();
-  if (!frame) {
+  if (!script_state->ContextIsValid()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       "Current frame is detached.");
     return ScriptPromise();
@@ -81,6 +79,7 @@ ScriptPromise MediaDevices::enumerateDevices(ScriptState* script_state,
   ScriptPromise promise = resolver->Promise();
   requests_.insert(resolver);
 
+  LocalFrame* frame = LocalDOMWindow::From(script_state)->GetFrame();
   GetDispatcherHost(frame)->EnumerateDevices(
       true /* audio input */, true /* video input */, true /* audio output */,
       true /* request_video_input_capabilities */,
@@ -110,9 +109,9 @@ ScriptPromise MediaDevices::SendUserMediaRequest(
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   auto* callbacks = MakeGarbageCollected<PromiseResolverCallbacks>(resolver);
 
-  Document* document = Document::From(ExecutionContext::From(script_state));
+  LocalDOMWindow* window = LocalDOMWindow::From(script_state);
   UserMediaController* user_media =
-      UserMediaController::From(document->GetFrame());
+      UserMediaController::From(window->GetFrame());
   if (!user_media) {
     exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       "No media device controller available; "
@@ -121,9 +120,8 @@ ScriptPromise MediaDevices::SendUserMediaRequest(
   }
 
   MediaErrorState error_state;
-  UserMediaRequest* request =
-      UserMediaRequest::Create(document->ToExecutionContext(), user_media,
-                               media_type, options, callbacks, error_state);
+  UserMediaRequest* request = UserMediaRequest::Create(
+      window, user_media, media_type, options, callbacks, error_state);
   if (!request) {
     DCHECK(error_state.HadException());
     if (error_state.CanGenerateException()) {
@@ -203,8 +201,7 @@ void MediaDevices::ContextDestroyed() {
 void MediaDevices::OnDevicesChanged(
     MediaDeviceType type,
     const Vector<WebMediaDeviceInfo>& device_infos) {
-  Document* document = Document::From(GetExecutionContext());
-  DCHECK(document);
+  DCHECK(GetExecutionContext());
 
   if (RuntimeEnabledFeatures::OnDeviceChangeEnabled())
     ScheduleDispatchEvent(Event::Create(event_type_names::kDevicechange));
@@ -239,11 +236,11 @@ void MediaDevices::StartObserving() {
   if (receiver_.is_bound() || stopped_)
     return;
 
-  Document* document = Document::From(GetExecutionContext());
-  if (!document || !document->GetFrame())
+  LocalDOMWindow* window = To<LocalDOMWindow>(GetExecutionContext());
+  if (!window)
     return;
 
-  GetDispatcherHost(document->GetFrame())
+  GetDispatcherHost(window->GetFrame())
       ->AddMediaDevicesListener(true /* audio input */, true /* video input */,
                                 true /* audio output */,
                                 receiver_.BindNewPipeAndPassRemote(

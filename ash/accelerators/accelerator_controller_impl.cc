@@ -15,8 +15,6 @@
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/ambient/ambient_controller.h"
 #include "ash/app_list/app_list_controller_impl.h"
-#include "ash/assistant/assistant_controller_impl.h"
-#include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/debug.h"
 #include "ash/display/display_configuration_controller.h"
@@ -36,6 +34,7 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "ash/public/cpp/new_window_delegate.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/toast_data.h"
@@ -90,6 +89,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
+#include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "components/user_manager/user_type.h"
@@ -1060,7 +1060,7 @@ void HandleToggleAssistant(const ui::Accelerator& accelerator) {
       break;
   }
 
-  Shell::Get()->assistant_controller()->ui_controller()->ToggleUi(
+  AssistantUiController::Get()->ToggleUi(
       /*entry_point=*/chromeos::assistant::mojom::AssistantEntryPoint::kHotkey,
       /*exit_point=*/chromeos::assistant::mojom::AssistantExitPoint::kHotkey);
 }

@@ -612,7 +612,7 @@ base::Optional<SkColor> NativeThemeWin::GetPlatformHighContrastColor(
       return system_colors_[SystemThemeColor::kWindow];
 
     // Window Text
-    case kColorId_DefaultIconColor:
+    case kColorId_MenuIconColor:
     case kColorId_DialogForeground:
     case kColorId_LabelEnabledColor:
     case kColorId_LabelSecondaryColor:
@@ -627,6 +627,7 @@ base::Optional<SkColor> NativeThemeWin::GetPlatformHighContrastColor(
     case kColorId_AlertSeverityLow:
     case kColorId_AlertSeverityMedium:
     case kColorId_AlertSeverityHigh:
+    case kColorId_DefaultIconColor:
       return system_colors_[SystemThemeColor::kWindowText];
 
     // Hyperlinks

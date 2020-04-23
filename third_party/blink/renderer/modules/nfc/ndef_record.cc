@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_data_view.h"
 #include "third_party/blink/renderer/modules/nfc/ndef_message.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_utils.h"
@@ -136,7 +137,7 @@ String getDocumentLanguage(const ExecutionContext* execution_context) {
   DCHECK(execution_context);
   String document_language;
   Element* document_element =
-      Document::From(execution_context)->documentElement();
+      To<LocalDOMWindow>(execution_context)->document()->documentElement();
   if (document_element) {
     document_language = document_element->getAttribute(html_names::kLangAttr);
   }

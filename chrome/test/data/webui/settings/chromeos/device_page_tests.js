@@ -1051,36 +1051,12 @@ cr.define('device_page_tests', function() {
             isLowPowerCharger);
       }
 
-      suite('no power settings', function() {
-        suiteSetup(function() {
-          // Never show power settings.
-          loadTimeData.overrideValues({
-            enablePowerSettings: false,
-          });
-        });
-
-        test('power row hidden', function() {
-          assertEquals(null, devicePage.$$('#powerRow'));
-          assertEquals(
-              0,
-              settings.DevicePageBrowserProxyImpl.getInstance()
-                  .updatePowerStatusCalled_);
-        });
-      });
-
       suite('power settings', function() {
         let powerPage;
         let powerSourceRow;
         let powerSourceSelect;
         let acIdleSelect;
         let lidClosedToggle;
-
-        suiteSetup(function() {
-          // Always show power settings.
-          loadTimeData.overrideValues({
-            enablePowerSettings: true,
-          });
-        });
 
         setup(function() {
           return showAndGetDeviceSubpage('power', settings.routes.POWER)

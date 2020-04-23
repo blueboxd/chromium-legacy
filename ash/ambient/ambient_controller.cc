@@ -10,15 +10,15 @@
 #include "ash/ambient/model/photo_model_observer.h"
 #include "ash/ambient/ui/ambient_container_view.h"
 #include "ash/ambient/util/ambient_util.h"
-#include "ash/assistant/assistant_controller_impl.h"
-#include "ash/assistant/util/animation_util.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/public/cpp/ambient/ambient_mode_state.h"
 #include "ash/public/cpp/ambient/ambient_prefs.h"
 #include "ash/public/cpp/ambient/photo_controller.h"
+#include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "ui/views/widget/widget.h"
 
@@ -32,11 +32,8 @@ bool CanStartAmbientMode() {
 }
 
 void CloseAssistantUi() {
-  auto* assistant_controller = Shell::Get()->assistant_controller();
-  // |AssistantController| is initiated before the |AmbientController| in shell.
-  DCHECK(assistant_controller);
-
-  assistant_controller->ui_controller()->CloseUi(
+  DCHECK(AssistantUiController::Get());
+  AssistantUiController::Get()->CloseUi(
       chromeos::assistant::mojom::AssistantExitPoint::kUnspecified);
 }
 

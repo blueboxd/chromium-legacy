@@ -92,7 +92,8 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
   // omitting other arguments that never have non-default values on iOS.
   SafeBrowsingUrlCheckerImpl(
       ResourceType resource_type,
-      scoped_refptr<UrlCheckerDelegate> url_checker_delegate);
+      scoped_refptr<UrlCheckerDelegate> url_checker_delegate,
+      const base::RepeatingCallback<web::WebState*()>& web_state_getter);
 
   ~SafeBrowsingUrlCheckerImpl() override;
 
@@ -226,7 +227,12 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
   const int load_flags_;
   const ResourceType resource_type_;
   const bool has_user_gesture_;
+  // TODO(crbug.com/1069047): |web_state_getter| is only used on iOS, and
+  // |web_contents_getter| is used on all other platforms.  This class should
+  // be refactored to use only the common functionality can be shared across
+  // platforms.
   base::RepeatingCallback<content::WebContents*()> web_contents_getter_;
+  base::RepeatingCallback<web::WebState*()> web_state_getter_;
   scoped_refptr<UrlCheckerDelegate> url_checker_delegate_;
   scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
 

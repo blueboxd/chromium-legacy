@@ -12,6 +12,12 @@
 suite('cr-icon-button', function() {
   let button;
 
+  /** @param {string} key */
+  function press(key) {
+    button.dispatchEvent(new KeyboardEvent('keydown', {key}));
+    button.dispatchEvent(new KeyboardEvent('keyup', {key}));
+  }
+
   setup(async () => {
     PolymerTest.clearBody();
     button = document.createElement('cr-icon-button');
@@ -49,6 +55,30 @@ suite('cr-icon-button', function() {
     const wait = test_util.eventToPromise('click', button);
     MockInteractions.pressAndReleaseKeyOn(button, -1, [], ' ');
     await wait;
+  });
+
+  test('space up does not click without space down', () => {
+    let clicked = false;
+    button.addEventListener('click', () => {
+      clicked = true;
+    }, {once: true});
+    button.dispatchEvent(new KeyboardEvent('keyup', {key: ' '}));
+    assertFalse(clicked);
+    press(' ');
+    assertTrue(clicked);
+  });
+
+  test('space up events will not result in one click if loses focus', () => {
+    let clicked = false;
+    button.addEventListener('click', () => {
+      clicked = true;
+    }, {once: true});
+    button.dispatchEvent(new KeyboardEvent('keydown', {key: ' '}));
+    button.dispatchEvent(new Event('blur'));
+    button.dispatchEvent(new KeyboardEvent('keyup', {key: ' '}));
+    assertFalse(clicked);
+    press(' ');
+    assertTrue(clicked);
   });
 
   test('disabled prevents UI and programmatic clicks', async () => {

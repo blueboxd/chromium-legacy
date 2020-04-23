@@ -260,9 +260,12 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
 
       function onRequestSession() {
-        let sessionInit = {};
+        let sessionInit = {
+          requiredFeatures: ['anchors'],
+          optionalFeatures: [],
+        };
         if (useDomOverlay.checked) {
-          sessionInit.optionalFeatures = ['dom-overlay'];
+          sessionInit.optionalFeatures.push('dom-overlay');
           sessionInit.domOverlay = {root: document.body};
         }
         navigator.xr.requestSession('immersive-ar', sessionInit).then((session) => {

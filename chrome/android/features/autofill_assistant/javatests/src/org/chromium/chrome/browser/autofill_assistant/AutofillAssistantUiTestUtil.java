@@ -60,6 +60,7 @@ import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcherConfig;
 import org.chromium.chrome.browser.ui.RootUiCoordinator;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
+import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -415,7 +416,7 @@ class AutofillAssistantUiTestUtil {
      * after a default timeout.
      */
     public static void waitUntilKeyboardMatchesCondition(
-            CustomTabActivityTestRule testRule, boolean isShowing) {
+            ChromeActivityTestRule testRule, boolean isShowing) {
         CriteriaHelper.pollInstrumentationThread(new Criteria(
                 "Timeout while waiting for the keyboard to be "
                 + (isShowing ? "visible" : "hidden")) {
@@ -511,7 +512,7 @@ class AutofillAssistantUiTestUtil {
     }
 
     /** Performs a single tap on the center of the specified element. */
-    public static void tapElement(CustomTabActivityTestRule testRule, String... elementIds)
+    public static void tapElement(ChromeActivityTestRule testRule, String... elementIds)
             throws Exception {
         Rect coords = getAbsoluteBoundingRect(testRule, elementIds);
         float x = coords.left + 0.5f * (coords.right - coords.left);
@@ -530,7 +531,7 @@ class AutofillAssistantUiTestUtil {
 
     /** Computes the bounding rectangle of the specified DOM element in absolute screen space. */
     public static Rect getAbsoluteBoundingRect(
-            CustomTabActivityTestRule testRule, String... elementIds) throws Exception {
+            ChromeActivityTestRule testRule, String... elementIds) throws Exception {
         // Get bounding rectangle in viewport space.
         Rect elementRect = getBoundingRectForElement(testRule.getWebContents(), elementIds);
 
@@ -590,7 +591,7 @@ class AutofillAssistantUiTestUtil {
     }
 
     public static boolean checkElementOnScreen(
-            CustomTabActivityTestRule testRule, String... elementIds) throws Exception {
+            ChromeActivityTestRule testRule, String... elementIds) throws Exception {
         Rect coords = getAbsoluteBoundingRect(testRule, elementIds);
         DisplayMetrics displayMetrics = testRule.getActivity().getResources().getDisplayMetrics();
 

@@ -69,8 +69,6 @@ class InterfaceFactoryImpl : public DeferredDestroy<mojom::InterfaceFactory> {
   void CreateCdm(
       const std::string& key_system,
       mojo::PendingReceiver<mojom::ContentDecryptionModule> receiver) final;
-  void CreateDecryptor(int cdm_id,
-                       mojo::PendingReceiver<mojom::Decryptor> receiver) final;
 
   // DeferredDestroy<mojom::InterfaceFactory> implemenation.
   void OnDestroyPending(base::OnceClosure destroy_cb) final;

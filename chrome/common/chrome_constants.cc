@@ -94,8 +94,8 @@ const base::FilePath::CharType kBrowserProcessExecutablePathChromium[] =
 const base::FilePath::CharType kBrowserProcessExecutablePath[] =
     FPL(PRODUCT_STRING ".app/Contents/MacOS/" PRODUCT_STRING);
 const base::FilePath::CharType kHelperProcessExecutablePathChromium[] =
-    FPL(CHROMIUM_PRODUCT_STRING " Helper.app/Contents/MacOS/"
-        CHROMIUM_PRODUCT_STRING " Helper");
+    FPL(CHROMIUM_PRODUCT_STRING
+        " Helper.app/Contents/MacOS/" CHROMIUM_PRODUCT_STRING " Helper");
 const base::FilePath::CharType kHelperProcessExecutablePath[] =
     FPL(PRODUCT_STRING " Helper.app/Contents/MacOS/" PRODUCT_STRING " Helper");
 #elif defined(OS_ANDROID)
@@ -169,6 +169,7 @@ const base::FilePath::CharType kOfflinePageRequestQueueDirname[] =
 const base::FilePath::CharType kPreferencesFilename[] = FPL("Preferences");
 const base::FilePath::CharType kPreviewsOptOutDBFilename[] =
     FPL("previews_opt_out.db");
+const base::FilePath::CharType kQueryTileStorageDirname[] = FPL("Query Tiles");
 const base::FilePath::CharType kReadmeFilename[] = FPL("README");
 const base::FilePath::CharType kSecurePreferencesFilename[] =
     FPL("Secure Preferences");

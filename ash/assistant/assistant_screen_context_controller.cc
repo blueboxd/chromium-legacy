@@ -8,9 +8,9 @@
 #include <vector>
 
 #include "ash/assistant/assistant_controller_impl.h"
-#include "ash/assistant/assistant_ui_controller.h"
 #include "ash/public/cpp/assistant/assistant_client.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
+#include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/mojom/assistant_controller.mojom.h"
@@ -226,13 +226,13 @@ void AssistantScreenContextController::RequestScreenshot(
 }
 
 void AssistantScreenContextController::OnAssistantControllerConstructed() {
-  assistant_controller_->ui_controller()->AddModelObserver(this);
+  AssistantUiController::Get()->AddModelObserver(this);
   assistant_controller_->view_delegate()->AddObserver(this);
 }
 
 void AssistantScreenContextController::OnAssistantControllerDestroying() {
   assistant_controller_->view_delegate()->RemoveObserver(this);
-  assistant_controller_->ui_controller()->RemoveModelObserver(this);
+  AssistantUiController::Get()->RemoveModelObserver(this);
 }
 
 void AssistantScreenContextController::OnUiVisibilityChanged(

@@ -452,9 +452,24 @@ bool LayerNeedsUpdate(LayerType* layer,
   return true;
 }
 
-template <typename LayerType>
 inline bool LayerShouldBeSkippedForDrawPropertiesComputation(
-    LayerType* layer,
+    Layer* layer,
+    const TransformTree& transform_tree,
+    const EffectTree& effect_tree) {
+  const EffectNode* effect_node = effect_tree.Node(layer->effect_tree_index());
+  if (effect_node->HasRenderSurface() && effect_node->subtree_has_copy_request)
+    return false;
+
+  // If the layer transform is not invertible, it should be skipped. In case the
+  // transform is animating and singular, we should not skip it.
+  const TransformNode* transform_node =
+      transform_tree.Node(layer->transform_tree_index());
+  return !transform_node->node_and_ancestors_are_animated_or_invertible ||
+         !effect_node->is_drawn;
+}
+
+inline bool LayerShouldBeSkippedForDrawPropertiesComputation(
+    LayerImpl* layer,
     const TransformTree& transform_tree,
     const EffectTree& effect_tree) {
   const EffectNode* effect_node = effect_tree.Node(layer->effect_tree_index());

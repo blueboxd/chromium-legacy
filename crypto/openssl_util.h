@@ -6,6 +6,7 @@
 #define CRYPTO_OPENSSL_UTIL_H_
 
 #include <stddef.h>
+#include <string.h>
 
 #include "base/location.h"
 #include "base/macros.h"

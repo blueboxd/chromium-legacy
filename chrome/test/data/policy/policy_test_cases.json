@@ -5985,6 +5985,22 @@
     ]
   },
 
+  "VoiceInteractionQuickAnswersEnabled": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "VoiceInteractionQuickAnswersEnabled": true
+        },
+        "prefs": {
+          "settings.voice_interaction.quick_answers.enabled": {
+            "value": true
+          }
+        }
+      }
+    ]
+  },
+
   "DeviceRebootOnUserSignout": {
     "os": ["chromeos"],
     "policy_pref_mapping_test": [

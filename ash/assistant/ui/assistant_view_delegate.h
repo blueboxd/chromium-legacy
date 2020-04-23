@@ -19,12 +19,8 @@ namespace ash {
 
 class AssistantAlarmTimerModel;
 class AssistantAlarmTimerModelObserver;
-class AssistantInteractionModel;
-class AssistantInteractionModelObserver;
 class AssistantNotificationModel;
 class AssistantNotificationModelObserver;
-class AssistantUiModel;
-class AssistantUiModelObserver;
 enum class AssistantButtonId;
 
 namespace assistant {
@@ -75,14 +71,8 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegate {
   // Gets the alarm/timer model.
   virtual const AssistantAlarmTimerModel* GetAlarmTimerModel() const = 0;
 
-  // Gets the interaction model.
-  virtual const AssistantInteractionModel* GetInteractionModel() const = 0;
-
   // Gets the notification model.
   virtual const AssistantNotificationModel* GetNotificationModel() const = 0;
-
-  // Gets the ui model.
-  virtual const AssistantUiModel* GetUiModel() const = 0;
 
   // Adds/removes the specified view delegate observer.
   virtual void AddObserver(AssistantViewDelegateObserver* observer) = 0;
@@ -94,21 +84,11 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegate {
   virtual void RemoveAlarmTimerModelObserver(
       AssistantAlarmTimerModelObserver* observer) = 0;
 
-  // Adds/removes the interaction model observer.
-  virtual void AddInteractionModelObserver(
-      AssistantInteractionModelObserver* observer) = 0;
-  virtual void RemoveInteractionModelObserver(
-      AssistantInteractionModelObserver* observer) = 0;
-
   // Adds/removes the notification model observer.
   virtual void AddNotificationModelObserver(
       AssistantNotificationModelObserver* observer) = 0;
   virtual void RemoveNotificationModelObserver(
       AssistantNotificationModelObserver* observer) = 0;
-
-  // Adds/removes the ui model observer.
-  virtual void AddUiModelObserver(AssistantUiModelObserver* observer) = 0;
-  virtual void RemoveUiModelObserver(AssistantUiModelObserver* observer) = 0;
 
   // Downloads the image found at the specified |url|. On completion, the
   // supplied |callback| will be run with the downloaded image. If the download

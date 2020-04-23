@@ -45,6 +45,8 @@ class X11_WINDOW_EXPORT X11WindowManager {
     return window_mouse_currently_on_;
   }
 
+  std::vector<X11Window*> GetAllOpenWindows() const;
+
  private:
   X11Window* located_events_grabber_ = nullptr;
   X11Window* window_mouse_currently_on_ = nullptr;

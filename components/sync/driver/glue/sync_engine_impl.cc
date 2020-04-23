@@ -324,8 +324,7 @@ void SyncEngineImpl::HandleInitializationSuccessOnFrontendLoop(
     const WeakHandle<DataTypeDebugInfoListener> debug_info_listener,
     std::unique_ptr<ModelTypeConnector> model_type_connector,
     const std::string& birthday,
-    const std::string& bag_of_chips,
-    const std::string& last_keystore_key) {
+    const std::string& bag_of_chips) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   model_type_connector_ = std::move(model_type_connector);
@@ -342,8 +341,7 @@ void SyncEngineImpl::HandleInitializationSuccessOnFrontendLoop(
   }
 
   host_->OnEngineInitialized(initial_types, js_backend, debug_info_listener,
-                             birthday, bag_of_chips, last_keystore_key,
-                             /*success=*/true);
+                             birthday, bag_of_chips, /*success=*/true);
 }
 
 void SyncEngineImpl::HandleInitializationFailureOnFrontendLoop() {
@@ -351,19 +349,17 @@ void SyncEngineImpl::HandleInitializationFailureOnFrontendLoop() {
   host_->OnEngineInitialized(ModelTypeSet(), WeakHandle<JsBackend>(),
                              WeakHandle<DataTypeDebugInfoListener>(),
                              /*birthday=*/"", /*bag_of_chips=*/"",
-                             /*last_keystore_key=*/"",
                              /*success=*/false);
 }
 
 void SyncEngineImpl::HandleSyncCycleCompletedOnFrontendLoop(
-    const SyncCycleSnapshot& snapshot,
-    const std::string& last_keystore_key) {
+    const SyncCycleSnapshot& snapshot) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Process any changes to the datatypes we're syncing.
   // TODO(sync): add support for removing types.
   if (IsInitialized()) {
-    host_->OnSyncCycleCompleted(snapshot, last_keystore_key);
+    host_->OnSyncCycleCompleted(snapshot);
   }
 }
 

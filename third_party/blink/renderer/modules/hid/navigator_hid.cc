@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/modules/hid/navigator_hid.h"
 
-#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/modules/hid/hid.h"
@@ -36,9 +36,8 @@ void NavigatorHID::Trace(Visitor* visitor) {
 
 NavigatorHID::NavigatorHID(Navigator& navigator) {
   if (navigator.GetFrame()) {
-    DCHECK(navigator.GetFrame()->GetDocument());
-    hid_ = MakeGarbageCollected<HID>(
-        *navigator.GetFrame()->GetDocument()->ToExecutionContext());
+    DCHECK(navigator.GetFrame()->DomWindow());
+    hid_ = MakeGarbageCollected<HID>(*navigator.GetFrame()->DomWindow());
   }
 }
 

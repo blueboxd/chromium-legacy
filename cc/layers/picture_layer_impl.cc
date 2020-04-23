@@ -793,8 +793,11 @@ LCDTextDisallowedReason PictureLayerImpl::ComputeLCDTextDisallowedReason()
     return LCDTextDisallowedReason::kNone;
   if (!layer_tree_impl()->settings().can_use_lcd_text)
     return LCDTextDisallowedReason::kSetting;
-  if (!contents_opaque())
+  if (!contents_opaque()) {
+    if (SkColorGetA(background_color()) != SK_AlphaOPAQUE)
+      return LCDTextDisallowedReason::kBackgroundColorNotOpaque;
     return LCDTextDisallowedReason::kContentsNotOpaque;
+  }
 
   if (GetEffectTree().Node(effect_tree_index())->screen_space_opacity != 1.f)
     return LCDTextDisallowedReason::kLayerOpacity;

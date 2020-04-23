@@ -4,6 +4,7 @@
 
 #include "ui/events/event_source.h"
 
+#include "base/logging.h"
 #include "ui/events/event_rewriter_continuation.h"
 #include "ui/events/event_sink.h"
 

@@ -192,9 +192,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       function onRequestSession() {
         let options = {
           requiredFeatures: ['local-floor', 'hit-test'],
+          optionalFeatures: ['anchors'],
         };
         if (useDomOverlay.checked) {
-          options.optionalFeatures = ['dom-overlay'];
+          options.optionalFeatures.push('dom-overlay');
           options.domOverlay = {root: document.body};
         }
         navigator.xr.requestSession('immersive-ar', options).then((session) => {

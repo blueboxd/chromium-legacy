@@ -84,9 +84,9 @@ void SharedMemorySecurityPolicy::ReleaseReservationForMapping(size_t size) {
   // Note #1: relaxed memory ordering is sufficient since atomicity is all
   // that's required.
   // Note #2: |size| should never overflow when aligned to page size, since
-  // this should only be called if |AcquireReservationForMapping()| returned
-  // true.
-  total_mapped_size_.fetch_sub(size, std::memory_order_relaxed);
+  // this should only be called if AcquireReservationForMapping() returned true.
+  base::Optional<size_t> page_aligned_size = AlignWithPageSize(size);
+  total_mapped_size_.fetch_sub(*page_aligned_size, std::memory_order_relaxed);
 }
 
 }  // namespace base

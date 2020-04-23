@@ -37,7 +37,6 @@
 <translation id="1041263367839475438">Dostupné zariadenia</translation>
 <translation id="1042174272890264476">Váš počítač má tiež vstavanú knižnicu RLZ prehliadača <ph name="SHORT_PRODUCT_NAME" />. Knižnica RLZ priradí nejedinečnú značku, pomocou ktorej sa nedá zistiť totožnosť, na meranie výsledkov a použitia prehliadača <ph name="SHORT_PRODUCT_NAME" /> vyplývajúceho z konkrétnej propagačnej kampane. Tieto menovky sa niekedy zobrazujú v dopytoch Vyhľadávania Google v prehliadači <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1043818413152647937">Chcete vymazať dáta aj z týchto aplikácií?</translation>
-<translation id="1045448422538531528">Pridať do skupiny</translation>
 <translation id="1046635659603195359">Zdá sa, že ste už funkciu Voice Match nastavili pomocou Asistenta Google v inom zariadení. Tieto predchádzajúce záznamy môžete použiť na vytvorenie hlasového modelu v tomto zariadení. Malo by to trvať menej ako minútu.</translation>
 <translation id="104710386808485638">Chcete Linux reštartovať?</translation>
 <translation id="1047431265488717055">Kopírovať te&amp;xt odkazu</translation>
@@ -92,6 +91,7 @@
 <translation id="1122198203221319518">&amp;Nástroje</translation>
 <translation id="1122242684574577509">Overenie totožnosti zlyhalo. Kliknutím prejdete na prihlasovaciu stránku pre sieť Wi‑Fi, ktorú používate (<ph name="NETWORK_ID" />).</translation>
 <translation id="1122960773616686544">Názov záložky</translation>
+<translation id="1123753900084781868">Živý prepis momentálne nie je k dispozícii</translation>
 <translation id="1124772482545689468">Používateľ</translation>
 <translation id="1125550662859510761">Vyzerá ako <ph name="WIDTH" /> x <ph name="HEIGHT" /> (natívne)</translation>
 <translation id="1126809382673880764">Nechráni vás pred nebezpečnými webmi, stiahnutými súbormi ani rozšíreniami. Ochrana Bezpečného prehliadania vám bude poskytovaná v náležitých prípadoch v ďalších službách Googlu, ako sú napríklad Gmail alebo Vyhľadávanie.</translation>
@@ -407,7 +407,6 @@
 <translation id="1536754031901697553">Odpája sa...</translation>
 <translation id="15373452373711364">Veľký kurzor myši</translation>
 <translation id="1540605929960647700">Povolenie režimu ukážky</translation>
-<translation id="1541396123399225659">Pridať do novej skupiny</translation>
 <translation id="1542514202066550870">Táto karta prezentuje obsah VR do náhlavnej súpravy.</translation>
 <translation id="1543284117603151572">Importované z prehliadača Edge</translation>
 <translation id="1545177026077493356">Automatický režim verejného terminálu</translation>
@@ -1904,7 +1903,6 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="3514373592552233661">Ak je k dispozícii viac sietí, uprednostní sa preferovaná sieť pred ostatnými známymi sieťami</translation>
 <translation id="3515983984924808886">Resetovanie potvrďte opätovným stlačením bezpečnostného kľúča. Všetky informácie uchované v bezpečnostnom kľúči (vrátane jeho kódu PIN) budú odstránené.</translation>
 <translation id="3518985090088779359">Prijať a pokračovať</translation>
-<translation id="351952459507671940">Pridať do novej skupiny</translation>
 <translation id="3521606918211282604">Zmeniť veľkosť na disku</translation>
 <translation id="3523642406908660543">Opýtať sa, keď budú chcieť stránky použiť doplnok na prístup do počítača (odporúčané)</translation>
 <translation id="3524965460886318643">Exportovať aktivity</translation>
@@ -2894,7 +2892,6 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="4871322859485617074">Kód PIN obsahuje neplatné znaky</translation>
 <translation id="4871370605780490696">Pridanie záložky</translation>
 <translation id="4871719318659334896">Zavrieť skupinu</translation>
-<translation id="4871852311166078968">Pridať do skupiny</translation>
 <translation id="4873312501243535625">Media File Checker</translation>
 <translation id="4876273079589074638">Pomôžte našim programátorom prešetriť toto zlyhanie a vyriešiť ho. Ak je to možné, uveďte presné kroky. Poskytnite čo najpodrobnejšie informácie.</translation>
 <translation id="4876895919560854374">Zamknúť alebo odomknúť obrazovku</translation>

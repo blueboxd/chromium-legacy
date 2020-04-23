@@ -13,13 +13,13 @@
 #include "ash/accessibility/accessibility_observer.h"
 #include "ash/ash_export.h"
 #include "ash/assistant/assistant_alarm_timer_controller.h"
-#include "ash/assistant/assistant_interaction_controller.h"
+#include "ash/assistant/assistant_interaction_controller_impl.h"
 #include "ash/assistant/assistant_notification_controller.h"
 #include "ash/assistant/assistant_screen_context_controller.h"
 #include "ash/assistant/assistant_setup_controller.h"
 #include "ash/assistant/assistant_state_controller.h"
 #include "ash/assistant/assistant_suggestions_controller_impl.h"
-#include "ash/assistant/assistant_ui_controller.h"
+#include "ash/assistant/assistant_ui_controller_impl.h"
 #include "ash/assistant/assistant_view_delegate_impl.h"
 #include "ash/assistant/assistant_web_ui_controller.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
@@ -113,10 +113,6 @@ class ASH_EXPORT AssistantControllerImpl
     return &assistant_alarm_timer_controller_;
   }
 
-  AssistantInteractionController* interaction_controller() {
-    return &assistant_interaction_controller_;
-  }
-
   AssistantNotificationController* notification_controller() {
     return &assistant_notification_controller_;
   }
@@ -132,8 +128,6 @@ class ASH_EXPORT AssistantControllerImpl
   AssistantStateController* state_controller() {
     return &assistant_state_controller_;
   }
-
-  AssistantUiController* ui_controller() { return &assistant_ui_controller_; }
 
   AssistantWebUiController* web_ui_controller() {
     return &assistant_web_ui_controller_;
@@ -187,13 +181,13 @@ class ASH_EXPORT AssistantControllerImpl
 
   // Assistant sub-controllers.
   AssistantAlarmTimerController assistant_alarm_timer_controller_{this};
-  AssistantInteractionController assistant_interaction_controller_{this};
+  AssistantInteractionControllerImpl assistant_interaction_controller_{this};
   AssistantNotificationController assistant_notification_controller_;
   AssistantStateController assistant_state_controller_;
   AssistantScreenContextController assistant_screen_context_controller_{this};
   AssistantSetupController assistant_setup_controller_{this};
   AssistantSuggestionsControllerImpl assistant_suggestions_controller_{this};
-  AssistantUiController assistant_ui_controller_{this};
+  AssistantUiControllerImpl assistant_ui_controller_;
   AssistantWebUiController assistant_web_ui_controller_;
 
   AssistantViewDelegateImpl view_delegate_{this};

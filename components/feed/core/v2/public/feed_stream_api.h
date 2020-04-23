@@ -75,6 +75,8 @@ class FeedStreamApi {
   virtual void ReportOpenAction() = 0;
   // The user triggered the 'open in new tab' action.
   virtual void ReportOpenInNewTabAction() = 0;
+  // The user triggered the 'open in new incognito tab' action.
+  virtual void ReportOpenInNewIncognitoTabAction() = 0;
   // The user pressed the 'send feedback' context menu option, but may have not
   // completed the feedback process.
   virtual void ReportSendFeedbackAction() = 0;

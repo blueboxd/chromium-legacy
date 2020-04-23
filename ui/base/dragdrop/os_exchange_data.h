@@ -17,6 +17,7 @@
 #include <objidl.h>
 #endif
 
+#include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "ui/base/dragdrop/download_file_interface.h"

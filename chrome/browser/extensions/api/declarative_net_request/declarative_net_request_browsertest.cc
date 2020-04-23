@@ -1680,7 +1680,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, ZeroRulesets) {
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, MultipleRulesets) {
   set_config_flags(ConfigFlag::kConfig_HasBackgroundScript);
 
-  const int kNumStaticRulesets = 5;
+  const int kNumStaticRulesets = 4;
   const char* kStaticFilterPrefix = "static";
   std::vector<GURL> expected_blocked_urls;
   std::vector<TestRulesetInfo> rulesets;
@@ -1712,41 +1712,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, MultipleRulesets) {
 
   expected_allowed_urls.push_back(GetURLForFilter("no_such_rule"));
 
-  std::vector<GURL> all_urls;
-  all_urls.insert(all_urls.end(), expected_blocked_urls.begin(),
-                  expected_blocked_urls.end());
-  all_urls.insert(all_urls.end(), expected_allowed_urls.begin(),
-                  expected_allowed_urls.end());
-
-  {
-    SCOPED_TRACE("Initial load");
-    VerifyNavigations(expected_blocked_urls, expected_allowed_urls);
-  }
-
-  {
-    SCOPED_TRACE("Extension disabled");
-    DisableExtension(extension_id);
-    WaitForExtensionsWithRulesetsCount(0);
-
-    // All urls must be allowed_now.
-    VerifyNavigations({}, all_urls);
-  }
-
-  {
-    SCOPED_TRACE("Extension enabled");
-    EnableExtension(extension_id);
-    WaitForExtensionsWithRulesetsCount(1);
-    VerifyNavigations(expected_blocked_urls, expected_allowed_urls);
-  }
-
-  {
-    SCOPED_TRACE("Extension uninstalled");
-    UninstallExtension(extension_id);
-    WaitForExtensionsWithRulesetsCount(0);
-
-    // All urls must be allowed_now.
-    VerifyNavigations({}, all_urls);
-  }
+  VerifyNavigations(expected_blocked_urls, expected_allowed_urls);
 }
 
 // Ensure that Blink's in-memory cache is cleared on adding/removing rulesets.

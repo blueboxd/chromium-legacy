@@ -100,8 +100,14 @@ class RenderViewContextMenuObserver {
   virtual bool IsCommandIdChecked(int command_id);
   virtual bool IsCommandIdEnabled(int command_id);
 
-  // Called when a user selects the specified context-menu item.
+  // Called when a user selects the specified context-menu item. This is
+  // only called when the observer returns true for IsCommandIdSupported()
+  // for that |command_id|.
   virtual void ExecuteCommand(int command_id) {}
+
+  // Called when a user selects the specified context-menu item, including
+  // command that is supported by other observers.
+  virtual void CommandWillBeExecuted(int command_id) {}
 
   virtual void OnMenuClosed() {}
 

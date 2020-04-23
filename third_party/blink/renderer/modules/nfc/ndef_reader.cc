@@ -73,11 +73,12 @@ bool NDEFReader::HasPendingActivity() const {
 ScriptPromise NDEFReader::scan(ScriptState* script_state,
                                const NDEFScanOptions* options,
                                ExceptionState& exception_state) {
-  ExecutionContext* execution_context = GetExecutionContext();
-  Document* document = Document::From(execution_context);
+  LocalFrame* frame = script_state->ContextIsValid()
+                          ? LocalDOMWindow::From(script_state)->GetFrame()
+                          : nullptr;
   // https://w3c.github.io/web-nfc/#security-policies
   // WebNFC API must be only accessible from top level browsing context.
-  if (!execution_context || !document->IsInMainFrame()) {
+  if (!frame || !frame->IsMainFrame()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kNotAllowedError,
                                       "NFC interfaces are only avaliable "
                                       "in a top-level browsing context");
@@ -111,7 +112,7 @@ ScriptPromise NDEFReader::scan(ScriptState* script_state,
 
   GetPermissionService()->RequestPermission(
       CreatePermissionDescriptor(PermissionName::NFC),
-      LocalFrame::HasTransientUserActivation(document->GetFrame()),
+      LocalFrame::HasTransientUserActivation(frame),
       WTF::Bind(&NDEFReader::OnRequestPermission, WrapPersistent(this),
                 WrapPersistent(options)));
   return resolver_->Promise();

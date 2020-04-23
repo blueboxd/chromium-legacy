@@ -17,7 +17,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
@@ -131,8 +130,8 @@ class DataReductionProxyRequestOptionsTest : public testing::Test {
   }
 
   void CreateRequestOptions(const std::string& version) {
-    request_options_.reset(new TestDataReductionProxyRequestOptions(
-        kClient, version, test_context_->config()));
+    request_options_.reset(
+        new TestDataReductionProxyRequestOptions(kClient, version));
     request_options_->Init();
   }
 

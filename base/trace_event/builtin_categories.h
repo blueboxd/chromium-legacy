@@ -121,6 +121,7 @@
   X("PlatformMalloc")                                                    \
   X("ppapi")                                                             \
   X("ppapi proxy")                                                       \
+  X("print")                                                             \
   X("rail")                                                              \
   X("renderer")                                                          \
   X("renderer_host")                                                     \

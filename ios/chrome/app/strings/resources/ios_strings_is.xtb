@@ -196,7 +196,6 @@
 <translation id="3469166899695866866">Stöðva niðurhal?</translation>
 <translation id="3470502288861289375">Afritar...</translation>
 <translation id="3474624961160222204">Halda áfram sem <ph name="NAME" /></translation>
-<translation id="3474649192738347024">Eyðublöð fyllt út.</translation>
 <translation id="3478058380795961209">Gildir út mánuðinn</translation>
 <translation id="3482959374254649722">Samstillir flipa...</translation>
 <translation id="3484946776651937681">Opna í niðurhalsmöppu</translation>
@@ -479,6 +478,7 @@ Gögnin þín voru dulkóðuð með aðgangsorði samstillingar <ph name="TIME" 
 <translation id="7136892417564438900">Myndavélin er ekki tiltæk</translation>
 <translation id="7159472599653637159">Biðja um fartækjasvæði</translation>
 <translation id="7173114856073700355">Opna stillingar</translation>
+<translation id="7189598951263744875">Deila...</translation>
 <translation id="7192050974311852563">Hefja skráningu</translation>
 <translation id="7203585745079012652">Lesa upp svör</translation>
 <translation id="7265758999917665941">Aldrei fyrir þetta vefsvæði</translation>

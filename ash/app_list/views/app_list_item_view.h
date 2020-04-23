@@ -103,6 +103,10 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
 
   // Sets UI state to dragging state.
   void SetDragUIState();
+  // Sets UI state to cardify state.
+  void SetCardifyUIState();
+  // Sets UI state to normal state.
+  void SetNormalUIState();
 
   // Returns the icon bounds for with |target_bounds| as the bounds of this view
   // and given |icon_size| and the |icon_scale| if the icon was scaled from the
@@ -157,6 +161,7 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
     UI_STATE_NORMAL,              // Normal UI (icon + label)
     UI_STATE_DRAGGING,            // Dragging UI (scaled icon only)
     UI_STATE_DROPPING_IN_FOLDER,  // Folder dropping preview UI
+    UI_STATE_CARDIFY,             // Cardify UI (scaled icon + label)
   };
 
   // gfx::AnimationDelegate:
@@ -176,6 +181,9 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
   // Scales up app icon if |scale_up| is true; otherwise, scale it back to
   // normal size.
   void ScaleAppIcon(bool scale_up);
+
+  // Scale app icon to |scale_factor| without animation.
+  void ScaleIconImmediatly(float scale_factor);
 
   // Sets |touch_dragging_| flag and updates UI.
   void SetTouchDragging(bool touch_dragging);

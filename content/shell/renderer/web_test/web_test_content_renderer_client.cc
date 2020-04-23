@@ -18,6 +18,7 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/test/web_test_support_renderer.h"
+#include "content/renderer/loader/web_worker_fetch_context_impl.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/common/web_test/web_test_switches.h"
 #include "content/shell/renderer/shell_render_frame_observer.h"
@@ -61,7 +62,7 @@ namespace content {
 
 WebTestContentRendererClient::WebTestContentRendererClient() {
   EnableWebTestProxyCreation();
-  SetWorkerRewriteURLFunction(RewriteWebTestsURL);
+  WebWorkerFetchContextImpl::InstallRewriteURLFunction(RewriteWebTestsURL);
 }
 
 WebTestContentRendererClient::~WebTestContentRendererClient() = default;

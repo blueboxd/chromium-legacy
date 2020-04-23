@@ -117,7 +117,7 @@ bool CastCrashdumpUploader::Upload(std::string* response) {
 
   LOG(INFO) << "Sending request to " << data_.crash_server;
 
-  int http_status_code;
+  long http_status_code;
   std::string http_header_data;
   return http_layer_->SendRequest(data_.crash_server,
                                   parameters_,

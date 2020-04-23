@@ -12,6 +12,7 @@
 <translation id="1414495520565016063">‏آپ Chromium میں سائن ان ہیں!</translation>
 <translation id="151962892725702025">‏Chromium OS آپ کے ڈیٹا کی مطابقت پذیری نہیں کر سکا کیونکہ Sync آپ کے ڈومین کیلئے دستیاب نہیں ہے۔</translation>
 <translation id="1524282610922162960">‏ایک Chromium ٹیب کا اشتراک کریں</translation>
+<translation id="1553461853655228091">‏پنے اطراف کا 3D نقشہ تخلیق کرنے کی خاطر Chromium کو آپ کے کیمرے تک رسائی کی اجازت درکار ہے</translation>
 <translation id="1607715478322902680">{COUNT,plural, =0{‏آپ کے منتظم کا مطالبہ ہے کہ آپ اپ ڈیٹ کو لاگو کرنے کیلئے Chromium کو بند کر کے دوبارہ چلائیں}=1{‏آپ کے منتظم کا مطالبہ ہے کہ آپ اپ ڈیٹ کو لاگو کرنے کیلئے Chromium کو بند کر کے دوبارہ چلائیں۔ آپ کی پوشیدگی ونڈو دوبارہ نہیں کھلے گی۔}other{‏آپ کے منتظم کا مطالبہ ہے کہ آپ اپ ڈیٹ کو لاگو کرنے کیلئے Chromium کو بند کر کے دوبارہ چلائیں۔ آپ کی # پوشیدگی ونڈوز دوبارہ نہیں کھلیں گی۔}}</translation>
 <translation id="1708666629004767631">‏Chromium کا ایک نیا، محفوظ تر ورژن دستیاب ہے۔</translation>
 <translation id="1774152462503052664">‏Chromium کو پس منظر میں چلنے دیں</translation>
@@ -57,6 +58,7 @@
 <translation id="3258596308407688501">‏Chromium اپنی ڈیٹا ڈائریکٹری میں پڑھ اور لکھ نہیں سکتا ہے:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
+<translation id="3283186697780795848">‏Chromium ورژن <ph name="PRODUCT_VERSION" /> انسٹال ہے</translation>
 <translation id="328888136576916638">‏Google API کلیدیں دستیاب نہیں ہیں۔ Chromium کی کچھ فعالیت غیر فعال ہو جائے گی۔</translation>
 <translation id="3296368748942286671">‏Chromium بند ہو جانے پر پس منظر کی ایپس چلانا جاری رکھیں</translation>
 <translation id="331951419404882060">‏Chromium OS سائن ان میں ایک خرابی کی وجہ سے آپ کے ڈیٹا کی مطابقت پذیری نہیں کر سکا۔</translation>

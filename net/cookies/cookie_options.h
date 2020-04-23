@@ -33,17 +33,28 @@ class NET_EXPORT CookieOptions {
       COUNT
     };
 
-    SameSiteCookieContext() : SameSiteCookieContext(ContextType::CROSS_SITE) {}
+    SameSiteCookieContext()
+        : SameSiteCookieContext(ContextType::CROSS_SITE,
+                                ContextType::CROSS_SITE) {}
     explicit SameSiteCookieContext(ContextType same_site_context)
-        : context_(same_site_context) {}
+        : SameSiteCookieContext(same_site_context, same_site_context) {}
+
+    SameSiteCookieContext(ContextType same_site_context,
+                          ContextType schemeful_same_site_context)
+        : context_(same_site_context),
+          schemeful_context_(schemeful_same_site_context) {
+      DCHECK_LE(schemeful_context_, context_);
+    }
 
     // Convenience method which returns a SameSiteCookieContext with the most
-    // inclusive context. This allows access to all SameSite cookies.
+    // inclusive contexts. This allows access to all SameSite cookies.
     static SameSiteCookieContext MakeInclusive();
 
+    // Convenience method which returns a SameSiteCookieContext with the most
+    // inclusive contexts for set. This allows setting all SameSite cookies.
+    static SameSiteCookieContext MakeInclusiveForSet();
+
     // Returns the context for determining SameSite cookie inclusion.
-    // TODO(https://crbug.com/1030938): When schemeful_context is
-    // implemented choose to return it based on feature::kSchemefulSameSite.
     ContextType GetContextForCookieInclusion() const;
 
     // If you're just trying to determine if a cookie is accessible you likely
@@ -51,6 +62,11 @@ class NET_EXPORT CookieOptions {
     // context regardless the status of same-site features.
     ContextType context() const { return context_; }
     void set_context(ContextType context) { context_ = context; }
+
+    ContextType schemeful_context() const { return schemeful_context_; }
+    void set_schemeful_context(ContextType schemeful_context) {
+      schemeful_context_ = schemeful_context;
+    }
 
     NET_EXPORT friend bool operator==(
         const CookieOptions::SameSiteCookieContext& lhs,
@@ -62,6 +78,8 @@ class NET_EXPORT CookieOptions {
    private:
 
     ContextType context_;
+
+    ContextType schemeful_context_;
   };
 
   // Creates a CookieOptions object which:

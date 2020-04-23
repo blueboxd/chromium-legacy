@@ -346,6 +346,24 @@ const char kEnableBlinkFeatures[]           = "enable-blink-features";
 // just a keyboard. See https://crbug.com/977390 for links to i2i.
 const char kEnableCaretBrowsing[] = "enable-caret-browsing";
 
+// Flag that turns on a group of experimental/newly added cookie-related
+// features together, as a convenience for e.g. testing, to avoid having to set
+// multiple switches individually which may be error-prone (not to mention
+// tedious). There is not a corresponding switch to disable all these features,
+// because that is discouraged, and for testing purposes you'd need to switch
+// them off individually to identify the problematic feature anyway.
+//
+// At present this turns on:
+//   net::features::kCookiesWithoutSameSiteMustBeSecure
+//   net::features::kSameSiteByDefaultCookies
+//   net::features::kSameSiteDefaultChecksMethodRigorously
+// It will soon also turn on:
+//   content_settings::kImprovedCookieControls
+//   content_settings::kImprovedCookieControlsForThirdPartyCookieBlocking
+//   net::features::kSchemefulSameSite
+const char kEnableExperimentalCookieFeatures[] =
+    "enable-experimental-cookie-features";
+
 // Enables experimental WebAssembly features.
 const char kEnableExperimentalWebAssemblyFeatures[] =
     "enable-experimental-webassembly-features";

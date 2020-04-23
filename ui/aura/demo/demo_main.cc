@@ -42,10 +42,6 @@
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/init/gl_factory.h"
 
-#if defined(USE_X11)
-#include "ui/gfx/x/x11_connection.h"  // nogncheck
-#endif
-
 #if defined(OS_WIN)
 #include "ui/display/win/dpi.h"
 #endif
@@ -158,12 +154,6 @@ void RunRunLoopUntilOnHostCloseRequested(aura::WindowTreeHost* host) {
 }
 
 int DemoMain() {
-#if defined(USE_X11)
-  // This demo uses InProcessContextFactory which uses X on a separate Gpu
-  // thread.
-  gfx::InitializeThreadedX11();
-#endif
-
   gl::init::InitializeGLOneOff();
 
 #if defined(OS_WIN)

@@ -20,8 +20,6 @@
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
@@ -46,8 +44,6 @@ class DataReductionProxySettingsTest
                                             bool expected_restricted,
                                             bool expected_fallback_restricted) {
     test_context_->SetDataReductionProxyEnabled(initially_enabled);
-    test_context_->config()->UpdateConfigForTesting(initially_enabled,
-                                                    request_succeeded, true);
     ExpectSetProxyPrefs(expected_enabled, false);
     settings_->MaybeActivateDataReductionProxy(false);
     test_context_->RunUntilIdle();
@@ -127,9 +123,6 @@ TEST(DataReductionProxySettingsStandaloneTest, TestOnProxyEnabledPrefChange) {
           .SkipSettingsInitialization()
           .Build();
 
-
-  // The proxy is enabled initially.
-  drp_test_context->config()->UpdateConfigForTesting(true, true, true);
   drp_test_context->InitSettings();
 
   MockDataReductionProxyService* mock_service =
@@ -386,8 +379,6 @@ TEST(DataReductionProxySettingsStandaloneTest,
           .SkipSettingsInitialization()
           .Build();
 
-  // The proxy is enabled initially.
-  drp_test_context->config()->UpdateConfigForTesting(true, true, true);
   drp_test_context->InitSettings();
 
   base::HistogramTester histogram_tester;

@@ -56,6 +56,11 @@ class FakeAudioOutputProvider : public assistant_client::AudioOutputProvider {
     return volume_control_;
   }
 
+  void RegisterAudioEmittingStateCallback(
+      AudioEmittingStateCallback callback) override {
+    NOTIMPLEMENTED();
+  }
+
  private:
   FakeVolumeControl volume_control_;
 };

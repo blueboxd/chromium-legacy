@@ -684,6 +684,24 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
   ShowAndVerifyUi();
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest, InvocationSourceMetrics) {
+  base::HistogramTester histogram_tester;
+  LoadTestExtension("extensions/uitest/extension_with_action_and_command");
+  ClickExtensionsMenuButton();
+
+  constexpr char kHistogramName[] = "Extensions.Toolbar.InvocationSource";
+  histogram_tester.ExpectTotalCount(kHistogramName, 0);
+
+  TriggerSingleExtensionButton();
+  histogram_tester.ExpectTotalCount(kHistogramName, 1);
+  histogram_tester.ExpectBucketCount(
+      kHistogramName, ToolbarActionViewController::InvocationSource::kMenuEntry,
+      1);
+
+  // TODO(devlin): Add a test for command invocation once
+  // https://crbug.com/1070305 is fixed.
+}
+
 class ActivateWithReloadExtensionsMenuBrowserTest
     : public ExtensionsMenuViewBrowserTest,
       public ::testing::WithParamInterface<bool> {};

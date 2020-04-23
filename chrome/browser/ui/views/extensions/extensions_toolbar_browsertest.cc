@@ -27,19 +27,23 @@ Profile* ExtensionsToolbarBrowserTest::profile() {
   return browser()->profile();
 }
 
-void ExtensionsToolbarBrowserTest::LoadTestExtension(
-    const std::string& extension,
-    bool allow_incognito) {
+scoped_refptr<const extensions::Extension>
+ExtensionsToolbarBrowserTest::LoadTestExtension(const std::string& path,
+                                                bool allow_incognito) {
   extensions::ChromeTestExtensionLoader loader(profile());
   loader.set_allow_incognito_access(allow_incognito);
   base::FilePath test_data_dir;
   base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
-  AppendExtension(loader.LoadExtension(test_data_dir.AppendASCII(extension)));
+  scoped_refptr<const extensions::Extension> extension =
+      loader.LoadExtension(test_data_dir.AppendASCII(path));
+  AppendExtension(extension);
 
   // Loading an extension can result in the container changing visibility.
   // Allow it to finish laying out appropriately.
   auto* container = GetExtensionsToolbarContainer();
   container->GetWidget()->LayoutRootViewIfNecessary();
+
+  return extension;
 }
 
 void ExtensionsToolbarBrowserTest::AppendExtension(

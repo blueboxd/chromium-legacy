@@ -185,6 +185,12 @@ void StatusAreaWidget::UpdateLayout(bool animate) {
   if (layout_inputs_ == new_layout_inputs)
     return;
 
+  // Do not animate size changes, as they only really occur when tray items are
+  // added and removed. See crbug.com/1067199.
+  if (layout_inputs_ &&
+      layout_inputs_->bounds.size() != new_layout_inputs.bounds.size())
+    animate = false;
+
   for (TrayBackgroundView* tray_button : tray_buttons_)
     tray_button->UpdateLayout();
   status_area_widget_delegate_->UpdateLayout(animate);

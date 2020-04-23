@@ -237,11 +237,8 @@ void DiscardsGraphDumpImpl::RequestNodeDescriptions(
     // The requested node may have been removed by the time the request arrives,
     // in which case no description is returned for that node ID.
     if (it != nodes_by_id_.end()) {
-      const performance_manager::Node* node = it->second;
-      base::Value description = describer_registry->DescribeNodeData(node);
-
-      if (!description.is_none())
-        descriptions[node_id] = ToJSON(description);
+      descriptions[node_id] =
+          ToJSON(describer_registry->DescribeNodeData(it->second));
     }
   }
 

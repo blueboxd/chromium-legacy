@@ -37,7 +37,6 @@
 <translation id="1041263367839475438">Amadivayisi atholakalayo</translation>
 <translation id="1042174272890264476">Ikhompyutha yakho iphinda ize nelabhulali ye-<ph name="SHORT_PRODUCT_NAME" /> RLZ eyakhelwe ngaphakathi. I-RLZ ifakela umaka ongakhombi isiqu somuntu, esingahlukile ukuze kulinganiswe usesho nokusetshenziswa kwe-<ph name="SHORT_PRODUCT_NAME" /> okuhlolwa ngumkhankaso othile wokuphromotha. Lawa malebula kwesinye isikhathi avela kumibuzo ye-Usesho lwe-Google ku-<ph name="PRODUCT_NAME" />.</translation>
 <translation id="1043818413152647937">Futhi sula idatha kusuka kulezi zinhlelo zokusebenza?</translation>
-<translation id="1045448422538531528">Engeza kwiqembu</translation>
 <translation id="1046635659603195359">Kubonakala sengathi usuvele usethe Voice Match nomsizi wakho we-Google kwenye idivayisi.Lokhu kurekhoda kungasetshenziswa ukuze kwenziwe imodeli yezwi kule divayisi. Lokhu kuzomele kuthathe ngaphansi kweminithi.</translation>
 <translation id="104710386808485638">Qala kabusha i-Linux?</translation>
 <translation id="1047431265488717055">Kopisha um&amp;bhalo wesixhumanisi</translation>
@@ -92,6 +91,7 @@ I-<ph name="EXTENSION_NAME" /></translation>
 <translation id="1122198203221319518">&amp;Amathuluzi</translation>
 <translation id="1122242684574577509">Ukuqinisekisa kuhlulekile. Chofoza ukuze uvakashele ikhasi lokungena ngemvume kusukela kunethiwekhi yakho ye-Wi-Fi oyisebenzisayo (<ph name="NETWORK_ID" />).</translation>
 <translation id="1122960773616686544">Igama lebhukhimakhi</translation>
+<translation id="1123753900084781868">Okushuthwe Bukhoma akutholakali njengamanje</translation>
 <translation id="1124772482545689468">Umsebenzisi</translation>
 <translation id="1125550662859510761">Kubukeka njenge-<ph name="WIDTH" /> x <ph name="HEIGHT" /> (Okwakhona)</translation>
 <translation id="1126809382673880764">Akukuvikeli kumawebusayithi ayingozi, okulandwayo, kanye nezandiso. Usazokuthola ukuvikelwa kokuphequlula okuphephile, lapho kutholakala, kwamanye amasevisi we-Google, njenge-Gmail. nokuSesha.</translation>
@@ -405,7 +405,6 @@ I-<ph name="EXTENSION_NAME" /></translation>
 <translation id="1536754031901697553">Iyanqamula...</translation>
 <translation id="15373452373711364">Isikhombisi esikhulu segundane</translation>
 <translation id="1540605929960647700">Nika amandla imodi yedemo</translation>
-<translation id="1541396123399225659">Engeza kuqembu elisha</translation>
 <translation id="1542514202066550870">Le thebhu yethula  okuqukethwe kwe-VR ku-earphone.</translation>
 <translation id="1543284117603151572">Kungeniswe kusukela ku-Edge</translation>
 <translation id="1545177026077493356">Imodi ezenzakalelayo yekhiyoski</translation>
@@ -1903,7 +1902,6 @@ Ungaphatha izilungiselelo zale akhawunti ngokufaka uhlelo lokusebenza lwe-Family
 <translation id="3514373592552233661">Amanethiwekhi ancanyelwayo azoncanyelwa ngaphezulu kwamanye amanethiwekhi uma kutholakala engaphezulu kweyodwa</translation>
 <translation id="3515983984924808886">Thinta ukhiye wakho wokuqinisekisa ubunikazi futhi ukuze uqinisekise ukusetha kabusha. Lonke ulwazi olugcinwe kukhiye wokuqinisekisa ubunikazi, olufaka IPHINIKHODI yalo luzosuswa.</translation>
 <translation id="3518985090088779359">Yamukela uphinde uqhubeke</translation>
-<translation id="351952459507671940">Engeza kuqembu elisha</translation>
 <translation id="3521606918211282604">Shintsha usayizi wediski</translation>
 <translation id="3523642406908660543">Buza uma ngabe isayithi lifuna ukusebenzisa i-plugin ukufinyelela kukhompuyutha yakho (kunconyiwe)</translation>
 <translation id="3524965460886318643">Thumela imisebenzi</translation>
@@ -2892,7 +2890,6 @@ Ungaphatha izilungiselelo zale akhawunti ngokufaka uhlelo lokusebenza lwe-Family
 <translation id="4871322859485617074">I-PIN iqukethwe izinhlamvu ezingavumelekile</translation>
 <translation id="4871370605780490696">Engeza ibhukhimakhi</translation>
 <translation id="4871719318659334896">Vala iqembu</translation>
-<translation id="4871852311166078968">Engeza kwiqembu</translation>
 <translation id="4873312501243535625">Isihloli sefayela lemidiya</translation>
 <translation id="4876273079589074638">Siza onjiniyela bethu baphenye baphinde balungise lokhu kuphahlazeka. Faka kuhlu izinyathelo eziqondile uma ungakhona. Awukho umniningwane omncane kakhulu!</translation>
 <translation id="4876895919560854374">Khiya uphinde uvule isikrini</translation>

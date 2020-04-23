@@ -10,6 +10,7 @@
 #include <bitset>
 
 #include "base/hash/hash.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"

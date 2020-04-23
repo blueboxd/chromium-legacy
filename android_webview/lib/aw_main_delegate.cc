@@ -228,6 +228,8 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     // See
     // https://groups.google.com/a/chromium.org/forum/#!topic/blink-dev/XBKAGb2_7uAi.
     features.DisableIfNotSet(network::features::kCrossOriginEmbedderPolicy);
+
+    features.DisableIfNotSet(::features::kInstalledApp);
   }
 
   android_webview::RegisterPathProvider();

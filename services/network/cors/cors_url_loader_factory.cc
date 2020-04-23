@@ -325,7 +325,8 @@ bool CorsURLLoaderFactory::IsSane(const NetworkContext* context,
       break;
   }
 
-  if (context) {
+  if (context && (process_id_ != mojom::kBrowserProcessId ||
+                  !context->allow_any_cors_exempt_header_for_browser())) {
     net::HttpRequestHeaders::Iterator header_iterator(
         request.cors_exempt_headers);
     const auto& allowed_exempt_headers = context->cors_exempt_header_list();

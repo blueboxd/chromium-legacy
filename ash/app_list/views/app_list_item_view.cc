@@ -61,6 +61,9 @@ constexpr int kTouchLongpressDelayInMs = 300;
 // The drag and drop app icon should get scaled by this factor.
 constexpr float kDragDropAppIconScale = 1.2f;
 
+// The app icon should get scaled by this factor when entering cardify mode.
+constexpr float kCardifyIconScale = 0.84f;
+
 // The drag and drop icon scaling up or down animation transition duration.
 constexpr int kDragDropAppIconScaleTransitionInMs = 200;
 
@@ -342,6 +345,12 @@ void AppListItemView::RefreshIcon() {
   }
 }
 
+void AppListItemView::ScaleIconImmediatly(float scale_factor) {
+  icon_scale_ = scale_factor;
+  SetIcon(icon_image_);
+  layer()->SetTransform(gfx::Transform());
+}
+
 void AppListItemView::SetUIState(UIState ui_state) {
   if (ui_state_ == ui_state)
     return;
@@ -352,6 +361,8 @@ void AppListItemView::SetUIState(UIState ui_state) {
       progress_bar_->SetVisible(is_installing_);
       if (ui_state_ == UI_STATE_DRAGGING)
         ScaleAppIcon(false);
+      else if (ui_state_ == UI_STATE_CARDIFY)
+        ScaleIconImmediatly(1.0f);
       break;
     case UI_STATE_DRAGGING:
       title_->SetVisible(false);
@@ -360,6 +371,9 @@ void AppListItemView::SetUIState(UIState ui_state) {
         ScaleAppIcon(true);
       break;
     case UI_STATE_DROPPING_IN_FOLDER:
+      break;
+    case UI_STATE_CARDIFY:
+      ScaleIconImmediatly(kCardifyIconScale);
       break;
   }
   ui_state_ = ui_state;
@@ -382,9 +396,7 @@ void AppListItemView::ScaleAppIcon(bool scale_up) {
       // end of that animation, the layer will be destroyed, causing the
       // animation observer to get canceled. For this case, we need to scale
       // down the icon immediately, with no animation.
-      icon_scale_ = 1.0f;
-      SetIcon(icon_image_);
-      layer()->SetTransform(gfx::Transform());
+      ScaleIconImmediatly(1.0f);
     }
   }
 
@@ -414,9 +426,7 @@ void AppListItemView::ScaleAppIcon(bool scale_up) {
 }
 
 void AppListItemView::OnImplicitAnimationsCompleted() {
-  icon_scale_ = 1.0f;
-  SetIcon(icon_image_);
-  layer()->SetTransform(gfx::Transform());
+  ScaleIconImmediatly(1.0f);
 }
 
 void AppListItemView::SetTouchDragging(bool touch_dragging) {
@@ -956,6 +966,14 @@ void AppListItemView::SetIconVisible(bool visible) {
 
 void AppListItemView::SetDragUIState() {
   SetUIState(UI_STATE_DRAGGING);
+}
+
+void AppListItemView::SetCardifyUIState() {
+  SetUIState(UI_STATE_CARDIFY);
+}
+
+void AppListItemView::SetNormalUIState() {
+  SetUIState(UI_STATE_NORMAL);
 }
 
 // static

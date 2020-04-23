@@ -29,6 +29,10 @@ void RecordClick(ResultType result_type, const base::TimeDelta duration);
 // Record selected text length to learn about usage pattern.
 void RecordSelectedTextLength(int length);
 
+// Record active impression with result type and impression duration.
+void RecordActiveImpression(ResultType result_type,
+                            const base::TimeDelta duration);
+
 // Record user interaction with the consent UI with how many times the user has
 // seen the consent and impression duration.
 void RecordConsentInteraction(ConsentInteractionType type,

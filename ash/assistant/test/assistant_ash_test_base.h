@@ -27,9 +27,6 @@ class Widget;
 
 namespace ash {
 
-class AssistantControllerImpl;
-class AssistantInteractionController;
-class AssistantInteractionModel;
 class AssistantTestApi;
 class SuggestionChipView;
 class TestAssistantClient;
@@ -178,16 +175,12 @@ class AssistantAshTestBase : public AshTestBase {
   void EnableKeyboard() { SetVirtualKeyboardEnabled(true); }
   void DisableKeyboard() { SetVirtualKeyboardEnabled(false); }
 
-  AssistantInteractionController* interaction_controller();
-  const AssistantInteractionModel* interaction_model();
-
   TestAssistantService* assistant_service();
 
  private:
   std::unique_ptr<AssistantTestApi> test_api_;
   std::unique_ptr<TestAssistantSetup> test_setup_;
   std::unique_ptr<TestAssistantWebViewFactory> test_web_view_factory_;
-  AssistantControllerImpl* controller_ = nullptr;
 
   std::vector<std::unique_ptr<aura::Window>> windows_;
   std::vector<std::unique_ptr<views::Widget>> widgets_;

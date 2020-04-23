@@ -63,8 +63,19 @@ JSONParser::~JSONParser() = default;
 Optional<Value> JSONParser::Parse(StringPiece input) {
   input_ = input;
   index_ = 0;
+  // Line and column counting is 1-based, but |index_| is 0-based. For example,
+  // if input is "Aaa\nB" then 'A' and 'B' are both in column 1 (at lines 1 and
+  // 2) and have indexes of 0 and 4. We track the line number explicitly (the
+  // |line_number_| field) and the column number implicitly (the difference
+  // between |index_| and |index_last_line_|). In calculating that difference,
+  // |index_last_line_| is the index of the '\r' or '\n', not the index of the
+  // first byte after the '\n'. For the 'B' in "Aaa\nB", its |index_| and
+  // |index_last_line_| would be 4 and 3: 'B' is in column (4 - 3) = 1. We
+  // initialize |index_last_line_| to -1, not 0, since -1 is the (out of range)
+  // index of the imaginary '\n' immediately before the start of the string:
+  // 'A' is in column (0 - -1) = 1.
   line_number_ = 1;
-  index_last_line_ = 0;
+  index_last_line_ = -1;
 
   error_code_ = JSONReader::JSON_NO_ERROR;
   error_line_ = 0;
@@ -371,7 +382,7 @@ Optional<Value> JSONParser::ConsumeDictionary() {
         return nullopt;
       }
     } else if (token != T_OBJECT_END) {
-      ReportError(JSONReader::JSON_SYNTAX_ERROR, 0);
+      ReportError(JSONReader::JSON_SYNTAX_ERROR, 1);
       return nullopt;
     }
   }
@@ -465,7 +476,19 @@ bool JSONParser::ConsumeStringRaw(StringBuilder* out) {
       return true;
     }
     if (next_char != '\\') {
-      // If this character is not an escape sequence...
+      // If this character is not an escape sequence, track any line breaks and
+      // copy next_char to the StringBuilder. The JSON spec forbids unescaped
+      // ASCII control characters within a string, including '\r' and '\n', but
+      // this implementation is more lenient.
+      if ((next_char == '\r') || (next_char == '\n')) {
+        index_last_line_ = index_;
+        // Don't increment line_number_ twice for "\r\n". We are guaranteed
+        // that (index_ > 0) because we are consuming a string, so we must have
+        // seen an opening '"' quote character.
+        if ((next_char == '\r') || (input_[index_ - 1] != '\r')) {
+          ++line_number_;
+        }
+      }
       ConsumeChar();
       string.Append(next_char);
     } else {
@@ -727,9 +750,18 @@ bool JSONParser::ConsumeIfMatch(StringPiece match) {
 
 void JSONParser::ReportError(JSONReader::JsonParseError code,
                              int column_adjust) {
+  // For historical reasons, column_adjust is off by one.
+  column_adjust--;
+
   error_code_ = code;
   error_line_ = line_number_;
   error_column_ = index_ - index_last_line_ + column_adjust;
+
+  // For a final blank line ('\n' and then EOF), a negative column_adjust may
+  // put us below 1, which doesn't really make sense for 1-based columns.
+  if (error_column_ < 1) {
+    error_column_ = 1;
+  }
 }
 
 // static

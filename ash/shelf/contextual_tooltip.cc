@@ -123,8 +123,7 @@ bool ShouldShowNudge(PrefService* prefs,
       *recheck_delay = delay;
   };
 
-  if (!features::AreContextualNudgesEnabled() ||
-      ShelfConfig::Get()->ShelfControlsForcedShownForAccessibility()) {
+  if (!features::AreContextualNudgesEnabled()) {
     set_recheck_delay(base::TimeDelta());
     return false;
   }

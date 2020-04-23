@@ -37,7 +37,6 @@
 <translation id="1041263367839475438">Pajisjet që ofrohen</translation>
 <translation id="1042174272890264476">Kompjuteri yt vjen po ashtu me bibliotekën RLZ të <ph name="SHORT_PRODUCT_NAME" /> të integruar. Parametri RLZ cakton një etiketë jo unike, jo personalisht të identifikueshme për të matur kërkimet dhe përdorimin e <ph name="SHORT_PRODUCT_NAME" /> të nxitur nga një fushatë promocionale të veçantë. Këto etiketa ndonjëherë shfaqen në pyetjet e "Kërko me Google" në <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1043818413152647937">Do të pastrosh po ashtu të dhënat nga këto aplikacione?</translation>
-<translation id="1045448422538531528">Shto te grupi</translation>
 <translation id="1046635659603195359">Me sa duket e ke konfiguruar tashmë Voice Match me "Asistentin tënd të Google" në një pajisje tjetër. Këto regjistrime të mëparshme mund të përdoren për të krijuar një model zanor në këtë pajisje. Kjo duhet të kërkojë më pak se një minutë.</translation>
 <translation id="104710386808485638">Do ta rinisësh Linux?</translation>
 <translation id="1047431265488717055">Kopjo tekstin e lidhjes</translation>
@@ -92,6 +91,7 @@
 <translation id="1122198203221319518">&amp;Veglat</translation>
 <translation id="1122242684574577509">Vërtetimi dështoi. Kliko për të vizituar faqen e identifikimit për rrjetin Wi-Fi që po përdor (<ph name="NETWORK_ID" />).</translation>
 <translation id="1122960773616686544">Emri i faqeshënuesit</translation>
+<translation id="1123753900084781868">"Titrat në çast" nuk ofrohen për momentin</translation>
 <translation id="1124772482545689468">Përdoruesi</translation>
 <translation id="1125550662859510761">Duket si <ph name="WIDTH" /> x <ph name="HEIGHT" /> (origjinale)</translation>
 <translation id="1126809382673880764">Nuk të mbron kundër faqeve të internetit, shkarkimeve dhe shtesave të rrezikshme. Do të vazhdosh të marrësh mbrojtje për "Shfletimin e sigurt", aty ku ofrohet, në shërbimet e tjera të Google, si Gmail dhe "Kërko".</translation>
@@ -404,7 +404,6 @@
 <translation id="1536754031901697553">Po shkëputet...</translation>
 <translation id="15373452373711364">Kursor i madh</translation>
 <translation id="1540605929960647700">Aktivizo modalitetin e demonstrimit</translation>
-<translation id="1541396123399225659">Shto te grupi i ri</translation>
 <translation id="1542514202066550870">Kjo skedë po prezanton përmbajtje VR në një kufje.</translation>
 <translation id="1543284117603151572">Të importuar nga Edge</translation>
 <translation id="1545177026077493356">Modaliteti automatik "Kioskë"</translation>
@@ -1902,7 +1901,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="3514373592552233661">Rrjetet e preferuara do të preferohen në raport me rrjetet e tjera të njohura nëse ofrohen më shumë se një</translation>
 <translation id="3515983984924808886">Prek përsëri çelësin e sigurisë për të konfirmuar rivendosjen. Të gjitha informacionet e ruajtura në çelësin e sigurisë, duke përfshirë kodin e tij PIN, do të fshihen.</translation>
 <translation id="3518985090088779359">Prano dhe vazhdo</translation>
-<translation id="351952459507671940">Shto te grupi i ri</translation>
 <translation id="3521606918211282604">Ndrysho madhësinë e diskut</translation>
 <translation id="3523642406908660543">Pyet kur një sajt dëshiron të përdorë një përbërës shtesë për qasjen te kompjuteri yt (rekomandohet)</translation>
 <translation id="3524965460886318643">Eksporto aktivitetet</translation>
@@ -2892,7 +2890,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="4871322859485617074">Kodi PIN përmban karaktere të pavlefshme</translation>
 <translation id="4871370605780490696">Shto faqeshënues</translation>
 <translation id="4871719318659334896">Mbyll grupin</translation>
-<translation id="4871852311166078968">Shto te grupi</translation>
 <translation id="4873312501243535625">Kontrolluesi i skedarëve të medias</translation>
 <translation id="4876273079589074638">Ndihmo inxhinierët tanë të hetojnë dhe të rregullojnë këtë ndërprerje aksidentale. Rendit hapat e saktë nëse është e mundur. Nuk ka detaje të tepërta!</translation>
 <translation id="4876895919560854374">Kyç dhe shkyç ekranin</translation>

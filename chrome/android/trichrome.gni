@@ -47,6 +47,7 @@ template("trichrome_library_apk_tmpl") {
                              "min_sdk_version",
                              "proguard_jar_path",
                              "target_sdk_version",
+                             "verify_native_libs_and_assets",
                            ])
 
     # TODO(torne): since there's no real java code in the library right now,

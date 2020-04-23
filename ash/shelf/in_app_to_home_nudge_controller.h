@@ -24,7 +24,9 @@ class ASH_EXPORT InAppToHomeNudgeController {
   // Sets whether the in app to home nudge can be shown for the current shelf
   // state. If the nudge is allowed, controller may show the nudge if required.
   // If the nudge is not allowed, the nudge will be hidden if currently visible.
-  void SetNudgeAllowedForCurrentShelf(bool in_tablet_mode, bool in_app_shelf);
+  void SetNudgeAllowedForCurrentShelf(bool in_tablet_mode,
+                                      bool in_app_shelf,
+                                      bool shelf_controls_visible);
 
  private:
   // pointer to the shelf widget that owns the drag handle anchoring the nudge.

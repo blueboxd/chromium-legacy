@@ -179,9 +179,11 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableWebShareV2(bool);
   BLINK_PLATFORM_EXPORT static void EnableWebUsb(bool);
   BLINK_PLATFORM_EXPORT static void EnableWebXR(bool);
+  BLINK_PLATFORM_EXPORT static void EnableWebXRAnchors(bool);
   BLINK_PLATFORM_EXPORT static void EnableWebXRARModule(bool);
   BLINK_PLATFORM_EXPORT static void EnableWebXRHitTest(bool);
   BLINK_PLATFORM_EXPORT static void EnableWebXRIncubations(bool);
+  BLINK_PLATFORM_EXPORT static void EnableWebXRLightEstimation(bool);
   BLINK_PLATFORM_EXPORT static void EnableXSLT(bool);
   BLINK_PLATFORM_EXPORT static void ForceOverlayFullscreenVideo(bool);
   BLINK_PLATFORM_EXPORT static void EnableTimerThrottlingForBackgroundTabs(
@@ -230,6 +232,8 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableAcceleratedSmallCanvases(bool);
 
   BLINK_PLATFORM_EXPORT static void EnableTrustTokens(bool);
+
+  BLINK_PLATFORM_EXPORT static void EnableInstalledApp(bool);
 
  private:
   WebRuntimeFeatures();

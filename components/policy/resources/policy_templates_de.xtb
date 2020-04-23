@@ -1523,6 +1523,7 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
 <translation id="3303653927512453822">Hiermit kann für alle Cookies das alte "<ph name="ATTRIBUTE_SAMESITE_NAME" />"-Verhalten wiederhergestellt werden. Wird es wiederhergestellt, werden Cookies, für die kein "<ph name="ATTRIBUTE_SAMESITE_NAME" />"-Attribut angegeben ist, so behandelt, als würden sie "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />" enthalten. Außerdem wird nicht mehr vorausgesetzt, dass Cookies mit dem Attribut "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />" auch das Attribut "<ph name="ATTRIBUTE_SECURE_NAME" />" enthalten müssen. Eine vollständige Beschreibung steht unter https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies zur Verfügung.
 
           Wenn diese Richtlinie nicht konfiguriert ist, hängt das Standardverhalten von "<ph name="ATTRIBUTE_SAMESITE_NAME" />" für Cookies, die kein "<ph name="ATTRIBUTE_SAMESITE_NAME" />"-Attribut enthalten, von der jeweiligen Konfiguration der "<ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES" />"-Funktion ab. Diese kann im Rahmen einer Testphase oder durch Aktivieren oder Deaktivieren des "<ph name="FLAG_NAME_SAMESITE_BY_DEFAULT_COOKIES" />"-Status festgelegt werden.</translation>
+<translation id="3303911765031636277">Konfigurationsrichtlinie für den Chrome Enterprise Connector "OnFileAttached"</translation>
 <translation id="3304662785258434098">Mit dieser Richtlinie können Sie festlegen, ob Nutzer mithilfe von Ausnahmen gemischte Inhalte auf bestimmten Websites zulassen dürfen.
 
           Die Richtlinie kann für bestimmte URL-Muster überschrieben werden. Hierfür stehen die Richtlinien "InsecureContentAllowedForUrls" und "InsecureContentBlockedForUrls" zur Verfügung.
@@ -2137,6 +2138,7 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
 
           Es können außerdem spezifische Einstellungen für den Netz- und Akkubetrieb vorgenommen werden.
           </translation>
+<translation id="4147818922357566987">Nur Variationen für wichtige Fehlerbehebungen aktivieren</translation>
 <translation id="4150201353443180367">Display</translation>
 <translation id="4157003184375321727">Betriebssystem- und Firmware-Version melden</translation>
 <translation id="4157594634940419685">Zugriff auf native CUPS-Drucker erlauben</translation>
@@ -2811,12 +2813,12 @@ Wenn diese Richtlinie nicht festgelegt ist, werden 0 Millisekunden als Zeitlimi
 
 Geben Sie den Richtlinienwert in Millisekunden an.</translation>
 <translation id="523505283826916779">Einstellungen für Bedienungshilfen</translation>
-<translation id="5236004592041099233">Hiermit wird die Liste der URLs für die Unternehmensanmeldung konfiguriert (nur HTTP- und HTTPS-Schemas). Der Passwortschutzdienst erfasst den Hashwert von Passwörtern auf diesen URLs und verwendet ihn, um zu prüfen, ob Passwörter wiederverwendet werden.
-      Ihre Anmeldeseiten müssen den Richtlinien unter https://www.chromium.org/developers/design-documents/create-amazing-password-forms entsprechen, damit Hashwerte von Passwörtern in <ph name="PRODUCT_NAME" /> richtig erfasst werden können.
+<translation id="5236004592041099233">Hiermit wird die Liste der URLs für die Unternehmensanmeldung konfiguriert (nur HTTP- und HTTPS-Schemas). Der Passwortschutzdienst erfasst auf diesen URLs den Salted-Hash-Wert von Passwörtern und verwendet ihn, um zu prüfen, ob Passwörter wiederverwendet werden.
+      Ihre Anmeldeseiten müssen den Richtlinien unter https://www.chromium.org/developers/design-documents/create-amazing-password-forms entsprechen, damit Salted-Hash-Werte von Passwörtern in <ph name="PRODUCT_NAME" /> richtig erfasst werden können.
 
-      Wenn diese Einstellung aktiviert ist, erfasst der Passwortschutzdienst den Hashwert von Passwörtern auf diesen URLs und verwendet ihn, um zu prüfen, ob Passwörter wiederverwendet werden.
-      Ist sie deaktiviert oder nicht konfiguriert, erfasst der Passwortschutzdienst die Hashwerte von Passwörtern nur unter https://accounts.google.com.
-      Diese Richtlinie ist nur in Windows-Instanzen verfügbar, die mit einer <ph name="MS_AD_NAME" />-Domain verbunden sind, oder bei Windows 10 Pro- oder Enterprise-Instanzen, bei denen zur Geräteverwaltung eine Anmeldung vorgenommen wurde.</translation>
+      Wenn diese Einstellung aktiviert ist, erfasst der Passwortschutzdienst den Salted-Hash-Wert von Passwörtern auf diesen URLs und verwendet ihn, um zu prüfen, ob Passwörter wiederverwendet werden.
+      Ist sie deaktiviert oder nicht konfiguriert, erfasst der Passwortschutzdienst die Salted-Hash-Werte von Passwörtern nur unter https://accounts.google.com.
+      Diese Richtlinie ist nur in Windows-Instanzen verfügbar, die mit einer <ph name="MS_AD_NAME" />-Domain verbunden sind, oder bei Windows 10 Pro- oder Enterprise-Instanzen, die für die Geräteverwaltung angemeldet sind.</translation>
 <translation id="5236882091572996759">Wenn diese Richtlinie auf "true" gesetzt oder nicht konfiguriert ist, wird der Nutzer während der Audiowiedergabe als aktiv angesehen. Dadurch wird verhindert, dass das Zeitlimit für die Inaktivität erreicht wird und entsprechende Maßnahmen ergriffen werden. Der Bildschirm wird jedoch unabhängig von den Audioaktivitäten gemäß den konfigurierten Zeitlimits gedimmt, abgeschaltet und gesperrt.
 
           Ist diese Richtlinie auf "false" gesetzt, wird der Nutzer trotz Audiowiedergabe als inaktiv angesehen.</translation>
@@ -3501,7 +3503,7 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
 <translation id="6221175752766085998">Zertifikate zulassen, die von lokalen Vertrauensankern ausgestellt werden, bei denen die "subjectAlternativeName"-Erweiterung fehlt</translation>
 <translation id="6224304369267200483">Automatischer Nachweis des Sicherheitsschlüssels durch URLs/Domains</translation>
 <translation id="6233173491898450179">Downloadverzeichnis festlegen</translation>
-<translation id="6234177445959386333">Hiermit wird die Liste der URLs für die Unternehmensanmeldung konfiguriert, für die der Passwortschutzdienst den Hashwert von Passwörtern registrieren soll.</translation>
+<translation id="6234177445959386333">Hiermit wird die Liste der URLs für die Unternehmensanmeldung konfiguriert, auf denen der Passwortschutzdienst den Salted-Hash-Wert von Passwörtern erfassen soll.</translation>
 <translation id="6242147107333796512">Informationen im Zusammenhang mit Absturzberichten melden, wie Remote ID,
       Zeitstempel und Ursache.
 
@@ -3963,11 +3965,11 @@ Speicherinformationen werden unabhängig von der gewählten Option an die Seite 
 <translation id="7040229947030068419">Beispielwert</translation>
 <translation id="7044883996351280650">Android-Dienst "Sicherung und Wiederherstellung" konfigurieren</translation>
 <translation id="705089873294344912">Hiermit wird die URL zur Passwortänderung konfiguriert (nur HTTP- und HTTPS-Schemas). Nutzer, in deren Browser eine Warnung angezeigt wurde, werden vom Passwortschutzdienst an diese URL weitergeleitet, damit sie ihr Passwort ändern können.
-      Die Seite zum Ändern des Passworts muss den Richtlinien unter https://www.chromium.org/developers/design-documents/create-amazing-password-forms entsprechen, damit der Hashwert des neuen Passworts in <ph name="PRODUCT_NAME" /> richtig erfasst werden kann.
+      Die Seite zum Ändern des Passworts muss den Richtlinien unter https://www.chromium.org/developers/design-documents/create-amazing-password-forms entsprechen, damit der Salted-Hash-Wert des neuen Passworts in <ph name="PRODUCT_NAME" /> richtig erfasst werden kann.
 
       Wenn diese Einstellung aktiviert ist, leitet der Passwortschutzdienst Nutzer, in deren Browser eine Warnung angezeigt wurde, an diese URL weiter, damit sie ihr Passwort ändern können.
       Ist sie deaktiviert oder nicht konfiguriert, werden Nutzer an https://myaccount.google.com weitergeleitet, damit sie ihr Passwort ändern können.
-      Diese Richtlinie ist nur in Windows-Instanzen verfügbar, die mit einer <ph name="MS_AD_NAME" />-Domain verbunden sind, oder bei Windows 10 Pro- oder Enterprise-Instanzen, bei denen zur Geräteverwaltung eine Anmeldung vorgenommen wurde.</translation>
+      Diese Richtlinie ist nur in Windows-Instanzen verfügbar, die mit einer <ph name="MS_AD_NAME" />-Domain verbunden sind, oder bei Windows 10 Pro- oder Enterprise-Instanzen, die für die Geräteverwaltung angemeldet sind.</translation>
 <translation id="7053678646221257043">Bei Aktivierung erzwingt diese Richtlinie, dass die Lesezeichen vom aktuellen Standardbrowser importiert werden. Wenn Sie deaktiviert ist, werden keine Lesezeichen importiert. Sollte Sie nicht konfiguriert sein, wird der Nutzer gefragt, ob ein Import erfolgen soll, oder der Import findet automatisch statt.</translation>
 <translation id="7063895219334505671">Pop-ups auf diesen Websites zulassen</translation>
 <translation id="706669471845501145">Anzeige von Desktop-Benachrichtigungen durch Websites zulassen</translation>
@@ -4069,6 +4071,15 @@ Speicherinformationen werden unabhängig von der gewählten Option an die Seite 
       Diese Richtlinie kann auf "Konservativ" und auf "Leistung" gesetzt werden. Dadurch wird entweder eine Aufgabenplaner-Konfiguration für optimale Stabilität oder für optimale Leistung ausgewählt.
 
       Wenn die Richtlinie nicht festgelegt ist, kann der Nutzer selbst wählen.</translation>
+<translation id="7144454922853468101">Über diese Richtlinie können Sie festlegen, welche Variationen in <ph name="PRODUCT_NAME" /> zulässig sind.
+
+      Mit Variationen sind kleine Konfigurationsänderungen an <ph name="PRODUCT_NAME" /> möglich, ohne dass eine neue Version veröffentlicht werden muss. Dazu werden bestehende Funktionen aktiviert oder deaktiviert.
+
+      Wenn Sie "<ph name="VARIATIONS_ENABLED_OPTION_NAME" />" (Wert: 0) festlegen oder die Richtlinie nicht konfigurieren, können alle Variationen für den Browser angewendet werden.
+
+      Wenn Sie "<ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" />" festlegen (Wert: 1), werden nur Variationen für <ph name="PRODUCT_NAME" /> angewendet, die als wichtige Sicherheits- oder Stabilitätskorrekturen gewertet werden.
+
+      Wenn Sie "<ph name="VARIATIONS_DISABLED_OPTION_NAME" />" festlegen (Wert: 2), werden keine Variationen auf den Browser angewendet. Dieser Modus kann die <ph name="PRODUCT_NAME" />-Entwickler möglicherweise daran hindern, wichtige Sicherheitskorrekturen zeitnah durchzuführen. Er wird daher nicht empfohlen.</translation>
 <translation id="7145335384492396213">Standardmodus PIN-Druck</translation>
 <translation id="7149042336307555519"> Verbindungstypen, die für Betriebssystem-Updates verwendet werden können. Betriebssystem-Updates stellen für Verbindungen aufgrund ihrer Größe eine starke Belastung dar und können zusätzliche Kosten verursachen. Aus diesem Grund sind sie für teure Verbindungstypen (derzeit nur "cellular") standardmäßig nicht aktiviert.
 
@@ -4763,6 +4774,15 @@ Wird diese Richtlinie nicht konfiguriert, ist der Datenschutzbildschirm anfangs 
 <translation id="8176035528522326671">Unternehmensnutzer nur als primären Nutzer mehrerer Profile zulassen (Standardverhalten für von Unternehmen verwaltete Nutzer)</translation>
 <translation id="8183108371184777472">Öffnen des Browserfensters verhindern</translation>
 <translation id="8186911565834244165">Nutzerfeedback zulassen</translation>
+<translation id="8196725647498287556">Über diese Richtlinie können Sie festlegen, welche Variationen auf einem vom Unternehmen verwalteten <ph name="PRODUCT_OS_NAME" />-Gerät zulässig sind.
+
+      Mit Variationen sind kleine Konfigurationsänderungen an <ph name="PRODUCT_OS_NAME" /> möglich, ohne dass eine neue Version veröffentlicht werden muss. Dazu werden bestehende Funktionen aktiviert oder deaktiviert.
+
+      Wenn Sie "<ph name="VARIATIONS_ENABLED_OPTION_NAME" />" (Wert: 0) festlegen oder die Richtlinie nicht konfigurieren, können alle Variationen für <ph name="PRODUCT_OS_NAME" /> angewendet werden.
+
+      Wenn Sie "<ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" />" festlegen (Wert: 1), werden nur Variationen für <ph name="PRODUCT_OS_NAME" /> angewendet, die als wichtige Sicherheits- oder Stabilitätskorrekturen gewertet werden.
+
+      Wenn Sie "<ph name="VARIATIONS_DISABLED_OPTION_NAME" />" festlegen (Wert: 2), werden auf dem Anmeldebildschirm keine Variationen auf den Browser angewendet. Dieser Modus kann die <ph name="PRODUCT_OS_NAME" />-Entwickler möglicherweise daran hindern, wichtige Sicherheitskorrekturen zeitnah durchzuführen. Er wird daher nicht empfohlen.</translation>
 <translation id="8213770777756919897">Diese Richtlinie ist veraltet und wird in Version 85 von <ph name="PRODUCT_OS_NAME" /> entfernt. Bitte verwenden Sie stattdessen die Richtlinie "<ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />".
 
           Ist diese Richtlinie konfiguriert, wird damit festgelegt, was <ph name="PRODUCT_OS_NAME" /> tun soll, wenn der Nutzer für die Dauer der Inaktivitätsverzögerung inaktiv bleibt. Diese kann gesondert konfiguriert werden.
@@ -5314,6 +5334,19 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
           Wird die Richtlinie nicht konfiguriert, obwohl sie auf dem Gerät unterstützt wird, dann wird der Standardmodus für die Akkuaufladung angewendet und kann vom Nutzer nicht geändert werden.
 
           Hinweis: Sofern konfiguriert, überschreibt "<ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" />" diese Richtlinie.</translation>
+<translation id="9071472304496502510">Liste der Einstellungen für Chrome Enterprise Connector-Services für den Enterprise Connector "<ph name="ON_FILE_ATTACHED_ENTERPRISE_CONNECTOR" />" – dieser wird ausgelöst, wenn eine Datei an Chrome angehängt wird.
+
+      Mit den Feldern "<ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />", "<ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />", "<ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" />" und "<ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" />" wird ermittelt, ob der Connector eine Datei zur Analyse senden soll, wenn sie an eine bestimmte Seite angehängt wird, und welche Tags für die Analyseanfrage verwendet werden sollen. Ein Tag, das einem "Aktivierungsmuster" entspricht, wird der Anfrage hinzugefügt, wenn die Seiten-URL mit einem für das jeweilige Tag passenden Muster übereinstimmt – jedoch nur, wenn kein "Deaktivierungsmuster" mit demselben Tag mit der Seiten-URL übereinstimmt. Die Analyse wird durchgeführt, wenn die Anfrage mindestens ein Tag enthält.
+
+      Das Feld "<ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" />" legt fest, für welchen Analyseanbieter die Einstellungen gelten.
+
+      Wenn das Feld "<ph name="ENTERPRISE_CONNECTOR_BLOCK_UNTIL_VERDICT_FIELD" />" auf 1 gesetzt ist, wartet Chrome auf eine Antwort des Analyseanbieters, bevor der Seite Zugriff auf die Datei gewährt wird. Wenn es auf einen anderen Ganzzahlwert gesetzt ist, gewährt Chrome der Seite sofort Zugriff auf die Datei.
+
+      Das Feld "<ph name="ENTERPRISE_CONNECTOR_BLOCK_PASSWORD_PROTECTED_FIELD" />" legt fest, ob Chrome den Zugriff auf Dateien blockiert, die durch ein Passwort geschützt sind.
+
+      Das Feld "<ph name="ENTERPRISE_CONNECTOR_BLOCK_LARGE_FILES_FIELD" />" legt fest, ob Chrome den Zugriff auf Dateien blockiert, die zu groß für die Analyse sind (50 MB oder größer).
+
+      Diese Richtlinie kann nur über die Google Admin-Konsole konfiguriert werden.</translation>
 <translation id="9077227880520270584">Timer für automatische Anmeldung in lokalem Gerätekonto</translation>
 <translation id="9084985621503260744">Angaben zum Einfluss von Videoaktivitäten auf den Energiesparmodus</translation>
 <translation id="9088433379343318874">Contentanbieter für betreute Nutzer aktivieren</translation>

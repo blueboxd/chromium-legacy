@@ -75,6 +75,9 @@ interface AutofillAgent {
   // The form field is given by an path defined by an array of CSS selectors.
   GetElementFormAndFieldData(array<string> selectors) => (
       autofill.mojom.FormData form, autofill.mojom.FormFieldData field);
+
+  // Set whether or not an assistant action is currently running an action.
+  SetAssistantActionState(bool running);
 };
 
 // There is one instance of this interface per render frame in the render

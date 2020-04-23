@@ -61,7 +61,7 @@ void MaybeCreateSafeBrowsing(
 SafeBrowsingService::SafeBrowsingService(const std::string& user_agent)
     : user_agent_(user_agent) {}
 
-SafeBrowsingService::~SafeBrowsingService() {}
+SafeBrowsingService::~SafeBrowsingService() = default;
 
 void SafeBrowsingService::Initialize() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

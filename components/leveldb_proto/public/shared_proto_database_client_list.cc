@@ -81,6 +81,8 @@ std::string SharedProtoDatabaseClientList::ProtoDbTypeToString(
       return "FeedStreamDatabase";
     case ProtoDbType::TAB_STATE_DATABASE:
       return "TabStateDatabase";
+    case ProtoDbType::UPBOARDING_QUERY_TILE_STORE:
+      return "UpboardingQueryTileStore";
     case ProtoDbType::LAST:
       NOTREACHED();
       return std::string();

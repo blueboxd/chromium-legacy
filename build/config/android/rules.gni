@@ -2123,6 +2123,9 @@ if (enable_java_templates) {
   #   main_component_library: Specifies the name of the base component's library
   #     in a component build. If given, the system will find dependent native
   #     libraries at runtime by inspecting this library (optional).
+  #   verify_native_libs_and_assets: (optional): If true, will verify the list
+  #     of included native libraries and assets is consistent with an
+  #     expectation file.
   template("android_apk_or_module") {
     forward_variables_from(invoker, [ "testonly" ])
     assert(defined(invoker.android_manifest))
@@ -3167,6 +3170,11 @@ if (enable_java_templates) {
                                  "uncompress_shared_libraries",
                                ])
 
+        if (defined(invoker.verify_native_libs_and_assets) &&
+            invoker.verify_native_libs_and_assets) {
+          verify_native_libs_and_assets_target_name = _template_name
+        }
+
         assets_build_config = _build_config
         keystore_name = _keystore_name
         keystore_path = _keystore_path
@@ -3472,6 +3480,7 @@ if (enable_java_templates) {
                                "uncompress_dex",
                                "uncompress_shared_libraries",
                                "use_chromium_linker",
+                               "verify_native_libs_and_assets",
                                "version_code",
                                "version_name",
                              ])
@@ -3746,7 +3755,8 @@ if (enable_java_templates) {
         no_build_hooks = true
       }
 
-      if (defined(invoker.proguard_enabled) && invoker.proguard_enabled) {
+      if (defined(invoker.proguard_enabled) && invoker.proguard_enabled &&
+          !incremental_install) {
         # When ProGuard is on, we use ProGuard to combine the under test java
         # code and the test java code. This is to allow us to apply all ProGuard
         # optimizations that we ship with, but not have them break tests. The
@@ -4399,6 +4409,9 @@ if (enable_java_templates) {
   #    is_multi_abi: If true will add a library placeholder for the missing ABI
   #      if either the primary or the secondary ABI has no native libraries set.
   #
+  #    verify_native_libs_and_assets: (optional): If true, will verify the list
+  #      of included native libraries and assets is consistent with an
+  #      expectation file.
   # Example:
   #   android_app_bundle("chrome_public_bundle") {
   #      base_module_target = "//chrome/android:chrome_public_apk"
@@ -4697,6 +4710,12 @@ if (enable_java_templates) {
         build_config = _module_build_config
         module_zip_path = _module_zip_path
         native_libraries_config = _native_libraries_config
+
+        if (module_name == "base" &&
+            defined(invoker.verify_native_libs_and_assets) &&
+            invoker.verify_native_libs_and_assets) {
+          verify_native_libs_and_assets_target_name = "${_target_name}__base"
+        }
 
         deps = [
           ":${_target_name}__allot_native_libraries",

@@ -43,6 +43,7 @@
     API_AVAILABLE(ios(13)) {
   self.sceneState.scene = base::mac::ObjCCastStrict<UIWindowScene>(scene);
   self.sceneState.activationLevel = SceneActivationLevelBackground;
+  self.sceneState.connectionOptions = connectionOptions;
 }
 
 - (void)sceneDidDisconnect:(UIScene*)scene API_AVAILABLE(ios(13)) {

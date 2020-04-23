@@ -556,7 +556,6 @@ cr.define('settings.display', function() {
      */
     showTouchCalibrationSetting_(display) {
       return !display.isInternal &&
-          loadTimeData.getBoolean('hasExternalTouchDevice') &&
           loadTimeData.getBoolean('enableTouchCalibrationSetting');
     },
 

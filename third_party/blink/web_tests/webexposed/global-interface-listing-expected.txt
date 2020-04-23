@@ -11297,6 +11297,7 @@ interface XRFrame
     method createAnchor
     method getHitTestResults
     method getHitTestResultsForTransientInput
+    method getLightEstimate
     method getPose
     method getViewerPose
 interface XRHitTestResult
@@ -11336,6 +11337,15 @@ interface XRInputSourcesChangeEvent : Event
     getter added
     getter removed
     getter session
+    method constructor
+interface XRLightEstimate
+    attribute @@toStringTag
+    getter primaryLightDirection
+    getter primaryLightIntensity
+    getter sphericalHarmonicsCoefficients
+    method constructor
+interface XRLightProbe
+    attribute @@toStringTag
     method constructor
 interface XRPlane
     attribute @@toStringTag
@@ -11419,6 +11429,7 @@ interface XRSession : EventTarget
     method requestAnimationFrame
     method requestHitTestSource
     method requestHitTestSourceForTransientInput
+    method requestLightProbe
     method requestReferenceSpace
     method updateRenderState
     method updateWorldTrackingState

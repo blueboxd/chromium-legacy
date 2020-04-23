@@ -4,6 +4,8 @@
 
 #include "base/trace_event/heap_profiler_allocation_context_tracker.h"
 
+#include <string.h>
+
 #include <algorithm>
 #include <iterator>
 

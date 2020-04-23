@@ -123,12 +123,10 @@ android_library("java") {
     "//base:base_java",
     "//base:jni_java",
     "//components/browser_ui/modaldialog/android:java",
+    "//components/content_settings/android:content_settings_enums_java",
     "//content/public/android:content_java",
     "//third_party/android_deps:android_support_v4_java",
     "//ui/android:ui_java",
-  ]
-  srcjar_deps = [
-    "//components/content_settings/core/common:content_settings_type_javagen",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }

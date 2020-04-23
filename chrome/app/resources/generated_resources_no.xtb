@@ -37,7 +37,6 @@
 <translation id="1041263367839475438">Tilgjengelige enheter</translation>
 <translation id="1042174272890264476">Datamaskinen din har <ph name="SHORT_PRODUCT_NAME" />s RLZ-bibliotek innebygget. RLZ tildeler en ikke-unik, ikke-personlig tagg for å måle søk og <ph name="SHORT_PRODUCT_NAME" />-bruk drevet av en bestemt markedsføringskampanje. Disse etikettene vises noen ganger i Google-søk i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1043818413152647937">Vil du også slette data fra disse appene?</translation>
-<translation id="1045448422538531528">Legg til i gruppe</translation>
 <translation id="1046635659603195359">Det ser ut til at du allerede har konfigurert Voice Match med Google-assistenten din på en annen enhet. Disse tidligere opptakene kan brukes til å lage en stemmemodell på denne enheten. Dette burde ta mindre enn ett minutt.</translation>
 <translation id="104710386808485638">Vil du starte Linux på nytt?</translation>
 <translation id="1047431265488717055">Kopiér linkte&amp;kst</translation>
@@ -405,7 +404,6 @@
 <translation id="1536754031901697553">Kobler fra …</translation>
 <translation id="15373452373711364">Stor markør</translation>
 <translation id="1540605929960647700">Slå på demomodus</translation>
-<translation id="1541396123399225659">Legg til i en ny gruppe</translation>
 <translation id="1542514202066550870">Denne fanen sender VR-innhold til VR-briller.</translation>
 <translation id="1543284117603151572">Importert fra Edge</translation>
 <translation id="1545177026077493356">Automatisk kioskmodus</translation>
@@ -1903,7 +1901,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="3514373592552233661">Foretrukne nettverk prioriteres fremfor andre kjente nettverk hvis mer enn ett nettverk er tilgjengelig</translation>
 <translation id="3515983984924808886">Berør sikkerhetsnøkkelen en gang til for å bekrefte tilbakestillingen. All informasjon som er lagret på sikkerhetsnøkkelen, inkludert PIN-koden, blir slettet.</translation>
 <translation id="3518985090088779359">Godta og fortsett</translation>
-<translation id="351952459507671940">Legg til i en ny gruppe</translation>
 <translation id="3521606918211282604">Endre diskstørrelsen</translation>
 <translation id="3523642406908660543">Spør når et nettsted ønsker å bruke et programtillegg for å få tilgang til datamaskinen (anbefales)</translation>
 <translation id="3524965460886318643">Eksportér aktivitet</translation>
@@ -2891,7 +2888,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="4871322859485617074">PIN-koden inneholder ugyldige tegn.</translation>
 <translation id="4871370605780490696">Legg til bokmerke</translation>
 <translation id="4871719318659334896">Lukk gruppen</translation>
-<translation id="4871852311166078968">Legg til i gruppe</translation>
 <translation id="4873312501243535625">Media File Checker</translation>
 <translation id="4876273079589074638">Hjelp teknikerne våre med å undersøke og fikse denne feilen. Legg inn den nøyaktige fremgangsmåten om du kan. Ingen detaljer er ubetydelige.</translation>
 <translation id="4876895919560854374">låse og låse opp skjermen</translation>

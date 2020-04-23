@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 import("//third_party/closure_compiler/compile_js.gni")
-import("//tools/polymer/polymer.gni")
+import("//tools/polymer/html_to_js.gni")
 
 js_type_check("closure_compile") {
   uses_js_modules = true
@@ -13,11 +13,6 @@ js_type_check("closure_compile") {
 js_library("cr_autocomplete_match_list") {
 }
 
-polymer_modulizer("cr_autocomplete_match_list") {
-  js_file = "cr_autocomplete_match_list.js"
-  html_file = "cr_autocomplete_match_list.html"
-  html_type = "v3-ready"
-}
-group("omnibox_modules") {
-  public_deps = [ ":cr_autocomplete_match_list_module" ]
+html_to_js("web_components") {
+  js_files = [ "cr_autocomplete_match_list.js" ]
 }

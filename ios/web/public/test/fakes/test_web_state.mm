@@ -25,6 +25,12 @@
 #endif
 
 namespace web {
+namespace {
+// Function used to implement the default WebState getters.
+web::WebState* ReturnWeakReference(base::WeakPtr<TestWebState> weak_web_state) {
+  return weak_web_state.get();
+}
+}  // namespace
 
 void TestWebState::AddObserver(WebStateObserver* observer) {
   observers_.AddObserver(observer);
@@ -56,6 +62,14 @@ TestWebState::~TestWebState() {
     observer.WebStateDestroyed();
   for (auto& observer : policy_deciders_)
     observer.ResetWebState();
+}
+
+WebState::Getter TestWebState::CreateDefaultGetter() {
+  return base::BindRepeating(&ReturnWeakReference, weak_factory_.GetWeakPtr());
+}
+
+WebState::OnceGetter TestWebState::CreateDefaultOnceGetter() {
+  return base::BindOnce(&ReturnWeakReference, weak_factory_.GetWeakPtr());
 }
 
 WebStateDelegate* TestWebState::GetDelegate() {

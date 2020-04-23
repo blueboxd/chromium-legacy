@@ -556,6 +556,8 @@ FetchHeaderList* Response::InternalHeaderList() const {
 }
 
 void Response::Trace(Visitor* visitor) {
+  ScriptWrappable::Trace(visitor);
+  ActiveScriptWrappable<Response>::Trace(visitor);
   Body::Trace(visitor);
   visitor->Trace(response_);
   visitor->Trace(headers_);

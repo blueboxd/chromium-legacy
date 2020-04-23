@@ -655,9 +655,7 @@
       },
       'android-kitkat-arm-rel-swarming': {
         'swarming': {
-          # TODO(crbug.com/1071301): Switch to -dev Gold account once it's
-          # available.
-          'service_account': 'chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com'
+          'service_account': 'chrome-gold-dev@chops-service-accounts.iam.gserviceaccount.com'
         },
       },
       'android-marshmallow-arm64-rel': {
@@ -667,9 +665,7 @@
       },
       'android-marshmallow-arm64-rel-swarming': {
         'swarming': {
-          # TODO(crbug.com/1071301): Switch to -dev Gold account once it's
-          # available.
-          'service_account': 'chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com'
+          'service_account': 'chrome-gold-dev@chops-service-accounts.iam.gserviceaccount.com'
         },
       },
       'android-pie-arm64-rel': {

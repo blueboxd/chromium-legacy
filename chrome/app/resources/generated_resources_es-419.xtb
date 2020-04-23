@@ -37,7 +37,6 @@
 <translation id="1041263367839475438">Dispositivos disponibles</translation>
 <translation id="1042174272890264476">Tu computadora también tiene la biblioteca RLZ de <ph name="SHORT_PRODUCT_NAME" /> incorporada. RLZ asigna una etiqueta identificable, no exclusiva y no personal para medir las búsquedas y el uso de <ph name="SHORT_PRODUCT_NAME" /> impulsados por una determinada campaña de promoción. Estas etiquetas aparecen a veces en las consultas de la Búsqueda de Google en <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1043818413152647937">¿También quieres borrar los datos de estas apps?</translation>
-<translation id="1045448422538531528">Agregar al grupo</translation>
 <translation id="1046635659603195359">Al parecer, ya configuraste Voice Match con tu Asistente de Google en otro dispositivo. Las grabaciones anteriores pueden usarse para crear un modelo de voz en este dispositivo. El proceso debería tomar menos de un minuto.</translation>
 <translation id="104710386808485638">¿Quieres reiniciar Linux?</translation>
 <translation id="1047431265488717055">Copiar texto del vínculo</translation>
@@ -92,6 +91,7 @@
 <translation id="1122198203221319518">&amp;Herramientas</translation>
 <translation id="1122242684574577509">Error de autenticación; haz clic para visitar la página de acceso correspondiente a la red Wi-Fi que estás usando (<ph name="NETWORK_ID" />).</translation>
 <translation id="1122960773616686544">Nombre del marcador</translation>
+<translation id="1123753900084781868">El Subtitulado instantáneo no está disponible en este momento</translation>
 <translation id="1124772482545689468">Usuario</translation>
 <translation id="1125550662859510761">Resolución: <ph name="WIDTH" /> × <ph name="HEIGHT" /> (nativa)</translation>
 <translation id="1126809382673880764">No te protege contra descargas, extensiones ni sitios web peligrosos. Seguirás teniendo la protección (donde esté disponible) de la Navegación segura en otros servicios de Google, como Gmail y la Búsqueda.</translation>
@@ -404,7 +404,6 @@
 <translation id="1536754031901697553">Desconectando…</translation>
 <translation id="15373452373711364">Cursor del mouse grande</translation>
 <translation id="1540605929960647700">Activar el modo de demostración</translation>
-<translation id="1541396123399225659">Agregar a un nuevo grupo</translation>
 <translation id="1542514202066550870">Esta pestaña muestra contenido de RV en un visor.</translation>
 <translation id="1543284117603151572">Importados desde Edge</translation>
 <translation id="1545177026077493356">Modo kiosco automático</translation>
@@ -418,6 +417,11 @@
 <translation id="1555130319947370107">Azul</translation>
 <translation id="1556537182262721003">No se pudo mover el directorio de extensiones al perfil</translation>
 <translation id="155865706765934889">Panel táctil</translation>
+<translation id="1560763881671211335">Los administradores de G Suite for Education determinan cuáles son los servicios de Google que pueden utilizar los usuarios cuando acceden a una cuenta de G Suite for Education. Los administradores de las instituciones educativas deben dar el consentimiento, o bien recibirlo de los padres o madres, para que los usuarios menores de edad puedan utilizar los servicios.
+
+    Los datos de navegación (como el historial, los favoritos y las contraseñas) se almacenarán en la cuenta de Family Link, no en la cuenta de la institución educativa.
+
+    Se seguirá aplicando la configuración parental de Family Link. Si antes habías bloqueado una app o un sitio, no tendrás que volver a hacerlo.</translation>
 <translation id="1566049601598938765">Sitio web</translation>
 <translation id="15662109988763471">La impresora seleccionada no está disponible o no se instaló correctamente. Revisa tu impresora o selecciona otra.</translation>
 <translation id="1567387640189251553">Se conectó otro teclado desde la última vez que ingresaste tu contraseña. Es posible que alguien esté intentando determinar qué teclas presionaste.</translation>
@@ -1197,6 +1201,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="258095186877893873">Largo</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (plataforma <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">No se pudo obtener el ticket de Kerberos. Vuelve a intentarlo o comunícate con el administrador de dispositivos de tu organización. (Código de error <ph name="ERROR_CODE" />).</translation>
+<translation id="2585013490795742997">Se muestra 1 resultado de la búsqueda para <ph name="QUERY" /></translation>
 <translation id="2585724835339714757">Esta pestaña está compartiendo tu pantalla.</translation>
 <translation id="2586657967955657006">Portapapeles</translation>
 <translation id="2586672484245266891">Ingresa una URL más corta</translation>
@@ -1883,6 +1888,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3498215018399854026">No pudimos comunicarnos con ninguno de tus padres. Vuelve a intentarlo.</translation>
 <translation id="3500417806337761827">Se produjo un error al activar el recurso compartido porque ya se activaron demasiados archivos compartidos SMB.</translation>
 <translation id="3505030558724226696">Revocar el acceso al dispositivo</translation>
+<translation id="3507132249039706973">Se activó la protección estándar</translation>
 <translation id="3507421388498836150">Permisos actuales para "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="3507888235492474624">Vuelve a buscar dispositivos Bluetooth</translation>
 <translation id="3508492320654304609">No se pudieron borrar tus datos de acceso</translation>
@@ -1895,7 +1901,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3514373592552233661">Se utilizarán las redes preferidas en lugar de otras conocidas si hay más de una disponible</translation>
 <translation id="3515983984924808886">Vuelve a tocar tu llave de seguridad para confirmar el restablecimiento. Se borrará toda la información almacenada en la llave de seguridad, incluido su PIN.</translation>
 <translation id="3518985090088779359">Aceptar y continuar</translation>
-<translation id="351952459507671940">Agregar a un nuevo grupo</translation>
 <translation id="3521606918211282604">Cambiar el tamaño del disco</translation>
 <translation id="3523642406908660543">Preguntarme cuando un sitio intente usar un complemento para acceder a la computadora (recomendado)</translation>
 <translation id="3524965460886318643">Exportar actividades</translation>
@@ -2885,7 +2890,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4871322859485617074">El PIN contiene caracteres no válidos</translation>
 <translation id="4871370605780490696">Agregar marcador</translation>
 <translation id="4871719318659334896">Cerrar grupo</translation>
-<translation id="4871852311166078968">Agregar al grupo</translation>
 <translation id="4873312501243535625">Comprobador de archivos multimedia</translation>
 <translation id="4876273079589074638">¡Ayuda a que nuestros ingenieros investiguen y solucionen este fallo! Enumera los pasos exactos si es posible. No omitas ningún detalle.</translation>
 <translation id="4876895919560854374">Bloquear y desbloquear la pantalla</translation>
@@ -3236,6 +3240,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5352033265844765294">Impresión de fecha</translation>
 <translation id="5353252989841766347">Exportar contraseñas desde Chrome</translation>
 <translation id="5355099869024327351">Permite que el Asistente te muestre notificaciones</translation>
+<translation id="5355191726083956201">Se activó la protección mejorada</translation>
 <translation id="5355926466126177564">La extensión "<ph name="EXTENSION_NAME" />" cambió la página que se muestra al llevar a cabo búsquedas desde el cuadro multifunción.</translation>
 <translation id="5359910752122114278">1 resultado</translation>
 <translation id="5360150013186312835">Mostrar en la barra de herramientas</translation>
@@ -3547,6 +3552,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="577322787686508614">No se permite la operación de lectura en: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5774295353725270860">Abrir Archivos</translation>
 <translation id="577624874850706961">Buscar cookies</translation>
+<translation id="5776858208024364029">Se muestran <ph name="NUMBER" /> resultados de búsqueda para <ph name="QUERY" /></translation>
 <translation id="5777468213129569553">Abrir Chrome</translation>
 <translation id="5778747455497889540">A continuación, encontrarás la contraseña del módulo de seguridad generada de manera aleatoria que se le asigna a tu computadora:</translation>
 <translation id="5780011244986845107">La carpeta seleccionada contiene archivos confidenciales. ¿Confirmas que deseas otorgar a "<ph name="APP_NAME" />" acceso de lectura permanente a esta carpeta?</translation>
@@ -4103,6 +4109,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
+<translation id="6520876759015997832">Resultado de la búsqueda <ph name="LIST_POSITION" /> de <ph name="LIST_SIZE" />: <ph name="SEARCH_RESULT_TEXT" />. Presiona Intro para navegar a la sección.</translation>
 <translation id="652492607360843641">Estás conectado a una red <ph name="NETWORK_TYPE" />.</translation>
 <translation id="6527303717912515753">Compartir</translation>
 <translation id="6528513914570774834">Permitir que otros usuarios de este dispositivo usen esta red</translation>
@@ -4114,6 +4121,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6532206849875187177">Seguridad y acceso</translation>
 <translation id="6532527800157340614">No es posible completar el acceso porque no se pudo recuperar tu token de acceso. Comprueba la conexión de red y vuelve a intentarlo.</translation>
 <translation id="6532663472409656417">Inscripto en una empresa</translation>
+<translation id="6535331821390304775">Siempre permitir que <ph name="ORIGIN" /> abra este tipo de vínculos en la app asociada</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Nota:<ph name="END_BOLD" /> Solo debes habilitar esta opción si sabes lo que estás haciendo o si alguien te lo solicitó, ya que la recopilación de datos puede reducir el rendimiento.</translation>
 <translation id="6541638731489116978">Este sitio no tiene permiso para acceder a tus sensores de movimiento.</translation>
 <translation id="6545665334409411530">Frecuencia de repetición</translation>
@@ -4243,6 +4251,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6727969043791803658">Conectado (batería: <ph name="BATTERY_PERCENTAGE" />%)</translation>
 <translation id="6732801395666424405">No se cargaron los certificados.</translation>
 <translation id="6732900235521116609">No se puede quitar el acceso directo</translation>
+<translation id="6734468588183300211">Cuando está activado el modo Incógnito, los sitios web no pueden usar tu actividad de navegación en diferentes sitios, por ejemplo, para personalizar anuncios. Es posible que las características de algunos sitios no funcionen de forma adecuada.</translation>
 <translation id="6735304988756581115">Mostrar cookies y otros datos de sitio...</translation>
 <translation id="6736243959894955139">Dirección</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
@@ -4255,6 +4264,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="674632704103926902">Habilitar la función tocar y arrastrar</translation>
 <translation id="6748217015615267851">Procesador: <ph name="RENDERER_URL" /></translation>
 <translation id="6748465660675848252">Puedes continuar, pero se restaurarán únicamente la configuración y los datos sincronizados. Se perderán todos los datos locales.</translation>
+<translation id="6749006854028927059">Los sitios no pueden usar tus cookies para ver la actividad de navegación en diferentes sitios, por ejemplo, con el fin de personalizar anuncios. Es posible que las características de algunos sitios no funcionen de forma adecuada.</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (Incógnito)</translation>
 <translation id="6757101664402245801">URL copiada</translation>
 <translation id="6758056191028427665">Danos tu opinión sobre nuestro trabajo.</translation>
@@ -4346,6 +4356,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="686664946474413495">Temperatura de color</translation>
 <translation id="6871644448911473373">Respondedor de OCSP:<ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">El servidor rechazó la contraseña que ingresaste.</translation>
+<translation id="6874170800191969835">Resultado de la búsqueda <ph name="SEARCH_RESULT_TEXT" />.</translation>
 <translation id="6876155724392614295">Bicicleta</translation>
 <translation id="6876469544038980967">Poco útil</translation>
 <translation id="6878422606530379992">Se permite el acceso a los sensores</translation>
@@ -4616,6 +4627,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="7235737137505019098">Tu llave de seguridad no tiene suficiente espacio disponible para crear más cuentas.</translation>
 <translation id="7238643356913091553"><ph name="NETWORK_NAME" />, detalles</translation>
 <translation id="7240339475467890413">¿Deseas conectarte a un nuevo hotspot?</translation>
+<translation id="7240847845291869311">Tu hijo quiere agregar una Cuenta de Google de G Suite for Education en este dispositivo. El <ph name="LINK_BEGIN" />Aviso de Privacidad de G Suite for Education<ph name="LINK_END" /> tiene como finalidad que los usuarios de este producto y sus padres o madres comprendan cuáles son los datos que se recopilan, por qué se hace y qué se hace con ellos.</translation>
 <translation id="7241389281993241388">Accede a <ph name="TOKEN_NAME" /> para importar el certificado de cliente.</translation>
 <translation id="7241443820034350811">Si no encuentras tu llave de seguridad en la lista, presiona el botón de la llave durante al menos 5 segundos.</translation>
 <translation id="7243632151880336635">Borrar y salir</translation>
@@ -5198,6 +5210,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="7987814697832569482">Conectarse siempre a través de esta VPN</translation>
 <translation id="7988355189918024273">Habilitar funciones de accesibilidad</translation>
 <translation id="7991296728590311172">Configuración de accesibilidad mejorada</translation>
+<translation id="7992202128769240372">Supera el límite de <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="7994350303002908848">No se pudo instalar Plugin VM. Vuelve a intentarlo o comunícate con el administrador de dispositivos de tu organización. Código de error: <ph name="ERROR_CODE" />.</translation>
 <translation id="7994702968232966508">Método EAP</translation>
 <translation id="7997826902155442747">Prioridad de proceso</translation>

@@ -160,10 +160,6 @@ class WebTestRuntimeFlags {
   // is invoked.
   DEFINE_BOOL_WEB_TEST_RUNTIME_FLAG(dump_create_view)
 
-  // If true, the test runner will output descriptive test for spellcheck
-  // execution.
-  DEFINE_BOOL_WEB_TEST_RUNTIME_FLAG(dump_spell_check_callbacks)
-
   // If true, content_shell will output text for alert(), confirm(), prompt(),
   // etc.
   DEFINE_BOOL_WEB_TEST_RUNTIME_FLAG(dump_javascript_dialogs)

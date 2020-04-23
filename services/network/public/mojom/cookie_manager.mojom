@@ -83,6 +83,7 @@ enum ContextType {
 // Keep defaults here in sync with net/cookies/cookie_options.h.
 struct CookieSameSiteContext {
   ContextType context = CROSS_SITE;
+  ContextType schemeful_context = CROSS_SITE;
 };
 
 // What rules to apply when determining whether access to a particular cookie is

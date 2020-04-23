@@ -6,6 +6,7 @@
 
 #include <iomanip>
 #include <iostream>
+#include <sstream>
 
 #include "base/strings/stringprintf.h"
 #include "base/values.h"

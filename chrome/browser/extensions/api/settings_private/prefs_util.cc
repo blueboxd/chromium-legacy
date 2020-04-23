@@ -503,6 +503,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[chromeos::assistant::prefs::kAssistantNotificationEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)[chromeos::assistant::prefs::kAssistantQuickAnswersEnabled] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
   // Misc.
   (*s_whitelist)[::prefs::kUse24HourClock] =

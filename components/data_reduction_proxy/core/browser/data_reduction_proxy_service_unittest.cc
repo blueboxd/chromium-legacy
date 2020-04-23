@@ -15,7 +15,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
@@ -159,8 +158,6 @@ TEST_F(DataReductionProxyServiceTest,
   DataReductionProxyService* service =
       drp_test_context->data_reduction_proxy_service();
 
-  service->config()->UpdateConfigForTesting(true, true, true);
-
   auto proxy_server1 = net::ProxyServer::FromPacString("PROXY foo");
   service->config_client()->ApplySerializedConfig(CreateEncodedConfig());
 
@@ -180,7 +177,6 @@ TEST_F(DataReductionProxyServiceTest,
   drp_test_context->SetDataReductionProxyEnabled(true);
   DataReductionProxyService* service =
       drp_test_context->data_reduction_proxy_service();
-  service->config()->UpdateConfigForTesting(true, true, true);
 
   auto core_proxy_server = net::ProxyServer::FromPacString("PROXY foo");
   auto second_proxy_server = net::ProxyServer::FromPacString("PROXY bar");
@@ -201,7 +197,6 @@ TEST_F(DataReductionProxyServiceTest, TestCustomProxyConfigProperties) {
   drp_test_context->SetDataReductionProxyEnabled(true);
   DataReductionProxyService* service =
       drp_test_context->data_reduction_proxy_service();
-  service->config()->UpdateConfigForTesting(true, true, true);
 
   mojo::Remote<network::mojom::CustomProxyConfigClient> client_remote;
   TestCustomProxyConfigClient client(

@@ -301,6 +301,11 @@ def interface_context(interface, interfaces, component_info):
     # as in the WebIDL spec?
     is_immutable_prototype = is_global or 'ImmutablePrototype' in extended_attributes
 
+    # interface mixin
+    assert not interface.is_mixin, (
+        "Interface mixin {} must not be a direct target of bindings code generation."
+        .format(interface.name))
+
     wrapper_class_id = ('kNodeClassId' if inherits_interface(
         interface.name, 'Node') else 'kObjectClassId')
 
@@ -416,8 +421,7 @@ def interface_context(interface, interfaces, component_info):
     # https://html.spec.whatwg.org/C/#html-element-constructors
     if has_html_constructor:
         if ('Constructor' in extended_attributes
-                or 'NoInterfaceObject' in extended_attributes
-                or interface.is_mixin):
+                or 'NoInterfaceObject' in extended_attributes):
             raise Exception('[HTMLConstructor] cannot be specified with '
                             '[Constructor] or [NoInterfaceObject], or on '
                             'a mixin : %s' % interface.name)

@@ -852,6 +852,8 @@ source_set("quic_test_tools_core") {
     "src/quic/test_tools/failing_proof_source.h",
     "src/quic/test_tools/fake_proof_source.cc",
     "src/quic/test_tools/fake_proof_source.h",
+    "src/quic/test_tools/first_flight.cc",
+    "src/quic/test_tools/first_flight.h",
     "src/quic/test_tools/mock_clock.cc",
     "src/quic/test_tools/mock_clock.h",
     "src/quic/test_tools/mock_quic_client_promised_info.cc",

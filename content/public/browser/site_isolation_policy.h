@@ -47,6 +47,11 @@ class CONTENT_EXPORT SiteIsolationPolicy {
   // opting itself into isolation via a header.
   static bool AreDynamicIsolatedOriginsEnabled();
 
+  // Returns true if isolated origins preloaded with the browser should be
+  // applied.  For example, this is used to apply memory limits to preloaded
+  // isolated origins on Android.
+  static bool ArePreloadedIsolatedOriginsEnabled();
+
   // Applies isolated origins from all available sources, including the
   // command-line switch, field trials, enterprise policy, and the embedder.
   // See also AreIsolatedOriginsEnabled. These origins apply globally to the

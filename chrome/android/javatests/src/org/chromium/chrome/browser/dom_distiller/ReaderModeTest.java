@@ -132,7 +132,7 @@ public class ReaderModeTest implements CustomMainActivityStart {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             originalTab.getUserDataHost()
                     .getUserData(ReaderModeManager.USER_DATA_KEY)
-                    .activateReaderMode(originalTab);
+                    .activateReaderMode();
         });
         CustomTabActivity customTabActivity = waitForCustomTabActivity();
         CriteriaHelper.pollUiThread(
@@ -155,7 +155,7 @@ public class ReaderModeTest implements CustomMainActivityStart {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             originalTab.getUserDataHost()
                     .getUserData(ReaderModeManager.USER_DATA_KEY)
-                    .activateReaderMode(originalTab);
+                    .activateReaderMode();
         });
         CustomTabActivity customTabActivity = waitForCustomTabActivity();
         CriteriaHelper.pollUiThread(
@@ -181,7 +181,7 @@ public class ReaderModeTest implements CustomMainActivityStart {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             originalTab.getUserDataHost()
                     .getUserData(ReaderModeManager.USER_DATA_KEY)
-                    .activateReaderMode(originalTab);
+                    .activateReaderMode();
         });
         CustomTabActivity customTabActivity = waitForCustomTabActivity();
         CriteriaHelper.pollUiThread(
@@ -227,9 +227,7 @@ public class ReaderModeTest implements CustomMainActivityStart {
         assertThat(innerHtml).doesNotContain("article-header");
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            tab.getUserDataHost()
-                    .getUserData(ReaderModeManager.USER_DATA_KEY)
-                    .activateReaderMode(tab);
+            tab.getUserDataHost().getUserData(ReaderModeManager.USER_DATA_KEY).activateReaderMode();
         });
         waitForDistillation(TITLE, mDownloadTestRule.getActivity().getActivityTab());
     }
@@ -242,7 +240,7 @@ public class ReaderModeTest implements CustomMainActivityStart {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             originalTab.getUserDataHost()
                     .getUserData(ReaderModeManager.USER_DATA_KEY)
-                    .activateReaderMode(originalTab);
+                    .activateReaderMode();
         });
         CustomTabActivity customTabActivity = waitForCustomTabActivity();
         CriteriaHelper.pollUiThread(() -> customTabActivity.getActivityTab() != null);

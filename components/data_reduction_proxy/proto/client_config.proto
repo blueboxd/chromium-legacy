@@ -19,26 +19,27 @@ message ClientConfig {
   optional Timestamp DEPRECATED_refresh_time = 2 [deprecated = true];
   // The proxy configuration the client should use to connect to the Data Saver
   // service.
-  optional ProxyConfig proxy_config = 3;
+  optional DeprecatedProxyConfig proxy_config = 3 [deprecated = true];
   // The duration after which the client should request a new configuration. The
   // session_key is guaranteed to be valid through this time and may be valid
   // for some time thereafter. If both refresh_duration and refresh_time are
   // present, refresh_duration should take priority.
   optional Duration refresh_duration = 4;
   // Configuration information for reporting pageload metrics.
-  optional PageloadMetricsConfig pageload_metrics_config = 5;
+  optional DeprecatedPageloadMetricsConfig pageload_metrics_config = 5
+      [deprecated = true];
   // Prevents the host base and user base blacklisting behaviors for lite pages
   // and server LoFi.
-  optional bool ignore_long_term_black_list_rules = 7;
+  optional bool ignore_long_term_black_list_rules = 7 [deprecated = true];
   // The configuration that the client should use to connect to the prefetch
   // proxy.
   optional PrefetchProxyConfig prefetch_proxy_config = 8;
 }
 
 // The configuration for reporting pageload metrics.
-message PageloadMetricsConfig {
+message DeprecatedPageloadMetricsConfig {
   // The fraction of pageloads for which to report pageload metrics.
-  optional float reporting_fraction = 1;
+  optional float reporting_fraction = 1 [deprecated = true];
 }
 
 // N.B.:
@@ -84,19 +85,19 @@ message Duration {
 }
 
 // Data Saver proxy configuration.
-message ProxyConfig {
+message DeprecatedProxyConfig {
   // Provides proxy server information for HTTP URIs.
-  repeated ProxyServer http_proxy_servers = 1;
+  repeated DeprecatedProxyServer http_proxy_servers = 1 [deprecated = true];
 }
 
 // Configuration information for a specific proxy server.
-message ProxyServer {
+message DeprecatedProxyServer {
   // The scheme of the proxy server.
   enum ProxyScheme {
     // The proxy scheme is unspecified.
     UNSPECIFIED = 0;
     // HTTP
-    HTTP = 1;
+    DEPRECATED_HTTP = 1 [deprecated = true];
     // HTTPS
     HTTPS = 2;
     // HTTPS over QUIC

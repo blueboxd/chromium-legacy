@@ -228,7 +228,7 @@ void ChildStatusCollector::OnUsageTimeStateChange(
 }
 
 void ChildStatusCollector::UpdateChildUsageTime() {
-  Time now = GetCurrentTime();
+  Time now = clock_->Now();
   Time reset_time = activity_storage_->GetBeginningOfDay(now);
   if (reset_time > now)
     reset_time -= TimeDelta::FromDays(1);

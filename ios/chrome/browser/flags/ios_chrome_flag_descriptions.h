@@ -5,6 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_FLAGS_IOS_CHROME_FLAG_DESCRIPTIONS_H_
 #define IOS_CHROME_BROWSER_FLAGS_IOS_CHROME_FLAG_DESCRIPTIONS_H_
 
+#include "Availability.h"
+
 // Please add names and descriptions in alphabetical order.
 
 namespace flag_descriptions {
@@ -186,9 +188,6 @@ extern const char
 extern const char kEnableClipboardProviderImageSuggestionsName[];
 extern const char kEnableClipboardProviderImageSuggestionsDescription[];
 
-// Title and description for the flag to enable the new error page workflow.
-extern const char kUseJSForErrorPageName[];
-extern const char kUseJSForErrorPageDescription[];
 
 // Title and description for the flag to enable persistent downloads.
 extern const char kEnablePersistentDownloadsName[];
@@ -203,6 +202,10 @@ extern const char kEnableSyncUSSNigoriDescription[];
 // Title and description for the flag to search in iFrames in Find In Page.
 extern const char kFindInPageiFrameName[];
 extern const char kFindInPageiFrameDescription[];
+
+// Title and description for the flag to trigger the startup sign-in promo.
+extern const char kForceStartupSigninPromoName[];
+extern const char kForceStartupSigninPromoDescription[];
 
 // Title and description for the flag to force an unstacked tabstrip.
 extern const char kForceUnstackedTabstripName[];
@@ -265,6 +268,10 @@ extern const char kMarkHttpAsDescription[];
 extern const char kMobileGoogleSRPName[];
 extern const char kMobileGoogleSRPDescription[];
 
+// Title and description for the flag to enable the new sign-in architecture.
+extern const char kNewSigninArchitectureName[];
+extern const char kNewSigninArchitectureDescription[];
+
 // Title and description for the flag to preserve the default match when an
 // async match updates.
 extern const char kOmniboxPreserveDefaultMatchAgainstAsyncUpdateName[];
@@ -296,6 +303,12 @@ extern const char kPageInfoChromeGuardDescription[];
 // Title and description for the flag to enable the new design of the page info.
 extern const char kPageInfoRefactoringName[];
 extern const char kPageInfoRefactoringDescription[];
+
+#if defined(__IPHONE_13_4)
+// Title and description for the flag to enable pointer support on tablets.
+extern const char kPointerSupportName[];
+extern const char kPointerSupportDescription[];
+#endif  // defined(__IPHONE_13_4)
 
 // Title and description for the flag to enable QR code generation for a page.
 extern const char kQRCodeGenerationName[];
@@ -348,14 +361,6 @@ extern const char kSnapshotDrawViewDescription[];
 extern const char kSSLCommittedInterstitialsName[];
 extern const char kSSLCommittedInterstitialsDescription[];
 
-// Title and description for the flag to trigger the startup sign-in promo.
-extern const char kForceStartupSigninPromoName[];
-extern const char kForceStartupSigninPromoDescription[];
-
-// Title and description for the flag to enable the new sign-in architecture.
-extern const char kNewSigninArchitectureName[];
-extern const char kNewSigninArchitectureDescription[];
-
 // Title and description for the flag to allow syncing DeviceInfo in
 // transport-only mode.
 extern const char kSyncDeviceInfoInTransportModeName[];
@@ -380,6 +385,10 @@ extern const char kTranslateInfobarMessagesUIDescription[];
 // enterprise policy.
 extern const char kURLBlocklistIOSName[];
 extern const char kURLBlocklistIOSDescription[];
+
+// Title and description for the flag to enable the new error page workflow.
+extern const char kUseJSForErrorPageName[];
+extern const char kUseJSForErrorPageDescription[];
 
 // Title and description for the flag to control if Google Payments API calls
 // should use the sandbox servers.

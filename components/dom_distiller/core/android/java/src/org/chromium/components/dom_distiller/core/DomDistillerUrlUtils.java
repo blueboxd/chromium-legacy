@@ -63,7 +63,8 @@ public final class DomDistillerUrlUtils {
     }
 
     @NativeMethods
-    interface Natives {
+    @VisibleForTesting
+    public interface Natives {
         String getDistillerViewUrlFromUrl(String scheme, String url, String title);
         String getOriginalUrlFromDistillerUrl(String viewerUrl);
         boolean isDistilledPage(String url);

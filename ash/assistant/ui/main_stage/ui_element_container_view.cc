@@ -16,6 +16,7 @@
 #include "ash/assistant/ui/main_stage/assistant_ui_element_view.h"
 #include "ash/assistant/ui/main_stage/assistant_ui_element_view_factory.h"
 #include "ash/assistant/ui/main_stage/element_animator.h"
+#include "ash/public/cpp/assistant/controller/assistant_interaction_controller.h"
 #include "base/callback.h"
 #include "base/time/time.h"
 #include "cc/base/math_util.h"
@@ -151,7 +152,8 @@ void UiElementContainerView::OnAllViewsAnimatedIn() {
     return;
   }
 
-  const auto* response = delegate()->GetInteractionModel()->response();
+  const auto* response =
+      AssistantInteractionController::Get()->GetModel()->response();
   DCHECK(response);
 
   // Let screen reader read the query result. This includes the text response

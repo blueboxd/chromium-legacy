@@ -11,26 +11,15 @@
 #include "ash/shell.h"           // mash-ok
 #include "ash/wm/window_util.h"  // mash-ok
 #include "base/logging.h"
+#include "chrome/browser/chromeos/input_method/assistive_window_properties.h"
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/views/widget/widget.h"
 
 namespace chromeos {
 namespace input_method {
 
-namespace {}  // namespace
-
-AssistiveWindowControllerImpl::AssistiveWindowControllerImpl() {
-  ui::IMEBridge::Get()->SetAssistiveWindowHandler(this);
-}
-
-AssistiveWindowControllerImpl::~AssistiveWindowControllerImpl() {
-  ui::IMEBridge::Get()->SetAssistiveWindowHandler(nullptr);
-}
-
-void AssistiveWindowControllerImpl::Init() {
-  if (suggestion_window_view_)
-    return;
-
+namespace {
+gfx::NativeView GetParentView() {
   gfx::NativeView parent = nullptr;
 
   aura::Window* active_window = ash::window_util::GetActiveWindow();
@@ -40,9 +29,34 @@ void AssistiveWindowControllerImpl::Init() {
       active_window ? active_window->GetRootWindow()
                     : ash::Shell::GetRootWindowForNewWindows(),
       ash::kShellWindowId_VirtualKeyboardContainer);
+  return parent;
+}
+}  // namespace
+
+AssistiveWindowControllerImpl::AssistiveWindowControllerImpl() {
+  ui::IMEBridge::Get()->SetAssistiveWindowHandler(this);
+}
+
+AssistiveWindowControllerImpl::~AssistiveWindowControllerImpl() {
+  ui::IMEBridge::Get()->SetAssistiveWindowHandler(nullptr);
+}
+
+void AssistiveWindowControllerImpl::InitSuggestionWindow() {
+  if (suggestion_window_view_)
+    return;
   // suggestion_window_view_ is deleted by DialogDelegateView::DeleteDelegate.
-  suggestion_window_view_ = new ui::ime::SuggestionWindowView(parent);
+  suggestion_window_view_ = new ui::ime::SuggestionWindowView(GetParentView());
   views::Widget* widget = suggestion_window_view_->InitWidget();
+  widget->AddObserver(this);
+  widget->Show();
+}
+
+void AssistiveWindowControllerImpl::InitUndoWindow() {
+  if (undo_window_)
+    return;
+  // undo_window is deleted by DialogDelegateView::DeleteDelegate.
+  undo_window_ = new ui::ime::UndoWindow(GetParentView(), this);
+  views::Widget* widget = undo_window_->InitWidget();
   widget->AddObserver(this);
   widget->Show();
 }
@@ -52,6 +66,10 @@ void AssistiveWindowControllerImpl::OnWidgetClosing(views::Widget* widget) {
       widget == suggestion_window_view_->GetWidget()) {
     widget->RemoveObserver(this);
     suggestion_window_view_ = nullptr;
+  }
+  if (undo_window_ && widget == undo_window_->GetWidget()) {
+    widget->RemoveObserver(this);
+    undo_window_ = nullptr;
   }
 }
 
@@ -64,11 +82,15 @@ void AssistiveWindowControllerImpl::HideSuggestion() {
 void AssistiveWindowControllerImpl::SetBounds(const gfx::Rect& cursor_bounds) {
   if (suggestion_window_view_)
     suggestion_window_view_->SetBounds(cursor_bounds);
+  if (undo_window_)
+    undo_window_->SetBounds(cursor_bounds);
 }
 
 void AssistiveWindowControllerImpl::FocusStateChanged() {
   if (suggestion_window_view_)
     HideSuggestion();
+  if (undo_window_)
+    undo_window_->Hide();
 }
 
 void AssistiveWindowControllerImpl::ShowSuggestion(
@@ -76,7 +98,7 @@ void AssistiveWindowControllerImpl::ShowSuggestion(
     const size_t confirmed_length,
     const bool show_tab) {
   if (!suggestion_window_view_)
-    Init();
+    InitSuggestionWindow();
   suggestion_text_ = text;
   confirmed_length_ = confirmed_length;
   suggestion_window_view_->Show(text, confirmed_length, show_tab);
@@ -89,6 +111,20 @@ base::string16 AssistiveWindowControllerImpl::GetSuggestionText() const {
 size_t AssistiveWindowControllerImpl::GetConfirmedLength() const {
   return confirmed_length_;
 }
+
+void AssistiveWindowControllerImpl::SetAssistiveWindowProperties(
+    const AssistiveWindowProperties& window) {
+  switch (window.type) {
+    case ui::ime::AssistiveWindowType::kUndoWindow:
+      if (!undo_window_)
+        InitUndoWindow();
+      window.visible ? undo_window_->Show() : undo_window_->Hide();
+  }
+}
+
+void AssistiveWindowControllerImpl::AssistiveWindowClicked(
+    ui::ime::ButtonId id,
+    ui::ime::AssistiveWindowType type) {}
 
 }  // namespace input_method
 }  // namespace chromeos

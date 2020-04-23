@@ -49,7 +49,7 @@ base::FilePath GetWebTestsFilePath() {
 //
 // Note that this isn't applied to external/wpt because tests in external/wpt
 // are accessed via http.
-WebURL RewriteAbsolutePathInCsswgTest(const std::string& utf8_url) {
+WebURL RewriteAbsolutePathInCsswgTest(base::StringPiece utf8_url) {
   static constexpr base::StringPiece kFileScheme = "file:///";
   if (!base::StartsWith(utf8_url, kFileScheme, base::CompareCase::SENSITIVE))
     return WebURL();
@@ -60,9 +60,9 @@ WebURL RewriteAbsolutePathInCsswgTest(const std::string& utf8_url) {
   static constexpr size_t kFileSchemeAndDriveLen = kFileScheme.size() + 3;
   if (utf8_url.size() <= kFileSchemeAndDriveLen)
     return WebURL();
-  std::string path = utf8_url.substr(kFileSchemeAndDriveLen);
+  base::StringPiece path = utf8_url.substr(kFileSchemeAndDriveLen);
 #else
-  std::string path = utf8_url.substr(kFileScheme.size());
+  base::StringPiece path = utf8_url.substr(kFileScheme.size());
 #endif
   base::FilePath new_path = GetWebTestsFilePath().AppendASCII(path);
   return WebURL(net::FilePathToFileURL(new_path));
@@ -113,7 +113,7 @@ static base::FilePath GetBuildDirectory() {
   return result;
 }
 
-WebURL RewriteWebTestsURL(const std::string& utf8_url, bool is_wpt_mode) {
+WebURL RewriteWebTestsURL(base::StringPiece utf8_url, bool is_wpt_mode) {
   if (is_wpt_mode) {
     WebURL rewritten_url = RewriteAbsolutePathInCsswgTest(utf8_url);
     if (!rewritten_url.IsEmpty())
@@ -127,9 +127,9 @@ WebURL RewriteWebTestsURL(const std::string& utf8_url, bool is_wpt_mode) {
   if (base::StartsWith(utf8_url, kGenPrefix, base::CompareCase::SENSITIVE)) {
     base::FilePath gen_directory_path =
         GetBuildDirectory().Append(FILE_PATH_LITERAL("gen/"));
-    std::string new_url = std::string("file://") +
-                          gen_directory_path.AsUTF8Unsafe() +
-                          utf8_url.substr(kGenPrefix.size());
+    std::string new_url("file://");
+    new_url.append(gen_directory_path.AsUTF8Unsafe());
+    new_url.append(utf8_url.substr(kGenPrefix.size()).data());
     return WebURL(GURL(new_url));
   }
 
@@ -138,10 +138,22 @@ WebURL RewriteWebTestsURL(const std::string& utf8_url, bool is_wpt_mode) {
   if (!base::StartsWith(utf8_url, kPrefix, base::CompareCase::SENSITIVE))
     return WebURL(GURL(utf8_url));
 
-  std::string utf8_path = GetWebTestsFilePath().AsUTF8Unsafe();
-  std::string new_url =
-      std::string("file://") + utf8_path + utf8_url.substr(kPrefix.size());
+  std::string new_url("file://");
+  new_url.append(GetWebTestsFilePath().AsUTF8Unsafe());
+  new_url.append(utf8_url.substr(kPrefix.size()).data());
   return WebURL(GURL(new_url));
+}
+
+WebURL RewriteFileURLToLocalResource(base::StringPiece resource) {
+  // Some web tests use file://// which we resolve as a UNC path. Normalize
+  // them to just file:///.
+  std::string result = resource.as_string();
+  static const size_t kFileLen = sizeof("file:///") - 1;
+  while (base::StartsWith(base::ToLowerASCII(result), "file:////",
+                          base::CompareCase::SENSITIVE)) {
+    result = result.substr(0, kFileLen) + result.substr(kFileLen + 1);
+  }
+  return RewriteWebTestsURL(result, /*is_wpt_mode=*/false);
 }
 
 gfx::ColorSpace GetWebTestColorSpace(const std::string& name) {

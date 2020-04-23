@@ -67,7 +67,7 @@ class CORE_EXPORT PropertyRegistry : public GarbageCollected<PropertyRegistry> {
     bool operator!=(const Iterator& o) const { return !(*this == o); }
 
    private:
-    // True if declared_iterator_ points to a registation that has already
+    // True if declared_iterator_ points to a registration that has already
     // been emitted by registered_iterator_.
     bool CurrentDeclaredIteratorIsMasked();
 

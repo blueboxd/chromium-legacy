@@ -311,6 +311,9 @@ extern const char
 extern const char kEnableAutofillCreditCardUploadFeedbackName[];
 extern const char kEnableAutofillCreditCardUploadFeedbackDescription[];
 
+extern const char kEnableExperimentalCookieFeaturesName[];
+extern const char kEnableExperimentalCookieFeaturesDescription[];
+
 extern const char kEnableDeferAllScriptName[];
 extern const char kEnableDeferAllScriptDescription[];
 
@@ -1016,14 +1019,8 @@ extern const char kSharingPeerConnectionSenderDescription[];
 extern const char kSharingQRCodeGeneratorName[];
 extern const char kSharingQRCodeGeneratorDescription[];
 
-extern const char kSharingRenameDevicesName[];
-extern const char kSharingRenameDevicesDescription[];
-
 extern const char kSharingSendViaSyncName[];
 extern const char kSharingSendViaSyncDescription[];
-
-extern const char kSharingDeriveVapidKeyName[];
-extern const char kSharingDeriveVapidKeyDescription[];
 
 extern const char kSharingDeviceExpirationName[];
 extern const char kSharingDeviceExpirationDescription[];
@@ -1970,6 +1967,9 @@ extern const char kEnableGoogleAssistantAecDescription[];
 
 extern const char kEnableHeuristicStylusPalmRejectionName[];
 extern const char kEnableHeuristicStylusPalmRejectionDescription[];
+
+extern const char kEnableHighResolutionMouseScrollingName[];
+extern const char kEnableHighResolutionMouseScrollingDescription[];
 
 extern const char kEnableNeuralStylusPalmRejectionName[];
 extern const char kEnableNeuralStylusPalmRejectionDescription[];

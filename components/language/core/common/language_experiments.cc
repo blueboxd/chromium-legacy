@@ -76,12 +76,7 @@ bool ShouldForceTriggerTranslateOnEnglishPages(int force_trigger_count) {
   if (!base::FeatureList::IsEnabled(kOverrideTranslateTriggerInIndia))
     return false;
 
-  bool threshold_reached =
-      IsForceTriggerBackoffThresholdReached(force_trigger_count);
-  UMA_HISTOGRAM_BOOLEAN("Translate.ForceTriggerBackoffStateReached",
-                        threshold_reached);
-
-  return !threshold_reached;
+  return !IsForceTriggerBackoffThresholdReached(force_trigger_count);
 }
 
 bool ShouldPreventRankerEnforcementInIndia(int force_trigger_count) {

@@ -749,12 +749,6 @@ KeystoreKeysHandler* SyncEncryptionHandlerImpl::GetKeystoreKeysHandler() {
   return this;
 }
 
-std::string SyncEncryptionHandlerImpl::GetLastKeystoreKey() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  syncable::ReadTransaction trans(FROM_HERE, user_share_->directory.get());
-  return keystore_key_;
-}
-
 // Note: this is called from within a syncable transaction, so we need to post
 // tasks if we want to do any work that creates a new sync_api transaction.
 bool SyncEncryptionHandlerImpl::ApplyNigoriUpdate(

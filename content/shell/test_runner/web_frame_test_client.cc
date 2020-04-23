@@ -14,11 +14,13 @@
 #include "content/public/common/referrer.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/shell/common/web_test/web_test_string_util.h"
+#include "content/shell/renderer/web_test/blink_test_helpers.h"
 #include "content/shell/renderer/web_test/blink_test_runner.h"
 #include "content/shell/test_runner/accessibility_controller.h"
 #include "content/shell/test_runner/event_sender.h"
 #include "content/shell/test_runner/gc_controller.h"
 #include "content/shell/test_runner/mock_screen_orientation_client.h"
+#include "content/shell/test_runner/spell_check_client.h"
 #include "content/shell/test_runner/test_interfaces.h"
 #include "content/shell/test_runner/test_plugin.h"
 #include "content/shell/test_runner/test_runner.h"
@@ -138,6 +140,12 @@ WebFrameTestClient::WebFrameTestClient(WebViewTestProxy* web_view_test_proxy,
       web_frame_test_proxy_(web_frame_test_proxy) {
   DCHECK(web_frame_test_proxy_);
   DCHECK(web_view_test_proxy_);
+}
+
+WebFrameTestClient::~WebFrameTestClient() = default;
+
+void WebFrameTestClient::Reset() {
+  spell_check_->Reset();
 }
 
 // static
@@ -269,7 +277,10 @@ void WebFrameTestClient::HandleWebAccessibilityEvent(
 
   AccessibilityController* accessibility_controller =
       web_view_test_proxy_->accessibility_controller();
-  accessibility_controller->NotificationReceived(obj, event_name);
+
+  accessibility_controller->NotificationReceived(
+      web_frame_test_proxy_->GetWebFrame(), obj, event_name);
+
   if (accessibility_controller->ShouldLogAccessibilityEvents()) {
     std::string message("AccessibilityNotification - ");
     message += event_name;
@@ -371,9 +382,8 @@ void WebFrameTestClient::WillSendRequest(blink::WebURLRequest& request) {
   }
 
   // Set the new substituted URL.
-  request.SetUrl(blink_test_runner()->RewriteWebTestsURL(
-      request.Url().GetString().Utf8(),
-      test_runner()->IsWebPlatformTestsMode()));
+  request.SetUrl(RewriteWebTestsURL(request.Url().GetString().Utf8(),
+                                    test_runner()->IsWebPlatformTestsMode()));
 }
 
 void WebFrameTestClient::DidAddMessageToConsole(
@@ -485,9 +495,9 @@ bool WebFrameTestClient::ShouldContinueNavigation(
         network::mojom::ReferrerPolicy::kDefault);
   }
 
-  info->url_request.SetUrl(blink_test_runner()->RewriteWebTestsURL(
-      info->url_request.Url().GetString().Utf8(),
-      test_runner()->IsWebPlatformTestsMode()));
+  info->url_request.SetUrl(
+      RewriteWebTestsURL(info->url_request.Url().GetString().Utf8(),
+                         test_runner()->IsWebPlatformTestsMode()));
   return should_continue;
 }
 
@@ -506,14 +516,20 @@ void WebFrameTestClient::CheckIfAudioSinkExistsAndIsAuthorized(
 
 void WebFrameTestClient::DidClearWindowObject() {
   TestInterfaces* interfaces = web_view_test_proxy_->test_interfaces();
+  TestRunner* test_runner = interfaces->GetTestRunner();
   WebWidgetTestProxy* web_widget_test_proxy =
       web_frame_test_proxy_->GetLocalRootWebWidgetTestProxy();
-
   blink::WebLocalFrame* frame = web_frame_test_proxy_->GetWebFrame();
+
+  spell_check_ = std::make_unique<SpellCheckClient>(frame);
+  frame->SetTextCheckClient(spell_check_.get());
+
   // These calls will install the various JS bindings for web tests into the
   // frame before JS has a chance to run.
   GCController::Install(frame);
   interfaces->Install(frame);
+  test_runner->Install(frame, spell_check_.get(),
+                       web_view_test_proxy_->view_test_runner());
   web_view_test_proxy_->Install(frame);
   web_widget_test_proxy->Install(frame);
 }

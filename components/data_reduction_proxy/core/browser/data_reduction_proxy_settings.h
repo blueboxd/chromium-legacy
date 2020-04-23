@@ -34,7 +34,6 @@ class Clock;
 
 namespace data_reduction_proxy {
 
-class DataReductionProxyConfig;
 class DataReductionProxyService;
 class DataReductionProxyCompressionStats;
 
@@ -200,15 +199,7 @@ class DataReductionProxySettings {
     return data_reduction_proxy_service_.get();
   }
 
-  // Returns the |DataReductionProxyConfig| being used. May be null if
-  // InitDataReductionProxySettings has not been called.
-  DataReductionProxyConfig* Config() const { return config_; }
-
-  // Permits changing the underlying |DataReductionProxyConfig| without running
-  // the initialization loop.
-  void ResetConfigForTest(DataReductionProxyConfig* config) {
-    config_ = config;
-  }
+  bool is_initialized() const { return !!prefs_; }
 
  protected:
   void InitPrefMembers();
@@ -224,7 +215,6 @@ class DataReductionProxySettings {
   // enabled or disabled at startup.
   virtual void RecordStartupState(
       data_reduction_proxy::ProxyStartupState state) const;
-
 
  private:
   friend class DataReductionProxySettingsTestBase;
@@ -289,9 +279,6 @@ class DataReductionProxySettings {
   PrefService* prefs_;
 
   PrefChangeRegistrar registrar_;
-
-  // The caller must ensure that the |config_| outlives this instance.
-  DataReductionProxyConfig* config_;
 
   SyntheticFieldTrialRegistrationCallback register_synthetic_field_trial_;
 

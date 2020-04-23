@@ -11,7 +11,7 @@
     android:viewportHeight="104">
   <path
       android:pathData="m103.68,51.84c0,28.63 -23.21,51.84 -51.84,51.84s-51.84,-23.21 -51.84,-51.84 23.21,-51.84 51.84,-51.84 51.84,23.21 51.84,51.84"
-      android:fillColor="#f0f0f0"
+      android:fillColor="@color/camera_background"
       android:fillType="evenOdd"/>
   <path
       android:pathData="m51.84,12.96c21.473,0 38.88,17.407 38.88,38.88s-17.407,38.88 -38.88,38.88 -38.88,-17.407 -38.88,-38.88 17.407,-38.88 38.88,-38.88"

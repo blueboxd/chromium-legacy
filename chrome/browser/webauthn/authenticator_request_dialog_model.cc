@@ -679,17 +679,26 @@ void AuthenticatorRequestDialogModel::CollectPIN(
 }
 
 void AuthenticatorRequestDialogModel::StartInlineBioEnrollment(
-    int max_bio_samples) {
-  max_bio_samples_ = max_bio_samples;
-  bio_samples_remaining_ = max_bio_samples;
+    base::OnceClosure next_callback) {
+  max_bio_samples_ = base::nullopt;
+  bio_samples_remaining_ = base::nullopt;
+  bio_enrollment_callback_ = std::move(next_callback);
   SetCurrentStep(Step::kInlineBioEnrollment);
 }
 
 void AuthenticatorRequestDialogModel::OnSampleCollected(
     int bio_samples_remaining) {
   DCHECK(current_step_ == Step::kInlineBioEnrollment);
-  *bio_samples_remaining_ = bio_samples_remaining;
+
+  bio_samples_remaining_ = bio_samples_remaining;
+  if (!max_bio_samples_) {
+    max_bio_samples_ = bio_samples_remaining + 1;
+  }
   OnSheetModelDidChange();
+}
+
+void AuthenticatorRequestDialogModel::OnBioEnrollmentDone() {
+  std::move(bio_enrollment_callback_).Run();
 }
 
 void AuthenticatorRequestDialogModel::RequestAttestationPermission(

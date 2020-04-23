@@ -57,6 +57,8 @@ class MockObserver : public FidoRequestHandlerBase::Observer {
   MOCK_METHOD2(CollectPIN,
                void(base::Optional<int>,
                     base::OnceCallback<void(std::string)>));
+  MOCK_METHOD1(StartBioEnrollment, void(base::OnceClosure));
+  MOCK_METHOD1(OnSampleCollected, void(int));
   MOCK_METHOD0(FinishCollectToken, void());
   MOCK_METHOD1(OnRetryUserVerification, void(int));
   MOCK_METHOD0(OnInternalUserVerificationLocked, void());

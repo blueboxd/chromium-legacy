@@ -95,11 +95,6 @@ void ReportPageScheme(const std::string& scheme);
 // language list.
 void ReportSimilarLanguageMatch(bool match);
 
-// Called when page language is "en*" and doesn't match the CLD language; i.e
-// when we suspect that the page language is incorrect.
-void ReportLanguageDetectionConflict(const std::string& page_lang,
-                                     const std::string& cld_lang);
-
 }  // namespace translate
 
 #endif  // COMPONENTS_TRANSLATE_CORE_COMMON_TRANSLATE_METRICS_H_

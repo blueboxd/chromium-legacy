@@ -21,14 +21,11 @@
 #include "chrome/browser/favicon/history_ui_favicon_request_handler_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
-#include "chrome/browser/sync/session_sync_service_factory.h"
 #include "chrome/browser/ui/android/favicon/jni_headers/FaviconHelper_jni.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon/core/favicon_util.h"
 #include "components/favicon/core/history_ui_favicon_request_handler.h"
 #include "components/favicon_base/favicon_util.h"
-#include "components/sync_sessions/open_tabs_ui_delegate.h"
-#include "components/sync_sessions/session_sync_service.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/android/java_bitmap.h"
@@ -296,11 +293,6 @@ jboolean FaviconHelper::GetForeignFaviconImageForURL(
 
   GURL page_url(ConvertJavaStringToUTF8(env, j_page_url));
 
-  sync_sessions::SessionSyncService* session_sync_service =
-      SessionSyncServiceFactory::GetInstance()->GetForProfile(profile);
-  DCHECK(session_sync_service);
-  sync_sessions::OpenTabsUIDelegate* open_tabs =
-      session_sync_service->GetOpenTabsUIDelegate();
   favicon::HistoryUiFaviconRequestHandler* history_ui_favicon_request_handler =
       HistoryUiFaviconRequestHandlerFactory::GetForBrowserContext(profile);
   // Can be null in tests.
@@ -311,9 +303,7 @@ jboolean FaviconHelper::GetForeignFaviconImageForURL(
       base::BindOnce(&FaviconHelper::OnFaviconBitmapResultAvailable,
                      weak_ptr_factory_.GetWeakPtr(),
                      ScopedJavaGlobalRef<jobject>(j_favicon_image_callback)),
-      favicon::HistoryUiFaviconRequestOrigin::kRecentTabs,
-      /*icon_url_for_uma=*/
-      open_tabs ? open_tabs->GetIconUrlForPageUrl(page_url) : GURL());
+      favicon::HistoryUiFaviconRequestOrigin::kRecentTabs);
   return true;
 }
 

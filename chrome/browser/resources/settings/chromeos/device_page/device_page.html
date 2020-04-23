@@ -42,12 +42,10 @@
         <cr-link-row class="hr" hidden="[[hideStorageInfo_]]" id="storageRow"
             label="$i18n{storageTitle}" on-click="onStorageTap_"
             role-description="$i18n{subpageArrowRoleDescription}"></cr-link-row>
-        <template is="dom-if" if="[[enablePowerSettings_]]">
-          <cr-link-row class="hr" id="powerRow" label="$i18n{powerTitle}"
-              on-click="onPowerTap_"
-              role-description="$i18n{subpageArrowRoleDescription}">
-          </cr-link-row>
-        </template>
+        <cr-link-row class="hr" id="powerRow" label="$i18n{powerTitle}"
+            on-click="onPowerTap_"
+            role-description="$i18n{subpageArrowRoleDescription}">
+        </cr-link-row>
       </div>
       <template is="dom-if" route-path="/pointer-overlay">
         <settings-subpage
@@ -100,14 +98,11 @@
           </settings-subpage>
         </template>
       </template>
-      <template is="dom-if" route-path="/power"
-          no-search="[[!enablePowerSettings_]]">
+      <template is="dom-if" route-path="/power">
         <settings-subpage
             associated-control="[[$$('#powerRow')]]"
-            page-title="$i18n{powerTitle}"
-            no-search$="[[!enablePowerSettings_]]">
-          <settings-power enable-power-settings="[[enablePowerSettings_]]">
-          </settings-power>
+            page-title="$i18n{powerTitle}">
+          <settings-power></settings-power>
         </settings-subpage>
       </template>
     </settings-animated-pages>

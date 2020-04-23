@@ -36,7 +36,6 @@
 #include "ios/chrome/browser/first_run/first_run.h"
 #import "ios/chrome/browser/geolocation/omnibox_geolocation_controller.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
-#import "ios/chrome/browser/interstitials/ios_blocking_page_tab_helper.h"
 #import "ios/chrome/browser/language/url_language_histogram_factory.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
@@ -160,9 +159,11 @@
 #import "ios/chrome/browser/webui/net_export_tab_helper.h"
 #import "ios/chrome/browser/webui/net_export_tab_helper_delegate.h"
 #import "ios/chrome/browser/webui/show_mail_composer_context.h"
+#import "ios/chrome/browser/window_activities/window_activity_helpers.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
+#import "ios/components/security_interstitials/ios_blocking_page_tab_helper.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/ui/fullscreen_provider.h"
 #include "ios/public/provider/chrome/browser/voice/voice_search_controller.h"
@@ -2886,8 +2887,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 - (void)closeWebState:(web::WebState*)webState {
   // Only allow a web page to close itself if it was opened by DOM, if there
   // are no navigation items, or if an interstitial is showing.
-  IOSBlockingPageTabHelper* helper =
-      IOSBlockingPageTabHelper::FromWebState(webState);
+  security_interstitials::IOSBlockingPageTabHelper* helper =
+      security_interstitials::IOSBlockingPageTabHelper::FromWebState(webState);
   DCHECK(webState->HasOpener() ||
          !webState->GetNavigationManager()->GetItemCount() ||
          helper->GetCurrentBlockingPage(webState) != nullptr);
@@ -3004,6 +3005,27 @@ NSString* const kBrowserViewControllerSnackbarCategory =
         UrlLoadingBrowserAgent::FromBrowser(self.browser)->Load(params);
       };
       [_contextMenuCoordinator addItemWithTitle:title action:action];
+
+      if (IsMultiwindowSupported()) {
+        // Open in New Window.
+        title = l10n_util::GetNSStringWithFixup(
+            IDS_IOS_CONTENT_CONTEXT_OPENINNEWWINDOW);
+        action = ^{
+          // TODO(crbug.com/1073410): Record this in the
+          //   MobileWebContextMenuOpenInNewTab histogram.
+          // The "Open In New Window" item in the context menu opens a new tab
+          // in a new window. This will be (according to |isOffTheRecord|)
+          // incognito if the originating browser is incognito.
+          BrowserViewController* strongSelf = weakSelf;
+          if (!strongSelf)
+            return;
+
+          NSUserActivity* loadURLActivity =
+              ActivityToLoadURL(link, referrer, strongSelf.isOffTheRecord);
+          [strongSelf.dispatcher openNewWindowWithActivity:loadURLActivity];
+        };
+        [_contextMenuCoordinator addItemWithTitle:title action:action];
+      }
       if (!_isOffTheRecord) {
         // Open in Incognito Tab.
         title = l10n_util::GetNSStringWithFixup(

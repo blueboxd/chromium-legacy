@@ -57,15 +57,14 @@ AssistantPageView::AssistantPageView(
       min_height_dip_(kMinHeightEmbeddedDip) {
   InitLayout();
 
-  // |assistant_view_delegate_| could be nullptr in test.
-  if (assistant_view_delegate_)
-    assistant_view_delegate_->AddUiModelObserver(this);
+  if (AssistantController::Get())  // May be |nullptr| in tests.
+    assistant_controller_observer_.Add(AssistantController::Get());
+
+  if (AssistantUiController::Get())  // May be |nullptr| in tests.
+    assistant_ui_model_observer_.Add(AssistantUiController::Get());
 }
 
-AssistantPageView::~AssistantPageView() {
-  if (assistant_view_delegate_)
-    assistant_view_delegate_->RemoveUiModelObserver(this);
-}
+AssistantPageView::~AssistantPageView() = default;
 
 void AssistantPageView::InitLayout() {
   SetPaintToLayer();
@@ -115,10 +114,10 @@ void AssistantPageView::OnBoundsChanged(const gfx::Rect& prev_bounds) {
 }
 
 void AssistantPageView::RequestFocus() {
-  if (!assistant_view_delegate_)
+  if (!AssistantUiController::Get())  // May be |nullptr| in tests.
     return;
 
-  switch (assistant_view_delegate_->GetUiModel()->ui_mode()) {
+  switch (AssistantUiController::Get()->GetModel()->ui_mode()) {
     case AssistantUiMode::kLauncherEmbeddedUi:
       if (assistant_main_view_)
         assistant_main_view_->RequestFocus();
@@ -239,6 +238,14 @@ void AssistantPageView::AnimateYPosition(AppListViewState target_view_state,
   animator.Run(view_shadow_->shadow()->shadow_layer(), nullptr);
 }
 
+void AssistantPageView::OnAssistantControllerDestroying() {
+  if (AssistantUiController::Get())  // May be |nullptr| in tests.
+    assistant_ui_model_observer_.Remove(AssistantUiController::Get());
+
+  if (AssistantController::Get())  // May be |nullptr| in tests.
+    assistant_controller_observer_.Remove(AssistantController::Get());
+}
+
 void AssistantPageView::OnUiVisibilityChanged(
     AssistantVisibility new_visibility,
     AssistantVisibility old_visibility,
@@ -266,8 +273,8 @@ void AssistantPageView::OnUiVisibilityChanged(
 
 int AssistantPageView::GetChildViewHeightForWidth(int width) const {
   int height = 0;
-  if (assistant_view_delegate_) {
-    switch (assistant_view_delegate_->GetUiModel()->ui_mode()) {
+  if (AssistantUiController::Get()) {  // May be |nullptr| in tests.
+    switch (AssistantUiController::Get()->GetModel()->ui_mode()) {
       case AssistantUiMode::kLauncherEmbeddedUi:
         if (assistant_main_view_)
           height = assistant_main_view_->GetHeightForWidth(width);

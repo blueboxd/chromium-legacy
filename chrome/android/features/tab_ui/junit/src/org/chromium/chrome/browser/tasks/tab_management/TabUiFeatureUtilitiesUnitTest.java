@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.test.util.browser.Features;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -87,7 +88,10 @@ public class TabUiFeatureUtilitiesUnitTest {
     }
 
     private void cacheFeatureFlags() {
-        List<String> featuresToCache = TabUiFeatureUtilities.getFeaturesToCache();
+        List<String> featuresToCache = Arrays.asList(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
+                ChromeFeatureList.TAB_GROUPS_ANDROID,
+                ChromeFeatureList.DUET_TABSTRIP_INTEGRATION_ANDROID,
+                ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID);
         CachedFeatureFlags.cacheNativeFlags(featuresToCache);
     }
 

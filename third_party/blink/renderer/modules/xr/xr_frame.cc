@@ -7,6 +7,8 @@
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/modules/xr/xr_hit_test_source.h"
 #include "third_party/blink/renderer/modules/xr/xr_input_source.h"
+#include "third_party/blink/renderer/modules/xr/xr_light_estimate.h"
+#include "third_party/blink/renderer/modules/xr/xr_light_probe.h"
 #include "third_party/blink/renderer/modules/xr/xr_reference_space.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
 #include "third_party/blink/renderer/modules/xr/xr_transient_input_hit_test_source.h"
@@ -98,6 +100,35 @@ XRAnchorSet* XRFrame::trackedAnchors() const {
   return session_->TrackedAnchors();
 }
 
+XRLightEstimate* XRFrame::getLightEstimate(
+    XRLightProbe* light_probe,
+    ExceptionState& exception_state) const {
+  if (!is_active_) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kInactiveFrame);
+    return nullptr;
+  }
+
+  if (!is_animation_frame_) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kNonAnimationFrame);
+    return nullptr;
+  }
+
+  if (!light_probe) {
+    return nullptr;
+  }
+
+  // Must use a light probe created from the same session.
+  if (light_probe->session() != session_) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kSessionMismatch);
+    return nullptr;
+  }
+
+  return light_probe->getLightEstimate();
+}
+
 // Return an XRPose that has a transform of basespace_from_space, while
 // accounting for the base pose matrix of this frame. If computing a transform
 // isn't possible, return nullptr.
@@ -175,6 +206,12 @@ ScriptPromise XRFrame::createAnchor(ScriptState* script_state,
                                     XRSpace* space,
                                     ExceptionState& exception_state) {
   DVLOG(2) << __func__;
+
+  if (!session_->IsFeatureEnabled(device::mojom::XRSessionFeature::ANCHORS)) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                      XRSession::kAnchorsFeatureNotSupported);
+    return {};
+  }
 
   if (!is_active_) {
     DVLOG(2) << __func__ << ": frame not active, failing anchor creation";

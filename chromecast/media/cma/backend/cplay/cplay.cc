@@ -47,6 +47,8 @@ VolumeMap& GetVolumeMap() {
 namespace {
 
 const int kReadSize = 1024;
+const WavHeader::AudioFormat kDefaultAudioFormat =
+    WavHeader::AudioFormat::kFloat32;
 
 void PrintHelp(const std::string& command) {
   LOG(INFO) << "Usage: " << command;
@@ -162,6 +164,7 @@ class WavOutputHandler : public OutputHandler {
       : wav_file_(path,
                   base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE),
         num_channels_(num_channels) {
+    header_.SetAudioFormat(kDefaultAudioFormat);
     header_.SetNumChannels(num_channels);
     header_.SetSampleRate(sample_rate);
 

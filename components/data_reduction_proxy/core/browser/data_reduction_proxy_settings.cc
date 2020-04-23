@@ -13,7 +13,6 @@
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "build/build_config.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
@@ -58,7 +57,6 @@ DataReductionProxySettings::DataReductionProxySettings(
     bool is_off_the_record_profile)
     : unreachable_(false),
       prefs_(nullptr),
-      config_(nullptr),
       clock_(base::DefaultClock::GetInstance()),
       is_off_the_record_profile_(is_off_the_record_profile) {
   DCHECK(!is_off_the_record_profile_);
@@ -72,9 +70,7 @@ void DataReductionProxySettings::InitDataReductionProxySettings(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(prefs);
   DCHECK(data_reduction_proxy_service);
-  DCHECK(data_reduction_proxy_service->config());
   prefs_ = prefs;
-  config_ = data_reduction_proxy_service->config();
   data_reduction_proxy_service_ = std::move(data_reduction_proxy_service);
   RecordDataReductionInit();
 

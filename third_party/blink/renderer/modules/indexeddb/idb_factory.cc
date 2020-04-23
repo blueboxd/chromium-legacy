@@ -42,9 +42,9 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_binding_for_modules.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_idb_database_info.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/probe/async_task_id.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
@@ -205,8 +205,8 @@ IDBFactory::IDBFactory(std::unique_ptr<WebIDBFactory> web_idb_factory)
 
 static bool IsContextValid(ExecutionContext* context) {
   DCHECK(context->IsDocument() || context->IsWorkerGlobalScope());
-  if (auto* document = Document::DynamicFrom(context))
-    return document->GetFrame() && document->GetPage();
+  if (auto* window = DynamicTo<LocalDOMWindow>(context))
+    return window->GetFrame();
   return true;
 }
 
@@ -477,8 +477,8 @@ bool IDBFactory::AllowIndexedDB(ScriptState* script_state) {
   DCHECK(execution_context->IsContextThread());
   SECURITY_DCHECK(execution_context->IsDocument() ||
                   execution_context->IsWorkerGlobalScope());
-  if (auto* document = Document::DynamicFrom(execution_context)) {
-    LocalFrame* frame = document->GetFrame();
+  if (auto* window = DynamicTo<LocalDOMWindow>(execution_context)) {
+    LocalFrame* frame = window->GetFrame();
     if (!frame)
       return false;
     if (auto* settings_client = frame->GetContentSettingsClient()) {

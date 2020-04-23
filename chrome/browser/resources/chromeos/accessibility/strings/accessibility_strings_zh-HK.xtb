@@ -6,7 +6,7 @@
 <translation id="1012173283529841972">清單項目</translation>
 <translation id="1013742170491673792">srched</translation>
 <translation id="1022586497894531524">首次使用 ChromeVox 朗讀功能嗎？此教學課程提供簡要的基本操作說明，協助您開始使用 ChromeVox。</translation>
-<translation id="1025074108959230262">固定模式已停用</translation>
+<translation id="1025074108959230262">相黏模式已停用</translation>
 <translation id="1031961866430398710">然後</translation>
 <translation id="1038643060055067718">行數：</translation>
 <translation id="1038795173450935438">如要移至網頁上的下一個項目，請按 Search + 向右鍵；或按 Search + 向左鍵則可返回上一個項目。如要前往下一行，請按 Search + 向下鍵；如要前往上一行，請使用 Search + 向上鍵。到達您要點擊的項目時，請按 Search + 空格鍵。</translation>
@@ -69,7 +69,7 @@
 <translation id="146450394670219700">圖像物件</translation>
 <translation id="1480046233931937785">製作人員名單</translation>
 <translation id="1487494366197411587">Chromebook 的 Search 鍵位於左側 Shift 鍵的正上方。</translation>
-<translation id="1498498210836053409">編輯文字時停用固定模式 (智能固定模式)</translation>
+<translation id="1498498210836053409">編輯文字時停用相黏模式 (智能相黏模式)</translation>
 <translation id="1499041187027566160">調高音量</translation>
 <translation id="1502086903961450562">上一個圖形</translation>
 <translation id="1506187449813838456">提高音調</translation>
@@ -531,7 +531,7 @@
 <translation id="5304943142864553931"><ph name="TITLE" />，分頁</translation>
 <translation id="5308380583665731573">連線</translation>
 <translation id="5310788376443009632">已移除</translation>
-<translation id="5320727453979144100">固定模式已啟用</translation>
+<translation id="5320727453979144100">相黏模式已啟用</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{1 個逗號}other{# 個逗號}}</translation>
 <translation id="532485153932049746">文字格式
     <ph name="FONT_SIZE_STRING" />
@@ -995,7 +995,7 @@
 <translation id="948171205378458592">放慢說話速度</translation>
 <translation id="962913030769097253">下一個第 1 級標題</translation>
 <translation id="966588271015727539">選取藍牙點字顯示器</translation>
-<translation id="973955474346881951">啟用/停用固定模式</translation>
+<translation id="973955474346881951">啟用/停用相黏模式</translation>
 <translation id="985654871861528815">下移一行</translation>
 <translation id="992256792861109788">粉紅色</translation>
 </translationbundle>

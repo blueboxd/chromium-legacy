@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/layout/ng/mathml/ng_math_fraction_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/mathml/ng_math_layout_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/mathml/ng_math_row_layout_algorithm.h"
+#include "third_party/blink/renderer/core/layout/ng/mathml/ng_math_scripts_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/mathml/ng_math_space_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/mathml/ng_math_under_over_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
@@ -55,6 +56,7 @@
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
 #include "third_party/blink/renderer/core/mathml/mathml_element.h"
 #include "third_party/blink/renderer/core/mathml/mathml_fraction_element.h"
+#include "third_party/blink/renderer/core/mathml/mathml_scripts_element.h"
 #include "third_party/blink/renderer/core/mathml/mathml_space_element.h"
 #include "third_party/blink/renderer/core/mathml/mathml_under_over_element.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
@@ -101,16 +103,25 @@ NOINLINE void DetermineMathMLAlgorithmAndRun(
   // Currently math layout algorithms can only apply to MathML elements.
   auto* element = box.GetNode();
   DCHECK(element);
-  if (IsA<MathMLSpaceElement>(element))
+  if (IsA<MathMLSpaceElement>(element)) {
     CreateAlgorithmAndRun<NGMathSpaceLayoutAlgorithm>(params, callback);
-  else if (IsA<MathMLFractionElement>(element) &&
-           IsValidMathMLFraction(params.node))
+  } else if (IsA<MathMLFractionElement>(element) &&
+             IsValidMathMLFraction(params.node)) {
     CreateAlgorithmAndRun<NGMathFractionLayoutAlgorithm>(params, callback);
-  else if (IsA<MathMLUnderOverElement>(element) &&
-           IsValidMathMLUnderOver(params.node))
+  } else if (IsA<MathMLUnderOverElement>(element) &&
+             IsValidMathMLScript(params.node)) {
     CreateAlgorithmAndRun<NGMathUnderOverLayoutAlgorithm>(params, callback);
-  else
+  } else if (IsA<MathMLScriptsElement>(element) &&
+             IsValidMathMLScript(params.node)) {
+    // TODO(rbuis): take into account movablelimits.
+    if (IsA<MathMLUnderOverElement>(element)) {
+      CreateAlgorithmAndRun<NGMathUnderOverLayoutAlgorithm>(params, callback);
+    } else {
+      CreateAlgorithmAndRun<NGMathScriptsLayoutAlgorithm>(params, callback);
+    }
+  } else {
     CreateAlgorithmAndRun<NGMathRowLayoutAlgorithm>(params, callback);
+  }
 }
 
 template <typename Callback>
@@ -1041,6 +1052,8 @@ void NGBlockNode::PlaceChildrenInLayoutBox(
     // wrapper, we're ready to compensate for this discrepancy. See
     // LayoutNGFieldset for more details.
     LayoutBlock* content_wrapper = rendered_legend->ContainingBlock();
+    if (content_wrapper->IsLayoutFlowThread())
+      content_wrapper = content_wrapper->ContainingBlock();
     DCHECK(content_wrapper->IsAnonymous());
     DCHECK(IsA<HTMLFieldSetElement>(content_wrapper->Parent()->GetNode()));
     LayoutPoint location = rendered_legend->Location();
@@ -1264,6 +1277,11 @@ bool NGBlockNode::UseLogicalBottomMarginEdgeForInlineBlockBaseline() const {
 bool NGBlockNode::IsCustomLayoutLoaded() const {
   DCHECK(box_->IsLayoutNGCustom());
   return To<LayoutNGCustom>(box_)->IsLoaded();
+}
+
+MathScriptType NGBlockNode::ScriptType() const {
+  DCHECK(IsA<MathMLScriptsElement>(GetLayoutBox()->GetNode()));
+  return To<MathMLScriptsElement>(GetLayoutBox()->GetNode())->GetScriptType();
 }
 
 scoped_refptr<const NGLayoutResult> NGBlockNode::LayoutAtomicInline(

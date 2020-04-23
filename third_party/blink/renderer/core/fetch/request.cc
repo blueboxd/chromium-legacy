@@ -972,6 +972,8 @@ network::mojom::RequestDestination Request::GetRequestDestination() const {
 }
 
 void Request::Trace(Visitor* visitor) {
+  ScriptWrappable::Trace(visitor);
+  ActiveScriptWrappable<Request>::Trace(visitor);
   Body::Trace(visitor);
   visitor->Trace(request_);
   visitor->Trace(headers_);

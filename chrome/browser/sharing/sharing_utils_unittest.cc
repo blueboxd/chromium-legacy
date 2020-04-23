@@ -35,28 +35,45 @@ class SharingUtilsTest : public testing::Test {
 
 }  // namespace
 
-TEST_F(SharingUtilsTest, SyncEnabled_SigninOnly) {
-  // Enable transport mode required features.
+TEST_F(SharingUtilsTest, SyncEnabled_FullySynced) {
+  // Disable transport mode required features.
   scoped_feature_list_.InitWithFeatures(
-      /*enabled_features=*/{kSharingDeriveVapidKey},
-      /*disabled_features=*/{});
+      /*enabled_features=*/{},
+      /*disabled_features=*/{kSharingSendViaSync});
   test_sync_service_.SetTransportState(
       syncer::SyncService::TransportState::ACTIVE);
-  test_sync_service_.SetActiveDataTypes({syncer::DEVICE_INFO});
+  // PREFERENCES is actively synced.
+  test_sync_service_.SetActiveDataTypes(
+      {syncer::DEVICE_INFO, syncer::PREFERENCES});
 
   EXPECT_TRUE(IsSyncEnabledForSharing(&test_sync_service_));
   EXPECT_FALSE(IsSyncDisabledForSharing(&test_sync_service_));
 }
 
-TEST_F(SharingUtilsTest, SyncEnabled_FullySynced) {
+TEST_F(SharingUtilsTest, SyncDisabled_FullySynced_MissingDataTypes) {
   // Disable transport mode required features.
   scoped_feature_list_.InitWithFeatures(
       /*enabled_features=*/{},
-      /*disabled_features=*/{kSharingDeriveVapidKey});
+      /*disabled_features=*/{kSharingSendViaSync});
   test_sync_service_.SetTransportState(
       syncer::SyncService::TransportState::ACTIVE);
+  // Missing PREFERENCES.
+  test_sync_service_.SetActiveDataTypes({syncer::DEVICE_INFO});
+
+  EXPECT_FALSE(IsSyncEnabledForSharing(&test_sync_service_));
+  EXPECT_TRUE(IsSyncDisabledForSharing(&test_sync_service_));
+}
+
+TEST_F(SharingUtilsTest, SyncEnabled_SigninOnly) {
+  // Enable transport mode required features.
+  scoped_feature_list_.InitWithFeatures(
+      /*enabled_features=*/{kSharingSendViaSync},
+      /*disabled_features=*/{});
+  test_sync_service_.SetTransportState(
+      syncer::SyncService::TransportState::ACTIVE);
+  // SHARING_MESSAGE is actively synced.
   test_sync_service_.SetActiveDataTypes(
-      {syncer::DEVICE_INFO, syncer::PREFERENCES});
+      {syncer::DEVICE_INFO, syncer::SHARING_MESSAGE});
 
   EXPECT_TRUE(IsSyncEnabledForSharing(&test_sync_service_));
   EXPECT_FALSE(IsSyncDisabledForSharing(&test_sync_service_));
@@ -65,23 +82,11 @@ TEST_F(SharingUtilsTest, SyncEnabled_FullySynced) {
 TEST_F(SharingUtilsTest, SyncDisabled_SigninOnly_MissingDataTypes) {
   // Enable transport mode required features.
   scoped_feature_list_.InitWithFeatures(
-      /*enabled_features=*/{kSharingDeriveVapidKey},
+      /*enabled_features=*/{kSharingSendViaSync},
       /*disabled_features=*/{});
   test_sync_service_.SetTransportState(
       syncer::SyncService::TransportState::ACTIVE);
-  test_sync_service_.SetActiveDataTypes({});
-
-  EXPECT_FALSE(IsSyncEnabledForSharing(&test_sync_service_));
-  EXPECT_TRUE(IsSyncDisabledForSharing(&test_sync_service_));
-}
-
-TEST_F(SharingUtilsTest, SyncDisabled_FullySynced_MissingDataTypes) {
-  // Disable transport mode required features.
-  scoped_feature_list_.InitWithFeatures(
-      /*enabled_features=*/{},
-      /*disabled_features=*/{kSharingDeriveVapidKey});
-  test_sync_service_.SetTransportState(
-      syncer::SyncService::TransportState::ACTIVE);
+  // Missing SHARING_MESSAGE.
   test_sync_service_.SetActiveDataTypes({syncer::DEVICE_INFO});
 
   EXPECT_FALSE(IsSyncEnabledForSharing(&test_sync_service_));

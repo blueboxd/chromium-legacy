@@ -196,7 +196,6 @@
 <translation id="3469166899695866866">İndirme Durdurulsun mu?</translation>
 <translation id="3470502288861289375">Kopyalanıyor...</translation>
 <translation id="3474624961160222204"><ph name="NAME" /> olarak devam et</translation>
-<translation id="3474649192738347024">Form dolduruldu.</translation>
 <translation id="3478058380795961209">Son Kullanım Ayı</translation>
 <translation id="3482959374254649722">Sekmeleriniz senkronize ediliyor...</translation>
 <translation id="3484946776651937681">İndirilenler'de aç</translation>
@@ -479,6 +478,7 @@ Verileriniz <ph name="TIME" /> tarihinde senkronizasyon parolanızla şifrelendi
 <translation id="7136892417564438900">Kamera kullanılamıyor</translation>
 <translation id="7159472599653637159">Mobil Site İste</translation>
 <translation id="7173114856073700355">Ayarları Aç</translation>
+<translation id="7189598951263744875">Paylaş...</translation>
 <translation id="7192050974311852563">Günlüğe Kaydetmeyi Başlat</translation>
 <translation id="7203585745079012652">Yanıtı Sesli Söyle</translation>
 <translation id="7265758999917665941">Bu Site İçin Hiçbir Zaman</translation>

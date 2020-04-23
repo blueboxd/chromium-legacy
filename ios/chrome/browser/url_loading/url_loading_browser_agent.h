@@ -63,7 +63,7 @@ class UrlLoadingBrowserAgent : public BrowserUserData<UrlLoadingBrowserAgent> {
   Browser* browser_;
   UrlLoadingNotifierBrowserAgent* notifier_ = nullptr;
   UrlLoadingBrowserAgent* incognito_loader_ = nullptr;
-  SceneUrlLoadingService* app_service_ = nullptr;
+  SceneUrlLoadingService* scene_service_ = nullptr;
 };
 
 #endif  // IOS_CHROME_BROWSER_URL_LOADING_URL_LOADING_BROWSER_AGENT_H_

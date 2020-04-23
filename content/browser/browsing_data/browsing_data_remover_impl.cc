@@ -302,10 +302,10 @@ void BrowsingDataRemoverImpl::RemoveImpl(
   //////////////////////////////////////////////////////////////////////////////
   // INITIALIZATION
   base::RepeatingCallback<bool(const GURL&)> url_filter =
-      filter_builder->BuildGeneralFilter();
+      filter_builder->BuildUrlFilter();
   base::RepeatingCallback<bool(const url::Origin&)> origin_filter =
       static_cast<BrowsingDataFilterBuilderImpl*>(filter_builder)
-          ->BuildGeneralOriginFilter();
+          ->BuildOriginFilter();
 
   // Some backends support a filter that |is_null()| to make complete deletion
   // more efficient.

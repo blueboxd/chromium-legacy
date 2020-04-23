@@ -108,10 +108,12 @@ void NGFragmentChildIterator::UpdateSelfFromFragment(
           To<NGBlockBreakToken>(previous_fragment->BreakToken());
       current_.break_token_for_fragmentainer_only_ = true;
     } else {
-      // This is a column spanner. We'll leave |current_block_break_token_|
-      // alone here, as it will be used as in incoming break token when we get
-      // to the next column.
+      // This is a column spanner, or in the case of a fieldset, this could be a
+      // rendered legend. We'll leave |current_block_break_token_| alone here,
+      // as it will be used as in incoming break token when we get to the next
+      // column.
       DCHECK(
+          previous_fragment->IsRenderedLegend() ||
           NGBlockNode(ToLayoutBox(previous_fragment->GetMutableLayoutObject()))
               .IsColumnSpanAll());
 

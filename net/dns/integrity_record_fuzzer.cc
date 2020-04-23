@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <limits>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -10,6 +11,8 @@
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "net/dns/record_rdata.h"
+
+namespace net {
 
 namespace {
 
@@ -20,20 +23,19 @@ base::StringPiece MakeStringPiece(const std::vector<uint8_t>& vec) {
 
 // For arbitrary data, check that parse(data).serialize() == data.
 void ParseThenSerializeProperty(const std::vector<uint8_t>& data) {
-  // Since |data| is chosen by a fuzzer, the digest is unlikely to match the
-  // nonce. As a result, |maybe_parsed| will likely be nullptr. However, we can
-  // still exercise the code.
-  auto maybe_parsed = net::IntegrityRecordRdata::Create(MakeStringPiece(data));
-  if (!maybe_parsed) {
-    return;  // Property is vacuously true since |data| was not parseable.
+  auto parsed = IntegrityRecordRdata::Create(MakeStringPiece(data));
+  CHECK(parsed);
+  base::Optional<std::vector<uint8_t>> maybe_serialized = parsed->Serialize();
+  // Since |data| is chosen by a fuzzer, the record's digest is unlikely to
+  // match its nonce. As a result, |parsed->IsIntact()| may be false, and thus
+  // |parsed->Serialize()| may be |base::nullopt|.
+  CHECK_EQ(parsed->IsIntact(), !!maybe_serialized);
+  if (maybe_serialized) {
+    CHECK(data == *maybe_serialized);
   }
-  // Any parseable record's serialization should match the original input.
-  std::vector<uint8_t> serialized = maybe_parsed->Serialize();
-  CHECK_EQ(serialized.size(), maybe_parsed->LengthForSerialization());
-  CHECK(data == serialized);
 }
 
-// For an arbitrary net::IntegrityRecordRdata r, test parse(r.serialize()) == r.
+// For arbitrary IntegrityRecordRdata r, check that parse(r.serialize()) == r.
 void SerializeThenParseProperty(const std::vector<uint8_t>& data) {
   // Ensure that the nonce is not too long to be serialized.
   if (data.size() > std::numeric_limits<uint16_t>::max()) {
@@ -41,14 +43,17 @@ void SerializeThenParseProperty(const std::vector<uint8_t>& data) {
     return;
   }
   // Build an IntegrityRecordRdata by treating |data| as a nonce.
-  net::IntegrityRecordRdata record_from_nonce(data);
-  std::vector<uint8_t> serialized = record_from_nonce.Serialize();
-  CHECK_EQ(serialized.size(), record_from_nonce.LengthForSerialization());
+  IntegrityRecordRdata record(data);
+  CHECK(record.IsIntact());
+  base::Optional<std::vector<uint8_t>> maybe_serialized = record.Serialize();
+  CHECK(maybe_serialized.has_value());
+
   // Parsing |serialized| always produces a record identical to the original.
-  auto maybe_parsed =
-      net::IntegrityRecordRdata::Create(MakeStringPiece(serialized));
-  CHECK(maybe_parsed);
-  CHECK(maybe_parsed->IsEqual(&record_from_nonce));
+  auto parsed =
+      IntegrityRecordRdata::Create(MakeStringPiece(*maybe_serialized));
+  CHECK(parsed);
+  CHECK(parsed->IsIntact());
+  CHECK(parsed->IsEqual(&record));
 }
 
 }  // namespace
@@ -59,6 +64,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   SerializeThenParseProperty(data_vec);
   // Construct a random IntegrityRecordRdata to exercise that code path. No need
   // to exercise parse/serialize since we already did that with |data|.
-  net::IntegrityRecordRdata rand_record(net::IntegrityRecordRdata::Random());
+  IntegrityRecordRdata rand_record(IntegrityRecordRdata::Random());
   return 0;
 }
+
+}  // namespace net

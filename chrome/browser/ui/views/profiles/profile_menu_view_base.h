@@ -106,7 +106,7 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
                        const base::string16& subtitle = base::string16(),
                        const gfx::VectorIcon& icon = kUserAccountAvatarIcon,
                        ui::NativeTheme::ColorId color_id =
-                           ui::NativeTheme::kColorId_DefaultIconColor);
+                           ui::NativeTheme::kColorId_MenuIconColor);
   void SetSyncInfo(const base::string16& description,
                    const base::string16& clickable_text,
                    SyncInfoContainerBackgroundState background_state,

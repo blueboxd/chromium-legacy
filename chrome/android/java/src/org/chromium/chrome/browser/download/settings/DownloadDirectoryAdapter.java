@@ -19,7 +19,7 @@ import androidx.annotation.Nullable;
 import org.chromium.chrome.browser.download.DirectoryOption;
 import org.chromium.chrome.browser.download.DownloadDirectoryProvider;
 import org.chromium.chrome.browser.download.DownloadLocationDialogBridge;
-import org.chromium.chrome.browser.download.DownloadUtils;
+import org.chromium.chrome.browser.download.StringUtils;
 import org.chromium.chrome.download.R;
 
 import java.util.ArrayList;
@@ -135,8 +135,8 @@ public class DownloadDirectoryAdapter extends ArrayAdapter<Object> {
         titleText.setEnabled(enabled);
         summaryText.setEnabled(enabled);
         if (enabled) {
-            summaryText.setText(DownloadUtils.getStringForAvailableBytes(
-                    mContext, directoryOption.availableSpace));
+            summaryText.setText(
+                    StringUtils.getAvailableBytesForUi(mContext, directoryOption.availableSpace));
         } else {
             if (mErrorOptions.isEmpty()) {
                 summaryText.setText(mContext.getText(R.string.download_location_not_enough_space));

@@ -1043,9 +1043,9 @@ String ScriptLoader::GetScriptText() const {
   String script_text_internal_slot = element_->ScriptTextInternalSlot();
   if (child_text_content == script_text_internal_slot)
     return child_text_content;
-  return GetStringForScriptExecution(child_text_content,
-                                     element_->GetScriptElementType(),
-                                     element_->GetDocument().ContextDocument());
+  return GetStringForScriptExecution(
+      child_text_content, element_->GetScriptElementType(),
+      element_->GetDocument().GetExecutionContext());
 }
 
 }  // namespace blink

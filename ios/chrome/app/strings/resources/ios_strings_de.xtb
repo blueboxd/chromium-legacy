@@ -196,7 +196,6 @@
 <translation id="3469166899695866866">Download beenden?</translation>
 <translation id="3470502288861289375">Wird kopiert...</translation>
 <translation id="3474624961160222204">Als "<ph name="NAME" />" fortfahren</translation>
-<translation id="3474649192738347024">Formulare ausgefüllt</translation>
 <translation id="3478058380795961209">Ablaufmonat</translation>
 <translation id="3482959374254649722">Tabs werden synchronisiert...</translation>
 <translation id="3484946776651937681">Downloadordner öffnen</translation>
@@ -479,6 +478,7 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="7136892417564438900">Kamera ist nicht verfügbar</translation>
 <translation id="7159472599653637159">Mobile Version anfordern</translation>
 <translation id="7173114856073700355">Einstellungen öffnen</translation>
+<translation id="7189598951263744875">Teilen...</translation>
 <translation id="7192050974311852563">Protokollierung starten</translation>
 <translation id="7203585745079012652">Gesprochene Antworten</translation>
 <translation id="7265758999917665941">Für diese Website niemals</translation>

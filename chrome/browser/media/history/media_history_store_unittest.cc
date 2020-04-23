@@ -246,7 +246,14 @@ INSTANTIATE_TEST_SUITE_P(
                     TestState::kIncognito,
                     TestState::kSavingBrowserHistoryDisabled));
 
-TEST_P(MediaHistoryStoreUnitTest, CreateDatabaseTables) {
+#if defined(THREAD_SANITIZER)
+// https://crbug.com/846380
+#define MAYBE_CreateDatabaseTables DISABLED_CreateDatabaseTables
+#else
+#define MAYBE_CreateDatabaseTables CreateDatabaseTables
+#endif
+
+TEST_P(MediaHistoryStoreUnitTest, MAYBE_CreateDatabaseTables) {
   ASSERT_TRUE(GetDB().DoesTableExist("origin"));
   ASSERT_TRUE(GetDB().DoesTableExist("playback"));
   ASSERT_TRUE(GetDB().DoesTableExist("playbackSession"));
@@ -818,7 +825,7 @@ INSTANTIATE_TEST_SUITE_P(All,
                          testing::Values(TestState::kNormal,
                                          TestState::kIncognito));
 
-TEST_P(MediaHistoryStoreFeedsTest, CreateDatabaseTables) {
+TEST_P(MediaHistoryStoreFeedsTest, MAYBE_CreateDatabaseTables) {
   ASSERT_TRUE(GetDB().DoesTableExist("mediaFeed"));
   ASSERT_TRUE(GetDB().DoesTableExist("mediaFeedItem"));
 }

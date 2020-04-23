@@ -21,18 +21,22 @@ class CC_EXPORT PaintedOverlayScrollbarLayer : public ScrollbarLayerBase {
  public:
   std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
 
+  static scoped_refptr<PaintedOverlayScrollbarLayer> CreateOrReuse(
+      scoped_refptr<Scrollbar> scrollbar,
+      PaintedOverlayScrollbarLayer* existing_layer);
+  static scoped_refptr<PaintedOverlayScrollbarLayer> Create(
+      scoped_refptr<Scrollbar> scrollbar);
+
   PaintedOverlayScrollbarLayer(const PaintedOverlayScrollbarLayer&) = delete;
   PaintedOverlayScrollbarLayer& operator=(const PaintedOverlayScrollbarLayer&) =
       delete;
-  static scoped_refptr<PaintedOverlayScrollbarLayer> Create(
-      scoped_refptr<Scrollbar> scrollbar);
 
   bool OpacityCanAnimateOnImplThread() const override;
   bool Update() override;
   void SetLayerTreeHost(LayerTreeHost* host) override;
   void PushPropertiesTo(LayerImpl* layer) override;
 
-  ScrollbarLayerType ScrollbarLayerTypeForTesting() const override;
+  ScrollbarLayerType GetScrollbarLayerType() const override;
 
  protected:
   explicit PaintedOverlayScrollbarLayer(scoped_refptr<Scrollbar> scrollbar);

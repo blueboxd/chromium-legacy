@@ -36,20 +36,17 @@ class SyncEngineHost {
   //
   // |js_backend| is what about:sync interacts with. It is initialized only if
   // |success| is true.
-  // TODO(crbug.com/1012226): Remove |last_keystore_key| when VAPID migration is
-  // over.
+
   virtual void OnEngineInitialized(
       ModelTypeSet initial_types,
       const WeakHandle<JsBackend>& js_backend,
       const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
       const std::string& birthday,
       const std::string& bag_of_chips,
-      const std::string& last_keystore_key,
       bool success) = 0;
 
   // The engine queried the server recently and received some updates.
-  virtual void OnSyncCycleCompleted(const SyncCycleSnapshot& snapshot,
-                                    const std::string& last_keystore_key) = 0;
+  virtual void OnSyncCycleCompleted(const SyncCycleSnapshot& snapshot) = 0;
 
   // Informs the host of some network event. These notifications are disabled by
   // default and must be enabled through an explicit request to the SyncEngine.

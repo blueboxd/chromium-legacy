@@ -143,20 +143,6 @@ void MediaInterfaceFactory::CreateCdm(
   GetMediaInterfaceFactory()->CreateCdm(key_system, std::move(receiver));
 }
 
-void MediaInterfaceFactory::CreateDecryptor(
-    int cdm_id,
-    mojo::PendingReceiver<media::mojom::Decryptor> receiver) {
-  if (!task_runner_->BelongsToCurrentThread()) {
-    task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&MediaInterfaceFactory::CreateDecryptor,
-                                  weak_this_, cdm_id, std::move(receiver)));
-    return;
-  }
-
-  DVLOG(1) << __func__;
-  GetMediaInterfaceFactory()->CreateDecryptor(cdm_id, std::move(receiver));
-}
-
 media::mojom::InterfaceFactory*
 MediaInterfaceFactory::GetMediaInterfaceFactory() {
   DVLOG(1) << __func__;

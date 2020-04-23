@@ -212,8 +212,9 @@ public class TrustedWebActivityClient {
         connection.addListener(() -> {
             try {
                 callback.onConnected(origin, connection.get());
-            } catch (RemoteException | ExecutionException | InterruptedException e) {
-                Log.w(TAG, "Failed to execute TWA command.");
+            } catch (RemoteException | ExecutionException | InterruptedException
+                    | SecurityException e) {
+                Log.w(TAG, "Failed to execute TWA command.", e);
             }
         }, UI_THREAD_EXECUTOR);
 

@@ -182,13 +182,6 @@ std::string DeterminePageLanguage(const std::string& code,
   std::string language = modified_html_lang.empty() ? modified_code :
                                                       modified_html_lang;
 
-  // When the page language is English, log conflicting CLD results. We will use
-  // these metrics to decide when to favor CLD.
-  if (language.substr(0, 2) == "en" && cld_language.substr(0, 2) != "en" &&
-      cld_language != kUnknownLanguageCode) {
-    translate::ReportLanguageDetectionConflict(language, cld_language);
-  }
-
   // If |language| is empty, just use CLD result even though it might be
   // translate::kUnknownLanguageCode.
   if (language.empty()) {

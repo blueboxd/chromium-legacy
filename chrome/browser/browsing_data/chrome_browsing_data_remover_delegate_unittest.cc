@@ -537,7 +537,7 @@ class ClearDomainReliabilityTester {
 
     last_filter_ = filter_builder->IsEmptyBlacklist()
                        ? base::RepeatingCallback<bool(const GURL&)>()
-                       : filter_builder->BuildGeneralFilter();
+                       : filter_builder->BuildUrlFilter();
   }
 
   unsigned clear_count_ = 0;
@@ -1827,8 +1827,8 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
   EXPECT_EQ(
       network::mojom::NetworkContext::DomainReliabilityClearMode::CLEAR_BEACONS,
       tester.last_clear_mode());
-  EXPECT_TRUE(ProbablySameFilters(
-      builder->BuildGeneralFilter(), tester.last_filter()));
+  EXPECT_TRUE(
+      ProbablySameFilters(builder->BuildUrlFilter(), tester.last_filter()));
 }
 
 TEST_F(ChromeBrowsingDataRemoverDelegateTest, DomainReliability_Contexts) {
@@ -1859,8 +1859,8 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
   EXPECT_EQ(network::mojom::NetworkContext::DomainReliabilityClearMode::
                 CLEAR_CONTEXTS,
             tester.last_clear_mode());
-  EXPECT_TRUE(ProbablySameFilters(
-      builder->BuildGeneralFilter(), tester.last_filter()));
+  EXPECT_TRUE(
+      ProbablySameFilters(builder->BuildUrlFilter(), tester.last_filter()));
 }
 
 TEST_F(ChromeBrowsingDataRemoverDelegateTest, DomainReliability_ContextsWin) {
@@ -1936,8 +1936,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
   std::unique_ptr<BrowsingDataFilterBuilder> builder(
       BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST));
   builder->AddRegisterableDomain(kTestRegisterableDomain1);
-  base::RepeatingCallback<bool(const GURL&)> filter =
-      builder->BuildGeneralFilter();
+  base::RepeatingCallback<bool(const GURL&)> filter = builder->BuildUrlFilter();
 
   EXPECT_CALL(*tester.store(),
               RemoveStatisticsByOriginAndTimeImpl(
@@ -1967,8 +1966,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
   std::unique_ptr<BrowsingDataFilterBuilder> builder(
       BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST));
   builder->AddRegisterableDomain(kTestRegisterableDomain1);
-  base::RepeatingCallback<bool(const GURL&)> filter =
-      builder->BuildGeneralFilter();
+  base::RepeatingCallback<bool(const GURL&)> filter = builder->BuildUrlFilter();
 
   EXPECT_CALL(*tester.store(),
               RemoveLoginsByURLAndTimeImpl(ProbablySameFilter(filter), _, _))
@@ -2035,8 +2033,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
   auto builder =
       BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST);
   builder->AddRegisterableDomain(kTestRegisterableDomain1);
-  base::RepeatingCallback<bool(const GURL&)> filter =
-      builder->BuildGeneralFilter();
+  base::RepeatingCallback<bool(const GURL&)> filter = builder->BuildUrlFilter();
 
   EXPECT_CALL(*tester.store(),
               RemoveCompromisedCredentialsByUrlAndTimeImpl(
@@ -2856,7 +2853,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
   EXPECT_EQ(0, tester.mock().remove_all_calls());
   EXPECT_EQ(net::ReportingBrowsingDataRemover::DATA_TYPE_REPORTS,
             tester.mock().last_data_type_mask());
-  EXPECT_TRUE(ProbablySameFilters(builder->BuildGeneralFilter(),
+  EXPECT_TRUE(ProbablySameFilters(builder->BuildUrlFilter(),
                                   tester.mock().last_origin_filter()));
 }
 

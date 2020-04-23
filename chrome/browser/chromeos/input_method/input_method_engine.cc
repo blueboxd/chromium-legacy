@@ -295,6 +295,26 @@ bool InputMethodEngine::AcceptSuggestion(int context_id, std::string* error) {
   return true;
 }
 
+bool InputMethodEngine::SetAssistiveWindowProperties(
+    int context_id,
+    const AssistiveWindowProperties& assistive_window,
+    std::string* error) {
+  if (!IsActive()) {
+    *error = kErrorNotActive;
+    return false;
+  }
+  if (context_id != context_id_ || context_id_ == -1) {
+    *error = kErrorWrongContext;
+    return false;
+  }
+
+  IMEAssistiveWindowHandlerInterface* aw_handler =
+      ui::IMEBridge::Get()->GetAssistiveWindowHandler();
+  if (aw_handler)
+    aw_handler->SetAssistiveWindowProperties(assistive_window);
+  return true;
+}
+
 bool InputMethodEngine::SetMenuItems(
     const std::vector<input_method::InputMethodManager::MenuItem>& items,
     std::string* error) {

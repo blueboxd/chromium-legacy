@@ -48,6 +48,7 @@
 #include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "third_party/blink/public/mojom/leak_detector/leak_detector.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/platform/web_url_loader_client.h"
@@ -248,6 +249,7 @@ RenderViewTest::RendererBlinkPlatformImplTestOverride::Get() const {
 }
 
 void RenderViewTest::RendererBlinkPlatformImplTestOverride::Initialize() {
+  blink::Platform::InitializeBlink();
   main_thread_scheduler_ =
       blink::scheduler::WebThreadScheduler::CreateMainThreadScheduler();
   blink_platform_impl_ =

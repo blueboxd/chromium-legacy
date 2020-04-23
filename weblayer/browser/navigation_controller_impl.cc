@@ -69,7 +69,12 @@ class NavigationControllerImpl::NavigationThrottleImpl
 
   ThrottleCheckResult WillRedirectRequest() override {
     controller_->WillRedirectRequest(this, navigation_handle());
-    return should_cancel_ ? CANCEL : PROCEED;
+
+    const bool should_cancel = should_cancel_;
+    if (load_params_)
+      controller_->DoNavigate(std::move(load_params_));
+    // WARNING: this may have been deleted.
+    return should_cancel ? CANCEL : PROCEED;
   }
 
   const char* GetNameForLogging() override {
@@ -405,6 +410,14 @@ void NavigationControllerImpl::DoNavigate(
     // safe.
     Stop();
     navigation_starting_->SetParamsToLoadWhenSafe(std::move(params));
+    return;
+  }
+
+  if (active_throttle_) {
+    // DoNavigate() is being called reentrantly. Delay processing until it's
+    // safe.
+    Stop();
+    active_throttle_->ScheduleNavigate(std::move(params));
     return;
   }
 

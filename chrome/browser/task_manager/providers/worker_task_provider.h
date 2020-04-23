@@ -29,9 +29,6 @@ class PerProfileWorkerTaskTracker;
 
 // See https://w3c.github.io/workers/ or https://w3c.github.io/ServiceWorker/
 // for more details.
-//
-// TODO(https://crbug.com/1041093): Add support for dedicated workers and shared
-//                                  workers.
 class WorkerTaskProvider : public TaskProvider,
                            public ProfileManagerObserver,
                            public ProfileObserver {

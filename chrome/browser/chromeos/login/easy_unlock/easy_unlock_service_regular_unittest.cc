@@ -238,6 +238,10 @@ class EasyUnlockServiceRegularTest : public testing::Test {
   // Must outlive TestingProfiles.
   content::BrowserTaskEnvironment task_environment_;
 
+  // PrefService which contains the browser process' local storage. It should be
+  // destructed after TestingProfile.
+  TestingPrefServiceSimple local_pref_service_;
+
   std::unique_ptr<TestingProfile> profile_;
   AccountId account_id_;
   chromeos::FakeChromeUserManager* fake_chrome_user_manager_;
@@ -262,9 +266,6 @@ class EasyUnlockServiceRegularTest : public testing::Test {
 
   testing::StrictMock<MockEasyUnlockNotificationController>*
       mock_notification_controller_;
-
-  // PrefService which contains the browser process' local storage.
-  TestingPrefServiceSimple local_pref_service_;
 
   views::TestViewsDelegate view_delegate_;
   base::HistogramTester histogram_tester_;

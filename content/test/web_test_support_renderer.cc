@@ -13,7 +13,6 @@
 #include "content/common/unique_name_helper.h"
 #include "content/renderer/input/render_widget_input_handler_delegate.h"
 #include "content/renderer/loader/request_extra_data.h"
-#include "content/renderer/loader/web_worker_fetch_context_impl.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
@@ -74,10 +73,6 @@ void EnableWebTestProxyCreation() {
   RenderViewImpl::InstallCreateHook(CreateWebViewTestProxy);
   RenderWidget::InstallCreateForFrameHook(CreateRenderWidgetForFrame);
   RenderFrameImpl::InstallCreateHook(CreateWebFrameTestProxy);
-}
-
-void SetWorkerRewriteURLFunction(RewriteURLFunction rewrite_url_function) {
-  WebWorkerFetchContextImpl::InstallRewriteURLFunction(rewrite_url_function);
 }
 
 void EnableRendererWebTestMode() {

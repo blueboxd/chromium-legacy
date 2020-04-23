@@ -5,6 +5,9 @@
       如果將這項政策設為代表網域名稱的字串，<ph name="PRODUCT_OS_NAME" />將會在使用者登入流程中顯示自動完成選項，使用者只需輸入自己的使用者名稱 (不含網域名稱延伸部分) 即可。使用者可以覆寫這個網域名稱的延伸部分。
       如果這項政策的值不是有效網域，系統就不會套用這項政策。</translation>
 <translation id="1010151305531217567">將滑鼠的主要按鈕切換為右鍵</translation>
+<translation id="1011266755572744012">指定使用者執行單一列印工作時，可列印的紙張數量上限。
+
+      如果不設定這個值，系統不會套用任何限制，且使用者可以列印任何文件。</translation>
 <translation id="101438888985615157">將畫面旋轉 180 度</translation>
 <translation id="1016912092715201525">設定 <ph name="PRODUCT_NAME" /> 中的預設瀏覽器檢查功能並禁止使用者變更。
 
@@ -146,6 +149,11 @@
 <translation id="1160939557934457296">停用略過安全瀏覽警告網頁繼續進行</translation>
 <translation id="1163080558183062209">停用拒絕清單上的印表機類型</translation>
 <translation id="117059611145966538">外部列印伺服器</translation>
+<translation id="1177624681620856105"> 這項政策可控管系統是否要在外部通訊協定的啟動確認提示中顯示「一律開啟」核取方塊。
+
+      如果將這項政策設為 True 或不予設定，當系統顯示外部通訊協定的確認訊息時，使用者可以選取「一律允許」，這樣日後會略過這個網站上的所有通訊協定確認提示。
+
+      如果將這項政策設為 False，系統將不會顯示「一律允許」核取方塊，並會在每次叫用外部通訊協定時向使用者顯示提示。</translation>
 <translation id="1194005076170619046">如果啟用這項設定，當工作階段處於啟動狀態且螢幕未鎖定時，系統匣會顯示紅色的大型登出按鈕。
 
       如果停用或不指定這項設定，則系統匣不會顯示紅色的大型登出按鈕。</translation>
@@ -582,6 +590,7 @@
 
       如果沒有設定這項政策，就沒有裝置印表機可供使用，且系統會忽略其他 <ph name="DEVICE_PRINTERS_POLICY_PATTERN" /> 政策。
       </translation>
+<translation id="1930127294345368978">單一列印工作可使用的紙張數量上限</translation>
 <translation id="193259052151668190">卸離式 USB 裝置許可清單</translation>
 <translation id="1933378685401357864">桌布圖片</translation>
 <translation id="1956493342242507974">設置 <ph name="PRODUCT_OS_NAME" /> 登入畫面的電源管理設定。
@@ -1042,6 +1051,17 @@
 <translation id="253135976343875019">在 AC 供電環境下執行時的閒置警告延遲時間</translation>
 <translation id="2536525645274582300">使用者可決定是否要啟用 Google 定位服務</translation>
 <translation id="254653220329944566">啟用 <ph name="PRODUCT_NAME" /> 雲端報告功能</translation>
+<translation id="2548397295248733155">請注意，這項政策已遭淘汰，並將在 <ph name="PRODUCT_OS_NAME" />第 85 版中移除。請改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
+
+          指定電池供電時的閒置時間長度。如果使用者在這段時間內沒有任何動作，系統就會關閉螢幕。
+
+          如果將這項政策設為大於 0 的值，只要使用者處於閒置狀態的時間達到這項政策指定的長度，<ph name="PRODUCT_OS_NAME" />就會關閉螢幕。
+
+          如果將這項政策的值設為 0，則 <ph name="PRODUCT_OS_NAME" />不會在使用者處於閒置狀態時關閉螢幕。
+
+          如果不設定這項政策，系統會使用預設時間長度。
+
+          指定政策值時需以毫秒為單位。設定值必須小於或等於閒置延遲時間。</translation>
 <translation id="2548572254685798999">回報安全瀏覽資訊</translation>
 <translation id="2550593661567988768">僅限單面列印</translation>
 <translation id="2551520365302988324">傳送使用者上傳內容以供掃描</translation>
@@ -1439,6 +1459,15 @@
 <translation id="3184161739683646075">控管 DNS-over-HTTPS 的模式</translation>
 <translation id="3185009703220253572">自第 <ph name="SINCE_VERSION" /> 版起</translation>
 <translation id="3187220842205194486">Android 應用程式無法存取企業金鑰 (這項政策對企業金鑰沒有影響)。</translation>
+<translation id="3196585866522778760">請注意，這項政策已遭淘汰，並將在 <ph name="PRODUCT_OS_NAME" />第 85 版中移除。請改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
+
+          指定電池供電時的閒置時間長度。如果使用者在這段時間內沒有任何動作，系統就會執行閒置動作。
+
+          設定這項政策後，只要使用者處於閒置狀態的時間達到這項政策指定的長度，<ph name="PRODUCT_OS_NAME" />就會採取閒置動作 (可另行設定)。
+
+          如果不設定這項政策，系統會使用預設時間長度。
+
+          指定政策值時需以毫秒為單位。</translation>
 <translation id="3205825995289802549">首次執行時將第一個瀏覽器視窗最大化</translation>
 <translation id="3211426942294667684">瀏覽器登入設定</translation>
 <translation id="3214164532079860003">如果啟用這項政策，則會強制從目前的預設瀏覽器匯入首頁。如果停用這項政策，則不會匯入首頁。如果未設定這項政策，系統會自動匯入首頁，或詢問使用者是否要匯入首頁。</translation>
@@ -1477,6 +1506,7 @@
 <translation id="3303653927512453822">允許你將所有 Cookie 還原成舊版的 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 行為。還原成舊版的行為會導致系統將未指定 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 屬性的 Cookie 視為「<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />」，並移除「<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />」Cookie 必須帶有「<ph name="ATTRIBUTE_SECURE_NAME" />」屬性的要求。如需完整說明，請參閱 https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies。
 
           如果不設定這項政策，系統對於未指定 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 屬性的 Cookie 所採取的預設 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 行為，會取決於使用者對於 <ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES" /> 功能的個人配置。使用者可以透過實際測試，或是啟用或停用 <ph name="FLAG_NAME_SAMESITE_BY_DEFAULT_COOKIES" /> 標記，來設定這項功能的個人配置。</translation>
+<translation id="3303911765031636277">OnFileAttached Chrome Enterprise Connector 的配置政策</translation>
 <translation id="3304662785258434098">你可以設定使用者是否能新增例外網站，允許特定網站顯示混合內容。
 
           你可以透過「InsecureContentAllowedForUrls」和「InsecureContentBlockedForUrls」政策，使用特定網址模式覆寫這項政策。
@@ -1505,6 +1535,17 @@
 如果設為 True 或未設定，則 <ph name="PRODUCT_NAME" /> 可以使用原生通知。
 
 如果設為 False，<ph name="PRODUCT_NAME" /> 不會使用原生通知。<ph name="PRODUCT_NAME" /> 的訊息中心將做為備用選項。</translation>
+<translation id="3360093276083825336">請注意，這項政策已遭淘汰，並將在 <ph name="PRODUCT_OS_NAME" />第 85 版中移除。請改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
+
+          指定電池供電時的閒置時間長度。如果使用者在這段時間內沒有任何動作，系統就會顯示警告對話方塊。
+
+          設定這項政策後，只要使用者處於閒置狀態的時間達到這項政策指定的長度，<ph name="PRODUCT_OS_NAME" />就會顯示警告對話方塊，告知使用者即將採取的閒置動作。
+
+         如果未設定這項政策，系統將不會顯示警告對話方塊。
+
+          指定政策值時需以毫秒為單位。設定值必須小於或等於閒置延遲時間。
+
+          只有當閒置動作設為登出或關機時，系統才會顯示警告訊息。</translation>
 <translation id="3373364525435227558">針對受管理工作階段設定一或多個建議語言代碼，方便使用者從中擇一使用。
 
       使用者可以在啟動受管理工作階段前先選擇所需語言代碼和鍵盤配置。根據預設，系統會按字母順序列出 <ph name="PRODUCT_OS_NAME" /> 支援的所有語言代碼。這項政策可讓你將一些建議語言代碼移至清單頂端。
@@ -1656,6 +1697,19 @@
       如果將這項政策設為「DeveloperToolsAllowed」(值為 1)，使用者可在所有情況下存取及使用開發人員工具和 JavaScript 控制台，包括在由企業政策安裝的擴充功能中。
       如果將這項政策設為「DeveloperToolsDisallowed」(值為 2)，使用者將無法再存取開發人員工具，也無法再檢查網站元素。此外，所有可開啟開發人員工具或 JavaScript 控制台的鍵盤快速鍵、選單項目或內容選單項目都會遭到停用。</translation>
 <translation id="3547954654003013442">Proxy 設定</translation>
+<translation id="3550122827225052130">請注意，這項政策已遭淘汰，並將在 <ph name="PRODUCT_OS_NAME" />第 85 版中移除。請改用 <ph name="SCREEN_LOCK_DELAYS_POLICY_NAME" />。
+
+          指定 AC 供電時的閒置時間長度。如果使用者在這段時間內沒有任何動作，系統就會鎖定螢幕。
+
+          如果將這項政策設為大於 0 的值，只要使用者處於閒置狀態的時間達到這項政策指定的長度，<ph name="PRODUCT_OS_NAME" />就會鎖定螢幕。
+
+          如果將這項政策設為 0，則 <ph name="PRODUCT_OS_NAME" />不會在使用者處於閒置狀態時鎖定螢幕。
+
+          如果不設定這項政策，系統會使用預設時間長度。
+
+          如要在閒置狀態下鎖定螢幕，建議你啟用暫停時的螢幕鎖定功能，並且將 <ph name="PRODUCT_OS_NAME" />設為在閒置延遲時間過後暫停。建議你只有在螢幕鎖定的設定時間大幅短於暫停時間，或是完全不需閒置暫停功能時，才使用這項政策。
+
+          指定政策值時需以毫秒為單位。設定值必須小於閒置延遲時間。</translation>
 <translation id="3550875587920006460">允許自訂檢查更新的時間表。這項設定將會套用至這部裝置的所有使用者和所有介面。設定完成後，裝置將會根據時間表檢查更新。如要取消任何排定的更新檢查作業，你必須先移除這項政策。</translation>
 <translation id="355118380775352753">要在替代瀏覽器中開啟的網站</translation>
 <translation id="3554498762428140109">啟用原生視窗遮蔽功能</translation>
@@ -2061,6 +2115,7 @@
 
           此外，AC 電源和電池的設定各自獨立。
           </translation>
+<translation id="4147818922357566987">僅啟用與重大修正項目相關的變化版本</translation>
 <translation id="4150201353443180367">顯示設定</translation>
 <translation id="4157003184375321727">回報作業系統和韌體版本</translation>
 <translation id="4157594634940419685">允許存取原生 CUPS 印表機</translation>
@@ -2439,6 +2494,11 @@
 
       注意：這項政策不適用於 Android。如要在 Android 上啟用 SitePerProcess，請使用 SitePerProcessAndroid 政策設定。
       </translation>
+<translation id="4787763197941188108">覆寫預設的列印頁面大小。
+
+      <ph name="PAGE_SIZE_NAME" /> 應包含其中一個列出的格式或是「自訂」(如果清單未列出所需的紙張大小)。如果將值設為「自訂」，則需一併指定 <ph name="PAGE_SIZE_CUSTOM_SIZE" /> 屬性。這個屬性會描述所需的高度和寬度 (以微米為單位)。否則，請勿指定 <ph name="PAGE_SIZE_CUSTOM_SIZE" /> 屬性。系統會忽略違反這些規則的政策。
+
+      如果頁面大小不適用於使用者選取的印表機，系統會忽略這項政策。</translation>
 <translation id="4788252609789586009">啟用 <ph name="PRODUCT_NAME" /> 的自動填入功能，並允許使用者使用先前儲存的信用卡資訊自動填寫網路表單。
 
       如果停用這項設定，自動填入功能就不會提出填寫建議或填入信用卡資訊，也無法儲存使用者在瀏覽網路時提交的其他信用卡資訊。
@@ -3458,6 +3518,17 @@
 <translation id="6315673513957120120">當使用者瀏覽出現 SSL 錯誤的網站，Chrome 會顯示警告網頁。在預設或政策設為 True 的情況下，使用者可以忽略這類警告網頁，繼續前往原先指定的頁面。
       這項政策設為 False 時，系統會禁止使用者忽略任何警告網頁。</translation>
 <translation id="6319198883324703402">設定第一次通知使用者重新啟動的時間</translation>
+<translation id="6331167725613770725">請注意，這項政策已遭淘汰，並將在 <ph name="PRODUCT_OS_NAME" />第 85 版中移除。請改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
+
+          指定 AC 供電時的閒置時間長度。如果使用者在這段時間內沒有任何動作，系統就會顯示警告對話方塊。
+
+          設定這項政策後，只要使用者處於閒置狀態的時間達到這項政策指定的長度，<ph name="PRODUCT_OS_NAME" />就會顯示警告對話方塊，告知使用者即將採取的閒置動作。
+
+         如果未設定這項政策，系統將不會顯示警告對話方塊。
+
+          指定政策值時需以毫秒為單位。設定值必須小於或等於閒置延遲時間。
+
+          只有當閒置動作設為登出或關機時，系統才會顯示警告訊息。</translation>
 <translation id="6342187235303612558">禁止使用者上傳或下載目前不支援 DLP 或惡意軟體掃描的檔案。</translation>
 <translation id="6348718801326095108">如果 Cookie 由符合這些網址模式的網頁所設定，則這些 Cookie 僅限在目前的工作階段中有效。也就是說，系統會在瀏覽器關閉時刪除這些 Cookie。
 
@@ -3565,6 +3636,19 @@
       如果啟用這項設定，安全瀏覽功能將信任這些網域。
       如果停用或不指定這項設定，則系統會對所有資源套用預設的安全瀏覽保護機制。
       這項政策僅適用於已加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體，或是已註冊裝置管理服務的 Windows 10 專業版或企業版執行個體。</translation>
+<translation id="6495337487202227251">請注意，這項政策已遭淘汰，並將在 <ph name="PRODUCT_OS_NAME" />第 85 版中移除。請改用 <ph name="SCREEN_LOCK_DELAYS_POLICY_NAME" />。
+
+          指定電池供電時的閒置時間長度。如果使用者在這段時間內沒有任何動作，系統就會鎖定螢幕。
+
+          如果將這項政策設為大於 0 的值，只要使用者處於閒置狀態的時間達到這項政策指定的長度，<ph name="PRODUCT_OS_NAME" />就會鎖定螢幕。
+
+          如果將這項政策設為 0，則 <ph name="PRODUCT_OS_NAME" />不會在使用者處於閒置狀態時鎖定螢幕。
+
+          如果不設定這項政策，系統會使用預設時間長度。
+
+          如要在閒置狀態下鎖定螢幕，建議你啟用暫停時的螢幕鎖定功能，並且將 <ph name="PRODUCT_OS_NAME" />設為在閒置延遲時間過後暫停。建議你只有在螢幕鎖定的設定時間大幅短於暫停時間，或是完全不需閒置暫停功能時，才使用這項政策。
+
+          指定政策值時需以毫秒為單位。設定值必須小於閒置延遲時間。</translation>
 <translation id="6515357889978918016"><ph name="PLUGIN_VM_NAME" /> 圖片</translation>
 <translation id="6520802717075138474">第一次執行時從預設瀏覽器匯入搜尋引擎</translation>
 <translation id="6525955212636890608">如果啟用這項設定，在已設為允許 Flash 內容 (無論是由使用者或根據公司政策所設定) 的網站上，系統會執行所有內嵌的 Flash 內容，包括來自其他來源的內容或檔案較小的內容。
@@ -3950,6 +4034,15 @@
       你可以將這項政策設為「conservative」或「performance」，讓系統選取以穩定性或效能最佳化為主的工作排程器設定。
 
       如果不設定這項政策，使用者將可自行選取偏好設定。</translation>
+<translation id="7144454922853468101">設定這項政策後，你可以指定哪些變化版本可套用至 <ph name="PRODUCT_NAME" />。
+
+      變化版本可以透過選擇性啟用或停用現有功能的方式，在不推出新版瀏覽器的情況下提供對 <ph name="PRODUCT_NAME" /> 的修改項目。
+
+      如果將這項政策設為 <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (值為 0) 或不予設定，使用者可以將所有變化版本套用到瀏覽器。
+
+      如果設為 <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (值為 1)，使用者只能將修正重大安全性或穩定性問題的變化版本套用到 <ph name="PRODUCT_NAME" />。
+
+      如果設為 <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (值為 2)，使用者無法將任何變化版本套用到瀏覽器。請注意，這個模式可能會讓 <ph name="PRODUCT_NAME" />開發人員無法及時提供重大安全性修正項目，因此不建議使用。</translation>
 <translation id="7145335384492396213">預設 PIN 碼列印模式</translation>
 <translation id="7149042336307555519"> 允許用來進行作業系統更新的連線類型。由於作業系統更新檔案較大，可能會對連線流量造成沉重負荷，也可能會產生額外費用。因此當使用者使用較昂貴的連線類型 (目前僅有「cellular」) 時，系統預設不會啟用作業系統更新。
 
@@ -4280,6 +4373,17 @@
       如果不設定這項政策，則不會有任何影響，系統不會在使用者登出時強制重新啟動。如果設為 [不要重新啟動]，結果也一樣。
       這項政策只會影響無關聯的使用者。
       </translation>
+<translation id="7679483888150212009">請注意，這項政策已遭淘汰，並將在 <ph name="PRODUCT_OS_NAME" />第 85 版中移除。請改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
+
+          指定 AC 供電時的閒置時間長度。如果使用者在這段時間內沒有任何動作，系統就會將螢幕調暗。
+
+          如果將這項政策設為大於 0 的值，只要使用者處於閒置狀態的時間達到這項政策指定的長度，<ph name="PRODUCT_OS_NAME" />就會調暗螢幕。
+
+          如果將這項政策設為 0，則 <ph name="PRODUCT_OS_NAME" />不會在使用者處於閒置狀態時調暗螢幕。
+
+          如果不設定這項政策，系統會使用預設時間長度。
+
+          指定政策值時需以毫秒為單位。設定值必須小於或等於螢幕的關閉延遲時間 (如有設定) 和閒置延遲時間。</translation>
 <translation id="7683777542468165012">動態政策更新</translation>
 <translation id="7687943045976362719">如果設定這項政策，指定的內容類型會由 <ph name="PRODUCT_FRAME_NAME" />處理。
 
@@ -4425,6 +4529,13 @@
 
           如果停用這項政策，使用者就無法新增 Kerberos 帳戶，只能透過「設定 Kerberos 帳戶」政策新增帳戶。這個方法可以有效地鎖定帳戶。</translation>
 <translation id="7895553628261067384">遠端存取</translation>
+<translation id="7898879331506985900">這項企業政策只是暫時性措施，將在 M86 版中移除。
+
+      透過漸進式的 M80 穩定版發布作業，Chrome 的預設參照政策已從目前的值 no-referrer-when-downgrade 強化為更安全的 strict-origin-when-cross-origin。
+
+      在發布之前，這項企業政策不會生效。如果你在發布之後啟用這項企業政策，Chrome 的預設參照政策將設為 M80 預先發布版的值 no-referrer-when-downgrade。
+
+      在預設狀態下，系統會停用這項企業政策。</translation>
 <translation id="7902040092815978832">在輸入密碼時顯示數字鍵盤</translation>
 <translation id="7912255076272890813">設定允許的應用程式/擴充功能類型</translation>
 <translation id="7922358664346625612">讓 Chrome 中的最後一個分頁保持開啟。</translation>
@@ -4462,6 +4573,17 @@
 <translation id="7956210013490975468">設定 <ph name="PRODUCT_OS_NAME" />的系統 Proxy 服務。</translation>
 <translation id="7958537754689366707">每 12 小時需輸入密碼</translation>
 <translation id="7961779417826583251">不針對列出的舊版憑證授權單位強制執行憑證透明化政策</translation>
+<translation id="7973609468423251675">請注意，這項政策已遭淘汰，並將在 <ph name="PRODUCT_OS_NAME" />第 85 版中移除。請改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
+
+          指定電池供電時的閒置時間長度。如果使用者在這段時間內沒有任何動作，系統就會將螢幕調暗。
+
+          如果將這項政策設為大於 0 的值，只要使用者處於閒置狀態的時間達到這項政策指定的長度，<ph name="PRODUCT_OS_NAME" />就會調暗螢幕。
+
+          如果將這項政策設為 0，則 <ph name="PRODUCT_OS_NAME" />不會在使用者處於閒置狀態時調暗螢幕。
+
+          如果不設定這項政策，系統會使用預設時間長度。
+
+          指定政策值時需以毫秒為單位。設定值必須小於或等於螢幕的關閉延遲時間 (如有設定) 和閒置延遲時間。</translation>
 <translation id="7974114691960514888">系統不再支援這項政策。連線至遠端用戶時，啟用 STUN 使用量和轉送伺服器。如果啟用這項設定，那麼即使遠端主機電腦被防火牆隔開，這台電腦也能發現遠端主機電腦並建立連結。如果停用這項設定，並且外傳 UDP 連結遭到防火牆篩選，則這台電腦只會與當地網路內的主機電腦建立連線。</translation>
 <translation id="7976157349247117979">「<ph name="PRODUCT_NAME" />」目的地名稱</translation>
 <translation id="7980227303582973781">無特殊限制</translation>
@@ -4469,6 +4591,17 @@
 <translation id="798856998567564266">如果啟用這項設定，使用者可新增、移除或修改書籤。這也是不設定政策時的預設值。
 
       如果停用這項設定，使用者將無法新增、移除或修改書籤，但仍可使用現有書籤。</translation>
+<translation id="7991022023019679916">請注意，這項政策已遭淘汰，並將在 <ph name="PRODUCT_OS_NAME" />第 85 版中移除。請改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
+
+          指定 AC 供電時的閒置時間長度。如果使用者在這段時間內沒有任何動作，系統就會關閉螢幕。
+
+          如果將這項政策設為大於 0 的值，只要使用者處於閒置狀態的時間達到這項政策指定的長度，<ph name="PRODUCT_OS_NAME" />就會關閉螢幕。
+
+          如果將這項政策的值設為 0，則 <ph name="PRODUCT_OS_NAME" />不會在使用者處於閒置狀態時關閉螢幕。
+
+          如果不設定這項政策，系統會使用預設時間長度。
+
+          指定政策值時需以毫秒為單位。設定值必須小於或等於閒置延遲時間。</translation>
 <translation id="7992136759457836904">讓你控制是否要在 Chrome 作業系統上執行虛擬機器。
 
       如果將這項政策設為 True，裝置即可執行虛擬機器。
@@ -4598,6 +4731,22 @@
 <translation id="8176035528522326671">僅允許企業使用者成為多重設定檔的主要使用者 (受企業管理的使用者的預設行為)</translation>
 <translation id="8183108371184777472">禁止啟動瀏覽器視窗</translation>
 <translation id="8186911565834244165">允許使用者意見回饋功能</translation>
+<translation id="8196725647498287556">你可以透過這項政策指定哪些變化版本可套用至受企業管理的 <ph name="PRODUCT_OS_NAME" />裝置。
+
+      變化版本可以透過選擇性啟用或停用現有功能的方式，在不推出新版本的情況下提供對 <ph name="PRODUCT_OS_NAME" />的修改項目。
+
+      如果將這項政策設為 <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (值為 0) 或未設定，使用者可以將所有變化版本套用到 <ph name="PRODUCT_OS_NAME" />。
+
+      如果設為 <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (值為 1)，使用者只能將修正重大安全性或穩定性問題的變化版本套用到 <ph name="PRODUCT_OS_NAME" />。
+
+      如果設為 <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (值為 2)，使用者無法在登入畫面上將任何變化版本套用到瀏覽器。請注意，這個模式可能會讓 <ph name="PRODUCT_OS_NAME" />開發人員無法及時提供重大安全性修正項目，因此不建議使用。</translation>
+<translation id="8213770777756919897">請注意，這項政策已遭淘汰，並將在 <ph name="PRODUCT_OS_NAME" />第 85 版中移除。請改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
+
+          如果設定這項政策，當使用者的閒置時間已達閒置延遲時間指定的長度 (可另行設定)，<ph name="PRODUCT_OS_NAME" />會採取這項政策指定的動作。
+
+         如果不設定這項政策，則系統會採取預設的暫停動作。
+
+         如果將動作設為暫停，你可以另行設定 <ph name="PRODUCT_OS_NAME" />在暫停前是否要鎖定螢幕。</translation>
 <translation id="8214600119442850823">設定密碼管理員</translation>
 <translation id="8217516105848565518">這項政策已遭到淘汰，請改用 RemoteAccessHostDomainList。</translation>
 <translation id="8244171102276095471">在傳輸層安全標準 (TLS) 中啟用 RC4 加密套件</translation>
@@ -4667,6 +4816,11 @@
 <translation id="8331479227794770304">啟用相黏鍵</translation>
 <translation id="8339420913453596618">已停用雙重驗證</translation>
 <translation id="8344454543174932833">第一次執行時從預設瀏覽器匯入書籤</translation>
+<translation id="8347993687936322631">請注意，這項政策已遭淘汰，並將在 <ph name="PRODUCT_OS_NAME" />第 85 版中移除。請改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
+
+          這項政策會針對內容更具體的 <ph name="IDLE_ACTION_AC_POLICY_NAME" /> 和 <ph name="IDLE_ACTION_BATTERY_POLICY_NAME" /> 政策提供備用值。如果設定這項政策，但未設定內容更具體的相關政策，系統就會使用這項政策的值。
+
+          如果不設定這項政策，內容更具體的政策行為將不會受到影響。</translation>
 <translation id="8351446723835838047">你可以設定網址模式清單，指定可使用金鑰產生功能的網站。如果網址模式符合「KeygenBlockedForUrls」的設定，這項政策會覆寫這類例外狀況。
 
           如果不設定這項政策，系統會根據「DefaultKeygenSetting」政策 (如有設定) 或使用者的個人設定，將全域預設值套用至所有網站。
@@ -4819,6 +4973,15 @@
       一旦設定了這項政策，除了本政策中列出的 ID 外，其他所有印表機皆可供使用者使用。ID 必須和 <ph name="BULK_PRINTERS_POLICY" /> 指定檔案中的「id」或「guid」欄位相符。
       </translation>
 <translation id="8587229956764455752">允許建立新的使用者帳戶</translation>
+<translation id="8591713876665299827">請注意，這項政策已遭淘汰，並將在 <ph name="PRODUCT_OS_NAME" />第 85 版中移除。請改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
+
+          指定 AC 供電時的閒置時間長度。如果使用者在這段時間內沒有任何動作，系統就會執行閒置動作。
+
+          設定這項政策後，只要使用者處於閒置狀態的時間達到這項政策指定的長度，<ph name="PRODUCT_OS_NAME" />就會採取閒置動作 (可另行設定)。
+
+          如果不設定這項政策，系統會使用預設時間長度。
+
+          指定政策值時需以毫秒為單位。</translation>
 <translation id="8598350264853261122">如果將這項政策設為 false，無關聯使用者將無法使用 ARC。
 
       如果將這項政策設為 true 或不予設定，所有使用者皆可使用 ARC (除非透過其他方法停用 ARC)。
@@ -5123,6 +5286,19 @@
           如果裝置支援這項政策但你未設定政策，系統會套用標準充電模式，且使用者無法變更這個模式。
 
           注意：如果指定 <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" />，這項政策會遭到覆寫。</translation>
+<translation id="9071472304496502510">指定要套用至 <ph name="ON_FILE_ATTACHED_ENTERPRISE_CONNECTOR" /> Enterprise Connector 的 Chrome Enterprise 連接器服務設定清單，這份清單會在檔案附加至 Chrome 時觸發。
+
+      將檔案附加至特定網頁時，系統會使用 <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />、<ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />、<ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" />、<ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> 欄位來判斷連接器是否要傳送檔案進行分析，以及要在該檔案的分析要求中加入哪些標記。系統會比對標記對應的模式，如果頁面網址符合與該標記相關聯的「啟用」模式，那麼只要不符合相同標記中的「停用」模式，系統就會將該標記加入分析要求中。如果在要求中加入至少 1 個標記，系統就會進行分析。
+
+      <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" /> 欄位會識別與設定對應的分析服務供應商。
+
+      如果將 <ph name="ENTERPRISE_CONNECTOR_BLOCK_UNTIL_VERDICT_FIELD" /> 欄位設為 1，Chrome 會先等候分析服務的回覆，再授予頁面存取權。如果設為其他整數值，Chrome 會立即授予檔案的頁面存取權。
+
+      <ph name="ENTERPRISE_CONNECTOR_BLOCK_PASSWORD_PROTECTED_FIELD" /> 欄位可控制 Chrome 要封鎖還是允許受到密碼保護的檔案。
+
+      <ph name="ENTERPRISE_CONNECTOR_BLOCK_LARGE_FILES_FIELD" /> 欄位可控制 Chrome 要封鎖還是允許大小過大而無法分析的檔案 (超過 50 MB 的檔案)。
+
+      你只能透過 Google 管理控制台設定這項政策。</translation>
 <translation id="9077227880520270584">裝置本機帳戶自動登入計時器</translation>
 <translation id="9084985621503260744">指定會影響電源管理的視訊活動</translation>
 <translation id="9088433379343318874">啟用受監管的使用者內容提供者</translation>

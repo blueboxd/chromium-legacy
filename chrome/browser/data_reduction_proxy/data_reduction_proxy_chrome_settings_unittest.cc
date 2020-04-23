@@ -9,7 +9,6 @@
 
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
@@ -49,7 +48,6 @@ class DataReductionProxyChromeSettingsTest
     test_context_->test_network_quality_tracker()
         ->ReportEffectiveConnectionTypeForTesting(
             net::EFFECTIVE_CONNECTION_TYPE_4G);
-    config_ = test_context_->mock_config();
     dict_ = std::make_unique<base::DictionaryValue>();
 
     PrefRegistrySimple* registry = test_context_->pref_service()->registry();
@@ -66,7 +64,6 @@ class DataReductionProxyChromeSettingsTest
   std::unique_ptr<base::DictionaryValue> dict_;
   std::unique_ptr<data_reduction_proxy::DataReductionProxyTestContext>
       test_context_;
-  data_reduction_proxy::MockDataReductionProxyConfig* config_;
 };
 
 TEST_F(DataReductionProxyChromeSettingsTest, MigrateNonexistentProxyPref) {

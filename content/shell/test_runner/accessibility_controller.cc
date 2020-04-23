@@ -159,7 +159,7 @@ void AccessibilityController::Reset() {
 }
 
 void AccessibilityController::Install(blink::WebLocalFrame* frame) {
-  ax_context_.reset(new blink::WebAXContext(frame->GetDocument()));
+  ax_context_ = std::make_unique<blink::WebAXContext>(frame->GetDocument());
   frame->View()->GetSettings()->SetInlineTextBoxAccessibilityEnabled(true);
 
   AccessibilityControllerBindings::Install(weak_factory_.GetWeakPtr(), frame);
@@ -170,11 +170,14 @@ bool AccessibilityController::ShouldLogAccessibilityEvents() {
 }
 
 void AccessibilityController::NotificationReceived(
+    blink::WebLocalFrame* frame,
     const blink::WebAXObject& target,
     const std::string& notification_name) {
-  web_view_test_proxy_->blink_test_runner()->PostTask(
-      base::BindOnce(&AccessibilityController::PostNotification,
-                     weak_factory_.GetWeakPtr(), target, notification_name));
+  frame->GetTaskRunner(blink::TaskType::kInternalTest)
+      ->PostTask(FROM_HERE,
+                 base::BindOnce(&AccessibilityController::PostNotification,
+                                weak_factory_.GetWeakPtr(), target,
+                                notification_name));
 }
 
 void AccessibilityController::PostNotification(

@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/feature_list.h"
+#include "base/logging.h"
 #include "services/service_manager/sandbox/features.h"
 #include "services/service_manager/sandbox/switches.h"
 

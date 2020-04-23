@@ -807,12 +807,20 @@ class GetAuthTokenFunctionTest
     id_api()->SetCachedToken(key, token_data);
   }
 
+  void SetCachedGaiaId(const std::string& gaia_id) {
+    id_api()->SetGaiaIdForExtension(extension_id_, gaia_id);
+  }
+
   const IdentityTokenCacheValue& GetCachedToken(
       const CoreAccountId& account_id) {
     ExtensionTokenKey key(
         extension_id_, account_id.empty() ? GetPrimaryAccountId() : account_id,
         oauth_scopes_);
     return id_api()->GetCachedToken(key);
+  }
+
+  base::Optional<std::string> GetCachedGaiaId() {
+    return id_api()->GetGaiaIdForExtension(extension_id_);
   }
 
   void QueueRequestStart(IdentityMintRequestQueue::MintType type,
@@ -1654,6 +1662,56 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, LoginInvalidatesTokenCache) {
             GetCachedToken(CoreAccountId()).status());
 }
 #endif
+
+IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
+                       IssueAdviceInvalidatesGaiaIdCache) {
+  SignIn("primary@example.com");
+  AccountInfo secondary_account_info =
+      identity_test_env()->MakeAccountAvailable("secondary@example.com");
+
+  scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
+  scoped_refptr<const Extension> extension(CreateExtension(CLIENT_ID | SCOPES));
+  func->set_extension(extension.get());
+
+  // Pre-populate the gaia id cache.
+  SetCachedGaiaId(secondary_account_info.gaia);
+
+  // The user revoked their token and must give a consent again. Gaia disabled
+  // the new flow for the secondary account.
+  func->push_mint_token_result(TestOAuth2MintTokenFlow::ISSUE_ADVICE_SUCCESS);
+
+  std::unique_ptr<base::Value> value(utils::RunFunctionAndReturnSingleResult(
+      func.get(), "[{\"interactive\": true}]", browser()));
+  ASSERT_TRUE(value->is_string());
+  EXPECT_EQ(kAccessToken, value->GetString());
+  EXPECT_TRUE(func->scope_ui_shown());
+  EXPECT_FALSE(GetCachedGaiaId().has_value());
+}
+
+IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
+                       IssueAdviceFailureInvalidatesGaiaIdCache) {
+  SignIn("primary@example.com");
+  AccountInfo secondary_account_info =
+      identity_test_env()->MakeAccountAvailable("secondary@example.com");
+
+  scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
+  scoped_refptr<const Extension> extension(CreateExtension(CLIENT_ID | SCOPES));
+  func->set_extension(extension.get());
+
+  // Pre-populate the gaia id cache.
+  SetCachedGaiaId(secondary_account_info.gaia);
+
+  // The user revoked their token and must give a consent again. Gaia disabled
+  // the new flow for the secondary account.
+  func->push_mint_token_result(TestOAuth2MintTokenFlow::ISSUE_ADVICE_SUCCESS);
+  func->set_scope_ui_failure(GaiaWebAuthFlow::WINDOW_CLOSED);
+
+  std::string error = utils::RunFunctionAndReturnError(
+      func.get(), "[{\"interactive\": true}]", browser());
+  EXPECT_EQ(std::string(errors::kUserRejected), error);
+  EXPECT_TRUE(func->scope_ui_shown());
+  EXPECT_FALSE(GetCachedGaiaId().has_value());
+}
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, ComponentWithChromeClientId) {
   scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());

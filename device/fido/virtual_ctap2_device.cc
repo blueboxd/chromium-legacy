@@ -1633,6 +1633,7 @@ CtapDeviceResponseCode VirtualCtap2Device::OnBioEnrollment(
                 {"Template", base::NumberToString(
                                  *mutable_state()->bio_current_template_id)});
         mutable_state()->bio_current_template_id = base::nullopt;
+        mutable_state()->fingerprints_enrolled = true;
       }
       break;
     case SubCmd::kEnumerateEnrollments: {

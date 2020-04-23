@@ -61,7 +61,4 @@ interface InterfaceFactory {
   // this call may be initiated by an untrusted process (e.g. renderer), so the
   // implementation must fully validate |key_system| before creating the CDM.
   CreateCdm(string key_system, pending_receiver<ContentDecryptionModule> cdm);
-
-  // Creates a Decryptor associated with the |cdm_id|.
-  CreateDecryptor(int32 cdm_id, pending_receiver<Decryptor> decryptor);
 };

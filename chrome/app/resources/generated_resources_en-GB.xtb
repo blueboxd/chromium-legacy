@@ -37,7 +37,6 @@
 <translation id="1041263367839475438">Available devices</translation>
 <translation id="1042174272890264476">Your computer also comes with <ph name="SHORT_PRODUCT_NAME" />'s RLZ library built in. RLZ assigns a non-unique, non-personally identifiable tag to measure the searches and <ph name="SHORT_PRODUCT_NAME" /> usage driven by a particular promotional campaign. These labels sometimes appear in Google Search queries in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1043818413152647937">Also clear data from these apps?</translation>
-<translation id="1045448422538531528">Add to group</translation>
 <translation id="1046635659603195359">It looks like you've already set up Voice Match with your Google Assistant on another device.These previous recordings can be used to make a voice model on this device. This should take less than a minute.</translation>
 <translation id="104710386808485638">Restart Linux?</translation>
 <translation id="1047431265488717055">Copy Link Te&amp;xt</translation>
@@ -408,7 +407,6 @@
 <translation id="1536754031901697553">Disconnecting...</translation>
 <translation id="15373452373711364">Large mouse cursor</translation>
 <translation id="1540605929960647700">Enable demo mode</translation>
-<translation id="1541396123399225659">Add to New Group</translation>
 <translation id="1542514202066550870">This tab is presenting VR content to a headset.</translation>
 <translation id="1543284117603151572">Imported From Edge</translation>
 <translation id="1545177026077493356">Automatic Kiosk Mode</translation>
@@ -1906,7 +1904,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3514373592552233661">Preferred networks will be preferred over other known networks if more than one is available</translation>
 <translation id="3515983984924808886">Touch your security key again to confirm reset. All information stored on the security key, including its PIN, will be deleted.</translation>
 <translation id="3518985090088779359">Accept &amp; continue</translation>
-<translation id="351952459507671940">Add to new group</translation>
 <translation id="3521606918211282604">Change disk size</translation>
 <translation id="3523642406908660543">Ask when a site wants to use a plug-in to access your computer (recommended)</translation>
 <translation id="3524965460886318643">Export activities</translation>
@@ -2896,7 +2893,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="4871322859485617074">PIN contains invalid characters</translation>
 <translation id="4871370605780490696">Add bookmark</translation>
 <translation id="4871719318659334896">Close group</translation>
-<translation id="4871852311166078968">Add to Group</translation>
 <translation id="4873312501243535625">Media File Checker</translation>
 <translation id="4876273079589074638">Help our engineers investigate and fix this crash. List exact steps if you can. No detail is too small!</translation>
 <translation id="4876895919560854374">Lock and unlock the screen</translation>

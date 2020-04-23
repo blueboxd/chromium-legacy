@@ -115,6 +115,8 @@ class ChromeAuthenticatorRequestDelegate
   void CollectPIN(
       base::Optional<int> attempts,
       base::OnceCallback<void(std::string)> provide_pin_cb) override;
+  void StartBioEnrollment(base::OnceClosure next_callback) override;
+  void OnSampleCollected(int bio_samples_remaining) override;
   void FinishCollectToken() override;
   void OnRetryUserVerification(int attempts) override;
   void OnInternalUserVerificationLocked() override;

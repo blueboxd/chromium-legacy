@@ -43,16 +43,13 @@ namespace data_reduction_proxy {
 class ClientConfig;
 class DataReductionProxyRequestOptions;
 class DataReductionProxySettings;
-class MockDataReductionProxyConfig;
-class TestDataReductionProxyConfig;
 
 // Test version of |DataReductionProxyRequestOptions|.
 class TestDataReductionProxyRequestOptions
     : public DataReductionProxyRequestOptions {
  public:
   TestDataReductionProxyRequestOptions(Client client,
-                                       const std::string& version,
-                                       DataReductionProxyConfig* config);
+                                       const std::string& version);
 
   // Overrides of DataReductionProxyRequestOptions.
   std::string GetDefaultKey() const override;
@@ -64,8 +61,7 @@ class TestDataReductionProxyRequestOptions
 class MockDataReductionProxyRequestOptions
     : public TestDataReductionProxyRequestOptions {
  public:
-  MockDataReductionProxyRequestOptions(Client client,
-                                       DataReductionProxyConfig* config);
+  explicit MockDataReductionProxyRequestOptions(Client client);
 
   ~MockDataReductionProxyRequestOptions() override;
 
@@ -79,7 +75,6 @@ class TestDataReductionProxyConfigServiceClient
  public:
   TestDataReductionProxyConfigServiceClient(
       DataReductionProxyRequestOptions* request_options,
-      DataReductionProxyConfig* config,
       DataReductionProxyService* service,
       network::NetworkConnectionTracker* network_connection_tracker,
       ConfigStorer config_storer,
@@ -323,9 +318,6 @@ class DataReductionProxyTestContext {
   // |net::MockClientSocketFactory| specified.
   void EnableDataReductionProxyWithSecureProxyCheckSuccess();
 
-  // Returns the underlying |MockDataReductionProxyConfig|. This can only be
-  // called if built with WithMockConfig.
-  MockDataReductionProxyConfig* mock_config() const;
 
   DataReductionProxyService* data_reduction_proxy_service() const;
 
@@ -341,8 +333,6 @@ class DataReductionProxyTestContext {
   // only be called if built with WithMockRequestOptions.
   MockDataReductionProxyRequestOptions* mock_request_options() const;
 
-  // Returns the underlying |TestDataReductionProxyConfig|.
-  TestDataReductionProxyConfig* config() const;
 
   // Returns the underlying |TestDataReductionProxyConfigServiceClient|. This
   // can only be called if built with WithTestConfigClient.

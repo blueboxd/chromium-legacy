@@ -14,7 +14,6 @@
 
 namespace blink {
 struct WebSize;
-class WebURL;
 }  // namespace blink
 
 namespace gfx {
@@ -68,12 +67,6 @@ void SchedulerRunIdleTasks(base::OnceClosure callback);
 // Causes the RenderWidget corresponding to |render_frame| to update its
 // TextInputState.
 void ForceTextInputStateUpdateForRenderFrame(RenderFrame* render_frame);
-
-// RewriteURLFunction must be safe to call from any thread in the renderer
-// process.
-using RewriteURLFunction = blink::WebURL (*)(const std::string&,
-                                             bool is_wpt_mode);
-void SetWorkerRewriteURLFunction(RewriteURLFunction rewrite_url_function);
 
 }  // namespace content
 

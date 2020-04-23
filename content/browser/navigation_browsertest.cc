@@ -60,6 +60,7 @@
 #include "content/test/content_browser_test_utils_internal.h"
 #include "content/test/did_commit_navigation_interceptor.h"
 #include "content/test/fake_network_url_loader_factory.h"
+#include "content/test/test_content_browser_client.h"
 #include "content/test/test_render_frame_host_factory.h"
 #include "ipc/ipc_security_test_util.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
@@ -72,6 +73,7 @@
 #include "net/test/url_request/url_request_failed_job.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+#include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "url/gurl.h"
 #include "url/url_util.h"
 
@@ -1756,6 +1758,117 @@ IN_PROC_BROWSER_TEST_F(NavigationBaseBrowserTest,
   response_2.WaitForRequest();
   EXPECT_FALSE(
       base::Contains(response_2.http_request()->headers, "header_name"));
+}
+
+// Name of header used by CorsInjectingUrlLoader.
+const std::string kCorsHeaderName = "test-header";
+
+// URLLoaderThrottle that stores the last value of |kCorsHeaderName|.
+class CorsInjectingUrlLoader : public blink::URLLoaderThrottle {
+ public:
+  explicit CorsInjectingUrlLoader(std::string* last_cors_header_value)
+      : last_cors_header_value_(last_cors_header_value) {}
+
+  // blink::URLLoaderThrottle:
+  void WillStartRequest(network::ResourceRequest* request,
+                        bool* defer) override {
+    if (!request->cors_exempt_headers.GetHeader(kCorsHeaderName,
+                                                last_cors_header_value_)) {
+      last_cors_header_value_->clear();
+    }
+  }
+
+ private:
+  // See |NavigationCorsExemptBrowserTest::last_cors_header_value_| for details.
+  std::string* last_cors_header_value_;
+};
+
+// ContentBrowserClient responsible for creating CorsInjectingUrlLoader.
+class CorsContentBrowserClient : public TestContentBrowserClient {
+ public:
+  explicit CorsContentBrowserClient(std::string* last_cors_header_value)
+      : last_cors_header_value_(last_cors_header_value) {}
+
+  // ContentBrowserClient overrides:
+  std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
+  CreateURLLoaderThrottles(
+      const network::ResourceRequest& request,
+      BrowserContext* browser_context,
+      const base::RepeatingCallback<WebContents*()>& wc_getter,
+      NavigationUIData* navigation_ui_data,
+      int frame_tree_node_id) override {
+    std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles;
+    throttles.push_back(
+        std::make_unique<CorsInjectingUrlLoader>(last_cors_header_value_));
+    return throttles;
+  }
+
+ private:
+  // See |NavigationCorsExemptBrowserTest::last_cors_header_value_| for details.
+  std::string* last_cors_header_value_;
+};
+
+class NavigationCorsExemptBrowserTest : public NavigationBaseBrowserTest {
+ public:
+  NavigationCorsExemptBrowserTest() = default;
+
+ protected:
+  const std::string& last_cors_header_value() const {
+    return last_cors_header_value_;
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ShellContentBrowserClient::set_allow_any_cors_exempt_header_for_browser(
+        true);
+    NavigationBaseBrowserTest::SetUpCommandLine(command_line);
+  }
+  void SetUpOnMainThread() override {
+    original_client_ =
+        SetBrowserClientForTesting(&cors_content_browser_client_);
+    host_resolver()->AddRule("*", "127.0.0.1");
+  }
+  void TearDownOnMainThread() override {
+    if (original_client_)
+      SetBrowserClientForTesting(original_client_);
+    ShellContentBrowserClient::set_allow_any_cors_exempt_header_for_browser(
+        false);
+  }
+
+ private:
+  // Last value of kCorsHeaderName. Set by CorsInjectingUrlLoader.
+  std::string last_cors_header_value_;
+  CorsContentBrowserClient cors_content_browser_client_{
+      &last_cors_header_value_};
+  ContentBrowserClient* original_client_ = nullptr;
+};
+
+// Verifies a header added by way of SetRequestHeader() makes it into
+// |cors_exempt_headers|.
+IN_PROC_BROWSER_TEST_F(NavigationCorsExemptBrowserTest,
+                       SetCorsExemptRequestHeader) {
+  net::test_server::ControllableHttpResponse response(embedded_test_server(),
+                                                      "", true);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const std::string header_value = "value";
+  content::TestNavigationThrottleInserter throttle_inserter(
+      shell()->web_contents(),
+      base::BindLambdaForTesting([header_value](NavigationHandle* handle)
+                                     -> std::unique_ptr<NavigationThrottle> {
+        NavigationRequest* request = NavigationRequest::From(handle);
+        auto throttle = std::make_unique<TestNavigationThrottle>(handle);
+        throttle->SetCallback(
+            TestNavigationThrottle::WILL_START_REQUEST,
+            base::BindLambdaForTesting([request, header_value]() {
+              request->SetCorsExemptRequestHeader(kCorsHeaderName,
+                                                  header_value);
+            }));
+        return throttle;
+      }));
+  shell()->LoadURL(embedded_test_server()->GetURL("/doc"));
+  response.WaitForRequest();
+  EXPECT_EQ(header_value, response.http_request()->headers.at(kCorsHeaderName));
+  EXPECT_EQ(header_value, last_cors_header_value());
 }
 
 struct NewWebContentsData {

@@ -130,6 +130,11 @@ bool SiteIsolationPolicy::AreDynamicIsolatedOriginsEnabled() {
 }
 
 // static
+bool SiteIsolationPolicy::ArePreloadedIsolatedOriginsEnabled() {
+  return !IsSiteIsolationDisabled();
+}
+
+// static
 std::string SiteIsolationPolicy::GetIsolatedOriginsFromCommandLine() {
   std::string cmdline_arg =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(

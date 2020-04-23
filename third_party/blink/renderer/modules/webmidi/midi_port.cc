@@ -32,7 +32,6 @@
 
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/modules/webmidi/midi_access.h"
@@ -200,8 +199,7 @@ void MIDIPort::OpenAsynchronously(ScriptPromiseResolver* resolver) {
   if (!GetExecutionContext())
     return;
 
-  UseCounter::Count(*Document::From(GetExecutionContext()),
-                    WebFeature::kMIDIPortOpen);
+  UseCounter::Count(GetExecutionContext(), WebFeature::kMIDIPortOpen);
   DCHECK_NE(0u, running_open_count_);
   running_open_count_--;
 

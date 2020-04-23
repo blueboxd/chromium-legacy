@@ -122,9 +122,9 @@ static Platform* g_platform = nullptr;
 
 static GCTaskRunner* g_gc_task_runner = nullptr;
 
-Platform::Platform() {
-  WTF::Partitions::Initialize();
-}
+static bool did_initialize_blink_ = false;
+
+Platform::Platform() = default;
 
 Platform::~Platform() = default;
 
@@ -175,26 +175,34 @@ class SimpleMainThread : public Thread {
 
 }  // namespace
 
-void Platform::Initialize(
+void Platform::InitializeBlink() {
+  DCHECK(!did_initialize_blink_);
+  WTF::Partitions::Initialize();
+  WTF::Initialize();
+  did_initialize_blink_ = true;
+}
+
+void Platform::InitializeMainThread(
     Platform* platform,
     scheduler::WebThreadScheduler* main_thread_scheduler) {
   DCHECK(!g_platform);
   DCHECK(platform);
   g_platform = platform;
-  InitializeCommon(platform, main_thread_scheduler->CreateMainThread());
+  InitializeMainThreadCommon(platform,
+                             main_thread_scheduler->CreateMainThread());
 }
 
 void Platform::CreateMainThreadAndInitialize(Platform* platform) {
   DCHECK(!g_platform);
   DCHECK(platform);
   g_platform = platform;
-  InitializeCommon(platform, std::make_unique<SimpleMainThread>());
+  InitializeBlink();
+  InitializeMainThreadCommon(platform, std::make_unique<SimpleMainThread>());
 }
 
-void Platform::InitializeCommon(Platform* platform,
-                                std::unique_ptr<Thread> main_thread) {
-  WTF::Initialize();
-
+void Platform::InitializeMainThreadCommon(Platform* platform,
+                                          std::unique_ptr<Thread> main_thread) {
+  DCHECK(did_initialize_blink_);
   Thread::SetMainThread(std::move(main_thread));
 
   ProcessHeap::Init();

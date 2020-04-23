@@ -79,13 +79,13 @@ struct AudioSinkParameters;
 struct AudioSourceParameters;
 class MediaPermission;
 class GpuVideoAcceleratorFactories;
-}
+}  // namespace media
 
 namespace v8 {
 class Context;
 template <class T>
 class Local;
-}
+}  // namespace v8
 
 namespace viz {
 class RasterContextProvider;
@@ -121,9 +121,12 @@ class BLINK_PLATFORM_EXPORT Platform {
  public:
   // Initialize platform and wtf. If you need to initialize the entire Blink,
   // you should use blink::Initialize. WebThreadScheduler must be owned by
-  // the embedder.
-  static void Initialize(Platform*,
-                         scheduler::WebThreadScheduler* main_thread_scheduler);
+  // the embedder. InitializeBlink must be called before WebThreadScheduler is
+  // created and passed to InitializeMainThread.
+  static void InitializeBlink();
+  static void InitializeMainThread(
+      Platform*,
+      scheduler::WebThreadScheduler* main_thread_scheduler);
   static Platform* Current();
 
   // This is another entry point for embedders that only require simple
@@ -485,10 +488,9 @@ class BLINK_PLATFORM_EXPORT Platform {
   // backed by an independent context. Returns null if the context cannot be
   // created or initialized.
   virtual std::unique_ptr<WebGraphicsContext3DProvider>
-  CreateOffscreenGraphicsContext3DProvider(
-      const ContextAttributes&,
-      const WebURL& top_document_url,
-      GraphicsInfo*);
+  CreateOffscreenGraphicsContext3DProvider(const ContextAttributes&,
+                                           const WebURL& top_document_url,
+                                           GraphicsInfo*);
 
   // Returns a newly allocated and initialized offscreen context provider,
   // backed by the process-wide shared main thread context. Returns null if
@@ -668,8 +670,8 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual bool IsTakingV8ContextSnapshot() { return false; }
 
  private:
-  static void InitializeCommon(Platform* platform,
-                               std::unique_ptr<Thread> main_thread);
+  static void InitializeMainThreadCommon(Platform* platform,
+                                         std::unique_ptr<Thread> main_thread);
 };
 
 }  // namespace blink

@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
@@ -218,7 +219,8 @@ void ExtensionActionViewController::OnContextMenuClosed() {
     extensions_container_->UndoPopOut();
 }
 
-bool ExtensionActionViewController::ExecuteAction(bool by_user) {
+bool ExtensionActionViewController::ExecuteAction(bool by_user,
+                                                  InvocationSource source) {
   if (!ExtensionIsValid())
     return false;
 
@@ -228,6 +230,7 @@ bool ExtensionActionViewController::ExecuteAction(bool by_user) {
     return false;
   }
 
+  base::UmaHistogramEnumeration("Extensions.Toolbar.InvocationSource", source);
   return ExecuteAction(SHOW_POPUP, by_user);
 }
 

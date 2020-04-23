@@ -88,7 +88,7 @@ class NavigationURLLoaderTest : public testing::Test {
             nullptr /* blob_url_loader_factory */,
             base::UnguessableToken::Create() /* devtools_navigation_token */,
             base::UnguessableToken::Create() /* devtools_frame_token */,
-            false /* obey_origin_policy */));
+            false /* obey_origin_policy */, {} /* cors_exempt_headers */));
     return NavigationURLLoader::Create(
         browser_context_.get(),
         BrowserContext::GetDefaultStoragePartition(browser_context_.get()),

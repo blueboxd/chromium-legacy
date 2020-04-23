@@ -9,7 +9,7 @@
 #include "third_party/blink/public/mojom/credentialmanager/credential_manager.mojom-blink.h"
 #include "third_party/blink/public/mojom/sms/sms_receiver.mojom-blink.h"
 #include "third_party/blink/public/mojom/webauthn/authenticator.mojom-blink.h"
-#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
@@ -19,7 +19,7 @@ namespace blink {
 class ScriptState;
 
 // Owns the client end of the mojo::CredentialManager interface connection to an
-// implementation that services requests in the security context of the document
+// implementation that services requests in the security context of the window
 // supplemented by this CredentialManagerProxy instance.
 //
 // This facilitates routing API calls to be serviced in the correct security
@@ -31,13 +31,13 @@ class ScriptState;
 // method was called.
 class MODULES_EXPORT CredentialManagerProxy
     : public GarbageCollected<CredentialManagerProxy>,
-      public Supplement<Document> {
+      public Supplement<LocalDOMWindow> {
   USING_GARBAGE_COLLECTED_MIXIN(CredentialManagerProxy);
 
  public:
   static const char kSupplementName[];
 
-  explicit CredentialManagerProxy(Document&);
+  explicit CredentialManagerProxy(LocalDOMWindow&);
   virtual ~CredentialManagerProxy();
 
   mojom::blink::CredentialManager* CredentialManager() {
@@ -52,19 +52,14 @@ class MODULES_EXPORT CredentialManagerProxy
     credential_manager_.FlushForTesting();
   }
 
-  void Trace(Visitor* visitor) override;
-
-  // Both flavors must be called only with arguments representing a valid
-  // context corresponding to an attached Document.
+  // Must be called only with argument representing a valid
+  // context corresponding to an attached window.
   static CredentialManagerProxy* From(ScriptState*);
-  static CredentialManagerProxy* From(Document&);
 
  private:
   mojo::Remote<mojom::blink::Authenticator> authenticator_;
   mojo::Remote<mojom::blink::CredentialManager> credential_manager_;
   mojo::Remote<mojom::blink::SmsReceiver> sms_receiver_;
-
-  Member<Document> document_;
 };
 
 }  // namespace blink

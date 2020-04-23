@@ -13,6 +13,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.supplier.Supplier;
+import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -41,6 +42,40 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
     private final FeedListContentManager mContentManager;
     private final TabModelSelector mTabModelSelector;
     private final Supplier<Tab> mTabProvider;
+
+    /**
+     * A {@link TabObserver} that observes navigation related events that originate from Feed
+     * interactions. Calls reportNavigationDone when navigation completes.
+     */
+    private class FeedTabNavigationObserver extends EmptyTabObserver {
+        private final boolean mInNewTab;
+
+        FeedTabNavigationObserver(boolean inNewTab) {
+            mInNewTab = inNewTab;
+        }
+
+        @Override
+        public void onPageLoadFinished(Tab tab, String url) {
+            FeedStreamSurfaceJni.get().reportNavigationDone(
+                    mNativeFeedStreamSurface, FeedStreamSurface.this, url, mInNewTab);
+            tab.removeObserver(this);
+        }
+
+        @Override
+        public void onPageLoadFailed(Tab tab, int errorCode) {
+            tab.removeObserver(this);
+        }
+
+        @Override
+        public void onCrash(Tab tab) {
+            tab.removeObserver(this);
+        }
+
+        @Override
+        public void onDestroyed(Tab tab) {
+            tab.removeObserver(this);
+        }
+    }
 
     /**
      * Creates a {@link FeedStreamSurface} for creating native side bridge to access native feed
@@ -152,15 +187,17 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
         mTabProvider.get().loadUrl(loadUrlParams);
         FeedStreamSurfaceJni.get().reportNavigationStarted(
                 mNativeFeedStreamSurface, FeedStreamSurface.this, url, false /*inNewTab*/);
+        mTabProvider.get().addObserver(new FeedTabNavigationObserver(false));
     }
 
     @Override
     public void navigateNewTab(String url) {
         Tab tab = mTabProvider.get();
-        mTabModelSelector.openNewTab(
+        Tab newTab = mTabModelSelector.openNewTab(
                 new LoadUrlParams(url), TabLaunchType.FROM_CHROME_UI, tab, tab.isIncognito());
         FeedStreamSurfaceJni.get().reportNavigationStarted(
                 mNativeFeedStreamSurface, FeedStreamSurface.this, url, true /*inNewTab*/);
+        newTab.addObserver(new FeedTabNavigationObserver(true));
     }
 
     @Override
@@ -225,6 +262,9 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
         void reportOpenAction(long nativeFeedStreamSurface, FeedStreamSurface caller);
         // TODO(jianli): Call this function at the appropriate time.
         void reportOpenInNewTabAction(long nativeFeedStreamSurface, FeedStreamSurface caller);
+        // TODO(jianli): Call this function at the appropriate time.
+        void reportOpenInNewIncognitoTabAction(
+                long nativeFeedStreamSurface, FeedStreamSurface caller);
         // TODO(jianli): Call this function at the appropriate time.
         void reportSendFeedbackAction(long nativeFeedStreamSurface, FeedStreamSurface caller);
         // TODO(jianli): Call this function at the appropriate time.

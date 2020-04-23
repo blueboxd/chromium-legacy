@@ -13,7 +13,7 @@
       "transform": 2
     },
     {
-      "name": "",
+      "name": "Synthesized Clip",
       "bounds": [800, 300],
       "transform": 2
     }

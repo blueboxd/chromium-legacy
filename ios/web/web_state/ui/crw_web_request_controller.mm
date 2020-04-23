@@ -440,31 +440,6 @@ enum class BackForwardNavigationType {
   }
 }
 
-// Reports Navigation.IOSWKWebViewSlowFastBackForward UMA. No-op if pending
-// navigation is not back forward navigation.
-- (void)reportBackForwardNavigationTypeForFastNavigation:(BOOL)isFast {
-  web::NavigationManager* navigationManager = self.navigationManagerImpl;
-  int pendingIndex = navigationManager->GetPendingItemIndex();
-  if (pendingIndex == -1) {
-    // Pending navigation is not a back forward navigation.
-    return;
-  }
-
-  BOOL isBack = pendingIndex < navigationManager->GetLastCommittedItemIndex();
-  BackForwardNavigationType type = BackForwardNavigationType::FAST_BACK;
-  if (isBack) {
-    type = isFast ? BackForwardNavigationType::FAST_BACK
-                  : BackForwardNavigationType::SLOW_BACK;
-  } else {
-    type = isFast ? BackForwardNavigationType::FAST_FORWARD
-                  : BackForwardNavigationType::SLOW_FORWARD;
-  }
-
-  UMA_HISTOGRAM_ENUMERATION(
-      "Navigation.IOSWKWebViewSlowFastBackForward", type,
-      BackForwardNavigationType::BACK_FORWARD_NAVIGATION_TYPE_COUNT);
-}
-
 #pragma mark Navigation and Session Information
 
 // Returns the associated NavigationManagerImpl.
@@ -681,7 +656,6 @@ enum class BackForwardNavigationType {
     [self.navigationHandler.navigationStates
            setContext:std::move(navigationContext)
         forNavigation:navigation];
-    [self reportBackForwardNavigationTypeForFastNavigation:NO];
   };
 
   // When navigating via WKBackForwardListItem to pages created or updated by
@@ -733,7 +707,6 @@ enum class BackForwardNavigationType {
       holder->set_navigation_type(WKNavigationTypeBackForward);
       navigation = [self.webView
           goToBackForwardListItem:holder->back_forward_list_item()];
-      [self reportBackForwardNavigationTypeForFastNavigation:YES];
     }
     [self.navigationHandler.navigationStates
              setState:web::WKNavigationState::REQUESTED

@@ -126,7 +126,6 @@ static_library("common") {
     "google_url_loader_throttle.h",
     "heap_profiler_controller.cc",
     "heap_profiler_controller.h",
-    "instant_mojom_traits.h",
     "logging_chrome.cc",
     "logging_chrome.h",
     "mac/launchd.h",
@@ -152,6 +151,7 @@ static_library("common") {
     "prerender_util.h",
     "ref_counted_util.h",
     "render_messages.h",
+    "search/instant_mojom_traits.h",
     "search/instant_types.cc",
     "search/instant_types.h",
     "search/ntp_logging_events.h",
@@ -194,6 +194,7 @@ static_library("common") {
     "//chrome/common/net",
     "//chrome/common/profiler",
     "//chrome/common/qr_code_generator",
+    "//chrome/common/search:mojo_bindings",
     "//chrome/installer/util:with_no_strings",
     "//components/cast_certificate",
     "//components/cdm/common",
@@ -658,8 +659,8 @@ static_library("test_support") {
 
   deps = [
     ":common",
-    ":search_mojom",
     "//base",
+    "//chrome/common/search:mojo_bindings",
     "//testing/gmock",
     "//testing/gtest",
   ]
@@ -757,15 +758,6 @@ mojom("mojo_bindings") {
   ]
 
   component_deps = [ "//content/public/common" ]
-}
-
-mojom("search_mojom") {
-  sources = [ "search.mojom" ]
-
-  public_deps = [
-    "//mojo/public/mojom/base",
-    "//url/mojom:url_mojom_gurl",
-  ]
 }
 
 if (enable_print_preview && !is_chromeos) {

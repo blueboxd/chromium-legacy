@@ -235,6 +235,8 @@ class CONTENT_EXPORT NavigationRequest
   void RemoveRequestHeader(const std::string& header_name) override;
   void SetRequestHeader(const std::string& header_name,
                         const std::string& header_value) override;
+  void SetCorsExemptRequestHeader(const std::string& header_name,
+                                  const std::string& header_value) override;
   const net::HttpResponseHeaders* GetResponseHeaders() override;
   net::HttpResponseInfo::ConnectionInfo GetConnectionInfo() override;
   const base::Optional<net::SSLInfo>& GetSSLInfo() override;
@@ -1150,6 +1152,8 @@ class CONTENT_EXPORT NavigationRequest
   // modified during a redirect, the headers will be applied to the redirected
   // request.
   net::HttpRequestHeaders modified_request_headers_;
+
+  net::HttpRequestHeaders cors_exempt_request_headers_;
 
   // Set of headers to remove during the redirect phase. This can only be
   // modified during the redirect phase.

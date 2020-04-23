@@ -977,14 +977,12 @@ void SiteSettingsHandler::HandleGetExceptionList(const base::ListValue* args) {
 
   std::unique_ptr<base::ListValue> exceptions(new base::ListValue);
 
-  HostContentSettingsMap* map =
-      HostContentSettingsMapFactory::GetForProfile(profile_);
   const auto* extension_registry = extensions::ExtensionRegistry::Get(profile_);
   AddExceptionsGrantedByHostedApps(profile_, APIPermissionFromGroupName(type),
                                    exceptions.get());
-  site_settings::GetExceptionsFromHostContentSettingsMap(
-      map, content_type, extension_registry, web_ui(), /*incognito=*/false,
-      /*filter=*/nullptr, exceptions.get());
+  site_settings::GetExceptionsForContentType(
+      content_type, profile_, extension_registry, web_ui(), /*incognito=*/false,
+      exceptions.get());
 
   Profile* incognito = profile_->HasOffTheRecordProfile()
                            ? profile_->GetOffTheRecordProfile()
@@ -992,11 +990,10 @@ void SiteSettingsHandler::HandleGetExceptionList(const base::ListValue* args) {
   // On Chrome OS in Guest mode the incognito profile is the primary profile,
   // so do not fetch an extra copy of the same exceptions.
   if (incognito && incognito != profile_) {
-    map = HostContentSettingsMapFactory::GetForProfile(incognito);
     extension_registry = extensions::ExtensionRegistry::Get(incognito);
-    site_settings::GetExceptionsFromHostContentSettingsMap(
-        map, content_type, extension_registry, web_ui(), /*incognito=*/true,
-        /*filter=*/nullptr, exceptions.get());
+    site_settings::GetExceptionsForContentType(
+        content_type, profile_, extension_registry, web_ui(),
+        /*incognito=*/true, exceptions.get());
   }
 
   ResolveJavascriptCallback(*callback_id, *exceptions.get());
@@ -1202,6 +1199,12 @@ void SiteSettingsHandler::HandleResetCategoryPermissionForPattern(
           "SoundContentSetting.UnmuteBy.PatternException"));
     }
   }
+
+  auto* auto_blocker =
+      PermissionDecisionAutoBlockerFactory::GetForProfile(profile);
+  // End embargo if currently active, no-op otherwise.
+  auto_blocker->RemoveEmbargoByUrl(GURL(primary_pattern_string), content_type);
+
   content_settings::LogWebSiteSettingsPermissionChange(
       content_type, ContentSetting::CONTENT_SETTING_DEFAULT);
 }

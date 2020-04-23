@@ -18,6 +18,8 @@ class TabStripRegionView final : public views::View {
   const char* GetClassName() const override;
   void ChildPreferredSizeChanged(views::View* child) override;
 
+  // TODO(958173): Override OnBoundsChanged to cancel tabstrip animations.
+
  private:
   DISALLOW_COPY_AND_ASSIGN(TabStripRegionView);
 };

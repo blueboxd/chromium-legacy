@@ -33,6 +33,13 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   ShellContentBrowserClient();
   ~ShellContentBrowserClient() override;
 
+  // The value supplied here is set when creating the NetworkContext.
+  // Specifically
+  // network::mojom::NetworkContext::allow_any_cors_exempt_header_for_browser.
+  static void set_allow_any_cors_exempt_header_for_browser(bool value) {
+    allow_any_cors_exempt_header_for_browser_ = value;
+  }
+
   // ContentBrowserClient overrides.
   std::unique_ptr<BrowserMainParts> CreateBrowserMainParts(
       const MainFunctionParams& parameters) override;
@@ -139,6 +146,8 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       BrowserContext* context);
 
  private:
+  static bool allow_any_cors_exempt_header_for_browser_;
+
   base::OnceClosure select_client_certificate_callback_;
   base::OnceCallback<bool(const service_manager::Identity&)>
       should_terminate_on_service_quit_callback_;

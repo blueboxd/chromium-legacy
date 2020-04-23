@@ -33,15 +33,6 @@ int kDefaultAutoResumptionSizeLimit = 10 * 1024 * 1024;  // 10 MB
 const char kAutoResumptionSizeLimitParamName[] = "AutoResumptionSizeLimit";
 }  // namespace
 
-static ScopedJavaLocalRef<jstring> JNI_DownloadUtils_GetFailStateMessage(
-    JNIEnv* env,
-    jint fail_state) {
-  base::string16 message = OfflineItemUtils::GetFailStateMessage(
-      static_cast<offline_items_collection::FailState>(fail_state));
-  l10n_util::GetStringFUTF16(IDS_DOWNLOAD_STATUS_INTERRUPTED, message);
-  return ConvertUTF16ToJavaString(env, message);
-}
-
 static jint JNI_DownloadUtils_GetResumeMode(
     JNIEnv* env,
     const base::android::JavaParamRef<jstring>& jurl,

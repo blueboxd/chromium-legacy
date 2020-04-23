@@ -107,6 +107,7 @@ js_library("multidevice_tether_item") {
     ":multidevice_feature_behavior",
     "..:os_route",
     "..:os_settings_routes",
+    "../..:settings_routes",
     "//ui/webui/resources/cr_components/chromeos/network:network_listener_behavior",
     "//ui/webui/resources/cr_components/chromeos/network:onc_mojo",
   ]
@@ -187,14 +188,13 @@ js_library("multidevice_radio_button.m") {
   extra_deps = [ ":multidevice_radio_button_module" ]
 }
 
-# TODO: Fix and re-enable
-#js_library("multidevice_smartlock_subpage.m") {
-#  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/multidevice_page/multidevice_smartlock_subpage.m.js" ]
-#  deps = [
-#    # TODO: Fill those in.
-#  ]
-#  extra_deps = [ ":multidevice_smartlock_subpage_module" ]
-#}
+js_library("multidevice_smartlock_subpage.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/multidevice_page/multidevice_smartlock_subpage.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":multidevice_smartlock_subpage_module" ]
+}
 
 js_library("multidevice_subpage.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/multidevice_page/multidevice_subpage.m.js" ]
@@ -204,14 +204,13 @@ js_library("multidevice_subpage.m") {
   extra_deps = [ ":multidevice_subpage_module" ]
 }
 
-# TODO: Fix and re-enable
-#js_library("multidevice_tether_item.m") {
-#  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/multidevice_page/multidevice_tether_item.m.js" ]
-#  deps = [
-#    # TODO: Fill those in.
-#  ]
-#  extra_deps = [ ":multidevice_tether_item_module" ]
-#}
+js_library("multidevice_tether_item.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/multidevice_page/multidevice_tether_item.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":multidevice_tether_item_module" ]
+}
 
 import("//tools/polymer/polymer.gni")
 
@@ -223,13 +222,9 @@ group("polymer3_elements") {
     ":multidevice_feature_toggle_module",
     ":multidevice_page_module",
     ":multidevice_radio_button_module",
-
-    # TODO: Fix and re-enable
-    #":multidevice_smartlock_subpage_module",
+    ":multidevice_smartlock_subpage_module",
     ":multidevice_subpage_module",
-
-    # TODO: Fix and re-enable
-    #":multidevice_tether_item_module",
+    ":multidevice_tether_item_module",
   ]
 }
 
@@ -263,12 +258,11 @@ polymer_modulizer("multidevice_radio_button") {
   html_type = "dom-module"
 }
 
-# TODO: Fix and re-enable
-#polymer_modulizer("multidevice_smartlock_subpage") {
-#  js_file = "multidevice_smartlock_subpage.js"
-#  html_file = "multidevice_smartlock_subpage.html"
-#  html_type = "dom-module"
-#}
+polymer_modulizer("multidevice_smartlock_subpage") {
+  js_file = "multidevice_smartlock_subpage.js"
+  html_file = "multidevice_smartlock_subpage.html"
+  html_type = "dom-module"
+}
 
 polymer_modulizer("multidevice_subpage") {
   js_file = "multidevice_subpage.js"
@@ -276,12 +270,11 @@ polymer_modulizer("multidevice_subpage") {
   html_type = "dom-module"
 }
 
-# TODO: Fix and re-enable
-#polymer_modulizer("multidevice_tether_item") {
-#  js_file = "multidevice_tether_item.js"
-#  html_file = "multidevice_tether_item.html"
-#  html_type = "dom-module"
-#}
+polymer_modulizer("multidevice_tether_item") {
+  js_file = "multidevice_tether_item.js"
+  html_file = "multidevice_tether_item.html"
+  html_type = "dom-module"
+}
 
 import("//ui/webui/resources/tools/js_modulizer.gni")
 

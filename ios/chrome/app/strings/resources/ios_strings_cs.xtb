@@ -196,7 +196,6 @@
 <translation id="3469166899695866866">Zastavit stahování?</translation>
 <translation id="3470502288861289375">Kopírování...</translation>
 <translation id="3474624961160222204">Pokrač. jako <ph name="NAME" /></translation>
-<translation id="3474649192738347024">Formuláře byly vyplněny.</translation>
 <translation id="3478058380795961209">Měsíc vypršení platnosti</translation>
 <translation id="3482959374254649722">Probíhá synchronizace karet…</translation>
 <translation id="3484946776651937681">Otevřít ve složce Stažené soubory</translation>
@@ -479,6 +478,7 @@ Vaše data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro syn
 <translation id="7136892417564438900">Kamera je nedostupná</translation>
 <translation id="7159472599653637159">Vyžádat web pro mobily</translation>
 <translation id="7173114856073700355">Otevřít nastavení</translation>
+<translation id="7189598951263744875">Sdílet...</translation>
 <translation id="7192050974311852563">Začít protokolovat</translation>
 <translation id="7203585745079012652">Vyslovovat odpovědi</translation>
 <translation id="7265758999917665941">Pro tento web nikdy</translation>

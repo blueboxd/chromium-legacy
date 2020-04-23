@@ -401,6 +401,7 @@ crbug.com/1027534 [ mac nvidia-0xfe9 ] conformance2/rendering/uniform-block-buff
 crbug.com/1027776 [ mac nvidia-0xfe9 ] deqp/data/gles3/shaders/conversions.html [ Failure ]
 crbug.com/1027776 [ mac nvidia-0xfe9 ] conformance2/rendering/framebuffer-texture-level1.html [ Failure ]
 crbug.com/1037650 [ mac nvidia-0xfe9 ] conformance2/textures/canvas_sub_rectangle/* [ RetryOnFailure ]
+crbug.com/1073538 [ mac nvidia-0xfe9 ] deqp/functional/gles3/shadermatrix/div_dynamic.html [ RetryOnFailure ]
 
 # Mac AMD
 # TODO(kbr): uncomment the following two exepectations after test

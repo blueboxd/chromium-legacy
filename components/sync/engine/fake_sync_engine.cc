@@ -13,7 +13,6 @@
 namespace syncer {
 
 constexpr char FakeSyncEngine::kTestBirthday[];
-constexpr char FakeSyncEngine::kTestKeystoreKey[];
 
 FakeSyncEngine::FakeSyncEngine() {}
 FakeSyncEngine::~FakeSyncEngine() {}
@@ -21,10 +20,10 @@ FakeSyncEngine::~FakeSyncEngine() {}
 void FakeSyncEngine::Initialize(InitParams params) {
   bool success = !fail_initial_download_;
   initialized_ = success;
-  params.host->OnEngineInitialized(
-      ModelTypeSet(), WeakHandle<JsBackend>(),
-      WeakHandle<DataTypeDebugInfoListener>(), kTestBirthday,
-      /*bag_of_chips=*/"", kTestKeystoreKey, success);
+  params.host->OnEngineInitialized(ModelTypeSet(), WeakHandle<JsBackend>(),
+                                   WeakHandle<DataTypeDebugInfoListener>(),
+                                   kTestBirthday,
+                                   /*bag_of_chips=*/"", success);
 }
 
 bool FakeSyncEngine::IsInitialized() const {

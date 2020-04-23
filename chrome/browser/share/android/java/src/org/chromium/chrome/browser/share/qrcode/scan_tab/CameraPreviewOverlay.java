@@ -14,7 +14,7 @@ import android.text.StaticLayout;
 import android.text.TextPaint;
 import android.view.View;
 
-import org.chromium.chrome.browser.share.qrcode.R;
+import org.chromium.chrome.browser.share.R;
 
 /** CameraPreviewOverlay is a mainly transparent layer meant for the camera preview. */
 public class CameraPreviewOverlay extends View {

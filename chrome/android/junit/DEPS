@@ -12,6 +12,7 @@ include_rules = [
   "+components/bookmarks/common/android",
   "+components/browser_ui/notifications/android",
   "+components/browser_ui/widget/android",
+  "+components/dom_distiller/core",
   "+components/offline_items_collection/core/android/java/src",
   "+components/omnibox/browser/android/java/src/org/chromium/components/omnibox",
   "+components/payments/content/android/java/src/org/chromium/components/payments",

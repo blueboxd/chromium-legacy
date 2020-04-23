@@ -196,7 +196,6 @@
 <translation id="3469166899695866866">Zaustavljate preuzimanje?</translation>
 <translation id="3470502288861289375">Kopiranje...</translation>
 <translation id="3474624961160222204">Nastavi kao <ph name="NAME" /></translation>
-<translation id="3474649192738347024">Obrasci su popunjeni.</translation>
 <translation id="3478058380795961209">Mesec isteka</translation>
 <translation id="3482959374254649722">Sinhronizacija kartica je u toku...</translation>
 <translation id="3484946776651937681">Otvori u Preuzimanjima</translation>
@@ -479,6 +478,7 @@ Podaci su šifrovani pomoću pristupne fraze za sinhronizaciju <ph name="TIME" 
 <translation id="7136892417564438900">Kamera je nedostupna</translation>
 <translation id="7159472599653637159">Zahtevaj mobilni sajt</translation>
 <translation id="7173114856073700355">Otvori Podešavanja</translation>
+<translation id="7189598951263744875">Deli...</translation>
 <translation id="7192050974311852563">Pokreni evidentiranje</translation>
 <translation id="7203585745079012652">Izgovaraj odgovore</translation>
 <translation id="7265758999917665941">Nikada za ovaj sajt</translation>

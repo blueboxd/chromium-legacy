@@ -271,6 +271,7 @@
       'linux-code-coverage': 'clang_code_coverage',
       'linux-fieldtrial-rel': 'release_bot_minimal_symbols',
       'linux-password-manager-captured-sites-rel': 'release_bot',
+      'linux-perfetto-rel': 'perfetto_release_bot',
       'linux-upload-perfetto': 'release_bot',
       'linux-wpt-fyi-rel': 'release_bot_minimal_symbols',
       'mac-autofill-captured-sites-rel': 'release_bot',
@@ -780,9 +781,9 @@
       'linux-chrome': 'official_goma',
       'linux-chromeos-chrome': 'official_goma_chromeos_include_unwind_tables',
       'mac-chrome': 'official_goma',
-      'win64-chrome': 'official_goma_x64',
-      'win_chrome_official': 'official_goma_x86',
       'win-celab-try-rel': 'official_celab_release_bot',
+      'win-chrome': 'official_goma_x86',
+      'win64-chrome': 'official_goma_x64',
     },
 
     'tryserver.chromium.chromiumos': {
@@ -849,6 +850,7 @@
       'linux-gcc-rel': 'release_bot_x86_minimal_symbols_no_clang_cxx11',
       'linux-libfuzzer-asan-rel': 'libfuzzer_asan_release_trybot',
       'linux-ozone-rel': 'ozone_linux_release_trybot',
+      'linux-perfetto-rel': 'perfetto_release_trybot',
       'linux-rel': 'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_code_coverage',
       'linux-trusty-rel': 'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange',
       'linux-viz-rel': 'release_trybot',
@@ -2047,6 +2049,14 @@
       'ozone_linux', 'release_trybot',
     ],
 
+    'perfetto_release_bot': [
+      'perfetto', 'release_bot',
+    ],
+
+    'perfetto_release_trybot': [
+      'perfetto', 'release_trybot',
+    ],
+
     'presubmit': [
       # The chromium_presubmit bot does not use mb.
       'error',
@@ -2653,6 +2663,10 @@
 
     'pdf_xfa': {
       'gn_args': 'pdf_enable_xfa=true',
+    },
+
+    'perfetto': {
+      'gn_args': 'use_perfetto_client_library=true',
     },
 
     'pgo_phase_1': {

@@ -26,7 +26,7 @@ void SafeBrowsingSubresourceHelper::CreateForWebContents(
                                 web_contents, ui_manager)));
 }
 
-SafeBrowsingSubresourceHelper::~SafeBrowsingSubresourceHelper() {}
+SafeBrowsingSubresourceHelper::~SafeBrowsingSubresourceHelper() = default;
 
 void SafeBrowsingSubresourceHelper::ReadyToCommitNavigation(
     content::NavigationHandle* navigation_handle) {

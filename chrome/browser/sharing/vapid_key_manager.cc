@@ -26,32 +26,24 @@ crypto::ECPrivateKey* VapidKeyManager::GetOrCreateKey() {
 }
 
 bool VapidKeyManager::RefreshCachedKey() {
-  if (base::FeatureList::IsEnabled(kSharingDeriveVapidKey)) {
-    auto derived_key = sync_service_->GetExperimentalAuthenticationKey();
-    if (!derived_key)
-      return InitWithPreference();
+  if (InitWithPreference())
+    return true;
 
-    return UpdateCachedKey(std::move(derived_key));
-  } else {
-    if (InitWithPreference())
-      return true;
+  if (vapid_key_)
+    return false;
 
-    if (vapid_key_)
-      return false;
+  // Don't generate keys if preferences is not syncing to avoid isolated keys.
+  if (!sync_service_->GetActiveDataTypes().Has(syncer::PREFERENCES))
+    return false;
 
-    // Don't generate keys if preferences is not syncing to avoid isolated keys.
-    if (!sync_service_->GetActiveDataTypes().Has(syncer::PREFERENCES))
-      return false;
-
-    auto generated_key = crypto::ECPrivateKey::Create();
-    if (!generated_key) {
-      LogSharingVapidKeyCreationResult(
-          SharingVapidKeyCreationResult::kGenerateECKeyFailed);
-      return false;
-    }
-
-    return UpdateCachedKey(std::move(generated_key));
+  auto generated_key = crypto::ECPrivateKey::Create();
+  if (!generated_key) {
+    LogSharingVapidKeyCreationResult(
+        SharingVapidKeyCreationResult::kGenerateECKeyFailed);
+    return false;
   }
+
+  return UpdateCachedKey(std::move(generated_key));
 }
 
 bool VapidKeyManager::UpdateCachedKey(

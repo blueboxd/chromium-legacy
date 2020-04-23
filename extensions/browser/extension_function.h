@@ -113,7 +113,7 @@ class ExtensionFunction : public base::RefCountedThreadSafe<
   bool HasPermission() const;
 
   // Sends |error| as an error response.
-  void RespondWithError(const std::string& error);
+  void RespondWithError(std::string error);
 
   // The result of a function call.
   //
@@ -129,8 +129,7 @@ class ExtensionFunction : public base::RefCountedThreadSafe<
    protected:
     void SetFunctionResults(ExtensionFunction* function,
                             std::unique_ptr<base::ListValue> results);
-    void SetFunctionError(ExtensionFunction* function,
-                          const std::string& error);
+    void SetFunctionError(ExtensionFunction* function, std::string error);
   };
   typedef std::unique_ptr<ResponseValueObject> ResponseValue;
 
@@ -212,7 +211,7 @@ class ExtensionFunction : public base::RefCountedThreadSafe<
 
   // Called when the quota limit has been exceeded. The default implementation
   // returns an error.
-  virtual void OnQuotaExceeded(const std::string& violation_error);
+  virtual void OnQuotaExceeded(std::string violation_error);
 
   // Specifies the raw arguments to the function, as a JSON value. Expects a
   // base::Value of type LIST.
@@ -371,7 +370,7 @@ class ExtensionFunction : public base::RefCountedThreadSafe<
   //   example, alarms::Get::Results::Create(alarm).
   ResponseValue ArgumentList(std::unique_ptr<base::ListValue> results);
   // Error. chrome.runtime.lastError.message will be set to |error|.
-  ResponseValue Error(const std::string& error);
+  ResponseValue Error(std::string error);
   // Error with formatting. Args are processed using
   // ErrorUtils::FormatErrorMessage, that is, each occurrence of * is replaced
   // by the corresponding |s*|:

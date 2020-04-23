@@ -31,8 +31,6 @@ WebTestRenderFrameObserver::WebTestRenderFrameObserver(
                                 ->GetTestRunner();
   render_frame->GetWebFrame()->SetContentSettingsClient(
       test_runner->GetWebContentSettings());
-  render_frame->GetWebFrame()->SetTextCheckClient(
-      test_runner->GetWebTextCheckClient());
   render_frame->GetAssociatedInterfaceRegistry()->AddInterface(
       base::BindRepeating(&WebTestRenderFrameObserver::BindReceiver,
                           base::Unretained(this)));

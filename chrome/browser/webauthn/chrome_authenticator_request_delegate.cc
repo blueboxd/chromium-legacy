@@ -526,6 +526,22 @@ void ChromeAuthenticatorRequestDelegate::CollectPIN(
   weak_dialog_model_->CollectPIN(attempts, std::move(provide_pin_cb));
 }
 
+void ChromeAuthenticatorRequestDelegate::StartBioEnrollment(
+    base::OnceClosure next_callback) {
+  if (!weak_dialog_model_)
+    return;
+
+  weak_dialog_model_->StartInlineBioEnrollment(std::move(next_callback));
+}
+
+void ChromeAuthenticatorRequestDelegate::OnSampleCollected(
+    int bio_samples_remaining) {
+  if (!weak_dialog_model_)
+    return;
+
+  weak_dialog_model_->OnSampleCollected(bio_samples_remaining);
+}
+
 void ChromeAuthenticatorRequestDelegate::FinishCollectToken() {
   if (!weak_dialog_model_)
     return;

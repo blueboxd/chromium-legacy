@@ -188,77 +188,6 @@ TEST_F(PreviewsLitePageRedirectDeciderTest, TestSingleBypass) {
   }
 }
 
-class PreviewsLitePageRedirectDeciderPrefTest
-    : public ChromeRenderViewHostTestHarness {
- protected:
-  PreviewsLitePageRedirectDecider* GetDeciderWithDRPEnabled(bool enabled) {
-    data_reduction_proxy::DataReductionProxySettings::
-        SetDataSaverEnabledForTesting(profile()->GetPrefs(), enabled);
-    DataReductionProxyChromeSettingsFactory::GetForBrowserContext(profile())
-        ->InitDataReductionProxySettings(
-            profile(),
-            std::make_unique<data_reduction_proxy::DataStoreImpl>(
-                profile()->GetPath()),
-            task_environment()->GetMainThreadTaskRunner());
-
-    decider_ = std::make_unique<PreviewsLitePageRedirectDecider>(
-        web_contents()->GetBrowserContext());
-
-    return decider_.get();
-  }
-
- private:
-  std::unique_ptr<PreviewsLitePageRedirectDecider> decider_;
-};
-
-TEST_F(PreviewsLitePageRedirectDeciderPrefTest, TestDRPDisabled) {
-  PreviewsLitePageRedirectDecider* decider = GetDeciderWithDRPEnabled(false);
-  EXPECT_FALSE(decider->NeedsToNotifyUser());
-
-  content::WebContentsTester::For(web_contents())
-      ->NavigateAndCommit(GURL(kTestUrl));
-
-  // Should still be false after a navigation
-  EXPECT_FALSE(decider->NeedsToNotifyUser());
-}
-
-TEST_F(PreviewsLitePageRedirectDeciderPrefTest, TestDRPEnabled) {
-  PreviewsLitePageRedirectDecider* decider = GetDeciderWithDRPEnabled(true);
-  EXPECT_TRUE(decider->NeedsToNotifyUser());
-
-  content::WebContentsTester::For(web_contents())
-      ->NavigateAndCommit(GURL(kTestUrl));
-
-  // Should still be true after a navigation
-  EXPECT_TRUE(decider->NeedsToNotifyUser());
-}
-
-TEST_F(PreviewsLitePageRedirectDeciderPrefTest, TestDRPEnabledCmdLineIgnored) {
-  PreviewsLitePageRedirectDecider* decider = GetDeciderWithDRPEnabled(true);
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      previews::switches::kDoNotRequireLitePageRedirectInfoBar);
-  EXPECT_FALSE(decider->NeedsToNotifyUser());
-
-  content::WebContentsTester::For(web_contents())
-      ->NavigateAndCommit(GURL(kTestUrl));
-
-  // Should still be false after a navigation.
-  EXPECT_FALSE(decider->NeedsToNotifyUser());
-}
-
-TEST_F(PreviewsLitePageRedirectDeciderPrefTest, TestDRPEnabledThenNotify) {
-  PreviewsLitePageRedirectDecider* decider = GetDeciderWithDRPEnabled(true);
-  EXPECT_TRUE(decider->NeedsToNotifyUser());
-
-  // Simulate the callback being run.
-  decider->SetUserHasSeenUINotification();
-
-  content::WebContentsTester::For(web_contents())
-      ->NavigateAndCommit(GURL(kTestUrl));
-
-  EXPECT_FALSE(decider->NeedsToNotifyUser());
-}
-
 class TestPreviewsLitePageRedirectDeciderWebContentsObserver
     : public content::WebContentsObserver,
       public content::WebContentsUserData<
@@ -290,7 +219,10 @@ class TestPreviewsLitePageRedirectDeciderWebContentsObserver
 WEB_CONTENTS_USER_DATA_KEY_IMPL(
     TestPreviewsLitePageRedirectDeciderWebContentsObserver)
 
-TEST_F(PreviewsLitePageRedirectDeciderPrefTest, TestDRPPageIDIncremented) {
+class PreviewsLitePageRedirectDeciderPageIDTest
+    : public ChromeRenderViewHostTestHarness {};
+
+TEST_F(PreviewsLitePageRedirectDeciderPageIDTest, TestDRPPageIDIncremented) {
   TestPreviewsLitePageRedirectDeciderWebContentsObserver::CreateForWebContents(
       web_contents());
   content::WebContentsTester::For(web_contents())

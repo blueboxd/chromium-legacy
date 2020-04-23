@@ -12470,6 +12470,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                         ->GetViewBounds()
                         .height() *
                     5 * scale_factor;
+
+  // The raster size is expanded by a factor of 1.3 to allow for some scrolling
+  // without requiring re-raster. The expanded area to be rasterized should be
+  // centered around the iframe's visible area within the parent document, hence
+  // the "(expected_height - view_height) / 2" term below.
   int expected_height = view_height * 13 / 10;
 
   int expected_offset = ((5000 - div_offset_top * 5) * scale_factor) -
@@ -12523,18 +12528,27 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       new UpdateViewportIntersectionMessageFilter();
   child->current_frame_host()->GetProcess()->AddFilter(filter.get());
 
+  // Get the page offset of the middle frame within the top document.
+  EvalJsResult top_eval_result = EvalJs(
+      root->current_frame_host(),
+      "document.getElementsByTagName('div')[0].getBoundingClientRect().top;");
+  ASSERT_TRUE(top_eval_result.error.empty());
+  int top_div_offset_top = top_eval_result.ExtractInt();
+
   // This scrolls the div containing in the 'Site B' iframe that contains the
   // 'Site C' iframe, and then we verify that the 'Site C' frame receives the
   // correct compositor frame. Force a lifecycle update after the scroll and
   // wait for it to finish; by the time this call returns, the viewport
   // intersection IPC should already have been received by the browser process
-  // and handled by the filter.
-  EvalJsResult eval_result = EvalJsAfterLifecycleUpdate(
+  // and handled by the filter. Extract the page offset of the leaf iframe
+  // within the middle document.
+  EvalJsResult child_eval_result = EvalJsAfterLifecycleUpdate(
       child->current_frame_host(),
       "document.getElementsByTagName('div')[0].scrollTo(0, 5000);",
       "document.getElementsByTagName('div')[0].getBoundingClientRect().top;");
-  ASSERT_TRUE(eval_result.error.empty());
-  int div_offset_top = eval_result.ExtractInt();
+  ASSERT_TRUE(child_eval_result.error.empty());
+  int child_div_offset_top = child_eval_result.ExtractInt();
+
   gfx::Rect compositing_rect =
       filter->GetIntersectionState().compositor_visible_rect;
 
@@ -12552,8 +12566,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                         .height() *
                     scale_factor;
   int expected_height = view_height * 13 / 10;
-  int expected_offset = ((5000 - div_offset_top) * scale_factor) -
-                        (expected_height - view_height) / 2;
+  // Multiply top_div_offset_top by 5 to account for transform:scale(0.2)
+  int expected_offset =
+      ((5000 - (top_div_offset_top * 5) - child_div_offset_top) *
+       scale_factor) -
+      (expected_height - view_height) / 2;
 
   // Allow a small amount for rounding differences from applying page and
   // device scale factors at different times.

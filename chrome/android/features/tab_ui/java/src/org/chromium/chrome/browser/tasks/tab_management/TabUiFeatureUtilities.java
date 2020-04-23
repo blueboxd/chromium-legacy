@@ -6,10 +6,7 @@ package org.chromium.chrome.browser.tasks.tab_management;
 
 import android.os.Build;
 import android.text.TextUtils;
-
 import androidx.annotation.Nullable;
-
-import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
 import org.chromium.chrome.browser.device.DeviceClassManager;
@@ -21,11 +18,6 @@ import org.chromium.chrome.browser.flags.IntCachedFieldTrialParameter;
 import org.chromium.chrome.browser.flags.StringCachedFieldTrialParameter;
 import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
-import org.chromium.ui.base.DeviceFormFactor;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * A class to handle the state of flags for tab_management.
@@ -90,24 +82,6 @@ public class TabUiFeatureUtilities {
         }
 
         return TabManagementModuleProvider.isTabManagementModuleSupported();
-    }
-
-    /**
-     * @return Tab UI related feature flags that should be cached.
-     */
-    public static List<String> getFeaturesToCache() {
-        if (!isEligibleForTabUiExperiments()) {
-            return Collections.emptyList();
-        }
-        return Arrays.asList(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
-                ChromeFeatureList.TAB_GROUPS_ANDROID,
-                ChromeFeatureList.DUET_TABSTRIP_INTEGRATION_ANDROID,
-                ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID);
-    }
-
-    private static boolean isEligibleForTabUiExperiments() {
-        return !DeviceFormFactor.isNonMultiDisplayContextOnTablet(
-                ContextUtils.getApplicationContext());
     }
 
     /**

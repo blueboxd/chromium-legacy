@@ -14,8 +14,8 @@
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/notifications/notification.h"
 #include "third_party/blink/renderer/modules/permissions/permission_utils.h"
@@ -86,10 +86,10 @@ ScriptPromise NotificationManager::RequestPermission(
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  Document* doc = Document::DynamicFrom(context);
+  LocalDOMWindow* win = To<LocalDOMWindow>(context);
   permission_service_->RequestPermission(
       CreatePermissionDescriptor(mojom::blink::PermissionName::NOTIFICATIONS),
-      LocalFrame::HasTransientUserActivation(doc ? doc->GetFrame() : nullptr),
+      LocalFrame::HasTransientUserActivation(win ? win->GetFrame() : nullptr),
       WTF::Bind(&NotificationManager::OnPermissionRequestComplete,
                 WrapPersistent(this), WrapPersistent(resolver),
                 WrapPersistent(deprecated_callback)));

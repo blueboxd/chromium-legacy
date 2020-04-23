@@ -176,14 +176,9 @@ class CC_EXPORT CompositorFrameReporter {
   FrameSkippedReason frame_skip_reason() const { return *frame_skip_reason_; }
 
  private:
-  void DroppedFrame();
-  void MissedDeadlineFrame();
-
   void TerminateReporter();
   void EndCurrentStage(base::TimeTicks end_time);
   void ReportCompositorLatencyHistograms() const;
-  void ReportLatencyHistograms(bool report_event_latency = false,
-                               bool report_delayed_latency = false);
   void ReportStageHistogramWithBreakdown(
       const StageData& stage,
       FrameSequenceTrackerType frame_sequence_tracker_type =
@@ -218,6 +213,16 @@ class CC_EXPORT CompositorFrameReporter {
 
   void ReportAllTraceEvents(const char* termination_status_str) const;
 
+  void EnableReportType(FrameReportType report_type) {
+    report_types_.set(static_cast<size_t>(report_type));
+  }
+  bool TestReportType(FrameReportType report_type) const {
+    return report_types_.test(static_cast<size_t>(report_type));
+  }
+
+  // This method is only used for DCheck
+  base::TimeDelta SumOfStageHistory() const;
+
   const bool should_report_metrics_;
 
   StageData current_stage_;
@@ -229,13 +234,12 @@ class CC_EXPORT CompositorFrameReporter {
   // be divided based on the frame submission status.
   std::vector<StageData> stage_history_;
 
-  // This method is only used for DCheck
-  base::TimeDelta SumOfStageHistory() const;
-
   // List of metrics for events affecting this frame.
   std::vector<EventMetrics> events_metrics_;
 
-  FrameReportType report_type_ = FrameReportType::kNonDroppedFrame;
+  std::bitset<static_cast<size_t>(FrameReportType::kMaxValue) + 1>
+      report_types_;
+
   base::TimeTicks frame_termination_time_;
   base::TimeTicks begin_main_frame_start_;
   FrameTerminationStatus frame_termination_status_ =

@@ -43,18 +43,6 @@ Polymer({
     },
 
     /**
-     * Whether power status and settings should be fetched and displayed.
-     * @private
-     */
-    enablePowerSettings_: {
-      type: Boolean,
-      value() {
-        return loadTimeData.getBoolean('enablePowerSettings');
-      },
-      readOnly: true,
-    },
-
-    /**
      * Whether storage management info should be hidden.
      * @private
      */

@@ -8,6 +8,8 @@
 #include <windows.h>
 #endif  // defined(OS_WIN)
 
+#include <string.h>
+
 #include "base/debug/alias.h"
 #include "base/logging.h"
 #include "base/partition_alloc_buildflags.h"

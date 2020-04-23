@@ -114,8 +114,7 @@ IN_PROC_BROWSER_TEST_F(EventLatencyBrowserTest, KeyPressOnButton) {
 
 // Tests that if a key-press on a page with an animation causes a visual update,
 // appropriate event latency metrics are reported.
-IN_PROC_BROWSER_TEST_F(EventLatencyBrowserTest,
-                       DISABLED_KeyPressOnButtonWithAnimation) {
+IN_PROC_BROWSER_TEST_F(EventLatencyBrowserTest, KeyPressOnButtonWithAnimation) {
   base::HistogramTester histogram_tester;
 
   ASSERT_NO_FATAL_FAILURE(LoadTestPage());
@@ -167,7 +166,10 @@ IN_PROC_BROWSER_TEST_F(EventLatencyBrowserTest,
 
 // Tests that entering a character in a textbox leads to appropriate event
 // latency metrics being reported even though the page has an animation running.
-IN_PROC_BROWSER_TEST_F(EventLatencyBrowserTest, KeyPressInInputWithAnimation) {
+//
+// Disabled due to flakiness on several platforms. See crbug.com/1072340
+IN_PROC_BROWSER_TEST_F(EventLatencyBrowserTest,
+                       DISABLED_KeyPressInInputWithAnimation) {
   base::HistogramTester histogram_tester;
 
   ASSERT_NO_FATAL_FAILURE(LoadTestPage());

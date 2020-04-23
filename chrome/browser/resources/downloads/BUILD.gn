@@ -5,7 +5,7 @@
 import("//chrome/common/features.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/grit/grit_rule.gni")
-import("//tools/polymer/polymer.gni")
+import("//tools/polymer/html_to_js.gni")
 import("../optimize_webui.gni")
 
 if (optimize_webui) {
@@ -47,7 +47,7 @@ if (optimize_webui) {
       downloads_pak_file,
     ]
     deps = [
-      ":polymer3_elements",
+      ":web_components",
       "//chrome/browser/ui/webui/downloads:mojo_bindings_js",
     ]
     grit_flags = [
@@ -143,35 +143,11 @@ js_library("toolbar") {
   ]
 }
 
-group("polymer3_elements") {
-  public_deps = [
-    ":icons_module",
-    ":item_module",
-    ":manager_module",
-    ":toolbar_module",
+html_to_js("web_components") {
+  js_files = [
+    "icons.js",
+    "item.js",
+    "manager.js",
+    "toolbar.js",
   ]
-}
-
-polymer_modulizer("item") {
-  html_file = "item.html"
-  js_file = "item.js"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("manager") {
-  html_file = "manager.html"
-  js_file = "manager.js"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("toolbar") {
-  html_file = "toolbar.html"
-  js_file = "toolbar.js"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("icons") {
-  html_file = "icons.html"
-  js_file = "icons.js"
-  html_type = "v3-ready"
 }

@@ -160,18 +160,18 @@ def DownloadAndUnpack(url, output_dir, path_prefixes=None):
       t.extractall(path=output_dir, members=members)
 
 
-def GetPlatformUrlPrefix(platform):
-  if platform == 'win32' or platform == 'cygwin':
-    return CDS_URL + '/Win/'
-  if platform == 'darwin':
-    return CDS_URL + '/Mac/'
-  assert platform.startswith('linux')
-  return CDS_URL + '/Linux_x64/'
+def GetPlatformUrlPrefix(host_os):
+  _HOST_OS_URL_MAP = {
+      'linux': 'Linux_x64',
+      'mac': 'Mac',
+      'win': 'Win',
+  }
+  return CDS_URL + '/' + _HOST_OS_URL_MAP[host_os] + '/'
 
 
-def DownloadAndUnpackPackage(package_file, output_dir):
+def DownloadAndUnpackPackage(package_file, output_dir, host_os):
   cds_file = "%s-%s.tgz" % (package_file, PACKAGE_VERSION)
-  cds_full_url = GetPlatformUrlPrefix(sys.platform) + cds_file
+  cds_full_url = GetPlatformUrlPrefix(host_os) + cds_file
   try:
     DownloadAndUnpack(cds_full_url, output_dir)
   except URLError:
@@ -184,7 +184,7 @@ def DownloadAndUnpackPackage(package_file, output_dir):
 # TODO(hans): Create a clang-win-runtime package instead.
 def DownloadAndUnpackClangWinRuntime(output_dir):
   cds_file = "clang-%s.tgz" %  PACKAGE_VERSION
-  cds_full_url = GetPlatformUrlPrefix('win32') + cds_file
+  cds_full_url = GetPlatformUrlPrefix('win') + cds_file
   path_prefixes =  [ 'lib/clang/' + RELEASE_VERSION + '/lib/',
                      'bin/llvm-symbolizer.exe' ]
   try:
@@ -248,7 +248,7 @@ def CopyDiaDllTo(target_dir):
   CopyFile(dia_dll, target_dir)
 
 
-def UpdatePackage(package_name):
+def UpdatePackage(package_name, host_os):
   stamp_file = None
   package_file = None
 
@@ -260,9 +260,12 @@ def UpdatePackage(package_name):
     package_file = 'clang-tidy'
   elif package_name == 'lld_mac':
     package_file = 'lld'
-    if sys.platform != 'darwin':
-      print('The lld_mac package cannot be downloaded on non-macs.')
-      print('On non-mac, lld is included in the clang package.')
+    if host_os != 'mac':
+      print(
+          'The lld_mac package cannot be downloaded for non-macs.',
+          file=sys.stderr)
+      print(
+          'On non-mac, lld is included in the clang package.', file=sys.stderr)
       return 1
   elif package_name == 'objdump':
     package_file = 'llvmobjdump'
@@ -306,27 +309,42 @@ def UpdatePackage(package_name):
   if package_name == 'clang' and os.path.exists(LLVM_BUILD_DIR):
     RmTree(LLVM_BUILD_DIR)
 
-  DownloadAndUnpackPackage(package_file, LLVM_BUILD_DIR)
+  DownloadAndUnpackPackage(package_file, LLVM_BUILD_DIR, host_os)
 
-  if package_name == 'clang':
-    if sys.platform == 'win32':
-      CopyDiaDllTo(os.path.join(LLVM_BUILD_DIR, 'bin'))
-    if 'win' in target_os:
-      # When doing win/cross builds on other hosts, get the Windows runtime
-      # libraries, and llvm-symbolizer.exe (needed in asan builds).
-      DownloadAndUnpackClangWinRuntime(LLVM_BUILD_DIR)
+  if package_name == 'clang' and 'win' in target_os:
+    # When doing win/cross builds on other hosts, get the Windows runtime
+    # libraries, and llvm-symbolizer.exe (needed in asan builds).
+    DownloadAndUnpackClangWinRuntime(LLVM_BUILD_DIR)
+    # Copy DIA dll when targeting Windows independent of the host OS as well,
+    # in case it needs to be copied to swarming.
+    # TODO(https://crbug.com/1073298): It's not clear what this is for,
+    # try removing it.
+    CopyDiaDllTo(os.path.join(LLVM_BUILD_DIR, 'bin'))
 
   WriteStampFile(expected_stamp, stamp_file)
   return 0
 
 
 def main():
+  _PLATFORM_HOST_OS_MAP = {
+      'darwin': 'mac',
+      'cygwin': 'win',
+      'linux2': 'linux',
+      'win32': 'win',
+  }
+  default_host_os = _PLATFORM_HOST_OS_MAP.get(sys.platform, sys.platform)
+
   parser = argparse.ArgumentParser(description='Update clang.')
   parser.add_argument('--output-dir',
                       help='Where to extract the package.')
   parser.add_argument('--package',
                       help='What package to update (default: clang)',
                       default='clang')
+  parser.add_argument(
+      '--host-os',
+      help='Which host OS to download for (default: %s)' % default_host_os,
+      default=default_host_os,
+      choices=('linux', 'mac', 'win'))
   parser.add_argument('--force-local-build', action='store_true',
                       help='(no longer used)')
   parser.add_argument('--print-revision', action='store_true',
@@ -376,7 +394,7 @@ def main():
     LLVM_BUILD_DIR = os.path.abspath(args.output_dir)
     STAMP_FILE = os.path.join(LLVM_BUILD_DIR, 'cr_build_revision')
 
-  return UpdatePackage(args.package)
+  return UpdatePackage(args.package, args.host_os)
 
 
 if __name__ == '__main__':

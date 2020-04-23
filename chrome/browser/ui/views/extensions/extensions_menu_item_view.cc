@@ -113,8 +113,8 @@ const char* ExtensionsMenuItemView::GetClassName() const {
 
 void ExtensionsMenuItemView::OnThemeChanged() {
   views::View::OnThemeChanged();
-  const SkColor icon_color = GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_DefaultIconColor);
+  const SkColor icon_color =
+      GetNativeTheme()->GetSystemColor(ui::NativeTheme::kColorId_MenuIconColor);
   pin_button_->set_ink_drop_base_color(icon_color);
   views::SetImageFromVectorIcon(context_menu_button_, kBrowserToolsIcon,
                                 kSecondaryIconSizeDp, icon_color);

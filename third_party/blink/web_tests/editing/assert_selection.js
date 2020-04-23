@@ -764,6 +764,54 @@ class Sample {
   /** @return {!Selection} */
   get selection() { return this.selection_; }
 
+  /**
+   * @public
+   * Enables or disables the test runner's spell checker.
+   * When enabled, this must later be disabled before ending the test to prevent
+   * leak detection due to the resolved callback keeping the |iframe_| alive.
+   */
+  setMockSpellCheckerEnabled(enabled) {
+    this.iframe_.contentWindow.eval(
+      "testRunner.setMockSpellCheckerEnabled(" + enabled + ");");
+    if (!enabled)
+      this.setSpellCheckResolvedCallback(null);
+  }
+
+  /**
+   * @public
+   * Sets the callback to run when spell checks are resolved.
+   */
+  setSpellCheckResolvedCallback(resolved_cb) {
+    var add = resolved_cb && !this.listener_;
+    var remove = !resolved_cb && this.listener_;
+    if (add) {
+      this.listener_ = (e) => {
+        if (e.data != "resolved_spellcheck")
+          return;
+        resolved_cb();
+      };
+      window.addEventListener("message", this.listener_, false);
+      this.iframe_.contentWindow.eval(
+         "testRunner.setSpellCheckResolvedCallback(() => { \
+           window.parent.postMessage('resolved_spellcheck', '*'); \
+         });");
+    } else if (remove) {
+      // Drops the stored closure's reference to the iframe allowing it to be
+      // destroyed before the web test harness is reset for the next test.
+      // This is important for leak detection at the end of this test.
+      this.iframe_.contentWindow.eval(
+        "testRunner.removeSpellCheckResolvedCallback();");
+      window.removeEventListener("message", this.listener_, false);
+      this.listener_ = null;
+    }
+  }
+
+  /**
+   * @public
+   * @param {string} JS code to run in the Sample's iframe.
+   */
+  eval(string) { this.iframe_.window.eval(string); }
+
   /** @return {string} */
   static get playgroundId() { return 'playground'; }
 

@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#import "ios/chrome/browser/overlays/public/common/alerts/alert_overlay.h"
 #import "ios/chrome/browser/ui/alert_view/alert_view_controller.h"
 #import "ios/chrome/browser/ui/overlays/common/alerts/alert_overlay_coordinator+alert_mediator_creation.h"
 #import "ios/chrome/browser/ui/overlays/common/alerts/alert_overlay_mediator.h"
@@ -17,6 +18,8 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+using alert_overlays::AlertRequest;
 
 @interface AlertOverlayCoordinator () <AlertOverlayMediatorDataSource,
                                        ContainedPresenterDelegate>
@@ -66,6 +69,10 @@
 
 + (BOOL)showsOverlayUsingChildViewController {
   return YES;
+}
+
++ (const OverlayRequestSupport*)requestSupport {
+  return AlertRequest::RequestSupport();
 }
 
 - (UIViewController*)viewController {

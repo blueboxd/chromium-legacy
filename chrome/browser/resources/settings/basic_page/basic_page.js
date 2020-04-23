@@ -130,6 +130,16 @@ Polymer({
 
     /** @private {!Route|undefined} */
     currentRoute_: Object,
+
+    /**
+     * Used to avoid handling a new toggle while currently toggling.
+     * @private
+     */
+    advancedTogglingInProgress_: {
+      type: Boolean,
+      value: false,
+      reflectToAttribute: true,
+    },
   },
 
   hostAttributes: {
@@ -139,12 +149,6 @@ Polymer({
   listeners: {
     'subpage-expand': 'onSubpageExpanded_',
   },
-
-  /**
-   * Used to avoid handling a new toggle while currently toggling.
-   * @private {boolean}
-   */
-  advancedTogglingInProgress_: false,
 
   // <if expr="chromeos">
   /** @private {boolean} */

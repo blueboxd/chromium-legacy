@@ -7,15 +7,15 @@ import("//third_party/abseil-cpp/absl.gni")
 absl_source_set("traits") {
   public = [ "traits.h" ]
   visibility = []
-  visibility += [ "../../random/*" ]
-  deps = [ "../../base:config" ]
+  visibility += [ "//third_party/abseil-cpp/absl/random/*" ]
+  deps = [ "//third_party/abseil-cpp/absl/base:config" ]
 }
 
 absl_source_set("distribution_caller") {
   public = [ "distribution_caller.h" ]
   visibility = []
-  visibility += [ "../../random/*" ]
-  deps = [ "../../base:config" ]
+  visibility += [ "//third_party/abseil-cpp/absl/random/*" ]
+  deps = [ "//third_party/abseil-cpp/absl/base:config" ]
 }
 
 absl_source_set("distributions") {
@@ -24,17 +24,17 @@ absl_source_set("distributions") {
     ":distribution_caller",
     ":traits",
     ":uniform_helper",
-    "../../base",
-    "../../meta:type_traits",
-    "../../strings",
+    "//third_party/abseil-cpp/absl/base",
+    "//third_party/abseil-cpp/absl/meta:type_traits",
+    "//third_party/abseil-cpp/absl/strings",
   ]
 }
 
 absl_source_set("fast_uniform_bits") {
   public = [ "fast_uniform_bits.h" ]
   visibility = []
-  visibility += [ "../../random/*" ]
-  deps = [ "../../base:config" ]
+  visibility += [ "//third_party/abseil-cpp/absl/random/*" ]
+  deps = [ "//third_party/abseil-cpp/absl/base:config" ]
 }
 
 absl_source_set("seed_material") {
@@ -46,11 +46,11 @@ absl_source_set("seed_material") {
   }
   deps = [
     ":fast_uniform_bits",
-    "../../base:core_headers",
-    "../../base:raw_logging_internal",
-    "../../strings",
-    "../../types:optional",
-    "../../types:span",
+    "//third_party/abseil-cpp/absl/base:core_headers",
+    "//third_party/abseil-cpp/absl/base:raw_logging_internal",
+    "//third_party/abseil-cpp/absl/strings",
+    "//third_party/abseil-cpp/absl/types:optional",
+    "//third_party/abseil-cpp/absl/types:span",
   ]
 }
 
@@ -61,44 +61,44 @@ absl_source_set("pool_urbg") {
     ":randen",
     ":seed_material",
     ":traits",
-    "../../base",
-    "../../base:config",
-    "../../base:core_headers",
-    "../../base:endian",
-    "../../base:raw_logging_internal",
-    "../../random:seed_gen_exception",
-    "../../types:span",
+    "//third_party/abseil-cpp/absl/base",
+    "//third_party/abseil-cpp/absl/base:config",
+    "//third_party/abseil-cpp/absl/base:core_headers",
+    "//third_party/abseil-cpp/absl/base:endian",
+    "//third_party/abseil-cpp/absl/base:raw_logging_internal",
+    "//third_party/abseil-cpp/absl/random:seed_gen_exception",
+    "//third_party/abseil-cpp/absl/types:span",
   ]
 }
 
 absl_source_set("explicit_seed_seq") {
   testonly = true
   public = [ "explicit_seed_seq.h" ]
-  deps = [ "../../base:config" ]
+  deps = [ "//third_party/abseil-cpp/absl/base:config" ]
 }
 
 absl_source_set("sequence_urbg") {
   testonly = true
   public = [ "sequence_urbg.h" ]
-  deps = [ "../../base:config" ]
+  deps = [ "//third_party/abseil-cpp/absl/base:config" ]
 }
 
 absl_source_set("salted_seed_seq") {
   public = [ "salted_seed_seq.h" ]
   deps = [
     ":seed_material",
-    "../../container:inlined_vector",
-    "../../meta:type_traits",
-    "../../types:optional",
-    "../../types:span",
+    "//third_party/abseil-cpp/absl/container:inlined_vector",
+    "//third_party/abseil-cpp/absl/meta:type_traits",
+    "//third_party/abseil-cpp/absl/types:optional",
+    "//third_party/abseil-cpp/absl/types:span",
   ]
 }
 
 absl_source_set("iostream_state_saver") {
   public = [ "iostream_state_saver.h" ]
   deps = [
-    "../../meta:type_traits",
-    "../../numeric:int128",
+    "//third_party/abseil-cpp/absl/meta:type_traits",
+    "//third_party/abseil-cpp/absl/numeric:int128",
   ]
 }
 
@@ -107,23 +107,23 @@ absl_source_set("generate_real") {
   deps = [
     ":fastmath",
     ":traits",
-    "../../base:bits",
-    "../../meta:type_traits",
+    "//third_party/abseil-cpp/absl/base:bits",
+    "//third_party/abseil-cpp/absl/meta:type_traits",
   ]
 }
 
 absl_source_set("fastmath") {
   public = [ "fastmath.h" ]
-  deps = [ "../../base:bits" ]
+  deps = [ "//third_party/abseil-cpp/absl/base:bits" ]
 }
 
 absl_source_set("wide_multiply") {
   public = [ "wide_multiply.h" ]
   deps = [
     ":traits",
-    "../../base:bits",
-    "../../base:config",
-    "../../numeric:int128",
+    "//third_party/abseil-cpp/absl/base:bits",
+    "//third_party/abseil-cpp/absl/base:config",
+    "//third_party/abseil-cpp/absl/numeric:int128",
   ]
 }
 
@@ -133,11 +133,11 @@ absl_source_set("nonsecure_base") {
     ":pool_urbg",
     ":salted_seed_seq",
     ":seed_material",
-    "../../base:core_headers",
-    "../../meta:type_traits",
-    "../../strings",
-    "../../types:optional",
-    "../../types:span",
+    "//third_party/abseil-cpp/absl/base:core_headers",
+    "//third_party/abseil-cpp/absl/meta:type_traits",
+    "//third_party/abseil-cpp/absl/strings",
+    "//third_party/abseil-cpp/absl/types:optional",
+    "//third_party/abseil-cpp/absl/types:span",
   ]
 }
 
@@ -146,9 +146,9 @@ absl_source_set("pcg_engine") {
   deps = [
     ":fastmath",
     ":iostream_state_saver",
-    "../../base:config",
-    "../../meta:type_traits",
-    "../../numeric:int128",
+    "//third_party/abseil-cpp/absl/base:config",
+    "//third_party/abseil-cpp/absl/meta:type_traits",
+    "//third_party/abseil-cpp/absl/numeric:int128",
   ]
 }
 
@@ -157,7 +157,7 @@ absl_source_set("randen_engine") {
   deps = [
     ":iostream_state_saver",
     ":randen",
-    "../../meta:type_traits",
+    "//third_party/abseil-cpp/absl/meta:type_traits",
   ]
 }
 
@@ -167,7 +167,7 @@ absl_source_set("platform") {
     "randen-keys.inc",
     "randen_traits.h",
   ]
-  deps = [ "../../base:config" ]
+  deps = [ "//third_party/abseil-cpp/absl/base:config" ]
 }
 
 absl_source_set("randen") {
@@ -177,7 +177,7 @@ absl_source_set("randen") {
     ":platform",
     ":randen_hwaes",
     ":randen_slow",
-    "../../base:raw_logging_internal",
+    "//third_party/abseil-cpp/absl/base:raw_logging_internal",
   ]
 }
 
@@ -186,8 +186,8 @@ absl_source_set("randen_slow") {
   sources = [ "randen_slow.cc" ]
   deps = [
     ":platform",
-    "../../base:config",
-    "../../base:core_headers",
+    "//third_party/abseil-cpp/absl/base:config",
+    "//third_party/abseil-cpp/absl/base:core_headers",
   ]
 }
 
@@ -200,7 +200,7 @@ absl_source_set("randen_hwaes") {
   deps = [
     ":platform",
     ":randen_hwaes_impl",
-    "../../base:config",
+    "//third_party/abseil-cpp/absl/base:config",
   ]
 }
 
@@ -211,16 +211,16 @@ absl_source_set("randen_hwaes_impl") {
   ]
   deps = [
     ":platform",
-    "../../base:config",
-    "../../base:core_headers",
+    "//third_party/abseil-cpp/absl/base:config",
+    "//third_party/abseil-cpp/absl/base:core_headers",
   ]
 }
 
 executable("gaussian_distribution_gentables") {
   sources = [ "gaussian_distribution_gentables.cc" ]
   deps = [
-    "../../base:core_headers",
-    "../../random:distributions",
+    "//third_party/abseil-cpp/absl/base:core_headers",
+    "//third_party/abseil-cpp/absl/random:distributions",
   ]
 }
 
@@ -235,20 +235,20 @@ absl_source_set("distribution_test_util") {
     "distribution_test_util.cc",
   ]
   deps = [
-    "../../base:config",
-    "../../base:core_headers",
-    "../../base:raw_logging_internal",
-    "../../strings",
-    "../../strings:str_format",
-    "../../types:span",
+    "//third_party/abseil-cpp/absl/base:config",
+    "//third_party/abseil-cpp/absl/base:core_headers",
+    "//third_party/abseil-cpp/absl/base:raw_logging_internal",
+    "//third_party/abseil-cpp/absl/strings",
+    "//third_party/abseil-cpp/absl/strings:str_format",
+    "//third_party/abseil-cpp/absl/types:span",
   ]
 }
 
 absl_source_set("mocking_bit_gen_base") {
   public = [ "mocking_bit_gen_base.h" ]
   deps = [
-    "../../random",
-    "../../strings",
+    "//third_party/abseil-cpp/absl/random",
+    "//third_party/abseil-cpp/absl/strings",
   ]
 }
 
@@ -257,12 +257,12 @@ absl_source_set("nanobenchmark") {
   deps = [
     ":platform",
     ":randen_engine",
-    "../../base:core_headers",
-    "../../base:raw_logging_internal",
+    "//third_party/abseil-cpp/absl/base:core_headers",
+    "//third_party/abseil-cpp/absl/base:raw_logging_internal",
   ]
 }
 
 absl_source_set("uniform_helper") {
   public = [ "uniform_helper.h" ]
-  deps = [ "../../meta:type_traits" ]
+  deps = [ "//third_party/abseil-cpp/absl/meta:type_traits" ]
 }

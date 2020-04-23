@@ -37,7 +37,6 @@
 <translation id="1041263367839475438">Tilgængelige enheder</translation>
 <translation id="1042174272890264476">Computeren leveres også med <ph name="SHORT_PRODUCT_NAME" />s RLZ-samling indbygget. RLZ tildeler et ikke-unikt, ikke-personligt identificerbart tag til at måle søgninger og <ph name="SHORT_PRODUCT_NAME" />-brug, der er drevet af en bestemt kampagne. Disse etiketter vises nogle gange i Googles søgeforespørgsler i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1043818413152647937">Vil du også rydde dataene fra disse apps?</translation>
-<translation id="1045448422538531528">Føj til gruppe</translation>
 <translation id="1046635659603195359">Det ser ud til, at du allerede har konfigureret Voice Match med Google-assistenten på en anden enhed. Disse tidligere optagelser kan bruges til at oprette en stemmemodel på denne enhed. Dette bør tage mindre end et minut.</translation>
 <translation id="104710386808485638">Vil du genstarte Linux?</translation>
 <translation id="1047431265488717055">Kopiér linkte&amp;kst</translation>
@@ -408,7 +407,6 @@
 <translation id="1536754031901697553">Afbryder forbindelsen...</translation>
 <translation id="15373452373711364">Stor musemarkør</translation>
 <translation id="1540605929960647700">Aktivér demotilstand</translation>
-<translation id="1541396123399225659">Føj til ny gruppe</translation>
 <translation id="1542514202066550870">Denne fane viser VR-indhold til et headset.</translation>
 <translation id="1543284117603151572">Importeret fra Edge</translation>
 <translation id="1545177026077493356">Automatisk terminaltilstand</translation>
@@ -1906,7 +1904,6 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="3514373592552233661">Favoritter netværk prioriteres frem for andre kendte netværk, hvis der er mere end ét tilgængeligt netværk</translation>
 <translation id="3515983984924808886">Tryk på din sikkerhedsnøgle igen for at bekræfte nulstillingen. Alle de oplysninger, der er gemt på sikkerhedsnøglen, bl.a. pinkoden, slettes.</translation>
 <translation id="3518985090088779359">Acceptér og fortsæt</translation>
-<translation id="351952459507671940">Føj til ny gruppe</translation>
 <translation id="3521606918211282604">Skift diskstørrelse</translation>
 <translation id="3523642406908660543">Spørg, når et website vil anvende et plugin til at få adgang til din computer (anbefales)</translation>
 <translation id="3524965460886318643">Eksportér aktiviteter</translation>
@@ -2896,7 +2893,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4871322859485617074">Pinkoden indeholder ugyldige tegn</translation>
 <translation id="4871370605780490696">Tilføj bogmærke</translation>
 <translation id="4871719318659334896">Luk gruppe</translation>
-<translation id="4871852311166078968">Føj til gruppe</translation>
 <translation id="4873312501243535625">Mediefilkontrol</translation>
 <translation id="4876273079589074638">Hjælp vores softwareudviklere med at undersøge og løse dette nedbrud. Angiv så vidt muligt præcist, hvad du gjorde. Alle detaljer er vigtige.</translation>
 <translation id="4876895919560854374">Låse skærmen/låse skærmen op</translation>

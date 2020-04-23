@@ -28,6 +28,9 @@ class HTTPAuthOverlayRequestConfig
                                const std::string& message,
                                const std::string& default_username);
 
+  // OverlayUserData:
+  void CreateAuxiliaryData(base::SupportsUserData* user_data) override;
+
   const GURL url_;
   const std::string message_;
   const std::string default_username_;

@@ -5,6 +5,7 @@
 #ifndef UI_EVENTS_BLINK_PREDICTION_EMPTY_FILTER_H_
 #define UI_EVENTS_BLINK_PREDICTION_EMPTY_FILTER_H_
 
+#include "base/macros.h"
 #include "ui/events/blink/prediction/input_filter.h"
 
 namespace ui {

@@ -11,11 +11,12 @@
 #include "ui/base/x/x11_topmost_window_finder.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/views/views_export.h"
 
-namespace aura {
-class Window;
+namespace ui {
+class X11Window;
 }
 
 namespace views {
@@ -30,8 +31,8 @@ class VIEWS_EXPORT X11TopmostWindowFinder : public ui::EnumerateWindowsDelegate,
   // Returns the topmost window at |screen_loc_in_pixels|, ignoring the windows
   // in |ignore|. Returns NULL if the topmost window at |screen_loc_in_pixels|
   // does not belong to Chrome.
-  aura::Window* FindLocalProcessWindowAt(const gfx::Point& screen_loc_in_pixels,
-                                         const std::set<aura::Window*>& ignore);
+  XID FindLocalProcessWindowAt(const gfx::Point& screen_loc_in_pixels,
+                               const std::set<gfx::AcceleratedWidget>& ignore);
 
   // Returns the topmost window at |screen_loc_in_pixels|.
   XID FindWindowAt(const gfx::Point& screen_loc_in_pixels) override;
@@ -42,10 +43,10 @@ class VIEWS_EXPORT X11TopmostWindowFinder : public ui::EnumerateWindowsDelegate,
 
   // Returns true if |window| does not not belong to |ignore|, is visible and
   // contains |screen_loc_|.
-  bool ShouldStopIteratingAtLocalProcessWindow(aura::Window* window);
+  bool ShouldStopIteratingAtLocalProcessWindow(ui::X11Window* window);
 
   gfx::Point screen_loc_in_pixels_;
-  std::set<aura::Window*> ignore_;
+  std::set<gfx::AcceleratedWidget> ignore_;
   XID toplevel_ = x11::None;
 
   DISALLOW_COPY_AND_ASSIGN(X11TopmostWindowFinder);

@@ -16,6 +16,10 @@ class ScopedCurrentChannel;
 // Retrieves the manifest key for the given action |type|.
 const char* GetManifestKeyForActionType(ActionInfo::Type type);
 
+// Given an |action_type|, returns the corresponding API name to be referenced
+// from JavaScript.
+const char* GetAPINameForActionType(ActionInfo::Type action_type);
+
 // Retrieves the ActionInfo for the |extension| if and only if it
 // corresponds to the specified |type|. This is useful for testing to ensure
 // the type is specified correctly, since most production code is type-

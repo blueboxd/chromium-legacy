@@ -21,13 +21,11 @@ AmbientAssistantDialogPlate::AmbientAssistantDialogPlate(
     : delegate_(delegate) {
   InitLayout();
 
-  // The AssistantViewDelegate should outlive AmbientAssistantDialogPlate.
-  delegate_->AddInteractionModelObserver(this);
+  assistant_interaction_model_observer_.Add(
+      AssistantInteractionController::Get());
 }
 
-AmbientAssistantDialogPlate::~AmbientAssistantDialogPlate() {
-  delegate_->RemoveInteractionModelObserver(this);
-}
+AmbientAssistantDialogPlate::~AmbientAssistantDialogPlate() = default;
 
 const char* AmbientAssistantDialogPlate::GetClassName() const {
   return "AmbientAssistantDialogPlate";
@@ -55,8 +53,8 @@ void AmbientAssistantDialogPlate::InitLayout() {
       views::BoxLayout::MainAxisAlignment::kStart);
 
   // Animated voice input toggle button.
-  animated_voice_input_toggle_ = AddChildView(std::make_unique<MicView>(
-      this, delegate_, AssistantButtonId::kVoiceInputToggle));
+  animated_voice_input_toggle_ = AddChildView(
+      std::make_unique<MicView>(this, AssistantButtonId::kVoiceInputToggle));
   animated_voice_input_toggle_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ASH_ASSISTANT_DIALOG_PLATE_MIC_ACCNAME));
 

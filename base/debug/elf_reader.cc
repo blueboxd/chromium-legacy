@@ -6,6 +6,7 @@
 
 #include <arpa/inet.h>
 #include <elf.h>
+#include <string.h>
 
 #include "base/bits.h"
 #include "base/containers/span.h"

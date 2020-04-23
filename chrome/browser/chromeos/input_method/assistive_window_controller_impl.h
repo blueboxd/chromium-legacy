@@ -10,21 +10,25 @@
 #include "base/macros.h"
 #include "chrome/browser/chromeos/input_method/assistive_window_controller.h"
 #include "ui/base/ime/ime_assistive_window_handler_interface.h"
+#include "ui/chromeos/ime/assistive_delegate.h"
 #include "ui/chromeos/ime/suggestion_window_view.h"
+#include "ui/chromeos/ime/undo_window.h"
 
 namespace views {
 class Widget;
 }  // namespace views
 
 namespace chromeos {
+struct AssistiveWindowProperties;
+
 namespace input_method {
 
 // The implementation of AssistiveWindowController.
 // AssistiveWindowController controls different assistive windows.
-class AssistiveWindowControllerImpl
-    : public AssistiveWindowController,
-      public views::WidgetObserver,
-      public IMEAssistiveWindowHandlerInterface {
+class AssistiveWindowControllerImpl : public AssistiveWindowController,
+                                      public views::WidgetObserver,
+                                      public IMEAssistiveWindowHandlerInterface,
+                                      public ui::ime::AssistiveDelegate {
  public:
   AssistiveWindowControllerImpl();
   ~AssistiveWindowControllerImpl() override;
@@ -32,6 +36,8 @@ class AssistiveWindowControllerImpl
  private:
   // IMEAssistiveWindowHandlerInterface implementation.
   void SetBounds(const gfx::Rect& cursor_bounds) override;
+  void SetAssistiveWindowProperties(
+      const AssistiveWindowProperties& window) override;
   void ShowSuggestion(const base::string16& text,
                       const size_t confirmed_length,
                       const bool show_tab) override;
@@ -41,9 +47,15 @@ class AssistiveWindowControllerImpl
   void FocusStateChanged() override;
   void OnWidgetClosing(views::Widget* widget) override;
 
-  void Init();
+  // ui::ime::AssistiveDelegate implementation.
+  void AssistiveWindowClicked(ui::ime::ButtonId id,
+                              ui::ime::AssistiveWindowType type) override;
+
+  void InitSuggestionWindow();
+  void InitUndoWindow();
 
   ui::ime::SuggestionWindowView* suggestion_window_view_ = nullptr;
+  ui::ime::UndoWindow* undo_window_ = nullptr;
   base::string16 suggestion_text_;
   size_t confirmed_length_;
 

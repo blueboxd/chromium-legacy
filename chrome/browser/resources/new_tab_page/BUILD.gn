@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 import("//third_party/closure_compiler/compile_js.gni")
-import("//tools/polymer/polymer.gni")
+import("//tools/polymer/html_to_js.gni")
 
 js_type_check("closure_compile") {
   is_polymer3 = true
@@ -156,112 +156,22 @@ js_library("doodle_share_dialog") {
   ]
 }
 
-polymer_modulizer("app") {
-  js_file = "app.js"
-  html_file = "app.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("customize_dialog") {
-  js_file = "customize_dialog.js"
-  html_file = "customize_dialog.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("mini_page") {
-  js_file = "mini_page.js"
-  html_file = "mini_page.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("most_visited") {
-  js_file = "most_visited.js"
-  html_file = "most_visited.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("customize_shortcuts") {
-  js_file = "customize_shortcuts.js"
-  html_file = "customize_shortcuts.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("customize_backgrounds") {
-  js_file = "customize_backgrounds.js"
-  html_file = "customize_backgrounds.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("customize_themes") {
-  js_file = "customize_themes.js"
-  html_file = "customize_themes.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("theme_icon") {
-  js_file = "theme_icon.js"
-  html_file = "theme_icon.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("grid") {
-  js_file = "grid.js"
-  html_file = "grid.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("voice_search_overlay") {
-  js_file = "voice_search_overlay.js"
-  html_file = "voice_search_overlay.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("untrusted_iframe") {
-  js_file = "untrusted_iframe.js"
-  html_file = "untrusted_iframe.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("fakebox") {
-  js_file = "fakebox.js"
-  html_file = "fakebox.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("realbox") {
-  js_file = "realbox.js"
-  html_file = "realbox.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("logo") {
-  js_file = "logo.js"
-  html_file = "logo.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("doodle_share_dialog") {
-  js_file = "doodle_share_dialog.js"
-  html_file = "doodle_share_dialog.html"
-  html_type = "v3-ready"
-}
-
-group("polymer3_elements") {
-  public_deps = [
-    ":app_module",
-    ":customize_backgrounds_module",
-    ":customize_dialog_module",
-    ":customize_shortcuts_module",
-    ":customize_themes_module",
-    ":doodle_share_dialog_module",
-    ":fakebox_module",
-    ":grid_module",
-    ":logo_module",
-    ":mini_page_module",
-    ":most_visited_module",
-    ":realbox_module",
-    ":theme_icon_module",
-    ":untrusted_iframe_module",
-    ":voice_search_overlay_module",
+html_to_js("web_components") {
+  js_files = [
+    "app.js",
+    "customize_backgrounds.js",
+    "customize_dialog.js",
+    "customize_shortcuts.js",
+    "customize_themes.js",
+    "doodle_share_dialog.js",
+    "fakebox.js",
+    "grid.js",
+    "logo.js",
+    "mini_page.js",
+    "most_visited.js",
+    "realbox.js",
+    "theme_icon.js",
+    "untrusted_iframe.js",
+    "voice_search_overlay.js",
   ]
 }

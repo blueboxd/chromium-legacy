@@ -55,11 +55,12 @@ ScriptPromise NDEFWriter::write(ScriptState* script_state,
                                 const NDEFMessageSource& write_message,
                                 const NDEFWriteOptions* options,
                                 ExceptionState& exception_state) {
-  ExecutionContext* execution_context = GetExecutionContext();
-  Document* document = Document::From(execution_context);
+  LocalDOMWindow* window = script_state->ContextIsValid()
+                               ? LocalDOMWindow::From(script_state)
+                               : nullptr;
   // https://w3c.github.io/web-nfc/#security-policies
   // WebNFC API must be only accessible from top level browsing context.
-  if (!execution_context || !document->IsInMainFrame()) {
+  if (!window || !window->GetFrame()->IsMainFrame()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kNotAllowedError,
                                       "NFC interfaces are only avaliable "
                                       "in a top-level browsing context");
@@ -77,7 +78,7 @@ ScriptPromise NDEFWriter::write(ScriptState* script_state,
   // Step 11.2: Run "create NDEF message", if this throws an exception,
   // reject p with that exception and abort these steps.
   NDEFMessage* ndef_message =
-      NDEFMessage::Create(execution_context, write_message, exception_state);
+      NDEFMessage::Create(window, write_message, exception_state);
   if (exception_state.HadException()) {
     return ScriptPromise();
   }
@@ -90,7 +91,7 @@ ScriptPromise NDEFWriter::write(ScriptState* script_state,
   InitNfcProxyIfNeeded();
   GetPermissionService()->RequestPermission(
       CreatePermissionDescriptor(PermissionName::NFC),
-      LocalFrame::HasTransientUserActivation(document->GetFrame()),
+      LocalFrame::HasTransientUserActivation(window->GetFrame()),
       WTF::Bind(&NDEFWriter::OnRequestPermission, WrapPersistent(this),
                 WrapPersistent(resolver), WrapPersistent(options),
                 std::move(message)));

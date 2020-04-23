@@ -123,9 +123,6 @@ void PropertyRegistration::DeclareProperty(Document& document,
       ConvertInitialVariableData(initial_value);
 
   // Parse initial value, if we have it.
-  //
-  // TODO(andruud): The initial-value should only be optional if 'syntax'
-  // is the universal syntax definition ("*").
   const CSSValue* initial = nullptr;
   if (initial_variable_data) {
     const CSSParserContext* parser_context =
@@ -144,11 +141,16 @@ void PropertyRegistration::DeclareProperty(Document& document,
             *initial, is_animation_tainted);
   }
 
+  // For non-universal @property rules, the initial value is required for the
+  // the rule to be valid.
+  if (!initial && !syntax->IsUniversal())
+    return;
+
   document.GetPropertyRegistry()->DeclareProperty(
       name, *MakeGarbageCollected<PropertyRegistration>(
                 name, *syntax, inherits, initial, initial_variable_data));
 
-  document.GetStyleEngine().CustomPropertyRegistered();
+  document.GetStyleEngine().PropertyRegistryChanged();
 }
 
 void PropertyRegistration::registerProperty(
@@ -215,7 +217,7 @@ void PropertyRegistration::registerProperty(
         StyleBuilderConverter::ConvertRegisteredPropertyVariableData(
             *initial, is_animation_tainted);
   } else {
-    if (!syntax_definition->IsTokenStream()) {
+    if (!syntax_definition->IsUniversal()) {
       exception_state.ThrowDOMException(
           DOMExceptionCode::kSyntaxError,
           "An initial value must be provided if the syntax is not '*'");
@@ -228,7 +230,14 @@ void PropertyRegistration::registerProperty(
           atomic_name, *syntax_definition, property_definition->inherits(),
           initial, std::move(initial_variable_data)));
 
-  document->GetStyleEngine().CustomPropertyRegistered();
+  document->GetStyleEngine().PropertyRegistryChanged();
+}
+
+void PropertyRegistration::RemoveDeclaredProperties(Document& document) {
+  if (PropertyRegistry* registry = document.GetPropertyRegistry()) {
+    registry->RemoveDeclaredProperties();
+    document.GetStyleEngine().PropertyRegistryChanged();
+  }
 }
 
 }  // namespace blink

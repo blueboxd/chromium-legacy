@@ -4,7 +4,7 @@
 
 // Multiply-included file, hence no include guard.
 
-#include "chrome/common/instant_mojom_traits.h"
+#include "chrome/common/search/instant_mojom_traits.h"
 #include "services/network/public/cpp/p2p_param_traits.h"
 #undef CHROME_COMMON_PRERENDER_MESSAGES_H_
 #include "chrome/common/prerender_messages.h"

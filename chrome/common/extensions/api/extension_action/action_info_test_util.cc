@@ -27,6 +27,23 @@ const char* GetManifestKeyForActionType(ActionInfo::Type type) {
   return action_key;
 }
 
+const char* GetAPINameForActionType(ActionInfo::Type action_type) {
+  const char* api_name = nullptr;
+  switch (action_type) {
+    case ActionInfo::TYPE_BROWSER:
+      api_name = "browserAction";
+      break;
+    case ActionInfo::TYPE_PAGE:
+      api_name = "pageAction";
+      break;
+    case ActionInfo::TYPE_ACTION:
+      api_name = "action";
+      break;
+  }
+
+  return api_name;
+}
+
 const ActionInfo* GetActionInfoOfType(const Extension& extension,
                                       ActionInfo::Type type) {
   const ActionInfo* action_info =

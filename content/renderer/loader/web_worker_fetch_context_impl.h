@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/strings/string_piece.h"
 #include "base/synchronization/waitable_event.h"
 #include "content/common/child_process.mojom.h"
 #include "content/common/content_export.h"
@@ -169,7 +170,7 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   void SetResponseOverrideForMainScript(
       std::unique_ptr<NavigationResponseOverrideParameters> response_override);
 
-  using RewriteURLFunction = blink::WebURL (*)(const std::string&, bool);
+  using RewriteURLFunction = blink::WebURL (*)(base::StringPiece, bool);
   static void InstallRewriteURLFunction(RewriteURLFunction rewrite_url);
 
   blink::WebString GetAcceptLanguages() const override;

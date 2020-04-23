@@ -71,6 +71,23 @@ class NET_EXPORT SiteForCookies {
   // |this| represents.
   bool IsFirstParty(const GURL& url) const;
 
+  // Don't use this function unless you know what you're doing, if you're unsure
+  // you probably want IsFirstParty().
+  //
+  // If |compute_schemefully| is true this function will return true if |url|
+  // should be considered first-party to the context |this| represents when the
+  // compatibility of the schemes are taken into account.
+  //
+  // If |compute_schemefully| is false this function will return true if |url|
+  // should be considered first-party to the context |this| represents when the
+  // compatibility of the scheme are not taken into account. Note that schemes
+  // are still compared for exact equality if neither |this| nor |url| have a
+  // registered domain.
+  //
+  // See CompatibleScheme() for more information on scheme compatibility.
+  bool IsFirstPartyWithSchemefulMode(const GURL& url,
+                                     bool compute_schemefully) const;
+
   // Returns true if |other.IsFirstParty()| is true for exactly the same URLs
   // as |this->IsFirstParty| (potentially none).
   bool IsEquivalent(const SiteForCookies& other) const;
@@ -99,29 +116,14 @@ class NET_EXPORT SiteForCookies {
   // IsNull() is true.
   bool schemefully_same() const { return schemefully_same_; }
 
+  void SetSchemefullySameForTesting(bool schemefully_same) {
+    schemefully_same_ = schemefully_same;
+  }
+
   // Returns true if this SiteForCookies matches nothing.
   // If the SchemefulSameSite feature is enabled then !schemefully_same_ causes
   // this function to return true.
   bool IsNull() const;
-
-  // Don't use this function unless you know what you're doing, if you're unsure
-  // you probably want IsFirstParty().
-  //
-  // Returns true if |url| should be considered first-party to the context
-  // |this| represents when the compatibility of the schemes are taken into
-  // account. See CompatibleScheme().
-  bool IsSchemefullyFirstParty(const GURL& url) const;
-
-  // Don't use this function unless you know what you're doing, if you're unsure
-  // you probably want IsFirstParty().
-  //
-  // Returns true if |url| should be considered first-party to the context
-  // |this| represents when the compatibility of the scheme are not taken into
-  // account. See CompatibleScheme().
-  //
-  // Note that schemes are still compared for exact equality if neither |this|
-  // nor |url| have a registered domain.
-  bool IsSchemelesslyFirstParty(const GURL& url) const;
 
  private:
   SiteForCookies(const std::string& scheme, const std::string& host);
@@ -129,6 +131,10 @@ class NET_EXPORT SiteForCookies {
   // Two schemes are considered compatible if they exactly match, they are both
   // in ["https", "wss"], or they are both in ["http", "ws"].
   bool CompatibleScheme(const std::string& other_scheme) const;
+
+  bool IsSchemefullyFirstParty(const GURL& url) const;
+
+  bool IsSchemelesslyFirstParty(const GURL& url) const;
 
   // These should be canonicalized appropriately by GURL/url::Origin.
   // An empty |scheme_| means that this matches nothing.
@@ -153,7 +159,8 @@ class NET_EXPORT SiteForCookies {
   //
   // For a SiteForCookies with !scheme_.empty() this value starts as true and
   // will only go false via MarkIfCrossScheme(), otherwise this value is
-  // irrelevant.
+  // irrelevant (For tests this value can also be modified by
+  // SetSchemefullySameForTesting()).
   bool schemefully_same_;
 };
 

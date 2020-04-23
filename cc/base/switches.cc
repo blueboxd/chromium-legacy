@@ -92,7 +92,7 @@ const char kUIShowScreenSpaceRects[] = "ui-show-screenspace-rects";
 
 // Highlights layers that can't use lcd text. Layers containing no text won't
 // be highlighted. See DebugColors::NonLCDTextHighlightColor() for the colors.
-const char kHighlightNonLCDTextLayers[] = "higlight-non-lcd-text-layers";
+const char kHighlightNonLCDTextLayers[] = "highlight-non-lcd-text-layers";
 
 // Switches the ui compositor to use layer lists instead of layer trees.
 const char kUIEnableLayerLists[] = "ui-enable-layer-lists";

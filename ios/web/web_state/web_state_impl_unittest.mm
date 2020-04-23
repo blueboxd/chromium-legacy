@@ -177,6 +177,43 @@ class WebStateImplTest : public web::WebTest {
   std::unique_ptr<WebStateImpl> web_state_;
 };
 
+// Tests WebState::Getter default implementation.
+TEST_F(WebStateImplTest, DefaultGetter) {
+  WebState::Getter getter = web_state_->CreateDefaultGetter();
+  ASSERT_FALSE(getter.is_null());
+
+  // Verify that the getter returns |web_state_| if executed before
+  // deallocation.
+  EXPECT_EQ(web_state_.get(), getter.Run());
+
+  // Destroy |web_state_| and verify that the getter returns nullptr if executed
+  // after destruction.
+  web_state_ = nullptr;
+  EXPECT_FALSE(getter.Run());
+}
+
+// Tests WebState::OnceGetter default implementation before WebState
+// destruction.
+TEST_F(WebStateImplTest, DefaultOnceGetterBeforeDestruction) {
+  WebState::OnceGetter getter = web_state_->CreateDefaultOnceGetter();
+  ASSERT_FALSE(getter.is_null());
+
+  // Verify that the getter returns |web_state_| if executed before
+  // deallocation.
+  EXPECT_EQ(web_state_.get(), std::move(getter).Run());
+}
+
+// Tests WebState::OnceGetter default implementation after WebState destruction.
+TEST_F(WebStateImplTest, DefaultOnceGetterAfterDestruction) {
+  WebState::OnceGetter getter = web_state_->CreateDefaultOnceGetter();
+  ASSERT_FALSE(getter.is_null());
+
+  // Destroy |web_state_| and verify that the getter returns nullptr if executed
+  // after destruction.
+  web_state_ = nullptr;
+  EXPECT_FALSE(std::move(getter).Run());
+}
+
 TEST_F(WebStateImplTest, WebUsageEnabled) {
   // Default is false.
   ASSERT_TRUE(web_state_->IsWebUsageEnabled());

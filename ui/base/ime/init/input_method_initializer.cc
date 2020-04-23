@@ -4,6 +4,8 @@
 
 #include "ui/base/ime/init/input_method_initializer.h"
 
+#include <ostream>
+
 #include "build/build_config.h"
 
 #if defined(OS_CHROMEOS)

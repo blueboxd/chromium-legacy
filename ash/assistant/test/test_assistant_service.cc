@@ -8,7 +8,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/assistant/assistant_interaction_controller.h"
 #include "base/unguessable_token.h"
 #include "chromeos/services/assistant/public/cpp/default_assistant_interaction_subscriber.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -89,8 +89,6 @@ class OpenTabsUIDelegateMock : public sync_sessions::OpenTabsUIDelegate {
   OpenTabsUIDelegateMock() {}
   ~OpenTabsUIDelegateMock() override {}
 
-  MOCK_METHOD1(GetIconUrlForPageUrl, GURL(const GURL& page_url));
-
   MOCK_METHOD1(
       GetAllForeignSessions,
       bool(std::vector<const sync_sessions::SyncedSession*>* sessions));

@@ -196,7 +196,6 @@
 <translation id="3469166899695866866">다운로드를 중지하시겠습니까?</translation>
 <translation id="3470502288861289375">복사 중...</translation>
 <translation id="3474624961160222204"><ph name="NAME" />(으)로 계속</translation>
-<translation id="3474649192738347024">양식 작성이 완료되었습니다.</translation>
 <translation id="3478058380795961209">만료 월</translation>
 <translation id="3482959374254649722">탭을 동기화하는 중...</translation>
 <translation id="3484946776651937681">다운로드에서 열기</translation>
@@ -479,6 +478,7 @@
 <translation id="7136892417564438900">카메라를 사용할 수 없음</translation>
 <translation id="7159472599653637159">모바일 사이트 요청</translation>
 <translation id="7173114856073700355">설정 열기</translation>
+<translation id="7189598951263744875">공유...</translation>
 <translation id="7192050974311852563">로깅 시작</translation>
 <translation id="7203585745079012652">음성 응답</translation>
 <translation id="7265758999917665941">이 사이트 제외</translation>

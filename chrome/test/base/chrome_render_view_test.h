@@ -19,7 +19,8 @@ namespace autofill {
 class AutofillAgent;
 class TestPasswordAutofillAgent;
 class PasswordGenerationAgent;
-}
+class AutofillAssistantAgent;
+}  // namespace autofill
 
 class ChromeRenderViewTest : public content::RenderViewTest {
  public:
@@ -43,15 +44,16 @@ class ChromeRenderViewTest : public content::RenderViewTest {
 
   void WaitForAutofillDidAssociateFormControl();
 
-  autofill::TestPasswordAutofillAgent* password_autofill_agent_;
-  autofill::PasswordGenerationAgent* password_generation_;
-  autofill::AutofillAgent* autofill_agent_;
+  autofill::TestPasswordAutofillAgent* password_autofill_agent_ = nullptr;
+  autofill::PasswordGenerationAgent* password_generation_ = nullptr;
+  autofill::AutofillAssistantAgent* autofill_assistant_agent_ = nullptr;
+  autofill::AutofillAgent* autofill_agent_ = nullptr;
 
   std::unique_ptr<service_manager::BinderRegistry> registry_;
   blink::AssociatedInterfaceRegistry associated_interfaces_;
 
   // Naked pointer as ownership is with content::RenderViewTest::render_thread_.
-  ChromeMockRenderThread* chrome_render_thread_;
+  ChromeMockRenderThread* chrome_render_thread_ = nullptr;
 };
 
 #endif  // CHROME_TEST_BASE_CHROME_RENDER_VIEW_TEST_H_

@@ -22,6 +22,7 @@ class CORE_EXPORT ScrollbarLayerDelegate : public cc::Scrollbar {
                          float device_scale_factor);
 
   // cc::Scrollbar implementation.
+  bool IsSame(const cc::Scrollbar& other) const override;
   cc::ScrollbarOrientation Orientation() const override;
   bool IsLeftSideVerticalScrollbar() const override;
   bool HasThumb() const override;

@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "ash/app_list/app_list_controller_impl.h"
-#include "ash/assistant/assistant_controller_impl.h"
 #include "ash/assistant/test/test_assistant_client.h"
 #include "ash/assistant/test/test_assistant_setup.h"
 #include "ash/assistant/test/test_assistant_web_view_factory.h"
@@ -16,6 +15,7 @@
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
+#include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "ash/public/cpp/test/assistant_test_api.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_helper.h"
@@ -125,10 +125,6 @@ void AssistantAshTestBase::SetUp() {
   // Set user consent so the suggestion chips are displayed.
   SetConsentStatus(ConsentStatus::kActivityControlAccepted);
 
-  // Cache controller.
-  controller_ = Shell::Get()->assistant_controller();
-  DCHECK(controller_);
-
   // At this point our Assistant service is ready for use.
   // Indicate this by changing status from NOT_READY to READY.
   test_api_->GetAssistantState()->NotifyStatusChanged(
@@ -152,15 +148,15 @@ void AssistantAshTestBase::ShowAssistantUi(AssistantEntryPoint entry_point) {
     // by the Assistant service.
     assistant_service()->StartVoiceInteraction();
   } else {
-    // Otherwise, the interaction is triggered by a call to |ShowUi|.
-    controller_->ui_controller()->ShowUi(entry_point);
+    // Otherwise, the interaction is triggered by a call to ShowUi().
+    AssistantUiController::Get()->ShowUi(entry_point);
   }
   // Send all mojom messages to/from the assistant service.
   base::RunLoop().RunUntilIdle();
 }
 
 void AssistantAshTestBase::CloseAssistantUi(AssistantExitPoint exit_point) {
-  controller_->ui_controller()->CloseUi(exit_point);
+  AssistantUiController::Get()->CloseUi(exit_point);
 }
 
 void AssistantAshTestBase::OpenLauncher() {
@@ -315,14 +311,6 @@ void AssistantAshTestBase::DismissKeyboard() {
 bool AssistantAshTestBase::IsKeyboardShowing() const {
   auto* keyboard_controller = keyboard::KeyboardUIController::Get();
   return keyboard_controller->IsEnabled() && keyboard::IsKeyboardShowing();
-}
-
-AssistantInteractionController* AssistantAshTestBase::interaction_controller() {
-  return controller_->interaction_controller();
-}
-
-const AssistantInteractionModel* AssistantAshTestBase::interaction_model() {
-  return interaction_controller()->model();
 }
 
 TestAssistantService* AssistantAshTestBase::assistant_service() {

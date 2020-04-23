@@ -184,7 +184,7 @@ void ManifestVerifier::OnWebDataServiceRequestDone(
 
     if (base::IsStringUTF8(origin_or_id) && GURL(origin_or_id).is_valid()) {
       supported_origin_strings.emplace_back(origin_or_id);
-    } else {
+    } else if (base::IsStringASCII(origin_or_id)) {
       native_app_ids.emplace_back(origin_or_id);
     }
   }

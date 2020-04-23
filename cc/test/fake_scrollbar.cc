@@ -12,6 +12,10 @@ namespace cc {
 FakeScrollbar::FakeScrollbar() = default;
 FakeScrollbar::~FakeScrollbar() = default;
 
+bool FakeScrollbar::IsSame(const Scrollbar& other) const {
+  return this == &other;
+}
+
 ScrollbarOrientation FakeScrollbar::Orientation() const {
   return orientation_;
 }

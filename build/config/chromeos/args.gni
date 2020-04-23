@@ -3,7 +3,12 @@
 # found in the LICENSE file.
 
 declare_args() {
+  # This is used only by Simple Chrome to bind its value to test-runner scripts
+  # generated at build-time.
   cros_board = ""
+
+  # Similar to cros_board above, this used only by test-runner scripts in
+  # Simple Chrome.
   cros_sdk_version = ""
 }
 
@@ -18,5 +23,5 @@ declare_args() {
   # instead.
   # https://chromium.googlesource.com/chromium/src/+/master/docs/chromeos_build_instructions.md
   # https://chromium.googlesource.com/chromiumos/docs/+/master/simple_chrome_workflow.md
-  is_chromeos_device = cros_board != ""
+  is_chromeos_device = false
 }

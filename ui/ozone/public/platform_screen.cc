@@ -4,6 +4,8 @@
 
 #include "ui/ozone/public/platform_screen.h"
 
+#include "base/logging.h"
+
 namespace ui {
 
 PlatformScreen::PlatformScreen() = default;

@@ -399,7 +399,6 @@ void OSSettingsUI::InitOSWebUIHandlers(content::WebUIDataSource* html_source) {
                           arc::IsArcAllowedForProfile(profile));
   html_source->AddBoolean("havePlayStoreApp", arc::IsPlayStoreAvailable());
 
-  html_source->AddBoolean("enablePowerSettings", true);
   web_ui()->AddMessageHandler(
       std::make_unique<chromeos::settings::PowerHandler>(profile->GetPrefs()));
 }

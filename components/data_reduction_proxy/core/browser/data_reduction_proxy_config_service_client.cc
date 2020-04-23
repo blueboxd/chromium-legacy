@@ -23,7 +23,6 @@
 #include "base/system/sys_info.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_util.h"
@@ -173,12 +172,10 @@ net::BackoffEntry::Policy GetBackoffPolicy() {
 DataReductionProxyConfigServiceClient::DataReductionProxyConfigServiceClient(
     const net::BackoffEntry::Policy& backoff_policy,
     DataReductionProxyRequestOptions* request_options,
-    DataReductionProxyConfig* config,
     DataReductionProxyService* service,
     network::NetworkConnectionTracker* network_connection_tracker,
     ConfigStorer config_storer)
     : request_options_(request_options),
-      config_(config),
       service_(service),
       network_connection_tracker_(network_connection_tracker),
       config_storer_(config_storer),
@@ -195,7 +192,6 @@ DataReductionProxyConfigServiceClient::DataReductionProxyConfigServiceClient(
       fetch_in_progress_(false),
       client_config_override_used_(false) {
   DCHECK(request_options);
-  DCHECK(config);
   DCHECK(service);
   DCHECK(config_service_url_.is_valid());
   DCHECK(!params::IsIncludedInHoldbackFieldTrial() ||
@@ -469,7 +465,6 @@ void DataReductionProxyConfigServiceClient::InvalidateConfig() {
   GetBackoffEntry()->InformOfRequest(false);
   config_storer_.Run(std::string());
   request_options_->Invalidate();
-  config_->OnNewClientConfigFetched();
 }
 
 void DataReductionProxyConfigServiceClient::HandleResponse(
@@ -547,7 +542,6 @@ bool DataReductionProxyConfigServiceClient::ParseAndApplyProxyConfig(
 
 
   request_options_->SetSecureSession(config.session_key());
-  config_->OnNewClientConfigFetched();
   remote_config_applied_ = true;
   return true;
 }

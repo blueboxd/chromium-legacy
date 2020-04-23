@@ -1937,6 +1937,11 @@
       status: "stable",
     },
     {
+      name: "WebXRAnchors",
+      depends_on: ["WebXRARModule", "WebXRHitTest"],
+      status: "experimental"
+    },
+    {
       name: "WebXRARModule",
       depends_on: ["WebXR"],
       status: "stable",
@@ -1953,6 +1958,11 @@
     },
     {
       name: "WebXRIncubations",
+      depends_on: ["WebXRARModule"],
+      status: "experimental",
+    },
+    {
+      name: "WebXRLightEstimation",
       depends_on: ["WebXRARModule"],
       status: "experimental",
     },

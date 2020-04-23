@@ -176,27 +176,7 @@ class ActionTestHelper {
 
 }  // namespace
 
-class ExtensionActionAPITest : public ExtensionApiTest {
- public:
-  ExtensionActionAPITest() {}
-  ~ExtensionActionAPITest() override {}
-
-  const char* GetAPIName(ActionInfo::Type action_type) {
-    switch (action_type) {
-      case ActionInfo::TYPE_ACTION:
-        return "action";
-      case ActionInfo::TYPE_BROWSER:
-        return "browserAction";
-      case ActionInfo::TYPE_PAGE:
-        return "pageAction";
-    }
-    NOTREACHED();
-    return nullptr;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ExtensionActionAPITest);
-};
+using ExtensionActionAPITest = ExtensionApiTest;
 
 // Alias these for readability, when a test only exercises one type of action.
 using BrowserActionAPITest = ExtensionActionAPITest;
@@ -454,9 +434,9 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPITest, OnClickedDispatching) {
   TestExtensionDir test_dir;
   test_dir.WriteManifest(base::StringPrintf(
       kManifestTemplate, GetManifestKeyForActionType(GetParam())));
-  test_dir.WriteFile(
-      FILE_PATH_LITERAL("background.js"),
-      base::StringPrintf(kBackgroundJsTemplate, GetAPIName(GetParam())));
+  test_dir.WriteFile(FILE_PATH_LITERAL("background.js"),
+                     base::StringPrintf(kBackgroundJsTemplate,
+                                        GetAPINameForActionType(GetParam())));
 
   // Though this says "ExtensionActionTestHelper", it's actually used for all
   // toolbar actions.
@@ -579,9 +559,9 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPICanvasTest, DynamicSetIcon) {
   TestExtensionDir test_dir;
   test_dir.WriteManifest(base::StringPrintf(
       kManifestTemplate, GetManifestKeyForActionType(GetParam())));
-  test_dir.WriteFile(
-      FILE_PATH_LITERAL("background.js"),
-      base::StringPrintf(kBackgroundJsTemplate, GetAPIName(GetParam())));
+  test_dir.WriteFile(FILE_PATH_LITERAL("background.js"),
+                     base::StringPrintf(kBackgroundJsTemplate,
+                                        GetAPINameForActionType(GetParam())));
   test_dir.WriteFile(FILE_PATH_LITERAL("blue_icon.png"), blue_icon);
   test_dir.WriteFile(FILE_PATH_LITERAL("red_icon.png"), red_icon);
 
@@ -792,7 +772,7 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPITest, GettersAndSetters) {
         }
       };
 
-  const char* kApiName = GetAPIName(GetParam());
+  const char* kApiName = GetAPINameForActionType(GetParam());
 
   {
     // setPopup/getPopup.
@@ -926,7 +906,7 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPITest, EnableAndDisable) {
            });)";
     RunTestAndWaitForSuccess(
         profile(), extension->id(),
-        base::StringPrintf(kScriptTemplate, GetAPIName(GetParam()),
+        base::StringPrintf(kScriptTemplate, GetAPINameForActionType(GetParam()),
                            disable_function, tab_id2));
     EXPECT_FALSE(action->GetIsVisible(tab_id2));
     EXPECT_TRUE(action->GetIsVisible(tab_id1));
@@ -940,7 +920,7 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPITest, EnableAndDisable) {
            });)";
     RunTestAndWaitForSuccess(
         profile(), extension->id(),
-        base::StringPrintf(kScriptTemplate, GetAPIName(GetParam()),
+        base::StringPrintf(kScriptTemplate, GetAPINameForActionType(GetParam()),
                            enable_function, tab_id2));
     EXPECT_TRUE(action->GetIsVisible(tab_id2));
     EXPECT_TRUE(action->GetIsVisible(tab_id1));
@@ -963,7 +943,7 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPITest, EnableAndDisable) {
            });)";
     RunTestAndWaitForSuccess(
         profile(), extension->id(),
-        base::StringPrintf(kScriptTemplate, GetAPIName(GetParam()),
+        base::StringPrintf(kScriptTemplate, GetAPINameForActionType(GetParam()),
                            disable_function));
     EXPECT_EQ(false, action->GetIsVisible(tab_id2));
     EXPECT_EQ(false, action->GetIsVisible(tab_id1));
@@ -977,7 +957,7 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPITest, EnableAndDisable) {
            });)";
     RunTestAndWaitForSuccess(
         profile(), extension->id(),
-        base::StringPrintf(kScriptTemplate, GetAPIName(GetParam()),
+        base::StringPrintf(kScriptTemplate, GetAPINameForActionType(GetParam()),
                            enable_function));
     EXPECT_EQ(true, action->GetIsVisible(tab_id2));
     EXPECT_EQ(true, action->GetIsVisible(tab_id1));

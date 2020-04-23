@@ -87,14 +87,11 @@ GPUTexture* GPUTexture::Create(GPUDevice* device,
 
   return MakeGarbageCollected<GPUTexture>(
       device,
-      device->GetProcs().deviceCreateTexture(device->GetHandle(), &dawn_desc),
-      dawn_desc.format);
+      device->GetProcs().deviceCreateTexture(device->GetHandle(), &dawn_desc));
 }
 
-GPUTexture::GPUTexture(GPUDevice* device,
-                       WGPUTexture texture,
-                       WGPUTextureFormat format)
-    : DawnObject<WGPUTexture>(device, texture), format_(format) {}
+GPUTexture::GPUTexture(GPUDevice* device, WGPUTexture texture)
+    : DawnObject<WGPUTexture>(device, texture) {}
 
 GPUTexture::~GPUTexture() {
   if (IsDawnControlClientDestroyed()) {

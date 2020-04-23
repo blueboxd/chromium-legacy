@@ -37,10 +37,6 @@ class GeolocationPermissionContextDelegate
       permissions::GeolocationPermissionContext* context) override;
 
  private:
-  void UpdateTabContext(const permissions::PermissionRequestID& id,
-                        const GURL& requesting_frame,
-                        bool allowed) override;
-
   // This must only be accessed from the UI thread.
   GeolocationPermissionContextExtensions extensions_context_;
 

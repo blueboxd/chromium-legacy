@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/logging.h"
 #include "ui/display/display.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/rect.h"

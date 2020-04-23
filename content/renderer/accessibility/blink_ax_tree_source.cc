@@ -550,7 +550,7 @@ WebAXObject BlinkAXTreeSource::GetNull() const {
 }
 
 std::string BlinkAXTreeSource::GetDebugString(blink::WebAXObject node) const {
-  return node.ToString().Utf8();
+  return node.ToString(true).Utf8();
 }
 
 void BlinkAXTreeSource::SerializeNode(WebAXObject src,

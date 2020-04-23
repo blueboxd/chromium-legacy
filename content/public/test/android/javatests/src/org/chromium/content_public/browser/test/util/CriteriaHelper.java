@@ -222,7 +222,7 @@ public class CriteriaHelper {
             Throwable throwable = throwableRef.get();
             if (throwable != null) {
                 if (throwable instanceof AssertionError) {
-                    throw (AssertionError) throwable;
+                    throw new AssertionError(throwable);
                 } else if (throwable instanceof RuntimeException) {
                     throw (RuntimeException) throwable;
                 } else {

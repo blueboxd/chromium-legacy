@@ -37,7 +37,6 @@
 <translation id="1041263367839475438">可用的设备</translation>
 <translation id="1042174272890264476">您的计算机还内置了 <ph name="SHORT_PRODUCT_NAME" /> 的 RLZ 库。RLZ 会指定非唯一、非个人身份识别代码来衡量某推广活动所带来的搜索量和 <ph name="SHORT_PRODUCT_NAME" /> 使用量。这些标签有时会显示在 <ph name="PRODUCT_NAME" /> 的 Google 搜索查询中。</translation>
 <translation id="1043818413152647937">要一并清除以下应用内的数据吗？</translation>
-<translation id="1045448422538531528">添加到群组</translation>
 <translation id="1046635659603195359">您似乎已在另一部设备上为 Google 助理设置了 Voice Match 功能。这些先前的录音可用于在此设备上创建语音模型，创建过程通常会在 1 分钟内完成。</translation>
 <translation id="104710386808485638">重启 Linux？</translation>
 <translation id="1047431265488717055">复制链接文字(&amp;X)</translation>
@@ -92,6 +91,7 @@
 <translation id="1122198203221319518">工具(&amp;T)</translation>
 <translation id="1122242684574577509">身份验证失败。请点击此处访问当前所用 Wi-Fi 网络（“<ph name="NETWORK_ID" />”）的登录页面。</translation>
 <translation id="1122960773616686544">书签名称</translation>
+<translation id="1123753900084781868">暂时无法使用实时字幕功能</translation>
 <translation id="1124772482545689468">用户</translation>
 <translation id="1125550662859510761">有效分辨率：<ph name="WIDTH" /> x <ph name="HEIGHT" />（原生）</translation>
 <translation id="1126809382673880764">不会保护您免受危险网站、下载内容和扩展程序的侵害。在 Gmail 和 Google 搜索等其他 Google 服务中，若安全浏览保护可用，您仍将获得该保护。</translation>
@@ -404,7 +404,6 @@
 <translation id="1536754031901697553">正在断开连接…</translation>
 <translation id="15373452373711364">大号鼠标光标</translation>
 <translation id="1540605929960647700">启用演示模式</translation>
-<translation id="1541396123399225659">添加到新组</translation>
 <translation id="1542514202066550870">此标签页正在向头戴设备显示 VR 内容。</translation>
 <translation id="1543284117603151572">从 Edge 导入的书签</translation>
 <translation id="1545177026077493356">自动自助服务终端模式</translation>
@@ -1901,7 +1900,6 @@
 <translation id="3514373592552233661">如果有多个网络可供使用，首选网络将优先于其他已知网络</translation>
 <translation id="3515983984924808886">请再次轻触安全密钥以确认重置。安全密钥上存储的所有信息（包括它的 PIN 码）都会被删除。</translation>
 <translation id="3518985090088779359">接受并继续</translation>
-<translation id="351952459507671940">添加到新组</translation>
 <translation id="3521606918211282604">更改磁盘大小</translation>
 <translation id="3523642406908660543">当网站要使用插件访问您的计算机时询问您（推荐）</translation>
 <translation id="3524965460886318643">导出活动记录</translation>
@@ -2890,7 +2888,6 @@
 <translation id="4871322859485617074">PIN 码包含无效字符</translation>
 <translation id="4871370605780490696">添加书签</translation>
 <translation id="4871719318659334896">关闭群组</translation>
-<translation id="4871852311166078968">添加到群组</translation>
 <translation id="4873312501243535625">媒体文件检查工具</translation>
 <translation id="4876273079589074638">帮助我们的工程师调查并解决此崩溃问题。请列出您的具体操作，越详细越好！</translation>
 <translation id="4876895919560854374">将屏幕锁定和解锁</translation>

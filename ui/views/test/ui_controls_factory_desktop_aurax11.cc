@@ -25,7 +25,7 @@
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
 #include "ui/events/test/x11_event_waiter.h"
 #include "ui/gfx/x/x11.h"
-#include "ui/gfx/x/x11_connection.h"
+#include "ui/gfx/x/x11_types.h"
 #include "ui/views/test/test_desktop_screen_x11.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"
 
@@ -281,9 +281,6 @@ class UIControlsDesktopX11 : public UIControlsAura {
 }  // namespace
 
 UIControlsAura* CreateUIControlsDesktopAura() {
-  // The constructor of UIControlsDesktopX11 needs X11 connection to be
-  // initialized.
-  gfx::InitializeThreadedX11();
   return new UIControlsDesktopX11();
 }
 

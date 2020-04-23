@@ -47,11 +47,6 @@ class TestRunnerForSpecificView {
   explicit TestRunnerForSpecificView(WebViewTestProxy* web_view_test_proxy);
   ~TestRunnerForSpecificView();
 
-  // Installs view-specific bindings (handled by |this|) and *also* global
-  // TestRunner bindings (both kinds of bindings are exposed via a single
-  // |testRunner| object in javascript).
-  void Install(blink::WebLocalFrame* frame);
-
   void Reset();
 
   // Pointer lock methods used by WebViewTestClient.

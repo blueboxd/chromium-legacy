@@ -836,7 +836,7 @@ class WebRequestHandlerBehaviorChangedFunction
       extensions::QuotaLimitHeuristics* heuristics) const override;
   // Handle quota exceeded gracefully: Only warn the user but still execute the
   // function.
-  void OnQuotaExceeded(const std::string& error) override;
+  void OnQuotaExceeded(std::string error) override;
   ResponseAction Run() override;
 };
 

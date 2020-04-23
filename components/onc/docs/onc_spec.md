@@ -434,7 +434,8 @@ static IP configuration (see **StaticIPConfig**).
     * (optional) - **array of string**
     * An array of strings, each of which is an IP block in CIDR notation,
       whose traffic should **not** be handled by the network. Example:
-      `["10.0.0.0/8", "192.168.5.0/24"]`.
+      `["10.0.0.0/8", "192.168.5.0/24"]`. These excluded IP blocks will always
+      take priority over the included blocks in **IncludedRoutes**.
 
 * **WebProxyAutoDiscoveryUrl**
     * (optional if part of **IPConfigs**, read-only) - **string**

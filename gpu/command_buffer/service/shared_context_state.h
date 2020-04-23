@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/containers/mru_cache.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -20,6 +21,7 @@
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/gpu_gles2_export.h"
 #include "gpu/ipc/common/gpu_peak_memory.h"
+#include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "ui/gl/progress_reporter.h"
 
@@ -152,6 +154,31 @@ class GPU_GLES2_EXPORT SharedContextState
   void AddContextLostObserver(ContextLostObserver* obs);
   void RemoveContextLostObserver(ContextLostObserver* obs);
 
+  // Creating a SkSurface backed by FBO takes ~500 usec and holds ~50KB of heap
+  // on Android circa 2020. Caching them is a memory/CPU tradeoff.
+  void CacheSkSurface(void* key, sk_sp<SkSurface> surface) {
+    sk_surface_cache_.Put(key, surface);
+  }
+  sk_sp<SkSurface> GetCachedSkSurface(void* key) {
+    auto found = sk_surface_cache_.Get(key);
+    if (found == sk_surface_cache_.end())
+      return nullptr;
+    return found->second;
+  }
+  void EraseCachedSkSurface(void* key) {
+    auto found = sk_surface_cache_.Peek(key);
+    if (found != sk_surface_cache_.end())
+      sk_surface_cache_.Erase(found);
+  }
+  // Supports DCHECKs. OK to be approximate.
+  bool CachedSkSurfaceIsUnique(void* key) {
+    auto found = sk_surface_cache_.Peek(key);
+    // It was purged. Assume it was unique.
+    if (found == sk_surface_cache_.end())
+      return true;
+    return found->second->unique();
+  }
+
  private:
   friend class base::RefCounted<SharedContextState>;
 
@@ -240,6 +267,8 @@ class GPU_GLES2_EXPORT SharedContextState
 
   bool context_lost_ = false;
   base::ObserverList<ContextLostObserver>::Unchecked context_lost_observers_;
+
+  base::MRUCache<void*, sk_sp<SkSurface>> sk_surface_cache_;
 
   base::WeakPtrFactory<SharedContextState> weak_ptr_factory_{this};
 

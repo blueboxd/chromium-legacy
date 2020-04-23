@@ -12,7 +12,6 @@
 #include "components/sync/base/progress_marker_map.h"
 #include "components/sync/driver/sync_token_status.h"
 #include "components/sync/engine/cycle/model_neutral_state.h"
-#include "crypto/ec_private_key.h"
 
 namespace syncer {
 
@@ -103,11 +102,6 @@ void TestSyncService::SetUserDemographics(
   user_demographics_result_ = user_demographics_result;
 }
 
-void TestSyncService::SetExperimentalAuthenticationKey(
-    std::unique_ptr<crypto::ECPrivateKey> experimental_authentication_key) {
-  experimental_authentication_key_ = std::move(experimental_authentication_key);
-}
-
 void TestSyncService::SetEmptyLastCycleSnapshot() {
   SetLastCycleSnapshot(SyncCycleSnapshot());
 }
@@ -193,14 +187,6 @@ base::Time TestSyncService::GetAuthErrorTime() const {
 bool TestSyncService::RequiresClientUpgrade() const {
   return detailed_sync_status_.sync_protocol_error.action ==
          syncer::UPGRADE_CLIENT;
-}
-
-std::unique_ptr<crypto::ECPrivateKey>
-TestSyncService::GetExperimentalAuthenticationKey() const {
-  if (!experimental_authentication_key_)
-    return nullptr;
-
-  return experimental_authentication_key_->Copy();
 }
 
 std::unique_ptr<SyncSetupInProgressHandle>

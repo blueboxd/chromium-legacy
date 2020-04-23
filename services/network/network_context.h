@@ -159,6 +159,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
     return cors_exempt_header_list_;
   }
 
+  bool allow_any_cors_exempt_header_for_browser() const {
+    return params_ && params_->allow_any_cors_exempt_header_for_browser;
+  }
+
 #if defined(OS_ANDROID)
   base::android::ApplicationStatusListener* app_status_listener() const {
     return app_status_listener_.get();

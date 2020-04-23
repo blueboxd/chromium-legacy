@@ -177,7 +177,7 @@ TEST(CredentialsContainerTest,
   MockCredentialManager mock_credential_manager;
   CredentialManagerTestingContext context(&mock_credential_manager);
 
-  auto* proxy = CredentialManagerProxy::From(*context.GetDocument());
+  auto* proxy = CredentialManagerProxy::From(context.GetScriptState());
   auto promise = MakeGarbageCollected<CredentialsContainer>()->get(
       context.GetScriptState(), CredentialRequestOptions::Create());
   mock_credential_manager.WaitForCallToGet();

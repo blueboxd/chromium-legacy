@@ -6,8 +6,8 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
-#include "chrome/browser/vr/xr_runtime_manager_statics.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/xr_runtime_manager.h"
 #include "content/public/common/web_preferences.h"
 #include "device/vr/buildflags/buildflags.h"
 
@@ -98,7 +98,7 @@ void VrTabHelper::SetIsContentDisplayedInHeadset(content::WebContents* contents,
 /* static */
 void VrTabHelper::ExitVrPresentation() {
 #if defined(OS_WIN) && BUILDFLAG(ENABLE_VR)
-  XRRuntimeManagerStatics::ExitImmersivePresentation();
+  content::XRRuntimeManager::ExitImmersivePresentation();
 #endif
 }
 

@@ -91,13 +91,6 @@ class CORE_EXPORT ScrollingCoordinator final
   // Should be called whenever the root layer for the given frame view changes.
   void FrameViewRootLayerDidChange(LocalFrameView*);
 
-  scoped_refptr<cc::ScrollbarLayerBase> CreateSolidColorScrollbarLayer(
-      ScrollbarOrientation,
-      int thumb_thickness,
-      int track_start,
-      bool is_left_side_vertical_scrollbar,
-      cc::ElementId);
-
   void WillDestroyScrollableArea(ScrollableArea*);
 
   // Updates scroll offset in cc scroll tree immediately. We don't wait for
@@ -162,7 +155,7 @@ class CORE_EXPORT ScrollingCoordinator final
   bool should_scroll_on_main_thread_dirty_;
 
  private:
-  void AddScrollbarLayer(ScrollableArea*,
+  void SetScrollbarLayer(ScrollableArea*,
                          ScrollbarOrientation,
                          scoped_refptr<cc::ScrollbarLayerBase>);
   cc::ScrollbarLayerBase* GetScrollbarLayer(ScrollableArea*,

@@ -10,6 +10,7 @@
 #include <memory>
 #include <string>
 
+#include "base/callback.h"
 #include "base/time/time.h"
 #include "third_party/webrtc/api/video/video_codec_type.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"

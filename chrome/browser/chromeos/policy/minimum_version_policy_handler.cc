@@ -6,8 +6,10 @@
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
+#include "base/time/default_clock.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/policy/minimum_version_policy_handler_delegate_impl.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/settings/cros_settings_provider.h"
 
@@ -63,7 +65,9 @@ int MinimumVersionRequirement::Compare(
 MinimumVersionPolicyHandler::MinimumVersionPolicyHandler(
     Delegate* delegate,
     chromeos::CrosSettings* cros_settings)
-    : delegate_(delegate), cros_settings_(cros_settings) {
+    : delegate_(delegate),
+      cros_settings_(cros_settings),
+      clock_(base::DefaultClock::GetInstance()) {
   policy_subscription_ = cros_settings_->AddSettingsObserver(
       chromeos::kMinimumChromeVersionEnforced,
       base::Bind(&MinimumVersionPolicyHandler::OnPolicyChanged,
@@ -87,11 +91,6 @@ bool MinimumVersionPolicyHandler::CurrentVersionSatisfies(
   return delegate_->GetCurrentVersion().CompareTo(requirement.version()) >= 0;
 }
 
-void MinimumVersionPolicyHandler::NotifyMinimumVersionStateChanged() {
-  for (auto& observer : observers_)
-    observer.OnMinimumVersionStateChanged();
-}
-
 bool MinimumVersionPolicyHandler::IsPolicyApplicable() {
   bool device_managed = delegate_->IsEnterpriseManaged();
   bool is_kiosk = delegate_->IsKioskMode();
@@ -106,16 +105,18 @@ void MinimumVersionPolicyHandler::OnPolicyChanged() {
   if (status != chromeos::CrosSettingsProvider::TRUSTED ||
       !IsPolicyApplicable())
     return;
+
   const base::ListValue* entries;
   std::vector<std::unique_ptr<MinimumVersionRequirement>> configs;
   if (!cros_settings_->GetList(chromeos::kMinimumChromeVersionEnforced,
                                &entries) ||
       !entries->GetSize()) {
-    // Reset and notify if policy is not set or set to empty list.
-    Reset();
-    NotifyMinimumVersionStateChanged();
+    // Reset state and hide update required screen if policy is not set or set
+    // to empty list.
+    HandleUpdateNotRequired();
     return;
   }
+
   for (const auto& item : entries->GetList()) {
     const base::DictionaryValue* dict;
     if (item.GetAsDictionary(&dict)) {
@@ -125,7 +126,8 @@ void MinimumVersionPolicyHandler::OnPolicyChanged() {
         configs.push_back(std::move(instance));
     }
   }
-  // select the strongest config whose requirements are not satisfied by the
+
+  // Select the strongest config whose requirements are not satisfied by the
   // current version. The strongest config is chosen as the one whose minimum
   // required version is greater and closest to the current version. In case of
   // conflict. preference is given to the one with lesser warning time or eol
@@ -140,26 +142,92 @@ void MinimumVersionPolicyHandler::OnPolicyChanged() {
          item->Compare(configs[strongest_config_idx].get()) < 0))
       strongest_config_idx = i;
   }
+
   if (strongest_config_idx != -1) {
-    // update is required if at least one config exists whose requirements are
+    // Update is required if at least one config exists whose requirements are
     // not satisfied by the current version.
     std::unique_ptr<MinimumVersionRequirement> strongest_config =
         std::move(configs[strongest_config_idx]);
     if (!state_ || state_->Compare(strongest_config.get()) != 0) {
       state_ = std::move(strongest_config);
       requirements_met_ = false;
-      NotifyMinimumVersionStateChanged();
+      FetchEolInfo();
     }
   } else if (state_) {
-    // Reset the state if the policy is already applied.
-    Reset();
-    NotifyMinimumVersionStateChanged();
+    // Update is not required as the requirements of all of the configs in the
+    // policy are satisfied by the current chrome version.
+    HandleUpdateNotRequired();
+  }
+}
+
+void MinimumVersionPolicyHandler::HandleUpdateNotRequired() {
+  // Reset the state including any running timers.
+  Reset();
+  // Hide update required screen if it is visible and switch back to the login
+  // screen.
+  if (delegate_->IsLoginSessionState()) {
+    delegate_->HideUpdateRequiredScreenIfShown();
   }
 }
 
 void MinimumVersionPolicyHandler::Reset() {
   state_.reset();
   requirements_met_ = true;
+}
+
+void MinimumVersionPolicyHandler::FetchEolInfo() {
+  // Return if update required state is null meaning all requirements are
+  // satisfied.
+  if (!state_)
+    return;
+
+  update_required_time_ = clock_->Now();
+  chromeos::UpdateEngineClient* update_engine_client =
+      chromeos::DBusThreadManager::Get()->GetUpdateEngineClient();
+  // Request the End of Life (Auto Update Expiration) status.
+  update_engine_client->GetEolInfo(
+      base::BindOnce(&MinimumVersionPolicyHandler::OnFetchEolInfo,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void MinimumVersionPolicyHandler::OnFetchEolInfo(
+    const chromeos::UpdateEngineClient::EolInfo info) {
+  if (info.eol_date.is_null() || info.eol_date > update_required_time_) {
+    // End of life is not reached. Start update with |warning_time_|.
+    HandleUpdateRequired(state_->warning());
+  } else {
+    // End of life is reached. Start update with |eol_warning_time_|.
+    HandleUpdateRequired(state_->eol_warning());
+  }
+}
+
+void MinimumVersionPolicyHandler::HandleUpdateRequired(
+    base::TimeDelta warning_time) {
+  if (warning_time.is_zero())
+    OnDeadlineReached();
+  // TODO(https://crbug.com/1048607): Handle the cases for network limitations
+  // and warning time greater than zero. This would include starting the timer,
+  // triggering update process if network is good and showing in-session
+  // notifications if required.
+}
+
+void MinimumVersionPolicyHandler::OnDeadlineReached() {
+  if (delegate_->IsLoginSessionState() && !delegate_->IsLoginInProgress()) {
+    // Show update required screen over the login screen.
+    delegate_->ShowUpdateRequiredScreen();
+  } else if (delegate_->IsUserLoggedIn() && delegate_->IsUserManaged()) {
+    // Terminate the current user session to show update required
+    // screen on the login screen if user is managed.
+    delegate_->RestartToLoginScreen();
+  }
+  // No action is required if -
+  // 1) The user signed in is not managed. Once the un-managed user signs out or
+  // the device is rebooted, the policy handler will be called again to show the
+  // update required screen if required.
+  // 2) Login is in progress. This would be handled in-session once user logs
+  // in, the user would be logged out and update required screen is shown.
+  // 3) Device has just been enrolled. The login screen would check and show the
+  // update required screen.
 }
 
 }  // namespace policy

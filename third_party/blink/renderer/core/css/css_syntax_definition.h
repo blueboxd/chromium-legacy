@@ -19,7 +19,9 @@ class CORE_EXPORT CSSSyntaxDefinition {
   const CSSValue* Parse(CSSParserTokenRange,
                         const CSSParserContext&,
                         bool is_animation_tainted) const;
-  bool IsTokenStream() const {
+
+  // https://drafts.css-houdini.org/css-properties-values-api-1/#universal-syntax-descriptor
+  bool IsUniversal() const {
     return syntax_components_.size() == 1 &&
            syntax_components_[0].GetType() == CSSSyntaxType::kTokenStream;
   }

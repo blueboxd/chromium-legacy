@@ -305,7 +305,8 @@ bool IsBannedCrossSiteAuth(network::ResourceRequest* resource_request,
         extra_data->allow_cross_origin_auth_prompt();
   }
 
-  if (first_party.IsSchemelesslyFirstParty(request_url)) {
+  if (first_party.IsFirstPartyWithSchemefulMode(
+          request_url, /*compute_schemefully=*/false)) {
     // If the first party is secure but the subresource is not, this is
     // mixed-content. Do not allow the image.
     if (!allow_cross_origin_auth_prompt &&

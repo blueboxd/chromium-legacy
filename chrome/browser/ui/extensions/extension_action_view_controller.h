@@ -69,7 +69,7 @@ class ExtensionActionViewController
   ui::MenuModel* GetContextMenu() override;
   void OnContextMenuShown() override;
   void OnContextMenuClosed() override;
-  bool ExecuteAction(bool by_user) override;
+  bool ExecuteAction(bool by_user, InvocationSource source) override;
   void UpdateState() override;
   void RegisterCommand() override;
   bool DisabledClickOpensMenu() const override;

@@ -15,9 +15,8 @@
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/public/web/modules/mediastream/web_media_stream_device_observer.h"
-#include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame.h"
-#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/mediastream/apply_constraints_processor.h"
 #include "third_party/blink/renderer/modules/peerconnection/peer_connection_tracker.h"
@@ -133,11 +132,11 @@ void UserMediaClient::RequestUserMedia(UserMediaRequest* user_media_request) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(user_media_request);
   DCHECK(user_media_request->Audio() || user_media_request->Video());
-  // ownerDocument may be null if we are in a test.
+  // GetWindow() may be null if we are in a test.
   // In that case, it's OK to not check frame().
 
-  DCHECK(!user_media_request->OwnerDocument() ||
-         frame_ == user_media_request->OwnerDocument()->GetFrame());
+  DCHECK(!user_media_request->GetWindow() ||
+         frame_ == user_media_request->GetWindow()->GetFrame());
 
   // Save histogram data so we can see how much GetUserMedia is used.
   UpdateAPICount(user_media_request->MediaRequestType());
@@ -161,11 +160,9 @@ void UserMediaClient::RequestUserMedia(UserMediaRequest* user_media_request) {
   // TODO(mustaq): The description above seems specific to pre-UAv2 stack-based
   // tokens.  Perhaps we don't need to preserve this bit?
   bool has_transient_user_activation = false;
-  if (user_media_request->OwnerDocument() &&
-      user_media_request->OwnerDocument()->GetFrame()) {
-    has_transient_user_activation = user_media_request->OwnerDocument()
-                                        ->GetFrame()
-                                        ->Frame::HasTransientUserActivation();
+  if (LocalDOMWindow* window = user_media_request->GetWindow()) {
+    has_transient_user_activation =
+        LocalFrame::HasTransientUserActivation(window->GetFrame());
   }
   user_media_request->set_request_id(request_id);
   user_media_request->set_has_transient_user_activation(

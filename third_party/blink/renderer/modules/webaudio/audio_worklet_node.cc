@@ -153,14 +153,28 @@ void AudioWorkletHandler::CheckNumberOfChannelsForInput(AudioNodeInput* input) {
     }
   }
 
-  // If the node has zero output, it becomes the "automatic pull" node. This
-  // does not apply to the general case where we have outputs that aren't
-  // connected.
-  if (NumberOfOutputs() == 0) {
-    Context()->GetDeferredTaskHandler().AddAutomaticPullNode(this);
+  AudioHandler::CheckNumberOfChannelsForInput(input);
+  UpdatePullStatusIfNeeded();
+}
+
+void AudioWorkletHandler::UpdatePullStatusIfNeeded() {
+  Context()->AssertGraphOwner();
+
+  bool is_output_connected = false;
+  for (unsigned i = 0; i < NumberOfOutputs(); ++i) {
+    if (Output(i).IsConnected()) {
+      is_output_connected = true;
+      break;
+    }
   }
 
-  AudioHandler::CheckNumberOfChannelsForInput(input);
+  // If no output is connected, add the node to the automatic pull list.
+  // Otherwise, remove it out of the list.
+  if (!is_output_connected) {
+    Context()->GetDeferredTaskHandler().AddAutomaticPullNode(this);
+  } else {
+    Context()->GetDeferredTaskHandler().RemoveAutomaticPullNode(this);
+  }
 }
 
 double AudioWorkletHandler::TailTime() const {
@@ -371,6 +385,13 @@ AudioWorkletNode* AudioWorkletNode::Create(
   context->audioWorklet()->CreateProcessor(node->GetWorkletHandler(),
                                            std::move(processor_port_channel),
                                            std::move(serialized_node_options));
+
+  {
+    // The node should be manually added to the automatic pull node list,
+    // even without a |connect()| call.
+    BaseAudioContext::GraphAutoLocker locker(context);
+    node->Handler().UpdatePullStatusIfNeeded();
+  }
 
   return node;
 }

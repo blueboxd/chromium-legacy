@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "base/logging.h"
 #include "base/win/core_winrt_util.h"
 #include "base/win/windows_version.h"
 #include "skia/ext/skia_utils_win.h"

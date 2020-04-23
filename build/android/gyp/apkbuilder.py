@@ -18,6 +18,7 @@ import zlib
 import finalize_apk
 
 from util import build_utils
+from util import diff_utils
 from util import zipalign
 
 # Input dex.jar files are zipaligned.
@@ -107,6 +108,13 @@ def _ParseArgs(args):
       '--best-compression',
       action='store_true',
       help='Use zip -9 rather than zip -1')
+  parser.add_argument(
+      '--expected-native-libs-and-assets',
+      help='Expected list of native libraries and assets.')
+  parser.add_argument(
+      '--native-libs-and-assets-expectation-failure-file',
+      help='Write to this file if the expected list of native libraries and '
+      'assets does not match the actual list.')
   options = parser.parse_args(args)
   options.assets = build_utils.ParseGnList(options.assets)
   options.uncompressed_assets = build_utils.ParseGnList(
@@ -188,7 +196,12 @@ def _AddAssets(apk, path_tuples, fast_align, disable_compression=False):
     apk: ZipFile to write to.
     paths: List of paths (with optional :zipPath suffix) to add.
     disable_compression: Whether to disable compression.
+
+  Returns: A list of (apk_path, compress, alignment) tuple representing what and
+  how assets are added.
   """
+  added_assets = []
+
   # Group all uncompressed assets together in the hope that it will increase
   # locality of mmap'ed files.
   for target_compress in (False, True):
@@ -209,17 +222,26 @@ def _AddAssets(apk, path_tuples, fast_align, disable_compression=False):
           raise Exception('Multiple targets specified the asset path: %s' %
                           apk_path)
         except KeyError:
+          alignment = 0 if compress and not fast_align else 4
           zipalign.AddToZipHermetic(
               apk,
               apk_path,
               src_path=src_path,
               compress=compress,
-              alignment=0 if compress and not fast_align else 4)
+              alignment=alignment)
+          added_assets.append((apk_path, compress, alignment))
+  return added_assets
 
 
 def _AddNativeLibraries(out_apk, native_libs, android_abi, uncompress,
                         fast_align):
-  """Add native libraries to APK."""
+  """Add native libraries to APK.
+
+  Returns: A list of (apk_path, compress, alignment) tuple representing what and
+  how native libraries are added.
+  """
+  added_libraries = []
+
   has_crazy_linker = any(
       'android_linker' in os.path.basename(p) for p in native_libs)
   has_monochrome = any('monochrome' in os.path.basename(p) for p in native_libs)
@@ -243,12 +265,53 @@ def _AddNativeLibraries(out_apk, native_libs, android_abi, uncompress,
       lib_android_abi = 'arm64-v8a-hwasan'
 
     apk_path = 'lib/%s/%s' % (lib_android_abi, basename)
+    alignment = 0 if compress and not fast_align else 0x1000
     zipalign.AddToZipHermetic(
         out_apk,
         apk_path,
         src_path=path,
         compress=compress,
-        alignment=0 if compress and not fast_align else 0x1000)
+        alignment=alignment)
+    added_libraries.append((apk_path, compress, alignment))
+
+  return added_libraries
+
+
+def _VerifyNativeLibsAndAssets(
+    native_libs, assets, expectation_file_path,
+    unexpected_native_libs_and_assets_failure_file_path):
+  """Verifies the native libraries and assets are as expected.
+
+  Check that the native libraries and assets being added are consistent with
+  the expectation file.
+  """
+
+  native_libs.sort()
+  assets.sort()
+  with tempfile.NamedTemporaryFile() as generated_output:
+    for apk_path, compress, alignment in native_libs + assets:
+      generated_output.write('apk_path=%s, compress=%s, alignment=%s\n' %
+                             (apk_path, compress, alignment))
+
+      generated_output.flush()
+
+    msg = diff_utils.DiffFileContents(
+        expectation_file_path, generated_output.name, show_files_compared=False)
+    if not msg:
+      return
+
+    msg_header = """\
+Native Libraries and Assets expectations file needs updating. For details see:
+https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/android/java/README.md
+"""
+    sys.stderr.write(msg_header)
+    sys.stderr.write(msg)
+    if unexpected_native_libs_and_assets_failure_file_path:
+      build_utils.MakeDirectory(
+          os.path.dirname(unexpected_native_libs_and_assets_failure_file_path))
+      with open(unexpected_native_libs_and_assets_failure_file_path, 'w') as f:
+        f.write(msg_header)
+        f.write(msg)
 
 
 def main(args):
@@ -348,9 +411,14 @@ def main(args):
 
       # 2. Assets
       logging.debug('Adding assets/')
-      _AddAssets(out_apk, assets, fast_align, disable_compression=False)
-      _AddAssets(
-          out_apk, uncompressed_assets, fast_align, disable_compression=True)
+      added_assets = _AddAssets(
+          out_apk, assets, fast_align, disable_compression=False)
+      added_assets.extend(
+          _AddAssets(
+              out_apk,
+              uncompressed_assets,
+              fast_align,
+              disable_compression=True))
 
       # 3. Dex files
       logging.debug('Adding classes.dex')
@@ -372,13 +440,20 @@ def main(args):
 
       # 4. Native libraries.
       logging.debug('Adding lib/')
-      _AddNativeLibraries(out_apk, native_libs, options.android_abi,
-                          options.uncompress_shared_libraries, fast_align)
+      added_libs = _AddNativeLibraries(
+          out_apk, native_libs, options.android_abi,
+          options.uncompress_shared_libraries, fast_align)
 
       if options.secondary_android_abi:
-        _AddNativeLibraries(out_apk, secondary_native_libs,
-                            options.secondary_android_abi,
-                            options.uncompress_shared_libraries, fast_align)
+        added_libs.extend(
+            _AddNativeLibraries(
+                out_apk, secondary_native_libs, options.secondary_android_abi,
+                options.uncompress_shared_libraries, fast_align))
+
+      if options.expected_native_libs_and_assets:
+        _VerifyNativeLibsAndAssets(
+            added_libs, added_assets, options.expected_native_libs_and_assets,
+            options.native_libs_and_assets_expectation_failure_file)
 
       # Add a placeholder lib if the APK should be multi ABI but is missing libs
       # for one of the ABIs.

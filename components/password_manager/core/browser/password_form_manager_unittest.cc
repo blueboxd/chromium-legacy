@@ -2549,6 +2549,28 @@ TEST_F(PasswordFormManagerTestWithMockedSaver, MoveCredentialsToAccountStore) {
   form_manager_->MoveCredentialsToAccountStore();
 }
 
+TEST_F(PasswordFormManagerTestWithMockedSaver,
+       BlockMovingCredentialsToAccountStore) {
+  const std::string kEmail = "email@gmail.com";
+  const std::string kGaiaId = signin::GetTestGaiaIdForEmail(kEmail);
+
+  PasswordForm saved_match(saved_match_);
+  saved_match.in_store = PasswordForm::Store::kProfileStore;
+  SetNonFederatedAndNotifyFetchCompleted({&saved_match});
+
+  ON_CALL(*mock_password_save_manager(), GetPendingCredentials)
+      .WillByDefault(ReturnRef(saved_match));
+
+  ON_CALL(client_, GetIdentityManager())
+      .WillByDefault(Return(identity_test_env_.identity_manager()));
+
+  identity_test_env_.SetPrimaryAccount(kEmail);
+
+  EXPECT_CALL(*mock_password_save_manager(),
+              BlockMovingToAccountStoreFor(GaiaIdHash::FromGaiaId(kGaiaId)));
+  form_manager_->BlockMovingCredentialsToAccountStore();
+}
+
 TEST_F(PasswordFormManagerTestWithMockedSaver, IsNewLogin) {
   EXPECT_CALL(*mock_password_save_manager(), IsNewLogin());
   form_manager_->IsNewLogin();

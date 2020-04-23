@@ -196,7 +196,6 @@
 <translation id="3469166899695866866">Vols aturar la baixada?</translation>
 <translation id="3470502288861289375">S'està copiant...</translation>
 <translation id="3474624961160222204">Continua com a <ph name="NAME" /></translation>
-<translation id="3474649192738347024">S'han emplenat els formularis.</translation>
 <translation id="3478058380795961209">Mes de caducitat</translation>
 <translation id="3482959374254649722">S'estan sincronitzant les pestanyes...</translation>
 <translation id="3484946776651937681">Obre a Baixades</translation>
@@ -479,6 +478,7 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="7136892417564438900">La càmera no està disponible</translation>
 <translation id="7159472599653637159">Sol·licita lloc web per a mòbils</translation>
 <translation id="7173114856073700355">Obre Configuració</translation>
+<translation id="7189598951263744875">Comparteix...</translation>
 <translation id="7192050974311852563">Inicia el registre</translation>
 <translation id="7203585745079012652">Pronuncia les respostes</translation>
 <translation id="7265758999917665941">Mai per a aquest lloc web</translation>

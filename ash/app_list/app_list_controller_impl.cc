@@ -17,7 +17,6 @@
 #include "ash/app_list/views/contents_view.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/assistant/assistant_controller_impl.h"
-#include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/util/assistant_util.h"
@@ -34,6 +33,7 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/assistant/controller/assistant_controller.h"
+#include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -75,10 +75,6 @@ namespace {
 
 bool IsTabletMode() {
   return Shell::Get()->tablet_mode_controller()->InTabletMode();
-}
-
-void CloseAssistantUi(AssistantExitPoint exit_point) {
-  Shell::Get()->assistant_controller()->ui_controller()->CloseUi(exit_point);
 }
 
 TabletModeAnimationTransition CalculateAnimationTransitionForMetrics(
@@ -181,7 +177,7 @@ AppListControllerImpl::AppListControllerImpl()
   shell->window_tree_host_manager()->AddObserver(this);
   shell->mru_window_tracker()->AddObserver(this);
   AssistantController::Get()->AddObserver(this);
-  shell->assistant_controller()->ui_controller()->AddModelObserver(this);
+  AssistantUiController::Get()->AddModelObserver(this);
 }
 
 AppListControllerImpl::~AppListControllerImpl() {
@@ -558,16 +554,14 @@ void AppListControllerImpl::OnAppListStateChanged(AppListState new_state,
   UpdateLauncherContainer();
 
   if (new_state == AppListState::kStateEmbeddedAssistant) {
-    // ShowUi will be no-op if the AssistantUiModel is already visible.
-    Shell::Get()->assistant_controller()->ui_controller()->ShowUi(
-        AssistantEntryPoint::kUnspecified);
+    // ShowUi() will be no-op if the Assistant UI is already visible.
+    AssistantUiController::Get()->ShowUi(AssistantEntryPoint::kUnspecified);
     return;
   }
 
   if (old_state == AppListState::kStateEmbeddedAssistant) {
-    // CloseUi will be no-op if the AssistantUiModel is already closed.
-    Shell::Get()->assistant_controller()->ui_controller()->CloseUi(
-        AssistantExitPoint::kBackInLauncher);
+    // CloseUi() will be no-op if the Assistant UI is already closed.
+    AssistantUiController::Get()->CloseUi(AssistantExitPoint::kBackInLauncher);
   }
 }
 
@@ -903,8 +897,11 @@ void AppListControllerImpl::OnHomeLauncherAnimationComplete(
   home_screen_blur_disabler_.reset();
 
   home_launcher_transition_state_ = HomeLauncherTransitionState::kFinished;
-  CloseAssistantUi(shown ? AssistantExitPoint::kLauncherOpen
-                         : AssistantExitPoint::kLauncherClose);
+
+  AssistantUiController::Get()->CloseUi(
+      shown ? AssistantExitPoint::kLauncherOpen
+            : AssistantExitPoint::kLauncherClose);
+
   // Animations can be reversed (e.g. in a drag). Let's ensure the target
   // visibility is correct first.
   OnVisibilityChanged(shown, display_id);
@@ -1068,7 +1065,7 @@ void AppListControllerImpl::RecordShelfAppLaunched() {
 // Methods of |client_|:
 
 void AppListControllerImpl::StartAssistant() {
-  Shell::Get()->assistant_controller()->ui_controller()->ShowUi(
+  AssistantUiController::Get()->ShowUi(
       AssistantEntryPoint::kLauncherSearchBoxIcon);
 }
 
@@ -1140,7 +1137,7 @@ void AppListControllerImpl::OpenSearchResult(const std::string& result_id,
     if (!GetLastQueryLength()) {
       RecordZeroStateSuggestionOpenTypeHistogram(ASSISTANT_OMNIBOX_RESULT);
     }
-    Shell::Get()->assistant_controller()->ui_controller()->ShowUi(
+    AssistantUiController::Get()->ShowUi(
         AssistantEntryPoint::kLauncherSearchResult);
     AssistantController::Get()->OpenUrl(
         assistant::util::CreateAssistantQueryDeepLink(
@@ -1204,7 +1201,7 @@ void AppListControllerImpl::ViewClosing() {
     keyboard::KeyboardUIController::Get()->HideKeyboardExplicitlyBySystem();
   }
 
-  CloseAssistantUi(AssistantExitPoint::kLauncherClose);
+  AssistantUiController::Get()->CloseUi(AssistantExitPoint::kLauncherClose);
 
   if (client_)
     client_->ViewClosing();
@@ -1729,7 +1726,7 @@ void AppListControllerImpl::Shutdown() {
 
   Shell* shell = Shell::Get();
   AssistantController::Get()->RemoveObserver(this);
-  shell->assistant_controller()->ui_controller()->RemoveModelObserver(this);
+  AssistantUiController::Get()->RemoveModelObserver(this);
   shell->mru_window_tracker()->RemoveObserver(this);
   shell->window_tree_host_manager()->RemoveObserver(this);
   AssistantState::Get()->RemoveObserver(this);

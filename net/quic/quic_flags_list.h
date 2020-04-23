@@ -105,9 +105,6 @@ QUIC_FLAG(
     FLAGS_quic_reloadable_flag_quic_donot_reset_ideal_next_packet_send_time,
     false)
 
-// If true, enable experiment for testing PCC congestion-control.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_pcc3, false)
-
 // When true and the BBR9 connection option is present, BBR only considers
 // bandwidth samples app-limited if they're not filling the pipe.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_flexible_app_limited, false)
@@ -289,18 +286,6 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_spdy_enable_granular_decompress_errors,
           true)
 
-// If true, use passed in ack_frame to calculate minimum size of the serialized
-// ACK frame.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_use_ack_frame_to_get_min_size,
-          true)
-
-// If true, skip packet threshold loss detection if largest acked is a runt.
-QUIC_FLAG(
-    bool,
-    FLAGS_quic_reloadable_flag_quic_skip_packet_threshold_loss_detection_with_runt,
-    true)
-
 // If true, QUIC BBRv2 to take ack height into account when calculating
 // queuing_threshold in PROBE_UP.
 QUIC_FLAG(
@@ -313,15 +298,6 @@ QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_send_ping_when_pto_skips_packet_number,
     true)
-
-// If true, QuicSession\'s various write methods will set transmission type.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_write_with_transmission, true)
-
-// If true, fix a bug in QUIC BBR where bandwidth estimate becomes 0 after a
-// loss only event.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_bbr_fix_zero_bw_on_loss_only_event,
-          true)
 
 // If true, trigger QUIC_BUG in two ShouldCreateIncomingStream() overrides when
 // called with locally initiated stream ID.
@@ -381,7 +357,7 @@ QUIC_FLAG(
 // options.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_bbr2_lower_startup_cwnd_gain,
-          false)
+          true)
 
 // The divisor that controls how often MAX_STREAMS frames are sent.
 QUIC_FLAG(int32_t, FLAGS_quic_max_streams_window_divisor, 2)

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script>let additionalChromiumResources = ["../resources/xr-internal-device-mocking.js"];</script>
+<script src="/webxr/resources/webxr_util.js"></script>
+<script src="/webxr/resources/webxr_test_constants.js"></script>
+<script src="/webxr/resources/webxr_test_asserts.js"></script>
+<canvas />
+
+<script>
+// Because light estimation is not yet in the core webxr spec, this is an internal-chrome only test.
+
+function assert_defined(v, description) {
+  assert_not_equals(v, undefined, description);
+}
+
+// Verifies the structure of |XRLightEstimate|
+// Defined in 'third_party/blink/renderer/modules/xr/xr_light_estimate.idl'
+function verifyXRLightEstimate(lightEstimate) {
+  assert_true(lightEstimate instanceof XRLightEstimate);
+
+  assert_defined(lightEstimate.sphericalHarmonicsCoefficients, "sphericalHarmonicsCoefficients was not defined on XRLightEstimate");
+  assert_array_equals(Array.from(lightEstimate.sphericalHarmonicsCoefficients), new Array(9).fill().map((x, i) => [i, i, i]).flat());
+
+  assert_defined(lightEstimate.primaryLightDirection, "primaryLightDirection was not defined on XRLightEstimate");
+  assert_equals(lightEstimate.primaryLightDirection.x, 0);
+  assert_equals(lightEstimate.primaryLightDirection.y, 1);
+  assert_equals(lightEstimate.primaryLightDirection.z, 0);
+  assert_equals(lightEstimate.primaryLightDirection.w, 0);
+
+  assert_defined(lightEstimate.primaryLightIntensity, "primaryLightIntensity was not defined on XRLightEstimate");
+  assert_equals(lightEstimate.primaryLightIntensity.x, 1);
+  assert_equals(lightEstimate.primaryLightIntensity.y, 1);
+  assert_equals(lightEstimate.primaryLightIntensity.z, 1);
+  assert_equals(lightEstimate.primaryLightIntensity.w, 1);
+}
+
+// Verifies the structure of |XRFrame| (as it relates to light estimation)
+// for a session that's expected to suppot light estimation.
+// Defined in 'third_party/blink/renderer/modules/xr/xr_frame.idl'
+function verifyXRLightEstimateExists(t, resolve, count, session, frame, lightProbe) {
+  t.step(() => {
+    assert_not_equals(count, 0, "Did not get light estimate with a reasonable number of frames");
+    assert_defined(frame.getLightEstimate, "getLightEstimate was not defined on XRFrame");
+
+    const lightEstimate = frame.getLightEstimate(lightProbe);
+    if (lightEstimate === null) {
+      // Check if we get a lighting estimate next frame
+      session.requestAnimationFrame((time, frame) => {
+        verifyXRLightEstimateExists(t, resolve, count - 1, session, frame, lightProbe);
+      });
+    } else {
+      verifyXRLightEstimate(lightEstimate);
+      resolve();
+    }
+  });
+}
+
+// Verifies the structure of |XRLightProbe|
+// Defined in 'third_party/blink/renderer/modules/xr/xr_light_probe.idl'
+function verifyXRLightProbe(lightProbe) {
+  assert_true(lightProbe instanceof XRLightProbe);
+}
+
+const lightingInformationExistsName = "Ensures lighting estimation feature works when enabled";
+function lightingInformationExists(session, fakeDeviceController, t) {
+  t.step(() => {
+    assert_defined(session.requestLightProbe, "requestLightProbe was not defined on XRSession");
+  });
+
+  return new Promise((resolve, reject) => {
+    session.requestLightProbe().then((lightProbe) => {
+      verifyXRLightProbe(lightProbe);
+
+      session.requestAnimationFrame((time, frame) => {
+        verifyXRLightEstimateExists(t, resolve, 10, session, frame, lightProbe);
+      });
+    });
+  });
+}
+
+const lightingInformationDoesNotExistName = "Ensure lighting estimation feature does not work when not explicitly enabled";
+function lightingInformationDoesNotExist(session, fakeDeviceController, t) {
+  t.step(() => {
+    assert_defined(session.requestLightProbe, "requestLightProbe was not defined on XRSession");
+  });
+
+  return promise_rejects_dom(t, "NotSupportedError", DOMException, session.requestLightProbe());
+}
+
+xr_session_promise_test(
+  lightingInformationExistsName,
+  lightingInformationExists,
+  IMMERSIVE_AR_DEVICE,
+  'immersive-ar',
+  { 'requiredFeatures': ['light-estimation'] }
+);
+xr_session_promise_test(
+  lightingInformationDoesNotExistName,
+  lightingInformationDoesNotExist,
+  IMMERSIVE_AR_DEVICE,
+  'immersive-ar',
+  {}
+);
+
+</script>

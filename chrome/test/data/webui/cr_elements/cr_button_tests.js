@@ -18,8 +18,8 @@ suite('cr-button', function() {
 
   /** @param {string} key */
   function press(key) {
-    button.dispatchEvent(new KeyboardEvent('keydown', {key: key}));
-    button.dispatchEvent(new KeyboardEvent('keyup', {key: key}));
+    button.dispatchEvent(new KeyboardEvent('keydown', {key}));
+    button.dispatchEvent(new KeyboardEvent('keyup', {key}));
   }
 
   test('label is displayed', async () => {
@@ -99,5 +99,29 @@ suite('cr-button', function() {
     const wait = test_util.eventToPromise('tap', button);
     button.click();
     await wait;
+  });
+
+  test('space up does not click without space down', () => {
+    let clicked = false;
+    button.addEventListener('click', () => {
+      clicked = true;
+    }, {once: true});
+    button.dispatchEvent(new KeyboardEvent('keyup', {key: ' '}));
+    assertFalse(clicked);
+    press(' ');
+    assertTrue(clicked);
+  });
+
+  test('space up events will not result in one click if loses focus', () => {
+    let clicked = false;
+    button.addEventListener('click', () => {
+      clicked = true;
+    }, {once: true});
+    button.dispatchEvent(new KeyboardEvent('keydown', {key: ' '}));
+    button.dispatchEvent(new Event('blur'));
+    button.dispatchEvent(new KeyboardEvent('keyup', {key: ' '}));
+    assertFalse(clicked);
+    press(' ');
+    assertTrue(clicked);
   });
 });

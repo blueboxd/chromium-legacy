@@ -953,7 +953,8 @@ public class CustomTabActivityTest {
     @RetryOnFailure
     public void testMultipleActionButtons() throws TimeoutException {
         Bitmap expectedIcon1 = createVectorDrawableBitmap(R.drawable.ic_content_copy_black, 48, 48);
-        Bitmap expectedIcon2 = createVectorDrawableBitmap(R.drawable.ic_music_note_36dp, 48, 48);
+        Bitmap expectedIcon2 =
+                createVectorDrawableBitmap(R.drawable.ic_email_googblue_36dp, 48, 48);
         Intent intent = createMinimalCustomTabIntent();
 
         // Mark the intent as trusted so it can show more than one action button.
@@ -1018,40 +1019,6 @@ public class CustomTabActivityTest {
         Assert.assertTrue(connection.updateVisuals(token, updateVisualsBundle));
 
         assertEquals("Bestest testest", actionButton.getContentDescription());
-    }
-
-    /**
-     * Test that additional action buttons are ignored for untrusted intents.
-     */
-    @Test
-    @SmallTest
-    @Feature({"UiCatalogue"})
-    @RetryOnFailure
-    public void testMultipleActionButtons_untrusted() {
-        Bitmap expectedIcon1 = createVectorDrawableBitmap(R.drawable.ic_content_copy_black, 48, 48);
-        Bitmap expectedIcon2 = createVectorDrawableBitmap(R.drawable.ic_music_note_36dp, 48, 48);
-        Intent intent = createMinimalCustomTabIntent();
-
-        // By default, the intent should not be trusted.
-        Assert.assertFalse(IntentHandler.wasIntentSenderChrome(intent));
-
-        ArrayList<Bundle> toolbarItems = new ArrayList<>(2);
-        final PendingIntent pi = PendingIntent.getBroadcast(
-                InstrumentationRegistry.getTargetContext(), 0, new Intent(), 0);
-        toolbarItems.add(makeToolbarItemBundle(expectedIcon1, "Shown", pi));
-        toolbarItems.add(makeToolbarItemBundle(expectedIcon2, "Not shown", pi));
-        intent.putParcelableArrayListExtra(CustomTabsIntent.EXTRA_TOOLBAR_ITEMS, toolbarItems);
-        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
-
-        View toolbarView = mCustomTabActivityTestRule.getActivity().findViewById(R.id.toolbar);
-        Assert.assertTrue(
-                "A custom tab toolbar is never shown", toolbarView instanceof CustomTabToolbar);
-        CustomTabToolbar toolbar = (CustomTabToolbar) toolbarView;
-        final ImageButton actionButton = toolbar.getCustomActionButtonForTest(0);
-        Assert.assertNotNull("Action button not found", actionButton);
-        assertEquals("Shown", actionButton.getContentDescription());
-
-        Assert.assertNull(toolbar.getCustomActionButtonForTest(1));
     }
 
     /**
@@ -1136,7 +1103,7 @@ public class CustomTabActivityTest {
                         R.layout.web_notification);
         remoteViews.setTextViewText(R.id.title, "Kittens!");
         remoteViews.setTextViewText(R.id.body, "So fluffy");
-        remoteViews.setImageViewResource(R.id.icon, R.drawable.ic_music_note_36dp);
+        remoteViews.setImageViewResource(R.id.icon, R.drawable.ic_email_googblue_36dp);
         intent.putExtra(CustomTabsIntent.EXTRA_REMOTEVIEWS, remoteViews);
         intent.putExtra(CustomTabsIntent.EXTRA_REMOTEVIEWS_VIEW_IDS, new int[] {R.id.icon});
         PendingIntent pi2 = PendingIntent.getBroadcast(

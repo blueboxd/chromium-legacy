@@ -105,6 +105,11 @@ class PasswordFormManagerForUI {
   // A user opted to move the credentials used for a successful login from the
   // profile store to the account store.
   virtual void MoveCredentialsToAccountStore() = 0;
+
+  // Suppresses future prompts for moving the submitted credentials returned by
+  // GetPendingCredentials() to the account store of the currently signed in
+  // user.
+  virtual void BlockMovingCredentialsToAccountStore() = 0;
 };
 
 }  // namespace  password_manager

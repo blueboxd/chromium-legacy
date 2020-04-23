@@ -206,10 +206,9 @@ bool AudioWorkletGlobalScope::Process(
   v8::Local<v8::Array> inputs = v8::Array::New(isolate, input_buses->size());
   uint32_t input_bus_index = 0;
   for (auto input_bus : *input_buses) {
-    // If |input_bus| is null, then the input is not connected, and
-    // the array for that input should have one channel and a length
-    // of 0.
-    unsigned number_of_channels = input_bus ? input_bus->NumberOfChannels() : 1;
+    // If |input_bus| is null, it means the input port is not connected, and
+    // the corresponding array for that input port should have zero channel.
+    unsigned number_of_channels = input_bus ? input_bus->NumberOfChannels() : 0;
     size_t bus_length = input_bus ? input_bus->length() : 0;
 
     v8::Local<v8::Array> channels = v8::Array::New(isolate, number_of_channels);

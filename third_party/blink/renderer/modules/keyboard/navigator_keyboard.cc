@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/modules/keyboard/navigator_keyboard.h"
 
-#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/modules/keyboard/keyboard.h"
@@ -16,12 +16,8 @@ const char NavigatorKeyboard::kSupplementName[] = "NavigatorKeyboard";
 
 NavigatorKeyboard::NavigatorKeyboard(Navigator& navigator)
     : Supplement<Navigator>(navigator),
-      keyboard_(MakeGarbageCollected<Keyboard>(GetSupplementable()->GetFrame()
-                                                   ? GetSupplementable()
-                                                         ->GetFrame()
-                                                         ->GetDocument()
-                                                         ->ToExecutionContext()
-                                                   : nullptr)) {}
+      keyboard_(
+          MakeGarbageCollected<Keyboard>(GetSupplementable()->DomWindow())) {}
 
 // static
 Keyboard* NavigatorKeyboard::keyboard(Navigator& navigator) {

@@ -148,16 +148,13 @@ void AddExceptionForHostedApp(const std::string& url_pattern,
                               const extensions::Extension& app,
                               base::ListValue* exceptions);
 
-// Fills in |exceptions| with Values for the given |type| from |map|.
-// If |filter| is not null then only exceptions with matching primary patterns
-// will be returned.
-void GetExceptionsFromHostContentSettingsMap(
-    const HostContentSettingsMap* map,
+// Fills in |exceptions| with Values for the given |type| from |profile|.
+void GetExceptionsForContentType(
     ContentSettingsType type,
+    Profile* profile,
     const extensions::ExtensionRegistry* extension_registry,
     content::WebUI* web_ui,
     bool incognito,
-    const std::string* filter,
     base::ListValue* exceptions);
 
 // Fills in object saying what the current settings is for the category (such as

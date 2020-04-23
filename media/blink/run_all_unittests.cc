@@ -10,6 +10,7 @@
 #include "media/base/media.h"
 #include "media/blink/blink_platform_with_task_environment.h"
 #include "mojo/public/cpp/bindings/binder_map.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/web/blink.h"
 
@@ -60,6 +61,7 @@ class MediaBlinkTestSuite : public base::TestSuite {
     mojo::core::Init();
 #endif
 
+    blink::Platform::InitializeBlink();
     platform_ = std::make_unique<BlinkPlatformWithTaskEnvironment>();
 
     mojo::BinderMap binders;

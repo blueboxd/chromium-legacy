@@ -964,7 +964,8 @@ bool AuthenticatorBioEnrollmentSheetModel::IsAcceptButtonEnabled() const {
 }
 
 bool AuthenticatorBioEnrollmentSheetModel::IsAcceptButtonVisible() const {
-  return dialog_model()->bio_samples_remaining() <= 0;
+  return dialog_model()->bio_samples_remaining() &&
+         dialog_model()->bio_samples_remaining() <= 0;
 }
 
 base::string16 AuthenticatorBioEnrollmentSheetModel::GetAcceptButtonLabel()
@@ -979,6 +980,14 @@ bool AuthenticatorBioEnrollmentSheetModel::IsCancelButtonVisible() const {
 base::string16 AuthenticatorBioEnrollmentSheetModel::GetCancelButtonLabel()
     const {
   return l10n_util::GetStringUTF16(IDS_WEBAUTHN_INLINE_ENROLLMENT_CANCEL_LABEL);
+}
+
+void AuthenticatorBioEnrollmentSheetModel::OnAccept() {
+  dialog_model()->OnBioEnrollmentDone();
+}
+
+void AuthenticatorBioEnrollmentSheetModel::OnCancel() {
+  OnAccept();
 }
 
 // AuthenticatorRetryUvSheetModel -------------------------------------

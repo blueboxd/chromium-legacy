@@ -42,8 +42,6 @@ class TestSyncService : public SyncService {
   void SetLastCycleSnapshot(const SyncCycleSnapshot& snapshot);
   void SetUserDemographics(
       const UserDemographicsResult& user_demographics_result);
-  void SetExperimentalAuthenticationKey(
-      std::unique_ptr<crypto::ECPrivateKey> experimental_authentication_key);
   // Convenience versions of the above, for when the caller doesn't care about
   // the particular values in the snapshot, just whether there is one.
   void SetEmptyLastCycleSnapshot();
@@ -69,8 +67,6 @@ class TestSyncService : public SyncService {
   GoogleServiceAuthError GetAuthError() const override;
   base::Time GetAuthErrorTime() const override;
   bool RequiresClientUpgrade() const override;
-  std::unique_ptr<crypto::ECPrivateKey> GetExperimentalAuthenticationKey()
-      const override;
 
   std::unique_ptr<SyncSetupInProgressHandle> GetSetupInProgressHandle()
       override;
@@ -144,8 +140,6 @@ class TestSyncService : public SyncService {
   GURL sync_service_url_;
 
   UserDemographicsResult user_demographics_result_;
-
-  std::unique_ptr<crypto::ECPrivateKey> experimental_authentication_key_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSyncService);
 };

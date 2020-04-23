@@ -482,10 +482,9 @@ void OnSmsReceive(ScriptPromiseResolver* resolver,
                   const WTF::String& otp) {
   AssertSecurityRequirementsBeforeResponse(
       resolver, RequiredOriginType::kSecureAndSameWithAncestors);
-  auto& document =
-      Document::From(*ExecutionContext::From(resolver->GetScriptState()));
-  ukm::SourceId source_id = document.UkmSourceID();
-  ukm::UkmRecorder* recorder = document.UkmRecorder();
+  auto& window = *LocalDOMWindow::From(resolver->GetScriptState());
+  ukm::SourceId source_id = window.document()->UkmSourceID();
+  ukm::UkmRecorder* recorder = window.document()->UkmRecorder();
 
   if (status == mojom::blink::SmsStatus::kTimeout) {
     RecordSmsOutcome(SMSReceiverOutcome::kTimeout, source_id, recorder);

@@ -162,7 +162,6 @@ chrome_test_java_sources = [
   "javatests/src/org/chromium/chrome/browser/download/DownloadNotificationServiceTest.java",
   "javatests/src/org/chromium/chrome/browser/download/DownloadTest.java",
   "javatests/src/org/chromium/chrome/browser/download/DownloadTestRule.java",
-  "javatests/src/org/chromium/chrome/browser/download/DownloadUtilsTest.java",
   "javatests/src/org/chromium/chrome/browser/download/MockDownloadNotificationService.java",
   "javatests/src/org/chromium/chrome/browser/download/OMADownloadHandlerTest.java",
   "javatests/src/org/chromium/chrome/browser/download/ServicificationDownloadTest.java",

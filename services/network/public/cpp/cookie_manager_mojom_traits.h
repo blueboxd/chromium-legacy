@@ -74,6 +74,11 @@ struct StructTraits<network::mojom::CookieSameSiteContextDataView,
     return s.context();
   }
 
+  static net::CookieOptions::SameSiteCookieContext::ContextType
+  schemeful_context(net::CookieOptions::SameSiteCookieContext& s) {
+    return s.schemeful_context();
+  }
+
   static bool Read(network::mojom::CookieSameSiteContextDataView mojo_options,
                    net::CookieOptions::SameSiteCookieContext* context);
 };

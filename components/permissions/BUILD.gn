@@ -43,6 +43,7 @@ source_set("permissions") {
   ]
   deps = [
     "//base",
+    "//components/content_settings/browser",
     "//components/content_settings/core/browser",
     "//components/keyed_service/content",
     "//components/strings:components_strings_grit",
@@ -129,6 +130,7 @@ source_set("unit_tests") {
     ":test_support",
     "//base",
     "//base/test:test_support",
+    "//components/content_settings/browser",
     "//components/content_settings/core/browser",
     "//components/keyed_service/content",
     "//components/prefs:test_support",

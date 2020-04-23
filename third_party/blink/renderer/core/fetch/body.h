@@ -29,12 +29,7 @@ class ScriptState;
 // spec only Response has it and Request has a byte stream defined in the
 // Encoding spec. The spec should be fixed shortly to be aligned with this
 // implementation.
-class CORE_EXPORT Body : public ScriptWrappable,
-                         public ActiveScriptWrappable<Body>,
-                         public ExecutionContextClient {
-  DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(Body);
-
+class CORE_EXPORT Body : public ExecutionContextClient {
  public:
   enum class BodyUsed { kUsed, kUnused, kBroken };
   enum class BodyLocked { kLocked, kUnlocked, kBroken };
@@ -64,13 +59,7 @@ class CORE_EXPORT Body : public ScriptWrappable,
   // exception pending and the caller should return to JavaScript immediately.
   BodyLocked IsBodyLocked(ExceptionState&);
 
-  // ScriptWrappable override.
-  bool HasPendingActivity() const override;
-
-  void Trace(Visitor* visitor) override {
-    ScriptWrappable::Trace(visitor);
-    ExecutionContextClient::Trace(visitor);
-  }
+  bool HasPendingActivity() const;
 
  protected:
   // A version of IsBodyUsed() which catches exceptions and returns

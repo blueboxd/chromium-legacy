@@ -41,6 +41,8 @@ component("memory") {
     "userspace_swap/region.h",
     "userspace_swap/swap_storage.cc",
     "userspace_swap/swap_storage.h",
+    "userspace_swap/userfaultfd.cc",
+    "userspace_swap/userfaultfd.h",
   ]
 }
 
@@ -58,5 +60,6 @@ source_set("unit_tests") {
   sources = [
     "pagemap_unittest.cc",
     "userspace_swap/swap_storage_unittest.cc",
+    "userspace_swap/userfaultfd_unittest.cc",
   ]
 }

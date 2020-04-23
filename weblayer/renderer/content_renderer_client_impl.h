@@ -28,6 +28,8 @@ class ContentRendererClientImpl : public content::ContentRendererClient {
   void RenderThreadStarted() override;
   void RenderFrameCreated(content::RenderFrame* render_frame) override;
   bool HasErrorPage(int http_status_code) override;
+  bool ShouldSuppressErrorPage(content::RenderFrame* render_frame,
+                               const GURL& url) override;
   void PrepareErrorPage(content::RenderFrame* render_frame,
                         const blink::WebURLError& error,
                         const std::string& http_method,

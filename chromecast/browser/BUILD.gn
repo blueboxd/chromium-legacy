@@ -515,6 +515,7 @@ cast_source_set("browsertests") {
     "renderer_prelauncher_test.cc",
     "test/cast_features_browsertest.cc",
     "test/cast_navigation_browsertest.cc",
+    "webview/webview_browsertest.cc",
   ]
 
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
@@ -526,6 +527,7 @@ cast_source_set("browsertests") {
     "//chromecast/base",
     "//chromecast/base:chromecast_switches",
     "//chromecast/base/metrics",
+    "//components/keyed_service/content",
     "//components/prefs",
     "//content/public/browser",
     "//content/test:test_support",

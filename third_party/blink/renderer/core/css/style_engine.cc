@@ -1638,9 +1638,7 @@ void StyleEngine::ApplyRuleSetChanges(
     // @property rules are (for now) ignored in shadow trees, per spec.
     // https://drafts.css-houdini.org/css-properties-values-api-1/#at-property-rule
     if (tree_scope.RootNode().IsDocumentNode()) {
-      PropertyRegistry* registry = GetDocument().GetPropertyRegistry();
-      if (registry)
-        registry->RemoveDeclaredProperties();
+      PropertyRegistration::RemoveDeclaredProperties(GetDocument());
 
       for (auto* it = new_style_sheets.begin(); it != new_style_sheets.end();
            it++) {
@@ -1762,7 +1760,7 @@ bool StyleEngine::UpdateRemUnits(const ComputedStyle* old_root_style,
   return false;
 }
 
-void StyleEngine::CustomPropertyRegistered() {
+void StyleEngine::PropertyRegistryChanged() {
   // TODO(timloh): Invalidate only elements with this custom property set
   MarkAllElementsForStyleRecalc(StyleChangeReasonForTracing::Create(
       style_change_reason::kPropertyRegistration));

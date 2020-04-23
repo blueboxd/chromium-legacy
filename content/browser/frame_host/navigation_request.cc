@@ -2418,6 +2418,8 @@ void NavigationRequest::OnStartChecksComplete(
   std::vector<std::unique_ptr<NavigationLoaderInterceptor>> interceptor;
   if (web_bundle_handle_)
     interceptor.push_back(web_bundle_handle_->TakeInterceptor());
+  net::HttpRequestHeaders cors_exempt_headers;
+  std::swap(cors_exempt_headers, cors_exempt_request_headers_);
   loader_ = NavigationURLLoader::Create(
       browser_context, partition,
       std::make_unique<NavigationRequestInfo>(
@@ -2432,7 +2434,8 @@ void NavigationRequest::OnStartChecksComplete(
           blob_url_loader_factory_ ? blob_url_loader_factory_->Clone()
                                    : nullptr,
           devtools_navigation_token(), frame_tree_node_->devtools_frame_token(),
-          OriginPolicyThrottle::ShouldRequestOriginPolicy(common_params_->url)),
+          OriginPolicyThrottle::ShouldRequestOriginPolicy(common_params_->url),
+          std::move(cors_exempt_headers)),
       std::move(navigation_ui_data), service_worker_handle_.get(),
       appcache_handle_.get(), std::move(prefetched_signed_exchange_cache_),
       this, IsServedFromBackForwardCache(), std::move(interceptor));
@@ -3757,6 +3760,13 @@ void NavigationRequest::SetRequestHeader(const std::string& header_name,
                                          const std::string& header_value) {
   DCHECK(state_ == WILL_START_REQUEST || state_ == WILL_REDIRECT_REQUEST);
   modified_request_headers_.SetHeader(header_name, header_value);
+}
+
+void NavigationRequest::SetCorsExemptRequestHeader(
+    const std::string& header_name,
+    const std::string& header_value) {
+  DCHECK(state_ == WILL_START_REQUEST || state_ == WILL_REDIRECT_REQUEST);
+  cors_exempt_request_headers_.SetHeader(header_name, header_value);
 }
 
 const net::HttpResponseHeaders* NavigationRequest::GetResponseHeaders() {

@@ -37,7 +37,6 @@
 <translation id="1041263367839475438">可用的裝置</translation>
 <translation id="1042174272890264476">您的電腦也內置了 <ph name="SHORT_PRODUCT_NAME" /> 的 RLZ 資料庫。RLZ 可指定非重複、非個人的可識別標記，以評估特定宣傳廣告活動所提升的搜尋數量與 <ph name="SHORT_PRODUCT_NAME" /> 使用量。這些標籤有時也會顯示在 <ph name="PRODUCT_NAME" /> 的 Google 搜尋查詢中。</translation>
 <translation id="1043818413152647937">要清除這些裝置的資料嗎？</translation>
-<translation id="1045448422538531528">新增至群組</translation>
 <translation id="1046635659603195359">您似乎已在另一部裝置上透過「Google 助理」設定了 Voice Match 功能。先前的錄音可在此裝置上用於建立語音模型，過程需時少於一分鐘。</translation>
 <translation id="104710386808485638">要重新啟動 Linux 嗎？</translation>
 <translation id="1047431265488717055">複製連結文字(&amp;X)</translation>
@@ -408,7 +407,6 @@
 <translation id="1536754031901697553">正在解除連結…</translation>
 <translation id="15373452373711364">大型滑鼠游標</translation>
 <translation id="1540605929960647700">啟用示範模式</translation>
-<translation id="1541396123399225659">新增至新群組</translation>
 <translation id="1542514202066550870">此分頁正在將 VR 內容投放至眼罩。</translation>
 <translation id="1543284117603151572">從 EDGE 匯入</translation>
 <translation id="1545177026077493356">自動 Kiosk 模式</translation>
@@ -1904,7 +1902,6 @@
 <translation id="3514373592552233661">如有多個已知網絡可供使用，系統會優先使用慣用網絡</translation>
 <translation id="3515983984924808886">再次輕觸安全密鑰即可確認重設。此安全密鑰上儲存的所有資料 (包括 PIN) 將被刪除。</translation>
 <translation id="3518985090088779359">接受並繼續</translation>
-<translation id="351952459507671940">新增至新群組</translation>
 <translation id="3521606918211282604">改變磁碟大小</translation>
 <translation id="3523642406908660543">在網站要使用外掛程式存取您的電腦時，先詢問您 (建議)</translation>
 <translation id="3524965460886318643">匯出活動</translation>
@@ -2894,7 +2891,6 @@
 <translation id="4871322859485617074">PIN 中包含無效的字元</translation>
 <translation id="4871370605780490696">新增書籤</translation>
 <translation id="4871719318659334896">關閉群組</translation>
-<translation id="4871852311166078968">新增至群組</translation>
 <translation id="4873312501243535625">媒體檔案檢查工具</translation>
 <translation id="4876273079589074638">協助我們的軟件工程師調查和修正此當機問題。請盡可能列出所有實際步驟，越詳細越好！</translation>
 <translation id="4876895919560854374">鎖定和解鎖屏幕</translation>

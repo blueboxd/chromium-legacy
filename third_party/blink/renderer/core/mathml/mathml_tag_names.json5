@@ -40,6 +40,18 @@
       interfaceName: "MathMLElement",
     },
     {
+      name: "msub",
+      interfaceName: "MathMLScriptsElement",
+    },
+    {
+      name: "msup",
+      interfaceName: "MathMLScriptsElement",
+    },
+    {
+      name: "msubsup",
+      interfaceName: "MathMLScriptsElement",
+    },
+    {
       name: "mi",
       interfaceName: "MathMLElement",
     },

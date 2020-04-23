@@ -17,6 +17,7 @@
 #include "components/safe_browsing/core/db/v4_local_database_manager.h"
 #import "ios/chrome/browser/safe_browsing/url_checker_delegate_impl.h"
 #include "ios/web/public/thread/web_task_traits.h"
+#import "ios/web/public/web_state.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -79,10 +80,10 @@ void SafeBrowsingService::ShutDown() {
 }
 
 std::unique_ptr<safe_browsing::SafeBrowsingUrlCheckerImpl>
-SafeBrowsingService::CreateUrlChecker(
-    safe_browsing::ResourceType resource_type) {
+SafeBrowsingService::CreateUrlChecker(safe_browsing::ResourceType resource_type,
+                                      web::WebState* web_state) {
   return std::make_unique<safe_browsing::SafeBrowsingUrlCheckerImpl>(
-      resource_type, url_checker_delegate_);
+      resource_type, url_checker_delegate_, web_state->CreateDefaultGetter());
 }
 
 void SafeBrowsingService::SetUpURLLoaderFactory(

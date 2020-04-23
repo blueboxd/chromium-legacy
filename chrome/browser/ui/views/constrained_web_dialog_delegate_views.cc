@@ -7,6 +7,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
+#include "chrome/browser/ui/blocked_content/popunder_preventer.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -98,6 +99,11 @@ class ConstrainedDialogWebView : public views::WebView,
 
  private:
   InitiatorWebContentsObserver initiator_observer_;
+
+  // Showing a dialog should not activate, but on the Mac it does
+  // (https://crbug.com/1073587). Make sure it cannot be used to generate a
+  // popunder.
+  PopunderPreventer popunder_preventer_;
 
   std::unique_ptr<ConstrainedWebDialogDelegateViews> impl_;
 
@@ -364,6 +370,7 @@ ConstrainedDialogWebView::ConstrainedDialogWebView(
     const gfx::Size& max_size)
     : views::WebView(browser_context),
       initiator_observer_(web_contents),
+      popunder_preventer_(web_contents),
       impl_(std::make_unique<ConstrainedWebDialogDelegateViews>(
           browser_context,
           std::move(delegate),

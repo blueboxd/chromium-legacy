@@ -5,9 +5,9 @@
 #include "ash/assistant/assistant_setup_controller.h"
 
 #include "ash/assistant/assistant_controller_impl.h"
-#include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/assistant/util/i18n_util.h"
+#include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
@@ -66,7 +66,7 @@ void AssistantSetupController::StartOnboarding(bool relaunch, FlowType type) {
   if (!assistant_setup)
     return;
 
-  assistant_controller_->ui_controller()->CloseUi(
+  AssistantUiController::Get()->CloseUi(
       chromeos::assistant::mojom::AssistantExitPoint::kSetup);
 
   assistant_setup->StartAssistantOptInFlow(
@@ -77,7 +77,7 @@ void AssistantSetupController::StartOnboarding(bool relaunch, FlowType type) {
 void AssistantSetupController::OnOptInFlowFinished(bool relaunch,
                                                    bool completed) {
   if (relaunch && completed) {
-    assistant_controller_->ui_controller()->ShowUi(
+    AssistantUiController::Get()->ShowUi(
         chromeos::assistant::mojom::AssistantEntryPoint::kSetup);
   }
 }

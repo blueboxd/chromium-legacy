@@ -55,7 +55,7 @@ namespace blink {
 class MediaKeys::PendingAction final
     : public GarbageCollected<MediaKeys::PendingAction> {
  public:
-  enum class Type { kSetServerCertificate, kGetStatusForPolicy };
+  using Type = EmeApiType;
 
   Type GetType() const { return type_; }
 
@@ -116,13 +116,9 @@ class MediaKeys::PendingAction final
 class SetCertificateResultPromise
     : public ContentDecryptionModuleResultPromise {
  public:
-  SetCertificateResultPromise(ScriptState* script_state,
-                              MediaKeys* media_keys,
-                              const char* interface_name,
-                              const char* property_name)
+  SetCertificateResultPromise(ScriptState* script_state, MediaKeys* media_keys)
       : ContentDecryptionModuleResultPromise(script_state,
-                                             interface_name,
-                                             property_name),
+                                             EmeApiType::kSetServerCertificate),
         media_keys_(media_keys) {}
 
   ~SetCertificateResultPromise() override = default;
@@ -171,12 +167,9 @@ class GetStatusForPolicyResultPromise
     : public ContentDecryptionModuleResultPromise {
  public:
   GetStatusForPolicyResultPromise(ScriptState* script_state,
-                                  MediaKeys* media_keys,
-                                  const char* interface_name,
-                                  const char* property_name)
+                                  MediaKeys* media_keys)
       : ContentDecryptionModuleResultPromise(script_state,
-                                             interface_name,
-                                             property_name),
+                                             EmeApiType::kGetStatusForPolicy),
         media_keys_(media_keys) {}
 
   ~GetStatusForPolicyResultPromise() override = default;
@@ -298,8 +291,7 @@ ScriptPromise MediaKeys::setServerCertificate(
 
   // 4. Let promise be a new promise.
   SetCertificateResultPromise* result =
-      MakeGarbageCollected<SetCertificateResultPromise>(
-          script_state, this, "MediaKeys", "setServerCertificate");
+      MakeGarbageCollected<SetCertificateResultPromise>(script_state, this);
   ScriptPromise promise = result->Promise();
 
   // 5. Run the following steps asynchronously. See SetServerCertificateTask().
@@ -340,8 +332,7 @@ ScriptPromise MediaKeys::getStatusForPolicy(
 
   // Let promise be a new promise.
   GetStatusForPolicyResultPromise* result =
-      MakeGarbageCollected<GetStatusForPolicyResultPromise>(
-          script_state, this, "MediaKeys", "getStatusForPolicy");
+      MakeGarbageCollected<GetStatusForPolicyResultPromise>(script_state, this);
   ScriptPromise promise = result->Promise();
 
   // Run the following steps asynchronously. See GetStatusForPolicyTask().
@@ -415,6 +406,9 @@ void MediaKeys::TimerFired(TimerBase*) {
       case PendingAction::Type::kGetStatusForPolicy:
         GetStatusForPolicyTask(action->StringData(), action->Result());
         break;
+
+      default:
+        NOTREACHED();
     }
   }
 }

@@ -196,7 +196,6 @@
 <translation id="3469166899695866866">Stop download?</translation>
 <translation id="3470502288861289375">Copying...</translation>
 <translation id="3474624961160222204">Continue as <ph name="NAME" /></translation>
-<translation id="3474649192738347024">Forms filled.</translation>
 <translation id="3478058380795961209">Month of Expiry</translation>
 <translation id="3482959374254649722">Syncing your tabs...</translation>
 <translation id="3484946776651937681">Open in downloads</translation>
@@ -479,6 +478,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="7136892417564438900">Camera is unavailable</translation>
 <translation id="7159472599653637159">Request Mobile Site</translation>
 <translation id="7173114856073700355">Open Settings</translation>
+<translation id="7189598951263744875">Share...</translation>
 <translation id="7192050974311852563">Start logging</translation>
 <translation id="7203585745079012652">Speak Answers Back</translation>
 <translation id="7265758999917665941">Never for this site</translation>

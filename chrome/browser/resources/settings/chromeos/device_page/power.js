@@ -16,8 +16,6 @@ Polymer({
   ],
 
   properties: {
-    enablePowerSettings: Boolean,
-
     /** @private {string} ID of the selected power source, or ''. */
     selectedPowerSourceId_: String,
 
@@ -43,7 +41,7 @@ Polymer({
     hasLid_: Boolean,
 
     /**
-     * List of available dual-role power sources, if enablePowerSettings is on.
+     * List of available dual-role power sources.
      * @private {!Array<!settings.PowerSource>|undefined}
      */
     powerSources_: Array,
@@ -120,15 +118,6 @@ Polymer({
   /** @override */
   created() {
     this.browserProxy_ = settings.DevicePageBrowserProxyImpl.getInstance();
-  },
-
-  /** @override */
-  ready() {
-    // enablePowerSettings comes from loadTimeData, so it will always be set
-    // before attached() is called.
-    if (!this.enablePowerSettings) {
-      settings.Router.getInstance().navigateToPreviousRoute();
-    }
   },
 
   /** @override */

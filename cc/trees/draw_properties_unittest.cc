@@ -3672,10 +3672,18 @@ TEST_P(LCDTextTest, CanUseLCDText) {
   UpdateActiveTreeDrawProperties();
   CheckCanUseLCDText(LCDTextDisallowedReason::kNone);
 
-  // Case 9: Non-opaque content.
+  // Case 9a: Non-opaque content and opaque background.
   child_->SetContentsOpaque(false);
+  child_->SetBackgroundColor(SK_ColorGREEN);
   UpdateActiveTreeDrawProperties();
   CheckCanUseLCDText(LCDTextDisallowedReason::kContentsNotOpaque, child_);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone, grand_child_);
+
+  // Case 9b: Non-opaque content and non-opaque background.
+  child_->SetBackgroundColor(SkColorSetARGB(128, 255, 255, 255));
+  UpdateActiveTreeDrawProperties();
+  CheckCanUseLCDText(LCDTextDisallowedReason::kBackgroundColorNotOpaque,
+                     child_);
   CheckCanUseLCDText(LCDTextDisallowedReason::kNone, grand_child_);
 
   // Case 10: Sanity check: restore content opaqueness.
@@ -3712,6 +3720,7 @@ TEST_P(LCDTextTest, CanUseLCDTextWithAnimationContentsOpaque) {
 
   // Mark contents non-opaque within the first animation frame.
   child_->SetContentsOpaque(false);
+  child_->SetBackgroundColor(SK_ColorWHITE);
   AddOpacityTransitionToElementWithAnimation(child_->element_id(), timeline(),
                                              10.0, 0.9f, 0.1f, false);
   UpdateActiveTreeDrawProperties();

@@ -85,7 +85,6 @@ class ExternalVkImageSkiaRepresentation : public SharedImageRepresentationSkia {
   };
   AccessMode access_mode_ = kNone;
   int surface_msaa_count_ = 0;
-  sk_sp<SkSurface> surface_;
   VkSemaphore end_access_semaphore_ = VK_NULL_HANDLE;
 };
 

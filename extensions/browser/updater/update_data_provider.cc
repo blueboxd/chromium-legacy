@@ -153,6 +153,12 @@ void UpdateDataProvider::RunInstallCallback(
         FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
         base::BindOnce(base::IgnoreResult(&base::DeleteFile), unpacked_dir,
                        true));
+    base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})
+        ->PostTask(
+            FROM_HERE,
+            base::BindOnce(std::move(update_client_callback),
+                           update_client::CrxInstaller::Result(
+                               update_client::InstallError::GENERIC_ERROR)));
     return;
   }
 

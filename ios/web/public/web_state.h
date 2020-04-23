@@ -159,6 +159,19 @@ class WebState : public base::SupportsUserData {
 
   ~WebState() override {}
 
+  // A callback that returns a pointer to a WebState. The callback can always be
+  // used, but it may return nullptr if the info used to instantiate the
+  // callback can no longer be used to return a WebState.
+  using Getter = base::RepeatingCallback<WebState*(void)>;
+  // Use this variant for instances that will only run the callback a single
+  // time.
+  using OnceGetter = base::OnceCallback<WebState*(void)>;
+
+  // Creates default WebState getters that return this WebState, or nullptr if
+  // the WebState has been deallocated.
+  virtual Getter CreateDefaultGetter() = 0;
+  virtual OnceGetter CreateDefaultOnceGetter() = 0;
+
   // Gets/Sets the delegate.
   virtual WebStateDelegate* GetDelegate() = 0;
   virtual void SetDelegate(WebStateDelegate* delegate) = 0;

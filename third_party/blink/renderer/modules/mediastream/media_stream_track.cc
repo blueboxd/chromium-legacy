@@ -36,11 +36,11 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_track_capabilities.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_track_constraints.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_track_settings.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/modules/imagecapture/image_capture.h"
 #include "third_party/blink/renderer/modules/mediastream/apply_constraints_request.h"
 #include "third_party/blink/renderer/modules/mediastream/media_constraints_impl.h"
@@ -383,9 +383,9 @@ void MediaStreamTrack::stopTrack(ExecutionContext* execution_context) {
     return;
 
   ready_state_ = MediaStreamSource::kReadyStateEnded;
-  Document* document = Document::From(execution_context);
+  LocalDOMWindow* window = To<LocalDOMWindow>(execution_context);
   UserMediaController* user_media =
-      UserMediaController::From(document->GetFrame());
+      UserMediaController::From(window->GetFrame());
   if (user_media)
     user_media->StopTrack(Component());
 
@@ -692,9 +692,9 @@ ScriptPromise MediaStreamTrack::applyConstraints(
     return promise;
   }
 
-  Document* document = Document::From(execution_context);
+  LocalDOMWindow* window = To<LocalDOMWindow>(execution_context);
   UserMediaController* user_media =
-      UserMediaController::From(document->GetFrame());
+      UserMediaController::From(window->GetFrame());
   if (!user_media) {
     resolver->Reject(OverconstrainedError::Create(
         String(), "Cannot apply constraints due to unexpected error"));

@@ -41,7 +41,7 @@
 
 namespace blink {
 
-class Document;
+class LocalDOMWindow;
 class MediaErrorState;
 class MediaStreamConstraints;
 class MediaStreamDescriptor;
@@ -114,7 +114,7 @@ class MODULES_EXPORT UserMediaRequest final
                    Callbacks*);
   virtual ~UserMediaRequest();
 
-  Document* OwnerDocument();
+  LocalDOMWindow* GetWindow();
 
   void Start();
 

@@ -279,28 +279,4 @@ TEST(TranslateMetricsTest, ReportSimilarLanguageMatch) {
   EXPECT_EQ(1, recorder.GetCount(kFalse));
 }
 
-TEST(TranslateMetricsTest, ReportLanguageDetectionConflict) {
-  MetricsRecorder recorder(
-      translate::metrics_internal::kTranslateLanguageDetectionConflict);
-  recorder.CheckTotalCount(0);
-
-  translate::ReportLanguageDetectionConflict("en", "es");
-  recorder.CheckTotalCount(1);
-  EXPECT_EQ(recorder.GetCount(base::HashMetricName("en,es")), 1);
-
-  translate::ReportLanguageDetectionConflict("en", "es");
-  recorder.CheckTotalCount(2);
-  EXPECT_EQ(recorder.GetCount(base::HashMetricName("en,es")), 2);
-
-  translate::ReportLanguageDetectionConflict("en-AU", "ru-Latn");
-  recorder.CheckTotalCount(3);
-  EXPECT_EQ(recorder.GetCount(base::HashMetricName("en-AU,ru-Latn")), 1);
-
-  // We don't track "en-XX" or "en-YY" as page codes.
-  translate::ReportLanguageDetectionConflict("en-XX", "es");
-  translate::ReportLanguageDetectionConflict("en-YY", "es");
-  recorder.CheckTotalCount(5);
-  EXPECT_EQ(recorder.GetCount(base::HashMetricName("other,es")), 2);
-}
-
 }  // namespace translate

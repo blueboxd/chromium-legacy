@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/optional.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"

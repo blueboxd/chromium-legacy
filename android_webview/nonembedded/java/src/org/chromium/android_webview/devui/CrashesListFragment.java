@@ -402,7 +402,8 @@ public class CrashesListFragment extends Fragment {
                                 Build.VERSION.SDK_INT, webViewPackage.packageName,
                                 webViewPackage.versionName, webViewPackage.versionCode, appPackage,
                                 appVersion, crashInfo.uploadId))
-                .appendQueryParameter("labels", "User-Submitted,Via-WebView-DevTools")
+                .appendQueryParameter(
+                        "labels", "User-Submitted,Via-WebView-DevTools,Pri-3,Type-Bug,OS-Android")
                 .build();
     }
 

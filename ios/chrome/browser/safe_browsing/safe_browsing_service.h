@@ -35,6 +35,10 @@ class SafeBrowsingUrlCheckerImpl;
 class UrlCheckerDelegate;
 }  // namespace safe_browsing
 
+namespace web {
+class WebState;
+}  // namespace web
+
 // Manages Safe Browsing related functionality. This class owns and provides
 // support for constructing and initializing the Safe Browsing database. This
 // class must be created and destroyed on the main thread. This class is
@@ -56,7 +60,8 @@ class SafeBrowsingService
   // Creates a SafeBrowsingUrlCheckerImpl that can be used to query the
   // SafeBrowsingDatabaseManager owned by this service.
   std::unique_ptr<safe_browsing::SafeBrowsingUrlCheckerImpl> CreateUrlChecker(
-      safe_browsing::ResourceType resource_type);
+      safe_browsing::ResourceType resource_type,
+      web::WebState* web_state);
 
  private:
   friend struct web::WebThread::DeleteOnThread<web::WebThread::UI>;

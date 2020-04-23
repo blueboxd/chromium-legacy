@@ -101,8 +101,7 @@ void SyncEngineBackend::OnSyncCycleCompleted(
     const SyncCycleSnapshot& snapshot) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   host_.Call(FROM_HERE, &SyncEngineImpl::HandleSyncCycleCompletedOnFrontendLoop,
-             snapshot,
-             sync_manager_->GetEncryptionHandler()->GetLastKeystoreKey());
+             snapshot);
 }
 
 void SyncEngineBackend::DoRefreshTypes(ModelTypeSet types) {
@@ -465,8 +464,7 @@ void SyncEngineBackend::DoInitialProcessControlTypes() {
       FROM_HERE, &SyncEngineImpl::HandleInitializationSuccessOnFrontendLoop,
       registrar_->GetLastConfiguredTypes(), js_backend_, debug_info_listener_,
       base::Passed(sync_manager_->GetModelTypeConnectorProxy()),
-      sync_manager_->birthday(), sync_manager_->bag_of_chips(),
-      sync_manager_->GetEncryptionHandler()->GetLastKeystoreKey());
+      sync_manager_->birthday(), sync_manager_->bag_of_chips());
 
   js_backend_.Reset();
   debug_info_listener_.Reset();

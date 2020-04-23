@@ -28,6 +28,8 @@ component("fido") {
     "authenticator_selection_criteria.h",
     "authenticator_supported_options.cc",
     "authenticator_supported_options.h",
+    "bio/enroller.cc",
+    "bio/enroller.h",
     "bio/enrollment.cc",
     "bio/enrollment.h",
     "bio/enrollment_handler.cc",

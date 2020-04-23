@@ -286,14 +286,13 @@ js_library("kerberos_add_account_dialog.m") {
   extra_deps = [ ":kerberos_add_account_dialog_module" ]
 }
 
-# TODO: Fix and re-enable
-#js_library("lock_screen.m") {
-#  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/os_people_page/lock_screen.m.js" ]
-#  deps = [
-#    # TODO: Fill those in.
-#  ]
-#  extra_deps = [ ":lock_screen_module" ]
-#}
+js_library("lock_screen.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/os_people_page/lock_screen.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":lock_screen_module" ]
+}
 
 js_library("lock_screen_password_prompt_dialog.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/os_people_page/lock_screen_password_prompt_dialog.m.js" ]
@@ -335,22 +334,21 @@ js_library("os_sync_controls.m") {
   extra_deps = [ ":os_sync_controls_module" ]
 }
 
-# TODO: Fix and re-enable
-#js_library("setup_fingerprint_dialog.m") {
-#  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/os_people_page/setup_fingerprint_dialog.m.js" ]
-#  deps = [
-#    # TODO: Fill those in.
-#  ]
-#  extra_deps = [ ":setup_fingerprint_dialog_module" ]
-#}
+js_library("setup_fingerprint_dialog.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/os_people_page/setup_fingerprint_dialog.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":setup_fingerprint_dialog_module" ]
+}
 
-#js_library("setup_pin_dialog.m") {
-#  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/os_people_page/setup_pin_dialog.m.js" ]
-#  deps = [
-#    # TODO: Fill those in.
-#  ]
-#  extra_deps = [ ":setup_pin_dialog_module" ]
-#}
+js_library("setup_pin_dialog.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/os_people_page/setup_pin_dialog.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":setup_pin_dialog_module" ]
+}
 
 js_library("user_list.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/os_people_page/user_list.m.js" ]
@@ -384,17 +382,13 @@ group("polymer3_elements") {
     ":fingerprint_list_module",
     ":kerberos_accounts_module",
     ":kerberos_add_account_dialog_module",
-
-    # TODO: Fix and re-enable
-    #":lock_screen_module",
+    ":lock_screen_module",
     ":lock_screen_password_prompt_dialog_module",
     ":modulize",
     ":os_people_page_module",
     ":os_sync_controls_module",
-
-    # TODO: Fix and re-enable
-    #":setup_fingerprint_dialog_module",
-    #":setup_pin_dialog_module",
+    ":setup_fingerprint_dialog_module",
+    ":setup_pin_dialog_module",
     ":user_list_module",
     ":users_add_user_dialog_module",
     ":users_page_module",
@@ -425,12 +419,11 @@ polymer_modulizer("kerberos_add_account_dialog") {
   html_type = "dom-module"
 }
 
-# TODO: Fix and re-enable
-#polymer_modulizer("lock_screen") {
-#  js_file = "lock_screen.js"
-#  html_file = "lock_screen.html"
-#  html_type = "dom-module"
-#}
+polymer_modulizer("lock_screen") {
+  js_file = "lock_screen.js"
+  html_file = "lock_screen.html"
+  html_type = "dom-module"
+}
 
 polymer_modulizer("lock_screen_password_prompt_dialog") {
   js_file = "lock_screen_password_prompt_dialog.js"
@@ -450,19 +443,17 @@ polymer_modulizer("os_sync_controls") {
   html_type = "dom-module"
 }
 
-# TODO: Fix and re-enable
-#polymer_modulizer("setup_fingerprint_dialog") {
-#  js_file = "setup_fingerprint_dialog.js"
-#  html_file = "setup_fingerprint_dialog.html"
-#  html_type = "dom-module"
-#}
+polymer_modulizer("setup_fingerprint_dialog") {
+  js_file = "setup_fingerprint_dialog.js"
+  html_file = "setup_fingerprint_dialog.html"
+  html_type = "dom-module"
+}
 
-# TODO: Fix and re-enable
-#polymer_modulizer("setup_pin_dialog") {
-#  js_file = "setup_pin_dialog.js"
-#  html_file = "setup_pin_dialog.html"
-#  html_type = "dom-module"
-#}
+polymer_modulizer("setup_pin_dialog") {
+  js_file = "setup_pin_dialog.js"
+  html_file = "setup_pin_dialog.html"
+  html_type = "dom-module"
+}
 
 polymer_modulizer("user_list") {
   js_file = "user_list.js"

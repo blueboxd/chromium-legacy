@@ -847,8 +847,6 @@ void HttpStreamFactory::JobController::OnAlternativeProxyJobFailed(
   DCHECK(alternative_job_->alternative_proxy_server() ==
          alternative_job_->proxy_info().proxy_server());
 
-  base::UmaHistogramSparse("Net.AlternativeProxyFailed", -net_error);
-
   // Need to mark alt proxy as broken regardless of whether the job is bound.
   // The proxy will be marked bad until the proxy retry information is cleared
   // by an event such as a network change.

@@ -18,13 +18,19 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/download/DownloadStatus.java",
     "java/src/org/chromium/chrome/browser/download/MediaStoreHelper.java",
     "java/src/org/chromium/chrome/browser/download/MimeUtils.java",
+    "java/src/org/chromium/chrome/browser/download/StringUtils.java",
     "java/src/org/chromium/chrome/browser/download/UriUtils.java",
   ]
 
   deps = [
+    ":java_resources",
     "//base:base_java",
     "//base:jni_java",
+    "//chrome/browser/flags:java",
     "//chrome/browser/util:java",
+    "//components/browser_ui/modaldialog/android:java",
+    "//components/browser_ui/util/android:java",
+    "//components/browser_ui/widget/android:java",
     "//components/download/internal/common:internal_java",
     "//components/download/public/common:public_java",
     "//components/embedder_support/android:util_java",
@@ -32,6 +38,7 @@ android_library("java") {
     "//components/offline_items_collection/core:core_java",
     "//content/public/android:content_java",
     "//third_party/android_deps:androidx_core_core_java",
+    "//third_party/android_deps:com_google_android_material_material_java",
   ]
 
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
@@ -43,6 +50,7 @@ generate_jni("jni_headers") {
     "java/src/org/chromium/chrome/browser/download/DownloadManagerBridge.java",
     "java/src/org/chromium/chrome/browser/download/DownloadStartupUtils.java",
     "java/src/org/chromium/chrome/browser/download/MimeUtils.java",
+    "java/src/org/chromium/chrome/browser/download/StringUtils.java",
   ]
 }
 
@@ -52,6 +60,7 @@ android_library("download_java_tests") {
   sources = [
     "javatests/src/org/chromium/chrome/browser/download/DownloadFileProviderTest.java",
     "javatests/src/org/chromium/chrome/browser/download/MimeUtilsTest.java",
+    "javatests/src/org/chromium/chrome/browser/download/StringUtilsTest.java",
   ]
 
   deps = [
@@ -59,6 +68,8 @@ android_library("download_java_tests") {
     "//base:base_java",
     "//base:base_java_test_support",
     "//chrome/test/android:chrome_java_test_support",
+    "//components/offline_items_collection/core:core_java",
+    "//third_party/android_support_test_runner:runner_java",
     "//third_party/junit",
     "//third_party/mockito:mockito_java",
   ]
@@ -66,6 +77,17 @@ android_library("download_java_tests") {
 
 android_resources("java_resources") {
   sources = [
+    "java/res/color/tint_on_blue_bg.xml",
+    "java/res/drawable-hdpi/ic_refresh_white_24dp.png",
+    "java/res/drawable-hdpi/ic_refresh_white_36dp.png",
+    "java/res/drawable-mdpi/ic_refresh_white_24dp.png",
+    "java/res/drawable-mdpi/ic_refresh_white_36dp.png",
+    "java/res/drawable-xhdpi/ic_refresh_white_24dp.png",
+    "java/res/drawable-xhdpi/ic_refresh_white_36dp.png",
+    "java/res/drawable-xxhdpi/ic_refresh_white_24dp.png",
+    "java/res/drawable-xxhdpi/ic_refresh_white_36dp.png",
+    "java/res/drawable-xxxhdpi/ic_refresh_white_24dp.png",
+    "java/res/drawable-xxxhdpi/ic_refresh_white_36dp.png",
     "java/res/drawable/async_image_view_unavailable.xml",
     "java/res/drawable/async_image_view_waiting.xml",
     "java/res/drawable/circular_progress_bar_background_large.xml",
@@ -109,7 +131,9 @@ android_resources("java_resources") {
     "java/res/layout/download_storage_summary.xml",
     "java/res/layout/downloads_empty_view.xml",
     "java/res/menu/download_manager_menu.xml",
+    "java/res/values-night-v17/colors.xml",
     "java/res/values-v17/attrs.xml",
+    "java/res/values-v17/colors.xml",
     "java/res/values-v17/ids.xml",
     "java/res/values-v17/styles.xml",
   ]

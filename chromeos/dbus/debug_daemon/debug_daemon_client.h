@@ -235,9 +235,11 @@ class COMPONENT_EXPORT(DEBUG_DAEMON) DebugDaemonClient
   // StartPluginVmDispatcher/StopPluginVmDispatcher.
   using PluginVmDispatcherCallback = base::OnceCallback<void(bool success)>;
   // Calls debugd::kStartVmPluginDispatcher, which starts the PluginVm
-  // dispatcher service on behalf of |owner_id|. |callback| is called
+  // dispatcher service on behalf of |owner_id|. |lang| indicates
+  // currently selected system language. |callback| is called
   // when the method finishes.
   virtual void StartPluginVmDispatcher(const std::string& owner_id,
+                                       const std::string& lang,
                                        PluginVmDispatcherCallback callback) = 0;
   // Calls debug::kStopVmPluginDispatcher, which stops the PluginVm dispatcher
   // service. |callback| is called when the method finishes.

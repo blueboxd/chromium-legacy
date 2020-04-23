@@ -250,13 +250,13 @@ WorkletGlobalScopeProxy* PaintWorklet::CreateGlobalScope() {
   if (!is_paint_off_thread_ ||
       GetNumberOfGlobalScopes() < kNumGlobalScopesPerThread) {
     return MakeGarbageCollected<PaintWorkletGlobalScopeProxy>(
-        Document::From(GetExecutionContext())->GetFrame(), ModuleResponsesMap(),
-        GetNumberOfGlobalScopes() + 1);
+        To<LocalDOMWindow>(GetExecutionContext())->GetFrame(),
+        ModuleResponsesMap(), GetNumberOfGlobalScopes() + 1);
   }
 
   if (!proxy_client_) {
     proxy_client_ = PaintWorkletProxyClient::Create(
-        Document::From(GetExecutionContext()), worklet_id_);
+        To<LocalDOMWindow>(GetExecutionContext()), worklet_id_);
   }
 
   auto* worker_clients = MakeGarbageCollected<WorkerClients>();

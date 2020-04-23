@@ -13,6 +13,7 @@ namespace chromeos {
 namespace quick_answers {
 
 namespace {
+const char kQuickAnswerActiveImpression[] = "QuickAnswers.ActiveImpression";
 const char kQuickAnswerClick[] = "QuickAnswers.Click";
 const char kQuickAnswerResult[] = "QuickAnswers.Result";
 const char kQuickAnswerLoadingStatus[] = "QuickAnswers.Loading.Status";
@@ -94,6 +95,12 @@ void RecordClick(ResultType result_type, const base::TimeDelta duration) {
 
 void RecordSelectedTextLength(int length) {
   base::UmaHistogramCounts1000(kQuickAnswerSelectedContentLength, length);
+}
+
+void RecordActiveImpression(ResultType result_type,
+                            const base::TimeDelta duration) {
+  RecordTypeAndDuration(kQuickAnswerActiveImpression, result_type, duration,
+                        /*is_medium_bucketization=*/true);
 }
 
 void RecordConsentInteraction(ConsentInteractionType type,

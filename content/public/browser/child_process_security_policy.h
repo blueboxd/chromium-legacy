@@ -327,6 +327,9 @@ class ChildProcessSecurityPolicy {
   virtual std::vector<url::Origin> GetIsolatedOrigins(
       base::Optional<IsolatedOriginSource> source = base::nullopt,
       BrowserContext* browser_context = nullptr) = 0;
+
+  // Clears all isolated origins.  This is unsafe to use outside of testing.
+  virtual void ClearIsolatedOriginsForTesting() = 0;
 };
 
 }  // namespace content

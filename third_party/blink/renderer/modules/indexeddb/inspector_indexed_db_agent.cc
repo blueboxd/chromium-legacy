@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/dom/dom_string_list.h"
 #include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/inspected_frames.h"
 #include "third_party/blink/renderer/core/inspector/v8_inspector_string.h"
@@ -584,8 +585,7 @@ class OpenCursorCallback final : public NativeEventListener {
       return;
     }
 
-    Document* document = Document::From(ExecutionContext::From(script_state_));
-    if (!document)
+    if (!script_state_->ContextIsValid())
       return;
     ScriptState::Scope scope(script_state_);
     v8::Local<v8::Context> context = script_state_->GetContext();

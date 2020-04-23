@@ -37,7 +37,6 @@
 <translation id="1041263367839475438">Vifaa vinavyopatikana</translation>
 <translation id="1042174272890264476">Kompyuta yako pia huja na maktaba ya <ph name="SHORT_PRODUCT_NAME" /> ya RLZ iliyojengewa ndani. RLZ hutoa lebo isiyo ya kipekee, isiyotambulika kibinafsi ili kupima utafutaji na matumizi ya <ph name="SHORT_PRODUCT_NAME" />  yanayoendeshwa na kampeni husika ya ukwezaji. Lebo hizi wakati mwingine hutokea katika hoja za Huduma ya Tafuta na Google katika <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1043818413152647937">Pia, ungependa kufuta data kutoka kwenye programu hizi?</translation>
-<translation id="1045448422538531528">Weka kwenye kikundi</translation>
 <translation id="1046635659603195359">Inaonekana kuwa tayari umeweka mipangilio ya Voice Match katika programu ya Mratibu wa Google kwenye kifaa kingine. Rekodi hizi za awali zinaweza kutumika kutengeneza mfano wa sauti kwenye kifaa hiki. Hatua hii haitachukua zaidi ya dakika moja.</translation>
 <translation id="104710386808485638">Ungependa Kuzima Kisha Uwashe Linux?</translation>
 <translation id="1047431265488717055">Nakili Maandishi ya Kiungo</translation>
@@ -405,7 +404,6 @@
 <translation id="1536754031901697553">Inatenganisha...</translation>
 <translation id="15373452373711364">Kishale kikubwa cha kipanya</translation>
 <translation id="1540605929960647700">Washa hali ya onyesho</translation>
-<translation id="1541396123399225659">Ongeza kwenye Kikundi Kipya</translation>
 <translation id="1542514202066550870">Kichupo hiki kinawasilisha maudhui ya VR kwenye kifaa cha kutazama uhalisia pepe.</translation>
 <translation id="1543284117603151572">Zilizoletwa Kutoka Kivinjari cha Edge</translation>
 <translation id="1545177026077493356">Skrini Nzima Kiotomatiki</translation>
@@ -1903,7 +1901,6 @@ Unaweza kudhibiti mipangilio ya akaunti hii kwa kusakinisha programu ya Family L
 <translation id="3514373592552233661">Mitandao inayopendelewa itatumiwa badala ya mitandao mingine inayojulikana ikiwa kuna zaidi ya mtandao mmoja</translation>
 <translation id="3515983984924808886">Gusa ufunguo wako wa usalama tena ili uthibitishe hatua ya kuubadilisha. Maelezo yote yaliyohifadhiwa kwenye ufunguo wa usalama, ikiwa ni pamoja na PIN, yatafutwa.</translation>
 <translation id="3518985090088779359">Kubali na uendelee</translation>
-<translation id="351952459507671940">Ongeza kwenye kikundi kipya</translation>
 <translation id="3521606918211282604">Badilisha ukubwa wa diski</translation>
 <translation id="3523642406908660543">Uliza wakati tovuti inapotaka kutumia programu jalizi kufikia kompyuta yako (inapendekezwa)</translation>
 <translation id="3524965460886318643">Tuma Shughuli</translation>
@@ -2891,7 +2888,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4871322859485617074">PIN ina nambari zisizo sahihi</translation>
 <translation id="4871370605780490696">Ongeza alamisho</translation>
 <translation id="4871719318659334896">Funga kikundi</translation>
-<translation id="4871852311166078968">Weka kwenye Kikundi</translation>
 <translation id="4873312501243535625">Kikagua Faili za Maudhui</translation>
 <translation id="4876273079589074638">Wasaidie wahandisi wetu kuchunguza na kurekebisha hitilafu hii ya kuacha kufanya kazi. Orodhesha hatua kamili kama unaweza. Maelezo yote ni muhimu!</translation>
 <translation id="4876895919560854374">Funga na ufungue skrini</translation>
@@ -4123,7 +4119,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6532206849875187177">Usalama na kuingia katika akaunti</translation>
 <translation id="6532527800157340614">Imeshindwa kuingia katika akaunti kwa sababu haikuleta data ya ufikiaji. Tafadhali kagua muunganisho wa mtandao kisha ujaribu tena.</translation>
 <translation id="6532663472409656417">Imejumuishwa kwenye Biashara</translation>
-<translation id="6535331821390304775">Ruhusu <ph name="ORIGIN" /> ili ifungue viungo vya aina hii kwenye programu inayohusiana kila wakati</translation>
+<translation id="6535331821390304775">Ruhusu <ph name="ORIGIN" /> ifungue viungo vya aina hii kwenye programu inayohusiana kila wakati</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Kumbuka:<ph name="END_BOLD" /> Washa tu kama unajua unachofanya au kama umeambiwa ufanye hivyo, kwani mkusanyiko wa data unaweza kupunguza utendaji.</translation>
 <translation id="6541638731489116978">Tovuti hii imezuiwa ili isifikie vitambuzi vya mwendo.</translation>
 <translation id="6545665334409411530">Ukadiriaji wa kurudia</translation>
@@ -4629,7 +4625,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="7235737137505019098">Ufunguo wako wa usalama hauna nafasi ya kutosha ili kutumia akaunti nyingine zozote.</translation>
 <translation id="7238643356913091553"><ph name="NETWORK_NAME" />, Maelezo</translation>
 <translation id="7240339475467890413">Ungependa kuunganishwa kwenye mtandaopepe mpya?</translation>
-<translation id="7240847845291869311">Mtoto wako angependa kuweka Akaunti ya G Suite for Education kwenye kifaa hiki. <ph name="LINK_BEGIN" />Ilani ya Faragha ya G Suite for Education<ph name="LINK_END" /> imekusudiwa kuwasaidia watumiaji na wazazi wanaotumia G Suite for Education kuelewa data ambayo bidhaa inakusanya, sababu za kuikusanya na tunachofanya nayo.</translation>
+<translation id="7240847845291869311">Mtoto wako angependa kuweka Akaunti ya G Suite for Education kwenye kifaa hiki. <ph name="LINK_BEGIN" />Ilani ya Faragha ya G Suite for Education<ph name="LINK_END" /> imekusudiwa kuwasaidia wateja na wazazi wanaotumia G Suite for Education kuelewa data ambayo bidhaa inakusanya, sababu za kuikusanya na tunachofanya nayo.</translation>
 <translation id="7241389281993241388">Tafadhali ingia kwenye <ph name="TOKEN_NAME" /> ili kuleta cheti cha mteja.</translation>
 <translation id="7241443820034350811">Ikiwa ufunguo wako wa usalama haujaorodheshwa, bonyeza vitufe vyake kwa angalau sekunde 5.</translation>
 <translation id="7243632151880336635">Futa na Uondoke kwenye Akaunti</translation>

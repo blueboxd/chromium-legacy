@@ -11,9 +11,6 @@
  * </settings-setup-pin-dialog>
  */
 
-(function() {
-'use strict';
-
 Polymer({
   is: 'settings-setup-pin-dialog',
 
@@ -117,4 +114,3 @@ Polymer({
     return this.i18n(isConfirmStep ? 'confirm' : 'continue');
   },
 });
-})();

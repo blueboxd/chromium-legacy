@@ -69,8 +69,8 @@ UrlLoadingBrowserAgent::UrlLoadingBrowserAgent(Browser* browser)
 UrlLoadingBrowserAgent::~UrlLoadingBrowserAgent() {}
 
 void UrlLoadingBrowserAgent::SetSceneService(
-    SceneUrlLoadingService* app_service) {
-  app_service_ = app_service;
+    SceneUrlLoadingService* scene_service) {
+  scene_service_ = scene_service;
 }
 
 void UrlLoadingBrowserAgent::SetDelegate(id<URLLoadingDelegate> delegate) {
@@ -213,7 +213,7 @@ void UrlLoadingBrowserAgent::LoadUrlInCurrentTab(const UrlLoadParams& params) {
 }
 
 void UrlLoadingBrowserAgent::SwitchToTab(const UrlLoadParams& params) {
-  DCHECK(app_service_);
+  DCHECK(scene_service_);
 
   web::NavigationManager::WebLoadParams web_params = params.web_params;
 
@@ -236,7 +236,7 @@ void UrlLoadingBrowserAgent::SwitchToTab(const UrlLoadParams& params) {
       new_tab_params.web_params.referrer = web::Referrer();
       new_tab_params.in_incognito = browser_state->IsOffTheRecord();
       new_tab_params.append_to = kCurrentTab;
-      app_service_->LoadUrlInNewTab(new_tab_params);
+      scene_service_->LoadUrlInNewTab(new_tab_params);
     }
     return;
   }
@@ -257,12 +257,12 @@ void UrlLoadingBrowserAgent::SwitchToTab(const UrlLoadParams& params) {
 }
 
 void UrlLoadingBrowserAgent::LoadUrlInNewTab(const UrlLoadParams& params) {
-  DCHECK(app_service_);
+  DCHECK(scene_service_);
   DCHECK(delegate_);
   DCHECK(browser_);
   ChromeBrowserState* browser_state = browser_->GetBrowserState();
   ChromeBrowserState* active_browser_state =
-      app_service_->GetCurrentBrowser()->GetBrowserState();
+      scene_service_->GetCurrentBrowser()->GetBrowserState();
 
   // Two UrlLoadingServices exist, normal and incognito.  Handle two special
   // cases that need to be sent up to the SceneUrlLoadingService:
@@ -277,9 +277,9 @@ void UrlLoadingBrowserAgent::LoadUrlInNewTab(const UrlLoadParams& params) {
     // ends up appended to the end of the model, not just next to what is
     // currently selected in the other mode. This is done with the |append_to|
     // parameter.
-    UrlLoadParams app_params = params;
-    app_params.append_to = kLastTab;
-    app_service_->LoadUrlInNewTab(app_params);
+    UrlLoadParams scene_params = params;
+    scene_params.append_to = kLastTab;
+    scene_service_->LoadUrlInNewTab(scene_params);
     return;
   }
 

@@ -47,13 +47,14 @@
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/omnibox/clipboard_utils.h"
 #include "chrome/browser/ui/search/ntp_user_data_logger.h"
+#include "chrome/browser/ui/search/omnibox_mojo_utils.h"
 #include "chrome/browser/ui/search/omnibox_utils.h"
 #include "chrome/browser/ui/search/search_ipc_router_policy_impl.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
 #include "chrome/common/chrome_features.h"
-#include "chrome/common/search.mojom.h"
+#include "chrome/common/search/omnibox.mojom.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -99,61 +100,6 @@
 #include "url/gurl.h"
 
 namespace {
-
-base::flat_map<int32_t, chrome::mojom::SuggestionGroupPtr>
-CreateSuggestionGroupsMap(
-    PrefService* prefs,
-    const SearchSuggestionParser::HeadersMap& headers_map) {
-  base::flat_map<int32_t, chrome::mojom::SuggestionGroupPtr> result_map;
-  for (const auto& pair : headers_map) {
-    chrome::mojom::SuggestionGroupPtr suggestion_group =
-        chrome::mojom::SuggestionGroup::New();
-    suggestion_group->header = pair.second;
-    suggestion_group->hidden =
-        omnibox::IsSuggestionGroupIdHidden(prefs, pair.first);
-    result_map.emplace(pair.first, std::move(suggestion_group));
-  }
-  return result_map;
-}
-
-std::vector<chrome::mojom::AutocompleteMatchPtr> CreateAutocompleteMatches(
-    const AutocompleteResult& result) {
-  std::vector<chrome::mojom::AutocompleteMatchPtr> matches;
-  for (const AutocompleteMatch& match : result) {
-    chrome::mojom::AutocompleteMatchPtr mojom_match =
-        chrome::mojom::AutocompleteMatch::New();
-    mojom_match->allowed_to_be_default_match =
-        match.allowed_to_be_default_match;
-    mojom_match->contents = match.contents;
-    for (const auto& contents_class : match.contents_class) {
-      mojom_match->contents_class.push_back(
-          chrome::mojom::ACMatchClassification::New(contents_class.offset,
-                                                    contents_class.style));
-    }
-    mojom_match->description = match.description;
-    for (const auto& description_class : match.description_class) {
-      mojom_match->description_class.push_back(
-          chrome::mojom::ACMatchClassification::New(description_class.offset,
-                                                    description_class.style));
-    }
-    mojom_match->destination_url = match.destination_url.spec();
-    mojom_match->suggestion_group_id = match.suggestion_group_id.value_or(0);
-    mojom_match->icon_url =
-        SearchTabHelper::AutocompleteMatchVectorIconToResourceName(
-            match.GetVectorIcon(false));
-    mojom_match->image_dominant_color = match.image_dominant_color;
-    mojom_match->image_url = match.image_url.spec();
-    mojom_match->fill_into_edit = match.fill_into_edit;
-    mojom_match->inline_autocompletion = match.inline_autocompletion;
-    mojom_match->is_search_type = AutocompleteMatch::IsSearchType(match.type);
-    mojom_match->swap_contents_and_description =
-        match.swap_contents_and_description;
-    mojom_match->type = AutocompleteMatchType::ToString(match.type);
-    mojom_match->supports_deletion = match.SupportsDeletion();
-    matches.push_back(std::move(mojom_match));
-  }
-  return matches;
-}
 
 // Converts an in-memory bitmap data to a base64 data url.
 std::string GetBitmapDataUrl(const char* data, size_t size) {
@@ -267,51 +213,6 @@ void SearchTabHelper::OnTabClosing() {
   if (search::IsInstantNTP(web_contents_) && chrome_colors_service_)
     chrome_colors_service_->RevertThemeChangesForTab(
         web_contents_, chrome_colors::RevertReason::TAB_CLOSED);
-}
-
-// static
-std::string SearchTabHelper::AutocompleteMatchVectorIconToResourceName(
-    const gfx::VectorIcon& icon) {
-  if (icon.name == omnibox::kBlankIcon.name) {
-    return "";  // An empty resource name is effectively a blank icon.
-  } else if (icon.name == omnibox::kBookmarkIcon.name) {
-    return kBookmarkIconResourceName;
-  } else if (icon.name == omnibox::kCalculatorIcon.name) {
-    return kCalculatorIconResourceName;
-  } else if (icon.name == omnibox::kClockIcon.name) {
-    return kClockIconResourceName;
-  } else if (icon.name == omnibox::kDriveDocsIcon.name) {
-    return kDriveDocsIconResourceName;
-  } else if (icon.name == omnibox::kDriveFolderIcon.name) {
-    return kDriveFolderIconResourceName;
-  } else if (icon.name == omnibox::kDriveFormsIcon.name) {
-    return kDriveFormIconResourceName;
-  } else if (icon.name == omnibox::kDriveImageIcon.name) {
-    return kDriveImageIconResourceName;
-  } else if (icon.name == omnibox::kDriveLogoIcon.name) {
-    return kDriveLogoIconResourceName;
-  } else if (icon.name == omnibox::kDrivePdfIcon.name) {
-    return kDrivePdfIconResourceName;
-  } else if (icon.name == omnibox::kDriveSheetsIcon.name) {
-    return kDriveSheetsIconResourceName;
-  } else if (icon.name == omnibox::kDriveSlidesIcon.name) {
-    return kDriveSlidesIconResourceName;
-  } else if (icon.name == omnibox::kDriveVideoIcon.name) {
-    return kDriveVideoIconResourceName;
-  } else if (icon.name == omnibox::kExtensionAppIcon.name) {
-    return kExtensionAppIconResourceName;
-  } else if (icon.name == omnibox::kPageIcon.name) {
-    return kPageIconResourceName;
-  } else if (icon.name == omnibox::kPedalIcon.name) {
-    return "";  // Pedals are not supported in the NTP Realbox.
-  } else if (icon.name == vector_icons::kSearchIcon.name) {
-    return kSearchIconResourceName;
-  } else {
-    NOTREACHED()
-        << "Every vector icon returned by AutocompleteMatch::GetVectorIcon "
-           "must have an equivalent SVG resource for the NTP Realbox.";
-    return "";
-  }
 }
 
 void SearchTabHelper::DidStartNavigation(
@@ -551,12 +452,9 @@ void SearchTabHelper::OnResultChanged(AutocompleteController* controller,
     return;
   }
 
-  ipc_router_.AutocompleteResultChanged(chrome::mojom::AutocompleteResult::New(
+  ipc_router_.AutocompleteResultChanged(omnibox::CreateAutocompleteResult(
       autocomplete_controller_->input().text(),
-      CreateSuggestionGroupsMap(
-          profile()->GetPrefs(),
-          autocomplete_controller_->result().headers_map()),
-      CreateAutocompleteMatches(autocomplete_controller_->result())));
+      autocomplete_controller_->result(), profile()->GetPrefs()));
 
   BitmapFetcherService* bitmap_fetcher_service =
       BitmapFetcherServiceFactory::GetForBrowserContext(profile());
@@ -833,7 +731,8 @@ void SearchTabHelper::OnDeleteAutocompleteMatchConfirm(
       success = true;
       autocomplete_controller_->Stop(false);
       autocomplete_controller_->DeleteMatch(match);
-      matches = CreateAutocompleteMatches(autocomplete_controller_->result());
+      matches = omnibox::CreateAutocompleteMatches(
+          autocomplete_controller_->result());
     }
   }
 }

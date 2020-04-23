@@ -116,6 +116,7 @@
 <translation id="2360196772093551345">موبائل سائٹ کی درخواست کریں</translation>
 <translation id="2381405137052800939">مبادیات</translation>
 <translation id="2386793615875593361">1 کو منتخب کیا گیا</translation>
+<translation id="2421004566762153674">فریق ثالث کوکیز کو مسدود کیا جا رہا ہے</translation>
 <translation id="2421044535038393232">ترمیم جاری رکھیں</translation>
 <translation id="2435457462613246316">پاس ورڈ دکھائیں</translation>
 <translation id="2497852260688568942">مطابقت پذیری کو آپ کے منتظم نے غیر فعال کر دیا ہے</translation>
@@ -195,7 +196,6 @@
 <translation id="3469166899695866866">ڈاؤن لوڈ روکیں؟</translation>
 <translation id="3470502288861289375">کاپی کیے جا رہے ہیں…</translation>
 <translation id="3474624961160222204">بطور <ph name="NAME" /> جاری رکھیں</translation>
-<translation id="3474649192738347024">فارمز پُر ہوگئے ہیں۔</translation>
 <translation id="3478058380795961209">میعاد کے اختتام کا مہینہ</translation>
 <translation id="3482959374254649722">آپ کے ٹیبز کی مطابقت پذیری ہو رہی ہے…</translation>
 <translation id="3484946776651937681">ڈاؤن لوڈز میں کھولیں</translation>
@@ -478,6 +478,7 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="7136892417564438900">کیمرا دستیاب نہیں ہے</translation>
 <translation id="7159472599653637159">موبائل سائٹ کی درخواست کریں</translation>
 <translation id="7173114856073700355">ترتیبات کھولیں</translation>
+<translation id="7189598951263744875">اشتراک کریں…</translation>
 <translation id="7192050974311852563">لاگ کرنا شروع کریں</translation>
 <translation id="7203585745079012652">جوابات دوبارہ بولیں</translation>
 <translation id="7265758999917665941">اس سائٹ کیلئے کبھی نہیں</translation>

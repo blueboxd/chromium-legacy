@@ -118,14 +118,14 @@ class UserManagerTest : public testing::Test {
   }
 
   void TearDown() override {
-    // Unregister the in-memory local settings instance.
-    local_state_.reset();
-
     wallpaper_controller_client_.reset();
 
     // Shut down the DeviceSettingsService.
     DeviceSettingsService::Get()->UnsetSessionManager();
     TestingBrowserProcess::GetGlobal()->SetProfileManager(NULL);
+
+    // Unregister the in-memory local settings instance.
+    local_state_.reset();
 
     base::RunLoop().RunUntilIdle();
     chromeos::DBusThreadManager::Shutdown();
@@ -196,6 +196,7 @@ class UserManagerTest : public testing::Test {
   content::BrowserTaskEnvironment task_environment_;
 
   ScopedCrosSettingsTestHelper settings_helper_;
+  // local_state_ should be destructed after ProfileManager.
   std::unique_ptr<ScopedTestingLocalState> local_state_;
 
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;

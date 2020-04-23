@@ -32,7 +32,8 @@ class AccessibilityController {
   void Reset();
   void Install(blink::WebLocalFrame* frame);
   bool ShouldLogAccessibilityEvents();
-  void NotificationReceived(const blink::WebAXObject& target,
+  void NotificationReceived(blink::WebLocalFrame* frame,
+                            const blink::WebAXObject& target,
                             const std::string& notification_name);
   void PostNotification(const blink::WebAXObject& target,
                         const std::string& notification_name);

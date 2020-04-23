@@ -12,25 +12,10 @@
 
 namespace data_reduction_proxy {
 
-// Creates a new ClientConfig from the given parameters.
-ClientConfig CreateConfig(const std::string& session_key,
-                          int64_t expire_duration_seconds,
-                          int64_t expire_duration_nanoseconds,
-                          ProxyServer_ProxyScheme primary_scheme,
-                          const std::string& primary_host,
-                          int primary_port,
-                          ProxyServer_ProxyScheme secondary_scheme,
-                          const std::string& secondary_host,
-                          int secondary_port,
-                          float reporting_fraction,
-                          bool ignore_long_term_black_list_rules);
-
-// Creates a new ClientConfig with no proxies from the given parameters.
-ClientConfig CreateEmptyProxyConfig(const std::string& session_key,
-                                    int64_t expire_duration_seconds,
-                                    int64_t expire_duration_nanoseconds,
-                                    float reporting_fraction,
-                                    bool ignore_long_term_black_list_rules);
+// Creates a new ClientConfig.
+ClientConfig CreateClientConfig(const std::string& session_key,
+                                int64_t expire_duration_seconds,
+                                int64_t expire_duration_nanoseconds);
 
 // Takes |config| and returns the base64 encoding of its serialized byte stream.
 std::string EncodeConfig(const ClientConfig& config);

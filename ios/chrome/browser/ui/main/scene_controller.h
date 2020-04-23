@@ -13,6 +13,7 @@
 #import "ios/chrome/browser/ui/main/scene_controller_guts.h"
 #import "ios/chrome/browser/ui/main/scene_state.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_switcher.h"
+#import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 
 @protocol MainControllerGuts;
 
@@ -22,7 +23,8 @@
                                        TabSwitcherDelegate,
                                        TabSwitching,
                                        SceneControllerGuts,
-                                       TabOpening>
+                                       TabOpening,
+                                       WebStateListObserving>
 
 - (instancetype)init NS_UNAVAILABLE;
 - (instancetype)initWithSceneState:(SceneState*)sceneState

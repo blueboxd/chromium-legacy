@@ -16,8 +16,9 @@ include_rules = [
 
 specific_include_rules = {
   # cc files do not leak includes so they are allowed to reference the test
-  # helpers that include //content/renderer.
+  # helpers that include //content/renderer, and //content/renderer itself.
   ".*\.cc": [
+    "+content/renderer",
     "+content/shell/test_runner/web_frame_test_proxy.h",
     "+content/shell/test_runner/web_view_test_proxy.h",
     "+content/shell/test_runner/web_widget_test_proxy.h",

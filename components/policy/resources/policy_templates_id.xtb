@@ -1514,6 +1514,7 @@ Jika kebijakan ini tidak ditetapkan, layar privasi mula-mula akan dinonaktifkan 
 <translation id="3303653927512453822">Mengizinkan Anda mengembalikan semua cookie ke perilaku <ph name="ATTRIBUTE_SAMESITE_NAME" /> lama. Pengembalian ke perilaku lama akan menyebabkan cookie yang tidak menentukan atribut <ph name="ATTRIBUTE_SAMESITE_NAME" /> dianggap sebagai "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />", dan menghapus persyaratan bagi cookie "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />" untuk membawa atribut "<ph name="ATTRIBUTE_SECURE_NAME" />". Lihat penjelasan lengkapnya di https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies.
 
           Jika kebijakan ini tidak ditetapkan, perilaku <ph name="ATTRIBUTE_SAMESITE_NAME" /> default untuk cookie yang tidak menentukan atribut <ph name="ATTRIBUTE_SAMESITE_NAME" /> akan bergantung pada konfigurasi pribadi pengguna untuk fitur <ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES" />, yang mungkin ditetapkan berdasarkan uji coba lapangan atau dengan mengaktifkan atau menonaktifkan tanda <ph name="FLAG_NAME_SAMESITE_BY_DEFAULT_COOKIES" />.</translation>
+<translation id="3303911765031636277">Kebijakan konfigurasi untuk OnFileAttached Chrome Enterprise Connector</translation>
 <translation id="3304662785258434098">Memungkinkan Anda menetapkan apakah pengguna dapat menambahkan pengecualian untuk mengizinkan konten campuran bagi situs tertentu.
 
           Kebijakan ini dapat diganti dengan pola URL tertentu menggunakan kebijakan 'InsecureContentAllowedForUrls' dan 'InsecureContentBlockedForUrls'.
@@ -2140,6 +2141,7 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
 
           Juga ada setelan terpisah untuk daya AC dan baterai.
           </translation>
+<translation id="4147818922357566987">Aktifkan variasi terkait perbaikan penting saja</translation>
 <translation id="4150201353443180367">Tampilan</translation>
 <translation id="4157003184375321727">Laporkan versi OS dan firmware</translation>
 <translation id="4157594634940419685">Izinkan akses ke printer CUPS native</translation>
@@ -4065,6 +4067,15 @@ Kebijakan ini hanya berlaku jika dukungan aplikasi Linux diaktifkan.</translatio
       Kebijakan ini dapat disetel ke "konservatif" dan "performa", yang akan memilih konfigurasi penjadwal tugas yang disetel untuk stabilitas vs performa maksimum.
 
       Jika kebijakan tidak disetel, pengguna akan dapat memilih sendiri.</translation>
+<translation id="7144454922853468101">Dengan mengonfigurasi kebijakan ini, Anda dapat menentukan variasi mana yang diizinkan untuk diterapkan ke <ph name="PRODUCT_NAME" />.
+
+      Variasi memberikan cara untuk menawarkan modifikasi pada <ph name="PRODUCT_NAME" /> tanpa mengirimkan versi baru browser, dengan mengaktifkan atau menonaktifkan fitur yang sudah ada secara selektif.
+
+      Jika <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (nilai 0) ditetapkan, atau jika kebijakan ini tidak ditetapkan, semua variasi akan diterapkan ke browser.
+
+      Jika <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (nilai 1) ditetapkan, hanya variasi yang dianggap sebagai perbaikan keamanan atau stabilitas penting yang akan diterapkan ke <ph name="PRODUCT_NAME" />.
+
+      Jika <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (nilai 2) ditetapkan, semua variasi tidak akan dapat diterapkan ke browser. Perlu diketahui, mode ini tidak direkomendasikan karena berpotensi menyebabkan developer <ph name="PRODUCT_NAME" /> tidak dapat menyediakan perbaikan keamanan penting secara tepat waktu.</translation>
 <translation id="7145335384492396213">Mode pencetakan PIN default</translation>
 <translation id="7149042336307555519"> Jenis sambungan yang diizinkan untuk digunakan update OS. Update OS berpotensi menyebabkan beban berat pada sambungan karena ukurannya dan mungkin menimbulkan biaya tambahan. Oleh karena itu, update tersebut akan dinonaktifkan secara default untuk jenis sambungan yang dianggap mahal (saat ini hanya "data seluler").
 
@@ -4756,6 +4767,15 @@ Jika kebijakan ini tidak ditetapkan, layar privasi mula-mula akan dinonaktifkan,
 <translation id="8176035528522326671">Memungkinkan pengguna perusahaan menjadi pengguna banyak profil primer saja (Perilaku default untuk pengguna yang dikelola perusahaan)</translation>
 <translation id="8183108371184777472">Sembunyikan peluncuran jendela browser</translation>
 <translation id="8186911565834244165">Izinkan masukan pengguna</translation>
+<translation id="8196725647498287556">Dengan mengonfigurasi kebijakan ini, Anda dapat menentukan variasi mana yang diizinkan untuk diterapkan ke perangkat <ph name="PRODUCT_OS_NAME" /> yang dikelola perusahaan.
+
+      Variasi memberikan cara untuk menawarkan modifikasi pada <ph name="PRODUCT_OS_NAME" /> tanpa mengirimkan versi baru, dengan mengaktifkan atau menonaktifkan fitur yang sudah ada secara selektif.
+
+      Jika <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (nilai 0) ditetapkan, atau jika kebijakan ini tidak ditetapkan, semua variasi akan diterapkan ke <ph name="PRODUCT_OS_NAME" />.
+
+      Jika <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (nilai 1) ditetapkan, hanya variasi yang dianggap sebagai perbaikan keamanan atau stabilitas penting yang akan diterapkan ke <ph name="PRODUCT_OS_NAME" />.
+
+      Jika <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (nilai 2) ditetapkan, semua variasi tidak akan diterapkan ke browser di layar login. Perlu diketahui, mode ini tidak direkomendasikan karena berpotensi menyebabkan developer <ph name="PRODUCT_OS_NAME" /> tidak dapat menyediakan perbaikan keamanan penting secara tepat waktu.</translation>
 <translation id="8213770777756919897">Perhatikan bahwa kebijakan ini sudah tidak digunakan lagi dan akan dihapus di <ph name="PRODUCT_OS_NAME" /> versi 85. Sebagai gantinya, gunakan <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 
           Jika ditetapkan, kebijakan ini akan menentukan tindakan yang diambil <ph name="PRODUCT_OS_NAME" /> saat pengguna tetap tidak ada aktivitas selama durasi waktu yang ditentukan oleh penundaan waktu tidak ada aktivitas, yang dapat dikonfigurasi secara terpisah.
@@ -5301,6 +5321,19 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
           Jika kebijakan ini tidak ditetapkan dan kebijakan didukung di perangkat, mode pengisian daya baterai standar akan diterapkan dan tidak dapat diubah oleh pengguna.
 
           Catatan: <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> akan mengganti kebijakan ini jika kebijakan tersebut ditentukan.</translation>
+<translation id="9071472304496502510">Daftar setelan layanan Chrome Enterprise Connectors yang akan diterapkan ke <ph name="ON_FILE_ATTACHED_ENTERPRISE_CONNECTOR" /> Enterprise Connector, yang memicu saat file dilampirkan ke Chrome.
+
+      Kolom <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" /> dan <ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> digunakan untuk menentukan apakah konektor perlu mengirimkan file untuk dianalisis saat dilampirkan ke halaman tertentu dan tag yang perlu disertakan dalam permintaan analisis untuk file tersebut. Tag yang sesuai dengan pola 'aktifkan' akan disertakan dalam permintaan analisis, jika URL halaman cocok dengan pola yang terkait tag tersebut selama tidak ada pola 'nonaktifkan' yang memiliki tag sama yang cocok dengan URL halaman. Analisis dilakukan jika terdapat minimal 1 tag yang disertakan dalam permintaan.
+
+      Kolom <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" /> akan mengidentifikasi penyedia layanan analisis yang sesuai dengan setelan.
+
+      Jika kolom <ph name="ENTERPRISE_CONNECTOR_BLOCK_UNTIL_VERDICT_FIELD" /> ditetapkan ke 1, Chrome akan menunggu untuk mendapatkan respons dari layanan analisis sebelum memberikan akses halaman ke halaman tersebut. Jika nilai berupa bilangan bulat, Chrome akan memberikan akses halaman ke file secara langsung.
+
+      Kolom <ph name="ENTERPRISE_CONNECTOR_BLOCK_PASSWORD_PROTECTED_FIELD" /> mengontrol apakah Chrome akan memblokir atau mengizinkan file yang dilindungi sandi.
+
+      Kolom <ph name="ENTERPRISE_CONNECTOR_BLOCK_LARGE_FILES_FIELD" /> mengontrol apakah Chrome akan memblokir atau mengizinkan file yang berukuran terlalu besar untuk dianalisis (lebih dari 50 MB).
+
+      Kebijakan ini hanya dapat ditetapkan dari konsol Google Admin.</translation>
 <translation id="9077227880520270584">Timer login otomatis akun lokal perangkat</translation>
 <translation id="9084985621503260744">Tentukan apakah aktivitas video memengaruhi pengelolaan daya</translation>
 <translation id="9088433379343318874">Izinkan penyedia konten pengguna yang dilindungi</translation>

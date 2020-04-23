@@ -356,6 +356,9 @@ void InputDeviceFactoryEvdev::ApplyInputDeviceSettings() {
   SetBoolPropertyForOneType(
       DT_MOUSE, "Mouse Reverse Scrolling",
       input_device_settings_.mouse_reverse_scroll_enabled);
+  SetBoolPropertyForOneType(
+      DT_MOUSE, "Mouse High Resolution Scrolling",
+      base::FeatureList::IsEnabled(ui::kEnableHighResolutionMouseScrolling));
 
   SetBoolPropertyForOneType(DT_TOUCHPAD, "Tap Paused",
                             input_device_settings_.tap_to_click_paused);

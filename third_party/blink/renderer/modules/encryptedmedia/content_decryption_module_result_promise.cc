@@ -35,11 +35,9 @@ ExceptionCode WebCdmExceptionToExceptionCode(
 
 ContentDecryptionModuleResultPromise::ContentDecryptionModuleResultPromise(
     ScriptState* script_state,
-    const char* interface_name,
-    const char* property_name)
+    EmeApiType type)
     : resolver_(MakeGarbageCollected<ScriptPromiseResolver>(script_state)),
-      interface_name_(interface_name),
-      property_name_(property_name) {}
+      type_(type) {}
 
 ContentDecryptionModuleResultPromise::~ContentDecryptionModuleResultPromise() =
     default;
@@ -111,7 +109,8 @@ void ContentDecryptionModuleResultPromise::Reject(ExceptionCode code,
   ScriptState::Scope scope(resolver_->GetScriptState());
   ExceptionState exception_state(resolver_->GetScriptState()->GetIsolate(),
                                  ExceptionState::kExecutionContext,
-                                 interface_name_, property_name_);
+                                 EncryptedMediaUtils::GetInterfaceName(type_),
+                                 EncryptedMediaUtils::GetPropertyName(type_));
   exception_state.ThrowException(code, error_message);
   resolver_->Reject(exception_state);
 

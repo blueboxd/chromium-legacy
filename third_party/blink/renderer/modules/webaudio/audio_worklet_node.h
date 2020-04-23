@@ -49,6 +49,7 @@ class AudioWorkletHandler final
   void Process(uint32_t frames_to_process) override;
 
   void CheckNumberOfChannelsForInput(AudioNodeInput*) override;
+  void UpdatePullStatusIfNeeded() override;
 
   double TailTime() const override;
   double LatencyTime() const override { return 0; }

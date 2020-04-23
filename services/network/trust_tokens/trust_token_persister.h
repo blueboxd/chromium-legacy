@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback_forward.h"
 #include "services/network/trust_tokens/suitable_trust_token_origin.h"
 
 namespace network {

@@ -188,6 +188,7 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsParentalControlsSettingsEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsQuickAnswersDogfood();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsQuickAnswersEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsQuickAnswersRichUiEnabled();
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsQuickAnswersSettingToggleEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsSplitSettingsSyncEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsSplitSyncConsentEnabled();
 

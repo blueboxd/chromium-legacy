@@ -96,6 +96,10 @@ RE_RENDER_IMAGE_NAME = re.compile(
       r'(?P<device_model_sdk>[-\w]+)\.png')
 
 _DEVICE_GOLD_DIR = 'skia_gold'
+# A map of Android product models to SDK ints.
+RENDER_TEST_MODEL_SDK_CONFIGS = {
+    'Nexus 5X': [23],
+}
 
 
 @contextlib.contextmanager
@@ -960,6 +964,23 @@ class LocalDeviceInstrumentationTestRun(
             use_luci=use_luci)
 
         if not status:
+          continue
+
+        # Don't fail the test if we ran on an unsupported configuration unless
+        # the test has explicitly opted in, as it's likely that baselines
+        # aren't maintained for that configuration.
+        with open(json_path) as infile:
+          # All the key/value pairs in the JSON file are strings, so convert
+          # to a bool.
+          fail_on_unsupported = json.load(infile).get(
+              'fail_on_unsupported_configs', 'false')
+          fail_on_unsupported = fail_on_unsupported.lower() == 'true'
+        if device.build_version_sdk not in RENDER_TEST_MODEL_SDK_CONFIGS.get(
+            device.product_model, []) and not fail_on_unsupported:
+          _AppendToLog(
+              results, 'Gold comparison for %s failed, but model %s with SDK '
+              '%d is not a supported configuration, so ignoring failure.' %
+              (render_name, device.product_model, device.build_version_sdk))
           continue
 
         _FailTestIfNecessary(results)

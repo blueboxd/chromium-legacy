@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
+#include "chrome/browser/previews/previews_https_notification_infobar_decider.h"
 #include "chrome/browser/previews/previews_lite_page_redirect_decider.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_blacklist_data.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -68,7 +69,7 @@ class PreviewsService : public KeyedService {
   // The https notification infobar decider.
   PreviewsHTTPSNotificationInfoBarDecider*
   previews_https_notification_infobar_decider() {
-    return previews_lite_page_redirect_decider_.get();
+    return previews_https_notification_infobar_decider_.get();
   }
 
   PreviewsOfflineHelper* previews_offline_helper() {
@@ -103,6 +104,10 @@ class PreviewsService : public KeyedService {
   // The server lite page preview decider.
   std::unique_ptr<PreviewsLitePageRedirectDecider>
       previews_lite_page_redirect_decider_;
+
+  // The decider for showing the HTTPS Notification InfoBar.
+  std::unique_ptr<PreviewsHTTPSNotificationInfoBarDecider>
+      previews_https_notification_infobar_decider_;
 
   // The offline previews helper.
   std::unique_ptr<PreviewsOfflineHelper> previews_offline_helper_;

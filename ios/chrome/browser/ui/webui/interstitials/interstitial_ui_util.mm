@@ -11,12 +11,15 @@
 #include "components/grit/dev_ui_components_resources.h"
 #include "components/security_interstitials/core/ssl_error_options_mask.h"
 #include "crypto/rsa_private_key.h"
+#include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/ssl/ios_captive_portal_blocking_page.h"
 #include "ios/chrome/browser/ssl/ios_ssl_blocking_page.h"
 #import "ios/chrome/browser/ui/webui/interstitials/interstitial_ui_constants.h"
 #import "ios/chrome/browser/ui/webui/interstitials/interstitial_ui_util.h"
+#include "ios/components/security_interstitials/ios_blocking_page_controller_client.h"
+#import "ios/components/security_interstitials/ios_blocking_page_metrics_helper.h"
 #import "ios/web/public/security/web_interstitial_delegate.h"
 #include "ios/web/public/webui/url_data_source_ios.h"
 #include "ios/web/public/webui/web_ui_ios.h"
@@ -107,15 +110,35 @@ std::unique_ptr<web::WebInterstitialDelegate> CreateSslBlockingPageDelegate(
         security_interstitials::SSLErrorOptionsMask::STRICT_ENFORCEMENT;
   }
 
+  security_interstitials::MetricsHelper::ReportDetails reporting_info;
+  reporting_info.metric_prefix =
+      overridable ? "ssl_overridable" : "ssl_nonoverridable";
+
   return std::make_unique<IOSSSLBlockingPage>(
       web_state, cert_error, ssl_info, request_url, options_mask,
-      base::Time::NowFromSystemTime(), base::OnceCallback<void(bool)>());
+      base::Time::NowFromSystemTime(), base::OnceCallback<void(bool)>(),
+      std::make_unique<security_interstitials::IOSBlockingPageControllerClient>(
+          web_state,
+          std::make_unique<
+              security_interstitials::IOSBlockingPageMetricsHelper>(
+              web_state, request_url, reporting_info),
+          GetApplicationContext()->GetApplicationLocale()));
 }
 
 std::unique_ptr<web::WebInterstitialDelegate>
 CreateCaptivePortalBlockingPageDelegate(web::WebState* web_state) {
   GURL landing_url("https://captive.portal/login");
   GURL request_url("https://google.com");
+
+  security_interstitials::MetricsHelper::ReportDetails reporting_info;
+  reporting_info.metric_prefix = "ssl_nonoverridable";
+
   return std::make_unique<IOSCaptivePortalBlockingPage>(
-      web_state, request_url, landing_url, base::OnceCallback<void(bool)>());
+      web_state, request_url, landing_url, base::OnceCallback<void(bool)>(),
+      new security_interstitials::IOSBlockingPageControllerClient(
+          web_state,
+          std::make_unique<
+              security_interstitials::IOSBlockingPageMetricsHelper>(
+              web_state, request_url, reporting_info),
+          GetApplicationContext()->GetApplicationLocale()));
 }

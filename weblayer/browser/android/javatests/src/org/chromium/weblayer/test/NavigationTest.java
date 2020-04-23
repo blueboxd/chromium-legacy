@@ -22,6 +22,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.util.TestWebServer;
@@ -608,6 +609,7 @@ public class NavigationTest {
 
     @Test
     @SmallTest
+    @DisabledTest(message = "crbug.com/1065536")
     public void testSetRequestHeaderInRedirect() throws Exception {
         TestWebServer testServer = TestWebServer.start();
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(null);

@@ -29,11 +29,15 @@ function axElementById(id) {
 // Note that we have the separate <newline> text because it's an AXNodeObject and does
 // not do whitespace collapsing (though this might change in the future).
 async_test(async(t) => {
-  const hiddenEl = document.getElementById("hidden");
   let axHidden = axElementById("hidden");
   t.step(() => { assert_equals(axHidden.childrenCount, 3, "Children count when locked"); });
 
-  // This should unlock #hidden.
+  // Press on the #child. This will cause the element to be brought into the view,
+  // since it is interactable even though it is locked by subtree-visibility (see
+  // https://github.com/WICG/display-locking for details). When that is done,
+  // the element will become unlocked and AXNodeObjects will be replaced with
+  // AXLayoutObjects, causing <newline> to be collapsed, so we expect to see
+  // two children.
   axElementById("child").press();
   // Wait for the next frame for the ax object to be recreated.
   requestAnimationFrame(() => {

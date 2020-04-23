@@ -212,6 +212,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnableWebXRARModule, features::kWebXrArModule, kUseFeatureState},
     {wf::EnableWebXRHitTest, features::kWebXrHitTest, kUseFeatureState},
     {wf::EnableWebXRIncubations, features::kWebXrIncubations, kEnableOnly},
+    {wf::EnableWebXRAnchors, features::kWebXrIncubations, kEnableOnly},
+    {wf::EnableWebXRLightEstimation, features::kWebXrIncubations, kEnableOnly},
     {wf::EnableUserActivationPostMessageTransfer,
      features::kUserActivationPostMessageTransfer, kUseFeatureState},
     {wf::EnableUserActivationSameOriginVisibility,
@@ -316,6 +318,7 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnableWebNfc, features::kWebNfc, kDisableOnly},
 #endif
     {wf::EnableTrustTokens, network::features::kTrustTokens, kEnableOnly},
+    {wf::EnableInstalledApp, features::kInstalledApp, kDisableOnly},
   };
   for (const auto& mapping : blinkFeatureToBaseFeatureMapping) {
     SetRuntimeFeatureFromChromiumFeature(
@@ -360,6 +363,7 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           {"LegacyWindowsDWriteFontFallback",
            features::kLegacyWindowsDWriteFontFallback, kUseFeatureState},
           {"OriginPolicy", features::kOriginPolicy, kUseFeatureState},
+          {"RawClipboard", blink::features::kRawClipboard, kEnableOnly},
           {"ShadowDOMV0", blink::features::kWebComponentsV0Enabled,
            kEnableOnly},
           {"StorageAccessAPI", blink::features::kStorageAccessAPI, kEnableOnly},

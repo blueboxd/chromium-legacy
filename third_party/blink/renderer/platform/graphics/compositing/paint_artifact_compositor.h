@@ -317,7 +317,8 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
       const PendingLayer&,
       Vector<std::unique_ptr<ContentLayerClientImpl>>&
           new_content_layer_clients,
-      Vector<scoped_refptr<cc::Layer>>& new_scroll_hit_test_layers);
+      Vector<scoped_refptr<cc::Layer>>& new_scroll_hit_test_layers,
+      Vector<scoped_refptr<cc::ScrollbarLayerBase>>& new_scrollbar_layers);
 
   bool PropertyTreeStateChanged(const PropertyTreeState&) const;
 
@@ -387,6 +388,7 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   Vector<SynthesizedClipEntry> synthesized_clip_cache_;
 
   Vector<scoped_refptr<cc::Layer>> scroll_hit_test_layers_;
+  Vector<scoped_refptr<cc::ScrollbarLayerBase>> scrollbar_layers_;
 
   Vector<PendingLayer, 0> pending_layers_;
 

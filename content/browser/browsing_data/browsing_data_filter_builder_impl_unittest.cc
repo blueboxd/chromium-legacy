@@ -131,8 +131,7 @@ TEST(BrowsingDataFilterBuilderImplTest,
   builder.AddRegisterableDomain(std::string(kIPAddress));
   builder.AddRegisterableDomain(std::string(kUnknownRegistryDomain));
   builder.AddRegisterableDomain(std::string(kInternalHostname));
-  base::RepeatingCallback<bool(const GURL&)> filter =
-      builder.BuildGeneralFilter();
+  base::RepeatingCallback<bool(const GURL&)> filter = builder.BuildUrlFilter();
 
   TestCase test_cases[] = {
       // We match any URL on the specified domains.
@@ -177,8 +176,7 @@ TEST(BrowsingDataFilterBuilderImplTest,
   builder.AddRegisterableDomain(std::string(kIPAddress));
   builder.AddRegisterableDomain(std::string(kUnknownRegistryDomain));
   builder.AddRegisterableDomain(std::string(kInternalHostname));
-  base::RepeatingCallback<bool(const GURL&)> filter =
-      builder.BuildGeneralFilter();
+  base::RepeatingCallback<bool(const GURL&)> filter = builder.BuildUrlFilter();
 
   TestCase test_cases[] = {
       // We match any URL that are not on the specified domains.
@@ -427,8 +425,7 @@ TEST(BrowsingDataFilterBuilderImplTest, OriginWhitelist) {
       BrowsingDataFilterBuilderImpl::WHITELIST);
   builder.AddOrigin(url::Origin::Create(GURL("https://www.google.com")));
   builder.AddOrigin(url::Origin::Create(GURL("http://www.example.com")));
-  base::RepeatingCallback<bool(const GURL&)> filter =
-      builder.BuildGeneralFilter();
+  base::RepeatingCallback<bool(const GURL&)> filter = builder.BuildUrlFilter();
 
   TestCase test_cases[] = {
       // Whitelist matches any URL on the specified origins.
@@ -459,8 +456,7 @@ TEST(BrowsingDataFilterBuilderImplTest, OriginBlacklist) {
       BrowsingDataFilterBuilderImpl::BLACKLIST);
   builder.AddOrigin(url::Origin::Create(GURL("https://www.google.com")));
   builder.AddOrigin(url::Origin::Create(GURL("http://www.example.com")));
-  base::RepeatingCallback<bool(const GURL&)> filter =
-      builder.BuildGeneralFilter();
+  base::RepeatingCallback<bool(const GURL&)> filter = builder.BuildUrlFilter();
 
   TestCase test_cases[] = {
       // URLS on explicitly specified origins are not matched.
@@ -492,8 +488,7 @@ TEST(BrowsingDataFilterBuilderImplTest, CombinedWhitelist) {
       BrowsingDataFilterBuilderImpl::WHITELIST);
   builder.AddOrigin(url::Origin::Create(GURL("https://google.com")));
   builder.AddRegisterableDomain("example.com");
-  base::RepeatingCallback<bool(const GURL&)> filter =
-      builder.BuildGeneralFilter();
+  base::RepeatingCallback<bool(const GURL&)> filter = builder.BuildUrlFilter();
 
   TestCase test_cases[] = {
       // Whitelist matches any URL on the specified origins.
@@ -516,8 +511,7 @@ TEST(BrowsingDataFilterBuilderImplTest, CombinedBlacklist) {
       BrowsingDataFilterBuilderImpl::BLACKLIST);
   builder.AddOrigin(url::Origin::Create(GURL("https://google.com")));
   builder.AddRegisterableDomain("example.com");
-  base::RepeatingCallback<bool(const GURL&)> filter =
-      builder.BuildGeneralFilter();
+  base::RepeatingCallback<bool(const GURL&)> filter = builder.BuildUrlFilter();
 
   TestCase test_cases[] = {
       // URLS on explicitly specified origins are not matched.

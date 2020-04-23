@@ -38,10 +38,10 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/modules/filesystem/dom_file_system.h"
@@ -111,9 +111,8 @@ void LocalFileSystem::RequestFileSystemCallback(
 void LocalFileSystem::RequestFileSystemAccessInternal(
     ExecutionContext* context,
     base::OnceCallback<void(bool)> callback) {
-  if (context->IsDocument()) {
-    auto* client =
-        Document::From(context)->GetFrame()->GetContentSettingsClient();
+  if (LocalDOMWindow* window = DynamicTo<LocalDOMWindow>(context)) {
+    auto* client = window->GetFrame()->GetContentSettingsClient();
     if (!client) {
       std::move(callback).Run(true);
     } else {
@@ -193,9 +192,9 @@ void LocalFileSystem::Trace(Visitor* visitor) {
 const char LocalFileSystem::kSupplementName[] = "LocalFileSystem";
 
 LocalFileSystem* LocalFileSystem::From(ExecutionContext& context) {
-  if (auto* document = Document::DynamicFrom(context)) {
+  if (auto* window = DynamicTo<LocalDOMWindow>(context)) {
     LocalFileSystem* file_system =
-        Supplement<LocalFrame>::From<LocalFileSystem>(document->GetFrame());
+        Supplement<LocalFrame>::From<LocalFileSystem>(window->GetFrame());
     DCHECK(file_system);
     return file_system;
   }

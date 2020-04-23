@@ -66,7 +66,7 @@ WebPepperSocketImpl::WebPepperSocketImpl(const WebDocument& document,
       buffered_amount_(0),
       buffered_amount_after_close_(0) {
   Document* core_document = document;
-  private_ = WebSocketChannelImpl::Create(core_document->ToExecutionContext(),
+  private_ = WebSocketChannelImpl::Create(core_document->GetExecutionContext(),
                                           channel_proxy_.Get(),
                                           SourceLocation::Capture());
   DCHECK(private_);

@@ -424,6 +424,7 @@ bool UtilityProcessHost::StartProcess() {
       os_crypt::switches::kUseMockKeychain,
 #endif
       switches::kDisableTestCerts,
+      switches::kEnableExperimentalCookieFeatures,
       switches::kEnableLogging,
       switches::kForceTextDirection,
       switches::kForceUIDirection,

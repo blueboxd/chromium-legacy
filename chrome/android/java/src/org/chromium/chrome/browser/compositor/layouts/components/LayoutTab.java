@@ -9,6 +9,8 @@ import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.RectF;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.MathUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.animation.FloatProperty;
@@ -663,6 +665,7 @@ public class LayoutTab {
      * @param y The vertical coordinate of the hit testing point.
      * @return  Whether the hit testing point is inside the tab.
      */
+    @VisibleForTesting
     public boolean checkCloseHitTest(float x, float y) {
         RectF closeRectangle = getCloseBounds();
         return closeRectangle != null ? closeRectangle.contains(x, y) : false;

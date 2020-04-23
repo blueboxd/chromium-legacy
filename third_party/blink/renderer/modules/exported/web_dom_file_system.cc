@@ -35,7 +35,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_dom_file_system.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_entry.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_file_entry.h"
-#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/modules/filesystem/directory_entry.h"
@@ -71,11 +71,8 @@ WebDOMFileSystem WebDOMFileSystem::Create(WebLocalFrame* frame,
   DCHECK(frame);
   DCHECK(To<WebLocalFrameImpl>(frame)->GetFrame());
   auto* dom_file_system = MakeGarbageCollected<DOMFileSystem>(
-      To<WebLocalFrameImpl>(frame)
-          ->GetFrame()
-          ->GetDocument()
-          ->ToExecutionContext(),
-      name, static_cast<mojom::blink::FileSystemType>(type), root_url);
+      To<WebLocalFrameImpl>(frame)->GetFrame()->DomWindow(), name,
+      static_cast<mojom::blink::FileSystemType>(type), root_url);
   if (serializable_type == kSerializableTypeSerializable)
     dom_file_system->MakeClonable();
   return WebDOMFileSystem(dom_file_system);

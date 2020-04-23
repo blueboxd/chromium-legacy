@@ -64,12 +64,11 @@ public class PageInfoControllerTest {
     @RetryOnFailure
     public void testShow() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            ChromeActivity activity = mActivityTestRule.getActivity();
-            Tab tab = activity.getActivityTab();
+            Tab tab = mActivityTestRule.getActivity().getActivityTab();
             PageInfoController.show(mActivityTestRule.getActivity(), tab.getWebContents(), null,
                     PageInfoController.OpenedFromSource.MENU,
-                    new ChromePageInfoControllerDelegate(activity, tab.getWebContents(),
-                            activity::getModalDialogManager,
+                    new ChromePageInfoControllerDelegate(mActivityTestRule.getActivity(),
+                            tab.getWebContents(),
                             /*offlinePageLoadUrlDelegate=*/
                             new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(tab)));
         });
@@ -87,17 +86,16 @@ public class PageInfoControllerTest {
         mActivityTestRule.loadUrlInTab(
                 testUrl, PageTransition.TYPED, mActivityTestRule.getActivity().getActivityTab());
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            ChromeActivity activity = mActivityTestRule.getActivity();
-            Tab tab = activity.getActivityTab();
+            Tab tab = mActivityTestRule.getActivity().getActivityTab();
             ChromePageInfoControllerDelegate chromePageInfoControllerDelegate =
-                    new ChromePageInfoControllerDelegate(activity, tab.getWebContents(),
-                            activity::getModalDialogManager,
+                    new ChromePageInfoControllerDelegate(mActivityTestRule.getActivity(),
+                            tab.getWebContents(),
                             /*offlinePageLoadUrlDelegate=*/
                             new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(tab));
             chromePageInfoControllerDelegate.setOfflinePageStateForTesting(
                     ChromePageInfoControllerDelegate.OfflinePageState.NOT_OFFLINE_PAGE);
-            PageInfoController pageInfo = new PageInfoController(activity, tab.getWebContents(),
-                    ConnectionSecurityLevel.NONE, /*publisher=*/null,
+            PageInfoController pageInfo = new PageInfoController(mActivityTestRule.getActivity(),
+                    tab.getWebContents(), ConnectionSecurityLevel.NONE, /*publisher=*/null,
                     chromePageInfoControllerDelegate);
             PageInfoView pageInfoView = pageInfo.getPageInfoViewForTesting();
             // Test that the title contains the Unicode hostname rather than strict equality, as

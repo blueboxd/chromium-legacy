@@ -9,10 +9,10 @@
 #include <vector>
 
 #include "ash/assistant/assistant_controller_impl.h"
-#include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/util/assistant_util.h"
 #include "ash/assistant/util/deep_link_util.h"
+#include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "ash/public/cpp/assistant/conversation_starter.h"
 #include "ash/public/cpp/assistant/conversation_starters_client.h"
 #include "ash/public/cpp/assistant/proactive_suggestions.h"
@@ -110,13 +110,13 @@ void AssistantSuggestionsControllerImpl::RemoveModelObserver(
 }
 
 void AssistantSuggestionsControllerImpl::OnAssistantControllerConstructed() {
-  assistant_controller_->ui_controller()->AddModelObserver(this);
+  AssistantUiController::Get()->AddModelObserver(this);
   AssistantState::Get()->AddObserver(this);
 }
 
 void AssistantSuggestionsControllerImpl::OnAssistantControllerDestroying() {
   AssistantState::Get()->RemoveObserver(this);
-  assistant_controller_->ui_controller()->RemoveModelObserver(this);
+  AssistantUiController::Get()->RemoveModelObserver(this);
 }
 
 void AssistantSuggestionsControllerImpl::OnUiVisibilityChanged(
@@ -160,7 +160,7 @@ void AssistantSuggestionsControllerImpl::OnAssistantContextEnabled(
   // We currently assume that the context setting is not being modified while
   // Assistant UI is visible.
   DCHECK_NE(AssistantVisibility::kVisible,
-            assistant_controller_->ui_controller()->model()->visibility());
+            AssistantUiController::Get()->GetModel()->visibility());
 
   // In conversation starters V2, we only update conversation starters when
   // Assistant UI is becoming visible so as to maximize freshness.

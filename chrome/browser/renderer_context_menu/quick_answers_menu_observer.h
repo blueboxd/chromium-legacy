@@ -35,6 +35,7 @@ class QuickAnswersMenuObserver
   bool IsCommandIdChecked(int command_id) override;
   bool IsCommandIdEnabled(int command_id) override;
   void ExecuteCommand(int command_id) override;
+  void CommandWillBeExecuted(int command_id) override;
   void OnContextMenuShown(const content::ContextMenuParams& params,
                           const gfx::Rect& bounds_in_screen) override;
   void OnContextMenuViewBoundsChanged(
@@ -71,6 +72,9 @@ class QuickAnswersMenuObserver
   std::unique_ptr<chromeos::quick_answers::QuickAnswer> quick_answer_;
 
   ash::QuickAnswersController* quick_answers_controller_ = nullptr;
+
+  // Whether commands other than quick answers is executed.
+  bool is_other_command_executed_ = false;
 };
 
 #endif  // CHROME_BROWSER_RENDERER_CONTEXT_MENU_QUICK_ANSWERS_MENU_OBSERVER_H_

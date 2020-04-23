@@ -3,6 +3,7 @@ include_rules = [
   "+components/autofill/content/renderer",
   "+components/cdm/renderer",
   "+components/content_settings/renderer",
+  "+components/error_page/common",
   "+components/safe_browsing/content/common",
   "+components/safe_browsing/content/renderer",
   "+components/safe_browsing/core/common",
@@ -11,6 +12,7 @@ include_rules = [
   "+components/spellcheck/renderer",
   "+components/translate/content/renderer",
   "+components/translate/core/common",
+  "+content/public/common",
   "+content/public/renderer",
   # needed for safebrowsing
   "+mojo/public/cpp/bindings",

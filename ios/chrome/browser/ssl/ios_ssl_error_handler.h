@@ -10,7 +10,7 @@
 #include "base/timer/timer.h"
 #include "components/captive_portal/core/captive_portal_detector.h"
 #include "components/captive_portal/core/captive_portal_types.h"
-#include "ios/chrome/browser/interstitials/ios_security_interstitial_page.h"
+#include "ios/components/security_interstitials/ios_security_interstitial_page.h"
 #import "ios/web/public/web_state_user_data.h"
 #include "url/gurl.h"
 

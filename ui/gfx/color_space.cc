@@ -11,6 +11,7 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/lazy_instance.h"
+#include "base/logging.h"
 #include "base/synchronization/lock.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkData.h"

@@ -118,7 +118,7 @@ SafeBrowsingTabHelper::PolicyDecider::ShouldAllowRequest(
           ? safe_browsing::ResourceType::kMainFrame
           : safe_browsing::ResourceType::kSubFrame;
   std::unique_ptr<safe_browsing::SafeBrowsingUrlCheckerImpl> url_checker =
-      safe_browsing_service->CreateUrlChecker(resource_type);
+      safe_browsing_service->CreateUrlChecker(resource_type, web_state());
 
   GURL request_url = net::GURLWithNSURL(request.URL);
   std::string method = base::SysNSStringToUTF8([request HTTPMethod]);

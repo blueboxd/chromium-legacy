@@ -439,6 +439,22 @@ void PasswordFormManager::MoveCredentialsToAccountStore() {
   password_save_manager_->MoveCredentialsToAccountStore();
 }
 
+void PasswordFormManager::BlockMovingCredentialsToAccountStore() {
+  // Nothing to do if there is no signed in user or the credentials are already
+  // blocked for moving.
+  if (!IsMovableToAccountStore())
+    return;
+  const std::string gaia_id =
+      client_->GetIdentityManager()
+          ->GetPrimaryAccountInfo(signin::ConsentLevel::kNotRequired)
+          .gaia;
+  // The above call to IsMovableToAccountStore() guarantees there is a signed in
+  // user.
+  DCHECK(!gaia_id.empty());
+  password_save_manager_->BlockMovingToAccountStoreFor(
+      GaiaIdHash::FromGaiaId(gaia_id));
+}
+
 bool PasswordFormManager::IsNewLogin() const {
   return password_save_manager_->IsNewLogin();
 }

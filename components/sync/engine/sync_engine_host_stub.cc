@@ -15,12 +15,10 @@ void SyncEngineHostStub::OnEngineInitialized(
     const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
     const std::string& birthday,
     const std::string& bag_of_chips,
-    const std::string& last_keystore_key,
     bool success) {}
 
 void SyncEngineHostStub::OnSyncCycleCompleted(
-    const SyncCycleSnapshot& snapshot,
-    const std::string& last_keystore_key) {}
+    const SyncCycleSnapshot& snapshot) {}
 
 void SyncEngineHostStub::OnProtocolEvent(const ProtocolEvent& event) {}
 

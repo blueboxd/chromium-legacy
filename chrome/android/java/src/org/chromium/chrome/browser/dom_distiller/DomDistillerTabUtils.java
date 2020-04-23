@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.dom_distiller;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -17,8 +19,11 @@ import org.chromium.content_public.browser.WebContents;
  */
 @JNINamespace("android")
 public class DomDistillerTabUtils {
-    // Triggering heuristics encoded in native enum DistillerHeuristicsType.
+    /** Triggering heuristics encoded in native enum DistillerHeuristicsType. */
     private static Integer sHeuristics;
+
+    /** Used to specify whether mobile friendly is enabled for testing purposes. */
+    private static Boolean sExcludeMobileFriendlyForTesting;
 
     private DomDistillerTabUtils() {
     }
@@ -93,8 +98,14 @@ public class DomDistillerTabUtils {
      * is disabled.
      */
     public static boolean shouldExcludeMobileFriendly() {
+        if (sExcludeMobileFriendlyForTesting != null) return sExcludeMobileFriendlyForTesting;
         return !PrefServiceBridge.getInstance().getBoolean(Pref.READER_FOR_ACCESSIBILITY_ENABLED)
                 && getDistillerHeuristics() == DistillerHeuristicsType.ADABOOST_MODEL;
+    }
+
+    @VisibleForTesting
+    public static void setExcludeMobileFriendlyForTesting(boolean excludeForTesting) {
+        sExcludeMobileFriendlyForTesting = excludeForTesting;
     }
 
     /**

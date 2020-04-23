@@ -258,7 +258,7 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
 }
 
 Compositor::~Compositor() {
-  TRACE_EVENT0("shutdown", "Compositor::destructor");
+  TRACE_EVENT0("shutdown,viz", "Compositor::destructor");
 
   for (auto& observer : observer_list_)
     observer.OnCompositingShuttingDown(this);

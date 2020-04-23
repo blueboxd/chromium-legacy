@@ -318,8 +318,6 @@ TEST_F(SharingDeviceSourceSyncTest,
 }
 
 TEST_F(SharingDeviceSourceSyncTest, GetDeviceCandidates_RenameAfterFiltering) {
-  scoped_feature_list_.InitAndEnableFeature(
-      send_tab_to_self::kSharingRenameDevices);
   auto device_source = CreateDeviceSource(/*wait_until_ready=*/true);
 
   // This device will be filtered out because its older than |min_updated_time|.

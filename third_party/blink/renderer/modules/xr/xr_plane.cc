@@ -94,6 +94,14 @@ HeapVector<Member<DOMPointReadOnly>> XRPlane::polygon() const {
 ScriptPromise XRPlane::createAnchor(ScriptState* script_state,
                                     XRRigidTransform* initial_pose,
                                     ExceptionState& exception_state) {
+  DVLOG(2) << __func__;
+
+  if (!session_->IsFeatureEnabled(device::mojom::XRSessionFeature::ANCHORS)) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                      XRSession::kAnchorsFeatureNotSupported);
+    return {};
+  }
+
   if (!initial_pose) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       XRSession::kNoRigidTransformSpecified);

@@ -37,7 +37,6 @@
 <translation id="1041263367839475438">Dostępne urządzenia</translation>
 <translation id="1042174272890264476">Twój komputer zawiera również wbudowaną bibliotekę RLZ <ph name="SHORT_PRODUCT_NAME" />. Przypisuje ona powtarzalny, nieumożliwiający identyfikacji użytkownika tag służący do monitorowania wyszukiwań i używania <ph name="SHORT_PRODUCT_NAME" /> w ramach określonej kampanii promocyjnej. Etykiety te czasami pojawiają się w zapytaniach wyszukiwarki Google w <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1043818413152647937">Wyczyścić też dane z tych aplikacji?</translation>
-<translation id="1045448422538531528">Dodaj do grupy</translation>
 <translation id="1046635659603195359">Wygląda na to, że Asystent Google zna już Twój głos z innego urządzenia, na którym masz ustawioną funkcję Voice Match. Możesz użyć zapisanych tam nagrań, by utworzyć model głosu na tym urządzeniu. Powinno to zająć mniej niż minutę.</translation>
 <translation id="104710386808485638">Uruchomić Linuksa ponownie?</translation>
 <translation id="1047431265488717055">Kopiuj te&amp;kst linku</translation>
@@ -408,7 +407,6 @@
 <translation id="1536754031901697553">Rozłączam...</translation>
 <translation id="15373452373711364">Duży kursor myszy</translation>
 <translation id="1540605929960647700">Włącz tryb demonstracyjny</translation>
-<translation id="1541396123399225659">Dodaj do nowej grupy</translation>
 <translation id="1542514202066550870">Ta karta prezentuje treści VR na goglach.</translation>
 <translation id="1543284117603151572">Zaimportowane z Edge</translation>
 <translation id="1545177026077493356">Automatyczny tryb kiosku</translation>
@@ -1902,7 +1900,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="3514373592552233661">Jeśli będzie dostępnych więcej sieci, sieci preferowane będą wybierane przed innymi znanymi sieciami</translation>
 <translation id="3515983984924808886">Jeszcze raz dotknij klucza bezpieczeństwa, by potwierdzić resetowanie. Wszystkie informacje zapisane w kluczu, w tym jego kod PIN, zostaną usunięte.</translation>
 <translation id="3518985090088779359">Akceptuj i kontynuuj</translation>
-<translation id="351952459507671940">Dodaj do nowej grupy</translation>
 <translation id="3521606918211282604">Zmień rozmiar dysku</translation>
 <translation id="3523642406908660543">Pytaj, gdy strona chce uzyskać dostęp do komputera przez wtyczkę (zalecane)</translation>
 <translation id="3524965460886318643">Eksportuj aktywność</translation>
@@ -2892,7 +2889,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="4871322859485617074">Kod PIN zawiera niedozwolone znaki</translation>
 <translation id="4871370605780490696">Dodaj zakładkę</translation>
 <translation id="4871719318659334896">Zamknij grupę</translation>
-<translation id="4871852311166078968">Dodaj do grupy</translation>
 <translation id="4873312501243535625">Kontroler plików multimedialnych</translation>
 <translation id="4876273079589074638">Pomóż naszym inżynierom zbadać i naprawić tę awarię. Jeśli możesz, dokładnie opisz poszczególne czynności. Każdy szczegół jest ważny.</translation>
 <translation id="4876895919560854374">Blokowanie i odblokowywanie ekranu</translation>

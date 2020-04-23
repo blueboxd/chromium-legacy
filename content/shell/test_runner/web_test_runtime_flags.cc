@@ -57,7 +57,6 @@ void WebTestRuntimeFlags::Reset() {
   set_can_open_windows(false);
 
   set_dump_create_view(false);
-  set_dump_spell_check_callbacks(false);
   set_dump_javascript_dialogs(true);
 
   set_has_custom_text_output(false);

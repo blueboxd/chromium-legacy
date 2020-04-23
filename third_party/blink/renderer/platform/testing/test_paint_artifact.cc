@@ -73,9 +73,8 @@ TestPaintArtifact& TestPaintArtifact::RectDrawing(const IntRect& bounds,
 }
 
 TestPaintArtifact& TestPaintArtifact::ScrollHitTest(
-    const TransformPaintPropertyNode* scroll_offset,
-    const IntRect& scroll_container_bounds) {
-  return ScrollHitTest(NewClient(), scroll_offset, scroll_container_bounds);
+    const TransformPaintPropertyNode* scroll_translation) {
+  return ScrollHitTest(NewClient(), scroll_translation);
 }
 
 TestPaintArtifact& TestPaintArtifact::ForeignLayer(
@@ -100,8 +99,7 @@ TestPaintArtifact& TestPaintArtifact::RectDrawing(DummyRectClient& client,
 
 TestPaintArtifact& TestPaintArtifact::ScrollHitTest(
     DummyRectClient& client,
-    const TransformPaintPropertyNode* scroll_translation,
-    const IntRect& scroll_container_bounds) {
+    const TransformPaintPropertyNode* scroll_translation) {
   paint_chunks_.back().EnsureHitTestData().scroll_translation =
       scroll_translation;
   return *this;

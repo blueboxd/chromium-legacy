@@ -49,9 +49,9 @@ WebUIControllerFactory* WebUIControllerFactory::GetInstance() {
   return instance.get();
 }
 
-WebUIControllerFactory::WebUIControllerFactory() {}
+WebUIControllerFactory::WebUIControllerFactory() = default;
 
-WebUIControllerFactory::~WebUIControllerFactory() {}
+WebUIControllerFactory::~WebUIControllerFactory() = default;
 
 content::WebUI::TypeID WebUIControllerFactory::GetWebUIType(
     content::BrowserContext* browser_context,

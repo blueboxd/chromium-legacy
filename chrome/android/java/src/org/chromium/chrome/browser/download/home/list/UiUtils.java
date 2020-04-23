@@ -14,7 +14,7 @@ import androidx.annotation.DrawableRes;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.MathUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.download.DownloadUtils;
+import org.chromium.chrome.browser.download.StringUtils;
 import org.chromium.chrome.browser.download.home.filter.Filters;
 import org.chromium.chrome.browser.download.home.list.view.CircularProgressView;
 import org.chromium.chrome.browser.download.home.list.view.CircularProgressView.UiState;
@@ -312,25 +312,25 @@ public final class UiUtils {
             }
         }
 
-        CharSequence progressString = DownloadUtils.getProgressTextForNotification(progress);
+        CharSequence progressString = StringUtils.getProgressTextForUi(progress);
         CharSequence statusString = null;
 
         switch (item.state) {
             case OfflineItemState.PENDING:
                 // TODO(crbug.com/891421): Add detailed pending state string from
-                // DownloadUtils.getPendingStatusString().
+                // StringUtils.getPendingStatusForUi().
                 statusString = context.getString(R.string.download_manager_pending);
                 break;
             case OfflineItemState.IN_PROGRESS:
                 if (item.timeRemainingMs > 0) {
-                    statusString = DownloadUtils.formatRemainingTime(context, item.timeRemainingMs);
+                    statusString = StringUtils.timeLeftForUi(context, item.timeRemainingMs);
                 }
                 break;
             case OfflineItemState.FAILED: // Intentional fallthrough.
             case OfflineItemState.CANCELLED: // Intentional fallthrough.
             case OfflineItemState.INTERRUPTED:
                 // TODO(crbug.com/891421): Add detailed failure state string from
-                // DownloadUtils.getFailStatusString().
+                // StringUtils.getFailStatusForUi().
                 statusString = context.getString(R.string.download_manager_failed);
                 break;
             case OfflineItemState.PAUSED:
@@ -360,9 +360,9 @@ public final class UiUtils {
                 return context.getString(R.string.download_manager_pending);
             case OfflineItemState.IN_PROGRESS:
                 if (item.timeRemainingMs > 0) {
-                    return DownloadUtils.formatRemainingTime(context, item.timeRemainingMs);
+                    return StringUtils.timeLeftForUi(context, item.timeRemainingMs);
                 } else {
-                    return DownloadUtils.getProgressTextForNotification(item.progress);
+                    return StringUtils.getProgressTextForUi(item.progress);
                 }
             case OfflineItemState.FAILED: // Intentional fallthrough.
             case OfflineItemState.CANCELLED: // Intentional fallthrough.

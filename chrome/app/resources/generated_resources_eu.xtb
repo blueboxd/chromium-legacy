@@ -37,7 +37,6 @@
 <translation id="1041263367839475438">Gailu erabilgarriak</translation>
 <translation id="1042174272890264476">Ordenagailuak <ph name="SHORT_PRODUCT_NAME" /> produktuaren RLZ liburutegia ere du integratuta. RLZ liburutegiak esklusiboa ez den eta pertsonalki identifikatu ezin zaitzakeen etiketa bat esleitzen du promozio-kanpaina jakin batek sortutako bilaketak eta <ph name="SHORT_PRODUCT_NAME" /> produktuaren erabilera neurtzeko. Etiketa horiek <ph name="PRODUCT_NAME" /> produktuko Google Bilaketa kontsultetan agertzen dira batzuetan.</translation>
 <translation id="1043818413152647937">Aplikazio hauetako datuak ere garbitu nahi dituzu?</translation>
-<translation id="1045448422538531528">Gehitu taldean</translation>
 <translation id="1046635659603195359">Beste gailu bateko Google-ren Laguntzailea eginbidearekin erabiltzeko daukazu konfiguratuta Voice Match. Ahots-eredua sortzeko, gailu horretako grabaketak erabil genitzake gailu honetan ere. Minutu bat baino gutxiago beharko dugu.</translation>
 <translation id="104710386808485638">Linux berrabiarazi nahi duzu?</translation>
 <translation id="1047431265488717055">Kopiatu estekaren te&amp;stua</translation>
@@ -408,7 +407,6 @@
 <translation id="1536754031901697553">Deskonektatzen…</translation>
 <translation id="15373452373711364">Saguaren kurtsore handia</translation>
 <translation id="1540605929960647700">Gaitu demo modua</translation>
-<translation id="1541396123399225659">Gehitu talde berrian</translation>
 <translation id="1542514202066550870">Fitxa hau errealitate birtuala erakusten ari da ikustaile batean.</translation>
 <translation id="1543284117603151572">Edge-tik inportatutakoak</translation>
 <translation id="1545177026077493356">Kiosko modu automatikoa</translation>
@@ -1906,7 +1904,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="3514373592552233661">Sare bat baino gehiago badaude erabilgarri, hobetsitakoek izango dute lehentasuna</translation>
 <translation id="3515983984924808886">Berrezarri nahi duzula berresteko, sakatu segurtasun-giltza. Ezabatu egingo da segurtasun-giltzan gordetako informazio guztia (PIN kodea barne).</translation>
 <translation id="3518985090088779359">Onartu eta jarraitu</translation>
-<translation id="351952459507671940">Gehitu talde berrian</translation>
 <translation id="3521606918211282604">Aldatu diskoaren tamaina</translation>
 <translation id="3523642406908660543">Galdetu webguneek plugin bat erabili nahi dutenean ordenagailua atzitzeko (gomendatua)</translation>
 <translation id="3524965460886318643">Esportatu jarduerak</translation>
@@ -2896,7 +2893,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="4871322859485617074">PIN kodeak balio ez duten karaktereak ditu</translation>
 <translation id="4871370605780490696">Gehitu laster-marka</translation>
 <translation id="4871719318659334896">Itxi taldea</translation>
-<translation id="4871852311166078968">Gehitu taldean</translation>
 <translation id="4873312501243535625">Multimedia-fitxategien egiaztatzailea</translation>
 <translation id="4876273079589074638">Lagundu gure ingeniariei hutsegitea aztertzen eta konpontzen. Ahal baduzu, azaldu zer egin duzun urratsez urrats. Xehetasun txikienek ere garrantzitsuak dira!</translation>
 <translation id="4876895919560854374">Blokeatu eta desblokeatu pantaila</translation>

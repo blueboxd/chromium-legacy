@@ -150,6 +150,10 @@ LayoutBox* LayoutFieldset::FindInFlowLegend(const LayoutBlock& fieldset) {
       parent = To<LayoutBlock>(fieldset.FirstChild());
       if (!parent)
         return nullptr;
+      // If the anonymous fieldset wrapper is a multi-column, the rendered
+      // legend will be found inside the multi-column flow thread.
+      if (parent->FirstChild() && parent->FirstChild()->IsLayoutFlowThread())
+        parent = To<LayoutBlock>(parent->FirstChild());
     }
   }
   for (LayoutObject* legend = parent->FirstChild(); legend;

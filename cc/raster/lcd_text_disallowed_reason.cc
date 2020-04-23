@@ -15,18 +15,20 @@ const char* LCDTextDisallowedReasonToString(LCDTextDisallowedReason reason) {
       return "none";
     case LCDTextDisallowedReason::kSetting:
       return "setting";
+    case LCDTextDisallowedReason::kBackgroundColorNotOpaque:
+      return "background-color-not-opaque";
     case LCDTextDisallowedReason::kContentsNotOpaque:
-      return "contents not opaque";
+      return "contents-not-opaque";
     case LCDTextDisallowedReason::kLayerOpacity:
-      return "layer opacity";
+      return "layer-opacity";
     case LCDTextDisallowedReason::kNonIntegralTranslation:
-      return "non-integral translation";
+      return "non-integral-translation";
     case LCDTextDisallowedReason::kNonIntegralXOffset:
-      return "non-integral x-offset";
+      return "non-integral-x-offset";
     case LCDTextDisallowedReason::kNonIntegralYOffset:
-      return "non-integral y-offset";
+      return "non-integral-y-offset";
     case LCDTextDisallowedReason::kWillChangeTransform:
-      return "will-change: transform";
+      return "will-change-transform";
   }
   NOTREACHED();
   return "";

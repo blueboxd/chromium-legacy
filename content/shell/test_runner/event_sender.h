@@ -163,8 +163,11 @@ class EventSender {
   void MouseScrollBy(gin::Arguments* args, MouseScrollType scroll_type);
   void MouseMoveTo(blink::WebLocalFrame* frame, gin::Arguments* args);
   void MouseLeave(blink::WebPointerProperties::PointerType, int pointerId);
-  void ScheduleAsynchronousClick(int button_number, int modifiers);
-  void ScheduleAsynchronousKeyDown(const std::string& code_str,
+  void ScheduleAsynchronousClick(blink::WebLocalFrame* frame,
+                                 int button_number,
+                                 int modifiers);
+  void ScheduleAsynchronousKeyDown(blink::WebLocalFrame* frame,
+                                   const std::string& code_str,
                                    int modifiers,
                                    KeyLocationCode location);
   // Consumes the transient user activation state for follow-up tests that don't

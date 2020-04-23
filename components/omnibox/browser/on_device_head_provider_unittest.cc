@@ -8,6 +8,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "components/omnibox/browser/autocomplete_input.h"
@@ -15,6 +16,7 @@
 #include "components/omnibox/browser/fake_autocomplete_provider_client.h"
 #include "components/omnibox/browser/on_device_head_model.h"
 #include "components/omnibox/browser/test_scheme_classifier.h"
+#include "components/omnibox/common/omnibox_features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -120,6 +122,13 @@ TEST_F(OnDeviceHeadProviderTest, TestIfIncognitoIsAllowed) {
 
   // Test "always-serve" mode.
   ASSERT_TRUE(IsOnDeviceHeadProviderAllowed(input, "always-serve"));
+
+  // Disable omnibox::kNewSearchFeatures and now all modes should be disabled.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeaturesAndParameters({}, {omnibox::kNewSearchFeatures});
+  ASSERT_FALSE(IsOnDeviceHeadProviderAllowed(input, ""));
+  ASSERT_FALSE(IsOnDeviceHeadProviderAllowed(input, "incognito-only"));
+  ASSERT_FALSE(IsOnDeviceHeadProviderAllowed(input, "always-serve"));
 }
 
 TEST_F(OnDeviceHeadProviderTest, RejectOnFocusRequest) {
@@ -174,6 +183,13 @@ TEST_F(OnDeviceHeadProviderTest, HasMatches) {
   EXPECT_EQ(base::UTF8ToUTF16("maps"), provider_->matches()[0].contents);
   EXPECT_EQ(base::UTF8ToUTF16("mail"), provider_->matches()[1].contents);
   EXPECT_EQ(base::UTF8ToUTF16("map"), provider_->matches()[2].contents);
+
+  // Disable omnibox::kNewSearchFeatures and now all modes should be disabled.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeaturesAndParameters({}, {omnibox::kNewSearchFeatures});
+  ASSERT_FALSE(IsOnDeviceHeadProviderAllowed(input, ""));
+  ASSERT_FALSE(IsOnDeviceHeadProviderAllowed(input, "incognito-only"));
+  ASSERT_FALSE(IsOnDeviceHeadProviderAllowed(input, "always-serve"));
 }
 
 TEST_F(OnDeviceHeadProviderTest, CancelInProgressRequest) {

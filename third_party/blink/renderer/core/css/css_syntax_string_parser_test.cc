@@ -48,6 +48,7 @@ class CSSSyntaxStringParserTest : public testing::Test {
 
 TEST_F(CSSSyntaxStringParserTest, UniversalDescriptor) {
   auto universal = CreateUniversalDescriptor();
+  EXPECT_TRUE(universal.IsUniversal());
   EXPECT_EQ(universal, *CSSSyntaxStringParser("*").Parse());
   EXPECT_EQ(universal, *CSSSyntaxStringParser(" * ").Parse());
   EXPECT_EQ(universal, *CSSSyntaxStringParser("\r*\r\n").Parse());

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "ui/views/metadata/type_conversion.h"
 

@@ -436,6 +436,8 @@ blink_core_sources("layout") {
     "ng/mathml/ng_math_layout_utils.h",
     "ng/mathml/ng_math_row_layout_algorithm.cc",
     "ng/mathml/ng_math_row_layout_algorithm.h",
+    "ng/mathml/ng_math_scripts_layout_algorithm.cc",
+    "ng/mathml/ng_math_scripts_layout_algorithm.h",
     "ng/mathml/ng_math_space_layout_algorithm.cc",
     "ng/mathml/ng_math_space_layout_algorithm.h",
     "ng/mathml/ng_math_under_over_layout_algorithm.cc",

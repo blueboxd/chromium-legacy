@@ -124,9 +124,6 @@
     <!-- Explore Sites colors -->
     <color name="explore_sites_dense_tile_background_color">#00000000</color>
 
-    <!-- Prefetch article colors -->
-    <color name="prefetch_offline_icon_tint_color">@color/modern_grey_500</color>
-
     <!-- Offline indicator v2 colors -->
     <color name="offline_indicator_offline_color">@android:color/black</color>
     <color name="offline_indicator_back_online_color">@color/default_bg_color_blue</color>

@@ -157,6 +157,17 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
 
     virtual void FinishCollectToken() = 0;
 
+    // Called when a biometric enrollment may be completed as part of the
+    // request and the user should be notified to collect samples.
+    // |next_callback| must be executed asynchronously at any time to move on to
+    // the next step of the request.
+    virtual void StartBioEnrollment(base::OnceClosure next_callback) = 0;
+
+    // Called when a biometric enrollment sample has been collected.
+    // |bio_samples_remaining| is the number of samples needed to finish the
+    // enrollment.
+    virtual void OnSampleCollected(int bio_samples_remaining) = 0;
+
     // Called when an authenticator reports internal user verification has
     // failed (e.g. not recognising the user's fingerprints) and the user should
     // try again. Receives the number of |attempts| before the device locks

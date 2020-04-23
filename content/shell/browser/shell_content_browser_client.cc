@@ -125,6 +125,10 @@ blink::UserAgentMetadata GetShellUserAgentMetadata() {
   return metadata;
 }
 
+// static
+bool ShellContentBrowserClient::allow_any_cors_exempt_header_for_browser_ =
+    false;
+
 ShellContentBrowserClient* ShellContentBrowserClient::Get() {
   return g_browser_client;
 }
@@ -381,6 +385,8 @@ ShellContentBrowserClient::CreateNetworkContextParams(BrowserContext* context) {
   network::mojom::NetworkContextParamsPtr context_params =
       network::mojom::NetworkContextParams::New();
   UpdateCorsExemptHeader(context_params.get());
+  context_params->allow_any_cors_exempt_header_for_browser =
+      allow_any_cors_exempt_header_for_browser_;
   context_params->user_agent = GetUserAgent();
   context_params->accept_language = GetAcceptLangs(context);
   return context_params;

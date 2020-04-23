@@ -125,14 +125,14 @@ bool BrowsingDataFilterBuilderImpl::IsEmptyBlacklist() {
 }
 
 base::RepeatingCallback<bool(const GURL&)>
-BrowsingDataFilterBuilderImpl::BuildGeneralFilter() {
+BrowsingDataFilterBuilderImpl::BuildUrlFilter() {
   if (IsEmptyBlacklist())
     return base::BindRepeating([](const GURL&) { return true; });
   return base::BindRepeating(&MatchesURL, origins_, domains_, mode_);
 }
 
 base::RepeatingCallback<bool(const url::Origin&)>
-BrowsingDataFilterBuilderImpl::BuildGeneralOriginFilter() {
+BrowsingDataFilterBuilderImpl::BuildOriginFilter() {
   if (IsEmptyBlacklist())
     return base::BindRepeating([](const url::Origin&) { return true; });
   return base::BindRepeating(&MatchesOrigin, origins_, domains_, mode_);

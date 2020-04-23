@@ -374,6 +374,10 @@ void FeedStream::ReportOpenInNewTabAction() {
   user_classifier_->OnEvent(UserClassifier::Event::kSuggestionsUsed);
   metrics_reporter_->OpenInNewTabAction();
 }
+void FeedStream::ReportOpenInNewIncognitoTabAction() {
+  user_classifier_->OnEvent(UserClassifier::Event::kSuggestionsUsed);
+  metrics_reporter_->OpenInNewIncognitoTabAction();
+}
 void FeedStream::ReportSliceViewed(const std::string& slice_id) {
   int index = surface_updater_->GetSliceIndexFromSliceId(slice_id);
   if (index >= 0)

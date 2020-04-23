@@ -331,7 +331,7 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
 
   void CollectMatchingUserRules(ElementRuleCollector&) const;
 
-  void CustomPropertyRegistered();
+  void PropertyRegistryChanged();
 
   void EnvironmentVariableChanged();
 

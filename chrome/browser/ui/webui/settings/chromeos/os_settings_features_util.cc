@@ -4,10 +4,13 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_features_util.h"
 
+#include "base/feature_list.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "components/arc/arc_features.h"
 #include "components/user_manager/user_manager.h"
 
 namespace chromeos {
@@ -37,6 +40,11 @@ bool ShouldShowParentalControlSettings(const Profile* profile) {
 
   return profile->IsChild() ||
          !profile->GetProfilePolicyConnector()->IsManaged();
+}
+
+bool ShouldShowExternalStorageSettings(const Profile* profile) {
+  return base::FeatureList::IsEnabled(arc::kUsbStorageUIFeature) &&
+         arc::IsArcPlayStoreEnabledForProfile(profile);
 }
 
 }  // namespace features

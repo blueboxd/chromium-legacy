@@ -16,6 +16,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/app_service_test.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_activity_registry.h"
+#include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limit_utils.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limits_policy_builder.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_test_utils.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_types.h"
@@ -114,6 +115,8 @@ class AppTimeControllerTest : public testing::Test {
 
   void EnablePerAppTimeLimits();
 
+  void DisableWebTimeLimit();
+
   void CreateActivityForApp(const AppId& app_id,
                             base::TimeDelta active_time,
                             base::TimeDelta time_limit);
@@ -196,6 +199,16 @@ void AppTimeControllerTest::TearDown() {
 
 void AppTimeControllerTest::EnablePerAppTimeLimits() {
   scoped_feature_list_.InitAndEnableFeature(features::kPerAppTimeLimits);
+}
+
+void AppTimeControllerTest::DisableWebTimeLimit() {
+  scoped_feature_list_.InitWithFeatures(
+      /* enabled_features */ {{features::kPerAppTimeLimits}},
+      /* disabled_features */ {{features::kWebTimeLimits}});
+
+  // Recreate app time controller.
+  DeleteController();
+  InstantiateController();
 }
 
 void AppTimeControllerTest::CreateActivityForApp(const AppId& app_id,
@@ -603,6 +616,22 @@ TEST_F(AppTimeControllerTest, SetLastResetTimeTest) {
 
   test_api()->SetLastResetTime(prev_midnight + kDay);
   EXPECT_EQ(test_api()->GetLastResetTime(), reset_time);
+}
+
+TEST_F(AppTimeControllerTest, WebTimeLimitDisabled) {
+  DisableWebTimeLimit();
+
+  // Simulate chrome install
+  controller()->app_registry()->OnAppInstalled(GetChromeAppId());
+  controller()->app_registry()->OnAppAvailable(GetChromeAppId());
+
+  // Set the time limit to 30 minutes but run chrome for 1 hour.
+  CreateActivityForApp(GetChromeAppId(), kOneHour, kOneHour / 2);
+
+  EXPECT_EQ(controller()->app_registry()->GetWebTimeLimit(), base::nullopt);
+
+  EXPECT_EQ(controller()->app_registry()->GetAppState(GetChromeAppId()),
+            AppState::kAvailable);
 }
 
 }  // namespace app_time

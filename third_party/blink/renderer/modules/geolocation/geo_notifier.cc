@@ -7,7 +7,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_position_options.h"
-#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/modules/geolocation/geolocation.h"
 #include "third_party/blink/renderer/modules/geolocation/geolocation_position_error.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
@@ -23,7 +23,7 @@ GeoNotifier::GeoNotifier(Geolocation* geolocation,
       error_callback_(error_callback),
       options_(options),
       timer_(MakeGarbageCollected<Timer>(
-          geolocation->GetDocument()->GetTaskRunner(TaskType::kMiscPlatformAPI),
+          geolocation->GetWindow()->GetTaskRunner(TaskType::kMiscPlatformAPI),
           this,
           &GeoNotifier::TimerFired)),
       use_cached_position_(false) {

@@ -53,6 +53,12 @@
 #endif
 
 namespace web {
+namespace {
+// Function used to implement the default WebState getters.
+web::WebState* ReturnWeakReference(base::WeakPtr<WebStateImpl> weak_web_state) {
+  return weak_web_state.get();
+}
+}  // namespace
 
 /* static */
 std::unique_ptr<WebState> WebState::Create(const CreateParams& params) {
@@ -118,6 +124,14 @@ WebStateImpl::~WebStateImpl() {
   for (auto& observer : policy_deciders_)
     observer.ResetWebState();
   SetDelegate(nullptr);
+}
+
+WebState::Getter WebStateImpl::CreateDefaultGetter() {
+  return base::BindRepeating(&ReturnWeakReference, weak_factory_.GetWeakPtr());
+}
+
+WebState::OnceGetter WebStateImpl::CreateDefaultOnceGetter() {
+  return base::BindOnce(&ReturnWeakReference, weak_factory_.GetWeakPtr());
 }
 
 WebStateDelegate* WebStateImpl::GetDelegate() {
@@ -377,10 +391,14 @@ void WebStateImpl::RunJavaScriptDialog(
                                  std::move(presenter_callback));
 }
 
-void WebStateImpl::JavaScriptDialogClosed(DialogClosedCallback callback,
-                                          bool success,
-                                          NSString* user_input) {
-  running_javascript_dialog_ = false;
+void WebStateImpl::JavaScriptDialogClosed(
+    base::WeakPtr<WebStateImpl> weak_web_state,
+    DialogClosedCallback callback,
+    bool success,
+    NSString* user_input) {
+  if (weak_web_state) {
+    weak_web_state->running_javascript_dialog_ = false;
+  }
   std::move(callback).Run(success, user_input);
 }
 

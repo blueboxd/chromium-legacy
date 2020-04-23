@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "remoting/base/grpc_support/grpc_async_executor.h"
 #include "remoting/base/grpc_support/grpc_async_request.h"
 #include "third_party/grpc/src/include/grpcpp/client_context.h"

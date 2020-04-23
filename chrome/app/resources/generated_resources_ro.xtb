@@ -37,7 +37,6 @@
 <translation id="1041263367839475438">Dispozitive disponibile</translation>
 <translation id="1042174272890264476">Computerul este dotat, de asemenea, cu o bibliotecă RLZ încorporată, oferită de <ph name="SHORT_PRODUCT_NAME" />. Biblioteca RLZ atribuie o etichetă non-unică și care nu vă identifică în mod personal, pentru a măsura căutările și modul în care este utilizat <ph name="SHORT_PRODUCT_NAME" /> în funcție de o anumită campanie promoțională. Aceste etichete pot apărea uneori în interogările Căutării Google din <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1043818413152647937">Ștergi și datele din aceste aplicații?</translation>
-<translation id="1045448422538531528">Adaugă în grup</translation>
 <translation id="1046635659603195359">Se pare că ai configurat deja Voice Match cu Asistentul Google pe alt dispozitiv. Aceste înregistrări anterioare pot fi folosite pentru a crea un model vocal pe acest dispozitiv. Ar trebui să dureze cel mult un minut.</translation>
 <translation id="104710386808485638">Repornești Linux?</translation>
 <translation id="1047431265488717055">Copiază te&amp;xtul linkului</translation>
@@ -408,7 +407,6 @@
 <translation id="1536754031901697553">Se deconectează...</translation>
 <translation id="15373452373711364">Cursor de mouse mare</translation>
 <translation id="1540605929960647700">Activează modul demonstrativ</translation>
-<translation id="1541396123399225659">Adaugă într-un grup nou</translation>
 <translation id="1542514202066550870">Această filă prezintă conținut RV unui vizualizator.</translation>
 <translation id="1543284117603151572">Importate din Edge</translation>
 <translation id="1545177026077493356">Mod chioșc automat</translation>
@@ -1906,7 +1904,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3514373592552233661">Dacă sunt disponibile mai multe rețele, vor fi folosite cele preferate</translation>
 <translation id="3515983984924808886">Atinge cheia de securitate din nou pentru a confirma resetarea. Toate informațiile stocate pe cheia de securitate, inclusiv codul său PIN, vor fi șterse.</translation>
 <translation id="3518985090088779359">Acceptă și continuă</translation>
-<translation id="351952459507671940">Adaugă într-un grup nou</translation>
 <translation id="3521606918211282604">Modifică dimensiunea discului</translation>
 <translation id="3523642406908660543">Întreabă-mă atunci când un site vrea să folosească un plugin să-mi acceseze computerul (recomandat).</translation>
 <translation id="3524965460886318643">Exportă activitățile</translation>
@@ -2896,7 +2893,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4871322859485617074">Codul PIN conține caractere nevalide</translation>
 <translation id="4871370605780490696">Adaugă un marcaj</translation>
 <translation id="4871719318659334896">Închide grupul</translation>
-<translation id="4871852311166078968">Adaugă în grup</translation>
 <translation id="4873312501243535625">Verificator de fișiere media</translation>
 <translation id="4876273079589074638">Ajută-i pe inginerii noștri să investigheze și să remedieze această blocare. Dacă poți, indică pașii exacți. Orice detaliu este important!</translation>
 <translation id="4876895919560854374">Blochează și deblochează ecranul</translation>

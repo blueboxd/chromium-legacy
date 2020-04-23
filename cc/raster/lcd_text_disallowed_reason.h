@@ -16,6 +16,7 @@ namespace cc {
 enum class LCDTextDisallowedReason : uint8_t {
   kNone,
   kSetting,
+  kBackgroundColorNotOpaque,
   kContentsNotOpaque,
   kLayerOpacity,
   kNonIntegralTranslation,

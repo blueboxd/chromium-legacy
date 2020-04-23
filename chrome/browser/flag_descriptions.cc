@@ -513,6 +513,12 @@ const char kEnableAutofillCreditCardUploadFeedbackDescription[] =
     "show a highlight, otherwise the icon will be updated and if it is "
     "clicked, the save card failure bubble will be shown.";
 
+const char kEnableExperimentalCookieFeaturesName[] =
+    "Enable experimental cookie features";
+const char kEnableExperimentalCookieFeaturesDescription[] =
+    "Enable new features that affect setting, sending, and managing cookies. "
+    "The enabled features are subject to change at any time.";
+
 const char kEnableDeferAllScriptName[] = "DeferAllScript previews";
 const char kEnableDeferAllScriptDescription[] =
     "Enable deferring synchronous script on slow pages.";
@@ -1751,22 +1757,11 @@ const char kSharingQRCodeGeneratorName[] = "Enable sharing page via QR Code";
 const char kSharingQRCodeGeneratorDescription[] =
     "Enables right-click UI to share the page's URL via a generated QR Code.";
 
-const char kSharingRenameDevicesName[] =
-    "Enable device renaming in Sharing features.";
-const char kSharingRenameDevicesDescription[] =
-    "Enables renaming devices using HardwareInfo when populating device list "
-    "and sender device info.";
-
 const char kSharingSendViaSyncName[] =
     "Enable sending Sharing message via Sync";
 const char kSharingSendViaSyncDescription[] =
     "Enables sending Sharing message via commiting to Chrome Sync's "
     "SHARING_MESSAGE data type";
-
-const char kSharingDeriveVapidKeyName[] =
-    "Enable Sharing derive VAPID key from sync";
-const char kSharingDeriveVapidKeyDescription[] =
-    "Enables Sharing infrastructure to derive VAPID key from sync.";
 
 const char kSharingDeviceExpirationName[] =
     "Configures sharing device expiration";
@@ -3414,6 +3409,12 @@ const char kEnableHeuristicStylusPalmRejectionName[] =
 const char kEnableHeuristicStylusPalmRejectionDescription[] =
     "Enable additional heuristic palm rejection logic when interacting with "
     "stylus usage. Not intended for all devices.";
+
+const char kEnableHighResolutionMouseScrollingName[] =
+    "Enable high resolution mouse scrolling";
+const char kEnableHighResolutionMouseScrollingDescription[] =
+    "Enable use of high-resolution scrolling events from supported mice (those "
+    "which report REL_WHEEL_HI_RES from the Linux kernel).";
 
 const char kEnableNeuralStylusPalmRejectionName[] =
     "Enable Neural Palm Detection";

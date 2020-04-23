@@ -528,11 +528,6 @@ NightLightControllerImpl::ColorScalesFromRemappedTemperatureInKevin(
   return {red, green, blue};
 }
 
-bool NightLightControllerImpl::GetEnabled() const {
-  return active_user_pref_service_ &&
-         active_user_pref_service_->GetBoolean(prefs::kNightLightEnabled);
-}
-
 float NightLightControllerImpl::GetColorTemperature() const {
   if (active_user_pref_service_)
     return active_user_pref_service_->GetDouble(prefs::kNightLightTemperature);
@@ -703,6 +698,11 @@ void NightLightControllerImpl::SetCurrentGeoposition(
           kOneHourDuration;
 
   Refresh(/*did_schedule_change=*/true, keep_manual_toggles_during_schedules);
+}
+
+bool NightLightControllerImpl::GetEnabled() const {
+  return active_user_pref_service_ &&
+         active_user_pref_service_->GetBoolean(prefs::kNightLightEnabled);
 }
 
 void NightLightControllerImpl::SuspendDone(

@@ -359,9 +359,8 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
                            float scale_factor,
                            bool animate_visibility);
 
-  // Handles ripping off an item from the shelf. Returns true when the item got
-  // removed.
-  bool HandleRipOffDrag(const ui::LocatedEvent& event);
+  // Handles ripping off an item from the shelf.
+  void HandleRipOffDrag(const ui::LocatedEvent& event);
 
   // Finalize the rip off dragging by either |cancel| the action or validating.
   void FinalizeRipOffDrag(bool cancel);
@@ -391,9 +390,6 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
 
   // Invoked after the fading out animation for item deletion is ended.
   void OnFadeOutAnimationEnded();
-
-  // Fade in last visible item.
-  void StartFadeInLastVisibleItem();
 
   // Gets the menu anchor rect for menus. |source| is the view that is
   // asking for a menu, |location| is the location of the event, |context_menu|

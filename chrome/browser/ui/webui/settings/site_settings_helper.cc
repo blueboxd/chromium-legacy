@@ -33,8 +33,10 @@
 #include "components/content_settings/core/common/content_settings_utils.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/permissions/chooser_context_base.h"
+#include "components/permissions/permission_decision_auto_blocker.h"
 #include "components/permissions/permission_manager.h"
 #include "components/permissions/permission_result.h"
+#include "components/permissions/permissions_client.h"
 #include "components/prefs/pref_service.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/url_formatter/url_formatter.h"
@@ -522,23 +524,26 @@ std::string GetDisplayNameForPattern(
   return pattern.ToString();
 }
 
-void GetExceptionsFromHostContentSettingsMap(
-    const HostContentSettingsMap* map,
+void GetExceptionsForContentType(
     ContentSettingsType type,
+    Profile* profile,
     const extensions::ExtensionRegistry* extension_registry,
     content::WebUI* web_ui,
     bool incognito,
-    const std::string* filter,
     base::ListValue* exceptions) {
-  ContentSettingsForOneType entries;
-  map->GetSettingsForOneType(type, std::string(), &entries);
+  ContentSettingsForOneType all_settings;
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(profile);
+
+  map->GetSettingsForOneType(type, std::string(), &all_settings);
+
   // Group settings by primary_pattern.
   AllPatternsSettings all_patterns_settings;
-  for (auto i = entries.begin(); i != entries.end(); ++i) {
+  for (const auto& setting : all_settings) {
     // Don't add default settings.
-    if (i->primary_pattern == ContentSettingsPattern::Wildcard() &&
-        i->secondary_pattern == ContentSettingsPattern::Wildcard() &&
-        i->source !=
+    if (setting.primary_pattern == ContentSettingsPattern::Wildcard() &&
+        setting.secondary_pattern == ContentSettingsPattern::Wildcard() &&
+        setting.source !=
             SiteSettingSourceToString(SiteSettingSource::kPreference)) {
       continue;
     }
@@ -546,14 +551,36 @@ void GetExceptionsFromHostContentSettingsMap(
     // Off-the-record HostContentSettingsMap contains incognito content settings
     // as well as normal content settings. Here, we use the incongnito settings
     // only.
-    if (map->IsOffTheRecord() && !i->incognito)
+    if (map->IsOffTheRecord() && !setting.incognito)
       continue;
 
-    if (filter && i->primary_pattern.ToString() != *filter)
+    all_patterns_settings[std::make_pair(
+        setting.primary_pattern, setting.source)][setting.secondary_pattern] =
+        setting.GetContentSetting();
+  }
+
+  ContentSettingsForOneType embargo_settings;
+  map->GetSettingsForOneType(ContentSettingsType::PERMISSION_AUTOBLOCKER_DATA,
+                             std::string(), &embargo_settings);
+
+  permissions::PermissionDecisionAutoBlocker* auto_blocker =
+      permissions::PermissionsClient::Get()->GetPermissionDecisionAutoBlocker(
+          profile);
+
+  for (const auto& setting : embargo_settings) {
+    // Off-the-record HostContentSettingsMap contains incognito content
+    // settings as well as normal content settings. Here, we use the
+    // incongnito settings only.
+    if (map->IsOffTheRecord() && !setting.incognito)
       continue;
 
-    all_patterns_settings[std::make_pair(i->primary_pattern, i->source)]
-                         [i->secondary_pattern] = i->GetContentSetting();
+    if (auto_blocker
+            ->GetEmbargoResult(GURL(setting.primary_pattern.ToString()), type)
+            .content_setting == CONTENT_SETTING_BLOCK) {
+      all_patterns_settings[std::make_pair(
+          setting.primary_pattern, setting.source)][setting.secondary_pattern] =
+          CONTENT_SETTING_BLOCK;
+    }
   }
 
   // Keep the exceptions sorted by provider so they will be displayed in

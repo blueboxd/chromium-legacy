@@ -54,10 +54,6 @@
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
-#if defined(USE_X11)
-#include "ui/gfx/x/x11_connection.h"  // nogncheck
-#endif
-
 base::LazyInstance<base::TestDiscardableMemoryAllocator>::DestructorAtExit
     g_discardable_memory_allocator = LAZY_INSTANCE_INITIALIZER;
 
@@ -87,12 +83,6 @@ int main(int argc, char** argv) {
   ui::OzonePlatform::InitParams params;
   params.single_process = true;
   ui::OzonePlatform::InitializeForGPU(params);
-#endif
-
-#if defined(USE_X11)
-  // This demo uses InProcessContextFactory which uses X on a separate Gpu
-  // thread.
-  gfx::InitializeThreadedX11();
 #endif
 
   gl::init::InitializeGLOneOff();

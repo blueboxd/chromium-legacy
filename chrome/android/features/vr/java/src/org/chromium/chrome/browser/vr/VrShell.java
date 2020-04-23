@@ -570,7 +570,6 @@ public class VrShell extends GvrLayout
         PageInfoController.show(mActivity, webContents, null,
                 PageInfoController.OpenedFromSource.VR,
                 new ChromePageInfoControllerDelegate(mActivity, webContents,
-                        mActivity::getModalDialogManager,
                         /*offlinePageLoadUrlDelegate=*/
                         new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(tab)));
     }

@@ -230,17 +230,19 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       # GPU exepections use slightly different names for the angle backends
       # than the Chrome flags
       known_backend_flag_map = {
-        'd3d11': 'd3d11',
-        'd3d9': 'd3d9',
-        'opengl': 'gl',
-        'opengles': 'gles',
-        'vulkan': 'vulkan',
-        'swiftshader': 'swiftshader',
+        'd3d11': ['d3d11'],
+        'd3d9': ['d3d9'],
+        'opengl': ['gl'],
+        'opengles': ['gles'],
+        'vulkan': ['vulkan'],
+        # Support setting VK_ICD_FILENAMES for swiftshader when requesting
+        # the 'vulkan' backend.
+        'swiftshader': ['swiftshader', 'vulkan'],
       }
       current_angle_backend = gpu_helper.GetANGLERenderer(gpu_info)
       if (current_angle_backend not in known_backend_flag_map or
-          known_backend_flag_map[current_angle_backend] != \
-          self._angle_backend):
+          self._angle_backend not in \
+            known_backend_flag_map[current_angle_backend]):
         self.fail('requested ANGLE backend (' + self._angle_backend + ')' +
                   ' had no effect on the browser: ' +
                   self._GetGPUInfoErrorString(gpu_info))

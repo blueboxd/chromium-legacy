@@ -5,14 +5,11 @@
 #include "ash/assistant/assistant_view_delegate_impl.h"
 
 #include "ash/assistant/assistant_controller_impl.h"
-#include "ash/assistant/assistant_interaction_controller.h"
 #include "ash/assistant/assistant_notification_controller.h"
 #include "ash/assistant/model/assistant_interaction_model.h"
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "ash/assistant/model/assistant_notification_model.h"
 #include "ash/assistant/model/assistant_notification_model_observer.h"
-#include "ash/assistant/model/assistant_ui_model.h"
-#include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/public/cpp/assistant/assistant_state_base.h"
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -30,18 +27,9 @@ const AssistantAlarmTimerModel* AssistantViewDelegateImpl::GetAlarmTimerModel()
   return assistant_controller_->alarm_timer_controller()->model();
 }
 
-const AssistantInteractionModel*
-AssistantViewDelegateImpl::GetInteractionModel() const {
-  return assistant_controller_->interaction_controller()->model();
-}
-
 const AssistantNotificationModel*
 AssistantViewDelegateImpl::GetNotificationModel() const {
   return assistant_controller_->notification_controller()->model();
-}
-
-const AssistantUiModel* AssistantViewDelegateImpl::GetUiModel() const {
-  return assistant_controller_->ui_controller()->model();
 }
 
 void AssistantViewDelegateImpl::AddObserver(
@@ -65,17 +53,6 @@ void AssistantViewDelegateImpl::RemoveAlarmTimerModelObserver(
       observer);
 }
 
-void AssistantViewDelegateImpl::AddInteractionModelObserver(
-    AssistantInteractionModelObserver* observer) {
-  assistant_controller_->interaction_controller()->AddModelObserver(observer);
-}
-
-void AssistantViewDelegateImpl::RemoveInteractionModelObserver(
-    AssistantInteractionModelObserver* observer) {
-  assistant_controller_->interaction_controller()->RemoveModelObserver(
-      observer);
-}
-
 void AssistantViewDelegateImpl::AddNotificationModelObserver(
     AssistantNotificationModelObserver* observer) {
   assistant_controller_->notification_controller()->AddModelObserver(observer);
@@ -85,16 +62,6 @@ void AssistantViewDelegateImpl::RemoveNotificationModelObserver(
     AssistantNotificationModelObserver* observer) {
   assistant_controller_->notification_controller()->RemoveModelObserver(
       observer);
-}
-
-void AssistantViewDelegateImpl::AddUiModelObserver(
-    AssistantUiModelObserver* observer) {
-  assistant_controller_->ui_controller()->AddModelObserver(observer);
-}
-
-void AssistantViewDelegateImpl::RemoveUiModelObserver(
-    AssistantUiModelObserver* observer) {
-  assistant_controller_->ui_controller()->RemoveModelObserver(observer);
 }
 
 void AssistantViewDelegateImpl::DownloadImage(

@@ -124,7 +124,7 @@ public final class EditUrlSuggestionTest {
         mModel = new PropertyModel.Builder(EditUrlSuggestionProperties.ALL_KEYS).build();
 
         mProcessor = new EditUrlSuggestionProcessor(
-                mContext, mSuggestionHost, mLocationBarDelegate, () -> mIconBridge, () -> null);
+                mContext, mSuggestionHost, mLocationBarDelegate, () -> mIconBridge);
         mProcessor.setActivityTabProvider(mTabProvider);
 
         when(mEditButton.getId()).thenReturn(R.id.url_edit_icon);

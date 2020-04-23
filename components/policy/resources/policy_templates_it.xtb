@@ -4048,11 +4048,11 @@ Se questa norma è impostata su True o non è impostata, il modello di oscuramen
       Se la norma non viene impostata, l'utente è libero di fare la propria scelta.</translation>
 <translation id="7144454922853468101">La configurazione di questo criterio consente di specificare quali varianti è possibile applicare in <ph name="PRODUCT_NAME" />.
 
-      Le varianti forniscono un mezzo per apportare modifiche a <ph name="PRODUCT_NAME" /> senza inviare una nuova versione del browser attivando o disattivando in modo selettivo le funzionalità già esistenti.
+      Le varianti forniscono un mezzo per apportare modifiche a <ph name="PRODUCT_NAME" /> senza inviare una nuova versione del browser, attivando o disattivando in modo selettivo le funzionalità già esistenti.
 
       La configurazione di <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (valore 0) o la mancata configurazione del criterio consentono di applicare al browser tutte le varianti.
 
-      La configurazione di <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (valore 1) consente di applicare a <ph name="PRODUCT_NAME" /> esclusivamente correzioni della stabilità o varianti considerate critiche per la sicurezza.
+      La configurazione di <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (valore 1) consente di applicare a <ph name="PRODUCT_NAME" /> soltanto le varianti considerate correzioni fondamentali per la sicurezza e la stabilità.
 
       La configurazione di <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (valore 2) impedisce di applicare al browser tutte le varianti. Questa modalità potrebbe impedire agli sviluppatori di <ph name="PRODUCT_NAME" /> di fornire tempestivamente correzioni fondamentali per la sicurezza ed è pertanto sconsigliata.</translation>
 <translation id="7145335384492396213">Modalità di stampa PIN predefinita</translation>
@@ -4751,7 +4751,7 @@ Se la norma non viene configurata, la modalità ad alto contrasto viene inizialm
 <translation id="8186911565834244165">Consenti il feedback degli utenti</translation>
 <translation id="8196725647498287556">La configurazione di questo criterio consente di specificare quali varianti è possibile applicare su un dispositivo <ph name="PRODUCT_OS_NAME" /> gestito dall'azienda.
 
-      Le varianti forniscono un mezzo per apportare modifiche a <ph name="PRODUCT_OS_NAME" /> senza inviare una nuova versione attivando o disattivando in modo selettivo le funzionalità già esistenti.
+      Le varianti forniscono un mezzo per apportare modifiche a <ph name="PRODUCT_OS_NAME" /> senza inviare una nuova versione, attivando o disattivando in modo selettivo le funzionalità già esistenti.
 
       Se imposti <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (valore 0) o se non imposti il criterio, è possibile applicare tutte le varianti a <ph name="PRODUCT_OS_NAME" />.
 

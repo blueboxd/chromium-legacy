@@ -66,6 +66,9 @@ class ASH_PUBLIC_EXPORT NightLightController {
   // the schedule type is set to "Sunset to Sunrise".
   virtual void SetCurrentGeoposition(const SimpleGeoposition& position) = 0;
 
+  // Whether Night Light is enabled.
+  virtual bool GetEnabled() const = 0;
+
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 

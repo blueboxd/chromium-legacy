@@ -16,12 +16,17 @@ class Rect;
 
 namespace chromeos {
 
+struct AssistiveWindowProperties;
+
 // A interface to handle the assistive windows related method call.
 class COMPONENT_EXPORT(UI_BASE_IME) IMEAssistiveWindowHandlerInterface {
  public:
   virtual ~IMEAssistiveWindowHandlerInterface() {}
 
-  // Called when showing/hiding suggestion window.
+  // Called when showing/hiding assistive window.
+  virtual void SetAssistiveWindowProperties(
+      const AssistiveWindowProperties& window) {}
+
   virtual void ShowSuggestion(const base::string16& text,
                               const size_t confirmed_length,
                               const bool show_tab) {}

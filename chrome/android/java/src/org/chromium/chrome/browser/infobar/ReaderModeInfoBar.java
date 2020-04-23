@@ -12,6 +12,8 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
@@ -38,7 +40,7 @@ public class ReaderModeInfoBar extends InfoBar {
         @Override
         public void onClick(View v) {
             if (getReaderModeManager() == null || mIsHiding) return;
-            getReaderModeManager().activateReaderMode(getTab());
+            getReaderModeManager().activateReaderMode();
         }
     };
 
@@ -124,7 +126,8 @@ public class ReaderModeInfoBar extends InfoBar {
     }
 
     @NativeMethods
-    interface Natives {
+    @VisibleForTesting
+    public interface Natives {
         void create(Tab tab);
         Tab getTab(long nativeReaderModeInfoBar, ReaderModeInfoBar caller);
     }

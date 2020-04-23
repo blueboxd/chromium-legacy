@@ -24,11 +24,6 @@ bool GeolocationPermissionContextDelegate::DecidePermission(
   return false;
 }
 
-void GeolocationPermissionContextDelegate::UpdateTabContext(
-    const permissions::PermissionRequestID& id,
-    const GURL& requesting_frame,
-    bool allowed) {}
-
 #if defined(OS_ANDROID)
 bool GeolocationPermissionContextDelegate::IsInteractable(
     content::WebContents* web_contents) {

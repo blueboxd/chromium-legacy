@@ -55,6 +55,8 @@ source_set("factory") {
   deps = [
     ":public",
     "internal:internal",
+    "//chrome/browser/upboarding/query_tiles/proto",
+    "//components/leveldb_proto",
   ]
 }
 

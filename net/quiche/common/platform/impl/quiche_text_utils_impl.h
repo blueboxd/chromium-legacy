@@ -18,6 +18,7 @@
 #include "base/strings/stringprintf.h"
 #include "net/base/hex_utils.h"
 #include "net/base/parse_number.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_optional.h"
 #include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quiche {
@@ -28,6 +29,11 @@ class QuicheTextUtilsImpl {
   // Returns true of |data| starts with |prefix|, case sensitively.
   static bool StartsWith(QuicheStringPiece data, QuicheStringPiece prefix) {
     return base::StartsWith(data, prefix, base::CompareCase::SENSITIVE);
+  }
+
+  // Returns true if |data| end with |suffix|, case sensitively.
+  static bool EndsWith(QuicheStringPiece data, QuicheStringPiece suffix) {
+    return base::EndsWith(data, suffix, base::CompareCase::SENSITIVE);
   }
 
   // Returns true of |data| ends with |suffix|, case insensitively.
@@ -114,6 +120,16 @@ class QuicheTextUtilsImpl {
         output->resize(len);
       }
     }
+  }
+
+  // Decodes a base64-encoded |input|.  Returns nullopt when the input is
+  // invalid.
+  static QuicheOptional<std::string> Base64Decode(QuicheStringPiece input) {
+    std::string output;
+    if (!base::Base64Decode(input, &output)) {
+      return QuicheOptional<std::string>();
+    }
+    return output;
   }
 
   // Returns a std::string containing hex and ASCII representations of |binary|,

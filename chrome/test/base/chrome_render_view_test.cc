@@ -12,6 +12,7 @@
 #include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/test/base/chrome_unit_test_suite.h"
 #include "components/autofill/content/renderer/autofill_agent.h"
+#include "components/autofill/content/renderer/autofill_assistant_agent.h"
 #include "components/autofill/content/renderer/password_autofill_agent.h"
 #include "components/autofill/content/renderer/password_generation_agent.h"
 #include "components/autofill/content/renderer/test_password_autofill_agent.h"
@@ -38,6 +39,7 @@
 #endif
 
 using autofill::AutofillAgent;
+using autofill::AutofillAssistantAgent;
 using autofill::PasswordAutofillAgent;
 using autofill::PasswordGenerationAgent;
 using blink::WebFrame;
@@ -48,9 +50,9 @@ using blink::WebScriptSource;
 using blink::WebString;
 using blink::WebURLRequest;
 using content::RenderFrame;
+using testing::_;
 using testing::NiceMock;
 using testing::Return;
-using testing::_;
 
 namespace {
 
@@ -60,12 +62,13 @@ class MockAutofillAgent : public AutofillAgent {
   MockAutofillAgent(RenderFrame* render_frame,
                     PasswordAutofillAgent* password_autofill_agent,
                     PasswordGenerationAgent* password_generation_agent,
+                    AutofillAssistantAgent* autofill_assistant_agent,
                     blink::AssociatedInterfaceRegistry* registry)
       : AutofillAgent(render_frame,
                       password_autofill_agent,
                       password_generation_agent,
-                      registry) {
-  }
+                      autofill_assistant_agent,
+                      registry) {}
 
   ~MockAutofillAgent() override {}
 
@@ -90,13 +93,7 @@ class MockAutofillAgent : public AutofillAgent {
 
 }  // namespace
 
-ChromeRenderViewTest::ChromeRenderViewTest()
-    : password_autofill_agent_(NULL),
-      password_generation_(NULL),
-      autofill_agent_(NULL),
-      chrome_render_thread_(NULL) {
-}
-
+ChromeRenderViewTest::ChromeRenderViewTest() = default;
 ChromeRenderViewTest::~ChromeRenderViewTest() = default;
 
 void ChromeRenderViewTest::SetUp() {
@@ -123,9 +120,11 @@ void ChromeRenderViewTest::SetUp() {
   password_generation_ = new autofill::PasswordGenerationAgent(
       view_->GetMainRenderFrame(), password_autofill_agent_,
       &associated_interfaces_);
+  autofill_assistant_agent_ =
+      new autofill::AutofillAssistantAgent(view_->GetMainRenderFrame());
   autofill_agent_ = new NiceMock<MockAutofillAgent>(
       view_->GetMainRenderFrame(), password_autofill_agent_,
-      password_generation_, &associated_interfaces_);
+      password_generation_, autofill_assistant_agent_, &associated_interfaces_);
 }
 
 void ChromeRenderViewTest::TearDown() {

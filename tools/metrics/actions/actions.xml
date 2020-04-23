@@ -4795,6 +4795,92 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="ContentSuggestions.Feed.CardAction.ContextMenu">
+  <owner>harringtond@chromium.org</owner>
+  <owner>carlosk@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <description>The user opened the context menu for a Feed card.</description>
+</action>
+
+<action name="ContentSuggestions.Feed.CardAction.Download">
+  <owner>harringtond@chromium.org</owner>
+  <owner>carlosk@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <description>
+    The user selected the 'download' option for a Feed card.
+  </description>
+</action>
+
+<action name="ContentSuggestions.Feed.CardAction.HideStory">
+  <owner>harringtond@chromium.org</owner>
+  <owner>carlosk@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <description>
+    The user selected the 'hide story' option for a Feed card.
+  </description>
+</action>
+
+<action name="ContentSuggestions.Feed.CardAction.LearnMore">
+  <owner>harringtond@chromium.org</owner>
+  <owner>carlosk@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <description>
+    The user selected the 'learn more' option for a Feed card.
+  </description>
+</action>
+
+<action name="ContentSuggestions.Feed.CardAction.ManageInterests">
+  <owner>harringtond@chromium.org</owner>
+  <owner>carlosk@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <description>
+    The user selected the 'manage interests' option for a Feed card.
+  </description>
+</action>
+
+<action name="ContentSuggestions.Feed.CardAction.NotInterestedIn">
+  <owner>harringtond@chromium.org</owner>
+  <owner>carlosk@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <description>
+    The user selected the 'not interested in' option for a Feed card.
+  </description>
+</action>
+
+<action name="ContentSuggestions.Feed.CardAction.Open">
+  <owner>harringtond@chromium.org</owner>
+  <owner>carlosk@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <description>The user tapped on a card in the Feed.</description>
+</action>
+
+<action name="ContentSuggestions.Feed.CardAction.OpenInNewIncognitoTab">
+  <owner>harringtond@chromium.org</owner>
+  <owner>carlosk@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <description>
+    The user selected the 'open in new incognito tab' option for a Feed card.
+  </description>
+</action>
+
+<action name="ContentSuggestions.Feed.CardAction.OpenInNewTab">
+  <owner>harringtond@chromium.org</owner>
+  <owner>carlosk@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <description>
+    The user selected the 'open in new tab' option for a Feed card.
+  </description>
+</action>
+
+<action name="ContentSuggestions.Feed.CardAction.SendFeedback">
+  <owner>harringtond@chromium.org</owner>
+  <owner>carlosk@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <description>
+    The user selected the 'send feedback' option for a Feed card.
+  </description>
+</action>
+
 <action name="ContentSuggestions.NotificationsPreferenceOff">
   <owner>dgn@chromium.org</owner>
   <owner>finkm@chromium.org</owner>

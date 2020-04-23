@@ -54,6 +54,7 @@
 <translation id="1331212799747679585">‏Chrome کو اپ ڈیٹ نہیں کیا جا سکتا ہے۔ مزید اختیارات</translation>
 <translation id="1332501820983677155">‏Google Chrome خصوصیت کے شارٹ کٹس</translation>
 <translation id="1360432990279830238">سائن آؤٹ کریں اور مطابقت پذیری آف کریں؟</translation>
+<translation id="1364532808393826295"><ph name="APP_NAME" /> - <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">سائٹ <ph name="SITE_NAME" /> شامل کی گئی</translation>
 <translation id="1373696734384179344">منتخب مواد ڈاؤن لوڈ کرنے کیلئے ناکافی میموری۔</translation>
 <translation id="1376578503827013741">شمار کیا جا رہا ہے…</translation>
@@ -140,6 +141,7 @@
 <translation id="2017836877785168846">پتہ بار کی سرگزشت اور خودکار تکمیلات کو صاف کرتا ہے۔</translation>
 <translation id="2021896219286479412">پوری اسکرین کے سائٹ کنٹرولز</translation>
 <translation id="2025115093177348061">افزودہ حقیقت</translation>
+<translation id="2030769033451695672"><ph name="URL_OF_THE_CURRENT_TAB" /> پر واپس جانے کے لیے تھپتھپائیں</translation>
 <translation id="2038563949887743358">ڈیسک ٹاپ سائٹ کی درخواست کو آن کریں</translation>
 <translation id="2041019821020695769">‏Chrome کو آپ کو اطلاعات بھیجنے کی سہولت دینے کیلئے، <ph name="BEGIN_LINK" />Android کی ترتیبات<ph name="END_LINK" /> میں بھی اطلاعات آن کریں۔</translation>
 <translation id="204321170514947529">‏<ph name="APP_NAME" /> کا ڈیٹا Chrome میں بھی ہے</translation>
@@ -301,6 +303,7 @@
 <translation id="3207960819495026254">بُک مارک بنایا ہوا</translation>
 <translation id="3211426585530211793"><ph name="ITEM_TITLE" /> کو حذف کر دیا گیا</translation>
 <translation id="321773570071367578">اگر آپ اپنا پاس فریز بھول گئے ہیں یا اس ترتیب کو تبدیل کرنا چاہتے ہیں تو <ph name="BEGIN_LINK" />مطابقت پذیری دوبارہ ترتیب دیں<ph name="END_LINK" /></translation>
+<translation id="3223655101706843289">اس سے <ph name="ORIGIN" /> اور اس کی ایپ کے ذریعے آپ کی ہوم اسکرین پر اسٹور کردہ سبھی ڈیٹا اور کوکیز صاف ہو جائیں گی۔</translation>
 <translation id="3227137524299004712">مائیکروفون</translation>
 <translation id="3232754137068452469">ویب ایپ</translation>
 <translation id="3236059992281584593">1 منٹ باقی</translation>
@@ -534,6 +537,7 @@
 <translation id="4943872375798546930">کوئی نتائج نہیں ہیں</translation>
 <translation id="4961107849584082341">اس صفحہ کا کسی بھی زبان میں ترجمہ کریں</translation>
 <translation id="4962975101802056554">آلہ کے لیے سبھی اجازتوں کو کالعدم کریں</translation>
+<translation id="4964199952259983386">‏Chrome کو AR کا استعمال کرنے دینے کے لیے، <ph name="BEGIN_LINK" />Android ترتیبات<ph name="END_LINK" /> میں بھی کیمرا آن کریں۔</translation>
 <translation id="4970824347203572753">آپ کے مقام پر دستیاب نہیں ہے</translation>
 <translation id="497421865427891073">آگے جائیں</translation>
 <translation id="4988210275050210843">فائل (<ph name="MEGABYTES" />) ڈاؤن لوڈ ہو رہی ہے۔</translation>
@@ -633,6 +637,7 @@
 <translation id="5684874026226664614">افوہ۔ اس صفحہ کا ترجمہ نہیں کیا جا سکا۔</translation>
 <translation id="5686790454216892815">فائل کا نام کافی بڑا ہے</translation>
 <translation id="5689516760719285838">مقام</translation>
+<translation id="5690795753582697420">‏Android کی ترتیبات میں کیمرا آف ہے</translation>
 <translation id="5694049548840660018">آسانی سے ہوم پر واپس جائيں</translation>
 <translation id="569536719314091526">مزید اختیارات کے بٹن سے کسی بھی زبان میں اس صفحہ کا ترجمہ کریں</translation>
 <translation id="5710871682236653961">‏NFC آلات پر تھپتھپاتے وقت سائٹس کو معلومات بھیجنے اور وصول کرنے کی اجازت دینے سے پہلے پوچھیں (تجویز کردہ)</translation>
@@ -664,6 +669,7 @@
 <translation id="5876056640971328065">ویڈیو موقوف کریں</translation>
 <translation id="5884076754568147479">‏ٹاسکس کو مکمل کرنے میں آپ کی مدد کرنے کے لیے، Google کو ان سائٹس کے URLs اور مواد موصول ہوں گے جن پر آپ اسسٹنٹ استعمال کرتے ہیں، نیز اسسٹنٹ کے ذریعے آپ کی جمع کروائی ہوئی معلومات بھی موصول ہوں گی</translation>
 <translation id="5919204609460789179">مطابقت پذیری شروع کرنے کیلئے <ph name="PRODUCT_NAME" /> کو اپ ڈیٹ کریں</translation>
+<translation id="5922853908706496913">آپ کی اسکرین کا اشتراک کیا جا رہا ہے</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> کی بچت ہوئی</translation>
 <translation id="5939518447894949180">دوبارہ ترتیب دیں</translation>
 <translation id="5942872142862698679">‏تلاش کیلئے Google کا استعمال کیا جا رہا ہے</translation>
@@ -874,6 +880,7 @@
 <translation id="751961395872307827">سائٹ سے منسلک نہیں کیا جا سکتا</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7542481630195938534">تجاویز حاصل نہیں کی جا سکیں</translation>
+<translation id="7554752735887601236">سائٹ آپ کا مائیکروفون استعمال کر رہی ہے</translation>
 <translation id="7559975015014302720">لائٹ موڈ آف ہے</translation>
 <translation id="7562080006725997899">براؤزنگ ڈیٹا صاف کرنا</translation>
 <translation id="756809126120519699">‏Chrome ڈیٹا صاف کر دیا گیا</translation>
@@ -910,7 +917,9 @@
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{‏<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 اور <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> مزید}other{‏<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 اور <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> مزید}}</translation>
 <translation id="7791543448312431591">شامل کریں</translation>
 <translation id="780301667611848630">نہیں شکریہ</translation>
+<translation id="7804248752222191302">ایک سائٹ آپ کا کیمرا استعمال کر رہی ہے</translation>
 <translation id="7810647596859435254">اس کے ساتھ کھولیں…</translation>
+<translation id="7817023149356982970">آپ اس سائٹ سے سائن آؤٹ ہو جائیں گے۔</translation>
 <translation id="7821588508402923572">آپ کے ڈیٹا کی بچتیں یہاں دکھائی دیں گی</translation>
 <translation id="7828557259026017104">کوکیز ایسی فائلز ہوتی ہیں جنہیں آپ کی ملاحظہ کی جانے والی ویب سائٹس تخلیق کرتی ہیں۔ سائٹس آپ کی ترجیحات کو یاد رکھنے کیلئے ان کا استعمال کرتی ہیں۔ فریق ثالث کوکیز دیگر سائٹس کے ذریعے تخلیق کی جاتی ہیں۔ یہ سائٹس کچھ مواد کی مالک ہوتی ہیں، جیسے اشتہارات یا تصاویر جنہیں آپ ملاحظہ کی جانے والی ویب صفحہ پر دیکھتے ہیں۔</translation>
 <translation id="783819812427904514">ویڈیو کی آواز چلائیں</translation>
@@ -953,7 +962,6 @@
 <translation id="8073388330009372546">تصویر نئے ٹیب میں کھولیں</translation>
 <translation id="8076492880354921740">ٹیبز</translation>
 <translation id="8084114998886531721">محفوظ کیا گیا پاسورڈ</translation>
-<translation id="8087000398470557479">‏یہ مواد <ph name="DOMAIN_NAME" /> کی جانب سے ہے، جسے Google نے ڈیلیور کیا ہے۔</translation>
 <translation id="8103578431304235997">پوشیدگی ٹیب</translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8109613176066109935">اپنے سبھی آلات پر اپنے بُک مارکس حاصل کرنے کیلئے، سِنک کو آن کریں</translation>
@@ -989,8 +997,10 @@
 <translation id="8364299278605033898">مقبول ویب سائٹس دیکھیں</translation>
 <translation id="8368027906805972958">نا معلوم یا غیر تعاون یافتہ آلہ (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">کسی مخصوص سائٹ کیلئے پس منظر کی مطابقت پذیری کی اجازت دیں۔</translation>
+<translation id="83792324527827022">سائٹ آپ کا کیمرا اور مائیکروفون استعمال کر رہی ہے</translation>
 <translation id="8380167699614421159">یہ سائٹ دخل انداز یا گمراہ کن اشتہارات دکھاتی ہے</translation>
 <translation id="8393700583063109961">پیغام بھیجیں</translation>
+<translation id="8394832520002899662">سائٹ پر واپس جانے کے لیے تھپتھپائیں</translation>
 <translation id="8413126021676339697">مکمل سرگزشت دکھائیں</translation>
 <translation id="8427875596167638501">پیش منظر ٹیب آدھا کھلا ہے</translation>
 <translation id="8428213095426709021">ترتیبات</translation>
@@ -1033,6 +1043,8 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{سگنل کی مضبوطی کی سطح: # بار}other{سگنل کی مضبوطی کی سطح: # بارز}}</translation>
 <translation id="868929229000858085">اپنے رابطوں کو تلاش کریں</translation>
 <translation id="869891660844655955">میعاد ختم ہونے کی تاریخ</translation>
+<translation id="8702612070107455751">تمام آف لائن ڈیٹا حذف ہو جائیں گے۔</translation>
+<translation id="8737217482364735741">اس سے <ph name="ORIGIN" /> کے ذریعے اسٹور کردہ سبھی ڈیٹا اور کوکیز صاف ہو جائیں گی۔</translation>
 <translation id="8748850008226585750">مواد مخفی ہیں</translation>
 <translation id="8751914237388039244">ایک تصویر منتخب کریں</translation>
 <translation id="8758557275681689734">اپنے سبھی کھلے ہوئے ٹیبز دیکھیں</translation>
@@ -1079,6 +1091,7 @@
 <translation id="9100610230175265781">پاس فریز درکار ہے</translation>
 <translation id="9102803872260866941">پیش منظر ٹیب کھلا ہے</translation>
 <translation id="9104217018994036254">ان آلات کی فہرست جن کے ساتھ ٹیب کا اشتراک کرنا ہے۔</translation>
+<translation id="9108312223223904744">سیکیورٹی کلید سپورٹ کے بطور فون</translation>
 <translation id="9133397713400217035">آف لائن دریافت کریں</translation>
 <translation id="9133703968756164531">‎<ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)‎</translation>
 <translation id="9137013805542155359">اصل دکھائیں</translation>

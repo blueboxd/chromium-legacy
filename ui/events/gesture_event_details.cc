@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ui/events/gesture_event_details.h"
+#include "base/logging.h"
 
 namespace ui {
 

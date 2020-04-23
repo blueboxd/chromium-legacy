@@ -142,6 +142,9 @@ void WebFrameTestProxy::Initialize(
 }
 
 void WebFrameTestProxy::Reset() {
+  // TODO(danakj): We navigate to about:blank between frames, do we even keep
+  // the same RenderFrame?
+
   if (IsMainFrame()) {
     GetWebFrame()->SetName(blink::WebString());
     GetWebFrame()->ClearOpener();
@@ -150,6 +153,8 @@ void WebFrameTestProxy::Reset() {
     // Resetting the internals object also overrides the WebPreferences, so we
     // have to sync them to WebKit again.
     render_view()->SetWebkitPreferences(render_view()->GetWebkitPreferences());
+
+    test_client_->Reset();
   }
   if (IsLocalRoot()) {
     GetLocalRootWebWidgetTestProxy()->Reset();

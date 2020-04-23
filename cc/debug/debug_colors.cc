@@ -327,6 +327,8 @@ SkColor DebugColors::NonLCDTextHighlightColor(LCDTextDisallowedReason reason) {
       return SK_ColorTRANSPARENT;
     case LCDTextDisallowedReason::kSetting:
       return SkColorSetARGB(96, 128, 255, 0);
+    case LCDTextDisallowedReason::kBackgroundColorNotOpaque:
+      return SkColorSetARGB(96, 128, 128, 0);
     case LCDTextDisallowedReason::kContentsNotOpaque:
       return SkColorSetARGB(96, 255, 0, 0);
     case LCDTextDisallowedReason::kLayerOpacity:

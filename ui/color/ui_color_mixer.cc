@@ -35,6 +35,7 @@ void AddUiColorMixer(ColorProvider* provider) {
   mixer[kColorFocusableBorderFocused] = SetAlpha(kColorAccent, 0x4D);
   mixer[kColorFocusableBorderUnfocused] = {kColorBorderAndSeparatorForeground};
   mixer[kColorIcon] = {kColorSecondaryForeground};
+  mixer[kColorMenuIcon] = {kColorIcon};
   mixer[kColorLabelDisabledForeground] = {kColorDisabledForeground};
   mixer[kColorLabelForeground] = {kColorPrimaryForeground};
   mixer[kColorLabelSecondaryForeground] = {kColorSecondaryForeground};

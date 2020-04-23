@@ -4,6 +4,7 @@
 
 #include "ui/base/ime/mock_ime_input_context_handler.h"
 
+#include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/input_method.h"

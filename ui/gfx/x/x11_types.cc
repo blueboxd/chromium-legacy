@@ -7,26 +7,32 @@
 #include <X11/Xlib.h>
 
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "build/build_config.h"
 #include "ui/gfx/x/x11_switches.h"
 
 namespace gfx {
 
+namespace {
+
+XDisplay* OpenNewXDisplay() {
+  if (!XInitThreads())
+    return nullptr;
+  std::string display_str =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kX11Display);
+  return XOpenDisplay(display_str.empty() ? nullptr : display_str.c_str());
+}
+
+}  // namespace
+
 XDisplay* GetXDisplay() {
-  static XDisplay* display = NULL;
-  if (!display)
-    display = OpenNewXDisplay();
+  static XDisplay* display = OpenNewXDisplay();
   return display;
 }
 
-XDisplay* OpenNewXDisplay() {
-#if defined(OS_CHROMEOS)
-  return XOpenDisplay(NULL);
-#else
-  std::string display_str = base::CommandLine::ForCurrentProcess()->
-                            GetSwitchValueASCII(switches::kX11Display);
-  return XOpenDisplay(display_str.empty() ? NULL : display_str.c_str());
-#endif
+XDisplay* CloneXDisplay(XDisplay* display) {
+  return XOpenDisplay(DisplayString(display));
 }
 
 void PutARGBImage(XDisplay* display,

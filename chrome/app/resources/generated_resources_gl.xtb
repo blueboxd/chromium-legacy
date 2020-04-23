@@ -37,7 +37,6 @@
 <translation id="1041263367839475438">Dispositivos dispoñibles</translation>
 <translation id="1042174272890264476">O ordenador tamén inclúe a biblioteca de <ph name="SHORT_PRODUCT_NAME" />. RLZ asigna unha etiqueta que non é exclusiva e sen identificación persoal para medir as buscas e o uso de <ph name="SHORT_PRODUCT_NAME" /> derivados dunha determinada campaña promocional. En ocasións estas etiquetas aparecen nas consultas de Busca de Google en <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1043818413152647937">Tamén queres borrar os datos destas aplicacións?</translation>
-<translation id="1045448422538531528">Engadir a un grupo</translation>
 <translation id="1046635659603195359">Parece que xa configuraches a Voice Match co teu Asistente de Google noutro dispositivo. As gravacións anteriores pódense usar para crear un modelo de voz neste dispositivo. Esta acción debería levar menos dun minuto.</translation>
 <translation id="104710386808485638">Queres reiniciar Linux?</translation>
 <translation id="1047431265488717055">Copiar te&amp;xto da ligazón</translation>
@@ -92,6 +91,7 @@
 <translation id="1122198203221319518">&amp;Ferramentas</translation>
 <translation id="1122242684574577509">Non se puido efectuar a autenticación. Fai clic para visitar a páxina de inicio de sesión da rede wifi que utilizas (<ph name="NETWORK_ID" />).</translation>
 <translation id="1122960773616686544">Nome do marcador</translation>
+<translation id="1123753900084781868">A función Subtítulos instantáneos non está dispoñible nestes intres</translation>
 <translation id="1124772482545689468">Usuario</translation>
 <translation id="1125550662859510761">A resolución parece de <ph name="WIDTH" /> x <ph name="HEIGHT" /> (nativa)</translation>
 <translation id="1126809382673880764">Non te protexe contra sitios web, descargas e extensións perigosos. Continuarás dispoñendo da protección da función Navegación segura, sempre que estea dispoñible, noutros servizos de Google (como Gmail e a Busca).</translation>
@@ -406,7 +406,6 @@
 <translation id="1536754031901697553">Desconectando…</translation>
 <translation id="15373452373711364">Cursor do rato grande</translation>
 <translation id="1540605929960647700">Activar o modo de demostración</translation>
-<translation id="1541396123399225659">Engadir ao novo grupo</translation>
 <translation id="1542514202066550870">Esta pestana envía contido de RV a un visor.</translation>
 <translation id="1543284117603151572">Importados de Edge</translation>
 <translation id="1545177026077493356">Modo de quiosco automático</translation>
@@ -1904,7 +1903,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="3514373592552233661">As redes preferidas terán prioridade ante outras redes coñecidas se hai varias dispoñibles</translation>
 <translation id="3515983984924808886">Toca a chave de seguranza de novo para confirmar o seu restablecemento. Eliminarase toda a información almacenada nela, incluídos os PIN.</translation>
 <translation id="3518985090088779359">Aceptar e continuar</translation>
-<translation id="351952459507671940">Engadir ao novo grupo</translation>
 <translation id="3521606918211282604">Cambiar tamaño do disco</translation>
 <translation id="3523642406908660543">Preguntar cando un sitio quere utilizar un plugin para acceder ao teu ordenador (recomendado)</translation>
 <translation id="3524965460886318643">Exportar actividades</translation>
@@ -2894,7 +2892,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="4871322859485617074">O PIN contén caracteres non válidos</translation>
 <translation id="4871370605780490696">Engadir marcador</translation>
 <translation id="4871719318659334896">Pechar grupo</translation>
-<translation id="4871852311166078968">Engadir a un grupo</translation>
 <translation id="4873312501243535625">Comprobador de ficheiros multimedia</translation>
 <translation id="4876273079589074638">Indica exactamente o que aconteceu paso a paso para axudar aos nosos enxeñeiros a investigar e solucionar este fallo. Calquera detalle é importante.</translation>
 <translation id="4876895919560854374">Bloquear e desbloquear a pantalla</translation>

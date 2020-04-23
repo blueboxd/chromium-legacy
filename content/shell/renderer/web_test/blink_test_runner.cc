@@ -162,15 +162,6 @@ void BlinkTestRunner::PrintMessage(const std::string& message) {
   GetBlinkTestClientRemote()->PrintMessage(message);
 }
 
-void BlinkTestRunner::PostTask(base::OnceClosure task) {
-  GetTaskRunner()->PostTask(FROM_HERE, std::move(task));
-}
-
-void BlinkTestRunner::PostDelayedTask(base::OnceClosure task,
-                                      base::TimeDelta delay) {
-  GetTaskRunner()->PostDelayedTask(FROM_HERE, std::move(task), delay);
-}
-
 WebString BlinkTestRunner::RegisterIsolatedFileSystem(
     const blink::WebVector<blink::WebString>& absolute_filenames) {
   std::vector<base::FilePath> files;
@@ -191,11 +182,6 @@ WebString BlinkTestRunner::GetAbsoluteWebStringFromUTF8Path(
     net::FileURLToFilePath(base_url.Resolve(utf8_path), &path);
   }
   return blink::FilePathToWebString(path);
-}
-
-WebURL BlinkTestRunner::RewriteWebTestsURL(const std::string& utf8_url,
-                                           bool is_wpt_mode) {
-  return content::RewriteWebTestsURL(utf8_url, is_wpt_mode);
 }
 
 TestPreferences* BlinkTestRunner::Preferences() {
@@ -295,26 +281,6 @@ void BlinkTestRunner::SetFocus(blink::WebView* web_view, bool focus) {
 
 void BlinkTestRunner::SetBlockThirdPartyCookies(bool block) {
   GetWebTestClientRemote()->BlockThirdPartyCookies(block);
-}
-
-std::string BlinkTestRunner::PathToLocalResource(const std::string& resource) {
-#if defined(OS_WIN)
-  if (base::StartsWith(resource, "/tmp/", base::CompareCase::SENSITIVE)) {
-    // We want a temp file.
-    GURL base_url = net::FilePathToFileURL(test_config_->temp_path);
-    return base_url.Resolve(resource.substr(sizeof("/tmp/") - 1)).spec();
-  }
-#endif
-
-  // Some web tests use file://// which we resolve as a UNC path. Normalize
-  // them to just file:///.
-  std::string result = resource;
-  static const size_t kFileLen = sizeof("file:///") - 1;
-  while (base::StartsWith(base::ToLowerASCII(result), "file:////",
-                          base::CompareCase::SENSITIVE)) {
-    result = result.substr(0, kFileLen) + result.substr(kFileLen + 1);
-  }
-  return RewriteWebTestsURL(result, false /* is_wpt_mode */).GetString().Utf8();
 }
 
 void BlinkTestRunner::SetLocale(const std::string& locale) {
@@ -765,15 +731,6 @@ void BlinkTestRunner::OnReplyBluetoothManualChooserEvents(
       std::move(get_bluetooth_events_callbacks_.front());
   get_bluetooth_events_callbacks_.pop_front();
   std::move(callback).Run(events);
-}
-
-scoped_refptr<base::SingleThreadTaskRunner> BlinkTestRunner::GetTaskRunner() {
-  if (web_view_test_proxy_->GetWebView()->MainFrame()->IsWebLocalFrame()) {
-    WebLocalFrame* main_frame =
-        web_view_test_proxy_->GetWebView()->MainFrame()->ToWebLocalFrame();
-    return main_frame->GetTaskRunner(blink::TaskType::kInternalTest);
-  }
-  return blink::scheduler::GetSingleThreadTaskRunnerForTesting();
 }
 
 }  // namespace content

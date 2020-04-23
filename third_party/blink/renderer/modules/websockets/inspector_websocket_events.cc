@@ -5,8 +5,8 @@
 #include "third_party/blink/renderer/modules/websockets/inspector_websocket_events.h"
 
 #include <memory>
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
@@ -24,16 +24,15 @@ std::unique_ptr<TracedValue> InspectorWebSocketCreateEvent::Data(
   auto value = std::make_unique<TracedValue>();
   value->SetInteger("identifier", static_cast<int>(identifier));
   value->SetString("url", url.GetString());
-  if (auto* document = Document::DynamicFrom(execution_context)) {
-    value->SetString("frame",
-                     IdentifiersFactory::FrameId(document->GetFrame()));
+  if (auto* window = DynamicTo<LocalDOMWindow>(execution_context)) {
+    value->SetString("frame", IdentifiersFactory::FrameId(window->GetFrame()));
   } else if (auto* scope = DynamicTo<WorkerGlobalScope>(execution_context)) {
     value->SetString("workerId",
                      IdentifiersFactory::IdFromToken(
                          scope->GetThread()->GetDevToolsWorkerToken()));
   } else {
     NOTREACHED()
-        << "WebSocket is available only in Document and WorkerGlobalScope";
+        << "WebSocket is available only in Window and WorkerGlobalScope";
   }
   if (!protocol.IsNull())
     value->SetString("webSocketProtocol", protocol);
@@ -47,16 +46,15 @@ std::unique_ptr<TracedValue> InspectorWebSocketEvent::Data(
   DCHECK(execution_context->IsContextThread());
   auto value = std::make_unique<TracedValue>();
   value->SetInteger("identifier", static_cast<int>(identifier));
-  if (auto* document = Document::DynamicFrom(execution_context)) {
-    value->SetString("frame",
-                     IdentifiersFactory::FrameId(document->GetFrame()));
+  if (auto* window = DynamicTo<LocalDOMWindow>(execution_context)) {
+    value->SetString("frame", IdentifiersFactory::FrameId(window->GetFrame()));
   } else if (auto* scope = DynamicTo<WorkerGlobalScope>(execution_context)) {
     value->SetString("workerId",
                      IdentifiersFactory::IdFromToken(
                          scope->GetThread()->GetDevToolsWorkerToken()));
   } else {
     NOTREACHED()
-        << "WebSocket is available only in Document and WorkerGlobalScope";
+        << "WebSocket is available only in Window and WorkerGlobalScope";
   }
   SetCallStack(value.get());
   return value;

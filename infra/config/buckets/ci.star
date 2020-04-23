@@ -1799,23 +1799,19 @@ ci.fyi_builder(
 )
 
 ci.fyi_builder(
+    name = 'linux-perfetto-rel',
+    console_view_entry = ci.console_view_entry(
+        category = 'linux',
+    ),
+)
+
+ci.fyi_builder(
     name = 'linux-wpt-fyi-rel',
     console_view_entry = ci.console_view_entry(
         category = 'linux',
     ),
     experimental = True,
     goma_backend = None,
-)
-
-# The only non-isolated tests this runs are scripts which
-# work just as well on Linux as on Mac.
-ci.fyi_builder(
-    name = 'Mac10.15 Tests',
-    console_view_entry = ci.console_view_entry(
-        category = 'mac',
-        short_name = '15',
-    ),
-    triggered_by = ['Mac Builder Next'],
 )
 
 ci.fyi_builder(
@@ -2041,6 +2037,16 @@ ci.fyi_mac_builder(
     ),
     cores = None,
     os = None,
+)
+
+ci.thin_tester(
+    name = 'Mac10.15 Tests',
+    mastername = 'chromium.fyi',
+    console_view_entry = ci.console_view_entry(
+        category = 'mac',
+        short_name = '15',
+    ),
+    triggered_by = ['Mac Builder Next'],
 )
 
 ci.fyi_mac_builder(
@@ -3106,8 +3112,6 @@ ci.memory_builder(
         category = 'mac',
         short_name = 'bld',
     ),
-    # TODO(https://crbug.com/1071686): Remove this after debugging
-    execution_timeout = time.hour * 9 / 2,
     goma_debug = True,  # TODO(hinoka): Remove this after debugging.
     goma_jobs = None,
     cores = None,  # Swapping between 8 and 24

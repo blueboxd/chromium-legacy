@@ -4,6 +4,7 @@
 
 package org.chromium.weblayer.test;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
@@ -16,6 +17,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.weblayer.CrashReporterCallback;
 import org.chromium.weblayer.CrashReporterController;
@@ -74,7 +76,10 @@ public class CrashReporterTest {
 
     @Test
     @SmallTest
-    public void testCrashReporterLoading() throws Exception {
+    @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.O_MR1,
+            message = "Flaky on P, crbug.com/1073464")
+    public void
+    testCrashReporterLoading() throws Exception {
         BundleCallbackHelper callbackHelper = new BundleCallbackHelper();
         CallbackHelper deleteHelper = new CallbackHelper();
 

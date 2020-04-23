@@ -620,7 +620,8 @@ void ShelfLayoutManager::UpdateContextualNudges() {
 
   if (in_app_to_home_nudge_controller_) {
     in_app_to_home_nudge_controller_->SetNudgeAllowedForCurrentShelf(
-        in_tablet_mode, in_app_shelf);
+        in_tablet_mode, in_app_shelf,
+        ShelfConfig::Get()->shelf_controls_shown());
   }
 
   // Create home to overview nudge controller if home to overview nudge is

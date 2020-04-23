@@ -4,6 +4,8 @@
 
 #include "content/browser/web_package/signed_exchange_error.h"
 
+#include "base/logging.h"
+
 namespace content {
 
 // static

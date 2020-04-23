@@ -1089,7 +1089,7 @@ Cette règle n'est disponible que sur les instances Windows qui sont associées 
 <translation id="254653220329944566">Active la création de rapports dans le cloud pour <ph name="PRODUCT_NAME" /></translation>
 <translation id="2548397295248733155">Cette règle étant obsolète, elle sera supprimée dans la version 85 de <ph name="PRODUCT_OS_NAME" />. (Veuillez utiliser la règle <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.)
 
-          Elle permet de spécifier le délai d'inactivité de l'utilisateur au terme duquel l'écran est éteint (lorsque l'appareil fonctionne sur batterie).
+          Elle permet de spécifier le délai d'inactivité au terme duquel l'écran est éteint (lorsque l'appareil fonctionne sur batterie).
 
           Si cette règle est définie sur une valeur supérieure à zéro, <ph name="PRODUCT_OS_NAME" /> éteint l'écran au terme du délai d'inactivité de l'utilisateur.
 
@@ -1560,6 +1560,7 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 <translation id="3303653927512453822">Permet de rétablir l'ancien comportement <ph name="ATTRIBUTE_SAMESITE_NAME" /> pour tous les cookies. Si vous rétablissez l'ancien comportement, les cookies dont la valeur de l'attribut <ph name="ATTRIBUTE_SAMESITE_NAME" /> n'est pas spécifiée sont traités comme si la valeur <ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" /> était définie. De plus, ceux dont l'attribut a pour valeur <ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" /> n'exigent plus que la valeur de l'attribut <ph name="ATTRIBUTE_SECURE_NAME" /> soit spécifiée. Pour obtenir une description complète, consultez la page https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies.
 
           Lorsque cette règle n'est pas configurée, le comportement <ph name="ATTRIBUTE_SAMESITE_NAME" /> par défaut pour les cookies dont la valeur de l'attribut <ph name="ATTRIBUTE_SAMESITE_NAME" /> n'est pas spécifiée dépend de la configuration personnelle de l'utilisateur concernant la fonctionnalité <ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES" />, qui peut être définie lors d'un test, ou par l'activation ou la désactivation de l'indicateur <ph name="FLAG_NAME_SAMESITE_BY_DEFAULT_COOKIES" />.</translation>
+<translation id="3303911765031636277">Règle de configuration du connecteur Chrome Enterprise OnFileAttached</translation>
 <translation id="3304662785258434098">Permet de définir si les utilisateurs peuvent ajouter ou non des exceptions qui autorisent l'affichage de contenu mixte sur des sites spécifiques.
 
           Pour les formats d'URL spécifiques, les règles "InsecureContentAllowedForUrls" et "InsecureContentBlockedForUrls" peuvent être utilisées à la place de celle-ci.
@@ -2185,6 +2186,7 @@ Cette option est habituellement désactivée dans le cadre de la protection cont
 
           Il est possible de définir des paramètres différents selon que l'appareil est relié à l'alimentation secteur ou qu'il fonctionne sur batterie.
           </translation>
+<translation id="4147818922357566987">Activer uniquement les variantes concernant les correctifs critiques</translation>
 <translation id="4150201353443180367">Écran</translation>
 <translation id="4157003184375321727">Indiquer la version du système d'exploitation et du micrologiciel</translation>
 <translation id="4157594634940419685">Autoriser l'accès à des imprimantes CUPS en natif</translation>
@@ -3761,7 +3763,7 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
       Cette règle n'est disponible que sur les instances Windows qui sont associées à un domaine <ph name="MS_AD_NAME" />, ou sur les instances Windows 10 Pro ou Windows Enterprise qui sont enregistrées pour bénéficier de la gestion des appareils.</translation>
 <translation id="6495337487202227251">Cette règle étant obsolète, elle sera supprimée dans la version 85 de <ph name="PRODUCT_OS_NAME" />. (Veuillez utiliser la règle <ph name="SCREEN_LOCK_DELAYS_POLICY_NAME" />.)
 
-          Elle permet de spécifier le délai d'inactivité de l'utilisateur au terme duquel l'écran est verrouillé (lorsque l'appareil fonctionne sur batterie).
+          Elle permet de spécifier le délai d'inactivité au terme duquel l'écran est verrouillé (lorsque l'appareil fonctionne sur batterie).
 
           Si cette règle est définie sur une valeur supérieure à zéro, la valeur correspond au délai d'inactivité au terme duquel <ph name="PRODUCT_OS_NAME" /> verrouille l'écran.
 
@@ -4166,6 +4168,15 @@ En cas de non-configuration de cette règle, aucune restriction ne s'applique qu
       Cette règle dispose des options "prudent" et "performances", vous permettant de sélectionner des configurations de planificateurs de tâches privilégiant, respectivement, la stabilité ou les performances.
 
       Si cette règle n'est pas paramétrée, l'utilisateur pourra faire son propre choix.</translation>
+<translation id="7144454922853468101">Permet de définir quelles variantes peuvent être appliquées dans <ph name="PRODUCT_NAME" />.
+
+      Les variantes offrent un moyen de proposer des modifications concernant <ph name="PRODUCT_NAME" /> sans envoyer de nouvelle version du navigateur, en activant ou en désactivant des fonctionnalités déjà disponibles.
+
+      Si vous définissez <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> sur 0 ou si cette règle n'est pas configurée, toutes les variantes peuvent alors être appliquées au navigateur.
+
+      Si vous définissez <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> sur 1, seules les variantes considérées comme des correctifs essentiels de sécurité ou de stabilité peuvent être appliquées à <ph name="PRODUCT_NAME" />.
+
+      Si vous définissez <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> sur 2, aucune variante ne peut être appliquée au navigateur. Veuillez noter que ce mode n'est pas recommandé, car il est susceptible d'empêcher les développeurs <ph name="PRODUCT_NAME" /> de fournir des correctifs de sécurité critiques en temps voulu.</translation>
 <translation id="7145335384492396213">Mode d'impression par code défini par défaut</translation>
 <translation id="7149042336307555519"> Types de connexion autorisés pour les mises à jour du système d'exploitation. En raison de leur taille, les mises à jour du système d'exploitation peuvent considérablement ralentir la connexion et entraînent parfois des frais supplémentaires. Elles ne sont donc pas activées par défaut pour les types de connexion jugés coûteux (actuellement, seules les connexions mobiles sont concernées).
 
@@ -4510,7 +4521,7 @@ Si ce paramètre est désactivé ou s'il n'est pas configuré, <ph name="PRODUCT
       </translation>
 <translation id="7679483888150212009">Cette règle étant obsolète, elle sera supprimée dans la version 85 de <ph name="PRODUCT_OS_NAME" />. (Veuillez utiliser la règle <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.)
 
-          Elle permet de spécifier le délai d'inactivité de l'utilisateur au terme duquel l'écran s'assombrit (lorsque l'appareil fonctionne sur secteur).
+          Elle permet de spécifier le délai d'inactivité au terme duquel l'écran s'assombrit (lorsque l'appareil fonctionne sur secteur).
 
           Si cette règle est définie sur une valeur supérieure à zéro, <ph name="PRODUCT_OS_NAME" /> assombrit l'écran au terme du délai d'inactivité de l'utilisateur.
 
@@ -4712,7 +4723,7 @@ au maximum si un utilisateur se sert de l'appareil.
 <translation id="7961779417826583251">Désactiver l'application des règles de transparence des certificats pour une liste d'autorités de certification héritées</translation>
 <translation id="7973609468423251675">Cette règle étant obsolète, elle sera supprimée dans la version 85 de <ph name="PRODUCT_OS_NAME" />. (Veuillez utiliser la règle <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.)
 
-          Elle permet de spécifier le délai d'inactivité de l'utilisation au terme duquel l'écran s'assombrit (lorsque l'appareil fonctionne sur batterie).
+          Elle permet de spécifier le délai d'inactivité au terme duquel l'écran s'assombrit (lorsque l'appareil fonctionne sur batterie).
 
           Si cette règle est définie sur une valeur supérieure à zéro, <ph name="PRODUCT_OS_NAME" /> assombrit l'écran au terme du délai d'inactivité de l'utilisateur.
 
@@ -4735,7 +4746,7 @@ Si ce paramètre est désactivé et que les connexions UDP sortantes sont filtr�
       Si vous désactivez ce paramètre, il est impossible d'ajouter, de supprimer ou de modifier des favoris. Les favoris existants restent disponibles.</translation>
 <translation id="7991022023019679916">Cette règle étant obsolète, elle sera supprimée dans la version 85 de <ph name="PRODUCT_OS_NAME" />. (Veuillez utiliser la règle <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.)
 
-          Elle permet de spécifier le délai d'inactivité de l'utilisateur au terme duquel l'écran est éteint (lorsque l'appareil fonctionne sur secteur).
+          Elle permet de spécifier le délai d'inactivité au terme duquel l'écran est éteint (lorsque l'appareil fonctionne sur secteur).
 
           Si cette règle est définie sur une valeur supérieure à zéro, <ph name="PRODUCT_OS_NAME" /> éteint l'écran au terme du délai d'inactivité de l'utilisateur.
 
@@ -4874,6 +4885,15 @@ Si cette règle n'est pas définie, l'écran de confidentialité est désactivé
 <translation id="8176035528522326671">Autoriser l'utilisateur d'entreprise à participer aux sessions à plusieurs profils en tant qu'utilisateur principal seulement (comportement par défaut pour les utilisateurs gérés par une entreprise)</translation>
 <translation id="8183108371184777472">Empêcher l'ouverture de la fenêtre du navigateur</translation>
 <translation id="8186911565834244165">Autoriser les commentaires des utilisateurs</translation>
+<translation id="8196725647498287556">Permet de définir quelles variantes peuvent être appliquées sur un appareil <ph name="PRODUCT_OS_NAME" /> géré par une entreprise.
+
+      Les variantes offrent un moyen de proposer des modifications concernant <ph name="PRODUCT_OS_NAME" /> sans envoyer de nouvelle version, en activant ou en désactivant des fonctionnalités déjà disponibles.
+
+      Si vous définissez <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> sur "0" ou si cette règle n'est pas configurée, toutes les variantes peuvent alors être appliquées à <ph name="PRODUCT_OS_NAME" />.
+
+      Si vous définissez <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> sur "1", seules les variantes considérées comme des correctifs essentiels de sécurité ou de stabilité peuvent être appliquées à <ph name="PRODUCT_OS_NAME" />.
+
+      Si vous définissez <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> sur "2", aucune variante ne peut être appliquée au navigateur sur l'écran de connexion. Veuillez noter que ce mode n'est pas recommandé, car il est susceptible d'empêcher les développeurs <ph name="PRODUCT_OS_NAME" /> de fournir des correctifs de sécurité critiques en temps voulu.</translation>
 <translation id="8213770777756919897">Cette règle étant obsolète, elle sera supprimée dans la version 85 de <ph name="PRODUCT_OS_NAME" />. (Veuillez utiliser la règle <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.)
 
           Si cette règle est configurée, <ph name="PRODUCT_OS_NAME" /> met en œuvre l'action à effectuer en cas d'inactivité de l'utilisateur (laquelle peut être définie séparément) au terme du délai d'inactivité de l'utilisateur.
@@ -5437,6 +5457,19 @@ indique uniquement les imprimantes qui peuvent être choisies.
           Si cette règle n'est pas définie et si elle est compatible avec l'appareil, le mode standard de recharge de la batterie est appliqué et ne peut pas être modifié par l'utilisateur.
 
           Remarque : Si elle est définie, la règle <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> remplace cette règle.</translation>
+<translation id="9071472304496502510">Liste des services des connecteurs Chrome Enterprise à appliquer au connecteur <ph name="ON_FILE_ATTACHED_ENTERPRISE_CONNECTOR" /> Enterprise, qui se déclenche lorsqu'un fichier est ajouté en pièce jointe dans Chrome.
+
+      Les champs <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" /> et <ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> permettent de déterminer si le connecteur doit envoyer un fichier en vue d'une analyse lorsqu'il est joint à une page spécifique, ainsi que les tags à inclure dans la demande d'analyse pour ce fichier. Un tag correspondant à un format "activer" sera inclus dans la demande d'analyse si l'URL de la page suit un format associé à ce tag, à condition qu'aucun format "désactiver" associé à ce même tag ne corresponde à l'URL de la page. L'analyse a lieu si au moins un tag doit être inclus dans la demande.
+
+      Le champ <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" /> permet de savoir à quel fournisseur de services d'analyse les paramètres correspondent.
+
+      Si la valeur du champ <ph name="ENTERPRISE_CONNECTOR_BLOCK_UNTIL_VERDICT_FIELD" /> est 1, Chrome attend de recevoir une réponse du service d'analyse avant de laisser la page accéder au fichier. Pour toute autre valeur entière, Chrome laisse la page accéder immédiatement au fichier.
+
+      Le champ <ph name="ENTERPRISE_CONNECTOR_BLOCK_PASSWORD_PROTECTED_FIELD" /> permet de définir si Chrome doit bloquer ou autoriser les fichiers protégés par un mot de passe.
+
+      Le champ <ph name="ENTERPRISE_CONNECTOR_BLOCK_LARGE_FILES_FIELD" /> permet de définir si Chrome doit bloquer ou autoriser les fichiers trop volumineux pour être analysés (plus de 50 Mo).
+
+      Cette règle ne peut être définie que dans la Console d'administration Google.</translation>
 <translation id="9077227880520270584">Minuteur de connexion automatique au compte local de l'appareil</translation>
 <translation id="9084985621503260744">Indiquer si l'activité vidéo a une incidence sur la gestion de l'alimentation</translation>
 <translation id="9088433379343318874">Activer le fournisseur de contenu de l'utilisateur supervisé</translation>

@@ -300,6 +300,9 @@ ContentBrowserClientImpl::CreateNetworkContext(
   network::mojom::NetworkContextParamsPtr context_params =
       SystemNetworkContextManager::CreateDefaultNetworkContextParams(
           GetUserAgent());
+  // Headers coming from the embedder are implicitly trusted and should not
+  // trigger CORS checks.
+  context_params->allow_any_cors_exempt_header_for_browser = true;
   context_params->accept_language = GetAcceptLangs(context);
   if (!context->IsOffTheRecord()) {
     base::FilePath cookie_path = context->GetPath();

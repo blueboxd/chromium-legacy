@@ -37,7 +37,6 @@
 <translation id="1041263367839475438">Thiết bị hiện có</translation>
 <translation id="1042174272890264476">Máy tính của bạn cũng đi kèm với thư viện RLZ của <ph name="SHORT_PRODUCT_NAME" /> được tích hợp sẵn. RLZ chỉ định thẻ không thể nhận dạng cá nhân, không duy nhất để đo lường các tìm kiếm và mức độ sử dụng <ph name="SHORT_PRODUCT_NAME" /> mà một chiến dịch quảng cáo cụ thể mang lại. Đôi khi các nhãn này xuất hiện trong truy vấn Google Tìm kiếm trong <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1043818413152647937">Cũng xóa dữ liệu khỏi các ứng dụng này?</translation>
-<translation id="1045448422538531528">Thêm vào nhóm</translation>
 <translation id="1046635659603195359">Có vẻ như bạn đã thiết lập tính năng Voice Match với Trợ lý Google trên một thiết bị khác. Trợ lý có thể dùng những bản ghi âm đã có trước đây để tạo một mẫu giọng nói trên thiết bị này. Quá trình này sẽ mất chưa đến 1 phút.</translation>
 <translation id="104710386808485638">Khởi động lại Linux?</translation>
 <translation id="1047431265488717055">Sao chép &amp;văn bản liên kết</translation>
@@ -92,6 +91,7 @@
 <translation id="1122198203221319518">&amp;Công cụ</translation>
 <translation id="1122242684574577509">Xác thực bị lỗi. Nhấp để truy cập trang đăng nhập của mạng Wi-Fi mà bạn đang sử dụng (<ph name="NETWORK_ID" />).</translation>
 <translation id="1122960773616686544">Tên dấu trang</translation>
+<translation id="1123753900084781868">Tính năng Phụ đề trực tiếp hiện không hoạt động</translation>
 <translation id="1124772482545689468">Người dùng</translation>
 <translation id="1125550662859510761">Có vẻ như là <ph name="WIDTH" /> x <ph name="HEIGHT" /> (Gốc)</translation>
 <translation id="1126809382673880764">Không bảo vệ bạn trước các trang web, tệp đã tải xuống và tiện ích nguy hiểm. Bạn sẽ vẫn được bảo vệ bằng tính năng Duyệt web an toàn (nếu có) ở các dịch vụ khác của Google, chẳng hạn như Gmail và Tìm kiếm.</translation>
@@ -407,7 +407,6 @@
 <translation id="1536754031901697553">Đang ngắt kết nối...</translation>
 <translation id="15373452373711364">Con trỏ chuột lớn</translation>
 <translation id="1540605929960647700">Bật chế độ minh họa</translation>
-<translation id="1541396123399225659">Thêm vào nhóm mới</translation>
 <translation id="1542514202066550870">Tab này đang trình bày nội dung thực tế ảo đến một kính thực tế ảo.</translation>
 <translation id="1543284117603151572">Đã nhập từ Edge</translation>
 <translation id="1545177026077493356">Chế độ kiosk tự động</translation>
@@ -1905,7 +1904,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="3514373592552233661">Mạng ưa thích sẽ được ưu tiên hơn so với các mạng đã biết khác nếu có nhiều mạng</translation>
 <translation id="3515983984924808886">Chạm lại vào khóa bảo mật để xác nhận đặt lại. Thao tác này sẽ xóa toàn bộ thông tin lưu trữ trên khóa bảo mật, bao gồm cả mã PIN của khóa.</translation>
 <translation id="3518985090088779359">Chấp nhận và tiếp tục</translation>
-<translation id="351952459507671940">Thêm vào nhóm mới</translation>
 <translation id="3521606918211282604">Thay đổi dung lượng ổ đĩa</translation>
 <translation id="3523642406908660543">Hỏi khi một trang web muốn sử dụng plugin để truy cập vào máy tính của bạn (được khuyến nghị)</translation>
 <translation id="3524965460886318643">Xuất hoạt động</translation>
@@ -2895,7 +2893,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="4871322859485617074">Mã PIN chứa ký tự không hợp lệ</translation>
 <translation id="4871370605780490696">Thêm dấu trang</translation>
 <translation id="4871719318659334896">Đóng nhóm</translation>
-<translation id="4871852311166078968">Thêm vào nhóm</translation>
 <translation id="4873312501243535625">Trình kiểm tra tệp phương tiện</translation>
 <translation id="4876273079589074638">Giúp các kỹ sư của chúng tôi điều tra và khắc phục trục trặc này. Liệt kê các bước chính xác nếu bạn có thể. Không cần liệt kê quá chi tiết!</translation>
 <translation id="4876895919560854374">Khóa và mở khóa màn hình</translation>

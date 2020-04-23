@@ -80,7 +80,7 @@ public class QrCodeDialog extends DialogFragment {
 
     private View getDialogView() {
         View dialogView = (View) getActivity().getLayoutInflater().inflate(
-                org.chromium.chrome.browser.share.qrcode.R.layout.qrcode_dialog, null);
+                org.chromium.chrome.browser.share.R.layout.qrcode_dialog, null);
         ChromeImageButton closeButton =
                 (ChromeImageButton) dialogView.findViewById(R.id.close_button);
         closeButton.setOnClickListener(v -> dismiss());
@@ -93,9 +93,9 @@ public class QrCodeDialog extends DialogFragment {
         QrCodePageAdapter pageAdapter = new QrCodePageAdapter(pages);
 
         TabLayout tabLayout =
-                dialogView.findViewById(org.chromium.chrome.browser.share.qrcode.R.id.tab_layout);
-        ViewPager viewPager = dialogView.findViewById(
-                org.chromium.chrome.browser.share.qrcode.R.id.qrcode_view_pager);
+                dialogView.findViewById(org.chromium.chrome.browser.share.R.id.tab_layout);
+        ViewPager viewPager =
+                dialogView.findViewById(org.chromium.chrome.browser.share.R.id.qrcode_view_pager);
         viewPager.setAdapter(pageAdapter);
 
         mTabLayoutPageListener = new TabLayoutPageListener(tabLayout, mTabs);

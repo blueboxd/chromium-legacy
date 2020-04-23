@@ -9,8 +9,8 @@
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_html_or_trusted_script_or_trusted_script_url.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_html.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_script.h"
@@ -29,19 +29,19 @@ void TrustedTypesCheckForHTMLThrows(const String& string) {
       nullptr /* extra_data */);
   blink::test::RunPendingTasks();
 
-  Document& document = dummy_page_holder->GetDocument();
+  LocalDOMWindow* window = dummy_page_holder->GetFrame().DomWindow();
   V8TestingScope scope;
   DummyExceptionStateForTesting exception_state;
   ASSERT_FALSE(exception_state.HadException());
-  String s = TrustedTypesCheckForHTML(string, &document, exception_state);
+  String s = TrustedTypesCheckForHTML(string, window, exception_state);
   EXPECT_FALSE(exception_state.HadException());
 
-  document.GetContentSecurityPolicy()->DidReceiveHeader(
+  window->GetContentSecurityPolicy()->DidReceiveHeader(
       "require-trusted-types-for 'script'",
       network::mojom::ContentSecurityPolicyType::kEnforce,
       network::mojom::ContentSecurityPolicySource::kMeta);
   ASSERT_FALSE(exception_state.HadException());
-  String s1 = TrustedTypesCheckForHTML(string, &document, exception_state);
+  String s1 = TrustedTypesCheckForHTML(string, window, exception_state);
   EXPECT_TRUE(exception_state.HadException());
   EXPECT_EQ(ESErrorType::kTypeError, exception_state.CodeAs<ESErrorType>());
   exception_state.ClearException();
@@ -55,21 +55,19 @@ void TrustedTypesCheckForScriptThrows(const String& string) {
       nullptr /* extra_data */);
   blink::test::RunPendingTasks();
 
-  Document& document = dummy_page_holder->GetDocument();
+  LocalDOMWindow* window = dummy_page_holder->GetFrame().DomWindow();
   V8TestingScope scope;
   DummyExceptionStateForTesting exception_state;
   ASSERT_FALSE(exception_state.HadException());
-  String s = TrustedTypesCheckForScript(string, document.ToExecutionContext(),
-                                        exception_state);
+  String s = TrustedTypesCheckForScript(string, window, exception_state);
   EXPECT_FALSE(exception_state.HadException());
 
-  document.GetContentSecurityPolicy()->DidReceiveHeader(
+  window->GetContentSecurityPolicy()->DidReceiveHeader(
       "require-trusted-types-for 'script'",
       network::mojom::ContentSecurityPolicyType::kEnforce,
       network::mojom::ContentSecurityPolicySource::kMeta);
   ASSERT_FALSE(exception_state.HadException());
-  String s1 = TrustedTypesCheckForScript(string, document.ToExecutionContext(),
-                                         exception_state);
+  String s1 = TrustedTypesCheckForScript(string, window, exception_state);
   EXPECT_TRUE(exception_state.HadException());
   EXPECT_EQ(ESErrorType::kTypeError, exception_state.CodeAs<ESErrorType>());
   exception_state.ClearException();
@@ -83,21 +81,19 @@ void TrustedTypesCheckForScriptURLThrows(const String& string) {
       nullptr /* extra_data */);
   blink::test::RunPendingTasks();
 
-  Document& document = dummy_page_holder->GetDocument();
+  LocalDOMWindow* window = dummy_page_holder->GetFrame().DomWindow();
   V8TestingScope scope;
   DummyExceptionStateForTesting exception_state;
   ASSERT_FALSE(exception_state.HadException());
-  String s = TrustedTypesCheckForScriptURL(
-      string, document.ToExecutionContext(), exception_state);
+  String s = TrustedTypesCheckForScriptURL(string, window, exception_state);
   EXPECT_FALSE(exception_state.HadException());
 
-  document.GetContentSecurityPolicy()->DidReceiveHeader(
+  window->GetContentSecurityPolicy()->DidReceiveHeader(
       "require-trusted-types-for 'script'",
       network::mojom::ContentSecurityPolicyType::kEnforce,
       network::mojom::ContentSecurityPolicySource::kMeta);
   ASSERT_FALSE(exception_state.HadException());
-  String s1 = TrustedTypesCheckForScriptURL(
-      string, document.ToExecutionContext(), exception_state);
+  String s1 = TrustedTypesCheckForScriptURL(string, window, exception_state);
   EXPECT_TRUE(exception_state.HadException());
   EXPECT_EQ(ESErrorType::kTypeError, exception_state.CodeAs<ESErrorType>());
   exception_state.ClearException();
@@ -107,11 +103,11 @@ void TrustedTypesCheckForScriptWorks(
     const StringOrTrustedScript& string_or_trusted_script,
     String expected) {
   auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
-  Document& document = dummy_page_holder->GetDocument();
+  LocalDOMWindow* window = dummy_page_holder->GetFrame().DomWindow();
   V8TestingScope scope;
   DummyExceptionStateForTesting exception_state;
-  String s = TrustedTypesCheckForScript(
-      string_or_trusted_script, document.ToExecutionContext(), exception_state);
+  String s = TrustedTypesCheckForScript(string_or_trusted_script, window,
+                                        exception_state);
   ASSERT_EQ(s, expected);
 }
 

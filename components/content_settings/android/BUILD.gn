@@ -31,14 +31,17 @@ source_set("android") {
 }
 
 android_library("content_settings_enums_java") {
-  srcjar_deps = [ ":content_setting_javagen" ]
+  srcjar_deps = [ ":content_settings_enums_javagen" ]
   deps = [ "//third_party/android_deps:androidx_annotation_annotation_java" ]
 }
 
-java_cpp_enum("content_setting_javagen") {
+java_cpp_enum("content_settings_enums_javagen") {
   sources = [
+    "../core/browser/cookie_settings.h",
     "../core/common/content_settings.h",
+    "../core/common/content_settings_types.h",
     "../core/common/cookie_controls_enforcement.h",
     "../core/common/cookie_controls_status.h",
   ]
+  visibility = [ ":*" ]  # Depend on through :content_settings_enums_java
 }

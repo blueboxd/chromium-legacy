@@ -53,6 +53,29 @@ While most manifest changes are reviewed when the manifest template file
 changes, manifest entries that are pulled in via. deps (through manifest
 merging) can cause real bugs (permissions issues, security vulnerabilities).
 
+## Native Libraries and Assets
+Some of our apk and aab files contain native library files (under lib/) and
+assets files (under assets/).
+
+### What are `*.native_libs_and_assets.expected` files?
+`*.native_libs_and_assets.expected` files store in a text format the list of
+native libraries & assets, and their related information (whether it's
+compressed, how it's aligned).
+We have
+1. [chrome_modern_public_bundle__base.native_libs_and_assets.expected](chrome_modern_public_bundle__base__create.native_libs_and_assets.expected),
+which is for the base module of `chrome_modern_public_bundle`.
+2. [monochrome_public_bundle__base.native_libs_and_assets.expected](monochrome_public_bundle__base__create.native_libs_and_assets.expected),
+which is for the base module of `monochrome_public_bundle`.
+3. [trichrome_chrome_bundle__base.native_libs_and_assets.expected](trichrome_chrome_bundle__base__create.native_libs_and_assets.expected),
+which is for the base module of `trichrome_chrome_bundle`.
+4. [trichrome_library_apk.native_libs_and_assets.expected](trichrome_library_apk__create.native_libs_and_assets.expected),
+which is for `trichrome_library_apk`
+
+### Why do we care about native libraries and assets discrepancies?
+When we change build gn files, the native libraries and assets can sometimes
+be changed in an unexpected way.
+
+
 ## Build failures caused by `*.expected` files
 
 ### What is the build error telling me?

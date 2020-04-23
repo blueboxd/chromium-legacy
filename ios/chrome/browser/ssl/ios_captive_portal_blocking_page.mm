@@ -24,8 +24,11 @@ IOSCaptivePortalBlockingPage::IOSCaptivePortalBlockingPage(
     web::WebState* web_state,
     const GURL& request_url,
     const GURL& landing_url,
-    base::OnceCallback<void(bool)> callback)
-    : IOSSecurityInterstitialPage(web_state, request_url),
+    base::OnceCallback<void(bool)> callback,
+    security_interstitials::IOSBlockingPageControllerClient* client)
+    : security_interstitials::IOSSecurityInterstitialPage(web_state,
+                                                          request_url,
+                                                          client),
       landing_url_(landing_url),
       callback_(std::move(callback)) {
   captive_portal::CaptivePortalMetrics::LogCaptivePortalBlockingPageEvent(

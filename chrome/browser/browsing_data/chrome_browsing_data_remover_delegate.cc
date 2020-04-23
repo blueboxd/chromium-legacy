@@ -387,7 +387,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
   delete_end_ = delete_end;
 
   base::RepeatingCallback<bool(const GURL& url)> filter =
-      filter_builder->BuildGeneralFilter();
+      filter_builder->BuildUrlFilter();
 
   // Some backends support a filter that |is_null()| to make complete deletion
   // more efficient.

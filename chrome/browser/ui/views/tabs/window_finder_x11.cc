@@ -4,9 +4,12 @@
 
 #include "chrome/browser/ui/views/tabs/window_finder.h"
 
+#include "ui/aura/window.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/point_conversions.h"
+#include "ui/views/widget/desktop_aura/desktop_window_tree_host_linux.h"
 #include "ui/views/widget/desktop_aura/x11_topmost_window_finder.h"
 
 namespace {
@@ -26,7 +29,16 @@ gfx::Point DIPToPixelPoint(const gfx::Point& dip_point) {
 gfx::NativeWindow WindowFinder::GetLocalProcessWindowAtPoint(
     const gfx::Point& screen_point,
     const std::set<gfx::NativeWindow>& ignore) {
+  std::set<gfx::AcceleratedWidget> ignore_top_level;
+  for (auto* const window : ignore)
+    ignore_top_level.emplace(window->GetHost()->GetAcceleratedWidget());
+
   // The X11 server is the canonical state of what the window stacking order is.
   views::X11TopmostWindowFinder finder;
-  return finder.FindLocalProcessWindowAt(DIPToPixelPoint(screen_point), ignore);
+  auto accelerated_widget = finder.FindLocalProcessWindowAt(
+      DIPToPixelPoint(screen_point), ignore_top_level);
+  return accelerated_widget
+             ? views::DesktopWindowTreeHostLinux::GetContentWindowForWidget(
+                   static_cast<gfx::AcceleratedWidget>(accelerated_widget))
+             : nullptr;
 }

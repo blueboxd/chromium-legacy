@@ -132,7 +132,6 @@ void DeferredTaskHandler::HandleDirtyAudioNodeOutputs() {
 
 void DeferredTaskHandler::AddAutomaticPullNode(
     scoped_refptr<AudioHandler> node) {
-  DCHECK(IsAudioThread());
   AssertGraphOwner();
 
   if (!automatic_pull_handlers_.Contains(node)) {

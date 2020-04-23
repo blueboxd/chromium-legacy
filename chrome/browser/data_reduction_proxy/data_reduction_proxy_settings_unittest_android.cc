@@ -24,7 +24,6 @@
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
@@ -76,8 +75,6 @@ void data_reduction_proxy::DataReductionProxySettingsTestBase::ResetSettings(
     settings->data_reduction_proxy_service_ = test_context_->TakeService();
   }
   settings->data_reduction_proxy_service_->SetSettingsForTesting(settings);
-  settings->config_ = test_context_->config();
-  test_context_->config()->ResetParamFlagsForTest();
   EXPECT_CALL(*settings, GetOriginalProfilePrefs())
       .Times(AnyNumber())
       .WillRepeatedly(Return(test_context_->pref_service()));

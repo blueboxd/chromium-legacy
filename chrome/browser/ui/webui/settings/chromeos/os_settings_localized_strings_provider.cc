@@ -33,10 +33,12 @@
 #include "chrome/browser/ui/webui/management_ui.h"
 #include "chrome/browser/ui/webui/policy_indicator_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/chromeos/bluetooth_strings_provider.h"
+#include "chrome/browser/ui/webui/settings/chromeos/device_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/chromeos/internet_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/chromeos/multidevice_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_features_util.h"
 #include "chrome/browser/ui/webui/settings/chromeos/people_strings_provider.h"
+#include "chrome/browser/ui/webui/settings/chromeos/personalization_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_concept.h"
 #include "chrome/browser/ui/webui/settings/shared_settings_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/webui_util.h"
@@ -63,10 +65,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/chromeos/devicetype_utils.h"
-#include "ui/chromeos/events/keyboard_layout_util.h"
-#include "ui/display/display_features.h"
-#include "ui/display/display_switches.h"
-#include "ui/display/manager/touch_device_manager.h"
 #include "ui/display/types/display_constants.h"
 
 namespace chromeos {
@@ -437,51 +435,6 @@ void AddLanguagesStrings(content::WebUIDataSource* html_source) {
       base::ASCIIToUTF16(chrome::kLanguageSettingsLearnMoreUrl));
 }
 
-void AddPersonalizationStrings(content::WebUIDataSource* html_source) {
-  static constexpr webui::LocalizedString kLocalizedStrings[] = {
-      {"ambientModeTitle", IDS_OS_SETTINGS_AMBIENT_MODE_TITLE},
-      {"ambientModeEnabled", IDS_OS_SETTINGS_AMBIENT_MODE_ENABLED},
-      {"ambientModeDisabled", IDS_OS_SETTINGS_AMBIENT_MODE_DISABLED},
-      {"ambientModeOn", IDS_OS_SETTINGS_AMBIENT_MODE_ON},
-      {"ambientModeOff", IDS_OS_SETTINGS_AMBIENT_MODE_OFF},
-      {"ambientModeTopicSourceTitle",
-       IDS_OS_SETTINGS_AMBIENT_MODE_TOPIC_SOURCE_TITLE},
-      {"ambientModeTopicSourceGooglePhotos",
-       IDS_OS_SETTINGS_AMBIENT_MODE_TOPIC_SOURCE_GOOGLE_PHOTOS},
-      {"ambientModeTopicSourceArtGallery",
-       IDS_OS_SETTINGS_AMBIENT_MODE_TOPIC_SOURCE_ART_GALLERY},
-      {"changePictureTitle", IDS_OS_SETTINGS_CHANGE_PICTURE_TITLE},
-      {"openWallpaperApp", IDS_OS_SETTINGS_OPEN_WALLPAPER_APP},
-      {"personalizationPageTitle", IDS_OS_SETTINGS_PERSONALIZATION},
-      {"setWallpaper", IDS_OS_SETTINGS_SET_WALLPAPER},
-      {"takePhoto", IDS_SETTINGS_CHANGE_PICTURE_TAKE_PHOTO},
-      {"captureVideo", IDS_SETTINGS_CHANGE_PICTURE_CAPTURE_VIDEO},
-      {"discardPhoto", IDS_SETTINGS_CHANGE_PICTURE_DISCARD_PHOTO},
-      {"previewAltText", IDS_SETTINGS_CHANGE_PICTURE_PREVIEW_ALT},
-      {"switchModeToVideo", IDS_SETTINGS_CHANGE_PICTURE_SWITCH_MODE_TO_VIDEO},
-      {"profilePhoto", IDS_SETTINGS_CHANGE_PICTURE_PROFILE_PHOTO},
-      {"changePicturePageDescription", IDS_SETTINGS_CHANGE_PICTURE_DIALOG_TEXT},
-      {"switchModeToCamera", IDS_SETTINGS_CHANGE_PICTURE_SWITCH_MODE_TO_CAMERA},
-      {"chooseFile", IDS_SETTINGS_CHANGE_PICTURE_CHOOSE_FILE},
-      {"oldPhoto", IDS_SETTINGS_CHANGE_PICTURE_OLD_PHOTO},
-      {"oldVideo", IDS_SETTINGS_CHANGE_PICTURE_OLD_VIDEO},
-      {"authorCreditText", IDS_SETTINGS_CHANGE_PICTURE_AUTHOR_CREDIT_TEXT},
-      {"photoCaptureAccessibleText",
-       IDS_SETTINGS_PHOTO_CAPTURE_ACCESSIBLE_TEXT},
-      {"photoDiscardAccessibleText",
-       IDS_SETTINGS_PHOTO_DISCARD_ACCESSIBLE_TEXT},
-      {"photoModeAccessibleText", IDS_SETTINGS_PHOTO_MODE_ACCESSIBLE_TEXT},
-      {"videoModeAccessibleText", IDS_SETTINGS_VIDEO_MODE_ACCESSIBLE_TEXT},
-  };
-  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
-
-  html_source->AddBoolean(
-      "changePictureVideoModeEnabled",
-      base::FeatureList::IsEnabled(::features::kChangePictureVideoMode));
-  html_source->AddBoolean("isAmbientModeEnabled",
-                          chromeos::features::IsAmbientModeEnabled());
-}
-
 void AddCrostiniStrings(content::WebUIDataSource* html_source,
                         Profile* profile) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
@@ -758,292 +711,6 @@ void AddChromeOSUserStrings(content::WebUIDataSource* html_source,
   }
 }
 
-void AddDevicePointersStrings(content::WebUIDataSource* html_source) {
-  static constexpr webui::LocalizedString kPointersStrings[] = {
-      {"mouseTitle", IDS_SETTINGS_MOUSE_TITLE},
-      {"touchpadTitle", IDS_SETTINGS_TOUCHPAD_TITLE},
-      {"mouseAndTouchpadTitle", IDS_SETTINGS_MOUSE_AND_TOUCHPAD_TITLE},
-      {"touchpadTapToClickEnabledLabel",
-       IDS_SETTINGS_TOUCHPAD_TAP_TO_CLICK_ENABLED_LABEL},
-      {"touchpadSpeed", IDS_SETTINGS_TOUCHPAD_SPEED_LABEL},
-      {"pointerSlow", IDS_SETTINGS_POINTER_SPEED_SLOW_LABEL},
-      {"pointerFast", IDS_SETTINGS_POINTER_SPEED_FAST_LABEL},
-      {"mouseScrollSpeed", IDS_SETTINGS_MOUSE_SCROLL_SPEED_LABEL},
-      {"mouseSpeed", IDS_SETTINGS_MOUSE_SPEED_LABEL},
-      {"mouseSwapButtons", IDS_SETTINGS_MOUSE_SWAP_BUTTONS_LABEL},
-      {"mouseReverseScroll", IDS_SETTINGS_MOUSE_REVERSE_SCROLL_LABEL},
-      {"mouseAccelerationLabel", IDS_SETTINGS_MOUSE_ACCELERATION_LABEL},
-      {"mouseScrollAccelerationLabel",
-       IDS_SETTINGS_MOUSE_SCROLL_ACCELERATION_LABEL},
-      {"touchpadAccelerationLabel", IDS_SETTINGS_TOUCHPAD_ACCELERATION_LABEL},
-      {"touchpadScrollAccelerationLabel",
-       IDS_SETTINGS_TOUCHPAD_SCROLL_ACCELERATION_LABEL},
-      {"touchpadScrollSpeed", IDS_SETTINGS_TOUCHPAD_SCROLL_SPEED_LABEL},
-  };
-  AddLocalizedStringsBulk(html_source, kPointersStrings);
-
-  html_source->AddString("naturalScrollLearnMoreLink",
-                         GetHelpUrlWithBoard(chrome::kNaturalScrollHelpURL));
-
-  html_source->AddBoolean(
-      "allowDisableMouseAcceleration",
-      base::FeatureList::IsEnabled(::features::kAllowDisableMouseAcceleration));
-  html_source->AddBoolean(
-      "allowScrollSettings",
-      base::FeatureList::IsEnabled(::chromeos::features::kAllowScrollSettings));
-}
-
-void AddDeviceKeyboardStrings(content::WebUIDataSource* html_source) {
-  static constexpr webui::LocalizedString keyboard_strings[] = {
-      {"keyboardTitle", IDS_SETTINGS_KEYBOARD_TITLE},
-      {"keyboardKeyCtrl", IDS_SETTINGS_KEYBOARD_KEY_LEFT_CTRL},
-      {"keyboardKeyAlt", IDS_SETTINGS_KEYBOARD_KEY_LEFT_ALT},
-      {"keyboardKeyCapsLock", IDS_SETTINGS_KEYBOARD_KEY_CAPS_LOCK},
-      {"keyboardKeyCommand", IDS_SETTINGS_KEYBOARD_KEY_COMMAND},
-      {"keyboardKeyDiamond", IDS_SETTINGS_KEYBOARD_KEY_DIAMOND},
-      {"keyboardKeyEscape", IDS_SETTINGS_KEYBOARD_KEY_ESCAPE},
-      {"keyboardKeyBackspace", IDS_SETTINGS_KEYBOARD_KEY_BACKSPACE},
-      {"keyboardKeyAssistant", IDS_SETTINGS_KEYBOARD_KEY_ASSISTANT},
-      {"keyboardKeyDisabled", IDS_SETTINGS_KEYBOARD_KEY_DISABLED},
-      {"keyboardKeyExternalCommand",
-       IDS_SETTINGS_KEYBOARD_KEY_EXTERNAL_COMMAND},
-      {"keyboardKeyExternalMeta", IDS_SETTINGS_KEYBOARD_KEY_EXTERNAL_META},
-      {"keyboardKeyMeta", IDS_SETTINGS_KEYBOARD_KEY_META},
-      {"keyboardSendFunctionKeys", IDS_SETTINGS_KEYBOARD_SEND_FUNCTION_KEYS},
-      {"keyboardEnableAutoRepeat", IDS_SETTINGS_KEYBOARD_AUTO_REPEAT_ENABLE},
-      {"keyRepeatDelay", IDS_SETTINGS_KEYBOARD_AUTO_REPEAT_DELAY},
-      {"keyRepeatDelayLong", IDS_SETTINGS_KEYBOARD_AUTO_REPEAT_DELAY_LONG},
-      {"keyRepeatDelayShort", IDS_SETTINGS_KEYBOARD_AUTO_REPEAT_DELAY_SHORT},
-      {"keyRepeatRate", IDS_SETTINGS_KEYBOARD_AUTO_REPEAT_RATE},
-      {"keyRepeatRateSlow", IDS_SETTINGS_KEYBOARD_AUTO_REPEAT_RATE_SLOW},
-      {"keyRepeatRateFast", IDS_SETTINGS_KEYBOARD_AUTO_REPEAT_FAST},
-      {"showKeyboardShortcutViewer",
-       IDS_SETTINGS_KEYBOARD_SHOW_SHORTCUT_VIEWER},
-      {"keyboardShowLanguageAndInput",
-       IDS_SETTINGS_KEYBOARD_SHOW_LANGUAGE_AND_INPUT},
-  };
-  AddLocalizedStringsBulk(html_source, keyboard_strings);
-
-  html_source->AddLocalizedString("keyboardKeySearch",
-                                  ui::DeviceUsesKeyboardLayout2()
-                                      ? IDS_SETTINGS_KEYBOARD_KEY_LAUNCHER
-                                      : IDS_SETTINGS_KEYBOARD_KEY_SEARCH);
-  html_source->AddLocalizedString(
-      "keyboardSendFunctionKeysDescription",
-      ui::DeviceUsesKeyboardLayout2()
-          ? IDS_SETTINGS_KEYBOARD_SEND_FUNCTION_KEYS_LAYOUT2_DESCRIPTION
-          : IDS_SETTINGS_KEYBOARD_SEND_FUNCTION_KEYS_DESCRIPTION);
-}
-
-void AddDeviceStylusStrings(content::WebUIDataSource* html_source) {
-  static constexpr webui::LocalizedString kStylusStrings[] = {
-      {"stylusTitle", IDS_SETTINGS_STYLUS_TITLE},
-      {"stylusEnableStylusTools", IDS_SETTINGS_STYLUS_ENABLE_STYLUS_TOOLS},
-      {"stylusAutoOpenStylusTools", IDS_SETTINGS_STYLUS_AUTO_OPEN_STYLUS_TOOLS},
-      {"stylusFindMoreAppsPrimary", IDS_SETTINGS_STYLUS_FIND_MORE_APPS_PRIMARY},
-      {"stylusFindMoreAppsSecondary",
-       IDS_SETTINGS_STYLUS_FIND_MORE_APPS_SECONDARY},
-      {"stylusNoteTakingApp", IDS_SETTINGS_STYLUS_NOTE_TAKING_APP_LABEL},
-      {"stylusNoteTakingAppEnabledOnLockScreen",
-       IDS_SETTINGS_STYLUS_NOTE_TAKING_APP_LOCK_SCREEN_CHECKBOX},
-      {"stylusNoteTakingAppKeepsLastNoteOnLockScreen",
-       IDS_SETTINGS_STYLUS_NOTE_TAKING_APP_KEEP_LATEST_NOTE},
-      {"stylusNoteTakingAppLockScreenSettingsHeader",
-       IDS_SETTINGS_STYLUS_LOCK_SCREEN_NOTES_TITLE},
-      {"stylusNoteTakingAppNoneAvailable",
-       IDS_SETTINGS_STYLUS_NOTE_TAKING_APP_NONE_AVAILABLE},
-      {"stylusNoteTakingAppWaitingForAndroid",
-       IDS_SETTINGS_STYLUS_NOTE_TAKING_APP_WAITING_FOR_ANDROID}};
-  AddLocalizedStringsBulk(html_source, kStylusStrings);
-}
-
-void AddDeviceDisplayStrings(content::WebUIDataSource* html_source) {
-  static constexpr webui::LocalizedString kDisplayStrings[] = {
-      {"displayTitle", IDS_SETTINGS_DISPLAY_TITLE},
-      {"displayArrangementText", IDS_SETTINGS_DISPLAY_ARRANGEMENT_TEXT},
-      {"displayArrangementTitle", IDS_SETTINGS_DISPLAY_ARRANGEMENT_TITLE},
-      {"displayMirror", IDS_SETTINGS_DISPLAY_MIRROR},
-      {"displayMirrorDisplayName", IDS_SETTINGS_DISPLAY_MIRROR_DISPLAY_NAME},
-      {"displayAmbientColorTitle", IDS_SETTINGS_DISPLAY_AMBIENT_COLOR_TITLE},
-      {"displayAmbientColorSubtitle",
-       IDS_SETTINGS_DISPLAY_AMBIENT_COLOR_SUBTITLE},
-      {"displayNightLightLabel", IDS_SETTINGS_DISPLAY_NIGHT_LIGHT_LABEL},
-      {"displayNightLightOnAtSunset",
-       IDS_SETTINGS_DISPLAY_NIGHT_LIGHT_ON_AT_SUNSET},
-      {"displayNightLightOffAtSunrise",
-       IDS_SETTINGS_DISPLAY_NIGHT_LIGHT_OFF_AT_SUNRISE},
-      {"displayNightLightScheduleCustom",
-       IDS_SETTINGS_DISPLAY_NIGHT_LIGHT_SCHEDULE_CUSTOM},
-      {"displayNightLightScheduleLabel",
-       IDS_SETTINGS_DISPLAY_NIGHT_LIGHT_SCHEDULE_LABEL},
-      {"displayNightLightScheduleNever",
-       IDS_SETTINGS_DISPLAY_NIGHT_LIGHT_SCHEDULE_NEVER},
-      {"displayNightLightScheduleSunsetToSunRise",
-       IDS_SETTINGS_DISPLAY_NIGHT_LIGHT_SCHEDULE_SUNSET_TO_SUNRISE},
-      {"displayNightLightStartTime",
-       IDS_SETTINGS_DISPLAY_NIGHT_LIGHT_START_TIME},
-      {"displayNightLightStopTime", IDS_SETTINGS_DISPLAY_NIGHT_LIGHT_STOP_TIME},
-      {"displayNightLightText", IDS_SETTINGS_DISPLAY_NIGHT_LIGHT_TEXT},
-      {"displayNightLightTemperatureLabel",
-       IDS_SETTINGS_DISPLAY_NIGHT_LIGHT_TEMPERATURE_LABEL},
-      {"displayNightLightTempSliderMaxLabel",
-       IDS_SETTINGS_DISPLAY_NIGHT_LIGHT_TEMP_SLIDER_MAX_LABEL},
-      {"displayNightLightTempSliderMinLabel",
-       IDS_SETTINGS_DISPLAY_NIGHT_LIGHT_TEMP_SLIDER_MIN_LABEL},
-      {"displayUnifiedDesktop", IDS_SETTINGS_DISPLAY_UNIFIED_DESKTOP},
-      {"displayUnifiedDesktopOn", IDS_SETTINGS_DISPLAY_UNIFIED_DESKTOP_ON},
-      {"displayUnifiedDesktopOff", IDS_SETTINGS_DISPLAY_UNIFIED_DESKTOP_OFF},
-      {"displayResolutionTitle", IDS_SETTINGS_DISPLAY_RESOLUTION_TITLE},
-      {"displayResolutionText", IDS_SETTINGS_DISPLAY_RESOLUTION_TEXT},
-      {"displayResolutionTextBest", IDS_SETTINGS_DISPLAY_RESOLUTION_TEXT_BEST},
-      {"displayResolutionTextNative",
-       IDS_SETTINGS_DISPLAY_RESOLUTION_TEXT_NATIVE},
-      {"displayResolutionSublabel", IDS_SETTINGS_DISPLAY_RESOLUTION_SUBLABEL},
-      {"displayResolutionMenuItem", IDS_SETTINGS_DISPLAY_RESOLUTION_MENU_ITEM},
-      {"displayResolutionInterlacedMenuItem",
-       IDS_SETTINGS_DISPLAY_RESOLUTION_INTERLACED_MENU_ITEM},
-      {"displayZoomTitle", IDS_SETTINGS_DISPLAY_ZOOM_TITLE},
-      {"displayZoomSublabel", IDS_SETTINGS_DISPLAY_ZOOM_SUBLABEL},
-      {"displayZoomValue", IDS_SETTINGS_DISPLAY_ZOOM_VALUE},
-      {"displayZoomLogicalResolutionText",
-       IDS_SETTINGS_DISPLAY_ZOOM_LOGICAL_RESOLUTION_TEXT},
-      {"displayZoomNativeLogicalResolutionNativeText",
-       IDS_SETTINGS_DISPLAY_ZOOM_LOGICAL_RESOLUTION_NATIVE_TEXT},
-      {"displayZoomLogicalResolutionDefaultText",
-       IDS_SETTINGS_DISPLAY_ZOOM_LOGICAL_RESOLUTION_DEFAULT_TEXT},
-      {"displaySizeSliderMinLabel", IDS_SETTINGS_DISPLAY_ZOOM_SLIDER_MINIMUM},
-      {"displaySizeSliderMaxLabel", IDS_SETTINGS_DISPLAY_ZOOM_SLIDER_MAXIMUM},
-      {"displayScreenTitle", IDS_SETTINGS_DISPLAY_SCREEN},
-      {"displayScreenExtended", IDS_SETTINGS_DISPLAY_SCREEN_EXTENDED},
-      {"displayScreenPrimary", IDS_SETTINGS_DISPLAY_SCREEN_PRIMARY},
-      {"displayOrientation", IDS_SETTINGS_DISPLAY_ORIENTATION},
-      {"displayOrientationStandard", IDS_SETTINGS_DISPLAY_ORIENTATION_STANDARD},
-      {"displayOrientationAutoRotate",
-       IDS_SETTINGS_DISPLAY_ORIENTATION_AUTO_ROTATE},
-      {"displayOverscanPageText", IDS_SETTINGS_DISPLAY_OVERSCAN_TEXT},
-      {"displayOverscanPageTitle", IDS_SETTINGS_DISPLAY_OVERSCAN_TITLE},
-      {"displayOverscanSubtitle", IDS_SETTINGS_DISPLAY_OVERSCAN_SUBTITLE},
-      {"displayOverscanInstructions",
-       IDS_SETTINGS_DISPLAY_OVERSCAN_INSTRUCTIONS},
-      {"displayOverscanResize", IDS_SETTINGS_DISPLAY_OVERSCAN_RESIZE},
-      {"displayOverscanPosition", IDS_SETTINGS_DISPLAY_OVERSCAN_POSITION},
-      {"displayOverscanReset", IDS_SETTINGS_DISPLAY_OVERSCAN_RESET},
-      {"displayTouchCalibrationTitle",
-       IDS_SETTINGS_DISPLAY_TOUCH_CALIBRATION_TITLE},
-      {"displayTouchCalibrationText",
-       IDS_SETTINGS_DISPLAY_TOUCH_CALIBRATION_TEXT}};
-  AddLocalizedStringsBulk(html_source, kDisplayStrings);
-
-  base::CommandLine& cmd = *base::CommandLine::ForCurrentProcess();
-  html_source->AddBoolean("unifiedDesktopAvailable",
-                          cmd.HasSwitch(::switches::kEnableUnifiedDesktop));
-
-  html_source->AddBoolean("listAllDisplayModes",
-                          display::features::IsListAllDisplayModesEnabled());
-
-  html_source->AddBoolean("deviceSupportsAmbientColor",
-                          ash::features::IsAllowAmbientEQEnabled());
-
-  html_source->AddBoolean(
-      "enableTouchCalibrationSetting",
-      cmd.HasSwitch(chromeos::switches::kEnableTouchCalibrationSetting));
-
-  html_source->AddBoolean("hasExternalTouchDevice",
-                          display::HasExternalTouchscreenDevice());
-
-  html_source->AddBoolean(
-      "allowDisplayIdentificationApi",
-      base::FeatureList::IsEnabled(ash::features::kDisplayIdentification));
-
-  html_source->AddString("invalidDisplayId",
-                         base::NumberToString(display::kInvalidDisplayId));
-}
-
-void AddDeviceStorageStrings(content::WebUIDataSource* html_source) {
-  static constexpr webui::LocalizedString kStorageStrings[] = {
-      {"storageTitle", IDS_SETTINGS_STORAGE_TITLE},
-      {"storageItemInUse", IDS_SETTINGS_STORAGE_ITEM_IN_USE},
-      {"storageItemAvailable", IDS_SETTINGS_STORAGE_ITEM_AVAILABLE},
-      {"storageItemSystem", IDS_SETTINGS_STORAGE_ITEM_SYSTEM},
-      {"storageItemMyFiles", IDS_SETTINGS_STORAGE_ITEM_MY_FILES},
-      {"storageItemBrowsingData", IDS_SETTINGS_STORAGE_ITEM_BROWSING_DATA},
-      {"storageItemApps", IDS_SETTINGS_STORAGE_ITEM_APPS},
-      {"storageItemCrostini", IDS_SETTINGS_STORAGE_ITEM_CROSTINI},
-      {"storageItemOtherUsers", IDS_SETTINGS_STORAGE_ITEM_OTHER_USERS},
-      {"storageSizeComputing", IDS_SETTINGS_STORAGE_SIZE_CALCULATING},
-      {"storageSizeUnknown", IDS_SETTINGS_STORAGE_SIZE_UNKNOWN},
-      {"storageSpaceLowMessageTitle",
-       IDS_SETTINGS_STORAGE_SPACE_LOW_MESSAGE_TITLE},
-      {"storageSpaceLowMessageLine1",
-       IDS_SETTINGS_STORAGE_SPACE_LOW_MESSAGE_LINE_1},
-      {"storageSpaceLowMessageLine2",
-       IDS_SETTINGS_STORAGE_SPACE_LOW_MESSAGE_LINE_2},
-      {"storageSpaceCriticallyLowMessageTitle",
-       IDS_SETTINGS_STORAGE_SPACE_CRITICALLY_LOW_MESSAGE_TITLE},
-      {"storageSpaceCriticallyLowMessageLine1",
-       IDS_SETTINGS_STORAGE_SPACE_CRITICALLY_LOW_MESSAGE_LINE_1},
-      {"storageSpaceCriticallyLowMessageLine2",
-       IDS_SETTINGS_STORAGE_SPACE_CRITICALLY_LOW_MESSAGE_LINE_2},
-      {"storageExternal", IDS_SETTINGS_STORAGE_EXTERNAL},
-      {"storageExternalStorageEmptyListHeader",
-       IDS_SETTINGS_STORAGE_EXTERNAL_STORAGE_EMPTY_LIST_HEADER},
-      {"storageExternalStorageListHeader",
-       IDS_SETTINGS_STORAGE_EXTERNAL_STORAGE_LIST_HEADER},
-      {"storageOverviewAriaLabel", IDS_SETTINGS_STORAGE_OVERVIEW_ARIA_LABEL}};
-  AddLocalizedStringsBulk(html_source, kStorageStrings);
-
-  html_source->AddString(
-      "storageAndroidAppsExternalDrivesNote",
-      l10n_util::GetStringFUTF16(
-          IDS_SETTINGS_STORAGE_ANDROID_APPS_ACCESS_EXTERNAL_DRIVES_NOTE,
-          base::ASCIIToUTF16(chrome::kArcExternalStorageLearnMoreURL)));
-}
-
-void AddDevicePowerStrings(content::WebUIDataSource* html_source) {
-  static constexpr webui::LocalizedString kPowerStrings[] = {
-      {"powerTitle", IDS_SETTINGS_POWER_TITLE},
-      {"powerSourceLabel", IDS_SETTINGS_POWER_SOURCE_LABEL},
-      {"powerSourceBattery", IDS_SETTINGS_POWER_SOURCE_BATTERY},
-      {"powerSourceAcAdapter", IDS_SETTINGS_POWER_SOURCE_AC_ADAPTER},
-      {"powerSourceLowPowerCharger",
-       IDS_SETTINGS_POWER_SOURCE_LOW_POWER_CHARGER},
-      {"calculatingPower", IDS_SETTINGS_POWER_SOURCE_CALCULATING},
-      {"powerIdleLabel", IDS_SETTINGS_POWER_IDLE_LABEL},
-      {"powerIdleWhileChargingLabel",
-       IDS_SETTINGS_POWER_IDLE_WHILE_CHARGING_LABEL},
-      {"powerIdleWhileChargingAriaLabel",
-       IDS_SETTINGS_POWER_IDLE_WHILE_CHARGING_ARIA_LABEL},
-      {"powerIdleWhileOnBatteryLabel",
-       IDS_SETTINGS_POWER_IDLE_WHILE_ON_BATTERY_LABEL},
-      {"powerIdleWhileOnBatteryAriaLabel",
-       IDS_SETTINGS_POWER_IDLE_WHILE_ON_BATTERY_ARIA_LABEL},
-      {"powerIdleDisplayOffSleep", IDS_SETTINGS_POWER_IDLE_DISPLAY_OFF_SLEEP},
-      {"powerIdleDisplayOff", IDS_SETTINGS_POWER_IDLE_DISPLAY_OFF},
-      {"powerIdleDisplayOn", IDS_SETTINGS_POWER_IDLE_DISPLAY_ON},
-      {"powerIdleOther", IDS_SETTINGS_POWER_IDLE_OTHER},
-      {"powerLidSleepLabel", IDS_SETTINGS_POWER_LID_CLOSED_SLEEP_LABEL},
-      {"powerLidSignOutLabel", IDS_SETTINGS_POWER_LID_CLOSED_SIGN_OUT_LABEL},
-      {"powerLidShutDownLabel", IDS_SETTINGS_POWER_LID_CLOSED_SHUT_DOWN_LABEL},
-  };
-  AddLocalizedStringsBulk(html_source, kPowerStrings);
-}
-
-void AddDeviceStrings(content::WebUIDataSource* html_source) {
-  static constexpr webui::LocalizedString kDeviceStrings[] = {
-      {"devicePageTitle", IDS_SETTINGS_DEVICE_TITLE},
-      {"scrollLabel", IDS_SETTINGS_SCROLL_LABEL},
-      {"touchPadScrollLabel", IDS_OS_SETTINGS_TOUCHPAD_REVERSE_SCROLL_LABEL},
-  };
-  AddLocalizedStringsBulk(html_source, kDeviceStrings);
-
-  AddDevicePointersStrings(html_source);
-  AddDeviceKeyboardStrings(html_source);
-  AddDeviceStylusStrings(html_source);
-  AddDeviceDisplayStrings(html_source);
-  AddDeviceStorageStrings(html_source);
-  AddDevicePowerStrings(html_source);
-}
-
 void AddFilesStrings(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"disconnectGoogleDriveAccount", IDS_SETTINGS_DISCONNECT_GOOGLE_DRIVE},
@@ -1086,6 +753,10 @@ void AddGoogleAssistantStrings(content::WebUIDataSource* html_source,
       {"googleAssistantEnableContext", IDS_ASSISTANT_SCREEN_CONTEXT_TITLE},
       {"googleAssistantEnableContextDescription",
        IDS_ASSISTANT_SCREEN_CONTEXT_DESC},
+      {"googleAssistantEnableQuickAnswers",
+       IDS_ASSISTANT_QUICK_ANSWERS_SETTING_TITLE},
+      {"googleAssistantEnableQuickAnswersDescription",
+       IDS_ASSISTANT_QUICK_ANSWERS_SETTING_DESC},
       {"googleAssistantEnableHotword",
        IDS_SETTINGS_GOOGLE_ASSISTANT_ENABLE_HOTWORD},
       {"googleAssistantEnableHotwordDescription",
@@ -1121,6 +792,9 @@ void AddGoogleAssistantStrings(content::WebUIDataSource* html_source,
   html_source->AddBoolean(
       "voiceMatchDisabled",
       chromeos::assistant::features::IsVoiceMatchDisabled());
+  html_source->AddBoolean(
+      "quickAnswersAvailable",
+      chromeos::features::IsQuickAnswersSettingToggleEnabled());
 }
 
 void AddPrintingStrings(content::WebUIDataSource* html_source) {
@@ -1516,6 +1190,11 @@ OsSettingsLocalizedStringsProvider::OsSettingsLocalizedStringsProvider(
   per_page_providers_.push_back(std::make_unique<PeopleStringsProvider>(
       profile, /*delegate=*/this, sync_service, supervised_user_service,
       kerberos_credentials_manager));
+  per_page_providers_.push_back(
+      std::make_unique<DeviceStringsProvider>(profile, /*delegate=*/this));
+  per_page_providers_.push_back(
+      std::make_unique<PersonalizationStringsProvider>(
+          profile, /*delegate=*/this, profile->GetPrefs()));
 }
 
 OsSettingsLocalizedStringsProvider::~OsSettingsLocalizedStringsProvider() =
@@ -1538,11 +1217,9 @@ void OsSettingsLocalizedStringsProvider::AddOsLocalizedStrings(
   AddCommonStrings(html_source, profile);
   AddCrostiniStrings(html_source, profile);
   AddDateTimeStrings(html_source);
-  AddDeviceStrings(html_source);
   AddFilesStrings(html_source);
   AddGoogleAssistantStrings(html_source, profile);
   AddLanguagesStrings(html_source);
-  AddPersonalizationStrings(html_source);
   AddPluginVmStrings(html_source, profile);
   AddPrintingStrings(html_source);
   AddPrivacyStrings(html_source);

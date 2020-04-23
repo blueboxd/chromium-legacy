@@ -23,6 +23,7 @@
 #include "cc/paint/paint_canvas.h"
 #include "content/shell/common/web_test/web_test_constants.h"
 #include "content/shell/common/web_test/web_test_string_util.h"
+#include "content/shell/renderer/web_test/blink_test_helpers.h"
 #include "content/shell/renderer/web_test/blink_test_runner.h"
 #include "content/shell/test_runner/layout_dump.h"
 #include "content/shell/test_runner/mock_content_settings_client.h"
@@ -41,6 +42,7 @@
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
 #include "services/network/public/mojom/cors.mojom.h"
+#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/web/blink.h"
@@ -128,15 +130,16 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   static gin::WrapperInfo kWrapperInfo;
 
   static void Install(base::WeakPtr<TestRunner> test_runner,
-                      base::WeakPtr<TestRunnerForSpecificView> view_test_runner,
+                      TestRunnerForSpecificView* view_test_runner,
                       blink::WebLocalFrame* frame,
+                      SpellCheckClient* spell_check,
                       bool is_wpt_reftest,
                       bool is_frame_part_of_main_test_window);
 
  private:
-  explicit TestRunnerBindings(
-      base::WeakPtr<TestRunner> test_runner,
-      base::WeakPtr<TestRunnerForSpecificView> view_test_runner);
+  explicit TestRunnerBindings(base::WeakPtr<TestRunner> test_runner,
+                              TestRunnerForSpecificView* view_test_runner,
+                              SpellCheckClient* spell_check);
   ~TestRunnerBindings() override;
 
   // gin::Wrappable:
@@ -179,7 +182,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void DumpPermissionClientCallbacks();
   void DumpPingLoaderCallbacks();
   void DumpSelectionRect();
-  void DumpSpellCheckCallbacks();
   void DumpTitleChanges();
   void DumpUserGestureInFrameLoadCallbacks();
   void EvaluateScriptInIsolatedWorld(int world_id, const std::string& script);
@@ -303,7 +305,8 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   int WindowCount();
 
   base::WeakPtr<TestRunner> runner_;
-  base::WeakPtr<TestRunnerForSpecificView> view_runner_;
+  TestRunnerForSpecificView* const view_runner_;
+  SpellCheckClient* const spell_check_;
 
   DISALLOW_COPY_AND_ASSIGN(TestRunnerBindings);
 };
@@ -311,12 +314,12 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
 gin::WrapperInfo TestRunnerBindings::kWrapperInfo = {gin::kEmbedderNativeGin};
 
 // static
-void TestRunnerBindings::Install(
-    base::WeakPtr<TestRunner> test_runner,
-    base::WeakPtr<TestRunnerForSpecificView> view_test_runner,
-    blink::WebLocalFrame* frame,
-    bool is_wpt_test,
-    bool is_frame_part_of_main_test_window) {
+void TestRunnerBindings::Install(base::WeakPtr<TestRunner> test_runner,
+                                 TestRunnerForSpecificView* view_test_runner,
+                                 blink::WebLocalFrame* frame,
+                                 SpellCheckClient* spell_check,
+                                 bool is_wpt_test,
+                                 bool is_frame_part_of_main_test_window) {
   v8::Isolate* isolate = blink::MainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> context = frame->MainWorldScriptContext();
@@ -325,8 +328,8 @@ void TestRunnerBindings::Install(
 
   v8::Context::Scope context_scope(context);
 
-  TestRunnerBindings* wrapped =
-      new TestRunnerBindings(test_runner, view_test_runner);
+  TestRunnerBindings* wrapped = new TestRunnerBindings(
+      std::move(test_runner), view_test_runner, spell_check);
   gin::Handle<TestRunnerBindings> bindings =
       gin::CreateHandle(isolate, wrapped);
   if (bindings.IsEmpty())
@@ -389,12 +392,12 @@ void TestRunnerBindings::Install(
   }
 }
 
-TestRunnerBindings::TestRunnerBindings(
-    base::WeakPtr<TestRunner> runner,
-    base::WeakPtr<TestRunnerForSpecificView> view_runner)
-    : runner_(runner), view_runner_(view_runner) {}
+TestRunnerBindings::TestRunnerBindings(base::WeakPtr<TestRunner> runner,
+                                       TestRunnerForSpecificView* view_runner,
+                                       SpellCheckClient* spell_check)
+    : runner_(runner), view_runner_(view_runner), spell_check_(spell_check) {}
 
-TestRunnerBindings::~TestRunnerBindings() {}
+TestRunnerBindings::~TestRunnerBindings() = default;
 
 gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
     v8::Isolate* isolate) {
@@ -451,8 +454,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("dumpPingLoaderCallbacks",
                  &TestRunnerBindings::DumpPingLoaderCallbacks)
       .SetMethod("dumpSelectionRect", &TestRunnerBindings::DumpSelectionRect)
-      .SetMethod("dumpSpellCheckCallbacks",
-                 &TestRunnerBindings::DumpSpellCheckCallbacks)
       .SetMethod("dumpTitleChanges", &TestRunnerBindings::DumpTitleChanges)
       .SetMethod("dumpUserGestureInFrameLoadCallbacks",
                  &TestRunnerBindings::DumpUserGestureInFrameLoadCallbacks)
@@ -716,32 +717,25 @@ void TestRunnerBindings::ResetTestHelperControllers() {
 
 void TestRunnerBindings::SetTabKeyCyclesThroughElements(
     bool tab_key_cycles_through_elements) {
-  if (view_runner_)
-    view_runner_->SetTabKeyCyclesThroughElements(
-        tab_key_cycles_through_elements);
+  view_runner_->SetTabKeyCyclesThroughElements(tab_key_cycles_through_elements);
 }
 
 void TestRunnerBindings::ExecCommand(gin::Arguments* args) {
-  if (view_runner_)
-    view_runner_->ExecCommand(args);
+  view_runner_->ExecCommand(args);
 }
 
 void TestRunnerBindings::TriggerTestInspectorIssue(gin::Arguments* args) {
-  if (view_runner_)
-    view_runner_->TriggerTestInspectorIssue();
+  view_runner_->TriggerTestInspectorIssue();
 }
 
 bool TestRunnerBindings::IsCommandEnabled(const std::string& command) {
-  if (view_runner_)
-    return view_runner_->IsCommandEnabled(command);
-  return false;
+  return view_runner_->IsCommandEnabled(command);
 }
 
 void TestRunnerBindings::SetDomainRelaxationForbiddenForURLScheme(
     bool forbidden,
     const std::string& scheme) {
-  if (view_runner_)
-    view_runner_->SetDomainRelaxationForbiddenForURLScheme(forbidden, scheme);
+  view_runner_->SetDomainRelaxationForbiddenForURLScheme(forbidden, scheme);
 }
 
 void TestRunnerBindings::SetDumpConsoleMessages(bool enabled) {
@@ -790,26 +784,23 @@ void TestRunnerBindings::SetFilePathForMockFileDialog(
 }
 
 void TestRunnerBindings::SetMockSpellCheckerEnabled(bool enabled) {
-  if (runner_)
-    runner_->SetMockSpellCheckerEnabled(enabled);
+  spell_check_->SetEnabled(enabled);
 }
 
 void TestRunnerBindings::SetSpellCheckResolvedCallback(
     v8::Local<v8::Function> callback) {
-  if (runner_)
-    runner_->spellcheck_->SetSpellCheckResolvedCallback(callback);
+  spell_check_->SetSpellCheckResolvedCallback(callback);
 }
 
 void TestRunnerBindings::RemoveSpellCheckResolvedCallback() {
-  if (runner_)
-    runner_->spellcheck_->RemoveSpellCheckResolvedCallback();
+  spell_check_->RemoveSpellCheckResolvedCallback();
 }
 
 v8::Local<v8::Value>
 TestRunnerBindings::EvaluateScriptInIsolatedWorldAndReturnValue(
     int world_id,
     const std::string& script) {
-  if (!view_runner_ || world_id <= 0 || world_id >= (1 << 29))
+  if (world_id <= 0 || world_id >= (1 << 29))
     return v8::Local<v8::Value>();
   return view_runner_->EvaluateScriptInIsolatedWorldAndReturnValue(world_id,
                                                                    script);
@@ -818,7 +809,7 @@ TestRunnerBindings::EvaluateScriptInIsolatedWorldAndReturnValue(
 void TestRunnerBindings::EvaluateScriptInIsolatedWorld(
     int world_id,
     const std::string& script) {
-  if (view_runner_ && world_id > 0 && world_id < (1 << 29))
+  if (world_id > 0 && world_id < (1 << 29))
     view_runner_->EvaluateScriptInIsolatedWorld(world_id, script);
 }
 
@@ -826,10 +817,8 @@ void TestRunnerBindings::SetIsolatedWorldInfo(
     int world_id,
     v8::Local<v8::Value> security_origin,
     v8::Local<v8::Value> content_security_policy) {
-  if (view_runner_) {
-    view_runner_->SetIsolatedWorldInfo(world_id, security_origin,
-                                       content_security_policy);
-  }
+  view_runner_->SetIsolatedWorldInfo(world_id, security_origin,
+                                     content_security_policy);
 }
 
 void TestRunnerBindings::AddOriginAccessAllowListEntry(
@@ -852,8 +841,7 @@ void TestRunnerBindings::AddOriginAccessAllowListEntry(
 }
 
 void TestRunnerBindings::ForceRedSelectionColors() {
-  if (view_runner_)
-    view_runner_->ForceRedSelectionColors();
+  view_runner_->ForceRedSelectionColors();
 }
 
 void TestRunnerBindings::InsertStyleSheet(const std::string& source_code) {
@@ -864,15 +852,11 @@ void TestRunnerBindings::InsertStyleSheet(const std::string& source_code) {
 bool TestRunnerBindings::FindString(
     const std::string& search_text,
     const std::vector<std::string>& options_array) {
-  if (view_runner_)
-    return view_runner_->FindString(search_text, options_array);
-  return false;
+  return view_runner_->FindString(search_text, options_array);
 }
 
 std::string TestRunnerBindings::SelectionAsMarkup() {
-  if (view_runner_)
-    return view_runner_->SelectionAsMarkup();
-  return std::string();
+  return view_runner_->SelectionAsMarkup();
 }
 
 void TestRunnerBindings::SetTextSubpixelPositioning(bool value) {
@@ -888,13 +872,11 @@ void TestRunnerBindings::SetTrustTokenKeyCommitments(
 }
 
 void TestRunnerBindings::SetPageVisibility(const std::string& new_visibility) {
-  if (view_runner_)
-    view_runner_->SetPageVisibility(new_visibility);
+  view_runner_->SetPageVisibility(new_visibility);
 }
 
 void TestRunnerBindings::SetTextDirection(const std::string& direction_name) {
-  if (view_runner_)
-    view_runner_->SetTextDirection(direction_name);
+  view_runner_->SetTextDirection(direction_name);
 }
 
 void TestRunnerBindings::UseUnfortunateSynchronousResizeMode() {
@@ -936,28 +918,23 @@ void TestRunnerBindings::SetDisallowedSubresourcePathSuffixes(
 }
 
 void TestRunnerBindings::DidAcquirePointerLock() {
-  if (view_runner_)
-    view_runner_->DidAcquirePointerLock();
+  view_runner_->DidAcquirePointerLock();
 }
 
 void TestRunnerBindings::DidNotAcquirePointerLock() {
-  if (view_runner_)
-    view_runner_->DidNotAcquirePointerLock();
+  view_runner_->DidNotAcquirePointerLock();
 }
 
 void TestRunnerBindings::DidLosePointerLock() {
-  if (view_runner_)
-    view_runner_->DidLosePointerLock();
+  view_runner_->DidLosePointerLock();
 }
 
 void TestRunnerBindings::SetPointerLockWillFailSynchronously() {
-  if (view_runner_)
-    view_runner_->SetPointerLockWillFailSynchronously();
+  view_runner_->SetPointerLockWillFailSynchronously();
 }
 
 void TestRunnerBindings::SetPointerLockWillRespondAsynchronously() {
-  if (view_runner_)
-    view_runner_->SetPointerLockWillRespondAsynchronously();
+  view_runner_->SetPointerLockWillRespondAsynchronously();
 }
 
 void TestRunnerBindings::SetPopupBlockingEnabled(bool block_popups) {
@@ -1098,11 +1075,6 @@ void TestRunnerBindings::DumpPermissionClientCallbacks() {
     runner_->DumpPermissionClientCallbacks();
 }
 
-void TestRunnerBindings::DumpSpellCheckCallbacks() {
-  if (runner_)
-    runner_->DumpSpellCheckCallbacks();
-}
-
 void TestRunnerBindings::DumpBackForwardList() {
   if (runner_)
     runner_->DumpBackForwardList();
@@ -1193,14 +1165,11 @@ void TestRunnerBindings::SetBlockThirdPartyCookies(bool block) {
 }
 
 void TestRunnerBindings::SetWindowIsKey(bool value) {
-  if (view_runner_)
-    view_runner_->SetWindowIsKey(value);
+  view_runner_->SetWindowIsKey(value);
 }
 
 std::string TestRunnerBindings::PathToLocalResource(const std::string& path) {
-  if (runner_)
-    return runner_->PathToLocalResource(path);
-  return std::string();
+  return RewriteFileURLToLocalResource(path).GetString().Utf8();
 }
 
 void TestRunnerBindings::SetBackingScaleFactor(
@@ -1214,39 +1183,33 @@ void TestRunnerBindings::SetBackingScaleFactor(
   // ERROR :GL_OUT_OF_MEMORY. See https://crbug.com/899482 or
   // https://crbug.com/900271
   double limited_value = fmin(15, value);
-  if (view_runner_)
-    view_runner_->SetBackingScaleFactor(limited_value, callback);
+  view_runner_->SetBackingScaleFactor(limited_value, callback);
 }
 
 void TestRunnerBindings::SetColorProfile(const std::string& name,
                                          v8::Local<v8::Function> callback) {
-  if (view_runner_)
-    view_runner_->SetColorProfile(name, callback);
+  view_runner_->SetColorProfile(name, callback);
 }
 
 void TestRunnerBindings::SetBluetoothFakeAdapter(
     const std::string& adapter_name,
     v8::Local<v8::Function> callback) {
-  if (view_runner_)
-    view_runner_->SetBluetoothFakeAdapter(adapter_name, callback);
+  view_runner_->SetBluetoothFakeAdapter(adapter_name, callback);
 }
 
 void TestRunnerBindings::SetBluetoothManualChooser(bool enable) {
-  if (view_runner_)
-    view_runner_->SetBluetoothManualChooser(enable);
+  view_runner_->SetBluetoothManualChooser(enable);
 }
 
 void TestRunnerBindings::GetBluetoothManualChooserEvents(
     v8::Local<v8::Function> callback) {
-  if (view_runner_)
-    return view_runner_->GetBluetoothManualChooserEvents(callback);
+  return view_runner_->GetBluetoothManualChooserEvents(callback);
 }
 
 void TestRunnerBindings::SendBluetoothManualChooserEvent(
     const std::string& event,
     const std::string& argument) {
-  if (view_runner_)
-    view_runner_->SendBluetoothManualChooserEvent(event, argument);
+  view_runner_->SendBluetoothManualChooserEvent(event, argument);
 }
 
 void TestRunnerBindings::SetPOSIXLocale(const std::string& locale) {
@@ -1307,29 +1270,24 @@ void TestRunnerBindings::SimulateWebContentIndexDelete(const std::string& id) {
 }
 
 void TestRunnerBindings::SetHighlightAds() {
-  if (view_runner_)
-    view_runner_->SetHighlightAds(true);
+  view_runner_->SetHighlightAds(true);
 }
 
 void TestRunnerBindings::AddWebPageOverlay() {
-  if (view_runner_)
-    view_runner_->AddWebPageOverlay();
+  view_runner_->AddWebPageOverlay();
 }
 
 void TestRunnerBindings::RemoveWebPageOverlay() {
-  if (view_runner_)
-    view_runner_->RemoveWebPageOverlay();
+  view_runner_->RemoveWebPageOverlay();
 }
 
 void TestRunnerBindings::UpdateAllLifecyclePhasesAndComposite() {
-  if (view_runner_)
-    view_runner_->UpdateAllLifecyclePhasesAndComposite();
+  view_runner_->UpdateAllLifecyclePhasesAndComposite();
 }
 
 void TestRunnerBindings::UpdateAllLifecyclePhasesAndCompositeThen(
     v8::Local<v8::Function> callback) {
-  if (view_runner_)
-    view_runner_->UpdateAllLifecyclePhasesAndCompositeThen(callback);
+  view_runner_->UpdateAllLifecyclePhasesAndCompositeThen(callback);
 }
 
 void TestRunnerBindings::SetAnimationRequiresRaster(bool do_raster) {
@@ -1339,22 +1297,19 @@ void TestRunnerBindings::SetAnimationRequiresRaster(bool do_raster) {
 }
 
 void TestRunnerBindings::GetManifestThen(v8::Local<v8::Function> callback) {
-  if (view_runner_)
-    view_runner_->GetManifestThen(callback);
+  view_runner_->GetManifestThen(callback);
 }
 
 void TestRunnerBindings::CapturePixelsAsyncThen(
     v8::Local<v8::Function> callback) {
-  if (view_runner_)
-    view_runner_->CapturePixelsAsyncThen(callback);
+  view_runner_->CapturePixelsAsyncThen(callback);
 }
 
 void TestRunnerBindings::CopyImageAtAndCapturePixelsAsyncThen(
     int x,
     int y,
     v8::Local<v8::Function> callback) {
-  if (view_runner_)
-    view_runner_->CopyImageAtAndCapturePixelsAsyncThen(x, y, callback);
+  view_runner_->CopyImageAtAndCapturePixelsAsyncThen(x, y, callback);
 }
 
 void TestRunnerBindings::SetCustomTextOutput(const std::string& output) {
@@ -1364,8 +1319,7 @@ void TestRunnerBindings::SetCustomTextOutput(const std::string& output) {
 
 void TestRunnerBindings::SetViewSourceForFrame(const std::string& name,
                                                bool enabled) {
-  if (view_runner_)
-    view_runner_->SetViewSourceForFrame(name, enabled);
+  view_runner_->SetViewSourceForFrame(name, enabled);
 }
 
 void TestRunnerBindings::SetPermission(const std::string& name,
@@ -1382,9 +1336,6 @@ void TestRunnerBindings::SetPermission(const std::string& name,
 void TestRunnerBindings::DispatchBeforeInstallPromptEvent(
     const std::vector<std::string>& event_platforms,
     v8::Local<v8::Function> callback) {
-  if (!view_runner_)
-    return;
-
   return view_runner_->DispatchBeforeInstallPromptEvent(event_platforms,
                                                         callback);
 }
@@ -1398,8 +1349,6 @@ void TestRunnerBindings::ResolveBeforeInstallPromptPromise(
 }
 
 void TestRunnerBindings::RunIdleTasks(v8::Local<v8::Function> callback) {
-  if (!view_runner_)
-    return;
   view_runner_->RunIdleTasks(callback);
 }
 
@@ -1422,13 +1371,11 @@ int TestRunnerBindings::WebHistoryItemCount() {
 }
 
 void TestRunnerBindings::ForceNextWebGLContextCreationToFail() {
-  if (view_runner_)
-    view_runner_->ForceNextWebGLContextCreationToFail();
+  view_runner_->ForceNextWebGLContextCreationToFail();
 }
 
 void TestRunnerBindings::ForceNextDrawingBufferCreationToFail() {
-  if (view_runner_)
-    view_runner_->ForceNextDrawingBufferCreationToFail();
+  view_runner_->ForceNextDrawingBufferCreationToFail();
 }
 
 void TestRunnerBindings::NotImplemented(const gin::Arguments& args) {}
@@ -1444,8 +1391,9 @@ void TestRunner::WorkQueue::ProcessWorkSoon() {
   // We delay processing queued work to avoid recursion problems, and to avoid
   // running tasks in the middle of a navigation call stack, where blink and
   // content may have inconsistent states halfway through being updated.
-  controller_->blink_test_runner_->PostTask(base::BindOnce(
-      &TestRunner::WorkQueue::ProcessWork, weak_factory_.GetWeakPtr()));
+  blink::scheduler::GetSingleThreadTaskRunnerForTesting()->PostTask(
+      FROM_HERE, base::BindOnce(&TestRunner::WorkQueue::ProcessWork,
+                                weak_factory_.GetWeakPtr()));
 }
 
 void TestRunner::WorkQueue::Reset() {
@@ -1503,17 +1451,16 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
     : work_queue_(this),
       test_interfaces_(interfaces),
       mock_content_settings_client_(std::make_unique<MockContentSettingsClient>(
-          &web_test_runtime_flags_)),
-      spellcheck_(std::make_unique<SpellCheckClient>(this)) {}
+          &web_test_runtime_flags_)) {}
 
 TestRunner::~TestRunner() = default;
 
-void TestRunner::Install(
-    blink::WebLocalFrame* frame,
-    base::WeakPtr<TestRunnerForSpecificView> view_test_runner) {
+void TestRunner::Install(blink::WebLocalFrame* frame,
+                         SpellCheckClient* spell_check,
+                         TestRunnerForSpecificView* view_test_runner) {
   // In WPT, only reftests generate pixel results.
   TestRunnerBindings::Install(weak_factory_.GetWeakPtr(), view_test_runner,
-                              frame, IsWebPlatformTestsMode(),
+                              frame, spell_check, IsWebPlatformTestsMode(),
                               IsFramePartOfMainTestWindow(frame));
   mock_screen_orientation_client_.OverrideAssociatedInterfaceProviderForFrame(
       frame);
@@ -1522,7 +1469,6 @@ void TestRunner::Install(
 void TestRunner::SetDelegate(BlinkTestRunner* blink_test_runner) {
   blink_test_runner_ = blink_test_runner;
   mock_content_settings_client_->SetDelegate(blink_test_runner);
-  spellcheck_->SetDelegate(blink_test_runner);
 }
 
 void TestRunner::SetMainView(blink::WebView* web_view) {
@@ -1580,8 +1526,6 @@ void TestRunner::Reset() {
     blink_test_runner_->CloseRemainingWindows();
   else
     close_remaining_windows_ = true;
-
-  spellcheck_->Reset();
 }
 
 void TestRunner::SetTestIsRunning(bool running) {
@@ -1768,14 +1712,6 @@ bool TestRunner::CanOpenWindows() const {
 
 blink::WebContentSettingsClient* TestRunner::GetWebContentSettings() const {
   return mock_content_settings_client_.get();
-}
-
-blink::WebTextCheckClient* TestRunner::GetWebTextCheckClient() const {
-  return spellcheck_.get();
-}
-
-bool TestRunner::ShouldDumpSpellCheckCallbacks() const {
-  return web_test_runtime_flags_.dump_spell_check_callbacks();
 }
 
 bool TestRunner::ShouldDumpBackForwardList() const {
@@ -2408,11 +2344,6 @@ void TestRunner::SetDisallowedSubresourcePathSuffixes(
           new MockWebDocumentSubresourceFilter(suffixes, block_subresources));
 }
 
-void TestRunner::DumpSpellCheckCallbacks() {
-  web_test_runtime_flags_.set_dump_spell_check_callbacks(true);
-  OnWebTestRuntimeFlagsChanged();
-}
-
 void TestRunner::DumpBackForwardList() {
   dump_back_forward_list_ = true;
 }
@@ -2492,10 +2423,6 @@ void TestRunner::SetEffectiveConnectionType(
   effective_connection_type_ = connection_type;
 }
 
-void TestRunner::SetMockSpellCheckerEnabled(bool enabled) {
-  spellcheck_->SetEnabled(enabled);
-}
-
 bool TestRunner::ShouldDumpConsoleMessages() const {
   return web_test_runtime_flags_.dump_console_messages();
 }
@@ -2533,10 +2460,6 @@ void TestRunner::SetFocus(blink::WebView* web_view, bool focus) {
       previously_focused_view_ = nullptr;
     }
   }
-}
-
-std::string TestRunner::PathToLocalResource(const std::string& path) {
-  return blink_test_runner_->PathToLocalResource(path);
 }
 
 void TestRunner::SetPermission(const std::string& name,

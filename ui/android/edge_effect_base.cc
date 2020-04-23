@@ -4,6 +4,8 @@
 
 #include "ui/android/edge_effect_base.h"
 
+#include "base/logging.h"
+
 namespace ui {
 
 // static

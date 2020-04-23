@@ -21,6 +21,9 @@ class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerBase {
  public:
   std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
 
+  static scoped_refptr<PaintedScrollbarLayer> CreateOrReuse(
+      scoped_refptr<Scrollbar> scrollbar,
+      PaintedScrollbarLayer* existing_layer);
   static scoped_refptr<PaintedScrollbarLayer> Create(
       scoped_refptr<Scrollbar> scrollbar);
 
@@ -36,7 +39,7 @@ class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerBase {
     return internal_content_bounds_;
   }
 
-  ScrollbarLayerType ScrollbarLayerTypeForTesting() const override;
+  ScrollbarLayerType GetScrollbarLayerType() const override;
 
  protected:
   explicit PaintedScrollbarLayer(scoped_refptr<Scrollbar> scrollbar);

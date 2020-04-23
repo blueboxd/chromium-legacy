@@ -6,7 +6,7 @@
 #define CHROME_RENDERER_SEARCHBOX_SEARCH_BOUNCER_H_
 
 #include "base/macros.h"
-#include "chrome/common/search.mojom.h"
+#include "chrome/common/search/search.mojom.h"
 #include "content/public/renderer/render_thread_observer.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"

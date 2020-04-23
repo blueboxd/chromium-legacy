@@ -196,7 +196,6 @@
 <translation id="3469166899695866866">ダウンロードを中止しますか？</translation>
 <translation id="3470502288861289375">コピーしています...</translation>
 <translation id="3474624961160222204"><ph name="NAME" /> として続行</translation>
-<translation id="3474649192738347024">フォームに入力されました。</translation>
 <translation id="3478058380795961209">有効期限（月）</translation>
 <translation id="3482959374254649722">タブを同期しています...</translation>
 <translation id="3484946776651937681">ダウンロード フォルダを開く</translation>
@@ -479,6 +478,7 @@
 <translation id="7136892417564438900">カメラを使用できません</translation>
 <translation id="7159472599653637159">モバイルサイトをリクエスト</translation>
 <translation id="7173114856073700355">設定を開く</translation>
+<translation id="7189598951263744875">共有...</translation>
 <translation id="7192050974311852563">ログ記録を開始</translation>
 <translation id="7203585745079012652">回答を音声で聞く</translation>
 <translation id="7265758999917665941">このサイトでは保存しない</translation>

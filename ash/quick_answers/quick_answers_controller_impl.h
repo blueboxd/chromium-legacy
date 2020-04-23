@@ -44,7 +44,7 @@ class ASH_EXPORT QuickAnswersControllerImpl
   void MaybeShowQuickAnswers(const gfx::Rect& anchor_bounds,
                              const std::string& title) override;
 
-  void DismissQuickAnswers() override;
+  void DismissQuickAnswers(bool is_active) override;
 
   // Update the bounds of the anchor view.
   void UpdateQuickAnswersAnchorBounds(const gfx::Rect& anchor_bounds) override;

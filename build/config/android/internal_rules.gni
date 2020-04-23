@@ -723,7 +723,8 @@ template("test_runner_script") {
           "@WrappedPath(@FileArg($_rebased_build_config:deps_info:apk_path))",
         ]
       }
-      if (defined(invoker.proguard_enabled) && invoker.proguard_enabled) {
+      if (defined(invoker.proguard_enabled) && invoker.proguard_enabled &&
+          !_incremental_apk) {
         executable_args += [ "--enable-java-deobfuscation" ]
       }
       if (use_jacoco_coverage) {
@@ -2572,6 +2573,9 @@ if (enable_java_templates) {
   #   keystore_password: Keystore password.
   #   uncompress_shared_libraries: (optional, default false) Whether to store
   #     native libraries inside the APK uncompressed and page-aligned.
+  #   verify_native_libs_and_assets_target_name: (optional): If set, will verify
+  #     the list of included native libraries and assets is consistent with an
+  #     expectation file.
   template("package_apk") {
     action_with_pydeps(target_name) {
       forward_variables_from(invoker,
@@ -2688,6 +2692,31 @@ if (enable_java_templates) {
       }
       if (_secondary_native_lib_placeholders != []) {
         args += [ "--secondary-native-lib-placeholders=$_secondary_native_lib_placeholders" ]
+      }
+
+      if (defined(invoker.verify_native_libs_and_assets_target_name)) {
+        _target_src_dir = get_label_info(":$target_name", "dir")
+        _expected_native_libs_and_assets =
+            "$_target_src_dir/java/" +
+            "${invoker.verify_native_libs_and_assets_target_name}." +
+            "native_libs_and_assets.expected"
+        args += [
+          "--expected-native-libs-and-assets",
+          rebase_path(_expected_native_libs_and_assets, root_build_dir),
+        ]
+        inputs += [ _expected_native_libs_and_assets ]
+
+        if (check_android_configuration) {
+          _native_libs_and_assets_expectation_failure_filepath =
+              "$android_configuration_failure_dir/" +
+              "${invoker.verify_native_libs_and_assets_target_name}." +
+              "native_libs_and_assets.failed"
+          args += [
+            "--native-libs-and-assets-expectation-failure-file",
+            rebase_path(_native_libs_and_assets_expectation_failure_filepath,
+                        root_build_dir),
+          ]
+        }
       }
     }
   }
@@ -3207,8 +3236,9 @@ if (enable_java_templates) {
           get_path_info(_final_jar_path, "name") + ".interface.jar"
 
       if (_has_sources) {
-        _javac_jar_path = "$target_gen_dir/$_main_target_name.javac.jar"
-        _generated_jar_path = "$target_gen_dir/$_main_target_name.generated.jar"
+        _javac_jar_path = "$target_out_dir/$_main_target_name.javac.jar"
+        _generated_jar_path =
+            "$target_gen_dir/$_main_target_name.generated.srcjar"
       }
 
       if (_is_prebuilt) {
@@ -3764,6 +3794,9 @@ if (enable_java_templates) {
 #     packaged into each module.
 #   is_multi_abi: If true will add a library placeholder for the missing ABI if
 #     either the primary or the secondary ABI has no native libraries set.
+#   verify_native_libs_and_assets_target_name: (optional): If set, will verify
+#     the list of included native libraries and assets is consistent with an
+#     expectation file.
 template("create_android_app_bundle_module") {
   _rebased_build_config = rebase_path(invoker.build_config, root_build_dir)
   _rebased_native_libraries_config =
@@ -3838,6 +3871,31 @@ template("create_android_app_bundle_module") {
       args += [ "--dex-file=$_rebased_dex_path" ]
     } else {
       args += [ "--dex-file=@FileArg($_rebased_build_config:final_dex:path)" ]
+    }
+
+    if (defined(invoker.verify_native_libs_and_assets_target_name)) {
+      _target_src_dir = get_label_info(":$target_name", "dir")
+      _expected_native_libs_and_assets =
+          "$_target_src_dir/java/" +
+          "${invoker.verify_native_libs_and_assets_target_name}." +
+          "native_libs_and_assets.expected"
+      args += [
+        "--expected-native-libs-and-assets",
+        rebase_path(_expected_native_libs_and_assets, root_build_dir),
+      ]
+      inputs += [ _expected_native_libs_and_assets ]
+
+      if (check_android_configuration) {
+        _native_libs_and_assets_expectation_failure_filepath =
+            "$android_configuration_failure_dir/" +
+            "${invoker.verify_native_libs_and_assets_target_name}." +
+            "native_libs_and_assets.failed"
+        args += [
+          "--native-libs-and-assets-expectation-failure-file",
+          rebase_path(_native_libs_and_assets_expectation_failure_filepath,
+                      root_build_dir),
+        ]
+      }
     }
   }
 }

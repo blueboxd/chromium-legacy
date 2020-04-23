@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/logging.h"
 #include "ui/events/event_rewriter_continuation.h"
 #include "ui/events/event_source.h"
 

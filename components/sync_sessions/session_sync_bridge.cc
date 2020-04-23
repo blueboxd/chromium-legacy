@@ -169,7 +169,7 @@ void SessionSyncBridge::StartLocalSessionEventHandler() {
           /*delegate=*/this, sessions_client_, store_->mutable_tracker());
 
   syncing_->open_tabs_ui_delegate = std::make_unique<OpenTabsUIDelegateImpl>(
-      sessions_client_, store_->tracker(), &favicon_cache_,
+      sessions_client_, store_->tracker(),
       base::BindRepeating(&SessionSyncBridge::DeleteForeignSessionFromUI,
                           base::Unretained(this)));
 

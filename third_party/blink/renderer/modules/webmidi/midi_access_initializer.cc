@@ -11,9 +11,9 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_midi_options.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/modules/permissions/permission_utils.h"
@@ -55,10 +55,10 @@ ScriptPromise MIDIAccessInitializer::Start() {
       GetExecutionContext(),
       permission_service_.BindNewPipeAndPassReceiver(std::move(task_runner)));
 
-  Document& doc = Document::From(*GetExecutionContext());
+  LocalDOMWindow* window = To<LocalDOMWindow>(GetExecutionContext());
   permission_service_->RequestPermission(
       CreateMidiPermissionDescriptor(options_->hasSysex() && options_->sysex()),
-      LocalFrame::HasTransientUserActivation(doc.GetFrame()),
+      LocalFrame::HasTransientUserActivation(window->GetFrame()),
       WTF::Bind(&MIDIAccessInitializer::OnPermissionsUpdated,
                 WrapPersistent(this)));
 

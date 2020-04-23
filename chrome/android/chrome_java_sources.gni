@@ -519,7 +519,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/dom_distiller/DomDistillerTabUtils.java",
   "java/src/org/chromium/chrome/browser/dom_distiller/DomDistillerUIUtils.java",
   "java/src/org/chromium/chrome/browser/dom_distiller/ReaderModeManager.java",
-  "java/src/org/chromium/chrome/browser/dom_distiller/ReaderModeTabInfo.java",
   "java/src/org/chromium/chrome/browser/dom_distiller/TabDistillabilityProvider.java",
   "java/src/org/chromium/chrome/browser/download/ChromeDownloadDelegate.java",
   "java/src/org/chromium/chrome/browser/download/DownloadActivity.java",

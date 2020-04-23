@@ -196,7 +196,6 @@
 <translation id="3469166899695866866">Pysäytetäänkö lataus?</translation>
 <translation id="3470502288861289375">Kopioidaan…</translation>
 <translation id="3474624961160222204">Jatka käyttäjänä <ph name="NAME" /></translation>
-<translation id="3474649192738347024">Lomakkeet on täytetty.</translation>
 <translation id="3478058380795961209">Voimassa (kk)</translation>
 <translation id="3482959374254649722">Synkronoidaan välilehtiä…</translation>
 <translation id="3484946776651937681">Avaa Lataukset-kansiossa</translation>
@@ -479,6 +478,7 @@ Tietosi salattiin tunnuslauseesi avulla <ph name="TIME" />. Aloita synkronointi 
 <translation id="7136892417564438900">Kamera ei ole käytettävissä</translation>
 <translation id="7159472599653637159">Mobiiliversioon</translation>
 <translation id="7173114856073700355">Avaa asetukset</translation>
+<translation id="7189598951263744875">Jaa...</translation>
 <translation id="7192050974311852563">Aloita kirjaus</translation>
 <translation id="7203585745079012652">Puhu vastaukset</translation>
 <translation id="7265758999917665941">Ei koskaan tälle sivustolle</translation>

@@ -66,6 +66,9 @@ class FeedStreamSurface : public FeedStreamApi::SurfaceInterface {
   void ReportOpenInNewTabAction(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
+  void ReportOpenInNewIncognitoTabAction(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
   void ReportSendFeedbackAction(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);

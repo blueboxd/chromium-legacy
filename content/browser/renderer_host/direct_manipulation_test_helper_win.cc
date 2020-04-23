@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/browser/renderer_host/direct_manipulation_test_helper_win.h"
+#include "base/logging.h"
 
 namespace content {
 MockDirectManipulationContent::MockDirectManipulationContent() {}

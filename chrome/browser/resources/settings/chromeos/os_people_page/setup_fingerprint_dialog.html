@@ -60,7 +60,6 @@
         margin-inline-start: 5px;
       }
     </style>
-
     <cr-dialog id="dialog" on-close="close"
         close-text="$i18n{close}">
       <div slot="title">$i18n{configureFingerprintTitle}</div>
@@ -94,7 +93,6 @@
             hidden$="[[hideAddAnother_(step_, allowAddAnotherFinger)]]">
           $i18n{configureFingerprintAddAnotherButton}
         </cr-button>
-
         <cr-button id="closeButton"
             class$="[[getCloseButtonClass_(step_)]]" on-click="onClose_">
           [[getCloseButtonText_(step_)]]
@@ -102,6 +100,5 @@
       </div>
     </cr-dialog>
   </template>
-
   <script src="setup_fingerprint_dialog.js"></script>
 </dom-module>

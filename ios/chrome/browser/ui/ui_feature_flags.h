@@ -5,6 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_UI_UI_FEATURE_FLAGS_H_
 #define IOS_CHROME_BROWSER_UI_UI_FEATURE_FLAGS_H_
 
+#include "Availability.h"
 #include "base/feature_list.h"
 
 // Feature to take snapshots using |-drawViewHierarchy:|.
@@ -46,5 +47,10 @@ extern const base::Feature kNewSigninArchitecture;
 
 // Feature flag to enable QR code generation for a URL.
 extern const base::Feature kQRCodeGeneration;
+
+#if defined(__IPHONE_13_4)
+// Feature flag to enable Pointer support on tablets
+extern const base::Feature kPointerSupport;
+#endif  // defined(__IPHONE_13_4)
 
 #endif  // IOS_CHROME_BROWSER_UI_UI_FEATURE_FLAGS_H_

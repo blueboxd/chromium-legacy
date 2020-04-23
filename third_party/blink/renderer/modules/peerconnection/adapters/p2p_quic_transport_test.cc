@@ -455,7 +455,8 @@ class ConnectedCryptoClientStream final : public quic::QuicCryptoClientStream {
                                      session,
                                      std::move(verify_context),
                                      crypto_config,
-                                     proof_handler),
+                                     proof_handler,
+                                     /*has_application_state = */ true),
         session_(session) {}
   ~ConnectedCryptoClientStream() override {}
 

@@ -4,10 +4,13 @@
 
 #include "remoting/host/host_event_logger.h"
 
-// Included here, since the #define for LOG_USER in syslog.h conflicts with the
-// constants in base/logging.h, and this source file should use the version in
-// syslog.h.
+// Included order is important, since the #define for LOG_USER in syslog.h
+// conflicts with the constants in base/logging.h, and this source file should
+// use the version in syslog.h.
+// clang-format off
+#include "base/logging.h"
 #include <syslog.h>
+// clang-format on
 
 #include <memory>
 

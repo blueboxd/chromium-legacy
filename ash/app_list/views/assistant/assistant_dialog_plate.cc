@@ -92,20 +92,20 @@ AssistantDialogPlate::AssistantDialogPlate(AssistantViewDelegate* delegate)
           /*end_animation_callback=*/base::BindRepeating(
               &AssistantDialogPlate::OnAnimationEnded,
               base::Unretained(this)))),
-      query_history_iterator_(
-          delegate_->GetInteractionModel()->query_history().GetIterator()) {
+      query_history_iterator_(AssistantInteractionController::Get()
+                                  ->GetModel()
+                                  ->query_history()
+                                  .GetIterator()) {
   SetID(AssistantViewID::kDialogPlate);
   InitLayout();
 
-  // The AssistantViewDelegate should outlive AssistantDialogPlate.
-  delegate_->AddInteractionModelObserver(this);
-  delegate_->AddUiModelObserver(this);
+  assistant_controller_observer_.Add(AssistantController::Get());
+  assistant_interaction_model_observer_.Add(
+      AssistantInteractionController::Get());
+  assistant_ui_model_observer_.Add(AssistantUiController::Get());
 }
 
-AssistantDialogPlate::~AssistantDialogPlate() {
-  delegate_->RemoveUiModelObserver(this);
-  delegate_->RemoveInteractionModelObserver(this);
-}
+AssistantDialogPlate::~AssistantDialogPlate() = default;
 
 const char* AssistantDialogPlate::GetClassName() const {
   return "AssistantDialogPlate";
@@ -159,6 +159,13 @@ bool AssistantDialogPlate::HandleKeyEvent(views::Textfield* textfield,
     default:
       return false;
   }
+}
+
+void AssistantDialogPlate::OnAssistantControllerDestroying() {
+  assistant_ui_model_observer_.Remove(AssistantUiController::Get());
+  assistant_interaction_model_observer_.Remove(
+      AssistantInteractionController::Get());
+  assistant_controller_observer_.Remove(AssistantController::Get());
 }
 
 void AssistantDialogPlate::OnInputModalityChanged(
@@ -401,8 +408,8 @@ void AssistantDialogPlate::InitVoiceLayoutContainer() {
       voice_layout_container->AddChildView(std::move(spacer)), 1);
 
   // Animated voice input toggle.
-  auto animated_voice_input_toggle = std::make_unique<MicView>(
-      this, delegate_, AssistantButtonId::kVoiceInputToggle);
+  auto animated_voice_input_toggle =
+      std::make_unique<MicView>(this, AssistantButtonId::kVoiceInputToggle);
   animated_voice_input_toggle->SetID(AssistantViewID::kMicView);
   animated_voice_input_toggle->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ASH_ASSISTANT_DIALOG_PLATE_MIC_ACCNAME));
@@ -475,7 +482,7 @@ bool AssistantDialogPlate::OnAnimationEnded(
 }
 
 InputModality AssistantDialogPlate::input_modality() const {
-  return delegate_->GetInteractionModel()->input_modality();
+  return AssistantInteractionController::Get()->GetModel()->input_modality();
 }
 
 }  // namespace ash

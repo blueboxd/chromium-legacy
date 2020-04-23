@@ -159,6 +159,9 @@ PreviewsService::GetAllowedPreviews() {
 PreviewsService::PreviewsService(content::BrowserContext* browser_context)
     : previews_lite_page_redirect_decider_(
           std::make_unique<PreviewsLitePageRedirectDecider>(browser_context)),
+      previews_https_notification_infobar_decider_(
+          std::make_unique<PreviewsHTTPSNotificationInfoBarDecider>(
+              browser_context)),
       previews_offline_helper_(
           std::make_unique<PreviewsOfflineHelper>(browser_context)),
       browser_context_(browser_context),
@@ -215,6 +218,9 @@ void PreviewsService::Initialize(
 void PreviewsService::Shutdown() {
   if (previews_lite_page_redirect_decider_)
     previews_lite_page_redirect_decider_->Shutdown();
+
+  if (previews_https_notification_infobar_decider_)
+    previews_https_notification_infobar_decider_->Shutdown();
 
   if (previews_offline_helper_)
     previews_offline_helper_->Shutdown();

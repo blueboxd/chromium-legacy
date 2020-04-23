@@ -7,6 +7,8 @@
 
 #include <memory>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/component_export.h"
@@ -16,11 +18,13 @@
 #include "base/sequence_checker.h"
 #include "device/fido/authenticator_make_credential_response.h"
 #include "device/fido/authenticator_selection_criteria.h"
+#include "device/fido/bio/enroller.h"
 #include "device/fido/client_data.h"
 #include "device/fido/ctap_make_credential_request.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_request_handler_base.h"
 #include "device/fido/fido_transport_protocol.h"
+#include "device/fido/pin.h"
 
 namespace device {
 
@@ -53,7 +57,8 @@ enum class MakeCredentialStatus {
 };
 
 class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialRequestHandler
-    : public FidoRequestHandlerBase {
+    : public FidoRequestHandlerBase,
+      public BioEnroller::Delegate {
  public:
   using CompletionCallback = base::OnceCallback<void(
       MakeCredentialStatus,
@@ -97,6 +102,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialRequestHandler
     kWaitingForNewPIN,
     kSettingPIN,
     kRequestWithPIN,
+    kBioEnrollment,
+    kBioEnrollmentDone,
     kFinished,
   };
 
@@ -104,6 +111,13 @@ class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialRequestHandler
   void DispatchRequest(FidoAuthenticator* authenticator) override;
   void AuthenticatorRemoved(FidoDiscoveryBase* discovery,
                             FidoAuthenticator* authenticator) override;
+
+  // BioEnroller::Delegate:
+  void OnSampleCollected(BioEnrollmentSampleStatus status,
+                         int samples_remaining) override;
+  void OnEnrollmentDone(
+      base::Optional<std::vector<uint8_t>> template_id) override;
+  void OnEnrollmentError(CtapDeviceResponseCode status) override;
 
   void HandleResponse(
       FidoAuthenticator* authenticator,
@@ -122,6 +136,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialRequestHandler
                     base::Optional<pin::EmptyResponse> response);
   void OnHavePINToken(CtapDeviceResponseCode status,
                       base::Optional<pin::TokenResponse> response);
+  void OnEnrollmentDismissed();
   void OnUvRetriesResponse(CtapDeviceResponseCode status,
                            base::Optional<pin::RetriesResponse> response);
   void OnHaveUvToken(FidoAuthenticator* authenticator,
@@ -145,6 +160,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialRequestHandler
   // requesting PIN etc. The object is owned by the underlying discovery object
   // and this pointer is cleared if it's removed during processing.
   FidoAuthenticator* authenticator_ = nullptr;
+  base::Optional<pin::TokenResponse> token_;
+  std::unique_ptr<BioEnroller> bio_enroller_;
   SEQUENCE_CHECKER(my_sequence_checker_);
   base::WeakPtrFactory<MakeCredentialRequestHandler> weak_factory_{this};
 

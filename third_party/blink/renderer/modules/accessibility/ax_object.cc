@@ -4032,11 +4032,37 @@ const AXObject* AXObject::LowestCommonAncestor(const AXObject& first,
   return common_ancestor;
 }
 
-String AXObject::ToString() const {
-  return AXObject::InternalRoleName(RoleValue())
-             .GetString()
-             .EncodeForDebugging() +
-         ": " + ComputedName().EncodeForDebugging();
+String AXObject::ToString(bool verbose) const {
+  // Build a friendly name for debugging the object.
+  // If verbose, build a longer name name in the form of:
+  // CheckBox axid#28 <input.someClass#cbox1> name="checkbox"
+  String string_builder =
+      AXObject::InternalRoleName(RoleValue()).GetString().EncodeForDebugging();
+
+  if (verbose) {
+    string_builder = string_builder + " axid#" + String::Number(AXObjectID());
+    // Add useful HTML element info, like <div.myClass#myId>.
+    if (GetElement()) {
+      string_builder =
+          string_builder + " <" + GetElement()->tagName().LowerASCII();
+      if (GetElement()->FastHasAttribute(html_names::kClassAttr)) {
+        string_builder = string_builder + "." +
+                         GetElement()->FastGetAttribute(html_names::kClassAttr);
+      }
+      if (GetElement()->FastHasAttribute(html_names::kIdAttr)) {
+        string_builder = string_builder + "#" +
+                         GetElement()->FastGetAttribute(html_names::kIdAttr);
+      }
+      string_builder = string_builder + ">";
+    }
+
+    string_builder = string_builder + " name=";
+  } else {
+    string_builder = string_builder + ": ";
+  }
+
+  // Append name last, in case it is long.
+  return string_builder + ComputedName().EncodeForDebugging();
 }
 
 bool operator==(const AXObject& first, const AXObject& second) {
@@ -4090,7 +4116,7 @@ bool operator>=(const AXObject& first, const AXObject& second) {
 }
 
 std::ostream& operator<<(std::ostream& stream, const AXObject& obj) {
-  return stream << obj.ToString().Utf8();
+  return stream << obj.ToString(true).Utf8();
 }
 
 void AXObject::Trace(Visitor* visitor) {

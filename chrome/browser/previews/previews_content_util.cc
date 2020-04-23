@@ -174,7 +174,8 @@ bool ShouldAllowRedirectPreview(content::NavigationHandle* navigation_handle) {
     return false;
 
   // This should always be at the end, but before the control group check.
-  if (decider->NeedsToNotifyUser()) {
+  if (previews_service->previews_https_notification_infobar_decider()
+          ->NeedsToNotifyUser()) {
     previews::LogLitePageRedirectIneligibleReason(
         previews::LitePageRedirectIneligibleReason::kInfoBarNotSeen);
     return false;

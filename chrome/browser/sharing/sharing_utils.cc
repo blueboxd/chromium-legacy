@@ -32,13 +32,7 @@ bool CanListDevices(syncer::SyncService* sync_service) {
 
 bool CanSendViaVapid(syncer::SyncService* sync_service) {
   // Can send using VAPID key in sharing.vapid_key preferences.
-  if (sync_service->GetActiveDataTypes().Has(syncer::PREFERENCES))
-    return true;
-
-  // TODO(crbug.com/1012226): Remove when derive VAPID key is removed.
-  // Can send using derived VAPID key if local sync is disabled.
-  return base::FeatureList::IsEnabled(kSharingDeriveVapidKey) &&
-         !sync_service->IsLocalSyncEnabled();
+  return sync_service->GetActiveDataTypes().Has(syncer::PREFERENCES);
 }
 
 bool CanSendViaSenderID(syncer::SyncService* sync_service) {

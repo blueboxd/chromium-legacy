@@ -247,7 +247,8 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
   TestingDeviceStatusCollector(
       PrefService* pref_service,
       chromeos::system::StatisticsProvider* provider,
-      std::unique_ptr<TestingDeviceStatusCollectorOptions> options)
+      std::unique_ptr<TestingDeviceStatusCollectorOptions> options,
+      base::SimpleTestClock* clock)
       : policy::DeviceStatusCollector(pref_service,
                                       provider,
                                       options->volume_info_fetcher,
@@ -259,15 +260,19 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
                                       options->stateful_partition_info_fetcher,
                                       options->cros_healthd_data_fetcher,
                                       options->graphics_status_fetcher,
-                                      options->crash_report_info_fetcher) {
+                                      options->crash_report_info_fetcher),
+        test_clock_(*clock) {
     // Set the baseline time to a fixed value (1 hour after day start) to
     // prevent test flakiness due to a single activity period spanning two days.
-    SetBaselineTime(Time::Now().LocalMidnight() + kHour);
+    clock_ = clock;
+    test_clock_.SetNow(Time::Now().LocalMidnight() + kHour);
   }
 
   void Simulate(ui::IdleState* states, int len) {
-    for (int i = 0; i < len; i++)
+    for (int i = 0; i < len; i++) {
+      test_clock_.Advance(policy::DeviceStatusCollector::kIdlePollInterval);
       ProcessIdleState(states[i]);
+    }
   }
 
   void set_max_stored_past_activity_interval(TimeDelta value) {
@@ -276,12 +281,6 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
 
   void set_max_stored_future_activity_interval(TimeDelta value) {
     max_stored_future_activity_interval_ = value;
-  }
-
-  // Reset the baseline time.
-  void SetBaselineTime(Time time) {
-    baseline_time_ = time;
-    baseline_offset_periods_ = 0;
   }
 
   void set_kiosk_account(std::unique_ptr<policy::DeviceLocalAccount> account) {
@@ -318,20 +317,8 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
     ADD_FAILURE();
   }
 
-  // Each time this is called, returns a time that is a fixed increment
-  // later than the previous time.
-  Time GetCurrentTime() override {
-    int poll_interval = policy::DeviceStatusCollector::kIdlePollIntervalSeconds;
-    return baseline_time_ +
-           TimeDelta::FromSeconds(poll_interval * baseline_offset_periods_++);
-  }
-
  private:
-  // Baseline time for the fake times returned from GetCurrentTime().
-  Time baseline_time_;
-
-  // The number of simulated periods since the baseline time.
-  int baseline_offset_periods_;
+  base::SimpleTestClock& test_clock_;
 
   std::unique_ptr<policy::DeviceLocalAccount> kiosk_account_;
 };
@@ -684,7 +671,8 @@ class DeviceStatusCollectorTest : public testing::Test {
       std::unique_ptr<TestingDeviceStatusCollectorOptions> options) {
     std::vector<em::VolumeInfo> expected_volume_info;
     status_collector_ = std::make_unique<TestingDeviceStatusCollector>(
-        &local_state_, &fake_statistics_provider_, std::move(options));
+        &local_state_, &fake_statistics_provider_, std::move(options),
+        &test_clock_);
   }
 
   void RestartStatusCollector() {
@@ -870,7 +858,7 @@ class DeviceStatusCollectorTest : public testing::Test {
 
   // Convenience method.
   int64_t ActivePeriodMilliseconds() {
-    return policy::DeviceStatusCollector::kIdlePollIntervalSeconds * 1000;
+    return policy::DeviceStatusCollector::kIdlePollInterval.InMilliseconds();
   }
 
   // Since this is a unit test running in browser_tests we must do additional
@@ -886,6 +874,8 @@ class DeviceStatusCollectorTest : public testing::Test {
   chromeos::ScopedTestingCrosSettings scoped_testing_cros_settings_;
   chromeos::FakeOwnerSettingsService owner_settings_service_{
       scoped_testing_cros_settings_.device_settings(), nullptr};
+  // local_state_ should be destructed after TestingProfile.
+  TestingPrefServiceSimple local_state_;
   // Only set after MockRunningKioskApp was called.
   std::unique_ptr<TestingProfile> testing_profile_;
   // Only set after MockAutoLaunchArcKioskApp was called.
@@ -897,7 +887,6 @@ class DeviceStatusCollectorTest : public testing::Test {
   em::DeviceStatusReportRequest device_status_;
   em::SessionStatusReportRequest session_status_;
   bool got_session_status_;
-  TestingPrefServiceSimple local_state_;
   TestingPrefServiceSimple profile_pref_service_;
   std::unique_ptr<TestingDeviceStatusCollector> status_collector_;
   const policy::DeviceLocalAccount fake_kiosk_device_local_account_;
@@ -1069,32 +1058,29 @@ TEST_F(DeviceStatusCollectorTest, MaxStoredPeriods) {
       TimeDelta::FromDays(kMaxDays - 1));
   status_collector_->set_max_stored_future_activity_interval(
       TimeDelta::FromDays(1));
-  Time baseline = Time::Now().LocalMidnight();
+  test_clock_.SetNow(Time::Now().LocalMidnight());
 
   // Simulate 12 active periods.
   for (int i = 0; i < kMaxDays + 2; i++) {
     status_collector_->Simulate(test_states,
                                 sizeof(test_states) / sizeof(ui::IdleState));
     // Advance the simulated clock by a day.
-    baseline += TimeDelta::FromDays(1);
-    status_collector_->SetBaselineTime(baseline);
+    test_clock_.Advance(TimeDelta::FromDays(1));
   }
 
   // Check that we don't exceed the max number of periods.
   GetStatus();
-  EXPECT_EQ(kMaxDays - 1, device_status_.active_periods_size());
+  EXPECT_EQ(kMaxDays, device_status_.active_periods_size());
 
   // Simulate some future times.
   for (int i = 0; i < kMaxDays + 2; i++) {
     status_collector_->Simulate(test_states,
                                 sizeof(test_states) / sizeof(ui::IdleState));
     // Advance the simulated clock by a day.
-    baseline += TimeDelta::FromDays(1);
-    status_collector_->SetBaselineTime(baseline);
+    test_clock_.Advance(TimeDelta::FromDays(1));
   }
   // Set the clock back so the previous simulated times are in the future.
-  baseline -= TimeDelta::FromDays(20);
-  status_collector_->SetBaselineTime(baseline);
+  test_clock_.Advance(-TimeDelta::FromDays(20));
 
   // Collect one more data point to trigger pruning.
   status_collector_->Simulate(test_states, 1);
@@ -1135,9 +1121,8 @@ TEST_F(DeviceStatusCollectorTest, ActivityCrossingMidnight) {
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportDeviceActivityTimes, true);
 
-  // Set the baseline time to 10 seconds after midnight.
-  status_collector_->SetBaselineTime(Time::Now().LocalMidnight() +
-                                     TimeDelta::FromSeconds(10));
+  // Set the baseline time to 20 seconds before midnight.
+  test_clock_.SetNow(Time::Now().LocalMidnight() - TimeDelta::FromSeconds(20));
 
   status_collector_->Simulate(test_states, 1);
   GetStatus();

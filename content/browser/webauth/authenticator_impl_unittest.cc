@@ -3347,9 +3347,14 @@ static constexpr char kTestPIN[] = "1234";
 class UVTestAuthenticatorClientDelegate
     : public AuthenticatorRequestClientDelegate {
  public:
-  explicit UVTestAuthenticatorClientDelegate(bool* collected_pin)
-      : collected_pin_(collected_pin) {
+  explicit UVTestAuthenticatorClientDelegate(bool* collected_pin,
+                                             bool* did_bio_enrollment,
+                                             bool cancel_bio_enrollment)
+      : collected_pin_(collected_pin),
+        did_bio_enrollment_(did_bio_enrollment),
+        cancel_bio_enrollment_(cancel_bio_enrollment) {
     *collected_pin_ = false;
+    *did_bio_enrollment_ = false;
   }
 
   bool SupportsPIN() const override { return true; }
@@ -3362,10 +3367,30 @@ class UVTestAuthenticatorClientDelegate
         FROM_HERE, base::BindOnce(std::move(provide_pin_cb), kTestPIN));
   }
 
+  void StartBioEnrollment(base::OnceClosure next_callback) override {
+    *did_bio_enrollment_ = true;
+    if (cancel_bio_enrollment_) {
+      base::SequencedTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, std::move(next_callback));
+      return;
+    }
+    bio_callback_ = std::move(next_callback);
+  }
+
+  void OnSampleCollected(int remaining_samples) override {
+    if (remaining_samples <= 0) {
+      base::SequencedTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, std::move(bio_callback_));
+    }
+  }
+
   void FinishCollectToken() override {}
 
  private:
   bool* collected_pin_;
+  base::OnceClosure bio_callback_;
+  bool* did_bio_enrollment_;
+  bool cancel_bio_enrollment_;
 };
 
 class UVTestAuthenticatorContentBrowserClient : public ContentBrowserClient {
@@ -3373,13 +3398,22 @@ class UVTestAuthenticatorContentBrowserClient : public ContentBrowserClient {
   std::unique_ptr<AuthenticatorRequestClientDelegate>
   GetWebAuthenticationRequestDelegate(
       RenderFrameHost* render_frame_host) override {
-    return std::make_unique<UVTestAuthenticatorClientDelegate>(&collected_pin_);
+    return std::make_unique<UVTestAuthenticatorClientDelegate>(
+        &collected_pin_, &did_bio_enrollment_, cancel_bio_enrollment_);
   }
 
   bool collected_pin() { return collected_pin_; }
 
+  bool did_bio_enrollment() { return did_bio_enrollment_; }
+
+  void set_cancel_bio_enrollment(bool cancel_bio_enrollment) {
+    cancel_bio_enrollment_ = cancel_bio_enrollment;
+  }
+
  private:
   bool collected_pin_;
+  bool did_bio_enrollment_;
+  bool cancel_bio_enrollment_ = false;
 };
 
 class UVAuthenticatorImplTest : public AuthenticatorImplTest {
@@ -4011,6 +4045,71 @@ TEST_F(InternalUVAuthenticatorImplTest, MakeCredentialCryptotoken) {
       EXPECT_TRUE(registration.second.is_u2f);
     }
   }
+}
+
+// Test making a credential on an authenticator that supports biometric
+// enrollment but has no fingerprints enrolled.
+TEST_F(InternalUVAuthenticatorImplTest, MakeCredentialInlineBioEnrollment) {
+  mojo::Remote<blink::mojom::Authenticator> authenticator =
+      ConnectToAuthenticator();
+
+  device::VirtualCtap2Device::Config config;
+  config.internal_uv_support = true;
+  config.pin_support = true;
+  config.user_verification_succeeds = true;
+  config.bio_enrollment_support = true;
+  virtual_device_factory_->mutable_state()->pin = kTestPIN;
+  virtual_device_factory_->mutable_state()->pin_retries =
+      device::kMaxPinRetries;
+  virtual_device_factory_->mutable_state()->fingerprints_enrolled = false;
+  virtual_device_factory_->SetCtap2Config(config);
+
+  auto options =
+      make_credential_options(device::UserVerificationRequirement::kRequired);
+
+  TestMakeCredentialCallback callback_receiver;
+  authenticator->MakeCredential(std::move(options),
+                                callback_receiver.callback());
+  callback_receiver.WaitForCallback();
+
+  EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+  EXPECT_TRUE(HasUV(callback_receiver));
+  EXPECT_TRUE(test_client_.collected_pin());
+  EXPECT_TRUE(test_client_.did_bio_enrollment());
+  EXPECT_TRUE(virtual_device_factory_->mutable_state()->fingerprints_enrolled);
+}
+
+// Test making a credential skipping biometric enrollment during credential
+// creation.
+TEST_F(InternalUVAuthenticatorImplTest, MakeCredentialSkipInlineBioEnrollment) {
+  mojo::Remote<blink::mojom::Authenticator> authenticator =
+      ConnectToAuthenticator();
+  test_client_.set_cancel_bio_enrollment(true);
+
+  device::VirtualCtap2Device::Config config;
+  config.internal_uv_support = true;
+  config.pin_support = true;
+  config.user_verification_succeeds = true;
+  config.bio_enrollment_support = true;
+  virtual_device_factory_->mutable_state()->pin = kTestPIN;
+  virtual_device_factory_->mutable_state()->pin_retries =
+      device::kMaxPinRetries;
+  virtual_device_factory_->mutable_state()->fingerprints_enrolled = false;
+  virtual_device_factory_->SetCtap2Config(config);
+
+  auto options =
+      make_credential_options(device::UserVerificationRequirement::kRequired);
+
+  TestMakeCredentialCallback callback_receiver;
+  authenticator->MakeCredential(std::move(options),
+                                callback_receiver.callback());
+  callback_receiver.WaitForCallback();
+
+  EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+  EXPECT_TRUE(HasUV(callback_receiver));
+  EXPECT_TRUE(test_client_.collected_pin());
+  EXPECT_TRUE(test_client_.did_bio_enrollment());
+  EXPECT_FALSE(virtual_device_factory_->mutable_state()->fingerprints_enrolled);
 }
 
 TEST_F(InternalUVAuthenticatorImplTest, GetAssertion) {

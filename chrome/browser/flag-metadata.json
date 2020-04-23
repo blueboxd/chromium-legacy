@@ -642,8 +642,8 @@
   },
   {
     "name": "crostini-disk-resizing",
-    "owners": [ "davidmunro@google.com", "nverne" ],
-    "expiry_milestone": 83
+    "owners": [ "davidmunro", "nverne" ],
+    "expiry_milestone": 86
   },
   {
     "name": "crostini-gpu-support",
@@ -1453,6 +1453,14 @@
     "expiry_milestone": 85
   },
   {
+    "name": "enable-experimental-cookie-features",
+    "owners": [ "chlily", "//net/cookies/OWNERS" ],
+    // This should expire once all cookie handling changes have been enabled by
+    // default. This is expected to take a while, and this expiry will probably
+    // need to be extended.
+    "expiry_milestone": 95
+  },
+  {
     "name": "enable-experimental-fling-animation",
     "owners": [ "sarsha@microsoft.com" ],
     "expiry_milestone": 89
@@ -1563,6 +1571,11 @@
     "name": "enable-hide-arc-media-notifications",
     "owners": [ "beccahughes", "media-dev" ],
     "expiry_milestone": 80
+  },
+  {
+    "name": "enable-high-resolution-mouse-scrolling",
+    "owners": [ "hcutts", "chromeos-tango@google.com" ],
+    "expiry_milestone": 85
   },
   {
     "name": "enable-history-favicons-google-server-query",
@@ -2596,7 +2609,7 @@
   {
     "name": "hardware-media-key-handling",
     "owners": [ "steimel", "media-dev" ],
-    "expiry_milestone": 84
+    "expiry_milestone": 90
   },
   {
     "name": "heavy-ad-privacy-mitigations-opt-out",
@@ -3399,6 +3412,11 @@
     "expiry_milestone": 83
   },
   {
+    "name": "pointer-support",
+    "owners": [ "noyau" ],
+    "expiry_milestone": 85
+  },
+  {
     "name": "policy-atomic-group-enabled",
     "owners": [ "ydago" ],
     "expiry_milestone": 80
@@ -3633,11 +3651,6 @@
     "expiry_milestone": 85
   },
   {
-    "name": "sharing-derive-vapid-key",
-    "owners": [ "//chrome/browser/sharing/OWNERS" ],
-    "expiry_milestone": 85
-  },
-  {
     "name": "sharing-device-expiration",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
     "expiry_milestone": 83
@@ -3656,11 +3669,6 @@
     "name": "sharing-qr-code-generator",
     "owners": [ "//components/send_tab_to_self/OWNERS" ],
     "expiry_milestone": 86
-  },
-  {
-    "name": "sharing-rename-devices",
-    "owners": [ "//chrome/browser/sharing/OWNERS" ],
-    "expiry_milestone": 83
   },
   {
     "name": "sharing-send-via-sync",

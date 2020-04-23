@@ -1,0 +1,13 @@
+This is a testharness.js-based test.
+FAIL SpaceAfterScript assert_approx_equals: mmultiscripts: Space after first superscript expected 30 +/- 1 but got -10
+FAIL SuperscriptShiftUp assert_approx_equals: mmultiscripts: First superscript shift expected 70 +/- 1 but got -10
+FAIL SuperscriptShiftUpCramped assert_approx_equals: msup: Superscript shift expected 50 +/- 1 but got -10
+FAIL SubscriptShiftDown assert_approx_equals: mmultiscripts: First subscript shift expected 60 +/- 1 but got 10
+FAIL SubSuperscriptGapMin assert_approx_equals: mmultiscripts: SubSuperscript gap expected 110 +/- 1 but got -20
+FAIL SuperscriptBottomMaxWithSubscript assert_approx_equals: mmultiscripts: SubSuperscript gap expected 110 +/- 1 but got -20
+PASS SubscriptTopMax
+PASS SuperscriptBottomMin
+PASS SubscriptBaselineDrop
+PASS SuperscriptBaselineDrop
+Harness: the test ran to completion.
+

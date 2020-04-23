@@ -49,7 +49,6 @@ crbug.com/957674 virtual/scalefactor200/external/wpt/largest-contentful-paint/in
 crbug.com/957674 virtual/scalefactor200withoutzoom/external/wpt/largest-contentful-paint/invisible-images-composited-2.html [ Pass ]
 
 virtual/android/fullscreen/video-overlay-scroll.html [ Failure ]
-virtual/android/rootscroller/fixed-chaining-with-implicit-pointer-events-none.html [ Failure ]
 virtual/android/rootscroller/nested-rootscroller-browser-controls-bounds-shown.html [ Crash ]
 virtual/android/url-bar/bottom-and-top-fixed-sticks-to-top.html [ Crash ]
 virtual/android/url-bar/bottom-fixed-adjusted-when-showing-url-bar.html [ Crash ]
@@ -90,8 +89,6 @@ virtual/threaded/fast/events/pinch/scroll-visual-viewport-send-boundary-events.h
 
 paint/invalidation/media-audio-no-spurious-repaints.html [ Failure ]
 
-crbug.com/940033 virtual/threaded-prefer-compositing/fast/scrolling/mouse-scrolling-over-standard-scrollbar.html [ Failure ]
-
 # Missing compositing reasons
 http/tests/devtools/layers/layer-compositing-reasons.js [ Failure ]
 # Missing WheelEventHandler
@@ -102,8 +99,6 @@ crbug.com/1047358 paint/pagination/composited-paginated-outlined-box.html [ Fail
 
 # Ad frame highlight size is incorrect
 crbug.com/1047359 http/tests/subresource_filter/ad-highlight-frame-resized.html [ Failure ]
-
-virtual/threaded/fast/scroll-snap/snaps-after-touchpad-scrolling.html [ Failure ]
 
 compositing/gestures/gesture-tapHighlight-composited-img.html [ Pass Failure ]
 http/tests/images/image-decode-in-frame.html [ Pass Failure ]

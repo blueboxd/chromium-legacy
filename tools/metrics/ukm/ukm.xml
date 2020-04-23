@@ -1607,7 +1607,7 @@ be describing additional metrics about the same event.
       <history>
         <index fields="profile.country"/>
         <statistics>
-          <quantiles type="enumeration"/>
+          <enumeration/>
         </statistics>
       </history>
     </aggregation>

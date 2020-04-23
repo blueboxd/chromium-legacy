@@ -5,6 +5,7 @@
 #include "gpu/command_buffer/service/shared_context_state.h"
 
 #include "base/strings/stringprintf.h"
+#include "base/system/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "components/crash/core/common/crash_key.h"
@@ -44,6 +45,20 @@
 
 namespace {
 static constexpr size_t kInitialScratchDeserializationBufferSize = 1024;
+
+size_t MaxNumSkSurface() {
+  static constexpr size_t kNormalMaxNumSkSurface = 16;
+#if defined(OS_ANDROID)
+  static constexpr size_t kLowEndMaxNumSkSurface = 4;
+  if (base::SysInfo::IsLowEndDevice()) {
+    return kLowEndMaxNumSkSurface;
+  } else {
+    return kNormalMaxNumSkSurface;
+  }
+#else
+  return kNormalMaxNumSkSurface;
+#endif
+}
 }
 
 namespace gpu {
@@ -100,7 +115,8 @@ SharedContextState::SharedContextState(
       share_group_(std::move(share_group)),
       context_(context),
       real_context_(std::move(context)),
-      surface_(std::move(surface)) {
+      surface_(std::move(surface)),
+      sk_surface_cache_(MaxNumSkSurface()) {
   if (GrContextIsVulkan()) {
 #if BUILDFLAG(ENABLE_VULKAN)
     gr_context_ = vk_context_provider_->GetGrContext();
@@ -507,6 +523,7 @@ void SharedContextState::PurgeMemory(
       return;
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
       // With moderate pressure, clear any unlocked resources.
+      sk_surface_cache_.Clear();
       gr_context_->purgeUnlockedResources(true /* scratchResourcesOnly */);
       UpdateSkiaOwnedMemorySize();
       scratch_deserialization_buffer_.resize(
@@ -515,6 +532,7 @@ void SharedContextState::PurgeMemory(
       break;
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL:
       // With critical pressure, purge as much as possible.
+      sk_surface_cache_.Clear();
       gr_context_->freeGpuResources();
       UpdateSkiaOwnedMemorySize();
       scratch_deserialization_buffer_.resize(0u);

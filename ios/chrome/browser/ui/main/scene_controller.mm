@@ -12,6 +12,7 @@
 #include "base/task/post_task.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/url_formatter/url_formatter.h"
+#import "ios/chrome/app/application_delegate/app_state.h"
 #include "ios/chrome/app/application_delegate/tab_opening.h"
 #import "ios/chrome/app/application_delegate/url_opener.h"
 #include "ios/chrome/app/application_mode.h"
@@ -67,6 +68,7 @@
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
+#import "ios/chrome/browser/window_activities/window_activity_helpers.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/mailto/mailto_handler_provider.h"
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
@@ -398,12 +400,35 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
     tabModel = self.mainInterface.tabModel;
     [self setCurrentInterfaceForMode:ApplicationMode::NORMAL];
   }
+
+  // Figure out what UI to show initially.
+
+  // See if this scene launched as part of a multiwindow URL opening.
+  // If so, load that URL (this also creates a new tab to load the URL in).
+  // No other UI will show in this case.
+  if (IsMultiwindowSupported()) {
+    if (@available(iOS 13, *)) {
+      for (NSUserActivity* activity in self.sceneState.connectionOptions
+               .userActivities) {
+        if (ActivityIsURLLoad(activity)) {
+          UrlLoadParams params = LoadParamsFromActivity(activity);
+          UrlLoadingBrowserAgent::FromBrowser(self.mainInterface.browser)
+              ->Load(params);
+          return;
+        }
+      }
+    }
+  }
+
   if (self.tabSwitcherIsActive) {
     DCHECK(!self.dismissingTabSwitcher);
     [self beginDismissingTabSwitcherWithCurrentModel:self.mainInterface.tabModel
                                         focusOmnibox:NO];
     [self finishDismissingTabSwitcher];
   }
+
+  // If this is first run, or if this web state list should have an NTP created
+  // when it activates, then create that tab.
   if (firstRun || [self shouldOpenNTPTabOnActivationOfTabModel:tabModel]) {
     OpenNewTabCommand* command = [OpenNewTabCommand
         commandWithIncognito:self.currentInterface.incognito];
@@ -414,6 +439,8 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
     [applicationHandler openURLInNewTab:command];
   }
 
+  // If this is first run, show the first run UI on top of the new tab.
+  // If this isn't first run, check if the sign-in promo needs to display.
   if (firstRun) {
     [self.mainController prepareForFirstRunUI];
     [self showFirstRunUI];
@@ -783,7 +810,7 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
                                  completion:nil];
 }
 
-- (void)openNewWindow {
+- (void)openNewWindowWithActivity:(NSUserActivity*)userActivity {
   if (!IsMultiwindowSupported())
     return;  // silent no-op.
 
@@ -794,7 +821,7 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
 
     [UIApplication.sharedApplication
         requestSceneSessionActivation:nil /* make a new scene */
-                         userActivity:nil
+                         userActivity:userActivity
                               options:options
                          errorHandler:nil];
   }

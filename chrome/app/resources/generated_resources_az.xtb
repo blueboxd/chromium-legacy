@@ -37,7 +37,6 @@
 <translation id="1041263367839475438">Əlçatan cihazlar</translation>
 <translation id="1042174272890264476">Kompüteriniz həmçinin daxili <ph name="SHORT_PRODUCT_NAME" /> RLZ kitabxanası ilə gəlir. RLZ axtarışları və <ph name="SHORT_PRODUCT_NAME" /> istifadəsini ölçmək üçün identifikasiya edilə bilən teq ayırır. Bu etiketlər bəzən <ph name="PRODUCT_NAME" /> daxilində, Google Axtarış sorğularında görünür.</translation>
 <translation id="1043818413152647937">Həmçinin bu tətbiqlərdən data silinsin?</translation>
-<translation id="1045448422538531528">Qrupa əlavə edin</translation>
 <translation id="1046635659603195359">Artıq digər cihazda Google Assistent ilə Voice Match ayarlamısınız. Əvvəlki səsyazıları bu cihazda səs modeli yaratmaq üçün istifadə edilə bilər. Bu, bir dəqiqədən az vaxt ala bilər.</translation>
 <translation id="104710386808485638">Linux yenidən başladılsın?</translation>
 <translation id="1047431265488717055">Link Mətnini Kopyalayın</translation>
@@ -90,6 +89,7 @@
 <translation id="1122198203221319518">&amp;Alət</translation>
 <translation id="1122242684574577509">Doğrulama alınmadı. İstifadə etdiyiniz Wi-Fi şəbəkəsi üçün login səhifəsinə daxil olun (<ph name="NETWORK_ID" />).</translation>
 <translation id="1122960773616686544">Əlfəcin adı</translation>
+<translation id="1123753900084781868">Canlı Altyazı hazırda əlçatan deyil</translation>
 <translation id="1124772482545689468">İstifadəçi</translation>
 <translation id="1125550662859510761"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (Lokal)</translation>
 <translation id="1126809382673880764">Sizi təhlükəli veb sayt, endirmə və artırmalardan qorumur. Hələ də Gmail və Axtarış kimi digər Google xidmətlərində mümkün olduğu qədər Təhlükəsiz Baxış qoruması əldə edəcəksiniz.</translation>
@@ -405,7 +405,6 @@
 <translation id="1536754031901697553">Ayrılır...</translation>
 <translation id="15373452373711364">Böyük maus kursoru</translation>
 <translation id="1540605929960647700">Demo rejimini aktiv edin</translation>
-<translation id="1541396123399225659">Yeni Qrupa əlavə edin</translation>
 <translation id="1542514202066550870">Bu tabel qulaqlıq üçün VR kontenti göstərir.</translation>
 <translation id="1543284117603151572">Edge'dən import edildi</translation>
 <translation id="1545177026077493356">Avtomatik Kiosk rejimi</translation>
@@ -1900,7 +1899,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="3514373592552233661">Birdən çox şəbəkə əlçatan olduqda, məlum olan şəbəkə ilə müqayisədə tərcih edilən şəbəkələr seçiləcək</translation>
 <translation id="3515983984924808886">Sıfırlamanı təsdiq etmək üçün təhlükəsizlik açarınıza yenidən toxunun. PIN kod daxil olmaqla təhlükəsizlik açarında saxlanılan bütün məlumatlar silinəcək.</translation>
 <translation id="3518985090088779359">Qəbul edin və davam edin</translation>
-<translation id="351952459507671940">Yeni qrupa əlavə edin</translation>
 <translation id="3521606918211282604">Disk ölçüsünü dəyişin</translation>
 <translation id="3523642406908660543">Sayt kompüterinizə daxil olmaq üçün plaqin işlədərsə, icazə alsın (tövsiyə olunur)</translation>
 <translation id="3524965460886318643">Eksport Fəaliyyətləri</translation>
@@ -2888,7 +2886,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="4871322859485617074">PIN yanlış simvollardan ibarətdir</translation>
 <translation id="4871370605780490696">Əlfəcin əlavə edin</translation>
 <translation id="4871719318659334896">Qrupu bağlayın</translation>
-<translation id="4871852311166078968">Qrupa əlavə edin</translation>
 <translation id="4873312501243535625">Media Fayl Yoxlayıcı</translation>
 <translation id="4876273079589074638">Bu xətanın araşdırılması və aradan qaldırılması üçün mühəndislərimizə yardım edin. Bunu edə bilərsinizsə, dəqiq mərhələləri qeyd edin. Heç bir xırdalığı gözdən qaçırmayın!</translation>
 <translation id="4876895919560854374">Ekranı kiliddəyin və kiliddən çıxarın</translation>

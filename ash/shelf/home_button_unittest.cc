@@ -11,10 +11,10 @@
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/assistant/assistant_controller_impl.h"
-#include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/test/test_assistant_service.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
@@ -364,22 +364,16 @@ TEST_P(HomeButtonTest, LongPressGesture) {
       CreateGestureEvent(ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
   SendGestureEvent(&long_press);
   GetAppListTestHelper()->WaitUntilIdle();
-  EXPECT_EQ(AssistantVisibility::kVisible, Shell::Get()
-                                               ->assistant_controller()
-                                               ->ui_controller()
-                                               ->model()
-                                               ->visibility());
+  EXPECT_EQ(AssistantVisibility::kVisible,
+            AssistantUiController::Get()->GetModel()->visibility());
 
-  Shell::Get()->assistant_controller()->ui_controller()->CloseUi(
+  AssistantUiController::Get()->CloseUi(
       chromeos::assistant::mojom::AssistantExitPoint::kUnspecified);
   // Test long press gesture on secondary display.
   SendGestureEventToSecondaryDisplay(&long_press);
   GetAppListTestHelper()->WaitUntilIdle();
-  EXPECT_EQ(AssistantVisibility::kVisible, Shell::Get()
-                                               ->assistant_controller()
-                                               ->ui_controller()
-                                               ->model()
-                                               ->visibility());
+  EXPECT_EQ(AssistantVisibility::kVisible,
+            AssistantUiController::Get()->GetModel()->visibility());
 }
 
 TEST_P(HomeButtonTest, LongPressGestureInTabletMode) {
@@ -412,11 +406,8 @@ TEST_P(HomeButtonTest, LongPressGestureInTabletMode) {
       CreateGestureEvent(ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
   SendGestureEvent(&long_press);
   GetAppListTestHelper()->WaitUntilIdle();
-  EXPECT_EQ(AssistantVisibility::kVisible, Shell::Get()
-                                               ->assistant_controller()
-                                               ->ui_controller()
-                                               ->model()
-                                               ->visibility());
+  EXPECT_EQ(AssistantVisibility::kVisible,
+            AssistantUiController::Get()->GetModel()->visibility());
   GetAppListTestHelper()->CheckVisibility(true);
   GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenAllApps);
 
@@ -428,13 +419,10 @@ TEST_P(HomeButtonTest, LongPressGestureInTabletMode) {
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
   GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenAllApps);
-  EXPECT_EQ(AssistantVisibility::kClosed, Shell::Get()
-                                              ->assistant_controller()
-                                              ->ui_controller()
-                                              ->model()
-                                              ->visibility());
+  EXPECT_EQ(AssistantVisibility::kClosed,
+            AssistantUiController::Get()->GetModel()->visibility());
 
-  Shell::Get()->assistant_controller()->ui_controller()->CloseUi(
+  AssistantUiController::Get()->CloseUi(
       chromeos::assistant::mojom::AssistantExitPoint::kUnspecified);
 }
 
@@ -455,19 +443,13 @@ TEST_P(HomeButtonTest, LongPressGestureWithSecondaryUser) {
       CreateGestureEvent(ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
   SendGestureEvent(&long_press);
   // The Assistant is disabled for secondary user.
-  EXPECT_NE(AssistantVisibility::kVisible, Shell::Get()
-                                               ->assistant_controller()
-                                               ->ui_controller()
-                                               ->model()
-                                               ->visibility());
+  EXPECT_NE(AssistantVisibility::kVisible,
+            AssistantUiController::Get()->GetModel()->visibility());
 
   // Test long press gesture on secondary display.
   SendGestureEventToSecondaryDisplay(&long_press);
-  EXPECT_NE(AssistantVisibility::kVisible, Shell::Get()
-                                               ->assistant_controller()
-                                               ->ui_controller()
-                                               ->model()
-                                               ->visibility());
+  EXPECT_NE(AssistantVisibility::kVisible,
+            AssistantUiController::Get()->GetModel()->visibility());
 }
 
 TEST_P(HomeButtonTest, LongPressGestureWithSettingsDisabled) {
@@ -488,19 +470,13 @@ TEST_P(HomeButtonTest, LongPressGestureWithSettingsDisabled) {
   ui::GestureEvent long_press =
       CreateGestureEvent(ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
   SendGestureEvent(&long_press);
-  EXPECT_NE(AssistantVisibility::kVisible, Shell::Get()
-                                               ->assistant_controller()
-                                               ->ui_controller()
-                                               ->model()
-                                               ->visibility());
+  EXPECT_NE(AssistantVisibility::kVisible,
+            AssistantUiController::Get()->GetModel()->visibility());
 
   // Test long press gesture on secondary display.
   SendGestureEventToSecondaryDisplay(&long_press);
-  EXPECT_NE(AssistantVisibility::kVisible, Shell::Get()
-                                               ->assistant_controller()
-                                               ->ui_controller()
-                                               ->model()
-                                               ->visibility());
+  EXPECT_NE(AssistantVisibility::kVisible,
+            AssistantUiController::Get()->GetModel()->visibility());
 }
 
 // Tests that tapping in the bottom left corner in tablet mode results in the

@@ -6,15 +6,15 @@ import("//third_party/abseil-cpp/absl.gni")
 
 absl_source_set("algorithm") {
   public = [ "algorithm.h" ]
-  deps = [ "../base:config" ]
+  deps = [ "//third_party/abseil-cpp/absl/base:config" ]
 }
 
 absl_source_set("container") {
   public = [ "container.h" ]
   deps = [
     ":algorithm",
-    "../base:core_headers",
-    "../meta:type_traits",
+    "//third_party/abseil-cpp/absl/base:core_headers",
+    "//third_party/abseil-cpp/absl/meta:type_traits",
   ]
 }
 
@@ -33,10 +33,10 @@ absl_source_set("container_test") {
   sources = [ "container_test.cc" ]
   deps = [
     ":container",
-    "../base",
-    "../base:core_headers",
-    "../memory",
-    "../types:span",
+    "//third_party/abseil-cpp/absl/base",
+    "//third_party/abseil-cpp/absl/base:core_headers",
+    "//third_party/abseil-cpp/absl/memory",
+    "//third_party/abseil-cpp/absl/types:span",
     "//third_party/googletest:gtest",
     "//third_party/googletest:gmock",
   ]

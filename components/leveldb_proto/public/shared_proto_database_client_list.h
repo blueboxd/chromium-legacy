@@ -50,6 +50,7 @@ enum class ProtoDbType {
   SHARED_DB_METADATA = 25,
   FEED_STREAM_DATABASE = 26,
   TAB_STATE_DATABASE = 27,
+  UPBOARDING_QUERY_TILE_STORE = 28,
   LAST,
 };
 
@@ -62,6 +63,7 @@ constexpr ProtoDbType kWhitelistedDbForSharedImpl[]{
     ProtoDbType::PRINT_JOB_DATABASE,
     ProtoDbType::FEED_STREAM_DATABASE,
     ProtoDbType::TAB_STATE_DATABASE,
+    ProtoDbType::UPBOARDING_QUERY_TILE_STORE,
     ProtoDbType::LAST,  // Marks the end of list.
 };
 

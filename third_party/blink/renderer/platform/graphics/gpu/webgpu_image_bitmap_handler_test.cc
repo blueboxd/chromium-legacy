@@ -4,80 +4,12 @@
 
 #include "third_party/blink/renderer/platform/graphics/gpu/webgpu_image_bitmap_handler.h"
 
-#include "base/memory/scoped_refptr.h"
-#include "base/test/null_task_runner.h"
-#include "base/test/task_environment.h"
-#include "build/build_config.h"
-#include "components/viz/common/resources/transferable_resource.h"
-#include "components/viz/test/test_context_provider.h"
-#include "gpu/command_buffer/client/webgpu_interface_stub.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/platform/graphics/accelerated_static_bitmap_image.h"
-#include "third_party/blink/renderer/platform/graphics/gpu/drawing_buffer_test_helpers.h"
-#include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
-#include "third_party/blink/renderer/platform/graphics/test/gpu_test_utils.h"
-
-using testing::_;
-using testing::Return;
 
 namespace blink {
 
 static constexpr uint64_t kMaxArrayLength = 40000;
-
-namespace {
-gpu::SyncToken GenTestSyncToken(GLbyte id) {
-  gpu::SyncToken token;
-  // Store id in the first byte
-  reinterpret_cast<GLbyte*>(&token)[0] = id;
-  return token;
-}
-
-scoped_refptr<StaticBitmapImage> CreateBitmap() {
-  auto mailbox = gpu::Mailbox::GenerateForSharedImage();
-  auto release_callback = viz::SingleReleaseCallback::Create(
-      base::BindOnce([](const gpu::SyncToken&, bool) {}));
-  return AcceleratedStaticBitmapImage::CreateFromCanvasMailbox(
-      mailbox, GenTestSyncToken(100), 0, SkImageInfo::MakeN32Premul(100, 100),
-      GL_TEXTURE_2D, true, SharedGpuContext::ContextProviderWrapper(),
-      base::PlatformThread::CurrentRef(),
-      base::MakeRefCounted<base::NullTaskRunner>(),
-      std::move(release_callback));
-}
-
-bool GPUUploadingPathSupported() {
-// In current state, only passthrough command buffer can work on this path.
-// and Windows is the platform that is using passthrough command buffer by
-// default.
-// TODO(shaobo.yan@intel.com): Enable test on more platforms when they're ready.
-#if defined(OS_WIN)
-  return true;
-#else
-  return false;
-#endif  // defined(OS_WIN)
-}
-
-class MockWebGPUInterface : public gpu::webgpu::WebGPUInterfaceStub {
- public:
-  MOCK_METHOD(gpu::webgpu::ReservedTexture,
-              ReserveTexture,
-              (uint64_t device_client_id));
-  MOCK_METHOD(void,
-              AssociateMailbox,
-              (GLuint64 device_client_id,
-               GLuint device_generation,
-               GLuint id,
-               GLuint generation,
-               GLuint usage,
-               const GLbyte* mailbox));
-  MOCK_METHOD(void,
-              DissociateMailbox,
-              (GLuint64 device_client_id,
-               GLuint texture_id,
-               GLuint texture_generation));
-};
-}  // anonymous namespace
 
 class WebGPUImageBitmapHandlerTest : public testing::Test {
  protected:
@@ -175,73 +107,4 @@ TEST_F(WebGPUImageBitmapHandlerTest, VerifyCopyBytesFromSubImageBitmap) {
                            image_data_rect);
 }
 
-class DawnTextureFromImageBitmapTest : public testing::Test {
- protected:
-  void SetUp() override {
-    auto webgpu = std::make_unique<MockWebGPUInterface>();
-    webgpu_ = webgpu.get();
-    auto provider = std::make_unique<WebGraphicsContext3DProviderForTests>(
-        std::move(webgpu));
-
-    dawn_control_client_ =
-        base::MakeRefCounted<DawnControlClientHolder>(std::move(provider));
-
-    dawn_texture_provider_ = base::MakeRefCounted<DawnTextureFromImageBitmap>(
-        dawn_control_client_, 1 /* device_client_id */);
-
-    test_context_provider_ = viz::TestContextProvider::Create();
-    InitializeSharedGpuContext(test_context_provider_.get());
-  }
-
-  void TearDown() override { SharedGpuContext::ResetForTesting(); }
-  MockWebGPUInterface* webgpu_;
-  scoped_refptr<DawnControlClientHolder> dawn_control_client_;
-  scoped_refptr<DawnTextureFromImageBitmap> dawn_texture_provider_;
-  scoped_refptr<viz::TestContextProvider> test_context_provider_;
-  base::test::TaskEnvironment task_environment_;
-};
-
-TEST_F(DawnTextureFromImageBitmapTest, VerifyAccessTexture) {
-  if (!GPUUploadingPathSupported()) {
-    LOG(ERROR) << "Test skipped because GPU uploading path not supported.";
-    return;
-  }
-  auto bitmap = CreateBitmap();
-
-  viz::TransferableResource resource;
-  gpu::webgpu::ReservedTexture reservation = {
-      reinterpret_cast<WGPUTexture>(&resource), 1, 1};
-
-  // Test that ProduceDawnTextureFromImageBitmap calls ReserveTexture and
-  // AssociateMailbox correctly.
-  const GLbyte* mailbox_bytes = nullptr;
-
-  EXPECT_CALL(*webgpu_, ReserveTexture(_)).WillOnce(Return(reservation));
-  EXPECT_CALL(*webgpu_, AssociateMailbox(
-                            dawn_texture_provider_->GetDeviceClientIdForTest(),
-                            _, reservation.id, reservation.generation,
-                            WGPUTextureUsage_CopySrc, _))
-      .WillOnce(testing::SaveArg<5>(&mailbox_bytes));
-
-  WGPUTexture texture =
-      dawn_texture_provider_->ProduceDawnTextureFromImageBitmap(bitmap);
-
-  gpu::Mailbox mailbox = gpu::Mailbox::FromVolatile(
-      *reinterpret_cast<const volatile gpu::Mailbox*>(mailbox_bytes));
-
-  EXPECT_TRUE(mailbox == bitmap->GetMailboxHolder().mailbox);
-  EXPECT_NE(texture, nullptr);
-  EXPECT_EQ(dawn_texture_provider_->GetTextureIdForTest(), 1u);
-  EXPECT_EQ(dawn_texture_provider_->GetTextureGenerationForTest(), 1u);
-
-  // Test that FinishDawnTextureFromImageBitmapAccess calls DissociateMailbox
-  // correctly.
-  EXPECT_CALL(*webgpu_, DissociateMailbox(
-                            dawn_texture_provider_->GetDeviceClientIdForTest(),
-                            reservation.id, reservation.generation));
-
-  dawn_texture_provider_->FinishDawnTextureFromImageBitmapAccess();
-
-  EXPECT_EQ(dawn_texture_provider_->GetTextureIdForTest(), 0u);
-}
 }  // namespace blink

@@ -499,6 +499,9 @@ class SiteSettingsHandlerTest : public testing::Test {
   const std::string kCookies;
   const std::string kFlash;
 
+  const ContentSettingsType kPermissionNotifications =
+      ContentSettingsType::NOTIFICATIONS;
+
   // The number of listeners that are expected to fire when any content setting
   // is changed.
   const size_t kNumberContentSettingListeners = 2;
@@ -997,6 +1000,89 @@ TEST_F(SiteSettingsHandlerTest, InstalledApps) {
   EXPECT_FALSE(origin_info->FindKey("isInstalled")->GetBool());
 }
 
+TEST_F(SiteSettingsHandlerTest, ResetCategoryPermissionForEmbargoedOrigins) {
+  constexpr char kOriginToBlock[] = "https://www.blocked.com:443";
+  constexpr char kOriginToEmbargo[] = "https://embargoed.co.uk";
+
+  // Add and test 1 blocked origin
+  {
+    base::ListValue set_args;
+    set_args.AppendString(kOriginToBlock);  // Primary pattern.
+    set_args.AppendString(kOriginToBlock);  // Secondary pattern.
+    set_args.AppendString(kNotifications);
+    set_args.AppendString(
+        content_settings::ContentSettingToString(CONTENT_SETTING_BLOCK));
+    set_args.AppendBoolean(false);  // Incognito.
+
+    handler()->HandleSetCategoryPermissionForPattern(&set_args);
+    ASSERT_EQ(1U, web_ui()->call_data().size());
+  }
+
+  // Add and test 1 embargoed origin.
+  {
+    auto* auto_blocker =
+        PermissionDecisionAutoBlockerFactory::GetForProfile(profile());
+    for (size_t i = 0; i < 3; ++i) {
+      auto_blocker->RecordDismissAndEmbargo(GURL(kOriginToEmbargo),
+                                            kPermissionNotifications, false);
+    }
+    // Check that origin is under embargo.
+    EXPECT_EQ(
+        CONTENT_SETTING_BLOCK,
+        auto_blocker
+            ->GetEmbargoResult(GURL(kOriginToEmbargo), kPermissionNotifications)
+            .content_setting);
+  }
+
+  // Check there are 2 blocked origins.
+  {
+    base::ListValue exceptions;
+    site_settings::GetExceptionsForContentType(
+        kPermissionNotifications, profile(), /*extension_registry=*/nullptr,
+        web_ui(),
+        /*incognito=*/false, &exceptions);
+
+    // The size should be 2, 1st is blocked origin, 2nd is embargoed origin.
+    ASSERT_EQ(2U, exceptions.GetSize());
+  }
+
+  {
+    // Reset blocked origin.
+    base::ListValue reset_args;
+    reset_args.AppendString(kOriginToBlock);
+    reset_args.AppendString(kOriginToBlock);
+    reset_args.AppendString(kNotifications);
+    reset_args.AppendBoolean(false);  // Incognito.
+    handler()->HandleResetCategoryPermissionForPattern(&reset_args);
+
+    // Check there is 1 blocked origin.
+    base::ListValue exceptions;
+    site_settings::GetExceptionsForContentType(
+        kPermissionNotifications, profile(), /*extension_registry=*/nullptr,
+        web_ui(),
+        /*incognito=*/false, &exceptions);
+    ASSERT_EQ(1U, exceptions.GetSize());
+  }
+
+  {
+    // Reset embargoed origin.
+    base::ListValue reset_args;
+    reset_args.AppendString(kOriginToEmbargo);
+    reset_args.AppendString(kOriginToEmbargo);
+    reset_args.AppendString(kNotifications);
+    reset_args.AppendBoolean(false);  // Incognito.
+    handler()->HandleResetCategoryPermissionForPattern(&reset_args);
+
+    // Check that there are no blocked or embargoed origins.
+    base::ListValue exceptions;
+    site_settings::GetExceptionsForContentType(
+        kPermissionNotifications, profile(), /*extension_registry=*/nullptr,
+        web_ui(),
+        /*incognito=*/false, &exceptions);
+    ASSERT_EQ(0U, exceptions.GetSize());
+  }
+}
+
 TEST_F(SiteSettingsHandlerTest, Origins) {
   const std::string google("https://www.google.com:443");
   const std::string uma_base("WebsiteSettings.Menu.PermissionChanged");
@@ -1105,7 +1191,8 @@ TEST_F(SiteSettingsHandlerTest, DefaultSettingSource) {
   ASSERT_TRUE(profile()->CreateHistoryService(/* delete_file= */ true,
                                               /* no_db= */ false));
 
-  // Use a non-default port to verify the display name does not strip this off.
+  // Use a non-default port to verify the display name does not strip this
+  // off.
   const std::string google("https://www.google.com:183");
   const std::string expected_display_name("www.google.com:183");
 

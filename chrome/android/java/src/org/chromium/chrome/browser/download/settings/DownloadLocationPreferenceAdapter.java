@@ -18,7 +18,7 @@ import androidx.annotation.Nullable;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.download.DirectoryOption;
 import org.chromium.chrome.browser.download.DownloadLocationDialogBridge;
-import org.chromium.chrome.browser.download.DownloadUtils;
+import org.chromium.chrome.browser.download.StringUtils;
 import org.chromium.chrome.download.R;
 
 /**
@@ -62,7 +62,7 @@ public class DownloadLocationPreferenceAdapter
 
         TextView summaryText = (TextView) view.findViewById(R.id.description);
         if (isEnabled(position)) {
-            String summary = DownloadUtils.getStringForAvailableBytes(
+            String summary = StringUtils.getAvailableBytesForUi(
                     getContext(), directoryOption.availableSpace);
             summaryText.setText(summary);
 

@@ -19,6 +19,7 @@ class FakeScrollbar : public Scrollbar {
   FakeScrollbar& operator=(const FakeScrollbar&) = delete;
 
   // Scrollbar implementation.
+  bool IsSame(const Scrollbar&) const override;
   ScrollbarOrientation Orientation() const override;
   bool IsLeftSideVerticalScrollbar() const override;
   bool IsSolidColor() const override;

@@ -48,6 +48,10 @@ enum ScrollbarPart {
 
 class Scrollbar : public base::RefCounted<Scrollbar> {
  public:
+  // Check if this scrollbar and the other scrollbar are backed with the same
+  // source scrollbar (e.g. blink::Scrollbar).
+  virtual bool IsSame(const Scrollbar&) const = 0;
+
   virtual ScrollbarOrientation Orientation() const = 0;
   virtual bool IsLeftSideVerticalScrollbar() const = 0;
   virtual bool IsSolidColor() const = 0;

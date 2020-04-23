@@ -26,7 +26,7 @@ Processes
 Ways to get help.
 
 * [Chat](/docs/ui/ask/index.md#chat)
-* [Discuss](docs/ui/ask/index.md#discuss)
+* [Discuss](/docs/ui/ask/index.md#discuss)
 * [E-mail](/docs/ui/ask/index.md#e_mail)
 
 |||---|||

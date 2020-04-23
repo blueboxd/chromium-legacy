@@ -1253,8 +1253,7 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveDownloadsByOrigin) {
   std::unique_ptr<BrowsingDataFilterBuilder> builder(
       BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST));
   builder->AddRegisterableDomain("host1.com");
-  base::RepeatingCallback<bool(const GURL&)> filter =
-      builder->BuildGeneralFilter();
+  base::RepeatingCallback<bool(const GURL&)> filter = builder->BuildUrlFilter();
 
   EXPECT_CALL(*tester.download_manager(),
               RemoveDownloadsByURLAndTime(ProbablySameFilter(filter), _, _));

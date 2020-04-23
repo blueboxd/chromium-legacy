@@ -109,6 +109,11 @@ every day:
     multiple files in the workspace that have the same name.
 *   ***Protobuf support*** -
     Syntax highlighting for .proto files.
+*   [***Mojom IDL support***](https://github.com/GoogleChromeLabs/mojom-language-support) -
+    Syntax highlighting and a
+    [language server](https://microsoft.github.io/language-server-protocol/)
+    for .mojom files. This isn't available on the VS Code marketplace for now.
+    You need to install it manually.
 *   ***you-complete-me*** -
     YouCompleteMe code completion for VS Code. It works fairly well in Chromium.
 *   ***Rewrap*** -

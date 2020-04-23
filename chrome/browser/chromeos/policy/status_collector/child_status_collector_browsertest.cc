@@ -21,6 +21,7 @@
 #include "base/system/sys_info.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_path_override.h"
+#include "base/test/simple_test_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -112,44 +113,23 @@ class TestingChildStatusCollector : public policy::ChildStatusCollector {
       chromeos::system::StatisticsProvider* provider,
       const policy::StatusCollector::AndroidStatusFetcher&
           android_status_fetcher,
-      TimeDelta activity_day_start)
+      TimeDelta activity_day_start,
+      base::SimpleTestClock* clock)
       : policy::ChildStatusCollector(pref_service,
                                      profile,
                                      provider,
                                      android_status_fetcher,
                                      activity_day_start) {
-    // Set the baseline time to a fixed value (1 hour after day start) to
-    // prevent test flakiness due to a single activity period spanning two days.
-    // TODO(crbug.com/827386): migrate to use SimpleTestClock.
-    SetBaselineTime(Time::Now().LocalMidnight() + activity_day_start + kHour);
+    clock_ = clock;
   }
 
+  // Each time this is called, returns a time that is a fixed increment
+  // later than the previous time.
   void UpdateUsageTime() { UpdateChildUsageTime(); }
-
-  // Reset the baseline time.
-  void SetBaselineTime(Time time) {
-    baseline_time_ = time;
-    baseline_offset_periods_ = 0;
-  }
 
   std::string GetDMTokenForProfile(Profile* profile) const override {
     return kFakeDmToken;
   }
-
- protected:
-  // Each time this is called, returns a time that is a fixed increment
-  // later than the previous time.
-  Time GetCurrentTime() override {
-    return baseline_time_ + TimeDelta::FromSeconds(kIdlePollIntervalSeconds *
-                                                   baseline_offset_periods_++);
-  }
-
- private:
-  // Baseline time for the fake times returned from GetCurrentTime().
-  Time baseline_time_;
-
-  // The number of simulated periods since the baseline time.
-  int baseline_offset_periods_;
 };
 
 // Overloads |GetActiveMilliseconds| for child status report.
@@ -312,9 +292,10 @@ class ChildStatusCollectorTest : public testing::Test {
               session_manager::SessionState::LOCKED);
           break;
         case DeviceStateTransitions::kPeriodicCheckTriggered:
-          status_collector_->UpdateUsageTime();
           break;
       }
+      test_clock_.Advance(TimeDelta::FromSeconds(kIdlePollIntervalSeconds));
+      status_collector_->UpdateUsageTime();
     }
   }
 
@@ -333,19 +314,25 @@ class ChildStatusCollectorTest : public testing::Test {
     app_registry->OnAppInstalled(app_id);
 
     // Window instance is irrelevant for tests here.
-    app_registry->OnAppActive(app_id, nullptr /* window */, base::Time::Now());
+    app_registry->OnAppActive(app_id, nullptr /* window */, test_clock_.Now());
     task_environment_.FastForwardBy(duration);
+    test_clock_.Advance(duration);
     app_registry->OnAppInactive(app_id, nullptr /* window */,
-                                base::Time::Now());
+                                test_clock_.Now());
   }
 
   virtual void RestartStatusCollector(
       const policy::StatusCollector::AndroidStatusFetcher&
           android_status_fetcher,
       const TimeDelta activity_day_start = kMidnight) {
+    // Set the baseline time to a fixed value (1 hour after day start) to
+    // prevent test flakiness due to a single activity period spanning two days.
+    test_clock_.SetNow(Time::Now().LocalMidnight() + activity_day_start +
+                       kHour);
     status_collector_ = std::make_unique<TestingChildStatusCollector>(
         &profile_pref_service_, testing_profile_.get(),
-        &fake_statistics_provider_, android_status_fetcher, activity_day_start);
+        &fake_statistics_provider_, android_status_fetcher, activity_day_start,
+        &test_clock_);
   }
 
   void GetStatus() {
@@ -395,7 +382,7 @@ class ChildStatusCollectorTest : public testing::Test {
     const std::string lsb_release = base::StringPrintf(
         "CHROMEOS_RELEASE_VERSION=%s", platform_version.c_str());
     base::SysInfo::SetChromeOSVersionInfoForTest(lsb_release,
-                                                 base::Time::Now());
+                                                 test_clock_.Now());
   }
 
   // Convenience method.
@@ -441,16 +428,18 @@ class ChildStatusCollectorTest : public testing::Test {
   base::test::ScopedFeatureList scoped_feature_list_;
   chromeos::FakeOwnerSettingsService owner_settings_service_{
       scoped_testing_cros_settings_.device_settings(), nullptr};
+  // local_state_ should be destructed after TestingProfile.
+  TestingPrefServiceSimple local_state_;
   std::unique_ptr<TestingProfile> testing_profile_;
   chromeos::MockUserManager* const user_manager_;
   user_manager::ScopedUserManager user_manager_enabler_;
   em::ChildStatusReportRequest child_status_;
-  TestingPrefServiceSimple local_state_;
   TestingPrefServiceSimple profile_pref_service_;
   std::unique_ptr<TestingChildStatusCollector> status_collector_;
   base::ScopedPathOverride user_data_dir_override_;
   chromeos::FakeUpdateEngineClient* const update_engine_client_;
   std::unique_ptr<base::RunLoop> run_loop_;
+  base::SimpleTestClock test_clock_;
 
   // This property is required to instantiate the session manager, a singleton
   // which is used by the device status collector.
@@ -571,7 +560,7 @@ TEST_F(ChildStatusCollectorTest, ActivityKeptInPref) {
   EXPECT_TRUE(
       profile_pref_service_.GetDictionary(prefs::kUserActivityTimes)->empty());
   base::Time initial_time = base::Time::Now() + kHour;
-  status_collector_->SetBaselineTime(initial_time);
+  test_clock_.SetNow(initial_time);
 
   DeviceStateTransitions test_states[] = {
       DeviceStateTransitions::kEnterSessionActive,
@@ -593,7 +582,7 @@ TEST_F(ChildStatusCollectorTest, ActivityKeptInPref) {
   // able to count the active periods found by the original collector, because
   // the results are stored in a pref.
   RestartStatusCollector(base::BindRepeating(&GetEmptyAndroidStatus));
-  status_collector_->SetBaselineTime(initial_time);
+  test_clock_.SetNow(initial_time);
   SimulateStateChanges(test_states,
                        sizeof(test_states) / sizeof(DeviceStateTransitions));
 
@@ -633,7 +622,7 @@ TEST_F(ChildStatusCollectorTest, BeforeDayStart) {
   RestartStatusCollector(base::BindRepeating(&GetEmptyAndroidStatus), kSixAm);
   // 04:00 AM
   Time initial_time = Time::Now().LocalMidnight() + TimeDelta::FromHours(4);
-  status_collector_->SetBaselineTime(initial_time);
+  test_clock_.SetNow(initial_time);
   EXPECT_TRUE(
       profile_pref_service_.GetDictionary(prefs::kUserActivityTimes)->empty());
 
@@ -662,8 +651,7 @@ TEST_F(ChildStatusCollectorTest, ActivityCrossingMidnight) {
 
   // Set the baseline time to 15 seconds before midnight, so the activity is
   // split between two days.
-  status_collector_->SetBaselineTime(Time::Now().LocalMidnight() -
-                                     TimeDelta::FromSeconds(15));
+  test_clock_.SetNow(Time::Now().LocalMidnight() - TimeDelta::FromSeconds(15));
   SimulateStateChanges(test_states,
                        sizeof(test_states) / sizeof(DeviceStateTransitions));
   GetStatus();
@@ -691,20 +679,23 @@ TEST_F(ChildStatusCollectorTest, ActivityCrossingMidnight) {
 TEST_F(ChildStatusCollectorTest, ClockChanged) {
   DeviceStateTransitions test_states[1] = {
       DeviceStateTransitions::kEnterSessionActive};
-  base::Time initial_time =
-      Time::Now().LocalMidnight() + base::TimeDelta::FromHours(1);
-  status_collector_->SetBaselineTime(initial_time);
+  base::Time initial_time;
+  ASSERT_TRUE(base::Time::FromString("30 Mar 2020 1:00AM PST", &initial_time));
+  test_clock_.SetNow(initial_time);
   SimulateStateChanges(test_states, 1);
 
-  // Simulate clock change.
-  status_collector_->SetBaselineTime(initial_time - TimeDelta::FromMinutes(30));
+  // Simulate a real DST clock change.
+  base::Time clock_change_time;
+  ASSERT_TRUE(
+      base::Time::FromString("30 Mar 2020 2:00AM PDT", &clock_change_time));
+  test_clock_.SetNow(clock_change_time);
   test_states[0] = DeviceStateTransitions::kLeaveSessionActive;
   SimulateStateChanges(test_states, 1);
 
   GetStatus();
 
   ASSERT_EQ(1, child_status_.screen_time_span_size());
-  ExpectChildScreenTimeMilliseconds(ActivePeriodMilliseconds());
+  ExpectChildScreenTimeMilliseconds(2 * ActivePeriodMilliseconds());
 }
 
 TEST_F(ChildStatusCollectorTest, ReportingAppActivity) {
@@ -718,6 +709,7 @@ TEST_F(ChildStatusCollectorTest, ReportingAppActivity) {
   const chromeos::app_time::AppId app2(apps::mojom::AppType::kExtension,
                                        "app2");
   const base::Time start_time = base::Time::Now();
+  test_clock_.SetNow(start_time);
   const base::TimeDelta app1_interval = base::TimeDelta::FromMinutes(1);
   const base::TimeDelta app2_interval = base::TimeDelta::FromMinutes(2);
   SimulateAppActivity(app1, app1_interval);

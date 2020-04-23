@@ -14,14 +14,11 @@ import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Environment;
 import android.os.StrictMode;
 import android.text.TextUtils;
 
-import androidx.annotation.IntDef;
 import androidx.annotation.MainThread;
 import androidx.annotation.Nullable;
-import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.content.res.AppCompatResources;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -31,8 +28,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.FileUtils;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.Log;
-import org.chromium.base.StrictModeContext;
-import org.chromium.base.TimeUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordHistogram;
@@ -68,41 +63,20 @@ import org.chromium.components.offline_items_collection.FailState;
 import org.chromium.components.offline_items_collection.LaunchLocation;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineItem;
-import org.chromium.components.offline_items_collection.OfflineItem.Progress;
-import org.chromium.components.offline_items_collection.OfflineItemProgressUnit;
-import org.chromium.components.offline_items_collection.OfflineItemState;
 import org.chromium.components.offline_items_collection.OpenParams;
-import org.chromium.components.offline_items_collection.PendingState;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.widget.Toast;
 
 import java.io.File;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.text.NumberFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Locale;
 
 /**
  * A class containing some utility static methods.
  */
 public class DownloadUtils {
-
-    /** Strings indicating how many bytes have been downloaded for different units. */
-    @VisibleForTesting
-    static final int[] BYTES_DOWNLOADED_STRINGS = {
-        R.string.file_size_downloaded_kb,
-        R.string.file_size_downloaded_mb,
-        R.string.file_size_downloaded_gb
-    };
-
-    private static final int[] BYTES_AVAILABLE_STRINGS = {
-            R.string.download_manager_ui_space_free_kb, R.string.download_manager_ui_space_free_mb,
-            R.string.download_manager_ui_space_free_gb};
-
     private static final String TAG = "download";
 
     private static final String DEFAULT_MIME_TYPE = "*/*";
@@ -115,19 +89,6 @@ public class DownloadUtils {
     private static final String DOCUMENTS_UI_PACKAGE_NAME = "com.android.documentsui";
     public static final String EXTRA_SHOW_PREFETCHED_CONTENT =
             "org.chromium.chrome.browser.download.SHOW_PREFETCHED_CONTENT";
-
-    @VisibleForTesting
-    static final String ELLIPSIS = "\u2026";
-
-    /**
-     * Possible sizes of type-based icons.
-     */
-    @IntDef({IconSize.DP_24, IconSize.DP_36})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface IconSize {
-        int DP_24 = 24;
-        int DP_36 = 36;
-    }
 
     /**
      * Displays the download manager UI. Note the UI is different on tablets and on phones.
@@ -535,213 +496,6 @@ public class DownloadUtils {
     }
 
     /**
-     * Helper method to determine the progress text to use for an in progress download notification.
-     * @param progress The {@link Progress} struct that represents the current state of an in
-     *                 progress download.
-     * @return         The {@link String} that represents the progress.
-     */
-    public static String getProgressTextForNotification(Progress progress) {
-        Context context = ContextUtils.getApplicationContext();
-
-        if (progress.isIndeterminate() && progress.value == 0) {
-            return context.getResources().getString(R.string.download_started);
-        }
-
-        switch (progress.unit) {
-            case OfflineItemProgressUnit.PERCENTAGE:
-                return progress.isIndeterminate()
-                        ? context.getResources().getString(R.string.download_started)
-                        : getPercentageString(progress.getPercentage());
-            case OfflineItemProgressUnit.BYTES:
-                String bytes =
-                        org.chromium.components.browser_ui.util.DownloadUtils.getStringForBytes(
-                                context, progress.value);
-                if (progress.isIndeterminate()) {
-                    return context.getResources().getString(
-                            R.string.download_ui_indeterminate_bytes, bytes);
-                } else {
-                    String total =
-                            org.chromium.components.browser_ui.util.DownloadUtils.getStringForBytes(
-                                    context, progress.max);
-                    return context.getResources().getString(
-                            R.string.download_ui_determinate_bytes, bytes, total);
-                }
-            case OfflineItemProgressUnit.FILES:
-                if (progress.isIndeterminate()) {
-                    int fileCount = (int) Math.min(Integer.MAX_VALUE, progress.value);
-                    return context.getResources().getQuantityString(
-                            R.plurals.download_ui_files_downloaded, fileCount, fileCount);
-                } else {
-                    return formatRemainingFiles(context, progress);
-                }
-            default:
-                assert false;
-        }
-
-        return "";
-    }
-
-    /**
-     * Create a string that represents the percentage of the file that has downloaded.
-     * @param percentage Current percentage of the file.
-     * @return String representing the percentage of the file that has been downloaded.
-     */
-    public static String getPercentageString(int percentage) {
-        NumberFormat formatter = NumberFormat.getPercentInstance(Locale.getDefault());
-        return formatter.format(percentage / 100.0);
-    }
-
-    /**
-     * Creates a string that shows the time left or number of files left.
-     * @param context The application context.
-     * @param progress The download progress.
-     * @param timeRemainingInMillis The remaining time in milli seconds.
-     * @return Formatted string representing the time left or the number of files left.
-     */
-    public static String getTimeOrFilesLeftString(
-            Context context, Progress progress, long timeRemainingInMillis) {
-        return progress.unit == OfflineItemProgressUnit.FILES
-                ? formatRemainingFiles(context, progress)
-                : formatRemainingTime(context, timeRemainingInMillis);
-    }
-
-    /**
-     * Creates a string that represents the number of files left to be downloaded.
-     * @param progress Current download progress.
-     * @return String representing the number of files left.
-     */
-    public static String formatRemainingFiles(Context context, Progress progress) {
-        int filesLeft = (int) (progress.max - progress.value);
-        return filesLeft == 1 ? context.getResources().getString(R.string.one_file_left)
-                              : context.getResources().getString(R.string.files_left, filesLeft);
-    }
-
-    /**
-     * Format remaining time for the given millis, in the following format:
-     * 5 hours; will include 1 unit, can go down to seconds precision.
-     * This is similar to what android.java.text.Formatter.formatShortElapsedTime() does. Don't use
-     * ui::TimeFormat::Simple() as it is very expensive.
-     *
-     * @param context the application context.
-     * @param millis the remaining time in milli seconds.
-     * @return the formatted remaining time.
-     */
-    public static String formatRemainingTime(Context context, long millis) {
-        long secondsLong = millis / 1000;
-
-        int days = 0;
-        int hours = 0;
-        int minutes = 0;
-        if (secondsLong >= TimeUtils.SECONDS_PER_DAY) {
-            days = (int) (secondsLong / TimeUtils.SECONDS_PER_DAY);
-            secondsLong -= days * TimeUtils.SECONDS_PER_DAY;
-        }
-        if (secondsLong >= TimeUtils.SECONDS_PER_HOUR) {
-            hours = (int) (secondsLong / TimeUtils.SECONDS_PER_HOUR);
-            secondsLong -= hours * TimeUtils.SECONDS_PER_HOUR;
-        }
-        if (secondsLong >= TimeUtils.SECONDS_PER_MINUTE) {
-            minutes = (int) (secondsLong / TimeUtils.SECONDS_PER_MINUTE);
-            secondsLong -= minutes * TimeUtils.SECONDS_PER_MINUTE;
-        }
-        int seconds = (int) secondsLong;
-
-        if (days >= 2) {
-            days += (hours + 12) / 24;
-            return context.getString(R.string.remaining_duration_days, days);
-        } else if (days > 0) {
-            return context.getString(R.string.remaining_duration_one_day);
-        } else if (hours >= 2) {
-            hours += (minutes + 30) / 60;
-            return context.getString(R.string.remaining_duration_hours, hours);
-        } else if (hours > 0) {
-            return context.getString(R.string.remaining_duration_one_hour);
-        } else if (minutes >= 2) {
-            minutes += (seconds + 30) / 60;
-            return context.getString(R.string.remaining_duration_minutes, minutes);
-        } else if (minutes > 0) {
-            return context.getString(R.string.remaining_duration_one_minute);
-        } else if (seconds == 1) {
-            return context.getString(R.string.remaining_duration_one_second);
-        } else {
-            return context.getString(R.string.remaining_duration_seconds, seconds);
-        }
-    }
-
-    /**
-     * Determine what String to show for a given offline page in download home.
-     * @param item The offline item representing the offline page.
-     * @return String representing the current status.
-     */
-    public static String getOfflinePageStatusString(OfflineItem item) {
-        Context context = ContextUtils.getApplicationContext();
-        switch (item.state) {
-            case OfflineItemState.COMPLETE:
-                return context.getString(R.string.download_notification_completed);
-            case OfflineItemState.PENDING:
-                return getPendingStatusString(item.pendingState);
-            case OfflineItemState.PAUSED:
-                return context.getString(R.string.download_notification_paused);
-            case OfflineItemState.IN_PROGRESS: // intentional fall through
-            case OfflineItemState.CANCELLED: // intentional fall through
-            case OfflineItemState.INTERRUPTED: // intentional fall through
-            case OfflineItemState.FAILED:
-                break;
-            // case OfflineItemState.MAX_DOWNLOAD_STATE:
-            default:
-                assert false : "Unexpected OfflineItemState: " + item.state;
-        }
-
-        long bytesReceived = item.receivedBytes;
-        if (bytesReceived == 0) {
-            return context.getString(R.string.download_started);
-        }
-
-        return DownloadUtils.getStringForDownloadedBytes(context, bytesReceived);
-    }
-
-    /**
-     * Determine the status string for a failed download.
-     *
-     * @param failState Reason download failed.
-     * @return String representing the current download status.
-     */
-    public static String getFailStatusString(@FailState int failState) {
-        if (BrowserStartupController.getInstance().isFullBrowserStarted()) {
-            return DownloadUtilsJni.get().getFailStateMessage(failState);
-        }
-        Context context = ContextUtils.getApplicationContext();
-        return context.getString(R.string.download_notification_failed);
-    }
-
-    /**
-     * Determine the status string for a pending download.
-     *
-     * @param pendingState Reason download is pending.
-     * @return String representing the current download status.
-     */
-    public static String getPendingStatusString(@PendingState int pendingState) {
-        Context context = ContextUtils.getApplicationContext();
-        // When foreground service restarts and there is no connection to native, use the default
-        // pending status. The status will be replaced when connected to native.
-        if (BrowserStartupController.getInstance().isFullBrowserStarted()
-                && ChromeFeatureList.isEnabled(
-                        ChromeFeatureList.OFFLINE_PAGES_DESCRIPTIVE_PENDING_STATUS)) {
-            switch (pendingState) {
-                case PendingState.PENDING_NETWORK:
-                    return context.getString(R.string.download_notification_pending_network);
-                case PendingState.PENDING_ANOTHER_DOWNLOAD:
-                    return context.getString(
-                            R.string.download_notification_pending_another_download);
-                default:
-                    return context.getString(R.string.download_notification_pending);
-            }
-        } else {
-            return context.getString(R.string.download_notification_pending);
-        }
-    }
-
-    /**
      * Get the resume mode based on the current fail state, to distinguish the case where download
      * cannot be resumed at all or can be resumed in the middle, or should be restarted from the
      * beginning.
@@ -791,85 +545,6 @@ public class DownloadUtils {
                 helper.getDownloadSharedPreferenceEntry(item.getContentId());
         return entry != null && item.getDownloadInfo().state() == DownloadState.INTERRUPTED
                 && entry.isAutoResumable;
-    }
-
-    /**
-     * Format the number of bytes into KB, or MB, or GB and return the corresponding string
-     * resource. Uses default download-related set of strings.
-     * @param context Context to use.
-     * @param bytes Number of bytes.
-     * @return A formatted string to be displayed.
-     */
-    public static String getStringForDownloadedBytes(Context context, long bytes) {
-        return org.chromium.components.browser_ui.util.DownloadUtils.getStringForBytes(
-                context, BYTES_DOWNLOADED_STRINGS, bytes);
-    }
-
-    /**
-     * Format the number of available bytes into KB, MB, or GB and return the corresponding string
-     * resource. Uses default format "20 KB available."
-     *
-     * @param context   Context to use.
-     * @param bytes     Number of bytes needed to display.
-     * @return          The formatted string to be displayed.
-     */
-    public static String getStringForAvailableBytes(Context context, long bytes) {
-        return org.chromium.components.browser_ui.util.DownloadUtils.getStringForBytes(
-                context, BYTES_AVAILABLE_STRINGS, bytes);
-    }
-
-    /**
-     * Abbreviate a file name into a given number of characters with ellipses.
-     * e.g. "thisisaverylongfilename.txt" => "thisisave....txt".
-     * @param fileName File name to abbreviate.
-     * @param limit Character limit.
-     * @return Abbreviated file name.
-     */
-    public static String getAbbreviatedFileName(String fileName, int limit) {
-        assert limit >= 1;  // Abbreviated file name should at least be 1 characters (a...)
-
-        if (TextUtils.isEmpty(fileName) || fileName.length() <= limit) return fileName;
-
-        // Find the file name extension
-        int index = fileName.lastIndexOf(".");
-        int extensionLength = fileName.length() - index;
-
-        // If the extension is too long, just use truncate the string from beginning.
-        if (extensionLength >= limit) {
-            return fileName.substring(0, limit) + ELLIPSIS;
-        }
-        int remainingLength = limit - extensionLength;
-        return fileName.substring(0, remainingLength) + ELLIPSIS + fileName.substring(index);
-    }
-
-    /**
-     * Return an icon for a given file type.
-     * @param fileType Type of the file as returned by DownloadFilter.
-     * @param iconSize Size of the returned icon.
-     * @return Resource ID of the corresponding icon.
-     */
-    public static int getIconResId(int fileType, @IconSize int iconSize) {
-        // TODO(huayinz): Make image view size same as icon size so that 36dp icons can be removed.
-        switch (fileType) {
-            case DownloadFilter.Type.PAGE:
-                return iconSize == IconSize.DP_24 ? R.drawable.ic_globe_24dp
-                                                  : R.drawable.ic_globe_36dp;
-            case DownloadFilter.Type.VIDEO:
-                return iconSize == IconSize.DP_24 ? R.drawable.ic_videocam_24dp
-                                                  : R.drawable.ic_videocam_36dp;
-            case DownloadFilter.Type.AUDIO:
-                return iconSize == IconSize.DP_24 ? R.drawable.ic_music_note_24dp
-                                                  : R.drawable.ic_music_note_36dp;
-            case DownloadFilter.Type.IMAGE:
-                return iconSize == IconSize.DP_24 ? R.drawable.ic_drive_image_24dp
-                                                  : R.drawable.ic_drive_image_36dp;
-            case DownloadFilter.Type.DOCUMENT:
-                return iconSize == IconSize.DP_24 ? R.drawable.ic_drive_document_24dp
-                                                  : R.drawable.ic_drive_document_36dp;
-            default:
-                return iconSize == IconSize.DP_24 ? R.drawable.ic_drive_file_24dp
-                                                  : R.drawable.ic_drive_file_36dp;
-        }
     }
 
     /**
@@ -932,25 +607,6 @@ public class DownloadUtils {
     }
 
     /**
-     * Returns if the path is in the download directory on primary storage.
-     * @param path The directory to check.
-     * @return If the path is in the download directory on primary storage.
-     */
-    public static boolean isInPrimaryStorageDownloadDirectory(String path) {
-        // Only primary storage can have content URI as file path.
-        if (ContentUriUtils.isContentUri(path)) return true;
-
-        // Check if the file path contains the external public directory.
-        File primaryDir = null;
-        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-            primaryDir = Environment.getExternalStorageDirectory();
-        }
-        if (primaryDir == null || path == null) return false;
-        String primaryPath = primaryDir.getAbsolutePath();
-        return primaryPath == null ? false : path.contains(primaryPath);
-    }
-
-    /**
      * @return The status of prompt for download pref, defined by {@link DownloadPromptStatus}.
      */
     @DownloadPromptStatus
@@ -967,7 +623,6 @@ public class DownloadUtils {
 
     @NativeMethods
     interface Natives {
-        String getFailStateMessage(@FailState int failState);
         int getResumeMode(String url, @FailState int failState);
     }
 }

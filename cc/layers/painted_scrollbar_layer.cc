@@ -20,6 +20,14 @@ std::unique_ptr<LayerImpl> PaintedScrollbarLayer::CreateLayerImpl(
                                            is_overlay_);
 }
 
+scoped_refptr<PaintedScrollbarLayer> PaintedScrollbarLayer::CreateOrReuse(
+    scoped_refptr<Scrollbar> scrollbar,
+    PaintedScrollbarLayer* existing_layer) {
+  if (existing_layer && existing_layer->scrollbar_->IsSame(*scrollbar))
+    return existing_layer;
+  return Create(std::move(scrollbar));
+}
+
 scoped_refptr<PaintedScrollbarLayer> PaintedScrollbarLayer::Create(
     scoped_refptr<Scrollbar> scrollbar) {
   return base::WrapRefCounted(new PaintedScrollbarLayer(std::move(scrollbar)));
@@ -237,7 +245,7 @@ UIResourceBitmap PaintedScrollbarLayer::RasterizeScrollbarPart(
 }
 
 ScrollbarLayerBase::ScrollbarLayerType
-PaintedScrollbarLayer::ScrollbarLayerTypeForTesting() const {
+PaintedScrollbarLayer::GetScrollbarLayerType() const {
   return kPainted;
 }
 

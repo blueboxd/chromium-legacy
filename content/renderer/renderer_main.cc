@@ -37,6 +37,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "services/service_manager/sandbox/switches.h"
 #include "services/tracing/public/cpp/trace_startup.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/webrtc_overrides/init_webrtc.h"  // nogncheck
 #include "ui/base/ui_base_switches.h"
@@ -160,6 +161,7 @@ int RendererMain(const MainFunctionParams& parameters) {
     }
   }
 
+  blink::Platform::InitializeBlink();
   std::unique_ptr<blink::scheduler::WebThreadScheduler> main_thread_scheduler =
       blink::scheduler::WebThreadScheduler::CreateMainThreadScheduler(
           CreateMainThreadMessagePump(), initial_virtual_time);

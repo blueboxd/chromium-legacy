@@ -376,10 +376,13 @@ base::Optional<SkColor> SkColorFromColorId(
       return fallback_theme->GetSystemColor(color_id);
     }
 
-    case ui::NativeTheme::kColorId_DefaultIconColor:
+    case ui::NativeTheme::kColorId_MenuIconColor:
       if (GtkCheckVersion(3, 20))
         return GetFgColor("GtkMenu#menu GtkMenuItem#menuitem #radio");
       return GetFgColor("GtkMenu#menu GtkMenuItem#menuitem.radio");
+
+    case ui::NativeTheme::kColorId_DefaultIconColor:
+      return GetFgColor("GtkButton#button.flat.scale GtkImage#image");
 
     case ui::NativeTheme::kColorId_NumColors:
       NOTREACHED();

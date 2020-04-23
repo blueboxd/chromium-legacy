@@ -136,7 +136,8 @@ Navigation::LoadError NavigationImpl::GetLoadError() {
 
 void NavigationImpl::SetRequestHeader(const std::string& name,
                                       const std::string& value) {
-  navigation_handle_->SetRequestHeader(name, value);
+  // Any headers coming from the client should be exempt from CORS checks.
+  navigation_handle_->SetCorsExemptRequestHeader(name, value);
 }
 
 #if defined(OS_ANDROID)

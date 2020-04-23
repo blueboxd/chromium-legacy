@@ -45,6 +45,11 @@ ScrollbarLayerDelegate::ScrollbarLayerDelegate(blink::Scrollbar& scrollbar,
 
 ScrollbarLayerDelegate::~ScrollbarLayerDelegate() = default;
 
+bool ScrollbarLayerDelegate::IsSame(const cc::Scrollbar& other) const {
+  return scrollbar_.Get() ==
+         static_cast<const ScrollbarLayerDelegate&>(other).scrollbar_.Get();
+}
+
 cc::ScrollbarOrientation ScrollbarLayerDelegate::Orientation() const {
   if (scrollbar_->Orientation() == kHorizontalScrollbar)
     return cc::HORIZONTAL;

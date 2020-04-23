@@ -16,7 +16,6 @@
 #include "components/favicon_base/favicon_util.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "ui/gfx/image/image_png_rep.h"
-#include "url/gurl.h"
 
 namespace favicon {
 

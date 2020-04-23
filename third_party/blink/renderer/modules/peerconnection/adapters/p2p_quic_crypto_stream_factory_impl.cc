@@ -21,7 +21,7 @@ P2PQuicCryptoStreamFactoryImpl::CreateClientCryptoStream(
   return std::make_unique<quic::QuicCryptoClientStream>(
       server_id, session,
       crypto_config->proof_verifier()->CreateDefaultContext(), crypto_config,
-      proof_handler);
+      proof_handler, /*has_application_state = */ true);
 }
 
 std::unique_ptr<quic::QuicCryptoServerStreamBase>

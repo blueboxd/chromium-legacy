@@ -124,10 +124,13 @@ bool ExtensionActionPlatformDelegateViews::AcceleratorPressed(
     const ui::Accelerator& accelerator) {
   DCHECK(controller_->CanHandleAccelerators());
 
-  if (controller_->IsShowingPopup())
+  if (controller_->IsShowingPopup()) {
     controller_->HidePopup();
-  else
-    controller_->ExecuteAction(true);
+  } else {
+    controller_->ExecuteAction(
+        true, ToolbarActionViewController::InvocationSource::kCommand);
+  }
+
   return true;
 }
 

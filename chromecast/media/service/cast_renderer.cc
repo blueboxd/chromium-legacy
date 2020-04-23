@@ -383,7 +383,9 @@ void CastRenderer::OnVideoGeometryChange(const gfx::RectF& rect_f,
 
 void CastRenderer::OnError(::media::PipelineStatus status) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  client_->OnError(status);
+  if (client_) {
+    client_->OnError(status);
+  }
 }
 
 void CastRenderer::OnEnded(Stream stream) {

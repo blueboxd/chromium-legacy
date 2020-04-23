@@ -10,21 +10,56 @@
 #include "ash/public/cpp/notification_utils.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/json/json_writer.h"
+#include "base/strings/string_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "chrome/browser/chromeos/assistant/assistant_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_ui.h"
 #include "chrome/common/webui_url_constants.h"
+#include "chromeos/assistant/buildflags.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "chromeos/services/assistant/public/proto/settings_ui.pb.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/storage_partition.h"
+#include "net/base/url_util.h"
+#include "services/data_decoder/public/cpp/data_decoder.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
+#include "url/gurl.h"
+
+#if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
+#include "chromeos/assistant/internal/internal_constants.h"
+#endif
 
 using chromeos::assistant::ConsentFlowUi;
 
+namespace {
+
+// String to prepend to JSON responses to prevent XSSI. See http://go/xssi.
+constexpr char kJsonSafetyPrefix[] = ")]}'\n";
+
+PrefService* Prefs() {
+  return ProfileManager::GetActiveUserProfile()->GetPrefs();
+}
+
+bool HasJsonSafetyPrefix(std::string& json_body) {
+  return base::StartsWith(json_body, kJsonSafetyPrefix,
+                          base::CompareCase::SENSITIVE);
+}
+
+}  // namespace
+
 AssistantSetup::AssistantSetup() {
+  DCHECK(assistant::IsAssistantAllowedForProfile(
+             ProfileManager::GetActiveUserProfile()) ==
+         ash::mojom::AssistantAllowedState::ALLOWED);
   ash::AssistantState::Get()->AddObserver(this);
+
+  SyncSearchAndAssistantState();
 }
 
 AssistantSetup::~AssistantSetup() {
@@ -39,6 +74,18 @@ void AssistantSetup::StartAssistantOptInFlow(
 
 bool AssistantSetup::BounceOptInWindowIfActive() {
   return chromeos::AssistantOptInDialog::BounceIfActive();
+}
+
+void AssistantSetup::MaybeStartAssistantOptInFlow() {
+  DCHECK(Prefs());
+  if (!Prefs()->GetUserPrefValue(
+          chromeos::assistant::prefs::kAssistantConsentStatus)) {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&AssistantSetup::StartAssistantOptInFlow,
+                       weak_factory_.GetWeakPtr(), ash::FlowType::kConsentFlow,
+                       base::DoNothing::Once<bool>()));
+  }
 }
 
 void AssistantSetup::OnAssistantStatusChanged(
@@ -62,7 +109,6 @@ void AssistantSetup::SyncSettingsState() {
   consent_flow_ui->set_flow_id(
       chromeos::assistant::ActivityControlSettingsUiSelector::
           ASSISTANT_SUW_ONBOARDING_ON_CHROME_OS);
-  selector.set_gaia_user_context_ui(true);
   settings_manager_->GetSettings(
       selector.SerializeAsString(),
       base::BindOnce(&AssistantSetup::OnGetSettingsResponse,
@@ -74,21 +120,6 @@ void AssistantSetup::OnGetSettingsResponse(const std::string& settings) {
   if (!settings_ui.ParseFromString(settings))
     return;
 
-  // Sync domain policy status.
-  if (settings_ui.has_gaia_user_context_ui()) {
-    const auto& gaia_user_context_ui = settings_ui.gaia_user_context_ui();
-    if (gaia_user_context_ui.assistant_disabled_by_dasher_domain()) {
-      DVLOG(1) << "Assistant is disabled by domain policy.";
-      PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
-      prefs->SetBoolean(chromeos::assistant::prefs::kAssistantDisabledByPolicy,
-                        true);
-      prefs->SetBoolean(chromeos::assistant::prefs::kAssistantEnabled, false);
-      return;
-    }
-  } else {
-    LOG(ERROR) << "Failed to get gaia user context";
-  }
-
   // Sync activity control status.
   if (!settings_ui.has_consent_flow_ui()) {
     LOG(ERROR) << "Failed to get activity control status.";
@@ -96,47 +127,97 @@ void AssistantSetup::OnGetSettingsResponse(const std::string& settings) {
   }
   const auto& consent_status = settings_ui.consent_flow_ui().consent_status();
   const auto& consent_ui = settings_ui.consent_flow_ui().consent_ui();
-  Profile* profile = ProfileManager::GetActiveUserProfile();
-  PrefService* prefs = profile->GetPrefs();
   switch (consent_status) {
     case ConsentFlowUi::ASK_FOR_CONSENT:
       if (consent_ui.has_activity_control_ui() &&
           consent_ui.activity_control_ui().setting_zippy().size()) {
-        prefs->SetInteger(chromeos::assistant::prefs::kAssistantConsentStatus,
-                          chromeos::assistant::prefs::ConsentStatus::kNotFound);
+        Prefs()->SetInteger(
+            chromeos::assistant::prefs::kAssistantConsentStatus,
+            chromeos::assistant::prefs::ConsentStatus::kNotFound);
       } else {
-        prefs->SetInteger(chromeos::assistant::prefs::kAssistantConsentStatus,
-                          chromeos::assistant::prefs::ConsentStatus::
-                              kActivityControlAccepted);
+        Prefs()->SetInteger(chromeos::assistant::prefs::kAssistantConsentStatus,
+                            chromeos::assistant::prefs::ConsentStatus::
+                                kActivityControlAccepted);
       }
       break;
     case ConsentFlowUi::ERROR_ACCOUNT:
-      prefs->SetInteger(
+      Prefs()->SetInteger(
           chromeos::assistant::prefs::kAssistantConsentStatus,
           chromeos::assistant::prefs::ConsentStatus::kUnauthorized);
       break;
     case ConsentFlowUi::ALREADY_CONSENTED:
-      prefs->SetInteger(
+      Prefs()->SetInteger(
           chromeos::assistant::prefs::kAssistantConsentStatus,
           chromeos::assistant::prefs::ConsentStatus::kActivityControlAccepted);
       break;
     case ConsentFlowUi::UNSPECIFIED:
     case ConsentFlowUi::ERROR:
-      prefs->SetInteger(chromeos::assistant::prefs::kAssistantConsentStatus,
-                        chromeos::assistant::prefs::ConsentStatus::kUnknown);
+      Prefs()->SetInteger(chromeos::assistant::prefs::kAssistantConsentStatus,
+                          chromeos::assistant::prefs::ConsentStatus::kUnknown);
       LOG(ERROR) << "Invalid activity control consent status.";
   }
 }
 
-void AssistantSetup::MaybeStartAssistantOptInFlow() {
-  auto* pref_service = ProfileManager::GetActiveUserProfile()->GetPrefs();
-  DCHECK(pref_service);
-  if (!pref_service->GetUserPrefValue(
-          chromeos::assistant::prefs::kAssistantConsentStatus)) {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&AssistantSetup::StartAssistantOptInFlow,
-                       weak_factory_.GetWeakPtr(), ash::FlowType::kConsentFlow,
-                       base::DoNothing::Once<bool>()));
+void AssistantSetup::SyncSearchAndAssistantState() {
+#if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = net::AppendOrReplaceQueryParameter(
+      GURL(chromeos::assistant::kServiceIdEndpoint),
+      chromeos::assistant::kPayloadParamName,
+      chromeos::assistant::kServiceIdRequestPayload);
+  url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
+                                                 NO_TRAFFIC_ANNOTATION_YET);
+  url_loader_factory_ =
+      ProfileManager::GetActiveUserProfile()->GetURLLoaderFactory();
+
+  url_loader_->DownloadToString(
+      url_loader_factory_.get(),
+      base::BindOnce(&AssistantSetup::OnSimpleURLLoaderComplete,
+                     weak_factory_.GetWeakPtr()),
+      /*max_body_size*/ 1024);
+#endif
+}
+
+void AssistantSetup::OnSimpleURLLoaderComplete(
+    std::unique_ptr<std::string> response_body) {
+  if (!response_body || url_loader_->NetError() != net::OK ||
+      !url_loader_->ResponseInfo() || !url_loader_->ResponseInfo()->headers) {
+    LOG(ERROR) << "Network error. Failed to get response.";
+    // Set the pref to false if the pref is not set.
+    if (!Prefs()->GetUserPrefValue(
+            chromeos::assistant::prefs::kAssistantDisabledByPolicy)) {
+      Prefs()->SetBoolean(
+          chromeos::assistant::prefs::kAssistantDisabledByPolicy, false);
+    }
+    return;
+  }
+
+  if (!HasJsonSafetyPrefix(*response_body)) {
+    LOG(ERROR) << "Invalid response.";
+    return;
+  }
+
+  // Strip the JsonSafetyPrefix and parse the response.
+  data_decoder::DataDecoder::ParseJsonIsolated(
+      response_body->substr(strlen(kJsonSafetyPrefix)),
+      base::BindOnce(&AssistantSetup::OnJsonParsed,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void AssistantSetup::OnJsonParsed(
+    data_decoder::DataDecoder::ValueOrError response) {
+  if (!response.value) {
+    LOG(ERROR) << "JSON parsing failed: " << *response.error;
+    return;
+  }
+
+  // |result| is true if the Search and Assistant bit is disabled.
+  auto is_disabled = response.value->FindBoolPath("result");
+
+  Prefs()->SetBoolean(chromeos::assistant::prefs::kAssistantDisabledByPolicy,
+                      is_disabled.value());
+  if (is_disabled.value()) {
+    DVLOG(1) << "Assistant is disabled by domain policy.";
+    Prefs()->SetBoolean(chromeos::assistant::prefs::kAssistantEnabled, false);
   }
 }

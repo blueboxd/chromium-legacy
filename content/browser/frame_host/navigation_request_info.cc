@@ -22,7 +22,8 @@ NavigationRequestInfo::NavigationRequestInfo(
         blob_url_loader_factory,
     const base::UnguessableToken& devtools_navigation_token,
     const base::UnguessableToken& devtools_frame_token,
-    bool obey_origin_policy)
+    bool obey_origin_policy,
+    net::HttpRequestHeaders cors_exempt_headers)
     : common_params(std::move(common_params)),
       begin_params(std::move(begin_params)),
       isolation_info(isolation_info),
@@ -37,7 +38,8 @@ NavigationRequestInfo::NavigationRequestInfo(
       blob_url_loader_factory(std::move(blob_url_loader_factory)),
       devtools_navigation_token(devtools_navigation_token),
       devtools_frame_token(devtools_frame_token),
-      obey_origin_policy(obey_origin_policy) {}
+      obey_origin_policy(obey_origin_policy),
+      cors_exempt_headers(std::move(cors_exempt_headers)) {}
 
 NavigationRequestInfo::~NavigationRequestInfo() {}
 

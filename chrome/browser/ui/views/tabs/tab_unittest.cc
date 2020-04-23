@@ -34,6 +34,8 @@
 #include "ui/gfx/favicon_size.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/layout/flex_layout.h"
+#include "ui/views/view_class_properties.h"
 #include "ui/views/widget/widget.h"
 
 using views::Widget;
@@ -353,8 +355,16 @@ class AlertIndicatorTest : public ChromeViewsTestBase {
     controller_ = new FakeBaseTabStripController;
     tab_strip_ = new TabStrip(std::unique_ptr<TabStripController>(controller_));
     controller_->set_tab_strip(tab_strip_);
+
     // The tab strip must be added to the view hierarchy for it to create the
     // buttons.
+    views::FlexLayout* layout_manager =
+        parent_.SetLayoutManager(std::make_unique<views::FlexLayout>());
+    layout_manager->SetOrientation(views::LayoutOrientation::kHorizontal)
+        .SetDefault(
+            views::kFlexBehaviorKey,
+            views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
+                                     views::MaximumFlexSizeRule::kUnbounded));
     parent_.AddChildView(tab_strip_);
     parent_.set_owned_by_client();
 

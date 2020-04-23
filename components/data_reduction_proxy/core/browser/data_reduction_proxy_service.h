@@ -45,7 +45,6 @@ class HttpRequestHeaders;
 namespace data_reduction_proxy {
 
 class DataReductionProxyCompressionStats;
-class DataReductionProxyConfig;
 class DataReductionProxyConfigServiceClient;
 class DataReductionProxyRequestOptions;
 class DataReductionProxySettings;
@@ -161,7 +160,6 @@ class DataReductionProxyService
     return url_loader_factory_->Clone();
   }
 
-  DataReductionProxyConfig* config() const { return config_.get(); }
 
   DataReductionProxyConfigServiceClient* config_client() const {
     return config_client_.get();
@@ -184,7 +182,6 @@ class DataReductionProxyService
   }
 
   void SetDependenciesForTesting(
-      std::unique_ptr<DataReductionProxyConfig> config,
       std::unique_ptr<DataReductionProxyRequestOptions> request_options,
       std::unique_ptr<DataReductionProxyConfigServiceClient> config_client);
 
@@ -253,8 +250,6 @@ class DataReductionProxyService
   // The type of Data Reduction Proxy client.
   const Client client_;
 
-  // Parameters including DNS names and allowable configurations.
-  std::unique_ptr<DataReductionProxyConfig> config_;
 
   // Constructs credentials suitable for authenticating the client.
   std::unique_ptr<DataReductionProxyRequestOptions> request_options_;

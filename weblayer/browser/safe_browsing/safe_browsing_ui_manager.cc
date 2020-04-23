@@ -16,7 +16,7 @@ SafeBrowsingUIManager::SafeBrowsingUIManager() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
-SafeBrowsingUIManager::~SafeBrowsingUIManager() {}
+SafeBrowsingUIManager::~SafeBrowsingUIManager() = default;
 
 void SafeBrowsingUIManager::SendSerializedThreatDetails(
     const std::string& serialized) {

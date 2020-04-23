@@ -142,9 +142,8 @@ def main():
     with SystemLogReader() as system_logger:
       target.Start()
 
-      if args.enable_fuchsia_system_log:
-        if args.system_log_file and args.system_log_file != '-':
-          system_logger.Start(target, args.package, args.system_log_file)
+      if args.system_log_file and args.system_log_file != '-':
+        system_logger.Start(target, args.package, args.system_log_file)
 
       if args.test_launcher_filter_file:
         target.PutFile(args.test_launcher_filter_file, TEST_FILTER_PATH,

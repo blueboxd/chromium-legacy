@@ -69,7 +69,7 @@ bool IsBrowserSigninAllowed(Profile* profile) {
 }
 
 std::string GetOAuth2MintTokenFlowVersion() {
-  return version_info::GetMajorVersionNumber();
+  return version_info::GetVersionNumber();
 }
 
 }  // namespace
@@ -562,10 +562,14 @@ void IdentityGetAuthTokenFunction::OnIssueAdviceSuccess(
     const IssueAdviceInfo& issue_advice) {
   TRACE_EVENT_NESTABLE_ASYNC_INSTANT0("identity", "OnIssueAdviceSuccess", this);
 
-  IdentityAPI::GetFactoryInstance()
-      ->Get(GetProfile())
-      ->SetCachedToken(
-          token_key_, IdentityTokenCacheValue::CreateIssueAdvice(issue_advice));
+  IdentityAPI* identity_api =
+      IdentityAPI::GetFactoryInstance()->Get(GetProfile());
+  identity_api->SetCachedToken(
+      token_key_, IdentityTokenCacheValue::CreateIssueAdvice(issue_advice));
+  // IssueAdvice doesn't communicate back to Chrome which account has been
+  // chosen by the user. Cached gaia id may contain incorrect information so
+  // it's better to remove it.
+  identity_api->EraseGaiaIdForExtension(token_key_.extension_id);
   CompleteMintTokenFlow();
 
   should_prompt_for_signin_ = false;

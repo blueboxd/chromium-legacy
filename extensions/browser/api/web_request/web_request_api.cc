@@ -2872,7 +2872,7 @@ void WebRequestHandlerBehaviorChangedFunction::GetQuotaLimitHeuristics(
 }
 
 void WebRequestHandlerBehaviorChangedFunction::OnQuotaExceeded(
-    const std::string& violation_error) {
+    std::string violation_error) {
   // Post warning message.
   WarningSet warnings;
   warnings.insert(

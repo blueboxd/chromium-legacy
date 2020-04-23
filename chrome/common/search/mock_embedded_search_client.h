@@ -7,8 +7,9 @@
 
 #include <string>
 
-#include "chrome/common/search.mojom.h"
 #include "chrome/common/search/instant_types.h"
+#include "chrome/common/search/omnibox.mojom.h"
+#include "chrome/common/search/search.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 class MockEmbeddedSearchClient : public chrome::mojom::EmbeddedSearchClient {

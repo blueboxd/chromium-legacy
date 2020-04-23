@@ -40,11 +40,6 @@ class GeolocationPermissionContext : public PermissionContextBase {
                                   BrowserPermissionCallback* callback,
                                   GeolocationPermissionContext* context) = 0;
 
-    // Called when UpdateTabContext() is called on the context.
-    virtual void UpdateTabContext(const PermissionRequestID& id,
-                                  const GURL& requesting_frame,
-                                  bool allowed) = 0;
-
 #if defined(OS_ANDROID)
     // Returns whether or not this |web_contents| is interactable.
     virtual bool IsInteractable(content::WebContents* web_contents) = 0;

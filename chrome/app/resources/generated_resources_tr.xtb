@@ -37,7 +37,6 @@
 <translation id="1041263367839475438">Kullanılabilir cihazlar</translation>
 <translation id="1042174272890264476">Bilgisayarınızda aynı zamanda yerleşik <ph name="SHORT_PRODUCT_NAME" /> RLZ kitaplığı da bulunur. RLZ, aramaları ve belirli bir promosyon kampanyasının sağladığı <ph name="SHORT_PRODUCT_NAME" /> kullanımını ölçmek için benzersiz olmayan ve kimlik bilgileri içermeyen bir etiket atar. Bu etiketler bazen <ph name="PRODUCT_NAME" /> içindeki Google Arama sorgularında görünür.</translation>
 <translation id="1043818413152647937">Ayrıca veriler bu uygulamalardan da temizlensin mi?</translation>
-<translation id="1045448422538531528">Gruba ekle</translation>
 <translation id="1046635659603195359">Google Asistan'la Voice Match'i başka bir cihazda zaten kurmuş olduğunuz anlaşılıyor. Önceki bu kayıtlar, bu cihazda bir ses modeli oluşturmak için kullanılabilir. Bu işlem, bir dakikadan az sürecektir.</translation>
 <translation id="104710386808485638">Linux yeniden başlatılsın mı?</translation>
 <translation id="1047431265488717055">&amp;Bağlantı Metnini Kopyala</translation>
@@ -92,6 +91,7 @@
 <translation id="1122198203221319518">&amp;Araçlar</translation>
 <translation id="1122242684574577509">Kimlik doğrulama başarısız oldu. Kullanmakta olduğunuz Kablosuz ağın (<ph name="NETWORK_ID" />) giriş sayfasını ziyaret etmek için tıklayın.</translation>
 <translation id="1122960773616686544">Yer işareti adı</translation>
+<translation id="1123753900084781868">Canlı Altyazı şu anda kullanılamıyor</translation>
 <translation id="1124772482545689468">Kullanıcı</translation>
 <translation id="1125550662859510761"><ph name="WIDTH" /> x <ph name="HEIGHT" /> şeklinde görünür (Yerel)</translation>
 <translation id="1126809382673880764">Sizi tehlikeli web siteleri, indirmeler ve uzantılara karşı korumaz. Gmail ve Arama gibi diğer Google hizmetlerinde, mümkün olduğunda Güvenli Tarama korumasından yararlanmaya devam edersiniz.</translation>
@@ -407,7 +407,6 @@
 <translation id="1536754031901697553">Bağlantı kesiliyor...</translation>
 <translation id="15373452373711364">Büyük fare imleci</translation>
 <translation id="1540605929960647700">Demo modunu etkinleştir</translation>
-<translation id="1541396123399225659">Yeni Gruba ekle</translation>
 <translation id="1542514202066550870">Bu sekme bir başlığa VR içeriği sunuyor.</translation>
 <translation id="1543284117603151572">Edge'den Aktarıldı</translation>
 <translation id="1545177026077493356">Otomatik Kiosk Modu</translation>
@@ -1905,7 +1904,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3514373592552233661">Birden fazla ağ kullanılabilir olduğunda, bilinen ağlar arasında tercih edilen ağlar seçilir</translation>
 <translation id="3515983984924808886">Sıfırlamayı onaylamak için güvenlik anahtarınıza tekrar dokunun. PIN'i de dahil olmak üzere güvenlik anahtarında depolanan tüm bilgiler silinir.</translation>
 <translation id="3518985090088779359">Kabul et ve devam et</translation>
-<translation id="351952459507671940">Yeni gruba ekle</translation>
 <translation id="3521606918211282604">Disk boyutunu değiştir</translation>
 <translation id="3523642406908660543">Bir site, bilgisayarıma erişmek için eklenti kullanmak istediğinde bana sor (önerilen)</translation>
 <translation id="3524965460886318643">Etkinlikleri Dışa Aktar</translation>
@@ -2895,7 +2893,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4871322859485617074">PIN geçersiz karakterler içeriyor</translation>
 <translation id="4871370605780490696">Yer işaretlerine ekleyin</translation>
 <translation id="4871719318659334896">Grubu kapat</translation>
-<translation id="4871852311166078968">Gruba Ekle</translation>
 <translation id="4873312501243535625">Medya Dosyası Denetleyicisi</translation>
 <translation id="4876273079589074638">Mühendislerimizin kilitlenme olayı araştırmalarına ve düzeltmelerine yardımcı olun. Yapabilirseniz adımları tam olarak listeleyin. Hiçbir ayrıntıyı atlamayın!</translation>
 <translation id="4876895919560854374">Ekranı kilitleme ve kilidini açma</translation>
@@ -3981,7 +3978,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6326855256003666642">Canlı Tutma Sayısı</translation>
 <translation id="632707535499064463"><ph name="ORGANIZATION_NAME" /> son tarihten önce bu cihazı güncellemenizi gerektiriyor.</translation>
 <translation id="6327785803543103246">Web proxy otomatik keşfi</translation>
-<translation id="6331566915566907158">Chrome özelliklerini ve performansını iyileştirmeye yardımcı olun</translation>
+<translation id="6331566915566907158">Chrome OS özelliklerini ve performansını iyileştirmeye yardımcı olun</translation>
 <translation id="6333064448949140209">Dosya, hata ayıklama amacıyla Google'a gönderilecektir</translation>
 <translation id="6339668969738228384"><ph name="USER_EMAIL_ADDRESS" /> için yeni profil oluştur</translation>
 <translation id="6340017061976355871">Sunucuya bağlanamadı. Lütfen ağ bağlantınızı kontrol edip tekrar deneyin. Sorun devam ederse Chromebook'unuzu yeniden başlatın.</translation>

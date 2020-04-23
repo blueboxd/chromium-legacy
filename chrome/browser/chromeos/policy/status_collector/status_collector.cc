@@ -140,8 +140,4 @@ std::string StatusCollector::GetDMTokenForProfile(Profile* profile) const {
   return user_cloud_policy_manager->core()->client()->dm_token();
 }
 
-base::Time StatusCollector::GetCurrentTime() {
-  return base::Time::Now();
-}
-
 }  // namespace policy

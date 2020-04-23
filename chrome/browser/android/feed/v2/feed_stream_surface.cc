@@ -110,6 +110,12 @@ void FeedStreamSurface::ReportOpenInNewTabAction(
   feed_stream_api_->ReportOpenInNewTabAction();
 }
 
+void FeedStreamSurface::ReportOpenInNewIncognitoTabAction(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  feed_stream_api_->ReportOpenInNewIncognitoTabAction();
+}
+
 void FeedStreamSurface::ReportSliceViewed(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,

@@ -113,6 +113,7 @@ void TranslateInfoBarDelegate::Create(
 
   // Try to reuse existing translate infobar delegate.
   if (old_delegate) {
+    old_delegate->step_ = step;
     for (auto& observer : old_delegate->observers_) {
       observer.OnTranslateStepChanged(step, error_type);
     }

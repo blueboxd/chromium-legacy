@@ -29,6 +29,7 @@ import org.chromium.chromecast.base.Controller;
 import org.chromium.chromecast.base.Observable;
 import org.chromium.chromecast.base.Observers;
 import org.chromium.chromecast.base.Unit;
+import org.chromium.content_public.browser.WebContents;
 
 /**
  * Activity for displaying a WebContents in CastShell.
@@ -42,6 +43,34 @@ import org.chromium.chromecast.base.Unit;
 public class CastWebContentsActivity extends Activity {
     private static final String TAG = "CastWebActivity";
     private static final boolean DEBUG = true;
+
+    // JavaScript to execute on WebContents when the back key is pressed.
+    // This will return a value that indicates whether or not the default
+    // Android behavior for the back key should be disabled or not.
+    private static final String BACK_PRESSED_JAVASCRIPT = "{"
+            + "  let getActiveElement = function() {"
+            + "    let activeElement = document.activeElement;"
+            + "    while (activeElement && activeElement.shadowRoot && activeElement.shadowRoot.activeElement) {"
+            + "      activeElement = activeElement.shadowRoot.activeElement;"
+            + "    }"
+            + "    return activeElement;"
+            + "  };"
+            + "  let backPressEvent = new KeyboardEvent("
+            + "     \"keydown\", {"
+            + "      bubbles: true,"
+            + "      key: \"BrowserBack\","
+            + "      cancelable: true,"
+            + "      composed: true"
+            + "     }"
+            + "  );"
+            + "  let activeElement = getActiveElement();"
+            + "  if (activeElement) {"
+            + "    activeElement.dispatchEvent(backPressEvent);"
+            + "  } else {"
+            + "    document.dispatchEvent(backPressEvent);"
+            + "  }"
+            + "  backPressEvent.defaultPrevented;"
+            + "};";
 
     // Tracks whether this Activity is between onCreate() and onDestroy().
     private final Controller<Unit> mCreatedState = new Controller<>();
@@ -218,6 +247,20 @@ public class CastWebContentsActivity extends Activity {
         if (DEBUG) Log.d(TAG, "onDestroy");
         mCreatedState.reset();
         super.onDestroy();
+    }
+
+    @Override
+    public void onBackPressed() {
+        WebContents webContents = CastWebContentsIntentUtils.getWebContents(getIntent());
+        if (webContents == null) {
+            super.onBackPressed();
+            return;
+        }
+        webContents.evaluateJavaScript(BACK_PRESSED_JAVASCRIPT, defaultPrevented -> {
+            if (!"true".equals(defaultPrevented)) {
+                super.onBackPressed();
+            }
+        });
     }
 
     @Override

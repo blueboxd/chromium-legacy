@@ -47,6 +47,8 @@ class FakeNightLightController : public ash::NightLightController {
     ++position_pushes_num_;
   }
 
+  bool GetEnabled() const override { return false; }
+
   void NotifyScheduleTypeChanged(ScheduleType type) {
     for (auto& observer : observers_)
       observer.OnScheduleTypeChanged(type);

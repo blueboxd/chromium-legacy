@@ -37,7 +37,6 @@ extern const char kClientHeaderOption[];
 extern const char kAndroidWebViewProtocolVersion[];
 #endif
 
-class DataReductionProxyConfig;
 
 typedef base::RepeatingCallback<void(const net::HttpRequestHeaders&)>
     UpdateHeaderCallback;
@@ -48,8 +47,7 @@ class DataReductionProxyRequestOptions {
 
   // Constructs a DataReductionProxyRequestOptions object with the given
   // client type, and config.
-  DataReductionProxyRequestOptions(Client client,
-                                   DataReductionProxyConfig* config);
+  explicit DataReductionProxyRequestOptions(Client client);
 
   virtual ~DataReductionProxyRequestOptions();
 
@@ -111,9 +109,7 @@ class DataReductionProxyRequestOptions {
   virtual std::string GetDefaultKey() const;
 
   // Visible for testing.
-  DataReductionProxyRequestOptions(Client client,
-                                   const std::string& version,
-                                   DataReductionProxyConfig* config);
+  DataReductionProxyRequestOptions(Client client, const std::string& version);
 
   // Returns the chrome proxy header. Protected so that it is available for
   // testing.
@@ -147,9 +143,6 @@ class DataReductionProxyRequestOptions {
   std::string build_;
   std::string patch_;
   const std::string server_experiments_;
-
-  // Must outlive |this|.
-  DataReductionProxyConfig* data_reduction_proxy_config_;
 
   // The page identifier that was last generated for data saver proxy server.
   uint64_t current_page_id_;

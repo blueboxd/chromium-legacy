@@ -37,7 +37,6 @@
 <translation id="1041263367839475438">사용 가능한 기기</translation>
 <translation id="1042174272890264476">또한 컴퓨터에는 <ph name="SHORT_PRODUCT_NAME" /> RLZ 라이브러리가 내장되어 있습니다. RLZ는 고유하지 않고 개인 식별이 불가능한 태그를 할당하여 특정 홍보 캠페인을 통한 검색 및 <ph name="SHORT_PRODUCT_NAME" /> 사용 실태를 측정합니다. 이러한 라벨은 <ph name="PRODUCT_NAME" />의 Google 검색어에 표시되기도 합니다.</translation>
 <translation id="1043818413152647937">아래 앱의 데이터도 삭제하시겠습니까?</translation>
-<translation id="1045448422538531528">그룹에 추가</translation>
 <translation id="1046635659603195359">다른 기기의 Google 어시스턴트에서 이미 Voice Match를 설정한 것 같습니다. 이전에 녹음된 음성을 사용하여 이 기기에서 음성 모델을 만들 수 있습니다. 이 작업은 최대 1분 정도 걸립니다.</translation>
 <translation id="104710386808485638">Linux를 다시 시작하시겠습니까?</translation>
 <translation id="1047431265488717055">링크 텍스트 복사(&amp;X)</translation>
@@ -92,6 +91,7 @@
 <translation id="1122198203221319518">도구(&amp;T)</translation>
 <translation id="1122242684574577509">인증에 실패했습니다. 클릭하여 사용 중인 Wi-Fi 네트워크(<ph name="NETWORK_ID" />)의 로그인 페이지로 이동하세요.</translation>
 <translation id="1122960773616686544">북마크 이름</translation>
+<translation id="1123753900084781868">현재 실시간 자막을 사용할 수 없습니다.</translation>
 <translation id="1124772482545689468">사용자</translation>
 <translation id="1125550662859510761"><ph name="WIDTH" />x<ph name="HEIGHT" />(기본)처럼 보입니다.</translation>
 <translation id="1126809382673880764">위험한 웹사이트, 다운로드 항목, 확장 프로그램으로부터 사용자를 보호하지 않습니다. Gmail, Google 검색과 같은 다른 Google 서비스에서는 가능한 경우 세이프 브라우징 보호가 계속 제공됩니다.</translation>
@@ -407,7 +407,6 @@
 <translation id="1536754031901697553">연결을 해제하는 중...</translation>
 <translation id="15373452373711364">큰 마우스 커서</translation>
 <translation id="1540605929960647700">데모 모드 사용</translation>
-<translation id="1541396123399225659">새 그룹에 추가</translation>
 <translation id="1542514202066550870">이 탭에서 헤드셋에 VR 콘텐츠를 전송하는 중입니다.</translation>
 <translation id="1543284117603151572">Edge에서 가져옴</translation>
 <translation id="1545177026077493356">자동 키오스크 모드</translation>
@@ -1905,7 +1904,6 @@
 <translation id="3514373592552233661">두 개 이상의 네트워크를 사용할 수 있는 경우 기본 설정된 네트워크가 다른 알려진 네트워크보다 우선 사용됩니다.</translation>
 <translation id="3515983984924808886">보안 키를 다시 터치하여 초기화 여부를 확인하세요. PIN을 비롯하여 보안 키에 저장된 모든 정보가 삭제됩니다.</translation>
 <translation id="3518985090088779359">동의하고 계속</translation>
-<translation id="351952459507671940">새 그룹에 추가</translation>
 <translation id="3521606918211282604">디스크 크기 변경</translation>
 <translation id="3523642406908660543">사이트에서 플러그인을 사용하여 내 컴퓨터에 액세스하려고 할 때 확인(권장)</translation>
 <translation id="3524965460886318643">활동 내보내기</translation>
@@ -2893,7 +2891,6 @@
 <translation id="4871322859485617074">PIN에 잘못된 문자가 포함되었습니다.</translation>
 <translation id="4871370605780490696">북마크 추가</translation>
 <translation id="4871719318659334896">그룹 닫기</translation>
-<translation id="4871852311166078968">그룹에 추가</translation>
 <translation id="4873312501243535625">미디어 파일 검사기</translation>
 <translation id="4876273079589074638">Google 엔지니어가 이 비정상 종료를 조사하고 해결할 수 있도록 도와주세요. 가능한 경우 단계를 정확히 나열해 주세요. 자세히 설명해 주시면 큰 도움이 됩니다.</translation>
 <translation id="4876895919560854374">화면 잠금 및 잠금 해제</translation>
@@ -4113,7 +4110,7 @@
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
-<translation id="6520876759015997832">검색결과 <ph name="LIST_SIZE" />개 중 <ph name="LIST_POSITION" />개: <ph name="SEARCH_RESULT_TEXT" />. 섹션으로 이동하려면 Enter를 누릅니다.</translation>
+<translation id="6520876759015997832">검색결과 <ph name="LIST_SIZE" />개 중 <ph name="LIST_POSITION" />번: <ph name="SEARCH_RESULT_TEXT" />. 섹션으로 이동하려면 Enter를 누릅니다.</translation>
 <translation id="652492607360843641"><ph name="NETWORK_TYPE" /> 네트워크에 연결되어 있습니다.</translation>
 <translation id="6527303717912515753">공유</translation>
 <translation id="6528513914570774834">이 기기의 다른 사용자가 이 네트워크를 사용하도록 허용</translation>
@@ -4255,7 +4252,7 @@
 <translation id="6727969043791803658">연결됨, 배터리 <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="6732801395666424405">인증서를 로드하지 못했습니다.</translation>
 <translation id="6732900235521116609">바로가기를 삭제할 수 없음</translation>
-<translation id="6734468588183300211">시크릿 모드에 있는 동안에는 사이트에서 사용자의 다양한 사이트 탐색 활동 정보를 이용해 광고 맞춤설정 등의 작업을 하기 위해 쿠키를 사용할 수 없습니다. 일부 사이트에서는 기능이 작동하지 않을 수 있습니다.</translation>
+<translation id="6734468588183300211">시크릿 모드에 있는 동안에는 사이트에서 사용자의 다양한 사이트 탐색 활동 정보를 이용해 광고 맞춤설정 등의 작업을 하는 데 쿠키를 사용할 수 없습니다. 일부 사이트에서는 기능이 작동하지 않을 수 있습니다.</translation>
 <translation id="6735304988756581115">쿠키 및 기타 사이트 데이터 표시...</translation>
 <translation id="6736243959894955139">주소</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" />[<ph name="ISSUED_TO" />]</translation>
@@ -4268,7 +4265,7 @@
 <translation id="674632704103926902">탭 드래그 사용</translation>
 <translation id="6748217015615267851">렌더기: <ph name="RENDERER_URL" /></translation>
 <translation id="6748465660675848252">계속 진행할 수 있지만 동기화된 데이터와 설정만 복원됩니다. 모든 로컬 데이터가 손실됩니다.</translation>
-<translation id="6749006854028927059">사이트에서 사용자의 다양한 사이트 탐색 활동 정보를 이용해 광고 맞춤설정 등의 작업을 하기 위해 쿠키를 사용할 수 없습니다. 일부 사이트에서는 기능이 작동하지 않을 수 있습니다.</translation>
+<translation id="6749006854028927059">사이트에서 사용자의 다양한 사이트 탐색 활동 정보를 이용해 광고 맞춤설정 등의 작업을 하는 데 쿠키를 사용할 수 없습니다. 일부 사이트에서는 기능이 작동하지 않을 수 있습니다.</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (시크릿 모드)</translation>
 <translation id="6757101664402245801">URL을 복사했습니다</translation>
 <translation id="6758056191028427665">개선할 점이나 격려하고 싶은 점을 알려주세요.</translation>
@@ -4360,7 +4357,7 @@
 <translation id="686664946474413495">색상 온도</translation>
 <translation id="6871644448911473373">OCSP 응답자: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">입력한 비밀번호가 서버에 의해 거부되었습니다.</translation>
-<translation id="6874170800191969835"><ph name="SEARCH_RESULT_TEXT" />(으)로 이동했습니다.</translation>
+<translation id="6874170800191969835"><ph name="SEARCH_RESULT_TEXT" /> 항목으로 이동했습니다.</translation>
 <translation id="6876155724392614295">자전거</translation>
 <translation id="6876469544038980967">도움이 되지 않음</translation>
 <translation id="6878422606530379992">센서가 허용됨</translation>

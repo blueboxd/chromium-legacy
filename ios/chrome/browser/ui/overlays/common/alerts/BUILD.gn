@@ -16,6 +16,8 @@ source_set("alerts") {
 
   deps = [
     "//base",
+    "//ios/chrome/browser/overlays",
+    "//ios/chrome/browser/overlays/public/common/alerts",
     "//ios/chrome/browser/ui/alert_view",
     "//ios/chrome/browser/ui/elements",
     "//ios/chrome/browser/ui/overlays:coordinators",
@@ -36,6 +38,7 @@ source_set("unit_tests") {
     ":alerts",
     "//ios/chrome/browser/main:test_support",
     "//ios/chrome/browser/overlays",
+    "//ios/chrome/browser/overlays/public/common/alerts",
     "//ios/chrome/browser/overlays/test",
     "//ios/chrome/browser/ui/alert_view",
     "//ios/chrome/browser/ui/alert_view/test",

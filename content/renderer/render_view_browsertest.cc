@@ -931,7 +931,8 @@ TEST_F(RenderViewImplTest, BeginNavigation) {
       blink::kWebNavigationPolicyCurrentTab;
   render_thread_->sink().ClearMessages();
   frame()->BeginNavigation(std::move(form_navigation_info));
-  EXPECT_TRUE(frame()->IsBrowserSideNavigationPending());
+  EXPECT_TRUE(render_thread_->sink().GetUniqueMessageMatching(
+      FrameHostMsg_OpenURL::ID));
 
   // Popup links to WebUI URLs.
   blink::WebURLRequest popup_request(GetWebUIURL("foo"));
@@ -951,7 +952,8 @@ TEST_F(RenderViewImplTest, BeginNavigation) {
       blink::kWebNavigationPolicyNewForegroundTab;
   render_thread_->sink().ClearMessages();
   frame()->BeginNavigation(std::move(popup_navigation_info));
-  EXPECT_TRUE(frame()->IsBrowserSideNavigationPending());
+  EXPECT_TRUE(render_thread_->sink().GetUniqueMessageMatching(
+      FrameHostMsg_OpenURL::ID));
 }
 
 TEST_F(RenderViewImplTest, BeginNavigationHandlesAllTopLevel) {
@@ -1008,7 +1010,8 @@ TEST_F(RenderViewImplTest, BeginNavigationForWebUI) {
 
   render_thread_->sink().ClearMessages();
   frame()->BeginNavigation(std::move(navigation_info));
-  EXPECT_TRUE(frame()->IsBrowserSideNavigationPending());
+  EXPECT_TRUE(render_thread_->sink().GetUniqueMessageMatching(
+      FrameHostMsg_OpenURL::ID));
 
   // Navigations to WebUI URLs.
   auto webui_navigation_info = std::make_unique<blink::WebNavigationInfo>();
@@ -1027,7 +1030,8 @@ TEST_F(RenderViewImplTest, BeginNavigationForWebUI) {
       blink::kWebNavigationPolicyCurrentTab;
   render_thread_->sink().ClearMessages();
   frame()->BeginNavigation(std::move(webui_navigation_info));
-  EXPECT_TRUE(frame()->IsBrowserSideNavigationPending());
+  EXPECT_TRUE(render_thread_->sink().GetUniqueMessageMatching(
+      FrameHostMsg_OpenURL::ID));
 
   // Form posts to data URLs.
   auto data_navigation_info = std::make_unique<blink::WebNavigationInfo>();
@@ -1053,7 +1057,8 @@ TEST_F(RenderViewImplTest, BeginNavigationForWebUI) {
       blink::kWebNavigationPolicyCurrentTab;
   render_thread_->sink().ClearMessages();
   frame()->BeginNavigation(std::move(data_navigation_info));
-  EXPECT_TRUE(frame()->IsBrowserSideNavigationPending());
+  EXPECT_TRUE(render_thread_->sink().GetUniqueMessageMatching(
+      FrameHostMsg_OpenURL::ID));
 
   // A popup that creates a view first and then navigates to a
   // normal HTTP URL.
@@ -1079,7 +1084,8 @@ TEST_F(RenderViewImplTest, BeginNavigationForWebUI) {
   render_thread_->sink().ClearMessages();
   static_cast<RenderFrameImpl*>(new_view->GetMainRenderFrame())
       ->BeginNavigation(std::move(popup_navigation_info));
-  EXPECT_TRUE(frame()->IsBrowserSideNavigationPending());
+  EXPECT_TRUE(render_thread_->sink().GetUniqueMessageMatching(
+      FrameHostMsg_OpenURL::ID));
 }
 
 // This test verifies that when device emulation is enabled, RenderFrameProxy

@@ -5,7 +5,7 @@
 import("//chrome/common/features.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/grit/grit_rule.gni")
-import("//tools/polymer/polymer.gni")
+import("//tools/polymer/html_to_js.gni")
 import("../optimize_webui.gni")
 
 if (optimize_webui) {
@@ -40,7 +40,7 @@ if (optimize_webui) {
       "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
     ]
 
-    deps = [ ":polymer3_elements" ]
+    deps = [ ":web_components" ]
     defines = chrome_grit_defines
     outputs = [
       "grit/extensions_resources.h",
@@ -59,189 +59,44 @@ group("closure_compile") {
   ]
 }
 
-group("polymer3_elements") {
+group("web_components") {
   public_deps = [
-    ":checkup_module",
-    ":code_section_module",
-    ":detail_view_module",
-    ":drop_overlay_module",
-    ":error_page_module",
-    ":host_permissions_toggle_list_module",
-    ":icons_module",
-    ":install_warnings_dialog_module",
-    ":item_list_module",
-    ":item_module",
-    ":keyboard_shortcuts_module",
-    ":load_error_module",
-    ":manager_module",
-    ":options_dialog_module",
-    ":pack_dialog_alert_module",
-    ":pack_dialog_module",
-    ":runtime_host_permissions_module",
-    ":runtime_hosts_dialog_module",
-    ":shared_style_module",
-    ":shared_vars_module",
-    ":shortcut_input_module",
-    ":sidebar_module",
-    ":toggle_row_module",
-    ":toolbar_module",
-    "activity_log:polymer3_elements",
+    ":web_components_local",
+    "activity_log:web_components",
   ]
+}
+
+html_to_js("web_components_local") {
+  js_files = [
+    "checkup.js",
+    "code_section.js",
+    "detail_view.js",
+    "drop_overlay.js",
+    "error_page.js",
+    "host_permissions_toggle_list.js",
+    "icons.js",
+    "install_warnings_dialog.js",
+    "item.js",
+    "item_list.js",
+    "keyboard_shortcuts.js",
+    "load_error.js",
+    "manager.js",
+    "options_dialog.js",
+    "pack_dialog.js",
+    "pack_dialog_alert.js",
+    "runtime_host_permissions.js",
+    "runtime_hosts_dialog.js",
+    "shared_style.js",
+    "shared_vars.js",
+    "shortcut_input.js",
+    "sidebar.js",
+    "toggle_row.js",
+    "toolbar.js",
+  ]
+
   if (is_chromeos) {
-    public_deps += [ ":kiosk_dialog_module" ]
+    js_files += [ "kiosk_dialog.js" ]
   }
-}
-
-polymer_modulizer("checkup") {
-  js_file = "checkup.js"
-  html_file = "checkup.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("code_section") {
-  js_file = "code_section.js"
-  html_file = "code_section.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("detail_view") {
-  js_file = "detail_view.js"
-  html_file = "detail_view.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("drop_overlay") {
-  js_file = "drop_overlay.js"
-  html_file = "drop_overlay.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("error_page") {
-  js_file = "error_page.js"
-  html_file = "error_page.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("host_permissions_toggle_list") {
-  js_file = "host_permissions_toggle_list.js"
-  html_file = "host_permissions_toggle_list.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("icons") {
-  js_file = "icons.js"
-  html_file = "icons.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("install_warnings_dialog") {
-  js_file = "install_warnings_dialog.js"
-  html_file = "install_warnings_dialog.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("item") {
-  js_file = "item.js"
-  html_file = "item.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("item_list") {
-  js_file = "item_list.js"
-  html_file = "item_list.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("keyboard_shortcuts") {
-  js_file = "keyboard_shortcuts.js"
-  html_file = "keyboard_shortcuts.html"
-  html_type = "v3-ready"
-}
-
-if (is_chromeos) {
-  polymer_modulizer("kiosk_dialog") {
-    js_file = "kiosk_dialog.js"
-    html_file = "kiosk_dialog.html"
-    html_type = "v3-ready"
-  }
-}
-
-polymer_modulizer("load_error") {
-  js_file = "load_error.js"
-  html_file = "load_error.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("manager") {
-  js_file = "manager.js"
-  html_file = "manager.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("options_dialog") {
-  js_file = "options_dialog.js"
-  html_file = "options_dialog.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("pack_dialog") {
-  js_file = "pack_dialog.js"
-  html_file = "pack_dialog.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("pack_dialog_alert") {
-  js_file = "pack_dialog_alert.js"
-  html_file = "pack_dialog_alert.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("runtime_host_permissions") {
-  js_file = "runtime_host_permissions.js"
-  html_file = "runtime_host_permissions.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("runtime_hosts_dialog") {
-  js_file = "runtime_hosts_dialog.js"
-  html_file = "runtime_hosts_dialog.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("shared_style") {
-  js_file = "shared_style.js"
-  html_file = "shared_style.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("shared_vars") {
-  js_file = "shared_vars.js"
-  html_file = "shared_vars.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("shortcut_input") {
-  js_file = "shortcut_input.js"
-  html_file = "shortcut_input.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("sidebar") {
-  js_file = "sidebar.js"
-  html_file = "sidebar.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("toggle_row") {
-  js_file = "toggle_row.js"
-  html_file = "toggle_row.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("toolbar") {
-  js_file = "toolbar.js"
-  html_file = "toolbar.html"
-  html_type = "v3-ready"
 }
 
 js_type_check("extensions_module_resources") {

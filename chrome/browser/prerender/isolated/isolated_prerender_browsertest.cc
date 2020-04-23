@@ -531,12 +531,7 @@ class IsolatedPrerenderBrowserTest
   std::unique_ptr<net::test_server::HttpResponse> GetConfigResponse(
       const net::test_server::HttpRequest& request) {
     data_reduction_proxy::ClientConfig config =
-        data_reduction_proxy::CreateConfig(
-            "secretsessionkey", 1000, 0,
-            data_reduction_proxy::ProxyServer_ProxyScheme_HTTP,
-            "proxy-host.net", 80,
-            data_reduction_proxy::ProxyServer_ProxyScheme_HTTP, "fallback.net",
-            80, 0.5f, false);
+        data_reduction_proxy::CreateClientConfig("secretsessionkey", 1000, 0);
 
     data_reduction_proxy::PrefetchProxyConfig_Proxy* valid_secure_proxy =
         config.mutable_prefetch_proxy_config()->add_proxy_list();

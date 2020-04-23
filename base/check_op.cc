@@ -11,6 +11,8 @@
 #pragma clang max_tokens_here 236000
 #endif
 
+#include <string.h>
+
 #include <cstdio>
 #include <sstream>
 

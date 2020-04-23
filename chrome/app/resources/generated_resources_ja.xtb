@@ -37,7 +37,6 @@
 <translation id="1041263367839475438">使用可能なデバイス</translation>
 <translation id="1042174272890264476">お使いのパソコンには <ph name="SHORT_PRODUCT_NAME" /> の RLZ ライブラリも組み込まれています。RLZ は、個人を特定できないタグを割り当てて、特定の販促キャンペーンで生じた検索や <ph name="SHORT_PRODUCT_NAME" /> の利用状況を計測します。これらのラベルは <ph name="PRODUCT_NAME" /> で Google 検索キーワード内に表示されることがあります。</translation>
 <translation id="1043818413152647937">次のアプリのデータも削除しますか？</translation>
-<translation id="1045448422538531528">グループに追加</translation>
 <translation id="1046635659603195359">別のデバイスの Google アシスタントで Voice Match をすでに設定しているようです。そこですでに登録してある音声を使ってこのデバイスで音声モデルを作成できます。処理にかかる時間は 1 分以内です。</translation>
 <translation id="104710386808485638">Linux を再起動しますか？</translation>
 <translation id="1047431265488717055">リンクテキストをコピー(&amp;X)</translation>
@@ -92,6 +91,7 @@
 <translation id="1122198203221319518">ツール(&amp;T)</translation>
 <translation id="1122242684574577509">認証できませんでした。クリックして、ご利用の Wi-Fi ネットワーク（<ph name="NETWORK_ID" />）のログインページにアクセスしてください。</translation>
 <translation id="1122960773616686544">ブックマーク名</translation>
+<translation id="1123753900084781868">自動字幕起こしは現在ご利用いただけません</translation>
 <translation id="1124772482545689468">ユーザー</translation>
 <translation id="1125550662859510761">表示上のサイズ: <ph name="WIDTH" />x<ph name="HEIGHT" />（ネイティブ）</translation>
 <translation id="1126809382673880764">危険なウェブサイト、ダウンロード、拡張機能から保護されていません。セーフ ブラウジングによる保護については、Gmail や Google 検索といった他の Google サービスで利用可能な場合は引き続き保護されます。</translation>
@@ -407,7 +407,6 @@
 <translation id="1536754031901697553">切断しています...</translation>
 <translation id="15373452373711364">大きいマウスカーソル</translation>
 <translation id="1540605929960647700">デモモードの有効化</translation>
-<translation id="1541396123399225659">新しいグループに追加</translation>
 <translation id="1542514202066550870">このタブは VR コンテンツをヘッドセットに配信しています。</translation>
 <translation id="1543284117603151572">Edge からインポート</translation>
 <translation id="1545177026077493356">自動キオスク モード</translation>
@@ -1905,7 +1904,6 @@
 <translation id="3514373592552233661">複数のネットワークを利用できる場合に、優先ネットワークを他の既知のネットワークより優先します</translation>
 <translation id="3515983984924808886">リセットを確定するには、セキュリティ キーをもう一度タップしてください。セキュリティ キーに保存されているすべての情報（PIN を含む）が削除されます。</translation>
 <translation id="3518985090088779359">同意して続行</translation>
-<translation id="351952459507671940">新しいグループに追加</translation>
 <translation id="3521606918211282604">ディスクのサイズを変更</translation>
 <translation id="3523642406908660543">サイトがプラグインを使用してパソコンにアクセスしようとしたときに確認する（推奨）</translation>
 <translation id="3524965460886318643">アクティビティをエクスポート</translation>
@@ -2895,7 +2893,6 @@
 <translation id="4871322859485617074">PIN に無効な文字が含まれています</translation>
 <translation id="4871370605780490696">ブックマークを追加</translation>
 <translation id="4871719318659334896">グループを閉じる</translation>
-<translation id="4871852311166078968">グループに追加</translation>
 <translation id="4873312501243535625">メディア ファイル チェッカー</translation>
 <translation id="4876273079589074638">このクラッシュについて迅速に調査、解決できるよう、具体的な操作についてできるだけ詳しくご説明ください。</translation>
 <translation id="4876895919560854374">画面のロックとロック解除</translation>
@@ -4127,7 +4124,7 @@
 <translation id="6532206849875187177">セキュリティとログイン</translation>
 <translation id="6532527800157340614">アクセス トークンを取得できなかったため、ログインできませんでした。ネットワーク接続を確認してからもう一度お試しください。</translation>
 <translation id="6532663472409656417">企業登録済み</translation>
-<translation id="6535331821390304775"><ph name="ORIGIN" /> のこのタイプのリンクは常に関連付けられたアプリで開く</translation>
+<translation id="6535331821390304775"><ph name="ORIGIN" /> でのこのタイプのリンクは常に関連付けられたアプリで開く</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />注:<ph name="END_BOLD" /> データの収集によりパフォーマンスが低下する場合があるため、意図的に行う場合、または指示された場合のみ有効にしてください。</translation>
 <translation id="6541638731489116978">このサイトではモーション センサーへのアクセスがブロックされています。</translation>
 <translation id="6545665334409411530">リピート回数 / 秒</translation>
@@ -4257,7 +4254,7 @@
 <translation id="6727969043791803658">接続済み、<ph name="BATTERY_PERCENTAGE" />% のバッテリー残量</translation>
 <translation id="6732801395666424405">証明書が読み込まれていません</translation>
 <translation id="6732900235521116609">ショートカットの削除はできません</translation>
-<translation id="6734468588183300211">シークレット モードのとき、サイトは、Cookie を使用して別のサイトでのあなたの閲覧アクティビティを確認できず、広告のカスタマイズなどが行えなくなります。一部サイトの機能が使用できなくなる可能性もあります。</translation>
+<translation id="6734468588183300211">シークレット モードを使用中は、サイトは、Cookie を使用して別のサイトでのあなたの閲覧アクティビティを確認できず、広告のカスタマイズなどが行えなくなります。一部サイトの機能が使用できなくなる可能性もあります。</translation>
 <translation id="6735304988756581115">Cookie と他のサイトのデータを表示...</translation>
 <translation id="6736243959894955139">アドレス</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>

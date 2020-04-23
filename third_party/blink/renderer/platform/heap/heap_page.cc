@@ -702,6 +702,7 @@ void NormalPageArena::AllocatePage() {
   ASAN_POISON_MEMORY_REGION(page->Payload(), page->PayloadSize());
 #endif
   AddToFreeList(page->Payload(), page->PayloadSize());
+  SynchronizedStore(page);
 }
 
 void NormalPageArena::FreePage(NormalPage* page) {
@@ -1025,6 +1026,7 @@ Address LargeObjectArena::DoAllocateLargeObjectPage(size_t allocation_size,
       large_object->PayloadSize());
   // Add page to the list of young pages.
   large_object->SetAsYoung(true);
+  SynchronizedStore(large_object);
   return result;
 }
 

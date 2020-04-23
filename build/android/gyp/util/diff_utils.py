@@ -23,7 +23,7 @@ def _SkipOmitted(line):
   return line
 
 
-def DiffFileContents(expected_path, actual_path):
+def DiffFileContents(expected_path, actual_path, show_files_compared=True):
   """Check file contents for equality and return the diff or None."""
   with open(expected_path) as f_expected, open(actual_path) as f_actual:
     expected_lines = f_expected.readlines()
@@ -42,12 +42,13 @@ def DiffFileContents(expected_path, actual_path):
       tofile=os.path.join('after', expected_path),
       n=0)
 
-  # Space added before "patch" so that giant command is not put in bash history.
-  return """\
+  files_compared_msg = """\
 Files Compared:
   * {}
   * {}
+  """.format(expected_path, actual_path)
 
+  patch_msg = """\
 If you are looking at this through LogDog, click "Raw log" before copying.
 See https://bugs.chromium.org/p/chromium/issues/detail?id=984616.
 
@@ -57,4 +58,6 @@ To update the file, run:
 {}
 END_DIFF
 ############ END ############
-""".format(expected_path, actual_path, ''.join(diff).rstrip())
+""".format(''.join(diff).rstrip())
+
+  return files_compared_msg + patch_msg if show_files_compared else patch_msg

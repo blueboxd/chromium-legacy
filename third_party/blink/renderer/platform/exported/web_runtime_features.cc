@@ -441,6 +441,10 @@ void WebRuntimeFeatures::EnableWebXR(bool enable) {
   RuntimeEnabledFeatures::SetWebXREnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableWebXRAnchors(bool enable) {
+  RuntimeEnabledFeatures::SetWebXRAnchorsEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableWebXRARModule(bool enable) {
   RuntimeEnabledFeatures::SetWebXRARModuleEnabled(enable);
 }
@@ -451,6 +455,10 @@ void WebRuntimeFeatures::EnableWebXRHitTest(bool enable) {
 
 void WebRuntimeFeatures::EnableWebXRIncubations(bool enable) {
   RuntimeEnabledFeatures::SetWebXRIncubationsEnabled(enable);
+}
+
+void WebRuntimeFeatures::EnableWebXRLightEstimation(bool enable) {
+  RuntimeEnabledFeatures::SetWebXRLightEstimationEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnablePresentationAPI(bool enable) {
@@ -641,6 +649,10 @@ void WebRuntimeFeatures::EnableAcceleratedSmallCanvases(bool enable) {
 
 void WebRuntimeFeatures::EnableTrustTokens(bool enable) {
   RuntimeEnabledFeatures::SetTrustTokensEnabled(enable);
+}
+
+void WebRuntimeFeatures::EnableInstalledApp(bool enable) {
+  RuntimeEnabledFeatures::SetInstalledAppEnabled(enable);
 }
 
 }  // namespace blink

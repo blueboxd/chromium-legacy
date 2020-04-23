@@ -109,7 +109,7 @@
 <translation id="1810845389119482123">Sinxronizatsiya oxirigacha sozlanmagan</translation>
 <translation id="1821253160463689938">Saytlarga tashrif buyurmasangiz ham, cookie-axborot ulardagi afzalliklaringizni eslab qolish uchun foydalaniladi</translation>
 <translation id="1829244130665387512">Sahifa ichidan qidirish</translation>
-<translation id="1853692000353488670">Yangi inkognito ichki oynasi</translation>
+<translation id="1853692000353488670">Yangi inkognito varaq</translation>
 <translation id="1856325424225101786">Lite rejimi asliga qaytarilsinmi?</translation>
 <translation id="1868024384445905608">Chrome endi fayllarni tezroq yuklab oladi</translation>
 <translation id="1883903952484604915">Fayllarim</translation>
@@ -162,7 +162,7 @@ Qidiruvni boshlash uchun istalgan soʻz ustiga bosing. Soʻrovni aniqlashtirish 
 <translation id="2122601567107267586">Dastur ochilmadi</translation>
 <translation id="2126426811489709554">Chrome asosida ishlaydi</translation>
 <translation id="2131665479022868825"><ph name="DATA" /> tejaldi</translation>
-<translation id="213279576345780926"><ph name="TAB_TITLE" /> ichki oynasi yopildi</translation>
+<translation id="213279576345780926">Yopildi: <ph name="TAB_TITLE" /></translation>
 <translation id="2139186145475833000">Bosh ekranga qo‘shish</translation>
 <translation id="2146738493024040262">Darhol ishga tushadigan ilovada ochish</translation>
 <translation id="2154484045852737596">Karta ma’lumotlarini tahrirlash</translation>
@@ -339,7 +339,7 @@ Qidiruvni boshlash uchun istalgan soʻzni bosib turing. Qidruvni aniqlashtirish 
 <translation id="3443221991560634068">Joriy sahifani qayta yuklash</translation>
 <translation id="3445014427084483498">Hozir</translation>
 <translation id="3478363558367712427">Qidiruv tizimini tanlashingiz mumkin</translation>
-<translation id="3492207499832628349">Yangi inkognito tabi</translation>
+<translation id="3492207499832628349">Yangi inkognito varaq</translation>
 <translation id="3493531032208478708">Bildirgi takliflar haqida <ph name="BEGIN_LINK" />batafsil ma’lumot<ph name="END_LINK" /></translation>
 <translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="3513704683820682405">Boyitilgan reallik</translation>
@@ -642,7 +642,7 @@ Bu sozlamani almashtirish uchun <ph name="BEGIN_LINK" />sinxronizatsiyani tiklan
 <translation id="5694049548840660018">Bosh sahifaga tezkor yorliq</translation>
 <translation id="569536719314091526">“Yana” tugmasidan bu sahifani boshqa tilga tarjima qilishingiz mumkin</translation>
 <translation id="5710871682236653961">NFC qurilmalar ustiga bosilganda saytlarda axborot almashinuviga ruxsat soʻralsin (tavsiya etiladi)</translation>
-<translation id="572328651809341494">Yaqinda ochilgan ichki oynalar</translation>
+<translation id="572328651809341494">Yaqinda ochilgan varaqlar</translation>
 <translation id="5726692708398506830">Sahifadagi hamma narsani kattalashtirish</translation>
 <translation id="5748802427693696783">Standart rejimdagi varaqlarga o‘tildi</translation>
 <translation id="5749068826913805084">Yuklab olish uchun Chrome brauzerida omborga saqlash ruxsati bo‘lishi zarur.</translation>
@@ -963,7 +963,6 @@ Masalan, qaysi sahifalarga kirganligingizdan qat’i nazar, ba’zi saytlarda re
 <translation id="8073388330009372546">&amp;Rasmni yangi ichki oynada ochish</translation>
 <translation id="8076492880354921740">Varaqlar</translation>
 <translation id="8084114998886531721">Saqlangan parol</translation>
-<translation id="8087000398470557479"><ph name="DOMAIN_NAME" /> sayti kontenti, Google tomonidan taqdim etildi.</translation>
 <translation id="8103578431304235997">Inkognito sahifa</translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8109613176066109935">Boshqa qurilmalardagi xatcho‘plaringizni ko‘rish uchun sinxronizatsiyani yoqing</translation>
@@ -1055,11 +1054,11 @@ Masalan, qaysi sahifalarga kirganligingizdan qat’i nazar, ba’zi saytlarda re
 <translation id="8801436777607969138">Muayyan saytda JavaScript kodini bloklash.</translation>
 <translation id="8812260976093120287">Ba’zi saytlarda qurilmangizdagi qo‘llab-quvvatlanadigan to‘lov ilovalari orqali to‘lash mumkin.</translation>
 <translation id="8816026460808729765">Saytlarga sensorlardan foydalanishni taqiqlash</translation>
-<translation id="8820817407110198400">Xatcho‘plar</translation>
+<translation id="8820817407110198400">Bukmarklar</translation>
 <translation id="883806473910249246">Kontentni yuklab olishda xatolik yuz berdi.</translation>
 <translation id="8840953339110955557">Bu sahifa onlayn versiyasidan farq qilishi mumkin.</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="8853345339104747198">“<ph name="TAB_TITLE" />” ichki oynasi</translation>
+<translation id="8853345339104747198"><ph name="TAB_TITLE" />, varaq</translation>
 <translation id="885701979325669005">Ombor</translation>
 <translation id="889338405075704026">Chrome sozlamalarini ochish</translation>
 <translation id="8909135823018751308">Ulashish…</translation>

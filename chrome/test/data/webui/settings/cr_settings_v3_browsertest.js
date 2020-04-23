@@ -138,6 +138,23 @@ TEST_F('CrSettingsMainPageV3Test', 'MAYBE_MainPageV3', function() {
 });
 
 // eslint-disable-next-line no-var
+var CrSettingsAutofillPageV3Test = class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/autofill_page_test.m.js';
+  }
+
+  /** @override */
+  get featureListInternal() {
+    return {disabled: ['features::kPrivacySettingsRedesign']};
+  }
+};
+
+TEST_F('CrSettingsAutofillPageV3Test', 'All', function() {
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
 var CrSettingsAutofillSectionCompanyEnabledV3Test =
     class extends CrSettingsV3BrowserTest {
   /** @override */
@@ -311,6 +328,11 @@ var CrSettingsPrivacyPageV3Test = class extends CrSettingsV3BrowserTest {
   get browsePreload() {
     return 'chrome://settings/test_loader.html?module=settings/privacy_page_test.m.js';
   }
+
+  /** @override */
+  get featureListInternal() {
+    return {disabled: ['features::kPrivacySettingsRedesign']};
+  }
 };
 
 TEST_F('CrSettingsPrivacyPageV3Test', 'PrivacyPageTests', function() {
@@ -413,7 +435,6 @@ TEST_F('CrSettingsAdvancedPageV3Test', 'MAYBE_Load', function() {
 [['AllSites', 'all_sites_tests.m.js'],
  ['AppearanceFontsPage', 'appearance_fonts_page_test.m.js'],
  ['AppearancePage', 'appearance_page_test.m.js'],
- ['AutofillPage', 'autofill_page_test.m.js'],
  ['BasicPage', 'basic_page_test.m.js'],
  ['CategoryDefaultSetting', 'category_default_setting_tests.m.js'],
  ['CategorySettingExceptions', 'category_setting_exceptions_tests.m.js'],

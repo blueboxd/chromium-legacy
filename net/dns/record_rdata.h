@@ -340,32 +340,51 @@ class NET_EXPORT IntegrityRecordRdata : public RecordRdata {
   IntegrityRecordRdata& operator=(const IntegrityRecordRdata&) = default;
   IntegrityRecordRdata& operator=(IntegrityRecordRdata&&) = default;
 
+  // RecordRdata:
   bool IsEqual(const RecordRdata* other) const override;
   uint16_t Type() const override;
 
-  // Attempts to parse an INTEGRITY record from |data|. Returns nullptr when the
-  // parse fails or when the parsed digest is not equal to the SHA256 hash of
-  // the parsed nonce.
+  // Attempts to parse an INTEGRITY record from |data|. Never returns nullptr.
+  // The caller can check the intactness of the record with |IsIntact()|.
   static std::unique_ptr<IntegrityRecordRdata> Create(
       const base::StringPiece& data);
 
   // Generate an integrity record with a random nonce and corresponding digest.
+  // Postcondition: |IsIntact()| is true.
   static IntegrityRecordRdata Random();
 
-  // Serialize |this| using the INTEGRITY wire format.
-  std::vector<uint8_t> Serialize() const;
+  // Serialize |this| using the INTEGRITY wire format. Returns |base::nullopt|
+  // when |!IsIntact()|.
+  base::Optional<std::vector<uint8_t>> Serialize() const;
 
-  // Returns the exact number of bytes |this| will occupy when serialized.
-  size_t LengthForSerialization() const;
+  // Precondition: |IsIntact()|.
+  const Nonce& nonce() const {
+    CHECK(is_intact_);
+    return nonce_;
+  }
 
-  const Nonce& nonce() const { return nonce_; }
-  base::StringPiece digest() const;
+  // Precondition: |IsIntact()|.
+  const Digest& digest() const {
+    CHECK(is_intact_);
+    return digest_;
+  }
+
+  // To be considered intact, this record must have parsed successfully (if
+  // parsed by |Create()|) and the digest must match the hash of the nonce.
+  bool IsIntact() const { return is_intact_; }
 
  private:
+  IntegrityRecordRdata(Nonce nonce_, Digest digest_, size_t rdata_len);
+
   static Digest Hash(const Nonce& nonce);
+
+  // Returns the exact number of bytes a record constructed from |nonce| would
+  // occupy when serialized.
+  static size_t LengthForSerialization(const Nonce& nonce);
 
   Nonce nonce_;
   Digest digest_;
+  bool is_intact_;
 };
 
 }  // namespace net

@@ -183,9 +183,7 @@ class BluetoothSetting : public SettingWithDeviceAction {
 
 class DoNotDisturbSetting : public Setting {
  public:
-  explicit DoNotDisturbSetting(
-      ash::mojom::AssistantNotificationController* controller)
-      : assistant_notification_controller_(controller) {}
+  explicit DoNotDisturbSetting(ServiceContext* context) : context_(context) {}
 
   const char* setting_id() const override {
     return kDoNotDisturbDeviceSettingId;
@@ -193,13 +191,17 @@ class DoNotDisturbSetting : public Setting {
 
   void Modify(const client_op::ModifySettingArgs& request) override {
     HandleOnOffChange(request, [&](bool enabled) {
-      this->assistant_notification_controller_->SetQuietMode(enabled);
+      this->assistant_notification_controller()->SetQuietMode(enabled);
     });
   }
 
  private:
-  ash::mojom::AssistantNotificationController* const
-      assistant_notification_controller_;
+  ash::mojom::AssistantNotificationController*
+  assistant_notification_controller() {
+    return context_->assistant_notification_controller();
+  }
+
+  ServiceContext* context_;
 };
 
 class SwitchAccessSetting : public SettingWithDeviceAction {
@@ -269,8 +271,7 @@ AssistantDeviceSettingsDelegate::AssistantDeviceSettingsDelegate(
   AddSetting(std::make_unique<WifiSetting>(context));
   AddSetting(std::make_unique<BluetoothSetting>(context));
   AddSetting(std::make_unique<NightLightSetting>(context));
-  AddSetting(std::make_unique<DoNotDisturbSetting>(
-      context->assistant_notification_controller()));
+  AddSetting(std::make_unique<DoNotDisturbSetting>(context));
   AddSetting(std::make_unique<BrightnessSetting>(context));
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(

@@ -240,10 +240,10 @@
     chrome.test.assertEq(4, elements.length);
 
     // Check: the main button text should be the path components.
-    chrome.test.assertEq(path.split('/')[0], elements[0].text);
-    chrome.test.assertEq(path.split('/')[1], elements[1].text);
-    chrome.test.assertEq(path.split('/')[2], elements[2].text);
-    chrome.test.assertEq(path.split('/')[3], elements[3].text);
+    chrome.test.assertEq('My files', elements[0].text);
+    chrome.test.assertEq('Downloads', elements[1].text);
+    chrome.test.assertEq('nested-folder0', elements[2].text);
+    chrome.test.assertEq('nested-folder1', elements[3].text);
 
     // Check: the "last" main button should be disabled.
     chrome.test.assertEq(undefined, elements[0].attributes.disabled);
@@ -285,9 +285,9 @@
     chrome.test.assertEq(3, elements.length);
 
     // Check: main button text should be the non-elided path components.
-    chrome.test.assertEq(path.split('/')[0], elements[0].text);
-    chrome.test.assertEq(path.split('/')[3], elements[1].text);
-    chrome.test.assertEq(path.split('/')[4], elements[2].text);
+    chrome.test.assertEq('My files', elements[0].text);
+    chrome.test.assertEq('nested-folder1', elements[1].text);
+    chrome.test.assertEq('nested-folder2', elements[2].text);
 
     // Check: the "last" main button should be disabled.
     chrome.test.assertEq(undefined, elements[0].attributes.disabled);

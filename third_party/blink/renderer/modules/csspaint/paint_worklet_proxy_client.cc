@@ -11,7 +11,7 @@
 #include "third_party/blink/renderer/core/css/cssom/cross_thread_unit_value.h"
 #include "third_party/blink/renderer/core/css/cssom/css_style_value.h"
 #include "third_party/blink/renderer/core/css/cssom/paint_worklet_input.h"
-#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
@@ -33,11 +33,11 @@ PaintWorkletProxyClient* PaintWorkletProxyClient::From(WorkerClients* clients) {
 }
 
 // static
-PaintWorkletProxyClient* PaintWorkletProxyClient::Create(Document* document,
+PaintWorkletProxyClient* PaintWorkletProxyClient::Create(LocalDOMWindow* window,
                                                          int worklet_id) {
   WebLocalFrameImpl* local_frame =
-      WebLocalFrameImpl::FromFrame(document->GetFrame());
-  PaintWorklet* paint_worklet = PaintWorklet::From(*document->domWindow());
+      WebLocalFrameImpl::FromFrame(window->GetFrame());
+  PaintWorklet* paint_worklet = PaintWorklet::From(*window);
   scoped_refptr<base::SingleThreadTaskRunner> compositor_host_queue;
   base::WeakPtr<PaintWorkletPaintDispatcher> compositor_paint_dispatcher =
       local_frame->LocalRootFrameWidget()->EnsureCompositorPaintDispatcher(

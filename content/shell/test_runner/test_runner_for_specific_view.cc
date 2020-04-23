@@ -37,6 +37,7 @@
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
+#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_isolated_world_ids.h"
 #include "third_party/blink/public/platform/web_isolated_world_info.h"
@@ -73,12 +74,7 @@ TestRunnerForSpecificView::TestRunnerForSpecificView(
   Reset();
 }
 
-TestRunnerForSpecificView::~TestRunnerForSpecificView() {}
-
-void TestRunnerForSpecificView::Install(blink::WebLocalFrame* frame) {
-  web_view_test_proxy_->test_interfaces()->GetTestRunner()->Install(
-      frame, weak_factory_.GetWeakPtr());
-}
+TestRunnerForSpecificView::~TestRunnerForSpecificView() = default;
 
 void TestRunnerForSpecificView::Reset() {
   pointer_locked_ = false;
@@ -143,7 +139,10 @@ bool TestRunnerForSpecificView::isPointerLocked() {
 }
 
 void TestRunnerForSpecificView::PostTask(base::OnceClosure callback) {
-  blink_test_runner()->PostTask(std::move(callback));
+  // TODO(danakj): Use the frame that called the JS bindings to post the task.
+  // not the main frame.
+  blink::scheduler::GetSingleThreadTaskRunnerForTesting()->PostTask(
+      FROM_HERE, std::move(callback));
 }
 
 void TestRunnerForSpecificView::PostV8Callback(

@@ -6,6 +6,6 @@
 interface XRHitTestResult {
   XRPose? getPose(XRSpace relative_to);
 
-  [RuntimeEnabled=WebXRIncubations, CallWith=ScriptState, RaisesException]
+  [RuntimeEnabled=WebXRAnchors, CallWith=ScriptState, RaisesException, MeasureAs=XRHitTestResultCreateAnchor]
   Promise<XRAnchor> createAnchor(XRRigidTransform initial_pose);
 };

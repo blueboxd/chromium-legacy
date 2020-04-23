@@ -572,6 +572,12 @@ _CONFIG = [
         ],
     },
     {
+        'paths': ['third_party/blink/renderer/core/frame/visual_viewport.cc'],
+        'allowed': [
+            'cc::SolidColorScrollbarLayer',
+        ],
+    },
+    {
         'paths':
         ['third_party/blink/renderer/core/frame/web_frame_widget_base.cc'],
         'allowed': [
@@ -610,10 +616,7 @@ _CONFIG = [
     {
         'paths': ['third_party/blink/renderer/core/page/scrolling'],
         'allowed': [
-            # cc scrollbar layer types.
-            'cc::PaintedOverlayScrollbarLayer',
-            'cc::PaintedScrollbarLayer',
-            'cc::SolidColorScrollbarLayer',
+            'cc::ScrollbarLayerBase',
         ],
     },
     {

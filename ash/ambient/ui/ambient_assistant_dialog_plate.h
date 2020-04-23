@@ -7,7 +7,9 @@
 
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "ash/assistant/ui/base/assistant_button_listener.h"
+#include "ash/public/cpp/assistant/controller/assistant_interaction_controller.h"
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
@@ -42,6 +44,12 @@ class AmbientAssistantDialogPlate : public views::View,
   // Owned by view hierarchy.
   MicView* animated_voice_input_toggle_ = nullptr;
   AssistantQueryView* voice_query_view_ = nullptr;
+
+  ScopedObserver<AssistantInteractionController,
+                 AssistantInteractionModelObserver,
+                 &AssistantInteractionController::AddModelObserver,
+                 &AssistantInteractionController::RemoveModelObserver>
+      assistant_interaction_model_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AmbientAssistantDialogPlate);
 };

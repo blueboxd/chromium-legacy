@@ -1566,11 +1566,11 @@ int WebAXObject::GetDOMNodeId() const {
   return private_->GetDOMNodeId();
 }
 
-WebString WebAXObject::ToString() const {
+WebString WebAXObject::ToString(bool verbose) const {
   if (IsDetached())
     return WebString();
 
-  return private_->ToString();
+  return private_->ToString(verbose);
 }
 
 WebAXObject::WebAXObject(AXObject* object) : private_(object) {}

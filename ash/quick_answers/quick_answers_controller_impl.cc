@@ -76,9 +76,12 @@ void QuickAnswersControllerImpl::MaybeShowQuickAnswers(
   quick_answers_client_->SendRequest(request);
 }
 
-void QuickAnswersControllerImpl::DismissQuickAnswers() {
+void QuickAnswersControllerImpl::DismissQuickAnswers(bool is_active) {
   MaybeDismissQuickAnswersConsent();
   quick_answers_ui_controller_->CloseQuickAnswersView();
+  quick_answers_client_->OnQuickAnswersDismissed(
+      quick_answer_ ? quick_answer_->result_type : ResultType::kNoResult,
+      is_active);
 }
 
 chromeos::quick_answers::QuickAnswersDelegate*

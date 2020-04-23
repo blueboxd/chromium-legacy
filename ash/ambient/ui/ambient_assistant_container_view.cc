@@ -44,13 +44,10 @@ AmbientAssistantContainerView::AmbientAssistantContainerView()
   DCHECK(delegate_);
   InitLayout();
 
-  // |delegate_| must outlive |this|.
-  delegate_->AddUiModelObserver(this);
+  assistant_ui_model_observer_.Add(AssistantUiController::Get());
 }
 
-AmbientAssistantContainerView::~AmbientAssistantContainerView() {
-  delegate_->RemoveUiModelObserver(this);
-}
+AmbientAssistantContainerView::~AmbientAssistantContainerView() = default;
 
 const char* AmbientAssistantContainerView::GetClassName() const {
   return "AmbientAssistantContainerView";

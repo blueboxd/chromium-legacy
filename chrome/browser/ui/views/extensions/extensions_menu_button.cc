@@ -51,7 +51,8 @@ void ExtensionsMenuButton::ButtonPressed(Button* sender,
                                          const ui::Event& event) {
   base::RecordAction(
       base::UserMetricsAction("Extensions.Toolbar.ExtensionActivatedFromMenu"));
-  controller_->ExecuteAction(true);
+  controller_->ExecuteAction(
+      true, ToolbarActionViewController::InvocationSource::kMenuEntry);
 }
 
 // ToolbarActionViewDelegateViews:

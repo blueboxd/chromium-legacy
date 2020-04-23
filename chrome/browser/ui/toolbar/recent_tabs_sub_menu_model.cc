@@ -128,7 +128,7 @@ int CommandIdToWindowVectorIndex(int command_id) {
 
 ui::ImageModel CreateFavicon(const gfx::VectorIcon& icon) {
   return ui::ImageModel::FromVectorIcon(
-      icon, ui::NativeTheme::kColorId_DefaultIconColor, 16);
+      icon, ui::NativeTheme::kColorId_MenuIconColor, 16);
 }
 
 }  // namespace
@@ -587,15 +587,13 @@ void RecentTabsSubMenuModel::AddTabFavicon(int command_id, const GURL& url) {
     // Can be null for tests.
     if (!history_ui_favicon_request_handler)
       return;
-    sync_sessions::OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate();
     history_ui_favicon_request_handler->GetFaviconImageForPageURL(
         url,
         base::BindOnce(&RecentTabsSubMenuModel::OnFaviconDataAvailable,
                        weak_ptr_factory_for_other_devices_tab_.GetWeakPtr(),
                        command_id),
 
-        favicon::HistoryUiFaviconRequestOrigin::kRecentTabs,
-        open_tabs ? open_tabs->GetIconUrlForPageUrl(url) : GURL());
+        favicon::HistoryUiFaviconRequestOrigin::kRecentTabs);
   }
 }
 

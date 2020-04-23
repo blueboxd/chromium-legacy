@@ -37,7 +37,6 @@
 <translation id="1041263367839475438">Dostupná zařízení</translation>
 <translation id="1042174272890264476">Počítač je dodáván s integrovanou knihovnou RLZ prohlížeče <ph name="SHORT_PRODUCT_NAME" />. RLZ přiřadí značku, která slouží k vyhodnocení vyhledávání a využití prohlížečů <ph name="SHORT_PRODUCT_NAME" />, které pocházejí z konkrétní propagační kampaně. Tato značka není jedinečná a neumožňuje osobní identifikaci. Tyto značky jsou někdy v prohlížeči <ph name="PRODUCT_NAME" /> uváděny v dotazech ve Vyhledávání Google.</translation>
 <translation id="1043818413152647937">Vymazat data také z těchto aplikací?</translation>
-<translation id="1045448422538531528">Přidat do skupiny</translation>
 <translation id="1046635659603195359">Funkci rozpoznání hlasu Voice Match jste u Asistenta Google už zřejmě nastavili v jiném zařízení. Dřívější nahrávky lze použít k vytvoření hlasového modelu v tomto zařízení. Mělo by to trvat méně než minutu.</translation>
 <translation id="104710386808485638">Restartovat Linux?</translation>
 <translation id="1047431265488717055">Kopírovat te&amp;xt odkazu</translation>
@@ -408,7 +407,6 @@
 <translation id="1536754031901697553">Odpojování...</translation>
 <translation id="15373452373711364">Velký kurzor myši</translation>
 <translation id="1540605929960647700">Zapnout ukázkový režim</translation>
-<translation id="1541396123399225659">Přidat do nové skupiny</translation>
 <translation id="1542514202066550870">Tato karta odesílá VR obsah do náhlavní soupravy.</translation>
 <translation id="1543284117603151572">Importováno z aplikace Edge</translation>
 <translation id="1545177026077493356">Automatický režim veřejného terminálu</translation>
@@ -1905,7 +1903,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="3514373592552233661">V případě, že bude k dispozici více než jedna síť, budou před ostatními známými sítěmi upřednostněny preferované sítě</translation>
 <translation id="3515983984924808886">Potvrďte reset tím, že se znovu dotknete bezpečnostního klíče. Všechny informace uložené na bezpečnostním klíči, včetně kódu PIN, se vymažou.</translation>
 <translation id="3518985090088779359">PŘIJMOUT A POKRAČOVAT</translation>
-<translation id="351952459507671940">Přidat do nové skupiny</translation>
 <translation id="3521606918211282604">Změnit velikost disku</translation>
 <translation id="3523642406908660543">Dotázat se, pokud chce web použít plugin k přístupu do počítače (doporučeno)</translation>
 <translation id="3524965460886318643">Exportovat aktivity</translation>
@@ -2894,7 +2891,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="4871322859485617074">PIN obsahuje neplatné znaky</translation>
 <translation id="4871370605780490696">Přidat záložku</translation>
 <translation id="4871719318659334896">Zavřít skupinu</translation>
-<translation id="4871852311166078968">Přidat do skupiny</translation>
 <translation id="4873312501243535625">Nástroj na kontrolu mediálních souborů</translation>
 <translation id="4876273079589074638">Pomozte našim technikům prozkoumat toto selhání a odstranit jeho příčiny. Je-li to možné, přesně popište jednotlivé kroky. Důležité mohou být i nejmenší podrobnosti.</translation>
 <translation id="4876895919560854374">Uzamknutí a odemknutí obrazovky</translation>

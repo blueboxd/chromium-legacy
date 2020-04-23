@@ -158,7 +158,6 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/system_connector.h"
-#include "content/public/browser/webvr_service_provider.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -294,11 +293,8 @@
 #include "components/rlz/rlz_tracker.h"
 #endif  // BUILDFLAG(ENABLE_RLZ)
 
-#if BUILDFLAG(ENABLE_VR)
-#include "chrome/browser/vr/service/vr_service_impl.h"
-#if defined(OS_WIN)
+#if BUILDFLAG(ENABLE_VR) && defined(OS_WIN)
 #include "chrome/browser/vr/consent/xr_session_request_consent_manager_impl.h"
-#endif
 #endif
 
 #if defined(USE_AURA)
@@ -953,15 +949,10 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   SecKeychainAddCallback(&KeychainCallback, 0, NULL);
 #endif  // defined(OS_MACOSX)
 
-#if BUILDFLAG(ENABLE_VR)
-  content::WebvrServiceProvider::SetWebvrServiceCallback(
-      base::Bind(&vr::VRServiceImpl::Create));
-
-#if defined(OS_WIN)
+#if BUILDFLAG(ENABLE_VR) && defined(OS_WIN)
   vr::XRSessionRequestConsentManager::SetInstance(
       new vr::XRSessionRequestConsentManagerImpl());
-#endif  // defined(OS_WIN)
-#endif  // BUILDFLAG(ENABLE_VR)
+#endif  // BUILDFLAG(ENABLE_VR) && OS_WIN
 
   // Enable Navigation Tracing only if a trace upload url is specified.
   if (parsed_command_line_.HasSwitch(switches::kEnableNavigationTracing) &&

@@ -117,14 +117,13 @@ void QuickAnswersClient::SendRequest(
 }
 
 void QuickAnswersClient::OnQuickAnswerClick(ResultType result_type) {
-  // Use default 0 duration for clicks before fetch finish.
-  base::TimeDelta duration;
-  if (!quick_answer_received_time_.is_null()) {
-    // Fetch finish with no result, set the duration to be between fetch
-    // finish and user clicks.
-    duration = base::TimeTicks::Now() - quick_answer_received_time_;
-  }
-  RecordClick(result_type, duration);
+  RecordClick(result_type, GetImpressionDuration());
+}
+
+void QuickAnswersClient::OnQuickAnswersDismissed(ResultType result_type,
+                                                 bool is_active) {
+  if (is_active)
+    RecordActiveImpression(result_type, GetImpressionDuration());
 }
 
 void QuickAnswersClient::NotifyEligibilityChanged() {
@@ -175,6 +174,16 @@ void QuickAnswersClient::IntentGeneratorCallback(
   result_loader_ = CreateResultLoader(intent_type);
   // Load and parse search result.
   result_loader_->Fetch(processed_request.selected_text);
+}
+
+base::TimeDelta QuickAnswersClient::GetImpressionDuration() const {
+  // Use default 0 duration.
+  base::TimeDelta duration;
+  if (!quick_answer_received_time_.is_null()) {
+    // Fetch finish, set the duration to be between fetch finish and now.
+    duration = base::TimeTicks::Now() - quick_answer_received_time_;
+  }
+  return duration;
 }
 
 }  // namespace quick_answers

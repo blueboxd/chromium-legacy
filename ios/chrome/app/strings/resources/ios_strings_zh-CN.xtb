@@ -196,7 +196,6 @@
 <translation id="3469166899695866866">是否停止下载？</translation>
 <translation id="3470502288861289375">正在复制…</translation>
 <translation id="3474624961160222204">继续以<ph name="NAME" />的身份使用</translation>
-<translation id="3474649192738347024">表单已填好。</translation>
 <translation id="3478058380795961209">到期月份</translation>
 <translation id="3482959374254649722">正在同步您的标签页…</translation>
 <translation id="3484946776651937681">在“下载内容”中打开</translation>
@@ -479,6 +478,7 @@
 <translation id="7136892417564438900">无法使用相机</translation>
 <translation id="7159472599653637159">请求移动版网站</translation>
 <translation id="7173114856073700355">打开“设置”</translation>
+<translation id="7189598951263744875">分享...</translation>
 <translation id="7192050974311852563">开始生成日志</translation>
 <translation id="7203585745079012652">说出答案</translation>
 <translation id="7265758999917665941">此网站一律不保存密码</translation>

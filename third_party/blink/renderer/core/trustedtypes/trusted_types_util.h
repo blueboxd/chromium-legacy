@@ -11,7 +11,6 @@
 
 namespace blink {
 
-class Document;
 class ExecutionContext;
 class ExceptionState;
 class StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL;
@@ -23,12 +22,6 @@ enum class SpecificTrustedType {
   kScript,
   kScriptURL,
 };
-
-// TODO(crbug.com/1029822): Temporary helpers to ease migrating ExecutionContext
-// to LocalDOMWindow.
-CORE_EXPORT String TrustedTypesCheckForHTML(const String&,
-                                            const Document*,
-                                            ExceptionState&);
 
 // Perform Trusted Type checks, with the IDL union types as input. All of these
 // will call String& versions below to do the heavy lifting.
@@ -65,10 +58,11 @@ CORE_EXPORT String TrustedTypesCheckForScriptURL(const String&,
 // Functionally equivalent to TrustedTypesCheckForScript(const String&, ...),
 // but with setup & error handling suitable for the asynchronous execution
 // cases.
-String TrustedTypesCheckForJavascriptURLinNavigation(const String&, Document*);
+String TrustedTypesCheckForJavascriptURLinNavigation(const String&,
+                                                     ExecutionContext*);
 CORE_EXPORT String GetStringForScriptExecution(const String&,
                                                ScriptElementBase::Type,
-                                               Document*);
+                                               ExecutionContext*);
 
 // Determine whether a Trusted Types check is needed in this execution context.
 //

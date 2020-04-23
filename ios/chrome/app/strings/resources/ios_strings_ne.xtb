@@ -116,6 +116,7 @@
 <translation id="2360196772093551345">मोबाइल साइट अनुरोध गर्नुहोस्</translation>
 <translation id="2381405137052800939">आधारभूत</translation>
 <translation id="2386793615875593361">1 चयन गरियो</translation>
+<translation id="2421004566762153674">तेस्रो पक्षीय कुकीहरूलाई रोक लगाउँदै</translation>
 <translation id="2421044535038393232">सम्पादन गरिरहनुहोस्</translation>
 <translation id="2435457462613246316">पासवर्ड देखाउनुहोस्</translation>
 <translation id="2497852260688568942">तपाईंको प्रशासकले सिंंक असक्षम पार्नुभएको छ।</translation>
@@ -195,7 +196,6 @@
 <translation id="3469166899695866866">डाउनलोड रोक्ने हो?</translation>
 <translation id="3470502288861289375">प्रतिलिपि बनाउँदै...</translation>
 <translation id="3474624961160222204"><ph name="NAME" /> का रूपमा जारी राख्नुहोस्</translation>
-<translation id="3474649192738347024">फारम भरियो।</translation>
 <translation id="3478058380795961209">म्याद समाप्ति महिना</translation>
 <translation id="3482959374254649722">तपाईँका ट्याबहरू सिंक गर्दै ...</translation>
 <translation id="3484946776651937681">डाउनलोडहरू नामक फोल्डरमा खोल्नुहोस्</translation>
@@ -478,6 +478,7 @@
 <translation id="7136892417564438900">क्यामेरा उपलब्ध छैन</translation>
 <translation id="7159472599653637159">मोबाइल साइट अनुरोध गर्नुहोस्</translation>
 <translation id="7173114856073700355">सेटिङहरू खोल्नुहोस्</translation>
+<translation id="7189598951263744875">साझेदारी गर्नुहोस्...</translation>
 <translation id="7192050974311852563">लग गर्न सुरु गर्नुहोस्</translation>
 <translation id="7203585745079012652">जवाफहरू पुन: भन्नुहोस्</translation>
 <translation id="7265758999917665941">यो साइटका हकमा कहिल्यै पनि नसम्झनुहोस्</translation>

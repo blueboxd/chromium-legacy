@@ -239,34 +239,34 @@ TEST_F(JSONParserTest, LineColumnCounting) {
           "[2,4,6\n8",
           // ------^
           2,
-          2,  // TODO(nigeltao): column should be 1.
+          1,
       },
       {
           "[\n0,\n1,\n2,\n3,4,5,6 7,\n8,\n9\n]",
           // ---------------------^
           5,
-          10,  // TODO(nigeltao): column should be 9.
+          9,
       },
       {
           // Same as the previous example, but with "\r\n"s instead of "\n"s.
           "[\r\n0,\r\n1,\r\n2,\r\n3,4,5,6 7,\r\n8,\r\n9\r\n]",
           // -----------------------------^
           5,
-          10,  // TODO(nigeltao): column should be 9.
+          9,
       },
       // The JSON spec forbids unescaped ASCII control characters (including
       // line breaks) within a string, but our implementation is more lenient.
       {
           "[\"3\n1\" 4",
           // --------^
-          1,  // TODO(nigeltao): line should be 2.
-          8,  // TODO(nigeltao): column should be 4.
+          2,
+          4,
       },
       {
           "[\"3\r\n1\" 4",
           // ----------^
-          1,  // TODO(nigeltao): line should be 2.
-          9,  // TODO(nigeltao): column should be 4.
+          2,
+          4,
       },
   };
 

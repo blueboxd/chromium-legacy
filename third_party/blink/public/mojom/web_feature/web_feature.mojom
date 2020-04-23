@@ -2585,6 +2585,8 @@ enum WebFeature {
   kImageCaptureTilt = 3247,
   kImageCaptureZoom = 3248,
   kImageCaptureTorch = 3249,
+  kXRFrameCreateAnchor = 3250,
+  kXRHitTestResultCreateAnchor = 3251,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

@@ -5,6 +5,7 @@
 #ifndef UI_EVENTS_BLINK_PREDICTION_KALMAN_FILTER_H_
 #define UI_EVENTS_BLINK_PREDICTION_KALMAN_FILTER_H_
 
+#include "base/macros.h"
 #include "ui/gfx/geometry/matrix3_f.h"
 
 namespace ui {

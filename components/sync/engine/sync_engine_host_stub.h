@@ -23,10 +23,8 @@ class SyncEngineHostStub : public SyncEngineHost {
       const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
       const std::string& birthday,
       const std::string& bag_of_chips,
-      const std::string& last_keystore_key,
       bool success) override;
-  void OnSyncCycleCompleted(const SyncCycleSnapshot& snapshot,
-                            const std::string& last_keystore_key) override;
+  void OnSyncCycleCompleted(const SyncCycleSnapshot& snapshot) override;
   void OnProtocolEvent(const ProtocolEvent& event) override;
   void OnDirectoryTypeCommitCounterUpdated(
       ModelType type,

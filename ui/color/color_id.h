@@ -5,6 +5,7 @@
 #ifndef UI_COLOR_COLOR_ID_H_
 #define UI_COLOR_COLOR_ID_H_
 
+#include "base/logging.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
 
@@ -49,6 +50,7 @@
   E(kColorFocusableBorderFocused, NativeTheme::kColorId_FocusedBorderColor) \
   E(kColorFocusableBorderUnfocused, \
     NativeTheme::kColorId_UnfocusedBorderColor) \
+  E(kColorMenuIcon, NativeTheme::kColorId_MenuIconColor) \
   E(kColorIcon, NativeTheme::kColorId_DefaultIconColor) \
   E(kColorLabelDisabledForeground, NativeTheme::kColorId_LabelDisabledColor) \
   E(kColorLabelForeground, NativeTheme::kColorId_LabelEnabledColor) \

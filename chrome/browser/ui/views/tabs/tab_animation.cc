@@ -19,13 +19,11 @@ constexpr base::TimeDelta kZeroDuration = base::TimeDelta::FromMilliseconds(0);
 
 constexpr base::TimeDelta TabAnimation::kAnimationDuration;
 
-TabAnimation::TabAnimation(TabAnimationState static_state,
-                           base::OnceClosure tab_removed_callback)
+TabAnimation::TabAnimation(TabAnimationState static_state)
     : initial_state_(static_state),
       target_state_(static_state),
       start_time_(base::TimeTicks::Now()),
-      duration_(kZeroDuration),
-      tab_removed_callback_(std::move(tab_removed_callback)) {}
+      duration_(kZeroDuration) {}
 
 TabAnimation::~TabAnimation() = default;
 
@@ -57,10 +55,6 @@ void TabAnimation::CompleteAnimation() {
   initial_state_ = target_state_;
   start_time_ = base::TimeTicks::Now();
   duration_ = kZeroDuration;
-}
-
-void TabAnimation::NotifyCloseCompleted() {
-  std::move(tab_removed_callback_).Run();
 }
 
 base::TimeDelta TabAnimation::GetTimeRemaining() const {

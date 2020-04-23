@@ -611,6 +611,11 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"url-blocklist-ios", flag_descriptions::kURLBlocklistIOSName,
      flag_descriptions::kURLBlocklistIOSDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kURLBlocklistIOS)},
+#if defined(__IPHONE_13_4)
+    {"pointer-support", flag_descriptions::kPointerSupportName,
+     flag_descriptions::kPointerSupportDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kPointerSupport)},
+#endif  // defined(__IPHONE_13_4)
 };
 
 // Add all switches from experimental flags to |command_line|.

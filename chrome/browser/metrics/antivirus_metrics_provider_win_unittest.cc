@@ -23,7 +23,8 @@
 namespace {
 
 void VerifySystemProfileData(const metrics::SystemProfileProto& system_profile,
-                             bool expect_unhashed_value) {
+                             bool expect_unhashed_value,
+                             bool second_run) {
   if (base::win::GetVersion() < base::win::Version::WIN8)
     return;
 
@@ -34,7 +35,10 @@ void VerifySystemProfileData(const metrics::SystemProfileProto& system_profile,
 
   if (base::win::GetVersion() >= base::win::Version::WIN8) {
     bool defender_found = false;
+    uint32_t last_hash = 0xdeadbeef;
     for (const auto& av : system_profile.antivirus_product()) {
+      if (av.has_product_name_hash())
+        last_hash = av.product_name_hash();
       if (av.product_name_hash() ==
           variations::HashName(kWindowsDefender) ||
           av.product_name_hash() ==
@@ -50,7 +54,11 @@ void VerifySystemProfileData(const metrics::SystemProfileProto& system_profile,
         break;
       }
     }
-    EXPECT_TRUE(defender_found);
+    EXPECT_TRUE(defender_found)
+        << "expect_unhashed_value = " << expect_unhashed_value
+        << ", second_run = " << second_run << ", "
+        << system_profile.antivirus_product().size()
+        << " antivirus products found. Last hash is " << last_hash << ".";
   }
 }
 
@@ -74,13 +82,13 @@ class AntiVirusMetricsProviderTest : public ::testing::TestWithParam<bool> {
     metrics::SystemProfileProto system_profile;
     provider_.ProvideSystemProfileMetrics(&system_profile);
 
-    VerifySystemProfileData(system_profile, expect_unhashed_value_);
+    VerifySystemProfileData(system_profile, expect_unhashed_value_, false);
     // This looks weird, but it's to make sure that reading the data out of the
     // AntiVirusMetricsProvider does not invalidate it, as the class should be
     // resilient to this.
     system_profile.Clear();
     provider_.ProvideSystemProfileMetrics(&system_profile);
-    VerifySystemProfileData(system_profile, expect_unhashed_value_);
+    VerifySystemProfileData(system_profile, expect_unhashed_value_, true);
   }
 
   // Helper function to toggle whether the ReportFullAVProductDetails feature is

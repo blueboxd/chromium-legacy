@@ -225,7 +225,6 @@ class WizardController {
   void OnDemoPreferencesScreenExit(DemoPreferencesScreen::Result result);
   void OnDemoSetupScreenExit(DemoSetupScreen::Result result);
   void OnTermsOfServiceScreenExit(TermsOfServiceScreen::Result result);
-  void OnTermsOfServiceAccepted();
   void OnSyncConsentScreenExit();
   void OnSyncConsentFinished();
   void OnFingerprintSetupScreenExit(FingerprintSetupScreen::Result result);

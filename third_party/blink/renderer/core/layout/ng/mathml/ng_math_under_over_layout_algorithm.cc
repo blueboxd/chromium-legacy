@@ -253,16 +253,15 @@ scoped_refptr<const NGLayoutResult> NGMathUnderOverLayoutAlgorithm::Layout() {
   return container_builder_.ToBoxFragment();
 }
 
-base::Optional<MinMaxSizes> NGMathUnderOverLayoutAlgorithm::ComputeMinMaxSizes(
+MinMaxSizes NGMathUnderOverLayoutAlgorithm::ComputeMinMaxSizes(
     const MinMaxSizesInput& input) const {
   DCHECK(IsValidMathMLScript(Node()));
 
-  base::Optional<MinMaxSizes> sizes =
-      CalculateMinMaxSizesIgnoringChildren(Node(), border_scrollbar_padding_);
-  if (sizes)
-    return sizes;
+  if (auto sizes = CalculateMinMaxSizesIgnoringChildren(
+          Node(), border_scrollbar_padding_))
+    return *sizes;
 
-  sizes.emplace();
+  MinMaxSizes sizes;
   LayoutUnit child_percentage_resolution_block_size =
       CalculateChildPercentageBlockSizeForMinMax(
           ConstraintSpace(), Node(), border_scrollbar_padding_,
@@ -278,10 +277,10 @@ base::Optional<MinMaxSizes> NGMathUnderOverLayoutAlgorithm::ComputeMinMaxSizes(
         ComputeMinAndMaxContentContribution(Style(), child, child_input);
     NGBoxStrut margins = ComputeMinMaxMargins(Style(), child);
     child_sizes += margins.InlineSum();
-    sizes->Encompass(child_sizes);
+    sizes.Encompass(child_sizes);
   }
 
-  *sizes += border_scrollbar_padding_.InlineSum();
+  sizes += border_scrollbar_padding_.InlineSum();
   return sizes;
 }
 

@@ -1619,6 +1619,21 @@ public class ExternalNavigationHandlerTest {
                         ExternalNavigationHandler.StandardActions.ANSWER));
     }
 
+    @Test
+    @SmallTest
+    public void testIsDownload_noSystemDownloadManager() {
+        Assert.assertTrue("pdf should be a download, no viewer in Android Chrome",
+                mUrlHandler.isPdfDownload("http://somesampeleurldne.com/file.pdf"));
+        Assert.assertFalse("URL is not a file, but web page",
+                mUrlHandler.isPdfDownload("http://somesampleurldne.com/index.html"));
+        Assert.assertFalse("URL is not a file url",
+                mUrlHandler.isPdfDownload("http://somesampeleurldne.com/not.a.real.extension"));
+        Assert.assertFalse("URL is an image, can be viewed in Chrome",
+                mUrlHandler.isPdfDownload("http://somesampleurldne.com/image.jpg"));
+        Assert.assertFalse("URL is a text file can be viewed in Chrome",
+                mUrlHandler.isPdfDownload("http://somesampleurldne.com/copy.txt"));
+    }
+
     private static ResolveInfo newResolveInfo(String packageName) {
         ActivityInfo ai = new ActivityInfo();
         ai.packageName = packageName;
@@ -1839,11 +1854,6 @@ public class ExternalNavigationHandlerTest {
         @Override
         public boolean isChromeAppInForeground() {
             return mIsChromeAppInForeground;
-        }
-
-        @Override
-        public boolean isPdfDownload(String url) {
-            return url.endsWith(".pdf");
         }
 
         @Override

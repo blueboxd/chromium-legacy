@@ -215,8 +215,13 @@ CHAR-LIMIT guidelines:
       <message name="IDS_ENTER_VR" desc="Menu item for entering VR. [CHAR-LIMIT=27]">
         Enter VR
       </message>
+
+      <!-- Notification channels -->
       <message name="IDS_NOTIFICATION_CATEGORY_GROUP_GENERAL" desc='Subheading for "General" section of a list of notification categories. [CHAR-LIMIT=32]'>
         General
+      </message>
+      <message name="IDS_NOTIFICATION_CATEGORY_GROUP_SITES" desc='Subheading for "Sites" section of a list of notification categories. [CHAR-LIMIT=32]'>
+        Sites
       </message>
       <message name="IDS_NOTIFICATION_CATEGORY_INCOGNITO" desc="Label for notification that indicates incognito mode is active, within a list of notification categories. [CHAR-LIMIT=32]">
         Incognito
@@ -249,14 +254,19 @@ CHAR-LIMIT guidelines:
         Virtual Reality
       </message>
       <message name="IDS_NOTIFICATION_CATEGORY_UPDATES" desc="Label for update notifications, within a list of notification categories. [CHAR-LIMIT=32]">
-       Updates
+        Updates
       </message>
       <message name="IDS_NOTIFICATION_CATEGORY_COMPLETED_DOWNLOADS" desc="Label for completed download notifications, within a list of notification categories. [CHAR-LIMIT=32]">
-       Completed downloads
+        Completed downloads
       </message>
+      <message name="IDS_NOTIFICATION_CATEGORY_ANNOUNCEMENT" desc="Label for announcements notifications, within a list of notification categories. [CHAR-LIMIT=32]">
+        Announcements
+      </message>
+
       <message name="IDS_NOTIFICATION_CATEGORY_PERMISSION_REQUESTS" desc="Label for permission requests, within a list of notification categories. [CHAR-LIMIT=32]">
        Permission requests
       </message>
+
       <message name="IDS_UNSUPPORTED" desc="Message displayed to the user when an attempted action is not supported.">
         Unsupported
       </message>
@@ -3136,10 +3146,6 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
       <message name="IDS_ACCESSIBILITY_COLLAPSE_SECTION_HEADER" desc="Content description for the suggested section header collapse button.">
         Tap to collapse
-      </message>
-
-      <message name="IDS_ANNOUNCEMENT_NOTIFICATION_CHANNEL_NAME" desc="The channel name for announcement notification, will show on the Android notification setting UI as a channel category.">
-        Announcements
       </message>
 
       <message name="IDS_TAB_SWITCHER_BUTTON_LABEL" desc="Label for tab switcher button">

@@ -898,7 +898,6 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   CORE_EXPORT bool SetEffectiveZoom(float);
-  float EffectiveZoom() const;
 
   // -webkit-clip-path
   bool ClipPathDataEquivalent(const ComputedStyle& other) const {
@@ -2985,10 +2984,6 @@ class ComputedStyle : public ComputedStyleBase,
   FRIEND_TEST_ALL_PREFIXES(ComputedStyleTest, CustomPropertiesEqual_Values);
   FRIEND_TEST_ALL_PREFIXES(ComputedStyleTest, CustomPropertiesEqual_Data);
 };
-
-inline float ComputedStyle::EffectiveZoom() const {
-  return InternalEffectiveZoom();
-}
 
 inline bool ComputedStyle::HasAnyPseudoElementStyles() const {
   return !!PseudoBitsInternal();

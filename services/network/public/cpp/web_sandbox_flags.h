@@ -6,6 +6,9 @@
 #define SERVICES_NETWORK_PUBLIC_CPP_WEB_SANDBOX_FLAGS_H_
 
 #include <cstdint>
+#include <string>
+#include "base/component_export.h"
+#include "base/strings/string_piece_forward.h"
 
 namespace network {
 namespace mojom {
@@ -28,11 +31,42 @@ inline WebSandboxFlags& operator|=(WebSandboxFlags& a, WebSandboxFlags b) {
   return a = a | b;
 }
 
+inline WebSandboxFlags& operator&=(WebSandboxFlags& a, WebSandboxFlags b) {
+  return a = a & b;
+}
+
 inline constexpr WebSandboxFlags operator~(WebSandboxFlags flags) {
   return static_cast<WebSandboxFlags>(~static_cast<int>(flags));
 }
 
 }  // namespace mojom
+
+// The output of |ParseSandboxPolicy(input)|.
+struct WebSandboxFlagsParsingResult {
+  // The complement of the parsed WebSandboxFlags policy.
+  // TODO(arthursonzogni): Update the caller of ParseWebSandboxPolicy(). They
+  // should directly use the policy instead of its complement.
+  mojom::WebSandboxFlags flags;
+
+  // The console error message to be displayed for invalid input. Empty when
+  // there are no errors.
+  std::string error_message;
+};
+
+// Parses a WebSandboxPolicy. The input is an unordered set of unique
+// space-separated sandbox tokens.
+// See: http://www.w3.org/TR/html5/the-iframe-element.html#attr-iframe-sandbox
+//
+// |ignored_flags| is used by experimental features to ignore some tokens when
+// the corresponding feature is off.
+//
+// Supposed to be called only from a (semi-)sandboxed processes, i.e. from blink
+// or from the network process. See: docs/security/rule-of-2.md.
+COMPONENT_EXPORT(NETWORK_CPP)
+WebSandboxFlagsParsingResult ParseWebSandboxPolicy(
+    const base::StringPiece& input,
+    mojom::WebSandboxFlags ignored_flags);
+
 }  // namespace network
 
 #endif  // SERVICES_NETWORK_PUBLIC_CPP_SANDBOX_FLAGS_H_

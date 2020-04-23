@@ -63,10 +63,7 @@ std::pair<base::string16, base::string16> GetOnboardingTitleAndDetails() {
 OnboardingDialogView::OnboardingDialogView(
     ChromePasswordManagerClient* client,
     std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save)
-    : form_to_save_(std::move(form_to_save)),
-      client_(client),
-      saving_flow_recorder_(
-          std::make_unique<password_manager::SavingFlowMetricsRecorder>()) {}
+    : form_to_save_(std::move(form_to_save)), client_(client) {}
 
 OnboardingDialogView::~OnboardingDialogView() {
   Java_OnboardingDialogBridge_destroy(base::android::AttachCurrentThread(),
@@ -91,40 +88,25 @@ void OnboardingDialogView::Show() {
 
   client_->GetPrefs()->SetInteger(
       password_manager::prefs::kPasswordManagerOnboardingState,
-      static_cast<int>(
-          password_manager::metrics_util::OnboardingState::kShown));
-
-  saving_flow_recorder_->SetOnboardingShown();
-}
-
-void OnboardingDialogView::DismissWithReasonAndDelete(
-    password_manager::metrics_util::OnboardingUIDismissalReason reason) {
-  password_manager::metrics_util::LogOnboardingUIDismissalReason(reason);
-  if (saving_flow_recorder_) {
-    saving_flow_recorder_->SetFlowResult(reason);
-  }
-  delete this;
+      static_cast<int>(password_manager::OnboardingState::kShown));
 }
 
 void OnboardingDialogView::OnboardingAccepted(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
-  client_->OnOnboardingSuccessful(std::move(form_to_save_),
-                                  std::move(saving_flow_recorder_));
-  DismissWithReasonAndDelete(
-      password_manager::metrics_util::OnboardingUIDismissalReason::kAccepted);
+  client_->OnOnboardingSuccessful(std::move(form_to_save_));
+
+  delete this;
 }
 
 void OnboardingDialogView::OnboardingRejected(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
-  DismissWithReasonAndDelete(
-      password_manager::metrics_util::OnboardingUIDismissalReason::kRejected);
+  delete this;
 }
 
 void OnboardingDialogView::OnboardingAborted(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
-  DismissWithReasonAndDelete(
-      password_manager::metrics_util::OnboardingUIDismissalReason::kDismissed);
+  delete this;
 }

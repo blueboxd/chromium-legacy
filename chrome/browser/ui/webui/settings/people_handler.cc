@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/signin_view_controller.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
@@ -696,16 +697,23 @@ void PeopleHandler::HandleSignout(const base::ListValue* args) {
           delete_profile ? signin_metrics::SignoutDelete::DELETED
                          : signin_metrics::SignoutDelete::KEEPING;
 
+      // Do not remove the accounts: the Gaia logout tab will remove them in a
+      // better way (see http://crbug.com/1068978).
       identity_manager->GetPrimaryAccountMutator()->ClearPrimaryAccount(
-          signin::PrimaryAccountMutator::ClearAccountsAction::kRemoveAll,
+          signin::PrimaryAccountMutator::ClearAccountsAction::kKeepAll,
           signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS, delete_metric);
     } else {
       DCHECK(!delete_profile)
           << "Deleting the profile should only be offered the user is syncing.";
-
-      identity_manager->GetAccountsMutator()->RemoveAllAccounts(
-          signin_metrics::SourceForRefreshTokenOperation::kSettings_Signout);
     }
+
+    Browser* browser =
+        chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
+    if (!browser)
+      return;
+
+    browser->signin_view_controller()->ShowGaiaLogoutTab(
+        signin_metrics::SourceForRefreshTokenOperation::kSettings_Signout);
   }
 
   if (delete_profile) {

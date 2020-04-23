@@ -18,7 +18,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
 import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
-import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
+import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxy;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
 
@@ -81,7 +81,7 @@ public class TracingNotificationManager {
 
         // On Android O and above, the BROWSER channel may have independently been disabled, too.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            return notificationChannelEnabled(ChannelDefinitions.ChannelId.BROWSER);
+            return notificationChannelEnabled(ChromeChannelDefinitions.ChannelId.BROWSER);
         }
 
         return true;
@@ -198,7 +198,7 @@ public class TracingNotificationManager {
     private static ChromeNotificationBuilder createNotificationBuilder() {
         return NotificationBuilderFactory
                 .createChromeNotificationBuilder(
-                        true /* preferCompat */, ChannelDefinitions.ChannelId.BROWSER)
+                        true /* preferCompat */, ChromeChannelDefinitions.ChannelId.BROWSER)
                 .setVisibility(Notification.VISIBILITY_PUBLIC)
                 .setSmallIcon(R.drawable.ic_chrome)
                 .setShowWhen(false)

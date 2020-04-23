@@ -39,7 +39,7 @@ class CRWNavigationItemStorageTest : public PlatformTest {
                                               0.0, 0.0, 0.0)];
     [item_storage_
         setPOSTData:[@"Test data" dataUsingEncoding:NSUTF8StringEncoding]];
-    [item_storage_ setHTTPRequestHeaders:@{ @"HeaderKey" : @"HeaderValue" }];
+    [item_storage_ setHTTPRequestHeaders:@{@"HeaderKey" : @"HeaderValue"}];
     [item_storage_ setUserAgentType:web::UserAgentType::DESKTOP];
   }
 

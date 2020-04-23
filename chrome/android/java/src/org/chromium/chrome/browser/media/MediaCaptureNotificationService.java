@@ -24,7 +24,7 @@ import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
 import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.PendingIntentProvider;
-import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
+import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.tab.Tab;
@@ -185,8 +185,8 @@ public class MediaCaptureNotificationService extends Service {
     private void createNotification(
             int notificationId, @MediaType int mediaType, String url, boolean isIncognito) {
         final String channelId = mediaType == MediaType.SCREEN_CAPTURE
-                ? ChannelDefinitions.ChannelId.SCREEN_CAPTURE
-                : ChannelDefinitions.ChannelId.MEDIA;
+                ? ChromeChannelDefinitions.ChannelId.SCREEN_CAPTURE
+                : ChromeChannelDefinitions.ChannelId.MEDIA;
 
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory

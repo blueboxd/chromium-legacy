@@ -34,3 +34,5 @@ Local Modifications:
 * Functions and macros in absl/base/dynamic_annotations.{h,cc} and
   absl/base/thread_annotations.h have been renamed to avoid ODR
   violations and macro clashes with Chromium (see step 3).
+
+* Patches from //third_party/abseil-cpp/patches have been applied.

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_SERVICES_LOCAL_SEARCH_SERVICE_INDEX_IMPL_H_
-#define CHROME_SERVICES_LOCAL_SEARCH_SERVICE_INDEX_IMPL_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOCAL_SEARCH_SERVICE_INDEX_H_
+#define CHROME_BROWSER_CHROMEOS_LOCAL_SEARCH_SERVICE_INDEX_H_
 
 #include <map>
 #include <memory>
@@ -80,13 +80,13 @@ enum class ResponseStatus {
 // A local search service Index.
 // It has a registry of searchable data, which can be updated. It also runs a
 // synchronous search function to find matching items for a given query.
-class IndexImpl {
+class Index {
  public:
-  IndexImpl();
-  ~IndexImpl();
+  Index();
+  ~Index();
 
-  IndexImpl(const IndexImpl&) = delete;
-  IndexImpl& operator=(const IndexImpl&) = delete;
+  Index(const Index&) = delete;
+  Index& operator=(const Index&) = delete;
 
   // Returns number of data items.
   uint64_t GetSize();
@@ -127,9 +127,9 @@ class IndexImpl {
   // Search parameters.
   local_search_service::SearchParams search_params_;
 
-  base::WeakPtrFactory<IndexImpl> weak_ptr_factory_{this};
+  base::WeakPtrFactory<Index> weak_ptr_factory_{this};
 };
 
 }  // namespace local_search_service
 
-#endif  // CHROME_SERVICES_LOCAL_SEARCH_SERVICE_INDEX_IMPL_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOCAL_SEARCH_SERVICE_INDEX_H_

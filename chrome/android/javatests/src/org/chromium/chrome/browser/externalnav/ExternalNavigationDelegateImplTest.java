@@ -238,23 +238,6 @@ import java.util.List;
 
     @Test
     @SmallTest
-    public void testIsDownload_noSystemDownloadManager() {
-        ExternalNavigationDelegateImpl delegate = new ExternalNavigationDelegateImpl(
-                mActivityTestRule.getActivity().getActivityTab());
-        Assert.assertTrue("pdf should be a download, no viewer in Android Chrome",
-                delegate.isPdfDownload("http://somesampeleurldne.com/file.pdf"));
-        Assert.assertFalse("URL is not a file, but web page",
-                delegate.isPdfDownload("http://somesampleurldne.com/index.html"));
-        Assert.assertFalse("URL is not a file url",
-                delegate.isPdfDownload("http://somesampeleurldne.com/not.a.real.extension"));
-        Assert.assertFalse("URL is an image, can be viewed in Chrome",
-                delegate.isPdfDownload("http://somesampleurldne.com/image.jpg"));
-        Assert.assertFalse("URL is a text file can be viewed in Chrome",
-                delegate.isPdfDownload("http://somesampleurldne.com/copy.txt"));
-    }
-
-    @Test
-    @SmallTest
     public void testMaybeSetPendingIncognitoUrl() {
         ExternalNavigationDelegateImpl delegate = new ExternalNavigationDelegateImpl(
                 mActivityTestRule.getActivity().getActivityTab());

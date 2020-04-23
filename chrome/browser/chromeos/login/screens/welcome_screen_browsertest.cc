@@ -196,14 +196,13 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
   test::OobeJS().ExpectVisiblePath({"connect", "keyboardSelect"});
 }
 
-// Flaky: https://crbug.com/1025396.
 IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
-                       DISABLED_WelcomeScreenLanguageSelection) {
+                       WelcomeScreenLanguageSelection) {
   OobeScreenWaiter(WelcomeView::kScreenId).Wait();
 
   test::OobeJS().TapOnPath(
       {"connect", "welcomeScreen", "languageSelectionButton"});
-  ASSERT_TRUE(g_browser_process->GetApplicationLocale() == "en-US");
+  ASSERT_EQ(g_browser_process->GetApplicationLocale(), "en-US");
   test::OobeJS().GetBool(
       "document.getElementById('connect').$.welcomeScreen.currentLanguage == "
       "'English (United States)'");
@@ -213,14 +212,14 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
   test::OobeJS().GetBool(
       "document.getElementById('connect').$.welcomeScreen.currentLanguage == "
       "'français'");
-  ASSERT_TRUE(g_browser_process->GetApplicationLocale() == "fr");
+  ASSERT_EQ(g_browser_process->GetApplicationLocale(), "fr");
 
   test::OobeJS().SelectElementInPath("en-US",
                                      {"connect", "languageSelect", "select"});
   test::OobeJS().GetBool(
       "document.getElementById('connect').$.welcomeScreen.currentLanguage == "
       "'English (United States)'");
-  ASSERT_TRUE(g_browser_process->GetApplicationLocale() == "en-US");
+  ASSERT_EQ(g_browser_process->GetApplicationLocale(), "en-US");
 }
 
 IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
@@ -237,8 +236,8 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
   test::OobeJS().GetBool(
       "document.getElementById('connect').$.welcomeScreen.currentKeyboard=="
       "'US'");
-  ASSERT_TRUE(welcome_screen()->GetInputMethod() ==
-              extension_id_prefix + "xkb:us:intl:eng");
+  ASSERT_EQ(welcome_screen()->GetInputMethod(),
+            extension_id_prefix + "xkb:us:intl:eng");
 
   test::OobeJS().SelectElementInPath(extension_id_prefix + "xkb:us:workman:eng",
                                      {"connect", "keyboardSelect", "select"});
@@ -247,8 +246,8 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
           "document.getElementById('connect').$.welcomeScreen.currentKeyboard=="
           "'") +
       extension_id_prefix + "xkb:us:workman:eng'");
-  ASSERT_TRUE(welcome_screen()->GetInputMethod() ==
-              extension_id_prefix + "xkb:us:workman:eng");
+  ASSERT_EQ(welcome_screen()->GetInputMethod(),
+            extension_id_prefix + "xkb:us:workman:eng");
 }
 
 // Set of browser tests for Welcome Screen Accessibility options.
@@ -361,8 +360,7 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest, PRE_SelectedLanguage) {
             locale);
 }
 
-IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest, DISABLED_SelectedLanguage) {
-  observer_->Wait();
+IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest, SelectedLanguage) {
   const std::string locale = "ru";
   EXPECT_EQ(g_browser_process->local_state()->GetString(
                 language::prefs::kApplicationLocale),

@@ -73,25 +73,6 @@ void LogLeakDialogTypeAndDismissalReason(LeakDialogType type,
                                 reason);
 }
 
-void LogOnboardingState(OnboardingState state) {
-  base::UmaHistogramEnumeration("PasswordManager.Onboarding.State", state);
-}
-
-void LogOnboardingUIDismissalReason(OnboardingUIDismissalReason reason) {
-  base::UmaHistogramEnumeration("PasswordManager.Onboarding.UIDismissalReason",
-                                reason);
-}
-
-void LogResultOfSavingFlow(OnboardingResultOfSavingFlow result) {
-  base::UmaHistogramEnumeration("PasswordManager.Onboarding.ResultOfSavingFlow",
-                                result);
-}
-
-void LogResultOfOnboardingSavingFlow(OnboardingResultOfSavingFlow result) {
-  base::UmaHistogramEnumeration(
-      "PasswordManager.Onboarding.ResultOfSavingFlowAfterOnboarding", result);
-}
-
 void LogUIDisplayDisposition(UIDisplayDisposition disposition) {
   base::UmaHistogramEnumeration("PasswordBubble.DisplayDisposition",
                                 disposition, NUM_DISPLAY_DISPOSITIONS);

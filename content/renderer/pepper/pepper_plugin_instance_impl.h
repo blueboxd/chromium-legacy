@@ -522,6 +522,8 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // Should be used only for logging.
   bool is_flash_plugin() const { return is_flash_plugin_; }
 
+  bool SupportsKeyboardFocus();
+
  private:
   friend class base::RefCounted<PepperPluginInstanceImpl>;
   friend class PpapiPluginInstanceTest;

@@ -12,7 +12,7 @@ import android.os.Build;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeVersionInfo;
-import org.chromium.chrome.browser.browserservices.permissiondelegation.NotificationPermissionUpdater;
+import org.chromium.chrome.browser.browserservices.permissiondelegation.PermissionUpdater;
 import org.chromium.chrome.browser.metrics.WebApkUma;
 import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.webapk.lib.common.WebApkConstants;
@@ -71,7 +71,7 @@ public class ClientAppBroadcastReceiver extends BroadcastReceiver {
     private final ClearDataStrategy mClearDataStrategy;
     private final ClientAppDataRegister mRegister;
     private final BrowserServicesStore mStore;
-    private final NotificationPermissionUpdater mNotificationPermissionUpdater;
+    private final PermissionUpdater mPermissionUpdater;
 
     /** Constructor with default dependencies for Android. */
     @Inject
@@ -84,11 +84,11 @@ public class ClientAppBroadcastReceiver extends BroadcastReceiver {
 
     /** Constructor to allow dependency injection in tests. */
     public ClientAppBroadcastReceiver(ClearDataStrategy strategy, ClientAppDataRegister register,
-            BrowserServicesStore store, NotificationPermissionUpdater permissionUpdater) {
+            BrowserServicesStore store, PermissionUpdater permissionUpdater) {
         mClearDataStrategy = strategy;
         mRegister = register;
         mStore = store;
-        mNotificationPermissionUpdater = permissionUpdater;
+        mPermissionUpdater = permissionUpdater;
     }
 
     @Override
@@ -126,8 +126,7 @@ public class ClientAppBroadcastReceiver extends BroadcastReceiver {
             }
         }
 
-        mClearDataStrategy
-                .execute(context, mRegister, mNotificationPermissionUpdater, uid, uninstalled);
+        mClearDataStrategy.execute(context, mRegister, mPermissionUpdater, uid, uninstalled);
         clearPreferences(uid, uninstalled);
     }
 
@@ -142,7 +141,7 @@ public class ClientAppBroadcastReceiver extends BroadcastReceiver {
     /** Implemented as a class partially for historic reasons, partially to help testing. */
     static class ClearDataStrategy {
         public void execute(Context context, ClientAppDataRegister register,
-                NotificationPermissionUpdater permissionUpdater, int uid, boolean uninstalled) {
+                PermissionUpdater permissionUpdater, int uid, boolean uninstalled) {
             // Retrieving domains and origins ahead of time, because the register is about to be
             // cleaned up.
             Set<String> domains = register.getDomainsForRegisteredUid(uid);

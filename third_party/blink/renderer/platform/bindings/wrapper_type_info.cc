@@ -16,17 +16,6 @@ static_assert(offsetof(struct WrapperTypeInfo, gin_embedder) ==
               "offset of WrapperTypeInfo.ginEmbedder must be the same as "
               "gin::WrapperInfo.embedder");
 
-void WrapperTypeInfo::WrapperCreated() {
-  ThreadState::Current()->Heap().stats_collector()->IncreaseWrapperCount(1);
-}
-
-void WrapperTypeInfo::WrapperDestroyed() {
-  ThreadHeapStatsCollector* stats_collector =
-      ThreadState::Current()->Heap().stats_collector();
-  stats_collector->DecreaseWrapperCount(1);
-  stats_collector->IncreaseCollectedWrapperCount(1);
-}
-
 void WrapperTypeInfo::Trace(Visitor* visitor, const void* impl) const {
   switch (wrapper_class_id) {
     case WrapperTypeInfo::kNodeClassId:

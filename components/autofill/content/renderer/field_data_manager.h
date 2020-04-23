@@ -22,6 +22,10 @@ namespace autofill {
 // of user typed value and field properties mask).
 class FieldDataManager : public base::RefCounted<FieldDataManager> {
  public:
+  using FieldDataMap =
+      std::map<FieldRendererId,
+               std::pair<base::Optional<base::string16>, FieldPropertiesMask>>;
+
   FieldDataManager();
 
   void ClearData();
@@ -47,14 +51,16 @@ class FieldDataManager : public base::RefCounted<FieldDataManager> {
 
   bool DidUserType(FieldRendererId id) const;
 
+  const FieldDataMap& field_data_map() const {
+    return field_value_and_properties_map_;
+  }
+
  private:
   friend class base::RefCounted<FieldDataManager>;
 
   ~FieldDataManager();
 
-  std::map<FieldRendererId,
-           std::pair<base::Optional<base::string16>, FieldPropertiesMask>>
-      field_value_and_properties_map_;
+  FieldDataMap field_value_and_properties_map_;
 };
 
 }  // namespace autofill

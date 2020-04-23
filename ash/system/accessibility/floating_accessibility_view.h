@@ -64,6 +64,7 @@ class FloatingAccessibilityView : public views::View,
   FloatingAccessibilityView(const FloatingAccessibilityView&) = delete;
 
   void SetMenuPosition(FloatingMenuPosition position);
+  void SetDetailedViewShown(bool shown);
 
  private:
   // views::ButtonListener:

@@ -33,6 +33,9 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) CrossOriginEmbedderPolicy final {
       mojom::CrossOriginEmbedderPolicyValue::kNone;
   base::Optional<std::string> report_only_reporting_endpoint;
 
+  // TODO(arthursonzogni): Stop using this function. Move it internally to
+  // services/network/public/cpp/cross_origin_embedder_policy_parser.cc
+  //
   // Parses |header_value| and returns a pair of a COEP value and an optional
   // reporting endpoint. This is usually used for two headers.
   //

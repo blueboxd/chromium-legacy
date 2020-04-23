@@ -216,6 +216,7 @@ source_set("ios_web_general_unittests") {
   testonly = true
   deps = [
     ":core",
+    ":test_support",
     ":threads",
     ":web",
     "//base",
@@ -224,6 +225,7 @@ source_set("ios_web_general_unittests") {
     "//ios/net",
     "//ios/testing:ocmock_support",
     "//ios/web/public",
+    "//ios/web/public/session",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
     "//ios/web/test:mojo_bindings",
@@ -238,6 +240,7 @@ source_set("ios_web_general_unittests") {
 
   sources = [
     "browser_state_unittest.cc",
+    "crw_navigation_item_storage_unittest.mm",
     "history_state_util_unittest.mm",
     "network_context_owner_unittest.cc",
     "test/web_test_unittest.mm",
@@ -251,6 +254,7 @@ source_set("ios_web_navigation_unittests") {
   testonly = true
   deps = [
     ":core",
+    ":test_support",
     ":web",
     "//base",
     "//base/test:test_support",
@@ -264,6 +268,7 @@ source_set("ios_web_navigation_unittests") {
     "//ios/web/navigation:navigation_manager_util",
     "//ios/web/navigation:wk_navigation_util",
     "//ios/web/public",
+    "//ios/web/public/session",
     "//ios/web/public/session",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
@@ -281,15 +286,12 @@ source_set("ios_web_navigation_unittests") {
 
   sources = [
     "navigation/crw_navigation_item_holder_unittest.mm",
-    "navigation/crw_navigation_item_storage_unittest.mm",
     "navigation/crw_session_storage_unittest.mm",
     "navigation/crw_wk_navigation_states_unittest.mm",
     "navigation/error_page_helper_unittest.mm",
     "navigation/error_retry_state_machine_unittest.mm",
     "navigation/navigation_context_impl_unittest.mm",
     "navigation/navigation_item_impl_unittest.mm",
-    "navigation/navigation_item_storage_test_util.h",
-    "navigation/navigation_item_storage_test_util.mm",
     "navigation/navigation_manager_impl_unittest.mm",
     "navigation/navigation_manager_util_unittest.mm",
     "navigation/nscoder_util_unittest.mm",
@@ -343,10 +345,15 @@ source_set("test_support") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
+    "navigation/navigation_item_storage_test_util.h",
+    "navigation/navigation_item_storage_test_util.mm",
     "public/test/crw_fake_web_state_delegate.h",
     "public/test/crw_fake_web_state_delegate.mm",
   ]
-  deps = [ "//ios/web" ]
+  deps = [
+    "//ios/web",
+    "//ios/web/public/session",
+  ]
 }
 
 source_set("ios_web_web_state_unittests") {

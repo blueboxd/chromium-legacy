@@ -65,7 +65,8 @@ static WebVector<WebMediaKeySystemMediaCapability> ConvertCapabilities(
 
     result[i].robustness = capabilities[i]->robustness();
     result[i].encryption_scheme =
-        capabilities[i]->hasEncryptionScheme()
+        (capabilities[i]->hasEncryptionScheme() &&
+         !capabilities[i]->encryptionScheme().IsNull())
             ? ConvertEncryptionScheme(capabilities[i]->encryptionScheme())
             : WebMediaKeySystemMediaCapability::EncryptionScheme::kNotSpecified;
   }

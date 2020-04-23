@@ -20,8 +20,7 @@ class CORE_EXPORT NGMathUnderOverLayoutAlgorithm
 
   scoped_refptr<const NGLayoutResult> Layout() override;
 
-  base::Optional<MinMaxSizes> ComputeMinMaxSizes(
-      const MinMaxSizesInput&) const override;
+  MinMaxSizes ComputeMinMaxSizes(const MinMaxSizesInput&) const override;
 
  private:
   void GatherChildren(NGBlockNode* base,

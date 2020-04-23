@@ -34,10 +34,6 @@ StoreMetricsReporter::StoreMetricsReporter(
       "PasswordManager.LeakDetection.Enabled",
       prefs->GetBoolean(
           password_manager::prefs::kPasswordLeakDetectionEnabled));
-  password_manager::metrics_util::LogOnboardingState(
-      static_cast<password_manager::metrics_util::OnboardingState>(
-          prefs->GetInteger(
-              password_manager::prefs::kPasswordManagerOnboardingState)));
 }
 
 StoreMetricsReporter::~StoreMetricsReporter() = default;

@@ -46,10 +46,13 @@ void DictionaryTest::set(const InternalDictionary* testing_dictionary) {
     unrestricted_double_member_ =
         testing_dictionary->unrestrictedDoubleMember();
   }
-  string_member_ = testing_dictionary->stringMember();
+  if (testing_dictionary->hasStringMember())
+    string_member_ = testing_dictionary->stringMember();
   string_member_with_default_ = testing_dictionary->stringMemberWithDefault();
-  byte_string_member_ = testing_dictionary->byteStringMember();
-  usv_string_member_ = testing_dictionary->usvStringMember();
+  if (testing_dictionary->hasByteStringMember())
+    byte_string_member_ = testing_dictionary->byteStringMember();
+  if (testing_dictionary->hasUsvStringMember())
+    usv_string_member_ = testing_dictionary->usvStringMember();
   if (testing_dictionary->hasStringSequenceMember())
     string_sequence_member_ = testing_dictionary->stringSequenceMember();
   string_sequence_member_with_default_ =
@@ -58,14 +61,17 @@ void DictionaryTest::set(const InternalDictionary* testing_dictionary) {
     string_sequence_or_null_member_ =
         testing_dictionary->stringSequenceOrNullMember();
   }
-  enum_member_ = testing_dictionary->enumMember();
+  if (testing_dictionary->hasEnumMember())
+    enum_member_ = testing_dictionary->enumMember();
   enum_member_with_default_ = testing_dictionary->enumMemberWithDefault();
-  enum_or_null_member_ = testing_dictionary->enumOrNullMember();
+  if (testing_dictionary->hasEnumOrNullMember())
+    enum_or_null_member_ = testing_dictionary->enumOrNullMember();
   if (testing_dictionary->hasElementMember())
     element_member_ = testing_dictionary->elementMember();
   if (testing_dictionary->hasElementOrNullMember())
     element_or_null_member_ = testing_dictionary->elementOrNullMember();
-  object_member_ = testing_dictionary->objectMember();
+  if (testing_dictionary->hasObjectMember())
+    object_member_ = testing_dictionary->objectMember();
   object_or_null_member_with_default_ =
       testing_dictionary->objectOrNullMemberWithDefault();
   if (testing_dictionary->hasDoubleOrStringMember())
@@ -74,13 +80,16 @@ void DictionaryTest::set(const InternalDictionary* testing_dictionary) {
     double_or_string_sequence_member_ =
         testing_dictionary->doubleOrStringSequenceMember();
   }
+  // eventTargetOrNullMember has a default null value.
   event_target_or_null_member_ = testing_dictionary->eventTargetOrNullMember();
   if (testing_dictionary->hasInternalEnumOrInternalEnumSequenceMember()) {
     internal_enum_or_internal_enum_sequence_ =
         testing_dictionary->internalEnumOrInternalEnumSequenceMember();
   }
-  any_member_ = testing_dictionary->anyMember();
-  callback_function_member_ = testing_dictionary->callbackFunctionMember();
+  if (testing_dictionary->hasAnyMember())
+    any_member_ = testing_dictionary->anyMember();
+  if (testing_dictionary->hasCallbackFunctionMember())
+    callback_function_member_ = testing_dictionary->callbackFunctionMember();
 }
 
 InternalDictionary* DictionaryTest::get() {

@@ -49,10 +49,6 @@ class OnboardingDialogView {
                          const base::android::JavaParamRef<jobject>& obj);
 
  private:
-  // Records the reaction to the onboarding and deletes this class.
-  void DismissWithReasonAndDelete(
-      password_manager::metrics_util::OnboardingUIDismissalReason reason);
-
   // The corresponding java object.
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
 
@@ -63,9 +59,6 @@ class OnboardingDialogView {
   // Needed for prompting the user the save their password, as well as
   // retrieving web_contents and setting prefs.
   ChromePasswordManagerClient* client_;
-
-  std::unique_ptr<password_manager::SavingFlowMetricsRecorder>
-      saving_flow_recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(OnboardingDialogView);
 };

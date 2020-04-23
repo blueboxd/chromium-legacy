@@ -30,13 +30,8 @@ class NGLayoutAlgorithmOperations {
 
   // Computes the min-content and max-content intrinsic sizes for the given box.
   // The result will not take any min-width, max-width or width properties into
-  // account. If the return value is empty, the caller is expected to synthesize
-  // this value from the overflow rect returned from Layout called with an
-  // available width of 0 and LayoutUnit::max(), respectively.
-  virtual base::Optional<MinMaxSizes> ComputeMinMaxSizes(
-      const MinMaxSizesInput&) const {
-    return base::nullopt;
-  }
+  // account.
+  virtual MinMaxSizes ComputeMinMaxSizes(const MinMaxSizesInput&) const = 0;
 };
 
 // Parameters to pass when creating a layout algorithm for a block node.

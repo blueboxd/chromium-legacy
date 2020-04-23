@@ -11,6 +11,7 @@
 #include "base/files/file.h"
 #include "base/synchronization/lock.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "third_party/blink/public/mojom/disk_allocator.mojom-blink.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/threading.h"
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
@@ -29,7 +30,7 @@ namespace blink {
 // - Writes can be done from any thread.
 // - public methods are thread-safe, and unless otherwise noted, can be called
 //   from any thread.
-class PLATFORM_EXPORT DiskDataAllocator {
+class PLATFORM_EXPORT DiskDataAllocator : public mojom::blink::DiskAllocator {
  public:
   class Metadata {
    public:
@@ -50,7 +51,7 @@ class PLATFORM_EXPORT DiskDataAllocator {
   };
 
   // Must be called on the main thread.
-  void ProvideTemporaryFile(::base::File file);
+  void ProvideTemporaryFile(::base::File file) override;
 
   // Whether writes may succeed. This is not a guarantee. However, when this
   // returns false, writes will fail.
@@ -71,8 +72,9 @@ class PLATFORM_EXPORT DiskDataAllocator {
   // Discards existing data pointed at by |metadata|.
   void Discard(std::unique_ptr<Metadata> metadata);
 
-  virtual ~DiskDataAllocator();
+  ~DiskDataAllocator() override;
   static DiskDataAllocator& Instance();
+  static void Bind(mojo::PendingReceiver<mojom::blink::DiskAllocator> receiver);
 
  protected:
   // Protected methods for testing.
@@ -89,6 +91,7 @@ class PLATFORM_EXPORT DiskDataAllocator {
   // CHECK()s that the read is successful.
   virtual void DoRead(int64_t offset, char* data, int size);
 
+  mojo::Receiver<mojom::blink::DiskAllocator> receiver_{this};
   base::File file_;  // May be invalid.
 
  protected:  // For testing.

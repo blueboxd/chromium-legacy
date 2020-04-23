@@ -95,7 +95,10 @@ FetchEvent::FetchEvent(ScriptState* script_state,
       observer_(respond_with_observer),
       preload_response_property_(MakeGarbageCollected<PreloadResponseProperty>(
           ExecutionContext::From(script_state))),
-      worker_timing_remote_(std::move(worker_timing_remote)) {
+      worker_timing_remote_(ExecutionContext::From(script_state)) {
+  worker_timing_remote_.Bind(std::move(worker_timing_remote),
+                             ExecutionContext::From(script_state)
+                                 ->GetTaskRunner(TaskType::kNetworking));
   if (!navigation_preload_sent)
     preload_response_property_->ResolveWithUndefined();
 
@@ -205,7 +208,7 @@ void FetchEvent::OnNavigationPreloadComplete(
 }
 
 void FetchEvent::addPerformanceEntry(PerformanceMark* performance_mark) {
-  if (worker_timing_remote_) {
+  if (worker_timing_remote_.is_bound()) {
     auto mojo_performance_mark =
         performance_mark->ToMojoPerformanceMarkOrMeasure();
     worker_timing_remote_->AddPerformanceEntry(
@@ -214,7 +217,7 @@ void FetchEvent::addPerformanceEntry(PerformanceMark* performance_mark) {
 }
 
 void FetchEvent::addPerformanceEntry(PerformanceMeasure* performance_measure) {
-  if (worker_timing_remote_) {
+  if (worker_timing_remote_.is_bound()) {
     auto mojo_performance_measure =
         performance_measure->ToMojoPerformanceMarkOrMeasure();
     worker_timing_remote_->AddPerformanceEntry(
@@ -227,6 +230,7 @@ void FetchEvent::Trace(Visitor* visitor) {
   visitor->Trace(request_);
   visitor->Trace(preload_response_property_);
   visitor->Trace(body_completion_notifier_);
+  visitor->Trace(worker_timing_remote_);
   ExtendableEvent::Trace(visitor);
   ExecutionContextClient::Trace(visitor);
 }

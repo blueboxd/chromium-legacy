@@ -22,7 +22,7 @@ import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker.SystemNotificationType;
 import org.chromium.chrome.browser.notifications.PendingIntentProvider;
-import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
+import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
 import org.chromium.components.browser_ui.notifications.ChromeNotification;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
@@ -54,7 +54,7 @@ public final class SharingNotificationUtil {
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory
                         .createChromeNotificationBuilder(/*preferCompat=*/true,
-                                ChannelDefinitions.ChannelId.SHARING,
+                                ChromeChannelDefinitions.ChannelId.SHARING,
                                 /*remoteAppPackageName=*/null,
                                 new NotificationMetadata(type, group, id))
                         .setContentIntent(contentIntent)
@@ -99,7 +99,7 @@ public final class SharingNotificationUtil {
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory
                         .createChromeNotificationBuilder(/*preferCompat=*/true,
-                                ChannelDefinitions.ChannelId.SHARING,
+                                ChromeChannelDefinitions.ChannelId.SHARING,
                                 /*remoteAppPackageName=*/null,
                                 new NotificationMetadata(type, group, id))
                         .setContentTitle(contentTitle)
@@ -136,7 +136,7 @@ public final class SharingNotificationUtil {
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory
                         .createChromeNotificationBuilder(/*preferCompat=*/true,
-                                ChannelDefinitions.ChannelId.SHARING,
+                                ChromeChannelDefinitions.ChannelId.SHARING,
                                 /*remoteAppPackageName=*/null,
                                 new NotificationMetadata(type, group, id))
                         .setContentTitle(contentTitle)

@@ -5,15 +5,11 @@
 package org.chromium.chrome.browser.browserservices.permissiondelegation;
 
 import android.content.ComponentName;
-import android.content.Intent;
-import android.net.Uri;
 
 import androidx.annotation.WorkerThread;
 
 import org.chromium.base.Log;
-import org.chromium.base.PackageManagerUtils;
 import org.chromium.base.task.PostTask;
-import org.chromium.chrome.browser.browserservices.BrowserServicesMetrics;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityClient;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.embedder_support.util.Origin;
@@ -33,6 +29,8 @@ import javax.inject.Singleton;
 public class NotificationPermissionUpdater {
     private static final String TAG = "TWANotifications";
 
+    private static final @ContentSettingsType int TYPE = ContentSettingsType.NOTIFICATIONS;
+
     private final TrustedWebActivityPermissionManager mPermissionManager;
     private final TrustedWebActivityClient mTrustedWebActivityClient;
 
@@ -47,21 +45,11 @@ public class NotificationPermissionUpdater {
     /**
      * To be called when an origin is verified with a package. It sets the notification permission
      * for that origin according to the following:
-     * - If the package handles browsable intents for the origin and a TrustedWebActivityService
-     *   is found, it updates Chrome's notification permission for that origin to match Android's
-     *   notification permission for the package.
+     * - If a TrustedWebActivityService is found, it updates Chrome's notification permission for
+     * that origin to match Android's notification permission for the package.
      * - Otherwise, it does nothing.
      */
     public void onOriginVerified(Origin origin, String packageName) {
-        // If the client doesn't handle browsable Intents for the URL, we don't do anything special
-        // for the origin's notifications.
-        if (!appHandlesBrowsableIntent(packageName, origin.uri())) {
-            Log.d(TAG, "Package does not handle Browsable Intents for the origin.");
-            return;
-        }
-
-        mPermissionManager.addDelegateApp(origin, packageName);
-
         // It's important to note here that the client we connect to to check for the notification
         // permission may not be the client that triggered this method call.
 
@@ -94,22 +82,8 @@ public class NotificationPermissionUpdater {
         // This method will be called by the TrustedWebActivityClient on a background thread, so
         // hop back over to the UI thread to deal with the result.
         PostTask.postTask(UiThreadTaskTraits.USER_VISIBLE, () -> {
-            mPermissionManager.updatePermission(
-                    origin, app.getPackageName(), ContentSettingsType.NOTIFICATIONS, enabled);
+            mPermissionManager.updatePermission(origin, app.getPackageName(), TYPE, enabled);
             Log.d(TAG, "Updating origin notification permissions to: %b", enabled);
         });
-    }
-
-    private boolean appHandlesBrowsableIntent(String packageName, Uri uri) {
-        Intent browsableIntent = new Intent();
-        browsableIntent.setPackage(packageName);
-        browsableIntent.setData(uri);
-        browsableIntent.setAction(Intent.ACTION_VIEW);
-        browsableIntent.addCategory(Intent.CATEGORY_BROWSABLE);
-
-        try (BrowserServicesMetrics.TimingMetric unused =
-                        BrowserServicesMetrics.getBrowsableIntentResolutionTimingContext()) {
-            return PackageManagerUtils.resolveActivity(browsableIntent, 0) != null;
-        }
     }
 }

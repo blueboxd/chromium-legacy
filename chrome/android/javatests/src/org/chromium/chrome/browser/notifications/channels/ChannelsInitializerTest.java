@@ -23,7 +23,6 @@ import android.support.test.filters.SmallTest;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.CollectionUtil;
@@ -31,9 +30,9 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.notifications.NotificationSettingsBridge;
-import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxy;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
+import org.chromium.components.browser_ui.notifications.channels.ChannelsInitializer;
 import org.chromium.content_public.browser.test.NativeLibraryTestRule;
 
 import java.util.ArrayList;
@@ -42,7 +41,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Instrumentation tests for ChannelsInitializer.
+ * Instrumentation tests for ChannelsInitializer, using ChromeChannelDefinitions.
  *
  * These are Android instrumentation tests so that resource strings can be accessed, and so that
  * we can test against the real NotificationManager implementation.
@@ -56,9 +55,6 @@ public class ChannelsInitializerTest {
     @Rule
     public NativeLibraryTestRule mNativeLibraryTestRule = new NativeLibraryTestRule();
 
-    @Rule
-    public TestRule mProcessor = new Features.InstrumentationProcessor();
-
     @Before
     @TargetApi(Build.VERSION_CODES.O)
     public void setUp() {
@@ -68,8 +64,8 @@ public class ChannelsInitializerTest {
 
         mContext = InstrumentationRegistry.getTargetContext();
         mNotificationManagerProxy = new NotificationManagerProxyImpl(mContext);
-        mChannelsInitializer =
-                new ChannelsInitializer(mNotificationManagerProxy, mContext.getResources());
+        mChannelsInitializer = new ChannelsInitializer(mNotificationManagerProxy,
+                ChromeChannelDefinitions.getInstance(), mContext.getResources());
 
         // Delete any channels and channel groups that may already have been initialized. Cleaning
         // up here rather than in tearDown in case tests running before these ones caused channels
@@ -116,10 +112,10 @@ public class ChannelsInitializerTest {
             notificationChannelIds.add(channel.getId());
         }
         assertThat(notificationChannelIds,
-                containsInAnyOrder(ChannelDefinitions.ChannelId.BROWSER,
-                        ChannelDefinitions.ChannelId.DOWNLOADS,
-                        ChannelDefinitions.ChannelId.INCOGNITO,
-                        ChannelDefinitions.ChannelId.MEDIA));
+                containsInAnyOrder(ChromeChannelDefinitions.ChannelId.BROWSER,
+                        ChromeChannelDefinitions.ChannelId.DOWNLOADS,
+                        ChromeChannelDefinitions.ChannelId.INCOGNITO,
+                        ChromeChannelDefinitions.ChannelId.MEDIA));
     }
 
     @Test
@@ -131,7 +127,7 @@ public class ChannelsInitializerTest {
         mChannelsInitializer.initializeStartupChannels();
         assertThat(mNotificationManagerProxy.getNotificationChannelGroups(), hasSize(1));
         assertThat(mNotificationManagerProxy.getNotificationChannelGroups().get(0).getId(),
-                is(ChannelDefinitions.ChannelGroupId.GENERAL));
+                is(ChromeChannelDefinitions.ChannelGroupId.GENERAL));
     }
 
     @Test
@@ -141,11 +137,12 @@ public class ChannelsInitializerTest {
     @Feature({"Browser", "Notifications"})
     public void testUpdateLocale_otherChannelsDoNotThrowException() {
         NotificationChannelGroup group =
-                ChannelDefinitions.getChannelGroup(ChannelDefinitions.ChannelGroupId.GENERAL)
+                ChromeChannelDefinitions.getInstance()
+                        .getChannelGroup(ChromeChannelDefinitions.ChannelGroupId.GENERAL)
                         .toNotificationChannelGroup(mContext.getResources());
         NotificationChannel channel =
                 new NotificationChannel("ACCOUNT", "Account", NotificationManager.IMPORTANCE_LOW);
-        channel.setGroup(ChannelDefinitions.ChannelGroupId.GENERAL);
+        channel.setGroup(ChromeChannelDefinitions.ChannelGroupId.GENERAL);
         mNotificationManagerProxy.createNotificationChannelGroup(group);
         mNotificationManagerProxy.createNotificationChannel(channel);
         mContext = InstrumentationRegistry.getTargetContext();
@@ -158,15 +155,15 @@ public class ChannelsInitializerTest {
     @TargetApi(Build.VERSION_CODES.O)
     @Feature({"Browser", "Notifications"})
     public void testEnsureInitialized_browserChannel() {
-        mChannelsInitializer.ensureInitialized(ChannelDefinitions.ChannelId.BROWSER);
+        mChannelsInitializer.ensureInitialized(ChromeChannelDefinitions.ChannelId.BROWSER);
 
         assertThat(getChannelsIgnoringDefault(), hasSize(1));
         NotificationChannel channel = getChannelsIgnoringDefault().get(0);
-        assertThat(channel.getId(), is(ChannelDefinitions.ChannelId.BROWSER));
+        assertThat(channel.getId(), is(ChromeChannelDefinitions.ChannelId.BROWSER));
         assertThat(channel.getName().toString(),
                 is(mContext.getString(org.chromium.chrome.R.string.notification_category_browser)));
         assertThat(channel.getImportance(), is(NotificationManager.IMPORTANCE_LOW));
-        assertThat(channel.getGroup(), is(ChannelDefinitions.ChannelGroupId.GENERAL));
+        assertThat(channel.getGroup(), is(ChromeChannelDefinitions.ChannelGroupId.GENERAL));
     }
 
     @Test
@@ -175,16 +172,16 @@ public class ChannelsInitializerTest {
     @TargetApi(Build.VERSION_CODES.O)
     @Feature({"Browser", "Notifications"})
     public void testEnsureInitialized_downloadsChannel() {
-        mChannelsInitializer.ensureInitialized(ChannelDefinitions.ChannelId.DOWNLOADS);
+        mChannelsInitializer.ensureInitialized(ChromeChannelDefinitions.ChannelId.DOWNLOADS);
 
         assertThat(getChannelsIgnoringDefault(), hasSize(1));
         NotificationChannel channel = getChannelsIgnoringDefault().get(0);
-        assertThat(channel.getId(), is(ChannelDefinitions.ChannelId.DOWNLOADS));
+        assertThat(channel.getId(), is(ChromeChannelDefinitions.ChannelId.DOWNLOADS));
         assertThat(channel.getName().toString(),
                 is(mContext.getString(
                         org.chromium.chrome.R.string.notification_category_downloads)));
         assertThat(channel.getImportance(), is(NotificationManager.IMPORTANCE_LOW));
-        assertThat(channel.getGroup(), is(ChannelDefinitions.ChannelGroupId.GENERAL));
+        assertThat(channel.getGroup(), is(ChromeChannelDefinitions.ChannelGroupId.GENERAL));
     }
 
     @Test
@@ -193,16 +190,16 @@ public class ChannelsInitializerTest {
     @TargetApi(Build.VERSION_CODES.O)
     @Feature({"Browser", "Notifications"})
     public void testEnsureInitialized_incognitoChannel() {
-        mChannelsInitializer.ensureInitialized(ChannelDefinitions.ChannelId.INCOGNITO);
+        mChannelsInitializer.ensureInitialized(ChromeChannelDefinitions.ChannelId.INCOGNITO);
 
         assertThat(getChannelsIgnoringDefault(), hasSize(1));
         NotificationChannel channel = getChannelsIgnoringDefault().get(0);
-        assertThat(channel.getId(), is(ChannelDefinitions.ChannelId.INCOGNITO));
+        assertThat(channel.getId(), is(ChromeChannelDefinitions.ChannelId.INCOGNITO));
         assertThat(channel.getName().toString(),
                 is(mContext.getString(
                         org.chromium.chrome.R.string.notification_category_incognito)));
         assertThat(channel.getImportance(), is(NotificationManager.IMPORTANCE_LOW));
-        assertThat(channel.getGroup(), is(ChannelDefinitions.ChannelGroupId.GENERAL));
+        assertThat(channel.getGroup(), is(ChromeChannelDefinitions.ChannelGroupId.GENERAL));
     }
 
     @Test
@@ -211,15 +208,15 @@ public class ChannelsInitializerTest {
     @TargetApi(Build.VERSION_CODES.O)
     @Feature({"Browser", "Notifications"})
     public void testEnsureInitialized_mediaChannel() {
-        mChannelsInitializer.ensureInitialized(ChannelDefinitions.ChannelId.MEDIA);
+        mChannelsInitializer.ensureInitialized(ChromeChannelDefinitions.ChannelId.MEDIA);
 
         assertThat(getChannelsIgnoringDefault(), hasSize(1));
         NotificationChannel channel = getChannelsIgnoringDefault().get(0);
-        assertThat(channel.getId(), is(ChannelDefinitions.ChannelId.MEDIA));
+        assertThat(channel.getId(), is(ChromeChannelDefinitions.ChannelId.MEDIA));
         assertThat(channel.getName().toString(),
                 is(mContext.getString(org.chromium.chrome.R.string.notification_category_media)));
         assertThat(channel.getImportance(), is(NotificationManager.IMPORTANCE_LOW));
-        assertThat(channel.getGroup(), is(ChannelDefinitions.ChannelGroupId.GENERAL));
+        assertThat(channel.getGroup(), is(ChromeChannelDefinitions.ChannelGroupId.GENERAL));
     }
 
     @Test
@@ -228,16 +225,16 @@ public class ChannelsInitializerTest {
     @TargetApi(Build.VERSION_CODES.O)
     @Feature({"Browser", "Notifications"})
     public void testEnsureInitialized_sitesChannel() {
-        mChannelsInitializer.ensureInitialized(ChannelDefinitions.ChannelId.SITES);
+        mChannelsInitializer.ensureInitialized(ChromeChannelDefinitions.ChannelId.SITES);
 
         assertThat(getChannelsIgnoringDefault(), hasSize(1));
 
         NotificationChannel channel = getChannelsIgnoringDefault().get(0);
-        assertThat(channel.getId(), is(ChannelDefinitions.ChannelId.SITES));
+        assertThat(channel.getId(), is(ChromeChannelDefinitions.ChannelId.SITES));
         assertThat(channel.getName().toString(),
                 is(mContext.getString(org.chromium.chrome.R.string.notification_category_sites)));
         assertThat(channel.getImportance(), is(NotificationManager.IMPORTANCE_DEFAULT));
-        assertThat(channel.getGroup(), is(ChannelDefinitions.ChannelGroupId.GENERAL));
+        assertThat(channel.getGroup(), is(ChromeChannelDefinitions.ChannelGroupId.GENERAL));
     }
 
     @Test
@@ -250,17 +247,17 @@ public class ChannelsInitializerTest {
         // channels ignore construction parameters when re-created. If one test created the channel
         // enabled, and the other disabled, the second test would fail.
         mChannelsInitializer.ensureInitializedAndDisabled(
-                ChannelDefinitions.ChannelId.CONTENT_SUGGESTIONS);
+                ChromeChannelDefinitions.ChannelId.CONTENT_SUGGESTIONS);
 
         assertThat(getChannelsIgnoringDefault(), hasSize(1));
 
         NotificationChannel channel = getChannelsIgnoringDefault().get(0);
-        assertThat(channel.getId(), is(ChannelDefinitions.ChannelId.CONTENT_SUGGESTIONS));
+        assertThat(channel.getId(), is(ChromeChannelDefinitions.ChannelId.CONTENT_SUGGESTIONS));
         assertThat(channel.getName().toString(),
                 is(mContext.getString(
                         org.chromium.chrome.R.string.notification_category_content_suggestions)));
         assertThat(channel.getImportance(), is(NotificationManager.IMPORTANCE_NONE));
-        assertThat(channel.getGroup(), is(ChannelDefinitions.ChannelGroupId.GENERAL));
+        assertThat(channel.getGroup(), is(ChromeChannelDefinitions.ChannelGroupId.GENERAL));
     }
 
     @Test
@@ -269,17 +266,17 @@ public class ChannelsInitializerTest {
     @TargetApi(Build.VERSION_CODES.O)
     @Feature({"Browser", "Notifications"})
     public void testEnsureInitialized_webappActions() {
-        mChannelsInitializer.ensureInitialized(ChannelDefinitions.ChannelId.WEBAPP_ACTIONS);
+        mChannelsInitializer.ensureInitialized(ChromeChannelDefinitions.ChannelId.WEBAPP_ACTIONS);
 
         assertThat(getChannelsIgnoringDefault(), hasSize(1));
 
         NotificationChannel channel = getChannelsIgnoringDefault().get(0);
-        assertThat(channel.getId(), is(ChannelDefinitions.ChannelId.WEBAPP_ACTIONS));
+        assertThat(channel.getId(), is(ChromeChannelDefinitions.ChannelId.WEBAPP_ACTIONS));
         assertThat(channel.getName().toString(),
                 is(mContext.getString(
                         org.chromium.chrome.R.string.notification_category_fullscreen_controls)));
         assertThat(channel.getImportance(), is(NotificationManager.IMPORTANCE_MIN));
-        assertThat(channel.getGroup(), is(ChannelDefinitions.ChannelGroupId.GENERAL));
+        assertThat(channel.getGroup(), is(ChromeChannelDefinitions.ChannelGroupId.GENERAL));
     }
 
     @Test
@@ -299,7 +296,7 @@ public class ChannelsInitializerTest {
         NotificationChannel channel = getChannelsIgnoringDefault().get(0);
         assertThat(channel.getName().toString(), is("example.com"));
         assertThat(channel.getImportance(), is(NotificationManager.IMPORTANCE_DEFAULT));
-        assertThat(channel.getGroup(), is(ChannelDefinitions.ChannelGroupId.SITES));
+        assertThat(channel.getGroup(), is(ChromeChannelDefinitions.ChannelGroupId.SITES));
     }
 
     @Test
@@ -308,8 +305,8 @@ public class ChannelsInitializerTest {
     @TargetApi(Build.VERSION_CODES.O)
     @Feature({"Browser", "Notifications"})
     public void testEnsureInitialized_multipleCalls() {
-        mChannelsInitializer.ensureInitialized(ChannelDefinitions.ChannelId.SITES);
-        mChannelsInitializer.ensureInitialized(ChannelDefinitions.ChannelId.BROWSER);
+        mChannelsInitializer.ensureInitialized(ChromeChannelDefinitions.ChannelId.SITES);
+        mChannelsInitializer.ensureInitialized(ChromeChannelDefinitions.ChannelId.BROWSER);
         assertThat(getChannelsIgnoringDefault(), hasSize(2));
     }
 
@@ -319,10 +316,12 @@ public class ChannelsInitializerTest {
     @TargetApi(Build.VERSION_CODES.O)
     @Feature({"Browser", "Notifications"})
     public void testEnsureInitialized_multipleIds() {
-        Collection<String> groupIds = CollectionUtil.newHashSet(
-                ChannelDefinitions.ChannelGroupId.SITES, ChannelDefinitions.ChannelGroupId.GENERAL);
-        Collection<String> channelIds = CollectionUtil.newHashSet(
-                ChannelDefinitions.ChannelId.MEDIA, ChannelDefinitions.ChannelId.BROWSER);
+        Collection<String> groupIds =
+                CollectionUtil.newHashSet(ChromeChannelDefinitions.ChannelGroupId.SITES,
+                        ChromeChannelDefinitions.ChannelGroupId.GENERAL);
+        Collection<String> channelIds =
+                CollectionUtil.newHashSet(ChromeChannelDefinitions.ChannelId.MEDIA,
+                        ChromeChannelDefinitions.ChannelId.BROWSER);
         mChannelsInitializer.ensureInitialized(groupIds, channelIds);
         assertThat(getChannelsIgnoringDefault(), hasSize(2));
     }

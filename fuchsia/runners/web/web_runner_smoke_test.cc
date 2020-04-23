@@ -13,6 +13,7 @@
 #include "base/fuchsia/service_provider_impl.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -95,7 +96,14 @@ class WebRunnerSmokeTest : public testing::Test {
 };
 
 // Verify that the Component loads and fetches the desired page.
-TEST_F(WebRunnerSmokeTest, RequestHtmlAndImage) {
+// TODO(https://crbug.com/1073823): Flakes due to raciness between test
+// completion and GPU process failure on bots which lack GPU emulation.
+#if defined(ARCH_CPU_ARM64)
+#define MAYBE_RequestHtmlAndImage DISABLED_RequestHtmlAndImage
+#else
+#define MAYBE_RequestHtmlAndImage RequestHtmlAndImage
+#endif
+TEST_F(WebRunnerSmokeTest, MAYBE_RequestHtmlAndImage) {
   fuchsia::sys::LaunchInfo launch_info = LaunchInfoWithServices();
   launch_info.url = test_server_.GetURL("/test.html").spec();
 

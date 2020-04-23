@@ -71,6 +71,7 @@
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/core/features.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
@@ -249,6 +250,10 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   html_source->AddBoolean(
       "privacySettingsRedesignEnabled",
       base::FeatureList::IsEnabled(features::kPrivacySettingsRedesign));
+
+  html_source->AddBoolean(
+      "safeBrowsingEnhancedEnabled",
+      base::FeatureList::IsEnabled(safe_browsing::kEnhancedProtection));
 
   html_source->AddBoolean(
       "navigateToGooglePasswordManager",

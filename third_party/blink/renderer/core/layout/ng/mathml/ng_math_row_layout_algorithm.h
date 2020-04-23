@@ -29,8 +29,7 @@ class CORE_EXPORT NGMathRowLayoutAlgorithm
  private:
   scoped_refptr<const NGLayoutResult> Layout() final;
 
-  base::Optional<MinMaxSizes> ComputeMinMaxSizes(
-      const MinMaxSizesInput&) const final;
+  MinMaxSizes ComputeMinMaxSizes(const MinMaxSizesInput&) const final;
 
   LogicalSize child_available_size_;
   const NGBoxStrut border_padding_;

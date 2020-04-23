@@ -161,10 +161,10 @@ inline scoped_refptr<const NGLayoutResult> LayoutWithAlgorithm(
   return result;
 }
 
-inline base::Optional<MinMaxSizes> ComputeMinMaxSizesWithAlgorithm(
+inline MinMaxSizes ComputeMinMaxSizesWithAlgorithm(
     const NGLayoutAlgorithmParams& params,
     const MinMaxSizesInput& input) {
-  base::Optional<MinMaxSizes> min_max_sizes;
+  MinMaxSizes min_max_sizes;
   DetermineAlgorithmAndRun(
       params, [&min_max_sizes, &input](NGLayoutAlgorithmOperations* algorithm) {
         min_max_sizes = algorithm->ComputeMinMaxSizes(input);
@@ -745,51 +745,21 @@ MinMaxSizes NGBlockNode::ComputeMinMaxSizes(
 
   NGFragmentGeometry fragment_geometry =
       CalculateInitialMinMaxFragmentGeometry(*constraint_space, *this);
-  base::Optional<MinMaxSizes> maybe_sizes = ComputeMinMaxSizesWithAlgorithm(
+  sizes = ComputeMinMaxSizesWithAlgorithm(
       NGLayoutAlgorithmParams(*this, fragment_geometry, *constraint_space),
       input);
 
-  if (maybe_sizes.has_value()) {
-    auto* html_marquee_element = DynamicTo<HTMLMarqueeElement>(box_->GetNode());
-    if (UNLIKELY(html_marquee_element && html_marquee_element->IsHorizontal()))
-      maybe_sizes->min_size = LayoutUnit();
-    else if (UNLIKELY(IsA<HTMLSelectElement>(box_->GetNode()) ||
-                      (IsA<HTMLInputElement>(box_->GetNode()) &&
-                       To<HTMLInputElement>(box_->GetNode())->type() ==
-                           input_type_names::kFile)) &&
-             Style().LogicalWidth().IsPercentOrCalc())
-      maybe_sizes->min_size = LayoutUnit();
-    box_->SetIntrinsicLogicalWidthsFromNG(
-        *maybe_sizes, input.percentage_resolution_block_size);
-    return *maybe_sizes;
-  }
-
-  if (!box_->GetFrameView()->IsInPerformLayout()) {
-    // We can't synthesize these using Layout() if we're not in PerformLayout.
-    // This situation can happen on mac. Fall back to legacy instead.
-    return ComputeMinMaxSizesFromLegacy(input);
-  }
-
-  // Have to synthesize this value.
-  scoped_refptr<const NGLayoutResult> layout_result =
-      Layout(zero_constraint_space);
-  sizes.min_size =
-      NGFragment(container_writing_mode, layout_result->PhysicalFragment())
-          .InlineSize();
-
-  // Now, redo with infinite space for max_content
-  NGConstraintSpaceBuilder builder =
-      CreateConstraintSpaceBuilderForMinMax(*this);
-  builder.SetAvailableSize({LayoutUnit::Max(), LayoutUnit()});
-  builder.SetPercentageResolutionSize({LayoutUnit(), LayoutUnit()});
-  NGConstraintSpace infinite_constraint_space = builder.ToConstraintSpace();
-
-  layout_result = Layout(infinite_constraint_space);
-  NGBoxFragment max_fragment(
-      container_writing_mode,
-      TextDirection::kLtr,  // irrelevant here
-      To<NGPhysicalBoxFragment>(layout_result->PhysicalFragment()));
-  sizes.max_size = max_fragment.Size().inline_size;
+  auto* html_marquee_element = DynamicTo<HTMLMarqueeElement>(box_->GetNode());
+  if (UNLIKELY(html_marquee_element && html_marquee_element->IsHorizontal()))
+    sizes.min_size = LayoutUnit();
+  else if (UNLIKELY(IsA<HTMLSelectElement>(box_->GetNode()) ||
+                    (IsA<HTMLInputElement>(box_->GetNode()) &&
+                     To<HTMLInputElement>(box_->GetNode())->type() ==
+                         input_type_names::kFile)) &&
+           Style().LogicalWidth().IsPercentOrCalc())
+    sizes.min_size = LayoutUnit();
+  box_->SetIntrinsicLogicalWidthsFromNG(sizes,
+                                        input.percentage_resolution_block_size);
   return sizes;
 }
 

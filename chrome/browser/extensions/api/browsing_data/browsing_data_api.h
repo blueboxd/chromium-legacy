@@ -13,11 +13,11 @@
 #include <vector>
 
 #include "base/scoped_observer.h"
-#include "chrome/browser/extensions/chrome_extension_function.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/browsing_data_remover.h"
+#include "extensions/browser/extension_function.h"
 #include "ppapi/buildflags/buildflags.h"
 
 class PluginPrefs;

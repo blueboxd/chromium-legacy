@@ -27056,6 +27056,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3249" label="ImageCaptureTorch"/>
   <int value="3250" label="XRFrameCreateAnchor"/>
   <int value="3251" label="XRHitTestResultCreateAnchor"/>
+  <int value="3252" label="CSSKeywordRevert"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -42210,6 +42211,22 @@ from previous Chrome versions.
   <int value="1" label="Fetch failed because of empty URL"/>
   <int value="2" label="Fetch failed (unspecified reason)"/>
   <int value="3" label="Fetch failed because the document origin is opaque"/>
+</enum>
+
+<enum name="ManifestInvalidError">
+  <int value="0" label="XML Parsing failed"/>
+  <int value="1" label="Invalid xlmns on gupdate tag"/>
+  <int value="2" label="Missing gupdate tag"/>
+  <int value="3" label="Invalid protocol on gupdate tag"/>
+  <int value="4" label="Missing app id"/>
+  <int value="5" label="Missing update check tags"/>
+  <int value="6" label="Multiple update check tags"/>
+  <int value="7" label="Invalid Prodversion min"/>
+  <int value="8" label="Empty codebase url"/>
+  <int value="9" label="Invalid codebase url"/>
+  <int value="10" label="Missing version for update check"/>
+  <int value="11" label="Invalid version"/>
+  <int value="12" label="Bad Update specification"/>
 </enum>
 
 <enum name="MappedCSSProperties">

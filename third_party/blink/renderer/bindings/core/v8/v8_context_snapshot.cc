@@ -402,7 +402,6 @@ void V8ContextSnapshot::DeserializeInternalField(v8::Local<v8::Object> object,
         embed_data->did_fail = true;
         return;
       }
-      WrapperTypeInfo::WrapperCreated();
       return;
     }
     case InternalFieldType::kNone:

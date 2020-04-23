@@ -453,13 +453,6 @@ void ThreadState::VisitWeakPersistents(Visitor* visitor) {
   weak_persistent_region_->TraceNodes(visitor);
 }
 
-void ThreadState::WillStartV8GC(BlinkGC::V8GCType gc_type) {
-  // Finish Oilpan's complete sweeping before running a V8 major GC.
-  // This will let the GC collect more V8 objects.
-  if (gc_type == BlinkGC::kV8MajorGC)
-    CompleteSweep();
-}
-
 void ThreadState::ScheduleForcedGCForTesting() {
   DCHECK(CheckThread());
   CompleteSweep();
@@ -890,9 +883,6 @@ void UpdateTraceCounters(const ThreadHeapStatsCollector& stats_collector) {
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
                  "BlinkGC.PartitionAllocSizeAtLastGCKB",
                  CappedSizeInKB(event.partition_alloc_bytes_before_sweeping));
-  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
-                 "BlinkGC.WrapperCountAtLastGC",
-                 event.wrapper_count_before_sweeping);
 
   // Current values.
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
@@ -908,11 +898,6 @@ void UpdateTraceCounters(const ThreadHeapStatsCollector& stats_collector) {
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
                  "PartitionAlloc.TotalSizeOfCommittedPagesKB",
                  CappedSizeInKB(WTF::Partitions::TotalSizeOfCommittedPages()));
-  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"), "BlinkGC.WrapperCount",
-                 stats_collector.wrapper_count());
-  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
-                 "BlinkGC.CollectedWrapperCount",
-                 stats_collector.collected_wrapper_count());
 }
 
 // Update histograms with statistics from the previous garbage collection cycle.

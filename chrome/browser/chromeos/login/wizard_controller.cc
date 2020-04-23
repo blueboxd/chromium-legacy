@@ -667,16 +667,6 @@ void WizardController::ShowEnableDebuggingScreen() {
 }
 
 void WizardController::ShowTermsOfServiceScreen() {
-  // Only show the Terms of Service when logging into a public account and Terms
-  // of Service have been specified through policy. In all other cases, advance
-  // to the post-ToS part immediately.
-  if (!user_manager::UserManager::Get()->IsLoggedInAsPublicAccount() ||
-      !ProfileManager::GetActiveUserProfile()->GetPrefs()->IsManagedPreference(
-          prefs::kTermsOfServiceURL)) {
-    OnTermsOfServiceAccepted();
-    return;
-  }
-
   SetCurrentScreen(GetScreen(TermsOfServiceScreenView::kScreenId));
 }
 
@@ -1090,7 +1080,8 @@ void WizardController::OnTermsOfServiceScreenExit(
 
   switch (result) {
     case TermsOfServiceScreen::Result::ACCEPTED:
-      OnTermsOfServiceAccepted();
+    case TermsOfServiceScreen::Result::NOT_APPLICABLE:
+      ShowSyncConsentScreen();
       break;
     case TermsOfServiceScreen::Result::DECLINED:
       // End the session and return to the login screen.
@@ -1098,10 +1089,6 @@ void WizardController::OnTermsOfServiceScreenExit(
           login_manager::SessionStopReason::TERMS_DECLINED);
       break;
   }
-}
-
-void WizardController::OnTermsOfServiceAccepted() {
-  ShowSyncConsentScreen();
 }
 
 void WizardController::OnSyncConsentScreenExit() {

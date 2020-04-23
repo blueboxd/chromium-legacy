@@ -263,7 +263,7 @@ class ExtensionDownloader {
   // If |results| is null, it means something went wrong when parsing it.
   void HandleManifestResults(std::unique_ptr<ManifestFetchData> fetch_data,
                              std::unique_ptr<UpdateManifestResults> results,
-                             const base::Optional<std::string>& error);
+                             const base::Optional<ManifestParseFailure>& error);
 
   // This function partition extension IDs stored in |fetch_data| into 3 sets:
   // update/no update/error using the update infromation from

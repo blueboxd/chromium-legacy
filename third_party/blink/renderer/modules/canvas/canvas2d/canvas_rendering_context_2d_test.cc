@@ -887,6 +887,11 @@ TEST_F(CanvasRenderingContext2DTest, ImageBitmapColorSpaceConversion) {
   for (int conversion_iterator = kColorSpaceConversion_Default;
        conversion_iterator <= kColorSpaceConversion_Last;
        conversion_iterator++) {
+    // TODO(crbug.com/898631): Do not test "preserve" which
+    // is not a valid value of ColorSpaceConversion.
+    if (conversion_iterator == kColorSpaceConversion_Preserve)
+      continue;
+
     // Color convert using ImageBitmap
     ImageBitmapOptions* options = ImageBitmapOptions::Create();
     options->setColorSpaceConversion(

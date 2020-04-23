@@ -51,6 +51,11 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
 
   scoped_refptr<const NGLayoutResult> Layout() override;
 
+  MinMaxSizes ComputeMinMaxSizes(const MinMaxSizesInput&) const override {
+    NOTREACHED();
+    return MinMaxSizes();
+  }
+
  private:
   enum class TruncateType {
     // Indicates default behavior. The default truncates if the text doesn't

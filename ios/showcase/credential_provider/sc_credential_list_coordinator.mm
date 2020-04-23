@@ -71,7 +71,6 @@ NSArray<id<Credential>>* allPasswords = @[
 
 - (void)start {
   self.viewController = [[CredentialListViewController alloc] init];
-  self.viewController.title = @"CPE Passwords";
   self.viewController.delegate = self;
   [self.baseViewController setHidesBarsOnSwipe:NO];
   [self.baseViewController pushViewController:self.viewController animated:YES];

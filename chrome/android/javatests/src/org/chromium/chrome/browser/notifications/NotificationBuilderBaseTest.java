@@ -18,7 +18,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
+import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
 import org.chromium.components.browser_ui.notifications.ChromeNotification;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
 import org.chromium.components.browser_ui.widget.RoundedIconGenerator;
@@ -73,7 +73,7 @@ public class NotificationBuilderBaseTest {
                 return null;
             }
         };
-        notificationBuilder.setChannelId(ChannelDefinitions.ChannelId.BROWSER);
+        notificationBuilder.setChannelId(ChromeChannelDefinitions.ChannelId.BROWSER);
         Bitmap fromNullIcon = notificationBuilder.ensureNormalizedIcon(null, origin);
         Assert.assertNotNull(fromNullIcon);
         Assert.assertEquals(largeIconWidthPx, fromNullIcon.getWidth());

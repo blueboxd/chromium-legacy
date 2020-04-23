@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_SERVICES_LOCAL_SEARCH_SERVICE_TEST_UTILS_H_
-#define CHROME_SERVICES_LOCAL_SEARCH_SERVICE_TEST_UTILS_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOCAL_SEARCH_SERVICE_TEST_UTILS_H_
+#define CHROME_BROWSER_CHROMEOS_LOCAL_SEARCH_SERVICE_TEST_UTILS_H_
 
 #include <map>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "chrome/services/local_search_service/index_impl.h"
+#include "chrome/browser/chromeos/local_search_service/index.h"
 
 namespace local_search_service {
 
@@ -21,11 +21,11 @@ std::vector<Data> CreateTestData(
 
 // Finds item for |query| from |index| and checks their ids are those in
 // |expected_result_ids|.
-void FindAndCheck(IndexImpl* index,
+void FindAndCheck(Index* index,
                   std::string query,
                   int32_t max_results,
                   ResponseStatus expected_status,
                   const std::vector<std::string>& expected_result_ids);
 }  // namespace local_search_service
 
-#endif  // CHROME_SERVICES_LOCAL_SEARCH_SERVICE_TEST_UTILS_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOCAL_SEARCH_SERVICE_TEST_UTILS_H_

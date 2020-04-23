@@ -26,6 +26,14 @@ class AddressField : public FormField {
   static std::unique_ptr<FormField> Parse(AutofillScanner* scanner,
                                           LogManager* log_manager);
 
+#if defined(UNIT_TEST)
+  // Assign types to the fields for the testing purposes.
+  void AddClassificationsForTesting(
+      FieldCandidatesMap* field_candidates_for_testing) const {
+    AddClassifications(field_candidates_for_testing);
+  }
+#endif
+
  protected:
   void AddClassifications(FieldCandidatesMap* field_candidates) const override;
 
@@ -37,18 +45,6 @@ class AddressField : public FormField {
     RESULT_MATCH_NAME,       // Only the name matches the pattern.
     RESULT_MATCH_NAME_LABEL  // Name and label both match the pattern.
   };
-
-  FRIEND_TEST_ALL_PREFIXES(AddressFieldTest, ParseOneLineAddress);
-  FRIEND_TEST_ALL_PREFIXES(AddressFieldTest, ParseTwoLineAddress);
-  FRIEND_TEST_ALL_PREFIXES(AddressFieldTest, ParseThreeLineAddress);
-  FRIEND_TEST_ALL_PREFIXES(AddressFieldTest, ParseStreetAddressFromTextArea);
-  FRIEND_TEST_ALL_PREFIXES(AddressFieldTest, ParseCity);
-  FRIEND_TEST_ALL_PREFIXES(AddressFieldTest, ParseState);
-  FRIEND_TEST_ALL_PREFIXES(AddressFieldTest, ParseZip);
-  FRIEND_TEST_ALL_PREFIXES(AddressFieldTest, ParseStateAndZipOneLabel);
-  FRIEND_TEST_ALL_PREFIXES(AddressFieldTest, ParseCountry);
-  FRIEND_TEST_ALL_PREFIXES(AddressFieldTest, ParseTwoLineAddressMissingLabel);
-  FRIEND_TEST_ALL_PREFIXES(AddressFieldTest, ParseCompany);
 
   static const int kZipCodeMatchType;
   static const int kCityMatchType;
@@ -65,7 +61,14 @@ class AddressField : public FormField {
 
   // Parses the current field pointed to by |scanner|, if it exists, and tries
   // to figure out whether the field's type: city, state, zip, or none of those.
+  // TODO(crbug.com/1073555) Delete this once experiment
+  // |kAutofillUseParseCityStateCountryZipCodeInHeuristic| has been launched.
   bool ParseCityStateZipCode(AutofillScanner* scanner);
+
+  // Parses the current field pointed to by |scanner|, if it exists, and tries
+  // to figure out whether the field's type: city, state, country, zip, or
+  // none of those.
+  bool ParseCityStateCountryZipCode(AutofillScanner* scanner);
 
   // Like ParseFieldSpecifics(), but applies |pattern| against the name and
   // label of the current field separately. If the return value is
@@ -84,6 +87,7 @@ class AddressField : public FormField {
   // Otherwise |scanner| rewinds and the field is cleared.
   ParseNameLabelResult ParseNameAndLabelForZipCode(AutofillScanner* scanner);
   ParseNameLabelResult ParseNameAndLabelForCity(AutofillScanner* scanner);
+  ParseNameLabelResult ParseNameAndLabelForCountry(AutofillScanner* scanner);
   ParseNameLabelResult ParseNameAndLabelForState(AutofillScanner* scanner);
 
   LogManager* log_manager_;

@@ -38,6 +38,7 @@
 #include "services/network/public/mojom/fetch_api.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/inspector/inspector_issue_storage.h"
 #include "third_party/blink/renderer/core/workers/parent_execution_context_task_runners.h"
 #include "third_party/blink/renderer/core/workers/worker_backing_thread_startup_data.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
@@ -161,6 +162,9 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   virtual void ClearWorkerBackingThread() = 0;
   ConsoleMessageStorage* GetConsoleMessageStorage() const {
     return console_message_storage_.Get();
+  }
+  InspectorIssueStorage* GetInspectorIssueStorage() const {
+    return inspector_issue_storage_.Get();
   }
   v8::Isolate* GetIsolate();
 
@@ -436,6 +440,7 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   Platform::NestedMessageLoopRunner* nested_runner_ = nullptr;
 
   CrossThreadPersistent<ConsoleMessageStorage> console_message_storage_;
+  CrossThreadPersistent<InspectorIssueStorage> inspector_issue_storage_;
   CrossThreadPersistent<WorkerOrWorkletGlobalScope> global_scope_;
   CrossThreadPersistent<WorkerInspectorController> worker_inspector_controller_;
 

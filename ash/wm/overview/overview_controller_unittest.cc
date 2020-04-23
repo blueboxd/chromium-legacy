@@ -22,6 +22,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/wm_event.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/test/scoped_feature_list.h"
@@ -364,6 +365,23 @@ TEST_F(OverviewControllerTest, OcclusionTest) {
   WaitForOcclusionStateChange(window2.get());
   EXPECT_EQ(OcclusionState::VISIBLE, window1->occlusion_state());
   EXPECT_EQ(OcclusionState::OCCLUDED, window2->occlusion_state());
+}
+
+// Tests that PIP windows are not shown in overview.
+TEST_F(OverviewControllerTest, PipMustNotInOverviewGridTest) {
+  gfx::Rect bounds{100, 100};
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindowInShellWithBounds(bounds));
+  WaitForShowAnimation(window.get());
+  auto* controller = Shell::Get()->overview_controller();
+  controller->StartOverview();
+  // Ensure |window| is in overview with window state non-PIP.
+  EXPECT_TRUE(controller->overview_session()->IsWindowInOverview(window.get()));
+  WMEvent pip_event(WM_EVENT_PIP);
+  WindowState::Get(window.get())->OnWMEvent(&pip_event);
+  // Ensure |window| is not in overview with window state PIP.
+  EXPECT_FALSE(
+      controller->overview_session()->IsWindowInOverview(window.get()));
 }
 
 // Tests that beginning window selection hides the app list.

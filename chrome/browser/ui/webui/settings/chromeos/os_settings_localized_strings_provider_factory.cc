@@ -5,9 +5,9 @@
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_localized_strings_provider_factory.h"
 
 #include "chrome/browser/chromeos/kerberos/kerberos_credentials_manager_factory.h"
+#include "chrome/browser/chromeos/local_search_service/local_search_service_proxy.h"
+#include "chrome/browser/chromeos/local_search_service/local_search_service_proxy_factory.h"
 #include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_client_factory.h"
-#include "chrome/browser/local_search_service/local_search_service_proxy.h"
-#include "chrome/browser/local_search_service/local_search_service_proxy_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
@@ -56,7 +56,7 @@ OsSettingsLocalizedStringsProviderFactory::BuildServiceInstanceFor(
       profile,
       local_search_service::LocalSearchServiceProxyFactory::GetForProfile(
           profile)
-          ->GetLocalSearchServiceImpl(),
+          ->GetLocalSearchService(),
       multidevice_setup::MultiDeviceSetupClientFactory::GetForProfile(profile),
       ProfileSyncServiceFactory::GetForProfile(profile),
       SupervisedUserServiceFactory::GetForProfile(profile),

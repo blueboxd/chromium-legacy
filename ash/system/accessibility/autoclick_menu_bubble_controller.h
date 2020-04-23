@@ -68,6 +68,7 @@ class ASH_EXPORT AutoclickMenuBubbleController
  private:
   friend class AutoclickMenuBubbleControllerTest;
   friend class AutoclickTest;
+  friend class FloatingAccessibilityControllerTest;
 
   // Owned by views hierarchy.
   TrayBubbleView* bubble_view_ = nullptr;

@@ -673,8 +673,7 @@ void ExtensionDownloader::OnManifestLoadComplete(
 void ExtensionDownloader::HandleManifestResults(
     std::unique_ptr<ManifestFetchData> fetch_data,
     std::unique_ptr<UpdateManifestResults> results,
-    const base::Optional<std::string>& error) {
-
+    const base::Optional<ManifestParseFailure>& error) {
   if (!results) {
     VLOG(2) << "parsing manifest failed (" << fetch_data->full_url() << ")";
     NotifyExtensionsDownloadStageChanged(
@@ -689,7 +688,7 @@ void ExtensionDownloader::HandleManifestResults(
   }
 
   // Report manifest update check status.
-  NotifyExtensionManifestUpdateCheckStatus(results->list);
+  NotifyExtensionManifestUpdateCheckStatus(results->update_list);
 
   NotifyExtensionsDownloadStageChanged(
       fetch_data->extension_ids(),
@@ -828,9 +827,9 @@ void ExtensionDownloader::DetermineUpdates(
   DCHECK_NE(nullptr, no_updates);
   DCHECK_NE(nullptr, errors);
 
-  // Group possible updates by extension IDs.
+  // Group successful possible updates by extension IDs.
   const std::map<std::string, std::vector<const UpdateManifestResult*>>
-      update_groups = possible_updates.GroupByID();
+      update_groups = possible_updates.GroupSuccessfulByID();
 
   // For each extensions in the current batch, greedily find an update from
   // |possible_updates|.
@@ -1174,8 +1173,11 @@ void ExtensionDownloader::OnExtensionLoadComplete(base::FilePath crx_path) {
 void ExtensionDownloader::NotifyExtensionManifestUpdateCheckStatus(
     std::vector<UpdateManifestResult> results) {
   for (const auto& manifest_result : results) {
-    delegate_->OnExtensionManifestUpdateCheckStatusReceived(
-        manifest_result.extension_id, manifest_result.status);
+    // Status is received only for the successfully parsed manifests.
+    if (!manifest_result.parse_error) {
+      delegate_->OnExtensionManifestUpdateCheckStatusReceived(
+          manifest_result.extension_id, manifest_result.status);
+    }
   }
 }
 

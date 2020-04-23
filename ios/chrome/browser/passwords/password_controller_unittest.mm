@@ -23,6 +23,7 @@
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_manager.h"
+#include "components/password_manager/core/browser/password_manager_onboarding.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -95,8 +96,7 @@ class MockPasswordManagerClient
     prefs_ = std::make_unique<TestingPrefServiceSimple>();
     prefs_->registry()->RegisterIntegerPref(
         kPasswordManagerOnboardingState,
-        static_cast<int>(
-            password_manager::metrics_util::OnboardingState::kDoNotShow));
+        static_cast<int>(password_manager::OnboardingState::kDoNotShow));
     prefs_->registry()->RegisterBooleanPref(kWasOnboardingFeatureCheckedBefore,
                                             false);
     prefs_->registry()->RegisterBooleanPref(kPasswordLeakDetectionEnabled,

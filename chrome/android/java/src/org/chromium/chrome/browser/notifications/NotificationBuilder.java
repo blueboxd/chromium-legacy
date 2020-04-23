@@ -15,9 +15,9 @@ import android.os.Bundle;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.widget.RemoteViews;
 
-import org.chromium.chrome.browser.notifications.channels.ChannelsInitializer;
 import org.chromium.components.browser_ui.notifications.ChromeNotification;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
+import org.chromium.components.browser_ui.notifications.channels.ChannelsInitializer;
 
 /**
  * Wraps a Notification.Builder object.

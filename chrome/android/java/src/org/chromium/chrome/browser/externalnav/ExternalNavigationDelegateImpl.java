@@ -19,7 +19,6 @@ import android.os.StrictMode;
 import android.provider.Browser;
 import android.text.TextUtils;
 import android.view.WindowManager.BadTokenException;
-import android.webkit.MimeTypeMap;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
@@ -72,8 +71,6 @@ import java.util.List;
  * The main implementation of the {@link ExternalNavigationDelegate}.
  */
 public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegate {
-    private static final String PDF_EXTENSION = "pdf";
-
     protected final Context mApplicationContext;
     private final Tab mTab;
     private final TabObserver mTabObserver;
@@ -441,14 +438,6 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
         if (context instanceof ChromeActivity) {
             ((ChromeActivity) context).getTabModelSelector().closeTab(mTab);
         }
-    }
-
-    @Override
-    public boolean isPdfDownload(String url) {
-        String fileExtension = MimeTypeMap.getFileExtensionFromUrl(url);
-        if (TextUtils.isEmpty(fileExtension)) return false;
-
-        return PDF_EXTENSION.equals(fileExtension);
     }
 
     @Override

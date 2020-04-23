@@ -2957,12 +2957,7 @@ bool ChromeContentBrowserClient::CanCreateWindow(
   }
 #endif
 
-  // Don't let prerenders open popups.
-  if (auto* prerender_contents =
-          prerender::PrerenderContents::FromWebContents(web_contents)) {
-    prerender_contents->Destroy(prerender::FINAL_STATUS_CREATE_NEW_WINDOW);
-    return false;
-  }
+  DCHECK(!prerender::PrerenderContents::FromWebContents(web_contents));
 
   BlockedWindowParams blocked_params(
       target_url, source_origin, opener->GetSiteInstance(), referrer,

@@ -70,10 +70,10 @@ public class SiteChannelsManagerTest {
     private static void clearExistingSiteChannels(
             NotificationManagerProxy notificationManagerProxy) {
         for (NotificationChannel channel : notificationManagerProxy.getNotificationChannels()) {
-            if (channel.getId().startsWith(ChannelDefinitions.CHANNEL_ID_PREFIX_SITES)
+            if (SiteChannelsManager.isValidSiteChannelId(channel.getId())
                     || (channel.getGroup() != null
-                               && channel.getGroup().equals(
-                                          ChannelDefinitions.ChannelGroupId.SITES))) {
+                            && channel.getGroup().equals(
+                                    ChromeChannelDefinitions.ChannelGroupId.SITES))) {
                 notificationManagerProxy.deleteNotificationChannel(channel.getId());
             }
         }
@@ -238,7 +238,7 @@ public class SiteChannelsManagerTest {
     public void testGetChannelIdForOrigin_unknownOrigin() {
         String channelId = mSiteChannelsManager.getChannelIdForOrigin("https://unknown.com");
 
-        assertThat(channelId, is(ChannelDefinitions.ChannelId.SITES));
+        assertThat(channelId, is(ChromeChannelDefinitions.ChannelId.SITES));
 
         assertThat(RecordHistogram.getHistogramTotalCountForTesting(
                            "Notifications.Android.SitesChannel"),

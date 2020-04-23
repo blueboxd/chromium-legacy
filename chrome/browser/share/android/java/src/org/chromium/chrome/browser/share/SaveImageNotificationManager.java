@@ -24,7 +24,7 @@ import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.notifications.NotificationIntentInterceptor;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.PendingIntentProvider;
-import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
+import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxy;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
@@ -125,8 +125,8 @@ public class SaveImageNotificationManager {
         // Build the notification.
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory
-                        .createChromeNotificationBuilder(true, ChannelDefinitions.ChannelId.SHARING,
-                                null,
+                        .createChromeNotificationBuilder(true,
+                                ChromeChannelDefinitions.ChannelId.SHARING, null,
                                 new NotificationMetadata(
                                         NotificationUmaTracker.SystemNotificationType
                                                 .SHARE_SAVE_IMAGE,

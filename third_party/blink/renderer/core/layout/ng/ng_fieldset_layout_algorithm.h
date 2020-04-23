@@ -25,8 +25,7 @@ class CORE_EXPORT NGFieldsetLayoutAlgorithm
 
   scoped_refptr<const NGLayoutResult> Layout() override;
 
-  base::Optional<MinMaxSizes> ComputeMinMaxSizes(
-      const MinMaxSizesInput&) const override;
+  MinMaxSizes ComputeMinMaxSizes(const MinMaxSizesInput&) const override;
 
  private:
   NGBreakStatus LayoutChildren();

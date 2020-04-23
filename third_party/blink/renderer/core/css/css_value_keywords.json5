@@ -784,6 +784,7 @@
     //
     "document",
     "reset",
+    "-internal-reset-effective",
 
     //
     // user-zoom

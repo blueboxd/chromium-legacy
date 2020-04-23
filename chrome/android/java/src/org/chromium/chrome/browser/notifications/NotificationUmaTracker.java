@@ -19,7 +19,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.MathUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
+import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 
@@ -269,8 +269,8 @@ public class NotificationUmaTracker {
         recordHistogram("Mobile.SystemNotification.CreationFailure", type);
     }
 
-    private void logNotificationShown(
-            @SystemNotificationType int type, @ChannelDefinitions.ChannelId String channelId) {
+    private void logNotificationShown(@SystemNotificationType int type,
+            @ChromeChannelDefinitions.ChannelId String channelId) {
         if (!mNotificationManager.areNotificationsEnabled()) {
             logPotentialBlockedCause();
             recordHistogram("Mobile.SystemNotification.Blocked", type);
@@ -286,7 +286,7 @@ public class NotificationUmaTracker {
     }
 
     @TargetApi(26)
-    private boolean isChannelBlocked(@ChannelDefinitions.ChannelId String channelId) {
+    private boolean isChannelBlocked(@ChromeChannelDefinitions.ChannelId String channelId) {
         // Use non-compat notification manager as compat does not have getNotificationChannel (yet).
         NotificationManager notificationManager =
                 ContextUtils.getApplicationContext().getSystemService(NotificationManager.class);

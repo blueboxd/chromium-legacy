@@ -22,6 +22,7 @@
 #include "android_webview/browser/safe_browsing/aw_safe_browsing_whitelist_manager.h"
 #include "android_webview/browser_jni_headers/AwBrowserContext_jni.h"
 #include "android_webview/common/aw_features.h"
+#include "android_webview/common/crash_reporter/crash_keys.h"
 #include "base/base_paths_posix.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
@@ -73,7 +74,7 @@ const void* const kDownloadManagerDelegateKey = &kDownloadManagerDelegateKey;
 AwBrowserContext* g_browser_context = NULL;
 
 crash_reporter::CrashKeyString<1> g_web_view_compat_crash_key(
-    "WEBLAYER_WEB_VIEW_COMPAT_MODE");
+    crash_keys::kWeblayerWebViewCompatMode);
 
 // Empty method to skip origin security check as DownloadManager will set its
 // own method.

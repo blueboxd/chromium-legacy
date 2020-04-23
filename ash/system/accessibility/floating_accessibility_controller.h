@@ -5,22 +5,28 @@
 #ifndef ASH_SYSTEM_ACCESSIBILITY_FLOATING_ACCESSIBILITY_CONTROLLER_H_
 #define ASH_SYSTEM_ACCESSIBILITY_FLOATING_ACCESSIBILITY_CONTROLLER_H_
 
+#include "ash/accessibility/accessibility_observer.h"
+#include "ash/ash_export.h"
 #include "ash/public/cpp/accessibility_controller_enums.h"
 #include "ash/public/cpp/ash_constants.h"
+#include "ash/system/accessibility/floating_accessibility_detailed_controller.h"
 #include "ash/system/accessibility/floating_accessibility_view.h"
 #include "ash/system/locale/locale_update_controller_impl.h"
 
 namespace ash {
 
+class AccessibilityControllerImpl;
 class FloatingAccessibilityView;
 
 // Controls the floating accessibility menu.
-class FloatingAccessibilityController
+class ASH_EXPORT FloatingAccessibilityController
     : public FloatingAccessibilityView::Delegate,
+      public FloatingAccessibilityDetailedController::Delegate,
       public TrayBubbleView::Delegate,
-      public LocaleChangeObserver {
+      public LocaleChangeObserver,
+      public AccessibilityObserver {
  public:
-  FloatingAccessibilityController();
+  FloatingAccessibilityController(AccessibilityControllerImpl* accessibility_controller);
   FloatingAccessibilityController(const FloatingAccessibilityController&) =
       delete;
   FloatingAccessibilityController& operator=(
@@ -31,10 +37,15 @@ class FloatingAccessibilityController
   void Show(FloatingMenuPosition position);
   void SetMenuPosition(FloatingMenuPosition new_position);
 
+  // AccessibilityObserver:
+  void OnAccessibilityStatusChanged() override;
+
  private:
   friend class FloatingAccessibilityControllerTest;
   // FloatingAccessibilityView::Delegate:
   void OnDetailedMenuEnabled(bool enabled) override;
+  // FloatingAccessibilityDetailedController::Delegate:
+  void OnDetailedMenuClosed() override;
   // TrayBubbleView::Delegate:
   void BubbleViewDestroyed() override;
   // LocaleChangeObserver:
@@ -46,7 +57,13 @@ class FloatingAccessibilityController
 
   bool detailed_view_shown_ = false;
 
+  // Controller for the detailed view, exists only when visible.
+  std::unique_ptr<FloatingAccessibilityDetailedController>
+      detailed_menu_controller_;
+
   FloatingMenuPosition position_ = kDefaultFloatingMenuPosition;
+
+  AccessibilityControllerImpl* const accessibility_controller_; // Owns us.
 };
 
 }  // namespace ash

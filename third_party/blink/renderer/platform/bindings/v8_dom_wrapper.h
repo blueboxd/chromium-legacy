@@ -136,7 +136,6 @@ inline v8::Local<v8::Object> V8DOMWrapper::AssociateObjectWithWrapper(
   RUNTIME_CALL_TIMER_SCOPE(
       isolate, RuntimeCallStats::CounterId::kAssociateObjectWithWrapper);
   if (DOMDataStore::SetWrapper(isolate, impl, wrapper_type_info, wrapper)) {
-    WrapperTypeInfo::WrapperCreated();
     SetNativeInfo(isolate, wrapper, wrapper_type_info, impl);
     DCHECK(HasInternalFieldsSet(wrapper));
   }
@@ -151,7 +150,6 @@ inline void V8DOMWrapper::AssociateObjectWithWrapper(
     v8::Local<v8::Object> wrapper) {
   RUNTIME_CALL_TIMER_SCOPE(
       isolate, RuntimeCallStats::CounterId::kAssociateObjectWithWrapper);
-  WrapperTypeInfo::WrapperCreated();
   SetNativeInfo(isolate, wrapper, wrapper_type_info, impl);
   DCHECK(HasInternalFieldsSet(wrapper));
   SECURITY_CHECK(ToCustomWrappable(wrapper) == impl);

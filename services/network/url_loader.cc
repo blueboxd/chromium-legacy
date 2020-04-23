@@ -36,7 +36,6 @@
 #include "net/base/upload_file_element_reader.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/static_cookie_policy.h"
-#include "net/http/structured_headers.h"
 #include "net/ssl/client_cert_store.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_private_key.h"
@@ -50,9 +49,9 @@
 #include "services/network/origin_policy/origin_policy_constants.h"
 #include "services/network/origin_policy/origin_policy_manager.h"
 #include "services/network/public/cpp/constants.h"
+#include "services/network/public/cpp/cross_origin_embedder_policy_parser.h"
 #include "services/network/public/cpp/cross_origin_opener_policy_parser.h"
 #include "services/network/public/cpp/cross_origin_resource_policy.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/header_util.h"
 #include "services/network/public/cpp/net_adapters.h"
 #include "services/network/public/cpp/network_switches.h"
@@ -76,8 +75,6 @@ using ConcerningHeaderId = URLLoader::ConcerningHeaderId;
 // Cannot use 0, because this means "default" in
 // mojo::core::Core::CreateDataPipe
 constexpr size_t kBlockedBodyAllocationSize = 1;
-
-constexpr char kCrossOriginOpenerPolicyHeader[] = "Cross-Origin-Opener-Policy";
 
 // TODO: this duplicates some of PopulateResourceResponse in
 // content/browser/loader/resource_loader.cc
@@ -125,26 +122,11 @@ void PopulateResourceResponse(net::URLRequest* request,
       response->ssl_info = request->ssl_info();
   }
 
-  // TODO(ahemery): Cross origin isolation headers should only be parsed for
-  // secure contexts. Check here using IsUrlPotentiallyTrustworthy() once the
-  // tests are updated to use HTTPS.
-  // Parse the Cross-Origin-Embedder-Policy and
-  // Cross-Origin-Embedder-Policy-Report-Only headers.
-  if (base::FeatureList::IsEnabled(features::kCrossOriginEmbedderPolicy)) {
+  if (response->headers) {
     response->cross_origin_embedder_policy =
-        URLLoader::ParseCrossOriginEmbedderPolicyValue(
-            request->response_headers());
-  }
-
-  // Parse the Cross-Origin-Opener-Policy header.
-  if (base::FeatureList::IsEnabled(features::kCrossOriginOpenerPolicy)) {
-    std::string raw_coop_string;
-    if (request->response_headers() &&
-        request->response_headers()->GetNormalizedHeader(
-            kCrossOriginOpenerPolicyHeader, &raw_coop_string)) {
-      response->cross_origin_opener_policy =
-          ParseCrossOriginOpenerPolicyHeader(raw_coop_string);
-    }
+        ParseCrossOriginEmbedderPolicy(*(response->headers));
+    response->cross_origin_opener_policy =
+        ParseCrossOriginOpenerPolicy(*(response->headers));
   }
 
   response->request_start = request->creation_time();
@@ -439,20 +421,6 @@ const struct {
     {net::HttpRequestHeaders::kReferer, ConcerningHeaderId::kReferer},
     {"Via", ConcerningHeaderId::kVia},
 };
-
-std::pair<network::mojom::CrossOriginEmbedderPolicyValue,
-          base::Optional<std::string>>
-ParseCrossOriginEmbedderPolicyValueInternal(
-    const net::HttpResponseHeaders* headers,
-    base::StringPiece header_name) {
-  std::string header_value;
-  if (!headers ||
-      !headers->GetNormalizedHeader(header_name.as_string(), &header_value)) {
-    return std::make_pair(mojom::CrossOriginEmbedderPolicyValue::kNone,
-                          base::nullopt);
-  }
-  return CrossOriginEmbedderPolicy::Parse(header_value);
-}
 
 }  // namespace
 
@@ -1504,19 +1472,6 @@ void URLLoader::LogConcerningRequestHeaders(
         "NetworkService.ConcerningRequestHeader.PresentOnStart",
         concerning_header_found);
   }
-}
-
-// static
-CrossOriginEmbedderPolicy URLLoader::ParseCrossOriginEmbedderPolicyValue(
-    const net::HttpResponseHeaders* headers) {
-  CrossOriginEmbedderPolicy coep;
-  std::tie(coep.value, coep.reporting_endpoint) =
-      ParseCrossOriginEmbedderPolicyValueInternal(
-          headers, CrossOriginEmbedderPolicy::kHeaderName);
-  std::tie(coep.report_only_value, coep.report_only_reporting_endpoint) =
-      ParseCrossOriginEmbedderPolicyValueInternal(
-          headers, CrossOriginEmbedderPolicy::kReportOnlyHeaderName);
-  return coep;
 }
 
 void URLLoader::OnAuthCredentials(

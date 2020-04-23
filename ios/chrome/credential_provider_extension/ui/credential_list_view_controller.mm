@@ -4,6 +4,7 @@
 
 #import "ios/chrome/credential_provider_extension/ui/credential_list_view_controller.h"
 
+#include "base/mac/foundation_util.h"
 #import "ios/chrome/common/credential_provider/credential.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 
@@ -39,6 +40,9 @@ const CGFloat kHeaderHeight = 70;
 
 - (void)viewDidLoad {
   [super viewDidLoad];
+  self.title =
+      NSLocalizedString(@"IDS_IOS_CREDENTIAL_PROVIDER_CREDENTIAL_LIST_TITLE",
+                        @"AutofFill Chrome Password");
   self.view.backgroundColor = [UIColor colorNamed:kBackgroundColor];
   self.navigationItem.rightBarButtonItem = [self navigationCancelButton];
   self.tableView.tableFooterView = [[UIView alloc] initWithFrame:CGRectZero];
@@ -47,8 +51,17 @@ const CGFloat kHeaderHeight = 70;
       [[UISearchController alloc] initWithSearchResultsController:nil];
   self.searchController.searchResultsUpdater = self;
   self.searchController.obscuresBackgroundDuringPresentation = NO;
+  self.searchController.searchBar.backgroundColor = [UIColor clearColor];
   self.tableView.tableHeaderView = self.searchController.searchBar;
-  self.navigationController.navigationBar.translucent = NO;
+  self.tableView.tableFooterView = [[UIView alloc] initWithFrame:CGRectZero];
+
+  self.navigationController.navigationBar.translucent = YES;
+  self.navigationController.navigationBar.barTintColor =
+      [UIColor colorNamed:kBackgroundColor];
+  self.navigationController.navigationBar.shadowImage = [[UIImage alloc] init];
+  [self.navigationController.navigationBar
+      setBackgroundImage:[[UIImage alloc] init]
+           forBarMetrics:UIBarMetricsDefault];
 
   // Presentation of searchController will walk up the view controller hierarchy
   // until it finds the root view controller or one that defines a presentation
@@ -107,7 +120,8 @@ const CGFloat kHeaderHeight = 70;
   if (!cell) {
     cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle
                                   reuseIdentifier:kCellIdentifier];
-    cell.accessoryType = UITableViewCellAccessoryDetailButton;
+    cell.accessoryView = [self infoIconButton];
+    cell.contentView.backgroundColor = [UIColor colorNamed:kBackgroundColor];
   }
 
   id<Credential> credential = [self credentialForIndexPath:indexPath];
@@ -142,12 +156,6 @@ const CGFloat kHeaderHeight = 70;
   return view;
 }
 
-- (void)tableView:(UITableView*)tableView
-    accessoryButtonTappedForRowWithIndexPath:(NSIndexPath*)indexPath {
-  id<Credential> credential = [self credentialForIndexPath:indexPath];
-  [self.delegate showDetailsForCredential:credential];
-}
-
 - (CGFloat)tableView:(UITableView*)tableView
     heightForHeaderInSection:(NSInteger)section {
   return kHeaderHeight;
@@ -168,7 +176,34 @@ const CGFloat kHeaderHeight = 70;
       initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
                            target:self.delegate
                            action:@selector(navigationCancelButtonWasPressed:)];
+  cancelButton.tintColor = [UIColor colorNamed:kBlueColor];
   return cancelButton;
+}
+
+// Creates a button to be displayed as accessory of the password row item.
+- (UIView*)infoIconButton {
+  UIImage* image = [UIImage imageNamed:@"info_icon"];
+  image = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+
+  UIButton* button = [UIButton buttonWithType:UIButtonTypeCustom];
+  button.frame = CGRectMake(0.0, 0.0, image.size.width, image.size.height);
+  [button setBackgroundImage:image forState:UIControlStateNormal];
+  [button setTintColor:[UIColor colorNamed:kBlueColor]];
+  [button addTarget:self
+                action:@selector(infoIconButtonTapped:event:)
+      forControlEvents:UIControlEventTouchUpInside];
+
+  return button;
+}
+
+// Called when info icon is tapped.
+- (void)infoIconButtonTapped:(id)sender event:(id)event {
+  CGPoint hitPoint =
+      [base::mac::ObjCCastStrict<UIButton>(sender) convertPoint:CGPointZero
+                                                         toView:self.tableView];
+  NSIndexPath* indexPath = [self.tableView indexPathForRowAtPoint:hitPoint];
+  id<Credential> credential = [self credentialForIndexPath:indexPath];
+  [self.delegate showDetailsForCredential:credential];
 }
 
 // Returns number of sections to display based on |suggestedPasswords| and

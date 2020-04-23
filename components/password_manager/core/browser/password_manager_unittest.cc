@@ -337,7 +337,7 @@ class PasswordManagerTest : public testing::Test {
     prefs_.reset(new TestingPrefServiceSimple());
     prefs_->registry()->RegisterIntegerPref(
         prefs::kPasswordManagerOnboardingState,
-        static_cast<int>(metrics_util::OnboardingState::kDoNotShow));
+        static_cast<int>(OnboardingState::kDoNotShow));
     prefs_->registry()->RegisterBooleanPref(
         prefs::kWasOnboardingFeatureCheckedBefore, false);
     prefs_->registry()->RegisterBooleanPref(
@@ -1009,9 +1009,8 @@ TEST_F(PasswordManagerTest, OnboardingSimple) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
       features::kPasswordManagerOnboardingAndroid);
-  prefs_->SetInteger(
-      prefs::kPasswordManagerOnboardingState,
-      static_cast<int>(metrics_util::OnboardingState::kShouldShow));
+  prefs_->SetInteger(prefs::kPasswordManagerOnboardingState,
+                     static_cast<int>(OnboardingState::kShouldShow));
 
   FormData form_data(MakeSimpleFormData());
   std::vector<FormData> observed = {form_data};
@@ -1039,9 +1038,8 @@ TEST_F(PasswordManagerTest, OnboardingPasswordSyncDisabled) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
       features::kPasswordManagerOnboardingAndroid);
-  prefs_->SetInteger(
-      prefs::kPasswordManagerOnboardingState,
-      static_cast<int>(metrics_util::OnboardingState::kShouldShow));
+  prefs_->SetInteger(prefs::kPasswordManagerOnboardingState,
+                     static_cast<int>(OnboardingState::kShouldShow));
 
   FormData form_data(MakeSimpleFormData());
   std::vector<FormData> observed = {form_data};
@@ -1072,9 +1070,8 @@ TEST_F(PasswordManagerTest, OnboardingPasswordUpdate) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
       features::kPasswordManagerOnboardingAndroid);
-  prefs_->SetInteger(
-      prefs::kPasswordManagerOnboardingState,
-      static_cast<int>(metrics_util::OnboardingState::kShouldShow));
+  prefs_->SetInteger(prefs::kPasswordManagerOnboardingState,
+                     static_cast<int>(OnboardingState::kShouldShow));
 
   FormData observed_form_data(MakeSimpleFormData());
   std::vector<FormData> observed_forms = {observed_form_data};

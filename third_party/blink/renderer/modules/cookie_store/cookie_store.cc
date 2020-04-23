@@ -85,7 +85,7 @@ base::Optional<CanonicalCookie> ToCanonicalCookie(
 
   String cookie_url_host = cookie_url.Host();
   String domain;
-  if (options->hasDomain()) {
+  if (!options->domain().IsNull()) {
     if (name.StartsWith("__Host-")) {
       exception_state.ThrowTypeError(
           "Cookies with \"__Host-\" prefix cannot have a domain");

@@ -4,9 +4,11 @@
 
 #include "ash/system/accessibility/floating_accessibility_controller.h"
 
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "ash/system/accessibility/floating_menu_utils.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/wm/collision_detection/collision_detection_utils.h"
@@ -22,18 +24,17 @@ constexpr int kFloatingMenuHeight = 64;
 constexpr base::TimeDelta kAnimationDuration =
     base::TimeDelta::FromMilliseconds(150);
 
-FloatingMenuPosition DefaultSystemPosition() {
-  return base::i18n::IsRTL() ? FloatingMenuPosition::kBottomLeft
-                             : FloatingMenuPosition::kBottomRight;
-}
-
 }  // namespace
 
-FloatingAccessibilityController::FloatingAccessibilityController() {
+FloatingAccessibilityController::FloatingAccessibilityController(
+    AccessibilityControllerImpl* accessibility_controller)
+    : accessibility_controller_(accessibility_controller) {
   Shell::Get()->locale_update_controller()->AddObserver(this);
+  accessibility_controller_->AddObserver(this);
 }
 FloatingAccessibilityController::~FloatingAccessibilityController() {
   Shell::Get()->locale_update_controller()->RemoveObserver(this);
+  accessibility_controller_->RemoveObserver(this);
   if (bubble_widget_ && !bubble_widget_->IsClosed())
     bubble_widget_->CloseNow();
 }
@@ -48,25 +49,24 @@ void FloatingAccessibilityController::Show(FloatingMenuPosition position) {
 
   DCHECK(!bubble_view_);
 
-  position_ = position;
   TrayBubbleView::InitParams init_params;
   init_params.delegate = this;
-  // We need our view to be on the same level as the autoclicks menu, so neither
-  // of them is overlapping each other.
+  // Our view uses SettingsBubbleContainer since it is activatable and is
+  // included in the collision detection logic.
   init_params.parent_window = Shell::GetContainer(
-      Shell::GetPrimaryRootWindow(), kShellWindowId_AutoclickContainer);
+      Shell::GetPrimaryRootWindow(), kShellWindowId_SettingBubbleContainer);
   init_params.anchor_mode = TrayBubbleView::AnchorMode::kRect;
   // The widget's shadow is drawn below and on the sides of the view, with a
   // width of kCollisionWindowWorkAreaInsetsDp. Set the top inset to 0 to ensure
-  // the scroll view is drawn at kCollisionWindowWorkAreaInsetsDp above the
+  // the detailed view is drawn at kCollisionWindowWorkAreaInsetsDp above the
   // bubble menu when the position is at the bottom of the screen. The space
-  // between the bubbles belongs to the scroll view bubble's shadow.
+  // between the bubbles belongs to the detailed view bubble's shadow.
   init_params.insets = gfx::Insets(0, kCollisionWindowWorkAreaInsetsDp,
                                    kCollisionWindowWorkAreaInsetsDp,
                                    kCollisionWindowWorkAreaInsetsDp);
-  init_params.max_height = kFloatingMenuHeight;
   init_params.corner_radius = kUnifiedTrayCornerRadius;
   init_params.has_shadow = false;
+  init_params.max_height = kFloatingMenuHeight;
   init_params.translucent = true;
   bubble_view_ = new FloatingAccessibilityBubbleView(init_params);
 
@@ -82,7 +82,7 @@ void FloatingAccessibilityController::Show(FloatingMenuPosition position) {
   TrayBackgroundView::InitializeBubbleAnimations(bubble_widget_);
   bubble_view_->InitializeAndShowBubble();
 
-  SetMenuPosition(position_);
+  SetMenuPosition(position);
 }
 
 void FloatingAccessibilityController::SetMenuPosition(
@@ -101,48 +101,10 @@ void FloatingAccessibilityController::SetMenuPosition(
   // If this is the default system position, pick the position based on the
   // language direction.
   if (new_position == FloatingMenuPosition::kSystemDefault)
-    new_position = DefaultSystemPosition();
+    new_position = DefaultSystemFloatingMenuPosition();
 
-  // Calculates the ideal bounds.
-  // TODO(katie): Support multiple displays: draw the menu on whichever display
-  // the cursor is on.
-  aura::Window* window = Shell::GetPrimaryRootWindow();
-  gfx::Rect work_area =
-      WorkAreaInsets::ForWindow(window)->user_work_area_bounds();
-  gfx::Rect new_bounds;
-
-  gfx::Size preferred_size = menu_view_->GetPreferredSize();
-  switch (new_position) {
-    case FloatingMenuPosition::kBottomRight:
-      new_bounds = gfx::Rect(work_area.right() - preferred_size.width(),
-                             work_area.bottom() - preferred_size.height(),
-                             preferred_size.width(), preferred_size.height());
-      break;
-    case FloatingMenuPosition::kBottomLeft:
-      new_bounds =
-          gfx::Rect(work_area.x(), work_area.bottom() - preferred_size.height(),
-                    preferred_size.width(), preferred_size.height());
-      break;
-    case FloatingMenuPosition::kTopLeft:
-      // Because there is no inset at the top of the widget, add
-      // 2 * kCollisionWindowWorkAreaInsetsDp to the top of the work area.
-      // to ensure correct padding.
-      new_bounds = gfx::Rect(
-          work_area.x(), work_area.y() + 2 * kCollisionWindowWorkAreaInsetsDp,
-          preferred_size.width(), preferred_size.height());
-      break;
-    case FloatingMenuPosition::kTopRight:
-      // Because there is no inset at the top of the widget, add
-      // 2 * kCollisionWindowWorkAreaInsetsDp to the top of the work area.
-      // to ensure correct padding.
-      new_bounds =
-          gfx::Rect(work_area.right() - preferred_size.width(),
-                    work_area.y() + 2 * kCollisionWindowWorkAreaInsetsDp,
-                    preferred_size.width(), preferred_size.height());
-      break;
-    case FloatingMenuPosition::kSystemDefault:
-      return;
-  }
+  gfx::Rect new_bounds = GetOnScreenBoundsForFloatingMenuPosition(
+      menu_view_->GetPreferredSize(), new_position);
 
   gfx::Rect resting_bounds =
       CollisionDetectionUtils::AdjustToFitMovementAreaByGravity(
@@ -154,6 +116,7 @@ void FloatingAccessibilityController::SetMenuPosition(
   resting_bounds.Inset(-kCollisionWindowWorkAreaInsetsDp, 0,
                        -kCollisionWindowWorkAreaInsetsDp,
                        -kCollisionWindowWorkAreaInsetsDp);
+
   if (bubble_widget_->GetWindowBoundsInScreen() == resting_bounds)
     return;
 
@@ -164,11 +127,39 @@ void FloatingAccessibilityController::SetMenuPosition(
   settings.SetTransitionDuration(kAnimationDuration);
   settings.SetTweenType(gfx::Tween::EASE_OUT);
   bubble_widget_->SetBounds(resting_bounds);
+
+  if (detailed_menu_controller_) {
+    detailed_menu_controller_->UpdateAnchorRect(
+        resting_bounds, GetAnchorAlignmentForFloatingMenuPosition(position_));
+  }
 }
 
 void FloatingAccessibilityController::OnDetailedMenuEnabled(bool enabled) {
-  // TODO(crbug.com/1061068): Implement detailed menu view logic.
-  detailed_view_shown_ = enabled;
+  if (enabled) {
+    detailed_menu_controller_ =
+        std::make_unique<FloatingAccessibilityDetailedController>(this);
+    gfx::Rect anchor_rect = bubble_view_->GetBoundsInScreen();
+    anchor_rect.Inset(-kCollisionWindowWorkAreaInsetsDp, 0,
+                      -kCollisionWindowWorkAreaInsetsDp,
+                      -kCollisionWindowWorkAreaInsetsDp);
+    detailed_menu_controller_->Show(
+        anchor_rect, GetAnchorAlignmentForFloatingMenuPosition(position_));
+    menu_view_->SetDetailedViewShown(true);
+  } else {
+    detailed_menu_controller_.reset();
+    // We may need to update the autoclick bounds.
+    Shell::Get()
+        ->accessibility_controller()
+        ->UpdateAutoclickMenuBoundsIfNeeded();
+  }
+}
+
+void FloatingAccessibilityController::OnDetailedMenuClosed() {
+  detailed_menu_controller_.reset();
+
+  if (!menu_view_)
+    return;
+  menu_view_->SetDetailedViewShown(false);
 }
 
 void FloatingAccessibilityController::BubbleViewDestroyed() {
@@ -182,6 +173,14 @@ void FloatingAccessibilityController::OnLocaleChanged() {
   // position is the system default.
   if (position_ == FloatingMenuPosition::kSystemDefault)
     SetMenuPosition(position_);
+}
+
+void FloatingAccessibilityController::OnAccessibilityStatusChanged() {
+  // Some features may change the available screen area(docked magnifier), we
+  // will update the location of the menu in such cases.
+  SetMenuPosition(position_);
+  if (detailed_menu_controller_)
+    detailed_menu_controller_->OnAccessibilityStatusChanged();
 }
 
 }  // namespace ash

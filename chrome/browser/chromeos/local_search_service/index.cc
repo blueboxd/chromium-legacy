@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/services/local_search_service/index_impl.h"
+#include "chrome/browser/chromeos/local_search_service/index.h"
 
 #include <utility>
 
@@ -82,16 +82,15 @@ local_search_service::Result::Result() = default;
 local_search_service::Result::Result(const Result& result) = default;
 local_search_service::Result::~Result() = default;
 
-IndexImpl::IndexImpl() = default;
+Index::Index() = default;
 
-IndexImpl::~IndexImpl() = default;
+Index::~Index() = default;
 
-uint64_t IndexImpl::GetSize() {
+uint64_t Index::GetSize() {
   return data_.size();
 }
 
-void IndexImpl::AddOrUpdate(
-    const std::vector<local_search_service::Data>& data) {
+void Index::AddOrUpdate(const std::vector<local_search_service::Data>& data) {
   for (const auto& item : data) {
     const auto& id = item.id;
     DCHECK(!id.empty());
@@ -102,7 +101,7 @@ void IndexImpl::AddOrUpdate(
   }
 }
 
-uint32_t IndexImpl::Delete(const std::vector<std::string>& ids) {
+uint32_t Index::Delete(const std::vector<std::string>& ids) {
   uint32_t num_deleted = 0u;
   for (const auto& id : ids) {
     DCHECK(!id.empty());
@@ -117,7 +116,7 @@ uint32_t IndexImpl::Delete(const std::vector<std::string>& ids) {
   return num_deleted;
 }
 
-local_search_service::ResponseStatus IndexImpl::Find(
+local_search_service::ResponseStatus Index::Find(
     const base::string16& query,
     uint32_t max_results,
     std::vector<local_search_service::Result>* results) {
@@ -134,16 +133,16 @@ local_search_service::ResponseStatus IndexImpl::Find(
   return local_search_service::ResponseStatus::kSuccess;
 }
 
-void IndexImpl::SetSearchParams(
+void Index::SetSearchParams(
     const local_search_service::SearchParams& search_params) {
   search_params_ = search_params;
 }
 
-void IndexImpl::GetSearchParamsForTesting(double* relevance_threshold,
-                                          double* partial_match_penalty_rate,
-                                          bool* use_prefix_only,
-                                          bool* use_weighted_ratio,
-                                          bool* use_edit_distance) {
+void Index::GetSearchParamsForTesting(double* relevance_threshold,
+                                      double* partial_match_penalty_rate,
+                                      bool* use_prefix_only,
+                                      bool* use_weighted_ratio,
+                                      bool* use_edit_distance) {
   DCHECK(relevance_threshold);
   DCHECK(partial_match_penalty_rate);
   DCHECK(use_prefix_only);
@@ -157,7 +156,7 @@ void IndexImpl::GetSearchParamsForTesting(double* relevance_threshold,
   *use_edit_distance = search_params_.use_edit_distance;
 }
 
-std::vector<local_search_service::Result> IndexImpl::GetSearchResults(
+std::vector<local_search_service::Result> Index::GetSearchResults(
     const base::string16& query,
     uint32_t max_results) const {
   std::vector<local_search_service::Result> results;

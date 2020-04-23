@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.notifications.channels;
+package org.chromium.components.browser_ui.notifications.channels;
 
 import android.annotation.TargetApi;
 import android.app.NotificationChannel;
@@ -10,10 +10,8 @@ import android.app.NotificationChannelGroup;
 import android.app.NotificationManager;
 import android.content.res.Resources;
 import android.os.Build;
-import android.text.TextUtils;
 
 import org.chromium.base.CollectionUtil;
-import org.chromium.chrome.browser.webapps.WebApkServiceClient;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxy;
 
 import java.util.Collection;
@@ -28,10 +26,12 @@ import java.util.Set;
 @TargetApi(Build.VERSION_CODES.O)
 public class ChannelsInitializer {
     private final NotificationManagerProxy mNotificationManager;
+    private ChannelDefinitions mChannelDefinitions;
     private Resources mResources;
 
-    public ChannelsInitializer(
-            NotificationManagerProxy notificationManagerProxy, Resources resources) {
+    public ChannelsInitializer(NotificationManagerProxy notificationManagerProxy,
+            ChannelDefinitions channelDefinitions, Resources resources) {
+        mChannelDefinitions = channelDefinitions;
         mNotificationManager = notificationManagerProxy;
         mResources = resources;
     }
@@ -40,9 +40,9 @@ public class ChannelsInitializer {
      * Creates all the channels on the notification manager that we want to appear in our
      * channel settings from first launch onwards.
      */
-    void initializeStartupChannels() {
-        Set<String> groupIds = ChannelDefinitions.getStartupChannelGroupIds();
-        Set<String> channelIds = ChannelDefinitions.getStartupChannelIds();
+    public void initializeStartupChannels() {
+        Set<String> groupIds = mChannelDefinitions.getStartupChannelGroupIds();
+        Set<String> channelIds = mChannelDefinitions.getStartupChannelIds();
         ensureInitialized(groupIds, channelIds);
     }
 
@@ -51,7 +51,7 @@ public class ChannelsInitializer {
      *
      * @param resources The new resources to use.
      */
-    void updateLocale(Resources resources) {
+    public void updateLocale(Resources resources) {
         mResources = resources;
         Set<String> groupIds = new HashSet<>();
         Set<String> channelIds = new HashSet<>();
@@ -62,8 +62,8 @@ public class ChannelsInitializer {
             channelIds.add(channel.getId());
         }
         // only re-initialize known channel ids, as we only want to update known & existing channels
-        groupIds.retainAll(ChannelDefinitions.getAllChannelGroupIds());
-        channelIds.retainAll(ChannelDefinitions.getAllChannelIds());
+        groupIds.retainAll(mChannelDefinitions.getAllChannelGroupIds());
+        channelIds.retainAll(mChannelDefinitions.getAllChannelIds());
         ensureInitialized(groupIds, channelIds);
     }
 
@@ -71,8 +71,8 @@ public class ChannelsInitializer {
      * Cleans up any old channels that are no longer required from previous versions of the app.
      * It's safe to call this multiple times since deleting an already-deleted channel is a no-op.
      */
-    void deleteLegacyChannels() {
-        for (String channelId : ChannelDefinitions.getLegacyChannelIds()) {
+    public void deleteLegacyChannels() {
+        for (String channelId : mChannelDefinitions.getLegacyChannelIds()) {
             mNotificationManager.deleteNotificationChannel(channelId);
         }
     }
@@ -114,15 +114,9 @@ public class ChannelsInitializer {
     }
 
     private ChannelDefinitions.PredefinedChannel getPredefinedChannel(String channelId) {
-        if (channelId.startsWith(ChannelDefinitions.CHANNEL_ID_PREFIX_SITES)) {
-            // If we have a valid site channel ID at this point, it is safe to assume a channel
-            // has already been created, since the only way to obtain a site channel ID is by
-            // creating a channel.
-            assert SiteChannelsManager.isValidSiteChannelId(channelId);
-            return null;
-        }
+        if (mChannelDefinitions.isValidNonPredefinedChannelId(channelId)) return null;
         ChannelDefinitions.PredefinedChannel predefinedChannel =
-                ChannelDefinitions.getChannelFromId(channelId);
+                mChannelDefinitions.getChannelFromId(channelId);
         if (predefinedChannel == null) {
             throw new IllegalStateException("Could not initialize channel: " + channelId);
         }
@@ -142,7 +136,7 @@ public class ChannelsInitializer {
 
         for (String groupId : groupIds) {
             ChannelDefinitions.PredefinedChannelGroup predefinedChannelGroup =
-                    ChannelDefinitions.getChannelGroup(groupId);
+                    mChannelDefinitions.getChannelGroup(groupId);
             if (predefinedChannelGroup == null) continue;
             NotificationChannelGroup channelGroup =
                     predefinedChannelGroup.toNotificationChannelGroup(mResources);
@@ -154,7 +148,7 @@ public class ChannelsInitializer {
                     getPredefinedChannel(channelId);
             if (predefinedChannel == null) continue;
             NotificationChannelGroup channelGroup =
-                    ChannelDefinitions.getChannelGroupForChannel(predefinedChannel)
+                    mChannelDefinitions.getChannelGroupForChannel(predefinedChannel)
                             .toNotificationChannelGroup(mResources);
             NotificationChannel channel = predefinedChannel.toNotificationChannel(mResources);
             if (!enabled) {
@@ -171,18 +165,13 @@ public class ChannelsInitializer {
     }
 
     /**
-     * This calls ensureInitialized after checking this isn't a WebAPK channel ID or null.
+     * This calls ensureInitialized after checking this isn't null.
      * @param channelId Id of the channel to be initialized.
      */
     public void safeInitialize(String channelId) {
         // The channelId may be null if the notification will be posted by another app that
-        // does not target O or sets its own channels. E.g. WebAPK notifications.
+        // does not target O or sets its own channels, e.g. WebAPK notifications.
         if (channelId == null) {
-            return;
-        }
-        // If the channel ID matches {@link WebApkServiceClient#CHANNEL_ID_WEBAPKS}, we don't create
-        // the channel in Chrome. Instead, the channel will be created in WebAPKs.
-        if (TextUtils.equals(channelId, WebApkServiceClient.CHANNEL_ID_WEBAPKS)) {
             return;
         }
         ensureInitialized(channelId);

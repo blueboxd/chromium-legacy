@@ -41,7 +41,7 @@ import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.PendingIntentProvider;
-import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
+import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.offline_items_collection.ContentId;
@@ -77,11 +77,11 @@ public final class DownloadNotificationFactory {
     public static Notification buildNotification(Context context,
             @DownloadNotificationService.DownloadStatus int downloadStatus,
             DownloadUpdate downloadUpdate, int notificationId) {
-        String channelId = ChannelDefinitions.ChannelId.DOWNLOADS;
+        String channelId = ChromeChannelDefinitions.ChannelId.DOWNLOADS;
         if (LegacyHelpers.isLegacyDownload(downloadUpdate.getContentId())
                 && downloadStatus == DownloadNotificationService.DownloadStatus.COMPLETED
                 && ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_NOTIFICATION_BADGE)) {
-            channelId = ChannelDefinitions.ChannelId.COMPLETED_DOWNLOADS;
+            channelId = ChromeChannelDefinitions.ChannelId.COMPLETED_DOWNLOADS;
         }
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory

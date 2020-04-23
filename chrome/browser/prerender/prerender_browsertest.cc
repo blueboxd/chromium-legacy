@@ -1107,12 +1107,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderNoSSLReferrer) {
   NavigateToDestURL();
 }
 
-// Checks that popups on a prerendered page cause cancellation.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPopup) {
-  PrerenderTestURL("/prerender/prerender_popup.html",
-                   FINAL_STATUS_CREATE_NEW_WINDOW, 0);
-}
-
 // Checks that renderers using excessive memory will be terminated.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderExcessiveMemory) {
   ASSERT_TRUE(GetPrerenderManager());
@@ -1753,51 +1747,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, HttpPost) {
       "document.getElementsByTagName('pre')[0].innerText);",
       &body));
   EXPECT_EQ("text=value\n", body);
-}
-
-// Prerenders a page that tries to automatically sign user in via the Credential
-// Manager API. The page should be killed.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, AutosigninInPrerenderer) {
-  // Set up a credential in the password store.
-  {
-    base::ScopedAllowBlockingForTesting allow_blocking;
-    PasswordStoreFactory::GetInstance()->SetTestingFactory(
-        current_browser()->profile(),
-        base::BindRepeating(
-            &password_manager::BuildPasswordStore<
-                content::BrowserContext, password_manager::TestPasswordStore>));
-  }
-  scoped_refptr<password_manager::TestPasswordStore> password_store =
-      static_cast<password_manager::TestPasswordStore*>(
-          PasswordStoreFactory::GetForProfile(
-              current_browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS)
-              .get());
-  autofill::PasswordForm signin_form;
-  signin_form.signon_realm = embedded_test_server()->base_url().spec();
-  signin_form.password_value = base::ASCIIToUTF16("password");
-  signin_form.username_value = base::ASCIIToUTF16("user");
-  signin_form.origin = embedded_test_server()->base_url();
-  signin_form.skip_zero_click = false;
-  password_store->AddLogin(signin_form);
-  // Enable 'auto signin' for the profile.
-  password_bubble_experiment::RecordAutoSignInPromptFirstRunExperienceWasShown(
-      browser()->profile()->GetPrefs());
-
-  // Intercept the successful landing page where a signed in user ends up.
-  // It should never load as the API is suppressed.
-  GURL done_url = embedded_test_server()->GetURL("/password/done.html");
-  auto interceptor = std::make_unique<content::URLLoaderInterceptor>(
-      base::BindLambdaForTesting(
-          [&](content::URLLoaderInterceptor::RequestParams* params) {
-            EXPECT_NE(params->url_request.url, done_url);
-            return false;
-          }));
-  // Loading may finish or be interrupted. The final result is important only.
-  DisableLoadEventCheck();
-  // TestPrenderContents is always created before the Autosignin JS can run, so
-  // waiting for PrerenderContents to stop should be reliable.
-  PrerenderTestURL("/password/autosignin.html",
-                   FINAL_STATUS_CREDENTIAL_MANAGER_API, 0);
 }
 
 class PrerenderIncognitoBrowserTest : public PrerenderBrowserTest {

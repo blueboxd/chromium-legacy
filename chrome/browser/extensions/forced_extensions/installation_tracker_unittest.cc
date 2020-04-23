@@ -57,9 +57,9 @@ constexpr char kTimedOutNotInstalledStats[] =
 constexpr char kInstallationFailureCacheStatus[] =
     "Extensions.ForceInstalledFailureCacheStatus";
 constexpr char kFailureReasonsCWS[] =
-    "Extensions.WebStore_ForceInstalledFailureReason2";
+    "Extensions.WebStore_ForceInstalledFailureReason3";
 constexpr char kFailureReasonsSH[] =
-    "Extensions.OffStore_ForceInstalledFailureReason2";
+    "Extensions.OffStore_ForceInstalledFailureReason3";
 constexpr char kInstallationStages[] = "Extensions.ForceInstalledStage";
 constexpr char kInstallationDownloadingStages[] =
     "Extensions.ForceInstalledDownloadingStage";

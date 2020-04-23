@@ -29,9 +29,6 @@ class TestPasswordManagerClient
   TestPasswordManagerClient();
   ~TestPasswordManagerClient() override;
 
-  // PasswordManagerClient:
-  MOCK_METHOD0(OnCredentialManagerUsed, bool());
-
   // PromptUserTo*Ptr functions allow to both override PromptUserTo* methods
   // and expect calls.
   MOCK_METHOD1(PromptUserToSavePasswordPtr, void(PasswordFormManagerForUI*));

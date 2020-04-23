@@ -239,6 +239,7 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
       static_cast<id<BrowserCommands>>(self.browser->GetCommandDispatcher());
   self.mediator.bookmarkModel = ios::BookmarkModelFactory::GetForBrowserState(
       self.browser->GetBrowserState());
+  self.mediator.prefService = self.browser->GetBrowserState()->GetPrefs();
   self.mediator.templateURLService =
       ios::TemplateURLServiceFactory::GetForBrowserState(
           self.browser->GetBrowserState());

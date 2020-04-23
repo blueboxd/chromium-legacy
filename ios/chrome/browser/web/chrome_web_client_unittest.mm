@@ -324,6 +324,11 @@ TEST_F(ChromeWebClientTest, PrepareErrorPageWithSSLInfo) {
 
 // Tests the default user agent for different views.
 TEST_F(ChromeWebClientTest, DefaultUserAgent) {
+  if (@available(iOS 13, *)) {
+  } else {
+    // The feature is only available on iOS 13.
+    return;
+  }
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {web::features::kUseDefaultUserAgentInWebClient, web::kMobileGoogleSRP},
@@ -373,6 +378,7 @@ TEST_F(ChromeWebClientTest, DefaultUserAgent) {
   EXPECT_EQ(web::UserAgentType::DESKTOP,
             web_client.GetDefaultUserAgent(mock_regular_regular_view,
                                            non_google_url));
+
   EXPECT_EQ(
       web::UserAgentType::MOBILE,
       web_client.GetDefaultUserAgent(mock_regular_regular_view, google_url));

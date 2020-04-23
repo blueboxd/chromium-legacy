@@ -198,6 +198,17 @@ const base::Feature kAutofillUseImprovedLabelDisambiguation{
     "AutofillUseImprovedLabelDisambiguation",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether to use the |ParseCityStateCountryZipCode| or not for
+// predicting the heuristic type.
+// |ParseCityStateCountryZipCode| is intended to prevent the misclassification
+// of the country field into |ADDRESS_HOME_STATE| while determining the
+// heuristic type. The misclassification happens sometimes because the regular
+// expression for |ADDRESS_HOME_STATE| contains the term "region" which is also
+// used for country selectors.
+const base::Feature kAutofillUseParseCityStateCountryZipCodeInHeuristic{
+    "AutofillUseParseCityStateCountryZipCodeInHeuristic",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether or not autofill utilizes the country code from the Chrome
 // variation service. The country code is used for determining the address
 // requirements for address profile creation and as source for a default country

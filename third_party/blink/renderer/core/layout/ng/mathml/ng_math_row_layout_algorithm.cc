@@ -140,19 +140,17 @@ scoped_refptr<const NGLayoutResult> NGMathRowLayoutAlgorithm::Layout() {
   return container_builder_.ToBoxFragment();
 }
 
-base::Optional<MinMaxSizes> NGMathRowLayoutAlgorithm::ComputeMinMaxSizes(
+MinMaxSizes NGMathRowLayoutAlgorithm::ComputeMinMaxSizes(
     const MinMaxSizesInput& input) const {
-  base::Optional<MinMaxSizes> sizes =
-      CalculateMinMaxSizesIgnoringChildren(Node(), border_scrollbar_padding_);
-  if (sizes)
-    return sizes;
+  if (auto sizes = CalculateMinMaxSizesIgnoringChildren(
+          Node(), border_scrollbar_padding_))
+    return *sizes;
 
-  sizes.emplace();
+  MinMaxSizes sizes;
   LayoutUnit child_percentage_resolution_block_size =
       CalculateChildPercentageBlockSizeForMinMax(
           ConstraintSpace(), Node(), border_padding_,
           input.percentage_resolution_block_size);
-
   MinMaxSizesInput child_input(child_percentage_resolution_block_size);
 
   for (NGLayoutInputNode child = Node().FirstChild(); child;
@@ -163,17 +161,17 @@ base::Optional<MinMaxSizes> NGMathRowLayoutAlgorithm::ComputeMinMaxSizes(
         ComputeMinAndMaxContentContribution(Style(), child, child_input);
     NGBoxStrut child_margins = ComputeMinMaxMargins(Style(), child);
     child_min_max_sizes += child_margins.InlineSum();
-    sizes->max_size += child_min_max_sizes.max_size;
-    sizes->min_size += child_min_max_sizes.min_size;
+    sizes += child_min_max_sizes;
 
     // TODO(rbuis): Operators can add lspace and rspace.
   }
-  sizes->max_size = std::max(sizes->max_size, sizes->min_size);
 
   // Due to negative margins, it is possible that we calculated a negative
   // intrinsic width. Make sure that we never return a negative width.
-  sizes->Encompass(LayoutUnit());
-  *sizes += border_scrollbar_padding_.InlineSum();
+  sizes.Encompass(LayoutUnit());
+
+  DCHECK_LE(sizes.min_size, sizes.max_size);
+  sizes += border_scrollbar_padding_.InlineSum();
   return sizes;
 }
 

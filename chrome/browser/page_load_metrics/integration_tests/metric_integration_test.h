@@ -91,6 +91,15 @@ class MetricIntegrationTest : public InProcessBrowserTest {
   void ExpectUKMPageLoadMetric(base::StringPiece metric_name,
                                int64_t expected_value);
 
+  void ExpectUKMPageLoadMetricNear(base::StringPiece metric_name,
+                                   double expected_value,
+                                   double epsilon);
+
+  // Checks that the UMA entry is in the bucket for |expected_value| or within
+  // the bucket for |expected_value| +- 1.
+  void ExpectUniqueUMAPageLoadMetricNear(base::StringPiece metric_name,
+                                         double expected_value);
+
  private:
   static std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
       const std::string& relative_url,

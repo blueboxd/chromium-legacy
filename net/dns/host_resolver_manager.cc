@@ -1069,6 +1069,8 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
 
     virtual RequestPriority priority() const = 0;
 
+    virtual void AddTransactionTimeQueued(base::TimeDelta time_queued) = 0;
+
    protected:
     Delegate() = default;
     virtual ~Delegate() = default;
@@ -1134,6 +1136,12 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
 
     DnsQueryType type = transactions_needed_.front();
     transactions_needed_.pop();
+
+    // Record how long this transaction has been waiting to be created.
+    base::TimeDelta time_queued = tick_clock_->NowTicks() - task_start_time_;
+    UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.JobQueueTime.PerTransaction",
+                                 time_queued);
+    delegate_->AddTransactionTimeQueued(time_queued);
 
     std::unique_ptr<DnsTransaction> transaction = CreateTransaction(type);
     transaction->Start();
@@ -2274,6 +2282,9 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
     if (!dns_task)
       return;
 
+    UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.JobQueueTime.Failure",
+                                 total_transaction_time_queued_);
+
     if (duration < base::TimeDelta::FromMilliseconds(10)) {
       base::UmaHistogramSparse(
           secure ? "Net.DNS.SecureDnsTask.ErrorBeforeFallback.Fast"
@@ -2322,6 +2333,9 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
 
     UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.DnsTask.SuccessTime", duration);
 
+    UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.JobQueueTime.Success",
+                                 total_transaction_time_queued_);
+
     // Reset the insecure DNS failure counter if an insecure DnsTask completed
     // successfully.
     if (!secure)
@@ -2361,6 +2375,10 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
     } else if (dns_task_->needs_another_transaction()) {
       dns_task_->StartNextTransaction();
     }
+  }
+
+  void AddTransactionTimeQueued(base::TimeDelta time_queued) override {
+    total_transaction_time_queued_ += time_queued;
   }
 
   void StartMdnsTask() {
@@ -2698,6 +2716,8 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
 
   // Iterator to |this| in the JobMap. |nullopt| if not owned by the JobMap.
   base::Optional<JobMap::iterator> self_iterator_;
+
+  base::TimeDelta total_transaction_time_queued_;
 
   base::WeakPtrFactory<Job> weak_ptr_factory_{this};
 };

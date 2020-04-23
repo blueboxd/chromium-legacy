@@ -2418,6 +2418,44 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Metrics) {
   EXPECT_EQ(1, actions.GetActionCount("PDF.LoadSuccess"));
 }
 
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, TabInAndOutOfPDFPlugin) {
+  GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test.pdf"));
+  content::WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
+  ASSERT_TRUE(guest_contents);
+
+  // Set focus on PDF document.
+  ASSERT_TRUE(content::ExecuteScript(
+      guest_contents, "document.getElementById('plugin').focus();"));
+
+  // The script will ensure we return the id of the focused element on focus.
+  std::string script =
+      "function onFocus(e) {"
+      "  domAutomationController.send(e.target.id);"
+      "}"
+      "const plugin = document.getElementById('plugin');"
+      "const button = "
+      "document.getElementById('zoom-toolbar').$['zoom-out-button'];"
+      "plugin.addEventListener('focus', onFocus);"
+      "button.addEventListener('focus', onFocus);";
+  ASSERT_TRUE(content::ExecuteScript(guest_contents, script));
+
+  // Helper to simulate a tab press and wait for a focus message.
+  auto press_tab_and_wait_for_message = [guest_contents](bool reverse) {
+    content::DOMMessageQueue msg_queue;
+    std::string reply;
+    SimulateKeyPress(guest_contents, ui::DomKey::TAB, ui::DomCode::TAB,
+                     ui::VKEY_TAB, false, /*shift=*/reverse, false, false);
+    EXPECT_TRUE(msg_queue.WaitForMessage(&reply));
+    return reply;
+  };
+
+  // Press <shift-tab> and ensure that last toolbar element (zoom-out-button)
+  // receives focus.
+  EXPECT_EQ("\"zoom-out-button\"", press_tab_and_wait_for_message(true));
+  // Press <tab> and ensure that PDF document receives focus.
+  EXPECT_EQ("\"plugin\"", press_tab_and_wait_for_message(false));
+}
+
 // This test suite does a simple text-extraction based on the accessibility
 // internals, breaking lines & paragraphs where appropriate.  Unlike
 // TreeDumpTests, this allows us to verify the kNextOnLine and kPreviousOnLine

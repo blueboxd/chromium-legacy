@@ -14,7 +14,6 @@ import android.net.Uri;
 import android.os.StrictMode;
 import android.provider.Browser;
 import android.text.TextUtils;
-import android.webkit.MimeTypeMap;
 
 import androidx.annotation.VisibleForTesting;
 
@@ -46,8 +45,6 @@ import java.util.List;
  * WebLayer's implementation of the {@link ExternalNavigationDelegate}.
  */
 public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegate {
-    private static final String PDF_EXTENSION = "pdf";
-
     protected final Context mApplicationContext;
     private final TabImpl mTab;
     private boolean mTabDestroyed;
@@ -293,14 +290,6 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
         // parameters are specified such that this flow should never be invoked.
         // TODO(crbug.com/1031465): Adapt //chrome's logic for closing of tabs.
         assert false;
-    }
-
-    @Override
-    public boolean isPdfDownload(String url) {
-        String fileExtension = MimeTypeMap.getFileExtensionFromUrl(url);
-        if (TextUtils.isEmpty(fileExtension)) return false;
-
-        return PDF_EXTENSION.equals(fileExtension);
     }
 
     @Override

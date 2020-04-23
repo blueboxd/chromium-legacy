@@ -5,15 +5,16 @@
 package org.chromium.chrome.browser.notifications.channels;
 
 import android.annotation.TargetApi;
-import android.app.NotificationChannel;
-import android.app.NotificationChannelGroup;
 import android.app.NotificationManager;
-import android.content.res.Resources;
 import android.os.Build;
+import android.text.TextUtils;
 
 import androidx.annotation.StringDef;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.webapps.WebApkServiceClient;
+import org.chromium.components.browser_ui.notifications.channels.ChannelDefinitions;
+import org.chromium.components.browser_ui.notifications.channels.ChannelDefinitions.PredefinedChannel;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -27,8 +28,8 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Contains the properties of all our pre-definable notification channels on Android O+. In practice
- * this is all our channels except site channels, which are defined dynamically by the
+ * Contains Chrome-specific properties for pre-definable notification channels on Android O+. In
+ * practice this is all our channels except site channels, which are defined dynamically by the
  * {@link SiteChannelsManager}. <br/>
  * <br/>
  * PLEASE NOTE: Notification channels appear in system UI and their properties are persisted forever
@@ -38,14 +39,23 @@ import java.util.Set;
  * See the README.md in this directory for more information before adding or changing any channels.
  */
 @TargetApi(Build.VERSION_CODES.O)
-public class ChannelDefinitions {
-    public static final String CHANNEL_ID_PREFIX_SITES = "web:";
+public class ChromeChannelDefinitions extends ChannelDefinitions {
     /**
      * Version number identifying the current set of channels. This must be incremented whenever the
      * set of channels returned by {@link #getStartupChannelIds()} or {@link #getLegacyChannelIds()}
      * changes.
      */
     static final int CHANNELS_VERSION = 2;
+
+    private static class LazyHolder {
+        private static ChromeChannelDefinitions sInstance = new ChromeChannelDefinitions();
+    }
+
+    public static ChromeChannelDefinitions getInstance() {
+        return LazyHolder.sInstance;
+    }
+
+    private ChromeChannelDefinitions() {}
 
     /**
      * To define a new channel, add the channel ID to this StringDef and add a new entry to
@@ -79,9 +89,7 @@ public class ChannelDefinitions {
         String ANNOUNCEMENT = "announcement";
     }
 
-    @StringDef({
-            ChannelGroupId.GENERAL, ChannelGroupId.SITES
-    })
+    @StringDef({ChannelGroupId.GENERAL, ChannelGroupId.SITES})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ChannelGroupId {
         String SITES = "sites";
@@ -183,7 +191,7 @@ public class ChannelDefinitions {
 
             map.put(ChannelId.ANNOUNCEMENT,
                     new PredefinedChannel(ChannelId.ANNOUNCEMENT,
-                            R.string.announcement_notification_channel_name,
+                            R.string.notification_category_announcement,
                             NotificationManager.IMPORTANCE_LOW, ChannelGroupId.GENERAL,
                             true /* showNotificationBadges */));
 
@@ -198,9 +206,9 @@ public class ChannelDefinitions {
      * channel ids so they aren't accidentally reused.
      */
     private static final String[] LEGACY_CHANNEL_IDS = {
-            ChannelDefinitions.ChannelId.SITES,
-            ChannelDefinitions.ChannelId.PERMISSION_REQUESTS,
-            ChannelDefinitions.ChannelId.PERMISSION_REQUESTS_HIGH,
+            ChromeChannelDefinitions.ChannelId.SITES,
+            ChromeChannelDefinitions.ChannelId.PERMISSION_REQUESTS,
+            ChromeChannelDefinitions.ChannelId.PERMISSION_REQUESTS_HIGH,
     };
 
     // Map defined in static inner class so it's only initialized lazily.
@@ -213,118 +221,46 @@ public class ChannelDefinitions {
                             ChannelGroupId.GENERAL, R.string.notification_category_group_general));
             map.put(ChannelGroupId.SITES,
                     new PredefinedChannelGroup(
-                            ChannelGroupId.SITES, R.string.notification_category_sites));
+                            ChannelGroupId.SITES, R.string.notification_category_group_sites));
             MAP = Collections.unmodifiableMap(map);
         }
     }
 
-    /**
-     * @return A set of all known channel group ids that can be used for {@link #getChannelGroup}.
-     */
-    static Set<String> getAllChannelGroupIds() {
+    @Override
+    public Set<String> getAllChannelGroupIds() {
         return PredefinedChannelGroups.MAP.keySet();
     }
 
-    /**
-     * @return A set of all known channel ids that can be used for {@link #getChannelFromId}.
-     */
-    static Set<String> getAllChannelIds() {
+    @Override
+    public Set<String> getAllChannelIds() {
         return PredefinedChannels.MAP.keySet();
     }
 
-    /**
-     * @return A set of channel ids of channels that should be initialized on startup.
-     */
-    static Set<String> getStartupChannelIds() {
+    @Override
+    public Set<String> getStartupChannelIds() {
         // CHANNELS_VERSION must be incremented if the set of channels returned here changes.
         return PredefinedChannels.STARTUP;
     }
 
-    /**
-     * @return A set of channel group ids of channel groups that should be initialized on startup.
-     */
-    static Set<String> getStartupChannelGroupIds() {
-        Set<String> groupIds = new HashSet<>();
-        for (String id : getStartupChannelIds()) {
-            groupIds.add(getChannelFromId(id).mGroupId);
-        }
-        return groupIds;
-    }
-
-    /**
-     * @return An array of old ChannelIds that may have been returned by
-     *         {@link #getStartupChannelIds} in the past, but are no longer in use.
-     */
-    static List<String> getLegacyChannelIds() {
+    @Override
+    public List<String> getLegacyChannelIds() {
         List<String> legacyChannels = new ArrayList<>(Arrays.asList(LEGACY_CHANNEL_IDS));
         return legacyChannels;
     }
 
-    static PredefinedChannelGroup getChannelGroupForChannel(PredefinedChannel channel) {
-        return getChannelGroup(channel.mGroupId);
-    }
-
-    static PredefinedChannelGroup getChannelGroup(@ChannelGroupId String groupId) {
+    @Override
+    public PredefinedChannelGroup getChannelGroup(@ChannelGroupId String groupId) {
         return PredefinedChannelGroups.MAP.get(groupId);
     }
 
-    static PredefinedChannel getChannelFromId(@ChannelId String channelId) {
+    @Override
+    public PredefinedChannel getChannelFromId(@ChannelId String channelId) {
         return PredefinedChannels.MAP.get(channelId);
     }
 
-    /**
-     * Helper class for storing predefined channel properties while allowing the channel name to be
-     * lazily evaluated only when it is converted to an actual NotificationChannel.
-     */
-    static class PredefinedChannel {
-        @ChannelId
-        private final String mId;
-        private final int mNameResId;
-        private final int mImportance;
-        @ChannelGroupId
-        private final String mGroupId;
-        private final boolean mShowNotificationBadges;
-
-        PredefinedChannel(@ChannelId String id, int nameResId, int importance,
-                @ChannelGroupId String groupId) {
-            this(id, nameResId, importance, groupId, false /* showNotificationBadges */);
-        }
-
-        PredefinedChannel(@ChannelId String id, int nameResId, int importance,
-                @ChannelGroupId String groupId, boolean showNotificationBadges) {
-            this.mId = id;
-            this.mNameResId = nameResId;
-            this.mImportance = importance;
-            this.mGroupId = groupId;
-            this.mShowNotificationBadges = showNotificationBadges;
-        }
-
-        NotificationChannel toNotificationChannel(Resources resources) {
-            String name = resources.getString(mNameResId);
-            NotificationChannel channel = new NotificationChannel(mId, name, mImportance);
-            channel.setGroup(mGroupId);
-            channel.setShowBadge(mShowNotificationBadges);
-            return channel;
-        }
-    }
-
-    /**
-     * Helper class for storing predefined channel group properties while allowing the group name to
-     * be lazily evaluated only when it is converted to an actual NotificationChannelGroup.
-     */
-    public static class PredefinedChannelGroup {
-        @ChannelGroupId
-        public final String mId;
-        public final int mNameResId;
-
-        PredefinedChannelGroup(@ChannelGroupId String id, int nameResId) {
-            this.mId = id;
-            this.mNameResId = nameResId;
-        }
-
-        NotificationChannelGroup toNotificationChannelGroup(Resources resources) {
-            String name = resources.getString(mNameResId);
-            return new NotificationChannelGroup(mId, name);
-        }
+    @Override
+    public boolean isValidNonPredefinedChannelId(String channelId) {
+        return SiteChannelsManager.isValidSiteChannelId(channelId)
+                || TextUtils.equals(channelId, WebApkServiceClient.CHANNEL_ID_WEBAPKS);
     }
 }

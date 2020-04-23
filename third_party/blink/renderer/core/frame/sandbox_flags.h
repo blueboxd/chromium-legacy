@@ -30,7 +30,6 @@
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink-forward.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink-forward.h"
-#include "third_party/blink/renderer/core/dom/space_split_string.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
@@ -42,10 +41,6 @@ using SandboxFlagFeaturePolicyPairs =
 // policies. This includes most but not all sandbox flags as some flags have not
 // yet migrated to using feature policies.
 const SandboxFlagFeaturePolicyPairs& SandboxFlagsWithFeaturePolicies();
-
-network::mojom::blink::WebSandboxFlags ParseSandboxPolicy(
-    const SpaceSplitString& policy,
-    String& invalid_tokens_error_message);
 
 // With FeaturePolicyForSandbox most sandbox flags will be represented with
 // features. This method returns the part of sandbox flags which were not mapped

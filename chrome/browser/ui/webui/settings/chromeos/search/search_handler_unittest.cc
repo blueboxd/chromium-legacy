@@ -6,10 +6,10 @@
 
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chromeos/local_search_service/local_search_service.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search.mojom-test-utils.h"
 #include "chrome/common/webui_url_constants.h"
-#include "chrome/services/local_search_service/local_search_service_impl.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -50,7 +50,7 @@ class SearchHandlerTest : public testing::Test {
   TestingProfileManager profile_manager_;
   chromeos::network_config::CrosNetworkConfigTestHelper network_config_helper_;
   mojo::Remote<mojom::SearchHandler> handler_remote_;
-  local_search_service::LocalSearchServiceImpl local_search_service_;
+  local_search_service::LocalSearchService local_search_service_;
   std::unique_ptr<OsSettingsLocalizedStringsProvider> provider_;
   std::unique_ptr<SearchHandler> handler_;
 };

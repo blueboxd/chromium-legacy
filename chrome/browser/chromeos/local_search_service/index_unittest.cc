@@ -9,8 +9,8 @@
 #include <utility>
 #include <vector>
 
-#include "chrome/services/local_search_service/index_impl.h"
-#include "chrome/services/local_search_service/test_utils.h"
+#include "chrome/browser/chromeos/local_search_service/index.h"
+#include "chrome/browser/chromeos/local_search_service/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace local_search_service {
@@ -25,16 +25,16 @@ constexpr bool kDefaultUseEditDistance = false;
 
 }  // namespace
 
-class IndexImplTest : public testing::Test {
+class IndexTest : public testing::Test {
  protected:
-  IndexImpl index_impl_;
+  Index index_;
 };
 
-TEST_F(IndexImplTest, SetSearchParams) {
+TEST_F(IndexTest, SetSearchParams) {
   {
     // No params are specified so default values are used.
     const SearchParams search_params;
-    index_impl_.SetSearchParams(search_params);
+    index_.SetSearchParams(search_params);
 
     // Initialize them to values different from default.
     double relevance_threshold = kDefaultRelevanceThreshold * 2.0;
@@ -43,7 +43,7 @@ TEST_F(IndexImplTest, SetSearchParams) {
     bool use_weighted_ratio = !kDefaultUseWeightedRatio;
     bool use_edit_distance = !kDefaultUseEditDistance;
 
-    index_impl_.GetSearchParamsForTesting(
+    index_.GetSearchParamsForTesting(
         &relevance_threshold, &partial_match_penalty_rate, &use_prefix_only,
         &use_weighted_ratio, &use_edit_distance);
 
@@ -62,7 +62,7 @@ TEST_F(IndexImplTest, SetSearchParams) {
         !kDefaultUsePrefixOnly, !kDefaultUseWeightedRatio,
         !kDefaultUseEditDistance};
 
-    index_impl_.SetSearchParams(search_params);
+    index_.SetSearchParams(search_params);
 
     // Initialize them to default values.
     double relevance_threshold = kDefaultRelevanceThreshold;
@@ -71,7 +71,7 @@ TEST_F(IndexImplTest, SetSearchParams) {
     bool use_weighted_ratio = kDefaultUseWeightedRatio;
     bool use_edit_distance = kDefaultUseEditDistance;
 
-    index_impl_.GetSearchParamsForTesting(
+    index_.GetSearchParamsForTesting(
         &relevance_threshold, &partial_match_penalty_rate, &use_prefix_only,
         &use_weighted_ratio, &use_edit_distance);
 
@@ -84,51 +84,51 @@ TEST_F(IndexImplTest, SetSearchParams) {
   }
 }
 
-TEST_F(IndexImplTest, RelevanceThreshold) {
+TEST_F(IndexTest, RelevanceThreshold) {
   const std::map<std::string, std::vector<std::string>> data_to_register = {
       {"id1", {"Clash Of Clan"}}, {"id2", {"famous"}}};
   std::vector<Data> data = CreateTestData(data_to_register);
-  index_impl_.AddOrUpdate(data);
-  EXPECT_EQ(index_impl_.GetSize(), 2u);
+  index_.AddOrUpdate(data);
+  EXPECT_EQ(index_.GetSize(), 2u);
   {
     SearchParams search_params;
     search_params.relevance_threshold = 0.0;
-    index_impl_.SetSearchParams(search_params);
+    index_.SetSearchParams(search_params);
 
-    FindAndCheck(&index_impl_, "CC",
+    FindAndCheck(&index_, "CC",
                  /*max_results=*/-1, ResponseStatus::kSuccess, {"id1", "id2"});
   }
   {
     SearchParams search_params;
     search_params.relevance_threshold = 0.3;
-    index_impl_.SetSearchParams(search_params);
+    index_.SetSearchParams(search_params);
 
-    FindAndCheck(&index_impl_, "CC",
+    FindAndCheck(&index_, "CC",
                  /*max_results=*/-1, ResponseStatus::kSuccess, {"id1"});
   }
   {
     SearchParams search_params;
     search_params.relevance_threshold = 0.9;
-    index_impl_.SetSearchParams(search_params);
+    index_.SetSearchParams(search_params);
 
-    FindAndCheck(&index_impl_, "CC",
+    FindAndCheck(&index_, "CC",
                  /*max_results=*/-1, ResponseStatus::kSuccess, {});
   }
 }
 
-TEST_F(IndexImplTest, MaxResults) {
+TEST_F(IndexTest, MaxResults) {
   const std::map<std::string, std::vector<std::string>> data_to_register = {
       {"id1", {"Clash Of Clan"}}, {"id2", {"famous"}}};
   std::vector<Data> data = CreateTestData(data_to_register);
-  index_impl_.AddOrUpdate(data);
-  EXPECT_EQ(index_impl_.GetSize(), 2u);
+  index_.AddOrUpdate(data);
+  EXPECT_EQ(index_.GetSize(), 2u);
   SearchParams search_params;
   search_params.relevance_threshold = 0.0;
-  index_impl_.SetSearchParams(search_params);
+  index_.SetSearchParams(search_params);
 
-  FindAndCheck(&index_impl_, "CC",
+  FindAndCheck(&index_, "CC",
                /*max_results=*/-1, ResponseStatus::kSuccess, {"id1", "id2"});
-  FindAndCheck(&index_impl_, "CC",
+  FindAndCheck(&index_, "CC",
                /*max_results=*/1, ResponseStatus::kSuccess, {"id1"});
 }
 

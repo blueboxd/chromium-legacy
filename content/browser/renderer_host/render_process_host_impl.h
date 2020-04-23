@@ -953,6 +953,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void ProvideStatusFileForRenderer();
 #endif
 
+  // Gives a DELETE_ON_CLOSE file descriptor to the renderer, to use for
+  // swapping. See blink::DiskDataAllocator for uses.
+  void ProvideSwapFileForRenderer();
+
   mojo::OutgoingInvitation mojo_invitation_;
 
   size_t keep_alive_ref_count_;

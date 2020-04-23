@@ -12,6 +12,8 @@ extern NSString* const kConfirmationAlertMoreInfoAccessibilityIdentifier;
 extern NSString* const kConfirmationAlertTitleAccessibilityIdentifier;
 extern NSString* const kConfirmationAlertSubtitleAccessibilityIdentifier;
 extern NSString* const kConfirmationAlertPrimaryActionAccessibilityIdentifier;
+extern NSString* const
+    kConfirmationAlertBarPrimaryActionAccessibilityIdentifier;
 
 @protocol ConfirmationAlertActionHandler;
 
@@ -22,6 +24,9 @@ extern NSString* const kConfirmationAlertPrimaryActionAccessibilityIdentifier;
 
 // The headline below the image. Must be set before the view is loaded.
 @property(nonatomic, strong) NSString* titleString;
+
+// Text style for the title. If nil, will default to UIFontTextStyleTitle1.
+@property(nonatomic, strong) NSString* titleTextStyle;
 
 // The subtitle below the title. Must be set before the view is loaded.
 @property(nonatomic, strong) NSString* subtitleString;
@@ -38,6 +43,14 @@ extern NSString* const kConfirmationAlertPrimaryActionAccessibilityIdentifier;
 
 // Value to determine whether or not the image's size should be scaled.
 @property(nonatomic) BOOL imageHasFixedSize;
+
+// Controls if, when we run out of view space, we should hide the action button
+// instead of the image.
+@property(nonatomic) BOOL alwaysShowImage;
+
+// The style of the primary action button added to the toolbar. Must be set if
+// alwaysShowImage is set to YES.
+@property(nonatomic) UIBarButtonSystemItem primaryActionBarButtonStyle;
 
 // Controls if there is a help button in the view. Must be set before the
 // view is loaded.

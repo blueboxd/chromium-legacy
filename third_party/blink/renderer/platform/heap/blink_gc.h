@@ -21,7 +21,6 @@ class Visitor;
 using Address = uint8_t*;
 using ConstAddress = const uint8_t*;
 
-using FinalizationCallback = void (*)(void*);
 using VisitorCallback = void (*)(Visitor*, const void*);
 using MarkingVisitorCallback = void (*)(MarkingVisitor*, const void*);
 using TraceCallback = VisitorCallback;

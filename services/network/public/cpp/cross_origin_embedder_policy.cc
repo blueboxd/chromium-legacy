@@ -38,6 +38,7 @@ bool CrossOriginEmbedderPolicy::operator==(
          report_only_reporting_endpoint == other.report_only_reporting_endpoint;
 }
 
+// static
 std::pair<mojom::CrossOriginEmbedderPolicyValue, base::Optional<std::string>>
 CrossOriginEmbedderPolicy::Parse(base::StringPiece header_value) {
   constexpr auto kNone = mojom::CrossOriginEmbedderPolicyValue::kNone;

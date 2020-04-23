@@ -21,7 +21,7 @@ import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
 import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.PendingIntentProvider;
-import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
+import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
 import org.chromium.chrome.browser.notifications.settings.NotificationSettings;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.components.browser_ui.notifications.ChromeNotification;
@@ -123,7 +123,7 @@ public class PrefetchedPagesNotifier {
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory
                         .createChromeNotificationBuilder(true /* preferCompat */,
-                                ChannelDefinitions.ChannelId.CONTENT_SUGGESTIONS,
+                                ChromeChannelDefinitions.ChannelId.CONTENT_SUGGESTIONS,
                                 null /* remoteAppPackageName */, metadata)
                         .setAutoCancel(true)
                         .setContentIntent(clickIntent)

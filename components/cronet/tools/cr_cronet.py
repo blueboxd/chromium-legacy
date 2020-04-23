@@ -119,6 +119,7 @@ def get_mobile_gn_args(target_os, is_release):
 def get_ios_gn_args(is_release, target_cpu):
   return get_mobile_gn_args('ios', is_release) + \
       'is_cronet_build=true  ' + \
+      'enable_remoting=false ' + \
       'use_xcode_clang=false ' + \
       'ios_deployment_target="9.0" ' + \
       'enable_dsyms=true ' + \

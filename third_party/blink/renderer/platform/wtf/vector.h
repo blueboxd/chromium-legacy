@@ -192,14 +192,22 @@ template <typename T, typename Allocator>
 struct VectorMover<true, T, Allocator> {
   STATIC_ONLY(VectorMover);
   using Traits = ConstructTraits<T, VectorTraits<T>, Allocator>;
+  static void MoveImpl(const T* src, const T* src_end, T* dst) {
+    size_t bytes = reinterpret_cast<const char*>(src_end) -
+                   reinterpret_cast<const char*>(src);
+    if (Allocator::kIsGarbageCollected) {
+      AtomicWriteMemcpy(dst, src, bytes);
+    } else {
+      memcpy(dst, src, bytes);
+    }
+  }
+
   static void Move(const T* src,
                    const T* src_end,
                    T* dst,
                    bool has_inline_buffer) {
     if (LIKELY(dst && src)) {
-      memcpy(dst, src,
-             reinterpret_cast<const char*>(src_end) -
-                 reinterpret_cast<const char*>(src));
+      MoveImpl(src, src_end, dst);
       if (has_inline_buffer)
         Traits::NotifyNewElements(dst, src_end - src);
     }
@@ -235,10 +243,24 @@ struct VectorMover<true, T, Allocator> {
         Traits::NotifyNewElements(dst, src_end - src);
     }
   }
+
+  static void SwapImpl(T* src, T* src_end, T* dst) {
+    if (Allocator::kIsGarbageCollected) {
+      alignas(std::max(alignof(T), sizeof(size_t))) char buf[sizeof(T)];
+      for (; src < src_end; ++src, ++dst) {
+        memcpy(buf, dst, sizeof(T));
+        AtomicWriteMemcpy<sizeof(T)>(dst, src);
+        AtomicWriteMemcpy<sizeof(T)>(src, buf);
+      }
+    } else {
+      std::swap_ranges(reinterpret_cast<char*>(src),
+                       reinterpret_cast<char*>(src_end),
+                       reinterpret_cast<char*>(dst));
+    }
+  }
+
   static void Swap(T* src, T* src_end, T* dst) {
-    std::swap_ranges(reinterpret_cast<char*>(src),
-                     reinterpret_cast<char*>(src_end),
-                     reinterpret_cast<char*>(dst));
+    SwapImpl(src, src_end, dst);
     const size_t len = src_end - src;
     Traits::NotifyNewElements(src, len);
     Traits::NotifyNewElements(dst, len);
@@ -725,7 +747,7 @@ class VectorBuffer : protected VectorBufferBase<T, Allocator> {
     if (Buffer() != InlineBuffer() && other.Buffer() != other.InlineBuffer()) {
       // The easiest case: both buffers are non-inline. We just need to swap the
       // pointers.
-      std::swap(buffer_, other.buffer_);
+      AtomicWriteSwap(buffer_, other.buffer_);
       std::swap(capacity_, other.capacity_);
       std::swap(size_, other.size_);
       Allocator::BackingWriteBarrier(&buffer_);
@@ -786,8 +808,9 @@ class VectorBuffer : protected VectorBufferBase<T, Allocator> {
       DCHECK_EQ(Buffer(), InlineBuffer());
       DCHECK_NE(other.Buffer(), other.InlineBuffer());
       ANNOTATE_DELETE_BUFFER(buffer_, inlineCapacity, size_);
-      buffer_ = other.Buffer();
-      other.buffer_ = other.InlineBuffer();
+      AsAtomicPtr(&buffer_)->store(other.Buffer(), std::memory_order_relaxed);
+      AsAtomicPtr(&other.buffer_)
+          ->store(other.InlineBuffer(), std::memory_order_relaxed);
       std::swap(size_, other.size_);
       ANNOTATE_NEW_BUFFER(other.buffer_, inlineCapacity, other.size_);
       Allocator::BackingWriteBarrier(&buffer_);
@@ -796,8 +819,8 @@ class VectorBuffer : protected VectorBufferBase<T, Allocator> {
       DCHECK_NE(Buffer(), InlineBuffer());
       DCHECK_EQ(other.Buffer(), other.InlineBuffer());
       ANNOTATE_DELETE_BUFFER(other.buffer_, inlineCapacity, other.size_);
-      other.buffer_ = Buffer();
-      buffer_ = InlineBuffer();
+      AsAtomicPtr(&other.buffer_)->store(Buffer(), std::memory_order_relaxed);
+      AsAtomicPtr(&buffer_)->store(InlineBuffer(), std::memory_order_relaxed);
       std::swap(size_, other.size_);
       ANNOTATE_NEW_BUFFER(buffer_, inlineCapacity, size_);
       Allocator::BackingWriteBarrier(&other.buffer_);
@@ -1031,6 +1054,10 @@ class VectorBuffer : protected VectorBufferBase<T, Allocator> {
 template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 class Vector
     : private VectorBuffer<T, INLINE_CAPACITY, Allocator>,
+      // ConditionalDestructor could in addition check for
+      // VectorTraits<T>::kNeedsDestruction which requires that the complete
+      // type is available though. Unfortunately, there's some use cases that
+      // use Vector with foward-declared types.
       public ConditionalDestructor<Vector<T, INLINE_CAPACITY, Allocator>,
                                    (INLINE_CAPACITY == 0) &&
                                        Allocator::kIsGarbageCollected> {

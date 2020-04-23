@@ -30,7 +30,7 @@ import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
-import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
+import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -1238,7 +1238,7 @@ public class SiteSettingsTest {
 
             // Ensure that a proper separate channel has indeed been created to allow the user to
             // alter the setting.
-            Assert.assertNotEquals(ChannelDefinitions.ChannelId.SITES,
+            Assert.assertNotEquals(ChromeChannelDefinitions.ChannelId.SITES,
                     SiteChannelsManager.getInstance().getChannelIdForOrigin(
                             Origin.createOrThrow(url).toString()));
         });

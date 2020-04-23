@@ -13,12 +13,67 @@
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "components/prefs/pref_change_registrar.h"
 
 namespace chromeos {
 class FakeSessionManagerClient;
 }
 
 namespace policy {
+
+// Helpert functions for setting up device local account.
+class DeviceLocalAccountTestHelper {
+ public:
+  static void SetupDeviceLocalAccount(UserPolicyBuilder* policy_builder,
+                                      const std::string& kAccountId,
+                                      const std::string& kDisplayName);
+
+  static void AddPublicSession(
+      enterprise_management::ChromeDeviceSettingsProto* proto,
+      const std::string& kAccountId);
+};
+
+// Helper base class used for waiting for a pref value stored in local state
+// to change to a particular expected value.
+class LocalStateValueWaiter {
+ public:
+  LocalStateValueWaiter(const std::string& pref, base::Value expected_value);
+  LocalStateValueWaiter(const LocalStateValueWaiter&) = delete;
+  LocalStateValueWaiter& operator=(const LocalStateValueWaiter&) = delete;
+
+  virtual bool ExpectedValueFound();
+  virtual ~LocalStateValueWaiter();
+
+  void Wait();
+
+ protected:
+  const std::string pref_;
+  const base::Value expected_value_;
+
+  PrefChangeRegistrar pref_change_registrar_;
+
+ private:
+  base::RunLoop run_loop_;
+  void QuitLoopIfExpectedValueFound();
+};
+
+class DictionaryLocalStateValueWaiter : public LocalStateValueWaiter {
+ public:
+  DictionaryLocalStateValueWaiter(const std::string& pref,
+                                  const std::string& expected_value,
+                                  const std::string& key);
+
+  DictionaryLocalStateValueWaiter(const DictionaryLocalStateValueWaiter&) =
+      delete;
+  DictionaryLocalStateValueWaiter& operator=(
+      const DictionaryLocalStateValueWaiter&) = delete;
+  ~DictionaryLocalStateValueWaiter() override;
+
+ private:
+  bool ExpectedValueFound() override;
+
+  const std::string key_;
+};
 
 class DevicePolicyCrosTestHelper {
  public:

@@ -30,12 +30,6 @@
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/renderer/core/feature_policy/feature_policy_parser.h"
-#include "third_party/blink/renderer/core/html/html_iframe_element.h"
-#include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
-#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
-#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -78,72 +72,6 @@ SandboxFlagsImplementedByFeaturePolicy() {
       mask |= pair.first;
   }
   return mask;
-}
-
-network::mojom::blink::WebSandboxFlags ParseSandboxPolicy(
-    const SpaceSplitString& policy,
-    String& invalid_tokens_error_message) {
-  // http://www.w3.org/TR/html5/the-iframe-element.html#attr-iframe-sandbox
-  // Parse the unordered set of unique space-separated tokens.
-  network::mojom::blink::WebSandboxFlags flags =
-      network::mojom::blink::WebSandboxFlags::kAll;
-  unsigned length = policy.size();
-  unsigned number_of_token_errors = 0;
-  StringBuilder token_errors;
-
-  using SandboxFlags = network::mojom::blink::WebSandboxFlags;
-
-  for (unsigned index = 0; index < length; index++) {
-    // Turn off the corresponding sandbox flag if it's set as "allowed".
-    String sandbox_token(policy[index]);
-    if (EqualIgnoringASCIICase(sandbox_token, "allow-same-origin")) {
-      flags = flags & ~SandboxFlags::kOrigin;
-    } else if (EqualIgnoringASCIICase(sandbox_token, "allow-forms")) {
-      flags = flags & ~SandboxFlags::kForms;
-    } else if (EqualIgnoringASCIICase(sandbox_token, "allow-scripts")) {
-      flags = flags & ~SandboxFlags::kScripts;
-      flags = flags & ~SandboxFlags::kAutomaticFeatures;
-    } else if (EqualIgnoringASCIICase(sandbox_token, "allow-top-navigation")) {
-      flags = flags & ~SandboxFlags::kTopNavigation;
-    } else if (EqualIgnoringASCIICase(sandbox_token, "allow-popups")) {
-      flags = flags & ~SandboxFlags::kPopups;
-    } else if (EqualIgnoringASCIICase(sandbox_token, "allow-pointer-lock")) {
-      flags = flags & ~SandboxFlags::kPointerLock;
-    } else if (EqualIgnoringASCIICase(sandbox_token,
-                                      "allow-orientation-lock")) {
-      flags = flags & ~SandboxFlags::kOrientationLock;
-    } else if (EqualIgnoringASCIICase(sandbox_token,
-                                      "allow-popups-to-escape-sandbox")) {
-      flags = flags & ~SandboxFlags::kPropagatesToAuxiliaryBrowsingContexts;
-    } else if (EqualIgnoringASCIICase(sandbox_token, "allow-modals")) {
-      flags = flags & ~SandboxFlags::kModals;
-    } else if (EqualIgnoringASCIICase(sandbox_token, "allow-presentation")) {
-      flags = flags & ~SandboxFlags::kPresentationController;
-    } else if (EqualIgnoringASCIICase(
-                   sandbox_token, "allow-top-navigation-by-user-activation")) {
-      flags = flags & ~SandboxFlags::kTopNavigationByUserActivation;
-    } else if (EqualIgnoringASCIICase(sandbox_token, "allow-downloads")) {
-      flags = flags & ~SandboxFlags::kDownloads;
-    } else if (RuntimeEnabledFeatures::StorageAccessAPIEnabled() &&
-               EqualIgnoringASCIICase(
-                   sandbox_token, "allow-storage-access-by-user-activation")) {
-      flags = flags & ~SandboxFlags::kStorageAccessByUserActivation;
-    } else {
-      token_errors.Append(token_errors.IsEmpty() ? "'" : ", '");
-      token_errors.Append(sandbox_token);
-      token_errors.Append("'");
-      number_of_token_errors++;
-    }
-  }
-
-  if (number_of_token_errors) {
-    token_errors.Append(number_of_token_errors > 1
-                            ? " are invalid sandbox flags."
-                            : " is an invalid sandbox flag.");
-    invalid_tokens_error_message = token_errors.ToString();
-  }
-
-  return flags;
 }
 
 // Removes a certain set of flags from |sandbox_flags| for which we have feature

@@ -8,15 +8,15 @@
 #include <vector>
 
 #include "base/optional.h"
+#include "chrome/browser/chromeos/local_search_service/index.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search.mojom.h"
-#include "chrome/services/local_search_service/index_impl.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 namespace local_search_service {
-class LocalSearchServiceImpl;
+class LocalSearchService;
 }  // namespace local_search_service
 
 namespace chromeos {
@@ -37,9 +37,8 @@ class SearchHandler : public mojom::SearchHandler, public KeyedService {
   // Maximum number of results returned by a Search() call.
   static const size_t kNumMaxResults;
 
-  SearchHandler(
-      OsSettingsLocalizedStringsProvider* strings_provider,
-      local_search_service::LocalSearchServiceImpl* local_search_service);
+  SearchHandler(OsSettingsLocalizedStringsProvider* strings_provider,
+                local_search_service::LocalSearchService* local_search_service);
   ~SearchHandler() override;
 
   SearchHandler(const SearchHandler& other) = delete;
@@ -65,7 +64,7 @@ class SearchHandler : public mojom::SearchHandler, public KeyedService {
       const local_search_service::Result& result);
 
   OsSettingsLocalizedStringsProvider* strings_provider_;
-  local_search_service::IndexImpl* index_;
+  local_search_service::Index* index_;
 
   // Note: Expected to have multiple clients, so a ReceiverSet is used.
   mojo::ReceiverSet<mojom::SearchHandler> receivers_;

@@ -24,6 +24,11 @@ extern const char kAndroidSdkInt[];
 
 extern const char kSupportLibraryWebkitVersion[];
 
+// Indicates whether weblayer and webview are running in the same process.
+// When this is true, crashes may be reported to both WebLayer and WebView,
+// regardless of whetere the crash happened.
+extern const char kWeblayerWebViewCompatMode[];
+
 }  // namespace crash_keys
 }  // namespace android_webview
 

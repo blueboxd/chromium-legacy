@@ -318,11 +318,11 @@ scoped_refptr<const NGLayoutResult> NGMathScriptsLayoutAlgorithm::Layout() {
   return container_builder_.ToBoxFragment();
 }
 
-base::Optional<MinMaxSizes> NGMathScriptsLayoutAlgorithm::ComputeMinMaxSizes(
+MinMaxSizes NGMathScriptsLayoutAlgorithm::ComputeMinMaxSizes(
     const MinMaxSizesInput& input) const {
-  if (base::Optional<MinMaxSizes> sizes = CalculateMinMaxSizesIgnoringChildren(
+  if (auto sizes = CalculateMinMaxSizesIgnoringChildren(
           Node(), border_scrollbar_padding_))
-    return sizes;
+    return *sizes;
 
   NGBlockNode base = nullptr;
   NGBlockNode sub = nullptr;

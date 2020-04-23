@@ -11,21 +11,21 @@
 
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/services/local_search_service/local_search_service_impl.h"
-#include "chrome/services/local_search_service/test_utils.h"
+#include "chrome/browser/chromeos/local_search_service/local_search_service.h"
+#include "chrome/browser/chromeos/local_search_service/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace local_search_service {
 
-class LocalSearchServiceImplTest : public testing::Test {
+class LocalSearchServiceTest : public testing::Test {
  protected:
-  LocalSearchServiceImpl service_impl_;
+  LocalSearchService service_;
 };
 
 // Tests a query that results in an exact match. We do not aim to test the
 // algorithm used in the search, but exact match should always be returned.
-TEST_F(LocalSearchServiceImplTest, ResultFound) {
-  IndexImpl* const index = service_impl_.GetIndexImpl(IndexId::kCrosSettings);
+TEST_F(LocalSearchServiceTest, ResultFound) {
+  Index* const index = service_.GetIndex(IndexId::kCrosSettings);
   DCHECK(index);
 
   EXPECT_EQ(index->GetSize(), 0u);
@@ -48,8 +48,8 @@ TEST_F(LocalSearchServiceImplTest, ResultFound) {
 // Tests a query that results in no match. We do not aim to test the algorithm
 // used in the search, but a query too different from the item should have no
 // result returned.
-TEST_F(LocalSearchServiceImplTest, ResultNotFound) {
-  IndexImpl* const index = service_impl_.GetIndexImpl(IndexId::kCrosSettings);
+TEST_F(LocalSearchServiceTest, ResultNotFound) {
+  Index* const index = service_.GetIndex(IndexId::kCrosSettings);
   DCHECK(index);
 
   EXPECT_EQ(index->GetSize(), 0u);
@@ -69,8 +69,8 @@ TEST_F(LocalSearchServiceImplTest, ResultNotFound) {
                /*max_results=*/-1, ResponseStatus::kSuccess, {});
 }
 
-TEST_F(LocalSearchServiceImplTest, UpdateData) {
-  IndexImpl* const index = service_impl_.GetIndexImpl(IndexId::kCrosSettings);
+TEST_F(LocalSearchServiceTest, UpdateData) {
+  Index* const index = service_.GetIndex(IndexId::kCrosSettings);
   DCHECK(index);
 
   EXPECT_EQ(index->GetSize(), 0u);

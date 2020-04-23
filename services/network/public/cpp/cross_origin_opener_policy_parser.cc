@@ -4,16 +4,18 @@
 
 #include "services/network/public/cpp/cross_origin_opener_policy_parser.h"
 
-#include <vector>
-
+#include <string>
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "net/http/http_response_headers.h"
+#include "services/network/public/cpp/features.h"
 
 namespace network {
 
 namespace {
 
 // Const definition of the strings involved in the header parsing.
+constexpr char kCrossOriginOpenerPolicyHeader[] = "Cross-Origin-Opener-Policy";
 const char kSameOrigin[] = "same-origin";
 const char kSameOriginAllowPopups[] = "same-origin-allow-popups";
 
@@ -24,10 +26,19 @@ const char kHTTPTabOrSpace[] = {0x09, /* CHARACTER TABULATION */
 
 }  // namespace
 
-mojom::CrossOriginOpenerPolicy ParseCrossOriginOpenerPolicyHeader(
-    const std::string& raw_coop_string) {
+mojom::CrossOriginOpenerPolicy ParseCrossOriginOpenerPolicy(
+    const net::HttpResponseHeaders& headers) {
+  std::string header_value;
+  if (!base::FeatureList::IsEnabled(features::kCrossOriginOpenerPolicy))
+    return mojom::CrossOriginOpenerPolicy::kUnsafeNone;
+
+  if (!headers.GetNormalizedHeader(kCrossOriginOpenerPolicyHeader,
+                                   &header_value)) {
+    return mojom::CrossOriginOpenerPolicy::kUnsafeNone;
+  }
+
   base::StringPiece trimmed_value =
-      base::TrimString(raw_coop_string, kHTTPTabOrSpace, base::TRIM_ALL);
+      base::TrimString(header_value, kHTTPTabOrSpace, base::TRIM_ALL);
   if (trimmed_value == kSameOrigin)
     return mojom::CrossOriginOpenerPolicy::kSameOrigin;
   if (trimmed_value == kSameOriginAllowPopups)

@@ -31,8 +31,10 @@
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -710,6 +712,8 @@ const CSSValue* StyleCascade::ResolvePendingSubstitution(
 const CSSValue* StyleCascade::ResolveRevert(const CSSProperty& property,
                                             CascadeOrigin origin,
                                             CascadeResolver& resolver) {
+  GetDocument().CountUse(WebFeature::kCSSKeywordRevert);
+
   CascadeOrigin target_origin = TargetOriginForRevert(origin);
   const CSSProperty* target_property = &property;
 

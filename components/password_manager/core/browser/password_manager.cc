@@ -213,9 +213,8 @@ void PasswordManager::RegisterProfilePrefs(
   registry->RegisterDoublePref(prefs::kLastTimeObsoleteHttpCredentialsRemoved,
                                0.0);
   registry->RegisterDoublePref(prefs::kLastTimePasswordCheckCompleted, 0.0);
-  registry->RegisterIntegerPref(
-      prefs::kPasswordManagerOnboardingState,
-      static_cast<int>(metrics_util::OnboardingState::kDoNotShow));
+  registry->RegisterIntegerPref(prefs::kPasswordManagerOnboardingState,
+                                static_cast<int>(OnboardingState::kDoNotShow));
   registry->RegisterBooleanPref(prefs::kWasOnboardingFeatureCheckedBefore,
                                 false);
 

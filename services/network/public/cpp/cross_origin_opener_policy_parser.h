@@ -7,7 +7,9 @@
 
 #include "services/network/public/mojom/cross_origin_opener_policy.mojom.h"
 
-#include <string>
+namespace net {
+class HttpResponseHeaders;
+}
 
 namespace network {
 
@@ -15,8 +17,9 @@ namespace network {
 // https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e
 // TODO(ahemery): add a fuzzer for the parser, see
 // services/network/content_security_policy_fuzzer.cc for an example.
-mojom::CrossOriginOpenerPolicy COMPONENT_EXPORT(NETWORK_CPP)
-    ParseCrossOriginOpenerPolicyHeader(const std::string& raw_coop_string);
+COMPONENT_EXPORT(NETWORK_CPP)
+mojom::CrossOriginOpenerPolicy ParseCrossOriginOpenerPolicy(
+    const net::HttpResponseHeaders& headers);
 
 }  // namespace network
 

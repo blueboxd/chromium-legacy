@@ -2662,6 +2662,20 @@ TEST_F(StyleEngineTest,
                                     GetCSSPropertyColor()));
 }
 
+TEST_F(StyleEngineTest, RevertUseCount) {
+  ScopedCSSRevertForTest scoped_feature(true);
+
+  GetDocument().body()->setInnerHTML(
+      "<style>div { display: unset; }</style><div></div>");
+  UpdateAllLifecyclePhases();
+  EXPECT_FALSE(GetDocument().IsUseCounted(WebFeature::kCSSKeywordRevert));
+
+  GetDocument().body()->setInnerHTML(
+      "<style>div { display: revert; }</style><div></div>");
+  UpdateAllLifecyclePhases();
+  EXPECT_TRUE(GetDocument().IsUseCounted(WebFeature::kCSSKeywordRevert));
+}
+
 class ParameterizedStyleEngineTest
     : public testing::WithParamInterface<bool>,
       private ScopedCSSReducedFontLoadingInvalidationsForTest,

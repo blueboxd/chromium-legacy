@@ -133,11 +133,6 @@ public interface ExternalNavigationDelegate {
     boolean isChromeAppInForeground();
 
     /**
-     * @return Whether the URL is a file download.
-     */
-    boolean isPdfDownload(String url);
-
-    /**
      * Check if the URL should be handled by an instant app, or kick off an async request for an
      * instant app banner.
      * @param url The current URL.

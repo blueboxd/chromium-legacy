@@ -123,6 +123,9 @@ class AccountsCookieMutator {
 #endif
 
   // Remove all accounts from the Gaia cookie.
+  // Note: this only clears the Gaia cookies. Other cookies such as the SAML
+  // provider cookies are not cleared. To cleanly remove an account from the
+  // web, the Gaia logout page should be loaded as a navigation.
   virtual void LogOutAllAccounts(
       gaia::GaiaSource source,
       LogOutFromCookieCompletedCallback completion_callback) = 0;

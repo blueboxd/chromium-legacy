@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/web_sandbox_flags.h"
 #include "services/network/public/mojom/content_security_policy.mojom-shared.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -22,6 +23,7 @@
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/network/content_security_policy_parsers.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
 #include "third_party/blink/renderer/platform/wtf/text/parsing_utilities.h"
@@ -1224,14 +1226,21 @@ void CSPDirectiveList::ApplySandboxPolicy(const String& name,
     policy_->ReportDuplicateDirective(name);
     return;
   }
+
+  using network::mojom::blink::WebSandboxFlags;
+  WebSandboxFlags ignored_flags =
+      !RuntimeEnabledFeatures::StorageAccessAPIEnabled()
+          ? WebSandboxFlags::kStorageAccessByUserActivation
+          : WebSandboxFlags::kNone;
+
   has_sandbox_policy_ = true;
-  String invalid_tokens;
-  SpaceSplitString policy_tokens =
-      SpaceSplitString(AtomicString(sandbox_policy));
-  policy_->EnforceSandboxFlags(
-      ParseSandboxPolicy(policy_tokens, invalid_tokens));
-  if (!invalid_tokens.IsNull())
-    policy_->ReportInvalidSandboxFlags(invalid_tokens);
+  network::WebSandboxFlagsParsingResult parsed =
+      network::ParseWebSandboxPolicy(sandbox_policy.Utf8(), ignored_flags);
+  policy_->EnforceSandboxFlags(parsed.flags);
+  if (!parsed.error_message.empty()) {
+    policy_->ReportInvalidSandboxFlags(
+        WebString::FromUTF8(parsed.error_message));
+  }
 }
 
 void CSPDirectiveList::AddTrustedTypes(const String& name,

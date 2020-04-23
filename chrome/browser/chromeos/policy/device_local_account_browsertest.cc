@@ -320,94 +320,6 @@ class TestingUpdateManifestProvider
   DISALLOW_COPY_AND_ASSIGN(TestingUpdateManifestProvider);
 };
 
-// Helper base class used for waiting for a pref value stored in local state
-// to change to a particular expected value.
-class PrefValueWaiter {
- public:
-  PrefValueWaiter(const std::string& pref, base::Value expected_value)
-      : pref_(pref), expected_value_(std::move(expected_value)) {
-    pref_change_registrar_.Init(g_browser_process->local_state());
-  }
-
-  PrefValueWaiter(const PrefValueWaiter&) = delete;
-  PrefValueWaiter& operator=(const PrefValueWaiter&) = delete;
-
-  virtual bool ExpectedValueFound();
-  virtual ~PrefValueWaiter() = default;
-
-  void Wait();
-
- protected:
-  const std::string pref_;
-  const base::Value expected_value_;
-
-  PrefChangeRegistrar pref_change_registrar_;
-
- private:
-  base::RunLoop run_loop_;
-  void QuitLoopIfExpectedValueFound();
-};
-
-bool PrefValueWaiter::ExpectedValueFound() {
-  const base::Value* pref_value =
-      pref_change_registrar_.prefs()->Get(pref_.c_str());
-  if (!pref_value) {
-    // Can't use ASSERT_* in non-void functions so this is the next best
-    // thing.
-    ADD_FAILURE() << "Pref " << pref_ << " not found";
-    return true;
-  }
-  return *pref_value == expected_value_;
-}
-
-void PrefValueWaiter::QuitLoopIfExpectedValueFound() {
-  if (ExpectedValueFound())
-    run_loop_.Quit();
-}
-
-void PrefValueWaiter::Wait() {
-  pref_change_registrar_.Add(
-      pref_.c_str(), base::Bind(&PrefValueWaiter::QuitLoopIfExpectedValueFound,
-                                base::Unretained(this)));
-  // Necessary if the pref value changes before the run loop is run. It is
-  // safe to call RunLoop::Quit before RunLoop::Run (in which case the call
-  // to Run will do nothing).
-  QuitLoopIfExpectedValueFound();
-  run_loop_.Run();
-}
-
-class DictionaryPrefValueWaiter : public PrefValueWaiter {
- public:
-  DictionaryPrefValueWaiter(const std::string& pref,
-                            const std::string& expected_value,
-                            const std::string& key)
-      : PrefValueWaiter(pref, base::Value(expected_value)), key_(key) {}
-
-  DictionaryPrefValueWaiter(const DictionaryPrefValueWaiter&) = delete;
-  DictionaryPrefValueWaiter& operator=(const DictionaryPrefValueWaiter&) =
-      delete;
-  ~DictionaryPrefValueWaiter() override = default;
-
- private:
-  bool ExpectedValueFound() override;
-
-  const std::string key_;
-};
-
-bool DictionaryPrefValueWaiter::ExpectedValueFound() {
-  const base::DictionaryValue* pref =
-      pref_change_registrar_.prefs()->GetDictionary(pref_.c_str());
-  if (!pref) {
-    // Can't use ASSERT_* in non-void functions so this is the next best
-    // thing.
-    ADD_FAILURE() << "Pref " << pref_ << " not found";
-    return true;
-  }
-  std::string actual_value;
-  return (pref->GetStringWithoutPathExpansion(key_, &actual_value) &&
-          actual_value == expected_value_.GetString());
-}
-
 TestingUpdateManifestProvider::Update::Update(const std::string& version,
                                               const GURL& crx_url)
     : version(version),
@@ -591,18 +503,8 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
 
   void InitializePolicy() {
     device_policy()->policy_data().set_public_key_version(1);
-    em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
-    proto.mutable_show_user_names()->set_show_user_names(true);
-
-    device_local_account_policy_.policy_data().set_policy_type(
-        dm_protocol::kChromePublicAccountPolicyType);
-    device_local_account_policy_.policy_data().set_username(kAccountId1);
-    device_local_account_policy_.policy_data().set_settings_entity_id(
-        kAccountId1);
-    device_local_account_policy_.policy_data().set_public_key_version(1);
-    device_local_account_policy_.payload().mutable_userdisplayname()->set_value(
-        kDisplayName1);
-
+    DeviceLocalAccountTestHelper::SetupDeviceLocalAccount(
+        &device_local_account_policy_, kAccountId1, kDisplayName1);
     // Don't enable new managed sessions, use old public sessions.
     SetManagedSessionsEnabled(/* managed_sessions_enabled */ false);
   }
@@ -655,11 +557,7 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
 
   void AddPublicSessionToDevicePolicy(const std::string& username) {
     em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
-    em::DeviceLocalAccountInfoProto* account =
-        proto.mutable_device_local_accounts()->add_account();
-    account->set_account_id(username);
-    account->set_type(
-        em::DeviceLocalAccountInfoProto::ACCOUNT_TYPE_PUBLIC_SESSION);
+    DeviceLocalAccountTestHelper::AddPublicSession(&proto, username);
     RefreshDevicePolicy();
     ASSERT_TRUE(local_policy_mixin_.UpdateDevicePolicy(proto));
   }
@@ -696,8 +594,8 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
     proto.mutable_system_timezone()->set_timezone_detection_type(policy);
     RefreshDevicePolicy();
 
-    PrefValueWaiter(prefs::kSystemTimezoneAutomaticDetectionPolicy,
-                    base::Value(policy))
+    LocalStateValueWaiter(prefs::kSystemTimezoneAutomaticDetectionPolicy,
+                          base::Value(policy))
         .Wait();
     ASSERT_TRUE(local_policy_mixin_.UpdateDevicePolicy(proto));
   }
@@ -735,7 +633,8 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
 
   void WaitForDisplayName(const std::string& user_id,
                           const std::string& expected_display_name) {
-    DictionaryPrefValueWaiter("UserDisplayName", expected_display_name, user_id)
+    DictionaryLocalStateValueWaiter("UserDisplayName", expected_display_name,
+                                    user_id)
         .Wait();
   }
 

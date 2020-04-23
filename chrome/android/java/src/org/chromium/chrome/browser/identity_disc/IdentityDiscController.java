@@ -285,7 +285,10 @@ public class IdentityDiscController implements NativeInitObserver, ProfileDataCa
      * whether to show in-product help.
      */
     private void recordIdentityDiscUsed() {
-        Profile profile = Profile.getLastUsedProfile();
+        // TODO (https://crbug.com/1048632): Use the current profile (i.e., regular profile or
+        // incognito profile) instead of always using regular profile. It works correctly now, but
+        // it is not safe.
+        Profile profile = Profile.getLastUsedRegularProfile();
         Tracker tracker = TrackerFactory.getTrackerForProfile(profile);
         tracker.notifyEvent(EventConstants.IDENTITY_DISC_USED);
         RecordUserAction.record("MobileToolbarIdentityDiscTap");

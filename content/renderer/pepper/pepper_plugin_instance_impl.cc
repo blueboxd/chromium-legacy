@@ -2229,6 +2229,11 @@ void PepperPluginInstanceImpl::OnHiddenForPlaceholder(bool hidden) {
   UpdateLayer(false /* device_changed */);
 }
 
+bool PepperPluginInstanceImpl::SupportsKeyboardFocus() {
+  // Only PDF plugin supports keyboard focus.
+  return LoadPdfInterface();
+}
+
 void PepperPluginInstanceImpl::AddPluginObject(PluginObject* plugin_object) {
   DCHECK(live_plugin_objects_.find(plugin_object) ==
          live_plugin_objects_.end());

@@ -9,11 +9,15 @@
 #include "third_party/blink/renderer/platform/heap/threading_traits.h"
 #include "third_party/blink/renderer/platform/heap/trace_traits.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/conditional_destructor.h"
 
 namespace blink {
 
 template <typename Table>
-class HeapHashTableBacking {
+class HeapHashTableBacking final
+    : public WTF::ConditionalDestructor<
+          HeapHashTableBacking<Table>,
+          std::is_trivially_destructible<typename Table::ValueType>::value> {
   DISALLOW_NEW();
   IS_GARBAGE_COLLECTED_TYPE();
 
@@ -21,8 +25,7 @@ class HeapHashTableBacking {
   template <typename Backing>
   static void* AllocateObject(size_t size);
 
-  static void Finalize(void* pointer);
-  void FinalizeGarbageCollectedObject() { Finalize(this); }
+  void Finalize();
 };
 
 template <typename Table>
@@ -51,16 +54,16 @@ void* HeapHashTableBacking<Table>::AllocateObject(size_t size) {
 }
 
 template <typename Table>
-void HeapHashTableBacking<Table>::Finalize(void* pointer) {
+void HeapHashTableBacking<Table>::Finalize() {
   using Value = typename Table::ValueType;
   static_assert(
       !std::is_trivially_destructible<Value>::value,
       "Finalization of trivially destructible classes should not happen.");
-  HeapObjectHeader* header = HeapObjectHeader::FromPayload(pointer);
+  HeapObjectHeader* header = HeapObjectHeader::FromPayload(this);
   // Use the payload size as recorded by the heap to determine how many
   // elements to finalize.
   size_t length = header->PayloadSize() / sizeof(Value);
-  Value* table = reinterpret_cast<Value*>(pointer);
+  Value* table = reinterpret_cast<Value*>(this);
   for (unsigned i = 0; i < length; ++i) {
     if (!Table::IsEmptyOrDeletedBucket(table[i]))
       table[i].~Value();
@@ -80,17 +83,6 @@ struct MakeGarbageCollectedTrait<HeapHashTableBacking<Table>> {
         ::new (memory) HeapHashTableBacking<Table>();
     header->MarkFullyConstructed<HeapObjectHeader::AccessMode::kAtomic>();
     return object;
-  }
-};
-
-template <typename Table>
-struct FinalizerTrait<HeapHashTableBacking<Table>> {
-  STATIC_ONLY(FinalizerTrait);
-  static const bool kNonTrivialFinalizer =
-      !std::is_trivially_destructible<typename Table::ValueType>::value;
-  static void Finalize(void* obj) {
-    internal::FinalizerTraitImpl<HeapHashTableBacking<Table>,
-                                 kNonTrivialFinalizer>::Finalize(obj);
   }
 };
 

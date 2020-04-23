@@ -214,14 +214,14 @@ void InstallationMetrics::ReportMetrics() {
     InstallationReporter::FailureReason failure_reason =
         installation.failure_reason.value_or(
             InstallationReporter::FailureReason::UNKNOWN);
-    base::UmaHistogramEnumeration("Extensions.ForceInstalledFailureReason2",
+    base::UmaHistogramEnumeration("Extensions.ForceInstalledFailureReason3",
                                   failure_reason);
     if (tracker_->extensions().at(extension_id).is_from_store) {
       base::UmaHistogramEnumeration(
-          "Extensions.WebStore_ForceInstalledFailureReason2", failure_reason);
+          "Extensions.WebStore_ForceInstalledFailureReason3", failure_reason);
     } else {
       base::UmaHistogramEnumeration(
-          "Extensions.OffStore_ForceInstalledFailureReason2", failure_reason);
+          "Extensions.OffStore_ForceInstalledFailureReason3", failure_reason);
     }
 
     // In case of CRX_FETCH_FAILURE, report the network error code, HTTP

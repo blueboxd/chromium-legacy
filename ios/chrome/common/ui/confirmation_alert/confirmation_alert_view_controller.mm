@@ -21,6 +21,8 @@ NSString* const kConfirmationAlertSubtitleAccessibilityIdentifier =
     @"kConfirmationAlertSubtitleAccessibilityIdentifier";
 NSString* const kConfirmationAlertPrimaryActionAccessibilityIdentifier =
     @"kConfirmationAlertPrimaryActionAccessibilityIdentifier";
+NSString* const kConfirmationAlertBarPrimaryActionAccessibilityIdentifier =
+    @"kConfirmationAlertBarPrimaryActionAccessibilityIdentifier";
 
 namespace {
 
@@ -38,6 +40,9 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
 // References to the UI properties that need to be updated when the trait
 // collection changes.
 @property(nonatomic, strong) UIButton* primaryActionButton;
+@property(nonatomic, strong) UIToolbar* topToolbar;
+@property(nonatomic, strong) NSArray* regularHeightToolbarItems;
+@property(nonatomic, strong) NSArray* compactHeightToolbarItems;
 @property(nonatomic, strong) UIImageView* imageView;
 // Constraints.
 @property(nonatomic, strong)
@@ -45,7 +50,9 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
 @property(nonatomic, strong)
     NSArray<NSLayoutConstraint*>* regularWidthConstraints;
 @property(nonatomic, strong)
-    NSLayoutConstraint* scrollViewBottomVerticalConstraint;
+    NSLayoutConstraint* regularHeightScrollViewBottomVerticalConstraint;
+@property(nonatomic, strong)
+    NSLayoutConstraint* compactHeightScrollViewBottomVerticalConstraint;
 @property(nonatomic, strong)
     NSLayoutConstraint* primaryButtonBottomVerticalConstraint;
 @end
@@ -59,8 +66,8 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
 
   self.view.backgroundColor = [UIColor colorNamed:kBackgroundColor];
 
-  UIToolbar* topToolbar = [self createTopToolbar];
-  [self.view addSubview:topToolbar];
+  self.topToolbar = [self createTopToolbar];
+  [self.view addSubview:self.topToolbar];
 
   self.imageView = [self createImageView];
   UILabel* title = [self createTitleLabel];
@@ -78,7 +85,7 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
 
   // Toolbar constraints to the top.
   AddSameConstraintsToSides(
-      topToolbar, self.view.safeAreaLayoutGuide,
+      self.topToolbar, self.view.safeAreaLayoutGuide,
       LayoutSides::kTrailing | LayoutSides::kTop | LayoutSides::kLeading);
 
   // Scroll View constraints to the height of its content. Can be overridden.
@@ -146,13 +153,26 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
     self.primaryActionButton = primaryActionButton;
   }
 
-  self.scrollViewBottomVerticalConstraint = [scrollView.bottomAnchor
-      constraintLessThanOrEqualToAnchor:scrollViewBottomAnchor];
+  self.regularHeightScrollViewBottomVerticalConstraint =
+      [scrollView.bottomAnchor
+          constraintLessThanOrEqualToAnchor:scrollViewBottomAnchor];
+  self.compactHeightScrollViewBottomVerticalConstraint =
+      [scrollView.bottomAnchor
+          constraintLessThanOrEqualToAnchor:scrollViewBottomAnchor];
+
+  if (self.alwaysShowImage && self.primaryActionAvailable) {
+    // If we always want to show the image, then it means we must hide the
+    // button when in compact height mode - meaning we have to constraint the
+    // scrollview's bottom to the safeArea's bottom.
+    self.compactHeightScrollViewBottomVerticalConstraint =
+        [scrollView.bottomAnchor
+            constraintLessThanOrEqualToAnchor:self.view.safeAreaLayoutGuide
+                                                  .bottomAnchor];
+  }
 
   [NSLayoutConstraint activateConstraints:@[
     [scrollView.topAnchor
-        constraintGreaterThanOrEqualToAnchor:topToolbar.bottomAnchor],
-    self.scrollViewBottomVerticalConstraint,
+        constraintGreaterThanOrEqualToAnchor:self.topToolbar.bottomAnchor],
   ]];
 
   if (!self.imageHasFixedSize) {
@@ -213,7 +233,6 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
 - (void)updateViewConstraints {
   CGFloat marginValue =
       self.view.layoutMargins.left - self.view.safeAreaInsets.left;
-  self.scrollViewBottomVerticalConstraint.constant = -marginValue;
   self.primaryButtonBottomVerticalConstraint.constant = -marginValue;
   if (self.traitCollection.horizontalSizeClass ==
       UIUserInterfaceSizeClassCompact) {
@@ -223,8 +242,33 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
     [NSLayoutConstraint deactivateConstraints:self.compactWidthConstraints];
     [NSLayoutConstraint activateConstraints:self.regularWidthConstraints];
   }
-  self.imageView.hidden =
+
+  BOOL isVerticalCompact =
       self.traitCollection.verticalSizeClass == UIUserInterfaceSizeClassCompact;
+
+  NSLayoutConstraint* oldBottomConstraint;
+  NSLayoutConstraint* newBottomConstraint;
+  if (isVerticalCompact) {
+    oldBottomConstraint = self.regularHeightScrollViewBottomVerticalConstraint;
+    newBottomConstraint = self.compactHeightScrollViewBottomVerticalConstraint;
+    self.topToolbar.items = self.compactHeightToolbarItems;
+  } else {
+    oldBottomConstraint = self.compactHeightScrollViewBottomVerticalConstraint;
+    newBottomConstraint = self.regularHeightScrollViewBottomVerticalConstraint;
+    self.topToolbar.items = self.regularHeightToolbarItems;
+  }
+
+  newBottomConstraint.constant = -marginValue;
+  [NSLayoutConstraint deactivateConstraints:@[ oldBottomConstraint ]];
+  [NSLayoutConstraint activateConstraints:@[ newBottomConstraint ]];
+
+  if (self.alwaysShowImage) {
+    // Update the primary action button visibility.
+    [self.primaryActionButton setHidden:isVerticalCompact];
+  } else {
+    [self.imageView setHidden:isVerticalCompact];
+  }
+
   [super updateViewConstraints];
 }
 
@@ -259,34 +303,65 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
           forToolbarPosition:UIBarPositionAny];
   [topToolbar setBarTintColor:[UIColor colorNamed:kBackgroundColor]];
   topToolbar.delegate = self;
-  NSMutableArray* items = [[NSMutableArray alloc] init];
+
+  NSMutableArray* regularHeightItems = [[NSMutableArray alloc] init];
+  NSMutableArray* compactHeightItems = [[NSMutableArray alloc] init];
   if (self.helpButtonAvailable) {
     UIBarButtonItem* helpButton = [[UIBarButtonItem alloc]
         initWithImage:[UIImage imageNamed:@"confirmation_alert_ic_help"]
                 style:UIBarButtonItemStylePlain
                target:self
                action:@selector(didTapHelpButton)];
-    [items addObject:helpButton];
+    [regularHeightItems addObject:helpButton];
+    [compactHeightItems addObject:helpButton];
     helpButton.accessibilityIdentifier =
         kConfirmationAlertMoreInfoAccessibilityIdentifier;
     // Set the help button as the left button item so it can be used as a
     // popover anchor.
     _helpButton = helpButton;
   }
+
+  if (self.alwaysShowImage && self.primaryActionAvailable) {
+    if (self.helpButtonAvailable) {
+      // Add margin with help button.
+      UIBarButtonItem* fixedSpacer = [[UIBarButtonItem alloc]
+          initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace
+                               target:nil
+                               action:nil];
+      fixedSpacer.width = 15.0f;
+      [compactHeightItems addObject:fixedSpacer];
+    }
+
+    UIBarButtonItem* primaryActionBarButton = [[UIBarButtonItem alloc]
+        initWithBarButtonSystemItem:self.primaryActionBarButtonStyle
+                             target:self
+                             action:@selector(didTapPrimaryActionButton)];
+    primaryActionBarButton.accessibilityIdentifier =
+        kConfirmationAlertBarPrimaryActionAccessibilityIdentifier;
+
+    // Only shows up in constraint height mode.
+    [compactHeightItems addObject:primaryActionBarButton];
+  }
+
   UIBarButtonItem* spacer = [[UIBarButtonItem alloc]
       initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace
                            target:nil
                            action:nil];
-  [items addObject:spacer];
+  [regularHeightItems addObject:spacer];
+  [compactHeightItems addObject:spacer];
 
   UIBarButtonItem* doneButton = [[UIBarButtonItem alloc]
       initWithBarButtonSystemItem:UIBarButtonSystemItemDone
                            target:self
                            action:@selector(didTapDoneButton)];
-  [items addObject:doneButton];
+  [regularHeightItems addObject:doneButton];
+  [compactHeightItems addObject:doneButton];
 
-  topToolbar.items = items;
   topToolbar.translatesAutoresizingMaskIntoConstraints = NO;
+
+  self.regularHeightToolbarItems = regularHeightItems;
+  self.compactHeightToolbarItems = compactHeightItems;
+
   return topToolbar;
 }
 
@@ -300,14 +375,17 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
 
 // Helper to create the title label.
 - (UILabel*)createTitleLabel {
+  if (!self.titleTextStyle) {
+    self.titleTextStyle = UIFontTextStyleTitle1;
+  }
   UILabel* title = [[UILabel alloc] init];
   title.numberOfLines = 0;
   UIFontDescriptor* descriptor = [UIFontDescriptor
-      preferredFontDescriptorWithTextStyle:UIFontTextStyleTitle1];
+      preferredFontDescriptorWithTextStyle:self.titleTextStyle];
   UIFont* font = [UIFont systemFontOfSize:descriptor.pointSize
                                    weight:UIFontWeightBold];
   UIFontMetrics* fontMetrics =
-      [UIFontMetrics metricsForTextStyle:UIFontTextStyleTitle1];
+      [UIFontMetrics metricsForTextStyle:self.titleTextStyle];
   title.font = [fontMetrics scaledFontForFont:font];
   title.textColor = [UIColor colorNamed:kTextPrimaryColor];
   title.text = self.titleString.capitalizedString;

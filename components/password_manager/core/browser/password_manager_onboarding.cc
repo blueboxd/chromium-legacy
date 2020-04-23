@@ -11,45 +11,6 @@
 
 namespace password_manager {
 
-namespace {
-// Functions converting UIDismissalReasons for the save password
-// infobar and the onboarding dialog into values of the
-// |OnboardingResultOfSavingFlow| enum.
-metrics_util::OnboardingResultOfSavingFlow FlowResultFromInfobarDismissalReason(
-    const metrics_util::UIDismissalReason reason) {
-  switch (reason) {
-    case metrics_util::UIDismissalReason::NO_DIRECT_INTERACTION:
-      return metrics_util::OnboardingResultOfSavingFlow::
-          kInfobarNoDirectInteraction;
-    case metrics_util::UIDismissalReason::CLICKED_SAVE:
-      return metrics_util::OnboardingResultOfSavingFlow::kInfobarClickedSave;
-    case metrics_util::UIDismissalReason::CLICKED_CANCEL:
-      return metrics_util::OnboardingResultOfSavingFlow::kInfobarClickedCancel;
-    case metrics_util::UIDismissalReason::CLICKED_NEVER:
-      return metrics_util::OnboardingResultOfSavingFlow::kInfobarClickedNever;
-    default:
-      NOTREACHED();
-      return metrics_util::OnboardingResultOfSavingFlow::
-          kInfobarNoDirectInteraction;
-  }
-}
-
-metrics_util::OnboardingResultOfSavingFlow
-FlowResultFromOnboardingDismissalReason(
-    const metrics_util::OnboardingUIDismissalReason reason) {
-  switch (reason) {
-    case metrics_util::OnboardingUIDismissalReason::kRejected:
-      return metrics_util::OnboardingResultOfSavingFlow::kOnboardingRejected;
-    case metrics_util::OnboardingUIDismissalReason::kDismissed:
-      return metrics_util::OnboardingResultOfSavingFlow::kOnboardingDismissed;
-    default:
-      NOTREACHED();
-      return metrics_util::OnboardingResultOfSavingFlow::kOnboardingRejected;
-  }
-}
-}  // namespace
-
-using OnboardingState = password_manager::metrics_util::OnboardingState;
 
 OnboardingStateUpdate::OnboardingStateUpdate(
     scoped_refptr<password_manager::PasswordStore> store,
@@ -149,29 +110,6 @@ bool ShouldShowOnboarding(PrefService* prefs,
                     true);
   return base::FeatureList::IsEnabled(
       password_manager::features::kPasswordManagerOnboardingAndroid);
-}
-
-SavingFlowMetricsRecorder::SavingFlowMetricsRecorder() = default;
-
-SavingFlowMetricsRecorder::~SavingFlowMetricsRecorder() {
-  metrics_util::LogResultOfSavingFlow(flow_result_);
-  if (onboarding_shown_) {
-    metrics_util::LogResultOfOnboardingSavingFlow(flow_result_);
-  }
-}
-
-void SavingFlowMetricsRecorder::SetOnboardingShown() {
-  onboarding_shown_ = true;
-}
-
-void SavingFlowMetricsRecorder::SetFlowResult(
-    metrics_util::UIDismissalReason reason) {
-  flow_result_ = FlowResultFromInfobarDismissalReason(reason);
-}
-
-void SavingFlowMetricsRecorder::SetFlowResult(
-    metrics_util::OnboardingUIDismissalReason reason) {
-  flow_result_ = FlowResultFromOnboardingDismissalReason(reason);
 }
 
 }  // namespace password_manager

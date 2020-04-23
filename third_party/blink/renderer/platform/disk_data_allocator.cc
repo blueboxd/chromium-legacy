@@ -200,4 +200,11 @@ DiskDataAllocator& DiskDataAllocator::Instance() {
   return instance;
 }
 
+// static
+void DiskDataAllocator::Bind(
+    mojo::PendingReceiver<mojom::blink::DiskAllocator> receiver) {
+  DCHECK(!Instance().receiver_.is_bound());
+  Instance().receiver_.Bind(std::move(receiver));
+}
+
 }  // namespace blink

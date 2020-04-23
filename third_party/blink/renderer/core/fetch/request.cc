@@ -379,7 +379,7 @@ Request* Request::CreateRequestWithRequestOrString(
     if (!SecurityPolicy::ReferrerPolicyFromString(
             init->referrerPolicy(), kDoNotSupportReferrerPolicyLegacyKeywords,
             &referrer_policy)) {
-      DCHECK(init->referrerPolicy().IsEmpty());
+      DCHECK_EQ(init->referrerPolicy(), g_empty_string);
       referrer_policy = network::mojom::ReferrerPolicy::kDefault;
     }
 

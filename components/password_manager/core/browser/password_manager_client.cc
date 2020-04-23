@@ -30,10 +30,6 @@ void PasswordManagerClient::PostHSTSQueryForHost(const GURL& origin,
   std::move(callback).Run(HSTSResult::kError);
 }
 
-bool PasswordManagerClient::OnCredentialManagerUsed() {
-  return true;
-}
-
 void PasswordManagerClient::ShowTouchToFill(PasswordManagerDriver* driver) {}
 
 BiometricAuthenticator* PasswordManagerClient::GetBiometricAuthenticator() {

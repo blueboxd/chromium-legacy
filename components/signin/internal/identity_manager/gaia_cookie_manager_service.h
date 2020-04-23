@@ -266,6 +266,9 @@ class GaiaCookieManagerService
   void CancelAll();
 
   // Signout all accounts.
+  // Note: this only clears the Gaia cookies. Other cookies such as the SAML
+  // provider cookies are not cleared. To cleanly remove an account from the
+  // web, the Gaia logout page should be loaded as a navigation.
   void LogOutAllAccounts(gaia::GaiaSource source,
                          LogOutFromCookieCompletedCallback callback);
 

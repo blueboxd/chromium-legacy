@@ -29,7 +29,7 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.browserservices.permissiondelegation.NotificationPermissionUpdater;
+import org.chromium.chrome.browser.browserservices.permissiondelegation.PermissionUpdater;
 import org.chromium.components.embedder_support.util.Origin;
 
 import java.util.Arrays;
@@ -45,7 +45,8 @@ public class ClientAppBroadcastReceiverTest {
     @Mock public Context mContext;
     @Mock public ClientAppDataRegister mDataRegister;
     @Mock public ClientAppBroadcastReceiver.ClearDataStrategy mMockStrategy;
-    @Mock public NotificationPermissionUpdater mPermissionUpdater;
+    @Mock
+    public PermissionUpdater mPermissionUpdater;
 
     private ClientAppBroadcastReceiver mReceiver;
 
@@ -136,7 +137,7 @@ public class ClientAppBroadcastReceiverTest {
         assertEquals(domains, new HashSet<>(ClearDataDialogActivity.getDomainsFromIntent(intent)));
     }
 
-    /** Tests we call the NotificationPermissionUpdater. */
+    /** Tests we call the PermissionUpdater. */
     @Test
     @Feature("TrustedwebActivities")
     public void execute_UpdatePermissions() {

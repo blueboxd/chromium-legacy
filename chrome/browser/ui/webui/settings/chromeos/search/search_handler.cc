@@ -6,11 +6,11 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chromeos/local_search_service/local_search_service.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_concept.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_result_icon.mojom.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/services/local_search_service/local_search_service_impl.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
@@ -35,9 +35,9 @@ const size_t SearchHandler::kNumMaxResults = 5;
 
 SearchHandler::SearchHandler(
     OsSettingsLocalizedStringsProvider* strings_provider,
-    local_search_service::LocalSearchServiceImpl* local_search_service)
+    local_search_service::LocalSearchService* local_search_service)
     : strings_provider_(strings_provider),
-      index_(local_search_service->GetIndexImpl(
+      index_(local_search_service->GetIndex(
           local_search_service::IndexId::kCrosSettings)) {}
 
 SearchHandler::~SearchHandler() = default;

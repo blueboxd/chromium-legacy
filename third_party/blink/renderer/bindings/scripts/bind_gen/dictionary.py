@@ -40,8 +40,8 @@ from .mako_renderer import MakoRenderer
 from .path_manager import PathManager
 
 _DICT_MEMBER_PRESENCE_PREDICATES = {
-    "ScriptValue": "{}.IsEmpty()",
-    "ScriptPromise": "{}.IsEmpty()",
+    "ScriptValue": "!{}.IsEmpty()",
+    "ScriptPromise": "!{}.IsEmpty()",
 }
 
 

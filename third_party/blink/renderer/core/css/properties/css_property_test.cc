@@ -39,16 +39,15 @@ TEST_F(CSSPropertyTest, GetUnvisitedPropertyFromVisited) {
   }
 }
 
-TEST_F(CSSPropertyTest, InternalEffectiveZoomNotWebExposed) {
-  const CSSProperty& property = GetCSSPropertyInternalEffectiveZoom();
-  EXPECT_FALSE(property.IsWebExposed(GetDocument().GetExecutionContext()));
-}
+TEST_F(CSSPropertyTest, InternalResetEffectiveNotWebExposed) {
+  const CSSPropertyValueSet* ua_set = css_test_helpers::ParseDeclarationBlock(
+      "zoom:-internal-reset-effective", kUASheetMode);
+  const CSSPropertyValueSet* author_set =
+      css_test_helpers::ParseDeclarationBlock("zoom:-internal-reset-effective",
+                                              kHTMLStandardMode);
 
-TEST_F(CSSPropertyTest, InternalEffectiveZoomCanBeParsed) {
-  const CSSValue* value = css_test_helpers::ParseLonghand(
-      GetDocument(), GetCSSPropertyInternalEffectiveZoom(), "1.2");
-  ASSERT_TRUE(value);
-  EXPECT_EQ("1.2", value->CssText());
+  EXPECT_TRUE(ua_set->HasProperty(CSSPropertyID::kZoom));
+  EXPECT_FALSE(author_set->HasProperty(CSSPropertyID::kZoom));
 }
 
 TEST_F(CSSPropertyTest, VisitedPropertiesCanParseValues) {

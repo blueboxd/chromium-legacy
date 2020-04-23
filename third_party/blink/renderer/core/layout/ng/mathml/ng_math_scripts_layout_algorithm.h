@@ -27,8 +27,7 @@ class CORE_EXPORT NGMathScriptsLayoutAlgorithm
                       NGBlockNode* sub,
                       NGBoxFragmentBuilder* = nullptr) const;
 
-  base::Optional<MinMaxSizes> ComputeMinMaxSizes(
-      const MinMaxSizesInput&) const final;
+  MinMaxSizes ComputeMinMaxSizes(const MinMaxSizesInput&) const final;
 
   struct ChildAndMetrics {
     STACK_ALLOCATED();

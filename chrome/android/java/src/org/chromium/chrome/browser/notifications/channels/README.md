@@ -12,7 +12,7 @@ notifications to be constructed using
 valid `ChannelId`.
 
 For an up-to-date enumeration of what channels exist, see the
-map of `ChannelId`s to `Channel`s in `ChannelDefinitions.PredefinedChannels`.
+map of `ChannelId`s to `Channel`s in `ChromeChannelDefinitions.PredefinedChannels`.
 
 [TOC]
 
@@ -46,11 +46,11 @@ launch of the app? (UI review can help with this).
 
 In both cases, take the following steps:
 
-1. Add a new id to the `@ChannelId` intdef in `ChannelDefinitions.java`
+1. Add a new id to the `@ChannelId` intdef in `ChromeChannelDefinitions.java`
 2. Add a failing test in `ChannelsInitializerTest.java` for your new channel's properties (you'll
  need a new string for the channel name)
 3. To make the test pass (yay TDD), add a corresponding entry to `PredefinedChannels.MAP` in
-`ChannelDefinitions.java` with the correct channel properties
+`ChromeChannelDefinitions.java` with the correct channel properties
 4. Create notifications via
 `NotificationBuilderFactory.createChromeNotificationBuilder`, passing the new
 channel id (the custom builder will set the channel on the notification for
@@ -59,8 +59,8 @@ you, and ensure the channel is initialized before building it)
  channel id (along with your new `SystemNotificationType`, see above)
 
 For channels that should be created on first launch of the app, some extra steps are required:
-- Add the new channel to `PredefinedChannels.STARTUP` in `ChannelDefinitions.java`
-- Increment `CHANNELS_VERSION` in `ChannelDefinitions.java`
+- Add the new channel to `PredefinedChannels.STARTUP` in `ChromeChannelDefinitions.java`
+- Increment `CHANNELS_VERSION` in `ChromeChannelDefinitions.java`
 - Update startup channel tests in `ChannelsInitializerTest.java` and `ChannelsUpdaterTest.java`.
 
 Note: An optional 'description' field exists for notification channels.
@@ -83,18 +83,18 @@ for newly created channels, where appropriate. See [the setDescription documenta
 ## How to deprecate a channel
 
 Note, renaming an existing channel is free, just update the string and bump the
-`CHANNELS_VERSION` in `ChannelDefinitions.java` so that updaters pick up the
+`CHANNELS_VERSION` in `ChromeChannelDefinitions.java` so that updaters pick up the
 change.
 
 To stop an existing channel showing up any more, follow the following steps:
 
 1. Ensure any notifications previously associated with this channel no longer
 exist, or are now sent to alternative channels.
-2. Remove the channel's entry from `PredefinedChannels.MAP` and `PredefinedChannels.STARTUP` in
-`ChannelDefinitions.java`
-3. Move the channel id from the `@ChannelId` intdef to the `LEGACY_CHANNEL_IDS`
-array in `ChannelDefinitions.java`
-4. Increment `CHANNELS_VERSION` in `ChannelDefinitions.java`
+2. Remove the channel's entry from `PredefinedChannels.MAP` in `ChromeChannelDefinitions.java` and
+`PredefinedChannels.STARTUP` in `ChromeChannelDefinitions.java`
+3. Move the channel id from the `@ChannelId` intdef in `ChromeChannelDefinitions.java` to the
+`LEGACY_CHANNEL_IDS` array in `ChromeChannelDefinitions.java`
+4. Increment `CHANNELS_VERSION` in `ChromeChannelDefinitions.java`
 5. Update tests in `ChannelsInitializerTest.java` that refer to the old channel
 
 This should only happen infrequently. Note a 'deleted channels' count in

@@ -17,9 +17,9 @@ import android.widget.RemoteViews;
 import androidx.core.app.NotificationCompat;
 
 import org.chromium.base.Log;
-import org.chromium.chrome.browser.notifications.channels.ChannelsInitializer;
 import org.chromium.components.browser_ui.notifications.ChromeNotification;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
+import org.chromium.components.browser_ui.notifications.channels.ChannelsInitializer;
 
 /**
  * Wraps a NotificationCompat.Builder object.

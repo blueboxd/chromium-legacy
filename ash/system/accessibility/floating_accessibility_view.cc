@@ -22,7 +22,8 @@ namespace ash {
 
 namespace {
 
-constexpr int kPanelPositionButtonPadding = 16;
+// These constants are defined in DIP.
+constexpr int kPanelPositionButtonPadding = 14;
 constexpr int kPanelPositionButtonSize = 36;
 constexpr int kSeparatorHeight = 16;
 
@@ -39,13 +40,11 @@ std::unique_ptr<views::Separator> CreateSeparator() {
   return separator;
 }
 
-std::unique_ptr<views::View> CreateButtonRowContainer() {
+std::unique_ptr<views::View> CreateButtonRowContainer(int padding) {
   auto button_container = std::make_unique<views::View>();
   button_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal,
-      gfx::Insets(0, kPanelPositionButtonPadding, kPanelPositionButtonPadding,
-                  kPanelPositionButtonPadding),
-      kPanelPositionButtonPadding));
+      gfx::Insets(0, padding, padding, padding), padding));
   return button_container;
 }
 
@@ -74,7 +73,7 @@ FloatingAccessibilityView::FloatingAccessibilityView(Delegate* delegate)
   // TODO(crbug.com/1061068): Add buttons view that represents enabled features.
 
   std::unique_ptr<views::View> tray_button_container =
-      CreateButtonRowContainer();
+      CreateButtonRowContainer(kUnifiedTopShortcutSpacing);
   a11y_tray_button_ =
       tray_button_container->AddChildView(std::make_unique<FloatingMenuButton>(
           this, kUnifiedMenuAccessibilityIcon,
@@ -82,7 +81,7 @@ FloatingAccessibilityView::FloatingAccessibilityView(Delegate* delegate)
           /*flip_for_rtl*/ true, kTrayItemSize));
 
   std::unique_ptr<views::View> position_button_container =
-      CreateButtonRowContainer();
+      CreateButtonRowContainer(kPanelPositionButtonPadding);
   position_button_ = position_button_container->AddChildView(
       std::make_unique<FloatingMenuButton>(
           this, kAutoclickPositionBottomLeftIcon,
@@ -122,11 +121,14 @@ void FloatingAccessibilityView::SetMenuPosition(FloatingMenuPosition position) {
   }
 }
 
+void FloatingAccessibilityView::SetDetailedViewShown(bool shown) {
+  a11y_tray_button_->SetToggled(shown);
+}
+
 void FloatingAccessibilityView::ButtonPressed(views::Button* sender,
                                               const ui::Event& event) {
   if (sender == a11y_tray_button_) {
     delegate_->OnDetailedMenuEnabled(!a11y_tray_button_->IsToggled());
-    a11y_tray_button_->SetToggled(!a11y_tray_button_->IsToggled());
     return;
   }
 

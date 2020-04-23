@@ -55,6 +55,16 @@ def _CppHeader(filename):
   ])
 
 
+def _RemoveCurrentDirectoryPrefix(filename):
+  current_dir_prefixes = [os.curdir + os.sep]
+  if os.altsep is not None:
+    current_dir_prefixes.append(os.curdir + os.altsep)
+  for prefix in current_dir_prefixes:
+    if filename.startswith(prefix):
+      return filename[len(prefix):]
+  return filename
+
+
 def _RemoveTestSuffix(filename):
   base, _ = os.path.splitext(filename)
   suffixes = [ '_test', '_unittest', '_browsertest' ]
@@ -94,6 +104,8 @@ def _ObjCppImplementation(filename):
 
 
 def _CreateFile(filename):
+  filename = _RemoveCurrentDirectoryPrefix(filename)
+
   contents = _GetHeader(filename) + '\n'
 
   if filename.endswith('.h'):

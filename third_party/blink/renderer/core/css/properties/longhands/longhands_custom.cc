@@ -2855,29 +2855,6 @@ const CSSValue* ForcedColorAdjust::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.ForcedColorAdjust());
 }
 
-void InternalEffectiveZoom::ApplyInitial(StyleResolverState& state) const {
-  auto initial = ComputedStyleInitialValues::InitialInternalEffectiveZoom();
-  state.SetEffectiveZoom(initial);
-}
-
-void InternalEffectiveZoom::ApplyInherit(StyleResolverState& state) const {
-  state.SetEffectiveZoom(state.ParentStyle()->EffectiveZoom());
-}
-
-void InternalEffectiveZoom::ApplyValue(StyleResolverState& state,
-                                       const CSSValue& value) const {
-  state.SetEffectiveZoom(StyleBuilderConverter::ConvertZoom(state, value));
-}
-
-const CSSValue* InternalEffectiveZoom::ParseSingleValue(
-    CSSParserTokenRange& range,
-    const CSSParserContext& context,
-    const CSSParserLocalContext& local_context) const {
-  ValueRange value_range = kValueRangeNonNegative;
-  return css_property_parser_helpers::ConsumeNumber(range, context,
-                                                    value_range);
-}
-
 void InternalVisitedColor::ApplyInitial(StyleResolverState& state) const {
   if (!RuntimeEnabledFeatures::CSSCascadeEnabled()) {
     state.SetCascadedVisitedColorValue(
@@ -8114,8 +8091,10 @@ const CSSValue* Zoom::ParseSingleValue(CSSParserTokenRange& range,
   const CSSParserToken& token = range.Peek();
   CSSValue* zoom = nullptr;
   if (token.GetType() == kIdentToken) {
-    zoom =
-        css_property_parser_helpers::ConsumeIdent<CSSValueID::kNormal>(range);
+    CSSIdentifierValue* ident = css_property_parser_helpers::ConsumeIdent<
+        CSSValueID::kNormal, CSSValueID::kInternalResetEffective>(range);
+    if (ident && isValueAllowedInMode(ident->GetValueID(), context.Mode()))
+      zoom = ident;
   } else {
     zoom = css_property_parser_helpers::ConsumePercent(range, context,
                                                        kValueRangeNonNegative);
@@ -8153,6 +8132,14 @@ void Zoom::ApplyInherit(StyleResolverState& state) const {
 }
 
 void Zoom::ApplyValue(StyleResolverState& state, const CSSValue& value) const {
+  // TODO(crbug.com/976224): Support zoom on foreignObject
+  if (const auto* ident = DynamicTo<CSSIdentifierValue>(value)) {
+    if (ident->GetValueID() == CSSValueID::kInternalResetEffective) {
+      state.SetEffectiveZoom(ComputedStyleInitialValues::InitialZoom());
+      return;
+    }
+  }
+
   state.SetZoom(StyleBuilderConverter::ConvertZoom(state, value));
 }
 

@@ -59,7 +59,6 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
  public:
   MOCK_CONST_METHOD1(IsSavingAndFillingEnabled, bool(const GURL&));
   MOCK_CONST_METHOD1(IsFillingEnabled, bool(const GURL&));
-  MOCK_METHOD0(OnCredentialManagerUsed, bool());
   MOCK_CONST_METHOD0(IsIncognito, bool());
   MOCK_METHOD0(NotifyUserAutoSigninPtr, bool());
   MOCK_METHOD1(NotifyUserCouldBeAutoSignedInPtr,
@@ -205,8 +204,6 @@ class CredentialManagerImplTest : public testing::Test {
     ON_CALL(*client_, IsSavingAndFillingEnabled(_))
         .WillByDefault(testing::Return(true));
     ON_CALL(*client_, IsFillingEnabled(_)).WillByDefault(testing::Return(true));
-    ON_CALL(*client_, OnCredentialManagerUsed())
-        .WillByDefault(testing::Return(true));
     ON_CALL(*client_, IsIncognito()).WillByDefault(testing::Return(false));
 
     form_.username_value = base::ASCIIToUTF16("Username");
@@ -1146,19 +1143,6 @@ TEST_F(CredentialManagerImplTest, RequestCredentialWithFirstRunAndSkip) {
 TEST_F(CredentialManagerImplTest, RequestCredentialWithTLSErrors) {
   // If we encounter TLS errors, we won't return credentials.
   EXPECT_CALL(*client_, IsFillingEnabled(_))
-      .WillRepeatedly(testing::Return(false));
-
-  store_->AddLogin(form_);
-
-  std::vector<GURL> federations;
-
-  ExpectZeroClickSignInFailure(CredentialMediationRequirement::kSilent, true,
-                               federations);
-}
-
-TEST_F(CredentialManagerImplTest, RequestCredentialWhilePrerendering) {
-  // The client disallows the credential manager for the current page.
-  EXPECT_CALL(*client_, OnCredentialManagerUsed())
       .WillRepeatedly(testing::Return(false));
 
   store_->AddLogin(form_);

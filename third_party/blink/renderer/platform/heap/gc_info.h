@@ -7,8 +7,10 @@
 
 #include <atomic>
 #include "base/gtest_prod_util.h"
+#include "third_party/blink/renderer/platform/heap/blink_gc.h"
 #include "third_party/blink/renderer/platform/heap/finalizer_traits.h"
 #include "third_party/blink/renderer/platform/heap/name_traits.h"
+#include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 
 namespace blink {
 
@@ -23,7 +25,7 @@ struct PLATFORM_EXPORT GCInfo final {
   static inline const GCInfo& From(GCInfoIndex);
 
   const TraceCallback trace;
-  const FinalizationCallback finalize;
+  const internal::FinalizationCallback finalize;
   const NameCallback name;
   const bool has_v_table;
 };
@@ -102,9 +104,7 @@ struct GCInfoTrait {
   static GCInfoIndex Index() {
     static_assert(sizeof(T), "T must be fully defined");
     static const GCInfo kGcInfo = {
-        TraceTrait<T>::Trace,
-        FinalizerTrait<T>::kNonTrivialFinalizer ? FinalizerTrait<T>::Finalize
-                                                : nullptr,
+        TraceTrait<T>::Trace, internal::FinalizerTrait<T>::kCallback,
         NameTrait<T>::GetName, std::is_polymorphic<T>::value};
     // This is more complicated than using threadsafe initialization, but this
     // is instantiated many times (once for every GC type).

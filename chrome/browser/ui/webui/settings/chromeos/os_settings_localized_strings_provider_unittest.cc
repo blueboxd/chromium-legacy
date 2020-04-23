@@ -5,14 +5,14 @@
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_localized_strings_provider.h"
 
 #include "base/run_loop.h"
-#include "chrome/browser/local_search_service/local_search_service_proxy.h"
-#include "chrome/browser/local_search_service/local_search_service_proxy_factory.h"
+#include "chrome/browser/chromeos/local_search_service/index.h"
+#include "chrome/browser/chromeos/local_search_service/local_search_service.h"
+#include "chrome/browser/chromeos/local_search_service/local_search_service_proxy.h"
+#include "chrome/browser/chromeos/local_search_service/local_search_service_proxy_factory.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_localized_strings_provider_factory.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_concept.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/services/local_search_service/index_impl.h"
-#include "chrome/services/local_search_service/local_search_service_impl.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -44,8 +44,8 @@ class OsSettingsLocalizedStringsProviderTest : public testing::Test {
     index_ =
         local_search_service::LocalSearchServiceProxyFactory::GetForProfile(
             profile)
-            ->GetLocalSearchServiceImpl()
-            ->GetIndexImpl(local_search_service::IndexId::kCrosSettings);
+            ->GetLocalSearchService()
+            ->GetIndex(local_search_service::IndexId::kCrosSettings);
 
     // Allow asynchronous networking code to complete (networking functionality
     // is tested below).
@@ -55,7 +55,7 @@ class OsSettingsLocalizedStringsProviderTest : public testing::Test {
   content::BrowserTaskEnvironment task_environment_;
   TestingProfileManager profile_manager_;
   chromeos::network_config::CrosNetworkConfigTestHelper network_config_helper_;
-  local_search_service::IndexImpl* index_;
+  local_search_service::Index* index_;
   OsSettingsLocalizedStringsProvider* provider_;
 };
 

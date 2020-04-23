@@ -4,12 +4,20 @@
 
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_mediator.h"
 
+#include "base/strings/sys_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/default_clock.h"
+#include "components/bookmarks/browser/bookmark_model.h"
+#include "components/bookmarks/browser/bookmark_utils.h"
+#include "components/bookmarks/common/bookmark_pref_names.h"
+#include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/feature_engagement/test/mock_tracker.h"
 #include "components/language/ios/browser/ios_language_detection_tab_helper.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/reading_list/core/reading_list_model_impl.h"
 #include "components/translate/core/browser/translate_prefs.h"
+#include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/main/test_browser.h"
 #import "ios/chrome/browser/overlays/public/overlay_presenter.h"
@@ -17,6 +25,7 @@
 #import "ios/chrome/browser/overlays/public/overlay_request_queue.h"
 #import "ios/chrome/browser/overlays/public/web_content_area/java_script_alert_overlay.h"
 #include "ios/chrome/browser/overlays/test/fake_overlay_presentation_context.h"
+#include "ios/chrome/browser/policy/policy_features.h"
 #import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_tools_item.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_table_view_controller.h"
@@ -47,6 +56,8 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+using bookmarks::BookmarkModel;
 
 @interface FakePopupMenuConsumer : NSObject <PopupMenuConsumer>
 @property(nonatomic, strong)
@@ -113,6 +124,21 @@ class PopupMenuMediatorTest : public ChromeWebTest {
                                readingListModel:reading_list_model_.get()
                       triggerNewIncognitoTabTip:trigger_incognito_hint];
     return mediator_;
+  }
+
+  void CreatePrefs() {
+    prefs_ = std::make_unique<TestingPrefServiceSimple>();
+    prefs_->registry()->RegisterBooleanPref(
+        bookmarks::prefs::kEditBookmarksEnabled,
+        /*default_value=*/true);
+  }
+
+  void SetUpBookmarks() {
+    browser_state_->CreateBookmarkModel(false);
+    bookmark_model_ =
+        ios::BookmarkModelFactory::GetForBrowserState(browser_state_.get());
+    bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model_);
+    mediator_.bookmarkModel = bookmark_model_;
   }
 
   void SetUpWebStateList() {
@@ -197,6 +223,8 @@ class PopupMenuMediatorTest : public ChromeWebTest {
   std::unique_ptr<TestChromeBrowserState> browser_state_;
   std::unique_ptr<Browser> browser_;
   PopupMenuMediator* mediator_;
+  BookmarkModel* bookmark_model_;
+  std::unique_ptr<TestingPrefServiceSimple> prefs_;
   std::unique_ptr<ReadingListModelImpl> reading_list_model_;
   ToolbarTestWebState* web_state_;
   ToolbarTestNavigationManager* navigation_manager_;
@@ -413,4 +441,50 @@ TEST_F(PopupMenuMediatorTest, TestTextZoomDisabledIPad) {
   FontSizeTabHelper::CreateForWebState(web_state_list_->GetWebStateAt(0));
   SetUpActiveWebState();
   EXPECT_FALSE(HasItem(consumer, kToolsMenuTextZoom, /*enabled=*/YES));
+}
+
+// Tests that 1) the tools menu has an enabled 'Add to Bookmarks' button when
+// the current URL is not in bookmarks 2) the bookmark button changes to an
+// enabled 'Edit bookmark' button when navigating to a bookmarked URL, 3) the
+// bookmark button changes to 'Add to Bookmarks' when the bookmark is removed.
+TEST_F(PopupMenuMediatorTest, TestBookmarksToolsMenuButtons) {
+  const GURL url("https://bookmarked.url");
+  web_state_->SetCurrentURL(url);
+  CreateMediator(PopupMenuTypeToolsMenu, /*is_incognito=*/NO,
+                 /*trigger_incognito_hint=*/NO);
+  SetUpBookmarks();
+  bookmarks::AddIfNotBookmarked(bookmark_model_, url,
+                                base::SysNSStringToUTF16(@"Test bookmark"));
+  mediator_.webStateList = web_state_list_.get();
+  FakePopupMenuConsumer* consumer = [[FakePopupMenuConsumer alloc] init];
+  mediator_.popupMenu = consumer;
+
+  EXPECT_TRUE(HasItem(consumer, kToolsMenuAddToBookmarks, /*enabled=*/YES));
+
+  SetUpActiveWebState();
+  EXPECT_FALSE(HasItem(consumer, kToolsMenuAddToBookmarks, /*enabled=*/YES));
+  EXPECT_TRUE(HasItem(consumer, kToolsMenuEditBookmark, /*enabled=*/YES));
+
+  bookmark_model_->RemoveAllUserBookmarks();
+  EXPECT_TRUE(HasItem(consumer, kToolsMenuAddToBookmarks, /*enabled=*/YES));
+  EXPECT_FALSE(HasItem(consumer, kToolsMenuEditBookmark, /*enabled=*/YES));
+}
+
+// Tests that the bookmark button is disabled when EditBookmarksEnabled pref is
+// changed to false.
+TEST_F(PopupMenuMediatorTest, TestDisableBookmarksButton) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(kEditBookmarksIOS);
+
+  CreateMediator(PopupMenuTypeToolsMenu, /*is_incognito=*/NO,
+                 /*trigger_incognito_hint=*/NO);
+  CreatePrefs();
+  FakePopupMenuConsumer* consumer = [[FakePopupMenuConsumer alloc] init];
+  mediator_.popupMenu = consumer;
+  mediator_.prefService = prefs_.get();
+
+  EXPECT_TRUE(HasItem(consumer, kToolsMenuAddToBookmarks, /*enabled=*/YES));
+
+  prefs_->SetBoolean(bookmarks::prefs::kEditBookmarksEnabled, false);
+  EXPECT_TRUE(HasItem(consumer, kToolsMenuAddToBookmarks, /*enabled=*/NO));
 }

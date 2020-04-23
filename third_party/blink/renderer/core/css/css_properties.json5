@@ -5710,18 +5710,6 @@
         initial_color: "StyleColor::CurrentColor",
       },
     },
-    {
-      name: "-internal-effective-zoom",
-      property_methods: ["ParseSingleValue"],
-      inherited: true,
-      field_template: "primitive",
-      type_name: "float",
-      default_value: "1.0f",
-      field_group: "*",
-      priority: "High",
-      style_builder_custom_functions: ["initial", "inherit", "value"],
-      surrogate_for: "zoom",
-    },
 
     // Name: -internal-empty-line-height:
     // Value: none | fabricated

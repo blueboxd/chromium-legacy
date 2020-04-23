@@ -39,6 +39,7 @@ namespace signin_metrics {
 enum class AccessPoint;
 enum class PromoAction;
 enum class Reason;
+enum class SourceForRefreshTokenOperation;
 }  // namespace signin_metrics
 
 namespace signin {
@@ -84,6 +85,15 @@ class SigninViewController {
   // does not turn sync on. |email_hint| may be empty.
   virtual void ShowDiceAddAccountTab(signin_metrics::AccessPoint access_point,
                                      const std::string& email_hint);
+
+  // Opens the Gaia logout page in a new tab. This removes the accounts from the
+  // web, as well as from Chrome (Dice intercepts the web signout and
+  // invalidates all Chrome accounts). If a primary account is set, this
+  // function does not clear it, but still invalidates its credentials.
+  // This is the only way to properly signout all accounts. In particular,
+  // calling Gaia logout programmatically or revoking the tokens does not sign
+  // out SAML accounts completely (see https://crbug.com/1069421).
+  void ShowGaiaLogoutTab(signin_metrics::SourceForRefreshTokenOperation source);
 
   // Shows the modal sign-in email confirmation dialog as a tab-modal dialog on
   // top of the currently displayed WebContents in |browser_|.

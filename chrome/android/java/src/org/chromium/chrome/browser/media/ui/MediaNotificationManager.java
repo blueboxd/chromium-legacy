@@ -46,7 +46,7 @@ import org.chromium.chrome.browser.notifications.ForegroundServiceUtils;
 import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
-import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
+import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
 import org.chromium.components.browser_ui.notifications.ChromeNotification;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxy;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
@@ -296,7 +296,7 @@ public class MediaNotificationManager {
                         null /* notificationTag */, s.getNotificationId());
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory.createChromeNotificationBuilder(true /* preferCompat */,
-                        ChannelDefinitions.ChannelId.MEDIA, null /* remoteAppPackageName */,
+                        ChromeChannelDefinitions.ChannelId.MEDIA, null /* remoteAppPackageName */,
                         metadata);
         ForegroundServiceUtils.getInstance().startForeground(s, s.getNotificationId(),
                 builder.buildChromeNotification().getNotification(), 0 /* foregroundServiceType */);
@@ -988,7 +988,7 @@ public class MediaNotificationManager {
                 new NotificationMetadata(NotificationUmaTracker.SystemNotificationType.MEDIA,
                         null /* notificationTag */, mMediaNotificationInfo.id);
         mNotificationBuilder = NotificationBuilderFactory.createChromeNotificationBuilder(
-                true /* preferCompat */, ChannelDefinitions.ChannelId.MEDIA,
+                true /* preferCompat */, ChromeChannelDefinitions.ChannelId.MEDIA,
                 null /* remoteAppPackageName*/, metadata);
         setMediaStyleLayoutForNotificationBuilder(mNotificationBuilder);
 

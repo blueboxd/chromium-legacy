@@ -19,6 +19,7 @@ class Tracker;
 @protocol BrowserCommands;
 class OverlayPresenter;
 @protocol PopupMenuConsumer;
+class PrefService;
 class ReadingListModel;
 class TemplateURLService;
 class WebStateList;
@@ -54,6 +55,8 @@ class WebStateList;
 @property(nonatomic, assign) feature_engagement::Tracker* engagementTracker;
 // The bookmarks model to know if the page is bookmarked.
 @property(nonatomic, assign) bookmarks::BookmarkModel* bookmarkModel;
+// Pref service to retrieve preference values.
+@property(nonatomic, assign) PrefService* prefService;
 // The template url service to use for checking whether search by image is
 // available.
 @property(nonatomic, assign) TemplateURLService* templateURLService;

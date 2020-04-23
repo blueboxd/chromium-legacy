@@ -21,13 +21,13 @@ import org.chromium.chrome.test.util.browser.Features;
  * Java unit tests for ChannelDefinitions.
  */
 @RunWith(BlockJUnit4ClassRunner.class)
-public class ChannelDefinitionsTest {
+public class ChromeChannelDefinitionsTest {
     @Rule
     public TestRule processor = new Features.JUnitProcessor();
 
     @Test
     public void testNoOverlapBetweenStartupAndLegacyChannelIds() {
-        assertThat(ChannelDefinitions.getStartupChannelIds(),
-                everyItem(not(isIn(ChannelDefinitions.getLegacyChannelIds()))));
+        assertThat(ChromeChannelDefinitions.getInstance().getStartupChannelIds(),
+                everyItem(not(isIn(ChromeChannelDefinitions.getInstance().getLegacyChannelIds()))));
     }
 }

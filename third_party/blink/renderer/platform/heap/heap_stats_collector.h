@@ -267,7 +267,6 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
     size_t allocated_space_in_bytes_before_sweeping = 0;
     size_t partition_alloc_bytes_before_sweeping = 0;
     double live_object_rate = 0;
-    size_t wrapper_count_before_sweeping = 0;
     base::TimeDelta gc_nested_in_v8;
   };
 
@@ -370,9 +369,6 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
 
   // Allocated space in bytes for all arenas.
   size_t allocated_space_bytes_ = 0;
-
-  size_t wrapper_count_ = 0;
-  size_t collected_wrapper_count_ = 0;
 
   bool is_started_ = false;
 

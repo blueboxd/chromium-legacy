@@ -59,6 +59,15 @@ Polymer({
       computed: 'computeSelectSafeBrowsingRadio_(prefs.safebrowsing.*)',
     },
 
+    /** @private */
+    safeBrowsingEnhancedEnabled_: {
+      type: Boolean,
+      readOnly: true,
+      value: function() {
+        return loadTimeData.getBoolean('safeBrowsingEnhancedEnabled');
+      },
+    },
+
     /** @private {!settings.SafeBrowsingRadioManagedState} */
     safeBrowsingRadioManagedState_: Object,
 

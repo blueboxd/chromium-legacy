@@ -214,6 +214,8 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
   void OnWindowDestroying(aura::Window* window) override;
 
   // WindowStateObserver:
+  void OnPreWindowStateTypeChange(WindowState* window_state,
+                                  WindowStateType old_type) override;
   void OnPostWindowStateTypeChange(WindowState* window_state,
                                    WindowStateType old_type) override;
 

@@ -82,7 +82,6 @@ class ChromePasswordManagerClient
   void PostHSTSQueryForHost(
       const GURL& origin,
       password_manager::HSTSCallback callback) const override;
-  bool OnCredentialManagerUsed() override;
   bool PromptUserToSaveOrUpdatePassword(
       std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save,
       bool is_update) override;
@@ -195,9 +194,7 @@ class ChromePasswordManagerClient
   // This is called when the onboarding experience was shown successfully,
   // which means that the user should now be prompted to save their password.
   void OnOnboardingSuccessful(
-      std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save,
-      std::unique_ptr<password_manager::SavingFlowMetricsRecorder>
-          saving_flow_recorder);
+      std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save);
 
   void OnImeTextCommittedEvent(const base::string16& text_str) override;
   void OnImeSetComposingTextEvent(const base::string16& text_str) override;

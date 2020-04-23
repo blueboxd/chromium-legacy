@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_LOCAL_SEARCH_SERVICE_LOCAL_SEARCH_SERVICE_PROXY_H_
-#define CHROME_BROWSER_LOCAL_SEARCH_SERVICE_LOCAL_SEARCH_SERVICE_PROXY_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOCAL_SEARCH_SERVICE_LOCAL_SEARCH_SERVICE_PROXY_H_
+#define CHROME_BROWSER_CHROMEOS_LOCAL_SEARCH_SERVICE_LOCAL_SEARCH_SERVICE_PROXY_H_
 
 #include <memory>
 
@@ -15,7 +15,7 @@ class Profile;
 
 namespace local_search_service {
 
-class LocalSearchServiceImpl;
+class LocalSearchService;
 
 // TODO(jiameng): the next cl will remove this class completely because the
 // factory will return LocalSearchService (that will be a KeyedService).
@@ -28,14 +28,14 @@ class LocalSearchServiceProxy : public KeyedService {
   LocalSearchServiceProxy(const LocalSearchServiceProxy&) = delete;
   LocalSearchServiceProxy& operator=(const LocalSearchServiceProxy&) = delete;
 
-  LocalSearchServiceImpl* GetLocalSearchServiceImpl();
+  LocalSearchService* GetLocalSearchService();
 
  private:
-  std::unique_ptr<LocalSearchServiceImpl> local_search_service_impl_;
+  std::unique_ptr<LocalSearchService> local_search_service_;
 
   base::WeakPtrFactory<LocalSearchServiceProxy> weak_ptr_factory_{this};
 };
 
 }  // namespace local_search_service
 
-#endif  // CHROME_BROWSER_LOCAL_SEARCH_SERVICE_LOCAL_SEARCH_SERVICE_PROXY_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOCAL_SEARCH_SERVICE_LOCAL_SEARCH_SERVICE_PROXY_H_

@@ -38,7 +38,7 @@ NGCustomLayoutAlgorithm::NGCustomLayoutAlgorithm(
           space.PercentageResolutionBlockSize());
 }
 
-base::Optional<MinMaxSizes> NGCustomLayoutAlgorithm::ComputeMinMaxSizes(
+MinMaxSizes NGCustomLayoutAlgorithm::ComputeMinMaxSizes(
     const MinMaxSizesInput& input) const {
   if (!Node().IsCustomLayoutLoaded())
     return FallbackMinMaxSizes(input);
@@ -200,15 +200,13 @@ void NGCustomLayoutAlgorithm::AddAnyOutOfFlowPositionedChildren(
   }
 }
 
-base::Optional<MinMaxSizes> NGCustomLayoutAlgorithm::FallbackMinMaxSizes(
+MinMaxSizes NGCustomLayoutAlgorithm::FallbackMinMaxSizes(
     const MinMaxSizesInput& input) const {
-  NGBlockLayoutAlgorithm algorithm(params_);
-  return algorithm.ComputeMinMaxSizes(input);
+  return NGBlockLayoutAlgorithm(params_).ComputeMinMaxSizes(input);
 }
 
 scoped_refptr<const NGLayoutResult> NGCustomLayoutAlgorithm::FallbackLayout() {
-  NGBlockLayoutAlgorithm algorithm(params_);
-  return algorithm.Layout();
+  return NGBlockLayoutAlgorithm(params_).Layout();
 }
 
 }  // namespace blink

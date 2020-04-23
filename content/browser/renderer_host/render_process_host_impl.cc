@@ -27,6 +27,7 @@
 #include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/files/file.h"
+#include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/memory_pressure_monitor.h"
@@ -223,6 +224,7 @@
 #include "storage/browser/file_system/sandbox_file_system_backend.h"
 #include "third_party/blink/public/common/page/launching_process_state.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
+#include "third_party/blink/public/mojom/disk_allocator.mojom.h"
 #include "third_party/blink/public/public_buildflags.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/accessibility/accessibility_switches.h"
@@ -3610,6 +3612,8 @@ void RenderProcessHostImpl::OnChannelConnected(int32_t peer_pid) {
     // MemoryUsageMonitor in blink.
     ProvideStatusFileForRenderer();
 #endif
+
+    ProvideSwapFileForRenderer();
   }
 
 #if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
@@ -5061,5 +5065,39 @@ void RenderProcessHostImpl::ProvideStatusFileForRenderer() {
   monitor->SetProcFiles(statm_file.Duplicate(), status_file.Duplicate());
 }
 #endif
+
+void RenderProcessHostImpl::ProvideSwapFileForRenderer() {
+  if (!base::FeatureList::IsEnabled(features::kParkableStringsToDisk))
+    return;
+  mojo::Remote<blink::mojom::DiskAllocator> allocator;
+  BindReceiver(allocator.BindNewPipeAndPassReceiver());
+
+  // In Incognito, nothing should be written to disk. Providing an invalid file
+  // prevents the renderer from doing so.
+  if (GetBrowserContext()->IsOffTheRecord()) {
+    allocator->ProvideTemporaryFile(base::File());
+    return;
+  }
+
+  // File creation done on a background thread. The renderer side will behave
+  // correctly even if the file is provided later or never.
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()}, base::BindOnce([]() {
+        base::FilePath path;
+        CHECK(base::CreateTemporaryFile(&path));
+
+        int flags = base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_READ |
+                    base::File::FLAG_WRITE | base::File::FLAG_DELETE_ON_CLOSE;
+        auto file = base::File(base::FilePath(path), flags);
+        CHECK(file.IsValid());
+        return file;
+      }),
+      base::BindOnce(
+          [](mojo::Remote<blink::mojom::DiskAllocator> allocator,
+             base::File file) {
+            allocator->ProvideTemporaryFile(std::move(file));
+          },
+          std::move(allocator)));
+}
 
 }  // namespace content

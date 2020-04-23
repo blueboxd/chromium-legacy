@@ -9,8 +9,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include "chrome/browser/chromeos/local_search_service/index.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_per_page_strings_provider.h"
-#include "chrome/services/local_search_service/index_impl.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
@@ -22,7 +22,7 @@ class WebUIDataSource;
 }  // namespace content
 
 namespace local_search_service {
-class LocalSearchServiceImpl;
+class LocalSearchService;
 }  // namespace local_search_service
 
 namespace syncer {
@@ -68,7 +68,7 @@ class OsSettingsLocalizedStringsProvider
  public:
   OsSettingsLocalizedStringsProvider(
       Profile* profile,
-      local_search_service::LocalSearchServiceImpl* local_search_service,
+      local_search_service::LocalSearchService* local_search_service,
       multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client,
       syncer::SyncService* sync_service,
       SupervisedUserService* supervised_user_service,
@@ -101,7 +101,7 @@ class OsSettingsLocalizedStringsProvider
 
   std::vector<std::unique_ptr<OsSettingsPerPageStringsProvider>>
       per_page_providers_;
-  local_search_service::IndexImpl* index_;
+  local_search_service::Index* index_;
   std::unordered_map<int, const SearchConcept*> canonical_id_to_metadata_map_;
 };
 

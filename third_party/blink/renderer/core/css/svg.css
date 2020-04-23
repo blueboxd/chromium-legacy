@@ -87,7 +87,7 @@ tspan, textPath {
 
 /* TODO(crbug.com/976224): Support zoom on foreignObject */
 foreignObject {
-    -internal-effective-zoom: initial !important;
+    zoom: -internal-reset-effective !important;
 }
 
 /*

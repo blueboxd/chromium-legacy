@@ -17,29 +17,31 @@
 namespace blink {
 
 GamepadSharedMemoryReader::GamepadSharedMemoryReader(LocalFrame& frame)
-    : receiver_(this, frame.DomWindow()) {
-  frame.GetBrowserInterfaceBroker().GetInterface(
-      gamepad_monitor_remote_.BindNewPipeAndPassReceiver());
+    : receiver_(this, frame.DomWindow()),
+      gamepad_monitor_remote_(frame.DomWindow()) {
   // See https://bit.ly/2S0zRAS for task types
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       frame.GetTaskRunner(TaskType::kMiscPlatformAPI);
+  frame.GetBrowserInterfaceBroker().GetInterface(
+      gamepad_monitor_remote_.BindNewPipeAndPassReceiver(task_runner));
   gamepad_monitor_remote_->SetObserver(
       receiver_.BindNewPipeAndPassRemote(task_runner));
 }
 
 void GamepadSharedMemoryReader::Trace(Visitor* visitor) {
   visitor->Trace(receiver_);
+  visitor->Trace(gamepad_monitor_remote_);
 }
 
 void GamepadSharedMemoryReader::SendStartMessage() {
-  if (gamepad_monitor_remote_) {
+  if (gamepad_monitor_remote_.is_bound()) {
     gamepad_monitor_remote_->GamepadStartPolling(
         &renderer_shared_buffer_region_);
   }
 }
 
 void GamepadSharedMemoryReader::SendStopMessage() {
-  if (gamepad_monitor_remote_) {
+  if (gamepad_monitor_remote_.is_bound()) {
     gamepad_monitor_remote_->GamepadStopPolling();
   }
 }

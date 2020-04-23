@@ -11,14 +11,11 @@
 #include <vector>
 
 #include "base/strings/stringprintf.h"
-#include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/http/http_util.h"
 #include "net/url_request/redirect_util.h"
-#include "services/network/public/cpp/content_security_policy/content_security_policy.h"
 #include "services/network/public/cpp/cross_origin_embedder_policy.h"
 #include "services/network/public/cpp/cross_origin_opener_policy_parser.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
@@ -92,20 +89,11 @@ void ServiceWorkerLoaderHelpers::SaveResponseHeaders(
   if (out_head->content_length == -1)
     out_head->content_length = out_head->headers->GetContentLength();
 
-  // TODO(pmeuleman): Remove the code duplication with
-  // //services/network/url_loader.cc.
-  if (base::FeatureList::IsEnabled(
-          network::features::kCrossOriginOpenerPolicy)) {
-    // Parse the Cross-Origin-Opener-Policy header.
-    constexpr char kCrossOriginOpenerPolicyHeader[] =
-        "Cross-Origin-Opener-Policy";
-    std::string raw_coop_string;
-    if (out_head->headers &&
-        out_head->headers->GetNormalizedHeader(kCrossOriginOpenerPolicyHeader,
-                                               &raw_coop_string)) {
-      out_head->cross_origin_opener_policy =
-          network::ParseCrossOriginOpenerPolicyHeader(raw_coop_string);
-    }
+  // TODO(arthursonzogni): Move this to ParsedHeaders. Stop parsing in the
+  // browser process.
+  if (out_head->headers) {
+    out_head->cross_origin_opener_policy =
+        network::ParseCrossOriginOpenerPolicy(*(out_head->headers));
   }
 }
 

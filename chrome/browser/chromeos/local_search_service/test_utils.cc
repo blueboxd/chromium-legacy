@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/services/local_search_service/test_utils.h"
+#include "chrome/browser/chromeos/local_search_service/test_utils.h"
 
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -34,7 +34,7 @@ std::vector<Data> CreateTestData(
   return output;
 }
 
-void FindAndCheck(IndexImpl* index,
+void FindAndCheck(Index* index,
                   std::string query,
                   int32_t max_results,
                   ResponseStatus expected_status,

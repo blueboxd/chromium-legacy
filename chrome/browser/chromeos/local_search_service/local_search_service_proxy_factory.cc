@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/local_search_service/local_search_service_proxy_factory.h"
+#include "chrome/browser/chromeos/local_search_service/local_search_service_proxy_factory.h"
 
-#include "chrome/browser/local_search_service/local_search_service_proxy.h"
+#include "chrome/browser/chromeos/local_search_service/local_search_service_proxy.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 

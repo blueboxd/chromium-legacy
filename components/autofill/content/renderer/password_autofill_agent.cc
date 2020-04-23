@@ -49,6 +49,7 @@
 #include "third_party/blink/public/web/web_autofill_client.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_element.h"
+#include "third_party/blink/public/web/web_form_control_element.h"
 #include "third_party/blink/public/web/web_form_element.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_node.h"
@@ -409,6 +410,33 @@ bool ShowPopupWithoutPasswords(const WebInputElement& password_element) {
     return false;
   }
   return !password_element.IsNull() && IsElementEditable(password_element);
+}
+
+// This method tries to fix `fields` with empty typed or filled properties by
+// matching them against previously filled or typed in fields with the same
+// value and copying their filled or typed mask.
+//
+// This helps against websites where submitted fields differ from fields that
+// had previously been autofilled or typed into.
+void FillNonTypedOrFilledPropertiesMasks(std::vector<FormFieldData>* fields,
+                                         const FieldDataManager& manager) {
+  static constexpr FieldPropertiesMask FILLED_OR_TYPED =
+      FieldPropertiesFlags::AUTOFILLED | FieldPropertiesFlags::USER_TYPED;
+
+  for (auto& field : *fields) {
+    if (field.properties_mask & FILLED_OR_TYPED)
+      continue;
+
+    for (const auto& pair : manager.field_data_map()) {
+      const auto& field_data = pair.second;
+
+      if ((field_data.second & FILLED_OR_TYPED) &&
+          field_data.first == field.value) {
+        field.properties_mask |= field_data.second & FILLED_OR_TYPED;
+        break;
+      }
+    }
+  }
 }
 
 }  // namespace
@@ -1168,6 +1196,9 @@ void PasswordAutofillAgent::OnWillSubmitForm(const WebFormElement& form) {
     }
     submitted_form_data->submission_event =
         SubmissionIndicatorEvent::HTML_FORM_SUBMISSION;
+
+    FillNonTypedOrFilledPropertiesMasks(&submitted_form_data->fields,
+                                        *field_data_manager_);
 
     if (FrameCanAccessPasswordManager()) {
       // Some observers depend on sending this information now instead of when

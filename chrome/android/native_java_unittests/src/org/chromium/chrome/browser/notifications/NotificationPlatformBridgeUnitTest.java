@@ -13,7 +13,7 @@ import android.app.Notification;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.CalledByNativeJavaTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
+import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
 
 import java.util.Arrays;
@@ -70,9 +70,9 @@ public class NotificationPlatformBridgeUnitTest {
 
         // Returns null for a channel id that is not associated with a particular origin.
         assertNull(NotificationPlatformBridge.getOriginFromChannelId(
-                ChannelDefinitions.ChannelId.BROWSER));
+                ChromeChannelDefinitions.ChannelId.BROWSER));
         assertNull(NotificationPlatformBridge.getOriginFromChannelId(
-                ChannelDefinitions.ChannelId.SITES));
+                ChromeChannelDefinitions.ChannelId.SITES));
 
         // Returns null if channel id is null.
         assertNull(NotificationPlatformBridge.getOriginFromChannelId(null));

@@ -11,6 +11,7 @@
 #include "base/macros.h"
 
 @class ChromeIdentity;
+@class UIViewController;
 
 namespace ios {
 
@@ -28,6 +29,17 @@ class ChromeTrustedVaultService {
   virtual void FetchKeys(
       ChromeIdentity* chrome_identity,
       base::OnceCallback<void(const TrustedVaultSharedKeyList&)> callback);
+  // Presents the trusted vault key reauthentication UI for |identity|.
+  // Once the reauth is done and the UI is dismissed, |callback| is called.
+  // |callback| is not called if the reauthentication is canceled.
+  virtual void Reauthentication(ChromeIdentity* chrome_identity,
+                                UIViewController* presentingViewController,
+                                void (^callback)(BOOL success, NSError* error));
+  // Cancels the presented trusted vault key reauthentication UI.
+  // The reauthentication callback will not be called.
+  // If no reauthentication dialog is not present, |callback| is called
+  // synchronously.
+  virtual void CancelReauthentication(BOOL animated, void (^callback)(void));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeTrustedVaultService);

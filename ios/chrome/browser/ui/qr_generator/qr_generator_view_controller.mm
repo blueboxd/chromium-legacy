@@ -28,10 +28,15 @@ const CGFloat kQRCodeImageSize = 200.0;
   self.image = [self createQRCodeImage];
   self.imageHasFixedSize = YES;
 
+  self.titleTextStyle = UIFontTextStyleTitle3;
+
   self.subtitleString = [self.pageURL host];
 
   self.primaryActionAvailable = YES;
   self.primaryActionString = l10n_util::GetNSString(IDS_IOS_SHARE_BUTTON_LABEL);
+
+  self.alwaysShowImage = YES;
+  self.primaryActionBarButtonStyle = UIBarButtonSystemItemAction;
 
   self.helpButtonAvailable = YES;
   [super loadView];

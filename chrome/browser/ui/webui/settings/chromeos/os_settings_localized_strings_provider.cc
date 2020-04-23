@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/assistant/assistant_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/chromeos/local_search_service/local_search_service.h"
 #include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_client_factory.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -49,7 +50,6 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
-#include "chrome/services/local_search_service/local_search_service_impl.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
@@ -1172,12 +1172,12 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source) {
 
 OsSettingsLocalizedStringsProvider::OsSettingsLocalizedStringsProvider(
     Profile* profile,
-    local_search_service::LocalSearchServiceImpl* local_search_service,
+    local_search_service::LocalSearchService* local_search_service,
     multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client,
     syncer::SyncService* sync_service,
     SupervisedUserService* supervised_user_service,
     KerberosCredentialsManager* kerberos_credentials_manager)
-    : index_(local_search_service->GetIndexImpl(
+    : index_(local_search_service->GetIndex(
           local_search_service::IndexId::kCrosSettings)) {
   // Add per-page string providers.
   // TODO(khorimoto): Add providers for the remaining pages.

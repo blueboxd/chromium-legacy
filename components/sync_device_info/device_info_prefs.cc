@@ -130,11 +130,22 @@ void DeviceInfoPrefs::GarbageCollectExpiredCacheGuids() {
   ListPrefUpdate update_cache_guids(pref_service_,
                                     kDeviceInfoRecentGUIDsWithTimestamps);
   update_cache_guids->EraseListValueIf([this](const auto& dict) {
+    // Avoid crashes if the preference contains corrupt entries that are not
+    // dictionaries, and meanwhile clean up these corrupt entries.
+    if (!dict.is_dict()) {
+      return true;
+    }
+
     base::Optional<int> days_since_epoch = dict.FindIntKey(kTimestampKey);
-    const base::Time creation_time =
-        days_since_epoch ? base::Time::FromDeltaSinceWindowsEpoch(
-                               base::TimeDelta::FromDays(*days_since_epoch))
-                         : base::Time::Min();
+
+    // Avoid crashes if the dictionary contains no timestamp and meanwhile clean
+    // up these corrupt entries.
+    if (!days_since_epoch.has_value()) {
+      return true;
+    }
+
+    const base::Time creation_time = base::Time::FromDeltaSinceWindowsEpoch(
+        base::TimeDelta::FromDays(*days_since_epoch));
     return creation_time < clock_->Now() - kMaxTimeDeltaLocalCacheGuidsStored;
   });
 }

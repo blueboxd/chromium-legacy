@@ -19,7 +19,7 @@ import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.PendingIntentProvider;
-import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
+import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.sync.GoogleServiceAuthError.State;
@@ -141,7 +141,8 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory
                         .createChromeNotificationBuilder(true /* preferCompat */,
-                                ChannelDefinitions.ChannelId.BROWSER, null /*remoteAppPackageName*/,
+                                ChromeChannelDefinitions.ChannelId.BROWSER,
+                                null /*remoteAppPackageName*/,
                                 new NotificationMetadata(
                                         NotificationUmaTracker.SystemNotificationType.SYNC, null,
                                         NotificationConstants.NOTIFICATION_ID_SYNC))

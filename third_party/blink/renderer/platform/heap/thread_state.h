@@ -258,7 +258,6 @@ class PLATFORM_EXPORT ThreadState final {
   void SchedulePreciseGC();
   void ScheduleForcedGCForTesting();
   void ScheduleGCIfNeeded();
-  void WillStartV8GC(BlinkGC::V8GCType);
   void SetGCState(GCState);
   GCState GetGCState() const { return gc_state_; }
   void SetGCPhase(GCPhase);

@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_handler_factory.h"
 
-#include "chrome/browser/local_search_service/local_search_service_proxy.h"
-#include "chrome/browser/local_search_service/local_search_service_proxy_factory.h"
+#include "chrome/browser/chromeos/local_search_service/local_search_service_proxy.h"
+#include "chrome/browser/chromeos/local_search_service/local_search_service_proxy_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_localized_strings_provider_factory.h"
@@ -45,7 +45,7 @@ KeyedService* SearchHandlerFactory::BuildServiceInstanceFor(
       OsSettingsLocalizedStringsProviderFactory::GetForProfile(profile),
       local_search_service::LocalSearchServiceProxyFactory::GetForProfile(
           Profile::FromBrowserContext(profile))
-          ->GetLocalSearchServiceImpl());
+          ->GetLocalSearchService());
 }
 
 bool SearchHandlerFactory::ServiceIsNULLWhileTesting() const {

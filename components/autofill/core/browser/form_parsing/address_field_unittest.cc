@@ -11,8 +11,10 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/form_parsing/autofill_scanner.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -65,7 +67,7 @@ TEST_F(AddressFieldTest, ParseOneLineAddress) {
   AutofillScanner scanner(list_);
   field_ = Parse(&scanner);
   ASSERT_NE(nullptr, field_.get());
-  field_->AddClassifications(&field_candidates_map_);
+  field_->AddClassificationsForTesting(&field_candidates_map_);
   ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("addr1")) !=
               field_candidates_map_.end());
   EXPECT_EQ(ADDRESS_HOME_LINE1,
@@ -89,7 +91,7 @@ TEST_F(AddressFieldTest, ParseTwoLineAddress) {
   AutofillScanner scanner(list_);
   field_ = Parse(&scanner);
   ASSERT_NE(nullptr, field_.get());
-  field_->AddClassifications(&field_candidates_map_);
+  field_->AddClassificationsForTesting(&field_candidates_map_);
   ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("addr1")) !=
               field_candidates_map_.end());
   EXPECT_EQ(ADDRESS_HOME_LINE1,
@@ -122,7 +124,7 @@ TEST_F(AddressFieldTest, ParseThreeLineAddress) {
   AutofillScanner scanner(list_);
   field_ = Parse(&scanner);
   ASSERT_NE(nullptr, field_.get());
-  field_->AddClassifications(&field_candidates_map_);
+  field_->AddClassificationsForTesting(&field_candidates_map_);
   ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("addr1")) !=
               field_candidates_map_.end());
   EXPECT_EQ(ADDRESS_HOME_LINE1,
@@ -148,7 +150,7 @@ TEST_F(AddressFieldTest, ParseStreetAddressFromTextArea) {
   AutofillScanner scanner(list_);
   field_ = Parse(&scanner);
   ASSERT_NE(nullptr, field_.get());
-  field_->AddClassifications(&field_candidates_map_);
+  field_->AddClassificationsForTesting(&field_candidates_map_);
   ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("addr")) !=
               field_candidates_map_.end());
   EXPECT_EQ(ADDRESS_HOME_STREET_ADDRESS,
@@ -167,7 +169,7 @@ TEST_F(AddressFieldTest, ParseCity) {
   AutofillScanner scanner(list_);
   field_ = Parse(&scanner);
   ASSERT_NE(nullptr, field_.get());
-  field_->AddClassifications(&field_candidates_map_);
+  field_->AddClassificationsForTesting(&field_candidates_map_);
   ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("city1")) !=
               field_candidates_map_.end());
   EXPECT_EQ(ADDRESS_HOME_CITY,
@@ -186,7 +188,7 @@ TEST_F(AddressFieldTest, ParseState) {
   AutofillScanner scanner(list_);
   field_ = Parse(&scanner);
   ASSERT_NE(nullptr, field_.get());
-  field_->AddClassifications(&field_candidates_map_);
+  field_->AddClassificationsForTesting(&field_candidates_map_);
   ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("state1")) !=
               field_candidates_map_.end());
   EXPECT_EQ(ADDRESS_HOME_STATE,
@@ -204,7 +206,7 @@ TEST_F(AddressFieldTest, ParseZip) {
   AutofillScanner scanner(list_);
   field_ = Parse(&scanner);
   ASSERT_NE(nullptr, field_.get());
-  field_->AddClassifications(&field_candidates_map_);
+  field_->AddClassificationsForTesting(&field_candidates_map_);
   ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("zip1")) !=
               field_candidates_map_.end());
   EXPECT_EQ(ADDRESS_HOME_ZIP,
@@ -227,7 +229,7 @@ TEST_F(AddressFieldTest, ParseStateAndZipOneLabel) {
   AutofillScanner scanner(list_);
   field_ = Parse(&scanner);
   ASSERT_NE(nullptr, field_.get());
-  field_->AddClassifications(&field_candidates_map_);
+  field_->AddClassificationsForTesting(&field_candidates_map_);
   ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("state")) !=
               field_candidates_map_.end());
   EXPECT_EQ(ADDRESS_HOME_STATE,
@@ -250,7 +252,7 @@ TEST_F(AddressFieldTest, ParseCountry) {
   AutofillScanner scanner(list_);
   field_ = Parse(&scanner);
   ASSERT_NE(nullptr, field_.get());
-  field_->AddClassifications(&field_candidates_map_);
+  field_->AddClassificationsForTesting(&field_candidates_map_);
   ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("country1")) !=
               field_candidates_map_.end());
   EXPECT_EQ(
@@ -270,12 +272,122 @@ TEST_F(AddressFieldTest, ParseCompany) {
   AutofillScanner scanner(list_);
   field_ = Parse(&scanner);
   ASSERT_NE(nullptr, field_.get());
-  field_->AddClassifications(&field_candidates_map_);
+  field_->AddClassificationsForTesting(&field_candidates_map_);
   ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("company1")) !=
               field_candidates_map_.end());
   EXPECT_EQ(
       COMPANY_NAME,
       field_candidates_map_[ASCIIToUTF16("company1")].BestHeuristicType());
+}
+
+// Tests that the city, state, country and zip-code fields are correctly
+// classfied with unambiguous field names and labels.
+TEST_F(AddressFieldTest, ParseCityStateCountryZipcodeTogether) {
+  FormFieldData field;
+  field.form_control_type = "text";
+
+  field.label = ASCIIToUTF16("City");
+  field.name = ASCIIToUTF16("city");
+  list_.push_back(
+      std::make_unique<AutofillField>(field, ASCIIToUTF16("city1")));
+
+  field.label = ASCIIToUTF16("State");
+  field.name = ASCIIToUTF16("state");
+  list_.push_back(
+      std::make_unique<AutofillField>(field, ASCIIToUTF16("state1")));
+
+  field.label = ASCIIToUTF16("Country");
+  field.name = ASCIIToUTF16("country");
+  list_.push_back(
+      std::make_unique<AutofillField>(field, ASCIIToUTF16("country1")));
+
+  field.label = ASCIIToUTF16("Zip");
+  field.name = ASCIIToUTF16("zip");
+  list_.push_back(std::make_unique<AutofillField>(field, ASCIIToUTF16("zip1")));
+
+  base::test::ScopedFeatureList enabled;
+  enabled.InitAndEnableFeature(
+      features::kAutofillUseParseCityStateCountryZipCodeInHeuristic);
+
+  AutofillScanner scanner(list_);
+  field_ = Parse(&scanner);
+  ASSERT_NE(nullptr, field_.get());
+  field_->AddClassificationsForTesting(&field_candidates_map_);
+
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("city1")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(ADDRESS_HOME_CITY,
+            field_candidates_map_[ASCIIToUTF16("city1")].BestHeuristicType());
+
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("state1")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(ADDRESS_HOME_STATE,
+            field_candidates_map_[ASCIIToUTF16("state1")].BestHeuristicType());
+
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("country1")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(
+      ADDRESS_HOME_COUNTRY,
+      field_candidates_map_[ASCIIToUTF16("country1")].BestHeuristicType());
+
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("zip1")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(ADDRESS_HOME_ZIP,
+            field_candidates_map_[ASCIIToUTF16("zip1")].BestHeuristicType());
+}
+
+// Tests that the field is classified as |ADDRESS_HOME_COUNTRY| when the field
+// label contains 'Region'.
+TEST_F(AddressFieldTest, ParseCountryLabelRegion) {
+  FormFieldData field;
+  field.form_control_type = "text";
+
+  field.label = ASCIIToUTF16("Country/Region");
+  field.name = ASCIIToUTF16("country");
+  list_.push_back(
+      std::make_unique<AutofillField>(field, ASCIIToUTF16("country1")));
+
+  base::test::ScopedFeatureList enabled;
+  enabled.InitAndEnableFeature(
+      features::kAutofillUseParseCityStateCountryZipCodeInHeuristic);
+
+  AutofillScanner scanner(list_);
+  field_ = Parse(&scanner);
+  ASSERT_NE(nullptr, field_.get());
+  field_->AddClassificationsForTesting(&field_candidates_map_);
+
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("country1")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(
+      ADDRESS_HOME_COUNTRY,
+      field_candidates_map_[ASCIIToUTF16("country1")].BestHeuristicType());
+}
+
+// Tests that the field is classified as |ADDRESS_HOME_COUNTRY| when the field
+// name contains 'region'.
+TEST_F(AddressFieldTest, ParseCountryNameRegion) {
+  FormFieldData field;
+  field.form_control_type = "text";
+
+  field.label = ASCIIToUTF16("Land");
+  field.name = ASCIIToUTF16("client_region");
+  list_.push_back(
+      std::make_unique<AutofillField>(field, ASCIIToUTF16("country1")));
+
+  base::test::ScopedFeatureList enabled;
+  enabled.InitAndEnableFeature(
+      features::kAutofillUseParseCityStateCountryZipCodeInHeuristic);
+
+  AutofillScanner scanner(list_);
+  field_ = Parse(&scanner);
+  ASSERT_NE(nullptr, field_.get());
+  field_->AddClassificationsForTesting(&field_candidates_map_);
+
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("country1")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(
+      ADDRESS_HOME_COUNTRY,
+      field_candidates_map_[ASCIIToUTF16("country1")].BestHeuristicType());
 }
 
 }  // namespace autofill

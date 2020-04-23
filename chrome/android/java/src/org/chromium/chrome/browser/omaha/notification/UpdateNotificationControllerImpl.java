@@ -35,7 +35,7 @@ import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.PendingIntentProvider;
-import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
+import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
 import org.chromium.chrome.browser.omaha.OmahaBase;
 import org.chromium.chrome.browser.omaha.UpdateStatusProvider;
 import org.chromium.chrome.browser.omaha.UpdateStatusProvider.UpdateStatus;
@@ -123,8 +123,8 @@ public class UpdateNotificationControllerImpl implements UpdateNotificationContr
 
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory
-                        .createChromeNotificationBuilder(true, ChannelDefinitions.ChannelId.UPDATES,
-                                null,
+                        .createChromeNotificationBuilder(true,
+                                ChromeChannelDefinitions.ChannelId.UPDATES, null,
                                 new NotificationMetadata(
                                         NotificationUmaTracker.SystemNotificationType.UPDATES,
                                         UPDATE_NOTIFICATION_TAG /* notificationTag */,

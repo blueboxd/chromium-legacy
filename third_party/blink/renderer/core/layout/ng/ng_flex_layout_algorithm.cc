@@ -1072,14 +1072,13 @@ void NGFlexLayoutAlgorithm::PropagateBaselineFromChild(
   *fallback_baseline = fallback_baseline->value_or(baseline_offset);
 }
 
-base::Optional<MinMaxSizes> NGFlexLayoutAlgorithm::ComputeMinMaxSizes(
+MinMaxSizes NGFlexLayoutAlgorithm::ComputeMinMaxSizes(
     const MinMaxSizesInput& input) const {
-  base::Optional<MinMaxSizes> sizes =
-      CalculateMinMaxSizesIgnoringChildren(Node(), border_scrollbar_padding_);
-  if (sizes)
-    return sizes;
+  if (auto sizes = CalculateMinMaxSizesIgnoringChildren(
+          Node(), border_scrollbar_padding_))
+    return *sizes;
 
-  sizes.emplace();
+  MinMaxSizes sizes;
   LayoutUnit child_percentage_resolution_block_size =
       CalculateChildPercentageBlockSizeForMinMax(
           ConstraintSpace(), Node(), border_padding_,
@@ -1098,24 +1097,23 @@ base::Optional<MinMaxSizes> NGFlexLayoutAlgorithm::ComputeMinMaxSizes(
     NGBoxStrut child_margins = ComputeMinMaxMargins(Style(), child);
     child_min_max_sizes += child_margins.InlineSum();
     if (is_column_) {
-      sizes->min_size = std::max(sizes->min_size, child_min_max_sizes.min_size);
-      sizes->max_size = std::max(sizes->max_size, child_min_max_sizes.max_size);
+      sizes.min_size = std::max(sizes.min_size, child_min_max_sizes.min_size);
+      sizes.max_size = std::max(sizes.max_size, child_min_max_sizes.max_size);
     } else {
-      sizes->max_size += child_min_max_sizes.max_size;
+      sizes.max_size += child_min_max_sizes.max_size;
       if (algorithm_->IsMultiline()) {
-        sizes->min_size =
-            std::max(sizes->min_size, child_min_max_sizes.min_size);
+        sizes.min_size = std::max(sizes.min_size, child_min_max_sizes.min_size);
       } else {
-        sizes->min_size += child_min_max_sizes.min_size;
+        sizes.min_size += child_min_max_sizes.min_size;
       }
     }
   }
-  sizes->max_size = std::max(sizes->max_size, sizes->min_size);
+  sizes.max_size = std::max(sizes.max_size, sizes.min_size);
 
   // Due to negative margins, it is possible that we calculated a negative
   // intrinsic width. Make sure that we never return a negative width.
-  sizes->Encompass(LayoutUnit());
-  *sizes += border_scrollbar_padding_.InlineSum();
+  sizes.Encompass(LayoutUnit());
+  sizes += border_scrollbar_padding_.InlineSum();
   return sizes;
 }
 

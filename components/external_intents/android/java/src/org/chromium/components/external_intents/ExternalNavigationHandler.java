@@ -19,6 +19,7 @@ import android.provider.Browser;
 import android.provider.Telephony;
 import android.text.TextUtils;
 import android.util.Pair;
+import android.webkit.MimeTypeMap;
 import android.webkit.WebView;
 
 import androidx.annotation.IntDef;
@@ -66,6 +67,7 @@ public class ExternalNavigationHandler {
     private static final String PLAY_APP_PATH = "/store/apps/details";
     private static final String PLAY_HOSTNAME = "play.google.com";
 
+    private static final String PDF_EXTENSION = "pdf";
     private static final String PDF_VIEWER = "com.google.android.apps.docs";
     private static final String PDF_MIME = "application/pdf";
     private static final String PDF_SUFFIX = ".pdf";
@@ -314,7 +316,7 @@ public class ExternalNavigationHandler {
     /** http://crbug.com/605302 : Allow Chrome to handle all pdf file downloads. */
     private boolean isInternalPdfDownload(
             boolean isExternalProtocol, ExternalNavigationParams params) {
-        if (!isExternalProtocol && mDelegate.isPdfDownload(params.getUrl())) {
+        if (!isExternalProtocol && isPdfDownload(params.getUrl())) {
             if (DEBUG) Log.i(TAG, "PDF downloads are now handled by Chrome");
             return true;
         }
@@ -1126,6 +1128,17 @@ public class ExternalNavigationHandler {
         return intent.filterEquals(other)
                 && (intent.getSelector() == other.getSelector()
                         || intent.getSelector().filterEquals(other.getSelector()));
+    }
+
+    /**
+     * @return Whether the URL is a file download.
+     */
+    @VisibleForTesting
+    public boolean isPdfDownload(String url) {
+        String fileExtension = MimeTypeMap.getFileExtensionFromUrl(url);
+        if (TextUtils.isEmpty(fileExtension)) return false;
+
+        return PDF_EXTENSION.equals(fileExtension);
     }
 
     private static boolean isPdfIntent(Intent intent) {

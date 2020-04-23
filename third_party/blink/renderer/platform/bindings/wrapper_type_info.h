@@ -103,9 +103,6 @@ struct WrapperTypeInfo {
         v8::External::Cast(*type_info_wrapper)->Value());
   }
 
-  PLATFORM_EXPORT static void WrapperCreated();
-  PLATFORM_EXPORT static void WrapperDestroyed();
-
   bool Equals(const WrapperTypeInfo* that) const { return this == that; }
 
   bool IsSubclass(const WrapperTypeInfo* that) const {

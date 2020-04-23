@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/frame/is_input_pending_options.h"
-#include "third_party/blink/renderer/core/frame/is_input_pending_options_init.h"
+
+#include "third_party/blink/renderer/bindings/core/v8/v8_is_input_pending_options_init.h"
 
 namespace blink {
 

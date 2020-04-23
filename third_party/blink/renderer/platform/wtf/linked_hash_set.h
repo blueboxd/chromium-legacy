@@ -262,11 +262,6 @@ class LinkedHashSet {
   // Needs finalization. The anchor needs to unlink itself from the chain.
   ~LinkedHashSet();
 
-  static void Finalize(void* pointer) {
-    reinterpret_cast<LinkedHashSet*>(pointer)->~LinkedHashSet();
-  }
-  void FinalizeGarbageCollectedObject() { Finalize(this); }
-
   void Swap(LinkedHashSet&);
 
   unsigned size() const { return impl_.size(); }

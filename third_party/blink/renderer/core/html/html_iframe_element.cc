@@ -151,13 +151,30 @@ void HTMLIFrameElement::ParseAttribute(
       FrameOwnerPropertiesChanged();
   } else if (name == html_names::kSandboxAttr) {
     sandbox_->DidUpdateAttributeValue(params.old_value, value);
-    String invalid_tokens;
     bool feature_policy_for_sandbox =
         RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled();
+
     network::mojom::blink::WebSandboxFlags current_flags =
-        value.IsNull()
-            ? network::mojom::blink::WebSandboxFlags::kNone
-            : ParseSandboxPolicy(sandbox_->TokenSet(), invalid_tokens);
+        network::mojom::blink::WebSandboxFlags::kNone;
+    if (!value.IsNull()) {
+      using network::mojom::blink::WebSandboxFlags;
+      WebSandboxFlags ignored_flags =
+          !RuntimeEnabledFeatures::StorageAccessAPIEnabled()
+              ? WebSandboxFlags::kStorageAccessByUserActivation
+              : WebSandboxFlags::kNone;
+
+      auto parsed = network::ParseWebSandboxPolicy(sandbox_->value().Utf8(),
+                                                   ignored_flags);
+      current_flags = parsed.flags;
+      if (!parsed.error_message.empty()) {
+        GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+            mojom::blink::ConsoleMessageSource::kOther,
+            mojom::blink::ConsoleMessageLevel::kError,
+            WebString::FromUTF8(
+                "Error while parsing the 'sandbox' attribute: " +
+                parsed.error_message)));
+      }
+    }
     SetAllowedToDownload(
         (current_flags & network::mojom::blink::WebSandboxFlags::kDownloads) ==
         network::mojom::blink::WebSandboxFlags::kNone);
@@ -178,12 +195,6 @@ void HTMLIFrameElement::ParseAttribute(
           current_flags & ~sandbox_to_set;
     }
     SetSandboxFlags(sandbox_to_set);
-    if (!invalid_tokens.IsNull()) {
-      GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-          mojom::ConsoleMessageSource::kOther,
-          mojom::ConsoleMessageLevel::kError,
-          "Error while parsing the 'sandbox' attribute: " + invalid_tokens));
-    }
     if (RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled()) {
       Vector<String> messages;
       UpdateContainerPolicy(&messages);

@@ -8,6 +8,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/system/accessibility/autoclick_scroll_bubble_controller.h"
+#include "ash/system/accessibility/floating_menu_utils.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/tray/tray_bubble_view.h"
 #include "ash/system/tray/tray_constants.h"
@@ -28,42 +29,6 @@ namespace {
 // Autoclick menu constants.
 const int kAutoclickMenuWidth = 369;
 const int kAutoclickMenuHeight = 64;
-
-FloatingMenuPosition DefaultSystemPosition() {
-  return base::i18n::IsRTL() ? FloatingMenuPosition::kBottomLeft
-                             : FloatingMenuPosition::kBottomRight;
-}
-
-views::BubbleBorder::Arrow GetScrollAnchorAlignmentForPosition(
-    FloatingMenuPosition position) {
-  // If this is the default system position, pick the position based on the
-  // language direction.
-  if (position == FloatingMenuPosition::kSystemDefault) {
-    position = DefaultSystemPosition();
-  }
-  // Mirror arrow in RTL languages so that it always stays near the screen
-  // edge.
-  switch (position) {
-    case FloatingMenuPosition::kBottomLeft:
-      return base::i18n::IsRTL() ? views::BubbleBorder::Arrow::TOP_RIGHT
-                                 : views::BubbleBorder::Arrow::TOP_LEFT;
-    case FloatingMenuPosition::kTopLeft:
-      return base::i18n::IsRTL() ? views::BubbleBorder::Arrow::BOTTOM_RIGHT
-                                 : views::BubbleBorder::Arrow::BOTTOM_LEFT;
-    case FloatingMenuPosition::kBottomRight:
-      return base::i18n::IsRTL() ? views::BubbleBorder::Arrow::TOP_LEFT
-                                 : views::BubbleBorder::Arrow::TOP_RIGHT;
-    case FloatingMenuPosition::kTopRight:
-      return base::i18n::IsRTL() ? views::BubbleBorder::Arrow::BOTTOM_LEFT
-                                 : views::BubbleBorder::Arrow::BOTTOM_RIGHT;
-    case FloatingMenuPosition::kSystemDefault:
-      // It's not possible for position to be kSystemDefault here because we've
-      // set it via DefaultSystemPosition() above if it was kSystemDefault.
-      NOTREACHED();
-      return views::BubbleBorder::Arrow::TOP_LEFT;
-  }
-}
-
 }  // namespace
 
 AutoclickMenuBubbleController::AutoclickMenuBubbleController() {
@@ -92,7 +57,7 @@ void AutoclickMenuBubbleController::SetEventType(AutoclickEventType type) {
     anchor_rect.Inset(-kCollisionWindowWorkAreaInsetsDp,
                       -kCollisionWindowWorkAreaInsetsDp);
     scroll_bubble_controller_->ShowBubble(
-        anchor_rect, GetScrollAnchorAlignmentForPosition(position_));
+        anchor_rect, GetAnchorAlignmentForFloatingMenuPosition(position_));
   } else if (scroll_bubble_controller_) {
     scroll_bubble_controller_ = nullptr;
     // Update the bubble menu's position in case it had moved out of the way
@@ -117,46 +82,12 @@ void AutoclickMenuBubbleController::SetPosition(
   // If this is the default system position, pick the position based on the
   // language direction.
   if (new_position == FloatingMenuPosition::kSystemDefault)
-    new_position = DefaultSystemPosition();
+    new_position = DefaultSystemFloatingMenuPosition();
 
-  // Calculates the ideal bounds.
   // TODO(katie): Support multiple displays: draw the menu on whichever display
   // the cursor is on.
-  aura::Window* window = Shell::GetPrimaryRootWindow();
-  gfx::Rect work_area =
-      WorkAreaInsets::ForWindow(window)->user_work_area_bounds();
-  gfx::Rect new_bounds;
-  switch (new_position) {
-    case FloatingMenuPosition::kBottomRight:
-      new_bounds = gfx::Rect(work_area.right() - kAutoclickMenuWidth,
-                             work_area.bottom() - kAutoclickMenuHeight,
-                             kAutoclickMenuWidth, kAutoclickMenuHeight);
-      break;
-    case FloatingMenuPosition::kBottomLeft:
-      new_bounds =
-          gfx::Rect(work_area.x(), work_area.bottom() - kAutoclickMenuHeight,
-                    kAutoclickMenuWidth, kAutoclickMenuHeight);
-      break;
-    case FloatingMenuPosition::kTopLeft:
-      // Because there is no inset at the top of the widget, add
-      // 2 * kCollisionWindowWorkAreaInsetsDp to the top of the work area.
-      // to ensure correct padding.
-      new_bounds = gfx::Rect(
-          work_area.x(), work_area.y() + 2 * kCollisionWindowWorkAreaInsetsDp,
-          kAutoclickMenuWidth, kAutoclickMenuHeight);
-      break;
-    case FloatingMenuPosition::kTopRight:
-      // Because there is no inset at the top of the widget, add
-      // 2 * kCollisionWindowWorkAreaInsetsDp to the top of the work area.
-      // to ensure correct padding.
-      new_bounds =
-          gfx::Rect(work_area.right() - kAutoclickMenuWidth,
-                    work_area.y() + 2 * kCollisionWindowWorkAreaInsetsDp,
-                    kAutoclickMenuWidth, kAutoclickMenuHeight);
-      break;
-    case FloatingMenuPosition::kSystemDefault:
-      return;
-  }
+  gfx::Rect new_bounds = GetOnScreenBoundsForFloatingMenuPosition(
+      gfx::Size(kAutoclickMenuWidth, kAutoclickMenuHeight), new_position);
 
   // Update the preferred bounds based on other system windows.
   gfx::Rect resting_bounds = CollisionDetectionUtils::GetRestingPosition(
@@ -187,7 +118,7 @@ void AutoclickMenuBubbleController::SetPosition(
 
   // Position the scroll bubble with respect to the menu.
   scroll_bubble_controller_->UpdateAnchorRect(
-      resting_bounds, GetScrollAnchorAlignmentForPosition(new_position));
+      resting_bounds, GetAnchorAlignmentForFloatingMenuPosition(new_position));
 }
 
 void AutoclickMenuBubbleController::SetScrollPosition(

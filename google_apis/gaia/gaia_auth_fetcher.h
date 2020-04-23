@@ -169,6 +169,9 @@ class GaiaAuthFetcher {
   void StartListAccounts();
 
   // Starts a request to log out the accounts in the GAIA cookie.
+  // Note: this only clears the Gaia cookies. Other cookies such as the SAML
+  // provider cookies are not cleared. To cleanly remove an account from the
+  // web, the Gaia logout page should be loaded as a navigation.
   void StartLogOut();
 
   // Given a child account's OAuth2 refresh token, the parent account's

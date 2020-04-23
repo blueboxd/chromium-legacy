@@ -31,7 +31,7 @@ import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
 import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.PendingIntentProvider;
-import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
+import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -161,8 +161,8 @@ public class AutoFetchNotifier {
         // Create the notification.
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory
-                        .createChromeNotificationBuilder(
-                                true /* preferCompat */, ChannelDefinitions.ChannelId.DOWNLOADS)
+                        .createChromeNotificationBuilder(true /* preferCompat */,
+                                ChromeChannelDefinitions.ChannelId.DOWNLOADS)
                         .setContentTitle(title)
                         .setGroup(COMPLETE_NOTIFICATION_TAG)
                         .setPriorityBeforeO(NotificationCompat.PRIORITY_LOW)
@@ -313,7 +313,7 @@ public class AutoFetchNotifier {
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory
                         .createChromeNotificationBuilder(true /* preferCompat */,
-                                ChannelDefinitions.ChannelId.DOWNLOADS,
+                                ChromeChannelDefinitions.ChannelId.DOWNLOADS,
                                 null /* remoteAppPackageName */, metadata)
                         .setAutoCancel(true)
                         .setContentIntent(pendingClickIntent)

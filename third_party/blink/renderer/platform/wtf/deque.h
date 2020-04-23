@@ -52,10 +52,14 @@ class DequeConstIterator;
 template <typename T,
           wtf_size_t inlineCapacity = 0,
           typename Allocator = PartitionAllocator>
-class Deque : public ConditionalDestructor<Deque<T, INLINE_CAPACITY, Allocator>,
-                                           (INLINE_CAPACITY == 0) &&
-                                               Allocator::kIsGarbageCollected> {
+class Deque
+    : public ConditionalDestructor<Deque<T, INLINE_CAPACITY, Allocator>,
+                                   !VectorTraits<T>::kNeedsDestruction &&
+                                       Allocator::kIsGarbageCollected> {
   USE_ALLOCATOR(Deque, Allocator);
+
+  static_assert((inlineCapacity == 0) || !Allocator::kIsGarbageCollected,
+                "inlineCapacity not supported with garbage collection.");
 
  public:
   typedef DequeIterator<T, inlineCapacity, Allocator> iterator;

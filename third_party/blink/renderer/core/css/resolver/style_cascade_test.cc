@@ -2361,7 +2361,7 @@ TEST_F(StyleCascadeTest, ForeignObjectZoomVsEffectiveZoom) {
   ASSERT_TRUE(foreign_object);
 
   TestCascade cascade(GetDocument(), foreign_object);
-  cascade.Add("-internal-effective-zoom:initial !important",
+  cascade.Add("zoom:-internal-reset-effective !important",
               CascadeOrigin::kUserAgent);
   cascade.Add("zoom:200%");
   cascade.Apply();
@@ -2372,7 +2372,7 @@ TEST_F(StyleCascadeTest, ForeignObjectZoomVsEffectiveZoom) {
 TEST_F(StyleCascadeTest, ZoomCascadeOrder) {
   TestCascade cascade(GetDocument());
   cascade.Add("zoom:200%", CascadeOrigin::kUserAgent);
-  cascade.Add("-internal-effective-zoom:initial", CascadeOrigin::kUserAgent);
+  cascade.Add("zoom:-internal-reset-effective", CascadeOrigin::kUserAgent);
   cascade.Apply();
 
   EXPECT_EQ(1.0f, cascade.TakeStyle()->EffectiveZoom());
@@ -2388,17 +2388,22 @@ TEST_F(StyleCascadeTest, ZoomVsAll) {
 }
 
 TEST_F(StyleCascadeTest, InternalEffectiveZoomVsAll) {
+  TestCascade parent(GetDocument());
+  parent.Add("zoom", "200%");
+  parent.Apply();
+
   TestCascade cascade(GetDocument());
-  cascade.Add("-internal-effective-zoom:200%", CascadeOrigin::kUserAgent);
-  cascade.Add("all:initial");
+  cascade.InheritFrom(parent.TakeStyle());
+  cascade.Add("zoom:-internal-reset-effective", CascadeOrigin::kUserAgent);
+  cascade.Add("all:inherit");
   cascade.Apply();
 
-  EXPECT_EQ(1.0f, cascade.TakeStyle()->EffectiveZoom());
+  EXPECT_EQ(4.0f, cascade.TakeStyle()->EffectiveZoom());
 }
 
 TEST_F(StyleCascadeTest, ZoomReversedCascadeOrder) {
   TestCascade cascade(GetDocument());
-  cascade.Add("-internal-effective-zoom:initial", CascadeOrigin::kUserAgent);
+  cascade.Add("zoom:-internal-reset-effective", CascadeOrigin::kUserAgent);
   cascade.Add("zoom:200%", CascadeOrigin::kUserAgent);
   cascade.Apply();
 
@@ -2408,7 +2413,7 @@ TEST_F(StyleCascadeTest, ZoomReversedCascadeOrder) {
 TEST_F(StyleCascadeTest, ZoomImportant) {
   TestCascade cascade(GetDocument());
   cascade.Add("zoom:200% !important", CascadeOrigin::kUserAgent);
-  cascade.Add("-internal-effective-zoom:initial", CascadeOrigin::kAuthor);
+  cascade.Add("zoom:-internal-reset-effective", CascadeOrigin::kAuthor);
   cascade.Apply();
 
   EXPECT_EQ(2.0f, cascade.TakeStyle()->EffectiveZoom());

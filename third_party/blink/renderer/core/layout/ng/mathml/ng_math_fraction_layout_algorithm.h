@@ -19,8 +19,7 @@ class CORE_EXPORT NGMathFractionLayoutAlgorithm
  private:
   scoped_refptr<const NGLayoutResult> Layout() final;
 
-  base::Optional<MinMaxSizes> ComputeMinMaxSizes(
-      const MinMaxSizesInput&) const final;
+  MinMaxSizes ComputeMinMaxSizes(const MinMaxSizesInput&) const final;
 
   void GatherChildren(NGBlockNode* numerator, NGBlockNode* denominator);
   const NGBoxStrut border_scrollbar_padding_;

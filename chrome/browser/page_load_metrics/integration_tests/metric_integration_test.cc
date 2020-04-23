@@ -137,3 +137,33 @@ void MetricIntegrationTest::ExpectUKMPageLoadMetric(StringPiece metric_name,
   TestUkmRecorder::ExpectEntryMetric(kv->second.get(), metric_name,
                                      expected_value);
 }
+
+void MetricIntegrationTest::ExpectUKMPageLoadMetricNear(StringPiece metric_name,
+                                                        double expected_value,
+                                                        double epsilon) {
+  std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> merged_entries =
+      ukm_recorder().GetMergedEntriesByName(PageLoad::kEntryName);
+
+  EXPECT_EQ(1ul, merged_entries.size());
+  const auto& kv = merged_entries.begin();
+  const int64_t* recorded =
+      TestUkmRecorder::GetEntryMetric(kv->second.get(), metric_name);
+  EXPECT_NE(recorded, nullptr);
+  EXPECT_NEAR(*recorded, expected_value, epsilon);
+}
+
+void MetricIntegrationTest::ExpectUniqueUMAPageLoadMetricNear(
+    StringPiece metric_name,
+    double expected_value) {
+  EXPECT_EQ(histogram_tester_->GetAllSamples(metric_name).size(), 1u)
+      << "There should be one sample for " << metric_name.data();
+  // UMA uses integer buckets so check that the value is in the bucket of
+  // |expected_value| or in the bucket of |expected_value| +- 1.
+  EXPECT_TRUE(
+      histogram_tester_->GetBucketCount(metric_name, expected_value) == 1 ||
+      histogram_tester_->GetBucketCount(metric_name, expected_value + 1.0) ==
+          1 ||
+      histogram_tester_->GetBucketCount(metric_name, expected_value - 1.0) == 1)
+      << "The sample for " << metric_name.data()
+      << " is not near the expected value!";
+}

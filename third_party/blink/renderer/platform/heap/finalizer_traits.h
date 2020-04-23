@@ -8,18 +8,12 @@
 #include <type_traits>
 
 #include "base/template_util.h"
-#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
-
-namespace WTF {
-
-template <typename ValueArg, typename Allocator>
-class ListHashSetNode;
-
-}  // namespace WTF
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
-
 namespace internal {
+
+using FinalizationCallback = void (*)(void*);
 
 template <typename T, typename = void>
 struct HasFinalizeGarbageCollectedObject : std::false_type {};
@@ -75,66 +69,27 @@ struct FinalizerTraitImpl<T, false> {
   }
 };
 
-}  // namespace internal
-
 // The FinalizerTrait is used to determine if a type requires finalization and
 // what finalization means.
 template <typename T>
 struct FinalizerTrait {
   STATIC_ONLY(FinalizerTrait);
+
+ private:
   static constexpr bool kNonTrivialFinalizer =
       internal::HasFinalizeGarbageCollectedObject<T>::value ||
       !std::is_trivially_destructible<typename std::remove_cv<T>::type>::value;
+
   static void Finalize(void* obj) {
     internal::FinalizerTraitImpl<T, kNonTrivialFinalizer>::Finalize(obj);
   }
+
+ public:
+  static constexpr FinalizationCallback kCallback =
+      kNonTrivialFinalizer ? Finalize : nullptr;
 };
 
-class HeapAllocator;
-
-template <typename T, typename U, typename V>
-struct FinalizerTrait<LinkedHashSet<T, U, V, HeapAllocator>> {
-  STATIC_ONLY(FinalizerTrait);
-  static constexpr bool kNonTrivialFinalizer = true;
-  static void Finalize(void* obj) {
-    internal::FinalizerTraitImpl<LinkedHashSet<T, U, V, HeapAllocator>,
-                                 kNonTrivialFinalizer>::Finalize(obj);
-  }
-};
-
-template <typename T, typename Allocator>
-struct FinalizerTrait<WTF::ListHashSetNode<T, Allocator>> {
-  STATIC_ONLY(FinalizerTrait);
-  static constexpr bool kNonTrivialFinalizer =
-      !std::is_trivially_destructible<T>::value;
-  static void Finalize(void* obj) {
-    internal::FinalizerTraitImpl<WTF::ListHashSetNode<T, Allocator>,
-                                 kNonTrivialFinalizer>::Finalize(obj);
-  }
-};
-
-template <typename T, size_t inlineCapacity>
-struct FinalizerTrait<Vector<T, inlineCapacity, HeapAllocator>> {
-  STATIC_ONLY(FinalizerTrait);
-  static constexpr bool kNonTrivialFinalizer =
-      inlineCapacity && VectorTraits<T>::kNeedsDestruction;
-  static void Finalize(void* obj) {
-    internal::FinalizerTraitImpl<Vector<T, inlineCapacity, HeapAllocator>,
-                                 kNonTrivialFinalizer>::Finalize(obj);
-  }
-};
-
-template <typename T, size_t inlineCapacity>
-struct FinalizerTrait<Deque<T, inlineCapacity, HeapAllocator>> {
-  STATIC_ONLY(FinalizerTrait);
-  static const bool kNonTrivialFinalizer =
-      inlineCapacity && VectorTraits<T>::kNeedsDestruction;
-  static void Finalize(void* obj) {
-    internal::FinalizerTraitImpl<Deque<T, inlineCapacity, HeapAllocator>,
-                                 kNonTrivialFinalizer>::Finalize(obj);
-  }
-};
-
+}  // namespace internal
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_FINALIZER_TRAITS_H_

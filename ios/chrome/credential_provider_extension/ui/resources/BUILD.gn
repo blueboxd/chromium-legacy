@@ -10,6 +10,7 @@ group("resources") {
     ":consent_illustration",
     ":default_world_favicon",
     ":empty_credentials_illustration",
+    ":info_icon",
     ":password_hide_icon",
     ":password_reveal_icon",
     ":stale_credentials_illustration",
@@ -62,5 +63,13 @@ imageset("default_world_favicon") {
     "default_world_favicon.imageset/default_world_favicon.png",
     "default_world_favicon.imageset/default_world_favicon@2x.png",
     "default_world_favicon.imageset/default_world_favicon@3x.png",
+  ]
+}
+
+imageset("info_icon") {
+  sources = [
+    "info_icon.imageset/Contents.json",
+    "info_icon.imageset/info_icon@2x.png",
+    "info_icon.imageset/info_icon@3x.png",
   ]
 }

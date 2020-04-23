@@ -528,7 +528,9 @@ AccessibilityControllerImpl::AccessibilityControllerImpl()
   CreateAccessibilityFeatures();
 }
 
-AccessibilityControllerImpl::~AccessibilityControllerImpl() = default;
+AccessibilityControllerImpl::~AccessibilityControllerImpl() {
+  floating_menu_controller_.reset();
+}
 
 void AccessibilityControllerImpl::CreateAccessibilityFeatures() {
   DCHECK(VerifyFeaturesData());
@@ -1156,7 +1158,7 @@ void AccessibilityControllerImpl::ShowFloatingMenuIfEnabled() {
   if (floating_menu().enabled()) {
     DCHECK(!floating_menu_controller_);
     floating_menu_controller_ =
-        std::make_unique<FloatingAccessibilityController>();
+        std::make_unique<FloatingAccessibilityController>(this);
     floating_menu_controller_->Show(GetFloatingMenuPosition());
   }
 }

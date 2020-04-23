@@ -1339,7 +1339,7 @@ bool ComputedStyle::SetEffectiveZoom(float f) {
   float clamped_effective_zoom = clampTo<float>(f, 1e-6, 1e6);
   if (EffectiveZoom() == clamped_effective_zoom)
     return false;
-  SetInternalEffectiveZoom(clamped_effective_zoom);
+  SetEffectiveZoomInternal(clamped_effective_zoom);
   // Record UMA for the effective zoom in order to assess the relative
   // importance of sub-pixel behavior, and related features and bugs.
   // Clamp to a max of 400%, to make the histogram behave better at no

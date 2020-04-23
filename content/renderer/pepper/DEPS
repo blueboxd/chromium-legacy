@@ -9,4 +9,5 @@ include_rules = [
   "+third_party/opus",
   "+ui/base/ime",
   "+ui/base/range",
+  "+ui/events/keycodes/keyboard_codes.h",
 ]

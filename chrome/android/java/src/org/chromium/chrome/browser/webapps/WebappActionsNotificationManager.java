@@ -26,7 +26,7 @@ import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.PendingIntentProvider;
-import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
+import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.browser_ui.notifications.ChromeNotification;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxy;
@@ -113,7 +113,7 @@ class WebappActionsNotificationManager implements PauseResumeWithNativeObserver 
                 null /* notificationTag */, NotificationConstants.NOTIFICATION_ID_WEBAPP_ACTIONS);
         return NotificationBuilderFactory
                 .createChromeNotificationBuilder(true /* prefer compat */,
-                        ChannelDefinitions.ChannelId.WEBAPP_ACTIONS,
+                        ChromeChannelDefinitions.ChannelId.WEBAPP_ACTIONS,
                         null /* remoteAppPackageName */, metadata)
                 .setSmallIcon(R.drawable.ic_chrome)
                 .setContentTitle(webappExtras.shortName)

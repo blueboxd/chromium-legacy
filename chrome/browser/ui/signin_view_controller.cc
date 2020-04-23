@@ -32,6 +32,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/signin/public/base/account_consistency_method.h"
+#include "components/signin/public/identity_manager/accounts_mutator.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/google_api_keys.h"
@@ -44,6 +45,10 @@ const base::Feature kSigninReauthPrompt = {"SigninReauthPrompt",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
+
+const base::Feature kOpenSignoutTab = {"OpenSignoutTab",
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Returns the sign-in reason for |mode|.
 signin_metrics::Reason GetSigninReasonFromMode(profiles::BubbleViewMode mode) {
   DCHECK(SigninViewController::ShouldShowSigninForMode(mode));
@@ -386,6 +391,28 @@ void SigninViewController::ShowDiceAddAccountTab(
   ShowDiceSigninTab(
       signin_metrics::Reason::REASON_ADD_SECONDARY_ACCOUNT, access_point,
       signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO, email_hint);
+}
+
+void SigninViewController::ShowGaiaLogoutTab(
+    signin_metrics::SourceForRefreshTokenOperation source) {
+  if (!base::FeatureList::IsEnabled(kOpenSignoutTab)) {
+    IdentityManagerFactory::GetForProfile(browser_->profile())
+        ->GetAccountsMutator()
+        ->RemoveAllAccounts(source);
+    return;
+  }
+
+  // Since the user may be triggering navigation from another UI element such as
+  // a menu, ensure the web contents (and therefore the page that is about to be
+  // shown) is focused. (See crbug/926492 for motivation.)
+  auto* const contents = browser_->tab_strip_model()->GetActiveWebContents();
+  if (contents)
+    contents->Focus();
+
+  // Do not use a singleton tab. A new tab should be opened even if there is
+  // already a logout tab.
+  ShowTabOverwritingNTP(browser_,
+                        GaiaUrls::GetInstance()->service_logout_url());
 }
 
 void SigninViewController::ShowModalSigninEmailConfirmationDialog(

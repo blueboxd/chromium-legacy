@@ -32,7 +32,7 @@ import org.robolectric.shadows.ShadowPendingIntent;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
+import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
 import org.chromium.components.browser_ui.notifications.ChromeNotification;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
@@ -101,8 +101,8 @@ public class NotificationIntentInterceptorTest {
                 NotificationUmaTracker.SystemNotificationType.DOWNLOAD_FILES, null, 0);
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory.createChromeNotificationBuilder(true /* preferCompat */,
-                        ChannelDefinitions.ChannelId.DOWNLOADS, null /* remoteAppPackageName */,
-                        metaData);
+                        ChromeChannelDefinitions.ChannelId.DOWNLOADS,
+                        null /* remoteAppPackageName */, metaData);
 
         // Set content intent.
         Intent contentIntent = new Intent(TestReceiver.TEST_ACTION);

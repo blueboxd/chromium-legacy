@@ -383,7 +383,7 @@ bool NGFieldsetLayoutAlgorithm::IsFragmentainerOutOfSpace(
   return block_offset >= FragmentainerSpaceAtBfcStart(ConstraintSpace());
 }
 
-base::Optional<MinMaxSizes> NGFieldsetLayoutAlgorithm::ComputeMinMaxSizes(
+MinMaxSizes NGFieldsetLayoutAlgorithm::ComputeMinMaxSizes(
     const MinMaxSizesInput& input) const {
   MinMaxSizes sizes;
 

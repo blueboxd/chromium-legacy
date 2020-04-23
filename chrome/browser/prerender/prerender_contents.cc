@@ -109,19 +109,6 @@ class PrerenderContents::WebContentsDelegateImpl
     std::move(callback).Run(false);
   }
 
-  bool IsWebContentsCreationOverridden(
-      content::SiteInstance* source_site_instance,
-      content::mojom::WindowContainerType window_container_type,
-      const GURL& opener_url,
-      const std::string& frame_name,
-      const GURL& target_url) override {
-    // Since we don't want to permit child windows that would have a
-    // window.opener property, terminate prerendering.
-    prerender_contents_->Destroy(FINAL_STATUS_CREATE_NEW_WINDOW);
-    // Cancel the popup.
-    return true;
-  }
-
   bool OnGoToEntryOffset(int offset) override {
     // This isn't allowed because the history merge operation
     // does not work if there are renderer issued challenges.

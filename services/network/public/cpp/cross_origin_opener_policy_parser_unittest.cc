@@ -7,16 +7,21 @@
 #include <string>
 #include <vector>
 
+#include "base/test/scoped_feature_list.h"
 #include "net/http/http_response_headers.h"
+#include "services/network/public/cpp/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace network {
 
 using CrossOriginOpenerPolicy = mojom::CrossOriginOpenerPolicy;
 
-TEST(CrossOriginOpenerPolicyParserTest, Parse) {
+TEST(CrossOriginOpenerPolicyTest, Parse) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kCrossOriginOpenerPolicy);
+
   const struct {
-    const char* raw_coop_string;
+    std::string raw_coop_string;
     CrossOriginOpenerPolicy policy;
   } kTestCases[] = {
       {"same-origin", CrossOriginOpenerPolicy::kSameOrigin},
@@ -46,8 +51,11 @@ TEST(CrossOriginOpenerPolicyParserTest, Parse) {
     SCOPED_TRACE(testing::Message() << std::endl
                                     << "raw_coop_string = "
                                     << test_case.raw_coop_string << std::endl);
-    EXPECT_EQ(test_case.policy,
-              ParseCrossOriginOpenerPolicyHeader(test_case.raw_coop_string));
+    scoped_refptr<net::HttpResponseHeaders> headers(
+        new net::HttpResponseHeaders("HTTP/1.1 200 OK"));
+    headers->AddHeader("Cross-Origin-Opener-Policy: " +
+                       test_case.raw_coop_string);
+    EXPECT_EQ(test_case.policy, ParseCrossOriginOpenerPolicy(*headers));
   }
 }
 

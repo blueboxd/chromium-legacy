@@ -27,7 +27,7 @@ class TermsOfServiceScreenView;
 // for public sessions only.
 class TermsOfServiceScreen : public BaseScreen {
  public:
-  enum class Result { ACCEPTED, DECLINED };
+  enum class Result { ACCEPTED, DECLINED, NOT_APPLICABLE };
 
   static std::string GetResultString(Result result);
 
@@ -48,8 +48,17 @@ class TermsOfServiceScreen : public BaseScreen {
   // Called when view is destroyed so there is no dead reference to it.
   void OnViewDestroyed(TermsOfServiceScreenView* view);
 
+  void set_exit_callback_for_testing(const ScreenExitCallback& exit_callback) {
+    exit_callback_ = exit_callback;
+  }
+
+  const ScreenExitCallback& get_exit_callback_for_testing() {
+    return exit_callback_;
+  }
+
  private:
   // BaseScreen:
+  bool MaybeSkip() override;
   void ShowImpl() override;
   void HideImpl() override;
   void OnUserAction(const std::string& action_id) override;

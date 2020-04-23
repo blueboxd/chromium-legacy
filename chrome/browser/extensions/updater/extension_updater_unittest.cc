@@ -640,7 +640,7 @@ class ExtensionUpdaterTest : public testing::Test {
     result.extension_id = id;
     result.version = version;
     result.crx_url = GURL(url);
-    results->list.push_back(result);
+    results->update_list.push_back(result);
   }
 
   void StartUpdateCheck(ExtensionDownloader* downloader,
@@ -2248,9 +2248,9 @@ class ExtensionUpdaterTest : public testing::Test {
     constexpr int kDaystartElapsedSeconds = 750;
     results->daystart_elapsed_seconds = kDaystartElapsedSeconds;
 
-    updater.downloader_->HandleManifestResults(
-        std::move(fetch_data), std::move(results),
-        /*error=*/base::Optional<std::string>());
+    updater.downloader_->HandleManifestResults(std::move(fetch_data),
+                                               std::move(results),
+                                               /*error=*/base::nullopt);
     Time last_ping_day =
         service.extension_prefs()->LastPingDay(extension->id());
     EXPECT_FALSE(last_ping_day.is_null());

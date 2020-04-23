@@ -33,6 +33,7 @@
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/renderer/core/core_probe_sink.h"
 #include "third_party/blink/renderer/core/inspector/devtools_session.h"
+#include "third_party/blink/renderer/core/inspector/inspector_audits_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_emulation_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_log_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_network_agent.h"
@@ -110,9 +111,12 @@ void WorkerInspectorController::AttachSession(DevToolsSession* session,
   session->Append(MakeGarbageCollected<InspectorLogAgent>(
       thread_->GetConsoleMessageStorage(), nullptr, session->V8Session()));
   if (auto* scope = DynamicTo<WorkerGlobalScope>(thread_->GlobalScope())) {
-    session->Append(MakeGarbageCollected<InspectorNetworkAgent>(
-        inspected_frames_.Get(), scope, session->V8Session()));
+    auto* network_agent = MakeGarbageCollected<InspectorNetworkAgent>(
+        inspected_frames_.Get(), scope, session->V8Session());
+    session->Append(network_agent);
     session->Append(MakeGarbageCollected<InspectorEmulationAgent>(nullptr));
+    session->Append(MakeGarbageCollected<InspectorAuditsAgent>(
+        network_agent, thread_->GetInspectorIssueStorage()));
   }
   ++session_count_;
 }

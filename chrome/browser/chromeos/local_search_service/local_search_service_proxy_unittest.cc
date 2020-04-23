@@ -7,10 +7,10 @@
 #include <utility>
 #include <vector>
 
-#include "chrome/browser/local_search_service/local_search_service_proxy.h"
-#include "chrome/services/local_search_service/index_impl.h"
-#include "chrome/services/local_search_service/local_search_service_impl.h"
-#include "chrome/services/local_search_service/test_utils.h"
+#include "chrome/browser/chromeos/local_search_service/index.h"
+#include "chrome/browser/chromeos/local_search_service/local_search_service.h"
+#include "chrome/browser/chromeos/local_search_service/local_search_service_proxy.h"
+#include "chrome/browser/chromeos/local_search_service/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace local_search_service {
@@ -19,11 +19,10 @@ class LocalSearchServiceProxyTest : public testing::Test {};
 
 TEST_F(LocalSearchServiceProxyTest, Basic) {
   LocalSearchServiceProxy service_proxy(nullptr);
-  LocalSearchServiceImpl* const service =
-      service_proxy.GetLocalSearchServiceImpl();
+  LocalSearchService* const service = service_proxy.GetLocalSearchService();
   DCHECK(service);
 
-  IndexImpl* const index = service->GetIndexImpl(IndexId::kCrosSettings);
+  Index* const index = service->GetIndex(IndexId::kCrosSettings);
   DCHECK(index);
 
   EXPECT_EQ(index->GetSize(), 0u);

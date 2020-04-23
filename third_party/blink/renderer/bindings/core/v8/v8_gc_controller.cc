@@ -105,22 +105,17 @@ void V8GCController::GcPrologue(v8::Isolate* isolate,
           Platform::Current()->GetTopLevelBlameContext())
     blame_context->Enter();
 
-  // TODO(haraken): A GC callback is not allowed to re-enter V8. This means
-  // that it's unsafe to run Oilpan's GC in the GC callback because it may
-  // run finalizers that call into V8. To avoid the risk, we should post
-  // a task to schedule the Oilpan's GC.
-  // (In practice, there is no finalizer that calls into V8 and thus is safe.)
-
   v8::HandleScope scope(isolate);
   switch (type) {
     case v8::kGCTypeScavenge:
-      if (ThreadState::Current())
-        ThreadState::Current()->WillStartV8GC(BlinkGC::kV8MinorGC);
       break;
     case v8::kGCTypeIncrementalMarking:
     case v8::kGCTypeMarkSweepCompact:
-      if (ThreadState::Current())
-        ThreadState::Current()->WillStartV8GC(BlinkGC::kV8MajorGC);
+      if (ThreadState::Current()) {
+        // Finish Oilpan's complete sweeping before running a V8 major GC.
+        // This will let the GC collect more V8 objects.
+        ThreadState::Current()->CompleteSweep();
+      }
       break;
     case v8::kGCTypeProcessWeakCallbacks:
       break;
@@ -128,18 +123,6 @@ void V8GCController::GcPrologue(v8::Isolate* isolate,
       NOTREACHED();
   }
 }
-
-namespace {
-
-void UpdateCollectedPhantomHandles(v8::Isolate* isolate) {
-  ThreadHeapStatsCollector* stats_collector =
-      ThreadState::Current()->Heap().stats_collector();
-  const size_t count = isolate->NumberOfPhantomHandleResetsSinceLastCall();
-  stats_collector->DecreaseWrapperCount(count);
-  stats_collector->IncreaseCollectedWrapperCount(count);
-}
-
-}  // namespace
 
 void V8GCController::GcEpilogue(v8::Isolate* isolate,
                                 v8::GCType type,
@@ -149,8 +132,6 @@ void V8GCController::GcEpilogue(v8::Isolate* isolate,
       IsNestedInV8GC(ThreadState::Current(), type)
           ? ThreadState::Current()->Heap().stats_collector()
           : nullptr);
-  UpdateCollectedPhantomHandles(isolate);
-
   ScriptForbiddenScope::Exit();
 
   if (BlameContext* blame_context =

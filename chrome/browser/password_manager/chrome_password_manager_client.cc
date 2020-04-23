@@ -314,16 +314,6 @@ void ChromePasswordManagerClient::PostHSTSQueryForHost(
       std::move(callback));
 }
 
-bool ChromePasswordManagerClient::OnCredentialManagerUsed() {
-  prerender::PrerenderContents* prerender_contents =
-      prerender::PrerenderContents::FromWebContents(web_contents());
-  if (prerender_contents) {
-    prerender_contents->Destroy(prerender::FINAL_STATUS_CREDENTIAL_MANAGER_API);
-    return false;
-  }
-  return true;
-}
-
 bool ChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(
     std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save,
     bool update_password) {
@@ -350,10 +340,8 @@ bool ChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(
     UpdatePasswordInfoBarDelegate::Create(web_contents(),
                                           std::move(form_to_save));
   } else {
-    auto saving_flow_recorder(
-        std::make_unique<password_manager::SavingFlowMetricsRecorder>());
-    SavePasswordInfoBarDelegate::Create(web_contents(), std::move(form_to_save),
-                                        std::move(saving_flow_recorder));
+    SavePasswordInfoBarDelegate::Create(web_contents(),
+                                        std::move(form_to_save));
   }
 #endif  // !defined(OS_ANDROID)
   return true;
@@ -1055,11 +1043,8 @@ void ChromePasswordManagerClient::GenerationElementLostFocus() {
 
 #if defined(OS_ANDROID)
 void ChromePasswordManagerClient::OnOnboardingSuccessful(
-    std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save,
-    std::unique_ptr<password_manager::SavingFlowMetricsRecorder>
-        saving_flow_recorder) {
-  SavePasswordInfoBarDelegate::Create(web_contents(), std::move(form_to_save),
-                                      std::move(saving_flow_recorder));
+    std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save) {
+  SavePasswordInfoBarDelegate::Create(web_contents(), std::move(form_to_save));
 }
 #endif  // defined(OS_ANDROID)
 

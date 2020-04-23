@@ -60,6 +60,10 @@ using FileErrorOr = storage::FileErrorOr<ValueType>;
 // memory usage, and simplicity.
 const constexpr size_t kFileLimitToDisableEviction = 10'000;
 
+// The maximum time for the |Retrier| to indicate that an operation should
+// be retried.
+constexpr auto kMaxRetryDuration = base::TimeDelta::FromMilliseconds(1000);
+
 const FilePath::CharType table_extension[] = FILE_PATH_LITERAL(".ldb");
 
 static const FilePath::CharType kLevelDBTestDirectoryPrefix[] =
@@ -95,21 +99,14 @@ class ChromiumFileLock : public FileLock {
 
 class Retrier {
  public:
-  Retrier(MethodID method, RetrierProvider* provider)
+  Retrier()
       // TODO(crbug.com/1059965): figure out a better way to handle time for
       // tests.
       : start_(base::subtle::TimeTicksNowIgnoringOverride()),
-        limit_(start_ + base::TimeDelta::FromMilliseconds(
-                            provider->MaxRetryTimeMillis())),
+        limit_(start_ + kMaxRetryDuration),
         last_(start_),
-        time_to_sleep_(base::TimeDelta::FromMilliseconds(10)),
-        success_(true),
-        method_(method),
-        provider_(provider) {}
-  ~Retrier() {
-    if (success_)
-      provider_->GetRetryTimeHistogram(method_)->AddTime(last_ - start_);
-  }
+        time_to_sleep_(base::TimeDelta::FromMilliseconds(10)) {}
+  ~Retrier() = default;
   bool ShouldKeepTrying() {
     if (last_ < limit_) {
       base::PlatformThread::Sleep(time_to_sleep_);
@@ -118,18 +115,14 @@ class Retrier {
       last_ = base::subtle::TimeTicksNowIgnoringOverride();
       return true;
     }
-    success_ = false;
     return false;
   }
 
  private:
-  base::TimeTicks start_;
+  const base::TimeTicks start_;
   base::TimeTicks limit_;
   base::TimeTicks last_;
   base::TimeDelta time_to_sleep_;
-  bool success_;
-  MethodID method_;
-  RetrierProvider* provider_;
 
   DISALLOW_COPY_AND_ASSIGN(Retrier);
 };
@@ -751,8 +744,7 @@ ChromiumEnv::ChromiumEnv(const std::string& name)
 
 ChromiumEnv::ChromiumEnv(const std::string& name,
                          std::unique_ptr<storage::FilesystemProxy> filesystem)
-    : kMaxRetryTimeMillis(1000),
-      filesystem_(std::move(filesystem)),
+    : filesystem_(std::move(filesystem)),
       name_(name),
       bgsignal_(&mu_),
       started_bgthread_(false) {
@@ -883,7 +875,7 @@ Status ChromiumEnv::RemoveFile(const std::string& fname) {
 Status ChromiumEnv::CreateDir(const std::string& name) {
   Status result;
   base::File::Error error = base::File::FILE_OK;
-  Retrier retrier(kCreateDir, this);
+  Retrier retrier;
   do {
     error = filesystem_->CreateDirectory(base::FilePath::FromUTF8Unsafe(name));
     if (error == base::File::FILE_OK)
@@ -924,7 +916,7 @@ Status ChromiumEnv::RenameFile(const std::string& src, const std::string& dst) {
     return result;
   FilePath destination = FilePath::FromUTF8Unsafe(dst);
 
-  Retrier retrier(kRenameFile, this);
+  Retrier retrier;
   base::File::Error error = base::File::FILE_OK;
   do {
     error = filesystem_->RenameFile(src_file_path, destination);
@@ -946,7 +938,7 @@ Status ChromiumEnv::LockFile(const std::string& fname, FileLock** lock) {
   *lock = nullptr;
   Status result;
   const base::FilePath path = base::FilePath::FromUTF8Unsafe(fname);
-  Retrier retrier(kLockFile, this);
+  Retrier retrier;
   FileErrorOr<std::unique_ptr<storage::FilesystemProxy::FileLock>> lock_result;
   do {
     lock_result = filesystem_->LockFile(path);
@@ -1121,21 +1113,6 @@ base::HistogramBase* ChromiumEnv::GetMethodIOErrorHistogram() const {
   uma_name.append(".IOError");
   return base::LinearHistogram::FactoryGet(uma_name, 1, kNumEntries,
       kNumEntries + 1, base::Histogram::kUmaTargetedHistogramFlag);
-}
-
-base::HistogramBase* ChromiumEnv::GetRetryTimeHistogram(MethodID method) const {
-  std::string uma_name(name_);
-  // TODO(dgrogan): This is probably not the best way to concatenate strings.
-  uma_name.append(".TimeUntilSuccessFor").append(MethodIDToString(method));
-
-  const int kBucketSizeMillis = 25;
-  // Add 2, 1 for each of the buckets <1 and >max.
-  const int kNumBuckets = kMaxRetryTimeMillis / kBucketSizeMillis + 2;
-  return base::Histogram::FactoryTimeGet(
-      uma_name, base::TimeDelta::FromMilliseconds(1),
-      base::TimeDelta::FromMilliseconds(kMaxRetryTimeMillis + 1),
-      kNumBuckets,
-      base::Histogram::kUmaTargetedHistogramFlag);
 }
 
 class Thread : public base::PlatformThread::Delegate {

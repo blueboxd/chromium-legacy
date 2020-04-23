@@ -2404,7 +2404,7 @@
 
     'cronet_ios': {
       'mixins': ['cronet_common'],
-      'gn_args': ('disable_brotli_filter=false is_cronet_build=true'),
+      'gn_args': ('disable_brotli_filter=false is_cronet_build=true enable_remoting=false'),
     },
 
     'dawn_tests': {

@@ -1051,6 +1051,14 @@ void OverviewItem::OnWindowDestroying(aura::Window* window) {
                              /*reposition=*/!animating_to_close_);
 }
 
+void OverviewItem::OnPreWindowStateTypeChange(WindowState* window_state,
+                                              WindowStateType old_type) {
+  // If entering overview and PIP happen at the same time, the PIP window is
+  // incorrectly listed in the overview list, which is not allowed.
+  if (window_state->IsPip())
+    overview_session_->RemoveItem(this);
+}
+
 void OverviewItem::OnPostWindowStateTypeChange(WindowState* window_state,
                                                WindowStateType old_type) {
   // During preparation, window state can change, e.g. updating shelf

@@ -19,7 +19,13 @@ BatteryDispatcher& BatteryDispatcher::Instance() {
   return *battery_dispatcher;
 }
 
-BatteryDispatcher::BatteryDispatcher() : has_latest_data_(false) {}
+BatteryDispatcher::BatteryDispatcher()
+    : monitor_(nullptr), has_latest_data_(false) {}
+
+void BatteryDispatcher::Trace(Visitor* visitor) {
+  visitor->Trace(monitor_);
+  PlatformEventDispatcher::Trace(visitor);
+}
 
 void BatteryDispatcher::QueryNextStatus() {
   monitor_->QueryNextStatus(

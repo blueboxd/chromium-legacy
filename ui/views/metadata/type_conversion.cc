@@ -312,6 +312,8 @@ DEFINE_ENUM_CONVERTERS(ui::TextInputType,
                         base::ASCIIToUTF16("TEXT_INPUT_TYPE_CONTENT_EDITABLE")},
                        {ui::TextInputType::TEXT_INPUT_TYPE_DATE_TIME_FIELD,
                         base::ASCIIToUTF16("TEXT_INPUT_TYPE_DATE_TIME_FIELD")},
+                       {ui::TextInputType::TEXT_INPUT_TYPE_NULL,
+                        base::ASCIIToUTF16("TEXT_INPUT_TYPE_NULL")},
                        {ui::TextInputType::TEXT_INPUT_TYPE_MAX,
                         base::ASCIIToUTF16("TEXT_INPUT_TYPE_MAX")})
 

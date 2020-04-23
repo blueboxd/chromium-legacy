@@ -66,6 +66,9 @@ struct ExtensionBuilder::ManifestData {
         case ActionType::BROWSER_ACTION:
           action_key = manifest_keys::kBrowserAction;
           break;
+        case ActionType::ACTION:
+          action_key = manifest_keys::kAction;
+          break;
       }
       manifest.Set(action_key, std::make_unique<base::DictionaryValue>());
     }

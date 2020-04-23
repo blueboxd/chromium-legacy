@@ -155,20 +155,19 @@
              compress="false" type="BINDATA" />
   </if>
   <include name="IDR_SETTINGS_CLEAR_BROWSING_DATA_DIALOG_CLEAR_BROWSING_DATA_BROWSER_PROXY_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/clear_browsing_data_dialog/clear_browsing_data_browser_proxy.m.js"
-           use_base_dir="false"
+           file="clear_browsing_data_dialog/clear_browsing_data_browser_proxy.js"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_CLEAR_BROWSING_DATA_DIALOG_CLEAR_BROWSING_DATA_DIALOG_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/clear_browsing_data_dialog/clear_browsing_data_dialog.m.js"
+  <include name="IDR_SETTINGS_CLEAR_BROWSING_DATA_DIALOG_CLEAR_BROWSING_DATA_DIALOG_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/clear_browsing_data_dialog/clear_browsing_data_dialog.js"
            use_base_dir="false"
            compress="false" type="BINDATA"
            preprocess="true" />
-  <include name="IDR_SETTINGS_CLEAR_BROWSING_DATA_DIALOG_HISTORY_DELETION_DIALOG_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/clear_browsing_data_dialog/history_deletion_dialog.m.js"
+  <include name="IDR_SETTINGS_CLEAR_BROWSING_DATA_DIALOG_HISTORY_DELETION_DIALOG_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/clear_browsing_data_dialog/history_deletion_dialog.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_CLEAR_BROWSING_DATA_DIALOG_INSTALLED_APP_CHECKBOX_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/clear_browsing_data_dialog/installed_app_checkbox.m.js"
+  <include name="IDR_SETTINGS_CLEAR_BROWSING_DATA_DIALOG_INSTALLED_APP_CHECKBOX_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/clear_browsing_data_dialog/installed_app_checkbox.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
   <include name="IDR_SETTINGS_CONTROLS_CONTROLLED_BUTTON_M_JS"
@@ -224,12 +223,11 @@
            use_base_dir="false"
            compress="false" type="BINDATA" />
   <if expr="not chromeos">
-    <include name="IDR_SETTINGS_DEFAULT_BROWSER_BROWSER_PROXY_M_JS"
-             file="${root_gen_dir}/chrome/browser/resources/settings/default_browser_page/default_browser_browser_proxy.m.js"
-             use_base_dir="false"
+    <include name="IDR_SETTINGS_DEFAULT_BROWSER_BROWSER_PROXY_JS"
+             file="default_browser_page/default_browser_browser_proxy.js"
              compress="false" type="BINDATA" />
-    <include name="IDR_SETTINGS_DEFAULT_BROWSER_PAGE_M_JS"
-             file="${root_gen_dir}/chrome/browser/resources/settings/default_browser_page/default_browser_page.m.js"
+    <include name="IDR_SETTINGS_DEFAULT_BROWSER_PAGE_JS"
+             file="${root_gen_dir}/chrome/browser/resources/settings/default_browser_page/default_browser_page.js"
              use_base_dir="false"
              compress="false" type="BINDATA" />
   </if>

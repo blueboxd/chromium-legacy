@@ -842,7 +842,7 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::Discard(
   // Can't discard a tab when it isn't in a tabstrip.
   if (!tab_strip_model_) {
     // Logs are used to diagnose user feedback reports.
-    MEMORY_LOG(ERROR) << "Skipped discarding " << GetTitle()
+    MEMORY_LOG(ERROR) << "Skipped discarding unit " << GetID()
                       << " because it isn't in a tab strip.";
     return false;
   }
@@ -850,7 +850,7 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::Discard(
   if (!IsValidStateChange(GetState(), LifecycleUnitState::DISCARDED,
                           DiscardReasonToStateChangeReason(reason))) {
     // Logs are used to diagnose user feedback reports.
-    MEMORY_LOG(ERROR) << "Skipped discarding " << GetTitle()
+    MEMORY_LOG(ERROR) << "Skipped discarding unit " << GetID()
                       << " because a transition from " << GetState()
                       << "to discarded is not allowed.";
     return false;

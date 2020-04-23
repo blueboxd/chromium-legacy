@@ -8,7 +8,7 @@
  */
 
 // clang-format off
-// #import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
 // clang-format on
 
 /**
@@ -25,11 +25,10 @@
  *   appName: string
  * }}
  */
-/* #export */ let InstalledApp;
+export let InstalledApp;
 
-cr.define('settings', function() {
   /** @interface */
-  /* #export */ class ClearBrowsingDataBrowserProxy {
+  export class ClearBrowsingDataBrowserProxy {
     /**
      * @param {!Array<string>} dataTypes
      * @param {number} timePeriod
@@ -57,31 +56,25 @@ cr.define('settings', function() {
   }
 
   /**
-   * @implements {settings.ClearBrowsingDataBrowserProxy}
+   * @implements {ClearBrowsingDataBrowserProxy}
    */
-  /* #export */ class ClearBrowsingDataBrowserProxyImpl {
+  export class ClearBrowsingDataBrowserProxyImpl {
     /** @override */
     clearBrowsingData(dataTypes, timePeriod, installedApps) {
-      return cr.sendWithPromise(
+      return sendWithPromise(
           'clearBrowsingData', dataTypes, timePeriod, installedApps);
     }
 
     /** @override */
     getInstalledApps(timePeriod) {
-      return cr.sendWithPromise('getInstalledApps', timePeriod);
+      return sendWithPromise('getInstalledApps', timePeriod);
     }
 
     /** @override */
     initialize() {
-      return cr.sendWithPromise('initializeClearBrowsingData');
+      return sendWithPromise('initializeClearBrowsingData');
     }
   }
 
-  cr.addSingletonGetter(ClearBrowsingDataBrowserProxyImpl);
+  addSingletonGetter(ClearBrowsingDataBrowserProxyImpl);
 
-  // #cr_define_end
-  return {
-    ClearBrowsingDataBrowserProxy: ClearBrowsingDataBrowserProxy,
-    ClearBrowsingDataBrowserProxyImpl: ClearBrowsingDataBrowserProxyImpl,
-  };
-});

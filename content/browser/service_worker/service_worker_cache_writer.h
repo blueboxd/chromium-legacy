@@ -249,15 +249,16 @@ class CONTENT_EXPORT ServiceWorkerCacheWriter {
                      net::IOBuffer* buf,
                      int buf_len);
   // If no write observer is set through set_write_observer(),
-  // WriteInfo() operates the same as WriteInfoToResponseWriter() and
+  // WriteInfo() operates the same as WriteResponseHeadToResponseWriter() and
   // WriteData() operates the same as WriteDataToResponseWriter().
   // If observer is set, the argument |response_info| or |data| is first sent
-  // to observer then WriteInfoToResponseWriter() or
+  // to observer then WriteResponseHeadToResponseWriter() or
   // WriteDataToResponseWriter() is called.
   int WriteInfo(scoped_refptr<HttpResponseInfoIOBuffer> response_info);
   int WriteData(scoped_refptr<net::IOBuffer> data, int length);
-  int WriteInfoToResponseWriter(
-      scoped_refptr<HttpResponseInfoIOBuffer> response_info);
+  int WriteResponseHeadToResponseWriter(
+      const network::mojom::URLResponseHead& response_head,
+      int response_data_size);
   int WriteDataToResponseWriter(scoped_refptr<net::IOBuffer> data, int length);
 
   // Called when |write_observer_| finishes its WillWriteData() operation.

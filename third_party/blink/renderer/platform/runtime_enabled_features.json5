@@ -616,6 +616,11 @@
       status: "experimental",
     },
     {
+      // Disable composited layer squashing in pre-CompositeAfterPaint for
+      // testing.
+      name: "DisableLayerSquashing",
+    },
+    {
       name: "DisallowDocumentAccess",
       status: "experimental",
     },

@@ -868,7 +868,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'c621315d173a9832fc7dcbf3854fe53cdfc5ee6c',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '8ab41801a6e470facfc297062bf1134f9acf68b2',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1217,7 +1217,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '1817325ff1cc06432aa6f2ea18e1c78b91dacd92',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'f4d974874d8563189cc45a7b16bdce71cbf689dc',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1522,7 +1522,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@f0a6533fb233bb4d45a3d7d4cb058f915fc505e6',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@1e57f0f5a22dc6d06f9962abb5513234c12efd0d',
     'condition': 'checkout_src_internal',
   },
 

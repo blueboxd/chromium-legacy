@@ -55,7 +55,7 @@
         "id": "InputContextType",
         "type": "string",
         "description": "Type of value this text field edits, (Text, Number, URL, etc)",
-        "enum": ["text", "search", "tel", "url", "email", "number", "password"]
+        "enum": ["text", "search", "tel", "url", "email", "number", "password", "null"]
       },
       {
         "id": "AutoCapitalizeType",

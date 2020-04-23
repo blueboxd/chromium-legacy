@@ -127,6 +127,9 @@ SquashingDisallowedReasons
 CompositingLayerAssigner::GetReasonsPreventingSquashing(
     const PaintLayer* layer,
     const CompositingLayerAssigner::SquashingState& squashing_state) {
+  if (RuntimeEnabledFeatures::DisableLayerSquashingEnabled())
+    return SquashingDisallowedReason::kDisabled;
+
   if (!squashing_state.have_assigned_backings_to_entire_squashing_layer_subtree)
     return SquashingDisallowedReason::kWouldBreakPaintOrder;
 

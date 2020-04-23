@@ -56,12 +56,6 @@ static const char kTranslateSubframeSuccessPercentage[] =
 static const char kTranslateSubframeErrorType[] =
     "Translate.TranslateSubframe.ErrorType";
 
-// Overrides the hrefTranslate logic to auto-translate when the navigation is
-// from any origin rather than only Google origins. Used for manual testing
-// where the test page may reside on a test domain.
-const base::Feature kAutoHrefTranslateAllOrigins{
-    "AutoHrefTranslateAllOrigins", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // A helper function for CombineTextNodesAndMakeCallback() below.
 // This is a copy of logic from macos specific RenderWidgetHostViewMac
 // that was created in https://chromium-review.googlesource.com/956029
@@ -270,7 +264,7 @@ void PerFrameContentTranslateDriver::DidFinishNavigation(
       (google_util::IsGoogleDomainUrl(initiator_origin->GetURL(),
                                       google_util::DISALLOW_SUBDOMAIN,
                                       google_util::ALLOW_NON_STANDARD_PORTS) ||
-       base::FeatureList::IsEnabled(kAutoHrefTranslateAllOrigins));
+       IsAutoHrefTranslateAllOriginsEnabled());
 
   translate_manager()->GetLanguageState().DidNavigate(
       navigation_handle->IsSameDocument(), navigation_handle->IsInMainFrame(),
@@ -355,10 +349,27 @@ void PerFrameContentTranslateDriver::OnWebLanguageDetectionDetails(
 void PerFrameContentTranslateDriver::OnPageContents(
     base::TimeTicks capture_begin_time,
     const base::string16& contents) {
-  awaiting_contents_ = false;
   details_.contents = contents;
   UMA_HISTOGRAM_TIMES(kTranslateCaptureText,
                       base::TimeTicks::Now() - capture_begin_time);
+
+  // Run language detection of contents in a sandboxed utility process.
+  mojo::Remote<language_detection::mojom::LanguageDetectionService> service =
+      language_detection::LaunchLanguageDetectionService();
+  service->DetermineLanguage(
+      contents,
+      base::BindOnce(&PerFrameContentTranslateDriver::OnPageContentsLanguage,
+                     weak_pointer_factory_.GetWeakPtr(), std::move(service)));
+}
+
+void PerFrameContentTranslateDriver::OnPageContentsLanguage(
+    mojo::Remote<language_detection::mojom::LanguageDetectionService>
+        service_handle,
+    const std::string& contents_language,
+    bool is_contents_language_reliable) {
+  awaiting_contents_ = false;
+  details_.cld_language = contents_language;
+  details_.is_cld_reliable = is_contents_language_reliable;
 
   if (!details_.url.is_empty())
     ComputeActualPageLanguage();
@@ -368,8 +379,8 @@ void PerFrameContentTranslateDriver::ComputeActualPageLanguage() {
   // TODO(crbug.com/1063520): Move this language detection to a sandboxed
   // utility process.
   std::string language = DeterminePageLanguage(
-      details_.content_language, details_.html_root_language, details_.contents,
-      &details_.cld_language, &details_.is_cld_reliable);
+      details_.content_language, details_.html_root_language,
+      details_.cld_language, details_.is_cld_reliable);
 
   if (!language.empty()) {
     details_.time = base::Time::Now();

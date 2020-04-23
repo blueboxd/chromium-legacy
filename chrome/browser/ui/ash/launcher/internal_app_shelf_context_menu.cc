@@ -41,7 +41,7 @@ void InternalAppShelfContextMenu::GetMenuModel(GetMenuModelCallback callback) {
 
     if (internal_app->internal_app_name == apps::BuiltInAppName::kPluginVm &&
         plugin_vm::IsPluginVmRunning(controller()->profile())) {
-      AddContextMenuOption(menu_model.get(), ash::STOP_APP,
+      AddContextMenuOption(menu_model.get(), ash::SHUTDOWN_GUEST_OS,
                            IDS_PLUGIN_VM_SHUT_DOWN_MENU_ITEM);
     }
   }
@@ -56,7 +56,7 @@ void InternalAppShelfContextMenu::ExecuteCommand(int command_id,
   const auto* internal_app = app_list::FindInternalApp(item().id.app_id);
   DCHECK(internal_app);
   DCHECK_EQ(internal_app->internal_app_name, apps::BuiltInAppName::kPluginVm);
-  if (command_id == ash::STOP_APP) {
+  if (command_id == ash::SHUTDOWN_GUEST_OS) {
     plugin_vm::PluginVmManager::GetForProfile(controller()->profile())
         ->StopPluginVm(plugin_vm::kPluginVmName, /*force=*/false);
     return;

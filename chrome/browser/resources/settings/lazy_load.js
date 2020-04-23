@@ -7,7 +7,7 @@ import './appearance_page/appearance_fonts_page.js';
 import './autofill_page/password_check.js';
 import './autofill_page/passwords_section.js';
 import './autofill_page/payments_section.js';
-import './clear_browsing_data_dialog/clear_browsing_data_dialog.m.js';
+import './clear_browsing_data_dialog/clear_browsing_data_dialog.js';
 import './search_engines_page/search_engines_page.js';
 import './privacy_page/cookies_page.m.js';
 import './privacy_page/security_keys_subpage.m.js';
@@ -62,7 +62,7 @@ export {ChromeCleanupIdleReason} from './chrome_cleanup_page/chrome_cleanup_page
 export {ChromeCleanupProxyImpl} from './chrome_cleanup_page/chrome_cleanup_proxy.js';
 export {CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW} from './chrome_cleanup_page/items_to_remove_list.js';
 // </if>
-export {ClearBrowsingDataBrowserProxyImpl} from './clear_browsing_data_dialog/clear_browsing_data_browser_proxy.m.js';
+export {ClearBrowsingDataBrowserProxyImpl} from './clear_browsing_data_dialog/clear_browsing_data_browser_proxy.js';
 export {DownloadsBrowserProxyImpl} from './downloads_page/downloads_browser_proxy.js';
 // <if expr="_google_chrome and is_win">
 export {IncompatibleApplication, IncompatibleApplicationsBrowserProxyImpl} from './incompatible_applications_page/incompatible_applications_browser_proxy.js';

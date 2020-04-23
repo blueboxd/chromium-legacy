@@ -55,11 +55,11 @@ namespace blink {
 
 namespace {
 
-void RecordSharedWorkerUsage(Document* document) {
-  UseCounter::Count(document, WebFeature::kSharedWorkerStart);
+void RecordSharedWorkerUsage(LocalDOMWindow* window) {
+  UseCounter::Count(window, WebFeature::kSharedWorkerStart);
 
-  if (document->IsCrossSiteSubframe())
-    UseCounter::Count(document, WebFeature::kThirdPartySharedWorker);
+  if (window->document()->IsCrossSiteSubframe())
+    UseCounter::Count(window, WebFeature::kThirdPartySharedWorker);
 }
 
 }  // namespace
@@ -81,7 +81,7 @@ SharedWorker* SharedWorker::Create(ExecutionContext* context,
   // from windows.
   LocalDOMWindow* window = To<LocalDOMWindow>(context);
 
-  RecordSharedWorkerUsage(window->document());
+  RecordSharedWorkerUsage(window);
 
   SharedWorker* worker = MakeGarbageCollected<SharedWorker>(context);
   worker->UpdateStateIfNeeded();
@@ -140,9 +140,9 @@ SharedWorker* SharedWorker::Create(ExecutionContext* context,
   else if (options->type == mojom::blink::ScriptType::kModule)
     UseCounter::Count(window, WebFeature::kModuleSharedWorker);
 
-  SharedWorkerClientHolder::From(*window->document())
-      ->Connect(worker, std::move(remote_port), script_url,
-                std::move(blob_url_token), std::move(options));
+  SharedWorkerClientHolder::From(*window)->Connect(
+      worker, std::move(remote_port), script_url, std::move(blob_url_token),
+      std::move(options));
 
   return worker;
 }

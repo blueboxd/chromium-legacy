@@ -23,7 +23,7 @@ CrostiniAppContextMenu::~CrostiniAppContextMenu() = default;
 bool CrostiniAppContextMenu::IsCommandIdEnabled(int command_id) const {
   if (command_id == ash::UNINSTALL) {
     return IsUninstallable();
-  } else if (command_id == ash::STOP_APP) {
+  } else if (command_id == ash::SHUTDOWN_GUEST_OS) {
     if (app_id() == crostini::GetTerminalId()) {
       return crostini::IsCrostiniRunning(profile());
     }
@@ -41,7 +41,7 @@ void CrostiniAppContextMenu::ExecuteCommand(int command_id, int event_flags) {
       proxy->Uninstall(app_id(), nullptr /* parent_window */);
       return;
     }
-    case ash::STOP_APP:
+    case ash::SHUTDOWN_GUEST_OS:
       if (app_id() == crostini::GetTerminalId()) {
         crostini::CrostiniManager::GetForProfile(profile())->StopVm(
             crostini::kCrostiniDefaultVmName, base::DoNothing());
@@ -63,7 +63,7 @@ void CrostiniAppContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
   }
 
   if (app_id() == crostini::GetTerminalId()) {
-    AddContextMenuOption(menu_model, ash::STOP_APP,
+    AddContextMenuOption(menu_model, ash::SHUTDOWN_GUEST_OS,
                          IDS_CROSTINI_SHUT_DOWN_LINUX_MENU_ITEM);
   }
 }

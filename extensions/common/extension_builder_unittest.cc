@@ -73,6 +73,7 @@ TEST(ExtensionBuilderTest, Actions) {
             .Build();
     EXPECT_TRUE(extension->manifest()->HasKey(manifest_keys::kPageAction));
     EXPECT_FALSE(extension->manifest()->HasKey(manifest_keys::kBrowserAction));
+    EXPECT_FALSE(extension->manifest()->HasKey(manifest_keys::kAction));
   }
   {
     scoped_refptr<const Extension> extension =
@@ -81,6 +82,16 @@ TEST(ExtensionBuilderTest, Actions) {
             .Build();
     EXPECT_FALSE(extension->manifest()->HasKey(manifest_keys::kPageAction));
     EXPECT_TRUE(extension->manifest()->HasKey(manifest_keys::kBrowserAction));
+    EXPECT_FALSE(extension->manifest()->HasKey(manifest_keys::kAction));
+  }
+  {
+    scoped_refptr<const Extension> extension =
+        ExtensionBuilder("action")
+            .SetAction(ExtensionBuilder::ActionType::ACTION)
+            .Build();
+    EXPECT_FALSE(extension->manifest()->HasKey(manifest_keys::kPageAction));
+    EXPECT_FALSE(extension->manifest()->HasKey(manifest_keys::kBrowserAction));
+    EXPECT_TRUE(extension->manifest()->HasKey(manifest_keys::kAction));
   }
 }
 

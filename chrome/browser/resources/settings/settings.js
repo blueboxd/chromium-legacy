@@ -8,7 +8,7 @@ export {AboutPageBrowserProxy, AboutPageBrowserProxyImpl, UpdateStatus} from './
 export {AppearanceBrowserProxy, AppearanceBrowserProxyImpl} from './appearance_page/appearance_browser_proxy.js';
 export {PasswordManagerImpl, PasswordManagerProxy} from './autofill_page/password_manager_proxy.js';
 // <if expr="not chromeos">
-export {DefaultBrowserBrowserProxyImpl} from './default_browser_page/default_browser_browser_proxy.m.js';
+export {DefaultBrowserBrowserProxyImpl} from './default_browser_page/default_browser_browser_proxy.js';
 // </if>
 export {ExtensionControlBrowserProxyImpl} from './extension_control_browser_proxy.m.js';
 export {HatsBrowserProxyImpl} from './hats_browser_proxy.m.js';

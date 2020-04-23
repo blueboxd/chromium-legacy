@@ -32,6 +32,9 @@ EnumTraits<ui::mojom::TextInputType, ui::TextInputType>::ToMojom(
     UI_TO_MOJO_TYPE_CASE(TEXT_AREA);
     UI_TO_MOJO_TYPE_CASE(CONTENT_EDITABLE);
     UI_TO_MOJO_TYPE_CASE(DATE_TIME_FIELD);
+    // Unfortunately we cannot use the macro due to the definition conflict.
+    case ui::TEXT_INPUT_TYPE_NULL:
+      return ui::mojom::TextInputType::TYPE_NULL;
   }
   NOTREACHED();
   return ui::mojom::TextInputType::NONE;
@@ -66,6 +69,10 @@ bool EnumTraits<ui::mojom::TextInputType, ui::TextInputType>::FromMojom(
     MOJO_TO_UI_TYPE_CASE(TEXT_AREA);
     MOJO_TO_UI_TYPE_CASE(CONTENT_EDITABLE);
     MOJO_TO_UI_TYPE_CASE(DATE_TIME_FIELD);
+    // Unfortunately we cannot use the macro due to the definition conflict.
+    case ui::mojom::TextInputType::TYPE_NULL:
+      *out = ui::TEXT_INPUT_TYPE_NULL;
+      return true;
   }
 #undef MOJO_TO_UI_TYPE_CASE
   return false;

@@ -5,9 +5,8 @@
         overflow: auto;
       }
 
-      iron-list {
-        @apply --card-sizing;
-        margin-top: var(--first-card-padding-top);
+      .history-cards {
+        margin-block-start: var(--first-card-padding-top);
       }
 
       dialog [slot=body] {
@@ -19,7 +18,8 @@
       [[noResultsMessage_(searchedTerm)]]
     </div>
 
-    <iron-list items="[[historyData_]]" as="item" id="infinite-list"
+    <iron-list class="history-cards"
+        items="[[historyData_]]" as="item" id="infinite-list"
         role="grid" aria-rowcount$="[[historyData_.length]]"
         hidden$="[[!hasResults_(historyData_.length)]]" preserve-focus>
       <template>

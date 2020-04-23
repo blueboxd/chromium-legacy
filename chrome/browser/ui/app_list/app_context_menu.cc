@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/app_list/app_context_menu.h"
 
 #include "ash/public/cpp/shelf_model.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/grit/generated_resources.h"
@@ -115,10 +116,8 @@ const gfx::VectorIcon& AppContextMenu::GetMenuItemVectorIcon(int command_id,
       NOTREACHED() << "NOTIFICATION_CONTAINER does not have an icon, and it is "
                       "added to the model by NotificationMenuController.";
       return gfx::kNoneIcon;
-    case ash::STOP_APP:
-      if (string_id == IDS_CROSTINI_SHUT_DOWN_LINUX_MENU_ITEM)
-        return views::kLinuxShutdownIcon;
-      return gfx::kNoneIcon;
+    case ash::SHUTDOWN_GUEST_OS:
+      return kShutdownGuestOsIcon;
     default:
       NOTREACHED();
       return gfx::kNoneIcon;

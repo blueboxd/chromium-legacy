@@ -542,6 +542,17 @@ MockServiceWorkerResponseReader::~MockServiceWorkerResponseReader() {}
 void MockServiceWorkerResponseReader::ReadInfo(
     HttpResponseInfoIOBuffer* info_buf,
     net::CompletionOnceCallback callback) {
+  // We need to allocate HttpResponseInfo for
+  // ServiceWorkerCacheCacheWriterTest.CopyScript_Async to pass.
+  // It reads/writes response headers and the current implementation
+  // of ServiceWorkerCacheWriter::WriteInfo() requires a valid
+  // HttpResponseInfo. This workaround will be gone once we remove
+  // HttpResponseInfo dependencies from service worker codebase.
+  DCHECK(!info_buf->http_info);
+  info_buf->http_info = std::make_unique<net::HttpResponseInfo>();
+  info_buf->http_info->headers =
+      base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.0 200 OK\0\0");
+
   DCHECK(!expected_reads_.empty());
   ExpectedRead expected = expected_reads_.front();
   EXPECT_TRUE(expected.info);

@@ -25,7 +25,8 @@ enum TextInputType {
   TEXT_AREA,
   CONTENT_EDITABLE,
   DATE_TIME_FIELD,
-  MAX = DATE_TIME_FIELD,
+  TYPE_NULL,
+  MAX = TYPE_NULL,
 };
 
 // See comments for ui::ImeTextSpan::Type for more details.

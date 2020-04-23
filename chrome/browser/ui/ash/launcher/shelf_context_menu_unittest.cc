@@ -575,7 +575,7 @@ TEST_F(ShelfContextMenuTest, CrostiniTerminalApp) {
 
   // When crostini is running, the terminal should have an option to kill the
   // vm.
-  EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::STOP_APP));
+  EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::SHUTDOWN_GUEST_OS));
 }
 
 // Checks the context menu for a "normal" crostini app (i.e. a registered one).

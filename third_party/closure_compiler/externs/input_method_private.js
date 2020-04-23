@@ -82,6 +82,7 @@ chrome.inputMethodPrivate.InputContextType = {
   EMAIL: 'email',
   NUMBER: 'number',
   PASSWORD: 'password',
+  NULL: 'null',
 };
 
 /**

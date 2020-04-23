@@ -746,54 +746,72 @@ def CreateMetadata(map_path, elf_path, apk_path, minimal_apks_path,
     linker_name: A coded linker name (see linker_map_parser.py).
 
   Returns:
-    None if |elf_path| is not supplied. Otherwise returns dict mapping string
-    constants to values.
-    If |elf_path| is supplied, git revision and elf info are included.
-    If |output_directory| is also supplied, then filenames will be included.
+    A dict mapping string costants to values, or None if empty. Performs
+    "best effort" extraction, using available data.
+    * If |output_directory| is given then stores path names relative to it.
+      Else stores the base name.
+    * Deduces GIT revision based on |*_path| and |output_directory|.
   """
   assert not (apk_path and minimal_apks_path)
-  metadata = None
+  logging.debug('Constructing metadata')
+  metadata = {}
+
+  if output_directory:
+    shorten_path = lambda path: os.path.relpath(path, output_directory)
+    gn_args = _ParseGnArgs(os.path.join(output_directory, 'args.gn'))
+    metadata[models.METADATA_GN_ARGS] = gn_args
+  else:
+    shorten_path = os.path.basename
+
+  if tool_prefix:
+    relative_tool_prefix = path_util.ToSrcRootRelative(tool_prefix)
+    metadata[models.METADATA_TOOL_PREFIX] = relative_tool_prefix
+
+  if linker_name:
+    metadata[models.METADATA_LINKER_NAME] = linker_name
+
+  # Deduce GIT revision.
+  path_candidates = [elf_path, apk_path, minimal_apks_path]
+  if output_directory:
+    path_candidates.append(output_directory + os.sep)
+  for path in path_candidates:
+    if path:
+      dirname = os.path.dirname(path)
+      if dirname:
+        git_rev = _DetectGitRevision(dirname)
+        if git_rev:
+          metadata[models.METADATA_GIT_REVISION] = git_rev
+          break
+
   if elf_path:
-    logging.debug('Constructing metadata')
-    git_rev = _DetectGitRevision(os.path.dirname(elf_path))
+    metadata[models.METADATA_ELF_FILENAME] = shorten_path(elf_path)
     architecture = _ArchFromElf(elf_path, tool_prefix)
-    build_id = BuildIdFromElf(elf_path, tool_prefix)
+    metadata[models.METADATA_ELF_ARCHITECTURE] = architecture
     timestamp_obj = datetime.datetime.utcfromtimestamp(os.path.getmtime(
         elf_path))
     timestamp = calendar.timegm(timestamp_obj.timetuple())
-    relative_tool_prefix = path_util.ToSrcRootRelative(tool_prefix)
+    metadata[models.METADATA_ELF_MTIME] = timestamp
+    build_id = BuildIdFromElf(elf_path, tool_prefix)
+    metadata[models.METADATA_ELF_BUILD_ID] = build_id
     relocations_count = _CountRelocationsFromElf(elf_path, tool_prefix)
+    metadata[models.METADATA_ELF_RELOCATIONS_COUNT] = relocations_count
 
-    metadata = {
-        models.METADATA_GIT_REVISION: git_rev,
-        models.METADATA_ELF_ARCHITECTURE: architecture,
-        models.METADATA_ELF_MTIME: timestamp,
-        models.METADATA_ELF_BUILD_ID: build_id,
-        models.METADATA_LINKER_NAME: linker_name,
-        models.METADATA_TOOL_PREFIX: relative_tool_prefix,
-        models.METADATA_ELF_RELOCATIONS_COUNT: relocations_count
-    }
+  if map_path:
+    metadata[models.METADATA_MAP_FILENAME] = shorten_path(map_path)
 
-    if output_directory:
-      relative_to_out = lambda path: os.path.relpath(path, output_directory)
-      gn_args = _ParseGnArgs(os.path.join(output_directory, 'args.gn'))
-      metadata[models.METADATA_MAP_FILENAME] = relative_to_out(map_path)
-      metadata[models.METADATA_ELF_FILENAME] = relative_to_out(elf_path)
-      metadata[models.METADATA_GN_ARGS] = gn_args
+  if apk_path:
+    metadata[models.METADATA_APK_FILENAME] = shorten_path(apk_path)
+    metadata[models.METADATA_APK_SIZE] = os.path.getsize(apk_path)
+  elif minimal_apks_path:
+    sizes_by_module = _CollectModuleSizes(minimal_apks_path)
+    metadata[models.METADATA_APK_FILENAME] = shorten_path(minimal_apks_path)
+    for name, size in sizes_by_module.items():
+      key = models.METADATA_APK_SIZE
+      if name != 'base':
+        key += '-' + name
+      metadata[key] = size
 
-      if apk_path:
-        metadata[models.METADATA_APK_FILENAME] = relative_to_out(apk_path)
-        metadata[models.METADATA_APK_SIZE] = os.path.getsize(apk_path)
-      elif minimal_apks_path:
-        sizes_by_module = _CollectModuleSizes(minimal_apks_path)
-        metadata[models.METADATA_APK_FILENAME] = relative_to_out(
-            minimal_apks_path)
-        for name, size in sizes_by_module.items():
-          key = models.METADATA_APK_SIZE
-          if name != 'base':
-            key += '-' + name
-          metadata[key] = size
-  return metadata
+  return metadata or None
 
 
 def _ResolveThinArchivePaths(raw_symbols, thin_archives):

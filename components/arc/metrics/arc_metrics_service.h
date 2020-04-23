@@ -76,6 +76,7 @@ class ArcMetricsService : public KeyedService,
   void ReportBootProgress(std::vector<mojom::BootProgressEventPtr> events,
                           mojom::BootType boot_type) override;
   void ReportNativeBridge(mojom::NativeBridgeType native_bridge_type) override;
+  void ReportCompanionLibApiUsage(mojom::CompanionLibApiId api_id) override;
 
   // wm::ActivationChangeObserver overrides.
   // Records to UMA when a user has interacted with an ARC app window.

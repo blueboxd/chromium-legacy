@@ -121,7 +121,7 @@ void PluginVmApps::GetMenuModel(const std::string& app_id,
 
   if (app_id == plugin_vm::kPluginVmAppId &&
       plugin_vm::IsPluginVmRunning(profile_)) {
-    AddCommandItem(ash::STOP_APP, IDS_PLUGIN_VM_SHUT_DOWN_MENU_ITEM,
+    AddCommandItem(ash::SHUTDOWN_GUEST_OS, IDS_PLUGIN_VM_SHUT_DOWN_MENU_ITEM,
                    &menu_items);
   }
 

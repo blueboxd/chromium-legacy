@@ -51,9 +51,12 @@ class XRFrameProviderRequestCallback
 }  // namespace
 
 XRFrameProvider::XRFrameProvider(XRSystem* xr)
-    : xr_(xr), last_has_focus_(xr->IsFrameFocused()) {
-  frame_transport_ = MakeGarbageCollected<XRFrameTransport>();
-}
+    : xr_(xr),
+      frame_transport_(MakeGarbageCollected<XRFrameTransport>(
+          xr->GetExecutionContext(),
+          xr->GetExecutionContext()->GetTaskRunner(
+              TaskType::kMiscPlatformAPI))),
+      last_has_focus_(xr->IsFrameFocused()) {}
 
 void XRFrameProvider::OnSessionStarted(
     XRSession* session,
@@ -137,7 +140,10 @@ void XRFrameProvider::OnSessionEnded(XRSession* session) {
     immersive_frame_pose_ = nullptr;
     is_immersive_frame_position_emulated_ = false;
 
-    frame_transport_ = MakeGarbageCollected<XRFrameTransport>();
+    frame_transport_ = MakeGarbageCollected<XRFrameTransport>(
+        session->GetExecutionContext(),
+        session->GetExecutionContext()->GetTaskRunner(
+            TaskType::kMiscPlatformAPI));
 
     // When we no longer have an active immersive session schedule all the
     // outstanding frames that were requested while the immersive session was

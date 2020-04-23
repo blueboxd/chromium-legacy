@@ -20,7 +20,7 @@ InternalAppContextMenu::InternalAppContextMenu(
 InternalAppContextMenu::~InternalAppContextMenu() = default;
 
 bool InternalAppContextMenu::IsCommandIdEnabled(int command_id) const {
-  if (command_id == ash::STOP_APP) {
+  if (command_id == ash::SHUTDOWN_GUEST_OS) {
     DCHECK_EQ(app_list::FindInternalApp(app_id())->internal_app_name,
               apps::BuiltInAppName::kPluginVm);
     return plugin_vm::IsPluginVmRunning(profile());
@@ -30,7 +30,7 @@ bool InternalAppContextMenu::IsCommandIdEnabled(int command_id) const {
 
 void InternalAppContextMenu::ExecuteCommand(int command_id, int event_flags) {
   switch (command_id) {
-    case ash::STOP_APP:
+    case ash::SHUTDOWN_GUEST_OS:
       DCHECK_EQ(app_list::FindInternalApp(app_id())->internal_app_name,
                 apps::BuiltInAppName::kPluginVm);
       plugin_vm::PluginVmManager::GetForProfile(profile())->StopPluginVm(
@@ -46,7 +46,7 @@ void InternalAppContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
   const auto* internal_app = app_list::FindInternalApp(app_id());
   DCHECK(internal_app);
   if (internal_app->internal_app_name == apps::BuiltInAppName::kPluginVm) {
-    AddContextMenuOption(menu_model, ash::STOP_APP,
+    AddContextMenuOption(menu_model, ash::SHUTDOWN_GUEST_OS,
                          IDS_PLUGIN_VM_SHUT_DOWN_MENU_ITEM);
   }
 }

@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/services/language_detection/public/cpp/language_detection_service.h"
 #include "components/translate/content/browser/content_translate_driver.h"
 #include "components/translate/content/common/translate.mojom.h"
 #include "components/translate/core/browser/translate_driver.h"
@@ -101,6 +102,12 @@ class PerFrameContentTranslateDriver : public ContentTranslateDriver {
 
   void OnPageContents(base::TimeTicks capture_begin_time,
                       const base::string16& contents);
+
+  void OnPageContentsLanguage(
+      mojo::Remote<language_detection::mojom::LanguageDetectionService>
+          service_handle,
+      const std::string& contents_language,
+      bool is_contents_language_reliable);
 
   void ComputeActualPageLanguage();
 

@@ -270,9 +270,33 @@ async function getFileFromHandle(fileSystemHandle) {
 }
 
 /**
+ * Returns whether `file` is a video or image file.
+ * @param {!File} file
+ * @return {boolean}
+ */
+function isVideoOrImage(file) {
+  // Check for .mkv explicitly because it is not a web-supported type, but is in
+  // common use on ChromeOS.
+  return /^(image)|(video)\//.test(file.type) || /\.mkv$/.test(file.name);
+}
+
+/**
+ * Returns whether `siblingFile` is related to `focusFile`. That is, whether
+ * they should be traversable from one another. Usually this means they share a
+ * similar (non-empty) MIME type.
+ * @param {!File} focusFile The file selected by the user.
+ * @param {!File} siblingFile A file in the same directory as `focusFile`.
+ * @return {boolean}
+ */
+function isFileRelated(focusFile, siblingFile) {
+  return focusFile.name === siblingFile.name ||
+      (!!focusFile.type && focusFile.type === siblingFile.type) ||
+      (isVideoOrImage(focusFile) && isVideoOrImage(siblingFile));
+}
+
+/**
  * Changes the working directory and initializes file iteration according to
  * the type of the opened file.
- *
  * @param {!FileSystemDirectoryHandle} directory
  * @param {?File} focusFile
  */
@@ -287,8 +311,8 @@ async function setCurrentDirectory(directory, focusFile) {
       continue;
     }
 
-    // Only allow traversal of matching mime types.
-    if (asFile.file.type === focusFile.type) {
+    // Only allow traversal of related file types.
+    if (isFileRelated(focusFile, asFile.file)) {
       currentFiles.push({token: -1, file: asFile.file, handle: asFile.handle});
     }
   }

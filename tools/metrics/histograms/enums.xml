@@ -10219,6 +10219,35 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="Successful first layout"/>
 </enum>
 
+<enum name="CompanionLibraryApisList">
+<!-- Value from components/arc/mojom/metrics.mojom -->
+
+  <int value="0" label="Unsupported"/>
+  <int value="1" label="GetDeviceMode"/>
+  <int value="2" label="GetDisplayTopology"/>
+  <int value="3" label="GetPrimaryDisplayId"/>
+  <int value="4" label="GetWorkspaceInsets"/>
+  <int value="5" label="RegisterArcDeviceInformationCallback"/>
+  <int value="6" label="UnregisterArcDeviceInformationCallback"/>
+  <int value="7" label="ActivateTask"/>
+  <int value="8" label="GetCaptionHeight"/>
+  <int value="9" label="GetHiddenCaptionButton"/>
+  <int value="10" label="HideCaptionButton"/>
+  <int value="11" label="GetTaskWindowBounds"/>
+  <int value="12" label="GetTaskWindowState"/>
+  <int value="13" label="IsShadowHidden"/>
+  <int value="14" label="HideShadow"/>
+  <int value="15" label="OnCloseRequestResponse"/>
+  <int value="16" label="SetOnCloseRequestHandler"/>
+  <int value="17" label="RemoveOnCloseRequestHandler"/>
+  <int value="18" label="SetTaskWindowBounds"/>
+  <int value="19" label="SetTaskWindowState"/>
+  <int value="20" label="GetWindowState"/>
+  <int value="21" label="WindowInteractionController"/>
+  <int value="22" label="SetClippingToTaskDisable"/>
+  <int value="23" label="IsClippingToTaskDisable"/>
+</enum>
+
 <enum name="CompileHeuristicsDecision">
   <int value="0" label="NoCacheHandler">
     No CachedMetadataHandler was provided, thus caching functionality is

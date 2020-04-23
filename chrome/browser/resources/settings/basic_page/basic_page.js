@@ -27,7 +27,7 @@ import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 // </if>
 
 // <if expr="not chromeos">
-import '../default_browser_page/default_browser_page.m.js';
+import '../default_browser_page/default_browser_page.js';
 // </if>
 
 import {assert} from 'chrome://resources/js/assert.m.js';

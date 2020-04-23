@@ -6,10 +6,12 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_GPU_XR_FRAME_TRANSPORT_H_
 
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
-#include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
+#include "third_party/blink/renderer/platform/context_lifecycle_notifier.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/drawing_buffer.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace gfx {
@@ -31,7 +33,9 @@ class PLATFORM_EXPORT XRFrameTransport final
     : public GarbageCollected<XRFrameTransport>,
       public device::mojom::blink::XRPresentationClient {
  public:
-  explicit XRFrameTransport();
+  explicit XRFrameTransport(
+      ContextLifecycleNotifier* context,
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
   ~XRFrameTransport() override;
 
   void BindSubmitFrameClient(
@@ -70,8 +74,10 @@ class PLATFORM_EXPORT XRFrameTransport final
   void OnSubmitFrameRendered() override;
   void OnSubmitFrameGpuFence(const gfx::GpuFenceHandle&) override;
 
-  mojo::Receiver<device::mojom::blink::XRPresentationClient>
-      submit_frame_client_receiver_{this};
+  HeapMojoReceiver<device::mojom::blink::XRPresentationClient,
+                   XRFrameTransport,
+                   HeapMojoWrapperMode::kWithoutContextObserver>
+      submit_frame_client_receiver_;
 
   // Used to keep the image alive until the next frame if using
   // waitForPreviousTransferToFinish.
@@ -90,6 +96,7 @@ class PLATFORM_EXPORT XRFrameTransport final
   device::mojom::blink::XRPresentationTransportOptionsPtr transport_options_;
 
   std::unique_ptr<GpuMemoryBufferImageCopy> frame_copier_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 };
 
 }  // namespace blink

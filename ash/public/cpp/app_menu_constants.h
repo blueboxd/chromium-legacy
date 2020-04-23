@@ -65,9 +65,9 @@ enum CommandId {
   LAUNCH_APP_SHORTCUT_FIRST = 1000,
   LAUNCH_APP_SHORTCUT_LAST = 1999,
 
-  // Command for stopping an app, or stopping a VM via an associated app. Used
-  // by AppContextMenu and ShelfContextMenu.
-  STOP_APP = 2000,
+  // Command for shutting down a VM associated with an App. Used by
+  // AppContextMenu and ShelfContextMenu.
+  SHUTDOWN_GUEST_OS = 2000,
 
   // Reserved range for extension/app custom menus as defined by
   //   IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST

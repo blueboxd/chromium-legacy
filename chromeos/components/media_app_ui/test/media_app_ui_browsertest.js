@@ -334,6 +334,60 @@ TEST_F('MediaAppUIBrowserTest', 'SaveCopyIPC', async () => {
   testDone();
 });
 
+TEST_F('MediaAppUIBrowserTest', 'RelatedFiles', async () => {
+  const testFiles = [
+    {name: 'matroska.mkv'},
+    {name: 'jaypeg.jpg', type: 'image/jpeg'},
+    {name: 'text.txt', type: 'text/plain'},
+    {name: 'jiff.gif', type: 'image/gif'},
+    {name: 'world.webm', type: 'video/webm'},
+    {name: 'other.txt', type: 'text/plain'},
+    {name: 'noext', type: ''},
+    {name: 'html', type: 'text/html'},
+    {name: 'matroska.emkv'},
+  ];
+  const directory = createMockTestDirectory(testFiles);
+  const [mkv, jpg, txt, gif, webm, other, ext, html] = directory.getFilesSync();
+  const imageAndVideoFiles = [mkv, jpg, gif, webm];
+
+  // Checks that the `currentFiles` array maintained by launch.js has everything
+  // in `expectedFiles`, and nothing extra.
+  function assertFilesToBe(testCase, expectedFiles) {
+    // If lengths match, we can just check that all `expectedFiles` are present.
+    assertEquals(
+        expectedFiles.length, currentFiles.length,
+        `Unexpected currentFiles length for ${testCase}`);
+    for (const f of expectedFiles) {
+      assertTrue(
+          !!currentFiles.find(descriptor => descriptor.file.name === f.name),
+          `${f.name} missing for ${testCase}`);
+    }
+  }
+
+  await setCurrentDirectory(directory, mkv);
+  assertFilesToBe('mkv', imageAndVideoFiles);
+
+  await setCurrentDirectory(directory, jpg);
+  assertFilesToBe('jpg', imageAndVideoFiles);
+
+  await setCurrentDirectory(directory, gif);
+  assertFilesToBe('gif', imageAndVideoFiles);
+
+  await setCurrentDirectory(directory, webm);
+  assertFilesToBe('webm', imageAndVideoFiles);
+
+  await setCurrentDirectory(directory, txt);
+  assertFilesToBe('txt', [txt, other]);
+
+  await setCurrentDirectory(directory, html);
+  assertFilesToBe('html', [html]);
+
+  await setCurrentDirectory(directory, ext);
+  assertFilesToBe('ext', [ext]);
+
+  testDone();
+});
+
 // Test cases injected into the guest context.
 // See implementations in media_app_guest_ui_browsertest.js.
 

@@ -97,7 +97,7 @@ const base::Feature kCrostiniUsername{"CrostiniUsername",
 
 // Enables the option to share the mic with Crostini or not
 const base::Feature kCrostiniShowMicSetting{"CrostiniShowMicSetting",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables Crostini GPU support.
 const base::Feature kCrostiniGpuSupport{"CrostiniGpuSupport",

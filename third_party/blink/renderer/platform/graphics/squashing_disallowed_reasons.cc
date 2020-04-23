@@ -73,7 +73,11 @@ constexpr SquashingDisallowedReasonStringMap
          "Cannot squash layers across mask boundaries."},
         {SquashingDisallowedReason::kCrossesLayoutContainmentBoundary,
          "SquashingDisallowedReasonCrossesLayoutContainmentBoundary",
-         "Cannot squash layer across layout containment boundary."}};
+         "Cannot squash layer across layout containment boundary."},
+        {SquashingDisallowedReason::kDisabled,
+         "SquashingDisallowedReasonDisabled",
+         "Squashing is disabled by runtime flag."},
+};
 
 }  // anonymous namespace
 

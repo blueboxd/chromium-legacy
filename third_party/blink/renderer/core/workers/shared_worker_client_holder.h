@@ -41,8 +41,8 @@
 #include "third_party/blink/public/mojom/worker/shared_worker_connector.mojom-blink.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_info.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_unique_receiver_set.h"
@@ -59,18 +59,18 @@ class SharedWorker;
 // new client instance regardless of existing connections, and keeps it until
 // the connection gets lost.
 //
-// SharedWorkerClientHolder is a per-Document object and owned by Document via
-// Supplement<Document>.
+// SharedWorkerClientHolder is a per-LocalDOMWindow object and owned by
+// LocalDOMWindow via Supplement<LocalDOMWindow>.
 class CORE_EXPORT SharedWorkerClientHolder final
     : public GarbageCollected<SharedWorkerClientHolder>,
-      public Supplement<Document> {
+      public Supplement<LocalDOMWindow> {
   USING_GARBAGE_COLLECTED_MIXIN(SharedWorkerClientHolder);
 
  public:
   static const char kSupplementName[];
-  static SharedWorkerClientHolder* From(Document& document);
+  static SharedWorkerClientHolder* From(LocalDOMWindow&);
 
-  explicit SharedWorkerClientHolder(Document&);
+  explicit SharedWorkerClientHolder(LocalDOMWindow&);
   virtual ~SharedWorkerClientHolder() = default;
 
   // Establishes a connection with SharedWorkerHost in the browser process.

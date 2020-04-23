@@ -133,6 +133,8 @@ class ContentTranslateDriver : public TranslateDriver,
     return language_histogram_;
   }
 
+  bool IsAutoHrefTranslateAllOriginsEnabled() const;
+
  private:
   void OnPageAway(int page_seq_no);
 

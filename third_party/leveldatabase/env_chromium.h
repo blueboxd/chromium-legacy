@@ -149,12 +149,11 @@ class LEVELDB_EXPORT UMALogger {
   virtual void RecordBytesWritten(int amount) const = 0;
 };
 
+// TODO(crbug.com/1053059): Delete this class.
 class LEVELDB_EXPORT RetrierProvider {
  public:
   virtual int MaxRetryTimeMillis() const = 0;
   virtual base::HistogramBase* GetRetryTimeHistogram(MethodID method) const = 0;
-  virtual base::HistogramBase* GetRecoveredFromErrorHistogram(
-      MethodID method) const = 0;
 };
 
 class LEVELDB_EXPORT ChromiumEnv : public leveldb::Env,
@@ -234,8 +233,6 @@ class LEVELDB_EXPORT ChromiumEnv : public leveldb::Env,
   // RetrierProvider implementation.
   int MaxRetryTimeMillis() const override { return kMaxRetryTimeMillis; }
   base::HistogramBase* GetRetryTimeHistogram(MethodID method) const override;
-  base::HistogramBase* GetRecoveredFromErrorHistogram(
-      MethodID method) const override;
 
   const std::unique_ptr<storage::FilesystemProxy> filesystem_;
 

@@ -105,20 +105,12 @@ class Retrier {
         time_to_sleep_(base::TimeDelta::FromMilliseconds(10)),
         success_(true),
         method_(method),
-        last_error_(base::File::FILE_OK),
         provider_(provider) {}
   ~Retrier() {
-    if (success_) {
+    if (success_)
       provider_->GetRetryTimeHistogram(method_)->AddTime(last_ - start_);
-      if (last_error_ != base::File::FILE_OK) {
-        DCHECK_LT(last_error_, 0);
-        provider_->GetRecoveredFromErrorHistogram(method_)->Add(-last_error_);
-      }
-    }
   }
-  bool ShouldKeepTrying(base::File::Error last_error) {
-    DCHECK_NE(last_error, base::File::FILE_OK);
-    last_error_ = last_error;
+  bool ShouldKeepTrying() {
     if (last_ < limit_) {
       base::PlatformThread::Sleep(time_to_sleep_);
       // TODO(crbug.com/1059965): figure out a better way to handle time for
@@ -137,7 +129,6 @@ class Retrier {
   base::TimeDelta time_to_sleep_;
   bool success_;
   MethodID method_;
-  base::File::Error last_error_;
   RetrierProvider* provider_;
 
   DISALLOW_COPY_AND_ASSIGN(Retrier);
@@ -897,7 +888,7 @@ Status ChromiumEnv::CreateDir(const std::string& name) {
     error = filesystem_->CreateDirectory(base::FilePath::FromUTF8Unsafe(name));
     if (error == base::File::FILE_OK)
       return result;
-  } while (retrier.ShouldKeepTrying(error));
+  } while (retrier.ShouldKeepTrying());
   result = MakeIOError(name, "Could not create directory.", kCreateDir, error);
   RecordOSError(kCreateDir, error);
   return result;
@@ -939,7 +930,7 @@ Status ChromiumEnv::RenameFile(const std::string& src, const std::string& dst) {
     error = filesystem_->RenameFile(src_file_path, destination);
     if (error == base::File::FILE_OK)
       return result;
-  } while (retrier.ShouldKeepTrying(error));
+  } while (retrier.ShouldKeepTrying());
 
   DCHECK(error != base::File::FILE_OK);
   RecordOSError(kRenameFile, error);
@@ -959,8 +950,7 @@ Status ChromiumEnv::LockFile(const std::string& fname, FileLock** lock) {
   FileErrorOr<std::unique_ptr<storage::FilesystemProxy::FileLock>> lock_result;
   do {
     lock_result = filesystem_->LockFile(path);
-  } while (lock_result.is_error() &&
-           retrier.ShouldKeepTrying(lock_result.error()));
+  } while (lock_result.is_error() && retrier.ShouldKeepTrying());
   if (lock_result.is_error()) {
     RecordOSError(kLockFile, lock_result.error());
     return MakeIOError(fname, FileErrorString(lock_result.error()), kLockFile,
@@ -1146,15 +1136,6 @@ base::HistogramBase* ChromiumEnv::GetRetryTimeHistogram(MethodID method) const {
       base::TimeDelta::FromMilliseconds(kMaxRetryTimeMillis + 1),
       kNumBuckets,
       base::Histogram::kUmaTargetedHistogramFlag);
-}
-
-base::HistogramBase* ChromiumEnv::GetRecoveredFromErrorHistogram(
-    MethodID method) const {
-  std::string uma_name(name_);
-  uma_name.append(".RetryRecoveredFromErrorIn")
-      .append(MethodIDToString(method));
-  return base::LinearHistogram::FactoryGet(uma_name, 1, kNumEntries,
-      kNumEntries + 1, base::Histogram::kUmaTargetedHistogramFlag);
 }
 
 class Thread : public base::PlatformThread::Delegate {

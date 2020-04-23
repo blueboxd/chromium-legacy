@@ -120,7 +120,7 @@ void AppServiceContextMenu::ExecuteCommand(int command_id, int event_flags) {
       controller()->CreateNewWindow(/*incognito=*/true);
       break;
 
-    case ash::STOP_APP:
+    case ash::SHUTDOWN_GUEST_OS:
       if (app_id() == crostini::GetTerminalId()) {
         crostini::CrostiniManager::GetForProfile(profile())->StopVm(
             crostini::kCrostiniDefaultVmName, base::DoNothing());
@@ -129,7 +129,7 @@ void AppServiceContextMenu::ExecuteCommand(int command_id, int event_flags) {
             plugin_vm::kPluginVmName, /*force=*/false);
       } else {
         LOG(ERROR) << "App " << app_id()
-                   << " should not have a stop app command.";
+                   << " should not have a shutdown guest OS command.";
       }
       break;
 

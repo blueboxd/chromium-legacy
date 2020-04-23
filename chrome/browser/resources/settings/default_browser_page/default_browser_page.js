@@ -7,8 +7,21 @@
  * 'settings-default-browser-page' is the settings page that contains
  * settings to change the default browser (i.e. which the OS will open).
  */
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
+import '../icons.m.js';
+import '../settings_shared_css.m.js';
+
+import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {DefaultBrowserBrowserProxy, DefaultBrowserBrowserProxyImpl, DefaultBrowserInfo} from './default_browser_browser_proxy.js';
+
 Polymer({
   is: 'settings-default-browser-page',
+
+  _template: html`{__html_template__}`,
 
   behaviors: [WebUIListenerBehavior],
 
@@ -26,12 +39,12 @@ Polymer({
     maySetDefaultBrowser_: Boolean,
   },
 
-  /** @private {settings.DefaultBrowserBrowserProxy} */
+  /** @private {DefaultBrowserBrowserProxy} */
   browserProxy_: null,
 
   /** @override */
   created() {
-    this.browserProxy_ = settings.DefaultBrowserBrowserProxyImpl.getInstance();
+    this.browserProxy_ = DefaultBrowserBrowserProxyImpl.getInstance();
   },
 
   /** @override */

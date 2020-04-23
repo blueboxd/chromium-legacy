@@ -8,6 +8,7 @@ PASS Commits variable references as their computed values
 PASS Commits custom variables
 PASS Commits em units as pixel values
 PASS Commits transforms
+FAIL Commits computed transform assert_equals: expected "translate(20px, 20px)" but got "matrix(1, 0, 0, 1, 20, 20)"
 PASS Commits the intermediate value of an animation in the middle of stack
 PASS Commit composites on top of the underlying value
 PASS Triggers mutation observers when updating style

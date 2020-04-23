@@ -48,6 +48,7 @@ class ExtensionBuilder {
   enum class ActionType {
     PAGE_ACTION,
     BROWSER_ACTION,
+    ACTION,
   };
 
   enum class BackgroundContext {

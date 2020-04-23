@@ -7,7 +7,30 @@
  * delete browsing data that has been cached by Chromium.
  */
 
-(function() {
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
+import 'chrome://resources/cr_elements/cr_tabs/cr_tabs.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/polymer/v3_0/iron-pages/iron-pages.js';
+import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
+import './history_deletion_dialog.js';
+import './installed_app_checkbox.js';
+import '../controls/settings_checkbox.m.js';
+import '../icons.m.js';
+import '../settings_shared_css.m.js';
+
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {DropdownMenuOptionList} from '../controls/settings_dropdown_menu.m.js';
+import {loadTimeData} from '../i18n_setup.m.js';
+import {StatusAction, SyncBrowserProxy, SyncBrowserProxyImpl, SyncStatus} from '../people_page/sync_browser_proxy.m.js';
+import {routes} from '../route.m.js';
+import {Route, RouteObserverBehavior, Router} from '../router.m.js';
+
+import {ClearBrowsingDataBrowserProxy, ClearBrowsingDataBrowserProxyImpl, InstalledApp} from './clear_browsing_data_browser_proxy.js';
+
 /**
  * @param {!Object} oldDialog the dialog to close
  * @param {!Object} newDialog the dialog to open
@@ -26,9 +49,11 @@ function replaceDialog(oldDialog, newDialog) {
 Polymer({
   is: 'settings-clear-browsing-data-dialog',
 
+  _template: html`{__html_template__}`,
+
   behaviors: [
     WebUIListenerBehavior,
-    settings.RouteObserverBehavior,
+    RouteObserverBehavior,
   ],
 
   properties: {
@@ -43,7 +68,7 @@ Polymer({
     /**
      * The current sync status, supplied by SyncBrowserProxy.
      * TODO(dpapad): make |syncStatus| private.
-     * @type {?settings.SyncStatus}
+     * @type {?SyncStatus}
      */
     syncStatus: Object,
 
@@ -180,15 +205,15 @@ Polymer({
 
   listeners: {'settings-boolean-control-change': 'updateClearButtonState_'},
 
-  /** @private {settings.ClearBrowsingDataBrowserProxy} */
+  /** @private {ClearBrowsingDataBrowserProxy} */
   browserProxy_: null,
 
-  /** @private {?settings.SyncBrowserProxy} */
+  /** @private {?SyncBrowserProxy} */
   syncBrowserProxy_: null,
 
   /** @override */
   ready() {
-    this.syncBrowserProxy_ = settings.SyncBrowserProxyImpl.getInstance();
+    this.syncBrowserProxy_ = SyncBrowserProxyImpl.getInstance();
     this.syncBrowserProxy_.getSyncStatus().then(
         this.handleSyncStatus_.bind(this));
     this.addWebUIListener(
@@ -202,8 +227,7 @@ Polymer({
 
   /** @override */
   attached() {
-    this.browserProxy_ =
-        settings.ClearBrowsingDataBrowserProxyImpl.getInstance();
+    this.browserProxy_ = ClearBrowsingDataBrowserProxyImpl.getInstance();
     this.dialogOpenedTime_ = Date.now();
     this.browserProxy_.initialize().then(() => {
       this.$.clearBrowsingDataDialog.showModal();
@@ -212,7 +236,7 @@ Polymer({
 
   /**
    * Handler for when the sync state is pushed from the browser.
-   * @param {?settings.SyncStatus} syncStatus
+   * @param {?SyncStatus} syncStatus
    * @private
    */
   handleSyncStatus_(syncStatus) {
@@ -247,12 +271,12 @@ Polymer({
   /**
    * Record visits to the CBD dialog.
    *
-   * settings.RouteObserverBehavior
-   * @param {!settings.Route} currentRoute
+   * RouteObserverBehavior
+   * @param {!Route} currentRoute
    * @protected
    */
   currentRouteChanged(currentRoute) {
-    if (currentRoute == settings.routes.CLEAR_BROWSER_DATA) {
+    if (currentRoute == routes.CLEAR_BROWSER_DATA) {
       chrome.metricsPrivate.recordUserAction('ClearBrowsingData_DialogCreated');
       this.dialogOpenedTime_ = Date.now();
     }
@@ -425,7 +449,8 @@ Polymer({
     }
   },
 
-  /** Closes clear brtowsing data or installed app dialog if they are open.
+  /**
+   * Closes clear brtowsing data or installed app dialog if they are open.
    * @private
    */
   closeDialogs_() {
@@ -489,7 +514,7 @@ Polymer({
               'ClearBrowsingData_Sync_NavigateToError');
         }
         // In any other error case, navigate to the sync page.
-        settings.Router.getInstance().navigateTo(settings.routes.SYNC);
+        Router.getInstance().navigateTo(routes.SYNC);
       }
     }
   },
@@ -500,7 +525,7 @@ Polymer({
    */
   computeIsSyncPaused_() {
     return !!this.syncStatus.hasError &&
-        this.syncStatus.statusAction === settings.StatusAction.REAUTHENTICATE;
+        this.syncStatus.statusAction === StatusAction.REAUTHENTICATE;
   },
 
   /**
@@ -509,7 +534,7 @@ Polymer({
    */
   computeHasPassphraseError_() {
     return !!this.syncStatus.hasError &&
-        this.syncStatus.statusAction === settings.StatusAction.ENTER_PASSPHRASE;
+        this.syncStatus.statusAction === StatusAction.ENTER_PASSPHRASE;
   },
 
   /**
@@ -557,8 +582,7 @@ Polymer({
    * Handles the tap confirm button in installed apps.
    * @private
    */
-  onInstalledAppsConfirmClick_: async function () {
+  onInstalledAppsConfirmClick_: async function() {
     await this.clearBrowsingData_();
   }
 });
-})();

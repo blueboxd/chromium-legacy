@@ -195,13 +195,11 @@ class IntegrationTest(unittest.TestCase):
       if use_pak:
         pak_files = [_TEST_APK_LOCALE_PAK_PATH, _TEST_APK_PAK_PATH]
         pak_info_file = _TEST_PAK_INFO_PATH
-      metadata = None
       linker_name = 'gold'
       with _AddMocksToPath():
-        if use_elf:
-          metadata = archive.CreateMetadata(
-              _TEST_MAP_PATH, elf_path, apk_path, minimal_apks_path,
-              _TEST_TOOL_PREFIX, output_directory, linker_name)
+        metadata = archive.CreateMetadata(_TEST_MAP_PATH, elf_path, apk_path,
+                                          minimal_apks_path, _TEST_TOOL_PREFIX,
+                                          output_directory, linker_name)
         section_sizes, raw_symbols = archive.CreateSectionSizesAndSymbols(
             map_path=_TEST_MAP_PATH,
             tool_prefix=_TEST_TOOL_PREFIX,

@@ -84,10 +84,13 @@ class FakeWritableFileStream {
 
 /** @implements FileSystemHandle  */
 class FakeFileSystemHandle {
-  constructor() {
+  /**
+   * @param {!string=} name
+   */
+  constructor(name = 'fake_file.png') {
     this.isFile = true;
     this.isDirectory = false;
-    this.name = 'fake_file.png';
+    this.name = name;
   }
   /** @override */
   async isSameEntry(other) {
@@ -101,10 +104,16 @@ class FakeFileSystemHandle {
 
 /** @implements FileSystemFileHandle  */
 class FakeFileSystemFileHandle extends FakeFileSystemHandle {
-  constructor() {
-    super();
+  /**
+   * @param {!string=} name
+   * @param {!string=} type
+   */
+  constructor(name = 'fake_file.png', type = '') {
+    super(name);
     /** @type {?FakeWritableFileStream} */
     this.lastWritable;
+    /** @type {!string} */
+    this.type = type;
   }
   /** @override */
   createWriter(options) {
@@ -117,23 +126,30 @@ class FakeFileSystemFileHandle extends FakeFileSystemHandle {
   }
   /** @override */
   async getFile() {
+    return this.getFileSync();
+  }
+
+  /** @return {!File} */
+  getFileSync() {
     // TODO(b/152832337): Use a real image file and set mime type to be
     // 'image/png'. In tests, the src_internal app struggles to reliably load
     // empty images because a size of 0 can't be decoded but also can't reliably
     // load real images due to b/152832025. Mitigate this for now by now by not
     // providing a mime type so the image doesn't get loaded in tests but we can
     // still test the IPC mechanisms.
-    return new File([], this.name);
+    return new File([], this.name, {type: this.type});
   }
 }
 
 /** @implements FileSystemDirectoryHandle  */
 class FakeFileSystemDirectoryHandle extends FakeFileSystemHandle {
-  constructor() {
-    super();
+  /**
+   * @param {!string=} name
+   */
+  constructor(name = 'fake-dir') {
+    super(name);
     this.isFile = false;
     this.isDirectory = true;
-    this.name = 'fake-dir';
     /**
      * Internal state mocking file handles in a directory handle.
      * @type {!Array<!FakeFileSystemFileHandle>}
@@ -151,6 +167,13 @@ class FakeFileSystemDirectoryHandle extends FakeFileSystemHandle {
    */
   addFileHandleForTest(fileHandle) {
     this.files.push(fileHandle);
+  }
+  /**
+   * Helper to get all entries as File.
+   * @return {!Array<!File>}
+   */
+  getFilesSync(index) {
+    return this.files.map(f => f.getFileSync());
   }
   /** @override */
   async getFile(name, options) {
@@ -188,10 +211,23 @@ class FakeFileSystemDirectoryHandle extends FakeFileSystemHandle {
   }
 }
 
-/** Creates a mock directory with a single file in it. */
-function createMockTestDirectory() {
+/**
+ * Structure to define a test file.
+ * @typedef{{name: (string|undefined), type: (string|undefined)}}
+ */
+let FileDesc;
+
+/**
+ * Creates a mock directory with the provided files in it.
+ * @param {!Array<!FileDesc>=} files
+ * @return {FakeFileSystemDirectoryHandle}
+ */
+function createMockTestDirectory(files = [{}]) {
   const directory = new FakeFileSystemDirectoryHandle();
-  directory.addFileHandleForTest(new FakeFileSystemFileHandle());
+  for (const /** FileDesc */ file of files) {
+    directory.addFileHandleForTest(
+        new FakeFileSystemFileHandle(file.name, file.type));
+  }
   return directory;
 }
 

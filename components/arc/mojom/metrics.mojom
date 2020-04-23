@@ -1,7 +1,7 @@
 // Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-// Next MinVersion: 4
+// Next MinVersion: 5
 
 module arc.mojom;
 
@@ -49,7 +49,50 @@ enum NativeBridgeType {
   NDK_TRANSLATION = 2,
 };
 
-// Next method ID: 2
+// ChromeOS companion library provide window management functionality to the
+// application running on ARC++. This enum list all functionality of it, for
+// collect statistics information of it by UMA stat.
+[Extensible]
+enum CompanionLibApiId {
+  // If the companion library version doesn't support an API call,
+  // the API call will be recorded as UNSUPPORTED.
+  UNSUPPORTED = 0,
+
+  // com.google.android.chromeos.ChromeOsDeviceInformation
+  GET_DEVICE_MODE = 1,
+  GET_DISPLAY_TOPOLOGY = 2,
+  GET_PRIMARY_DISPLAY_ID = 3,
+  GET_WORKSPACE_INSETS = 4,
+  REGISTER_CALLBACK = 5,
+  UNREGISTER_CALLBACK = 6,
+
+  // com.google.android.chromeos.activity.ChromeOsTaskManagement
+  ACTIVATE_TASK = 7,
+  GET_CAPTION_HEIGHT = 8,
+  GET_HIDDEN_CAPTION_BUTTON = 9,
+  HIDE_CAPTION_BUTTON = 10,
+  GET_TASK_WINDOW_BOUNDS = 11,
+  GET_TASK_WINDOW_STATE = 12,
+  IS_SHADOW_HIDDEN = 13,
+  HIDE_SHADOW = 14,
+  ON_CLOSE_REQUEST_RESPONSE = 15,
+  SET_ON_CLOSE_REQUEST_HANDLER = 16,
+  REMOVE_ON_CLOSE_REQUEST_HANDLER = 17,
+  SET_TASK_WINDOW_BOUNDS = 18,
+  SET_TASK_WINDOW_STATE = 19,
+
+  // com.google.android.chromeos.activity.TaskWindowState
+  GET_WINDOW_STATE = 20,
+
+  // com.google.android.chromeos.view.WindowInteractionController
+  WINDOW_INTERACTION_CONTROLLER = 21,
+
+  // com.google.android.chromeos.widget.PopupWindow
+  SET_CLIPPING_TO_TASK_DISABLE = 22,
+  IS_CLIPPING_TO_TASK_DISABLED = 23,
+};
+
+// Next method ID: 3
 interface MetricsHost {
   // Reports boot progress events from ARC instance.
   ReportBootProgress@0(array<BootProgressEvent> events,
@@ -57,6 +100,9 @@ interface MetricsHost {
 
   // Reports native bridge used by ARC instance.
   [MinVersion=3] ReportNativeBridge@1(NativeBridgeType native_bridge_type);
+
+  // Reports api usage by ChromeOS Companion Library.
+  [MinVersion=4] ReportCompanionLibApiUsage@2(CompanionLibApiId api_id);
 };
 
 // Next method ID: 2

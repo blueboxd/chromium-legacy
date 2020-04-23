@@ -11,6 +11,7 @@
 #include "content/browser/appcache/appcache_disk_cache.h"
 #include "content/browser/appcache/appcache_disk_cache_ops.h"
 #include "content/common/content_export.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace content {
 
@@ -37,6 +38,16 @@ class CONTENT_EXPORT ServiceWorkerResponseReader
 
 class CONTENT_EXPORT ServiceWorkerResponseWriter
     : public AppCacheResponseWriter {
+ public:
+  // Writes response headers for a service worker script to storage. Currently
+  // this just converts |response_head| to HttpResponseInfo and calls
+  // WriteInfo(). |response_head| must be examined by
+  // service_worker_loader_helpers::CheckResponseHead() before calling this
+  // method.
+  void WriteResponseHead(const network::mojom::URLResponseHead& response_head,
+                         int response_data_size,
+                         net::CompletionOnceCallback callback);
+
  protected:
   // Should only be constructed by the storage class.
   friend class ServiceWorkerStorage;

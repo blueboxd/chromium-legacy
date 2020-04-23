@@ -190,8 +190,8 @@ void CrostiniApps::GetMenuModel(const std::string& app_id,
       AddCommandItem(ash::SETTINGS, IDS_INTERNAL_APP_SETTINGS, &menu_items);
     }
     if (crostini::IsCrostiniRunning(profile_)) {
-      AddCommandItem(ash::STOP_APP, IDS_CROSTINI_SHUT_DOWN_LINUX_MENU_ITEM,
-                     &menu_items);
+      AddCommandItem(ash::SHUTDOWN_GUEST_OS,
+                     IDS_CROSTINI_SHUT_DOWN_LINUX_MENU_ITEM, &menu_items);
     }
   }
 

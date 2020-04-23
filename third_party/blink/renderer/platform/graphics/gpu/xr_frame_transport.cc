@@ -10,13 +10,17 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "mojo/public/cpp/system/platform_handle.h"
+#include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/platform/graphics/gpu_memory_buffer_image_copy.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "ui/gfx/gpu_fence.h"
 
 namespace blink {
 
-XRFrameTransport::XRFrameTransport() : submit_frame_client_receiver_(this) {}
+XRFrameTransport::XRFrameTransport(
+    ContextLifecycleNotifier* context,
+    scoped_refptr<base::SequencedTaskRunner> task_runner)
+    : submit_frame_client_receiver_(this, context), task_runner_(task_runner) {}
 
 XRFrameTransport::~XRFrameTransport() = default;
 
@@ -37,7 +41,7 @@ void XRFrameTransport::BindSubmitFrameClient(
     mojo::PendingReceiver<device::mojom::blink::XRPresentationClient>
         receiver) {
   submit_frame_client_receiver_.reset();
-  submit_frame_client_receiver_.Bind(std::move(receiver));
+  submit_frame_client_receiver_.Bind(std::move(receiver), task_runner_);
 }
 
 bool XRFrameTransport::DrawingIntoSharedBuffer() {
@@ -245,6 +249,8 @@ base::TimeDelta XRFrameTransport::WaitForGpuFenceReceived() {
   return base::TimeTicks::Now() - start;
 }
 
-void XRFrameTransport::Trace(Visitor* visitor) {}
+void XRFrameTransport::Trace(Visitor* visitor) {
+  visitor->Trace(submit_frame_client_receiver_);
+}
 
 }  // namespace blink

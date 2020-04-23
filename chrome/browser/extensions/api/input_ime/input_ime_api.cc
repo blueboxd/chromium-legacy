@@ -238,6 +238,9 @@ std::string ImeObserver::ConvertInputContextType(
     case ui::TEXT_INPUT_TYPE_PASSWORD:
       input_context_type = "password";
       break;
+    case ui::TEXT_INPUT_TYPE_NULL:
+      input_context_type = "null";
+      break;
     default:
       input_context_type = "text";
       break;

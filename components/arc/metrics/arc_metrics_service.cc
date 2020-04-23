@@ -267,6 +267,12 @@ void ArcMetricsService::ReportNativeBridge(
   StabilityMetricsManager::Get()->SetArcNativeBridgeType(native_bridge_type);
 }
 
+void ArcMetricsService::ReportCompanionLibApiUsage(
+    mojom::CompanionLibApiId api_id) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  UMA_HISTOGRAM_ENUMERATION("Arc.CompanionLibraryApisCounter", api_id);
+}
+
 void ArcMetricsService::OnWindowActivated(
     wm::ActivationChangeObserver::ActivationReason reason,
     aura::Window* gained_active,

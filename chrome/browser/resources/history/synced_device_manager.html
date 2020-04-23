@@ -49,10 +49,16 @@
       #synced-device-list {
         padding-top: var(--first-card-padding-top);
       }
+
+      history-synced-device-card {
+        margin-block-end: var(--card-padding-between);
+      }
     </style>
-    <div id="synced-device-list" hidden="[[!syncedDevices_.length]]">
+    <div id="synced-device-list" class="history-cards"
+        hidden="[[!syncedDevices_.length]]">
       <template is="dom-repeat" items="[[syncedDevices_]]" as="syncedDevice">
-        <history-synced-device-card device="[[syncedDevice.device]]"
+        <history-synced-device-card
+            device="[[syncedDevice.device]]"
             last-update-time="[[syncedDevice.lastUpdateTime]]"
             tabs="[[syncedDevice.tabs]]"
             separator-indexes="[[syncedDevice.separatorIndexes]]"

@@ -258,11 +258,15 @@ void ContentTranslateDriver::DidFinishNavigation(
       (google_util::IsGoogleDomainUrl(initiator_origin->GetURL(),
                                       google_util::DISALLOW_SUBDOMAIN,
                                       google_util::ALLOW_NON_STANDARD_PORTS) ||
-       base::FeatureList::IsEnabled(kAutoHrefTranslateAllOrigins));
+       IsAutoHrefTranslateAllOriginsEnabled());
 
   translate_manager_->GetLanguageState().DidNavigate(
       navigation_handle->IsSameDocument(), navigation_handle->IsInMainFrame(),
       reload, navigation_handle->GetHrefTranslate(), navigation_from_google);
+}
+
+bool ContentTranslateDriver::IsAutoHrefTranslateAllOriginsEnabled() const {
+  return base::FeatureList::IsEnabled(kAutoHrefTranslateAllOrigins);
 }
 
 void ContentTranslateDriver::OnPageAway(int page_seq_no) {

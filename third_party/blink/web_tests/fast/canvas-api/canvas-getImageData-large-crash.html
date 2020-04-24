@@ -3,8 +3,7 @@
 <script>
 test(function(t) {
     var canvas = document.createElement("canvas");
-    try {
-      canvas.getContext("2d").getImageData(10, 0xffffffff, 2147483647, 10);
-    } catch(e) {}
-}, 'Test that canvas does not crash when large image data is requested.');
+    assert_throws_js(TypeError, function() {
+        canvas.getContext("2d").getImageData(10, 0xffffffff, 2147483647, 10); });
+}, 'Test that canvas crash when large image data cannot be allocated.');
 </script>

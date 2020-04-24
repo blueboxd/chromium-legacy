@@ -9,26 +9,27 @@
 goog.provide('Output');
 goog.provide('Output.EventType');
 
+goog.require('AbstractEarcons');
 goog.require('AutomationTreeWalker');
+goog.require('ChromeVox');
 goog.require('EarconEngine');
 goog.require('EventSourceState');
+goog.require('LocaleOutputHelper');
 goog.require('LogStore');
+goog.require('NavBraille');
 goog.require('OutputRulesStr');
+goog.require('PhoneticData');
 goog.require('Spannable');
 goog.require('TextLog');
+goog.require('TtsCategory');
+goog.require('UserAnnotationHandler');
+goog.require('ValueSelectionSpan');
+goog.require('ValueSpan');
 goog.require('constants');
 goog.require('cursors.Cursor');
 goog.require('cursors.Range');
 goog.require('cursors.Unit');
-goog.require('AbstractEarcons');
-goog.require('ChromeVox');
-goog.require('NavBraille');
-goog.require('TtsCategory');
-goog.require('ValueSelectionSpan');
-goog.require('ValueSpan');
 goog.require('goog.i18n.MessageFormat');
-goog.require('LocaleOutputHelper');
-goog.require('UserAnnotationHandler');
 
 goog.scope(function() {
 const AutomationNode = chrome.automation.AutomationNode;
@@ -1140,6 +1141,10 @@ Output = class {
           const size = node.setSize ? node.setSize : 0;
           this.append_(buff, String(size));
           ruleStr.writeTokenWithValue(token, String(node.setSize));
+        } else if (token == 'phoneticReading') {
+          const text =
+              PhoneticData.forText(node.name, chrome.i18n.getUILanguage());
+          this.append_(buff, text);
         } else if (tree.firstChild) {
           // Custom functions.
           if (token == 'if') {
@@ -2465,6 +2470,8 @@ Output.RULES = {
           $if($imageAnnotation, $imageAnnotation, $urlFilename))
           $value $state $role $description`,
     },
+    imeCandidate:
+        {speak: '$name $phoneticReading @describe_index($posInSet, $setSize)'},
     inlineTextBox: {speak: `$name=`},
     inputTime: {enter: `$nameFromNode $role $state $restriction $description`},
     labelText: {

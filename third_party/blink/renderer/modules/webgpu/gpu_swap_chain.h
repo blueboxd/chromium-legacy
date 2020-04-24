@@ -26,13 +26,15 @@ class GPUSwapChain : public ScriptWrappable,
 
  public:
   explicit GPUSwapChain(GPUCanvasContext* context,
-                        const GPUSwapChainDescriptor* descriptor);
+                        const GPUSwapChainDescriptor* descriptor,
+                        SkFilterQuality filter_quality);
   ~GPUSwapChain() override;
 
   void Trace(Visitor* visitor) override;
 
   void Neuter();
   cc::Layer* CcLayer();
+  void SetFilterQuality(SkFilterQuality);
 
   // gpu_swap_chain.idl
   GPUTexture* getCurrentTexture();

@@ -53,6 +53,7 @@
 <translation id="1540800554400757039">Adres 1</translation>
 <translation id="1545749641540134597">Zeskanuj kod QR</translation>
 <translation id="1552525382687785070">Administrator wyłączył synchronizację</translation>
+<translation id="1554477036522844996">Nowe okno</translation>
 <translation id="1580783302095112590">E-mail wysłany.</translation>
 <translation id="1582732959743469162">Spowoduje to zatrzymanie bieżącego pobierania.</translation>
 <translation id="1605658421715042784">Kopiuj obraz</translation>
@@ -187,6 +188,7 @@
 <translation id="3328801116991980348">Informacje o witrynie</translation>
 <translation id="3329904751041170572">Nie można połączyć się z serwerem.</translation>
 <translation id="3335947283844343239">Otwórz ponownie zamkniętą kartę</translation>
+<translation id="3343651535143698944">Dodaj witrynę do wyjątków</translation>
 <translation id="3371831930909698441">Dostępne jest tłumaczenie. Opcje znajdują się u dołu ekranu.</translation>
 <translation id="3393920035788932672">Pop-upy akceptowane</translation>
 <translation id="3443810440409579745">Odebrano kartę.</translation>
@@ -555,6 +557,7 @@ Ponieważ Twoim kontem zarządza <ph name="HOSTED_DOMAIN" />, Twoje dane Chrome 
 <translation id="8319076807703933069">Nowe wyszukiwanie</translation>
 <translation id="8323906514956095947">Naciśnij i przytrzymaj, by zobaczyć więcej opcji</translation>
 <translation id="8328777765163860529">Zamknij wszystkie</translation>
+<translation id="8332159733957009464">Witryny z wyjątkami</translation>
 <translation id="8386068868580335421">Resetuj</translation>
 <translation id="8407669440184693619">Nie znaleziono haseł do tej strony</translation>
 <translation id="842017693807136194">Zalogowano za pomocą:</translation>

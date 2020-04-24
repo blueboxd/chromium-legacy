@@ -4,8 +4,7 @@
 
 #include "third_party/blink/renderer/modules/serial/navigator_serial.h"
 
-#include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/modules/serial/serial.h"
 
 namespace blink {
@@ -33,10 +32,8 @@ void NavigatorSerial::Trace(Visitor* visitor) {
 
 NavigatorSerial::NavigatorSerial(Navigator& navigator)
     : Supplement<Navigator>(navigator) {
-  if (navigator.GetFrame()) {
-    DCHECK(navigator.GetFrame()->GetDocument());
-    serial_ = MakeGarbageCollected<Serial>(
-        *navigator.GetFrame()->GetDocument()->ToExecutionContext());
+  if (navigator.DomWindow()) {
+    serial_ = MakeGarbageCollected<Serial>(*navigator.DomWindow());
   }
 }
 

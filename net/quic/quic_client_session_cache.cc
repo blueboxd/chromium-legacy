@@ -30,7 +30,7 @@ bool IsValid(SSL_SESSION* session, time_t now) {
                           SSL_SESSION_get_timeout(session));
 }
 
-bool DoApplicationStatesMatch(quic::ApplicationState* state,
+bool DoApplicationStatesMatch(const quic::ApplicationState* state,
                               quic::ApplicationState* other) {
   if ((state && !other) || (!state && other))
     return false;
@@ -55,12 +55,12 @@ QuicClientSessionCache::~QuicClientSessionCache() {
   Flush();
 }
 
-void QuicClientSessionCache::Insert(const quic::QuicServerId& server_id,
-                                    bssl::UniquePtr<SSL_SESSION> session,
-                                    quic::TransportParameters* params,
-                                    quic::ApplicationState* application_state) {
+void QuicClientSessionCache::Insert(
+    const quic::QuicServerId& server_id,
+    bssl::UniquePtr<SSL_SESSION> session,
+    const quic::TransportParameters& params,
+    const quic::ApplicationState* application_state) {
   DCHECK(session) << "TLS session is not inserted into client cache.";
-  DCHECK(params) << "Transport Parameters is not inserted into client cache.";
   auto iter = cache_.Get(server_id);
   if (iter == cache_.end()) {
     CreateAndInsertEntry(server_id, std::move(session), params,
@@ -70,7 +70,7 @@ void QuicClientSessionCache::Insert(const quic::QuicServerId& server_id,
 
   DCHECK(iter->second.params);
   // The states are both the same, so only need to insert sessions.
-  if (*params == *iter->second.params &&
+  if (params == *iter->second.params &&
       DoApplicationStatesMatch(application_state,
                                iter->second.application_state.get())) {
     iter->second.PushSession(std::move(session));
@@ -136,11 +136,11 @@ void QuicClientSessionCache::Flush() {
 void QuicClientSessionCache::CreateAndInsertEntry(
     const quic::QuicServerId& server_id,
     bssl::UniquePtr<SSL_SESSION> session,
-    quic::TransportParameters* params,
-    quic::ApplicationState* application_state) {
+    const quic::TransportParameters& params,
+    const quic::ApplicationState* application_state) {
   Entry entry;
   entry.PushSession(std::move(session));
-  entry.params = std::make_unique<quic::TransportParameters>(*params);
+  entry.params = std::make_unique<quic::TransportParameters>(params);
   if (application_state) {
     entry.application_state =
         std::make_unique<quic::ApplicationState>(*application_state);

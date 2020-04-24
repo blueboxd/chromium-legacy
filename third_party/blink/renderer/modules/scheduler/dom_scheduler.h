@@ -27,22 +27,22 @@ class WebSchedulingTaskQueue;
 
 class MODULES_EXPORT DOMScheduler : public ScriptWrappable,
                                     public ExecutionContextLifecycleObserver,
-                                    public Supplement<Document> {
+                                    public Supplement<LocalDOMWindow> {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(DOMScheduler);
 
  public:
   static const char kSupplementName[];
 
-  static DOMScheduler* From(Document&);
+  static DOMScheduler* From(LocalDOMWindow&);
 
-  explicit DOMScheduler(Document*);
+  explicit DOMScheduler(LocalDOMWindow*);
 
   // postTask creates and queues a DOMTask and returns a Promise that will
   // resolve when it completes. The task will be scheduled in the queue
   // corresponding to the priority in the SchedulerPostTaskOptions, or in a
   // queue associated with the given DOMTaskSignal if one is provided. If the
-  // underlying context is destroyed, e.g. for detached documents, this will
+  // underlying context is destroyed, e.g. for detached windows, this will
   // return a rejected promise.
   ScriptPromise postTask(ScriptState*,
                          V8Function*,
@@ -73,10 +73,10 @@ class MODULES_EXPORT DOMScheduler : public ScriptWrappable,
   static constexpr size_t kWebSchedulingPriorityCount =
       static_cast<size_t>(WebSchedulingPriority::kLastPriority) + 1;
 
-  void CreateGlobalTaskQueues(Document*);
+  void CreateGlobalTaskQueues(LocalDOMWindow*);
 
   // |global_task_queues_| is initialized with one entry per priority, indexed
-  // by priority. This will be empty when the document is detached.
+  // by priority. This will be empty when the window is detached.
   Vector<std::unique_ptr<WebSchedulingTaskQueue>, kWebSchedulingPriorityCount>
       global_task_queues_;
 };

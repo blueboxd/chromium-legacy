@@ -43,6 +43,7 @@ namespace {
 
 constexpr char kEnrollmentUI[] = "enterprise-enrollment";
 constexpr char kAdDialog[] = "oauth-enroll-ad-join-ui";
+constexpr char kBackButton[] = "oobe-signin-back-button";
 
 constexpr char kAdUnlockConfigurationStep[] = "unlockStep";
 constexpr char kAdUnlockPasswordInput[] = "unlockPasswordInput";
@@ -173,7 +174,6 @@ class EnterpriseEnrollmentTestBase : public OobeBaseTest {
     OobeScreenWaiter(EnrollmentScreenView::kScreenId).Wait();
     ASSERT_TRUE(enrollment_screen() != nullptr);
     ASSERT_TRUE(WizardController::default_controller() != nullptr);
-    ASSERT_FALSE(StartupUtils::IsOobeCompleted());
   }
 
   // Helper method to return the current EnrollmentScreen instance.
@@ -508,8 +508,12 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest, StoragePartitionUpdated) {
       test::OobeJS().GetString(webview_partition_path);
   EXPECT_FALSE(webview_partition_name_1.empty());
 
-  // Simulate navigating over the enrollment screen a second time (without using
-  // 'Back' and 'Next' buttons).
+  // Cancel button is enabled when the authenticator is ready. Do it manually
+  // instead of waiting for it.
+  test::ExecuteOobeJS("$('enterprise-enrollment').isCancelDisabled = false");
+  test::OobeJS().ClickOnPath({kEnrollmentUI, kBackButton});
+
+  // Simulate navigating over the enrollment screen a second time.
   ShowEnrollmentScreen();
   ExecutePendingJavaScript();
 

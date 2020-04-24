@@ -885,8 +885,8 @@ TEST_F(ProfileManagerTest, GetLastUsedProfileAllowedByPolicy) {
 
 #if defined(OS_CHROMEOS)
   // On CrOS, profile returned by GetLastUsedProfile is a sign-in profile that
-  // is forced to be incognito. That's why we need to create at least one user
-  // to get a regular profile.
+  // is forced to be off-the-record. That's why we need to create at least one
+  // user to get a regular profile.
   RegisterUser(
       AccountId::FromUserEmailGaiaId("test-user@example.com", "1234567890"));
 #endif
@@ -898,13 +898,13 @@ TEST_F(ProfileManagerTest, GetLastUsedProfileAllowedByPolicy) {
   EXPECT_EQ(IncognitoModePrefs::kDefaultAvailability,
             IncognitoModePrefs::GetAvailability(prefs));
 
-  ASSERT_TRUE(profile->GetOffTheRecordProfile());
+  ASSERT_TRUE(profile->GetPrimaryOTRProfile());
 
   IncognitoModePrefs::SetAvailability(prefs, IncognitoModePrefs::DISABLED);
   EXPECT_FALSE(
       profile_manager->GetLastUsedProfileAllowedByPolicy()->IsOffTheRecord());
 
-  // GetLastUsedProfileAllowedByPolicy() returns the incognito Profile when
+  // GetLastUsedProfileAllowedByPolicy() returns the off-the-record Profile when
   // incognito mode is forced.
   IncognitoModePrefs::SetAvailability(prefs, IncognitoModePrefs::FORCED);
   EXPECT_TRUE(
@@ -1057,8 +1057,7 @@ TEST_F(ProfileManagerTest, LastOpenedProfilesDoesNotContainIncognito) {
   EXPECT_EQ(profile1, last_opened_profiles[0]);
 
   // And for profile2.
-  Browser::CreateParams profile2_params(profile1->GetOffTheRecordProfile(),
-                                        true);
+  Browser::CreateParams profile2_params(profile1->GetPrimaryOTRProfile(), true);
   std::unique_ptr<Browser> browser2a(
       CreateBrowserWithTestWindowForParams(&profile2_params));
 

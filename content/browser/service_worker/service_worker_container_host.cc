@@ -951,31 +951,40 @@ ServiceWorkerContainerHost::GetRemoteControllerServiceWorker() {
   return remote_controller;
 }
 
+namespace {
+
+void ReportServiceWorkerAccess(int process_id,
+                               int frame_id,
+                               const GURL& scope,
+                               AllowServiceWorkerResult allowed) {
+  RenderFrameHost* rfh = RenderFrameHost::FromID(process_id, frame_id);
+  if (!rfh)
+    return;
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(WebContents::FromRenderFrameHost(rfh));
+  web_contents->OnServiceWorkerAccessed(rfh, scope, allowed);
+}
+
+}  // namespace
+
 bool ServiceWorkerContainerHost::AllowServiceWorker(const GURL& scope,
                                                     const GURL& script_url) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(context_);
+  AllowServiceWorkerResult allowed = AllowServiceWorkerResult::No();
   if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
-    return GetContentClient()->browser()->AllowServiceWorkerOnUI(
+    allowed = GetContentClient()->browser()->AllowServiceWorkerOnUI(
         scope, site_for_cookies().RepresentativeUrl(), top_frame_origin(),
-        script_url, context_->wrapper()->browser_context(),
-        base::BindRepeating(
-            [](int process_id, int frame_id) {
-              return WebContentsImpl::FromRenderFrameHostID(process_id,
-                                                            frame_id);
-            },
-            process_id_, frame_id_));
+        script_url, context_->wrapper()->browser_context());
   } else {
-    return GetContentClient()->browser()->AllowServiceWorkerOnIO(
+    allowed = GetContentClient()->browser()->AllowServiceWorkerOnIO(
         scope, site_for_cookies().RepresentativeUrl(), top_frame_origin(),
-        script_url, context_->wrapper()->resource_context(),
-        base::BindRepeating(
-            [](int process_id, int frame_id) {
-              return WebContentsImpl::FromRenderFrameHostID(process_id,
-                                                            frame_id);
-            },
-            process_id_, frame_id_));
+        script_url, context_->wrapper()->resource_context());
   }
+  RunOrPostTaskOnThread(FROM_HERE, BrowserThread::UI,
+                        base::BindOnce(&ReportServiceWorkerAccess, process_id_,
+                                       frame_id_, scope, allowed));
+  return allowed;
 }
 
 bool ServiceWorkerContainerHost::IsContextSecureForServiceWorker() const {

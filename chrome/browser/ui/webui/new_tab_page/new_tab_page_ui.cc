@@ -12,11 +12,13 @@
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/ui/search/omnibox_mojo_utils.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page_handler.h"
 #include "chrome/browser/ui/webui/new_tab_page/untrusted_source.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/new_tab_page_resources.h"
 #include "chrome/grit/new_tab_page_resources_map.h"
@@ -27,6 +29,7 @@
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "ui/resources/grit/webui_resources.h"
 
 using content::BrowserContext;
 using content::WebContents;
@@ -52,17 +55,23 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
                              .GoogleBaseURLValue())
                         .spec());
 
+  // Realbox.
   source->AddBoolean("realboxEnabled", ntp_features::IsRealboxEnabled());
   source->AddBoolean(
       "realboxMatchOmniboxTheme",
       base::FeatureList::IsEnabled(ntp_features::kRealboxMatchOmniboxTheme));
+  source->AddString(
+      "realboxDefaultIcon",
+      base::FeatureList::IsEnabled(ntp_features::kRealboxUseGoogleGIcon)
+          ? omnibox::kGoogleGIconResourceName
+          : omnibox::kSearchIconResourceName);
 
   static constexpr webui::LocalizedString kStrings[] = {
       {"doneButton", IDS_DONE},
       {"title", IDS_NEW_TAB_TITLE},
       {"undo", IDS_NEW_TAB_UNDO_THUMBNAIL_REMOVE},
 
-      // Custom Links
+      // Custom Links.
       {"addLinkTitle", IDS_NTP_CUSTOM_LINKS_ADD_SHORTCUT_TITLE},
       {"editLinkTitle", IDS_NTP_CUSTOM_LINKS_EDIT_SHORTCUT},
       {"invalidUrl", IDS_NTP_CUSTOM_LINKS_INVALID_URL},
@@ -119,8 +128,10 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
       {"voiceSearchButtonLabel", IDS_TOOLTIP_MIC_SEARCH},
       {"waiting", IDS_NEW_TAB_VOICE_WAITING},
 
-      // Search box.
+      // Realbox.
       {"searchBoxHint", IDS_GOOGLE_SEARCH_BOX_EMPTY_HINT_MD},
+      {"realboxSeparator", IDS_AUTOCOMPLETE_MATCH_DESCRIPTION_SEPARATOR},
+      {"removeSuggestion", IDS_OMNIBOX_REMOVE_SUGGESTION},
 
       // Logo/doodle.
       {"copyLink", IDS_NTP_DOODLE_SHARE_DIALOG_COPY_LABEL},
@@ -131,6 +142,28 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
       {"twitter", IDS_NTP_DOODLE_SHARE_DIALOG_TWITTER_LABEL},
   };
   AddLocalizedStringsBulk(source, kStrings);
+
+  // Register images that are purposefully not inlined in the HTML and instead
+  // are set in Javascript.
+  static constexpr webui::ResourcePath kImages[] = {
+      {omnibox::kGoogleGIconResourceName, IDR_WEBUI_IMAGES_200_LOGO_GOOGLE_G},
+      {omnibox::kBookmarkIconResourceName, IDR_LOCAL_NTP_ICONS_BOOKMARK},
+      {omnibox::kCalculatorIconResourceName, IDR_LOCAL_NTP_ICONS_CALCULATOR},
+      {omnibox::kClockIconResourceName, IDR_LOCAL_NTP_ICONS_CLOCK},
+      {omnibox::kDriveDocsIconResourceName, IDR_LOCAL_NTP_ICONS_DRIVE_DOCS},
+      {omnibox::kDriveFolderIconResourceName, IDR_LOCAL_NTP_ICONS_DRIVE_FOLDER},
+      {omnibox::kDriveFormIconResourceName, IDR_LOCAL_NTP_ICONS_DRIVE_FORM},
+      {omnibox::kDriveImageIconResourceName, IDR_LOCAL_NTP_ICONS_DRIVE_IMAGE},
+      {omnibox::kDriveLogoIconResourceName, IDR_LOCAL_NTP_ICONS_DRIVE_LOGO},
+      {omnibox::kDrivePdfIconResourceName, IDR_LOCAL_NTP_ICONS_DRIVE_PDF},
+      {omnibox::kDriveSheetsIconResourceName, IDR_LOCAL_NTP_ICONS_DRIVE_SHEETS},
+      {omnibox::kDriveSlidesIconResourceName, IDR_LOCAL_NTP_ICONS_DRIVE_SLIDES},
+      {omnibox::kDriveVideoIconResourceName, IDR_LOCAL_NTP_ICONS_DRIVE_VIDEO},
+      {omnibox::kExtensionAppIconResourceName,
+       IDR_LOCAL_NTP_ICONS_EXTENSION_APP},
+      {omnibox::kPageIconResourceName, IDR_LOCAL_NTP_ICONS_PAGE},
+      {omnibox::kSearchIconResourceName, IDR_WEBUI_IMAGES_ICON_SEARCH}};
+  webui::AddResourcePathsBulk(source, kImages);
 
   source->AddResourcePath("skcolor.mojom-lite.js",
                           IDR_NEW_TAB_PAGE_SKCOLOR_MOJO_LITE_JS);
@@ -150,7 +183,8 @@ NewTabPageUI::NewTabPageUI(content::WebUI* web_ui)
       page_factory_receiver_(this),
       profile_(Profile::FromWebUI(web_ui)),
       instant_service_(InstantServiceFactory::GetForProfile(profile_)),
-      web_contents_(web_ui->GetWebContents()) {
+      web_contents_(web_ui->GetWebContents()),
+      creation_time_(base::Time::Now()) {
   content::WebUIDataSource::Add(profile_,
                                 CreateNewTabPageUiHtmlSource(profile_));
 
@@ -194,7 +228,7 @@ void NewTabPageUI::CreatePageHandler(
   DCHECK(pending_page.is_valid());
   page_handler_ = std::make_unique<NewTabPageHandler>(
       std::move(pending_page_handler), std::move(pending_page), profile_,
-      web_contents_);
+      web_contents_, creation_time_);
 }
 
 void NewTabPageUI::NtpThemeChanged(const NtpTheme& theme) {

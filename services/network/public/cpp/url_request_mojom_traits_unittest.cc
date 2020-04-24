@@ -51,7 +51,7 @@ TEST(URLRequestMojomTraitsTest, Roundtrips_ResourceRequest) {
   original.url = GURL("https://example.com/resources/dummy.xml");
   original.site_for_cookies =
       net::SiteForCookies::FromUrl(GURL("https://example.com/index.html"));
-  original.attach_same_site_cookies = true;
+  original.force_ignore_site_for_cookies = true;
   original.update_first_party_url_on_redirect = false;
   original.request_initiator = url::Origin::Create(original.url);
   original.isolated_world_origin =

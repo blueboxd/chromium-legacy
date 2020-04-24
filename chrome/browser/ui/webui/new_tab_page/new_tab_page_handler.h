@@ -47,7 +47,8 @@ class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
                         pending_page_handler,
                     mojo::PendingRemote<new_tab_page::mojom::Page> pending_page,
                     Profile* profile,
-                    content::WebContents* web_contents);
+                    content::WebContents* web_contents,
+                    const base::Time& ntp_creation_time);
   ~NewTabPageHandler() override;
 
   // new_tab_page::mojom::PageHandler:
@@ -85,6 +86,7 @@ class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
   void GetDoodle(GetDoodleCallback callback) override;
   void ChooseLocalCustomBackground(
       ChooseLocalCustomBackgroundCallback callback) override;
+  void OnMostVisitedTilesRendered(double time) override;
 
  private:
   // InstantServiceObserver:
@@ -127,6 +129,7 @@ class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
   mojo::Receiver<new_tab_page::mojom::PageHandler> receiver_;
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
   content::WebContents* web_contents_;
+  base::Time ntp_creation_time_;
   base::WeakPtrFactory<NewTabPageHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NewTabPageHandler);

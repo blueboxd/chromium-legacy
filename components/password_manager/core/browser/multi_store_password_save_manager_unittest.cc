@@ -345,14 +345,25 @@ TEST_F(MultiStorePasswordSaveManagerTest, UpdateInProfileStoreOnly) {
 }
 
 TEST_F(MultiStorePasswordSaveManagerTest, UpdateInBothStores) {
+  // This test assumes that all fields of the PasswordForm in both stores are
+  // equal except the |moving_blocked_for_list|. The reason for that is:
+  // 1. |moving_blocked_for_list| is the most probable field to have different
+  //    values since it's always empty in the account store.
+  // 2. Other fields (e.g. |times_used|) are less critical and should be fine if
+  //    the value in one store overrides the value in the other one.
+
   SetAccountStoreEnabled(/*is_enabled=*/true);
 
-  PasswordForm saved_match_in_profile_store(saved_match_);
-  saved_match_in_profile_store.username_value =
+  PasswordForm saved_match_in_account_store(saved_match_);
+  saved_match_in_account_store.username_value =
       parsed_submitted_form_.username_value;
-  saved_match_in_profile_store.in_store = PasswordForm::Store::kProfileStore;
-  PasswordForm saved_match_in_account_store(saved_match_in_profile_store);
   saved_match_in_account_store.in_store = PasswordForm::Store::kAccountStore;
+  PasswordForm saved_match_in_profile_store(saved_match_in_account_store);
+  saved_match_in_profile_store.in_store = PasswordForm::Store::kProfileStore;
+  autofill::GaiaIdHash user_id_hash =
+      autofill::GaiaIdHash::FromGaiaId("user@gmail.com");
+  saved_match_in_profile_store.moving_blocked_for_list.push_back(user_id_hash);
+
   SetNonFederatedAndNotifyFetchCompleted(
       {&saved_match_in_profile_store, &saved_match_in_account_store});
 
@@ -365,8 +376,34 @@ TEST_F(MultiStorePasswordSaveManagerTest, UpdateInBothStores) {
   // An update prompt should be shown.
   EXPECT_TRUE(password_save_manager()->IsPasswordUpdate());
 
-  EXPECT_CALL(*mock_profile_form_saver(), Update(_, _, _));
-  EXPECT_CALL(*mock_account_form_saver(), Update(_, _, _));
+  // Both stores should be updated in the following ways:
+  // 1. |password_value| is updated.
+  // 2. |times_used| is incremented.
+  // 3. |date_last_used| is updated.
+  // 4. |in_store| field is irrelevant since it's not persisted.
+  // 5. The rest of fields are taken aribtrary from one store.
+  PasswordForm expected_profile_updated_form(saved_match_in_profile_store);
+  expected_profile_updated_form.password_value =
+      parsed_submitted_form_.password_value;
+  expected_profile_updated_form.times_used++;
+  expected_profile_updated_form.date_last_used =
+      password_save_manager()->GetPendingCredentials().date_last_used;
+  expected_profile_updated_form.in_store =
+      password_save_manager()->GetPendingCredentials().in_store;
+
+  PasswordForm expected_account_updated_form(saved_match_in_account_store);
+  expected_account_updated_form.password_value =
+      parsed_submitted_form_.password_value;
+  expected_account_updated_form.times_used++;
+  expected_account_updated_form.date_last_used =
+      password_save_manager()->GetPendingCredentials().date_last_used;
+  expected_account_updated_form.in_store =
+      password_save_manager()->GetPendingCredentials().in_store;
+
+  EXPECT_CALL(*mock_profile_form_saver(),
+              Update(expected_profile_updated_form, _, _));
+  EXPECT_CALL(*mock_account_form_saver(),
+              Update(expected_account_updated_form, _, _));
 
   password_save_manager()->Save(observed_form_, parsed_submitted_form_);
 }

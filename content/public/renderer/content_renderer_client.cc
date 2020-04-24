@@ -112,7 +112,7 @@ void ContentRendererClient::WillSendRequest(
     const net::SiteForCookies& site_for_cookies,
     const url::Origin* initiator_origin,
     GURL* new_url,
-    bool* attach_same_site_cookies) {}
+    bool* force_ignore_site_for_cookies) {}
 
 bool ContentRendererClient::IsPrefetchOnly(
     RenderFrame* render_frame,

@@ -200,4 +200,18 @@ void SafeBrowsingService::AddInterface(
       base::CreateSingleThreadTaskRunner({content::BrowserThread::UI}));
 }
 
+void SafeBrowsingService::StopDBManager() {
+  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                 base::BindOnce(&SafeBrowsingService::StopDBManagerOnIOThread,
+                                base::Unretained(this)));
+}
+
+void SafeBrowsingService::StopDBManagerOnIOThread() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  if (safe_browsing_db_manager_) {
+    safe_browsing_db_manager_->StopOnIOThread(true /*shutdown*/);
+    safe_browsing_db_manager_.reset();
+  }
+}
+
 }  // namespace weblayer

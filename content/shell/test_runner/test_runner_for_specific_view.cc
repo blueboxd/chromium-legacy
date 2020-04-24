@@ -19,6 +19,7 @@
 #include "content/common/widget_messages.h"
 #include "content/public/common/isolated_world_ids.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/shell/common/web_test/web_test_string_util.h"
 #include "content/shell/renderer/web_test/blink_test_runner.h"
 #include "content/shell/test_runner/layout_dump.h"
@@ -387,27 +388,6 @@ void TestRunnerForSpecificView::SendBluetoothManualChooserEvent(
     const std::string& event,
     const std::string& argument) {
   blink_test_runner()->SendBluetoothManualChooserEvent(event, argument);
-}
-
-void TestRunnerForSpecificView::SetBackingScaleFactor(
-    double value,
-    v8::Local<v8::Function> callback) {
-  blink_test_runner()->SetDeviceScaleFactor(value);
-
-  // TODO(oshima): remove this callback argument when all platforms are migrated
-  // to use-zoom-for-dsf by default
-  v8::UniquePersistent<v8::Function> global_callback(blink::MainThreadIsolate(),
-                                                     callback);
-  v8::Local<v8::Value> arg = v8::Boolean::New(
-      blink::MainThreadIsolate(), content::IsUseZoomForDSFEnabled());
-  PostV8CallbackWithArgs(std::move(global_callback), 1, &arg);
-}
-
-void TestRunnerForSpecificView::SetColorProfile(
-    const std::string& name,
-    v8::Local<v8::Function> callback) {
-  blink_test_runner()->SetDeviceColorSpace(name);
-  PostV8Callback(callback);
 }
 
 void TestRunnerForSpecificView::DispatchBeforeInstallPromptEvent(

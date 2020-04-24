@@ -3428,7 +3428,7 @@ TEST_F(FormStructureTest, EncodeUploadRequestWithPropertiesMask) {
   field.id_attribute = ASCIIToUTF16("first_name");
   field.autocomplete_attribute = "given-name";
   field.css_classes = ASCIIToUTF16("class1 class2");
-  field.properties_mask = FieldPropertiesFlags::HAD_FOCUS;
+  field.properties_mask = FieldPropertiesFlags::kHadFocus;
   form.fields.push_back(field);
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {NAME_FIRST});
@@ -3439,7 +3439,7 @@ TEST_F(FormStructureTest, EncodeUploadRequestWithPropertiesMask) {
   field.autocomplete_attribute = "family-name";
   field.css_classes = ASCIIToUTF16("class1 class2");
   field.properties_mask =
-      FieldPropertiesFlags::HAD_FOCUS | FieldPropertiesFlags::USER_TYPED;
+      FieldPropertiesFlags::kHadFocus | FieldPropertiesFlags::kUserTyped;
   form.fields.push_back(field);
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {NAME_LAST});
@@ -3451,7 +3451,7 @@ TEST_F(FormStructureTest, EncodeUploadRequestWithPropertiesMask) {
   field.autocomplete_attribute = "email";
   field.css_classes = ASCIIToUTF16("class1 class2");
   field.properties_mask =
-      FieldPropertiesFlags::HAD_FOCUS | FieldPropertiesFlags::USER_TYPED;
+      FieldPropertiesFlags::kHadFocus | FieldPropertiesFlags::kUserTyped;
   form.fields.push_back(field);
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {EMAIL_ADDRESS});
@@ -3486,15 +3486,15 @@ TEST_F(FormStructureTest, EncodeUploadRequestWithPropertiesMask) {
 
   test::FillUploadField(upload.add_field(), 3763331450U, nullptr, nullptr,
                         nullptr, 3U);
-  upload.mutable_field(0)->set_properties_mask(FieldPropertiesFlags::HAD_FOCUS);
+  upload.mutable_field(0)->set_properties_mask(FieldPropertiesFlags::kHadFocus);
   test::FillUploadField(upload.add_field(), 3494530716U, nullptr, nullptr,
                         nullptr, 5U);
   upload.mutable_field(1)->set_properties_mask(
-      FieldPropertiesFlags::HAD_FOCUS | FieldPropertiesFlags::USER_TYPED);
+      FieldPropertiesFlags::kHadFocus | FieldPropertiesFlags::kUserTyped);
   test::FillUploadField(upload.add_field(), 1029417091U, nullptr, nullptr,
                         nullptr, 9U);
   upload.mutable_field(2)->set_properties_mask(
-      FieldPropertiesFlags::HAD_FOCUS | FieldPropertiesFlags::USER_TYPED);
+      FieldPropertiesFlags::kHadFocus | FieldPropertiesFlags::kUserTyped);
 
   std::string expected_upload_string;
   ASSERT_TRUE(upload.SerializeToString(&expected_upload_string));

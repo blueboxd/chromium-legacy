@@ -12,7 +12,7 @@
 <translation id="1036348656032585052">निस्कृय पार्नुहोस्</translation>
 <translation id="1038842779957582377">अज्ञात नाम</translation>
 <translation id="1041998700806130099">कार्य पानासम्बन्धी सन्देश</translation>
-<translation id="1050038467049342496">अन्य अनुप्रयोगहरू बन्द गर्नुहोस्</translation>
+<translation id="1050038467049342496">अन्य एपहरू बन्द गर्नुहोस्</translation>
 <translation id="1055184225775184556">&amp;पूर्वस्थितिमा फर्काउनुहोस् थप्नुहोस्</translation>
 <translation id="1056898198331236512">चेतावनी</translation>
 <translation id="1058479211578257048">कार्डहरू सुरक्षित गर्दै...</translation>
@@ -69,7 +69,7 @@
     &lt;li&gt;तपाईंको इन्टरनेट जडानले सामान्य रूपमै काम गरिरहेको छ भन्ने सुनिश्चित गर्नुहोस्।&lt;/li&gt;
     &lt;li&gt;उक्त वेबसाइटको मालिकलाई सम्पर्क गर्नुहोस्।&lt;/li&gt;
     &lt;/ol&gt;</translation>
-<translation id="1257286744552378071">तपाईंले आफ्नो संगठनले व्यवस्थापन नगरेको कुनै साइटमा आफ्नो पासवर्ड प्रविष्ट गर्नुभयो। आफ्नो खाता सुरक्षित गर्न, अन्य अनुप्रयोग र साइटहरूमा तपाईंको पासवर्ड पुनः प्रयोग नगर्नुहोस्।</translation>
+<translation id="1257286744552378071">तपाईंले आफ्नो संगठनले व्यवस्थापन नगरेको कुनै साइटमा आफ्नो पासवर्ड प्रविष्ट गर्नुभयो। आफ्नो खाता सुरक्षित गर्न, अन्य एप र साइटहरूमा तपाईंको पासवर्ड पुनः प्रयोग नगर्नुहोस्।</translation>
 <translation id="1263231323834454256">पाठ्य सूची</translation>
 <translation id="1270502636509132238">पिकअपको विधि</translation>
 <translation id="1281476433249504884">स्ट्याकर १</translation>
@@ -97,7 +97,7 @@
 <translation id="1339601241726513588">भर्ती डोमेन:</translation>
 <translation id="1340482604681802745">पिकअपको ठेगाना</translation>
 <translation id="1346748346194534595">दायाँ</translation>
-<translation id="1348198688976932919">अगाडिको साइटमा खतरनाक अनुप्रयोगहरू समावेश छन्‌</translation>
+<translation id="1348198688976932919">अगाडिको साइटमा खतरनाक एपहरू समावेश छन्‌</translation>
 <translation id="1348779747280417563">नाम सही भएको निश्चित गर्नुहोस्</translation>
 <translation id="1357195169723583938">हालासालै यन्त्र प्रयोग गर्ने व्यक्ति र प्रयोग गरिएको समय</translation>
 <translation id="1364822246244961190">यो नीतिलाई रोक लगाइएको छ, यसको मानलाई बेवास्ता गरिने छ।</translation>
@@ -116,7 +116,7 @@
 <translation id="1413809658975081374">गोपनीयता त्रुटी</translation>
 <translation id="1426410128494586442">हो</translation>
 <translation id="1428146450423315676">स्ट्याकर ७</translation>
-<translation id="1430915738399379752">छाप्नुहोस्</translation>
+<translation id="1430915738399379752">प्रिन्ट गर्नुहोस्</translation>
 <translation id="1442386063175183758">दायाँ गेट फोल्ड</translation>
 <translation id="1442987760062738829">प्वाल</translation>
 <translation id="1455413310270022028">मेट्ने साधन</translation>
@@ -299,9 +299,9 @@
 <translation id="2212735316055980242">नीति फेला परेन</translation>
 <translation id="2213606439339815911">प्रविष्टिहरू ल्याउँदै...</translation>
 <translation id="2215727959747642672">फाइल सम्पादन गर्दै</translation>
-<translation id="2218879909401188352">हाल <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> मा रहेका आक्रमणकारीहरूले तपाईंको यन्त्रलाई नोक्सानी पुऱ्याउने, तपाईंको मोबाइल बिलमा नदेखिने शुल्क थप्ने वा तपाईंको व्यक्तिगत जानकारी चोर्ने जस्ता खतरनाक अनुप्रयोगहरू स्थापना गर्न सक्छन्। <ph name="BEGIN_LEARN_MORE_LINK" />थप जान्नुहोस्<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="2218879909401188352">हाल <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> मा रहेका आक्रमणकारीहरूले तपाईंको यन्त्रलाई नोक्सानी पुऱ्याउने, तपाईंको मोबाइल बिलमा नदेखिने शुल्क थप्ने वा तपाईंको व्यक्तिगत जानकारी चोर्ने जस्ता खतरनाक एपहरू स्थापना गर्न सक्छन्। <ph name="BEGIN_LEARN_MORE_LINK" />थप जान्नुहोस्<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">इन्टरनेट छैन</translation>
-<translation id="2230458221926704099"><ph name="BEGIN_LINK" />निदान अनुप्रयोग<ph name="END_LINK" /> प्रयोग गरेर आफ्नो जडान सम्बन्धी समस्याको समाधान गर्नुहोस्</translation>
+<translation id="2230458221926704099"><ph name="BEGIN_LINK" />निदान एप<ph name="END_LINK" /> प्रयोग गरेर आफ्नो जडान सम्बन्धी समस्याको समाधान गर्नुहोस्</translation>
 <translation id="2239100178324503013">अहिले पठाउनुहोस्</translation>
 <translation id="2248949050832152960">WebAuthn प्रयोग गर्नुहोस्</translation>
 <translation id="2250931979407627383">बायाँ किनारमा स्टिच</translation>
@@ -330,7 +330,7 @@
 <translation id="2344028582131185878">स्वचालित डाउनलोडहरू</translation>
 <translation id="2346319942568447007">तपाईंले प्रतिलिपि गर्नुभएको छवि</translation>
 <translation id="2354001756790975382">अन्य बुकमार्कहरू</translation>
-<translation id="2354430244986887761">Google सुरक्षित ब्राउजिङले हालै <ph name="SITE" /> मा  <ph name="BEGIN_LINK" />हानिकारक अनुप्रयोगहरू भेट्टायो<ph name="END_LINK" />।</translation>
+<translation id="2354430244986887761">Google सुरक्षित ब्राउजिङले हालै <ph name="SITE" /> मा  <ph name="BEGIN_LINK" />हानिकारक एपहरू भेट्टायो<ph name="END_LINK" />।</translation>
 <translation id="2355395290879513365">आक्रमणकारीहरूले यस साइटमा तपाईँले हेरिरहनुभएका छविहरू हेर्न र तिनीहरूलाई परिमार्जन गरी तपाईँलाई धोका दिन सक्छन्।</translation>
 <translation id="2356070529366658676">सोध्नुहोस्</translation>
 <translation id="2359629602545592467">बहु मुद्राहरू</translation>
@@ -395,7 +395,7 @@
 <translation id="2660650542324841986">तपाईंले पहुँच राख्न आँट्नुभएको सर्भर <ph name="ORIGIN" /> ले यसमा गरिने सबै अनुरोधहरूमा कुनै मूल नीति लागू गरिने कुरा अनुरोध गरेको छ। तर यसले अहिले नीति डेलिभर गर्न सकेको छैन। परिणाम स्वरूप ब्राउजरलाई तपाईंले <ph name="SITE" /> का लागि गर्नुभएको अनुरोध पूरा गर्नबाट रोक्छ। साइटका सञ्चालकहरूले सुरक्षाका साथै साइटका अन्य विशेषता कन्फिगर गर्ने प्रयोजनका लागि मूल नीतिहरू प्रयोग गर्न सक्छन्।</translation>
 <translation id="2664887757054927933">{COUNT,plural, =0{कुनै पनि होइन}=1{<ph name="DOMAIN_LIST" /> को १ पासवर्ड}=2{<ph name="DOMAIN_LIST" /> का २ पासवर्डहरू}other{<ph name="DOMAIN_LIST" /> का # पासवर्डहरू}}</translation>
 <translation id="2666092431469916601">शीर्ष</translation>
-<translation id="2666117266261740852">अन्य ट्याब वा अनुप्रयोगहरू बन्द गर्नुहोस्</translation>
+<translation id="2666117266261740852">अन्य ट्याब वा एपहरू बन्द गर्नुहोस्</translation>
 <translation id="2674170444375937751">तपाईं आफ्नो इतिहासबाट यी पृष्ठहरू मेटाउन चाहनुहुन्छ भन्ने कुरामा सुनिश्चित हुनुहुन्छ?</translation>
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">छोड्नुहोस्</translation>
@@ -427,7 +427,7 @@
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784949926578158345">जडान पुनः कायम भयो ।</translation>
 <translation id="2792012897584536778">यस यन्त्रका प्रशासकहरूले सुरक्षासम्बन्धी प्रमाणपत्रहरू सेटअप गरिसकेका हुँदा यसले उनीहरूलाई तपाईंले भ्रमण गर्नुहुने वेबसाटइका सामग्री हेर्न दिन सक्छ।</translation>
-<translation id="2799020568854403057">अगाडिको साइटमा हानिकारक अनुप्रयोगहरू समावेश छन्</translation>
+<translation id="2799020568854403057">अगाडिको साइटमा हानिकारक एपहरू समावेश छन्</translation>
 <translation id="2799223571221894425">पुन: सुरुवात गर्नुहोस्</translation>
 <translation id="2803306138276472711">Google सुरक्षित ब्राउजि्ले हालै <ph name="SITE" /> मा <ph name="BEGIN_LINK" />मालवेयर पत्ता<ph name="END_LINK" /> लगायो। सामन्यतया सुरक्षित भनिएका वेबसाइटहरू कहिलेकाहीँ मालवेयरद्वारा संक्रमित हुन्छन्।</translation>
 <translation id="2807052079800581569">छविको Y स्थान</translation>
@@ -601,7 +601,7 @@
 <translation id="3587738293690942763">मध्य भाग</translation>
 <translation id="3592413004129370115">Italian (Envelope)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
-<translation id="3603507503523709">तपाईंका प्रशासकले रोक लगाउनुभएको अनुप्रयोग</translation>
+<translation id="3603507503523709">तपाईंका प्रशासकले रोक लगाउनुभएको एप</translation>
 <translation id="3608932978122581043">अभिमुखीकरण फिड गर्नुहोस्</translation>
 <translation id="3614103345592970299">आकार २</translation>
 <translation id="361438452008624280">प्रविष्टिको सूची "<ph name="LANGUAGE_ID" />": अज्ञात वा असमर्थित भाषा।</translation>
@@ -883,7 +883,7 @@
 <translation id="4780366598804516005">मेलबक्स १</translation>
 <translation id="4780900888022378816"><ph name="ENROLLMENT_DOMAIN" /> ले तपाईंको यन्त्रको व्यवस्थापन गर्छ र <ph name="ACCOUNT_DOMAIN" /> ले तपाईंको खाताको व्यवस्थापन गर्छ।</translation>
 <translation id="4785689107224900852">यो ट्याबमा लैजानुहोस्</translation>
-<translation id="4791134497475588553">स्थापना गरिएका Linux अनुप्रयोग र यिनीहरूलाई अन्तिम पटक प्रयोग गरिएको समय</translation>
+<translation id="4791134497475588553">स्थापना गरिएका Linux एप र यिनीहरूलाई अन्तिम पटक प्रयोग गरिएको समय</translation>
 <translation id="4796594887379589189">कार्य खाताको ID</translation>
 <translation id="4798078619018708837">आफ्नो कार्डसम्बन्धी विवरणहरू अद्यावधिक गर्न <ph name="CREDIT_CARD" /> को म्याद सकिने मिति र CVC प्रविष्टि गर्नुहोस्। तपाईंले पुष्टि गरिसकेपछि तपाईंको Google खातामा रहेका कार्डसम्बन्धी विवरणहरू यो साइटसँग आदान प्रदान गरिने छ।</translation>
 <translation id="4800132727771399293">तपाईँको म्याद समाप्त हुने मिति र CVC जाँच गर्नुहोस् र फेरि प्रयास गर्नुहोस्</translation>
@@ -934,7 +934,7 @@
 <translation id="5023310440958281426">तपाईंको व्यवस्थापकको नीतिहरु जाँच्नुहोस्</translation>
 <translation id="5029568752722684782">प्रतिलिपि हटाउनुहोस्</translation>
 <translation id="5030338702439866405">द्वारा जारी गरिएको</translation>
-<translation id="503069730517007720">"<ph name="SOFTWARE_NAME" />" को मूल प्रमाणपत्र आवश्यक छ तर स्थापना गरिएको छैन। यो समस्या समाधान गर्न तपाईंको IT प्रशासकले "<ph name="SOFTWARE_NAME" />" को कन्फिगरेसनसम्बन्धी निर्देशनहरू हेर्नुपर्छ। <ph name="FURTHER_EXPLANATION" /></translation>
+<translation id="503069730517007720">"<ph name="SOFTWARE_NAME" />" को मूल प्रमाणपत्र आवश्यक छ तर स्थापना गरिएको छैन। यो समस्या समाधान गर्न तपाईंको IT एडमिनले "<ph name="SOFTWARE_NAME" />" को कन्फिगरेसनसम्बन्धी निर्देशनहरू हेर्नुपर्छ। <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">Google अनुवादको बारेमा</translation>
 <translation id="503498442187459473"><ph name="HOST" /> तपाईंको क्यामेरा र माइक्रोफोन प्रयोग गर्न चाहन्छ</translation>
 <translation id="5039804452771397117">अनुमति दिनुहोस्</translation>
@@ -1163,7 +1163,7 @@
 <translation id="5979084224081478209">पासवर्डहरूको जाँच गर्नुहोस्</translation>
 <translation id="5980920751713728343">Index-3x5</translation>
 <translation id="5984570616552610254">कक्षको आर्द्रता</translation>
-<translation id="598637245381783098">भुक्तानी अनुप्रयोग खोल्न सकिँदैन</translation>
+<translation id="598637245381783098">भुक्तानी एप खोल्न सकिँदैन</translation>
 <translation id="5989320800837274978">न त निश्चित प्रोक्सी सर्भरहरू न त .प्याक स्क्रिप्ट युआरएलहरू तोकिएका छन्।</translation>
 <translation id="5990559369517809815">सर्भरमा अनुरोधहरू एक विस्तारद्वारा रोकिएको छ।</translation>
 <translation id="5992691462791905444">इन्जिनियरिङ जेड फोल्ड</translation>
@@ -1173,7 +1173,7 @@
 <translation id="6014801569448771146">आफ्ना पासवर्डहरूको जाँच गर्नुहोस्</translation>
 <translation id="6015796118275082299">वर्ष</translation>
 <translation id="6017514345406065928">हरियो</translation>
-<translation id="6017850046339264347"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> मा रहेका आक्रमणकारीहरूले आफूलाई अर्कै रूपमा प्रस्तुत गर्ने भ्रामक अनुप्रयोगहरू स्थापना गर्न वा तपाईंलाई ट्र्याक गर्नसकिने डेटा सङ्कलन गर्न सक्छन्‌। <ph name="BEGIN_LEARN_MORE_LINK" />थप जान्नुहोस्<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6017850046339264347"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> मा रहेका आक्रमणकारीहरूले आफूलाई अर्कै रूपमा प्रस्तुत गर्ने भ्रामक एपहरू स्थापना गर्न वा तपाईंलाई ट्र्याक गर्नसकिने डेटा सङ्कलन गर्न सक्छन्‌। <ph name="BEGIN_LEARN_MORE_LINK" />थप जान्नुहोस्<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (सिंक गरिएको)</translation>
 <translation id="6027201098523975773">नाम प्रविष्टि गर्नुहोस्</translation>
 <translation id="603068602130820122">दायाँपट्टि दुई स्टिच</translation>
@@ -1187,7 +1187,7 @@
 <translation id="6041777658117377052">कक्षको तापक्रम</translation>
 <translation id="6044573915096792553">आकार १२</translation>
 <translation id="6045164183059402045">इम्पोजिसन टेम्प्लेट</translation>
-<translation id="6047233362582046994">तपाईं आफ्नो सुरक्षासम्बन्धी जोखिमहरूको बारेमा बुझ्नुहुन्छ भने, तपाईं हानिकारक अनुप्रयोगहरू हटाउनुअघि <ph name="BEGIN_LINK" />यो साइट<ph name="END_LINK" /> मा जान सक्नुहुन्छ।</translation>
+<translation id="6047233362582046994">तपाईं आफ्नो सुरक्षासम्बन्धी जोखिमहरूको बारेमा बुझ्नुहुन्छ भने, तपाईं हानिकारक एपहरू हटाउनुअघि <ph name="BEGIN_LINK" />यो साइट<ph name="END_LINK" /> मा जान सक्नुहुन्छ।</translation>
 <translation id="6047927260846328439">यो सामग्रीले तपाईंलाई सफ्टवेयर स्थापना गर्न लगाएर वा व्यक्तिगत जानकारी खुलाउन लगाएर झुक्याउन सक्छ। <ph name="BEGIN_LINK" />जे भए पनि देखाउनुहोस्‌<ph name="END_LINK" /></translation>
 <translation id="6049488691372270142">पृष्ठको डेलिभरी</translation>
 <translation id="6051221802930200923">उक्त वेबसाइटले प्रमाणपत्रको पिनिङ सुरक्षा व्यवस्थाको प्रयोग गर्ने हुनाले तपाईं अहिले नै <ph name="SITE" /> मा जान सक्नुहुन्न। नेटवर्कसम्बन्धी त्रुटि र आक्रमणहरू सामान्यतया अस्थायी हुन्छन्, त्यसैले यो पृष्ठले पछि सम्भवतः काम गर्नसक्नेछ।</translation>
@@ -1357,7 +1357,7 @@
 <translation id="6831043979455480757">अनुवाद गर्नुहोस्</translation>
 <translation id="6839929833149231406">क्षेत्र</translation>
 <translation id="6846340164947227603">कुनै भर्चुअल कार्ड नम्बर प्रयोग गर्नुहोस्...</translation>
-<translation id="6852204201400771460">अनुप्रयोग पुनः लोड गर्ने हो?</translation>
+<translation id="6852204201400771460">एप पुनः लोड गर्ने हो?</translation>
 <translation id="6865412394715372076">यो कार्ड यस बखत पुष्टि गर्न सकिँदैन</translation>
 <translation id="6868206169573555318">अद्यावधिक गर्न पुनः सुरुवात गर्नुहोस्</translation>
 <translation id="6874604403660855544">&amp;रिडु जोड</translation>
@@ -1371,7 +1371,7 @@
 <translation id="6910240653697687763"><ph name="URL" /> तपाईंका MIDI यन्त्रहरूमाथि पूर्ण नियन्त्रण प्राप्त गर्न चाहन्छ</translation>
 <translation id="6915804003454593391">प्रयोगकर्ता:</translation>
 <translation id="6934672428414710184">यो नाम तपाईंको Google खाताबाट लिइएको हो</translation>
-<translation id="6944692733090228304">तपाईंले <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> ले व्यवस्थापन नगरेको कुनै साइटमा आफ्नो पासवर्ड प्रविष्ट गर्नुभयो। आफ्नो खाता सुरक्षित गर्न अन्य अनुप्रयोग र साइटहरूमा तपाईंको पासवर्ड पुनः प्रयोग नगर्नुहोस्।</translation>
+<translation id="6944692733090228304">तपाईंले <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> ले व्यवस्थापन नगरेको कुनै साइटमा आफ्नो पासवर्ड प्रविष्ट गर्नुभयो। आफ्नो खाता सुरक्षित गर्न अन्य एप र साइटहरूमा तपाईंको पासवर्ड पुनः प्रयोग नगर्नुहोस्।</translation>
 <translation id="6945221475159498467">चयन गर्नुहोस्</translation>
 <translation id="6948701128805548767">पिकअपका विधि र मापदण्डहरू हेर्न, ठेगाना चयन गर्नुहोस्</translation>
 <translation id="6949872517221025916">पासवर्ड रिसेट गर्नुहोस्</translation>
@@ -1395,7 +1395,7 @@
 <translation id="7012363358306927923">चीन UnionPay</translation>
 <translation id="7016992613359344582">यी शुल्कहरू एक पटक तिरे पुग्ने वा बारम्बार तिर्नु पर्ने हुन सक्छन् र यस सम्बन्धमा स्पष्टता नहुन पनि सक्छ।</translation>
 <translation id="7029809446516969842">पासवर्डहरू</translation>
-<translation id="7031646650991750659">तपाईंले स्थापना गर्नुभएका Google Play अनुप्रयोगहरू</translation>
+<translation id="7031646650991750659">तपाईंले स्थापना गर्नुभएका Google Play एपहरू</translation>
 <translation id="7050187094878475250">तपाईं <ph name="DOMAIN" /> मा पुग्न प्रयास गर्नुभयो, तर सर्भरले एउटा प्रमाणपत्र प्रस्तुत गर्दछ जसको वैधानिकता अवधि भरोसा योग्य हुन निकै लामो छ।</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{यो कार्ड अहिले सुरक्षित गर्न सकिँदैन}other{यी कार्डहरू अहिले सुरक्षित गर्न सकिँदैन}}</translation>
 <translation id="7053983685419859001">रोक्नुहोस्</translation>
@@ -1436,13 +1436,13 @@
 <translation id="7201591969684833065">तपाईंका प्रशासक निम्न कुरा हेर्न सक्नुहुन्छ:</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> ले सुरक्षा मानहरूको पालना गर्दैन।</translation>
-<translation id="7210993021468939304">कन्टेनर भित्र Linux का क्रियाकलाप हेर्न र कन्टेनरभित्र Linux अनुप्रयोगहरू स्थापना गर्न र चलाउन सक्छ</translation>
+<translation id="7210993021468939304">कन्टेनर भित्र Linux का क्रियाकलाप हेर्न र कन्टेनरभित्र Linux एपहरू स्थापना गर्न र चलाउन सक्छ</translation>
 <translation id="721197778055552897">यो समस्याको बारे <ph name="BEGIN_LINK" />थप जान्नुहोस्<ph name="END_LINK" />।</translation>
 <translation id="7219179957768738017">जडानले <ph name="SSL_VERSION" /> प्रयोग गर्छ।</translation>
 <translation id="7220786058474068424">प्रशोधन गर्दै</translation>
 <translation id="7221855153210829124">सूचनाहरू देखाउनुहोस्</translation>
 <translation id="7229659723041939809">तपाईंले भर्खरै कुनै भ्रामक साइटमा आफ्नो पासवर्ड प्रविष्टि गर्नुभएको छ। Chrome तपाईंलाई अहिले नै <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> र तपाईंले हाल यो पासवर्ड प्रयोग गर्ने अन्य साइटका सुरक्षित गरिएका पासवर्डहरूको जाँच गर्न सिफारिस गर्छ।</translation>
-<translation id="7233592378249864828">पुष्टि गर्ने पाना छाप्नुहोस्</translation>
+<translation id="7233592378249864828">पुष्टि गर्ने पाना प्रिन्ट गर्नुहोस्</translation>
 <translation id="7238585580608191973">SHA-256 अङ्गुठाछाप</translation>
 <translation id="7240120331469437312">प्रमाणपत्र विषय वैकल्पिक नाम</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
@@ -1603,7 +1603,7 @@
 <translation id="7815407501681723534"><ph name="SEARCH_RESULTS" /> <ph name="SEARCH_STRING" />' का <ph name="NUMBER_OF_RESULTS" /> वटा परिणामहरू भेटिए</translation>
 <translation id="782886543891417279">तपाईँले प्रयोग गरिरहनु भएको Wi-Fi (<ph name="WIFI_NAME" />) लाई तपाईँले यसको लगइन पृष्ठको भ्रमण आवश्यकता पर्न सक्छ।</translation>
 <translation id="7836231406687464395">Postfix (Envelope)</translation>
-<translation id="7844689747373518809">{COUNT,plural, =0{कुनै पनि होइन}=1{१ अनुप्रयोग (<ph name="EXAMPLE_APP_1" />)}=2{२ अनुप्रयोगहरू (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}other{# अनुप्रयोगहरू (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}}</translation>
+<translation id="7844689747373518809">{COUNT,plural, =0{कुनै पनि होइन}=1{१ एप (<ph name="EXAMPLE_APP_1" />)}=2{२ एपहरू (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}other{# एपहरू (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}}</translation>
 <translation id="785549533363645510">यद्दपि, तपाईं अदृश्य हुनुहुन्न। इन्कोग्निटो हुनाले तपाईंको ब्राउजिङलाई तपाईंको रोजगारदाता, तपाईंको इन्टरनेट सेवा प्रदायक वा तपाईंले भ्रमण गर्नुभएका बेवसाइटहरूबाट लुकाउँदैन।</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">साइट छाड्ने हो?</translation>
@@ -1654,6 +1654,7 @@
 <translation id="8074253406171541171">10x13 (Envelope)</translation>
 <translation id="8078141288243656252">घुमाइएका बेला एनोटेसन गर्न मिल्दैन</translation>
 <translation id="8079031581361219619">साइट पुनः लोड गर्ने हो?</translation>
+<translation id="808089508890593134">Google</translation>
 <translation id="8086971161893892807">मस्यौदा</translation>
 <translation id="8088680233425245692">लेख गर्न असफल भयो।</translation>
 <translation id="808894953321890993">पासवर्ड परिवर्तन गर्नुहोस्‌</translation>
@@ -1882,7 +1883,7 @@
 <translation id="9168814207360376865">साइटहरूलाई तपाईंले भुक्तानी विधिहरू सुरक्षित गर्नुभए नभएको कुरा जाँच गर्न दिन्छ</translation>
 <translation id="9169664750068251925">सधैँ यस साइटमा ब्लक गर्नुहोस्</translation>
 <translation id="9170848237812810038">&amp;पूर्वस्थितिमा फर्काउनुहोस्</translation>
-<translation id="9171296965991013597">अनुप्रयोग छोड्ने हो?</translation>
+<translation id="9171296965991013597">एप छोड्ने हो?</translation>
 <translation id="9173282814238175921">एउटा कागजात/नयाँ पाना</translation>
 <translation id="917450738466192189">सर्भरको प्रमाणपत्र अमान्य छ।</translation>
 <translation id="9174917557437862841">ट्याब बदल्ने बटन, यो ट्याबमा जान Enter थिच्नुहोस्</translation>

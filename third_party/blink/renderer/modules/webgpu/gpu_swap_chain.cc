@@ -14,7 +14,8 @@
 namespace blink {
 
 GPUSwapChain::GPUSwapChain(GPUCanvasContext* context,
-                           const GPUSwapChainDescriptor* descriptor)
+                           const GPUSwapChainDescriptor* descriptor,
+                           SkFilterQuality filter_quality)
     : DawnObjectBase(descriptor->device()->GetDawnControlClient()),
       device_(descriptor->device()),
       context_(context),
@@ -23,6 +24,7 @@ GPUSwapChain::GPUSwapChain(GPUCanvasContext* context,
   swap_buffers_ = base::AdoptRef(new WebGPUSwapBufferProvider(
       this, GetDawnControlClient(), device_->GetClientID(), usage_,
       AsDawnEnum<WGPUTextureFormat>(descriptor->format())));
+  swap_buffers_->SetFilterQuality(filter_quality);
 }
 
 GPUSwapChain::~GPUSwapChain() {
@@ -38,9 +40,7 @@ void GPUSwapChain::Trace(Visitor* visitor) {
 
 void GPUSwapChain::Neuter() {
   texture_ = nullptr;
-
-  DCHECK(swap_buffers_);
-  if (!swap_buffers_) {
+  if (swap_buffers_) {
     swap_buffers_->Neuter();
     swap_buffers_ = nullptr;
   }
@@ -49,6 +49,13 @@ void GPUSwapChain::Neuter() {
 cc::Layer* GPUSwapChain::CcLayer() {
   DCHECK(swap_buffers_);
   return swap_buffers_->CcLayer();
+}
+
+void GPUSwapChain::SetFilterQuality(SkFilterQuality filter_quality) {
+  DCHECK(swap_buffers_);
+  if (swap_buffers_) {
+    swap_buffers_->SetFilterQuality(filter_quality);
+  }
 }
 
 // gpu_swap_chain.idl

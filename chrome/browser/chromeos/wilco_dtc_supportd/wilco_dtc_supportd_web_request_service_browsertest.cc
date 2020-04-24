@@ -125,7 +125,9 @@ class ContextRequestPerformer {
 
     auto request = std::make_unique<network::ResourceRequest>();
     request->url = url;
-    request->attach_same_site_cookies = true;
+    // TODO(crbug.com/993801): This probably isn't needed here and can be
+    // removed if the test sets an appropriate site_for_cookies instead.
+    request->force_ignore_site_for_cookies = true;
 
     auto url_loader = network::SimpleURLLoader::Create(
         std::move(request), TRAFFIC_ANNOTATION_FOR_TESTS);

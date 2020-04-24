@@ -154,6 +154,9 @@ class WizardController {
   void SetSharedURLLoaderFactoryForTesting(
       scoped_refptr<network::SharedURLLoaderFactory> factory);
 
+  // Resets |current_screen_| when login screen has started.
+  void LoginScreenStarted();
+
  private:
   // Create BaseScreen instances. These are owned by |screen_manager_|.
   std::vector<std::unique_ptr<BaseScreen>> CreateScreens();

@@ -174,7 +174,7 @@ IN_PROC_BROWSER_TEST_F(NoBestEffortTasksTest, LoadExtensionAndSendMessages) {
       extensions::ExtensionSystem::Get(browser()->profile())
           ->extension_service())
       ->Load(extension_dir);
-  auto* const extension =
+  scoped_refptr<const extensions::Extension> extension =
       extensions::TestExtensionRegistryObserver(
           extensions::ExtensionRegistry::Get(browser()->profile()))
           .WaitForExtensionReady();

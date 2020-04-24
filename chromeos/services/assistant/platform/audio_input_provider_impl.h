@@ -22,8 +22,7 @@ namespace assistant {
 
 class AudioInputProviderImpl : public assistant_client::AudioInputProvider {
  public:
-  AudioInputProviderImpl(mojom::Client* client,
-                         PowerManagerClient* power_manager_client,
+  AudioInputProviderImpl(PowerManagerClient* power_manager_client,
                          CrasAudioHandler* cras_audio_handler);
   ~AudioInputProviderImpl() override;
 

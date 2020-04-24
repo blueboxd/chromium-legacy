@@ -24,7 +24,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/password_list_sorter.h"
-#include "components/password_manager/core/browser/password_manager_util.h"
+#include "components/password_manager/core/browser/password_manager_features_util.h"
 #include "components/password_manager/core/browser/password_ui_utils.h"
 #include "components/password_manager/core/browser/ui/plaintext_reason.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -429,7 +429,7 @@ PasswordsPrivateDelegateImpl::GetExportProgressStatus() {
 }
 
 bool PasswordsPrivateDelegateImpl::IsOptedInForAccountStorage() {
-  return password_manager_util::IsOptedInForAccountStorage(
+  return password_manager::features_util::IsOptedInForAccountStorage(
       profile_->GetPrefs(), ProfileSyncServiceFactory::GetForProfile(profile_));
 }
 
@@ -439,7 +439,7 @@ void PasswordsPrivateDelegateImpl::SetAccountStorageOptIn(
   if (opt_in == IsOptedInForAccountStorage())
     return;
   if (!opt_in) {
-    password_manager_util::SetAccountStorageOptIn(
+    password_manager::features_util::SetAccountStorageOptIn(
         profile_->GetPrefs(),
         ProfileSyncServiceFactory::GetForProfile(profile_), false);
     return;

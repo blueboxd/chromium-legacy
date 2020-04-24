@@ -420,19 +420,19 @@ bool ShowPopupWithoutPasswords(const WebInputElement& password_element) {
 // had previously been autofilled or typed into.
 void FillNonTypedOrFilledPropertiesMasks(std::vector<FormFieldData>* fields,
                                          const FieldDataManager& manager) {
-  static constexpr FieldPropertiesMask FILLED_OR_TYPED =
-      FieldPropertiesFlags::AUTOFILLED | FieldPropertiesFlags::USER_TYPED;
+  static constexpr FieldPropertiesMask kFilledOrTyped =
+      FieldPropertiesFlags::kAutofilled | FieldPropertiesFlags::kUserTyped;
 
   for (auto& field : *fields) {
-    if (field.properties_mask & FILLED_OR_TYPED)
+    if (field.properties_mask & kFilledOrTyped)
       continue;
 
     for (const auto& pair : manager.field_data_map()) {
       const auto& field_data = pair.second;
 
-      if ((field_data.second & FILLED_OR_TYPED) &&
+      if ((field_data.second & kFilledOrTyped) &&
           field_data.first == field.value) {
-        field.properties_mask |= field_data.second & FILLED_OR_TYPED;
+        field.properties_mask |= field_data.second & kFilledOrTyped;
         break;
       }
     }
@@ -588,7 +588,7 @@ void PasswordAutofillAgent::UpdateStateForTextChange(
 
   const base::string16 element_value = element.Value().Utf16();
   field_data_manager_->UpdateFieldDataMap(element, element_value,
-                                          FieldPropertiesFlags::USER_TYPED);
+                                          FieldPropertiesFlags::kUserTyped);
 
   ProvisionallySavePassword(element.Form(), element, RESTRICTION_NONE);
 
@@ -675,7 +675,7 @@ void PasswordAutofillAgent::FillField(WebInputElement* input,
   input->SetAutofillValue(WebString::FromUTF16(credential));
   input->SetAutofillState(WebAutofillState::kAutofilled);
   field_data_manager_->UpdateFieldDataMap(
-      *input, credential, FieldPropertiesFlags::AUTOFILLED_ON_USER_TRIGGER);
+      *input, credential, FieldPropertiesFlags::kAutofilledOnUserTrigger);
 }
 
 void PasswordAutofillAgent::FillPasswordFieldAndSave(
@@ -1412,7 +1412,7 @@ void PasswordAutofillAgent::FocusedNodeHasChanged(const blink::WebNode& node) {
 
   focus_state_notifier_.FocusedInputChanged(focused_field_type);
   field_data_manager_->UpdateFieldDataMapWithNullValue(
-      *input_element, FieldPropertiesFlags::HAD_FOCUS);
+      *input_element, FieldPropertiesFlags::kHadFocus);
 }
 
 std::unique_ptr<FormData> PasswordAutofillAgent::GetFormDataFromWebForm(
@@ -1888,7 +1888,7 @@ void PasswordAutofillAgent::AutofillField(const base::string16& value,
   // intentionally interacting with the page.
   gatekeeper_.RegisterElement(&field);
   field_data_manager_.get()->UpdateFieldDataMap(
-      field, value, FieldPropertiesFlags::AUTOFILLED_ON_PAGELOAD);
+      field, value, FieldPropertiesFlags::kAutofilledOnPageLoad);
   autofilled_elements_cache_.emplace(field_id, WebString::FromUTF16(value));
   all_autofilled_elements_.insert(field_id);
 }

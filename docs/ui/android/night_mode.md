@@ -112,7 +112,7 @@ If adding a new theme, make sure the parent (or any indirect ancestor) theme of 
 ### Troubleshooting
 
 * Make sure `View` is inflated from `Activity` context instead of `Application` context
-  * `RemoteView` is an exception. See [RemoteViewsWithNightModeInflater.java](https://cs.chromium.org/chromium/src/chrome/android/java/src/org/chromium/chrome/browser/night_mode/RemoteViewsWithNightModeInflater.java?) for details.
+  * `RemoteView` is an exception. See [RemoteViewsWithNightModeInflater.java](https://cs.chromium.org/chromium/src/chrome/android/java/src/org/chromium/chrome/browser/night_mode/RemoteViewsWithNightModeInflater.java) for details.
 * Make sure color resources are accessed from `Activity` or `View` context instead of `Application` context
 * Check whether `Configuration.uiMode & UI_MODE_NIGHT_MASK` gives the correct UI night mode
   * If uiMode is not correct, it could be a support library issue or an Android framework issue. You can contact chrome-android-app@chromium.org for help.
@@ -125,19 +125,19 @@ Render tests are the recommended way to verify the appearance of night mode UI. 
 **For tests using DummyUiActivity:**
 
 * Put all the render tests into a separate test suite
-* Use class parameter [`NightModeTestUtils.NightModeParams.class`](https://cs.chromium.org/chromium/src/chrome/android/javatests/src/org/chromium/chrome/browser/night_mode/NightModeTestUtils.java?type=cs&q=NightModeTestUtils.NightModeParams)
+* Use class parameter [`NightModeTestUtils.NightModeParams.class`](https://cs.chromium.org/chromium/src/ui/android/javatests/src/org/chromium/ui/test/util/NightModeTestUtils.java?type=cs&q=NightModeTestUtils.NightModeParams)
 * Pass in a boolean parameter that indicates night mode state in constructor
-* Set up night mode in constructor by calling [`NightModeTestUtils#setUpNightModeForDummyUiActivity()`](https://cs.chromium.org/chromium/src/chrome/android/javatests/src/org/chromium/chrome/browser/night_mode/NightModeTestUtils.java?type=cs&q=setUpNightModeForDummyUiActivity&sq=package:chromium) and [`RenderTestRule#setNightModeEnabled()`](https://cs.chromium.org/chromium/src/chrome/test/android/javatests/src/org/chromium/chrome/test/util/RenderTestRule.java?type=cs&q=setNightModeEnabled)
-* During [`tearDownTest()`](https://cs.chromium.org/chromium/src/ui/android/javatests/src/org/chromium/ui/test/util/DummyUiActivityTestCase.java?type=cs&q=tearDownTest), reset night mode state by calling [`NightModeTestUtils#tearDownNightModeForDummyUiActivity()`](https://cs.chromium.org/chromium/src/chrome/android/javatests/src/org/chromium/chrome/browser/night_mode/NightModeTestUtils.java?type=cs&q=tearDownNightModeForDummyUiActivity)
+* Set up night mode in constructor by calling [`NightModeTestUtils#setUpNightModeForDummyUiActivity()`](https://cs.chromium.org/chromium/src/ui/android/javatests/src/org/chromium/ui/test/util/NightModeTestUtils.java?type=cs&q=setUpNightModeForDummyUiActivity&sq=package:chromium) and [`RenderTestRule#setNightModeEnabled()`](https://cs.chromium.org/chromium/src/ui/android/javatests/src/org/chromium/ui/test/util/RenderTestRule.java?type=cs&q=setNightModeEnabled)
+* During [`tearDownTest()`](https://cs.chromium.org/chromium/src/ui/android/javatests/src/org/chromium/ui/test/util/DummyUiActivityTestCase.java?type=cs&q=tearDownTest), reset night mode state by calling [`NightModeTestUtils#tearDownNightModeForDummyUiActivity()`](https://cs.chromium.org/chromium/src/ui/android/javatests/src/org/chromium/ui/test/util/NightModeTestUtils.java?type=cs&q=tearDownNightModeForDummyUiActivity)
 
 See [this CL](https://chromium-review.googlesource.com/c/chromium/src/+/1613883) as an example
 
 **For tests using ChromeActivityTestRule:**
 
-* In the method annotated with `@BeforeClass`, initialize states by calling [`NightModeTestUtils.setUpNightModeBeforeChromeActivityLaunched()`](https://cs.chromium.org/chromium/src/chrome/android/javatests/src/org/chromium/chrome/browser/night_mode/NightModeTestUtils.java?type=cs&q=setUpNightModeBeforeChromeActivityLaunched)
+* In the method annotated with `@BeforeClass`, initialize states by calling [`ChromeNightModeTestUtils.setUpNightModeBeforeChromeActivityLaunched()`](https://cs.chromium.org/chromium/src/chrome/android/javatests/src/org/chromium/chrome/browser/night_mode/ChromeNightModeTestUtils.java?type=cs&q=setUpNightModeBeforeChromeActivityLaunched)
 * Add method `setupNightMode()` with annotation `@ParameterAnnotations.UseMethodParameterBefore(NightModeTestUtils.NightModeParams.class)`
-* In method `setupNightMode()`, set up night mode state by calling [`NightModeTestUtils#setUpNightModeForChromeActivity()`](https://cs.chromium.org/chromium/src/chrome/android/javatests/src/org/chromium/chrome/browser/night_mode/NightModeTestUtils.java?type=cs&q=setUpNightModeForChromeActivity) and [`RenderTestRule#setNightModeEnabled()`](https://cs.chromium.org/chromium/src/chrome/test/android/javatests/src/org/chromium/chrome/test/util/RenderTestRule.java?type=cs&q=setNightModeEnabled)
-* In the method annotated with `@AfterClass`, reset night mode state by calling [`tearDownNightModeAfterChromeActivityDestroyed`](https://cs.chromium.org/chromium/src/chrome/android/javatests/src/org/chromium/chrome/browser/night_mode/NightModeTestUtils.java?type=cs&q=tearDownNightModeAfterChromeActivityDestroyed)
+* In method `setupNightMode()`, set up night mode state by calling [`ChromeNightModeTestUtils#setUpNightModeForChromeActivity()`](https://cs.chromium.org/chromium/src/chrome/android/javatests/src/org/chromium/chrome/browser/night_mode/ChromeNightModeTestUtils.java?type=cs&q=setUpNightModeForChromeActivity) and [`RenderTestRule#setNightModeEnabled()`](https://cs.chromium.org/chromium/src/ui/android/javatests/src/org/chromium/ui/test/util/RenderTestRule.java?type=cs&q=setNightModeEnabled)
+* In the method annotated with `@AfterClass`, reset night mode state by calling [`tearDownNightModeAfterChromeActivityDestroyed`](https://cs.chromium.org/chromium/src/chrome/android/javatests/src/org/chromium/chrome/browser/night_mode/ChromeNightModeTestUtils.java?type=cs&q=tearDownNightModeAfterChromeActivityDestroyed)
 
 See [this CL](https://chromium-review.googlesource.com/c/chromium/src/+/1656668) as an example
 
@@ -155,7 +155,7 @@ Ways to turn on night mode on **custom tab**:
 * Turn on power save mode (aka **battery saver**) on Android P+
 * Go to **Android Settings -> Developer options -> Night mode** on Android P
 * Go to **Android Settings -> Display -> Theme** on Android Q
-* [Set color scheme](https://cs.chromium.org/chromium/src/third_party/android_sdk/androidx_browser/browser/src/main/java/androidx/browser/customtabs/CustomTabsIntent.java?) to `COLOR_SCHEME_DARK` on creating a `CustomTabsIntent.Builder`
+* [Set color scheme](https://cs.chromium.org/chromium/src/third_party/android_sdk/androidx_browser/src/browser/browser/src/main/java/androidx/browser/customtabs/CustomTabsIntent.java) to `COLOR_SCHEME_DARK` on creating a `CustomTabsIntent.Builder`
 
 Some tips:
 

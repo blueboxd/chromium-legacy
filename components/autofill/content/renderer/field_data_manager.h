@@ -34,7 +34,7 @@ class FieldDataManager : public base::RefCounted<FieldDataManager> {
   // Updates the field value associated with the key |element| in
   // |field_value_and_properties_map_|.
   // Flags in |mask| are added with bitwise OR operation.
-  // If |value| is empty, USER_TYPED and AUTOFILLED should be cleared.
+  // If |value| is empty, kUserTyped and kAutofilled should be cleared.
   void UpdateFieldDataMap(const blink::WebFormControlElement& element,
                           const base::string16& value,
                           FieldPropertiesMask mask);

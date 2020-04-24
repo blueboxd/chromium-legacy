@@ -36,8 +36,10 @@ public class IdentityServicesProvider {
     /** Getter for {@link IdentityManager} instance. */
     public IdentityManager getIdentityManager() {
         ThreadUtils.assertOnUiThread();
-        IdentityManager result =
-                IdentityServicesProviderJni.get().getIdentityManager(Profile.getLastUsedProfile());
+        // TODO(https://crbug.com/1041781): Use the current profile (i.e., regular profile or
+        // incognito profile) instead of always using regular profile.
+        IdentityManager result = IdentityServicesProviderJni.get().getIdentityManager(
+                Profile.getLastUsedRegularProfile());
         assert result != null;
         return result;
     }
@@ -45,8 +47,10 @@ public class IdentityServicesProvider {
     /** Getter for {@link AccountTrackerService} instance. */
     public AccountTrackerService getAccountTrackerService() {
         ThreadUtils.assertOnUiThread();
+        // TODO(https://crbug.com/1041781): Use the current profile (i.e., regular profile or
+        // incognito profile) instead of always using regular profile.
         AccountTrackerService result = IdentityServicesProviderJni.get().getAccountTrackerService(
-                Profile.getLastUsedProfile());
+                Profile.getLastUsedRegularProfile());
         assert result != null;
         return result;
     }
@@ -54,8 +58,10 @@ public class IdentityServicesProvider {
     /** Getter for {@link SigninManager} instance. */
     public SigninManager getSigninManager() {
         ThreadUtils.assertOnUiThread();
-        SigninManager result =
-                IdentityServicesProviderJni.get().getSigninManager(Profile.getLastUsedProfile());
+        // TODO(https://crbug.com/1041781): Use the current profile (i.e., regular profile or
+        // incognito profile) instead of always using regular profile.
+        SigninManager result = IdentityServicesProviderJni.get().getSigninManager(
+                Profile.getLastUsedRegularProfile());
         assert result != null;
         return result;
     }

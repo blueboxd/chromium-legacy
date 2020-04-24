@@ -349,6 +349,7 @@
 <translation id="1465176863081977902">A&amp;frita slóð hljóðs</translation>
 <translation id="1465827627707997754">Pítsusneið</translation>
 <translation id="1468571364034902819">Ekki er hægt að nota þennan prófíl</translation>
+<translation id="1470084204649225129">{NUM_TABS,plural, =1{Bæta flipa við nýjan hóp}one{Bæta flipum við nýjan hóp}other{Bæta flipum við nýjan hóp}}</translation>
 <translation id="1472675084647422956">Sýna meira</translation>
 <translation id="1475502736924165259">Þú ert með skráð vottorð sem passa ekki í aðra flokka</translation>
 <translation id="1476088332184200792">Afrita í tæki</translation>
@@ -477,6 +478,7 @@
 <translation id="1629314197035607094">Útrunnið aðgangsorð</translation>
 <translation id="1630768113285622200">Endurræsa og halda áfram</translation>
 <translation id="1632803087685957583">Gerir þér kleift að breyta tíðni endurtekninga, ágiskun orða og fleira fyrir lyklaborðið</translation>
+<translation id="1634783886312010422">Hefurðu þegar breytt þessu aðgangsorði á <ph name="WEBSITE" />?</translation>
 <translation id="1635033183663317347">Forráðamaður þinn setti upp.</translation>
 <translation id="1637224376458524414">Fáðu þetta bókamerki á iPhone-símanum þínum</translation>
 <translation id="1637765355341780467">Eitthvað fór úrskeiðis við að opna prófílinn þinn. Sumir eiginleikar kunna að vera óaðgengilegir.</translation>
@@ -3387,6 +3389,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="5542949973455282971">Tengist við <ph name="CARRIER_NAME" /></translation>
 <translation id="5543983818738093899">Kannar stöðu...</translation>
 <translation id="554517032089923082">GTC</translation>
+<translation id="5545335608717746497">{NUM_TABS,plural, =1{Bæta flipa við hóp}one{Bæta flipum við hóp}other{Bæta flipum við hóp}}</translation>
 <translation id="5546865291508181392">Finna</translation>
 <translation id="5548159762883465903">{NUM_OTHER_TABS,plural, =0{„<ph name="TAB_TITLE" />“}=1{„<ph name="TAB_TITLE" />“ og 1 flipi til viðbótar}one{„<ph name="TAB_TITLE" />“ og # flipi til viðbótar}other{„<ph name="TAB_TITLE" />“ og # flipar til viðbótar}}</translation>
 <translation id="5548606607480005320">Öryggisathugun</translation>
@@ -4211,6 +4214,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="6659594942844771486">Flipi</translation>
 <translation id="6664237456442406323">Tölvan er því miður grunnstillt með gölluðu vélbúnaðarauðkenni. Þetta kemur í veg fyrir að Chrome OS geti uppfært í nýjustu öryggisúrræði og tölvan <ph name="BEGIN_BOLD" />kann að vera berskjölduð gagnvart árásum<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Eitthvað fór úrskeiðis við að opna prófílinn þinn. Skráðu þig út og svo inn aftur.</translation>
+<translation id="6670142487971298264"><ph name="APP_NAME" /> er nú í boði</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="6675665718701918026">Benditæki tengt</translation>
 <translation id="6676212663108450937">Íhugaðu að nota heyrnartól á meðan þú þjálfar röddina</translation>
@@ -4540,6 +4544,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="7108338896283013870">Fela</translation>
 <translation id="7108668606237948702">enter</translation>
 <translation id="7109543803214225826">Flýtileið fjarlægð</translation>
+<translation id="7110644433780444336">{NUM_TABS,plural, =1{Bæta flipa við hóp}one{Bæta flipum við hóp}other{Bæta flipum við hóp}}</translation>
 <translation id="7113502843173351041">Vita netfangið þitt</translation>
 <translation id="7114054701490058191">Aðgangsorðin stemma ekki</translation>
 <translation id="7114648273807173152">Þú getur notað Smart Lock til að skrá þig inn á Google reikninginn þinn með því að fara í Stillingar &gt; Tengd tæki &gt; Síminn þinn &gt; Smart Lock.</translation>
@@ -4583,6 +4588,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="7170041865419449892">Utan þjónustusvæðis</translation>
 <translation id="7171259390164035663">Ekki skrá</translation>
 <translation id="7171559745792467651">Setja upp forrit úr öðrum tækjum</translation>
+<translation id="7172470549472604877">{NUM_TABS,plural, =1{Bæta flipa við nýjan hóp}one{Bæta flipum við nýjan hóp}other{Bæta flipum við nýjan hóp}}</translation>
 <translation id="7174199383876220879">Nýtt! Stjórnaðu tónlistinni, myndskeiðunum og fleiru.</translation>
 <translation id="7175037578838465313">Stilla <ph name="NAME" /></translation>
 <translation id="7175353351958621980">Hlaðið frá:</translation>
@@ -5161,6 +5167,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="7925247922861151263">AAA-prófun mistókst</translation>
 <translation id="7925285046818567682">Bíður eftir <ph name="HOST_NAME" />...</translation>
 <translation id="7926423016278357561">Þetta var ekki ég.</translation>
+<translation id="7928175190925744466">Hefurðu þegar breytt þessu aðgangsorði?</translation>
 <translation id="7928836894214140642">Stýrt af <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">Vistaðir greiðslumátar birtast hér</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> deilir skjánum þínum og hljóði.</translation>

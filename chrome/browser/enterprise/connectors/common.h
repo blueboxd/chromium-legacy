@@ -43,10 +43,10 @@ struct AnalysisSettings {
 
   GURL analysis_url;
   std::set<std::string> tags;
-  BlockUntilVerdict block_until_verdict;
-  bool block_password_protected_files;
-  bool block_large_files;
-  bool block_unsupported_file_types;
+  BlockUntilVerdict block_until_verdict = BlockUntilVerdict::NO_BLOCK;
+  bool block_password_protected_files = false;
+  bool block_large_files = false;
+  bool block_unsupported_file_types = false;
 };
 
 struct ReportingSettings {

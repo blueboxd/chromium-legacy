@@ -276,8 +276,7 @@ function testPartnerLogoShown(onInfected, isPoweredByPartner) {
       isPoweredByPartner, defaultScannerResults);
   Polymer.dom.flush();
 
-  const poweredByContainerControl =
-      chromeCleanupPage.$$('#powered-by-container');
+  const poweredByContainerControl = chromeCleanupPage.$$('#powered-by');
   assertTrue(!!poweredByContainerControl);
   assertNotEquals(poweredByContainerControl.hidden, isPoweredByPartner);
 }

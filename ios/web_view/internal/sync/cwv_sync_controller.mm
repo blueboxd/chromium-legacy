@@ -9,7 +9,7 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/common/autofill_prefs.h"
-#include "components/password_manager/core/browser/password_manager_util.h"
+#include "components/password_manager/core/browser/password_manager_features_util.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/device_accounts_synchronizer.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -182,10 +182,11 @@ __weak id<CWVSyncControllerDataSource> gSyncDataSource;
 
   autofill::prefs::SetUserOptedInWalletSyncTransport(_prefService, accountId,
                                                      /*opted_in=*/true);
-  password_manager_util::SetDefaultPasswordStore(
+  password_manager::features_util::SetDefaultPasswordStore(
       _prefService, _syncService, autofill::PasswordForm::Store::kAccountStore);
-  password_manager_util::SetAccountStorageOptIn(_prefService, _syncService,
-                                                /*opt_in=*/true);
+  password_manager::features_util::SetAccountStorageOptIn(_prefService,
+                                                          _syncService,
+                                                          /*opt_in=*/true);
 }
 
 - (void)stopSyncAndClearIdentity {

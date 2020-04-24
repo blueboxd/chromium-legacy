@@ -13,11 +13,11 @@ import "url/mojom/url.mojom";
 // TODO(https://crbug.com/976975): Support URL rewriting for service workers.
 interface UrlRequestRulesReceiver {
   // Receives a set of rules to apply to URL requests.
-  OnRulesUpdated(array<UrlRequestRewriteRule> rules);
+  OnRulesUpdated(array<UrlRequestRule> rules);
 };
 
-// A URL request rewrite rule.
-struct UrlRequestRewriteRule {
+// A URL request modification rule.
+struct UrlRequestRule {
   // Set of hosts to apply the rewrites to. If empty, the rule will apply to
   // every request, independent of host.
   array<string>? hosts_filter;
@@ -27,10 +27,10 @@ struct UrlRequestRewriteRule {
   array<string>? schemes_filter;
 
   // URL request rewrites to apply.
-  array<UrlRequestRewrite> rewrites;
+  array<UrlRequestAction> actions;
 };
 
-union UrlRequestRewrite {
+union UrlRequestAction {
   // Adds a set of headers to a URL request.
   UrlRequestRewriteAddHeaders add_headers;
 
@@ -42,6 +42,10 @@ union UrlRequestRewrite {
 
   // Replaces a URL if the original URL ends with a pattern.
   UrlRequestRewriteReplaceUrl replace_url;
+
+  // Specifies whether the request should be allowed or blocked.
+  // Cannot be combined with other UrlRequestActions.
+  UrlRequestAccessPolicy policy;
 };
 
 // Adds |headers| to the URL request. If a header is already present in the
@@ -80,4 +84,9 @@ struct UrlRequestRewriteReplaceUrl {
 
   // The replacement URL.
   url.mojom.Url new_url;
+};
+
+enum UrlRequestAccessPolicy {
+  kAllow,
+  kDeny,
 };

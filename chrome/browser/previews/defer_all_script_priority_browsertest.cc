@@ -56,17 +56,13 @@ class DeferAllScriptPriorityBrowserTest
           {previews::features::kPreviews,
            previews::features::kDeferAllScriptPreviews,
            blink::features::kLowerJavaScriptPriorityWhenForceDeferred,
-           optimization_guide::features::kOptimizationHints,
-           data_reduction_proxy::features::
-               kDataReductionProxyEnabledWithNetworkService},
+           optimization_guide::features::kOptimizationHints},
           {});
     } else {
       scoped_feature_list_.InitWithFeatures(
           {previews::features::kPreviews,
            blink::features::kLowerJavaScriptPriorityWhenForceDeferred,
-           optimization_guide::features::kOptimizationHints,
-           data_reduction_proxy::features::
-               kDataReductionProxyEnabledWithNetworkService},
+           optimization_guide::features::kOptimizationHints},
           {});
     }
 

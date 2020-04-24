@@ -2931,6 +2931,7 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() const {
       // When we are not in web content, assume that a node with an unknown
       // role is a view (which often have the unknown role).
       return !GetDelegate()->IsWebContent() ? ATK_ROLE_PANEL : ATK_ROLE_UNKNOWN;
+    case ax::mojom::Role::kImeCandidate:
     case ax::mojom::Role::kKeyboard:
     case ax::mojom::Role::kNone:
     case ax::mojom::Role::kPresentational:

@@ -289,18 +289,15 @@ void AVIFImageDecoder::Decode(size_t index) {
     return;
   }
 
-  if (frame_buffer_cache_.IsEmpty()) {
-    // We're just decoding metadata.
-    DCHECK_EQ(index, 0u);
-    pending_decoded_image_ = true;
+  const auto* image = decoder_->image;
+  // All frames must be the same size.
+  if (Size() != IntSize(image->width, image->height)) {
+    SetFailed();
     return;
   }
 
-  pending_decoded_image_ = false;
   ImageFrame& buffer = frame_buffer_cache_[index];
   DCHECK_NE(buffer.GetStatus(), ImageFrame::kFrameComplete);
-
-  const auto* image = decoder_->image;
   buffer.SetHasAlpha(!!image->alphaPlane);
   if (decode_to_half_float_)
     buffer.SetPixelFormat(ImageFrame::PixelFormat::kRGBA_F16);
@@ -382,19 +379,21 @@ void AVIFImageDecoder::MaybeCreateDemuxer() {
   }
 
   // We need to SetSize() to proceed, so decode the first frame.
-  Decode(0);
+  if (!DecodeImage(0)) {
+    SetFailed();
+    return;
+  }
+  SetSize(decoder_->image->width, decoder_->image->height);
 }
 
 bool AVIFImageDecoder::DecodeImage(size_t index) {
-  if (!pending_decoded_image_) {
-    auto ret = avifDecoderNthImage(decoder_.get(), index);
-    if (ret != AVIF_RESULT_OK) {
-      // We shouldn't be called more times than specified in
-      // DecodeFrameCount(); possibly this should truncate if the initial
-      // count is wrong?
-      DCHECK_NE(ret, AVIF_RESULT_NO_IMAGES_REMAINING);
-      return false;
-    }
+  auto ret = avifDecoderNthImage(decoder_.get(), index);
+  if (ret != AVIF_RESULT_OK) {
+    // We shouldn't be called more times than specified in
+    // DecodeFrameCount(); possibly this should truncate if the initial
+    // count is wrong?
+    DCHECK_NE(ret, AVIF_RESULT_NO_IMAGES_REMAINING);
+    return false;
   }
 
   const auto* image = decoder_->image;
@@ -402,11 +401,7 @@ bool AVIFImageDecoder::DecodeImage(size_t index) {
   decode_to_half_float_ =
       is_high_bit_depth_ &&
       high_bit_depth_decoding_option_ == kHighBitDepthToHalfFloat;
-
-  if (!IsSizeAvailable())
-    return SetSize(image->width, image->height);
-  // All frames must be the same size.
-  return Size() == IntSize(image->width, image->height);
+  return true;
 }
 
 bool AVIFImageDecoder::UpdateColorTransform(const gfx::ColorSpace& src_cs,

@@ -65,7 +65,7 @@ void FontFaceCacheTest::AppendTestFaceForCapabilities(const CSSValue& stretch,
       CSSFontFamilyValue::Create(kFontNameForTesting);
   CSSFontFaceSrcValue* src = CSSFontFaceSrcValue::CreateLocal(
       kFontNameForTesting, network::mojom::CSPDisposition::DO_NOT_CHECK,
-      OriginClean::kTrue);
+      OriginClean::kTrue, false /* is_ad_related */);
   CSSValueList* src_value_list = CSSValueList::CreateCommaSeparated();
   src_value_list->Append(*src);
   CSSPropertyValue properties[] = {

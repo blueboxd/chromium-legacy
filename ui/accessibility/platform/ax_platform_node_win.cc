@@ -5220,6 +5220,7 @@ int AXPlatformNodeWin::MSAARole() {
       // hierarchy, matching the HWND.
       return ROLE_SYSTEM_PANE;
 
+    case ax::mojom::Role::kImeCandidate:
     case ax::mojom::Role::kIgnored:
     case ax::mojom::Role::kKeyboard:
     case ax::mojom::Role::kNone:
@@ -5775,6 +5776,10 @@ base::string16 AXPlatformNodeWin::UIAAriaRole() {
 
     case ax::mojom::Role::kImageMap:
       return L"document";
+
+    case ax::mojom::Role::kImeCandidate:
+      // Internal role, not used on Windows.
+      return L"group";
 
     case ax::mojom::Role::kInputTime:
       return L"group";
@@ -6703,6 +6708,7 @@ LONG AXPlatformNodeWin::ComputeUIAControlType() {  // NOLINT(runtime/int)
     case ax::mojom::Role::kPane:
     case ax::mojom::Role::kWindow:
     case ax::mojom::Role::kIgnored:
+    case ax::mojom::Role::kImeCandidate:
     case ax::mojom::Role::kKeyboard:
     case ax::mojom::Role::kNone:
     case ax::mojom::Role::kPresentational:

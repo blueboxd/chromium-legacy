@@ -698,8 +698,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
       std::string() /* searchable_form_encoding */,
       GURL() /* client_side_redirect_url */,
       base::nullopt /* devtools_initiator_info */,
-      false /* attach_same_site_cookies */, nullptr /* trust_token_params */,
-      impression);
+      false /* force_ignore_site_for_cookies */,
+      nullptr /* trust_token_params */, impression);
 
   // Shift-Reload forces bypassing caches and service workers.
   if (common_params->navigation_type ==
@@ -2258,6 +2258,19 @@ void NavigationRequest::OnRequestStarted(base::TimeTicks timestamp) {
   frame_tree_node_->navigator()->LogResourceRequestTime(timestamp,
                                                         common_params_->url);
 }
+namespace {
+
+void OnServiceWorkerAccessedThreadSafeWrapper(
+    base::WeakPtr<NavigationRequest> navigation,
+    const GURL& scope,
+    AllowServiceWorkerResult allowed) {
+  RunOrPostTaskOnThread(
+      FROM_HERE, BrowserThread::UI,
+      base::BindOnce(&NavigationRequest::OnServiceWorkerAccessed, navigation,
+                     scope, allowed));
+}
+
+}  // namespace
 
 void NavigationRequest::OnStartChecksComplete(
     NavigationThrottle::ThrottleCheckResult result) {
@@ -2336,7 +2349,9 @@ void NavigationRequest::OnStartChecksComplete(
         static_cast<ServiceWorkerContextWrapper*>(
             partition->GetServiceWorkerContext());
     service_worker_handle_ = std::make_unique<ServiceWorkerMainResourceHandle>(
-        service_worker_context);
+        service_worker_context,
+        base::BindRepeating(&OnServiceWorkerAccessedThreadSafeWrapper,
+                            weak_factory_.GetWeakPtr()));
   }
 
   if (IsSchemeSupportedForAppCache(common_params_->url)) {
@@ -2441,6 +2456,12 @@ void NavigationRequest::OnStartChecksComplete(
       this, IsServedFromBackForwardCache(), std::move(interceptor));
 
   DCHECK(!render_frame_host_);
+}
+
+void NavigationRequest::OnServiceWorkerAccessed(
+    const GURL& scope,
+    AllowServiceWorkerResult allowed) {
+  GetDelegate()->OnServiceWorkerAccessed(this, scope, allowed);
 }
 
 void NavigationRequest::OnRedirectChecksComplete(

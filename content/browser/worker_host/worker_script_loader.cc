@@ -10,7 +10,7 @@
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/service_worker/service_worker_main_resource_handle.h"
 #include "content/browser/service_worker/service_worker_main_resource_handle_core.h"
-#include "content/browser/service_worker/service_worker_request_handler.h"
+#include "content/browser/service_worker/service_worker_navigation_loader_interceptor.h"
 #include "content/browser/worker_host/worker_script_fetch_initiator.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -42,14 +42,14 @@ WorkerScriptLoader::WorkerScriptLoader(
       traffic_annotation_(traffic_annotation) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  std::unique_ptr<NavigationLoaderInterceptor> service_worker_interceptor;
   if (!service_worker_handle_) {
     // The DedicatedWorkerHost or SharedWorkerHost is already destroyed.
     Abort();
     return;
   }
-  service_worker_interceptor = ServiceWorkerRequestHandler::CreateForWorker(
-      resource_request_, process_id, service_worker_handle_);
+  auto service_worker_interceptor =
+      ServiceWorkerNavigationLoaderInterceptor::CreateForWorker(
+          resource_request_, process_id, service_worker_handle_);
 
   if (service_worker_interceptor)
     interceptors_.push_back(std::move(service_worker_interceptor));

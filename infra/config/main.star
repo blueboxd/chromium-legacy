@@ -98,28 +98,12 @@ luci.milo(
 
 exec('//recipes.star')
 
-exec('//buckets/ci.star')
-exec('//buckets/findit.star')
-exec('//buckets/goma.star')
-exec('//buckets/gpu.try.star')
-exec('//buckets/swangle.try.star')
-exec('//buckets/try.star')
-exec('//buckets/webrtc.star')
-exec('//buckets/webrtc.fyi.star')
-
-exec('//consoles/android.packager.star')
-exec('//consoles/chromium.goma.star')
-exec('//consoles/chromium.goma.fyi.star')
-exec('//consoles/chromium.goma.migration.star')
-exec('//consoles/chromium.webrtc.star')
-exec('//consoles/chromium.webrtc.fyi.star')
-exec('//consoles/findit.star')
-exec('//consoles/goma.latest.star')
-exec('//consoles/luci.chromium.goma.star')
-exec('//consoles/luci.chromium.try.star')
-exec('//consoles/sheriff.ios.star')
-
 exec('//notifiers.star')
+
+exec('//subprojects/chromium/main.star')
+exec('//subprojects/findit/main.star')
+exec('//subprojects/goma/main.star')
+exec('//subprojects/webrtc/main.star')
 
 exec('//generators/cq-builders-md.star')
 # This should be exec'ed before exec'ing scheduler-noop-jobs.star because

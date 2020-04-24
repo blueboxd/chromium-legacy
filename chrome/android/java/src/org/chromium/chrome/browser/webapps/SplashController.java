@@ -70,14 +70,6 @@ public class SplashController
         }
     };
 
-    @IntDef({SplashHidesReason.OTHER, SplashHidesReason.LOAD_FAILED, SplashHidesReason.CRASH})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface SplashHidesReason {
-        int OTHER = 0;
-        int LOAD_FAILED = 1;
-        int CRASH = 2;
-    }
-
     @IntDef({TranslucencyRemoval.NONE, TranslucencyRemoval.ON_SPLASH_SHOWN,
             TranslucencyRemoval.ON_SPLASH_HIDDEN})
     @Retention(RetentionPolicy.SOURCE)
@@ -199,27 +191,34 @@ public class SplashController
     @Override
     public void didFirstVisuallyNonEmptyPaint(Tab tab) {
         if (canHideSplashScreen()) {
-            hideSplash(tab, SplashHidesReason.OTHER);
+            hideSplash(tab, false /* loadFailed */);
+        }
+    }
+
+    @Override
+    public void onDidAttachInterstitialPage(Tab tab) {
+        if (canHideSplashScreen()) {
+            hideSplash(tab, true /* loadFailed */);
         }
     }
 
     @Override
     public void onPageLoadFinished(Tab tab, String url) {
         if (canHideSplashScreen()) {
-            hideSplash(tab, SplashHidesReason.OTHER);
+            hideSplash(tab, false /* loadFailed */);
         }
     }
 
     @Override
     public void onPageLoadFailed(Tab tab, int errorCode) {
         if (canHideSplashScreen()) {
-            hideSplash(tab, SplashHidesReason.LOAD_FAILED);
+            hideSplash(tab, true /* loadFailed */);
         }
     }
 
     @Override
     public void onCrash(Tab tab) {
-        hideSplash(tab, SplashHidesReason.CRASH);
+        hideSplash(tab, true /* loadFailed */);
     }
 
     private void showSplash() {
@@ -281,7 +280,7 @@ public class SplashController
     }
 
     /** Hides the splash screen. */
-    private void hideSplash(final Tab tab, final @SplashHidesReason int reason) {
+    private void hideSplash(final Tab tab, boolean loadFailed) {
         if (mTranslucencyRemovalStrategy == TranslucencyRemoval.ON_SPLASH_HIDDEN
                 && !mRemovedTranslucency) {
             removeTranslucency();
@@ -297,7 +296,7 @@ public class SplashController
             mParentView.invalidate();
         }
 
-        if (reason == SplashHidesReason.LOAD_FAILED || reason == SplashHidesReason.CRASH) {
+        if (loadFailed) {
             animateHideSplash(tab);
             return;
         }

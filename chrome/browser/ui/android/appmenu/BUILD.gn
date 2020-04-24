@@ -30,7 +30,6 @@ android_resources("java_resources") {
   sources = [ "java/res/values/styles.xml" ]
   deps = [
     "//components/browser_ui/styles/android:java_resources",
-    "//third_party/android_deps:com_google_android_material_material_java",
     "//ui/android:ui_java_resources",
   ]
 }

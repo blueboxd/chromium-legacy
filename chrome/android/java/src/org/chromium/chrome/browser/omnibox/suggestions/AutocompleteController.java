@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.omnibox.suggestions;
 
 import android.text.TextUtils;
+import android.util.SparseArray;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -46,8 +47,8 @@ public class AutocompleteController {
      * Listener for receiving OmniboxSuggestions.
      */
     public interface OnSuggestionsReceivedListener {
-        void onSuggestionsReceived(
-                List<OmniboxSuggestion> suggestions, String inlineAutocompleteText);
+        void onSuggestionsReceived(List<OmniboxSuggestion> suggestions,
+                SparseArray<String> groupHeaders, String inlineAutocompleteText);
     }
 
     /**
@@ -88,7 +89,7 @@ public class AutocompleteController {
         mUseCachedZeroSuggestResults = true;
         List<OmniboxSuggestion> suggestions =
                 OmniboxSuggestion.getCachedOmniboxSuggestionsForZeroSuggest();
-        if (suggestions != null) mListener.onSuggestionsReceived(suggestions, "");
+        if (suggestions != null) mListener.onSuggestionsReceived(suggestions, null, "");
     }
 
     /**
@@ -178,7 +179,7 @@ public class AutocompleteController {
      *
      * <p>
      * Calling this method with {@code false}, will result in
-     * {@link #onSuggestionsReceived(List, String, long)} being called with an empty
+     * {@link #onSuggestionsReceived(List, SparseArray, String, long)} being called with an empty
      * result set.
      *
      * @param clear Whether to clear the most recent autocomplete results.
@@ -228,7 +229,8 @@ public class AutocompleteController {
 
     @CalledByNative
     protected void onSuggestionsReceived(List<OmniboxSuggestion> suggestions,
-            String inlineAutocompleteText, long currentNativeAutocompleteResult) {
+            SparseArray<String> groupHeaders, String inlineAutocompleteText,
+            long currentNativeAutocompleteResult) {
         assert mListener != null : "Ensure a listener is set prior generating suggestions.";
         // Run through new providers to get an updated list of suggestions.
         suggestions = mVoiceSuggestionProvider.addVoiceSuggestions(
@@ -237,7 +239,7 @@ public class AutocompleteController {
         mCurrentNativeAutocompleteResult = currentNativeAutocompleteResult;
 
         // Notify callbacks of suggestions.
-        mListener.onSuggestionsReceived(suggestions, inlineAutocompleteText);
+        mListener.onSuggestionsReceived(suggestions, groupHeaders, inlineAutocompleteText);
         if (mWaitingForSuggestionsToCache) {
             OmniboxSuggestion.cacheOmniboxSuggestionListForZeroSuggest(suggestions);
         }
@@ -291,6 +293,30 @@ public class AutocompleteController {
         suggestionList.add(suggestion);
     }
 
+    /**
+     * Create a map (SparseArray) of Group Id to Group Header text.
+     *
+     * @param size Size hint for the newly created map.
+     * @return Empty map of Group ID to Header title.
+     */
+    @CalledByNative
+    private static SparseArray<String> createOmniboxGroupHeadersMap(int size) {
+        return new SparseArray<String>(size);
+    }
+
+    /**
+     * Insert element to Group Headers map.
+     *
+     * @param headersMap SparseArray of Group Id to Headers.
+     * @param groupId ID of a Group.
+     * @param headerText Group title.
+     */
+    @CalledByNative
+    private static void addOmniboxGroupHeaderToMap(
+            SparseArray<String> headersMap, int groupId, String headerText) {
+        headersMap.put(groupId, headerText);
+    }
+
     @CalledByNative
     private static OmniboxSuggestion buildOmniboxSuggestion(int nativeType, boolean isSearchType,
             int relevance, int transition, String contents, int[] contentClassificationOffsets,
@@ -298,7 +324,7 @@ public class AutocompleteController {
             int[] descriptionClassificationOffsets, int[] descriptionClassificationStyles,
             SuggestionAnswer answer, String fillIntoEdit, String url, String imageUrl,
             String imageDominantColor, boolean isStarred, boolean isDeletable,
-            String postContentType, byte[] postData) {
+            String postContentType, byte[] postData, int groupId) {
         assert contentClassificationOffsets.length == contentClassificationStyles.length;
         List<MatchClassification> contentClassifications = new ArrayList<>();
         for (int i = 0; i < contentClassificationOffsets.length; i++) {
@@ -316,7 +342,7 @@ public class AutocompleteController {
         return new OmniboxSuggestion(nativeType, isSearchType, relevance, transition, contents,
                 contentClassifications, description, descriptionClassifications, answer,
                 fillIntoEdit, url, imageUrl, imageDominantColor, isStarred, isDeletable,
-                postContentType, postData);
+                postContentType, postData, groupId);
     }
 
     /**

@@ -286,7 +286,7 @@ gfx::Size CandidateView::CalculatePreferredSize() const {
 
 void CandidateView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->SetName(candidate_label_->GetText());
-  node_data->role = ax::mojom::Role::kMenuItem;
+  node_data->role = ax::mojom::Role::kImeCandidate;
 }
 
 }  // namespace ime

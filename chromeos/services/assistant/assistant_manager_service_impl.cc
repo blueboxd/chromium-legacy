@@ -33,6 +33,7 @@
 #include "chromeos/services/assistant/assistant_manager_service_delegate.h"
 #include "chromeos/services/assistant/media_session/assistant_media_session.h"
 #include "chromeos/services/assistant/platform_api_impl.h"
+#include "chromeos/services/assistant/public/cpp/assistant_client.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom-shared.h"
 #include "chromeos/services/assistant/service_context.h"
@@ -143,14 +144,12 @@ std::vector<std::pair<std::string, std::string>> ToAuthTokensOrEmpty(
 }  // namespace
 
 AssistantManagerServiceImpl::AssistantManagerServiceImpl(
-    mojom::Client* client,
     ServiceContext* context,
     std::unique_ptr<AssistantManagerServiceDelegate> delegate,
     std::unique_ptr<network::PendingSharedURLLoaderFactory>
         pending_url_loader_factory,
     base::Optional<std::string> s3_server_uri_override)
-    : client_(client),
-      media_session_(std::make_unique<AssistantMediaSession>(client_, this)),
+    : media_session_(std::make_unique<AssistantMediaSession>(this)),
       action_module_(std::make_unique<action::CrosActionModule>(
           this,
           assistant::features::IsAppSupportEnabled(),
@@ -174,7 +173,7 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
 
   mojo::Remote<media_session::mojom::MediaControllerManager>
       media_controller_manager;
-  client->RequestMediaControllerManager(
+  AssistantClient::Get()->RequestMediaControllerManager(
       media_controller_manager.BindNewPipeAndPassReceiver());
   media_controller_manager->CreateActiveMediaController(
       media_controller_.BindNewPipeAndPassReceiver());

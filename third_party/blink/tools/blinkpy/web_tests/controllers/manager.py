@@ -311,8 +311,7 @@ class Manager(object):
 
     def _prepare_lists(self, paths, test_names):
         tests_to_skip = self._finder.skip_tests(paths, test_names,
-                                                self._expectations,
-                                                self._http_tests(test_names))
+                                                self._expectations)
         tests_to_run = [
             test for test in test_names if test not in tests_to_skip
         ]

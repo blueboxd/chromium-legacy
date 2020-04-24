@@ -89,6 +89,9 @@ void LinkStyle::NotifyFinished(Resource* resource) {
       GetDocument(), cached_style_sheet->GetResponse().ResponseUrl(),
       cached_style_sheet->GetResponse().IsCorsSameOrigin(),
       cached_style_sheet->GetReferrerPolicy(), cached_style_sheet->Encoding());
+  if (cached_style_sheet->GetResourceRequest().IsAdResource()) {
+    parser_context->SetIsAdRelated();
+  }
 
   if (StyleSheetContents* parsed_sheet =
           cached_style_sheet->CreateParsedStyleSheetFromCache(parser_context)) {

@@ -116,10 +116,6 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
 
   MainParams* params_;
 
-#if defined(OS_ANDROID)
-  std::unique_ptr<SafeBrowsingService> safe_browsing_service_;
-#endif
-
   std::unique_ptr<FeatureListCreator> feature_list_creator_;
 };
 

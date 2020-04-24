@@ -351,6 +351,7 @@ const InternalRoleEntry kInternalRoles[] = {
     {ax::mojom::Role::kIgnored, "Ignored"},
     {ax::mojom::Role::kImageMap, "ImageMap"},
     {ax::mojom::Role::kImage, "Image"},
+    {ax::mojom::Role::kImeCandidate, "ImeCandidate"},
     {ax::mojom::Role::kInlineTextBox, "InlineTextBox"},
     {ax::mojom::Role::kInputTime, "InputTime"},
     {ax::mojom::Role::kKeyboard, "Keyboard"},
@@ -3778,6 +3779,7 @@ bool AXObject::NameFromContents(bool recursive) const {
     case ax::mojom::Role::kIframePresentational:
     case ax::mojom::Role::kIframe:
     case ax::mojom::Role::kImage:
+    case ax::mojom::Role::kImeCandidate:  // Internal role, not used on the web.
     case ax::mojom::Role::kInputTime:
     case ax::mojom::Role::kKeyboard:
     case ax::mojom::Role::kListBox:

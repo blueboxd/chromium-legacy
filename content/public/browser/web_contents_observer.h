@@ -11,8 +11,10 @@
 #include "base/optional.h"
 #include "base/process/kill.h"
 #include "base/process/process_handle.h"
+#include "base/threading/thread_restrictions.h"
 #include "components/viz/common/vertical_scroll_direction.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/allow_service_worker_result.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/reload_type.h"
 #include "content/public/browser/visibility.h"
@@ -612,6 +614,18 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   // portal pending adoption. |predecessor_contents| is non-null, but may
   // subsequently be destroyed if it is not adopted.
   virtual void DidActivatePortal(WebContents* predecessor_contents) {}
+
+  // Called when the RenderFrameHost tries to use a ServiceWorker
+  // (e.g. via navigation.serviceWorker API).
+  virtual void OnServiceWorkerAccessed(RenderFrameHost* render_frame_host,
+                                       const GURL& scope,
+                                       AllowServiceWorkerResult allowed) {}
+  // Called when the NavigationHandle accesses ServiceWorker to see if the
+  // network request should be handled by the ServiceWorker instead
+  // (e.g. for navigations to URLs which are in scope of a ServiceWorker).
+  virtual void OnServiceWorkerAccessed(NavigationHandle* navigation_handle,
+                                       const GURL& scope,
+                                       AllowServiceWorkerResult allowed) {}
 
   // IPC::Listener implementation.
   // DEPRECATED: Use (i.e. override) the other overload instead:

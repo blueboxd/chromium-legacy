@@ -216,16 +216,25 @@ class LaunchCommand(object):
             LOGGER.info('Failure for passed tests %s: %s' % (status, failure))
         break
       self._log_parser.copy_screenshots(outdir_attempt)
+
       # If tests are not completed(interrupted or did not start)
       # re-run them with the same number of shards,
       # otherwise re-run with shards=1 and exclude passed tests.
       cancelled_attempt = cancelled_statuses.intersection(
           self.test_results['attempts'][-1]['failed'].keys())
+
+      # Item in cancelled_statuses is used to config for next attempt. The usage
+      # should be confined in this method. Real tests affected by these statuses
+      # will be marked timeout in results.
+      for status in cancelled_statuses:
+        self.test_results['attempts'][-1]['failed'].pop(status, None)
+
       if (not cancelled_attempt
           # If need to re-run less than 20 tests, 1 shard should be enough.
           or (len(running_tests) - len(self.egtests_app.excluded_tests)
               <= MAXIMUM_TESTS_PER_SHARD_FOR_RERUN)):
         shards = 1
+
     self.summary_log()
 
     return {

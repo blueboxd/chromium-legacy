@@ -38,7 +38,6 @@ void TileToProto(upboarding::Tile* entry,
   // Set ImageMetadatas.
   for (auto& image : entry->image_metadatas) {
     auto* data = proto->add_image_metadatas();
-    data->set_id(image.id);
     data->set_url(image.url.spec());
   }
 
@@ -58,7 +57,7 @@ void TileFromProto(upboarding::query_tiles::proto::Tile* proto,
   entry->accessibility_text = proto->accessibility_text();
 
   for (const auto& image_md : proto->image_metadatas()) {
-    entry->image_metadatas.emplace_back(image_md.id(), GURL(image_md.url()));
+    entry->image_metadatas.emplace_back(GURL(image_md.url()));
   }
 
   for (int i = 0; i < proto->sub_tiles_size(); i++) {

@@ -349,6 +349,7 @@
 <translation id="1465176863081977902">Պատճենել ձայնանյութի հասցեն</translation>
 <translation id="1465827627707997754">Պիցցայի կտոր</translation>
 <translation id="1468571364034902819">Հնարավոր չէ օգտագործել այս պրոֆիլը</translation>
+<translation id="1470084204649225129">{NUM_TABS,plural, =1{Ավելացնել ներդիր նոր խմբում}one{Ավելացնել ներդիրներ նոր խմբում}other{Ավելացնել ներդիրներ նոր խմբում}}</translation>
 <translation id="1472675084647422956">Ցուցադրել ավելի շատ</translation>
 <translation id="1475502736924165259">Ֆայլը պարունակում է հավաստագրեր, որոնք չեն համապատասխանում մյուս կատեգորիաներից ոչ մեկին</translation>
 <translation id="1476088332184200792">Պատճենել սարքում</translation>
@@ -477,6 +478,7 @@
 <translation id="1629314197035607094">Գաղտնաբառի ժամկետը լրացել է</translation>
 <translation id="1630768113285622200">Վերագործարկել և շարունակել</translation>
 <translation id="1632803087685957583">Թույլ է տալիս կարգավորել բառերի կանխատեսումը, ստեղների կրկնման արագությունը և այլն</translation>
+<translation id="1634783886312010422">Դուք արդեն փոխե՞լ եք այս գաղտնաբառը <ph name="WEBSITE" /> կայքում</translation>
 <translation id="1635033183663317347">Տեղադրվել է ձեր խնամակալի կողմից:</translation>
 <translation id="1637224376458524414">Օգտագործեք այս էջանիշը ձեր iPhone-ում</translation>
 <translation id="1637765355341780467">Պրոֆիլը բացելիս սխալ առաջացավ: Հնարավոր է` որոշ գործառույթներ անհասանելի լինեն:</translation>
@@ -3390,6 +3392,7 @@
 <translation id="5542949973455282971">Միանում է <ph name="CARRIER_NAME" /> ցանցին</translation>
 <translation id="5543983818738093899">Կարգավիճակի ստուգում...</translation>
 <translation id="554517032089923082">GTC</translation>
+<translation id="5545335608717746497">{NUM_TABS,plural, =1{Ավելացնել ներդիր խմբում}one{Ավելացնել ներդիրներ խմբում}other{Ավելացնել ներդիրներ խմբում}}</translation>
 <translation id="5546865291508181392">Find</translation>
 <translation id="5548159762883465903">{NUM_OTHER_TABS,plural, =0{«<ph name="TAB_TITLE" />»}=1{«<ph name="TAB_TITLE" />» ու ևս 1 ներդիր}one{«<ph name="TAB_TITLE" />» ու ևս # ներդիր}other{«<ph name="TAB_TITLE" />» ու ևս # ներդիր}}</translation>
 <translation id="5548606607480005320">Անվտանգության ստուգում</translation>
@@ -4214,6 +4217,7 @@
 <translation id="6659594942844771486">Ներդիր</translation>
 <translation id="6664237456442406323">Ձեր համակարգիչը կազմաձևված է սարքակազմի սխալ ID-ով: Սա թույլ չի տալիս, որպեսզի Chrome OS-ը թարմացվի անվտանգության վերջին նորացումներով և ձեր համակարգիչը <ph name="BEGIN_BOLD" />կարող է խոցելի դառնալ վնասարար հարձակումների համար<ph name="END_BOLD" />:</translation>
 <translation id="6664774537677393800">Պրոֆիլը բացելիս սխալ առաջացավ: Դուրս եկեք հաշվից ու նորից մուտք գործեք:</translation>
+<translation id="6670142487971298264"><ph name="APP_NAME" /> հավելվածն այժմ հասանելի է</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="6675665718701918026">Ցուցիչ սարքը միացված է</translation>
 <translation id="6676212663108450937">Ձայնի ճանաչման փորձերի համար խորհուրդ ենք տալիս օգտագործել ականջակալներ</translation>
@@ -4543,6 +4547,7 @@
 <translation id="7108338896283013870">Թաքցնել</translation>
 <translation id="7108668606237948702">enter</translation>
 <translation id="7109543803214225826">Դյուրանցումը հեռացվեց</translation>
+<translation id="7110644433780444336">{NUM_TABS,plural, =1{Ավելացնել ներդիր խմբում}one{Ավելացնել ներդիրներ խմբում}other{Ավելացնել ներդիրներ խմբում}}</translation>
 <translation id="7113502843173351041">Տեսնել ձեր էլ․ հասցեն</translation>
 <translation id="7114054701490058191">Գաղտնաբառերը չեն համընկնում</translation>
 <translation id="7114648273807173152">Smart Lock-ն օգտագործելու համար մտեք ձեր Google հաշիվ, անցեք Կարգավորումներ &gt; Միացված սարքեր &gt; Ձեր հեռախոսը &gt; Smart Lock:</translation>
@@ -4586,6 +4591,7 @@
 <translation id="7170041865419449892">Ծածկույթից դուրս</translation>
 <translation id="7171259390164035663">Հրաժարվել</translation>
 <translation id="7171559745792467651">Տեղադրեք հավելվածներ, որոնք օգտագործում եք ձեր մյուս սարքերում</translation>
+<translation id="7172470549472604877">{NUM_TABS,plural, =1{Ավելացնել ներդիր նոր խմբում}one{Ավելացնել ներդիրներ նոր խմբում}other{Ավելացնել ներդիրներ նոր խմբում}}</translation>
 <translation id="7174199383876220879">Նորո՛ւյթ։ Վերահսկեք երաժշտությունը, տեսանյութերը և այլն։</translation>
 <translation id="7175037578838465313"><ph name="NAME" /> ցանցի կարգավորում</translation>
 <translation id="7175353351958621980">Բեռնված է հետևյալ ուղուց՝</translation>
@@ -5163,6 +5169,7 @@
 <translation id="7925247922861151263">AAA ստուգումը չհաջողվեց</translation>
 <translation id="7925285046818567682">Սպասում ենք <ph name="HOST_NAME" />-ին…</translation>
 <translation id="7926423016278357561">Սա ես չեմ։</translation>
+<translation id="7928175190925744466">Արդեն փոխե՞լ եք այս գաղտնաբառը</translation>
 <translation id="7928836894214140642">Կառավարվում է <ph name="ENROLLMENT_DOMAIN" /> կայքի կողմից</translation>
 <translation id="7930294771522048157">Վճարման պահված եղանակները կհայտնվեն այստեղ</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> հավելվածը կիսվում է ձեր էկրանով և ձայնով:</translation>

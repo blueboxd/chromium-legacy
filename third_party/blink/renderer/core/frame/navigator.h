@@ -45,7 +45,7 @@ class CORE_EXPORT Navigator final : public ScriptWrappable,
                                     public NavigatorLanguage,
                                     public NavigatorOnLine,
                                     public NavigatorUA,
-                                    public DOMWindowClient,
+                                    public ExecutionContextClient,
                                     public Supplementable<Navigator> {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(Navigator);

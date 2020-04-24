@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/infobars/test/fake_infobar_ios.h"
 #import "ios/chrome/browser/ui/badges/badge_item.h"
 #include "ios/chrome/browser/ui/badges/badge_type_util.h"
+#import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/ui/infobars/test/fake_infobar_ui_delegate.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
@@ -33,7 +34,8 @@ class InfobarBadgeTabHelperTest : public PlatformTest {
   InfobarBadgeTabHelperTest()
       : delegate_([[FakeInfobarTabHelperDelegate alloc] init]) {
     // Enable kIOSInfobarUIReboot flag.
-    feature_list_.InitAndEnableFeature(kIOSInfobarUIReboot);
+    feature_list_.InitWithFeatures({kIOSInfobarUIReboot},
+                                   {kInfobarUIRebootOnlyiOS13});
 
     // Setup navigation manager. Needed for InfobarManager.
     web_state_.SetNavigationManager(

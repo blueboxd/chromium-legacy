@@ -149,7 +149,11 @@ AccessibilityController::AccessibilityController(
     : log_accessibility_events_(false),
       web_view_test_proxy_(web_view_test_proxy) {}
 
-AccessibilityController::~AccessibilityController() {}
+AccessibilityController::~AccessibilityController() {
+  // v8::Persistent will leak on destroy, due to the default
+  // NonCopyablePersistentTraits (it claims this may change in the future).
+  notification_callback_.Reset();
+}
 
 void AccessibilityController::Reset() {
   elements_.Clear();

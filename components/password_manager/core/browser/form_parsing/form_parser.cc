@@ -216,7 +216,7 @@ bool MatchesInteractability(const ProcessedField& processed_field,
   return (processed_field.interactability >= interactability_bar) ||
          (interactability_bar == Interactability::kCertain &&
           (processed_field.field->properties_mask &
-           FieldPropertiesFlags::AUTOFILLED));
+           FieldPropertiesFlags::kAutofilled));
 }
 
 bool DoesStringContainOnlyDigits(const base::string16& s) {
@@ -501,8 +501,8 @@ bool IsLikelyPassword(const ProcessedField& field, size_t* ignored_readonly) {
   // that a user typed or Chrome filled into that field in the past is an
   // indicator that the readonly was only temporary.
   if (field.field->is_readonly &&
-      !(field.field->properties_mask & (FieldPropertiesFlags::USER_TYPED |
-                                        FieldPropertiesFlags::AUTOFILLED))) {
+      !(field.field->properties_mask & (FieldPropertiesFlags::kUserTyped |
+                                        FieldPropertiesFlags::kAutofilled))) {
     ++*ignored_readonly;
     return false;
   }
@@ -901,7 +901,7 @@ std::vector<ProcessedField> ProcessFields(
     ProcessedField processed_field = {
         .field = &field, .autocomplete_flag = flag, .is_password = is_password};
 
-    if (field.properties_mask & FieldPropertiesFlags::USER_TYPED)
+    if (field.properties_mask & FieldPropertiesFlags::kUserTyped)
       processed_field.interactability = Interactability::kCertain;
     else if (field.is_focusable)
       processed_field.interactability = Interactability::kPossible;
@@ -994,7 +994,7 @@ std::unique_ptr<PasswordForm> AssemblePasswordForm(
 
   for (const FormFieldData& field : form_data.fields) {
     if (field.form_control_type == "password" &&
-        (field.properties_mask & FieldPropertiesFlags::AUTOFILLED)) {
+        (field.properties_mask & FieldPropertiesFlags::kAutofilled)) {
       result->form_has_autofilled_value = true;
     }
   }

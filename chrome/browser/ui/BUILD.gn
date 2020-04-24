@@ -1633,6 +1633,8 @@ jumbo_static_library("ui") {
       "ash/launcher/extension_shelf_context_menu.h",
       "ash/launcher/extension_uninstaller.cc",
       "ash/launcher/extension_uninstaller.h",
+      "ash/launcher/lacros_browser_shelf_item_delegate.cc",
+      "ash/launcher/lacros_browser_shelf_item_delegate.h",
       "ash/launcher/launcher_app_updater.cc",
       "ash/launcher/launcher_app_updater.h",
       "ash/launcher/launcher_controller_helper.cc",
@@ -2067,6 +2069,8 @@ jumbo_static_library("ui") {
       "webui/settings/chromeos/search/search_handler_factory.h",
       "webui/settings/chromeos/search/settings_user_action_tracker.cc",
       "webui/settings/chromeos/search/settings_user_action_tracker.h",
+      "webui/settings/chromeos/search_strings_provider.cc",
+      "webui/settings/chromeos/search_strings_provider.h",
       "webui/settings/chromeos/server_printer_url_util.cc",
       "webui/settings/chromeos/server_printer_url_util.h",
       "webui/settings/chromeos/wallpaper_handler.cc",
@@ -4484,6 +4488,16 @@ if (is_chromeos) {
 }
 
 if (is_android) {
+  java_cpp_enum("infobar_android_enums") {
+    sources = [ "android/infobars/infobar_android.h" ]
+  }
+
+  android_library("infobar_android_enums_java") {
+    deps = [ "//third_party/android_deps:androidx_annotation_annotation_java" ]
+
+    srcjar_deps = [ ":infobar_android_enums" ]
+  }
+
   java_cpp_enum("tab_model_enums_java") {
     sources = [ "android/tab_model/tab_model.h" ]
   }

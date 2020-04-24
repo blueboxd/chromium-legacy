@@ -20,6 +20,7 @@
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_confirm_coordinator.h"
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_password_coordinator.h"
 #import "ios/chrome/browser/ui/infobars/infobar_constants.h"
+#import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/ui/infobars/infobar_positioner.h"
 #import "ios/chrome/browser/ui/infobars/test/test_infobar_password_delegate.h"
 #import "ios/chrome/browser/ui/infobars/test_infobar_delegate.h"
@@ -70,7 +71,8 @@ class InfobarContainerCoordinatorTest : public PlatformTest {
         base_view_controller_([[FakeBaseViewController alloc] init]),
         positioner_([[TestContainerCoordinatorPositioner alloc] init]) {
     // Enable kIOSInfobarUIReboot flag.
-    feature_list_.InitAndEnableFeature(kIOSInfobarUIReboot);
+    feature_list_.InitWithFeatures({kIOSInfobarUIReboot},
+                                   {kInfobarUIRebootOnlyiOS13});
 
     // Setup WebstateList, Webstate and NavigationManager (Needed for
     // InfobarManager).

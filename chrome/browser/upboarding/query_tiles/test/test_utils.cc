@@ -27,8 +27,7 @@ void SerializeEntry(const Tile* entry, std::stringstream& out) {
       << "  accessibility_text: " << entry->accessibility_text << " \n";
 
   for (const auto& image : entry->image_metadatas)
-    out << "image id: " << image.id
-        << " image url: " << image.url.possibly_invalid_spec() << " \n";
+    out << "image url: " << image.url.possibly_invalid_spec() << " \n";
 }
 
 }  // namespace
@@ -85,10 +84,8 @@ void ResetTestEntry(Tile* entry) {
   entry->display_text = "test display text";
   entry->accessibility_text = "read this test display text";
   entry->image_metadatas.clear();
-  entry->image_metadatas.emplace_back("image-test-id-1",
-                                      GURL("http://www.example.com"));
-  entry->image_metadatas.emplace_back("image-test-id-2",
-                                      GURL("http://www.fakeurl.com"));
+  entry->image_metadatas.emplace_back(GURL("http://www.example.com"));
+  entry->image_metadatas.emplace_back(GURL("http://www.fakeurl.com"));
 
   auto entry1 = std::make_unique<Tile>();
   entry1->id = "guid-2-1";

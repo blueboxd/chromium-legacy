@@ -29,15 +29,14 @@ void DeepCopyTiles(const Tile& input, Tile* out) {
 
 ImageMetadata::ImageMetadata() = default;
 
-ImageMetadata::ImageMetadata(const std::string& id, const GURL& url)
-    : id(id), url(url) {}
+ImageMetadata::ImageMetadata(const GURL& url) : url(url) {}
 
 ImageMetadata::~ImageMetadata() = default;
 
 ImageMetadata::ImageMetadata(const ImageMetadata& other) = default;
 
 bool ImageMetadata::operator==(const ImageMetadata& other) const {
-  return id == other.id && url == other.url;
+  return url == other.url;
 }
 
 bool Tile::operator==(const Tile& other) const {

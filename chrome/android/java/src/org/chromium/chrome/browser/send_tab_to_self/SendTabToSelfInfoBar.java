@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.send_tab_to_self;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.infobar.InfoBar;
+import org.chromium.chrome.browser.ui.messages.infobar.InfoBar;
 import org.chromium.chrome.browser.ui.messages.infobar.InfoBarCompactLayout;
 
 /**

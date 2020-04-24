@@ -42,14 +42,13 @@
             android:singleLine="true"
             android:hint="@string/search_or_type_web_address" />
 
-        <!-- TODO(shaktisahu): Create a QueryTileChip view with rounded image and X button. -->
         <org.chromium.ui.widget.ChipView
             android:id="@+id/query_tiles_chip"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
             android:visibility="gone"
-            style="@style/SuggestionChipContacts" />
+            style="@style/InputChipWithRemoveIcon" />
     </RelativeLayout>
 
     <!-- Padding start is applied so that microphone icon appears in the same location as it

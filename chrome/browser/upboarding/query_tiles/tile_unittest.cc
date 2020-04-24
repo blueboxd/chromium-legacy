@@ -44,10 +44,6 @@ TEST(TileTest, DeepComparison) {
   EXPECT_TRUE(test::AreTilesIdentical(lhs, rhs));
 
   // Test image metadatas changed.
-  rhs.image_metadatas.front().id = "changed";
-  EXPECT_FALSE(test::AreTilesIdentical(lhs, rhs));
-  test::ResetTestEntry(&rhs);
-
   rhs.image_metadatas.front().url = GURL("http://www.url-changed.com");
   EXPECT_FALSE(test::AreTilesIdentical(lhs, rhs));
   test::ResetTestEntry(&rhs);

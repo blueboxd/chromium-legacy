@@ -15,11 +15,12 @@ Usage example:
     --source_file /tmp/original.textpb
 """
 
+import base64
 import glob
 import os
 import protoc_util
 import subprocess
-import base64
+import sys
 import urllib.parse
 
 from absl import app
@@ -48,11 +49,14 @@ flags.DEFINE_string('direction', 'forward',
 
 COMPONENT_FEED_PROTO_PATH = 'components/feed/core/proto/v2'
 
-def text_to_binary():
-  with open(FLAGS.source_file, mode='r') as file:
-    value_text_proto = file.read()
+def read_input():
+  if FLAGS.source_file:
+    with open(FLAGS.source_file, mode='r') as file:
+      return file.read()
+  return sys.stdin.buffer.read()
 
-  encoded = protoc_util.encode_proto(value_text_proto, FLAGS.message,
+def text_to_binary():
+  encoded = protoc_util.encode_proto(read_input(), FLAGS.message,
                                      FLAGS.chromium_path,
                                      COMPONENT_FEED_PROTO_PATH)
 
@@ -64,13 +68,10 @@ def text_to_binary():
     with open(FLAGS.output_file, mode='wb') as file:
       file.write(encoded)
   else:
-    print(encoded)
+    sys.stdout.buffer.write(encoded)
 
 def binary_to_text():
-  with open(FLAGS.source_file, mode='rb') as file:
-    value_text_proto = file.read()
-
-  encoded = protoc_util.decode_proto(value_text_proto, FLAGS.message,
+  encoded = protoc_util.decode_proto(read_input(), FLAGS.message,
                                      FLAGS.chromium_path,
                                      COMPONENT_FEED_PROTO_PATH)
 
@@ -85,8 +86,6 @@ def main(argv):
     raise app.UsageError('Too many arguments. Unknown: ' + ' '.join(argv[1:]))
   if not FLAGS.chromium_path:
     raise app.UsageError('chromium_path flag must be set.')
-  if not FLAGS.source_file:
-    raise app.UsageError('source_file flag must be set.')
   if FLAGS.direction != 'forward' and FLAGS.direction != 'reverse':
     raise app.UsageError('direction must be forward or reverse')
 

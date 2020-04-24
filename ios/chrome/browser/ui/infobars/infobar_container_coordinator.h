@@ -32,6 +32,11 @@ class WebState;
 // means the view is now visible and part of the main window hierarchy.
 - (void)baseViewDidAppear;
 
+// Notifies the coordinator that its baseViewController's ViewWillDisappear.
+// This means the view is not visible and no longer part of the main window
+// hierarchy.
+- (void)baseViewWillDisappear;
+
 // YES if an Infobar is being presented for |webState|.
 - (BOOL)isInfobarPresentingForWebState:(web::WebState*)webState;
 

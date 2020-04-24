@@ -69,37 +69,6 @@ TEST_F(NetworkSessionConfiguratorTest, Defaults) {
   EXPECT_FALSE(params_.greased_http2_frame);
   EXPECT_FALSE(params_.enable_websocket_over_http2);
 
-  EXPECT_FALSE(params_.enable_quic);
-  EXPECT_FALSE(params_.enable_quic_proxies_for_https_urls);
-  EXPECT_EQ("Chrome/52.0.2709.0 Linux x86_64", quic_params_.user_agent_id);
-  EXPECT_EQ(0u, quic_params_.origins_to_force_quic_on.size());
-}
-
-TEST_F(NetworkSessionConfiguratorTest, Http2FieldTrialGroupNameDoesNotMatter) {
-  base::FieldTrialList::CreateFieldTrial("HTTP2", "Disable");
-
-  ParseFieldTrials();
-
-  EXPECT_TRUE(params_.enable_http2);
-}
-
-TEST_F(NetworkSessionConfiguratorTest, Http2FieldTrialDisable) {
-  std::map<std::string, std::string> field_trial_params;
-  field_trial_params["http2_enabled"] = "false";
-  variations::AssociateVariationParams("HTTP2", "Experiment",
-                                       field_trial_params);
-  base::FieldTrialList::CreateFieldTrial("HTTP2", "Experiment");
-
-  ParseFieldTrials();
-
-  EXPECT_FALSE(params_.enable_http2);
-}
-
-TEST_F(NetworkSessionConfiguratorTest, EnableQuicFromFieldTrialGroup) {
-  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
-
-  ParseFieldTrials();
-
   EXPECT_TRUE(params_.enable_quic);
   EXPECT_TRUE(quic_params_.retry_without_alt_svc_on_quic_errors);
   EXPECT_EQ(1350u, quic_params_.max_packet_length);
@@ -129,6 +98,40 @@ TEST_F(NetworkSessionConfiguratorTest, EnableQuicFromFieldTrialGroup) {
 
   EXPECT_EQ(net::DefaultSupportedQuicVersions(),
             quic_params_.supported_versions);
+  EXPECT_FALSE(params_.enable_quic_proxies_for_https_urls);
+  EXPECT_EQ("Chrome/52.0.2709.0 Linux x86_64", quic_params_.user_agent_id);
+  EXPECT_EQ(0u, quic_params_.origins_to_force_quic_on.size());
+}
+
+TEST_F(NetworkSessionConfiguratorTest, Http2FieldTrialGroupNameDoesNotMatter) {
+  base::FieldTrialList::CreateFieldTrial("HTTP2", "Disable");
+
+  ParseFieldTrials();
+
+  EXPECT_TRUE(params_.enable_http2);
+}
+
+TEST_F(NetworkSessionConfiguratorTest, Http2FieldTrialDisable) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["http2_enabled"] = "false";
+  variations::AssociateVariationParams("HTTP2", "Experiment",
+                                       field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("HTTP2", "Experiment");
+
+  ParseFieldTrials();
+
+  EXPECT_FALSE(params_.enable_http2);
+}
+
+TEST_F(NetworkSessionConfiguratorTest, DisableQuicFromFieldTrialGroup) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["enable_quic"] = "false";
+  variations::AssociateVariationParams("QUIC", "Disabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Disabled");
+
+  ParseFieldTrials();
+
+  EXPECT_FALSE(params_.enable_quic);
 }
 
 TEST_F(NetworkSessionConfiguratorTest, EnableQuicFromParams) {

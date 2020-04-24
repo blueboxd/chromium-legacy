@@ -162,15 +162,12 @@ void PluginVmManager::LaunchPluginVm() {
   }
 
   // Launching Plugin Vm goes through the following steps:
-  // 1) Start the Plugin Vm Dispatcher (no-op if already running)
-  //   -- If starting the dispatcher fails, try installing the PluginVM DLC.
-  // 2) Call ListVms to get the state of the VM
-  // 3) Start the VM if necessary
-  // 4) Show the UI.
-  UpdateVmState(base::BindOnce(&PluginVmManager::OnListVmsForLaunch,
-                               weak_ptr_factory_.GetWeakPtr()),
-                base::BindOnce(&PluginVmManager::InstallPluginVmDlc,
-                               weak_ptr_factory_.GetWeakPtr()));
+  // 1) Ensure the PluginVM DLC is installed.
+  // 2) Start the Plugin Vm Dispatcher. (no-op if already running)
+  // 3) Call ListVms to get the state of the VM.
+  // 4) Start the VM if necessary.
+  // 5) Show the UI.
+  InstallPluginVmDlc();
 }
 
 void PluginVmManager::AddVmStartingObserver(

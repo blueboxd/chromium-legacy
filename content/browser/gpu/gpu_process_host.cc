@@ -860,6 +860,8 @@ bool GpuProcessHost::Init() {
       switches::GetDeadlineToSynchronizeSurfaces();
   params.main_thread_task_runner =
       base::CreateSingleThreadTaskRunner({BrowserThread::UI});
+  params.info_collection_gpu_process =
+      kind_ == GPU_PROCESS_KIND_INFO_COLLECTION;
   gpu_host_ = std::make_unique<viz::GpuHostImpl>(
       this, std::move(viz_main_pending_remote), std::move(params));
 
@@ -1242,6 +1244,14 @@ viz::mojom::GpuService* GpuProcessHost::gpu_service() {
   DCHECK(gpu_host_);
   return gpu_host_->gpu_service();
 }
+
+#if defined(OS_WIN)
+viz::mojom::InfoCollectionGpuService*
+GpuProcessHost::info_collection_gpu_service() {
+  DCHECK(gpu_host_);
+  return gpu_host_->info_collection_gpu_service();
+}
+#endif
 
 int GpuProcessHost::GetIDForTesting() const {
   return process_->GetData().id;

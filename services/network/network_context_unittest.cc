@@ -799,7 +799,7 @@ TEST_F(NetworkContextTest, DefaultHttpNetworkSessionParams) {
       network_context->url_request_context()->quic_context()->params();
 
   EXPECT_TRUE(params.enable_http2);
-  EXPECT_FALSE(params.enable_quic);
+  EXPECT_TRUE(params.enable_quic);
   EXPECT_EQ(1350u, quic_params->max_packet_length);
   EXPECT_TRUE(quic_params->origins_to_force_quic_on.empty());
   EXPECT_FALSE(params.enable_user_alternate_protocol_ports);

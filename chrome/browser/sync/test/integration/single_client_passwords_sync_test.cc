@@ -11,8 +11,8 @@
 #include "chrome/browser/sync/test/integration/secondary_account_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
+#include "components/password_manager/core/browser/password_manager_features_util.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
-#include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/sync/password_sync_bridge.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
@@ -22,6 +22,7 @@
 
 namespace {
 
+using password_manager::features_util::SetAccountStorageOptIn;
 using passwords_helper::AddLogin;
 using passwords_helper::CreateTestPasswordForm;
 using passwords_helper::GetPasswordCount;
@@ -307,8 +308,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
 
   // Let the user opt in to the passwords account storage, and wait for it to
   // become active.
-  password_manager_util::SetAccountStorageOptIn(GetProfile(0)->GetPrefs(),
-                                                GetSyncService(0), true);
+  SetAccountStorageOptIn(GetProfile(0)->GetPrefs(), GetSyncService(0), true);
   PasswordSyncActiveChecker(GetSyncService(0)).Wait();
   ASSERT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::PASSWORDS));
 
@@ -341,8 +341,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
 
   // Let the user opt in to the passwords account storage, and wait for it to
   // become active.
-  password_manager_util::SetAccountStorageOptIn(GetProfile(0)->GetPrefs(),
-                                                GetSyncService(0), true);
+  SetAccountStorageOptIn(GetProfile(0)->GetPrefs(), GetSyncService(0), true);
   PasswordSyncActiveChecker(GetSyncService(0)).Wait();
   ASSERT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::PASSWORDS));
 
@@ -408,8 +407,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
 
   // Let the user opt in to the passwords account storage, and wait for it to
   // become active.
-  password_manager_util::SetAccountStorageOptIn(GetProfile(0)->GetPrefs(),
-                                                GetSyncService(0), true);
+  SetAccountStorageOptIn(GetProfile(0)->GetPrefs(), GetSyncService(0), true);
   PasswordSyncActiveChecker(GetSyncService(0)).Wait();
 
   // Make sure the password showed up in the account store.
@@ -448,8 +446,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
 
   // Let the user opt in to the passwords account storage, and wait for it to
   // become active.
-  password_manager_util::SetAccountStorageOptIn(GetProfile(0)->GetPrefs(),
-                                                GetSyncService(0), true);
+  SetAccountStorageOptIn(GetProfile(0)->GetPrefs(), GetSyncService(0), true);
   PasswordSyncActiveChecker(GetSyncService(0)).Wait();
 
   // Make sure the password showed up in the account store.
@@ -502,8 +499,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
 
   // Let the user opt in to the passwords account storage, and wait for it to
   // become active.
-  password_manager_util::SetAccountStorageOptIn(GetProfile(0)->GetPrefs(),
-                                                GetSyncService(0), true);
+  SetAccountStorageOptIn(GetProfile(0)->GetPrefs(), GetSyncService(0), true);
   PasswordSyncActiveChecker(GetSyncService(0)).Wait();
 
   // Make sure the password showed up in the account store.

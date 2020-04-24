@@ -71,26 +71,24 @@ class ServiceWorkerTestContentBrowserClient : public TestContentBrowserClient {
 
   ServiceWorkerTestContentBrowserClient() {}
 
-  bool AllowServiceWorkerOnIO(
+  AllowServiceWorkerResult AllowServiceWorkerOnIO(
       const GURL& scope,
       const GURL& site_for_cookies,
       const base::Optional<url::Origin>& top_frame_origin,
       const GURL& script_url,
-      content::ResourceContext* context,
-      base::RepeatingCallback<WebContents*()> wc_getter) override {
+      content::ResourceContext* context) override {
     logs_.emplace_back(scope, site_for_cookies, top_frame_origin, script_url);
-    return false;
+    return AllowServiceWorkerResult::No();
   }
 
-  bool AllowServiceWorkerOnUI(
+  AllowServiceWorkerResult AllowServiceWorkerOnUI(
       const GURL& scope,
       const GURL& site_for_cookies,
       const base::Optional<url::Origin>& top_frame_origin,
       const GURL& script_url,
-      content::BrowserContext* context,
-      base::RepeatingCallback<WebContents*()> wc_getter) override {
+      content::BrowserContext* context) override {
     logs_.emplace_back(scope, site_for_cookies, top_frame_origin, script_url);
-    return false;
+    return AllowServiceWorkerResult::No();
   }
 
   const std::vector<AllowServiceWorkerCallLog>& logs() const { return logs_; }

@@ -166,7 +166,9 @@ const GestureSourceType = (function() {
 // https://crbug.com/893608
 const SPEED_INSTANT = 400000;
 
-function smoothScroll(pixels_to_scroll, start_x, start_y, gesture_source_type, direction, speed_in_pixels_s, precise_scrolling_deltas, scroll_by_page, cursor_visible, scroll_by_percentage) {
+function smoothScroll(pixels_to_scroll, start_x, start_y, gesture_source_type,
+                      direction, speed_in_pixels_s, precise_scrolling_deltas,
+                      scroll_by_page, cursor_visible, scroll_by_percentage) {
   let pixels_to_scroll_x = 0;
   let pixels_to_scroll_y = 0;
   if (direction == "down") {
@@ -190,10 +192,16 @@ function smoothScroll(pixels_to_scroll, start_x, start_y, gesture_source_type, d
     pixels_to_scroll_x = pixels_to_scroll;
     pixels_to_scroll_y = pixels_to_scroll;
   }
-  return smoothScrollWithXY(pixels_to_scroll_x, pixels_to_scroll_y, start_x, start_y, gesture_source_type, speed_in_pixels_s, precise_scrolling_deltas, scroll_by_page, cursor_visible, scroll_by_percentage);
+  return smoothScrollWithXY(pixels_to_scroll_x, pixels_to_scroll_y, start_x,
+                            start_y, gesture_source_type, speed_in_pixels_s,
+                            precise_scrolling_deltas, scroll_by_page,
+                            cursor_visible, scroll_by_percentage);
 }
 
-function smoothScrollWithXY(pixels_to_scroll_x, pixels_to_scroll_y, start_x, start_y, gesture_source_type, speed_in_pixels_s, precise_scrolling_deltas, scroll_by_page, cursor_visible, scroll_by_percentage) {
+function smoothScrollWithXY(pixels_to_scroll_x, pixels_to_scroll_y, start_x,
+                            start_y, gesture_source_type, speed_in_pixels_s,
+                            precise_scrolling_deltas, scroll_by_page,
+                            cursor_visible, scroll_by_percentage) {
   return new Promise((resolve, reject) => {
     if (window.chrome && chrome.gpuBenchmarking) {
       chrome.gpuBenchmarking.smoothScrollByXY(pixels_to_scroll_x,
@@ -213,12 +221,14 @@ function smoothScrollWithXY(pixels_to_scroll_x, pixels_to_scroll_y, start_x, sta
   });
 }
 
-function wheelTick(scroll_tick, center, direction, speed_in_pixels_s) {
+function wheelTick(scroll_tick_x, scroll_tick_y, center, speed_in_pixels_s) {
   if (typeof(speed_in_pixels_s) == "undefined")
     speed_in_pixels_s = SPEED_INSTANT;
   // Do not allow precise scrolling deltas for tick wheel scroll.
-  return smoothScroll(scroll_tick * pixelsPerTick(), center.x, center.y, GestureSourceType.MOUSE_INPUT,
-                      direction, speed_in_pixels_s, false /* precise_scrolling_deltas */);
+  return smoothScrollWithXY(scroll_tick_x * pixelsPerTick(),
+                            scroll_tick_y * pixelsPerTick(),
+                            center.x, center.y, GestureSourceType.MOUSE_INPUT,
+                            speed_in_pixels_s, false /* precise_scrolling_deltas */);
 }
 
 const LEGACY_MOUSE_WHEEL_TICK_MULTIPLIER = 120;

@@ -9,6 +9,7 @@
 <translation id="1384959399684842514">பதிவிறக்கம் இடைநிறுத்தப்பட்டது</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="2079545284768500474">செயல்தவிர்</translation>
+<translation id="2146738493024040262">இன்ஸ்டண்ட் ஆப்ஸைத் திற</translation>
 <translation id="2148716181193084225">இன்று</translation>
 <translation id="2359808026110333948">தொடர்க</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> மெ.பை.</translation>
@@ -27,6 +28,7 @@
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">தலைப்பு</translation>
 <translation id="4259722352634471385">செல்வது தடுக்கப்பட்டது: <ph name="URL" /></translation>
+<translation id="4433925000917964731">Google வழங்கும் Lite பக்கம்</translation>
 <translation id="4570913071927164677">விவரங்கள்</translation>
 <translation id="4645575059429386691">உங்கள் பெற்றோரால் நிர்வகிக்கப்படுகிறது</translation>
 <translation id="4883854917563148705">நிர்வகிக்கப்பட்ட அமைப்புகளை மீட்டமைக்க முடியாது</translation>
@@ -38,6 +40,7 @@
 <translation id="5391532827096253100">இந்தத் தளத்திற்கான இணைப்பு பாதுகாப்பானதல்ல. தளத் தகவல்</translation>
 <translation id="5556459405103347317">மீண்டும் ஏற்று</translation>
 <translation id="5596627076506792578">கூடுதல் விருப்பங்கள்</translation>
+<translation id="5804241973901381774">அனுமதிகள்</translation>
 <translation id="5860033963881614850">ஆஃப்</translation>
 <translation id="5916664084637901428">இயக்கு</translation>
 <translation id="5939518447894949180">மீட்டமை</translation>
@@ -46,6 +49,7 @@
 <translation id="6165508094623778733">மேலும் அறிக</translation>
 <translation id="6206551242102657620">பாதுகாப்பான இணைப்பு. தளத் தகவல்</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> விருப்பத்தேர்வுகள்</translation>
+<translation id="6447842834002726250">குக்கீகள்</translation>
 <translation id="6527303717912515753">பகிர்</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> ஜி.பை.</translation>
 <translation id="6746124502594467657">கீழே நகர்த்து</translation>

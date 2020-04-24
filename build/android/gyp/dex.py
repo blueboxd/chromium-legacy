@@ -69,6 +69,8 @@ def _ParseArgs(args):
       action='append',
       help='GN-list of bootclasspath. Needed for --desugar')
   parser.add_argument(
+      '--desugar-jdk-libs-json', help='Path to desugar_jdk_libs.json.')
+  parser.add_argument(
       '--classpath',
       action='append',
       help='GN-list of full classpath. Needed for --desugar')
@@ -498,6 +500,8 @@ def main(args):
     input_paths += options.classpath
     input_paths += options.bootclasspath
 
+  if options.desugar_jdk_libs_json:
+    dex_cmd += ['--desugared-lib', options.desugar_jdk_libs_json]
   if options.force_enable_assertions:
     dex_cmd += ['--force-enable-assertions']
 

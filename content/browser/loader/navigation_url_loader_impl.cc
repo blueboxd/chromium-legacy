@@ -41,8 +41,8 @@
 #include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_main_resource_handle.h"
 #include "content/browser/service_worker/service_worker_main_resource_handle_core.h"
+#include "content/browser/service_worker/service_worker_navigation_loader_interceptor.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
-#include "content/browser/service_worker/service_worker_request_handler.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -199,8 +199,8 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   new_request->url = request_info->common_params->url;
   new_request->site_for_cookies =
       request_info->isolation_info.site_for_cookies();
-  new_request->attach_same_site_cookies =
-      request_info->begin_params->attach_same_site_cookies;
+  new_request->force_ignore_site_for_cookies =
+      request_info->begin_params->force_ignore_site_for_cookies;
   new_request->trusted_params = network::ResourceRequest::TrustedParams();
   new_request->trusted_params->isolation_info = request_info->isolation_info;
   new_request->is_main_frame = request_info->is_main_frame;
@@ -498,8 +498,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 
     // Set up an interceptor for service workers.
     if (service_worker_handle_) {
-      std::unique_ptr<NavigationLoaderInterceptor> service_worker_interceptor =
-          ServiceWorkerRequestHandler::CreateForNavigation(
+      auto service_worker_interceptor =
+          ServiceWorkerNavigationLoaderInterceptor::CreateForNavigation(
               resource_request_->url, service_worker_handle_->AsWeakPtr(),
               *request_info);
       // The interceptor may not be created in certain cases (e.g., the origin

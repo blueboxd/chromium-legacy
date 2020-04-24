@@ -9,10 +9,10 @@
 #include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
@@ -30,13 +30,6 @@
 namespace blink {
 
 namespace {
-
-Settings* GetSettings(ExecutionContext* execution_context) {
-  DCHECK(execution_context);
-
-  Document* document = Document::From(execution_context);
-  return document->GetSettings();
-}
 
 bool IsKnownProtocolForPresentationUrl(const KURL& url) {
   return url.ProtocolIsInHTTPFamily() || url.ProtocolIs("cast") ||
@@ -59,9 +52,8 @@ PresentationRequest* PresentationRequest::Create(
     ExecutionContext* execution_context,
     const Vector<String>& urls,
     ExceptionState& exception_state) {
-  if (Document::From(execution_context)
-          ->IsSandboxed(network::mojom::blink::WebSandboxFlags::
-                            kPresentationController)) {
+  if (execution_context->IsSandboxed(
+          network::mojom::blink::WebSandboxFlags::kPresentationController)) {
     exception_state.ThrowSecurityError(
         "The document is sandboxed and lacks the 'allow-presentation' flag.");
     return nullptr;
@@ -137,31 +129,23 @@ bool PresentationRequest::HasPendingActivity() const {
 
 ScriptPromise PresentationRequest::start(ScriptState* script_state,
                                          ExceptionState& exception_state) {
-  ExecutionContext* execution_context = GetExecutionContext();
-  Settings* context_settings = GetSettings(execution_context);
-  Document* doc = Document::From(execution_context);
-
-  bool is_user_gesture_required =
-      !context_settings ||
-      context_settings->GetPresentationRequiresUserGesture();
-
-  if (is_user_gesture_required &&
-      !LocalFrame::HasTransientUserActivation(doc->GetFrame())) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidAccessError,
-        "PresentationRequest::start() requires user gesture.");
-    return ScriptPromise();
-  }
-
-  PresentationController* controller =
-      PresentationController::FromContext(GetExecutionContext());
-  if (!controller) {
+  if (!script_state->ContextIsValid()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
         "The PresentationRequest is no longer associated to a frame.");
     return ScriptPromise();
   }
 
+  LocalFrame* frame = LocalDOMWindow::From(script_state)->GetFrame();
+  if (frame->GetSettings()->GetPresentationRequiresUserGesture() &&
+      !LocalFrame::HasTransientUserActivation(frame)) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidAccessError,
+        "PresentationRequest::start() requires user gesture.");
+    return ScriptPromise();
+  }
+
+  PresentationController* controller = PresentationController::From(*frame);
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
 
   controller->GetPresentationService()->StartPresentation(

@@ -52,12 +52,12 @@ class NavigationControllerImpl : public fuchsia::web::NavigationController,
   void GetVisibleEntry(GetVisibleEntryCallback callback) final;
 
   // content::WebContentsObserver implementation.
-  void TitleWasSet(content::NavigationEntry*) override;
-  void DocumentAvailableInMainFrame() override;
+  void TitleWasSet(content::NavigationEntry*) final;
+  void DocumentAvailableInMainFrame() final;
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
-                     const GURL& validated_url) override;
-  void DidStartNavigation(
-      content::NavigationHandle* navigation_handle) override;
+                     const GURL& validated_url) final;
+  void DidStartNavigation(content::NavigationHandle* navigation_handle) final;
+  void DidFinishNavigation(content::NavigationHandle* navigation_handle) final;
 
   content::WebContents* const web_contents_;
 
@@ -72,6 +72,9 @@ class NavigationControllerImpl : public fuchsia::web::NavigationController,
 
   // True once the main document finishes loading.
   bool is_main_document_loaded_ = false;
+
+  // True if navigation failed due to an error during page load.
+  bool uncommitted_load_error_ = false;
 
   base::WeakPtrFactory<NavigationControllerImpl> weak_factory_;
 

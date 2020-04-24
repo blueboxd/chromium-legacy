@@ -70,6 +70,30 @@ TEST_F(SettingsUserActionTrackerTest, TestRecordMetrics) {
       /*sample=*/base::TimeDelta::FromSeconds(10),
       /*count=*/1);
 
+  // Repeat this, but only after 100ms. This is lower than the minimum value
+  // required for this metric, so it should be ignored.
+  tracker_.RecordClick();
+  tracker_.RecordNavigation();
+  tracker_.RecordSearch();
+  task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(100));
+  tracker_.RecordSettingChange();
+
+  // No additional logging should have occurred, so make the same verifications
+  // as above.
+  histogram_tester_.ExpectTotalCount(
+      "ChromeOS.Settings.NumClicksUntilChange.SubsequentChange",
+      /*count=*/1);
+  histogram_tester_.ExpectTotalCount(
+      "ChromeOS.Settings.NumNavigationsUntilChange.SubsequentChange",
+      /*count=*/1);
+  histogram_tester_.ExpectTotalCount(
+      "ChromeOS.Settings.NumSearchesUntilChange.SubsequentChange",
+      /*count=*/1);
+  histogram_tester_.ExpectTimeBucketCount(
+      "ChromeOS.Settings.TimeUntilChange.SubsequentChange",
+      /*sample=*/base::TimeDelta::FromSeconds(10),
+      /*count=*/1);
+
   // Repeat this once more, and verify that the counts increased.
   tracker_.RecordClick();
   tracker_.RecordNavigation();

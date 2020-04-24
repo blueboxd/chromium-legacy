@@ -55,7 +55,7 @@ class GPUCanvasContext : public CanvasRenderingContext {
   bool IsAccelerated() const final { return true; }
   bool IsOriginTopLeft() const final { return true; }
   bool Is3d() const final { return true; }
-  void SetFilterQuality(SkFilterQuality) final {}
+  void SetFilterQuality(SkFilterQuality) override;
   bool IsPaintable() const final { return true; }
   int ExternallyAllocatedBufferCountPerPixel() final { return 1; }
   void Stop() final;
@@ -68,6 +68,7 @@ class GPUCanvasContext : public CanvasRenderingContext {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GPUCanvasContext);
+  SkFilterQuality filter_quality_ = kLow_SkFilterQuality;
   Member<GPUSwapChain> swapchain_;
   bool stopped_ = false;
 };

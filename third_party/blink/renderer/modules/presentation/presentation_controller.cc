@@ -8,7 +8,6 @@
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -43,14 +42,10 @@ void PresentationController::ProvideTo(LocalFrame& frame) {
 // static
 PresentationController* PresentationController::FromContext(
     ExecutionContext* execution_context) {
-  if (!execution_context)
+  if (!execution_context || execution_context->IsContextDestroyed())
     return nullptr;
-
-  Document* document = Document::From(execution_context);
-  if (!document->GetFrame())
-    return nullptr;
-
-  return PresentationController::From(*document->GetFrame());
+  return PresentationController::From(
+      *To<LocalDOMWindow>(execution_context)->GetFrame());
 }
 
 void PresentationController::Trace(Visitor* visitor) {

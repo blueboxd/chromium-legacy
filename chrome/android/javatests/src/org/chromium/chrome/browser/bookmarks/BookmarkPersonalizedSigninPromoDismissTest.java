@@ -12,8 +12,6 @@ import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
@@ -29,15 +27,11 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninPromoController;
 import org.chromium.chrome.browser.sync.SyncTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.BookmarkTestUtil;
 import org.chromium.chrome.test.util.ChromeTabUtils;
-import org.chromium.components.signin.ChromeSigninController;
-import org.chromium.components.signin.metrics.SigninAccessPoint;
-import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
@@ -74,7 +68,6 @@ public class BookmarkPersonalizedSigninPromoDismissTest {
     @MediumTest
     public void testPromoNotShownAfterBeingDismissed() {
         BookmarkTestUtil.showBookmarkManager(mSyncTestRule.getActivity());
-        checkPrePromoStatus();
         onView(withId(R.id.signin_promo_view_container)).check(matches(isDisplayed()));
         onView(withId(R.id.signin_promo_close_button)).perform(click());
         onView(withId(R.id.signin_promo_view_container)).check(doesNotExist());
@@ -108,29 +101,8 @@ public class BookmarkPersonalizedSigninPromoDismissTest {
     @MediumTest
     public void testPromoImpressionCountIncrementAfterDisplayingSigninPromo() {
         assertEquals(0, SigninPromoController.getSigninPromoImpressionsCountBookmarks());
-        checkPrePromoStatus();
         BookmarkTestUtil.showBookmarkManager(mSyncTestRule.getActivity());
         onView(withId(R.id.signin_promo_view_container)).check(matches(isDisplayed()));
         assertEquals(1, SigninPromoController.getSigninPromoImpressionsCountBookmarks());
-    }
-
-    /**
-     * TODO(https://crbug.com/1045480): The promo dismiss tests are flaky
-     * This method is for temporary investigation of the problem.
-     * It should be removed after we fix the flakiness.
-     */
-    private void checkPrePromoStatus() {
-        assertTrue("Android master sync should be enabled!",
-                AndroidSyncSettings.get().isMasterSyncEnabled());
-        assertFalse("The user should not be signed in!", ChromeSigninController.get().isSignedIn());
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            assertTrue("Signin should be allowed!",
-                    IdentityServicesProvider.get().getSigninManager().isSignInAllowed());
-        });
-        assertTrue("Impression limit should not be reached!",
-                SigninPromoController.hasNotReachedImpressionLimit(
-                        SigninAccessPoint.BOOKMARK_MANAGER));
-        assertFalse("Signin promo should not be declined!",
-                BookmarkPromoHeader.wasPersonalizedSigninPromoDeclined());
     }
 }

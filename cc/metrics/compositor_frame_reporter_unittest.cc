@@ -10,6 +10,7 @@
 
 #include "base/strings/strcat.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "cc/input/scroll_input_type.h"
 #include "cc/metrics/compositor_frame_reporting_controller.h"
 #include "cc/metrics/event_metrics.h"
@@ -34,16 +35,17 @@ class CompositorFrameReporterTest : public testing::Test {
             base::TimeTicks() + base::TimeDelta::FromMilliseconds(16),
             nullptr,
             /*should_report_metrics=*/true)) {
+    pipeline_reporter_->set_tick_clock(&test_tick_clock_);
     AdvanceNowByMs(1);
   }
 
  protected:
   base::TimeTicks AdvanceNowByMs(int advance_ms) {
-    now_ += base::TimeDelta::FromMicroseconds(advance_ms);
-    return now_;
+    test_tick_clock_.Advance(base::TimeDelta::FromMicroseconds(advance_ms));
+    return test_tick_clock_.NowTicks();
   }
 
-  base::TimeTicks Now() { return now_; }
+  base::TimeTicks Now() { return test_tick_clock_.NowTicks(); }
 
   viz::FrameTimingDetails BuildFrameTimingDetails() {
     viz::FrameTimingDetails frame_timing_details;
@@ -56,10 +58,11 @@ class CompositorFrameReporterTest : public testing::Test {
     return frame_timing_details;
   }
 
-  std::unique_ptr<CompositorFrameReporter> pipeline_reporter_;
+  // This should be defined before |pipeline_reporter_| so it is created before
+  // and destroyed after that.
+  base::SimpleTestTickClock test_tick_clock_;
 
- private:
-  base::TimeTicks now_;
+  std::unique_ptr<CompositorFrameReporter> pipeline_reporter_;
 };
 
 TEST_F(CompositorFrameReporterTest, MainFrameAbortedReportingTest) {
@@ -409,26 +412,26 @@ TEST_F(CompositorFrameReporterTest,
   const int swap_end_latency_ms =
       (frame_timing_details.swap_timings.swap_end - event_time)
           .InMicroseconds();
-  histogram_tester.ExpectTotalCount(
-      "EventLatency.GestureScrollBegin.Wheel.TotalLatency", 1);
-  histogram_tester.ExpectTotalCount(
-      "EventLatency.GestureScrollBegin.Wheel.TotalLatencyToSwapEnd", 1);
-  histogram_tester.ExpectTotalCount(
-      "EventLatency.GestureScrollUpdate.Wheel.TotalLatency", 2);
-  histogram_tester.ExpectTotalCount(
-      "EventLatency.GestureScrollUpdate.Wheel.TotalLatencyToSwapEnd", 2);
-  histogram_tester.ExpectBucketCount(
-      "EventLatency.GestureScrollBegin.Wheel.TotalLatency", total_latency_ms,
-      1);
-  histogram_tester.ExpectBucketCount(
-      "EventLatency.GestureScrollBegin.Wheel.TotalLatencyToSwapEnd",
-      swap_end_latency_ms, 1);
-  histogram_tester.ExpectBucketCount(
-      "EventLatency.GestureScrollUpdate.Wheel.TotalLatency", total_latency_ms,
-      2);
-  histogram_tester.ExpectBucketCount(
-      "EventLatency.GestureScrollUpdate.Wheel.TotalLatencyToSwapEnd",
-      swap_end_latency_ms, 2);
+  struct {
+    const char* name;
+    const int64_t latency_ms;
+    const int count;
+  } expected_counts[] = {
+      {"EventLatency.GestureScrollBegin.Wheel.TotalLatency", total_latency_ms,
+       1},
+      {"EventLatency.GestureScrollBegin.Wheel.TotalLatencyToSwapEnd",
+       swap_end_latency_ms, 1},
+      {"EventLatency.GestureScrollUpdate.Wheel.TotalLatency", total_latency_ms,
+       2},
+      {"EventLatency.GestureScrollUpdate.Wheel.TotalLatencyToSwapEnd",
+       swap_end_latency_ms, 2},
+  };
+  for (const auto& expected_count : expected_counts) {
+    histogram_tester.ExpectTotalCount(expected_count.name,
+                                      expected_count.count);
+    histogram_tester.ExpectBucketCount(
+        expected_count.name, expected_count.latency_ms, expected_count.count);
+  }
 }
 
 // Tests that when the frame is not presented to the user, event latency metrics

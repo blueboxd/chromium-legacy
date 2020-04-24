@@ -587,7 +587,7 @@ void VotesUploader::SetKnownValueFlag(
     if (field->value.empty())
       continue;
     if (known_username == field->value || known_password == field->value) {
-      field->properties_mask |= autofill::FieldPropertiesFlags::KNOWN_VALUE;
+      field->properties_mask |= autofill::FieldPropertiesFlags::kKnownValue;
     }
   }
 }

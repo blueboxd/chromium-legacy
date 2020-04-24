@@ -17,6 +17,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.about_settings.AboutSettingsBridge;
 import org.chromium.chrome.browser.datareduction.DataReductionPromoUtils;
 import org.chromium.chrome.browser.omaha.VersionNumberGetter;
+import org.chromium.chrome.browser.ui.messages.infobar.ConfirmInfoBar;
 import org.chromium.chrome.browser.ui.messages.infobar.InfoBarControlLayout;
 import org.chromium.chrome.browser.ui.messages.infobar.InfoBarLayout;
 import org.chromium.components.embedder_support.util.UrlConstants;

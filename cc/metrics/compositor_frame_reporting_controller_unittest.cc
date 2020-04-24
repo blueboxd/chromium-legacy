@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/strings/strcat.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "cc/input/scroll_input_type.h"
 #include "cc/metrics/event_metrics.h"
 #include "components/viz/common/frame_timing_details.h"
@@ -56,6 +57,8 @@ class TestCompositorFrameReportingController
 class CompositorFrameReportingControllerTest : public testing::Test {
  public:
   CompositorFrameReportingControllerTest() : current_id_(1, 1) {
+    test_tick_clock_.SetNowTicks(base::TimeTicks::Now());
+    reporting_controller_.set_tick_clock(&test_tick_clock_);
     args_ = SimulateBeginFrameArgs(current_id_);
   }
 
@@ -137,20 +140,21 @@ class CompositorFrameReportingControllerTest : public testing::Test {
   }
 
   base::TimeTicks AdvanceNowByMs(int64_t advance_ms) {
-    now_ += base::TimeDelta::FromMicroseconds(advance_ms);
-    return now_;
+    test_tick_clock_.Advance(base::TimeDelta::FromMicroseconds(advance_ms));
+    return test_tick_clock_.NowTicks();
   }
 
  protected:
+  // This should be defined before |reporting_controller_| so it is created
+  // before and destroyed after that.
+  base::SimpleTestTickClock test_tick_clock_;
+
   TestCompositorFrameReportingController reporting_controller_;
   viz::BeginFrameArgs args_;
   viz::BeginFrameId current_id_;
   viz::BeginFrameId last_activated_id_;
   base::TimeTicks begin_main_start_;
   viz::FrameTokenGenerator next_token_;
-
- private:
-  base::TimeTicks now_ = base::TimeTicks::Now();
 };
 
 TEST_F(CompositorFrameReportingControllerTest, ActiveReporterCounts) {
@@ -919,21 +923,39 @@ TEST_F(CompositorFrameReportingControllerTest,
   SimulateSubmitCompositorFrame(*next_token_, {std::move(events_metrics), {}});
 
   // Present the submitted compositor frame to the user.
-  const base::TimeTicks presentation_time = AdvanceNowByMs(10);
   viz::FrameTimingDetails details;
-  details.presentation_feedback.timestamp = presentation_time;
+  details.received_compositor_frame_timestamp = AdvanceNowByMs(10);
+  details.draw_start_timestamp = AdvanceNowByMs(10);
+  details.swap_timings.swap_start = AdvanceNowByMs(10);
+  details.swap_timings.swap_end = AdvanceNowByMs(10);
+  details.presentation_feedback.timestamp = AdvanceNowByMs(10);
   reporting_controller_.DidPresentCompositorFrame(*next_token_, details);
 
   // Verify that EventLatency histograms are recorded.
-  const int64_t latency_ms = (presentation_time - event_time).InMicroseconds();
-  histogram_tester.ExpectTotalCount(
-      "EventLatency.GestureScrollBegin.Wheel.TotalLatency", 1);
-  histogram_tester.ExpectTotalCount(
-      "EventLatency.GestureScrollUpdate.Wheel.TotalLatency", 2);
-  histogram_tester.ExpectBucketCount(
-      "EventLatency.GestureScrollBegin.Wheel.TotalLatency", latency_ms, 1);
-  histogram_tester.ExpectBucketCount(
-      "EventLatency.GestureScrollUpdate.Wheel.TotalLatency", latency_ms, 2);
+  const int64_t total_latency_ms =
+      (details.presentation_feedback.timestamp - event_time).InMicroseconds();
+  const int64_t swap_end_latency_ms =
+      (details.swap_timings.swap_end - event_time).InMicroseconds();
+  struct {
+    const char* name;
+    const int64_t latency_ms;
+    const int count;
+  } expected_counts[] = {
+      {"EventLatency.GestureScrollBegin.Wheel.TotalLatency", total_latency_ms,
+       1},
+      {"EventLatency.GestureScrollBegin.Wheel.TotalLatencyToSwapEnd",
+       swap_end_latency_ms, 1},
+      {"EventLatency.GestureScrollUpdate.Wheel.TotalLatency", total_latency_ms,
+       2},
+      {"EventLatency.GestureScrollUpdate.Wheel.TotalLatencyToSwapEnd",
+       swap_end_latency_ms, 2},
+  };
+  for (const auto& expected_count : expected_counts) {
+    histogram_tester.ExpectTotalCount(expected_count.name,
+                                      expected_count.count);
+    histogram_tester.ExpectBucketCount(
+        expected_count.name, expected_count.latency_ms, expected_count.count);
+  }
 }
 
 // Tests that EventLatency histograms are not reported when the frame is dropped

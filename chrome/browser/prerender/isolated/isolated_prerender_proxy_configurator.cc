@@ -5,7 +5,7 @@
 #include "chrome/browser/prerender/isolated/isolated_prerender_proxy_configurator.h"
 
 #include "chrome/browser/prerender/isolated/isolated_prerender_params.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "net/base/host_port_pair.h"
 #include "net/proxy_resolution/proxy_config.h"
 #include "url/gurl.h"
@@ -43,8 +43,10 @@ void IsolatedPrerenderProxyConfigurator::UpdateCustomProxyConfig() {
   // Prerender feature to work, it needs to provide it's own custom proxy
   // configuration. Therefore, only update the custom proxy when DRP is
   // disabled.
-  if (!data_reduction_proxy::params::IsIncludedInHoldbackFieldTrial())
+  if (!base::FeatureList::IsEnabled(
+          data_reduction_proxy::features::kDataReductionProxyHoldback)) {
     return;
+  }
 
   if (!IsolatedPrerenderIsEnabled())
     return;

@@ -97,7 +97,6 @@ int ConfiguredProxyResolutionRequest::QueryDidComplete(int result_code) {
 
   // Make a note in the results which configuration was in use at the
   // time of the resolve.
-  results_->set_did_use_pac_script(true);
   results_->set_proxy_resolve_start_time(creation_time_);
   results_->set_proxy_resolve_end_time(base::TimeTicks::Now());
 

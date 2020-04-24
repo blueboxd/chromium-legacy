@@ -62,6 +62,15 @@ cc::Layer* GPUCanvasContext::CcLayer() const {
   return nullptr;
 }
 
+void GPUCanvasContext::SetFilterQuality(SkFilterQuality filter_quality) {
+  if (filter_quality != filter_quality_) {
+    filter_quality_ = filter_quality;
+    if (swapchain_) {
+      swapchain_->SetFilterQuality(filter_quality);
+    }
+  }
+}
+
 // gpu_canvas_context.idl
 GPUSwapChain* GPUCanvasContext::configureSwapChain(
     const GPUSwapChainDescriptor* descriptor) {
@@ -76,7 +85,8 @@ GPUSwapChain* GPUCanvasContext::configureSwapChain(
     // destroy all its resources (and produce errors when used).
     swapchain_->Neuter();
   }
-  swapchain_ = MakeGarbageCollected<GPUSwapChain>(this, descriptor);
+  swapchain_ =
+      MakeGarbageCollected<GPUSwapChain>(this, descriptor, filter_quality_);
   return swapchain_;
 }
 

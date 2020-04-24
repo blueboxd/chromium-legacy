@@ -42,11 +42,13 @@ class SettingsUserActionTracker : public mojom::UserActionRecorder {
 
   void ResetMetricsCountersAndTimestamp();
 
-  // Whether a setting has been changed since the window has been focused. Note
-  // that if the user blurs the window, then refocuses it in less than a minute,
-  // this value remains true; i.e., it flips back to false only when the user
-  // has blurred the window for over a minute.
-  bool has_changed_setting_ = false;
+  // Time at which the last setting change metric was recorded since the window
+  // has been focused, or null if no setting change has been recorded since the
+  // window has been focused. Note that if the user blurs the window then
+  // refocuses it in less than a minute, this value remains non-null; i.e., it
+  // flips back to null only when the user has blurred the window for over a
+  // minute.
+  base::TimeTicks last_record_setting_changed_timestamp_;
 
   // Time at which recording the current metric has started. If
   // |has_changed_setting_| is true, we're currently measuring the "subsequent

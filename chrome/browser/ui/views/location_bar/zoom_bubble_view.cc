@@ -442,8 +442,11 @@ void ZoomBubbleView::WindowClosing() {
 }
 
 void ZoomBubbleView::CloseBubble() {
-  if (ignore_close_bubble_)
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
+  if (ignore_close_bubble_ &&
+      GetAnchorViewForBrowser(browser) == GetAnchorView()) {
     return;
+  }
 
   // Widget's Close() is async, but we don't want to use zoom_bubble_ after
   // this. Additionally web_contents() may have been destroyed.

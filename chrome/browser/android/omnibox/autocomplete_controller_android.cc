@@ -46,6 +46,7 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_log.h"
 #include "components/omnibox/browser/search_provider.h"
+#include "components/omnibox/browser/search_suggestion_parser.h"
 #include "components/omnibox/browser/zero_suggest_provider.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/open_from_clipboard/clipboard_recent_content.h"
@@ -74,6 +75,9 @@ using bookmarks::BookmarkModel;
 using metrics::OmniboxEventProto;
 
 namespace {
+
+// Group assignment for suggestions that did not report any group.
+constexpr const int INVALID_GROUP = -1;
 
 // Used for histograms, append only.
 enum class MatchValidationResult {
@@ -427,6 +431,9 @@ void AutocompleteControllerAndroid::NotifySuggestionsReceived(
         env, suggestion_list_obj, j_omnibox_suggestion);
   }
 
+  ScopedJavaLocalRef<jobject> headers =
+      BuildOmniboxGroupHeaders(env, autocomplete_result.headers_map());
+
   // Get the inline-autocomplete text.
   base::string16 inline_autocomplete_text;
   if (auto* default_match = autocomplete_result.default_match())
@@ -436,7 +443,7 @@ void AutocompleteControllerAndroid::NotifySuggestionsReceived(
   jlong j_autocomplete_result =
       reinterpret_cast<intptr_t>(&(autocomplete_result));
   Java_AutocompleteController_onSuggestionsReceived(
-      env, java_bridge, suggestion_list_obj, inline_text,
+      env, java_bridge, suggestion_list_obj, headers, inline_text,
       j_autocomplete_result);
 }
 
@@ -567,7 +574,25 @@ AutocompleteControllerAndroid::BuildOmniboxSuggestion(
       destination_url, image_url, image_dominant_color,
       bookmark_model && bookmark_model->IsBookmarked(match.destination_url),
       match.SupportsDeletion(), post_content_type,
-      ToJavaByteArray(env, post_content));
+      ToJavaByteArray(env, post_content),
+      match.suggestion_group_id.value_or(INVALID_GROUP));
+}
+
+ScopedJavaLocalRef<jobject>
+AutocompleteControllerAndroid::BuildOmniboxGroupHeaders(
+    JNIEnv* env,
+    const SearchSuggestionParser::HeadersMap& native_header_map) {
+  const auto j_header_map =
+      Java_AutocompleteController_createOmniboxGroupHeadersMap(
+          env, native_header_map.size());
+
+  for (const auto& group_header : native_header_map) {
+    Java_AutocompleteController_addOmniboxGroupHeaderToMap(
+        env, j_header_map, group_header.first,
+        ConvertUTF16ToJavaString(env, group_header.second));
+  }
+
+  return j_header_map;
 }
 
 ScopedJavaLocalRef<jobject>

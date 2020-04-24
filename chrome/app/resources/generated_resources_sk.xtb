@@ -420,11 +420,11 @@
 <translation id="1555130319947370107">Modrá</translation>
 <translation id="1556537182262721003">Nepodarilo sa do profilu presunúť adresár rozšírenia.</translation>
 <translation id="155865706765934889">Touchpad</translation>
-<translation id="1560763881671211335">Správcovia služby G Suite for Education určujú, ku ktorým službám Googlu majú ich používatelia prístup s prihláseným účtom G Suite for Education. Správcovia škôl musia poskytnúť alebo získať súhlas s používaním služieb neplnoletými používateľmi.
+<translation id="1560763881671211335">Správcovia služby G Suite for Education určujú, ku ktorým službám Googlu majú ich používatelia prístup s prihláseným účtom G Suite for Education. Správcovia škôl musia poskytnúť alebo získať súhlas s používaním služieb neplnoletými používateľmi.
 
     Dáta prehliadania (vrátane histórie, záložiek a hesiel) budú uložené v účte Family Link, nie školskom účte.
 
-    Budú platiť nastavenia aplikácie Family Link nakonfigurované rodičmi. Ak ste v minulosti blokovali nejakú aplikáciu alebo web, nebudete to musieť robiť znova.</translation>
+    Budú platiť nastavenia aplikácie Family Link nakonfigurované rodičmi. Ak ste v minulosti zablokovali nejakú aplikáciu alebo web, nebudete to musieť robiť znova.</translation>
 <translation id="1566049601598938765">Webové stránky</translation>
 <translation id="15662109988763471">Vybratá tlačiareň nie je k dispozícii alebo nie je správne nainštalovaná. Skontrolujte ju alebo vyberte inú.</translation>
 <translation id="1567387640189251553">Od posledného zadania hesla bola pripojená iná klávesnica. Je možné, že sa pokúša ukradnúť vaše stlačenia klávesov.</translation>
@@ -4629,7 +4629,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="7235737137505019098">Bezpečnostný kľúč nemá dostatok miesta na ďalšie účty.</translation>
 <translation id="7238643356913091553"><ph name="NETWORK_NAME" />, podrobnosti</translation>
 <translation id="7240339475467890413">Pripojiť k novému hotspotu?</translation>
-<translation id="7240847845291869311">Vaše dieťa chce do tohto zariadenia pridať účet Google v rámci služby G Suite for Education. <ph name="LINK_BEGIN" />Oznámenie o ochrane údajov služby G Suite for Education<ph name="LINK_END" /> pomáha používateľom služby G Suite for Education a rodičom pochopiť, aké údaje sa v tejto službe zhromažďujú, na aký účel a akým spôsobom budú použité.</translation>
+<translation id="7240847845291869311">Vaše dieťa chce do tohto zariadenia pridať účet Google v rámci služby G Suite for Education. <ph name="LINK_BEGIN" />Oznámenie o ochrane súkromia služby G Suite for Education<ph name="LINK_END" /> pomáha používateľom služby G Suite for Education a rodičom pochopiť, aké údaje sa v tejto službe zhromažďujú, na aký účel a akým spôsobom budú použité.</translation>
 <translation id="7241389281993241388">Ak chcete importovať certifikát klienta, prihláste sa do <ph name="TOKEN_NAME" />.</translation>
 <translation id="7241443820034350811">Ak váš bezpečnostný kľúč nie je uvedený, stlačte tlačidlo na kľúči aspoň na päť sekúnd.</translation>
 <translation id="7243632151880336635">Vymazať a odhlásiť sa</translation>

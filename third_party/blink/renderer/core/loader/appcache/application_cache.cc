@@ -40,7 +40,8 @@
 
 namespace blink {
 
-ApplicationCache::ApplicationCache(LocalFrame* frame) : DOMWindowClient(frame) {
+ApplicationCache::ApplicationCache(LocalFrame* frame)
+    : ExecutionContextClient(frame) {
   DCHECK(RuntimeEnabledFeatures::AppCacheEnabled(
       frame->GetDocument()->ToExecutionContext()));
   ApplicationCacheHostForFrame* cache_host = GetApplicationCacheHost();
@@ -50,7 +51,7 @@ ApplicationCache::ApplicationCache(LocalFrame* frame) : DOMWindowClient(frame) {
 
 void ApplicationCache::Trace(Visitor* visitor) {
   EventTargetWithInlineData::Trace(visitor);
-  DOMWindowClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
 }
 
 ApplicationCacheHostForFrame* ApplicationCache::GetApplicationCacheHost()

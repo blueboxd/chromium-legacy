@@ -46,7 +46,7 @@ WebScreenInfo GetScreenInfo(LocalFrame& frame) {
 
 }  // namespace
 
-Screen::Screen(LocalFrame* frame) : DOMWindowClient(frame) {}
+Screen::Screen(LocalFrame* frame) : ExecutionContextClient(frame) {}
 
 int Screen::height() const {
   if (display_) {
@@ -167,7 +167,7 @@ int Screen::availWidth() const {
 
 void Screen::Trace(Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
-  DOMWindowClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
   Supplementable<Screen>::Trace(visitor);
 }
 
@@ -175,7 +175,7 @@ Screen::Screen(display::mojom::blink::DisplayPtr display,
                bool internal,
                bool primary,
                const String& id)
-    : DOMWindowClient(static_cast<LocalFrame*>(nullptr)),
+    : ExecutionContextClient(static_cast<LocalFrame*>(nullptr)),
       display_(std::move(display)),
       internal_(internal),
       primary_(primary),

@@ -349,6 +349,7 @@
 <translation id="1465176863081977902">К&amp;опиране на адреса на аудиозаписа</translation>
 <translation id="1465827627707997754">Парче пица</translation>
 <translation id="1468571364034902819">Не можете да използвате този потребителски профил</translation>
+<translation id="1470084204649225129">{NUM_TABS,plural, =1{Добавяне на раздела към нова група}other{Добавяне на разделите към нова група}}</translation>
 <translation id="1472675084647422956">Показване на още</translation>
 <translation id="1475502736924165259">Разполагате със сертификати, които не отговарят на нито една от другите категории</translation>
 <translation id="1476088332184200792">Копиране на устройството ви</translation>
@@ -474,6 +475,7 @@
 <translation id="1629314197035607094">Паролата е изтекла</translation>
 <translation id="1630768113285622200">Рестартиране и продължаване</translation>
 <translation id="1632803087685957583">Позволява ви да коригирате честотата на повтаряне за клавиатурата, функцията за предвиждане на думи и др.</translation>
+<translation id="1634783886312010422">Променихте ли вече тази парола в(ъв) <ph name="WEBSITE" />?</translation>
 <translation id="1635033183663317347">Инсталирано от контролиращия потребител.</translation>
 <translation id="1637224376458524414">Получете тази отметка на своя iPhone</translation>
 <translation id="1637765355341780467">Нещо се обърка при отварянето на потребителския ви профил. Някои функции може да не са налице.</translation>
@@ -3386,6 +3388,7 @@
 <translation id="5542949973455282971">Установява се връзка с(ъс) <ph name="CARRIER_NAME" /></translation>
 <translation id="5543983818738093899">Извършва се проверка за състоянието...</translation>
 <translation id="554517032089923082">GTC</translation>
+<translation id="5545335608717746497">{NUM_TABS,plural, =1{Добавяне на раздела към група}other{Добавяне на разделите към група}}</translation>
 <translation id="5546865291508181392">Търсене</translation>
 <translation id="5548159762883465903">{NUM_OTHER_TABS,plural, =0{„<ph name="TAB_TITLE" />“}=1{„<ph name="TAB_TITLE" />“ и още 1 раздел}other{„<ph name="TAB_TITLE" />“ и още # раздела}}</translation>
 <translation id="5548606607480005320">Проверка на безопасността</translation>
@@ -4211,6 +4214,7 @@
 <translation id="6659594942844771486">Раздел</translation>
 <translation id="6664237456442406323">За съжаление компютърът ви е конфигуриран с неправилно образуван идентификационен номер на хардуера. Това не позволява на Chrome OS да се актуализира с най-новите корекции за сигурност и машината ви <ph name="BEGIN_BOLD" />може да е уязвима към злонамерени атаки<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Нещо се обърка при отварянето на потребителския ви профил. Моля, излезте от профила си и влезте отново.</translation>
+<translation id="6670142487971298264"><ph name="APP_NAME" /> вече е налице</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="6675665718701918026">Свързано е посочващо устройство</translation>
 <translation id="6676212663108450937">Добре е да използвате слушалки, докато обучавате гласовия си модел</translation>
@@ -4540,6 +4544,7 @@
 <translation id="7108338896283013870">Скриване</translation>
 <translation id="7108668606237948702">enter</translation>
 <translation id="7109543803214225826">Прекият път бе премахнат</translation>
+<translation id="7110644433780444336">{NUM_TABS,plural, =1{Добавяне на раздела към група}other{Добавяне на разделите към група}}</translation>
 <translation id="7113502843173351041">Да осъществява достъп до имейл адреса ви</translation>
 <translation id="7114054701490058191">Паролите не са идентични</translation>
 <translation id="7114648273807173152">За да използвате Smart Lock за влизане в профила ви в Google, отворете „Настройки &gt; Свързани устройства &gt; Вашият телефон &gt; Smart Lock“.</translation>
@@ -4583,6 +4588,7 @@
 <translation id="7170041865419449892">Извън обхват</translation>
 <translation id="7171259390164035663">Без регистриране</translation>
 <translation id="7171559745792467651">Инсталиране на приложения от другите ви устройства</translation>
+<translation id="7172470549472604877">{NUM_TABS,plural, =1{Добавяне на раздела към нова група}other{Добавяне на разделите към нова група}}</translation>
 <translation id="7174199383876220879">Ново! Управлявайте своите музика, видеоклипове и др.</translation>
 <translation id="7175037578838465313">Конфигуриране на „<ph name="NAME" />“</translation>
 <translation id="7175353351958621980">Заредено от:</translation>
@@ -5161,6 +5167,7 @@
 <translation id="7925247922861151263">Проверката за AAA не бе успешна</translation>
 <translation id="7925285046818567682">Изчаква се отговор от <ph name="HOST_NAME" />...</translation>
 <translation id="7926423016278357561">Това не бях аз.</translation>
+<translation id="7928175190925744466">Променихте ли вече тази парола?</translation>
 <translation id="7928836894214140642">Управлява се от <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">Тук ще се покажат запазените начини на плащане</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> споделя екрана и звука ви.</translation>

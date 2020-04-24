@@ -41,6 +41,13 @@ class ASH_PUBLIC_EXPORT ShelfModelObserver {
   // event.
   virtual void ShelfItemStatusChanged(const ShelfID& id) {}
 
+  // Invoked after an item is dragged off the shelf (it is still being dragged).
+  virtual void ShelfItemRippedOff() {}
+
+  // Invoked after an item that has been dragged off the shelf is dragged back
+  // onto the shelf (it is still being dragged).
+  virtual void ShelfItemReturnedFromRipOff(int index) {}
+
  protected:
   virtual ~ShelfModelObserver() {}
 };

@@ -167,7 +167,7 @@ feedwire::ClientInfo CreateClientInfo(const ChromeInfo& chrome_info) {
 #elif defined(OS_IOS)
   client_info.set_platform_type(feedwire::ClientInfo::IOS);
 #endif
-  client_info.set_app_type(feedwire::ClientInfo::CHROME);
+  client_info.set_app_type(feedwire::ClientInfo::TEST_APP);
   *client_info.mutable_platform_version() = GetPlatformVersionMessage();
   *client_info.mutable_app_version() = GetAppVersionMessage(chrome_info);
   return client_info;

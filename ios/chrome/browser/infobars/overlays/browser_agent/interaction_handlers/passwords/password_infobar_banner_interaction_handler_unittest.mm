@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/infobars/test/fake_infobar_ios.h"
 #import "ios/chrome/browser/overlays/public/overlay_request_queue.h"
 #import "ios/chrome/browser/passwords/test/mock_ios_chrome_save_passwords_infobar_delegate.h"
+#import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/ui/infobars/test/fake_infobar_ui_delegate.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
@@ -25,7 +26,8 @@
 class PasswordInfobarBannerInteractionHandlerTest : public PlatformTest {
  public:
   PasswordInfobarBannerInteractionHandlerTest() {
-    scoped_feature_list_.InitWithFeatures({kIOSInfobarUIReboot}, {});
+    scoped_feature_list_.InitWithFeatures({kIOSInfobarUIReboot},
+                                          {kInfobarUIRebootOnlyiOS13});
     web_state_.SetNavigationManager(
         std::make_unique<web::TestNavigationManager>());
     InfobarOverlayRequestInserter::CreateForWebState(&web_state_);

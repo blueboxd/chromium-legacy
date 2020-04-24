@@ -5,6 +5,7 @@
 package org.chromium.chrome.test.util;
 
 import android.content.Context;
+import android.util.SparseArray;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ListView;
@@ -78,7 +79,8 @@ public class OmniboxTestUtils {
             List<MatchClassification> classifications = new ArrayList<>();
             classifications.add(new MatchClassification(0, MatchClassificationStyle.NONE));
             mSuggestions.add(new OmniboxSuggestion(type, false, 0, 0, text, classifications, null,
-                    classifications, null, "", url, null, null, false, false, null, null));
+                    classifications, null, "", url, null, null, false, false, null, null,
+                    OmniboxSuggestion.INVALID_GROUP));
             return this;
         }
 
@@ -155,10 +157,8 @@ public class OmniboxTestUtils {
                     if (suggestions == null) return;
 
                     for (int i = 0; i < suggestions.size(); i++) {
-                        onSuggestionsReceived(
-                                suggestions.get(i).mSuggestions,
-                                suggestions.get(i).mAutocompleteText,
-                                0);
+                        onSuggestionsReceived(suggestions.get(i).mSuggestions, null,
+                                suggestions.get(i).mAutocompleteText, 0);
                     }
                 }
             };
@@ -198,7 +198,7 @@ public class OmniboxTestUtils {
             setOnSuggestionsReceivedListener(new OnSuggestionsReceivedListener() {
                 @Override
                 public void onSuggestionsReceived(List<OmniboxSuggestion> suggestions,
-                        String inlineAutocompleteText) {
+                        SparseArray<String> groupHeaders, String inlineAutocompleteText) {
                     Assert.fail("No autocomplete suggestions should be received");
                 }
             });

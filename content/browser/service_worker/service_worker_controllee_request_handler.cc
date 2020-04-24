@@ -21,6 +21,8 @@
 #include "content/browser/service_worker/service_worker_object_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "content/public/browser/allow_service_worker_result.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -67,12 +69,15 @@ ServiceWorkerControlleeRequestHandler::ServiceWorkerControlleeRequestHandler(
     base::WeakPtr<ServiceWorkerContextCore> context,
     base::WeakPtr<ServiceWorkerContainerHost> container_host,
     blink::mojom::ResourceType resource_type,
-    bool skip_service_worker)
+    bool skip_service_worker,
+    ServiceWorkerAccessedCallback service_worker_accessed_callback)
     : context_(std::move(context)),
       container_host_(std::move(container_host)),
       resource_type_(resource_type),
       skip_service_worker_(skip_service_worker),
-      force_update_started_(false) {
+      force_update_started_(false),
+      service_worker_accessed_callback_(
+          std::move(service_worker_accessed_callback)) {
   DCHECK(ServiceWorkerUtils::IsMainResourceType(resource_type));
   TRACE_EVENT_WITH_FLOW0("ServiceWorker",
                          "ServiceWorkerControlleeRequestHandler::"
@@ -278,22 +283,28 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithRegistration(
     return;
   }
 
-  bool allow_service_worker = false;
+  AllowServiceWorkerResult allow_service_worker =
+      AllowServiceWorkerResult::No();
   if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
     allow_service_worker =
         GetContentClient()->browser()->AllowServiceWorkerOnUI(
             registration->scope(),
             container_host_->site_for_cookies().RepresentativeUrl(),
             container_host_->top_frame_origin(), /*script_url=*/GURL(),
-            browser_context_, container_host_->web_contents_getter());
+            browser_context_);
   } else {
     allow_service_worker =
         GetContentClient()->browser()->AllowServiceWorkerOnIO(
             registration->scope(),
             container_host_->site_for_cookies().RepresentativeUrl(),
             container_host_->top_frame_origin(), /*script_url=*/GURL(),
-            resource_context_, container_host_->web_contents_getter());
+            resource_context_);
   }
+
+  RunOrPostTaskOnThread(
+      FROM_HERE, BrowserThread::UI,
+      base::BindOnce(service_worker_accessed_callback_, registration->scope(),
+                     allow_service_worker));
 
   if (!allow_service_worker) {
     TRACE_EVENT_WITH_FLOW1(

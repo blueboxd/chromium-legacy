@@ -32,7 +32,7 @@ promise_test(async () => {
     div.addEventListener('wheel', wheelHandler);
     div.addEventListener('mousewheel', mouseWheelHandler);
     var center = elementCenter(div);
-    await wheelTick(20, center, 'upleft', 4000);
+    await wheelTick(-20, -20, center, 4000);
 
     assert_equals(testEvent.__proto__, WheelEvent.prototype, "Standard wheel event was fired.");
     assert_false(receivedMouseWheel, "mousewheel event should not have fired.");

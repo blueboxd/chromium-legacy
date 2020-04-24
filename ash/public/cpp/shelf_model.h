@@ -120,6 +120,14 @@ class ASH_PUBLIC_EXPORT ShelfModel {
   // has changed.
   void OnItemStatusChanged(const ShelfID& id);
 
+  // Notifies observers that an item has been dragged off the shelf (it is still
+  // being dragged).
+  void OnItemRippedOff();
+
+  // Notifies observers that an item that was dragged off the shelf has been
+  // dragged back onto the shelf (it is still being dragged).
+  void OnItemReturnedFromRipOff(int index);
+
   // Adds a record of the notification with this app id and notifies observers.
   void AddNotificationRecord(const std::string& app_id,
                              const std::string& notification_id);

@@ -57,7 +57,7 @@ android_library("devui_java") {
     "//base:base_java",
     "//components/minidump_uploader:minidump_uploader_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
-    "//third_party/android_deps:com_android_support_support_fragment_java",
+    "//third_party/android_deps:androidx_fragment_fragment_java",
     "//ui/android:ui_java",
   ]
   android_manifest_for_lint = system_webview_android_manifest

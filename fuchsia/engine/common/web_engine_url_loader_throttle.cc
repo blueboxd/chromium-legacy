@@ -79,20 +79,22 @@ void ApplyReplaceUrl(network::ResourceRequest* request,
 }
 
 void ApplyRewrite(network::ResourceRequest* request,
-                  const mojom::UrlRequestRewritePtr& rewrite) {
+                  const mojom::UrlRequestActionPtr& rewrite) {
   switch (rewrite->which()) {
-    case mojom::UrlRequestRewrite::Tag::ADD_HEADERS:
+    case mojom::UrlRequestAction::Tag::ADD_HEADERS:
       ApplyAddHeaders(request, rewrite->get_add_headers());
       break;
-    case mojom::UrlRequestRewrite::Tag::REMOVE_HEADER:
+    case mojom::UrlRequestAction::Tag::REMOVE_HEADER:
       ApplyRemoveHeader(request, rewrite->get_remove_header());
       break;
-    case mojom::UrlRequestRewrite::Tag::SUBSTITUTE_QUERY_PATTERN:
+    case mojom::UrlRequestAction::Tag::SUBSTITUTE_QUERY_PATTERN:
       ApplySubstituteQueryPattern(request,
                                   rewrite->get_substitute_query_pattern());
       break;
-    case mojom::UrlRequestRewrite::Tag::REPLACE_URL:
+    case mojom::UrlRequestAction::Tag::REPLACE_URL:
       ApplyReplaceUrl(request, rewrite->get_replace_url());
+      break;
+    case mojom::UrlRequestAction::Tag::POLICY:
       break;
   }
 }
@@ -101,9 +103,6 @@ bool HostMatches(const base::StringPiece& url_host,
                  const base::StringPiece& rule_host) {
   const base::StringPiece kWildcard("*.");
   if (base::StartsWith(rule_host, kWildcard, base::CompareCase::SENSITIVE)) {
-    // |rule_host| starts with a wildcard (e.g. "*.test.xyz"). Check if
-    // |url_host| ends with ".test.xyz". The "." character is included here to
-    // prevent accidentally matching "notatest.xyz".
     if (base::EndsWith(url_host, rule_host.substr(1),
                        base::CompareCase::SENSITIVE)) {
       return true;
@@ -117,8 +116,10 @@ bool HostMatches(const base::StringPiece& url_host,
   return base::CompareCaseInsensitiveASCII(url_host, rule_host) == 0;
 }
 
-void ApplyRule(network::ResourceRequest* request,
-               const mojom::UrlRequestRewriteRulePtr& rule) {
+// Returns true if the host and scheme filters defined in |rule| match
+// |request|.
+bool RuleFiltersMatchRequest(network::ResourceRequest* request,
+                             const mojom::UrlRequestRulePtr& rule) {
   const GURL& url = request->url;
 
   if (rule->hosts_filter) {
@@ -128,7 +129,7 @@ void ApplyRule(network::ResourceRequest* request,
         break;
     }
     if (!found)
-      return;
+      return false;
   }
 
   if (rule->schemes_filter) {
@@ -140,19 +141,46 @@ void ApplyRule(network::ResourceRequest* request,
       }
     }
     if (!found)
-      return;
+      return false;
   }
 
-  for (const auto& rewrite : rule->rewrites) {
-    ApplyRewrite(request, rewrite);
-  }
+  return true;
 }
 
-void ApplyRules(network::ResourceRequest* request,
-                const std::vector<mojom::UrlRequestRewriteRulePtr>& rules) {
-  for (const auto& rule : rules) {
-    ApplyRule(request, rule);
+// Applies |rule|'s transformations to |request| if it satisfies |rule|'s
+// criteria.
+void ApplyRule(network::ResourceRequest* request,
+               const mojom::UrlRequestRulePtr& rule) {
+  if (!RuleFiltersMatchRequest(request, rule))
+    return;
+
+  for (const auto& rewrite : rule->actions)
+    ApplyRewrite(request, rewrite);
+}
+
+// Returns true if |request| is either allowed or left unblocked by any rules.
+bool IsRequestAllowed(
+    network::ResourceRequest* request,
+    const WebEngineURLLoaderThrottle::UrlRequestRewriteRules& rules) {
+  for (const auto& rule : rules.data) {
+    if (rule->actions.size() != 1)
+      continue;
+
+    if (rule->actions[0]->which() != mojom::UrlRequestAction::Tag::POLICY)
+      continue;
+
+    if (!RuleFiltersMatchRequest(request, rule))
+      continue;
+
+    switch (rule->actions[0]->get_policy()) {
+      case mojom::UrlRequestAccessPolicy::kAllow:
+        return true;
+      case mojom::UrlRequestAccessPolicy::kDeny:
+        return false;
+    }
   }
+
+  return true;
 }
 
 }  // namespace
@@ -173,8 +201,16 @@ void WebEngineURLLoaderThrottle::WillStartRequest(
   scoped_refptr<WebEngineURLLoaderThrottle::UrlRequestRewriteRules>
       cached_rules = cached_rules_provider_->GetCachedRules();
   // |cached_rules| may be empty if no rule was ever sent to WebEngine.
-  if (cached_rules)
-    ApplyRules(request, cached_rules->data);
+  if (cached_rules) {
+    if (!IsRequestAllowed(request, *cached_rules)) {
+      delegate_->CancelWithError(net::ERR_ABORTED,
+                                 "Resource load blocked by embedder policy.");
+      return;
+    }
+
+    for (const auto& rule : cached_rules->data)
+      ApplyRule(request, rule);
+  }
   *defer = false;
 }
 

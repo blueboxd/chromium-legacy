@@ -4,8 +4,7 @@
 
 #include "third_party/blink/renderer/core/mathml/mathml_fraction_element.h"
 
-#include "third_party/blink/renderer/core/layout/ng/mathml/layout_ng_mathml_block.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
 
@@ -18,15 +17,6 @@ void MathMLFractionElement::AddMathFractionBarThicknessIfNeeded(
   if (auto length_or_percentage_value = AddMathLengthToComputedStyle(
           style, conversion_data, mathml_names::kLinethicknessAttr))
     style.SetMathFractionBarThickness(std::move(*length_or_percentage_value));
-}
-
-LayoutObject* MathMLFractionElement::CreateLayoutObject(
-    const ComputedStyle& style,
-    LegacyLayout legacy) {
-  if (!RuntimeEnabledFeatures::MathMLCoreEnabled() ||
-      !style.IsDisplayMathType() || legacy == LegacyLayout::kForce)
-    return MathMLElement::CreateLayoutObject(style, legacy);
-  return new LayoutNGMathMLBlock(this);
 }
 
 }  // namespace blink

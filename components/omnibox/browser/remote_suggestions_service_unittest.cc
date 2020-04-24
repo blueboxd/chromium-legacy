@@ -64,7 +64,7 @@ TEST_F(RemoteSuggestionsServiceTest, EnsureAttachCookies) {
                      base::Unretained(this)));
 
   RunAndWait();
-  EXPECT_TRUE(resource_request.attach_same_site_cookies);
+  EXPECT_TRUE(resource_request.force_ignore_site_for_cookies);
   EXPECT_EQ(net::LOAD_DO_NOT_SAVE_COOKIES, resource_request.load_flags);
   EXPECT_TRUE(resource_request.site_for_cookies.IsEquivalent(
       net::SiteForCookies::FromUrl(resource_request.url)));

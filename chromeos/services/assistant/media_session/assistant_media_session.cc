@@ -10,6 +10,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/services/assistant/assistant_manager_service.h"
+#include "chromeos/services/assistant/public/cpp/assistant_client.h"
 #include "services/media_session/public/cpp/features.h"
 
 // A macro which ensures we are running on the main thread.
@@ -35,10 +36,8 @@ const char kAudioFocusSourceName[] = "assistant";
 }  // namespace
 
 AssistantMediaSession::AssistantMediaSession(
-    mojom::Client* client,
     AssistantManagerService* assistant_manager_service)
-    : client_(client),
-      assistant_manager_service_(assistant_manager_service),
+    : assistant_manager_service_(assistant_manager_service),
       main_task_runner_(base::SequencedTaskRunnerHandle::Get()) {}
 
 AssistantMediaSession::~AssistantMediaSession() {
@@ -193,7 +192,7 @@ void AssistantMediaSession::EnsureServiceConnection() {
 
   audio_focus_manager_.reset();
 
-  client_->RequestAudioFocusManager(
+  AssistantClient::Get()->RequestAudioFocusManager(
       audio_focus_manager_.BindNewPipeAndPassReceiver());
   audio_focus_manager_->SetSource(base::UnguessableToken::Create(),
                                   kAudioFocusSourceName);

@@ -5,6 +5,8 @@
 #include "ash/system/accessibility/switch_access_menu_button.h"
 
 #include "ash/style/ash_color_provider.h"
+#include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/mojom/ax_node_data.mojom-shared.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -29,10 +31,11 @@ constexpr int kLabelTopPaddingSmallDip = 8;
 constexpr int kTextLineHeightDip = 20;
 }  // namespace
 
-SwitchAccessMenuButton::SwitchAccessMenuButton(views::ButtonListener* listener,
+SwitchAccessMenuButton::SwitchAccessMenuButton(std::string action_name,
                                                const gfx::VectorIcon& icon,
                                                int label_text_id)
-    : views::Button(listener),
+    : views::Button(this),
+      action_name_(action_name),
       image_view_(new views::ImageView()),
       label_(new views::Label(l10n_util::GetStringUTF16(label_text_id),
                               views::style::CONTEXT_BUTTON)) {
@@ -71,6 +74,18 @@ SwitchAccessMenuButton::SwitchAccessMenuButton(views::ButtonListener* listener,
       gfx::Insets(kButtonTopPaddingDip, left_padding_dip, bottom_padding_dip,
                   right_padding_dip));
   SetLayoutManager(std::move(layout));
+}
+
+void SwitchAccessMenuButton::ButtonPressed(views::Button* sender,
+                                           const ui::Event& event) {
+  NotifyAccessibilityEvent(ax::mojom::Event::kClicked,
+                           /*send_native_event=*/false);
+}
+
+void SwitchAccessMenuButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  views::Button::GetAccessibleNodeData(node_data);
+  node_data->AddStringAttribute(ax::mojom::StringAttribute::kValue,
+                                action_name_);
 }
 
 }  // namespace ash

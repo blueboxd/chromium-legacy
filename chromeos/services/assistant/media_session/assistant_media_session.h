@@ -33,8 +33,8 @@ class AssistantManagerService;
 class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantMediaSession
     : public media_session::mojom::MediaSession {
  public:
-  AssistantMediaSession(mojom::Client* client,
-                        AssistantManagerService* assistant_manager_service);
+  explicit AssistantMediaSession(
+      AssistantManagerService* assistant_manager_service);
   ~AssistantMediaSession() override;
 
   // media_session.mojom.MediaSession overrides:
@@ -105,7 +105,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantMediaSession
   // The current metadata associated with the current media session.
   media_session::MediaMetadata metadata_;
 
-  mojom::Client* const client_;
   AssistantManagerService* const assistant_manager_service_;
 
   scoped_refptr<base::SequencedTaskRunner> main_task_runner_;

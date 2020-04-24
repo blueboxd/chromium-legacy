@@ -188,6 +188,7 @@
     ignored,
     image,
     imageMap,
+    imeCandidate,
     inlineTextBox,
     inputTime,
     keyboard,

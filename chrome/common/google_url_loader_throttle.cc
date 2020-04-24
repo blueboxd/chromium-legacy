@@ -124,8 +124,7 @@ void GoogleURLLoaderThrottle::WillProcessResponse(
         !response_head->headers->HasHeaderValue("x-frame-options", "deny") &&
         !response_head->headers->HasHeaderValue("x-frame-options",
                                                 "sameorigin")) {
-      response_head->headers->RemoveHeader("x-frame-options");
-      response_head->headers->AddHeader("x-frame-options: sameorigin");
+      response_head->headers->AddHeader("x-frame-options", "sameorigin");
     }
   }
 }

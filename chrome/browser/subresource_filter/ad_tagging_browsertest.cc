@@ -36,6 +36,76 @@ namespace {
 using content::RenderFrameHost;
 using testing::CreateSuffixRule;
 
+// Creates a link element with rel="stylesheet" and href equal to the specified
+// url. Returns immediately after adding the element to the DOM.
+void AddExternalStylesheet(const content::ToRenderFrameHost& adapter,
+                           const GURL& url) {
+  std::string script_template = R"(
+      link = document.createElement("link");
+      link.rel = "stylesheet";
+      link.href = $1;
+      document.head.appendChild(link);
+  )";
+  EXPECT_TRUE(content::ExecJs(adapter.render_frame_host(),
+                              content::JsReplace(script_template, url)));
+}
+
+class AdTaggingPageLoadMetricsTestWaiter
+    : public page_load_metrics::PageLoadMetricsTestWaiter {
+ public:
+  explicit AdTaggingPageLoadMetricsTestWaiter(
+      content::WebContents* web_contents)
+      : page_load_metrics::PageLoadMetricsTestWaiter(web_contents) {}
+
+  void AddMinimumCompleteAdResourcesExpectation(int num_ad_resources) {
+    expected_minimum_complete_ad_resources_ = num_ad_resources;
+  }
+
+  void AddMinimumCompleteVanillaResourcesExpectation(
+      int num_vanilla_resources) {
+    expected_minimum_complete_vanilla_resources_ = num_vanilla_resources;
+  }
+
+  int current_complete_ad_resources() { return current_complete_ad_resources_; }
+
+  int current_complete_vanilla_resources() {
+    return current_complete_vanilla_resources_;
+  }
+
+ protected:
+  bool ExpectationsSatisfied() const override {
+    return current_complete_ad_resources_ >=
+               expected_minimum_complete_ad_resources_ &&
+           current_complete_vanilla_resources_ >=
+               expected_minimum_complete_vanilla_resources_ &&
+           PageLoadMetricsTestWaiter::ExpectationsSatisfied();
+  }
+
+  void HandleResourceUpdate(
+      const page_load_metrics::mojom::ResourceDataUpdatePtr& resource)
+      override {
+    // Due to cache-aware loading of font resources, we see two resource loads
+    // for resources not in the cache.  We ignore the first request, which
+    // results in a cache miss, by using the fact that it will have no received
+    // data. Note that this only impacts this class's expectations, not those in
+    // PageLoadMetricsTestWaiter itself.
+    if (resource->is_complete && resource->received_data_length != 0) {
+      if (resource->reported_as_ad_resource) {
+        current_complete_ad_resources_++;
+      } else {
+        current_complete_vanilla_resources_++;
+      }
+    }
+  }
+
+ private:
+  int current_complete_ad_resources_ = 0;
+  int expected_minimum_complete_ad_resources_ = 0;
+
+  int current_complete_vanilla_resources_ = 0;
+  int expected_minimum_complete_vanilla_resources_ = 0;
+};
+
 class AdTaggingBrowserTest : public SubresourceFilterBrowserTest {
  public:
   AdTaggingBrowserTest() : SubresourceFilterBrowserTest() {}
@@ -128,9 +198,9 @@ class AdTaggingBrowserTest : public SubresourceFilterBrowserTest {
     return embedded_test_server()->GetURL("/ad_tagging/" + page);
   }
 
-  std::unique_ptr<page_load_metrics::PageLoadMetricsTestWaiter>
-  CreatePageLoadMetricsTestWaiter() {
-    return std::make_unique<page_load_metrics::PageLoadMetricsTestWaiter>(
+  std::unique_ptr<AdTaggingPageLoadMetricsTestWaiter>
+  CreateAdTaggingPageLoadMetricsTestWaiter() {
+    return std::make_unique<AdTaggingPageLoadMetricsTestWaiter>(
         GetWebContents());
   }
 
@@ -340,7 +410,7 @@ IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest,
                        VerifyCrossOriginWithImmediateNavigate) {
   base::HistogramTester histogram_tester;
 
-  auto waiter = CreatePageLoadMetricsTestWaiter();
+  auto waiter = CreateAdTaggingPageLoadMetricsTestWaiter();
   // Create the main frame and cross origin subframe from an ad script.
   ui_test_utils::NavigateToURL(browser(), GetURL("frame_factory.html"));
   CreateSrcFrameFromAdScript(GetWebContents(),
@@ -565,6 +635,42 @@ IN_PROC_BROWSER_TEST_F(
   content::RenderFrameHost* ad_child_of_ad = CreateSrcFrameFromAdScript(
       ad_frame_with_aborted_load, GetURL("frame_factory.html"));
   EXPECT_TRUE(*observer.GetIsAdSubframe(ad_child_of_ad->GetFrameTreeNodeId()));
+}
+
+// Basic vanilla stylesheet with vanilla font and image.
+IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest,
+                       VanillaExternalStylesheet_ResourcesNotTagged) {
+  auto waiter = CreateAdTaggingPageLoadMetricsTestWaiter();
+
+  ui_test_utils::NavigateToURL(browser(), GetURL("test_div.html"));
+  AddExternalStylesheet(GetWebContents(),
+                        GetURL("sheet_with_vanilla_resources.css"));
+
+  // Document, favicon, stylesheet, font, background-image
+  waiter->AddMinimumCompleteVanillaResourcesExpectation(5);
+  waiter->Wait();
+
+  EXPECT_EQ(waiter->current_complete_vanilla_resources(), 5);
+  EXPECT_EQ(waiter->current_complete_ad_resources(), 0);
+}
+
+// Basic ad stylesheet with vanilla font and image.
+IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest,
+                       AdExternalStylesheet_ResourcesTagged) {
+  auto waiter = CreateAdTaggingPageLoadMetricsTestWaiter();
+
+  ui_test_utils::NavigateToURL(browser(), GetURL("test_div.html"));
+  AddExternalStylesheet(GetWebContents(),
+                        GetURL("sheet_with_vanilla_resources.css?ad=true"));
+
+  // Document, favicon
+  waiter->AddMinimumCompleteVanillaResourcesExpectation(2);
+  // Stylesheet, font, background-image
+  waiter->AddMinimumCompleteAdResourcesExpectation(3);
+  waiter->Wait();
+
+  EXPECT_EQ(waiter->current_complete_vanilla_resources(), 2);
+  EXPECT_EQ(waiter->current_complete_ad_resources(), 3);
 }
 
 void ExpectWindowOpenUkmEntry(const ukm::TestUkmRecorder& ukm_recorder,

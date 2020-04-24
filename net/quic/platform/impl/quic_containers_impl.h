@@ -32,6 +32,9 @@ template <typename Key,
               typename std::unordered_map<Key, Value, Hash>::allocator_type>
 using QuicUnorderedMapImpl = std::unordered_map<Key, Value, Hash, Eq, Alloc>;
 
+template <typename Key, typename Value, typename Hash>
+using QuicHashMapImpl = std::unordered_map<Key, Value, Hash>;
+
 // TODO(mpw): s/std::unordered_set/gtl::node_hash_set/ once node_hash_set is
 //   PG3-compatible.
 template <typename Key,
@@ -40,6 +43,9 @@ template <typename Key,
           typename Alloc =
               typename std::unordered_set<Key, Hash>::allocator_type>
 using QuicUnorderedSetImpl = std::unordered_set<Key, Hash, Eq, Alloc>;
+
+template <typename Key, typename Hash>
+using QuicHashSetImpl = std::unordered_set<Key, Hash>;
 
 // A map which offers insertion-ordered iteration.
 template <typename Key, typename Value, typename Hash>

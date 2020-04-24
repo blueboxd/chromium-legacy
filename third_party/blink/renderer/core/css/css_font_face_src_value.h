@@ -45,18 +45,20 @@ class CORE_EXPORT CSSFontFaceSrcValue : public CSSValue {
       const String& absolute_resource,
       const Referrer& referrer,
       network::mojom::CSPDisposition should_check_content_security_policy,
-      OriginClean origin_clean) {
+      OriginClean origin_clean,
+      bool is_ad_related) {
     return MakeGarbageCollected<CSSFontFaceSrcValue>(
         specified_resource, absolute_resource, referrer, false,
-        should_check_content_security_policy, origin_clean);
+        should_check_content_security_policy, origin_clean, is_ad_related);
   }
   static CSSFontFaceSrcValue* CreateLocal(
       const String& absolute_resource,
       network::mojom::CSPDisposition should_check_content_security_policy,
-      OriginClean origin_clean) {
+      OriginClean origin_clean,
+      bool is_ad_related) {
     return MakeGarbageCollected<CSSFontFaceSrcValue>(
         g_empty_string, absolute_resource, Referrer(), true,
-        should_check_content_security_policy, origin_clean);
+        should_check_content_security_policy, origin_clean, is_ad_related);
   }
 
   CSSFontFaceSrcValue(
@@ -65,7 +67,8 @@ class CORE_EXPORT CSSFontFaceSrcValue : public CSSValue {
       const Referrer& referrer,
       bool local,
       network::mojom::CSPDisposition should_check_content_security_policy,
-      OriginClean origin_clean)
+      OriginClean origin_clean,
+      bool is_ad_related)
       : CSSValue(kFontFaceSrcClass),
         absolute_resource_(absolute_resource),
         specified_resource_(specified_resource),
@@ -73,7 +76,8 @@ class CORE_EXPORT CSSFontFaceSrcValue : public CSSValue {
         is_local_(local),
         should_check_content_security_policy_(
             should_check_content_security_policy),
-        origin_clean_(origin_clean) {}
+        origin_clean_(origin_clean),
+        is_ad_related_(is_ad_related) {}
 
   const String& GetResource() const { return absolute_resource_; }
   const String& Format() const { return format_; }
@@ -106,6 +110,7 @@ class CORE_EXPORT CSSFontFaceSrcValue : public CSSValue {
   const bool is_local_;
   const network::mojom::CSPDisposition should_check_content_security_policy_;
   const OriginClean origin_clean_;
+  bool is_ad_related_;
 
   class FontResourceHelper : public GarbageCollected<FontResourceHelper>,
                              public FontResourceClient {

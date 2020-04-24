@@ -153,13 +153,13 @@ void WebFrameTestProxy::Reset() {
     // Resetting the internals object also overrides the WebPreferences, so we
     // have to sync them to WebKit again.
     render_view()->SetWebkitPreferences(render_view()->GetWebkitPreferences());
-
-    test_client_->Reset();
   }
   if (IsLocalRoot()) {
     GetLocalRootWebWidgetTestProxy()->Reset();
     GetLocalRootWebWidgetTestProxy()->EndSyntheticGestures();
   }
+
+  test_client_->Reset();
 }
 
 std::string WebFrameTestProxy::GetFrameNameForWebTests() {

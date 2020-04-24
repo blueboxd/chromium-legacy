@@ -9,11 +9,9 @@
 
 namespace blink {
 
-class MathMLElement;
-
 class LayoutNGMathMLBlock : public LayoutNGMixin<LayoutBlock> {
  public:
-  explicit LayoutNGMathMLBlock(MathMLElement*);
+  explicit LayoutNGMathMLBlock(Element*);
 
   const char* GetName() const override { return "LayoutNGMathMLBlock"; }
 

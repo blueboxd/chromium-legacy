@@ -164,7 +164,6 @@
 <translation id="2131665479022868825">تم توفير <ph name="DATA" /></translation>
 <translation id="213279576345780926">تم إغلاق <ph name="TAB_TITLE" /></translation>
 <translation id="2139186145475833000">الإضافة إلى الشاشة الرئيسية</translation>
-<translation id="2146738493024040262">فتح تطبيق فوري</translation>
 <translation id="2154484045852737596">تعديل البطاقة</translation>
 <translation id="2154710561487035718">‏نسخ عنوان URL</translation>
 <translation id="2156074688469523661">المواقع المتبقية (<ph name="NUMBER_OF_SITES" />)</translation>
@@ -281,7 +280,6 @@
 <translation id="2996809686854298943">‏عنوان URL المطلوب</translation>
 <translation id="300526633675317032">سيؤدي هذا إلى محو مساحة التخزين البالغة <ph name="SIZE_IN_KB" /> بأكملها من مساحة تخزين مواقع الويب.</translation>
 <translation id="3016635187733453316">يُرجى التأكُّد من اتصال هذا الجهاز بالإنترنت.</translation>
-<translation id="3029613699374795922">تم التنزيل بحجم <ph name="KBS" /> كيلوبايت</translation>
 <translation id="3029704984691124060">عبارات المرور غير متطابقة</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />الحصول على مساعدة<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">‏تحديد الموقع الجغرافي متوقف، يمكنك تفعيله من <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
@@ -457,7 +455,6 @@
 <translation id="4411535500181276704">الوضع البسيط</translation>
 <translation id="4415276339145661267">‏إدارة حسابك على Google</translation>
 <translation id="4432792777822557199">ستتم ترجمة الصفحات باللغة <ph name="SOURCE_LANGUAGE" /> إلى اللغة <ph name="TARGET_LANGUAGE" /> من الآن فصاعدًا</translation>
-<translation id="4433925000917964731">‏نسخة خفيفة تقدِّمها Google</translation>
 <translation id="4434045419905280838">النوافذ المنبثقة وإعادة التوجيه</translation>
 <translation id="4440958355523780886">‏صفحة بسيطة تقدِّمها Google. يُرجى النقر لتحميل الصفحة الأصلية.</translation>
 <translation id="4452411734226507615">إغلاق علامة التبويب <ph name="TAB_TITLE" /></translation>
@@ -663,7 +660,7 @@
 <translation id="5854790677617711513">مرّ عليها أكثر من 30 يومًا</translation>
 <translation id="5858741533101922242">‏يتعذر على Chrome تشغيل محوّل البلوتوث</translation>
 <translation id="5862731021271217234">للحصول على علامات التبويب من أجهزتك الأخرى، يُرجى تفعيل المزامنة.</translation>
-<translation id="5864174910718532887">التفاصيل: تم الترتيب بحسب اسم موقع الويب</translation>
+<translation id="5864174910718532887">التفاصيل: تم الترتيب حسب اسم موقع الويب</translation>
 <translation id="5864419784173784555">في انتظار تنزيل آخر…</translation>
 <translation id="5865733239029070421">‏يُرسِل إحصاءات الاستخدام وتقارير الأعطال إلى Google تلقائيًا.</translation>
 <translation id="5869522115854928033">كلمات المرور المحفوظة</translation>
@@ -727,7 +724,7 @@
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{‏<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 وعنوان إضافي واحد (<ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />)}zero{‏<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 و<ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> عنوان إضافي}two{‏<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 وعنوانان إضافيان (<ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />)}few{‏<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 و<ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> عناوين إضافية}many{‏<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 و<ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> عنوانًا إضافيًا}other{‏<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 و<ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> عنوان إضافي}}</translation>
 <translation id="6364438453358674297">هل تريد إزالة اقتراح من السجل؟</translation>
 <translation id="6369229450655021117">يمكنك "من هنا" البحث في الويب والمشاركة مع أصدقائك وعرض الصفحات المفتوحة</translation>
-<translation id="6378173571450987352">التفاصيل: تم الترتيب بحسب مقدار البيانات المُستخدَمة</translation>
+<translation id="6378173571450987352">التفاصيل: تم الترتيب حسب مقدار البيانات المُستخدَمة</translation>
 <translation id="6379829913050047669">‏سيتم فتح تطبيق <ph name="APP_NAME" /> في Chrome. تعني المتابعة موافقتك على <ph name="BEGIN_LINK1" />بنود خدمة Google<ph name="END_LINK1" /> و<ph name="BEGIN_LINK2" />بنود الخدمة الإضافية لكل من متصفح Google Chrome و"نظام التشغيل Chrome"<ph name="END_LINK2" />.</translation>
 <translation id="6381421346744604172">تعتيم المواقع الإلكترونية</translation>
 <translation id="6388207532828177975">المحو وإعادة الضبط</translation>
@@ -737,7 +734,6 @@
 <translation id="6406506848690869874">المزامنة</translation>
 <translation id="6410973561433500075">هل تريد إطلاق "الواقع المعزّز" من <ph name="DOMAIN" />؟</translation>
 <translation id="641643625718530986">طباعة…</translation>
-<translation id="6416782512398055893">تم التنزيل بحجم <ph name="MBS" /> ميغابايت</translation>
 <translation id="6427112570124116297">ترجمة موقع الويب</translation>
 <translation id="6433501201775827830">اختيار محرك البحث</translation>
 <translation id="6437478888915024427">معلومات الصفحة</translation>
@@ -745,7 +741,6 @@
 <translation id="6441734959916820584">الاسم طويل جدًا</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{صورة واحدة (#)}zero{# صورة}two{صورتان (#)}few{# صور}many{# صورةً}other{# صورة}}</translation>
 <translation id="6447558397796644647">تعذّر العثور على هذه الإشارة. تحقّق من الإملاء أو أضِف إشارة جديدة.</translation>
-<translation id="6447842834002726250">ملفّات تعريف الارتباط</translation>
 <translation id="6461962085415701688">يتعذر فتح الملف</translation>
 <translation id="6464977750820128603">‏يمكنك الاطِّلاع على مواقع الويب التي تزورها في Chrome وتحديد موقِّتات لها.\n\nتحصل Google على معلومات عن مواقع الويب التي ضبطت موقِّتات لها ومدة زيارتك لها. تُستخدم هذه المعلومات لتحسين الرفاهية الرقمية.</translation>
 <translation id="6475951671322991020">تنزيل الفيديو</translation>
@@ -754,7 +749,6 @@
 <translation id="6508722015517270189">‏إعادة تشغيل Chrome</translation>
 <translation id="6532866250404780454">‏لن يتم عرض مواقع الويب التي تزورها في Chrome. سيتم حذف جميع موقِّتات موقع الويب.</translation>
 <translation id="6534565668554028783">‏استغرقت Google وقتًا أطول مما يجب للاستجابة</translation>
-<translation id="6538442820324228105">تم التنزيل بحجم <ph name="GBS" /> غيغابايت</translation>
 <translation id="6539092367496845964">حدث خطأ. يُرجى إعادة المحاولة لاحقًا.</translation>
 <translation id="6545017243486555795">محو جميع البيانات</translation>
 <translation id="6545864417968258051">البحث عن بلوتوث</translation>
@@ -848,7 +842,7 @@
 <translation id="7291387454912369099">‏الملء التلقائي باستخدام "مساعد Google"</translation>
 <translation id="7293171162284876153">‏لبدء المزامنة، يُرجى تفعيل "مزامنة بيانات Chrome".</translation>
 <translation id="729975465115245577">لا يتضمن جهازك تطبيقًا لتخزين ملف كلمات المرور.</translation>
-<translation id="7302081693174882195">التفاصيل: تم الترتيب بحسب مقدار البيانات المحفوظة</translation>
+<translation id="7302081693174882195">التفاصيل: تم الترتيب حسب مقدار البيانات المحفوظة</translation>
 <translation id="7302486331832100261">أنت تحظر الإشعارات عادةً. للسماح بها، يُرجى النقر على "التفاصيل".</translation>
 <translation id="7328017930301109123">‏في الوضع البسيط، يُحمِّل Chrome الصفحات بشكلٍ أسرع ويستخدم بيانات أقل بنسبة تصل إلى 60 بالمائة.</translation>
 <translation id="7333031090786104871">لا تزال عملية إضافة موقع الويب السابق جارية</translation>

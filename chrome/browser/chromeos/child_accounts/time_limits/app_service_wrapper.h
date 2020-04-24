@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_CHILD_ACCOUNTS_TIME_LIMITS_APP_SERVICE_WRAPPER_H_
 #define CHROME_BROWSER_CHROMEOS_CHILD_ACCOUNTS_TIME_LIMITS_APP_SERVICE_WRAPPER_H_
 
+#include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -105,6 +106,10 @@ class AppServiceWrapper : public apps::AppRegistryCache::Observer,
   // will be removed from the icon.
   void ResumeApp(const AppId& app_id);
 
+  // Launches app identified by |app_service_id| with no event flags explicitly
+  // and default display id.
+  void LaunchApp(const std::string& app_service_id);
+
   // Returns installed apps that are relevant for Per-App Time Limits feature.
   // Installed apps of unsupported types will not be included.
   std::vector<AppId> GetInstalledApps() const;
@@ -124,6 +129,9 @@ class AppServiceWrapper : public apps::AppRegistryCache::Observer,
   // App service id will be only different from app_id.app_id() for ARC++ apps.
   // It does not make sense to call it for other apps.
   std::string GetAppServiceId(const AppId& app_id) const;
+
+  // Return true if the App with |app_service_id| is installed.
+  bool IsAppInstalled(const std::string& app_service_id);
 
   // Returns AppId from |app_service_id| and |app_type|.
   AppId AppIdFromAppServiceId(const std::string& app_service_id,

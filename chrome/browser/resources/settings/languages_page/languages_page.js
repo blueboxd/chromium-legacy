@@ -493,14 +493,6 @@ cr.define('settings', function() {
       this.languageHelper.disableLanguage(this.detailLanguage_.language.code);
     },
 
-    /**
-     * @return {string}
-     * @private
-     */
-    getLanguageListTwoLine_() {
-      return cr.isChromeOS || cr.isWindows ? 'two-line' : '';
-    },
-
     // <if expr="not is_macosx">
     /**
      * Returns the value to use as the |pref| attribute for the policy indicator

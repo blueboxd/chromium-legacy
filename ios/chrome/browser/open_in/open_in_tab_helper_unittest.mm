@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/memory/ref_counted.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/open_in/open_in_tab_helper_delegate.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -95,9 +94,8 @@ class OpenInTabHelperTest : public PlatformTest {
     item_->SetURL(url);
     scoped_refptr<net::HttpResponseHeaders> headers =
         new net::HttpResponseHeaders("HTTP 1.1 200 OK");
-    headers->AddHeader(base::StringPrintf("Content-Type: %s", content_type));
-    headers->AddHeader(
-        base::StringPrintf("Content-Disposition: %s", content_disposition));
+    headers->SetHeader("Content-Type", content_type);
+    headers->SetHeader("Content-Disposition", content_disposition);
 
     web::FakeNavigationContext navigation_context;
     navigation_context.SetResponseHeaders(headers);

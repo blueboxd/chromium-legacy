@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_task_signal.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/modules/scheduler/dom_task.h"
 #include "third_party/blink/renderer/modules/scheduler/dom_task_signal.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
@@ -23,7 +24,7 @@ static ScriptPromise RejectPromiseImmediately(ExceptionState& exception_state) {
   // The bindings layer implicitly converts thrown exceptions in
   // promise-returning functions to promise rejections.
   exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
-                                    "Current document is detached");
+                                    "Current window is detached");
   return ScriptPromise();
 }
 
@@ -31,23 +32,24 @@ static ScriptPromise RejectPromiseImmediately(ExceptionState& exception_state) {
 
 const char DOMScheduler::kSupplementName[] = "DOMScheduler";
 
-DOMScheduler* DOMScheduler::From(Document& document) {
-  DOMScheduler* scheduler = Supplement<Document>::From<DOMScheduler>(document);
+DOMScheduler* DOMScheduler::From(LocalDOMWindow& window) {
+  DOMScheduler* scheduler =
+      Supplement<LocalDOMWindow>::From<DOMScheduler>(window);
   if (!scheduler) {
-    scheduler = MakeGarbageCollected<DOMScheduler>(&document);
-    Supplement<Document>::ProvideTo(document, scheduler);
+    scheduler = MakeGarbageCollected<DOMScheduler>(&window);
+    Supplement<LocalDOMWindow>::ProvideTo(window, scheduler);
   }
   return scheduler;
 }
 
-DOMScheduler::DOMScheduler(Document* document)
-    : ExecutionContextLifecycleObserver(document),
-      Supplement<Document>(*document) {
-  if (document->IsContextDestroyed())
+DOMScheduler::DOMScheduler(LocalDOMWindow* window)
+    : ExecutionContextLifecycleObserver(window),
+      Supplement<LocalDOMWindow>(*window) {
+  if (window->IsContextDestroyed())
     return;
-  DCHECK(document->GetScheduler());
-  DCHECK(document->GetScheduler()->ToFrameScheduler());
-  CreateGlobalTaskQueues(document);
+  DCHECK(window->GetScheduler());
+  DCHECK(window->GetScheduler()->ToFrameScheduler());
+  CreateGlobalTaskQueues(window);
 }
 
 void DOMScheduler::ContextDestroyed() {
@@ -57,7 +59,7 @@ void DOMScheduler::ContextDestroyed() {
 void DOMScheduler::Trace(Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
   ExecutionContextLifecycleObserver::Trace(visitor);
-  Supplement<Document>::Trace(visitor);
+  Supplement<LocalDOMWindow>::Trace(visitor);
 }
 
 ScriptPromise DOMScheduler::postTask(ScriptState* script_state,
@@ -130,8 +132,8 @@ base::SingleThreadTaskRunner* DOMScheduler::GetTaskRunnerFor(
   return global_task_queues_[static_cast<int>(priority)]->GetTaskRunner().get();
 }
 
-void DOMScheduler::CreateGlobalTaskQueues(Document* document) {
-  FrameScheduler* scheduler = document->GetScheduler()->ToFrameScheduler();
+void DOMScheduler::CreateGlobalTaskQueues(LocalDOMWindow* window) {
+  FrameScheduler* scheduler = window->GetScheduler()->ToFrameScheduler();
   for (size_t i = 0; i < kWebSchedulingPriorityCount; i++) {
     global_task_queues_.push_back(scheduler->CreateWebSchedulingTaskQueue(
         static_cast<WebSchedulingPriority>(i)));

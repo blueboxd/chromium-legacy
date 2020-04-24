@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
+#include "base/synchronization/atomic_flag.h"
 #include "base/updateable_sequenced_task_runner.h"
 #include "chrome/browser/media/feeds/media_feeds_store.mojom.h"
 #include "chrome/browser/media/history/media_history_keyed_service.h"
@@ -73,7 +74,9 @@ class MediaHistoryStore : public base::RefCountedThreadSafe<MediaHistoryStore> {
     kFailedToOpenDatabase = 5,
     kFailedToEstablishTransaction = 6,
     kFailedToCreateMetaTable = 7,
-    kMaxValue = kFailedToCreateMetaTable,
+    kFailedToCommitTransaction = 8,
+    kFailedToDeleteOldDatabase = 9,
+    kMaxValue = kFailedToDeleteOldDatabase,
   };
 
   // If we write a playback into the database then we record the result to
@@ -105,9 +108,11 @@ class MediaHistoryStore : public base::RefCountedThreadSafe<MediaHistoryStore> {
 
   // Opens the database file from the |db_path|. Separated from the
   // constructor to ease construction/destruction of this object on one thread
-  // and database access on the DB sequence of |db_task_runner_|.
-  void Initialize();
+  // and database access on the DB sequence of |db_task_runner_|. If
+  // |should_reset| is true then this will delete and reset the DB.
+  void Initialize(const bool should_reset);
 
+  InitResult InitializeInternal();
   sql::InitStatus CreateOrUpgradeIfNeeded();
   sql::InitStatus InitializeTables();
   sql::Database* DB();
@@ -138,7 +143,6 @@ class MediaHistoryStore : public base::RefCountedThreadSafe<MediaHistoryStore> {
       base::Optional<unsigned int> num_sessions,
       base::Optional<MediaHistoryStore::GetPlaybackSessionsFilter> filter);
 
-  void RazeAndClose();
   void DeleteAllOriginData(const std::set<url::Origin>& origins);
   void DeleteAllURLData(const std::set<GURL>& urls);
 
@@ -165,7 +169,8 @@ class MediaHistoryStore : public base::RefCountedThreadSafe<MediaHistoryStore> {
 
   void UpdateMediaFeedDisplayTime(const int64_t feed_id);
 
-  void Close();
+  // Cancels pending DB transactions. Should only be called on the UI thread.
+  void SetCancelled();
 
  private:
   friend class base::RefCountedThreadSafe<MediaHistoryStore>;
@@ -173,11 +178,12 @@ class MediaHistoryStore : public base::RefCountedThreadSafe<MediaHistoryStore> {
   ~MediaHistoryStore();
 
   bool CanAccessDatabase() const;
+  bool IsCancelled() const;
 
   scoped_refptr<base::UpdateableSequencedTaskRunner> db_task_runner_;
   const base::FilePath db_path_;
   std::unique_ptr<sql::Database> db_;
-  sql::MetaTable meta_table_;
+  std::unique_ptr<sql::MetaTable> meta_table_;
   scoped_refptr<MediaHistoryOriginTable> origin_table_;
   scoped_refptr<MediaHistoryPlaybackTable> playback_table_;
   scoped_refptr<MediaHistorySessionTable> session_table_;
@@ -186,6 +192,7 @@ class MediaHistoryStore : public base::RefCountedThreadSafe<MediaHistoryStore> {
   scoped_refptr<MediaHistoryFeedsTable> feeds_table_;
   scoped_refptr<MediaHistoryFeedItemsTable> feed_items_table_;
   bool initialization_successful_;
+  base::AtomicFlag cancelled_;
 };
 
 }  // namespace media_history

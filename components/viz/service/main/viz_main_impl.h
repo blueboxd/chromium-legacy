@@ -13,6 +13,7 @@
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "components/discardable_memory/client/client_discardable_shared_memory_manager.h"
+#include "components/viz/service/gl/gpu_service_impl.h"
 #include "components/viz/service/main/viz_compositor_thread_runner_impl.h"
 #include "gpu/ipc/gpu_in_process_thread_service.h"
 #include "gpu/ipc/in_process_command_buffer.h"
@@ -24,6 +25,11 @@
 #include "services/viz/privileged/mojom/gl/gpu_service.mojom.h"
 #include "services/viz/privileged/mojom/viz_main.mojom.h"
 #include "ui/gfx/font_render_params.h"
+
+#if defined(OS_WIN)
+#include "components/viz/service/gl/info_collection_gpu_service_impl.h"
+#include "services/viz/privileged/mojom/gl/info_collection_gpu_service.mojom.h"
+#endif
 
 namespace base {
 class PowerMonitorSource;
@@ -41,6 +47,9 @@ class MojoUkmRecorder;
 
 namespace viz {
 class GpuServiceImpl;
+#if defined(OS_WIN)
+class InfoCollectionGpuServiceImpl;
+#endif
 
 class VizMainImpl : public mojom::VizMain,
                     public gpu::GpuInProcessThreadServiceDelegate {
@@ -110,6 +119,11 @@ class VizMainImpl : public mojom::VizMain,
           discardable_memory_manager,
       mojo::ScopedSharedBufferHandle activity_flags,
       gfx::FontRenderParams::SubpixelRendering subpixel_rendering) override;
+#if defined(OS_WIN)
+  void CreateInfoCollectionGpuService(
+      mojo::PendingReceiver<mojom::InfoCollectionGpuService> pending_receiver)
+      override;
+#endif
   void CreateFrameSinkManager(mojom::FrameSinkManagerParamsPtr params) override;
   void CreateVizDevTools(mojom::VizDevToolsParamsPtr params) override;
 
@@ -149,6 +163,9 @@ class VizMainImpl : public mojom::VizMain,
 
   std::unique_ptr<gpu::GpuInit> gpu_init_;
   std::unique_ptr<GpuServiceImpl> gpu_service_;
+#if defined(OS_WIN)
+  std::unique_ptr<InfoCollectionGpuServiceImpl> info_collection_gpu_service_;
+#endif
 
   // Allows the display compositor to use InProcessCommandBuffer to send GPU
   // commands to the GPU thread from the compositor thread. This must outlive

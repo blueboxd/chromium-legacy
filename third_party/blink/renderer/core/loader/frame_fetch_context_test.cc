@@ -208,8 +208,9 @@ class FrameFetchContextSubresourceFilterTest : public FrameFetchContextTest {
     base::Optional<ResourceRequestBlockedReason> reason =
         CanRequestInternal(ReportingDisposition::kReport);
     ResourceRequest request(KURL("http://example.com/"));
+    FetchInitiatorInfo initiator_info;
     EXPECT_EQ(expect_is_ad, GetFetchContext()->CalculateIfAdSubresource(
-                                request, ResourceType::kMock));
+                                request, ResourceType::kMock, initiator_info));
     return reason;
   }
 

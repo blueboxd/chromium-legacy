@@ -304,24 +304,22 @@ bool ContentBrowserClient::AllowAppCache(const GURL& manifest_url,
   return true;
 }
 
-bool ContentBrowserClient::AllowServiceWorkerOnIO(
+AllowServiceWorkerResult ContentBrowserClient::AllowServiceWorkerOnIO(
     const GURL& scope,
     const GURL& site_for_cookies,
     const base::Optional<url::Origin>& top_frame_origin,
     const GURL& script_url,
-    ResourceContext* context,
-    base::RepeatingCallback<WebContents*()> wc_getter) {
-  return true;
+    ResourceContext* context) {
+  return AllowServiceWorkerResult::Yes();
 }
 
-bool ContentBrowserClient::AllowServiceWorkerOnUI(
+AllowServiceWorkerResult ContentBrowserClient::AllowServiceWorkerOnUI(
     const GURL& scope,
     const GURL& site_for_cookies,
     const base::Optional<url::Origin>& top_frame_origin,
     const GURL& script_url,
-    BrowserContext* context,
-    base::RepeatingCallback<WebContents*()> wc_getter) {
-  return true;
+    BrowserContext* context) {
+  return AllowServiceWorkerResult::Yes();
 }
 
 bool ContentBrowserClient::AllowSharedWorker(

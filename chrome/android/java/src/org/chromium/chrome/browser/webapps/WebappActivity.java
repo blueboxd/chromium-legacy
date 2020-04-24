@@ -17,7 +17,6 @@ import android.view.ViewGroup;
 
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.IntentUtils;
@@ -397,35 +396,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
                     TabBrowserControlsConstraintsHelper.update(
                             tab, TabBrowserControlsConstraintsHelper.getConstraints(tab), true);
                 }
-            }
-
-            @Override
-            public void onDidAttachInterstitialPage(Tab tab) {
-                int state = ApplicationStatus.getStateForActivity(WebappActivity.this);
-                if (state == ActivityState.PAUSED || state == ActivityState.STOPPED
-                        || state == ActivityState.DESTROYED) {
-                    return;
-                }
-
-                // Kick the interstitial navigation to Chrome.
-                Intent intent =
-                        new Intent(Intent.ACTION_VIEW, Uri.parse(getActivityTab().getUrlString()));
-                intent.setPackage(getPackageName());
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                IntentHandler.startChromeLauncherActivityForTrustedIntent(intent);
-
-                // Pretend like the navigation never happened.  We delay so that this happens while
-                // the Activity is in the background.
-                mHandler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (getActivityTab().canGoBack()) {
-                            getActivityTab().goBack();
-                        } else {
-                            handleFinishAndClose();
-                        }
-                    }
-                }, MS_BEFORE_NAVIGATING_BACK_FROM_INTERSTITIAL);
             }
         };
     }

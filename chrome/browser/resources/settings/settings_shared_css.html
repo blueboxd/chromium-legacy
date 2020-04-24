@@ -154,9 +154,11 @@
        * outside of a settings-box. A list-frame is likely to follow a
        * settings box. */
       .list-frame {
-        @apply --settings-list-frame-padding;
-        align-items: center;
         display: block;
+        padding-block-end: 0;
+        padding-block-start: 0;
+        padding-inline-end: var(--cr-section-padding);
+        padding-inline-start: var(--cr-section-indent-padding);
       }
 
       /* A list-item is intended to be contained within a list-frame. The list

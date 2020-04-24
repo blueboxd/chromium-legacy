@@ -233,7 +233,6 @@ bool ShouldAbortPrerenderBeforeSwap(FinalStatus status) {
     // We'll crash the renderer after it's loaded.
     case FINAL_STATUS_RENDERER_CRASHED:
     case FINAL_STATUS_CANCELLED:
-    case FINAL_STATUS_NON_EMPTY_BROWSING_INSTANCE:
       return false;
     default:
       return true;

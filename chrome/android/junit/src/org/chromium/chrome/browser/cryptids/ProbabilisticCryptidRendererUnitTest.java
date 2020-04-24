@@ -144,7 +144,7 @@ public class ProbabilisticCryptidRendererUnitTest {
                 new FakeProbabilisticCrpytidRenderer(lastRenderDeltaFromNow);
         int numTrueRuns = 0;
         for (int i = 0; i < NUM_RUNS; i++) {
-            numTrueRuns += render.shouldUseCryptidRendering() ? 1 : 0;
+            numTrueRuns += render.shouldUseCryptidRendering(/*profile=*/null) ? 1 : 0;
         }
         return numTrueRuns;
     }

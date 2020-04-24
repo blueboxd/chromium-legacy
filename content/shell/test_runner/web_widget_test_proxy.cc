@@ -6,6 +6,7 @@
 
 #include "content/renderer/compositor/compositor_dependencies.h"
 #include "content/renderer/input/widget_input_handler_manager.h"
+#include "content/shell/renderer/web_test/blink_test_helpers.h"
 #include "content/shell/renderer/web_test/blink_test_runner.h"
 #include "content/shell/test_runner/test_interfaces.h"
 #include "content/shell/test_runner/test_runner.h"
@@ -16,6 +17,10 @@
 #include "third_party/blink/public/web/web_page_popup.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "third_party/blink/public/web/web_widget.h"
+
+#include "base/command_line.h"
+#include "base/strings/string_number_conversions.h"
+#include "ui/display/display_switches.h"
 
 namespace content {
 
@@ -167,6 +172,7 @@ void WebWidgetTestProxy::Reset() {
   event_sender_.Reset();
   ClearEditCommands();
   UseSynchronousResizeModeForTesting(false);
+  SetDeviceScaleFactorForTesting(0);
 }
 
 void WebWidgetTestProxy::Install(blink::WebLocalFrame* frame) {

@@ -615,14 +615,14 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, IncognitoProfile) {
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
   ASSERT_TRUE(profile);
-  EXPECT_FALSE(profile->HasOffTheRecordProfile());
+  EXPECT_FALSE(profile->HasPrimaryOTRProfile());
 
   size_t initial_profile_count = profile_manager->GetNumberOfProfiles();
 
   // Create an incognito profile.
-  Profile* incognito_profile = profile->GetOffTheRecordProfile();
+  Profile* incognito_profile = profile->GetPrimaryOTRProfile();
 
-  EXPECT_TRUE(profile->HasOffTheRecordProfile());
+  EXPECT_TRUE(profile->HasPrimaryOTRProfile());
   ASSERT_TRUE(profile_manager->IsValidProfile(incognito_profile));
   EXPECT_EQ(initial_profile_count, profile_manager->GetNumberOfProfiles());
 
@@ -639,9 +639,10 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, IncognitoProfile) {
                   .empty());
 
   // Delete the incognito profile.
-  incognito_profile->GetOriginalProfile()->DestroyOffTheRecordProfile();
+  incognito_profile->GetOriginalProfile()->DestroyOffTheRecordProfile(
+      incognito_profile);
 
-  EXPECT_FALSE(profile->HasOffTheRecordProfile());
+  EXPECT_FALSE(profile->HasPrimaryOTRProfile());
   EXPECT_FALSE(profile_manager->IsValidProfile(incognito_profile));
   EXPECT_EQ(initial_profile_count, profile_manager->GetNumberOfProfiles());
   // After destroying the incognito profile incognito preferences should be

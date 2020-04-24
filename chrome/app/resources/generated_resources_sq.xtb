@@ -417,7 +417,7 @@
 <translation id="1555130319947370107">E kaltër</translation>
 <translation id="1556537182262721003">Direktoria e shtesës nuk mund të zhvendoset te profili.</translation>
 <translation id="155865706765934889">Blloku me prekje</translation>
-<translation id="1560763881671211335">Administratorët e "G Suite për arsimin" përcaktojnë se te cilat shërbime të Google mund të qasen përdoruesit e tyre ndërkohë që janë identifikuar në një llogari "G Suite për arsimin". Administratorëve të shkollave u kërkohet të japin ose të marrin miratimin për përdorimin e shërbimeve nga përdoruesit e tyre të mitur.
+<translation id="1560763881671211335">Administratorët e "G Suite për edukimin" përcaktojnë se te cilat shërbime të Google mund të qasen përdoruesit e tyre ndërkohë që janë identifikuar në një llogari të "G Suite për edukimin". Administratorëve të shkollave u kërkohet të japin ose të marrin miratimin për përdorimin e shërbimeve nga përdoruesit e tyre të mitur.
 
     Të dhënat e shfletimit (duke përfshirë historikun, faqeshënuesit dhe fjalëkalimet) do të ruhen me llogarinë e Family Link dhe jo me llogarinë e shkollës.
 
@@ -4627,7 +4627,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="7235737137505019098">Çelësi yt i sigurisë nuk ka hapësirë të mjaftueshme për llogari të mëtejshme.</translation>
 <translation id="7238643356913091553"><ph name="NETWORK_NAME" />, detaje</translation>
 <translation id="7240339475467890413">Do të lidhesh me një zonë të re të qasjes në internet?</translation>
-<translation id="7240847845291869311">Fëmija yt do që të shtojë një "Llogari të Google G Suite për edukimin" te kjo pajisje. <ph name="LINK_BEGIN" />Njoftimi i privatësisë së "G Suite për edukimin"<ph name="LINK_END" /> ka për qëllim të ndihmojë përdoruesit e "G Suite për edukimin" dhe prindërit të kuptojnë se çfarë të dhënash produkti grumbullohen, pse grumbullohen dhe çfarë bëhet me to.</translation>
+<translation id="7240847845291869311">Fëmija yt do që të shtojë një "Llogari të Google" për "G Suite për edukimin" te kjo pajisje. <ph name="LINK_BEGIN" />Njoftimi i privatësisë së "G Suite për edukimin"<ph name="LINK_END" /> ka për qëllim të ndihmojë përdoruesit e "G Suite për edukimin" dhe prindërit të kuptojnë se çfarë të dhënash grumbullon produkti, pse grumbullohen dhe çfarë bëhet me to.</translation>
 <translation id="7241389281993241388">Identifikohu te <ph name="TOKEN_NAME" /> për të importuar certifikatën e klientit.</translation>
 <translation id="7241443820034350811">Nëse çelësi yt i sigurisë nuk është listuar, shtyp butonin e tij për të paktën 5 sekonda.</translation>
 <translation id="7243632151880336635">Pastro dhe dil</translation>

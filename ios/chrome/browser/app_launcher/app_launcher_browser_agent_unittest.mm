@@ -15,7 +15,7 @@
 #include "ios/chrome/browser/overlays/public/overlay_request.h"
 #import "ios/chrome/browser/overlays/public/overlay_request_queue.h"
 #include "ios/chrome/browser/overlays/public/overlay_response.h"
-#import "ios/chrome/browser/overlays/public/web_content_area/app_launcher_alert_overlay.h"
+#import "ios/chrome/browser/overlays/public/web_content_area/app_launcher_overlay.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
@@ -29,6 +29,9 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+using app_launcher_overlays::AppLaunchConfirmationRequest;
+using app_launcher_overlays::AllowAppLaunchResponse;
 
 // Test fixture for AppLauncherBrowserAgent.
 class AppLauncherBrowserAgentTest : public PlatformTest {
@@ -79,7 +82,7 @@ class AppLauncherBrowserAgentTest : public PlatformTest {
   }
 
   // Returns whether the front OverlayRequest for |web_state|'s queue is
-  // configured with an AppLauncherAlertOverlayRequestConfig with
+  // configured with an AppLaunchConfirmationRequest with
   // |is_repeated_request|.
   bool IsShowingDialog(web::WebState* web_state, bool is_repeated_request) {
     OverlayRequest* request = OverlayRequestQueue::FromWebState(
@@ -88,8 +91,8 @@ class AppLauncherBrowserAgentTest : public PlatformTest {
     if (!request)
       return false;
 
-    AppLauncherAlertOverlayRequestConfig* config =
-        request->GetConfig<AppLauncherAlertOverlayRequestConfig>();
+    AppLaunchConfirmationRequest* config =
+        request->GetConfig<AppLaunchConfirmationRequest>();
     return config && config->is_repeated_request() == is_repeated_request;
   }
 
@@ -117,8 +120,7 @@ TEST_F(AppLauncherBrowserAgentTest, AppStoreUrlShowsAlert) {
   OverlayRequestQueue* queue = OverlayRequestQueue::FromWebState(
       web_state, OverlayModality::kWebContentArea);
   queue->front_request()->GetCallbackManager()->SetCompletionResponse(
-      OverlayResponse::CreateWithInfo<AppLauncherAlertOverlayResponseInfo>(
-          /*allow_navigation=*/true));
+      OverlayResponse::CreateWithInfo<AllowAppLaunchResponse>());
 
   // Cancel requests in the queue so that the completion callback is executed,
   // expecting that the application will open the URL.
@@ -193,8 +195,7 @@ TEST_F(AppLauncherBrowserAgentTest, RepeatedRequestShowsAlert) {
   OverlayRequestQueue* queue = OverlayRequestQueue::FromWebState(
       web_state, OverlayModality::kWebContentArea);
   queue->front_request()->GetCallbackManager()->SetCompletionResponse(
-      OverlayResponse::CreateWithInfo<AppLauncherAlertOverlayResponseInfo>(
-          /*allow_navigation=*/true));
+      OverlayResponse::CreateWithInfo<AllowAppLaunchResponse>());
 
   // Cancel requests in the queue so that the completion callback is executed,
   // expecting that the application will open the URL.
@@ -226,8 +227,7 @@ TEST_F(AppLauncherBrowserAgentTest, AppUrlWithoutLinkShowsAlert) {
   OverlayRequestQueue* queue = OverlayRequestQueue::FromWebState(
       web_state, OverlayModality::kWebContentArea);
   queue->front_request()->GetCallbackManager()->SetCompletionResponse(
-      OverlayResponse::CreateWithInfo<AppLauncherAlertOverlayResponseInfo>(
-          /*allow_navigation=*/true));
+      OverlayResponse::CreateWithInfo<AllowAppLaunchResponse>());
 
   // Cancel requests in the queue so that the completion callback is executed,
   // expecting that the application will open the URL.

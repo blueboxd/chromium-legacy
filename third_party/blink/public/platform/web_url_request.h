@@ -152,9 +152,11 @@ class WebURLRequest {
 
     // Determines whether SameSite cookies will be attached to the request
     // even when the request looks cross-site.
-    bool attach_same_site_cookies() const { return attach_same_site_cookies_; }
-    void set_attach_same_site_cookies(bool attach) {
-      attach_same_site_cookies_ = attach;
+    bool force_ignore_site_for_cookies() const {
+      return force_ignore_site_for_cookies_;
+    }
+    void set_force_ignore_site_for_cookies(bool attach) {
+      force_ignore_site_for_cookies_ = attach;
     }
 
    protected:
@@ -168,7 +170,7 @@ class WebURLRequest {
     ui::PageTransition transition_type_ = ui::PAGE_TRANSITION_LINK;
     bool is_for_no_state_prefetch_ = false;
     bool originated_from_service_worker_ = false;
-    bool attach_same_site_cookies_ = false;
+    bool force_ignore_site_for_cookies_ = false;
   };
 
   BLINK_PLATFORM_EXPORT ~WebURLRequest();

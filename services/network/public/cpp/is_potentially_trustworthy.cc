@@ -175,8 +175,6 @@ std::vector<std::string> ParseSecureOriginAllowlistFromCmdline() {
 
   std::vector<std::string> origin_patterns =
       ParseSecureOriginAllowlist(origins_str);
-  UMA_HISTOGRAM_COUNTS_100("Security.TreatInsecureOriginAsSecure",
-                           origin_patterns.size());
 #if defined(OS_CHROMEOS)
   // For Crostini, we allow access to the default VM/container as a secure
   // origin via the hostname penguin.linux.test. We are required to use a

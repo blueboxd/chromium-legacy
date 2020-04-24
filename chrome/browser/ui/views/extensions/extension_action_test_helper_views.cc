@@ -158,6 +158,13 @@ ExtensionActionTestHelperViews::CreateOverflowBar(Browser* browser) {
           browser, browser_actions_container_)));
 }
 
+void ExtensionActionTestHelperViews::LayoutForOverflowBar() {
+  CHECK(GetToolbarActionsBar()->in_overflow_mode());
+  // This will update the container's preferred size which will in turn trigger
+  // a layout in the parent ResizeAwareParentView.
+  test_helper_->browser_actions_container()->RefreshToolbarActionViews();
+}
+
 gfx::Size ExtensionActionTestHelperViews::GetMinPopupSize() {
   return gfx::Size(ExtensionPopup::kMinWidth, ExtensionPopup::kMinHeight);
 }

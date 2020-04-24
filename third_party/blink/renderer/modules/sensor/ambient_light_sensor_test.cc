@@ -9,6 +9,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/event_type_names.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/modules/sensor/sensor_provider_proxy.h"
 #include "third_party/blink/renderer/modules/sensor/sensor_test_utils.h"
 
@@ -99,7 +100,8 @@ TEST(AmbientLightSensorTest, IlluminanceRounding) {
   // the order that each observer is notified is arbitrary, we know that by the
   // time we get to the next call here all observers will have been called.
   auto* sensor_proxy =
-      SensorProviderProxy::From(Document::From(context.GetExecutionContext()))
+      SensorProviderProxy::From(
+          To<LocalDOMWindow>(context.GetExecutionContext()))
           ->GetSensorProxy(device::mojom::blink::SensorType::AMBIENT_LIGHT);
   ASSERT_NE(sensor_proxy, nullptr);
   auto* mock_observer = MakeGarbageCollected<MockSensorProxyObserver>();
@@ -169,7 +171,8 @@ TEST(AmbientLightSensorTest, PlatformSensorReadingsBeforeActivation) {
   sensor->start();
 
   auto* sensor_proxy =
-      SensorProviderProxy::From(Document::From(context.GetExecutionContext()))
+      SensorProviderProxy::From(
+          To<LocalDOMWindow>(context.GetExecutionContext()))
           ->GetSensorProxy(device::mojom::blink::SensorType::AMBIENT_LIGHT);
   ASSERT_NE(sensor_proxy, nullptr);
   auto* mock_observer = MakeGarbageCollected<MockSensorProxyObserver>();

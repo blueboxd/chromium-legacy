@@ -462,13 +462,12 @@ class DeclarativeNetRequestBrowserTest
     )";
 
     // Serialize |rule_ids|.
-    ListBuilder builder;
-    for (int rule_id : rule_ids)
-      builder.Append(rule_id);
+    std::unique_ptr<base::Value> rule_ids_value =
+        ListBuilder().Append(rule_ids.begin(), rule_ids.end()).Build();
 
     // A cast is necessary from ListValue to Value, else this fails to compile.
     const std::string script = content::JsReplace(
-        kScript, static_cast<const base::Value&>(*builder.Build()));
+        kScript, static_cast<const base::Value&>(*rule_ids_value));
     ASSERT_EQ("success", ExecuteScriptInBackgroundPage(extension_id, script));
   }
 

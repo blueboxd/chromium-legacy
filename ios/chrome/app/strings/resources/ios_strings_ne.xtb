@@ -42,7 +42,7 @@
 <translation id="1389974829397082527">यहाँ कुनै पुस्तक चिन्हहरू छैनन्</translation>
 <translation id="1400642268715879018">पछिल्लो ४ हप्ता</translation>
 <translation id="1407135791313364759">सबै खोल्नुहोस्</translation>
-<translation id="1430915738399379752">छाप्नुहोस्</translation>
+<translation id="1430915738399379752">प्रिन्ट गर्नुहोस्</translation>
 <translation id="1436290164580597469">सिंक गर्न थाल्न पासफ्रेज प्रविष्टि गर्नुहोस्।</translation>
 <translation id="1449835205994625556">पासवर्ड लुकाउनुहोस्</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> वस्तुहरू</translation>
@@ -121,7 +121,7 @@
 <translation id="2435457462613246316">पासवर्ड देखाउनुहोस्</translation>
 <translation id="2497852260688568942">तपाईंको प्रशासकले सिंंक असक्षम पार्नुभएको छ।</translation>
 <translation id="2500374554657206846">पासवर्ड सुरक्षित गर्ने विकल्पहरू</translation>
-<translation id="2523363575747517183">यो वेबसाइटले बारम्बार अर्को अनुप्रयोग खोल्ने प्रयास गर्दैछ।</translation>
+<translation id="2523363575747517183">यो वेबसाइटले बारम्बार अर्को एप खोल्ने प्रयास गर्दैछ।</translation>
 <translation id="2529021024822217800">सबै खोल्नुहोस्</translation>
 <translation id="2562041823070056534"><ph name="DEVICE_NAME" /> मा पठाउँदै...</translation>
 <translation id="2570206273416014374">यसले ठेगाना पट्टी र खोज बाकसका केही कुकी र खोजहरूलाई तपाईंको पूर्वनिर्धारित खोज इन्जिनमा पठाउँछ।</translation>
@@ -330,7 +330,7 @@
 <translation id="5327248766486351172">नाम</translation>
 <translation id="5388358297987318779">छवि खोल्नुहोस्</translation>
 <translation id="5407969256130905701">परिवर्तनहरू खारेज गर्नुहोस्</translation>
-<translation id="5409365236829784218">यस फाइल खोल्न सक्ने कुनै पनि अनुप्रयोगहरू स्थापना गरिएको छैन्।</translation>
+<translation id="5409365236829784218">यस फाइल खोल्न सक्ने कुनै पनि एपहरू स्थापना गरिएको छैन्।</translation>
 <translation id="5416022985862681400">पछिल्ला ७ दिन</translation>
 <translation id="5433691172869980887">प्रयोगकर्ताको नाम प्रतिलिपि गरियो</translation>
 <translation id="54401264925851789">पृष्ठ सुरक्षा जानकारी</translation>
@@ -438,7 +438,7 @@
 <translation id="6668619169535738264">पुस्तक चिन्ह सम्पादन गर्नुहोस्</translation>
 <translation id="667999046851023355">कागजात</translation>
 <translation id="6691331417640343772">Google ड्याशबोर्डमा सिंक गरिएका डेटाहरू व्यवस्थित गर्नुहोस्</translation>
-<translation id="6713747756340119864">Google अनुप्रयोगहरू</translation>
+<translation id="6713747756340119864">Google एपहरू</translation>
 <translation id="6730682669179532099">पासवर्डहरू निर्यात गर्न सकिएन</translation>
 <translation id="6748108480210050150">बाट</translation>
 <translation id="6780034285637185932">जिप कोड</translation>
@@ -478,7 +478,7 @@
 <translation id="7136892417564438900">क्यामेरा उपलब्ध छैन</translation>
 <translation id="7159472599653637159">मोबाइल साइट अनुरोध गर्नुहोस्</translation>
 <translation id="7173114856073700355">सेटिङहरू खोल्नुहोस्</translation>
-<translation id="7189598951263744875">साझेदारी गर्नुहोस्...</translation>
+<translation id="7189598951263744875">सेयर गर्नुहोस्...</translation>
 <translation id="7192050974311852563">लग गर्न सुरु गर्नुहोस्</translation>
 <translation id="7203585745079012652">जवाफहरू पुन: भन्नुहोस्</translation>
 <translation id="7265758999917665941">यो साइटका हकमा कहिल्यै पनि नसम्झनुहोस्</translation>

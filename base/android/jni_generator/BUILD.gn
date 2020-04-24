@@ -82,12 +82,6 @@ group("jni_generator_tests") {
   ]
 }
 
-java_cpp_template("processor_args_java") {
-  package_path = "org/chromium/jni_generator"
-  sources = [ "ProcessorArgs.template" ]
-  defines = [ "HASH_JNI_NAMES_VALUE=$use_hashed_jni_names" ]
-}
-
 java_annotation_processor("jni_processor") {
   sources = [
     "java/src/org/chromium/jni_generator/JniProcessor.java",
@@ -110,6 +104,4 @@ java_annotation_processor("jni_processor") {
     "//third_party/android_deps:com_squareup_javapoet_java",
     "//third_party/android_deps:javax_annotation_jsr250_api_java",
   ]
-
-  srcjar_deps = [ ":processor_args_java" ]
 }

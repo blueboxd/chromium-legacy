@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD - style license that can be
 # found in the LICENSE file.
 
-  import("//build/config/chrome_build.gni")
+import("//build/config/chrome_build.gni")
 import("//components/vector_icons/vector_icons.gni")
 
 aggregate_vector_icons("ash_vector_icons") {
@@ -146,7 +146,13 @@ aggregate_vector_icons("ash_vector_icons") {
     "shelf_unlock_button.icon",
     "switch_access.icon",
     "switch_access_back.icon",
+    "switch_access_decrement.icon",
+    "switch_access_increment.icon",
+    "switch_access_keyboard.icon",
     "switch_access_scroll_down.icon",
+    "switch_access_scroll_left.icon",
+    "switch_access_scroll_right.icon",
+    "switch_access_scroll_up.icon",
     "switch_access_select.icon",
     "switch_access_settings.icon",
     "system_menu_accessibility.icon",

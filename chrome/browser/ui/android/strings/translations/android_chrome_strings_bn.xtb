@@ -164,7 +164,6 @@
 <translation id="2131665479022868825"><ph name="DATA" /> সংরক্ষণ করা হয়েছে</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> বন্ধ করা হয়েছে</translation>
 <translation id="2139186145475833000">হোম স্ক্রীনে যোগ করুন</translation>
-<translation id="2146738493024040262">ইনস্ট্যান্ট অ্যাপ খুলুন</translation>
 <translation id="2154484045852737596">কার্ড সম্পাদনা করুন</translation>
 <translation id="2154710561487035718">ইউআরএল কপি করুন</translation>
 <translation id="2156074688469523661">(<ph name="NUMBER_OF_SITES" />)টি সাইট বাকি আছে</translation>
@@ -281,7 +280,6 @@
 <translation id="2996809686854298943">URL প্রয়োজন</translation>
 <translation id="300526633675317032">এটা ওয়েবসাইট স্টোরেজের <ph name="SIZE_IN_KB" />-এর পুরোটা সাফ করবে।</translation>
 <translation id="3016635187733453316">এই ডিভাইসটি ইন্টারনেটে কানেক্ট করা আছে কিনা দেখে নিন</translation>
-<translation id="3029613699374795922"><ph name="KBS" /> KB ডাউনলোড হয়েছে</translation>
 <translation id="3029704984691124060">পাসফ্রেজসমূহ মেলে না</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />সহায়তা পান<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">লোকেশনটি বন্ধ, <ph name="BEGIN_LINK" />Android সেটিংস<ph name="END_LINK" /> থেকে এটি চালু করুন।</translation>
@@ -459,7 +457,6 @@
 <translation id="4411535500181276704">লাইট মোড</translation>
 <translation id="4415276339145661267">আপনার Google অ্যাকাউন্ট ম্যানেজ করুন</translation>
 <translation id="4432792777822557199">এখন থেকে <ph name="SOURCE_LANGUAGE" /> ভাষার পৃষ্ঠাগুলিকে <ph name="TARGET_LANGUAGE" /> ভাষায় অনুবাদ করা হবে</translation>
-<translation id="4433925000917964731">Google লাইট পৃষ্ঠা পাঠিয়েছে</translation>
 <translation id="4434045419905280838">পপ-আপ এবং রিডাইরেক্ট</translation>
 <translation id="4440958355523780886">Google লাইট পৃষ্ঠা পাঠিয়েছে। আসল পৃষ্ঠাটি লোড করতে ট্যাপ করুন।</translation>
 <translation id="4452411734226507615"><ph name="TAB_TITLE" /> ট্যাবটি বন্ধ করুন</translation>
@@ -739,7 +736,6 @@
 <translation id="6406506848690869874">সিঙ্ক</translation>
 <translation id="6410973561433500075"><ph name="DOMAIN" /> থেকে এআর (AR) মোডে যাবেন?</translation>
 <translation id="641643625718530986">প্রিন্ট...</translation>
-<translation id="6416782512398055893"><ph name="MBS" /> MB ডাউনলোড হয়েছে</translation>
 <translation id="6427112570124116297">ওয়েবের কন্টেন্ট অনুবাদ করুন</translation>
 <translation id="6433501201775827830">আপনার সার্চ ইঞ্জিন বেছে নিন</translation>
 <translation id="6437478888915024427">পৃষ্ঠার তথ্য</translation>
@@ -747,7 +743,6 @@
 <translation id="6441734959916820584">নামটি অত্যন্ত দীর্ঘ</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{#টি ছবি}one{#টি ছবি}other{#টি ছবি}}</translation>
 <translation id="6447558397796644647">এই বুকমার্কটি খুঁজে পাওয়া যাচ্ছে না। আপনার লেখা বানান চেক করুন অথবা একটি নতুন বুকমার্ক যোগ করুন।</translation>
-<translation id="6447842834002726250">কুকিজ</translation>
 <translation id="6461962085415701688">ফাইল খোলা যাচ্ছে না</translation>
 <translation id="6464977750820128603">Chrome-এ দেখা সাইটগুলি আপনি দেখতে পাবেন এবং সাইটগুলিতে টাইমার সেট করতে পারবেন।\n\nযে সমস্ত সাইটে টাইমার সেট করেছেন বা কত সময় ধরে সাইটটি দেখেছেন তার সমস্ত তথ্য Google-এর কাছে যায়। ডিজিটাল ওয়েলবিং-কে আরও উন্নত করতে এই তথ্য ব্যবহার করা হয়।</translation>
 <translation id="6475951671322991020">ভিডিও ডাউনলোড করুন</translation>
@@ -756,7 +751,6 @@
 <translation id="6508722015517270189">Chrome পুনরায় চালু করুন</translation>
 <translation id="6532866250404780454">আপনি কোন কোন সাইটে গেছেন তা Chrome-এ দেখা যাবে না। সমস্ত সাইটের টাইমার মুছে দেওয়া হবে।</translation>
 <translation id="6534565668554028783">Google সাড়া দিতে দেরী করছে</translation>
-<translation id="6538442820324228105"><ph name="GBS" /> GB ডাউনলোড হয়েছে</translation>
 <translation id="6539092367496845964">কোনও সমস্যা হয়েছে। পরে আবার চেষ্টা করুন।</translation>
 <translation id="6545017243486555795">সমস্ত ডেটা সাফ করুন</translation>
 <translation id="6545864417968258051">ব্লুটুথ স্ক্যানিং</translation>
@@ -1094,7 +1088,7 @@
 <translation id="9100610230175265781">পাসফ্রেজের প্রয়োজন</translation>
 <translation id="9102803872260866941">প্রিভিউ ট্যাব খোলা হয়েছে</translation>
 <translation id="9104217018994036254">ট্যাব শেয়ার করা যাবে এমন ডিভাইসের সূচি।</translation>
-<translation id="9108312223223904744">নিরাপত্তা কী হিসেবে ফোন</translation>
+<translation id="9108312223223904744">নিরাপত্তা কী হিসেবে ফোনের ব্যবহার</translation>
 <translation id="9133397713400217035">অফলাইন কন্টেন্ট দেখুন</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">প্রকৃত রূপ দেখান</translation>

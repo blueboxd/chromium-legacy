@@ -40,8 +40,8 @@ const base::Feature kSaveCardInfobarMessagesUI{
 const base::Feature kTranslateInfobarMessagesUI{
     "TranslateInfobarMessagesUI", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kInfobarUIRebootOnlyiOS13{
-    "InfobarUIRebootOnlyiOS13", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kInfobarUIRebootOnlyiOS13{"InfobarUIRebootOnlyiOS13",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool IsInfobarUIRebootEnabled() {
   if (base::FeatureList::IsEnabled(kInfobarUIRebootOnlyiOS13)) {

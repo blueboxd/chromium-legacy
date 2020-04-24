@@ -1792,14 +1792,18 @@ class ProxyTestGenerator(BaseTest):
         golden_file='HashedSampleForAnnotationProcessor_jni.golden')
 
     reg_dict = jni_registration_generator._DictForPath(
-        self._JoinScriptDir(path))
+        self._JoinScriptDir(path), use_proxy_hash=True)
     reg_dict = self._MergeRegistrationForTests([reg_dict])
 
-    proxy_opts = jni_registration_generator.ProxyOptions()
+    proxy_opts = jni_registration_generator.ProxyOptions(use_hash=True)
     self.AssertGoldenTextEquals(
         jni_registration_generator.CreateProxyJavaFromDict(
             reg_dict, proxy_opts),
         golden_file='HashedSampleForAnnotationProcessorGenJni.golden')
+    self.AssertGoldenTextEquals(
+        jni_registration_generator.CreateProxyJavaFromDict(
+            reg_dict, proxy_opts, forwarding=True),
+        golden_file='HashedSampleForAnnotationProcessorGenJni.2.golden')
 
   def testProxyJniExample(self):
     generated_text = self._CreateJniHeaderFromFile(

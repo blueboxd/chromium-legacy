@@ -164,7 +164,6 @@
 <translation id="2131665479022868825"><ph name="DATA" /> बचत केली</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> बंद केले</translation>
 <translation id="2139186145475833000">होम स्क्रीनवर जोडा</translation>
-<translation id="2146738493024040262">झटपट ॲप्स उघडा</translation>
 <translation id="2154484045852737596">कार्ड संपादित करा</translation>
 <translation id="2154710561487035718">URL कॉपी करा</translation>
 <translation id="2156074688469523661">उर्वरित साइट (<ph name="NUMBER_OF_SITES" />)</translation>
@@ -281,7 +280,6 @@
 <translation id="2996809686854298943">URL आवश्यक आहे</translation>
 <translation id="300526633675317032">हे सर्व <ph name="SIZE_IN_KB" /> वेबसाइट स्टोरेज साफ करेल.</translation>
 <translation id="3016635187733453316">हे डिव्हाइस इंटरनेटशी कनेक्ट केले असल्याची खात्री करा</translation>
-<translation id="3029613699374795922"><ph name="KBS" /> KB डाउनलोड केले</translation>
 <translation id="3029704984691124060">सांकेतिक वाक्यांश जुळत नाहीत</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />मदत मिळवा<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">स्‍थान बंद आहे; <ph name="BEGIN_LINK" />Android सेटिंग्‍ज<ph name="END_LINK" /> मध्‍ये हे चालू करा.</translation>
@@ -457,7 +455,6 @@
 <translation id="4411535500181276704">लाइट मोड</translation>
 <translation id="4415276339145661267">तुमचे Google खाते व्यवस्थापित करा</translation>
 <translation id="4432792777822557199">आतापासून पेज <ph name="SOURCE_LANGUAGE" />मधून <ph name="TARGET_LANGUAGE" />मध्ये भाषांतरित केली जातील</translation>
-<translation id="4433925000917964731">Google द्वारे पुरवलेले लाइट पेज</translation>
 <translation id="4434045419905280838">पॉप-अप आणि रीडिरेक्ट</translation>
 <translation id="4440958355523780886">Google ने पुरवलेले लाइट पेज. मूळ पेज लोड करण्यासाठी टॅप करा.</translation>
 <translation id="4452411734226507615"><ph name="TAB_TITLE" /> टॅब बंद करा</translation>
@@ -737,7 +734,6 @@
 <translation id="6406506848690869874">Sync</translation>
 <translation id="6410973561433500075"><ph name="DOMAIN" /> मधून AR एंटर करायचे आहे का?</translation>
 <translation id="641643625718530986">प्रिंट करा...</translation>
-<translation id="6416782512398055893"><ph name="MBS" /> MB डाउनलोड केले</translation>
 <translation id="6427112570124116297">वेबचे भाषांतर करा</translation>
 <translation id="6433501201775827830">तुमचे शोध इंजिन निवडा</translation>
 <translation id="6437478888915024427">पेज माहिती</translation>
@@ -745,7 +741,6 @@
 <translation id="6441734959916820584">नाव खूपच मोठे आहे</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# इमेज}other{# इमेज}}</translation>
 <translation id="6447558397796644647">तो बुकमार्क सापडत नाही. तुमचे शब्दलेखन तपासा किंवा नवीन बुकमार्क जोडा.</translation>
-<translation id="6447842834002726250">कुकीज</translation>
 <translation id="6461962085415701688">फाइल उघडू शकत नाही</translation>
 <translation id="6464977750820128603">तुम्ही Chrome मध्ये भेट दिलेल्या साइट पाहू शकता आणि त्यांच्यासाठी टायमर सेट करू शकता.\n\nGoogle ला तुम्ही ज्या साइटसाठी टायमर सेट केला आणि त्यांना किती वेळ भेट दिली याबद्दलची माहिती मिळते. ही माहिती डिजिटल संतुलन चांगले करण्यास वापरली जाते.</translation>
 <translation id="6475951671322991020">व्हिडिओ डाउनलोड करा</translation>
@@ -754,7 +749,6 @@
 <translation id="6508722015517270189">Chrome रीस्टार्ट करा</translation>
 <translation id="6532866250404780454">तुम्ही Chrome मध्ये भेट दिलेल्या साइट दाखवणार नाही. सर्व साइट टायमर हटवले जातील.</translation>
 <translation id="6534565668554028783">Google ने प्रतिसाद देण्यास बराच वेळ घेतला</translation>
-<translation id="6538442820324228105"><ph name="GBS" /> GB डाउलोड केले</translation>
 <translation id="6539092367496845964">काहीतरी चूक झाली. पुन्हा प्रयत्न करा.</translation>
 <translation id="6545017243486555795">सर्व डेटा साफ करा</translation>
 <translation id="6545864417968258051">ब्लूटूथ स्कॅन करत आहे</translation>

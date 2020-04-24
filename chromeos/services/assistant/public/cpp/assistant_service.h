@@ -5,6 +5,7 @@
 #ifndef CHROMEOS_SERVICES_ASSISTANT_PUBLIC_CPP_ASSISTANT_SERVICE_H_
 #define CHROMEOS_SERVICES_ASSISTANT_PUBLIC_CPP_ASSISTANT_SERVICE_H_
 
+#include "base/component_export.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "chromeos/services/assistant/public/mojom/settings.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -25,7 +26,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) AssistantService {
   // Initiates assistant and provides interfaces for assistant to call into the
   // browser.
   virtual void Init(
-      mojo::PendingRemote<mojom::Client> client,
       mojo::PendingRemote<mojom::DeviceActions> device_actions) = 0;
 
   // Binds the main assistant backend interface.

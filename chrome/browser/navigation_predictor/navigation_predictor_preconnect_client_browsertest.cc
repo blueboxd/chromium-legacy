@@ -174,11 +174,11 @@ IN_PROC_BROWSER_TEST_F(
   ui_test_utils::NavigateToURL(browser(), url);
 
   WaitForPreresolveCount(3);
-  EXPECT_EQ(3, preresolve_done_count_);
+  EXPECT_LE(3, preresolve_done_count_);
 
   // Expect another one.
   WaitForPreresolveCount(4);
-  EXPECT_EQ(4, preresolve_done_count_);
+  EXPECT_LE(4, preresolve_done_count_);
 }
 
 // Test that we preconnect after the last preconnect timed out.

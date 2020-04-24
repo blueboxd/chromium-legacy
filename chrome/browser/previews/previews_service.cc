@@ -92,7 +92,7 @@ int GetPreviewsTypeVersion(previews::PreviewsType type) {
     case previews::PreviewsType::OFFLINE:
       return previews::params::OfflinePreviewsVersion();
     case previews::PreviewsType::LITE_PAGE:
-      return data_reduction_proxy::params::LitePageVersion();
+      return 0;
     case previews::PreviewsType::LITE_PAGE_REDIRECT:
       return previews::params::LitePageServerPreviewsVersion();
     case previews::PreviewsType::NOSCRIPT:

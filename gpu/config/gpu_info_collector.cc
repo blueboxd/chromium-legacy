@@ -160,6 +160,8 @@ namespace gpu {
 bool CollectBasicGraphicsInfo(const base::CommandLine* command_line,
                               GPUInfo* gpu_info) {
   std::string use_gl = command_line->GetSwitchValueASCII(switches::kUseGL);
+  std::string use_angle =
+      command_line->GetSwitchValueASCII(switches::kUseANGLE);
 
   // If GL is disabled then we don't need GPUInfo.
   if (use_gl == gl::kGLImplementationDisabledName) {
@@ -186,6 +188,19 @@ bool CollectBasicGraphicsInfo(const base::CommandLine* command_line,
     // specify exceptions based on driver_vendor==<software GL> for some
     // blacklist rules.
     gpu_info->gpu.driver_vendor = software_gl_impl_name.as_string();
+
+    return true;
+  } else if (use_gl == gl::kGLImplementationANGLEName &&
+             use_angle == gl::kANGLEImplementationSwiftShaderName) {
+    // Similarly to the above, use fake vendor and device ids
+    // to make sure they never gets blacklisted for SwANGLE as well.
+    gpu_info->gpu.vendor_id = 0xffff;
+    gpu_info->gpu.device_id = 0xffff;
+
+    // Also declare the driver_vendor to be <SwANGLE> to be able to
+    // specify exceptions based on driver_vendor==<SwANGLE> for some
+    // blacklist rules.
+    gpu_info->gpu.driver_vendor = "SwANGLE";
 
     return true;
   }

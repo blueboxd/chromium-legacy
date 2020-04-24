@@ -203,7 +203,7 @@ void DedicatedWorkerHost::StartScriptLoad(
   file_url_support_ = creator_origin_.scheme() == url::kFileScheme;
 
   service_worker_handle_ = std::make_unique<ServiceWorkerMainResourceHandle>(
-      storage_partition_impl->GetServiceWorkerContext());
+      storage_partition_impl->GetServiceWorkerContext(), base::DoNothing());
 
   WorkerScriptFetchInitiator::Start(
       worker_process_host_->GetID(), script_url, creator_render_frame_host,

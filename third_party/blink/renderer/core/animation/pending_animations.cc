@@ -95,6 +95,8 @@ bool PendingAnimations::Update(
       if (animation->Playing() && !animation->startTime()) {
         waiting_for_start_time.push_back(animation.Get());
       } else if (animation->PendingInternal()) {
+        DCHECK(animation->timeline()->IsActive() &&
+               animation->timeline()->CurrentTimeSeconds());
         // A pending animation that is not waiting on a start time does not need
         // to be synchronized with animations that are starting up. Nonetheless,
         // it needs to notify the animation to resolve the ready promise and
@@ -117,18 +119,16 @@ bool PendingAnimations::Update(
   } else {
     for (auto& animation : waiting_for_start_time) {
       DCHECK(!animation->startTime());
-      // TODO(crbug.com/916117): Handle start time of scroll-linked animations.
+      DCHECK(animation->timeline()->IsActive() &&
+             animation->timeline()->CurrentTimeSeconds());
       animation->NotifyReady(
           animation->timeline()->CurrentTimeSeconds().value_or(0));
     }
   }
 
   // FIXME: The postCommit should happen *after* the commit, not before.
-  for (auto& animation : animations) {
-    // TODO(crbug.com/916117): Handle NaN current time of scroll timeline.
-    animation->PostCommit(
-        animation->timeline()->CurrentTimeSeconds().value_or(0));
-  }
+  for (auto& animation : animations)
+    animation->PostCommit();
 
   DCHECK(pending_.IsEmpty());
   for (auto& animation : deferred)
@@ -208,8 +208,8 @@ void PendingAnimations::FlushWaitingNonCompositedAnimations() {
     if (animation->HasActiveAnimationsOnCompositor()) {
       waiting_for_compositor_animation_start_.push_back(animation);
     } else {
-      // TODO(crbug.com/916117): Handle start time of scroll-linked
-      // animations.
+      DCHECK(animation->timeline()->IsActive() &&
+             animation->timeline()->CurrentTimeSeconds());
       animation->NotifyReady(
           animation->timeline()->CurrentTimeSeconds().value_or(0));
     }

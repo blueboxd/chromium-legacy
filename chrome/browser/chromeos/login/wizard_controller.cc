@@ -611,6 +611,10 @@ void WizardController::OnOwnershipStatusCheckDone(
     ShowLoginScreen();
 }
 
+void WizardController::LoginScreenStarted() {
+  SetCurrentScreen(nullptr);
+}
+
 void WizardController::ShowLoginScreen() {
   // This may be triggered by multiply asynchronous events from the JS side.
   if (login_screen_started_)
@@ -1387,7 +1391,8 @@ void WizardController::PerformOOBECompletedActions() {
 }
 
 void WizardController::SetCurrentScreen(BaseScreen* new_current) {
-  VLOG(1) << "SetCurrentScreen: " << new_current->screen_id();
+  VLOG(1) << "SetCurrentScreen: "
+          << (new_current ? new_current->screen_id().name : "null");
   if (current_screen_ == new_current || GetOobeUI() == nullptr)
     return;
 
@@ -1484,6 +1489,7 @@ void WizardController::AdvanceToScreen(OobeScreenId screen_id) {
                  << current_screen_->screen_id();
     return;
   }
+  login_screen_started_ = false;
 
   if (screen_id == WelcomeView::kScreenId) {
     ShowWelcomeScreen();

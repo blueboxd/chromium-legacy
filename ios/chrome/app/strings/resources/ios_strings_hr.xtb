@@ -53,6 +53,7 @@
 <translation id="1540800554400757039">1. adresni redak</translation>
 <translation id="1545749641540134597">Skeniranje QR koda</translation>
 <translation id="1552525382687785070">Administrator je onemogućio sinkronizaciju</translation>
+<translation id="1554477036522844996">Novi prozor</translation>
 <translation id="1580783302095112590">Poruka je poslana.</translation>
 <translation id="1582732959743469162">Time će se zaustaviti trenutačno preuzimanje i izbrisati sve što je dosad preuzeto.</translation>
 <translation id="1605658421715042784">Kopiraj sliku</translation>
@@ -187,6 +188,7 @@
 <translation id="3328801116991980348">Informacije o web-lokaciji</translation>
 <translation id="3329904751041170572">Povezivanje s poslužiteljem nije moguće.</translation>
 <translation id="3335947283844343239">Ponovo otvori zatvorenu karticu</translation>
+<translation id="3343651535143698944">Dodaj iznimku za web-lokaciju</translation>
 <translation id="3371831930909698441">Prevoditelj je dostupan. Opcije su dostupne pri dnu zaslona.</translation>
 <translation id="3393920035788932672">Dopušteni skočni</translation>
 <translation id="3443810440409579745">Primljena je kartica.</translation>
@@ -555,6 +557,7 @@ Budući da vašim računom upravlja <ph name="HOSTED_DOMAIN" />, vaši podaci iz
 <translation id="8319076807703933069">Novo pretraživanje</translation>
 <translation id="8323906514956095947">Dodirnite i držite za više opcija za kartice</translation>
 <translation id="8328777765163860529">Zatvori sve</translation>
+<translation id="8332159733957009464">Iznimke za web-lokacije</translation>
 <translation id="8386068868580335421">Vrati</translation>
 <translation id="8407669440184693619">Nije pronađena nijedna zaporka za ovu web-lokaciju</translation>
 <translation id="842017693807136194">Prijavljeni ste na uslugu</translation>

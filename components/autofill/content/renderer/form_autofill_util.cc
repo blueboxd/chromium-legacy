@@ -1787,8 +1787,8 @@ void WebFormControlElementToFormField(
   // this is one of recognised situations when the site-modified value is more
   // useful for filling.
   if (field_data_manager &&
-      field->properties_mask & (FieldPropertiesFlags::USER_TYPED |
-                                FieldPropertiesFlags::AUTOFILLED)) {
+      field->properties_mask & (FieldPropertiesFlags::kUserTyped |
+                                FieldPropertiesFlags::kAutofilled)) {
     const base::string16 typed_value = field_data_manager->GetUserTypedValue(
         FieldRendererId(element.UniqueRendererFormControlId()));
 

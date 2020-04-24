@@ -55,6 +55,10 @@
     NSMutableArray<InfobarCoordinator*>* infobarCoordinatorsToPresent;
 // If YES, the banner is not shown, but the badge and subsequent modals will be.
 @property(nonatomic, assign) BOOL skipBanner;
+// YES if this container baseViewController is currently visible and part of
+// the view hierarchy.
+@property(nonatomic, assign, getter=isBaseViewControllerVisible)
+    BOOL baseViewControllerVisible;
 
 @end
 
@@ -174,10 +178,15 @@
 }
 
 - (void)baseViewDidAppear {
+  self.baseViewControllerVisible = YES;
   InfobarCoordinator* coordinator =
       [self.infobarCoordinatorsToPresent firstObject];
   if (coordinator)
     [self presentBannerForInfobarCoordinator:coordinator];
+}
+
+- (void)baseViewWillDisappear {
+  self.baseViewControllerVisible = NO;
 }
 
 #pragma mark - ChromeCoordinator
@@ -268,6 +277,10 @@
   [self presentNextBannerInQueue];
 }
 
+- (BOOL)shouldDismissBanner {
+  return !self.baseViewControllerVisible;
+}
+
 #pragma mark InfobarCommands
 
 - (void)displayModalInfobar:(InfobarType)infobarType {
@@ -301,7 +314,8 @@
   // return.
   if (!(self.infobarBannerState ==
         InfobarBannerPresentationState::NotPresented) ||
-      (!self.baseViewController.view.window)) {
+      (!self.baseViewController.view.window) ||
+      (!self.baseViewControllerVisible)) {
     [self queueInfobarCoordinatorForPresentation:infobarCoordinator];
     return;
   }

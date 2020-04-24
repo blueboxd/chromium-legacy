@@ -214,7 +214,7 @@
 <translation id="2717271541250958000">tabpnl</translation>
 <translation id="2723001399770238859">صدا</translation>
 <translation id="27349076983469322">پس‌زمینه روشن</translation>
-<translation id="2737898226590637227">‏علامت مشخصه ARIA بعدی وجود ندارد</translation>
+<translation id="2737898226590637227">‏نشانگر مکانی ARIA بعدی وجود ندارد</translation>
 <translation id="2749275490991666823">دارای علامت</translation>
 <translation id="27527859628328957">پرش به مورد قابل فوکوس بعدی</translation>
 <translation id="2756452585631602151">برچسبی سفارشی وارد کنید</translation>
@@ -225,7 +225,7 @@
 <translation id="2811019999044652585">‏برای رفتن به قسمت‌های دیگر صفحه، مثل نوارهای ابزار یا سینی سیستم، روی Control+Forward فشار دهید. در Chromebook، کلید Forward دقیقاً‌ در بالای کلید عدد ۲ قرار دارد.</translation>
 <translation id="2811204574343810641">ردیف</translation>
 <translation id="2841013758207633010">زمان</translation>
-<translation id="2843432675592278677">‏علامت مشخصه ARIA قبلی وجود ندارد</translation>
+<translation id="2843432675592278677">‏نشانگر مکانی ARIA قبلی وجود ندارد</translation>
 <translation id="2843814945404750166">سبز زیتونی تیره</translation>
 <translation id="2843837985843789981">گروه قبلی</translation>
 <translation id="2864481629947106776">پیوند قبلی</translation>
@@ -261,7 +261,7 @@
 <translation id="3086746722712840547">نت</translation>
 <translation id="3090227230165225418">اعلام اعلان‌های بارگیری</translation>
 <translation id="3090532668523289635">grp</translation>
-<translation id="3093176084511590672">علامت مشخصه بعدی</translation>
+<translation id="3093176084511590672">نشانگر مکانی بعدی</translation>
 <translation id="3096671415663099226">cbo</translation>
 <translation id="309749186376891736">حرکت دادن نشانگر</translation>
 <translation id="3103579948980282461">ارغوانی</translation>
@@ -458,7 +458,7 @@
 <translation id="4668929960204016307">،</translation>
 <translation id="4677535310137735442">رفتن به ستون بعدی</translation>
 <translation id="4688873778442829762">grd</translation>
-<translation id="4693675773662933727">علامت مشخصه قبلی</translation>
+<translation id="4693675773662933727">نشانگر مکانی قبلی</translation>
 <translation id="4712898966495541134">پایان بخش انتخاب‌شده</translation>
 <translation id="4740661827607246557">فرمان‌های راهنما</translation>
 <translation id="4755857887974653209">‏غیرفعال کردن ChromeVox</translation>
@@ -584,7 +584,7 @@
 <translation id="56637627897541303">قسمت نوشتاری</translation>
 <translation id="5678161956734658133">mled</translation>
 <translation id="5681643281275621376">def</translation>
-<translation id="5682113568322255809">علامت مشخصه</translation>
+<translation id="5682113568322255809">نشانگر مکانی</translation>
 <translation id="5683155931978483559">کادر انتخاب قبلی</translation>
 <translation id="5684277895745049190">فهرست</translation>
 <translation id="5703716265115423771">پایین آوردن صدا</translation>

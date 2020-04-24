@@ -395,16 +395,6 @@ WebContents* PrerenderManager::SwapInternal(const GURL& url,
   if (prerender_web_contents && web_contents == prerender_web_contents)
     return nullptr;  // Do not swap in to ourself.
 
-  // Do not swap if the target WebContents is not the only WebContents in its
-  // current BrowsingInstance.
-  if (web_contents->GetSiteInstance()->GetRelatedActiveContentsCount() != 1u) {
-    DCHECK_GT(web_contents->GetSiteInstance()->GetRelatedActiveContentsCount(),
-              1u);
-    prerender_data->contents()->Destroy(
-        FINAL_STATUS_NON_EMPTY_BROWSING_INSTANCE);
-    return nullptr;
-  }
-
   DCHECK(prerender_data->contents()->prerendering_has_started());
 
   // At this point, we've determined that we will use the prerender.

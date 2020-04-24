@@ -145,7 +145,10 @@ WebFrameTestClient::WebFrameTestClient(WebViewTestProxy* web_view_test_proxy,
 WebFrameTestClient::~WebFrameTestClient() = default;
 
 void WebFrameTestClient::Reset() {
-  spell_check_->Reset();
+  // If this frame failed to navigate then it won't have set up the
+  // SpellCheckClient in DidClearWindowObject().
+  if (spell_check_)
+    spell_check_->Reset();
 }
 
 // static
@@ -528,7 +531,7 @@ void WebFrameTestClient::DidClearWindowObject() {
   // frame before JS has a chance to run.
   GCController::Install(frame);
   interfaces->Install(frame);
-  test_runner->Install(frame, spell_check_.get(),
+  test_runner->Install(web_frame_test_proxy_, spell_check_.get(),
                        web_view_test_proxy_->view_test_runner());
   web_view_test_proxy_->Install(frame);
   web_widget_test_proxy->Install(frame);

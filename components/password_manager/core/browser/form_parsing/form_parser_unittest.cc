@@ -68,7 +68,7 @@ struct FieldDataDescription {
   bool is_enabled = true;
   bool is_readonly = false;
   autofill::FieldPropertiesMask properties_mask =
-      FieldPropertiesFlags::NO_FLAGS;
+      FieldPropertiesFlags::kNoFlags;
   const char* autocomplete_attribute = nullptr;
   const char* value = kNonimportantValue;
   const char* typed_value = nullptr;
@@ -1109,11 +1109,11 @@ TEST(FormParserTest, ReadonlyFields) {
                   {.role = ElementRole::CURRENT_PASSWORD,
                    .is_readonly = true,
                    .properties_mask =
-                       FieldPropertiesFlags::AUTOFILLED_ON_PAGELOAD,
+                       FieldPropertiesFlags::kAutofilledOnPageLoad,
                    .form_control_type = "password"},
                   {.role = ElementRole::NEW_PASSWORD,
                    .is_readonly = true,
-                   .properties_mask = FieldPropertiesFlags::USER_TYPED,
+                   .properties_mask = FieldPropertiesFlags::kUserTyped,
                    .form_control_type = "password"},
                   {.is_readonly = true, .form_control_type = "password"},
               },
@@ -1130,11 +1130,11 @@ TEST(FormParserTest, ReadonlyFields) {
                   {.role = ElementRole::CURRENT_PASSWORD,
                    .is_readonly = true,
                    .properties_mask =
-                       FieldPropertiesFlags::AUTOFILLED_ON_USER_TRIGGER,
+                       FieldPropertiesFlags::kAutofilledOnUserTrigger,
                    .form_control_type = "password"},
                   {.role = ElementRole::NEW_PASSWORD,
                    .is_readonly = true,
-                   .properties_mask = FieldPropertiesFlags::USER_TYPED,
+                   .properties_mask = FieldPropertiesFlags::kUserTyped,
                    .form_control_type = "password"},
                   {.is_readonly = true, .form_control_type = "password"},
               },
@@ -1378,17 +1378,17 @@ TEST(FormParserTest, Interactability) {
               {
                   {.role = ElementRole::USERNAME,
                    .is_focusable = false,
-                   .properties_mask = FieldPropertiesFlags::USER_TYPED,
+                   .properties_mask = FieldPropertiesFlags::kUserTyped,
                    .form_control_type = "text"},
                   {.is_focusable = true, .form_control_type = "text"},
                   {.is_focusable = false, .form_control_type = "password"},
                   {.role = ElementRole::CURRENT_PASSWORD,
                    .is_focusable = true,
-                   .properties_mask = FieldPropertiesFlags::AUTOFILLED,
+                   .properties_mask = FieldPropertiesFlags::kAutofilled,
                    .form_control_type = "password"},
                   {.role = ElementRole::NEW_PASSWORD,
                    .is_focusable = true,
-                   .properties_mask = FieldPropertiesFlags::USER_TYPED,
+                   .properties_mask = FieldPropertiesFlags::kUserTyped,
                    .form_control_type = "password"},
               },
           .number_of_all_possible_passwords = 3,
@@ -1406,11 +1406,11 @@ TEST(FormParserTest, Interactability) {
               {
                   {.role = ElementRole::USERNAME,
                    .is_focusable = false,
-                   .properties_mask = FieldPropertiesFlags::AUTOFILLED,
+                   .properties_mask = FieldPropertiesFlags::kAutofilled,
                    .form_control_type = "text"},
                   {.role = ElementRole::CURRENT_PASSWORD,
                    .is_focusable = true,
-                   .properties_mask = FieldPropertiesFlags::AUTOFILLED,
+                   .properties_mask = FieldPropertiesFlags::kAutofilled,
                    .form_control_type = "password"},
                   {.is_focusable = true,
                    .value = "",
@@ -1971,7 +1971,7 @@ TEST(FormParserTest, ReadonlyStatus) {
                    // autofilled before.
                    .is_readonly = true,
                    .properties_mask =
-                       FieldPropertiesFlags::AUTOFILLED_ON_PAGELOAD,
+                       FieldPropertiesFlags::kAutofilledOnPageLoad,
                    .form_control_type = "password"},
                   {.role_filling = ElementRole::NEW_PASSWORD,
                    .role_saving = ElementRole::NEW_PASSWORD,
@@ -2197,7 +2197,7 @@ TEST(FormParserTest, MultipleUsernames) {
               {
                   {.role = ElementRole::USERNAME,
                    .properties_mask =
-                       FieldPropertiesFlags::AUTOFILLED_ON_PAGELOAD,
+                       FieldPropertiesFlags::kAutofilledOnPageLoad,
                    .form_control_type = "text",
                    .prediction = {.type = autofill::USERNAME}},
                   {.form_control_type = "text",

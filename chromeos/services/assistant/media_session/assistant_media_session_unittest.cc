@@ -8,7 +8,7 @@
 
 #include "base/test/task_environment.h"
 #include "chromeos/services/assistant/fake_assistant_manager_service_impl.h"
-#include "chromeos/services/assistant/test_support/fake_client.h"
+#include "chromeos/services/assistant/test_support/scoped_assistant_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -22,7 +22,6 @@ class AssistantMediaSessionTest : public testing::Test {
  public:
   AssistantMediaSessionTest()
       : assistant_media_session_(std::make_unique<AssistantMediaSession>(
-            &fake_client_,
             &fake_assistant_manager_service_impl_)) {}
   ~AssistantMediaSessionTest() override = default;
 
@@ -40,7 +39,7 @@ class AssistantMediaSessionTest : public testing::Test {
   base::test::SingleThreadTaskEnvironment task_environment_;
 
   std::unique_ptr<AssistantMediaSession> assistant_media_session_;
-  FakeClient fake_client_;
+  ScopedAssistantClient fake_client_;
   FakeAssistantManagerServiceImpl fake_assistant_manager_service_impl_;
 };
 

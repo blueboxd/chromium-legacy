@@ -24,13 +24,16 @@ jint JNI_SecurityStateModel_GetSecurityLevelForWebContents(
 
   security_state::SecurityStateClient* security_state_client =
       security_state::GetSecurityStateClient();
-  DCHECK(security_state_client);
 
-  std::unique_ptr<SecurityStateModelDelegate> security_state_model_delegate =
-      security_state_client->MaybeCreateSecurityStateModelDelegate();
+  // At this time, the usage of the client isn't mandatory as it is used only
+  // for optional overriding of default behavior.
+  if (security_state_client) {
+    std::unique_ptr<SecurityStateModelDelegate> security_state_model_delegate =
+        security_state_client->MaybeCreateSecurityStateModelDelegate();
 
-  if (security_state_model_delegate)
-    return security_state_model_delegate->GetSecurityLevel(web_contents);
+    if (security_state_model_delegate)
+      return security_state_model_delegate->GetSecurityLevel(web_contents);
+  }
 
   return security_state::GetSecurityLevel(
       *security_state::GetVisibleSecurityState(web_contents),

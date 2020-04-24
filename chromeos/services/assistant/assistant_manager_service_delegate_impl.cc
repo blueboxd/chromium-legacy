@@ -4,6 +4,10 @@
 
 #include "chromeos/services/assistant/assistant_manager_service_delegate_impl.h"
 
+#include <memory>
+#include <string>
+#include <utility>
+
 #include "ash/public/cpp/assistant/assistant_state_base.h"
 #include "chromeos/services/assistant/platform_api_impl.h"
 #include "chromeos/services/assistant/service_context.h"
@@ -15,10 +19,8 @@ namespace assistant {
 
 AssistantManagerServiceDelegateImpl::AssistantManagerServiceDelegateImpl(
     mojo::PendingRemote<device::mojom::BatteryMonitor> battery_monitor,
-    mojom::Client* client,
     ServiceContext* context)
     : battery_monitor_(std::move(battery_monitor)),
-      client_(client),
       context_(context) {}
 
 AssistantManagerServiceDelegateImpl::~AssistantManagerServiceDelegateImpl() =
@@ -29,7 +31,7 @@ AssistantManagerServiceDelegateImpl::CreatePlatformApi(
     AssistantMediaSession* media_session,
     scoped_refptr<base::SingleThreadTaskRunner> background_thread_task_runner) {
   return std::make_unique<PlatformApiImpl>(
-      client_, media_session, context_->power_manager_client(),
+      media_session, context_->power_manager_client(),
       context_->cras_audio_handler(), std::move(battery_monitor_),
       context_->main_task_runner(), background_thread_task_runner,
       context_->assistant_state()->locale().value());

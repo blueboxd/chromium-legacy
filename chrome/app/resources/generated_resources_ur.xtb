@@ -350,6 +350,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="1465176863081977902">آڈیو پتہ کا&amp;پی کریں</translation>
 <translation id="1465827627707997754">پزّا سلائس</translation>
 <translation id="1468571364034902819">یہ پروفائل استعمال نہیں کر سکتا</translation>
+<translation id="1470084204649225129">{NUM_TABS,plural, =1{نئے گروپ میں ٹیب شامل کریں}other{نئے گروپ میں ٹیبز شامل کریں}}</translation>
 <translation id="1472675084647422956">مزید دکھائیں</translation>
 <translation id="1475502736924165259">آپ کے پاس فائل پر ایسے سرٹیفیکیٹس ہیں جو کسی دوسرے زمرے میں فٹ نہیں ہوتے</translation>
 <translation id="1476088332184200792">اپنے آلہ پر کاپی کریں</translation>
@@ -478,6 +479,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="1629314197035607094">پاس ورڈ کی میعاد ختم ہو گئی</translation>
 <translation id="1630768113285622200">ری سٹارٹ کریں اور جاری رکھیں</translation>
 <translation id="1632803087685957583">آپ کو اپنے کی بورڈ کے تکرار کی شرح، لفظ کی پیشین گوئی وغیرہ ایڈجسٹ کرنے کی اجازت دیتی ہے</translation>
+<translation id="1634783886312010422">کیا آپ نے پہلے ہی <ph name="WEBSITE" /> پر اس پاس ورڈ کو تبدیل کیا ہے؟</translation>
 <translation id="1635033183663317347">آپ کے محافظ نے انسٹال کیا ہے۔</translation>
 <translation id="1637224376458524414">‏اپنے iPhone پر یہ بُک مارک حاصل کریں</translation>
 <translation id="1637765355341780467">آپ کے پروفائل کو کھولتے وقت کچھ غلط ہوگیا۔ کچھ خصوصیات غیر دستیاب ہو سکتی ہیں۔</translation>
@@ -3389,6 +3391,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="5542949973455282971"><ph name="CARRIER_NAME" /> سے منسلک کیا جا رہا ہے</translation>
 <translation id="5543983818738093899">اسٹیٹس چیک کیا جا رہا ہے…</translation>
 <translation id="554517032089923082">GTC</translation>
+<translation id="5545335608717746497">{NUM_TABS,plural, =1{گروپ میں ٹیب شامل کریں}other{گروپ میں ٹیبز شامل کریں}}</translation>
 <translation id="5546865291508181392">تلاش کریں</translation>
 <translation id="5548159762883465903">{NUM_OTHER_TABS,plural, =0{"<ph name="TAB_TITLE" />"}=1{"<ph name="TAB_TITLE" />" اور 1 دوسرا ٹیب}other{"<ph name="TAB_TITLE" />" اور # دیگر ٹیبز}}</translation>
 <translation id="5548606607480005320">سیفٹی چیک</translation>
@@ -4213,6 +4216,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="6659594942844771486">ٹیب</translation>
 <translation id="6664237456442406323">‏بدقسمتی سے، آپ کا کمپیوٹر بدوضع ہارڈ ویئر ID کے ساتھ کنفیگر کیا ہوا ہے۔ یہ Chrome OS کو تازہ ترین سیکیورٹی فکسز کے ساتھ اپ ڈیٹ ہونے سے روکتا ہے اور آپ کے کمپیوٹر کو <ph name="BEGIN_BOLD" />نقصان دہ حملوں سے خطرہ ہو سکتا ہے<ph name="END_BOLD" />۔</translation>
 <translation id="6664774537677393800">آپ کے پروفائل کو کھولتے وقت کچھ غلط ہوگیا۔ براہ کرم سائن آؤٹ کر کے دوبارہ سائن ان کریں۔</translation>
+<translation id="6670142487971298264"><ph name="APP_NAME" /> ابھی دستیاب ہے</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="6675665718701918026">پوائنٹنگ آلہ منسلک ہو گیا</translation>
 <translation id="6676212663108450937">اپنی آواز کو تربیت دینے کے دوران، براہ کرم ہیڈ فونز استعمال کریں</translation>
@@ -4542,6 +4546,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="7108338896283013870">چھپائیں</translation>
 <translation id="7108668606237948702">انٹر</translation>
 <translation id="7109543803214225826">شارٹ کٹ ہٹا دیا گیا</translation>
+<translation id="7110644433780444336">{NUM_TABS,plural, =1{گروپ میں ٹیب شامل کریں}other{گروپ میں ٹیبز شامل کریں}}</translation>
 <translation id="7113502843173351041">اپنا ای میل پتہ جانیں</translation>
 <translation id="7114054701490058191">پاس ورڈز مماثل نہیں ہیں</translation>
 <translation id="7114648273807173152">‏اپنے Google اکاؤنٹ میں سائن ان کرنے کی خاطر Smart Lock استعمال کرنے کیلئے، ترتیبات &gt; منسلک کردہ آلات &gt; اپنے فون &gt; Smart Lock پر جائیں۔</translation>
@@ -4585,6 +4590,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="7170041865419449892">رینج سے باہر</translation>
 <translation id="7171259390164035663">اندراج نہ کریں</translation>
 <translation id="7171559745792467651">اپنے دوسرے آلات سے ایپس انسٹال کریں</translation>
+<translation id="7172470549472604877">{NUM_TABS,plural, =1{نئے گروپ میں ٹیب شامل کریں}other{نئے گروپ میں ٹیبز شامل کریں}}</translation>
 <translation id="7174199383876220879">نیا! اپنی موسیقی، ویڈیوز اور بھی بہت کچھ کنٹرول کریں۔</translation>
 <translation id="7175037578838465313"><ph name="NAME" /> کنفیگر کریں</translation>
 <translation id="7175353351958621980">لوڈ کردہ از:</translation>
@@ -5164,6 +5170,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="7925247922861151263">‏AAA چیک ناکام ہوگیا</translation>
 <translation id="7925285046818567682"><ph name="HOST_NAME" /> کا منتظر…</translation>
 <translation id="7926423016278357561">یہ میں نہیں تھا۔</translation>
+<translation id="7928175190925744466">پہلے ہی اس پاس ورڈ تبدیل کیا ہے؟</translation>
 <translation id="7928836894214140642"><ph name="ENROLLMENT_DOMAIN" /> کے زیر انتظام</translation>
 <translation id="7930294771522048157">ادائیگی کے محفوظ کردہ طریقے یہاں ظاہر ہوں گے</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> آپ کی اسکرین اور آڈیو کا اشتراک کر رہی ہے۔</translation>

@@ -4,8 +4,8 @@
 
 source_set("web_content_area") {
   sources = [
-    "app_launcher_alert_overlay.h",
-    "app_launcher_alert_overlay.mm",
+    "app_launcher_overlay.h",
+    "app_launcher_overlay.mm",
     "http_auth_overlay.h",
     "http_auth_overlay.mm",
     "java_script_alert_overlay.h",
@@ -35,7 +35,10 @@ source_set("web_content_area") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [ "http_auth_overlay_unittest.mm" ]
+  sources = [
+    "app_launcher_overlay_unittest.mm",
+    "http_auth_overlay_unittest.mm",
+  ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 

@@ -59,18 +59,23 @@ public class MostVisitedSitesFaviconHelper {
      * Save the favicon to the disk.
      * @param topSitesInfo SiteSuggestions data updated.
      * @param urlsToUpdate The set of urls which need to fetch and save the favicon.
+     * @param callback The callback function after skipping the existing favicon or saving favicon.
      */
-    public void saveFaviconsToFile(List<SiteSuggestion> topSitesInfo, Set<String> urlsToUpdate) {
+    public void saveFaviconsToFile(
+            List<SiteSuggestion> topSitesInfo, Set<String> urlsToUpdate, Runnable callback) {
         for (SiteSuggestion siteData : topSitesInfo) {
             String url = siteData.url;
             if (!urlsToUpdate.contains(url)) {
+                if (callback != null) {
+                    callback.run();
+                }
                 continue;
             }
             LargeIconBridge.LargeIconCallback iconCallback =
                     (icon, fallbackColor, isFallbackColorDefault, iconType) -> {
                 saveFaviconToFile(String.valueOf(siteData.faviconId),
                         MostVisitedSitesMetadataUtils.getOrCreateTopSitesDirectory(), url,
-                        fallbackColor, icon);
+                        fallbackColor, icon, callback);
             };
             fetchIcon(siteData, iconCallback);
         }
@@ -120,32 +125,44 @@ public class MostVisitedSitesFaviconHelper {
      * @param url The url which the favicon corresponds to.
      * @param fallbackColor The color for generating a new icon when favicon is null from native.
      * @param icon The favicon fetched from native.
+     * @param callback The callback function after saving each favicon.
      */
-    private void saveFaviconToFile(
-            String fileName, File directory, String url, int fallbackColor, Bitmap icon) {
-        AsyncTask.THREAD_POOL_EXECUTOR.execute(() -> {
-            Bitmap newIcon = icon;
-            // If icon is null, we need to generate a favicon.
-            if (newIcon == null) {
-                Log.i(TAG, "Favicon is null for " + url + ". Generating an icon for it.");
-                mIconGenerator.setBackgroundColor(fallbackColor);
-                newIcon = mIconGenerator.generateIconForUrl(url);
+    private void saveFaviconToFile(String fileName, File directory, String url, int fallbackColor,
+            Bitmap icon, Runnable callback) {
+        new AsyncTask<Void>() {
+            @Override
+            protected Void doInBackground() {
+                Bitmap newIcon = icon;
+                // If icon is null, we need to generate a favicon.
+                if (newIcon == null) {
+                    Log.i(TAG, "Favicon is null for " + url + ". Generating an icon for it.");
+                    mIconGenerator.setBackgroundColor(fallbackColor);
+                    newIcon = mIconGenerator.generateIconForUrl(url);
+                }
+                // Save icon to file.
+                File metadataFile = new File(directory, fileName);
+                AtomicFile file = new AtomicFile(metadataFile);
+                FileOutputStream stream;
+                try {
+                    stream = file.startWrite();
+                    assert newIcon != null;
+                    newIcon.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                    file.finishWrite(stream);
+                    Log.i(TAG,
+                            "Finished saving top sites favicons to file: "
+                                    + metadataFile.getAbsolutePath());
+                } catch (IOException e) {
+                    Log.e(TAG, "Fail to write file: " + metadataFile.getAbsolutePath());
+                }
+                return null;
             }
-            // Save icon to file.
-            File metadataFile = new File(directory, fileName);
-            AtomicFile file = new AtomicFile(metadataFile);
-            FileOutputStream stream;
-            try {
-                stream = file.startWrite();
-                assert newIcon != null;
-                newIcon.compress(Bitmap.CompressFormat.PNG, 100, stream);
-                file.finishWrite(stream);
-                Log.i(TAG,
-                        "Finished saving top sites favicons to file: "
-                                + metadataFile.getAbsolutePath());
-            } catch (IOException e) {
-                Log.e(TAG, "Fail to write file: " + metadataFile.getAbsolutePath());
+
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                if (callback != null) {
+                    callback.run();
+                }
             }
-        });
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 }

@@ -14,10 +14,6 @@ class Document;
 class CORE_EXPORT MathMLUnderOverElement final : public MathMLScriptsElement {
  public:
   MathMLUnderOverElement(const QualifiedName& tagName, Document& document);
-
- private:
-  LayoutObject* CreateLayoutObject(const ComputedStyle&,
-                                   LegacyLayout legacy) override;
 };
 
 template <>

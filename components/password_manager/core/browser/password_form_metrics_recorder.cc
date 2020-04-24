@@ -103,11 +103,11 @@ UsernamePasswordsState CalculateUsernamePasswordsState(
     const base::string16& value =
         field.typed_value.empty() ? field.value : field.typed_value;
 
-    bool user_typed = field.properties_mask & FieldPropertiesFlags::USER_TYPED;
-    bool manually_filled = field.properties_mask &
-                           FieldPropertiesFlags::AUTOFILLED_ON_USER_TRIGGER;
+    bool user_typed = field.properties_mask & FieldPropertiesFlags::kUserTyped;
+    bool manually_filled =
+        field.properties_mask & FieldPropertiesFlags::kAutofilledOnUserTrigger;
     bool automatically_filled =
-        field.properties_mask & FieldPropertiesFlags::AUTOFILLED_ON_PAGELOAD;
+        field.properties_mask & FieldPropertiesFlags::kAutofilledOnPageLoad;
 
     // The typed `value` could appear in `saved_usernames`, `saved_passwords`,
     // or both. In the last case we use the control type of the form as a

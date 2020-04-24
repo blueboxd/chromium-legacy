@@ -823,6 +823,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       NavigationHandle* navigation_handle) override;
   std::unique_ptr<NavigationUIData> GetNavigationUIData(
       NavigationHandle* navigation_handle) override;
+  void OnServiceWorkerAccessed(NavigationHandle* navigation,
+                               const GURL& scope,
+                               AllowServiceWorkerResult allowed) override;
 
   // RenderWidgetHostDelegate --------------------------------------------------
 
@@ -1176,6 +1179,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // Notifies observers that AppCache was accessed. Public so AppCache code can
   // call this directly.
   void OnAppCacheAccessed(const GURL& manifest_url, bool blocked_by_policy);
+
+  void OnServiceWorkerAccessed(RenderFrameHost* render_frame_host,
+                               const GURL& scope,
+                               AllowServiceWorkerResult allowed);
 
   JavaScriptDialogNavigationDeferrer* GetJavaScriptDialogNavigationDeferrer() {
     return javascript_dialog_navigation_deferrer_.get();

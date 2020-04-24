@@ -53,6 +53,7 @@
 <translation id="1540800554400757039">地址 1</translation>
 <translation id="1545749641540134597">掃描 QR 圖碼</translation>
 <translation id="1552525382687785070">你的管理員停用了同步功能</translation>
+<translation id="1554477036522844996">開啟新視窗</translation>
 <translation id="1580783302095112590">已傳送郵件。</translation>
 <translation id="1582732959743469162">目前所有下載進度都會因此停止。</translation>
 <translation id="1605658421715042784">複製圖片</translation>
@@ -187,6 +188,7 @@
 <translation id="3328801116991980348">網站資訊</translation>
 <translation id="3329904751041170572">無法連上伺服器。</translation>
 <translation id="3335947283844343239">重新開啟先前關閉的分頁</translation>
+<translation id="3343651535143698944">新增例外網站</translation>
 <translation id="3371831930909698441">有可用的翻譯。翻譯選項的位置接近畫面底部。</translation>
 <translation id="3393920035788932672">已允許的彈出式視窗</translation>
 <translation id="3443810440409579745">已收到分頁。</translation>
@@ -555,6 +557,7 @@
 <translation id="8319076807703933069">新搜尋</translation>
 <translation id="8323906514956095947">輕觸並按住即可查看更多分頁選項</translation>
 <translation id="8328777765163860529">關閉全部</translation>
+<translation id="8332159733957009464">例外網站</translation>
 <translation id="8386068868580335421">重設</translation>
 <translation id="8407669440184693619">找不到這個網站的密碼</translation>
 <translation id="842017693807136194">目前登入身分</translation>

@@ -767,14 +767,10 @@ class Sample {
   /**
    * @public
    * Enables or disables the test runner's spell checker.
-   * When enabled, this must later be disabled before ending the test to prevent
-   * leak detection due to the resolved callback keeping the |iframe_| alive.
    */
   setMockSpellCheckerEnabled(enabled) {
     this.iframe_.contentWindow.eval(
       "testRunner.setMockSpellCheckerEnabled(" + enabled + ");");
-    if (!enabled)
-      this.setSpellCheckResolvedCallback(null);
   }
 
   /**
@@ -796,11 +792,6 @@ class Sample {
            window.parent.postMessage('resolved_spellcheck', '*'); \
          });");
     } else if (remove) {
-      // Drops the stored closure's reference to the iframe allowing it to be
-      // destroyed before the web test harness is reset for the next test.
-      // This is important for leak detection at the end of this test.
-      this.iframe_.contentWindow.eval(
-        "testRunner.removeSpellCheckResolvedCallback();");
       window.removeEventListener("message", this.listener_, false);
       this.listener_ = null;
     }

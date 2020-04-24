@@ -500,7 +500,6 @@ class BrowserView : public BrowserWindow,
       const views::ViewHierarchyChangedDetails& details) override;
   void AddedToWidget() override;
   void PaintChildren(const views::PaintInfo& paint_info) override;
-  void ChildPreferredSizeChanged(View* child) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void OnThemeChanged() override;
   bool GetDropFormats(int* formats,

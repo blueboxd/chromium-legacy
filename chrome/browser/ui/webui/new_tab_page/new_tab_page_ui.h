@@ -59,6 +59,14 @@ class NewTabPageUI : public ui::MojoWebUIController,
   Profile* profile_;
   InstantService* instant_service_;
   content::WebContents* web_contents_;
+  // Time this NewTabPageUI object was created. Used for logging the WebUI NTP's
+  // load performance. We want the WebUI NTP's load performance to be comparable
+  // to the local NTP, which uses the navigation start as the reference time.
+  // However, retrieving the navigation start time would require a significant
+  // amount of plumbing. Since the NewTabPageUI is created within a few
+  // milliseconds of starting the navigation this object's creation time should
+  // be equivalent in practice.
+  base::Time creation_time_;
 
   WEB_UI_CONTROLLER_TYPE_DECL();
 

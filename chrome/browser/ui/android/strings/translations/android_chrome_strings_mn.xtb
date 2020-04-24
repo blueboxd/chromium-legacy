@@ -164,7 +164,6 @@
 <translation id="2131665479022868825"><ph name="DATA" /> хадгалсан</translation>
 <translation id="213279576345780926">Хаалттай <ph name="TAB_TITLE" /></translation>
 <translation id="2139186145475833000">Нүүр хуудсын дэлгэц рүү нэмэх</translation>
-<translation id="2146738493024040262">Шуурхай апп-г нээх</translation>
 <translation id="2154484045852737596">Картыг засах</translation>
 <translation id="2154710561487035718">URL-ийг хуул</translation>
 <translation id="2156074688469523661">Үлдсэн сайт (<ph name="NUMBER_OF_SITES" />)</translation>
@@ -281,7 +280,6 @@
 <translation id="2996809686854298943">URL шаардлагатай</translation>
 <translation id="300526633675317032">Энэ нь вэб хуудасны сангийн бүх <ph name="SIZE_IN_KB" />-г устгах болно.</translation>
 <translation id="3016635187733453316">Энэ төхөөрөмж интернэтэд холбогдсон эсэхийг шалгана уу</translation>
-<translation id="3029613699374795922"><ph name="KBS" /> КБ-г татсан</translation>
 <translation id="3029704984691124060">Нэвтрэх хэллэг тохирохгүй байна</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Тусламж авах<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Байршил идэвхгүй, үүнийг <ph name="BEGIN_LINK" />Андройд Тохиргоо<ph name="END_LINK" /> дотроос асаана уу.</translation>
@@ -457,7 +455,6 @@
 <translation id="4411535500181276704">Lite горим</translation>
 <translation id="4415276339145661267">Google Бүртгэлээ удирдах</translation>
 <translation id="4432792777822557199">Одооноос <ph name="SOURCE_LANGUAGE" /> хэл дээрх хуудсыг <ph name="TARGET_LANGUAGE" /> хэл рүү орчуулна</translation>
-<translation id="4433925000917964731">Google-с өгч буй энгийн хуудас</translation>
 <translation id="4434045419905280838">Попап болон дахин чиглүүлэлт</translation>
 <translation id="4440958355523780886">Google-с хүргэж буй Энгийн хуудас. Эх хуудсыг ачаалахын тулд товшино уу.</translation>
 <translation id="4452411734226507615"><ph name="TAB_TITLE" /> чихтэй хуудсыг хаах</translation>
@@ -736,7 +733,6 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="6406506848690869874">Sync</translation>
 <translation id="6410973561433500075"><ph name="DOMAIN" />-с AR-т орох уу?</translation>
 <translation id="641643625718530986">Хэвлэх...</translation>
-<translation id="6416782512398055893"><ph name="MBS" /> МБ татсан</translation>
 <translation id="6427112570124116297">Вэбийг орчуулах</translation>
 <translation id="6433501201775827830">Хайлтын системээ сонгоно уу</translation>
 <translation id="6437478888915024427">Хуудасны мэдээлэл</translation>
@@ -744,7 +740,6 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="6441734959916820584">Нэр хэт урт байна</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# Зураг}other{# Зураг}}</translation>
 <translation id="6447558397796644647">Энэ хавчуургыг олох боломжгүй байна. Зөв бичгийн дүрмээ шалгах эсвэл шинэ хавчуурга нэмнэ үү.</translation>
-<translation id="6447842834002726250">Cookies</translation>
 <translation id="6461962085415701688">Файлыг нээх боломжгүй байна</translation>
 <translation id="6464977750820128603">Та Chrome-д зочилдог сайтуудаа харах болон тэдгээрт цаг хэмжигч тохируулах боломжтой.\n\nGoogle таны цаг хэмжигч тохируулсан сайтууд болон тэдгээрт хэр удаан зочилдог талаарх мэдээллийг авдаг. Энэ мэдээллийг Дижитал хэрэглээг сайжруулах зорилгоор ашигладаг.</translation>
 <translation id="6475951671322991020">Видео татах</translation>
@@ -753,7 +748,6 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="6508722015517270189">Chrome-г дахин эхлүүлэх</translation>
 <translation id="6532866250404780454">Таны Chrome-д зочилдог сайтуудыг харуулахгүй. Бүх сайтын цаг хэмжигчийг устгана.</translation>
 <translation id="6534565668554028783">Google хариу өгөхгүй хэтэрхий удсан</translation>
-<translation id="6538442820324228105"><ph name="GBS" /> ГБ татсан</translation>
 <translation id="6539092367496845964">Алдаа гарлаа. Дараа дахин оролдоно уу.</translation>
 <translation id="6545017243486555795">Бүх өгөгдлийг устгах</translation>
 <translation id="6545864417968258051">Bluetooth скан хийх</translation>

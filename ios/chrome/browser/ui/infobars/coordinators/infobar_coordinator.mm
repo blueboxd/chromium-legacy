@@ -461,13 +461,12 @@
   // InfobarDelelgate being destroyed. Trying to dismiss it twice might cause a
   // UIKit crash on iOS12.
   if (!self.bannerIsBeingDismissed &&
-      self.baseViewController.presentedViewController &&
-      self.baseViewController.presentedViewController ==
-          self.bannerViewController) {
+      self.bannerViewController.presentingViewController) {
     self.bannerIsBeingDismissed = YES;
     [self infobarBannerWillBeDismissed:userInitiated];
-    [self.baseViewController dismissViewControllerAnimated:animated
-                                                completion:completion];
+    [self.bannerViewController.presentingViewController
+        dismissViewControllerAnimated:animated
+                           completion:completion];
   } else if (completion) {
     completion();
   }

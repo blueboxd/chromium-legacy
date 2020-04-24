@@ -224,7 +224,7 @@ TEST_F(ScriptingPermissionsModifierUnitTest,
   auto reload_extension = [this, &extension_id]() {
     TestExtensionRegistryObserver observer(ExtensionRegistry::Get(profile()));
     service()->ReloadExtension(extension_id);
-    return base::WrapRefCounted(observer.WaitForExtensionLoaded());
+    return observer.WaitForExtensionLoaded();
   };
 
   // Permissions start withheld due to creation flag and remain withheld after
@@ -576,7 +576,7 @@ TEST_F(ScriptingPermissionsModifierUnitTest,
   {
     TestExtensionRegistryObserver observer(ExtensionRegistry::Get(profile()));
     service()->ReloadExtension(extension->id());
-    extension = base::WrapRefCounted(observer.WaitForExtensionLoaded());
+    extension = observer.WaitForExtensionLoaded();
   }
   EXPECT_TRUE(extension->permissions_data()
                   ->active_permissions()

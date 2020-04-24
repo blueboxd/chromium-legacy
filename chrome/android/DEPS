@@ -1,5 +1,6 @@
 include_rules = [
   "+components/permissions/android/nfc",
+  "+chrome/browser/enterprise",
   "+chrome/browser/flags/android",
   "+chrome/browser/notifications",
   "+chrome/browser/preferences/android/java",

@@ -6,17 +6,34 @@ import("//third_party/closure_compiler/compile_js.gni")
 
 js_type_check("closure_compile") {
   deps = [
+    ":cups_add_print_server_dialog",
     ":cups_add_printer_dialog",
-    ":cups_add_printer_dialog_elements",
+    ":cups_add_printer_manually_dialog",
+    ":cups_add_printer_manufacturer_model_dialog",
     ":cups_edit_printer_dialog",
+    ":cups_printer_dialog_error",
     ":cups_printer_dialog_util",
     ":cups_printers",
     ":cups_printers_browser_proxy",
+    ":cups_settings_add_printer_dialog",
     ":os_printing_page",
   ]
 }
 
-js_library("cups_add_printer_dialog") {
+js_library("cups_settings_add_printer_dialog") {
+  deps = [
+    ":cups_add_print_server_dialog",
+    ":cups_add_printer_dialog",
+    ":cups_add_printer_manually_dialog",
+    ":cups_add_printer_manufacturer_model_dialog",
+    ":cups_printers_browser_proxy",
+    "../localized_link:localized_link",
+    "//ui/webui/resources/js:load_time_data",
+    "//ui/webui/resources/js:web_ui_listener_behavior",
+  ]
+}
+
+js_library("cups_add_print_server_dialog") {
   deps = [
     ":cups_printers_browser_proxy",
     "../localized_link:localized_link",
@@ -25,7 +42,29 @@ js_library("cups_add_printer_dialog") {
   ]
 }
 
-js_library("cups_add_printer_dialog_elements") {
+js_library("cups_add_printer_manufacturer_model_dialog") {
+  deps = [
+    ":cups_printers_browser_proxy",
+    "../localized_link:localized_link",
+    "//ui/webui/resources/js:load_time_data",
+    "//ui/webui/resources/js:web_ui_listener_behavior",
+  ]
+}
+
+js_library("cups_add_printer_manually_dialog") {
+  deps = [
+    ":cups_printers_browser_proxy",
+    "../localized_link:localized_link",
+    "//ui/webui/resources/js:load_time_data",
+    "//ui/webui/resources/js:web_ui_listener_behavior",
+  ]
+}
+
+js_library("cups_add_printer_dialog") {
+  deps = [ ":cups_printers_browser_proxy" ]
+}
+
+js_library("cups_printer_dialog_error") {
   deps = [ ":cups_printers_browser_proxy" ]
 }
 
@@ -135,8 +174,12 @@ js_library("os_printing_page") {
 #js_type_check("closure_compile_module") {
 #  is_polymer3 = true
 #  deps = [
+#    ":cups_settings_add_printer_dialog.m",
+#    ":cups_add_print_server_dialog.m",
+#    ":cups_add_printer_manually_dialog.m",
 #    ":cups_add_printer_dialog.m",
-#    ":cups_add_printer_dialog_elements.m",
+#    ":cups_add_printer_manufacturer_model_dialog",
+#    ":cups_printer_dialog_error.m"
 #    ":cups_edit_printer_dialog.m",
 #    ":cups_nearby_printers.m",
 #    ":cups_printer_dialog_util.m",
@@ -152,23 +195,53 @@ js_library("os_printing_page") {
 #  ]
 #}
 
-# TODO: Fix and re-enable
-#js_library("cups_add_printer_dialog.m") {
-#  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/os_printing_page/cups_add_printer_dialog.m.js" ]
-#  deps = [
-#    # TODO: Fill those in.
-#  ]
-#  extra_deps = [ ":cups_add_printer_dialog_module" ]
-#}
+js_library("cups_settings_add_printer_dialog.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/os_printing_page/cups_settings_add_printer_dialog.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":cups_settings_add_printer_dialog_module" ]
+}
 
-# TODO: Fix and re-enable
-#js_library("cups_add_printer_dialog_elements.m") {
-#  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/os_printing_page/cups_add_printer_dialog_elements.m.js" ]
-#  deps = [
-#    # TODO: Fill those in.
-#  ]
-#  extra_deps = [ ":cups_add_printer_dialog_elements_module" ]
-#}
+js_library("cups_add_print_server_dialog.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/os_printing_page/cups_add_print_server_dialog.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":cups_add_print_server_dialog_module" ]
+}
+
+js_library("cups_add_printer_manufacturer_model_dialog.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/os_printing_page/cups_add_printer_manufacturer_model_dialog.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":cups_add_printer_manufacturer_model_dialog_module" ]
+}
+
+js_library("cups_add_printer_manually_dialog.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/os_printing_page/cups_add_printer_manually_dialog.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":cups_add_printer_manually_dialog_module" ]
+}
+
+js_library("cups_add_printer_dialog.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/os_printing_page/cups_add_printer_dialog.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":cups_add_printer_dialog_module" ]
+}
+
+js_library("cups_printer_dialog_error.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/os_printing_page/cups_printer_dialog_error.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":cups_printer_dialog_error_module" ]
+}
 
 js_library("cups_edit_printer_dialog.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/os_printing_page/cups_edit_printer_dialog.m.js" ]
@@ -270,11 +343,14 @@ import("//tools/polymer/polymer.gni")
 
 group("polymer3_elements") {
   public_deps = [
-    # TODO: Fix and re-enable
-    #":cups_add_printer_dialog_elements_module",
-    #":cups_add_printer_dialog_module",
+    ":cups_add_print_server_dialog",
+    ":cups_add_printer_dialog",
+    ":cups_add_printer_dialog_module",
+    ":cups_add_printer_manually_dialog",
+    ":cups_add_printer_manufacturer_model_dialog",
     ":cups_edit_printer_dialog_module",
     ":cups_nearby_printers_module",
+    ":cups_printer_dialog_error_module",
     ":cups_printer_dialog_util_module",
     ":cups_printer_shared_css_module",
     ":cups_printer_types_module",
@@ -287,19 +363,41 @@ group("polymer3_elements") {
   ]
 }
 
-# TODO: Fix and re-enable
-#polymer_modulizer("cups_add_printer_dialog") {
-#  js_file = "cups_add_printer_dialog.js"
-#  html_file = "cups_add_printer_dialog.html"
-#  html_type = "dom-module"
-#}
+polymer_modulizer("cups_settings_add_printer_dialog") {
+  js_file = "cups_settings_add_printer_dialog.js"
+  html_file = "cups_settings_add_printer_dialog.html"
+  html_type = "dom-module"
+}
 
-# TODO: Fix and re-enable
-#polymer_modulizer("cups_add_printer_dialog_elements") {
-#  js_file = "cups_add_printer_dialog_elements.js"
-#  html_file = "cups_add_printer_dialog_elements.html"
-#  html_type = "dom-module"
-#}
+polymer_modulizer("cups_add_print_server_dialog") {
+  js_file = "cups_add_print_server_dialog.js"
+  html_file = "cups_add_print_server_dialog.html"
+  html_type = "dom-module"
+}
+
+polymer_modulizer("cups_add_printer_manufacturer_model_dialog") {
+  js_file = "cups_add_printer_manufacturer_model_dialog.js"
+  html_file = "cups_add_printer_manufacturer_model_dialog.html"
+  html_type = "dom-module"
+}
+
+polymer_modulizer("cups_add_printer_manually_dialog") {
+  js_file = "cups_add_printer_manually_dialog.js"
+  html_file = "cups_add_printer_manually_dialog.html"
+  html_type = "dom-module"
+}
+
+polymer_modulizer("cups_add_printer_dialog") {
+  js_file = "cups_add_printer_dialog.js"
+  html_file = "cups_add_printer_dialog.html"
+  html_type = "dom-module"
+}
+
+polymer_modulizer("cups_printer_dialog_error") {
+  js_file = "cups_printer_dialog_error.js"
+  html_file = "cups_printer_dialog_error.html"
+  html_type = "dom-module"
+}
 
 polymer_modulizer("cups_edit_printer_dialog") {
   js_file = "cups_edit_printer_dialog.js"

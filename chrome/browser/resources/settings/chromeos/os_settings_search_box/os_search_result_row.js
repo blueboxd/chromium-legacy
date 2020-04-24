@@ -339,13 +339,7 @@ cr.define('settings', function() {
           new URLSearchParams(pathAndOptParams[1]) :
           undefined;
 
-      // TODO(crbug/1071283): The announcement should occur before any
-      // announcements at the new route.
-      this.fire(
-          'iron-announce',
-          {text: this.i18n('searchResultNavigatedTo', this.resultText_)});
       settings.Router.getInstance().navigateTo(route, params);
-
       this.fire('navigated-to-result-route');
     },
 

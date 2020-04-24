@@ -24,6 +24,7 @@
 #include "base/util/type_safety/strong_alias.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/allow_service_worker_result.h"
 #include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/browser/generated_code_cache_settings.h"
 #include "content/public/common/page_visibility_state.h"
@@ -50,6 +51,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
 #include "url/origin.h"
+#include "url/url_constants.h"
 
 #if (defined(OS_POSIX) && !defined(OS_MACOSX)) || defined(OS_FUCHSIA)
 #include "base/posix/global_descriptors.h"
@@ -591,24 +593,20 @@ class CONTENT_EXPORT ContentBrowserClient {
   // made to access the registration but there is no specific service worker in
   // the registration being acted on.
   //
-  // A null |wc_getter| callback indicates this is for starting a service
-  // worker, which is not necessarily associated with a particular tab.
   // This is called on the IO thread.
-  virtual bool AllowServiceWorkerOnIO(
+  virtual AllowServiceWorkerResult AllowServiceWorkerOnIO(
       const GURL& scope,
       const GURL& site_for_cookies,
       const base::Optional<url::Origin>& top_frame_origin,
       const GURL& script_url,
-      ResourceContext* context,
-      base::RepeatingCallback<WebContents*()> wc_getter);
+      ResourceContext* context);
   // Same but for the UI thread.
-  virtual bool AllowServiceWorkerOnUI(
+  virtual AllowServiceWorkerResult AllowServiceWorkerOnUI(
       const GURL& scope,
       const GURL& site_for_cookies,
       const base::Optional<url::Origin>& top_frame_origin,
       const GURL& script_url,
-      BrowserContext* context,
-      base::RepeatingCallback<WebContents*()> wc_getter);
+      BrowserContext* context);
 
   // Allow the embedder to control if a Shared Worker can be connected from a
   // given tab.

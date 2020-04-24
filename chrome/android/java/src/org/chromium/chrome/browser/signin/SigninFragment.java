@@ -16,6 +16,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.SyncFirstSetupCompleteSource;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.settings.ManageSyncSettings;
@@ -143,7 +144,7 @@ public class SigninFragment extends SigninFragmentBase {
                     @Override
                     public void onSignInComplete() {
                         UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(
-                                true);
+                                Profile.getLastUsedRegularProfile(), true);
                         if (settingsClicked) {
                             if (ChromeFeatureList.isEnabled(
                                         ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)) {

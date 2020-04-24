@@ -44,6 +44,8 @@ class AwContentsLifecycleNotifier {
     return has_aw_contents_ever_created_;
   }
 
+  std::vector<const AwContents*> GetAllAwContents() const;
+
  private:
   struct AwContentsData {
     AwContentsData();
@@ -75,9 +77,9 @@ class AwContentsLifecycleNotifier {
   AwContentsLifecycleNotifier::AwContentsData* GetAwContentsData(
       const AwContents* aw_contents);
 
-  // The AwContentId to AwContentsData mapping.
-  std::map<uint64_t, AwContentsLifecycleNotifier::AwContentsData>
-      aw_contents_id_to_data_;
+  // The AwContents to AwContentsData mapping.
+  std::map<const AwContents*, AwContentsLifecycleNotifier::AwContentsData>
+      aw_contents_to_data_;
 
   // The number of AwContents instances in each AwContentsState.
   int state_count_[3]{};

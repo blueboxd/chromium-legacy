@@ -1204,7 +1204,7 @@
 <translation id="258095186877893873">ยาว</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (แพลตฟอร์ม <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">ดึงข้อมูลตั๋ว Kerberos ไม่สำเร็จ ลองอีกครั้ง หรือติดต่อผู้ดูแลระบบอุปกรณ์ขององค์กร (รหัสข้อผิดพลาด <ph name="ERROR_CODE" />)</translation>
-<translation id="2585013490795742997">กำลังแสดงผลการค้นหา <ph name="QUERY" /> 1 รายการ</translation>
+<translation id="2585013490795742997">กำลังแสดงผลการค้นหา "<ph name="QUERY" />" จำนวน 1 รายการ</translation>
 <translation id="2585724835339714757">แท็บนี้กำลังแชร์หน้าจอของคุณ</translation>
 <translation id="2586657967955657006">คลิปบอร์ด</translation>
 <translation id="2586672484245266891">โปรดป้อน URL ที่สั้นกว่านี้</translation>
@@ -3555,7 +3555,7 @@
 <translation id="577322787686508614">ไม่อนุญาตให้อ่านใน "<ph name="DEVICE_NAME" />"</translation>
 <translation id="5774295353725270860">เปิดแอปพลิเคชันไฟล์</translation>
 <translation id="577624874850706961">ค้นหาคุกกี้</translation>
-<translation id="5776858208024364029">กำลังแสดงผลการค้นหา <ph name="QUERY" /> <ph name="NUMBER" /> รายการ</translation>
+<translation id="5776858208024364029">กำลังแสดงผลการค้นหา "<ph name="QUERY" />" จำนวน <ph name="NUMBER" /> รายการ</translation>
 <translation id="5777468213129569553">เปิด Chrome</translation>
 <translation id="5778747455497889540">ด้านล่างนี้คือรหัสผ่านโมดูลความปลอดภัยที่สร้างขึ้นโดยการสุ่มและได้รับการกำหนดให้กับคอมพิวเตอร์ของคุณ:</translation>
 <translation id="5780011244986845107">โฟลเดอร์ที่คุณเลือกมีไฟล์ที่ละเอียดอ่อน แน่ใจไหมว่าต้องการให้สิทธิ์การเข้าถึงในการอ่านโฟลเดอร์นี้อย่างถาวรแก่ "<ph name="APP_NAME" />"</translation>
@@ -4359,7 +4359,7 @@
 <translation id="686664946474413495">อุณหภูมิสี</translation>
 <translation id="6871644448911473373">OCSP Responder: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">เซิร์ฟเวอร์ปฏิเสธรหัสผ่านที่คุณป้อน</translation>
-<translation id="6874170800191969835">ไปยัง<ph name="SEARCH_RESULT_TEXT" /></translation>
+<translation id="6874170800191969835">ไปยัง "<ph name="SEARCH_RESULT_TEXT" />"</translation>
 <translation id="6876155724392614295">จักรยาน</translation>
 <translation id="6876469544038980967">ไม่มีประโยชน์</translation>
 <translation id="6878422606530379992">อนุญาตให้ใช้เซ็นเซอร์</translation>

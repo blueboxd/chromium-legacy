@@ -86,6 +86,9 @@ void WebAudioMediaStreamSource::EnsureSourceIsStopped() {
 void WebAudioMediaStreamSource::ConsumeAudio(
     const Vector<const float*>& audio_data,
     size_t number_of_frames) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("mediastream"),
+               "WebAudioMediaStreamSource::ConsumeAudio");
+
   // TODO(miu): Plumbing is needed to determine the actual capture timestamp
   // of the audio, instead of just snapshotting base::TimeTicks::Now(), for
   // proper audio/video sync.  https://crbug.com/335335
@@ -104,6 +107,8 @@ void WebAudioMediaStreamSource::ConsumeAudio(
 void WebAudioMediaStreamSource::DeliverRebufferedAudio(
     const media::AudioBus& audio_bus,
     int frame_delay) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("mediastream"),
+               "WebAudioMediaStreamSource::DeliverRebufferedAudio");
   const base::TimeTicks reference_time =
       current_reference_time_ +
       base::TimeDelta::FromMicroseconds(

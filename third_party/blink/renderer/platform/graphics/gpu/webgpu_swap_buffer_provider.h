@@ -41,6 +41,7 @@ class PLATFORM_EXPORT WebGPUSwapBufferProvider
   ~WebGPUSwapBufferProvider() override;
 
   cc::Layer* CcLayer();
+  void SetFilterQuality(SkFilterQuality);
   void Neuter();
   WGPUTexture GetNewTexture(const IntSize& size);
 

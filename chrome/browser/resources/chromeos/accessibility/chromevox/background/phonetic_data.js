@@ -55,3 +55,18 @@ PhoneticData.forCharacter = function(char, locale) {
 
   return map[char] || '';
 };
+
+/**
+ * @param {string} text
+ * @param {string} locale
+ * @return {string}
+ */
+PhoneticData.forText = function(text, locale) {
+  const result = [];
+  const chars = [...text];
+  for (const char of chars) {
+    const phoneticText = PhoneticData.forCharacter(char, locale);
+    result.push(char + phoneticText);
+  }
+  return result.join(', ');
+};

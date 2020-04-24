@@ -11,6 +11,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/strings/string_piece.h"
+#include "chrome/browser/chromeos/policy/messaging_layer/util/status.pb.h"
 
 namespace reporting {
 namespace error {
@@ -66,6 +67,13 @@ class WARN_UNUSED_RESULT Status {
 
   // Return a combination of the error code name and message.
   std::string ToString() const;
+
+  // Exports the contents of this object into |status_proto|. This method sets
+  // all fields in |status_proto| (for OK status clears |error_message|).
+  void SaveTo(StatusProto* status_proto) const;
+
+  // Populates this object using the contents of the given |status_proto|.
+  void RestoreFrom(const StatusProto& status_proto);
 
  private:
   error::Code error_code_;

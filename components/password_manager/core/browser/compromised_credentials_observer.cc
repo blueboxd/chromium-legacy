@@ -13,22 +13,8 @@
 
 namespace password_manager {
 
-CompromisedCredentialsObserver::CompromisedCredentialsObserver(
-    PasswordStore* store)
-    : store_(store) {
-  DCHECK(store_);
-}
-
-void CompromisedCredentialsObserver::Initialize() {
-  store_->AddObserver(this);
-}
-
-CompromisedCredentialsObserver::~CompromisedCredentialsObserver() {
-  store_->RemoveObserver(this);
-}
-
-void CompromisedCredentialsObserver::OnLoginsChanged(
-    const PasswordStoreChangeList& changes) {
+void ProcessLoginsChanged(const PasswordStoreChangeList& changes,
+                          const RemoveCompromisedCallback& remove_callback) {
   bool password_protection_show_domains_for_saved_password_is_on =
       base::FeatureList::IsEnabled(
           safe_browsing::kPasswordProtectionShowDomainsForSavedPasswords);
@@ -51,8 +37,8 @@ void CompromisedCredentialsObserver::OnLoginsChanged(
         })) {
       reason = RemoveCompromisedCredentialsReason::kRemove;
     }
-    store_->RemoveCompromisedCredentials(change.form().signon_realm,
-                                         change.form().username_value, reason);
+    remove_callback.Run(change.form().signon_realm,
+                        change.form().username_value, reason);
     UMA_HISTOGRAM_ENUMERATION(
         "PasswordManager.RemoveCompromisedCredentials",
         reason == RemoveCompromisedCredentialsReason::kUpdate

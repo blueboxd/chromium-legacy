@@ -105,7 +105,7 @@ TEST_F(QuicClientSessionCacheTest, SingleSession) {
   EXPECT_EQ(nullptr, cache.Lookup(id2, ssl_ctx_.get()));
   EXPECT_EQ(0u, cache.size());
 
-  cache.Insert(id1, std::move(session), params.get(), nullptr);
+  cache.Insert(id1, std::move(session), *params, nullptr);
   EXPECT_EQ(1u, cache.size());
   EXPECT_EQ(*params, *(cache.Lookup(id1, ssl_ctx_.get())->transport_params));
   EXPECT_EQ(nullptr, cache.Lookup(id2, ssl_ctx_.get()));
@@ -118,8 +118,8 @@ TEST_F(QuicClientSessionCacheTest, SingleSession) {
   auto session3 = NewSSLSession();
   SSL_SESSION* unowned3 = session3.get();
   quic::QuicServerId id3("c.com", 443);
-  cache.Insert(id3, std::move(session3), params.get(), nullptr);
-  cache.Insert(id2, std::move(session2), params2.get(), nullptr);
+  cache.Insert(id3, std::move(session3), *params, nullptr);
+  cache.Insert(id2, std::move(session2), *params2, nullptr);
   EXPECT_EQ(2u, cache.size());
   EXPECT_EQ(unowned2, cache.Lookup(id2, ssl_ctx_.get())->tls_session.get());
   EXPECT_EQ(unowned3, cache.Lookup(id3, ssl_ctx_.get())->tls_session.get());
@@ -142,9 +142,9 @@ TEST_F(QuicClientSessionCacheTest, MultipleSessions) {
   auto session3 = NewSSLSession();
   SSL_SESSION* unowned3 = session3.get();
 
-  cache.Insert(id1, std::move(session), params.get(), nullptr);
-  cache.Insert(id1, std::move(session2), params.get(), nullptr);
-  cache.Insert(id1, std::move(session3), params.get(), nullptr);
+  cache.Insert(id1, std::move(session), *params, nullptr);
+  cache.Insert(id1, std::move(session2), *params, nullptr);
+  cache.Insert(id1, std::move(session3), *params, nullptr);
   // The latest session is popped first.
   EXPECT_EQ(unowned3, cache.Lookup(id1, ssl_ctx_.get())->tls_session.get());
   EXPECT_EQ(unowned2, cache.Lookup(id1, ssl_ctx_.get())->tls_session.get());
@@ -164,11 +164,11 @@ TEST_F(QuicClientSessionCacheTest, DifferentTransportParams) {
   auto session3 = NewSSLSession();
   SSL_SESSION* unowned3 = session3.get();
 
-  cache.Insert(id1, std::move(session), params.get(), nullptr);
-  cache.Insert(id1, std::move(session2), params.get(), nullptr);
+  cache.Insert(id1, std::move(session), *params, nullptr);
+  cache.Insert(id1, std::move(session2), *params, nullptr);
   // tweak the transport parameters a little bit.
   params->perspective = quic::Perspective::IS_SERVER;
-  cache.Insert(id1, std::move(session3), params.get(), nullptr);
+  cache.Insert(id1, std::move(session3), *params, nullptr);
   auto resumption_state = cache.Lookup(id1, ssl_ctx_.get());
   EXPECT_EQ(unowned3, resumption_state->tls_session.get());
   EXPECT_EQ(*params.get(), *resumption_state->transport_params);
@@ -187,9 +187,9 @@ TEST_F(QuicClientSessionCacheTest, DifferentApplicationState) {
   quic::ApplicationState state;
   state.push_back('a');
 
-  cache.Insert(id1, std::move(session), params.get(), &state);
-  cache.Insert(id1, std::move(session2), params.get(), &state);
-  cache.Insert(id1, std::move(session3), params.get(), nullptr);
+  cache.Insert(id1, std::move(session), *params, &state);
+  cache.Insert(id1, std::move(session2), *params, &state);
+  cache.Insert(id1, std::move(session3), *params, nullptr);
   auto resumption_state = cache.Lookup(id1, ssl_ctx_.get());
   EXPECT_EQ(unowned3, resumption_state->tls_session.get());
   EXPECT_EQ(nullptr, resumption_state->application_state);
@@ -208,10 +208,10 @@ TEST_F(QuicClientSessionCacheTest, BothStatesDifferent) {
   quic::ApplicationState state;
   state.push_back('a');
 
-  cache.Insert(id1, std::move(session), params.get(), &state);
-  cache.Insert(id1, std::move(session2), params.get(), &state);
+  cache.Insert(id1, std::move(session), *params, &state);
+  cache.Insert(id1, std::move(session2), *params, &state);
   params->perspective = quic::Perspective::IS_SERVER;
-  cache.Insert(id1, std::move(session3), params.get(), nullptr);
+  cache.Insert(id1, std::move(session3), *params, nullptr);
   auto resumption_state = cache.Lookup(id1, ssl_ctx_.get());
   EXPECT_EQ(unowned3, resumption_state->tls_session.get());
   EXPECT_EQ(*params.get(), *resumption_state->transport_params);
@@ -235,9 +235,9 @@ TEST_F(QuicClientSessionCacheTest, SizeLimit) {
   SSL_SESSION* unowned3 = session3.get();
   quic::QuicServerId id3("c.com", 443);
 
-  cache.Insert(id1, std::move(session), params.get(), nullptr);
-  cache.Insert(id2, std::move(session2), params.get(), nullptr);
-  cache.Insert(id3, std::move(session3), params.get(), nullptr);
+  cache.Insert(id1, std::move(session), *params, nullptr);
+  cache.Insert(id2, std::move(session2), *params, nullptr);
+  cache.Insert(id3, std::move(session3), *params, nullptr);
 
   EXPECT_EQ(2u, cache.size());
   EXPECT_EQ(unowned2, cache.Lookup(id2, ssl_ctx_.get())->tls_session.get());
@@ -261,8 +261,8 @@ TEST_F(QuicClientSessionCacheTest, Expiration) {
   SSL_SESSION* unowned2 = session2.get();
   quic::QuicServerId id2("b.com", 443);
 
-  cache.Insert(id1, std::move(session), params.get(), nullptr);
-  cache.Insert(id2, std::move(session2), params.get(), nullptr);
+  cache.Insert(id1, std::move(session), *params, nullptr);
+  cache.Insert(id2, std::move(session2), *params, nullptr);
 
   EXPECT_EQ(2u, cache.size());
   // Expire the session.
@@ -290,8 +290,8 @@ TEST_F(QuicClientSessionCacheTest, FlushOnMemoryNotifications) {
   auto session2 = MakeTestSession(clock->Now(), 3 * kTimeout);
   quic::QuicServerId id2("b.com", 443);
 
-  cache.Insert(id1, std::move(session), params.get(), nullptr);
-  cache.Insert(id2, std::move(session2), params.get(), nullptr);
+  cache.Insert(id1, std::move(session), *params, nullptr);
+  cache.Insert(id2, std::move(session2), *params, nullptr);
 
   EXPECT_EQ(2u, cache.size());
   // Expire the session.

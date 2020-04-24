@@ -9,6 +9,7 @@
 <translation id="1384959399684842514">Yuklab olish pauza qilindi.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="2079545284768500474">Bekor qilish</translation>
+<translation id="2146738493024040262">Darhol ishga tushadigan ilovada ochish</translation>
 <translation id="2148716181193084225">Bugun</translation>
 <translation id="2359808026110333948">Davom etish</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
@@ -27,6 +28,7 @@
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">Nomi</translation>
 <translation id="4259722352634471385">Sahifa bloklandi: <ph name="URL" /></translation>
+<translation id="4433925000917964731">Sahifaning Lite versiyasi Google tomonidan taqdim etildi</translation>
 <translation id="4570913071927164677">Tafsilotlar</translation>
 <translation id="4645575059429386691">Ota-onangiz tomonidan boshqariladi</translation>
 <translation id="4883854917563148705">Boshqariladigan sozlamalarni oʻzgartirish imkonsiz</translation>
@@ -38,6 +40,7 @@
 <translation id="5391532827096253100">Bu sayt bilan o‘rnatilgan aloqa himoyalanmagan. Sayt axboroti</translation>
 <translation id="5556459405103347317">Qayta yuklash</translation>
 <translation id="5596627076506792578">Boshqa sozlamalar</translation>
+<translation id="5804241973901381774">Ruxsatlar</translation>
 <translation id="5860033963881614850">O‘chiq</translation>
 <translation id="5916664084637901428">Yoniq</translation>
 <translation id="5939518447894949180">Asliga qaytarish</translation>
@@ -46,6 +49,7 @@
 <translation id="6165508094623778733">Batafsil</translation>
 <translation id="6206551242102657620">Aloqa himoyalangan. Sayt axboroti</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> parametrlar</translation>
+<translation id="6447842834002726250">Cookie fayllari</translation>
 <translation id="6527303717912515753">Ulashish</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6746124502594467657">Pastga tushish</translation>

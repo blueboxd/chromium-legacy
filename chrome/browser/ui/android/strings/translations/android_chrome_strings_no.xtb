@@ -164,7 +164,6 @@ Trykk på et ord for å søke. For å finstemme søket, trykk og hold inne for �
 <translation id="2131665479022868825"><ph name="DATA" /> spart</translation>
 <translation id="213279576345780926">Lukket <ph name="TAB_TITLE" /></translation>
 <translation id="2139186145475833000">Legg til på startsiden</translation>
-<translation id="2146738493024040262">Åpne instant-appen</translation>
 <translation id="2154484045852737596">Endre kortet</translation>
 <translation id="2154710561487035718">Kopier nettadresse</translation>
 <translation id="2156074688469523661">Andre nettsteder (<ph name="NUMBER_OF_SITES" />)</translation>
@@ -281,7 +280,6 @@ Trykk og hold inne på et ord for å søke. For å finstemme søket, merk flere 
 <translation id="2996809686854298943">Nettadresse kreves</translation>
 <translation id="300526633675317032">Dette sletter alle dataene (<ph name="SIZE_IN_KB" />) fra nettstedslagringen.</translation>
 <translation id="3016635187733453316">Kontrollér at enheten er koblet til internett</translation>
-<translation id="3029613699374795922"><ph name="KBS" /> kB er lastet ned</translation>
 <translation id="3029704984691124060">Passordfrasene stemmer ikke overens</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Få hjelp<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Posisjon er slått av. Slå den på i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" />.</translation>
@@ -457,7 +455,6 @@ Det er bare du som kan se hva kameraet ditt ser på. Nettstedet kan ikke se bild
 <translation id="4411535500181276704">Forenklet modus</translation>
 <translation id="4415276339145661267">Administrer Google-kontoen din</translation>
 <translation id="4432792777822557199">Fra nå av oversettes sider på <ph name="SOURCE_LANGUAGE" /> til <ph name="TARGET_LANGUAGE" /></translation>
-<translation id="4433925000917964731">Forenklet versjon av siden levert av Google</translation>
 <translation id="4434045419905280838">Forgrunnsvinduer/viderekoblinger</translation>
 <translation id="4440958355523780886">Forenklet versjon av siden levert av Google. Trykk for å laste inn den opprinnelige siden.</translation>
 <translation id="4452411734226507615">Lukk <ph name="TAB_TITLE" />-fanen</translation>
@@ -737,7 +734,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6406506848690869874">Synkroniser</translation>
 <translation id="6410973561433500075">Vil du starte AR fra <ph name="DOMAIN" />?</translation>
 <translation id="641643625718530986">Skriv ut</translation>
-<translation id="6416782512398055893"><ph name="MBS" /> MB er lastet ned</translation>
 <translation id="6427112570124116297">Oversett nettet</translation>
 <translation id="6433501201775827830">Velg søkemotor</translation>
 <translation id="6437478888915024427">Sideinformasjon</translation>
@@ -745,7 +741,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6441734959916820584">Navnet er for langt</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# bilde}other{# bilder}}</translation>
 <translation id="6447558397796644647">Finner ikke dette bokmerket. Kontrollér stavemåten, eller legg til et nytt bokmerke.</translation>
-<translation id="6447842834002726250">Informasjonskapsler</translation>
 <translation id="6461962085415701688">Kan ikke åpne filen</translation>
 <translation id="6464977750820128603">Du kan se nettstedene du besøker i Chrome, og angi tidtakere for dem.\n\nGoogle får informasjon om nettstedene du angir tidtakere for, og hvor lenge du besøker dem. Denne informasjonen brukes til å gjøre Digital balanse bedre.</translation>
 <translation id="6475951671322991020">Last ned videoen</translation>
@@ -754,7 +749,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6508722015517270189">Start Chrome på nytt</translation>
 <translation id="6532866250404780454">Nettsteder du besøker i Chrome, vises ikke. Alle tidtakere for nettsteder blir slettet.</translation>
 <translation id="6534565668554028783">Google brukte for lang tid på å svare</translation>
-<translation id="6538442820324228105"><ph name="GBS" /> GB er lastet ned</translation>
 <translation id="6539092367496845964">Noe gikk galt. Prøv på nytt senere.</translation>
 <translation id="6545017243486555795">Slett alle data</translation>
 <translation id="6545864417968258051">Bluetooth-skanning</translation>

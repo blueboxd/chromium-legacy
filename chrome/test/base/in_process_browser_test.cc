@@ -93,6 +93,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/test/shell_test_api.h"
+#include "ash/shell.h"
 #include "base/system/sys_info.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -109,9 +110,12 @@
 #endif
 
 #if defined(TOOLKIT_VIEWS)
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/test/views/accessibility_checker.h"
+#include "ui/views/test/widget_test.h"
 #include "ui/views/views_delegate.h"
+#include "ui/views/widget/widget.h"
 #endif
 
 namespace {
@@ -164,6 +168,26 @@ InProcessBrowserTest::InProcessBrowserTest(
   views_delegate_ = std::move(views_delegate);
 }
 #endif
+
+void InProcessBrowserTest::RunScheduledLayouts() {
+#if defined(TOOLKIT_VIEWS)
+  views::Widget::Widgets widgets_to_layout;
+
+#if defined(OS_CHROMEOS)
+  // WidgetTest::GetAllWidgets() doesn't work for ChromeOS in a production
+  // environment. We must get the Widgets ourself.
+  for (aura::Window* root_window : ash::Shell::GetAllRootWindows())
+    views::Widget::GetAllChildWidgets(root_window, &widgets_to_layout);
+#else
+  widgets_to_layout = views::test::WidgetTest::GetAllWidgets();
+#endif  // defined(OS_CHROMEOS)
+
+  for (views::Widget* widget : widgets_to_layout)
+    widget->LayoutRootViewIfNecessary();
+#endif  // defined(TOOLKIT_VIEWS)
+}
+
+// defined(TOOLKIT_VIEWS)
 
 void InProcessBrowserTest::Initialize() {
   CreateTestServer(GetChromeTestDataDir());

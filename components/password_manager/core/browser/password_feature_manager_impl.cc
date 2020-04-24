@@ -4,6 +4,7 @@
 
 #include "components/password_manager/core/browser/password_feature_manager_impl.h"
 
+#include "components/password_manager/core/browser/password_manager_features_util.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -31,41 +32,38 @@ bool PasswordFeatureManagerImpl::IsGenerationEnabled() const {
 }
 
 bool PasswordFeatureManagerImpl::IsOptedInForAccountStorage() const {
-  return password_manager_util::IsOptedInForAccountStorage(pref_service_,
-                                                           sync_service_);
+  return features_util::IsOptedInForAccountStorage(pref_service_,
+                                                   sync_service_);
 }
 
 bool PasswordFeatureManagerImpl::ShouldShowAccountStorageOptIn() const {
-  return password_manager_util::ShouldShowAccountStorageOptIn(pref_service_,
-                                                              sync_service_);
+  return features_util::ShouldShowAccountStorageOptIn(pref_service_,
+                                                      sync_service_);
 }
 
 bool PasswordFeatureManagerImpl::ShouldShowAccountStorageReSignin() const {
-  return password_manager_util::ShouldShowAccountStorageReSignin(pref_service_,
-                                                                 sync_service_);
+  return features_util::ShouldShowAccountStorageReSignin(pref_service_,
+                                                         sync_service_);
 }
 
 void PasswordFeatureManagerImpl::SetAccountStorageOptIn(bool opt_in) {
-  password_manager_util::SetAccountStorageOptIn(pref_service_, sync_service_,
-                                                opt_in);
+  features_util::SetAccountStorageOptIn(pref_service_, sync_service_, opt_in);
 }
 
 void PasswordFeatureManagerImpl::SetDefaultPasswordStore(
     const PasswordForm::Store& store) {
-  password_manager_util::SetDefaultPasswordStore(pref_service_, sync_service_,
-                                                 store);
+  features_util::SetDefaultPasswordStore(pref_service_, sync_service_, store);
 }
 
 bool PasswordFeatureManagerImpl::ShouldShowPasswordStorePicker() const {
-  return password_manager_util::ShouldShowPasswordStorePicker(pref_service_,
-                                                              sync_service_);
+  return features_util::ShouldShowPasswordStorePicker(pref_service_,
+                                                      sync_service_);
 }
 
 PasswordForm::Store PasswordFeatureManagerImpl::GetDefaultPasswordStore()
     const {
   DCHECK(pref_service_);
-  return password_manager_util::GetDefaultPasswordStore(pref_service_,
-                                                        sync_service_);
+  return features_util::GetDefaultPasswordStore(pref_service_, sync_service_);
 }
 
 }  // namespace password_manager

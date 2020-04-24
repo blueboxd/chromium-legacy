@@ -1523,13 +1523,6 @@ config("default_warnings") {
           "-Wno-pointer-to-int-cast",
         ]
 
-        if (is_android) {
-          cflags += [
-            # TODO(https://crbug.com/1016947) Clean up, enable.
-            "-Wno-bitwise-conditional-parentheses",
-          ]
-        }
-
         cflags_c += [
           # TODO(https://crbug.com/995993): Clean up and enable.
           "-Wno-implicit-fallthrough",

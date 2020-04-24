@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_container.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_error.h"
@@ -131,7 +132,7 @@ ServiceWorkerRegistration* ServiceWorkerRegistration::Take(
     ScriptPromiseResolver* resolver,
     WebServiceWorkerRegistrationObjectInfo info) {
   return ServiceWorkerContainer::From(
-             Document::From(resolver->GetExecutionContext()))
+             To<LocalDOMWindow>(resolver->GetExecutionContext())->document())
       ->GetOrCreateServiceWorkerRegistration(std::move(info));
 }
 

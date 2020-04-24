@@ -164,7 +164,6 @@ Atinge orice cuvânt pentru a-l căuta. Ca să rafinezi căutarea, atinge lung p
 <translation id="2131665479022868825">Date economisite: <ph name="DATA" /></translation>
 <translation id="213279576345780926">Fila <ph name="TAB_TITLE" /> a fost închisă</translation>
 <translation id="2139186145475833000">Adaugă pe ecran pornire</translation>
-<translation id="2146738493024040262">Deschide aplicația instantanee</translation>
 <translation id="2154484045852737596">Editează cardul</translation>
 <translation id="2154710561487035718">Copiați adresa URL</translation>
 <translation id="2156074688469523661">Site-uri rămase (<ph name="NUMBER_OF_SITES" />)</translation>
@@ -281,7 +280,6 @@ Atinge lung orice cuvânt pentru a-l căuta. Pentru a rafina căutarea, selectea
 <translation id="2996809686854298943">Adresă URL obligatorie</translation>
 <translation id="300526633675317032">Astfel, se vor șterge <ph name="SIZE_IN_KB" /> din stocarea site-urilor.</translation>
 <translation id="3016635187733453316">Verifică dacă dispozitivul este conectat la internet</translation>
-<translation id="3029613699374795922"><ph name="KBS" /> KB descărcați</translation>
 <translation id="3029704984691124060">Expresiile de acces nu corespund</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Obține ajutor<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Locația este dezactivată; activeaz-o în <ph name="BEGIN_LINK" />Setări Android<ph name="END_LINK" />.</translation>
@@ -457,7 +455,6 @@ Doar tu poți vedea ce vede camera. Site-ul nu vede imaginile de pe cameră.</tr
 <translation id="4411535500181276704">Modul Lite</translation>
 <translation id="4415276339145661267">Gestionează-ți Contul Google</translation>
 <translation id="4432792777822557199">Paginile în <ph name="SOURCE_LANGUAGE" /> vor fi traduse în <ph name="TARGET_LANGUAGE" /> de acum înainte</translation>
-<translation id="4433925000917964731">Pagină Lite oferită de Google</translation>
 <translation id="4434045419905280838">Ferestre pop-up și redirecționări</translation>
 <translation id="4440958355523780886">Pagină Lite oferită de Google. Atinge pentru a încărca versiunea originală.</translation>
 <translation id="4452411734226507615">Închide fila <ph name="TAB_TITLE" /></translation>
@@ -737,7 +734,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="6406506848690869874">Sincronizare</translation>
 <translation id="6410973561433500075">Intri în RA de pe <ph name="DOMAIN" />?</translation>
 <translation id="641643625718530986">Printați...</translation>
-<translation id="6416782512398055893"><ph name="MBS" /> MB descărcați</translation>
 <translation id="6427112570124116297">Tradu pe web</translation>
 <translation id="6433501201775827830">Alege motorul de căutare</translation>
 <translation id="6437478888915024427">Informații despre pagină</translation>
@@ -745,7 +741,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="6441734959916820584">Numele este prea lung</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{O imagine}few{# imagini}other{# de imagini}}</translation>
 <translation id="6447558397796644647">Marcajul nu a fost găsit. Verifică ortografierea sau adaugă alt marcaj.</translation>
-<translation id="6447842834002726250">Cookie-uri</translation>
 <translation id="6461962085415701688">Fișierul nu poate fi deschis</translation>
 <translation id="6464977750820128603">Poți vedea site-urile pe care le vizitezi în Chrome și să setezi temporizatoare pentru ele.\n\nGoogle obține informații cu privire la site-urile pentru care setezi temporizatoare și la durata de accesare. Aceste informații sunt folosite pentru a îmbunătăți Bunăstarea digitală.</translation>
 <translation id="6475951671322991020">Descarcă videoclipul</translation>
@@ -754,7 +749,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="6508722015517270189">repornește Chrome;</translation>
 <translation id="6532866250404780454">Site-urile pe care le vizitezi în Chrome nu se vor afișa. Toate temporizatoarele site-urilor vor fi șterse.</translation>
 <translation id="6534565668554028783">Google a răspuns prea târziu</translation>
-<translation id="6538442820324228105"><ph name="GBS" /> GB descărcați</translation>
 <translation id="6539092367496845964">A apărut o eroare. Încearcă din nou mai târziu.</translation>
 <translation id="6545017243486555795">Șterge toate datele</translation>
 <translation id="6545864417968258051">Căutare Bluetooth</translation>
@@ -855,6 +849,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7352939065658542140">VIDEOCLIP</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Trimite un element selectat}few{Trimite # elemente selectate}other{Trimite # de elemente selectate}}</translation>
 <translation id="7359002509206457351">Acces la metodele de plată</translation>
+<translation id="7362144854749094396">Chrome are acces la istoric. Preferințele sunt trimise la <ph name="SITE_NAME" />.</translation>
 <translation id="7375125077091615385">Tip:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">Adresă URL</translation>

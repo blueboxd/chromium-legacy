@@ -79,7 +79,7 @@ void CopyFieldPropertiesMasks(const FormData& from, FormData* to) {
         GetPlatformSpecificIdentifier(to->fields[i]) ==
                 GetPlatformSpecificIdentifier(from.fields[i])
             ? from.fields[i].properties_mask
-            : autofill::FieldPropertiesFlags::ERROR_OCCURRED;
+            : autofill::FieldPropertiesFlags::kErrorOccurred;
   }
 }
 

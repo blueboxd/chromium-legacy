@@ -9,6 +9,7 @@ import android.content.Context;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Log;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.SiteSuggestion;
@@ -50,6 +51,16 @@ public class MostVisitedSitesHost implements MostVisitedSites.Observer {
 
     private static boolean sSkipRestoreFromDiskForTests;
 
+    private Runnable mCurrentTask;
+    private Runnable mPendingTask;
+    // Whether restoreFromDisk() is finished.
+    private boolean mIsSynced;
+    // Records how many remaining files the current task needs to save.
+    private int mCurrentFilesNeedToSaveCount;
+    // Records how many remaining files the pending task needs to save. This value is used to
+    // replace mCurrentFilesNeedToSaveCount when updating pending to current task.
+    private int mPendingFilesNeedToSaveCount;
+
     public MostVisitedSitesHost(Context context, Profile profile) {
         LargeIconBridge largeIconBridge =
                 SuggestionsDependencyFactory.getInstance().createLargeIconBridge(profile);
@@ -59,6 +70,56 @@ public class MostVisitedSitesHost implements MostVisitedSites.Observer {
         if (!sSkipRestoreFromDiskForTests) {
             restoreFromDisk();
         }
+    }
+
+    /**
+     * Once new siteSuggestions info is available, call this function to update map and set and save
+     * data to the disk. If syncing with disk hasn't finished or there is a current task running,
+     * make this new task the pending task. Otherwise, make this new task the current task and run
+     * it.
+     * @param siteSuggestions The new SiteSuggestions.
+     */
+    public void saveMostVisitedSitesInfo(List<SiteSuggestion> siteSuggestions) {
+        // Ensure that saving happens after map and set are updated. Use finishOneFileSaving() as
+        // callback to record when this current task has been finished.
+        Runnable newTask = () -> updateMapAndSetForNewSites(siteSuggestions, () -> {
+            MostVisitedSitesMetadataUtils.saveSuggestionListsToFile(
+                    siteSuggestions, this::finishOneFileSaving);
+            mFaviconSaver.saveFaviconsToFile(
+                    siteSuggestions, mUrlsToUpdateFavicon, this::finishOneFileSaving);
+        });
+
+        if (!mIsSynced || mCurrentTask != null) {
+            // Skip last mPendingTask which is not necessary to run.
+            mPendingTask = newTask;
+            mPendingFilesNeedToSaveCount = siteSuggestions.size() + 1;
+        } else {
+            // Assign newTask to mCurrentTask and run this task.
+            mCurrentTask = newTask;
+            mCurrentFilesNeedToSaveCount = siteSuggestions.size() + 1;
+            // Skip any pending task.
+            mPendingTask = null;
+            mPendingFilesNeedToSaveCount = 0;
+
+            Log.d(TAG, "Start a new task.");
+            mCurrentTask.run();
+        }
+    }
+
+    @Override
+    public void onSiteSuggestionsAvailable(List<SiteSuggestion> siteSuggestions) {
+        saveMostVisitedSitesInfo(siteSuggestions);
+    }
+
+    @Override
+    public void onIconMadeAvailable(String siteUrl) {}
+
+    /**
+     * Start the observer.
+     * @param maxResults The max number of sites to observe.
+     */
+    public void startObserving(int maxResults) {
+        mMostVisitedSites.setObserver(this, maxResults);
     }
 
     /**
@@ -85,30 +146,10 @@ public class MostVisitedSitesHost implements MostVisitedSites.Observer {
                     mUrlToIdMap.put(site.url, site.faviconId);
                 }
                 buildIdToUrlMap();
+                mIsSynced = true;
+                updatePendingToCurrent();
             }
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-    }
-
-    // TODO(spdonghao): Add a queue to cache the new SiteSuggestions task when there is a pending
-    // task that is updating the favicon files and metadata on disk. Reschedule the cached task when
-    // the pending task is completed.
-    @Override
-    public void onSiteSuggestionsAvailable(List<SiteSuggestion> siteSuggestions) {
-        updateMapAndSetForNewSites(siteSuggestions, () -> {
-            MostVisitedSitesMetadataUtils.saveSuggestionListsToFile(siteSuggestions, null);
-            mFaviconSaver.saveFaviconsToFile(siteSuggestions, mUrlsToUpdateFavicon);
-        });
-    }
-
-    @Override
-    public void onIconMadeAvailable(String siteUrl) {}
-
-    /**
-     * Start the observer.
-     * @param maxResults The max number of sites to observe.
-     */
-    public void startObserving(int maxResults) {
-        mMostVisitedSites.setObserver(this, maxResults);
     }
 
     /**
@@ -281,6 +322,27 @@ public class MostVisitedSitesHost implements MostVisitedSites.Observer {
     }
 
     @VisibleForTesting
+    protected void updatePendingToCurrent() {
+        mCurrentTask = mPendingTask;
+        mCurrentFilesNeedToSaveCount = mPendingFilesNeedToSaveCount;
+        mPendingTask = null;
+        if (mCurrentTask != null) {
+            Log.d(TAG, "Start a new task.");
+            mCurrentTask.run();
+        }
+    }
+
+    private void finishOneFileSaving() {
+        ThreadUtils.assertOnUiThread();
+        mCurrentFilesNeedToSaveCount--;
+
+        // If there is no file needed to save for current task, update pending task to current.
+        if (mCurrentFilesNeedToSaveCount == 0) {
+            updatePendingToCurrent();
+        }
+    }
+
+    @VisibleForTesting
     protected Map<String, Integer> getUrlToIDMapForTesting() {
         return mUrlToIdMap;
     }
@@ -298,5 +360,30 @@ public class MostVisitedSitesHost implements MostVisitedSites.Observer {
     @VisibleForTesting
     protected static void setSkipRestoreFromDiskForTesting() {
         sSkipRestoreFromDiskForTests = true;
+    }
+
+    @VisibleForTesting
+    public void setIsSyncedForTesting(boolean isSynced) {
+        mIsSynced = isSynced;
+    }
+
+    @VisibleForTesting
+    public int getCurrentFilesNeedToSaveCountForTesting() {
+        return mCurrentFilesNeedToSaveCount;
+    }
+
+    @VisibleForTesting
+    public int getPendingFilesNeedToSaveCountForTesting() {
+        return mPendingFilesNeedToSaveCount;
+    }
+
+    @VisibleForTesting
+    public void setCurrentTaskForTesting(Runnable currentTask) {
+        mCurrentTask = currentTask;
+    }
+
+    @VisibleForTesting
+    public void setPendingTaskForTesting(Runnable pendingTask) {
+        mPendingTask = pendingTask;
     }
 }

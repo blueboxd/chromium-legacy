@@ -12,6 +12,7 @@
 #include "ash/public/mojom/assistant_state_controller.mojom.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/ash/assistant/device_actions.h"
+#include "chromeos/services/assistant/public/cpp/assistant_client.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom-forward.h"
 #include "chromeos/services/assistant/service.h"
 #include "components/session_manager/core/session_manager_observer.h"
@@ -31,7 +32,7 @@ class Profile;
 
 // Class to handle all Assistant in-browser-process functionalities.
 class AssistantClientImpl : public ash::AssistantClient,
-                            public chromeos::assistant::mojom::Client,
+                            public chromeos::assistant::AssistantClient,
                             public content::NotificationObserver,
                             public signin::IdentityManager::Observer,
                             public session_manager::SessionManagerObserver {
@@ -55,7 +56,7 @@ class AssistantClientImpl : public ash::AssistantClient,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  // assistant::mojom::Client overrides:
+  // chromeos::assistant::AssisantClient overrides:
   void OnAssistantStatusChanged(ash::mojom::AssistantState new_state) override;
   void RequestAssistantController(
       mojo::PendingReceiver<chromeos::assistant::mojom::AssistantController>
@@ -107,8 +108,6 @@ class AssistantClientImpl : public ash::AssistantClient,
   // session_manager::SessionManagerObserver:
   void OnUserProfileLoaded(const AccountId& account_id) override;
   void OnUserSessionStarted(bool is_primary_user) override;
-
-  mojo::Receiver<chromeos::assistant::mojom::Client> client_receiver_{this};
 
   std::unique_ptr<DeviceActions> device_actions_;
   std::unique_ptr<chromeos::assistant::Service> service_;

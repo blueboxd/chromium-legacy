@@ -90,6 +90,8 @@ class CORE_EXPORT FontFaceSetDocument final : public FontFaceSet,
   bool ResolveFontStyle(const String&, Font&) override;
 
  private:
+  Document* GetDocument() const;
+
   void FireDoneEventIfPossible() override;
   const HeapLinkedHashSet<Member<FontFace>>& CSSConnectedFontFaceList()
       const override;

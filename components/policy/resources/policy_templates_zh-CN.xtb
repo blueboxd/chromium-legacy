@@ -1019,7 +1019,7 @@
 <translation id="253135976343875019">使用交流电源供电时的闲置警告延迟时间</translation>
 <translation id="2536525645274582300">用户可决定是否要启用 Google 位置信息服务</translation>
 <translation id="254653220329944566">启用 <ph name="PRODUCT_NAME" /> 云端报告</translation>
-<translation id="2548397295248733155">请注意，我们已弃用此政策，并将在 <ph name="PRODUCT_OS_NAME" />版本 85 中移除它。请改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
+<translation id="2548397295248733155">请注意，此政策已被弃用，并将在 <ph name="PRODUCT_OS_NAME" />版本 85 中移除。请改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
 
           指定当使用电池供电时系统应在设备闲置多久后关闭屏幕。
 
@@ -1027,7 +1027,7 @@
 
           如果您将此政策设为 0，那么在设备闲置时，<ph name="PRODUCT_OS_NAME" />不会关闭屏幕。
 
-          如果您未设置此政策，系统将使用默认时间长度。
+          如果您未设置此政策，系统将使用默认时长。
 
           指定的政策值应以毫秒为单位，且不得大于闲置延迟时间。</translation>
 <translation id="2548572254685798999">报告安全浏览信息</translation>
@@ -1431,13 +1431,13 @@
 <translation id="3184161739683646075">控制 DNS-over-HTTPS 模式</translation>
 <translation id="3185009703220253572">从版本 <ph name="SINCE_VERSION" /> 开始</translation>
 <translation id="3187220842205194486">Android 应用无法获得对企业密钥的访问权限。此政策对这些应用没有任何影响。</translation>
-<translation id="3196585866522778760">请注意，我们已弃用此政策，并将在 <ph name="PRODUCT_OS_NAME" />版本 85 中移除它。请改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
+<translation id="3196585866522778760">请注意，此政策已被弃用，并将在 <ph name="PRODUCT_OS_NAME" />版本 85 中移除。请改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
 
           指定当使用电池供电时系统应在设备闲置多久后采取闲置操作。
 
           如果您设置了此政策，那么只要设备闲置时长达到了此处指定的时长，<ph name="PRODUCT_OS_NAME" />就会采取闲置操作（可另行配置）。
 
-          如果您未设置此政策，系统将使用默认时间长度。
+          如果您未设置此政策，系统将使用默认时长。
 
           指定的政策值应以毫秒为单位。</translation>
 <translation id="3205825995289802549">首次运行时，将第一个浏览器窗口最大化</translation>
@@ -1509,7 +1509,7 @@
 如果此政策设为 True 或未设置，<ph name="PRODUCT_NAME" /> 将可以使用原生通知。
 
 如果此政策设为 False，<ph name="PRODUCT_NAME" /> 将不会使用原生通知。<ph name="PRODUCT_NAME" /> 的消息中心将被用作后备方案。</translation>
-<translation id="3360093276083825336">请注意，我们已弃用此政策，并将在 <ph name="PRODUCT_OS_NAME" />版本 85 中移除它。请改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
+<translation id="3360093276083825336">请注意，此政策已被弃用，并将在 <ph name="PRODUCT_OS_NAME" />版本 85 中移除。请改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
 
           指定当使用电池供电时系统应在设备闲置多久后显示警告对话框。
 
@@ -1668,7 +1668,7 @@
       如果此政策设为“DeveloperToolsAllowed”（值为 1），那么无论在什么情况下（包括在运行由企业政策安装的扩展程序的情况下），用户都可以访问和使用开发者工具以及 JavaScript 控制台。
       如果此政策设为“DeveloperToolsDisallowed”（值为 2），用户便无法再访问开发者工具和查看网站元素。用于打开开发者工具或 JavaScript 控制台的任何键盘快捷键以及任何菜单（或上下文菜单）条目都会被停用。</translation>
 <translation id="3547954654003013442">代理设置</translation>
-<translation id="3550122827225052130">请注意，我们已弃用此政策，并将在 <ph name="PRODUCT_OS_NAME" />版本 85 中移除它。请改用 <ph name="SCREEN_LOCK_DELAYS_POLICY_NAME" />。
+<translation id="3550122827225052130">请注意，此政策已被弃用，并将在 <ph name="PRODUCT_OS_NAME" />版本 85 中移除。请改用 <ph name="SCREEN_LOCK_DELAYS_POLICY_NAME" />。
 
           指定当使用交流电源供电时系统应在设备闲置多久后锁定屏幕。
 
@@ -1676,9 +1676,9 @@
 
           如果您将此政策设为 0，那么在设备闲置时，<ph name="PRODUCT_OS_NAME" />不会锁定屏幕。
 
-          如果您未设置此政策，系统将使用默认时间长度。
+          如果您未设置此政策，系统将使用默认时长。
 
-          若要在设备闲置时锁定屏幕，您最好让系统在进入暂停状态时锁定屏幕，并指示 <ph name="PRODUCT_OS_NAME" />在闲置延迟时间过后进入暂停状态。只有在以下情况下才应使用此政策：屏幕锁定时间应显著早于系统进入暂停状态的时间，或者完全不需要在设备闲置时暂停系统。
+          要在设备闲置时锁定屏幕，您最好采用以下方式：让系统在进入暂停状态时锁定屏幕，并指示 <ph name="PRODUCT_OS_NAME" />在闲置延迟时间过后进入暂停状态。只有在以下情况下才应使用此政策：屏幕锁定时间应显著早于系统进入暂停状态的时间，或者完全不需要在设备闲置时暂停系统。
 
           指定的政策值应以毫秒为单位，且必须小于闲置延迟时间。</translation>
 <translation id="3550875587920006460">允许用户设置自定义时间表来指定何时检查是否有更新。这适用于所有用户以及设备上的所有界面。设置后，设备便会按照此时间表检查是否有更新。必须移除此政策，才能取消其他已排定的更新检查。</translation>
@@ -2475,7 +2475,7 @@
       </translation>
 <translation id="4787763197941188108">替换默认打印页面大小。
 
-      <ph name="PAGE_SIZE_NAME" /> 应包含所列格式之一或（如果所需页面大小不在列表中）“custom”值。如果提供了“custom”值，则应指定 <ph name="PAGE_SIZE_CUSTOM_SIZE" /> 属性，以用于描述所需的高度和宽度（以微米为单位）。如果未提供“custom”值，便不应指定 <ph name="PAGE_SIZE_CUSTOM_SIZE" /> 属性。系统会忽略违反这些规则的政策。
+      <ph name="PAGE_SIZE_NAME" /> 应包含所列格式之一，如果所需页面大小不在列表中，则应包含“custom”值。如果提供了“custom”值，则应指定 <ph name="PAGE_SIZE_CUSTOM_SIZE" /> 属性，用于指定所需的高度和宽度（以微米为单位）。如果未提供“custom”值，便不应指定 <ph name="PAGE_SIZE_CUSTOM_SIZE" /> 属性。系统会忽略违反这些规则的政策。
 
       如果这一页面大小在用户选择的打印机上不适用，系统会忽略此政策。</translation>
 <translation id="4788252609789586009">启用 <ph name="PRODUCT_NAME" /> 的“自动填充”功能，并允许用户使用以前存储的信用卡信息在网络表单中自动填写相关信息。
@@ -3484,7 +3484,7 @@
 <translation id="6315673513957120120">当用户访问存在 SSL 错误的网站时，Chrome 将显示警告页面。默认情况下，或当此政策设为 true 时，用户可以在点击这些警告页面后继续操作。
       如果将此政策设为 false，用户将无法通过点击任何警告页面继续操作。</translation>
 <translation id="6319198883324703402">设置首次用户重新启动通知的时间</translation>
-<translation id="6331167725613770725">请注意，我们已弃用此政策，并将在 <ph name="PRODUCT_OS_NAME" />版本 85 中移除它。请改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
+<translation id="6331167725613770725">请注意，此政策已被弃用，并将在 <ph name="PRODUCT_OS_NAME" />版本 85 中移除。请改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
 
           指定当使用交流电源供电时系统应在设备闲置多久后显示警告对话框。
 
@@ -3603,7 +3603,7 @@
       如果启用了此设置，安全浏览功能将会信任这些网域。
       如果停用或未设置，系统便会将默认的安全浏览保护功能应用于所有资源。
       此政策仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例，或者已注册设备管理服务的 Windows 10 Pro 或 Enterprise 实例。</translation>
-<translation id="6495337487202227251">请注意，我们已弃用此政策，并将在 <ph name="PRODUCT_OS_NAME" />版本 85 中移除它。请改用 <ph name="SCREEN_LOCK_DELAYS_POLICY_NAME" />。
+<translation id="6495337487202227251">请注意，此政策已被弃用，并将在 <ph name="PRODUCT_OS_NAME" />版本 85 中移除。请改用 <ph name="SCREEN_LOCK_DELAYS_POLICY_NAME" />。
 
           指定当使用电池供电时系统应在设备闲置多久后锁定屏幕。
 
@@ -3611,9 +3611,9 @@
 
           如果您将此政策设为 0，那么在设备闲置时，<ph name="PRODUCT_OS_NAME" />不会锁定屏幕。
 
-          如果您未设置此政策，系统将使用默认时间长度。
+          如果您未设置此政策，系统将使用默认时长。
 
-          若要在设备闲置时锁定屏幕，您最好让系统在进入暂停状态时锁定屏幕，并指示 <ph name="PRODUCT_OS_NAME" />在闲置延迟时间过后进入暂停状态。只有在以下情况下才应使用此政策：屏幕锁定时间应显著早于系统进入暂停状态的时间，或者完全不需要在设备闲置时暂停系统。
+          要在设备闲置时锁定屏幕，您最好采用以下方式：让系统在进入暂停状态时锁定屏幕，并指示 <ph name="PRODUCT_OS_NAME" />在闲置延迟时间过后进入暂停状态。只有在以下情况下才应使用此政策：屏幕锁定时间应显著早于系统进入暂停状态的时间，或者完全不需要在设备闲置时暂停系统。
 
           指定的政策值应以毫秒为单位，且必须小于闲置延迟时间。</translation>
 <translation id="6515357889978918016"><ph name="PLUGIN_VM_NAME" /> 图片</translation>
@@ -4348,7 +4348,7 @@
       如果此政策未设置，它将不会产生任何效力，系统也不会在用户退出后强制相应设备重新启动。如果设为 Never，效果与未设置时一样。
       此政策仅对独立用户有效。
       </translation>
-<translation id="7679483888150212009">请注意，我们已弃用此政策，并将在 <ph name="PRODUCT_OS_NAME" />版本 85 中移除它。请改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
+<translation id="7679483888150212009">请注意，此政策已被弃用，并将在 <ph name="PRODUCT_OS_NAME" />版本 85 中移除。请改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
 
           指定当使用交流电源供电时系统应在设备闲置多久后降低屏幕亮度。
 
@@ -4356,7 +4356,7 @@
 
           如果您将此政策设为 0，那么在设备闲置时，<ph name="PRODUCT_OS_NAME" />不会降低屏幕亮度。
 
-          如果您未设置此政策，系统将使用默认时间长度。
+          如果您未设置此政策，系统将使用默认时长。
 
           指定的政策值应以毫秒为单位，且不得大于屏幕关闭延迟时间（若已设置）和闲置延迟时间。</translation>
 <translation id="7683777542468165012">动态政策刷新</translation>
@@ -4504,7 +4504,7 @@
 
           如果停用了此政策，则用户无法添加 Kerberos 帐号。只能通过“配置 Kerberos 帐号”政策添加帐号。这是锁定帐号的有效方式。</translation>
 <translation id="7895553628261067384">远程访问</translation>
-<translation id="7898879331506985900">这项企业政策只是短期的适应性措施，我们将在 M86 中移除它。
+<translation id="7898879331506985900">这项企业政策只是短期的适应性措施，将在 M86 中移除。
 
       为配合 M80 稳定版的逐步推出，Chrome 的默认引荐来源网址政策正从其当前值 no-referrer-when-downgrade 强化为更安全的 strict-origin-when-cross-origin。
 
@@ -4548,7 +4548,7 @@
 <translation id="7956210013490975468">为 <ph name="PRODUCT_OS_NAME" />配置系统代理服务。</translation>
 <translation id="7958537754689366707">必须每 12 小时输入一次密码</translation>
 <translation id="7961779417826583251">对于指定的一系列旧版证书授权机构，不强制执行证书透明化要求</translation>
-<translation id="7973609468423251675">请注意，我们已弃用此政策，并将在 <ph name="PRODUCT_OS_NAME" />版本 85 中移除它。请改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
+<translation id="7973609468423251675">请注意，此政策已被弃用，并将在 <ph name="PRODUCT_OS_NAME" />版本 85 中移除。请改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
 
           指定当使用电池供电时系统应在设备闲置多久后降低屏幕亮度。
 
@@ -4556,7 +4556,7 @@
 
           如果您将此政策设为 0，那么在设备闲置时，<ph name="PRODUCT_OS_NAME" />不会降低屏幕亮度。
 
-          如果您未设置此政策，系统将使用默认时间长度。
+          如果您未设置此政策，系统将使用默认时长。
 
           指定的政策值应以毫秒为单位，且不得大于屏幕关闭延迟时间（若已设置）和闲置延迟时间。</translation>
 <translation id="7974114691960514888">此政策已不再受支持。在连接到远程客户端时，允许使用 STUN 和中继服务器。如果启用此设置，那么即使远程客户端受到防火墙隔离，也仍然可以检测到并连接到此计算机。如果停用此设置，并且防火墙过滤了外发 UDP 连接，那么此计算机将只能与本地网络内的客户端计算机建立连接。</translation>
@@ -4566,7 +4566,7 @@
 <translation id="798856998567564266">如果您启用了此设置，则可添加、移除或修改书签（这是默认值，在未设置此政策的情况下，也是如此）。
 
       如果您停用了此设置，则无法添加、移除或修改书签，但仍可以访问现有的书签。</translation>
-<translation id="7991022023019679916">请注意，我们已弃用此政策，并将在 <ph name="PRODUCT_OS_NAME" />版本 85 中移除它。请改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
+<translation id="7991022023019679916">请注意，此政策已被弃用，并将在 <ph name="PRODUCT_OS_NAME" />版本 85 中移除。请改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
 
           指定当使用交流电源供电时系统应在设备闲置多久后关闭屏幕。
 
@@ -4574,7 +4574,7 @@
 
           如果您将此政策设为 0，那么在设备闲置时，<ph name="PRODUCT_OS_NAME" />不会关闭屏幕。
 
-          如果您未设置此政策，系统将使用默认时间长度。
+          如果您未设置此政策，系统将使用默认时长。
 
           指定的政策值应以毫秒为单位，且不得大于闲置延迟时间。</translation>
 <translation id="7992136759457836904">让您能够控制是否允许在 Chrome 操作系统上运行虚拟机。
@@ -4716,9 +4716,9 @@
       设置 <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" />（值为 1）会仅允许将那些被视为重要的安全性或稳定性修复程序的变体应用于 <ph name="PRODUCT_OS_NAME" />。
 
       设置 <ph name="VARIATIONS_DISABLED_OPTION_NAME" />（值为 2）会禁止在登录屏幕上将任何变体应用于该浏览器。请注意，我们不建议您使用此模式，因为它可能会妨碍 <ph name="PRODUCT_OS_NAME" />开发者及时提供重要的安全性修复程序。</translation>
-<translation id="8213770777756919897">请注意，我们已弃用此政策，并将在 <ph name="PRODUCT_OS_NAME" />版本 85 中移除它。请改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
+<translation id="8213770777756919897">请注意，此政策已被弃用，并将在 <ph name="PRODUCT_OS_NAME" />版本 85 中移除。请改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
 
-          如果您设置了此政策，即是指定了当设备闲置时长超过所设的闲置延迟时间后 <ph name="PRODUCT_OS_NAME" />会执行的操作；闲置延迟时间可另行配置。
+          如果您设置了此政策，即是指定了当设备闲置时长超过所设的闲置延迟时间后 <ph name="PRODUCT_OS_NAME" />会执行的操作；闲置延迟时长可单独配置。
 
           如果您未设置此政策，系统会执行默认操作，即暂停。
 
@@ -4792,7 +4792,7 @@
 <translation id="8331479227794770304">启用粘滞键</translation>
 <translation id="8339420913453596618">已停用第二重因素</translation>
 <translation id="8344454543174932833">首次运行时，从默认浏览器导入书签</translation>
-<translation id="8347993687936322631">请注意，我们已弃用此政策，并将在 <ph name="PRODUCT_OS_NAME" />版本 85 中移除它。请改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
+<translation id="8347993687936322631">请注意，此政策已被弃用，并将在 <ph name="PRODUCT_OS_NAME" />版本 85 中移除。请改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
 
           此政策可为更具体的 <ph name="IDLE_ACTION_AC_POLICY_NAME" /> 和 <ph name="IDLE_ACTION_BATTERY_POLICY_NAME" /> 政策提供后备值。如果您设置了此政策，但未分别设置更具体的政策，系统就会使用此值。
 
@@ -4949,13 +4949,13 @@
       如果使用此政策，那么除了与此政策中所列 ID 对应的打印机之外，其他所有打印机都可供用户使用。ID 必须与 <ph name="BULK_PRINTERS_POLICY" /> 中指定的文件内的“id”或“guid”字段相符。
       </translation>
 <translation id="8587229956764455752">允许创建新的用户帐号</translation>
-<translation id="8591713876665299827">请注意，我们已弃用此政策，并将在 <ph name="PRODUCT_OS_NAME" />版本 85 中移除它。请改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
+<translation id="8591713876665299827">请注意，此政策已被弃用，并将在 <ph name="PRODUCT_OS_NAME" />版本 85 中移除。请改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
 
           指定当使用交流电源供电时系统应在设备闲置多久后采取闲置操作。
 
           如果您设置了此政策，那么只要设备闲置时长达到了此处指定的时长，<ph name="PRODUCT_OS_NAME" />就会采取闲置操作（可另行配置）。
 
-          如果您未设置此政策，系统将使用默认时间长度。
+          如果您未设置此政策，系统将使用默认时长。
 
           指定的政策值应以毫秒为单位。</translation>
 <translation id="8598350264853261122">如果此政策设为 false，独立用户将无法使用 ARC。
@@ -5248,17 +5248,17 @@
           如果未设置此政策，并且相应设备支持此政策，则会应用标准电池充电模式，而且无法由用户更改。
 
           注意：<ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" />（若已指定）会覆盖此政策。</translation>
-<translation id="9071472304496502510">让您能够指定一系列 Chrome 企业版连接器服务设置，以应用于会在文件附加到 Chrome 时触发的 <ph name="ON_FILE_ATTACHED_ENTERPRISE_CONNECTOR" /> 企业版连接器。
+<translation id="9071472304496502510">让您能够指定适用于 <ph name="ON_FILE_ATTACHED_ENTERPRISE_CONNECTOR" /> 企业版连接器的 Chrome 企业版连接器服务设置列表，当文件附加到 Chrome 时会调用此列表。
 
       <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />、<ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />、<ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" /> 和 <ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> 字段用于确定当某个文件附加到特定网页后，该连接器是否应发送此文件以供分析，以及要将哪些标记添加到针对此文件的分析请求中。如果相应的网页网址与“enable”格式所对应的某个标记相匹配，那么只要所有包含这个标记的“disable”格式与此网页网址都不匹配，该连接器便会将这个标记添加到分析请求中。如果该连接器向分析请求中添加了至少 1 个标记，分析服务便会分析附加的文件。
 
       <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" /> 字段用于确定您指定的设置是与哪个分析服务提供商对应。
 
-      如果您将 <ph name="ENTERPRISE_CONNECTOR_BLOCK_UNTIL_VERDICT_FIELD" /> 字段设为 1，Chrome 将需要等到分析服务发来响应，才能确定是否要向相应网页授予文件访问权限。如果您将该字段设为任何其他整数值，Chrome 就会立即向相应网页授予文件访问权限。
+      如果您将 <ph name="ENTERPRISE_CONNECTOR_BLOCK_UNTIL_VERDICT_FIELD" /> 字段设为 1，Chrome 需要先等到分析服务的响应，再确定是否要向相应网页授予文件访问权限。如果您将该字段设为任何其他整数值，Chrome 就会立即向相应网页授予文件访问权限。
 
       <ph name="ENTERPRISE_CONNECTOR_BLOCK_PASSWORD_PROTECTED_FIELD" /> 字段用于控制 Chrome 是会禁止访问还是会允许访问受密码保护的文件。
 
-      <ph name="ENTERPRISE_CONNECTOR_BLOCK_LARGE_FILES_FIELD" /> 字段用于控制 Chrome 是会禁止访问还是会允许访问过大 (50+ MB) 的文件。
+      <ph name="ENTERPRISE_CONNECTOR_BLOCK_LARGE_FILES_FIELD" /> 字段用于控制 Chrome 是会禁止访问还是会允许访问因过大 (超过 50 MB) 而无法分析的文件。
 
       此政策只能通过 Google 管理控制台进行设置。</translation>
 <translation id="9077227880520270584">设备本地帐号自动登录计时器</translation>

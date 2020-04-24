@@ -43,8 +43,8 @@ class CORE_EXPORT CSSImageValue : public CSSValue {
                 const KURL&,
                 const Referrer&,
                 OriginClean origin_clean,
+                bool is_ad_related,
                 StyleImage* image = nullptr);
-  CSSImageValue(const AtomicString& absolute_url, OriginClean origin_clean);
   ~CSSImageValue();
 
   bool IsCachePending() const { return !cached_image_; }
@@ -61,6 +61,7 @@ class CORE_EXPORT CSSImageValue : public CSSValue {
   const String& RelativeUrl() const { return relative_url_; }
 
   const Referrer& GetReferrer() const { return referrer_; }
+  bool GetIsAdRelated() const { return is_ad_related_; }
 
   void ReResolveURL(const Document&) const;
 
@@ -75,13 +76,13 @@ class CORE_EXPORT CSSImageValue : public CSSValue {
   CSSImageValue* ValueWithURLMadeAbsolute() const {
     return MakeGarbageCollected<CSSImageValue>(
         absolute_url_, KURL(absolute_url_), Referrer(), origin_clean_,
-        cached_image_.Get());
+        is_ad_related_, cached_image_.Get());
   }
 
   CSSImageValue* Clone() const {
     return MakeGarbageCollected<CSSImageValue>(
         relative_url_, KURL(absolute_url_), Referrer(), origin_clean_,
-        cached_image_.Get());
+        is_ad_related_, cached_image_.Get());
   }
 
   void SetInitiator(const AtomicString& name) { initiator_name_ = name; }
@@ -101,6 +102,9 @@ class CORE_EXPORT CSSImageValue : public CSSValue {
   // Whether the stylesheet that requested this image is origin-clean:
   // https://drafts.csswg.org/cssom-1/#concept-css-style-sheet-origin-clean-flag
   const OriginClean origin_clean_;
+
+  // Whether this was created by an ad-related CSSParserContext.
+  const bool is_ad_related_;
 };
 
 template <>

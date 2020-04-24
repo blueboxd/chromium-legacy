@@ -813,8 +813,10 @@ FontDisplay FontFace::GetFontDisplay() const {
 }
 
 void FontFace::DidBeginImperativeLoad() {
-  if (GetDocument())
-    GetDocument()->GetFontPreloadManager().ImperativeFontLoadingStarted(this);
+  if (!DomWindow())
+    return;
+  DomWindow()->document()->GetFontPreloadManager().ImperativeFontLoadingStarted(
+      this);
 }
 
 }  // namespace blink

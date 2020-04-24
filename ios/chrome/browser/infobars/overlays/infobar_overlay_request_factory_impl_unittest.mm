@@ -15,6 +15,7 @@
 #import "ios/chrome/browser/overlays/public/infobar_modal/password_infobar_modal_overlay_request_config.h"
 #import "ios/chrome/browser/passwords/ios_chrome_save_password_infobar_delegate.h"
 #import "ios/chrome/browser/passwords/test/mock_ios_chrome_save_passwords_infobar_delegate.h"
+#import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/ui/infobars/test/fake_infobar_ui_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -31,7 +32,8 @@ using infobars::InfoBarDelegate;
 class InfobarOverlayRequestFactoryImplTest : public PlatformTest {
  public:
   InfobarOverlayRequestFactoryImplTest() {
-    feature_list_.InitWithFeatures({kIOSInfobarUIReboot}, {});
+    feature_list_.InitWithFeatures({kIOSInfobarUIReboot},
+                                   {kInfobarUIRebootOnlyiOS13});
   }
 
   InfobarOverlayRequestFactory* factory() { return &factory_; }

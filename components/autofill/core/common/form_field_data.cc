@@ -241,15 +241,15 @@ bool FormFieldData::IsPasswordInputElement() const {
 }
 
 bool FormFieldData::DidUserType() const {
-  return properties_mask & USER_TYPED;
+  return properties_mask & kUserTyped;
 }
 
 bool FormFieldData::HadFocus() const {
-  return properties_mask & HAD_FOCUS;
+  return properties_mask & kHadFocus;
 }
 
 bool FormFieldData::WasAutofilled() const {
-  return properties_mask & AUTOFILLED;
+  return properties_mask & kAutofilled;
 }
 
 void SerializeFormFieldData(const FormFieldData& field_data,

@@ -48,6 +48,9 @@ void ShowNotification(base::string16 title,
                       base::string16 message,
                       const std::string& notification_id,
                       content::BrowserContext* context) {
+  message_center::RichNotificationData option_fields;
+  option_fields.fullscreen_visibility =
+      message_center::FullscreenVisibility::OVER_USER;
   std::unique_ptr<message_center::Notification> notification =
       ash::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, notification_id, title,
@@ -57,7 +60,7 @@ void ShowNotification(base::string16 title,
           message_center::NotifierId(
               message_center::NotifierType::SYSTEM_COMPONENT,
               kTimeLimitNotifierId),
-          message_center::RichNotificationData(),
+          option_fields,
           base::MakeRefCounted<message_center::NotificationDelegate>(),
           ash::kNotificationSupervisedUserIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);

@@ -75,11 +75,13 @@ class SearchBoxViewBinder
             chipView.setVisibility(
                     model.get(SearchBoxProperties.CHIP_VISIBILITY) ? View.VISIBLE : View.GONE);
         } else if (SearchBoxProperties.CHIP_DRAWABLE == propertyKey) {
-            chipView.setIcon(model.get(SearchBoxProperties.CHIP_DRAWABLE), false);
+            chipView.setIcon(model.get(SearchBoxProperties.CHIP_DRAWABLE), true);
         } else if (SearchBoxProperties.CHIP_CLICK_CALLBACK == propertyKey) {
             chipView.setOnClickListener(model.get(SearchBoxProperties.CHIP_CLICK_CALLBACK));
         } else if (SearchBoxProperties.CHIP_CANCEL_CALLBACK == propertyKey) {
-            // TODO(shaktisahu): Hook it up to the cancel button.
+            chipView.addRemoveIcon();
+            chipView.setRemoveIconClickListener(
+                    model.get(SearchBoxProperties.CHIP_CANCEL_CALLBACK));
         } else {
             assert false : "Unhandled property detected in SearchBoxViewBinder!";
         }

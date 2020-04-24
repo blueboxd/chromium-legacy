@@ -642,7 +642,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionRemovePopup) {
 IN_PROC_BROWSER_TEST_P(BrowserActionApiLazyTest, IncognitoBasic) {
   ExtensionTestMessageListener ready_listener("ready", false);
   ASSERT_TRUE(embedded_test_server()->Start());
-  const Extension* extension = LoadExtensionWithParamFlags(
+  scoped_refptr<const Extension> extension = LoadExtensionWithParamFlags(
       test_data_dir_.AppendASCII("browser_action/basics"));
   ASSERT_TRUE(extension) << message_;
 
@@ -682,7 +682,7 @@ IN_PROC_BROWSER_TEST_P(BrowserActionApiLazyTest, IncognitoBasic) {
 
   ResultCatcher catcher;
   // Simulate the browser action being clicked.
-  ExecuteExtensionAction(incognito_browser, extension);
+  ExecuteExtensionAction(incognito_browser, extension.get());
 
   EXPECT_TRUE(catcher.GetNextResult());
 }
@@ -691,7 +691,7 @@ IN_PROC_BROWSER_TEST_P(BrowserActionApiLazyTest, IncognitoUpdate) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ExtensionTestMessageListener incognito_not_allowed_listener(
       "incognito not allowed", false);
-  const Extension* extension = LoadExtensionWithParamFlags(
+  scoped_refptr<const Extension> extension = LoadExtensionWithParamFlags(
       test_data_dir_.AppendASCII("browser_action/update"));
   ASSERT_TRUE(extension) << message_;
   ASSERT_TRUE(incognito_not_allowed_listener.WaitUntilSatisfied());

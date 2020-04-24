@@ -164,7 +164,6 @@ Sök genom att trycka på ett ord. Du kan finjustera sökningen genom att trycka
 <translation id="2131665479022868825"><ph name="DATA" /> har sparats</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> har stängts</translation>
 <translation id="2139186145475833000">Lägg till på startskärmen</translation>
-<translation id="2146738493024040262">Öppna snabbappen</translation>
 <translation id="2154484045852737596">Redigera kortet</translation>
 <translation id="2154710561487035718">Kopiera webbadress</translation>
 <translation id="2156074688469523661">Återstående webbplatser (<ph name="NUMBER_OF_SITES" />)</translation>
@@ -281,7 +280,6 @@ Sök genom att trycka länge på ett ord. Du kan förfina sökningen genom att v
 <translation id="2996809686854298943">En webbadress måste anges.</translation>
 <translation id="300526633675317032">Det här alternativet tar bort alla <ph name="SIZE_IN_KB" /> webbplatslagring.</translation>
 <translation id="3016635187733453316">Kontrollera att enheten är ansluten till internet</translation>
-<translation id="3029613699374795922"><ph name="KBS" /> kB har laddats ned</translation>
 <translation id="3029704984691124060">Lösenfraserna matchar inte</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Få hjälp<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Plats har inaktiverats. Aktivera det i <ph name="BEGIN_LINK" />Android-inställningarna<ph name="END_LINK" />.</translation>
@@ -457,7 +455,6 @@ Det är endast du som kan se det kameran avbildar. Bilderna från kameran visas 
 <translation id="4411535500181276704">Begränsat läge</translation>
 <translation id="4415276339145661267">Hantera Google-kontot</translation>
 <translation id="4432792777822557199">Sidor på <ph name="SOURCE_LANGUAGE" /> översätts till <ph name="TARGET_LANGUAGE" /> från och med nu</translation>
-<translation id="4433925000917964731">Lite-sida tillhandahållen av Google</translation>
 <translation id="4434045419905280838">Popup och omdirigeringar</translation>
 <translation id="4440958355523780886">Lite-sida tillhandahållen av Google. Tryck för att läsa in originalet.</translation>
 <translation id="4452411734226507615">Stäng fliken <ph name="TAB_TITLE" /></translation>
@@ -737,7 +734,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6406506848690869874">Synkronisera</translation>
 <translation id="6410973561433500075">Vill du starta AR från <ph name="DOMAIN" />?</translation>
 <translation id="641643625718530986">Skriv ut …</translation>
-<translation id="6416782512398055893"><ph name="MBS" /> MB har laddats ned</translation>
 <translation id="6427112570124116297">Översätt webbsidor</translation>
 <translation id="6433501201775827830">Välj sökmotor</translation>
 <translation id="6437478888915024427">Sidinformation</translation>
@@ -745,7 +741,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6441734959916820584">Namnet är för långt</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# bild}other{# bilder}}</translation>
 <translation id="6447558397796644647">Det går inte att hitta det bokmärket. Kontrollera stavningen eller lägg till ett nytt bokmärke.</translation>
-<translation id="6447842834002726250">Cookies</translation>
 <translation id="6461962085415701688">Det går inte att öppna filen</translation>
 <translation id="6464977750820128603">Du kan se vilka webbplatser du besökt i Chrome och ställa in en timer för dem.\n\nGoogle får information om vilka webbplatser du har ställt in en timer för och hur länge du har stannat på dem. Informationen används för att förbättra Digitalt välmående.</translation>
 <translation id="6475951671322991020">Ladda ned video</translation>
@@ -754,7 +749,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6508722015517270189">Starta om Chrome</translation>
 <translation id="6532866250404780454">Webbplatser som du besöker i Chrome visas inte. Alla timer för webbplatser raderas.</translation>
 <translation id="6534565668554028783">Google tog för lång tid på sig att svara</translation>
-<translation id="6538442820324228105"><ph name="GBS" /> GB har laddats ned</translation>
 <translation id="6539092367496845964">Något gick fel. Försök igen senare.</translation>
 <translation id="6545017243486555795">Rensa all data</translation>
 <translation id="6545864417968258051">Bluetooth-sökning</translation>

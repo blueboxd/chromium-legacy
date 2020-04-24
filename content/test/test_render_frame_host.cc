@@ -298,8 +298,7 @@ void TestRenderFrameHost::SendNavigateWithParamsAndInterfaceParams(
   if (navigation_request() && !navigation_request()->GetResponseHeaders()) {
     scoped_refptr<net::HttpResponseHeaders> response_headers =
         new net::HttpResponseHeaders(std::string());
-    response_headers->AddHeader(std::string("Content-Type: ") +
-                                params->contents_mime_type);
+    response_headers->SetHeader("Content-Type", params->contents_mime_type);
     navigation_request()->set_response_headers_for_testing(response_headers);
   }
 
@@ -335,7 +334,7 @@ void TestRenderFrameHost::SendRendererInitiatedNavigationRequest(
           std::string() /* searchable_form_encoding */,
           GURL() /* client_side_redirect_url */,
           base::nullopt /* devtools_initiator_info */,
-          false /* attach_same_site_cookies */,
+          false /* force_ignore_site_for_cookies */,
           nullptr /* trust_token_params */, base::nullopt /* impression */);
   auto common_params = CreateCommonNavigationParams();
   common_params->url = url;

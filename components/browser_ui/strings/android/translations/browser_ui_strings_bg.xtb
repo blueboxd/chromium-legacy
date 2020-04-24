@@ -9,6 +9,7 @@
 <translation id="1384959399684842514">Изтеглянето е на пауза</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> от <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="2079545284768500474">Отмяна</translation>
+<translation id="2146738493024040262">Отваряне на мигновеното приложение</translation>
 <translation id="2148716181193084225">Днес</translation>
 <translation id="2359808026110333948">Напред</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> МБ</translation>
@@ -27,6 +28,7 @@
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> от ?</translation>
 <translation id="4002066346123236978">Заглавие</translation>
 <translation id="4259722352634471385">Навигирането е блокирано: <ph name="URL" /></translation>
+<translation id="4433925000917964731">Олекотена страница, предоставена от Google</translation>
 <translation id="4570913071927164677">Подробности</translation>
 <translation id="4645575059429386691">Управлява се от ваш родител</translation>
 <translation id="4883854917563148705">Управляваните настройки не могат да се зададат отново</translation>
@@ -38,6 +40,7 @@
 <translation id="5391532827096253100">Връзката ви с този сайт не е защитена. Информация за сайта</translation>
 <translation id="5556459405103347317">Повторно зареждане</translation>
 <translation id="5596627076506792578">Още опции</translation>
+<translation id="5804241973901381774">Разрешения</translation>
 <translation id="5860033963881614850">Изключено</translation>
 <translation id="5916664084637901428">Включено</translation>
 <translation id="5939518447894949180">Нулиране</translation>
@@ -46,6 +49,7 @@
 <translation id="6165508094623778733">Научете повече</translation>
 <translation id="6206551242102657620">Връзката е защитена. Информация за сайта</translation>
 <translation id="6216432067784365534">Опции за <ph name="NAME_OF_LIST_ITEM" /></translation>
+<translation id="6447842834002726250">„Бисквитки“</translation>
 <translation id="6527303717912515753">Споделяне</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> ГБ</translation>
 <translation id="6746124502594467657">Придвижване надолу</translation>

@@ -9,6 +9,7 @@
 <translation id="1384959399684842514">ഡൗൺലോഡ് താൽക്കാലികമായി നിർത്തി</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="2079545284768500474">പഴയപടിയാക്കുക</translation>
+<translation id="2146738493024040262">ഇൻസ്റ്റന്‍റ് ആപ്പ് തുറക്കുക</translation>
 <translation id="2148716181193084225">ഇന്ന്</translation>
 <translation id="2359808026110333948">തുടരുക</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
@@ -27,6 +28,7 @@
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">ശീർഷകം</translation>
 <translation id="4259722352634471385">നാവിഗേഷൻ തടഞ്ഞിരിക്കുന്നു: <ph name="URL" /></translation>
+<translation id="4433925000917964731">Google നല്‍കുന്ന ലൈറ്റ് പേജ്</translation>
 <translation id="4570913071927164677">വിശദാംശങ്ങൾ</translation>
 <translation id="4645575059429386691">നിങ്ങളുടെ രക്ഷിതാവ് നിയന്ത്രിക്കുന്നു</translation>
 <translation id="4883854917563148705">മാനേജ് ചെയ്യുന്ന ക്രമീകരണം പുനഃസജ്ജീകരിക്കാനാവില്ല</translation>
@@ -38,6 +40,7 @@
 <translation id="5391532827096253100">ഈ സൈറ്റിലേക്കുള്ള നിങ്ങളുടെ കണക്ഷൻ സുരക്ഷിതമല്ല. സൈറ്റ് വിവരങ്ങള്‍</translation>
 <translation id="5556459405103347317">വീണ്ടും ലോഡ് ചെയ്യുക</translation>
 <translation id="5596627076506792578">കൂടുതൽ‍ ഓപ്‌ഷനുകൾ</translation>
+<translation id="5804241973901381774">അനുമതികൾ</translation>
 <translation id="5860033963881614850">ഓഫാക്കുക</translation>
 <translation id="5916664084637901428">ഓൺ ചെയ്യുക</translation>
 <translation id="5939518447894949180">റീസെറ്റ് ചെയ്യുക</translation>
@@ -46,6 +49,7 @@
 <translation id="6165508094623778733">കൂടുതലറിയുക</translation>
 <translation id="6206551242102657620">കണക്ഷൻ സുരക്ഷിതമാണ്. സൈറ്റ് വിവരങ്ങള്‍</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> ഓപ്‌ഷനുകൾ</translation>
+<translation id="6447842834002726250">കുക്കികള്‍</translation>
 <translation id="6527303717912515753">പങ്കിടുക</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6746124502594467657">താഴേക്ക് നീക്കുക</translation>

@@ -16,11 +16,11 @@
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/nullable_string16.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "cc/paint/paint_canvas.h"
+#include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/shell/common/web_test/web_test_constants.h"
 #include "content/shell/common/web_test/web_test_string_util.h"
 #include "content/shell/renderer/web_test/blink_test_helpers.h"
@@ -60,11 +60,12 @@
 #include "third_party/blink/public/web/web_view.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "ui/display/display_switches.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/gfx/test/icc_profiles.h"
 
 #if defined(OS_LINUX) || defined(OS_FUCHSIA)
 #include "third_party/blink/public/platform/web_font_render_style.h"
@@ -73,18 +74,6 @@
 namespace content {
 
 namespace {
-
-double GetDefaultDeviceScaleFactor() {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kForceDeviceScaleFactor)) {
-    double scale;
-    std::string value =
-        command_line->GetSwitchValueASCII(switches::kForceDeviceScaleFactor);
-    if (base::StringToDouble(value, &scale))
-      return scale;
-  }
-  return 1.f;
-}
 
 void ConvertAndSet(gin::Arguments* args, int* set_param) {
   v8::Local<v8::Value> value = args->PeekNext();
@@ -131,7 +120,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
 
   static void Install(base::WeakPtr<TestRunner> test_runner,
                       TestRunnerForSpecificView* view_test_runner,
-                      blink::WebLocalFrame* frame,
+                      RenderFrame* frame,
                       SpellCheckClient* spell_check,
                       bool is_wpt_reftest,
                       bool is_frame_part_of_main_test_window);
@@ -139,6 +128,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
  private:
   explicit TestRunnerBindings(base::WeakPtr<TestRunner> test_runner,
                               TestRunnerForSpecificView* view_test_runner,
+                              RenderFrame* frame,
                               SpellCheckClient* spell_check);
   ~TestRunnerBindings() override;
 
@@ -210,7 +200,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void QueueReload();
   void RemoveSpellCheckResolvedCallback();
   void RemoveWebPageOverlay();
-  void ResetTestHelperControllers();
   void ResolveBeforeInstallPromptPromise(const std::string& platform);
   void RunIdleTasks(v8::Local<v8::Function> callback);
   void SendBluetoothManualChooserEvent(const std::string& event,
@@ -306,6 +295,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
 
   base::WeakPtr<TestRunner> runner_;
   TestRunnerForSpecificView* const view_runner_;
+  RenderFrame* const frame_;
   SpellCheckClient* const spell_check_;
 
   DISALLOW_COPY_AND_ASSIGN(TestRunnerBindings);
@@ -316,20 +306,21 @@ gin::WrapperInfo TestRunnerBindings::kWrapperInfo = {gin::kEmbedderNativeGin};
 // static
 void TestRunnerBindings::Install(base::WeakPtr<TestRunner> test_runner,
                                  TestRunnerForSpecificView* view_test_runner,
-                                 blink::WebLocalFrame* frame,
+                                 RenderFrame* frame,
                                  SpellCheckClient* spell_check,
                                  bool is_wpt_test,
                                  bool is_frame_part_of_main_test_window) {
   v8::Isolate* isolate = blink::MainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
-  v8::Local<v8::Context> context = frame->MainWorldScriptContext();
+  blink::WebLocalFrame* web_frame = frame->GetWebFrame();
+  v8::Local<v8::Context> context = web_frame->MainWorldScriptContext();
   if (context.IsEmpty())
     return;
 
   v8::Context::Scope context_scope(context);
 
   TestRunnerBindings* wrapped = new TestRunnerBindings(
-      std::move(test_runner), view_test_runner, spell_check);
+      std::move(test_runner), view_test_runner, frame, spell_check);
   gin::Handle<TestRunnerBindings> bindings =
       gin::CreateHandle(isolate, wrapped);
   if (bindings.IsEmpty())
@@ -357,9 +348,9 @@ void TestRunnerBindings::Install(base::WeakPtr<TestRunner> test_runner,
   // Note that this method may be called multiple times on a frame, so we put
   // the code behind a flag. The flag is safe to be installed on testRunner
   // because WPT reftests never access this object.
-  if (is_wpt_test && is_frame_part_of_main_test_window && !frame->Parent() &&
-      !frame->Opener()) {
-    frame->ExecuteScript(blink::WebString(
+  if (is_wpt_test && is_frame_part_of_main_test_window &&
+      !web_frame->Parent() && !web_frame->Opener()) {
+    web_frame->ExecuteScript(blink::WebString(
         R"(if (!window.testRunner._wpt_reftest_setup) {
           window.testRunner._wpt_reftest_setup = true;
 
@@ -394,8 +385,12 @@ void TestRunnerBindings::Install(base::WeakPtr<TestRunner> test_runner,
 
 TestRunnerBindings::TestRunnerBindings(base::WeakPtr<TestRunner> runner,
                                        TestRunnerForSpecificView* view_runner,
+                                       RenderFrame* frame,
                                        SpellCheckClient* spell_check)
-    : runner_(runner), view_runner_(view_runner), spell_check_(spell_check) {}
+    : runner_(runner),
+      view_runner_(view_runner),
+      frame_(frame),
+      spell_check_(spell_check) {}
 
 TestRunnerBindings::~TestRunnerBindings() = default;
 
@@ -511,8 +506,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::RemoveSpellCheckResolvedCallback)
       .SetMethod("removeWebPageOverlay",
                  &TestRunnerBindings::RemoveWebPageOverlay)
-      .SetMethod("resetTestHelperControllers",
-                 &TestRunnerBindings::ResetTestHelperControllers)
       .SetMethod("resolveBeforeInstallPromptPromise",
                  &TestRunnerBindings::ResolveBeforeInstallPromptPromise)
       .SetMethod("runIdleTasks", &TestRunnerBindings::RunIdleTasks)
@@ -708,11 +701,6 @@ void TestRunnerBindings::SetCloseRemainingWindowsWhenComplete(
   bool close_remaining_windows = false;
   if (args->GetNext(&close_remaining_windows))
     runner_->SetCloseRemainingWindowsWhenComplete(close_remaining_windows);
-}
-
-void TestRunnerBindings::ResetTestHelperControllers() {
-  if (runner_)
-    runner_->ResetTestHelperControllers();
 }
 
 void TestRunnerBindings::SetTabKeyCyclesThroughElements(
@@ -1183,12 +1171,38 @@ void TestRunnerBindings::SetBackingScaleFactor(
   // ERROR :GL_OUT_OF_MEMORY. See https://crbug.com/899482 or
   // https://crbug.com/900271
   double limited_value = fmin(15, value);
-  view_runner_->SetBackingScaleFactor(limited_value, callback);
+
+  auto* frame_proxy = static_cast<WebFrameTestProxy*>(frame_);
+  WebWidgetTestProxy* widget = frame_proxy->GetLocalRootWebWidgetTestProxy();
+  widget->SetDeviceScaleFactorForTesting(limited_value);
+
+  // TODO(oshima): remove this callback argument when all platforms are migrated
+  // to use-zoom-for-dsf by default
+  v8::UniquePersistent<v8::Function> posted_callback(blink::MainThreadIsolate(),
+                                                     callback);
+  v8::Local<v8::Value> arg =
+      v8::Boolean::New(blink::MainThreadIsolate(), IsUseZoomForDSFEnabled());
+  view_runner_->PostV8CallbackWithArgs(std::move(posted_callback), 1, &arg);
 }
 
 void TestRunnerBindings::SetColorProfile(const std::string& name,
                                          v8::Local<v8::Function> callback) {
-  view_runner_->SetColorProfile(name, callback);
+  auto* frame_proxy = static_cast<WebFrameTestProxy*>(frame_);
+  WebWidgetTestProxy* widget = frame_proxy->GetLocalRootWebWidgetTestProxy();
+
+  gfx::ColorSpace color_space;
+  if (name == "genericRGB") {
+    color_space = gfx::ICCProfileForTestingGenericRGB().GetColorSpace();
+  } else if (name == "sRGB") {
+    color_space = gfx::ColorSpace::CreateSRGB();
+  } else if (name == "colorSpin") {
+    color_space = gfx::ICCProfileForTestingColorSpin().GetColorSpace();
+  } else if (name == "adobeRGB") {
+    color_space = gfx::ICCProfileForTestingAdobeRGB().GetColorSpace();
+  }
+  widget->SetDeviceColorSpaceForTesting(color_space);
+
+  view_runner_->PostV8Callback(std::move(callback));
 }
 
 void TestRunnerBindings::SetBluetoothFakeAdapter(
@@ -1455,15 +1469,16 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
 
 TestRunner::~TestRunner() = default;
 
-void TestRunner::Install(blink::WebLocalFrame* frame,
+void TestRunner::Install(RenderFrame* frame,
                          SpellCheckClient* spell_check,
                          TestRunnerForSpecificView* view_test_runner) {
   // In WPT, only reftests generate pixel results.
-  TestRunnerBindings::Install(weak_factory_.GetWeakPtr(), view_test_runner,
-                              frame, spell_check, IsWebPlatformTestsMode(),
-                              IsFramePartOfMainTestWindow(frame));
+  TestRunnerBindings::Install(
+      weak_factory_.GetWeakPtr(), view_test_runner, frame, spell_check,
+      IsWebPlatformTestsMode(),
+      IsFramePartOfMainTestWindow(frame->GetWebFrame()));
   mock_screen_orientation_client_.OverrideAssociatedInterfaceProviderForFrame(
-      frame);
+      frame->GetWebFrame());
 }
 
 void TestRunner::SetDelegate(BlinkTestRunner* blink_test_runner) {
@@ -1492,8 +1507,6 @@ void TestRunner::Reset() {
   if (blink_test_runner_) {
     // Reset the default quota for each origin.
     blink_test_runner_->SetDatabaseQuota(content::kDefaultDatabaseQuota);
-    blink_test_runner_->SetDeviceColorSpace("reset");
-    blink_test_runner_->SetDeviceScaleFactor(GetDefaultDeviceScaleFactor());
     blink_test_runner_->SetBlockThirdPartyCookies(false);
     blink_test_runner_->SetLocale("");
     blink_test_runner_->ResetAutoResizeMode();
@@ -2020,10 +2033,6 @@ int TestRunner::WindowCount() {
 void TestRunner::SetCloseRemainingWindowsWhenComplete(
     bool close_remaining_windows) {
   close_remaining_windows_ = close_remaining_windows;
-}
-
-void TestRunner::ResetTestHelperControllers() {
-  test_interfaces_->ResetTestHelperControllers();
 }
 
 void TestRunner::AddOriginAccessAllowListEntry(

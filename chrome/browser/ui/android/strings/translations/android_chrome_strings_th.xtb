@@ -164,7 +164,6 @@
 <translation id="2131665479022868825">ประหยัดไป <ph name="DATA" /></translation>
 <translation id="213279576345780926">ปิด <ph name="TAB_TITLE" /> แล้ว</translation>
 <translation id="2139186145475833000">เพิ่มลงในหน้าจอหลัก</translation>
-<translation id="2146738493024040262">เปิด Instant App</translation>
 <translation id="2154484045852737596">แก้ไขบัตร</translation>
 <translation id="2154710561487035718">คัดลอก URL</translation>
 <translation id="2156074688469523661">เว็บไซต์ที่เหลือ (<ph name="NUMBER_OF_SITES" />)</translation>
@@ -281,7 +280,6 @@
 <translation id="2996809686854298943">ต้องระบุ URL</translation>
 <translation id="300526633675317032">การดำเนินการนี้จะล้างพื้นที่เก็บข้อมูลเว็บไซต์ทั้ง <ph name="SIZE_IN_KB" /></translation>
 <translation id="3016635187733453316">ตรวจสอบว่าอุปกรณ์นี้เชื่อมต่ออินเทอร์เน็ตอยู่</translation>
-<translation id="3029613699374795922">ดาวน์โหลดแล้ว <ph name="KBS" /> KB</translation>
 <translation id="3029704984691124060">รหัสผ่านไม่ตรงกัน</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />ขอความช่วยเหลือ<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">ตอนนี้ตำแหน่งปิดอยู่ เปิดตำแหน่งได้ใน<ph name="BEGIN_LINK" />การตั้งค่า Android<ph name="END_LINK" /></translation>
@@ -457,7 +455,6 @@
 <translation id="4411535500181276704">โหมด Lite</translation>
 <translation id="4415276339145661267">จัดการบัญชี Google</translation>
 <translation id="4432792777822557199">จากนี้ไประบบจะแปลหน้าภาษา<ph name="SOURCE_LANGUAGE" />เป็นภาษา<ph name="TARGET_LANGUAGE" /></translation>
-<translation id="4433925000917964731">หน้าเวอร์ชัน Lite ให้บริการโดย Google</translation>
 <translation id="4434045419905280838">ป๊อปอัปและการเปลี่ยนเส้นทาง</translation>
 <translation id="4440958355523780886">หน้าเวอร์ชัน Lite จัดเตรียมโดย Google แตะเพื่อโหลดต้นฉบับ</translation>
 <translation id="4452411734226507615">ปิดแท็บ <ph name="TAB_TITLE" /></translation>
@@ -737,7 +734,6 @@
 <translation id="6406506848690869874">การซิงค์ข้อมูล</translation>
 <translation id="6410973561433500075">เข้าสู่โหมด AR จาก <ph name="DOMAIN" /> ใช่ไหม</translation>
 <translation id="641643625718530986">พิมพ์…</translation>
-<translation id="6416782512398055893">ดาวน์โหลดแล้ว <ph name="MBS" /> MB</translation>
 <translation id="6427112570124116297">แปลเว็บ</translation>
 <translation id="6433501201775827830">เลือกเครื่องมือค้นหา</translation>
 <translation id="6437478888915024427">ข้อมูลหน้าเว็บ</translation>
@@ -745,7 +741,6 @@
 <translation id="6441734959916820584">ชื่อยาวเกินไป</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# ภาพ}other{# ภาพ}}</translation>
 <translation id="6447558397796644647">ไม่พบบุ๊กมาร์กดังกล่าว โปรดตรวจสอบตัวสะกดหรือเพิ่มบุ๊กมาร์กใหม่</translation>
-<translation id="6447842834002726250">คุกกี้</translation>
 <translation id="6461962085415701688">เปิดไฟล์ไม่ได้</translation>
 <translation id="6464977750820128603">คุณดูเว็บไซต์ที่เข้าชมใน Chrome และตั้งตัวจับเวลาการใช้เว็บไซต์เหล่านั้นได้\n\nGoogle จะได้รับข้อมูลเกี่ยวกับเว็บไซต์ที่คุณตั้งตัวจับเวลาไว้และระยะเวลาที่คุณเข้าชมเว็บไซต์เหล่านั้น เราจะใช้ข้อมูลนี้เพื่อปรับปรุงไลฟ์สไตล์ดิจิทัลให้ดียิ่งขึ้น</translation>
 <translation id="6475951671322991020">ดาวน์โหลดวิดีโอ</translation>
@@ -754,7 +749,6 @@
 <translation id="6508722015517270189">รีสตาร์ท Chrome</translation>
 <translation id="6532866250404780454">ระบบจะไม่แสดงเว็บไซต์ที่คุณเข้าชมใน Chrome และจะลบตัวจับเวลาการใช้เว็บไซต์ทั้งหมด</translation>
 <translation id="6534565668554028783">Google ใช้เวลาตอบกลับนานเกินไป</translation>
-<translation id="6538442820324228105">ดาวน์โหลดแล้ว <ph name="GBS" /> GB</translation>
 <translation id="6539092367496845964">เกิดข้อผิดพลาด ลองอีกครั้งภายหลัง</translation>
 <translation id="6545017243486555795">ล้างข้อมูลทั้งหมด</translation>
 <translation id="6545864417968258051">การสแกนหาบลูทูธ</translation>
@@ -1045,7 +1039,7 @@
 <translation id="868929229000858085">ค้นหารายชื่อติดต่อ</translation>
 <translation id="869891660844655955">วันหมดอายุ</translation>
 <translation id="8702612070107455751">ระบบจะล้างข้อมูลออฟไลน์ทั้งหมด</translation>
-<translation id="8737217482364735741">การดำเนินการนี้จะล้างข้อมูลและคุกกี้ทั้งหมด <ph name="ORIGIN" /> ที่จัดเก็บไว้</translation>
+<translation id="8737217482364735741">การดำเนินการนี้จะล้างข้อมูลและคุกกี้ทั้งหมดที่ <ph name="ORIGIN" /> จัดเก็บไว้</translation>
 <translation id="8748850008226585750">เนื้อหาถูกซ่อนไว้</translation>
 <translation id="8751914237388039244">เลือกรูปภาพ</translation>
 <translation id="8758557275681689734">ดูแท็บที่เปิดอยู่ทั้งหมด</translation>
@@ -1092,7 +1086,7 @@
 <translation id="9100610230175265781">ต้องระบุรหัสผ่าน</translation>
 <translation id="9102803872260866941">แท็บแสดงตัวอย่างเปิดอยู่</translation>
 <translation id="9104217018994036254">รายการอุปกรณ์ที่จะแชร์แท็บด้วย</translation>
-<translation id="9108312223223904744">การรองรับโทรศัพท์เป็นคีย์ความปลอดภัย</translation>
+<translation id="9108312223223904744">โทรศัพท์เป็นการรองรับคีย์ความปลอดภัย</translation>
 <translation id="9133397713400217035">สำรวจแบบออฟไลน์</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">แสดงหน้าเว็บเดิม</translation>

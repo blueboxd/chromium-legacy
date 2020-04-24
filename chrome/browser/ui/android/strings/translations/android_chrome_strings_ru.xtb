@@ -164,7 +164,6 @@
 <translation id="2131665479022868825">Сэкономлено: <ph name="DATA" /></translation>
 <translation id="213279576345780926">Вкладка "<ph name="TAB_TITLE" />" закрыта</translation>
 <translation id="2139186145475833000">Добавить на главный экран</translation>
-<translation id="2146738493024040262">Открыть приложение с мгновенным запуском</translation>
 <translation id="2154484045852737596">Изменение данных карты</translation>
 <translation id="2154710561487035718">Копировать URL</translation>
 <translation id="2156074688469523661">Прочие сайты (<ph name="NUMBER_OF_SITES" />)</translation>
@@ -281,7 +280,6 @@
 <translation id="2996809686854298943">Необходимо указать URL</translation>
 <translation id="300526633675317032">Будут удалены все данные сайтов (<ph name="SIZE_IN_KB" />).</translation>
 <translation id="3016635187733453316">Убедитесь, что устройство подключено к Интернету.</translation>
-<translation id="3029613699374795922">Скачано <ph name="KBS" /> КБ</translation>
 <translation id="3029704984691124060">Кодовые фразы не совпадают</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Справка<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Определение местоположения отключено. Включите его в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
@@ -457,7 +455,6 @@
 <translation id="4411535500181276704">Упрощенный режим</translation>
 <translation id="4415276339145661267">Перейти в настройки аккаунта Google</translation>
 <translation id="4432792777822557199">Страницы на этом языке (<ph name="SOURCE_LANGUAGE" />) будут автоматически переводиться на <ph name="TARGET_LANGUAGE" /></translation>
-<translation id="4433925000917964731">Lite-версия страницы получена с помощью Google</translation>
 <translation id="4434045419905280838">Всплывающие окна и переадресация</translation>
 <translation id="4440958355523780886">Lite-версия страницы получена с помощью Google. Нажмите, чтобы загрузить оригинал.</translation>
 <translation id="4452411734226507615">Закрыть вкладку "<ph name="TAB_TITLE" />"</translation>
@@ -737,7 +734,6 @@
 <translation id="6406506848690869874">Синхронизация...</translation>
 <translation id="6410973561433500075">Войти в режим дополненной реальности на сайте <ph name="DOMAIN" />?</translation>
 <translation id="641643625718530986">Печать</translation>
-<translation id="6416782512398055893">Скачано <ph name="MBS" /> МБ</translation>
 <translation id="6427112570124116297">Перевод веб-страниц</translation>
 <translation id="6433501201775827830">Выберите поисковую систему</translation>
 <translation id="6437478888915024427">Информация о странице</translation>
@@ -745,7 +741,6 @@
 <translation id="6441734959916820584">Название слишком длинное.</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# изображение}one{# изображение}few{# изображения}many{# изображений}other{# изображения}}</translation>
 <translation id="6447558397796644647">Не удалось найти закладку. Убедитесь, что верно ввели запрос, или создайте новую закладку.</translation>
-<translation id="6447842834002726250">Файлы сookie</translation>
 <translation id="6461962085415701688">Не удалось открыть файл</translation>
 <translation id="6464977750820128603">Вы сможете просматривать список сайтов, посещенных в Chrome, и устанавливать для них таймеры.\n\nВ Google будут отправляться сведения о сайтах, для которых настроены таймеры, и времени их посещения. Мы собираем эти данные, чтобы улучшать сервис "Цифровое благополучие".</translation>
 <translation id="6475951671322991020">Скачать видео</translation>
@@ -754,7 +749,6 @@
 <translation id="6508722015517270189">Перезапустите Google Chrome.</translation>
 <translation id="6532866250404780454">В сервисе больше не будут отображаться данные о сайтах, которые вы посещаете в Chrome. Кроме того, будут удалены все таймеры сайтов.</translation>
 <translation id="6534565668554028783">Превышено время ожидания ответа от Google</translation>
-<translation id="6538442820324228105">Скачано <ph name="GBS" /> ГБ</translation>
 <translation id="6539092367496845964">Произошла ошибка. Повторите попытку позже.</translation>
 <translation id="6545017243486555795">Удалить все данные</translation>
 <translation id="6545864417968258051">Поиск Bluetooth-устройств</translation>
@@ -855,6 +849,7 @@
 <translation id="7352939065658542140">ВИДЕО</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Поделиться 1 выбранным объектом}one{Поделиться # выбранным объектом}few{Поделиться # выбранными объектами}many{Поделиться # выбранными объектами}other{Поделиться # выбранного объекта}}</translation>
 <translation id="7359002509206457351">Доступ к способам оплаты</translation>
+<translation id="7362144854749094396">Браузеру Chrome предоставлен доступ к истории. Сайту <ph name="SITE_NAME" /> доступны данные о настройках.</translation>
 <translation id="7375125077091615385">Тип:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" /></translation>
 <translation id="7400418766976504921">URL</translation>

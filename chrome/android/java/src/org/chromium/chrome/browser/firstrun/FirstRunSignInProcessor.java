@@ -14,6 +14,7 @@ import org.chromium.chrome.browser.SyncFirstSetupCompleteSource;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninManager;
@@ -81,7 +82,8 @@ public final class FirstRunSignInProcessor {
         signinManager.signIn(SigninAccessPoint.START_PAGE, account, new SignInCallback() {
             @Override
             public void onSignInComplete() {
-                UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(true);
+                UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(
+                        Profile.getLastUsedRegularProfile(), true);
                 // Show sync settings if user pressed the "Settings" button.
                 if (setUp) {
                     openSignInSettings(activity);

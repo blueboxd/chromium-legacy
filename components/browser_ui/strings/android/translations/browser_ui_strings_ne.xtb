@@ -9,6 +9,7 @@
 <translation id="1384959399684842514">डाउनलोड रोकिएको छ</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="2079545284768500474">अन्डू गर्नुहोस्</translation>
+<translation id="2146738493024040262">तात्कालिक एप खोल्नुहोस्</translation>
 <translation id="2148716181193084225">आज</translation>
 <translation id="2359808026110333948">जारी राख्नुहोस्</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> एम.बि.</translation>
@@ -27,6 +28,7 @@
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">शीर्षक</translation>
 <translation id="4259722352634471385">नेभिगेशन रोकियो: <ph name="URL" /></translation>
+<translation id="4433925000917964731">Google ले प्रदान गरेको मूल पृष्ठको लाइट संस्करण</translation>
 <translation id="4570913071927164677">विवरणहरू</translation>
 <translation id="4645575059429386691">तपाईँको अविभावक द्वारा प्रबन्ध गरिएको</translation>
 <translation id="4883854917563148705">व्यवस्थित सेटिङ रिसेट गर्न सकिँदैन</translation>
@@ -38,6 +40,7 @@
 <translation id="5391532827096253100">यस साइटमा तपाईंको जडान सुरक्षित छैन। साइटसम्बन्धी जानकारी</translation>
 <translation id="5556459405103347317">पुन: लोड गर्नुहोस्</translation>
 <translation id="5596627076506792578">अन्य विकल्पहरू</translation>
+<translation id="5804241973901381774">अनुमतिहरू</translation>
 <translation id="5860033963881614850">बन्द</translation>
 <translation id="5916664084637901428">खुल्ला</translation>
 <translation id="5939518447894949180">रिसेट गर्नुहोस्</translation>
@@ -46,6 +49,7 @@
 <translation id="6165508094623778733">थप जान्नुहोस्</translation>
 <translation id="6206551242102657620">जडान सुरक्षित छ। साइटसम्बन्धी जानकारी</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> विकल्पहरू</translation>
+<translation id="6447842834002726250">कुकीहरू</translation>
 <translation id="6527303717912515753">साझा गर्नुहोस्</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> जि.बि.</translation>
 <translation id="6746124502594467657">तल सार्नुहोस्</translation>

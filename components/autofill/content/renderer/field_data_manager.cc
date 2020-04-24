@@ -62,10 +62,10 @@ void FieldDataManager::UpdateFieldDataMap(
     field_value_and_properties_map_[id] =
         std::make_pair(base::Optional<base::string16>(value), mask);
   }
-  // Reset USER_TYPED and AUTOFILLED flags if the value is empty.
+  // Reset kUserTyped and kAutofilled flags if the value is empty.
   if (value.empty()) {
     field_value_and_properties_map_.at(id).second &=
-        ~(FieldPropertiesFlags::USER_TYPED | FieldPropertiesFlags::AUTOFILLED);
+        ~(FieldPropertiesFlags::kUserTyped | FieldPropertiesFlags::kAutofilled);
   }
 }
 
@@ -81,7 +81,7 @@ void FieldDataManager::UpdateFieldDataMapWithNullValue(
 
 bool FieldDataManager::DidUserType(FieldRendererId id) const {
   return HasFieldData(id) &&
-         (GetFieldPropertiesMask(id) & FieldPropertiesFlags::USER_TYPED);
+         (GetFieldPropertiesMask(id) & FieldPropertiesFlags::kUserTyped);
 }
 
 FieldDataManager::~FieldDataManager() = default;

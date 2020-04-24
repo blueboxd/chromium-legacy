@@ -355,7 +355,6 @@ function invokeSpellcheckTest(testObject, input, tester, expectedText) {
           grammar: '~'});
 
         assert_equals(serializer.serialize(sample.document), expectedText);
-        testObject.sample.setMockSpellCheckerEnabled(false);
         testObject.done();
       });
     };

@@ -10,7 +10,7 @@
 
 namespace blink {
 
-LayoutNGMathMLBlock::LayoutNGMathMLBlock(MathMLElement* element)
+LayoutNGMathMLBlock::LayoutNGMathMLBlock(Element* element)
     : LayoutNGMixin<LayoutBlock>(element) {
   DCHECK(element);
 }

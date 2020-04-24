@@ -923,7 +923,8 @@ void ImageBitmap::ResolvePromiseOnOriginalThread(
     ScriptPromiseResolver* resolver,
     bool origin_clean,
     std::unique_ptr<ParsedOptions> parsed_options,
-    sk_sp<SkImage> skia_image) {
+    sk_sp<SkImage> skia_image,
+    const ImageOrientationEnum orientation) {
   if (!skia_image) {
     resolver->Reject(
         ScriptValue(resolver->GetScriptState()->GetIsolate(),
@@ -931,7 +932,8 @@ void ImageBitmap::ResolvePromiseOnOriginalThread(
     return;
   }
   scoped_refptr<StaticBitmapImage> image =
-      UnacceleratedStaticBitmapImage::Create(std::move(skia_image));
+      UnacceleratedStaticBitmapImage::Create(std::move(skia_image),
+                                             orientation);
   DCHECK(IsMainThread());
   if (!parsed_options->premultiply_alpha) {
     image = GetImageWithAlphaDisposition(std::move(image), kUnpremultiplyAlpha);
@@ -958,7 +960,8 @@ void ImageBitmap::RasterizeImageOnBackgroundThread(
     sk_sp<PaintRecord> paint_record,
     const IntRect& dst_rect,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
-    WTF::CrossThreadOnceFunction<void(sk_sp<SkImage>)> callback) {
+    WTF::CrossThreadOnceFunction<void(sk_sp<SkImage>,
+                                      const ImageOrientationEnum)> callback) {
   DCHECK(!IsMainThread());
   SkImageInfo info =
       SkImageInfo::MakeN32Premul(dst_rect.Width(), dst_rect.Height());
@@ -970,7 +973,8 @@ void ImageBitmap::RasterizeImageOnBackgroundThread(
   }
   PostCrossThreadTask(
       *task_runner, FROM_HERE,
-      CrossThreadBindOnce(std::move(callback), std::move(skia_image)));
+      CrossThreadBindOnce(std::move(callback), std::move(skia_image),
+                          kDefaultImageOrientation));
 }
 
 ScriptPromise ImageBitmap::CreateAsync(ImageElementBase* image,

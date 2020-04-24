@@ -12,6 +12,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/security_state/core/security_state.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "content/public/test/mock_navigation_handle.h"
 #include "content/public/test/test_renderer_host.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_options.h"
@@ -171,10 +172,24 @@ TEST_F(TabSpecificContentSettingsTest, BlockedContent) {
   EXPECT_TRUE(content_settings->IsContentBlocked(ContentSettingsType::COOKIES));
 
   // Block a javascript during a navigation.
-  content_settings->OnServiceWorkerAccessed(GURL("http://google.com"), true,
-                                            false);
+  content::MockNavigationHandle navigation_handle;
+  static_cast<content::WebContentsObserver*>(content_settings)
+      ->OnServiceWorkerAccessed(
+          &navigation_handle, GURL("http://google.com"),
+          content::AllowServiceWorkerResult::FromPolicy(true, false));
   EXPECT_TRUE(
       content_settings->IsContentBlocked(ContentSettingsType::JAVASCRIPT));
+
+  // Block a javascript when page starts to start ServiceWorker.
+  static_cast<content::WebContentsObserver*>(content_settings)
+      ->OnServiceWorkerAccessed(
+          web_contents()->GetMainFrame(), GURL("http://google.com"),
+          content::AllowServiceWorkerResult::FromPolicy(true, false));
+  EXPECT_TRUE(
+      content_settings->IsContentBlocked(ContentSettingsType::JAVASCRIPT));
+
+  // Reset blocked content settings.
+  content_settings->ClearContentSettingsExceptForNavigationRelatedSettings();
 
   // Reset blocked content settings.
   content_settings->ClearContentSettingsExceptForNavigationRelatedSettings();

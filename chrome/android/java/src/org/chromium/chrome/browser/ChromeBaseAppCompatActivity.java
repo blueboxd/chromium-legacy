@@ -29,16 +29,16 @@ public class ChromeBaseAppCompatActivity
     private @StyleRes int mThemeResId;
 
     @Override
-    protected void attachBaseContext(Context newBase) {
-        super.attachBaseContext(newBase);
+    protected void attachBaseContext(Context baseContext) {
         mNightModeStateProvider = createNightModeStateProvider();
-
-        Configuration config = new Configuration();
         // Pre-Android O, fontScale gets initialized to 1 in the constructor. Set it to 0 so
-        // that applyOverrideConfiguration() does not interpret it as an overridden value.
+        // that it is not interpreted as an overridden value.
         // https://crbug.com/834191
-        config.fontScale = 0;
-        if (applyOverrides(newBase, config)) applyOverrideConfiguration(config);
+        Configuration overrideConfig = new Configuration();
+        overrideConfig.fontScale = 0;
+        applyConfigurationOverrides(baseContext, overrideConfig);
+
+        super.attachBaseContext(baseContext.createConfigurationContext(overrideConfig));
     }
 
     @Override
@@ -67,18 +67,13 @@ public class ChromeBaseAppCompatActivity
     }
 
     /**
-     * Called during {@link #attachBaseContext(Context)} to allow configuration overrides to be
-     * applied. If this methods return true, the overrides will be applied using
-     * {@link #applyOverrideConfiguration(Configuration)}.
+     * Called during {@link #attachBaseContext(Context)} to allow for configuration overrides.
      * @param baseContext The base {@link Context} attached to this class.
-     * @param overrideConfig The {@link Configuration} that will be passed to
-     *                       @link #applyOverrideConfiguration(Configuration)} if necessary.
-     * @return True if any configuration overrides were applied, and false otherwise.
+     * @return A Configuration object with overrides set.
      */
     @CallSuper
-    protected boolean applyOverrides(Context baseContext, Configuration overrideConfig) {
-        return NightModeUtils.applyOverridesForNightMode(
-                getNightModeStateProvider(), overrideConfig);
+    protected void applyConfigurationOverrides(Context baseContext, Configuration overrideConfig) {
+        NightModeUtils.applyOverridesForNightMode(mNightModeStateProvider, overrideConfig);
     }
 
     /**

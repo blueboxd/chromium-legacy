@@ -330,7 +330,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
     NOTREACHED();
     return nullptr;
   }
-  void Destroy(bool have_context) override {}
+  void Destroy(bool have_context) override;
   bool MakeCurrent() override { return true; }
   gl::GLContext* GetGLContext() override { return nullptr; }
   gl::GLSurface* GetGLSurface() override {
@@ -614,6 +614,10 @@ WebGPUDecoderImpl::WebGPUDecoderImpl(
 }
 
 WebGPUDecoderImpl::~WebGPUDecoderImpl() {
+  Destroy(false);
+}
+
+void WebGPUDecoderImpl::Destroy(bool have_context) {
   dawn_device_and_wire_servers_.clear();
 }
 

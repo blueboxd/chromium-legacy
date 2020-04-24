@@ -23,6 +23,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "content/public/browser/allow_service_worker_result.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -175,17 +176,6 @@ class TabSpecificContentSettings
                                  const GURL& url,
                                  bool blocked_by_policy);
 
-  // Called when a specific Service Worker scope was accessed.
-  // If access was blocked due to the user's content settings,
-  // |blocked_by_policy_javascript| or/and |blocked_by_policy_cookie| should be
-  // true, and this function should invoke OnContentBlocked for JavaScript
-  // or/and cookies respectively.
-  static void ServiceWorkerAccessed(
-      const base::Callback<content::WebContents*(void)>& wc_getter,
-      const GURL& scope,
-      bool blocked_by_policy_javascript,
-      bool blocked_by_policy_cookie);
-
   // Called when a specific Shared Worker was accessed.
   static void SharedWorkerAccessed(int render_process_id,
                                    int render_frame_id,
@@ -310,9 +300,6 @@ class TabSpecificContentSettings
   void OnFileSystemAccessed(const GURL& url, bool blocked_by_policy);
   void OnIndexedDBAccessed(const GURL& url, bool blocked_by_policy);
   void OnCacheStorageAccessed(const GURL& url, bool blocked_by_policy);
-  void OnServiceWorkerAccessed(const GURL& scope,
-                               bool blocked_by_policy_javascript,
-                               bool blocked_by_policy_cookie);
   void OnSharedWorkerAccessed(const GURL& worker_url,
                               const std::string& name,
                               const url::Origin& constructor_origin,
@@ -385,6 +372,19 @@ class TabSpecificContentSettings
                       const GURL& first_party_url,
                       const net::CanonicalCookie& cookie,
                       bool blocked_by_policy) override;
+  // Called when a specific Service Worker scope was accessed.
+  // If access was blocked due to the user's content settings,
+  // |blocked_by_policy_javascript| or/and |blocked_by_policy_cookie| should be
+  // true, and this function should invoke OnContentBlocked for JavaScript
+  // or/and cookies respectively.
+  void OnServiceWorkerAccessed(
+      content::NavigationHandle* navigation,
+      const GURL& scope,
+      content::AllowServiceWorkerResult allowed) override;
+  void OnServiceWorkerAccessed(
+      content::RenderFrameHost* frame,
+      const GURL& scope,
+      content::AllowServiceWorkerResult allowed) override;
 
   // content_settings::Observer implementation.
   void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,

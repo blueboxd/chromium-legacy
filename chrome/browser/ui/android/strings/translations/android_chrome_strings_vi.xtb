@@ -164,7 +164,6 @@ Nhấn vào từ bất kỳ để tìm kiếm. Để điều chỉnh nội dung 
 <translation id="2131665479022868825">Đã tiết kiệm <ph name="DATA" /></translation>
 <translation id="213279576345780926">Đã đóng <ph name="TAB_TITLE" /></translation>
 <translation id="2139186145475833000">Thêm vào Màn hình chính</translation>
-<translation id="2146738493024040262">Mở ứng dụng tức thì</translation>
 <translation id="2154484045852737596">Chỉnh sửa thẻ</translation>
 <translation id="2154710561487035718">Sao chép URL</translation>
 <translation id="2156074688469523661">Số trang web còn lại (<ph name="NUMBER_OF_SITES" />)</translation>
@@ -281,7 +280,6 @@ Chạm và giữ từ bất kỳ để tìm kiếm. Để điều chỉnh nội 
 <translation id="2996809686854298943">Cần có URL</translation>
 <translation id="300526633675317032">Thao tác này sẽ xóa tất cả <ph name="SIZE_IN_KB" /> bộ nhớ trang web.</translation>
 <translation id="3016635187733453316">Hãy đảm bảo thiết bị này có kết nối Internet</translation>
-<translation id="3029613699374795922">Đã tải xuống <ph name="KBS" /> KB</translation>
 <translation id="3029704984691124060">Cụm mật khẩu không khớp</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Nhận trợ giúp<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Đã tắt vị trí; hãy bật vị trí trong mục <ph name="BEGIN_LINK" />Cài đặt Android<ph name="END_LINK" />.</translation>
@@ -457,7 +455,6 @@ Chỉ bạn mới biết được máy ảnh đang nhìn vào thứ gì. Trang w
 <translation id="4411535500181276704">Chế độ thu gọn</translation>
 <translation id="4415276339145661267">Quản lý Tài khoản Google của bạn</translation>
 <translation id="4432792777822557199">Kể từ bây giờ trở đi, các trang viết bằng <ph name="SOURCE_LANGUAGE" /> sẽ được dịch sang <ph name="TARGET_LANGUAGE" /></translation>
-<translation id="4433925000917964731">Trang phiên bản rút gọn do Google cung cấp</translation>
 <translation id="4434045419905280838">Cửa sổ bật lên và liên kết chuyển hướng</translation>
 <translation id="4440958355523780886">Trang phiên bản rút gọn do Google cung cấp. Nhấn để tải trang gốc.</translation>
 <translation id="4452411734226507615">Đóng tab <ph name="TAB_TITLE" /></translation>
@@ -737,7 +734,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6406506848690869874">Đồng bộ hóa</translation>
 <translation id="6410973561433500075">Chuyển sang chế độ thực tế tăng cường từ <ph name="DOMAIN" />?</translation>
 <translation id="641643625718530986">In…</translation>
-<translation id="6416782512398055893">Đã tải xuống <ph name="MBS" /> MB</translation>
 <translation id="6427112570124116297">Dịch web</translation>
 <translation id="6433501201775827830">Chọn công cụ tìm kiếm của bạn</translation>
 <translation id="6437478888915024427">Thông tin trang</translation>
@@ -745,7 +741,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6441734959916820584">Tên quá dài</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# hình ảnh}other{# hình ảnh}}</translation>
 <translation id="6447558397796644647">Không tìm thấy dấu trang đó. Hãy kiểm tra lỗi chính tả hoặc thêm dấu trang mới.</translation>
-<translation id="6447842834002726250">Cookie</translation>
 <translation id="6461962085415701688">Không thể mở tệp</translation>
 <translation id="6464977750820128603">Bạn có thể xem các trang web mà mình truy cập trên Chrome và hẹn giờ cho các trang web này.\n\nGoogle thu thập thông tin về các trang web mà bạn đã hẹn giờ và khoảng thời gian bạn truy cập các trang web đó. Thông tin này dùng để cải thiện Digital Wellbeing.</translation>
 <translation id="6475951671322991020">Tải video xuống</translation>
@@ -754,7 +749,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6508722015517270189">Khởi động lại Chrome</translation>
 <translation id="6532866250404780454">Các trang web bạn truy cập trên Chrome sẽ không hiển thị. Tất cả lịch hẹn giờ trên trang web sẽ bị xóa.</translation>
 <translation id="6534565668554028783">Google mất quá nhiều thời gian để phản hồi</translation>
-<translation id="6538442820324228105">Đã tải xuống <ph name="GBS" /> GB</translation>
 <translation id="6539092367496845964">Đã xảy ra lỗi. Hãy thử lại sau.</translation>
 <translation id="6545017243486555795">Xóa tất cả dữ liệu</translation>
 <translation id="6545864417968258051">Quét tìm Bluetooth</translation>

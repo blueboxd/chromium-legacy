@@ -216,6 +216,7 @@ enum Role {
   kIgnored,
   kImage,
   kImageMap,
+  kImeCandidate,
   kInlineTextBox,
   kInputTime,
   kKeyboard,

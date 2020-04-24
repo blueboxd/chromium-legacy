@@ -310,7 +310,7 @@ class ChromeDriverBaseTest(unittest.TestCase):
       server_url = _CHROMEDRIVER_SERVER_URL
 
     if (not _ANDROID_PACKAGE_KEY and 'debugger_address' not in kwargs and
-          '_MINIDUMP_PATH' in globals()):
+          '_MINIDUMP_PATH' in globals() and _MINIDUMP_PATH):
       # Environment required for minidump not supported on Android
       # minidumpPath will fail parsing if debugger_address is set
       if 'experimental_options' in kwargs:

@@ -57,6 +57,7 @@ class ZoomBubbleView : public LocationBarBubbleDelegateView,
   FRIEND_TEST_ALL_PREFIXES(ZoomBubbleBrowserTest,
                            BubbleSuppressingExtensionRefreshesExistingBubble);
   FRIEND_TEST_ALL_PREFIXES(ZoomBubbleBrowserTest, FocusPreventsClose);
+  FRIEND_TEST_ALL_PREFIXES(ZoomBubbleBrowserTest, AnchorPositionsInFullscreen);
 
   // Returns true if we can reuse the existing bubble for the given
   // |web_contents|.

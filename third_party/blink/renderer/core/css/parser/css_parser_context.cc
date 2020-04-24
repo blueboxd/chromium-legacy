@@ -49,7 +49,9 @@ CSSParserContext::CSSParserContext(const CSSParserContext* other,
                        other->secure_context_mode_,
                        other->should_check_content_security_policy_,
                        use_counter_document,
-                       other->resource_fetch_restriction_) {}
+                       other->resource_fetch_restriction_) {
+  is_ad_related_ = other->is_ad_related_;
+}
 
 CSSParserContext::CSSParserContext(
     const CSSParserContext* other,
@@ -71,7 +73,9 @@ CSSParserContext::CSSParserContext(
           other->secure_context_mode_,
           other->should_check_content_security_policy_,
           use_counter_document,
-          other->resource_fetch_restriction_) {}
+          other->resource_fetch_restriction_) {
+  is_ad_related_ = other->is_ad_related_;
+}
 
 CSSParserContext::CSSParserContext(CSSParserMode mode,
                                    SecureContextMode secure_context_mode,
@@ -186,6 +190,7 @@ bool CSSParserContext::operator==(const CSSParserContext& other) const {
   return base_url_ == other.base_url_ && origin_clean_ == other.origin_clean_ &&
          charset_ == other.charset_ && mode_ == other.mode_ &&
          match_mode_ == other.match_mode_ && profile_ == other.profile_ &&
+         is_ad_related_ == other.is_ad_related_ &&
          is_html_document_ == other.is_html_document_ &&
          use_legacy_background_size_shorthand_behavior_ ==
              other.use_legacy_background_size_shorthand_behavior_ &&

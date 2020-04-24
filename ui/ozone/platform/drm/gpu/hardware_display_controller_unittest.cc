@@ -168,17 +168,8 @@ void HardwareDisplayControllerTest::InitializeDrmDevice(bool use_atomic) {
             {/* .id = */ pair.first, /*.value = */ value});
       };
 
-      drm_format_modifier y_css = {.formats = 1UL,
-                                   .modifier = I915_FORMAT_MOD_Y_TILED_CCS};
-      drm_format_modifier yf_css = {.formats = 1UL,
-                                    .modifier = I915_FORMAT_MOD_Yf_TILED_CCS};
-      drm_format_modifier x = {.formats = 1UL,
-                               .modifier = I915_FORMAT_MOD_X_TILED};
-      drm_format_modifier linear = {.formats = 1UL,
-                                    .modifier = DRM_FORMAT_MOD_LINEAR};
       drm_->SetPropertyBlob(ui::MockDrmDevice::AllocateInFormatsBlob(
-          kInFormatsBlobPropId, {DRM_FORMAT_XRGB8888},
-          {y_css, yf_css, x, linear}));
+          kInFormatsBlobPropId, {DRM_FORMAT_XRGB8888}, {}));
 
       plane_properties.emplace_back(std::move(plane));
     }
@@ -232,86 +223,6 @@ TEST_F(HardwareDisplayControllerTest, CheckModesettingResult) {
 
   EXPECT_TRUE(controller_->Modeset(plane, kDefaultMode));
   EXPECT_FALSE(plane.buffer->HasOneRef());
-}
-
-TEST_F(HardwareDisplayControllerTest, ModifiersWithConnectorType) {
-  ui::DrmOverlayPlane plane(CreateBuffer(), nullptr);
-
-  // With internal displays, all modifiers including compressed (css) should be
-  // there.
-  drm_->set_connector_type(DRM_MODE_CONNECTOR_eDP);
-
-  std::vector<uint64_t> internal_modifiers =
-      controller_->GetFormatModifiers(DRM_FORMAT_XRGB8888);
-  ASSERT_FALSE(internal_modifiers.empty());
-
-  EXPECT_NE(std::find(internal_modifiers.begin(), internal_modifiers.end(),
-                      I915_FORMAT_MOD_Y_TILED_CCS),
-            internal_modifiers.end());
-  EXPECT_NE(std::find(internal_modifiers.begin(), internal_modifiers.end(),
-                      I915_FORMAT_MOD_Yf_TILED_CCS),
-            internal_modifiers.end());
-  EXPECT_NE(std::find(internal_modifiers.begin(), internal_modifiers.end(),
-                      I915_FORMAT_MOD_X_TILED),
-            internal_modifiers.end());
-  EXPECT_NE(std::find(internal_modifiers.begin(), internal_modifiers.end(),
-                      DRM_FORMAT_MOD_LINEAR),
-            internal_modifiers.end());
-
-  // With external displays, *_CSS modifiers (2 of them) should not exist.
-  drm_->set_connector_type(DRM_MODE_CONNECTOR_DisplayPort);
-
-  std::vector<uint64_t> external_modifiers =
-      controller_->GetFormatModifiers(DRM_FORMAT_XRGB8888);
-  ASSERT_FALSE(external_modifiers.empty());
-  EXPECT_EQ(external_modifiers.size(), internal_modifiers.size() - 2);
-
-  EXPECT_EQ(std::find(external_modifiers.begin(), external_modifiers.end(),
-                      I915_FORMAT_MOD_Y_TILED_CCS),
-            external_modifiers.end());
-  EXPECT_EQ(std::find(external_modifiers.begin(), external_modifiers.end(),
-                      I915_FORMAT_MOD_Yf_TILED_CCS),
-            external_modifiers.end());
-  EXPECT_NE(std::find(internal_modifiers.begin(), internal_modifiers.end(),
-                      I915_FORMAT_MOD_X_TILED),
-            internal_modifiers.end());
-  EXPECT_NE(std::find(internal_modifiers.begin(), internal_modifiers.end(),
-                      DRM_FORMAT_MOD_LINEAR),
-            internal_modifiers.end());
-}
-
-TEST_F(HardwareDisplayControllerTest, CheckDisableResetsProps) {
-  ui::DrmOverlayPlane plane1(CreateBuffer(), nullptr);
-
-  EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
-
-  ui::DrmOverlayPlane plane2(CreateBuffer(), nullptr);
-  std::vector<ui::DrmOverlayPlane> planes = {};
-  planes.push_back(plane2.Clone());
-
-  SchedulePageFlip(std::move(planes));
-
-  // Test props values after disabling.
-  controller_->Disable();
-
-  ui::DrmDevice::Property connector_prop_crtc_id;
-  ui::ScopedDrmObjectPropertyPtr connector_props =
-      drm_->GetObjectProperties(kConnectorIdBase, DRM_MODE_OBJECT_CONNECTOR);
-  ui::GetDrmPropertyForName(drm_.get(), connector_props.get(), "CRTC_ID",
-                            &connector_prop_crtc_id);
-  EXPECT_EQ(0U, connector_prop_crtc_id.value);
-
-  ui::DrmDevice::Property crtc_prop_for_name;
-  ui::ScopedDrmObjectPropertyPtr crtc_props =
-      drm_->GetObjectProperties(kPrimaryCrtc, DRM_MODE_OBJECT_CRTC);
-  GetDrmPropertyForName(drm_.get(), crtc_props.get(), "ACTIVE",
-                        &crtc_prop_for_name);
-  EXPECT_EQ(0U, crtc_prop_for_name.value);
-
-  crtc_props = drm_->GetObjectProperties(kPrimaryCrtc, DRM_MODE_OBJECT_CRTC);
-  GetDrmPropertyForName(drm_.get(), crtc_props.get(), "MODE_ID",
-                        &crtc_prop_for_name);
-  EXPECT_EQ(0U, crtc_prop_for_name.value);
 }
 
 TEST_F(HardwareDisplayControllerTest, CheckStateAfterPageFlip) {

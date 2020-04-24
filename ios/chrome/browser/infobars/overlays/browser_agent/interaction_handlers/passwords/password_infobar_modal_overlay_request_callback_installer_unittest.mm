@@ -19,6 +19,7 @@
 #include "ios/chrome/browser/overlays/public/overlay_response.h"
 #include "ios/chrome/browser/overlays/test/overlay_test_macros.h"
 #import "ios/chrome/browser/passwords/test/mock_ios_chrome_save_passwords_infobar_delegate.h"
+#import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/ui/infobars/test/fake_infobar_ui_delegate.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
@@ -39,7 +40,8 @@ class PasswordInfobarModalOverlayRequestCallbackInstallerTest
  public:
   PasswordInfobarModalOverlayRequestCallbackInstallerTest()
       : installer_(&mock_handler_) {
-    scoped_feature_list_.InitWithFeatures({kIOSInfobarUIReboot}, {});
+    scoped_feature_list_.InitWithFeatures({kIOSInfobarUIReboot},
+                                          {kInfobarUIRebootOnlyiOS13});
     // Create the infobar and add it to the WebState's manager.
     web_state_.SetNavigationManager(
         std::make_unique<web::TestNavigationManager>());

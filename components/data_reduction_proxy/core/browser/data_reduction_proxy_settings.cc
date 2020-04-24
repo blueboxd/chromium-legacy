@@ -138,9 +138,6 @@ void DataReductionProxySettings::SetDataSaverEnabledForTesting(
 }
 
 bool DataReductionProxySettings::IsDataReductionProxyEnabled() const {
-  if (!params::IsEnabledWithNetworkService()) {
-    return false;
-  }
   return IsDataSaverEnabledByUser(is_off_the_record_profile_,
                                   GetOriginalProfilePrefs());
 }

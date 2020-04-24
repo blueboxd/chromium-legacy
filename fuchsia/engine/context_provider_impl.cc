@@ -30,7 +30,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/fuchsia/default_context.h"
-#include "base/fuchsia/default_job.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -316,6 +315,9 @@ void ContextProviderImpl::Create(
   sandbox_policy.SetServiceDirectory(std::move(service_directory));
   sandbox_policy.UpdateLaunchOptionsForSandbox(&launch_options);
 
+  // SandboxPolicyFuchsia should isolate each Context in its own job.
+  DCHECK_NE(launch_options.job_handle, ZX_HANDLE_INVALID);
+
   // Transfer the ContextRequest handle to a well-known location in the child
   // process' handle table.
   launch_options.handles_to_transfer.push_back(
@@ -341,17 +343,6 @@ void ContextProviderImpl::Create(
     launch_options.paths_to_transfer.push_back(
         base::PathToTransfer{data_path, data_directory_channel.release()});
   }
-
-  // Isolate the child Context processes by containing them within their own
-  // respective jobs.
-  zx::job job;
-  zx_status_t status = zx::job::create(*base::GetDefaultJob(), 0, &job);
-  if (status != ZX_OK) {
-    ZX_LOG(ERROR, status) << "zx_job_create";
-    context_request.Close(ZX_ERR_INTERNAL);
-    return;
-  }
-  launch_options.job_handle = job.get();
 
   base::CommandLine launch_command = *base::CommandLine::ForCurrentProcess();
   std::vector<zx::channel> devtools_listener_channels;

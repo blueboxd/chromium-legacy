@@ -349,6 +349,7 @@
 <translation id="1465176863081977902">K&amp;opiraj adresu audio sadržaja</translation>
 <translation id="1465827627707997754">Parče pice</translation>
 <translation id="1468571364034902819">Ovaj profil ne može da se koristi</translation>
+<translation id="1470084204649225129">{NUM_TABS,plural, =1{Dodaj karticu u novu grupu}one{Dodaj kartice u novu grupu}few{Dodaj kartice u novu grupu}other{Dodaj kartice u novu grupu}}</translation>
 <translation id="1472675084647422956">Prikaži više</translation>
 <translation id="1475502736924165259">Na datoteci ima sertifikata koji se ne uklapaju ni u jednu drugu kategoriju</translation>
 <translation id="1476088332184200792">Kopirajte na svoj uređaj</translation>
@@ -419,7 +420,7 @@
 <translation id="155865706765934889">Dodirna tabla</translation>
 <translation id="1560763881671211335">G Suite for Education administratori određuju kojim Google uslugama njihovi korisnici mogu da pristupaju dok su prijavljeni na G Suite for Education nalog. Administratori u školama moraju da navedu ili dobiju saglasnost kada maloletni korisnici koriste usluge.
 
-    Podaci pregledanja (uključujući istoriju, obeleživače i lozinke) se čuvaju na nalogu za Family Link, a ne na školskom nalogu.
+    Podaci pregledanja (uključujući istoriju, obeleživače i lozinke) čuvaju se na nalogu za Family Link, a ne na školskom nalogu.
 
     I dalje važe podešavanja koje je roditelj izabrao u Family Link-u. Ako ste ranije blokirali aplikaciju ili sajt, ne morate to ponovo da radite.</translation>
 <translation id="1566049601598938765">Veb-sajt</translation>
@@ -474,6 +475,7 @@
 <translation id="1629314197035607094">Lozinka je istekla</translation>
 <translation id="1630768113285622200">Restartuj i nastavi</translation>
 <translation id="1632803087685957583">Omogućavaju vam da prilagodite brzinu ponavljanja za tastaturu, predviđanje reči i još puno toga</translation>
+<translation id="1634783886312010422">Da li ste već promenili ovu lozinku na <ph name="WEBSITE" />?</translation>
 <translation id="1635033183663317347">Instalirao je nadređeni korisnik.</translation>
 <translation id="1637224376458524414">Koristite ovaj obeleživač na iPhone-u</translation>
 <translation id="1637765355341780467">Došlo je do problema pri otvaranju profila. Neke funkcije će možda biti nedostupne.</translation>
@@ -3384,6 +3386,7 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="5542949973455282971">Povezuje se sa mrežom <ph name="CARRIER_NAME" /></translation>
 <translation id="5543983818738093899">Provera statusa...</translation>
 <translation id="554517032089923082">GTC</translation>
+<translation id="5545335608717746497">{NUM_TABS,plural, =1{Dodaj karticu u grupu}one{Dodaj kartice u grupu}few{Dodaj kartice u grupu}other{Dodaj kartice u grupu}}</translation>
 <translation id="5546865291508181392">Pronađi</translation>
 <translation id="5548159762883465903">{NUM_OTHER_TABS,plural, =0{„<ph name="TAB_TITLE" />“}=1{„<ph name="TAB_TITLE" />“ i još 1 kartica}one{„<ph name="TAB_TITLE" />“ i još # kartica}few{„<ph name="TAB_TITLE" />“ i još # kartice}other{„<ph name="TAB_TITLE" />“ i još # kartica}}</translation>
 <translation id="5548606607480005320">Bezbednosna provera</translation>
@@ -4209,6 +4212,7 @@ Vodite računa da ne otkrijete nikakve osetljive informacije.</translation>
 <translation id="6659594942844771486">Kartica</translation>
 <translation id="6664237456442406323">Nažalost, računar je konfigurisan pomoću pogrešno napravljenog ID-a hardvera. To sprečava Chrome OS da se ažurira najnovijim bezbednosnim ispravkama i računar je <ph name="BEGIN_BOLD" />možda podložan zlonamernim napadima<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Došlo je do problema pri otvaranju profila. Odjavite se, pa se ponovo prijavite.</translation>
+<translation id="6670142487971298264">Aplikacija <ph name="APP_NAME" /> je sada dostupna</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="6675665718701918026">Pokazivački uređaj je povezan</translation>
 <translation id="6676212663108450937">Preporučujemo vam da koristite slušalice tokom uvežbavanja glasovnog modela</translation>
@@ -4538,6 +4542,7 @@ Vodite računa da ne otkrijete nikakve osetljive informacije.</translation>
 <translation id="7108338896283013870">Sakrij</translation>
 <translation id="7108668606237948702">enter</translation>
 <translation id="7109543803214225826">Prečica je uklonjena</translation>
+<translation id="7110644433780444336">{NUM_TABS,plural, =1{Dodaj karticu u grupu}one{Dodaj kartice u grupu}few{Dodaj kartice u grupu}other{Dodaj kartice u grupu}}</translation>
 <translation id="7113502843173351041">Otkrivanje vaše imejl adrese</translation>
 <translation id="7114054701490058191">Lozinke se ne podudaraju</translation>
 <translation id="7114648273807173152">Da biste koristili Smart Lock za prijavljivanje na Google nalog, idite na Podešavanja &gt; Povezani uređaji &gt; Telefon &gt; Smart Lock.</translation>
@@ -4581,6 +4586,7 @@ Vodite računa da ne otkrijete nikakve osetljive informacije.</translation>
 <translation id="7170041865419449892">Izvan opsega</translation>
 <translation id="7171259390164035663">Bez registracije</translation>
 <translation id="7171559745792467651">Instalirajte aplikacije sa drugih uređaja</translation>
+<translation id="7172470549472604877">{NUM_TABS,plural, =1{Dodaj karticu u novu grupu}one{Dodaj kartice u novu grupu}few{Dodaj kartice u novu grupu}other{Dodaj kartice u novu grupu}}</translation>
 <translation id="7174199383876220879">Novo! Kontrolišite muziku, video snimke i drugo.</translation>
 <translation id="7175037578838465313">Konfigurišite <ph name="NAME" /></translation>
 <translation id="7175353351958621980">Učitava se sa:</translation>
@@ -5159,6 +5165,7 @@ Vodite računa da ne otkrijete nikakve osetljive informacije.</translation>
 <translation id="7925247922861151263">Provera potvrde identiteta, ovlašćenja i pristupa nije uspela</translation>
 <translation id="7925285046818567682">Čeka se <ph name="HOST_NAME" />...</translation>
 <translation id="7926423016278357561">To nisam ja.</translation>
+<translation id="7928175190925744466">Već ste promenili ovu lozinku?</translation>
 <translation id="7928836894214140642">Upravlja <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">Sačuvani načini plaćanja će se prikazivati ovde</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> deli ekran i zvuk.</translation>

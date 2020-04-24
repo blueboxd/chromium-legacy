@@ -31,8 +31,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AudioInputImpl
       public media::AudioCapturerSource::CaptureCallback,
       public chromeos::PowerManagerClient::Observer {
  public:
-  AudioInputImpl(mojom::Client* client,
-                 PowerManagerClient* power_manager_client,
+  AudioInputImpl(PowerManagerClient* power_manager_client,
                  CrasAudioHandler* cras_audio_handler,
                  const std::string& device_id);
   ~AudioInputImpl() override;
@@ -128,8 +127,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AudioInputImpl
   // It ensures that AddObserver / RemoveObserver are called on the same
   // sequence.
   SEQUENCE_CHECKER(observer_sequence_checker_);
-
-  mojom::Client* const client_;
 
   chromeos::PowerManagerClient* power_manager_client_;
   ScopedObserver<chromeos::PowerManagerClient,

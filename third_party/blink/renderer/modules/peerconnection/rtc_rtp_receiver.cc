@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_rtp_decoding_parameters.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_rtp_header_extension_capability.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_rtp_header_extension_parameters.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
 #include "third_party/blink/renderer/core/streams/writable_stream.h"
@@ -89,11 +90,19 @@ void RTCRtpReceiver::setPlayoutDelayHint(base::Optional<double> hint,
 }
 
 HeapVector<Member<RTCRtpSynchronizationSource>>
-RTCRtpReceiver::getSynchronizationSources() {
+RTCRtpReceiver::getSynchronizationSources(ScriptState* script_state,
+                                          ExceptionState& exception_state) {
+  if (!script_state->ContextIsValid()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "Window is detached");
+    return HeapVector<Member<RTCRtpSynchronizationSource>>();
+  }
+
   UpdateSourcesIfNeeded();
 
-  Document* document = Document::From(pc_->GetExecutionContext());
-  DocumentLoadTiming& time_converter = document->Loader()->GetTiming();
+  LocalDOMWindow* window = LocalDOMWindow::From(script_state);
+  DocumentLoadTiming& time_converter =
+      window->GetFrame()->Loader().GetDocumentLoader()->GetTiming();
 
   HeapVector<Member<RTCRtpSynchronizationSource>> synchronization_sources;
   for (const auto& web_source : web_sources_) {
@@ -120,11 +129,19 @@ RTCRtpReceiver::getSynchronizationSources() {
 }
 
 HeapVector<Member<RTCRtpContributingSource>>
-RTCRtpReceiver::getContributingSources() {
+RTCRtpReceiver::getContributingSources(ScriptState* script_state,
+                                       ExceptionState& exception_state) {
+  if (!script_state->ContextIsValid()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "Window is detached");
+    return HeapVector<Member<RTCRtpContributingSource>>();
+  }
+
   UpdateSourcesIfNeeded();
 
-  Document* document = Document::From(pc_->GetExecutionContext());
-  DocumentLoadTiming& time_converter = document->Loader()->GetTiming();
+  LocalDOMWindow* window = LocalDOMWindow::From(script_state);
+  DocumentLoadTiming& time_converter =
+      window->GetFrame()->Loader().GetDocumentLoader()->GetTiming();
 
   HeapVector<Member<RTCRtpContributingSource>> contributing_sources;
   for (const auto& web_source : web_sources_) {

@@ -46,7 +46,7 @@ void FillVersion5Fields(FormFieldData* data) {
 
 void FillVersion6Fields(FormFieldData* data) {
   data->properties_mask =
-      FieldPropertiesFlags::USER_TYPED | FieldPropertiesFlags::HAD_FOCUS;
+      FieldPropertiesFlags::kUserTyped | FieldPropertiesFlags::kHadFocus;
 }
 
 void FillVersion7Fields(FormFieldData* data) {

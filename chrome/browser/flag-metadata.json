@@ -920,7 +920,13 @@
     "owners": [ "baileyberro", "cros-peripherals@google.com" ],
     "expiry_milestone": 85
   },
-  { "name": "dns-httpssvc",
+  {
+    "name": "dlc-settings-ui",
+    "owners": [ "cros-customization@google.com", "hsuregan" ],
+    "expiry_milestone": 86
+  },
+  {
+    "name": "dns-httpssvc",
     "owners": [ "dmcardle", "ericorth" ],
     "expiry_milestone": 85
   },
@@ -4240,12 +4246,12 @@
   {
     "name": "win-use-hybrid-spellchecker",
     "owners": [ "gujen@google.com", "chrome-language@google.com" ],
-    "expiry_milestone": 83
+    "expiry_milestone": 88
   },
   {
     "name": "win-use-native-spellchecker",
     "owners": [ "gujen@google.com", "chrome-language@google.com" ],
-    "expiry_milestone": 83
+    "expiry_milestone": 88
   },
   {
     "name": "zero-copy-video-capture",

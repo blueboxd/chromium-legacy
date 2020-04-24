@@ -10,10 +10,10 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_storage_estimate.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_storage_usage_details.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/modules/permissions/permission_utils.h"
@@ -90,23 +90,19 @@ StorageManager::StorageManager(ContextLifecycleNotifier* notifier)
 ScriptPromise StorageManager::persist(ScriptState* script_state) {
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
-  ExecutionContext* execution_context = ExecutionContext::From(script_state);
-  DCHECK(execution_context->IsSecureContext());  // [SecureContext] in IDL
-  const SecurityOrigin* security_origin =
-      execution_context->GetSecurityOrigin();
-  if (security_origin->IsOpaque()) {
+  LocalDOMWindow* window = LocalDOMWindow::From(script_state);
+  DCHECK(window->IsSecureContext());  // [SecureContext] in IDL
+  if (window->GetSecurityOrigin()->IsOpaque()) {
     resolver->Reject(V8ThrowException::CreateTypeError(
         script_state->GetIsolate(), kUniqueOriginErrorMessage));
     return promise;
   }
 
-  Document* doc = Document::From(execution_context);
-  GetPermissionService(ExecutionContext::From(script_state))
-      ->RequestPermission(
-          CreatePermissionDescriptor(PermissionName::DURABLE_STORAGE),
-          LocalFrame::HasTransientUserActivation(doc->GetFrame()),
-          WTF::Bind(&StorageManager::PermissionRequestComplete,
-                    WrapPersistent(this), WrapPersistent(resolver)));
+  GetPermissionService(window)->RequestPermission(
+      CreatePermissionDescriptor(PermissionName::DURABLE_STORAGE),
+      LocalFrame::HasTransientUserActivation(window->GetFrame()),
+      WTF::Bind(&StorageManager::PermissionRequestComplete,
+                WrapPersistent(this), WrapPersistent(resolver)));
 
   return promise;
 }

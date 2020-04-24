@@ -429,23 +429,23 @@ blink::WebFloatRect BoundsForObject(const blink::WebAXObject& object) {
   blink::WebFloatRect bounds;
   SkMatrix44 matrix;
   object.GetRelativeBounds(container, bounds, matrix);
-  gfx::RectF computedBounds(0, 0, bounds.width, bounds.height);
+  gfx::RectF computed_bounds(0, 0, bounds.width, bounds.height);
   while (!container.IsDetached()) {
-    computedBounds.Offset(bounds.x, bounds.y);
-    computedBounds.Offset(-container.GetScrollOffset().x(),
-                          -container.GetScrollOffset().y());
+    computed_bounds.Offset(bounds.x, bounds.y);
+    computed_bounds.Offset(-container.GetScrollOffset().x(),
+                           -container.GetScrollOffset().y());
     if (!matrix.isIdentity()) {
       gfx::Transform transform(matrix);
-      transform.TransformRect(&computedBounds);
+      transform.TransformRect(&computed_bounds);
     }
     container.GetRelativeBounds(container, bounds, matrix);
   }
-  return blink::WebFloatRect(computedBounds.x(), computedBounds.y(),
-                             computedBounds.width(), computedBounds.height());
+  return blink::WebFloatRect(computed_bounds.x(), computed_bounds.y(),
+                             computed_bounds.width(), computed_bounds.height());
 }
 
 blink::WebRect BoundsForCharacter(const blink::WebAXObject& object,
-                                  int characterIndex) {
+                                  int character_index) {
   DCHECK_EQ(object.Role(), ax::mojom::Role::kStaticText);
   int end = 0;
   for (unsigned i = 0; i < object.ChildCount(); i++) {
@@ -454,12 +454,12 @@ blink::WebRect BoundsForCharacter(const blink::WebAXObject& object,
     int start = end;
     blink::WebString name = inline_text_box.GetName();
     end += name.length();
-    if (characterIndex < start || characterIndex >= end)
+    if (character_index < start || character_index >= end)
       continue;
 
     blink::WebFloatRect inline_text_box_rect = BoundsForObject(inline_text_box);
 
-    int localIndex = characterIndex - start;
+    int local_index = character_index - start;
     blink::WebVector<int> character_offsets;
     inline_text_box.CharacterOffsets(character_offsets);
     if (character_offsets.size() != name.length())
@@ -467,10 +467,11 @@ blink::WebRect BoundsForCharacter(const blink::WebAXObject& object,
 
     switch (inline_text_box.GetTextDirection()) {
       case ax::mojom::TextDirection::kLtr: {
-        if (localIndex) {
-          int left = inline_text_box_rect.x + character_offsets[localIndex - 1];
-          int width =
-              character_offsets[localIndex] - character_offsets[localIndex - 1];
+        if (local_index) {
+          int left =
+              inline_text_box_rect.x + character_offsets[local_index - 1];
+          int width = character_offsets[local_index] -
+                      character_offsets[local_index - 1];
           return blink::WebRect(left, inline_text_box_rect.y, width,
                                 inline_text_box_rect.height);
         }
@@ -481,10 +482,10 @@ blink::WebRect BoundsForCharacter(const blink::WebAXObject& object,
       case ax::mojom::TextDirection::kRtl: {
         int right = inline_text_box_rect.x + inline_text_box_rect.width;
 
-        if (localIndex) {
-          int left = right - character_offsets[localIndex];
-          int width =
-              character_offsets[localIndex] - character_offsets[localIndex - 1];
+        if (local_index) {
+          int left = right - character_offsets[local_index];
+          int width = character_offsets[local_index] -
+                      character_offsets[local_index - 1];
           return blink::WebRect(left, inline_text_box_rect.y, width,
                                 inline_text_box_rect.height);
         }
@@ -494,10 +495,10 @@ blink::WebRect BoundsForCharacter(const blink::WebAXObject& object,
                               inline_text_box_rect.height);
       }
       case ax::mojom::TextDirection::kTtb: {
-        if (localIndex) {
-          int top = inline_text_box_rect.y + character_offsets[localIndex - 1];
-          int height =
-              character_offsets[localIndex] - character_offsets[localIndex - 1];
+        if (local_index) {
+          int top = inline_text_box_rect.y + character_offsets[local_index - 1];
+          int height = character_offsets[local_index] -
+                       character_offsets[local_index - 1];
           return blink::WebRect(inline_text_box_rect.x, top,
                                 inline_text_box_rect.width, height);
         }
@@ -507,10 +508,10 @@ blink::WebRect BoundsForCharacter(const blink::WebAXObject& object,
       case ax::mojom::TextDirection::kBtt: {
         int bottom = inline_text_box_rect.y + inline_text_box_rect.height;
 
-        if (localIndex) {
-          int top = bottom - character_offsets[localIndex];
-          int height =
-              character_offsets[localIndex] - character_offsets[localIndex - 1];
+        if (local_index) {
+          int top = bottom - character_offsets[local_index];
+          int height = character_offsets[local_index] -
+                       character_offsets[local_index - 1];
           return blink::WebRect(inline_text_box_rect.x, top,
                                 inline_text_box_rect.width, height);
         }
@@ -562,7 +563,7 @@ void GetBoundariesForOneWord(const blink::WebAXObject& object,
     end += name.length();
     if (end <= character_index)
       continue;
-    int localIndex = character_index - start;
+    int local_index = character_index - start;
 
     blink::WebVector<int> starts;
     blink::WebVector<int> ends;
@@ -579,7 +580,7 @@ void GetBoundariesForOneWord(const blink::WebAXObject& object,
 
     // Look for a character within any word other than the last.
     for (size_t j = 0; j < word_count - 1; j++) {
-      if (localIndex <= ends[j]) {
+      if (local_index <= ends[j]) {
         word_start = start + starts[j];
         word_end = start + ends[j];
         return;
@@ -669,7 +670,11 @@ WebAXObjectProxy::WebAXObjectProxy(const blink::WebAXObject& object,
                                    WebAXObjectProxy::Factory* factory)
     : accessibility_object_(object), factory_(factory) {}
 
-WebAXObjectProxy::~WebAXObjectProxy() {}
+WebAXObjectProxy::~WebAXObjectProxy() {
+  // v8::Persistent will leak on destroy, due to the default
+  // NonCopyablePersistentTraits (it claims this may change in the future).
+  notification_callback_.Reset();
+}
 
 gin::ObjectTemplateBuilder WebAXObjectProxy::GetObjectTemplateBuilder(
     v8::Isolate* isolate) {
@@ -992,15 +997,15 @@ bool WebAXObjectProxy::SelectionIsBackward() {
   accessibility_object_.UpdateLayoutAndCheckValidity();
 
   bool is_selection_backward = false;
-  blink::WebAXObject anchorObject;
-  int anchorOffset = -1;
-  ax::mojom::TextAffinity anchorAffinity;
-  blink::WebAXObject focusObject;
-  int focusOffset = -1;
-  ax::mojom::TextAffinity focusAffinity;
-  accessibility_object_.Selection(is_selection_backward, anchorObject,
-                                  anchorOffset, anchorAffinity, focusObject,
-                                  focusOffset, focusAffinity);
+  blink::WebAXObject anchor_object;
+  int anchor_offset = -1;
+  ax::mojom::TextAffinity anchor_affinity;
+  blink::WebAXObject focus_object;
+  int focus_offset = -1;
+  ax::mojom::TextAffinity focus_affinity;
+  accessibility_object_.Selection(is_selection_backward, anchor_object,
+                                  anchor_offset, anchor_affinity, focus_object,
+                                  focus_offset, focus_affinity);
   return is_selection_backward;
 }
 
@@ -1008,110 +1013,110 @@ v8::Local<v8::Value> WebAXObjectProxy::SelectionAnchorObject() {
   accessibility_object_.UpdateLayoutAndCheckValidity();
 
   bool is_selection_backward = false;
-  blink::WebAXObject anchorObject;
-  int anchorOffset = -1;
-  ax::mojom::TextAffinity anchorAffinity;
-  blink::WebAXObject focusObject;
-  int focusOffset = -1;
-  ax::mojom::TextAffinity focusAffinity;
-  accessibility_object_.Selection(is_selection_backward, anchorObject,
-                                  anchorOffset, anchorAffinity, focusObject,
-                                  focusOffset, focusAffinity);
-  if (anchorObject.IsNull())
+  blink::WebAXObject anchor_object;
+  int anchor_offset = -1;
+  ax::mojom::TextAffinity anchor_affinity;
+  blink::WebAXObject focus_object;
+  int focus_offset = -1;
+  ax::mojom::TextAffinity focus_affinity;
+  accessibility_object_.Selection(is_selection_backward, anchor_object,
+                                  anchor_offset, anchor_affinity, focus_object,
+                                  focus_offset, focus_affinity);
+  if (anchor_object.IsNull())
     return v8::Null(blink::MainThreadIsolate());
 
-  return factory_->GetOrCreate(anchorObject);
+  return factory_->GetOrCreate(anchor_object);
 }
 
 int WebAXObjectProxy::SelectionAnchorOffset() {
   accessibility_object_.UpdateLayoutAndCheckValidity();
 
   bool is_selection_backward = false;
-  blink::WebAXObject anchorObject;
-  int anchorOffset = -1;
-  ax::mojom::TextAffinity anchorAffinity;
-  blink::WebAXObject focusObject;
-  int focusOffset = -1;
-  ax::mojom::TextAffinity focusAffinity;
-  accessibility_object_.Selection(is_selection_backward, anchorObject,
-                                  anchorOffset, anchorAffinity, focusObject,
-                                  focusOffset, focusAffinity);
-  if (anchorOffset < 0)
+  blink::WebAXObject anchor_object;
+  int anchor_offset = -1;
+  ax::mojom::TextAffinity anchor_affinity;
+  blink::WebAXObject focus_object;
+  int focus_offset = -1;
+  ax::mojom::TextAffinity focus_affinity;
+  accessibility_object_.Selection(is_selection_backward, anchor_object,
+                                  anchor_offset, anchor_affinity, focus_object,
+                                  focus_offset, focus_affinity);
+  if (anchor_offset < 0)
     return -1;
 
-  return anchorOffset;
+  return anchor_offset;
 }
 
 std::string WebAXObjectProxy::SelectionAnchorAffinity() {
   accessibility_object_.UpdateLayoutAndCheckValidity();
 
   bool is_selection_backward = false;
-  blink::WebAXObject anchorObject;
-  int anchorOffset = -1;
-  ax::mojom::TextAffinity anchorAffinity;
-  blink::WebAXObject focusObject;
-  int focusOffset = -1;
-  ax::mojom::TextAffinity focusAffinity;
-  accessibility_object_.Selection(is_selection_backward, anchorObject,
-                                  anchorOffset, anchorAffinity, focusObject,
-                                  focusOffset, focusAffinity);
-  return anchorAffinity == ax::mojom::TextAffinity::kUpstream ? "upstream"
-                                                              : "downstream";
+  blink::WebAXObject anchor_object;
+  int anchor_offset = -1;
+  ax::mojom::TextAffinity anchor_affinity;
+  blink::WebAXObject focus_object;
+  int focus_offset = -1;
+  ax::mojom::TextAffinity focus_affinity;
+  accessibility_object_.Selection(is_selection_backward, anchor_object,
+                                  anchor_offset, anchor_affinity, focus_object,
+                                  focus_offset, focus_affinity);
+  return anchor_affinity == ax::mojom::TextAffinity::kUpstream ? "upstream"
+                                                               : "downstream";
 }
 
 v8::Local<v8::Value> WebAXObjectProxy::SelectionFocusObject() {
   accessibility_object_.UpdateLayoutAndCheckValidity();
 
   bool is_selection_backward = false;
-  blink::WebAXObject anchorObject;
-  int anchorOffset = -1;
-  ax::mojom::TextAffinity anchorAffinity;
-  blink::WebAXObject focusObject;
-  int focusOffset = -1;
-  ax::mojom::TextAffinity focusAffinity;
-  accessibility_object_.Selection(is_selection_backward, anchorObject,
-                                  anchorOffset, anchorAffinity, focusObject,
-                                  focusOffset, focusAffinity);
-  if (focusObject.IsNull())
+  blink::WebAXObject anchor_object;
+  int anchor_offset = -1;
+  ax::mojom::TextAffinity anchor_affinity;
+  blink::WebAXObject focus_object;
+  int focus_offset = -1;
+  ax::mojom::TextAffinity focus_affinity;
+  accessibility_object_.Selection(is_selection_backward, anchor_object,
+                                  anchor_offset, anchor_affinity, focus_object,
+                                  focus_offset, focus_affinity);
+  if (focus_object.IsNull())
     return v8::Null(blink::MainThreadIsolate());
 
-  return factory_->GetOrCreate(focusObject);
+  return factory_->GetOrCreate(focus_object);
 }
 
 int WebAXObjectProxy::SelectionFocusOffset() {
   accessibility_object_.UpdateLayoutAndCheckValidity();
 
   bool is_selection_backward = false;
-  blink::WebAXObject anchorObject;
-  int anchorOffset = -1;
-  ax::mojom::TextAffinity anchorAffinity;
-  blink::WebAXObject focusObject;
-  int focusOffset = -1;
-  ax::mojom::TextAffinity focusAffinity;
-  accessibility_object_.Selection(is_selection_backward, anchorObject,
-                                  anchorOffset, anchorAffinity, focusObject,
-                                  focusOffset, focusAffinity);
-  if (focusOffset < 0)
+  blink::WebAXObject anchor_object;
+  int anchor_offset = -1;
+  ax::mojom::TextAffinity anchor_affinity;
+  blink::WebAXObject focus_object;
+  int focus_offset = -1;
+  ax::mojom::TextAffinity focus_affinity;
+  accessibility_object_.Selection(is_selection_backward, anchor_object,
+                                  anchor_offset, anchor_affinity, focus_object,
+                                  focus_offset, focus_affinity);
+  if (focus_offset < 0)
     return -1;
 
-  return focusOffset;
+  return focus_offset;
 }
 
 std::string WebAXObjectProxy::SelectionFocusAffinity() {
   accessibility_object_.UpdateLayoutAndCheckValidity();
 
   bool is_selection_backward = false;
-  blink::WebAXObject anchorObject;
-  int anchorOffset = -1;
-  ax::mojom::TextAffinity anchorAffinity;
-  blink::WebAXObject focusObject;
-  int focusOffset = -1;
-  ax::mojom::TextAffinity focusAffinity;
-  accessibility_object_.Selection(is_selection_backward, anchorObject,
-                                  anchorOffset, anchorAffinity, focusObject,
-                                  focusOffset, focusAffinity);
-  return focusAffinity == ax::mojom::TextAffinity::kUpstream ? "upstream"
-                                                             : "downstream";
+  blink::WebAXObject anchor_object;
+  int anchor_offset = -1;
+  ax::mojom::TextAffinity anchor_affinity;
+  blink::WebAXObject focus_object;
+  int focus_offset = -1;
+  ax::mojom::TextAffinity focus_affinity;
+  accessibility_object_.Selection(is_selection_backward, anchor_object,
+                                  anchor_offset, anchor_affinity, focus_object,
+                                  focus_offset, focus_affinity);
+  return focus_affinity == ax::mojom::TextAffinity::kUpstream ? "upstream"
+                                                              : "downstream";
 }
 
 bool WebAXObjectProxy::IsAtomic() {
@@ -1563,8 +1568,8 @@ v8::Local<v8::Object> WebAXObjectProxy::AriaControlsElementAtIndex(
   blink::WebVector<blink::WebAXObject> elements =
       attribute_adapter.object_vector_attributes
           [blink::WebAXObjectVectorAttribute::kAriaControls];
-  size_t elementCount = elements.size();
-  if (index >= elementCount)
+  size_t element_count = elements.size();
+  if (index >= element_count)
     return v8::Local<v8::Object>();
 
   return factory_->GetOrCreate(elements[index]);
@@ -1578,8 +1583,8 @@ v8::Local<v8::Object> WebAXObjectProxy::AriaDetailsElementAtIndex(
   blink::WebVector<blink::WebAXObject> elements =
       attribute_adapter.object_vector_attributes
           [blink::WebAXObjectVectorAttribute::kAriaDetails];
-  size_t elementCount = elements.size();
-  if (index >= elementCount)
+  size_t element_count = elements.size();
+  if (index >= element_count)
     return v8::Local<v8::Object>();
 
   return factory_->GetOrCreate(elements[index]);
@@ -1603,8 +1608,8 @@ v8::Local<v8::Object> WebAXObjectProxy::AriaFlowToElementAtIndex(
   blink::WebVector<blink::WebAXObject> elements =
       attribute_adapter.object_vector_attributes
           [blink::WebAXObjectVectorAttribute::kAriaFlowTo];
-  size_t elementCount = elements.size();
-  if (index >= elementCount)
+  size_t element_count = elements.size();
+  if (index >= element_count)
     return v8::Local<v8::Object>();
 
   return factory_->GetOrCreate(elements[index]);
@@ -1614,8 +1619,8 @@ v8::Local<v8::Object> WebAXObjectProxy::AriaOwnsElementAtIndex(unsigned index) {
   accessibility_object_.UpdateLayoutAndCheckValidity();
   blink::WebVector<blink::WebAXObject> elements;
   accessibility_object_.AriaOwns(elements);
-  size_t elementCount = elements.size();
-  if (index >= elementCount)
+  size_t element_count = elements.size();
+  if (index >= element_count)
     return v8::Local<v8::Object>();
 
   return factory_->GetOrCreate(elements[index]);
@@ -1681,9 +1686,9 @@ v8::Local<v8::Object> WebAXObjectProxy::RowHeaderAtIndex(unsigned index) {
   accessibility_object_.UpdateLayoutAndCheckValidity();
   blink::WebVector<blink::WebAXObject> headers;
   accessibility_object_.RowHeaders(headers);
-  size_t headerCount = headers.size();
-  if (index >= headerCount)
-    return v8::Local<v8::Object>();
+  size_t header_count = headers.size();
+  if (index >= header_count)
+    return {};
 
   return factory_->GetOrCreate(headers[index]);
 }
@@ -1692,9 +1697,9 @@ v8::Local<v8::Object> WebAXObjectProxy::ColumnHeaderAtIndex(unsigned index) {
   accessibility_object_.UpdateLayoutAndCheckValidity();
   blink::WebVector<blink::WebAXObject> headers;
   accessibility_object_.ColumnHeaders(headers);
-  size_t headerCount = headers.size();
-  if (index >= headerCount)
-    return v8::Local<v8::Object>();
+  size_t header_count = headers.size();
+  if (index >= header_count)
+    return {};
 
   return factory_->GetOrCreate(headers[index]);
 }
@@ -1939,10 +1944,10 @@ std::string WebAXObjectProxy::Name() {
 
 std::string WebAXObjectProxy::NameFrom() {
   accessibility_object_.UpdateLayoutAndCheckValidity();
-  ax::mojom::NameFrom nameFrom = ax::mojom::NameFrom::kUninitialized;
-  blink::WebVector<blink::WebAXObject> nameObjects;
-  accessibility_object_.GetName(nameFrom, nameObjects);
-  switch (nameFrom) {
+  ax::mojom::NameFrom name_from = ax::mojom::NameFrom::kUninitialized;
+  blink::WebVector<blink::WebAXObject> name_objects;
+  accessibility_object_.GetName(name_from, name_objects);
+  switch (name_from) {
     case ax::mojom::NameFrom::kUninitialized:
     case ax::mojom::NameFrom::kNone:
       return "";
@@ -1970,45 +1975,45 @@ std::string WebAXObjectProxy::NameFrom() {
 
 int WebAXObjectProxy::NameElementCount() {
   accessibility_object_.UpdateLayoutAndCheckValidity();
-  ax::mojom::NameFrom nameFrom;
-  blink::WebVector<blink::WebAXObject> nameObjects;
-  accessibility_object_.GetName(nameFrom, nameObjects);
-  return static_cast<int>(nameObjects.size());
+  ax::mojom::NameFrom name_from;
+  blink::WebVector<blink::WebAXObject> name_objects;
+  accessibility_object_.GetName(name_from, name_objects);
+  return static_cast<int>(name_objects.size());
 }
 
 v8::Local<v8::Object> WebAXObjectProxy::NameElementAtIndex(unsigned index) {
   accessibility_object_.UpdateLayoutAndCheckValidity();
-  ax::mojom::NameFrom nameFrom;
-  blink::WebVector<blink::WebAXObject> nameObjects;
-  accessibility_object_.GetName(nameFrom, nameObjects);
-  if (index >= nameObjects.size())
-    return v8::Local<v8::Object>();
-  return factory_->GetOrCreate(nameObjects[index]);
+  ax::mojom::NameFrom name_from;
+  blink::WebVector<blink::WebAXObject> name_objects;
+  accessibility_object_.GetName(name_from, name_objects);
+  if (index >= name_objects.size())
+    return {};
+  return factory_->GetOrCreate(name_objects[index]);
 }
 
 std::string WebAXObjectProxy::Description() {
   accessibility_object_.UpdateLayoutAndCheckValidity();
-  ax::mojom::NameFrom nameFrom;
-  blink::WebVector<blink::WebAXObject> nameObjects;
-  accessibility_object_.GetName(nameFrom, nameObjects);
-  ax::mojom::DescriptionFrom descriptionFrom;
-  blink::WebVector<blink::WebAXObject> descriptionObjects;
+  ax::mojom::NameFrom name_from;
+  blink::WebVector<blink::WebAXObject> name_objects;
+  accessibility_object_.GetName(name_from, name_objects);
+  ax::mojom::DescriptionFrom description_from;
+  blink::WebVector<blink::WebAXObject> description_objects;
   return accessibility_object_
-      .Description(nameFrom, descriptionFrom, descriptionObjects)
+      .Description(name_from, description_from, description_objects)
       .Utf8();
 }
 
 std::string WebAXObjectProxy::DescriptionFrom() {
   accessibility_object_.UpdateLayoutAndCheckValidity();
-  ax::mojom::NameFrom nameFrom;
-  blink::WebVector<blink::WebAXObject> nameObjects;
-  accessibility_object_.GetName(nameFrom, nameObjects);
-  ax::mojom::DescriptionFrom descriptionFrom =
+  ax::mojom::NameFrom name_from;
+  blink::WebVector<blink::WebAXObject> name_objects;
+  accessibility_object_.GetName(name_from, name_objects);
+  ax::mojom::DescriptionFrom description_from =
       ax::mojom::DescriptionFrom::kUninitialized;
-  blink::WebVector<blink::WebAXObject> descriptionObjects;
-  accessibility_object_.Description(nameFrom, descriptionFrom,
-                                    descriptionObjects);
-  switch (descriptionFrom) {
+  blink::WebVector<blink::WebAXObject> description_objects;
+  accessibility_object_.Description(name_from, description_from,
+                                    description_objects);
+  switch (description_from) {
     case ax::mojom::DescriptionFrom::kUninitialized:
     case ax::mojom::DescriptionFrom::kNone:
       return "";
@@ -2028,10 +2033,10 @@ std::string WebAXObjectProxy::DescriptionFrom() {
 
 std::string WebAXObjectProxy::Placeholder() {
   accessibility_object_.UpdateLayoutAndCheckValidity();
-  ax::mojom::NameFrom nameFrom;
-  blink::WebVector<blink::WebAXObject> nameObjects;
-  accessibility_object_.GetName(nameFrom, nameObjects);
-  return accessibility_object_.Placeholder(nameFrom).Utf8();
+  ax::mojom::NameFrom name_from;
+  blink::WebVector<blink::WebAXObject> name_objects;
+  accessibility_object_.GetName(name_from, name_objects);
+  return accessibility_object_.Placeholder(name_from).Utf8();
 }
 
 int WebAXObjectProxy::MisspellingsCount() {
@@ -2041,29 +2046,29 @@ int WebAXObjectProxy::MisspellingsCount() {
 
 int WebAXObjectProxy::DescriptionElementCount() {
   accessibility_object_.UpdateLayoutAndCheckValidity();
-  ax::mojom::NameFrom nameFrom;
-  blink::WebVector<blink::WebAXObject> nameObjects;
-  accessibility_object_.GetName(nameFrom, nameObjects);
-  ax::mojom::DescriptionFrom descriptionFrom;
-  blink::WebVector<blink::WebAXObject> descriptionObjects;
-  accessibility_object_.Description(nameFrom, descriptionFrom,
-                                    descriptionObjects);
-  return static_cast<int>(descriptionObjects.size());
+  ax::mojom::NameFrom name_from;
+  blink::WebVector<blink::WebAXObject> name_objects;
+  accessibility_object_.GetName(name_from, name_objects);
+  ax::mojom::DescriptionFrom description_from;
+  blink::WebVector<blink::WebAXObject> description_objects;
+  accessibility_object_.Description(name_from, description_from,
+                                    description_objects);
+  return static_cast<int>(description_objects.size());
 }
 
 v8::Local<v8::Object> WebAXObjectProxy::DescriptionElementAtIndex(
     unsigned index) {
   accessibility_object_.UpdateLayoutAndCheckValidity();
-  ax::mojom::NameFrom nameFrom;
-  blink::WebVector<blink::WebAXObject> nameObjects;
-  accessibility_object_.GetName(nameFrom, nameObjects);
-  ax::mojom::DescriptionFrom descriptionFrom;
-  blink::WebVector<blink::WebAXObject> descriptionObjects;
-  accessibility_object_.Description(nameFrom, descriptionFrom,
-                                    descriptionObjects);
-  if (index >= descriptionObjects.size())
+  ax::mojom::NameFrom name_from;
+  blink::WebVector<blink::WebAXObject> name_objects;
+  accessibility_object_.GetName(name_from, name_objects);
+  ax::mojom::DescriptionFrom description_from;
+  blink::WebVector<blink::WebAXObject> description_objects;
+  accessibility_object_.Description(name_from, description_from,
+                                    description_objects);
+  if (index >= description_objects.size())
     return v8::Local<v8::Object>();
-  return factory_->GetOrCreate(descriptionObjects[index]);
+  return factory_->GetOrCreate(description_objects[index]);
 }
 
 v8::Local<v8::Object> WebAXObjectProxy::OffsetContainer() {
@@ -2135,8 +2140,7 @@ bool RootWebAXObjectProxy::IsRoot() const {
   return true;
 }
 
-WebAXObjectProxyList::WebAXObjectProxyList()
-    : elements_(blink::MainThreadIsolate()) {}
+WebAXObjectProxyList::WebAXObjectProxyList() = default;
 
 WebAXObjectProxyList::~WebAXObjectProxyList() {
   Clear();
@@ -2145,16 +2149,26 @@ WebAXObjectProxyList::~WebAXObjectProxyList() {
 void WebAXObjectProxyList::Clear() {
   v8::Isolate* isolate = blink::MainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
-  size_t elementCount = elements_.Size();
-  for (size_t i = 0; i < elementCount; i++) {
-    WebAXObjectProxy* unwrapped_object = nullptr;
-    bool result =
-        gin::ConvertFromV8(isolate, elements_.Get(i), &unwrapped_object);
-    DCHECK(result);
-    DCHECK(unwrapped_object);
-    unwrapped_object->Reset();
+
+  std::vector<std::unique_ptr<WebAXObjectProxy>> proxies;
+
+  for (auto& persistent : elements_) {
+    auto local = v8::Local<v8::Object>::New(isolate, persistent);
+
+    WebAXObjectProxy* proxy = nullptr;
+    bool ok = gin::ConvertFromV8(isolate, local, &proxy);
+    DCHECK(ok);
+
+    // Because the v8::Persistent in this container uses
+    // CopyablePersistentObject traits, it will not leak the Persistent objects
+    // on destruction. However this wrapper handle v8 object does not destroy
+    // the C++ object it is wrapping (the opposite is true actually), so we must
+    // destroy it explicitly.
+    proxies.emplace_back(proxy);
   }
-  elements_.Clear();
+
+  elements_.clear();
+  proxies.clear();
 }
 
 v8::Local<v8::Object> WebAXObjectProxyList::GetOrCreate(
@@ -2164,15 +2178,15 @@ v8::Local<v8::Object> WebAXObjectProxyList::GetOrCreate(
 
   v8::Isolate* isolate = blink::MainThreadIsolate();
 
-  size_t elementCount = elements_.Size();
-  for (size_t i = 0; i < elementCount; i++) {
-    WebAXObjectProxy* unwrapped_object = nullptr;
-    bool result =
-        gin::ConvertFromV8(isolate, elements_.Get(i), &unwrapped_object);
-    DCHECK(result);
-    DCHECK(unwrapped_object);
-    if (unwrapped_object->IsEqualToObject(object))
-      return elements_.Get(i);
+  for (const auto& persistent : elements_) {
+    auto local = v8::Local<v8::Object>::New(isolate, persistent);
+
+    WebAXObjectProxy* proxy = nullptr;
+    bool ok = gin::ConvertFromV8(isolate, local, &proxy);
+    DCHECK(ok);
+
+    if (proxy->IsEqualToObject(object))
+      return local;
   }
 
   v8::Local<v8::Value> value_handle =
@@ -2180,9 +2194,10 @@ v8::Local<v8::Object> WebAXObjectProxyList::GetOrCreate(
   v8::Local<v8::Object> handle;
   if (value_handle.IsEmpty() ||
       !value_handle->ToObject(isolate->GetCurrentContext()).ToLocal(&handle)) {
-    return v8::Local<v8::Object>();
+    return {};
   }
-  elements_.Append(handle);
+
+  elements_.emplace_back(isolate, std::move(handle));
   return handle;
 }
 

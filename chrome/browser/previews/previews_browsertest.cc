@@ -195,14 +195,13 @@ class PreviewsNoScriptBrowserTest : public ::testing::WithParamInterface<bool>,
 
   void SetUp() override {
     scoped_feature_list_.InitWithFeaturesAndParameters(
-        {{previews::features::kPreviews,
-          {{"override_should_show_preview_check",
-            GetParam() ? "true" : "false"}}},
-         {optimization_guide::features::kOptimizationHints, {}},
-         {previews::features::kNoScriptPreviews, {}},
-         {data_reduction_proxy::features::
-              kDataReductionProxyEnabledWithNetworkService,
-          {}}},
+        {
+            {previews::features::kPreviews,
+             {{"override_should_show_preview_check",
+               GetParam() ? "true" : "false"}}},
+            {optimization_guide::features::kOptimizationHints, {}},
+            {previews::features::kNoScriptPreviews, {}},
+        },
         {});
     PreviewsBrowserTest::SetUp();
   }

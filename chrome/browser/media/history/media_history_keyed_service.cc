@@ -28,11 +28,17 @@ namespace media_history {
 // history.
 class MediaHistoryKeyedService::StoreHolder {
  public:
-  explicit StoreHolder(
-      Profile* profile,
-      scoped_refptr<base::UpdateableSequencedTaskRunner> db_task_runner)
+  StoreHolder(Profile* profile,
+              scoped_refptr<base::UpdateableSequencedTaskRunner> db_task_runner,
+              const bool should_reset)
       : profile_(profile),
-        local_(new MediaHistoryStore(profile, std::move(db_task_runner))) {}
+        local_(new MediaHistoryStore(profile, db_task_runner)),
+        db_task_runner_(db_task_runner) {
+    local_->db_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&MediaHistoryStore::Initialize,
+                                  base::RetainedRef(local_), should_reset));
+  }
+
   explicit StoreHolder(Profile* profile, MediaHistoryKeyedService* remote)
       : profile_(profile), remote_(remote) {}
 
@@ -60,9 +66,17 @@ class MediaHistoryKeyedService::StoreHolder {
     return nullptr;
   }
 
+  void Shutdown() {
+    if (!local_)
+      return;
+
+    local_->SetCancelled();
+  }
+
  private:
   Profile* profile_;
   scoped_refptr<MediaHistoryStore> local_;
+  scoped_refptr<base::UpdateableSequencedTaskRunner> db_task_runner_;
   MediaHistoryKeyedService* remote_ = nullptr;
 };
 
@@ -83,9 +97,10 @@ MediaHistoryKeyedService::MediaHistoryKeyedService(Profile* profile)
   } else {
     auto db_task_runner = base::ThreadPool::CreateUpdateableSequencedTaskRunner(
         {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
-         base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
+         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 
-    store_ = std::make_unique<StoreHolder>(profile_, std::move(db_task_runner));
+    store_ = std::make_unique<StoreHolder>(profile_, std::move(db_task_runner),
+                                           /* should_reset=*/false);
   }
 }
 
@@ -106,10 +121,7 @@ void MediaHistoryKeyedService::Shutdown() {
   if (history)
     history->RemoveObserver(this);
 
-  if (auto* store = store_->GetForWrite()) {
-    store->db_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&MediaHistoryStore::Close, store));
-  }
+  store_->Shutdown();
 }
 
 void MediaHistoryKeyedService::OnURLsDeleted(
@@ -121,15 +133,15 @@ void MediaHistoryKeyedService::OnURLsDeleted(
     return;
 
   if (deletion_info.IsAllHistory()) {
-    // Destroy the old database and create a new one.
-    auto db_task_runner = store->db_task_runner_;
-
-    db_task_runner->PostTask(FROM_HERE,
-                             base::BindOnce(&MediaHistoryStore::RazeAndClose,
-                                            store_->GetForDelete()));
+    // Stop the old database and destroy the DB.
+    scoped_refptr<base::UpdateableSequencedTaskRunner> db_task_runner =
+        store->db_task_runner_;
+    store->SetCancelled();
+    store_.reset();
 
     // Create a new internal store.
-    store_ = std::make_unique<StoreHolder>(profile_, std::move(db_task_runner));
+    store_ = std::make_unique<StoreHolder>(profile_, std::move(db_task_runner),
+                                           /* should_reset= */ true);
     return;
   }
 

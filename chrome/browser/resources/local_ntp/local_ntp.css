@@ -231,11 +231,11 @@ body.hide-fakebox #fakebox {
   right: 16px;
 }
 
-#realbox-icon[data-icon='google_g'] {
+#realbox-icon[data-icon='google_g.png'] {
   background-size: 12px;
 }
 
-#realbox-icon[data-icon='search'] {
+#realbox-icon[data-icon='search.svg'] {
   -webkit-mask-size: 20px;  /* Loupe in realbox is bigger than in matches. */
 }
 

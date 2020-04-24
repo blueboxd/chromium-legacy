@@ -7,51 +7,15 @@
 
 #include <fuchsia/web/cpp/fidl.h>
 
-#include "fuchsia/base/string_util.h"
 #include "fuchsia/engine/url_request_rewrite.mojom.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 
 namespace mojo {
 
 template <>
-struct TypeConverter<mojom::UrlRequestRewriteAddHeadersPtr,
-                     fuchsia::web::UrlRequestRewriteAddHeaders> {
-  static mojom::UrlRequestRewriteAddHeadersPtr Convert(
-      const fuchsia::web::UrlRequestRewriteAddHeaders& input);
-};
-
-template <>
-struct TypeConverter<mojom::UrlRequestRewriteRemoveHeaderPtr,
-                     fuchsia::web::UrlRequestRewriteRemoveHeader> {
-  static mojom::UrlRequestRewriteRemoveHeaderPtr Convert(
-      const fuchsia::web::UrlRequestRewriteRemoveHeader& input);
-};
-
-template <>
-struct TypeConverter<mojom::UrlRequestRewriteSubstituteQueryPatternPtr,
-                     fuchsia::web::UrlRequestRewriteSubstituteQueryPattern> {
-  static mojom::UrlRequestRewriteSubstituteQueryPatternPtr Convert(
-      const fuchsia::web::UrlRequestRewriteSubstituteQueryPattern& input);
-};
-
-template <>
-struct TypeConverter<mojom::UrlRequestRewriteReplaceUrlPtr,
-                     fuchsia::web::UrlRequestRewriteReplaceUrl> {
-  static mojom::UrlRequestRewriteReplaceUrlPtr Convert(
-      const fuchsia::web::UrlRequestRewriteReplaceUrl& input);
-};
-
-template <>
-struct TypeConverter<mojom::UrlRequestRewritePtr,
-                     fuchsia::web::UrlRequestRewrite> {
-  static mojom::UrlRequestRewritePtr Convert(
-      const fuchsia::web::UrlRequestRewrite& input);
-};
-
-template <>
-struct TypeConverter<mojom::UrlRequestRewriteRulePtr,
+struct TypeConverter<mojom::UrlRequestRulePtr,
                      fuchsia::web::UrlRequestRewriteRule> {
-  static mojom::UrlRequestRewriteRulePtr Convert(
+  static mojom::UrlRequestRulePtr Convert(
       const fuchsia::web::UrlRequestRewriteRule& input);
 };
 

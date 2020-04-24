@@ -3347,7 +3347,7 @@ void HttpStreamFactoryJobControllerTest::TestAltSvcVersionSelection(
       url::Origin::Create(GURL("https://example.com")));
   scoped_refptr<HttpResponseHeaders> headers(
       base::MakeRefCounted<HttpResponseHeaders>(""));
-  headers->AddHeader(alt_svc_header);
+  headers->AddHeader("alt-svc", alt_svc_header);
   session_->http_stream_factory()->ProcessAlternativeServices(
       session_.get(), network_isolation_key, headers.get(), origin);
   AlternativeServiceInfo alt_svc_info =
@@ -3367,7 +3367,6 @@ void HttpStreamFactoryJobControllerTest::TestAltSvcVersionSelection(
 TEST_F(HttpStreamFactoryJobControllerTest,
        AltSvcVersionSelectionWithOldFormatFirst) {
   TestAltSvcVersionSelection(
-      "alt-svc: "
       "quic=\":443\"; ma=2592000; v=\"46,43\","
       "h3-Q050=\":443\"; ma=2592000,"
       "h3-Q049=\":443\"; ma=2592000,"
@@ -3383,7 +3382,6 @@ TEST_F(HttpStreamFactoryJobControllerTest,
 TEST_F(HttpStreamFactoryJobControllerTest,
        AltSvcVersionSelectionWithNewFormatFirst) {
   TestAltSvcVersionSelection(
-      "alt-svc: "
       "h3-Q050=\":443\"; ma=2592000,"
       "h3-Q049=\":443\"; ma=2592000,"
       "h3-Q048=\":443\"; ma=2592000,"
@@ -3400,7 +3398,7 @@ TEST_F(HttpStreamFactoryJobControllerTest,
        AltSvcVersionSelectionWithInverseOrderingOldFormat) {
   // Server prefers Q043 but client prefers Q046.
   TestAltSvcVersionSelection(
-      "alt-svc: quic=\":443\"; ma=2592000; v=\"43,46\"",
+      "quic=\":443\"; ma=2592000; v=\"43,46\"",
       quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO,
                               quic::QUIC_VERSION_43),
       quic::ParsedQuicVersionVector{
@@ -3414,7 +3412,6 @@ TEST_F(HttpStreamFactoryJobControllerTest,
        AltSvcVersionSelectionWithInverseOrderingNewFormat) {
   // Server prefers Q043 but client prefers Q046.
   TestAltSvcVersionSelection(
-      "alt-svc: "
       "h3-Q043=\":443\"; ma=2592000,"
       "h3-Q046=\":443\"; ma=2592000",
       quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO,

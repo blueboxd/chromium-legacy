@@ -1439,7 +1439,7 @@ TEST_F(AnimationAnimationTestNoCompositing, ScrollLinkedAnimationCreation) {
   scroll_animation->play();
 
   // Verify start and current times in Pending state.
-  EXPECT_FALSE(scroll_animation->startTime().has_value());
+  EXPECT_EQ(0, scroll_animation->startTime());
   EXPECT_EQ(20, scroll_animation->currentTime());
 
   UpdateAllLifecyclePhasesForTest();

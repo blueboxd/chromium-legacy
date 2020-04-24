@@ -84,7 +84,8 @@ void HostCachePersistenceManager::WriteToDisk() {
 
   net_log_.AddEvent(net::NetLogEventType::HOST_CACHE_PREF_WRITE);
   base::ListValue value;
-  cache_->GetAsListValue(&value, false);
+  cache_->GetAsListValue(&value, false,
+                         net::HostCache::SerializationType::kRestorable);
   writing_pref_ = true;
   pref_service_->Set(pref_name_, value);
   writing_pref_ = false;

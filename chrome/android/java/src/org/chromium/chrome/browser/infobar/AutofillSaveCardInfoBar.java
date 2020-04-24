@@ -14,6 +14,7 @@ import android.view.View;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ui.messages.infobar.ConfirmInfoBar;
 import org.chromium.chrome.browser.ui.messages.infobar.InfoBarControlLayout;
 import org.chromium.chrome.browser.ui.messages.infobar.InfoBarLayout;
 import org.chromium.ui.UiUtils;

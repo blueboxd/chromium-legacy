@@ -21,12 +21,9 @@ AssistantStateProxy::~AssistantStateProxy() {
   RegisterPrefChanges(nullptr);
 }
 
-void AssistantStateProxy::Init(mojom::ClientProxy* client,
-                               PrefService* profile_prefs) {
-  // Bind to AssistantStateController.
-  mojo::PendingRemote<ash::mojom::AssistantStateController> remote_controller;
-  client->RequestAssistantStateController(
-      remote_controller.InitWithNewPipeAndPassReceiver());
+void AssistantStateProxy::Init(
+    mojo::PendingRemote<ash::mojom::AssistantStateController> remote_controller,
+    PrefService* profile_prefs) {
   assistant_state_controller_.Bind(std::move(remote_controller));
 
   mojo::PendingRemote<ash::mojom::AssistantStateObserver> observer;

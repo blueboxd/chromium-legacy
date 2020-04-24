@@ -349,6 +349,7 @@
 <translation id="1465176863081977902">K&amp;opiraj adresu audio zapisa</translation>
 <translation id="1465827627707997754">Komad pice</translation>
 <translation id="1468571364034902819">Nije moguće koristiti ovaj profil</translation>
+<translation id="1470084204649225129">{NUM_TABS,plural, =1{Dodaj karticu u novu grupu}one{Dodaj kartice u novu grupu}few{Dodaj kartice u novu grupu}other{Dodaj kartice u novu grupu}}</translation>
 <translation id="1472675084647422956">Prikaži više</translation>
 <translation id="1475502736924165259">U arhivi imate certifikate koji ne odgovaraju nijednoj od ostalih kategorija</translation>
 <translation id="1476088332184200792">Kopirajte na svoj uređaj</translation>
@@ -420,7 +421,7 @@ da li    proksi server funkcionira. Ako smatrate da ne trebate koristiti
 <translation id="1555130319947370107">Plava</translation>
 <translation id="1556537182262721003">Prebacivanje direktorija ekstenzije u profil nije uspjelo.</translation>
 <translation id="155865706765934889">Dodirna podloga</translation>
-<translation id="1560763881671211335">Administratori za G Suite for Education određuju kojim Googleovim uslugama njihovi korisnici mogu pristupiti kada su prijavljeni na račun za G Suite for Education Školski administratori moraju pružiti ili dobiti pristanak od maloljetnih korisnika za korištenje usluga.
+<translation id="1560763881671211335">Administratori za G Suite for Education određuju kojim Googleovim uslugama njihovi korisnici mogu pristupiti kada su prijavljeni na račun za G Suite for Education. Školski administratori moraju pružiti ili dobiti pristanak od maloljetnih korisnika za korištenje usluga.
 
     Podaci pregledanja (uključujući historiju, oznake i lozinke) će se pohraniti na računu Family Linka, a ne na školskom računu.
 
@@ -477,6 +478,7 @@ da li    proksi server funkcionira. Ako smatrate da ne trebate koristiti
 <translation id="1629314197035607094">Lozinka je istekla</translation>
 <translation id="1630768113285622200">Ponovo pokreni i nastavi</translation>
 <translation id="1632803087685957583">Omogućava vam da podesite brzinu ponavljanja tastature, predviđanje riječi i još mnogo toga</translation>
+<translation id="1634783886312010422">Jeste li već promijenili ovu lozinku na web lokaciji <ph name="WEBSITE" />?</translation>
 <translation id="1635033183663317347">Instalirao je nadređeni korisnik.</translation>
 <translation id="1637224376458524414">Preuzmite oznaku na iPhone uređaju</translation>
 <translation id="1637765355341780467">Došlo je do problema prilikom otvaranja vašeg profila. Neke funkcije možda neće biti dostupne.</translation>
@@ -3387,6 +3389,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="5542949973455282971">Povezivanje s operaterom <ph name="CARRIER_NAME" /></translation>
 <translation id="5543983818738093899">Provjera statusa...</translation>
 <translation id="554517032089923082">GTC</translation>
+<translation id="5545335608717746497">{NUM_TABS,plural, =1{Dodaj karticu u grupu}one{Dodaj kartice u grupu}few{Dodaj kartice u grupu}other{Dodaj kartice u grupu}}</translation>
 <translation id="5546865291508181392">Pronađi</translation>
 <translation id="5548159762883465903">{NUM_OTHER_TABS,plural, =0{"<ph name="TAB_TITLE" />"}=1{"<ph name="TAB_TITLE" />" i još jedna kartica}one{"<ph name="TAB_TITLE" />" i još # kartica}few{"<ph name="TAB_TITLE" />" i još # kartice}other{"<ph name="TAB_TITLE" />" i još # kartica}}</translation>
 <translation id="5548606607480005320">Sigurnosna provjera</translation>
@@ -4211,6 +4214,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="6659594942844771486">Kartica</translation>
 <translation id="6664237456442406323">Nažalost, vaš računar je konfiguriran s neispravnim ID-om hardvera. Ovim se sprečava da se Chrome OS ažurira najnovijim sigurnosnim ispravkama i vaš računar <ph name="BEGIN_BOLD" />može biti izložen zlonamjernim napadima<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Došlo je do problema prilikom otvaranja vašeg profila. Odjavite se pa se ponovo prijavite.</translation>
+<translation id="6670142487971298264">Aplikacija <ph name="APP_NAME" /> je sada dostupna</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="6675665718701918026">Uređaj za pokazivanje je povezan</translation>
 <translation id="6676212663108450937">Razmislite da koristite slušalice dok vježbate glas</translation>
@@ -4540,6 +4544,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="7108338896283013870">Sakrij</translation>
 <translation id="7108668606237948702">enter</translation>
 <translation id="7109543803214225826">Prečac je uklonjen</translation>
+<translation id="7110644433780444336">{NUM_TABS,plural, =1{Dodaj karticu u grupu}one{Dodaj kartice u grupu}few{Dodaj kartice u grupu}other{Dodaj kartice u grupu}}</translation>
 <translation id="7113502843173351041">Zna vašu adresu e-pošte</translation>
 <translation id="7114054701490058191">Lozinke se ne podudaraju</translation>
 <translation id="7114648273807173152">Da koristite Pametno zaključavanja prilikom prijave na Google račun, idite na Postavke &gt; Povezani uređaji &gt; Vaš telefon &gt; Pametno zaključavanje.</translation>
@@ -4583,6 +4588,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="7170041865419449892">Izvan opsega</translation>
 <translation id="7171259390164035663">Nemoj prijaviti</translation>
 <translation id="7171559745792467651">Instalirajte aplikacije s drugih uređaja</translation>
+<translation id="7172470549472604877">{NUM_TABS,plural, =1{Dodaj karticu u novu grupu}one{Dodaj kartice u novu grupu}few{Dodaj kartice u novu grupu}other{Dodaj kartice u novu grupu}}</translation>
 <translation id="7174199383876220879">Novo! Upravljajte muzikom, videozapisima i drugim sadržajima.</translation>
 <translation id="7175037578838465313">Konfigurirajte <ph name="NAME" /></translation>
 <translation id="7175353351958621980">Učitano iz:</translation>
@@ -5161,6 +5167,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="7925247922861151263">AAA provjera nije uspjela</translation>
 <translation id="7925285046818567682">Čeka se <ph name="HOST_NAME" />...</translation>
 <translation id="7926423016278357561">To nisam bio/la ja</translation>
+<translation id="7928175190925744466">Već ste promijenili ovu lozinku?</translation>
 <translation id="7928836894214140642">Upravlja <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">Ovdje će se prikazati vaši sačuvani načini plaćanja</translation>
 <translation id="79312157130859720">Aplikacija <ph name="APP_NAME" /> dijeli vaš ekran i zvuk.</translation>
@@ -5213,7 +5220,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="7987814697832569482">Uvijek se povezuj preko ovog VPN-a</translation>
 <translation id="7988355189918024273">Omogućavanje funkcija pristupačnosti</translation>
 <translation id="7991296728590311172">Postavke prekidača za pristup</translation>
-<translation id="7992202128769240372">Prekoračeno je ograničenje od<ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
+<translation id="7992202128769240372">Prekoračuje ograničenje od <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="7994350303002908848">Instaliranje Plugin VM-a nije uspjelo. Pokušajte ponovo ili kontaktirajte administratora uređaja vaše organizacije. Kȏd greške: <ph name="ERROR_CODE" />.</translation>
 <translation id="7994702968232966508">EAP metoda</translation>
 <translation id="7997826902155442747">Prioritet procesa</translation>

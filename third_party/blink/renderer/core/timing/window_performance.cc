@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/core/timing/layout_shift.h"
 #include "third_party/blink/renderer/core/timing/performance_element_timing.h"
 #include "third_party/blink/renderer/core/timing/performance_event_timing.h"
+#include "third_party/blink/renderer/core/timing/performance_observer.h"
 #include "third_party/blink/renderer/core/timing/performance_timing.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
@@ -59,11 +60,6 @@ static constexpr base::TimeDelta kLongTaskObserverThreshold =
 namespace blink {
 
 namespace {
-
-// Events taking longer than this threshold to finish being processed are
-// regarded as long-latency events by event-timing. Shorter-latency events are
-// ignored to reduce performance impact.
-constexpr int kEventTimingDurationThresholdInMs = 104;
 
 String GetFrameAttribute(HTMLFrameOwnerElement* frame_owner,
                          const QualifiedName& attr_name,
@@ -158,7 +154,7 @@ WindowPerformance::WindowPerformance(LocalDOMWindow* window)
     : Performance(
           ToTimeOrigin(window),
           window->document()->GetTaskRunner(TaskType::kPerformanceTimeline)),
-      DOMWindowClient(window) {
+      ExecutionContextClient(window) {
   DCHECK(GetFrame());
   DCHECK(GetFrame()->GetPerformanceMonitor());
   GetFrame()->GetPerformanceMonitor()->Subscribe(
@@ -232,7 +228,7 @@ void WindowPerformance::Trace(Visitor* visitor) {
   visitor->Trace(timing_);
   Performance::Trace(visitor);
   PerformanceMonitor::Client::Trace(visitor);
-  DOMWindowClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
 }
 
 static bool CanAccessOrigin(Frame* frame1, Frame* frame2) {
@@ -383,8 +379,7 @@ void WindowPerformance::ReportEventTimings(WebSwapResult result,
             PerformanceEventTiming::CreateFirstInputTiming(entry));
       }
     }
-    if (duration_in_ms < kEventTimingDurationThresholdInMs ||
-        !event_timing_enabled)
+    if (!event_timing_enabled)
       continue;
 
     if (HasObserverFor(PerformanceEntry::kEvent)) {
@@ -393,8 +388,13 @@ void WindowPerformance::ReportEventTimings(WebSwapResult result,
       NotifyObserversOfEntry(*entry);
     }
 
-    if (!IsEventTimingBufferFull())
+    // Only buffer really slow events to keep memory usage low.
+    // TODO(npm): is 104 a reasonable buffering threshold or should it be
+    // relaxed?
+    if (duration_in_ms >= PerformanceObserver::kDefaultDurationThreshold &&
+        !IsEventTimingBufferFull()) {
       AddEventTimingBuffer(*entry);
+    }
   }
   event_timings_.clear();
 }

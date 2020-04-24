@@ -147,13 +147,17 @@ void MultiStorePasswordSaveManager::SavePendingToStoreImpl(
                         old_profile_password);
       break;
     case PendingCredentialsState::UPDATE:
-    case PendingCredentialsState::EQUAL_TO_SAVED_MATCH:
-      // TODO(crbug.com/1012203): Make to preserve the moving_blocked_for_list
-      // in the profile store in case |pending_credentials_| is coming from the
-      // account store.
-      form_saver_->Update(pending_credentials_, profile_matches,
+    case PendingCredentialsState::EQUAL_TO_SAVED_MATCH: {
+      // If the submitted credentials exists in both stores,
+      // |pending_credentials_| might be from the account store (and thus not
+      // have a moving_blocked_for_list). We need to preserve any existing list,
+      // so explicitly copy it over from the profile store match.
+      PasswordForm form_to_update(pending_credentials_);
+      form_to_update.moving_blocked_for_list =
+          states.similar_saved_form_from_profile_store->moving_blocked_for_list;
+      form_saver_->Update(form_to_update, profile_matches,
                           old_profile_password);
-      break;
+    } break;
     // The NEW_LOGIN case was already handled separately above.
     case PendingCredentialsState::NEW_LOGIN:
     case PendingCredentialsState::NONE:
@@ -170,10 +174,16 @@ void MultiStorePasswordSaveManager::SavePendingToStoreImpl(
                                         old_account_password);
         break;
       case PendingCredentialsState::UPDATE:
-      case PendingCredentialsState::EQUAL_TO_SAVED_MATCH:
-        account_store_form_saver_->Update(pending_credentials_, account_matches,
+      case PendingCredentialsState::EQUAL_TO_SAVED_MATCH: {
+        // If the submitted credentials exists in both stores,
+        // .|pending_credentials_| might be from the profile store (and thus
+        // has a moving_blocked_for_list). We need to clear it before storing to
+        // the account store.
+        PasswordForm form_to_update(pending_credentials_);
+        form_to_update.moving_blocked_for_list.clear();
+        account_store_form_saver_->Update(form_to_update, account_matches,
                                           old_account_password);
-        break;
+      } break;
       // The NEW_LOGIN case was already handled separately above.
       case PendingCredentialsState::NEW_LOGIN:
       case PendingCredentialsState::NONE:
@@ -267,7 +277,6 @@ void MultiStorePasswordSaveManager::BlockMovingToAccountStoreFor(
   // might be from the account store (and thus not have a
   // moving_blocked_for_list). We need to preserve any existing list, so
   // explicitly copy it over from the profile store match.
-
   PasswordForm form_to_block(pending_credentials_);
   form_to_block.moving_blocked_for_list =
       states.similar_saved_form_from_profile_store->moving_blocked_for_list;

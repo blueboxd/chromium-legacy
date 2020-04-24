@@ -111,9 +111,9 @@
           on-sync-setup-done="onSyncSetupDone_">
       </settings-sync-account-control>
     </template>
-    <div class="settings-box first" hidden="[[!syncDisabledByAdmin_]]">
+    <div class="cr-row first" hidden="[[!syncDisabledByAdmin_]]">
       <iron-icon id="disabled-by-admin-icon" icon="cr20:domain"></iron-icon>
-      <div class="middle settings-box-text">
+      <div class="flex cr-padded-text">
         $i18n{syncDisabledByAdministrator}
       </div>
     </div>
@@ -123,7 +123,7 @@
         on-dom-change="focusPassphraseInput_">
       <div id="existingPassphrase" class="list-frame">
         <div id="existingPassphraseTitle" class="list-item">
-            <div class="start settings-box-text">
+            <div class="start cr-padded-text">
               <div>$i18n{existingPassphraseTitle}</div>
               <div class="secondary"
                   inner-h-t-m-l="[[syncPrefs.enterPassphraseBody]]">
@@ -144,7 +144,7 @@
           </cr-input>
         </div>
         <div id="passphraseRecoverHint" class="list-item">
-          <div class="settings-box-text">$i18nRaw{passphraseRecover}</div>
+          <div class="cr-padded-text">$i18nRaw{passphraseRecover}</div>
         </div>
       </div>
     </template>
@@ -152,11 +152,11 @@
     <div id="sync-separator" hidden="[[!syncSectionDisabled_]]"></div>
 
     <div id="sync-section" hidden="[[syncSectionDisabled_]]">
-      <div class="settings-box first">
-        <h2 class="cr-title-text start">$i18n{sync}</h2>
+      <div class="cr-row first">
+        <h2 class="cr-title-text">$i18n{sync}</h2>
       </div>
 
-      <div id="[[pages_.SPINNER]]" class="settings-box first settings-box-text"
+      <div id="[[pages_.SPINNER]]" class="cr-row first cr-padded-text"
           hidden$="[[!isStatus_(pages_.SPINNER, pageStatus_)]]">
         $i18n{syncLoading}
       </div>
@@ -179,7 +179,7 @@
           <template is="dom-if" if="[[!syncSetupFriendlySettings_]]">
             <div id="encryptionDescription"
                 hidden="[[syncPrefs.passphraseRequired]]"
-                class$="single-column settings-box-text
+                class$="single-column cr-padded-text
                     [[getPassphraseHintLines_(syncPrefs.encryptAllData)]]
                     list-item">
               $i18n{encryptionOptionsTitle}
@@ -232,7 +232,7 @@
       </div>
     </div>
 
-    <div class="settings-box first">
+    <div class="cr-row first">
       <h2 class="cr-title-text">
         $i18n{nonPersonalizedServicesSectionLabel}
       </h2>

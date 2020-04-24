@@ -28,6 +28,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkPixmap.h"
@@ -97,10 +98,15 @@ class VideoCaptureOverlayTest : public testing::Test {
         kTestImageSize.width(), kTestImageSize.height(),
         GetLinearSRGB().ToSkColorSpace());
     CHECK(result.tryAllocPixels(info, info.minRowBytes()));
-    result.eraseColor(kTestImageBackground);
+    SkCanvas canvas(result);
+    canvas.drawColor(kTestImageBackground);
     for (size_t i = 0; i < base::size(kTestImageColors); ++i) {
       const size_t idx = (i + cycle) % base::size(kTestImageColors);
-      result.erase(kTestImageColors[idx], kTestImageColorRects[i]);
+      SkPaint paint;
+      paint.setBlendMode(SkBlendMode::kSrc);
+      paint.setColor(SkColor4f::FromColor(kTestImageColors[idx]),
+                     info.colorSpace());
+      canvas.drawIRect(kTestImageColorRects[i], paint);
     }
 
     return result;

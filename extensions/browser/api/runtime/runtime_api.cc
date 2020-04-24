@@ -164,6 +164,9 @@ BrowserContextKeyedAPIFactory<RuntimeAPI>* RuntimeAPI::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 
+constexpr int RuntimeAPI::kFastReloadCount;
+constexpr int RuntimeAPI::kUnpackedFastReloadCount;
+
 // static
 void RuntimeAPI::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kPrefLastRestartWasDueToDelayedRestartApi,

@@ -7,8 +7,10 @@
  * containing search engines settings.
  */
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/js/cr.m.js';
+import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import './search_engine_dialog.js';
 import './search_engines_list.js';
 import './omnibox_extension_entry.js';

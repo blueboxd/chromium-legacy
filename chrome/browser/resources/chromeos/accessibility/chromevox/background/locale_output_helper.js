@@ -115,6 +115,9 @@ LocaleOutputHelper = class {
 
     const targetLanguage = components[0];
     for (const voice of this.availableVoices_) {
+      if (!voice.lang) {
+        continue;
+      }
       const candidateLanguage = voice.lang.toLowerCase().split('-')[0];
       if (candidateLanguage === targetLanguage) {
         return true;

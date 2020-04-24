@@ -349,6 +349,7 @@
 <translation id="1465176863081977902">&amp;Копировать URL аудио</translation>
 <translation id="1465827627707997754">Кусок пиццы</translation>
 <translation id="1468571364034902819">Нельзя использовать этот профиль</translation>
+<translation id="1470084204649225129">{NUM_TABS,plural, =1{Добавить вкладку в новую группу}one{Добавить вкладки в новую группу}few{Добавить вкладки в новую группу}many{Добавить вкладки в новую группу}other{Добавить вкладки в новую группу}}</translation>
 <translation id="1472675084647422956">Показать больше...</translation>
 <translation id="1475502736924165259">У вас имеются сертификаты, которые не попадают ни в одну из других категорий</translation>
 <translation id="1476088332184200792">Копировать на мое устройство</translation>
@@ -476,6 +477,7 @@
 <translation id="1629314197035607094">Срок действия пароля истек.</translation>
 <translation id="1630768113285622200">Перезапустить и продолжить</translation>
 <translation id="1632803087685957583">Позволяет настроить подсказки, скорость повтора клавиш и т д.</translation>
+<translation id="1634783886312010422">Вы уже поменяли пароль на сайте <ph name="WEBSITE" />?</translation>
 <translation id="1635033183663317347">Установлено службой поддержки</translation>
 <translation id="1637224376458524414">Получите эту закладку на iPhone</translation>
 <translation id="1637765355341780467">Не удалось открыть профиль. Некоторые функции могут быть недоступны.</translation>
@@ -3385,6 +3387,7 @@
 <translation id="5542949973455282971">Подключение к сети "<ph name="CARRIER_NAME" />"…</translation>
 <translation id="5543983818738093899">Проверка статуса…</translation>
 <translation id="554517032089923082">GTC</translation>
+<translation id="5545335608717746497">{NUM_TABS,plural, =1{Добавить вкладку в группу}one{Добавить вкладки в группу}few{Добавить вкладки в группу}many{Добавить вкладки в группу}other{Добавить вкладки в группу}}</translation>
 <translation id="5546865291508181392">Найти</translation>
 <translation id="5548159762883465903">{NUM_OTHER_TABS,plural, =0{"<ph name="TAB_TITLE" />"}=1{"<ph name="TAB_TITLE" />" и ещё 1 вкладка}one{"<ph name="TAB_TITLE" />" и ещё # вкладка}few{"<ph name="TAB_TITLE" />" и ещё # вкладки}many{"<ph name="TAB_TITLE" />" и ещё # вкладок}other{"<ph name="TAB_TITLE" />" и ещё # вкладки}}</translation>
 <translation id="5548606607480005320">Проверка безопасности</translation>
@@ -4209,6 +4212,7 @@
 <translation id="6659594942844771486">Вкладка</translation>
 <translation id="6664237456442406323">К сожалению, в настройках компьютера указан недействительный аппаратный код. Chrome OS не сможет устанавливать обновления для системы безопасности, и ваш компьютер <ph name="BEGIN_BOLD" />может подвергаться атакам вредоносных сайтов<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Не удалось открыть профиль. Попробуйте выйти из аккаунта и войти снова.</translation>
+<translation id="6670142487971298264">Срок блокировки приложения "<ph name="APP_NAME" />" истек.</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="6675665718701918026">Подключено дополнительное устройство</translation>
 <translation id="6676212663108450937">Используйте наушники при обучении голосовым командам.</translation>
@@ -4538,6 +4542,7 @@
 <translation id="7108338896283013870">Скрыть</translation>
 <translation id="7108668606237948702">Войти</translation>
 <translation id="7109543803214225826">Ярлык удален</translation>
+<translation id="7110644433780444336">{NUM_TABS,plural, =1{Добавить вкладку в группу}one{Добавить вкладки в группу}few{Добавить вкладки в группу}many{Добавить вкладки в группу}other{Добавить вкладки в группу}}</translation>
 <translation id="7113502843173351041">Доступ к вашему адресу электронной почты</translation>
 <translation id="7114054701490058191">Пароли не совпадают</translation>
 <translation id="7114648273807173152">Чтобы использовать Smart Lock для входа в аккаунт Google, нажмите "Настройки &gt; Подключенные устройства &gt; Телефон &gt; Smart Lock".</translation>
@@ -4581,6 +4586,7 @@
 <translation id="7170041865419449892">Выход за рамки диапазона</translation>
 <translation id="7171259390164035663">Отказаться</translation>
 <translation id="7171559745792467651">Скачайте приложения, установленные на других ваших устройствах</translation>
+<translation id="7172470549472604877">{NUM_TABS,plural, =1{Добавить вкладку в новую группу}one{Добавить вкладки в новую группу}few{Добавить вкладки в новую группу}many{Добавить вкладки в новую группу}other{Добавить вкладки в новую группу}}</translation>
 <translation id="7174199383876220879">Новинка! Управляйте воспроизведением музыки, видео и других медиафайлов.</translation>
 <translation id="7175037578838465313">Настроить сеть "<ph name="NAME" />"</translation>
 <translation id="7175353351958621980">Загружено из:</translation>
@@ -5159,6 +5165,7 @@
 <translation id="7925247922861151263">Сбой при проверке AAA</translation>
 <translation id="7925285046818567682">Ожидание <ph name="HOST_NAME" />...</translation>
 <translation id="7926423016278357561">Это не я</translation>
+<translation id="7928175190925744466">Уже сменили пароль?</translation>
 <translation id="7928836894214140642">Под управлением домена <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">Здесь появятся сохраненные способы оплаты.</translation>
 <translation id="79312157130859720">Приложение "<ph name="APP_NAME" />" предоставило доступ к экрану и аудио.</translation>

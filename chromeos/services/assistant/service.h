@@ -100,8 +100,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   AssistantStateProxy* GetAssistantStateProxyForTesting();
 
   // AssistantService overrides:
-  void Init(mojo::PendingRemote<mojom::Client> client,
-            mojo::PendingRemote<mojom::DeviceActions> device_actions) override;
+  void Init(mojo::PendingRemote<mojom::DeviceActions> device_actions) override;
   void BindAssistant(mojo::PendingReceiver<mojom::Assistant> receiver) override;
   void BindSettingsManager(
       mojo::PendingReceiver<mojom::AssistantSettingsManager> receiver) override;
@@ -171,7 +170,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
 
   mojo::ReceiverSet<mojom::Assistant> assistant_receivers_;
 
-  mojo::Remote<mojom::Client> client_;
   mojo::Remote<mojom::DeviceActions> device_actions_;
 
   signin::IdentityManager* const identity_manager_;

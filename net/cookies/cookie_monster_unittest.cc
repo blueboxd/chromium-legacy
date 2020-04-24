@@ -51,6 +51,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+#include "url/url_constants.h"
 
 namespace net {
 
@@ -2902,13 +2903,13 @@ TEST_F(CookieMonsterTest, SetSecureCookies) {
   EXPECT_TRUE(
       CreateAndSetCookieReturnStatus(cm.get(), https_url, "A=B;").IsInclude());
 
-  // A secure cookie cannot be created from a URL with an insecure scheme.
+  // A secure cookie cannot be set from a URL with an insecure scheme.
   EXPECT_TRUE(
       CreateAndSetCookieReturnStatus(cm.get(), http_url, "A=B; Secure")
           .HasExactlyExclusionReasonsForTesting(
               {CanonicalCookie::CookieInclusionStatus::EXCLUDE_SECURE_ONLY}));
 
-  // A secure cookie can be created from a URL with a secure scheme.
+  // A secure cookie can be set from a URL with a secure scheme.
   EXPECT_TRUE(CreateAndSetCookieReturnStatus(cm.get(), https_url, "A=B; Secure")
                   .IsInclude());
 
@@ -3065,6 +3066,288 @@ TEST_F(CookieMonsterTest, SetSecureCookies) {
   ExpectLogContainsSomewhere(
       entries, 0, NetLogEventType::COOKIE_STORE_COOKIE_REJECTED_HTTPONLY,
       NetLogEventPhase::NONE);
+}
+
+// Tests the behavior of "Leave Secure Cookies Alone" in
+// MaybeDeleteEquivalentCookieAndUpdateStatus().
+// Check domain-match criterion: If either cookie domain matches the other,
+// don't set the insecure cookie.
+TEST_F(CookieMonsterTest, LeaveSecureCookiesAlone_DomainMatch) {
+  std::unique_ptr<CookieMonster> cm(new CookieMonster(nullptr, &net_log_));
+
+  // These domains will domain-match each other.
+  const char* kRegistrableDomain = "foo.com";
+  const char* kSuperdomain = "a.foo.com";
+  const char* kDomain = "b.a.foo.com";
+  const char* kSubdomain = "c.b.a.foo.com";
+  // This domain does not match any, aside from the registrable domain.
+  const char* kOtherDomain = "z.foo.com";
+
+  for (const char* preexisting_cookie_host :
+       {kRegistrableDomain, kSuperdomain, kDomain, kSubdomain}) {
+    GURL preexisting_cookie_url(
+        base::StrCat({url::kHttpsScheme, url::kStandardSchemeSeparator,
+                      preexisting_cookie_host}));
+    for (const char* new_cookie_host :
+         {kRegistrableDomain, kSuperdomain, kDomain, kSubdomain}) {
+      GURL https_url(base::StrCat(
+          {url::kHttpsScheme, url::kStandardSchemeSeparator, new_cookie_host}));
+      GURL http_url(base::StrCat(
+          {url::kHttpScheme, url::kStandardSchemeSeparator, new_cookie_host}));
+
+      // Preexisting Secure host and domain cookies.
+      EXPECT_TRUE(CreateAndSetCookieReturnStatus(
+                      cm.get(), preexisting_cookie_url, "A=0; Secure")
+                      .IsInclude());
+      EXPECT_TRUE(
+          CreateAndSetCookieReturnStatus(
+              cm.get(), preexisting_cookie_url,
+              base::StrCat({"B=0; Secure; Domain=", preexisting_cookie_host}))
+              .IsInclude());
+
+      // Don't set insecure cookie from an insecure URL if equivalent secure
+      // cookie exists.
+      EXPECT_TRUE(CreateAndSetCookieReturnStatus(cm.get(), http_url, "A=1")
+                      .HasExactlyExclusionReasonsForTesting(
+                          {CanonicalCookie::CookieInclusionStatus::
+                               EXCLUDE_OVERWRITE_SECURE}))
+          << "Insecure host cookie from " << http_url
+          << " should not be set if equivalent secure host cookie from "
+          << preexisting_cookie_url << " exists.";
+      EXPECT_TRUE(CreateAndSetCookieReturnStatus(
+                      cm.get(), http_url,
+                      base::StrCat({"A=2; Domain=", new_cookie_host}))
+                      .HasExactlyExclusionReasonsForTesting(
+                          {CanonicalCookie::CookieInclusionStatus::
+                               EXCLUDE_OVERWRITE_SECURE}))
+          << "Insecure domain cookie from " << http_url
+          << " should not be set if equivalent secure host cookie from "
+          << preexisting_cookie_url << " exists.";
+      EXPECT_TRUE(CreateAndSetCookieReturnStatus(cm.get(), http_url, "B=1")
+                      .HasExactlyExclusionReasonsForTesting(
+                          {CanonicalCookie::CookieInclusionStatus::
+                               EXCLUDE_OVERWRITE_SECURE}))
+          << "Insecure host cookie from " << http_url
+          << " should not be set if equivalent secure domain cookie from "
+          << preexisting_cookie_url << " exists.";
+      EXPECT_TRUE(CreateAndSetCookieReturnStatus(
+                      cm.get(), http_url,
+                      base::StrCat({"B=2; Domain=", new_cookie_host}))
+                      .HasExactlyExclusionReasonsForTesting(
+                          {CanonicalCookie::CookieInclusionStatus::
+                               EXCLUDE_OVERWRITE_SECURE}))
+          << "Insecure domain cookie from " << http_url
+          << " should not be set if equivalent secure domain cookie from "
+          << preexisting_cookie_url << " exists.";
+
+      // Allow setting insecure cookie from a secure URL even if equivalent
+      // secure cookie exists.
+      EXPECT_TRUE(CreateAndSetCookieReturnStatus(cm.get(), https_url, "A=3;")
+                      .IsInclude())
+          << "Insecure host cookie from " << https_url
+          << " can be set even if equivalent secure host cookie from "
+          << preexisting_cookie_url << " exists.";
+      EXPECT_TRUE(CreateAndSetCookieReturnStatus(
+                      cm.get(), https_url,
+                      base::StrCat({"A=4; Domain=", new_cookie_host}))
+                      .IsInclude())
+          << "Insecure domain cookie from " << https_url
+          << " can be set even if equivalent secure host cookie from "
+          << preexisting_cookie_url << " exists.";
+      EXPECT_TRUE(CreateAndSetCookieReturnStatus(cm.get(), https_url, "B=3;")
+                      .IsInclude())
+          << "Insecure host cookie from " << https_url
+          << " can be set even if equivalent secure domain cookie from "
+          << preexisting_cookie_url << " exists.";
+      EXPECT_TRUE(CreateAndSetCookieReturnStatus(
+                      cm.get(), https_url,
+                      base::StrCat({"B=4; Domain=", new_cookie_host}))
+                      .IsInclude())
+          << "Insecure domain cookie from " << https_url
+          << " can be set even if equivalent secure domain cookie from "
+          << preexisting_cookie_url << " exists.";
+
+      DeleteAll(cm.get());
+    }
+  }
+
+  // Test non-domain-matching case. These sets should all be allowed because the
+  // cookie is not equivalent.
+  GURL nonmatching_https_url(base::StrCat(
+      {url::kHttpsScheme, url::kStandardSchemeSeparator, kOtherDomain}));
+
+  for (const char* host : {kSuperdomain, kDomain, kSubdomain}) {
+    GURL https_url(
+        base::StrCat({url::kHttpsScheme, url::kStandardSchemeSeparator, host}));
+    GURL http_url(
+        base::StrCat({url::kHttpScheme, url::kStandardSchemeSeparator, host}));
+
+    // Preexisting Secure host and domain cookies.
+    EXPECT_TRUE(CreateAndSetCookieReturnStatus(cm.get(), nonmatching_https_url,
+                                               "A=0; Secure")
+                    .IsInclude());
+    EXPECT_TRUE(CreateAndSetCookieReturnStatus(
+                    cm.get(), nonmatching_https_url,
+                    base::StrCat({"B=0; Secure; Domain=", kOtherDomain}))
+                    .IsInclude());
+
+    // New cookie from insecure URL is set.
+    EXPECT_TRUE(
+        CreateAndSetCookieReturnStatus(cm.get(), http_url, "A=1;").IsInclude())
+        << "Insecure host cookie from " << http_url
+        << " can be set even if equivalent secure host cookie from "
+        << nonmatching_https_url << " exists.";
+    EXPECT_TRUE(CreateAndSetCookieReturnStatus(
+                    cm.get(), http_url, base::StrCat({"A=2; Domain=", host}))
+                    .IsInclude())
+        << "Insecure domain cookie from " << http_url
+        << " can be set even if equivalent secure host cookie from "
+        << nonmatching_https_url << " exists.";
+    EXPECT_TRUE(
+        CreateAndSetCookieReturnStatus(cm.get(), http_url, "B=1;").IsInclude())
+        << "Insecure host cookie from " << http_url
+        << " can be set even if equivalent secure domain cookie from "
+        << nonmatching_https_url << " exists.";
+    EXPECT_TRUE(CreateAndSetCookieReturnStatus(
+                    cm.get(), http_url, base::StrCat({"B=2; Domain=", host}))
+                    .IsInclude())
+        << "Insecure domain cookie from " << http_url
+        << " can be set even if equivalent secure domain cookie from "
+        << nonmatching_https_url << " exists.";
+
+    // New cookie from secure URL is set.
+    EXPECT_TRUE(
+        CreateAndSetCookieReturnStatus(cm.get(), https_url, "A=3;").IsInclude())
+        << "Insecure host cookie from " << https_url
+        << " can be set even if equivalent secure host cookie from "
+        << nonmatching_https_url << " exists.";
+    EXPECT_TRUE(CreateAndSetCookieReturnStatus(
+                    cm.get(), https_url, base::StrCat({"A=4; Domain=", host}))
+                    .IsInclude())
+        << "Insecure domain cookie from " << https_url
+        << " can be set even if equivalent secure host cookie from "
+        << nonmatching_https_url << " exists.";
+    EXPECT_TRUE(
+        CreateAndSetCookieReturnStatus(cm.get(), https_url, "B=3;").IsInclude())
+        << "Insecure host cookie from " << https_url
+        << " can be set even if equivalent secure host cookie from "
+        << nonmatching_https_url << " exists.";
+    EXPECT_TRUE(CreateAndSetCookieReturnStatus(
+                    cm.get(), https_url, base::StrCat({"B=4; Domain=", host}))
+                    .IsInclude())
+        << "Insecure domain cookie from " << https_url
+        << " can be set even if equivalent secure host cookie from "
+        << nonmatching_https_url << " exists.";
+
+    DeleteAll(cm.get());
+  }
+}
+
+// Tests the behavior of "Leave Secure Cookies Alone" in
+// MaybeDeleteEquivalentCookieAndUpdateStatus().
+// Check path-match criterion: If the new cookie is for the same path or a
+// subdirectory of the preexisting cookie's path, don't set the new cookie.
+TEST_F(CookieMonsterTest, LeaveSecureCookiesAlone_PathMatch) {
+  std::unique_ptr<CookieMonster> cm(new CookieMonster(nullptr, &net_log_));
+
+  // A path that is later in this list will path-match all the paths before it.
+  const char* kPaths[] = {"/", "/1", "/1/2", "/1/2/3"};
+  // This path does not match any, aside from the root path.
+  const char* kOtherDirectory = "/9";
+
+  for (int preexisting_cookie_path_index = 0; preexisting_cookie_path_index < 4;
+       ++preexisting_cookie_path_index) {
+    const char* preexisting_cookie_path = kPaths[preexisting_cookie_path_index];
+    GURL preexisting_cookie_url(
+        base::StrCat({url::kHttpsScheme, url::kStandardSchemeSeparator,
+                      "a.foo.com", preexisting_cookie_path}));
+    for (int new_cookie_path_index = 0; new_cookie_path_index < 4;
+         ++new_cookie_path_index) {
+      const char* new_cookie_path = kPaths[new_cookie_path_index];
+      bool should_path_match =
+          new_cookie_path_index >= preexisting_cookie_path_index;
+      GURL https_url(
+          base::StrCat({url::kHttpsScheme, url::kStandardSchemeSeparator,
+                        "a.foo.com", new_cookie_path}));
+      GURL http_url(
+          base::StrCat({url::kHttpScheme, url::kStandardSchemeSeparator,
+                        "a.foo.com", new_cookie_path}));
+
+      // Preexisting Secure cookie.
+      EXPECT_TRUE(
+          CreateAndSetCookieReturnStatus(
+              cm.get(), preexisting_cookie_url,
+              base::StrCat({"A=0; Secure; Path=", preexisting_cookie_path}))
+              .IsInclude());
+
+      // Don't set insecure cookie from an insecure URL if equivalent secure
+      // cookie exists.
+      CanonicalCookie::CookieInclusionStatus set =
+          CreateAndSetCookieReturnStatus(
+              cm.get(), http_url,
+              base::StrCat({"A=1; Path=", new_cookie_path}));
+      EXPECT_TRUE(should_path_match
+                      ? set.HasExactlyExclusionReasonsForTesting(
+                            {CanonicalCookie::CookieInclusionStatus::
+                                 EXCLUDE_OVERWRITE_SECURE})
+                      : set.IsInclude())
+          << "Insecure cookie from " << http_url << " should "
+          << (should_path_match ? "not " : "")
+          << "be set if equivalent secure cookie from "
+          << preexisting_cookie_url << " exists.";
+
+      // Allow setting insecure cookie from a secure URL even if equivalent
+      // secure cookie exists.
+      EXPECT_TRUE(CreateAndSetCookieReturnStatus(
+                      cm.get(), https_url,
+                      base::StrCat({"A=2; Path=", new_cookie_path}))
+                      .IsInclude())
+          << "Insecure cookie from " << http_url
+          << " can be set even if equivalent secure cookie from "
+          << preexisting_cookie_url << " exists.";
+
+      DeleteAll(cm.get());
+    }
+  }
+
+  // Test non-matching-path case. These sets should all be allowed because the
+  // cookie is not equivalent.
+  GURL nonmatching_https_url(
+      base::StrCat({url::kHttpsScheme, url::kStandardSchemeSeparator,
+                    "a.foo.com", kOtherDirectory}));
+
+  for (int new_cookie_path_index = 1; new_cookie_path_index < 4;
+       ++new_cookie_path_index) {
+    const char* new_cookie_path = kPaths[new_cookie_path_index];
+    GURL https_url(base::StrCat(
+        {url::kHttpsScheme, url::kStandardSchemeSeparator, new_cookie_path}));
+    GURL http_url(base::StrCat(
+        {url::kHttpScheme, url::kStandardSchemeSeparator, new_cookie_path}));
+
+    // Preexisting Secure cookie.
+    EXPECT_TRUE(CreateAndSetCookieReturnStatus(
+                    cm.get(), nonmatching_https_url,
+                    base::StrCat({"A=0; Secure; Path=", kOtherDirectory}))
+                    .IsInclude());
+
+    // New cookie from insecure URL is set.
+    EXPECT_TRUE(
+        CreateAndSetCookieReturnStatus(
+            cm.get(), http_url, base::StrCat({"A=1; Path=", new_cookie_path}))
+            .IsInclude())
+        << "Insecure cookie from " << http_url
+        << " can be set even if equivalent secure cookie from "
+        << nonmatching_https_url << " exists.";
+
+    // New cookie from secure URL is set.
+    EXPECT_TRUE(
+        CreateAndSetCookieReturnStatus(
+            cm.get(), https_url, base::StrCat({"A=1; Path=", new_cookie_path}))
+            .IsInclude())
+        << "Insecure cookie from " << https_url
+        << " can be set even if equivalent secure cookie from "
+        << nonmatching_https_url << " exists.";
+  }
 }
 
 // Tests for behavior for strict secure cookies.

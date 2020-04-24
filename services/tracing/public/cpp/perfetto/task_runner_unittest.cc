@@ -125,9 +125,16 @@ TEST_F(PerfettoTaskRunnerTest, SequentialTasks) {
   SetTaskExpectations(wait_for_tasks.QuitClosure(), 3);
 
   auto weak_ptr = destination()->GetWeakPtr();
-  task_runner()->PostTask([weak_ptr]() { weak_ptr->TestTask(1); });
-  task_runner()->PostTask([weak_ptr]() { weak_ptr->TestTask(2); });
-  task_runner()->PostTask([weak_ptr]() { weak_ptr->TestTask(3); });
+  for (int i = 1; i <= 3; ++i) {
+    task_runner()->PostTask([=]() mutable {
+      auto* dest = weak_ptr.get();
+      // The weak pointer must be reset before TestTask() is called, otherwise
+      // there will be a race where the factory could be destructed on main
+      // thread while still bound to the task runner sequence.
+      weak_ptr.reset();
+      dest->TestTask(i);
+    });
+  }
 
   wait_for_tasks.Run();
 }

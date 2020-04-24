@@ -126,8 +126,8 @@ void LeScanManagerImpl::PauseScan() {
   }
 }
 
-void LeScanManagerImpl::RestartScan() {
-  MAKE_SURE_IO_THREAD(RestartScan);
+void LeScanManagerImpl::ResumeScan() {
+  MAKE_SURE_IO_THREAD(ResumeScan);
   if (scan_handle_ids_.empty()) {
     LOG(ERROR) << "Can't restart scan, no scan handle";
     return;

@@ -4,9 +4,6 @@
 
 #include "third_party/blink/renderer/core/mathml/mathml_scripts_element.h"
 
-#include "third_party/blink/renderer/core/layout/ng/mathml/layout_ng_mathml_block.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-
 namespace blink {
 
 static MathScriptType ScriptTypeOf(const QualifiedName& tagName) {
@@ -27,16 +24,5 @@ static MathScriptType ScriptTypeOf(const QualifiedName& tagName) {
 MathMLScriptsElement::MathMLScriptsElement(const QualifiedName& tagName,
                                            Document& document)
     : MathMLElement(tagName, document), script_type_(ScriptTypeOf(tagName)) {}
-
-LayoutObject* MathMLScriptsElement::CreateLayoutObject(
-    const ComputedStyle& style,
-    LegacyLayout legacy) {
-  // TODO(crbug.com/1070600): Use LayoutObjectFactory for MathML layout object
-  // creation.
-  if (!RuntimeEnabledFeatures::MathMLCoreEnabled() ||
-      legacy == LegacyLayout::kForce || !style.IsDisplayMathType())
-    return MathMLElement::CreateLayoutObject(style, legacy);
-  return new LayoutNGMathMLBlock(this);
-}
 
 }  // namespace blink

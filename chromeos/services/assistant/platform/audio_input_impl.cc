@@ -14,6 +14,7 @@
 #include "base/timer/timer.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/power/power_manager_client.h"
+#include "chromeos/services/assistant/public/cpp/assistant_client.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
 #include "chromeos/services/assistant/utils.h"
 #include "libassistant/shared/public/platform_audio_buffer.h"
@@ -190,12 +191,10 @@ void AudioInputImpl::HotwordStateManager::RecreateAudioInputStream() {
   input_->RecreateAudioInputStream(/*use_dsp=*/false);
 }
 
-AudioInputImpl::AudioInputImpl(mojom::Client* client,
-                               PowerManagerClient* power_manager_client,
+AudioInputImpl::AudioInputImpl(PowerManagerClient* power_manager_client,
                                CrasAudioHandler* cras_audio_handler,
                                const std::string& device_id)
-    : client_(client),
-      power_manager_client_(power_manager_client),
+    : power_manager_client_(power_manager_client),
       power_manager_client_observer_(this),
       cras_audio_handler_(cras_audio_handler),
       task_runner_(base::SequencedTaskRunnerHandle::Get()),
@@ -467,7 +466,7 @@ void AudioInputImpl::RecreateAudioInputStream(bool use_dsp) {
     device_id_ = hotword_device_id_;
 
   mojo::PendingRemote<audio::mojom::StreamFactory> stream_factory;
-  client_->RequestAudioStreamFactory(
+  AssistantClient::Get()->RequestAudioStreamFactory(
       stream_factory.InitWithNewPipeAndPassReceiver());
   source_ = audio::CreateInputDevice(std::move(stream_factory), device_id_);
 

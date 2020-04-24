@@ -300,6 +300,12 @@ void BrowserActionsContainer::ShowToolbarActionBubble(
   DCHECK(!animating());
   DCHECK(!active_bubble_);
 
+  // Action view visibility is updated on layout. This happens
+  // asynchronously with respect to model changes. Normally this is
+  // fine, but here we rely on the View visibilities being up-to-date.
+  // So, force a layout.
+  GetWidget()->LayoutRootViewIfNecessary();
+
   views::View* anchor_view = nullptr;
   bool anchored_to_action_view = false;
   if (!controller->GetAnchorActionId().empty()) {

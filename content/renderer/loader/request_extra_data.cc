@@ -21,7 +21,7 @@ void RequestExtraData::CopyToResourceRequest(
   request->transition_type = transition_type_;
   request->originated_from_service_worker = originated_from_service_worker_;
 
-  request->attach_same_site_cookies = attach_same_site_cookies_;
+  request->force_ignore_site_for_cookies = force_ignore_site_for_cookies_;
 }
 
 }  // namespace content

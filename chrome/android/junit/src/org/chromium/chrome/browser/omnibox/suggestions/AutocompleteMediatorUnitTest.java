@@ -117,7 +117,8 @@ public class AutocompleteMediatorUnitTest {
                     null /* descriptionClassifications */, null /* answer */,
                     null /* fillIntoEdit */, null /* url */, null /* imageUrl */,
                     null /* imageDominantColor */, false /* isStarred */, false /* isDeletable */,
-                    null /* postContentType */, null /* postData */);
+                    null /* postContentType */, null /* postData */,
+                    OmniboxSuggestion.INVALID_GROUP);
             list.add(suggestion);
         }
 
@@ -284,7 +285,7 @@ public class AutocompleteMediatorUnitTest {
     public void updateSuggestionsList_defersKeyboardPopupWhenHaveLotsOfSuggestionsToShow() {
         mMediator.onNativeInitialized();
         mMediator.signalPendingKeyboardShowDecision();
-        mMediator.onSuggestionsReceived(mSuggestionsList, "");
+        mMediator.onSuggestionsReceived(mSuggestionsList, null, "");
         verify(mAutocompleteDelegate, times(1)).setKeyboardVisibility(eq(false));
         verify(mAutocompleteDelegate, never()).setKeyboardVisibility(eq(true));
     }
@@ -296,7 +297,7 @@ public class AutocompleteMediatorUnitTest {
         mMediator.onNativeInitialized();
         mMediator.signalPendingKeyboardShowDecision();
         mMediator.onSuggestionsReceived(
-                mSuggestionsList.subList(0, MINIMUM_NUMBER_OF_SUGGESTIONS_TO_SHOW), "");
+                mSuggestionsList.subList(0, MINIMUM_NUMBER_OF_SUGGESTIONS_TO_SHOW), null, "");
         verify(mAutocompleteDelegate, times(1)).setKeyboardVisibility(eq(true));
         verify(mAutocompleteDelegate, never()).setKeyboardVisibility(eq(false));
     }
@@ -307,8 +308,8 @@ public class AutocompleteMediatorUnitTest {
     public void updateSuggestionsList_doesNotShowKeyboardAfterReceivingSubsequentSuggestionLists() {
         mMediator.onNativeInitialized();
         mMediator.signalPendingKeyboardShowDecision();
-        mMediator.onSuggestionsReceived(mSuggestionsList, "");
-        mMediator.onSuggestionsReceived(mSuggestionsList.subList(0, 1), "");
+        mMediator.onSuggestionsReceived(mSuggestionsList, null, "");
+        mMediator.onSuggestionsReceived(mSuggestionsList.subList(0, 1), null, "");
         verify(mAutocompleteDelegate, times(1)).setKeyboardVisibility(eq(false));
         verify(mAutocompleteDelegate, never()).setKeyboardVisibility(eq(true));
     }
@@ -322,7 +323,7 @@ public class AutocompleteMediatorUnitTest {
         // the omnibox field. This is beyond our control.
         mMediator.onNativeInitialized();
         mMediator.signalPendingKeyboardShowDecision();
-        mMediator.onSuggestionsReceived(mSuggestionsList, "");
+        mMediator.onSuggestionsReceived(mSuggestionsList, null, "");
         verify(mAutocompleteDelegate, times(1)).setKeyboardVisibility(eq(false));
         // Should request keyboard hide.
         mMediator.onSuggestionListScroll();
@@ -340,7 +341,7 @@ public class AutocompleteMediatorUnitTest {
         mMediator.onNativeInitialized();
         mMediator.signalPendingKeyboardShowDecision();
         mMediator.onSuggestionsReceived(
-                mSuggestionsList.subList(0, MINIMUM_NUMBER_OF_SUGGESTIONS_TO_SHOW), "");
+                mSuggestionsList.subList(0, MINIMUM_NUMBER_OF_SUGGESTIONS_TO_SHOW), null, "");
         verify(mAutocompleteDelegate, times(1)).setKeyboardVisibility(eq(true));
 
         // Should perform no action.
@@ -429,11 +430,11 @@ public class AutocompleteMediatorUnitTest {
             ChromeFeatureList.OMNIBOX_DEFERRED_KEYBOARD_POPUP})
     public void onSuggestionsReceived_sendsOnSuggestionsChanged() {
         mMediator.onNativeInitialized();
-        mMediator.onSuggestionsReceived(mSuggestionsList, "inline_autocomplete");
+        mMediator.onSuggestionsReceived(mSuggestionsList, null, "inline_autocomplete");
         verify(mAutocompleteDelegate).onSuggestionsChanged("inline_autocomplete");
 
         // Ensure duplicate requests are suppressed.
-        mMediator.onSuggestionsReceived(mSuggestionsList, "inline_autocomplete2");
+        mMediator.onSuggestionsReceived(mSuggestionsList, null, "inline_autocomplete2");
         verifyNoMoreInteractions(mAutocompleteDelegate);
     }
 

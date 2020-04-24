@@ -34,7 +34,6 @@ class PlatformApiImpl : public CrosPlatformApi,
                         CrasAudioHandler::AudioObserver {
  public:
   PlatformApiImpl(
-      mojom::Client* client,
       AssistantMediaSession* media_session,
       PowerManagerClient* power_manager_client,
       CrasAudioHandler* cras_audio_handler,

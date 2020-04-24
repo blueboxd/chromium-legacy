@@ -53,6 +53,7 @@
 <translation id="1540800554400757039">Heimilisfang 1</translation>
 <translation id="1545749641540134597">Skanna QR-kóða</translation>
 <translation id="1552525382687785070">Kerfisstjóri hefur gert samstillingu óvirka</translation>
+<translation id="1554477036522844996">Nýr gluggi</translation>
 <translation id="1580783302095112590">Póstur sendur.</translation>
 <translation id="1582732959743469162">Allt niðurhal sem er í gangi verður stöðvað.</translation>
 <translation id="1605658421715042784">Afrita mynd</translation>
@@ -187,6 +188,7 @@
 <translation id="3328801116991980348">Upplýsingar um vefsvæði</translation>
 <translation id="3329904751041170572">Ekki var hægt að tengjast þjóninum.</translation>
 <translation id="3335947283844343239">Enduropna lokaðan flipa</translation>
+<translation id="3343651535143698944">Bæta við undanskildu vefsvæði</translation>
 <translation id="3371831930909698441">Þýðing er í boði. Valkostir eru neðst á skjánum</translation>
 <translation id="3393920035788932672">Sprettigluggar leyfðir</translation>
 <translation id="3443810440409579745">Flipi móttekinn.</translation>
@@ -555,6 +557,7 @@ Gögnin þín voru dulkóðuð með aðgangsorði samstillingar <ph name="TIME" 
 <translation id="8319076807703933069">Ný leit</translation>
 <translation id="8323906514956095947">Haltu inni til að sjá fleiri valkosti fyrir flipa</translation>
 <translation id="8328777765163860529">Loka öllu</translation>
+<translation id="8332159733957009464">Undanskilin vefsvæði</translation>
 <translation id="8386068868580335421">Endurstilla</translation>
 <translation id="8407669440184693619">Engin aðgangsorð fundust fyrir þetta vefsvæði</translation>
 <translation id="842017693807136194">Skráð inn með</translation>

@@ -164,7 +164,6 @@
 <translation id="2131665479022868825">Խնայվել է <ph name="DATA" /></translation>
 <translation id="213279576345780926">Փակված <ph name="TAB_TITLE" /></translation>
 <translation id="2139186145475833000">Ավելացնել գլխավոր էկրանին</translation>
-<translation id="2146738493024040262">Բացել ակնթարթային հավելվածը</translation>
 <translation id="2154484045852737596">Քարտի փոփոխություն</translation>
 <translation id="2154710561487035718">Պատճենել URL-ը</translation>
 <translation id="2156074688469523661">Այլ կայքեր (<ph name="NUMBER_OF_SITES" />)</translation>
@@ -281,7 +280,6 @@
 <translation id="2996809686854298943">Պահանջվում է URL-ը</translation>
 <translation id="300526633675317032">Կազատվի կայքի օգտագործած <ph name="SIZE_IN_KB" /> տարածք:</translation>
 <translation id="3016635187733453316">Համոզվեք, որ սարքը միացած է ինտերնետին</translation>
-<translation id="3029613699374795922">Ներբեռնվել է <ph name="KBS" /> ԿԲ</translation>
 <translation id="3029704984691124060">Անցաբառերը չեն համընկնում</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Ստացեք օգնություն<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Տեղորոշումն անջատված է: Միացրեք այն <ph name="BEGIN_LINK" />Android-ի կարգավորումներում<ph name="END_LINK" />:</translation>
@@ -457,7 +455,6 @@
 <translation id="4411535500181276704">Lite ռեժիմ</translation>
 <translation id="4415276339145661267">Կառավարել Google հաշիվը</translation>
 <translation id="4432792777822557199">Այսուհետ <ph name="SOURCE_LANGUAGE" /> էջերը կթարգմանվեն <ph name="TARGET_LANGUAGE" /></translation>
-<translation id="4433925000917964731">Էջի Lite տարբերակը տրամադրվել է Google-ի կողմից</translation>
 <translation id="4434045419905280838">Ելնող պատուհաններ և վերահղում</translation>
 <translation id="4440958355523780886">Էջի Lite տարբերակը տրամադրվել է Google-ի կողմից։ Հպեք՝ բնօրինակը բեռնելու համար։</translation>
 <translation id="4452411734226507615">Փակել <ph name="TAB_TITLE" /> ներդիրը</translation>
@@ -737,7 +734,6 @@
 <translation id="6406506848690869874">Համաժամացում</translation>
 <translation id="6410973561433500075">Մտնե՞լ լրացված իրականության ռեժիմ <ph name="DOMAIN" /> կայքից</translation>
 <translation id="641643625718530986">Տպել…</translation>
-<translation id="6416782512398055893">Ներբեռնվել է <ph name="MBS" /> ՄԲ</translation>
 <translation id="6427112570124116297">Թարգմանեք կայքերը</translation>
 <translation id="6433501201775827830">Ընտրեք որոնիչը</translation>
 <translation id="6437478888915024427">Տեղեկություններ էջի մասին</translation>
@@ -745,7 +741,6 @@
 <translation id="6441734959916820584">Անունը չափազանց երկար է</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# պատկեր}one{# պատկեր}other{# պատկեր}}</translation>
 <translation id="6447558397796644647">Չհաջողվեց գտնել այդ էջանիշը։ Ստուգեք ուղղագրությունը կամ ավելացրեք նոր էջանիշ։</translation>
-<translation id="6447842834002726250">Cookie ֆայլեր</translation>
 <translation id="6461962085415701688">Չհաջողվեց բացել ֆայլը</translation>
 <translation id="6464977750820128603">Դուք կարող եք տեսնել Chrome-ում այցելած ձեր կայքերը և սահմանել ժամաչափեր դրանց համար։\n\nGoogle-ին կուղարկվեն տեղեկություններ ձեր այցելած կայքերի և դրանց համար սահմանված ժամաչափերի մասին։ Այս տվյալները հավաքվում են՝ «Թվային բարեկեցություն» գործառույթը կատարելագործելու համար։</translation>
 <translation id="6475951671322991020">Ներբեռնել տեսանյութը</translation>
@@ -754,7 +749,6 @@
 <translation id="6508722015517270189">Վերագործարկեք Chrome-ը</translation>
 <translation id="6532866250404780454">Chrome-ում ձեր այցելած կայքերը չեն ցուցադրվի։ Բոլոր կայքերի ժամաչափերը կջնջվեն։</translation>
 <translation id="6534565668554028783">Google-ը չափազանց երկար է պատասխանում</translation>
-<translation id="6538442820324228105">Ներբեռնվել է <ph name="GBS" /> ԳԲ</translation>
 <translation id="6539092367496845964">Սխալ առաջացավ: Փորձեք ավելի ուշ:</translation>
 <translation id="6545017243486555795">Մաքրել բոլոր տվյալները</translation>
 <translation id="6545864417968258051">Bluetooth սարքերի որոնում</translation>
@@ -855,6 +849,7 @@
 <translation id="7352939065658542140">ՏԵՍԱՆՅՈՒԹ</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Հրապարակել ընտրված 1 տարրը}one{Share # selected items}other{Հրապարակել ընտրված # տարրերը}}</translation>
 <translation id="7359002509206457351">Վճարման եղանակների հասանելիություն</translation>
+<translation id="7362144854749094396">Պատմությունը հասանելի է Chrome-ին։ Կարգավորումների տվյալները հասանելի են <ph name="SITE_NAME" /> կայքին։</translation>
 <translation id="7375125077091615385">Տեսակ`</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" /></translation>
 <translation id="7400418766976504921">URL</translation>

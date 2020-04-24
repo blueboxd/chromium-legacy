@@ -19,7 +19,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
-#include "chrome/browser/chromeos/assistant/assistant_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/local_search_service/local_search_service.h"
@@ -28,7 +27,6 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_utils.h"
 #include "chrome/browser/ui/webui/chromeos/network_element_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/chromeos/smb_shares/smb_shares_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/management_ui.h"
@@ -41,6 +39,7 @@
 #include "chrome/browser/ui/webui/settings/chromeos/people_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/chromeos/personalization_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_concept.h"
+#include "chrome/browser/ui/webui/settings/chromeos/search_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/shared_settings_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/chrome_features.h"
@@ -52,7 +51,6 @@
 #include "chrome/grit/locale_settings.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "chromeos/services/assistant/public/cpp/features.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
@@ -746,57 +744,6 @@ void AddFilesStrings(content::WebUIDataSource* html_source) {
                          GetHelpUrlWithBoard(chrome::kSmbSharesLearnMoreURL));
 }
 
-void AddGoogleAssistantStrings(content::WebUIDataSource* html_source,
-                               Profile* profile) {
-  static constexpr webui::LocalizedString kLocalizedStrings[] = {
-      {"googleAssistantPageTitle", IDS_SETTINGS_GOOGLE_ASSISTANT},
-      {"googleAssistantEnableContext", IDS_ASSISTANT_SCREEN_CONTEXT_TITLE},
-      {"googleAssistantEnableContextDescription",
-       IDS_ASSISTANT_SCREEN_CONTEXT_DESC},
-      {"googleAssistantEnableQuickAnswers",
-       IDS_ASSISTANT_QUICK_ANSWERS_SETTING_TITLE},
-      {"googleAssistantEnableQuickAnswersDescription",
-       IDS_ASSISTANT_QUICK_ANSWERS_SETTING_DESC},
-      {"googleAssistantEnableHotword",
-       IDS_SETTINGS_GOOGLE_ASSISTANT_ENABLE_HOTWORD},
-      {"googleAssistantEnableHotwordDescription",
-       IDS_SETTINGS_GOOGLE_ASSISTANT_ENABLE_HOTWORD_DESCRIPTION},
-      {"googleAssistantVoiceSettings",
-       IDS_SETTINGS_GOOGLE_ASSISTANT_VOICE_SETTINGS},
-      {"googleAssistantVoiceSettingsDescription",
-       IDS_ASSISTANT_VOICE_MATCH_RECORDING},
-      {"googleAssistantVoiceSettingsRetrainButton",
-       IDS_SETTINGS_GOOGLE_ASSISTANT_VOICE_SETTINGS_RETRAIN},
-      {"googleAssistantEnableHotwordWithoutDspDescription",
-       IDS_SETTINGS_GOOGLE_ASSISTANT_ENABLE_HOTWORD_WITHOUT_DSP_DESCRIPTION},
-      {"googleAssistantEnableHotwordWithoutDspRecommended",
-       IDS_SETTINGS_GOOGLE_ASSISTANT_ENABLE_HOTWORD_WITHOUT_DSP_RECOMMENDED},
-      {"googleAssistantEnableHotwordWithoutDspAlwaysOn",
-       IDS_SETTINGS_GOOGLE_ASSISTANT_ENABLE_HOTWORD_WITHOUT_DSP_ALWAYS_ON},
-      {"googleAssistantEnableHotwordWithoutDspOff",
-       IDS_SETTINGS_GOOGLE_ASSISTANT_ENABLE_HOTWORD_WITHOUT_DSP_OFF},
-      {"googleAssistantEnableNotification",
-       IDS_SETTINGS_GOOGLE_ASSISTANT_ENABLE_NOTIFICATION},
-      {"googleAssistantEnableNotificationDescription",
-       IDS_SETTINGS_GOOGLE_ASSISTANT_ENABLE_NOTIFICATION_DESCRIPTION},
-      {"googleAssistantLaunchWithMicOpen",
-       IDS_SETTINGS_GOOGLE_ASSISTANT_LAUNCH_WITH_MIC_OPEN},
-      {"googleAssistantLaunchWithMicOpenDescription",
-       IDS_SETTINGS_GOOGLE_ASSISTANT_LAUNCH_WITH_MIC_OPEN_DESCRIPTION},
-      {"googleAssistantSettings", IDS_SETTINGS_GOOGLE_ASSISTANT_SETTINGS},
-  };
-  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
-
-  html_source->AddBoolean("hotwordDspAvailable",
-                          chromeos::IsHotwordDspAvailable());
-  html_source->AddBoolean(
-      "voiceMatchDisabled",
-      chromeos::assistant::features::IsVoiceMatchDisabled());
-  html_source->AddBoolean(
-      "quickAnswersAvailable",
-      chromeos::features::IsQuickAnswersSettingToggleEnabled());
-}
-
 void AddPrintingStrings(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"printingPageTitle", IDS_SETTINGS_PRINTING},
@@ -956,8 +903,6 @@ void AddSearchInSettingsStrings(content::WebUIDataSource* html_source) {
       {"searchNoResults", IDS_SEARCH_NO_RESULTS},
       {"searchResults", IDS_SEARCH_RESULTS},
       {"searchResultSelected", IDS_OS_SEARCH_RESULT_ROW_A11Y_RESULT_SELECTED},
-      {"searchResultNavigatedTo",
-       IDS_OS_SEARCH_RESULT_ROW_A11Y_NAVIGATED_TO_RESULT},
       {"searchResultsOne", IDS_OS_SEARCH_BOX_A11Y_ONE_RESULT},
       {"searchResultsNumber", IDS_OS_SEARCH_BOX_A11Y_RESULT_COUNT},
       // TODO(dpapad): IDS_DOWNLOAD_CLEAR_SEARCH and IDS_HISTORY_CLEAR_SEARCH
@@ -1121,37 +1066,6 @@ void AddResetStrings(content::WebUIDataSource* html_source) {
                                  l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
 }
 
-void AddSearchStrings(content::WebUIDataSource* html_source, Profile* profile) {
-  static constexpr webui::LocalizedString kLocalizedStrings[] = {
-      {"osSearchEngineLabel", IDS_OS_SETTINGS_SEARCH_ENGINE_LABEL},
-      {"searchGoogleAssistant", IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT},
-      {"searchGoogleAssistantEnabled",
-       IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT_ENABLED},
-      {"searchGoogleAssistantDisabled",
-       IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT_DISABLED},
-      {"searchGoogleAssistantOn", IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT_ON},
-      {"searchGoogleAssistantOff", IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT_OFF},
-  };
-  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
-
-  // NOTE: This will be false when the flag is disabled.
-  const bool is_assistant_allowed =
-      ::assistant::IsAssistantAllowedForProfile(profile) ==
-      ash::mojom::AssistantAllowedState::ALLOWED;
-  html_source->AddBoolean("isAssistantAllowed", is_assistant_allowed);
-  html_source->AddLocalizedString("osSearchPageTitle",
-                                  is_assistant_allowed
-                                      ? IDS_SETTINGS_SEARCH_AND_ASSISTANT
-                                      : IDS_SETTINGS_SEARCH);
-  html_source->AddString("searchExplanation",
-                         l10n_util::GetStringFUTF16(
-                             IDS_SETTINGS_SEARCH_EXPLANATION,
-                             base::ASCIIToUTF16(chrome::kOmniboxLearnMoreURL)));
-  html_source->AddString(
-      "osSearchEngineTooltip",
-      ui::SubstituteChromeOSDeviceType(IDS_OS_SETTINGS_SEARCH_ENGINE_TOOLTIP));
-}
-
 void AddPrivacyStrings(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"privacyPageTitle", IDS_SETTINGS_PRIVACY},
@@ -1195,6 +1109,8 @@ OsSettingsLocalizedStringsProvider::OsSettingsLocalizedStringsProvider(
   per_page_providers_.push_back(
       std::make_unique<PersonalizationStringsProvider>(
           profile, /*delegate=*/this, profile->GetPrefs()));
+  per_page_providers_.push_back(
+      std::make_unique<SearchStringsProvider>(profile, /*delegate=*/this));
 }
 
 OsSettingsLocalizedStringsProvider::~OsSettingsLocalizedStringsProvider() =
@@ -1218,14 +1134,12 @@ void OsSettingsLocalizedStringsProvider::AddOsLocalizedStrings(
   AddCrostiniStrings(html_source, profile);
   AddDateTimeStrings(html_source);
   AddFilesStrings(html_source);
-  AddGoogleAssistantStrings(html_source, profile);
   AddLanguagesStrings(html_source);
   AddPluginVmStrings(html_source, profile);
   AddPrintingStrings(html_source);
   AddPrivacyStrings(html_source);
   AddResetStrings(html_source);
   AddSearchInSettingsStrings(html_source);
-  AddSearchStrings(html_source, profile);
 
   policy_indicator::AddLocalizedStrings(html_source);
 

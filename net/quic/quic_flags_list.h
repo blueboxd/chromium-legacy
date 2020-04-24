@@ -293,12 +293,6 @@ QUIC_FLAG(
     FLAGS_quic_reloadable_flag_quic_bbr2_add_ack_height_to_queueing_threshold,
     true)
 
-// If true, send PING when PTO skips packet number and there is no data to send.
-QUIC_FLAG(
-    bool,
-    FLAGS_quic_reloadable_flag_quic_send_ping_when_pto_skips_packet_number,
-    true)
-
 // If true, trigger QUIC_BUG in two ShouldCreateIncomingStream() overrides when
 // called with locally initiated stream ID.
 QUIC_FLAG(bool,

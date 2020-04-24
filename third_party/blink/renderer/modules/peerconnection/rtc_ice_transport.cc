@@ -10,8 +10,8 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_ice_parameters.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_ice_server.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_peer_connection_ice_event_init.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/ice_transport_adapter_cross_thread_factory.h"
@@ -110,9 +110,8 @@ class DefaultIceTransportAdapterCrossThreadFactory
 }  // namespace
 
 RTCIceTransport* RTCIceTransport::Create(ExecutionContext* context) {
-  LocalFrame* frame = Document::From(context)->GetFrame();
   scoped_refptr<base::SingleThreadTaskRunner> proxy_thread =
-      frame->GetTaskRunner(TaskType::kNetworking);
+      context->GetTaskRunner(TaskType::kNetworking);
 
   PeerConnectionDependencyFactory::GetInstance()->EnsureInitialized();
   scoped_refptr<base::SingleThreadTaskRunner> host_thread =
@@ -127,9 +126,8 @@ RTCIceTransport* RTCIceTransport::Create(
     ExecutionContext* context,
     rtc::scoped_refptr<webrtc::IceTransportInterface> ice_transport,
     RTCPeerConnection* peer_connection) {
-  LocalFrame* frame = Document::From(context)->GetFrame();
   scoped_refptr<base::SingleThreadTaskRunner> proxy_thread =
-      frame->GetTaskRunner(TaskType::kNetworking);
+      context->GetTaskRunner(TaskType::kNetworking);
 
   PeerConnectionDependencyFactory::GetInstance()->EnsureInitialized();
   scoped_refptr<base::SingleThreadTaskRunner> host_thread =
@@ -166,7 +164,7 @@ RTCIceTransport::RTCIceTransport(
   DCHECK(adapter_factory);
   DCHECK(proxy_thread->BelongsToCurrentThread());
 
-  LocalFrame* frame = Document::From(context)->GetFrame();
+  LocalFrame* frame = To<LocalDOMWindow>(context)->GetFrame();
   DCHECK(frame);
   proxy_ = std::make_unique<IceTransportProxy>(*frame, std::move(proxy_thread),
                                                std::move(host_thread), this,

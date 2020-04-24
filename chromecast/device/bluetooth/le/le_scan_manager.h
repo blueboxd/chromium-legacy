@@ -65,7 +65,7 @@ class LeScanManager {
 
   virtual void PauseScan() {}
 
-  virtual void RestartScan() {}
+  virtual void ResumeScan() {}
 
   virtual void SetScanParameters(int scan_interval_ms, int scan_window_ms) {}
 

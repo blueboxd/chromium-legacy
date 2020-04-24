@@ -18,7 +18,7 @@ function reset() {
 
 var position = {x: 20, y: 20};
 promise_test(async () => {
-    await wheelTick(1, position, 'down');
+    await wheelTick(0, 1, position);
     await waitFor( () => {
         return document.scrollingElement.scrollTop == pixelsPerTick() &&
                document.scrollingElement.scrollLeft == 0;
@@ -27,7 +27,7 @@ promise_test(async () => {
 
 promise_test(async () => {
     reset();
-    await wheelTick(1, position, 'right');
+    await wheelTick(1, 0, position);
     await waitFor( () => {
         return document.scrollingElement.scrollTop == 0 &&
                document.scrollingElement.scrollLeft == pixelsPerTick();
@@ -36,7 +36,7 @@ promise_test(async () => {
 
 promise_test(async () => {
     reset();
-    await wheelTick(2, position, 'down');
+    await wheelTick(0, 2, position);
     await waitFor( () => {
         return document.scrollingElement.scrollTop == 2 * pixelsPerTick() &&
                document.scrollingElement.scrollLeft == 0;
@@ -45,7 +45,7 @@ promise_test(async () => {
 
 promise_test(async () => {
     reset();
-    await wheelTick(2, position, 'right');
+    await wheelTick(2, 0, position);
     await waitFor( () => {
         return document.scrollingElement.scrollTop == 0 &&
                document.scrollingElement.scrollLeft == 2 * pixelsPerTick();

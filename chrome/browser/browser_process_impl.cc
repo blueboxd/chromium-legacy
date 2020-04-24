@@ -1376,18 +1376,7 @@ void BrowserProcessImpl::ApplyDefaultBrowserPolicy() {
 
 void BrowserProcessImpl::Pin() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  // CHECK(!IsShuttingDown());
-  if (IsShuttingDown()) {
-    // TODO(rsesek): Consider removing this trace, but it has been helpful
-    // in debugging several shutdown crashes (https://crbug.com/113031,
-    // https://crbug.com/625646, and https://crbug.com/779829).
-    static crash_reporter::CrashKeyString<1024> browser_unpin_trace(
-        "browser-unpin-trace");
-    crash_reporter::SetCrashKeyStringToStackTrace(
-        &browser_unpin_trace, release_last_reference_callstack_);
-    CHECK(false);
-  }
+  CHECK(!IsShuttingDown());
 }
 
 void BrowserProcessImpl::Unpin() {
@@ -1401,7 +1390,6 @@ void BrowserProcessImpl::Unpin() {
   if (!quit_closure_)
     return;
 #endif
-  release_last_reference_callstack_ = base::debug::StackTrace();
 
   DCHECK(!shutting_down_);
   shutting_down_ = true;

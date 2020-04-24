@@ -219,9 +219,10 @@ class CONTENT_EXPORT ContentRendererClient {
 
   // Notifies the embedder that the given frame is requesting the resource at
   // |url|. If the function returns a valid |new_url|, the request must be
-  // updated to use it. The |attach_same_site_cookies| output parameter
-  // determines whether SameSite cookies should be attached to the request.
-  // The |site_for_cookies| is the site_for_cookies of the request. (This is
+  // updated to use it. The |force_ignore_site_for_cookies| output parameter
+  // indicates whether SameSite cookies should be unconditionally attached to
+  // the request, bypassing the usual |site_for_cookies| checks. The
+  // |site_for_cookies| is the site_for_cookies of the request. (This is
   // approximately the URL of the main frame. It is empty in the case of
   // cross-site iframes.)
   //
@@ -234,7 +235,7 @@ class CONTENT_EXPORT ContentRendererClient {
                                const net::SiteForCookies& site_for_cookies,
                                const url::Origin* initiator_origin,
                                GURL* new_url,
-                               bool* attach_same_site_cookies);
+                               bool* force_ignore_site_for_cookies);
 
   // Returns true if the request is associated with a document that is in
   // ""prefetch only" mode, and will not be rendered.

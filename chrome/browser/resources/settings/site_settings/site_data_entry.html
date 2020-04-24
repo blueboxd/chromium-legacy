@@ -3,7 +3,9 @@
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/html/cr/ui/focus_row_behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="../settings_shared_css.html">
 <link rel="import" href="../site_favicon.html">
@@ -12,14 +14,11 @@
 
 <dom-module id="site-data-entry">
   <template>
-    <style include="settings-shared">
-      .settings-box {
-        border: none;
-      }
+    <style include="cr-shared-style settings-shared iron-flex">
     </style>
-    <div class="settings-box two-line site-item" focus-row-container actionable>
+    <div class="cr-row continuation two-line" focus-row-container actionable>
       <site-favicon url="[[model.site]]"></site-favicon>
-      <div class="middle">
+      <div class="flex cr-row-gap">
         <span class="url-directionality">[[model.site]]</span>
         <div class="secondary">[[model.localData]]</div>
       </div>

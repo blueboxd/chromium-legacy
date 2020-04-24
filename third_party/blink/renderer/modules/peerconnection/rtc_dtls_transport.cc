@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/dtls_transport_proxy.h"
@@ -47,7 +48,7 @@ std::unique_ptr<DtlsTransportProxy> CreateProxy(
     ExecutionContext* context,
     webrtc::DtlsTransportInterface* native_transport,
     DtlsTransportProxy::Delegate* delegate) {
-  LocalFrame* frame = Document::From(context)->GetFrame();
+  LocalFrame* frame = To<LocalDOMWindow>(context)->GetFrame();
   scoped_refptr<base::SingleThreadTaskRunner> proxy_thread =
       frame->GetTaskRunner(TaskType::kNetworking);
   scoped_refptr<base::SingleThreadTaskRunner> host_thread =

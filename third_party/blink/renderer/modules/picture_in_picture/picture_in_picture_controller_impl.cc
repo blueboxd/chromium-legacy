@@ -225,8 +225,7 @@ void PictureInPictureControllerImpl::OnEnteredPictureInPicture(
   picture_in_picture_element_->OnEnteredPictureInPicture();
 
   picture_in_picture_window_ = MakeGarbageCollected<PictureInPictureWindow>(
-      GetSupplementable()->ToExecutionContext(),
-      picture_in_picture_window_size);
+      GetExecutionContext(), picture_in_picture_window_size);
 
   picture_in_picture_element_->DispatchEvent(
       *EnterPictureInPictureEvent::Create(
@@ -417,10 +416,10 @@ PictureInPictureControllerImpl::PictureInPictureControllerImpl(
     Document& document)
     : PictureInPictureController(document),
       PageVisibilityObserver(document.GetPage()),
-      ExecutionContextClient(document.ToExecutionContext()),
-      session_observer_receiver_(this, document.ToExecutionContext()),
-      picture_in_picture_service_(document.ToExecutionContext()),
-      picture_in_picture_session_(document.ToExecutionContext()) {}
+      ExecutionContextClient(document.GetExecutionContext()),
+      session_observer_receiver_(this, document.GetExecutionContext()),
+      picture_in_picture_service_(document.GetExecutionContext()),
+      picture_in_picture_session_(document.GetExecutionContext()) {}
 
 bool PictureInPictureControllerImpl::EnsureService() {
   if (picture_in_picture_service_.is_bound())

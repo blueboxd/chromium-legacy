@@ -164,7 +164,6 @@ Sakatu bilatu nahi duzun hitza. Bilaketa mugatzeko, eduki testua sakatuta eta ha
 <translation id="2131665479022868825"><ph name="DATA" /> aurreztu dira</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> itxi da</translation>
 <translation id="2139186145475833000">Gehitu hasierako pantailan</translation>
-<translation id="2146738493024040262">Ireki zuzeneko aplikazioa</translation>
 <translation id="2154484045852737596">Editatu txartela</translation>
 <translation id="2154710561487035718">Kopiatu URLa</translation>
 <translation id="2156074688469523661">Gainerako webguneak (<ph name="NUMBER_OF_SITES" />)</translation>
@@ -281,7 +280,6 @@ Eduki sakatuta bilatu nahi duzun hitza. Bilaketa mugatzeko, hautatu hitz gehiago
 <translation id="2996809686854298943">URLa derrigorrezkoa da</translation>
 <translation id="300526633675317032"><ph name="SIZE_IN_KB" /> ezabatuko dira webguneen datuetatik.</translation>
 <translation id="3016635187733453316">Ziurtatu gailua Internetera konektatuta dagoela</translation>
-<translation id="3029613699374795922"><ph name="KBS" /> KB deskargatu dira</translation>
 <translation id="3029704984691124060">Pasaesaldiak ez datoz bat</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Lortu laguntza<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Kokapena desaktibatuta dago; aktiba ezazu <ph name="BEGIN_LINK" />Android-en ezarpenetan<ph name="END_LINK" />.</translation>
@@ -457,7 +455,6 @@ Zuk bakarrik ikus dezakezu kamera zeri begira dagoen. Webgune honek ezin ditu ik
 <translation id="4411535500181276704">Oinarrizko modua</translation>
 <translation id="4415276339145661267">Kudeatu Google-ko kontua</translation>
 <translation id="4432792777822557199"><ph name="SOURCE_LANGUAGE" /> darabilten orriak <ph name="TARGET_LANGUAGE" /> hizkuntzara itzuliko dira</translation>
-<translation id="4433925000917964731">Google-k eskainitako oinarrizko orria</translation>
 <translation id="4434045419905280838">Leiho gainerak. / Birbideratzeak</translation>
 <translation id="4440958355523780886">Google-k hornitutako oinarrizko orria. Sakatu jatorrizkoa kargatzeko.</translation>
 <translation id="4452411734226507615">Itxi <ph name="TAB_TITLE" /> fitxa</translation>
@@ -737,7 +734,6 @@ Esaterako, bisitatu dituzun webguneetan oinarritzen ez diren iragarkiak bidalita
 <translation id="6406506848690869874">Sinkronizazioa</translation>
 <translation id="6410973561433500075">Errealitate areagotuan sartu nahi duzu <ph name="DOMAIN" /> webgunearen bidez?</translation>
 <translation id="641643625718530986">Inprimatu…</translation>
-<translation id="6416782512398055893"><ph name="MBS" /> MB deskargatu dira</translation>
 <translation id="6427112570124116297">Itzuli web-orria</translation>
 <translation id="6433501201775827830">Aukeratu bilatzailea</translation>
 <translation id="6437478888915024427">Orriari buruzko informazioa</translation>
@@ -745,7 +741,6 @@ Esaterako, bisitatu dituzun webguneetan oinarritzen ez diren iragarkiak bidalita
 <translation id="6441734959916820584">Izena luzeegia da</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# irudi}other{# irudi}}</translation>
 <translation id="6447558397796644647">Ezin da aurkitu laster-marka hori. Egiaztatu zuzen idatzi duzula edo gehitu laster-marka bat.</translation>
-<translation id="6447842834002726250">Cookieak</translation>
 <translation id="6461962085415701688">Ezin da ireki fitxategia</translation>
 <translation id="6464977750820128603">Chrome-n irekitako webguneak ikus ditzakezu, eta haiek erabiltzeko tenporizadoreak ezarri.\n\nGoogle-k informazioa jasotzen du tenporizadoreak ezarri dizkiezun webguneei buruz eta haietan zenbat denbora eman duzun kalkulatzen du. Ongizate digitala programa hobetzeko erabiltzen da informazio hori.</translation>
 <translation id="6475951671322991020">Deskargatu bideoa</translation>
@@ -754,7 +749,6 @@ Esaterako, bisitatu dituzun webguneetan oinarritzen ez diren iragarkiak bidalita
 <translation id="6508722015517270189">Berrabiarazi Chrome</translation>
 <translation id="6532866250404780454">Ez dira agertuko Chrome-n ireki dituzun webguneak. Ezabatu egingo dira webguneen tenporizadoreak.</translation>
 <translation id="6534565668554028783">Google-k ez du erantzun garaiz</translation>
-<translation id="6538442820324228105"><ph name="GBS" /> GB deskargatu dira</translation>
 <translation id="6539092367496845964">Arazoren bat izan da. Saiatu berriro geroago.</translation>
 <translation id="6545017243486555795">Garbitu datu guztiak</translation>
 <translation id="6545864417968258051">Bluetooth bidezko gailuen bilaketa</translation>

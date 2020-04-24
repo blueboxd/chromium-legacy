@@ -91,24 +91,11 @@ generate_localizable_strings("system_strings") {
   deps = [ _packed_resources_target ]
 }
 
+# Compatibility target. To be removed after internal is updated.
 source_set("credential_provider_extension_providers") {
   sources = [ "account_verification_provider.h" ]
-
+  deps = [ "//ios/chrome/common/credential_provider:account_verification_provider_header" ]
   assert_no_deps = [ "//ios/chrome/browser" ]
-
-  configs += [ "//build/config/compiler:enable_arc" ]
-}
-
-source_set("account_verification_provider") {
-  sources = [ "account_verification_provider.mm" ]
-
-  deps = [
-    ":credential_provider_extension_providers",
-    "//base",
-  ]
-
-  assert_no_deps = [ "//ios/chrome/browser" ]
-
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 

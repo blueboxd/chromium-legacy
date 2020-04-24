@@ -28,10 +28,13 @@ PrefService* GetActivePrefService() {
 BackGestureContextualNudgeControllerImpl::
     BackGestureContextualNudgeControllerImpl() {
   tablet_mode_observer_.Add(Shell::Get()->tablet_mode_controller());
+  shelf_control_visible_ = ShelfConfig::Get()->shelf_controls_shown();
+  ShelfConfig::Get()->AddObserver(this);
 }
 
 BackGestureContextualNudgeControllerImpl::
     ~BackGestureContextualNudgeControllerImpl() {
+  ShelfConfig::Get()->RemoveObserver(this);
   DoCleanUp();
 }
 
@@ -103,6 +106,17 @@ void BackGestureContextualNudgeControllerImpl::NavigationEntryChanged(
   MaybeShowNudgeUi(window);
 }
 
+void BackGestureContextualNudgeControllerImpl::OnShelfConfigUpdated() {
+  bool updated_shelf_control_visibility =
+      ShelfConfig::Get()->shelf_controls_shown();
+  if (shelf_control_visible_ == updated_shelf_control_visibility)
+    return;
+  shelf_control_visible_ = updated_shelf_control_visibility;
+  if (!nudge_ || !shelf_control_visible_)
+    return;
+  nudge_->CancelAnimationOrFadeOutToHide();
+}
+
 bool BackGestureContextualNudgeControllerImpl::CanShowNudge(
     base::TimeDelta* recheck_delay) const {
   if (!Shell::Get()->IsInTabletMode())
@@ -112,6 +126,9 @@ bool BackGestureContextualNudgeControllerImpl::CanShowNudge(
       session_manager::SessionState::ACTIVE) {
     return false;
   }
+
+  if (shelf_control_visible_)
+    return false;
 
   return contextual_tooltip::ShouldShowNudge(
       GetActivePrefService(), contextual_tooltip::TooltipType::kBackGesture,

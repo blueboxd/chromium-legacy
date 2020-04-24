@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "services/device/public/mojom/sensor.mojom-blink-forward.h"
 #include "services/device/public/mojom/sensor_provider.mojom-blink.h"
-#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
@@ -23,15 +23,15 @@ class SensorProxy;
 // 'SensorProxy' instances.
 class MODULES_EXPORT SensorProviderProxy final
     : public GarbageCollected<SensorProviderProxy>,
-      public Supplement<Document> {
+      public Supplement<LocalDOMWindow> {
   USING_GARBAGE_COLLECTED_MIXIN(SensorProviderProxy);
 
  public:
   static const char kSupplementName[];
 
-  static SensorProviderProxy* From(Document*);
+  static SensorProviderProxy* From(LocalDOMWindow*);
 
-  explicit SensorProviderProxy(Document&);
+  explicit SensorProviderProxy(LocalDOMWindow&);
   ~SensorProviderProxy();
 
   SensorProxy* CreateSensorProxy(device::mojom::blink::SensorType, Page*);

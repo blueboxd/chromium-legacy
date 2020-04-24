@@ -1378,6 +1378,21 @@ class Port(object):
         return Port.WPT_REGEX.match(test)
 
     @staticmethod
+    def is_wpt_idlharness_test(test_file):
+        """Returns whether a WPT test is (probably) an idlharness test.
+
+        There are no rules in WPT that can be used to identify idlharness tests
+        without examining the file contents (which would be expensive). This
+        method utilizes a filename heuristic, based on the convention of
+        including 'idlharness' in the appropriate test names.
+        """
+        match = Port.WPT_REGEX.match(test_file)
+        if not match:
+            return False
+        filename = match.group(2).split('/')[-1]
+        return 'idlharness' in filename
+
+    @staticmethod
     def should_use_wptserve(test):
         return Port.is_wpt_test(test)
 

@@ -95,7 +95,7 @@ class SharedWorkerHostTest : public testing::Test {
     // Set up for service worker.
     auto service_worker_handle =
         std::make_unique<ServiceWorkerMainResourceHandle>(
-            helper_->context_wrapper());
+            helper_->context_wrapper(), base::DoNothing());
     mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
         client_remote;
     mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>

@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/html/media/autoplay_policy.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/performance.h"
@@ -104,20 +105,21 @@ bool SpeechSynthesis::paused() const {
   return is_paused_;
 }
 
-void SpeechSynthesis::speak(SpeechSynthesisUtterance* utterance) {
+void SpeechSynthesis::speak(ScriptState* script_state,
+                            SpeechSynthesisUtterance* utterance) {
   DCHECK(utterance);
-  Document* document = Document::From(GetExecutionContext());
-  if (!document)
+  if (!script_state->ContextIsValid())
     return;
 
   // Note: Non-UseCounter based TTS metrics are of the form TextToSpeech.* and
   // are generally global, whereas these are scoped to a single page load.
-  UseCounter::Count(document, WebFeature::kTextToSpeech_Speak);
-  document->CountUseOnlyInCrossOriginIframe(
+  LocalDOMWindow* window = To<LocalDOMWindow>(GetExecutionContext());
+  UseCounter::Count(window, WebFeature::kTextToSpeech_Speak);
+  window->document()->CountUseOnlyInCrossOriginIframe(
       WebFeature::kTextToSpeech_SpeakCrossOrigin);
   if (!IsAllowedToStartByAutoplay()) {
     Deprecation::CountDeprecation(
-        document, WebFeature::kTextToSpeech_SpeakDisallowedByAutoplay);
+        window, WebFeature::kTextToSpeech_SpeakDisallowedByAutoplay);
     FireErrorEvent(utterance, 0 /* char_index */, "not-allowed");
     return;
   }
@@ -299,19 +301,16 @@ void SpeechSynthesis::Trace(Visitor* visitor) {
 bool SpeechSynthesis::GetElapsedTimeMillis(double* millis) {
   if (!GetExecutionContext())
     return false;
-  Document* delegate_document = Document::From(GetExecutionContext());
-  if (!delegate_document || delegate_document->IsStopped())
-    return false;
-  LocalDOMWindow* delegate_dom_window = delegate_document->domWindow();
-  if (!delegate_dom_window)
+  LocalDOMWindow* window = To<LocalDOMWindow>(GetExecutionContext());
+  if (window->document()->IsStopped())
     return false;
 
-  *millis = DOMWindowPerformance::performance(*delegate_dom_window)->now();
+  *millis = DOMWindowPerformance::performance(*window)->now();
   return true;
 }
 
 bool SpeechSynthesis::IsAllowedToStartByAutoplay() const {
-  Document* document = Document::From(GetExecutionContext());
+  Document* document = To<LocalDOMWindow>(GetExecutionContext())->document();
   DCHECK(document);
 
   // Note: could check the utterance->volume here, but that could be overriden

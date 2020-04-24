@@ -9,6 +9,7 @@
 <translation id="1384959399684842514">បានផ្អាកការទាញយក</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="2079545284768500474">បកក្រោយ</translation>
+<translation id="2146738493024040262">បើកកម្មវិធីប្រើភ្លាមៗ</translation>
 <translation id="2148716181193084225">ថ្ងៃនេះ</translation>
 <translation id="2359808026110333948">បន្ត</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
@@ -27,6 +28,7 @@
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">ចំណងជើង</translation>
 <translation id="4259722352634471385">ការរុករកត្រូវបានរារាំង៖ <ph name="URL" /></translation>
+<translation id="4433925000917964731">ទំព័រស្រាល​ដែល​ផ្ដល់​ដោយ Google</translation>
 <translation id="4570913071927164677">ព័ត៌មាន​លម្អិត</translation>
 <translation id="4645575059429386691">គ្រប់គ្រងដោយឪពុកម្តាយរបស់អ្នក</translation>
 <translation id="4883854917563148705">មិនអាច​កំណត់​ការកំណត់​ដែលស្ថិតក្រោម​ការគ្រប់គ្រង​ឡើងវិញ​បានទេ</translation>
@@ -38,6 +40,7 @@
 <translation id="5391532827096253100">ការតភ្ជាប់​របស់អ្នក​ជាមួយគេហទំព័រ​នេះមិនមាន​សុវត្ថិភាពទេ។ ព័ត៌មាន​អំពីគេហទំព័រ</translation>
 <translation id="5556459405103347317">ដំណើរការឡើងវិញ</translation>
 <translation id="5596627076506792578">ជម្រើសច្រើនទៀត</translation>
+<translation id="5804241973901381774">ការអនុញ្ញាត</translation>
 <translation id="5860033963881614850">បិទ</translation>
 <translation id="5916664084637901428">បើក</translation>
 <translation id="5939518447894949180">កំណត់ឡើងវិញ</translation>
@@ -46,6 +49,7 @@
 <translation id="6165508094623778733">ស្វែងយល់​បន្ថែម</translation>
 <translation id="6206551242102657620">ការតភ្ជាប់​មាន​សុវត្ថិភាព។ ព័ត៌មាន​អំពីគេហទំព័រ</translation>
 <translation id="6216432067784365534">ជម្រើស <ph name="NAME_OF_LIST_ITEM" /></translation>
+<translation id="6447842834002726250">ខុកឃី</translation>
 <translation id="6527303717912515753">ចែករំលែក</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6746124502594467657">រំកិលចុះ</translation>

@@ -178,7 +178,8 @@ enum LaunchSource {
   kFromAppListQueryContextMenu = 4, // Query-dependent results; context menu.
   kFromAppListRecommendation = 5,   // Query-less recommendations (smaller
                                     // icons).
-  kFromParentalControls = 6,        // Parental Controls Settings Section.
+  kFromParentalControls = 6,        // Parental Controls Settings Section and
+                                    // Per App time notification.
   kFromShelf = 7,                   // Shelf.
   kFromFileManager = 8,             // FileManager.
   kFromLink = 9,                    // Left-licking on links in the browser.

@@ -18,7 +18,7 @@ class WEB_ENGINE_EXPORT WebEngineURLLoaderThrottle
     : public blink::URLLoaderThrottle {
  public:
   using UrlRequestRewriteRules =
-      base::RefCountedData<std::vector<mojom::UrlRequestRewriteRulePtr>>;
+      base::RefCountedData<std::vector<mojom::UrlRequestRulePtr>>;
 
   // An interface to provide rewrite rules to the throttle. Its
   // implementation must outlive the WebEngineURLLoaderThrottle.

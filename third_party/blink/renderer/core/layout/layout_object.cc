@@ -242,8 +242,6 @@ LayoutObject* LayoutObject::CreateObject(Element* element,
     case EDisplay::kFlowRoot:
     case EDisplay::kInlineBlock:
     case EDisplay::kListItem:
-    case EDisplay::kMath:
-    case EDisplay::kInlineMath:
       return LayoutObjectFactory::CreateBlockFlow(*element, style, legacy);
     case EDisplay::kTable:
     case EDisplay::kInlineTable:
@@ -292,6 +290,9 @@ LayoutObject* LayoutObject::CreateObject(Element* element,
     case EDisplay::kInlineGrid:
       UseCounter::Count(element->GetDocument(), WebFeature::kCSSGridLayout);
       return LayoutObjectFactory::CreateGrid(*element, style, legacy);
+    case EDisplay::kMath:
+    case EDisplay::kInlineMath:
+      return LayoutObjectFactory::CreateMath(*element, style, legacy);
     case EDisplay::kLayoutCustom:
     case EDisplay::kInlineLayoutCustom:
       DCHECK(RuntimeEnabledFeatures::LayoutNGEnabled());

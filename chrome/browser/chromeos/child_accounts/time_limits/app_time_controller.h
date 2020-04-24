@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
@@ -27,6 +28,10 @@ class Profile;
 namespace base {
 class OneShotTimer;
 }  // namespace base
+
+namespace gfx {
+class ImageSkia;
+} // namespace gfx
 
 namespace chromeos {
 namespace app_time {
@@ -140,6 +145,12 @@ class AppTimeController : public SystemClockClient::Observer,
   // Called when the system time or timezone may have changed.
   bool HasTimeCrossedResetBoundary() const;
 
+  void OpenFamilyLinkApp();
+
+  void ShowNotificationForApp(const std::string& app_name,
+                              AppNotification notification,
+                              base::Optional<base::TimeDelta> time_limit,
+                              base::Optional<gfx::ImageSkia> icon);
   // Profile
   Profile* const profile_;
 
@@ -165,6 +176,8 @@ class AppTimeController : public SystemClockClient::Observer,
   // Metrics information to be recorded for PerAppTimeLimits.
   int patl_policy_update_count_ = 0;
   int apps_with_limit_ = 0;
+
+  base::WeakPtrFactory<AppTimeController> weak_ptr_factory_{this};
 };
 
 }  // namespace app_time

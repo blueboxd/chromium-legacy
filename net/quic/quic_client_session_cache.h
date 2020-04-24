@@ -32,8 +32,8 @@ class NET_EXPORT_PRIVATE QuicClientSessionCache : public quic::SessionCache {
 
   void Insert(const quic::QuicServerId& server_id,
               bssl::UniquePtr<SSL_SESSION> session,
-              quic::TransportParameters* params,
-              quic::ApplicationState* application_state) override;
+              const quic::TransportParameters& params,
+              const quic::ApplicationState* application_state) override;
 
   std::unique_ptr<quic::QuicResumptionState> Lookup(
       const quic::QuicServerId& server_id,
@@ -72,8 +72,8 @@ class NET_EXPORT_PRIVATE QuicClientSessionCache : public quic::SessionCache {
   // Creates a new entry and insert into |cache_|.
   void CreateAndInsertEntry(const quic::QuicServerId& server_id,
                             bssl::UniquePtr<SSL_SESSION> session,
-                            quic::TransportParameters* params,
-                            quic::ApplicationState* application_state);
+                            const quic::TransportParameters& params,
+                            const quic::ApplicationState* application_state);
 
   base::Clock* clock_;
   base::MRUCache<quic::QuicServerId, Entry> cache_;

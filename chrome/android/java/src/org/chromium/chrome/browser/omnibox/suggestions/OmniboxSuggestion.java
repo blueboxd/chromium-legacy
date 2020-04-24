@@ -25,6 +25,8 @@ import java.util.List;
  */
 @VisibleForTesting
 public class OmniboxSuggestion {
+    public static final int INVALID_GROUP = -1;
+
     private static final String KEY_ZERO_SUGGEST_LIST_SIZE = "zero_suggest_list_size";
     private static final String KEY_PREFIX_ZERO_SUGGEST_URL = "zero_suggest_url";
     private static final String KEY_PREFIX_ZERO_SUGGEST_DISPLAY_TEST = "zero_suggest_display_text";
@@ -32,6 +34,7 @@ public class OmniboxSuggestion {
     private static final String KEY_PREFIX_ZERO_SUGGEST_NATIVE_TYPE = "zero_suggest_native_type";
     private static final String KEY_PREFIX_ZERO_SUGGEST_IS_SEARCH_TYPE = "zero_suggest_is_search";
     private static final String KEY_PREFIX_ZERO_SUGGEST_ANSWER_TEXT = "zero_suggest_answer_text";
+    private static final String KEY_PREFIX_ZERO_SUGGEST_GROUP_ID = "zero_suggest_group_id";
     // Deprecated:
     // private static final String KEY_PREFIX_ZERO_SUGGEST_ANSWER_TYPE = "zero_suggest_answer_type";
     private static final String KEY_PREFIX_ZERO_SUGGEST_IS_DELETABLE = "zero_suggest_is_deletable";
@@ -88,13 +91,14 @@ public class OmniboxSuggestion {
     private final boolean mIsDeletable;
     private final String mPostContentType;
     private final byte[] mPostData;
+    private final int mGroupId;
 
     public OmniboxSuggestion(int nativeType, boolean isSearchType, int relevance, int transition,
             String displayText, List<MatchClassification> displayTextClassifications,
             String description, List<MatchClassification> descriptionClassifications,
             SuggestionAnswer answer, String fillIntoEdit, String url, String imageUrl,
             String imageDominantColor, boolean isStarred, boolean isDeletable,
-            String postContentType, byte[] postData) {
+            String postContentType, byte[] postData, int groupId) {
         mType = nativeType;
         mIsSearchType = isSearchType;
         mRelevance = relevance;
@@ -112,6 +116,7 @@ public class OmniboxSuggestion {
         mIsDeletable = isDeletable;
         mPostContentType = postContentType;
         mPostData = postData;
+        mGroupId = groupId;
     }
 
     public int getType() {
@@ -257,6 +262,7 @@ public class OmniboxSuggestion {
                                     ? ""
                                     : Base64.encodeToString(
                                             suggestion.getPostData(), Base64.DEFAULT))
+                    .putInt(KEY_PREFIX_ZERO_SUGGEST_GROUP_ID + i, suggestion.getGroupId())
                     .apply();
         }
     }
@@ -294,15 +300,25 @@ public class OmniboxSuggestion {
                 byte[] postData = Base64.decode(
                         prefs.getString(KEY_PREFIX_ZERO_SUGGEST_POST_CONTENT_DATA + i, ""),
                         Base64.DEFAULT);
+                int groupId = prefs.getInt(KEY_PREFIX_ZERO_SUGGEST_GROUP_ID + i, INVALID_GROUP);
 
                 OmniboxSuggestion suggestion = new OmniboxSuggestion(nativeType, isSearchType, 0, 0,
                         displayText, classifications, description, classifications, null, "", url,
                         null, null, isStarred, isDeletable,
                         postContentType.isEmpty() ? null : postContentType,
-                        postData.length == 0 ? null : postData);
+                        postData.length == 0 ? null : postData, groupId);
                 suggestions.add(suggestion);
             }
         }
         return suggestions;
+    }
+
+    /**
+     * @return ID of the group this suggestion is associated with, or null, if the suggestion is
+     *         not associated with any group, or INVALID_GROUP if suggestion is not associated with
+     *         any group.
+     */
+    public int getGroupId() {
+        return mGroupId;
     }
 }

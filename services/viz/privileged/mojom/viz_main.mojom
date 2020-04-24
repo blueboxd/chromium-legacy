@@ -9,6 +9,8 @@ import "services/network/public/mojom/tcp_socket.mojom";
 import "services/viz/public/mojom/compositing/compositing_mode_watcher.mojom";
 import "services/viz/privileged/mojom/compositing/frame_sink_manager.mojom";
 import "services/viz/privileged/mojom/gl/gpu_host.mojom";
+[EnableIf=is_win]
+import "services/viz/privileged/mojom/gl/info_collection_gpu_service.mojom";
 import "services/viz/privileged/mojom/gl/gpu_service.mojom";
 import "ui/gfx/mojom/font_render_params.mojom";
 
@@ -49,6 +51,12 @@ interface VizMain {
           discardable_memory_manager,
       handle<shared_buffer>? activity_flags,
       gfx.mojom.SubpixelRendering subpixel_rendering);
+
+  // Create a GPU info collection service provided by the info-collection GPU
+  // process.
+  [EnableIf=is_win]
+  CreateInfoCollectionGpuService(
+      pending_receiver<InfoCollectionGpuService> info_collection_gpu_service);
 
   // The viz devtools server is for use by developers to observe the
   // FrameSinkManager in the viz compositor. This is only called if the flag

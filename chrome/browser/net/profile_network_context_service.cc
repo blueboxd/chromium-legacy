@@ -34,7 +34,6 @@
 #include "chrome/common/pref_names.h"
 #include "components/certificate_transparency/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -802,15 +801,13 @@ ProfileNetworkContextService::CreateNetworkContextParams(
                   metrics::prefs::kMetricsReportingEnabled);
   }
 
-  if (data_reduction_proxy::params::IsEnabledWithNetworkService()) {
-    auto* drp_settings =
-        DataReductionProxyChromeSettingsFactory::GetForBrowserContext(profile_);
-    if (drp_settings) {
-      mojo::Remote<network::mojom::CustomProxyConfigClient> config_client;
-      network_context_params->custom_proxy_config_client_receiver =
-          config_client.BindNewPipeAndPassReceiver();
-      drp_settings->AddCustomProxyConfigClient(std::move(config_client));
-    }
+  auto* drp_settings =
+      DataReductionProxyChromeSettingsFactory::GetForBrowserContext(profile_);
+  if (drp_settings) {
+    mojo::Remote<network::mojom::CustomProxyConfigClient> config_client;
+    network_context_params->custom_proxy_config_client_receiver =
+        config_client.BindNewPipeAndPassReceiver();
+    drp_settings->AddCustomProxyConfigClient(std::move(config_client));
   }
 
 #if defined(OS_CHROMEOS)

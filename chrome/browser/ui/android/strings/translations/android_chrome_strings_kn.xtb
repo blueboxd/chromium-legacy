@@ -165,7 +165,6 @@
 <translation id="2131665479022868825"><ph name="DATA" /> ಉಳಿತಾಯ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> ಮುಚ್ಚಲಾಗಿದೆ</translation>
 <translation id="2139186145475833000">ಹೋಮ್ ಪರದೆಗೆ ಸೇರಿಸಿ</translation>
-<translation id="2146738493024040262">ತತ್‌ಕ್ಷಣದ ಅಪ್ಲಿಕೇಶನ್ ತೆರೆಯಿರಿ</translation>
 <translation id="2154484045852737596">ಕಾರ್ಡ್ ಎಡಿಟ್ ಮಾಡಿ</translation>
 <translation id="2154710561487035718">URL ನಕಲಿಸಿ</translation>
 <translation id="2156074688469523661">ಉಳಿದ ಸೈಟ್‌ಗಳು (<ph name="NUMBER_OF_SITES" />)</translation>
@@ -282,7 +281,6 @@
 <translation id="2996809686854298943">URL ಅಗತ್ಯವಿದೆ</translation>
 <translation id="300526633675317032">ಇದು ವೆಬ್‌ಸೈಟ್ ಸಂಗ್ರಹಣೆಯ ಎಲ್ಲಾ <ph name="SIZE_IN_KB" /> ಅನ್ನು ತೆರವುಗೊಳಿಸುತ್ತದೆ.</translation>
 <translation id="3016635187733453316">ಈ ಸಾಧನವು ಇಂಟರ್ನೆಟ್‌ಗೆ ಸಂಪರ್ಕಗೊಂಡಿರುವುದನ್ನು ಖಚಿತಪಡಿಸಿಕೊಳ್ಳಿ</translation>
-<translation id="3029613699374795922"><ph name="KBS" /> KB ಡೌನ್‌ಲೋಡ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="3029704984691124060">ಪಾಸ್‌ಫ್ರೇಸ್‌ಗಳು ಹೊಂದಿಕೆಯಾಗುವುದಿಲ್ಲ</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />ಸಹಾಯ ಪಡೆಯಿರಿ<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">ಸ್ಥಳ ಆಫ್ ಆಗಿದೆ; <ph name="BEGIN_LINK" />Android ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ<ph name="END_LINK" /> ಇದನ್ನು ಆನ್‌ ಮಾಡಿ.</translation>
@@ -458,7 +456,6 @@
 <translation id="4411535500181276704">ಲೈಟ್ ಮೋಡ್</translation>
 <translation id="4415276339145661267">ನಿಮ್ಮ Google ಖಾತೆಯನ್ನು ನಿರ್ವಹಿಸಿ</translation>
 <translation id="4432792777822557199">ಈಗಿನಿಂದಲೇ <ph name="SOURCE_LANGUAGE" /> ನಲ್ಲಿನ ಪುಟಗಳನ್ನು <ph name="TARGET_LANGUAGE" /> ಗೆ ಅನುವಾದ ಮಾಡಲಾಗುತ್ತದೆ</translation>
-<translation id="4433925000917964731">Lite ಪುಟವನ್ನು Google ಒದಗಿಸಿದೆ</translation>
 <translation id="4434045419905280838">ಪಾಪ್-ಅಪ್‌ಗಳು ಹಾಗೂ ಮರುನಿರ್ದೇಶನಗಳು</translation>
 <translation id="4440958355523780886">ಪುಟದ ಲೈಟ್ ಆವೃತ್ತಿಯನ್ನು Google ಒದಗಿಸಿದೆ. ಮೂಲ ಆವೃತ್ತಿಯನ್ನು ಲೋಡ್ ಮಾಡಲು ಟ್ಯಾಪ್ ಮಾಡಿ.</translation>
 <translation id="4452411734226507615"><ph name="TAB_TITLE" /> ಟ್ಯಾಬ್‌ ಮುಚ್ಚಿ</translation>
@@ -737,7 +734,6 @@
 <translation id="6406506848690869874">ಸಿಂಕ್</translation>
 <translation id="6410973561433500075"><ph name="DOMAIN" /> ನಿಂದ AR ಅನ್ನು ಪ್ರವೇಶಿಸಬೇಕೇ?</translation>
 <translation id="641643625718530986">ಮುದ್ರಿಸು...</translation>
-<translation id="6416782512398055893"><ph name="MBS" /> MB ಡೌನ್‌ಲೋಡ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="6427112570124116297">ವೆಬ್ ಅನ್ನು ಅನುವಾದಿಸಿ</translation>
 <translation id="6433501201775827830">ನಿಮ್ಮ ಹುಡುಕಾಟದ ಇಂಜಿನ್ ಆಯ್ಕೆಮಾಡಿ</translation>
 <translation id="6437478888915024427">ಪುಟದ ಮಾಹಿತಿ</translation>
@@ -745,7 +741,6 @@
 <translation id="6441734959916820584">ಹೆಸರು ತುಂಬಾ ಉದ್ದವಾಗಿದೆ</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# ಚಿತ್ರ}one{# ಚಿತ್ರಗಳು}other{# ಚಿತ್ರಗಳು}}</translation>
 <translation id="6447558397796644647">ಆ ಬುಕ್‌ಮಾರ್ಕ್ ಅನ್ನು ಹುಡುಕಲು ಸಾಧ್ಯವಿಲ್ಲ. ನಿಮ್ಮ ಕಾಗುಣಿತವನ್ನು ಪರಿಶೀಲಿಸಿ ಅಥವಾ ಹೊಸ ಬುಕ್‌ಮಾರ್ಕ್ ಅನ್ನು ಸೇರಿಸಿ.</translation>
-<translation id="6447842834002726250">ಕುಕೀಸ್</translation>
 <translation id="6461962085415701688">ಫೈಲ್ ತೆರೆಯಲು ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ</translation>
 <translation id="6464977750820128603">ನೀವು Chrome ನಲ್ಲಿ ಭೇಟಿ ಮಾಡಿದ ಸೈಟ್‌ಗಳನ್ನು ನೋಡಬಹುದು ಮತ್ತು ಅವುಗಳಿಗೆ ಟೈಮರ್‌ಗಳನ್ನು ಹೊಂದಿಸಬಹುದು.\n\nನೀವು ಯಾವ ಸೈಟ್‌ಗಳಿಗೆ  ಟೈಮರ್‌ಗಳನ್ನು ಹೊಂದಿಸಿದ್ದೀರಿ ಮತ್ತು  ಅವುಗಳಿಗೆ ಭೇಟಿ ಮಾಡಿ ಎಷ್ಟು ಸಮಯ ಕಳೆದಿರುವಿರಿ ಎನ್ನುವುದರ ಕುರಿತ ಮಾಹಿತಿಯನ್ನು Google ಪಡೆಯುತ್ತದೆ. ಡಿಜಿಟಲ್ ಯೋಗಕ್ಷೇಮವನ್ನು ಉತ್ತಮಗೊಳಿಸಲು ಈ ಮಾಹಿತಿಯನ್ನು ಬಳಸಲಾಗುವುದು.</translation>
 <translation id="6475951671322991020">ವೀಡಿಯೊ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ</translation>
@@ -754,7 +749,6 @@
 <translation id="6508722015517270189">Chrome ಮರುಪ್ರಾರಂಭಿಸಿ</translation>
 <translation id="6532866250404780454">Chrome ನಲ್ಲಿ ನೀವು ಭೇಟಿ ನೀಡುವ ಸೈಟ್‌ಗಳನ್ನು ತೋರಿಸುವುದಿಲ್ಲ. ಎಲ್ಲಾ ಸೈಟ್‌ ಟೈಮರ್‌ಗಳನ್ನು ಅಳಿಸಲಾಗುವುದು.</translation>
 <translation id="6534565668554028783">ಪ್ರತಿಕ್ರಿಯಿಸಲು Google ತೀರಾ ಹೆಚ್ಚು ಸಮಯ ತೆಗೆದುಕೊಂಡಿದೆ.</translation>
-<translation id="6538442820324228105"><ph name="GBS" /> GB ಡೌನ್‌ಲೋಡ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="6539092367496845964">ಏನೋ ತಪ್ಪಾಗಿದೆ. ನಂತರ ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="6545017243486555795">ಎಲ್ಲಾ ಡೇಟಾ ತೆರವುಗೊಳಿಸು</translation>
 <translation id="6545864417968258051">ಬ್ಲೂಟೂತ್ ಸ್ಕ್ಯಾನಿಂಗ್</translation>
@@ -856,6 +850,7 @@
 <translation id="7352939065658542140">ವೀಡಿಯೊ</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{ಆಯ್ಕೆಮಾಡಲಾದ 1 ಐಟಂ ಹಂಚಿಕೊಳ್ಳಿ}one{ಆಯ್ಕೆಮಾಡಲಾದ # ಐಟಂಗಳನ್ನು ಹಂಚಿಕೊಳ್ಳಿ}other{ಆಯ್ಕೆಮಾಡಲಾದ # ಐಟಂಗಳನ್ನು ಹಂಚಿಕೊಳ್ಳಿ}}</translation>
 <translation id="7359002509206457351">ಪಾವತಿ ವಿಧಾನಗಳನ್ನು ಪ್ರವೇಶಿಸಿ</translation>
+<translation id="7362144854749094396">ಇತಿಹಾಸವನ್ನು Chrome ಜೊತೆಗೆ ಹಂಚಿಕೊಳ್ಳಲಾಗಿದೆ. ಆದ್ಯತೆಗಳನ್ನು <ph name="SITE_NAME" /> ಜೊತೆಗೆ ಹಂಚಿಕೊಳ್ಳಲಾಗಿದೆ.</translation>
 <translation id="7375125077091615385">ಪ್ರಕಾರ:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>

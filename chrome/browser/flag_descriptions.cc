@@ -1245,6 +1245,11 @@ const char kNewOsSettingsSearchDescription[] =
     "Enables New OS Settings search with fuzzy matching, and disables the old "
     "OS settings search using exact string matching.";
 
+const char kDlcSettingsUiName[] = "DLC Settings UI";
+const char kDlcSettingsUiDescription[] =
+    "Enables DLC (Downloadable Content) Settings subpage in the Device section "
+    "of OS Settings.";
+
 const char kTextureLayerSkipWaitForActivationName[] = "Parallelize layers";
 const char kTextureLayerSkipWaitForActivationDescription[] =
     "Don't wait for layer activation before beginning new frame.";

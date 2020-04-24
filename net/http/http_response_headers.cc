@@ -381,22 +381,6 @@ void HttpResponseHeaders::RemoveHeaderLine(const std::string& name,
   Parse(new_raw_headers);
 }
 
-void HttpResponseHeaders::AddHeader(const std::string& header) {
-  CheckDoesNotHaveEmbeddedNulls(header);
-  DCHECK_EQ('\0', raw_headers_[raw_headers_.size() - 2]);
-  DCHECK_EQ('\0', raw_headers_[raw_headers_.size() - 1]);
-  // Don't copy the last null.
-  std::string new_raw_headers(raw_headers_, 0, raw_headers_.size() - 1);
-  new_raw_headers.append(header);
-  new_raw_headers.push_back('\0');
-  new_raw_headers.push_back('\0');
-
-  // Make this object hold the new data.
-  raw_headers_.clear();
-  parsed_.clear();
-  Parse(new_raw_headers);
-}
-
 void HttpResponseHeaders::AddHeader(base::StringPiece name,
                                     base::StringPiece value) {
   DCHECK(HttpUtil::IsValidHeaderName(name));

@@ -1053,6 +1053,24 @@ class PortTest(LoggingTestCase):
         self.assertFalse(
             Port.is_wpt_test('not-virtual/a-name/external/wpt/baz/qux.htm'))
 
+    def test_is_wpt_idlharness_test(self):
+        self.assertTrue(
+            Port.is_wpt_idlharness_test(
+                'external/wpt/css/css-pseudo/idlharness.html'))
+        self.assertTrue(
+            Port.is_wpt_idlharness_test(
+                'external/wpt/payment-handler/idlharness.https.any.html'))
+        self.assertTrue(
+            Port.is_wpt_idlharness_test(
+                'external/wpt/payment-handler/idlharness.https.any.serviceworker.html'
+            ))
+        self.assertFalse(
+            Port.is_wpt_idlharness_test(
+                'external/wpt/css/foo/interfaces.html'))
+        self.assertFalse(
+            Port.is_wpt_idlharness_test(
+                'external/wpt/css/idlharness/bar.html'))
+
     def test_should_use_wptserve(self):
         self.assertTrue(
             Port.should_use_wptserve('external/wpt/dom/interfaces.html'))

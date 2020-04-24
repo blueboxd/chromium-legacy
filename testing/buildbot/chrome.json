@@ -2851,7 +2851,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6",
+              "os": "Mac-10.15",
               "pool": "chrome.tests.template"
             }
           ],

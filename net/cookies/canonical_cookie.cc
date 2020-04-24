@@ -403,10 +403,27 @@ std::string CanonicalCookie::DomainWithoutDot() const {
 }
 
 bool CanonicalCookie::IsEquivalentForSecureCookieMatching(
-    const CanonicalCookie& ecc) const {
-  return (name_ == ecc.Name() && (ecc.IsDomainMatch(DomainWithoutDot()) ||
-                                  IsDomainMatch(ecc.DomainWithoutDot())) &&
-          ecc.IsOnPath(Path()));
+    const CanonicalCookie& secure_cookie) const {
+  // Names must be the same
+  bool same_name = name_ == secure_cookie.Name();
+
+  // They should domain-match in one direction or the other. (See RFC 6265bis
+  // section 5.1.3.)
+  // TODO(chlily): This does not check for the IP address case. This is bad due
+  // to https://crbug.com/1069935.
+  bool domain_match =
+      IsSubdomainOf(DomainWithoutDot(), secure_cookie.DomainWithoutDot()) ||
+      IsSubdomainOf(secure_cookie.DomainWithoutDot(), DomainWithoutDot());
+
+  bool path_match = secure_cookie.IsOnPath(Path());
+
+  bool equivalent_for_secure_cookie_matching =
+      same_name && domain_match && path_match;
+
+  // IsEquivalent() is a stricter check than this.
+  DCHECK(!IsEquivalent(secure_cookie) || equivalent_for_secure_cookie_matching);
+
+  return equivalent_for_secure_cookie_matching;
 }
 
 bool CanonicalCookie::IsOnPath(const std::string& url_path) const {

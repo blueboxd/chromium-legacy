@@ -164,7 +164,6 @@ Puudutage otsimiseks mis tahes sõna. Otsingu täpsustamiseks puudutage pikalt, 
 <translation id="2131665479022868825"><ph name="DATA" /> salvestati</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> suleti</translation>
 <translation id="2139186145475833000">Avaekraanile lisamine</translation>
-<translation id="2146738493024040262">Ava installimata avatav rakendus</translation>
 <translation id="2154484045852737596">Kaardi muutmine</translation>
 <translation id="2154710561487035718">Kopeeri URL</translation>
 <translation id="2156074688469523661">Järelejäänud saidid (<ph name="NUMBER_OF_SITES" />)</translation>
@@ -281,7 +280,6 @@ Puudutage pikalt mis tahes sõna, et seda otsida. Otsingu täpsustamiseks valige
 <translation id="2996809686854298943">Vaja on URL-i</translation>
 <translation id="300526633675317032">See tühjendab veebisaidi salvestusruumi mahuga <ph name="SIZE_IN_KB" />.</translation>
 <translation id="3016635187733453316">Veenduge, et seadmel oleks internetiühendus</translation>
-<translation id="3029613699374795922">Alla on laaditud <ph name="KBS" /> kB</translation>
 <translation id="3029704984691124060">Paroolid ei ühti</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Küsige abi<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Asukoht on välja lülitatud. Lülitage see sisse <ph name="BEGIN_LINK" />Androidi seadetes<ph name="END_LINK" />.</translation>
@@ -303,7 +301,7 @@ Puudutage pikalt mis tahes sõna, et seda otsida. Otsingu täpsustamiseks valige
 <translation id="3207960819495026254">Järjehoidjatesse lisatud</translation>
 <translation id="3211426585530211793"><ph name="ITEM_TITLE" /> kustutati</translation>
 <translation id="321773570071367578">Kui unustasite parooli või soovite seda seadet muuta, <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END_LINK" /></translation>
-<translation id="3223655101706843289">See kustutab kõik saidi <ph name="ORIGIN" /> salvestatud andmed ja küpsisefailid ning selle rakenduse teie avakuvalt.</translation>
+<translation id="3223655101706843289">See kustutab kõik saidi <ph name="ORIGIN" /> ja selle rakenduse salvestatud andmed ja küpsisefailid teie avakuvalt.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3232754137068452469">Veebirakendus</translation>
 <translation id="3236059992281584593">Jäänud on 1 minut</translation>
@@ -457,7 +455,6 @@ Ainult teie näete, mida kaamera vaatab. See sait ei näe teie kaamera pilti.</t
 <translation id="4411535500181276704">Lihtsustatud režiim</translation>
 <translation id="4415276339145661267">Google'i konto haldamine</translation>
 <translation id="4432792777822557199"><ph name="SOURCE_LANGUAGE" /> keeles olevad lehed tõlgitakse edaspidi <ph name="TARGET_LANGUAGE" /> keelde</translation>
-<translation id="4433925000917964731">Lihtsustatud lehte pakub Google</translation>
 <translation id="4434045419905280838">Hüpikaknad ja ümbersuunamised</translation>
 <translation id="4440958355523780886">Lihtsustatud lehte pakub Google. Puudutage algse lehe laadimiseks.</translation>
 <translation id="4452411734226507615">Vahelehe <ph name="TAB_TITLE" /> sulgemine</translation>
@@ -737,7 +734,6 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="6406506848690869874">Sünkroonimine</translation>
 <translation id="6410973561433500075">Kas siseneda domeenil <ph name="DOMAIN" /> AR-i?</translation>
 <translation id="641643625718530986">Printimine ...</translation>
-<translation id="6416782512398055893">Alla on laaditud <ph name="MBS" /> MB</translation>
 <translation id="6427112570124116297">Veebi tõlkimine</translation>
 <translation id="6433501201775827830">Valige oma otsingumootor</translation>
 <translation id="6437478888915024427">Lehe teave</translation>
@@ -745,7 +741,6 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="6441734959916820584">Nimi on liiga pikk</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# pilt}other{# pilti}}</translation>
 <translation id="6447558397796644647">Seda järjehoidjat ei leita. Kontrollige õigekirja või lisage uus järjehoidja.</translation>
-<translation id="6447842834002726250">Küpsised</translation>
 <translation id="6461962085415701688">Faili ei saa avada</translation>
 <translation id="6464977750820128603">Näete saite, mida Chrome'is külastate, ja saate nendele taimereid määrata.\n\nGoogle saab teavet saitide kohta, millele taimereid määrate, ja näeb, kui kaua neid külastate. Selle teabe abil muudetakse teenus Digitaalne heaolu paremaks.</translation>
 <translation id="6475951671322991020">Laadi video alla</translation>
@@ -754,7 +749,6 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="6508722015517270189">Taaskäivitage Chrome</translation>
 <translation id="6532866250404780454">Chrome'is külastatud saite ei kuvata. Kõik saitide taimerid kustutatakse.</translation>
 <translation id="6534565668554028783">Google'il kulus reageerimiseks liiga kaua aega</translation>
-<translation id="6538442820324228105">Alla on laaditud <ph name="GBS" /> GB</translation>
 <translation id="6539092367496845964">Midagi läks valesti. Proovige hiljem uuesti.</translation>
 <translation id="6545017243486555795">Kustuta kõik andmed</translation>
 <translation id="6545864417968258051">Bluetoothi otsimine</translation>
@@ -855,6 +849,7 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Jaga 1 valitud üksust}other{Jaga # valitud üksust}}</translation>
 <translation id="7359002509206457351">Makseviisidele juurdepääsemine</translation>
+<translation id="7362144854749094396">Ajalugu jagatakse Chrome'iga. Eelistusi jagatakse saidiga <ph name="SITE_NAME" />.</translation>
 <translation id="7375125077091615385">Tüüp:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>

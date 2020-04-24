@@ -38,7 +38,7 @@ MockBackgroundFetchDelegate::TestResponseBuilder::AddResponseHeader(
     const std::string& name,
     const std::string& value) {
   DCHECK(response_);
-  response_->headers->AddHeader(name + ": " + value);
+  response_->headers->AddHeader(name, value);
   return *this;
 }
 

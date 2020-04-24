@@ -276,8 +276,6 @@ base::Optional<double> Animation::TimelineTime() const {
 // https://drafts.csswg.org/web-animations/#setting-the-current-time-of-an-animation.
 void Animation::setCurrentTime(base::Optional<double> new_current_time,
                                ExceptionState& exception_state) {
-  // TODO(crbug.com/924159): Update this after we add support for inactive
-  // timelines and unresolved timeline.currentTime
   if (!new_current_time) {
     // If the current time is resolved, then throw a TypeError.
     if (CurrentTimeInternal()) {
@@ -446,7 +444,7 @@ bool Animation::PreCommit(
   return true;
 }
 
-void Animation::PostCommit(double timeline_time) {
+void Animation::PostCommit() {
   compositor_pending_ = false;
 
   if (!compositor_state_ || compositor_state_->pending_action == kNone)
@@ -896,10 +894,11 @@ const char* Animation::PlayStateString(AnimationPlayState play_state) {
 Animation::AnimationPlayState Animation::CalculateAnimationPlayState() const {
   // 1. All of the following conditions are true:
   //    * The current time of animation is unresolved, and
+  //    * the start time of animation is unresolved, and
   //    * animation does not have either a pending play task or a pending pause
   //      task,
   //    then idle.
-  if (!CurrentTimeInternal() && !PendingInternal())
+  if (!CurrentTimeInternal() && !start_time_ && !PendingInternal())
     return kIdle;
 
   // 2. Either of the following conditions are true:
@@ -974,18 +973,36 @@ void Animation::pause(ExceptionState& exception_state) {
   if (pending_pause_ || CalculateAnimationPlayState() == kPaused)
     return;
 
-  // 3.  If the animation’s current time is unresolved, perform the steps
+  // 3. Let has finite timeline be true if animation has an associated timeline
+  //    that is not monotonically increasing.
+  bool has_finite_timeline =
+      timeline_ && !timeline_->IsMonotonicallyIncreasing();
+
+  // 4.  If the animation’s current time is unresolved, perform the steps
   //     according to the first matching condition from below:
-  // 3a. If animation’s playback rate is ≥ 0,
-  //       Let animation’s hold time be zero.
-  // 3b. Otherwise,
-  //       If associated effect end for animation is positive infinity, throw an
-  //       "InvalidStateError" DOMException and abort these steps. Otherwise,
-  //       let animation’s hold time be associated effect end.
+  // 4a. If animation’s playback rate is ≥ 0,
+  //       Update either animation’s start time or hold time as follows:
+  //           If has finite timeline is true,
+  //               Set animation’s start time to zero.
+  //           Otherwise,
+  //               Set animation’s hold time to zero.
+  // 4b. Otherwise,
+  //         If associated effect end for animation is positive infinity,
+  //             throw an "InvalidStateError" DOMException and abort these
+  //             steps.
+  //         Otherwise,
+  //             Update either animation’s start time or hold time as follows:
+  //                 If has finite timeline is true,
+  //                     let animation’s start time be associated effect end.
+  //                 Otherwise,
+  //                     let animation’s hold time be associated effect end.
   base::Optional<double> current_time = CurrentTimeInternal();
   if (!current_time) {
     if (playback_rate_ >= 0) {
-      hold_time_ = 0;
+      if (has_finite_timeline)
+        start_time_ = 0;
+      else
+        hold_time_ = 0;
     } else {
       if (EffectEnd() == std::numeric_limits<double>::infinity()) {
         exception_state.ThrowDOMException(
@@ -993,30 +1010,35 @@ void Animation::pause(ExceptionState& exception_state) {
             "Cannot play reversed Animation with infinite target effect end.");
         return;
       }
-      hold_time_ = EffectEnd();
+      if (has_finite_timeline)
+        start_time_ = EffectEnd();
+      else
+        hold_time_ = EffectEnd();
     }
   }
 
-  // 4. Let has pending ready promise be a boolean flag that is initially false.
-  // 5. If animation has a pending play task, cancel that task and let has
+  // 5. Let has pending ready promise be a boolean flag that is initially false.
+  // 6. If animation has a pending play task, cancel that task and let has
   //    pending ready promise be true.
-  // 6. If has pending ready promise is false, set animation’s current ready
+  // 7. If has pending ready promise is false, set animation’s current ready
   //    promise to a new promise in the relevant Realm of animation.
   if (pending_play_)
     pending_play_ = false;
   else if (ready_promise_)
     ready_promise_->Reset();
 
-  // 7. Schedule a task to be executed at the first possible moment after the
-  //    user agent has performed any processing necessary to suspend the
-  //    playback of animation’s associated effect, if any.
+  // 8. Schedule a task to be executed at the first possible moment where both
+  //    of the following conditions are true:
+  //    8a. the user agent has performed any processing necessary to suspend
+  //        the playback of animation’s associated effect, if any.
+  //    8b. the animation is associated with a timeline that is not inactive.
   pending_pause_ = true;
   pending_play_ = false;
 
   SetOutdated();
   SetCompositorPending(false);
 
-  // 8. Run the procedure to update an animation’s finished state for animation
+  // 9. Run the procedure to update an animation’s finished state for animation
   //    with the did seek flag set to false (continuous) , and thesynchronously
   //    notify flag set to false.
   UpdateFinishedState(UpdateType::kContinuous, NotificationType::kAsync);
@@ -1049,51 +1071,63 @@ void Animation::PlayInternal(AutoRewind auto_rewind,
   // 1. Let aborted pause be a boolean flag that is true if animation has a
   //    pending pause task, and false otherwise.
   // 2. Let has pending ready promise be a boolean flag that is initially false.
+  // 3. Let performed seek be a boolean flag that is initially false.
+  // 4. Let has finite timeline be true if animation has an associated timeline
+  //    that is not monotonically increasing.
   bool aborted_pause = pending_pause_;
   bool has_pending_ready_promise = false;
+  bool performed_seek = false;
+  bool has_finite_timeline =
+      timeline_ && !timeline_->IsMonotonicallyIncreasing();
 
-  // 3. Perform the steps corresponding to the first matching condition from the
+  // 5. Perform the steps corresponding to the first matching condition from the
   //    following, if any:
   //
-  // 3a If animation’s effective playback rate > 0, the auto-rewind flag is true
+  // 5a If animation’s effective playback rate > 0, the auto-rewind flag is true
   //    and either animation’s:
   //      current time is unresolved, or
   //      current time < zero, or
   //      current time ≥ target effect end,
-  //    Set animation’s hold time to zero.
+  //    5a1. Set performed seek to true.
+  //    5a2. Update either animation’s start time or hold time as follows:
+  //         If has finite timeline is true,
+  //             Set animation’s start time to zero.
+  //         Otherwise,
+  //             Set animation’s hold time to zero.
   //
-  // 3b If animation’s effective playback rate < 0, the auto-rewind flag is true
+  // 5b If animation’s effective playback rate < 0, the auto-rewind flag is true
   //    and either animation’s:
   //      current time is unresolved, or
   //      current time ≤ zero, or
   //      current time > target effect end,
-  //    If target effect end is positive infinity, throw an "InvalidStateError"
-  //    DOMException and abort these steps. Otherwise, set animation’s hold time
-  //    to target effect end.
+  //    5b1.If associated effect end is positive infinity,
+  //        throw an "InvalidStateError" DOMException and abort these steps.
+  //    5b2.Otherwise,
+  //        5b2a Set performed seek to true.
+  //        5b2b Update either animation’s start time or hold time as follows:
+  //             If has finite timeline is true,
+  //                 Set animation’s start time to associated effect end.
+  //             Otherwise,
+  //                 Set animation’s hold time to associated effect end.
   //
-  // 3c If animation’s effective playback rate = 0 and animation’s current time
+  // 5c If animation’s effective playback rate = 0 and animation’s current time
   //    is unresolved,
-  //    Set animation’s hold time to zero.
+  //    5c1. Set performed seek to true.
+  //    5c2. Update either animation’s start time or hold time as follows:
+  //         If has finite timeline is true,
+  //             Set animation’s start time to zero.
+  //         Otherwise,
+  //             Set animation’s hold time to zero.
   double effective_playback_rate = EffectivePlaybackRate();
   base::Optional<double> current_time = CurrentTimeInternal();
 
-  // TODO(crbug.com/1012073): This should be able to be extracted into a
-  // function in AnimationTimeline that each child class can override for their
-  // own special behavior.
-  double initial_hold_time = 0;
-  if (timeline_ && timeline_->IsScrollTimeline() && timeline_->IsActive()) {
-    base::Optional<double> timeline_time = timeline_->CurrentTimeSeconds();
-    if (timeline_time) {
-      // TODO(crbug.com/924159): Once inactive timelines are supported we need
-      // to re-evaluate if it is desired behavior to adjust the hold time when
-      // playback rate is set before play().
-      initial_hold_time = timeline_time.value() * effective_playback_rate;
-    }
-  }
-
   if (effective_playback_rate > 0 && auto_rewind == AutoRewind::kEnabled &&
       (!current_time || current_time < 0 || current_time >= EffectEnd())) {
-    hold_time_ = initial_hold_time;
+    performed_seek = true;
+    if (has_finite_timeline)
+      start_time_ = 0;
+    else
+      hold_time_ = 0;
   } else if (effective_playback_rate < 0 &&
              auto_rewind == AutoRewind::kEnabled &&
              (!current_time || current_time <= 0 ||
@@ -1104,44 +1138,54 @@ void Animation::PlayInternal(AutoRewind auto_rewind,
           "Cannot play reversed Animation with infinite target effect end.");
       return;
     }
-    hold_time_ = initial_hold_time + EffectEnd();
+    performed_seek = true;
+    if (has_finite_timeline)
+      start_time_ = EffectEnd();
+    else
+      hold_time_ = EffectEnd();
   } else if (effective_playback_rate == 0 && !current_time) {
-    hold_time_ = initial_hold_time;
+    performed_seek = true;
+    if (has_finite_timeline)
+      start_time_ = 0;
+    else
+      hold_time_ = 0;
   }
 
-  // 4. If animation has a pending play task or a pending pause task,
-  //   4.1 Cancel that task.
-  //   4.2 Set has pending ready promise to true.
+  // 6. If animation has a pending play task or a pending pause task,
+  //   6.1 Cancel that task.
+  //   6.2 Set has pending ready promise to true.
   if (pending_play_ || pending_pause_) {
     pending_play_ = pending_pause_ = false;
     has_pending_ready_promise = true;
   }
 
-  // 5. If the following three conditions are all satisfied:
+  // 7. If the following three conditions are all satisfied:
   //      animation’s hold time is unresolved, and
+  //      performed seek is false, and
   //      aborted pause is false, and
   //      animation does not have a pending playback rate,
   //    abort this procedure.
-  if (!hold_time_ && !aborted_pause && !pending_playback_rate_)
+  if (!hold_time_ && !performed_seek && !aborted_pause &&
+      !pending_playback_rate_)
     return;
 
-  // 6. If animation’s hold time is resolved, let its start time be unresolved.
+  // 8. If animation’s hold time is resolved, let its start time be unresolved.
   if (hold_time_)
     start_time_ = base::nullopt;
 
-  // 7. If has pending ready promise is false, let animation’s current ready
+  // 9. If has pending ready promise is false, let animation’s current ready
   //    promise be a new promise in the relevant Realm of animation.
   if (ready_promise_ && !has_pending_ready_promise)
     ready_promise_->Reset();
 
-  // 8. Schedule a task to run as soon as animation is ready.
+  // 10. Schedule a task to run as soon as animation is ready.
   pending_play_ = true;
   finished_ = false;
   committed_finish_notification_ = false;
   SetOutdated();
   SetCompositorPending(/*effect_changed=*/false);
 
-  // 9. Run the procedure to update an animation’s finished state for animation
+  // 11. Run the procedure to update an animation’s finished state for animation
   //    with the did seek flag set to false, and the synchronously notify flag
   //    set to false.
   // Boolean valued arguments replaced with enumerated values for clarity.
@@ -1198,6 +1242,13 @@ void Animation::reverse(ExceptionState& exception_state) {
 
 // https://drafts.csswg.org/web-animations/#finishing-an-animation-section
 void Animation::finish(ExceptionState& exception_state) {
+  // TODO(crbug.com/916117): Implement finish for scroll-linked animations.
+  if (timeline_ && timeline_->IsScrollTimeline()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNotSupportedError,
+        "Scroll-linked WebAnimation currently does not support finish.");
+    return;
+  }
   if (!EffectivePlaybackRate()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
@@ -1527,9 +1578,6 @@ void Animation::ApplyPendingPlaybackRate() {
 
 void Animation::setPlaybackRate(double playback_rate,
                                 ExceptionState& exception_state) {
-  // TODO(crbug.com/924159): Update this after we add support for inactive
-  // timelines and unresolved timeline.currentTime
-
   base::Optional<double> start_time_before = start_time_;
 
   // 1. Clear any pending playback rate on animation.

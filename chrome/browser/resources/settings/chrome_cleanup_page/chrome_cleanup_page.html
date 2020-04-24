@@ -1,4 +1,4 @@
-    <style include="settings-shared">
+    <style include="cr-shared-style settings-shared iron-flex">
       #status-title {
         font-weight: 500;
       }
@@ -9,25 +9,14 @@
         width: 20px;
       }
 
-      #powered-by-settings-box {
-        min-height: 1em;
-      }
-
-      #powered-by-container {
-        align-items: center;
-        display: flex;
-        min-height: var(--settings-row-min-height);
-        width: 100%;
-      }
-
       /* Apply a fixed height to the <svg> tag inside #powered-by-logo.
          Used by |chromeCleanupPoweredByHTML|. */
       #powered-by-logo > svg {
         height: 22px;
       }
     </style>
-    <div class="settings-box first">
-      <div class="start">
+    <div class="cr-row first">
+      <div class="flex">
         <div id="status-title" role="status" inner-h-t-m-l="[[title_]]"></div>
         <div hidden="[[!showExplanation_]]">
           <span class="secondary">[[explanation_]]</span>
@@ -46,7 +35,7 @@
         </cr-button>
       </template>
     </div>
-    <div class="settings-box continuation">
+    <div class="cr-row continuation">
       <settings-checkbox hidden="[[!showLogsPermission_]]"
           id="chromeCleanupLogsUploadControl"
           sub-label="$i18n{chromeCleanupExplanationLogsPermissionPref}"
@@ -56,7 +45,7 @@
     </div>
     <cr-expand-button
         alt="[[showItemsLinkLabel_]]"
-        class="settings-box"
+        class="cr-row"
         expanded="{{itemsToRemoveSectionExpanded_}}"
         hidden="[[!showItemsToRemove_]]"
         id="show-items-button">
@@ -85,15 +74,13 @@
           items-to-show="[[
               getListEntriesFromStrings_(scannerResults_.extensions)]]">
       </items-to-remove-list>
-      <div class="settings-box continuation">
+      <div class="cr-row continuation">
         <div class="secondary">
           $i18nRaw{chromeCleanupDetailsExplanation}
         </div>
       </div>
-      <div id="powered-by-settings-box" class="settings-box continuation">
-        <div id="powered-by-container" class="secondary"
-            hidden="[[!isPoweredByPartner_]]">
-          $i18nRaw{chromeCleanupPoweredByHtml}
-        </div>
+      <div id="powered-by" class="cr-row continuation"
+          hidden="[[!isPoweredByPartner_]]">
+        $i18nRaw{chromeCleanupPoweredByHtml}
       </div>
     </iron-collapse>

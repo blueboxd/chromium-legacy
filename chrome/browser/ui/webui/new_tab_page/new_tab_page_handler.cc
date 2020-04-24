@@ -119,7 +119,8 @@ NewTabPageHandler::NewTabPageHandler(
         pending_page_handler,
     mojo::PendingRemote<new_tab_page::mojom::Page> pending_page,
     Profile* profile,
-    content::WebContents* web_contents)
+    content::WebContents* web_contents,
+    const base::Time& ntp_creation_time)
     : chrome_colors_service_(
           chrome_colors::ChromeColorsFactory::GetForProfile(profile)),
       instant_service_(InstantServiceFactory::GetForProfile(profile)),
@@ -129,7 +130,8 @@ NewTabPageHandler::NewTabPageHandler(
       page_{std::move(pending_page)},
       profile_(profile),
       receiver_{this, std::move(pending_page_handler)},
-      web_contents_(web_contents) {
+      web_contents_(web_contents),
+      ntp_creation_time_(ntp_creation_time) {
   CHECK(instant_service_);
   CHECK(ntp_background_service_);
   CHECK(logo_service_);
@@ -368,6 +370,12 @@ void NewTabPageHandler::ChooseLocalCustomBackground(
       base::FilePath::StringType(), web_contents_->GetTopLevelNativeWindow(),
       nullptr);
   choose_local_custom_background_callback_ = std::move(callback);
+}
+
+void NewTabPageHandler::OnMostVisitedTilesRendered(double time) {
+  NTPUserDataLogger::GetOrCreateFromWebContents(web_contents_)
+      ->LogEvent(NTP_ALL_TILES_LOADED,
+                 base::Time::FromJsTime(time) - ntp_creation_time_);
 }
 
 void NewTabPageHandler::NtpThemeChanged(const NtpTheme& ntp_theme) {

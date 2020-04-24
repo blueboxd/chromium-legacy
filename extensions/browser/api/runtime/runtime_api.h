@@ -72,6 +72,14 @@ class RuntimeAPI : public BrowserContextKeyedAPI,
     SUCCESS_RESTART_SCHEDULED,
   };
 
+  // After this many suspiciously fast consecutive reloads, an extension will
+  // get disabled.
+  static constexpr int kFastReloadCount = 5;
+
+  // Same as above, but we increase the fast reload count for unpacked
+  // extensions.
+  static constexpr int kUnpackedFastReloadCount = 30;
+
   static BrowserContextKeyedAPIFactory<RuntimeAPI>* GetFactoryInstance();
 
   static void RegisterPrefs(PrefRegistrySimple* registry);

@@ -9,6 +9,8 @@
 #include "ash/system/accessibility/floating_menu_button.h"
 #include "ash/system/tray/tray_constants.h"
 #include "cc/paint/paint_flags.h"
+#include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/mojom/ax_node_data.mojom-shared.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
@@ -17,6 +19,10 @@
 #include "ui/views/layout/box_layout.h"
 
 namespace ash {
+
+namespace {
+constexpr char kUniqueId[] = "switch_access_back_button";
+}  // namespace
 
 SwitchAccessBackButtonView::SwitchAccessBackButtonView(int diameter)
     : diameter_(diameter),
@@ -34,9 +40,13 @@ SwitchAccessBackButtonView::SwitchAccessBackButtonView(int diameter)
 
 void SwitchAccessBackButtonView::ButtonPressed(views::Button* sender,
                                                const ui::Event& event) {
-  // This code should not be called presently, as the button is never shown.
-  // TODO(crbug/973719): Transition to using new back button and menu which
-  //                     will be implemented using views/.
+  NotifyAccessibilityEvent(ax::mojom::Event::kClicked,
+                           /*send_native_event=*/false);
+}
+
+void SwitchAccessBackButtonView::GetAccessibleNodeData(
+    ui::AXNodeData* node_data) {
+  node_data->html_attributes.push_back(std::make_pair("id", kUniqueId));
 }
 
 const char* SwitchAccessBackButtonView::GetClassName() const {

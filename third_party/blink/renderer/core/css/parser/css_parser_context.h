@@ -87,6 +87,7 @@ class CORE_EXPORT CSSParserContext final
   const KURL& BaseURL() const { return base_url_; }
   const WTF::TextEncoding& Charset() const { return charset_; }
   const Referrer& GetReferrer() const { return referrer_; }
+  bool IsAdRelated() const { return is_ad_related_; }
   bool IsHTMLDocument() const { return is_html_document_; }
   enum ResourceFetchRestriction ResourceFetchRestriction() const {
     return resource_fetch_restriction_;
@@ -107,6 +108,8 @@ class CORE_EXPORT CSSParserContext final
   // CSSParserContext is not well understood and thus we sometimes need to
   // override this field.
   void SetMode(CSSParserMode mode) { mode_ = mode; }
+
+  void SetIsAdRelated() { is_ad_related_ = true; }
 
   KURL CompleteURL(const String& url) const;
 
@@ -170,6 +173,11 @@ class CORE_EXPORT CSSParserContext final
   CSSParserMode match_mode_;
   SelectorProfile profile_ = kLiveProfile;
   Referrer referrer_;
+
+  // Whether the associated stylesheet's ResourceRequest is an ad resource. If
+  // there is no associated ResourceRequest, whether ad script is on the v8 call
+  // stack at stylesheet creation. Not set for presentation attributes.
+  bool is_ad_related_ = false;
   bool is_html_document_;
   bool use_legacy_background_size_shorthand_behavior_;
   SecureContextMode secure_context_mode_;

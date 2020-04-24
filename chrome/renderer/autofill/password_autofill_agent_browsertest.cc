@@ -2238,11 +2238,11 @@ TEST_F(PasswordAutofillAgentTest, RememberFieldPropertiesOnSubmit) {
 
   std::map<base::string16, FieldPropertiesMask> expected_properties_masks;
   expected_properties_masks[ASCIIToUTF16("random_field")] =
-      FieldPropertiesFlags::HAD_FOCUS;
+      FieldPropertiesFlags::kHadFocus;
   expected_properties_masks[ASCIIToUTF16("username")] =
-      FieldPropertiesFlags::USER_TYPED | FieldPropertiesFlags::HAD_FOCUS;
+      FieldPropertiesFlags::kUserTyped | FieldPropertiesFlags::kHadFocus;
   expected_properties_masks[ASCIIToUTF16("password")] =
-      FieldPropertiesFlags::USER_TYPED | FieldPropertiesFlags::HAD_FOCUS;
+      FieldPropertiesFlags::kUserTyped | FieldPropertiesFlags::kHadFocus;
 
   ExpectFieldPropertiesMasks(PasswordFormSubmitted, expected_properties_masks,
                              SubmissionIndicatorEvent::HTML_FORM_SUBMISSION);
@@ -2282,9 +2282,9 @@ TEST_F(PasswordAutofillAgentTest, FixEmptyFieldPropertiesOnSubmit) {
 
   std::map<base::string16, FieldPropertiesMask> expected_properties_masks;
   expected_properties_masks[ASCIIToUTF16("new_username")] =
-      FieldPropertiesFlags::AUTOFILLED_ON_PAGELOAD;
+      FieldPropertiesFlags::kAutofilledOnPageLoad;
   expected_properties_masks[ASCIIToUTF16("new_password")] =
-      FieldPropertiesFlags::AUTOFILLED_ON_PAGELOAD;
+      FieldPropertiesFlags::kAutofilledOnPageLoad;
 
   ExpectFieldPropertiesMasks(PasswordFormSubmitted, expected_properties_masks,
                              SubmissionIndicatorEvent::HTML_FORM_SUBMISSION);
@@ -2309,9 +2309,9 @@ TEST_F(PasswordAutofillAgentTest,
 
   std::map<base::string16, FieldPropertiesMask> expected_properties_masks;
   expected_properties_masks[ASCIIToUTF16("username")] =
-      FieldPropertiesFlags::USER_TYPED | FieldPropertiesFlags::HAD_FOCUS;
+      FieldPropertiesFlags::kUserTyped | FieldPropertiesFlags::kHadFocus;
   expected_properties_masks[ASCIIToUTF16("password")] =
-      FieldPropertiesFlags::USER_TYPED | FieldPropertiesFlags::HAD_FOCUS;
+      FieldPropertiesFlags::kUserTyped | FieldPropertiesFlags::kHadFocus;
 
   ExpectFieldPropertiesMasks(PasswordFormSameDocumentNavigation,
                              expected_properties_masks,
@@ -2339,9 +2339,9 @@ TEST_F(PasswordAutofillAgentTest,
 
   std::map<base::string16, FieldPropertiesMask> expected_properties_masks;
   expected_properties_masks[ASCIIToUTF16("username")] =
-      FieldPropertiesFlags::USER_TYPED | FieldPropertiesFlags::HAD_FOCUS;
+      FieldPropertiesFlags::kUserTyped | FieldPropertiesFlags::kHadFocus;
   expected_properties_masks[ASCIIToUTF16("password")] =
-      FieldPropertiesFlags::USER_TYPED | FieldPropertiesFlags::HAD_FOCUS;
+      FieldPropertiesFlags::kUserTyped | FieldPropertiesFlags::kHadFocus;
 
   ExpectFieldPropertiesMasks(PasswordFormSameDocumentNavigation,
                              expected_properties_masks,

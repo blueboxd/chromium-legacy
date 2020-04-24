@@ -27,7 +27,6 @@
 #include "chrome/browser/apps/platform_apps/api/media_galleries/blob_data_source_factory.h"
 #include "chrome/browser/apps/platform_apps/api/media_galleries/media_galleries_api_util.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/media_galleries/gallery_watch_manager.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"

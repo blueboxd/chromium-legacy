@@ -297,6 +297,34 @@ TEST(UrlUtilTest, GetSuperdomain) {
   }
 }
 
+TEST(UrlUtilTest, IsSubdomainOf) {
+  struct {
+    const char* subdomain;
+    const char* superdomain;
+    bool is_subdomain;
+  } tests[] = {
+      {"bar.foo.com", "foo.com", true},
+      {"barfoo.com", "foo.com", false},
+      {"bar.foo.com", "com", true},
+      {"bar.foo.com", "other.com", false},
+      {"bar.foo.com", "bar.foo.com", true},
+      {"bar.foo.com", "baz.foo.com", false},
+      {"bar.foo.com", "baz.bar.foo.com", false},
+      {"bar.foo.com", "ar.foo.com", false},
+      {"foo.com", "foo.com.", false},
+      {"bar.foo.com", "foo.com.", false},
+      {"", "", false},
+      {"a", "", false},
+      {"", "a", false},
+      {"127.0.0.1", "0.0.1", true},  // Don't do this...
+  };
+
+  for (const auto& test : tests) {
+    EXPECT_EQ(test.is_subdomain,
+              IsSubdomainOf(test.subdomain, test.superdomain));
+  }
+}
+
 TEST(UrlUtilTest, CompliantHost) {
   struct {
     const char* const host;

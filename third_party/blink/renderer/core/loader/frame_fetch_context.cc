@@ -1010,10 +1010,11 @@ void FrameFetchContext::Trace(Visitor* visitor) {
 
 bool FrameFetchContext::CalculateIfAdSubresource(
     const ResourceRequest& resource_request,
-    ResourceType type) {
+    ResourceType type,
+    const FetchInitiatorInfo& initiator_info) {
   // Mark the resource as an Ad if the SubresourceFilter thinks it's an ad.
-  bool known_ad =
-      BaseFetchContext::CalculateIfAdSubresource(resource_request, type);
+  bool known_ad = BaseFetchContext::CalculateIfAdSubresource(
+      resource_request, type, initiator_info);
   if (GetResourceFetcherProperties().IsDetached() ||
       !GetFrame()->GetAdTracker()) {
     return known_ad;
@@ -1022,7 +1023,7 @@ bool FrameFetchContext::CalculateIfAdSubresource(
   // The AdTracker needs to know about the request as well, and may also mark it
   // as an ad.
   return GetFrame()->GetAdTracker()->CalculateIfAdSubresource(
-      document_->domWindow(), resource_request, type, known_ad);
+      document_->domWindow(), resource_request, type, initiator_info, known_ad);
 }
 
 bool FrameFetchContext::SendConversionRequestInsteadOfRedirecting(

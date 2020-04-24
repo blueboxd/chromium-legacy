@@ -352,6 +352,9 @@ class ChromeLauncherController
   // Create the Chrome browser shortcut ShelfItem.
   void CreateBrowserShortcutLauncherItem();
 
+  // Creates the Lacros browser shortcut ShelfItem.
+  void CreateLacrosBrowserShortcut();
+
   // Finds the index of where to insert the next item.
   int FindInsertionPoint();
 

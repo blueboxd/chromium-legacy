@@ -1628,7 +1628,7 @@ body.files-ng .list-view .loading-indicator {
   top: 0;
 }
 
-.downloads-warning {
+body:not(.files-ng) .downloads-warning {
   align-items: center;
   background-color: rgb(79, 129, 232);
   color: white;
@@ -1641,13 +1641,27 @@ body.files-ng .list-view .loading-indicator {
   transition: height 70ms linear;
 }
 
-.downloads-warning a:link,
-.volume-warning a:link {
+body.files-ng .downloads-warning {
+  align-items: center;
+  border-bottom: 1px solid var(--cr-separator-color, rgb(224, 224, 224));
+  display: flex;
+  flex: none;
+  flex-direction: row;
+  height: 40px;
+}
+
+body:not(.files-ng) .downloads-warning a:link,
+body:not(.files-ng) .volume-warning a:link {
   color: white;
   flex: none;
 }
 
-.downloads-warning .warning-icon {
+body.files-ng .downloads-warning a:link,
+body.files-ng .volume-warning a:link {
+  color: var(--google-blue-600);
+}
+
+body:not(.files-ng) .downloads-warning .warning-icon {
   background-image: -webkit-image-set(
       url(../images/files/ui/warning_white.png) 1x,
       url(../images/files/ui/2x/warning_white.png) 2x);
@@ -1658,11 +1672,22 @@ body.files-ng .list-view .loading-indicator {
   width: 16px;
 }
 
-.downloads-warning .warning-message {
+body.files-ng .downloads-warning .warning-icon {
+  -webkit-mask-image: url(../images/files/ui/warning.svg);
+  background-color: var(--google-grey-700);
+  background-size: 20px 20px;
+  flex: none;
+  height: 20px;
+  margin-inline-end: 12px;
+  margin-inline-start: 8px;
+  width: 20px;
+}
+
+body:not(.files-ng) .downloads-warning .warning-message {
   margin-inline-end: 40px;
 }
 
-.downloads-warning[hidden] {
+body:not(.files-ng) .downloads-warning[hidden] {
   display: flex !important;  /* Overrides [hidden] for animation. */
   height: 0;
 }
@@ -1675,7 +1700,7 @@ body.files-ng .list-view .loading-indicator {
 }
 
 /* Drive space warning banner. */
-.volume-warning {
+body:not(.files-ng) .volume-warning {
   align-items: center;
   animation: heightAnimation 70ms linear;
   background-color: rgb(79, 129, 232);
@@ -1689,12 +1714,25 @@ body.files-ng .list-view .loading-indicator {
   position: relative;
 }
 
+body.files-ng .volume-warning {
+  align-items: center;
+  border-bottom: 1px solid var(--cr-separator-color, rgb(224, 224, 224));
+  color: white;
+  display: flex;
+  flex: none;
+  flex-direction: row;
+  font-size: 13px;
+  height: 40px;
+  overflow: hidden;
+  position: relative;
+}
+
 .volume-warning[hidden] {
   border-top-width: 0;
   height: 0;
 }
 
-.volume-warning .drive-icon {
+body:not(.files-ng) .volume-warning .drive-icon {
   background: white -webkit-image-set(
       url(../images/files/ui/drive_logo.png) 1x,
       url(../images/files/ui/2x/drive_logo.png) 2x) no-repeat center;
@@ -1706,13 +1744,33 @@ body.files-ng .list-view .loading-indicator {
   width: 36px;
 }
 
-.volume-warning .drive-text {
+body.files-ng .volume-warning .drive-icon {
+  background: white url(../images/files/ui/drive_logo.svg) no-repeat center;
+  background-size: 20px 20px;
+  flex: none;
+  height: 20px;
+  margin-inline-end: 12px;
+  margin-inline-start: 8px;
+  width: 20px;
+}
+
+body:not(.files-ng) .volume-warning .drive-text {
   flex: none;
   font-size: 16px;
   margin-inline-end: 51px;
 }
 
-.volume-warning .imitate-paper-button {
+body.files-ng .volume-warning .button-group {
+  display: flex;
+  flex-direction: row-reverse;
+  margin-inline-start: auto;
+}
+
+body.files-ng .volume-warning .button-group > a {
+  text-decoration-line: none;
+}
+
+body:not(.files-ng) .volume-warning .imitate-paper-button {
   background-color: white;
   border-radius: 2px;
   color: rgb(79, 129, 232);
@@ -1721,7 +1779,15 @@ body.files-ng .list-view .loading-indicator {
   height: 2.5em;
 }
 
-.banner-close {
+body.files-ng .volume-warning .banner-button {
+  border: 0;
+  height: 32px;
+  margin-inline-end: 8px;
+  padding-inline-end: 16px;
+  padding-inline-start: 16px;
+}
+
+body:not(.files-ng) .banner-close {
   background: -webkit-image-set(
       url(../images/files/ui/close_button_white.png) 1x,
       url(../images/files/ui/2x/close_button_white.png) 2x) no-repeat center;
@@ -1734,6 +1800,23 @@ body.files-ng .list-view .loading-indicator {
   width: 40px;
 }
 
+body.files-ng .banner-close {
+  border: 0;
+  height: 32px;
+  margin-inline-end: 20px;
+  padding-inline-end: 16px;
+  padding-inline-start: 16px;
+  position: absolute;
+}
+
+body.files-ng .volume-warning .banner-close {
+  height: 32px;
+  margin-inline-end: 20px;
+  padding-inline-end: 16px;
+  padding-inline-start: 16px;
+  position: relative;
+}
+
 html[dir='ltr'] .banner-close {
   right: 0;
 }
@@ -1742,7 +1825,7 @@ html[dir='rtl'] .banner-close {
   left: 0;
 }
 
-.banner-cloud-bg {
+body:not(.files-ng) .banner-cloud-bg {
   background-image: -webkit-image-set(
       url(../images/files/ui/drive_banner_clouds.png) 1x,
       url(../images/files/ui/2x/drive_banner_clouds.png) 2x);

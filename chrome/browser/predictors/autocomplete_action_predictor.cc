@@ -255,9 +255,6 @@ void AutocompleteActionPredictor::OnOmniboxOpenedUrl(const OmniboxLog& log) {
     // next StartPrerendering call.
   }
 
-  UMA_HISTOGRAM_BOOLEAN("Prerender.OmniboxNavigationsCouldPrerender",
-                        prerender::IsNoStatePrefetchEnabled());
-
   const AutocompleteMatch& match = log.result.match_at(log.selected_index);
   const GURL& opened_url = match.destination_url;
   const base::string16 lower_user_text(base::i18n::ToLower(log.text));

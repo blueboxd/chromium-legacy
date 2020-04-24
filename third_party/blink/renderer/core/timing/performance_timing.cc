@@ -63,7 +63,7 @@ static uint64_t ToIntegerMilliseconds(base::TimeDelta duration) {
 }
 
 PerformanceTiming::PerformanceTiming(LocalFrame* frame)
-    : DOMWindowClient(frame) {}
+    : ExecutionContextClient(frame) {}
 
 uint64_t PerformanceTiming::navigationStart() const {
   DocumentLoadTiming* timing = GetDocumentLoadTiming();
@@ -655,7 +655,7 @@ uint64_t PerformanceTiming::MonotonicTimeToIntegerMilliseconds(
 
 void PerformanceTiming::Trace(Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
-  DOMWindowClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
 }
 
 }  // namespace blink

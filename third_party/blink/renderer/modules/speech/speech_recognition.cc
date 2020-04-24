@@ -29,7 +29,7 @@
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/modules/speech/speech_recognition_controller.h"
@@ -41,8 +41,8 @@
 namespace blink {
 
 SpeechRecognition* SpeechRecognition::Create(ExecutionContext* context) {
-  Document& document = Document::From(*context);
-  return MakeGarbageCollected<SpeechRecognition>(document.GetFrame(), context);
+  LocalDOMWindow* window = To<LocalDOMWindow>(context);
+  return MakeGarbageCollected<SpeechRecognition>(window->GetFrame(), context);
 }
 
 void SpeechRecognition::start(ExceptionState& exception_state) {

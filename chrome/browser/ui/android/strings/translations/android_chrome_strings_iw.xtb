@@ -164,7 +164,6 @@
 <translation id="2131665479022868825"><ph name="DATA" /> נשמרו</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> נסגר</translation>
 <translation id="2139186145475833000">הוספה לדף הבית</translation>
-<translation id="2146738493024040262">פתח אפליקציית אינסטנט</translation>
 <translation id="2154484045852737596">עריכת כרטיס</translation>
 <translation id="2154710561487035718">העתק כתובת אתר</translation>
 <translation id="2156074688469523661">אתרים שנותרו (<ph name="NUMBER_OF_SITES" />)</translation>
@@ -281,7 +280,6 @@
 <translation id="2996809686854298943">דרושה כתובת אתר</translation>
 <translation id="300526633675317032">פעולה זו תמחק את כל נתוני האתר המאוחסנים (<ph name="SIZE_IN_KB" />).</translation>
 <translation id="3016635187733453316">יש לוודא שהמכשיר הזה מחובר לאינטרנט</translation>
-<translation id="3029613699374795922">‏בוצעה הורדה של KB <ph name="KBS" /></translation>
 <translation id="3029704984691124060">ביטויי הסיסמה אינם תואמים</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />קבל עזרה<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">‏הגישה למיקום כבויה. יש להפעיל אותה ב<ph name="BEGIN_LINK" />הגדרות Android<ph name="END_LINK" />.</translation>
@@ -303,7 +301,7 @@
 <translation id="3207960819495026254">מסומן בסימניה</translation>
 <translation id="3211426585530211793">מועד המחיקה: <ph name="ITEM_TITLE" /></translation>
 <translation id="321773570071367578">אם שכחת את ביטוי הסיסמה או אם ברצונך לשנות את ההגדרה הזו, <ph name="BEGIN_LINK" />אפס את הסינכרון<ph name="END_LINK" /></translation>
-<translation id="3223655101706843289">‏פעולה זו תמחק את כל הנתונים וקובצי ה-Cookie שאוחסנו על ידי <ph name="ORIGIN" />. בנוסף, תימחק גם האפליקציה שלו שמופיעה במסך הבית.</translation>
+<translation id="3223655101706843289">‏פעולה זו תמחק את כל הנתונים וקובצי ה-Cookie שאוחסנו על ידי <ph name="ORIGIN" /> ועל ידי האפליקציה שלו שמופיעה במסך הבית.</translation>
 <translation id="3227137524299004712">מיקרופון</translation>
 <translation id="3232754137068452469">אפליקציית אינטרנט</translation>
 <translation id="3236059992281584593">נותרה דקה אחת</translation>
@@ -457,7 +455,6 @@
 <translation id="4411535500181276704">מצב טעינה מהירה</translation>
 <translation id="4415276339145661267">‏ניהול חשבון Google שלך</translation>
 <translation id="4432792777822557199">דפים ב<ph name="SOURCE_LANGUAGE" /> יתורגמו ל<ph name="TARGET_LANGUAGE" /> מעכשיו והלאה</translation>
-<translation id="4433925000917964731">‏גרסת Lite של הדף נוצרה על ידי Google</translation>
 <translation id="4434045419905280838">חלונות קופצים והפניות אוטומטיות</translation>
 <translation id="4440958355523780886">‏גרסת Lite של הדף נוצרה על ידי Google. אפשר להקיש כדי לטעון את הגרסה המקורית.</translation>
 <translation id="4452411734226507615">סגירת הכרטיסייה <ph name="TAB_TITLE" /></translation>
@@ -638,7 +635,7 @@
 <translation id="5684874026226664614">אופס. לא ניתן היה לתרגם את הדף הזה.</translation>
 <translation id="5686790454216892815">שם הקובץ ארוך מדי</translation>
 <translation id="5689516760719285838">מיקום</translation>
-<translation id="5690795753582697420">‏המצלמה כבויה בהגדרות Android</translation>
+<translation id="5690795753582697420">‏המצלמה מושבתת בהגדרות Android</translation>
 <translation id="5694049548840660018">חזרה לדף הבית בקלות</translation>
 <translation id="569536719314091526">דרך לחצן האפשרויות הנוספות אפשר לתרגם את הדף הזה לשפה כלשהי</translation>
 <translation id="5710871682236653961">‏הצגת שאלה לפני מתן הרשאה לאתרים לשלוח ולקבל מידע כשמקישים על מכשירי NFC (מומלץ)</translation>
@@ -670,7 +667,7 @@
 <translation id="5876056640971328065">השהיית הסרטון</translation>
 <translation id="5884076754568147479">‏כדי לעזור לך להשלים משימות, Google תקבל את כתובות ה-URL והתוכן של האתרים שבהם נעשה שימוש ב-Assistant, וכן את המידע שנשלח דרך Assistant</translation>
 <translation id="5919204609460789179">יש לעדכן את <ph name="PRODUCT_NAME" /> כדי להתחיל סנכרון</translation>
-<translation id="5922853908706496913">המערכת משתפת את המסך שלך</translation>
+<translation id="5922853908706496913">מתבצע שיתוף מסך</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> נחסכו</translation>
 <translation id="5939518447894949180">אפס</translation>
 <translation id="5942872142862698679">‏שימוש ב-Google לחיפוש</translation>
@@ -737,7 +734,6 @@
 <translation id="6406506848690869874">סנכרון</translation>
 <translation id="6410973561433500075">‏האם לעבור ל-AR מהדומיין <ph name="DOMAIN" />?</translation>
 <translation id="641643625718530986">הדפסה…</translation>
-<translation id="6416782512398055893">‏בוצעה הורדה של MB <ph name="MBS" /></translation>
 <translation id="6427112570124116297">תרגום התוכן באינטרנט</translation>
 <translation id="6433501201775827830">בחירת מנוע החיפוש</translation>
 <translation id="6437478888915024427">פרטי דף</translation>
@@ -745,7 +741,6 @@
 <translation id="6441734959916820584">השם ארוך מדי</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{תמונה אחת (#)}two{# תמונות}many{# תמונות}other{# תמונות}}</translation>
 <translation id="6447558397796644647">לא ניתן למצוא את הסימניה הזו. יש לוודא שהאיות נכון או להוסיף סימניה חדשה.</translation>
-<translation id="6447842834002726250">‏קובצי Cookie</translation>
 <translation id="6461962085415701688">לא ניתן לפתוח את הקובץ</translation>
 <translation id="6464977750820128603">‏אפשר לראות אתרים שמבקרים בהם ב-Chrome ולהגדיר טיימרים בשבילם.\n\n‏Google מקבלת מידע על האתרים שמוגדרים בשבילם טיימרים ומשך השהייה שלך באתרים האלה. המידע עוזר לשפר את 'שימוש חכם בדיגיטל'.</translation>
 <translation id="6475951671322991020">הורד סרטון</translation>
@@ -754,7 +749,6 @@
 <translation id="6508722015517270189">‏הפעלה מחדש של Chrome</translation>
 <translation id="6532866250404780454">‏אתרים שנכנסים אליהם ב-Chrome לא יופיעו. כל הטיימרים של האתרים יימחקו.</translation>
 <translation id="6534565668554028783">‏ל-Google נדרש זמן רב מדי להגיב</translation>
-<translation id="6538442820324228105">‏בוצעה הורדה של GB <ph name="GBS" /></translation>
 <translation id="6539092367496845964">משהו השתבש. יש לנסות שוב מאוחר יותר.</translation>
 <translation id="6545017243486555795">נקה את כל הנתונים</translation>
 <translation id="6545864417968258051">‏סריקת Bluetooth</translation>

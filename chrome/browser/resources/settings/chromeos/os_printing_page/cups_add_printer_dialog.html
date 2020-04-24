@@ -1,265 +1,36 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_searchable_drop_down/cr_searchable_drop_down.html">
-<link rel="import" href="chrome://resources/cr_elements/md_select_css.html">
-<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="../localized_link/localized_link.html">
-<link rel="import" href="../../i18n_setup.html">
-<link rel="import" href="cups_add_printer_dialog_elements.html">
 <link rel="import" href="cups_printer_dialog_util.html">
 <link rel="import" href="cups_printer_shared_css.html">
 <link rel="import" href="cups_printers_browser_proxy.html">
 
-<dom-module id="add-printer-manually-dialog">
+<dom-module id="add-printer-dialog">
   <template>
-    <style include="cups-printer-shared"></style>
-    <add-printer-dialog>
-      <div slot="dialog-title">
-        <span>$i18n{addPrintersManuallyTitle}</span>
-        <printer-dialog-error error-text="[[errorText_]]">
-        </printer-dialog-error>
-      </div>
-      <div slot="dialog-body">
-        <div class="settings-box first two-line">
-          <cr-input class="printer-name-input" autofocus
-            id="printerNameInput" value="{{newPrinter.printerName}}"
-            label="$i18n{printerName}" maxlength=64 on-keypress="onKeypress_">
-          </cr-input>
-        </div>
-        <div class="settings-box two-line">
-          <cr-input id="printerAddressInput" label="$i18n{printerAddress}"
-              value="{{newPrinter.printerAddress}}" maxlength=63
-              error-message="$i18n{ippPrinterUnreachable}"
-              on-keypress="onKeypress_">
-          </cr-input>
-        </div>
-        <div class="settings-box two-line">
-          <div class="start">
-            <div id="printerProtocol" class="cr-form-field-label"
-                aria-hidden="true">
-              $i18n{printerProtocol}
-            </div>
-            <div class="secondary">
-              <select class="md-select" aria-labelledby="printerProtocol"
-                  value="[[newPrinter.printerProtocol]]"
-                  on-change="onProtocolChange_">
-                <option value="ipp">$i18n{printerProtocolIpp}</option>
-                <option value="ipps">$i18n{printerProtocolIpps}</option>
-                <option value="http">$i18n{printerProtocolHttp}</option>
-                <option value="https">$i18n{printerProtocolHttps}</option>
-                <option value="socket">$i18n{printerProtocolAppSocket}
-                </option>
-                <option value="lpd">$i18n{printerProtocolLpd}</option>
-              </select>
-            </div>
-          </div>
-        </div>
-        <div class="settings-box two-line">
-          <cr-input id="printerQueueInput" label="$i18n{printerQueue}"
-              value="{{newPrinter.printerQueue}}" maxlength=64
-              on-keypress="onKeypress_">
-          </cr-input>
-        </div>
-      </div>
-      <template is="dom-if" if="[[printServersUiEnabled]]">
-        <div slot="dialog-buttons">
-          <!-- Left Group -->
-          <div>
-            <cr-button id="print-server-button" on-click="onPrintServerTap_">
-              $i18n{printServerButtonText}
-            </cr-button>
-          </div>
-          <!-- Right Group -->
-          <div>
-            <cr-button class="cancel-button" on-click="onCancelTap_">
-              $i18n{cancel}
-            </cr-button>
-            <cr-button id="addPrinterButton" class="action-button"
-                on-click="addPressed_"
-                disabled="[[!canAddPrinter_(newPrinter.*,
-                                            addPrinterInProgress_)]]">
-              $i18n{addPrinterButtonText}
-            </cr-button>
-          </div>
-        </div>
-      </template>
-      <template is="dom-if" if="[[!printServersUiEnabled]]">
-        <div slot="dialog-buttons">
-          <!-- Left Group -->
-          <div>
-            <cr-button class="cancel-button" on-click="onCancelTap_">
-              $i18n{cancel}
-            </cr-button>
-          </div>
-          <!-- Right Group -->
-          <div>
-            <cr-button id="addPrinterButton" class="action-button"
-                on-click="addPressed_"
-                disabled="[[!canAddPrinter_(newPrinter.*,
-                                            addPrinterInProgress_)]]">
-              $i18n{addPrinterButtonText}
-            </cr-button>
-          </div>
-        </div>
-      </template>
-    </add-printer-dialog>
-  </template>
-</dom-module>
-
-<dom-module id="add-printer-manufacturer-model-dialog">
-  <template>
-    <style include="cups-printer-shared">
-      .subtext {
-        margin-bottom: 10px;
-        padding-inline-end: 20px;
-        padding-inline-start: 20px;
+    <style include="settings-shared">
+      #dialog {
+        /* Force a bottom border regardless of scroll state. */
+        --cr-dialog-body-border-bottom: 1px solid var(--google-grey-300);
       }
-
-      #make-model-body {
-        height: 290px;
+      #dialog [slot=body] {
+        padding-inline-end: 0;
+        padding-inline-start: 0;
       }
     </style>
-    <add-printer-dialog>
-      <div slot="dialog-title">
-        <span>$i18n{manufacturerAndModelDialogTitle}</span>
-        <printer-dialog-error error-text="[[errorText_]]">
-        </printer-dialog-error>
-      </div>
-      <div id="make-model-body" slot="dialog-body">
-        <div class="subtext" id="makeModelTextInfo">
-          <settings-localized-link
-              localized-string=
-                  "[[getManufacturerAndModelSubtext_(activePrinter.*)]]"
-              link-url="$i18n{printingCUPSPrintLearnMoreUrl}">
-          </settings-localized-link>
-        </div>
-        <div class="settings-box two-line">
-          <cr-searchable-drop-down id="manufacturerDropdown"
-              items="[[manufacturerList]]"
-              label="$i18n{printerManufacturer}"
-              value="{{activePrinter.ppdManufacturer}}"
-              invalid="{{isManufacturerInvalid_}}">
-          </cr-searchable-drop-down>
-        </div>
-        <div class="settings-box two-line">
-          <cr-searchable-drop-down id="modelDropdown"
-              items="[[modelList]]"
-              label="$i18n{printerModel}"
-              value="{{activePrinter.ppdModel}}"
-              invalid="{{isModelInvalid_}}">
-          </cr-searchable-drop-down>
-        </div>
-        <div id="ppdLabel" class="cr-form-field-label">
-          <settings-localized-link localized-string="$i18n{selectDriver}"
-              link-url="$i18n{printingCUPSPrintPpdLearnMoreUrl}">
-          </settings-localized-link>
-        </div>
-        <div class="settings-box two-line">
-          <cr-input class="browse-file-input" readonly value="[[newUserPPD_]]"
-              aria-labelledby="ppdLabel" invalid="[[invalidPPD_]]"
-              error-message="$i18n{selectDriverErrorMessage}" tabindex="-1">
-          </cr-input>
-          <cr-button class="browse-button" on-click="onBrowseFile_"
-              aria-label="$i18n{selectDriverButtonAriaLabel}">
-            $i18n{selectDriverButtonText}
-          </cr-button>
-        </div>
-      </div>
-      <div slot="dialog-buttons">
-        <div> <!-- Left group -->
-          <div class="eula" id="eulaUrl" hidden="[[!eulaUrl_]]">
-            <a href="[[eulaUrl_]]" target="_blank">$i18n{printerEulaNotice}</a>
-          </div>
-        </div>
-        <div> <!-- Right group -->
-          <cr-button class="cancel-button" on-click="onCancelTap_">
-            $i18n{cancel}
-          </cr-button>
-          <cr-button class="action-button" id="addPrinterButton"
-              disabled="[[!canAddPrinter_(activePrinter.ppdManufacturer,
-                                          activePrinter.ppdModel,
-                                          activePrinter.printerPPDPath,
-                                          addPrinterInProgress_,
-                                          isManufacturerInvalid_,
-                                          isModelInvalid_)]]"
-              on-click="addPrinter_">
-            $i18n{addPrinterButtonText}
-          </cr-button>
-        </div>
-      </div>
-    </add-printer-dialog>
-  </template>
-</dom-module>
 
-<dom-module id="add-print-server-dialog">
-  <template>
-    <style include="cups-printer-shared">
-      [slot=dialog-body] {
-        height: 90px;
-      }
-      [slot=dialog-buttons] {
-        width: auto;
-      }
-    </style>
-    <add-printer-dialog id="printServerDialog">
-      <div slot="dialog-title">
-        $i18n{addPrintServerTitle}
-        <printer-dialog-error id="server-dialog-error"
-            error-text="[[errorText_]]">
-        </printer-dialog-error>
+    <cr-dialog id="dialog" close-text="$i18n{close}">
+      <div slot="title">
+        <slot name="dialog-title"></slot>
       </div>
-      <div slot="dialog-body">
-        <div class="settings-box first two-line">
-          <cr-input id="printServerAddressInput"
-              label="$i18n{printServerAddress}"
-              value="{{printServerAddress_}}"
-              error-message="$i18n{printServerInvalidUrlAddress}"
-              on-keypress="onKeypress_"
-              maxlength=63 autofocus>
-          </cr-input>
-        </div>
+      <div slot="body">
+        <slot name="dialog-body"></slot>
       </div>
-      <div slot="dialog-buttons">
-        <cr-button class="cancel-button" on-click="onCancelTap_">
-          $i18n{cancel}
-        </cr-button>
-        <cr-button class="action-button"
-            on-click="onAddPrintServerTap_"
-            disabled="[[inProgress_]]">
-          $i18n{addPrinterButtonText}
-        </cr-button>
+      <div slot="button-container">
+        <slot name="dialog-buttons"></slot>
       </div>
-    </add-printer-dialog>
-  </template>
-</dom-module>
-
-<dom-module id="settings-cups-add-printer-dialog">
-  <template>
-    <style include="settings-shared"></style>
-
-    <!-- Manually Add Printer Dialog -->
-    <template is="dom-if" if="[[showManuallyAddDialog_]]" restamp>
-      <add-printer-manually-dialog new-printer="{{newPrinter}}"
-          print-servers-ui-enabled="[[printServersUiEnabled_]]">
-      </add-printer-manually-dialog>
-    </template>
-
-    <!-- Manufacturer and Model Dialog -->
-    <template is="dom-if" if="[[showManufacturerDialog_]]" restamp>
-      <add-printer-manufacturer-model-dialog active-printer="{{newPrinter}}">
-      </add-printer-manufacturer-model-dialog>
-    </template>
-
-    <!-- Add Print Server Dialog -->
-    <template is="dom-if" if="[[printServersUiEnabled_]]">
-      <template is="dom-if" if="[[showAddPrintServerDialog_]]" restamp>
-        <add-print-server-dialog></add-print-server-dialog>
-      </template>
-    </template>
-
+    </cr-dialog>
   </template>
   <script src="cups_add_printer_dialog.js"></script>
 </dom-module>

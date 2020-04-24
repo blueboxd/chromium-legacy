@@ -80,9 +80,15 @@
     right: 16px;
   }
 
-  #realboxIcon[data-icon='search'] {
-    -webkit-mask-image: url(chrome://resources/images/icon_search.svg);
+  #realboxIcon[data-icon='search.svg'] {
+    -webkit-mask-image: url(search.svg);
     -webkit-mask-size: 20px; /* "Search" icon is larger than the other icons. */
+  }
+
+  #realboxIcon[data-icon='google_g.png'] {
+    background-color: transparent;
+    background-image: url(google_g.png);
+    background-size: 12px;
   }
 
   #voiceSearchButton {
@@ -108,7 +114,7 @@
   }
 </style>
 <div id="realboxInputWrapper">
-  <div id="realboxIcon" data-icon="search"></div>
+  <div id="realboxIcon" data-icon$="[[realboxIcon_]]"></div>
   <input type="search" autocomplete="off" spellcheck="false"
       aria-live="polite" placeholder="$i18n{searchBoxHint}">
   </input>

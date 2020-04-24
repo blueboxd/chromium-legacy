@@ -470,7 +470,7 @@ __wrap_dl_unwind_find_exidx(_Unwind_Ptr pc, int* length) {
   static const FakeExidx chrome_exidx_data[] = {
       {CFIBacktraceAndroid::executable_start_addr(), 0x80000000},
       {CFIBacktraceAndroid::executable_end_addr(), 0x80000000}};
-  *length = sizeof(chrome_exidx_data);
+  *length = base::size(chrome_exidx_data);
   return reinterpret_cast<_Unwind_Ptr>(chrome_exidx_data);
 }
 

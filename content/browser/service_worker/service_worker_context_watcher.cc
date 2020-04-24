@@ -347,7 +347,10 @@ void ServiceWorkerContextWatcher::OnControlleeAdded(
   if (it == version_info_map_.end())
     return;
   ServiceWorkerVersionInfo* version = it->second.get();
-  version->clients[uuid] = info;
+
+  bool inserted = version->clients.emplace(uuid, info).second;
+  DCHECK(inserted);
+
   SendVersionInfo(*version);
 }
 

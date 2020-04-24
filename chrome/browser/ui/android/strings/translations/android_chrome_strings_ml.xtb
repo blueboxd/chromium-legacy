@@ -164,7 +164,6 @@
 <translation id="2131665479022868825"><ph name="DATA" /> ലാഭിച്ചു</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> അടച്ചു</translation>
 <translation id="2139186145475833000">ഹോംസ്‌ക്രീനിൽ ചേർക്കുക</translation>
-<translation id="2146738493024040262">ഇൻസ്റ്റന്‍റ് ആപ്പ് തുറക്കുക</translation>
 <translation id="2154484045852737596">കാർഡ് എഡിറ്റ് ചെയ്യുക</translation>
 <translation id="2154710561487035718">URL പകര്‍ത്തുക</translation>
 <translation id="2156074688469523661">ശേഷിക്കുന്ന സൈറ്റുകൾ (<ph name="NUMBER_OF_SITES" />)</translation>
@@ -281,7 +280,6 @@
 <translation id="2996809686854298943">URL ആവശ്യമാണ്</translation>
 <translation id="300526633675317032">ഇത് വെബ്‌സൈറ്റ് സ്‌റ്റോറേജിലെ <ph name="SIZE_IN_KB" /> പൂർണ്ണമായും മായ്‌ക്കും.</translation>
 <translation id="3016635187733453316">ഈ ഉപകരണം ഇന്റർനെറ്റിലേക്ക് കണക്‌റ്റ് ചെയ്‌തിട്ടുണ്ടെന്ന് ഉറപ്പാക്കുക</translation>
-<translation id="3029613699374795922"><ph name="KBS" /> KB ഡൗൺലോഡ് ചെയ്‌തു</translation>
 <translation id="3029704984691124060">പാസ്‌ഫ്രെയ്‌സുകൾ പൊരുത്തപ്പെടുന്നില്ല</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />സഹായം തേടുക<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">ലൊക്കേഷൻ ഓഫാണ്; <ph name="BEGIN_LINK" />Android ക്രമീകരണത്തിൽ<ph name="END_LINK" /> അത് ഓണാക്കുക.</translation>
@@ -303,7 +301,7 @@
 <translation id="3207960819495026254">ബുക്ക്‌മാർക്കുചെയ്‌തു</translation>
 <translation id="3211426585530211793"><ph name="ITEM_TITLE" /> ഇല്ലാതാക്കി</translation>
 <translation id="321773570071367578">നിങ്ങൾ പാസ്‌ഫ്രെയ്‌സ് മറന്നുപോയെങ്കിലോ ഈ ക്രമീകരണം മാറ്റണമെങ്കിലോ, <ph name="BEGIN_LINK" />സമന്വയം റീസെറ്റ് ചെയ്യുക<ph name="END_LINK" /></translation>
-<translation id="3223655101706843289">ഇത് <ph name="ORIGIN" /> നിങ്ങളുടെ ഹോം സ്ക്രീനിൽ സംഭരിച്ച എല്ലാ ഡാറ്റയും കുക്കികളും അതിന്റെ ആപ്പുകളും മായ്ക്കും.</translation>
+<translation id="3223655101706843289">ഇത് <ph name="ORIGIN" /> എന്നതും അതിന്റെ ആപ്പും നിങ്ങളുടെ ഹോം സ്ക്രീനിൽ സംഭരിച്ച എല്ലാ ഡാറ്റയും കുക്കികളും മായ്ക്കും.</translation>
 <translation id="3227137524299004712">മൈക്രോഫോൺ</translation>
 <translation id="3232754137068452469">വെബ് ആപ്പ്</translation>
 <translation id="3236059992281584593">ഒരു മിനിറ്റ് ശേഷിക്കുന്നു</translation>
@@ -457,7 +455,6 @@
 <translation id="4411535500181276704">ലൈറ്റ് മോഡ്</translation>
 <translation id="4415276339145661267">നിങ്ങളുടെ Google അക്കൗണ്ട് മാനേജ് ചെയ്യുക</translation>
 <translation id="4432792777822557199">ഇനിമുതൽ <ph name="SOURCE_LANGUAGE" /> ഭാഷയിലുള്ള പേജുകൾ <ph name="TARGET_LANGUAGE" /> ഭാഷയിലേക്ക് വിവർത്തനം ചെയ്യപ്പെടും</translation>
-<translation id="4433925000917964731">Google നല്‍കുന്ന ലൈറ്റ് പേജ്</translation>
 <translation id="4434045419905280838">പോപ്-അപ്പുകളും റീഡയറക്‌റ്റുകളും</translation>
 <translation id="4440958355523780886">Google നൽകുന്ന ലൈറ്റ് പേജ്. യഥാർത്ഥ പേജ് ലോഡ് ചെയ്യാൻ ടാപ്പ് ചെയ്യുക.</translation>
 <translation id="4452411734226507615"><ph name="TAB_TITLE" /> ടാബ് അടയ്ക്കുക</translation>
@@ -737,7 +734,6 @@
 <translation id="6406506848690869874">Sync</translation>
 <translation id="6410973561433500075"><ph name="DOMAIN" /> എന്നതിൽ നിന്ന് AR-ൽ കടക്കണോ?</translation>
 <translation id="641643625718530986">പ്രിന്‍റ് ചെയ്യുക…</translation>
-<translation id="6416782512398055893"><ph name="MBS" /> MB ഡൗൺലോഡ് ചെയ്‌തു</translation>
 <translation id="6427112570124116297">വെബ് വിവർത്തനം ചെയ്യുക</translation>
 <translation id="6433501201775827830">നിങ്ങളുടെ തിരയൽ യന്ത്രം തിരഞ്ഞെടുക്കുക</translation>
 <translation id="6437478888915024427">പേജ് വിവരം</translation>
@@ -745,7 +741,6 @@
 <translation id="6441734959916820584">പേര് വളരെ വലുതാണ്</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# ചിത്രം}other{# ചിത്രങ്ങൾ}}</translation>
 <translation id="6447558397796644647">ആ ബുക്‌മാർക്ക് കണ്ടെത്താനാവുന്നില്ല. അക്ഷരത്തെറ്റ് പരിശോധിക്കുക അല്ലെങ്കിൽ പുതിയ ബുക്‌മാർക്ക് ചേർക്കുക.</translation>
-<translation id="6447842834002726250">കുക്കികള്‍</translation>
 <translation id="6461962085415701688">ഫയൽ തുറക്കാൻ കഴിയില്ല</translation>
 <translation id="6464977750820128603">നിങ്ങൾ Chrome- ൽ സന്ദർശിക്കുന്ന സൈറ്റുകൾ കാണാനും അവയ്ക്ക് ടൈമറുകൾ സജ്ജീകരിക്കാനുമാവും.\n\nനിങ്ങൾ ടൈമറുകൾ സജ്ജീകരിക്കുന്ന സൈറ്റുകളെക്കുറിച്ചും നിങ്ങൾ എത്ര സമയം അവ സന്ദർശിക്കുന്നു എന്നതിനെക്കുറിച്ചും Google ന് വിവരങ്ങൾ ലഭിക്കുന്നു. ഡിജിറ്റൽ ആരോഗ്യം മെച്ചപ്പെടുത്താൻ ഈ വിവരം ഉപയോഗിക്കുന്നു.</translation>
 <translation id="6475951671322991020">വീഡിയോ ഡൗൺലോഡ് ചെയ്യുക</translation>
@@ -754,7 +749,6 @@
 <translation id="6508722015517270189">Chrome റീസ്‌റ്റാർട്ടുചെയ്യുക</translation>
 <translation id="6532866250404780454">നിങ്ങൾ Chrome-ൽ സന്ദർശിക്കുന്ന സൈറ്റുകൾ കാണിക്കില്ല. എല്ലാ സൈറ്റ് ടൈമറുകളും ഇല്ലാതാക്കപ്പെടും.</translation>
 <translation id="6534565668554028783">Google പ്രതികരിക്കാൻ കൂടുതൽ സമയമെടുത്തു</translation>
-<translation id="6538442820324228105"><ph name="GBS" /> GB ഡൗൺലോഡുചെയ്‌തു</translation>
 <translation id="6539092367496845964">എന്തോ കുഴപ്പം സംഭവിച്ചു. പിന്നീട് വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="6545017243486555795">എല്ലാ വിവരങ്ങളും മായ്‌ക്കുക</translation>
 <translation id="6545864417968258051">Bluetooth സ്‌കാനിംഗ്</translation>
@@ -920,7 +914,7 @@
 <translation id="780301667611848630">വേണ്ട നന്ദി</translation>
 <translation id="7804248752222191302">ഒരു സൈറ്റ് നിങ്ങളുടെ ക്യാമറ ഉപയോഗിക്കുന്നു</translation>
 <translation id="7810647596859435254">ഇത് ഉപയോഗിച്ച് തുറക്കുക...</translation>
-<translation id="7817023149356982970">നിങ്ങൾ ഈ സൈറ്റിൽ നിന്ന് സൈൻ ഔട്ടാവും.</translation>
+<translation id="7817023149356982970">നിങ്ങൾ ഈ സൈറ്റിൽ നിന്ന് സൈൻ ഔട്ടാകും.</translation>
 <translation id="7821588508402923572">നിങ്ങൾ ലാഭിച്ച ഡാറ്റ ഇവിടെ ദൃശ്യമാവും</translation>
 <translation id="7828557259026017104">നിങ്ങൾ സന്ദർശിക്കുന്ന വെബ്‌സൈറ്റുകൾ സൃഷ്ടിക്കുന്ന ഫയലുകളാണ് കുക്കികൾ. നിങ്ങളുടെ മുൻ‌ഗണനകൾ ഓർമ്മിക്കാൻ സൈറ്റുകൾ അവ ഉപയോഗിക്കുന്നു. മൂന്നാം കക്ഷി കുക്കികളെ സൃഷ്ടിക്കുന്നത് മറ്റ് സൈറ്റുകളാണ്. നിങ്ങൾ സന്ദർശിക്കുന്ന വെബ്‌പേജിൽ കാണുന്ന പരസ്യങ്ങളോ ചിത്രങ്ങളോ പോലുള്ള ചില ഉള്ളടക്കം ഈ സൈറ്റുകളുടെ ഉടമസ്ഥതയിലാണ്.</translation>
 <translation id="783819812427904514">വീഡിയോ അൺ‌മ്യൂട്ട് ചെയ്യുക</translation>

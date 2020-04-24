@@ -28,25 +28,17 @@ not end in -dev.cfg as well as the markdown file
 [cq-builders.md](generated/cq-builders.md). Starlark files in the following
 directories are consumed by the configuration:
 
-*   buckets - Definitions of builders for the chromium project. There is a .star
-    file for each bucket in the chromium project where the bucket and the
-    builders for that bucket are defined.
-*   consoles - Definitions of milo consoles for the chromium project. There is a
-    .star for each console that defines the console.
-*   generators - Definitions of lucicfg generators that do various things to
-    post-process the LUCI configuration before the output files are generated
-    (e.g. generate no-op jobs to workaround limitations of our recipe config) or
-    generate additional files (e.g. the CQ builders markdown document).
-*   validators - Definitions of lucicfg generators that perform additional
-    validation on the the LUCI configuration (e.g. ensure all builders are added
-    to at least one console).
-*   versioned - Definitions of builders for the main waterfall for the chromium
-    project. Builders on the main waterfall are branched so that when a new
-    milestone is cut, ci and try buckets specific to that milestone are created
-    with an equivalent set of builders, schedulers, CQ groups, etc. to enable
-    CI/CQ on the new branch.
+* lib - Utilities for defining LUCI entities.
+* subprojects - Definitions of LUCI entities.
+* generators - Definitions of lucicfg generators that do various things to
+  post-process the LUCI configuration before the output files are generated.
+  (e.g. generate no-op jobs to workaround limitations of our recipe config) or
+  generate additional files (e.g. the CQ builders markdown document).
+* validators - Definitions of lucicfg generators that perform additional
+  validation on the the LUCI configuration (e.g. ensure all builders are added
+  to at least one console).
 
 The configuration rooted at [dev.star](dev.star) defines the LUCI services
 configuration for the chromium project on the dev instance of LUCI. This
-configuration is responsible for generating the raw configuration files ending
-in -dev.cfg.
+configuration consumes starlark files under the dev directory and is responsible
+for generating the raw configuration files ending in -dev.cfg.

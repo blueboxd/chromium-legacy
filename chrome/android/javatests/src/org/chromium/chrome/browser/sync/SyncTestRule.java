@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGenerator;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
 import org.chromium.chrome.browser.identity.UuidBasedUniqueIdentificationGenerator;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.UnifiedConsentServiceBridge;
@@ -432,7 +433,8 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
                         }
                     });
             // Outside of tests, URL-keyed anonymized data collection is enabled by sign-in UI.
-            UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(true);
+            UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(
+                    Profile.getLastUsedRegularProfile(), true);
         });
         if (setFirstSetupComplete) {
             SyncTestUtil.waitForSyncActive();

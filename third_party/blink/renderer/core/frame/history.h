@@ -45,7 +45,7 @@ class ScriptState;
 
 // This class corresponds to the History interface.
 class CORE_EXPORT History final : public ScriptWrappable,
-                                  public DOMWindowClient {
+                                  public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(History);
 

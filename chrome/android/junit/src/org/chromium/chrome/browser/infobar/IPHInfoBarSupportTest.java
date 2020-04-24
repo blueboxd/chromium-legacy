@@ -28,6 +28,7 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.infobar.IPHInfoBarSupport.IPHBubbleDelegate;
 import org.chromium.chrome.browser.infobar.IPHInfoBarSupport.PopupState;
+import org.chromium.chrome.browser.ui.messages.infobar.InfoBar;
 import org.chromium.chrome.browser.ui.messages.infobar.InfoBarUiItem;
 import org.chromium.components.browser_ui.widget.textbubble.TextBubble;
 

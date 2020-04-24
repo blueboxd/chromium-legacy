@@ -122,15 +122,6 @@ class NET_EXPORT ProxyInfo {
     return did_bypass_proxy_;
   }
 
-  void set_did_use_pac_script(bool did_use_pac_script) {
-    did_use_pac_script_ = did_use_pac_script;
-  }
-
-  // Returns true if the proxy resolution was done using a PAC script.
-  bool did_use_pac_script() const {
-    return did_use_pac_script_;
-  }
-
   // Returns the first valid proxy server. is_empty() must be false to be able
   // to call this function.
   const ProxyServer& proxy_server() const { return proxy_list_.Get(); }
@@ -209,9 +200,6 @@ class NET_EXPORT ProxyInfo {
 
   // Whether the proxy result represent a proxy bypass.
   bool did_bypass_proxy_;
-
-  // Whether we used a PAC script for resolving the proxy.
-  bool did_use_pac_script_;
 
   // How long it took to resolve the proxy.  Times are both null if proxy was
   // determined synchronously without running a PAC.

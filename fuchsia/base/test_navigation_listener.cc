@@ -106,34 +106,51 @@ void TestNavigationListener::OnNavigationStateChanged(
     current_state_.set_can_go_back(change.can_go_back());
   if (change.has_can_go_forward())
     current_state_.set_can_go_forward(change.can_go_forward());
-  if (change.has_is_main_document_loaded())
+  if (change.has_page_type())
+    current_state_.set_page_type(change.page_type());
+  if (change.has_is_main_document_loaded()) {
     current_state_.set_is_main_document_loaded(
         change.is_main_document_loaded());
+  }
 
   if (VLOG_IS_ON(1)) {
     std::string state_string;
     state_string.reserve(100);
 
-    if (current_state_.has_url())
+    if (current_state_.has_url()) {
       state_string.append(
           base::StringPrintf(" url=%s ", current_state_.url().c_str()));
+    }
 
-    if (current_state_.has_title())
+    if (current_state_.has_title()) {
       state_string.append(
           base::StringPrintf(" title='%s' ", current_state_.title().c_str()));
+    }
 
-    if (current_state_.has_can_go_back())
+    if (current_state_.has_can_go_back()) {
       state_string.append(
           base::StringPrintf(" can_go_back=%d ", current_state_.can_go_back()));
+    }
 
-    if (current_state_.has_can_go_forward())
+    if (current_state_.has_can_go_forward()) {
       state_string.append(base::StringPrintf(" can_go_forward=%d ",
                                              current_state_.can_go_forward()));
+    }
 
-    if (current_state_.has_is_main_document_loaded())
+    if (current_state_.has_page_type()) {
+      state_string.append(base::StringPrintf(
+          " page_type=%s ",
+          (current_state_.page_type() == fuchsia::web::PageType::NORMAL
+               ? "NORMAL"
+               : "ERROR")));
+    }
+
+    if (current_state_.has_is_main_document_loaded()) {
       state_string.append(
           base::StringPrintf(" is_main_document_loaded=%d ",
                              current_state_.is_main_document_loaded()));
+    }
+
     VLOG(1) << "Navigation state changed: " << state_string;
   }
 
@@ -172,6 +189,12 @@ bool TestNavigationListener::AllFieldsMatch(
   if (expected.has_can_go_back() &&
       (!current_state_.has_can_go_back() ||
        expected.can_go_back() != current_state_.can_go_back())) {
+    return false;
+  }
+
+  if (expected.has_page_type() &&
+      (!current_state_.has_page_type() ||
+       expected.page_type() != current_state_.page_type())) {
     return false;
   }
 

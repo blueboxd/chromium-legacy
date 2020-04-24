@@ -65,7 +65,7 @@ enum class TestState {
 }  // namespace
 
 class MediaHistoryKeyedServiceTest
-    : public ChromeRenderViewHostTestHarness,
+    : public testing::Test,
       public testing::WithParamInterface<TestState> {
  public:
   void SetUp() override {
@@ -74,26 +74,30 @@ class MediaHistoryKeyedServiceTest
          history::HistoryService::kHistoryServiceUsesTaskScheduler},
         {});
 
-    ChromeRenderViewHostTestHarness::SetUp();
-
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     g_temp_history_dir = temp_dir_.GetPath();
 
     mock_time_task_runner_ =
         base::MakeRefCounted<base::TestMockTimeTaskRunner>();
 
-    HistoryServiceFactory::GetInstance()->SetTestingFactory(
-        profile(),
+    TestingProfile::Builder builder;
+    builder.AddTestingFactory(
+        HistoryServiceFactory::GetInstance(),
         base::BindRepeating(&BuildTestHistoryService, mock_time_task_runner_));
+    builder.SetPath(temp_dir_.GetPath());
 
-    service_ = std::make_unique<MediaHistoryKeyedService>(profile());
+    profile_ = builder.Build();
 
     // Sleep the thread to allow the media history store to asynchronously
     // create the database and tables.
     WaitForDB();
   }
 
-  MediaHistoryKeyedService* service() const { return service_.get(); }
+  MediaHistoryKeyedService* service() {
+    return MediaHistoryKeyedService::Get(profile());
+  }
+
+  Profile* profile() { return profile_.get(); }
 
   void ConfigureHistoryService(
       scoped_refptr<base::SequencedTaskRunner> backend_runner) {
@@ -106,15 +110,10 @@ class MediaHistoryKeyedServiceTest
     profile()->GetPrefs()->SetBoolean(prefs::kSavingBrowserHistoryDisabled,
                                       false);
 
-    service_->Shutdown();
-
     // Tests that run a history service that uses the mock task runner for
     // backend processing will post tasks there during TearDown. Run them now to
     // avoid leaks.
     mock_time_task_runner_->RunUntilIdle();
-    service_.reset();
-
-    ChromeRenderViewHostTestHarness::TearDown();
   }
 
   int GetUserDataTableRowCount() {
@@ -211,7 +210,9 @@ class MediaHistoryKeyedServiceTest
  private:
   base::ScopedTempDir temp_dir_;
 
-  std::unique_ptr<MediaHistoryKeyedService> service_;
+  content::BrowserTaskEnvironment task_environment_;
+
+  std::unique_ptr<TestingProfile> profile_;
 
   base::test::ScopedFeatureList scoped_feature_list_;
 };

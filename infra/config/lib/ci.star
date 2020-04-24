@@ -25,6 +25,82 @@ defaults = args.defaults(
 )
 
 
+def declare_bucket(milestone_vars):
+  luci.bucket(
+      name = milestone_vars.ci_bucket,
+      acls = [
+          acl.entry(
+              roles = acl.BUILDBUCKET_READER,
+              groups = 'all',
+          ),
+          acl.entry(
+              roles = acl.BUILDBUCKET_TRIGGERER,
+              groups = 'project-chromium-ci-schedulers',
+          ),
+          acl.entry(
+              roles = acl.BUILDBUCKET_OWNER,
+              groups = 'google/luci-task-force@google.com',
+          ),
+      ],
+  )
+
+  luci.gitiles_poller(
+      name = milestone_vars.ci_poller,
+      bucket = milestone_vars.ci_bucket,
+      repo = 'https://chromium.googlesource.com/chromium/src',
+      refs = [milestone_vars.ref],
+  )
+
+  ci.main_console_view(
+      name = milestone_vars.main_console_name,
+      header = '//chromium-header.textpb',
+      repo = 'https://chromium.googlesource.com/chromium/src',
+      refs = [milestone_vars.ref],
+      title = milestone_vars.main_console_title,
+      top_level_ordering = [
+          'chromium',
+          'chromium.win',
+          'chromium.mac',
+          'chromium.linux',
+          'chromium.chromiumos',
+          'chromium.android',
+          'chrome',
+          'chromium.memory',
+          'chromium.dawn',
+          'chromium.gpu',
+          'chromium.fyi',
+          'chromium.android.fyi',
+          'chromium.clang',
+          'chromium.fuzz',
+          'chromium.gpu.fyi',
+          'chromium.swangle',
+      ],
+  )
+
+
+def set_defaults(milestone_vars, **kwargs):
+  default_values = dict(
+      add_to_console_view = milestone_vars.is_master,
+      bucket = milestone_vars.ci_bucket,
+      build_numbers = True,
+      configure_kitchen = True,
+      cores = 8,
+      cpu = builders.cpu.X86_64,
+      executable = 'recipe:chromium',
+      execution_timeout = 3 * time.hour,
+      header = '//chromium-header.textpb',
+      os = builders.os.LINUX_DEFAULT,
+      pool = 'luci.chromium.ci',
+      repo = 'https://chromium.googlesource.com/chromium/src',
+      service_account = 'chromium-ci-builder@chops-service-accounts.iam.gserviceaccount.com',
+      swarming_tags = ['vpython:native-python-wrapper'],
+      triggered_by = [milestone_vars.ci_poller],
+  )
+  default_values.update(kwargs)
+  for k, v in default_values.items():
+    getattr(defaults, k).set(v)
+
+
 def _console_view_ordering_graph_key(console_name):
   return graph.key('@chromium', '', 'console_view_ordering', console_name)
 
@@ -798,21 +874,6 @@ def swangle_windows_builder(*, name, **kwargs):
   )
 
 
-def thin_tester(
-    *,
-    name,
-    mastername,
-    triggered_by,
-    **kwargs):
-  return ci.builder(
-      name = name,
-      mastername = mastername,
-      triggered_by = triggered_by,
-      goma_backend = None,
-      **kwargs
-  )
-
-
 def win_builder(*, name, os=builders.os.WINDOWS_DEFAULT, **kwargs):
   return ci.builder(
       name = name,
@@ -827,9 +888,11 @@ ci = struct(
     builder = ci_builder,
     console_view = console_view,
     console_view_entry = console_view_entry,
+    declare_bucket = declare_bucket,
     defaults = defaults,
     main_console_view = main_console_view,
     ordering = ordering,
+    set_defaults = set_defaults,
 
     android_builder = android_builder,
     android_fyi_builder = android_fyi_builder,
@@ -859,6 +922,5 @@ ci = struct(
     swangle_linux_builder = swangle_linux_builder,
     swangle_mac_builder = swangle_mac_builder,
     swangle_windows_builder = swangle_windows_builder,
-    thin_tester = thin_tester,
     win_builder = win_builder,
 )

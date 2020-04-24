@@ -20,8 +20,7 @@ class AssistantMediaSession;
 class VolumeControlImpl : public assistant_client::VolumeControl,
                           public ash::mojom::VolumeObserver {
  public:
-  VolumeControlImpl(mojom::Client* client,
-                    AssistantMediaSession* media_session);
+  explicit VolumeControlImpl(AssistantMediaSession* media_session);
   ~VolumeControlImpl() override;
 
   // assistant_client::VolumeControl overrides:

@@ -99,8 +99,7 @@ VizMainImpl::VizMainImpl(Delegate* delegate,
       gpu_init_->gpu_feature_info(), gpu_init_->gpu_preferences(),
       gpu_init_->gpu_info_for_hardware_gpu(),
       gpu_init_->gpu_feature_info_for_hardware_gpu(),
-      gpu_init_->gpu_extra_info(), gpu_init_->device_perf_info(),
-      gpu_init_->vulkan_implementation(),
+      gpu_init_->gpu_extra_info(), gpu_init_->vulkan_implementation(),
       base::BindOnce(&VizMainImpl::ExitProcess, base::Unretained(this)));
 }
 
@@ -191,6 +190,19 @@ void VizMainImpl::CreateGpuService(
   if (delegate_)
     delegate_->OnGpuServiceConnection(gpu_service_.get());
 }
+
+#if defined(OS_WIN)
+void VizMainImpl::CreateInfoCollectionGpuService(
+    mojo::PendingReceiver<mojom::InfoCollectionGpuService> pending_receiver) {
+  DCHECK(gpu_thread_task_runner_->BelongsToCurrentThread());
+  DCHECK(!info_collection_gpu_service_);
+  DCHECK(gpu_init_->device_perf_info().has_value());
+
+  info_collection_gpu_service_ = std::make_unique<InfoCollectionGpuServiceImpl>(
+      gpu_thread_task_runner_, io_task_runner(),
+      gpu_init_->device_perf_info().value(), std::move(pending_receiver));
+}
+#endif
 
 void VizMainImpl::CreateFrameSinkManager(
     mojom::FrameSinkManagerParamsPtr params) {

@@ -76,8 +76,7 @@ void AssistantClientImpl::MaybeInit(Profile* profile) {
   service_ = std::make_unique<chromeos::assistant::Service>(
       profile->GetURLLoaderFactory()->Clone(),
       IdentityManagerFactory::GetForProfile(profile), profile->GetPrefs());
-  service_->Init(client_receiver_.BindNewPipeAndPassRemote(),
-                 device_actions_->AddReceiver());
+  service_->Init(device_actions_->AddReceiver());
 
   assistant_image_downloader_ = std::make_unique<AssistantImageDownloader>();
   assistant_setup_ = std::make_unique<AssistantSetup>();

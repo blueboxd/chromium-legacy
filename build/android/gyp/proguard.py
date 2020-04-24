@@ -110,6 +110,8 @@ def _ParseOptions():
   group.add_argument('--proguard-path', help='Path to the proguard.jar to use.')
   group.add_argument('--r8-path', help='Path to the R8.jar to use.')
   parser.add_argument(
+      '--desugar-jdk-libs-json', help='Path to desugar_jdk_libs.json.')
+  parser.add_argument(
       '--input-paths', required=True, help='GN-list of .jar files to optimize.')
   parser.add_argument(
       '--output-path', required=True, help='Path to the generated .jar file.')
@@ -235,17 +237,20 @@ def _OptimizeWithR8(options,
         tmp_mapping_path,
     ]
 
-    for lib in libraries:
-      cmd += ['--lib', lib]
-
-    for config_file in config_paths:
-      cmd += ['--pg-conf', config_file]
+    if options.desugar_jdk_libs_json:
+      cmd += ['--desugared-lib', options.desugar_jdk_libs_json]
 
     if options.min_api:
       cmd += ['--min-api', options.min_api]
 
     if options.force_enable_assertions:
       cmd += ['--force-enable-assertions']
+
+    for lib in libraries:
+      cmd += ['--lib', lib]
+
+    for config_file in config_paths:
+      cmd += ['--pg-conf', config_file]
 
     if options.main_dex_rules_path:
       for main_dex_rule in options.main_dex_rules_path:

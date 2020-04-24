@@ -416,6 +416,8 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
                                 ShelfItemDelegate* old_delegate,
                                 ShelfItemDelegate* delegate) override;
   void ShelfItemStatusChanged(const ShelfID& id) override;
+  void ShelfItemRippedOff() override;
+  void ShelfItemReturnedFromRipOff(int index) override;
 
   // Overridden from ShellObserver:
   void OnShelfAlignmentChanged(aura::Window* root_window,

@@ -162,7 +162,7 @@ void NavigatorGamepad::Trace(Visitor* visitor) {
   visitor->Trace(vibration_actuators_);
   visitor->Trace(gamepad_dispatcher_);
   Supplement<Navigator>::Trace(visitor);
-  DOMWindowClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
   PlatformEventController::Trace(visitor);
   Gamepad::Client::Trace(visitor);
 }
@@ -192,7 +192,7 @@ void NavigatorGamepad::DidUpdateData() {
 
 NavigatorGamepad::NavigatorGamepad(Navigator& navigator)
     : Supplement<Navigator>(navigator),
-      DOMWindowClient(navigator.DomWindow()),
+      ExecutionContextClient(navigator.DomWindow()),
       PlatformEventController(
           navigator.GetFrame() ? navigator.GetFrame()->GetDocument() : nullptr),
       // See https://bit.ly/2S0zRAS for task types

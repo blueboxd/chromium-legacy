@@ -40,7 +40,7 @@ namespace blink {
 
 Navigator::Navigator(LocalFrame* frame)
     : NavigatorLanguage(frame ? frame->DomWindow() : nullptr),
-      DOMWindowClient(frame) {}
+      ExecutionContextClient(frame) {}
 
 String Navigator::productSub() const {
   return "20030107";
@@ -117,7 +117,7 @@ String Navigator::GetAcceptLanguages() {
 void Navigator::Trace(Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
   NavigatorLanguage::Trace(visitor);
-  DOMWindowClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
   Supplementable<Navigator>::Trace(visitor);
 }
 

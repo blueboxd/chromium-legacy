@@ -100,6 +100,16 @@ GpuHostImpl::GpuHostImpl(Delegate* delegate,
       viz_main_(std::move(viz_main)),
       params_(std::move(params)),
       host_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
+  // Create a special GPU info collection service if the GPU process is used for
+  // info collection only.
+#if defined(OS_WIN)
+  if (params.info_collection_gpu_process) {
+    viz_main_->CreateInfoCollectionGpuService(
+        info_collection_gpu_service_remote_.BindNewPipeAndPassReceiver());
+    return;
+  }
+#endif
+
   DCHECK(delegate_);
 
   mojo::PendingRemote<discardable_memory::mojom::DiscardableSharedMemoryManager>
@@ -272,6 +282,14 @@ mojom::GpuService* GpuHostImpl::gpu_service() {
   DCHECK(gpu_service_remote_.is_bound());
   return gpu_service_remote_.get();
 }
+
+#if defined(OS_WIN)
+mojom::InfoCollectionGpuService* GpuHostImpl::info_collection_gpu_service() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(info_collection_gpu_service_remote_.is_bound());
+  return info_collection_gpu_service_remote_.get();
+}
+#endif
 
 #if defined(USE_OZONE)
 

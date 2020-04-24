@@ -54,6 +54,4 @@ luci.milo(
     logo = 'https://storage.googleapis.com/chrome-infra-public/logo/chromium.svg',
 )
 
-exec('//dev/buckets/ci.star')
-
-exec('//dev/consoles/chromium.swarm.star')
+exec('//dev/subprojects/chromium/main.star')

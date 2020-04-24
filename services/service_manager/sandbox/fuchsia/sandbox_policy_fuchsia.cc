@@ -27,7 +27,9 @@
 #include "base/containers/span.h"
 #include "base/files/file_util.h"
 #include "base/fuchsia/default_context.h"
+#include "base/fuchsia/default_job.h"
 #include "base/fuchsia/filtered_service_directory.h"
+#include "base/fuchsia/fuchsia_logging.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
@@ -241,6 +243,11 @@ void SandboxPolicyFuchsia::UpdateLaunchOptionsForSandbox(
         base::FilePath("/svc"),
         service_directory_client_.TakeChannel().release()});
   }
+
+  // Isolate the child process from the call by launching it in its own job.
+  zx_status_t status = zx::job::create(*base::GetDefaultJob(), 0, &job_);
+  ZX_CHECK(status == ZX_OK, status) << "zx_job_create";
+  options->job_handle = job_.get();
 }
 
 }  // namespace service_manager

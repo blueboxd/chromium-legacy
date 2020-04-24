@@ -145,12 +145,14 @@ class CORE_EXPORT ImageBitmap final : public ScriptWrappable,
   static void ResolvePromiseOnOriginalThread(ScriptPromiseResolver*,
                                              bool origin_clean,
                                              std::unique_ptr<ParsedOptions>,
-                                             sk_sp<SkImage>);
+                                             sk_sp<SkImage>,
+                                             const ImageOrientationEnum);
   static void RasterizeImageOnBackgroundThread(
       sk_sp<PaintRecord>,
       const IntRect&,
       scoped_refptr<base::SequencedTaskRunner>,
-      WTF::CrossThreadOnceFunction<void(sk_sp<SkImage>)> callback);
+      WTF::CrossThreadOnceFunction<void(sk_sp<SkImage>,
+                                        const ImageOrientationEnum)> callback);
   scoped_refptr<StaticBitmapImage> image_;
   bool is_neutered_ = false;
   int32_t memory_usage_ = 0;

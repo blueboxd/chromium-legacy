@@ -9,6 +9,7 @@
 <translation id="1384959399684842514">İndirme işlemi duraklatıldı</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="2079545284768500474">Geri al</translation>
+<translation id="2146738493024040262">Hazır Uygulamayı aç</translation>
 <translation id="2148716181193084225">Bugün</translation>
 <translation id="2359808026110333948">Devam et</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
@@ -27,6 +28,7 @@
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">Başlık</translation>
 <translation id="4259722352634471385">Gezinme engellendi: <ph name="URL" /></translation>
+<translation id="4433925000917964731">Google tarafından sağlanan basit sayfa</translation>
 <translation id="4570913071927164677">Ayrıntılar</translation>
 <translation id="4645575059429386691">Ebeveyniniz tarafından yönetiliyor</translation>
 <translation id="4883854917563148705">Yönetilen ayarlar sıfırlanamaz</translation>
@@ -38,6 +40,7 @@
 <translation id="5391532827096253100">Bu siteye bağlantınız güvenli değil. Site bilgileri</translation>
 <translation id="5556459405103347317">Yeniden Yükle</translation>
 <translation id="5596627076506792578">Diğer seçenekler</translation>
+<translation id="5804241973901381774">İzinler</translation>
 <translation id="5860033963881614850">Kapalı</translation>
 <translation id="5916664084637901428">Açık</translation>
 <translation id="5939518447894949180">Sıfırla</translation>
@@ -46,6 +49,7 @@
 <translation id="6165508094623778733">Daha fazla bilgi edinin</translation>
 <translation id="6206551242102657620">Bağlantı güvenli. Site bilgileri</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> Seçenekleri</translation>
+<translation id="6447842834002726250">Çerezler</translation>
 <translation id="6527303717912515753">Paylaş</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6746124502594467657">Aşağı taşı</translation>

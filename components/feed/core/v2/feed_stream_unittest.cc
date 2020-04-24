@@ -8,7 +8,10 @@
 #include <string>
 #include <utility>
 
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/optional.h"
+#include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/test/bind_test_util.h"
@@ -231,7 +234,12 @@ class TestFeedNetwork : public FeedNetwork {
     query_request_sent = request;
     QueryRequestResult result;
     result.status_code = 200;
-    result.response_body = std::make_unique<feedwire::Response>();
+    if (injected_response_) {
+      result.response_body = std::make_unique<feedwire::Response>(
+          std::move(injected_response_.value()));
+    } else {
+      result.response_body = std::make_unique<feedwire::Response>();
+    }
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), std::move(result)));
   }
@@ -242,8 +250,25 @@ class TestFeedNetwork : public FeedNetwork {
   }
   void CancelRequests() override { NOTIMPLEMENTED(); }
 
+  void InjectRealResponse() {
+    base::FilePath response_file_path;
+    CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &response_file_path));
+    response_file_path = response_file_path.AppendASCII(
+        "components/test/data/feed/response.binarypb");
+    std::string response_data;
+    CHECK(base::ReadFileToString(response_file_path, &response_data));
+
+    feedwire::Response response;
+    CHECK(response.ParseFromString(response_data));
+
+    injected_response_ = response;
+  }
+
   base::Optional<feedwire::Request> query_request_sent;
   int send_query_call_count = 0;
+
+ private:
+  base::Optional<feedwire::Response> injected_response_;
 };
 
 // Forwards to |FeedStream::WireResponseTranslator| unless a response is
@@ -1060,6 +1085,14 @@ TEST_F(FeedStreamTest, LoadMoreBeforeLoad) {
   stream_->LoadMore(callback.Bind());
 
   EXPECT_EQ(base::Optional<bool>(false), callback.GetResult());
+}
+
+TEST_F(FeedStreamTest, ReadNetworkResponse) {
+  network_.InjectRealResponse();
+  TestSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+
+  ASSERT_EQ("loading -> 10 slices", surface.DescribeUpdates());
 }
 
 }  // namespace

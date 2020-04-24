@@ -69,18 +69,23 @@ void StyleRuleImport::NotifyFinished(Resource* resource) {
 
   // Fallback to an insecure context parser if we don't have a parent style
   // sheet.
-  const CSSParserContext* context =
+  const CSSParserContext* parent_context =
       StrictCSSParserContext(SecureContextMode::kInsecureContext);
 
   if (parent_style_sheet_) {
     document = parent_style_sheet_->SingleOwnerDocument();
-    context = parent_style_sheet_->ParserContext();
+    parent_context = parent_style_sheet_->ParserContext();
   }
-  context = MakeGarbageCollected<CSSParserContext>(
-      context, cached_style_sheet->GetResponse().ResponseUrl(),
+
+  // If either parent or resource is marked as ad, the new CSS will be tagged
+  // as an ad.
+  CSSParserContext* context = MakeGarbageCollected<CSSParserContext>(
+      parent_context, cached_style_sheet->GetResponse().ResponseUrl(),
       cached_style_sheet->GetResponse().IsCorsSameOrigin(),
       cached_style_sheet->GetReferrerPolicy(), cached_style_sheet->Encoding(),
       document);
+  if (cached_style_sheet->GetResourceRequest().IsAdResource())
+    context->SetIsAdRelated();
 
   style_sheet_ = MakeGarbageCollected<StyleSheetContents>(
       context, cached_style_sheet->Url(), this);
@@ -145,7 +150,10 @@ void StyleRuleImport::RequestStyleSheet() {
 
   ResourceLoaderOptions options;
   options.initiator_info.name = fetch_initiator_type_names::kCSS;
-  FetchParameters params(ResourceRequest(abs_url), options);
+  ResourceRequest resource_request(abs_url);
+  if (parent_style_sheet_->ParserContext()->IsAdRelated())
+    resource_request.SetIsAdResource();
+  FetchParameters params(std::move(resource_request), options);
   params.SetCharset(parent_style_sheet_->Charset());
   params.SetFromOriginDirtyStyleSheet(origin_clean_ != OriginClean::kTrue);
   loading_ = true;

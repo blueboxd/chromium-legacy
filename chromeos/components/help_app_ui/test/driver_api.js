@@ -5,5 +5,5 @@
 /** @typedef {{testQueryResult: string}} */
 var TestMessageResponseData;
 
-/** @typedef {{testQuery: string}} */
+/** @typedef {{testQuery: string, testData: string?}} */
 var TestMessageQueryData;

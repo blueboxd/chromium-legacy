@@ -14,6 +14,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
 import android.support.test.filters.SmallTest;
+import android.util.SparseArray;
 import android.view.ViewGroup;
 
 import androidx.annotation.ColorRes;
@@ -88,8 +89,8 @@ public class VoiceRecognitionHandlerTest {
     private static final OnSuggestionsReceivedListener sEmptySuggestionListener =
             new OnSuggestionsReceivedListener() {
                 @Override
-                public void onSuggestionsReceived(
-                        List<OmniboxSuggestion> suggestions, String inlineAutocompleteText) {}
+                public void onSuggestionsReceived(List<OmniboxSuggestion> suggestions,
+                        SparseArray<String> groupHeaders, String inlineAutocompleteText) {}
             };
 
     /**

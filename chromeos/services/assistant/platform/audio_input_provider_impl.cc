@@ -10,11 +10,9 @@ namespace chromeos {
 namespace assistant {
 
 AudioInputProviderImpl::AudioInputProviderImpl(
-    mojom::Client* client,
     PowerManagerClient* power_manager_client,
     CrasAudioHandler* cras_audio_handler)
-    : audio_input_(client,
-                   power_manager_client,
+    : audio_input_(power_manager_client,
                    cras_audio_handler,
                    /*input_device_id=*/std::string()) {}
 

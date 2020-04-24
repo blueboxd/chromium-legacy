@@ -10,6 +10,8 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.datareduction.settings.DataReductionPreferenceFragment;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
+import org.chromium.chrome.browser.ui.messages.infobar.ConfirmInfoBar;
+import org.chromium.chrome.browser.ui.messages.infobar.InfoBar;
 
 /**
  * An InfoBar that lets the user know that Data Saver Lite Mode now also applies to HTTPS pages.

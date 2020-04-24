@@ -20,7 +20,6 @@
 
 #include "third_party/blink/renderer/modules/plugins/dom_plugin_array.h"
 
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
@@ -35,7 +34,7 @@
 namespace blink {
 
 DOMPluginArray::DOMPluginArray(LocalFrame* frame)
-    : ExecutionContextLifecycleObserver(frame ? frame->GetDocument() : nullptr),
+    : ExecutionContextLifecycleObserver(frame ? frame->DomWindow() : nullptr),
       PluginsChangedObserver(frame ? frame->GetPage() : nullptr) {
   UpdatePluginData();
 }

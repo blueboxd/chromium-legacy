@@ -164,7 +164,6 @@ Toca cualquier palabra para buscarla. Para acotar la búsqueda, mantén pulsado 
 <translation id="2131665479022868825">Datos ahorrados: <ph name="DATA" /></translation>
 <translation id="213279576345780926">Pestaña de <ph name="TAB_TITLE" /> cerrada</translation>
 <translation id="2139186145475833000">Añadir a pantalla de inicio</translation>
-<translation id="2146738493024040262">Abrir aplicación instantánea</translation>
 <translation id="2154484045852737596">Editar tarjeta</translation>
 <translation id="2154710561487035718">Copiar URL</translation>
 <translation id="2156074688469523661">Sitios web restantes (<ph name="NUMBER_OF_SITES" />)</translation>
@@ -281,7 +280,6 @@ Mantén pulsada cualquier palabra para buscarla. Para acotar la búsqueda, selec
 <translation id="2996809686854298943">URL necesaria</translation>
 <translation id="300526633675317032">Se borrarán los <ph name="SIZE_IN_KB" /> de almacenamiento del sitio web.</translation>
 <translation id="3016635187733453316">Comprueba que este dispositivo esté conectado a Internet.</translation>
-<translation id="3029613699374795922">kB descargados: <ph name="KBS" /></translation>
 <translation id="3029704984691124060">Las frases de contraseña no coinciden</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Obtener ayuda<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">La ubicación está desactivada. Actívala en los <ph name="BEGIN_LINK" />Ajustes de Android<ph name="END_LINK" />.</translation>
@@ -457,7 +455,6 @@ Solo tú podrás ver lo que está viendo tu cámara. El sitio web no podrá verl
 <translation id="4411535500181276704">Modo básico</translation>
 <translation id="4415276339145661267">Gestionar tu cuenta de Google</translation>
 <translation id="4432792777822557199">Las páginas en <ph name="SOURCE_LANGUAGE" /> se traducirán al <ph name="TARGET_LANGUAGE" /> a partir de ahora</translation>
-<translation id="4433925000917964731">Página básica ofrecida por Google</translation>
 <translation id="4434045419905280838">Ventanas emergentes y redirecciones</translation>
 <translation id="4440958355523780886">Página básica ofrecida por Google. Toca para cargar la original.</translation>
 <translation id="4452411734226507615">Cerrar la pestaña <ph name="TAB_TITLE" /></translation>
@@ -737,7 +734,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="6406506848690869874">Sincronización</translation>
 <translation id="6410973561433500075">¿Quieres acceder al modo de realidad aumentada desde <ph name="DOMAIN" />?</translation>
 <translation id="641643625718530986">Imprimir…</translation>
-<translation id="6416782512398055893">MB descargados: <ph name="MBS" /></translation>
 <translation id="6427112570124116297">Traduce la Web</translation>
 <translation id="6433501201775827830">Elegir tu motor de búsqueda</translation>
 <translation id="6437478888915024427">Información de la página</translation>
@@ -745,7 +741,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="6441734959916820584">El nombre es demasiado largo</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# imagen}other{# imágenes}}</translation>
 <translation id="6447558397796644647">No se ha podido encontrar el marcador. Comprueba que esté bien escrito o añade un nuevo marcador.</translation>
-<translation id="6447842834002726250">Cookies</translation>
 <translation id="6461962085415701688">No se puede abrir el archivo</translation>
 <translation id="6464977750820128603">Puedes ver los sitios web que visitas en Chrome y ponerles temporizadores.\n\nGoogle obtiene información sobre estos sitios web y sobre la duración de la visita. La información se usa para mejorar Bienestar digital.</translation>
 <translation id="6475951671322991020">Descargar vídeo</translation>
@@ -754,7 +749,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="6508722015517270189">Reinicia Chrome</translation>
 <translation id="6532866250404780454">Los sitios web que visites en Chrome no se mostrarán. Se eliminarán todos los temporizadores de los sitios web.</translation>
 <translation id="6534565668554028783">Google ha tardado demasiado en responder</translation>
-<translation id="6538442820324228105">GB descargados: <ph name="GBS" /></translation>
 <translation id="6539092367496845964">Se ha producido un error. Vuelve a intentarlo más tarde.</translation>
 <translation id="6545017243486555795">Borrar todos los datos</translation>
 <translation id="6545864417968258051">Búsqueda de dispositivos Bluetooth</translation>
@@ -855,6 +849,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="7352939065658542140">VÍDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Compartir 1 elemento seleccionado}other{Compartir # elementos seleccionados}}</translation>
 <translation id="7359002509206457351">Acceder a métodos de pago</translation>
+<translation id="7362144854749094396">El historial se comparte con Chrome. Las preferencias se comparten con <ph name="SITE_NAME" />.</translation>
 <translation id="7375125077091615385">Tipo:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>

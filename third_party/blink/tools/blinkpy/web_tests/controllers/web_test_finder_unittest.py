@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import optparse
 import os
 import sys
 import unittest
@@ -9,6 +10,7 @@ import unittest
 from blinkpy.common import path_finder
 from blinkpy.common.host_mock import MockHost
 from blinkpy.web_tests.controllers import web_test_finder
+from blinkpy.web_tests.models import test_expectations
 
 _MOCK_ROOT = os.path.join(path_finder.get_chromium_src_dir(), 'third_party',
                           'pymock')
@@ -17,6 +19,136 @@ import mock
 
 
 class WebTestFinderTests(unittest.TestCase):
+
+    def test_skip_tests_expectations(self):
+        """Tests that tests are skipped based on to expectations and options."""
+        host = MockHost()
+        port = host.port_factory.get('test-win-win7', None)
+
+        all_tests = [
+            'fast/css/passes.html',
+            'fast/css/fails.html',
+            'fast/css/times_out.html',
+            'fast/css/skip.html',
+        ]
+
+        # Patch port.tests() to return our tests
+        port.tests = lambda paths: paths or all_tests
+
+        options = optparse.Values({
+            'no_expectations': False,
+            'enable_sanitizer': False,
+            'skipped': 'default',
+            'skip_timeouts': False,
+            'skip_failing_tests': False,
+        })
+        finder = web_test_finder.WebTestFinder(port, options)
+
+        expectations = test_expectations.TestExpectations(port)
+        expectations.merge_raw_expectations(
+            ('# results: [ Failure Timeout Skip ]'
+             '\nfast/css/fails.html [ Failure ]'
+             '\nfast/css/times_out.html [ Timeout ]'
+             '\nfast/css/skip.html [ Skip ]'))
+
+        # When run with default settings, we only skip the tests marked Skip.
+        tests = finder.skip_tests([], all_tests, expectations)
+        self.assertEqual(tests, set(['fast/css/skip.html']))
+
+        # Specify test on the command line; by default should not skip.
+        tests = finder.skip_tests(['fast/css/skip.html'], all_tests,
+                                  expectations)
+        self.assertEqual(tests, set())
+
+        # Specify test on the command line, but always skip.
+        finder._options.skipped = 'always'
+        tests = finder.skip_tests(['fast/css/skip.html'], all_tests,
+                                  expectations)
+        self.assertEqual(tests, set(['fast/css/skip.html']))
+        finder._options.skipped = 'default'
+
+        # Only run skip tests, aka skip all non-skipped tests.
+        finder._options.skipped = 'only'
+        tests = finder.skip_tests([], all_tests, expectations)
+        self.assertEqual(
+            tests,
+            set([
+                'fast/css/passes.html', 'fast/css/fails.html',
+                'fast/css/times_out.html'
+            ]))
+        finder._options.skipped = 'default'
+
+        # Ignore any skip entries, aka never skip anything.
+        finder._options.skipped = 'ignore'
+        tests = finder.skip_tests([], all_tests, expectations)
+        self.assertEqual(tests, set())
+        finder._options.skipped = 'default'
+
+        # Skip tests that are marked TIMEOUT.
+        finder._options.skip_timeouts = True
+        tests = finder.skip_tests([], all_tests, expectations)
+        self.assertEqual(
+            tests, set(['fast/css/times_out.html', 'fast/css/skip.html']))
+        finder._options.skip_timeouts = False
+
+        # Skip tests that are marked FAILURE
+        finder._options.skip_failing_tests = True
+        tests = finder.skip_tests([], all_tests, expectations)
+        self.assertEqual(tests,
+                         set(['fast/css/fails.html', 'fast/css/skip.html']))
+        finder._options.skip_failing_tests = False
+
+        # Disable expectations entirely; nothing should be skipped by default.
+        finder._options.no_expectations = True
+        tests = finder.skip_tests([], all_tests, expectations)
+        self.assertEqual(tests, set())
+
+    def test_skip_tests_idlharness(self):
+        """Tests that idlharness tests are skipped on MSAN/ASAN runs.
+
+        See https://crbug.com/856601
+        """
+        host = MockHost()
+        port = host.port_factory.get('test-win-win7', None)
+
+        all_tests = [
+            'external/wpt/dir1/dir2/foo.html',
+            'external/wpt/dir1/dir2/idlharness.any.html',
+            'external/wpt/dir1/dir2/idlharness.any.worker.html',
+        ]
+
+        # Patch port.tests() to return our tests
+        port.tests = lambda paths: paths or all_tests
+
+        options = optparse.Values({
+            'no_expectations': True,
+            'enable_sanitizer': False,
+            'skipped': 'default',
+        })
+        finder = web_test_finder.WebTestFinder(port, options)
+
+        # Default case; not MSAN/ASAN so should not skip anything.
+        tests = finder.skip_tests([], all_tests, None)
+        self.assertEqual(tests, set())
+
+        # MSAN/ASAN, with no paths specified explicitly, so should skip both
+        # idlharness tests.
+        finder._options.enable_sanitizer = True
+        tests = finder.skip_tests([], all_tests, None)
+        self.assertEqual(
+            tests,
+            set([
+                'external/wpt/dir1/dir2/idlharness.any.html',
+                'external/wpt/dir1/dir2/idlharness.any.worker.html'
+            ]))
+
+        # MSAN/ASAN, with one of the tests specified explicitly (and
+        # --skipped=default), so should skip only the unspecified test.
+        tests = finder.skip_tests(
+            ['external/wpt/dir1/dir2/idlharness.any.html'], all_tests, None)
+        self.assertEqual(
+            tests, set(['external/wpt/dir1/dir2/idlharness.any.worker.html']))
+
     def test_find_fastest_tests(self):
         host = MockHost()
         port = host.port_factory.get('test-win-win7', None)

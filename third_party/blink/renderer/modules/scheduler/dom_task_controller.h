@@ -13,14 +13,15 @@
 
 namespace blink {
 class DOMTaskSignal;
-class Document;
+class ExecutionContext;
 
 class MODULES_EXPORT DOMTaskController final : public AbortController {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DOMTaskController* Create(Document&, const AtomicString& priority);
-  DOMTaskController(Document&, WebSchedulingPriority);
+  static DOMTaskController* Create(ExecutionContext*,
+                                   const AtomicString& priority);
+  DOMTaskController(ExecutionContext*, WebSchedulingPriority);
 
   void setPriority(const AtomicString& priority);
 

@@ -34,6 +34,7 @@
     'remove_from': [
       # On chromium.android, these do not need to run prior to M.
       'android-kitkat-arm-rel',
+      'android-lollipop-arm-rel',
       'KitKat Phone Tester (dbg)',
       'KitKat Tablet Tester',
       'android-code-coverage-native', # crbug/1018434
@@ -619,6 +620,7 @@
       'android-asan',  # https://crbug.com/964562
       'android-code-coverage-native', # https://crbug.com/1018780
       'android-kitkat-arm-rel', # https://crbug.com/1060245
+      'android-lollipop-arm-rel', # https://crbug.com/1060245
     ],
     'modifications': {
       'Android CFI': {
@@ -1666,6 +1668,7 @@
       'android-asan',
       # Don't run on trybots; waterfall is enough.
       'android-kitkat-arm-rel',
+      'android-lollipop-arm-rel',
       'android-marshmallow-arm64-rel',
       'android-pie-arm64-rel',
       # No capacity for tablet testers.
@@ -1701,6 +1704,7 @@
       'android-asan',
       # Don't run on trybots; waterfall is enough.
       'android-kitkat-arm-rel',
+      'android-lollipop-arm-rel',
       'android-marshmallow-arm64-rel',
       'android-pie-arm64-rel',
       # No capacity for tablet testers.
@@ -1715,6 +1719,7 @@
       'android-asan',
       # Don't run on trybots; waterfall is enough.
       'android-kitkat-arm-rel',
+      'android-lollipop-arm-rel',
       'android-marshmallow-arm64-rel',
       'android-pie-arm64-rel',
       # No capacity for tablet testers.
@@ -1744,6 +1749,7 @@
       'android-asan',
       # Don't run on trybots; waterfall is enough.
       'android-kitkat-arm-rel',
+      'android-lollipop-arm-rel',
       'android-marshmallow-arm64-rel',
       'android-pie-arm64-rel',
       # No capacity for tablet testers.
@@ -1769,6 +1775,7 @@
     # Only run these on the phone testers for now due to capacity.
     'remove_from': [
       'android-kitkat-arm-rel',
+      'android-lollipop-arm-rel',
       'android-marshmallow-arm64-rel',
       'android-pie-arm64-rel',
       'KitKat Tablet Tester',
@@ -2449,6 +2456,7 @@
     'remove_from': [
       # This test frequently fails on Android, https://crbug.com/824959
       'android-kitkat-arm-rel',
+      'android-lollipop-arm-rel',
       'KitKat Phone Tester (dbg)',
       'KitKat Tablet Tester',
       # matching android builders, the test fails on these.

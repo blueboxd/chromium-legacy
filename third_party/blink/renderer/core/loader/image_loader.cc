@@ -190,6 +190,15 @@ void ImageLoader::Dispose() {
   }
 }
 
+static bool ImageTypeNeedsDecode(const Image& image) {
+  // SVG images are context sensitive, and decoding them without the proper
+  // context will just end up wasting memory (and CPU).
+  // TODO(vmpstr): Generalize this to be all non-lazy decoded images.
+  if (IsA<SVGImage>(image))
+    return false;
+  return true;
+}
+
 void ImageLoader::DispatchDecodeRequestsIfComplete() {
   // If the current image isn't complete, then we can't dispatch any decodes.
   // This function will be called again when the current image completes.
@@ -206,14 +215,24 @@ void ImageLoader::DispatchDecodeRequestsIfComplete() {
   }
 
   LocalFrame* frame = GetElement()->GetDocument().GetFrame();
-  for (auto& request : decode_requests_) {
-    // If the image already in kDispatched state or still in kPEndingMicrotask
+  auto* it = decode_requests_.begin();
+  while (it != decode_requests_.end()) {
+    // If the image already in kDispatched state or still in kPendingMicrotask
     // state, then we don't dispatch decodes for it. So, the only case to handle
     // is if we're in kPendingLoad state.
-    if (request->state() != DecodeRequest::kPendingLoad)
+    auto& request = *it;
+    if (request->state() != DecodeRequest::kPendingLoad) {
+      ++it;
       continue;
+    }
     Image* image = GetContent()->GetImage();
-
+    if (!ImageTypeNeedsDecode(*image)) {
+      // If the image is of a type that doesn't need decode, resolve the
+      // promise.
+      request->Resolve();
+      it = decode_requests_.erase(it);
+      continue;
+    }
     // ImageLoader should be kept alive when decode is still pending. JS may
     // invoke 'decode' without capturing the Image object. If GC kicks in,
     // ImageLoader will be destroyed, leading to unresolved/unrejected Promise.
@@ -222,6 +241,7 @@ void ImageLoader::DispatchDecodeRequestsIfComplete() {
         WTF::Bind(&ImageLoader::DecodeRequestFinished,
                   WrapCrossThreadPersistent(this), request->request_id()));
     request->NotifyDecodeDispatched();
+    ++it;
   }
 }
 

@@ -22,7 +22,11 @@ namespace content {
 SpellCheckClient::SpellCheckClient(blink::WebLocalFrame* frame)
     : frame_(frame) {}
 
-SpellCheckClient::~SpellCheckClient() = default;
+SpellCheckClient::~SpellCheckClient() {
+  // v8::Persistent will leak on destroy, due to the default
+  // NonCopyablePersistentTraits (it claims this may change in the future).
+  resolved_callback_.Reset();
+}
 
 void SpellCheckClient::SetEnabled(bool enabled) {
   enabled_ = enabled;

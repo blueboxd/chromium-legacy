@@ -887,6 +887,9 @@ base::string16 BrowserAccessibilityAndroid::GetRoleDescription() const {
     case ax::mojom::Role::kImage:
       message_id = IDS_AX_ROLE_GRAPHIC;
       break;
+    case ax::mojom::Role::kImeCandidate:
+      // No role description.
+      break;
     case ax::mojom::Role::kInlineTextBox:
       // No role description.
       break;

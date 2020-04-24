@@ -604,15 +604,14 @@ FormData ConvertToFormData(
     form_field.typed_value = ASCIIToUTF16(field.typed_value);
 
     if (field.user_typed)
-      form_field.properties_mask |= FieldPropertiesFlags::USER_TYPED;
+      form_field.properties_mask |= FieldPropertiesFlags::kUserTyped;
 
     if (field.manually_filled)
       form_field.properties_mask |=
-          FieldPropertiesFlags::AUTOFILLED_ON_USER_TRIGGER;
+          FieldPropertiesFlags::kAutofilledOnUserTrigger;
 
     if (field.automatically_filled)
-      form_field.properties_mask |=
-          FieldPropertiesFlags::AUTOFILLED_ON_PAGELOAD;
+      form_field.properties_mask |= FieldPropertiesFlags::kAutofilledOnPageLoad;
 
     form_field.form_control_type = field.is_password ? "password" : "text";
 

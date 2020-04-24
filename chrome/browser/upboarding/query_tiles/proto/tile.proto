@@ -12,13 +12,10 @@ package upboarding.query_tiles.proto;
 // Next tag: 7
 message Tile {
   // Metadata about the image.
-  // Next tag: 3
+  // Next tag: 2
   message ImageMetadata {
-    // Unique id of the query tile image.
-    string id = 1;
-
     // URL of the image.
-    string url = 2;
+    string url = 1;
   }
 
   // Unique id of a query tile entry.

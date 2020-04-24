@@ -408,9 +408,7 @@ class ResourceLoadingHintsBrowserTest
     scoped_feature_list_.InitWithFeatures(
         {previews::features::kPreviews, previews::features::kNoScriptPreviews,
          optimization_guide::features::kOptimizationHints,
-         previews::features::kResourceLoadingHints,
-         data_reduction_proxy::features::
-             kDataReductionProxyEnabledWithNetworkService},
+         previews::features::kResourceLoadingHints},
         {});
     // Any additional ScopedFeatureLists added by subclasses must be
     // instantiated here to get destructed in the correct order.

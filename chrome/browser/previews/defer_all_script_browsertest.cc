@@ -52,8 +52,6 @@ class DeferAllScriptBrowserTest : public InProcessBrowserTest {
         {previews::features::kPreviews,
          previews::features::kDeferAllScriptPreviews,
          optimization_guide::features::kOptimizationHints,
-         data_reduction_proxy::features::
-             kDataReductionProxyEnabledWithNetworkService,
          features::kBackForwardCache},
         {});
   }

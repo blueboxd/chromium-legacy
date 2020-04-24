@@ -27,13 +27,11 @@ class TestExtensionRegistryObserver : public ExtensionRegistryObserver {
   ~TestExtensionRegistryObserver() override;
 
   // Waits for the notification, and returns the extension that caused it.
-  // TODO(lazyboy): Return scoped_refptr<const Extension> from all of these
-  // methods for consistency.
-  const Extension* WaitForExtensionWillBeInstalled();
-  const Extension* WaitForExtensionInstalled();
+  scoped_refptr<const Extension> WaitForExtensionWillBeInstalled();
+  scoped_refptr<const Extension> WaitForExtensionInstalled();
   scoped_refptr<const Extension> WaitForExtensionUninstalled();
-  const Extension* WaitForExtensionLoaded();
-  const Extension* WaitForExtensionReady();
+  scoped_refptr<const Extension> WaitForExtensionLoaded();
+  scoped_refptr<const Extension> WaitForExtensionReady();
   scoped_refptr<const Extension> WaitForExtensionUnloaded();
 
  private:
@@ -58,7 +56,7 @@ class TestExtensionRegistryObserver : public ExtensionRegistryObserver {
                            const Extension* extension,
                            UnloadedExtensionReason reason) override;
 
-  const Extension* Wait(std::unique_ptr<Waiter>* waiter);
+  scoped_refptr<const Extension> Wait(std::unique_ptr<Waiter>* waiter);
 
   std::unique_ptr<Waiter> will_be_installed_waiter_;
   std::unique_ptr<Waiter> installed_waiter_;

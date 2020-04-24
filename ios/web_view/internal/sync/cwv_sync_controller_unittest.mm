@@ -16,7 +16,7 @@
 #include "base/test/task_environment.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/image_fetcher/ios/ios_image_decoder_impl.h"
-#include "components/password_manager/core/browser/password_manager_util.h"
+#include "components/password_manager/core/browser/password_manager_features_util.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -104,10 +104,10 @@ TEST_F(CWVSyncControllerTest, StartSyncWithIdentity) {
   // Ensure opt-ins for transport only sync data is flipped to true.
   EXPECT_TRUE(autofill::prefs::IsUserOptedInWalletSyncTransport(
       &pref_service_, primary_account_info.account_id));
-  EXPECT_EQ(password_manager_util::GetDefaultPasswordStore(&pref_service_,
-                                                           &sync_service_),
+  EXPECT_EQ(password_manager::features_util::GetDefaultPasswordStore(
+                &pref_service_, &sync_service_),
             autofill::PasswordForm::Store::kAccountStore);
-  EXPECT_TRUE(password_manager_util::IsOptedInForAccountStorage(
+  EXPECT_TRUE(password_manager::features_util::IsOptedInForAccountStorage(
       &pref_service_, &sync_service_));
 }
 

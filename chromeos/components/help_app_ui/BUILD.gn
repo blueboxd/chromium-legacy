@@ -83,6 +83,7 @@ source_set("browser_test_support") {
     "test/driver.js",
     "test/driver_api.js",
     "test/guest_query_receiver.js",
+    "test/help_app_guest_ui_browsertest.js",
   ]
 }
 

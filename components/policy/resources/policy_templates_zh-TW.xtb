@@ -2496,7 +2496,7 @@
       </translation>
 <translation id="4787763197941188108">覆寫預設的列印頁面大小。
 
-      <ph name="PAGE_SIZE_NAME" /> 應包含其中一個列出的格式或是「自訂」(如果清單未列出所需的紙張大小)。如果將值設為「自訂」，則需一併指定 <ph name="PAGE_SIZE_CUSTOM_SIZE" /> 屬性。這個屬性會描述所需的高度和寬度 (以微米為單位)。否則，請勿指定 <ph name="PAGE_SIZE_CUSTOM_SIZE" /> 屬性。系統會忽略違反這些規則的政策。
+      <ph name="PAGE_SIZE_NAME" /> 應包含其中一個列出的格式或是「自訂」(如果清單未列出所需的紙張大小)。如果將值設為「自訂」，則需一併指定 <ph name="PAGE_SIZE_CUSTOM_SIZE" /> 屬性，描述所需的高度和寬度 (以微米為單位)。否則，請勿指定 <ph name="PAGE_SIZE_CUSTOM_SIZE" /> 屬性。系統會忽略違反這些規則的政策。
 
       如果頁面大小不適用於使用者選取的印表機，系統會忽略這項政策。</translation>
 <translation id="4788252609789586009">啟用 <ph name="PRODUCT_NAME" /> 的自動填入功能，並允許使用者使用先前儲存的信用卡資訊自動填寫網路表單。

@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/child_accounts/child_user_service.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_activity_registry.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_service_wrapper.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limit_utils.h"
@@ -26,6 +27,7 @@
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/notifications/notification_handler.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
@@ -150,58 +152,6 @@ std::string GetNotificationIdFor(const std::string& app_name,
       break;
   }
   return base::StrCat({notification_id, app_name});
-}
-
-void ShowNotificationForApp(const std::string& app_name,
-                            AppNotification notification,
-                            base::Optional<base::TimeDelta> time_limit,
-                            Profile* profile,
-                            base::Optional<gfx::ImageSkia> icon) {
-  DCHECK(notification == AppNotification::kFiveMinutes ||
-         notification == AppNotification::kOneMinute ||
-         notification == AppNotification::kTimeLimitChanged ||
-         notification == AppNotification::kBlocked ||
-         notification == AppNotification::kAvailable);
-
-  DCHECK(notification == AppNotification::kTimeLimitChanged ||
-         notification == AppNotification::kBlocked ||
-         notification == AppNotification::kAvailable || time_limit.has_value());
-
-  // Alright we have all the messages that we want.
-  const base::string16 app_name_16 = base::UTF8ToUTF16(app_name);
-  const base::string16 title =
-      GetNotificationTitleFor(app_name_16, notification);
-  const base::string16 message =
-      GetNotificationMessageFor(app_name_16, notification, time_limit);
-  // Family link display source.
-  const base::string16 notification_source =
-      l10n_util::GetStringUTF16(IDS_TIME_LIMIT_NOTIFICATION_DISPLAY_SOURCE);
-
-  std::string notification_id = GetNotificationIdFor(app_name, notification);
-
-  std::unique_ptr<message_center::Notification> message_center_notification =
-      ash::CreateSystemNotification(
-          message_center::NOTIFICATION_TYPE_SIMPLE, notification_id, title,
-          message, notification_source, GURL(),
-          message_center::NotifierId(
-              message_center::NotifierType::SYSTEM_COMPONENT,
-              kFamilyLinkSourceId),
-          message_center::RichNotificationData(),
-          base::MakeRefCounted<message_center::NotificationDelegate>(),
-          ash::kNotificationSupervisedUserIcon,
-          message_center::SystemNotificationWarningLevel::NORMAL);
-
-  if (icon.has_value())
-    message_center_notification->set_icon(gfx::Image(icon.value()));
-
-  auto* notification_display_service =
-      NotificationDisplayService::GetForProfile(profile);
-  if (!notification_display_service)
-    return;
-
-  notification_display_service->Display(NotificationHandler::Type::TRANSIENT,
-                                        *message_center_notification,
-                                        /*metadata=*/nullptr);
 }
 
 }  // namespace
@@ -429,8 +379,9 @@ void AppTimeController::ShowAppTimeLimitNotification(
   int size_hint_in_dp = 48;
   app_service_wrapper_->GetAppIcon(
       app_id, size_hint_in_dp,
-      base::BindOnce(&ShowNotificationForApp, app_name, notification,
-                     time_limit, profile_));
+      base::BindOnce(&AppTimeController::ShowNotificationForApp,
+                     weak_ptr_factory_.GetWeakPtr(), app_name, notification,
+                     time_limit));
 }
 
 void AppTimeController::OnAppLimitReached(const AppId& app_id,
@@ -562,6 +513,78 @@ bool AppTimeController::HasTimeCrossedResetBoundary() const {
   base::Time now = base::Time::Now();
 
   return now < last_limits_reset_time_ || now >= kDay + last_limits_reset_time_;
+}
+
+void AppTimeController::OpenFamilyLinkApp() {
+  const std::string app_id = arc::ArcPackageNameToAppId(
+      chromeos::ChildUserService::kFamilyLinkHelperAppPackageName, profile_);
+
+  if (app_service_wrapper_->IsAppInstalled(app_id)) {
+    // Launch Family Link Help app since it is available.
+    app_service_wrapper_->LaunchApp(app_id);
+    return;
+  }
+  // No Family Link Help app installed, so try to launch Play Store to Family
+  // Link Help app install page.
+  arc::LaunchPlayStoreWithUrl(
+      chromeos::ChildUserService::kFamilyLinkHelperAppPlayStoreURL);
+}
+
+void AppTimeController::ShowNotificationForApp(
+    const std::string& app_name,
+    AppNotification notification,
+    base::Optional<base::TimeDelta> time_limit,
+    base::Optional<gfx::ImageSkia> icon) {
+  DCHECK(notification == AppNotification::kFiveMinutes ||
+         notification == AppNotification::kOneMinute ||
+         notification == AppNotification::kTimeLimitChanged ||
+         notification == AppNotification::kBlocked ||
+         notification == AppNotification::kAvailable);
+
+  DCHECK(notification == AppNotification::kTimeLimitChanged ||
+         notification == AppNotification::kBlocked ||
+         notification == AppNotification::kAvailable || time_limit.has_value());
+
+  // Alright we have all the messages that we want.
+  const base::string16 app_name_16 = base::UTF8ToUTF16(app_name);
+  const base::string16 title =
+      GetNotificationTitleFor(app_name_16, notification);
+  const base::string16 message =
+      GetNotificationMessageFor(app_name_16, notification, time_limit);
+  // Family link display source.
+  const base::string16 notification_source =
+      l10n_util::GetStringUTF16(IDS_TIME_LIMIT_NOTIFICATION_DISPLAY_SOURCE);
+
+  std::string notification_id = GetNotificationIdFor(app_name, notification);
+
+  std::unique_ptr<message_center::Notification> message_center_notification =
+      ash::CreateSystemNotification(
+          message_center::NOTIFICATION_TYPE_SIMPLE, notification_id, title,
+          message, notification_source, GURL(),
+          message_center::NotifierId(
+              message_center::NotifierType::SYSTEM_COMPONENT,
+              kFamilyLinkSourceId),
+          message_center::RichNotificationData(),
+          notification == AppNotification::kTimeLimitChanged
+              ? base::MakeRefCounted<
+                    message_center::HandleNotificationClickDelegate>(
+                    base::BindRepeating(&AppTimeController::OpenFamilyLinkApp,
+                                        weak_ptr_factory_.GetWeakPtr()))
+              : base::MakeRefCounted<message_center::NotificationDelegate>(),
+          ash::kNotificationSupervisedUserIcon,
+          message_center::SystemNotificationWarningLevel::NORMAL);
+
+  if (icon.has_value())
+    message_center_notification->set_icon(gfx::Image(icon.value()));
+
+  auto* notification_display_service =
+      NotificationDisplayService::GetForProfile(profile_);
+  if (!notification_display_service)
+    return;
+
+  notification_display_service->Display(NotificationHandler::Type::TRANSIENT,
+                                        *message_center_notification,
+                                        /*metadata=*/nullptr);
 }
 
 }  // namespace app_time

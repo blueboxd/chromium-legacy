@@ -617,7 +617,7 @@
 <translation id="5921587111466148855">अध्याय</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{बराबर}other{# बराबर चिन्ह}}</translation>
 <translation id="5948123859135882163">संरचनात्मक र अर्थ जनक बीच को गणित अभिव्यक्तिहरूको व्याख्या टगल गर्नुहोस्</translation>
-<translation id="5955304353782037793">अनुप्रयोग</translation>
+<translation id="5955304353782037793">एप</translation>
 <translation id="5956928062748260866">संवाद</translation>
 <translation id="5963413905009737549">खण्ड</translation>
 <translation id="5968607524793740041">सन्दर्भ मेनु देखाउनुहोस्</translation>
@@ -636,7 +636,7 @@
 <translation id="6082768461603900813">आधारभूत नेभिगेसन</translation>
 <translation id="609281021724813947">अघिल्लो कुनै पनि स्लाइडर छैन</translation>
 <translation id="6100239002225743044">एक लाइन माथि सार्नुहोस्</translation>
-<translation id="6118126368611144850">Chrome का लागि Android अनुप्रयोगहरू। तपाईंको यन्त्रमा Play स्टोर भएको खण्डमा Android अनुप्रयोगहरूको सहयोगले ChromeVox रिलिज हुनु अगावै यसलाई चलाई हेर्नुहोस्। Play स्टोरबाट Google Chrome Canary डाउनलोड गरी परीक्षणात्मक समर्थन चलाएर हेर्नुहोस्।</translation>
+<translation id="6118126368611144850">Chrome का लागि Android एपहरू। तपाईंको यन्त्रमा Play स्टोर भएको खण्डमा Android एपहरूको सहयोगले ChromeVox रिलिज हुनु अगावै यसलाई चलाई हेर्नुहोस्। Play स्टोरबाट Google Chrome Canary डाउनलोड गरी परीक्षणात्मक समर्थन चलाएर हेर्नुहोस्।</translation>
 <translation id="611827076493383239">vtd</translation>
 <translation id="6122013438240733403">बटन</translation>
 <translation id="6132506484792346370">एउटा सूचीबाकस वा कम्बो बाकस</translation>
@@ -765,7 +765,7 @@
 <translation id="7240858705033280249">विवरणहरूमा जानुहोस्</translation>
 <translation id="7241683698754534149">लामो विवरणलाई नयाँ ट्याबमा खोल्नुहोस्</translation>
 <translation id="7244947685630430863">अघिल्लो कुनै पनि ग्राफिक छैन</translation>
-<translation id="7248671827512403053">अनुप्रयोग</translation>
+<translation id="7248671827512403053">एप</translation>
 <translation id="725969808843520477">अर्को रेडियो बटन</translation>
 <translation id="7261612856573623172">पाठवाचकसम्बन्धी प्रणालीको आवाज</translation>
 <translation id="7269119382257320590">कुनै विराम चिन्ह छैन</translation>

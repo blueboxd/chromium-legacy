@@ -4,7 +4,6 @@
 
 #include "components/arc/session/arc_property_util.h"
 
-#include <map>
 #include <memory>
 
 #include "base/command_line.h"
@@ -12,40 +11,13 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "components/arc/test/fake_cros_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace arc {
 namespace {
 
 constexpr char kCrosConfigPropertiesPath[] = "/arc/build-properties";
-
-class FakeCrosConfig : public arc::CrosConfig {
- public:
-  FakeCrosConfig() = default;
-  ~FakeCrosConfig() override = default;
-  FakeCrosConfig(const FakeCrosConfig&) = delete;
-  FakeCrosConfig& operator=(const FakeCrosConfig&) = delete;
-
-  bool GetString(const std::string& path,
-                 const std::string& property,
-                 std::string* val_out) override {
-    auto it = overrides_.find(property);
-    if (it != overrides_.end()) {
-      *val_out = it->second;
-      return true;
-    }
-    return arc::CrosConfig::GetString(path, property, val_out);
-  }
-
-  void SetString(const std::string& path,
-                 const std::string& property,
-                 const std::string& value) {
-    overrides_.emplace(property, value);
-  }
-
- private:
-  std::map<std::string, std::string> overrides_;
-};
 
 class ArcPropertyUtilTest : public testing::Test {
  public:

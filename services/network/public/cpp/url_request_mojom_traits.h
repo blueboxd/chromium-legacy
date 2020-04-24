@@ -83,9 +83,9 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
       const network::ResourceRequest& request) {
     return request.site_for_cookies;
   }
-  static bool attach_same_site_cookies(
+  static bool force_ignore_site_for_cookies(
       const network::ResourceRequest& request) {
-    return request.attach_same_site_cookies;
+    return request.force_ignore_site_for_cookies;
   }
   static bool update_first_party_url_on_redirect(
       const network::ResourceRequest& request) {

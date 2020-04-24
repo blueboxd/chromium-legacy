@@ -26,7 +26,7 @@ promise_test(async () => {
     shadowRoot.appendChild(shadowDiv);
 
     var center = elementCenter(shadowDiv);
-    await wheelTick(1, center, 'up');
+    await wheelTick(0, -1, center);
 
     assert_true(receivedMouseWheel);
 }, "Verify a mousewheel event is fired when wheeling over shadow div element.");

@@ -89,7 +89,7 @@ class ChromeExtensionsRendererClient
                        const net::SiteForCookies& site_for_cookies,
                        const url::Origin* initiator_origin,
                        GURL* new_url,
-                       bool* attach_same_site_cookies);
+                       bool* force_ignore_site_for_cookies);
   v8::Local<v8::Object> GetScriptableObject(
       const blink::WebElement& plugin_element,
       v8::Isolate* isolate);

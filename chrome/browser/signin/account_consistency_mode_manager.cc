@@ -197,8 +197,14 @@ AccountConsistencyModeManager::ComputeAccountConsistencyMethod(
   bool can_enable_dice_for_build = ignore_missing_oauth_client_for_testing_ ||
                                    google_apis::HasOAuthClientConfigured();
   if (!can_enable_dice_for_build) {
-    LOG(WARNING) << "Desktop Identity Consistency cannot be enabled as no "
-                    "OAuth client ID and client secret have been configured.";
+    // Only log this once.
+    static bool logged_warning = []() {
+      LOG(WARNING) << "Desktop Identity Consistency cannot be enabled as no "
+                      "OAuth client ID and client secret have been configured.";
+      return true;
+    }();
+    ALLOW_UNUSED_LOCAL(logged_warning);
+
     return AccountConsistencyMethod::kDisabled;
   }
 

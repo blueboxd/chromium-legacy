@@ -5,7 +5,7 @@
 #include "components/password_manager/core/browser/password_session_durations_metrics_recorder.h"
 
 #include "base/metrics/histogram_functions.h"
-#include "components/password_manager/core/browser/password_manager_util.h"
+#include "components/password_manager/core/browser/password_manager_features_util.h"
 
 namespace password_manager {
 
@@ -34,7 +34,7 @@ PasswordSessionDurationsMetricsRecorder::
           base::BindRepeating(
               &PasswordSessionDurationsMetricsRecorder::CheckForUserStateChange,
               base::Unretained(this))),
-      user_state_(password_manager_util::ComputePasswordAccountStorageUserState(
+      user_state_(features_util::ComputePasswordAccountStorageUserState(
           pref_service_,
           sync_service_)) {
   DCHECK(pref_service_);
@@ -84,8 +84,8 @@ void PasswordSessionDurationsMetricsRecorder::OnStateChanged(
 
 void PasswordSessionDurationsMetricsRecorder::CheckForUserStateChange() {
   metrics_util::PasswordAccountStorageUserState new_user_state =
-      password_manager_util::ComputePasswordAccountStorageUserState(
-          pref_service_, sync_service_);
+      features_util::ComputePasswordAccountStorageUserState(pref_service_,
+                                                            sync_service_);
   // If the state is unchanged, nothing to do.
   if (new_user_state == user_state_)
     return;

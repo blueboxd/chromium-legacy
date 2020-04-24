@@ -38,22 +38,22 @@ CreateSuggestionGroupsMap(
 
 }  // namespace
 
-const char kGoogleGIconResourceName[] = "google_g";
-const char kBookmarkIconResourceName[] = "bookmark";
-const char kCalculatorIconResourceName[] = "calculator";
-const char kClockIconResourceName[] = "clock";
-const char kDriveDocsIconResourceName[] = "drive_docs";
-const char kDriveFolderIconResourceName[] = "drive_folder";
-const char kDriveFormIconResourceName[] = "drive_form";
-const char kDriveImageIconResourceName[] = "drive_image";
-const char kDriveLogoIconResourceName[] = "drive_logo";
-const char kDrivePdfIconResourceName[] = "drive_pdf";
-const char kDriveSheetsIconResourceName[] = "drive_sheets";
-const char kDriveSlidesIconResourceName[] = "drive_slides";
-const char kDriveVideoIconResourceName[] = "drive_video";
-const char kExtensionAppIconResourceName[] = "extension_app";
-const char kPageIconResourceName[] = "page";
-const char kSearchIconResourceName[] = "search";
+const char kGoogleGIconResourceName[] = "google_g.png";
+const char kBookmarkIconResourceName[] = "bookmark.svg";
+const char kCalculatorIconResourceName[] = "calculator.svg";
+const char kClockIconResourceName[] = "clock.svg";
+const char kDriveDocsIconResourceName[] = "drive_docs.svg";
+const char kDriveFolderIconResourceName[] = "drive_folder.svg";
+const char kDriveFormIconResourceName[] = "drive_form.svg";
+const char kDriveImageIconResourceName[] = "drive_image.svg";
+const char kDriveLogoIconResourceName[] = "drive_logo.svg";
+const char kDrivePdfIconResourceName[] = "drive_pdf.svg";
+const char kDriveSheetsIconResourceName[] = "drive_sheets.svg";
+const char kDriveSlidesIconResourceName[] = "drive_slides.svg";
+const char kDriveVideoIconResourceName[] = "drive_video.svg";
+const char kExtensionAppIconResourceName[] = "extension_app.svg";
+const char kPageIconResourceName[] = "page.svg";
+const char kSearchIconResourceName[] = "search.svg";
 
 std::string AutocompleteMatchVectorIconToResourceName(
     const gfx::VectorIcon& icon) {

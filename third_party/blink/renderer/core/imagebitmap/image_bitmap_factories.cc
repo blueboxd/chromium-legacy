@@ -314,7 +314,8 @@ void DecodeImageOnDecoderThread(
     ArrayBufferContents contents,
     ImageDecoder::AlphaOption alpha_option,
     ColorBehavior color_behavior,
-    WTF::CrossThreadOnceFunction<void(sk_sp<SkImage>)> result_callback) {
+    WTF::CrossThreadOnceFunction<
+        void(sk_sp<SkImage>, const ImageOrientationEnum)> result_callback) {
   const bool data_complete = true;
   std::unique_ptr<ImageDecoder> decoder = ImageDecoder::Create(
       SegmentReader::CreateFromSkData(
@@ -322,12 +323,14 @@ void DecodeImageOnDecoderThread(
       data_complete, alpha_option, ImageDecoder::kDefaultBitDepth,
       color_behavior, ImageDecoder::OverrideAllowDecodeToYuv::kDeny);
   sk_sp<SkImage> frame;
+  ImageOrientationEnum orientation = kDefaultImageOrientation;
   if (decoder) {
+    orientation = decoder->Orientation().Orientation();
     frame = ImageBitmap::GetSkImageFromDecoder(std::move(decoder));
   }
-  PostCrossThreadTask(
-      *task_runner, FROM_HERE,
-      CrossThreadBindOnce(std::move(result_callback), std::move(frame)));
+  PostCrossThreadTask(*task_runner, FROM_HERE,
+                      CrossThreadBindOnce(std::move(result_callback),
+                                          std::move(frame), orientation));
 }
 }  // namespace
 
@@ -354,7 +357,8 @@ void ImageBitmapFactories::ImageBitmapLoader::ScheduleAsyncImageBitmapDecoding(
 }
 
 void ImageBitmapFactories::ImageBitmapLoader::ResolvePromiseOnOriginalThread(
-    sk_sp<SkImage> frame) {
+    sk_sp<SkImage> frame,
+    const ImageOrientationEnum orientation) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!frame) {
     RejectPromise(kUndecodableImageBitmapRejectionReason);
@@ -362,9 +366,9 @@ void ImageBitmapFactories::ImageBitmapLoader::ResolvePromiseOnOriginalThread(
   }
   DCHECK(frame->width());
   DCHECK(frame->height());
-
   scoped_refptr<StaticBitmapImage> image =
-      UnacceleratedStaticBitmapImage::Create(std::move(frame));
+      UnacceleratedStaticBitmapImage::Create(std::move(frame), orientation);
+
   image->SetOriginClean(true);
   auto* image_bitmap =
       MakeGarbageCollected<ImageBitmap>(image, crop_rect_, options_);

@@ -221,20 +221,18 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   bool AllowAppCache(const GURL& manifest_url,
                      const GURL& first_party,
                      content::BrowserContext* context) override;
-  bool AllowServiceWorkerOnIO(
+  content::AllowServiceWorkerResult AllowServiceWorkerOnIO(
       const GURL& scope,
       const GURL& site_for_cookies,
       const base::Optional<url::Origin>& top_frame_origin,
       const GURL& script_url,
-      content::ResourceContext* context,
-      base::RepeatingCallback<content::WebContents*()> wc_getter) override;
-  bool AllowServiceWorkerOnUI(
+      content::ResourceContext* context) override;
+  content::AllowServiceWorkerResult AllowServiceWorkerOnUI(
       const GURL& scope,
       const GURL& site_for_cookies,
       const base::Optional<url::Origin>& top_frame_origin,
       const GURL& script_url,
-      content::BrowserContext* context,
-      base::RepeatingCallback<content::WebContents*()> wc_getter) override;
+      content::BrowserContext* context) override;
   bool AllowSharedWorker(const GURL& worker_url,
                          const GURL& site_for_cookies,
                          const base::Optional<url::Origin>& top_frame_origin,

@@ -349,6 +349,7 @@
 <translation id="1465176863081977902">ஆடியோ முகவரியை ந&amp;கலெடு</translation>
 <translation id="1465827627707997754">பீட்சா துண்டு</translation>
 <translation id="1468571364034902819">இந்தச் சுயவிவரத்தைப் பயன்படுத்த முடியாது</translation>
+<translation id="1470084204649225129">{NUM_TABS,plural, =1{புதிய குழுவில் தாவலைச் சேர்}other{புதிய குழுவில் தாவல்களைச் சேர்}}</translation>
 <translation id="1472675084647422956">மேலும் காண்பி</translation>
 <translation id="1475502736924165259">பிற வகைகள் எவற்றிலும் பொருந்தாத சான்றிதழ்கள் கோப்பில் உள்ளன</translation>
 <translation id="1476088332184200792">உங்கள் சாதனத்திற்கு நகலெடுங்கள்</translation>
@@ -477,6 +478,7 @@
 <translation id="1629314197035607094">கடவுச்சொல் காலாவதியாகிவிட்டது</translation>
 <translation id="1630768113285622200">மீண்டும் தொடங்கி தொடர்க</translation>
 <translation id="1632803087685957583">ஒரு விசை மீண்டும் மீண்டும் உள்ளிடப்படும் வேகம், சொல்லைக் கணித்தல் போன்ற விசைப்பலகை அமைப்புகள் பலவற்றை மாற்ற அனுமதிக்கும்</translation>
+<translation id="1634783886312010422">இந்தக் கடவுச்சொல்லை ஏற்கெனவே <ph name="WEBSITE" /> தளத்தில் மாற்றிவிட்டீர்களா?</translation>
 <translation id="1635033183663317347">பாதுகாப்பாளர் நிறுவியது.</translation>
 <translation id="1637224376458524414">இந்தப் புத்தகக்குறியை உங்கள் iPhone இல் பெறுங்கள்</translation>
 <translation id="1637765355341780467">சுயவிவரத்தைத் திறக்கும் போது, ஏதோ தவறாகிவிட்டது. சில அம்சங்கள் கிடைக்காமல் போகக்கூடும்.</translation>
@@ -3387,6 +3389,7 @@
 <translation id="5542949973455282971"><ph name="CARRIER_NAME" /> உடன் இணைக்கிறது</translation>
 <translation id="5543983818738093899">நிலையைச் சரிபார்க்கிறது...</translation>
 <translation id="554517032089923082">GTC</translation>
+<translation id="5545335608717746497">{NUM_TABS,plural, =1{குழுவில் தாவலைச் சேர்}other{குழுவில் தாவல்களைச் சேர்}}</translation>
 <translation id="5546865291508181392">கண்டுபிடி</translation>
 <translation id="5548159762883465903">{NUM_OTHER_TABS,plural, =0{"<ph name="TAB_TITLE" />"}=1{"<ph name="TAB_TITLE" />" மேலும் ஒரு தாவல்}other{"<ph name="TAB_TITLE" />" மேலும் # தாவல்கள்}}</translation>
 <translation id="5548606607480005320">பாதுகாப்புச் சரிபார்ப்பு</translation>
@@ -4212,6 +4215,7 @@
 <translation id="6659594942844771486">தாவல்</translation>
 <translation id="6664237456442406323">எதிர்பாராதவிதமாக, உங்கள் கம்ப்யூட்டர் ஒரு தவறான வன்பொருள் ஐடியுடன் உள்ளமைக்கப்பட்டது. இது சமீபத்திய பாதுகாப்பு திருத்தங்களைக் கொண்டு Chrome OSஸைப் புதுப்பிப்பதிலிருந்து தடுக்கும், உங்கள் கம்ப்யூட்டர் <ph name="BEGIN_BOLD" />தீங்கிழைக்கும் தாக்குதல்களின்<ph name="END_BOLD" /> மூலம் பாதிக்கப்படலாம்.</translation>
 <translation id="6664774537677393800">சுயவிவரத்தைத் திறக்கும் போது, ஏதோ தவறாகிவிட்டது. வெளியேறி, மீண்டும் உள்நுழையவும்.</translation>
+<translation id="6670142487971298264">இப்போது <ph name="APP_NAME" /> ஆப்ஸைப் பயன்படுத்தலாம்</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="6675665718701918026">சுட்டும் சாதனம் இணைக்கப்பட்டது</translation>
 <translation id="6676212663108450937">உங்கள் குரலைப் புரிந்துகொள்ளப் பயிற்சி அளிக்கும்போது ஹெட்ஃபோன்களைப் பயன்படுத்தவும்</translation>
@@ -4541,6 +4545,7 @@
 <translation id="7108338896283013870">மறை</translation>
 <translation id="7108668606237948702">உள்ளிடு</translation>
 <translation id="7109543803214225826">ஷார்ட்கட் அகற்றப்பட்டது</translation>
+<translation id="7110644433780444336">{NUM_TABS,plural, =1{குழுவில் தாவலைச் சேர்}other{குழுவில் தாவல்களைச் சேர்}}</translation>
 <translation id="7113502843173351041">உங்கள் மின்னஞ்சல் முகவரியை அணுகுதல்</translation>
 <translation id="7114054701490058191">கடவுச்சொற்கள் பொருந்தவில்லை</translation>
 <translation id="7114648273807173152">உங்கள் Google கணக்கில் உள்நுழைவதற்கு Smart Lockகைப் பயன்படுத்த, ‘அமைப்புகள்’ &gt; ’இணைக்கப்பட்டுள்ள சாதனங்கள்’ &gt; ’உங்கள் ஃபோன்’ &gt; 'Smart Lock' என்பதற்குச் செல்லவும்.</translation>
@@ -4584,6 +4589,7 @@
 <translation id="7170041865419449892">வரம்புக்கு வெளியே</translation>
 <translation id="7171259390164035663">பதிவுசெய்ய வேண்டாம்</translation>
 <translation id="7171559745792467651">உங்களின் பிற சாதனங்களிலிருந்து ஆப்ஸை நிறுவவும்</translation>
+<translation id="7172470549472604877">{NUM_TABS,plural, =1{புதிய குழுவில் தாவலைச் சேர்}other{புதிய குழுவில் தாவல்களைச் சேர்}}</translation>
 <translation id="7174199383876220879">புதிது! உங்கள் இசை, வீடியோக்கள் போன்ற பலவற்றைக் கட்டுப்படுத்தலாம்.</translation>
 <translation id="7175037578838465313"><ph name="NAME" />ஐ உள்ளமை</translation>
 <translation id="7175353351958621980">இதிலிருந்து ஏற்றப்பட்டது:</translation>
@@ -5162,6 +5168,7 @@
 <translation id="7925247922861151263">AAA சோதனை தோல்வியுற்றது</translation>
 <translation id="7925285046818567682"><ph name="HOST_NAME" /> க்காக காத்திருக்கிறது...</translation>
 <translation id="7926423016278357561">அது நான் அல்ல.</translation>
+<translation id="7928175190925744466">இந்தக் கடவுச்சொல்லை ஏற்கெனவே மாற்றிவிட்டீர்களா?</translation>
 <translation id="7928836894214140642"><ph name="ENROLLMENT_DOMAIN" /> நிர்வகிக்கிறது</translation>
 <translation id="7930294771522048157">சேமிக்கப்பட்ட பேமெண்ட் முறைகள் இங்கு காண்பிக்கப்படும்</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> உங்கள் திரையையும் ஆடியோவையும் பகிர்கிறது.</translation>

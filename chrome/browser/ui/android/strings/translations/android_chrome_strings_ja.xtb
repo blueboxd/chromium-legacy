@@ -164,7 +164,6 @@
 <translation id="2131665479022868825"><ph name="DATA" /> 削減しました</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> を閉じました</translation>
 <translation id="2139186145475833000">ホーム画面に追加</translation>
-<translation id="2146738493024040262">プレビュー アプリを開く</translation>
 <translation id="2154484045852737596">カードを編集</translation>
 <translation id="2154710561487035718">URL をコピー</translation>
 <translation id="2156074688469523661">その他のサイト（<ph name="NUMBER_OF_SITES" /> 件）</translation>
@@ -281,7 +280,6 @@
 <translation id="2996809686854298943">URLが必要です</translation>
 <translation id="300526633675317032">ウェブサイトのストレージ <ph name="SIZE_IN_KB" /> のデータをすべて削除します。</translation>
 <translation id="3016635187733453316">このデバイスがインターネットに接続していることを確認してください</translation>
-<translation id="3029613699374795922"><ph name="KBS" /> KB をダウンロード済み</translation>
 <translation id="3029704984691124060">パスフレーズが一致しません</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />ヘルプ<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">位置情報が OFF になっています。<ph name="BEGIN_LINK" />Android の設定<ph name="END_LINK" />で ON にしてください。</translation>
@@ -457,7 +455,6 @@
 <translation id="4411535500181276704">ライトモード</translation>
 <translation id="4415276339145661267">Google アカウントの管理</translation>
 <translation id="4432792777822557199">今後、<ph name="SOURCE_LANGUAGE" />のページは<ph name="TARGET_LANGUAGE" />に翻訳されます</translation>
-<translation id="4433925000917964731">Google から提供されている軽量版のページ</translation>
 <translation id="4434045419905280838">ポップアップとリダイレクト</translation>
 <translation id="4440958355523780886">Google から提供されている軽量版のページです。元のページを読み込むにはタップしてください。</translation>
 <translation id="4452411734226507615">「<ph name="TAB_TITLE" />」タブを閉じます</translation>
@@ -737,7 +734,6 @@
 <translation id="6406506848690869874">同期</translation>
 <translation id="6410973561433500075"><ph name="DOMAIN" /> で AR を使用しますか？</translation>
 <translation id="641643625718530986">印刷...</translation>
-<translation id="6416782512398055893"><ph name="MBS" /> MB をダウンロード済み</translation>
 <translation id="6427112570124116297">ウェブの翻訳</translation>
 <translation id="6433501201775827830">検索エンジンを選択</translation>
 <translation id="6437478888915024427">ページ情報</translation>
@@ -745,7 +741,6 @@
 <translation id="6441734959916820584">名前が長すぎます</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# 個の画像}other{# 個の画像}}</translation>
 <translation id="6447558397796644647">お探しのブックマークが見つかりません。つづりを確認するか、新しいブックマークを追加してください。</translation>
-<translation id="6447842834002726250">Cookie</translation>
 <translation id="6461962085415701688">ファイルを開けません</translation>
 <translation id="6464977750820128603">Chrome でアクセスしたサイトを表示し、タイマーを設定できます。\n\nタイマーを設定したサイトの情報と、サイトでの滞在時間に関する情報が Google に送信されます。送信した情報は Digital Wellbeing の改善に役立てられます。</translation>
 <translation id="6475951671322991020">動画をダウンロード</translation>
@@ -754,7 +749,6 @@
 <translation id="6508722015517270189">Chrome を再起動する</translation>
 <translation id="6532866250404780454">Chrome でアクセスしたサイトは表示されなくなり、サイトに設定したタイマーはすべて削除されます。</translation>
 <translation id="6534565668554028783">Google からの応答に時間がかかりすぎています</translation>
-<translation id="6538442820324228105"><ph name="GBS" /> GB をダウンロード済み</translation>
 <translation id="6539092367496845964">エラーが発生しました。しばらくしてからもう一度お試しください。</translation>
 <translation id="6545017243486555795">すべてのデータを削除</translation>
 <translation id="6545864417968258051">Bluetooth のスキャン</translation>

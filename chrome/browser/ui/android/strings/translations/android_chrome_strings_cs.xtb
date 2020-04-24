@@ -164,7 +164,6 @@ Vyhledávání spustíte klepnutím na libovolné slovo. Chcete-li vyhledáván�
 <translation id="2131665479022868825">Uspořeno: <ph name="DATA" /></translation>
 <translation id="213279576345780926">Karta <ph name="TAB_TITLE" /> byla zavřena.</translation>
 <translation id="2139186145475833000">Přidat na plochu</translation>
-<translation id="2146738493024040262">Otevřít okamžitou aplikaci</translation>
 <translation id="2154484045852737596">Úprava karty</translation>
 <translation id="2154710561487035718">Kopírovat adresu URL</translation>
 <translation id="2156074688469523661">Zbývající weby (<ph name="NUMBER_OF_SITES" />)</translation>
@@ -281,7 +280,6 @@ Vyhledávání spustíte podržením libovolného slova. Vyhledávání můžete
 <translation id="2996809686854298943">Je požadována adresa URL</translation>
 <translation id="300526633675317032">Tímto vymažete celé úložiště webů (<ph name="SIZE_IN_KB" />).</translation>
 <translation id="3016635187733453316">Zkontrolujte, zda je toto zařízení připojeno k internetu</translation>
-<translation id="3029613699374795922">Staženo: <ph name="KBS" /> kB</translation>
 <translation id="3029704984691124060">Heslové fráze se neshodují</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Zobrazit nápovědu<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Určování polohy je vypnuté, zapnete jej v <ph name="BEGIN_LINK" />nastavení zařízení Android<ph name="END_LINK" />.</translation>
@@ -457,7 +455,6 @@ Pouze vy uvidíte, na co se kamera zaměřuje. Web snímky z kamery neuvidí.</
 <translation id="4411535500181276704">Zjednodušený režim</translation>
 <translation id="4415276339145661267">Spravovat váš účet Google</translation>
 <translation id="4432792777822557199">Stránky v jazyce <ph name="SOURCE_LANGUAGE" /> od teď budou překládány do jazyka <ph name="TARGET_LANGUAGE" /></translation>
-<translation id="4433925000917964731">Zjednodušenou stránku poskytuje Google</translation>
 <translation id="4434045419905280838">Vyskakovací okna a přesměrování</translation>
 <translation id="4440958355523780886">Zjednodušenou stránku poskytuje Google. Klepnutím načtete originál.</translation>
 <translation id="4452411734226507615">Zavřít kartu <ph name="TAB_TITLE" /></translation>
@@ -737,7 +734,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6406506848690869874">Synchronizace</translation>
 <translation id="6410973561433500075">Spustit rozšířenou realitu z webu <ph name="DOMAIN" />?</translation>
 <translation id="641643625718530986">Tisk…</translation>
-<translation id="6416782512398055893">Staženo: <ph name="MBS" /> MB</translation>
 <translation id="6427112570124116297">Přeložte si web</translation>
 <translation id="6433501201775827830">Vyberte vyhledávač</translation>
 <translation id="6437478888915024427">Informace o stránce</translation>
@@ -745,7 +741,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6441734959916820584">Název je příliš dlouhý</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# obrázek}few{# obrázky}many{# obrázku}other{# obrázků}}</translation>
 <translation id="6447558397796644647">Daná záložka nebyla nalezena. Zkontrolujte, zda jste neudělali překlep, nebo přidejte novou záložku.</translation>
-<translation id="6447842834002726250">Soubory cookie</translation>
 <translation id="6461962085415701688">Soubor nelze otevřít</translation>
 <translation id="6464977750820128603">Můžete se podívat, které stránky v Chromu navštěvujete, a nastavit pro ně časovače.\n\nGoogle obdrží informace o webech, pro které nastavíte časovače, a o tom, jak dlouho jste na nich byli. Tyto informace slouží ke zlepšování digitální rovnováhy.</translation>
 <translation id="6475951671322991020">Stáhnout video</translation>
@@ -754,7 +749,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6508722015517270189">Restartujte Chrome</translation>
 <translation id="6532866250404780454">Weby navštívené v Chromu se nebudou zobrazovat. Všechny časovače webů budou smazány.</translation>
 <translation id="6534565668554028783">Odpověď Googlu trvala příliš dlouho</translation>
-<translation id="6538442820324228105">Staženo: <ph name="GBS" /> GB</translation>
 <translation id="6539092367496845964">Něco se pokazilo. Zkuste to později.</translation>
 <translation id="6545017243486555795">Vymazat všechna data</translation>
 <translation id="6545864417968258051">Vyhledávání Bluetooth</translation>

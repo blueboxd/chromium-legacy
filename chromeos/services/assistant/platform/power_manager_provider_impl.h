@@ -38,8 +38,7 @@ namespace assistant {
 class COMPONENT_EXPORT(ASSISTANT_SERVICE) PowerManagerProviderImpl
     : public assistant_client::PowerManagerProvider {
  public:
-  PowerManagerProviderImpl(
-      mojom::Client* client,
+  explicit PowerManagerProviderImpl(
       scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner);
   ~PowerManagerProviderImpl() override;
 
@@ -84,9 +83,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) PowerManagerProviderImpl
   // corresponding client callback associated with the alarm. Removes the entry
   // for |id| from |timers_|.
   void OnTimerFiredOnMainThread(AlarmId id);
-
-  // Owned by chromeos::assistant::Service.
-  mojom::Client* const client_;
 
   // Store of currently active alarm ids returned to clients and the
   // corresponding pair of timer objects and client callbacks.

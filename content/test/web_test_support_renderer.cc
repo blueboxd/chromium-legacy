@@ -81,67 +81,9 @@ void EnableRendererWebTestMode() {
   UniqueNameHelper::PreserveStableUniqueNameForTesting();
 }
 
-int GetLocalSessionHistoryLength(RenderView* render_view) {
-  return static_cast<RenderViewImpl*>(render_view)
-      ->GetLocalSessionHistoryLengthForTesting();
-}
-
 void SetFocusAndActivate(RenderView* render_view, bool enable) {
   static_cast<RenderViewImpl*>(render_view)
       ->SetFocusAndActivateForTesting(enable);
-}
-
-void ForceResizeRenderView(RenderView* render_view,
-                           const blink::WebSize& new_size) {
-  RenderViewImpl* render_view_impl = static_cast<RenderViewImpl*>(render_view);
-  RenderFrameImpl* main_frame = render_view_impl->GetMainRenderFrame();
-  if (!main_frame)
-    return;
-  RenderWidget* render_widget = main_frame->GetLocalRootRenderWidget();
-  gfx::Rect window_rect(render_widget->WindowRect().x,
-                        render_widget->WindowRect().y, new_size.width,
-                        new_size.height);
-  render_widget->SetWindowRectSynchronouslyForTesting(window_rect);
-}
-
-void SetDeviceScaleFactor(RenderView* render_view, float factor) {
-  RenderViewImpl* render_view_impl = static_cast<RenderViewImpl*>(render_view);
-  RenderFrameImpl* main_frame = render_view_impl->GetMainRenderFrame();
-  if (!main_frame)
-    return;
-  RenderWidget* render_widget = main_frame->GetLocalRootRenderWidget();
-  render_widget->SetDeviceScaleFactorForTesting(factor);
-}
-
-void SetDeviceColorSpace(RenderView* render_view,
-                         const gfx::ColorSpace& color_space) {
-  RenderViewImpl* render_view_impl = static_cast<RenderViewImpl*>(render_view);
-  RenderFrameImpl* main_frame = render_view_impl->GetMainRenderFrame();
-  if (!main_frame)
-    return;
-  RenderWidget* render_widget = main_frame->GetLocalRootRenderWidget();
-  render_widget->SetDeviceColorSpaceForTesting(color_space);
-}
-
-void EnableAutoResizeMode(RenderView* render_view,
-                          const blink::WebSize& min_size,
-                          const blink::WebSize& max_size) {
-  RenderViewImpl* render_view_impl = static_cast<RenderViewImpl*>(render_view);
-  RenderFrameImpl* main_frame = render_view_impl->GetMainRenderFrame();
-  if (!main_frame)
-    return;
-  RenderWidget* render_widget = main_frame->GetLocalRootRenderWidget();
-  render_widget->EnableAutoResizeForTesting(min_size, max_size);
-}
-
-void DisableAutoResizeMode(RenderView* render_view,
-                           const blink::WebSize& new_size) {
-  RenderViewImpl* render_view_impl = static_cast<RenderViewImpl*>(render_view);
-  RenderFrameImpl* main_frame = render_view_impl->GetMainRenderFrame();
-  if (!main_frame)
-    return;
-  RenderWidget* render_widget = main_frame->GetLocalRootRenderWidget();
-  render_widget->DisableAutoResizeForTesting(new_size);
 }
 
 void SchedulerRunIdleTasks(base::OnceClosure callback) {

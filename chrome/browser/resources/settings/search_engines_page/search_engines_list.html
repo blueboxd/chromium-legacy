@@ -13,10 +13,6 @@
         flex: 4;
       }
 
-      #outer {
-        @apply --settings-list-frame-padding;
-      }
-
       settings-search-engine-entry {
         border-top: var(--cr-separator-line);
       }
@@ -34,7 +30,7 @@
         width: var(--cr-icon-ripple-size);
       }
     </style>
-    <div id="outer">
+    <div id="outer" class="list-frame">
       <div id="headers" class="column-header">
         <div class="name">$i18n{searchEnginesSearchEngine}</div>
         <div class="keyword">$i18n{searchEnginesKeyword}</div>

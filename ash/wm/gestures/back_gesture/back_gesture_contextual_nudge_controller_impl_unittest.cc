@@ -5,6 +5,7 @@
 #include "ash/wm/gestures/back_gesture/back_gesture_contextual_nudge_controller_impl.h"
 
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/contextual_tooltip.h"
 #include "ash/shell.h"
@@ -122,6 +123,17 @@ class BackGestureContextualNudgeControllerTestCantGoBack
   BackGestureContextualNudgeControllerTestCantGoBack()
       : BackGestureContextualNudgeControllerTest(false) {}
 };
+
+class BackGestureContextualNudgeControllerTestA11yPrefs
+    : public BackGestureContextualNudgeControllerTest,
+      public ::testing::WithParamInterface<std::string> {};
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    BackGestureContextualNudgeControllerTestA11yPrefs,
+    testing::Values(prefs::kAccessibilityAutoclickEnabled,
+                    prefs::kAccessibilitySpokenFeedbackEnabled,
+                    prefs::kAccessibilitySwitchAccessEnabled));
 
 // Tests the timing when BackGestureContextualNudgeControllerImpl should monitor
 // window activation changes.
@@ -318,6 +330,35 @@ TEST_F(BackGestureContextualNudgeControllerTest,
 
   std::unique_ptr<aura::Window> window_2 = CreateTestWindow();
   EXPECT_TRUE(nudge());
+}
+
+// Back Gesture Nudge should be hidden when shelf controls are enabled.
+TEST_P(BackGestureContextualNudgeControllerTestA11yPrefs,
+       HideNudgesForShelfControls) {
+  SCOPED_TRACE(testing::Message() << "Pref=" << GetParam());
+  std::unique_ptr<aura::Window> window = CreateTestWindow();
+  EXPECT_TRUE(nudge());
+
+  // Turn on accessibility settings to enable shelf controls.
+  Shell::Get()
+      ->session_controller()
+      ->GetLastActiveUserPrefService()
+      ->SetBoolean(GetParam(), true);
+  EXPECT_FALSE(nudge());
+}
+
+// Back Gesture Nudge should be disabled when shelf controls are enabled.
+TEST_P(BackGestureContextualNudgeControllerTestA11yPrefs,
+       DisableNudgesForShelfControls) {
+  SCOPED_TRACE(testing::Message() << "Pref=" << GetParam());
+
+  // Turn on accessibility settings to enable shelf controls.
+  Shell::Get()
+      ->session_controller()
+      ->GetLastActiveUserPrefService()
+      ->SetBoolean(GetParam(), true);
+  std::unique_ptr<aura::Window> window = CreateTestWindow();
+  EXPECT_FALSE(nudge());
 }
 
 }  // namespace ash

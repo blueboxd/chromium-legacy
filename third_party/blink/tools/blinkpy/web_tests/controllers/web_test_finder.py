@@ -36,6 +36,7 @@ import re
 from blinkpy.web_tests.layout_package.json_results_generator import convert_times_trie_to_flat_paths
 from blinkpy.web_tests.models import test_expectations
 from blinkpy.web_tests.models.typ_types import ResultType
+from blinkpy.web_tests.port.base import Port
 
 _log = logging.getLogger(__name__)
 
@@ -174,14 +175,37 @@ class WebTestFinder(object):
         else:
             return line
 
-    def skip_tests(self, paths, all_tests_list, expectations, http_tests):
-        if self._options.no_expectations:
-            # do not skip anything.
-            return []
+    def skip_tests(self, paths, all_tests_list, expectations):
+        """Given a list of tests, returns the ones that should be skipped.
 
+        A test may be skipped for many reasons, depending on the expectation
+        files and options selected. The most obvious is SKIP entries in
+        TestExpectations, but we also e.g. skip idlharness tests on MSAN/ASAN
+        due to https://crbug.com/856601.
+
+        Args:
+            paths: the paths passed on the command-line to run_web_tests.py
+            all_tests_list: all tests that we are considering running
+            expectations: parsed TestExpectations data
+
+        Returns: a set of tests that should be skipped (not run).
+        """
         all_tests = set(all_tests_list)
         tests_to_skip = set()
         for test in all_tests:
+            # We always skip idlharness tests for MSAN/ASAN, even when running
+            # with --no-expectations (https://crbug.com/856601). Note we will
+            # run the test anyway if it is explicitly specified on the command
+            # line; paths are removed from the skip list after this loop.
+            if self._options.enable_sanitizer and Port.is_wpt_idlharness_test(
+                    test):
+                tests_to_skip.update({test})
+                continue
+
+            if self._options.no_expectations:
+                # do not skip anything from TestExpectations
+                continue
+
             expected_results = expectations.get_expectations(test).results
             if ResultType.Skip in expected_results:
                 tests_to_skip.update({test})
@@ -189,6 +213,7 @@ class WebTestFinder(object):
                 tests_to_skip.update({test})
             if self._options.skip_failing_tests and ResultType.Failure in expected_results:
                 tests_to_skip.update({test})
+
         if self._options.skipped == 'only':
             tests_to_skip = all_tests - tests_to_skip
         elif self._options.skipped == 'ignore':

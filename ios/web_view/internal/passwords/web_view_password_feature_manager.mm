@@ -5,7 +5,7 @@
 #include "ios/web_view/internal/passwords/web_view_password_feature_manager.h"
 
 #include "base/logging.h"
-#include "components/password_manager/core/browser/password_manager_util.h"
+#include "components/password_manager/core/browser/password_manager_features_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_service.h"
 
@@ -27,8 +27,8 @@ bool WebViewPasswordFeatureManager::IsOptedInForAccountStorage() const {
   // Although ios/web_view will only write to the account store, this should
   // still be controlled on a per user basis to ensure that the logged out user
   // remains opted out.
-  return password_manager_util::IsOptedInForAccountStorage(pref_service_,
-                                                           sync_service_);
+  return password_manager::features_util::IsOptedInForAccountStorage(
+      pref_service_, sync_service_);
 }
 
 bool WebViewPasswordFeatureManager::ShouldShowAccountStorageOptIn() const {

@@ -14,6 +14,7 @@ namespace feedwire {
 class ContentId;
 }
 namespace feed {
+struct StreamModelUpdateRequest;
 
 std::string ToTextProto(const feedwire::ContentId& v);
 std::string ToTextProto(const feedstore::StreamData& v);
@@ -54,6 +55,8 @@ inline std::ostream& operator<<(std::ostream& os,
 inline std::ostream& operator<<(std::ostream& os, const feedstore::Record& v) {
   return os << ToTextProto(v);
 }
+
+std::ostream& operator<<(std::ostream& os, const StreamModelUpdateRequest& v);
 
 }  // namespace feed
 

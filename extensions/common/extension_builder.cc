@@ -99,8 +99,7 @@ struct ExtensionBuilder::ManifestData {
       ListBuilder scripts_value;
       for (const auto& script : content_scripts) {
         ListBuilder matches;
-        for (const auto& match : script.second)
-          matches.Append(match);
+        matches.Append(script.second.begin(), script.second.end());
         scripts_value.Append(
             DictionaryBuilder()
                 .Set(manifest_keys::kJs,

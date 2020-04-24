@@ -5,8 +5,10 @@
 #include "chromeos/services/assistant/platform/network_provider_impl.h"
 
 #include <algorithm>
+#include <vector>
 
 #include "base/bind.h"
+#include "chromeos/services/assistant/public/cpp/assistant_client.h"
 #include "chromeos/services/network_config/public/mojom/constants.mojom.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom-forward.h"
 
@@ -19,11 +21,9 @@ using ConnectionStateType =
 namespace chromeos {
 namespace assistant {
 
-NetworkProviderImpl::NetworkProviderImpl(mojom::Client* client)
+NetworkProviderImpl::NetworkProviderImpl()
     : connection_status_(ConnectionStatus::UNKNOWN) {
-  if (!client)
-    return;
-  client->RequestNetworkConfig(
+  AssistantClient::Get()->RequestNetworkConfig(
       cros_network_config_remote_.BindNewPipeAndPassReceiver());
   cros_network_config_remote_->AddObserver(
       receiver_.BindNewPipeAndPassRemote());

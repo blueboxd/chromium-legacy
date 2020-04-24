@@ -18,11 +18,13 @@
 namespace content {
 
 ServiceWorkerMainResourceHandle::ServiceWorkerMainResourceHandle(
-    ServiceWorkerContextWrapper* context_wrapper)
+    ServiceWorkerContextWrapper* context_wrapper,
+    ServiceWorkerAccessedCallback on_service_worker_accessed)
     : context_wrapper_(context_wrapper) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  core_ = new ServiceWorkerMainResourceHandleCore(weak_factory_.GetWeakPtr(),
-                                                  context_wrapper);
+  core_ = new ServiceWorkerMainResourceHandleCore(
+      weak_factory_.GetWeakPtr(), context_wrapper,
+      std::move(on_service_worker_accessed));
 }
 
 ServiceWorkerMainResourceHandle::~ServiceWorkerMainResourceHandle() {

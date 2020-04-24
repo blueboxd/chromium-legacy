@@ -46,7 +46,8 @@ StyleFetchedImage::StyleFetchedImage(const Document& document,
                                      bool is_lazyload_possibly_deferred)
     : document_(&document),
       url_(params.Url()),
-      origin_clean_(!params.IsFromOriginDirtyStyleSheet()) {
+      origin_clean_(!params.IsFromOriginDirtyStyleSheet()),
+      is_ad_related_(params.GetResourceRequest().IsAdResource()) {
   is_image_resource_ = true;
   is_lazyload_possibly_deferred_ = is_lazyload_possibly_deferred;
 
@@ -84,7 +85,7 @@ ImageResourceContent* StyleFetchedImage::CachedImage() const {
 CSSValue* StyleFetchedImage::CssValue() const {
   return MakeGarbageCollected<CSSImageValue>(
       AtomicString(url_.GetString()), url_, Referrer(),
-      origin_clean_ ? OriginClean::kTrue : OriginClean::kFalse,
+      origin_clean_ ? OriginClean::kTrue : OriginClean::kFalse, is_ad_related_,
       const_cast<StyleFetchedImage*>(this));
 }
 

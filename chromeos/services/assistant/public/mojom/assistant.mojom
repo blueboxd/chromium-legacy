@@ -258,68 +258,6 @@ interface AssistantInteractionSubscriber {
   OnWaitStarted();
 };
 
-// Interface for assistant to call into client.
-interface Client {
-  // Notifies assistant client that assistant running status has changed.
-  OnAssistantStatusChanged(ash.mojom.AssistantState new_state);
-
-  // Requests an AssistantController implementation from Ash, via the browser.
-  RequestAssistantController(pending_receiver<AssistantController> receiver);
-
-  // Requests Ash's AssistantAlarmTimerController interface from the browser.
-  RequestAssistantAlarmTimerController(
-      pending_receiver<ash.mojom.AssistantAlarmTimerController> receiver);
-
-  // Requests Ash's AssistantNotificationController interface from the browser.
-  RequestAssistantNotificationController(
-      pending_receiver<ash.mojom.AssistantNotificationController> receiver);
-
-  // Requests Ash's AssistantScreenContextController interface from the browser.
-  RequestAssistantScreenContextController(
-      pending_receiver<ash.mojom.AssistantScreenContextController> receiver);
-
-  // Requests Ash's AssistantVolumeControl interface from the browser.
-  RequestAssistantVolumeControl(
-      pending_receiver<ash.mojom.AssistantVolumeControl> receiver);
-
-  // Requests Ash's AssistantStateController interface from the browser.
-  RequestAssistantStateController(
-      pending_receiver<ash.mojom.AssistantStateController> receiver);
-
-  // Requests a BatteryMonitor from the browser.
-  RequestBatteryMonitor(pending_receiver<device.mojom.BatteryMonitor> receiver);
-
-  // Requests a connection to the Device service's WakeLockProvider interface
-  // from the browser.
-  RequestWakeLockProvider(
-      pending_receiver<device.mojom.WakeLockProvider> receiver);
-
-  // Requests an Audio Service StreamFactory from the browser.
-  RequestAudioStreamFactory(
-      pending_receiver<audio.mojom.StreamFactory> receiver);
-
-  // Requests an audio decoder interface from the Assistant Audio Decoder
-  // service, via the browser.
-  RequestAudioDecoderFactory(
-      pending_receiver<AssistantAudioDecoderFactory> receiver);
-
-  // Requests a connection to the Media Session service's AudioFocusManager from
-  // the browser.
-  RequestAudioFocusManager(
-      pending_receiver<media_session.mojom.AudioFocusManager> receiver);
-
-  // Requests a connection to the Media Session service's MediaControllerManager
-  // interface from the browser.
-  RequestMediaControllerManager(
-      pending_receiver<media_session.mojom.MediaControllerManager> receiver);
-
-  // Requests a connection to the CrosNetworkConfig service interface via the
-  // browser.
-  RequestNetworkConfig(
-      pending_receiver<chromeos.network_config.mojom.CrosNetworkConfig>
-          receiver);
-};
-
 // Interface for assistant to call into browser to perform device actions.
 interface DeviceActions {
   // Enables or disables WiFi.

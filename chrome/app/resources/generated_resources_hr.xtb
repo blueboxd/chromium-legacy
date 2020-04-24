@@ -349,6 +349,7 @@
 <translation id="1465176863081977902">K&amp;opiraj adresu audiozapisa</translation>
 <translation id="1465827627707997754">Komad pizze</translation>
 <translation id="1468571364034902819">Taj se profil ne može upotrijebiti</translation>
+<translation id="1470084204649225129">{NUM_TABS,plural, =1{Dodaj karticu novoj grupi}one{Dodaj karticu novoj grupi}few{Dodaj kartice novoj grupi}other{Dodaj kartice novoj grupi}}</translation>
 <translation id="1472675084647422956">Prikaži više</translation>
 <translation id="1475502736924165259">U arhivi imate certifikate koji ne odgovaraju nijednoj od ostalih kategorija</translation>
 <translation id="1476088332184200792">Kopiraj na svoj uređaj</translation>
@@ -477,6 +478,7 @@
 <translation id="1629314197035607094">Zaporka je istekla</translation>
 <translation id="1630768113285622200">Ponovo pokreni i nastavi</translation>
 <translation id="1632803087685957583">Omogućuje prilagodbu stope ponavljanja, predviđanja riječi i ostalih značajki tipkovnice</translation>
+<translation id="1634783886312010422">Jeste li već promijenili ovu zaporku na web-lokaciji <ph name="WEBSITE" />?</translation>
 <translation id="1635033183663317347">Instalirao tvoj skrbnik.</translation>
 <translation id="1637224376458524414">Koristite ovu oznaku na svojem iPhoneu</translation>
 <translation id="1637765355341780467">Prilikom otvaranja profila dogodila se pogreška. Neke značajke možda nisu dostupne.</translation>
@@ -3387,6 +3389,7 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="5542949973455282971">Povezivanje s mrežom <ph name="CARRIER_NAME" /></translation>
 <translation id="5543983818738093899">Provjeravanje statusa...</translation>
 <translation id="554517032089923082">GTC</translation>
+<translation id="5545335608717746497">{NUM_TABS,plural, =1{Dodaj karticu grupi}one{Dodaj karticu grupi}few{Dodaj kartice grupi}other{Dodaj kartice grupi}}</translation>
 <translation id="5546865291508181392">Traži</translation>
 <translation id="5548159762883465903">{NUM_OTHER_TABS,plural, =0{„<ph name="TAB_TITLE" />"}=1{„<ph name="TAB_TITLE" />" i još jedna kartica}one{„<ph name="TAB_TITLE" />" i još # kartica}few{„<ph name="TAB_TITLE" />" i još # kartice}other{„<ph name="TAB_TITLE" />" i još # kartica}}</translation>
 <translation id="5548606607480005320">Sigurnosna provjera</translation>
@@ -4211,6 +4214,7 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="6659594942844771486">Kartica</translation>
 <translation id="6664237456442406323">Nažalost, vaše je računalo konfigurirano pogrešno oblikovanim ID-om hardvera. To sprječava ažuriranje OS-a Chrome najnovijim sigurnosnim popravcima pa bi vaše računalo <ph name="BEGIN_BOLD" />moglo biti ranjivo na zlonamjerne napade<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Prilikom otvaranja profila dogodila se pogreška. Odjavite se i ponovo prijavite.</translation>
+<translation id="6670142487971298264">Aplikacija <ph name="APP_NAME" /> sada je dostupna</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="6675665718701918026">Pokazivački je uređaj povezan</translation>
 <translation id="6676212663108450937">Preporučujemo da prilikom uvježbavanja glasovnog modela upotrebljavate slušalice</translation>
@@ -4540,6 +4544,7 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="7108338896283013870">Sakrij preglednik</translation>
 <translation id="7108668606237948702">enter</translation>
 <translation id="7109543803214225826">Prečac je uklonjen</translation>
+<translation id="7110644433780444336">{NUM_TABS,plural, =1{Dodaj karticu grupi}one{Dodaj karticu grupi}few{Dodaj kartice grupi}other{Dodaj kartice grupi}}</translation>
 <translation id="7113502843173351041">znati vašu e-adrese</translation>
 <translation id="7114054701490058191">Zaporke se ne podudaraju</translation>
 <translation id="7114648273807173152">Da biste upotrebljavali Smart Lock za prijavu na Google račun, idite na Postavke &gt; Povezani uređaji &gt; Vaš telefon &gt; Smart Lock.</translation>
@@ -4583,6 +4588,7 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="7170041865419449892">Izvan raspona</translation>
 <translation id="7171259390164035663">Bez registracije</translation>
 <translation id="7171559745792467651">Instalirajte aplikacije sa svojih ostalih uređaja</translation>
+<translation id="7172470549472604877">{NUM_TABS,plural, =1{Dodaj karticu novoj grupi}one{Dodaj karticu novoj grupi}few{Dodaj kartice novoj grupi}other{Dodaj kartice novoj grupi}}</translation>
 <translation id="7174199383876220879">Novo! Upravljate glazbom, videozapisima i drugim medijima.</translation>
 <translation id="7175037578838465313">Konfiguriraj <ph name="NAME" /></translation>
 <translation id="7175353351958621980">Učitano iz:</translation>
@@ -5161,6 +5167,7 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="7925247922861151263">Provjera AAA nije uspjela</translation>
 <translation id="7925285046818567682">Čekanje <ph name="HOST_NAME" />...</translation>
 <translation id="7926423016278357561">To nisam bio ja.</translation>
+<translation id="7928175190925744466">Već ste promijenili ovu zaporku?</translation>
 <translation id="7928836894214140642">Upravlja: <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">Ovdje će se prikazivati spremljeni načini plaćanja</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> dijeli zaslon i zvuk.</translation>

@@ -55,6 +55,8 @@ _java_lib_exceptions =
     ]
 
 _r8_path = "//third_party/r8/lib/r8.jar"
+_desugar_jdk_libs_json = "//third_party/r8/desugar_jdk_libs.json"
+_desugar_jdk_libs_jar = "//third_party/android_deps/libs/com_android_tools_desugar_jdk_libs/desugar_jdk_libs-1.0.5.jar"
 
 _dexdump_path = "$android_sdk_build_tools/dexdump"
 _dexlayout_path = "//third_party/android_build_tools/art/dexlayout"
@@ -1067,6 +1069,13 @@ if (enable_java_templates) {
           rebase_path(_r8_path, root_build_dir),
         ]
         inputs += [ _r8_path ]
+        if (enable_jdk_library_desugaring) {
+          args += [
+            "--desugar-jdk-libs-json",
+            rebase_path(_desugar_jdk_libs_json, root_build_dir),
+          ]
+          inputs += [ _desugar_jdk_libs_json ]
+        }
       } else {
         _proguard_jar_path = invoker.proguard_jar_path
         args += [
@@ -1455,6 +1464,15 @@ if (enable_java_templates) {
 
         if (_enable_desugar) {
           args += [ "--desugar" ]
+
+          # Passing the flag for dex merging causes invalid dex files to be created.
+          if (enable_jdk_library_desugaring && !_is_dex_merging) {
+            inputs += [ _desugar_jdk_libs_json ]
+            args += [
+              "--desugar-jdk-libs-json",
+              rebase_path(_desugar_jdk_libs_json, root_build_dir),
+            ]
+          }
         }
         if (_desugar_needs_classpath) {
           args += [
@@ -1479,6 +1497,32 @@ if (enable_java_templates) {
           args += [ "--force-enable-assertions" ]
         }
       }
+    }
+  }
+
+  # Variables
+  #   output: Path to output ".l8.dex".
+  #   min_sdk_version: The minimum Android SDK version this target supports.
+  template("dex_jdk_libs") {
+    action_with_pydeps(target_name) {
+      script = "//build/android/gyp/dex_jdk_libs.py"
+      inputs = [
+        _r8_path,
+        _desugar_jdk_libs_json,
+        _desugar_jdk_libs_jar,
+      ]
+      outputs = [ invoker.output ]
+      args = [
+        "--r8-path",
+        rebase_path(_r8_path, root_build_dir),
+        "--desugar-jdk-libs-json",
+        rebase_path(_desugar_jdk_libs_json, root_build_dir),
+        "--desugar-jdk-libs-jar",
+        rebase_path(_desugar_jdk_libs_jar, root_build_dir),
+        "--output",
+        rebase_path(invoker.output, root_build_dir),
+        "--min-api=${invoker.min_sdk_version}",
+      ]
     }
   }
 
@@ -2555,6 +2599,7 @@ if (enable_java_templates) {
   #       asset information.
   #   deps: Specifies the dependencies of this target.
   #   dex_path: Path to classes.dex file to include (optional).
+  #   jdk_libs_dex: Path to classes.dex for desugar_jdk_libs.
   #   packaged_resources_path: Path to .ap_ to use.
   #   output_apk_path: Output path for the generated .apk.
   #   min_sdk_version: The minimum Android SDK version this target supports.
@@ -2655,8 +2700,18 @@ if (enable_java_templates) {
         args += [ "--java-resources=@FileArg($_rebased_build_config:java_resources_jars)" ]
       }
       if (defined(invoker.dex_path)) {
-        _rebased_dex_path = rebase_path(invoker.dex_path, root_build_dir)
-        args += [ "--dex-file=$_rebased_dex_path" ]
+        inputs += [ invoker.dex_path ]
+        args += [
+          "--dex-file",
+          rebase_path(invoker.dex_path, root_build_dir),
+        ]
+      }
+      if (defined(invoker.jdk_libs_dex)) {
+        inputs += [ invoker.jdk_libs_dex ]
+        args += [
+          "--jdk-libs-dex-file",
+          rebase_path(invoker.jdk_libs_dex, root_build_dir),
+        ]
       }
       if ((defined(invoker.loadable_modules) &&
            invoker.loadable_modules != []) ||
@@ -3896,6 +3951,19 @@ template("create_android_app_bundle_module") {
                       root_build_dir),
         ]
       }
+    }
+
+    # TODO(https://crbug.com/1056751): Add support for proguarding jdk libs.
+    if (enable_jdk_library_desugaring && invoker.module_name == "base") {
+      _all_jdk_libs = "//build/android:all_jdk_libs"
+      deps += [ _all_jdk_libs ]
+      _jdk_libs_dex = get_label_info(_all_jdk_libs, "target_out_dir") +
+                      "/all_jdk_libs.l8.dex"
+      inputs += [ _jdk_libs_dex ]
+      args += [
+        "--jdk-libs-dex-file",
+        rebase_path(_jdk_libs_dex, root_build_dir),
+      ]
     }
   }
 }

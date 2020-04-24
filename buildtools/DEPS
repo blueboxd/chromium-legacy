@@ -20,7 +20,7 @@ vars = {
   'clang_format_revision': '96636aa0e9f047f17447f2d45a094d0b59ed7917',
   'libcxx_revision':       'd9040c75cfea5928c804ab7c235fed06a63f743a',
   'libcxxabi_revision':    '196ba1aaa8ac285d94f4ea8d9836390a45360533',
-  'libunwind_revision':    '43bb9f872232f531bac80093ceb4de61c64b9ab7',
+  'libunwind_revision':    'd999d54f4bca789543a2eb6c995af2d9b5a1f3ed',
 }
 
 deps = {

@@ -5121,6 +5121,24 @@ void WebContentsImpl::OnAppCacheAccessed(const GURL& manifest_url,
     observer.AppCacheAccessed(manifest_url, blocked_by_policy);
 }
 
+void WebContentsImpl::OnServiceWorkerAccessed(
+    RenderFrameHost* render_frame_host,
+    const GURL& scope,
+    AllowServiceWorkerResult allowed) {
+  for (auto& observer : observers_) {
+    observer.OnServiceWorkerAccessed(render_frame_host, scope, allowed);
+  }
+}
+
+void WebContentsImpl::OnServiceWorkerAccessed(
+    NavigationHandle* navigation,
+    const GURL& scope,
+    AllowServiceWorkerResult allowed) {
+  for (auto& observer : observers_) {
+    observer.OnServiceWorkerAccessed(navigation, scope, allowed);
+  }
+}
+
 void WebContentsImpl::OnColorChooserFactoryReceiver(
     mojo::PendingReceiver<blink::mojom::ColorChooserFactory> receiver) {
   color_chooser_factory_receivers_.Add(this, std::move(receiver));

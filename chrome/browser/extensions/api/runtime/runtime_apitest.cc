@@ -147,34 +147,38 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
 }
 
 // Tests that an extension calling chrome.runtime.reload() repeatedly
-// will eventually be disabled.
-// This test is flaky: crbug.com/366181
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_ChromeRuntimeReloadDisable) {
+// will eventually be terminated.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ExtensionTerminatedForRapidReloads) {
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
-  const char kManifest[] =
-      "{"
-      "  \"name\": \"reload\","
-      "  \"version\": \"1.0\","
-      "  \"background\": {"
-      "    \"scripts\": [\"background.js\"]"
-      "  },"
-      "  \"manifest_version\": 2"
-      "}";
+  static constexpr char kManifest[] = R"(
+      {
+        "name": "reload",
+        "version": "1.0",
+        "background": {
+          "scripts": ["background.js"]
+        },
+        "manifest_version": 2
+      })";
 
   TestExtensionDir dir;
   dir.WriteManifest(kManifest);
-  dir.WriteFile(FILE_PATH_LITERAL("background.js"), "console.log('loaded');");
+  dir.WriteFile(FILE_PATH_LITERAL("background.js"),
+                "chrome.test.sendMessage('ready');");
 
-  const Extension* extension = LoadExtension(dir.UnpackedPath());
+  // Use a packed extension, since this is the scenario we are interested in
+  // testing. Unpacked extensions are allowed more reloads within the allotted
+  // time, to avoid interfering with the developer work flow.
+  const Extension* extension = LoadExtension(dir.Pack());
   ASSERT_TRUE(extension);
   const std::string extension_id = extension->id();
 
-  // Somewhat arbitrary upper limit of 30 iterations. If the extension manages
-  // to reload itself that often without being terminated, the test fails
+  // The current limit for fast reload is 5, so the loop limit of 10
+  // be enough to trigger termination. If the extension manages to
+  // reload itself that often without being terminated, the test fails
   // anyway.
-  for (int i = 0; i < 30; i++) {
+  for (int i = 0; i < RuntimeAPI::kFastReloadCount + 1; i++) {
+    ExtensionTestMessageListener ready_listener_reload("ready", false);
     TestExtensionRegistryObserver unload_observer(registry, extension_id);
-    TestExtensionRegistryObserver load_observer(registry, extension_id);
     ASSERT_TRUE(ExecuteScriptInBackgroundPageNoWait(
         extension_id, "chrome.runtime.reload();"));
     unload_observer.WaitForExtensionUnloaded();
@@ -184,11 +188,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_ChromeRuntimeReloadDisable) {
                                    ExtensionRegistry::TERMINATED)) {
       break;
     } else {
-      load_observer.WaitForExtensionLoaded();
-      // We need to let other registry observers handle the notification to
-      // finish initialization
-      base::RunLoop().RunUntilIdle();
-      WaitForExtensionViewsToLoad();
+      EXPECT_TRUE(ready_listener_reload.WaitUntilSatisfied());
     }
   }
   ASSERT_TRUE(

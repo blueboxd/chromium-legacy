@@ -5,6 +5,7 @@
 #import "ios/web/navigation/navigation_item_storage_builder.h"
 
 #import "ios/web/navigation/navigation_item_impl.h"
+#import "ios/web/navigation/wk_navigation_util.h"
 #import "ios/web/public/session/crw_navigation_item_storage.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -40,8 +41,14 @@ NavigationItemStorageBuilder::BuildNavigationItemImpl(
   // GetVirtualURL() returns |url_| for the non-overridden case, this will also
   // update the virtual URL reported by this object.
   item->original_request_url_ = navigation_item_storage.URL;
-  item->SetURL(navigation_item_storage.URL);
-  item->SetVirtualURL(navigation_item_storage.virtualURL);
+  if (wk_navigation_util::IsRestoreSessionUrl(navigation_item_storage.URL)) {
+    // If it is a session restoration URL, restore the virtual URL to avoid a
+    // session restoration of a session restoration.
+    item->SetURL(navigation_item_storage.virtualURL);
+  } else {
+    item->SetURL(navigation_item_storage.URL);
+    item->SetVirtualURL(navigation_item_storage.virtualURL);
+  }
   item->referrer_ = navigation_item_storage.referrer;
   item->timestamp_ = navigation_item_storage.timestamp;
   item->title_ = navigation_item_storage.title;

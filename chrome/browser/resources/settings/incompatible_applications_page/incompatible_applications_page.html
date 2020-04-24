@@ -1,20 +1,20 @@
-    <style include="settings-shared">
+    <style include="cr-shared-style settings-shared iron-flex">
       #is-done-section > iron-icon {
         --iron-icon-fill-color: var(--cr-checked-color);
       }
     </style>
 
-    <div hidden$="[[!isDone_]]" id="is-done-section" class="settings-box first">
+    <div hidden$="[[!isDone_]]" id="is-done-section" class="cr-row first">
       <iron-icon icon="settings:check-circle"></iron-icon>
-      <div class="middle no-min-width">
+      <div class="flex no-min-width">
         $i18n{incompatibleApplicationsDone}
       </div>
     </div>
 
     <template is="dom-if" if="[[!isDone_]]">
-      <div class="settings-box first">
+      <div class="cr-row first">
         <iron-icon icon="cr:security"></iron-icon>
-        <div class="middle no-min-width">
+        <div class="flex no-min-width">
           <div hidden$="[[!hasAdminRights_]]">
             [[subtitleText_]] $i18nRaw{incompatibleApplicationsSubpageLearnHow}
           </div>
@@ -23,7 +23,7 @@
           </div>
         </div>
       </div>
-      <div class="settings-box continuation">
+      <div class="cr-row continuation">
         <h2 class="secondary">[[listTitleText_]]</h2>
       </div>
       <div id="incompatible-applications-list" class="list-frame vertical-list">

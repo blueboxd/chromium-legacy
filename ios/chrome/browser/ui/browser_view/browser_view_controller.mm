@@ -1509,11 +1509,13 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // TODO(crbug.com/976411):This should probably move to the BannerVC once/if
   // the dismiss event from BVC is observable.
   if (IsInfobarUIRebootEnabled() &&
-      !base::FeatureList::IsEnabled(kInfobarOverlayUI) &&
-      (self.infobarContainerCoordinator.infobarBannerState !=
-       InfobarBannerPresentationState::NotPresented)) {
-    [self.infobarContainerCoordinator dismissInfobarBannerAnimated:NO
-                                                        completion:nil];
+      !base::FeatureList::IsEnabled(kInfobarOverlayUI)) {
+    [self.infobarContainerCoordinator baseViewWillDisappear];
+    if (self.infobarContainerCoordinator.infobarBannerState !=
+        InfobarBannerPresentationState::NotPresented) {
+      [self.infobarContainerCoordinator dismissInfobarBannerAnimated:NO
+                                                          completion:nil];
+    }
   }
   [_bookmarkInteractionController dismissSnackbar];
   [super viewWillDisappear:animated];

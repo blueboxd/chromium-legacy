@@ -100,21 +100,12 @@ cr.define('settings_sync_account_control', function() {
           });
     });
 
-    test('promo header has the correct class', function() {
+    test('promo header is visible', function() {
       testElement.syncStatus = {signedIn: false, signedInUsername: ''};
       testElement.promoLabelWithNoAccount = testElement.promoLabelWithAccount =
           'title';
       sync_test_util.simulateStoredAccounts([]);
       assertTrue(test_util.isChildVisible(testElement, '#promo-header'));
-      // When there is no secondary label, the settings box is one line.
-      assertFalse(
-          testElement.$$('#promo-header').classList.contains('two-line'));
-
-      testElement.promoSecondaryLabelWithNoAccount =
-          testElement.promoSecondaryLabelWithAccount = 'subtitle';
-      // When there is a secondary label, the settings box is two line.
-      assertTrue(
-          testElement.$$('#promo-header').classList.contains('two-line'));
     });
 
     test('not signed in and no stored accounts', async function() {
@@ -291,7 +282,7 @@ cr.define('settings_sync_account_control', function() {
                      .classList.contains('sync-problem'));
       assertTrue(!!testElement.$$('[icon="settings:sync-problem"]'));
       let displayedText =
-          userInfo.querySelector('span:not([hidden])').textContent;
+          userInfo.querySelector('div:not([hidden])').textContent;
       assertFalse(displayedText.includes('barName'));
       assertFalse(displayedText.includes('fooName'));
       assertTrue(displayedText.includes('Sync isn\'t working'));
@@ -310,7 +301,7 @@ cr.define('settings_sync_account_control', function() {
       assertTrue(testElement.$$('#sync-icon-container')
                      .classList.contains('sync-paused'));
       assertTrue(!!testElement.$$('[icon=\'settings:sync-disabled\']'));
-      displayedText = userInfo.querySelector('span:not([hidden])').textContent;
+      displayedText = userInfo.querySelector('div:not([hidden])').textContent;
       assertFalse(displayedText.includes('barName'));
       assertFalse(displayedText.includes('fooName'));
       assertTrue(displayedText.includes('Sync is paused'));
@@ -330,7 +321,7 @@ cr.define('settings_sync_account_control', function() {
       assertTrue(testElement.$$('#sync-icon-container')
                      .classList.contains('sync-disabled'));
       assertTrue(!!testElement.$$('[icon=\'cr:sync\']'));
-      displayedText = userInfo.querySelector('span:not([hidden])').textContent;
+      displayedText = userInfo.querySelector('div:not([hidden])').textContent;
       assertFalse(displayedText.includes('barName'));
       assertFalse(displayedText.includes('fooName'));
       assertTrue(displayedText.includes('Sync disabled'));
@@ -348,7 +339,7 @@ cr.define('settings_sync_account_control', function() {
       assertTrue(testElement.$$('#sync-icon-container')
                      .classList.contains('sync-problem'));
       assertTrue(!!testElement.$$('[icon="settings:sync-problem"]'));
-      displayedText = userInfo.querySelector('span:not([hidden])').textContent;
+      displayedText = userInfo.querySelector('div:not([hidden])').textContent;
       assertFalse(displayedText.includes('barName'));
       assertFalse(displayedText.includes('fooName'));
       assertTrue(displayedText.includes('Sync isn\'t working'));
@@ -366,7 +357,7 @@ cr.define('settings_sync_account_control', function() {
       assertTrue(testElement.$$('#sync-icon-container')
                      .classList.contains('sync-problem'));
       assertTrue(!!testElement.$$('[icon="settings:sync-problem"]'));
-      displayedText = userInfo.querySelector('span:not([hidden])').textContent;
+      displayedText = userInfo.querySelector('div:not([hidden])').textContent;
       assertFalse(displayedText.includes('barName'));
       assertFalse(displayedText.includes('fooName'));
       assertFalse(displayedText.includes('Sync isn\'t working'));

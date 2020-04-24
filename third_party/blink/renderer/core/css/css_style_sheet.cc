@@ -95,9 +95,12 @@ const Document* CSSStyleSheet::SingleOwnerDocument(
 CSSStyleSheet* CSSStyleSheet::Create(Document& document,
                                      const CSSStyleSheetInit* options,
                                      ExceptionState& exception_state) {
-  // Folowing steps at spec draft
-  // https://wicg.github.io/construct-stylesheets/#dom-cssstylesheet-cssstylesheet
   auto* parser_context = MakeGarbageCollected<CSSParserContext>(document);
+  if (AdTracker::IsAdScriptExecutingInDocument(&document))
+    parser_context->SetIsAdRelated();
+
+  // Following steps at spec draft
+  // https://wicg.github.io/construct-stylesheets/#dom-cssstylesheet-cssstylesheet
   auto* contents = MakeGarbageCollected<StyleSheetContents>(parser_context);
   CSSStyleSheet* sheet = MakeGarbageCollected<CSSStyleSheet>(contents, nullptr);
   sheet->SetAssociatedDocument(&document);
@@ -139,6 +142,8 @@ CSSStyleSheet* CSSStyleSheet::CreateInline(Node& owner_node,
       owner_node.GetDocument(), owner_node.GetDocument().BaseURL(),
       true /* origin_clean */, owner_node.GetDocument().GetReferrerPolicy(),
       encoding);
+  if (AdTracker::IsAdScriptExecutingInDocument(&owner_node.GetDocument()))
+    parser_context->SetIsAdRelated();
   auto* sheet = MakeGarbageCollected<StyleSheetContents>(parser_context,
                                                          base_url.GetString());
   return MakeGarbageCollected<CSSStyleSheet>(sheet, owner_node, true,

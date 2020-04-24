@@ -8,7 +8,7 @@
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
-#include "chromeos/services/assistant/test_support/fake_client.h"
+#include "chromeos/services/assistant/test_support/scoped_assistant_client.h"
 #include "services/device/public/cpp/test/test_wake_lock_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -21,15 +21,15 @@ namespace {
 const uint64_t kAlarmRelativeTimeMs = 1000;
 const uint64_t kAlarmMaxDelayMs = 0;
 
-class PowerManagerProviderTestClient : public FakeClient {
+class ScopedPowerManagerProviderTestClient : public ScopedAssistantClient {
  public:
-  explicit PowerManagerProviderTestClient(
+  explicit ScopedPowerManagerProviderTestClient(
       device::TestWakeLockProvider* wake_lock_provider)
       : wake_lock_provider_(wake_lock_provider) {}
-  ~PowerManagerProviderTestClient() override = default;
+  ~ScopedPowerManagerProviderTestClient() override = default;
 
  private:
-  // FakeClient overrides:
+  // ScopedAssistantClient overrides:
   void RequestWakeLockProvider(
       mojo::PendingReceiver<device::mojom::WakeLockProvider> receiver)
       override {
@@ -38,7 +38,7 @@ class PowerManagerProviderTestClient : public FakeClient {
 
   device::TestWakeLockProvider* const wake_lock_provider_;
 
-  DISALLOW_COPY_AND_ASSIGN(PowerManagerProviderTestClient);
+  DISALLOW_COPY_AND_ASSIGN(ScopedPowerManagerProviderTestClient);
 };
 
 }  // namespace
@@ -55,7 +55,7 @@ class PowerManagerProviderImplTest : public testing::Test {
     FakePowerManagerClient::Get()->set_tick_clock(
         task_environment_.GetMockTickClock());
     power_manager_provider_impl_ = std::make_unique<PowerManagerProviderImpl>(
-        &test_client_, task_environment_.GetMainThreadTaskRunner());
+        task_environment_.GetMainThreadTaskRunner());
     power_manager_provider_impl_->set_tick_clock_for_testing(
         task_environment_.GetMockTickClock());
   }
@@ -128,7 +128,7 @@ class PowerManagerProviderImplTest : public testing::Test {
   base::test::TaskEnvironment task_environment_;
 
   device::TestWakeLockProvider wake_lock_provider_;
-  PowerManagerProviderTestClient test_client_{&wake_lock_provider_};
+  ScopedPowerManagerProviderTestClient test_client_{&wake_lock_provider_};
 
   std::unique_ptr<PowerManagerProviderImpl> power_manager_provider_impl_;
 

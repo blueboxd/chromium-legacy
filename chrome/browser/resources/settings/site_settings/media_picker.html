@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/md_select_css.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="../settings_shared_css.html">
 <link rel="import" href="../settings_vars_css.html">
@@ -14,7 +15,7 @@
         display: block;
       }
     </style>
-    <div class="settings-box first" id="picker" hidden>
+    <div class="cr-row first" id="picker" hidden>
       <select id="mediaPicker" class="md-select" on-change="onChange_"
           aria-label$="[[label]]">
         <template is="dom-repeat" items="[[devices]]">

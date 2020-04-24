@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/web_kiosk_controller.h"
+#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/system/device_disabling_manager.h"
@@ -107,6 +108,11 @@ void LoginDisplayHostCommon::StartSignInScreen() {
 
   // Run UI-specific logic.
   OnStartSignInScreen();
+
+  // Inform wizard controller that login screen has started.
+  // TODO(crbug.com/1064271): Move this to OnStartSignInScreen().
+  if (WizardController::default_controller())
+    WizardController::default_controller()->LoginScreenStarted();
 
   // Enable status area after starting sign-in screen, as it may depend on the
   // UI being visible.

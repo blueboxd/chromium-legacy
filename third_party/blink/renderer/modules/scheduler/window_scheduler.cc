@@ -10,10 +10,7 @@
 namespace blink {
 
 DOMScheduler* WindowScheduler::scheduler(LocalDOMWindow& window) {
-  if (Document* document = window.document()) {
-    return DOMScheduler::From(*document);
-  }
-  return nullptr;
+  return DOMScheduler::From(window);
 }
 
 }  // namespace blink

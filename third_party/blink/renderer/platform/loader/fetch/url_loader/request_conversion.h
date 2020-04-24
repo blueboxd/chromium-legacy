@@ -8,7 +8,6 @@
 // This file consists of request conversion functions between blink and network.
 
 namespace network {
-class ResourceRequestBody;
 struct ResourceRequest;
 }  // namespace network
 
@@ -16,10 +15,6 @@ namespace blink {
 
 class ResourceRequestHead;
 class ResourceRequestBody;
-class EncodedFormData;
-
-void PopulateResourceRequestBody(const EncodedFormData& src,
-                                 network::ResourceRequestBody* dest);
 
 void PopulateResourceRequest(const ResourceRequestHead& src,
                              ResourceRequestBody src_body,

@@ -349,6 +349,7 @@
 <translation id="1465176863081977902">Копіювати адресу аудіо</translation>
 <translation id="1465827627707997754">Шматок піци</translation>
 <translation id="1468571364034902819">Цей профіль вимкнено</translation>
+<translation id="1470084204649225129">{NUM_TABS,plural, =1{Додати вкладку в нову групу}one{Додати вкладки в нову групу}few{Додати вкладки в нову групу}many{Додати вкладки в нову групу}other{Додати вкладки в нову групу}}</translation>
 <translation id="1472675084647422956">Показати більше</translation>
 <translation id="1475502736924165259">У вас є сертифікати, які не відповідають іншим категоріям</translation>
 <translation id="1476088332184200792">Скопіювати на пристрій</translation>
@@ -477,6 +478,7 @@
 <translation id="1629314197035607094">Термін дії пароля закінчився</translation>
 <translation id="1630768113285622200">Перезапустити й продовжити</translation>
 <translation id="1632803087685957583">Дає змогу налаштувати швидкість повтору клавіатури, передбачення слів тощо</translation>
+<translation id="1634783886312010422">Ви вже змінили пароль на сайті <ph name="WEBSITE" />?</translation>
 <translation id="1635033183663317347">Установив опікун.</translation>
 <translation id="1637224376458524414">Додайте цю закладку на iPhone</translation>
 <translation id="1637765355341780467">Не вдалося відкрити профіль. Деякі функції можуть бути недоступні.</translation>
@@ -3387,6 +3389,7 @@
 <translation id="5542949973455282971">З'єднання з <ph name="CARRIER_NAME" /></translation>
 <translation id="5543983818738093899">Перевірка статусу…</translation>
 <translation id="554517032089923082">GTC</translation>
+<translation id="5545335608717746497">{NUM_TABS,plural, =1{Додати вкладку в групу}one{Додати вкладки в групу}few{Додати вкладки в групу}many{Додати вкладки в групу}other{Додати вкладки в групу}}</translation>
 <translation id="5546865291508181392">Знайти</translation>
 <translation id="5548159762883465903">{NUM_OTHER_TABS,plural, =0{"<ph name="TAB_TITLE" />"}=1{"<ph name="TAB_TITLE" />" і ще 1 вкладка}one{"<ph name="TAB_TITLE" />" і ще # вкладка}few{"<ph name="TAB_TITLE" />" і ще # вкладки}many{"<ph name="TAB_TITLE" />" і ще # вкладок}other{"<ph name="TAB_TITLE" />" і ще # вкладки}}</translation>
 <translation id="5548606607480005320">Перевірка безпеки</translation>
@@ -4211,6 +4214,7 @@
 <translation id="6659594942844771486">Вкладка</translation>
 <translation id="6664237456442406323">На жаль, ваш комп’ютер налаштовано за допомогою ідентифікатора апаратного забезпечення з невірною структурою. Це перешкоджає оновленню ОС Chrome найновішими виправленнями системи безпеки, а тому ваш комп’ютер <ph name="BEGIN_BOLD" />може бути вразливим до зловмисних атак<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Не вдалося відкрити профіль. Вийдіть і знову ввійдіть.</translation>
+<translation id="6670142487971298264">Додаток <ph name="APP_NAME" /> уже доступний</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="6675665718701918026">Маніпулятор підключено</translation>
 <translation id="6676212663108450937">Скористайтеся навушниками, коли тренуєте голос</translation>
@@ -4540,6 +4544,7 @@
 <translation id="7108338896283013870">Сховати</translation>
 <translation id="7108668606237948702">Enter</translation>
 <translation id="7109543803214225826">Ярлик видалено</translation>
+<translation id="7110644433780444336">{NUM_TABS,plural, =1{Додати вкладку в групу}one{Додати вкладки в групу}few{Додати вкладки в групу}many{Додати вкладки в групу}other{Додати вкладки в групу}}</translation>
 <translation id="7113502843173351041">Бачити вашу електронну адресу</translation>
 <translation id="7114054701490058191">Паролі не збігаються</translation>
 <translation id="7114648273807173152">Щоб увійти в обліковий запис Google за допомогою Smart Lock, перейдіть у меню "Налаштування" &gt; "Підключені пристрої" &gt; "Телефон" &gt; "Smart Lock".</translation>
@@ -4583,6 +4588,7 @@
 <translation id="7170041865419449892">За межами досяжності</translation>
 <translation id="7171259390164035663">Пропустити реєстрацію</translation>
 <translation id="7171559745792467651">Установіть додатки з інших пристроїв</translation>
+<translation id="7172470549472604877">{NUM_TABS,plural, =1{Додати вкладку в нову групу}one{Додати вкладки в нову групу}few{Додати вкладки в нову групу}many{Додати вкладки в нову групу}other{Додати вкладки в нову групу}}</translation>
 <translation id="7174199383876220879">Новинка! Керуйте музикою, відео й іншим контентом.</translation>
 <translation id="7175037578838465313">Налаштувати мережу "<ph name="NAME" />"</translation>
 <translation id="7175353351958621980">Завантажено з:</translation>
@@ -5161,6 +5167,7 @@
 <translation id="7925247922861151263">Помилка перевірки AAA</translation>
 <translation id="7925285046818567682"><ph name="HOST_NAME" />...</translation>
 <translation id="7926423016278357561">Це не я.</translation>
+<translation id="7928175190925744466">Уже змінили цей пароль?</translation>
 <translation id="7928836894214140642">Керується доменом <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">Тут відображатимуться збережені способи оплати</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> транслює ваш екран і аудіо.</translation>

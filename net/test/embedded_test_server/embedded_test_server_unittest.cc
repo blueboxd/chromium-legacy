@@ -102,9 +102,12 @@ class TestConnectionListener
       std::unique_ptr<StreamSocket> socket) override {
     base::AutoLock lock(lock_);
     did_get_socket_on_complete_ = socket && socket->IsConnected();
+    complete_loop_.Quit();
   }
 
   void WaitUntilFirstConnectionAccepted() { accept_loop_.Run(); }
+
+  void WaitUntilGotSocketFromResponseCompleted() { complete_loop_.Run(); }
 
   size_t SocketAcceptedCount() const {
     base::AutoLock lock(lock_);
@@ -127,6 +130,7 @@ class TestConnectionListener
   bool did_get_socket_on_complete_;
 
   base::RunLoop accept_loop_;
+  base::RunLoop complete_loop_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   mutable base::Lock lock_;
@@ -357,6 +361,8 @@ TEST_P(EmbeddedTestServerTest, ConnectionListenerRead) {
   WaitForResponses(1);
   EXPECT_EQ(1u, connection_listener_.SocketAcceptedCount());
   EXPECT_TRUE(connection_listener_.DidReadFromSocket());
+
+  connection_listener_.WaitUntilGotSocketFromResponseCompleted();
   EXPECT_TRUE(connection_listener_.DidGetSocketOnComplete());
 }
 
@@ -372,6 +378,8 @@ TEST_P(EmbeddedTestServerTest, ConnectionListenerComplete) {
   WaitForResponses(1);
   EXPECT_EQ(1u, connection_listener_.SocketAcceptedCount());
   EXPECT_TRUE(connection_listener_.DidReadFromSocket());
+
+  connection_listener_.WaitUntilGotSocketFromResponseCompleted();
   EXPECT_TRUE(connection_listener_.DidGetSocketOnComplete());
 }
 

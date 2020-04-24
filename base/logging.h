@@ -17,11 +17,10 @@
 #include "base/check.h"
 #include "base/check_op.h"
 #include "base/compiler_specific.h"
-#include "base/logging_buildflags.h"
 #include "base/macros.h"
+#include "base/notreached.h"
 #include "base/scoped_clear_last_error.h"
 #include "base/strings/string_piece_forward.h"
-#include "build/build_config.h"
 
 #if defined(OS_CHROMEOS)
 #include <cstdio>
@@ -550,17 +549,6 @@ const LogSeverity LOG_DCHECK = LOG_FATAL;
 
 #endif  // DCHECK_IS_ON()
 
-#if BUILDFLAG(ENABLE_LOG_ERROR_NOT_REACHED)
-// Implement logging of NOTREACHED() as a dedicated function to get function
-// call overhead down to a minimum.
-void LogErrorNotReached(const char* file, int line);
-#define NOTREACHED()                                       \
-  (true) ? ::logging::LogErrorNotReached(__FILE__, __LINE__) \
-       : EAT_STREAM_PARAMETERS
-#else
-#define NOTREACHED() DCHECK((false))
-#endif
-
 // Redefine the standard assert to use our nice log files
 #undef assert
 #define assert(x) DLOG_ASSERT(x)
@@ -717,26 +705,5 @@ inline std::ostream& operator<<(std::ostream& out, const std::wstring& wstr) {
   return out << wstr.c_str();
 }
 }  // namespace std
-
-// The NOTIMPLEMENTED() macro annotates codepaths which have not been
-// implemented yet. If output spam is a serious concern,
-// NOTIMPLEMENTED_LOG_ONCE can be used.
-
-#if defined(COMPILER_GCC)
-// On Linux, with GCC, we can use __PRETTY_FUNCTION__ to get the demangled name
-// of the current function in the NOTIMPLEMENTED message.
-#define NOTIMPLEMENTED_MSG "Not implemented reached in " << __PRETTY_FUNCTION__
-#else
-#define NOTIMPLEMENTED_MSG "NOT IMPLEMENTED"
-#endif
-
-#define NOTIMPLEMENTED() DLOG(ERROR) << NOTIMPLEMENTED_MSG
-#define NOTIMPLEMENTED_LOG_ONCE()                       \
-  do {                                                  \
-    static bool logged_once = false;                    \
-    DLOG_IF(ERROR, !logged_once) << NOTIMPLEMENTED_MSG; \
-    logged_once = true;                                 \
-  } while (0);                                          \
-  EAT_STREAM_PARAMETERS
 
 #endif  // BASE_LOGGING_H_

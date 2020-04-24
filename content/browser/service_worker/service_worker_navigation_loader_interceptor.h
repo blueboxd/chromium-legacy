@@ -7,12 +7,13 @@
 
 #include <memory>
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/loader/single_request_url_loader_factory.h"
 #include "content/browser/navigation_subresource_loader_params.h"
+#include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/common/child_process_host.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -22,23 +23,7 @@
 namespace content {
 
 class ServiceWorkerMainResourceHandle;
-
-struct ServiceWorkerNavigationLoaderInterceptorParams {
-  // For all clients:
-  blink::mojom::ResourceType resource_type =
-      blink::mojom::ResourceType::kMainFrame;
-  bool skip_service_worker = false;
-
-  // For windows:
-  bool is_main_frame = false;
-  // Whether all ancestor frames of the frame that is navigating have a secure
-  // origin. True for main frames.
-  bool are_ancestors_secure = false;
-  int frame_tree_node_id = RenderFrameHost::kNoFrameTreeNodeId;
-
-  // For web workers:
-  int process_id = ChildProcessHost::kInvalidUniqueID;
-};
+struct NavigationRequestInfo;
 
 // Handles navigations for service worker clients (windows and web workers).
 // Lives on the UI thread.
@@ -46,12 +31,24 @@ struct ServiceWorkerNavigationLoaderInterceptorParams {
 // The corresponding legacy class is ServiceWorkerControlleeRequestHandler which
 // lives on the service worker context core thread. Currently, this class just
 // delegates to the legacy class by posting tasks to it on the core thread.
-class ServiceWorkerNavigationLoaderInterceptor final
+class CONTENT_EXPORT ServiceWorkerNavigationLoaderInterceptor final
     : public NavigationLoaderInterceptor {
  public:
-  ServiceWorkerNavigationLoaderInterceptor(
-      const ServiceWorkerNavigationLoaderInterceptorParams& params,
-      base::WeakPtr<ServiceWorkerMainResourceHandle> handle);
+  // Creates a ServiceWorkerNavigationLoaderInterceptor for a navigation.
+  // Returns nullptr if the interceptor could not be created for this |url|.
+  static std::unique_ptr<NavigationLoaderInterceptor> CreateForNavigation(
+      const GURL& url,
+      base::WeakPtr<ServiceWorkerMainResourceHandle> navigation_handle,
+      const NavigationRequestInfo& request_info);
+
+  // Creates a ServiceWorkerNavigationLoaderInterceptor for a worker.
+  // Returns nullptr if the interceptor could not be created for the URL of the
+  // worker.
+  static std::unique_ptr<NavigationLoaderInterceptor> CreateForWorker(
+      const network::ResourceRequest& resource_request,
+      int process_id,
+      base::WeakPtr<ServiceWorkerMainResourceHandle> navigation_handle);
+
   ~ServiceWorkerNavigationLoaderInterceptor() override;
 
   // NavigationLoaderInterceptor overrides:
@@ -80,6 +77,20 @@ class ServiceWorkerNavigationLoaderInterceptor final
   base::WeakPtr<ServiceWorkerNavigationLoaderInterceptor> GetWeakPtr();
 
  private:
+  friend class ServiceWorkerNavigationLoaderInterceptorTest;
+
+  ServiceWorkerNavigationLoaderInterceptor(
+      base::WeakPtr<ServiceWorkerMainResourceHandle> handle,
+      blink::mojom::ResourceType resource_type,
+      bool skip_service_worker,
+      bool are_ancestors_secure,
+      int frame_tree_node_id,
+      int process_id);
+
+  // Returns true if a ServiceWorkerNavigationLoaderInterceptor should be
+  // created for a navigation to |url|.
+  static bool ShouldCreateForNavigation(const GURL& url);
+
   // Given as a callback to NavigationURLLoaderImpl.
   void RequestHandlerWrapper(
       SingleRequestURLLoaderFactory::RequestHandler handler_on_core_thread,
@@ -95,7 +106,18 @@ class ServiceWorkerNavigationLoaderInterceptor final
   // TODO(falken): Arrange things so |handle_| outlives |this| for workers too.
   const base::WeakPtr<ServiceWorkerMainResourceHandle> handle_;
 
-  const ServiceWorkerNavigationLoaderInterceptorParams params_;
+  // For all clients:
+  blink::mojom::ResourceType resource_type_;
+  bool skip_service_worker_;
+
+  // For windows:
+  // Whether all ancestor frames of the frame that is navigating have a secure
+  // origin. True for main frames.
+  bool are_ancestors_secure_;
+  int frame_tree_node_id_;
+
+  // For web workers:
+  int process_id_;
 
   base::Optional<SubresourceLoaderParams> subresource_loader_params_;
 

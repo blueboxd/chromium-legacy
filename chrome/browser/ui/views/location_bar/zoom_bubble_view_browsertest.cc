@@ -17,7 +17,9 @@
 #include "components/zoom/zoom_controller.h"
 #include "extensions/browser/extension_zoom_request_client.h"
 #include "extensions/common/extension_builder.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/views/test/test_widget_observer.h"
+#include "ui/views/test/widget_test.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
@@ -25,6 +27,7 @@
 #endif
 
 #if defined(OS_MACOSX)
+#include "chrome/browser/ui/browser_commands_mac.h"
 #include "ui/base/test/scoped_fake_nswindow_fullscreen.h"
 #endif
 
@@ -80,6 +83,83 @@ IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, NonImmersiveFullscreen) {
   EXPECT_FALSE(zoom_bubble->GetAnchorView());
 
   // Exit fullscreen before ending the test for the sake of sanity.
+  {
+    FullscreenNotificationObserver waiter(browser());
+    chrome::ToggleFullscreenMode(browser());
+    waiter.Wait();
+  }
+}
+
+// Test whether the zoom bubble is anchored to the same location if the toolbar
+// shows in fullscreen. And when the toolbar hides in fullscreen, the zoom
+// bubble should close and re-show in a new un-anchored position.
+IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, AnchorPositionsInFullscreen) {
+#if defined(OS_MACOSX)
+  ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
+#endif
+
+  BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
+  content::WebContents* web_contents = browser_view->GetActiveWebContents();
+
+  ZoomBubbleView::ShowBubble(web_contents, ZoomBubbleView::AUTOMATIC);
+  ASSERT_TRUE(ZoomBubbleView::GetZoomBubble());
+  ZoomBubbleView* zoom_bubble = ZoomBubbleView::GetZoomBubble();
+  ASSERT_TRUE(zoom_bubble);
+  // Record the anchor view when not in fullscreen.
+  const views::View* org_anchor_view = zoom_bubble->GetAnchorView();
+
+  // Enter into a browser fullscreen mode. This would close the zoom bubble.
+  {
+    // The fullscreen change notification is sent asynchronously. Wait for the
+    // notification before testing the zoom bubble visibility.
+    FullscreenNotificationObserver waiter(browser());
+    chrome::ToggleFullscreenMode(browser());
+    waiter.Wait();
+  }
+  EXPECT_FALSE(ZoomBubbleView::GetZoomBubble());
+
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+  const bool should_show_toolbar = true;
+#else
+  const bool should_show_toolbar = false;
+#endif
+  EXPECT_EQ(should_show_toolbar, browser()->window()->IsToolbarVisible());
+
+  // The zoom bubble should be anchored to the same anchor view if the toolbar
+  // shows.
+  ZoomBubbleView::ShowBubble(web_contents, ZoomBubbleView::AUTOMATIC);
+  zoom_bubble = ZoomBubbleView::GetZoomBubble();
+  ASSERT_TRUE(zoom_bubble);
+  if (should_show_toolbar) {
+    EXPECT_EQ(org_anchor_view, zoom_bubble->GetAnchorView());
+#if defined(OS_MACOSX)
+    const ZoomBubbleView* org_zoom_bubble = zoom_bubble;
+    // Hide toolbar.
+    chrome::ToggleFullscreenToolbar(browser());
+
+    zoom_bubble = ZoomBubbleView::GetZoomBubble();
+    EXPECT_EQ(org_zoom_bubble, zoom_bubble);
+    EXPECT_EQ(org_anchor_view, zoom_bubble->GetAnchorView());
+
+    views::test::WidgetDestroyedWaiter waiter(zoom_bubble->GetWidget());
+    // Press the zoom-in button. This will open a new bubble in an un-anchored
+    // position.
+    const ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                               ui::EventTimeForNow(), 0, 0);
+    zoom_bubble->ButtonPressed(zoom_bubble->zoom_in_button_, event);
+    zoom_bubble = ZoomBubbleView::GetZoomBubble();
+    EXPECT_NE(org_zoom_bubble, zoom_bubble);
+    EXPECT_FALSE(zoom_bubble->GetAnchorView());
+
+    // Closing the original zoom bubble is asynchronous.
+    waiter.Wait();
+    EXPECT_TRUE(zoom_bubble->GetWidget());
+#endif
+  } else {
+    EXPECT_FALSE(zoom_bubble->GetAnchorView());
+  }
+
+  // Don't leave the browser in fullscreen for subsequent tests.
   {
     FullscreenNotificationObserver waiter(browser());
     chrome::ToggleFullscreenMode(browser());

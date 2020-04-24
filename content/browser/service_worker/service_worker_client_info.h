@@ -15,7 +15,6 @@ namespace content {
 // Holds information about a single service worker client:
 // https://w3c.github.io/ServiceWorker/#client
 struct CONTENT_EXPORT ServiceWorkerClientInfo {
-  ServiceWorkerClientInfo();
   ServiceWorkerClientInfo(
       int process_id,
       int route_id,

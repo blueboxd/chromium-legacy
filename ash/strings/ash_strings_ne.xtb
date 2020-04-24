@@ -156,7 +156,7 @@
 <translation id="2946119680249604491">जडान थप्नुहोस्</translation>
 <translation id="2961963223658824723">केही चिज गडबड भयो। केही बेरमा फेरि प्रयास गर्नुहोस्।</translation>
 <translation id="2963773877003373896">मोड3</translation>
-<translation id="2970920913501714344">अनुप्रयोग, विस्तार र विषयवस्तुहरू स्थापना गर्नुहोस्</translation>
+<translation id="2970920913501714344">एप, विस्तार र विषयवस्तुहरू स्थापना गर्नुहोस्</translation>
 <translation id="2977598380246111477">अर्को नम्बर</translation>
 <translation id="2995447421581609334">cast यन्त्रहरू देखाउनुहोस्।</translation>
 <translation id="2996462380875591307">डक गरिएको म्याग्निफायर सक्षम पारियो। यसलाई निष्क्रिय पार्न फेरि Ctrl+खोज+D कुञ्जी थिच्नुहोस्।</translation>
@@ -214,7 +214,7 @@
 <translation id="3513798432020909783"><ph name="MANAGER_EMAIL" /> ले व्यवस्थापन गरेको खाता</translation>
 <translation id="3573179567135747900">पुन: "<ph name="FROM_LOCALE" />" मा परिवर्तन गर्नुहोस् (फेरि सुरु गर्न आवश्यक छ)</translation>
 <translation id="3576141592585647168">समय क्षेत्र परिवर्तन गर्नुहोस्</translation>
-<translation id="3593646411856133110">खुला रहेका अनुप्रयोगहरू हेर्न माथितिर स्वाइप गरी थिचिरहनुहोस्</translation>
+<translation id="3593646411856133110">खुला रहेका एपहरू हेर्न माथितिर स्वाइप गरी थिचिरहनुहोस्</translation>
 <translation id="3595596368722241419">ब्यटरी पूर्ण</translation>
 <translation id="3604801046548457007">डेस्क <ph name="DESK_TITILE" /> सिर्जना गरियो</translation>
 <translation id="3606978283550408104">ब्रेल प्रदर्शन जडित छ।</translation>
@@ -283,7 +283,7 @@
 <translation id="4430019312045809116">आयतन</translation>
 <translation id="4450893287417543264">फेरि नदेखाउनुहोस्</translation>
 <translation id="4477350412780666475">अर्को ट्र्याक</translation>
-<translation id="4477892968187500306">यो यन्त्रमा Google ले पुष्टि नगरेका अनुप्रयोगहरू हुन सक्छन्।</translation>
+<translation id="4477892968187500306">यो यन्त्रमा Google ले पुष्टि नगरेका एपहरू हुन सक्छन्।</translation>
 <translation id="4479639480957787382">इथरनेट</translation>
 <translation id="4481530544597605423">जोडा हटाइएका यन्त्रहरू</translation>
 <translation id="4505050298327493054">सक्रिय डेस्क।</translation>
@@ -445,7 +445,7 @@
 <translation id="6637729079642709226">समय परिवर्तन गर्नुहोस्</translation>
 <translation id="6650933572246256093">ब्लुटूथ यन्त्र "<ph name="DEVICE_NAME" />" पेयरका लागि अनुमति चाहन्छ। कृपया त्यस यन्त्रमा यो पासकुञ्जी प्रविष्टि गर्नुहोस्: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">पासवर्ड</translation>
-<translation id="6665545700722362599">वेबसाइट, अनुप्रयोग र विस्तारहरूलाई स्थानसम्बन्धी सेवा, यन्त्रको माइक्रोफोन, क्यामेरा वा अन्य सुविधाहरूको प्रयोग गर्ने अनुमति दिनुहोस्</translation>
+<translation id="6665545700722362599">वेबसाइट, एप र विस्तारहरूलाई स्थानसम्बन्धी सेवा, यन्त्रको माइक्रोफोन, क्यामेरा वा अन्य सुविधाहरूको प्रयोग गर्ने अनुमति दिनुहोस्</translation>
 <translation id="6669268301501499730">सक्रिय छ</translation>
 <translation id="6670153871843998651">डेस्क ३</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>

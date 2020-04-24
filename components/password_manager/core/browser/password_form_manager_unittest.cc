@@ -1786,11 +1786,11 @@ TEST_P(PasswordFormManagerTest, MAYBE_FillingAssistanceMetric) {
   submitted_form_.fields[kUsernameFieldIndex].value =
       saved_match_.username_value;
   submitted_form_.fields[kUsernameFieldIndex].properties_mask =
-      FieldPropertiesFlags::AUTOFILLED_ON_USER_TRIGGER;
+      FieldPropertiesFlags::kAutofilledOnUserTrigger;
   submitted_form_.fields[kPasswordFieldIndex].value =
       saved_match_.password_value;
   submitted_form_.fields[kPasswordFieldIndex].properties_mask =
-      FieldPropertiesFlags::AUTOFILLED_ON_USER_TRIGGER;
+      FieldPropertiesFlags::kAutofilledOnUserTrigger;
 
   base::HistogramTester histogram_tester;
   //  Simulate successful submission.

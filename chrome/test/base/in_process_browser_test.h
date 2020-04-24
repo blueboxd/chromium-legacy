@@ -263,6 +263,10 @@ class InProcessBrowserTest : public content::BrowserTestBase {
     open_about_blank_on_browser_launch_ = value;
   }
 
+  // Runs scheduled layouts on all Widgets using
+  // Widget::LayoutRootViewIfNecessary(). No-op outside of Views.
+  void RunScheduledLayouts();
+
  private:
   void Initialize();
 

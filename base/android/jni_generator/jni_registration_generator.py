@@ -27,6 +27,7 @@ MERGEABLE_KEYS = [
     'JNI_NATIVE_METHOD',
     'JNI_NATIVE_METHOD_ARRAY',
     'PROXY_NATIVE_SIGNATURES',
+    'FORWARDING_PROXY_METHODS',
     'PROXY_NATIVE_METHOD_ARRAY',
     'PROXY_NATIVE_METHOD_ARRAY_MAIN_DEX',
     'REGISTER_MAIN_DEX_NATIVES',
@@ -83,11 +84,24 @@ def _Generate(java_file_paths,
 
   with build_utils.AtomicOutput(srcjar_path) as f:
     with zipfile.ZipFile(f, 'w') as srcjar:
-      build_utils.AddToZipHermetic(
-          srcjar,
-          '%s.java' % jni_generator.ProxyHelpers.GetQualifiedClass(
-              proxy_opts.use_hash),
-          data=CreateProxyJavaFromDict(combined_dict, proxy_opts))
+      if proxy_opts.use_hash:
+        # J/N.java
+        build_utils.AddToZipHermetic(
+            srcjar,
+            '%s.java' % jni_generator.ProxyHelpers.GetQualifiedClass(True),
+            data=CreateProxyJavaFromDict(combined_dict, proxy_opts))
+        # org/chromium/base/natives/GEN_JNI.java
+        build_utils.AddToZipHermetic(
+            srcjar,
+            '%s.java' % jni_generator.ProxyHelpers.GetQualifiedClass(False),
+            data=CreateProxyJavaFromDict(
+                combined_dict, proxy_opts, forwarding=True))
+      else:
+        # org/chromium/base/natives/GEN_JNI.java
+        build_utils.AddToZipHermetic(
+            srcjar,
+            '%s.java' % jni_generator.ProxyHelpers.GetQualifiedClass(False),
+            data=CreateProxyJavaFromDict(combined_dict, proxy_opts))
 
 
 def _DictForPath(path, use_proxy_hash=False):
@@ -188,7 +202,7 @@ JNI_REGISTRATION_EXPORT bool ${REGISTRATION_NAME}(JNIEnv* env) {
   registration_dict['REGISTER_MAIN_DEX_PROXY_NATIVES'] = main_dex_call
 
 
-def CreateProxyJavaFromDict(registration_dict, proxy_opts):
+def CreateProxyJavaFromDict(registration_dict, proxy_opts, forwarding=False):
   template = string.Template("""\
 // Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
@@ -201,25 +215,36 @@ package ${PACKAGE};
 // Please do not change its content.
 
 public class ${CLASS_NAME} {
-  public static final boolean TESTING_ENABLED = ${TESTING_ENABLED};
-  public static final boolean REQUIRE_MOCK = ${REQUIRE_MOCK};
-${SIGNATURES}
-
+${FIELDS}
+${METHODS}
 }
 """)
 
+  is_natives_class = not forwarding and proxy_opts.use_hash
+  class_name = jni_generator.ProxyHelpers.GetClass(is_natives_class)
+  package = jni_generator.ProxyHelpers.GetPackage(is_natives_class)
+
+  if forwarding or not proxy_opts.use_hash:
+    fields = string.Template("""\
+    public static final boolean TESTING_ENABLED = ${TESTING_ENABLED};
+    public static final boolean REQUIRE_MOCK = ${REQUIRE_MOCK};
+""").substitute({
+        'TESTING_ENABLED': str(proxy_opts.enable_mocks).lower(),
+        'REQUIRE_MOCK': str(proxy_opts.require_mocks).lower(),
+    })
+  else:
+    fields = ''
+
+  if forwarding:
+    methods = registration_dict['FORWARDING_PROXY_METHODS']
+  else:
+    methods = registration_dict['PROXY_NATIVE_SIGNATURES']
+
   return template.substitute({
-      'TESTING_ENABLED':
-      str(proxy_opts.enable_mocks).lower(),
-      'REQUIRE_MOCK':
-      str(proxy_opts.require_mocks).lower(),
-      'CLASS_NAME':
-      jni_generator.ProxyHelpers.GetClass(proxy_opts.use_hash),
-      'PACKAGE':
-      jni_generator.ProxyHelpers.GetPackage(proxy_opts.use_hash).replace(
-          '/', '.'),
-      'SIGNATURES':
-      registration_dict['PROXY_NATIVE_SIGNATURES']
+      'CLASS_NAME': class_name,
+      'FIELDS': fields,
+      'PACKAGE': package.replace('/', '.'),
+      'METHODS': methods
   })
 
 
@@ -310,10 +335,16 @@ class HeaderGenerator(object):
     self._AddClassPathDeclarations()
     self._AddForwardDeclaration()
     self._AddJNINativeMethodsArrays()
-    self._AddProxySignatures()
     self._AddProxyNativeMethodKStrings()
     self._AddRegisterNativesCalls()
     self._AddRegisterNativesFunctions()
+
+    self.registration_dict['PROXY_NATIVE_SIGNATURES'] = ('\n'.join(
+        _MakeProxySignature(n) for n in self.proxy_natives))
+    if self.use_proxy_hash:
+      self.registration_dict['FORWARDING_PROXY_METHODS'] = ('\n'.join(
+          _MakeForwardingProxy(n) for n in self.proxy_natives))
+
     return self.registration_dict
 
   def _SetDictValue(self, key, value):
@@ -412,10 +443,6 @@ ${KMETHODS}
     }
     return template.substitute(values)
 
-  def _AddProxySignatures(self):
-    self.registration_dict['PROXY_NATIVE_SIGNATURES'] = ('\n'.join(
-        _MakeProxySignature(n) for n in self.proxy_natives))
-
   def _AddProxyNativeMethodKStrings(self):
     """Returns KMethodString for wrapped native methods in all_classes """
 
@@ -508,17 +535,45 @@ ${NATIVES}\
     return ''
 
 
-def _MakeProxySignature(proxy_native):
-  signature_template = string.Template("""
-  public static native ${RETURN_TYPE} ${NAME}(${PARAMS});""")
+def _MakeForwardingProxy(proxy_native):
+  template = string.Template("""
+    public static ${RETURN_TYPE} ${ORIG_NAME}(${PARAMS_WITH_TYPES}) {
+        ${MAYBE_RETURN}${PROXY_CLASS}.${NAME}($PARAM_NAMES);
+    }""")
 
-  return signature_template.substitute({
+  params_with_types = ', '.join(
+      '%s %s' % (p.datatype, p.name) for p in proxy_native.params)
+  param_names = ', '.join(p.name for p in proxy_native.params)
+  proxy_class = jni_generator.ProxyHelpers.GetQualifiedClass(True)
+
+  return template.substitute({
       'RETURN_TYPE':
       proxy_native.return_type,
+      'ORIG_NAME':
+      proxy_native.proxy_name_orig,
+      'PARAMS_WITH_TYPES':
+      params_with_types,
+      'MAYBE_RETURN':
+      '' if proxy_native.return_type == 'void' else 'return ',
+      'PROXY_CLASS':
+      proxy_class.replace('/', '.'),
       'NAME':
       proxy_native.proxy_name,
-      'PARAMS':
-      jni_generator.JniParams.MakeProxyParamSignature(proxy_native.params)
+      'PARAM_NAMES':
+      param_names,
+  })
+
+
+def _MakeProxySignature(proxy_native):
+  signature_template = string.Template("""
+    public static native ${RETURN_TYPE} ${NAME}(${PARAMS_WITH_TYPES});""")
+
+  params_with_types = ', '.join(
+      '%s %s' % (p.datatype, p.name) for p in proxy_native.params)
+  return signature_template.substitute({
+      'RETURN_TYPE': proxy_native.return_type,
+      'NAME': proxy_native.proxy_name,
+      'PARAMS_WITH_TYPES': params_with_types,
   })
 
 
@@ -547,7 +602,7 @@ def main(argv):
   arg_parser.add_argument(
       '--srcjar-path',
       required=True,
-      help='Path to output srcjar for GEN_JNI.java (Or J/N.java if proxy'
+      help='Path to output srcjar for GEN_JNI.java (and J/N.java if proxy'
       ' hash is enabled).')
   arg_parser.add_argument(
       '--sources-exclusions',

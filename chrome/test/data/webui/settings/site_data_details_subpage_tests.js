@@ -65,7 +65,7 @@ suite('SiteDataDetailsSubpage', function() {
           assertEquals(site, actualSite);
 
           Polymer.dom.flush();
-          const entries = page.root.querySelectorAll('.settings-box');
+          const entries = page.root.querySelectorAll('.cr-row');
           assertEquals(1, entries.length);
 
           const listItems = page.root.querySelectorAll('.list-item');

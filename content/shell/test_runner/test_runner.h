@@ -54,6 +54,7 @@ namespace content {
 class BlinkTestRunner;
 class MockContentSettingsClient;
 class MockScreenOrientationClient;
+class RenderFrame;
 class SpellCheckClient;
 class TestInterfaces;
 class TestRunnerForSpecificView;
@@ -76,7 +77,7 @@ class TestRunner {
   explicit TestRunner(TestInterfaces*);
   virtual ~TestRunner();
 
-  void Install(blink::WebLocalFrame* frame,
+  void Install(RenderFrame* frame,
                SpellCheckClient* spell_check,
                TestRunnerForSpecificView* view_test_runner);
 
@@ -294,7 +295,6 @@ class TestRunner {
   // Functions for dealing with windows. By default we block all new windows.
   int WindowCount();
   void SetCloseRemainingWindowsWhenComplete(bool close_remaining_windows);
-  void ResetTestHelperControllers();
 
   // Allows web tests to manage origins' allow list.
   void AddOriginAccessAllowListEntry(const std::string& source_origin,

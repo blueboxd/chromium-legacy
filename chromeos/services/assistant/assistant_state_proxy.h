@@ -31,7 +31,9 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantStateProxy
   AssistantStateProxy();
   ~AssistantStateProxy() override;
 
-  void Init(mojom::ClientProxy* client, PrefService* profile_prefs);
+  void Init(mojo::PendingRemote<ash::mojom::AssistantStateController>
+                remote_controller,
+            PrefService* profile_prefs);
 
  private:
   // AssistantStateObserver:

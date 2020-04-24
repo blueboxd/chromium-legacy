@@ -396,6 +396,7 @@ TEST(CanonicalCookieTest, IsEquivalent) {
       creation_time, expiration_time, base::Time(), secure, httponly, same_site,
       COOKIE_PRIORITY_MEDIUM);
   EXPECT_FALSE(cookie->IsEquivalent(*other_cookie));
+  // The path comparison is asymmetric
   EXPECT_FALSE(cookie->IsEquivalentForSecureCookieMatching(*other_cookie));
   EXPECT_TRUE(other_cookie->IsEquivalentForSecureCookieMatching(*cookie));
 
@@ -406,6 +407,56 @@ TEST(CanonicalCookieTest, IsEquivalent) {
   EXPECT_FALSE(cookie->IsEquivalent(*other_cookie));
   EXPECT_TRUE(cookie->IsEquivalentForSecureCookieMatching(*other_cookie));
   EXPECT_FALSE(other_cookie->IsEquivalentForSecureCookieMatching(*cookie));
+}
+
+TEST(CanonicalCookieTest, IsEquivalentForSecureCookieMatching) {
+  struct {
+    struct {
+      const char* name;
+      const char* domain;
+      const char* path;
+    } cookie, secure_cookie;
+    bool equivalent;
+    bool is_symmetric;  // Whether the reverse comparison has the same result.
+  } kTests[] = {
+      // Equivalent to itself
+      {{"A", "a.foo.com", "/"}, {"A", "a.foo.com", "/"}, true, true},
+      {{"A", ".a.foo.com", "/"}, {"A", ".a.foo.com", "/"}, true, true},
+      // Names are different
+      {{"A", "a.foo.com", "/"}, {"B", "a.foo.com", "/"}, false, true},
+      // Host cookie and domain cookie with same hostname match
+      {{"A", "a.foo.com", "/"}, {"A", ".a.foo.com", "/"}, true, true},
+      // Subdomains and superdomains match
+      {{"A", "a.foo.com", "/"}, {"A", ".foo.com", "/"}, true, true},
+      {{"A", ".a.foo.com", "/"}, {"A", ".foo.com", "/"}, true, true},
+      {{"A", "a.foo.com", "/"}, {"A", "foo.com", "/"}, true, true},
+      {{"A", ".a.foo.com", "/"}, {"A", "foo.com", "/"}, true, true},
+      // Different domains don't match
+      {{"A", "a.foo.com", "/"}, {"A", "b.foo.com", "/"}, false, true},
+      {{"A", "a.foo.com", "/"}, {"A", "ba.foo.com", "/"}, false, true},
+      // Path attribute matches if it is a subdomain, but not vice versa.
+      {{"A", "a.foo.com", "/sub"}, {"A", "a.foo.com", "/"}, true, false},
+      // Different paths don't match
+      {{"A", "a.foo.com", "/sub"}, {"A", "a.foo.com", "/other"}, false, true},
+      {{"A", "a.foo.com", "/a/b"}, {"A", "a.foo.com", "/a/c"}, false, true},
+  };
+
+  for (auto test : kTests) {
+    auto cookie = std::make_unique<CanonicalCookie>(
+        test.cookie.name, "value1", test.cookie.domain, test.cookie.path,
+        base::Time(), base::Time(), base::Time(), false /* secure */, false,
+        CookieSameSite::LAX_MODE, COOKIE_PRIORITY_MEDIUM);
+    auto secure_cookie = std::make_unique<CanonicalCookie>(
+        test.secure_cookie.name, "value2", test.secure_cookie.domain,
+        test.secure_cookie.path, base::Time(), base::Time(), base::Time(),
+        true /* secure */, false, CookieSameSite::LAX_MODE,
+        COOKIE_PRIORITY_MEDIUM);
+
+    EXPECT_EQ(test.equivalent,
+              cookie->IsEquivalentForSecureCookieMatching(*secure_cookie));
+    EXPECT_EQ(test.equivalent == test.is_symmetric,
+              secure_cookie->IsEquivalentForSecureCookieMatching(*cookie));
+  }
 }
 
 TEST(CanonicalCookieTest, IsDomainMatch) {

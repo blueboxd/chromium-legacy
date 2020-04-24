@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "cc/cc_export.h"
 #include "cc/metrics/compositor_frame_reporter.h"
@@ -77,6 +78,11 @@ class CC_EXPORT CompositorFrameReportingController {
   virtual void AddActiveTracker(FrameSequenceTrackerType type);
   virtual void RemoveActiveTracker(FrameSequenceTrackerType type);
 
+  void set_tick_clock(const base::TickClock* tick_clock) {
+    DCHECK(tick_clock);
+    tick_clock_ = tick_clock;
+  }
+
   std::unique_ptr<CompositorFrameReporter>* reporters() { return reporters_; }
 
  protected:
@@ -120,6 +126,8 @@ class CC_EXPORT CompositorFrameReportingController {
   // DO NOT reorder this line and the one above. The latency_ukm_reporter_ must
   // outlive the objects in |submitted_compositor_frames_|.
   base::circular_deque<SubmittedCompositorFrame> submitted_compositor_frames_;
+
+  const base::TickClock* tick_clock_ = base::DefaultTickClock::GetInstance();
 };
 }  // namespace cc
 

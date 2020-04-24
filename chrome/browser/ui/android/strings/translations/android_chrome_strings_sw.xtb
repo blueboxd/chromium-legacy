@@ -164,7 +164,6 @@ Gusa neno lolote ili utafute. Ili uchuje utafutaji wako, gusa na ushikilie ili u
 <translation id="2131665479022868825"><ph name="DATA" /> imeokolewa</translation>
 <translation id="213279576345780926">Umefunga <ph name="TAB_TITLE" /></translation>
 <translation id="2139186145475833000">Ongeza kwenye skrini ya kwanza</translation>
-<translation id="2146738493024040262">Fungua Programu Inayofunguka Papo Hapo</translation>
 <translation id="2154484045852737596">Badilisha kadi</translation>
 <translation id="2154710561487035718">Nakili UR:</translation>
 <translation id="2156074688469523661">Tovuti zilizosalia (<ph name="NUMBER_OF_SITES" />)</translation>
@@ -281,7 +280,6 @@ Gusa na ushikilie neno lolote ili utafute. Ili uchuje utafutaji wako, chagua man
 <translation id="2996809686854298943">URL inahitajika</translation>
 <translation id="300526633675317032">Hatua hii itafuta <ph name="SIZE_IN_KB" /> yote ya hifadhi ya tovuti.</translation>
 <translation id="3016635187733453316">Hakikisha kwamba kifaa hiki kimeunganishwa kwenye intaneti</translation>
-<translation id="3029613699374795922">Umepakua KB <ph name="KBS" /></translation>
 <translation id="3029704984691124060">Kaulisiri hazilingani</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Pata usaidizi<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Kipengele cha mahali kimezimwa; kiwashe katika <ph name="BEGIN_LINK" />Mipangilio ya Android<ph name="END_LINK" />.</translation>
@@ -457,7 +455,6 @@ Ni wewe pekee unaweza kuona kile ambacho kamera yako inaona. Tovuti hii haiwezi 
 <translation id="4411535500181276704">Hali nyepesi</translation>
 <translation id="4415276339145661267">Dhibiti Akaunti yako ya Google</translation>
 <translation id="4432792777822557199">Kurasa za <ph name="SOURCE_LANGUAGE" /> zitatafsiriwa katika <ph name="TARGET_LANGUAGE" /> kuanzia sasa</translation>
-<translation id="4433925000917964731">Ukurasa mwepesi umetolewa na Google</translation>
 <translation id="4434045419905280838">Madirisha ibukizi/kuelekeza kwingine</translation>
 <translation id="4440958355523780886">Ukurasa mwepesi umetolewa na Google. Gusa ili upakie ukurasa halisi.</translation>
 <translation id="4452411734226507615">Funga kichupo cha <ph name="TAB_TITLE" /></translation>
@@ -737,7 +734,6 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="6406506848690869874">Sawazisha</translation>
 <translation id="6410973561433500075">Ungependa kuingia Uhalisia Ulioboreshwa ukitumia <ph name="DOMAIN" />?</translation>
 <translation id="641643625718530986">Chapisha...</translation>
-<translation id="6416782512398055893">Umepakua MB <ph name="MBS" /></translation>
 <translation id="6427112570124116297">Tafsiri Wavuti</translation>
 <translation id="6433501201775827830">Chagua mtambo wako wa kutafuta</translation>
 <translation id="6437478888915024427">Maelezo ya ukurasa</translation>
@@ -745,7 +741,6 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="6441734959916820584">Jina ni ndefu mno</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{Picha #}other{Picha #}}</translation>
 <translation id="6447558397796644647">Imeshindwa kupata alamisho hilo. Angalia maendelezo au uweke alamisho jipya.</translation>
-<translation id="6447842834002726250">Vidakuzi</translation>
 <translation id="6461962085415701688">Imeshindwa kufungua faili</translation>
 <translation id="6464977750820128603">Unaweza kuona tovuti ambazo ulitembelea katika Chrome na kuziwekea vipima muda.\n\nGoogle inapata maelezo kuhusu tovuti ulizowekea vipima muda na muda unaozitembelea. Tunatumia maelezo haya kuboresha mpango wa Nidhamu Dijitali.</translation>
 <translation id="6475951671322991020">Pakua video</translation>
@@ -754,7 +749,6 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="6508722015517270189">Zima na uwashe Chrome</translation>
 <translation id="6532866250404780454">Haitaonyesha tovuti unazotembelea katika Chrome. Itafuta vipima muda vyote kwenye tovuti.</translation>
 <translation id="6534565668554028783">Google imechukua muda mrefu kujibu</translation>
-<translation id="6538442820324228105">Umepakua GB <ph name="GBS" /></translation>
 <translation id="6539092367496845964">Hitilafu fulani imetokea. Jaribu tena baadaye.</translation>
 <translation id="6545017243486555795">Futa Data Yote</translation>
 <translation id="6545864417968258051">Kutafuta Bluetooth</translation>
@@ -855,6 +849,7 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Shiriki kipengee 1 kilichochaguliwa}other{Shiriki vipengee # vilivyochaguliwa}}</translation>
 <translation id="7359002509206457351">Ufikiaji wa njia za kulipa</translation>
+<translation id="7362144854749094396">Historia imeshirikiwa na Chrome. Mapendeleo yameshirikiwa na <ph name="SITE_NAME" />.</translation>
 <translation id="7375125077091615385">Aina:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>

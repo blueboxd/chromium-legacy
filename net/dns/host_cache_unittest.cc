@@ -908,7 +908,8 @@ TEST(HostCacheTest, SerializeAndDeserialize) {
   now += base::TimeDelta::FromSeconds(7);
 
   base::ListValue serialized_cache;
-  cache.GetAsListValue(&serialized_cache, /*include_staleness=*/false);
+  cache.GetAsListValue(&serialized_cache, false /* include_staleness */,
+                       HostCache::SerializationType::kRestorable);
   HostCache restored_cache(kMaxCacheEntries);
 
   // Add entries for "foobar3.com" and "foobar4.com" to the cache before
@@ -1018,7 +1019,8 @@ TEST(HostCacheTest, SerializeAndDeserializeWithNetworkIsolationKey) {
   EXPECT_EQ(2u, cache.size());
 
   base::ListValue serialized_cache;
-  cache.GetAsListValue(&serialized_cache, /*include_staleness=*/false);
+  cache.GetAsListValue(&serialized_cache, false /* include_staleness */,
+                       HostCache::SerializationType::kRestorable);
   HostCache restored_cache(kMaxCacheEntries);
   EXPECT_TRUE(restored_cache.RestoreFromListValue(serialized_cache));
   EXPECT_EQ(1u, restored_cache.size());
@@ -1032,6 +1034,43 @@ TEST(HostCacheTest, SerializeAndDeserializeWithNetworkIsolationKey) {
   ASSERT_EQ(1u, result->second.addresses().value().size());
   EXPECT_EQ(endpoint, result->second.addresses().value().front());
   EXPECT_FALSE(restored_cache.Lookup(key2, now));
+}
+
+TEST(HostCacheTest, SerializeForDebugging) {
+  const char kHostname[] = "hostname.test";
+  const base::TimeDelta kTTL = base::TimeDelta::FromSeconds(10);
+  const NetworkIsolationKey kNetworkIsolationKey =
+      NetworkIsolationKey::CreateTransient();
+
+  HostCache::Key key(kHostname, DnsQueryType::UNSPECIFIED, 0,
+                     HostResolverSource::ANY, kNetworkIsolationKey);
+  IPEndPoint endpoint(IPAddress(1, 2, 3, 4), 0);
+
+  HostCache::Entry entry = HostCache::Entry(OK, AddressList(endpoint),
+                                            HostCache::Entry::SOURCE_UNKNOWN);
+
+  base::TimeTicks now;
+  HostCache cache(kMaxCacheEntries);
+
+  cache.Set(key, entry, now, kTTL);
+
+  EXPECT_TRUE(cache.Lookup(key, now));
+  EXPECT_EQ(kNetworkIsolationKey,
+            cache.Lookup(key, now)->first.network_isolation_key);
+  EXPECT_EQ(1u, cache.size());
+
+  base::ListValue serialized_cache;
+  cache.GetAsListValue(&serialized_cache, false /* include_staleness */,
+                       HostCache::SerializationType::kDebug);
+  HostCache restored_cache(kMaxCacheEntries);
+  EXPECT_FALSE(restored_cache.RestoreFromListValue(serialized_cache));
+
+  base::Value::ListView list = serialized_cache.GetList();
+  ASSERT_EQ(1u, list.size());
+  ASSERT_TRUE(list[0].is_dict());
+  base::Value* nik_value = list[0].FindPath("network_isolation_key");
+  ASSERT_TRUE(nik_value);
+  ASSERT_EQ(base::Value(kNetworkIsolationKey.ToDebugString()), *nik_value);
 }
 
 TEST(HostCacheTest, SerializeAndDeserialize_Text) {
@@ -1050,7 +1089,8 @@ TEST(HostCacheTest, SerializeAndDeserialize_Text) {
   EXPECT_EQ(1u, cache.size());
 
   base::ListValue serialized_cache;
-  cache.GetAsListValue(&serialized_cache, false /* include_staleness */);
+  cache.GetAsListValue(&serialized_cache, false /* include_staleness */,
+                       HostCache::SerializationType::kRestorable);
   HostCache restored_cache(kMaxCacheEntries);
   restored_cache.RestoreFromListValue(serialized_cache);
 
@@ -1089,7 +1129,8 @@ TEST(HostCacheTest, SerializeAndDeserialize_Esni) {
   EXPECT_EQ(1u, cache.size());
 
   base::ListValue serialized_cache;
-  cache.GetAsListValue(&serialized_cache, false /* include_staleness */);
+  cache.GetAsListValue(&serialized_cache, false /* include_staleness */,
+                       HostCache::SerializationType::kRestorable);
   HostCache restored_cache(kMaxCacheEntries);
   restored_cache.RestoreFromListValue(serialized_cache);
 
@@ -1132,7 +1173,8 @@ class HostCacheMalformedEsniSerializationTest : public ::testing::Test {
     HostCache cache(kMaxCacheEntries);
     cache.Set(key, entry, now, ttl);
     EXPECT_EQ(1u, cache.size());
-    cache.GetAsListValue(&serialized_cache_, true /* include_staleness */);
+    cache.GetAsListValue(&serialized_cache_, true /* include_staleness */,
+                         HostCache::SerializationType::kRestorable);
   }
 
   base::ListValue serialized_cache_;
@@ -1179,7 +1221,8 @@ TEST(HostCacheTest, SerializeAndDeserialize_Hostname) {
   EXPECT_EQ(1u, cache.size());
 
   base::ListValue serialized_cache;
-  cache.GetAsListValue(&serialized_cache, false /* include_staleness */);
+  cache.GetAsListValue(&serialized_cache, false /* include_staleness */,
+                       HostCache::SerializationType::kRestorable);
   HostCache restored_cache(kMaxCacheEntries);
   restored_cache.RestoreFromListValue(serialized_cache);
 

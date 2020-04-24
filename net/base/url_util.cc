@@ -266,6 +266,23 @@ std::string GetSuperdomain(base::StringPiece domain) {
   return domain.substr(dot_pos + 1).as_string();
 }
 
+bool IsSubdomainOf(base::StringPiece subdomain, base::StringPiece superdomain) {
+  if (subdomain.empty() || superdomain.empty())
+    return false;
+
+  // Subdomain must be identical or have strictly more labels than the
+  // superdomain.
+  if (subdomain.length() <= superdomain.length())
+    return subdomain == superdomain;
+
+  // Superdomain must be suffix of subdomain, and the last character not
+  // included in the matching substring must be a dot.
+  if (!subdomain.ends_with(superdomain))
+    return false;
+  subdomain.remove_suffix(superdomain.length());
+  return subdomain.back() == '.';
+}
+
 std::string CanonicalizeHost(base::StringPiece host,
                              url::CanonHostInfo* host_info) {
   // Try to canonicalize the host.

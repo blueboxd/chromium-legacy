@@ -41,7 +41,7 @@ void UrlRequestRulesReceiver::OnUrlRequestRulesReceiverAssociatedReceiver(
 }
 
 void UrlRequestRulesReceiver::OnRulesUpdated(
-    std::vector<mojom::UrlRequestRewriteRulePtr> rules) {
+    std::vector<mojom::UrlRequestRulePtr> rules) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::AutoLock auto_lock(lock_);
   cached_rules_ =

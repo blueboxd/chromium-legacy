@@ -3278,7 +3278,14 @@ blink::WebHitTestResult RenderWidget::GetHitTestResultAtPoint(
 }
 
 void RenderWidget::SetDeviceScaleFactorForTesting(float factor) {
-  DCHECK_GT(factor, 0.f);
+  DCHECK_GE(factor, 0.f);
+
+  // Receiving a 0 is used to reset between tests, it removes the override in
+  // order to listen to the browser for the next test.
+  if (!factor) {
+    device_scale_factor_for_testing_ = 0;
+    return;
+  }
 
   // We are changing the device scale factor from the renderer, so allocate a
   // new viz::LocalSurfaceId to avoid surface invariants violations in tests.

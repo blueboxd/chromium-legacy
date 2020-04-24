@@ -112,6 +112,12 @@ component("sandbox") {
       "fuchsia/sandbox_policy_fuchsia.h",
     ]
 
+    public_deps += [
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.io",
+      "//third_party/fuchsia-sdk/sdk/pkg/fidl",
+      "//third_party/fuchsia-sdk/sdk/pkg/zx",
+    ]
+
     deps += [
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.fonts",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.intl",

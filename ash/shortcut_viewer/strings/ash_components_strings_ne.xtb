@@ -2,14 +2,14 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ne">
 <translation id="1036550831858290950">आफ्नो हालको ट्याबलाई पुस्तक चिन्हका रूपमा सुरक्षित गर्नुहोस्</translation>
-<translation id="104962181688258143">फाइल अनुप्रयोग खोल्नुहोस्‌</translation>
+<translation id="104962181688258143">फाइल एप खोल्नुहोस्‌</translation>
 <translation id="1122869341872663659"><ph name="QUERY" /> का <ph name="N" /> खोजका परिणाम देखाइँदै</translation>
 <translation id="1195667586424773550">लिंकलाई ट्याबको ठेगाना पट्टीमा ड्र्याग गर्नुहोस्</translation>
 <translation id="1204450209689312104">इन्कोग्निटो मोडमा एउटा नयाँ विन्डो खोल्नुहोस्</translation>
 <translation id="1251638888133819822">पूर्ण स्क्रिनसम्बन्धी म्याग्निफायरलाई सक्रिय गर्नुहोस्‌ वा निष्क्रिय पार्नुहोस्</translation>
 <translation id="1290373024480130896"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="MODIFIER3" /><ph name="SEPARATOR3" /><ph name="KEY" /></translation>
 <translation id="1293699935367580298">Esc</translation>
-<translation id="1299858300159559687">आफ्नो हालको पृष्ठ छाप्नुहोस्</translation>
+<translation id="1299858300159559687">आफ्नो हालको पृष्ठ प्रिन्ट गर्नुहोस्</translation>
 <translation id="1383876407941801731">खोज्नुहोस्</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> वा <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
 <translation id="1477442857810932985">रेखाको अन्त्यमा जानुहोस्</translation>
@@ -169,7 +169,7 @@
 <translation id="7254764037241667478">यन्त्रलाई शयन अवस्थामा लानुहोस् (निलम्बन गर्नुहोस्)</translation>
 <translation id="7379254767514753910"><ph name="ALT" /> वा <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="7422707470576323858">अर्को उपलब्ध इनपुट विधि प्रयोग गर्नुहोस्</translation>
-<translation id="743754632698445141">एउटा अनुप्रयोग अनपिन गर्नुहोस्</translation>
+<translation id="743754632698445141">एउटा एप अनपिन गर्नुहोस्</translation>
 <translation id="7439718573248533901">अर्को अक्षर मेट्‌नुहोस् (अगाडिबाट मेट्‌नुहोस्)</translation>
 <translation id="7500368597227394048">हाइफन</translation>
 <translation id="7611271430932669992">पपअप र संवादहरूमा केन्द्रित गर्नुहोस्</translation>

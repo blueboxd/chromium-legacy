@@ -143,8 +143,10 @@ class PLATFORM_EXPORT FetchContext : public GarbageCollected<FetchContext> {
 
   // Determine if the request is on behalf of an advertisement. If so, return
   // true.
-  virtual bool CalculateIfAdSubresource(const ResourceRequest& resource_request,
-                                        ResourceType type) {
+  virtual bool CalculateIfAdSubresource(
+      const ResourceRequest& resource_request,
+      ResourceType type,
+      const FetchInitiatorInfo& initiator_info) {
     return false;
   }
 

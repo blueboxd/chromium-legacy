@@ -59,7 +59,8 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
               test->context()->AsWeakPtr(),
               test->container_host_,
               type,
-              /*skip_service_worker=*/false)) {}
+              /*skip_service_worker=*/false,
+              base::DoNothing())) {}
 
     void MaybeCreateLoader() {
       network::ResourceRequest resource_request;
@@ -145,25 +146,23 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
 
 class ServiceWorkerTestContentBrowserClient : public TestContentBrowserClient {
  public:
-  ServiceWorkerTestContentBrowserClient() {}
-  bool AllowServiceWorkerOnIO(
+  ServiceWorkerTestContentBrowserClient() = default;
+  AllowServiceWorkerResult AllowServiceWorkerOnIO(
       const GURL& scope,
       const GURL& site_for_cookies,
       const base::Optional<url::Origin>& top_frame_origin,
       const GURL& script_url,
-      content::ResourceContext* context,
-      base::RepeatingCallback<WebContents*()> wc_getter) override {
-    return false;
+      content::ResourceContext* context) override {
+    return AllowServiceWorkerResult::No();
   }
 
-  bool AllowServiceWorkerOnUI(
+  AllowServiceWorkerResult AllowServiceWorkerOnUI(
       const GURL& scope,
       const GURL& site_for_cookies,
       const base::Optional<url::Origin>& top_frame_origin,
       const GURL& script_url,
-      content::BrowserContext* context,
-      base::RepeatingCallback<WebContents*()> wc_getter) override {
-    return false;
+      content::BrowserContext* context) override {
+    return AllowServiceWorkerResult::No();
   }
 };
 
@@ -412,7 +411,7 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, SkipServiceWorker) {
       std::make_unique<ServiceWorkerControlleeRequestHandler>(
           context()->AsWeakPtr(), container_host_,
           blink::mojom::ResourceType::kMainFrame,
-          /*skip_service_worker=*/true));
+          /*skip_service_worker=*/true, base::DoNothing()));
 
   // Conduct a main resource load.
   test_resources.MaybeCreateLoader();
@@ -453,7 +452,7 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, NullContext) {
       std::make_unique<ServiceWorkerControlleeRequestHandler>(
           context()->AsWeakPtr(), container_host_,
           blink::mojom::ResourceType::kMainFrame,
-          /*skip_service_worker=*/false));
+          /*skip_service_worker=*/false, base::DoNothing()));
 
   // Destroy the context and make a new one.
   helper_->context_wrapper()->DeleteAndStartOver();

@@ -334,7 +334,7 @@ AutofillField* HeuristicallyFindCVCFieldForUpload(
 }
 
 // Iff the CVC of the credit card is known, find the first field with this
-// value (also set |properties_mask| to |KNOWN_VALUE|). Otherwise, heuristically
+// value (also set |properties_mask| to |kKnownValue|). Otherwise, heuristically
 // search for the CVC field if any.
 AutofillField* GetBestPossibleCVCFieldForUpload(
     const FormStructure& form_structure,
@@ -343,7 +343,7 @@ AutofillField* GetBestPossibleCVCFieldForUpload(
     AutofillField* result =
         FindFirstFieldWithValue(form_structure, last_unlocked_credit_card_cvc);
     if (result)
-      result->properties_mask = FieldPropertiesFlags::KNOWN_VALUE;
+      result->properties_mask = FieldPropertiesFlags::kKnownValue;
     return result;
   }
 

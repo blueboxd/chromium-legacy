@@ -164,7 +164,6 @@ Tik op enige woord om te soek. Raak en hou om meer of minder woorde te kies as j
 <translation id="2131665479022868825"><ph name="DATA" /> gestoor</translation>
 <translation id="213279576345780926">Het <ph name="TAB_TITLE" /> toegemaak</translation>
 <translation id="2139186145475833000">Voeg by tuisskerm</translation>
-<translation id="2146738493024040262">Maak kitsprogram oop</translation>
 <translation id="2154484045852737596">Wysig kaart</translation>
 <translation id="2154710561487035718">Kopieer URL</translation>
 <translation id="2156074688469523661">Oorblywende werwe (<ph name="NUMBER_OF_SITES" />)</translation>
@@ -281,7 +280,6 @@ Raak en hou enige woord om te soek. Kies meer of minder woorde as jy jou soektog
 <translation id="2996809686854298943">URL vereis</translation>
 <translation id="300526633675317032">Dit sal al <ph name="SIZE_IN_KB" /> se webwerfberging uitvee.</translation>
 <translation id="3016635187733453316">Maak seker dat hierdie toestel aan die internet gekoppel is</translation>
-<translation id="3029613699374795922">Het <ph name="KBS" /> KB afgelaai</translation>
 <translation id="3029704984691124060">Wagwoordfrases stem nie ooreen nie</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Kry hulp<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Ligging is af; skakel dit in <ph name="BEGIN_LINK" />Android-instellings<ph name="END_LINK" /> aan.</translation>
@@ -457,7 +455,6 @@ Net jy kan sien waarna jou kamera kyk. Hierdie werf kan nie jou kamera se prente
 <translation id="4411535500181276704">Ligte modus</translation>
 <translation id="4415276339145661267">Bestuur jou Google-rekening</translation>
 <translation id="4432792777822557199">Bladsye in <ph name="SOURCE_LANGUAGE" /> sal van nou af in <ph name="TARGET_LANGUAGE" /> vertaal word</translation>
-<translation id="4433925000917964731">Ligte bladsy deur Google verskaf</translation>
 <translation id="4434045419905280838">Opspringers en herleidings</translation>
 <translation id="4440958355523780886">Ligte bladsy verskaf deur Google. Tik om die oorspronklike bladsy te laai.</translation>
 <translation id="4452411734226507615">Maak <ph name="TAB_TITLE" />-oortjie toe</translation>
@@ -737,7 +734,6 @@ Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advert
 <translation id="6406506848690869874">Sinkronisering</translation>
 <translation id="6410973561433500075">Voer AR van <ph name="DOMAIN" /> af in?</translation>
 <translation id="641643625718530986">Druk tans uit …</translation>
-<translation id="6416782512398055893">Het <ph name="MBS" /> MB afgelaai</translation>
 <translation id="6427112570124116297">Vertaal die Web</translation>
 <translation id="6433501201775827830">Kies jou soekenjin</translation>
 <translation id="6437478888915024427">Bladsy-inligting</translation>
@@ -745,7 +741,6 @@ Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advert
 <translation id="6441734959916820584">Naam is te lank</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# prent}other{# prente}}</translation>
 <translation id="6447558397796644647">Kan nie daardie boekmerk opspoor nie. Gaan jou spelling na of voeg 'n nuwe boekmerk by.</translation>
-<translation id="6447842834002726250">Webkoekies</translation>
 <translation id="6461962085415701688">Kan nie lêer oopmaak nie</translation>
 <translation id="6464977750820128603">Jy kan werwe sien wat jy in Chrome besoek en tydtellers vir hulle stel.\n\nGoogle kry inligting oor die werwe waarvoor jy tydtellers stel en hoe lank jy hulle besoek. Hierdie inligting word gebruik om Digitale Welstand te verbeter.</translation>
 <translation id="6475951671322991020">Laai video af</translation>
@@ -754,7 +749,6 @@ Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advert
 <translation id="6508722015517270189">Herbegin Chrome</translation>
 <translation id="6532866250404780454">Werwe wat jy in Chrome besoek, sal nie wys nie. Alle werftydtellers sal uitgevee word.</translation>
 <translation id="6534565668554028783">Google het te lank gevat om te reageer</translation>
-<translation id="6538442820324228105">Het <ph name="GBS" /> GB afgelaai</translation>
 <translation id="6539092367496845964">Iets is fout. Probeer later weer.</translation>
 <translation id="6545017243486555795">Vee alle data uit</translation>
 <translation id="6545864417968258051">Bluetooth-opsporing</translation>
@@ -855,6 +849,7 @@ Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advert
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Deel 1 gekose item}other{Deel # gekose items}}</translation>
 <translation id="7359002509206457351">Toegang tot betaalmetodes</translation>
+<translation id="7362144854749094396">Geskiedenis word gedeel met Chrome. Voorkeure word gedeel met <ph name="SITE_NAME" />.</translation>
 <translation id="7375125077091615385">Tipe:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>

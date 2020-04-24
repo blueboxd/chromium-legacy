@@ -10,6 +10,7 @@
 #include "base/memory/singleton.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/enterprise/connectors/connectors_prefs.h"
 #include "components/policy/core/browser/url_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
@@ -17,6 +18,9 @@
 #include "components/url_matcher/url_matcher.h"
 
 namespace enterprise_connectors {
+
+const base::Feature kEnterpriseConnectorsEnabled{
+    "EnterpriseConnectorsEnabled", base::FEATURE_DISABLED_BY_DEFAULT};
 
 namespace {
 
@@ -49,6 +53,18 @@ bool MatchURLAgainstPatterns(const GURL& url,
   return has_scan_match;
 }
 
+const char* ConnectorToPref(AnalysisConnector connector) {
+  switch (connector) {
+    case AnalysisConnector::BULK_DATA_ENTRY:
+    case AnalysisConnector::FILE_DOWNLOADED:
+      // TODO(crbug/1067631): Return the corresponding prefs for these analysis
+      // connectors once they exist.
+      return nullptr;
+    case AnalysisConnector::FILE_ATTACHED:
+      return kOnFileAttachedPref;
+  }
+}
+
 }  // namespace
 
 // ConnectorsManager implementation---------------------------------------------
@@ -61,11 +77,59 @@ ConnectorsManager* ConnectorsManager::GetInstance() {
   return base::Singleton<ConnectorsManager>::get();
 }
 
+bool ConnectorsManager::IsConnectorEnabled(AnalysisConnector connector) {
+  if (!base::FeatureList::IsEnabled(kEnterpriseConnectorsEnabled))
+    return false;
+
+  if (connector_settings_.count(connector) == 1)
+    return true;
+
+  const char* pref = ConnectorToPref(connector);
+  return pref && g_browser_process->local_state()->HasPrefPath(pref);
+}
+
 void ConnectorsManager::GetAnalysisSettings(const GURL& url,
                                             AnalysisConnector connector,
                                             AnalysisSettingsCallback callback) {
+  if (IsConnectorEnabled(connector)) {
+    GetAnalysisSettingsFromConnectorPolicy(url, connector, std::move(callback));
+  } else {
+    std::move(callback).Run(
+        GetAnalysisSettingsFromLegacyPolicies(url, connector));
+  }
+}
+
+void ConnectorsManager::GetAnalysisSettingsFromConnectorPolicy(
+    const GURL& url,
+    AnalysisConnector connector,
+    AnalysisSettingsCallback callback) {
+  if (connector_settings_.count(connector) == 0)
+    CacheConnectorPolicy(connector);
+
+  // If the connector is still not in memory, it means the pref is set to an
+  // empty list or that it is not a list.
+  if (connector_settings_.count(connector) == 0) {
+    std::move(callback).Run(base::nullopt);
+    return;
+  }
+
+  // While multiple services can be set by the connector policies, only the
+  // first one is considered for now.
   std::move(callback).Run(
-      GetAnalysisSettingsFromLegacyPolicies(url, connector));
+      connector_settings_[connector][0].GetAnalysisSettings(url));
+}
+
+void ConnectorsManager::CacheConnectorPolicy(AnalysisConnector connector) {
+  // Connectors with non-existing policies should not reach this code.
+  const char* pref = ConnectorToPref(connector);
+  DCHECK(pref);
+
+  const base::ListValue* policy_value =
+      g_browser_process->local_state()->GetList(pref);
+  if (policy_value && policy_value->is_list()) {
+    for (const base::Value& service_settings : policy_value->GetList())
+      connector_settings_[connector].emplace_back(service_settings);
+  }
 }
 
 bool ConnectorsManager::DelayUntilVerdict(AnalysisConnector connector) const {
@@ -199,6 +263,15 @@ std::set<std::string> ConnectorsManager::MatchURLAgainstLegacyPolicies(
     tags.emplace("malware");
 
   return tags;
+}
+
+void ConnectorsManager::Reset() {
+  connector_settings_.clear();
+}
+
+const ConnectorsManager::AnalysisConnectorsSettings&
+ConnectorsManager::GetAnalysisConnectorsSettingsForTesting() const {
+  return connector_settings_;
 }
 
 }  // namespace enterprise_connectors

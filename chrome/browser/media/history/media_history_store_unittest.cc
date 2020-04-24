@@ -39,7 +39,6 @@
 #include "services/media_session/public/cpp/media_image.h"
 #include "services/media_session/public/cpp/media_metadata.h"
 #include "services/media_session/public/cpp/media_position.h"
-#include "sql/database.h"
 #include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -122,19 +121,6 @@ class MediaHistoryStoreUnitTest
         MediaHistoryStore::kInitResultHistogramName,
         MediaHistoryStore::InitResult::kSuccess, 1);
 
-    // Set up the local DB connection used for assertions.
-    base::FilePath db_file =
-        temp_dir_.GetPath().Append(FILE_PATH_LITERAL("Media History"));
-    ASSERT_TRUE(db_.Open(db_file));
-
-    // Get the size in bytes.
-    int64_t file_size = 0;
-    base::GetFileSize(db_file, &file_size);
-    EXPECT_LT(0, file_size);
-
-    histogram_tester.ExpectUniqueSample(
-        MediaHistoryStore::kDatabaseSizeKbHistogramName, file_size / 1000, 1);
-
     // Set up the media history store for OTR.
     otr_service_ = std::make_unique<MediaHistoryKeyedService>(
         profile_->GetOffTheRecordProfile());
@@ -213,6 +199,27 @@ class MediaHistoryStoreUnitTest
     return out;
   }
 
+  static std::vector<mojom::MediaHistoryPlaybackSessionRowPtr>
+  GetPlaybackSessionsSync(MediaHistoryKeyedService* service, int max_sessions) {
+    base::RunLoop run_loop;
+    std::vector<mojom::MediaHistoryPlaybackSessionRowPtr> out;
+
+    service->GetPlaybackSessions(
+        max_sessions,
+        base::BindRepeating(
+            [](const base::TimeDelta& duration,
+               const base::TimeDelta& position) { return true; }),
+        base::BindLambdaForTesting(
+            [&](std::vector<mojom::MediaHistoryPlaybackSessionRowPtr>
+                    sessions) {
+              out = std::move(sessions);
+              run_loop.Quit();
+            }));
+
+    run_loop.Run();
+    return out;
+  }
+
   MediaHistoryKeyedService* service() const {
     // If the param is true then we use the OTR service to simulate being in
     // incognito.
@@ -230,11 +237,9 @@ class MediaHistoryStoreUnitTest
   base::ScopedTempDir temp_dir_;
 
  protected:
-  sql::Database& GetDB() { return db_; }
   content::BrowserTaskEnvironment task_environment_;
 
  private:
-  sql::Database db_;
   std::unique_ptr<MediaHistoryKeyedService> otr_service_;
   std::unique_ptr<TestingProfile> profile_;
 };
@@ -245,22 +250,6 @@ INSTANTIATE_TEST_SUITE_P(
     testing::Values(TestState::kNormal,
                     TestState::kIncognito,
                     TestState::kSavingBrowserHistoryDisabled));
-
-#if defined(THREAD_SANITIZER)
-// https://crbug.com/846380
-#define MAYBE_CreateDatabaseTables DISABLED_CreateDatabaseTables
-#else
-#define MAYBE_CreateDatabaseTables CreateDatabaseTables
-#endif
-
-TEST_P(MediaHistoryStoreUnitTest, MAYBE_CreateDatabaseTables) {
-  ASSERT_TRUE(GetDB().DoesTableExist("origin"));
-  ASSERT_TRUE(GetDB().DoesTableExist("playback"));
-  ASSERT_TRUE(GetDB().DoesTableExist("playbackSession"));
-  ASSERT_TRUE(GetDB().DoesTableExist("sessionImage"));
-  ASSERT_TRUE(GetDB().DoesTableExist("mediaImage"));
-  ASSERT_FALSE(GetDB().DoesTableExist("mediaFeed"));
-}
 
 TEST_P(MediaHistoryStoreUnitTest, SavePlayback) {
   base::HistogramTester histogram_tester;
@@ -416,24 +405,21 @@ TEST_P(MediaHistoryStoreUnitTest, UrlShouldBeUniqueForSessions) {
   WaitForDB();
 
   {
-    mojom::MediaHistoryStatsPtr stats = GetStatsSync(service());
+    auto sessions = GetPlaybackSessionsSync(service(), 5);
 
     if (IsReadOnly()) {
-      EXPECT_EQ(0,
-                stats->table_row_counts[MediaHistorySessionTable::kTableName]);
+      EXPECT_TRUE(sessions.empty());
     } else {
-      EXPECT_EQ(2,
-                stats->table_row_counts[MediaHistorySessionTable::kTableName]);
+      EXPECT_EQ(2u, sessions.size());
 
-      sql::Statement s(GetDB().GetUniqueStatement(
-          "SELECT id FROM playbackSession WHERE url = ?"));
-      s.BindString(0, url_a.spec());
-      ASSERT_TRUE(s.Step());
-      EXPECT_EQ(1, s.ColumnInt(0));
+      for (auto& session : sessions) {
+        if (session->url == url_a)
+          EXPECT_EQ(1, session->id);
+      }
     }
 
     // The OTR service should have the same data.
-    EXPECT_EQ(stats, GetStatsSync(otr_service()));
+    EXPECT_EQ(sessions, GetPlaybackSessionsSync(otr_service(), 5));
   }
 
   // Save a session on the first URL.
@@ -445,26 +431,21 @@ TEST_P(MediaHistoryStoreUnitTest, UrlShouldBeUniqueForSessions) {
   WaitForDB();
 
   {
-    mojom::MediaHistoryStatsPtr stats = GetStatsSync(service());
+    auto sessions = GetPlaybackSessionsSync(service(), 5);
 
     if (IsReadOnly()) {
-      EXPECT_EQ(0,
-                stats->table_row_counts[MediaHistorySessionTable::kTableName]);
+      EXPECT_TRUE(sessions.empty());
     } else {
-      EXPECT_EQ(2,
-                stats->table_row_counts[MediaHistorySessionTable::kTableName]);
+      EXPECT_EQ(2u, sessions.size());
 
-      // The OTR service should have the same data.
-      EXPECT_EQ(stats, GetStatsSync(otr_service()));
-
-      // The row for |url_a| should have been replaced so we should have a new
-      // ID.
-      sql::Statement s(GetDB().GetUniqueStatement(
-          "SELECT id FROM playbackSession WHERE url = ?"));
-      s.BindString(0, url_a.spec());
-      ASSERT_TRUE(s.Step());
-      EXPECT_EQ(3, s.ColumnInt(0));
+      for (auto& session : sessions) {
+        if (session->url == url_a)
+          EXPECT_EQ(3, session->id);
+      }
     }
+
+    // The OTR service should have the same data.
+    EXPECT_EQ(sessions, GetPlaybackSessionsSync(otr_service(), 5));
   }
 
   histogram_tester.ExpectBucketCount(
@@ -825,11 +806,6 @@ INSTANTIATE_TEST_SUITE_P(All,
                          testing::Values(TestState::kNormal,
                                          TestState::kIncognito));
 
-TEST_P(MediaHistoryStoreFeedsTest, MAYBE_CreateDatabaseTables) {
-  ASSERT_TRUE(GetDB().DoesTableExist("mediaFeed"));
-  ASSERT_TRUE(GetDB().DoesTableExist("mediaFeedItem"));
-}
-
 TEST_P(MediaHistoryStoreFeedsTest, DiscoverMediaFeed) {
   GURL url_a("https://www.google.com/feed");
   GURL url_b("https://www.google.co.uk/feed");
@@ -1182,50 +1158,6 @@ TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult_MultipleFeeds) {
       ASSERT_EQ(1u, feeds.size());
       EXPECT_EQ(feed_id_a, feeds[0]->id);
     }
-  }
-}
-
-TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult_BadType) {
-  service()->DiscoverMediaFeed(GURL("https://www.google.com/feed"));
-  WaitForDB();
-
-  // If we are read only we should use -1 as a placeholder feed id because the
-  // feed will not have been stored. This is so we can run the rest of the test
-  // to ensure a no-op.
-  const int feed_id = IsReadOnly() ? -1 : GetMediaFeedsSync(service())[0]->id;
-
-  service()->StoreMediaFeedFetchResult(
-      feed_id, GetExpectedItems(), media_feeds::mojom::FetchResult::kSuccess,
-      /* was_fetched_from_cache= */ false,
-      std::vector<media_session::MediaImage>(), std::string(),
-      base::DoNothing());
-  WaitForDB();
-
-  {
-    // The media items should be stored.
-    auto items = GetItemsForMediaFeedSync(service(), feed_id);
-
-    if (IsReadOnly()) {
-      EXPECT_TRUE(items.empty());
-    } else {
-      EXPECT_EQ(GetExpectedItems(), items);
-    }
-
-    // The OTR service should have the same data.
-    EXPECT_EQ(items, GetItemsForMediaFeedSync(otr_service(), feed_id));
-  }
-
-  sql::Statement s(
-      GetDB().GetUniqueStatement("UPDATE mediaFeedItem SET type = 99"));
-  ASSERT_TRUE(s.Run());
-
-  {
-    // The items should be skipped because of the invalid type.
-    auto items = GetItemsForMediaFeedSync(service(), feed_id);
-    EXPECT_TRUE(items.empty());
-
-    // The OTR service should have the same data.
-    EXPECT_EQ(items, GetItemsForMediaFeedSync(otr_service(), feed_id));
   }
 }
 

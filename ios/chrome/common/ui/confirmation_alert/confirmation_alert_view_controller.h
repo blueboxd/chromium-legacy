@@ -49,7 +49,7 @@ extern NSString* const
 @property(nonatomic) BOOL alwaysShowImage;
 
 // The style of the primary action button added to the toolbar. Must be set if
-// alwaysShowImage is set to YES.
+// both alwaysShowImage and primaryActionAvailable are set to YES.
 @property(nonatomic) UIBarButtonSystemItem primaryActionBarButtonStyle;
 
 // Controls if there is a help button in the view. Must be set before the

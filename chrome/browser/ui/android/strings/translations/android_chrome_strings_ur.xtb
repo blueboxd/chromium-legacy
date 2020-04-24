@@ -164,7 +164,6 @@
 <translation id="2131665479022868825"><ph name="DATA" /> کی بچت ہوئی</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> کو بند کر دیا گیا</translation>
 <translation id="2139186145475833000">ہوم اسکرین میں شامل کریں</translation>
-<translation id="2146738493024040262">فوری ایپ کھولیں</translation>
 <translation id="2154484045852737596">کارڈ میں ترمیم کریں</translation>
 <translation id="2154710561487035718">‏URL کاپی کریں</translation>
 <translation id="2156074688469523661">باقی سائٹس (<ph name="NUMBER_OF_SITES" />)</translation>
@@ -281,7 +280,6 @@
 <translation id="2996809686854298943">‏URL درکار ہے</translation>
 <translation id="300526633675317032">اس سے ویب سائٹ اسٹوریج کا کُل <ph name="SIZE_IN_KB" /> صاف ہو جائے گا۔</translation>
 <translation id="3016635187733453316">یہ یقینی بنائیں کہ آپ کا آلہ انٹرنیٹ سے منسلک ہے</translation>
-<translation id="3029613699374795922">‏<ph name="KBS" /> KB ڈاؤن لوڈ ہو گیا</translation>
 <translation id="3029704984691124060">پاس فریزز مماثل نہیں ہیں</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />مدد حاصل کریں<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">‏مقام آف ہے، <ph name="BEGIN_LINK" />Android کی ترتیبات<ph name="END_LINK" /> میں اسے آن کریں۔</translation>
@@ -456,7 +454,6 @@
 <translation id="4411535500181276704">لائٹ موڈ</translation>
 <translation id="4415276339145661267">‏اپنے Google اکاؤنٹ کا نظم کریں</translation>
 <translation id="4432792777822557199">آئندہ سے <ph name="SOURCE_LANGUAGE" /> کے صفحات کا <ph name="TARGET_LANGUAGE" /> میں ترجمہ کیا جائے گا</translation>
-<translation id="4433925000917964731">‏Google کی طرف سے فراہم کردہ لائٹ صفحہ</translation>
 <translation id="4434045419905280838">پوپ اپس اور ری ڈائریکٹس</translation>
 <translation id="4440958355523780886">‏Google کے ذریعے فراہم کردہ لائٹ صفحہ۔ اصل کو لوڈ کرنے کیلئے تھپتھپائیں۔</translation>
 <translation id="4452411734226507615"><ph name="TAB_TITLE" /> ٹیب بند کریں</translation>
@@ -736,7 +733,6 @@
 <translation id="6406506848690869874">مطابقت پذیر بنائیں</translation>
 <translation id="6410973561433500075">‏<ph name="DOMAIN" /> سے AR میں داخل ہوں؟</translation>
 <translation id="641643625718530986">پرنٹ کریں…</translation>
-<translation id="6416782512398055893">‏<ph name="MBS" /> MB ڈاؤن لوڈ ہو گیا</translation>
 <translation id="6427112570124116297">ویب کا ترجمہ کریں</translation>
 <translation id="6433501201775827830">اپنے تلاش انجن کا انتخاب کریں</translation>
 <translation id="6437478888915024427">صفحہ کی معلومات</translation>
@@ -744,7 +740,6 @@
 <translation id="6441734959916820584">نام کافی بڑا ہے</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# تصویر}other{# تصاویر}}</translation>
 <translation id="6447558397796644647">وہ بُک مارک تلاش نہیں کیا جا سکا۔ اپنا املا چیک کریں یا ایک نیا بُک مارک شامل کریں۔</translation>
-<translation id="6447842834002726250">کوکیز</translation>
 <translation id="6461962085415701688">فائل نہیں کھل سکتی</translation>
 <translation id="6464977750820128603">‏آپ Chrome میں اپنی ملاحظہ کردہ سائٹس کو دیکھ اور ان کے لیے ٹائمرز سیٹ کر سکتے ہیں۔\n\nجن سائٹس کے لیے آپ ٹائمرز سیٹ کرتے ہیں اور جتنی دیر تک آپ ان سائٹس کو ملاحظہ کرتے ہیں اس کے بارے میں Google معلومات حاصل کرتا ہے۔ ڈیجیٹل فلاح و بہبود کو بہتر بنانے کے لیے اس معلومات کا استعمال کیا جاتا ہے۔</translation>
 <translation id="6475951671322991020">ویڈیو ڈاؤن لوڈ کریں</translation>
@@ -753,7 +748,6 @@
 <translation id="6508722015517270189">‏Chrome کو دوبارہ شروع کریں</translation>
 <translation id="6532866250404780454">‏Chrome میں آپ کی ملاحظہ کردہ سائٹس نہیں دکھائی دیں گی۔ سائٹ کے سبھی ٹائمرز حذف کر دیے جائیں گے۔</translation>
 <translation id="6534565668554028783">‏Google کو جواب دینے میں کافی وقت لگا</translation>
-<translation id="6538442820324228105">‏<ph name="GBS" /> GB ڈاؤن لوڈ ہو گیا</translation>
 <translation id="6539092367496845964">کچھ غلط ہو گیا۔ بعد میں دوبارہ کوشش کریں۔</translation>
 <translation id="6545017243486555795">سبھی ڈیٹا صاف کریں</translation>
 <translation id="6545864417968258051">بلوٹوتھ اسکیننگ</translation>
@@ -854,6 +848,7 @@
 <translation id="7352939065658542140">ویڈیو</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{1 منتخب کردہ آئٹم کا اشتراک کریں}other{# منتخب کردہ آئٹمز کا اشتراک کریں}}</translation>
 <translation id="7359002509206457351">ادائیگی کے طریقوں تک رسائی حاصل کریں</translation>
+<translation id="7362144854749094396">‏سرگزشت Chrome کے ساتھ اشتراک کردہ ہے۔ ترجیحات <ph name="SITE_NAME" /> کے ساتھ اشتراک کردہ ہیں۔</translation>
 <translation id="7375125077091615385">قسم:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />۔</translation>
 <translation id="7400418766976504921">URL</translation>

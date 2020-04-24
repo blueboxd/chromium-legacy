@@ -129,8 +129,9 @@ class ExtensionCrashRecoveryTest : public extensions::ExtensionBrowserTest {
     display_service_->SimulateClick(NotificationHandler::Type::TRANSIENT,
                                     "app.background.crashed." + extension_id,
                                     base::nullopt, base::nullopt);
-    auto* extension = observer.WaitForExtensionLoaded();
-    extensions::BackgroundPageWatcher(GetProcessManager(), extension)
+    scoped_refptr<const Extension> extension =
+        observer.WaitForExtensionLoaded();
+    extensions::BackgroundPageWatcher(GetProcessManager(), extension.get())
         .WaitForOpen();
   }
 
@@ -543,7 +544,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
     chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
     observer.Wait();
   }
-  auto* extension = observer.WaitForExtensionLoaded();
+  scoped_refptr<const Extension> extension = observer.WaitForExtensionLoaded();
   EXPECT_EQ(first_extension_id_, extension->id());
 
   // Extension should now be loaded.

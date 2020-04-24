@@ -349,6 +349,7 @@
 <translation id="1465176863081977902">Kopieer oudio-adres</translation>
 <translation id="1465827627707997754">Pizzaskyf</translation>
 <translation id="1468571364034902819">Kan nie hierdie profiel gebruik nie</translation>
+<translation id="1470084204649225129">{NUM_TABS,plural, =1{Voeg oortjie by nuwe groep}other{Voeg oortjies by nuwe groep}}</translation>
 <translation id="1472675084647422956">Wys meer</translation>
 <translation id="1475502736924165259">Jy het sertifikate op lêer wat nie in enige van die ander kategorieë pas nie</translation>
 <translation id="1476088332184200792">Kopieer na jou toestel toe</translation>
@@ -477,6 +478,7 @@
 <translation id="1629314197035607094">Wagwoord het verstryk</translation>
 <translation id="1630768113285622200">Herbegin en gaan voort</translation>
 <translation id="1632803087685957583">Maak dit vir jou moontlik om jou sleutelbord se herhaalkoers, woordvoorspelling en meer te verstel</translation>
+<translation id="1634783886312010422">Het jy hierdie wagwoord reeds op <ph name="WEBSITE" /> verander?</translation>
 <translation id="1635033183663317347">Deur jou voog geïnstalleer.</translation>
 <translation id="1637224376458524414">Kry hierdie boekmerk op jou iPhone</translation>
 <translation id="1637765355341780467">Iets het verkeerd geloop met die oopmaak van jou profiel. Sekere kenmerke kan dalk onbeskikbaar wees.</translation>
@@ -3387,6 +3389,7 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="5542949973455282971">Koppel tans aan <ph name="CARRIER_NAME" /></translation>
 <translation id="5543983818738093899">Kontroleer tans status …</translation>
 <translation id="554517032089923082">GTC</translation>
+<translation id="5545335608717746497">{NUM_TABS,plural, =1{Voeg oortjie by groep}other{Voeg oortjies by groep}}</translation>
 <translation id="5546865291508181392">Vind</translation>
 <translation id="5548159762883465903">{NUM_OTHER_TABS,plural, =0{"<ph name="TAB_TITLE" />"}=1{"<ph name="TAB_TITLE" />" en 1 ander oortjie}other{"<ph name="TAB_TITLE" />" en # ander oortjies}}</translation>
 <translation id="5548606607480005320">Veiligheidskontrole</translation>
@@ -4212,6 +4215,7 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="6659594942844771486">Oortjie</translation>
 <translation id="6664237456442406323">Ongelukkig is jou rekenaar opgestel met 'n misvormde hardeware-ID. Dit verhinder die Chrome-bedryfstelsel om met die nuutste sekuriteitsoplossings op te dateer en jou rekenaar <ph name="BEGIN_BOLD" />kan dalk blootgestel word aan kwaadwillige aanvalle<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Iets het verkeerd geloop met die oopmaak van jou profiel. Meld asseblief af en meld dan weer aan.</translation>
+<translation id="6670142487971298264"><ph name="APP_NAME" /> is nou beskikbaar</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="6675665718701918026">Wystoestel is gekoppel</translation>
 <translation id="6676212663108450937">Oorweeg dit asseblief om oorfone te gebruik terwyl jy jou stem oplei</translation>
@@ -4541,6 +4545,7 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="7108338896283013870">Versteek</translation>
 <translation id="7108668606237948702">enter</translation>
 <translation id="7109543803214225826">Kortpad is verwyder</translation>
+<translation id="7110644433780444336">{NUM_TABS,plural, =1{Voeg oortjie by groep}other{Voeg oortjies by groep}}</translation>
 <translation id="7113502843173351041">Ken jou e-posadres</translation>
 <translation id="7114054701490058191">Wagwoorde stem nie ooreen nie</translation>
 <translation id="7114648273807173152">Gaan na Instellings &gt; Gekoppelde toestelle &gt; Jou foon &gt; Smart Lock toe om Smart Lock te gebruik om by jou Google-rekening aan te meld.</translation>
@@ -4584,6 +4589,7 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="7170041865419449892">Buite bereik</translation>
 <translation id="7171259390164035663">Moenie inskryf nie</translation>
 <translation id="7171559745792467651">Installeer programme van jou ander toestelle af</translation>
+<translation id="7172470549472604877">{NUM_TABS,plural, =1{Voeg oortjie by nuwe groep}other{Voeg oortjies by nuwe groep}}</translation>
 <translation id="7174199383876220879">Nuut! Beheer jou musiek, video's en meer.</translation>
 <translation id="7175037578838465313">Stel <ph name="NAME" /> op</translation>
 <translation id="7175353351958621980">Gelaai vanaf:</translation>
@@ -5162,6 +5168,7 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="7925247922861151263">AAA-kontrolering het misluk</translation>
 <translation id="7925285046818567682">Wag tans vir <ph name="HOST_NAME" /> …</translation>
 <translation id="7926423016278357561">Dit was nie ek nie.</translation>
+<translation id="7928175190925744466">Het jy hierdie wagwoord reeds verander?</translation>
 <translation id="7928836894214140642">Bestuur deur <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">Gestoorde betaalmetodes sal hier verskyn</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> deel tans jou skerm en oudio.</translation>

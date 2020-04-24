@@ -9,6 +9,7 @@
 <translation id="1384959399684842514">የሚወርደው ላፍታ ቆሟል</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="2079545284768500474">ቀልብስ</translation>
+<translation id="2146738493024040262">ቅጽበታዊ መተግበሪያን ክፈት</translation>
 <translation id="2148716181193084225">ዛሬ</translation>
 <translation id="2359808026110333948">ቀጥል</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> ሜባ</translation>
@@ -27,6 +28,7 @@
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">ርዕስ</translation>
 <translation id="4259722352634471385">ዳሰሳ ታግዷል፦ <ph name="URL" /></translation>
+<translation id="4433925000917964731">ቀላል ገጹ በGoogle ቀርቧል።</translation>
 <translation id="4570913071927164677">ዝርዝሮች</translation>
 <translation id="4645575059429386691">በእርስዎ ወላጅ የሚቀናበር</translation>
 <translation id="4883854917563148705">የሚተዳደሩ ቅንብሮች ዳግም ሊጀመሩ አይችሉም</translation>
@@ -38,6 +40,7 @@
 <translation id="5391532827096253100">ወደዚህ ጣቢያ ያልዎት ግንኙነት ደህንነቱ የተጠበቀ አይደለም። የጣቢያ መረጃ</translation>
 <translation id="5556459405103347317">ዳግም ጫን</translation>
 <translation id="5596627076506792578">ተጨማሪ አማራጮች</translation>
+<translation id="5804241973901381774">ፍቃዶች</translation>
 <translation id="5860033963881614850">አጥፋ</translation>
 <translation id="5916664084637901428">በርቷል</translation>
 <translation id="5939518447894949180">ዳግም አስጀምር</translation>
@@ -46,6 +49,7 @@
 <translation id="6165508094623778733">የበለጠ ለመረዳት</translation>
 <translation id="6206551242102657620">ግንኙነት ደህንነቱ የተጠበቀ ነው። የጣቢያ መረጃ</translation>
 <translation id="6216432067784365534">የ<ph name="NAME_OF_LIST_ITEM" /> አማራጮች</translation>
+<translation id="6447842834002726250">ኩኪዎች</translation>
 <translation id="6527303717912515753">አጋራ</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> ጊባ</translation>
 <translation id="6746124502594467657">ወደታች አውርድ</translation>

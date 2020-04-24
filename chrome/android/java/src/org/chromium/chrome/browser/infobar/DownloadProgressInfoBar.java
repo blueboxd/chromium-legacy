@@ -20,6 +20,7 @@ import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadInfoBarController;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.ui.messages.infobar.InfoBar;
 import org.chromium.chrome.browser.ui.messages.infobar.InfoBarLayout;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.content_public.browser.UiThreadTaskTraits;

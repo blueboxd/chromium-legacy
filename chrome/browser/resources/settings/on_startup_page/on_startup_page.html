@@ -1,10 +1,11 @@
-    <style include="settings-shared">
+    <style include="cr-shared-style settings-shared iron-flex">
       .block {
         display: block;
       }
     </style>
-    <div class="settings-box block first">
+    <div class="cr-row first">
       <settings-radio-group id="onStartupRadioGroup"
+          class="flex"
           pref="{{prefs.session.restore_on_startup}}"
           group-aria-label="$i18n{onStartup}">
         <controlled-radio-button name="[[prefValues_.OPEN_NEW_TAB]]"

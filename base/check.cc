@@ -84,6 +84,18 @@ CheckError CheckError::DPCheck(const char* file,
   return check_error;
 }
 
+CheckError CheckError::NotImplemented(const char* file,
+                                      int line,
+                                      const char* function) {
+  CheckError check_error(new LogMessage(file, line, LOG_ERROR));
+  if (function) {
+    check_error.stream() << "Not implemented reached in " << function;
+  } else {
+    check_error.stream() << "NOT IMPLEMENTED";
+  }
+  return check_error;
+}
+
 std::ostream& CheckError::stream() {
   return log_message_->stream();
 }

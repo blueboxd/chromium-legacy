@@ -20,11 +20,11 @@
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/ng/flex/layout_ng_flexible_box.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_fieldset.h"
-#include "third_party/blink/renderer/core/layout/ng/layout_ng_flexible_box.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_grid.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_progress.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_ruby_as_block.h"
@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_inside_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_outside_list_marker.h"
+#include "third_party/blink/renderer/core/layout/ng/mathml/layout_ng_mathml_block.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
@@ -119,6 +120,14 @@ LayoutBlock* LayoutObjectFactory::CreateGrid(Node& node,
   if (disable_ng_for_type)
     UseCounter::Count(node.GetDocument(), WebFeature::kLegacyLayoutByGrid);
   return CreateObject<LayoutBlock, LayoutNGGrid, LayoutGrid>(
+      node, style, legacy, disable_ng_for_type);
+}
+
+LayoutBlock* LayoutObjectFactory::CreateMath(Node& node,
+                                             const ComputedStyle& style,
+                                             LegacyLayout legacy) {
+  bool disable_ng_for_type = !RuntimeEnabledFeatures::MathMLCoreEnabled();
+  return CreateObject<LayoutBlock, LayoutNGMathMLBlock, LayoutBlockFlow>(
       node, style, legacy, disable_ng_for_type);
 }
 

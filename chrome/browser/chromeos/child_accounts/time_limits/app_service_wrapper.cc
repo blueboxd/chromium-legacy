@@ -98,6 +98,12 @@ void AppServiceWrapper::ResumeApp(const AppId& app_id) {
   GetAppProxy()->UnpauseApps(apps);
 }
 
+void AppServiceWrapper::LaunchApp(const std::string& app_service_id) {
+  GetAppProxy()->Launch(app_service_id, ui::EventFlags::EF_NONE,
+                        apps::mojom::LaunchSource::kFromParentalControls,
+                        display::kDefaultDisplayId);
+}
+
 std::vector<AppId> AppServiceWrapper::GetInstalledApps() const {
   std::vector<AppId> installed_apps;
   GetAppCache().ForEachApp([&installed_apps](const apps::AppUpdate& update) {
@@ -155,6 +161,10 @@ void AppServiceWrapper::GetAppIcon(
 
 std::string AppServiceWrapper::GetAppServiceId(const AppId& app_id) const {
   return AppServiceIdFromAppId(app_id, profile_);
+}
+
+bool AppServiceWrapper::IsAppInstalled(const std::string& app_id) {
+  return GetAppCache().GetAppType(app_id) != apps::mojom::AppType::kUnknown;
 }
 
 AppId AppServiceWrapper::AppIdFromAppServiceId(

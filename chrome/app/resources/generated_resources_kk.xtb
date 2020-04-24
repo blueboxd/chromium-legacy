@@ -1201,7 +1201,7 @@
 <translation id="258095186877893873">Ұзақ</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (<ph name="PLATFORM_VERSION" /> платформасы) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Kerberos билетін алу мүмкін болмады. Қайталап көріңіз немесе ұйымыңыздың құрылғы әкімшісіне хабарласыңыз. (Қате коды: <ph name="ERROR_CODE" />)</translation>
-<translation id="2585013490795742997"><ph name="QUERY" /> бойынша 1 нәтиже бар.</translation>
+<translation id="2585013490795742997"><ph name="QUERY" /> бойынша 1 іздеу нәтижесі көрсетілуде</translation>
 <translation id="2585724835339714757">Бұл қойынды экраныңызбен бөлісуде.</translation>
 <translation id="2586657967955657006">Буфер</translation>
 <translation id="2586672484245266891">Қысқа URL мекенжайын енгізіңіз</translation>
@@ -3552,7 +3552,7 @@
 <translation id="577322787686508614">Келесі құрылғыдан оқуға рұқсат жоқ: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5774295353725270860">Файлдар қолданбасын ашу</translation>
 <translation id="577624874850706961">Cookie файлдарын іздеу</translation>
-<translation id="5776858208024364029"><ph name="QUERY" /> сұрауы бойынша іздеу нәтижесі: <ph name="NUMBER" /></translation>
+<translation id="5776858208024364029"><ph name="QUERY" /> сұрауы бойынша <ph name="NUMBER" /> іздеу нәтижесі көрсетілуде</translation>
 <translation id="5777468213129569553">Chrome браузерін ашу</translation>
 <translation id="5778747455497889540">Төменде қауіпсіздік модулінің компьютерге тағайындалған және еркін жасалған құпия сөзі берілген:</translation>
 <translation id="5780011244986845107">Сіз таңдаған қалтада құпия файлдар бар. "<ph name="APP_NAME" />" қолданбасына қалтадағы деректерді тұрақты оқу мүмкіндігін бергіңіз келе ме?</translation>
@@ -4121,7 +4121,7 @@
 <translation id="6532206849875187177">Қауіпсіздік және есептік жазбаға кіру</translation>
 <translation id="6532527800157340614">Кіру токенін алу мүмкін болмағандықтан, жүйеге кіре алмадыңыз. Желі байланысын тексеріп, қайталап көріңіз.</translation>
 <translation id="6532663472409656417">Кәсіпорында тіркелген</translation>
-<translation id="6535331821390304775"><ph name="ORIGIN" /> бетіне осындай сілтемелерді байланыстырылған қолданбада әрдайым ашуға рұқсат етілсін.</translation>
+<translation id="6535331821390304775"><ph name="ORIGIN" /> бетіне осындай сілтемелерді байланыстырылған қолданбада әрдайым ашуға рұқсат етілсін</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Ескертпе:<ph name="END_BOLD" /> не істеп жатқаныңызды білсеңіз немесе сізден орындауды сұраған болса ғана қосыңыз, себебі деректерді жинақтау өнімділікті нашарлатуы мүмкін.</translation>
 <translation id="6541638731489116978">Бұл сайттың қозғалыс датчиктеріңізді пайдалануына тыйым салынды.</translation>
 <translation id="6545665334409411530">Қайталау жиілігі</translation>

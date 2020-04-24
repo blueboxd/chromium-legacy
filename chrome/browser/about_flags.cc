@@ -4155,13 +4155,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSendTabToSelfWhenSignedInDescription, kOsAll,
      FEATURE_VALUE_TYPE(send_tab_to_self::kSendTabToSelfWhenSignedIn)},
 
-    {"enable-data-reduction-proxy-with-network-service",
-     flag_descriptions::kEnableDataReductionProxyNetworkServiceName,
-     flag_descriptions::kEnableDataReductionProxyNetworkServiceDescription,
-     kOsAll,
-     FEATURE_VALUE_TYPE(data_reduction_proxy::features::
-                            kDataReductionProxyEnabledWithNetworkService)},
-
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS)
     {"sharing-peer-connection-receiver",
@@ -5098,6 +5091,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"new-os-settings-search", flag_descriptions::kNewOsSettingsSearchName,
      flag_descriptions::kNewOsSettingsSearchDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kNewOsSettingsSearch)},
+    {"dlc-settings-ui", flag_descriptions::kDlcSettingsUiName,
+     flag_descriptions::kDlcSettingsUiDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kDlcSettingsUi)},
     {"help-app", flag_descriptions::kHelpAppName,
      flag_descriptions::kHelpAppDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kHelpAppV2)},

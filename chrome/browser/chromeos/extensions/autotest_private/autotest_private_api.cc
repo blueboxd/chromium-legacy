@@ -269,6 +269,7 @@ api::autotest_private::ShelfItemType GetShelfItemType(ash::ShelfItemType type) {
           SHELF_ITEM_TYPE_BROWSERSHORTCUT;
     case ash::TYPE_DIALOG:
       return api::autotest_private::ShelfItemType::SHELF_ITEM_TYPE_DIALOG;
+    case ash::TYPE_LACROS_BROWSER:  // TODO(jamescook): Add autotest support.
     case ash::TYPE_UNDEFINED:
       return api::autotest_private::ShelfItemType::SHELF_ITEM_TYPE_NONE;
   }

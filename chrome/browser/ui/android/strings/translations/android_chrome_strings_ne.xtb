@@ -67,7 +67,7 @@
 <translation id="1409879593029778104"><ph name="FILE_NAME" /> फाइल पहिल्यै अवस्थित भएकाले डाउनलोड रोकियो।</translation>
 <translation id="1414981605391750300">Google मा सम्पर्क गर्दै। यस कार्यमा एक मिनेट जति लाग्नसक्छ…</translation>
 <translation id="1416550906796893042">अनुप्रयोगको संस्करण</translation>
-<translation id="1430915738399379752">छाप्नुहोस्</translation>
+<translation id="1430915738399379752">प्रिन्ट गर्नुहोस्</translation>
 <translation id="1446450296470737166">MIDI यन्त्रहरूको पूर्ण नियन्त्रणलाई अनुमति दिनुहोस्</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> आदान प्रदान गर्न सकिएन</translation>
 <translation id="1477626028522505441"><ph name="FILE_NAME" /> डाउनलोड सर्भरको समस्याको कारण असफल भयो।</translation>
@@ -159,12 +159,11 @@
 
 कुनै शब्द खोज्न उक्त शब्दमा ट्याप गर्नुहोस्। आफ्नो खोज परिष्कृत गर्न सम्बन्धित पाठमा छोइराखेर अझ धेरै वा कम शब्दहरू चयन गर्नुहोस्। आफ्नो खोज पद सम्पादन गर्न प्यानल खोल्नुहोस्, नयाँ ट्याबमा खोल्ने आइकनमा ट्याप गर्नुहोस् र खोज बाकसमा रहेको खोज पदमा आवश्यक परिवर्तनहरू गर्नुहोस्।</translation>
 <translation id="2111511281910874386">पृष्ठमा जानुहोस्</translation>
-<translation id="2122601567107267586">अनुप्रयोग खोल्न सकिएन</translation>
+<translation id="2122601567107267586">एप खोल्न सकिएन</translation>
 <translation id="2126426811489709554">Chrome द्वारा संचालित</translation>
 <translation id="2131665479022868825"><ph name="DATA" /> बचत गरियो</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> बन्द भयो</translation>
 <translation id="2139186145475833000">गृह स्क्रिनमा थप्नुहोस्</translation>
-<translation id="2146738493024040262">तात्कालिक अनुप्रयोग खोल्नुहोस्</translation>
 <translation id="2154484045852737596">कार्ड सम्पादन गर्नुहोस्</translation>
 <translation id="2154710561487035718">URL प्रतिलिपि गर्नुहोस्</translation>
 <translation id="2156074688469523661">बाँकी साइटहरू (<ph name="NUMBER_OF_SITES" />)</translation>
@@ -203,7 +202,7 @@
 <translation id="2450907520913474542">यो पृष्ठ नछोडिकन वेबसाइटहरूमा रहेका शीर्षकहरूबारे जान्नुहोस्। खोज्नका लागि छुनुहोस् नामक सुविधाले कुनै शब्द र त्यसको सन्दर्भलाई Google खोजमा पठाउँछ र उक्त शब्दको परिभाषा, त्यससँग सम्बन्धित तस्बिर, खोज परिणाम र अन्य विवरणहरू देखाउँछ।
 
 कुनै शब्द खोज्न उक्त शब्दमा छोइराख्नुहोस्। आफ्नो खोज परिष्कृत गर्न अझ धेरै वा कम शब्दहरू चयन गर्नुहोस्। आफ्नो खोज पद सम्पादन गर्न प्यानल खोल्नुहोस्, नयाँ ट्याबमा खोल्ने आइकनमा ट्याप गर्नुहोस् र खोज बाकसमा रहेको खोज पदमा आवश्यक परिवर्तनहरू गर्नुहोस्।</translation>
-<translation id="246532703174860178">आदान प्रदान गर्नुहोस्</translation>
+<translation id="246532703174860178">सेयर गर्नुहोस्</translation>
 <translation id="2482878487686419369">सूचनाहरू</translation>
 <translation id="2490684707762498678"><ph name="APP_NAME" /> ले व्यवस्थापन गरेको</translation>
 <translation id="2494974097748878569">Chrome को Google सहायक</translation>
@@ -252,7 +251,7 @@
 <translation id="2818669890320396765">आफ्ना सबै यन्त्रमा पुस्तक चिन्हहरू प्राप्त गर्न साइन इन गरी सिंक गर्ने सुविधा सक्रिय गर्नुहोस्</translation>
 <translation id="2822354292072154809">तपाईं साँच्चिकै <ph name="CHOSEN_OBJECT_NAME" /> का साइटसम्बन्धी सम्पूर्ण अनुमतिहरू रिसेट गर्न चाहनुहुन्छ?</translation>
 <translation id="2842985007712546952">अभिभावक फोल्डर</translation>
-<translation id="2860954141821109167">यस यन्त्रमा कुनै फोन अनुप्रयोग सक्षम गरिएको कुरा सुनिश्चित गर्नुहोस्</translation>
+<translation id="2860954141821109167">यस यन्त्रमा कुनै फोन एप सक्षम गरिएको कुरा सुनिश्चित गर्नुहोस्</translation>
 <translation id="2870560284913253234">साइट</translation>
 <translation id="2874939134665556319">अघिल्लो ट्र्याक</translation>
 <translation id="2876369937070532032">यसले तपाईंको सुरक्षा जोखिममा हुँदा तपाईंले भ्रमण गर्ने केही पृष्ठका URL हरू Google मा पठाउँछ</translation>
@@ -281,7 +280,6 @@
 <translation id="2996809686854298943">URL आवश्यक छ</translation>
 <translation id="300526633675317032">यसले वेबसाइटको भण्डारणको सबै <ph name="SIZE_IN_KB" /> खाली गर्ने छ।</translation>
 <translation id="3016635187733453316">यो यन्त्र इन्टरनेटमा जोडिएको कुरा सुनिश्चित गर्नुहोस्</translation>
-<translation id="3029613699374795922"><ph name="KBS" /> के.बि. डाउनलोड गरियो</translation>
 <translation id="3029704984691124060">पासफ्रेजहरू मेल खाँदैनन्</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />मद्दत प्राप्त गर्नुहोस्<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">स्थानसम्बन्धी सुविधा निष्क्रिय छ; <ph name="BEGIN_LINK" />Android का सेटिङहरू<ph name="END_LINK" /> मा गई यसलाई सक्रिय गर्नुहोस्।</translation>
@@ -305,7 +303,7 @@
 <translation id="321773570071367578">यदि तपाईँले आफ्नो पासफ्रेज बिर्सनुभएको छ वा यस सेटिङलाई परिवर्तन गर्न चाहनुहुन्छ भने <ph name="BEGIN_LINK" />सिंकलाई रिसेट गर्नुहोस्<ph name="END_LINK" /></translation>
 <translation id="3223655101706843289">यस कार्यले <ph name="ORIGIN" /> ले भण्डारण गरेका सबै डेटा र कुकीका साथै तपाईंको गृह स्क्रिनमा रहेका यसका अनुप्रयोगहरू मेटाउने छ।</translation>
 <translation id="3227137524299004712">माइक्रोफोन</translation>
-<translation id="3232754137068452469">वेब अनुप्रयोग</translation>
+<translation id="3232754137068452469">वेब एप</translation>
 <translation id="3236059992281584593">१ मिनेट बाँकी छ</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3254409185687681395">यो पृष्ठलाई बुकमार्क गर्नुहोस्</translation>
@@ -319,7 +317,7 @@
 <translation id="3295530008794733555">अझ छिटो ब्राउज गर्नुहोस्। कम डेटा प्रयोग गर्नुहोस्।</translation>
 <translation id="3298243779924642547">लाइट</translation>
 <translation id="3303414029551471755">सामग्री डाउनलोड गर्न अगाडि बढ्ने हो?</translation>
-<translation id="3306398118552023113">यो अनुप्रयोग Chrome मा चलिरहेको छ</translation>
+<translation id="3306398118552023113">यो एप Chrome मा चलिरहेको छ</translation>
 <translation id="3315103659806849044">तपाईं हाल आफ्ना सिंक तथा Google का सेवासम्बन्धी सेटिङहरूलाई आफू अनुकूल पार्दै हुनुहुन्छ। सिंक सेवा सक्रिय पार्ने कार्य पूरा गर्न स्क्रिन बटनको छेवैमा रहेको सुनिश्चित गर्नुहोस् नामक बटनमा ट्याप गर्नुहोस्। माथि नेभिगेसन गर्नुहोस्</translation>
 <translation id="3328801116991980348">साइट जानकारी</translation>
 <translation id="3333961966071413176">सबै सम्पर्कहरू</translation>
@@ -330,7 +328,7 @@
 <translation id="3367813778245106622">सिंक सुरु गर्न फेरि साइन इन गर्नुहोस्</translation>
 <translation id="3373979091428520308">यो पृष्ठ अर्को यन्त्रसँग आदान प्रदान गर्न अर्को यन्त्रमा रहेको Chrome ब्राउजरको सेटिङमा गई सिंक गर्ने सुविधा सक्रिय गर्नुहोस्</translation>
 <translation id="3374023511497244703">अब उप्रान्त तपाईंको Google खातामा तपाईंका पुस्तक चिन्ह, इतिहास, पासवर्ड र Chrome का अन्य डेटा सिंक हुने छैनन्</translation>
-<translation id="3384347053049321195">छवि साझेदारी गर्नुहोस्</translation>
+<translation id="3384347053049321195">छवि सेयर गर्नुहोस्</translation>
 <translation id="3386292677130313581">साइटहरूलाई तपाईँको स्थान थाहा पाउने अनुमति दिनु भन्दा पहिले तपाईँलाई सोध्ने (सिफारिस गरिएको)</translation>
 <translation id="3387650086002190359"><ph name="FILE_NAME" /> डाउनलोड फाइल प्रणाली त्रूटिका कारण असफल भयो।</translation>
 <translation id="3389286852084373014">पाठ ज्यादै ठुलो छ</translation>
@@ -457,7 +455,6 @@
 <translation id="4411535500181276704">लाइट मोड</translation>
 <translation id="4415276339145661267">आफ्नो Google खाताको व्यवस्थापन गर्नुहोस्</translation>
 <translation id="4432792777822557199"><ph name="SOURCE_LANGUAGE" /> मा रहेका पृष्ठहरूलाई अब उप्रान्त <ph name="TARGET_LANGUAGE" /> मा अनुवाद गरिनेछ</translation>
-<translation id="4433925000917964731">Google ले प्रदान गरेको मूल पृष्ठको लाइट संस्करण</translation>
 <translation id="4434045419905280838">पपअप तथा रिडिरेक्टहरू</translation>
 <translation id="4440958355523780886">Google ले उपलब्ध गराएको मूल पृष्ठको लाइट संस्करण। मूल पृष्ठ लोड गर्न ट्याप गर्नुहोस्।</translation>
 <translation id="4452411734226507615"><ph name="TAB_TITLE" /> ट्याब बन्द गर्नुहोस्‌</translation>
@@ -468,7 +465,7 @@
 <translation id="447252321002412580">Chrome का सुविधा तथा कार्यसम्पादन सुधार्न मद्दत गर्नुहोस्</translation>
 <translation id="4479647676395637221">साइटहरूलाई तपाईँको क्यामेरा प्रयोग गर्न अनुमति दिनुभन्दा पहिले तपाईँलाई सोध्ने (सिफारिस गरिएको)</translation>
 <translation id="4479972344484327217">Chrome को <ph name="MODULE" /> स्थापना गरिँदै…</translation>
-<translation id="4487967297491345095">Chrome का अनुप्रयोग सम्बन्धी सबै डेटा सदाका लागि मेटिने छन्। यस अन्तर्गत सबै फाइल, सेटिङ, खाता, डेटाबेसहरू आदि पर्दछन्।</translation>
+<translation id="4487967297491345095">Chrome का एप सम्बन्धी सबै डेटा सदाका लागि मेटिने छन्। यस अन्तर्गत सबै फाइल, सेटिङ, खाता, डेटाबेसहरू आदि पर्दछन्।</translation>
 <translation id="4493497663118223949">लाइट मोड सक्रिय छ</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# दिन अघि}other{# दिन अघि}}</translation>
 <translation id="451872707440238414">आफ्ना पुस्तक चिन्हहरू खोज्नुहोस्</translation>
@@ -527,7 +524,7 @@
 <translation id="4882831918239250449">खोज, विज्ञापन र थप कुराहरू वैयक्तीकृत गर्ने प्रयोजनका लागि तपाईंको ब्राउजिङ इतिहासको प्रयोग गरिने तरिका नियन्त्रण गर्नुहोस्</translation>
 <translation id="4885273946141277891">असमर्थित संख्याका Chrome दृष्टान्तहरू।</translation>
 <translation id="4887024562049524730">साइटहरूलाई भर्चुअल रियालिटी चल्ने तपाईंको यन्त्र र त्यसमा भएको डेटा प्रयोग गर्न अनुमति दिनुअघि सोध्नुहोस् (सिफारिस गरिएको)</translation>
-<translation id="4910889077668685004">भुक्तानी सम्बन्धी अनुप्रयोगहरू</translation>
+<translation id="4910889077668685004">भुक्तानी सम्बन्धी एपहरू</translation>
 <translation id="4913161338056004800">तथ्याङ्कहरू रिसेट गर्नुहोस्</translation>
 <translation id="4913169188695071480">पुन: ताजा गर्ने काम रोक्नुहोस्</translation>
 <translation id="4915549754973153784">अन्य यन्त्रहरूलाई स्क्यान गर्दा <ph name="BEGIN_LINK" />मद्दत प्राप्त गर्नुहोस्<ph name="END_LINK" />…</translation>
@@ -537,7 +534,7 @@
 <translation id="4943872375798546930">कुनै नतिजा छैन</translation>
 <translation id="4961107849584082341">यस पृष्ठलाई जुनसुकै भाषामा अनुवाद गर्नुहोस्</translation>
 <translation id="4962975101802056554">यन्त्रका सबै अनुमतिहरू फिर्ता लिनुहोस्</translation>
-<translation id="4964199952259983386">Chrome लाई AR प्रयोग गर्न दिन <ph name="BEGIN_LINK" />Android का सेटिङ<ph name="END_LINK" />मा गई क्यामेरा पनि सक्रिय गर्नुहोस्।</translation>
+<translation id="4964199952259983386">Chrome लाई AR प्रयोग गर्न दिन <ph name="BEGIN_LINK" />Android का सेटिङ<ph name="END_LINK" />मा गई क्यामेरा पनि सुचारु गर्नुहोस्।</translation>
 <translation id="4970824347203572753">तपाईंको स्थानमा उपलब्ध छैन</translation>
 <translation id="497421865427891073">अगाडि जानुहोस्</translation>
 <translation id="4988210275050210843">फाइलहरू डाउनलोड गर्दै (<ph name="MEGABYTES" />)।</translation>
@@ -557,10 +554,10 @@
 <translation id="510275257476243843">१ घन्टा बाँकी छ</translation>
 <translation id="5123685120097942451">इन्कोग्निटो ट्याब</translation>
 <translation id="5127805178023152808">सिंक बन्द छ</translation>
-<translation id="5129038482087801250">वेबको अनुप्रयोग स्थापना गर्नुहोस्</translation>
+<translation id="5129038482087801250">वेबको एप स्थापना गर्नुहोस्</translation>
 <translation id="5132942445612118989">सबै यन्त्रहरूमा आफ्ना पासवर्ड, इतिहास र थप कुरा सिंक गर्नुहोस्</translation>
 <translation id="5139940364318403933">Google Drive प्रयोग गर्ने तरिका सिक्नुहोस्</translation>
-<translation id="5152843274749979095">समर्थन गरिने कुनै अनुप्रयोग स्थापना गरिएको छैन</translation>
+<translation id="5152843274749979095">समर्थन गरिने कुनै एप स्थापना गरिएको छैन</translation>
 <translation id="5161254044473106830">शीर्षक आवश्यक छ</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{१ डाउनलोड असफल भयो।}other{# डाउनलोडहरू असफल भए।}}</translation>
 <translation id="5170568018924773124">फोल्डरमा देखाउनुहोस्</translation>
@@ -637,7 +634,7 @@
 <translation id="5684874026226664614">ओहो। यो पृष्ठ अनुवादन गर्न सकिएन।</translation>
 <translation id="5686790454216892815">फाइलको नाम ज्यादै लामो छ</translation>
 <translation id="5689516760719285838">स्थान</translation>
-<translation id="5690795753582697420">Android का सेटिङमा क्यामेरा निष्क्रिय पारिएको छ</translation>
+<translation id="5690795753582697420">Android का सेटिङमा क्यामेरा बन्द गरिएको छ</translation>
 <translation id="5694049548840660018">सजिलैसँग गृहपृष्ठमा फर्कनुहोस्</translation>
 <translation id="569536719314091526">थप विकल्पहरू नामक बटनबाट यस पृष्ठलाई जुनसुकै भाषामा अनुवाद गर्नुहोस्</translation>
 <translation id="5710871682236653961">तपाईंले NFC यन्त्रहरूमा ट्याप गर्दा साइटहरूलाई जानकारी पठाउने र प्राप्त गर्ने अनुमति दिनुअघि सोध्नुहोस् (सिफारिस गरिएको)</translation>
@@ -656,7 +653,7 @@
 <translation id="5810288467834065221">प्रतिलिपि अधिकार <ph name="YEAR" /> Google LLC। सर्वाधिकार सुरक्षित।</translation>
 <translation id="5817918615728894473">जोडा  बनाउनुहोस्</translation>
 <translation id="583281660410589416">अज्ञात</translation>
-<translation id="5833984609253377421">लिंक आदान प्रदान गर्नुहोस्</translation>
+<translation id="5833984609253377421">लिंक सेयर गर्नुहोस्</translation>
 <translation id="5836192821815272682">Chrome को अद्यावधिक डाउनलोड गर्दै…</translation>
 <translation id="5853623416121554550">पज गरियो</translation>
 <translation id="5854790677617711513">३० दिनभन्दा पुरानो</translation>
@@ -669,7 +666,7 @@
 <translation id="5876056640971328065">भिडियो पज गर्नुहोस्</translation>
 <translation id="5884076754568147479">तपाईंलाई काम सम्पन्न गर्न मद्दत गर्न Google ले तपाईंले सहायक प्रयोग गर्ने साइटका URL र सामग्रीहरूका साथै तपाईंले सहायकमार्फत पेस गर्न जानकारी प्राप्त गर्ने छ</translation>
 <translation id="5919204609460789179">सिंक सुरु गर्न <ph name="PRODUCT_NAME" /> लाई अद्यावधिक गर्नुहोस्</translation>
-<translation id="5922853908706496913">तपाईंको स्क्रिन प्रस्तुत गर्दै</translation>
+<translation id="5922853908706496913">तपाईंको स्क्रिन सेयर गर्दै</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> बचत गरियो</translation>
 <translation id="5939518447894949180">रिसेट गर्नुहोस्</translation>
 <translation id="5942872142862698679">खोजीका लागि Google प्रयोग गर्दै</translation>
@@ -735,8 +732,7 @@
 <translation id="6404511346730675251">बुकमार्क सम्पादन गर्नुहोस्</translation>
 <translation id="6406506848690869874">समक्रमण</translation>
 <translation id="6410973561433500075"><ph name="DOMAIN" /> बाट AR मा प्रवेश गर्ने हो?</translation>
-<translation id="641643625718530986">छाप्नुहोस्...</translation>
-<translation id="6416782512398055893"><ph name="MBS" /> एम.बि. डाउनलोड गरियो</translation>
+<translation id="641643625718530986">प्रिन्ट गर्नुहोस्...</translation>
 <translation id="6427112570124116297">वेब अनुवाद गर्नुहोस्</translation>
 <translation id="6433501201775827830">आफ्नो खोज इन्जिन छनौट गर्नुहोस्</translation>
 <translation id="6437478888915024427">पृष्ठको जानकारी</translation>
@@ -744,7 +740,6 @@
 <translation id="6441734959916820584">नाम अत्यन्तै लामो छ</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# छवि}other{# छविहरू}}</translation>
 <translation id="6447558397796644647">उक्त पुस्तक चिन्ह फेला पार्न सकिएन। आफ्नो हिज्जे जाँच्नुहोस् वा कुनै नयाँ पुस्तक चिन्ह थप्नुहोस्।</translation>
-<translation id="6447842834002726250">कुकीहरू</translation>
 <translation id="6461962085415701688">फाइल खोल्न सकिँदैन</translation>
 <translation id="6464977750820128603">तपाईं आफूले Chrome मार्फत भ्रमण गर्ने साइटहरू हेर्न र तिनमा टाइमर सेट गर्न सक्नुहुन्छ।\n\nGoogle ले तपाईंले टाइमर सेट गर्नुभएका साइटहरू तथा उक्त साइट भ्रमण गर्दा बिताउनुभएको समयसम्बन्धी जानकारी प्राप्त गर्छ। यो जानकारी डिजिटल वेलबिइङ सुविधालाई अझ राम्रो बनाउनका निम्ति प्रयोग गरिन्छ।</translation>
 <translation id="6475951671322991020">भिडियो डाउनलोड गर्नुहोस्</translation>
@@ -753,7 +748,6 @@
 <translation id="6508722015517270189">Chrome पुनः सुरु गर्नुहोस्</translation>
 <translation id="6532866250404780454">तपाईंले Chrome मार्फत हेर्नुभएका साइटहरू देखिने छैनन्। साइटका सबै टाइमरहरू मेटाइने छन्।</translation>
 <translation id="6534565668554028783">Google ले प्रतिक्रिया जनाउन निकै लामो समय लियो</translation>
-<translation id="6538442820324228105"><ph name="GBS" /> जि.बि. डाउनलोड गरियो</translation>
 <translation id="6539092367496845964">केही चिज गडबड भयो। पछि फेरि प्रयास गर्नुहोस्।</translation>
 <translation id="6545017243486555795">सबै डेटा खाली गर्नुहोस्</translation>
 <translation id="6545864417968258051">ब्लुटुथ स्क्यान गर्दै</translation>
@@ -813,7 +807,7 @@
 <translation id="6979737339423435258">सुरूबाट नै</translation>
 <translation id="6981982820502123353">पहुँच</translation>
 <translation id="6989267951144302301">डाउनलोड गर्न सकिएन</translation>
-<translation id="6990079615885386641">Google प्ले स्टोरबाट अनुप्रयोग प्राप्त गर्नुहोस्: <ph name="APP_ACTION" /></translation>
+<translation id="6990079615885386641">Google प्ले स्टोरबाट एप प्राप्त गर्नुहोस्: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">साइटहरूलाई तपाईँको माइक्रोफोन प्रयोग गर्न अनुमति दिनुभन्दा पहिले तपाईँलाई सोध्ने (सिफारिस गरिएको)</translation>
 <translation id="6995899638241819463">डेटा चोरीको घटनामा पासवर्डको खुलासा हुँदा तपाईंलाई चेतावनी दिइन्छ</translation>
 <translation id="7000754031042624318">Android का सेटिङहरूमा अनुमति निष्क्रिय पारिएको छ</translation>
@@ -846,13 +840,13 @@
 <translation id="7290209999329137901">नाम बदल्ने सुविधा उपलब्ध छैन</translation>
 <translation id="7291387454912369099">सहायकले ट्रिगर गरेको चेकआउट</translation>
 <translation id="7293171162284876153">सिंक गर्ने कार्य सुरु गर्न "Chrome को आफ्नो डेटा सिंक गर्नुहोस्"।</translation>
-<translation id="729975465115245577">तपाईंको यन्त्रमा पासवर्डहरूको फाइल भण्डारण गर्ने कुनै अनुप्रयोग छैन।</translation>
+<translation id="729975465115245577">तपाईंको यन्त्रमा पासवर्डहरूको फाइल भण्डारण गर्ने कुनै एप छैन।</translation>
 <translation id="7302081693174882195">विवरणहरू: बचत गरिएको डेटाको मात्राअनुसार क्रमबद्ध गरिएको</translation>
 <translation id="7302486331832100261">तपाईं सामान्यतया सूचनाहरूमाथि रोक लगाउनुहुन्छ। अनुमति दिन विवरणहरूमा ट्याप गर्नुहोस्।</translation>
 <translation id="7328017930301109123">लाइट मोडमा हुँदा Chrome ले पृष्ठहरू अझ छिटो लोड गर्नुका साथै ६० प्रतिशतसम्म कम डेटा प्रयोग गर्छ।</translation>
 <translation id="7333031090786104871">अघिल्लो साइट अझै थपिँदै</translation>
 <translation id="7352939065658542140">भिडियो</translation>
-<translation id="7353894246028566792">{NUM_SELECTED,plural, =1{चयन गरिएको १ वस्तु आदान प्रदान गर्नुहोस्}other{चयन गरिएका # वस्तुहरू आदान प्रदान गर्नुहोस्}}</translation>
+<translation id="7353894246028566792">{NUM_SELECTED,plural, =1{चयन गरिएको १ वस्तु सेयर गर्नुहोस्}other{चयन गरिएका # वस्तुहरू सेयर गर्नुहोस्}}</translation>
 <translation id="7359002509206457351">भुक्तानी विधिहरूमाथि पहुँच राख्नुहोस्</translation>
 <translation id="7375125077091615385">प्रकार:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />।</translation>
@@ -908,7 +902,7 @@
 <translation id="7704317875155739195">खोज तथा URL हरू स्वतः पूर्ण गर्नुहोस्</translation>
 <translation id="7725024127233776428">तपाईंले पुस्तक चिन्ह लगाउनुभएका पृष्ठहरू यहाँ देखिन्छन्</translation>
 <translation id="773466115871691567"><ph name="SOURCE_LANGUAGE" /> मा रहेका पृष्ठहरूलाई सधैँ अनुवाद गर्नुहोस्‌</translation>
-<translation id="7746457520633464754">Chrome ले खतरनाक अनुप्रयोग र साइटहरू पत्ता लगाउने प्रयोजनका लागि तपाईंले भ्रमण गर्ने केही पृष्ठका URL, प्रणालीसम्बन्धी सीमित जानकारी र केही पृष्ठका सामग्री Google मा पठाउँछ</translation>
+<translation id="7746457520633464754">Chrome ले खतरनाक एप र साइटहरू पत्ता लगाउने प्रयोजनका लागि तपाईंले भ्रमण गर्ने केही पृष्ठका URL, प्रणालीसम्बन्धी सीमित जानकारी र केही पृष्ठका सामग्री Google मा पठाउँछ</translation>
 <translation id="7757787379047923882"><ph name="DEVICE_NAME" /> ले आदान प्रदान गरेको पाठ</translation>
 <translation id="7762668264895820836">SD कार्ड <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">ठेगाना थप्नुहोस्</translation>

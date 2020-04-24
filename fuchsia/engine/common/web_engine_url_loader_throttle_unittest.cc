@@ -6,6 +6,7 @@
 
 #include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
 namespace {
 
@@ -51,15 +52,15 @@ TEST_F(WebEngineURLLoaderThrottleTest, WildcardHosts) {
   mojom::UrlRequestRewriteAddHeadersPtr add_headers =
       mojom::UrlRequestRewriteAddHeaders::New();
   add_headers->headers.SetHeader("Header", "Value");
-  mojom::UrlRequestRewritePtr rewrite =
-      mojom::UrlRequestRewrite::NewAddHeaders(std::move(add_headers));
-  std::vector<mojom::UrlRequestRewritePtr> rewrites;
-  rewrites.push_back(std::move(rewrite));
-  mojom::UrlRequestRewriteRulePtr rule = mojom::UrlRequestRewriteRule::New();
+  mojom::UrlRequestActionPtr rewrite =
+      mojom::UrlRequestAction::NewAddHeaders(std::move(add_headers));
+  std::vector<mojom::UrlRequestActionPtr> actions;
+  actions.push_back(std::move(rewrite));
+  mojom::UrlRequestRulePtr rule = mojom::UrlRequestRule::New();
   rule->hosts_filter = base::Optional<std::vector<std::string>>({"*.test.net"});
-  rule->rewrites = std::move(rewrites);
+  rule->actions = std::move(actions);
 
-  std::vector<mojom::UrlRequestRewriteRulePtr> rules;
+  std::vector<mojom::UrlRequestRulePtr> rules;
   rules.push_back(std::move(rule));
 
   TestCachedRulesProvider provider;
@@ -100,15 +101,15 @@ TEST_F(WebEngineURLLoaderThrottleTest, DataReplacementUrl) {
       mojom::UrlRequestRewriteReplaceUrl::New();
   replace_url->url_ends_with = ".css";
   replace_url->new_url = GURL(kCssDataURI);
-  mojom::UrlRequestRewritePtr rewrite =
-      mojom::UrlRequestRewrite::NewReplaceUrl(std::move(replace_url));
-  std::vector<mojom::UrlRequestRewritePtr> rewrites;
-  rewrites.push_back(std::move(rewrite));
-  mojom::UrlRequestRewriteRulePtr rule = mojom::UrlRequestRewriteRule::New();
+  mojom::UrlRequestActionPtr rewrite =
+      mojom::UrlRequestAction::NewReplaceUrl(std::move(replace_url));
+  std::vector<mojom::UrlRequestActionPtr> actions;
+  actions.push_back(std::move(rewrite));
+  mojom::UrlRequestRulePtr rule = mojom::UrlRequestRule::New();
   rule->hosts_filter = base::Optional<std::vector<std::string>>({"*.test.net"});
-  rule->rewrites = std::move(rewrites);
+  rule->actions = std::move(actions);
 
-  std::vector<mojom::UrlRequestRewriteRulePtr> rules;
+  std::vector<mojom::UrlRequestRulePtr> rules;
   rules.push_back(std::move(rule));
 
   TestCachedRulesProvider provider;
@@ -123,4 +124,75 @@ TEST_F(WebEngineURLLoaderThrottleTest, DataReplacementUrl) {
   request.url = GURL("http://test.net/style.css?query#ref");
   throttle.WillStartRequest(&request, &defer);
   EXPECT_EQ(request.url, base::StringPiece(kCssDataURI));
+}
+
+class TestThrottleDelegate : public blink::URLLoaderThrottle::Delegate {
+ public:
+  TestThrottleDelegate() = default;
+  ~TestThrottleDelegate() override = default;
+
+  bool canceled() const { return canceled_; }
+  base::StringPiece cancel_reason() const { return cancel_reason_; }
+
+  void Reset() {
+    canceled_ = false;
+    cancel_reason_.clear();
+  }
+
+  // URLLoaderThrottle::Delegate implementation.
+  void CancelWithError(int error_code,
+                       base::StringPiece custom_reason) override {
+    canceled_ = true;
+    cancel_reason_ = custom_reason.as_string();
+  }
+  void Resume() override {}
+
+ private:
+  bool canceled_ = false;
+  std::string cancel_reason_;
+};
+
+// Tests that resource loads can be allowed or blocked based on the
+// UrlRequestAction policy.
+TEST_F(WebEngineURLLoaderThrottleTest, AllowAndDeny) {
+  std::vector<mojom::UrlRequestRulePtr> rules;
+
+  {
+    mojom::UrlRequestRulePtr rule = mojom::UrlRequestRule::New();
+    rule->hosts_filter = base::Optional<std::vector<std::string>>({"test.net"});
+    rule->actions.push_back(mojom::UrlRequestAction::NewPolicy(
+        mojom::UrlRequestAccessPolicy::kAllow));
+    rules.push_back(std::move(rule));
+  }
+  {
+    mojom::UrlRequestRulePtr rule = mojom::UrlRequestRule::New();
+    rule->actions.push_back(mojom::UrlRequestAction::NewPolicy(
+        mojom::UrlRequestAccessPolicy::kDeny));
+    rules.push_back(std::move(rule));
+  }
+
+  TestCachedRulesProvider provider;
+  provider.SetCachedRules(
+      base::MakeRefCounted<WebEngineURLLoaderThrottle::UrlRequestRewriteRules>(
+          std::move(rules)));
+
+  WebEngineURLLoaderThrottle throttle(&provider);
+  bool defer = false;
+
+  TestThrottleDelegate delegate;
+  throttle.set_delegate(&delegate);
+
+  network::ResourceRequest request1;
+  request1.url = GURL("http://test.net");
+  throttle.WillStartRequest(&request1, &defer);
+  EXPECT_FALSE(delegate.canceled());
+
+  delegate.Reset();
+
+  network::ResourceRequest request2;
+  request2.url = GURL("http://blocked.net");
+  throttle.WillStartRequest(&request2, &defer);
+  EXPECT_TRUE(delegate.canceled());
+  EXPECT_EQ(delegate.cancel_reason(),
+            "Resource load blocked by embedder policy.");
 }

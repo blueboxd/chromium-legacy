@@ -68,7 +68,7 @@ void HTMLBodyElement::CollectStyleForPresentationAttribute(
           url, GetDocument().CompleteURL(url),
           Referrer(GetDocument().OutgoingReferrer(),
                    GetDocument().GetReferrerPolicy()),
-          OriginClean::kTrue);
+          OriginClean::kTrue, false /* is_ad_related */);
       image_value->SetInitiator(localName());
       style->SetProperty(
           CSSPropertyValue(GetCSSPropertyBackgroundImage(), *image_value));

@@ -764,6 +764,12 @@ class MostVisitedElement extends PolymerElement {
       this.screenWidth_ = ScreenWidth.NARROW;
     }
   }
+
+  /** @private */
+  onTilesRendered_() {
+    this.pageHandler_.onMostVisitedTilesRendered(
+        BrowserProxy.getInstance().now());
+  }
 }
 
 customElements.define(MostVisitedElement.is, MostVisitedElement);

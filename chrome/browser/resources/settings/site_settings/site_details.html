@@ -12,6 +12,8 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../i18n_setup.html">
 <link rel="import" href="../icons.html">
 <link rel="import" href="../route.html">
@@ -26,7 +28,7 @@
 
 <dom-module id="site-details">
   <template>
-    <style include="settings-shared action-link">
+    <style include="cr-shared-style settings-shared action-link iron-flex">
       .favicon-image {
         margin: 2px;
       }
@@ -41,6 +43,10 @@
 
       #resetSettingsButton {
         margin-top: 24px;
+      }
+
+      #usageHeader {
+        padding: 0 var(--cr-section-padding);
       }
     </style>
     <!-- Confirm reset settings dialog. -->
@@ -111,7 +117,7 @@
     </cr-dialog>
 
     <div id="usage">
-      <div class="settings-box first line-only">
+      <div id="usageHeader">
         <h2 class="first">$i18n{siteSettingsUsage}</h2>
       </div>
       <div class="list-frame">
@@ -137,8 +143,8 @@
       </div>
     </div>
 
-    <div class="settings-box first">
-      <h2 class="start">$i18n{siteSettingsPermissions}</h2>
+    <div class="cr-row first">
+      <h2 class="flex">$i18n{siteSettingsPermissions}</h2>
       <cr-button id="resetSettingsButton" class="header-aligned-button"
           role="button" aria-disabled="false"
           on-click="onConfirmClearSettings_">

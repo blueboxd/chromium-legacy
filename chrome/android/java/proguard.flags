@@ -4,7 +4,7 @@
 
 # Every fragment must have an empty constructor, so it can be instantiated when
 # restoring its activity's state.
--keep public class org.chromium.chrome.browser.** extends androidx.fragment.app.Fragment {
+-keep public class org.chromium.** extends androidx.fragment.app.Fragment {
   public <init>();
 }
 

@@ -203,21 +203,21 @@ std::string BrowserSavePasswordProgressLogger::FormStructureToFieldsLogString(
 
     if (field->properties_mask) {
       field_info += ", properties=";
-      field_info += (field->properties_mask & FieldPropertiesFlags::USER_TYPED)
+      field_info += (field->properties_mask & FieldPropertiesFlags::kUserTyped)
                         ? "T"
                         : "_";
+      field_info +=
+          (field->properties_mask & FieldPropertiesFlags::kAutofilledOnPageLoad)
+              ? "Ap"
+              : "__";
       field_info += (field->properties_mask &
-                     FieldPropertiesFlags::AUTOFILLED_ON_PAGELOAD)
-                        ? "Ap"
-                        : "__";
-      field_info += (field->properties_mask &
-                     FieldPropertiesFlags::AUTOFILLED_ON_USER_TRIGGER)
+                     FieldPropertiesFlags::kAutofilledOnUserTrigger)
                         ? "Au"
                         : "__";
-      field_info += (field->properties_mask & FieldPropertiesFlags::HAD_FOCUS)
+      field_info += (field->properties_mask & FieldPropertiesFlags::kHadFocus)
                         ? "F"
                         : "_";
-      field_info += (field->properties_mask & FieldPropertiesFlags::KNOWN_VALUE)
+      field_info += (field->properties_mask & FieldPropertiesFlags::kKnownValue)
                         ? "K"
                         : "_";
     }

@@ -22,6 +22,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/no_destructor.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -337,7 +338,7 @@ void OnProfileLoaded(ProfileManager::ProfileLoadedCallback client_callback,
   }
   DCHECK(profile);
   std::move(client_callback)
-      .Run(incognito ? profile->GetOffTheRecordProfile() : profile);
+      .Run(incognito ? profile->GetPrimaryOTRProfile() : profile);
 }
 
 #if !defined(OS_ANDROID)
@@ -418,7 +419,7 @@ Profile* ProfileManager::GetLastUsedProfileAllowedByPolicy() {
   if (!profile)
     return nullptr;
   if (IsOffTheRecordModeForced(profile))
-    return profile->GetOffTheRecordProfile();
+    return profile->GetPrimaryOTRProfile();
   return profile;
 }
 
@@ -499,7 +500,7 @@ Profile* ProfileManager::CreateInitialProfile() {
           profile_manager->GetInitialProfileDir()));
 
   if (profile_manager->ShouldGoOffTheRecord(profile))
-    return profile->GetOffTheRecordProfile();
+    return profile->GetPrimaryOTRProfile();
   return profile;
 }
 
@@ -608,7 +609,7 @@ void ProfileManager::CreateProfileAsync(const base::FilePath& profile_path,
       // such as having no extensions, not writing to disk, etc.
       if (profile->IsGuestSession() || profile->IsSystemProfile()) {
         SetNonPersonalProfilePrefs(profile);
-        profile = profile->GetOffTheRecordProfile();
+        profile = profile->GetPrimaryOTRProfile();
       }
       // Profile has already been created. Run callback immediately.
       callback.Run(profile, Profile::CREATE_STATUS_INITIALIZED);
@@ -625,11 +626,12 @@ bool ProfileManager::IsValidProfile(const void* profile) {
        ++iter) {
     if (iter->second->created) {
       Profile* candidate = iter->second->profile.get();
-      if (candidate == profile ||
-          (candidate->HasOffTheRecordProfile() &&
-           candidate->GetOffTheRecordProfile() == profile)) {
+      if (candidate == profile)
         return true;
-      }
+      std::vector<Profile*> otr_profiles =
+          candidate->GetAllOffTheRecordProfiles();
+      if (base::Contains(otr_profiles, profile))
+        return true;
     }
   }
   return false;
@@ -669,8 +671,7 @@ Profile* ProfileManager::GetLastUsedProfile(
   LOG_IF(FATAL, !profile) << "Calling GetLastUsedProfile() before profile "
                           << "initialization is completed.";
 
-  return profile->IsGuestSession() ? profile->GetOffTheRecordProfile()
-                                   : profile;
+  return profile->IsGuestSession() ? profile->GetPrimaryOTRProfile() : profile;
 #else
   return GetProfile(GetLastUsedProfileDir(user_data_dir));
 #endif
@@ -1168,7 +1169,7 @@ void ProfileManager::OnProfileCreated(Profile* profile,
   if (success) {
     DoFinalInit(info, go_off_the_record);
     if (go_off_the_record)
-      profile = profile->GetOffTheRecordProfile();
+      profile = profile->GetPrimaryOTRProfile();
   } else {
     profile = nullptr;
     profiles_info_.erase(iter);
@@ -1385,7 +1386,7 @@ Profile* ProfileManager::GetActiveUserOrOffTheRecordProfileFromPath(
     // many of the browser and ui tests fail. We do return the OTR profile
     // if the login-profile switch is passed so that we can test this.
     if (ShouldGoOffTheRecord(profile))
-      return profile->GetOffTheRecordProfile();
+      return profile->GetPrimaryOTRProfile();
     DCHECK(!user_manager::UserManager::Get()->IsLoggedInAsGuest());
     return profile;
   }
@@ -1401,7 +1402,7 @@ Profile* ProfileManager::GetActiveUserOrOffTheRecordProfileFromPath(
   // Some unit tests didn't initialize the UserManager.
   if (user_manager::UserManager::IsInitialized() &&
       user_manager::UserManager::Get()->IsLoggedInAsGuest())
-    return profile->GetOffTheRecordProfile();
+    return profile->GetPrimaryOTRProfile();
   return profile;
 #else
   base::FilePath default_profile_dir(user_data_dir);
@@ -1753,7 +1754,7 @@ void ProfileManager::SaveActiveProfiles() {
 
   profile_list->Clear();
 
-  // crbug.com/120112 -> several non-incognito profiles might have the same
+  // crbug.com/120112 -> several non-off-the-record profiles might have the same
   // GetPath().BaseName(). In that case, we cannot restore both
   // profiles. Include each base name only once in the last active profile
   // list.

@@ -145,6 +145,9 @@
 #   user. By default, each policy is mandatory and not recommended.
 #   'per_profile' controls whether a user policy applies to every user logging
 #   into the browser or only one profile.
+#   'cloud_only' Set to True if the policy is forced or recommended to set from
+#   Admin console only. This hides the policy from policy templates and
+#   documentation.
 #
 #   The 'max_size' key is used to specify the maximal size of the external data
 #   that a policy can reference, in bytes. This annotation is compulsory for

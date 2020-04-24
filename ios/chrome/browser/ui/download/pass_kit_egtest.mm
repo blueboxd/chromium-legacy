@@ -12,6 +12,7 @@
 #include "ios/chrome/browser/download/download_test_util.h"
 #include "ios/chrome/browser/download/pass_kit_mime_type.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_constants.h"
+#import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
@@ -86,7 +87,9 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
 
 // Turn on Messages UI.
 #if defined(CHROME_EARL_GREY_1)
-  _featureList.InitAndEnableFeature(kIOSInfobarUIReboot);
+  _featureList.InitWithFeatures(
+      /*enabled_features=*/{kIOSInfobarUIReboot},
+      /*disabled_features=*/{kInfobarUIRebootOnlyiOS13});
 #endif
 
   self.testServer->RegisterRequestHandler(base::Bind(&GetResponse));
@@ -96,6 +99,7 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
 - (AppLaunchConfiguration)appConfigurationForTestCase {
   AppLaunchConfiguration config;
   config.features_enabled.push_back(kIOSInfobarUIReboot);
+  config.features_disabled.push_back(kInfobarUIRebootOnlyiOS13);
   return config;
 }
 

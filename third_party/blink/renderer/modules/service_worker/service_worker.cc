@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_post_message_options.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/messaging/blink_transferable_message.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
@@ -165,7 +166,7 @@ ServiceWorker* ServiceWorker::From(ExecutionContext* context,
     return scope->GetOrCreateServiceWorker(std::move(info));
   }
 
-  return ServiceWorkerContainer::From(Document::From(context))
+  return ServiceWorkerContainer::From(To<LocalDOMWindow>(context)->document())
       ->GetOrCreateServiceWorker(std::move(info));
 }
 

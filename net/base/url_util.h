@@ -131,6 +131,12 @@ NET_EXPORT std::string GetHostOrSpecFromURL(const GURL& url);
 // GetSuperdomain("127.0.0.1") -> "0.0.1"
 NET_EXPORT std::string GetSuperdomain(base::StringPiece domain);
 
+// Returns whether |subdomain| is a subdomain of (or identical to)
+// |superdomain|, if both are hostnames (not IP addresses -- for which this
+// function is nonsensical). Does not consider the Public Suffix List.
+NET_EXPORT bool IsSubdomainOf(base::StringPiece subdomain,
+                              base::StringPiece superdomain);
+
 // Canonicalizes |host| and returns it.  Also fills |host_info| with
 // IP address information.  |host_info| must not be NULL.
 NET_EXPORT std::string CanonicalizeHost(base::StringPiece host,

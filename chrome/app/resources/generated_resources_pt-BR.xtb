@@ -349,6 +349,7 @@
 <translation id="1465176863081977902">C&amp;opiar endereço do áudio</translation>
 <translation id="1465827627707997754">Fatia de pizza</translation>
 <translation id="1468571364034902819">Não é possível usar esse perfil</translation>
+<translation id="1470084204649225129">{NUM_TABS,plural, =1{Adicionar guia ao novo grupo}one{Adicionar guia ao novo grupo}other{Adicionar guias ao novo grupo}}</translation>
 <translation id="1472675084647422956">Mostrar mais</translation>
 <translation id="1475502736924165259">Você tem certificados no arquivo que não correspondem a nenhuma das outras categorias</translation>
 <translation id="1476088332184200792">Copiar para o dispositivo</translation>
@@ -477,6 +478,7 @@
 <translation id="1629314197035607094">Senha expirada</translation>
 <translation id="1630768113285622200">Reiniciar e continuar</translation>
 <translation id="1632803087685957583">Permite ajustar a taxa de repetição, a previsão de palavras e outras configurações do teclado</translation>
+<translation id="1634783886312010422">Você já mudou essa senha em <ph name="WEBSITE" />?</translation>
 <translation id="1635033183663317347">Instalada pelo custodiante.</translation>
 <translation id="1637224376458524414">Receber esse favorito no seu iPhone</translation>
 <translation id="1637765355341780467">Ocorreu um erro ao abrir seu perfil. É possível que alguns recursos estejam indisponíveis.</translation>
@@ -3387,6 +3389,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="5542949973455282971">Conectando-se à <ph name="CARRIER_NAME" /></translation>
 <translation id="5543983818738093899">Verificando status...</translation>
 <translation id="554517032089923082">GTC</translation>
+<translation id="5545335608717746497">{NUM_TABS,plural, =1{Adicionar guia ao grupo}one{Adicionar guia ao grupo}other{Adicionar guias ao grupo}}</translation>
 <translation id="5546865291508181392">Buscar</translation>
 <translation id="5548159762883465903">{NUM_OTHER_TABS,plural, =0{"<ph name="TAB_TITLE" />"}=1{"<ph name="TAB_TITLE" />" e mais 1 guia}one{"<ph name="TAB_TITLE" />" e mais # guia}other{"<ph name="TAB_TITLE" />" e mais # guias}}</translation>
 <translation id="5548606607480005320">Confirmação de segurança</translation>
@@ -4213,6 +4216,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6659594942844771486">Guia</translation>
 <translation id="6664237456442406323">Infelizmente, seu computador está configurado com um ID de hardware mal formado. Isso impede que o Chrome OS seja atualizado com as correções de segurança mais recentes e, por isso, seu computador <ph name="BEGIN_BOLD" />pode ficar vulnerável a ataques maliciosos<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Ocorreu um erro ao abrir seu perfil. Saia da conta e faça login novamente.</translation>
+<translation id="6670142487971298264"><ph name="APP_NAME" /> já está disponível</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="6675665718701918026">Dispositivo apontador conectado</translation>
 <translation id="6676212663108450937">Recomendamos o uso de fones de ouvido para treinar sua voz</translation>
@@ -4542,6 +4546,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7108338896283013870">Ocultar</translation>
 <translation id="7108668606237948702">enter</translation>
 <translation id="7109543803214225826">Atalho removido</translation>
+<translation id="7110644433780444336">{NUM_TABS,plural, =1{Adicionar guia ao grupo}one{Adicionar guia ao grupo}other{Adicionar guias ao grupo}}</translation>
 <translation id="7113502843173351041">Saiba seu endereço de e-mail</translation>
 <translation id="7114054701490058191">As senhas não correspondem</translation>
 <translation id="7114648273807173152">Para usar o Smart Lock para fazer login na sua Conta do Google, acesse "Config." &gt; "Dispositivos conectados" &gt; "Seu smartphone" &gt; "Smart Lock".</translation>
@@ -4585,6 +4590,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7170041865419449892">Fora de alcance</translation>
 <translation id="7171259390164035663">Não se inscrever</translation>
 <translation id="7171559745792467651">Instale apps dos seus outros dispositivos</translation>
+<translation id="7172470549472604877">{NUM_TABS,plural, =1{Adicionar guia ao novo grupo}one{Adicionar guia ao novo grupo}other{Adicionar guias ao novo grupo}}</translation>
 <translation id="7174199383876220879">Novo! Controle suas músicas, vídeos e muito mais.</translation>
 <translation id="7175037578838465313">Configurar a rede <ph name="NAME" /></translation>
 <translation id="7175353351958621980">Carregado de:</translation>
@@ -5163,6 +5169,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7925247922861151263">Falha ao verificar AAA</translation>
 <translation id="7925285046818567682">Aguardando <ph name="HOST_NAME" />...</translation>
 <translation id="7926423016278357561">Não fui eu.</translation>
+<translation id="7928175190925744466">Já mudou essa senha?</translation>
 <translation id="7928836894214140642">Gerenciado por <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">As formas de pagamento salvas serão exibidas aqui</translation>
 <translation id="79312157130859720">O app <ph name="APP_NAME" /> está compartilhando sua tela e áudio.</translation>

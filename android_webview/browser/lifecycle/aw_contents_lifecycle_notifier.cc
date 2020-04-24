@@ -48,11 +48,10 @@ void AwContentsLifecycleNotifier::OnWebViewCreated(
     const AwContents* aw_contents) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   has_aw_contents_ever_created_ = true;
-  uint64_t id = reinterpret_cast<uint64_t>(aw_contents);
   bool first_created = !HasAwContentsInstance();
-  DCHECK(aw_contents_id_to_data_.find(id) == aw_contents_id_to_data_.end());
+  DCHECK(aw_contents_to_data_.find(aw_contents) == aw_contents_to_data_.end());
 
-  aw_contents_id_to_data_.emplace(id, AwContentsData());
+  aw_contents_to_data_.emplace(aw_contents, AwContentsData());
   state_count_[ToIndex(AwContentsState::kDetached)]++;
   UpdateAppState();
 
@@ -65,13 +64,12 @@ void AwContentsLifecycleNotifier::OnWebViewCreated(
 void AwContentsLifecycleNotifier::OnWebViewDestroyed(
     const AwContents* aw_contents) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  uint64_t id = reinterpret_cast<uint64_t>(aw_contents);
-  const auto it = aw_contents_id_to_data_.find(id);
-  DCHECK(it != aw_contents_id_to_data_.end());
+  const auto it = aw_contents_to_data_.find(aw_contents);
+  DCHECK(it != aw_contents_to_data_.end());
 
   state_count_[ToIndex(it->second.aw_content_state)]--;
   DCHECK(state_count_[ToIndex(it->second.aw_content_state)] >= 0);
-  aw_contents_id_to_data_.erase(it);
+  aw_contents_to_data_.erase(it);
   UpdateAppState();
 
   if (!HasAwContentsInstance()) {
@@ -126,6 +124,15 @@ void AwContentsLifecycleNotifier::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
+std::vector<const AwContents*> AwContentsLifecycleNotifier::GetAllAwContents()
+    const {
+  std::vector<const AwContents*> result;
+  result.reserve(aw_contents_to_data_.size());
+  for (auto& it : aw_contents_to_data_)
+    result.push_back(it.first);
+  return result;
+}
+
 AwContentsLifecycleNotifier::AwContentsLifecycleNotifier() = default;
 
 AwContentsLifecycleNotifier::~AwContentsLifecycleNotifier() = default;
@@ -177,9 +184,8 @@ bool AwContentsLifecycleNotifier::HasAwContentsInstance() const {
 
 AwContentsLifecycleNotifier::AwContentsData*
 AwContentsLifecycleNotifier::GetAwContentsData(const AwContents* aw_contents) {
-  uint64_t id = reinterpret_cast<uint64_t>(aw_contents);
-  DCHECK(aw_contents_id_to_data_.find(id) != aw_contents_id_to_data_.end());
-  return &aw_contents_id_to_data_.at(id);
+  DCHECK(aw_contents_to_data_.find(aw_contents) != aw_contents_to_data_.end());
+  return &aw_contents_to_data_.at(aw_contents);
 }
 
 }  // namespace android_webview

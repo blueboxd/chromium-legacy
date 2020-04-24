@@ -9542,6 +9542,24 @@ TEST_F(HTTPSSessionTest, DontResumeSessionsForInvalidCertificates) {
   }
 }
 
+// Interceptor to check that secure DNS has been disabled. Secure DNS should be
+// disabled for any network fetch triggered during certificate verification as
+// it could cause a deadlock.
+class SecureDnsInterceptor : public net::URLRequestInterceptor {
+ public:
+  SecureDnsInterceptor() = default;
+  ~SecureDnsInterceptor() override = default;
+
+ private:
+  // URLRequestInterceptor implementation:
+  net::URLRequestJob* MaybeInterceptRequest(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const override {
+    EXPECT_TRUE(request->disable_secure_dns());
+    return nullptr;
+  }
+};
+
 class HTTPSCertNetFetchingTest : public HTTPSRequestTest {
  public:
   HTTPSCertNetFetchingTest() : context_(true) {}
@@ -9552,6 +9570,9 @@ class HTTPSCertNetFetchingTest : public HTTPSRequestTest {
     context_.set_cert_verifier(cert_verifier_.get());
     context_.SetCTPolicyEnforcer(std::make_unique<DefaultCTPolicyEnforcer>());
     context_.Init();
+
+    net::URLRequestFilter::GetInstance()->AddHostnameInterceptor(
+        "http", "127.0.0.1", std::make_unique<SecureDnsInterceptor>());
 
     cert_net_fetcher_->SetURLRequestContext(&context_);
     context_.cert_verifier()->SetConfig(GetCertVerifierConfig());
@@ -9565,6 +9586,7 @@ class HTTPSCertNetFetchingTest : public HTTPSRequestTest {
 #if defined(USE_NSS_CERTS)
     SetURLRequestContextForNSSHttpIO(nullptr);
 #endif
+    net::URLRequestFilter::GetInstance()->ClearHandlers();
   }
 
  protected:
@@ -9600,22 +9622,6 @@ static const SHA256HashValue kOCSPTestCertSPKI = {{
 // This is the policy OID contained in the certificates that testserver
 // generates.
 static const char kOCSPTestCertPolicy[] = "1.3.6.1.4.1.11129.2.4.1";
-
-// Interceptor to check that secure DNS has been disabled.
-class SecureDnsInterceptor : public net::URLRequestInterceptor {
- public:
-  SecureDnsInterceptor() = default;
-  ~SecureDnsInterceptor() override = default;
-
- private:
-  // URLRequestInterceptor implementation:
-  net::URLRequestJob* MaybeInterceptRequest(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const override {
-    EXPECT_TRUE(request->disable_secure_dns());
-    return nullptr;
-  }
-};
 
 class HTTPSOCSPTest : public HTTPSRequestTest {
  public:

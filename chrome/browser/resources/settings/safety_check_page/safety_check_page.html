@@ -1,4 +1,5 @@
-    <style include="settings-shared">
+
+    <style include="cr-shared-style settings-shared iron-flex">
       #safetyCheckCollapse .list-item.selected {
          min-height: var(--settings-row-two-line-min-height);
       }
@@ -29,10 +30,10 @@
         }
       }
     </style>
-    <div id="safetyCheckParent" class="settings-box first two-line">
+    <div id="safetyCheckParent" class="cr-row first two-line">
       <iron-icon icon="settings20:safety-check" aria-hidden="true">
       </iron-icon>
-      <div class="start settings-box-text" no-search>
+      <div class="flex cr-padded-text" no-search>
         [[parentDisplayString_]]
       </div>
       <template is="dom-if" if="[[shouldShowParentButton_(parentStatus_)]]"
@@ -56,7 +57,7 @@
     </div>
     <iron-collapse id="safetyCheckCollapse"
         opened="[[shouldShowChildren_(parentStatus_)]]">
-      <div class="settings-box two-line">
+      <div class="cr-row">
         <iron-icon icon="[[getUpdatesIcon_(updatesStatus_)]]"
             id="updatesIcon"
             role="img"
@@ -64,7 +65,7 @@
             src="[[getUpdatesIconSrc_(updatesStatus_)]]"
             class$="[[getUpdatesIconClass_(updatesStatus_)]]">
         </iron-icon>
-        <div class="start settings-box-text">
+        <div class="flex cr-padded-text">
           <div>$i18n{safetyCheckUpdatesPrimaryLabel}</div>
           <div class="secondary" no-search
               inner-h-t-m-l="[[updatesDisplayString_]]">
@@ -86,7 +87,7 @@
           </iron-icon>
         </template>
       </div>
-      <div class="settings-box two-line">
+      <div class="cr-row">
         <iron-icon icon="[[getPasswordsIcon_(passwordsStatus_)]]"
             id="passwordsIcon"
             src="[[getPasswordsIconSrc_(passwordsStatus_)]]"
@@ -94,7 +95,7 @@
             role="img"
             aria-label="[[getPasswordsIconAriaLabel_(passwordsStatus_)]]">
         </iron-icon>
-        <div class="start settings-box-text">
+        <div class="flex cr-padded-text">
           <div>$i18n{passwords}</div>
           <div class="secondary" no-search
               inner-h-t-m-l="[[passwordsDisplayString_]]">
@@ -110,7 +111,7 @@
           </cr-button>
         </template>
       </div>
-      <div class="settings-box two-line">
+      <div class="cr-row">
         <iron-icon icon="[[getSafeBrowsingIcon_(safeBrowsingStatus_)]]"
             id="safeBrowsingIcon"
             src="[[getSafeBrowsingIconSrc_(safeBrowsingStatus_)]]"
@@ -118,7 +119,7 @@
             role="img"
             aria-label="[[getSafeBrowsingIconAriaLabel_(safeBrowsingStatus_)]]">
         </iron-icon>
-        <div class="start settings-box-text">
+        <div class="flex cr-padded-text">
           <div>$i18n{safeBrowsingSectionLabel}</div>
           <div class="secondary" no-search
               inner-h-t-m-l="[[safeBrowsingDisplayString_]]">
@@ -141,7 +142,7 @@
           </iron-icon>
         </template>
       </div>
-      <div class="settings-box two-line">
+      <div class="cr-row">
         <iron-icon icon="[[getExtensionsIcon_(extensionsStatus_)]]"
             id="extensionsIcon"
             src="[[getExtensionsIconSrc_(extensionsStatus_)]]"
@@ -149,7 +150,7 @@
             role="img"
             aria-label="[[getExtensionsIconAriaLabel_(extensionsStatus_)]]">
         </iron-icon>
-        <div class="start settings-box-text">
+        <div class="flex cr-padded-text">
           <div>$i18n{safetyCheckExtensionsPrimaryLabel}</div>
           <div class="secondary" no-search
               inner-h-t-m-l="[[extensionsDisplayString_]]">

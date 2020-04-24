@@ -169,6 +169,8 @@ component("chromium_sqlite3") {
 
   sources = [
     "sqlite3_shim.c",
+    "sqlite3_shim_fixups.h",
+    "src/amalgamation/rename_exports.h",
     "src/amalgamation/sqlite3.h",
   ]
 
@@ -246,6 +248,8 @@ component("dev_sqlite3") {
 
   sources = [
     "dev/sqlite3_shim.c",
+    "sqlite3_shim_fixups.h",
+    "src/amalgamation_dev/rename_exports.h",
     "src/amalgamation_dev/sqlite3.h",
   ]
 

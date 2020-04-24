@@ -366,6 +366,12 @@ UnPackStatus LzmaUtilImpl::UnPack(const base::FilePath& location,
           total_written += written;
         }
       } else {
+        // Modified pages are not written to disk until they're evicted from the
+        // working set. Explicitly kick off the write to disk now
+        // (asynchronously) to improve the odds that the file's contents are
+        // on-disk when another process (such as chrome.exe) would like to use
+        // them.
+        ::FlushViewOfFile(mapped_file->data(), 0);
         // Unmap the target file from the process's address space.
         mapped_file.reset();
         last_folder_index = -1;

@@ -178,7 +178,7 @@ cr-menu.chrome-menu > [checked]::before {
 .cr-dialog-buttons > button.cr-dialog-ok[disabled]:hover {
   background-color:
       var(--cros-default-button-background-color-primary-disabled);
-  color: var(--cros-default-button-label-color-primary-disabled`);
+  color: var(--cros-default-button-label-color-primary-disabled);
 }
 
 .cr-dialog-buttons > button.cr-dialog-cancel {
@@ -392,4 +392,35 @@ html[dir='rtl'] .cr-dialog-close {
      * so add extra padding on top of it. */
     padding-top: 3px;
   }
+}
+
+/* Common typography styles for ChromeOS. */
+body.files-ng .headline2 {
+  color: var(--google-grey-900);
+  font-family: Roboto;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 22px;
+}
+
+body.files-ng .body2-primary {
+  color: var(--google-grey-900);
+  font-family: Roboto;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+ /* Modification to cr-button to comply with ChromeOS GM2 rules. */
+body.files-ng cr-button.text-button {
+  color: var(--google-blue-600);
+  cursor: pointer;
+  font-family: Roboto;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+body.files-ng cr-button.text-button:focus {
+  outline-color: rgba(var(--google-blue-600-rgb), 40%);
+  outline-width: 2px;
 }

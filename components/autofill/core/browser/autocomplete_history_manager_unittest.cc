@@ -151,7 +151,7 @@ TEST_F(AutocompleteHistoryManagerTest, CreditCardNumberValue) {
   valid_cc.label = ASCIIToUTF16("Credit Card");
   valid_cc.name = ASCIIToUTF16("ccnum");
   valid_cc.value = ASCIIToUTF16("4012888888881881");
-  valid_cc.properties_mask |= USER_TYPED;
+  valid_cc.properties_mask |= kUserTyped;
   valid_cc.form_control_type = "text";
   form.fields.push_back(valid_cc);
 
@@ -174,7 +174,7 @@ TEST_F(AutocompleteHistoryManagerTest, NonCreditCardNumberValue) {
   invalid_cc.label = ASCIIToUTF16("Credit Card");
   invalid_cc.name = ASCIIToUTF16("ccnum");
   invalid_cc.value = ASCIIToUTF16("4580123456789012");
-  invalid_cc.properties_mask |= USER_TYPED;
+  invalid_cc.properties_mask |= kUserTyped;
   invalid_cc.form_control_type = "text";
   form.fields.push_back(invalid_cc);
 
@@ -194,7 +194,7 @@ TEST_F(AutocompleteHistoryManagerTest, SSNValue) {
   ssn.label = ASCIIToUTF16("Social Security Number");
   ssn.name = ASCIIToUTF16("ssn");
   ssn.value = ASCIIToUTF16("078-05-1120");
-  ssn.properties_mask |= USER_TYPED;
+  ssn.properties_mask |= kUserTyped;
   ssn.form_control_type = "text";
   form.fields.push_back(ssn);
 
@@ -215,7 +215,7 @@ TEST_F(AutocompleteHistoryManagerTest, SearchField) {
   search_field.label = ASCIIToUTF16("Search");
   search_field.name = ASCIIToUTF16("search");
   search_field.value = ASCIIToUTF16("my favorite query");
-  search_field.properties_mask |= USER_TYPED;
+  search_field.properties_mask |= kUserTyped;
   search_field.form_control_type = "search";
   form.fields.push_back(search_field);
 
@@ -235,7 +235,7 @@ TEST_F(AutocompleteHistoryManagerTest, AutocompleteFeatureOff) {
   search_field.label = ASCIIToUTF16("Search");
   search_field.name = ASCIIToUTF16("search");
   search_field.value = ASCIIToUTF16("my favorite query");
-  search_field.properties_mask |= USER_TYPED;
+  search_field.properties_mask |= kUserTyped;
   search_field.form_control_type = "search";
   form.fields.push_back(search_field);
 
@@ -258,7 +258,7 @@ TEST_F(AutocompleteHistoryManagerTest, InvalidValues) {
   search_field.label = ASCIIToUTF16("Search");
   search_field.name = ASCIIToUTF16("search");
   search_field.value = ASCIIToUTF16("");
-  search_field.properties_mask |= USER_TYPED;
+  search_field.properties_mask |= kUserTyped;
   search_field.form_control_type = "search";
   form.fields.push_back(search_field);
 
@@ -266,7 +266,7 @@ TEST_F(AutocompleteHistoryManagerTest, InvalidValues) {
   search_field.label = ASCIIToUTF16("Search2");
   search_field.name = ASCIIToUTF16("other search");
   search_field.value = ASCIIToUTF16(" ");
-  search_field.properties_mask |= USER_TYPED;
+  search_field.properties_mask |= kUserTyped;
   search_field.form_control_type = "search";
   form.fields.push_back(search_field);
 
@@ -274,7 +274,7 @@ TEST_F(AutocompleteHistoryManagerTest, InvalidValues) {
   search_field.label = ASCIIToUTF16("Search3");
   search_field.name = ASCIIToUTF16("other search");
   search_field.value = ASCIIToUTF16("      ");
-  search_field.properties_mask |= USER_TYPED;
+  search_field.properties_mask |= kUserTyped;
   search_field.form_control_type = "search";
   form.fields.push_back(search_field);
 
@@ -298,7 +298,7 @@ TEST_F(AutocompleteHistoryManagerTest, FieldWithAutocompleteOff) {
   field.label = ASCIIToUTF16("Something esoteric");
   field.name = ASCIIToUTF16("esoterica");
   field.value = ASCIIToUTF16("a truly esoteric value, I assure you");
-  field.properties_mask |= USER_TYPED;
+  field.properties_mask |= kUserTyped;
   field.form_control_type = "text";
   field.should_autocomplete = false;
   form.fields.push_back(field);
@@ -322,7 +322,7 @@ TEST_F(AutocompleteHistoryManagerTest, Incognito) {
   search_field.label = ASCIIToUTF16("Search");
   search_field.name = ASCIIToUTF16("search");
   search_field.value = ASCIIToUTF16("my favorite query");
-  search_field.properties_mask |= USER_TYPED;
+  search_field.properties_mask |= kUserTyped;
   search_field.form_control_type = "search";
   form.fields.push_back(search_field);
 
@@ -347,7 +347,7 @@ TEST_F(AutocompleteHistoryManagerTest, UserInputNotFocusable) {
   search_field.name = ASCIIToUTF16("search");
   search_field.value = ASCIIToUTF16("my favorite query");
   search_field.form_control_type = "search";
-  search_field.properties_mask |= USER_TYPED;
+  search_field.properties_mask |= kUserTyped;
   search_field.is_focusable = false;
   form.fields.push_back(search_field);
 
@@ -370,7 +370,7 @@ TEST_F(AutocompleteHistoryManagerTest, PresentationField) {
   field.label = ASCIIToUTF16("Something esoteric");
   field.name = ASCIIToUTF16("esoterica");
   field.value = ASCIIToUTF16("a truly esoteric value, I assure you");
-  field.properties_mask |= USER_TYPED;
+  field.properties_mask |= kUserTyped;
   field.form_control_type = "text";
   field.role = FormFieldData::RoleAttribute::kPresentation;
   form.fields.push_back(field);

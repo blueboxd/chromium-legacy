@@ -14,18 +14,15 @@
 
 namespace upboarding {
 
-// Metadata of an query tile image.
+// Metadata of a tile image.
 struct ImageMetadata {
   ImageMetadata();
-  ImageMetadata(const std::string& id, const GURL& url);
+  explicit ImageMetadata(const GURL& url);
   ~ImageMetadata();
   ImageMetadata(const ImageMetadata& other);
   bool operator==(const ImageMetadata& other) const;
 
-  // Unique Id for image.
-  std::string id;
-
-  // Origin URL the image fetched from.
+  // URL of the image.
   GURL url;
 };
 

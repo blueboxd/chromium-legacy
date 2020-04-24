@@ -20,8 +20,8 @@
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/password_manager/core/browser/password_manager_features_util.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
-#include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
@@ -104,8 +104,8 @@ class PasswordManagerSyncTest : public SyncTest {
 
     // Let the user opt in to the passwords account storage, and wait for it to
     // become active.
-    password_manager_util::SetAccountStorageOptIn(GetProfile(0)->GetPrefs(),
-                                                  GetSyncService(0), true);
+    password_manager::features_util::SetAccountStorageOptIn(
+        GetProfile(0)->GetPrefs(), GetSyncService(0), true);
     PasswordSyncActiveChecker(GetSyncService(0)).Wait();
     ASSERT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::PASSWORDS));
   }
@@ -254,7 +254,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest, ChooseDestinationStore) {
 
   // Part 2: Mimic the user choosing to save locally; now a newly saved password
   // should end up in the profile store.
-  password_manager_util::SetDefaultPasswordStore(
+  password_manager::features_util::SetDefaultPasswordStore(
       GetProfile(0)->GetPrefs(), GetSyncService(0),
       autofill::PasswordForm::Store::kProfileStore);
   {

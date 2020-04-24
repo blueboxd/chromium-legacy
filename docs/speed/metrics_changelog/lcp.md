@@ -1,5 +1,8 @@
 # Largest Contentful Paint Changelog
 
+* Chrome 83
+  * Metric definition improvement: [Largest Contentful Paint measurement stops at first input or scroll](2020_05_lcp.md)
+  * Metric definition improvement: [Largest Contentful Paint properly accounts for visual size of background images](2020_05_lcp.md)
 * Chrome 81
   * Metric definition improvement: [Largest Text Paint correctly reported while largest image is loading](2020_04_lcp.md)
 * Chrome 79

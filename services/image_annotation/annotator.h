@@ -15,6 +15,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -244,7 +245,7 @@ class Annotator : public mojom::Annotator {
   mojo::Remote<data_decoder::mojom::JsonParser> json_parser_;
 
   // A timer used to throttle server request frequency.
-  base::RepeatingTimer server_request_timer_;
+  std::unique_ptr<base::RepeatingTimer> server_request_timer_;
 
   const GURL server_url_;
 
@@ -253,6 +254,9 @@ class Annotator : public mojom::Annotator {
   const int batch_size_;
 
   const double min_ocr_confidence_;
+
+  // Used for all callbacks.
+  base::WeakPtrFactory<Annotator> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Annotator);
 };

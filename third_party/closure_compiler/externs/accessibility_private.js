@@ -73,6 +73,22 @@ chrome.accessibilityPrivate.SwitchAccessCommand = {
 /**
  * @enum {string}
  */
+chrome.accessibilityPrivate.SwitchAccessMenuAction = {
+  DECREMENT: 'decrement',
+  DICTATION: 'dictation',
+  INCREMENT: 'increment',
+  KEYBOARD: 'keyboard',
+  SCROLL_DOWN: 'scroll_down',
+  SCROLL_LEFT: 'scroll_left',
+  SCROLL_RIGHT: 'scroll_right',
+  SCROLL_UP: 'scroll_up',
+  SELECT: 'select',
+  SETTINGS: 'settings',
+};
+
+/**
+ * @enum {string}
+ */
 chrome.accessibilityPrivate.SyntheticKeyboardEventType = {
   KEYUP: 'keyup',
   KEYDOWN: 'keydown',

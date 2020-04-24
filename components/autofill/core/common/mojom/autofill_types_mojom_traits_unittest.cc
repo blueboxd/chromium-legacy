@@ -315,7 +315,7 @@ TEST_F(AutofillTypeTraitsTestImpl, PassFormFieldData) {
   input.should_autocomplete = true;
   input.role = FormFieldData::RoleAttribute::kPresentation;
   input.text_direction = base::i18n::RIGHT_TO_LEFT;
-  input.properties_mask = FieldPropertiesFlags::HAD_FOCUS;
+  input.properties_mask = FieldPropertiesFlags::kHadFocus;
   input.typed_value = base::ASCIIToUTF16("TestTypedValue");
   input.bounds = gfx::RectF(1, 2, 10, 100);
 

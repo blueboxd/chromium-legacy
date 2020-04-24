@@ -77,7 +77,12 @@ Usually you need a policy when
             If the policy needs additional verification or processing, please
             implement a `ConfigurationPolicyHandler` to do so.
         3.  Test the mapping by adding policy to
-            [policy_test_cases.json](https://cs.chromium.org/chromium/src/chrome/test/data/policy/policy_test_cases.json?q=policy_test_case)
+            [policy_test_cases.json](https://cs.chromium.org/chromium/src/chrome/test/data/policy/policy_test_cases.json?q=policy_test_case).
+        4.  iOS platform has its own
+            [configuration_policy_handler_list_factory.mm](https://source.chromium.org/chromium/chromium/src/+/master:ios/chrome/browser/policy/configuration_policy_handler_list_factory.mm)
+            and
+            [policy_test_cases.json](https://source.chromium.org/chromium/chromium/src/+/master:ios/chrome/test/data/policy/policy_test_cases.json)
+            file.
 4.  Disable the user setting UI when the policy is applied.
     -   If your feature can be controlled by GUI in `chrome://settings`, the
         associated option should be disabled when the policy controlling it is

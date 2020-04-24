@@ -225,7 +225,7 @@ void ChromeExtensionsRendererClient::WillSendRequest(
     const net::SiteForCookies& site_for_cookies,
     const url::Origin* initiator_origin,
     GURL* new_url,
-    bool* attach_same_site_cookies) {
+    bool* force_ignore_site_for_cookies) {
   std::string extension_id;
   GURL request_url(url);
   if (initiator_origin &&
@@ -258,7 +258,7 @@ void ChromeExtensionsRendererClient::WillSendRequest(
       // to any URLs it has permission for). But for now we make do with just
       // checking the direct initiator of the request.
       // We also want to check same-siteness between the initiator and the
-      // requested URL, because setting |attach_same_site_cookies| to true
+      // requested URL, because setting |force_ignore_site_for_cookies| to true
       // causes Strict cookies to be attached, and having the initiator be
       // same-site to the request URL is a requirement for Strict cookies
       // (see net::cookie_util::ComputeSameSiteContext).
@@ -272,7 +272,7 @@ void ChromeExtensionsRendererClient::WillSendRequest(
                 net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
       }
 
-      *attach_same_site_cookies =
+      *force_ignore_site_for_cookies =
           extension_has_access_to_request_url && initiator_ok;
     } else {
       // If there is no extension installed for the origin, it may be from a

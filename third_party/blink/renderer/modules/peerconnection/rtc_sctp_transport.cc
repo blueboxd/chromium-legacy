@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "third_party/blink/public/web/web_local_frame.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/sctp_transport_proxy.h"
@@ -50,7 +50,7 @@ std::unique_ptr<SctpTransportProxy> CreateProxy(
     scoped_refptr<base::SingleThreadTaskRunner> worker_thread) {
   DCHECK(main_thread);
   DCHECK(worker_thread);
-  LocalFrame* frame = Document::From(context)->GetFrame();
+  LocalFrame* frame = To<LocalDOMWindow>(context)->GetFrame();
   DCHECK(frame);
   return SctpTransportProxy::Create(*frame, main_thread, worker_thread,
                                     native_transport, delegate);
@@ -63,8 +63,7 @@ RTCSctpTransport::RTCSctpTransport(
     rtc::scoped_refptr<webrtc::SctpTransportInterface> native_transport)
     : RTCSctpTransport(context,
                        native_transport,
-                       Document::From(context)->GetFrame()->GetTaskRunner(
-                           TaskType::kNetworking),
+                       context->GetTaskRunner(TaskType::kNetworking),
                        PeerConnectionDependencyFactory::GetInstance()
                            ->GetWebRtcWorkerTaskRunner()) {}
 

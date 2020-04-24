@@ -8,6 +8,8 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/test/task_environment.h"
+#include "chromeos/services/assistant/test_support/scoped_assistant_client.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom-forward.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,8 +22,8 @@ using ConnectionStatus = NetworkProviderImpl::ConnectionStatus;
 
 class NetworkProviderImplTest : public ::testing::Test {
  public:
-  NetworkProviderImplTest() : network_provider_(nullptr) {}
-  ~NetworkProviderImplTest() override {}
+  NetworkProviderImplTest() = default;
+  ~NetworkProviderImplTest() override = default;
 
   void PublishConnectionStateType(ConnectionStateType connection_type) {
     std::vector<NetworkStatePropertiesPtr> active_networks;
@@ -57,6 +59,8 @@ class NetworkProviderImplTest : public ::testing::Test {
   }
 
  protected:
+  ScopedAssistantClient assistant_client_;
+  base::test::TaskEnvironment task_environment;
   NetworkProviderImpl network_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkProviderImplTest);

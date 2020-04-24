@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/optional.h"
+#include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "cc/base/base_export.h"
 #include "cc/cc_export.h"
@@ -175,6 +176,11 @@ class CC_EXPORT CompositorFrameReporter {
 
   FrameSkippedReason frame_skip_reason() const { return *frame_skip_reason_; }
 
+  void set_tick_clock(const base::TickClock* tick_clock) {
+    DCHECK(tick_clock);
+    tick_clock_ = tick_clock;
+  }
+
  private:
   void TerminateReporter();
   void EndCurrentStage(base::TimeTicks end_time);
@@ -223,6 +229,8 @@ class CC_EXPORT CompositorFrameReporter {
   // This method is only used for DCheck
   base::TimeDelta SumOfStageHistory() const;
 
+  base::TimeTicks Now() const;
+
   const bool should_report_metrics_;
 
   StageData current_stage_;
@@ -261,6 +269,8 @@ class CC_EXPORT CompositorFrameReporter {
   base::Optional<base::TimeTicks> did_not_produce_frame_time_;
   base::Optional<FrameSkippedReason> frame_skip_reason_;
   base::Optional<base::TimeTicks> main_frame_abort_time_;
+
+  const base::TickClock* tick_clock_ = base::DefaultTickClock::GetInstance();
 };
 }  // namespace cc
 

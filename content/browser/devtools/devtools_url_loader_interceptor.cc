@@ -902,9 +902,7 @@ Response InterceptionJob::InnerContinueRequest(
     if (modifications->modified_url.isJust()) {
       std::string location = modifications->modified_url.fromJust();
       CancelRequest();
-      auto* headers = response_metadata_->head->headers.get();
-      headers->RemoveHeader("location");
-      headers->AddHeader("location: " + location);
+      response_metadata_->head->headers->SetHeader("location", location);
       GURL redirect_url = create_loader_params_->request.url.Resolve(location);
       if (!redirect_url.is_valid())
         return Response::ServerError("Invalid modified URL");
@@ -1107,7 +1105,7 @@ void InterceptionJob::ProcessSetCookies(const net::HttpResponseHeaders& headers,
           create_loader_params_->request.url,
           create_loader_params_->request.site_for_cookies,
           create_loader_params_->request.request_initiator,
-          (create_loader_params_->request.attach_same_site_cookies ||
+          (create_loader_params_->request.force_ignore_site_for_cookies ||
            should_treat_as_first_party)));
 
   // |this| might be deleted here if |cookies| is empty!
@@ -1255,7 +1253,8 @@ void InterceptionJob::FetchCookies(
       net::cookie_util::ComputeSameSiteContextForRequest(
           request.method, request.url, request.site_for_cookies,
           request.request_initiator,
-          (request.attach_same_site_cookies || should_treat_as_first_party)));
+          (request.force_ignore_site_for_cookies ||
+           should_treat_as_first_party)));
 
   cookie_manager_->GetCookieList(request.url, options, std::move(callback));
 }

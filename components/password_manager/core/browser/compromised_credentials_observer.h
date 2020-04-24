@@ -5,35 +5,26 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_COMPROMISED_CREDENTIALS_OBSERVER_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_COMPROMISED_CREDENTIALS_OBSERVER_H_
 
-#include "components/password_manager/core/browser/password_store.h"
+#include "base/callback.h"
+#include "components/password_manager/core/browser/compromised_credentials_table.h"
+#include "components/password_manager/core/browser/password_store_change.h"
 
 namespace password_manager {
 
-// Observes changes in Password Store logins and updates the
-// CompromisedCredentialsTable accordingly.
-class CompromisedCredentialsObserver : public PasswordStore::Observer {
- public:
-  // Fordbid copying and assigning.
-  CompromisedCredentialsObserver(const CompromisedCredentialsObserver&) =
-      delete;
-  CompromisedCredentialsObserver& operator=(
-      const CompromisedCredentialsObserver&) = delete;
+// The callback to use to synchronously remove a compromised
+// credentials from the password store. The parameters match those in
+// RemoveCompromisedCredentials.
+using RemoveCompromisedCallback =
+    base::RepeatingCallback<void(const std::string&,
+                                 const base::string16&,
+                                 RemoveCompromisedCredentialsReason)>;
 
-  explicit CompromisedCredentialsObserver(PasswordStore* store);
-  ~CompromisedCredentialsObserver() override;
-
-  // Adds this instance as an observer in |store_|.
-  void Initialize();
-
- private:
-  // Called when the contents of the password store change.
-  // Removes rows from the compromised credentials database if the login
-  // was removed or the password was updated.  If row is not in the database,
-  // the call is ignored.
-  void OnLoginsChanged(const PasswordStoreChangeList& changes) override;
-
-  PasswordStore* const store_;
-};
+// Called when the content of the password store changes.
+// Removes rows from the compromised credentials database if the login
+// was removed or the password was updated. If row is not in the database,
+// the call is ignored.
+void ProcessLoginsChanged(const PasswordStoreChangeList& changes,
+                          const RemoveCompromisedCallback& remove_callback);
 
 }  // namespace password_manager
 

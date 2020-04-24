@@ -34,7 +34,6 @@ class AssistantMediaSession;
 class AudioOutputProviderImpl : public assistant_client::AudioOutputProvider {
  public:
   AudioOutputProviderImpl(
-      mojom::Client* client,
       PowerManagerClient* power_manager_client,
       CrasAudioHandler* cras_audio_handler,
       AssistantMediaSession* media_session,
@@ -63,7 +62,6 @@ class AudioOutputProviderImpl : public assistant_client::AudioOutputProvider {
   void BindStreamFactory(
       mojo::PendingReceiver<audio::mojom::StreamFactory> receiver);
 
-  mojom::Client* const client_;
   AudioInputImpl loop_back_input_;
   VolumeControlImpl volume_control_impl_;
   scoped_refptr<base::SequencedTaskRunner> main_task_runner_;

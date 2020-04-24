@@ -177,6 +177,9 @@ void ConsumerWrapper::SetFormat(size_t number_of_channels, float sample_rate) {
 }
 
 void ConsumerWrapper::ConsumeAudio(AudioBus* bus, size_t number_of_frames) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("mediastream"),
+               "ConsumerWrapper::ConsumeAudio");
+
   if (!bus)
     return;
 

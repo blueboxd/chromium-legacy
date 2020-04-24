@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.suggestions.mostvisited;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import android.graphics.Bitmap;
 import android.support.test.filters.SmallTest;
@@ -147,6 +148,71 @@ public class MostVisitedSitesHostTest {
                 (int) mMostVisitedSitesHost.getUrlToIDMapForTesting().get("https://www.0.com"));
         assertEquals(expectedId2,
                 (int) mMostVisitedSitesHost.getUrlToIDMapForTesting().get("https://www.2.com"));
+    }
+
+    /**
+     * Test when synchronization of metadata stored on disk hasn't finished yet, all coming tasks
+     * will be set as the pending task. Besides, the latest task will override the old one.
+     */
+    @Test
+    @SmallTest
+    public void testSyncNotFinished() {
+        List<SiteSuggestion> newTopSites1 = createFakeSiteSuggestions1();
+        List<SiteSuggestion> newTopSites2 = createFakeSiteSuggestions2();
+
+        mMostVisitedSitesHost.setIsSyncedForTesting(false);
+
+        // If restoring from disk is not finished, all coming tasks should be set as the pending
+        // task.
+        mMostVisitedSitesHost.saveMostVisitedSitesInfo(newTopSites1);
+        mMostVisitedSitesHost.saveMostVisitedSitesInfo(newTopSites2);
+
+        // newTopSites1 should be skipped and newTopSites2 should be the pending task.
+        assertEquals(newTopSites2.size(),
+                mMostVisitedSitesHost.getPendingFilesNeedToSaveCountForTesting() - 1);
+    }
+
+    /**
+     * Test when current task is not finished, all coming tasks will be set as the pending task.
+     * Besides, the latest task will override the old one.
+     */
+    @Test
+    @SmallTest
+    public void testCurrentNotNull() {
+        List<SiteSuggestion> newTopSites1 = createFakeSiteSuggestions1();
+        List<SiteSuggestion> newTopSites2 = createFakeSiteSuggestions2();
+
+        mMostVisitedSitesHost.setIsSyncedForTesting(true);
+        mMostVisitedSitesHost.setCurrentTaskForTesting(() -> {});
+
+        // If current task is not null, all saving tasks should be set as pending task.
+        mMostVisitedSitesHost.saveMostVisitedSitesInfo(newTopSites1);
+        mMostVisitedSitesHost.saveMostVisitedSitesInfo(newTopSites2);
+
+        // newTopSites1 should be skipped and newTopSites2 should be the pending task.
+        assertEquals(newTopSites2.size(),
+                mMostVisitedSitesHost.getPendingFilesNeedToSaveCountForTesting() - 1);
+    }
+
+    /**
+     * Test when current task is finished, the pending task should be set as current task and run.
+     */
+    @Test
+    @SmallTest
+    public void testTasksContinuity() {
+        AtomicBoolean isPendingRun = new AtomicBoolean(false);
+
+        // Set and run current task.
+        mMostVisitedSitesHost.setIsSyncedForTesting(true);
+        mMostVisitedSitesHost.setCurrentTaskForTesting(null);
+        mMostVisitedSitesHost.saveMostVisitedSitesInfo(createFakeSiteSuggestions1());
+
+        // When current task is not finished, set pending task.
+        assertTrue(mMostVisitedSitesHost.getCurrentFilesNeedToSaveCountForTesting() > 0);
+        mMostVisitedSitesHost.setPendingTaskForTesting(() -> isPendingRun.set(true));
+
+        // isPendingRun should eventually become true.
+        CriteriaHelper.pollInstrumentationThread(isPendingRun::get);
     }
 
     private void checkMapAndSet(Set<String> expectedUrlsToFetchIcon, Set<String> expectedUrlsInMap,

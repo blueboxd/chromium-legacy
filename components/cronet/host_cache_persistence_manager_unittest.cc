@@ -85,7 +85,8 @@ class HostCachePersistenceManagerTest : public testing::Test {
                    base::TimeDelta::FromSeconds(1));
 
     base::ListValue value;
-    temp_cache.GetAsListValue(&value, false);
+    temp_cache.GetAsListValue(&value, false /* include_stale */,
+                              net::HostCache::SerializationType::kRestorable);
     pref_service_->Set(kPrefName, value);
   }
 

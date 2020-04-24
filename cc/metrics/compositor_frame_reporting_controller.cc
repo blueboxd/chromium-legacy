@@ -49,7 +49,7 @@ CompositorFrameReportingController::SubmittedCompositorFrame::
     SubmittedCompositorFrame(SubmittedCompositorFrame&& other) = default;
 
 base::TimeTicks CompositorFrameReportingController::Now() const {
-  return base::TimeTicks::Now();
+  return tick_clock_->NowTicks();
 }
 
 bool CompositorFrameReportingController::HasReporterAt(
@@ -67,11 +67,10 @@ void CompositorFrameReportingController::WillBeginImplFrame(
     reporter->TerminateFrame(FrameTerminationStatus::kDidNotProduceFrame,
                              reporter->did_not_produce_frame_time());
   }
-  std::unique_ptr<CompositorFrameReporter> reporter =
-      std::make_unique<CompositorFrameReporter>(
-          active_trackers_, args.frame_id,
-          args.frame_time + (args.interval * 1.5), latency_ukm_reporter_.get(),
-          should_report_metrics_);
+  auto reporter = std::make_unique<CompositorFrameReporter>(
+      active_trackers_, args.frame_id, args.frame_time + (args.interval * 1.5),
+      latency_ukm_reporter_.get(), should_report_metrics_);
+  reporter->set_tick_clock(tick_clock_);
   reporter->StartStage(StageType::kBeginImplFrameToSendBeginMainFrame,
                        begin_time);
   reporters_[PipelineStage::kBeginImplFrame] = std::move(reporter);
@@ -94,11 +93,11 @@ void CompositorFrameReportingController::WillBeginMainFrame(
     // In this case we have already submitted the ImplFrame, but we received
     // beginMain frame before next BeginImplFrame (Not reached the ImplFrame
     // deadline yet). So will start a new reporter at BeginMainFrame.
-    std::unique_ptr<CompositorFrameReporter> reporter =
-        std::make_unique<CompositorFrameReporter>(
-            active_trackers_, args.frame_id,
-            args.frame_time + (args.interval * 1.5),
-            latency_ukm_reporter_.get(), should_report_metrics_);
+    auto reporter = std::make_unique<CompositorFrameReporter>(
+        active_trackers_, args.frame_id,
+        args.frame_time + (args.interval * 1.5), latency_ukm_reporter_.get(),
+        should_report_metrics_);
+    reporter->set_tick_clock(tick_clock_);
     reporter->StartStage(StageType::kSendBeginMainFrameToCommit, Now());
     reporters_[PipelineStage::kBeginMainFrame] = std::move(reporter);
   }

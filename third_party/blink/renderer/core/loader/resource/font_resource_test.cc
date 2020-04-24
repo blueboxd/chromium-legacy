@@ -130,7 +130,8 @@ TEST_F(CacheAwareFontResourceTest, CacheAwareFontLoading) {
   CSSFontFaceSrcValue* src_value = CSSFontFaceSrcValue::Create(
       url.GetString(), url.GetString(),
       Referrer(document.Url(), document.GetReferrerPolicy()),
-      network::mojom::CSPDisposition::DO_NOT_CHECK, OriginClean::kTrue);
+      network::mojom::CSPDisposition::DO_NOT_CHECK, OriginClean::kTrue,
+      false /* is_ad_related */);
 
   // Route font requests in this test through CSSFontFaceSrcValue::Fetch
   // instead of calling FontResource::Fetch directly. CSSFontFaceSrcValue

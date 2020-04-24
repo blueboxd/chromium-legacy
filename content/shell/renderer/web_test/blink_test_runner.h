@@ -100,12 +100,6 @@ class BlinkTestRunner {
   // Controls Content Index entries.
   void SimulateWebContentIndexDelete(const std::string& id);
 
-  // Controls the device scale factor of the main WebView for hidpi tests.
-  void SetDeviceScaleFactor(float factor);
-
-  // Change the device color space while running a web test.
-  void SetDeviceColorSpace(const std::string& name);
-
   // Set the bluetooth adapter while running a web test, uses Mojo to
   // communicate with the browser.
   void SetBluetoothFakeAdapter(const std::string& adapter_name,

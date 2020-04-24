@@ -63,7 +63,12 @@ WebGPUCommandBufferStub::WebGPUCommandBufferStub(
                         stream_id,
                         route_id) {}
 
-WebGPUCommandBufferStub::~WebGPUCommandBufferStub() {}
+WebGPUCommandBufferStub::~WebGPUCommandBufferStub() {
+  // Must run before memory_tracker_ is destroyed.
+  decoder_context()->Destroy(false);
+
+  memory_tracker_ = nullptr;
+}
 
 gpu::ContextResult WebGPUCommandBufferStub::Initialize(
     CommandBufferStub* share_command_buffer_stub,

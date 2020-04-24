@@ -4,6 +4,13 @@
 
 package org.chromium.chrome.browser.share;
 
+import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static android.support.test.espresso.matcher.ViewMatchers.withContentDescription;
+import static android.support.test.espresso.matcher.ViewMatchers.withId;
+
+import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.anyOf;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -26,6 +33,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.util.ViewUtils;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.components.embedder_support.util.UrlConstants;
@@ -145,6 +153,9 @@ public final class ShareButtonControllerTest {
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     public void testShareButtonDisabledOnDataUrl() {
         mActivityTestRule.loadUrl("data:,Hello%2C%20World!");
+
+        ViewUtils.waitForView(allOf(withId(R.id.optional_toolbar_button),
+                anyOf(not(isDisplayed()), not(withContentDescription(R.string.share)))));
 
         View experimentalButton = mActivityTestRule.getActivity()
                                           .getToolbarManager()

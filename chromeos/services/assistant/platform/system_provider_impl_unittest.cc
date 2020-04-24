@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/test/task_environment.h"
 #include "chromeos/services/assistant/platform/power_manager_provider_impl.h"
-#include "chromeos/services/assistant/test_support/fake_client.h"
+#include "chromeos/services/assistant/test_support/scoped_assistant_client.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/device/public/mojom/battery_monitor.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -66,7 +66,7 @@ class SystemProviderImplTest : public testing::Test {
 
     system_provider_impl_ = std::make_unique<SystemProviderImpl>(
         std::make_unique<PowerManagerProviderImpl>(
-            &fake_client_, task_environment_.GetMainThreadTaskRunner()),
+            task_environment_.GetMainThreadTaskRunner()),
         battery_monitor_.CreateRemoteAndBind());
     FlushForTesting();
   }
@@ -80,7 +80,7 @@ class SystemProviderImplTest : public testing::Test {
  private:
   base::test::TaskEnvironment task_environment_;
   FakeBatteryMonitor battery_monitor_;
-  FakeClient fake_client_;
+  ScopedAssistantClient assistant_client_;
   std::unique_ptr<SystemProviderImpl> system_provider_impl_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemProviderImplTest);

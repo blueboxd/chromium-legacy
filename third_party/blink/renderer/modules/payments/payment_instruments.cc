@@ -18,10 +18,10 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_image_object.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_payment_instrument.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/payments/basic_card_helper.h"
@@ -77,6 +77,8 @@ bool rejectError(ScriptPromiseResolver* resolver,
 }
 
 bool AllowedToUsePaymentFeatures(ScriptState* script_state) {
+  if (!script_state->ContextIsValid())
+    return false;
   return ExecutionContext::From(script_state)
       ->GetSecurityContext()
       .GetFeaturePolicy()
@@ -250,8 +252,6 @@ ScriptPromise PaymentInstruments::set(ScriptState* script_state,
   }
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  ExecutionContext* context = ExecutionContext::From(script_state);
-  Document* doc = Document::DynamicFrom(context);
 
   // Should move this permission check to browser process.
   // Please see http://crbug.com/795929
@@ -259,8 +259,8 @@ ScriptPromise PaymentInstruments::set(ScriptState* script_state,
       ->RequestPermission(
           CreatePermissionDescriptor(
               mojom::blink::PermissionName::PAYMENT_HANDLER),
-          LocalFrame::HasTransientUserActivation(doc ? doc->GetFrame()
-                                                     : nullptr),
+          LocalFrame::HasTransientUserActivation(
+              LocalDOMWindow::From(script_state)->GetFrame()),
           WTF::Bind(
               &PaymentInstruments::OnRequestPermission, WrapPersistent(this),
               WrapPersistent(resolver), instrument_key,

@@ -20,12 +20,19 @@ MediaHistoryTableBase::MediaHistoryTableBase(
 
 MediaHistoryTableBase::~MediaHistoryTableBase() = default;
 
+void MediaHistoryTableBase::SetCancelled() {
+  cancelled_.Set();
+}
+
 sql::InitStatus MediaHistoryTableBase::Initialize(sql::Database* db) {
   DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(db);
 
   db_ = db;
-  return CreateTableIfNonExistent();
+
+  if (CanAccessDatabase())
+    return CreateTableIfNonExistent();
+  return sql::InitStatus::INIT_FAILURE;
 }
 
 sql::Database* MediaHistoryTableBase::DB() {
@@ -40,7 +47,7 @@ void MediaHistoryTableBase::ResetDB() {
 
 bool MediaHistoryTableBase::CanAccessDatabase() {
   DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
-  return db_;
+  return !cancelled_.IsSet() && db_;
 }
 
 void MediaHistoryTableBase::BindProto(

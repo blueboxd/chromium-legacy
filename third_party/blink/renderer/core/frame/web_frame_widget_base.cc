@@ -107,6 +107,7 @@ void WebFrameWidgetBase::Close(
   request_animation_after_delay_timer_.reset();
   widget_base_->Shutdown(std::move(cleanup_runner), std::move(cleanup_task));
   widget_base_.reset();
+  receiver_.reset();
 }
 
 WebLocalFrame* WebFrameWidgetBase::LocalRoot() const {

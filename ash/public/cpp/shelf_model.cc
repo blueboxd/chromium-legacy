@@ -20,6 +20,7 @@ static ShelfModel* g_shelf_model = nullptr;
 int ShelfItemTypeToWeight(ShelfItemType type) {
   switch (type) {
     case TYPE_BROWSER_SHORTCUT:
+    case TYPE_LACROS_BROWSER:
     case TYPE_PINNED_APP:
       return 1;
     case TYPE_APP:
@@ -230,6 +231,16 @@ void ShelfModel::SetActiveShelfID(const ShelfID& shelf_id) {
 void ShelfModel::OnItemStatusChanged(const ShelfID& id) {
   for (auto& observer : observers_)
     observer.ShelfItemStatusChanged(id);
+}
+
+void ShelfModel::OnItemRippedOff() {
+  for (auto& observer : observers_)
+    observer.ShelfItemRippedOff();
+}
+
+void ShelfModel::OnItemReturnedFromRipOff(int index) {
+  for (auto& observer : observers_)
+    observer.ShelfItemReturnedFromRipOff(index);
 }
 
 void ShelfModel::RemoveNotificationRecord(const std::string& notification_id) {

@@ -29,8 +29,8 @@
         width: 100%;
       }
 
-      .block {
-        display: block;
+      #generalControls {
+        padding: 0 var(--cr-section-padding);
       }
 
       .bullet-line {
@@ -66,7 +66,7 @@
       <img id="banner" alt=""
           src="chrome://settings/images/cookies_banner.svg">
     </picture>
-    <div class="settings-box block first">
+    <div id="generalControls">
       <h2>$i18n{cookiePageGeneralControls}</h2>
       <cr-radio-group selected="[[cookiesControlRadioSelected_]]"
           selectable-elements="cr-radio-button, settings-collapse-radio-button"

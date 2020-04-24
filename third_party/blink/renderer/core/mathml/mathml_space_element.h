@@ -9,7 +9,6 @@
 
 namespace blink {
 
-class LayoutObject;
 class ComputedStyle;
 class CSSToLengthConversionData;
 
@@ -21,8 +20,6 @@ class MathMLSpaceElement final : public MathMLElement {
                                const CSSToLengthConversionData&);
 
  private:
-  LayoutObject* CreateLayoutObject(const ComputedStyle&,
-                                   LegacyLayout legacy) override;
   bool IsPresentationAttribute(const QualifiedName&) const override;
   void CollectStyleForPresentationAttribute(
       const QualifiedName&,

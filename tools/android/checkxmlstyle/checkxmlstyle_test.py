@@ -376,6 +376,32 @@ class NewTextAppearanceTest(unittest.TestCase):
     self.assertEqual(0, len(errors))
 
 
+class UnfavoredLayoutAttributesTest(unittest.TestCase):
+
+  def testLineSpacingAttributesUsage(self):
+    xmlChanges = [
+        '<TextView android:id="@+id/test"',
+        '    android:lineSpacingExtra="42dp"',
+        '    android:lineSpacingMultiplier="42dp"',
+        '/>',
+        '<TextViewWithLeading android:id="@+id/test2"',
+        '    app:leading="42dp"',
+        '/>'
+    ]
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+        MockFile('ui/android/java/res/layout/new_textview.xml', xmlChanges)
+    ]
+    result = checkxmlstyle._CheckLineSpacingAttribute(
+        mock_input_api, MockOutputApi())
+
+    self.assertEqual(1, len(result))
+    self.assertEqual(2, len(result[0].items))
+    self.assertEqual('  ui/android/java/res/layout/new_textview.xml:2',
+                      result[0].items[0].splitlines()[0])
+    self.assertEqual('  ui/android/java/res/layout/new_textview.xml:3',
+                      result[0].items[1].splitlines()[0])
+
 class UnfavoredWidgetsTest(unittest.TestCase):
 
   def testButtonCompatUsage(self):

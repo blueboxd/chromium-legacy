@@ -164,7 +164,6 @@ Axtarmaq üçün istənilən sözə toxunun. Axtarışı dəqiqləşdirmək üç
 <translation id="2131665479022868825"><ph name="DATA" /> yadda saxlandı</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> qapadıldı</translation>
 <translation id="2139186145475833000">Ev ekranına əlavə edin</translation>
-<translation id="2146738493024040262">Ani tətbiqi açın</translation>
 <translation id="2154484045852737596">Kartı redaktə edin</translation>
 <translation id="2154710561487035718">Linki Kopyalayın</translation>
 <translation id="2156074688469523661">Qalan saytlar (<ph name="NUMBER_OF_SITES" />)</translation>
@@ -281,7 +280,6 @@ Axtarmaq üçün istənilən sözə toxunub saxlayın. Axtarışınızı dəqiql
 <translation id="2996809686854298943">URL tələb olunur</translation>
 <translation id="300526633675317032">Bu, veb sayt yaddaşının <ph name="SIZE_IN_KB" /> hissəsini siləcək</translation>
 <translation id="3016635187733453316">Bu cihazın internetə qoşulduğuna əmin olun</translation>
-<translation id="3029613699374795922"><ph name="KBS" /> KB endirildi</translation>
 <translation id="3029704984691124060">Parollar uyğun gəlmir</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Yardım alın<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Məkan deaktivdir: <ph name="BEGIN_LINK" />Android Ayarlarından<ph name="END_LINK" /> aktiv edin.</translation>
@@ -457,7 +455,6 @@ Kamerada görünəni ancaq siz görə bilərsiniz. Sayt kameranızdakı şəkill
 <translation id="4411535500181276704">Layt rejimi</translation>
 <translation id="4415276339145661267">Google Hesabını idarə edin</translation>
 <translation id="4432792777822557199">Bundan sonra <ph name="SOURCE_LANGUAGE" /> dilində olan səhifələr <ph name="TARGET_LANGUAGE" /> dilinə tərcümə ediləcək</translation>
-<translation id="4433925000917964731">Google'un dəstəklədiyi lite səhifəsi</translation>
 <translation id="4434045419905280838">Popap və yönləndirmələr</translation>
 <translation id="4440958355523780886">Google tərəfindən dəstəklənən lite səhifəsi. Orijinalı yükləmək üçün klikləyin.</translation>
 <translation id="4452411734226507615"><ph name="TAB_TITLE" /> tabını bağlayın</translation>
@@ -735,7 +732,6 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="6406506848690869874">Sinx</translation>
 <translation id="6410973561433500075"><ph name="DOMAIN" /> saytından AR rejiminə daxil olunsun?</translation>
 <translation id="641643625718530986">Çap edin...</translation>
-<translation id="6416782512398055893"><ph name="MBS" /> MB endirildi</translation>
 <translation id="6427112570124116297">Vebi tərcümə edin</translation>
 <translation id="6433501201775827830">Axtarış sistemini seçin</translation>
 <translation id="6437478888915024427">Səhifə məlumatı</translation>
@@ -743,7 +739,6 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="6441734959916820584">Ad çox uzundur</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# Şəkil}other{# Şəkil}}</translation>
 <translation id="6447558397796644647">Bu əlfəcini tapmaq mümkün deyil. Orfoqrafiyanı yoxlayın və ya yeni əlfəcin əlavə edin.</translation>
-<translation id="6447842834002726250">Kukilər</translation>
 <translation id="6461962085415701688">Fayl açılmır</translation>
 <translation id="6464977750820128603">Chrome'da girdiyiniz saytlara baxa və onlar üçün taymer ayarlaya bilərsiniz.\n\nGoogle taymer ayarladığınız saytları və onlara hansı müddətdən bir girdiyiniz haqda məlumat əldə edir. Bu məlumat Digital Sağlamlığı təkmilləşdirmək üçün istifadə olunur.</translation>
 <translation id="6475951671322991020">Videonu endirin</translation>
@@ -752,7 +747,6 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="6508722015517270189">Chrome'u yenidən başladın</translation>
 <translation id="6532866250404780454">Chrome'da girdiyiniz saytlar göstərilməyəcək. Bütün sayt taymerləri silinəcək.</translation>
 <translation id="6534565668554028783">Google cavab üçün çox vaxt aldı</translation>
-<translation id="6538442820324228105"><ph name="GBS" /> GB endirildi</translation>
 <translation id="6539092367496845964">Xəta baş verdi. Sonra cəhd edin.</translation>
 <translation id="6545017243486555795">Bütün Datanı Silin</translation>
 <translation id="6545864417968258051">Bluetooth skanı</translation>

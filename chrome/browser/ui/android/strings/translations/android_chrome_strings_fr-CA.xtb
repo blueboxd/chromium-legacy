@@ -164,7 +164,6 @@ Touchez un mot pour lancer une recherche. Pour affiner votre recherche, maintene
 <translation id="2131665479022868825">Données enregistrées : <ph name="DATA" /></translation>
 <translation id="213279576345780926">Onglet <ph name="TAB_TITLE" /> fermé</translation>
 <translation id="2139186145475833000">Ajouter à l'écran d'accueil</translation>
-<translation id="2146738493024040262">Ouvrir l'application instantanée</translation>
 <translation id="2154484045852737596">Modifier la carte</translation>
 <translation id="2154710561487035718">Copier l'URL</translation>
 <translation id="2156074688469523661">Sites restants (<ph name="NUMBER_OF_SITES" />)</translation>
@@ -281,7 +280,6 @@ Maintenez le doigt sur un mot pour effectuer une recherche sur celui-ci. Pour af
 <translation id="2996809686854298943">URL requise</translation>
 <translation id="300526633675317032">Cette action entraînera la suppression de l'ensemble des <ph name="SIZE_IN_KB" /> d'espace de stockage des sites Web.</translation>
 <translation id="3016635187733453316">Assurez-vous que cet appareil est connecté à Internet</translation>
-<translation id="3029613699374795922"><ph name="KBS" /> ko téléchargés</translation>
 <translation id="3029704984691124060">Mots de passe multitermes différents</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Obtenir de l'aide<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Le paramètre Position est désactivé, activez-le dans les <ph name="BEGIN_LINK" />paramètres Android<ph name="END_LINK" />.</translation>
@@ -457,7 +455,6 @@ Vous seul voyez les images de l'appareil photo. Le site n'y a pas accès.</trans
 <translation id="4411535500181276704">Mode simplifié</translation>
 <translation id="4415276339145661267">Gérer votre compte Google</translation>
 <translation id="4432792777822557199">Les pages en <ph name="SOURCE_LANGUAGE" /> seront désormais traduites en <ph name="TARGET_LANGUAGE" /></translation>
-<translation id="4433925000917964731">Page en version simplifiée fournie par Google</translation>
 <translation id="4434045419905280838">Fenêt. context. et redirections</translation>
 <translation id="4440958355523780886">Page en version simplifiée fournie par Google. Touchez pour charger la page originale.</translation>
 <translation id="4452411734226507615">Fermer l'onglet <ph name="TAB_TITLE" /></translation>
@@ -737,7 +734,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6406506848690869874">Synchronisation</translation>
 <translation id="6410973561433500075">Démarrer la RA à partir de <ph name="DOMAIN" />?</translation>
 <translation id="641643625718530986">Imprimer...</translation>
-<translation id="6416782512398055893"><ph name="MBS" /> Mo téléchargés</translation>
 <translation id="6427112570124116297">Traduisez le Web</translation>
 <translation id="6433501201775827830">Choisissez votre moteur de recherche</translation>
 <translation id="6437478888915024427">Renseignements sur la page</translation>
@@ -745,7 +741,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6441734959916820584">Le nom est trop long</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# image}one{# image}other{# images}}</translation>
 <translation id="6447558397796644647">Impossible de trouver ce favori. Vérifiez l'orthographe ou ajoutez un signet.</translation>
-<translation id="6447842834002726250">Témoins</translation>
 <translation id="6461962085415701688">Impossible d'ouvrir le fichier</translation>
 <translation id="6464977750820128603">Vous pouvez afficher les sites que vous avez visités dans Chrome et définir des minuteries pour ceux-ci.\n\nGoogle collecte des renseignements sur les sites pour lesquels vous définissez des minuteries et peut déterminer le temps que vous passez sur ces derniers. Ces données sont utilisées pour améliorer Bien-être numérique.</translation>
 <translation id="6475951671322991020">Télécharger la vidéo</translation>
@@ -754,7 +749,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6508722015517270189">Redémarrer Google Chrome</translation>
 <translation id="6532866250404780454">Les sites que vous visitez dans Chrome ne s'afficheront pas. Toutes les minuteries de site seront supprimées.</translation>
 <translation id="6534565668554028783">Google a pris trop de temps à répondre</translation>
-<translation id="6538442820324228105"><ph name="GBS" /> Go téléchargés</translation>
 <translation id="6539092367496845964">Une erreur s'est produite. Réessayez plus tard.</translation>
 <translation id="6545017243486555795">Effacer toutes les données</translation>
 <translation id="6545864417968258051">Recherche d'appareils Bluetooth</translation>

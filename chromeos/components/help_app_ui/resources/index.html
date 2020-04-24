@@ -2,8 +2,9 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 <!DOCTYPE html>
+<html dir="$i18n{textdirection}" lang="$i18n{language}">
 <meta charset="utf-8">
-<title>&#xFEFF;</title>
+<title>$i18n{appTitle}</title>
 <style>
   body {
     height: 100vh;
@@ -24,3 +25,4 @@
 <script src="/help_app.mojom-lite.js"></script>
 <script src="/browser_proxy.js"></script>
 <iframe src="chrome-untrusted://help-app/app.html"></iframe>
+</html>

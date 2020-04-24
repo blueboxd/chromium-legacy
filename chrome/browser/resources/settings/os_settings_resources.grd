@@ -761,17 +761,41 @@
       <structure name="IDR_OS_SETTINGS_CUPS_EDIT_PRINTER_DIALOG_JS"
                  file="chromeos/os_printing_page/cups_edit_printer_dialog.js"
                  compress="false" type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_CUPS_SETTINGS_ADD_PRINTER_DIALOG_HTML"
+                 file="chromeos/os_printing_page/cups_settings_add_printer_dialog.html"
+                 compress="false" type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_CUPS_SETTINGS_ADD_PRINTER_DIALOG_JS"
+                 file="chromeos/os_printing_page/cups_settings_add_printer_dialog.js"
+                 compress="false" type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_CUPS_ADD_PRINTER_DIALOG_HTML"
                  file="chromeos/os_printing_page/cups_add_printer_dialog.html"
                  compress="false" type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_CUPS_ADD_PRINTER_DIALOG_JS"
                  file="chromeos/os_printing_page/cups_add_printer_dialog.js"
                  compress="false" type="chrome_html" />
-      <structure name="IDR_OS_SETTINGS_CUPS_ADD_PRINTER_DIALOG_ELEMENTS_HTML"
-                 file="chromeos/os_printing_page/cups_add_printer_dialog_elements.html"
+      <structure name="IDR_OS_SETTINGS_CUPS_ADD_PRINT_SERVER_DIALOG_HTML"
+                 file="chromeos/os_printing_page/cups_add_print_server_dialog.html"
                  compress="false" type="chrome_html" />
-      <structure name="IDR_OS_SETTINGS_CUPS_ADD_PRINTER_DIALOG_ELEMENTS_JS"
-                 file="chromeos/os_printing_page/cups_add_printer_dialog_elements.js"
+      <structure name="IDR_OS_SETTINGS_CUPS_ADD_PRINT_SERVER_DIALOG_JS"
+                 file="chromeos/os_printing_page/cups_add_print_server_dialog.js"
+                 compress="false" type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_CUPS_PRINTER_DIALOG_ERROR_HTML"
+                 file="chromeos/os_printing_page/cups_printer_dialog_error.html"
+                 compress="false" type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_CUPS_PRINTER_DIALOG_ERROR_JS"
+                 file="chromeos/os_printing_page/cups_printer_dialog_error.js"
+                 compress="false" type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_CUPS_ADD_PRINTER_MANUFACTURER_MODEL_DIALOG_HTML"
+                 file="chromeos/os_printing_page/cups_add_printer_manufacturer_model_dialog.html"
+                 compress="false" type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_CUPS_ADD_PRINTER_MANUFACTURER_MODEL_DIALOG_JS"
+                 file="chromeos/os_printing_page/cups_add_printer_manufacturer_model_dialog.js"
+                 compress="false" type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_CUPS_ADD_PRINTER_MANUALLY_DIALOG_HTML"
+                 file="chromeos/os_printing_page/cups_add_printer_manually_dialog.html"
+                 compress="false" type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_CUPS_ADD_PRINTER_MANUALLY_DIALOG_JS"
+                 file="chromeos/os_printing_page/cups_add_printer_manually_dialog.js"
                  compress="false" type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_CUPS_PRINTER_DIALOG_UTIL_HTML"
                  file="chromeos/os_printing_page/cups_printer_dialog_util.html"

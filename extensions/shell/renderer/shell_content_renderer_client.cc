@@ -91,8 +91,8 @@ void ShellContentRendererClient::WillSendRequest(
     const net::SiteForCookies& site_for_cookies,
     const url::Origin* initiator_origin,
     GURL* new_url,
-    bool* attach_same_site_cookies) {
-  *attach_same_site_cookies = false;
+    bool* force_ignore_site_for_cookies) {
+  *force_ignore_site_for_cookies = false;
   // TODO(jamescook): Cause an error for bad extension scheme requests?
 }
 

@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_SERVICES_ASSISTANT_PLATFORM_NETWORK_PROVIDER_IMPL_H_
 #define CHROMEOS_SERVICES_ASSISTANT_PLATFORM_NETWORK_PROVIDER_IMPL_H_
 
+#include <vector>
+
 #include "base/macros.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
@@ -19,7 +21,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) NetworkProviderImpl
     : public assistant_client::NetworkProvider,
       public network_config::mojom::CrosNetworkConfigObserver {
  public:
-  explicit NetworkProviderImpl(mojom::Client* client);
+  NetworkProviderImpl();
   ~NetworkProviderImpl() override;
 
   // assistant_client::NetworkProvider:

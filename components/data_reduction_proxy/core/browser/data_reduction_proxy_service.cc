@@ -101,8 +101,7 @@ DataReductionProxyService::DataReductionProxyService(
   // It is safe to use base::Unretained here, since it gets executed
   // synchronously on the UI thread, and |this| outlives the caller (since the
   // caller is owned by |this|.
-  if (!params::IsIncludedInHoldbackFieldTrial() ||
-      previews::params::IsLitePageServerPreviewsEnabled() ||
+  if (previews::params::IsLitePageServerPreviewsEnabled() ||
       params::ForceEnableClientConfigServiceForAllDataSaverUsers()) {
     config_client_ = std::make_unique<DataReductionProxyConfigServiceClient>(
         GetBackoffPolicy(), request_options_.get(), this,
@@ -110,7 +109,6 @@ DataReductionProxyService::DataReductionProxyService(
         base::BindRepeating(&DataReductionProxyService::StoreSerializedConfig,
                             base::Unretained(this)));
   }
-
 
   if (config_client_)
     config_client_->Initialize(url_loader_factory_);
@@ -390,8 +388,7 @@ void DataReductionProxyService::OnServicesDataUse(int32_t service_hash_code,
 void DataReductionProxyService::StoreSerializedConfig(
     const std::string& serialized_config) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!params::IsIncludedInHoldbackFieldTrial() ||
-         previews::params::IsLitePageServerPreviewsEnabled() ||
+  DCHECK(previews::params::IsLitePageServerPreviewsEnabled() ||
          params::ForceEnableClientConfigServiceForAllDataSaverUsers());
 
   SetStringPref(prefs::kDataReductionProxyConfig, serialized_config);

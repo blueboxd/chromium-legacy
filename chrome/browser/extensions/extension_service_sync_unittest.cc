@@ -2822,6 +2822,26 @@ TEST_F(ExtensionServiceTestSupervised, ExtensionsLiteThemesAllowed) {
   EXPECT_TRUE(registry()->enabled_extensions().Contains(id));
 }
 
+// Tests that regular users are not affecting supervised user UMA metrics.
+TEST_F(ExtensionServiceTestSupervised,
+       RegularUsersNotAffectingSupervisedUserMetrics) {
+  InitServices(/*profile_is_supervised=*/false);
+
+  base::HistogramTester histogram_tester;
+
+  base::FilePath path = data_dir().AppendASCII("good.crx");
+  const Extension* extension = InstallCRX(path, INSTALL_NEW);
+  ASSERT_TRUE(extension);
+
+  supervised_user_service()->AddOrUpdateExtensionApproval(*extension);
+
+  histogram_tester.ExpectTotalCount("SupervisedUsers.Extensions", 0);
+
+  supervised_user_service()->RemoveExtensionApproval(*extension);
+
+  histogram_tester.ExpectTotalCount("SupervisedUsers.Extensions", 0);
+}
+
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
 // Tests sync behavior in the case of an item that starts out as an app and gets

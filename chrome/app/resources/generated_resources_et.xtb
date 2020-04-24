@@ -349,6 +349,7 @@
 <translation id="1465176863081977902">K&amp;opeeri heli aadress</translation>
 <translation id="1465827627707997754">Pitsalõik</translation>
 <translation id="1468571364034902819">Seda profiili ei saa kasutada</translation>
+<translation id="1470084204649225129">{NUM_TABS,plural, =1{Vahelehe lisamine uude gruppi}other{Vahelehtede lisamine uude gruppi}}</translation>
 <translation id="1472675084647422956">Kuva rohkem</translation>
 <translation id="1475502736924165259">Teil on sertifikaate, mis ei sobi ühtegi muusse kategooriasse</translation>
 <translation id="1476088332184200792">Kopeeri seadmesse</translation>
@@ -477,6 +478,7 @@
 <translation id="1629314197035607094">Parool on aegunud</translation>
 <translation id="1630768113285622200">Taaskäivita ja jätka</translation>
 <translation id="1632803087685957583">Võimaldab kohandada klaviatuuri korduskiirust, sõnade prognoosimist ja muud</translation>
+<translation id="1634783886312010422">Kas muutsite juba seda parooli saidil <ph name="WEBSITE" />?</translation>
 <translation id="1635033183663317347">Selle installis teie järelevaataja.</translation>
 <translation id="1637224376458524414">Hankige see järjehoidja oma iPhone'i</translation>
 <translation id="1637765355341780467">Teie profiili avamisel läks midagi valesti. Mõned funktsioonid ei pruugi olla saadaval.</translation>
@@ -3387,6 +3389,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="5542949973455282971">Luuakse ühendus operaatoriga <ph name="CARRIER_NAME" /></translation>
 <translation id="5543983818738093899">Oleku kontrollimine ...</translation>
 <translation id="554517032089923082">GTC</translation>
+<translation id="5545335608717746497">{NUM_TABS,plural, =1{Vahelehe lisamine gruppi}other{Vahelehtede lisamine gruppi}}</translation>
 <translation id="5546865291508181392">Otsi</translation>
 <translation id="5548159762883465903">{NUM_OTHER_TABS,plural, =0{„<ph name="TAB_TITLE" />”}=1{„<ph name="TAB_TITLE" />” ja veel 1 vaheleht}other{„<ph name="TAB_TITLE" />” ja veel # vahelehte}}</translation>
 <translation id="5548606607480005320">Ohutuskontroll</translation>
@@ -4211,6 +4214,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="6659594942844771486">Vaheleht</translation>
 <translation id="6664237456442406323">Kahjuks on teie arvuti seadistatud vigase riistvara ID-ga. See ei lase Chrome OS-i värskendada uusimate turvaparandustega ja teie arvuti <ph name="BEGIN_BOLD" />võib pahatahtlike rünnakute osas haavatav olla<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Teie profiili avamisel läks midagi valesti. Logige välja ja seejärel uuesti sisse.</translation>
+<translation id="6670142487971298264"><ph name="APP_NAME" /> on nüüd saadaval</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="6675665718701918026">Ühendati kursoriseade</translation>
 <translation id="6676212663108450937">Hääle õpetamisel on soovitatav kasutada kõrvaklappe</translation>
@@ -4540,6 +4544,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="7108338896283013870">Peida</translation>
 <translation id="7108668606237948702">sisestusklahv</translation>
 <translation id="7109543803214225826">Otsetee on eemaldatud</translation>
+<translation id="7110644433780444336">{NUM_TABS,plural, =1{Vahelehe lisamine gruppi}other{Vahelehtede lisamine gruppi}}</translation>
 <translation id="7113502843173351041">Teave teie e-posti aadressi kohta</translation>
 <translation id="7114054701490058191">Paroolid ei ühti</translation>
 <translation id="7114648273807173152">Oma Google’i kontole funktsiooni Smart Lock abil sisselogimiseks tehke valikud Seaded &gt; Ühendatud seaded &gt; Teie telefon &gt; Smart Lock.</translation>
@@ -4583,6 +4588,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="7170041865419449892">Vahemikust väljas</translation>
 <translation id="7171259390164035663">Ära registreeri</translation>
 <translation id="7171559745792467651">Installige rakendusi muudest seadmetest</translation>
+<translation id="7172470549472604877">{NUM_TABS,plural, =1{Vahelehe lisamine uude gruppi}other{Vahelehtede lisamine uude gruppi}}</translation>
 <translation id="7174199383876220879">Uus! Juhtige muusikat, videoid ja muudki.</translation>
 <translation id="7175037578838465313">Võrgu <ph name="NAME" /> seadistamine</translation>
 <translation id="7175353351958621980">Laaditud:</translation>
@@ -5161,6 +5167,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="7925247922861151263">AAA kontrollimine nurjus</translation>
 <translation id="7925285046818567682"><ph name="HOST_NAME" /> vastuse ootel...</translation>
 <translation id="7926423016278357561">See ei olnud mina.</translation>
+<translation id="7928175190925744466">Kas muutsite juba seda parooli?</translation>
 <translation id="7928836894214140642">Haldab <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">Salvestatud makseviisid kuvatakse siin</translation>
 <translation id="79312157130859720">Rakendus <ph name="APP_NAME" /> jagab teie ekraani ja heli.</translation>

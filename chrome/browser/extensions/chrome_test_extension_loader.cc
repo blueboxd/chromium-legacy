@@ -305,7 +305,7 @@ void ChromeTestExtensionLoader::CheckPermissions(const Extension* extension) {
 
 scoped_refptr<const Extension> ChromeTestExtensionLoader::LoadUnpacked(
     const base::FilePath& file_path) {
-  const Extension* extension = nullptr;
+  scoped_refptr<const Extension> extension;
   TestExtensionRegistryObserver registry_observer(extension_registry_);
   scoped_refptr<UnpackedInstaller> installer =
       UnpackedInstaller::Create(extension_service_);

@@ -253,7 +253,7 @@ void TestResponseProvider::GetResponseHeadersAndBody(
     return GetLanguageResponse(request, headers, response_body);
   } else if (url.path() == kSubresourcePath) {
     // Different "Content-Language" headers in the main page and subresource.
-    (*headers)->AddHeader("Content-Language: fr");
+    (*headers)->AddHeader("Content-Language", "fr");
     *response_body = base::StringPrintf(
         "<html><body><img src=%s></body></html>", kSomeLanguageUrl);
     return;
@@ -302,7 +302,7 @@ void TestResponseProvider::GetLanguageResponse(
   std::string http;
   net::GetValueForKeyInQuery(url, "http", &http);
   if (!http.empty())
-    (*headers)->AddHeader(std::string("Content-Language: ") + http);
+    (*headers)->AddHeader("Content-Language", http);
   // Response body.
   std::string meta;
   net::GetValueForKeyInQuery(url, "meta", &meta);

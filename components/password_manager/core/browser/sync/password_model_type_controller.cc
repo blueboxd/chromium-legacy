@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "components/password_manager/core/browser/password_manager_util.h"
+#include "components/password_manager/core/browser/password_manager_features_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/sync_client.h"
@@ -81,8 +81,7 @@ syncer::DataTypeController::PreconditionState
 PasswordModelTypeController::GetPreconditionState() const {
   if (sync_mode_ == syncer::SyncMode::kFull)
     return PreconditionState::kPreconditionsMet;
-  return password_manager_util::IsOptedInForAccountStorage(pref_service_,
-                                                           sync_service_)
+  return features_util::IsOptedInForAccountStorage(pref_service_, sync_service_)
              ? PreconditionState::kPreconditionsMet
              : PreconditionState::kMustStopAndClearData;
 }
@@ -94,7 +93,7 @@ void PasswordModelTypeController::OnStateChanged(syncer::SyncService* sync) {
 }
 
 void PasswordModelTypeController::OnAccountsCookieDeletedByUserAction() {
-  password_manager_util::ClearAccountStorageSettingsForAllUsers(pref_service_);
+  features_util::ClearAccountStorageSettingsForAllUsers(pref_service_);
 }
 
 void PasswordModelTypeController::OnOptInStateMaybeChanged() {

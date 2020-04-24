@@ -114,11 +114,8 @@ TEST(ExtensionSettingsPolicyHandlerTest, CheckPolicySettingsURL) {
   auto url_parses_successfully = [](const char* policy_template,
                                     const std::string& url) {
     std::string policy = base::StringPrintf(policy_template, url.c_str());
-    std::string error;
-    std::unique_ptr<base::Value> policy_value =
-        base::JSONReader::ReadAndReturnErrorDeprecated(
-            policy, base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS,
-            nullptr, &error);
+    base::Optional<base::Value> policy_value = base::JSONReader::Read(
+        policy, base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS);
     if (!policy_value)
       return false;
 
@@ -127,10 +124,10 @@ TEST(ExtensionSettingsPolicyHandlerTest, CheckPolicySettingsURL) {
     policy::PolicyMap policy_map;
     ExtensionSettingsPolicyHandler handler(chrome_schema);
 
-    policy_map.Set(policy::key::kExtensionSettings,
-                   policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-                   policy::POLICY_SOURCE_CLOUD, std::move(policy_value),
-                   nullptr);
+    policy_map.Set(
+        policy::key::kExtensionSettings, policy::POLICY_LEVEL_MANDATORY,
+        policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+        base::Value::ToUniquePtrValue(std::move(*policy_value)), nullptr);
 
     policy::PolicyErrorMap errors;
     return handler.CheckPolicySettings(policy_map, &errors) && errors.empty();
@@ -355,12 +352,11 @@ TEST(ExtensionURLPatternListPolicyHandlerTest, ApplyPolicySettings) {
 }
 
 TEST(ExtensionSettingsPolicyHandlerTest, CheckPolicySettings) {
-  std::string error;
-  std::unique_ptr<base::Value> policy_value =
-      base::JSONReader::ReadAndReturnErrorDeprecated(
+  base::JSONReader::ValueWithError policy_result =
+      base::JSONReader::ReadAndReturnValueWithError(
           kTestManagementPolicy1,
-          base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS, NULL, &error);
-  ASSERT_TRUE(policy_value.get()) << error;
+          base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS);
+  ASSERT_TRUE(policy_result.value) << policy_result.error_message;
 
   policy::Schema chrome_schema =
       policy::Schema::Wrap(policy::GetChromeSchemaData());
@@ -368,9 +364,10 @@ TEST(ExtensionSettingsPolicyHandlerTest, CheckPolicySettings) {
   policy::PolicyErrorMap errors;
   ExtensionSettingsPolicyHandler handler(chrome_schema);
 
-  policy_map.Set(policy::key::kExtensionSettings,
-                 policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-                 policy::POLICY_SOURCE_CLOUD, std::move(policy_value), nullptr);
+  policy_map.Set(
+      policy::key::kExtensionSettings, policy::POLICY_LEVEL_MANDATORY,
+      policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+      base::Value::ToUniquePtrValue(std::move(*policy_result.value)), nullptr);
   // CheckPolicySettings() fails due to missing update URL.
   EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_FALSE(errors.empty());
@@ -426,12 +423,11 @@ TEST(ExtensionSettingsPolicyHandlerTest, ApplyPolicySettings) {
   base::win::ScopedDomainStateForTesting scoped_domain(true);
 #endif
 
-  std::string error;
-  std::unique_ptr<base::Value> policy_value =
-      base::JSONReader::ReadAndReturnErrorDeprecated(
+  base::JSONReader::ValueWithError policy_result =
+      base::JSONReader::ReadAndReturnValueWithError(
           kTestManagementPolicy2,
-          base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS, NULL, &error);
-  ASSERT_TRUE(policy_value.get()) << error;
+          base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS);
+  ASSERT_TRUE(policy_result.value) << policy_result.error_message;
 
   policy::Schema chrome_schema =
       policy::Schema::Wrap(policy::GetChromeSchemaData());
@@ -440,15 +436,15 @@ TEST(ExtensionSettingsPolicyHandlerTest, ApplyPolicySettings) {
   PrefValueMap prefs;
   ExtensionSettingsPolicyHandler handler(chrome_schema);
 
-  policy_map.Set(policy::key::kExtensionSettings,
-                 policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-                 policy::POLICY_SOURCE_CLOUD, policy_value->CreateDeepCopy(),
-                 nullptr);
+  policy_map.Set(
+      policy::key::kExtensionSettings, policy::POLICY_LEVEL_MANDATORY,
+      policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+      base::Value::ToUniquePtrValue(policy_result.value->Clone()), nullptr);
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   handler.ApplyPolicySettings(policy_map, &prefs);
   base::Value* value = NULL;
   ASSERT_TRUE(prefs.GetValue(pref_names::kExtensionManagement, &value));
-  EXPECT_EQ(*policy_value, *value);
+  EXPECT_EQ(*policy_result.value, *value);
 }
 
 // Only enterprise managed machines can auto install extensions from a location
@@ -458,12 +454,10 @@ TEST(ExtensionSettingsPolicyHandlerTest, NonManagedOffWebstoreExtension) {
   // Mark as not enterprise managed.
   base::win::ScopedDomainStateForTesting scoped_domain(false);
 
-  std::string error;
-  std::unique_ptr<base::Value> policy_value =
-      base::JSONReader::ReadAndReturnErrorDeprecated(
-          kTestManagementPolicy2,
-          base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS, nullptr, &error);
-  ASSERT_TRUE(policy_value.get()) << error;
+  auto policy_result = base::JSONReader::ReadAndReturnValueWithError(
+      kTestManagementPolicy2,
+      base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS);
+  ASSERT_TRUE(policy_result.value) << policy_result.error_message;
 
   policy::Schema chrome_schema =
       policy::Schema::Wrap(policy::GetChromeSchemaData());
@@ -472,10 +466,10 @@ TEST(ExtensionSettingsPolicyHandlerTest, NonManagedOffWebstoreExtension) {
   PrefValueMap prefs;
   ExtensionSettingsPolicyHandler handler(chrome_schema);
 
-  policy_map.Set(policy::key::kExtensionSettings,
-                 policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-                 policy::POLICY_SOURCE_CLOUD, policy_value->CreateDeepCopy(),
-                 nullptr);
+  policy_map.Set(
+      policy::key::kExtensionSettings, policy::POLICY_LEVEL_MANDATORY,
+      policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+      base::Value::ToUniquePtrValue(policy_result.value->Clone()), nullptr);
   EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_FALSE(errors.empty());
 }

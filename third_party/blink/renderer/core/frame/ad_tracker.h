@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/probe/async_task_id.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_info.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
@@ -39,6 +40,10 @@ class CORE_EXPORT AdTracker : public GarbageCollected<AdTracker> {
   // Finds an AdTracker for a given ExecutionContext.
   static AdTracker* FromExecutionContext(ExecutionContext*);
 
+  static bool IsAdScriptExecutingInDocument(
+      Document* document,
+      StackType stack_type = StackType::kBottomAndTop);
+
   // Instrumenting methods.
   // Called when a script module or script gets executed from native code.
   void Will(const probe::ExecuteScript&);
@@ -49,15 +54,17 @@ class CORE_EXPORT AdTracker : public GarbageCollected<AdTracker> {
   void Did(const probe::CallFunction&);
 
   // Called when a subresource request is about to be sent or is redirected.
-  // Returns true if:
-  // - If the resource is loaded in an ad iframe
-  // - If ad script is in the v8 stack
+  // Returns true if any of the following are true:
+  // - the resource is loaded in an ad iframe
   // - |known_ad| is true
+  // - ad script is in the v8 stack and the resource was not requested by CSS.
   // Virtual for testing.
-  virtual bool CalculateIfAdSubresource(ExecutionContext* execution_context,
-                                        const ResourceRequest& request,
-                                        ResourceType resource_type,
-                                        bool known_ad);
+  virtual bool CalculateIfAdSubresource(
+      ExecutionContext* execution_context,
+      const ResourceRequest& request,
+      ResourceType resource_type,
+      const FetchInitiatorInfo& initiator_info,
+      bool known_ad);
 
   // Called when an async task is created. Check at this point for ad script on
   // the stack and annotate the task if so.

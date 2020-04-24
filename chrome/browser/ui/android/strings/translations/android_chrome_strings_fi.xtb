@@ -164,7 +164,6 @@ Hae napauttamalla sanaa. Jos haluat tarkentaa hakuasi, valitse enemmän tai väh
 <translation id="2131665479022868825"><ph name="DATA" /> tallennettu</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> suljettiin</translation>
 <translation id="2139186145475833000">Lisää aloitusnäyttöön</translation>
-<translation id="2146738493024040262">Avaa Instant-sovellus</translation>
 <translation id="2154484045852737596">Muokkaa korttia</translation>
 <translation id="2154710561487035718">Kopioi URL-osoite</translation>
 <translation id="2156074688469523661">Jäljellä olevat sivustot (<ph name="NUMBER_OF_SITES" />)</translation>
@@ -281,7 +280,6 @@ Hae sanaa koskettamalla sitä pitkään. Jos haluat tarkentaa hakuasi, valitse e
 <translation id="2996809686854298943">URL-osoite vaaditaan</translation>
 <translation id="300526633675317032">Tämä tyhjentää yhteensä <ph name="SIZE_IN_KB" /> tallennettuja sivustotietoja.</translation>
 <translation id="3016635187733453316">Varmista, että laite on yhteydessä internetiin</translation>
-<translation id="3029613699374795922">Ladattu: <ph name="KBS" /> kt</translation>
 <translation id="3029704984691124060">Tunnuslauseet eivät vastaa toisiaan.</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Tutustu ohjeisiin<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Sijainti on pois päältä. Voit laittaa sen päälle <ph name="BEGIN_LINK" />Android-asetuksista<ph name="END_LINK" />.</translation>
@@ -457,7 +455,6 @@ Vain sinä voit nähdä, mitä kamera kuvaa. Sivusto ei voi nähdä kamerasi kuv
 <translation id="4411535500181276704">Yksinkertaistettu tila</translation>
 <translation id="4415276339145661267">Ylläpidä Google-tiliäsi</translation>
 <translation id="4432792777822557199">Kielellä <ph name="SOURCE_LANGUAGE" /> kirjoitetut sivut käännetään tästä lähtien kielelle <ph name="TARGET_LANGUAGE" />.</translation>
-<translation id="4433925000917964731">Googlen tarjoama yksinkertaistettu sivu</translation>
 <translation id="4434045419905280838">Ponn.ikkunat ja uudelleenohjaus</translation>
 <translation id="4440958355523780886">Googlen tarjoama yksinkertaistettu sivu. Lataa alkuperäinen napauttamalla.</translation>
 <translation id="4452411734226507615">Sulje välilehti <ph name="TAB_TITLE" /></translation>
@@ -737,7 +734,6 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="6406506848690869874">Synkronointi</translation>
 <translation id="6410973561433500075">Siirrytäänkö AR-tilaan (<ph name="DOMAIN" />)?</translation>
 <translation id="641643625718530986">Tulosta…</translation>
-<translation id="6416782512398055893">Ladattu: <ph name="MBS" /> Mt</translation>
 <translation id="6427112570124116297">Käännä verkon sisältö</translation>
 <translation id="6433501201775827830">Valitse hakukone</translation>
 <translation id="6437478888915024427">Sivun tiedot</translation>
@@ -745,7 +741,6 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="6441734959916820584">Nimi on liian pitkä</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# kuva}other{# kuvaa}}</translation>
 <translation id="6447558397796644647">Tätä kirjanmerkkiä ei löydy. Tarkista oikeinkirjoitus tai lisää uusi kirjanmerkki.</translation>
-<translation id="6447842834002726250">Evästeet</translation>
 <translation id="6461962085415701688">Tiedoston avaaminen epäonnistui</translation>
 <translation id="6464977750820128603">Voit nähdä Chromessa käyttämäsi sivustot ja asettaa niille ajastimia.\n\nGoogle saa tietoa sivustoista, joille asetat ajastimia, ja sivustojen käytön kestosta. Tietoja käytetään Digitaalisen hyvinvoinnin parantamiseen.</translation>
 <translation id="6475951671322991020">Lataa video</translation>
@@ -754,7 +749,6 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="6508722015517270189">Käynnistä Chrome uudelleen.</translation>
 <translation id="6532866250404780454">Chromessa käyttämäsi sivustot eivät näy. Kaikki sivuston ajastimet poistetaan.</translation>
 <translation id="6534565668554028783">Google ei vastannut riittävän nopeasti.</translation>
-<translation id="6538442820324228105">Ladattu: <ph name="GBS" /> Gt</translation>
 <translation id="6539092367496845964">Jotain meni vikaan. Yritä myöhemmin uudelleen.</translation>
 <translation id="6545017243486555795">Poista kaikki tiedot</translation>
 <translation id="6545864417968258051">Bluetooth-haku</translation>
@@ -855,6 +849,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Jaa 1 valittu kohde}other{Jaa # valittua kohdetta}}</translation>
 <translation id="7359002509206457351">Pääsy maksutapoihin</translation>
+<translation id="7362144854749094396">Chrome saa historiatietosi. <ph name="SITE_NAME" /> saa tiedon valinnoistasi.</translation>
 <translation id="7375125077091615385">Tyyppi:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL-osoite</translation>

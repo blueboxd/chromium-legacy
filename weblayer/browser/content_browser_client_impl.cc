@@ -586,14 +586,8 @@ void ContentBrowserClientImpl::CreateFeatureListAndFieldTrials() {
 
 #if defined(OS_ANDROID)
 SafeBrowsingService* ContentBrowserClientImpl::GetSafeBrowsingService() {
-  if (!safe_browsing_service_) {
-    // Create and initialize safe_browsing_service on first get.
-    // Note: Initialize() needs to happen on UI thread.
-    safe_browsing_service_ =
-        std::make_unique<SafeBrowsingService>(GetUserAgent());
-    safe_browsing_service_->Initialize();
-  }
-  return safe_browsing_service_.get();
+  return weblayer::BrowserProcess::GetInstance()->GetSafeBrowsingService(
+      GetUserAgent());
 }
 #endif
 

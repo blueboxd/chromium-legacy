@@ -474,6 +474,8 @@ const char* ToString(ax::mojom::Role role) {
       return "imageMap";
     case ax::mojom::Role::kImage:
       return "image";
+    case ax::mojom::Role::kImeCandidate:
+      return "imeCandidate";
     case ax::mojom::Role::kInlineTextBox:
       return "inlineTextBox";
     case ax::mojom::Role::kInputTime:
@@ -858,6 +860,8 @@ ax::mojom::Role ParseRole(const char* role) {
     return ax::mojom::Role::kImageMap;
   if (0 == strcmp(role, "image"))
     return ax::mojom::Role::kImage;
+  if (0 == strcmp(role, "imeCandidate"))
+    return ax::mojom::Role::kImeCandidate;
   if (0 == strcmp(role, "inlineTextBox"))
     return ax::mojom::Role::kInlineTextBox;
   if (0 == strcmp(role, "inputTime"))

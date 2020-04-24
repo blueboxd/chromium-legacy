@@ -47,6 +47,8 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/result_codes.h"
+#include "ipc/ipc_message.h"
+#include "mojo/public/c/system/types.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
@@ -2281,7 +2283,7 @@ bool ServiceWorkerVersion::IsStartWorkerAllowed() const {
   if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
     if (!GetContentClient()->browser()->AllowServiceWorkerOnUI(
             scope_, scope_, url::Origin::Create(scope_), script_url_,
-            context_->wrapper()->browser_context(), base::NullCallback())) {
+            context_->wrapper()->browser_context())) {
       return false;
     }
   } else {
@@ -2289,7 +2291,7 @@ bool ServiceWorkerVersion::IsStartWorkerAllowed() const {
     if ((context_->wrapper()->resource_context() &&
          !GetContentClient()->browser()->AllowServiceWorkerOnIO(
              scope_, scope_, url::Origin::Create(scope_), script_url_,
-             context_->wrapper()->resource_context(), base::NullCallback()))) {
+             context_->wrapper()->resource_context()))) {
       return false;
     }
   }

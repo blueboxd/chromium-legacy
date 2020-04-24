@@ -197,14 +197,6 @@ cr.define('settings', function() {
     },
 
     /**
-     * @return {string}
-     * @private
-     */
-    getPromoHeaderClass_() {
-      return this.subLabel_ ? 'two-line' : '';
-    },
-
-    /**
      * @param {string} label
      * @param {string} name
      * @return {string}

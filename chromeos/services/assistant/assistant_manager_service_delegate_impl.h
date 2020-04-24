@@ -5,17 +5,12 @@
 #ifndef CHROMEOS_SERVICES_ASSISTANT_ASSISTANT_MANAGER_SERVICE_DELEGATE_IMPL_H_
 #define CHROMEOS_SERVICES_ASSISTANT_ASSISTANT_MANAGER_SERVICE_DELEGATE_IMPL_H_
 
+#include <memory>
+#include <string>
+
 #include "chromeos/services/assistant/assistant_manager_service_delegate.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/device/public/mojom/battery_monitor.mojom.h"
-
-namespace chromeos {
-namespace assistant {
-namespace mojom {
-class Client;
-}  // namespace mojom
-}  // namespace assistant
-}  // namespace chromeos
 
 namespace chromeos {
 namespace assistant {
@@ -27,7 +22,6 @@ class AssistantManagerServiceDelegateImpl
  public:
   AssistantManagerServiceDelegateImpl(
       mojo::PendingRemote<device::mojom::BatteryMonitor> battery_monitor,
-      mojom::Client* client,
       ServiceContext* context);
   ~AssistantManagerServiceDelegateImpl() override;
 
@@ -46,7 +40,6 @@ class AssistantManagerServiceDelegateImpl
  private:
   mojo::PendingRemote<device::mojom::BatteryMonitor> battery_monitor_;
   // Owned by the parent |Service| which will destroy |this| before |context_|.
-  mojom::Client* client_;
   ServiceContext* context_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantManagerServiceDelegateImpl);

@@ -13,7 +13,7 @@
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
-#include "chromeos/services/assistant/test_support/fake_client.h"
+#include "chromeos/services/assistant/test_support/scoped_assistant_client.h"
 #include "services/audio/public/cpp/fake_stream_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -22,12 +22,12 @@ namespace assistant {
 
 namespace {
 
-class FakeAssistantClient : public FakeClient {
+class ScopedFakeAssistantClient : public ScopedAssistantClient {
  public:
-  FakeAssistantClient() = default;
-  ~FakeAssistantClient() override = default;
+  ScopedFakeAssistantClient() = default;
+  ~ScopedFakeAssistantClient() override = default;
 
-  // FakeClient overrides:
+  // ScopedAssistantClient overrides:
   void RequestAudioStreamFactory(
       mojo::PendingReceiver<audio::mojom::StreamFactory> receiver) override {
     if (!fake_stream_factory_.receiver_.is_bound())
@@ -37,7 +37,7 @@ class FakeAssistantClient : public FakeClient {
  private:
   audio::FakeStreamFactory fake_stream_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(FakeAssistantClient);
+  DISALLOW_COPY_AND_ASSIGN(ScopedFakeAssistantClient);
 };
 
 }  // namespace
@@ -53,8 +53,8 @@ class AudioInputImplTest : public testing::Test,
     CrasAudioHandler::InitializeForTesting();
 
     audio_input_impl_ = std::make_unique<AudioInputImpl>(
-        &fake_assistant_client_, FakePowerManagerClient::Get(),
-        CrasAudioHandler::Get(), "fake-device-id");
+        FakePowerManagerClient::Get(), CrasAudioHandler::Get(),
+        "fake-device-id");
 
     audio_input_impl_->AddObserver(this);
   }
@@ -91,7 +91,7 @@ class AudioInputImplTest : public testing::Test,
  private:
   base::test::TaskEnvironment task_environment_;
   base::test::ScopedFeatureList scoped_feature_list_;
-  FakeAssistantClient fake_assistant_client_;
+  ScopedFakeAssistantClient fake_assistant_client_;
   std::unique_ptr<AudioInputImpl> audio_input_impl_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioInputImplTest);

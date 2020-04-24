@@ -53,6 +53,11 @@ class ChildUserService : public KeyedService,
     ChildUserService* const service_;
   };
 
+  // Family Link helper(for child and teens) is an app available to supervised
+  // users and the companion app of Family Link app(for parents).
+  static const char kFamilyLinkHelperAppPackageName[];
+  static const char kFamilyLinkHelperAppPlayStoreURL[];
+
   explicit ChildUserService(content::BrowserContext* context);
   ChildUserService(const ChildUserService&) = delete;
   ChildUserService& operator=(const ChildUserService&) = delete;

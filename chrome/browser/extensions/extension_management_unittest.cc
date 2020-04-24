@@ -192,14 +192,14 @@ class ExtensionManagementServiceTest : public testing::Test {
   }
 
   void SetExampleDictPref(const base::StringPiece example_dict_preference) {
-    std::string error_msg;
-    std::unique_ptr<base::Value> parsed =
-        base::JSONReader::ReadAndReturnErrorDeprecated(
+    base::JSONReader::ValueWithError result =
+        base::JSONReader::ReadAndReturnValueWithError(
             example_dict_preference,
-            base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS, NULL,
-            &error_msg);
-    ASSERT_TRUE(parsed && parsed->is_dict()) << error_msg;
-    SetPref(true, pref_names::kExtensionManagement, std::move(parsed));
+            base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS);
+    ASSERT_TRUE(result.value && result.value->is_dict())
+        << result.error_message;
+    SetPref(true, pref_names::kExtensionManagement,
+            base::Value::ToUniquePtrValue(std::move(*result.value)));
   }
 
   // Wrapper of ExtensionManagement::GetInstallationMode, |id| and

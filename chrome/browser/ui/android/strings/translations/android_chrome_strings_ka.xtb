@@ -164,7 +164,6 @@
 <translation id="2131665479022868825">დაზოგილია <ph name="DATA" /></translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> დაიხურა</translation>
 <translation id="2139186145475833000">მთავარ ეკრანზე დამატება</translation>
-<translation id="2146738493024040262">მყისიერი აპის გახსნა</translation>
 <translation id="2154484045852737596">ბარათის რედაქტირება</translation>
 <translation id="2154710561487035718">დააკოპიე URL</translation>
 <translation id="2156074688469523661">დანარჩენი საიტები (<ph name="NUMBER_OF_SITES" />)</translation>
@@ -281,7 +280,6 @@
 <translation id="2996809686854298943">საჭიროა URL</translation>
 <translation id="300526633675317032">ეს მოქმედება მთლიანად გაასუფთავებს ვებსაიტების მეხსიერებას (სულ: <ph name="SIZE_IN_KB" />).</translation>
 <translation id="3016635187733453316">დარწმუნდით, რომ ეს მოწყობილობა დაკავშირებულია ინტერნეტთან</translation>
-<translation id="3029613699374795922">ჩამოტვირთულია <ph name="KBS" /> კბაიტი</translation>
 <translation id="3029704984691124060">კოდური ფრაზები ერთმანეთს არ ემთხვევა</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />მიიღეთ დახმარება<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">მდებარეობა გამორთულია, ჩართეთ ის <ph name="BEGIN_LINK" />Android-ის პარამეტრებიდან<ph name="END_LINK" />.</translation>
@@ -457,7 +455,6 @@
 <translation id="4411535500181276704">Lite რეჟიმი</translation>
 <translation id="4415276339145661267">თქვენი Google ანგარიშის მართვა</translation>
 <translation id="4432792777822557199"><ph name="SOURCE_LANGUAGE" /> გვერდები ამიერიდან ითარგმნება შემდეგ ენაზე: <ph name="TARGET_LANGUAGE" /></translation>
-<translation id="4433925000917964731">გვერდის Lite ვერსიას უზრუნველყოფს Google</translation>
 <translation id="4434045419905280838">ამომხ. ფანჯრები/გადამისამართება</translation>
 <translation id="4440958355523780886">გვერდის Lite ვერსიას უზრუნველყოფს Google. შეეხეთ ორიგინალის ჩასატვირთად.</translation>
 <translation id="4452411734226507615"><ph name="TAB_TITLE" /> ჩანართის დახურვა</translation>
@@ -737,7 +734,6 @@
 <translation id="6406506848690869874">სინქრონიზაცია</translation>
 <translation id="6410973561433500075">გსურთ აუგმენტური რეალობის რეჟიმზე გადასვლა <ph name="DOMAIN" />-დან?</translation>
 <translation id="641643625718530986">ბეჭდვა…</translation>
-<translation id="6416782512398055893">ჩამოტვირთულია <ph name="MBS" /> მბაიტი</translation>
 <translation id="6427112570124116297">თარგმნეთ ვებ-კონტენტი</translation>
 <translation id="6433501201775827830">აირჩიეთ საძიებო სისტემა</translation>
 <translation id="6437478888915024427">გვერდის ინფორმაცია</translation>
@@ -745,7 +741,6 @@
 <translation id="6441734959916820584">სახელი მეტისმეტად გრძელია</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# სურათი}other{# სურათი}}</translation>
 <translation id="6447558397796644647">ეს სანიშნე ვერ მოიძებნა. შეამოწმეთ მართლწერა ან დაამატეთ ახალი სანიშნე.</translation>
-<translation id="6447842834002726250">ქუქი ფაილები</translation>
 <translation id="6461962085415701688">ფაილი ვერ გაიხსნა</translation>
 <translation id="6464977750820128603">თქვენ იხილავთ Chrome-ის მეშვეობით მონახულებულ ვებსაიტებს და შეძლებთ მათთვის ტაიმერების დაყენებას.\n\nGoogle მიიღებს ინფორმაციას იმ ვებსაიტების შესახებ, რომლებისთვისაც დააყენეთ ტაიმერები და ასევე შეიტყობს, რამდენი ხნის განმავლობაში სტუმრობთ მათ. აღნიშნული ინფორმაცია გამოიყენება ციფრული კომფორტის გასაუმჯობესებლად.</translation>
 <translation id="6475951671322991020">ვიდეოს ჩამოტვირთვა</translation>
@@ -754,7 +749,6 @@
 <translation id="6508722015517270189">Chrome-ის გადატვირთვა</translation>
 <translation id="6532866250404780454">Chrome-იდან მონახულებული ვებსაიტები არ გამოჩნდება. ვებსაიტების ყველა ტაიმერი წაიშლება.</translation>
 <translation id="6534565668554028783">Google-ს რეაგირებისთვის მეტისმეტად ბევრი დრო დასჭირდა</translation>
-<translation id="6538442820324228105">ჩამოტვირთულია <ph name="GBS" /> გბაიტი</translation>
 <translation id="6539092367496845964">წარმოიქმნა შეფერხება. ცადეთ მოგვიანებით.</translation>
 <translation id="6545017243486555795">ყველა მონაცემის გასუფთავება</translation>
 <translation id="6545864417968258051">Bluetooth სკანირება</translation>

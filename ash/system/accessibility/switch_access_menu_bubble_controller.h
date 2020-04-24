@@ -25,7 +25,8 @@ class ASH_EXPORT SwitchAccessMenuBubbleController
       const SwitchAccessMenuBubbleController&) = delete;
 
   void ShowBackButton(const gfx::Rect& anchor);
-  void ShowMenu(const gfx::Rect& anchor);
+  void ShowMenu(const gfx::Rect& anchor,
+                const std::vector<std::string>& actions_to_show);
   void CloseAll();
 
   // TrayBubbleView::Delegate:
@@ -33,6 +34,8 @@ class ASH_EXPORT SwitchAccessMenuBubbleController
 
  private:
   friend class SwitchAccessMenuBubbleControllerTest;
+
+  void ShowBackButtonForMenu();
 
   std::unique_ptr<SwitchAccessBackButtonBubbleController>
       back_button_controller_;

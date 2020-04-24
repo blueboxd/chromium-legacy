@@ -294,8 +294,6 @@ class BasePreviewsLitePageRedirectServerBrowserTest
         {previews::features::kPreviews,
          optimization_guide::features::kOptimizationHints,
          previews::features::kResourceLoadingHints,
-         data_reduction_proxy::features::
-             kDataReductionProxyEnabledWithNetworkService,
          network::features::kReporting},
         {network::features::kNetworkErrorLogging});
 

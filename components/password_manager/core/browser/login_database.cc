@@ -1119,8 +1119,6 @@ PasswordStoreChangeList LoginDatabase::UpdateLogin(const PasswordForm& form,
 #if defined(OS_IOS)
   DeleteEncryptedPassword(form);
 #endif
-  // Replacement is necessary to deal with updating imported credentials. See
-  // crbug.com/349138 for details.
   DCHECK(!update_statement_.empty());
   sql::Statement s(
       db_.GetCachedStatement(SQL_FROM_HERE, update_statement_.c_str()));

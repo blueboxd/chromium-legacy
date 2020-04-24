@@ -4,8 +4,7 @@
 
 #include "third_party/blink/renderer/core/mathml/mathml_space_element.h"
 
-#include "third_party/blink/renderer/core/layout/ng/mathml/layout_ng_mathml_block.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
 
@@ -52,14 +51,6 @@ void MathMLSpaceElement::CollectStyleForPresentationAttribute(
   } else {
     MathMLElement::CollectStyleForPresentationAttribute(name, value, style);
   }
-}
-
-LayoutObject* MathMLSpaceElement::CreateLayoutObject(const ComputedStyle& style,
-                                                     LegacyLayout legacy) {
-  if (!RuntimeEnabledFeatures::MathMLCoreEnabled() ||
-      !style.IsDisplayMathType() || legacy == LegacyLayout::kForce)
-    return MathMLElement::CreateLayoutObject(style, legacy);
-  return new LayoutNGMathMLBlock(this);
 }
 
 }  // namespace blink

@@ -38,9 +38,11 @@ ChromeVoxLocaleOutputHelperTest = class extends ChromeVoxNextE2ETest {
     // Mock this api to return a predefined set of voices.
     chrome.tts.getVoices = function(callback) {
       callback([
-        {'lang': 'en-US'}, {'lang': 'fr-CA'}, {'lang': 'es-ES'},
-        {'lang': 'it-IT'}, {'lang': 'ja-JP'}, {'lang': 'ko-KR'},
-        {'lang': 'zh-TW'}, {'lang': 'ast'}, {'lang': 'pt'}
+        // All properties of TtsVoice object are optional.
+        // https://developer.chrome.com/apps/tts#type-TtsVoice.
+        {}, {voiceName: 'Android'}, {'lang': 'en-US'}, {'lang': 'fr-CA'},
+        {'lang': 'es-ES'}, {'lang': 'it-IT'}, {'lang': 'ja-JP'},
+        {'lang': 'ko-KR'}, {'lang': 'zh-TW'}, {'lang': 'ast'}, {'lang': 'pt'}
       ]);
     };
   }

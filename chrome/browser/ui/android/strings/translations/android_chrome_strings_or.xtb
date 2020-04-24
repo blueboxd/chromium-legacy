@@ -164,7 +164,6 @@
 <translation id="2131665479022868825"><ph name="DATA" /> ସେଭ୍ ହୋଇଛି</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" />ବନ୍ଦ ହୋଇଯାଇଛି</translation>
 <translation id="2139186145475833000">ହୋମ୍ ସ୍କ୍ରିନରେ ଯୋଗ କରନ୍ତୁ</translation>
-<translation id="2146738493024040262">ଇନ୍‌ଷ୍ଟାଣ୍ଟ ଆପ୍ ଖୋଲନ୍ତୁ</translation>
 <translation id="2154484045852737596">କାର୍ଡକୁ ଏଡିଟ୍ କରନ୍ତୁ</translation>
 <translation id="2154710561487035718">URL କପି କରନ୍ତୁ</translation>
 <translation id="2156074688469523661">ବାକିଥିବା ସାଇଟ୍‍ଗୁଡ଼ିକ (<ph name="NUMBER_OF_SITES" />)</translation>
@@ -281,7 +280,6 @@
 <translation id="2996809686854298943">URL ଆବଶ୍ୟକ</translation>
 <translation id="300526633675317032">ଏହା ୱେବ୍‌ସାଇଟ୍‌ ଷ୍ଟୋରେଜ୍‌ର ସମସ୍ତ <ph name="SIZE_IN_KB" /> ଡାଟା ଖାଲି କରିବ।</translation>
 <translation id="3016635187733453316">ଏହି ଡିଭାଇସ୍‌ଟି ଇଣ୍ଟର୍ନେଟ୍ ସହ ସଂଯୁକ୍ତ ହୋଇଥିବା ସୁନିଶ୍ଚିତ କରନ୍ତୁ</translation>
-<translation id="3029613699374795922"><ph name="KBS" /> KB ଡାଉନ୍‌ଲୋଡ୍‌ କରାଯାଇଛି</translation>
 <translation id="3029704984691124060">ପାସଫ୍ରେଜ୍ ମେଳ ଖାଉନାହିଁ</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />ସାହାଯ୍ୟ ପାଆନ୍ତୁ<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">ଲୋକେସନ୍‍ ବନ୍ଦ ଅଛି; ଏହାକୁ <ph name="BEGIN_LINK" />Android ସେଟିଂସ୍‌<ph name="END_LINK" />ରେ ଚାଲୁ କରନ୍ତୁ।</translation>
@@ -457,7 +455,6 @@
 <translation id="4411535500181276704">ଲାଇଟ୍ ମୋଡ୍</translation>
 <translation id="4415276339145661267">ଆପଣଙ୍କର Google ଆକାଉଣ୍ଟ ପରିଚାଳନା କରନ୍ତୁ</translation>
 <translation id="4432792777822557199">ବର୍ତ୍ତମାନ ଠାରୁ <ph name="SOURCE_LANGUAGE" />ର ପୃଷ୍ଠାଗୁଡ଼ିକୁ <ph name="TARGET_LANGUAGE" />ରେ ଅନୁବାଦ କରାଯିବ</translation>
-<translation id="4433925000917964731">Google ଦ୍ୱାରା ପ୍ରଦତ୍ତ ଲାଇଟ୍ ପୃଷ୍ଠା</translation>
 <translation id="4434045419905280838">ପପ୍-ଅପ୍ ଏବଂ ରିଡାଇରେକ୍‌ଟ</translation>
 <translation id="4440958355523780886">Google ଦ୍ୱାରା ପ୍ରଦତ୍ତ ଲାଇଟ୍ ପୃଷ୍ଠା ଅସଲଟିକୁ ଲୋଡ୍ କରିବାକୁ ଟାପ୍ କରନ୍ତୁ</translation>
 <translation id="4452411734226507615"><ph name="TAB_TITLE" />ଟ୍ୟାବ୍ ବନ୍ଦ କରନ୍ତୁ</translation>
@@ -737,7 +734,6 @@
 <translation id="6406506848690869874">ସିଙ୍କ୍‌ କରନ୍ତୁ</translation>
 <translation id="6410973561433500075"><ph name="DOMAIN" />ରୁ ARକୁ ଯିବେ କି?</translation>
 <translation id="641643625718530986">ପ୍ରିଣ୍ଟ କରନ୍ତୁ…</translation>
-<translation id="6416782512398055893"><ph name="MBS" /> MB ଡାଉନ୍‍ଲୋଡ୍ ହୋଇଛି</translation>
 <translation id="6427112570124116297">ୱେବ୍ ଅନୁବାଦ କରନ୍ତୁ</translation>
 <translation id="6433501201775827830">ଆପଣଙ୍କର ସନ୍ଧାନ ଇଞ୍ଜିନ୍ ବାଛନ୍ତୁ</translation>
 <translation id="6437478888915024427">ପୃଷ୍ଠା ସୂଚନା</translation>
@@ -745,7 +741,6 @@
 <translation id="6441734959916820584">ନାମଟି ବହୁତ ଲମ୍ବା ଅଟେ</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{#ଟି ଛବି}other{#ଟି ଛବି}}</translation>
 <translation id="6447558397796644647">ସେହି ବୁକମାର୍କ ମିଳୁନାହିଁ। ଆପଣଙ୍କର ବନାନ ଯାଞ୍ଚ କରନ୍ତୁ କିମ୍ବା ଏକ ନୂଆ ବୁକମାର୍କ ଯୋଗ କରନ୍ତୁ।</translation>
-<translation id="6447842834002726250">କୁକୀଗୁଡିକ</translation>
 <translation id="6461962085415701688">ଫାଇଲ୍ ଖୋଲିପାରିବ ନାହିଁ</translation>
 <translation id="6464977750820128603">ଆପଣ Chromeରେ ଯେଉଁ ସାଇଟ୍‍ଗୁଡ଼ିକୁ ଯାଆନ୍ତି, ସେଗୁଡ଼ିକୁ ଦେଖିପାରିବେ ଏବଂ ସେଗୁଡ଼ିକ ପାଇଁ ଟାଇମର୍‌ଗୁଡ଼ିକ ସେଟ୍‌ କରିପାରିବେ। \n\nଆପଣ କେଉଁ ସାଇଟ୍‍ଗୁଡ଼ିକ ପାଇଁ ଟାଇମର୍‌ଗୁଡ଼ିକ ସେଟ୍‌ କରନ୍ତି ଏବଂ ଆପଣ ସେଗୁଡ଼ିକୁ କେତେ ସମୟ ପାଇଁ ଯାଆନ୍ତି, Google ସେହି ବିଷୟରେ ସୂଚନା ପ୍ରାପ୍ତ କରେ। ଡିଜିଟାଲ୍ ୱେଲ୍‍ବିଂକୁ ଉନ୍ନତ କରିବାରେ ଏହି ସୂଚନା ବ୍ୟବହାର କରାଯାଏ।</translation>
 <translation id="6475951671322991020">ଭିଡିଓ ଡାଉନ୍‌ଲୋଡ୍ କରନ୍ତୁ</translation>
@@ -754,7 +749,6 @@
 <translation id="6508722015517270189">Chrome ରିଷ୍ଟାର୍ଟ କରନ୍ତୁ</translation>
 <translation id="6532866250404780454">Chromeରେ ଆପଣ ଯେଉଁ ସାଇଟ୍‌ଗୁଡ଼ିକୁ ଯାଆନ୍ତି ସେଗୁଡ଼ିକ ଦେଖାଇବ ନାହିଁ। ସମସ୍ତ ସାଇଟ୍‍ ଟାଇମର୍‌ ଡିଲିଟ୍‍ କରାଯିବ।</translation>
 <translation id="6534565668554028783">Google ପ୍ରତିକ୍ରିୟା ଦେବାକୁ ବହୁତ ସମୟ ନେଉଛି</translation>
-<translation id="6538442820324228105"><ph name="GBS" /> GBକୁ ଡାଉନ୍‍ଲୋଡ୍ କରାଯାଇଛି</translation>
 <translation id="6539092367496845964">କିଛି ଭୁଲ ହୋଇଗଲା। ପରେ ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।</translation>
 <translation id="6545017243486555795">ସମସ୍ତ ଡାଟା ଖାଲି କରନ୍ତୁ</translation>
 <translation id="6545864417968258051">ବ୍ଲୁଟୁଥ୍ ସ୍କାନିଂ</translation>

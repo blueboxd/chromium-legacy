@@ -182,14 +182,16 @@ class DeclarativeNetRequestUnittest : public DNRTestBase {
   bool RunDynamicRuleUpdateFunction(const Extension& extension,
                                     const std::vector<int>& rule_ids_to_remove,
                                     const std::vector<TestRule>& rules_to_add) {
-    ListBuilder ids_to_remove;
-    for (int rule_id : rule_ids_to_remove)
-      ids_to_remove.Append(rule_id);
+    std::unique_ptr<base::Value> ids_to_remove_value =
+        ListBuilder()
+            .Append(rule_ids_to_remove.begin(), rule_ids_to_remove.end())
+            .Build();
 
-    std::unique_ptr<base::Value> args = ListBuilder()
-                                            .Append(ids_to_remove.Build())
-                                            .Append(ToListValue(rules_to_add))
-                                            .Build();
+    std::unique_ptr<base::Value> args =
+        ListBuilder()
+            .Append(std::move(ids_to_remove_value))
+            .Append(ToListValue(rules_to_add))
+            .Build();
     std::string json_args;
     base::JSONWriter::WriteWithOptions(
         *args, base::JSONWriter::OPTIONS_PRETTY_PRINT, &json_args);
@@ -764,7 +766,8 @@ TEST_P(SingleRulesetTest, DynamicRulesetRace) {
   TestExtensionRegistryObserver registry_observer(registry());
 
   service()->EnableExtension(extension_id);
-  const Extension* extension = registry_observer.WaitForExtensionLoaded();
+  scoped_refptr<const Extension> extension =
+      registry_observer.WaitForExtensionLoaded();
   ASSERT_TRUE(extension);
   ASSERT_EQ(extension_id, extension->id());
 

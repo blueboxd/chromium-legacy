@@ -1857,12 +1857,8 @@ if (enable_java_templates) {
         "*/R\$*.class",
         "*/Manifest.class",
         "*/Manifest\$*.class",
+        "*/GEN_JNI.class",
       ]
-      if (use_hashed_jni_names) {
-        jar_excluded_patterns += [ "J/N.class" ]
-      } else {
-        jar_excluded_patterns += [ "*/GEN_JNI.class" ]
-      }
     }
   }
 
@@ -1916,7 +1912,7 @@ if (enable_java_templates) {
       defines = []
 
       # Set these even when !use_final_fields so that they have correct default
-      # values withnin junit_binary().
+      # values within junit_binary(), which ignores jar_excluded_patterns.
       if (is_java_debug || dcheck_always_on) {
         defines += [ "_DCHECK_IS_ON" ]
       }
@@ -3183,6 +3179,14 @@ if (enable_java_templates) {
         uncompress_shared_libraries = _uncompress_shared_libraries
 
         deps = _deps + [ ":$_build_config_target" ]
+
+        # TODO(https://crbug.com/1056751): Add support for proguarding jdk libs.
+        if (enable_jdk_library_desugaring) {
+          _all_jdk_libs = "//build/android:all_jdk_libs"
+          deps += [ _all_jdk_libs ]
+          jdk_libs_dex = get_label_info(_all_jdk_libs, "target_out_dir") +
+                         "/all_jdk_libs.l8.dex"
+        }
 
         if (_incremental_apk) {
           _dex_target =

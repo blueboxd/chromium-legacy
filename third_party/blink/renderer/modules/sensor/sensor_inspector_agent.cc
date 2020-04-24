@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/modules/sensor/sensor_inspector_agent.h"
 
-#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/sensor/sensor_provider_proxy.h"
@@ -14,8 +14,8 @@
 
 namespace blink {
 
-SensorInspectorAgent::SensorInspectorAgent(Document* document)
-    : provider_(SensorProviderProxy::From(document)) {}
+SensorInspectorAgent::SensorInspectorAgent(LocalDOMWindow* window)
+    : provider_(SensorProviderProxy::From(window)) {}
 
 void SensorInspectorAgent::Trace(Visitor* visitor) {
   visitor->Trace(provider_);
@@ -62,14 +62,14 @@ const char kInspectorConsoleMessage[] =
 }  // namespace
 
 void SensorInspectorAgent::DidCommitLoadForLocalFrame(LocalFrame* frame) {
-  Document* current_document = provider_->GetSupplementable();
-  Document* new_document = frame->GetDocument();
-  if (current_document != new_document) {
+  LocalDOMWindow* current_window = provider_->GetSupplementable();
+  LocalDOMWindow* new_window = frame->DomWindow();
+  if (current_window != new_window) {
     // We need to manually reset |provider_| to drop the strong reference it
-    // has to an old document that would otherwise be prevented from being
+    // has to an old window that would otherwise be prevented from being
     // deleted.
     bool inspector_mode = provider_->inspector_mode();
-    provider_ = SensorProviderProxy::From(new_document);
+    provider_ = SensorProviderProxy::From(new_window);
     provider_->set_inspector_mode(inspector_mode);
   }
 }
@@ -78,12 +78,11 @@ void SensorInspectorAgent::SetOrientationSensorOverride(double alpha,
                                                         double beta,
                                                         double gamma) {
   if (!provider_->inspector_mode()) {
-    Document* document = provider_->GetSupplementable();
-    if (document) {
+    if (LocalDOMWindow* window = provider_->GetSupplementable()) {
       auto* console_message = MakeGarbageCollected<ConsoleMessage>(
           mojom::ConsoleMessageSource::kJavaScript,
           mojom::ConsoleMessageLevel::kInfo, kInspectorConsoleMessage);
-      document->AddConsoleMessage(console_message);
+      window->AddConsoleMessage(console_message);
     }
     provider_->set_inspector_mode(true);
   }

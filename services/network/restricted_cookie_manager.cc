@@ -39,20 +39,20 @@ net::CookieOptions MakeOptionsForSet(
     const net::SiteForCookies& site_for_cookies,
     const CookieSettings* cookie_settings) {
   net::CookieOptions options;
-  bool attach_same_site_cookies =
+  bool force_ignore_site_for_cookies =
       cookie_settings->ShouldIgnoreSameSiteRestrictions(
           url, site_for_cookies.RepresentativeUrl());
   if (role == mojom::RestrictedCookieManagerRole::SCRIPT) {
     options.set_exclude_httponly();  // Default, but make it explicit here.
     options.set_same_site_cookie_context(
         net::cookie_util::ComputeSameSiteContextForScriptSet(
-            url, site_for_cookies, attach_same_site_cookies));
+            url, site_for_cookies, force_ignore_site_for_cookies));
   } else {
     // mojom::RestrictedCookieManagerRole::NETWORK
     options.set_include_httponly();
     options.set_same_site_cookie_context(
         net::cookie_util::ComputeSameSiteContextForSubresource(
-            url, site_for_cookies, attach_same_site_cookies));
+            url, site_for_cookies, force_ignore_site_for_cookies));
   }
   return options;
 }
@@ -64,7 +64,7 @@ net::CookieOptions MakeOptionsForGet(
     const CookieSettings* cookie_settings) {
   // TODO(https://crbug.com/925311): Wire initiator here.
   net::CookieOptions options;
-  bool attach_same_site_cookies =
+  bool force_ignore_site_for_cookies =
       cookie_settings->ShouldIgnoreSameSiteRestrictions(
           url, site_for_cookies.RepresentativeUrl());
   if (role == mojom::RestrictedCookieManagerRole::SCRIPT) {
@@ -72,13 +72,13 @@ net::CookieOptions MakeOptionsForGet(
     options.set_same_site_cookie_context(
         net::cookie_util::ComputeSameSiteContextForScriptGet(
             url, site_for_cookies, base::nullopt /*initiator*/,
-            attach_same_site_cookies));
+            force_ignore_site_for_cookies));
   } else {
     // mojom::RestrictedCookieManagerRole::NETWORK
     options.set_include_httponly();
     options.set_same_site_cookie_context(
         net::cookie_util::ComputeSameSiteContextForSubresource(
-            url, site_for_cookies, attach_same_site_cookies));
+            url, site_for_cookies, force_ignore_site_for_cookies));
   }
   return options;
 }

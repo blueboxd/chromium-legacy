@@ -142,6 +142,15 @@ void TaskAnnotator::RunTask(const char* trace_event_name,
   std::move(pending_task->task).Run();
 
   tls->Set(previous_pending_task);
+
+  // Stomp the markers. Otherwise they can stick around on the unused parts of
+  // stack and cause |task_backtrace| to be associated with an unrelated stack
+  // sample on this thread later in the event of a crash. Alias once again after
+  // these writes to make sure the compiler doesn't optimize them out (unused
+  // writes to a local variable).
+  task_backtrace.front() = nullptr;
+  task_backtrace.back() = nullptr;
+  debug::Alias(&task_backtrace);
 }
 
 uint64_t TaskAnnotator::GetTaskTraceID(const PendingTask& task) const {

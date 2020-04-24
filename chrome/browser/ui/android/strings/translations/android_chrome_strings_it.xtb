@@ -164,7 +164,6 @@ Tocca una parola per eseguire una ricerca. Per perfezionare la ricerca, tocca e 
 <translation id="2131665479022868825">Dati risparmiati: <ph name="DATA" /></translation>
 <translation id="213279576345780926">La scheda <ph name="TAB_TITLE" /> è stata chiusa</translation>
 <translation id="2139186145475833000">Aggiungi a schermata Home</translation>
-<translation id="2146738493024040262">Apri l'app istantanea</translation>
 <translation id="2154484045852737596">Modifica la carta</translation>
 <translation id="2154710561487035718">Copia URL</translation>
 <translation id="2156074688469523661">Siti rimanenti (<ph name="NUMBER_OF_SITES" />)</translation>
@@ -281,7 +280,6 @@ Tocca e tieni premuta una parola per eseguire una ricerca. Per perfezionare la r
 <translation id="2996809686854298943">URL obbligatorio</translation>
 <translation id="300526633675317032">Verranno cancellati tutti i <ph name="SIZE_IN_KB" /> di memoria utilizzata dai siti web.</translation>
 <translation id="3016635187733453316">Assicurati che questo dispositivo sia connesso a Internet</translation>
-<translation id="3029613699374795922">Sono stati scricati <ph name="KBS" /> kB</translation>
 <translation id="3029704984691124060">Le passphrase non corrispondono</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Richiedi assistenza<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">La geolocalizzazione non è attiva; attivala nelle <ph name="BEGIN_LINK" />Impostazioni Android<ph name="END_LINK" />.</translation>
@@ -457,7 +455,6 @@ Soltanto tu puoi vedere cosa sta inquadrando la videocamera. Il sito non può ve
 <translation id="4411535500181276704">Modalità Lite</translation>
 <translation id="4415276339145661267">Gestisci il tuo Account Google</translation>
 <translation id="4432792777822557199">Le pagine in <ph name="SOURCE_LANGUAGE" /> verranno tradotte in <ph name="TARGET_LANGUAGE" /> d'ora in poi</translation>
-<translation id="4433925000917964731">Pagina Lite fornita da Google</translation>
 <translation id="4434045419905280838">Popup e reindirizzamenti</translation>
 <translation id="4440958355523780886">Pagina Lite fornita da Google. Tocca per caricare l'originale.</translation>
 <translation id="4452411734226507615">Chiudi la scheda <ph name="TAB_TITLE" /></translation>
@@ -737,7 +734,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="6406506848690869874">Sincronizzazione</translation>
 <translation id="6410973561433500075">Vuoi entrare nella AR da <ph name="DOMAIN" />?</translation>
 <translation id="641643625718530986">Stampa…</translation>
-<translation id="6416782512398055893">Sono stati scaricati <ph name="MBS" /> MB</translation>
 <translation id="6427112570124116297">Traduci il Web</translation>
 <translation id="6433501201775827830">Scegli il motore di ricerca</translation>
 <translation id="6437478888915024427">Informazioni sulla pagina</translation>
@@ -745,7 +741,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="6441734959916820584">Il nome è troppo lungo</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# immagine}other{# immagini}}</translation>
 <translation id="6447558397796644647">Impossibile trovare un preferito corrispondente. Controlla l'ortografia o aggiungi un nuovo preferito.</translation>
-<translation id="6447842834002726250">Cookie</translation>
 <translation id="6461962085415701688">Impossibile aprire il file.</translation>
 <translation id="6464977750820128603">Puoi vedere i siti che visiti in Chrome e impostare dei timer per ciascuno di essi.\n\nGoogle riceve informazioni sui siti per i quali imposti dei timer e sul tempo che trascorri a visitarli. Queste informazioni sono utilizzate al fine di migliorare Benessere digitale.</translation>
 <translation id="6475951671322991020">Scarica video</translation>
@@ -754,7 +749,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="6508722015517270189">Riavvia Chrome</translation>
 <translation id="6532866250404780454">I siti che visiti in Chrome non verranno mostrati. Tutti i timer dei siti saranno eliminati.</translation>
 <translation id="6534565668554028783">Google ha impiegato troppo tempo a rispondere</translation>
-<translation id="6538442820324228105">Sono stati scaricati <ph name="GBS" /> GB</translation>
 <translation id="6539092367496845964">Si è verificato un problema. Riprova più tardi.</translation>
 <translation id="6545017243486555795">Cancella tutti i dati</translation>
 <translation id="6545864417968258051">Scansione Bluetooth</translation>

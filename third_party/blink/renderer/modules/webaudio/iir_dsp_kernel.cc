@@ -28,7 +28,7 @@ void IIRDSPKernel::GetFrequencyResponse(int n_frequencies,
                                         const float* frequency_hz,
                                         float* mag_response,
                                         float* phase_response) {
-  DCHECK_GT(n_frequencies, 0);
+  DCHECK_GE(n_frequencies, 0);
   DCHECK(frequency_hz);
   DCHECK(mag_response);
   DCHECK(phase_response);

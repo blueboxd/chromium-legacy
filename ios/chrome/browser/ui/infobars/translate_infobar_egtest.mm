@@ -174,7 +174,7 @@ void TestResponseProvider::GetResponseHeadersAndBody(
     return GetLanguageResponse(request, headers, response_body);
   } else if (url.path() == kSubresourcePath) {
     // Different "Content-Language" headers in the main page and subresource.
-    (*headers)->AddHeader("Content-Language: fr");
+    (*headers)->AddHeader("Content-Language", "fr");
     *response_body = base::StringPrintf(
         "<html><body><img src=%s></body></html>", kSomeLanguageUrl);
     return;
@@ -223,7 +223,7 @@ void TestResponseProvider::GetLanguageResponse(
   std::string http;
   net::GetValueForKeyInQuery(url, "http", &http);
   if (!http.empty())
-    (*headers)->AddHeader(std::string("Content-Language: ") + http);
+    (*headers)->AddHeader("Content-Language", http);
   // Response body.
   std::string meta;
   net::GetValueForKeyInQuery(url, "meta", &meta);
@@ -257,7 +257,9 @@ void TestResponseProvider::GetLanguageResponse(
   [super setUp];
 
 #if defined(CHROME_EARL_GREY_1)
-  _featureList.InitAndEnableFeature(kIOSInfobarUIReboot);
+  _featureList.InitWithFeatures(
+      /*enabled_features=*/{kIOSInfobarUIReboot},
+      /*disabled_features=*/{kInfobarUIRebootOnlyiOS13});
 #endif
 
   // Set up the fake URL for the translate script to hit the mock HTTP server.
@@ -276,6 +278,7 @@ void TestResponseProvider::GetLanguageResponse(
 - (AppLaunchConfiguration)appConfigurationForTestCase {
   AppLaunchConfiguration config;
   config.features_enabled.push_back(kIOSInfobarUIReboot);
+  config.features_disabled.push_back(kInfobarUIRebootOnlyiOS13);
   return config;
 }
 

@@ -195,7 +195,7 @@ void BiquadDSPKernel::GetFrequencyResponse(BiquadDSPKernel& kernel,
   // updating |kernel| while we're computing the response.
   DCHECK(IsMainThread());
 
-  DCHECK_GT(n_frequencies, 0);
+  DCHECK_GE(n_frequencies, 0);
   DCHECK(frequency_hz);
   DCHECK(mag_response);
   DCHECK(phase_response);

@@ -636,12 +636,11 @@ bool AllowedToUsePaymentRequest(const ExecutionContext* execution_context) {
 
   // Note: PaymentRequest is only exposed to Window and not workers.
   // 1. If |document| has no browsing context, then return false.
-  const Document* document = Document::From(execution_context);
-  if (!document->GetFrame())
+  if (execution_context->IsContextDestroyed())
     return false;
 
   // 2. If Feature Policy is enabled, return the policy for "payment" feature.
-  return document->IsFeatureEnabled(
+  return execution_context->IsFeatureEnabled(
       mojom::blink::FeaturePolicyFeature::kPayment,
       ReportOptions::kReportOnFailure);
 }

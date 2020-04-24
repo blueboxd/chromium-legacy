@@ -20,7 +20,7 @@ function iframeMouseWheel()
 promise_test(async () => {
     var frame = document.getElementById("frame");
     var center = elementCenter(frame);
-    await wheelTick(1, center, 'up', 4000);
+    await wheelTick(0, -1, center, 4000);
     assert_false(receivedMouseWheel, "Received wheel event in parent");
     assert_true(iframeReceivedMouseWheel, "Received wheel event in iframe");
 }, "Mousewheel in iframe doesn't dispatch to parent.");

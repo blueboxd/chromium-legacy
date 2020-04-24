@@ -12,6 +12,10 @@
 // Called whener an InfobarBannerContained banner has been dismissed.
 - (void)infobarBannerFinishedPresenting;
 
+// YES if the InfobarBannerContainer shouldn't be presenting any InfobarBanners,
+// meaning that the InfobarBanner needs to be dismissed.
+- (BOOL)shouldDismissBanner;
+
 @end
 
 // Infobar banners presented by an InfobarCoordinatorContainer.

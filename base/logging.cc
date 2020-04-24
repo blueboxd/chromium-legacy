@@ -1139,11 +1139,6 @@ std::wstring GetLogFileFullPath() {
 }
 #endif
 
-BASE_EXPORT void LogErrorNotReached(const char* file, int line) {
-  LogMessage(file, line, LOG_ERROR).stream()
-      << "NOTREACHED() hit.";
-}
-
 }  // namespace logging
 
 std::ostream& std::operator<<(std::ostream& out, const wchar_t* wstr) {

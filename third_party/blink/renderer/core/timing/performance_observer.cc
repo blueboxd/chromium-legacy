@@ -136,7 +136,7 @@ void PerformanceObserver::observe(const PerformanceObserverInit* observer_init,
     if (entry_types == PerformanceEntry::kInvalid) {
       return;
     }
-    if (observer_init->buffered()) {
+    if (observer_init->buffered() || observer_init->hasDurationThreshold()) {
       UseCounter::Count(GetExecutionContext(),
                         WebFeature::kPerformanceObserverEntryTypesAndBuffered);
       String message =
@@ -185,6 +185,11 @@ void PerformanceObserver::observe(const PerformanceObserverInit* observer_init,
                 PerformanceEntry::StartTimeCompareLessThan);
       is_buffered = true;
     }
+    if (entry_type == PerformanceEntry::kEvent &&
+        observer_init->hasDurationThreshold()) {
+      // TODO(npm): should we do basic validation (like negative values etc?).
+      duration_threshold_ = std::max(16.0, observer_init->durationThreshold());
+    }
     filter_options_ |= entry_type;
   }
   if (filter_options_ & PerformanceEntry::kLayoutShift) {
@@ -229,6 +234,12 @@ void PerformanceObserver::EnqueuePerformanceEntry(PerformanceEntry& entry) {
   performance_entries_.push_back(&entry);
   if (performance_)
     performance_->ActivateObserver(*this);
+}
+
+bool PerformanceObserver::CanObserve(const PerformanceEntry& entry) const {
+  if (entry.EntryTypeEnum() != PerformanceEntry::kEvent)
+    return true;
+  return entry.duration() >= duration_threshold_;
 }
 
 bool PerformanceObserver::HasPendingActivity() const {

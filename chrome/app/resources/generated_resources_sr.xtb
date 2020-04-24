@@ -349,6 +349,7 @@
 <translation id="1465176863081977902">К&amp;опирај адресу аудио садржаја</translation>
 <translation id="1465827627707997754">Парче пице</translation>
 <translation id="1468571364034902819">Овај профил не може да се користи</translation>
+<translation id="1470084204649225129">{NUM_TABS,plural, =1{Додај картицу у нову групу}one{Додај картице у нову групу}few{Додај картице у нову групу}other{Додај картице у нову групу}}</translation>
 <translation id="1472675084647422956">Прикажи више</translation>
 <translation id="1475502736924165259">На датотеци има сертификата који се не уклапају ни у једну другу категорију</translation>
 <translation id="1476088332184200792">Копирајте на свој уређај</translation>
@@ -419,7 +420,7 @@
 <translation id="155865706765934889">Додирна табла</translation>
 <translation id="1560763881671211335">G Suite for Education администратори одређују којим Google услугама њихови корисници могу да приступају док су пријављени на G Suite for Education налог. Администратори у школама морају да наведу или добију сагласност када малолетни корисници користе услуге.
 
-    Подаци прегледања (укључујући историју, обележиваче и лозинке) се чувају на налогу за Family Link, а не на школском налогу.
+    Подаци прегледања (укључујући историју, обележиваче и лозинке) чувају се на налогу за Family Link, а не на школском налогу.
 
     И даље важе подешавања које је родитељ изабрао у Family Link-у. Ако сте раније блокирали апликацију или сајт, не морате то поново да радите.</translation>
 <translation id="1566049601598938765">Веб-сајт</translation>
@@ -474,6 +475,7 @@
 <translation id="1629314197035607094">Лозинка је истекла</translation>
 <translation id="1630768113285622200">Рестартуј и настави</translation>
 <translation id="1632803087685957583">Омогућавају вам да прилагодите брзину понављања за тастатуру, предвиђање речи и још пуно тога</translation>
+<translation id="1634783886312010422">Да ли сте већ променили ову лозинку на <ph name="WEBSITE" />?</translation>
 <translation id="1635033183663317347">Инсталирао је надређени корисник.</translation>
 <translation id="1637224376458524414">Користите овај обележивач на iPhone-у</translation>
 <translation id="1637765355341780467">Дошло је до проблема при отварању профила. Неке функције ће можда бити недоступне.</translation>
@@ -3384,6 +3386,7 @@
 <translation id="5542949973455282971">Повезује се са мрежом <ph name="CARRIER_NAME" /></translation>
 <translation id="5543983818738093899">Провера статуса...</translation>
 <translation id="554517032089923082">GTC</translation>
+<translation id="5545335608717746497">{NUM_TABS,plural, =1{Додај картицу у групу}one{Додај картице у групу}few{Додај картице у групу}other{Додај картице у групу}}</translation>
 <translation id="5546865291508181392">Пронађи</translation>
 <translation id="5548159762883465903">{NUM_OTHER_TABS,plural, =0{„<ph name="TAB_TITLE" />“}=1{„<ph name="TAB_TITLE" />“ и још 1 картица}one{„<ph name="TAB_TITLE" />“ и још # картица}few{„<ph name="TAB_TITLE" />“ и још # картице}other{„<ph name="TAB_TITLE" />“ и још # картица}}</translation>
 <translation id="5548606607480005320">Безбедносна провера</translation>
@@ -4209,6 +4212,7 @@
 <translation id="6659594942844771486">Картица</translation>
 <translation id="6664237456442406323">Нажалост, рачунар је конфигурисан помоћу погрешно направљеног ИД-а хардвера. То спречава Chrome ОС да се ажурира најновијим безбедносним исправкама и рачунар је <ph name="BEGIN_BOLD" />можда подложан злонамерним нападима<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Дошло је до проблема при отварању профила. Одјавите се, па се поново пријавите.</translation>
+<translation id="6670142487971298264">Апликација <ph name="APP_NAME" /> је сада доступна</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="6675665718701918026">Показивачки уређај је повезан</translation>
 <translation id="6676212663108450937">Препоручујемо вам да користите слушалице током увежбавања гласовног модела</translation>
@@ -4538,6 +4542,7 @@
 <translation id="7108338896283013870">Сакриј</translation>
 <translation id="7108668606237948702">enter</translation>
 <translation id="7109543803214225826">Пречица је уклоњена</translation>
+<translation id="7110644433780444336">{NUM_TABS,plural, =1{Додај картицу у групу}one{Додај картице у групу}few{Додај картице у групу}other{Додај картице у групу}}</translation>
 <translation id="7113502843173351041">Откривање ваше имејл адресе</translation>
 <translation id="7114054701490058191">Лозинке се не подударају</translation>
 <translation id="7114648273807173152">Да бисте користили Smart Lock за пријављивање на Google налог, идите на Подешавања &gt; Повезани уређаји &gt; Телефон &gt; Smart Lock.</translation>
@@ -4581,6 +4586,7 @@
 <translation id="7170041865419449892">Изван опсега</translation>
 <translation id="7171259390164035663">Без регистрације</translation>
 <translation id="7171559745792467651">Инсталирајте апликације са других уређаја</translation>
+<translation id="7172470549472604877">{NUM_TABS,plural, =1{Додај картицу у нову групу}one{Додај картице у нову групу}few{Додај картице у нову групу}other{Додај картице у нову групу}}</translation>
 <translation id="7174199383876220879">Ново! Контролишите музику, видео снимке и друго.</translation>
 <translation id="7175037578838465313">Конфигуришите <ph name="NAME" /></translation>
 <translation id="7175353351958621980">Учитава се са:</translation>
@@ -5159,6 +5165,7 @@
 <translation id="7925247922861151263">Провера потврде идентитета, овлашћења и приступа није успела</translation>
 <translation id="7925285046818567682">Чека се <ph name="HOST_NAME" />...</translation>
 <translation id="7926423016278357561">То нисам ја.</translation>
+<translation id="7928175190925744466">Већ сте променили ову лозинку?</translation>
 <translation id="7928836894214140642">Управља <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">Сачувани начини плаћања ће се приказивати овде</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> дели екран и звук.</translation>

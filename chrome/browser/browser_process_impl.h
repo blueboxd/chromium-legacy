@@ -15,7 +15,6 @@
 #include <memory>
 #include <string>
 
-#include "base/debug/stack_trace.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
@@ -380,10 +379,6 @@ class BrowserProcessImpl : public BrowserProcess,
 #endif
 
   std::unique_ptr<BrowserProcessPlatformPart> platform_part_;
-
-  // TODO(eroman): Remove this when done debugging 113031. This tracks
-  // the callstack which released the final module reference count.
-  base::debug::StackTrace release_last_reference_callstack_;
 
   // Lazily initialized.
   std::unique_ptr<WebRtcLogUploader> webrtc_log_uploader_;

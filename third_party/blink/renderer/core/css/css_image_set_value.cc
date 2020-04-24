@@ -67,6 +67,12 @@ void CSSImageSetValue::FillImageSet() {
     image.referrer.referrer = image_value.GetReferrer().referrer;
     image.referrer.referrer_policy = image_value.GetReferrer().referrer_policy;
     image.scale_factor = scale_factor;
+
+    // Only set for the first image as all images in a set should have identical
+    // is_ad_related bits.
+    if (!images_in_set_.size())
+      is_ad_related_ = image_value.GetIsAdRelated();
+    DCHECK_EQ(is_ad_related_, image_value.GetIsAdRelated());
     images_in_set_.push_back(image);
     ++i;
   }
@@ -116,6 +122,8 @@ StyleImage* CSSImageSetValue::CacheImage(
     resource_request.SetReferrerPolicy(
         ReferrerPolicyResolveDefault(image.referrer.referrer_policy));
     resource_request.SetReferrerString(image.referrer.referrer);
+    if (is_ad_related_)
+      resource_request.SetIsAdResource();
     ResourceLoaderOptions options;
     options.initiator_info.name = parser_mode_ == kUASheetMode
                                       ? fetch_initiator_type_names::kUacss

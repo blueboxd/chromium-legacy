@@ -112,6 +112,7 @@ public class MainActivity extends FragmentActivity {
                                            : getResources().getColor(R.color.navigation_unselected);
             for (Drawable drawable : textView.getCompoundDrawables()) {
                 if (drawable != null) {
+                    drawable.mutate();
                     drawable.setColorFilter(
                             new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_IN));
                 }

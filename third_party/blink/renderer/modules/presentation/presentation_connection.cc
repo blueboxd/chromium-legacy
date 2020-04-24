@@ -7,13 +7,13 @@
 #include <memory>
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
 #include "third_party/blink/renderer/core/fileapi/file_reader_loader.h"
 #include "third_party/blink/renderer/core/fileapi/file_reader_loader_client.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer_view.h"
@@ -158,7 +158,7 @@ class PresentationConnection::BlobLoader final
 PresentationConnection::PresentationConnection(LocalFrame& frame,
                                                const String& id,
                                                const KURL& url)
-    : ExecutionContextLifecycleStateObserver(frame.GetDocument()),
+    : ExecutionContextLifecycleStateObserver(frame.DomWindow()),
       id_(id),
       url_(url),
       state_(mojom::blink::PresentationConnectionState::CONNECTING),
@@ -219,12 +219,8 @@ ControllerPresentationConnection* ControllerPresentationConnection::Take(
   DCHECK(resolver);
   DCHECK(request);
 
-  Document* document = Document::From(resolver->GetExecutionContext());
-  if (!document->GetFrame())
-    return nullptr;
-
   PresentationController* controller =
-      PresentationController::From(*document->GetFrame());
+      PresentationController::FromContext(resolver->GetExecutionContext());
   if (!controller)
     return nullptr;
 

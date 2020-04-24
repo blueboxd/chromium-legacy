@@ -144,8 +144,8 @@ TEST_F(WebPushSenderTest, SendMessageTest) {
   EXPECT_EQ("payload", std::string(body.bytes(), body.length()));
 
   auto response_head = network::CreateURLResponseHead(net::HTTP_OK);
-  response_head->headers->AddHeader(
-      "location:https://fcm.googleapis.com/message_id");
+  response_head->headers->AddHeader("location",
+                                    "https://fcm.googleapis.com/message_id");
 
   loader().SimulateResponseForPendingRequest(
       pendingRequest->request.url, network::URLLoaderCompletionStatus(net::OK),

@@ -7,8 +7,10 @@ package org.chromium.chrome.browser.cryptids;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Log;
+import org.chromium.chrome.browser.enterprise.util.ManagedBrowserUtils;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.profiles.Profile;
 
 /**
  * Allows for cryptids to be displayed on the New Tab Page under certain probabilistic conditions.
@@ -22,10 +24,15 @@ public class ProbabilisticCryptidRenderer {
     /**
      * Determines whether cryptid should be rendered on this NTP instance, based on probability
      * factors as well as variations groups.
+     * @param profile the current user profile. Should not be null, except in tests.
      * @return true if the probability conditions are met and cryptid should be shown,
      *         false otherwise
      */
-    public boolean shouldUseCryptidRendering() {
+    public boolean shouldUseCryptidRendering(Profile profile) {
+        // Profile may be null for testing.
+        if (profile != null && isBlocked(profile)) {
+            return false;
+        }
         // TODO: This should be disabled unless enabled by variations.
         return getRandom() < calculateProbability();
     }
@@ -119,5 +126,13 @@ public class ProbabilisticCryptidRenderer {
     int calculateProbability() {
         return calculateProbability(getLastRenderTimestampMillis(), System.currentTimeMillis(),
                 getRenderingMoratoriumLengthMillis(), getRampUpLengthMillis(), getMaxProbability());
+    }
+
+    /**
+     * Enforces that feature is not used in blocked contexts (namely, incognito/OTR, and when
+     * enterprise policies are active).
+     */
+    private boolean isBlocked(Profile profile) {
+        return profile.isOffTheRecord() || ManagedBrowserUtils.hasBrowserPoliciesApplied(profile);
     }
 }

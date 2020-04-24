@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "content/browser/loader/single_request_url_loader_factory.h"
+#include "content/browser/service_worker/service_worker_accessed_callback.h"
 #include "content/browser/service_worker/service_worker_navigation_loader.h"
 #include "content/common/content_export.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -45,7 +46,8 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler final {
       base::WeakPtr<ServiceWorkerContextCore> context,
       base::WeakPtr<ServiceWorkerContainerHost> container_host,
       blink::mojom::ResourceType resource_type,
-      bool skip_service_worker);
+      bool skip_service_worker,
+      ServiceWorkerAccessedCallback service_worker_accessed_callback);
   ~ServiceWorkerControlleeRequestHandler();
 
   // This could get called multiple times during the lifetime in redirect
@@ -120,6 +122,8 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler final {
 
   ServiceWorkerLoaderCallback loader_callback_;
   NavigationLoaderInterceptor::FallbackCallback fallback_callback_;
+
+  ServiceWorkerAccessedCallback service_worker_accessed_callback_;
 
   base::WeakPtrFactory<ServiceWorkerControlleeRequestHandler> weak_factory_{
       this};

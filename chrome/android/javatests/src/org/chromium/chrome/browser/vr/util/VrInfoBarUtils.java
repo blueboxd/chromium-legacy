@@ -9,7 +9,7 @@ import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_SHORT_
 
 import androidx.annotation.IntDef;
 
-import org.chromium.chrome.browser.infobar.InfoBar;
+import org.chromium.chrome.browser.ui.messages.infobar.InfoBar;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.util.InfoBarUtil;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;

@@ -99,13 +99,6 @@ class TestGpuService : public viz::mojom::GpuService {
                               const gpu::SyncToken& sync_token) override {}
   void GetVideoMemoryUsageStats(
       GetVideoMemoryUsageStatsCallback callback) override {}
-#if defined(OS_WIN)
-  void RequestCompleteGpuInfo(
-      RequestCompleteGpuInfoCallback callback) override {}
-  void GetGpuSupportedRuntimeVersionAndDevicePerfInfo(
-      GetGpuSupportedRuntimeVersionAndDevicePerfInfoCallback callback)
-      override {}
-#endif
   void RequestHDRStatus(RequestHDRStatusCallback callback) override {}
   void LoadedShader(int32_t client_id,
                     const std::string& key,

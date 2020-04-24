@@ -4,25 +4,25 @@
 
 #include "third_party/blink/renderer/modules/scheduler/dom_task_controller.h"
 
-#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/scheduler/dom_task_signal.h"
 
 namespace blink {
 
 // static
-DOMTaskController* DOMTaskController::Create(Document& document,
+DOMTaskController* DOMTaskController::Create(ExecutionContext* context,
                                              const AtomicString& priority) {
   return MakeGarbageCollected<DOMTaskController>(
-      document, WebSchedulingPriorityFromString(priority));
+      context, WebSchedulingPriorityFromString(priority));
 }
 
-DOMTaskController::DOMTaskController(Document& document,
+DOMTaskController::DOMTaskController(ExecutionContext* context,
                                      WebSchedulingPriority priority)
     : AbortController(MakeGarbageCollected<DOMTaskSignal>(
-          &document,
+          context,
           priority,
           DOMTaskSignal::Type::kCreatedByController)) {
-  DCHECK(!document.IsContextDestroyed());
+  DCHECK(!context->IsContextDestroyed());
 }
 
 void DOMTaskController::setPriority(const AtomicString& priority) {

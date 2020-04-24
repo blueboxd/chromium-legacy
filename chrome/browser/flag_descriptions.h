@@ -858,6 +858,9 @@ extern const char kOopRasterizationDescription[];
 extern const char kNewOsSettingsSearchName[];
 extern const char kNewOsSettingsSearchDescription[];
 
+extern const char kDlcSettingsUiName[];
+extern const char kDlcSettingsUiDescription[];
+
 extern const char kEnableDeJellyName[];
 extern const char kEnableDeJellyDescription[];
 

@@ -228,6 +228,7 @@ bool ShelfButtonIsInDrag(const ShelfItemType item_type,
   switch (item_type) {
     case TYPE_PINNED_APP:
     case TYPE_BROWSER_SHORTCUT:
+    case TYPE_LACROS_BROWSER:
     case TYPE_APP:
       return static_cast<const ShelfAppButton*>(item_view)->state() &
              ShelfAppButton::STATE_DRAGGING;
@@ -674,6 +675,7 @@ void ShelfView::ButtonPressed(views::Button* sender,
   switch (model_->items()[last_pressed_index_].type) {
     case TYPE_PINNED_APP:
     case TYPE_BROWSER_SHORTCUT:
+    case TYPE_LACROS_BROWSER:
     case TYPE_APP:
       Shell::Get()->metrics()->RecordUserMetricsAction(
           UMA_LAUNCHER_CLICK_ON_APP);
@@ -968,6 +970,7 @@ views::View* ShelfView::CreateViewForItem(const ShelfItem& item) {
   switch (item.type) {
     case TYPE_PINNED_APP:
     case TYPE_BROWSER_SHORTCUT:
+    case TYPE_LACROS_BROWSER:
     case TYPE_APP:
     case TYPE_DIALOG: {
       ShelfAppButton* button = new ShelfAppButton(
@@ -1301,6 +1304,8 @@ void ShelfView::ContinueDrag(const ui::LocatedEvent& event) {
   DCHECK(drag_view_);
   DCHECK_NE(-1, view_model_->GetIndexOfView(drag_view_));
 
+  const bool dragged_off_shelf_before = dragged_off_shelf_;
+
   // Handle rip off functionality if this is not a drag and drop host operation
   // and not the app list item.
   if (drag_and_drop_shelf_id_.IsNull() &&
@@ -1312,6 +1317,8 @@ void ShelfView::ContinueDrag(const ui::LocatedEvent& event) {
       drag_scroll_dir_ = 0;
       scrolling_timer_.Stop();
       speed_up_drag_scrolling_.Stop();
+      if (!dragged_off_shelf_before)
+        model_->OnItemRippedOff();
       return;
     }
   }
@@ -1326,6 +1333,8 @@ void ShelfView::ContinueDrag(const ui::LocatedEvent& event) {
                                           drag_point.y() - drag_origin_.y()));
   drag_and_drop_host_->UpdateDragIconProxy(drag_point_in_screen -
                                            drag_origin_.OffsetFromOrigin());
+  if (dragged_off_shelf_before)
+    model_->OnItemReturnedFromRipOff(view_model_->GetIndexOfView(drag_view_));
 }
 
 void ShelfView::MoveDragViewTo(int primary_axis_coordinate) {
@@ -1553,19 +1562,20 @@ bool ShelfView::ShouldFocusOut(bool reverse, views::View* button) {
 }
 
 std::pair<int, int> ShelfView::GetDragRange(int index) {
-  int min_index = -1;
-  int max_index = -1;
-  ShelfItemType type = model_->items()[index].type;
-  for (int i = 0; i < model_->item_count(); ++i) {
-    if (SameDragType(model_->items()[i].type, type)) {
-      if (min_index == -1)
-        min_index = i;
-      max_index = i;
-    }
-  }
-  min_index = std::max(min_index, 0);
-  max_index = std::min(max_index, last_visible_index_);
-  return std::pair<int, int>(min_index, max_index);
+  const ShelfItemType type = model_->items()[index].type;
+  const auto same_drag_type = [this, type](const ShelfItem& item) {
+    return SameDragType(item.type, type);
+  };
+  const auto begin_iter = model_->items().cbegin();
+  const auto end_iter = model_->items().cend();
+  const auto min_iter = std::find_if(begin_iter, end_iter, same_drag_type);
+  DCHECK(min_iter != end_iter);
+  const auto max_iter = std::prev(
+      std::find_if_not(std::next(min_iter), end_iter, same_drag_type));
+  DCHECK(max_iter != end_iter);
+  return std::make_pair(
+      static_cast<int>(min_iter - begin_iter),
+      std::min(static_cast<int>(max_iter - begin_iter), last_visible_index_));
 }
 
 void ShelfView::OnFadeInAnimationEnded() {
@@ -1872,6 +1882,7 @@ void ShelfView::ShelfItemChanged(int model_index, const ShelfItem& old_item) {
   switch (item.type) {
     case TYPE_PINNED_APP:
     case TYPE_BROWSER_SHORTCUT:
+    case TYPE_LACROS_BROWSER:
     case TYPE_APP:
     case TYPE_DIALOG: {
       CHECK_EQ(ShelfAppButton::kViewClassName, view->GetClassName());
@@ -1918,6 +1929,27 @@ void ShelfView::ShelfItemStatusChanged(const ShelfID& id) {
   ShelfAppButton* button = GetShelfAppButton(id);
   button->ReflectItemStatus(item);
   button->SchedulePaint();
+}
+
+void ShelfView::ShelfItemRippedOff() {
+  // On the display where the drag started, there is nothing to do.
+  if (dragging())
+    return;
+  // When a dragged item has been ripped off the shelf, it is moved to the end.
+  // Now we need to hide it.
+  view_model_->view_at(model_->item_count() - 1)->layer()->SetOpacity(0.f);
+}
+
+void ShelfView::ShelfItemReturnedFromRipOff(int index) {
+  // On the display where the drag started, there is nothing to do.
+  if (dragging())
+    return;
+  // Show the item and prevent it from animating into place from the position
+  // where it was sitting with zero opacity.
+  views::View* view = view_model_->view_at(index);
+  view->SetBoundsRect(bounds_animator_->GetTargetBounds(view));
+  bounds_animator_->StopAnimatingView(view);
+  view->layer()->SetOpacity(1.f);
 }
 
 void ShelfView::OnShelfAlignmentChanged(aura::Window* root_window,

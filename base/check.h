@@ -87,6 +87,10 @@ class BASE_EXPORT CheckError {
 
   static CheckError DPCheck(const char* file, int line, const char* condition);
 
+  static CheckError NotImplemented(const char* file,
+                                   int line,
+                                   const char* function);
+
   // Stream for adding optional details to the error message.
   std::ostream& stream();
 

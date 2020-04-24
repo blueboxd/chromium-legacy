@@ -62,11 +62,11 @@ bool EqualIgnoringQueryAndFragment(const KURL& a, const KURL& b) {
 }  // namespace
 
 History::History(LocalFrame* frame)
-    : DOMWindowClient(frame), last_state_object_requested_(nullptr) {}
+    : ExecutionContextClient(frame), last_state_object_requested_(nullptr) {}
 
 void History::Trace(Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
-  DOMWindowClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
 }
 
 unsigned History::length(ExceptionState& exception_state) const {

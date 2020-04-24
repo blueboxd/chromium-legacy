@@ -1,4 +1,4 @@
-<style include="settings-shared md-select">
+<style include="cr-shared-style iron-flex settings-shared md-select">
   #search-wrapper {
     align-items: center;
     display: flex;
@@ -9,29 +9,30 @@
     focus-config="[[focusConfig_]]">
   <div route-path="default">
     <!-- Omnibox search engine -->
-    <div class="settings-box first block">
-      <div id="search-wrapper">
-        <div id="searchExplanation" class="start settings-box-text">
-          $i18nRaw{searchExplanation}
-        </div>
-        <template is="dom-if" if="[[isDefaultSearchControlledByPolicy_(
-            prefs.default_search_provider_data.template_url_data)]]">
-          <cr-policy-pref-indicator pref="[[
-              prefs.default_search_provider_data.template_url_data]]">
-          </cr-policy-pref-indicator>
-        </template>
-        <select class="md-select" on-change="onChange_"
-            aria-labelledby="searchExplanation"
-            disabled$="[[isDefaultSearchEngineEnforced_(
-                prefs.default_search_provider_data.template_url_data)]]">
-          <template is="dom-repeat" items="[[searchEngines_]]">
-            <option selected="[[item.default]]">[[item.name]]</option>
-          </template>
-        </select>
+    <div class="cr-row first">
+      <div id="searchExplanation" class="flex cr-padded-text">
+        $i18nRaw{searchExplanation}
       </div>
-      <template is="dom-if"
-          if="[[prefs.default_search_provider_data.template_url_data.extensionId]]">
+      <template is="dom-if" if="[[isDefaultSearchControlledByPolicy_(
+          prefs.default_search_provider_data.template_url_data)]]">
+        <cr-policy-pref-indicator pref="[[
+            prefs.default_search_provider_data.template_url_data]]">
+        </cr-policy-pref-indicator>
+      </template>
+      <select class="md-select" on-change="onChange_"
+          aria-labelledby="searchExplanation"
+          disabled$="[[isDefaultSearchEngineEnforced_(
+              prefs.default_search_provider_data.template_url_data)]]">
+        <template is="dom-repeat" items="[[searchEngines_]]">
+          <option selected="[[item.default]]">[[item.name]]</option>
+        </template>
+      </select>
+    </div>
+    <template is="dom-if"
+        if="[[prefs.default_search_provider_data.template_url_data.extensionId]]">
+      <div class="cr-row continuation">
         <extension-controlled-indicator
+            class="flex"
             extension-id="[[
                 prefs.default_search_provider_data.template_url_data.extensionId]]"
             extension-name="[[
@@ -40,8 +41,8 @@
                 prefs.default_search_provider_data.template_url_data.extensionCanBeDisabled]]"
             on-disable-extension="onDisableExtension_">
         </extension-controlled-indicator>
-      </template>
-    </div>
+      </div>
+    </template>
 
     <!-- Manage search engines -->
     <cr-link-row class="hr" id="enginesSubpageTrigger"

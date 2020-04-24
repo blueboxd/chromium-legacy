@@ -121,7 +121,7 @@ TEST_F(LanguageDetectionControllerTest, MissingHttpContentLanguage) {
   // Pass content-language header to LanguageDetectionController.
   scoped_refptr<net::HttpResponseHeaders> headers(
       new net::HttpResponseHeaders(""));
-  headers->AddHeader("Content-Language: fr, en-CA");
+  headers->SetHeader("Content-Language", "fr, en-CA");
   web::FakeNavigationContext context;
   context.SetResponseHeaders(headers);
   web_state().OnNavigationFinished(&context);

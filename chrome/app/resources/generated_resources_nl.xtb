@@ -349,6 +349,7 @@
 <translation id="1465176863081977902">Adres van audio k&amp;opiëren</translation>
 <translation id="1465827627707997754">Pizzapunt</translation>
 <translation id="1468571364034902819">Dit profiel kan niet worden gebruikt</translation>
+<translation id="1470084204649225129">{NUM_TABS,plural, =1{Tabblad toevoegen aan nieuwe groep}other{Tabbladen toevoegen aan nieuwe groep}}</translation>
 <translation id="1472675084647422956">Meer weergeven</translation>
 <translation id="1475502736924165259">Je hebt certificaten die niet in een van de andere categorieën vallen</translation>
 <translation id="1476088332184200792">Kopiëren naar je apparaat</translation>
@@ -477,6 +478,7 @@
 <translation id="1629314197035607094">Wachtwoord verlopen</translation>
 <translation id="1630768113285622200">Opnieuw opstarten en doorgaan</translation>
 <translation id="1632803087685957583">Hiermee kun je de herhaalsnelheid van het toetsenbord, woordvoorspelling en meer aanpassen</translation>
+<translation id="1634783886312010422">Heb je dit wachtwoord al gewijzigd op <ph name="WEBSITE" />?</translation>
 <translation id="1635033183663317347">Geïnstalleerd door je ouder/verzorger.</translation>
 <translation id="1637224376458524414">Deze bladwijzer gebruiken op je iPhone</translation>
 <translation id="1637765355341780467">Er is iets misgegaan bij het openen van je profiel. Mogelijk zijn sommige functies niet beschikbaar.</translation>
@@ -3387,6 +3389,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="5542949973455282971">Verbinding maken met <ph name="CARRIER_NAME" /></translation>
 <translation id="5543983818738093899">Status controleren…</translation>
 <translation id="554517032089923082">GTC</translation>
+<translation id="5545335608717746497">{NUM_TABS,plural, =1{Tabblad toevoegen aan groep}other{Tabbladen toevoegen aan groep}}</translation>
 <translation id="5546865291508181392">Zoek</translation>
 <translation id="5548159762883465903">{NUM_OTHER_TABS,plural, =0{<ph name="TAB_TITLE" />}=1{<ph name="TAB_TITLE" /> en 1 ander tabblad}other{<ph name="TAB_TITLE" /> en # andere tabbladen}}</translation>
 <translation id="5548606607480005320">Veiligheidscheck</translation>
@@ -4211,6 +4214,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="6659594942844771486">Tabblad</translation>
 <translation id="6664237456442406323">Je computer is geconfigureerd met een hardware-ID met een onjuiste notatie. Dit zorgt ervoor dat Chrome OS niet kan worden bijgewerkt met de nieuwste beveiligingsoplossingen, waardoor je computer <ph name="BEGIN_BOLD" />kwetsbaar kan zijn voor schadelijke aanvallen<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Er is iets misgegaan bij het openen van je profiel. Log uit en log vervolgens weer in.</translation>
+<translation id="6670142487971298264"><ph name="APP_NAME" /> is nu beschikbaar</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="6675665718701918026">Aanwijsapparaat verbonden</translation>
 <translation id="6676212663108450937">Overweeg het gebruik van een hoofdtelefoon wanneer je je stem traint</translation>
@@ -4540,6 +4544,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="7108338896283013870">Verbergen</translation>
 <translation id="7108668606237948702">Enter</translation>
 <translation id="7109543803214225826">Snelkoppeling verwijderd</translation>
+<translation id="7110644433780444336">{NUM_TABS,plural, =1{Tabblad toevoegen aan groep}other{Tabbladen toevoegen aan groep}}</translation>
 <translation id="7113502843173351041">Toegang krijgen tot je e-mailadres</translation>
 <translation id="7114054701490058191">Wachtwoorden komen niet overeen</translation>
 <translation id="7114648273807173152">Als je Smart Lock wilt gebruiken om in te loggen op je Google-account, ga je naar Instellingen &gt; Verbonden apparaten &gt; Je telefoon &gt; Smart Lock.</translation>
@@ -4583,6 +4588,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="7170041865419449892">Geen bereik</translation>
 <translation id="7171259390164035663">Niet inschrijven</translation>
 <translation id="7171559745792467651">Apps van je andere apparaten installeren</translation>
+<translation id="7172470549472604877">{NUM_TABS,plural, =1{Tabblad toevoegen aan nieuwe groep}other{Tabbladen toevoegen aan nieuwe groep}}</translation>
 <translation id="7174199383876220879">Nieuw! Bedien je muziek, video's en meer.</translation>
 <translation id="7175037578838465313"><ph name="NAME" /> configureren</translation>
 <translation id="7175353351958621980">Geladen via:</translation>
@@ -5160,6 +5166,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="7925247922861151263">AAA-controle mislukt</translation>
 <translation id="7925285046818567682">Wachten op <ph name="HOST_NAME" />...</translation>
 <translation id="7926423016278357561">Dit was ik niet.</translation>
+<translation id="7928175190925744466">Heb je dit wachtwoord al gewijzigd?</translation>
 <translation id="7928836894214140642">Beheerd door <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">Opgeslagen betaalmethoden worden hier weergegeven</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> deelt je scherm en audio.</translation>

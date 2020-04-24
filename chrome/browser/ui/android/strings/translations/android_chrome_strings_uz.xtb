@@ -164,7 +164,6 @@ Qidiruvni boshlash uchun istalgan soʻz ustiga bosing. Soʻrovni aniqlashtirish 
 <translation id="2131665479022868825"><ph name="DATA" /> tejaldi</translation>
 <translation id="213279576345780926">Yopildi: <ph name="TAB_TITLE" /></translation>
 <translation id="2139186145475833000">Bosh ekranga qo‘shish</translation>
-<translation id="2146738493024040262">Darhol ishga tushadigan ilovada ochish</translation>
 <translation id="2154484045852737596">Karta ma’lumotlarini tahrirlash</translation>
 <translation id="2154710561487035718">URL manzilni nusxalash</translation>
 <translation id="2156074688469523661">Qolgan saytlar (<ph name="NUMBER_OF_SITES" />)</translation>
@@ -281,7 +280,6 @@ Qidiruvni boshlash uchun istalgan soʻzni bosib turing. Qidruvni aniqlashtirish 
 <translation id="2996809686854298943">URL manzili kiritilmadi</translation>
 <translation id="300526633675317032">Veb-sayt xotirasidan <ph name="SIZE_IN_KB" /> tozalanadi.</translation>
 <translation id="3016635187733453316">Bu qurilma internetga ulanganini tekshiring</translation>
-<translation id="3029613699374795922"><ph name="KBS" /> KB yuklab olindi</translation>
 <translation id="3029704984691124060">Kodli iboralar bir xil emas</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Yordam markazi<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Joylashuvni aniqlash xizmati yoqilmagan, uni <ph name="BEGIN_LINK" />Android sozlamalari<ph name="END_LINK" /> orqali yoqing.</translation>
@@ -457,7 +455,6 @@ Kameradagi tasvirlar faqat sizga koʻrinadi. Kamera tasvirlari saytga koʻrinmay
 <translation id="4411535500181276704">Lite rejimi</translation>
 <translation id="4415276339145661267">Google hisobingizni boshqaring</translation>
 <translation id="4432792777822557199"><ph name="SOURCE_LANGUAGE" /> tilidagi sahifalar hozirdan <ph name="TARGET_LANGUAGE" /> tiliga tarjima qilinadi</translation>
-<translation id="4433925000917964731">Sahifaning Lite versiyasi Google tomonidan taqdim etildi</translation>
 <translation id="4434045419905280838">Qalquvchi oyna va yo‘naltirishlar</translation>
 <translation id="4440958355523780886">Sahifaning Lite-versiyasi Google tomonidan taqdim etildi. Asl versiyani yuklash uchun tegining.</translation>
 <translation id="4452411734226507615"><ph name="TAB_TITLE" /> nomli varaqni yopish</translation>
@@ -737,7 +734,6 @@ Masalan, qaysi sahifalarga kirganligingizdan qat’i nazar, ba’zi saytlarda re
 <translation id="6406506848690869874">Sinxronlash</translation>
 <translation id="6410973561433500075"><ph name="DOMAIN" /> orqali AR rejimiga kirilsinmi?</translation>
 <translation id="641643625718530986">Chop etish…</translation>
-<translation id="6416782512398055893"><ph name="MBS" /> MB yuklab olindi</translation>
 <translation id="6427112570124116297">Internetni oʻz tilingizda kezing</translation>
 <translation id="6433501201775827830">Qidiruv tizimini tanlang</translation>
 <translation id="6437478888915024427">Sahifa haqida</translation>
@@ -745,7 +741,6 @@ Masalan, qaysi sahifalarga kirganligingizdan qat’i nazar, ba’zi saytlarda re
 <translation id="6441734959916820584">Bu nom juda uzun</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# ta rasm}other{# ta rasm}}</translation>
 <translation id="6447558397796644647">Bu bukmark topilmadi. Xatosiz kiritilganini tekshiring yoki yangi bukmark kiriting</translation>
-<translation id="6447842834002726250">Cookie fayllari</translation>
 <translation id="6461962085415701688">Fayl ochilmadi</translation>
 <translation id="6464977750820128603">Chromeda ochilgan saytlarni koʻrish va ular uchun taymerlar sozlash mumkin.\n\nGooglega faqat taymer sozlangan saytlar va ular qancha vaqt ochilganligi haqidagi axborot yuboriladi. Bu axborot Raqamli qulaylikni yaxshilashga yordam beradi.</translation>
 <translation id="6475951671322991020">Videoni yuklab olish</translation>
@@ -754,7 +749,6 @@ Masalan, qaysi sahifalarga kirganligingizdan qat’i nazar, ba’zi saytlarda re
 <translation id="6508722015517270189">Chrome’ni qaytadan ishga tushiring</translation>
 <translation id="6532866250404780454">Chrome brauzerida ochilgan saytlar chiqmaydi. Barcha sayt taymerlari tozalanadi.</translation>
 <translation id="6534565668554028783">Google serverlaridan javob vaqti judayam uzayib ketdi</translation>
-<translation id="6538442820324228105"><ph name="GBS" /> GB yuklab olindi</translation>
 <translation id="6539092367496845964">Xatolik yuz berdi. Keyinroq qaytadan urining.</translation>
 <translation id="6545017243486555795">Barcha ma’lumotlarni tozalash</translation>
 <translation id="6545864417968258051">Bluetooth qurilmalarni qidirish</translation>

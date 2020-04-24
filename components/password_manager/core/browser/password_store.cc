@@ -161,10 +161,6 @@ bool PasswordStore::Init(PrefService* prefs,
         base::BindOnce(&PasswordStore::OnInitCompleted, this));
   }
 
-  compromised_credentials_observer_ =
-      std::make_unique<CompromisedCredentialsObserver>(this);
-  compromised_credentials_observer_->Initialize();
-
   return true;
 }
 
@@ -629,7 +625,6 @@ void PasswordStore::ScheduleEnterprisePasswordURLUpdate() {
 
 PasswordStore::~PasswordStore() {
   DCHECK(shutdown_called_);
-  compromised_credentials_observer_.reset(nullptr);
 }
 
 scoped_refptr<base::SequencedTaskRunner>
@@ -703,6 +698,19 @@ void PasswordStore::NotifyLoginsChanged(
     if (reuse_detector_)
       reuse_detector_->OnLoginsChanged(changes);
 #endif
+    ProcessLoginsChanged(
+        changes,
+        base::BindRepeating(
+            [](scoped_refptr<PasswordStore> store,
+               const std::string& signon_realm, const base::string16& username,
+               RemoveCompromisedCredentialsReason reason) {
+              auto callback = base::BindOnce(
+                  &PasswordStore::RemoveCompromisedCredentialsImpl, store,
+                  signon_realm, username, reason);
+              store->InvokeAndNotifyAboutCompromisedPasswordsChange(
+                  std::move(callback));
+            },
+            scoped_refptr<PasswordStore>(this)));
   }
 }
 

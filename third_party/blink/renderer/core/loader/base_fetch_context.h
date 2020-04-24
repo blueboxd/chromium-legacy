@@ -66,8 +66,10 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
   virtual std::unique_ptr<WebSocketHandshakeThrottle>
   CreateWebSocketHandshakeThrottle() = 0;
 
-  bool CalculateIfAdSubresource(const ResourceRequest& resource_request,
-                                ResourceType type) override;
+  bool CalculateIfAdSubresource(
+      const ResourceRequest& resource_request,
+      ResourceType type,
+      const FetchInitiatorInfo& initiator_info) override;
 
   // Returns whether a request to |url| is a conversion registration request.
   // Conversion registration requests are redirects to a well-known conversion

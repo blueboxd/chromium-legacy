@@ -709,4 +709,17 @@ suite('NewTabPageMostVisitedTest', () => {
     assertStyle(
         mostVisited.$.addShortCutIcon, 'background-color', 'rgb(0, 0, 255)');
   });
+
+  test('rendering tiles logs event', async () => {
+    // Arrange.
+    testProxy.setResultFor('now', 123);
+
+    // Act.
+    await addTiles(1);
+
+    // Assert.
+    const time =
+        await testProxy.handler.whenCalled('onMostVisitedTilesRendered');
+    assertEquals(time, 123);
+  });
 });

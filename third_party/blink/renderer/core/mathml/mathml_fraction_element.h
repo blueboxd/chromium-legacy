@@ -11,7 +11,6 @@ namespace blink {
 
 class ComputedStyle;
 class CSSToLengthConversionData;
-class LayoutObject;
 
 class MathMLFractionElement final : public MathMLElement {
  public:
@@ -19,10 +18,6 @@ class MathMLFractionElement final : public MathMLElement {
 
   void AddMathFractionBarThicknessIfNeeded(ComputedStyle&,
                                            const CSSToLengthConversionData&);
-
- private:
-  LayoutObject* CreateLayoutObject(const ComputedStyle&,
-                                   LegacyLayout legacy) final;
 };
 
 }  // namespace blink

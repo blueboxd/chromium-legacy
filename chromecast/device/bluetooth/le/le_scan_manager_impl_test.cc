@@ -97,14 +97,14 @@ TEST_F(LeScanManagerTest, TestEnableDisableScan) {
   task_environment_.RunUntilIdle();
 }
 
-TEST_F(LeScanManagerTest, TestPauseRestartScan) {
+TEST_F(LeScanManagerTest, TestPauseResumeScan) {
   std::unique_ptr<LeScanManager::ScanHandle> scan_handle;
 
   // Don't call StartScan or StopScan if there is no handle.
   EXPECT_CALL(le_scanner_, StopScan()).Times(0);
   le_scan_manager_.PauseScan();
   EXPECT_CALL(le_scanner_, StartScan()).Times(0);
-  le_scan_manager_.RestartScan();
+  le_scan_manager_.ResumeScan();
   task_environment_.RunUntilIdle();
 
   // Create a handle.
@@ -121,10 +121,10 @@ TEST_F(LeScanManagerTest, TestPauseRestartScan) {
   le_scan_manager_.PauseScan();
   task_environment_.RunUntilIdle();
 
-  // Restart scan.
+  // Resume scan.
   EXPECT_CALL(mock_observer_, OnScanEnableChanged(_)).Times(0);
   EXPECT_CALL(le_scanner_, StartScan()).WillOnce(Return(true));
-  le_scan_manager_.RestartScan();
+  le_scan_manager_.ResumeScan();
   task_environment_.RunUntilIdle();
 
   // Delete the handle.

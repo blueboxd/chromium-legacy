@@ -242,6 +242,12 @@ interface PageHandler {
   GetDoodle() => (Doodle? doodle);
   // Choose custom background from local file system.
   ChooseLocalCustomBackground() => (bool success);
+
+  // ======= METRICS =======
+  // Logs that most visited tiles were displayed / updated at |time|. The first
+  // instance of this event is used as a proxy for when the NTP has finished
+  // loading.
+  OnMostVisitedTilesRendered(double time);
 };
 
 // WebUI-side handler for requests from the browser.

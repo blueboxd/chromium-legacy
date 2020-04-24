@@ -132,7 +132,7 @@ class ChromeContentRendererClient
                        const net::SiteForCookies& site_for_cookies,
                        const url::Origin* initiator_origin,
                        GURL* new_url,
-                       bool* attach_same_site_cookies) override;
+                       bool* force_ignore_site_for_cookies) override;
   bool IsPrefetchOnly(content::RenderFrame* render_frame,
                       const blink::WebURLRequest& request) override;
   uint64_t VisitedLinkHash(const char* canonical_url, size_t length) override;

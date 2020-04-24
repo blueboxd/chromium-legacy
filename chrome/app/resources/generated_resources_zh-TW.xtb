@@ -349,6 +349,7 @@
 <translation id="1465176863081977902">複製音訊位址(&amp;O)</translation>
 <translation id="1465827627707997754">披薩切片</translation>
 <translation id="1468571364034902819">無法使用這個設定檔</translation>
+<translation id="1470084204649225129">{NUM_TABS,plural, =1{將分頁加入新群組}other{將分頁加入新群組}}</translation>
 <translation id="1472675084647422956">顯示更多</translation>
 <translation id="1475502736924165259">您儲存的這些憑證不屬於任何其他類別</translation>
 <translation id="1476088332184200792">複製到你的裝置</translation>
@@ -477,6 +478,7 @@
 <translation id="1629314197035607094">密碼已過期</translation>
 <translation id="1630768113285622200">重新啟動並繼續</translation>
 <translation id="1632803087685957583">讓你調整鍵盤按鍵重複輸入速率、字詞預測功能等等</translation>
+<translation id="1634783886312010422">你在 <ph name="WEBSITE" /> 上變更了這個密碼嗎？</translation>
 <translation id="1635033183663317347">由您的監護人安裝。</translation>
 <translation id="1637224376458524414">在 iPhone 上取得這個書籤</translation>
 <translation id="1637765355341780467">開啟你的設定檔時發生錯誤，部分功能可能無法使用。</translation>
@@ -1203,7 +1205,7 @@
 <translation id="258095186877893873">長</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (平台：<ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">無法取得 Kerberos 票證。請再試一次，或與貴機構的裝置管理員聯絡。(錯誤代碼 <ph name="ERROR_CODE" />)。</translation>
-<translation id="2585013490795742997">目前正顯示 1 項與「<ph name="QUERY" />」相符的搜尋結果</translation>
+<translation id="2585013490795742997">目前顯示 1 項與「<ph name="QUERY" />」相符的搜尋結果</translation>
 <translation id="2585724835339714757">這個分頁正在共用你的畫面。</translation>
 <translation id="2586657967955657006">剪貼簿</translation>
 <translation id="2586672484245266891">請輸入較短的網址</translation>
@@ -3385,6 +3387,7 @@
 <translation id="5542949973455282971">正在連線至「<ph name="CARRIER_NAME" />」</translation>
 <translation id="5543983818738093899">正在檢查狀態...</translation>
 <translation id="554517032089923082">GTC</translation>
+<translation id="5545335608717746497">{NUM_TABS,plural, =1{將分頁加入群組}other{將分頁加入群組}}</translation>
 <translation id="5546865291508181392">尋找</translation>
 <translation id="5548159762883465903">{NUM_OTHER_TABS,plural, =0{「<ph name="TAB_TITLE" />」}=1{「<ph name="TAB_TITLE" />」和另外 1 個分頁}other{「<ph name="TAB_TITLE" />」和另外 # 個分頁}}</translation>
 <translation id="5548606607480005320">安全檢查</translation>
@@ -3553,7 +3556,7 @@
 <translation id="577322787686508614">無法在以下裝置上執行讀取作業：「<ph name="DEVICE_NAME" />」。</translation>
 <translation id="5774295353725270860">開啟「檔案」應用程式</translation>
 <translation id="577624874850706961">搜尋 Cookie</translation>
-<translation id="5776858208024364029">目前正顯示 <ph name="NUMBER" /> 項與「<ph name="QUERY" />」相符的搜尋結果</translation>
+<translation id="5776858208024364029">目前顯示 <ph name="NUMBER" /> 項與「<ph name="QUERY" />」相符的搜尋結果</translation>
 <translation id="5777468213129569553">開啟 Chrome</translation>
 <translation id="5778747455497889540">以下是你的電腦專用的安全模組密碼 (由系統隨機產生)。</translation>
 <translation id="5780011244986845107">你選取的資料夾包含敏感檔案。你確定要將這個資料夾的讀取權限永久授予「<ph name="APP_NAME" />」嗎？</translation>
@@ -4209,6 +4212,7 @@
 <translation id="6659594942844771486">分頁</translation>
 <translation id="6664237456442406323">抱歉，你的電腦是由格式錯誤的硬體 ID 所設定。這樣會防止 Chrome 作業系統更新最新的安全性修復，你的電腦也可能<ph name="BEGIN_BOLD" />容易遭受惡意攻擊<ph name="END_BOLD" />。</translation>
 <translation id="6664774537677393800">開啟你的設定檔時發生錯誤。請先登出，然後再次登入。</translation>
+<translation id="6670142487971298264">現在可以使用「<ph name="APP_NAME" />」了</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="6675665718701918026">已連上指標裝置</translation>
 <translation id="6676212663108450937">訓練聲音時，建議你使用耳罩式耳機</translation>
@@ -4538,6 +4542,7 @@
 <translation id="7108338896283013870">隱藏</translation>
 <translation id="7108668606237948702">輸入</translation>
 <translation id="7109543803214225826">已移除捷徑</translation>
+<translation id="7110644433780444336">{NUM_TABS,plural, =1{將分頁加入群組}other{將分頁加入群組}}</translation>
 <translation id="7113502843173351041">存取你的電子郵件地址</translation>
 <translation id="7114054701490058191">密碼不符</translation>
 <translation id="7114648273807173152">如要使用 Smart Lock 登入 Google 帳戶，請依序前往 [設定] &gt; [已連接的裝置] &gt; [你的手機] &gt; [Smart Lock]。</translation>
@@ -4581,6 +4586,7 @@
 <translation id="7170041865419449892">超出範圍</translation>
 <translation id="7171259390164035663">不註冊</translation>
 <translation id="7171559745792467651">安裝你其他裝置上的應用程式</translation>
+<translation id="7172470549472604877">{NUM_TABS,plural, =1{將分頁加入新群組}other{將分頁加入新群組}}</translation>
 <translation id="7174199383876220879">新功能！控管你的音樂、影片等媒體內容</translation>
 <translation id="7175037578838465313">設定「<ph name="NAME" />」</translation>
 <translation id="7175353351958621980">載入來源：</translation>
@@ -5159,6 +5165,7 @@
 <translation id="7925247922861151263">AAA 檢查失敗</translation>
 <translation id="7925285046818567682">正在等候 <ph name="HOST_NAME" />...</translation>
 <translation id="7926423016278357561">這不是我。</translation>
+<translation id="7928175190925744466">你變更了這個密碼嗎？</translation>
 <translation id="7928836894214140642">由 <ph name="ENROLLMENT_DOMAIN" /> 管理</translation>
 <translation id="7930294771522048157">已儲存的付款方式會顯示在這裡</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> 正在共用您的畫面和音訊。</translation>
@@ -5211,7 +5218,7 @@
 <translation id="7987814697832569482">一律透過這個 VPN 建立連線</translation>
 <translation id="7988355189918024273">啟用無障礙功能</translation>
 <translation id="7991296728590311172">開關功能設定</translation>
-<translation id="7992202128769240372">超出 <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" />的限制</translation>
+<translation id="7992202128769240372">超出 <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" />上限</translation>
 <translation id="7994350303002908848">無法安裝 Plugin VM。請再試一次，或是與貴機構的裝置管理員聯絡。錯誤代碼：<ph name="ERROR_CODE" />。</translation>
 <translation id="7994702968232966508">EAP 方法</translation>
 <translation id="7997826902155442747">處理優先順序</translation>

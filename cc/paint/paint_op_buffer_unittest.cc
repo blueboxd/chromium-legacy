@@ -3132,6 +3132,56 @@ TEST(PaintOpBufferTest, ReplacesImagesFromProvider) {
   buffer.Playback(&canvas, PlaybackParams(&image_provider));
 }
 
+TEST(PaintOpBufferTest, DrawImageRectOpWithLooperNoImageProvider) {
+  PaintOpBuffer buffer;
+  PaintImage image = CreateDiscardablePaintImage(gfx::Size(100, 100));
+  SkLayerDrawLooper::Builder sk_draw_looper_builder;
+  sk_draw_looper_builder.addLayer(20.0, 20.0);
+  SkLayerDrawLooper::LayerInfo info_unmodified;
+  sk_draw_looper_builder.addLayerOnTop(info_unmodified);
+
+  PaintFlags paint_flags;
+  paint_flags.setLooper(sk_draw_looper_builder.detach());
+  buffer.push<DrawImageRectOp>(
+      image, SkRect::MakeWH(100, 100), SkRect::MakeWH(100, 100), &paint_flags,
+      PaintCanvas::SrcRectConstraint::kFast_SrcRectConstraint);
+
+  testing::StrictMock<MockCanvas> canvas;
+  EXPECT_CALL(canvas, willSave);
+  EXPECT_CALL(canvas, didTranslate);
+  EXPECT_CALL(canvas, willRestore);
+  EXPECT_CALL(canvas, onDrawImageRect).Times(2);
+
+  buffer.Playback(&canvas, PlaybackParams(nullptr));
+}
+
+TEST(PaintOpBufferTest, DrawImageRectOpWithLooperWithImageProvider) {
+  PaintOpBuffer buffer;
+  PaintImage image = CreateDiscardablePaintImage(gfx::Size(100, 100));
+  SkLayerDrawLooper::Builder sk_draw_looper_builder;
+  sk_draw_looper_builder.addLayer(20.0, 20.0);
+  SkLayerDrawLooper::LayerInfo info_unmodified;
+  sk_draw_looper_builder.addLayerOnTop(info_unmodified);
+
+  PaintFlags paint_flags;
+  paint_flags.setLooper(sk_draw_looper_builder.detach());
+  buffer.push<DrawImageRectOp>(
+      image, SkRect::MakeWH(100, 100), SkRect::MakeWH(100, 100), &paint_flags,
+      PaintCanvas::SrcRectConstraint::kFast_SrcRectConstraint);
+
+  testing::StrictMock<MockCanvas> canvas;
+  EXPECT_CALL(canvas, willSave);
+  EXPECT_CALL(canvas, didTranslate);
+  EXPECT_CALL(canvas, willRestore);
+  EXPECT_CALL(canvas, onDrawImageRect).Times(2);
+
+  std::vector<SkSize> src_rect_offset = {SkSize::MakeEmpty()};
+  std::vector<SkSize> scale_adjustment = {SkSize::Make(1.0f, 1.0f)};
+  std::vector<SkFilterQuality> quality = {kHigh_SkFilterQuality};
+  MockImageProvider image_provider(src_rect_offset, scale_adjustment, quality);
+  buffer.Playback(&canvas, PlaybackParams(&image_provider));
+}
+
 TEST(PaintOpBufferTest, ReplacesImagesFromProviderOOP) {
   PaintOpBuffer buffer;
   SkSize expected_scale = SkSize::Make(0.2f, 0.5f);

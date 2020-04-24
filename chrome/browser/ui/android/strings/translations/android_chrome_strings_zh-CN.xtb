@@ -164,7 +164,6 @@
 <translation id="2131665479022868825">节省了 <ph name="DATA" /></translation>
 <translation id="213279576345780926">已关闭“<ph name="TAB_TITLE" />”</translation>
 <translation id="2139186145475833000">添加到主屏幕</translation>
-<translation id="2146738493024040262">打开免安装应用</translation>
 <translation id="2154484045852737596">修改支付卡</translation>
 <translation id="2154710561487035718">复制网址</translation>
 <translation id="2156074688469523661">其余的网站（<ph name="NUMBER_OF_SITES" /> 个）</translation>
@@ -281,7 +280,6 @@
 <translation id="2996809686854298943">必须提供网址</translation>
 <translation id="300526633675317032">这会清除全部的网站存储数据 (<ph name="SIZE_IN_KB" />)。</translation>
 <translation id="3016635187733453316">请确保此设备已连接到互联网。</translation>
-<translation id="3029613699374795922">已下载 <ph name="KBS" /> KB</translation>
 <translation id="3029704984691124060">密码不匹配</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />获取帮助<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">位置信息功能现处于关闭状态；请在 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />中开启此项功能。</translation>
@@ -457,7 +455,6 @@
 <translation id="4411535500181276704">精简模式</translation>
 <translation id="4415276339145661267">管理您的 Google 帐号</translation>
 <translation id="4432792777822557199">从现在开始，源语言为<ph name="SOURCE_LANGUAGE" />的网页一律会被翻译成<ph name="TARGET_LANGUAGE" /></translation>
-<translation id="4433925000917964731">由 Google 提供的精简版网页</translation>
 <translation id="4434045419905280838">弹出式窗口和重定向</translation>
 <translation id="4440958355523780886">由 Google 提供的精简版网页。点按即可加载原始网页。</translation>
 <translation id="4452411734226507615">关闭“<ph name="TAB_TITLE" />”标签页</translation>
@@ -737,7 +734,6 @@
 <translation id="6406506848690869874">同步</translation>
 <translation id="6410973561433500075">从 <ph name="DOMAIN" /> 进入 AR 环境？</translation>
 <translation id="641643625718530986">打印…</translation>
-<translation id="6416782512398055893">已下载 <ph name="MBS" /> MB</translation>
 <translation id="6427112570124116297">翻译网页</translation>
 <translation id="6433501201775827830">选择您的搜索引擎</translation>
 <translation id="6437478888915024427">网页信息</translation>
@@ -745,7 +741,6 @@
 <translation id="6441734959916820584">名称太长</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# 张图片}other{# 张图片}}</translation>
 <translation id="6447558397796644647">找不到该书签。请检查您的拼写或添加新书签。</translation>
-<translation id="6447842834002726250">Cookie</translation>
 <translation id="6461962085415701688">无法打开文件</translation>
 <translation id="6464977750820128603">您可以查看自己在 Chrome 中访问的网站并为这些网站设置计时器。\n\nGoogle 会获取这些设有计时器的网站的相关信息以及您对这些网站的访问时长。这些信息会被用于改进“数字健康”应用。</translation>
 <translation id="6475951671322991020">下载视频</translation>
@@ -754,7 +749,6 @@
 <translation id="6508722015517270189">重新启动 Chrome</translation>
 <translation id="6532866250404780454">您在 Chrome 中访问的网站不会显示。所有网站计时器都会被删除。</translation>
 <translation id="6534565668554028783">Google 的响应速度太慢</translation>
-<translation id="6538442820324228105">已下载 <ph name="GBS" /> GB</translation>
 <translation id="6539092367496845964">出了点问题。请稍后重试。</translation>
 <translation id="6545017243486555795">清除所有数据</translation>
 <translation id="6545864417968258051">蓝牙扫描</translation>
@@ -1044,7 +1038,7 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{信号强度：# 格}other{信号强度：# 格}}</translation>
 <translation id="868929229000858085">搜索联系人</translation>
 <translation id="869891660844655955">截止日期</translation>
-<translation id="8702612070107455751">所有离线数据都会遭到清除。</translation>
+<translation id="8702612070107455751">所有离线数据都会被清除。</translation>
 <translation id="8737217482364735741">这会清除 <ph name="ORIGIN" /> 存储的所有数据和 Cookie。</translation>
 <translation id="8748850008226585750">内容已隐藏</translation>
 <translation id="8751914237388039244">选择图片</translation>

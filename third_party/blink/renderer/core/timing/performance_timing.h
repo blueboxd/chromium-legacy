@@ -55,7 +55,7 @@ class ScriptValue;
 
 // Legacy support for NT1(https://www.w3.org/TR/navigation-timing/).
 class CORE_EXPORT PerformanceTiming final : public ScriptWrappable,
-                                            public DOMWindowClient {
+                                            public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(PerformanceTiming);
 

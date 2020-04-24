@@ -77,24 +77,22 @@ void SaveStatusCallback(bool* called,
 
 class ServiceWorkerTestContentBrowserClient : public TestContentBrowserClient {
  public:
-  bool AllowServiceWorkerOnIO(
+  AllowServiceWorkerResult AllowServiceWorkerOnIO(
       const GURL& scope,
       const GURL& site_for_cookies,
       const base::Optional<url::Origin>& top_frame_origin,
       const GURL& script_url,
-      content::ResourceContext* context,
-      base::RepeatingCallback<WebContents*()> wc_getter) override {
-    return false;
+      content::ResourceContext* context) override {
+    return AllowServiceWorkerResult::No();
   }
 
-  bool AllowServiceWorkerOnUI(
+  AllowServiceWorkerResult AllowServiceWorkerOnUI(
       const GURL& scope,
       const GURL& site_for_cookies,
       const base::Optional<url::Origin>& top_frame_origin,
       const GURL& script_url,
-      content::BrowserContext* context,
-      base::RepeatingCallback<WebContents*()> wc_getter) override {
-    return false;
+      content::BrowserContext* context) override {
+    return AllowServiceWorkerResult::No();
   }
 };
 

@@ -145,7 +145,7 @@ class NET_EXPORT CanonicalCookie {
   bool IsEquivalent(const CanonicalCookie& ecc) const {
     // It seems like it would make sense to take secure, httponly, and samesite
     // into account, but the RFC doesn't specify this.
-    // NOTE: Keep this logic in-sync with TrimDuplicateCookiesForHost().
+    // NOTE: Keep this logic in-sync with TrimDuplicateCookiesForKey().
     return (name_ == ecc.Name() && domain_ == ecc.Domain()
             && path_ == ecc.Path());
   }
@@ -157,18 +157,40 @@ class NET_EXPORT CanonicalCookie {
   }
 
   // Checks a looser set of equivalency rules than 'IsEquivalent()' in order
-  // to support the stricter 'Secure' behaviors specified in
+  // to support the stricter 'Secure' behaviors specified in Step 12 of
+  // https://tools.ietf.org/html/draft-ietf-httpbis-rfc6265bis-05#section-5.4
+  // which originated from the proposal in
   // https://tools.ietf.org/html/draft-ietf-httpbis-cookie-alone#section-3
   //
-  // Returns 'true' if this cookie's name matches |ecc|, and this cookie is
-  // a domain-match for |ecc| (or vice versa), and |ecc|'s path is "on" this
-  // cookie's path (as per 'IsOnPath()').
+  // Returns 'true' if this cookie's name matches |secure_cookie|, and this
+  // cookie is a domain-match for |secure_cookie| (or vice versa), and
+  // |secure_cookie|'s path is "on" this cookie's path (as per 'IsOnPath()').
   //
   // Note that while the domain-match cuts both ways (e.g. 'example.com'
   // matches 'www.example.com' in either direction), the path-match is
   // unidirectional (e.g. '/login/en' matches '/login' and '/', but
   // '/login' and '/' do not match '/login/en').
-  bool IsEquivalentForSecureCookieMatching(const CanonicalCookie& ecc) const;
+  //
+  // Conceptually:
+  // If new_cookie.IsEquivalentForSecureCookieMatching(secure_cookie) is true,
+  // this means that new_cookie would "shadow" secure_cookie: they would would
+  // be indistinguishable when serialized into a Cookie header. This is
+  // important because, if an attacker is attempting to set new_cookie, it
+  // should not be allowed to mislead the server into using new_cookie's value
+  // instead of secure_cookie's.
+  //
+  // The reason for the asymmetric path comparison ("cookie1=bad; path=/a/b"
+  // from an insecure source is not allowed if "cookie1=good; secure; path=/a"
+  // exists, but "cookie2=bad; path=/a" from an insecure source is allowed if
+  // "cookie2=good; secure; path=/a/b" exists) is because cookies in the Cookie
+  // header are serialized with longer path first. (See CookieSorter in
+  // cookie_monster.cc.) That is, they would be serialized as "Cookie:
+  // cookie1=bad; cookie1=good" in one case, and "Cookie: cookie2=good;
+  // cookie2=bad" in the other case. The first scenario is not allowed because
+  // the attacker injects the bad value, whereas the second scenario is ok
+  // because the good value is still listed first.
+  bool IsEquivalentForSecureCookieMatching(
+      const CanonicalCookie& secure_cookie) const;
 
   void SetSourceScheme(CookieSourceScheme source_scheme) {
     source_scheme_ = source_scheme;
@@ -178,12 +200,28 @@ class NET_EXPORT CanonicalCookie {
   }
   void SetCreationDate(const base::Time& date) { creation_date_ = date; }
 
-  // Returns true if the given |url_path| path-matches the cookie-path as
-  // described in section 5.1.4 in RFC 6265.
+  // Returns true if the given |url_path| path-matches this cookie's cookie-path
+  // as described in section 5.1.4 in RFC 6265. This returns true if |path_| and
+  // |url_path| are identical, or if |url_path| is a subdirectory of |path_|.
   bool IsOnPath(const std::string& url_path) const;
 
-  // Returns true if the cookie domain matches the given |host| as described in
-  // section 5.1.3 of RFC 6265.
+  // This returns true if this cookie's |domain_| indicates that it can be
+  // accessed by |host|.
+  //
+  // In the case where |domain_| has no leading dot, this is a host cookie and
+  // will only domain match if |host| is identical to |domain_|.
+  //
+  // In the case where |domain_| has a leading dot, this is a domain cookie. It
+  // will match |host| if |domain_| is a suffix of |host|, or if |domain_| is
+  // exactly equal to |host| plus a leading dot.
+  //
+  // Note that this isn't quite the same as the "domain-match" algorithm in RFC
+  // 6265bis, since our implementation uses the presence of a leading dot in the
+  // |domain_| string in place of the spec's host-only-flag. That is, if
+  // |domain_| has no leading dot, then we only consider it matching if |host|
+  // is identical (which reflects the intended behavior when the cookie has a
+  // host-only-flag), whereas the RFC also treats them as domain-matching if
+  // |domain_| is a subdomain of |host|.
   bool IsDomainMatch(const std::string& host) const;
 
   // Returns if the cookie should be included (and if not, why) for the given

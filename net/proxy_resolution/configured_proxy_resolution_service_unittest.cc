@@ -932,7 +932,6 @@ TEST_F(ConfiguredProxyResolutionServiceTest, PAC) {
   EXPECT_THAT(callback.WaitForResult(), IsOk());
   EXPECT_FALSE(info.is_direct());
   EXPECT_EQ("foopy:80", info.proxy_server().ToURI());
-  EXPECT_TRUE(info.did_use_pac_script());
 
   EXPECT_FALSE(info.proxy_resolve_start_time().is_null());
   EXPECT_FALSE(info.proxy_resolve_end_time().is_null());
@@ -1026,7 +1025,6 @@ TEST_F(ConfiguredProxyResolutionServiceTest, PAC_FailoverWithoutDirect) {
   EXPECT_THAT(callback1.WaitForResult(), IsOk());
   EXPECT_FALSE(info.is_direct());
   EXPECT_EQ("foopy:8080", info.proxy_server().ToURI());
-  EXPECT_TRUE(info.did_use_pac_script());
 
   EXPECT_FALSE(info.proxy_resolve_start_time().is_null());
   EXPECT_FALSE(info.proxy_resolve_end_time().is_null());
@@ -1077,7 +1075,6 @@ TEST_F(ConfiguredProxyResolutionServiceTest, PAC_RuntimeError) {
   // Since the PAC script was non-mandatory, we should have fallen-back to
   // DIRECT.
   EXPECT_TRUE(info.is_direct());
-  EXPECT_TRUE(info.did_use_pac_script());
 
   EXPECT_FALSE(info.proxy_resolve_start_time().is_null());
   EXPECT_FALSE(info.proxy_resolve_end_time().is_null());
@@ -1189,7 +1186,6 @@ TEST_F(ConfiguredProxyResolutionServiceTest, PAC_ConfigSourcePropagates) {
   EXPECT_THAT(callback.WaitForResult(), IsOk());
   EXPECT_EQ(MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
             info.traffic_annotation());
-  EXPECT_TRUE(info.did_use_pac_script());
 
   EXPECT_FALSE(info.proxy_resolve_start_time().is_null());
   EXPECT_FALSE(info.proxy_resolve_end_time().is_null());

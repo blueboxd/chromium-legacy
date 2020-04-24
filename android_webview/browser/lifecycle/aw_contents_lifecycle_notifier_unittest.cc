@@ -258,4 +258,28 @@ TEST_F(AwContentsLifecycleNotifierTest, DetachFromVisibleWindow) {
   ASSERT_TRUE(HasAwContentsEverCreated());
 }
 
+TEST_F(AwContentsLifecycleNotifierTest, GetAllAwContents) {
+  std::vector<const AwContents*> all_aw_contents(
+      notifier()->GetAllAwContents());
+  ASSERT_TRUE(all_aw_contents.empty());
+  const AwContents* fake_aw_contents = reinterpret_cast<const AwContents*>(1);
+  notifier()->OnWebViewCreated(fake_aw_contents);
+  all_aw_contents = notifier()->GetAllAwContents();
+  ASSERT_EQ(all_aw_contents.size(), 1u);
+  ASSERT_EQ(all_aw_contents.back(), fake_aw_contents);
+  const AwContents* fake_aw_contents2 = reinterpret_cast<const AwContents*>(2);
+  notifier()->OnWebViewCreated(fake_aw_contents2);
+  all_aw_contents = notifier()->GetAllAwContents();
+  ASSERT_EQ(all_aw_contents.size(), 2u);
+  ASSERT_EQ(all_aw_contents.front(), fake_aw_contents);
+  ASSERT_EQ(all_aw_contents.back(), fake_aw_contents2);
+  notifier()->OnWebViewDestroyed(fake_aw_contents);
+  all_aw_contents = notifier()->GetAllAwContents();
+  ASSERT_EQ(all_aw_contents.size(), 1u);
+  ASSERT_EQ(all_aw_contents.back(), fake_aw_contents2);
+  notifier()->OnWebViewDestroyed(fake_aw_contents2);
+  all_aw_contents = notifier()->GetAllAwContents();
+  ASSERT_TRUE(all_aw_contents.empty());
+}
+
 }  // namespace android_webview

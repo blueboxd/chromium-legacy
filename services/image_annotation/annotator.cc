@@ -349,15 +349,15 @@ Annotator::Annotator(
     std::unique_ptr<Client> client)
     : client_(std::move(client)),
       url_loader_factory_(std::move(url_loader_factory)),
-      server_request_timer_(
-          FROM_HERE,
-          throttle,
-          base::BindRepeating(&Annotator::SendRequestBatchToServer,
-                              base::Unretained(this))),
       server_url_(std::move(server_url)),
       api_key_(std::move(api_key)),
       batch_size_(batch_size),
-      min_ocr_confidence_(min_ocr_confidence) {}
+      min_ocr_confidence_(min_ocr_confidence) {
+  server_request_timer_ = std::make_unique<base::RepeatingTimer>(
+      FROM_HERE, throttle,
+      base::BindRepeating(&Annotator::SendRequestBatchToServer,
+                          weak_factory_.GetWeakPtr()));
+}
 
 Annotator::~Annotator() {
   // Report any clients still connected at service shutdown.
@@ -397,7 +397,7 @@ void Annotator::AnnotateImage(
   // reassign local processing (for other interested clients) if the dead image
   // processor was responsible for some ongoing work.
   request_info_list.back().image_processor.set_disconnect_handler(
-      base::BindOnce(&Annotator::RemoveRequestInfo, base::Unretained(this),
+      base::BindOnce(&Annotator::RemoveRequestInfo, weak_factory_.GetWeakPtr(),
                      request_key, --request_info_list.end(),
                      true /* canceled */));
 
@@ -412,9 +412,9 @@ void Annotator::AnnotateImage(
   // TODO(crbug.com/916420): first query the public result cache by URL to
   // improve latency.
 
-  request_info_list.back().image_processor->GetJpgImageData(
-      base::BindOnce(&Annotator::OnJpgImageDataReceived, base::Unretained(this),
-                     request_key, --request_info_list.end()));
+  request_info_list.back().image_processor->GetJpgImageData(base::BindOnce(
+      &Annotator::OnJpgImageDataReceived, weak_factory_.GetWeakPtr(),
+      request_key, --request_info_list.end()));
 }
 
 // static
@@ -581,13 +581,13 @@ void Annotator::OnJpgImageDataReceived(
   pending_requests_.insert(request_key);
 
   // Start sending batches to the server.
-  if (!server_request_timer_.IsRunning())
-    server_request_timer_.Reset();
+  if (!server_request_timer_->IsRunning())
+    server_request_timer_->Reset();
 }
 
 void Annotator::SendRequestBatchToServer() {
   if (server_request_queue_.empty()) {
-    server_request_timer_.Stop();
+    server_request_timer_->Stop();
     return;
   }
 
@@ -609,7 +609,7 @@ void Annotator::SendRequestBatchToServer() {
   ongoing_server_requests_.back()->DownloadToString(
       url_loader_factory_.get(),
       base::BindOnce(&Annotator::OnServerResponseReceived,
-                     base::Unretained(this), request_keys,
+                     weak_factory_.GetWeakPtr(), request_keys,
                      --ongoing_server_requests_.end()),
       kMaxResponseSize);
 
@@ -640,9 +640,9 @@ void Annotator::OnServerResponseReceived(
   ReportServerResponseSizeBytes(json_response->size());
 
   // Send JSON string to a dedicated service for safe parsing.
-  GetJsonParser()->Parse(*json_response,
-                         base::BindOnce(&Annotator::OnResponseJsonParsed,
-                                        base::Unretained(this), request_keys));
+  GetJsonParser()->Parse(
+      *json_response, base::BindOnce(&Annotator::OnResponseJsonParsed,
+                                     weak_factory_.GetWeakPtr(), request_keys));
 }
 
 void Annotator::OnResponseJsonParsed(
@@ -747,7 +747,7 @@ void Annotator::RemoveRequestInfo(
           &request_info_list.front().image_processor;
 
       request_info_list.front().image_processor->GetJpgImageData(base::BindOnce(
-          &Annotator::OnJpgImageDataReceived, base::Unretained(this),
+          &Annotator::OnJpgImageDataReceived, weak_factory_.GetWeakPtr(),
           request_key, request_info_list.begin()));
     }
   }

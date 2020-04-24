@@ -45,8 +45,10 @@ base::Optional<ResourceRequestBlockedReason> BaseFetchContext::CanRequest(
   return blocked_reason;
 }
 
-bool BaseFetchContext::CalculateIfAdSubresource(const ResourceRequest& request,
-                                                ResourceType type) {
+bool BaseFetchContext::CalculateIfAdSubresource(
+    const ResourceRequest& request,
+    ResourceType type,
+    const FetchInitiatorInfo& initiator_info) {
   // A base class should override this is they have more signals than just the
   // SubresourceFilter.
   SubresourceFilter* filter = GetSubresourceFilter();

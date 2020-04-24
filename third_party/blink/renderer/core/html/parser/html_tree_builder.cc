@@ -942,13 +942,19 @@ bool HTMLTreeBuilder::ProcessTemplateEndTag(AtomicHTMLToken* token) {
   tree_.ActiveFormattingElements()->ClearToLastMarker();
   template_insertion_modes_.pop_back();
   ResetInsertionModeAppropriately();
-  // Check for a declarative shadow root.
   if (RuntimeEnabledFeatures::DeclarativeShadowDOMEnabled() &&
       template_stack_item) {
     DCHECK(template_stack_item->IsElementNode());
     HTMLTemplateElement* template_element =
         DynamicTo<HTMLTemplateElement>(template_stack_item->GetElement());
-    if (template_element->IsDeclarativeShadowRoot()) {
+    // 9. If the start tag for the declarative template element did not have an
+    // attribute with the name "shadowroot" whose value was an ASCII
+    // case-insensitive match for the strings "open" or "closed", then stop this
+    // algorithm.
+    // 10. If the adjusted current node is the topmost element in the stack of
+    // open elements, then stop this algorithm.
+    if (template_element->IsDeclarativeShadowRoot() &&
+        shadow_host_stack_item->GetNode() != tree_.OpenElements()->RootNode()) {
       DCHECK(shadow_host_stack_item);
       DCHECK(shadow_host_stack_item->IsElementNode());
       UseCounter::Count(shadow_host_stack_item->GetElement()->GetDocument(),

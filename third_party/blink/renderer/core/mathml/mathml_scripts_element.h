@@ -21,8 +21,6 @@ class CORE_EXPORT MathMLScriptsElement : public MathMLElement {
 
  private:
   const MathScriptType script_type_;
-  LayoutObject* CreateLayoutObject(const ComputedStyle&,
-                                   LegacyLayout legacy) override;
 };
 
 template <>

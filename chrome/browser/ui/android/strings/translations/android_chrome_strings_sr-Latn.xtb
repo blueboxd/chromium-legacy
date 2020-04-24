@@ -164,7 +164,6 @@ Dodirnite bilo koju reč za pretragu. Da biste precizirali pretragu, dodirnite i
 <translation id="2131665479022868825">Sačuvano: <ph name="DATA" /></translation>
 <translation id="213279576345780926">Zatvorili ste karticu <ph name="TAB_TITLE" /></translation>
 <translation id="2139186145475833000">Dodaj na početni ekran</translation>
-<translation id="2146738493024040262">Otvori instant aplikaciju</translation>
 <translation id="2154484045852737596">Izmenite karticu</translation>
 <translation id="2154710561487035718">Kopiranje URL adrese</translation>
 <translation id="2156074688469523661">Preostali sajtovi (<ph name="NUMBER_OF_SITES" />)</translation>
@@ -281,7 +280,6 @@ Dodirnite i zadržite bilo koju reč za pretragu. Da biste precizirali pretragu,
 <translation id="2996809686854298943">URL je obavezan</translation>
 <translation id="300526633675317032">Ovim ćete obrisati ceo memorijski prostor veb-sajta od <ph name="SIZE_IN_KB" />.</translation>
 <translation id="3016635187733453316">Uverite se da je uređaj povezan na internet</translation>
-<translation id="3029613699374795922">Preuzeli ste <ph name="KBS" /> kB</translation>
 <translation id="3029704984691124060">Pristupne fraze se ne podudaraju</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Potražite pomoć<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Lokacija je isključena; uključite je u <ph name="BEGIN_LINK" />Android podešavanjima<ph name="END_LINK" />.</translation>
@@ -457,7 +455,6 @@ Samo vi možete da vidite prikaz kamere. Sajt ne može da vidi slike kamere.</tr
 <translation id="4411535500181276704">Lite režim</translation>
 <translation id="4415276339145661267">Upravljajte Google nalogom</translation>
 <translation id="4432792777822557199">Stranice na jeziku <ph name="SOURCE_LANGUAGE" /> će se od sada prevoditi na <ph name="TARGET_LANGUAGE" /></translation>
-<translation id="4433925000917964731">Pojednostavljenu stranicu pruža Google</translation>
 <translation id="4434045419905280838">Iskačući prozori i preusmeravanja</translation>
 <translation id="4440958355523780886">Pojednostavljenu stranicu pruža Google. Dodirnite da biste učitali prvobitnu stranicu.</translation>
 <translation id="4452411734226507615">Zatvori karticu <ph name="TAB_TITLE" /></translation>
@@ -737,7 +734,6 @@ Na primer, neki veb-sajtovi mogu da odgovore na ovaj zahtev prikazivanjem oglasa
 <translation id="6406506848690869874">Sinhronizacija</translation>
 <translation id="6410973561433500075">Želite da aktivirate proširenu realnost sa <ph name="DOMAIN" />?</translation>
 <translation id="641643625718530986">Štampaj...</translation>
-<translation id="6416782512398055893">Preuzeli ste <ph name="MBS" /> MB</translation>
 <translation id="6427112570124116297">Prevodite stranice sa veba</translation>
 <translation id="6433501201775827830">Izaberite pretraživač</translation>
 <translation id="6437478888915024427">Informacije o stranici</translation>
@@ -745,7 +741,6 @@ Na primer, neki veb-sajtovi mogu da odgovore na ovaj zahtev prikazivanjem oglasa
 <translation id="6441734959916820584">Naziv je predugačak</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# slika}one{# slika}few{# slike}other{# slika}}</translation>
 <translation id="6447558397796644647">Ne možemo da pronađemo taj obeleživač. Proverite pravopis ili dodajte novi obeleživač.</translation>
-<translation id="6447842834002726250">Kolačići</translation>
 <translation id="6461962085415701688">Ne možete da otvorite datoteku</translation>
 <translation id="6464977750820128603">Možete da vidite sajtove koje posećujete u Chrome-u i da podesite tajmere za njih.\n\nGoogle dobija informacije o sajtovima za koje podesite tajmere i o tome koliko dugo ih posećujete. Te informacije se koriste za poboljšanje Digitalnog blagostanja.</translation>
 <translation id="6475951671322991020">Preuzmi video</translation>
@@ -754,7 +749,6 @@ Na primer, neki veb-sajtovi mogu da odgovore na ovaj zahtev prikazivanjem oglasa
 <translation id="6508722015517270189">Ponovo pokrenite Chrome</translation>
 <translation id="6532866250404780454">Sajtovi koje posećujete u Chrome-u se neće prikazivati. Biće izbrisani tajmeri za sve sajtove.</translation>
 <translation id="6534565668554028783">Google-u je trebalo predugo da odgovori</translation>
-<translation id="6538442820324228105">Preuzeli ste <ph name="GBS" /> GB</translation>
 <translation id="6539092367496845964">Nešto nije u redu. Probajte ponovo kasnije.</translation>
 <translation id="6545017243486555795">Obriši sve podatke</translation>
 <translation id="6545864417968258051">Bluetooth skeniranje</translation>
@@ -855,6 +849,7 @@ Na primer, neki veb-sajtovi mogu da odgovore na ovaj zahtev prikazivanjem oglasa
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Deli 1 izabranu stavku}one{Deli # izabranu stavku}few{Deli # izabrane stavke}other{Deli # izabranih stavki}}</translation>
 <translation id="7359002509206457351">Pristup načinima plaćanja</translation>
+<translation id="7362144854749094396">Istorija se deli sa Chrome-om. Podešavanja se dele sa <ph name="SITE_NAME" />.</translation>
 <translation id="7375125077091615385">Tip:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL adresa</translation>

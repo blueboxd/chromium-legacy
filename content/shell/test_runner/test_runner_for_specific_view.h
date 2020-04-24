@@ -54,11 +54,7 @@ class TestRunnerForSpecificView {
   void RequestPointerUnlock();
   bool isPointerLocked();
 
- private:
-  friend class TestRunnerBindings;
-
   // Helpers for working with base and V8 callbacks.
-  void PostTask(base::OnceClosure callback);
   void PostV8Callback(const v8::Local<v8::Function>& callback);
   void PostV8CallbackWithArgs(v8::UniquePersistent<v8::Function> callback,
                               int argc,
@@ -69,6 +65,11 @@ class TestRunnerForSpecificView {
       const std::vector<v8::UniquePersistent<v8::Value>>& args);
   base::OnceClosure CreateClosureThatPostsV8Callback(
       const v8::Local<v8::Function>& callback);
+
+ private:
+  friend class TestRunnerBindings;
+
+  void PostTask(base::OnceClosure callback);
 
   void UpdateAllLifecyclePhasesAndComposite();
   void UpdateAllLifecyclePhasesAndCompositeThen(
@@ -122,13 +123,6 @@ class TestRunnerForSpecificView {
   //               |argument|.
   void SendBluetoothManualChooserEvent(const std::string& event,
                                        const std::string& argument);
-
-  // Used to set the device scale factor.
-  void SetBackingScaleFactor(double value, v8::Local<v8::Function> callback);
-
-  // Change the device color profile while running a web test.
-  void SetColorProfile(const std::string& name,
-                       v8::Local<v8::Function> callback);
 
   // Causes the beforeinstallprompt event to be sent to the renderer.
   void DispatchBeforeInstallPromptEvent(

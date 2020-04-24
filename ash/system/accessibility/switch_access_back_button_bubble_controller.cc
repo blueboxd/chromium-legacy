@@ -10,12 +10,32 @@
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/unified_system_tray_view.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 
 namespace ash {
 
 namespace {
+
 constexpr int kBackButtonRadiusDip = 18;
 constexpr int kBackButtonDiameterDip = 2 * kBackButtonRadiusDip;
+
+// The back button should display above and to the right of the anchor rect
+// provided. Because the TrayBubbleView defaults to showing the right edges
+// lining up (rather than appearing off to the side) we'll add the width of the
+// button to the anchor rect's width.
+gfx::Rect AdjustAnchorRect(const gfx::Rect& anchor) {
+  gfx::Rect adjusted_anchor(anchor.x(), anchor.y(),
+                            anchor.width() + kBackButtonDiameterDip,
+                            anchor.height());
+
+  // Don't allow our new rect to extend past the edge of the display.
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayMatching(anchor);
+  adjusted_anchor.Intersect(display.bounds());
+  return adjusted_anchor;
+}
+
 }  // namespace
 
 SwitchAccessBackButtonBubbleController::
@@ -31,7 +51,7 @@ void SwitchAccessBackButtonBubbleController::ShowBackButton(
     const gfx::Rect& anchor) {
   if (widget_) {
     DCHECK(bubble_view_);
-    bubble_view_->ChangeAnchorRect(anchor);
+    bubble_view_->ChangeAnchorRect(AdjustAnchorRect(anchor));
     return;
   }
 
@@ -42,7 +62,7 @@ void SwitchAccessBackButtonBubbleController::ShowBackButton(
       Shell::GetContainer(Shell::GetPrimaryRootWindow(),
                           kShellWindowId_AccessibilityPanelContainer);
   init_params.anchor_mode = TrayBubbleView::AnchorMode::kRect;
-  init_params.anchor_rect = anchor;
+  init_params.anchor_rect = AdjustAnchorRect(anchor);
   init_params.is_anchored_to_status_area = false;
   init_params.has_shadow = false;
 

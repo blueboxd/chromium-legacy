@@ -14,7 +14,7 @@
 #import "ios/chrome/browser/overlays/public/overlay_request.h"
 #import "ios/chrome/browser/overlays/public/overlay_request_queue.h"
 #import "ios/chrome/browser/overlays/public/overlay_response.h"
-#import "ios/chrome/browser/overlays/public/web_content_area/app_launcher_alert_overlay.h"
+#import "ios/chrome/browser/overlays/public/web_content_area/app_launcher_overlay.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -30,6 +30,9 @@
 
 BROWSER_USER_DATA_KEY_IMPL(AppLauncherBrowserAgent)
 
+using app_launcher_overlays::AppLaunchConfirmationRequest;
+using app_launcher_overlays::AllowAppLaunchResponse;
+
 namespace {
 // Records histogram metric on the user's response when prompted to open another
 // application. |user_accepted| should be YES if the user accepted the prompt to
@@ -43,13 +46,8 @@ void RecordUserAcceptedAppLaunchMetric(BOOL user_accepted) {
 void AppLauncherOverlayCallback(base::OnceCallback<void(bool)> completion,
                                 bool repeated_request,
                                 OverlayResponse* response) {
-  // Extract the user decision from |response|.
-  bool user_accepted = false;
-  if (response) {
-    AppLauncherAlertOverlayResponseInfo* info =
-        response->GetInfo<AppLauncherAlertOverlayResponseInfo>();
-    user_accepted = info && info->allow_navigation();
-  }
+  // Check whether the user has allowed the navigation.
+  bool user_accepted = response && response->GetInfo<AllowAppLaunchResponse>();
 
   // Record the UMA for repeated requests.
   if (repeated_request)
@@ -113,7 +111,7 @@ void AppLauncherBrowserAgent::TabHelperDelegate::LaunchAppForTabHelper(
   bool show_dialog = UrlHasAppStoreScheme(url) || !link_transition;
   if (show_dialog) {
     std::unique_ptr<OverlayRequest> request =
-        OverlayRequest::CreateWithConfig<AppLauncherAlertOverlayRequestConfig>(
+        OverlayRequest::CreateWithConfig<AppLaunchConfirmationRequest>(
             /*is_repeated_request=*/false);
     request->GetCallbackManager()->AddCompletionCallback(base::BindOnce(
         &AppLauncherOverlayCallback, base::BindOnce(&LaunchExternalApp, url),
@@ -129,7 +127,7 @@ void AppLauncherBrowserAgent::TabHelperDelegate::ShowRepeatedAppLaunchAlert(
     AppLauncherTabHelper* tab_helper,
     base::OnceCallback<void(bool)> completion) {
   std::unique_ptr<OverlayRequest> request =
-      OverlayRequest::CreateWithConfig<AppLauncherAlertOverlayRequestConfig>(
+      OverlayRequest::CreateWithConfig<AppLaunchConfirmationRequest>(
           /*is_repeated_request=*/true);
   request->GetCallbackManager()->AddCompletionCallback(
       base::BindOnce(&AppLauncherOverlayCallback, std::move(completion),

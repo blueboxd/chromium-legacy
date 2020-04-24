@@ -7,6 +7,14 @@ License File: NOT_SHIPPED
 Security Critical: no
 
 Description:
+lib/r8.jar
+ - Contains R8 (proguard replacement) as well as D8 (dexer).
+desugar_jdk_libs.json
+ - Configuration for Java library desugaring.
+ - Taken from fa020a2164ea087c1d79c8c6b0f435f199f8d196
+ - This file should be kept in sync with the prebuilt shims that live
+   at //third_party/android_deps/libs/com_android_tools_desugar_jdk_libs.
+
 R8 is a proguard-like optimizer that also has the ability to dex.
 
 Local Modifications:
@@ -30,6 +38,9 @@ cp r8.jar $CHROMIUM_SRC/third_party/r8/libs/r8.jar
 
 # Upload to CIPD:
 cipd create --pkg-def cipd.yaml # Make note of the instance ID
+
+# Copy over desugar config:
+cp src/library_desugar/desugar_jdk_libs.json $CHROMIUM_SRC/third_party/r8
 
 # Manually update:
 * README.chromium (version number via "java -jar lib/r8.jar --version")

@@ -371,7 +371,7 @@ wheel: <
 #   //third_party/blink/tools/blinkpy/web_tests/port/server_process.py
 wheel: <
   name: "infra/python/wheels/pywin32/${vpython_platform}"
-  version: "version:224"
+  version: "version:227"
   match_tag: <
     platform: "win32"
   >

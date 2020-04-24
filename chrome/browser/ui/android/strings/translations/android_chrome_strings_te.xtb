@@ -164,7 +164,6 @@
 <translation id="2131665479022868825"><ph name="DATA" /> ఆదా చేయబడింది</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> మూసివేయబడింది</translation>
 <translation id="2139186145475833000">హోమ్ స్క్రీన్‌కు జోడించు</translation>
-<translation id="2146738493024040262">తక్షణ యాప్‌ను తెరువు</translation>
 <translation id="2154484045852737596">కార్డ్‌ను సవరించండి</translation>
 <translation id="2154710561487035718">URLను కాపీ చేయి</translation>
 <translation id="2156074688469523661">మిగిలిన సైట్‌లు (<ph name="NUMBER_OF_SITES" />)</translation>
@@ -281,7 +280,6 @@
 <translation id="2996809686854298943">URL అవసరం</translation>
 <translation id="300526633675317032">ఇది వెబ్‌సైట్ నిల్వలోని మొత్తం <ph name="SIZE_IN_KB" />ను తీసివేస్తుంది.</translation>
 <translation id="3016635187733453316">ఈ పరికరం ఇంటర్నెట్‌కు కనెక్ట్ చేయబడి ఉందని నిర్ధారించుకోండి</translation>
-<translation id="3029613699374795922"><ph name="KBS" /> KB డౌన్‌లోడ్ చేయబడింది</translation>
 <translation id="3029704984691124060">రహస్య పదబంధాలు సరిపోలలేదు</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />సహాయం పొందండి<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">స్థానం ఆఫ్ చేయబడింది; దీనిని <ph name="BEGIN_LINK" />Android సెట్టింగ్‌లు<ph name="END_LINK" />లో ఆన్ చేయండి.</translation>
@@ -457,7 +455,6 @@
 <translation id="4411535500181276704">లైట్ మోడ్</translation>
 <translation id="4415276339145661267">మీ Google ఖాతాను నిర్వహించండి</translation>
 <translation id="4432792777822557199">ఇప్పటి నుండి <ph name="SOURCE_LANGUAGE" />లో ఉన్న పేజీలు <ph name="TARGET_LANGUAGE" />కు అనువదించబడతాయి</translation>
-<translation id="4433925000917964731">Google అందించిన లైట్ పేజీ</translation>
 <translation id="4434045419905280838">పాప్-అప్‌లు మరియు మళ్లింపులు</translation>
 <translation id="4440958355523780886">Google నుండి లైట్ పేజీ అందించబడింది. అసలు పేజీని లోడ్ చేయడానికి నొక్కండి.</translation>
 <translation id="4452411734226507615"><ph name="TAB_TITLE" /> ట్యాబ్‌ను మూసివేయండి</translation>
@@ -737,7 +734,6 @@
 <translation id="6406506848690869874">Sync</translation>
 <translation id="6410973561433500075"><ph name="DOMAIN" /> నుండి AR మోడ్‌లోకి ప్రవేశించాలా?</translation>
 <translation id="641643625718530986">ముద్రించు…</translation>
-<translation id="6416782512398055893"><ph name="MBS" /> MB డౌన్‌లోడ్ చేయబడింది</translation>
 <translation id="6427112570124116297">వెబ్‌ను అనువదించండి</translation>
 <translation id="6433501201775827830">మీ శోధన ఇంజిన్‌ను ఎంచుకోండి</translation>
 <translation id="6437478888915024427">పేజీ సమాచారం</translation>
@@ -745,7 +741,6 @@
 <translation id="6441734959916820584">పేరు చాలా పొడువు ఉంది</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# ఫోటో}other{# ఫోటోలు}}</translation>
 <translation id="6447558397796644647">ఆ బుక్‌మార్క్‌ను కనుగొనడం సాధ్యం కాలేదు. మీ స్పెల్లింగ్‌ను తనిఖీ చేయండి లేదా కొత్త బుక్‌మార్క్‌ను జోడించండి.</translation>
-<translation id="6447842834002726250">కుక్కీలు</translation>
 <translation id="6461962085415701688">ఫైల్‌ను తెరవడం సాధ్యపడదు</translation>
 <translation id="6464977750820128603">Chromeలో మీరు ఏయే సైట్‌లను సందర్శించారో చూడవచ్చు, వాటికి టైమర్‌లను సెట్ చేయవచ్చు.\n\nమీరు టైమర్‌లను సెట్ చేసిన సైట్‌ల సమాచారం, మీరు ఎంతసేపు వాటిని సందర్శించారనే వివరాలు Googleకు అందించబడతాయి. డిజిటల్ సంక్షేమాన్ని మరింత మెరుగుపరచడానికి ఈ సమాచారం ఉపయోగించబడుతుంది.</translation>
 <translation id="6475951671322991020">వీడియోను డౌన్‌లోడ్ చేయి</translation>
@@ -754,7 +749,6 @@
 <translation id="6508722015517270189">Chromeను పునఃప్రారంభించండి</translation>
 <translation id="6532866250404780454">మీరు Chromeలో సందర్శించిన సైట్‌లు చూపబడవు. అన్ని సైట్ టైమర్‌లు తొలగించబడతాయి.</translation>
 <translation id="6534565668554028783">Google ప్రతిస్పందించడానికి చాలా ఎక్కువ సమయం తీసుకుంది</translation>
-<translation id="6538442820324228105"><ph name="GBS" /> GB డౌన్‌లోడ్ చేయబడింది</translation>
 <translation id="6539092367496845964">ఏదో తప్పు జరిగింది. తర్వాత మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="6545017243486555795">మొత్తం డేటాను తీసివేయి</translation>
 <translation id="6545864417968258051">బ్లూటూత్ స్కానింగ్</translation>

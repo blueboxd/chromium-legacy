@@ -9,6 +9,7 @@
 <translation id="1384959399684842514">다운로드 일시중지됨</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/<ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="2079545284768500474">실행취소</translation>
+<translation id="2146738493024040262">인스턴트 앱 열기</translation>
 <translation id="2148716181193084225">오늘</translation>
 <translation id="2359808026110333948">계속</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" />MB</translation>
@@ -27,6 +28,7 @@
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/?</translation>
 <translation id="4002066346123236978">제목</translation>
 <translation id="4259722352634471385">탐색이 차단됨: <ph name="URL" /></translation>
+<translation id="4433925000917964731">Google에서 제공하는 라이트 페이지</translation>
 <translation id="4570913071927164677">세부정보</translation>
 <translation id="4645575059429386691">부모님이 관리합니다.</translation>
 <translation id="4883854917563148705">관리 설정은 재설정할 수 없습니다.</translation>
@@ -38,6 +40,7 @@
 <translation id="5391532827096253100">이 사이트와의 연결은 안전하지 않습니다. 사이트 정보</translation>
 <translation id="5556459405103347317">새로고침</translation>
 <translation id="5596627076506792578">옵션 더보기</translation>
+<translation id="5804241973901381774">권한</translation>
 <translation id="5860033963881614850">사용 안함</translation>
 <translation id="5916664084637901428">사용</translation>
 <translation id="5939518447894949180">초기화</translation>
@@ -46,6 +49,7 @@
 <translation id="6165508094623778733">자세히 알아보기</translation>
 <translation id="6206551242102657620">이 사이트와의 연결은 안전합니다. 사이트 정보</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> 옵션</translation>
+<translation id="6447842834002726250">쿠키</translation>
 <translation id="6527303717912515753">공유</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" />GB</translation>
 <translation id="6746124502594467657">아래로 이동</translation>

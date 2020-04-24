@@ -283,7 +283,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionsDisabledWithSettingsOverrideAPI,
       test_data_dir_.AppendASCII("api_test/settings_overrides/homepage.crx"));
   extension_service()->AddProviderForTesting(std::move(provider));
   extension_service()->CheckForExternalUpdates();
-  const Extension* extension = observer.WaitForExtensionLoaded();
+  scoped_refptr<const Extension> extension = observer.WaitForExtensionLoaded();
   EXPECT_EQ(kExternalId, extension->id());
 }
 IN_PROC_BROWSER_TEST_F(ExtensionsDisabledWithSettingsOverrideAPI,

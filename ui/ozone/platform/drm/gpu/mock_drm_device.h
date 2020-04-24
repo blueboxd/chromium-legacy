@@ -98,8 +98,6 @@ class MockDrmDevice : public DrmDevice {
     return it != crtc_cursor_map_.end() ? it->second : 0;
   }
 
-  void set_connector_type(uint32_t type) { connector_type_ = type; }
-
   void InitializeState(
       const std::vector<CrtcProperties>& crtc_properties,
       const std::vector<ConnectorProperties>& connector_properties,
@@ -240,8 +238,6 @@ class MockDrmDevice : public DrmDevice {
   uint32_t property_id_generator_ = 0xff000000;
 
   std::set<uint32_t> allocated_property_blobs_;
-
-  uint32_t connector_type_ = DRM_MODE_CONNECTOR_eDP;
 
   DISALLOW_COPY_AND_ASSIGN(MockDrmDevice);
 };

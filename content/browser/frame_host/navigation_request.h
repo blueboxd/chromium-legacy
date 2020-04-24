@@ -27,6 +27,7 @@
 #include "content/common/content_export.h"
 #include "content/common/navigation_params.h"
 #include "content/common/navigation_params.mojom.h"
+#include "content/public/browser/allow_service_worker_result.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
@@ -573,6 +574,9 @@ class CONTENT_EXPORT NavigationRequest
   // RenderFrameHost::FromID(GetPreviousRenderFrameHostId())
   //     ->GetPageUkmSourceId() for main-frame cross-document navigations.
   ukm::SourceId GetPreviousPageUkmSourceId();
+
+  void OnServiceWorkerAccessed(const GURL& scope,
+                               AllowServiceWorkerResult allowed);
 
  private:
   friend class NavigationRequestTest;

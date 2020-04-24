@@ -26,6 +26,8 @@ jumbo_source_set("browser_sources") {
   visibility = [ "//content/*" ]
   sources = [
     "accessibility_tree_formatter.h",
+    "allow_service_worker_result.cc",
+    "allow_service_worker_result.h",
     "android/android_overlay_provider.h",
     "android/child_process_importance.h",
     "android/compositor.h",

@@ -58,11 +58,12 @@ public class StatusIndicatorCoordinator {
      *                                        browser controls can be animated. This will be false
      *                                        where we can't have a reliable cc::BCOM instance, e.g.
      *                                        tab switcher.
+     * @param requestRender Runnable to request a render when the cc-layer needs to be updated.
      */
     public StatusIndicatorCoordinator(Activity activity, ResourceManager resourceManager,
             ChromeFullscreenManager fullscreenManager,
             Supplier<Integer> statusBarColorWithoutStatusIndicatorSupplier,
-            Supplier<Boolean> canAnimateNativeBrowserControls) {
+            Supplier<Boolean> canAnimateNativeBrowserControls, Runnable requestRender) {
         // TODO(crbug.com/1005843): Create this view lazily if/when we need it. This is a task for
         // when we have the public API figured out. First, we should avoid inflating the view here
         // in case it's never used.
@@ -77,8 +78,14 @@ public class StatusIndicatorCoordinator {
         PropertyModelChangeProcessor.create(model,
                 new StatusIndicatorViewBinder.ViewHolder(root, mSceneLayer),
                 StatusIndicatorViewBinder::bind);
+        Runnable invalidateCompositorView = () -> {
+            root.getResourceAdapter().invalidate(null);
+            requestRender.run();
+        };
+
         mMediator = new StatusIndicatorMediator(model, fullscreenManager,
-                statusBarColorWithoutStatusIndicatorSupplier, canAnimateNativeBrowserControls);
+                statusBarColorWithoutStatusIndicatorSupplier, canAnimateNativeBrowserControls,
+                invalidateCompositorView);
         resourceManager.getDynamicResourceLoader().registerResource(
                 root.getId(), root.getResourceAdapter());
         root.addOnLayoutChangeListener(mMediator);

@@ -141,7 +141,8 @@ class ImageBitmapFactories final
     void RejectPromise(ImageBitmapRejectionReason);
 
     void ScheduleAsyncImageBitmapDecoding(ArrayBufferContents);
-    void ResolvePromiseOnOriginalThread(sk_sp<SkImage>);
+    void ResolvePromiseOnOriginalThread(sk_sp<SkImage>,
+                                        const ImageOrientationEnum);
 
     // ExecutionContextLifecycleObserver
     void ContextDestroyed() override;

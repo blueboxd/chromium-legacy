@@ -10,7 +10,6 @@
 #include "services/device/public/mojom/sensor.mojom-blink.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
@@ -26,11 +25,11 @@ namespace {
 const double kWaitingIntervalThreshold = 0.01;
 
 bool AreFeaturesEnabled(
-    Document* document,
+    ExecutionContext* context,
     const Vector<mojom::blink::FeaturePolicyFeature>& features) {
   return std::all_of(features.begin(), features.end(),
-                     [document](mojom::blink::FeaturePolicyFeature feature) {
-                       return document->IsFeatureEnabled(
+                     [context](mojom::blink::FeaturePolicyFeature feature) {
+                       return context->IsFeatureEnabled(
                            feature, ReportOptions::kReportOnFailure);
                      });
 }
@@ -50,9 +49,8 @@ Sensor::Sensor(ExecutionContext* execution_context,
   // [SecureContext] in idl.
   DCHECK(execution_context->IsSecureContext());
   DCHECK(!features.IsEmpty());
-  Document* document = Document::From(execution_context);
 
-  if (!AreFeaturesEnabled(document, features)) {
+  if (!AreFeaturesEnabled(execution_context, features)) {
     exception_state.ThrowSecurityError(
         "Access to sensor features is disallowed by feature policy");
     return;
@@ -177,15 +175,14 @@ void Sensor::InitSensorProxyIfNeeded() {
   if (sensor_proxy_)
     return;
 
-  Document* document = Document::From(GetExecutionContext());
-  if (!document || !document->GetFrame())
-    return;
-
-  auto* provider = SensorProviderProxy::From(document);
+  LocalDOMWindow* window = To<LocalDOMWindow>(GetExecutionContext());
+  auto* provider = SensorProviderProxy::From(window);
   sensor_proxy_ = provider->GetSensorProxy(type_);
 
-  if (!sensor_proxy_)
-    sensor_proxy_ = provider->CreateSensorProxy(type_, document->GetPage());
+  if (!sensor_proxy_) {
+    sensor_proxy_ =
+        provider->CreateSensorProxy(type_, window->GetFrame()->GetPage());
+  }
 }
 
 void Sensor::ContextDestroyed() {

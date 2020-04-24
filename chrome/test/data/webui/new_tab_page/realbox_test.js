@@ -71,4 +71,26 @@ suite('NewTabPageRealboxTest', () => {
     assertStyle(realbox, '--search-box-text', 'rgba(0, 0, 12, 255)');
     assertStyle(realbox, '--search-box-icon', 'rgba(0, 0, 1, 255)');
   });
+
+  test('realbox default icon', async () => {
+    // Assert.
+    assertStyle(
+        realbox.$.realboxIcon, '-webkit-mask-image',
+        'url("chrome://new-tab-page/search.svg")');
+    assertStyle(realbox.$.realboxIcon, 'background-image', 'none');
+
+    // Arrange.
+    loadTimeData.overrideValues({
+      realboxDefaultIcon: 'google_g.png',
+    });
+    PolymerTest.clearBody();
+    realbox = document.createElement('ntp-realbox');
+    document.body.appendChild(realbox);
+
+    // Assert.
+    assertStyle(realbox.$.realboxIcon, '-webkit-mask-image', 'none');
+    assertStyle(
+        realbox.$.realboxIcon, 'background-image',
+        'url("chrome://new-tab-page/google_g.png")');
+  });
 });

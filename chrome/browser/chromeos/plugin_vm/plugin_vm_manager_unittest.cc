@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/ash/launcher/shelf_spinner_controller.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/dlcservice/fake_dlcservice_client.h"
 #include "chromeos/dbus/fake_concierge_client.h"
 #include "chromeos/dbus/fake_seneschal_client.h"
 #include "chromeos/dbus/fake_vm_plugin_dispatcher_client.h"
@@ -42,6 +43,7 @@ class PluginVmManagerTest : public testing::Test {
     chrome_launcher_controller_ = std::make_unique<ChromeLauncherController>(
         testing_profile_.get(), shelf_model_.get());
     histogram_tester_ = std::make_unique<base::HistogramTester>();
+    chromeos::DlcserviceClient::InitializeFake();
   }
 
   ~PluginVmManagerTest() override {
@@ -52,6 +54,7 @@ class PluginVmManagerTest : public testing::Test {
     test_helper_.reset();
     testing_profile_.reset();
     chromeos::DBusThreadManager::Shutdown();
+    chromeos::DlcserviceClient::Shutdown();
   }
 
  protected:

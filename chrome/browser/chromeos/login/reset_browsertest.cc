@@ -252,10 +252,27 @@ class ResetTestWithTpmFirmwareUpdateRequested
   }
 };
 
-IN_PROC_BROWSER_TEST_F(ResetTest, ShowAndCancel) {
+IN_PROC_BROWSER_TEST_F(ResetTest, ShowAndCancelMultipleTimes) {
   EXPECT_TRUE(ash::LoginScreenTestApi::IsGuestButtonShown());
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsOobeDialogVisible());
+  // Invoke and close reset screen multiple times to make sure it is shown and
+  // hidden each time.
   InvokeResetScreen();
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
   CloseResetScreenAndWait();
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsOobeDialogVisible());
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsGuestButtonShown());
+
+  InvokeResetScreen();
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
+  CloseResetScreenAndWait();
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsOobeDialogVisible());
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsGuestButtonShown());
+
+  InvokeResetScreen();
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
+  CloseResetScreenAndWait();
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsOobeDialogVisible());
   EXPECT_TRUE(ash::LoginScreenTestApi::IsGuestButtonShown());
 }
 

@@ -22,6 +22,10 @@
 #include "weblayer/browser/system_network_context_manager.h"
 #include "weblayer/common/weblayer_paths.h"
 
+#if defined(OS_ANDROID)
+#include "weblayer/browser/safe_browsing/safe_browsing_service.h"
+#endif
+
 namespace weblayer {
 
 namespace {
@@ -120,5 +124,24 @@ void BrowserProcess::CreateNetworkQualityObserver() {
       content::CreateNetworkQualityObserver(GetNetworkQualityTracker());
   DCHECK(network_quality_observer_);
 }
+
+#if defined(OS_ANDROID)
+SafeBrowsingService* BrowserProcess::GetSafeBrowsingService(
+    std::string user_agent) {
+  if (!safe_browsing_service_) {
+    // Create and initialize safe_browsing_service on first get.
+    // Note: Initialize() needs to happen on UI thread.
+    safe_browsing_service_ = std::make_unique<SafeBrowsingService>(user_agent);
+    safe_browsing_service_->Initialize();
+  }
+  return safe_browsing_service_.get();
+}
+
+void BrowserProcess::StopSafeBrowsingService() {
+  if (safe_browsing_service_) {
+    safe_browsing_service_->StopDBManager();
+  }
+}
+#endif
 
 }  // namespace weblayer

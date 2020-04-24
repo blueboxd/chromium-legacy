@@ -9,6 +9,7 @@
 <translation id="1384959399684842514">Lataus keskeytettiin.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="2079545284768500474">Kumoa</translation>
+<translation id="2146738493024040262">Avaa Instant-sovellus</translation>
 <translation id="2148716181193084225">Tänään</translation>
 <translation id="2359808026110333948">Jatka</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> Mt</translation>
@@ -27,6 +28,7 @@
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">Nimi</translation>
 <translation id="4259722352634471385">Kohde on estetty: <ph name="URL" /></translation>
+<translation id="4433925000917964731">Googlen tarjoama yksinkertaistettu sivu</translation>
 <translation id="4570913071927164677">Tiedot</translation>
 <translation id="4645575059429386691">Vanhempasi hallinnoima</translation>
 <translation id="4883854917563148705">Ylläpidettyjä asetuksia ei voi nollata</translation>
@@ -38,6 +40,7 @@
 <translation id="5391532827096253100">Sivustolle muodostamasi yhteys ei ole turvallinen. Sivuston tiedot</translation>
 <translation id="5556459405103347317">Lataa uudelleen</translation>
 <translation id="5596627076506792578">Lisäasetukset</translation>
+<translation id="5804241973901381774">Käyttöoikeudet</translation>
 <translation id="5860033963881614850">Pois päältä</translation>
 <translation id="5916664084637901428">Päällä</translation>
 <translation id="5939518447894949180">Tyhjennä</translation>
@@ -46,6 +49,7 @@
 <translation id="6165508094623778733">Lisätietoja</translation>
 <translation id="6206551242102657620">Yhteys on turvallinen. Sivuston tiedot</translation>
 <translation id="6216432067784365534">Vaihtoehdot: <ph name="NAME_OF_LIST_ITEM" /></translation>
+<translation id="6447842834002726250">Evästeet</translation>
 <translation id="6527303717912515753">Jaa</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> Gt</translation>
 <translation id="6746124502594467657">Siirrä alas</translation>

@@ -9,6 +9,7 @@
 <translation id="1384959399684842514">Таталтыг түр зогсоосон</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="2079545284768500474">Буцаах</translation>
+<translation id="2146738493024040262">Шуурхай апп-г нээх</translation>
 <translation id="2148716181193084225">Өнөөдөр</translation>
 <translation id="2359808026110333948">Цааш</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> мегабайт</translation>
@@ -27,6 +28,7 @@
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">Гарчиг</translation>
 <translation id="4259722352634471385">Навигацыг хориглосон байна: <ph name="URL" /></translation>
+<translation id="4433925000917964731">Google-с өгч буй энгийн хуудас</translation>
 <translation id="4570913071927164677">Дэлгэрэнгүй</translation>
 <translation id="4645575059429386691">Эцэг, эх нь хариуцаж байна</translation>
 <translation id="4883854917563148705">Хяналттай тохиргоог шинэчлэх боломжгүй</translation>
@@ -38,6 +40,7 @@
 <translation id="5391532827096253100">Таны энэ сайтын холболт аюултай байна. Сайтын мэдээлэл</translation>
 <translation id="5556459405103347317">Дахин ачаал</translation>
 <translation id="5596627076506792578">Бусад сонголт</translation>
+<translation id="5804241973901381774">Зөвшөөрлүүд</translation>
 <translation id="5860033963881614850">Идэвхгүй байна</translation>
 <translation id="5916664084637901428">Асаах</translation>
 <translation id="5939518447894949180">Дахин сэргээх</translation>
@@ -46,6 +49,7 @@
 <translation id="6165508094623778733">Нэмэлт мэдээлэл авах</translation>
 <translation id="6206551242102657620">Холболт аюулгүй байна. Сайтын мэдээлэл</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> Сонголт</translation>
+<translation id="6447842834002726250">Cookies</translation>
 <translation id="6527303717912515753">Хуваалцах</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> гигабайт</translation>
 <translation id="6746124502594467657">Доош зөөх</translation>

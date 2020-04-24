@@ -177,8 +177,6 @@ mojom::ResourceType RequestContextToResourceType(
   }
 }
 
-}  // namespace
-
 void PopulateResourceRequestBody(const EncodedFormData& src,
                                  network::ResourceRequestBody* dest) {
   for (const auto& element : src.Elements()) {
@@ -227,6 +225,8 @@ void PopulateResourceRequestBody(const EncodedFormData& src,
     }
   }
 }
+
+}  // namespace
 
 void PopulateResourceRequest(const ResourceRequestHead& src,
                              ResourceRequestBody src_body,

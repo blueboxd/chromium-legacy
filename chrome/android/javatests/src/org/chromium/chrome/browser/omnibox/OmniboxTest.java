@@ -8,6 +8,7 @@ import android.annotation.SuppressLint;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
+import android.util.SparseArray;
 import android.view.KeyEvent;
 import android.widget.ImageButton;
 
@@ -79,8 +80,8 @@ public class OmniboxTest {
     private static final OnSuggestionsReceivedListener sEmptySuggestionListener =
             new OnSuggestionsReceivedListener() {
                 @Override
-                public void onSuggestionsReceived(
-                        List<OmniboxSuggestion> suggestions, String inlineAutocompleteText) {}
+                public void onSuggestionsReceived(List<OmniboxSuggestion> suggestions,
+                        SparseArray<String> groupHeaders, String inlineAutocompleteText) {}
             };
 
     /**

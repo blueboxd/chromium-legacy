@@ -103,7 +103,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
  public:
   // |service| owns this class and must outlive this class.
   AssistantManagerServiceImpl(
-      mojom::Client* client,
       ServiceContext* context,
       std::unique_ptr<AssistantManagerServiceDelegate> delegate,
       std::unique_ptr<network::PendingSharedURLLoaderFactory>
@@ -318,7 +317,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
 
   void SetStateAndInformObservers(State new_state);
 
-  mojom::Client* const client_;
   State state_ = State::STOPPED;
   std::unique_ptr<AssistantMediaSession> media_session_;
   std::unique_ptr<CrosPlatformApi> platform_api_;

@@ -4,6 +4,7 @@
 
 #include "components/feed/core/v2/stream_model_update_request.h"
 
+#include <sstream>
 #include <string>
 
 #include "base/base_paths.h"
@@ -15,6 +16,7 @@
 #include "components/feed/core/proto/v2/wire/feed_response.pb.h"
 #include "components/feed/core/proto/v2/wire/response.pb.h"
 #include "components/feed/core/v2/proto_util.h"
+#include "components/feed/core/v2/test/proto_printer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace feed {
@@ -24,22 +26,6 @@ const char kResponsePbPath[] = "components/test/data/feed/response.binarypb";
 constexpr base::TimeDelta kResponseTime = base::TimeDelta::FromSeconds(42);
 const base::Time kCurrentTime =
     base::Time::UnixEpoch() + base::TimeDelta::FromDays(123);
-// TODO(iwells): Replace response.binarypb with a response that uses the new
-// wire protocol.
-//
-// Since we're currently using a Jardin response which includes a
-// Piet shared state, and translation skips handling Piet shared states, we
-// expect to have only 33 StreamStructures even though there are 34 wire
-// operations.
-const int kExpectedStreamStructureCount = 33;
-const size_t kExpectedContentCount = 10;
-const size_t kExpectedSharedStateCount = 0;
-
-std::string ContentIdToString(const feedwire::ContentId& content_id) {
-  return "{content_domain: \"" + content_id.content_domain() +
-         "\", id: " + base::NumberToString(content_id.id()) + ", type: \"" +
-         feedwire::ContentId::Type_Name(content_id.type()) + "\"}";
-}
 
 feedwire::Response TestWireResponse() {
   // Read and parse response.binarypb.
@@ -60,7 +46,6 @@ feedwire::Response TestWireResponse() {
 }  // namespace
 
 // TODO(iwells): Test failure cases once the new protos are ready.
-
 TEST(StreamModelUpdateRequestTest, TranslateRealResponse) {
   // Tests how proto translation works on a real response from the server.
   //
@@ -69,79 +54,389 @@ TEST(StreamModelUpdateRequestTest, TranslateRealResponse) {
   // tools/generate_test_response_binarypb.sh.
 
   feedwire::Response response = TestWireResponse();
-  feedwire::FeedResponse feed_response = response.feed_response();
-
-  // TODO(iwells): Make these exactly equal once we aren't using an old
-  // response.
-  ASSERT_EQ(feed_response.data_operation_size(),
-            kExpectedStreamStructureCount + 1);
 
   std::unique_ptr<StreamModelUpdateRequest> translated = TranslateWireResponse(
       response, StreamModelUpdateRequest::Source::kNetworkUpdate, kResponseTime,
       kCurrentTime);
 
   ASSERT_TRUE(translated);
-  EXPECT_EQ(kCurrentTime, feedstore::GetLastAddedTime(translated->stream_data));
-  ASSERT_EQ(translated->stream_structures.size(),
-            static_cast<size_t>(kExpectedStreamStructureCount));
+  std::stringstream ss;
+  ss << *translated;
 
-  const std::vector<feedstore::StreamStructure>& structures =
-      translated->stream_structures;
-
-  // Check CLEAR_ALL:
-  EXPECT_EQ(structures[0].operation(), feedstore::StreamStructure::CLEAR_ALL);
-
-  // TODO(iwells): Check the shared state once we have a new
-
-  // Check UPDATE_OR_APPEND for the root:
-  EXPECT_EQ(structures[1].operation(),
-            feedstore::StreamStructure::UPDATE_OR_APPEND);
-  EXPECT_EQ(structures[1].type(), feedstore::StreamStructure::STREAM);
-  EXPECT_TRUE(structures[1].has_content_id());
-  EXPECT_FALSE(structures[1].has_parent_id());
-
-  feedwire::ContentId root_content_id = structures[1].content_id();
-
-  // Content:
-  EXPECT_EQ(structures[2].operation(),
-            feedstore::StreamStructure::UPDATE_OR_APPEND);
-  EXPECT_EQ(structures[2].type(), feedstore::StreamStructure::CONTENT);
-  EXPECT_TRUE(structures[2].has_content_id());
-  EXPECT_TRUE(structures[2].has_parent_id());
-
-  // TODO(iwells): Uncomment when these are available.
-  // EXPECT_TRUE(structures[3].has_content_info());
-  // EXPECT_NE(structures[3].content_info().score(), 0.);
-  // EXPECT_NE(structures[3].content_info().availability_time_seconds(), 0);
-  // EXPECT_TRUE(structures[3].content_info().has_representation_data());
-  // EXPECT_TRUE(structures[3].content_info().has_offline_metadata());
-
-  ASSERT_GT(translated->content.size(), 0UL);
-  EXPECT_EQ(ContentIdToString(translated->content[0].content_id()),
-            ContentIdToString(structures[2].content_id()));
-  // TODO(iwells): Check content.frame() once this is available.
-
-  // Non-content structures:
-  EXPECT_EQ(structures[3].operation(),
-            feedstore::StreamStructure::UPDATE_OR_APPEND);
-  // TODO(iwells): This is a CARD. Remove once we have a new response.
-  EXPECT_EQ(structures[3].type(), feedstore::StreamStructure::UNKNOWN_TYPE);
-  EXPECT_TRUE(structures[3].has_content_id());
-  EXPECT_TRUE(structures[3].has_parent_id());
-
-  EXPECT_EQ(structures[4].operation(),
-            feedstore::StreamStructure::UPDATE_OR_APPEND);
-  EXPECT_EQ(structures[4].type(), feedstore::StreamStructure::CLUSTER);
-  EXPECT_TRUE(structures[4].has_content_id());
-  EXPECT_TRUE(structures[4].has_parent_id());
-  EXPECT_EQ(ContentIdToString(structures[4].parent_id()),
-            ContentIdToString(root_content_id));
-
-  // The other members:
-  EXPECT_EQ(translated->content.size(), kExpectedContentCount);
-  EXPECT_EQ(translated->shared_states.size(), kExpectedSharedStateCount);
-
-  EXPECT_EQ(translated->response_time, kResponseTime);
+  const std::string want = R"(source: 0
+stream_data: {
+  last_added_time_millis: 10627200000
+  shared_state_id {
+    content_domain: "render_data"
+  }
+}
+content: {
+  content_id {
+    content_domain: "stories.f"
+    type: 1
+    id: 3328940074512586021
+  }
+  frame: "data2"
+}
+content: {
+  content_id {
+    content_domain: "stories.f"
+    type: 1
+    id: 8191455549164721606
+  }
+  frame: "data3"
+}
+content: {
+  content_id {
+    content_domain: "stories.f"
+    type: 1
+    id: 10337142060535577025
+  }
+  frame: "data4"
+}
+content: {
+  content_id {
+    content_domain: "stories.f"
+    type: 1
+    id: 9467333465122011616
+  }
+  frame: "data5"
+}
+content: {
+  content_id {
+    content_domain: "stories.f"
+    type: 1
+    id: 10024917518268143371
+  }
+  frame: "data6"
+}
+content: {
+  content_id {
+    content_domain: "stories.f"
+    type: 1
+    id: 14956621708214864803
+  }
+  frame: "data7"
+}
+content: {
+  content_id {
+    content_domain: "stories.f"
+    type: 1
+    id: 2741853109953412745
+  }
+  frame: "data8"
+}
+content: {
+  content_id {
+    content_domain: "stories.f"
+    type: 1
+    id: 586433679892097787
+  }
+  frame: "data9"
+}
+content: {
+  content_id {
+    content_domain: "stories.f"
+    type: 1
+    id: 790985792726953756
+  }
+  frame: "data10"
+}
+content: {
+  content_id {
+    content_domain: "stories.f"
+    type: 1
+    id: 7324025093440047528
+  }
+  frame: "data11"
+}
+shared_state: {
+  content_id {
+    content_domain: "render_data"
+  }
+  shared_state_data: "data1"
+}
+stream_structure: {
+  operation: 1
+}
+stream_structure: {
+  operation: 2
+  content_id {
+    content_domain: "root"
+  }
+  type: 1
+}
+stream_structure: {
+  operation: 2
+  content_id {
+    content_domain: "render_data"
+  }
+}
+stream_structure: {
+  operation: 2
+  content_id {
+    content_domain: "stories.f"
+    type: 1
+    id: 3328940074512586021
+  }
+  parent_id {
+    content_domain: "content.f"
+    type: 3
+    id: 14679492703605464401
+  }
+  type: 3
+}
+stream_structure: {
+  operation: 2
+  content_id {
+    content_domain: "content.f"
+    type: 3
+    id: 14679492703605464401
+  }
+  parent_id {
+    content_domain: "root"
+  }
+  type: 4
+}
+stream_structure: {
+  operation: 2
+  content_id {
+    content_domain: "stories.f"
+    type: 1
+    id: 8191455549164721606
+  }
+  parent_id {
+    content_domain: "content.f"
+    type: 3
+    id: 16663153735812675251
+  }
+  type: 3
+}
+stream_structure: {
+  operation: 2
+  content_id {
+    content_domain: "content.f"
+    type: 3
+    id: 16663153735812675251
+  }
+  parent_id {
+    content_domain: "root"
+  }
+  type: 4
+}
+stream_structure: {
+  operation: 2
+  content_id {
+    content_domain: "stories.f"
+    type: 1
+    id: 10337142060535577025
+  }
+  parent_id {
+    content_domain: "content.f"
+    type: 3
+    id: 15532023010474785878
+  }
+  type: 3
+}
+stream_structure: {
+  operation: 2
+  content_id {
+    content_domain: "content.f"
+    type: 3
+    id: 15532023010474785878
+  }
+  parent_id {
+    content_domain: "root"
+  }
+  type: 4
+}
+stream_structure: {
+  operation: 2
+  content_id {
+    content_domain: "stories.f"
+    type: 1
+    id: 9467333465122011616
+  }
+  parent_id {
+    content_domain: "content.f"
+    type: 3
+    id: 10111267591181086437
+  }
+  type: 3
+}
+stream_structure: {
+  operation: 2
+  content_id {
+    content_domain: "content.f"
+    type: 3
+    id: 10111267591181086437
+  }
+  parent_id {
+    content_domain: "root"
+  }
+  type: 4
+}
+stream_structure: {
+  operation: 2
+  content_id {
+    content_domain: "stories.f"
+    type: 1
+    id: 10024917518268143371
+  }
+  parent_id {
+    content_domain: "content.f"
+    type: 3
+    id: 6703713839373923610
+  }
+  type: 3
+}
+stream_structure: {
+  operation: 2
+  content_id {
+    content_domain: "content.f"
+    type: 3
+    id: 6703713839373923610
+  }
+  parent_id {
+    content_domain: "root"
+  }
+  type: 4
+}
+stream_structure: {
+  operation: 2
+  content_id {
+    content_domain: "stories.f"
+    type: 1
+    id: 14956621708214864803
+  }
+  parent_id {
+    content_domain: "content.f"
+    type: 3
+    id: 12592500096310265284
+  }
+  type: 3
+}
+stream_structure: {
+  operation: 2
+  content_id {
+    content_domain: "content.f"
+    type: 3
+    id: 12592500096310265284
+  }
+  parent_id {
+    content_domain: "root"
+  }
+  type: 4
+}
+stream_structure: {
+  operation: 2
+  content_id {
+    content_domain: "stories.f"
+    type: 1
+    id: 2741853109953412745
+  }
+  parent_id {
+    content_domain: "content.f"
+    type: 3
+    id: 1016582787945881825
+  }
+  type: 3
+}
+stream_structure: {
+  operation: 2
+  content_id {
+    content_domain: "content.f"
+    type: 3
+    id: 1016582787945881825
+  }
+  parent_id {
+    content_domain: "root"
+  }
+  type: 4
+}
+stream_structure: {
+  operation: 2
+  content_id {
+    content_domain: "stories.f"
+    type: 1
+    id: 586433679892097787
+  }
+  parent_id {
+    content_domain: "content.f"
+    type: 3
+    id: 9506447424580769257
+  }
+  type: 3
+}
+stream_structure: {
+  operation: 2
+  content_id {
+    content_domain: "content.f"
+    type: 3
+    id: 9506447424580769257
+  }
+  parent_id {
+    content_domain: "root"
+  }
+  type: 4
+}
+stream_structure: {
+  operation: 2
+  content_id {
+    content_domain: "stories.f"
+    type: 1
+    id: 790985792726953756
+  }
+  parent_id {
+    content_domain: "content.f"
+    type: 3
+    id: 17612738377810195843
+  }
+  type: 3
+}
+stream_structure: {
+  operation: 2
+  content_id {
+    content_domain: "content.f"
+    type: 3
+    id: 17612738377810195843
+  }
+  parent_id {
+    content_domain: "root"
+  }
+  type: 4
+}
+stream_structure: {
+  operation: 2
+  content_id {
+    content_domain: "stories.f"
+    type: 1
+    id: 7324025093440047528
+  }
+  parent_id {
+    content_domain: "content.f"
+    type: 3
+    id: 5093490247022575399
+  }
+  type: 3
+}
+stream_structure: {
+  operation: 2
+  content_id {
+    content_domain: "content.f"
+    type: 3
+    id: 5093490247022575399
+  }
+  parent_id {
+    content_domain: "root"
+  }
+  type: 4
+}
+server_response_time: 1587056924
+response_time: 42 s
+max_structure_sequence_number: 0
+)";
+  EXPECT_EQ(want, ss.str());
 }
 
 }  // namespace feed

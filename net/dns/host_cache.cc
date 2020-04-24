@@ -694,7 +694,8 @@ void HostCache::ClearForHosts(
 }
 
 void HostCache::GetAsListValue(base::ListValue* entry_list,
-                               bool include_staleness) const {
+                               bool include_staleness,
+                               SerializationType serialization_type) const {
   DCHECK(entry_list);
   entry_list->Clear();
 
@@ -703,9 +704,17 @@ void HostCache::GetAsListValue(base::ListValue* entry_list,
     const Entry& entry = pair.second;
 
     base::Value network_isolation_key_value;
-    // Don't save entries associated with ephemeral NetworkIsolationKeys.
-    if (!key.network_isolation_key.ToValue(&network_isolation_key_value))
-      continue;
+    if (serialization_type == SerializationType::kRestorable) {
+      // Don't save entries associated with ephemeral NetworkIsolationKeys.
+      if (!key.network_isolation_key.ToValue(&network_isolation_key_value))
+        continue;
+    } else {
+      // ToValue() fails for transient NIKs, since they should never be
+      // serialized to disk in a restorable format, so use ToDebugString() when
+      // serializing for debugging instead of for restoring from disk.
+      network_isolation_key_value =
+          base::Value(key.network_isolation_key.ToDebugString());
+    }
 
     auto entry_dict = std::make_unique<base::DictionaryValue>(
         entry.GetAsValue(include_staleness));
@@ -776,6 +785,7 @@ bool HostCache::RestoreFromListValue(const base::ListValue& old_cache) {
         entry_dict->FindKey(kNetworkIsolationKeyKey);
     NetworkIsolationKey network_isolation_key;
     if (!network_isolation_key_value ||
+        network_isolation_key_value->type() == base::Value::Type::STRING ||
         !NetworkIsolationKey::FromValue(*network_isolation_key_value,
                                         &network_isolation_key)) {
       return false;

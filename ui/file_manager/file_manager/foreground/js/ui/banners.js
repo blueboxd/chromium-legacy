@@ -208,27 +208,47 @@ class Banners extends cr.EventTarget {
     const wrapper = util.createChild(container, 'drive-welcome-wrapper');
     util.createChild(wrapper, 'drive-welcome-icon');
 
-    if (type === 'header') {
+    if (type === 'header' && !util.isFilesNg()) {
       util.createChild(wrapper, 'banner-cloud-bg');
       util.createChild(wrapper, 'banner-people');
     }
 
-    const close = util.createChild(wrapper, 'banner-close', 'button');
+    let close, links;
+    if (util.isFilesNg()) {
+      close =
+          util.createChild(wrapper, 'banner-close text-button', 'cr-button');
+      close.innerHTML = str('DRIVE_WELCOME_DISMISS');
+
+      const message = util.createChild(wrapper, 'drive-welcome-message');
+
+      const title = util.createChild(message, 'drive-welcome-title headline2');
+      title.textContent = str('DRIVE_WELCOME_TITLE');
+
+      const body = util.createChild(message, 'body2-primary');
+
+      const text = util.createChild(body, 'drive-welcome-text');
+      text.innerHTML = str(messageId);
+
+      links = util.createChild(body, 'drive-welcome-links');
+    } else {
+      close = util.createChild(wrapper, 'banner-close', 'button');
+
+      const message = util.createChild(wrapper, 'drive-welcome-message');
+
+      const title = util.createChild(message, 'drive-welcome-title');
+      title.textContent = str('DRIVE_WELCOME_TITLE');
+
+      const text = util.createChild(message, 'drive-welcome-text');
+      text.innerHTML = str(messageId);
+
+      links = util.createChild(message, 'drive-welcome-links');
+    }
+
     close.setAttribute('aria-label', str('DRIVE_WELCOME_DISMISS'));
     close.id = 'welcome-dismiss';
     close.tabIndex = 0;
     close.addEventListener('click', this.closeWelcomeBanner_.bind(this));
 
-    const message = util.createChild(wrapper, 'drive-welcome-message');
-
-    const title = util.createChild(message, 'drive-welcome-title');
-
-    const text = util.createChild(message, 'drive-welcome-text');
-    text.innerHTML = str(messageId);
-
-    const links = util.createChild(message, 'drive-welcome-links');
-
-    title.textContent = str('DRIVE_WELCOME_TITLE');
     const more = util.createChild(links, 'plain-link', 'a');
     more.textContent = str('DRIVE_LEARN_MORE');
     more.href = str('GOOGLE_DRIVE_OVERVIEW_URL');
@@ -275,39 +295,81 @@ class Banners extends cr.EventTarget {
 
     box.textContent = '';
     if (show && opt_sizeStats) {
-      const icon = this.document_.createElement('div');
-      icon.className = 'drive-icon';
-      box.appendChild(icon);
+      if (util.isFilesNg()) {
+        const icon = this.document_.createElement('div');
+        icon.className = 'drive-icon';
+        box.appendChild(icon);
 
-      const text = this.document_.createElement('div');
-      text.className = 'drive-text';
-      text.textContent = strf(
-          'DRIVE_SPACE_AVAILABLE_LONG',
-          util.bytesToString(opt_sizeStats.remainingSize));
-      box.appendChild(text);
+        const text = this.document_.createElement('div');
+        text.className = 'body2-primary';
+        text.textContent = strf(
+            'DRIVE_SPACE_AVAILABLE_LONG',
+            util.bytesToString(opt_sizeStats.remainingSize));
+        box.appendChild(text);
 
-      const link = this.document_.createElement('a');
-      link.href = str('GOOGLE_DRIVE_BUY_STORAGE_URL');
-      link.target = '_blank';
-      const button = this.document_.createElement('button');
-      button.className = 'imitate-paper-button';
-      button.textContent = str('DRIVE_BUY_MORE_SPACE_LINK');
-      link.appendChild(button);
-      box.appendChild(link);
+        const buttonGroup = this.document_.createElement('div');
+        buttonGroup.className = 'button-group';
+        box.appendChild(buttonGroup);
 
-      const close = this.document_.createElement('button');
-      close.setAttribute('aria-label', str('DRIVE_WELCOME_DISMISS'));
-      close.id = 'welcome-dismiss';
-      close.className = 'banner-close';
-      box.appendChild(close);
-      const totalSize = opt_sizeStats.totalSize;
-      close.addEventListener('click', () => {
-        const values = {};
-        values[DRIVE_WARNING_DISMISSED_KEY] = totalSize;
-        chrome.storage.local.set(values);
-        box.hidden = true;
-        this.requestRelayout_(100);
-      });
+        const close = this.document_.createElement('cr-button');
+        close.setAttribute('aria-label', str('DRIVE_WELCOME_DISMISS'));
+        close.id = 'welcome-dismiss';
+        close.innerHTML = str('DRIVE_WELCOME_DISMISS');
+        close.className = 'banner-close text-button';
+        buttonGroup.appendChild(close);
+
+        const link = this.document_.createElement('a');
+        link.href = str('GOOGLE_DRIVE_BUY_STORAGE_URL');
+        link.target = '_blank';
+        const buyMore = this.document_.createElement('cr-button');
+        buyMore.className = 'banner-button text-button';
+        buyMore.textContent = str('DRIVE_BUY_MORE_SPACE_LINK');
+        link.appendChild(buyMore);
+        buttonGroup.appendChild(link);
+
+        const totalSize = opt_sizeStats.totalSize;
+        close.addEventListener('click', () => {
+          const values = {};
+          values[DRIVE_WARNING_DISMISSED_KEY] = totalSize;
+          chrome.storage.local.set(values);
+          box.hidden = true;
+          this.requestRelayout_(100);
+        });
+      } else {
+        const icon = this.document_.createElement('div');
+        icon.className = 'drive-icon';
+        box.appendChild(icon);
+
+        const text = this.document_.createElement('div');
+        text.className = 'drive-text';
+        text.textContent = strf(
+            'DRIVE_SPACE_AVAILABLE_LONG',
+            util.bytesToString(opt_sizeStats.remainingSize));
+        box.appendChild(text);
+
+        const link = this.document_.createElement('a');
+        link.href = str('GOOGLE_DRIVE_BUY_STORAGE_URL');
+        link.target = '_blank';
+        const button = this.document_.createElement('button');
+        button.className = 'imitate-paper-button';
+        button.textContent = str('DRIVE_BUY_MORE_SPACE_LINK');
+        link.appendChild(button);
+        box.appendChild(link);
+
+        const close = this.document_.createElement('button');
+        close.setAttribute('aria-label', str('DRIVE_WELCOME_DISMISS'));
+        close.id = 'welcome-dismiss';
+        close.className = 'banner-close';
+        box.appendChild(close);
+        const totalSize = opt_sizeStats.totalSize;
+        close.addEventListener('click', () => {
+          const values = {};
+          values[DRIVE_WARNING_DISMISSED_KEY] = totalSize;
+          chrome.storage.local.set(values);
+          box.hidden = true;
+          this.requestRelayout_(100);
+        });
+      }
     }
 
     if (box.hidden != !show) {
@@ -360,7 +422,17 @@ class Banners extends cr.EventTarget {
    */
   maybeShowWelcomeBanner_() {
     this.ready_.then(() => {
-      if (this.directoryModel_.getFileList().length == 0 &&
+      if (util.isFilesNg()) {
+        // We do not want to increment the counter when the user navigates
+        // between different directories on Drive, but we increment the counter
+        // once anyway to prevent the full page banner from showing.
+        if (!this.previousDirWasOnDrive_ || this.welcomeHeaderCounter_ == 0) {
+          this.setWelcomeHeaderCounter_(this.welcomeHeaderCounter_ + 1);
+          this.prepareAndShowWelcomeBanner_(
+              'header', 'DRIVE_WELCOME_TEXT_SHORT_FILESNG');
+        }
+      } else if (
+          this.directoryModel_.getFileList().length == 0 &&
           this.welcomeHeaderCounter_ == 0) {
         // Only show the full page banner if the header banner was never shown.
         // Do not increment the counter.
@@ -595,7 +667,14 @@ class Banners extends cr.EventTarget {
       icon.className = 'warning-icon';
       const message = this.document_.createElement('div');
       message.className = 'warning-message';
-      message.innerHTML = util.htmlUnescape(str('DOWNLOADS_DIRECTORY_WARNING'));
+      if (util.isFilesNg()) {
+        message.className += 'warning-message body2-primary';
+        message.innerHTML =
+            util.htmlUnescape(str('DOWNLOADS_DIRECTORY_WARNING_FILESNG'));
+      } else {
+        message.innerHTML =
+            util.htmlUnescape(str('DOWNLOADS_DIRECTORY_WARNING'));
+      }
       box.appendChild(icon);
       box.appendChild(message);
       box.querySelector('a').addEventListener('click', e => {
@@ -603,10 +682,15 @@ class Banners extends cr.EventTarget {
         e.preventDefault();
       });
 
-      const close = this.document_.createElement('button');
+      const closeType = util.isFilesNg() ? 'cr-button' : 'button';
+      const close = this.document_.createElement(closeType);
       close.className = 'banner-close';
       close.setAttribute('aria-label', str('DRIVE_WELCOME_DISMISS'));
       close.id = 'welcome-dismiss';
+      if (util.isFilesNg()) {
+        close.innerHTML = str('DRIVE_WELCOME_DISMISS');
+        close.className = 'banner-close text-button';
+      }
       box.appendChild(close);
       close.addEventListener('click', () => {
         const values = {};

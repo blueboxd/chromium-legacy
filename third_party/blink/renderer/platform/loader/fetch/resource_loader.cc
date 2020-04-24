@@ -761,7 +761,8 @@ bool ResourceLoader::WillFollowRedirect(
             reporting_disposition,
             ResourceRequest::RedirectStatus::kFollowedRedirect);
 
-    if (Context().CalculateIfAdSubresource(*new_request, resource_type))
+    if (Context().CalculateIfAdSubresource(*new_request, resource_type,
+                                           options.initiator_info))
       new_request->SetIsAdResource();
 
     if (blocked_reason) {

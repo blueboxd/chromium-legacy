@@ -159,7 +159,8 @@ static void JNI_WebApkUpdateManager_StoreWebApkUpdateRequestToFile(
   SkBitmap splash_icon;
   if (!java_splash_icon_bitmap.is_null()) {
     gfx::JavaBitmap java_splash_icon_bitmap_lock(java_splash_icon_bitmap);
-    gfx::CreateSkBitmapFromJavaBitmap(java_splash_icon_bitmap_lock);
+    splash_icon =
+        gfx::CreateSkBitmapFromJavaBitmap(java_splash_icon_bitmap_lock);
     splash_icon.setImmutable();
   }
 

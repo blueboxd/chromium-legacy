@@ -1200,7 +1200,7 @@ Wenn Sie die Family Link App auf Ihrem Gerät installieren, können Sie die Eins
 <translation id="258095186877893873">Lang</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (Plattform <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Kerberos-Ticket konnte nicht abgerufen werden (Fehlercode: <ph name="ERROR_CODE" />). Versuchen Sie es noch einmal oder wenden Sie sich an den Geräteadministrator Ihrer Organisation.</translation>
-<translation id="2585013490795742997">Es wird 1 Suchergebnis für <ph name="QUERY" /> angezeigt</translation>
+<translation id="2585013490795742997">1 Suchergebnis für "<ph name="QUERY" />" wird angezeigt</translation>
 <translation id="2585724835339714757">Über diesen Tab wird Ihr Bildschirm freigegeben.</translation>
 <translation id="2586657967955657006">Zwischenablage</translation>
 <translation id="2586672484245266891">Geben Sie eine kürzere URL ein</translation>

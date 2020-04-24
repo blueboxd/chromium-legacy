@@ -7,6 +7,7 @@
 
 #include <fuchsia/io/cpp/fidl.h>
 #include <lib/fidl/cpp/interface_handle.h>
+#include <lib/zx/job.h>
 
 #include "base/memory/ref_counted.h"
 #include "services/service_manager/sandbox/export.h"
@@ -52,6 +53,9 @@ class SERVICE_MANAGER_SANDBOX_EXPORT SandboxPolicyFuchsia {
   std::unique_ptr<base::fuchsia::FilteredServiceDirectory> service_directory_;
   fidl::InterfaceHandle<::fuchsia::io::Directory> service_directory_client_;
   scoped_refptr<base::SequencedTaskRunner> service_directory_task_runner_;
+
+  // Job in which the child process is launched.
+  zx::job job_;
 
   DISALLOW_COPY_AND_ASSIGN(SandboxPolicyFuchsia);
 };

@@ -22,11 +22,11 @@
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "chromeos/services/assistant/service_context.h"
 #include "chromeos/services/assistant/test_support/fake_assistant_manager_service_delegate.h"
-#include "chromeos/services/assistant/test_support/fake_client.h"
 #include "chromeos/services/assistant/test_support/fake_service_context.h"
 #include "chromeos/services/assistant/test_support/fully_initialized_assistant_state.h"
 #include "chromeos/services/assistant/test_support/mock_assistant_interaction_subscriber.h"
 #include "chromeos/services/assistant/test_support/mock_media_manager.h"
+#include "chromeos/services/assistant/test_support/scoped_assistant_client.h"
 #include "libassistant/shared/internal_api/assistant_manager_internal.h"
 #include "libassistant/shared/public/assistant_manager.h"
 #include "services/media_session/public/mojom/media_session.mojom-shared.h"
@@ -67,18 +67,18 @@ ACTION_TEMPLATE(CloneArg,
 
 // Adds an AlarmTimerEvent of the given |type| to |events|.
 static void AddAlarmTimerEvent(
-    std::vector<assistant_client::AlarmTimerEvent>& events,
+    std::vector<assistant_client::AlarmTimerEvent>* events,
     assistant_client::AlarmTimerEvent::Type type) {
-  events.push_back(assistant_client::AlarmTimerEvent());
-  events.back().type = type;
+  events->push_back(assistant_client::AlarmTimerEvent());
+  events->back().type = type;
 }
 
 // Adds an AlarmTimerEvent of type TIMER with the given |state| to |events|.
 static void AddTimerEvent(
-    std::vector<assistant_client::AlarmTimerEvent>& events,
+    std::vector<assistant_client::AlarmTimerEvent>* events,
     assistant_client::Timer::State state) {
   AddAlarmTimerEvent(events, assistant_client::AlarmTimerEvent::TIMER);
-  events.back().timer_data.state = state;
+  events->back().timer_data.state = state;
 }
 
 // Return the list of all libassistant error codes that are considered to be
@@ -104,17 +104,6 @@ static std::vector<int> GetAuthenticationErrorCodes() {
 static std::vector<int> GetNonAuthenticationErrorCodes() {
   return {-99999, 0, 1};
 }
-
-class FakeAssistantClient : public FakeClient {
- public:
-  FakeAssistantClient() = default;
-
-  void RequestBatteryMonitor(
-      mojo::PendingReceiver<device::mojom::BatteryMonitor> receiver) override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FakeAssistantClient);
-};
 
 class AssistantAlarmTimerControllerMock
     : public ash::mojom::AssistantAlarmTimerController {
@@ -191,7 +180,7 @@ class AssistantManagerServiceImplTest : public testing::Test {
     delegate_ = delegate.get();
 
     assistant_manager_service_ = std::make_unique<AssistantManagerServiceImpl>(
-        &assistant_client_, service_context_.get(), std::move(delegate),
+        service_context_.get(), std::move(delegate),
         shared_url_loader_factory_->Clone(), s3_server_uri_override);
   }
 
@@ -276,7 +265,7 @@ class AssistantManagerServiceImplTest : public testing::Test {
  private:
   base::test::SingleThreadTaskEnvironment task_environment;
 
-  FakeAssistantClient assistant_client_{};
+  ScopedAssistantClient assistant_client_;
   FullyInitializedAssistantState assistant_state_;
 
   std::unique_ptr<FakeServiceContext> service_context_;
@@ -616,13 +605,13 @@ TEST_F(AssistantManagerServiceImplTest,
   std::vector<assistant_client::AlarmTimerEvent> events;
 
   // Ignore NONE, ALARMs, and SCHEDULED/PAUSED timers.
-  AddAlarmTimerEvent(events, assistant_client::AlarmTimerEvent::Type::NONE);
-  AddAlarmTimerEvent(events, assistant_client::AlarmTimerEvent::Type::ALARM);
-  AddTimerEvent(events, assistant_client::Timer::State::SCHEDULED);
-  AddTimerEvent(events, assistant_client::Timer::State::PAUSED);
+  AddAlarmTimerEvent(&events, assistant_client::AlarmTimerEvent::Type::NONE);
+  AddAlarmTimerEvent(&events, assistant_client::AlarmTimerEvent::Type::ALARM);
+  AddTimerEvent(&events, assistant_client::Timer::State::SCHEDULED);
+  AddTimerEvent(&events, assistant_client::Timer::State::PAUSED);
 
   // Accept FIRED timers.
-  AddTimerEvent(events, assistant_client::Timer::State::FIRED);
+  AddTimerEvent(&events, assistant_client::Timer::State::FIRED);
 
   fake_alarm_timer_manager()->SetAllEvents(std::move(events));
   fake_alarm_timer_manager()->NotifyRingingStateListeners();
@@ -657,13 +646,13 @@ TEST_F(AssistantManagerServiceImplTest,
   std::vector<assistant_client::AlarmTimerEvent> events;
 
   // Ignore NONE and ALARMs.
-  AddAlarmTimerEvent(events, assistant_client::AlarmTimerEvent::Type::NONE);
-  AddAlarmTimerEvent(events, assistant_client::AlarmTimerEvent::Type::ALARM);
+  AddAlarmTimerEvent(&events, assistant_client::AlarmTimerEvent::Type::NONE);
+  AddAlarmTimerEvent(&events, assistant_client::AlarmTimerEvent::Type::ALARM);
 
   // Accept SCHEDULED/PAUSED/FIRED timers.
-  AddTimerEvent(events, assistant_client::Timer::State::SCHEDULED);
-  AddTimerEvent(events, assistant_client::Timer::State::PAUSED);
-  AddTimerEvent(events, assistant_client::Timer::State::FIRED);
+  AddTimerEvent(&events, assistant_client::Timer::State::SCHEDULED);
+  AddTimerEvent(&events, assistant_client::Timer::State::PAUSED);
+  AddTimerEvent(&events, assistant_client::Timer::State::FIRED);
 
   fake_alarm_timer_manager()->SetAllEvents(std::move(events));
   fake_alarm_timer_manager()->NotifyRingingStateListeners();
@@ -683,7 +672,7 @@ TEST_F(AssistantManagerServiceImplTest,
 
   // Pre-populate the AlarmTimerManager with a single scheduled timer.
   std::vector<assistant_client::AlarmTimerEvent> events;
-  AddTimerEvent(events, assistant_client::Timer::State::SCHEDULED);
+  AddTimerEvent(&events, assistant_client::Timer::State::SCHEDULED);
   fake_alarm_timer_manager()->SetAllEvents(std::move(events));
 
   // Bind AssistantAlarmTimerController.

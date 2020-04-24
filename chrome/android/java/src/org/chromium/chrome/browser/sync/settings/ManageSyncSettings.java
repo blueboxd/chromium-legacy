@@ -185,7 +185,8 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
             type.setOnPreferenceChangeListener(this);
         }
 
-        if (Profile.getLastUsedRegularProfile().isChild()) {
+        Profile profile = Profile.getLastUsedRegularProfile();
+        if (profile.isChild()) {
             mGoogleActivityControls.setSummary(
                     R.string.sign_in_google_activity_controls_summary_child_account);
         }
@@ -199,15 +200,15 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
         mUrlKeyedAnonymizedData =
                 (ChromeSwitchPreference) findPreference(PREF_URL_KEYED_ANONYMIZED_DATA);
         mUrlKeyedAnonymizedData.setChecked(
-                UnifiedConsentServiceBridge.isUrlKeyedAnonymizedDataCollectionEnabled());
+                UnifiedConsentServiceBridge.isUrlKeyedAnonymizedDataCollectionEnabled(profile));
         mUrlKeyedAnonymizedData.setOnPreferenceChangeListener((preference, newValue) -> {
             UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(
-                    (boolean) newValue);
+                    profile, (boolean) newValue);
             return true;
         });
         mUrlKeyedAnonymizedData.setManagedPreferenceDelegate((
                 ChromeManagedPreferenceDelegate) (preference
-                -> UnifiedConsentServiceBridge.isUrlKeyedAnonymizedDataCollectionManaged()));
+                -> UnifiedConsentServiceBridge.isUrlKeyedAnonymizedDataCollectionManaged(profile)));
     }
 
     @Override
@@ -591,7 +592,8 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
         RecordUserAction.record("Signin_Signin_ConfirmAdvancedSyncSettings");
         ProfileSyncService.get().setFirstSetupComplete(
                 SyncFirstSetupCompleteSource.ADVANCED_FLOW_CONFIRM);
-        UnifiedConsentServiceBridge.recordSyncSetupDataTypesHistogram();
+        UnifiedConsentServiceBridge.recordSyncSetupDataTypesHistogram(
+                Profile.getLastUsedRegularProfile());
         // Settings will be applied when mSyncSetupInProgressHandle is released in onDestroy.
         getActivity().finish();
     }

@@ -11,6 +11,7 @@
 
 #include "base/no_destructor.h"
 #include "base/strings/strcat.h"
+#include "chrome/browser/chromeos/policy/messaging_layer/util/status.pb.h"
 
 namespace reporting {
 namespace error {
@@ -94,6 +95,24 @@ std::string Status::ToString() const {
     base::StrAppend(&output, {":", error_message_});
   }
   return output;
+}
+
+void Status::SaveTo(StatusProto* status_proto) const {
+  status_proto->set_code(error_code_);
+  if (error_code_ != error::OK) {
+    status_proto->set_error_message(error_message_);
+  } else {
+    status_proto->clear_error_message();
+  }
+}
+
+void Status::RestoreFrom(const StatusProto& status_proto) {
+  error_code_ = static_cast<error::Code>(status_proto.code());
+  if (error_code_ != error::OK) {
+    error_message_ = status_proto.error_message();
+  } else {
+    error_message_.clear();
+  }
 }
 
 std::ostream& operator<<(std::ostream& os, const Status& x) {

@@ -306,6 +306,7 @@
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/google_api_keys.h"
 #include "gpu/config/gpu_switches.h"
+#include "ipc/ipc_message.h"
 #include "media/audio/audio_manager.h"
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
@@ -2322,13 +2323,13 @@ bool ChromeContentBrowserClient::AllowAppCache(
       ->IsCookieAccessAllowed(manifest_url, first_party);
 }
 
-bool ChromeContentBrowserClient::AllowServiceWorkerOnIO(
+content::AllowServiceWorkerResult
+ChromeContentBrowserClient::AllowServiceWorkerOnIO(
     const GURL& scope,
     const GURL& site_for_cookies,
     const base::Optional<url::Origin>& top_frame_origin,
     const GURL& script_url,
-    content::ResourceContext* context,
-    base::RepeatingCallback<content::WebContents*()> wc_getter) {
+    content::ResourceContext* context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   GURL first_party_url = top_frame_origin ? top_frame_origin->GetURL() : GURL();
 
@@ -2341,7 +2342,7 @@ bool ChromeContentBrowserClient::AllowServiceWorkerOnIO(
   // settings.
   if (!ChromeContentBrowserClientExtensionsPart::AllowServiceWorkerOnIO(
           scope, first_party_url, script_url, context)) {
-    return false;
+    return content::AllowServiceWorkerResult::No();
   }
 #endif
 
@@ -2359,26 +2360,18 @@ bool ChromeContentBrowserClient::AllowServiceWorkerOnIO(
   // Check if cookies are allowed.
   bool allow_cookies = io_data->GetCookieSettings()->IsCookieAccessAllowed(
       scope, site_for_cookies, top_frame_origin);
-  // Record access to database for potential display in UI.
-  // Only post the task if this is for a specific tab.
-  if (!wc_getter.is_null()) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&content_settings::TabSpecificContentSettings::
-                           ServiceWorkerAccessed,
-                       std::move(wc_getter), scope, !allow_javascript,
-                       !allow_cookies));
-  }
-  return allow_javascript && allow_cookies;
+
+  return content::AllowServiceWorkerResult::FromPolicy(!allow_javascript,
+                                                       !allow_cookies);
 }
 
-bool ChromeContentBrowserClient::AllowServiceWorkerOnUI(
+content::AllowServiceWorkerResult
+ChromeContentBrowserClient::AllowServiceWorkerOnUI(
     const GURL& scope,
     const GURL& site_for_cookies,
     const base::Optional<url::Origin>& top_frame_origin,
     const GURL& script_url,
-    content::BrowserContext* context,
-    base::RepeatingCallback<content::WebContents*()> wc_getter) {
+    content::BrowserContext* context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   GURL first_party_url = top_frame_origin ? top_frame_origin->GetURL() : GURL();
 
@@ -2391,7 +2384,7 @@ bool ChromeContentBrowserClient::AllowServiceWorkerOnUI(
   // settings.
   if (!ChromeContentBrowserClientExtensionsPart::AllowServiceWorkerOnUI(
           scope, first_party_url, script_url, context)) {
-    return false;
+    return content::AllowServiceWorkerResult::No();
   }
 #endif
 
@@ -2411,13 +2404,8 @@ bool ChromeContentBrowserClient::AllowServiceWorkerOnUI(
       CookieSettingsFactory::GetForProfile(profile)->IsCookieAccessAllowed(
           scope, site_for_cookies, top_frame_origin);
 
-  // Record access to database for potential display in UI.
-  // Only post the task if this is for a specific tab.
-  if (!wc_getter.is_null()) {
-    content_settings::TabSpecificContentSettings::ServiceWorkerAccessed(
-        std::move(wc_getter), scope, !allow_javascript, !allow_cookies);
-  }
-  return allow_javascript && allow_cookies;
+  return content::AllowServiceWorkerResult::FromPolicy(!allow_javascript,
+                                                       !allow_cookies);
 }
 
 bool ChromeContentBrowserClient::AllowSharedWorker(

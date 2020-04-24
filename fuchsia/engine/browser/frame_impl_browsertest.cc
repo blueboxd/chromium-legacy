@@ -1710,6 +1710,131 @@ IN_PROC_BROWSER_TEST_F(RequestMonitoringFrameImplBrowserTest, ExtraHeaders) {
               testing::Contains(testing::Key("X-2ExtraHeaders")));
 }
 
+// Tests that UrlRequestActions can be set up to deny requests to specific
+// hosts.
+IN_PROC_BROWSER_TEST_F(RequestMonitoringFrameImplBrowserTest,
+                       UrlRequestRewriteDeny) {
+  fuchsia::web::FramePtr frame = CreateFrame();
+
+  fuchsia::web::UrlRequestRewriteRule rule;
+  rule.set_hosts_filter({"127.0.0.1"});
+  rule.set_action(fuchsia::web::UrlRequestAction::DENY);
+  std::vector<fuchsia::web::UrlRequestRewriteRule> rules;
+  rules.push_back(std::move(rule));
+  frame->SetUrlRequestRewriteRules(std::move(rules), []() {});
+
+  fuchsia::web::NavigationControllerPtr controller;
+  frame->GetNavigationController(controller.NewRequest());
+
+  // 127.0.0.1 should be blocked.
+  const GURL page_url(embedded_test_server()->GetURL(kPage4Path));
+  {
+    fuchsia::web::NavigationState error_state;
+    error_state.set_page_type(fuchsia::web::PageType::ERROR);
+    EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
+        controller.get(), fuchsia::web::LoadUrlParams(), page_url.spec()));
+    navigation_listener_.RunUntilNavigationStateMatches(error_state);
+  }
+
+  // However, "localhost" is not blocked, so this request should be allowed.
+  {
+    GURL::Replacements replacements;
+    replacements.SetHostStr("localhost");
+    GURL page_url_localhost = page_url.ReplaceComponents(replacements);
+    EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
+        controller.get(), fuchsia::web::LoadUrlParams(),
+        page_url_localhost.spec()));
+    navigation_listener_.RunUntilUrlEquals(page_url_localhost);
+  }
+}
+
+// Tests that a UrlRequestAction with no filter criteria will apply to all
+// requests.
+IN_PROC_BROWSER_TEST_F(RequestMonitoringFrameImplBrowserTest,
+                       UrlRequestRewriteDenyAll) {
+  fuchsia::web::FramePtr frame = CreateFrame();
+
+  // No filter criteria are set, so everything is denied.
+  fuchsia::web::UrlRequestRewriteRule rule;
+  rule.set_action(fuchsia::web::UrlRequestAction::DENY);
+  std::vector<fuchsia::web::UrlRequestRewriteRule> rules;
+  rules.push_back(std::move(rule));
+  frame->SetUrlRequestRewriteRules(std::move(rules), []() {});
+
+  fuchsia::web::NavigationControllerPtr controller;
+  frame->GetNavigationController(controller.NewRequest());
+
+  // 127.0.0.1 should be blocked.
+  const GURL page_url(embedded_test_server()->GetURL(kPage4Path));
+  {
+    fuchsia::web::NavigationState error_state;
+    error_state.set_page_type(fuchsia::web::PageType::ERROR);
+    EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
+        controller.get(), fuchsia::web::LoadUrlParams(), page_url.spec()));
+    navigation_listener_.RunUntilNavigationStateMatches(error_state);
+  }
+
+  // "localhost" should be blocked.
+  {
+    GURL::Replacements replacements;
+    replacements.SetHostStr("localhost");
+    GURL page_url_localhost = page_url.ReplaceComponents(replacements);
+    fuchsia::web::NavigationState error_state;
+    error_state.set_page_type(fuchsia::web::PageType::ERROR);
+    EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
+        controller.get(), fuchsia::web::LoadUrlParams(), page_url.spec()));
+    navigation_listener_.RunUntilNavigationStateMatches(error_state);
+    EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
+        controller.get(), fuchsia::web::LoadUrlParams(),
+        page_url_localhost.spec()));
+    navigation_listener_.RunUntilNavigationStateMatches(error_state);
+  }
+}
+
+// Tests that UrlRequestActions can be set up to only allow requests for a
+// single host, while denying everything else.
+IN_PROC_BROWSER_TEST_F(RequestMonitoringFrameImplBrowserTest,
+                       UrlRequestRewriteSelectiveAllow) {
+  fuchsia::web::FramePtr frame = CreateFrame();
+
+  // Allow 127.0.0.1.
+  fuchsia::web::UrlRequestRewriteRule rule;
+  rule.set_hosts_filter({"127.0.0.1"});
+  rule.set_action(fuchsia::web::UrlRequestAction::ALLOW);
+  std::vector<fuchsia::web::UrlRequestRewriteRule> rules;
+  rules.push_back(std::move(rule));
+
+  // Deny everything else.
+  rule = {};
+  rule.set_action(fuchsia::web::UrlRequestAction::DENY);
+  rules.push_back(std::move(rule));
+  frame->SetUrlRequestRewriteRules(std::move(rules), []() {});
+
+  fuchsia::web::NavigationControllerPtr controller;
+  frame->GetNavigationController(controller.NewRequest());
+
+  // 127.0.0.1 should be allowed.
+  const GURL page_url(embedded_test_server()->GetURL(kPage4Path));
+  {
+    EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
+        controller.get(), fuchsia::web::LoadUrlParams(), page_url.spec()));
+    navigation_listener_.RunUntilUrlEquals(page_url);
+  }
+
+  // "localhost" should be blocked.
+  {
+    GURL::Replacements replacements;
+    replacements.SetHostStr("localhost");
+    GURL page_url_localhost = page_url.ReplaceComponents(replacements);
+    fuchsia::web::NavigationState error_state;
+    error_state.set_page_type(fuchsia::web::PageType::ERROR);
+    EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
+        controller.get(), fuchsia::web::LoadUrlParams(),
+        page_url_localhost.spec()));
+    navigation_listener_.RunUntilNavigationStateMatches(error_state);
+  }
+}
+
 // Tests the URLRequestRewrite API properly adds headers on every requests.
 IN_PROC_BROWSER_TEST_F(RequestMonitoringFrameImplBrowserTest,
                        UrlRequestRewriteAddHeaders) {

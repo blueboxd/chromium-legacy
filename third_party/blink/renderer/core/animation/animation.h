@@ -250,7 +250,7 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   bool PreCommit(int compositor_group,
                  const PaintArtifactCompositor*,
                  bool start_on_compositor);
-  void PostCommit(double timeline_time);
+  void PostCommit();
 
   unsigned SequenceNumber() const override { return sequence_number_; }
 

@@ -16,7 +16,7 @@ class SingleThreadTaskRunner;
 }
 
 namespace blink {
-class Document;
+class ExecutionContext;
 class WebSchedulingTaskQueue;
 
 class MODULES_EXPORT DOMTaskSignal final
@@ -37,7 +37,7 @@ class MODULES_EXPORT DOMTaskSignal final
     kMaxValue = kPriorityHasChanged
   };
 
-  DOMTaskSignal(Document*, WebSchedulingPriority, Type);
+  DOMTaskSignal(ExecutionContext*, WebSchedulingPriority, Type);
   ~DOMTaskSignal() override;
 
   // task_signal.idl

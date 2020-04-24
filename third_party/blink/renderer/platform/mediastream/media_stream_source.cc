@@ -217,6 +217,9 @@ void MediaStreamSource::GetSettings(WebMediaStreamTrack::Settings& settings) {
 
 void MediaStreamSource::SetAudioFormat(size_t number_of_channels,
                                        float sample_rate) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("mediastream"),
+               "MediaStreamSource::SetAudioFormat");
+
   SendLogMessage(
       String::Format(
           "SetAudioFormat({id=%s}, {number_of_channels=%d}, {sample_rate=%f})",
@@ -230,6 +233,9 @@ void MediaStreamSource::SetAudioFormat(size_t number_of_channels,
 }
 
 void MediaStreamSource::ConsumeAudio(AudioBus* bus, size_t number_of_frames) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("mediastream"),
+               "MediaStreamSource::ConsumeAudio");
+
   DCHECK(requires_consumer_);
   MutexLocker locker(audio_consumers_lock_);
   for (AudioDestinationConsumer* consumer : audio_consumers_)

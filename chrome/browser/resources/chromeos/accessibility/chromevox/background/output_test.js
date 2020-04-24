@@ -981,10 +981,10 @@ SYNC_TEST_F('ChromeVoxOutputE2ETest', 'ValidateCommonProperties', function() {
 
   // This filters out known roles that don't have states or descriptions.
   const notStated = [
-    RoleType.CLIENT, RoleType.EMBEDDED_OBJECT, RoleType.INLINE_TEXT_BOX,
-    RoleType.LINE_BREAK, RoleType.LIST_MARKER, RoleType.PARAGRAPH,
-    RoleType.ROOT_WEB_AREA, RoleType.STATIC_TEXT, RoleType.PLUGIN_OBJECT,
-    RoleType.WINDOW
+    RoleType.CLIENT, RoleType.EMBEDDED_OBJECT, RoleType.IME_CANDIDATE,
+    RoleType.INLINE_TEXT_BOX, RoleType.LINE_BREAK, RoleType.LIST_MARKER,
+    RoleType.PARAGRAPH, RoleType.ROOT_WEB_AREA, RoleType.STATIC_TEXT,
+    RoleType.PLUGIN_OBJECT, RoleType.WINDOW
   ];
   const notRestricted = [
     RoleType.ALERT,
@@ -994,6 +994,7 @@ SYNC_TEST_F('ChromeVoxOutputE2ETest', 'ValidateCommonProperties', function() {
     RoleType.EMBEDDED_OBJECT,
     RoleType.GENERIC_CONTAINER,
     RoleType.IMAGE,
+    RoleType.IME_CANDIDATE,
     RoleType.INLINE_TEXT_BOX,
     RoleType.LINE_BREAK,
     RoleType.LIST,
@@ -1009,10 +1010,10 @@ SYNC_TEST_F('ChromeVoxOutputE2ETest', 'ValidateCommonProperties', function() {
     RoleType.WINDOW
   ];
   const notDescribed = [
-    RoleType.CLIENT, RoleType.EMBEDDED_OBJECT, RoleType.INLINE_TEXT_BOX,
-    RoleType.LINE_BREAK, RoleType.LIST_MARKER, RoleType.PARAGRAPH,
-    RoleType.PLUGIN_OBJECT, RoleType.ROOT_WEB_AREA, RoleType.STATIC_TEXT,
-    RoleType.WINDOW
+    RoleType.CLIENT, RoleType.EMBEDDED_OBJECT, RoleType.IME_CANDIDATE,
+    RoleType.INLINE_TEXT_BOX, RoleType.LINE_BREAK, RoleType.LIST_MARKER,
+    RoleType.PARAGRAPH, RoleType.PLUGIN_OBJECT, RoleType.ROOT_WEB_AREA,
+    RoleType.STATIC_TEXT, RoleType.WINDOW
   ];
   missingState = missingState.filter(function(state) {
     return notStated.indexOf(state) == -1;

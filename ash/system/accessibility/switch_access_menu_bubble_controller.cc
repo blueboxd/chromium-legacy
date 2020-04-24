@@ -27,10 +27,15 @@ void SwitchAccessMenuBubbleController::ShowBackButton(const gfx::Rect& anchor) {
   back_button_controller_->ShowBackButton(anchor);
 }
 
-void SwitchAccessMenuBubbleController::ShowMenu(const gfx::Rect& anchor) {
+void SwitchAccessMenuBubbleController::ShowMenu(
+    const gfx::Rect& anchor,
+    const std::vector<std::string>& actions_to_show) {
   if (widget_) {
     DCHECK(bubble_view_);
+    menu_view_->SetActions(actions_to_show);
+    bubble_view_->SetPreferredWidth(menu_view_->GetBubbleWidthDip());
     bubble_view_->ChangeAnchorRect(anchor);
+    ShowBackButtonForMenu();
     return;
   }
 
@@ -50,6 +55,7 @@ void SwitchAccessMenuBubbleController::ShowMenu(const gfx::Rect& anchor) {
   bubble_view_ = new TrayBubbleView(init_params);
 
   menu_view_ = new SwitchAccessMenuView();
+  menu_view_->SetActions(actions_to_show);
   menu_view_->SetBorder(
       views::CreateEmptyBorder(kUnifiedTopShortcutSpacing, 0, 0, 0));
   bubble_view_->SetPreferredWidth(menu_view_->GetBubbleWidthDip());
@@ -61,6 +67,7 @@ void SwitchAccessMenuBubbleController::ShowMenu(const gfx::Rect& anchor) {
   widget_ = views::BubbleDialogDelegateView::CreateBubble(bubble_view_);
   TrayBackgroundView::InitializeBubbleAnimations(widget_);
   bubble_view_->InitializeAndShowBubble();
+  ShowBackButtonForMenu();
 }
 
 void SwitchAccessMenuBubbleController::CloseAll() {
@@ -73,6 +80,11 @@ void SwitchAccessMenuBubbleController::BubbleViewDestroyed() {
   bubble_view_ = nullptr;
   menu_view_ = nullptr;
   widget_ = nullptr;
+}
+
+void SwitchAccessMenuBubbleController::ShowBackButtonForMenu() {
+  gfx::Rect widget_bounds = widget_->GetWindowBoundsInScreen();
+  ShowBackButton(widget_bounds);
 }
 
 }  // namespace ash

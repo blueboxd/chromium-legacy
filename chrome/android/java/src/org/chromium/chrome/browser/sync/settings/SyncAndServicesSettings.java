@@ -374,7 +374,7 @@ public class SyncAndServicesSettings extends PreferenceFragmentCompat
             UmaSessionStats.changeMetricsReportingConsent((boolean) newValue);
         } else if (PREF_URL_KEYED_ANONYMIZED_DATA.equals(key)) {
             UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(
-                    (boolean) newValue);
+                    Profile.getLastUsedRegularProfile(), (boolean) newValue);
         } else if (PREF_AUTOFILL_ASSISTANT.equals(key)) {
             setAutofillAssistantSwitchValue((boolean) newValue);
         }
@@ -547,7 +547,8 @@ public class SyncAndServicesSettings extends PreferenceFragmentCompat
         mUsageAndCrashReporting.setChecked(
                 mPrivacyPrefManager.isUsageAndCrashReportingPermittedByUser());
         mUrlKeyedAnonymizedData.setChecked(
-                UnifiedConsentServiceBridge.isUrlKeyedAnonymizedDataCollectionEnabled());
+                UnifiedConsentServiceBridge.isUrlKeyedAnonymizedDataCollectionEnabled(
+                        Profile.getLastUsedRegularProfile()));
 
         if (mAutofillAssistant != null) {
             mAutofillAssistant.setChecked(isAutofillAssistantSwitchOn());
@@ -653,7 +654,8 @@ public class SyncAndServicesSettings extends PreferenceFragmentCompat
                 return PrivacyPreferencesManager.getInstance().isMetricsReportingManaged();
             }
             if (PREF_URL_KEYED_ANONYMIZED_DATA.equals(key)) {
-                return UnifiedConsentServiceBridge.isUrlKeyedAnonymizedDataCollectionManaged();
+                return UnifiedConsentServiceBridge.isUrlKeyedAnonymizedDataCollectionManaged(
+                        Profile.getLastUsedRegularProfile());
             }
             return false;
         };
@@ -677,7 +679,8 @@ public class SyncAndServicesSettings extends PreferenceFragmentCompat
         RecordUserAction.record("Signin_Signin_ConfirmAdvancedSyncSettings");
         ProfileSyncService.get().setFirstSetupComplete(
                 SyncFirstSetupCompleteSource.ADVANCED_FLOW_CONFIRM);
-        UnifiedConsentServiceBridge.recordSyncSetupDataTypesHistogram();
+        UnifiedConsentServiceBridge.recordSyncSetupDataTypesHistogram(
+                Profile.getLastUsedRegularProfile());
         // Settings will be applied when mSyncSetupInProgressHandle is released in onDestroy.
         getActivity().finish();
     }

@@ -869,8 +869,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
 
   // This request will show up as cross-site because the chrome-extension URL
   // won't match the test_server domain (127.0.0.1), but because we set
-  // |attach_same_site_cookies| to true for extension-initiated requests, this
-  // will actually be able to get the cookie.
+  // |force_ignore_site_for_cookies| to true for extension-initiated requests,
+  // this will actually be able to get the cookie.
   GURL url = test_server.GetURL("/echocookieheader");
   std::string script = R"((url => {
     var xhr = new XMLHttpRequest();

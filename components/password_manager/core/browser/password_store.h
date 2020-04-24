@@ -54,7 +54,6 @@ using metrics_util::GaiaPasswordHashChange;
 #endif
 
 class AffiliatedMatchHelper;
-class CompromisedCredentialsObserver;
 class PasswordStoreConsumer;
 class CompromisedCredentialsConsumer;
 class PasswordStoreSigninNotifier;
@@ -813,9 +812,6 @@ class PasswordStore : protected PasswordStoreSync,
   base::RepeatingClosure sync_enabled_or_disabled_cb_;
 
   std::unique_ptr<AffiliatedMatchHelper> affiliated_match_helper_;
-
-  std::unique_ptr<CompromisedCredentialsObserver>
-      compromised_credentials_observer_;
 
   PrefService* prefs_ = nullptr;
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)

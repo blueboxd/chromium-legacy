@@ -26,6 +26,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/json/json_writer.h"
+#include "weblayer/browser/browser_process.h"
 #include "weblayer/browser/java/jni/BrowserImpl_jni.h"
 #endif
 
@@ -36,6 +37,9 @@ using base::android::ScopedJavaLocalRef;
 #endif
 
 namespace weblayer {
+
+// TODO(timvolodine): consider using an observer for this, crbug.com/1068713.
+int BrowserImpl::browser_count_ = 0;
 
 std::unique_ptr<Browser> Browser::Create(
     Profile* profile,
@@ -59,6 +63,14 @@ BrowserImpl::~BrowserImpl() {
     RemoveTab(tabs_.back().get());
 #endif
   profile_->DecrementBrowserImplCount();
+  browser_count_--;
+  DCHECK(browser_count_ >= 0);
+
+#if defined(OS_ANDROID)
+  if (browser_count_ == 0) {
+    weblayer::BrowserProcess::GetInstance()->StopSafeBrowsingService();
+  }
+#endif
 }
 
 TabImpl* BrowserImpl::CreateTabForSessionRestore(
@@ -312,6 +324,7 @@ void BrowserImpl::RemoveObserver(BrowserObserver* observer) {
 
 BrowserImpl::BrowserImpl(ProfileImpl* profile) : profile_(profile) {
   profile_->IncrementBrowserImplCount();
+  browser_count_++;
 }
 
 void BrowserImpl::RestoreStateIfNecessary(

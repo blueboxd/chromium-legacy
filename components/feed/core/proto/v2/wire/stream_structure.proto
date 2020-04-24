@@ -24,12 +24,6 @@ message Cluster {
 // inside or outside a card. Actual data on what to display will be sent on an
 // extension.
 message Content {
-  enum Type {
-    UNKNOWN_CONTENT = 0;
-    XSURFACE = 1;
-  }
-  optional Type type = 1;
-
   optional bool is_ad = 3;
 
   optional XSurfaceContent xsurface_content = 1000;

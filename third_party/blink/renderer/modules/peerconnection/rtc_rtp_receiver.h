@@ -53,8 +53,12 @@ class RTCRtpReceiver final : public ScriptWrappable {
   base::Optional<double> playoutDelayHint() const;
   void setPlayoutDelayHint(base::Optional<double>, ExceptionState&);
   RTCRtpReceiveParameters* getParameters();
-  HeapVector<Member<RTCRtpSynchronizationSource>> getSynchronizationSources();
-  HeapVector<Member<RTCRtpContributingSource>> getContributingSources();
+  HeapVector<Member<RTCRtpSynchronizationSource>> getSynchronizationSources(
+      ScriptState*,
+      ExceptionState&);
+  HeapVector<Member<RTCRtpContributingSource>> getContributingSources(
+      ScriptState*,
+      ExceptionState&);
   ScriptPromise getStats(ScriptState*);
   RTCInsertableStreams* createEncodedAudioStreams(ScriptState*,
                                                   ExceptionState&);

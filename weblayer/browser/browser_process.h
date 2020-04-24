@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
+#include "build/build_config.h"
 #include "services/network/public/cpp/network_quality_tracker.h"
 
 class PrefRegistrySimple;
@@ -24,6 +25,7 @@ class SharedURLLoaderFactory;
 }
 
 namespace weblayer {
+class SafeBrowsingService;
 
 // Class that holds global state in the browser process. Should be used only on
 // the UI thread.
@@ -47,6 +49,11 @@ class BrowserProcess {
   network_time::NetworkTimeTracker* GetNetworkTimeTracker();
   network::NetworkQualityTracker* GetNetworkQualityTracker();
 
+#if defined(OS_ANDROID)
+  SafeBrowsingService* GetSafeBrowsingService(std::string user_agent);
+  void StopSafeBrowsingService();
+#endif
+
  private:
   void RegisterPrefs(PrefRegistrySimple* pref_registry);
   void CreateNetworkQualityObserver();
@@ -60,6 +67,10 @@ class BrowserProcess {
   std::unique_ptr<
       network::NetworkQualityTracker::RTTAndThroughputEstimatesObserver>
       network_quality_observer_;
+
+#if defined(OS_ANDROID)
+  std::unique_ptr<SafeBrowsingService> safe_browsing_service_;
+#endif
 
   SEQUENCE_CHECKER(sequence_checker_);
 

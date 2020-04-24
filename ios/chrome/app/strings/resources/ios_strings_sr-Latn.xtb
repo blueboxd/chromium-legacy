@@ -53,6 +53,7 @@
 <translation id="1540800554400757039">1. red za adresu</translation>
 <translation id="1545749641540134597">Skenirajte QR kôd</translation>
 <translation id="1552525382687785070">Administrator je onemogućio sinhronizaciju</translation>
+<translation id="1554477036522844996">Novi prozor</translation>
 <translation id="1580783302095112590">Imejl je poslata.</translation>
 <translation id="1582732959743469162">Na taj način ćete potpuno zaustaviti trenutno preuzimanje.</translation>
 <translation id="1605658421715042784">Kopiraj sliku</translation>
@@ -187,6 +188,7 @@
 <translation id="3328801116991980348">Informacije o sajtu</translation>
 <translation id="3329904751041170572">Povezivanje sa serverom nije moguće.</translation>
 <translation id="3335947283844343239">Ponovo otvori zatvorenu karticu</translation>
+<translation id="3343651535143698944">Dodaj izuzetak za sajtove</translation>
 <translation id="3371831930909698441">Prevodilac je dostupan. Opcije su dostupne u dnu ekrana.</translation>
 <translation id="3393920035788932672">Dozvoljeni iskačući prozori</translation>
 <translation id="3443810440409579745">Kartica je primljena.</translation>
@@ -555,6 +557,7 @@ Pošto vašim nalogom upravlja <ph name="HOSTED_DOMAIN" />, Chrome podaci će s
 <translation id="8319076807703933069">Nova pretraga</translation>
 <translation id="8323906514956095947">Dodirnite i zadržite ako želite više opcija za kartice</translation>
 <translation id="8328777765163860529">Zatvori sve</translation>
+<translation id="8332159733957009464">Izuzeci za sajtove</translation>
 <translation id="8386068868580335421">Resetuj</translation>
 <translation id="8407669440184693619">Nije pronađena nijedna lozinka za ovaj sajt</translation>
 <translation id="842017693807136194">Prijavljeni ste pomoću:</translation>

@@ -51,15 +51,6 @@ using content::WebContents;
 namespace content_settings {
 namespace {
 
-static TabSpecificContentSettings* GetForWCGetter(
-    const base::Callback<content::WebContents*(void)>& wc_getter) {
-  WebContents* web_contents = wc_getter.Run();
-  if (!web_contents)
-    return nullptr;
-
-  return TabSpecificContentSettings::FromWebContents(web_contents);
-}
-
 bool ShouldSendUpdatedContentSettingsRulesToRenderer(
     ContentSettingsType content_type) {
   // ContentSettingsType::DEFAULT signals that multiple content settings may
@@ -186,19 +177,6 @@ void TabSpecificContentSettings::FileSystemAccessed(int render_process_id,
       GetForFrame(render_process_id, render_frame_id);
   if (settings)
     settings->OnFileSystemAccessed(url, blocked_by_policy);
-}
-
-// static
-void TabSpecificContentSettings::ServiceWorkerAccessed(
-    const base::Callback<content::WebContents*(void)>& wc_getter,
-    const GURL& scope,
-    bool blocked_by_policy_javascript,
-    bool blocked_by_policy_cookie) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  TabSpecificContentSettings* settings = GetForWCGetter(wc_getter);
-  if (settings)
-    settings->OnServiceWorkerAccessed(scope, blocked_by_policy_javascript,
-                                      blocked_by_policy_cookie);
 }
 
 // static
@@ -421,24 +399,49 @@ void TabSpecificContentSettings::OnCacheStorageAccessed(
 }
 
 void TabSpecificContentSettings::OnServiceWorkerAccessed(
+    content::NavigationHandle* navigation,
     const GURL& scope,
-    bool blocked_by_policy_javascript,
-    bool blocked_by_policy_cookie) {
+    content::AllowServiceWorkerResult allowed) {
   DCHECK(scope.is_valid());
-  if (blocked_by_policy_javascript || blocked_by_policy_cookie) {
-    blocked_local_shared_objects_.service_workers()->Add(
+  if (allowed) {
+    allowed_local_shared_objects_.service_workers()->Add(
         url::Origin::Create(scope));
   } else {
-    allowed_local_shared_objects_.service_workers()->Add(
+    blocked_local_shared_objects_.service_workers()->Add(
         url::Origin::Create(scope));
   }
 
-  if (blocked_by_policy_javascript) {
+  if (allowed.javascript_blocked_by_policy()) {
     OnContentBlocked(ContentSettingsType::JAVASCRIPT);
   } else {
     OnContentAllowed(ContentSettingsType::JAVASCRIPT);
   }
-  if (blocked_by_policy_cookie) {
+  if (allowed.cookies_blocked_by_policy()) {
+    OnContentBlocked(ContentSettingsType::COOKIES);
+  } else {
+    OnContentAllowed(ContentSettingsType::COOKIES);
+  }
+}
+
+void TabSpecificContentSettings::OnServiceWorkerAccessed(
+    content::RenderFrameHost* frame,
+    const GURL& scope,
+    content::AllowServiceWorkerResult allowed) {
+  DCHECK(scope.is_valid());
+  if (allowed) {
+    allowed_local_shared_objects_.service_workers()->Add(
+        url::Origin::Create(scope));
+  } else {
+    blocked_local_shared_objects_.service_workers()->Add(
+        url::Origin::Create(scope));
+  }
+
+  if (allowed.javascript_blocked_by_policy()) {
+    OnContentBlocked(ContentSettingsType::JAVASCRIPT);
+  } else {
+    OnContentAllowed(ContentSettingsType::JAVASCRIPT);
+  }
+  if (allowed.cookies_blocked_by_policy()) {
     OnContentBlocked(ContentSettingsType::COOKIES);
   } else {
     OnContentAllowed(ContentSettingsType::COOKIES);

@@ -12,20 +12,9 @@
 
 #include "base/callback_forward.h"
 
-namespace blink {
-struct WebSize;
-}  // namespace blink
-
-namespace gfx {
-class ColorSpace;
-}
-
 namespace content {
 class RenderFrame;
 class RenderView;
-class WebFrameTestProxy;
-class WebViewTestProxy;
-class WebWidgetTestProxy;
 
 // Turn a renderer into web test mode.
 void EnableRendererWebTestMode();
@@ -35,31 +24,10 @@ void EnableRendererWebTestMode();
 // between WebFrames and RenderFrames.
 void EnableWebTestProxyCreation();
 
-// Returns the length of the local session history of a render view.
-int GetLocalSessionHistoryLength(RenderView* render_view);
-
 // Sets the focus of the render view depending on |enable|. This only overrides
 // the state of the renderer, and does not sync the focus to the browser
 // process.
 void SetFocusAndActivate(RenderView* render_view, bool enable);
-
-// Changes the window rect of the given render view.
-void ForceResizeRenderView(RenderView* render_view,
-                           const blink::WebSize& new_size);
-
-// Set the device scale factor and force the compositor to resize.
-void SetDeviceScaleFactor(RenderView* render_view, float factor);
-
-// Set the device color space.
-void SetDeviceColorSpace(RenderView* render_view,
-                         const gfx::ColorSpace& color_space);
-
-// Control auto resize mode.
-void EnableAutoResizeMode(RenderView* render_view,
-                          const blink::WebSize& min_size,
-                          const blink::WebSize& max_size);
-void DisableAutoResizeMode(RenderView* render_view,
-                           const blink::WebSize& new_size);
 
 // Run all pending idle tasks immediately, and then invoke callback.
 void SchedulerRunIdleTasks(base::OnceClosure callback);

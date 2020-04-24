@@ -15,6 +15,12 @@ namespace {
 // considered short enough for the "first change" metric.
 constexpr base::TimeDelta kShortBlurTimeLimit = base::TimeDelta::FromMinutes(1);
 
+// The minimum amount of time between a setting change and a subsequent setting
+// change. If two changes occur les than this amount of time from each other,
+// they are ignored by metrics. See https://crbug.com/1073714 for details.
+constexpr base::TimeDelta kMinSubsequentChange =
+    base::TimeDelta::FromMilliseconds(200);
+
 // Min/max values for the duration metrics. Note that these values are tied to
 // the metrics defined below; if these ever change, the metric names must also
 // be updated.
@@ -55,7 +61,7 @@ void SettingsUserActionTracker::RecordPageFocus() {
   // user coming back to the window a new session for the purpose of metrics.
   if (blurred_duration >= kShortBlurTimeLimit) {
     ResetMetricsCountersAndTimestamp();
-    has_changed_setting_ = false;
+    last_record_setting_changed_timestamp_ = base::TimeTicks();
   }
 }
 
@@ -76,7 +82,15 @@ void SettingsUserActionTracker::RecordSearch() {
 }
 
 void SettingsUserActionTracker::RecordSettingChange() {
-  if (has_changed_setting_) {
+  base::TimeTicks now = base::TimeTicks::Now();
+
+  if (!last_record_setting_changed_timestamp_.is_null()) {
+    // If it has been less than |kMinSubsequentChange| since the last recorded
+    // setting change, this change is discarded. See https://crbug.com/1073714
+    // for details.
+    if (now - last_record_setting_changed_timestamp_ < kMinSubsequentChange)
+      return;
+
     base::UmaHistogramCounts1000(
         "ChromeOS.Settings.NumClicksUntilChange.SubsequentChange",
         num_clicks_since_start_time_);
@@ -87,7 +101,7 @@ void SettingsUserActionTracker::RecordSettingChange() {
         "ChromeOS.Settings.NumSearchesUntilChange.SubsequentChange",
         num_searches_since_start_time_);
     LogDurationMetric("ChromeOS.Settings.TimeUntilChange.SubsequentChange",
-                      base::TimeTicks::Now() - metric_start_time_);
+                      now - metric_start_time_);
   } else {
     base::UmaHistogramCounts1000(
         "ChromeOS.Settings.NumClicksUntilChange.FirstChange",
@@ -99,11 +113,11 @@ void SettingsUserActionTracker::RecordSettingChange() {
         "ChromeOS.Settings.NumSearchesUntilChange.FirstChange",
         num_searches_since_start_time_);
     LogDurationMetric("ChromeOS.Settings.TimeUntilChange.FirstChange",
-                      base::TimeTicks::Now() - metric_start_time_);
+                      now - metric_start_time_);
   }
 
   ResetMetricsCountersAndTimestamp();
-  has_changed_setting_ = true;
+  last_record_setting_changed_timestamp_ = now;
 }
 
 void SettingsUserActionTracker::ResetMetricsCountersAndTimestamp() {

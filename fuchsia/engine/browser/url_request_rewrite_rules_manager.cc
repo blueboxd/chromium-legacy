@@ -106,11 +106,18 @@ bool ValidateRules(
     }
     if (rule.has_schemes_filter() && rule.schemes_filter().empty())
       return false;
-    if (!rule.has_rewrites())
-      return false;
-    for (const auto& rewrite : rule.rewrites()) {
-      if (!ValidateRewrite(rewrite))
+
+    if (rule.has_rewrites()) {
+      if (rule.has_action())
         return false;
+
+      for (const auto& rewrite : rule.rewrites()) {
+        if (!ValidateRewrite(rewrite))
+          return false;
+      }
+    } else if (!rule.has_action()) {
+      // No rewrites, no action = no point!
+      return false;
     }
   }
   return true;
@@ -159,7 +166,7 @@ zx_status_t UrlRequestRewriteRulesManager::OnRulesUpdated(
   base::AutoLock auto_lock(lock_);
   cached_rules_ =
       base::MakeRefCounted<WebEngineURLLoaderThrottle::UrlRequestRewriteRules>(
-          mojo::ConvertTo<std::vector<mojom::UrlRequestRewriteRulePtr>>(
+          mojo::ConvertTo<std::vector<mojom::UrlRequestRulePtr>>(
               std::move(rules)));
 
   // Send the updated rules to the receivers.

@@ -69,6 +69,11 @@ export class BrowserProxy {
   matchMedia(query) {
     return window.matchMedia(query);
   }
+
+  /** @return {number} */
+  now() {
+    return Date.now();
+  }
 }
 
 addSingletonGetter(BrowserProxy);

@@ -164,7 +164,6 @@ Dotaknite se poljubne besede, če želite iskati. Če želite izboljšati iskanj
 <translation id="2131665479022868825">Shranjeno <ph name="DATA" /></translation>
 <translation id="213279576345780926">Zaprt zavihek: <ph name="TAB_TITLE" /></translation>
 <translation id="2139186145475833000">Dodajanje na začetni zaslon</translation>
-<translation id="2146738493024040262">Odpri nenamestljivo aplikacijo</translation>
 <translation id="2154484045852737596">Urejanje kartice</translation>
 <translation id="2154710561487035718">Kopiraj URL</translation>
 <translation id="2156074688469523661">Preostala spletna mesta (<ph name="NUMBER_OF_SITES" />)</translation>
@@ -281,7 +280,6 @@ Dotaknite se poljubne besede in jo pridržite, če želite iskati. Če želite i
 <translation id="2996809686854298943">URL je obvezen</translation>
 <translation id="300526633675317032">S tem bo izbrisanih vseh <ph name="SIZE_IN_KB" /> shranjenih podatkov spletnega mesta.</translation>
 <translation id="3016635187733453316">Naprava mora biti povezana z internetom</translation>
-<translation id="3029613699374795922">Preneseno <ph name="KBS" /> KB</translation>
 <translation id="3029704984691124060">Gesli se ne ujemata</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Poiščite pomoč<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Lokacija je izklopljena. Vklopite jo lahko v <ph name="BEGIN_LINK" />nastavitvah za Android<ph name="END_LINK" />.</translation>
@@ -457,7 +455,6 @@ Samo vam je vidno, kam je usmerjen fotoaparat. Spletno mesto si ne more ogledati
 <translation id="4411535500181276704">Lahki način</translation>
 <translation id="4415276339145661267">Upravljanje računa Google</translation>
 <translation id="4432792777822557199">Strani v jeziku <ph name="SOURCE_LANGUAGE" /> bodo od zdaj naprej prevedene v jezik <ph name="TARGET_LANGUAGE" /></translation>
-<translation id="4433925000917964731">Stran v osnovnem načinu, ki jo je prikazal Google</translation>
 <translation id="4434045419905280838">Pojavna okna in preusmeritve</translation>
 <translation id="4440958355523780886">Stran v osnovnem načinu, ki jo je prikazal Google. Dotaknite se, če želite naložiti izvirno stran.</translation>
 <translation id="4452411734226507615">Zapiranje zavihka <ph name="TAB_TITLE" /></translation>
@@ -737,7 +734,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="6406506848690869874">Sinhronizacija</translation>
 <translation id="6410973561433500075">Ali želite zagnati razširjeno resničnost z domene <ph name="DOMAIN" />?</translation>
 <translation id="641643625718530986">Tiskanje …</translation>
-<translation id="6416782512398055893">Preneseno <ph name="MBS" /> MB</translation>
 <translation id="6427112570124116297">Prevajanje spleta</translation>
 <translation id="6433501201775827830">Izbira iskalnika</translation>
 <translation id="6437478888915024427">Podatki o strani</translation>
@@ -745,7 +741,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="6441734959916820584">Ime je predolgo</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# slika}one{# slika}two{# sliki}few{# slike}other{# slik}}</translation>
 <translation id="6447558397796644647">Tega zaznamka ni mogoče najti. Preverite črkovanje ali dodajte nov zaznamek.</translation>
-<translation id="6447842834002726250">Piškotki</translation>
 <translation id="6461962085415701688">Datoteke ni mogoče odpreti</translation>
 <translation id="6464977750820128603">Ogledate si lahko spletna mesta, ki jih obiščete v Chromu, in zanje nastavite merilnike časa.\n\nGoogle dobi podatke o spletnih mestih, za katere nastavite merilnike časa, in o tem, kako dolgo traja vaš obisk teh mest. Te podatke uporabljamo za izboljšanje Digitalne dobrobiti.</translation>
 <translation id="6475951671322991020">Prenos videoposnetka</translation>
@@ -754,7 +749,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="6508722015517270189">Znova zaženite Chrome</translation>
 <translation id="6532866250404780454">Spletna mesta, ki jih obiščete v Chromu, ne bodo prikazana. Vsi merilniki časa spletnih mest bodo izbrisani.</translation>
 <translation id="6534565668554028783">Google se ni odzval v ustreznem času</translation>
-<translation id="6538442820324228105">Preneseno <ph name="GBS" /> GB</translation>
 <translation id="6539092367496845964">Prišlo je do napake. Poskusite znova pozneje.</translation>
 <translation id="6545017243486555795">Izbris vseh podatkov</translation>
 <translation id="6545864417968258051">Iskanje naprav Bluetooth</translation>

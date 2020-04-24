@@ -13,8 +13,6 @@ cast_source_set("le") {
     "gatt_client_manager_impl.cc",
     "gatt_client_manager_impl.h",
     "le_scan_manager.h",
-    "le_scan_manager_impl.cc",
-    "le_scan_manager_impl.h",
     "le_scan_result.cc",
     "le_scan_result.h",
     "remote_characteristic.h",
@@ -43,6 +41,21 @@ cast_source_set("le") {
     "//chromecast/device/bluetooth/shlib",
     "//chromecast/public",
     "//third_party/re2",
+  ]
+}
+
+cast_source_set("le_impl") {
+  sources = [
+    "le_scan_manager_impl.cc",
+    "le_scan_manager_impl.h",
+  ]
+
+  deps = [
+    ":le",
+    "//base",
+    "//chromecast/base",
+    "//chromecast/device/bluetooth:util",
+    "//chromecast/device/bluetooth/shlib",
   ]
 }
 
@@ -83,6 +96,7 @@ cast_source_set("unittests") {
   ]
   deps = [
     ":le",
+    ":le_impl",
     ":test_support",
     "//base",
     "//base/test:test_support",

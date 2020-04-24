@@ -99,8 +99,8 @@ ContextType ComputeSameSiteContext(const GURL& url,
 CookieOptions::SameSiteCookieContext ComputeSameSiteContextForSet(
     const GURL& url,
     const SiteForCookies& site_for_cookies,
-    bool attach_same_site_cookies) {
-  if (attach_same_site_cookies)
+    bool force_ignore_site_for_cookies) {
+  if (force_ignore_site_for_cookies)
     return CookieOptions::SameSiteCookieContext::MakeInclusiveForSet();
 
   // Schemeless check
@@ -436,7 +436,7 @@ CookieOptions::SameSiteCookieContext ComputeSameSiteContextForRequest(
     const GURL& url,
     const SiteForCookies& site_for_cookies,
     const base::Optional<url::Origin>& initiator,
-    bool attach_same_site_cookies) {
+    bool force_ignore_site_for_cookies) {
   // Set SameSiteCookieMode according to the rules laid out in
   // https://tools.ietf.org/html/draft-ietf-httpbis-rfc6265bis-02:
   //
@@ -462,7 +462,7 @@ CookieOptions::SameSiteCookieContext ComputeSameSiteContextForRequest(
   //
   // * Otherwise, do not include same-site cookies.
 
-  if (attach_same_site_cookies)
+  if (force_ignore_site_for_cookies)
     return CookieOptions::SameSiteCookieContext::MakeInclusive();
 
   CookieOptions::SameSiteCookieContext same_site_context;
@@ -491,8 +491,8 @@ NET_EXPORT CookieOptions::SameSiteCookieContext
 ComputeSameSiteContextForScriptGet(const GURL& url,
                                    const SiteForCookies& site_for_cookies,
                                    const base::Optional<url::Origin>& initiator,
-                                   bool attach_same_site_cookies) {
-  if (attach_same_site_cookies)
+                                   bool force_ignore_site_for_cookies) {
+  if (force_ignore_site_for_cookies)
     return CookieOptions::SameSiteCookieContext::MakeInclusive();
 
   CookieOptions::SameSiteCookieContext same_site_context;
@@ -509,27 +509,27 @@ CookieOptions::SameSiteCookieContext ComputeSameSiteContextForResponse(
     const GURL& url,
     const SiteForCookies& site_for_cookies,
     const base::Optional<url::Origin>& initiator,
-    bool attach_same_site_cookies) {
+    bool force_ignore_site_for_cookies) {
   // |initiator| is here in case it'll be decided to ignore |site_for_cookies|
   // for entirely browser-side requests (see https://crbug.com/958335).
 
   return ComputeSameSiteContextForSet(url, site_for_cookies,
-                                      attach_same_site_cookies);
+                                      force_ignore_site_for_cookies);
 }
 
 CookieOptions::SameSiteCookieContext ComputeSameSiteContextForScriptSet(
     const GURL& url,
     const SiteForCookies& site_for_cookies,
-    bool attach_same_site_cookies) {
+    bool force_ignore_site_for_cookies) {
   return ComputeSameSiteContextForSet(url, site_for_cookies,
-                                      attach_same_site_cookies);
+                                      force_ignore_site_for_cookies);
 }
 
 CookieOptions::SameSiteCookieContext ComputeSameSiteContextForSubresource(
     const GURL& url,
     const SiteForCookies& site_for_cookies,
-    bool attach_same_site_cookies) {
-  if (attach_same_site_cookies)
+    bool force_ignore_site_for_cookies) {
+  if (force_ignore_site_for_cookies)
     return CookieOptions::SameSiteCookieContext::MakeInclusive();
 
   // If the URL is same-site as site_for_cookies it's same-site as all frames

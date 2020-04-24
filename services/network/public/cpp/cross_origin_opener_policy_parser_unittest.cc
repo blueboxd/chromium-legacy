@@ -53,8 +53,7 @@ TEST(CrossOriginOpenerPolicyTest, Parse) {
                                     << test_case.raw_coop_string << std::endl);
     scoped_refptr<net::HttpResponseHeaders> headers(
         new net::HttpResponseHeaders("HTTP/1.1 200 OK"));
-    headers->AddHeader("Cross-Origin-Opener-Policy: " +
-                       test_case.raw_coop_string);
+    headers->AddHeader("Cross-Origin-Opener-Policy", test_case.raw_coop_string);
     EXPECT_EQ(test_case.policy, ParseCrossOriginOpenerPolicy(*headers));
   }
 }

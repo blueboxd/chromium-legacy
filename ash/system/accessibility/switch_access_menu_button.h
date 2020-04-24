@@ -18,9 +18,10 @@ class Label;
 
 namespace ash {
 
-class SwitchAccessMenuButton : public views::Button {
+class SwitchAccessMenuButton : public views::Button,
+                               public views::ButtonListener {
  public:
-  SwitchAccessMenuButton(views::ButtonListener* listener,
+  SwitchAccessMenuButton(std::string action_name,
                          const gfx::VectorIcon& icon,
                          int accessible_name_id);
   ~SwitchAccessMenuButton() override = default;
@@ -30,7 +31,17 @@ class SwitchAccessMenuButton : public views::Button {
 
   static constexpr int kWidthDip = 80;
 
+  // views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
+  // views::View:
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+
  private:
+  friend class SwitchAccessMenuBubbleControllerTest;
+
+  std::string action_name_;
+
   // Owned by the views hierarchy.
   views::ImageView* image_view_;
   views::Label* label_;

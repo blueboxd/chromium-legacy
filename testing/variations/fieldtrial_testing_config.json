@@ -3306,6 +3306,25 @@
             ]
         }
     ],
+    "MediaHistory": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "UseMediaHistoryStore"
+                    ]
+                }
+            ]
+        }
+    ],
     "MergeBlockingNonBlockingPools": [
         {
             "platforms": [
@@ -6952,21 +6971,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "WebUITabStrip"
-                    ]
-                }
-            ]
-        }
-    ],
-    "WebViewWakeMetricsService": [
-        {
-            "platforms": [
-                "android_webview"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "WebViewWakeMetricsService"
                     ]
                 }
             ]

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_MEDIA_HISTORY_MEDIA_HISTORY_TABLE_BASE_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/synchronization/atomic_flag.h"
 #include "sql/init_status.h"
 
 namespace base {
@@ -34,6 +35,8 @@ class MediaHistoryTableBase
   // Deletes any row with the |url| and returns a bool whether it was
   // successful.
   virtual bool DeleteURL(const GURL& url);
+
+  void SetCancelled();
 
  protected:
   explicit MediaHistoryTableBase(
@@ -64,6 +67,8 @@ class MediaHistoryTableBase
 
  private:
   friend class base::RefCountedThreadSafe<MediaHistoryTableBase>;
+
+  base::AtomicFlag cancelled_;
 
   scoped_refptr<base::UpdateableSequencedTaskRunner> db_task_runner_;
   sql::Database* db_;

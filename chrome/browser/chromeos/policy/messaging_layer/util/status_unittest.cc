@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 
+#include "chrome/browser/chromeos/policy/messaging_layer/util/status.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace reporting {
@@ -103,6 +104,50 @@ TEST(Status, EqualsDifferentMessage) {
   const Status a = Status(error::CANCELLED, "message");
   const Status b = Status(error::CANCELLED, "another");
   EXPECT_NE(a, b);
+}
+
+TEST(Status, SaveOkTo) {
+  StatusProto status_proto;
+  Status::StatusOK().SaveTo(&status_proto);
+
+  EXPECT_EQ(status_proto.code(), error::OK);
+  EXPECT_TRUE(status_proto.error_message().empty())
+      << status_proto.error_message();
+}
+
+TEST(Status, SaveTo) {
+  Status status(error::INVALID_ARGUMENT, "argument error");
+  StatusProto status_proto;
+  status.SaveTo(&status_proto);
+
+  EXPECT_EQ(status_proto.code(), status.error_code());
+  EXPECT_EQ(status_proto.error_message(), status.error_message());
+}
+
+TEST(Status, RestoreFromOk) {
+  StatusProto status_proto;
+  status_proto.set_code(error::OK);
+  status_proto.set_error_message("invalid error");
+
+  Status status;
+  status.RestoreFrom(status_proto);
+
+  EXPECT_EQ(status.error_code(), status_proto.code());
+  // Error messages are ignored for OK status objects.
+  EXPECT_TRUE(status.error_message().empty()) << status.error_message();
+  EXPECT_TRUE(status.ok());
+}
+
+TEST(Status, RestoreFromNonOk) {
+  StatusProto status_proto;
+  status_proto.set_code(error::INVALID_ARGUMENT);
+  status_proto.set_error_message("argument error");
+
+  Status status;
+  status.RestoreFrom(status_proto);
+
+  EXPECT_EQ(status.error_code(), status_proto.code());
+  EXPECT_EQ(status.error_message(), status_proto.error_message());
 }
 }  // namespace
 }  // namespace reporting

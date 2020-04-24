@@ -9,6 +9,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_search_field/cr_search_field.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner-lite.html">
@@ -24,7 +25,7 @@
 
 <dom-module id="site-data">
   <template>
-    <style include="settings-shared">
+    <style include="cr-shared-style settings-shared">
       paper-spinner-lite {
         height: var(--cr-icon-size);
         opacity: 0;
@@ -40,13 +41,14 @@
         margin-inline-start: auto;
       }
     </style>
-    <div class="settings-box continuation">
+    <div class="cr-row continuation">
       <paper-spinner-lite active="[[isLoading_]]"></paper-spinner-lite>
       <cr-button disabled$="[[isLoading_]]" id="removeShowingSites"
           on-click="onRemoveShowingSitesTap_" hidden$="[[!sites.length]]">
         [[computeRemoveLabel_(filter)]]
       </cr-button>
       <cr-button disabled$="[[isLoading_]]" id="removeThirdPartyCookies"
+          class="cr-button-gap"
           on-click="onRemoveThirdPartyCookiesTap_"
           hidden$="[[!showRemoveThirdPartyCookies_(sites.length, filter)]]">
           $i18n{siteSettingsCookieRemoveAllThirdParty}

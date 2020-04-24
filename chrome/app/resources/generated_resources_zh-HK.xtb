@@ -349,6 +349,7 @@
 <translation id="1465176863081977902">複製音效檔案位址(&amp;O)</translation>
 <translation id="1465827627707997754">一塊薄餅</translation>
 <translation id="1468571364034902819">無法使用此設定檔</translation>
+<translation id="1470084204649225129">{NUM_TABS,plural, =1{將分頁加入新群組}other{將分頁加入新群組}}</translation>
 <translation id="1472675084647422956">顯示更多</translation>
 <translation id="1475502736924165259">下列檔案上的憑證不屬於任何其他類別</translation>
 <translation id="1476088332184200792">複製至您的裝置</translation>
@@ -477,6 +478,7 @@
 <translation id="1629314197035607094">密碼已過期</translation>
 <translation id="1630768113285622200">重新啟動及繼續</translation>
 <translation id="1632803087685957583">讓您調整鍵盤的重複頻率和字詞預測等功能</translation>
+<translation id="1634783886312010422">你在 <ph name="WEBSITE" /> 上變更了這個密碼嗎？</translation>
 <translation id="1635033183663317347">已由監護人安裝</translation>
 <translation id="1637224376458524414">在 iPhone 上取得此書籤</translation>
 <translation id="1637765355341780467">開啟您的設定檔時發生錯誤，部分功能可能無法使用。</translation>
@@ -3385,6 +3387,7 @@
 <translation id="5542949973455282971">正在連線至 <ph name="CARRIER_NAME" /></translation>
 <translation id="5543983818738093899">正在檢查狀態…</translation>
 <translation id="554517032089923082">GTC</translation>
+<translation id="5545335608717746497">{NUM_TABS,plural, =1{將分頁加入群組}other{將分頁加入群組}}</translation>
 <translation id="5546865291508181392">搜尋</translation>
 <translation id="5548159762883465903">{NUM_OTHER_TABS,plural, =0{「<ph name="TAB_TITLE" />」}=1{「<ph name="TAB_TITLE" />」和另外 1 個標籤}other{「<ph name="TAB_TITLE" />」和另外 # 個標籤}}</translation>
 <translation id="5548606607480005320">安全檢查</translation>
@@ -4209,6 +4212,7 @@
 <translation id="6659594942844771486">分頁</translation>
 <translation id="6664237456442406323">抱歉，您的電腦是由格式錯誤的硬件 ID 所設定。這樣會防止 Chrome 作業系統更新最新的安全性修復，您的電腦也可能<ph name="BEGIN_BOLD" />容易被惡意攻擊<ph name="END_BOLD" />。</translation>
 <translation id="6664774537677393800">開啟您的設定檔時發生錯誤，請先登出，然後再次登入。</translation>
+<translation id="6670142487971298264">現在可以使用「<ph name="APP_NAME" />」了</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="6675665718701918026">已連接指標裝置</translation>
 <translation id="6676212663108450937">訓練聲音時，建議您使用耳機</translation>
@@ -4538,6 +4542,7 @@
 <translation id="7108338896283013870">隱藏</translation>
 <translation id="7108668606237948702">Enter 鍵</translation>
 <translation id="7109543803214225826">已移除捷徑</translation>
+<translation id="7110644433780444336">{NUM_TABS,plural, =1{將分頁加入群組}other{將分頁加入群組}}</translation>
 <translation id="7113502843173351041">存取您的電郵地址</translation>
 <translation id="7114054701490058191">密碼不符</translation>
 <translation id="7114648273807173152">如要使用 Smart Lock 登入 Google 帳戶，請前往 [設定] &gt; [已連接的裝置] &gt; [您的手機] &gt; [Smart Lock]。</translation>
@@ -4581,6 +4586,7 @@
 <translation id="7170041865419449892">超出範圍</translation>
 <translation id="7171259390164035663">不要註冊</translation>
 <translation id="7171559745792467651">安裝其他裝置上的應用程式</translation>
+<translation id="7172470549472604877">{NUM_TABS,plural, =1{將分頁加入新群組}other{將分頁加入新群組}}</translation>
 <translation id="7174199383876220879">新功能！控制音樂、影片及其他內容。</translation>
 <translation id="7175037578838465313">設定「<ph name="NAME" />」</translation>
 <translation id="7175353351958621980">載入來源：</translation>
@@ -5159,6 +5165,7 @@
 <translation id="7925247922861151263">AAA 檢查失敗</translation>
 <translation id="7925285046818567682">正在等候 <ph name="HOST_NAME" />…</translation>
 <translation id="7926423016278357561">這不是我本人。</translation>
+<translation id="7928175190925744466">你變更了這個密碼嗎？</translation>
 <translation id="7928836894214140642">由 <ph name="ENROLLMENT_DOMAIN" /> 管理</translation>
 <translation id="7930294771522048157">已儲存的付款方法會在這裡顯示</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> 正在共用您的螢幕和音效。</translation>

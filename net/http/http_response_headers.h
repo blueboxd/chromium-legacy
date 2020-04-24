@@ -105,16 +105,6 @@ class NET_EXPORT HttpResponseHeaders
   // case-insensitively.
   void RemoveHeaderLine(const std::string& name, const std::string& value);
 
-  // Adds a particular header.  |header| has to be a single header without any
-  // EOL termination, just [<header-name>: <header-values>]
-  // If a header with the same name is already stored, the two headers are not
-  // merged together by this method; the one provided is simply put at the
-  // end of the list.
-  //
-  // TODO(https://crbug.com/1068194): If this isn't needed in production code,
-  // remove it, in favor of the next method.
-  void AddHeader(const std::string& header);
-
   // Adds the specified response header. If a header with the same name is
   // already stored, the two headers are not merged together by this method; the
   // one provided is simply put at the end of the list.

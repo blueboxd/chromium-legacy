@@ -164,7 +164,6 @@ Mag-tap ng anumang salita para maghanap. Para pinuhin ang iyong paghahanap, pind
 <translation id="2131665479022868825"><ph name="DATA" /> ang natipid</translation>
 <translation id="213279576345780926">Isinarang <ph name="TAB_TITLE" /></translation>
 <translation id="2139186145475833000">Idagdag sa Home screen</translation>
-<translation id="2146738493024040262">Buksan ang Instant App</translation>
 <translation id="2154484045852737596">I-edit ang card</translation>
 <translation id="2154710561487035718">Kopyahin ang URL</translation>
 <translation id="2156074688469523661">Mga natitirang site (<ph name="NUMBER_OF_SITES" />)</translation>
@@ -281,7 +280,6 @@ Pindutin nang matagal ang anumang salita para maghanap. Para pinuhin ang iyong p
 <translation id="2996809686854298943">Kinakailangan ang URL</translation>
 <translation id="300526633675317032">Iki-clear nito ang lahat ng <ph name="SIZE_IN_KB" /> ng storage ng website.</translation>
 <translation id="3016635187733453316">Siguraduhing nakakonekta ang device sa internet</translation>
-<translation id="3029613699374795922"><ph name="KBS" /> KB ang na-download</translation>
 <translation id="3029704984691124060">Hindi nagtutugma ang mga passphrase</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Humingi ng tulong<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Naka-off ang lokasyon; i-on ito sa <ph name="BEGIN_LINK" />Mga Setting ng Android<ph name="END_LINK" />.</translation>
@@ -457,7 +455,6 @@ Ikaw lang ang makakakita kung ano ang tinitingnan ng iyong camera. Hindi makikit
 <translation id="4411535500181276704">Lite mode</translation>
 <translation id="4415276339145661267">Pamahalaan ang iyong Google Account</translation>
 <translation id="4432792777822557199">Simula ngayon ay isasalin na sa <ph name="TARGET_LANGUAGE" /> ang mga page na nasa <ph name="SOURCE_LANGUAGE" /></translation>
-<translation id="4433925000917964731">Hatid ng Google ang lite na page</translation>
 <translation id="4434045419905280838">Mga pop-up at pag-redirect</translation>
 <translation id="4440958355523780886">Lite na page na hatid ng Google. Mag-tap para i-load ang orihinal.</translation>
 <translation id="4452411734226507615">Isara ang tab na <ph name="TAB_TITLE" /></translation>
@@ -737,7 +734,6 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="6406506848690869874">Pag-sync</translation>
 <translation id="6410973561433500075">Pumasok sa AR mula sa <ph name="DOMAIN" />?</translation>
 <translation id="641643625718530986">I-print…</translation>
-<translation id="6416782512398055893"><ph name="MBS" /> MB ang na-download</translation>
 <translation id="6427112570124116297">I-translate ang Web</translation>
 <translation id="6433501201775827830">Pumili ng iyong search engine</translation>
 <translation id="6437478888915024427">Impormasyon ng page</translation>
@@ -745,7 +741,6 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="6441734959916820584">Masyadong mahaba ang pangalan</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# Larawan}one{# Larawan}other{# na Larawan}}</translation>
 <translation id="6447558397796644647">Hindi mahanap ang bookmark na iyon. Tingnan ang iyong spelling o magdagdag ng bagong bookmark.</translation>
-<translation id="6447842834002726250">Cookies</translation>
 <translation id="6461962085415701688">Hindi mabuksan ang file</translation>
 <translation id="6464977750820128603">Puwede mong makita ang mga site na binibisita mo sa Chrome at puwede kang magtakda ng mga timer para sa mga ito.\n\nKumukuha ng impormasyon ang Google tungkol sa mga site kung saan ka nagtakda ng mga timer at inaalam nito kung gaano mo katagal binisita ang mga ito. Ginagamit ang impormasyong ito para pahusayin ang Digital Wellness.</translation>
 <translation id="6475951671322991020">I-download ang video</translation>
@@ -754,7 +749,6 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="6508722015517270189">I-restart ang Chrome</translation>
 <translation id="6532866250404780454">Hindi lalabas ang mga site na binibisita mo sa Chrome. Ide-delete ang lahat ng timer sa site.</translation>
 <translation id="6534565668554028783">Masyadong matagal bago nakatugon ang Google</translation>
-<translation id="6538442820324228105"><ph name="GBS" /> GB ang na-download</translation>
 <translation id="6539092367496845964">Nagkaproblema. Subukan ulit sa ibang pagkakataon.</translation>
 <translation id="6545017243486555795">I-clear ang Lahat ng Data</translation>
 <translation id="6545864417968258051">Pag-scan ng Bluetooth</translation>

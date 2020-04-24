@@ -164,7 +164,6 @@
 <translation id="2131665479022868825">ປະຢັດໄດ້ <ph name="DATA" /></translation>
 <translation id="213279576345780926">ປິດ <ph name="TAB_TITLE" /> ແລ້ວ</translation>
 <translation id="2139186145475833000">ເພີ່ມໃສ່ໜ້າຈໍຫຼັກ</translation>
-<translation id="2146738493024040262">ເປີດແອັບພ້ອມໃຊ້</translation>
 <translation id="2154484045852737596">ແກ້ໄຂບັດ</translation>
 <translation id="2154710561487035718">ກັອບ​ປີ້ URL</translation>
 <translation id="2156074688469523661">ເວັບໄຊທີ່ຍັງເຫຼືອ (<ph name="NUMBER_OF_SITES" />)</translation>
@@ -281,7 +280,6 @@
 <translation id="2996809686854298943">ຕ້ອງມີ URL.</translation>
 <translation id="300526633675317032">ນີ້ຈະລຶບລ້າງທັງໝົດ <ph name="SIZE_IN_KB" /> ຂອງບ່ອນເກັບຂໍ້ມູນເວັບໄຊ.</translation>
 <translation id="3016635187733453316">ຮັບປະກັນວ່າອຸປະກອນນີ້ເຊື່ອມຕໍ່ກັບອິນເຕີເນັດ</translation>
-<translation id="3029613699374795922">ດາວໂຫຼດ <ph name="KBS" /> KB ແລ້ວ</translation>
 <translation id="3029704984691124060">ວະລີຜ່ານບໍ່ກົງກັນ</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />ຂໍຄວາມຊ່ວຍເຫຼືອ<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">ສະຖານທີ່ປິດຢູ່, ກະລຸນາເປີດມັນໃນ <ph name="BEGIN_LINK" />ການຕັ້ງຄ່າ Android<ph name="END_LINK" />.</translation>
@@ -457,7 +455,6 @@
 <translation id="4411535500181276704">ໂໝດ Lite</translation>
 <translation id="4415276339145661267">ຈັດການບັນຊີ Google ຂອງທ່ານ</translation>
 <translation id="4432792777822557199">ໜ້າຕ່າງໆຢູ່ໃນ <ph name="SOURCE_LANGUAGE" /> ຈະຖືກແປເປັນ <ph name="TARGET_LANGUAGE" /> ຈາກນີ້ເປັນຕົ້ນໄປ</translation>
-<translation id="4433925000917964731">ໜ້າ Lite ທີ່ Google ສະໜອງໃຫ້</translation>
 <translation id="4434045419905280838">ປັອບອັບ ແລະ ການປ່ຽນເສັ້ນທາງ</translation>
 <translation id="4440958355523780886">ໜ້າ Lite ທີ່ໃຫ້ໂດຍ Google. ກະລຸນາແຕະເພື່ອໂຫຼດຕົ້ນສະບັບ.</translation>
 <translation id="4452411734226507615">ປິດແຖບ <ph name="TAB_TITLE" /></translation>
@@ -737,7 +734,6 @@
 <translation id="6406506848690869874">ຊິງຄ໌</translation>
 <translation id="6410973561433500075">ເຂົ້າສູ່ໂໝດ AR ຈາກ <ph name="DOMAIN" /> ບໍ?</translation>
 <translation id="641643625718530986">ພິມ</translation>
-<translation id="6416782512398055893">ດາວໂຫຼດ <ph name="MBS" /> MB ແລ້ວ</translation>
 <translation id="6427112570124116297">ແປເວັບໄຊ</translation>
 <translation id="6433501201775827830">ເລືອກໂປຣແກຣມຊອກຫາຂອງທ່ານ</translation>
 <translation id="6437478888915024427">ຂໍ້ມູນໜ້າ</translation>
@@ -745,7 +741,6 @@
 <translation id="6441734959916820584">ຊື່ຍາວເກີນໄປ</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# ຮູບ}other{# ຮູບ}}</translation>
 <translation id="6447558397796644647">ບໍ່ສາມາດຊອກເຫັນບຸກມາກນັ້ນ. ກວດການສະກົດຄຳຂອງທ່ານ ຫຼື ເພີ່ມບຸກມາກໃໝ່.</translation>
-<translation id="6447842834002726250">ຄຸກກີ້</translation>
 <translation id="6461962085415701688">ບໍ່ສາມາດເປີດໄຟລ໌ໄດ້</translation>
 <translation id="6464977750820128603">ທ່ານສາມາດເຫັນເວັບໄຊທີ່ທ່ານເຂົ້າເຖິງໃນ Chrome ແລະ ຕັ້ງຄ່າໂມງນັບຖອຍຫຼັງສຳລັບພວກມັນໄດ້.\n\nGoogle ຮັບເອົາຂໍ້ມູນກ່ຽວກັບເວັບໄຊທີ່ທ່ານຕັ້ງຄ່າໂມງນັບຖອຍຫຼັງສຳລັບ ແລະ ທ່ານເຂົ້າເບິ່ງພວກມັນດົນປານໃດ. ຂໍ້ມູນນີ້ຖືກໃຊ້ເພື່ອເຮັດໃຫ້ Digital Wellbeing ດີຂຶ້ນ.</translation>
 <translation id="6475951671322991020">ດາວໂຫຼດວິດີໂອ</translation>
@@ -754,7 +749,6 @@
 <translation id="6508722015517270189">ປິດເປີດ Chrome ຄືນໃໝ່</translation>
 <translation id="6532866250404780454">ເວັບໄຊທີ່ທ່ານເຂົ້າເບິ່ງໃນ Chrome ຈະບໍ່ສະແດງ. ລະບົບຈະລຶບໂມງນັບຖອຍຫຼັງຂອງເວັບໄຊທັງໝົດ.</translation>
 <translation id="6534565668554028783">Google ໃຊ້ເວລາດົນເກີນໄປໃນການຕອບ</translation>
-<translation id="6538442820324228105">ດາວໂຫຼດ <ph name="GBS" /> GB ແລ້ວ</translation>
 <translation id="6539092367496845964">ມີບາງຢ່າງຜິດພາດ. ລອງໃໝ່ໃນພາຍຫລັງ.</translation>
 <translation id="6545017243486555795">ລຶບລ້າງທຸກຂໍ້ມູນ</translation>
 <translation id="6545864417968258051">ການສະແກນ Bluetooth</translation>

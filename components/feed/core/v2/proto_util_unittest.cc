@@ -18,8 +18,8 @@ TEST(ProtoUtilTest, CreateClientInfo) {
   chrome_info.channel = version_info::Channel::STABLE;
 
   feedwire::ClientInfo result = CreateClientInfo(chrome_info);
-
-  EXPECT_EQ(feedwire::ClientInfo::CHROME, result.app_type());
+  // TODO(harringtond): change back to CHROME when it is supported.
+  EXPECT_EQ(feedwire::ClientInfo::TEST_APP, result.app_type());
   EXPECT_EQ(feedwire::Version::RELEASE, result.app_version().build_type());
   EXPECT_EQ(1, result.app_version().major());
   EXPECT_EQ(2, result.app_version().minor());

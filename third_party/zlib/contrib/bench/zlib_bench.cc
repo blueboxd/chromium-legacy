@@ -325,7 +325,7 @@ int main(int argc, char* argv[]) {
   else
     usage_exit(argv[0]);
 
-  while (argn < argc && !strncmp(argv[argn], "--", 2)) {
+  while (argn < argc && argv[argn][0] == '-') {
     if (get_option(argc, argv, "--compression")) {
       if (!get_compression(argc, argv, &zlib_compression_level))
         usage_exit(argv[0]);

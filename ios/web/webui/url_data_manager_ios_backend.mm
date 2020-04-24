@@ -48,11 +48,12 @@ namespace web {
 
 namespace {
 
+const char kContentSecurityPolicy[] = "Content-Security-Policy";
 const char kChromeURLContentSecurityPolicyHeaderBase[] =
-    "Content-Security-Policy: script-src chrome://resources "
-    "'self'; ";
+    "script-src chrome://resources 'self'; ";
 
-const char kChromeURLXFrameOptionsHeader[] = "X-Frame-Options: DENY";
+const char kXFrameOptions[] = "X-Frame-Options";
+const char kChromeURLXFrameOptionsHeader[] = "DENY";
 
 // Returns whether |url| passes some sanity checks and is a valid GURL.
 bool CheckURLIsValid(const GURL& url) {
@@ -276,20 +277,17 @@ void URLRequestChromeJob::GetResponseInfo(net::HttpResponseInfo* info) {
     std::string base = kChromeURLContentSecurityPolicyHeaderBase;
     base.append(content_security_policy_object_source_);
     base.append(content_security_policy_frame_source_);
-    info->headers->AddHeader(base);
+    info->headers->AddHeader(kContentSecurityPolicy, base);
   }
 
   if (deny_xframe_options_)
-    info->headers->AddHeader(kChromeURLXFrameOptionsHeader);
+    info->headers->AddHeader(kXFrameOptions, kChromeURLXFrameOptionsHeader);
 
   if (!allow_caching_)
-    info->headers->AddHeader("Cache-Control: no-cache");
+    info->headers->AddHeader("Cache-Control", "no-cache");
 
-  if (send_content_type_header_ && !mime_type_.empty()) {
-    std::string content_type = base::StringPrintf(
-        "%s:%s", net::HttpRequestHeaders::kContentType, mime_type_.c_str());
-    info->headers->AddHeader(content_type);
-  }
+  if (send_content_type_header_ && !mime_type_.empty())
+    info->headers->AddHeader(net::HttpRequestHeaders::kContentType, mime_type_);
 }
 
 std::unique_ptr<net::SourceStream> URLRequestChromeJob::SetUpSourceStream() {

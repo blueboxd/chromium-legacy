@@ -11,6 +11,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/was_activated_option.mojom.h"
 #include "fuchsia/base/string_util.h"
+#include "net/base/net_errors.h"
 #include "net/http/http_util.h"
 #include "ui/base/page_transition_types.h"
 
@@ -93,6 +94,12 @@ void NavigationControllerImpl::OnNavigationEntryChanged() {
   UpdateNavigationStateFromNavigationEntry(
       web_contents_->GetController().GetVisibleEntry(), web_contents_,
       &new_state);
+  if (new_state.page_type() != fuchsia::web::PageType::ERROR &&
+      uncommitted_load_error_) {
+    // If there was a loading error which prevented the navigation entry from
+    // being committed, then reflect the error in |new_state|.
+    new_state.set_page_type(fuchsia::web::PageType::ERROR);
+  }
 
   DiffNavigationEntries(previous_navigation_state_, new_state,
                         &pending_navigation_event_);
@@ -237,12 +244,20 @@ void NavigationControllerImpl::DidFinishLoad(
 
 void NavigationControllerImpl::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
+  uncommitted_load_error_ = false;
   if (!navigation_handle->IsInMainFrame() ||
       navigation_handle->IsSameDocument()) {
     return;
   }
 
   is_main_document_loaded_ = false;
+  OnNavigationEntryChanged();
+}
+
+void NavigationControllerImpl::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  uncommitted_load_error_ = !navigation_handle->HasCommitted() &&
+                            navigation_handle->GetNetErrorCode() != net::OK;
   OnNavigationEntryChanged();
 }
 

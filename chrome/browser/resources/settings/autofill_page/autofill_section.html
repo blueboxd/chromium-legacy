@@ -1,4 +1,4 @@
-    <style include="settings-shared passwords-shared">
+    <style include="cr-shared-style settings-shared passwords-shared iron-flex">
       #addressList .start {
         display: flex;
         overflow: hidden;
@@ -17,8 +17,8 @@
         pref="{{prefs.autofill.profile_enabled}}">
     </settings-toggle-button>
     <template is="dom-if" if="[[prefs.autofill.profile_enabled.extensionId]]">
-      <div class="settings-box continuation">
-        <extension-controlled-indicator class="start"
+      <div class="cr-row continuation">
+        <extension-controlled-indicator class="flex"
             id="autofillExtensionIndicator"
             extension-id="[[prefs.autofill.profile_enabled.extensionId]]"
             extension-name="[[prefs.autofill.profile_enabled.controlledByName]]"
@@ -27,8 +27,8 @@
         </extension-controlled-indicator>
       </div>
     </template>
-    <div class="settings-box continuation">
-      <h2 class="start">$i18n{addresses}</h2>
+    <div class="cr-row continuation">
+      <h2 class="flex">$i18n{addresses}</h2>
       <cr-button id="addAddress" class="header-aligned-button"
           on-click="onAddAddressTap_"
           hidden$="[[!prefs.autofill.profile_enabled.value]]">

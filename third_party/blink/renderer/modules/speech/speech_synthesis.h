@@ -58,7 +58,7 @@ class MODULES_EXPORT SpeechSynthesis final
   bool speaking() const;
   bool paused() const;
 
-  void speak(SpeechSynthesisUtterance*);
+  void speak(ScriptState*, SpeechSynthesisUtterance*);
   void cancel();
   void pause();
   void resume();

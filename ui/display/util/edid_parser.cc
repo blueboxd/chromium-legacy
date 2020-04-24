@@ -120,7 +120,6 @@ void EdidParser::ParseEdid(const std::vector<uint8_t>& edid) {
   constexpr size_t kProductIdLength = 2;
 
   if (edid.size() < kManufacturerOffset + kManufacturerLength) {
-    LOG(ERROR) << "Too short EDID data: manufacturer id";
     base::UmaHistogramEnumeration(kParseEdidFailureMetric,
                                   ParseEdidFailure::kManufacturerId);
     return;  // Any other fields below are beyond this edid offset.
@@ -131,7 +130,6 @@ void EdidParser::ParseEdid(const std::vector<uint8_t>& edid) {
       (edid[kManufacturerOffset] << 8) + edid[kManufacturerOffset + 1];
 
   if (edid.size() < kProductIdOffset + kProductIdLength) {
-    LOG(ERROR) << "Too short EDID data: product id";
     base::UmaHistogramEnumeration(kParseEdidFailureMetric,
                                   ParseEdidFailure::kProductId);
     return;  // Any other fields below are beyond this edid offset.
@@ -146,7 +144,6 @@ void EdidParser::ParseEdid(const std::vector<uint8_t>& edid) {
   constexpr int32_t kYearOffset = 1990;
 
   if (edid.size() < kYearOfManufactureOffset + 1) {
-    LOG(ERROR) << "Too short EDID data: year of manufacture";
     base::UmaHistogramEnumeration(kParseEdidFailureMetric,
                                   ParseEdidFailure::kYearOfManufacture);
     return;  // Any other fields below are beyond this edid offset.
@@ -168,7 +165,6 @@ void EdidParser::ParseEdid(const std::vector<uint8_t>& edid) {
   constexpr uint8_t kColorBitDepthOffset = 4;
 
   if (edid.size() < kVideoInputDefinitionOffset + 1) {
-    LOG(ERROR) << "Too short EDID data: bits per channel";
     base::UmaHistogramEnumeration(kParseEdidFailureMetric,
                                   ParseEdidFailure::kBitsPerChannel);
     return;  // Any other fields below are beyond this edid offset.
@@ -189,7 +185,6 @@ void EdidParser::ParseEdid(const std::vector<uint8_t>& edid) {
   constexpr double kGammaBias = 100.0;
 
   if (edid.size() < kGammaOffset + 1) {
-    LOG(ERROR) << "Too short EDID data: gamma";
     base::UmaHistogramEnumeration(kParseEdidFailureMetric,
                                   ParseEdidFailure::kGamma);
     return;  // Any other fields below are beyond this edid offset.
@@ -235,7 +230,6 @@ void EdidParser::ParseEdid(const std::vector<uint8_t>& edid) {
       "EDID Parameter section length error");
 
   if (edid.size() < kChromaticityOffset + kChromaticityLength) {
-    LOG(ERROR) << "Too short EDID data: chromaticity coordinates";
     base::UmaHistogramEnumeration(kParseEdidFailureMetric,
                                   ParseEdidFailure::kChromaticityCoordinates);
     return;  // Any other fields below are beyond this edid offset.
@@ -338,7 +332,6 @@ void EdidParser::ParseEdid(const std::vector<uint8_t>& edid) {
   for (const char c : display_name_) {
     if (!isascii(c) || !isprint(c)) {
       display_name_.clear();
-      LOG(ERROR) << "invalid EDID: human unreadable char in name";
       base::UmaHistogramEnumeration(kParseEdidFailureMetric,
                                     ParseEdidFailure::kDisplayName);
     }
@@ -393,7 +386,6 @@ void EdidParser::ParseEdid(const std::vector<uint8_t>& edid) {
   constexpr uint8_t kHDRStaticMetadataDataBlockLengthMask = 0x1F;
 
   if (edid.size() < kNumExtensionsOffset + 1) {
-    LOG(ERROR) << "Too short EDID data: extensions";
     base::UmaHistogramEnumeration(kParseEdidFailureMetric,
                                   ParseEdidFailure::kExtensions);
     return;  // Any other fields below are beyond this edid offset.

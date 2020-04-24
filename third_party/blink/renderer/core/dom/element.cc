@@ -3700,10 +3700,7 @@ const char* Element::ErrorMessageForAttachShadow() const {
 
   // 4. If shadow host has a non-null shadow root whose is declarative shadow
   // root property is false, then throw an "NotSupportedError" DOMException.
-  // 5. TODO(masonfreed): If shadow host has a non-null shadow root whose is
-  // declarative shadow root property is true, then remove all of shadow root’s
-  // children, in tree order. Return shadow host’s shadow root.
-  if (GetShadowRoot()) {
+  if (GetShadowRoot() && !GetShadowRoot()->IsDeclarativeShadowRoot()) {
     return "Shadow root cannot be created on a host "
            "which already hosts a shadow tree.";
   }
@@ -3783,6 +3780,15 @@ ShadowRoot& Element::AttachShadowRootInternal(
   DCHECK(!AlwaysCreateUserAgentShadowRoot());
 
   GetDocument().SetShadowCascadeOrder(ShadowCascadeOrder::kShadowCascadeV1);
+
+  if (auto* shadow_root = GetShadowRoot()) {
+    // 5. If shadow host has a non-null shadow root whose "is declarative shadow
+    // root property is true, then remove all of shadow root’s children, in tree
+    // order. Return shadow host’s shadow root.
+    DCHECK(shadow_root->IsDeclarativeShadowRoot());
+    shadow_root->RemoveChildren();
+    return *shadow_root;
+  }
 
   // 6. Let shadow be a new shadow root whose node document is shadow host’s
   // node document, host is shadow host, and mode is mode.

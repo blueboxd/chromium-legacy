@@ -41,7 +41,6 @@
 #include "gpu/vulkan/vulkan_image.h"
 #include "gpu/vulkan/vulkan_implementation.h"
 #include "gpu/vulkan/vulkan_util.h"
-#include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/gpu/GrBackendSemaphore.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
@@ -327,11 +326,6 @@ class SharedImageRepresentationSkiaVkAHB
       }
       surface_msaa_count_ = final_msaa_count;
     }
-
-    int count = surface_->getCanvas()->save();
-    DCHECK_EQ(count, 1);
-    ALLOW_UNUSED_LOCAL(count);
-
     return surface_;
   }
 
@@ -341,7 +335,12 @@ class SharedImageRepresentationSkiaVkAHB
 
     surface.reset();
     DCHECK(surface_->unique());
-    surface_->getCanvas()->restoreToCount(1);
+    // TODO(penghuang): reset canvas cached in |surface_|, when skia provides an
+    // API to do it.
+    // Currently, the |surface_| is only used with SkSurface::draw(ddl), it
+    // doesn't create a canvas and change the state of it, so we don't get any
+    // render issues. But we shouldn't assume this backing will only be used in
+    // this way.
     EndAccess(false /* readonly */);
   }
 

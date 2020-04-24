@@ -342,6 +342,8 @@ void SupervisedUserService::SetPrimaryPermissionCreatorForTest(
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 void SupervisedUserService::AddOrUpdateExtensionApproval(
     const extensions::Extension& extension) {
+  if (!active_)
+    return;
   auto it = approved_extensions_map_.find(extension.id());
   bool has_key = it != approved_extensions_map_.end();
   ApprovedExtensionChange change_type = has_key
@@ -358,6 +360,8 @@ void SupervisedUserService::AddOrUpdateExtensionApproval(
 
 void SupervisedUserService::RemoveExtensionApproval(
     const extensions::Extension& extension) {
+  if (!active_)
+    return;
   UpdateApprovedExtension(extension.id(), extension.VersionString(),
                           ApprovedExtensionChange::kRemove);
 }

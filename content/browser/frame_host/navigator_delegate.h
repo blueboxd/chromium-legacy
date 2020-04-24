@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_FRAME_HOST_NAVIGATOR_DELEGATE_H_
 
 #include "base/strings/string16.h"
+#include "content/public/browser/allow_service_worker_result.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_throttle.h"
@@ -127,6 +128,12 @@ class CONTENT_EXPORT NavigatorDelegate {
   // embedder and |nullptr| is returned.
   virtual std::unique_ptr<NavigationUIData> GetNavigationUIData(
       NavigationHandle* navigation_handle);
+
+  // Called when a navigation accessed ServiceWorker to check if it should be
+  // handled by the ServiceWorker or not.
+  virtual void OnServiceWorkerAccessed(NavigationHandle* navigation,
+                                       const GURL& scope,
+                                       AllowServiceWorkerResult allowed) {}
 };
 
 }  // namespace content

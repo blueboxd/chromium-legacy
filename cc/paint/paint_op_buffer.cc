@@ -1310,7 +1310,6 @@ void DrawImageRectOp::RasterWithFlags(const DrawImageRectOp* op,
                                       const PaintFlags* flags,
                                       SkCanvas* canvas,
                                       const PlaybackParams& params) {
-  SkPaint paint = flags ? flags->ToSkPaint() : SkPaint();
   // TODO(crbug.com/931704): make sure to support the case where paint worklet
   // generated images are used in other raster work such as canvas2d.
   if (op->image.IsPaintWorklet()) {
@@ -1321,6 +1320,11 @@ void DrawImageRectOp::RasterWithFlags(const DrawImageRectOp* op,
       return;
     ImageProvider::ScopedResult result =
         params.image_provider->GetRasterContent(DrawImage(op->image));
+
+    // Check that we are not using loopers with paint worklets, since converting
+    // PaintFlags to SkPaint drops loopers.
+    DCHECK(!flags->getLooper());
+    SkPaint paint = flags ? flags->ToSkPaint() : SkPaint();
 
     DCHECK(IsScaleAdjustmentIdentity(op->scale_adjustment));
     SkAutoCanvasRestore save_restore(canvas, true);
@@ -1344,8 +1348,11 @@ void DrawImageRectOp::RasterWithFlags(const DrawImageRectOp* op,
 
   if (!params.image_provider) {
     SkRect adjusted_src = AdjustSrcRectForScale(op->src, op->scale_adjustment);
-    canvas->drawImageRect(op->image.GetSkImage().get(), adjusted_src, op->dst,
-                          &paint, skconstraint);
+    flags->DrawToSk(canvas, [op, adjusted_src, skconstraint](SkCanvas* c,
+                                                             const SkPaint& p) {
+      c->drawImageRect(op->image.GetSkImage().get(), adjusted_src, op->dst, &p,
+                       skconstraint);
+    });
     return;
   }
 
@@ -1374,9 +1381,13 @@ void DrawImageRectOp::RasterWithFlags(const DrawImageRectOp* op,
       op->src.makeOffset(decoded_image.src_rect_offset().width(),
                          decoded_image.src_rect_offset().height());
   adjusted_src = AdjustSrcRectForScale(adjusted_src, scale_adjustment);
-  paint.setFilterQuality(decoded_image.filter_quality());
-  canvas->drawImageRect(decoded_image.image().get(), adjusted_src, op->dst,
-                        &paint, skconstraint);
+  flags->DrawToSk(canvas, [op, &decoded_image, adjusted_src, skconstraint](
+                              SkCanvas* c, const SkPaint& p) {
+    SkPaint paint_with_filter_quality(p);
+    paint_with_filter_quality.setFilterQuality(decoded_image.filter_quality());
+    c->drawImageRect(decoded_image.image().get(), adjusted_src, op->dst,
+                     &paint_with_filter_quality, skconstraint);
+  });
 }
 
 void DrawIRectOp::RasterWithFlags(const DrawIRectOp* op,

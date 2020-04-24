@@ -69,6 +69,7 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/modules/crypto/crypto_result_impl.h"
@@ -640,14 +641,19 @@ RTCPeerConnection* RTCPeerConnection::Create(
     const RTCConfiguration* rtc_configuration,
     const Dictionary& media_constraints,
     ExceptionState& exception_state) {
+  if (context->IsContextDestroyed()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNotSupportedError,
+        "PeerConnections may not be created in detached documents.");
+    return nullptr;
+  }
+
   // Count number of PeerConnections that could potentially be impacted by CSP
-  if (context) {
-    auto& security_context = context->GetSecurityContext();
-    auto* content_security_policy = security_context.GetContentSecurityPolicy();
-    if (content_security_policy &&
-        content_security_policy->IsActiveForConnections()) {
-      UseCounter::Count(context, WebFeature::kRTCPeerConnectionWithActiveCsp);
-    }
+  auto& security_context = context->GetSecurityContext();
+  auto* content_security_policy = security_context.GetContentSecurityPolicy();
+  if (content_security_policy &&
+      content_security_policy->IsActiveForConnections()) {
+    UseCounter::Count(context, WebFeature::kRTCPeerConnectionWithActiveCsp);
   }
 
   if (media_constraints.IsObject()) {
@@ -753,7 +759,7 @@ RTCPeerConnection::RTCPeerConnection(
           force_encoded_audio_insertable_streams),
       force_encoded_video_insertable_streams_(
           force_encoded_video_insertable_streams) {
-  Document* document = Document::From(GetExecutionContext());
+  LocalDOMWindow* window = To<LocalDOMWindow>(context);
 
   InstanceCounters::IncrementCounter(
       InstanceCounters::kRTCPeerConnectionCounter);
@@ -767,14 +773,6 @@ RTCPeerConnection::RTCPeerConnection(
                                       "Cannot create so many PeerConnections");
     return;
   }
-  if (!document->GetFrame()) {
-    closed_ = true;
-    stopped_ = true;
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kNotSupportedError,
-        "PeerConnections may not be created in detached documents.");
-    return;
-  }
 
   // Tests might need a custom RtcPeerConnectionHandler implementation.
   if (!g_create_rpc_peer_connection_handler_callback_.Get().is_null()) {
@@ -784,7 +782,7 @@ RTCPeerConnection::RTCPeerConnection(
     peer_handler_ =
         PeerConnectionDependencyFactory::GetInstance()
             ->CreateRTCPeerConnectionHandler(
-                this, document->GetTaskRunner(TaskType::kInternalMedia),
+                this, window->GetTaskRunner(TaskType::kInternalMedia),
                 force_encoded_audio_insertable_streams_,
                 force_encoded_video_insertable_streams_);
   }
@@ -799,7 +797,7 @@ RTCPeerConnection::RTCPeerConnection(
   }
 
   auto* web_frame =
-      static_cast<WebLocalFrame*>(WebFrame::FromFrame(document->GetFrame()));
+      static_cast<WebLocalFrame*>(WebFrame::FromFrame(window->GetFrame()));
   if (!peer_handler_->Initialize(configuration, constraints, web_frame)) {
     closed_ = true;
     stopped_ = true;
@@ -810,7 +808,7 @@ RTCPeerConnection::RTCPeerConnection(
   }
 
   feature_handle_for_scheduler_ =
-      document->GetFrame()->GetFrameScheduler()->RegisterFeature(
+      window->GetFrame()->GetFrameScheduler()->RegisterFeature(
           SchedulingPolicy::Feature::kWebRTC,
           {SchedulingPolicy::DisableAggressiveThrottling(),
            SchedulingPolicy::RecordMetricsForBackForwardCache()});
@@ -1134,12 +1132,12 @@ void RTCPeerConnection::MaybeWarnAboutUnsafeSdp(
     const RTCSessionDescriptionInit* session_description_init) const {
   base::Optional<ComplexSdpCategory> complex_sdp_category =
       CheckForComplexSdp(session_description_init);
-  if (!complex_sdp_category)
+  if (!complex_sdp_category || !GetExecutionContext())
     return;
 
-  Document* document = Document::From(GetExecutionContext());
-  RTCPeerConnectionController::From(*document).MaybeReportComplexSdp(
-      *complex_sdp_category);
+  LocalDOMWindow* window = To<LocalDOMWindow>(GetExecutionContext());
+  RTCPeerConnectionController::From(*window->document())
+      .MaybeReportComplexSdp(*complex_sdp_category);
 
   if (*complex_sdp_category == ComplexSdpCategory::kPlanBImplicitSemantics) {
     Deprecation::CountDeprecation(
@@ -1273,8 +1271,10 @@ void RTCPeerConnection::GenerateCertificateCompleted(
 }
 
 bool RTCPeerConnection::HasDocumentMedia() const {
+  if (!GetExecutionContext())
+    return false;
   UserMediaController* user_media_controller = UserMediaController::From(
-      Document::From(GetExecutionContext())->GetFrame());
+      To<LocalDOMWindow>(GetExecutionContext())->GetFrame());
   return user_media_controller &&
          user_media_controller->HasRequestedUserMedia();
 }
@@ -3177,11 +3177,13 @@ void RTCPeerConnection::DidAddRemoteDataChannel(
 }
 
 void RTCPeerConnection::DidNoteInterestingUsage(int usage_pattern) {
-  Document* document = Document::From(GetExecutionContext());
-  ukm::SourceId source_id = document->UkmSourceID();
+  if (!GetExecutionContext())
+    return;
+  LocalDOMWindow* window = To<LocalDOMWindow>(GetExecutionContext());
+  ukm::SourceId source_id = window->document()->UkmSourceID();
   ukm::builders::WebRTC_AddressHarvesting(source_id)
       .SetUsagePattern(usage_pattern)
-      .Record(document->UkmRecorder());
+      .Record(window->document()->UkmRecorder());
 }
 
 void RTCPeerConnection::UnregisterPeerConnectionHandler() {

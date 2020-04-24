@@ -45,9 +45,14 @@ class SwitchAccessMenuBubbleControllerTest : public AshTestBase {
   }
 
   std::vector<SwitchAccessMenuButton*> GetMenuButtons() {
-    return std::vector<SwitchAccessMenuButton*>(
-        {GetMenuView()->scroll_down_button_, GetMenuView()->select_button_,
-         GetMenuView()->settings_button_});
+    std::vector<SwitchAccessMenuButton*> buttons;
+    for (views::View* button : GetMenuView()->children())
+      buttons.push_back(static_cast<SwitchAccessMenuButton*>(button));
+    return buttons;
+  }
+
+  std::string GetName(SwitchAccessMenuButton* button) {
+    return button->action_name_;
   }
 
   gfx::Rect GetBackButtonBounds() {
@@ -68,7 +73,6 @@ class SwitchAccessMenuBubbleControllerTest : public AshTestBase {
 
 // TODO(anastasi): Add more tests for closing and repositioning the button.
 TEST_F(SwitchAccessMenuBubbleControllerTest, ShowBackButton) {
-  EXPECT_TRUE(GetBubbleController());
   gfx::Rect anchor_rect(100, 100, 0, 0);
   GetBubbleController()->ShowBackButton(anchor_rect);
 
@@ -78,9 +82,9 @@ TEST_F(SwitchAccessMenuBubbleControllerTest, ShowBackButton) {
 }
 
 TEST_F(SwitchAccessMenuBubbleControllerTest, ShowMenu) {
-  EXPECT_TRUE(GetBubbleController());
   gfx::Rect anchor_rect(10, 10, 0, 0);
-  GetBubbleController()->ShowMenu(anchor_rect);
+  GetBubbleController()->ShowMenu(anchor_rect,
+                                  {"select", "scrollDown", "settings"});
   EXPECT_TRUE(GetMenuView());
 
   for (SwitchAccessMenuButton* button : GetMenuButtons()) {
@@ -89,6 +93,31 @@ TEST_F(SwitchAccessMenuBubbleControllerTest, ShowMenu) {
   }
 
   EXPECT_EQ(GetMenuView()->width(), GetExpectedBubbleWidth());
+}
+
+TEST_F(SwitchAccessMenuBubbleControllerTest, SetActions) {
+  gfx::Rect anchor_rect(10, 10, 0, 0);
+  GetBubbleController()->ShowMenu(anchor_rect,
+                                  {"select", "scrollDown", "settings"});
+  EXPECT_TRUE(GetMenuView());
+
+  std::vector<SwitchAccessMenuButton*> buttons = GetMenuButtons();
+  EXPECT_EQ(3ul, buttons.size());
+  EXPECT_EQ("select", GetName(buttons[0]));
+  EXPECT_EQ("scrollDown", GetName(buttons[1]));
+  EXPECT_EQ("settings", GetName(buttons[2]));
+
+  GetBubbleController()->ShowMenu(
+      anchor_rect,
+      {"keyboard", "dictation", "increment", "decrement", "settings"});
+
+  buttons = GetMenuButtons();
+  EXPECT_EQ(5ul, buttons.size());
+  EXPECT_EQ("keyboard", GetName(buttons[0]));
+  EXPECT_EQ("dictation", GetName(buttons[1]));
+  EXPECT_EQ("increment", GetName(buttons[2]));
+  EXPECT_EQ("decrement", GetName(buttons[3]));
+  EXPECT_EQ("settings", GetName(buttons[4]));
 }
 
 }  // namespace ash

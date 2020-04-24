@@ -936,7 +936,8 @@ void Performance::NotifyObserversOfEntry(PerformanceEntry& entry) const {
          RuntimeEnabledFeatures::EventTimingEnabled(GetExecutionContext()));
   bool observer_found = false;
   for (auto& observer : observers_) {
-    if (observer->FilterOptions() & entry.EntryTypeEnum()) {
+    if (observer->FilterOptions() & entry.EntryTypeEnum() &&
+        observer->CanObserve(entry)) {
       observer->EnqueuePerformanceEntry(entry);
       observer_found = true;
     }

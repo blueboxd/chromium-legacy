@@ -80,7 +80,8 @@ CSSValue* ConsumeFontFaceSrcURI(CSSParserTokenRange& range,
   CSSFontFaceSrcValue* uri_value(CSSFontFaceSrcValue::Create(
       url, context.CompleteURL(url), context.GetReferrer(),
       context.ShouldCheckContentSecurityPolicy(),
-      context.IsOriginClean() ? OriginClean::kTrue : OriginClean::kFalse));
+      context.IsOriginClean() ? OriginClean::kTrue : OriginClean::kFalse,
+      context.IsAdRelated()));
 
   if (range.Peek().FunctionId() != CSSValueID::kFormat)
     return uri_value;
@@ -109,7 +110,8 @@ CSSValue* ConsumeFontFaceSrcLocal(CSSParserTokenRange& range,
       return nullptr;
     return CSSFontFaceSrcValue::CreateLocal(
         arg.Value().ToString(), should_check_content_security_policy,
-        context.IsOriginClean() ? OriginClean::kTrue : OriginClean::kFalse);
+        context.IsOriginClean() ? OriginClean::kTrue : OriginClean::kFalse,
+        context.IsAdRelated());
   }
   if (args.Peek().GetType() == kIdentToken) {
     String family_name = css_parsing_utils::ConcatenateFamilyName(args);
@@ -117,7 +119,8 @@ CSSValue* ConsumeFontFaceSrcLocal(CSSParserTokenRange& range,
       return nullptr;
     return CSSFontFaceSrcValue::CreateLocal(
         family_name, should_check_content_security_policy,
-        context.IsOriginClean() ? OriginClean::kTrue : OriginClean::kFalse);
+        context.IsOriginClean() ? OriginClean::kTrue : OriginClean::kFalse,
+        context.IsAdRelated());
   }
   return nullptr;
 }

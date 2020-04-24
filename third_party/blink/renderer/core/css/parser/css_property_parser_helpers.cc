@@ -1777,7 +1777,8 @@ static CSSValue* CreateCSSImageValueWithReferrer(
     const CSSParserContext& context) {
   CSSValue* image_value = MakeGarbageCollected<CSSImageValue>(
       raw_value, context.CompleteURL(raw_value), context.GetReferrer(),
-      context.IsOriginClean() ? OriginClean::kTrue : OriginClean::kFalse);
+      context.IsOriginClean() ? OriginClean::kTrue : OriginClean::kFalse,
+      context.IsAdRelated());
   return image_value;
 }
 

@@ -255,13 +255,7 @@ class ExtensionContentSettingsApiTest : public ExtensionApiTest {
   std::unique_ptr<ScopedKeepAlive> keep_alive_;
 };
 
-// http://crbug.com/177163
-#if defined(OS_WIN) && !defined(NDEBUG)
-#define MAYBE_Standard DISABLED_Standard
-#else
-#define MAYBE_Standard Standard
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionContentSettingsApiTest, MAYBE_Standard) {
+IN_PROC_BROWSER_TEST_F(ExtensionContentSettingsApiTest, Standard) {
   CheckContentSettingsDefault();
 
   const char kExtensionPath[] = "content_settings/standard";

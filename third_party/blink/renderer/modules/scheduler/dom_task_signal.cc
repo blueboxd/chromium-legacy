@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "base/callback.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/modules/scheduler/dom_scheduler.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
@@ -19,14 +19,14 @@
 
 namespace blink {
 
-DOMTaskSignal::DOMTaskSignal(Document* document,
+DOMTaskSignal::DOMTaskSignal(ExecutionContext* context,
                              WebSchedulingPriority priority,
                              Type type)
-    : AbortSignal(document->ToExecutionContext()),
-      ExecutionContextLifecycleObserver(document),
+    : AbortSignal(context),
+      ExecutionContextLifecycleObserver(context),
       priority_(priority) {
   if (type == Type::kCreatedByController) {
-    web_scheduling_task_queue_ = document->GetScheduler()
+    web_scheduling_task_queue_ = context->GetScheduler()
                                      ->ToFrameScheduler()
                                      ->CreateWebSchedulingTaskQueue(priority_);
   }
@@ -53,13 +53,13 @@ void DOMTaskSignal::SignalPriorityChange(WebSchedulingPriority priority) {
 }
 
 base::SingleThreadTaskRunner* DOMTaskSignal::GetTaskRunner() {
-  auto* document =
-      Document::From(ExecutionContextLifecycleObserver::GetExecutionContext());
-  if (!document)
+  auto* window = To<LocalDOMWindow>(
+      ExecutionContextLifecycleObserver::GetExecutionContext());
+  if (!window)
     return nullptr;
   if (web_scheduling_task_queue_)
     return web_scheduling_task_queue_->GetTaskRunner().get();
-  return DOMScheduler::From(*document)->GetTaskRunnerFor(priority_);
+  return DOMScheduler::From(*window)->GetTaskRunnerFor(priority_);
 }
 
 void DOMTaskSignal::Trace(Visitor* visitor) {

@@ -94,7 +94,8 @@ public class OmniboxSuggestionUnitTest {
                     null /* imageUrl */, null /* imageDominantColor */, false /* isStarred */,
                     false /* isDeletable */,
                     hasPostData ? "Dummy Content Type" + (index + 1) : null /* postContentType */,
-                    hasPostData ? new byte[] {4, 5, 6, (byte) (index + 1)} : null /* postData */);
+                    hasPostData ? new byte[] {4, 5, 6, (byte) (index + 1)} : null /* postData */,
+                    OmniboxSuggestion.INVALID_GROUP);
             list.add(suggestion);
         }
 

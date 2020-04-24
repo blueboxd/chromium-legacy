@@ -80,7 +80,7 @@ public class MostVisitedSitesFaviconHelperTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 ()
                         -> mMostVisitedSitesFaviconHelper.saveFaviconsToFile(
-                                mExpectedSiteSuggestions, urlsToUpdate));
+                                mExpectedSiteSuggestions, urlsToUpdate, null));
 
         // Wait util the file number equals to expected one.
         CriteriaHelper.pollInstrumentationThread(Criteria.equals(

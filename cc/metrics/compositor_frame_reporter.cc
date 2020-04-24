@@ -229,6 +229,7 @@ CompositorFrameReporter::CopyReporterAtBeginImplStage() const {
   new_reporter->current_stage_.stage_type =
       StageType::kBeginImplFrameToSendBeginMainFrame;
   new_reporter->current_stage_.start_time = stage_history_.front().start_time;
+  new_reporter->set_tick_clock(tick_clock_);
   return new_reporter;
 }
 
@@ -292,7 +293,7 @@ void CompositorFrameReporter::OnAbortBeginMainFrame(base::TimeTicks timestamp) {
 
 void CompositorFrameReporter::OnDidNotProduceFrame(
     FrameSkippedReason skip_reason) {
-  did_not_produce_frame_time_ = base::TimeTicks::Now();
+  did_not_produce_frame_time_ = Now();
   frame_skip_reason_ = skip_reason;
 }
 
@@ -323,7 +324,7 @@ void CompositorFrameReporter::SetEventsMetrics(
 
 void CompositorFrameReporter::TerminateReporter() {
   if (frame_termination_status_ == FrameTerminationStatus::kUnknown)
-    TerminateFrame(FrameTerminationStatus::kUnknown, base::TimeTicks::Now());
+    TerminateFrame(FrameTerminationStatus::kUnknown, Now());
   DCHECK_EQ(current_stage_.start_time, base::TimeTicks());
   const char* termination_status_str = nullptr;
   switch (frame_termination_status_) {
@@ -721,6 +722,10 @@ base::TimeDelta CompositorFrameReporter::SumOfStageHistory() const {
   for (const StageData& stage : stage_history_)
     sum += stage.end_time - stage.start_time;
   return sum;
+}
+
+base::TimeTicks CompositorFrameReporter::Now() const {
+  return tick_clock_->NowTicks();
 }
 
 }  // namespace cc

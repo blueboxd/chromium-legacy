@@ -211,7 +211,7 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
         mStatusIndicatorCoordinator = new StatusIndicatorCoordinator(mActivity,
                 mActivity.getCompositorViewHolder().getResourceManager(), fullscreenManager,
                 mActivity.getStatusBarColorController()::getStatusBarColorWithoutStatusIndicator,
-                canAnimateBrowserControls);
+                canAnimateBrowserControls, layoutManager::requestUpdate);
         layoutManager.setStatusIndicatorSceneOverlay(mStatusIndicatorCoordinator.getSceneLayer());
         mStatusIndicatorObserver = new StatusIndicatorCoordinator.StatusIndicatorObserver() {
             @Override

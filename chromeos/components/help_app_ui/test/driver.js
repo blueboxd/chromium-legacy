@@ -57,17 +57,26 @@ class GuestDriver {
    * Sends a query to the guest that runs postMessage in the guest context.
    *
    * @param {string} query the message to post in the guest.
-   * @return Promise<string> JSON.stringify()'d value of response if there is
+   * @param {string=} data additional data to post with the query.
+   * @return {Promise<string>} JSON.stringify()'d value of response if there is
    *  one.
    */
-  async sendPostMessageRequest(query) {
+  async sendPostMessageRequest(query, data = '') {
     const frame = assertInstanceof(
         document.querySelector(`iframe[src^="${this.origin}"]`),
         HTMLIFrameElement);
     /** @type{TestMessageQueryData} */
-    const message = {testQuery: query};
+    const message = {testQuery: query, testData: data};
     frame.contentWindow.postMessage(message, this.origin);
     const event = await this.popTestMessage();
     return event.data.testQueryResult;
+  }
+
+  /**
+   * Runs the given `testCase` in the guest context.
+   * @param {string} testCase
+   */
+  async runTestInGuest(testCase) {
+    await this.sendPostMessageRequest('run-test-case', testCase);
   }
 }

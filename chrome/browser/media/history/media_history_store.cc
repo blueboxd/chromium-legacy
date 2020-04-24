@@ -60,6 +60,13 @@ void DatabaseErrorCallback(sql::Database* db,
     DLOG(FATAL) << db->GetErrorMessage();
 }
 
+base::FilePath GetDBPath(Profile* profile) {
+  // If this is a testing profile then we should use an in-memory database.
+  if (profile->AsTestingProfile())
+    return base::FilePath();
+  return profile->GetPath().Append(kMediaHistoryDatabaseName);
+}
+
 }  // namespace
 
 int GetCurrentVersion() {
@@ -84,7 +91,7 @@ MediaHistoryStore::MediaHistoryStore(
     Profile* profile,
     scoped_refptr<base::UpdateableSequencedTaskRunner> db_task_runner)
     : db_task_runner_(db_task_runner),
-      db_path_(profile->GetPath().Append(kMediaHistoryDatabaseName)),
+      db_path_(GetDBPath(profile)),
       origin_table_(new MediaHistoryOriginTable(db_task_runner_)),
       playback_table_(new MediaHistoryPlaybackTable(db_task_runner_)),
       session_table_(new MediaHistorySessionTable(db_task_runner_)),
@@ -97,20 +104,15 @@ MediaHistoryStore::MediaHistoryStore(
       feed_items_table_(media_feeds::MediaFeedsService::IsEnabled()
                             ? new MediaHistoryFeedItemsTable(db_task_runner_)
                             : nullptr),
-      initialization_successful_(false) {
-  db_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&MediaHistoryStore::Initialize, base::Unretained(this)));
-}
+      initialization_successful_(false) {}
 
 MediaHistoryStore::~MediaHistoryStore() {
-  db_task_runner_->ReleaseSoon(FROM_HERE, std::move(origin_table_));
-  db_task_runner_->ReleaseSoon(FROM_HERE, std::move(playback_table_));
-  db_task_runner_->ReleaseSoon(FROM_HERE, std::move(session_table_));
-  db_task_runner_->ReleaseSoon(FROM_HERE, std::move(session_images_table_));
-  db_task_runner_->ReleaseSoon(FROM_HERE, std::move(images_table_));
-  db_task_runner_->ReleaseSoon(FROM_HERE, std::move(feeds_table_));
-  db_task_runner_->ReleaseSoon(FROM_HERE, std::move(feed_items_table_));
+  // The connection pointer needs to be deleted on the DB sequence since there
+  // might be a task in progress on the DB sequence which uses this connection.
+  if (meta_table_)
+    db_task_runner_->DeleteSoon(FROM_HERE, meta_table_.release());
+  if (db_)
+    db_task_runner_->DeleteSoon(FROM_HERE, db_.release());
 }
 
 sql::Database* MediaHistoryStore::DB() {
@@ -179,100 +181,114 @@ void MediaHistoryStore::SavePlayback(
       MediaHistoryStore::PlaybackWriteResult::kSuccess);
 }
 
-void MediaHistoryStore::Initialize() {
+void MediaHistoryStore::Initialize(const bool should_reset) {
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
+
+  if (should_reset) {
+    if (!sql::Database::Delete(db_path_)) {
+      LOG(ERROR) << "Failed to delete the old database.";
+
+      base::UmaHistogramEnumeration(
+          MediaHistoryStore::kInitResultHistogramName,
+          MediaHistoryStore::InitResult::kFailedToDeleteOldDatabase);
+
+      return;
+    }
+  }
+
+  if (IsCancelled())
+    return;
+
+  auto result = InitializeInternal();
+
+  if (IsCancelled()) {
+    meta_table_.reset();
+    db_.reset();
+    return;
+  }
+
+  base::UmaHistogramEnumeration(MediaHistoryStore::kInitResultHistogramName,
+                                result);
+}
+
+MediaHistoryStore::InitResult MediaHistoryStore::InitializeInternal() {
   DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
 
   db_ = std::make_unique<sql::Database>();
   db_->set_histogram_tag("MediaHistory");
+  db_->set_exclusive_locking();
 
   // To recover from corruption.
   db_->set_error_callback(
       base::BindRepeating(&DatabaseErrorCallback, db_.get(), db_path_));
 
-  base::File::Error err;
-  if (!base::CreateDirectoryAndGetError(db_path_.DirName(), &err)) {
-    LOG(ERROR) << "Failed to create the directory.";
+  meta_table_ = std::make_unique<sql::MetaTable>();
 
-    base::UmaHistogramEnumeration(
-        MediaHistoryStore::kInitResultHistogramName,
-        MediaHistoryStore::InitResult::kFailedToCreateDirectory);
+  if (db_path_.empty()) {
+    if (IsCancelled() || !db_ || !db_->OpenInMemory()) {
+      LOG(ERROR) << "Failed to open the in-memory database.";
 
-    return;
-  }
+      return MediaHistoryStore::InitResult::kFailedToOpenDatabase;
+    }
+  } else {
+    base::File::Error err;
+    if (IsCancelled() ||
+        !base::CreateDirectoryAndGetError(db_path_.DirName(), &err)) {
+      LOG(ERROR) << "Failed to create the directory.";
 
-  if (!db_->Open(db_path_)) {
-    LOG(ERROR) << "Failed to open the database.";
+      return MediaHistoryStore::InitResult::kFailedToCreateDirectory;
+    }
 
-    base::UmaHistogramEnumeration(
-        MediaHistoryStore::kInitResultHistogramName,
-        MediaHistoryStore::InitResult::kFailedToOpenDatabase);
+    if (IsCancelled() || !db_ || !db_->Open(db_path_)) {
+      LOG(ERROR) << "Failed to open the database.";
 
-    return;
+      return MediaHistoryStore::InitResult::kFailedToOpenDatabase;
+    }
   }
 
   db_->Preload();
 
-  if (!db_->Execute("PRAGMA foreign_keys=1")) {
+  if (IsCancelled() || !db_ || !db_->Execute("PRAGMA foreign_keys=1")) {
     LOG(ERROR) << "Failed to enable foreign keys on the media history store.";
-    db_->Poison();
 
-    base::UmaHistogramEnumeration(
-        MediaHistoryStore::kInitResultHistogramName,
-        MediaHistoryStore::InitResult::kFailedNoForeignKeys);
-
-    return;
+    return MediaHistoryStore::InitResult::kFailedNoForeignKeys;
   }
 
-  if (!meta_table_.Init(db_.get(), GetCurrentVersion(),
-                        kCompatibleVersionNumber)) {
+  if (IsCancelled() || !db_ || !meta_table_ ||
+      !meta_table_->Init(db_.get(), GetCurrentVersion(),
+                         kCompatibleVersionNumber)) {
     LOG(ERROR) << "Failed to create the meta table.";
 
-    base::UmaHistogramEnumeration(
-        MediaHistoryStore::kInitResultHistogramName,
-        MediaHistoryStore::InitResult::kFailedToCreateMetaTable);
-
-    return;
+    return MediaHistoryStore::InitResult::kFailedToCreateMetaTable;
   }
 
-  if (!db_->BeginTransaction()) {
+  if (IsCancelled() || !db_ || !db_->BeginTransaction()) {
     LOG(ERROR) << "Failed to begin the transaction.";
 
-    base::UmaHistogramEnumeration(
-        MediaHistoryStore::kInitResultHistogramName,
-        MediaHistoryStore::InitResult::kFailedToEstablishTransaction);
-
-    return;
+    return MediaHistoryStore::InitResult::kFailedToEstablishTransaction;
   }
 
   sql::InitStatus status = CreateOrUpgradeIfNeeded();
   if (status != sql::INIT_OK) {
     LOG(ERROR) << "Failed to create or update the media history store.";
 
-    base::UmaHistogramEnumeration(
-        MediaHistoryStore::kInitResultHistogramName,
-        MediaHistoryStore::InitResult::kFailedDatabaseTooNew);
-
-    return;
+    return MediaHistoryStore::InitResult::kFailedDatabaseTooNew;
   }
 
   status = InitializeTables();
   if (status != sql::INIT_OK) {
     LOG(ERROR) << "Failed to initialize the media history store tables.";
 
-    base::UmaHistogramEnumeration(
-        MediaHistoryStore::kInitResultHistogramName,
-        MediaHistoryStore::InitResult::kFailedInitializeTables);
-
-    return;
+    return MediaHistoryStore::InitResult::kFailedInitializeTables;
   }
 
-  // Commit the transaction for creating the db.
-  DB()->CommitTransaction();
+  if (IsCancelled() || !db_ || !DB()->CommitTransaction()) {
+    LOG(ERROR) << "Failed to commit transaction.";
+
+    return MediaHistoryStore::InitResult::kFailedToCommitTransaction;
+  }
 
   initialization_successful_ = true;
-
-  base::UmaHistogramEnumeration(MediaHistoryStore::kInitResultHistogramName,
-                                MediaHistoryStore::InitResult::kSuccess);
 
   // Get the size in bytes.
   int64_t file_size = 0;
@@ -283,14 +299,17 @@ void MediaHistoryStore::Initialize() {
     base::UmaHistogramMemoryKB(MediaHistoryStore::kDatabaseSizeKbHistogramName,
                                file_size / 1000);
   }
+
+  return MediaHistoryStore::InitResult::kSuccess;
 }
 
 sql::InitStatus MediaHistoryStore::CreateOrUpgradeIfNeeded() {
-  if (!db_->is_open())
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
+  if (IsCancelled() || !meta_table_)
     return sql::INIT_FAILURE;
 
-  int cur_version = meta_table_.GetVersionNumber();
-  if (meta_table_.GetCompatibleVersionNumber() > kCurrentVersionNumber) {
+  int cur_version = meta_table_->GetVersionNumber();
+  if (meta_table_->GetCompatibleVersionNumber() > kCurrentVersionNumber) {
     LOG(WARNING) << "Media history database is too new.";
     return sql::INIT_TOO_NEW;
   }
@@ -304,6 +323,9 @@ sql::InitStatus MediaHistoryStore::CreateOrUpgradeIfNeeded() {
 
 sql::InitStatus MediaHistoryStore::InitializeTables() {
   DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
+  if (IsCancelled() || !db_)
+    return sql::INIT_FAILURE;
+
   sql::InitStatus status = origin_table_->Initialize(db_.get());
   if (status == sql::INIT_OK)
     status = playback_table_->Initialize(db_.get());
@@ -353,7 +375,6 @@ mojom::MediaHistoryStatsPtr MediaHistoryStore::GetMediaHistoryStats() {
 std::vector<mojom::MediaHistoryOriginRowPtr>
 MediaHistoryStore::GetOriginRowsForDebug() {
   std::vector<mojom::MediaHistoryOriginRowPtr> origins;
-
   DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
   if (!CanAccessDatabase())
     return origins;
@@ -513,19 +534,6 @@ MediaHistoryStore::GetPlaybackSessions(
   return sessions;
 }
 
-void MediaHistoryStore::RazeAndClose() {
-  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
-
-  if (db_->is_open())
-    db_->RazeAndClose();
-
-  sql::Database::Delete(db_path_);
-
-  db_.reset();
-  meta_table_.Reset();
-  initialization_successful_ = false;
-}
-
 void MediaHistoryStore::DeleteAllOriginData(
     const std::set<url::Origin>& origins) {
   DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
@@ -610,13 +618,13 @@ void MediaHistoryStore::DiscoverMediaFeed(const GURL& url) {
   if (!CanAccessDatabase())
     return;
 
+  if (!feeds_table_)
+    return;
+
   if (!DB()->BeginTransaction()) {
     LOG(ERROR) << "Failed to begin the transaction.";
     return;
   }
-
-  if (!feeds_table_)
-    return;
 
   if (!(CreateOriginId(url::Origin::Create(url)) &&
         feeds_table_->DiscoverFeed(url))) {
@@ -638,13 +646,13 @@ void MediaHistoryStore::StoreMediaFeedFetchResult(
   if (!CanAccessDatabase())
     return;
 
+  if (!feeds_table_ || !feed_items_table_)
+    return;
+
   if (!DB()->BeginTransaction()) {
     LOG(ERROR) << "Failed to begin the transaction.";
     return;
   }
-
-  if (!feeds_table_ || !feed_items_table_)
-    return;
 
   // Remove all the items currently associated with this feed.
   if (!feed_items_table_->DeleteItems(feed_id)) {
@@ -718,13 +726,13 @@ void MediaHistoryStore::StoreMediaFeedItemSafeSearchResults(
   if (!CanAccessDatabase())
     return;
 
+  if (!feeds_table_ || !feed_items_table_)
+    return;
+
   if (!DB()->BeginTransaction()) {
     LOG(ERROR) << "Failed to begin the transaction.";
     return;
   }
-
-  if (!feeds_table_ || !feed_items_table_)
-    return;
 
   std::set<int64_t> feed_ids;
   for (auto& entry : results) {
@@ -749,8 +757,29 @@ void MediaHistoryStore::StoreMediaFeedItemSafeSearchResults(
   DB()->CommitTransaction();
 }
 
+void MediaHistoryStore::SetCancelled() {
+  DCHECK(!db_task_runner_->RunsTasksInCurrentSequence());
+
+  cancelled_.Set();
+
+  MediaHistoryTableBase* tables[] = {
+      origin_table_.get(),         playback_table_.get(), session_table_.get(),
+      session_images_table_.get(), images_table_.get(),   feeds_table_.get(),
+      feed_items_table_.get(),
+  };
+
+  for (auto* table : tables) {
+    if (table)
+      table->SetCancelled();
+  }
+}
+
 bool MediaHistoryStore::CanAccessDatabase() const {
-  return initialization_successful_ && db_ && db_->is_open();
+  return !IsCancelled() && initialization_successful_ && db_ && db_->is_open();
+}
+
+bool MediaHistoryStore::IsCancelled() const {
+  return cancelled_.IsSet();
 }
 
 void MediaHistoryStore::UpdateMediaFeedDisplayTime(const int64_t feed_id) {
@@ -772,14 +801,6 @@ void MediaHistoryStore::UpdateMediaFeedDisplayTime(const int64_t feed_id) {
   }
 
   DB()->CommitTransaction();
-}
-
-void MediaHistoryStore::Close() {
-  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
-
-  db_.reset();
-  meta_table_.Reset();
-  initialization_successful_ = false;
 }
 
 }  // namespace media_history

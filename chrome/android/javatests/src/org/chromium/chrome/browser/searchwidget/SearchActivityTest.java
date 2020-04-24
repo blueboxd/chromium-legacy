@@ -338,12 +338,14 @@ public class SearchActivityTest {
         // Cache some mock results to show.
         List<MatchClassification> classifications = new ArrayList<>();
         classifications.add(new MatchClassification(0, MatchClassificationStyle.NONE));
-        OmniboxSuggestion mockSuggestion = new OmniboxSuggestion(0, true, 0, 0,
-                "https://google.com", classifications, "https://google.com", classifications, null,
-                "", "https://google.com", null, null, false, false, null, null);
-        OmniboxSuggestion mockSuggestion2 = new OmniboxSuggestion(0, true, 0, 0,
-                "https://android.com", classifications, "https://android.com", classifications,
-                null, "", "https://android.com", null, null, false, false, null, null);
+        OmniboxSuggestion mockSuggestion =
+                new OmniboxSuggestion(0, true, 0, 0, "https://google.com", classifications,
+                        "https://google.com", classifications, null, "", "https://google.com", null,
+                        null, false, false, null, null, OmniboxSuggestion.INVALID_GROUP);
+        OmniboxSuggestion mockSuggestion2 =
+                new OmniboxSuggestion(0, true, 0, 0, "https://android.com", classifications,
+                        "https://android.com", classifications, null, "", "https://android.com",
+                        null, null, false, false, null, null, OmniboxSuggestion.INVALID_GROUP);
         List<OmniboxSuggestion> list = new ArrayList<>();
         list.add(mockSuggestion);
         list.add(mockSuggestion2);

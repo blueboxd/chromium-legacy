@@ -143,6 +143,7 @@ class BrowserImpl : public Browser {
   std::string persistence_id_;
   std::unique_ptr<BrowserPersister> browser_persister_;
   base::OnceClosure visible_security_state_changed_callback_for_tests_;
+  static int browser_count_;
 };
 
 }  // namespace weblayer

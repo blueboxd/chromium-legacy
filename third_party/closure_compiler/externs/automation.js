@@ -189,6 +189,7 @@ chrome.automation.RoleType = {
   IGNORED: 'ignored',
   IMAGE: 'image',
   IMAGE_MAP: 'imageMap',
+  IME_CANDIDATE: 'imeCandidate',
   INLINE_TEXT_BOX: 'inlineTextBox',
   INPUT_TIME: 'inputTime',
   KEYBOARD: 'keyboard',

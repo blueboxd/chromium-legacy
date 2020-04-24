@@ -31,9 +31,9 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/compromised_credentials_table.h"
 #include "components/password_manager/core/browser/password_list_sorter.h"
+#include "components/password_manager/core/browser/password_manager_features_util.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
-#include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/reauth_purpose.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -314,8 +314,8 @@ TEST_F(PasswordsPrivateDelegateImplTest, TestShouldReauthForOptIn) {
 
   PasswordsPrivateDelegateImpl delegate(&profile_);
 
-  password_manager_util::SetAccountStorageOptIn(profile_.GetPrefs(),
-                                                test_sync_service, false);
+  password_manager::features_util::SetAccountStorageOptIn(
+      profile_.GetPrefs(), test_sync_service, false);
 
   EXPECT_CALL(mock_google_authenticator_, Run);
   delegate.set_account_storage_opt_in_reauthenticator(
@@ -335,8 +335,8 @@ TEST_F(PasswordsPrivateDelegateImplTest, TestShouldNotReauthForOptOut) {
 
   PasswordsPrivateDelegateImpl delegate(&profile_);
 
-  password_manager_util::SetAccountStorageOptIn(profile_.GetPrefs(),
-                                                test_sync_service, true);
+  password_manager::features_util::SetAccountStorageOptIn(
+      profile_.GetPrefs(), test_sync_service, true);
 
   EXPECT_CALL(mock_google_authenticator_, Run).Times(0);
   delegate.set_account_storage_opt_in_reauthenticator(

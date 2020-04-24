@@ -27,6 +27,7 @@ class SwitchAccessBackButtonView : public views::View,
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::View:
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   const char* GetClassName() const override;
   void OnPaint(gfx::Canvas* canvas) override;
 

@@ -679,8 +679,29 @@ This file contains the strings for ash.
       <message name="IDS_ASH_SWITCH_ACCESS_BACK_BUTTON_DESCRIPTION" desc="The tooltip text for the Switch Access back button. The back button allows users to exit the feature's current focus area.">
         Back button
       </message>
+      <message name="IDS_ASH_SWITCH_ACCESS_DECREMENT" desc="The label for the Switch Access menu option to decrement the selected input.">
+        Decrement
+      </message>
+      <message name="IDS_ASH_SWITCH_ACCESS_DICTATION" desc="The label for the Switch Access menu option to dictate into the focused input.">
+        Dictation
+      </message>
+      <message name="IDS_ASH_SWITCH_ACCESS_INCREMENT" desc="The label for the Switch Access menu option to increment the selected input.">
+        Increment
+      </message>
+      <message name="IDS_ASH_SWITCH_ACCESS_KEYBOARD" desc="The label for the Switch Access menu option to open the onscreen keyboard.">
+        Keyboard
+      </message>
       <message name="IDS_ASH_SWITCH_ACCESS_SCROLL_DOWN" desc="The label for the Switch Access menu option to scroll the selected view down.">
         Scroll Down
+      </message>
+      <message name="IDS_ASH_SWITCH_ACCESS_SCROLL_LEFT" desc="The label for the Switch Access menu option to scroll the selected view left.">
+        Scroll Left
+      </message>
+      <message name="IDS_ASH_SWITCH_ACCESS_SCROLL_RIGHT" desc="The label for the Switch Access menu option to scroll the selected view right.">
+        Scroll Right
+      </message>
+      <message name="IDS_ASH_SWITCH_ACCESS_SCROLL_UP" desc="The label for the Switch Access menu option to scroll the selected view up.">
+        Scroll Up
       </message>
       <message name="IDS_ASH_SWITCH_ACCESS_SELECT" desc="The label for the Switch Access menu option to select the focused element.">
         Select

@@ -101,7 +101,7 @@ void TabCapturePerformanceTestBase::LoadExtension(
       extensions::ExtensionSystem::Get(browser()->profile())
           ->extension_service();
   extensions::UnpackedInstaller::Create(extension_service)->Load(unpacked_dir);
-  extension_ = registry_observer.WaitForExtensionReady();
+  extension_ = registry_observer.WaitForExtensionReady().get();
   CHECK(extension_);
   CHECK_EQ(kExtensionId, extension_->id());
 }

@@ -208,6 +208,12 @@ bool FontFaceSetDocument::ResolveFontStyle(const String& font_string,
   return true;
 }
 
+Document* FontFaceSetDocument::GetDocument() const {
+  if (auto* window = To<LocalDOMWindow>(GetExecutionContext()))
+    return window->document();
+  return nullptr;
+}
+
 FontFaceSetDocument* FontFaceSetDocument::From(Document& document) {
   FontFaceSetDocument* fonts =
       Supplement<Document>::From<FontFaceSetDocument>(document);

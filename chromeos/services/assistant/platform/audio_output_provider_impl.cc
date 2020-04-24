@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "chromeos/services/assistant/media_session/assistant_media_session.h"
 #include "chromeos/services/assistant/platform/audio_stream_handler.h"
+#include "chromeos/services/assistant/public/cpp/assistant_client.h"
 #include "chromeos/services/assistant/public/mojom/assistant_audio_decoder.mojom.h"
 #include "libassistant/shared/public/platform_audio_buffer.h"
 #include "media/audio/audio_device_description.h"
@@ -141,23 +142,20 @@ class AudioOutputImpl : public assistant_client::AudioOutput {
 }  // namespace
 
 AudioOutputProviderImpl::AudioOutputProviderImpl(
-    mojom::Client* client,
     PowerManagerClient* power_manager_client,
     CrasAudioHandler* cras_audio_handler,
     AssistantMediaSession* media_session,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner,
     const std::string& device_id)
-    : client_(client),
-      loop_back_input_(client,
-                       power_manager_client,
+    : loop_back_input_(power_manager_client,
                        cras_audio_handler,
                        media::AudioDeviceDescription::kLoopbackInputDeviceId),
-      volume_control_impl_(client, media_session),
+      volume_control_impl_(media_session),
       main_task_runner_(base::SequencedTaskRunnerHandle::Get()),
       background_task_runner_(background_task_runner),
       device_id_(device_id),
       media_session_(media_session) {
-  client_->RequestAudioDecoderFactory(
+  AssistantClient::Get()->RequestAudioDecoderFactory(
       audio_decoder_factory_remote_.BindNewPipeAndPassReceiver());
   audio_decoder_factory_ = audio_decoder_factory_remote_.get();
 }
@@ -211,7 +209,7 @@ void AudioOutputProviderImpl::RegisterAudioEmittingStateCallback(
 
 void AudioOutputProviderImpl::BindStreamFactory(
     mojo::PendingReceiver<audio::mojom::StreamFactory> receiver) {
-  client_->RequestAudioStreamFactory(std::move(receiver));
+  AssistantClient::Get()->RequestAudioStreamFactory(std::move(receiver));
 }
 
 }  // namespace assistant

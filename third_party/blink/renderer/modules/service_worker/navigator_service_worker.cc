@@ -109,8 +109,7 @@ ServiceWorkerContainer* NavigatorServiceWorker::GetOrCreateContainer(
                       WebFeature::kFileAccessedServiceWorker);
   }
 
-  return ServiceWorkerContainer::From(
-      Document::From(frame->DomWindow()->GetExecutionContext()));
+  return ServiceWorkerContainer::From(frame->GetDocument());
 }
 
 void NavigatorServiceWorker::Trace(Visitor* visitor) {

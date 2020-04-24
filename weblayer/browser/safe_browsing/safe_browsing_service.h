@@ -53,6 +53,7 @@ class SafeBrowsingService {
   CreateSafeBrowsingNavigationThrottle(content::NavigationHandle* handle);
   void AddInterface(service_manager::BinderRegistry* registry,
                     content::RenderProcessHost* render_process_host);
+  void StopDBManager();
 
  private:
   SafeBrowsingUIManager* GetSafeBrowsingUIManager();
@@ -68,6 +69,7 @@ class SafeBrowsingService {
   GetURLLoaderFactoryOnIOThread();
   void CreateURLLoaderFactoryForIO(
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver);
+  void StopDBManagerOnIOThread();
 
   // The UI manager handles showing interstitials. Accessed on both UI and IO
   // thread.

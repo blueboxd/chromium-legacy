@@ -8,9 +8,9 @@
 #include <utility>
 
 #include "base/android/jni_string.h"
-#include "chrome/android/chrome_jni_headers/ConfirmInfoBar_jni.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/ui/messages/android/jni_headers/ConfirmInfoBar_jni.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/android/window_android.h"

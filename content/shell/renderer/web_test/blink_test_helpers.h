@@ -10,10 +10,6 @@
 
 #include <string>
 
-namespace gfx {
-class ColorSpace;
-}
-
 namespace content {
 struct TestPreferences;
 struct WebPreferences;
@@ -32,10 +28,6 @@ blink::WebURL RewriteWebTestsURL(base::StringPiece utf8_url, bool is_wpt_mode);
 // The same as RewriteWebTestsURL() unless the resource is a path starting
 // with /tmp/, then return a file URL to a temporary file.
 blink::WebURL RewriteFileURLToLocalResource(base::StringPiece resource);
-
-// Get the color space for a given name string. This is not in the ColorSpace
-// class to avoid bloating the shipping build.
-gfx::ColorSpace GetWebTestColorSpace(const std::string& name);
 
 }  // namespace content
 

@@ -4174,7 +4174,7 @@ En cas de non-configuration de cette règle, aucune restriction ne s'applique qu
 
       Si vous définissez <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> sur 0 ou si cette règle n'est pas configurée, toutes les variantes peuvent alors être appliquées au navigateur.
 
-      Si vous définissez <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> sur 1, seules les variantes considérées comme des correctifs essentiels de sécurité ou de stabilité peuvent être appliquées à <ph name="PRODUCT_NAME" />.
+      Si vous définissez <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> sur 1, seules les variantes considérées comme des correctifs de sécurité ou de stabilité critiques peuvent être appliquées à <ph name="PRODUCT_NAME" />.
 
       Si vous définissez <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> sur 2, aucune variante ne peut être appliquée au navigateur. Veuillez noter que ce mode n'est pas recommandé, car il est susceptible d'empêcher les développeurs <ph name="PRODUCT_NAME" /> de fournir des correctifs de sécurité critiques en temps voulu.</translation>
 <translation id="7145335384492396213">Mode d'impression par code défini par défaut</translation>
@@ -5465,9 +5465,9 @@ indique uniquement les imprimantes qui peuvent être choisies.
 
       Si la valeur du champ <ph name="ENTERPRISE_CONNECTOR_BLOCK_UNTIL_VERDICT_FIELD" /> est 1, Chrome attend de recevoir une réponse du service d'analyse avant de laisser la page accéder au fichier. Pour toute autre valeur entière, Chrome laisse la page accéder immédiatement au fichier.
 
-      Le champ <ph name="ENTERPRISE_CONNECTOR_BLOCK_PASSWORD_PROTECTED_FIELD" /> permet de définir si Chrome doit bloquer ou autoriser les fichiers protégés par un mot de passe.
+      Le champ <ph name="ENTERPRISE_CONNECTOR_BLOCK_PASSWORD_PROTECTED_FIELD" /> permet de définir si Chrome doit bloquer ou autoriser l'accès aux fichiers protégés par un mot de passe.
 
-      Le champ <ph name="ENTERPRISE_CONNECTOR_BLOCK_LARGE_FILES_FIELD" /> permet de définir si Chrome doit bloquer ou autoriser les fichiers trop volumineux pour être analysés (plus de 50 Mo).
+      Le champ <ph name="ENTERPRISE_CONNECTOR_BLOCK_LARGE_FILES_FIELD" /> permet de définir si Chrome doit bloquer ou autoriser l'accès aux fichiers trop volumineux pour être analysés (plus de 50 Mo).
 
       Cette règle ne peut être définie que dans la Console d'administration Google.</translation>
 <translation id="9077227880520270584">Minuteur de connexion automatique au compte local de l'appareil</translation>

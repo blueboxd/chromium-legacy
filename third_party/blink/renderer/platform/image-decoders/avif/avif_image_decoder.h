@@ -70,7 +70,6 @@ class PLATFORM_EXPORT AVIFImageDecoder final : public ImageDecoder {
                    const gfx::ColorSpace& frame_cs,
                    ImageFrame* buffer);
 
-  bool pending_decoded_image_ = false;
   bool is_high_bit_depth_ = false;
   bool decode_to_half_float_ = false;
   size_t decoded_frame_count_ = 0;

@@ -53,6 +53,7 @@
 <translation id="1540800554400757039">Адрес 1</translation>
 <translation id="1545749641540134597">Сканирайте код за бърза реакция</translation>
 <translation id="1552525382687785070">Синхронизирането е деактивирано от администратора ви</translation>
+<translation id="1554477036522844996">Нов прозорец</translation>
 <translation id="1580783302095112590">Пощата е изпратена.</translation>
 <translation id="1582732959743469162">Текущото изтегляне ще бъде прекратено.</translation>
 <translation id="1605658421715042784">Копиране на изображението</translation>
@@ -187,6 +188,7 @@
 <translation id="3328801116991980348">Информация за сайта</translation>
 <translation id="3329904751041170572">Не можа да се установи връзка със сървъра.</translation>
 <translation id="3335947283844343239">Повторно отваряне на затворения раздел</translation>
+<translation id="3343651535143698944">Добавяне на изключение за сайт</translation>
 <translation id="3371831930909698441">Налице е превод. Опциите са достъпни в долната част на екрана.</translation>
 <translation id="3393920035788932672">Изск. прозорци са разр.</translation>
 <translation id="3443810440409579745">Получен раздел.</translation>
@@ -555,6 +557,7 @@
 <translation id="8319076807703933069">Ново търсене</translation>
 <translation id="8323906514956095947">Докоснете и задръжте, за да видите още опции за разделите</translation>
 <translation id="8328777765163860529">Затваряне на всички</translation>
+<translation id="8332159733957009464">Изключения за сайта</translation>
 <translation id="8386068868580335421">Нулиране</translation>
 <translation id="8407669440184693619">Няма намерени пароли за този сайт</translation>
 <translation id="842017693807136194">Влезли сте със:</translation>

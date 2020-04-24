@@ -35,11 +35,11 @@
 namespace blink {
 
 BarProp::BarProp(LocalFrame* frame, Type type)
-    : DOMWindowClient(frame), type_(type) {}
+    : ExecutionContextClient(frame), type_(type) {}
 
 void BarProp::Trace(Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
-  DOMWindowClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
 }
 
 bool BarProp::visible() const {

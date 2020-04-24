@@ -1201,7 +1201,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="258095186877893873">Lang</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> – <ph name="PRODUCT_VERSION" /> (plattform <ph name="PLATFORM_VERSION" />) – <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Kunne ikke hente Kerberos-saken. Prøv på nytt, eller kontakt enhetsadministratoren for organisasjonen din. (Feilkode <ph name="ERROR_CODE" />).</translation>
-<translation id="2585013490795742997">Viser 1 søkeresultat for <ph name="QUERY" /></translation>
+<translation id="2585013490795742997">Viser ett søkeresultat for <ph name="QUERY" /></translation>
 <translation id="2585724835339714757">Denne fanen deler skjermen din.</translation>
 <translation id="2586657967955657006">Utklippstavle</translation>
 <translation id="2586672484245266891">Skriv inn en kortere nettadresse</translation>

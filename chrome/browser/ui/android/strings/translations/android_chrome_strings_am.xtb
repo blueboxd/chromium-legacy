@@ -164,7 +164,6 @@
 <translation id="2131665479022868825"><ph name="DATA" /> ተቀምጧል</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> ተዘግቷል</translation>
 <translation id="2139186145475833000">ወደ መነሻ ማያ ገጽ አክል</translation>
-<translation id="2146738493024040262">ቅጽበታዊ መተግበሪያን ክፈት</translation>
 <translation id="2154484045852737596">ካርትን ያርትዑ</translation>
 <translation id="2154710561487035718">URL ቅዳ</translation>
 <translation id="2156074688469523661">ቀሪ ጣቢያዎች (<ph name="NUMBER_OF_SITES" />)</translation>
@@ -281,7 +280,6 @@
 <translation id="2996809686854298943">ዩአርኤል ያስፈልጋል</translation>
 <translation id="300526633675317032">ይህ ሁሉንም <ph name="SIZE_IN_KB" /> የድር ጣቢያ ማከማቻ ያጸዳል።</translation>
 <translation id="3016635187733453316">ይህ መሣሪያ ወደ በይነ መረብ እንደተገናኘ እርግጠኛ ይሁኑ</translation>
-<translation id="3029613699374795922"><ph name="KBS" /> ኪባ ወርዷል</translation>
 <translation id="3029704984691124060">የይለፍ ሐረጎቹ አይዛመዱም</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />እገዛ ያግኙ<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">አካባቢ ጠፍቷል፤ በ<ph name="BEGIN_LINK" />Android ቅንብሮች<ph name="END_LINK" /> ውስጥ ያብሩት።</translation>
@@ -457,7 +455,6 @@
 <translation id="4411535500181276704">ቀላል ሁነታ</translation>
 <translation id="4415276339145661267">የGoogle መለያዎን ያቀናብሩ</translation>
 <translation id="4432792777822557199">በ<ph name="SOURCE_LANGUAGE" /> ያሉ ገጾች ወደ <ph name="TARGET_LANGUAGE" /> ከአሁን በኋላ ይተረጎማሉ</translation>
-<translation id="4433925000917964731">ቀላል ገጹ በGoogle ቀርቧል።</translation>
 <translation id="4434045419905280838">ብቅ-ባዮች እና አቅጣጫ ማዞሮች</translation>
 <translation id="4440958355523780886">ቀላል ገጽ በGoogle ቀርቧል። ኦርጂናሉን ለመጫን መታ ያድርጉ።</translation>
 <translation id="4452411734226507615">የ<ph name="TAB_TITLE" /> ትር ዝጋ</translation>
@@ -737,7 +734,6 @@
 <translation id="6406506848690869874">አመሳስል</translation>
 <translation id="6410973561433500075">ኤአር ከ<ph name="DOMAIN" /> ይግባ?</translation>
 <translation id="641643625718530986">አትም…</translation>
-<translation id="6416782512398055893"><ph name="MBS" /> ሜባ ወርዷል</translation>
 <translation id="6427112570124116297">ድሩን ያስተርጉሙ</translation>
 <translation id="6433501201775827830">የእርስዎን የፍለጋ ፕሮግራም ይምረጡ</translation>
 <translation id="6437478888915024427">የገጽ መረጃ</translation>
@@ -745,7 +741,6 @@
 <translation id="6441734959916820584">ስም በጣም ረጅም ነው</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# ምስል}one{# ምስሎች}other{# ምስሎች}}</translation>
 <translation id="6447558397796644647">ዕልባቱን ማግኘት አልተቻለም። የፊደል አጻጻፍዎን ይመልከቱ ወይም አዲስ ዕልባት ያግኙ።</translation>
-<translation id="6447842834002726250">ኩኪዎች</translation>
 <translation id="6461962085415701688">ፋይሉን መክፈት አይቻልም</translation>
 <translation id="6464977750820128603">በChrome ውስጥ የሚጎበኟቸውን ጣቢያዎች መመልከት እና ለእነሱ ሰዓት ቆጣሪዎችን ማቀናበር ይችላሉ።\n\nGoogle ሰዓት ቆጣሪዎች ስለሚያቀናብሩላቸው ጣቢያዎች እና ለምን ያህል ርዝመት እንደሚጎበኟቸው መረጃ ያገኛል። ይህ መረጃ ዲጂታል ብቁ መሆን የተሻለ ለማድረግ ስራ ላይ ይውላል።</translation>
 <translation id="6475951671322991020">ቪድዮ አውርድ</translation>
@@ -754,7 +749,6 @@
 <translation id="6508722015517270189">Chromeን ዳግም ያስጀምሩት</translation>
 <translation id="6532866250404780454">በChrome ውስጥ የሚጎበኟቸው ጣቢያዎች አይታዩም። ሁሉም ሰዓት ቆጣሪዎች ይሰረዛሉ።</translation>
 <translation id="6534565668554028783">Google ምላሽ ለመስጠት ከልክ በላይ ረዥም ጊዜ ወስዷል</translation>
-<translation id="6538442820324228105"><ph name="GBS" /> ጊባ ወርዷል</translation>
 <translation id="6539092367496845964">የሆነ ችግር ተፈጥሯል። ቆይተው እንደገና ይሞክሩ።</translation>
 <translation id="6545017243486555795">ሁሉንም ውሂብ አጽዳ</translation>
 <translation id="6545864417968258051">የብሉቱዝ ቅኝት</translation>
@@ -855,6 +849,7 @@
 <translation id="7352939065658542140">ቪድዮ</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{1 የተመረጠ ንጥል አጋራ}one{# የተመረጡ ንጥሎችን አጋራ}other{# የተመረጡ ንጥሎችን አጋራ}}</translation>
 <translation id="7359002509206457351">የመዳረሻ መክፈያ ዘዴዎች</translation>
+<translation id="7362144854749094396">ታሪክ ከChrome ጋር ይጋራል። ምርጫዎች ከ<ph name="SITE_NAME" /> ጋር ይጋራሉ።</translation>
 <translation id="7375125077091615385">ዓይነት፦</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />።</translation>
 <translation id="7400418766976504921">URL</translation>

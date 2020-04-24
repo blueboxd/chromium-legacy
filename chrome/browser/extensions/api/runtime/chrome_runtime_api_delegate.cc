@@ -56,20 +56,13 @@ const char kUpdateThrottled[] = "throttled";
 const char kUpdateNotFound[] = "no_update";
 const char kUpdateFound[] = "update_available";
 
-// If an extension reloads itself within this many miliseconds of reloading
+// If an extension reloads itself within this many milliseconds of reloading
 // itself, the reload is considered suspiciously fast.
 const int kFastReloadTime = 10000;
 
 // Same as above, but we shorten the fast reload interval for unpacked
 // extensions for ease of testing.
 const int kUnpackedFastReloadTime = 1000;
-
-// After this many suspiciously fast consecutive reloads, an extension will get
-// disabled.
-const int kFastReloadCount = 5;
-
-// Same as above, but we increase the fast reload count for unpacked extensions.
-const int kUnpackedFastReloadCount = 30;
 
 // A holder class for the policy we use for exponential backoff of update check
 // requests.
@@ -184,14 +177,14 @@ void ChromeRuntimeAPIDelegate::ReloadExtension(
       extensions::ExtensionRegistry::Get(browser_context_)
           ->GetInstalledExtension(extension_id);
   int fast_reload_time = kFastReloadTime;
-  int fast_reload_count = kFastReloadCount;
+  int fast_reload_count = extensions::RuntimeAPI::kFastReloadCount;
 
   // If an extension is unpacked, we allow for a faster reload interval
   // and more fast reload attempts before terminating the extension.
   // This is intended to facilitate extension testing for developers.
   if (extensions::Manifest::IsUnpackedLocation(extension->location())) {
     fast_reload_time = kUnpackedFastReloadTime;
-    fast_reload_count = kUnpackedFastReloadCount;
+    fast_reload_count = extensions::RuntimeAPI::kUnpackedFastReloadCount;
   }
 
   std::pair<base::TimeTicks, int>& reload_info =

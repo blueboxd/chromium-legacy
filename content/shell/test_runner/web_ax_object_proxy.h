@@ -13,7 +13,6 @@
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
 #include "third_party/blink/public/web/web_ax_object.h"
-#include "v8/include/v8-util.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -253,8 +252,13 @@ class WebAXObjectProxyList : public WebAXObjectProxy::Factory {
   v8::Local<v8::Object> GetOrCreate(const blink::WebAXObject&) override;
 
  private:
-  typedef v8::PersistentValueVector<v8::Object> ElementList;
-  ElementList elements_;
+  // Defines the Persistents as copyable because v8 does not support moving
+  // in non-copyable (default) traits either.
+  using CopyablePersistentObject =
+      v8::Persistent<v8::Object, v8::CopyablePersistentTraits<v8::Object>>;
+  // Because the v8::Persistent in this container uses CopyablePersistentObject
+  // traits, it will not leak on destruction.
+  std::vector<CopyablePersistentObject> elements_;
 };
 
 }  // namespace content

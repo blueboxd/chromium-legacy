@@ -8,8 +8,8 @@
 #include <type_traits>
 #include "base/json/string_escape.h"
 #include "base/logging.h"
-
 #include "components/feed/core/proto/v2/wire/content_id.pb.h"
+#include "components/feed/core/v2/stream_model_update_request.h"
 
 namespace feed {
 namespace {}  // namespace
@@ -232,6 +232,25 @@ std::string ToTextProto(const feedstore::StoredAction& v) {
 }
 std::string ToTextProto(const feedstore::Record& v) {
   return TextProtoPrinter::ToString(v);
+}
+
+std::ostream& operator<<(std::ostream& os, const StreamModelUpdateRequest& v) {
+  os << "source: " << static_cast<int>(v.source) << '\n';
+  os << "stream_data: " << v.stream_data;
+  for (auto& content : v.content) {
+    os << "content: " << content;
+  }
+  for (auto& shared_state : v.shared_states) {
+    os << "shared_state: " << shared_state;
+  }
+  for (auto& stream_structure : v.stream_structures) {
+    os << "stream_structure: " << stream_structure;
+  }
+  os << "server_response_time: " << v.server_response_time << '\n';
+  os << "response_time: " << v.response_time << '\n';
+  os << "max_structure_sequence_number: " << v.max_structure_sequence_number
+     << '\n';
+  return os;
 }
 
 }  // namespace feed

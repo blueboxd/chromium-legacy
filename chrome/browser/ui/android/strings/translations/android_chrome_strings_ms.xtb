@@ -164,7 +164,6 @@ Ketik mana-mana perkataan untuk mencari. Untuk memperhalus carian anda, sentuh &
 <translation id="2131665479022868825"><ph name="DATA" /> disimpan</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> tertutup</translation>
 <translation id="2139186145475833000">Tambahkan kepada Skrin utama</translation>
-<translation id="2146738493024040262">Buka Apl Segera</translation>
 <translation id="2154484045852737596">Edit kad</translation>
 <translation id="2154710561487035718">Salin URL</translation>
 <translation id="2156074688469523661">Baki tapak (<ph name="NUMBER_OF_SITES" />)</translation>
@@ -281,7 +280,6 @@ Sentuh &amp; tahan mana-mana perkataan untuk mencari. Untuk memperhalus carian a
 <translation id="2996809686854298943">URL yang diperlukan</translation>
 <translation id="300526633675317032">Tindakan ini akan menghapuskan semua <ph name="SIZE_IN_KB" /> daripada storan tapak web.</translation>
 <translation id="3016635187733453316">Pastikan peranti ini disambungkan ke Internet</translation>
-<translation id="3029613699374795922">Dimuat turun <ph name="KBS" /> KB</translation>
 <translation id="3029704984691124060">Frasa laluan tidak sepadan</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Dapatkan bantuan<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Lokasi dimatikan, hidupkannya dalam <ph name="BEGIN_LINK" />Tetapan Android<ph name="END_LINK" />.</translation>
@@ -457,7 +455,6 @@ Anda sahaja yang boleh melihat perkara yang dilihat oleh kamera anda. Tapak ters
 <translation id="4411535500181276704">Mod Ringkas</translation>
 <translation id="4415276339145661267">Urus Akaun Google anda</translation>
 <translation id="4432792777822557199">Halaman dalam <ph name="SOURCE_LANGUAGE" /> akan diterjemahkan kepada <ph name="TARGET_LANGUAGE" /> bermula dari sekarang</translation>
-<translation id="4433925000917964731">Halaman Lite disediakan oleh Google</translation>
 <translation id="4434045419905280838">Tetingkap timbul dan ubah hala</translation>
 <translation id="4440958355523780886">Halaman Lite disediakan oleh Google. Ketik untuk memuatkan halaman asal.</translation>
 <translation id="4452411734226507615">Tutup tab <ph name="TAB_TITLE" /></translation>
@@ -737,7 +734,6 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="6406506848690869874">Segerak</translation>
 <translation id="6410973561433500075">Masuki AR daripada <ph name="DOMAIN" />?</translation>
 <translation id="641643625718530986">Cetak…</translation>
-<translation id="6416782512398055893">Dimuat turun <ph name="MBS" /> MB</translation>
 <translation id="6427112570124116297">Terjemah Web</translation>
 <translation id="6433501201775827830">Pilih enjin carian anda</translation>
 <translation id="6437478888915024427">Maklumat halaman</translation>
@@ -745,7 +741,6 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="6441734959916820584">Nama terlalu panjang</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# Imej}other{# Imej}}</translation>
 <translation id="6447558397796644647">Tidak menjumpai penanda halaman itu. Semak ejaan anda atau tambahkan penanda halaman baharu.</translation>
-<translation id="6447842834002726250">Kuki</translation>
 <translation id="6461962085415701688">Tidak dapat membuka fail</translation>
 <translation id="6464977750820128603">Anda dapat melihat tapak yang anda lawati dalam Chrome dan menetapkan pemasa untuk tapak tersebut.\n\nGoogle menerima maklumat tentang tapak yang pemasanya telah anda tetapkan dan tempoh anda berada di tapak itu. Maklumat ini digunakan untuk menambah baik Kesejahteraan Digital.</translation>
 <translation id="6475951671322991020">Muat turun video</translation>
@@ -754,7 +749,6 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="6508722015517270189">Mulakan semula Chrome</translation>
 <translation id="6532866250404780454">Tapak yang anda lawati dalam Chrome tidak akan dipaparkan. Semua pemasa tapak akan dipadamkan.</translation>
 <translation id="6534565668554028783">Google mengambil masa terlalu lama untuk bertindak balas</translation>
-<translation id="6538442820324228105">Dimuat turun <ph name="GBS" /> GB</translation>
 <translation id="6539092367496845964">Kesilapan telah berlaku. Cuba sebentar lagi.</translation>
 <translation id="6545017243486555795">Hapuskan Semua Data</translation>
 <translation id="6545864417968258051">Pengimbasan Bluetooth</translation>
@@ -855,6 +849,7 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Kongsi 1 item yang dipilih}other{Kongsi # item yang dipilih}}</translation>
 <translation id="7359002509206457351">Akses kaedah pembayaran</translation>
+<translation id="7362144854749094396">Sejarah dikongsi dengan Chrome. Pilihan dikongsi dengan <ph name="SITE_NAME" />.</translation>
 <translation id="7375125077091615385">Jenis:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>

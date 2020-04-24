@@ -16,8 +16,8 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/page/frame_tree.h"
 #include "third_party/blink/renderer/core/testing/internals.h"
@@ -41,14 +41,13 @@ ScriptPromise InternalsPermission::setPermission(
     ExceptionState& exception_state) {
   mojom::blink::PermissionDescriptorPtr descriptor =
       ParsePermissionDescriptor(script_state, raw_descriptor, exception_state);
-  if (exception_state.HadException())
+  if (exception_state.HadException() || !script_state->ContextIsValid())
     return ScriptPromise();
 
-  ExecutionContext* context = ExecutionContext::From(script_state);
+  LocalDOMWindow* window = LocalDOMWindow::From(script_state);
   KURL url;
   if (origin.IsNull()) {
-    const SecurityOrigin* security_origin =
-        context->GetSecurityContext().GetSecurityOrigin();
+    const SecurityOrigin* security_origin = window->GetSecurityOrigin();
     if (security_origin->IsOpaque()) {
       exception_state.ThrowDOMException(
           DOMExceptionCode::kNotAllowedError,
@@ -68,19 +67,16 @@ ScriptPromise InternalsPermission::setPermission(
 
   KURL embedding_url;
   if (embedding_origin.IsNull()) {
-    const SecurityOrigin* security_origin = Document::From(context)
-                                                ->GetFrame()
-                                                ->Tree()
-                                                .Top()
-                                                .GetSecurityContext()
-                                                ->GetSecurityOrigin();
-    if (security_origin->IsOpaque()) {
+    Frame& top_frame = window->GetFrame()->Tree().Top();
+    const SecurityOrigin* top_security_origin =
+        top_frame.GetSecurityContext()->GetSecurityOrigin();
+    if (top_security_origin->IsOpaque()) {
       exception_state.ThrowDOMException(
           DOMExceptionCode::kNotAllowedError,
           "Unable to set permission for an opaque embedding origin.");
       return ScriptPromise();
     }
-    embedding_url = KURL(security_origin->ToString());
+    embedding_url = KURL(top_security_origin->ToString());
   } else {
     embedding_url = KURL(embedding_origin);
     if (!embedding_url.IsValid()) {

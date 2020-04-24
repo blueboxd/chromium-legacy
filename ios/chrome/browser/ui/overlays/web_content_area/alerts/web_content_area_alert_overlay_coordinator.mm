@@ -9,7 +9,6 @@
 #include "ios/chrome/browser/overlays/public/overlay_request_support.h"
 #import "ios/chrome/browser/ui/overlays/common/alerts/alert_overlay_coordinator+alert_mediator_creation.h"
 #import "ios/chrome/browser/ui/overlays/overlay_request_mediator_util.h"
-#import "ios/chrome/browser/ui/overlays/web_content_area/app_launcher/app_launcher_alert_overlay_mediator.h"
 #import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/java_script_alert_overlay_mediator.h"
 #import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/java_script_confirmation_overlay_mediator.h"
 #import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/java_script_prompt_overlay_mediator.h"
@@ -33,7 +32,6 @@
   dispatch_once(&onceToken, ^{
     _supportedMediatorClasses = @[
       [AlertOverlayMediator class],
-      [AppLauncherAlertOverlayMediator class],
       [JavaScriptConfirmationOverlayMediator class],
       [JavaScriptAlertOverlayMediator class],
       [JavaScriptPromptOverlayMediator class],

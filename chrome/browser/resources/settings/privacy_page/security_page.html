@@ -4,6 +4,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_radio_group/cr_radio_group.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_indicator_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
 <link rel="import" href="collapse_radio_button.html">
@@ -25,13 +26,13 @@
 
 <dom-module id="settings-security-page">
   <template>
-    <style include="settings-shared">
+    <style include="cr-shared-style settings-shared">
       img {
         width: 100%;
       }
 
-      .block {
-        display: block;
+      #safeBrowsingSection {
+        padding: 0 var(--cr-section-padding);
       }
 
       .bullet-line {
@@ -82,7 +83,7 @@
       <img id="banner" alt=""
           src="chrome://settings/images/safe_browsing_banner.svg">
     </picture>
-    <div class="settings-box block first">
+    <div id="safeBrowsingSection">
       <h2>$i18n{safeBrowsingSectionLabel}</h2>
       <cr-radio-group id="safeBrowsingRadio"
           selected="[[selectSafeBrowsingRadio_]]"
@@ -176,7 +177,7 @@
         </settings-collapse-radio-button>
       </cr-radio-group>
     </div>
-    <div class="settings-box first line-only">
+    <div class="cr-row first">
       <h2>$i18n{advancedPageTitle}</h2>
     </div>
     <template is="dom-if" if="[[showSecureDnsSetting_]]">

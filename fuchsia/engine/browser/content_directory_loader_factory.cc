@@ -103,21 +103,23 @@ ContentDirectoriesMap* GetContentDirectories() {
 scoped_refptr<net::HttpResponseHeaders> CreateHeaders(
     base::StringPiece mime_type,
     const base::Optional<std::string>& charset) {
-  constexpr char kXFrameOptionsHeader[] = "X-Frame-Options: DENY";
-  constexpr char kCacheHeader[] = "Cache-Control: no-cache";
-  constexpr char kContentTypePrefix[] = "Content-Type: ";
+  constexpr char kXFrameOptions[] = "X-Frame-Options";
+  constexpr char kXFrameOptionsValue[] = "DENY";
+  constexpr char kCacheControl[] = "Cache-Control";
+  constexpr char kCacheControlValue[] = "no-cache";
+  constexpr char kContentType[] = "Content-Type";
   constexpr char kCharsetSeparator[] = "; charset=";
 
   auto headers =
       base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.1 200 OK\r\n");
-  headers->AddHeader(kXFrameOptionsHeader);
-  headers->AddHeader(kCacheHeader);
+  headers->SetHeader(kXFrameOptions, kXFrameOptionsValue);
+  headers->SetHeader(kCacheControl, kCacheControlValue);
 
   if (charset) {
-    headers->AddHeader(base::StrCat(
-        {kContentTypePrefix, mime_type, kCharsetSeparator, *charset}));
+    headers->SetHeader(kContentType,
+                       base::StrCat({mime_type, kCharsetSeparator, *charset}));
   } else {
-    headers->AddHeader(base::StrCat({kContentTypePrefix, mime_type}));
+    headers->SetHeader(kContentType, mime_type);
   }
 
   return headers;

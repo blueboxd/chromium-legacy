@@ -150,6 +150,10 @@ const base::Feature kDriveFs{"DriveFS", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kDriveFsMirroring{"DriveFsMirroring",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables the DLC Settings subpage in Device section of OS Settings.
+const base::Feature kDlcSettingsUi{"DlcSettingsUi",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If enabled, allows Unicorn users to add secondary EDU accounts.
 const base::Feature kEduCoexistence{"EduCoexistence",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
@@ -225,6 +229,12 @@ const base::Feature kVirtualKeyboardFloatingDefault{
 
 // Enables or disables Instant Tethering on Chrome OS.
 const base::Feature kInstantTethering{"InstantTethering",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
+// See kLacrosSupport below. This feature also enables a separate icon in the
+// shelf and app list representing the lacros-chrome browser, much like how
+// Windows supports a side-by-side installation of Chrome canary.
+const base::Feature kLacrosSideBySide{"LacrosSideBySide",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables "Linux and Chrome OS" support. Allows a Linux version of Chrome
@@ -409,6 +419,10 @@ bool IsImeDecoderWithSandboxEnabled() {
 bool IsInstantTetheringBackgroundAdvertisingSupported() {
   return base::FeatureList::IsEnabled(
       kInstantTetheringBackgroundAdvertisementSupport);
+}
+
+bool IsLacrosSideBySideEnabled() {
+  return base::FeatureList::IsEnabled(kLacrosSideBySide);
 }
 
 bool IsLacrosSupportEnabled() {

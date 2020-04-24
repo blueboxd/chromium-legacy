@@ -50,6 +50,7 @@ def _CommonChecks(input_api, output_api):
   result.extend(_CheckColorPaletteReferences(input_api, output_api))
   result.extend(_CheckXmlNamespacePrefixes(input_api, output_api))
   result.extend(_CheckTextAppearance(input_api, output_api))
+  result.extend(_CheckLineSpacingAttribute(input_api, output_api))
   result.extend(_CheckButtonCompatWidgetUsage(input_api, output_api))
   # Add more checks here
   return result
@@ -398,6 +399,40 @@ def _CheckNewTextAppearance(input_api, output_api):
     See https://crbug.com/775198 for more information.
   ''', errors)
     ]
+  return []
+
+### unfavored layout attributes below ###
+def _CheckLineSpacingAttribute(input_api, output_api):
+  """
+  Encourage using TextViewWithLeading rather than android:lineSpacingExtra
+  and android:lineSpacingMultiplier.
+  """
+  warnings = []
+  attributes = ['android:lineSpacingExtra', 'android:lineSpacingMultiplier']
+  for f in IncludedFiles(input_api):
+    for line_number, line in f.ChangedContents():
+      for attribute in attributes:
+        if attribute in line:
+          warnings.append(
+              '  %s:%d\n    \t%s' % (f.LocalPath(), line_number, line.strip()))
+
+  if warnings:
+    return [
+      output_api.PresubmitPromptWarning(
+          '''
+  Android Widget Check warning:
+    Your new code is using android:lineSpacingExtra
+    or android:lineSpacingMultiplier, listed below.
+
+    Use org.chromium.ui.widget.TextViewWithLeading instead of
+    using android:lineSpacingExtra or android:lineSpacingMultiplier if possible;
+    TextViewWithLeading is a TextView with the added leading property, which can
+    perform the calculation to setup leading correctly.
+
+    See https://crbug.com/1069805 for more information.
+  ''', warnings)
+    ]
+
   return []
 
 

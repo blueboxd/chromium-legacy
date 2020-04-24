@@ -39,6 +39,8 @@ android_resources("java_resources") {
 
 android_library("java") {
   sources = [
+    "java/src/org/chromium/chrome/browser/ui/messages/infobar/ConfirmInfoBar.java",
+    "java/src/org/chromium/chrome/browser/ui/messages/infobar/InfoBar.java",
     "java/src/org/chromium/chrome/browser/ui/messages/infobar/InfoBarCompactLayout.java",
     "java/src/org/chromium/chrome/browser/ui/messages/infobar/InfoBarControlLayout.java",
     "java/src/org/chromium/chrome/browser/ui/messages/infobar/InfoBarInteractionHandler.java",
@@ -56,6 +58,7 @@ android_library("java") {
     ":java_resources",
     "//base:base_java",
     "//base:jni_java",
+    "//chrome/browser/ui:infobar_android_enums_java",
     "//chrome/browser/util:java",
     "//components/browser_ui/styles/android:java_resources",
     "//components/browser_ui/widget/android:java",
@@ -70,7 +73,11 @@ android_library("java") {
 }
 
 generate_jni("jni_headers") {
-  sources = [ "java/src/org/chromium/chrome/browser/ui/messages/infobar/SimpleConfirmInfoBarBuilder.java" ]
+  sources = [
+    "java/src/org/chromium/chrome/browser/ui/messages/infobar/ConfirmInfoBar.java",
+    "java/src/org/chromium/chrome/browser/ui/messages/infobar/InfoBar.java",
+    "java/src/org/chromium/chrome/browser/ui/messages/infobar/SimpleConfirmInfoBarBuilder.java",
+  ]
 }
 
 java_library("junit") {

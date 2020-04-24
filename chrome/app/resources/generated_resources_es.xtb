@@ -349,6 +349,7 @@
 <translation id="1465176863081977902">C&amp;opiar dirección de audio</translation>
 <translation id="1465827627707997754">Porción de pizza</translation>
 <translation id="1468571364034902819">No se puede utilizar este perfil</translation>
+<translation id="1470084204649225129">{NUM_TABS,plural, =1{Añadir pestaña a nuevo grupo}other{Añadir pestañas a nuevo grupo}}</translation>
 <translation id="1472675084647422956">Mostrar más</translation>
 <translation id="1475502736924165259">Tienes certificados registrados que no corresponden a ninguna otra categoría</translation>
 <translation id="1476088332184200792">Copiar en tu dispositivo</translation>
@@ -477,6 +478,7 @@
 <translation id="1629314197035607094">Contraseña caducada</translation>
 <translation id="1630768113285622200">Reiniciar y continuar</translation>
 <translation id="1632803087685957583">Te permite configurar la frecuencia de repetición del teclado, la predicción de palabras y otros ajustes</translation>
+<translation id="1634783886312010422">¿Has cambiado esta contraseña en <ph name="WEBSITE" />?</translation>
 <translation id="1635033183663317347">Instalada por tu tutor legal.</translation>
 <translation id="1637224376458524414">Obtener este marcador en tu iPhone</translation>
 <translation id="1637765355341780467">Se ha producido un error al abrir tu perfil. Es posible que algunas funciones no estén disponibles.</translation>
@@ -3386,6 +3388,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="5542949973455282971">Conectando con <ph name="CARRIER_NAME" /></translation>
 <translation id="5543983818738093899">Comprobando el estado...</translation>
 <translation id="554517032089923082">GTC</translation>
+<translation id="5545335608717746497">{NUM_TABS,plural, =1{Añadir pestaña a grupo}other{Añadir pestañas a grupo}}</translation>
 <translation id="5546865291508181392">Buscar</translation>
 <translation id="5548159762883465903">{NUM_OTHER_TABS,plural, =0{"<ph name="TAB_TITLE" />"}=1{"<ph name="TAB_TITLE" />" y 1 pestaña más}other{"<ph name="TAB_TITLE" />" y # pestañas más}}</translation>
 <translation id="5548606607480005320">Comprobación de seguridad</translation>
@@ -4210,6 +4213,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6659594942844771486">Pestaña</translation>
 <translation id="6664237456442406323">Lamentablemente, tu ordenador está configurado con un identificador de hardware incorrecto. Esto impide que Chrome OS se actualice con los últimos parches de seguridad y hace que el ordenador <ph name="BEGIN_BOLD" />pueda ser vulnerable a ataques maliciosos<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Se ha producido un error al abrir tu perfil. Cierra sesión y vuelve a iniciarla.</translation>
+<translation id="6670142487971298264"><ph name="APP_NAME" /> ya está disponible</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="6675665718701918026">Dispositivo señalador conectado</translation>
 <translation id="6676212663108450937">Te recomendamos utilizar auriculares cuando entrenes tu voz</translation>
@@ -4539,6 +4543,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7108338896283013870">Ocultar</translation>
 <translation id="7108668606237948702">intro</translation>
 <translation id="7109543803214225826">Se ha quitado el acceso directo</translation>
+<translation id="7110644433780444336">{NUM_TABS,plural, =1{Añadir pestaña a grupo}other{Añadir pestañas a grupo}}</translation>
 <translation id="7113502843173351041">Conocer tu dirección de correo electrónico</translation>
 <translation id="7114054701490058191">Las contraseñas no coinciden</translation>
 <translation id="7114648273807173152">Si quieres usar Smart Lock para iniciar sesión en tu cuenta de Google, ve a Configuración &gt; Dispositivos conectados &gt; Tu teléfono &gt; Smart Lock.</translation>
@@ -4582,6 +4587,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7170041865419449892">Fuera del alcance</translation>
 <translation id="7171259390164035663">No registrar</translation>
 <translation id="7171559745792467651">Instala aplicaciones de tus otros dispositivos</translation>
+<translation id="7172470549472604877">{NUM_TABS,plural, =1{Añadir pestaña a nuevo grupo}other{Añadir pestañas a nuevo grupo}}</translation>
 <translation id="7174199383876220879">¡Nuevo! Controla tu música, tus vídeos y otras muchas cosas.</translation>
 <translation id="7175037578838465313">Configurar <ph name="NAME" /></translation>
 <translation id="7175353351958621980">Cargado desde:</translation>
@@ -4672,7 +4678,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7290594223351252791">Confirmar registro</translation>
 <translation id="7295614427631867477">Ten en cuenta que Android, Google Play y las aplicaciones asociadas se rigen por sus propias políticas de recogida y uso de datos.</translation>
 <translation id="729583233778673644">Permite los cifrados AES y RC4. Esta opción aumenta el riesgo, ya que los algoritmos de cifrado de RC4 no son seguros.</translation>
-<translation id="7296774163727375165">Condiciones de <ph name="DOMAIN" /></translation>
+<translation id="7296774163727375165">Términos de <ph name="DOMAIN" /></translation>
 <translation id="7297443947353982503">Nombre de usuario o contraseña incorrectos o error de autenticación EAP</translation>
 <translation id="729761647156315797">Selecciona el idioma y el teclado</translation>
 <translation id="7297726121602187087">Verde oscuro</translation>
@@ -5160,6 +5166,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7925247922861151263">Error de comprobación de AAA</translation>
 <translation id="7925285046818567682">Esperando a <ph name="HOST_NAME" />...</translation>
 <translation id="7926423016278357561">No es mi perfil</translation>
+<translation id="7928175190925744466">¿Has cambiado esta contraseña?</translation>
 <translation id="7928836894214140642">Gestionado por <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">Los métodos de pago guardados aparecerán aquí</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> está compartiendo la pantalla y el audio.</translation>

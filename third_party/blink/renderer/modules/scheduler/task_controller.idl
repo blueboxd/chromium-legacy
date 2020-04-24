@@ -11,7 +11,7 @@
     MeasureAs=TaskControllerConstructor,
     RuntimeEnabled=WebScheduler
 ] interface TaskController : AbortController {
-    [CallWith=Document] constructor(optional TaskPriority priority = "user-visible");
+    [CallWith=ExecutionContext] constructor(optional TaskPriority priority = "user-visible");
     [MeasureAs=TaskControllerSetPriority] void setPriority(TaskPriority priority);
 };
 

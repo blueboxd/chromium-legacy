@@ -49,16 +49,12 @@ void TestInterfaces::Install(blink::WebLocalFrame* frame) {
   gamepad_controller_->Install(frame);
 }
 
-void TestInterfaces::ResetTestHelperControllers() {
+void TestInterfaces::ResetAll() {
   gamepad_controller_->Reset();
   blink::WebCache::Clear();
 
   for (WebViewTestProxy* web_view_test_proxy : window_list_)
     web_view_test_proxy->Reset();
-}
-
-void TestInterfaces::ResetAll() {
-  ResetTestHelperControllers();
   test_runner_->Reset();
 }
 

@@ -1766,8 +1766,7 @@ TEST(HttpResponseHeadersTest, GetNormalizedHeaderWithCommas) {
   EXPECT_FALSE(parsed->GetNormalizedHeader("f", &value));
 }
 
-// Tests the two-argument version of AddHeader.
-TEST(HttpResponseHeadersTest, AddHeaderTwoArgs) {
+TEST(HttpResponseHeadersTest, AddHeader) {
   scoped_refptr<HttpResponseHeaders> headers = HttpResponseHeaders::TryToCreate(
       "HTTP/1.1 200 OK\n"
       "connection: keep-alive\n"
@@ -1825,60 +1824,6 @@ TEST(HttpResponseHeadersTest, SetHeader) {
       "connection: close\n",
       ToSimpleString(headers));
 }
-
-struct AddHeaderTestData {
-  const char* orig_headers;
-  const char* new_header;
-  const char* expected_headers;
-};
-
-class AddHeaderTest
-    : public HttpResponseHeadersTest,
-      public ::testing::WithParamInterface<AddHeaderTestData> {
-};
-
-TEST_P(AddHeaderTest, AddHeader) {
-  const AddHeaderTestData test = GetParam();
-
-  std::string orig_headers(test.orig_headers);
-  HeadersToRaw(&orig_headers);
-  scoped_refptr<HttpResponseHeaders> parsed(
-      new HttpResponseHeaders(orig_headers));
-
-  std::string new_header(test.new_header);
-  parsed->AddHeader(new_header);
-
-  EXPECT_EQ(std::string(test.expected_headers), ToSimpleString(parsed));
-}
-
-const AddHeaderTestData add_header_tests[] = {
-  { "HTTP/1.1 200 OK\n"
-    "connection: keep-alive\n"
-    "Cache-control: max-age=10000\n",
-
-    "Content-Length: 450",
-
-    "HTTP/1.1 200 OK\n"
-    "connection: keep-alive\n"
-    "Cache-control: max-age=10000\n"
-    "Content-Length: 450\n"
-  },
-  { "HTTP/1.1 200 OK\n"
-    "connection: keep-alive\n"
-    "Cache-control: max-age=10000    \n",
-
-    "Content-Length: 450  ",
-
-    "HTTP/1.1 200 OK\n"
-    "connection: keep-alive\n"
-    "Cache-control: max-age=10000\n"
-    "Content-Length: 450\n"
-  },
-};
-
-INSTANTIATE_TEST_SUITE_P(HttpResponseHeaders,
-                         AddHeaderTest,
-                         testing::ValuesIn(add_header_tests));
 
 struct RemoveHeaderTestData {
   const char* orig_headers;

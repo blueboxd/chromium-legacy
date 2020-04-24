@@ -40,9 +40,12 @@ def get_protoc_common_args(root_dir, proto_path):
 
 def encode_proto(text, message_name, root_dir, proto_path):
   """Calls a command line to encode the text string and returns binary bytes."""
+  input_buffer = text
+  if isinstance(input_buffer, str):
+    input_buffer = text.encode()
   return run_command([protoc_path(root_dir), '--encode=' + message_name]
                      + get_protoc_common_args(root_dir, proto_path),
-                     text.encode())
+                     input_buffer)
 
 
 def decode_proto(data, message_name, root_dir, proto_path):

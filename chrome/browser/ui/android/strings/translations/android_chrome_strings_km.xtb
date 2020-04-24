@@ -164,7 +164,6 @@
 <translation id="2131665479022868825">បានរក្សាទុក <ph name="DATA" /></translation>
 <translation id="213279576345780926">បានបិទ <ph name="TAB_TITLE" /></translation>
 <translation id="2139186145475833000">បន្ថែមទៅអេក្រង់ដើម</translation>
-<translation id="2146738493024040262">បើកកម្មវិធីប្រើភ្លាមៗ</translation>
 <translation id="2154484045852737596">កែសម្រួលកាត</translation>
 <translation id="2154710561487035718">ចម្លង URL</translation>
 <translation id="2156074688469523661">ទំព័រនៅសល់ (<ph name="NUMBER_OF_SITES" />)</translation>
@@ -281,7 +280,6 @@
 <translation id="2996809686854298943">តម្រូវឲ្យមាន URL</translation>
 <translation id="300526633675317032">វានឹងជម្រះ <ph name="SIZE_IN_KB" /> ទាំងស្រុងនៃទំហំផ្ទុកគេហទំព័រ</translation>
 <translation id="3016635187733453316">ត្រូវប្រាកដថា ឧបករណ៍នេះ​មានការតភ្ជាប់អ៊ីនធឺណិត</translation>
-<translation id="3029613699374795922">បាន​ទាញយក <ph name="KBS" /> KB</translation>
 <translation id="3029704984691124060">ឃ្លាសម្ងាត់មិនត្រូវគ្នា</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />ទទួលជំនួយ<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">ទីតាំង​ត្រូវ​បាន​បិទ សូម​បើក​វា​នៅ​ក្នុង <ph name="BEGIN_LINK" />ការ​កំណត់ Android<ph name="END_LINK" /> ។</translation>
@@ -457,7 +455,6 @@
 <translation id="4411535500181276704">មុខងារស្រាល</translation>
 <translation id="4415276339145661267">គ្រប់គ្រង​គណនី Google របស់​អ្នក</translation>
 <translation id="4432792777822557199">ទំព័រជាភាសា <ph name="SOURCE_LANGUAGE" /> នឹងត្រូវបានបកប្រែទៅជាភាសា <ph name="TARGET_LANGUAGE" /> ចាប់ពីពេលនេះតទៅ</translation>
-<translation id="4433925000917964731">ទំព័រស្រាល​ដែល​ផ្ដល់​ដោយ Google</translation>
 <translation id="4434045419905280838">ផ្ទាំងផុស​ និង​ការ​បញ្ជូន​បន្ត</translation>
 <translation id="4440958355523780886">ទំព័រស្រាល​ដែល​ផ្ដល់​ដោយ Google ។ សូម​ចុច​ដើម្បីផ្ទុក​ទំព័រ​ដើម។</translation>
 <translation id="4452411734226507615">បិទ​ផ្ទាំង <ph name="TAB_TITLE" /></translation>
@@ -737,7 +734,6 @@
 <translation id="6406506848690869874">សមកាលកម្ម</translation>
 <translation id="6410973561433500075">ចូល AR ពី <ph name="DOMAIN" /> ឬ?</translation>
 <translation id="641643625718530986">បោះពុម្ព…</translation>
-<translation id="6416782512398055893">បាន​ទាញយក <ph name="MBS" /> MB</translation>
 <translation id="6427112570124116297">បកប្រែ​គេហទំព័រ</translation>
 <translation id="6433501201775827830">ជ្រើសរើស​ម៉ាស៊ីន​ស្វែងរករបស់អ្នក</translation>
 <translation id="6437478888915024427">ព័ត៌មាន​អំពី​ទំព័រ</translation>
@@ -745,7 +741,6 @@
 <translation id="6441734959916820584">ឈ្មោះ​វែងពេក</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{រូបភាព #}other{រូបភាព #}}</translation>
 <translation id="6447558397796644647">រកមិនឃើញចំណាំនោះទេ។ សូមពិនិត្យមើលអក្ខរាវិរុទ្ធរបស់អ្នក ឬបញ្ចូលចំណាំថ្មី។</translation>
-<translation id="6447842834002726250">ខុកឃី</translation>
 <translation id="6461962085415701688">មិនអាចបើកឯកសារបានទេ</translation>
 <translation id="6464977750820128603">អ្នកអាច​ឃើញ​គេហទំព័រដែល​អ្នកចូលមើល​នៅក្នុង Chrome និងកំណត់​កម្មវិធី​កំណត់ពេល​សម្រាប់គេហ​ទំព័រទាំងនោះ។\n\nGoogle ទទួលបាន​ព័ត៌មានអំពី​គេហទំព័រដែល​អ្នកកំណត់​កម្មវិធី​កំណត់ពេល និងរយៈពេលដែលអ្នកចូលមើល​សម្រាប់គេហទំព័រ​ទាំងនោះ។ ព័ត៌មាន​នេះត្រូវបាន​ប្រើ ដើម្បី​ធ្វើឱ្យសុខុមាលភាពឌីជីថល​ប្រសើរ​ជាងមុន។</translation>
 <translation id="6475951671322991020">ទាញយកវីដេអូ</translation>
@@ -754,7 +749,6 @@
 <translation id="6508722015517270189">ចាប់ផ្តើម Chrome ឡើងវិញ</translation>
 <translation id="6532866250404780454">គេហ​ទំព័រដែល​អ្នកចូលមើល​នៅក្នុង Chrome នឹងមិនបង្ហាញទេ។ កម្មវិធី​កំណត់ពេលរបស់​គេហទំព័រទាំង​អស់នឹងត្រូវ​បានលុប។</translation>
 <translation id="6534565668554028783">Google បាន​ចំណាយពេល​យូរពេក​ក្នុងការ​ឆ្លើយតប</translation>
-<translation id="6538442820324228105">បាន​ទាញយក <ph name="GBS" /> GB</translation>
 <translation id="6539092367496845964">មានអ្វីមួយខុសប្រក្រតី។ សូមព្យាយាមម្តង​ទៀតនៅ​ពេលក្រោយ។</translation>
 <translation id="6545017243486555795">ជម្រះទិន្នន័យទាំងអស់</translation>
 <translation id="6545864417968258051">ការស្កេនប៊្លូធូស</translation>

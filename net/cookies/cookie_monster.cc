@@ -904,7 +904,7 @@ void CookieMonster::TrimDuplicateCookiesForKey(const std::string& key,
     dupes.erase(dupes.begin());
 
     LOG(ERROR) << base::StringPrintf(
-        "Found %d duplicate cookies for host='%s', "
+        "Found %d duplicate cookies for key='%s', "
         "with {name='%s', domain='%s', path='%s'}",
         static_cast<int>(dupes.size()), key.c_str(),
         std::get<0>(signature).c_str(), std::get<1>(signature).c_str(),
@@ -998,68 +998,72 @@ void CookieMonster::MaybeDeleteEquivalentCookieAndUpdateStatus(
       CanonicalCookie::CookieInclusionStatus::EXCLUDE_OVERWRITE_HTTP_ONLY));
 
   bool found_equivalent_cookie = false;
-  CookieMap::iterator maybe_delete_it = cookies_.end();
-  CanonicalCookie* cc_skipped_secure = nullptr;
+  CookieMap::iterator deletion_candidate_it = cookies_.end();
+  CanonicalCookie* skipped_secure_cookie = nullptr;
 
   // Check every cookie matching this domain key for equivalence.
   CookieMapItPair range_its = cookies_.equal_range(key);
   for (auto cur_it = range_its.first; cur_it != range_its.second; ++cur_it) {
-    CanonicalCookie* cc = cur_it->second.get();
+    CanonicalCookie* cur_existing_cookie = cur_it->second.get();
 
     // Evaluate "Leave Secure Cookies Alone":
-    // If the cookie is being set from an insecure scheme, then if a cookie
-    // already exists with the same name and it is Secure, then the cookie
-    // should *not* be updated if they domain-match and ignoring the path
-    // attribute. This notion of equivalence is slightly more inclusive than the
-    // usual IsEquivalent() check.
+    // If the cookie is being set from an insecure source, then if an
+    // "equivalent" Secure cookie already exists, then the cookie should *not*
+    // be updated.
+    //
+    // "Equivalent" means they are the same by
+    // IsEquivalentForSecureCookieMatching(). See the comment there for
+    // details. (Note this is not a symmetric comparison.) This notion of
+    // equivalence is slightly more inclusive than the usual IsEquivalent() one.
     //
     // See: https://tools.ietf.org/html/draft-ietf-httpbis-cookie-alone
-    if (cc->IsSecure() && !source_secure &&
-        cookie_being_set.IsEquivalentForSecureCookieMatching(*cc)) {
+    if (cur_existing_cookie->IsSecure() && !source_secure &&
+        cookie_being_set.IsEquivalentForSecureCookieMatching(
+            *cur_existing_cookie)) {
       // Hold onto this for additional Netlogging later if we end up preserving
       // a would-have-been-deleted cookie because of this.
-      cc_skipped_secure = cc;
+      skipped_secure_cookie = cur_existing_cookie;
       net_log_.AddEvent(NetLogEventType::COOKIE_STORE_COOKIE_REJECTED_SECURE,
                         [&](NetLogCaptureMode capture_mode) {
                           return NetLogCookieMonsterCookieRejectedSecure(
-                              cc_skipped_secure, &cookie_being_set,
+                              skipped_secure_cookie, &cookie_being_set,
                               capture_mode);
                         });
       status->AddExclusionReason(
           CanonicalCookie::CookieInclusionStatus::EXCLUDE_OVERWRITE_SECURE);
     }
 
-    if (cookie_being_set.IsEquivalent(*cc)) {
+    if (cookie_being_set.IsEquivalent(*cur_existing_cookie)) {
       // We should never have more than one equivalent cookie, since they should
       // overwrite each other.
       CHECK(!found_equivalent_cookie)
           << "Duplicate equivalent cookies found, cookie store is corrupted.";
-      DCHECK(maybe_delete_it == cookies_.end());
+      DCHECK(deletion_candidate_it == cookies_.end());
       found_equivalent_cookie = true;
 
       // The |cookie_being_set| is rejected for trying to overwrite an httponly
       // cookie when it should not be able to.
-      if (skip_httponly && cc->IsHttpOnly()) {
+      if (skip_httponly && cur_existing_cookie->IsHttpOnly()) {
         net_log_.AddEvent(
             NetLogEventType::COOKIE_STORE_COOKIE_REJECTED_HTTPONLY,
             [&](NetLogCaptureMode capture_mode) {
               return NetLogCookieMonsterCookieRejectedHttponly(
-                  cc, &cookie_being_set, capture_mode);
+                  cur_existing_cookie, &cookie_being_set, capture_mode);
             });
         status->AddExclusionReason(CanonicalCookie::CookieInclusionStatus::
                                        EXCLUDE_OVERWRITE_HTTP_ONLY);
       } else {
-        maybe_delete_it = cur_it;
+        deletion_candidate_it = cur_it;
       }
     }
   }
 
-  if (maybe_delete_it != cookies_.end()) {
-    CanonicalCookie* maybe_delete_cc = maybe_delete_it->second.get();
-    if (maybe_delete_cc->Value() == cookie_being_set.Value())
-      *creation_date_to_inherit = maybe_delete_cc->CreationDate();
+  if (deletion_candidate_it != cookies_.end()) {
+    CanonicalCookie* deletion_candidate = deletion_candidate_it->second.get();
+    if (deletion_candidate->Value() == cookie_being_set.Value())
+      *creation_date_to_inherit = deletion_candidate->CreationDate();
     if (status->IsInclude()) {
-      InternalDeleteCookie(maybe_delete_it, true,
+      InternalDeleteCookie(deletion_candidate_it, true /* sync_to_store */,
                            already_expired ? DELETE_COOKIE_EXPIRED_OVERWRITE
                                            : DELETE_COOKIE_OVERWRITE);
     } else if (status->HasExclusionReason(
@@ -1067,14 +1071,14 @@ void CookieMonster::MaybeDeleteEquivalentCookieAndUpdateStatus(
                        EXCLUDE_OVERWRITE_SECURE)) {
       // Log that we preserved a cookie that would have been deleted due to
       // Leave Secure Cookies Alone. This arbitrarily only logs the last
-      // |cc_skipped_secure| that we were left with after the for loop, even if
-      // there were multiple matching Secure cookies that were left alone.
-      DCHECK(cc_skipped_secure);
+      // |skipped_secure_cookie| that we were left with after the for loop, even
+      // if there were multiple matching Secure cookies that were left alone.
+      DCHECK(skipped_secure_cookie);
       net_log_.AddEvent(
           NetLogEventType::COOKIE_STORE_COOKIE_PRESERVED_SKIPPED_SECURE,
           [&](NetLogCaptureMode capture_mode) {
             return NetLogCookieMonsterCookiePreservedSkippedSecure(
-                cc_skipped_secure, maybe_delete_cc, &cookie_being_set,
+                skipped_secure_cookie, deletion_candidate, &cookie_being_set,
                 capture_mode);
           });
     }

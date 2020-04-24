@@ -164,7 +164,6 @@
 <translation id="2131665479022868825"><ph name="DATA" /> сақталды</translation>
 <translation id="213279576345780926">Жабық <ph name="TAB_TITLE" /></translation>
 <translation id="2139186145475833000">Негізгі экранға қосу</translation>
-<translation id="2146738493024040262">Instant App ашу</translation>
 <translation id="2154484045852737596">Карта мәліметін өңдеу</translation>
 <translation id="2154710561487035718">URL сілтемесін көшіру</translation>
 <translation id="2156074688469523661">Қалған сайттар: (<ph name="NUMBER_OF_SITES" />)</translation>
@@ -281,7 +280,6 @@
 <translation id="2996809686854298943">URL қажет</translation>
 <translation id="300526633675317032">Вебсайттың барлық деректері жойылады (<ph name="SIZE_IN_KB" />).</translation>
 <translation id="3016635187733453316">Бұл құрылғы интернетке қосулы екенін тексеріңіз.</translation>
-<translation id="3029613699374795922"><ph name="KBS" /> КБ жүктелді</translation>
 <translation id="3029704984691124060">Құпия фразалар сәйкес келмейді</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Анықтама алу<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Орынды анықтау қызметі өшірулі; оны <ph name="BEGIN_LINK" />Android параметрлері<ph name="END_LINK" /> ішінен қосыңыз.</translation>
@@ -303,7 +301,7 @@
 <translation id="3207960819495026254">Бетбелгі қойылған</translation>
 <translation id="3211426585530211793"><ph name="ITEM_TITLE" /> жойылды.</translation>
 <translation id="321773570071367578">Егер құпия фразаны ұмытып қалсаңыз немесе оны өзгерткіңіз келсе, <ph name="BEGIN_LINK" />синхрондауды қалпына келтіріңіз<ph name="END_LINK" /></translation>
-<translation id="3223655101706843289"><ph name="ORIGIN" /> және негізгі экрандағы қолданбалар сақтаған барлық деректер мен cookie файлдары өшіріледі.</translation>
+<translation id="3223655101706843289"><ph name="ORIGIN" /> және негізгі экрандағы оның қолданбасы сақтаған барлық деректер мен cookie файлдары өшіріледі.</translation>
 <translation id="3227137524299004712">Микрофон</translation>
 <translation id="3232754137068452469">Веб-қолданба</translation>
 <translation id="3236059992281584593">1 мин қалды</translation>
@@ -457,7 +455,6 @@
 <translation id="4411535500181276704">Lite режимі</translation>
 <translation id="4415276339145661267">Google есептік жазбасын басқару</translation>
 <translation id="4432792777822557199">Осыдан кейін <ph name="SOURCE_LANGUAGE" /> тіліндегі бет <ph name="TARGET_LANGUAGE" /> тіліне аударылады</translation>
-<translation id="4433925000917964731">Google бетті Lite нұсқасында ұсынды</translation>
 <translation id="4434045419905280838">Қалқымалы терезе және бағыттау</translation>
 <translation id="4440958355523780886">Google бетті Lite нұсқасында ұсынды. Бастапқы нұсқасын жүктеу үшін түртіңіз.</translation>
 <translation id="4452411734226507615"><ph name="TAB_TITLE" /> қойындысын жабу</translation>
@@ -737,7 +734,6 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="6406506848690869874">Синхрондау</translation>
 <translation id="6410973561433500075">AR <ph name="DOMAIN" /> сайтынан енгізілсін бе?</translation>
 <translation id="641643625718530986">Басып шығару…</translation>
-<translation id="6416782512398055893"><ph name="MBS" /> МБ жүктеп алынды</translation>
 <translation id="6427112570124116297">Веб-беттерді басқа тілге аудару</translation>
 <translation id="6433501201775827830">Іздеу жүйесін таңдаңыз</translation>
 <translation id="6437478888915024427">Бет туралы ақпарат</translation>
@@ -745,7 +741,6 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="6441734959916820584">Атау тым ұзын.</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# сурет}other{# сурет}}</translation>
 <translation id="6447558397796644647">Бетбелгі табылмады. Емлені тексеріңіз немесе жаңа бетбелгі енгізіңіз.</translation>
-<translation id="6447842834002726250">Cookie файлдары</translation>
 <translation id="6461962085415701688">Файл ашылмайды</translation>
 <translation id="6464977750820128603">Chrome браузерінде ашқан сайттарды көріп, оларға таймер орната аласыз.\n\nGoogle таймер орнатылған сайттар және болған уақытыңыз туралы ақпарат алады. Бұл ақпарат Digital Wellbeing функциясын жақсартуға пайдаланылады.</translation>
 <translation id="6475951671322991020">Бейнені жүктеу</translation>
@@ -754,7 +749,6 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="6508722015517270189">Chrome браузерін қайта іске қосу</translation>
 <translation id="6532866250404780454">Chrome браузерінде ашқан сайттар көрсетілмейді. Барлық сайт таймерлері жойылады.</translation>
 <translation id="6534565668554028783">Google ұзақ уақыт жауап бермеуде</translation>
-<translation id="6538442820324228105"><ph name="GBS" /> ГБ жүктелді</translation>
 <translation id="6539092367496845964">Бірдеңе дұрыс болмады. Кейінірек қайталап көріңіз.</translation>
 <translation id="6545017243486555795">Барлық деректерді өшіру</translation>
 <translation id="6545864417968258051">Bluetooth құрылғыларын іздеу</translation>
@@ -1092,7 +1086,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="9100610230175265781">Құпия фраза қажет</translation>
 <translation id="9102803872260866941">"Алдын ала қарау" қойындысы ашылды.</translation>
 <translation id="9104217018994036254">Қойынды жіберілетін құрылғылар тізімі.</translation>
-<translation id="9108312223223904744">Телефонды қауіпсіздік кілтіне арналған қолдау қызметі ретінде орнату</translation>
+<translation id="9108312223223904744">Телефонның қауіпсіздік кілті ретінде қолдауы</translation>
 <translation id="9133397713400217035">Офлайн режимде</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Түпнұсқаны көрсету</translation>

@@ -164,7 +164,6 @@
 <translation id="2131665479022868825">已節省 <ph name="DATA" /></translation>
 <translation id="213279576345780926">已關閉「<ph name="TAB_TITLE" />」</translation>
 <translation id="2139186145475833000">加到主畫面</translation>
-<translation id="2146738493024040262">開啟免安裝應用程式</translation>
 <translation id="2154484045852737596">編輯卡片資訊</translation>
 <translation id="2154710561487035718">複製網址</translation>
 <translation id="2156074688469523661">其餘網站 (<ph name="NUMBER_OF_SITES" />)</translation>
@@ -281,7 +280,6 @@
 <translation id="2996809686854298943">必須要有網址</translation>
 <translation id="300526633675317032">這會將網站儲存的資料全部清除 (共 <ph name="SIZE_IN_KB" />)。</translation>
 <translation id="3016635187733453316">請確認此裝置已連上網際網路</translation>
-<translation id="3029613699374795922">已下載 <ph name="KBS" /> KB</translation>
 <translation id="3029704984691124060">通關密語不符</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />取得說明<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">定位功能已關閉，請在 <ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />中開啟這項功能。</translation>
@@ -303,7 +301,7 @@
 <translation id="3207960819495026254">已加入書籤</translation>
 <translation id="3211426585530211793">已刪除「<ph name="ITEM_TITLE" />」</translation>
 <translation id="321773570071367578">如果您忘記通關密語，或是想變更這項設定，請<ph name="BEGIN_LINK" />重設同步功能<ph name="END_LINK" /></translation>
-<translation id="3223655101706843289">這會清除 <ph name="ORIGIN" /> 儲存的所有資料和 Cookie，以及該網站在主畫面上的應用程式。</translation>
+<translation id="3223655101706843289">這會清除 <ph name="ORIGIN" /> 及該網站在主畫面上的應用程式儲存的所有資料和 Cookie。</translation>
 <translation id="3227137524299004712">麥克風</translation>
 <translation id="3232754137068452469">網路應用程式</translation>
 <translation id="3236059992281584593">還剩 1 分鐘</translation>
@@ -457,7 +455,6 @@
 <translation id="4411535500181276704">精簡模式</translation>
 <translation id="4415276339145661267">管理你的 Google 帳戶</translation>
 <translation id="4432792777822557199">從現在起，系統會將<ph name="SOURCE_LANGUAGE" />網頁內容翻譯成<ph name="TARGET_LANGUAGE" /></translation>
-<translation id="4433925000917964731">由 Google 提供的精簡版網頁</translation>
 <translation id="4434045419905280838">彈出式視窗與重新導向</translation>
 <translation id="4440958355523780886">由 Google 提供的精簡版網頁。輕觸即可載入原始網頁。</translation>
 <translation id="4452411734226507615">關閉 [<ph name="TAB_TITLE" />] 分頁</translation>
@@ -737,7 +734,6 @@
 <translation id="6406506848690869874">同步</translation>
 <translation id="6410973561433500075">要從 <ph name="DOMAIN" /> 進入 AR 嗎？</translation>
 <translation id="641643625718530986">列印…</translation>
-<translation id="6416782512398055893">已下載 <ph name="MBS" /> MB</translation>
 <translation id="6427112570124116297">翻譯網頁</translation>
 <translation id="6433501201775827830">選擇搜尋引擎</translation>
 <translation id="6437478888915024427">頁面資訊</translation>
@@ -745,7 +741,6 @@
 <translation id="6441734959916820584">這個名稱太長</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# 張圖片}other{# 張圖片}}</translation>
 <translation id="6447558397796644647">找不到指定書籤。請檢查文字是否正確或新增書籤。</translation>
-<translation id="6447842834002726250">Cookie</translation>
 <translation id="6461962085415701688">無法開啟檔案</translation>
 <translation id="6464977750820128603">你可以查看自己透過 Chrome 造訪的網站，並對這些網站設定計時器。\n\nGoogle 會收到這些設有計時器的網站相關資訊以及你的造訪時間長度。這些資訊可協助我們改善數位健康。</translation>
 <translation id="6475951671322991020">下載影片</translation>
@@ -754,7 +749,6 @@
 <translation id="6508722015517270189">重新啟動 Chrome</translation>
 <translation id="6532866250404780454">數位健康將不會顯示你透過 Chrome 造訪的網站。所有網站計時器也將遭到刪除。</translation>
 <translation id="6534565668554028783">Google 的回應時間過長</translation>
-<translation id="6538442820324228105">已下載 <ph name="GBS" /> GB</translation>
 <translation id="6539092367496845964">發生錯誤，請稍後再試。</translation>
 <translation id="6545017243486555795">清除所有資料</translation>
 <translation id="6545864417968258051">藍牙掃描</translation>
@@ -855,6 +849,7 @@
 <translation id="7352939065658542140">影片</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{分享 1 個選取的項目}other{分享 # 個選取的項目}}</translation>
 <translation id="7359002509206457351">存取付款方式</translation>
+<translation id="7362144854749094396">已將歷史記錄分享給 Chrome。已將偏好設定分享給 <ph name="SITE_NAME" />。</translation>
 <translation id="7375125077091615385">類型：</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />。</translation>
 <translation id="7400418766976504921">網址</translation>
@@ -881,7 +876,7 @@
 <translation id="751961395872307827">無法連線至網站</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7542481630195938534">無法取得建議</translation>
-<translation id="7554752735887601236">某個網站正在使用你的麥克風</translation>
+<translation id="7554752735887601236">有網站正在使用你的麥克風</translation>
 <translation id="7559975015014302720">精簡模式已關閉</translation>
 <translation id="7562080006725997899">正在清除瀏覽資料</translation>
 <translation id="756809126120519699">已清除 Chrome 資料</translation>
@@ -918,7 +913,7 @@
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 和另外 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> 種付款方式}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 和另外 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> 種付款方式}}</translation>
 <translation id="7791543448312431591">新增</translation>
 <translation id="780301667611848630">不用了，謝謝</translation>
-<translation id="7804248752222191302">某個網站正在使用你的攝影機</translation>
+<translation id="7804248752222191302">有網站正在使用你的攝影機</translation>
 <translation id="7810647596859435254">選擇開啟工具…</translation>
 <translation id="7817023149356982970">系統會將你登出這個網站。</translation>
 <translation id="7821588508402923572">你省下的數據流量會顯示在這裡</translation>
@@ -998,7 +993,7 @@
 <translation id="8364299278605033898">查看熱門網站</translation>
 <translation id="8368027906805972958">不明或不支援的裝置 (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">允許特定網站執行背景同步處理作業。</translation>
-<translation id="83792324527827022">某個網站正在使用你的攝影機和麥克風</translation>
+<translation id="83792324527827022">有網站正在使用你的攝影機和麥克風</translation>
 <translation id="8380167699614421159">這個網站會顯示干擾性或誤導性的廣告</translation>
 <translation id="8393700583063109961">傳送訊息</translation>
 <translation id="8394832520002899662">輕觸即可返回網站</translation>
@@ -1092,7 +1087,7 @@
 <translation id="9100610230175265781">請提供通關密語</translation>
 <translation id="9102803872260866941">預覽分頁已開啟</translation>
 <translation id="9104217018994036254">要共用分頁的裝置清單。</translation>
-<translation id="9108312223223904744">使用手機做為安全金鑰支援服務</translation>
+<translation id="9108312223223904744">支援使用手機做為安全金鑰</translation>
 <translation id="9133397713400217035">離線探索</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">顯示原文</translation>

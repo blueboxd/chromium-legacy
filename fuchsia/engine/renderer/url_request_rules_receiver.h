@@ -42,8 +42,7 @@ class UrlRequestRulesReceiver
       mojo::PendingAssociatedReceiver<mojom::UrlRequestRulesReceiver> receiver);
 
   // mojom::UrlRequestRulesReceiver implementation.
-  void OnRulesUpdated(
-      std::vector<mojom::UrlRequestRewriteRulePtr> rules) override;
+  void OnRulesUpdated(std::vector<mojom::UrlRequestRulePtr> rules) override;
 
   // WebEngineURLLoaderThrottle::CachedRulesProvider implementation.
   scoped_refptr<WebEngineURLLoaderThrottle::UrlRequestRewriteRules>

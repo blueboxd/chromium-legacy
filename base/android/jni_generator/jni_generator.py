@@ -138,6 +138,8 @@ class NativeMethod(object):
       self.name = self.name[0].upper() + self.name[1:]
 
     self.proxy_name = kwargs.get('proxy_name', self.name)
+    # Non-hashed proxy name if applicable.
+    self.proxy_name_orig = None
 
     if self.params:
       assert type(self.params) is list
@@ -468,10 +470,6 @@ class JniParams(object):
       prefix = 'descriptor: '
       index = signature_line.index(prefix)
     return '"%s"' % signature_line[index + len(prefix):]
-
-  @staticmethod
-  def MakeProxyParamSignature(params):
-    return ', '.join('%s %s' % (p.datatype, p.name) for p in params)
 
   @staticmethod
   def Parse(params, use_proxy_types=False):
@@ -969,22 +967,15 @@ class JNIFromJavaP(object):
 # declaration in another class (org.chromium.base.natives.GEN_JNI)
 # but generates wrapper code so it can be called through the declaring class.
 class ProxyHelpers(object):
-  NATIVE_PROXY_CLASS_NAME = 'GEN_JNI'
-  NATIVE_PROXY_PACKAGE_NAME = 'org/chromium/base/natives'
-
   MAX_CHARS_FOR_HASHED_NATIVE_METHODS = 8
 
   @staticmethod
   def GetClass(use_hash):
-    if use_hash:
-      return 'N'
-    return ProxyHelpers.NATIVE_PROXY_CLASS_NAME
+    return 'N' if use_hash else 'GEN_JNI'
 
   @staticmethod
   def GetPackage(use_hash):
-    if use_hash:
-      return 'J'
-    return ProxyHelpers.NATIVE_PROXY_PACKAGE_NAME
+    return 'J' if use_hash else 'org/chromium/base/natives'
 
   @staticmethod
   def GetQualifiedClass(use_hash):
@@ -1009,9 +1000,8 @@ class ProxyHelpers(object):
   def CreateProxyMethodName(fully_qualified_class, old_name, use_hash=False):
     """Returns the literal method name for the corresponding proxy method"""
     if use_hash:
-      hashed_name = ProxyHelpers.CreateHashedMethodName(fully_qualified_class,
-                                                        old_name)
-      return hashed_name
+      return ProxyHelpers.CreateHashedMethodName(fully_qualified_class,
+                                                 old_name)
 
     # The annotation processor currently uses a method name
     # org_chromium_example_foo_method_1name escaping _ to _1
@@ -1045,6 +1035,9 @@ class ProxyHelpers(object):
             is_proxy=True,
             proxy_name=unescaped_proxy_name,
             ptr_type=ptr_type)
+        if use_hash:
+          native.proxy_name_orig = ProxyHelpers.CreateProxyMethodName(
+              fully_qualified_class, name, False)
         methods.append(native)
 
     return methods
@@ -1753,8 +1746,7 @@ See SampleForTests.java for more details.
       '--use_proxy_hash',
       action='store_true',
       help='Hashes the native declaration of methods used '
-      'in @JniNatives interface. And uses a shorter name and package'
-      ' than GEN_JNI.')
+      'in @JniNatives interface.')
   parser.add_argument(
       '--feature_list_file',
       default='',

@@ -88,6 +88,9 @@ class StyleFetchedImage final : public StyleImage,
   Member<const Document> document_;
   const KURL url_;
   const bool origin_clean_;
+
+  // Whether this was created by an ad-related CSSParserContext.
+  const bool is_ad_related_;
 };
 
 template <>

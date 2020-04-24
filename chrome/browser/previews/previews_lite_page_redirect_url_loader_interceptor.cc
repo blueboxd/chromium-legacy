@@ -102,7 +102,6 @@ net::HttpRequestHeaders GetChromeProxyHeaders(
       DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
           browser_context);
   if (settings) {
-    DCHECK(data_reduction_proxy::params::IsEnabledWithNetworkService());
     std::string header;
     if (settings->GetProxyRequestHeaders().GetHeader(
             data_reduction_proxy::chrome_proxy_header(), &header)) {

@@ -27,6 +27,11 @@ class RealboxElement extends PolymerElement {
         type: Object,
         observer: 'onThemeChange_',
       },
+
+      realboxIcon_: {
+        type: String,
+        value: () => loadTimeData.getString('realboxDefaultIcon')
+      }
     };
   }
 

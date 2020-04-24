@@ -349,6 +349,7 @@
 <translation id="1465176863081977902">အသံ၏ လိပ်စာ မိ&amp;တ္တူ ကူးပါ</translation>
 <translation id="1465827627707997754">ပီဇာအပိုင်း</translation>
 <translation id="1468571364034902819">ဤပရိုဖိုင်ကို အသုံးပြု၍မရပါ</translation>
+<translation id="1470084204649225129">{NUM_TABS,plural, =1{အုပ်စုအသစ်သို့ တဘ်ထည့်ခြင်း}other{အုပ်စုအသစ်သို့ တဘ်များထည့်ခြင်း}}</translation>
 <translation id="1472675084647422956">ပိုပြရန်</translation>
 <translation id="1475502736924165259">အခြားအုပ်စုများနှင့် ကိုက်ညီမှုမရှိသည့် အသိအမှတ်ပြုလက်မှတ်များ သင့်ထံတွင် ရှိပါသည်</translation>
 <translation id="1476088332184200792">သင့်စက်သို့ မိတ္တူကူးခြင်း</translation>
@@ -477,6 +478,7 @@
 <translation id="1629314197035607094">စကားဝှက် သက်တမ်းကုန်သွားပြီ</translation>
 <translation id="1630768113285622200">ပြန်လည်စတင်ပြီး ရှေ့ဆက်ရန်</translation>
 <translation id="1632803087685957583">သင့်အား သင့်ကီးဘုတ်၏ ထပ်တလဲလဲဖော်ပြနှုန်း၊ စာလုံးခန့်မှန်းဖော်ပြမှုနှင့် အခြားအရာများစွာတို့ကို ပြင်ဆင်ခွင့်ပေးသည်</translation>
+<translation id="1634783886312010422"><ph name="WEBSITE" /> တွင် ဤစကားဝှက်ကို ပြောင်းပြီးပြီလား။</translation>
 <translation id="1635033183663317347">သင့်အုပ်ထိန်းသူမှ ထည့်သွင်းခဲ့သည်။</translation>
 <translation id="1637224376458524414">ဤဝဘ်လိပ်စာကို သင်၏ iPhone တွင် ရယူရန်</translation>
 <translation id="1637765355341780467">သင့်ပရိုဖိုင်ကို ဖွင့်စဉ်တွင် တစ်ခုခုချွတ်ယွင်းသွားသည်။ အချို့ဝန်ဆောင်မှုများကို အသုံးပြုနိုင်မည်မဟုတ်ပါ။</translation>
@@ -3387,6 +3389,7 @@
 <translation id="5542949973455282971"><ph name="CARRIER_NAME" /> သို့ ချိတ်ဆက်နေသည်</translation>
 <translation id="5543983818738093899">အခြေအနေကို စစ်ကြည့်နေ...</translation>
 <translation id="554517032089923082">GTC</translation>
+<translation id="5545335608717746497">{NUM_TABS,plural, =1{အုပ်စုသို့ တဘ်ထည့်ရန်}other{အုပ်စုသို့ တဘ်များထည့်ရန်}}</translation>
 <translation id="5546865291508181392">ရှာဖွေရန်</translation>
 <translation id="5548159762883465903">{NUM_OTHER_TABS,plural, =0{"<ph name="TAB_TITLE" />"}=1{"<ph name="TAB_TITLE" />" နှင့် အခြားတဘ် ၁ ခု}other{"<ph name="TAB_TITLE" />" နှင့် အခြားတဘ် # ခု}}</translation>
 <translation id="5548606607480005320">လုံခြုံရေး စစ်ဆေးမှု</translation>
@@ -4209,6 +4212,7 @@
 <translation id="6659594942844771486">တဲဘ်</translation>
 <translation id="6664237456442406323">သင်၏ ကွန်ပျူတာကို အန္တရာယ်ရှိ ဟာ့ဒ်ဝဲ ID ဖြင့် စီစဉ်ဖွဲ့စည်းထားသည်မှာ ကံဆိုးပါသည်။ ၎င်းက Chrome OS ကို နောက်ဆုံး လုံခြုံရေး ပြင်ဆင်ချက်များဖြင့် မွမ်းမံမှုကို ဟန့်တားနေရာ သင်၏ ကွန်ပျူတာမှာ <ph name="BEGIN_BOLD" />အန္တရာယ် တိုက်ခိုက်မှုများ ခံရမှာ စိုးရိမ်ရပါသည်<ph name="END_BOLD" />။</translation>
 <translation id="6664774537677393800">သင့်ပရိုဖိုင်ကို ဖွင့်နေစဉ်တွင် တစ်စုံတစ်ခု မှားယွင်းသွားပါသည်။ ထွက်ပြီး ပြန်လည်၍ လက်မှတ်ထိုးဝင်ကြည့်ပါ။</translation>
+<translation id="6670142487971298264"><ph name="APP_NAME" /> အသုံးပြုနိုင်ပါပြီ</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="6675665718701918026">ညွှန်းပြ ကိရိယာကို ချိတ်ဆက်ထားသည်</translation>
 <translation id="6676212663108450937">သင့်အသံကို လေ့ကျင့်ပေးနေစဉ် နားကြပ်အသုံးပြုပါ</translation>
@@ -4538,6 +4542,7 @@
 <translation id="7108338896283013870">ဝှက်ထားရန်</translation>
 <translation id="7108668606237948702">ရိုက်ထည့်</translation>
 <translation id="7109543803214225826">ဖြတ်လမ်းလင့်ခ်ကို ဖယ်ရှားပြီးပါပြီ</translation>
+<translation id="7110644433780444336">{NUM_TABS,plural, =1{အုပ်စုသို့ တဘ်ထည့်ရန်}other{အုပ်စုသို့ တဘ်များထည့်ရန်}}</translation>
 <translation id="7113502843173351041">သင်၏ အီးမေးလ် လိပ်စာကို သိရန်</translation>
 <translation id="7114054701490058191">စကားဝှက်များ မတူပါ</translation>
 <translation id="7114648273807173152">သင့် Google အကောင့်သို့ လက်မှတ်ထိုးဝင်ရာတွင် Smart Lock သုံးရန် 'ဆက်တင်များ &gt; ချိတ်ဆက်ထားသော ကိရိယာများ &gt; သင်၏ဖုန်း &gt; Smart Lock' သို့ သွားပါ။</translation>
@@ -4581,6 +4586,7 @@
 <translation id="7170041865419449892">ဘောင်အပြင်မှာ ရှိနေ</translation>
 <translation id="7171259390164035663">စာရင်းမသွင်းရန်</translation>
 <translation id="7171559745792467651">သင်၏ အခြားသော စက်ပစ္စည်းများမှ အက်ပ်များကို ထည့်သွင်းခြင်း</translation>
+<translation id="7172470549472604877">{NUM_TABS,plural, =1{အုပ်စုအသစ်သို့ တဘ်ထည့်ရန်}other{အုပ်စုအသစ်သို့ တဘ်များထည့်ရန်}}</translation>
 <translation id="7174199383876220879">အသစ်။ သင်၏ သီချင်း၊ ဗီဒီယိုနှင့် အခြားအရာများကို ထိန်းချုပ်ပါ။</translation>
 <translation id="7175037578838465313"><ph name="NAME" /> ကို စီစဉ်သတ်မှတ်ရန်</translation>
 <translation id="7175353351958621980">မှ တင်ခဲ့သည်:</translation>
@@ -5159,6 +5165,7 @@
 <translation id="7925247922861151263">AAA စစ်ဆေးခြင်း မအောင်မြင်ပါ</translation>
 <translation id="7925285046818567682"><ph name="HOST_NAME" />အတွက် စောင့်နေ...</translation>
 <translation id="7926423016278357561">၎င်းသည် ကျွှန်ုပ်မဟုတ်ပါ။</translation>
+<translation id="7928175190925744466">ဤစကားဝှက်ကို ပြောင်းပြီးပြီလား။</translation>
 <translation id="7928836894214140642"><ph name="ENROLLMENT_DOMAIN" /> က စီမံခန့်ခွဲထားပါသည်</translation>
 <translation id="7930294771522048157">သိမ်းထားသော ငွေပေးချေနည်းလမ်းများ ဤနေရာတွင် ပေါ်လာပါမည်</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> သည်သင့်ဖန်သားပြင်နှင့် အသံကို မျှဝေနေသည်။</translation>

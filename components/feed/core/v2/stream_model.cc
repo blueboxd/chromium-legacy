@@ -8,6 +8,7 @@
 #include <sstream>
 #include <utility>
 
+#include "base/json/string_escape.h"
 #include "base/logging.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
@@ -254,7 +255,9 @@ std::string StreamModel::DumpStateForTesting() {
   ss << "next_page_token='" << GetNextPageToken() << "'\n";
   ss << "consistency_token='" << GetConsistencyToken() << "'\n";
   for (auto& entry : shared_states_) {
-    ss << "shared_state[" << entry.first << "]='" << entry.second.data << "'\n";
+    ss << "shared_state[" << entry.first
+       << "]=" << base::GetQuotedJSONString(entry.second.data.substr(0, 100))
+       << "\n";
   }
   ss << GetFinalFeatureTree()->DumpStateForTesting();
   ss << "}StreamModel\n";

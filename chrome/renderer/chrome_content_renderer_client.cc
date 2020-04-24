@@ -1300,13 +1300,13 @@ void ChromeContentRendererClient::WillSendRequest(
     const net::SiteForCookies& site_for_cookies,
     const url::Origin* initiator_origin,
     GURL* new_url,
-    bool* attach_same_site_cookies) {
+    bool* force_ignore_site_for_cookies) {
 // Check whether the request should be allowed. If not allowed, we reset the
 // URL to something invalid to prevent the request and cause an error.
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   ChromeExtensionsRendererClient::GetInstance()->WillSendRequest(
       frame, transition_type, url, site_for_cookies, initiator_origin, new_url,
-      attach_same_site_cookies);
+      force_ignore_site_for_cookies);
   if (!new_url->is_empty())
     return;
 #endif

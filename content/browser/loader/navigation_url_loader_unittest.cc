@@ -68,7 +68,7 @@ class NavigationURLLoaderTest : public testing::Test {
             std::string() /* searchable_form_encoding */,
             GURL() /* client_side_redirect_url */,
             base::nullopt /* devtools_initiator_info */,
-            false /* attach_same_site_cookies */,
+            false /* force_ignore_site_for_cookies */,
             nullptr /* trust_token_params */, base::nullopt /* impression */);
     auto common_params = CreateCommonNavigationParams();
     common_params->url = url;

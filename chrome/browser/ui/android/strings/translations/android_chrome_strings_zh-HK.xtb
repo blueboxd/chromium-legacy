@@ -164,7 +164,6 @@
 <translation id="2131665479022868825">已節省 <ph name="DATA" /></translation>
 <translation id="213279576345780926">已關閉「<ph name="TAB_TITLE" />」</translation>
 <translation id="2139186145475833000">新增至主螢幕</translation>
-<translation id="2146738493024040262">開啟免安裝應用程式</translation>
 <translation id="2154484045852737596">編輯付款信用卡</translation>
 <translation id="2154710561487035718">複製網址</translation>
 <translation id="2156074688469523661">其餘網站 (共 <ph name="NUMBER_OF_SITES" /> 個)</translation>
@@ -281,7 +280,6 @@
 <translation id="2996809686854298943">請提供網址</translation>
 <translation id="300526633675317032">這會將網站儲存空間的 <ph name="SIZE_IN_KB" /> 資料全部清除。</translation>
 <translation id="3016635187733453316">請確保此裝置已連接互聯網</translation>
-<translation id="3029613699374795922">已下載 <ph name="KBS" /> KB</translation>
 <translation id="3029704984691124060">複雜密碼不符</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />取得說明<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">位置資訊功能已關閉，請在「<ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />」中開啟此功能。</translation>
@@ -457,7 +455,6 @@
 <translation id="4411535500181276704">精簡模式</translation>
 <translation id="4415276339145661267">管理您的 Google 帳戶</translation>
 <translation id="4432792777822557199">從現在開始，來源語言為<ph name="SOURCE_LANGUAGE" />的網頁一律會翻譯成<ph name="TARGET_LANGUAGE" /></translation>
-<translation id="4433925000917964731">此簡易版網頁由 Google 提供</translation>
 <translation id="4434045419905280838">彈出式視窗和重新導向</translation>
 <translation id="4440958355523780886">此簡易版網頁由 Google 提供。輕按即可載入原始版本網頁。</translation>
 <translation id="4452411734226507615">關閉 <ph name="TAB_TITLE" /> 分頁</translation>
@@ -737,7 +734,6 @@
 <translation id="6406506848690869874">同步處理</translation>
 <translation id="6410973561433500075">要從 <ph name="DOMAIN" /> 進入 AR 嗎？</translation>
 <translation id="641643625718530986">列印…</translation>
-<translation id="6416782512398055893">已下載 <ph name="MBS" /> MB</translation>
 <translation id="6427112570124116297">翻譯網頁</translation>
 <translation id="6433501201775827830">選取您的搜尋引擎</translation>
 <translation id="6437478888915024427">網頁資訊</translation>
@@ -745,7 +741,6 @@
 <translation id="6441734959916820584">此名稱過長</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# 張圖片}other{# 張圖片}}</translation>
 <translation id="6447558397796644647">找不到該書籤。請檢查拼字或新增書籤。</translation>
-<translation id="6447842834002726250">Cookie</translation>
 <translation id="6461962085415701688">無法開啟檔案</translation>
 <translation id="6464977750820128603">您可查看在 Chrome 上瀏覽的網站，並為這些網站設定計時器。\n\nGoogle 會收到這些設有計時器的網站相關資料，以及您的瀏覽時間長度。這些資料可協助我們改善「健康數碼生活」。</translation>
 <translation id="6475951671322991020">下載影片</translation>
@@ -754,7 +749,6 @@
 <translation id="6508722015517270189">重新啟動 Chrome</translation>
 <translation id="6532866250404780454">系統不會顯示您在 Chrome 上瀏覽的網站。所有網站計時器將會被刪除。</translation>
 <translation id="6534565668554028783">Google 的回應時間過長</translation>
-<translation id="6538442820324228105">已下載 <ph name="GBS" /> GB</translation>
 <translation id="6539092367496845964">發生錯誤，請稍後再試。</translation>
 <translation id="6545017243486555795">清除所有資料</translation>
 <translation id="6545864417968258051">藍牙掃瞄</translation>
@@ -855,6 +849,7 @@
 <translation id="7352939065658542140">影片</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{分享 1 個已選取的項目}other{分享 # 個已選取的項目}}</translation>
 <translation id="7359002509206457351">存取付款方法</translation>
+<translation id="7362144854749094396">已將歷史記錄分享給 Chrome。已將偏好設定分享給 <ph name="SITE_NAME" />。</translation>
 <translation id="7375125077091615385">類型：</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />。</translation>
 <translation id="7400418766976504921">網址</translation>

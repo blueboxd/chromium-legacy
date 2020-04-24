@@ -38,23 +38,19 @@ const char* const kChildKinds[] = {"functions", "events"};
 std::unique_ptr<base::DictionaryValue> LoadSchemaDictionary(
     const std::string& name,
     const base::StringPiece& schema) {
-  std::string error_message;
-  std::unique_ptr<base::Value> result(
-      base::JSONReader::ReadAndReturnErrorDeprecated(
-          schema,
-          base::JSON_PARSE_RFC,  // options
-          NULL,                  // error code
-          &error_message));
+  base::JSONReader::ValueWithError result =
+      base::JSONReader::ReadAndReturnValueWithError(schema);
 
   // Tracking down http://crbug.com/121424
   char buf[128];
   base::snprintf(buf, base::size(buf), "%s: (%d) '%s'", name.c_str(),
-                 result.get() ? static_cast<int>(result->type()) : -1,
-                 error_message.c_str());
+                 result.value ? static_cast<int>(result.value->type()) : -1,
+                 result.error_message.c_str());
 
-  CHECK(result.get()) << error_message << " for schema " << schema;
-  CHECK(result->is_dict()) << " for schema " << schema;
-  return base::DictionaryValue::From(std::move(result));
+  CHECK(result.value) << result.error_message << " for schema " << schema;
+  CHECK(result.value->is_dict()) << " for schema " << schema;
+  return base::DictionaryValue::From(
+      base::Value::ToUniquePtrValue(std::move(*result.value)));
 }
 
 const base::DictionaryValue* FindListItem(const base::ListValue* list,

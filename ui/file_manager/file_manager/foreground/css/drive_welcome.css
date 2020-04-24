@@ -4,10 +4,15 @@
 
 /* Google Drive welcome banners.*/
 
-.drive-welcome-icon {
+body:not(.files-ng) .drive-welcome-icon {
   background-image: -webkit-image-set(
     url(../images/files/ui/drive_logo.png) 1x,
     url(../images/files/ui/2x/drive_logo.png) 2x);
+  background-repeat: no-repeat;
+}
+
+body.files-ng .drive-welcome-icon {
+  background-image: url(../images/files/ui/drive_logo.svg);
   background-repeat: no-repeat;
 }
 
@@ -25,10 +30,21 @@
 }
 
 /* Header welcome banner. */
-.drive-welcome.header {
+body:not(.files-ng) .drive-welcome.header {
   background-color: rgb(79, 129, 232);
   flex: none;
   height: 130px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  position: relative;
+  transition: height 180ms ease, visibility 0ms linear 180ms;
+}
+
+body.files-ng .drive-welcome.header {
+  border-bottom: 1px solid var(--cr-separator-color, rgb(224, 224, 224));
+  box-sizing: border-box;
+  flex: none;
+  height: 72px;
   overflow-x: hidden;
   overflow-y: auto;
   position: relative;
@@ -40,7 +56,7 @@
   visibility: hidden;
 }
 
-.drive-welcome.header .drive-welcome-wrapper {
+body:not(.files-ng) .drive-welcome.header .drive-welcome-wrapper {
   color: white;
   display: flex;
   flex-direction: row;
@@ -51,7 +67,14 @@
   top: 0;
 }
 
-.drive-welcome.header .drive-welcome-icon {
+body.files-ng .drive-welcome.header .drive-welcome-wrapper {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  height: 71px;
+}
+
+body:not(.files-ng) .drive-welcome.header .drive-welcome-icon {
   background-color: white;
   background-position: center;
   background-size: 64px 64px;
@@ -64,23 +87,53 @@
   width: 78px;
 }
 
-.drive-welcome.header .drive-welcome-message {
-  -webkit-margin-end: 50px;
-  -webkit-margin-start: 20px;
+body.files-ng .drive-welcome.header .drive-welcome-icon {
+  background-position: center;
+  background-size: 32px 32px;
+  border-radius: 4px;
+  flex: none;
+  height: 32px;
+  margin-inline-end: 20px;
+  margin-inline-start: 16px;
+  width: 32px;
+}
+
+body:not(.files-ng) .drive-welcome.header .drive-welcome-message {
+  margin-inline-end: 50px;
+  margin-inline-start: 20px;
   z-index: 1;
 }
 
-.drive-welcome.header .drive-welcome-title {
+body.files-ng .drive-welcome.header .drive-welcome-message {
+  margin-inline-end: 50px;
+  z-index: 1;
+}
+
+body:not(.files-ng) .drive-welcome.header .drive-welcome-title {
   font-size: 21px;
   font-weight: 500;
   margin-bottom: 4px;
 }
 
-.drive-welcome.header .drive-welcome-text {
+body.files-ng .drive-welcome.header .drive-welcome-title {
+  margin-bottom: 2px;
+}
+
+body:not(.files-ng) .drive-welcome.header .drive-welcome-text {
   font-size: 16px;
 }
 
-.drive-welcome.header .drive-welcome-links {
+body.files-ng .drive-welcome.header .drive-welcome-text {
+  display: inline;
+}
+
+body:not(.files-ng) .drive-welcome.header .drive-welcome-links {
+  z-index: 1;
+}
+
+body.files-ng .drive-welcome.header .drive-welcome-links {
+  display: inline;
+  margin-inline-start: 4px;
   z-index: 1;
 }
 
@@ -88,7 +141,7 @@
   display: inline-block;
 }
 
-.drive-welcome.header .banner-close {
+body:not(.files-ng) .drive-welcome.header .banner-close {
   top: 0;
 }
 
@@ -119,10 +172,14 @@ html[dir='rtl'] .drive-welcome.header .banner-people {
   transform: scaleY(-1);
 }
 
-.drive-welcome.header .plain-link {
+body:not(.files-ng) .drive-welcome.header .plain-link {
   color: white;
   font-size: 16px;
   text-decoration: underline;
+}
+
+body.files-ng .drive-welcome.header .plain-link {
+  color: var(--google-blue-600);
 }
 
 /* Full page welcome banner. */
@@ -173,8 +230,8 @@ html[dir='rtl'] .drive-welcome.header .banner-people {
 }
 
 .drive-welcome.page .drive-welcome-message {
-  margin-left: 10px;
-  margin-right: 10px;
+  margin-inline-end: 10px;
+  margin-inline-start: 10px;
   max-width: 525px;
 }
 

@@ -421,7 +421,7 @@
 
     נתוני הגלישה (כולל ההיסטוריה, הסימניות והסיסמאות) יישמרו בחשבון Family Link ולא בחשבון הבית ספרי.
 
-    הגדרות ההורה שנקבעו ב-Family Link ימשיכו לחול. אם חסמת בעבר אפליקציה או אתר, לא יהיה צורך לחסום אותם מחדש.</translation>
+    הגדרות ההורים ב-Family Link ימשיכו לחול. אם חסמת בעבר אפליקציה או אתר, לא יהיה צורך לחסום אותם מחדש.</translation>
 <translation id="1566049601598938765">אתר</translation>
 <translation id="15662109988763471">המדפסת שנבחרה אינה זמינה או שאינה מותקנת כראוי. יש לבדוק את המדפסת או לנסות לבחור מדפסת אחרת.</translation>
 <translation id="1567387640189251553">חוברה מקלדת אחרת מאז שהזנת את הסיסמה בפעם האחרונה. ייתכן שהיא מנסה לתעד את ההקשות שלך.</translation>
@@ -1201,7 +1201,7 @@
 <translation id="258095186877893873">ארוכה</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (פלטפורמה <ph name="PLATFORM_VERSION" />‏) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">‏לא ניתן לקבל כרטיס Kerberos. עליך לנסות שוב, או ליצור קשר עם מנהל המכשיר בארגון. (קוד שגיאה <ph name="ERROR_CODE" />).</translation>
-<translation id="2585013490795742997">מוצגת תוצאת חיפוש אחת שהוחזרה לשאילתה <ph name="QUERY" /></translation>
+<translation id="2585013490795742997">מוצגת תוצאת חיפוש אחת שנמצאה לשאילתה <ph name="QUERY" /></translation>
 <translation id="2585724835339714757">הכרטיסייה הזו משתפת את המסך שלך.</translation>
 <translation id="2586657967955657006">לוח</translation>
 <translation id="2586672484245266891">יש להזין כתובת אתר קצרה יותר</translation>
@@ -3553,7 +3553,7 @@
 <translation id="577322787686508614">פעולת קריאה אסורה במכשיר: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5774295353725270860">פתח את יישום הקבצים</translation>
 <translation id="577624874850706961">‏חפש קובצי Cookie</translation>
-<translation id="5776858208024364029">מוצגות <ph name="NUMBER" /> תוצאות חיפוש שהוחזרו לשאילתה <ph name="QUERY" /></translation>
+<translation id="5776858208024364029">מוצגות <ph name="NUMBER" /> תוצאות חיפוש שנמצאו לשאילתה <ph name="QUERY" /></translation>
 <translation id="5777468213129569553">‏פתח את Chrome</translation>
 <translation id="5778747455497889540">סיסמת המודול המאובטח שנוצרה באופן אקראי והוקצתה למחשב שלך:</translation>
 <translation id="5780011244986845107">התיקייה שבחרת מכילה קבצים רגישים. האפליקציה <ph name="APP_NAME" /> תקבל הרשאת קריאה קבועה לתיקייה הזו. להמשיך?</translation>
@@ -4252,7 +4252,7 @@
 <translation id="6727969043791803658">‏מחובר, ‎<ph name="BATTERY_PERCENTAGE" />%‎ סוללה</translation>
 <translation id="6732801395666424405">האישורים לא נטענו</translation>
 <translation id="6732900235521116609">לא ניתן להסיר את קיצור הדרך</translation>
-<translation id="6734468588183300211">‏במצב אנונימי, אתרים לא יכולים להשתמש בקובצי Cookie כדי לקבל מידע על פעילות הגלישה שלך באתרים שונים. המידע הזה דרוש להם לצרכים שונים, כמו למשל הצגה של מודעות בהתאמה אישית. ייתכן שתכונות באתרים מסוימים לא יפעלו כראוי.</translation>
+<translation id="6734468588183300211">‏במצב אנונימי, אתרים לא יכולים להשתמש בקובצי Cookie כדי לקבל מידע על פעילות הגלישה שלך. המידע הזה דרוש להם לצרכים שונים, כמו למשל הצגה של מודעות בהתאמה אישית. ייתכן שתכונות באתרים מסוימים לא יפעלו כראוי.</translation>
 <translation id="6735304988756581115">‏הצג קובצי Cookie ונתוני אתר אחרים...</translation>
 <translation id="6736243959894955139">כתובת</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> ‏[<ph name="ISSUED_TO" />]‏</translation>
@@ -4265,7 +4265,7 @@
 <translation id="674632704103926902">הפעל גרירה והקשה</translation>
 <translation id="6748217015615267851">כלי עיבוד: <ph name="RENDERER_URL" /></translation>
 <translation id="6748465660675848252">אתה יכול להמשיך, אולם רק הנתונים וההגדרות המסונכרנים שלך ישוחזרו. כל הנתונים המקומיים יאבדו.</translation>
-<translation id="6749006854028927059">‏אתרים לא יכולים להשתמש בקובצי Cookie כדי לקבל מידע על פעילות הגלישה שלך באתרים שונים. המידע הזה דרוש להם לצרכים שונים, כמו למשל הצגה של מודעות בהתאמה אישית. ייתכן שתכונות באתרים מסוימים לא יפעלו כראוי.</translation>
+<translation id="6749006854028927059">‏אתרים לא יכולים להשתמש בקובצי Cookie כדי לקבל מידע על פעילות הגלישה שלך. המידע הזה דרוש להם לצרכים שונים, כמו למשל הצגה של מודעות בהתאמה אישית. ייתכן שתכונות באתרים מסוימים לא יפעלו כראוי.</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (גלישה בסתר)</translation>
 <translation id="6757101664402245801">כתובת האתר הועתקה</translation>
 <translation id="6758056191028427665">נשמח לקבל ממך משוב.</translation>
@@ -5210,7 +5210,7 @@
 <translation id="7987814697832569482">‏החיבור יתבצע תמיד דרך ה-VPN הזה</translation>
 <translation id="7988355189918024273">הפוך תכונות נגישות לפעילות</translation>
 <translation id="7991296728590311172">הגדרות גישה באמצעות מתג</translation>
-<translation id="7992202128769240372">זוהתה חריגה מהמגבלה הבאה: <ph name="NUMBER_OF_SHEETS" /> ‏<ph name="SHEETS_LABEL" /></translation>
+<translation id="7992202128769240372">לא ניתן להדפיס יותר מ-<ph name="NUMBER_OF_SHEETS" /> ‏<ph name="SHEETS_LABEL" /></translation>
 <translation id="7994350303002908848">‏לא ניתן להתקין את Plugin VM. יש לנסות שוב או לפנות למנהל המכשיר בארגון. קוד שגיאה: <ph name="ERROR_CODE" />.</translation>
 <translation id="7994702968232966508">‏שיטת EAP</translation>
 <translation id="7997826902155442747">עדיפות תהליך</translation>

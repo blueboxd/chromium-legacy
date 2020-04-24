@@ -517,17 +517,17 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceWithCorsBrowserTest, FactoryOverride) {
         auto response = network::mojom::URLResponseHead::New();
         response->headers =
             base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.1 200 OK");
-        response->headers->AddHeader(
-            "access-control-allow-origin: https://www2.example.com");
-        response->headers->AddHeader("access-control-allow-methods: *");
+        response->headers->SetHeader("access-control-allow-origin",
+                                     "https://www2.example.com");
+        response->headers->SetHeader("access-control-allow-methods", "*");
         client->OnReceiveResponse(std::move(response));
       } else if (resource_request.method == "custom-method") {
         has_received_request_ = true;
         auto response = network::mojom::URLResponseHead::New();
         response->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
             "HTTP/1.1 202 Accepted");
-        response->headers->AddHeader(
-            "access-control-allow-origin: https://www2.example.com");
+        response->headers->SetHeader("access-control-allow-origin",
+                                     "https://www2.example.com");
         client->OnReceiveResponse(std::move(response));
         client->OnComplete(network::URLLoaderCompletionStatus(net::OK));
       } else {

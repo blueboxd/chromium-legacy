@@ -30,23 +30,10 @@
 namespace {
 
 const char kEnabled[] = "Enabled";
-const char kControl[] = "Control";
-const char kDisabled[] = "Disabled";
-
-const char kQuicFieldTrial[] = "DataReductionProxyUseQuic";
-
-const char kLitePageFieldTrial[] = "DataCompressionProxyLoFi";
 
 // Default URL for retrieving the Data Reduction Proxy configuration.
 const char kClientConfigURL[] =
     "https://datasaver.googleapis.com/v1/clientConfigs";
-
-// Default URL for sending pageload metrics.
-const char kPingbackURL[] =
-    "https://datasaver.googleapis.com/v1/metrics:recordPageloadMetrics";
-
-// LitePage black list version.
-const char kLitePageBlackListVersion[] = "lite-page-blacklist-version";
 
 const char kExperimentsOption[] = "exp";
 
@@ -84,41 +71,9 @@ bool IsIncludedInFREPromoFieldTrial() {
   return CanShowAndroidLowMemoryDevicePromo();
 }
 
-bool IsIncludedInHoldbackFieldTrial() {
-  return base::FeatureList::IsEnabled(
-      data_reduction_proxy::features::kDataReductionProxyHoldback);
-}
-
 bool ForceEnableClientConfigServiceForAllDataSaverUsers() {
   return base::FeatureList::IsEnabled(
       data_reduction_proxy::features::kFetchClientConfig);
-}
-
-bool IsForcePingbackEnabledViaFlags() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      data_reduction_proxy::switches::kEnableDataReductionProxyForcePingback);
-}
-
-bool WarnIfNoDataReductionProxy() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      data_reduction_proxy::switches::kEnableDataReductionProxyBypassWarning);
-}
-
-bool IsIncludedInQuicFieldTrial() {
-  if (base::StartsWith(base::FieldTrialList::FindFullName(kQuicFieldTrial),
-                       kControl, base::CompareCase::SENSITIVE)) {
-    return false;
-  }
-  if (base::StartsWith(base::FieldTrialList::FindFullName(kQuicFieldTrial),
-                       kDisabled, base::CompareCase::SENSITIVE)) {
-    return false;
-  }
-  // QUIC is enabled by default.
-  return true;
-}
-
-const char* GetQuicFieldTrialName() {
-  return kQuicFieldTrial;
 }
 
 GURL GetConfigServiceURL() {
@@ -141,31 +96,6 @@ GURL GetConfigServiceURL() {
   return GURL(kClientConfigURL);
 }
 
-GURL GetPingbackURL() {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  std::string url;
-  if (command_line->HasSwitch(switches::kDataReductionPingbackURL)) {
-    url =
-        command_line->GetSwitchValueASCII(switches::kDataReductionPingbackURL);
-  }
-
-  if (url.empty())
-    return GURL(kPingbackURL);
-
-  GURL result(url);
-  if (result.is_valid())
-    return result;
-
-  LOG(WARNING) << "The following page load metrics URL specified at the "
-               << "command-line or variation is invalid: " << url;
-  return GURL(kPingbackURL);
-}
-
-int LitePageVersion() {
-  return GetFieldTrialParameterAsInteger(kLitePageFieldTrial,
-                                         kLitePageBlackListVersion, 0, 0);
-}
-
 int GetFieldTrialParameterAsInteger(const std::string& group,
                                     const std::string& param_name,
                                     int default_value,
@@ -181,7 +111,6 @@ int GetFieldTrialParameterAsInteger(const std::string& group,
 
   return value;
 }
-
 
 std::string GetDataSaverServerExperimentsOptionName() {
   return kExperimentsOption;
@@ -214,13 +143,6 @@ std::string GetDataSaverServerExperiments() {
   return base::GetFieldTrialParamValueByFeature(
       features::kDataReductionProxyServerExperiments, kExperimentsOption);
 }
-
-bool IsEnabledWithNetworkService() {
-  return base::FeatureList::IsEnabled(
-      data_reduction_proxy::features::
-          kDataReductionProxyEnabledWithNetworkService);
-}
-
 
 }  // namespace params
 

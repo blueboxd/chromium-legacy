@@ -876,7 +876,8 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
                            reporting_disposition,
                            resource_request.GetRedirectStatus());
 
-  if (Context().CalculateIfAdSubresource(resource_request, resource_type))
+  if (Context().CalculateIfAdSubresource(resource_request, resource_type,
+                                         options.initiator_info))
     resource_request.SetIsAdResource();
 
   if (blocked_reason)

@@ -13,7 +13,7 @@
 #include "components/password_manager/core/browser/mock_password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_manager.h"
-#include "components/password_manager/core/browser/password_manager_util.h"
+#include "components/password_manager/core/browser/password_manager_features_util.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -111,8 +111,9 @@ TEST_F(WebViewPasswordManagerClientTest, PromptIfAllConditionsPass) {
   CoreAccountInfo account_info;
   account_info.gaia = "1337";
   sync_service_.SetAuthenticatedAccountInfo(account_info);
-  password_manager_util::SetAccountStorageOptIn(&pref_service_, &sync_service_,
-                                                /*opt_in=*/true);
+  password_manager::features_util::SetAccountStorageOptIn(&pref_service_,
+                                                          &sync_service_,
+                                                          /*opt_in=*/true);
 
   EXPECT_TRUE(password_manager_client_->PromptUserToSaveOrUpdatePassword(
       std::move(password_manager_for_ui), /*update_password=*/false));

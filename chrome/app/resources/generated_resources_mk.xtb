@@ -349,6 +349,7 @@
 <translation id="1465176863081977902">К&amp;опирај ја адресата на аудиото</translation>
 <translation id="1465827627707997754">Парче пица</translation>
 <translation id="1468571364034902819">Профилов не може да се користи</translation>
+<translation id="1470084204649225129">{NUM_TABS,plural, =1{Додајте картичка во новата група}one{Додајте картички во новата група}other{Додајте картички во новата група}}</translation>
 <translation id="1472675084647422956">Прикажи повеќе</translation>
 <translation id="1475502736924165259">Имате сертификати што не припаѓаат во ниедна друга категорија</translation>
 <translation id="1476088332184200792">Копирај на уредот</translation>
@@ -477,6 +478,7 @@
 <translation id="1629314197035607094">Лозинката е истечена</translation>
 <translation id="1630768113285622200">Рестартирај и продолжи</translation>
 <translation id="1632803087685957583">Ви дозволува да ги приспособите стапката на повторување на тастатурата, предвидувањето зборови и др.</translation>
+<translation id="1634783886312010422">Дали веќе ја променивте лозинкава на <ph name="WEBSITE" />?</translation>
 <translation id="1635033183663317347">Инсталирано од вашиот старател.</translation>
 <translation id="1637224376458524414">Преземете го обележувачов на вашиот iPhone</translation>
 <translation id="1637765355341780467">Нешто тргна наопаку при отворањето на профилот. Некои функции може да бидат недостапни.</translation>
@@ -3387,6 +3389,7 @@
 <translation id="5542949973455282971">Се поврзува со <ph name="CARRIER_NAME" /></translation>
 <translation id="5543983818738093899">Се проверува статусот...</translation>
 <translation id="554517032089923082">GTC</translation>
+<translation id="5545335608717746497">{NUM_TABS,plural, =1{Додајте картичка во групата}one{Додајте картички во групата}other{Додајте картички во групата}}</translation>
 <translation id="5546865291508181392">Најди</translation>
 <translation id="5548159762883465903">{NUM_OTHER_TABS,plural, =0{„<ph name="TAB_TITLE" />“}=1{„<ph name="TAB_TITLE" />“ и уште 1 картичка}one{„<ph name="TAB_TITLE" />“ и уште # картичка}other{„<ph name="TAB_TITLE" />“ и уште # картички}}</translation>
 <translation id="5548606607480005320">Безбедносна проверка</translation>
@@ -4211,6 +4214,7 @@
 <translation id="6659594942844771486">Картичка</translation>
 <translation id="6664237456442406323">За жал, вашиот компјутер е конфигуриран со деформиран ИД на хардвер. Ова го спречува Chrome OS да ги ажурира најновите безбедносни поправки и вашиот компјутер <ph name="BEGIN_BOLD" />може да е ранлив на напади од злонамерен софтвер<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Нешто тргна наопаку при отворањето на профилот. Одјавете се, па најавете се повторно.</translation>
+<translation id="6670142487971298264"><ph name="APP_NAME" /> сега е достапна</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="6675665718701918026">Уредот за покажување е поврзан</translation>
 <translation id="6676212663108450937">Размислете за користење слушалки при обучувањето на гласот.</translation>
@@ -4540,6 +4544,7 @@
 <translation id="7108338896283013870">Сокриј</translation>
 <translation id="7108668606237948702">enter</translation>
 <translation id="7109543803214225826">Кратенката е отстранета</translation>
+<translation id="7110644433780444336">{NUM_TABS,plural, =1{Додајте картичка во групата}one{Додајте картички во групата}other{Додајте картички во групата}}</translation>
 <translation id="7113502843173351041">Знајте си ја адресата на е-пошта</translation>
 <translation id="7114054701490058191">Лозинките не се совпаѓаат</translation>
 <translation id="7114648273807173152">За да ја користите Smart Lock за најавување на вашата сметка на Google, одете во „Поставки &gt; Поврзани уреди &gt; Вашиот телефон &gt; Smart Lock“.</translation>
@@ -4583,6 +4588,7 @@
 <translation id="7170041865419449892">Надвор од опсег</translation>
 <translation id="7171259390164035663">Не регистрирај</translation>
 <translation id="7171559745792467651">Инсталирајте апликации што ги имате на другите уреди</translation>
+<translation id="7172470549472604877">{NUM_TABS,plural, =1{Додајте картичка во новата група}one{Додајте картички во новата група}other{Додајте картички во новата група}}</translation>
 <translation id="7174199383876220879">Ново! Контролирајте ја музиката, видеата и друго.</translation>
 <translation id="7175037578838465313">Конфигурирање на <ph name="NAME" /></translation>
 <translation id="7175353351958621980">Вчитано од:</translation>
@@ -5161,6 +5167,7 @@
 <translation id="7925247922861151263">AAA-проверката не успеа</translation>
 <translation id="7925285046818567682">Се чека <ph name="HOST_NAME" />...</translation>
 <translation id="7926423016278357561">Не бев јас.</translation>
+<translation id="7928175190925744466">Веќе ја променивте лозинкава?</translation>
 <translation id="7928836894214140642">Управувана од <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">Зачуваните начини за плаќање ќе се појават тука</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> ги споделува вашиот екран и аудио.</translation>

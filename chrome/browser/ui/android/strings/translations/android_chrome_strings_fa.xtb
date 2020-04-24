@@ -164,7 +164,6 @@
 <translation id="2131665479022868825"><ph name="DATA" /> صرفه‌جویی شد</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> بسته شد</translation>
 <translation id="2139186145475833000">افزودن به صفحه اصلی</translation>
-<translation id="2146738493024040262">برنامه فوری را باز کنید</translation>
 <translation id="2154484045852737596">ویرایش کارت</translation>
 <translation id="2154710561487035718">کپی نشانی وب</translation>
 <translation id="2156074688469523661">سایت‌های باقی‌مانده (<ph name="NUMBER_OF_SITES" />)</translation>
@@ -281,7 +280,6 @@
 <translation id="2996809686854298943">نشانی وب لازم است</translation>
 <translation id="300526633675317032">این کار کل <ph name="SIZE_IN_KB" /> فضای ذخیره‌سازی وب‌سایت را پاک می‌کند.</translation>
 <translation id="3016635187733453316">مطمئن شوید این دستگاه به اینترنت متصل باشد</translation>
-<translation id="3029613699374795922"><ph name="KBS" /> کیلوبایت بارگیری شد</translation>
 <translation id="3029704984691124060">عبارت‌های عبور مطابقت ندارند</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />دریافت راهنمایی<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">‏مکان خاموش است، آن را در <ph name="BEGIN_LINK" />تنظیمات Android<ph name="END_LINK" /> روشن کنید.</translation>
@@ -457,7 +455,6 @@
 <translation id="4411535500181276704">حالت ساده</translation>
 <translation id="4415276339145661267">‏مدیریت «حساب Google»</translation>
 <translation id="4432792777822557199">از این به بعد، صفحه‌های <ph name="SOURCE_LANGUAGE" />، به <ph name="TARGET_LANGUAGE" /> ترجمه خواهند شد</translation>
-<translation id="4433925000917964731">‏صفحه ساده‌شده را Google ارائه کرده است</translation>
 <translation id="4434045419905280838">پنجره‌های بازشو و هدایت‌ها</translation>
 <translation id="4440958355523780886">‏صفحه ساده‌شده را Google ارائه کرده است. برای بارگیری صفحه اصلی، ضربه بزنید.</translation>
 <translation id="4452411734226507615">بستن برگه <ph name="TAB_TITLE" /></translation>
@@ -737,7 +734,6 @@
 <translation id="6406506848690869874">همگام‌سازی</translation>
 <translation id="6410973561433500075">‏از <ph name="DOMAIN" /> وارد حالت AR می‌شوید؟</translation>
 <translation id="641643625718530986">چاپ...</translation>
-<translation id="6416782512398055893"><ph name="MBS" /> مگابایت بارگیری شد</translation>
 <translation id="6427112570124116297">وب را ترجمه کنید</translation>
 <translation id="6433501201775827830">انتخاب موتور جستجو</translation>
 <translation id="6437478888915024427">اطلاعات صفحه</translation>
@@ -745,7 +741,6 @@
 <translation id="6441734959916820584">نام خیلی طولانی است</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# تصویر}one{# تصویر}other{# تصویر}}</translation>
 <translation id="6447558397796644647">آن نشانک پیدا نشد. املای خود را بررسی کنید یا نشانک جدیدی را اضافه کنید.</translation>
-<translation id="6447842834002726250">کوکی‌ها</translation>
 <translation id="6461962085415701688">فایل باز نمی‌شود</translation>
 <translation id="6464977750820128603">‏می‌توانید سایت‌هایی را که در Chrome بازدید می‌کنید مشاهده کنید و تایمرهایی را برای آن‌ها تنظیم کنید.\n\n‏Google اطلاعاتی درباره سایت‌هایی که برای آن‌ها تایمر تنظیم می‌کنید و مدت زمانی که از آن‌ها بازدید می‌کنید، دریافت می‌کند. از این اطلاعات برای بهبود «آسایش دیجیتالی» استفاده می‌شود.</translation>
 <translation id="6475951671322991020">بارگیری ویدیو</translation>
@@ -754,7 +749,6 @@
 <translation id="6508722015517270189">‏Chrome را راه‌اندازی مجدد کنید</translation>
 <translation id="6532866250404780454">‏سایت‌هایی که در Chrome بازدید می‌کنید، نشان داده نخواهد شد. همه تایمرهای سایت حذف خواهد شد.</translation>
 <translation id="6534565668554028783">‏پاسخ Google بیش از حد طول کشیده است</translation>
-<translation id="6538442820324228105"><ph name="GBS" /> گیگابایت بارگیری شد</translation>
 <translation id="6539092367496845964">مشکلی پیش آمد. بعداً دوباره امتحان کنید.</translation>
 <translation id="6545017243486555795">پاک کردن همه داده‌ها</translation>
 <translation id="6545864417968258051">اسکن کردن بلوتوث</translation>

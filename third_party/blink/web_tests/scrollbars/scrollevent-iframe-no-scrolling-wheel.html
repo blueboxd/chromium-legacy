@@ -15,7 +15,7 @@ async function runTest() {
     var doc = window.frames[0].document;
     var fillDiv = doc.getElementById("fillDIV");
     var center = elementCenter(fillDiv);
-    await wheelTick(1, center, 'down');
+    await wheelTick(0, 1, center);
     await conditionHolds( () => {
         return window.frames[0].scrollY == 0;
     });

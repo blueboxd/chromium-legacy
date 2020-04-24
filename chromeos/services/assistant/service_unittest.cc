@@ -25,8 +25,8 @@
 #include "chromeos/services/assistant/assistant_state_proxy.h"
 #include "chromeos/services/assistant/fake_assistant_manager_service_impl.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
-#include "chromeos/services/assistant/test_support/fake_client.h"
 #include "chromeos/services/assistant/test_support/fully_initialized_assistant_state.h"
+#include "chromeos/services/assistant/test_support/scoped_assistant_client.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
@@ -50,17 +50,16 @@ const char* kGaiaId = "gaia_id_for_user_gmail.com";
 const char* kEmailAddress = "user@gmail.com";
 }  // namespace
 
-class FakeAssistantClient : public FakeClient {
+class ScopedFakeAssistantClient : public ScopedAssistantClient {
  public:
-  explicit FakeAssistantClient(ash::AssistantState* assistant_state)
+  explicit ScopedFakeAssistantClient(ash::AssistantState* assistant_state)
       : assistant_state_(assistant_state),
         status_(ash::mojom::AssistantState::NOT_READY) {}
 
   ash::mojom::AssistantState status() { return status_; }
 
  private:
-  // FakeClient:
-
+  // ScopedAssistantClient:
   void OnAssistantStatusChanged(ash::mojom::AssistantState new_state) override {
     status_ = new_state;
   }
@@ -74,7 +73,7 @@ class FakeAssistantClient : public FakeClient {
   ash::AssistantState* const assistant_state_;
   ash::mojom::AssistantState status_;
 
-  DISALLOW_COPY_AND_ASSIGN(FakeAssistantClient);
+  DISALLOW_COPY_AND_ASSIGN(ScopedFakeAssistantClient);
 };
 
 class FakeDeviceActions : mojom::DeviceActions {
@@ -144,8 +143,7 @@ class AssistantServiceTest : public testing::Test {
     service_->SetAssistantManagerServiceForTesting(
         std::make_unique<FakeAssistantManagerServiceImpl>());
 
-    service_->Init(fake_assistant_client_.MakeRemote(),
-                   fake_device_actions_.CreatePendingRemoteAndBind());
+    service_->Init(fake_device_actions_.CreatePendingRemoteAndBind());
     // Wait for AssistantManagerService to be set.
     base::RunLoop().RunUntilIdle();
 
@@ -194,7 +192,7 @@ class AssistantServiceTest : public testing::Test {
 
   PrefService* pref_service() { return &pref_service_; }
 
-  FakeAssistantClient* client() { return &fake_assistant_client_; }
+  ScopedFakeAssistantClient* client() { return &fake_assistant_client_; }
 
   base::test::TaskEnvironment* task_environment() { return &task_environment_; }
 
@@ -209,7 +207,7 @@ class AssistantServiceTest : public testing::Test {
 
   FullyInitializedAssistantState assistant_state_;
   signin::IdentityTestEnvironment identity_test_env_;
-  FakeAssistantClient fake_assistant_client_{&assistant_state_};
+  ScopedFakeAssistantClient fake_assistant_client_{&assistant_state_};
   FakeDeviceActions fake_device_actions_;
 
   TestingPrefServiceSimple pref_service_;

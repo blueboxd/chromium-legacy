@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/cpp/back_gesture_contextual_nudge_controller.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/session/session_observer.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -29,7 +30,8 @@ class ASH_EXPORT BackGestureContextualNudgeControllerImpl
     : public SessionObserver,
       public TabletModeObserver,
       public wm::ActivationChangeObserver,
-      public BackGestureContextualNudgeController {
+      public BackGestureContextualNudgeController,
+      public ShelfConfig::Observer {
  public:
   BackGestureContextualNudgeControllerImpl();
   BackGestureContextualNudgeControllerImpl(
@@ -59,6 +61,9 @@ class ASH_EXPORT BackGestureContextualNudgeControllerImpl
 
   // BackGestureContextualNudgeController:
   void NavigationEntryChanged(aura::Window* window) override;
+
+  // ShelfConfig::Observer:
+  void OnShelfConfigUpdated() override;
 
   bool is_monitoring_windows() const { return is_monitoring_windows_; }
   BackGestureContextualNudge* nudge() { return nudge_.get(); }
@@ -107,6 +112,9 @@ class ASH_EXPORT BackGestureContextualNudgeControllerImpl
 
   // True if we're currently monitoring window activation changes.
   bool is_monitoring_windows_ = false;
+
+  // Tracks the visibility of shelf controls.
+  bool shelf_control_visible_ = false;
 
   // Timer to automatically show nudge ui in 24 hours.
   base::OneShotTimer auto_show_timer_;

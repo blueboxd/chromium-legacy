@@ -290,9 +290,11 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
 
   // Indicate whether SameSite cookies should be attached even though the
   // request is cross-site.
-  bool attach_same_site_cookies() const { return attach_same_site_cookies_; }
-  void set_attach_same_site_cookies(bool attach) {
-    attach_same_site_cookies_ = attach;
+  bool force_ignore_site_for_cookies() const {
+    return force_ignore_site_for_cookies_;
+  }
+  void set_force_ignore_site_for_cookies(bool attach) {
+    force_ignore_site_for_cookies_ = attach;
   }
 
   // The first-party URL policy to apply when updating the first party URL
@@ -847,7 +849,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
 
   IsolationInfo isolation_info_;
 
-  bool attach_same_site_cookies_;
+  bool force_ignore_site_for_cookies_;
   base::Optional<url::Origin> initiator_;
   GURL delegate_redirect_url_;
   std::string method_;  // "GET", "POST", etc. Should be all uppercase.

@@ -309,6 +309,12 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
   [super viewDidAppear:animated];
   [self.metricsRecorder recordBannerEvent:MobileMessagesBannerEvent::Presented];
   self.bannerAppearedTime = [NSDate timeIntervalSinceReferenceDate];
+  // Once the Banner animation has completed check if the banner container
+  // should still present banners.
+  if ([self.infobarBannerContainer shouldDismissBanner]) {
+    [self.presentingViewController dismissViewControllerAnimated:NO
+                                                      completion:nil];
+  }
 }
 
 - (void)viewWillDisappear:(BOOL)animated {

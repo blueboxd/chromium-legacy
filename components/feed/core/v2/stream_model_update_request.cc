@@ -70,7 +70,7 @@ bool TranslateFeature(feedwire::Feature* feature,
   if (type == feedstore::StreamStructure::CONTENT) {
     feedwire::Content* wire_content = feature->mutable_content_extension();
 
-    if (wire_content->type() != feedwire::Content::XSURFACE)
+    if (!wire_content->has_xsurface_content())
       return false;
 
     // TODO(iwells): We still need score, availability_time_seconds,

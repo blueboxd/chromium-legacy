@@ -10,6 +10,7 @@ import android.content.res.Resources;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.text.TextUtils;
+import android.util.SparseArray;
 import android.view.View;
 
 import androidx.annotation.IntDef;
@@ -939,8 +940,8 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
     }
 
     @Override
-    public void onSuggestionsReceived(
-            List<OmniboxSuggestion> newSuggestions, String inlineAutocompleteText) {
+    public void onSuggestionsReceived(List<OmniboxSuggestion> newSuggestions,
+            SparseArray<String> groupHeaders, String inlineAutocompleteText) {
         if (mShouldPreventOmniboxAutocomplete
                 || getSuggestionVisibilityState() == SuggestionVisibilityState.DISALLOWED) {
             resolvePendingKeyboardShowDecision();

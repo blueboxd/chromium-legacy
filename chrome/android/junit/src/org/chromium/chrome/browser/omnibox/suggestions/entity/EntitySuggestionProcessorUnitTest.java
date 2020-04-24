@@ -106,7 +106,7 @@ public class EntitySuggestionProcessorUnitTest {
                         /* suggestionAnswer */ null, /* fillIntoEdit */ "", /* url */ "",
                         /* imageUrl */ url, /* imageDominantColor */ color,
                         /* isStarred */ false, /* isDeletable */ false, /* postContentType */ null,
-                        /* postData */ null);
+                        /* postData */ null, OmniboxSuggestion.INVALID_GROUP);
         PropertyModel model = mProcessor.createModelForSuggestion(suggestion);
         return new SuggestionTestHelper(suggestion, model);
     }

@@ -74,8 +74,7 @@ mojom::RoutineUpdatePtr MakeNonInteractiveRoutineUpdate() {
       /*output=*/mojo::ScopedHandle(), update_union.Clone());
 }
 
-base::Optional<std::vector<mojom::NonRemovableBlockDeviceInfoPtr>>
-MakeNonRemovableBlockDeviceInfo() {
+mojom::NonRemovableBlockDeviceResultPtr MakeNonRemovableBlockDeviceResult() {
   std::vector<mojom::NonRemovableBlockDeviceInfoPtr> info;
   info.push_back(mojom::NonRemovableBlockDeviceInfo::New(
       "test_path", 123 /* size */, "test_type", 10 /* manfid */, "test_name",
@@ -83,21 +82,20 @@ MakeNonRemovableBlockDeviceInfo() {
   info.push_back(mojom::NonRemovableBlockDeviceInfo::New(
       "test_path2", 124 /* size */, "test_type2", 11 /* manfid */, "test_name2",
       767 /* serial */));
-  return base::Optional<std::vector<mojom::NonRemovableBlockDeviceInfoPtr>>(
+  return mojom::NonRemovableBlockDeviceResult::NewBlockDeviceInfo(
       std::move(info));
 }
 
-mojom::BatteryInfoPtr MakeBatteryInfo() {
-  mojom::SmartBatteryInfoPtr smart_info = mojom::SmartBatteryInfo::New(
-      "2018-08-06" /* manufacture_date */, 981729 /* temperature */);
-  return mojom::BatteryInfo::New(
+mojom::BatteryResultPtr MakeBatteryResult() {
+  return mojom::BatteryResult::NewBatteryInfo(mojom::BatteryInfo::New(
       2 /* cycle_count */, 12.9 /* voltage_now */,
       "battery_vendor" /* vendor */, "serial_number" /* serial_number */,
       5.275 /* charge_full_design */, 5.292 /* charge_full */,
       11.55 /* voltage_min_design */, "battery_model" /* model_name */,
       5.123 /* charge_now */, 98.123 /* current_now */,
       "battery_technology" /* technology */, "battery_status" /* status */,
-      std::move(smart_info));
+      "2018-08-06" /* manufacture_date */,
+      mojom::UInt64Value::New(981729) /* temperature */));
 }
 
 mojom::CachedVpdResultPtr MakeCachedVpdResult() {
@@ -148,8 +146,8 @@ mojom::FanResultPtr MakeFanResult() {
 
 mojom::TelemetryInfoPtr MakeTelemetryInfo() {
   return mojom::TelemetryInfo::New(
-      MakeBatteryInfo() /* battery_info */,
-      MakeNonRemovableBlockDeviceInfo() /* block_device_info */,
+      MakeBatteryResult() /* battery_result */,
+      MakeNonRemovableBlockDeviceResult() /* block_device_result */,
       MakeCachedVpdResult() /* vpd_result */, MakeCpuResult() /* cpu_result */,
       MakeTimezoneResult() /* timezone_result */,
       MakeMemoryResult() /* memory_result */,

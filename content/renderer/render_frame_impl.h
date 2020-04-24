@@ -162,7 +162,6 @@ namespace content {
 class BlinkInterfaceRegistryImpl;
 class CompositorDependencies;
 class DocumentState;
-class ExternalPopupMenu;
 class FrameRequestBlocker;
 class MediaPermissionDispatcher;
 class NavigationClient;
@@ -417,10 +416,6 @@ class CONTENT_EXPORT RenderFrameImpl
 
   void ScriptedPrint(bool user_initiated);
 
-#if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
-  void DidHideExternalPopupMenu();
-#endif
-
   // IPC::Sender
   bool Send(IPC::Message* msg) override;
 
@@ -653,9 +648,6 @@ class CONTENT_EXPORT RenderFrameImpl
   scoped_refptr<blink::WebWorkerFetchContext>
   CreateWorkerFetchContextForPlzDedicatedWorker(
       blink::WebDedicatedWorkerHostFactoryClient* factory_client) override;
-  blink::WebExternalPopupMenu* CreateExternalPopupMenu(
-      const blink::WebPopupMenuInfo& popup_menu_info,
-      blink::WebExternalPopupMenuClient* popup_menu_client) override;
   std::unique_ptr<blink::WebPrescientNetworking> CreatePrescientNetworking()
       override;
   blink::BlameContext* GetFrameBlameContext() override;
@@ -929,11 +921,6 @@ class CONTENT_EXPORT RenderFrameImpl
   friend class RenderFrameObserver;
   friend class TestRenderFrame;
 
-  FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuDisplayNoneTest, SelectItem);
-  FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuRemoveTest, RemoveFrameOnChange);
-  FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuRemoveTest, RemoveOnChange);
-  FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuTest, NormalCase);
-  FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuTest, ShowPopupThenNavigate);
   FRIEND_TEST_ALL_PREFIXES(RenderAccessibilityImplTest,
                            AccessibilityMessagesQueueWhileSwappedOut);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameImplTest, LocalChildFrameWasShown);
@@ -1056,15 +1043,6 @@ class CONTENT_EXPORT RenderFrameImpl
       bool save_with_empty_url);
   void OnSuppressFurtherDialogs();
   void OnMixedContentFound(const FrameMsg_MixedContentFound_Params& params);
-
-#if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
-#if defined(OS_MACOSX)
-  void OnSelectPopupMenuItem(int selected_index);
-#else
-  void OnSelectPopupMenuItems(bool canceled,
-                              const std::vector<int>& selected_indices);
-#endif
-#endif
 
   // Callback scheduled from SerializeAsMHTML for when writing serialized
   // MHTML to the handle has been completed in the file thread.
@@ -1461,11 +1439,6 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Whether or not this RenderFrame is currently pasting.
   bool is_pasting_;
-
-#if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
-  // The external popup for the currently showing select popup.
-  std::unique_ptr<ExternalPopupMenu> external_popup_menu_;
-#endif
 
   std::unique_ptr<FrameBlameContext> blame_context_;
 

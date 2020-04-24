@@ -69,7 +69,7 @@ DOMUint8Array* ConvertUnsignedDataToUint8Array(
 base::TimeTicks GetTimeOrigin(ExecutionContext* context) {
   DCHECK(context);
   Performance* performance = nullptr;
-  if (LocalDOMWindow* window = context->ExecutingWindow()) {
+  if (LocalDOMWindow* window = DynamicTo<LocalDOMWindow>(context)) {
     performance = DOMWindowPerformance::performance(*window);
   } else {
     DCHECK(context->IsWorkerGlobalScope());

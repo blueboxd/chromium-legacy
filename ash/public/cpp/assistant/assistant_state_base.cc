@@ -95,6 +95,10 @@ void AssistantStateBase::RegisterPrefChanges(PrefService* pref_service) {
       chromeos::assistant::prefs::kAssistantNotificationEnabled,
       base::BindRepeating(&AssistantStateBase::UpdateNotificationEnabled,
                           base::Unretained(this)));
+  pref_change_registrar_->Add(
+      chromeos::assistant::prefs::kAssistantQuickAnswersEnabled,
+      base::BindRepeating(&AssistantStateBase::UpdateQuickAnswersEnabled,
+                          base::Unretained(this)));
 
   UpdateConsentStatus();
   UpdateContextEnabled();
@@ -103,6 +107,7 @@ void AssistantStateBase::RegisterPrefChanges(PrefService* pref_service) {
   UpdateHotwordEnabled();
   UpdateLaunchWithMicOpen();
   UpdateNotificationEnabled();
+  UpdateQuickAnswersEnabled();
 }
 
 bool AssistantStateBase::IsScreenContextAllowed() const {
@@ -126,6 +131,8 @@ void AssistantStateBase::InitializeObserver(AssistantStateObserver* observer) {
     observer->OnAssistantLaunchWithMicOpen(launch_with_mic_open_.value());
   if (notification_enabled_.has_value())
     observer->OnAssistantNotificationEnabled(notification_enabled_.value());
+  if (quick_answers_enabled_.has_value())
+    observer->OnAssistantQuickAnswersEnabled(quick_answers_enabled_.value());
 
   InitializeObserverMojom(observer);
 }
@@ -256,6 +263,18 @@ void AssistantStateBase::UpdateLockedFullScreenState(bool enabled) {
     observer.OnLockedFullScreenStateChanged(
         locked_full_screen_enabled_.value());
   }
+}
+
+void AssistantStateBase::UpdateQuickAnswersEnabled() {
+  auto quick_answers_enabled = pref_change_registrar_->prefs()->GetBoolean(
+      chromeos::assistant::prefs::kAssistantQuickAnswersEnabled);
+  if (quick_answers_enabled_.has_value() &&
+      quick_answers_enabled_.value() == quick_answers_enabled) {
+    return;
+  }
+  quick_answers_enabled_ = quick_answers_enabled;
+  for (auto& observer : observers_)
+    observer.OnAssistantQuickAnswersEnabled(quick_answers_enabled_.value());
 }
 
 }  // namespace ash

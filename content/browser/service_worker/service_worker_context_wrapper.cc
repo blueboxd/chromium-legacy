@@ -922,8 +922,7 @@ ServiceWorkerContextWrapper::GetWindowClientFrameRoutingIds(
                origin, /*include_reserved_clients=*/false);
        !it->IsAtEnd(); it->Advance()) {
     ServiceWorkerContainerHost* container_host = it->GetContainerHost();
-    DCHECK_EQ(container_host->type(),
-              blink::mojom::ServiceWorkerContainerType::kForWindow);
+    DCHECK(container_host->IsContainerForWindowClient());
     frame_routing_ids->push_back(GlobalFrameRoutingId(
         container_host->process_id(), container_host->frame_id()));
   }

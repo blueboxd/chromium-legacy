@@ -8,7 +8,7 @@
  */
 
 // clang-format off
-// #import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
 // clang-format on
 
 /**
@@ -24,7 +24,7 @@
  * }}
  * @see chrome/browser/ui/webui/settings/certificates_handler.cc
  */
-/* #export */ let CertificateSubnode;
+export let CertificateSubnode;
 
 /**
  * A data structure describing a certificate that is currently being imported,
@@ -33,7 +33,7 @@
  *   name: string,
  * }}
  */
-/* #export */ let NewCertificateSubNode;
+export let NewCertificateSubNode;
 
 /**
  * Top-level grouping node in a certificate list, representing an organization
@@ -48,7 +48,7 @@
  * }}
  * @see chrome/browser/ui/webui/settings/certificates_handler.cc
  */
-/* #export */ let CertificatesOrgGroup;
+export let CertificatesOrgGroup;
 
 /**
  * @typedef {{
@@ -57,7 +57,7 @@
  *   objSign: boolean
  * }}
  */
-/* #export */ let CaTrustInfo;
+export let CaTrustInfo;
 
 /**
  * Generic error returned from C++ via a Promise reject callback.
@@ -67,13 +67,13 @@
  * }}
  * @see chrome/browser/ui/webui/settings/certificates_handler.cc
  */
-/* #export */ let CertificatesError;
+export let CertificatesError;
 
 /**
  * Enumeration of all possible certificate types.
  * @enum {string}
  */
-/* #export */ const CertificateType = {
+export const CertificateType = {
   CA: 'ca',
   OTHER: 'other',
   PERSONAL: 'personal',
@@ -91,11 +91,10 @@
  * }}
  * @see chrome/browser/ui/webui/settings/certificates_handler.cc
  */
-/* #export */ let CertificatesImportError;
+export let CertificatesImportError;
 
-cr.define('certificate_manager', function() {
   /** @interface */
-  /* #export */ class CertificatesBrowserProxy {
+  export class CertificatesBrowserProxy {
     /**
      * Triggers 5 events in the following order
      * 1x 'client-import-allowed-changed' event.
@@ -194,9 +193,9 @@ cr.define('certificate_manager', function() {
   }
 
   /**
-   * @implements {certificate_manager.CertificatesBrowserProxy}
+   * @implements {CertificatesBrowserProxy}
    */
-  /* #export */ class CertificatesBrowserProxyImpl {
+  export class CertificatesBrowserProxyImpl {
     /** @override */
     refreshCertificates() {
       chrome.send('refreshCertificates');
@@ -214,45 +213,45 @@ cr.define('certificate_manager', function() {
 
     /** @override */
     deleteCertificate(id) {
-      return cr.sendWithPromise('deleteCertificate', id);
+      return sendWithPromise('deleteCertificate', id);
     }
 
     /** @override */
     exportPersonalCertificate(id) {
-      return cr.sendWithPromise('exportPersonalCertificate', id);
+      return sendWithPromise('exportPersonalCertificate', id);
     }
 
     /** @override */
     exportPersonalCertificatePasswordSelected(password) {
-      return cr.sendWithPromise(
+      return sendWithPromise(
           'exportPersonalCertificatePasswordSelected', password);
     }
 
     /** @override */
     importPersonalCertificate(useHardwareBacked) {
-      return cr.sendWithPromise('importPersonalCertificate', useHardwareBacked);
+      return sendWithPromise('importPersonalCertificate', useHardwareBacked);
     }
 
     /** @override */
     importPersonalCertificatePasswordSelected(password) {
-      return cr.sendWithPromise(
+      return sendWithPromise(
           'importPersonalCertificatePasswordSelected', password);
     }
 
     /** @override */
     getCaCertificateTrust(id) {
-      return cr.sendWithPromise('getCaCertificateTrust', id);
+      return sendWithPromise('getCaCertificateTrust', id);
     }
 
     /** @override */
     editCaCertificateTrust(id, ssl, email, objSign) {
-      return cr.sendWithPromise(
+      return sendWithPromise(
           'editCaCertificateTrust', id, ssl, email, objSign);
     }
 
     /** @override */
     importCaCertificateTrustSelected(ssl, email, objSign) {
-      return cr.sendWithPromise(
+      return sendWithPromise(
           'importCaCertificateTrustSelected', ssl, email, objSign);
     }
 
@@ -263,22 +262,16 @@ cr.define('certificate_manager', function() {
 
     /** @override */
     importCaCertificate() {
-      return cr.sendWithPromise('importCaCertificate');
+      return sendWithPromise('importCaCertificate');
     }
 
     /** @override */
     importServerCertificate() {
-      return cr.sendWithPromise('importServerCertificate');
+      return sendWithPromise('importServerCertificate');
     }
   }
 
   // The singleton instance_ is replaced with a test version of this wrapper
   // during testing.
-  cr.addSingletonGetter(CertificatesBrowserProxyImpl);
+  addSingletonGetter(CertificatesBrowserProxyImpl);
 
-  // #cr_define_end
-  return {
-    CertificatesBrowserProxy: CertificatesBrowserProxy,
-    CertificatesBrowserProxyImpl: CertificatesBrowserProxyImpl,
-  };
-});

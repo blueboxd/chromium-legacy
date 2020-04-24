@@ -256,6 +256,17 @@ const String Screen::id() const {
   return String();
 }
 
+bool Screen::touchSupport() const {
+  if (display_) {
+    DCHECK(RuntimeEnabledFeatures::ScreenEnumerationEnabled());
+    return display_->touch_support ==
+           display::mojom::blink::TouchSupport::AVAILABLE;
+  }
+  // TODO(http://crbug.com/994889): Implement this for |window.screen|?
+  NOTIMPLEMENTED_LOG_ONCE();
+  return false;
+}
+
 int64_t Screen::DisplayId() const {
   if (display_) {
     DCHECK(RuntimeEnabledFeatures::ScreenEnumerationEnabled());

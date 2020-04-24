@@ -23,6 +23,7 @@
 #include "content/test/content_browser_test_utils_internal.h"
 #include "net/dns/mock_host_resolver.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/page/widget.mojom-test-utils.h"
 
 namespace content {
 
@@ -757,18 +758,17 @@ IN_PROC_BROWSER_TEST_F(FindRequestManagerTest, MAYBE(FindMatchRects)) {
 
 namespace {
 
-class ZoomToFindInPageRectMessageFilter : public content::BrowserMessageFilter {
+class ZoomToFindInPageRectMessageFilter
+    : public blink::mojom::FrameWidgetHostInterceptorForTesting {
  public:
-  ZoomToFindInPageRectMessageFilter()
-      : content::BrowserMessageFilter(WidgetMsgStart),
+  ZoomToFindInPageRectMessageFilter(RenderWidgetHostImpl* rwhi)
+      : impl_(rwhi->frame_widget_host_receiver_for_testing().SwapImplForTesting(
+            this)),
         widget_message_seen_(false) {}
+  ~ZoomToFindInPageRectMessageFilter() override {}
 
-  bool OnMessageReceived(const IPC::Message& message) override {
-    IPC_BEGIN_MESSAGE_MAP(ZoomToFindInPageRectMessageFilter, message)
-      IPC_MESSAGE_HANDLER(WidgetHostMsg_ZoomToFindInPageRectInMainFrame,
-                          OnWidgetHostMessage)
-    IPC_END_MESSAGE_MAP()
-    return false;
+  blink::mojom::FrameWidgetHost* GetForwardingInterface() override {
+    return impl_;
   }
 
   void Reset() {
@@ -788,15 +788,14 @@ class ZoomToFindInPageRectMessageFilter : public content::BrowserMessageFilter {
   gfx::Rect& widget_message_rect() { return widget_rect_seen_; }
 
  private:
-  ~ZoomToFindInPageRectMessageFilter() override {}
-
-  void OnWidgetHostMessage(const gfx::Rect& rect_to_zoom) {
+  void ZoomToFindInPageRectInMainFrame(const gfx::Rect& rect_to_zoom) override {
     widget_rect_seen_ = rect_to_zoom;
     widget_message_seen_ = true;
     if (!quit_closure_.is_null())
       std::move(quit_closure_).Run();
   }
 
+  blink::mojom::FrameWidgetHost* impl_;
   gfx::Rect widget_rect_seen_;
   bool widget_message_seen_;
   base::OnceClosure quit_closure_;
@@ -813,16 +812,14 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, ActivateNearestFindMatch) {
   if (test_with_oopif)
     MakeChildFrameCrossProcess();
 
-  scoped_refptr<ZoomToFindInPageRectMessageFilter> message_filter_root =
-      new ZoomToFindInPageRectMessageFilter();
-  scoped_refptr<ZoomToFindInPageRectMessageFilter> message_filter_child =
-      new ZoomToFindInPageRectMessageFilter();
+  std::unique_ptr<ZoomToFindInPageRectMessageFilter> message_interceptor_child;
 
   if (test_with_oopif) {
     FrameTreeNode* root = contents()->GetFrameTree()->root();
     FrameTreeNode* child = root->child_at(0);
-    child->current_frame_host()->GetProcess()->AddFilter(
-        message_filter_child.get());
+    message_interceptor_child =
+        std::make_unique<ZoomToFindInPageRectMessageFilter>(
+            child->current_frame_host()->GetRenderWidgetHost());
   }
 
   auto default_options = blink::mojom::FindOptions::New();
@@ -852,10 +849,10 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, ActivateNearestFindMatch) {
     bool is_match_in_oopif = order[i] > 1 && test_with_oopif;
     // Check widget message rect to make sure it matches.
     if (is_match_in_oopif) {
-      message_filter_child->WaitForWidgetHostMessage();
+      message_interceptor_child->WaitForWidgetHostMessage();
       EXPECT_EQ(find_request_manager->GetSelectionRectForTesting(),
-                message_filter_child->widget_message_rect());
-      message_filter_child->Reset();
+                message_interceptor_child->widget_message_rect());
+      message_interceptor_child->Reset();
     }
 
     EXPECT_EQ(order[i] + 1, delegate()->GetFindResults().active_match_ordinal);

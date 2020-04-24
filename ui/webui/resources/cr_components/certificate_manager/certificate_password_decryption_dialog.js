@@ -6,8 +6,20 @@
  * @fileoverview A dialog prompting the user for a decryption password such that
  * a previously exported personal certificate can be imported.
  */
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
+import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
+import './certificate_shared_css.js';
+
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {CertificatesBrowserProxy, CertificatesBrowserProxyImpl} from './certificates_browser_proxy.js';
+
 Polymer({
   is: 'certificate-password-decryption-dialog',
+
+  _template: html`{__html_template__}`,
 
   behaviors: [I18nBehavior],
 
@@ -19,13 +31,12 @@ Polymer({
     },
   },
 
-  /** @private {?certificate_manager.CertificatesBrowserProxy} */
+  /** @private {?CertificatesBrowserProxy} */
   browserProxy_: null,
 
   /** @override */
   ready() {
-    this.browserProxy_ =
-        certificate_manager.CertificatesBrowserProxyImpl.getInstance();
+    this.browserProxy_ = CertificatesBrowserProxyImpl.getInstance();
   },
 
   /** @override */

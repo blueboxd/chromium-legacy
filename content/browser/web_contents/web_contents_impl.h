@@ -70,6 +70,7 @@
 #include "third_party/blink/public/mojom/frame/frame.mojom-forward.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "third_party/blink/public/mojom/page/display_cutout.mojom.h"
+#include "third_party/blink/public/mojom/popup/popup.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "ui/accessibility/ax_mode.h"
@@ -734,6 +735,15 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
           blink_widget_host,
       mojo::PendingAssociatedRemote<blink::mojom::Widget> blink_widget)
       override;
+  bool ShowPopup(RenderFrameHostImpl* render_frame_host,
+                 mojo::PendingRemote<blink::mojom::ExternalPopup>* popup,
+                 const gfx::Rect& bounds,
+                 int32_t item_height,
+                 double font_size,
+                 int32_t selected_item,
+                 std::vector<blink::mojom::MenuItemPtr>* menu_items,
+                 bool right_aligned,
+                 bool allow_multiple_selection) override;
 
   // RenderViewHostDelegate ----------------------------------------------------
   RenderViewHostDelegateView* GetDelegateView() override;

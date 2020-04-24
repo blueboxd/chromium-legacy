@@ -6,8 +6,23 @@
  * @fileoverview 'certificate-list' is an element that displays a list of
  * certificates.
  */
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
+import './certificate_entry.js';
+import './certificate_shared_css.js';
+
+import {assertNotReached} from 'chrome://resources/js/assert.m.js';
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {CertificateAction, CertificateActionEvent, CertificateActionEventDetail} from './certificate_manager_types.js';
+import {CertificatesBrowserProxy, CertificatesBrowserProxyImpl, CertificatesOrgGroup, CertificateType, NewCertificateSubNode} from './certificates_browser_proxy.js';
+
 Polymer({
   is: 'certificate-list',
+
+  _template: html`{__html_template__}`,
 
   properties: {
     /** @type {!Array<!CertificatesOrgGroup>} */
@@ -149,8 +164,7 @@ Polymer({
    * @private
    */
   handleImport_(useHardwareBacked, anchor) {
-    const browserProxy =
-        certificate_manager.CertificatesBrowserProxyImpl.getInstance();
+    const browserProxy = CertificatesBrowserProxyImpl.getInstance();
     if (this.certificateType === CertificateType.PERSONAL) {
       browserProxy.importPersonalCertificate(useHardwareBacked)
           .then(showPasswordPrompt => {

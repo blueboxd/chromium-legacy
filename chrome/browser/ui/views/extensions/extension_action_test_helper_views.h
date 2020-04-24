@@ -36,7 +36,6 @@ class ExtensionActionTestHelperViews : public ExtensionActionTestHelper {
   ExtensionsContainer* GetExtensionsContainer() override;
   std::unique_ptr<ExtensionActionTestHelper> CreateOverflowBar(
       Browser* browser) override;
-  void LayoutForOverflowBar() override;
   gfx::Size GetMinPopupSize() override;
   gfx::Size GetMaxPopupSize() override;
   gfx::Size GetToolbarActionSize() override;

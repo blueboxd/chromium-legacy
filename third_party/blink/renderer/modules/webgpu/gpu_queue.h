@@ -16,7 +16,7 @@ class GPUFence;
 class GPUFenceDescriptor;
 class GPUImageBitmapCopyView;
 class GPUTextureCopyView;
-class UnsignedLongSequenceOrGPUExtent3DDict;
+class UnsignedLongEnforceRangeSequenceOrGPUExtent3DDict;
 
 class GPUQueue : public DawnObject<WGPUQueue> {
   DEFINE_WRAPPERTYPEINFO();
@@ -29,10 +29,11 @@ class GPUQueue : public DawnObject<WGPUQueue> {
   void submit(const HeapVector<Member<GPUCommandBuffer>>& buffers);
   void signal(GPUFence* fence, uint64_t signal_value);
   GPUFence* createFence(const GPUFenceDescriptor* descriptor);
-  void copyImageBitmapToTexture(GPUImageBitmapCopyView* source,
-                                GPUTextureCopyView* destination,
-                                UnsignedLongSequenceOrGPUExtent3DDict& copySize,
-                                ExceptionState& exception_state);
+  void copyImageBitmapToTexture(
+      GPUImageBitmapCopyView* source,
+      GPUTextureCopyView* destination,
+      UnsignedLongEnforceRangeSequenceOrGPUExtent3DDict& copySize,
+      ExceptionState& exception_state);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GPUQueue);

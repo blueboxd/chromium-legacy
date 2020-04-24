@@ -359,7 +359,10 @@ class FlexLayoutAlgorithm {
   DISALLOW_NEW();
 
  public:
-  FlexLayoutAlgorithm(const ComputedStyle*, LayoutUnit line_break_length);
+  FlexLayoutAlgorithm(const ComputedStyle*,
+                      LayoutUnit line_break_length,
+                      LayoutUnit gap_between_items,
+                      LayoutUnit gap_between_lines);
 
   template <typename... Args>
   FlexItem& emplace_back(Args&&... args) {
@@ -428,6 +431,8 @@ class FlexLayoutAlgorithm {
   void LayoutColumnReverse(LayoutUnit main_axis_content_size,
                            LayoutUnit border_scrollbar_padding_before);
   bool IsNGFlexBox() const;
+  const LayoutUnit gap_between_items_;
+  const LayoutUnit gap_between_lines_;
 
  private:
   EOverflow MainAxisOverflowForChild(const LayoutBox& child) const;

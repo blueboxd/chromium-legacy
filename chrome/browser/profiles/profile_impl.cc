@@ -875,10 +875,6 @@ const Profile::OTRProfileID& ProfileImpl::GetOTRProfileID() const {
   return *otr_profile_id;
 }
 
-bool ProfileImpl::IsIndependentOffTheRecordProfile() {
-  return false;
-}
-
 Profile* ProfileImpl::GetOffTheRecordProfile(
     const OTRProfileID& otr_profile_id) {
   if (HasOffTheRecordProfile(otr_profile_id))

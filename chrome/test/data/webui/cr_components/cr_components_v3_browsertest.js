@@ -55,7 +55,7 @@ var CrComponentsCertificateManagerV3Test =
     class extends CrComponentsV3BrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=cr_components/certificate_manager_test.m.js';
+    return 'chrome://settings/test_loader.html?module=cr_components/certificate_manager_test.js';
   }
 
   /** @override */

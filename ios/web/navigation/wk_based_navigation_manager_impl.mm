@@ -741,12 +741,16 @@ void WKBasedNavigationManagerImpl::UnsafeRestore(
     forward_items.push_back(std::move(items[index]));
   }
 
-  AddRestoreCompletionCallback(base::BindOnce(
-      &WKBasedNavigationManagerImpl::RestoreItemsState, base::Unretained(this),
-      RestoreItemListType::kBackList, std::move(back_items)));
-  AddRestoreCompletionCallback(base::BindOnce(
-      &WKBasedNavigationManagerImpl::RestoreItemsState, base::Unretained(this),
-      RestoreItemListType::kForwardList, std::move(forward_items)));
+  if (@available(iOS 13, *)) {
+    AddRestoreCompletionCallback(
+        base::BindOnce(&WKBasedNavigationManagerImpl::RestoreItemsState,
+                       base::Unretained(this), RestoreItemListType::kBackList,
+                       std::move(back_items)));
+    AddRestoreCompletionCallback(base::BindOnce(
+        &WKBasedNavigationManagerImpl::RestoreItemsState,
+        base::Unretained(this), RestoreItemListType::kForwardList,
+        std::move(forward_items)));
+  }
 
   LoadURLWithParams(params);
 
@@ -795,8 +799,10 @@ void WKBasedNavigationManagerImpl::RestoreItemsState(
 void WKBasedNavigationManagerImpl::RestoreVisibleItemState() {
   NavigationItemImpl* last_committed_item =
       GetLastCommittedItemInCurrentOrRestoredSession();
-  if (restored_visible_item_ && last_committed_item) {
-    last_committed_item->RestoreStateFromItem(restored_visible_item_.get());
+  if (@available(iOS 13, *)) {
+    if (restored_visible_item_ && last_committed_item) {
+      last_committed_item->RestoreStateFromItem(restored_visible_item_.get());
+    }
   }
   restored_visible_item_.reset();
 }

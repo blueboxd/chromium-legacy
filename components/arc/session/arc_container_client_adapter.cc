@@ -129,11 +129,11 @@ class ArcContainerClientAdapter
         request, std::move(callback));
   }
 
-  void StopArcInstance(bool on_shutdown, bool backup_log) override {
+  void StopArcInstance(bool on_shutdown, bool should_backup_log) override {
     // Since we have the ArcInstanceStopped() callback, we don't need to do
     // anything when StopArcInstance completes.
     chromeos::SessionManagerClient::Get()->StopArcInstance(
-        cryptohome_id_.id(), backup_log, base::DoNothing());
+        cryptohome_id_.id(), should_backup_log, base::DoNothing());
   }
 
   void SetUserInfo(const cryptohome::Identification& cryptohome_id,

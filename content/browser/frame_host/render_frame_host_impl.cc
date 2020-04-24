@@ -217,6 +217,7 @@
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
 #include "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom.h"
+#include "third_party/blink/public/mojom/popup/popup.mojom.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/sms/sms_receiver.mojom.h"
@@ -1584,10 +1585,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidStopLoading, OnDidStopLoading)
     IPC_MESSAGE_HANDLER(FrameHostMsg_SelectionChanged, OnSelectionChanged)
     IPC_MESSAGE_HANDLER(FrameHostMsg_FrameDidCallFocus, OnFrameDidCallFocus)
-#if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_ShowPopup, OnShowPopup)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_HidePopup, OnHidePopup)
-#endif
   IPC_END_MESSAGE_MAP()
 
   // No further actions here, since we may have been deleted.
@@ -4221,32 +4218,37 @@ void RenderFrameHostImpl::RenderFallbackContentInParentProcess() {
   }
 }
 
+void RenderFrameHostImpl::ShowExternalPopup(
+    mojo::PendingRemote<blink::mojom::ExternalPopup> popup,
+    const gfx::Rect& bounds,
+    int32_t item_height,
+    double font_size,
+    int32_t selected_item,
+    std::vector<blink::mojom::MenuItemPtr> menu_items,
+    bool right_aligned,
+    bool allow_multiple_selection) {
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
-void RenderFrameHostImpl::OnShowPopup(
-    const FrameHostMsg_ShowPopup_Params& params) {
-  RenderViewHostDelegateView* view =
-      render_view_host_->delegate_->GetDelegateView();
-  if (view) {
-    gfx::Point original_point(params.bounds.x(), params.bounds.y());
-    gfx::Point transformed_point =
-        static_cast<RenderWidgetHostViewBase*>(GetView())
-            ->TransformPointToRootCoordSpace(original_point);
-    gfx::Rect transformed_bounds(transformed_point.x(), transformed_point.y(),
-                                 params.bounds.width(), params.bounds.height());
-    view->ShowPopupMenu(this, transformed_bounds, params.item_height,
-                        params.item_font_size, params.selected_item,
-                        params.popup_items, params.right_aligned,
-                        params.allow_multiple_selection);
+  if (delegate()->ShowPopup(this, &popup, bounds, item_height, font_size,
+                            selected_item, &menu_items, right_aligned,
+                            allow_multiple_selection)) {
+    return;
   }
-}
 
-void RenderFrameHostImpl::OnHidePopup() {
-  RenderViewHostDelegateView* view =
-      render_view_host_->delegate_->GetDelegateView();
-  if (view)
-    view->HidePopupMenu();
-}
+  auto* view = render_view_host()->delegate_->GetDelegateView();
+  if (!view)
+    return;
+
+  gfx::Point original_point(bounds.x(), bounds.y());
+  gfx::Point transformed_point =
+      static_cast<RenderWidgetHostViewBase*>(GetView())
+          ->TransformPointToRootCoordSpace(original_point);
+  gfx::Rect transformed_bounds(transformed_point.x(), transformed_point.y(),
+                               bounds.width(), bounds.height());
+  view->ShowPopupMenu(this, std::move(popup), transformed_bounds, item_height,
+                      font_size, selected_item, std::move(menu_items),
+                      right_aligned, allow_multiple_selection);
 #endif
+}
 
 void RenderFrameHostImpl::BindInterfaceProviderReceiver(
     mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
@@ -6315,32 +6317,6 @@ RenderFrameHostImpl* RenderFrameHostImpl::GetMainFrame() {
     main_frame = main_frame->GetParent();
   return main_frame;
 }
-
-#if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
-#if defined(OS_MACOSX)
-
-void RenderFrameHostImpl::DidSelectPopupMenuItem(int selected_index) {
-  Send(new FrameMsg_SelectPopupMenuItem(routing_id_, selected_index));
-}
-
-void RenderFrameHostImpl::DidCancelPopupMenu() {
-  Send(new FrameMsg_SelectPopupMenuItem(routing_id_, -1));
-}
-
-#else
-
-void RenderFrameHostImpl::DidSelectPopupMenuItems(
-    const std::vector<int>& selected_indices) {
-  Send(new FrameMsg_SelectPopupMenuItems(routing_id_, false, selected_indices));
-}
-
-void RenderFrameHostImpl::DidCancelPopupMenu() {
-  Send(
-      new FrameMsg_SelectPopupMenuItems(routing_id_, true, std::vector<int>()));
-}
-
-#endif
-#endif
 
 bool RenderFrameHostImpl::CanAccessFilesOfPageState(const PageState& state) {
   return ChildProcessSecurityPolicyImpl::GetInstance()->CanReadAllFiles(

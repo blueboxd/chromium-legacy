@@ -7,26 +7,25 @@
 // provides better context for testing.
 
 // clang-format off
-// #import 'chrome://settings/strings.m.js';
+import 'chrome://settings/strings.m.js';
+import 'chrome://resources/cr_components/certificate_manager/ca_trust_edit_dialog.js';
+import 'chrome://resources/cr_components/certificate_manager/certificate_delete_confirmation_dialog.js';
+import 'chrome://resources/cr_components/certificate_manager/certificate_list.js';
+import 'chrome://resources/cr_components/certificate_manager/certificate_manager.js';
+import 'chrome://resources/cr_components/certificate_manager/certificate_password_decryption_dialog.js';
+import 'chrome://resources/cr_components/certificate_manager/certificate_password_encryption_dialog.js';
+import 'chrome://resources/cr_components/certificate_manager/certificate_subentry.js';
 
-// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// #import {isChromeOS} from 'chrome://resources/js/cr.m.js';
-// #import {CertificatesBrowserProxyImpl, CertificateType} from 'chrome://resources/cr_components/certificate_manager/certificates_browser_proxy.m.js';
-// #import {TestBrowserProxy} from '../test_browser_proxy.m.js';
-// #import {eventToPromise} from '../test_util.m.js';
-// #import {keyEventOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
+import {CertificateAction, CertificateActionEvent} from 'chrome://resources/cr_components/certificate_manager/certificate_manager_types.js';
+import {CertificatesBrowserProxyImpl, CertificateType} from 'chrome://resources/cr_components/certificate_manager/certificates_browser_proxy.js';
+import {isChromeOS, webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+import {keyEventOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-// #import 'chrome://resources/cr_components/certificate_manager/ca_trust_edit_dialog.m.js';
-// #import 'chrome://resources/cr_components/certificate_manager/certificate_delete_confirmation_dialog.m.js';
-// #import 'chrome://resources/cr_components/certificate_manager/certificate_list.m.js';
-// #import 'chrome://resources/cr_components/certificate_manager/certificate_manager.m.js';
-// #import {CertificateAction, CertificateActionEvent} from 'chrome://resources/cr_components/certificate_manager/certificate_manager_types.m.js';
-// #import 'chrome://resources/cr_components/certificate_manager/certificate_password_decryption_dialog.m.js';
-// #import 'chrome://resources/cr_components/certificate_manager/certificate_password_encryption_dialog.m.js';
-// #import 'chrome://resources/cr_components/certificate_manager/certificate_subentry.m.js';
+import {TestBrowserProxy} from '../test_browser_proxy.m.js';
+import {eventToPromise} from '../test_util.m.js';
 // clang-format on
 
-cr.define('certificate_manager', function() {
   /**
    * A test version of CertificatesBrowserProxy. Provides helper methods
    * for allowing tests to know when a method was called, as well as
@@ -195,7 +194,7 @@ cr.define('certificate_manager', function() {
   function triggerInputEvent(element) {
     // The actual key code is irrelevant for tests.
     const kSpaceBar = 32;
-    MockInteractions.keyEventOn(element, 'input', kSpaceBar);
+    keyEventOn(element, 'input', kSpaceBar);
   }
 
   suite('CaTrustEditDialogTests', function() {
@@ -209,11 +208,10 @@ cr.define('certificate_manager', function() {
     const caTrustInfo = {ssl: true, email: false, objSign: false};
 
     setup(async function() {
-      /* #ignore */ await settings.forceLazyLoaded();
       browserProxy = new TestCertificatesBrowserProxy();
       browserProxy.setCaCertificateTrust(caTrustInfo);
 
-      certificate_manager.CertificatesBrowserProxyImpl.instance_ = browserProxy;
+      CertificatesBrowserProxyImpl.instance_ = browserProxy;
       PolymerTest.clearBody();
       dialog = document.createElement('ca-trust-edit-dialog');
     });
@@ -281,8 +279,7 @@ cr.define('certificate_manager', function() {
       document.body.appendChild(dialog);
       browserProxy.forceCertificatesError();
 
-      const whenErrorEventFired =
-          test_util.eventToPromise('certificates-error', dialog);
+      const whenErrorEventFired = eventToPromise('certificates-error', dialog);
 
       return browserProxy.whenCalled('getCaCertificateTrust')
           .then(function() {
@@ -307,7 +304,7 @@ cr.define('certificate_manager', function() {
 
     setup(function() {
       browserProxy = new TestCertificatesBrowserProxy();
-      certificate_manager.CertificatesBrowserProxyImpl.instance_ = browserProxy;
+      CertificatesBrowserProxyImpl.instance_ = browserProxy;
       PolymerTest.clearBody();
       dialog = document.createElement('certificate-delete-confirmation-dialog');
       dialog.model = model;
@@ -337,8 +334,7 @@ cr.define('certificate_manager', function() {
 
     test('DeleteError', function() {
       browserProxy.forceCertificatesError();
-      const whenErrorEventFired =
-          test_util.eventToPromise('certificates-error', dialog);
+      const whenErrorEventFired = eventToPromise('certificates-error', dialog);
 
       // Simulate clicking 'OK'.
       dialog.$.ok.click();
@@ -364,7 +360,7 @@ cr.define('certificate_manager', function() {
 
     setup(function() {
       browserProxy = new TestCertificatesBrowserProxy();
-      certificate_manager.CertificatesBrowserProxyImpl.instance_ = browserProxy;
+      CertificatesBrowserProxyImpl.instance_ = browserProxy;
       PolymerTest.clearBody();
       dialog = document.createElement('certificate-password-encryption-dialog');
       dialog.model = model;
@@ -419,8 +415,7 @@ cr.define('certificate_manager', function() {
       confirmPasswordInputElement.value = passwordInputElement.value;
       triggerInputEvent(passwordInputElement);
 
-      const whenErrorEventFired =
-          test_util.eventToPromise('certificates-error', dialog);
+      const whenErrorEventFired = eventToPromise('certificates-error', dialog);
       dialog.$.ok.click();
 
       return browserProxy.whenCalled(methodName).then(function() {
@@ -440,7 +435,7 @@ cr.define('certificate_manager', function() {
 
     setup(function() {
       browserProxy = new TestCertificatesBrowserProxy();
-      certificate_manager.CertificatesBrowserProxyImpl.instance_ = browserProxy;
+      CertificatesBrowserProxyImpl.instance_ = browserProxy;
       PolymerTest.clearBody();
       dialog = document.createElement('certificate-password-decryption-dialog');
       document.body.appendChild(dialog);
@@ -479,8 +474,7 @@ cr.define('certificate_manager', function() {
       passwordInputElement.value = 'foopassword';
       triggerInputEvent(passwordInputElement);
 
-      const whenErrorEventFired =
-          test_util.eventToPromise('certificates-error', dialog);
+      const whenErrorEventFired = eventToPromise('certificates-error', dialog);
       dialog.$.ok.click();
       return browserProxy.whenCalled(methodName).then(function() {
         return whenErrorEventFired;
@@ -498,12 +492,12 @@ cr.define('certificate_manager', function() {
      * @return {!Promise} A promise firing once |CertificateActionEvent| fires.
      */
     const actionEventToPromise = function() {
-      return test_util.eventToPromise(CertificateActionEvent, subentry);
+      return eventToPromise(CertificateActionEvent, subentry);
     };
 
     setup(function() {
       browserProxy = new TestCertificatesBrowserProxy();
-      certificate_manager.CertificatesBrowserProxyImpl.instance_ = browserProxy;
+      CertificatesBrowserProxyImpl.instance_ = browserProxy;
       PolymerTest.clearBody();
       subentry = document.createElement('certificate-subentry');
       subentry.model = createSampleCertificateSubnode();
@@ -512,7 +506,7 @@ cr.define('certificate_manager', function() {
 
       // Bring up the popup menu for the following tests to use.
       subentry.$.dots.click();
-      Polymer.dom.flush();
+      flush();
     });
 
     teardown(function() {
@@ -641,7 +635,7 @@ cr.define('certificate_manager', function() {
 
     setup(function() {
       browserProxy = new TestCertificatesBrowserProxy();
-      certificate_manager.CertificatesBrowserProxyImpl.instance_ = browserProxy;
+      CertificatesBrowserProxyImpl.instance_ = browserProxy;
       PolymerTest.clearBody();
       page = document.createElement('certificate-manager');
       document.body.appendChild(page);
@@ -659,13 +653,13 @@ cr.define('certificate_manager', function() {
       // Trigger all category tabs to be added to the DOM.
       const paperTabsElement = page.shadowRoot.querySelector('cr-tabs');
       paperTabsElement.selected = CertificateCategoryIndex.PERSONAL;
-      Polymer.dom.flush();
+      flush();
       paperTabsElement.selected = CertificateCategoryIndex.SERVER;
-      Polymer.dom.flush();
+      flush();
       paperTabsElement.selected = CertificateCategoryIndex.CA;
-      Polymer.dom.flush();
+      flush();
       paperTabsElement.selected = CertificateCategoryIndex.OTHER;
-      Polymer.dom.flush();
+      flush();
       const certificateLists =
           page.shadowRoot.querySelectorAll('certificate-list');
       assertEquals(4, certificateLists.length);
@@ -673,7 +667,7 @@ cr.define('certificate_manager', function() {
       const assertCertificateListLength = function(listIndex, expectedSize) {
         // Need to switch to the corresponding tab before querying the DOM.
         paperTabsElement.selected = listIndex;
-        Polymer.dom.flush();
+        flush();
         const certificateEntries =
             certificateLists[listIndex].shadowRoot.querySelectorAll(
                 'certificate-entry');
@@ -687,13 +681,13 @@ cr.define('certificate_manager', function() {
 
       return browserProxy.whenCalled('refreshCertificates').then(function() {
         // Simulate response for personal and CA certificates.
-        cr.webUIListenerCallback(
+        webUIListenerCallback(
             'certificates-changed', 'personalCerts',
             [createSampleCertificateOrgGroup()]);
-        cr.webUIListenerCallback('certificates-changed', 'caCerts', [
+        webUIListenerCallback('certificates-changed', 'caCerts', [
           createSampleCertificateOrgGroup(), createSampleCertificateOrgGroup()
         ]);
-        Polymer.dom.flush();
+        flush();
 
         assertCertificateListLength(CertificateCategoryIndex.PERSONAL, 1);
         assertCertificateListLength(CertificateCategoryIndex.SERVER, 0);
@@ -711,7 +705,7 @@ cr.define('certificate_manager', function() {
      */
     function testDialogOpensOnAction(dialogTagName, eventDetail) {
       assertFalse(!!page.shadowRoot.querySelector(dialogTagName));
-      const whenDialogOpen = test_util.eventToPromise('cr-dialog-open', page);
+      const whenDialogOpen = eventToPromise('cr-dialog-open', page);
       page.fire(CertificateActionEvent, eventDetail);
 
       // Some dialogs are opened after some async operation to fetch initial
@@ -772,14 +766,14 @@ cr.define('certificate_manager', function() {
           }));
     });
 
-    if (cr.isChromeOS) {
+    if (isChromeOS) {
       // Test that import buttons are hidden by default.
       test('ImportButton_Default', function() {
         const paperTabsElement = page.shadowRoot.querySelector('cr-tabs');
         paperTabsElement.selected = CertificateCategoryIndex.PERSONAL;
-        Polymer.dom.flush();
+        flush();
         paperTabsElement.selected = CertificateCategoryIndex.CA;
-        Polymer.dom.flush();
+        flush();
         const certificateLists =
             page.shadowRoot.querySelectorAll('certificate-list');
         const clientImportButton = certificateLists[0].$$('#import');
@@ -796,14 +790,14 @@ cr.define('certificate_manager', function() {
       test('ImportButton_ClientPolicyAllowed', function() {
         const paperTabsElement = page.shadowRoot.querySelector('cr-tabs');
         paperTabsElement.selected = CertificateCategoryIndex.PERSONAL;
-        Polymer.dom.flush();
+        flush();
         paperTabsElement.selected = CertificateCategoryIndex.CA;
-        Polymer.dom.flush();
+        flush();
         const certificateLists =
             page.shadowRoot.querySelectorAll('certificate-list');
 
         return browserProxy.whenCalled('refreshCertificates').then(function() {
-          cr.webUIListenerCallback(
+          webUIListenerCallback(
               'client-import-allowed-changed', true /* clientImportAllowed */);
           // Verify that import buttons are shown in the client certificate
           // tab.
@@ -824,14 +818,14 @@ cr.define('certificate_manager', function() {
       test('ImportButton_ClientPolicyDisallowed', function() {
         const paperTabsElement = page.shadowRoot.querySelector('cr-tabs');
         paperTabsElement.selected = CertificateCategoryIndex.PERSONAL;
-        Polymer.dom.flush();
+        flush();
         paperTabsElement.selected = CertificateCategoryIndex.CA;
-        Polymer.dom.flush();
+        flush();
         const certificateLists =
             page.shadowRoot.querySelectorAll('certificate-list');
 
         return browserProxy.whenCalled('refreshCertificates').then(function() {
-          cr.webUIListenerCallback(
+          webUIListenerCallback(
               'client-import-allowed-changed', false /* clientImportAllowed */);
           // Verify that import buttons are still hidden in the client
           // certificate tab.
@@ -852,14 +846,14 @@ cr.define('certificate_manager', function() {
       test('ImportButton_CAPolicyAllowed', function() {
         const paperTabsElement = page.shadowRoot.querySelector('cr-tabs');
         paperTabsElement.selected = CertificateCategoryIndex.PERSONAL;
-        Polymer.dom.flush();
+        flush();
         paperTabsElement.selected = CertificateCategoryIndex.CA;
-        Polymer.dom.flush();
+        flush();
         const certificateLists =
             page.shadowRoot.querySelectorAll('certificate-list');
 
         return browserProxy.whenCalled('refreshCertificates').then(function() {
-          cr.webUIListenerCallback(
+          webUIListenerCallback(
               'ca-import-allowed-changed', true /* clientImportAllowed */);
           // Verify that import buttons are still hidden in the client
           // certificate tab.
@@ -879,14 +873,14 @@ cr.define('certificate_manager', function() {
       test('ImportButton_CAPolicyDisallowed', function() {
         const paperTabsElement = page.shadowRoot.querySelector('cr-tabs');
         paperTabsElement.selected = CertificateCategoryIndex.PERSONAL;
-        Polymer.dom.flush();
+        flush();
         paperTabsElement.selected = CertificateCategoryIndex.CA;
-        Polymer.dom.flush();
+        flush();
         const certificateLists =
             page.shadowRoot.querySelectorAll('certificate-list');
 
         return browserProxy.whenCalled('refreshCertificates').then(function() {
-          cr.webUIListenerCallback(
+          webUIListenerCallback(
               'ca-import-allowed-changed', false /* clientImportAllowed */);
           // Verify that import buttons are still hidden in the client
           // certificate tab.
@@ -913,7 +907,7 @@ cr.define('certificate_manager', function() {
 
     setup(function() {
       browserProxy = new TestCertificatesBrowserProxy();
-      certificate_manager.CertificatesBrowserProxyImpl.instance_ = browserProxy;
+      CertificatesBrowserProxyImpl.instance_ = browserProxy;
       PolymerTest.clearBody();
       element = document.createElement('certificate-list');
       document.body.appendChild(element);
@@ -936,14 +930,14 @@ cr.define('certificate_manager', function() {
     function testImportForCertificateType(
         certificateType, proxyMethodName, actionEventExpected, bindBtn) {
       element.certificateType = certificateType;
-      Polymer.dom.flush();
+      flush();
 
       const importButton =
           bindBtn ? element.$$('#importAndBind') : element.$$('#import');
       assertTrue(!!importButton);
 
       const waitForActionEvent = actionEventExpected ?
-          test_util.eventToPromise(CertificateActionEvent, element) :
+          eventToPromise(CertificateActionEvent, element) :
           Promise.resolve(null);
 
       importButton.click();
@@ -968,7 +962,7 @@ cr.define('certificate_manager', function() {
           CertificateType.PERSONAL, 'importPersonalCertificate', true, false);
     });
 
-    if (cr.isChromeOS) {
+    if (isChromeOS) {
       test('ImportAndBindButton_Personal', function() {
         return testImportForCertificateType(
             CertificateType.PERSONAL, 'importPersonalCertificate', true, true);
@@ -985,5 +979,3 @@ cr.define('certificate_manager', function() {
           CertificateType.CA, 'importCaCertificate', true, false);
     });
   });
-  // #cr_define_end
-});

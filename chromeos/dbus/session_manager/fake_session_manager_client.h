@@ -129,7 +129,7 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
       const login_manager::UpgradeArcContainerRequest& request,
       VoidDBusMethodCallback callback) override;
   void StopArcInstance(const std::string& account_id,
-                       bool backup_log,
+                       bool should_backup_log,
                        VoidDBusMethodCallback callback) override;
   void SetArcCpuRestriction(
       login_manager::ContainerCpuRestrictionState restriction_state,

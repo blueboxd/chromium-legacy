@@ -629,7 +629,12 @@ bool IsPlayStoreAvailable() {
     return true;
 
   // Demo Mode is the only public session scenario that can launch Play.
-  return chromeos::DemoSession::IsDeviceInDemoMode() &&
+  if (!chromeos::DemoSession::IsDeviceInDemoMode())
+    return false;
+
+  // TODO(b/154290639): Remove check for |IsDemoModeOfflineEnrolled| when fixed
+  //                    in Play Store.
+  return !chromeos::DemoSession::IsDemoModeOfflineEnrolled() &&
          chromeos::features::ShouldShowPlayStoreInDemoMode();
 }
 

@@ -41,7 +41,6 @@ class ExtensionsMenuTestUtil : public ExtensionActionTestHelper {
   ExtensionsContainer* GetExtensionsContainer() override;
   std::unique_ptr<ExtensionActionTestHelper> CreateOverflowBar(
       Browser* browser) override;
-  void LayoutForOverflowBar() override;
   // TODO(devlin): Some of these popup methods have a common implementation
   // between this and ExtensionActionTestHelperViews. It would make sense to
   // extract them (since they aren't dependent on the extension action UI

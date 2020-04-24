@@ -130,8 +130,8 @@ void OnListVmDisks(
       image->image_type() == vm_tools::concierge::DiskImageType::DISK_IMAGE_RAW;
 
   std::vector<crostini::mojom::DiskSliderTickPtr> ticks =
-      GetTicks(*image, image->min_size(), image->size(),
-               max_size + image->size(), &(disk_info->default_index));
+      GetTicks(image->min_size(), image->size(), max_size + image->size(),
+               &(disk_info->default_index));
   if (ticks.size() == 0) {
     LOG(ERROR) << "Unable to calculate the number of ticks for min: "
                << image->min_size() << " current: " << image->size()
@@ -145,7 +145,6 @@ void OnListVmDisks(
 }
 
 std::vector<crostini::mojom::DiskSliderTickPtr> GetTicks(
-    const vm_tools::concierge::VmDiskInfo& info,
     int64_t min,
     int64_t current,
     int64_t max,

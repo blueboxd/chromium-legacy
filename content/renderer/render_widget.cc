@@ -55,7 +55,6 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/drop_data_builder.h"
-#include "content/renderer/external_popup_menu.h"
 #include "content/renderer/frame_swap_message_queue.h"
 #include "content/renderer/ime_event_guard.h"
 #include "content/renderer/input/main_thread_event_queue.h"
@@ -3063,14 +3062,6 @@ void RenderWidget::SetNeedsLowLatencyInput(bool needs_low_latency) {
 
 void RenderWidget::SetNeedsUnbufferedInputForDebugger(bool unbuffered) {
   input_event_queue_->SetNeedsUnbufferedInputForDebugger(unbuffered);
-}
-
-void RenderWidget::ZoomToFindInPageRectInMainFrame(
-    const blink::WebRect& rect_to_zoom) {
-  // Only oopif subframes should be sending this message.
-  DCHECK(!delegate_);
-  Send(new WidgetHostMsg_ZoomToFindInPageRectInMainFrame(routing_id(),
-                                                         rect_to_zoom));
 }
 
 void RenderWidget::SetPageScaleStateAndLimits(float page_scale_factor,

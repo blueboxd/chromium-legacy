@@ -75,6 +75,16 @@ void LoginDisplayHostCommon::Finalize(base::OnceClosure completion_callback) {
   OnFinalize();
 }
 
+void LoginDisplayHostCommon::FinalizeImmediately() {
+  CHECK(!is_finalizing_);
+  CHECK(!shutting_down_);
+  is_finalizing_ = true;
+  shutting_down_ = true;
+  OnFinalize();
+  Cleanup();
+  delete this;
+}
+
 AppLaunchController* LoginDisplayHostCommon::GetAppLaunchController() {
   return app_launch_controller_.get();
 }
@@ -300,11 +310,9 @@ void LoginDisplayHostCommon::OnAuthPrewarmDone() {
 void LoginDisplayHostCommon::ShutdownDisplayHost() {
   if (shutting_down_)
     return;
-
-  ProfileHelper::Get()->ClearSigninProfile(base::DoNothing());
   shutting_down_ = true;
-  registrar_.RemoveAll();
-  BrowserList::RemoveObserver(this);
+
+  Cleanup();
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
 
@@ -330,6 +338,11 @@ void LoginDisplayHostCommon::ShowGaiaDialogCommon(
     }
     LoadSigninWallpaper();
   }
+}
+void LoginDisplayHostCommon::Cleanup() {
+  ProfileHelper::Get()->ClearSigninProfile(base::DoNothing());
+  registrar_.RemoveAll();
+  BrowserList::RemoveObserver(this);
 }
 
 }  // namespace chromeos

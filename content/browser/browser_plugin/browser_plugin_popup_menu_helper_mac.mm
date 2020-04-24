@@ -12,8 +12,10 @@ namespace content {
 
 BrowserPluginPopupMenuHelper::BrowserPluginPopupMenuHelper(
     RenderFrameHostImpl* embedder_rfh,
-    RenderFrameHost* guest_rfh)
-    : PopupMenuHelper(this, guest_rfh), embedder_rfh_(embedder_rfh) {}
+    RenderFrameHost* guest_rfh,
+    mojo::PendingRemote<blink::mojom::ExternalPopup> popup)
+    : PopupMenuHelper(this, guest_rfh, std::move(popup)),
+      embedder_rfh_(embedder_rfh) {}
 
 RenderWidgetHostViewMac*
     BrowserPluginPopupMenuHelper::GetRenderWidgetHostView() const {

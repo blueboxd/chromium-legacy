@@ -11,7 +11,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.download.home.DownloadManagerCoordinator;
-import org.chromium.chrome.browser.download.home.DownloadManagerCoordinatorFactory;
+import org.chromium.chrome.browser.download.home.DownloadManagerCoordinatorFactoryHelper;
 import org.chromium.chrome.browser.download.home.DownloadManagerUiConfig;
 import org.chromium.chrome.browser.download.home.DownloadManagerUiConfigHelper;
 import org.chromium.chrome.browser.ui.native_page.BasicNativePage;
@@ -43,9 +43,8 @@ public class DownloadPage extends BasicNativePage implements DownloadManagerCoor
                         .setShowPaginationHeaders(DownloadUtils.shouldShowPaginationHeaders())
                         .build();
 
-        mDownloadCoordinator = DownloadManagerCoordinatorFactory.create(activity, config,
-                activity.getSnackbarManager(), activity.getModalDialogManager(),
-                activity.getCurrentTabModel().isIncognito());
+        mDownloadCoordinator = DownloadManagerCoordinatorFactoryHelper.create(
+                activity, config, activity.getSnackbarManager(), activity.getModalDialogManager());
 
         mDownloadCoordinator.addObserver(this);
         mTitle = activity.getString(R.string.menu_downloads);

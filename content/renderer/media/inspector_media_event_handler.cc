@@ -22,6 +22,21 @@ blink::WebString ToString(const base::Value& value) {
   return blink::WebString::FromUTF8(output_str);
 }
 
+// TODO(tmathmeyer) stop using a string here eventually. This means rewriting
+// the MediaLogRecord mojom interface.
+blink::InspectorPlayerMessage::Level LevelFromString(const std::string& level) {
+  if (level == "error")
+    return blink::InspectorPlayerMessage::Level::kError;
+  if (level == "warning")
+    return blink::InspectorPlayerMessage::Level::kWarning;
+  if (level == "info")
+    return blink::InspectorPlayerMessage::Level::kInfo;
+  if (level == "debug")
+    return blink::InspectorPlayerMessage::Level::kDebug;
+  NOTREACHED();
+  return blink::InspectorPlayerMessage::Level::kError;
+}
+
 }  // namespace
 
 InspectorMediaEventHandler::InspectorMediaEventHandler(
@@ -38,17 +53,19 @@ void InspectorMediaEventHandler::SendQueuedMediaEvents(
   if (video_player_destroyed_)
     return;
 
-  blink::InspectorPlayerEvents events;
   blink::InspectorPlayerProperties properties;
+  blink::InspectorPlayerMessages messages;
+  blink::InspectorPlayerEvents events;
+  blink::InspectorPlayerErrors errors;
 
   for (media::MediaLogRecord event : events_to_send) {
     switch (event.type) {
       case media::MediaLogRecord::Type::kMessage: {
         for (auto&& itr : event.params.DictItems()) {
-          blink::InspectorPlayerEvent ev = {
-              blink::InspectorPlayerEvent::MESSAGE_EVENT, event.time,
-              blink::WebString::FromUTF8(itr.first), ToString(itr.second)};
-          events.emplace_back(std::move(ev));
+          blink::InspectorPlayerMessage msg = {
+              LevelFromString(itr.first),
+              blink::WebString::FromUTF8(itr.second.GetString())};
+          messages.emplace_back(std::move(msg));
         }
         break;
       }
@@ -61,28 +78,32 @@ void InspectorMediaEventHandler::SendQueuedMediaEvents(
         break;
       }
       case media::MediaLogRecord::Type::kMediaEventTriggered: {
-        blink::InspectorPlayerEvent ev = {
-            blink::InspectorPlayerEvent::TRIGGERED_EVENT, event.time,
-            blink::WebString::FromUTF8("event"), ToString(event.params)};
+        blink::InspectorPlayerEvent ev = {event.time, ToString(event.params)};
         events.emplace_back(std::move(ev));
         break;
       }
       case media::MediaLogRecord::Type::kMediaStatus: {
-        // TODO(tmathmeyer) Make a new type in the browser protocol instead
-        // of overloading InspectorPlayerEvent.
-        blink::InspectorPlayerEvent ev = {
-            blink::InspectorPlayerEvent::ERROR_EVENT, event.time,
-            blink::WebString::FromUTF8("error"), ToString(event.params)};
-        events.emplace_back(std::move(ev));
+        base::Value* code = event.params.FindKey(media::MediaLog::kStatusText);
+        DCHECK_NE(code, nullptr);
+        blink::InspectorPlayerError error = {
+            blink::InspectorPlayerError::Type::kPipelineError, ToString(*code)};
+        errors.emplace_back(std::move(error));
         break;
       }
     }
   }
+
   if (!events.empty())
-    inspector_context_->NotifyPlayerEvents(player_id_, events);
+    inspector_context_->NotifyPlayerEvents(player_id_, std::move(events));
 
   if (!properties.empty())
-    inspector_context_->SetPlayerProperties(player_id_, properties);
+    inspector_context_->SetPlayerProperties(player_id_, std::move(properties));
+
+  if (!messages.empty())
+    inspector_context_->NotifyPlayerMessages(player_id_, std::move(messages));
+
+  if (!errors.empty())
+    inspector_context_->NotifyPlayerErrors(player_id_, std::move(errors));
 }
 
 void InspectorMediaEventHandler::OnWebMediaPlayerDestroyed() {

@@ -316,6 +316,21 @@ Try tapping the mic to ask me anything.
       <message name="IDS_PRINT_MANAGEMENT_COMPLETION_STATUS_UNKNOWN_ERROR" desc="Displayed text status if the print job had an unknown error." translateable="false">
         Unknown Error
       </message>
+      <message name="IDS_PRINT_MANAGEMENT_FILE_NAME_COLUMN" desc="The label for the column header that displays the file name of the print job.">
+        File name
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_PRINTER_NAME_COLUMN" desc="The label for the column header that displays the printer name.">
+        Printer
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_DATE_COLUMN" desc="The label for the column header that displays the date of which the print job was created.">
+        Date
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_STATUS_COLUMN" desc="The label for the column header that displays the current status of the print job.">
+        Status
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_TITLE" desc="The title of the print management app.">
+        Print Jobs
+      </message>
     </messages>
   </release>
 </grit>

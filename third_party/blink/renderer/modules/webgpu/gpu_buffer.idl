@@ -8,10 +8,10 @@
     Exposed(Window WebGPU, Worker WebGPU)
 ] interface GPUBuffer {
     [RaisesException] void setSubData(
-        unsigned long long dstOffset,
+        GPUSize64 dstOffset,
         [AllowShared, FlexibleArrayBufferView] ArrayBufferView src,
-        optional unsigned long long srcOffset = 0,
-        optional unsigned long long byteLength = 0);
+        optional GPUSize64 srcOffset = 0,
+        optional GPUSize64 byteLength = 0);
     [CallWith=ScriptState, RaisesException] Promise<ArrayBuffer> mapReadAsync();
     [CallWith=ScriptState, RaisesException] Promise<ArrayBuffer> mapWriteAsync();
     [CallWith=ScriptState] void unmap();

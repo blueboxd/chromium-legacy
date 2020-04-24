@@ -23,6 +23,7 @@
 #include "content/public/browser/visibility.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
+#include "third_party/blink/public/mojom/popup/popup.mojom.h"
 #import "ui/base/cocoa/views_hostable.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -100,14 +101,14 @@ class WebContentsViewMac : public WebContentsView,
   void ShowContextMenu(RenderFrameHost* render_frame_host,
                        const ContextMenuParams& params) override;
   void ShowPopupMenu(RenderFrameHost* render_frame_host,
+                     mojo::PendingRemote<blink::mojom::ExternalPopup> popup,
                      const gfx::Rect& bounds,
                      int item_height,
                      double item_font_size,
                      int selected_item,
-                     const std::vector<MenuItem>& items,
+                     std::vector<blink::mojom::MenuItemPtr> menu_items,
                      bool right_aligned,
                      bool allow_multiple_selection) override;
-  void HidePopupMenu() override;
 
   // PopupMenuHelper::Delegate:
   void OnMenuClosed() override;

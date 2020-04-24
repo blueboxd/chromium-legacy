@@ -119,10 +119,12 @@ ServiceWorkerContainerHost::CreateForWebWorker(
         container_remote,
     base::WeakPtr<ServiceWorkerContextCore> context) {
   DCHECK(context);
-  using ServiceWorkerContainerType = blink::mojom::ServiceWorkerContainerType;
-  DCHECK((base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker) &&
-          container_type == ServiceWorkerContainerType::kForDedicatedWorker) ||
+  using blink::mojom::ServiceWorkerContainerType;
+  DCHECK(container_type == ServiceWorkerContainerType::kForDedicatedWorker ||
          container_type == ServiceWorkerContainerType::kForSharedWorker);
+  if (container_type == ServiceWorkerContainerType::kForDedicatedWorker)
+    DCHECK(base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker));
+
   auto container_host = std::make_unique<ServiceWorkerContainerHost>(
       container_type, /*is_parent_frame_secure=*/true,
       FrameTreeNode::kFrameTreeNodeInvalidId, std::move(host_receiver),
@@ -163,6 +165,7 @@ ServiceWorkerContainerHost::ServiceWorkerContainerHost(
                                           : std::string()),
       context_(std::move(context)) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  DCHECK_NE(type_, blink::mojom::ServiceWorkerContainerType::kUnknown);
   DCHECK(context_);
 
   DCHECK(host_receiver.is_valid());
@@ -226,7 +229,7 @@ void ServiceWorkerContainerHost::Register(
     return;
   }
 
-  if (client_type() != blink::mojom::ServiceWorkerClientType::kWindow) {
+  if (!IsContainerForWindowClient()) {
     mojo::ReportBadMessage(ServiceWorkerConsts::kBadMessageFromNonWindow);
     std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kUnknown,
                             std::string(), nullptr);
@@ -546,7 +549,7 @@ void ServiceWorkerContainerHost::AddServiceWorkerToUpdate(
 
   // This is only called for windows now, but it should be called for all
   // clients someday.
-  DCHECK_EQ(type(), blink::mojom::ServiceWorkerContainerType::kForWindow);
+  DCHECK(IsContainerForWindowClient());
 
   versions_to_update_.emplace(std::move(version));
 }
@@ -737,8 +740,8 @@ bool ServiceWorkerContainerHost::IsContainerForClient() const {
   return false;
 }
 
-blink::mojom::ServiceWorkerClientType ServiceWorkerContainerHost::client_type()
-    const {
+blink::mojom::ServiceWorkerClientType
+ServiceWorkerContainerHost::GetClientType() const {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   switch (type_) {
     case blink::mojom::ServiceWorkerContainerType::kForWindow:
@@ -753,6 +756,18 @@ blink::mojom::ServiceWorkerClientType ServiceWorkerContainerHost::client_type()
   }
   NOTREACHED() << type_;
   return blink::mojom::ServiceWorkerClientType::kWindow;
+}
+
+bool ServiceWorkerContainerHost::IsContainerForWindowClient() const {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  return type_ == blink::mojom::ServiceWorkerContainerType::kForWindow;
+}
+
+bool ServiceWorkerContainerHost::IsContainerForWorkerClient() const {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  using blink::mojom::ServiceWorkerContainerType;
+  return type_ == ServiceWorkerContainerType::kForDedicatedWorker ||
+         type_ == ServiceWorkerContainerType::kForSharedWorker;
 }
 
 ServiceWorkerClientInfo ServiceWorkerContainerHost::GetServiceWorkerClientInfo()
@@ -771,7 +786,7 @@ void ServiceWorkerContainerHost::OnBeginNavigationCommit(
     mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
         coep_reporter) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  DCHECK_EQ(blink::mojom::ServiceWorkerContainerType::kForWindow, type());
+  DCHECK(IsContainerForWindowClient());
 
   SetContainerProcessId(container_process_id);
 
@@ -817,9 +832,7 @@ void ServiceWorkerContainerHost::OnBeginNavigationCommit(
 void ServiceWorkerContainerHost::CompleteWebWorkerPreparation(
     const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  using ServiceWorkerContainerType = blink::mojom::ServiceWorkerContainerType;
-  DCHECK(type_ == ServiceWorkerContainerType::kForDedicatedWorker ||
-         type_ == ServiceWorkerContainerType::kForSharedWorker);
+  DCHECK(IsContainerForWorkerClient());
 
   DCHECK(!cross_origin_embedder_policy_.has_value());
   cross_origin_embedder_policy_ = cross_origin_embedder_policy;
@@ -857,7 +870,7 @@ void ServiceWorkerContainerHost::UpdateUrls(
     // Revoke the token on URL change since any service worker holding the token
     // may no longer be the potential controller of this frame and shouldn't
     // have the power to display SSL dialogs for it.
-    if (type_ == blink::mojom::ServiceWorkerContainerType::kForWindow) {
+    if (IsContainerForWindowClient()) {
       auto* registry = FrameTreeNodeIdRegistry::GetInstance();
       registry->Remove(fetch_request_window_id_);
       fetch_request_window_id_ = base::UnguessableToken::Create();
@@ -936,20 +949,16 @@ ServiceWorkerContainerHost::GetRemoteControllerServiceWorker() {
     pending_controller_receiver_ =
         remote_controller.BindNewPipeAndPassReceiver();
   } else {
-    using ServiceWorkerContainerType = blink::mojom::ServiceWorkerContainerType;
     mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
         coep_reporter_to_be_passed;
     if (coep_reporter_) {
-      DCHECK_EQ(ServiceWorkerContainerType::kForWindow, type_);
+      DCHECK(IsContainerForWindowClient());
       coep_reporter_->Clone(
           coep_reporter_to_be_passed.InitWithNewPipeAndPassReceiver());
     } else {
       // TODO(https://crbug.com/999049): Implement DedicatedWorker and
       // SharedWorker cases.
-      DCHECK(
-          (base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker) &&
-           type_ == ServiceWorkerContainerType::kForDedicatedWorker) ||
-          type_ == ServiceWorkerContainerType::kForSharedWorker);
+      DCHECK(IsContainerForWorkerClient());
     }
 
     controller_->controller()->Clone(
@@ -1117,7 +1126,7 @@ void ServiceWorkerContainerHost::EvictFromBackForwardCache(
     BackForwardCacheMetrics::NotRestoredReason reason) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(IsBackForwardCacheEnabled());
-  DCHECK_EQ(type_, blink::mojom::ServiceWorkerContainerType::kForWindow);
+  DCHECK(IsContainerForWindowClient());
   is_in_back_forward_cache_ = false;
   RunOrPostTaskOnThread(
       FROM_HERE, BrowserThread::UI,
@@ -1136,7 +1145,7 @@ void ServiceWorkerContainerHost::EvictFromBackForwardCache(
 void ServiceWorkerContainerHost::OnEnterBackForwardCache() {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(IsBackForwardCacheEnabled());
-  DCHECK_EQ(type_, blink::mojom::ServiceWorkerContainerType::kForWindow);
+  DCHECK(IsContainerForWindowClient());
   if (controller_)
     controller_->MoveControlleeToBackForwardCacheMap(client_uuid());
   is_in_back_forward_cache_ = true;
@@ -1145,7 +1154,7 @@ void ServiceWorkerContainerHost::OnEnterBackForwardCache() {
 void ServiceWorkerContainerHost::OnRestoreFromBackForwardCache() {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(IsBackForwardCacheEnabled());
-  DCHECK_EQ(type_, blink::mojom::ServiceWorkerContainerType::kForWindow);
+  DCHECK(IsContainerForWindowClient());
   if (controller_)
     controller_->RestoreControlleeFromBackForwardCacheMap(client_uuid());
   is_in_back_forward_cache_ = false;
@@ -1335,20 +1344,16 @@ void ServiceWorkerContainerHost::StartControllerComplete(
   if (status == blink::ServiceWorkerStatusCode::kOk) {
     DCHECK(is_response_committed());
 
-    using ServiceWorkerContainerType = blink::mojom::ServiceWorkerContainerType;
     mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
         coep_reporter_to_be_passed;
     if (coep_reporter_) {
-      DCHECK_EQ(ServiceWorkerContainerType::kForWindow, type_);
+      DCHECK(IsContainerForWindowClient());
       coep_reporter_->Clone(
           coep_reporter_to_be_passed.InitWithNewPipeAndPassReceiver());
     } else {
       // TODO(https://crbug.com/999049): Implement DedicatedWorker and
       // SharedWorker cases.
-      DCHECK(
-          (base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker) &&
-           type_ == ServiceWorkerContainerType::kForDedicatedWorker) ||
-          type_ == ServiceWorkerContainerType::kForSharedWorker);
+      DCHECK(IsContainerForWorkerClient());
     }
 
     controller_->controller()->Clone(std::move(receiver),
@@ -1533,7 +1538,7 @@ bool ServiceWorkerContainerHost::IsValidGetRegistrationMessage(
     const GURL& client_url,
     std::string* out_error) const {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  if (client_type() != blink::mojom::ServiceWorkerClientType::kWindow) {
+  if (!IsContainerForWindowClient()) {
     *out_error = ServiceWorkerConsts::kBadMessageFromNonWindow;
     return false;
   }
@@ -1553,7 +1558,7 @@ bool ServiceWorkerContainerHost::IsValidGetRegistrationMessage(
 bool ServiceWorkerContainerHost::IsValidGetRegistrationsMessage(
     std::string* out_error) const {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  if (client_type() != blink::mojom::ServiceWorkerClientType::kWindow) {
+  if (!IsContainerForWindowClient()) {
     *out_error = ServiceWorkerConsts::kBadMessageFromNonWindow;
     return false;
   }
@@ -1568,7 +1573,7 @@ bool ServiceWorkerContainerHost::IsValidGetRegistrationsMessage(
 bool ServiceWorkerContainerHost::IsValidGetRegistrationForReadyMessage(
     std::string* out_error) const {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  if (client_type() != blink::mojom::ServiceWorkerClientType::kWindow) {
+  if (!IsContainerForWindowClient()) {
     *out_error = ServiceWorkerConsts::kBadMessageFromNonWindow;
     return false;
   }

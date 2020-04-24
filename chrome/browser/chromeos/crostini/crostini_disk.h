@@ -69,7 +69,6 @@ void OnListVmDisks(
 // matches the current value and will write the index of that value to
 // out_default_index.
 std::vector<crostini::mojom::DiskSliderTickPtr> GetTicks(
-    const vm_tools::concierge::VmDiskInfo& info,
     int64_t min,
     int64_t current,
     int64_t max,

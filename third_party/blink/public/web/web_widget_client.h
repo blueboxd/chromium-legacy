@@ -224,9 +224,6 @@ class WebWidgetClient {
                              const SkBitmap& drag_image,
                              const gfx::Point& drag_image_offset) {}
 
-  // Find in page zooms a rect in the main-frame renderer.
-  virtual void ZoomToFindInPageRectInMainFrame(const blink::WebRect& rect) {}
-
   // Sets the current page scale factor and minimum / maximum limits. Both
   // limits are initially 1 (no page scale allowed).
   virtual void SetPageScaleStateAndLimits(float page_scale_factor,
@@ -291,6 +288,9 @@ class WebWidgetClient {
   // Record the time it took for the first paint after the widget transitioned
   // from background inactive to active.
   virtual void RecordTimeToFirstActivePaint(base::TimeDelta duration) {}
+
+  // Returns a scale of the device emulator from the widget.
+  virtual float GetEmulatorScale() const { return 1.0f; }
 };
 
 }  // namespace blink

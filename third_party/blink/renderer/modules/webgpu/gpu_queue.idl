@@ -10,7 +10,7 @@
     void submit(sequence<GPUCommandBuffer> buffers);
 
     GPUFence createFence(optional GPUFenceDescriptor descriptor = {});
-    void signal(GPUFence fence, unsigned long long signalValue);
+    void signal(GPUFence fence, GPUFenceValue signalValue);
     [RaisesException] void copyImageBitmapToTexture(
         GPUImageBitmapCopyView source,
         GPUTextureCopyView destination,

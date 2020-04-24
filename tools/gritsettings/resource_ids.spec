@@ -153,11 +153,9 @@
   "chrome/browser/resources/local_ntp/local_ntp_resources.grd": {
     "includes": [1620],
   },
-  "chrome/browser/resources/new_tab_page/new_tab_page_resources_vulcanized.grd": {
+ "chrome/browser/resources/new_tab_page/new_tab_page_resources.grd": {
     "includes": [1640],
-  },
-  "chrome/browser/resources/new_tab_page/new_tab_page_resources.grd": {
-    "includes": [1660],
+    "structures": [1660],
   },
   "chrome/browser/resources/print_preview/print_preview_resources_vulcanized.grd": {
     "includes": [1680],

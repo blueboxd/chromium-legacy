@@ -5,5 +5,5 @@
 // https://gpuweb.github.io/gpuweb/
 
 dictionary GPULimits {
-    unsigned long maxBindGroups = 4;
+    GPUSize32 maxBindGroups = 4;
 };

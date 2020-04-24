@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/bookmarks/bookmarks_api.h"
-#include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
@@ -19,6 +18,7 @@
 #include "content/public/browser/web_contents_user_data.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_function.h"
 
 class Profile;
 
@@ -131,7 +131,7 @@ class ClipboardBookmarkManagerFunction : public extensions::BookmarksFunction {
  protected:
   ~ClipboardBookmarkManagerFunction() override {}
 
-  bool CopyOrCut(bool cut, const std::vector<std::string>& id_list);
+  ResponseValue CopyOrCut(bool cut, const std::vector<std::string>& id_list);
 };
 
 class BookmarkManagerPrivateCopyFunction
@@ -143,8 +143,8 @@ class BookmarkManagerPrivateCopyFunction
  protected:
   ~BookmarkManagerPrivateCopyFunction() override {}
 
-  // ExtensionFunction:
-  bool RunOnReady() override;
+  // BookmarksFunction:
+  ResponseValue RunOnReady() override;
 };
 
 class BookmarkManagerPrivateCutFunction
@@ -156,8 +156,8 @@ class BookmarkManagerPrivateCutFunction
  protected:
   ~BookmarkManagerPrivateCutFunction() override {}
 
-  // ExtensionFunction:
-  bool RunOnReady() override;
+  // BookmarksFunction:
+  ResponseValue RunOnReady() override;
 };
 
 class BookmarkManagerPrivatePasteFunction
@@ -169,8 +169,8 @@ class BookmarkManagerPrivatePasteFunction
  protected:
   ~BookmarkManagerPrivatePasteFunction() override {}
 
-  // ExtensionFunction:
-  bool RunOnReady() override;
+  // BookmarksFunction:
+  ResponseValue RunOnReady() override;
 };
 
 class BookmarkManagerPrivateCanPasteFunction
@@ -182,8 +182,8 @@ class BookmarkManagerPrivateCanPasteFunction
  protected:
   ~BookmarkManagerPrivateCanPasteFunction() override {}
 
-  // ExtensionFunction:
-  bool RunOnReady() override;
+  // BookmarksFunction:
+  ResponseValue RunOnReady() override;
 };
 
 class BookmarkManagerPrivateSortChildrenFunction
@@ -195,8 +195,8 @@ class BookmarkManagerPrivateSortChildrenFunction
  protected:
   ~BookmarkManagerPrivateSortChildrenFunction() override {}
 
-  // ExtensionFunction:
-  bool RunOnReady() override;
+  // BookmarksFunction:
+  ResponseValue RunOnReady() override;
 };
 
 class BookmarkManagerPrivateStartDragFunction
@@ -208,8 +208,8 @@ class BookmarkManagerPrivateStartDragFunction
  protected:
   ~BookmarkManagerPrivateStartDragFunction() override {}
 
-  // ExtensionFunction:
-  bool RunOnReady() override;
+  // BookmarksFunction:
+  ResponseValue RunOnReady() override;
 };
 
 class BookmarkManagerPrivateDropFunction
@@ -221,8 +221,8 @@ class BookmarkManagerPrivateDropFunction
  protected:
   ~BookmarkManagerPrivateDropFunction() override {}
 
-  // ExtensionFunction:
-  bool RunOnReady() override;
+  // BookmarksFunction:
+  ResponseValue RunOnReady() override;
 };
 
 class BookmarkManagerPrivateGetSubtreeFunction
@@ -234,8 +234,8 @@ class BookmarkManagerPrivateGetSubtreeFunction
  protected:
   ~BookmarkManagerPrivateGetSubtreeFunction() override {}
 
-  // ExtensionFunction:
-  bool RunOnReady() override;
+  // BookmarksFunction:
+  ResponseValue RunOnReady() override;
 };
 
 class BookmarkManagerPrivateRemoveTreesFunction
@@ -247,8 +247,8 @@ class BookmarkManagerPrivateRemoveTreesFunction
  protected:
   ~BookmarkManagerPrivateRemoveTreesFunction() override {}
 
-  // ExtensionFunction:
-  bool RunOnReady() override;
+  // BookmarksFunction:
+  ResponseValue RunOnReady() override;
 };
 
 class BookmarkManagerPrivateUndoFunction
@@ -260,8 +260,8 @@ class BookmarkManagerPrivateUndoFunction
  protected:
   ~BookmarkManagerPrivateUndoFunction() override {}
 
-  // ExtensionFunction:
-  bool RunOnReady() override;
+  // BookmarksFunction:
+  ResponseValue RunOnReady() override;
 };
 
 class BookmarkManagerPrivateRedoFunction
@@ -273,8 +273,8 @@ class BookmarkManagerPrivateRedoFunction
  protected:
   ~BookmarkManagerPrivateRedoFunction() override {}
 
-  // ExtensionFunction:
-  bool RunOnReady() override;
+  // BookmarksFunction:
+  ResponseValue RunOnReady() override;
 };
 
 }  // namespace extensions

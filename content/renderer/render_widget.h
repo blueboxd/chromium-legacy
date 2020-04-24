@@ -376,8 +376,6 @@ class CONTENT_EXPORT RenderWidget
   void SetHasTouchEventHandlers(bool has_handlers) override;
   void SetNeedsLowLatencyInput(bool) override;
   void SetNeedsUnbufferedInputForDebugger(bool) override;
-  void ZoomToFindInPageRectInMainFrame(
-      const blink::WebRect& rect_to_zoom) override;
   void SetPageScaleStateAndLimits(float page_scale_factor,
                                   bool is_pinch_gesture_active,
                                   float minimum,
@@ -400,7 +398,7 @@ class CONTENT_EXPORT RenderWidget
   // emulator. Returns 1 if there is no emulation active. Use this to position
   // things when the coordinates did not come from blink, such as from the mouse
   // position.
-  float GetEmulatorScale() const;
+  float GetEmulatorScale() const override;
 
   // Override point to obtain that the current input method state and caret
   // position.

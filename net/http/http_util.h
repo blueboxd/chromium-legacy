@@ -326,7 +326,7 @@ class NET_EXPORT HttpUtil {
   //
   // This iterator is careful to skip over delimiters found inside an HTTP
   // quoted string.
-  class NET_EXPORT_PRIVATE ValuesIterator {
+  class NET_EXPORT ValuesIterator {
    public:
     ValuesIterator(std::string::const_iterator values_begin,
                    std::string::const_iterator values_end,

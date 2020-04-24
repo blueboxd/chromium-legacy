@@ -94,8 +94,6 @@ class WebContentDecryptionModule;
 class WebDedicatedWorkerHostFactoryClient;
 class WebDocumentLoader;
 class WebEncryptedMediaClient;
-class WebExternalPopupMenu;
-class WebExternalPopupMenuClient;
 class WebLocalFrame;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
@@ -115,7 +113,6 @@ struct FramePolicy;
 struct WebConsoleMessage;
 struct WebContextMenuData;
 struct WebPluginParams;
-struct WebPopupMenuInfo;
 struct WebRect;
 
 class BLINK_EXPORT WebLocalFrameClient {
@@ -168,14 +165,6 @@ class BLINK_EXPORT WebLocalFrameClient {
   virtual scoped_refptr<WebWorkerFetchContext>
   CreateWorkerFetchContextForPlzDedicatedWorker(
       WebDedicatedWorkerHostFactoryClient*) {
-    return nullptr;
-  }
-
-  // Create a new WebPopupMenu. In the "createExternalPopupMenu" form, the
-  // client is responsible for rendering the contents of the popup menu.
-  virtual WebExternalPopupMenu* CreateExternalPopupMenu(
-      const WebPopupMenuInfo&,
-      WebExternalPopupMenuClient*) {
     return nullptr;
   }
 

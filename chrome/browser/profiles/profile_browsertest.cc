@@ -672,7 +672,8 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, Notifications) {
               content::Source<Profile>(otr_profile));
     EXPECT_TRUE(profile->HasOffTheRecordProfile());
     EXPECT_TRUE(otr_profile->IsOffTheRecord());
-    EXPECT_FALSE(otr_profile->IsIndependentOffTheRecordProfile());
+    EXPECT_TRUE(otr_profile->IsPrimaryOTRProfile());
+    EXPECT_TRUE(otr_profile->IsIncognitoProfile());
   }
 
   // We are about to destroy a profile. In production that will only happen

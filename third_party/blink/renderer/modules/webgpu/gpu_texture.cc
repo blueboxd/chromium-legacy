@@ -76,9 +76,10 @@ GPUTexture* GPUTexture::Create(GPUDevice* device,
   DCHECK(webgpu_desc);
 
   // Check size is correctly formatted before further processing.
-  const UnsignedLongSequenceOrGPUExtent3DDict& size = webgpu_desc->size();
-  if (size.IsUnsignedLongSequence() &&
-      size.GetAsUnsignedLongSequence().size() != 3) {
+  const UnsignedLongEnforceRangeSequenceOrGPUExtent3DDict& size =
+      webgpu_desc->size();
+  if (size.IsUnsignedLongEnforceRangeSequence() &&
+      size.GetAsUnsignedLongEnforceRangeSequence().size() != 3) {
     exception_state.ThrowRangeError("size length must be 3");
     return nullptr;
   }

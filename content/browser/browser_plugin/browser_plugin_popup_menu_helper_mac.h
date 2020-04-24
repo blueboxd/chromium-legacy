@@ -7,6 +7,8 @@
 
 #include "base/macros.h"
 #include "content/browser/frame_host/popup_menu_helper_mac.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "third_party/blink/public/mojom/popup/popup.mojom.h"
 
 namespace content {
 
@@ -21,8 +23,10 @@ class BrowserPluginPopupMenuHelper : public PopupMenuHelper,
   // Creates a BrowserPluginPopupMenuHelper that positions popups relative to
   // |embedder_rfh| and will notify |guest_rfh| when a user selects or cancels
   // the popup.
-  BrowserPluginPopupMenuHelper(RenderFrameHostImpl* embedder_rfh,
-                               RenderFrameHost* guest_rfh);
+  BrowserPluginPopupMenuHelper(
+      RenderFrameHostImpl* embedder_rfh,
+      RenderFrameHost* guest_rfh,
+      mojo::PendingRemote<blink::mojom::ExternalPopup> popup);
 
  private:
   // PopupMenuHelper:

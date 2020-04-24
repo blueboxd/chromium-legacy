@@ -5,8 +5,8 @@
 #include "third_party/blink/renderer/modules/webgpu/gpu_command_encoder.h"
 
 #include "third_party/blink/renderer/bindings/modules/v8/double_sequence_or_gpu_color_dict.h"
-#include "third_party/blink/renderer/bindings/modules/v8/unsigned_long_sequence_or_gpu_extent_3d_dict.h"
-#include "third_party/blink/renderer/bindings/modules/v8/unsigned_long_sequence_or_gpu_origin_3d_dict.h"
+#include "third_party/blink/renderer/bindings/modules/v8/unsigned_long_enforce_range_sequence_or_gpu_extent_3d_dict.h"
+#include "third_party/blink/renderer/bindings/modules/v8/unsigned_long_enforce_range_sequence_or_gpu_origin_3d_dict.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_buffer_copy_view.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_command_buffer_descriptor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_command_encoder_descriptor.h"
@@ -270,7 +270,7 @@ void GPUCommandEncoder::copyBufferToBuffer(GPUBuffer* src,
 void GPUCommandEncoder::copyBufferToTexture(
     GPUBufferCopyView* source,
     GPUTextureCopyView* destination,
-    UnsignedLongSequenceOrGPUExtent3DDict& copy_size,
+    UnsignedLongEnforceRangeSequenceOrGPUExtent3DDict& copy_size,
     ExceptionState& exception_state) {
   if (!ValidateCopySize(copy_size, exception_state) ||
       !ValidateTextureCopyView(destination, exception_state)) {
@@ -292,7 +292,7 @@ void GPUCommandEncoder::copyBufferToTexture(
 void GPUCommandEncoder::copyTextureToBuffer(
     GPUTextureCopyView* source,
     GPUBufferCopyView* destination,
-    UnsignedLongSequenceOrGPUExtent3DDict& copy_size,
+    UnsignedLongEnforceRangeSequenceOrGPUExtent3DDict& copy_size,
     ExceptionState& exception_state) {
   if (!ValidateCopySize(copy_size, exception_state) ||
       !ValidateTextureCopyView(source, exception_state)) {
@@ -314,7 +314,7 @@ void GPUCommandEncoder::copyTextureToBuffer(
 void GPUCommandEncoder::copyTextureToTexture(
     GPUTextureCopyView* source,
     GPUTextureCopyView* destination,
-    UnsignedLongSequenceOrGPUExtent3DDict& copy_size,
+    UnsignedLongEnforceRangeSequenceOrGPUExtent3DDict& copy_size,
     ExceptionState& exception_state) {
   if (!ValidateCopySize(copy_size, exception_state) ||
       !ValidateTextureCopyView(source, exception_state) ||

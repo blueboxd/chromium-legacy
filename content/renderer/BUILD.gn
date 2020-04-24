@@ -422,13 +422,6 @@ target(link_target_type, "renderer") {
   ]
   allow_circular_includes_from = []
 
-  if (use_external_popup_menu) {
-    sources += [
-      "external_popup_menu.cc",
-      "external_popup_menu.h",
-    ]
-  }
-
   if (is_android) {
     set_sources_assignment_filter([])
     sources += [

@@ -14,6 +14,8 @@ import static android.support.test.espresso.matcher.ViewMatchers.withEffectiveVi
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewAssertionTrue;
@@ -96,7 +98,7 @@ public class AutofillAssistantChromeTabIntegrationTest {
     @Test
     @MediumTest
     @DisabledTest(message = "https://crbug.com/1070272")
-    public void newTabButtonHidesAndRecoversAutofillAssistant() throws Exception {
+    public void newTabButtonHidesAndRecoversAutofillAssistant() {
         ArrayList<ActionProto> list = new ArrayList<>();
         list.add((ActionProto) ActionProto.newBuilder()
                          .setPrompt(PromptProto.newBuilder()
@@ -132,7 +134,7 @@ public class AutofillAssistantChromeTabIntegrationTest {
 
     @Test
     @MediumTest
-    public void switchingTabHidesAutofillAssistant() throws Exception {
+    public void switchingTabHidesAutofillAssistant() {
         ArrayList<ActionProto> list = new ArrayList<>();
         list.add((ActionProto) ActionProto.newBuilder()
                          .setPrompt(PromptProto.newBuilder().setMessage("Prompt").addChoices(
@@ -167,7 +169,7 @@ public class AutofillAssistantChromeTabIntegrationTest {
 
     @Test
     @MediumTest
-    public void closingTabResurfacesAutofillAssistant() throws Exception {
+    public void closingTabResurfacesAutofillAssistant() {
         ArrayList<ActionProto> list = new ArrayList<>();
         list.add((ActionProto) ActionProto.newBuilder()
                          .setPrompt(PromptProto.newBuilder().setMessage("Prompt").addChoices(
@@ -197,7 +199,7 @@ public class AutofillAssistantChromeTabIntegrationTest {
 
     @Test
     @MediumTest
-    public void startingNewAutofillAssistantChangeTabResumeRunOnPreviousTab() throws Exception {
+    public void startingNewAutofillAssistantChangeTabResumeRunOnPreviousTab() {
         ArrayList<ActionProto> listA = new ArrayList<>();
         listA.add((ActionProto) ActionProto.newBuilder()
                           .setPrompt(PromptProto.newBuilder()
@@ -252,7 +254,7 @@ public class AutofillAssistantChromeTabIntegrationTest {
 
     @Test
     @MediumTest
-    public void startingNewAutofillAssistantCloseTabResumesRunOnPreviousTab() throws Exception {
+    public void startingNewAutofillAssistantCloseTabResumesRunOnPreviousTab() {
         ArrayList<ActionProto> listA = new ArrayList<>();
         listA.add((ActionProto) ActionProto.newBuilder()
                           .setPrompt(PromptProto.newBuilder()
@@ -298,5 +300,37 @@ public class AutofillAssistantChromeTabIntegrationTest {
                 InstrumentationRegistry.getInstrumentation(), mTestRule.getActivity());
         waitUntilViewAssertionTrue(withText("Prompt B"), doesNotExist(), 3000L);
         waitUntilViewMatchesCondition(withText("Prompt A"), isCompletelyDisplayed());
+    }
+
+    @Test
+    @MediumTest
+    public void backButtonTerminatesAutofillAssistant() {
+        ChromeTabUtils.loadUrlOnUiThread(
+                mTestRule.getActivity().getActivityTab(), getURL(TEST_PAGE_B));
+
+        ArrayList<ActionProto> list = new ArrayList<>();
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setPrompt(PromptProto.newBuilder().setMessage("Prompt").addChoices(
+                                 PromptProto.Choice.newBuilder()))
+                         .build());
+
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath(TEST_PAGE_A)
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Done")))
+                        .build(),
+                list);
+        setupScripts(script);
+        startAutofillAssistantOnTab(TEST_PAGE_B);
+
+        waitUntilViewMatchesCondition(withText("Prompt"), isCompletelyDisplayed());
+
+        // First press on back button minimizes Autofill Assistant. Second click navigates back.
+        Espresso.pressBack();
+        Espresso.pressBack();
+        waitUntilViewMatchesCondition(withText(containsString("Sorry")), isCompletelyDisplayed());
+        assertThat(mTestRule.getActivity().getActivityTab().getUrl().getSpec(),
+                is(getURL(TEST_PAGE_A)));
     }
 }

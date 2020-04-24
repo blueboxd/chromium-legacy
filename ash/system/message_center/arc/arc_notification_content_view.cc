@@ -649,9 +649,11 @@ void ArcNotificationContentView::Layout() {
     gfx::Rect control_buttons_bounds(contents_bounds);
     const gfx::Size button_size = control_buttons_view_.GetPreferredSize();
 
-    control_buttons_bounds.set_x(control_buttons_bounds.right() -
-                                 button_size.width() -
-                                 message_center::kControlButtonPadding);
+    const int control_buttons_x = GetMirroredXWithWidthInView(
+        control_buttons_bounds.right() - button_size.width() -
+            message_center::kControlButtonPadding,
+        button_size.width());
+    control_buttons_bounds.set_x(control_buttons_x);
     control_buttons_bounds.set_y(control_buttons_bounds.y() +
                                  message_center::kControlButtonPadding);
     control_buttons_bounds.set_width(button_size.width());

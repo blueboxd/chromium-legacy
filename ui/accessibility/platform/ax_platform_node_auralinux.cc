@@ -28,11 +28,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_action_data.h"
+#include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_mode_observer.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_role_properties.h"
-#include "ui/accessibility/ax_text_utils.h"
 #include "ui/accessibility/ax_tree_data.h"
 #include "ui/accessibility/platform/atk_util_auralinux.h"
 #include "ui/accessibility/platform/ax_platform_atk_hyperlink.h"
@@ -4270,10 +4270,9 @@ const gchar* AXPlatformNodeAuraLinux::GetDefaultActionName() {
   if (!GetIntAttribute(ax::mojom::IntAttribute::kDefaultActionVerb, &action))
     return nullptr;
 
-  base::string16 action_verb = ActionVerbToUnlocalizedString(
-      static_cast<ax::mojom::DefaultActionVerb>(action));
-
-  ATK_AURALINUX_RETURN_STRING(base::UTF16ToUTF8(action_verb));
+  std::string action_verb =
+      ui::ToString(static_cast<ax::mojom::DefaultActionVerb>(action));
+  ATK_AURALINUX_RETURN_STRING(action_verb);
 }
 
 AtkAttributeSet* AXPlatformNodeAuraLinux::GetAtkAttributes() {

@@ -7,5 +7,5 @@
 [
     Exposed(Window WebGPU, Worker WebGPU)
 ] interface GPUComputePipeline {
-    GPUBindGroupLayout getBindGroupLayout(unsigned long index);
+    GPUBindGroupLayout getBindGroupLayout(GPUIndex32 index);
 };

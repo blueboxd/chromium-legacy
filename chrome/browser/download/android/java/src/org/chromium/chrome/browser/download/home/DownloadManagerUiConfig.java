@@ -50,7 +50,6 @@ public class DownloadManagerUiConfig {
      */
     public final long justNowThresholdSeconds;
 
-
     /** Whether or not grouping items into a single card is supported. */
     public final boolean supportsGrouping;
 

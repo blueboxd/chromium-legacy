@@ -58,7 +58,8 @@ TEST_F(BookmarkManagerPrivateApiUnitTest, RunOnDeletedNode) {
   auto copy_function =
       base::MakeRefCounted<BookmarkManagerPrivateCopyFunction>();
   EXPECT_EQ(
-      "Could not find bookmark nodes with given ids.",
+      base::StringPrintf("Could not find bookmark nodes with given ids: [%s]",
+                         node_id().c_str()),
       api_test_utils::RunFunctionAndReturnError(
           copy_function.get(),
           base::StringPrintf("[[\"%s\"]]", node_id().c_str()), profile()));

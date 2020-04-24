@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {BrowserProxy} from 'chrome://new-tab-page/new_tab_page.js';
+import 'chrome://new-tab-page/realbox.js';
+
+import {BrowserProxy} from 'chrome://new-tab-page/browser_proxy.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
 import {assertStyle, createTestProxy, createTheme} from 'chrome://test/new_tab_page/test_support.js';

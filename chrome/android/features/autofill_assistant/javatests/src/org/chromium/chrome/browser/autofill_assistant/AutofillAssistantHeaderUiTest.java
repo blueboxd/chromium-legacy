@@ -132,13 +132,14 @@ public class AutofillAssistantHeaderUiTest {
         AssistantHeaderCoordinator coordinator = createCoordinator(model);
         ViewHolder viewHolder = new ViewHolder(coordinator.getView());
 
-        String statusMessage = "Hello World";
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> model.set(AssistantHeaderModel.STATUS_MESSAGE, statusMessage));
-
+                () -> model.set(AssistantHeaderModel.STATUS_MESSAGE, "Hello World"));
         onView(is(viewHolder.mStatusMessage))
-                .check(matches(isDisplayed()))
-                .check(matches(withText(statusMessage)));
+                .check(matches(allOf(isDisplayed(), withText("Hello World"))));
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> model.set(AssistantHeaderModel.STATUS_MESSAGE, "<b>Hello Bold</b>"));
+        onView(is(viewHolder.mStatusMessage)).check(matches(withText("Hello Bold")));
 
         int progress = 42;
         TestThreadUtils.runOnUiThreadBlocking(

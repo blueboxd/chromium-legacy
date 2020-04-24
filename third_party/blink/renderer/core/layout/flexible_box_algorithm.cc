@@ -480,7 +480,9 @@ void FlexLine::ComputeLineItemsPosition(LayoutUnit main_axis_start_offset,
   LayoutUnit total_item_size;
   for (size_t i = 0; i < line_items.size(); ++i)
     total_item_size += line_items[i].FlexedMarginBoxSize();
-  remaining_free_space = container_main_inner_size - total_item_size;
+  remaining_free_space =
+      container_main_inner_size - total_item_size -
+      (line_items.size() - 1) * algorithm->gap_between_items_;
 
   const StyleContentAlignmentData justify_content =
       FlexLayoutAlgorithm::ResolvedJustifyContent(*algorithm->Style());
@@ -562,7 +564,9 @@ void FlexLine::ComputeLineItemsPosition(LayoutUnit main_axis_start_offset,
       LayoutUnit space_between =
           FlexLayoutAlgorithm::ContentDistributionSpaceBetweenChildren(
               available_free_space, justify_content, line_items.size());
-      main_axis_offset += space_between;
+      main_axis_offset += space_between + algorithm->gap_between_items_;
+      // The gap is included in the intrinsic content block size, so don't add
+      // it to sum_justify_adjustments.
       sum_justify_adjustments += space_between;
     }
   }
@@ -576,8 +580,12 @@ void FlexLine::ComputeLineItemsPosition(LayoutUnit main_axis_start_offset,
 }
 
 FlexLayoutAlgorithm::FlexLayoutAlgorithm(const ComputedStyle* style,
-                                         LayoutUnit line_break_length)
-    : style_(style),
+                                         LayoutUnit line_break_length,
+                                         LayoutUnit gap_between_items,
+                                         LayoutUnit gap_between_lines)
+    : gap_between_items_(gap_between_items),
+      gap_between_lines_(gap_between_lines),
+      style_(style),
       line_break_length_(line_break_length),
       next_item_index_(0) {}
 
@@ -603,14 +611,24 @@ FlexLine* FlexLayoutAlgorithm::ComputeNextFlexLine(
       break;
     }
     line_has_in_flow_item = true;
-    sum_flex_base_size += flex_item.FlexBaseMarginBoxSize();
+    sum_flex_base_size +=
+        flex_item.FlexBaseMarginBoxSize() + gap_between_items_;
     total_flex_grow += flex_item.style.ResolvedFlexGrow(StyleRef());
     const float flex_shrink = flex_item.style.ResolvedFlexShrink(StyleRef());
     total_flex_shrink += flex_shrink;
     total_weighted_flex_shrink +=
         flex_shrink * flex_item.flex_base_content_size;
-    sum_hypothetical_main_size += flex_item.HypotheticalMainAxisMarginBoxSize();
+    sum_hypothetical_main_size +=
+        flex_item.HypotheticalMainAxisMarginBoxSize() + gap_between_items_;
     flex_item.line_number = flex_lines_.size();
+  }
+  if (sum_hypothetical_main_size > 0) {
+    // We added a gap after every item but there shouldn't be one after the last
+    // item, so subtract it here.
+    DCHECK_GE(sum_hypothetical_main_size, gap_between_items_);
+    sum_hypothetical_main_size -= gap_between_items_;
+    DCHECK_GE(sum_flex_base_size, gap_between_items_);
+    sum_flex_base_size -= gap_between_items_;
   }
 
   DCHECK(next_item_index_ > start_index ||
@@ -699,16 +717,20 @@ LayoutUnit FlexLayoutAlgorithm::IntrinsicContentBlockSize() const {
   const FlexLine& last_line = flex_lines_.back();
   // Subtract the first line's offset to remove border/padding
   return last_line.cross_axis_offset + last_line.cross_axis_extent -
-         flex_lines_.front().cross_axis_offset;
+         flex_lines_.front().cross_axis_offset +
+         (flex_lines_.size() - 1) * gap_between_lines_;
 }
 
 void FlexLayoutAlgorithm::AlignFlexLines(LayoutUnit cross_axis_content_extent) {
   const StyleContentAlignmentData align_content = ResolvedAlignContent(*style_);
-  if (align_content.GetPosition() == ContentPosition::kFlexStart)
+  if (align_content.GetPosition() == ContentPosition::kFlexStart &&
+      gap_between_lines_ == 0) {
     return;
+  }
   if (flex_lines_.IsEmpty() || !IsMultiline())
     return;
-  LayoutUnit available_cross_axis_space = cross_axis_content_extent;
+  LayoutUnit available_cross_axis_space =
+      cross_axis_content_extent - (flex_lines_.size() - 1) * gap_between_lines_;
   for (const FlexLine& line : flex_lines_)
     available_cross_axis_space -= line.cross_axis_extent;
 
@@ -729,8 +751,10 @@ void FlexLayoutAlgorithm::AlignFlexLines(LayoutUnit cross_axis_content_extent) {
           static_cast<unsigned>(flex_lines_.size());
     }
 
-    line_offset += ContentDistributionSpaceBetweenChildren(
-        available_cross_axis_space, align_content, flex_lines_.size());
+    line_offset +=
+        ContentDistributionSpaceBetweenChildren(
+            available_cross_axis_space, align_content, flex_lines_.size()) +
+        gap_between_lines_;
   }
 }
 

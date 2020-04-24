@@ -464,33 +464,6 @@ IPC_STRUCT_BEGIN(FrameMsg_MixedContentFound_Params)
   IPC_STRUCT_MEMBER(network::mojom::SourceLocation, source_location)
 IPC_STRUCT_END()
 
-#if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
-// This message is used for supporting popup menus on Mac OS X and Android using
-// native controls. See the FrameHostMsg_ShowPopup message.
-IPC_STRUCT_BEGIN(FrameHostMsg_ShowPopup_Params)
-  // Position on the screen.
-  IPC_STRUCT_MEMBER(gfx::Rect, bounds)
-
-  // The height of each item in the menu.
-  IPC_STRUCT_MEMBER(int, item_height)
-
-  // The size of the font to use for those items.
-  IPC_STRUCT_MEMBER(double, item_font_size)
-
-  // The currently selected (displayed) item in the menu.
-  IPC_STRUCT_MEMBER(int, selected_item)
-
-  // The entire list of items in the popup menu.
-  IPC_STRUCT_MEMBER(std::vector<content::MenuItem>, popup_items)
-
-  // Whether items should be right-aligned.
-  IPC_STRUCT_MEMBER(bool, right_aligned)
-
-  // Whether this is a multi-select popup.
-  IPC_STRUCT_MEMBER(bool, allow_multiple_selection)
-IPC_STRUCT_END()
-#endif
-
 #if BUILDFLAG(ENABLE_PLUGINS)
 IPC_STRUCT_TRAITS_BEGIN(content::PepperRendererInstanceData)
   IPC_STRUCT_TRAITS_MEMBER(render_process_id)
@@ -543,17 +516,6 @@ IPC_MESSAGE_ROUTED0(FrameMsg_Reload)
 IPC_MESSAGE_ROUTED2(FrameMsg_DidUpdateName,
                     std::string /* name */,
                     std::string /* unique_name */)
-
-#if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
-#if defined(OS_MACOSX)
-IPC_MESSAGE_ROUTED1(FrameMsg_SelectPopupMenuItem,
-                    int /* selected index, -1 means no selection */)
-#else
-IPC_MESSAGE_ROUTED2(FrameMsg_SelectPopupMenuItems,
-                    bool /* user canceled the popup */,
-                    std::vector<int> /* selected indices */)
-#endif
-#endif
 
 // Request to enumerate and return links to all savable resources in the frame
 // Note: this covers only the immediate frame / doesn't cover subframes.
@@ -913,15 +875,6 @@ IPC_MESSAGE_ROUTED0(FrameHostMsg_FrameDidCallFocus)
 IPC_MESSAGE_ROUTED2(FrameHostMsg_PrintCrossProcessSubframe,
                     gfx::Rect /* rect area of the frame content */,
                     int /* rendered document cookie */)
-
-#if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
-
-// Message to show/hide a popup menu using native controls.
-IPC_MESSAGE_ROUTED1(FrameHostMsg_ShowPopup,
-                    FrameHostMsg_ShowPopup_Params)
-IPC_MESSAGE_ROUTED0(FrameHostMsg_HidePopup)
-
-#endif
 
 // Adding a new message? Stick to the sort order above: first platform
 // independent FrameMsg, then ifdefs for platform specific FrameMsg, then

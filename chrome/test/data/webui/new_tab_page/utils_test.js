@@ -5,7 +5,7 @@
 // So that mojo is defined.
 import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
 
-import {createScrollBorders, hexColorToSkColor, skColorToRgba} from 'chrome://new-tab-page/new_tab_page.js';
+import {createScrollBorders, hexColorToSkColor, skColorToRgba} from 'chrome://new-tab-page/utils.js';
 import {waitAfterNextRender} from 'chrome://test/test_util.m.js';
 
 suite('NewTabPageUtilsTest', () => {

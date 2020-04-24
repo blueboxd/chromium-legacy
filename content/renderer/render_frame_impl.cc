@@ -96,7 +96,6 @@
 #include "content/renderer/crash_helpers.h"
 #include "content/renderer/dom_automation_controller.h"
 #include "content/renderer/effective_connection_type_helper.h"
-#include "content/renderer/external_popup_menu.h"
 #include "content/renderer/frame_owner_properties_converter.h"
 #include "content/renderer/gpu_benchmarking_extension.h"
 #include "content/renderer/history_entry.h"
@@ -254,8 +253,6 @@ using blink::WebDOMEvent;
 using blink::WebDOMMessageEvent;
 using blink::WebElement;
 using blink::WebElementCollection;
-using blink::WebExternalPopupMenu;
-using blink::WebExternalPopupMenuClient;
 using blink::WebFrame;
 using blink::WebFrameLoadType;
 using blink::WebFrameSerializer;
@@ -272,7 +269,6 @@ using blink::WebNavigationType;
 using blink::WebNode;
 using blink::WebPluginDocument;
 using blink::WebPluginParams;
-using blink::WebPopupMenuInfo;
 using blink::WebRange;
 using blink::WebRect;
 using blink::WebScriptSource;
@@ -2149,14 +2145,6 @@ bool RenderFrameImpl::Send(IPC::Message* message) {
   return RenderThread::Get()->Send(message);
 }
 
-#if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
-void RenderFrameImpl::DidHideExternalPopupMenu() {
-  // We need to clear external_popup_menu_ as soon as ExternalPopupMenu::close
-  // is called. Otherwise, createExternalPopupMenu() for new popup will fail.
-  external_popup_menu_.reset();
-}
-#endif
-
 bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
   // Page IPCs are routed via the main frame (both local and remote) and then
   // forwarded to the RenderView. See comment in
@@ -2205,15 +2193,7 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_GetSerializedHtmlWithLocalLinks,
                         OnGetSerializedHtmlWithLocalLinks)
     IPC_MESSAGE_HANDLER(FrameMsg_MixedContentFound, OnMixedContentFound)
-#if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
-#if defined(OS_MACOSX)
-    IPC_MESSAGE_HANDLER(FrameMsg_SelectPopupMenuItem, OnSelectPopupMenuItem)
-#else
-    IPC_MESSAGE_HANDLER(FrameMsg_SelectPopupMenuItems, OnSelectPopupMenuItems)
-#endif
-#endif
     IPC_MESSAGE_HANDLER(UnfreezableFrameMsg_Delete, OnDeleteFrame)
-
   IPC_END_MESSAGE_MAP()
 
   return handled;
@@ -3838,28 +3818,6 @@ RenderFrameImpl::CreateWorkerFetchContextForPlzDedicatedWorker(
   for (auto& observer : observers_)
     observer.WillCreateWorkerFetchContext(worker_fetch_context.get());
   return worker_fetch_context;
-}
-
-WebExternalPopupMenu* RenderFrameImpl::CreateExternalPopupMenu(
-    const WebPopupMenuInfo& popup_menu_info,
-    WebExternalPopupMenuClient* popup_menu_client) {
-#if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
-  // An IPC message is sent to the browser to build and display the actual
-  // popup. The user could have time to click a different select by the time
-  // the popup is shown. In that case external_popup_menu_ is non NULL.
-  // By returning NULL in that case, we instruct Blink to cancel that new
-  // popup. So from the user perspective, only the first one will show, and
-  // will have to close the first one before another one can be shown.
-  if (external_popup_menu_)
-    return nullptr;
-  external_popup_menu_ = std::make_unique<ExternalPopupMenu>(
-      this, popup_menu_info, popup_menu_client);
-  external_popup_menu_->SetOriginScaleForEmulation(
-      GetLocalRootRenderWidget()->GetEmulatorScale());
-  return external_popup_menu_.get();
-#else
-  return nullptr;
-#endif
 }
 
 std::unique_ptr<blink::WebPrescientNetworking>
@@ -5921,44 +5879,6 @@ void RenderFrameImpl::RequestOverlayRoutingToken(
       // callback lifetime won't scape the valid scope.
       base::Unretained(this), std::move(callback)));
 }
-
-#if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
-#if defined(OS_MACOSX)
-void RenderFrameImpl::OnSelectPopupMenuItem(int selected_index) {
-  if (external_popup_menu_ == NULL)
-    return;
-
-  if (frame_)
-    frame_->NotifyUserActivation();
-  // We need to reset |external_popup_menu_| before calling DidSelectItem(),
-  // which might delete |this|.
-  // See ExternalPopupMenuRemoveTest.RemoveFrameOnChange
-  std::unique_ptr<ExternalPopupMenu> popup;
-  popup.swap(external_popup_menu_);
-  popup->DidSelectItem(selected_index);
-}
-#else
-void RenderFrameImpl::OnSelectPopupMenuItems(
-    bool canceled,
-    const std::vector<int>& selected_indices) {
-  // It is possible to receive more than one of these calls if the user presses
-  // a select faster than it takes for the show-select-popup IPC message to make
-  // it to the browser UI thread. Ignore the extra-messages.
-  // TODO(jcivelli): http:/b/5793321 Implement a better fix, as detailed in bug.
-  if (!external_popup_menu_)
-    return;
-
-  if (frame_)
-    frame_->NotifyUserActivation();
-  // We need to reset |external_popup_menu_| before calling DidSelectItems(),
-  // which might delete |this|.
-  // See ExternalPopupMenuRemoveTest.RemoveFrameOnChange
-  std::unique_ptr<ExternalPopupMenu> popup;
-  popup.swap(external_popup_menu_);
-  popup->DidSelectItems(canceled, selected_indices);
-}
-#endif
-#endif
 
 void RenderFrameImpl::OpenURL(std::unique_ptr<blink::WebNavigationInfo> info) {
   // A valid RequestorOrigin is always expected to be present.

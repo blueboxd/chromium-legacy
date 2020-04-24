@@ -852,10 +852,6 @@ bool TestingProfile::IsLegacySupervised() const {
   return IsSupervised() && !IsChild();
 }
 
-bool TestingProfile::IsIndependentOffTheRecordProfile() {
-  return IsOffTheRecord() && GetOTRProfileID() != OTRProfileID::PrimaryID();
-}
-
 bool TestingProfile::AllowsBrowserWindows() const {
   return allows_browser_windows_;
 }

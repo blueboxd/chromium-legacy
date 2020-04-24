@@ -119,6 +119,7 @@ mojom("mojom_platform") {
     "permissions/permission_status.mojom",
     "picture_in_picture/picture_in_picture.mojom",
     "plugins/plugin_registry.mojom",
+    "popup/popup.mojom",
     "prerender/prerender.mojom",
     "presentation/presentation.mojom",
     "push_messaging/push_messaging.mojom",

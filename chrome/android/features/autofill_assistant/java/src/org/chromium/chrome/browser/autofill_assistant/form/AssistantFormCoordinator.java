@@ -12,6 +12,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.chromium.chrome.autofill_assistant.R;
+import org.chromium.chrome.browser.autofill_assistant.AssistantTextUtils;
 
 /**
  * A coordinator responsible for showing a form to the user.
@@ -55,7 +56,8 @@ public class AssistantFormCoordinator {
                 } else {
                     mInfoView.setVisibility(View.VISIBLE);
                     TextView label = mInfoView.findViewById(R.id.text);
-                    label.setText(mModel.get(AssistantFormModel.INFO_LABEL));
+                    AssistantTextUtils.applyVisualAppearanceTags(
+                            label, mModel.get(AssistantFormModel.INFO_LABEL), null);
                 }
             } else if (AssistantFormModel.INFO_POPUP == propertyKey) {
                 View infoButton = mInfoView.findViewById(R.id.info_button);

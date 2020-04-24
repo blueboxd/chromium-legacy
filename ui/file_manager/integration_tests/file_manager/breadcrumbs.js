@@ -196,9 +196,9 @@
     chrome.test.assertEq(3, elements.length);
 
     // Check: the main button text should be the path components.
-    chrome.test.assertEq(path.split('/')[0], elements[0].text);
-    chrome.test.assertEq(path.split('/')[1], elements[1].text);
-    chrome.test.assertEq(path.split('/')[2], elements[2].text);
+    chrome.test.assertEq('My files', elements[0].text);
+    chrome.test.assertEq('Downloads', elements[1].text);
+    chrome.test.assertEq('nested-folder0', elements[2].text);
 
     // Check: the "last" main button should be disabled.
     chrome.test.assertEq(undefined, elements[0].attributes.disabled);
@@ -297,6 +297,72 @@
     // Check: the breadcrumb elider button should be shown.
     const eliderButton = ['bread-crumb', '[elider]:not([hidden])'];
     await remoteCall.waitForElement(appId, eliderButton);
+  };
+
+  /**
+   * Tests that clicking a main breadcumb button makes the app navigate and
+   * update the breadcrumb to that item.
+   */
+  testcase.breadcrumbsMainButtonClick = async () => {
+    // Build an array of nested folder test entries.
+    const nestedFolderTestEntries = createNestedTestFolders(2);
+
+    // Open FilesApp on Downloads containing the test entries.
+    const appId = await setupAndWaitUntilReady(
+        RootPath.DOWNLOADS, nestedFolderTestEntries, []);
+
+    // Navigate to deepest folder.
+    const breadcrumb = '/My files/Downloads/' +
+        nestedFolderTestEntries.map(e => e.nameText).join('/');
+    await navigateWithDirectoryTree(appId, breadcrumb);
+
+    // Check: the breadcrumb path attribute should be |breadcrumb|.
+    const breadcrumbElement =
+        await remoteCall.waitForElement(appId, ['bread-crumb']);
+    const path = breadcrumb.slice(1);  // remove leading "/" char
+    chrome.test.assertEq(path, breadcrumbElement.attributes.path);
+
+    // Click the "second" main breadcrumb button (2nd path component).
+    await remoteCall.waitAndClickElement(
+        appId, ['bread-crumb', 'button[id="second"]']);
+
+    // Check: the breadcrumb path should be updated due to navigation.
+    await remoteCall.waitForElement(
+        appId, ['bread-crumb[path="My files/Downloads"']);
+  };
+
+  /**
+   * Tests that an Enter key on a main breadcumb button item makes the app
+   * navigate and update the breadcrumb to that item.
+   */
+  testcase.breadcrumbsMainButtonEnterKey = async () => {
+    // Build an array of nested folder test entries.
+    const nestedFolderTestEntries = createNestedTestFolders(2);
+
+    // Open FilesApp on Downloads containing the test entries.
+    const appId = await setupAndWaitUntilReady(
+        RootPath.DOWNLOADS, nestedFolderTestEntries, []);
+
+    // Navigate to deepest folder.
+    const breadcrumb = '/My files/Downloads/' +
+        nestedFolderTestEntries.map(e => e.nameText).join('/');
+    await navigateWithDirectoryTree(appId, breadcrumb);
+
+    // Check: the breadcrumb path attribute should be |breadcrumb|.
+    const breadcrumbElement =
+        await remoteCall.waitForElement(appId, ['bread-crumb']);
+    const path = breadcrumb.slice(1);  // remove leading "/" char
+    chrome.test.assertEq(path, breadcrumbElement.attributes.path);
+
+    // Send an Enter key to the "second" main breadcrumb button.
+    const secondButton = ['bread-crumb', 'button[id="second"]'];
+    const enterKey = [secondButton, 'Enter', false, false, false];
+    chrome.test.assertTrue(
+        await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, enterKey));
+
+    // Check: the breadcrumb path should be updated due to navigation.
+    await remoteCall.waitForElement(
+        appId, ['bread-crumb[path="My files/Downloads"']);
   };
 
   /**
@@ -454,6 +520,12 @@
         nestedFolderTestEntries.map(e => e.nameText).join('/');
     await navigateWithDirectoryTree(appId, breadcrumb);
 
+    // Check: the breadcrumb path attribute should be |breadcrumb|.
+    const breadcrumbElement =
+        await remoteCall.waitForElement(appId, ['bread-crumb']);
+    const path = breadcrumb.slice(1);  // remove leading "/" char
+    chrome.test.assertEq(path, breadcrumbElement.attributes.path);
+
     // Click the breadcrumb elider button when it appears.
     const eliderButton = ['bread-crumb', '[elider]:not([hidden])'];
     await remoteCall.waitAndClickElement(appId, eliderButton);
@@ -482,5 +554,101 @@
     // Check: the breadcrumb path should be updated due to navigation.
     await remoteCall.waitForElement(
         appId, ['bread-crumb[path="My files/Downloads"']);
+  };
+
+  /**
+   * Tests that a <shift>-Tab key on the elider button drop down menu closes
+   * the menu and focuses button#first to the left of the elider button.
+   */
+  testcase.breadcrumbsEliderMenuItemTabLeft = async () => {
+    // Build an array of nested folder test entries.
+    const nestedFolderTestEntries = createNestedTestFolders(3);
+
+    // Open FilesApp on Downloads containing the test entries.
+    const appId = await setupAndWaitUntilReady(
+        RootPath.DOWNLOADS, nestedFolderTestEntries, []);
+
+    // Navigate to deepest folder.
+    const breadcrumb = '/My files/Downloads/' +
+        nestedFolderTestEntries.map(e => e.nameText).join('/');
+    await navigateWithDirectoryTree(appId, breadcrumb);
+
+    // Click the breadcrumb elider button when it appears.
+    const eliderButton = ['bread-crumb', '[elider]:not([hidden])'];
+    await remoteCall.waitAndClickElement(appId, eliderButton);
+
+    // Check: the elider button drop-down menu should open.
+    const menu = ['bread-crumb', '#elider-menu', 'dialog[open]'];
+    await remoteCall.waitForElement(appId, menu);
+
+    // Send an ArrowDown key to the drop-down menu.
+    const key = [menu, 'ArrowDown', false, false, false];
+    chrome.test.assertTrue(
+        await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key));
+
+    // Check: the drop-down menu item should focus.
+    const item = ['bread-crumb', '#elider-menu .dropdown-item:focus'];
+    await remoteCall.waitForElement(appId, item);
+
+    // Dispatch a <shift>-Tab key to the focused drop-down menu item.
+    const result = await sendTestMessage(
+        {name: 'dispatchTabKey', /* key modifier */ shift: true});
+    chrome.test.assertEq(
+        result, 'tabKeyDispatched', 'shift-Tab key dispatch failure');
+
+    // Check: the elider button drop-down menu should close.
+    await remoteCall.waitForElementLost(appId, menu);
+
+    // Check: the "first" main button should be focused.
+    await remoteCall.waitForElement(
+        appId, ['bread-crumb', 'button[id="first"]:focus']);
+  };
+
+  /**
+   * Tests that a Tab key on the elider button drop down menu closes the menu
+   * and focuses button#third to the right of the elider button.
+   */
+  testcase.breadcrumbsEliderMenuItemTabRight = async () => {
+    // Build an array of nested folder test entries.
+    const nestedFolderTestEntries = createNestedTestFolders(3);
+
+    // Open FilesApp on Downloads containing the test entries.
+    const appId = await setupAndWaitUntilReady(
+        RootPath.DOWNLOADS, nestedFolderTestEntries, []);
+
+    // Navigate to deepest folder.
+    const breadcrumb = '/My files/Downloads/' +
+        nestedFolderTestEntries.map(e => e.nameText).join('/');
+    await navigateWithDirectoryTree(appId, breadcrumb);
+
+    // Click the breadcrumb elider button when it appears.
+    const eliderButton = ['bread-crumb', '[elider]:not([hidden])'];
+    await remoteCall.waitAndClickElement(appId, eliderButton);
+
+    // Check: the elider button drop-down menu should open.
+    const menu = ['bread-crumb', '#elider-menu', 'dialog[open]'];
+    await remoteCall.waitForElement(appId, menu);
+
+    // Send an ArrowDown key to the drop-down menu.
+    const key = [menu, 'ArrowDown', false, false, false];
+    chrome.test.assertTrue(
+        await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key));
+
+    // Check: the drop-down menu item should focus.
+    const item = ['bread-crumb', '#elider-menu .dropdown-item:focus'];
+    await remoteCall.waitForElement(appId, item);
+
+    // Dispatch a Tab key to the focused drop-down menu item.
+    const result = await sendTestMessage(
+        {name: 'dispatchTabKey', /* key modifier */ shift: false});
+    chrome.test.assertEq(
+        result, 'tabKeyDispatched', 'Tab key dispatch failure');
+
+    // Check: the elider button drop-down menu should close.
+    await remoteCall.waitForElementLost(appId, menu);
+
+    // Check: the "third" main button should be focused.
+    await remoteCall.waitForElement(
+        appId, ['bread-crumb', 'button[id="third"]:focus']);
   };
 })();

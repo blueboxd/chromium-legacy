@@ -633,8 +633,6 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnHasTouchEventHandlers)
     IPC_MESSAGE_HANDLER(WidgetHostMsg_IntrinsicSizingInfoChanged,
                         OnIntrinsicSizingInfoChanged)
-    IPC_MESSAGE_HANDLER(WidgetHostMsg_ZoomToFindInPageRectInMainFrame,
-                        OnZoomToFindInPageRectInMainFrame)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -3259,22 +3257,6 @@ bool TransformPointAndRectToRootView(RenderWidgetHostViewBase* view,
 
 }  // namespace
 
-void RenderWidgetHostImpl::OnZoomToFindInPageRectInMainFrame(
-    const gfx::Rect& rect_to_zoom) {
-  if (!view_)
-    return;
-
-  auto* root_view = view_->GetRootView();
-  gfx::Rect transformed_rect_to_zoom(rect_to_zoom);
-  if (!TransformPointAndRectToRootView(view_.get(), root_view, nullptr,
-                                       &transformed_rect_to_zoom)) {
-    return;
-  }
-
-  auto* root_rvhi = RenderViewHostImpl::From(root_view->GetRenderWidgetHost());
-  root_rvhi->ZoomToFindInPageRect(transformed_rect_to_zoom);
-}
-
 void RenderWidgetHostImpl::AnimateDoubleTapZoomInMainFrame(
     const gfx::Point& point,
     const gfx::Rect& rect_to_zoom) {
@@ -3292,6 +3274,22 @@ void RenderWidgetHostImpl::AnimateDoubleTapZoomInMainFrame(
 
   auto* root_rvhi = RenderViewHostImpl::From(root_view->GetRenderWidgetHost());
   root_rvhi->AnimateDoubleTapZoom(transformed_point, transformed_rect_to_zoom);
+}
+
+void RenderWidgetHostImpl::ZoomToFindInPageRectInMainFrame(
+    const gfx::Rect& rect_to_zoom) {
+  if (!view_)
+    return;
+
+  auto* root_view = view_->GetRootView();
+  gfx::Rect transformed_rect_to_zoom(rect_to_zoom);
+  if (!TransformPointAndRectToRootView(view_.get(), root_view, nullptr,
+                                       &transformed_rect_to_zoom)) {
+    return;
+  }
+
+  auto* root_rvhi = RenderViewHostImpl::From(root_view->GetRenderWidgetHost());
+  root_rvhi->ZoomToFindInPageRect(transformed_rect_to_zoom);
 }
 
 gfx::Size RenderWidgetHostImpl::GetRootWidgetViewportSize() {

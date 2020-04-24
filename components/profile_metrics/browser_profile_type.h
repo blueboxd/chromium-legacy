@@ -14,8 +14,8 @@ enum class BrowserProfileType {
   kIncognito = 1,
   kGuest = 2,
   kSystem = 3,
-  kIndependentIncognitoProfile = 4,
-  kMaxValue = kIndependentIncognitoProfile,
+  kOtherOffTheRecordProfile = 4,
+  kMaxValue = kOtherOffTheRecordProfile,
 };
 
 }  // namespace profile_metrics

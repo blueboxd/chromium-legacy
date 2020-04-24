@@ -17,25 +17,25 @@ import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 
 /** A helper class to build and return an {@link DownloadManagerCoordinator}. */
-public class DownloadManagerCoordinatorFactory {
+public class DownloadManagerCoordinatorFactoryHelper {
     /**
      * Returns an instance of a {@link DownloadManagerCoordinator} to be used in the UI.
      * @param activity           The parent {@link Activity}.
      * @param config             A {@link DownloadManagerUiConfig} to provide configuration params.
      * @param snackbarManager    The {@link SnackbarManager} that should be used to show snackbars.
      * @param modalDialogManager The {@link ModalDialogManager} that should be used to show dialog.
-     * @param isIncognito        The boolean that represents whether the current mode is incognito.
      * @return                   A new {@link DownloadManagerCoordinator} instance.
      */
     public static DownloadManagerCoordinator create(Activity activity,
             DownloadManagerUiConfig config, SnackbarManager snackbarManager,
-            ModalDialogManager modalDialogManager, boolean isIncognito) {
-        Profile profile = isIncognito ? Profile.getLastUsedRegularProfile().getOffTheRecordProfile()
-                                      : Profile.getLastUsedRegularProfile();
+            ModalDialogManager modalDialogManager) {
+        Profile profile = config.isOffTheRecord
+                ? Profile.getLastUsedRegularProfile().getOffTheRecordProfile()
+                : Profile.getLastUsedRegularProfile();
         LegacyDownloadProvider legacyProvider =
                 config.useNewDownloadPath ? null : new LegacyDownloadProviderImpl();
         return new DownloadManagerCoordinatorImpl(activity, config, new PrefetchEnabledSupplier(),
-                DownloadManagerCoordinatorFactory::settingsLaunchHelper, snackbarManager,
+                DownloadManagerCoordinatorFactoryHelper::settingsLaunchHelper, snackbarManager,
                 modalDialogManager, TrackerFactory.getTrackerForProfile(profile),
                 new FaviconProviderImpl(profile), OfflineContentAggregatorFactory.get(),
                 legacyProvider, GlobalDiscardableReferencePool.getReferencePool());

@@ -31,14 +31,10 @@
 #include "third_party/blink/renderer/core/html/forms/external_popup_menu.h"
 
 #include "build/build_config.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
-#include "third_party/blink/public/platform/web_vector.h"
-#include "third_party/blink/public/web/web_external_popup_menu.h"
-#include "third_party/blink/public/web/web_local_frame_client.h"
-#include "third_party/blink/public/web/web_menu_item_info.h"
-#include "third_party/blink/public/web/web_popup_menu_info.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/events/current_input_event.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
@@ -49,14 +45,12 @@
 #include "third_party/blink/renderer/core/html/forms/html_option_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
 #include "third_party/blink/renderer/platform/geometry/int_point.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
-#if defined(OS_MACOSX)
-#include "third_party/blink/renderer/core/page/chrome_client.h"
-#endif
 
 namespace blink {
 
@@ -67,33 +61,39 @@ ExternalPopupMenu::ExternalPopupMenu(LocalFrame& frame,
       dispatch_event_timer_(frame.GetTaskRunner(TaskType::kInternalDefault),
                             this,
                             &ExternalPopupMenu::DispatchEvent),
-      web_external_popup_menu_(nullptr) {}
+      receiver_(this, owner_element.GetDocument().ToExecutionContext()) {}
 
 ExternalPopupMenu::~ExternalPopupMenu() = default;
 
 void ExternalPopupMenu::Trace(Visitor* visitor) {
   visitor->Trace(owner_element_);
   visitor->Trace(local_frame_);
+  visitor->Trace(receiver_);
   PopupMenu::Trace(visitor);
+}
+
+void ExternalPopupMenu::Reset() {
+  receiver_.reset();
 }
 
 bool ExternalPopupMenu::ShowInternal() {
   // Blink core reuses the PopupMenu of an element.  For simplicity, we do
-  // recreate the actual external popup everytime.
-  if (web_external_popup_menu_) {
-    web_external_popup_menu_->Close();
-    web_external_popup_menu_ = nullptr;
-  }
+  // recreate the actual external popup every time.
+  Reset();
 
-  WebPopupMenuInfo info;
-  GetPopupMenuInfo(info, *owner_element_);
-  if (info.items.empty())
+  int32_t item_height;
+  double font_size;
+  int32_t selected_item;
+  Vector<mojom::blink::MenuItemPtr> menu_items;
+  bool right_aligned;
+  bool allow_multiple_selection;
+  GetPopupMenuInfo(*owner_element_, &item_height, &font_size, &selected_item,
+                   &menu_items, &right_aligned, &allow_multiple_selection);
+  if (menu_items.IsEmpty())
     return false;
-  WebLocalFrameImpl* webframe =
-      WebLocalFrameImpl::FromFrame(local_frame_.Get());
-  web_external_popup_menu_ =
-      webframe->Client()->CreateExternalPopupMenu(info, this);
-  if (web_external_popup_menu_) {
+
+  auto* execution_context = owner_element_->GetDocument().ToExecutionContext();
+  if (!receiver_.is_bound()) {
     LayoutObject* layout_object = owner_element_->GetLayoutObject();
     if (!layout_object || !layout_object->IsBox())
       return false;
@@ -102,7 +102,20 @@ bool ExternalPopupMenu::ShowInternal() {
             ->LocalToAbsoluteRect(
                 ToLayoutBox(layout_object)->PhysicalBorderBoxRect()));
     IntRect rect_in_viewport = local_frame_->View()->FrameToViewport(rect);
-    web_external_popup_menu_->Show(rect_in_viewport);
+    float scale_for_emulation = WebLocalFrameImpl::FromFrame(local_frame_)
+                                    ->LocalRootFrameWidget()
+                                    ->Client()
+                                    ->GetEmulatorScale();
+
+    gfx::Rect bounds =
+        gfx::Rect(rect_in_viewport.X() * scale_for_emulation,
+                  rect_in_viewport.Y() * scale_for_emulation,
+                  rect_in_viewport.Width(), rect_in_viewport.Height());
+    local_frame_->GetLocalFrameHostRemote().ShowExternalPopup(
+        receiver_.BindNewPipeAndPassRemote(execution_context->GetTaskRunner(
+            TaskType::kInternalUserInteraction)),
+        bounds, item_height, font_size, selected_item, std::move(menu_items),
+        right_aligned, allow_multiple_selection);
     return true;
   }
 
@@ -141,10 +154,7 @@ void ExternalPopupMenu::DispatchEvent(TimerBase*) {
 void ExternalPopupMenu::Hide() {
   if (owner_element_)
     owner_element_->PopupDidHide();
-  if (!web_external_popup_menu_)
-    return;
-  web_external_popup_menu_->Close();
-  web_external_popup_menu_ = nullptr;
+  Reset();
 }
 
 void ExternalPopupMenu::UpdateFromElement(UpdateReason reason) {
@@ -169,7 +179,7 @@ void ExternalPopupMenu::UpdateFromElement(UpdateReason reason) {
 }
 
 void ExternalPopupMenu::Update() {
-  if (!web_external_popup_menu_ || !owner_element_)
+  if (!receiver_.is_bound() || !owner_element_)
     return;
   owner_element_->GetDocument().UpdateStyleAndLayoutTree();
   // disconnectClient() might have been called.
@@ -189,32 +199,21 @@ void ExternalPopupMenu::DisconnectClient() {
   dispatch_event_timer_.Stop();
 }
 
-void ExternalPopupMenu::DidChangeSelection(int index) {}
+void ExternalPopupMenu::DidAcceptIndices(const Vector<int32_t>& indices) {
+  local_frame_->NotifyUserActivation();
 
-void ExternalPopupMenu::DidAcceptIndex(int index) {
   // Calling methods on the HTMLSelectElement might lead to this object being
   // derefed. This ensures it does not get deleted while we are running this
   // method.
-  int popup_menu_item_index = ToPopupMenuItemIndex(index, *owner_element_);
-
-  if (owner_element_) {
-    owner_element_->PopupDidHide();
-    owner_element_->SelectOptionByPopup(popup_menu_item_index);
-  }
-  web_external_popup_menu_ = nullptr;
-}
-
-// Android uses this function even for single SELECT.
-void ExternalPopupMenu::DidAcceptIndices(const WebVector<int>& indices) {
   if (!owner_element_) {
-    web_external_popup_menu_ = nullptr;
+    Reset();
     return;
   }
 
   HTMLSelectElement* owner_element = owner_element_;
   owner_element->PopupDidHide();
 
-  if (indices.empty()) {
+  if (indices.IsEmpty()) {
     owner_element->SelectOptionByPopup(-1);
   } else if (!owner_element->IsMultiple()) {
     owner_element->SelectOptionByPopup(
@@ -227,44 +226,54 @@ void ExternalPopupMenu::DidAcceptIndices(const WebVector<int>& indices) {
       list_indices.push_back(ToPopupMenuItemIndex(indices[i], *owner_element));
     owner_element->SelectMultipleOptionsByPopup(list_indices);
   }
-
-  web_external_popup_menu_ = nullptr;
+  Reset();
 }
 
 void ExternalPopupMenu::DidCancel() {
+  local_frame_->NotifyUserActivation();
+
   if (owner_element_)
     owner_element_->PopupDidHide();
-  web_external_popup_menu_ = nullptr;
+  Reset();
 }
 
-void ExternalPopupMenu::GetPopupMenuInfo(WebPopupMenuInfo& info,
-                                         HTMLSelectElement& owner_element) {
+void ExternalPopupMenu::GetPopupMenuInfo(
+    HTMLSelectElement& owner_element,
+    int32_t* item_height,
+    double* font_size,
+    int32_t* selected_item,
+    Vector<mojom::blink::MenuItemPtr>* menu_items,
+    bool* right_aligned,
+    bool* allow_multiple_selection) {
   const HeapVector<Member<HTMLElement>>& list_items =
       owner_element.GetListItems();
   wtf_size_t item_count = list_items.size();
-  wtf_size_t count = 0;
-  Vector<WebMenuItemInfo> items(item_count);
   for (wtf_size_t i = 0; i < item_count; ++i) {
     if (owner_element.ItemIsDisplayNone(*list_items[i]))
       continue;
 
     Element& item_element = *list_items[i];
-    WebMenuItemInfo& popup_item = items[count++];
-    popup_item.label = owner_element.ItemText(item_element);
-    popup_item.tool_tip = item_element.title();
-    popup_item.checked = false;
+    auto popup_item = mojom::blink::MenuItem::New();
+    popup_item->label = owner_element.ItemText(item_element);
+    popup_item->tool_tip = item_element.title();
+    popup_item->checked = false;
     if (IsA<HTMLHRElement>(item_element)) {
-      popup_item.type = WebMenuItemInfo::kSeparator;
+      popup_item->type = mojom::blink::MenuItem::Type::kSeparator;
     } else if (IsA<HTMLOptGroupElement>(item_element)) {
-      popup_item.type = WebMenuItemInfo::kGroup;
+      popup_item->type = mojom::blink::MenuItem::Type::kGroup;
     } else {
-      popup_item.type = WebMenuItemInfo::kOption;
-      popup_item.checked = To<HTMLOptionElement>(item_element).Selected();
+      popup_item->type = mojom::blink::MenuItem::Type::kOption;
+      popup_item->checked = To<HTMLOptionElement>(item_element).Selected();
     }
-    popup_item.enabled = !item_element.IsDisabledFormControl();
+    popup_item->enabled = !item_element.IsDisabledFormControl();
     const ComputedStyle& style = *owner_element.ItemComputedStyle(item_element);
-    popup_item.text_direction = ToBaseTextDirection(style.Direction());
-    popup_item.has_text_direction_override = IsOverride(style.GetUnicodeBidi());
+    popup_item->text_direction =
+        style.Direction() == TextDirection::kLtr
+            ? mojo_base::mojom::blink::TextDirection::LEFT_TO_RIGHT
+            : mojo_base::mojom::blink::TextDirection::RIGHT_TO_LEFT;
+    popup_item->has_text_direction_override =
+        IsOverride(style.GetUnicodeBidi());
+    menu_items->push_back(std::move(popup_item));
   }
 
   const ComputedStyle& menu_style = owner_element.GetComputedStyle()
@@ -272,16 +281,15 @@ void ExternalPopupMenu::GetPopupMenuInfo(WebPopupMenuInfo& info,
                                         : *owner_element.EnsureComputedStyle();
   const SimpleFontData* font_data = menu_style.GetFont().PrimaryFont();
   DCHECK(font_data);
-  info.item_height = font_data ? font_data->GetFontMetrics().Height() : 0;
-  info.item_font_size = static_cast<int>(
+  *item_height = font_data ? font_data->GetFontMetrics().Height() : 0;
+  *font_size = static_cast<int>(
       menu_style.GetFont().GetFontDescription().ComputedSize());
-  info.selected_index = ToExternalPopupMenuItemIndex(
+  *selected_item = ToExternalPopupMenuItemIndex(
       owner_element.SelectedListIndex(), owner_element);
-  info.right_aligned = menu_style.Direction() == TextDirection::kRtl;
-  info.allow_multiple_selection = owner_element.IsMultiple();
-  if (count < item_count)
-    items.Shrink(count);
-  info.items = items;
+
+  *right_aligned = menu_style.Direction() == TextDirection::kRtl;
+
+  *allow_multiple_selection = owner_element.IsMultiple();
 }
 
 int ExternalPopupMenu::ToPopupMenuItemIndex(int external_popup_menu_item_index,

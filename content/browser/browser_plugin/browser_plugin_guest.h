@@ -37,19 +37,17 @@
 #include "content/public/browser/guest_host.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/screen_info.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-forward.h"
 #include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
+#include "third_party/blink/public/mojom/popup/popup.mojom.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "third_party/blink/public/web/web_drag_status.h"
 #include "third_party/blink/public/web/web_ime_text_span.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/geometry/rect.h"
-
-#if defined(OS_MACOSX)
-struct FrameHostMsg_ShowPopup_Params;
-#endif
 
 namespace gfx {
 class Range;
@@ -183,8 +181,19 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   void DidFinishNavigation(NavigationHandle* navigation_handle) override;
 
   void RenderProcessGone(base::TerminationStatus status) override;
-  bool OnMessageReceived(const IPC::Message& message,
-                         RenderFrameHost* render_frame_host) override;
+#if defined(OS_MACOSX)
+  // On MacOS X popups are painted by the browser process. We handle them here
+  // so that they are positioned correctly.
+  bool ShowPopup(RenderFrameHost* render_frame_host,
+                 mojo::PendingRemote<blink::mojom::ExternalPopup>* popup,
+                 const gfx::Rect& bounds,
+                 int32_t item_height,
+                 double font_size,
+                 int32_t selected_item,
+                 std::vector<blink::mojom::MenuItemPtr>* menu_items,
+                 bool right_aligned,
+                 bool allow_multiple_selection) override;
+#endif
 
   // GuestHost implementation.
   int LoadURLWithParams(
@@ -298,12 +307,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   // Message handlers for messages from guest.
   void OnHandleInputEventAck(blink::WebInputEvent::Type event_type,
                              blink::mojom::InputEventResultState ack_result);
-#if defined(OS_MACOSX)
-  // On MacOS X popups are painted by the browser process. We handle them here
-  // so that they are positioned correctly.
-  void OnShowPopup(RenderFrameHost* render_frame_host,
-                   const FrameHostMsg_ShowPopup_Params& params);
-#endif
   void OnUpdateFrameName(int frame_id,
                          bool is_top_level,
                          const std::string& name);

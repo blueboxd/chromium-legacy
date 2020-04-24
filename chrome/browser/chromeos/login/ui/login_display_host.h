@@ -85,6 +85,10 @@ class LoginDisplayHost {
   // instance is gone.
   virtual void Finalize(base::OnceClosure completion_callback) = 0;
 
+  // Called when current instance should be replaced with another one. After the
+  // call the instance will be gone.
+  virtual void FinalizeImmediately() = 0;
+
   // Toggles status area visibility.
   virtual void SetStatusAreaVisible(bool visible) = 0;
 

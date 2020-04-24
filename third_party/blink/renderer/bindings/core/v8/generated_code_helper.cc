@@ -219,10 +219,6 @@ bool IsEsIterableObject(v8::Isolate* isolate,
   return true;
 }
 
-Document* ToDocumentFromExecutionContext(ExecutionContext* execution_context) {
-  return execution_context->ExecutingWindow()->document();
-}
-
 ExecutionContext* ExecutionContextFromV8Wrappable(const Range* range) {
   return range->startContainer()->GetDocument().ToExecutionContext();
 }

@@ -6,13 +6,13 @@
 
 dictionary GPUBufferCopyView {
     required GPUBuffer buffer;
-    GPUBufferSize offset = 0;
+    GPUSize64 offset = 0;
 
     // TODO(crbug.com/1069302): rowPitch is deprecated; remove it, make bytesPerRow required.
-    unsigned long bytesPerRow;
+    GPUSize32 bytesPerRow;
     unsigned long rowPitch;
 
-    unsigned long rowsPerImage = 0;
+    GPUSize32 rowsPerImage = 0;
     // TODO(crbug.com/1069302): imageHeight is deprecated; remove it.
     unsigned long imageHeight;
 };

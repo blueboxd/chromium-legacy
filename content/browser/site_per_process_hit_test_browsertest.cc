@@ -5699,7 +5699,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest, PopupMenuTest) {
   EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
             child_node->current_frame_host()->GetSiteInstance());
 
-  scoped_refptr<ShowWidgetMessageFilter> filter = new ShowWidgetMessageFilter();
+  scoped_refptr<ShowWidgetMessageFilter> filter =
+      new ShowWidgetMessageFilter(web_contents());
   child_node->current_frame_host()->GetProcess()->AddFilter(filter.get());
 
   // Target left-click event to child frame.
@@ -5833,7 +5834,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
   EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
             c_node->current_frame_host()->GetSiteInstance());
 
-  scoped_refptr<ShowWidgetMessageFilter> filter = new ShowWidgetMessageFilter();
+  scoped_refptr<ShowWidgetMessageFilter> filter =
+      new ShowWidgetMessageFilter(shell()->web_contents());
   c_node->current_frame_host()->GetProcess()->AddFilter(filter.get());
 
   WaitForHitTestData(c_node->current_frame_host());
@@ -5972,7 +5974,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
               ->GetRenderWidgetHost()
               ->GetView());
 
-  scoped_refptr<ShowWidgetMessageFilter> filter = new ShowWidgetMessageFilter();
+  scoped_refptr<ShowWidgetMessageFilter> filter =
+      new ShowWidgetMessageFilter(web_contents());
   grandchild_node->current_frame_host()->GetProcess()->AddFilter(filter.get());
 
   // Target left-click event to the select element in the innermost frame.

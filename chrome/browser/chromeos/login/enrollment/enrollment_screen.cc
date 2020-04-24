@@ -14,8 +14,10 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/login/configuration_keys.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_uma.h"
+#include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/tpm_auto_update_mode_policy_handler.h"
@@ -57,19 +59,6 @@ constexpr double kMultiplyFactor = 1.5;
 constexpr double kJitterFactor = 0.1;           // +/- 10% jitter
 constexpr int64_t kMaxDelayMS = 8 * 60 * 1000;  // 8 minutes
 
-bool HasPublicUser() {
-  // Some tests don't initialize the UserManager.
-  if (!user_manager::UserManager::IsInitialized())
-    return false;
-
-  for (const user_manager::User* user :
-       user_manager::UserManager::Get()->GetUsers()) {
-    if (user->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT)
-      return true;
-  }
-  return false;
-}
-
 bool ShouldAttemptRestart() {
   // Restart browser to switch from DeviceCloudPolicyManagerChromeOS to
   // DeviceActiveDirectoryPolicyManager.
@@ -81,12 +70,6 @@ bool ShouldAttemptRestart() {
     // thus the correct one can be picked without restarting the browser.
     return true;
   }
-
-  // Restart browser to switch to Views account picker if we have public
-  // accounts (which have user pods on the login screen).
-  // TODO(crbug.com/943720): Switch to Views account without Chrome restart.
-  if (HasPublicUser())
-    return true;
 
   return false;
 }
@@ -341,8 +324,19 @@ void EnrollmentScreen::OnConfirmationClosed() {
   // either case, passing exit_callback_ directly should be safe.
   ClearAuth(base::BindRepeating(exit_callback_, Result::COMPLETED));
 
-  if (ShouldAttemptRestart())
+  if (ShouldAttemptRestart()) {
     chrome::AttemptRestart();
+    return;
+  }
+
+  // Could be not managed in tests.
+  if (g_browser_process->platform_part()
+          ->browser_policy_connector_chromeos()
+          ->IsEnterpriseManaged()) {
+    DCHECK_EQ(LoginDisplayHost::default_host()->GetOobeUI()->display_type(),
+              OobeUI::kOobeDisplay);
+    SwitchWebUItoMojo();
+  }
 }
 
 void EnrollmentScreen::OnAuthError(const GoogleServiceAuthError& error) {

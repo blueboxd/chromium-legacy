@@ -353,25 +353,19 @@ bool ExtensionApps::Accepts(const extensions::Extension* extension) {
   }
 }
 
-void ExtensionApps::OnSystemWebAppsInstalled() {
-  // This function wouldn't get called unless WebAppProvider existed.
-  const auto& system_web_app_ids = web_app::WebAppProvider::Get(profile_)
-                                       ->system_web_app_manager()
-                                       .GetAppIds();
-  for (const auto& app_id : system_web_app_ids) {
-    const extensions::Extension* extension =
-        extensions::ExtensionRegistry::Get(profile_)->GetInstalledExtension(
-            app_id);
-
-    if (!extension || !Accepts(extension)) {
-      continue;
-    }
-
-    Publish(Convert(extension,
-                    GetReadiness(app_id,
-                                 extensions::ExtensionPrefs::Get(profile_))),
-            subscribers_);
+const extensions::Extension* ExtensionApps::MaybeGetExtension(
+    const std::string& app_id) {
+  DCHECK(profile_);
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile_);
+  DCHECK(registry);
+  const extensions::Extension* extension =
+      registry->GetInstalledExtension(app_id);
+  if (!extension || !Accepts(extension)) {
+    return nullptr;
   }
+
+  return extension;
 }
 
 void ExtensionApps::Connect(
@@ -437,13 +431,7 @@ void ExtensionApps::Launch(const std::string& app_id,
                            int32_t event_flags,
                            apps::mojom::LaunchSource launch_source,
                            int64_t display_id) {
-  if (!profile_) {
-    return;
-  }
-
-  const extensions::Extension* extension =
-      extensions::ExtensionRegistry::Get(profile_)->GetInstalledExtension(
-          app_id);
+  const auto* extension = MaybeGetExtension(app_id);
   if (!extension || !extensions::util::IsAppLaunchable(app_id, profile_) ||
       RunExtensionEnableFlow(
           app_id,
@@ -518,13 +506,7 @@ void ExtensionApps::LaunchAppWithIntent(const std::string& app_id,
                                         apps::mojom::IntentPtr intent,
                                         apps::mojom::LaunchSource launch_source,
                                         int64_t display_id) {
-  if (!profile_) {
-    return;
-  }
-
-  const extensions::Extension* extension =
-      extensions::ExtensionRegistry::Get(profile_)->GetInstalledExtension(
-          app_id);
+  const auto* extension = MaybeGetExtension(app_id);
   if (!extension || !extensions::util::IsAppLaunchable(app_id, profile_)) {
     return;
   }
@@ -553,15 +535,8 @@ void ExtensionApps::LaunchAppWithIntent(const std::string& app_id,
 
 void ExtensionApps::SetPermission(const std::string& app_id,
                                   apps::mojom::PermissionPtr permission) {
-  if (!profile_) {
-    return;
-  }
-
-  const extensions::Extension* extension =
-      extensions::ExtensionRegistry::Get(profile_)->GetInstalledExtension(
-          app_id);
-
-  if (!extension->from_bookmark()) {
+  const auto* extension = MaybeGetExtension(app_id);
+  if (!extension || !extension->from_bookmark()) {
     return;
   }
 
@@ -741,11 +716,8 @@ void ExtensionApps::GetMenuModel(const std::string& app_id,
                                  apps::mojom::MenuType menu_type,
                                  int64_t display_id,
                                  GetMenuModelCallback callback) {
-  extensions::ExtensionRegistry* registry =
-      extensions::ExtensionRegistry::Get(profile_);
-  const extensions::Extension* extension =
-      registry->GetInstalledExtension(app_id);
-  if (!extension || !Accepts(extension)) {
+  const auto* extension = MaybeGetExtension(app_id);
+  if (!extension) {
     return;
   }
 
@@ -799,14 +771,7 @@ void ExtensionApps::GetMenuModel(const std::string& app_id,
 }
 
 void ExtensionApps::OpenNativeSettings(const std::string& app_id) {
-  if (!profile_) {
-    return;
-  }
-
-  const extensions::Extension* extension =
-      extensions::ExtensionRegistry::Get(profile_)->GetInstalledExtension(
-          app_id);
-
+  const auto* extension = MaybeGetExtension(app_id);
   if (!extension) {
     return;
   }
@@ -930,15 +895,8 @@ void ExtensionApps::OnAppWindowRemoved(extensions::AppWindow* app_window) {
 void ExtensionApps::OnExtensionLastLaunchTimeChanged(
     const std::string& app_id,
     const base::Time& last_launch_time) {
-  if (!profile_) {
-    return;
-  }
-
-  extensions::ExtensionRegistry* registry =
-      extensions::ExtensionRegistry::Get(profile_);
-  const extensions::Extension* extension =
-      registry->GetInstalledExtension(app_id);
-  if (!extension || !Accepts(extension)) {
+  const auto* extension = MaybeGetExtension(app_id);
+  if (!extension) {
     return;
   }
 
@@ -1046,6 +1004,24 @@ void ExtensionApps::OnExtensionUninstalled(
   app_service_->RemovePreferredApp(app_type_, extension->id());
 }
 
+void ExtensionApps::OnSystemWebAppsInstalled() {
+  // This function wouldn't get called unless WebAppProvider existed.
+  const auto& system_web_app_ids = web_app::WebAppProvider::Get(profile_)
+                                       ->system_web_app_manager()
+                                       .GetAppIds();
+  for (const auto& app_id : system_web_app_ids) {
+    const auto* extension = MaybeGetExtension(app_id);
+    if (!extension) {
+      continue;
+    }
+
+    Publish(Convert(extension,
+                    GetReadiness(app_id,
+                                 extensions::ExtensionPrefs::Get(profile_))),
+            subscribers_);
+  }
+}
+
 void ExtensionApps::OnPackageInstalled(
     const arc::mojom::ArcPackageInfo& package_info) {
   ApplyChromeBadge(package_info.package_name);
@@ -1086,14 +1062,7 @@ void ExtensionApps::OnDisplay(
 void ExtensionApps::OnClose(const std::string& notification_id) {
   const std::string& app_id =
       app_notifications_.GetAppIdForNotification(notification_id);
-  if (app_id.empty()) {
-    return;
-  }
-
-  const extensions::Extension* extension =
-      extensions::ExtensionRegistry::Get(profile_)->GetInstalledExtension(
-          app_id);
-  if (!extension || !Accepts(extension)) {
+  if (app_id.empty() || MaybeGetExtension(app_id) == nullptr) {
     return;
   }
 
@@ -1108,10 +1077,7 @@ void ExtensionApps::OnWillBeDestroyed(NotificationDisplayService* service) {
 
 void ExtensionApps::MaybeAddNotification(const std::string& app_id,
                                          const std::string& notification_id) {
-  const extensions::Extension* extension =
-      extensions::ExtensionRegistry::Get(profile_)->GetInstalledExtension(
-          app_id);
-  if (!extension || !Accepts(extension)) {
+  if (MaybeGetExtension(app_id) == nullptr) {
     return;
   }
 
@@ -1211,13 +1177,11 @@ void ExtensionApps::OnHideWebStoreIconPrefChanged() {
 }
 
 void ExtensionApps::UpdateShowInFields(const std::string& app_id) {
-  extensions::ExtensionRegistry* registry =
-      extensions::ExtensionRegistry::Get(profile_);
-  const extensions::Extension* extension =
-      registry->GetInstalledExtension(app_id);
-  if (!extension || !Accepts(extension)) {
+  const auto* extension = MaybeGetExtension(app_id);
+  if (!extension) {
     return;
   }
+
   apps::mojom::AppPtr app = apps::mojom::App::New();
   app->app_type = app_type_;
   app->app_id = app_id;
@@ -1437,12 +1401,8 @@ void ExtensionApps::ApplyChromeBadge(const std::string& package_name) {
 }
 
 void ExtensionApps::SetIconEffect(const std::string& app_id) {
-  extensions::ExtensionRegistry* registry =
-      extensions::ExtensionRegistry::Get(profile_);
-  DCHECK(registry);
-  const extensions::Extension* extension =
-      registry->GetInstalledExtension(app_id);
-  if (!extension || !Accepts(extension)) {
+  const auto* extension = MaybeGetExtension(app_id);
+  if (!extension) {
     return;
   }
 

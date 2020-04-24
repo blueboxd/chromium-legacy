@@ -7912,6 +7912,7 @@ interface Screen
     getter primary
     getter scaleFactor
     getter top
+    getter touchSupport
     getter width
     method constructor
 interface ScreenOrientation : EventTarget

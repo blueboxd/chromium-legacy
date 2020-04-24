@@ -25,7 +25,9 @@ struct MediaPlayer final : public GarbageCollected<MediaPlayer> {
   void Trace(Visitor*) {}
 
   WebString player_id;
-  InspectorPlayerEvents events;
+  Vector<InspectorPlayerError> errors;
+  Vector<InspectorPlayerEvent> events;
+  Vector<InspectorPlayerMessage> messages;
   HashMap<String, InspectorPlayerProperty> properties;
 };
 
@@ -51,15 +53,20 @@ class CORE_EXPORT MediaInspectorContextImpl final
 
   // MediaInspectorContext methods.
   WebString CreatePlayer() override;
-  void NotifyPlayerEvents(WebString, InspectorPlayerEvents) override;
-  void SetPlayerProperties(WebString, InspectorPlayerProperties) override;
+  void NotifyPlayerErrors(WebString playerId,
+                          const InspectorPlayerErrors&) override;
+  void NotifyPlayerEvents(WebString playerId,
+                          const InspectorPlayerEvents&) override;
+  void NotifyPlayerMessages(WebString playerId,
+                            const InspectorPlayerMessages&) override;
+  void SetPlayerProperties(WebString playerId,
+                           const InspectorPlayerProperties&) override;
 
   // GarbageCollected methods.
   void Trace(Visitor*) override;
 
-  Vector<WebString> GetAllPlayerIds();
-  std::pair<Vector<InspectorPlayerProperty>, Vector<InspectorPlayerEvent>>
-  GetPropertiesAndEvents(const WebString&);
+  Vector<WebString> AllPlayerIds();
+  const MediaPlayer& MediaPlayerFromId(const WebString&);
 
  private:
   HeapHashMap<String, Member<MediaPlayer>> players_;

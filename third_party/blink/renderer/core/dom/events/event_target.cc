@@ -299,9 +299,7 @@ EventTarget* EventTarget::Create(ScriptState* script_state) {
 }
 
 inline LocalDOMWindow* EventTarget::ExecutingWindow() {
-  if (ExecutionContext* context = GetExecutionContext())
-    return context->ExecutingWindow();
-  return nullptr;
+  return DynamicTo<LocalDOMWindow>(GetExecutionContext());
 }
 
 bool EventTarget::IsTopLevelNode() {

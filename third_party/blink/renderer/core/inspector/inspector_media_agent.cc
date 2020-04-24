@@ -13,35 +13,67 @@ namespace blink {
 
 namespace {
 
-std::unique_ptr<protocol::Media::PlayerEvent> ConvertInspectorPlayerEvent(
-    const InspectorPlayerEvent& event) {
-  protocol::Media::PlayerEventType event_type;
-  switch (event.type) {
-    case InspectorPlayerEvent::ERROR_EVENT:
-      event_type = protocol::Media::PlayerEventTypeEnum::ErrorEvent;
-      break;
-    case InspectorPlayerEvent::TRIGGERED_EVENT:
-      event_type = protocol::Media::PlayerEventTypeEnum::TriggeredEvent;
-      break;
-    case InspectorPlayerEvent::MESSAGE_EVENT:
-      event_type = protocol::Media::PlayerEventTypeEnum::MessageEvent;
-      break;
+const char* ConvertMessageLevelEnum(InspectorPlayerMessage::Level level) {
+  switch (level) {
+    case InspectorPlayerMessage::Level::kError:
+      return protocol::Media::PlayerMessage::LevelEnum::Error;
+    case InspectorPlayerMessage::Level::kWarning:
+      return protocol::Media::PlayerMessage::LevelEnum::Warning;
+    case InspectorPlayerMessage::Level::kInfo:
+      return protocol::Media::PlayerMessage::LevelEnum::Info;
+    case InspectorPlayerMessage::Level::kDebug:
+      return protocol::Media::PlayerMessage::LevelEnum::Debug;
   }
+}
+
+const char* ConvertErrorTypeEnum(InspectorPlayerError::Type level) {
+  switch (level) {
+    case InspectorPlayerError::Type::kPipelineError:
+      return protocol::Media::PlayerError::TypeEnum::Pipeline_error;
+    case InspectorPlayerError::Type::kMediaStatus:
+      return protocol::Media::PlayerError::TypeEnum::Media_error;
+  }
+}
+
+std::unique_ptr<protocol::Media::PlayerEvent> ConvertToProtocolType(
+    const InspectorPlayerEvent& event) {
   return protocol::Media::PlayerEvent::create()
-      .setType(event_type)
       .setTimestamp(event.timestamp.since_origin().InSecondsF())
-      .setName(event.key)
       .setValue(event.value)
       .build();
 }
 
-std::unique_ptr<protocol::Media::PlayerProperty> ConvertInspectorPlayerProperty(
+std::unique_ptr<protocol::Media::PlayerProperty> ConvertToProtocolType(
     const InspectorPlayerProperty& property) {
-  auto builder = std::move(
-      protocol::Media::PlayerProperty::create().setName(property.name));
-  if (property.value.has_value())
-    builder.setValue(property.value.value());
-  return builder.build();
+  return protocol::Media::PlayerProperty::create()
+      .setName(property.name)
+      .setValue(property.value)
+      .build();
+}
+
+std::unique_ptr<protocol::Media::PlayerMessage> ConvertToProtocolType(
+    const InspectorPlayerMessage& message) {
+  return protocol::Media::PlayerMessage::create()
+      .setLevel(ConvertMessageLevelEnum(message.level))
+      .setMessage(message.message)
+      .build();
+}
+
+std::unique_ptr<protocol::Media::PlayerError> ConvertToProtocolType(
+    const InspectorPlayerError& error) {
+  return protocol::Media::PlayerError::create()
+      .setType(ConvertErrorTypeEnum(error.type))
+      .setErrorCode(error.errorCode)
+      .build();
+}
+
+template <typename To, typename From>
+std::unique_ptr<protocol::Array<To>> ConvertVector(const Vector<From>& from) {
+  auto result = std::make_unique<protocol::Array<To>>();
+  result->reserve(from.size());
+  for (const From& each : from)
+    result->push_back(ConvertToProtocolType(each));
+  return result;
 }
 
 }  // namespace
@@ -61,12 +93,18 @@ void InspectorMediaAgent::Restore() {
 void InspectorMediaAgent::RegisterAgent() {
   instrumenting_agents_->AddInspectorMediaAgent(this);
   auto* cache = MediaInspectorContextImpl::FromLocalFrame(local_frame_);
-  Vector<WebString> players = cache->GetAllPlayerIds();
+  Vector<WebString> players = cache->AllPlayerIds();
   PlayersCreated(players);
   for (const auto& player_id : players) {
-    auto props_events = cache->GetPropertiesAndEvents(player_id);
-    PlayerPropertiesChanged(player_id, props_events.first);
-    PlayerEventsAdded(player_id, props_events.second);
+    const auto& media_player = cache->MediaPlayerFromId(player_id);
+    Vector<InspectorPlayerProperty> properties;
+    properties.AppendRange(media_player.properties.Values().begin(),
+                           media_player.properties.Values().end());
+
+    PlayerPropertiesChanged(player_id, properties);
+    PlayerMessagesLogged(player_id, media_player.messages);
+    PlayerEventsAdded(player_id, media_player.events);
+    PlayerErrorsRaised(player_id, media_player.errors);
   }
 }
 
@@ -89,23 +127,29 @@ protocol::Response InspectorMediaAgent::disable() {
 void InspectorMediaAgent::PlayerPropertiesChanged(
     const WebString& playerId,
     const Vector<InspectorPlayerProperty>& properties) {
-  auto protocol_props =
-      std::make_unique<protocol::Array<protocol::Media::PlayerProperty>>();
-  protocol_props->reserve(properties.size());
-  for (const auto& property : properties)
-    protocol_props->push_back(ConvertInspectorPlayerProperty(property));
-  GetFrontend()->playerPropertiesChanged(playerId, std::move(protocol_props));
+  GetFrontend()->playerPropertiesChanged(
+      playerId, ConvertVector<protocol::Media::PlayerProperty>(properties));
 }
 
 void InspectorMediaAgent::PlayerEventsAdded(
     const WebString& playerId,
     const Vector<InspectorPlayerEvent>& events) {
-  auto protocol_events =
-      std::make_unique<protocol::Array<protocol::Media::PlayerEvent>>();
-  protocol_events->reserve(events.size());
-  for (const auto& event : events)
-    protocol_events->push_back(ConvertInspectorPlayerEvent(event));
-  GetFrontend()->playerEventsAdded(playerId, std::move(protocol_events));
+  GetFrontend()->playerEventsAdded(
+      playerId, ConvertVector<protocol::Media::PlayerEvent>(events));
+}
+
+void InspectorMediaAgent::PlayerErrorsRaised(
+    const WebString& playerId,
+    const Vector<InspectorPlayerError>& errors) {
+  GetFrontend()->playerErrorsRaised(
+      playerId, ConvertVector<protocol::Media::PlayerError>(errors));
+}
+
+void InspectorMediaAgent::PlayerMessagesLogged(
+    const WebString& playerId,
+    const Vector<InspectorPlayerMessage>& messages) {
+  GetFrontend()->playerMessagesLogged(
+      playerId, ConvertVector<protocol::Media::PlayerMessage>(messages));
 }
 
 void InspectorMediaAgent::PlayersCreated(const Vector<WebString>& player_ids) {

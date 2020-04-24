@@ -1442,8 +1442,6 @@ crbug.com/1050754 external/wpt/fetch/api/basic/request-upload.any.worker.html [ 
 crbug.com/1050754 external/wpt/fetch/api/basic/stream-safe-creation.any.sharedworker.html [ Failure ]
 crbug.com/1050754 external/wpt/fetch/api/cors/cors-preflight-redirect.any.html [ Failure ]
 crbug.com/1050754 external/wpt/fetch/api/cors/cors-preflight-redirect.any.worker.html [ Failure ]
-crbug.com/1050754 external/wpt/fetch/api/cors/cors-preflight-response-validation.any.html [ Failure ]
-crbug.com/1050754 external/wpt/fetch/api/cors/cors-preflight-response-validation.any.worker.html [ Failure ]
 crbug.com/1050754 external/wpt/fetch/api/cors/data-url-shared-worker.html [ Failure ]
 crbug.com/1050754 external/wpt/fetch/api/idlharness.any.html [ Failure ]
 crbug.com/1050754 external/wpt/fetch/api/idlharness.any.serviceworker.html [ Failure ]

@@ -29,6 +29,9 @@ class BasicVulkanTest : public testing::Test {
   VulkanDeviceQueue* GetDeviceQueue() { return device_queue_.get(); }
   VkDevice device() { return device_queue_->GetVulkanDevice(); }
   VkQueue queue() { return device_queue_->GetVulkanQueue(); }
+  bool supports_swapchain() const {
+    return window_ != gfx::kNullAcceleratedWidget;
+  }
   std::unique_ptr<VulkanSurface> CreateViewSurface(
       gfx::AcceleratedWidget window);
 

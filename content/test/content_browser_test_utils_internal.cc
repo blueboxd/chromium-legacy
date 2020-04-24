@@ -369,22 +369,21 @@ RenderProcessHostBadIpcMessageWaiter::Wait() {
   return static_cast<bad_message::BadMessageReason>(internal_result.value());
 }
 
-ShowWidgetMessageFilter::ShowWidgetMessageFilter()
+ShowWidgetMessageFilter::ShowWidgetMessageFilter(WebContents* web_content)
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
-    : content::BrowserMessageFilter(FrameMsgStart),
+    : BrowserMessageFilter(FrameMsgStart),
 #else
-    : content::BrowserMessageFilter(ViewMsgStart),
+    : BrowserMessageFilter(ViewMsgStart),
 #endif
+      WebContentsObserver(web_content),
       message_loop_runner_(new content::MessageLoopRunner) {
 }
 
-ShowWidgetMessageFilter::~ShowWidgetMessageFilter() {}
+ShowWidgetMessageFilter::~ShowWidgetMessageFilter() = default;
 
 bool ShowWidgetMessageFilter::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(ShowWidgetMessageFilter, message)
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_ShowPopup, OnShowPopup)
-#else
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowWidget, OnShowWidget)
 #endif
   IPC_END_MESSAGE_MAP()
@@ -409,11 +408,20 @@ void ShowWidgetMessageFilter::OnShowWidget(int route_id,
 }
 
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
-void ShowWidgetMessageFilter::OnShowPopup(
-    const FrameHostMsg_ShowPopup_Params& params) {
+bool ShowWidgetMessageFilter::ShowPopup(
+    RenderFrameHost* render_frame_host,
+    mojo::PendingRemote<blink::mojom::ExternalPopup>* popup,
+    const gfx::Rect& bounds,
+    int32_t item_height,
+    double font_size,
+    int32_t selected_item,
+    std::vector<blink::mojom::MenuItemPtr>* menu_items,
+    bool right_aligned,
+    bool allow_multiple_selection) {
   base::PostTask(FROM_HERE, {content::BrowserThread::UI},
                  base::BindOnce(&ShowWidgetMessageFilter::OnShowWidgetOnUI,
-                                this, MSG_ROUTING_NONE, params.bounds));
+                                this, MSG_ROUTING_NONE, bounds));
+  return true;
 }
 #endif
 

@@ -31,6 +31,7 @@ class FakeLoginDisplayHost : public LoginDisplayHost {
   WebUILoginView* GetWebUILoginView() const override;
   void BeforeSessionStart() override;
   void Finalize(base::OnceClosure) override;
+  void FinalizeImmediately() override;
   void SetStatusAreaVisible(bool visible) override;
   void StartWizard(chromeos::OobeScreenId first_screen) override;
   WizardController* GetWizardController() override;

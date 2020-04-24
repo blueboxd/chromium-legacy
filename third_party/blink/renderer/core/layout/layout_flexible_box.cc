@@ -949,7 +949,8 @@ void LayoutFlexibleBox::LayoutFlexItems(bool relayout_children,
   ChildLayoutType layout_type =
       relayout_children ? kForceLayout : kLayoutIfNeeded;
   const LayoutUnit line_break_length = MainAxisContentExtent(LayoutUnit::Max());
-  FlexLayoutAlgorithm flex_algorithm(Style(), line_break_length);
+  FlexLayoutAlgorithm flex_algorithm(Style(), line_break_length, LayoutUnit(),
+                                     LayoutUnit());
   order_iterator_.First();
   for (LayoutBox* child = order_iterator_.CurrentChild(); child;
        child = order_iterator_.Next()) {

@@ -27,8 +27,6 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """Generate template values for a callback interface.
 
-Extends IdlTypeBase with property |callback_cpp_type|.
-
 Design doc: http://www.chromium.org/developers/design-documents/idl-compiler
 """
 
@@ -56,25 +54,6 @@ LEGACY_CALLBACK_INTERFACE_H_INCLUDES = frozenset([
 LEGACY_CALLBACK_INTERFACE_CPP_INCLUDES = frozenset([
     'bindings/core/v8/v8_dom_configuration.h',
 ])
-
-
-def _cpp_type(idl_type):
-    # FIXME: remove this function by making callback types consistent
-    # (always use usual v8_types.cpp_type)
-    if idl_type.is_string_type or idl_type.is_enum:
-        return 'const String&'
-    if idl_type.name == 'void':
-        return 'void'
-    # Callbacks use raw pointers, so raw_type=True
-    raw_cpp_type = idl_type.cpp_type_args(raw_type=True)
-    # Pass containers and dictionaries to callback method by const reference rather than by value
-    if (raw_cpp_type.startswith(('Vector', 'HeapVector'))
-            or idl_type.is_dictionary):
-        return 'const %s&' % raw_cpp_type
-    return raw_cpp_type
-
-
-IdlTypeBase.callback_cpp_type = property(_cpp_type)
 
 
 def callback_interface_context(callback_interface, _, component_info):
@@ -163,7 +142,7 @@ def method_context(operation):
     add_includes_for_operation(operation)
     context = {
         'cpp_type':
-        idl_type.callback_cpp_type,
+        idl_type.cpp_type,
         'idl_type':
         idl_type_str,
         'name':
@@ -189,11 +168,21 @@ def arguments_context(arguments):
             'v8_' + argument.name,
         }
 
+    def argument_cpp_type(argument):
+        if argument.idl_type.is_dictionary:
+            return 'const %s*' % argument.idl_type.implemented_as
+
+        return argument.idl_type.cpp_type_args(
+            extended_attributes=argument.extended_attributes,
+            raw_type=False,
+            used_as_rvalue_type=True,
+            used_as_variadic_argument=argument.is_variadic)
+
     argument_declarations = [
         'bindings::V8ValueOrScriptWrappableAdapter callback_this_value'
     ]
     argument_declarations.extend(
-        '%s %s' % (argument.idl_type.callback_cpp_type, argument.name)
+        '%s %s' % (argument_cpp_type(argument), argument.name)
         for argument in arguments)
     return {
         'argument_declarations': argument_declarations,

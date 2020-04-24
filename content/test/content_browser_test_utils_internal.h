@@ -27,7 +27,9 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom-forward.h"
+#include "third_party/blink/public/mojom/popup/popup.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -200,9 +202,10 @@ class RenderProcessHostBadIpcMessageWaiter {
   DISALLOW_COPY_AND_ASSIGN(RenderProcessHostBadIpcMessageWaiter);
 };
 
-class ShowWidgetMessageFilter : public content::BrowserMessageFilter {
+class ShowWidgetMessageFilter : public content::BrowserMessageFilter,
+                                public WebContentsObserver {
  public:
-  ShowWidgetMessageFilter();
+  explicit ShowWidgetMessageFilter(WebContents* web_content);
 
   bool OnMessageReceived(const IPC::Message& message) override;
 
@@ -219,8 +222,17 @@ class ShowWidgetMessageFilter : public content::BrowserMessageFilter {
 
   void OnShowWidget(int route_id, const gfx::Rect& initial_rect);
 
+  // WebContentsObserver:
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
-  void OnShowPopup(const FrameHostMsg_ShowPopup_Params& params);
+  bool ShowPopup(RenderFrameHost* render_frame_host,
+                 mojo::PendingRemote<blink::mojom::ExternalPopup>* popup,
+                 const gfx::Rect& bounds,
+                 int32_t item_height,
+                 double font_size,
+                 int32_t selected_item,
+                 std::vector<blink::mojom::MenuItemPtr>* menu_items,
+                 bool right_aligned,
+                 bool allow_multiple_selection) override;
 #endif
 
   void OnShowWidgetOnUI(int route_id, const gfx::Rect& initial_rect);

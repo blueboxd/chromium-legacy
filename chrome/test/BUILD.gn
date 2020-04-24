@@ -1104,7 +1104,6 @@ if (!is_android) {
       "../browser/process_singleton_browsertest.cc",
       "../browser/profile_resetter/profile_resetter_browsertest.cc",
       "../browser/profiles/host_zoom_map_browsertest.cc",
-      "../browser/profiles/independent_otr_profile_manager_browsertest.cc",
       "../browser/profiles/profile_browsertest.cc",
       "../browser/profiles/profile_list_desktop_browsertest.cc",
       "../browser/profiles/profile_manager_browsertest.cc",

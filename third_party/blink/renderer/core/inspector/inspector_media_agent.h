@@ -30,9 +30,13 @@ class CORE_EXPORT InspectorMediaAgent final
   protocol::Response disable() override;
 
   // Protocol send messages.
+  void PlayerErrorsRaised(const WebString&,
+                          const Vector<InspectorPlayerError>&);
+  void PlayerEventsAdded(const WebString&, const Vector<InspectorPlayerEvent>&);
+  void PlayerMessagesLogged(const WebString&,
+                            const Vector<InspectorPlayerMessage>&);
   void PlayerPropertiesChanged(const WebString&,
                                const Vector<InspectorPlayerProperty>&);
-  void PlayerEventsAdded(const WebString&, const Vector<InspectorPlayerEvent>&);
   void PlayersCreated(const Vector<WebString>&);
 
   // blink-gc methods.

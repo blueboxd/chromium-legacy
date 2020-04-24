@@ -174,6 +174,8 @@ enum class ClassStringContent { kEmpty, kWhiteSpaceOnly, kHasClasses };
 namespace {
 
 class DisplayLockStyleScope {
+  STACK_ALLOCATED();
+
  public:
   explicit DisplayLockStyleScope(Element* element) : element_(element) {
     // Note that we don't store context as a member of this scope, since it may
@@ -214,7 +216,7 @@ class DisplayLockStyleScope {
   }
 
  private:
-  UntracedMember<Element> element_;
+  Element* element_;
   bool should_update_self_ = false;
   bool did_update_children_ = false;
 };

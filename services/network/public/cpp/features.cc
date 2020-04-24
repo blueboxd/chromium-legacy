@@ -182,6 +182,13 @@ const base::Feature kCorbAllowlistAlsoAppliesToOorCors = {
 const char kCorbAllowlistAlsoAppliesToOorCorsParamName[] =
     "AllowlistForCorbAndCors";
 
+// The preflight parser should reject Access-Control-Allow-* headers which do
+// not conform to ABNF. But if the strict check is applied directly, some
+// existing sites might fail to load. The feature flag controls whether a strict
+// check will be used or not.
+const base::Feature kStrictAccessControlAllowListCheck = {
+    "StrictAccessControlAllowListCheck", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables preprocessing requests with the Trust Tokens API Fetch flags set,
 // and handling their responses, according to the protocol.
 // (See https://github.com/WICG/trust-token-api.)

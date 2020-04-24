@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/loader/worker_resource_timing_notifier_impl.h"
 
 #include <memory>
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/loader/cross_thread_resource_timing_info_copier.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/performance.h"
@@ -20,16 +21,11 @@ namespace {
 
 Performance* GetPerformance(ExecutionContext& execution_context) {
   DCHECK(execution_context.IsContextThread());
-  if (execution_context.IsDocument()) {
-    DCHECK(execution_context.ExecutingWindow());
-    return DOMWindowPerformance::performance(
-        *execution_context.ExecutingWindow());
-  }
-  if (execution_context.IsWorkerGlobalScope()) {
-    return WorkerGlobalScopePerformance::performance(
-        To<WorkerGlobalScope>(execution_context));
-  }
-  NOTREACHED() << "Unexpected execution context, it should be either Document "
+  if (auto* window = DynamicTo<LocalDOMWindow>(execution_context))
+    return DOMWindowPerformance::performance(*window);
+  if (auto* global_scope = DynamicTo<WorkerGlobalScope>(execution_context))
+    return WorkerGlobalScopePerformance::performance(*global_scope);
+  NOTREACHED() << "Unexpected execution context, it should be either Window "
                   "or WorkerGlobalScope";
   return nullptr;
 }

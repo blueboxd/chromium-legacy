@@ -2722,6 +2722,10 @@ void BrowserView::PaintChildren(const views::PaintInfo& paint_info) {
   }
 }
 
+void BrowserView::ChildPreferredSizeChanged(View* child) {
+  Layout();
+}
+
 void BrowserView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kClient;
 }

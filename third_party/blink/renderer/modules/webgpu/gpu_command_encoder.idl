@@ -12,10 +12,10 @@
 
     void copyBufferToBuffer(
         GPUBuffer src,
-        GPUBufferSize srcOffset,
+        GPUSize64 srcOffset,
         GPUBuffer dst,
-        GPUBufferSize dstOffset,
-        GPUBufferSize size);
+        GPUSize64 dstOffset,
+        GPUSize64 size);
 
     [RaisesException] void copyBufferToTexture(
         GPUBufferCopyView source,

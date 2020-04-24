@@ -579,14 +579,14 @@ class SessionManagerClientImpl : public SessionManagerClient {
   }
 
   void StopArcInstance(const std::string& account_id,
-                       bool backup_log,
+                       bool should_backup_log,
                        VoidDBusMethodCallback callback) override {
     dbus::MethodCall method_call(login_manager::kSessionManagerInterface,
                                  login_manager::kSessionManagerStopArcInstance);
 
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(account_id);
-    writer.AppendBool(backup_log);
+    writer.AppendBool(should_backup_log);
 
     session_manager_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,

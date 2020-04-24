@@ -29,6 +29,7 @@ class EventListener;
 class FlexibleArrayBufferView;
 class IDLDictionaryBase;
 class ScriptWrappable;
+class XPathNSResolver;
 struct WrapperTypeInfo;
 
 namespace bindings {
@@ -1345,6 +1346,32 @@ template <>
 struct NativeValueTraits<IDLNullable<IDLOnBeforeUnloadEventHandler>>;
 template <>
 struct NativeValueTraits<IDLNullable<IDLOnErrorEventHandler>>;
+
+// Workaround https://crbug.com/345529
+template <>
+struct CORE_EXPORT NativeValueTraits<XPathNSResolver>
+    : public NativeValueTraitsBase<XPathNSResolver*> {
+  static XPathNSResolver* NativeValue(v8::Isolate* isolate,
+                                      v8::Local<v8::Value> value,
+                                      ExceptionState& exception_state);
+
+  static XPathNSResolver* ArgumentValue(v8::Isolate* isolate,
+                                        int argument_index,
+                                        v8::Local<v8::Value> value,
+                                        ExceptionState& exception_state);
+};
+template <>
+struct CORE_EXPORT NativeValueTraits<IDLNullable<XPathNSResolver>>
+    : public NativeValueTraitsBase<IDLNullable<XPathNSResolver>> {
+  static XPathNSResolver* NativeValue(v8::Isolate* isolate,
+                                      v8::Local<v8::Value> value,
+                                      ExceptionState& exception_state);
+
+  static XPathNSResolver* ArgumentValue(v8::Isolate* isolate,
+                                        int argument_index,
+                                        v8::Local<v8::Value> value,
+                                        ExceptionState& exception_state);
+};
 
 }  // namespace blink
 

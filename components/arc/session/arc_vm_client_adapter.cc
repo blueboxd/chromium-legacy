@@ -444,7 +444,7 @@ class ArcVmClientAdapter : public ArcClientAdapter,
                        std::move(callback)));
   }
 
-  void StopArcInstance(bool on_shutdown, bool backup_log) override {
+  void StopArcInstance(bool on_shutdown, bool should_backup_log) override {
     if (on_shutdown) {
       // Do nothing when |on_shutdown| is true because either vm_concierge.conf
       // job (in case of user session termination) or session_manager (in case
@@ -455,7 +455,7 @@ class ArcVmClientAdapter : public ArcClientAdapter,
       return;
     }
 
-    if (backup_log) {
+    if (should_backup_log) {
       // TODO(b/149874690): Call debugd to back up the log.
     }
 

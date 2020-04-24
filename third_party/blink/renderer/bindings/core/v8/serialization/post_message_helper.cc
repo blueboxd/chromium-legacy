@@ -93,7 +93,7 @@ PostMessageHelper::CreateUserActivationSnapshot(
     const PostMessageOptions* options) {
   if (!options->includeUserActivation())
     return nullptr;
-  if (LocalDOMWindow* dom_window = execution_context->ExecutingWindow()) {
+  if (auto* dom_window = DynamicTo<LocalDOMWindow>(execution_context)) {
     if (LocalFrame* frame = dom_window->GetFrame()) {
       return mojom::blink::UserActivationSnapshot::New(
           frame->HasStickyUserActivation(),

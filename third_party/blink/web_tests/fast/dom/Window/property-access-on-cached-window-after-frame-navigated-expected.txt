@@ -243,6 +243,7 @@ PASS oldChildWindow.screen.pixelDepth is newChildWindow.screen.pixelDepth
 PASS oldChildWindow.screen.primary is newChildWindow.screen.primary
 PASS oldChildWindow.screen.scaleFactor is newChildWindow.screen.scaleFactor
 PASS oldChildWindow.screen.top is newChildWindow.screen.top
+PASS oldChildWindow.screen.touchSupport is newChildWindow.screen.touchSupport
 PASS oldChildWindow.screen.width is newChildWindow.screen.width
 PASS oldChildWindow.screenLeft is newChildWindow.screenLeft
 PASS oldChildWindow.screenTop is newChildWindow.screenTop

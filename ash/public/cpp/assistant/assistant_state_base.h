@@ -36,6 +36,7 @@ class ASH_PUBLIC_EXPORT AssistantStateObserver
   virtual void OnAssistantLaunchWithMicOpen(bool launch_with_mic_open) {}
   virtual void OnAssistantNotificationEnabled(bool notification_enabled) {}
   virtual void OnAssistantStateDestroyed() {}
+  virtual void OnAssistantQuickAnswersEnabled(bool quick_answers_enabled) {}
 
   // mojom::AssistantStateObserver:
   void OnAssistantStatusChanged(mojom::AssistantState state) override {}
@@ -122,6 +123,7 @@ class ASH_PUBLIC_EXPORT AssistantStateBase {
   void UpdateHotwordEnabled();
   void UpdateLaunchWithMicOpen();
   void UpdateNotificationEnabled();
+  void UpdateQuickAnswersEnabled();
 
   // Called when new values of the listened states are received.
   void UpdateAssistantStatus(mojom::AssistantState state);
@@ -169,6 +171,9 @@ class ASH_PUBLIC_EXPORT AssistantStateBase {
   // Whether locked full screen state is enabled. nullopt if the data is not
   // available yet.
   base::Optional<bool> locked_full_screen_enabled_;
+
+  // Whether quick answers is enabled. nullopt if the data is not available yet.
+  base::Optional<bool> quick_answers_enabled_;
 
   // Observes user profile prefs for the Assistant.
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;

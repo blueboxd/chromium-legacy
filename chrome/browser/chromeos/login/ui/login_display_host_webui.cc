@@ -26,6 +26,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -193,6 +194,19 @@ void MaybeShowDeviceDisabledScreen() {
       DeviceDisabledScreenView::kScreenId);
 }
 
+void MaybeShutdownLoginDisplayHostWebUI() {
+  if (!LoginDisplayHost::default_host())
+    return;
+  if (!LoginDisplayHost::default_host()->GetOobeUI())
+    return;
+  if (LoginDisplayHost::default_host()->GetOobeUI()->display_type() !=
+      OobeUI::kOobeDisplay) {
+    return;
+  }
+  LoginDisplayHost::default_host()->FinalizeImmediately();
+  CHECK(!LoginDisplayHost::default_host());
+}
+
 // ShowLoginWizard is split into two parts. This function is sometimes called
 // from TriggerShowLoginWizardFinish() directly, and sometimes from
 // OnLanguageSwitchedCallback()
@@ -201,6 +215,11 @@ void ShowLoginWizardFinish(
     chromeos::OobeScreenId first_screen,
     const chromeos::StartupCustomizationDocument* startup_manifest) {
   TRACE_EVENT0("chromeos", "ShowLoginWizard::ShowLoginWizardFinish");
+
+  if (ShouldShowSigninScreen(first_screen)) {
+    // Shutdown WebUI host to replace with the Mojo one.
+    MaybeShutdownLoginDisplayHostWebUI();
+  }
 
   // TODO(crbug.com/781402): Move LoginDisplayHost creation out of
   // LoginDisplayHostWebUI, it is not specific to a particular implementation.
@@ -1183,6 +1202,40 @@ void ShowLoginWizard(OobeScreenId first_screen) {
   StartupUtils::SetInitialLocale(locale);
 
   TriggerShowLoginWizardFinish(locale, std::move(data));
+}
+
+class WebUIToViewsSwitchMetricsReporter : public content::NotificationObserver {
+ public:
+  WebUIToViewsSwitchMetricsReporter() {
+    registrar_.Add(this, chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
+                   content::NotificationService::AllSources());
+  }
+
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override {
+    DCHECK_EQ(LoginDisplayHost::default_host()->GetOobeUI()->display_type(),
+              OobeUI::kGaiaSigninDisplay);
+    UMA_HISTOGRAM_TIMES("OOBE.WebUIToViewsSwitch.Duration", timer_.Elapsed());
+    registrar_.Remove(this, chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
+                      content::NotificationService::AllSources());
+    base::SequencedTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
+  }
+
+ private:
+  content::NotificationRegistrar registrar_;
+  base::ElapsedTimer timer_;
+};
+
+void SwitchWebUItoMojo() {
+  DCHECK_EQ(LoginDisplayHost::default_host()->GetOobeUI()->display_type(),
+            OobeUI::kOobeDisplay);
+
+  // The object deletes itself.
+  new WebUIToViewsSwitchMetricsReporter();
+
+  // This replaces WebUI host with the Mojo (views) host.
+  ShowLoginWizard(OobeScreen::SCREEN_UNKNOWN);
 }
 
 }  // namespace chromeos

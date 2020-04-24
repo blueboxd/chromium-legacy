@@ -7402,6 +7402,26 @@ void WebContentsImpl::DidChangeScreenOrientation() {
   last_screen_orientation_change_time_ = ui::EventTimeForNow();
 }
 
+bool WebContentsImpl::ShowPopup(
+    RenderFrameHostImpl* render_frame_host,
+    mojo::PendingRemote<blink::mojom::ExternalPopup>* popup,
+    const gfx::Rect& bounds,
+    int32_t item_height,
+    double font_size,
+    int32_t selected_item,
+    std::vector<blink::mojom::MenuItemPtr>* menu_items,
+    bool right_aligned,
+    bool allow_multiple_selection) {
+  for (auto& observer : observers_) {
+    if (observer.ShowPopup(render_frame_host, popup, bounds, item_height,
+                           font_size, selected_item, menu_items, right_aligned,
+                           allow_multiple_selection)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 void WebContentsImpl::UpdateWebContentsVisibility(Visibility visibility) {
   // Occlusion is disabled when |features::kWebContentsOcclusion| is disabled
   // (for power and speed impact assessment) or when

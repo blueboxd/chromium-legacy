@@ -33,6 +33,7 @@ class MockLoginDisplayHost : public LoginDisplayHost {
     MockFinalize(&completion_callback);
   }
 
+  MOCK_METHOD0(FinalizeImmediately, void());
   MOCK_METHOD1(SetStatusAreaVisible, void(bool));
   MOCK_METHOD1(StartWizard, void(OobeScreenId));
   MOCK_METHOD0(GetWizardController, WizardController*(void));

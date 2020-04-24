@@ -8,9 +8,12 @@ import 'chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-lite.js';
 import 'chrome://resources/mojo/mojo/public/mojom/base/time.mojom-lite.js';
 import 'chrome://resources/mojo/url/mojom/url.mojom-lite.js';
 import './print_job_entry.js';
+import './print_management_shared_css.js';
 
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {getMetadataProvider} from './mojo_interface_provider.js';
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {ListPropertyUpdateBehavior} from 'chrome://resources/js/list_property_update_behavior.m.js';
 
 /**
  * @typedef {{
@@ -28,6 +31,8 @@ Polymer({
 
   _template: html`{__html_template__}`,
 
+  behaviors: [I18nBehavior],
+
   /**
    * @private {
    *  ?chromeos.printing.printingManager.mojom.PrintingMetadataProviderInterface
@@ -42,7 +47,20 @@ Polymer({
      */
     printJobs_: {
       type: Array,
+      value: () => [],
     },
+
+    /**
+     * Used by FocusRowBehavior to track the last focused element on a row.
+     * @private
+     */
+    lastFocused_: Object,
+
+    /**
+     * Used by FocusRowBehavior to track if the list has been blurred.
+     * @private
+     */
+    listBlurred_: Boolean,
   },
 
   /** @override */
@@ -52,8 +70,6 @@ Polymer({
 
   /** @override */
   ready() {
-    // TODO(jimmyxgong): Remove this once the app has more capabilities.
-    this.$$('#header').textContent = 'Print Management';
     this.mojoInterfaceProvider_.getPrintJobs()
         .then(this.onPrintJobsReceived_.bind(this));
   },
@@ -65,6 +81,8 @@ Polymer({
   onPrintJobsReceived_(jobs) {
     // Sort the printers in descending order based on time the print job was
     // created.
+    // TODO(crbug/1073690): Update this when BigInt is supported for
+    // updateList().
     this.printJobs_ = jobs.printJobs.sort((first, second) => {
       return Number(second.creationTime.internalValue) -
           Number(first.creationTime.internalValue);

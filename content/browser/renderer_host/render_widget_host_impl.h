@@ -790,6 +790,12 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   const mojo::AssociatedRemote<blink::mojom::FrameWidget>&
   GetAssociatedFrameWidget();
 
+  // Exposed so that tests can swap the implementation and intercept calls.
+  mojo::AssociatedReceiver<blink::mojom::FrameWidgetHost>&
+  frame_widget_host_receiver_for_testing() {
+    return blink_frame_widget_host_receiver_;
+  }
+
  protected:
   // ---------------------------------------------------------------------------
   // The following method is overridden by RenderViewHost to send upwards to
@@ -892,11 +898,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void OnFirstVisuallyNonEmptyPaint();
   void OnHasTouchEventHandlers(bool has_handlers);
   void OnIntrinsicSizingInfoChanged(blink::WebIntrinsicSizingInfo info);
-  void OnZoomToFindInPageRectInMainFrame(const gfx::Rect& rect_to_zoom);
 
   // blink::mojom::FrameWidgetHost overrides.
   void AnimateDoubleTapZoomInMainFrame(const gfx::Point& tap_point,
                                        const gfx::Rect& rect_to_zoom) override;
+  void ZoomToFindInPageRectInMainFrame(const gfx::Rect& rect_to_zoom) override;
 
   // When the RenderWidget is destroyed and recreated, this resets states in the
   // browser to match the clean start for the renderer side.

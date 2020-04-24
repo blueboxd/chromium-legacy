@@ -9,6 +9,7 @@ from .code_node import LiteralNode
 from .code_node import SymbolNode
 from .code_node import SymbolScopeNode
 from .code_node import TextNode
+from .code_node import WeakDependencyNode
 from .code_node import render_code_node
 from .codegen_accumulator import CodeGenAccumulator
 from .mako_renderer import MakoRenderer
@@ -123,6 +124,32 @@ int var2 = var5;
 int var4 = 1;
 int var3 = var4;
 int var1 = var2 + var3;
+(void)var1;
+""")
+
+    def test_weak_dependency_node(self):
+        root = SymbolScopeNode(tail="\n")
+
+        root.register_code_symbols([
+            SymbolNode("var1", "int ${var1} = 1;"),
+            SymbolNode("var2", "int ${var2} = 2;"),
+            SymbolNode("var3", "int ${var3} = 3;"),
+        ])
+
+        root.extend([
+            WeakDependencyNode(dep_syms=["var1", "var2"]),
+            TextNode("f();"),
+            TextNode("(void)${var3};"),
+            TextNode("(void)${var1};"),
+        ])
+
+        self.assertRenderResult(
+            root, """\
+int var1 = 1;
+
+f();
+int var3 = 3;
+(void)var3;
 (void)var1;
 """)
 

@@ -1342,7 +1342,9 @@ const char* ToString(ax::mojom::DefaultActionVerb default_action_verb) {
     case ax::mojom::DefaultActionVerb::kClick:
       return "click";
     case ax::mojom::DefaultActionVerb::kClickAncestor:
-      return "clickAncestor";
+      // Some screen readers, such as Jaws, expect the following spelling of
+      // this verb.
+      return "click-ancestor";
     case ax::mojom::DefaultActionVerb::kJump:
       return "jump";
     case ax::mojom::DefaultActionVerb::kOpen:
@@ -1358,6 +1360,33 @@ const char* ToString(ax::mojom::DefaultActionVerb default_action_verb) {
   return "";
 }
 
+std::string ToLocalizedString(ax::mojom::DefaultActionVerb action_verb) {
+  switch (action_verb) {
+    case ax::mojom::DefaultActionVerb::kNone:
+      return "";
+    case ax::mojom::DefaultActionVerb::kActivate:
+      return l10n_util::GetStringUTF8(IDS_AX_ACTIVATE_ACTION_VERB);
+    case ax::mojom::DefaultActionVerb::kCheck:
+      return l10n_util::GetStringUTF8(IDS_AX_CHECK_ACTION_VERB);
+    case ax::mojom::DefaultActionVerb::kClick:
+      return l10n_util::GetStringUTF8(IDS_AX_CLICK_ACTION_VERB);
+    case ax::mojom::DefaultActionVerb::kClickAncestor:
+      return l10n_util::GetStringUTF8(IDS_AX_CLICK_ANCESTOR_ACTION_VERB);
+    case ax::mojom::DefaultActionVerb::kJump:
+      return l10n_util::GetStringUTF8(IDS_AX_JUMP_ACTION_VERB);
+    case ax::mojom::DefaultActionVerb::kOpen:
+      return l10n_util::GetStringUTF8(IDS_AX_OPEN_ACTION_VERB);
+    case ax::mojom::DefaultActionVerb::kPress:
+      return l10n_util::GetStringUTF8(IDS_AX_PRESS_ACTION_VERB);
+    case ax::mojom::DefaultActionVerb::kSelect:
+      return l10n_util::GetStringUTF8(IDS_AX_SELECT_ACTION_VERB);
+    case ax::mojom::DefaultActionVerb::kUncheck:
+      return l10n_util::GetStringUTF8(IDS_AX_UNCHECK_ACTION_VERB);
+  }
+
+  return "";
+}
+
 ax::mojom::DefaultActionVerb ParseDefaultActionVerb(
     const char* default_action_verb) {
   if (0 == strcmp(default_action_verb, "none"))
@@ -1368,7 +1397,9 @@ ax::mojom::DefaultActionVerb ParseDefaultActionVerb(
     return ax::mojom::DefaultActionVerb::kCheck;
   if (0 == strcmp(default_action_verb, "click"))
     return ax::mojom::DefaultActionVerb::kClick;
-  if (0 == strcmp(default_action_verb, "clickAncestor"))
+  // Some screen readers, such as Jaws, expect the following spelling of this
+  // verb.
+  if (0 == strcmp(default_action_verb, "click-ancestor"))
     return ax::mojom::DefaultActionVerb::kClickAncestor;
   if (0 == strcmp(default_action_verb, "jump"))
     return ax::mojom::DefaultActionVerb::kJump;
@@ -1381,31 +1412,6 @@ ax::mojom::DefaultActionVerb ParseDefaultActionVerb(
   if (0 == strcmp(default_action_verb, "uncheck"))
     return ax::mojom::DefaultActionVerb::kUncheck;
   return ax::mojom::DefaultActionVerb::kNone;
-}
-
-base::string16 ToLocalizedString(ax::mojom::DefaultActionVerb action_verb) {
-  switch (action_verb) {
-    case ax::mojom::DefaultActionVerb::kNone:
-      return base::string16();
-    case ax::mojom::DefaultActionVerb::kActivate:
-      return l10n_util::GetStringUTF16(IDS_AX_ACTIVATE_ACTION_VERB);
-    case ax::mojom::DefaultActionVerb::kCheck:
-      return l10n_util::GetStringUTF16(IDS_AX_CHECK_ACTION_VERB);
-    case ax::mojom::DefaultActionVerb::kClick:
-      return l10n_util::GetStringUTF16(IDS_AX_CLICK_ACTION_VERB);
-    case ax::mojom::DefaultActionVerb::kClickAncestor:
-      return l10n_util::GetStringUTF16(IDS_AX_CLICK_ANCESTOR_ACTION_VERB);
-    case ax::mojom::DefaultActionVerb::kJump:
-      return l10n_util::GetStringUTF16(IDS_AX_JUMP_ACTION_VERB);
-    case ax::mojom::DefaultActionVerb::kOpen:
-      return l10n_util::GetStringUTF16(IDS_AX_OPEN_ACTION_VERB);
-    case ax::mojom::DefaultActionVerb::kPress:
-      return l10n_util::GetStringUTF16(IDS_AX_PRESS_ACTION_VERB);
-    case ax::mojom::DefaultActionVerb::kSelect:
-      return l10n_util::GetStringUTF16(IDS_AX_SELECT_ACTION_VERB);
-    case ax::mojom::DefaultActionVerb::kUncheck:
-      return l10n_util::GetStringUTF16(IDS_AX_UNCHECK_ACTION_VERB);
-  }
 }
 
 const char* ToString(ax::mojom::Mutation mutation) {
@@ -2906,20 +2912,6 @@ ax::mojom::ImageAnnotationStatus ParseImageAnnotationStatus(
   return ax::mojom::ImageAnnotationStatus::kNone;
 }
 
-ax::mojom::Dropeffect ParseDropeffect(const char* dropeffect) {
-  if (0 == strcmp(dropeffect, "copy"))
-    return ax::mojom::Dropeffect::kCopy;
-  if (0 == strcmp(dropeffect, "execute"))
-    return ax::mojom::Dropeffect::kExecute;
-  if (0 == strcmp(dropeffect, "link"))
-    return ax::mojom::Dropeffect::kLink;
-  if (0 == strcmp(dropeffect, "move"))
-    return ax::mojom::Dropeffect::kMove;
-  if (0 == strcmp(dropeffect, "popup"))
-    return ax::mojom::Dropeffect::kPopup;
-  return ax::mojom::Dropeffect::kNone;
-}
-
 const char* ToString(ax::mojom::Dropeffect dropeffect) {
   switch (dropeffect) {
     case ax::mojom::Dropeffect::kCopy:
@@ -2937,6 +2929,20 @@ const char* ToString(ax::mojom::Dropeffect dropeffect) {
   }
 
   return "";
+}
+
+ax::mojom::Dropeffect ParseDropeffect(const char* dropeffect) {
+  if (0 == strcmp(dropeffect, "copy"))
+    return ax::mojom::Dropeffect::kCopy;
+  if (0 == strcmp(dropeffect, "execute"))
+    return ax::mojom::Dropeffect::kExecute;
+  if (0 == strcmp(dropeffect, "link"))
+    return ax::mojom::Dropeffect::kLink;
+  if (0 == strcmp(dropeffect, "move"))
+    return ax::mojom::Dropeffect::kMove;
+  if (0 == strcmp(dropeffect, "popup"))
+    return ax::mojom::Dropeffect::kPopup;
+  return ax::mojom::Dropeffect::kNone;
 }
 
 }  // namespace ui

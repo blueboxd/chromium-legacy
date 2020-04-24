@@ -12,58 +12,122 @@
   </outputs>
   <release seq="1">
     <includes>
-      <include name="IDR_NEW_TAB_PAGE_NEW_TAB_PAGE_JS"
-          file="new_tab_page.js" type="BINDATA" compress="false" />
+      <include name="IDR_NEW_TAB_PAGE_SKCOLOR_MOJO_LITE_JS"
+          file="${root_gen_dir}/skia/public/mojom/skcolor.mojom-lite.js"
+          use_base_dir="false" type="BINDATA" compress="gzip" />
+      <include name="IDR_NEW_TAB_PAGE_MOJO_LITE_JS"
+          file="${root_gen_dir}/chrome/browser/ui/webui/new_tab_page/new_tab_page.mojom-lite.js"
+          use_base_dir="false" type="BINDATA" compress="gzip" />
       <include name="IDR_NEW_TAB_PAGE_APP_JS"
           file="${root_gen_dir}/chrome/browser/resources/new_tab_page/app.js"
-          use_base_dir="false" type="BINDATA" compress="false" />
+          use_base_dir="false" type="BINDATA" compress="gzip" />
       <include name="IDR_NEW_TAB_PAGE_MOST_VISITED_JS"
           file="${root_gen_dir}/chrome/browser/resources/new_tab_page/most_visited.js"
-          use_base_dir="false" type="BINDATA" compress="false" />
+          use_base_dir="false" type="BINDATA" compress="gzip" />
       <include name="IDR_NEW_TAB_PAGE_CUSTOMIZE_DIALOG_JS"
           file="${root_gen_dir}/chrome/browser/resources/new_tab_page/customize_dialog.js"
-          use_base_dir="false" type="BINDATA" compress="false" />
+          use_base_dir="false" type="BINDATA" compress="gzip" />
       <include name="IDR_NEW_TAB_PAGE_VOICE_SEARCH_OVERLAY_JS"
           file="${root_gen_dir}/chrome/browser/resources/new_tab_page/voice_search_overlay.js"
-          use_base_dir="false" type="BINDATA" compress="false" />
+          use_base_dir="false" type="BINDATA" compress="gzip" />
       <include name="IDR_NEW_TAB_PAGE_CUSTOMIZE_BACKGROUNDS_JS"
           file="${root_gen_dir}/chrome/browser/resources/new_tab_page/customize_backgrounds.js"
-          use_base_dir="false" type="BINDATA" compress="false" />
+          use_base_dir="false" type="BINDATA" compress="gzip" />
       <include name="IDR_NEW_TAB_PAGE_CUSTOMIZE_SHORTCUTS_JS"
           file="${root_gen_dir}/chrome/browser/resources/new_tab_page/customize_shortcuts.js"
-          use_base_dir="false" type="BINDATA" compress="false" />
+          use_base_dir="false" type="BINDATA" compress="gzip" />
       <include name="IDR_NEW_TAB_PAGE_CUSTOMIZE_THEMES_JS"
           file="${root_gen_dir}/chrome/browser/resources/new_tab_page/customize_themes.js"
-          use_base_dir="false" type="BINDATA" compress="false" />
+          use_base_dir="false" type="BINDATA" compress="gzip" />
       <include name="IDR_NEW_TAB_PAGE_THEME_ICON_JS"
           file="${root_gen_dir}/chrome/browser/resources/new_tab_page/theme_icon.js"
-          use_base_dir="false" type="BINDATA" compress="false" />
+          use_base_dir="false" type="BINDATA" compress="gzip" />
       <include name="IDR_NEW_TAB_PAGE_GRID_JS"
           file="${root_gen_dir}/chrome/browser/resources/new_tab_page/grid.js"
-          use_base_dir="false" type="BINDATA" compress="false" />
+          use_base_dir="false" type="BINDATA" compress="gzip" />
       <include name="IDR_NEW_TAB_UNTRUSTED_IFRAME_JS"
           file="${root_gen_dir}/chrome/browser/resources/new_tab_page/untrusted_iframe.js"
-          use_base_dir="false" type="BINDATA" compress="false" />
+          use_base_dir="false" type="BINDATA" compress="gzip" />
+      <include name="IDR_NEW_TAB_PAGE_ACCOUNT_CIRCLE_SVG"
+          file="icons/account_circle.svg" type="BINDATA" compress="gzip" />
+      <include name="IDR_NEW_TAB_PAGE_BRUSH_ICON_SVG"
+          file="icons/brush.svg" type="BINDATA" compress="gzip" />
+      <include name="IDR_NEW_TAB_PAGE_CHECK_CIRCLE_SVG"
+          file="icons/check_circle.svg" type="BINDATA" compress="gzip" />
+      <include name="IDR_NEW_TAB_PAGE_GENERIC_GLOBE_SVG"
+          file="icons/generic_globe.svg" type="BINDATA" compress="gzip" />
+      <include name="IDR_NEW_TAB_PAGE_PENCIL_ICON_SVG"
+          file="icons/icon_pencil.svg" type="BINDATA" compress="gzip" />
+      <include name="IDR_NEW_TAB_PAGE_LINK_ICON_SVG"
+          file="icons/link.svg" type="BINDATA" compress="gzip" />
+      <include name="IDR_NEW_TAB_PAGE_BACKGROUNDS_ICON_SVG"
+          file="icons/backgrounds.svg" type="BINDATA" compress="gzip" />
+      <include name="IDR_NEW_TAB_PAGE_COLORED_HEADER_SVG"
+          file="icons/colored_header.svg" type="BINDATA" compress="gzip" />
+      <include name="IDR_NEW_TAB_PAGE_COLORS_ICON_SVG"
+          file="icons/colors.svg" type="BINDATA" compress="gzip" />
+      <include name="IDR_NEW_TAB_PAGE_COLORIZE_ICON_SVG"
+          file="icons/colorize.svg" type="BINDATA" compress="gzip" />
+      <include name="IDR_NEW_TAB_PAGE_SHORTCUT_CIRCLES_SVG"
+          file="icons/shortcut_circles.svg" type="BINDATA" compress="gzip" />
+      <include name="IDR_NEW_TAB_PAGE_GOOGLE_MIC_SVG"
+          file="icons/googlemic_clr_24px.svg" type="BINDATA" compress="gzip" />
+      <include name="IDR_NEW_TAB_PAGE_MIC_SVG"
+          file="icons/mic.svg" type="BINDATA" compress="gzip" />
+      <include name="IDR_NEW_TAB_PAGE_LINK_SVG"
+          file="icons/link.svg" type="BINDATA" compress="gzip" />
+      <include name="IDR_NEW_TAB_PAGE_COPY_SVG"
+          file="icons/copy.svg" type="BINDATA" compress="gzip" />
+      <include name="IDR_NEW_TAB_PAGE_FACEBOOK_SVG"
+          file="icons/facebook.svg" type="BINDATA" compress="gzip" />
+      <include name="IDR_NEW_TAB_PAGE_TWITTER_SVG"
+          file="icons/twitter.svg" type="BINDATA" compress="gzip" />
+      <include name="IDR_NEW_TAB_PAGE_MAIL_SVG"
+          file="icons/mail.svg" type="BINDATA" compress="gzip" />
+      <include name="IDR_NEW_TAB_PAGE_UPLOAD_SVG" file="icons/upload.svg"
+          type="BINDATA" compress="gzip" />
       <include name="IDR_NEW_TAB_PAGE_MINI_PAGE_JS"
           file="${root_gen_dir}/chrome/browser/resources/new_tab_page/mini_page.js"
-          use_base_dir="false" type="BINDATA" compress="false" />
+          use_base_dir="false" type="BINDATA" compress="gzip" />
       <include name="IDR_NEW_TAB_PAGE_FAKEBOX_JS"
           file="${root_gen_dir}/chrome/browser/resources/new_tab_page/fakebox.js"
-          use_base_dir="false" type="BINDATA" compress="false" />
+          use_base_dir="false" type="BINDATA" compress="gzip" />
       <include name="IDR_NEW_TAB_PAGE_LOGO_JS"
           file="${root_gen_dir}/chrome/browser/resources/new_tab_page/logo.js"
-          use_base_dir="false" type="BINDATA" compress="false" />
+          use_base_dir="false" type="BINDATA" compress="gzip" />
       <include name="IDR_NEW_TAB_PAGE_DOODLE_SHARE_DIALOG_JS"
           file="${root_gen_dir}/chrome/browser/resources/new_tab_page/doodle_share_dialog.js"
-          use_base_dir="false" type="BINDATA" compress="false" />
+          use_base_dir="false" type="BINDATA" compress="gzip" />
       <include name="IDR_NEW_TAB_PAGE_REALBOX_JS"
           file="${root_gen_dir}/chrome/browser/resources/new_tab_page/realbox.js"
-          use_base_dir="false" type="BINDATA" compress="false" />
-      <include name="IDR_NEW_TAB_PAGE_BROWSER_PROXY_JS"
-          file="browser_proxy.js" type="BINDATA" compress="false" />
-      <include name="IDR_NEW_TAB_PAGE_UTILS_JS"
-          file="utils.js" type="BINDATA" compress="false" />
-      <part file="new_tab_page_resources_common.grdp" />
+          use_base_dir="false" type="BINDATA" compress="gzip" />
     </includes>
+    <structures>
+      <structure name="IDR_NEW_TAB_PAGE_NEW_TAB_PAGE_HTML"
+          file="new_tab_page.html" type="chrome_html" compress="gzip" />
+      <structure name="IDR_NEW_TAB_PAGE_SHARED_VARS_CSS"
+          file="shared_vars.css" type="chrome_html" compress="gzip" />
+      <structure name="IDR_NEW_TAB_PAGE_BROWSER_PROXY_JS"
+          file="browser_proxy.js" type="chrome_html" compress="gzip" />
+      <structure name="IDR_NEW_TAB_PAGE_UTILS_JS"
+          file="utils.js" type="chrome_html" compress="gzip" />
+      <structure name="IDR_NEW_TAB_PAGE_UNTRUSTED_ONE_GOOGLE_BAR_HTML"
+          file="untrusted/one_google_bar.html" type="chrome_html"
+          compress="gzip" />
+      <structure name="IDR_NEW_TAB_PAGE_UNTRUSTED_ONE_GOOGLE_BAR_JS"
+          file="untrusted/one_google_bar.js" type="chrome_html"
+          compress="gzip" />
+      <structure name="IDR_NEW_TAB_PAGE_UNTRUSTED_PROMO_HTML"
+          file="untrusted/promo.html" type="chrome_html" compress="gzip" />
+      <structure name="IDR_NEW_TAB_PAGE_UNTRUSTED_PROMO_JS"
+          file="untrusted/promo.js" type="chrome_html" compress="gzip" />
+      <structure name="IDR_NEW_TAB_PAGE_UNTRUSTED_IMAGE_HTML"
+          file="untrusted/image.html" type="chrome_html" compress="gzip" />
+      <structure name="IDR_NEW_TAB_PAGE_UNTRUSTED_BACKGROUND_IMAGE_HTML"
+          file="untrusted/background_image.html" type="chrome_html"
+          compress="gzip" />
+      <structure name="IDR_NEW_TAB_PAGE_UNTRUSTED_IFRAME_HTML"
+          file="untrusted/iframe.html" type="chrome_html" compress="gzip" />
+    </structures>
   </release>
 </grit>

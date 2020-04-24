@@ -24,14 +24,6 @@
 #include "net/dns/public/resolve_error_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(TOOLKIT_VIEWS)
-#include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/toolbar/browser_app_menu_button.h"
-#include "chrome/browser/ui/views/toolbar/toolbar_view.h"
-#include "ui/views/bubble/bubble_dialog_delegate_view.h"
-#include "ui/views/view.h"
-#endif
-
 namespace {
 
 class InProcessBrowserTestP
@@ -134,58 +126,5 @@ IN_PROC_BROWSER_TEST_F(SingleProcessBrowserTest, MAYBE_Test) {
 }
 
 #endif
-
-#if defined(TOOLKIT_VIEWS)
-
-namespace {
-
-class LayoutTrackingView : public views::View {
- public:
-  LayoutTrackingView() = default;
-  ~LayoutTrackingView() override = default;
-
-  void ResetLayoutCount() { layout_count_ = 0; }
-  int layout_count() const { return layout_count_; }
-
-  // views::View:
-  void Layout() override {
-    ++layout_count_;
-    views::View::Layout();
-  }
-
- private:
-  int layout_count_ = 0;
-};
-
-}  // namespace
-
-IN_PROC_BROWSER_TEST_F(InProcessBrowserTest,
-                       RunsScheduledLayoutOnAnchoredBubbles) {
-  views::View* const anchor_view =
-      BrowserView::GetBrowserViewForBrowser(browser())
-          ->toolbar()
-          ->app_menu_button();
-
-  // Temporarily owned.
-  views::BubbleDialogDelegateView* const bubble =
-      new views::BubbleDialogDelegateView(anchor_view,
-                                          views::BubbleBorder::TOP_RIGHT);
-  LayoutTrackingView* layout_tracker =
-      bubble->AddChildView(std::make_unique<LayoutTrackingView>());
-
-  // Takes ownership.
-  views::Widget* const bubble_widget =
-      views::BubbleDialogDelegateView::CreateBubble(bubble);
-  bubble_widget->Show();
-
-  layout_tracker->ResetLayoutCount();
-  layout_tracker->InvalidateLayout();
-  EXPECT_EQ(layout_tracker->layout_count(), 0);
-
-  RunScheduledLayouts();
-  EXPECT_GT(layout_tracker->layout_count(), 0);
-}
-
-#endif  // defined(TOOLKIT_VIEWS)
 
 }  // namespace

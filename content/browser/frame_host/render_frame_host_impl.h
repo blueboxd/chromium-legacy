@@ -111,6 +111,7 @@
 #include "third_party/blink/public/mojom/notifications/notification_service.mojom-forward.h"
 #include "third_party/blink/public/mojom/payments/payment_app.mojom.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom.h"
+#include "third_party/blink/public/mojom/popup/popup.mojom.h"
 #include "third_party/blink/public/mojom/portal/portal.mojom-forward.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom.h"
@@ -147,9 +148,6 @@
 
 class GURL;
 struct FrameHostMsg_OpenURL_Params;
-#if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
-struct FrameHostMsg_ShowPopup_Params;
-#endif
 
 namespace blink {
 class AssociatedInterfaceProvider;
@@ -779,17 +777,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void set_no_create_browser_accessibility_manager_for_testing(bool flag) {
     no_create_browser_accessibility_manager_for_testing_ = flag;
   }
-
-#if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
-#if defined(OS_MACOSX)
-  // Select popup menu related methods (for external popup menus).
-  void DidSelectPopupMenuItem(int selected_index);
-  void DidCancelPopupMenu();
-#else
-  void DidSelectPopupMenuItems(const std::vector<int>& selected_indices);
-  void DidCancelPopupMenu();
-#endif
-#endif
 
   // Indicates that a navigation is ready to commit and can be
   // handled by this RenderFrame.
@@ -1441,6 +1428,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void DownloadURL(blink::mojom::DownloadURLParamsPtr params) override;
   void FocusedElementChanged(bool is_editable_element,
                              const gfx::Rect& bounds_in_frame_widget) override;
+  void ShowExternalPopup(mojo::PendingRemote<blink::mojom::ExternalPopup> popup,
+                         const gfx::Rect& bounds,
+                         int32_t item_height,
+                         double font_size,
+                         int32_t selected_item,
+                         std::vector<blink::mojom::MenuItemPtr> menu_items,
+                         bool right_aligned,
+                         bool allow_multiple_selection) override;
 
   // blink::LocalMainFrameHost overrides:
   void ScaleFactorChanged(float scale) override;
@@ -1654,10 +1649,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const url::Origin& frame_origin,
       net::IsolationInfo::RedirectMode redirect_mode) const;
 
-#if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
-  void OnShowPopup(const FrameHostMsg_ShowPopup_Params& params);
-  void OnHidePopup();
-#endif
 #if defined(OS_ANDROID)
   void ForwardGetInterfaceToRenderFrame(const std::string& interface_name,
                                         mojo::ScopedMessagePipeHandle pipe);

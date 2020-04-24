@@ -1897,6 +1897,11 @@
           'gtest_tests': 'network_service_android_gtests',
         },
       },
+      'chromeos-amd64-generic-lacros-rel': {
+        'additional_compile_targets': [
+          'chrome',
+        ],
+      },
       'chromeos-amd64-generic-rel-vm-tests': {
         'additional_compile_targets': [
           'chromiumos_preflight',
@@ -1915,11 +1920,6 @@
           'hard_timeout': 3600,
           'io_timeout': 3600,
         },
-      },
-      'chromeos-eve-lacros-rel': {
-        'additional_compile_targets': [
-          'chrome',
-        ],
       },
       'chromeos-kevin-rel-hw-tests': {
         'additional_compile_targets': [

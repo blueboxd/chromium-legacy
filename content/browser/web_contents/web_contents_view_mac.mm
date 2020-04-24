@@ -283,23 +283,20 @@ void WebContentsViewMac::ShowContextMenu(
 
 void WebContentsViewMac::ShowPopupMenu(
     RenderFrameHost* render_frame_host,
+    mojo::PendingRemote<blink::mojom::ExternalPopup> popup,
     const gfx::Rect& bounds,
     int item_height,
     double item_font_size,
     int selected_item,
-    const std::vector<MenuItem>& items,
+    std::vector<blink::mojom::MenuItemPtr> menu_items,
     bool right_aligned,
     bool allow_multiple_selection) {
-  popup_menu_helper_.reset(new PopupMenuHelper(this, render_frame_host));
+  popup_menu_helper_.reset(
+      new PopupMenuHelper(this, render_frame_host, std::move(popup)));
   popup_menu_helper_->ShowPopupMenu(bounds, item_height, item_font_size,
-                                    selected_item, items, right_aligned,
-                                    allow_multiple_selection);
+                                    selected_item, std::move(menu_items),
+                                    right_aligned, allow_multiple_selection);
   // Note: |this| may be deleted here.
-}
-
-void WebContentsViewMac::HidePopupMenu() {
-  if (popup_menu_helper_)
-    popup_menu_helper_->Hide();
 }
 
 void WebContentsViewMac::OnMenuClosed() {

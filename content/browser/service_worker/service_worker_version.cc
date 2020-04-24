@@ -1469,8 +1469,7 @@ void ServiceWorkerVersion::FocusClient(const std::string& client_uuid,
     receiver_.reset();
     return;
   }
-  if (container_host->client_type() !=
-      blink::mojom::ServiceWorkerClientType::kWindow) {
+  if (!container_host->IsContainerForWindowClient()) {
     // focus() should be called only for WindowClient.
     mojo::ReportBadMessage(
         "Received WindowClient#focus() request for a non-window client.");
@@ -1524,8 +1523,7 @@ void ServiceWorkerVersion::NavigateClient(const std::string& client_uuid,
     receiver_.reset();
     return;
   }
-  if (container_host->client_type() !=
-      blink::mojom::ServiceWorkerClientType::kWindow) {
+  if (!container_host->IsContainerForWindowClient()) {
     // navigate() should be called only for WindowClient.
     mojo::ReportBadMessage(
         "Received WindowClient#navigate() request for a non-window client.");

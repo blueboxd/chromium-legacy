@@ -1,16 +1,67 @@
-<style>
-  #entryList {
-    padding-inline-start: 10%;
-    padding-inline-end: 10%;
+<style include="print-management-shared">
+  html {
+    background-color: var(--cros-default-bg-color);
+  }
+
+  .main-container {
+    @apply --cr-centered-card-container;
+    max-width: 960px;
+  }
+
+  #columnHeaders {
+    align-items: center;
+    display: flex;
+    color: var(--google-grey-700);
+    min-height: var(--cr-section-min-height);
+  }
+
+  #headerContainer {
+    border-bottom: var(--cr-separator-line);
+    padding-bottom: 20px;
+    padding-top: 64px;
+  }
+
+  h1 {
+    font-size: 200%;
+    font-weight: 500;
+    margin-bottom: 0px;
+    margin-top: 0px;
   }
 </style>
 
-<div id="header"></div>
+<div class="main-container">
+  <div id="headerContainer">
+    <h1>[[i18n('printJobTitle')]]</h1>
+  </div>
 
-<iron-list id="entryList" items="[[printJobs_]]" role="grid">
-  <template>
-    <div role="row" tabindex$="[[tabIndex]]">
-      <print-job-entry job-entry="[[item]]"></print-job-entry>
+  <div id="columnHeaders"
+      aria-labeledby="fileNameColumn printerNameColumn dateColumn statusColumn">
+    <div id="fileNameColumn" class="long-text overflow-ellipsis"
+        aria-hidden="true">
+      [[i18n('fileNameColumn')]]
     </div>
-  </template>
-</iron-list>
+    <div id="printerNameColumn" class="long-text overflow-ellipsis padded-left"
+        aria-hidden="true">
+      [[i18n('printerNameColumn')]]
+    </div>
+    <div id="dateColumn" class="short-text overflow-ellipsis padded-left"
+        aria-hidden="true">
+      [[i18n('dateColumn')]]
+    </div>
+    <div id="statusColumn" class="short-text overflow-ellipsis padded-left"
+        aria-hidden="true">
+      [[i18n('statusColumn')]]
+    </div>
+  </div>
+
+  <iron-list id="entryList" items="[[printJobs_]]" role="grid">
+    <template>
+      <div role="row">
+        <print-job-entry job-entry="[[item]]" tabindex$="[[tabIndex]]"
+            last-focused="{{lastFocused_}}" list-blurred="{{listBlurred_}}"
+            focus-row-index="[[index]]" iron-list-tab-index="[[tabIndex]]">
+        </print-job-entry>
+      </div>
+    </template>
+  </iron-list>
+</div>

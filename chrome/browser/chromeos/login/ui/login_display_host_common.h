@@ -37,6 +37,7 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
   // LoginDisplayHost:
   void BeforeSessionStart() final;
   void Finalize(base::OnceClosure completion_callback) final;
+  void FinalizeImmediately() final;
   AppLaunchController* GetAppLaunchController() final;
   void StartUserAdding(base::OnceClosure completion_callback) final;
   void StartSignInScreen() final;
@@ -105,6 +106,8 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
   content::NotificationRegistrar registrar_;
 
  private:
+  void Cleanup();
+
   // True if session start is in progress.
   bool session_starting_ = false;
 

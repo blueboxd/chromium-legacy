@@ -5,9 +5,9 @@
 #include "third_party/blink/renderer/modules/webgpu/gpu_queue.h"
 
 #include "gpu/command_buffer/client/webgpu_interface.h"
-#include "third_party/blink/renderer/bindings/modules/v8/unsigned_long_sequence_or_gpu_extent_3d_dict.h"
-#include "third_party/blink/renderer/bindings/modules/v8/unsigned_long_sequence_or_gpu_origin_2d_dict.h"
-#include "third_party/blink/renderer/bindings/modules/v8/unsigned_long_sequence_or_gpu_origin_3d_dict.h"
+#include "third_party/blink/renderer/bindings/modules/v8/unsigned_long_enforce_range_sequence_or_gpu_extent_3d_dict.h"
+#include "third_party/blink/renderer/bindings/modules/v8/unsigned_long_enforce_range_sequence_or_gpu_origin_2d_dict.h"
+#include "third_party/blink/renderer/bindings/modules/v8/unsigned_long_enforce_range_sequence_or_gpu_origin_3d_dict.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_command_buffer_descriptor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_fence_descriptor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_image_bitmap_copy_view.h"
@@ -27,14 +27,14 @@ namespace blink {
 namespace {
 
 WGPUOrigin3D GPUOrigin2DToWGPUOrigin3D(
-    const UnsignedLongSequenceOrGPUOrigin2DDict* webgpu_origin) {
+    const UnsignedLongEnforceRangeSequenceOrGPUOrigin2DDict* webgpu_origin) {
   DCHECK(webgpu_origin);
 
   WGPUOrigin3D dawn_origin = {};
 
-  if (webgpu_origin->IsUnsignedLongSequence()) {
+  if (webgpu_origin->IsUnsignedLongEnforceRangeSequence()) {
     const Vector<uint32_t>& webgpu_origin_sequence =
-        webgpu_origin->GetAsUnsignedLongSequence();
+        webgpu_origin->GetAsUnsignedLongEnforceRangeSequence();
     DCHECK_EQ(webgpu_origin_sequence.size(), 3UL);
     dawn_origin.x = webgpu_origin_sequence[0];
     dawn_origin.y = webgpu_origin_sequence[1];
@@ -99,7 +99,7 @@ GPUFence* GPUQueue::createFence(const GPUFenceDescriptor* descriptor) {
 void GPUQueue::copyImageBitmapToTexture(
     GPUImageBitmapCopyView* source,
     GPUTextureCopyView* destination,
-    UnsignedLongSequenceOrGPUExtent3DDict& copy_size,
+    UnsignedLongEnforceRangeSequenceOrGPUExtent3DDict& copy_size,
     ExceptionState& exception_state) {
   if (!source->imageBitmap()) {
     exception_state.ThrowTypeError("No valid imageBitmap");

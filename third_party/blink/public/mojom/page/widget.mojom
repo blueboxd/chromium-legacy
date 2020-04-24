@@ -24,6 +24,10 @@ interface FrameWidgetHost {
   AnimateDoubleTapZoomInMainFrame(
                     gfx.mojom.Point tap_point,
                     gfx.mojom.Rect rect_to_zoom);
+
+  // Sent by a widget to the browser to request a page scale animation in the
+  // main-frame's widget for find-in-page zoom.
+  ZoomToFindInPageRectInMainFrame(gfx.mojom.Rect rect_to_zoom);
 };
 
 // Implemented in Blink, this interface defines widget-specific methods that

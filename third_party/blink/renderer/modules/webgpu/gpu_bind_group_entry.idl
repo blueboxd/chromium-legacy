@@ -7,6 +7,6 @@
 typedef (GPUSampler or GPUTextureView or GPUBufferBinding) GPUBindingResource;
 
 dictionary GPUBindGroupEntry {
-    required unsigned long binding;
+    required GPUIndex32 binding;
     required GPUBindingResource resource;
 };

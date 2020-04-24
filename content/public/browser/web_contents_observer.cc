@@ -46,6 +46,19 @@ bool WebContentsObserver::OnMessageReceived(
   return false;
 }
 
+bool WebContentsObserver::ShowPopup(
+    RenderFrameHost* render_frame_host,
+    mojo::PendingRemote<blink::mojom::ExternalPopup>* popup,
+    const gfx::Rect& bounds,
+    int32_t item_height,
+    double font_size,
+    int32_t selected_item,
+    std::vector<blink::mojom::MenuItemPtr>* menu_items,
+    bool right_aligned,
+    bool allow_multiple_selection) {
+  return false;
+}
+
 bool WebContentsObserver::OnMessageReceived(const IPC::Message& message) {
   return false;
 }

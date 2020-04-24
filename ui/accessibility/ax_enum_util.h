@@ -5,7 +5,8 @@
 #ifndef UI_ACCESSIBILITY_AX_ENUM_UTIL_H_
 #define UI_ACCESSIBILITY_AX_ENUM_UTIL_H_
 
-#include "base/strings/string16.h"
+#include <string>
+
 #include "ui/accessibility/ax_base_export.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
 
@@ -35,12 +36,13 @@ AX_BASE_EXPORT ax::mojom::ActionFlags ParseActionFlags(
 // ax::mojom::DefaultActionVerb
 AX_BASE_EXPORT const char* ToString(
     ax::mojom::DefaultActionVerb default_action_verb);
-AX_BASE_EXPORT ax::mojom::DefaultActionVerb ParseDefaultActionVerb(
-    const char* default_action_verb);
 
 // Returns a localized string that corresponds to the name of the given action.
-AX_BASE_EXPORT base::string16 ToLocalizedString(
+AX_BASE_EXPORT std::string ToLocalizedString(
     ax::mojom::DefaultActionVerb action_verb);
+
+AX_BASE_EXPORT ax::mojom::DefaultActionVerb ParseDefaultActionVerb(
+    const char* default_action_verb);
 
 // ax::mojom::Mutation
 AX_BASE_EXPORT const char* ToString(ax::mojom::Mutation mutation);

@@ -464,7 +464,7 @@ void ArcSessionImpl::OnMiniInstanceStarted(bool result) {
 
   if (stop_requested_) {
     // The ARC instance has started to run. Request to stop.
-    StopArcInstance(/*on_shutdown=*/false, /*backup_log=*/false);
+    StopArcInstance(/*on_shutdown=*/false, /*should_backup_log=*/false);
     return;
   }
 
@@ -488,12 +488,12 @@ void ArcSessionImpl::OnFreeDiskSpace(int64_t space) {
   // Ensure there's sufficient space on disk for the container.
   if (space == -1) {
     LOG(ERROR) << "Could not determine free disk space";
-    StopArcInstance(/*on_shutdown=*/false, /*backup_log=*/false);
+    StopArcInstance(/*on_shutdown=*/false, /*should_backup_log=*/false);
     return;
   } else if (space < kMinimumFreeDiskSpaceBytes) {
     VLOG(1) << "There is not enough disk space to start the ARC container";
     insufficient_disk_space_ = true;
-    StopArcInstance(/*on_shutdown=*/false, /*backup_log=*/false);
+    StopArcInstance(/*on_shutdown=*/false, /*should_backup_log=*/false);
     return;
   }
 
@@ -508,13 +508,13 @@ void ArcSessionImpl::OnSocketCreated(base::ScopedFD socket_fd) {
   if (stop_requested_) {
     // The ARC instance has started to run. Request to stop.
     VLOG(1) << "Stop() called while creating socket";
-    StopArcInstance(/*on_shutdown=*/false, /*backup_log=*/false);
+    StopArcInstance(/*on_shutdown=*/false, /*should_backup_log=*/false);
     return;
   }
 
   if (!socket_fd.is_valid()) {
     LOG(ERROR) << "ARC: Error creating socket";
-    StopArcInstance(/*on_shutdown=*/false, /*backup_log=*/false);
+    StopArcInstance(/*on_shutdown=*/false, /*should_backup_log=*/false);
     return;
   }
 
@@ -538,7 +538,7 @@ void ArcSessionImpl::OnUpgraded(base::ScopedFD socket_fd, bool result) {
 
   if (stop_requested_) {
     // The ARC instance has started to run. Request to stop.
-    StopArcInstance(/*on_shutdown=*/false, /*backup_log=*/false);
+    StopArcInstance(/*on_shutdown=*/false, /*should_backup_log=*/false);
     return;
   }
 
@@ -549,7 +549,7 @@ void ArcSessionImpl::OnUpgraded(base::ScopedFD socket_fd, bool result) {
                                            weak_factory_.GetWeakPtr()));
   if (!accept_cancel_pipe_.is_valid()) {
     // Failed to post a task to accept() the request.
-    StopArcInstance(/*on_shutdown=*/false, /*backup_log=*/false);
+    StopArcInstance(/*on_shutdown=*/false, /*should_backup_log=*/false);
     return;
   }
 }
@@ -561,16 +561,16 @@ void ArcSessionImpl::OnMojoConnected(
   accept_cancel_pipe_.reset();
 
   if (stop_requested_) {
-    StopArcInstance(/*on_shutdown=*/false, /*backup_log=*/false);
+    StopArcInstance(/*on_shutdown=*/false, /*should_backup_log=*/false);
     return;
   }
 
   if (!arc_bridge_host.get()) {
     LOG(ERROR) << "Invalid pipe.";
     // If we can't establish the connection with ARC bridge, it could
-    // be a problem inside ARC thus setting |backup_log| to back up log
+    // be a problem inside ARC thus setting |should_backup_log| to back up log
     // before container is shutdown.
-    StopArcInstance(/*on_shutdown=*/false, /*backup_log*/ true);
+    StopArcInstance(/*on_shutdown=*/false, /*should_backup_log*/ true);
     return;
   }
   arc_bridge_host_ = std::move(arc_bridge_host);
@@ -619,7 +619,7 @@ void ArcSessionImpl::Stop() {
     case State::RUNNING_MINI_INSTANCE:
     case State::RUNNING_FULL_INSTANCE:
       // An ARC {mini,full} instance is running. Request to stop it.
-      StopArcInstance(/*on_shutdown=*/false, /*backup_log=*/false);
+      StopArcInstance(/*on_shutdown=*/false, /*should_backup_log=*/false);
       return;
 
     case State::CONNECTING_MOJO:
@@ -635,7 +635,7 @@ void ArcSessionImpl::Stop() {
   }
 }
 
-void ArcSessionImpl::StopArcInstance(bool on_shutdown, bool backup_log) {
+void ArcSessionImpl::StopArcInstance(bool on_shutdown, bool should_backup_log) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(state_ == State::WAITING_FOR_LCD_DENSITY ||
          state_ == State::WAITING_FOR_NUM_CORES ||
@@ -649,7 +649,7 @@ void ArcSessionImpl::StopArcInstance(bool on_shutdown, bool backup_log) {
 
   // When the instance is full instance, change the |state_| in
   // ArcInstanceStopped().
-  client_->StopArcInstance(on_shutdown, backup_log);
+  client_->StopArcInstance(on_shutdown, should_backup_log);
 }
 
 void ArcSessionImpl::ArcInstanceStopped() {
@@ -717,7 +717,7 @@ void ArcSessionImpl::OnShutdown() {
       state_ == State::STARTING_FULL_INSTANCE ||
       state_ == State::CONNECTING_MOJO ||
       state_ == State::RUNNING_FULL_INSTANCE) {
-    StopArcInstance(/*on_shutdown=*/true, /*backup_log*/ false);
+    StopArcInstance(/*on_shutdown=*/true, /*should_backup_log*/ false);
   }
 
   // Directly set to the STOPPED state by OnStopped(). Note that calling

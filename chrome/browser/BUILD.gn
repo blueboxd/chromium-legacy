@@ -3414,8 +3414,6 @@ jumbo_static_library("browser") {
       "profile_resetter/triggered_profile_resetter_factory.cc",
       "profile_resetter/triggered_profile_resetter_factory.h",
       "profile_resetter/triggered_profile_resetter_win.cc",
-      "profiles/independent_otr_profile_manager.cc",
-      "profiles/independent_otr_profile_manager.h",
       "profiles/profile_shortcut_manager.cc",
       "profiles/profile_shortcut_manager.h",
       "profiles/profile_window.cc",

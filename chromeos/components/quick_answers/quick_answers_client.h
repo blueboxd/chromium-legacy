@@ -76,6 +76,7 @@ class QuickAnswersClient : public ash::AssistantStateObserver,
   void OnAssistantSettingsEnabled(bool enabled) override;
   void OnAssistantContextEnabled(bool enabled) override;
   void OnLocaleChanged(const std::string& locale) override;
+  void OnAssistantQuickAnswersEnabled(bool enabled) override;
   void OnAssistantStateDestroyed() override;
 
   // ResultLoaderDelegate:
@@ -111,6 +112,7 @@ class QuickAnswersClient : public ash::AssistantStateObserver,
   std::unique_ptr<ResultLoader> result_loader_;
   bool assistant_enabled_ = false;
   bool assistant_context_enabled_ = false;
+  bool quick_answers_settings_enabled_ = false;
   bool locale_supported_ = false;
   ash::mojom::AssistantAllowedState assistant_allowed_state_ =
       ash::mojom::AssistantAllowedState::ALLOWED;

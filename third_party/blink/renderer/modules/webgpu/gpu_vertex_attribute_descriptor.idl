@@ -6,8 +6,8 @@
 
 dictionary GPUVertexAttributeDescriptor {
     required GPUVertexFormat format;
-    required GPUBufferSize offset;
-    required unsigned long shaderLocation;
+    required GPUSize64 offset;
+    required GPUIndex32 shaderLocation;
 };
 
 enum GPUVertexFormat {

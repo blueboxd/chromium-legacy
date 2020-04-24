@@ -10,8 +10,6 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view_android.h"
 #include "content/public/android/content_jni_headers/SelectPopup_jni.h"
-#include "content/public/browser/render_frame_host.h"
-#include "content/public/common/menu_item.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "ui/gfx/geometry/rect_f.h"
 
@@ -54,14 +52,16 @@ SelectPopup::~SelectPopup() {
   if (j_obj.is_null())
     return;
   Java_SelectPopup_onNativeDestroyed(env, j_obj);
+  popup_.reset();
 }
 
-void SelectPopup::ShowMenu(RenderFrameHost* frame,
-                           const gfx::Rect& bounds,
-                           const std::vector<MenuItem>& items,
-                           int selected_item,
-                           bool multiple,
-                           bool right_aligned) {
+void SelectPopup::ShowMenu(
+    mojo::PendingRemote<blink::mojom::ExternalPopup> popup,
+    const gfx::Rect& bounds,
+    std::vector<blink::mojom::MenuItemPtr> items,
+    int selected_item,
+    bool multiple,
+    bool right_aligned) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_obj = java_obj_.get(env);
   if (j_obj.is_null())
@@ -75,7 +75,7 @@ void SelectPopup::ShowMenu(RenderFrameHost* frame,
     std::unique_ptr<jint[]> native_selected_array(new jint[items.size()]);
     size_t selected_count = 0;
     for (size_t i = 0; i < items.size(); ++i) {
-      if (items[i].checked)
+      if (items[i]->checked)
         native_selected_array[selected_count++] = i;
     }
 
@@ -91,14 +91,14 @@ void SelectPopup::ShowMenu(RenderFrameHost* frame,
 
   ScopedJavaLocalRef<jintArray> enabled_array(env,
                                               env->NewIntArray(items.size()));
-  std::vector<base::string16> labels;
+  std::vector<std::string> labels;
   labels.reserve(items.size());
   for (size_t i = 0; i < items.size(); ++i) {
-    labels.push_back(items[i].label);
-    jint enabled = (items[i].type == MenuItem::GROUP
+    labels.push_back(items[i]->label.value_or(""));
+    jint enabled = (items[i]->type == blink::mojom::MenuItem::Type::kGroup
                         ? POPUP_ITEM_TYPE_GROUP
-                        : (items[i].enabled ? POPUP_ITEM_TYPE_ENABLED
-                                            : POPUP_ITEM_TYPE_DISABLED));
+                        : (items[i]->enabled ? POPUP_ITEM_TYPE_ENABLED
+                                             : POPUP_ITEM_TYPE_DISABLED));
     env->SetIntArrayRegion(enabled_array.obj(), i, 1, &enabled);
   }
   ScopedJavaLocalRef<jobjectArray> items_array(
@@ -108,14 +108,19 @@ void SelectPopup::ShowMenu(RenderFrameHost* frame,
   const ScopedJavaLocalRef<jobject> popup_view = popup_view_.view();
   if (popup_view.is_null())
     return;
-  // |bounds| is in physical pixels if --use-zoom-for-dsf is enabled. Otherwise,
-  // it is in DIP pixels.
+
+  popup_.Bind(std::move(popup));
+  popup_.set_disconnect_handler(
+      base::BindOnce(&SelectPopup::HideMenu, base::Unretained(this)));
+
+  // |bounds| is in physical pixels if --use-zoom-for-dsf is enabled.
+  // Otherwise, it is in DIP pixels.
   gfx::RectF bounds_dip = gfx::RectF(bounds);
   if (IsUseZoomForDSFEnabled())
     bounds_dip.Scale(1 / web_contents_->GetNativeView()->GetDipScale());
   view->SetAnchorRect(popup_view, bounds_dip);
   Java_SelectPopup_show(env, j_obj, popup_view,
-                        reinterpret_cast<intptr_t>(frame), items_array,
+                        reinterpret_cast<jlong>(popup_.get()), items_array,
                         enabled_array, multiple, selected_array, right_aligned);
 }
 
@@ -125,23 +130,25 @@ void SelectPopup::HideMenu() {
   if (!j_obj.is_null())
     Java_SelectPopup_hideWithoutCancel(env, j_obj);
   popup_view_.Reset();
+  popup_.reset();
 }
 
 void SelectPopup::SelectMenuItems(JNIEnv* env,
                                   const JavaParamRef<jobject>& obj,
-                                  jlong selectPopupSourceFrame,
+                                  jlong selectPopupDelegate,
                                   const JavaParamRef<jintArray>& indices) {
-  RenderFrameHostImpl* rfhi =
-      reinterpret_cast<RenderFrameHostImpl*>(selectPopupSourceFrame);
-  DCHECK(rfhi);
+  blink::mojom::ExternalPopup* popup_raw_ptr =
+      reinterpret_cast<blink::mojom::ExternalPopup*>(selectPopupDelegate);
+  DCHECK(popup_raw_ptr && popup_.get() == popup_raw_ptr);
+
   if (indices == NULL) {
-    rfhi->DidCancelPopupMenu();
+    popup_->DidCancel();
     return;
   }
 
   std::vector<int> selected_indices;
   base::android::JavaIntArrayToIntVector(env, indices, &selected_indices);
-  rfhi->DidSelectPopupMenuItems(selected_indices);
+  popup_->DidAcceptIndices(selected_indices);
 }
 
 }  // namespace content

@@ -101,6 +101,11 @@ suite('<crostini-installer-app>', () => {
     await clickButton(getCancelButton());
   };
 
+  const diskTicks = [
+    {value: 1, ariaValue: '1', label: '1'},
+    {value: 2, ariaValue: '2', label: '2'}
+  ];
+
   test('installFlow', async () => {
     expectFalse(app.$$('#prompt-message').hidden);
     expectEquals(fakeBrowserProxy.handler.getCallCount('install'), 0);
@@ -110,6 +115,7 @@ suite('<crostini-installer-app>', () => {
     await clickCancel();  // Back to the prompt page.
     expectFalse(app.$$('#prompt-message').hidden);
 
+    fakeBrowserProxy.page.onAmountOfFreeDiskSpace(diskTicks, 0);
     await clickNext();
     expectFalse(app.$$('#configure-message').hidden);
     await clickInstall();
@@ -138,6 +144,7 @@ suite('<crostini-installer-app>', () => {
   });
 
   test('configUsername', async () => {
+    fakeBrowserProxy.page.onAmountOfFreeDiskSpace(diskTicks, 0);
     await clickNext();
 
     expectEquals(
@@ -182,6 +189,7 @@ suite('<crostini-installer-app>', () => {
   });
 
   test('errorCancel', async () => {
+    fakeBrowserProxy.page.onAmountOfFreeDiskSpace(diskTicks, 0);
     await clickNext();
     await clickInstall();
     fakeBrowserProxy.page.onInstallFinished(InstallerError.kErrorOffline);
@@ -198,6 +206,7 @@ suite('<crostini-installer-app>', () => {
   });
 
   test('errorRetry', async () => {
+    fakeBrowserProxy.page.onAmountOfFreeDiskSpace(diskTicks, 0);
     await clickNext();
     await clickInstall();
     fakeBrowserProxy.page.onInstallFinished(InstallerError.kErrorOffline);
@@ -219,6 +228,7 @@ suite('<crostini-installer-app>', () => {
   });
 
   test('cancelAfterStart', async () => {
+    fakeBrowserProxy.page.onAmountOfFreeDiskSpace(diskTicks, 0);
     await clickNext();
     await clickInstall();
     await clickCancel();

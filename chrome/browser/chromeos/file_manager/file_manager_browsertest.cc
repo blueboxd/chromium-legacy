@@ -982,10 +982,14 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
                       TestCase("breadcrumbsRenderShortPath").FilesNg(),
                       TestCase("breadcrumbsEliderButtonHidden").FilesNg(),
                       TestCase("breadcrumbsRenderLongPath").FilesNg(),
+                      TestCase("breadcrumbsMainButtonClick").FilesNg(),
+                      TestCase("breadcrumbsMainButtonEnterKey").FilesNg(),
                       TestCase("breadcrumbsEliderButtonClick").FilesNg(),
                       TestCase("breadcrumbsEliderButtonKeyboard").FilesNg(),
                       TestCase("breadcrumbsEliderMenuClickOutside").FilesNg(),
-                      TestCase("breadcrumbsEliderMenuItemClick").FilesNg()));
+                      TestCase("breadcrumbsEliderMenuItemClick").FilesNg(),
+                      TestCase("breadcrumbsEliderMenuItemTabLeft").FilesNg(),
+                      TestCase("breadcrumbsEliderMenuItemTabRight").FilesNg()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FormatDialog, /* format_dialog.js */

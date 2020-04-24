@@ -18,6 +18,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 
+import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.hasTypefaceSpan;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.hasTypefaceStyle;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.isImportantForAccessibility;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.isTextMaxLines;
@@ -380,5 +381,33 @@ public class AutofillAssistantDetailsUiTest {
                 .check(matches(hasTypefaceStyle(Typeface.BOLD_ITALIC)));
         onView(is(viewHolder.mPriceAttributionView))
                 .check(matches(hasTypefaceStyle(Typeface.BOLD_ITALIC)));
+    }
+
+    @Test
+    @MediumTest
+    public void testStyleSpans() throws Exception {
+        AssistantDetailsModel model = new AssistantDetailsModel();
+        AssistantDetailsCoordinator coordinator = createCoordinator(model);
+        ViewHolder viewHolder = runOnUiThreadBlocking(() -> new ViewHolder(coordinator.getView()));
+
+        runOnUiThreadBlocking(() -> {
+            model.set(AssistantDetailsModel.DETAILS,
+                    new AssistantDetails("<b>title</b>", 1, "image", "hint", null, false,
+                            "<b>Total</b>", "<b>$12</b>", "<b>line 1</b>", "<b>line 2</b>", "",
+                            "<b>line 3</b>", false, false, false, false, false, false));
+        });
+
+        onView(withText("title"))
+                .check(matches(hasTypefaceSpan(0, "title".length() - 1, Typeface.BOLD)));
+        onView(withText("Total"))
+                .check(matches(hasTypefaceSpan(0, "Total".length() - 1, Typeface.BOLD)));
+        onView(withText("$12"))
+                .check(matches(hasTypefaceSpan(0, "$12".length() - 1, Typeface.BOLD)));
+        onView(withText("line 1"))
+                .check(matches(hasTypefaceSpan(0, "line 1".length() - 1, Typeface.BOLD)));
+        onView(withText("line 2"))
+                .check(matches(hasTypefaceSpan(0, "line 2".length() - 1, Typeface.BOLD)));
+        onView(withText("line 3"))
+                .check(matches(hasTypefaceSpan(0, "line 3".length() - 1, Typeface.BOLD)));
     }
 }

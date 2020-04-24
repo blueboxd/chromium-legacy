@@ -171,7 +171,6 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
   virtual const KURL& BaseURL() const = 0;
   virtual KURL CompleteURL(const String& url) const = 0;
   virtual void DisableEval(const String& error_message) = 0;
-  virtual LocalDOMWindow* ExecutingWindow() const { return nullptr; }
   virtual String UserAgent() const = 0;
 
   virtual HttpsState GetHttpsState() const = 0;

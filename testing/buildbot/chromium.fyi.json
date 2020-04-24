@@ -11990,6 +11990,11 @@
       }
     ]
   },
+  "chromeos-amd64-generic-lacros-rel": {
+    "additional_compile_targets": [
+      "chrome"
+    ]
+  },
   "chromeos-amd64-generic-rel-vm-tests": {
     "additional_compile_targets": [
       "chromiumos_preflight"
@@ -12072,11 +12077,6 @@
         "test": "services_unittests",
         "test_target": "//services:services_unittests"
       }
-    ]
-  },
-  "chromeos-eve-lacros-rel": {
-    "additional_compile_targets": [
-      "chrome"
     ]
   },
   "chromeos-kevin-rel-hw-tests": {

@@ -335,14 +335,7 @@ class MediaDialogViewBrowserTest : public InProcessBrowserTest {
                 context, base::BindRepeating(&TestMediaRouter::Create)));
   }
 
-  void LayoutBrowser() {
-    BrowserView::GetBrowserViewForBrowser(browser())
-        ->GetWidget()
-        ->LayoutRootViewIfNecessary();
-  }
-
   MediaToolbarButtonView* GetToolbarIcon() {
-    LayoutBrowser();
     return BrowserView::GetBrowserViewForBrowser(browser())
         ->toolbar()
         ->media_button();
@@ -541,7 +534,6 @@ IN_PROC_BROWSER_TEST_F(MediaDialogViewBrowserTest,
   // Opening a page with media that hasn't played yet should not make the
   // toolbar icon visible.
   OpenTestURL();
-  LayoutBrowser();
   EXPECT_FALSE(IsToolbarIconVisible());
 
   // Once playback starts, the icon should be visible, but the dialog should not
@@ -551,10 +543,6 @@ IN_PROC_BROWSER_TEST_F(MediaDialogViewBrowserTest,
   WaitForVisibleToolbarIcon();
   EXPECT_TRUE(IsToolbarIconVisible());
   EXPECT_FALSE(IsDialogVisible());
-
-  // At this point, the toolbar icon has been set visible. Layout the
-  // browser to ensure it can be clicked.
-  LayoutBrowser();
 
   // Clicking on the toolbar icon should open the dialog.
   ClickToolbarIcon();

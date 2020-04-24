@@ -156,8 +156,7 @@ bool IsSameOriginWindowClientContainerHost(
     if (container_host->IsInBackForwardCache())
       return false;
   }
-  return container_host->type() ==
-             blink::mojom::ServiceWorkerContainerType::kForWindow &&
+  return container_host->IsContainerForWindowClient() &&
          container_host->url().GetOrigin() == origin &&
          (allow_reserved_client || container_host->is_execution_ready());
 }
@@ -368,8 +367,7 @@ void ServiceWorkerContextCore::HasMainFrameWindowClient(const GURL& origin,
   while (!container_host_iterator->IsAtEnd()) {
     ServiceWorkerContainerHost* container_host =
         container_host_iterator->GetContainerHost();
-    DCHECK_EQ(container_host->type(),
-              blink::mojom::ServiceWorkerContainerType::kForWindow);
+    DCHECK(container_host->IsContainerForWindowClient());
     render_frames->push_back(std::make_pair(container_host->process_id(),
                                             container_host->frame_id()));
     container_host_iterator->Advance();

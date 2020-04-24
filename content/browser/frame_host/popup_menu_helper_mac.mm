@@ -8,11 +8,11 @@
 #import "base/mac/scoped_sending_event.h"
 #include "base/message_loop/message_loop_current.h"
 #import "base/message_loop/message_pump_mac.h"
+#import "content/app_shim_remote_cocoa/render_widget_host_view_cocoa.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
-#import "content/app_shim_remote_cocoa/render_widget_host_view_cocoa.h"
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 #include "content/browser/renderer_host/webmenurunner_mac.h"
 #import "ui/base/cocoa/base_view.h"
@@ -25,14 +25,20 @@ bool g_allow_showing_popup_menus = true;
 
 }  // namespace
 
-PopupMenuHelper::PopupMenuHelper(Delegate* delegate,
-                                 RenderFrameHost* render_frame_host)
+PopupMenuHelper::PopupMenuHelper(
+    Delegate* delegate,
+    RenderFrameHost* render_frame_host,
+    mojo::PendingRemote<blink::mojom::ExternalPopup> popup)
     : delegate_(delegate),
       render_frame_host_(
-          static_cast<RenderFrameHostImpl*>(render_frame_host)->GetWeakPtr()) {
+          static_cast<RenderFrameHostImpl*>(render_frame_host)->GetWeakPtr()),
+      popup_(std::move(popup)) {
   RenderWidgetHost* widget_host =
       render_frame_host->GetRenderViewHost()->GetWidget();
   observer_.Add(widget_host);
+
+  popup_.set_disconnect_handler(
+      base::BindOnce(&PopupMenuHelper::Hide, weak_ptr_factory_.GetWeakPtr()));
 }
 
 PopupMenuHelper::~PopupMenuHelper() {
@@ -44,7 +50,7 @@ void PopupMenuHelper::ShowPopupMenu(
     int item_height,
     double item_font_size,
     int selected_item,
-    const std::vector<MenuItem>& items,
+    std::vector<blink::mojom::MenuItemPtr> items,
     bool right_aligned,
     bool allow_multiple_selection) {
   // Only single selection list boxes show a popup on Mac.
@@ -101,11 +107,16 @@ void PopupMenuHelper::ShowPopupMenu(
 
   // The RenderFrameHost may be deleted while running the menu, or it may have
   // requested the close. Don't notify in these cases.
-  if (render_frame_host_ && !popup_was_hidden_) {
-    if ([runner menuItemWasChosen])
-      render_frame_host_->DidSelectPopupMenuItem([runner indexOfSelectedItem]);
-    else
-      render_frame_host_->DidCancelPopupMenu();
+  if (popup_ && !popup_was_hidden_) {
+    if ([runner menuItemWasChosen]) {
+      int index = [runner indexOfSelectedItem];
+      if (index < 0)
+        popup_->DidCancel();
+      else
+        popup_->DidAcceptIndices({index});
+    } else {
+      popup_->DidCancel();
+    }
   }
 
   delegate_->OnMenuClosed();  // May delete |this|.
@@ -123,6 +134,7 @@ void PopupMenuHelper::Hide() {
   if (menu_runner_)
     [menu_runner_ hide];
   popup_was_hidden_ = true;
+  popup_.reset();
 }
 
 // static

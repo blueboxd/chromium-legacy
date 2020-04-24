@@ -91,6 +91,9 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
     // thread.
     base::MessagePumpType message_pump_type_for_gpu =
         base::MessagePumpType::DEFAULT;
+
+    // Determines if the platform supports vulkan swap chain.
+    bool supports_vulkan_swap_chain = false;
   };
 
   // Properties available in the host process after initialization.

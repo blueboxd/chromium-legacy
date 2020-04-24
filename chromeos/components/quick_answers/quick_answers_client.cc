@@ -88,6 +88,11 @@ void QuickAnswersClient::OnAssistantContextEnabled(bool enabled) {
   NotifyEligibilityChanged();
 }
 
+void QuickAnswersClient::OnAssistantQuickAnswersEnabled(bool enabled) {
+  quick_answers_settings_enabled_ = enabled;
+  NotifyEligibilityChanged();
+}
+
 void QuickAnswersClient::OnLocaleChanged(const std::string& locale) {
   // String literals used in some cases in the array because their
   // constant equivalents don't exist in:
@@ -132,6 +137,7 @@ void QuickAnswersClient::NotifyEligibilityChanged() {
   bool is_eligible =
       (chromeos::features::IsQuickAnswersEnabled() && assistant_state_ &&
        assistant_enabled_ && locale_supported_ && assistant_context_enabled_ &&
+       quick_answers_settings_enabled_ &&
        assistant_allowed_state_ == ash::mojom::AssistantAllowedState::ALLOWED);
 
   if (is_eligible_ != is_eligible) {

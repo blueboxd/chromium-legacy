@@ -34,6 +34,7 @@ import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.Matchers.not;
 
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.hasTintColor;
+import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.hasTypefaceSpan;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.startAutofillAssistant;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewMatchesCondition;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.withParentIndex;
@@ -41,6 +42,7 @@ import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUi
 import android.app.Activity;
 import android.app.Instrumentation.ActivityResult;
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.intent.Intents;
@@ -368,7 +370,7 @@ public class AutofillAssistantFormActionTest {
                                                 .setLabel("Counter 2")
                                                 .setDescriptionLine1("$20.00 per tick")
                                                 .setDescriptionLine2("<link1>Details</link1>"))))
-                        .setInfoLabel("Info label")
+                        .setInfoLabel("<b>Info label with bold text</b>")
                         .setInfoPopup(
                                 InfoPopupProto.newBuilder()
                                         .setTitle("Prompt title")
@@ -401,6 +403,12 @@ public class AutofillAssistantFormActionTest {
         startAutofillAssistant(mTestRule.getActivity(), testService);
 
         waitUntilViewMatchesCondition(withText("Continue"), isCompletelyDisplayed());
+        onView(withText("Info label with bold text"))
+                .check(matches(withEffectiveVisibility(VISIBLE)));
+        onView(withText("Info label with bold text"))
+                .check(matches(hasTypefaceSpan(
+                        0, "Info label with bold text".length() - 1, Typeface.BOLD)));
+
         onView(withId(R.id.info_button)).perform(click());
         waitUntilViewMatchesCondition(withText("Prompt title"), isCompletelyDisplayed());
         waitUntilViewMatchesCondition(withText("Prompt text"), isCompletelyDisplayed());

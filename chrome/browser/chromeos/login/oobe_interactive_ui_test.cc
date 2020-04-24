@@ -20,6 +20,7 @@
 #include "build/buildflag.h"
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/arc/session/arc_service_launcher.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/test/test_arc_session_manager.h"
@@ -817,7 +818,12 @@ void OobeZeroTouchInteractiveUITest::ZeroTouchEndToEnd() {
 
   test::WaitForEnrollmentScreen();
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
+  auto login_screen_waiter =
+      std::make_unique<content::WindowedNotificationObserver>(
+          chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
+          content::NotificationService::AllSources());
   enrollment_ui_.LeaveSuccessScreen();
+  login_screen_waiter->Wait();
 
   PerformSessionSignInSteps(get_auth_token_observer);
 

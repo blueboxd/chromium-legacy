@@ -6,6 +6,7 @@ visibility = [ "//ui/ozone/*" ]
 
 import("//build/config/linux/gtk/gtk.gni")
 import("//build/config/linux/pkg_config.gni")
+import("//gpu/vulkan/features.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//ui/ozone/platform/wayland/wayland.gni")
 
@@ -198,6 +199,14 @@ source_set("wayland") {
 
   if (use_bundled_weston) {
     data_deps = [ "//third_party/weston" ]
+  }
+
+  if (enable_vulkan) {
+    sources += [
+      "gpu/vulkan_implementation_wayland.cc",
+      "gpu/vulkan_implementation_wayland.h",
+    ]
+    deps += [ "//gpu/vulkan" ]
   }
 
   configs += [

@@ -229,8 +229,8 @@ class ArcSessionImpl
   void OnMojoConnected(std::unique_ptr<mojom::ArcBridgeHost> arc_bridge_host);
 
   // Request to stop ARC instance via DBus. Also backs up the ARC
-  // bug report if |backup_log| is set to true.
-  void StopArcInstance(bool on_shutdown, bool backup_log);
+  // bug report if |should_backup_log| is set to true.
+  void StopArcInstance(bool on_shutdown, bool should_backup_log);
 
   // ArcClientAdapter::Observer:
   void ArcInstanceStopped() override;

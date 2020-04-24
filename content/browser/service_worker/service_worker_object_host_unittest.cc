@@ -405,7 +405,7 @@ TEST_F(ServiceWorkerObjectHostTest, DispatchExtendableMessageEvent_FromClient) {
   EXPECT_TRUE(events[0]->source_info_for_client);
   EXPECT_EQ(container_host->client_uuid(),
             events[0]->source_info_for_client->client_uuid);
-  EXPECT_EQ(container_host->client_type(),
+  EXPECT_EQ(container_host->GetClientType(),
             events[0]->source_info_for_client->client_type);
 }
 

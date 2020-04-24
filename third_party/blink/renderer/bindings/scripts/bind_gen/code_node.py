@@ -685,10 +685,12 @@ class SymbolScopeNode(SequenceNode):
 
         self._likeliness = Likeliness.ALWAYS
         self._registered_code_symbols = set()
+        self._referenced_code_symbols = set()
 
     def _render(self, renderer, last_render_state):
         for symbol_node in last_render_state.undefined_code_symbols:
             assert self.is_code_symbol_registered(symbol_node)
+            self._referenced_code_symbols.add(symbol_node)
             if not self.is_code_symbol_defined(symbol_node):
                 self._insert_symbol_definition(symbol_node, last_render_state)
 
@@ -796,6 +798,11 @@ class SymbolScopeNode(SequenceNode):
     def register_code_symbols(self, symbol_nodes):
         for symbol_node in symbol_nodes:
             self.register_code_symbol(symbol_node)
+
+    @property
+    def referenced_code_symbols(self):
+        """Returns SymbolNodes that have once been referenced in this scope."""
+        return frozenset(self._referenced_code_symbols)
 
     @property
     def likeliness(self):
@@ -946,3 +953,61 @@ class SymbolDefinitionNode(SequenceNode):
     @property
     def target_symbol(self):
         return self._symbol_node
+
+
+class WeakDependencyNode(CodeNode):
+    """
+    Represents weak dependencies to SymbolNodes, where "weak" means that this
+    code node itself does not require any SymbolDefinitionNode of the target
+    symbols, however, once any other code node within the closest outer scope
+    requires a symbol definition, then this code node also requires the symbol
+    definition, too.  This makes the symbol definition node be placed prior to
+    this node iff such a definition is added.
+
+    In short, you can control the position of SymbolDefinitionNode with using
+    WeakDependencyNode without requiring the symbol definition node.
+    """
+
+    def __init__(self, dep_syms):
+        """
+        Args:
+            dep_syms: A list of code symbol names on which this code node
+                weakly depends.
+        """
+        assert isinstance(dep_syms, (list, tuple))
+        assert all(isinstance(sym, str) for sym in dep_syms)
+
+        CodeNode.__init__(self)
+
+        # Registered weak dependencies to symbols.
+        self._weak_dep_sym_names = list(dep_syms)
+        # Symbol names that have not yet turned into strong references.
+        self._weak_dep_sym_queue = list(self._weak_dep_sym_names)
+        # SymbolNodes that already turned into strong references.
+        self._strong_dep_symbol_nodes = []
+
+    def _render(self, renderer, last_render_state):
+        renderer.push_caller(self)
+        try:
+            self._render_internal()
+        finally:
+            renderer.pop_caller()
+
+    def _render_internal(self):
+        for symbol_node in self._strong_dep_symbol_nodes:
+            symbol_node.request_symbol_definition()
+
+        if not self._weak_dep_sym_queue:
+            return
+
+        referenced_code_symbols = self.outer_scope().referenced_code_symbols
+        unprocessed_sym_names = []
+        for weak_sym_name in self._weak_dep_sym_queue:
+            for symbol_node in referenced_code_symbols:
+                if symbol_node.name == weak_sym_name:
+                    symbol_node.request_symbol_definition()
+                    self._strong_dep_symbol_nodes.append(symbol_node)
+                    break
+            else:
+                unprocessed_sym_names.append(weak_sym_name)
+        self._weak_dep_sym_queue = unprocessed_sym_names

@@ -7,8 +7,8 @@
 #include <dawn/webgpu.h>
 
 #include "third_party/blink/renderer/bindings/modules/v8/double_sequence_or_gpu_color_dict.h"
-#include "third_party/blink/renderer/bindings/modules/v8/unsigned_long_sequence_or_gpu_extent_3d_dict.h"
-#include "third_party/blink/renderer/bindings/modules/v8/unsigned_long_sequence_or_gpu_origin_3d_dict.h"
+#include "third_party/blink/renderer/bindings/modules/v8/unsigned_long_enforce_range_sequence_or_gpu_extent_3d_dict.h"
+#include "third_party/blink/renderer/bindings/modules/v8/unsigned_long_enforce_range_sequence_or_gpu_origin_3d_dict.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_programmable_stage_descriptor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_texture_copy_view.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_shader_module.h"
@@ -695,14 +695,14 @@ WGPUColor AsDawnType(const DoubleSequenceOrGPUColorDict* webgpu_color) {
 }
 
 WGPUExtent3D AsDawnType(
-    const UnsignedLongSequenceOrGPUExtent3DDict* webgpu_extent) {
+    const UnsignedLongEnforceRangeSequenceOrGPUExtent3DDict* webgpu_extent) {
   DCHECK(webgpu_extent);
 
   WGPUExtent3D dawn_extent = {};
 
-  if (webgpu_extent->IsUnsignedLongSequence()) {
+  if (webgpu_extent->IsUnsignedLongEnforceRangeSequence()) {
     const Vector<uint32_t>& webgpu_extent_sequence =
-        webgpu_extent->GetAsUnsignedLongSequence();
+        webgpu_extent->GetAsUnsignedLongEnforceRangeSequence();
     DCHECK_EQ(webgpu_extent_sequence.size(), 3UL);
     dawn_extent.width = webgpu_extent_sequence[0];
     dawn_extent.height = webgpu_extent_sequence[1];
@@ -723,14 +723,14 @@ WGPUExtent3D AsDawnType(
 }
 
 WGPUOrigin3D AsDawnType(
-    const UnsignedLongSequenceOrGPUOrigin3DDict* webgpu_origin) {
+    const UnsignedLongEnforceRangeSequenceOrGPUOrigin3DDict* webgpu_origin) {
   DCHECK(webgpu_origin);
 
   WGPUOrigin3D dawn_origin = {};
 
-  if (webgpu_origin->IsUnsignedLongSequence()) {
+  if (webgpu_origin->IsUnsignedLongEnforceRangeSequence()) {
     const Vector<uint32_t>& webgpu_origin_sequence =
-        webgpu_origin->GetAsUnsignedLongSequence();
+        webgpu_origin->GetAsUnsignedLongEnforceRangeSequence();
     DCHECK_EQ(webgpu_origin_sequence.size(), 3UL);
     dawn_origin.x = webgpu_origin_sequence[0];
     dawn_origin.y = webgpu_origin_sequence[1];

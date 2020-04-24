@@ -12,7 +12,7 @@ import org.chromium.base.IntentUtils;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.SnackbarActivity;
 import org.chromium.chrome.browser.download.home.DownloadManagerCoordinator;
-import org.chromium.chrome.browser.download.home.DownloadManagerCoordinatorFactory;
+import org.chromium.chrome.browser.download.home.DownloadManagerCoordinatorFactoryHelper;
 import org.chromium.chrome.browser.download.home.DownloadManagerUiConfig;
 import org.chromium.chrome.browser.download.home.DownloadManagerUiConfigHelper;
 import org.chromium.chrome.browser.download.home.filter.Filters;
@@ -69,8 +69,8 @@ public class DownloadActivity extends SnackbarActivity implements ModalDialogMan
 
         mModalDialogManager = new ModalDialogManager(
                 new AppModalPresenter(this), ModalDialogManager.ModalDialogType.APP);
-        mDownloadCoordinator = DownloadManagerCoordinatorFactory.create(
-                this, config, getSnackbarManager(), mModalDialogManager, isOffTheRecord);
+        mDownloadCoordinator = DownloadManagerCoordinatorFactoryHelper.create(
+                this, config, getSnackbarManager(), mModalDialogManager);
         setContentView(mDownloadCoordinator.getView());
         mIsOffTheRecord = isOffTheRecord;
         mDownloadCoordinator.addObserver(mUiObserver);

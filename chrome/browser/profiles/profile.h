@@ -410,12 +410,9 @@ class Profile : public content::BrowserContext {
   // OTRs and update documentation above.
   bool IsIncognitoProfile() const;
 
-  // Returns true if this is a non-primary OffTheRecord profile. This type of
-  // OffTheRecord profiles have limited functionality and cannot be used to
-  // create a browser object.
-  //
-  // TODO(https://crbug.com/1033903): Rename to |CanSupportBrowsers|.
-  virtual bool IsIndependentOffTheRecordProfile() = 0;
+  // Returns true if this is a primary OffTheRecord profile, which covers the
+  // OffTheRecord profile used for incognito mode and guest sessions.
+  virtual bool IsPrimaryOTRProfile();
 
   // Returns whether it is a guest session. This covers both the guest profile
   // and its parent.

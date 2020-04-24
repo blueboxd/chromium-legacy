@@ -202,7 +202,7 @@ void ServiceWorkerRegistrationObjectHost::Update(
   }
 
   DelayUpdate(
-      container_host_->type(), registration, version,
+      container_host_->IsContainerForClient(), registration, version,
       base::BindOnce(
           &ExecuteUpdate, context_, registration->id(),
           false /* force_bypass_cache */, false /* skip_script_comparison */,
@@ -212,15 +212,13 @@ void ServiceWorkerRegistrationObjectHost::Update(
 }
 
 void ServiceWorkerRegistrationObjectHost::DelayUpdate(
-    blink::mojom::ServiceWorkerContainerType container_type,
+    bool is_container_for_client,
     ServiceWorkerRegistration* registration,
     ServiceWorkerVersion* version,
     StatusCallback update_function) {
   DCHECK(registration);
 
-  if (container_type !=
-          blink::mojom::ServiceWorkerContainerType::kForServiceWorker ||
-      (version && version->HasControllee())) {
+  if (is_container_for_client || (version && version->HasControllee())) {
     // Don't delay update() if called by non-workers or by workers with
     // controllees.
     std::move(update_function).Run(blink::ServiceWorkerStatusCode::kOk);

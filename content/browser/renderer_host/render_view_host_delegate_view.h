@@ -13,6 +13,7 @@
 #include "content/common/content_export.h"
 #include "content/common/drag_event_source_info.h"
 #include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
+#include "third_party/blink/public/mojom/popup/popup.mojom.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
 
 namespace blink {
@@ -36,7 +37,6 @@ class RenderFrameHost;
 class RenderWidgetHostImpl;
 struct ContextMenuParams;
 struct DropData;
-struct MenuItem;
 
 // This class provides a way for the RenderViewHost to reach out to its
 // delegate's view.
@@ -99,19 +99,18 @@ class CONTENT_EXPORT RenderViewHostDelegateView {
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
   // Shows a popup menu with the specified items.
-  // This method should call RenderFrameHost::DidSelectPopupMenuItem[s]() or
-  // RenderFrameHost::DidCancelPopupMenu() based on the user action.
-  virtual void ShowPopupMenu(RenderFrameHost* render_frame_host,
-                             const gfx::Rect& bounds,
-                             int item_height,
-                             double item_font_size,
-                             int selected_item,
-                             const std::vector<MenuItem>& items,
-                             bool right_aligned,
-                             bool allow_multiple_selection) {}
-
-  // Hides a popup menu opened by ShowPopupMenu().
-  virtual void HidePopupMenu() {}
+  // This method should call blink::mojom::ExternalPopup::DidAcceptIndices() or
+  // blink::mojom::ExternalPopup::DidCancel() based on the user action.
+  virtual void ShowPopupMenu(
+      RenderFrameHost* render_frame_host,
+      mojo::PendingRemote<blink::mojom::ExternalPopup> popup,
+      const gfx::Rect& bounds,
+      int item_height,
+      double item_font_size,
+      int selected_item,
+      std::vector<blink::mojom::MenuItemPtr> menu_items,
+      bool right_aligned,
+      bool allow_multiple_selection) {}
 #endif
 
 #if defined(OS_ANDROID)

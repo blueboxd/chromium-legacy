@@ -6,7 +6,7 @@
 
 dictionary GPUTextureCopyView {
     required GPUTexture texture;
-    unsigned long mipLevel = 0;
-    unsigned long arrayLayer = 0;
+    GPUSize32 mipLevel = 0;
+    GPUSize32 arrayLayer = 0;
     GPUOrigin3D origin = {};
 };

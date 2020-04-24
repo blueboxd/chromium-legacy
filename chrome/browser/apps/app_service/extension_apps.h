@@ -93,6 +93,10 @@ class ExtensionApps : public apps::PublisherBase,
   // and should therefore by handled by this publisher.
   bool Accepts(const extensions::Extension* extension);
 
+  // Returns extensions::Extension* for the valid |app_id|. Otherwise, returns
+  // nullptr.
+  const extensions::Extension* MaybeGetExtension(const std::string& app_id);
+
   // apps::mojom::Publisher overrides.
   void Connect(mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
                apps::mojom::ConnectOptionsPtr opts) override;

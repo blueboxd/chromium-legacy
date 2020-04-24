@@ -57,6 +57,8 @@ void FakeLoginDisplayHost::BeforeSessionStart() {}
 
 void FakeLoginDisplayHost::Finalize(base::OnceClosure) {}
 
+void FakeLoginDisplayHost::FinalizeImmediately() {}
+
 void FakeLoginDisplayHost::SetStatusAreaVisible(bool visible) {}
 
 void FakeLoginDisplayHost::StartWizard(OobeScreenId first_screen) {

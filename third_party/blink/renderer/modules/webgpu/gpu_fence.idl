@@ -7,6 +7,6 @@
 [
     Exposed(Window WebGPU, Worker WebGPU)
 ] interface GPUFence {
-    unsigned long long getCompletedValue();
-    [CallWith=ScriptState] Promise<void> onCompletion(unsigned long long completionValue);
+    GPUFenceValue getCompletedValue();
+    [CallWith=ScriptState] Promise<void> onCompletion(GPUFenceValue completionValue);
 };

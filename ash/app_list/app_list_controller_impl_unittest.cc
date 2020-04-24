@@ -1051,15 +1051,6 @@ TEST_F(AppListControllerImplMetricsTest, LogSingleResultListClick) {
                                        4, 1);
 }
 
-TEST_F(AppListControllerImplMetricsTest, LogSingleTileListClick) {
-  histogram_tester_.ExpectTotalCount(kAppListTileLaunchIndexAndQueryLength, 0);
-  SetSearchText(controller_, "aaaa");
-  controller_->LogResultLaunchHistogram(SearchResultLaunchLocation::kTileList,
-                                        4);
-  histogram_tester_.ExpectUniqueSample(kAppListTileLaunchIndexAndQueryLength,
-                                       32, 1);
-}
-
 TEST_F(AppListControllerImplMetricsTest, LogOneClickInEveryBucket) {
   histogram_tester_.ExpectTotalCount(kAppListResultLaunchIndexAndQueryLength,
                                      0);
@@ -1081,16 +1072,6 @@ TEST_F(AppListControllerImplMetricsTest, LogOneClickInEveryBucket) {
           7 * query_length + click_index, 1);
     }
   }
-}
-
-TEST_F(AppListControllerImplMetricsTest, LogManyClicksInOneBucket) {
-  histogram_tester_.ExpectTotalCount(kAppListTileLaunchIndexAndQueryLength, 0);
-  SetSearchText(controller_, "aaaa");
-  for (int i = 0; i < 50; ++i)
-    controller_->LogResultLaunchHistogram(SearchResultLaunchLocation::kTileList,
-                                          4);
-  histogram_tester_.ExpectUniqueSample(kAppListTileLaunchIndexAndQueryLength,
-                                       32, 50);
 }
 
 // One edge case may do harm to the presentation metrics reporter for tablet

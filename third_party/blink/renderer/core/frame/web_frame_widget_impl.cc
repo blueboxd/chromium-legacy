@@ -1039,7 +1039,8 @@ HitTestResult WebFrameWidgetImpl::CoreHitTestResultAt(
 
 void WebFrameWidgetImpl::ZoomToFindInPageRect(
     const WebRect& rect_in_root_frame) {
-  Client()->ZoomToFindInPageRectInMainFrame(rect_in_root_frame);
+  GetAssociatedFrameWidgetHost()->ZoomToFindInPageRectInMainFrame(
+      gfx::Rect(rect_in_root_frame));
 }
 
 HitTestResult WebFrameWidgetImpl::HitTestResultForRootFramePos(

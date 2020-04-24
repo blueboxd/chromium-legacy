@@ -71,7 +71,7 @@ class FakeArcClientAdapter : public ArcClientAdapter {
                                   !force_upgrade_failure_));
   }
 
-  void StopArcInstance(bool on_shutdown, bool backup_log) override {
+  void StopArcInstance(bool on_shutdown, bool should_backup_log) override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&FakeArcClientAdapter::NotifyArcInstanceStopped,

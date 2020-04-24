@@ -7783,7 +7783,7 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Incognito"/>
   <int value="2" label="Guest"/>
   <int value="3" label="System"/>
-  <int value="4" label="IndependentIncognito"/>
+  <int value="4" label="Other Off The Record"/>
 </enum>
 
 <enum name="BrowserServicesVerificationResult">

@@ -175,6 +175,7 @@ PASS childWindow.screen.pixelDepth is 0
 PASS childWindow.screen.primary is false
 PASS childWindow.screen.scaleFactor is 0
 PASS childWindow.screen.top is 0
+PASS childWindow.screen.touchSupport is false
 PASS childWindow.screen.width is 0
 PASS childWindow.screenLeft is 0
 PASS childWindow.screenTop is 0

@@ -14,6 +14,10 @@ namespace chromeos {
 // Shows the Chrome OS out-of-box / login UI.
 void ShowLoginWizard(OobeScreenId start_screen);
 
+// Shuts down LoginDisplayHostWebUI host and create LoginDisplayHostMojo
+// instead.
+void SwitchWebUItoMojo();
+
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_LOGIN_WIZARD_H_

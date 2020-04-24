@@ -30,14 +30,15 @@ constexpr char kGetScreensScript[] = R"(
                     availWidth: s.availWidth,
                     colorDepth: s.colorDepth,
                     height: s.height,
+                    id: s.id,
                     internal: s.internal,
                     left: s.left,
-                    id: s.id,
                     orientation: s.orientation != null,
                     pixelDepth: s.pixelDepth,
                     primary: s.primary,
                     scaleFactor: s.scaleFactor,
                     top: s.top,
+                    touchSupport: s.touchSupport,
                     width: s.width });
     }
     return result;
@@ -58,9 +59,9 @@ base::ListValue GetExpectedScreens() {
     s.SetIntKey("availWidth", d.work_area().width());
     s.SetIntKey("colorDepth", d.color_depth());
     s.SetIntKey("height", d.bounds().height());
+    s.SetStringKey("id", base::NumberToString(id++));
     s.SetBoolKey("internal", d.IsInternal());
     s.SetIntKey("left", d.bounds().x());
-    s.SetStringKey("id", base::NumberToString(id++));
     s.SetBoolKey("orientation", false);
     s.SetIntKey("pixelDepth", d.color_depth());
     s.SetBoolKey("primary", d.id() == screen->GetPrimaryDisplay().id());
@@ -71,6 +72,8 @@ base::ListValue GetExpectedScreens() {
     else
       s.SetDoubleKey("scaleFactor", d.device_scale_factor());
     s.SetIntKey("top", d.bounds().y());
+    s.SetBoolKey("touchSupport", d.touch_support() ==
+                                     display::Display::TouchSupport::AVAILABLE);
     s.SetIntKey("width", d.bounds().width());
     expected_screens.Append(std::move(s));
   }

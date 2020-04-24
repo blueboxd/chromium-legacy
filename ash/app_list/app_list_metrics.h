@@ -75,11 +75,6 @@ constexpr char kAppListToggleMethodHistogram[] = "Apps.AppListShowSource";
 constexpr char kAppListResultLaunchIndexAndQueryLength[] =
     "Apps.AppListResultLaunchIndexAndQueryLength";
 
-// The UMA histogram that logs the index launched item in the app tile list and
-// the query length.
-constexpr char kAppListTileLaunchIndexAndQueryLength[] =
-    "Apps.AppListTileLaunchIndexAndQueryLength";
-
 // The UMA histogram that logs if the query that introduces a launch of an item
 // in the results list is empty or not.
 constexpr char kAppListResultLaunchIsEmptyQuery[] =

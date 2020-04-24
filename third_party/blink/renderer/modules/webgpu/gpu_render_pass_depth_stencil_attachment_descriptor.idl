@@ -10,6 +10,6 @@ dictionary GPURenderPassDepthStencilAttachmentDescriptor {
     required (GPULoadOp or float) depthLoadValue;
     required GPUStoreOp depthStoreOp;
 
-    required (GPULoadOp or unsigned long) stencilLoadValue;
+    required (GPULoadOp or GPUStencilValue) stencilLoadValue;
     required GPUStoreOp stencilStoreOp;
 };

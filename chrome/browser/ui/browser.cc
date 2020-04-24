@@ -624,11 +624,9 @@ Browser::~Browser() {
   // because the ProfileManager needs to be able to destroy all profiles when
   // it is destroyed. See crbug.com/527035
   //
-  // A profile created with Profile::CreateOffTheRecordProfile() should not be
-  // destroyed directly by Browser (e.g. for offscreen tabs,
-  // https://crbug.com/664351).
-  if (profile_->IsOffTheRecord() &&
-      !profile_->IsIndependentOffTheRecordProfile() &&
+  // Non-primary OffTheRecord profiles should not be destroyed directly by
+  // Browser (e.g. for offscreen tabs, https://crbug.com/664351).
+  if (profile_->IsPrimaryOTRProfile() &&
       !BrowserList::IsIncognitoSessionInUse(profile_) &&
       !profile_->GetOriginalProfile()->IsSystemProfile()) {
     if (profile_->IsGuestSession()) {

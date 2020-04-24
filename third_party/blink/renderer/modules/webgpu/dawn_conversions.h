@@ -23,8 +23,8 @@ class DoubleSequenceOrGPUColorDict;
 class GPUColorDict;
 class GPUProgrammableStageDescriptor;
 class GPUTextureCopyView;
-class UnsignedLongSequenceOrGPUExtent3DDict;
-class UnsignedLongSequenceOrGPUOrigin3DDict;
+class UnsignedLongEnforceRangeSequenceOrGPUExtent3DDict;
+class UnsignedLongEnforceRangeSequenceOrGPUOrigin3DDict;
 
 // Convert WebGPU bitfield values to Dawn enums. These have the same value.
 template <typename DawnEnum>
@@ -42,8 +42,10 @@ DawnEnum AsDawnEnum(const WTF::String& webgpu_enum);
 WGPUColor AsDawnColor(const Vector<double>&);
 WGPUColor AsDawnType(const GPUColorDict*);
 WGPUColor AsDawnType(const DoubleSequenceOrGPUColorDict*);
-WGPUExtent3D AsDawnType(const UnsignedLongSequenceOrGPUExtent3DDict*);
-WGPUOrigin3D AsDawnType(const UnsignedLongSequenceOrGPUOrigin3DDict*);
+WGPUExtent3D AsDawnType(
+    const UnsignedLongEnforceRangeSequenceOrGPUExtent3DDict*);
+WGPUOrigin3D AsDawnType(
+    const UnsignedLongEnforceRangeSequenceOrGPUOrigin3DDict*);
 WGPUTextureCopyView AsDawnType(const GPUTextureCopyView* webgpu_view);
 using OwnedProgrammableStageDescriptor =
     std::tuple<WGPUProgrammableStageDescriptor, std::unique_ptr<char[]>>;

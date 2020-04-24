@@ -104,14 +104,14 @@ def arguments_context(arguments):
         }
 
     def argument_cpp_type(argument):
-        cpp_type = argument.idl_type.callback_cpp_type
-        if argument.is_variadic:
-            if argument.idl_type.is_traceable:
-                return 'const HeapVector<%s>&' % cpp_type
-            else:
-                return 'const Vector<%s>&' % cpp_type
-        else:
-            return cpp_type
+        if argument.idl_type.is_dictionary:
+            return 'const %s*' % argument.idl_type.implemented_as
+
+        return argument.idl_type.cpp_type_args(
+            extended_attributes=argument.extended_attributes,
+            raw_type=False,
+            used_as_rvalue_type=True,
+            used_as_variadic_argument=argument.is_variadic)
 
     argument_declarations = [
         'bindings::V8ValueOrScriptWrappableAdapter callback_this_value'

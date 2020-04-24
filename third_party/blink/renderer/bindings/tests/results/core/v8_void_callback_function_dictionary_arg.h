@@ -35,11 +35,11 @@ class CORE_EXPORT V8VoidCallbackFunctionDictionaryArg final : public CallbackFun
 
   // Performs "invoke".
   // https://heycam.github.io/webidl/#es-invoking-callback-functions
-  v8::Maybe<void> Invoke(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, const TestDictionary*& arg) WARN_UNUSED_RESULT;
+  v8::Maybe<void> Invoke(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, const TestDictionary* arg) WARN_UNUSED_RESULT;
 
   // Performs "invoke", and then reports an exception, if any, to the global
   // error handler such as DevTools' console.
-  void InvokeAndReportException(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, const TestDictionary*& arg);
+  void InvokeAndReportException(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, const TestDictionary* arg);
 };
 
 }  // namespace blink

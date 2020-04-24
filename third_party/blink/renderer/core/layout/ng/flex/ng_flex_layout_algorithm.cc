@@ -42,7 +42,28 @@ NGFlexLayoutAlgorithm::NGFlexLayoutAlgorithm(
       ShrinkAvailableSize(border_box_size_, border_scrollbar_padding_);
   child_percentage_size_ = CalculateChildPercentageSize(
       ConstraintSpace(), Node(), content_box_size_);
-  algorithm_.emplace(&Style(), MainAxisContentExtent(LayoutUnit::Max()));
+
+  LayoutUnit gap_between_items;
+  LayoutUnit gap_between_lines;
+  if (!Style().ColumnGap().IsNormal()) {
+    DCHECK(!Style().ColumnGap().GetLength().IsAuto());
+    DCHECK(!Style().ColumnGap().GetLength().IsIntrinsic());
+    // column-gap is defined to always apply in the inline axis.
+    gap_between_items = MinimumValueForLength(
+        Style().ColumnGap().GetLength(), child_percentage_size_.inline_size);
+  }
+  if (!Style().RowGap().IsNormal()) {
+    DCHECK(!Style().RowGap().GetLength().IsAuto());
+    DCHECK(!Style().RowGap().GetLength().IsIntrinsic());
+    // row-gap is defined to always apply in the block axis.
+    gap_between_lines = MinimumValueForLength(
+        Style().RowGap().GetLength(), child_percentage_size_.block_size);
+  }
+  if (is_column_)
+    std::swap(gap_between_items, gap_between_lines);
+
+  algorithm_.emplace(&Style(), MainAxisContentExtent(LayoutUnit::Max()),
+                     gap_between_items, gap_between_lines);
 }
 
 bool NGFlexLayoutAlgorithm::MainAxisIsInlineAxis(
@@ -54,6 +75,12 @@ bool NGFlexLayoutAlgorithm::MainAxisIsInlineAxis(
 LayoutUnit NGFlexLayoutAlgorithm::MainAxisContentExtent(
     LayoutUnit sum_hypothetical_main_size) const {
   if (Style().ResolvedIsColumnFlexDirection()) {
+    // Even though we only pass border_padding_ in the third parameter, the
+    // return value includes scrollbar, so subtract scrollbar to get content
+    // size.
+    // We add border_scrollbar_padding to the fourth parameter because
+    // |content_size| needs to be the size of the border box. We've overloaded
+    // the term "content".
     return ComputeBlockSizeForFragment(
                ConstraintSpace(), Style(), border_padding_,
                sum_hypothetical_main_size +
@@ -1085,11 +1112,13 @@ MinMaxSizes NGFlexLayoutAlgorithm::ComputeMinMaxSizes(
 
   MinMaxSizesInput child_input(child_percentage_resolution_block_size);
 
+  int number_of_items = 0;
   NGFlexChildIterator iterator(Node());
   for (NGBlockNode child = iterator.NextChild(); child;
        child = iterator.NextChild()) {
     if (child.IsOutOfFlowPositioned())
       continue;
+    number_of_items++;
 
     MinMaxSizes child_min_max_sizes =
         ComputeMinAndMaxContentContribution(Style(), child, child_input);
@@ -1105,6 +1134,14 @@ MinMaxSizes NGFlexLayoutAlgorithm::ComputeMinMaxSizes(
       } else {
         sizes.min_size += child_min_max_sizes.min_size;
       }
+    }
+  }
+  if (!is_column_) {
+    LayoutUnit gap_inline_size =
+        (number_of_items - 1) * algorithm_->gap_between_items_;
+    sizes.max_size += gap_inline_size;
+    if (!algorithm_->IsMultiline()) {
+      sizes.min_size += gap_inline_size;
     }
   }
   sizes.max_size = std::max(sizes.max_size, sizes.min_size);

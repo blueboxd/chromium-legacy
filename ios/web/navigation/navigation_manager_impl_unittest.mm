@@ -1818,12 +1818,14 @@ TEST_F(NavigationManagerTest, Restore) {
   for (size_t i = 0; i < base::size(restore_information); ++i) {
     NavigationItem* navigation_item = navigation_manager()->GetItemAtIndex(i);
     EXPECT_EQ(restore_information[i].url, navigation_item->GetURL());
-    if (!restore_information[i].virtual_url.is_empty()) {
-      EXPECT_EQ(restore_information[i].virtual_url,
-                navigation_item->GetVirtualURL());
+    if (@available(iOS 13, *)) {
+      if (!restore_information[i].virtual_url.is_empty()) {
+        EXPECT_EQ(restore_information[i].virtual_url,
+                  navigation_item->GetVirtualURL());
+      }
+      EXPECT_EQ(restore_information[i].user_agent,
+                navigation_item->GetUserAgentForInheritance());
     }
-    EXPECT_EQ(restore_information[i].user_agent,
-              navigation_item->GetUserAgentForInheritance());
     EXPECT_EQ(restore_information[i].display_state,
               navigation_item->GetPageDisplayState());
   }

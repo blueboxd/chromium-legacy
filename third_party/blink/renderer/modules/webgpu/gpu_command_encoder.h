@@ -21,7 +21,7 @@ class GPUComputePassEncoder;
 class GPURenderPassDescriptor;
 class GPURenderPassEncoder;
 class GPUTextureCopyView;
-class UnsignedLongSequenceOrGPUExtent3DDict;
+class UnsignedLongEnforceRangeSequenceOrGPUExtent3DDict;
 
 class GPUCommandEncoder : public DawnObject<WGPUCommandEncoder> {
   DEFINE_WRAPPERTYPEINFO();
@@ -45,18 +45,21 @@ class GPUCommandEncoder : public DawnObject<WGPUCommandEncoder> {
                           GPUBuffer* dst,
                           uint64_t dst_offset,
                           uint64_t size);
-  void copyBufferToTexture(GPUBufferCopyView* source,
-                           GPUTextureCopyView* destination,
-                           UnsignedLongSequenceOrGPUExtent3DDict& copy_size,
-                           ExceptionState& exception_state);
-  void copyTextureToBuffer(GPUTextureCopyView* source,
-                           GPUBufferCopyView* destination,
-                           UnsignedLongSequenceOrGPUExtent3DDict& copy_size,
-                           ExceptionState& exception_state);
-  void copyTextureToTexture(GPUTextureCopyView* source,
-                            GPUTextureCopyView* destination,
-                            UnsignedLongSequenceOrGPUExtent3DDict& copy_size,
-                            ExceptionState& exception_state);
+  void copyBufferToTexture(
+      GPUBufferCopyView* source,
+      GPUTextureCopyView* destination,
+      UnsignedLongEnforceRangeSequenceOrGPUExtent3DDict& copy_size,
+      ExceptionState& exception_state);
+  void copyTextureToBuffer(
+      GPUTextureCopyView* source,
+      GPUBufferCopyView* destination,
+      UnsignedLongEnforceRangeSequenceOrGPUExtent3DDict& copy_size,
+      ExceptionState& exception_state);
+  void copyTextureToTexture(
+      GPUTextureCopyView* source,
+      GPUTextureCopyView* destination,
+      UnsignedLongEnforceRangeSequenceOrGPUExtent3DDict& copy_size,
+      ExceptionState& exception_state);
   void pushDebugGroup(String groupLabel);
   void popDebugGroup();
   void insertDebugMarker(String markerLabel);

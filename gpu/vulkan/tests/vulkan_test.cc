@@ -17,6 +17,8 @@
 namespace gpu {
 
 TEST_F(BasicVulkanTest, BasicVulkanSurface) {
+  if (!supports_swapchain())
+    return;
   std::unique_ptr<VulkanSurface> surface = CreateViewSurface(window());
   EXPECT_TRUE(surface);
   EXPECT_TRUE(surface->Initialize(GetDeviceQueue(),
@@ -27,6 +29,9 @@ TEST_F(BasicVulkanTest, BasicVulkanSurface) {
 }
 
 TEST_F(BasicVulkanTest, EmptyVulkanSwaps) {
+  if (!supports_swapchain())
+    return;
+
   std::unique_ptr<VulkanSurface> surface = CreateViewSurface(window());
   ASSERT_TRUE(surface);
   ASSERT_TRUE(surface->Initialize(GetDeviceQueue(),

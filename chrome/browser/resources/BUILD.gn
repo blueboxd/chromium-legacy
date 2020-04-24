@@ -193,21 +193,13 @@ if (!is_android) {
   }
 
   grit("new_tab_page_resources") {
-    if (optimize_webui) {
-      source = "new_tab_page/new_tab_page_resources_vulcanized.grd"
-    } else {
-      source = "new_tab_page/new_tab_page_resources.grd"
-    }
+    source = "new_tab_page/new_tab_page_resources.grd"
 
     deps = [
+      "//chrome/browser/resources/new_tab_page:web_components",
       "//chrome/browser/ui/webui/new_tab_page:mojo_bindings_js",
       "//skia/public/mojom:mojom_js",
     ]
-    if (optimize_webui) {
-      deps += [ "//chrome/browser/resources/new_tab_page:optimized_js" ]
-    } else {
-      deps += [ "//chrome/browser/resources/new_tab_page:web_components" ]
-    }
 
     grit_flags = [
       "-E",

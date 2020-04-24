@@ -32,7 +32,7 @@ import './people_page/signout_dialog.m.js';
 import './people_page/sync_controls.m.js';
 import './people_page/sync_page.m.js';
 // <if expr="use_nss_certs">
-import 'chrome://resources/cr_components/certificate_manager/certificate_manager.m.js';
+import 'chrome://resources/cr_components/certificate_manager/certificate_manager.js';
 // </if>
 
 // Sections

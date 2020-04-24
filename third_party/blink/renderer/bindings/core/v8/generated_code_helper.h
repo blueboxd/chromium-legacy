@@ -19,7 +19,6 @@
 
 namespace blink {
 
-class Document;
 class DOMParser;
 class ExecutionContext;
 class Range;
@@ -136,9 +135,6 @@ CORE_EXPORT base::Optional<size_t> FindIndexInEnumStringTable(
 CORE_EXPORT bool IsEsIterableObject(v8::Isolate* isolate,
                                     v8::Local<v8::Value> value,
                                     ExceptionState& exception_state);
-
-CORE_EXPORT Document* ToDocumentFromExecutionContext(
-    ExecutionContext* execution_context);
 
 // This function is mostly used for EventTargets, and so this version is
 // inlined. The less commonly used overloads are defined in the .cc file.

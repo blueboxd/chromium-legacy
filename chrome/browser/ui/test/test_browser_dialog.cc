@@ -88,11 +88,6 @@ bool TestBrowserDialog::VerifyUi() {
   views::Widget::Widgets widgets_before = widgets_;
   UpdateWidgets();
 
-  // Force pending layouts of all existing widgets. This ensures any
-  // anchor Views are in the correct position.
-  for (views::Widget* widget : widgets_)
-    widget->LayoutRootViewIfNecessary();
-
   // Get the list of added dialog widgets. Ignore non-dialog widgets, including
   // those added by tests to anchor dialogs and the browser's status bubble.
   // Non-dialog widgets matching the test-specified name will also be included.

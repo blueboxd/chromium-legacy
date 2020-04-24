@@ -153,7 +153,7 @@ void OffTheRecordProfileImpl::Init() {
   // Guest profiles may always be OTR, and non primary OTRs are always allowed.
   // Check IncognitoModePrefs otherwise.
   CHECK(profile_->IsGuestSession() || profile_->IsSystemProfile() ||
-        IsIndependentOffTheRecordProfile() ||
+        !IsPrimaryOTRProfile() ||
         IncognitoModePrefs::GetAvailability(profile_->GetPrefs()) !=
             IncognitoModePrefs::DISABLED);
 
@@ -299,10 +299,6 @@ bool OffTheRecordProfileImpl::IsOffTheRecord() const {
 
 const Profile::OTRProfileID& OffTheRecordProfileImpl::GetOTRProfileID() const {
   return otr_profile_id_;
-}
-
-bool OffTheRecordProfileImpl::IsIndependentOffTheRecordProfile() {
-  return otr_profile_id_ != OTRProfileID::PrimaryID();
 }
 
 Profile* OffTheRecordProfileImpl::GetOffTheRecordProfile(

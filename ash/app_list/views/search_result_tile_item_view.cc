@@ -432,8 +432,6 @@ void SearchResultTileItemView::ActivateResult(int event_flags,
                                    AppListLaunchedFrom::kLaunchedFromSearchBox,
                                    AppListLaunchType::kAppSearchResult,
                                    index_in_container(), launch_as_default);
-  view_delegate_->LogResultLaunchHistogram(
-      SearchResultLaunchLocation::kTileList, index_in_container());
 }
 
 void SearchResultTileItemView::SetIcon(const gfx::ImageSkia& icon) {

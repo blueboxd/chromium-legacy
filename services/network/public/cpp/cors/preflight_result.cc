@@ -4,6 +4,7 @@
 
 #include "services/network/public/cpp/cors/preflight_result.h"
 
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -12,7 +13,9 @@
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "net/http/http_request_headers.h"
+#include "net/http/http_util.h"
 #include "services/network/public/cpp/cors/cors.h"
+#include "services/network/public/cpp/features.h"
 
 namespace network {
 
@@ -57,7 +60,13 @@ bool ParseAccessControlMaxAge(const base::Optional<std::string>& max_age,
   return true;
 }
 
-// At this moment, this function always succeeds.
+// Parses |string| as a Access-Control-Allow-* header value, storing the result
+// in |set|.
+//
+// If the |kStrictAccessControlAllowListCheck| feature is enabled,
+// this function returns false when |string| does not satisfy the syntax
+// here: https://fetch.spec.whatwg.org/#http-new-header-syntax.
+// The function always succeeds if the feature is disabled.
 bool ParseAccessControlAllowList(const base::Optional<std::string>& string,
                                  base::flat_set<std::string>* set,
                                  bool insert_in_lower_case) {
@@ -66,11 +75,18 @@ bool ParseAccessControlAllowList(const base::Optional<std::string>& string,
   if (!string)
     return true;
 
-  for (const auto& value : base::SplitString(
-           *string, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
-    // TODO(toyoshim): Strict ABNF header field checks want to be applied, e.g.
-    // strict VCHAR check of RFC-7230.
-    set->insert(insert_in_lower_case ? base::ToLowerASCII(value) : value);
+  const bool enable_strict_check = base::FeatureList::IsEnabled(
+      features::kStrictAccessControlAllowListCheck);
+
+  net::HttpUtil::ValuesIterator it(string->begin(), string->end(), ',', true);
+  while (it.GetNext()) {
+    base::StringPiece value = it.value_piece();
+    if (enable_strict_check && !net::HttpUtil::IsToken(value)) {
+      set->clear();
+      return false;
+    }
+    set->insert(insert_in_lower_case ? base::ToLowerASCII(value)
+                                     : value.as_string());
   }
   return true;
 }

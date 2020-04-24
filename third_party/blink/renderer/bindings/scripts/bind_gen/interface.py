@@ -21,6 +21,7 @@ from .code_node import SymbolDefinitionNode
 from .code_node import SymbolNode
 from .code_node import SymbolScopeNode
 from .code_node import TextNode
+from .code_node import WeakDependencyNode
 from .code_node_cxx import CxxBlockNode
 from .code_node_cxx import CxxBreakableBlockNode
 from .code_node_cxx import CxxClassDefNode
@@ -571,9 +572,6 @@ def _make_blink_api_call(code_node,
         arguments.append("${script_state}")
     if "ExecutionContext" in values:
         arguments.append("${execution_context}")
-    if "Document" in values:
-        arguments.append(
-            "*bindings::ToDocumentFromExecutionContext(${execution_context})")
     if "ThisValue" in values:
         arguments.append("ScriptValue(${isolate}, ${v8_receiver})")
 
@@ -799,7 +797,7 @@ def make_check_constructor_call(cg_context):
                        "return;")))
     node.accumulate(
         CodeGenAccumulator.require_include_headers([
-            "third_party/blink/renderer/platform/bindings/v8_object_constructor.h",
+            "third_party/blink/renderer/platform/bindings/v8_object_constructor.h"
         ]))
     return node
 
@@ -1367,21 +1365,28 @@ def make_steps_of_ce_reactions(cg_context):
         nodes.append(
             T("V0CustomElementProcessingStack::CallbackDeliveryScope "
               "v0_custom_element_scope;"))
+        nodes[-1].accumulate(
+            CodeGenAccumulator.require_include_headers([
+                "third_party/blink/renderer/core/html/custom/v0_custom_element_processing_stack.h"
+            ]))
 
     if "CEReactions" in ext_attrs:
         nodes.append(T("// [CEReactions]"))
         nodes.append(T("CEReactionsScope ce_reactions_scope;"))
+        nodes[-1].accumulate(
+            CodeGenAccumulator.require_include_headers([
+                "third_party/blink/renderer/core/html/custom/ce_reactions_scope.h"
+            ]))
 
     if not nodes:
         return None
 
-    nodes = SequenceNode(nodes)
-    nodes.accumulate(
-        CodeGenAccumulator.require_include_headers([
-            "third_party/blink/renderer/core/html/custom/ce_reactions_scope.h",
-            "third_party/blink/renderer/core/html/custom/v0_custom_element_processing_stack.h"
-        ]))
-    return nodes
+    # CEReactions scope is not tolerant of V8 exception, so it's necessary to
+    # invoke custom element reactions before throwing an exception.  Thus, put
+    # an ExceptionState before CEReactions scope.
+    nodes.insert(0, WeakDependencyNode(dep_syms=["exception_state"]))
+
+    return SequenceNode(nodes)
 
 
 def make_steps_of_put_forwards(cg_context):
@@ -1744,7 +1749,7 @@ def make_constructor_function_def(cg_context, function_name):
         body.append(T(text))
         body.accumulate(
             CodeGenAccumulator.require_include_headers([
-                "third_party/blink/renderer/bindings/core/v8/v8_html_constructor.h",
+                "third_party/blink/renderer/bindings/core/v8/v8_html_constructor.h"
             ]))
     else:
         body.append(
@@ -5362,7 +5367,7 @@ ${instance_template}->SetHandler(
 
     func_defs.accumulate(
         CodeGenAccumulator.require_include_headers([
-            "third_party/blink/renderer/bindings/core/v8/v8_set_return_value_for_core.h",
+            "third_party/blink/renderer/bindings/core/v8/v8_set_return_value_for_core.h"
         ]))
 
     return func_decls, func_defs, install_node

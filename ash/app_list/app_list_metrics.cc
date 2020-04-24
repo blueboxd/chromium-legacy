@@ -173,9 +173,6 @@ void RecordSearchLaunchIndexAndQueryLength(
     UMA_HISTOGRAM_EXACT_LINEAR(kAppListResultLaunchIndexAndQueryLength,
                                logged_value, kMaxLoggedHistogramValue);
     UMA_HISTOGRAM_BOOLEAN(kAppListResultLaunchIsEmptyQuery, query_length == 0);
-  } else if (launch_location == SearchResultLaunchLocation::kTileList) {
-    UMA_HISTOGRAM_EXACT_LINEAR(kAppListTileLaunchIndexAndQueryLength,
-                               logged_value, kMaxLoggedHistogramValue);
   }
 }
 

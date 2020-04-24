@@ -12619,7 +12619,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   }
 
   scoped_refptr<ShowWidgetMessageFilter> show_widget_filter =
-      new ShowWidgetMessageFilter();
+      new ShowWidgetMessageFilter(web_contents());
   child_node->current_frame_host()->GetProcess()->AddFilter(
       show_widget_filter.get());
 

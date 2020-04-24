@@ -117,10 +117,6 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   const KURL& BaseURL() const final;
   KURL CompleteURL(const String&) const final;
   void DisableEval(const String& error_message) final;
-  LocalDOMWindow* ExecutingWindow() const final {
-    // TODO(crbug.com/1029822): This const_cast is gross.
-    return const_cast<LocalDOMWindow*>(this);
-  }
   String UserAgent() const final;
   HttpsState GetHttpsState() const final;
   ResourceFetcher* Fetcher() const final;

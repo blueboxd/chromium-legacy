@@ -23,6 +23,20 @@
 # Test bugs
 #
 
+wpt_internal/webgpu/cts.html?worker=0&q=webgpu:api/validation/setBindGroup:dynamic_offsets_match_expectations_in_pass_encoder={"type":"compute","dynamicOffsets":[9007199254740991,0]} [ Failure ]
+wpt_internal/webgpu/cts.html?worker=0&q=webgpu:api/validation/setBindGroup:dynamic_offsets_match_expectations_in_pass_encoder={"type":"compute","dynamicOffsets":[0,9007199254740991]} [ Failure ]
+wpt_internal/webgpu/cts.html?worker=0&q=webgpu:api/validation/setBindGroup:dynamic_offsets_match_expectations_in_pass_encoder={"type":"renderpass","dynamicOffsets":[9007199254740991,0]} [ Failure ]
+wpt_internal/webgpu/cts.html?worker=0&q=webgpu:api/validation/setBindGroup:dynamic_offsets_match_expectations_in_pass_encoder={"type":"renderpass","dynamicOffsets":[0,9007199254740991]} [ Failure ]
+wpt_internal/webgpu/cts.html?worker=0&q=webgpu:api/validation/setBindGroup:dynamic_offsets_match_expectations_in_pass_encoder={"type":"renderbundle","dynamicOffsets":[9007199254740991,0]} [ Failure ]
+wpt_internal/webgpu/cts.html?worker=0&q=webgpu:api/validation/setBindGroup:dynamic_offsets_match_expectations_in_pass_encoder={"type":"renderbundle","dynamicOffsets":[0,9007199254740991]} [ Failure ]
+# ...
+wpt_internal/webgpu/cts.html?worker=1&q=webgpu:api/validation/setBindGroup:dynamic_offsets_match_expectations_in_pass_encoder={"type":"compute","dynamicOffsets":[9007199254740991,0]} [ Failure ]
+wpt_internal/webgpu/cts.html?worker=1&q=webgpu:api/validation/setBindGroup:dynamic_offsets_match_expectations_in_pass_encoder={"type":"compute","dynamicOffsets":[0,9007199254740991]} [ Failure ]
+wpt_internal/webgpu/cts.html?worker=1&q=webgpu:api/validation/setBindGroup:dynamic_offsets_match_expectations_in_pass_encoder={"type":"renderpass","dynamicOffsets":[9007199254740991,0]} [ Failure ]
+wpt_internal/webgpu/cts.html?worker=1&q=webgpu:api/validation/setBindGroup:dynamic_offsets_match_expectations_in_pass_encoder={"type":"renderpass","dynamicOffsets":[0,9007199254740991]} [ Failure ]
+wpt_internal/webgpu/cts.html?worker=1&q=webgpu:api/validation/setBindGroup:dynamic_offsets_match_expectations_in_pass_encoder={"type":"renderbundle","dynamicOffsets":[9007199254740991,0]} [ Failure ]
+wpt_internal/webgpu/cts.html?worker=1&q=webgpu:api/validation/setBindGroup:dynamic_offsets_match_expectations_in_pass_encoder={"type":"renderbundle","dynamicOffsets":[0,9007199254740991]} [ Failure ]
+
 # Undecided, but it's likely we'll require storage-buffers in fragment stage.
 # These tests will need updating. https://github.com/gpuweb/gpuweb/issues/639
 crbug.com/dawn/180 wpt_internal/webgpu/cts.html?worker=0&q=webgpu:api/validation/createPipelineLayout:visibility_and_dynamic_offsets={"type":"storage-buffer","hasDynamicOffset":false,"visibility":2} [ Failure ]

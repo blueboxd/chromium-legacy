@@ -830,9 +830,11 @@ class ServiceWorkerRegistrationObjectHostTest
       ServiceWorkerVersion* version) {
     base::Optional<blink::ServiceWorkerStatusCode> status;
     base::RunLoop run_loop;
+    const bool is_container_for_client =
+        provider_type !=
+        blink::mojom::ServiceWorkerContainerType::kForServiceWorker;
     ServiceWorkerRegistrationObjectHost::DelayUpdate(
-        blink::mojom::ServiceWorkerContainerType::kForServiceWorker,
-        registration, version,
+        is_container_for_client, registration, version,
         base::BindOnce(
             [](base::Optional<blink::ServiceWorkerStatusCode>* out_status,
                base::OnceClosure callback,

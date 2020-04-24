@@ -338,6 +338,10 @@ bool Profile::IsSystemProfile() const {
   return is_system_profile_;
 }
 
+bool Profile::IsPrimaryOTRProfile() {
+  return IsOffTheRecord() && GetOTRProfileID() == OTRProfileID::PrimaryID();
+}
+
 bool Profile::CanUseDiskWhenOffTheRecord() {
 #if defined(OS_CHROMEOS)
   // Guest mode on ChromeOS uses an in-memory file system to store the profile

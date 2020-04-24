@@ -7,7 +7,7 @@
  */
 
 // clang-format off
-// #import {CertificateSubnode, NewCertificateSubNode, CertificateType, CertificatesError, CertificatesImportError} from './certificates_browser_proxy.m.js';
+import { CertificatesError, CertificatesImportError,CertificateSubnode, CertificateType, NewCertificateSubNode} from './certificates_browser_proxy.js';
 // clang-format on
 
 /**
@@ -19,7 +19,7 @@
  *   anchor: !HTMLElement
  * }}
  */
-/* #export */ let CertificateActionEventDetail;
+export let CertificateActionEventDetail;
 
 /**
  * The payload of the 'certificates-error' event.
@@ -28,13 +28,13 @@
  *   anchor: ?HTMLElement
  * }}
  */
-/* #export */ let CertificatesErrorEventDetail;
+export let CertificatesErrorEventDetail;
 
 /**
  * Enumeration of actions that require a popup menu to be shown to the user.
  * @enum {number}
  */
-/* #export */ const CertificateAction = {
+export const CertificateAction = {
   DELETE: 0,
   EDIT: 1,
   EXPORT_PERSONAL: 2,
@@ -45,4 +45,4 @@
  * The name of the event fired when a certificate action is selected from the
  * dropdown menu. CertificateActionEventDetail is passed as the event detail.
  */
-/* #export */ const CertificateActionEvent = 'certificate-action';
+export const CertificateActionEvent = 'certificate-action';

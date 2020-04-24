@@ -267,9 +267,4 @@ IPC_MESSAGE_ROUTED0(WidgetHostMsg_DidFirstVisuallyNonEmptyPaint)
 IPC_MESSAGE_ROUTED1(WidgetHostMsg_HasTouchEventHandlers,
                     bool /* has_handlers */)
 
-// Sent by a widget to the browser to request a page scale animation in the
-// main-frame's widget for find-in-page zoom.
-IPC_MESSAGE_ROUTED1(WidgetHostMsg_ZoomToFindInPageRectInMainFrame,
-                    gfx::Rect /* rect_to_zoom */)
-
 #endif  //  CONTENT_COMMON_WIDGET_MESSAGES_H_

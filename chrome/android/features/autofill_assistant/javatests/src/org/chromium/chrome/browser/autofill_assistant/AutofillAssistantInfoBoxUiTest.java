@@ -14,8 +14,11 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
+import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.hasTypefaceSpan;
+
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Typeface;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.widget.TextView;
@@ -96,6 +99,14 @@ public class AutofillAssistantInfoBoxUiTest {
         // Image should not be set.
         assertThat(getExplanationView(coordinator).getCompoundDrawables()[1], nullValue());
         onView(is(getExplanationView(coordinator))).check(matches(withText("Message")));
+
+        // Test that info message supports typeface span.
+        AssistantInfoBox boldInfoBox = new AssistantInfoBox("", "<b>Message</b>");
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> model.set(AssistantInfoBoxModel.INFO_BOX, boldInfoBox));
+        onView(is(getExplanationView(coordinator))).check(matches(withText("Message")));
+        onView(withText("Message"))
+                .check(matches(hasTypefaceSpan(0, "Message".length() - 1, Typeface.BOLD)));
     }
 
     /** Tests for an infobox with message and image. */

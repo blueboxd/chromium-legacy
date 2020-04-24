@@ -71,7 +71,11 @@ constexpr OzonePlatform::PlatformProperties kWaylandPlatformProperties = {
     // https://github.com/wayland-project/wayland-protocols/commit/76d1ae8c65739eff3434ef219c58a913ad34e988
     /*custom_frame_pref_default=*/true,
     /*use_system_title_bar=*/false,
-    /*message_pump_type_for_gpu=*/base::MessagePumpType::DEFAULT};
+
+    /*message_pump_type_for_gpu=*/base::MessagePumpType::DEFAULT,
+
+    /*supports_vulkan_swap_chain=*/false,
+};
 
 class OzonePlatformWayland : public OzonePlatform {
  public:

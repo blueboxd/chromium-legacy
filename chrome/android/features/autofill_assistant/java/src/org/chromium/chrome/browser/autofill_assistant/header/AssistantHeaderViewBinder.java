@@ -13,6 +13,7 @@ import android.widget.TextView;
 import androidx.annotation.Nullable;
 
 import org.chromium.chrome.autofill_assistant.R;
+import org.chromium.chrome.browser.autofill_assistant.AssistantTextUtils;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChipViewHolder;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
@@ -71,8 +72,8 @@ class AssistantHeaderViewBinder
     public void bind(AssistantHeaderModel model, ViewHolder view, PropertyKey propertyKey) {
         if (AssistantHeaderModel.STATUS_MESSAGE == propertyKey) {
             String message = model.get(AssistantHeaderModel.STATUS_MESSAGE);
-            view.mStatusMessage.setText(message);
-            view.mStatusMessage.announceForAccessibility(message);
+            AssistantTextUtils.applyVisualAppearanceTags(view.mStatusMessage, message, null);
+            view.mStatusMessage.announceForAccessibility(view.mStatusMessage.getText());
         } else if (AssistantHeaderModel.PROGRESS == propertyKey) {
             view.mProgressBar.setProgress(model.get(AssistantHeaderModel.PROGRESS));
         } else if (AssistantHeaderModel.PROGRESS_VISIBLE == propertyKey) {

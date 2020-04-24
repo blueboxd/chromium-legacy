@@ -1450,7 +1450,6 @@ test("content_browsertests") {
   if (is_mac) {
     sources += [
       "../browser/accessibility/browser_accessibility_cocoa_browsertest.mm",
-      "../renderer/external_popup_menu_browsertest.cc",
     ]
     deps += [
       "//content/shell:content_shell",

@@ -4,9 +4,12 @@
 
 #include "services/network/public/cpp/cors/preflight_result.h"
 
+#include "base/feature_list.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
 #include "net/http/http_request_headers.h"
+#include "services/network/public/cpp/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace network {
@@ -16,6 +19,8 @@ namespace cors {
 namespace {
 
 using PreflightResultTest = ::testing::Test;
+
+constexpr base::Optional<mojom::CorsError> kNoError;
 
 struct TestCase {
   const std::string allow_methods;
@@ -263,6 +268,112 @@ TEST_F(PreflightResultTest, EnsureRequest) {
     EXPECT_EQ(test.expected_result,
               result->EnsureAllowedRequest(test.request_credentials_mode, "GET",
                                            headers, false));
+  }
+}
+
+struct ParseAccessListTestCase {
+  const std::string input;
+  const std::vector<std::string> values_to_be_accepted;
+  const base::Optional<mojom::CorsError> strict_check_result;
+};
+
+const ParseAccessListTestCase kParseHeadersCases[] = {
+    {"bad value", {}, mojom::CorsError::kInvalidAllowHeadersPreflightResponse},
+    {"X-MY-HEADER, ", {"X-MY-HEADER:t"}, kNoError},
+    {"", {}, kNoError},
+    {", X-MY-HEADER, Y-MY-HEADER, ,",
+     {"X-MY-HEADER:t", "Y-MY-HEADER:t"},
+     kNoError}};
+
+const ParseAccessListTestCase kParseMethodsCases[] = {
+    {"bad value", {}, mojom::CorsError::kInvalidAllowMethodsPreflightResponse},
+    {"GET, ", {"GET"}, kNoError},
+    {"", {}, kNoError},
+    {", GET, POST, ,", {"GET", "POST"}, kNoError}};
+
+TEST_F(PreflightResultTest, ParseAllowControlAllowHeadersStrict) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kStrictAccessControlAllowListCheck);
+
+  for (const auto& test : kParseHeadersCases) {
+    base::Optional<mojom::CorsError> error;
+    std::unique_ptr<PreflightResult> result = PreflightResult::Create(
+        mojom::CredentialsMode::kOmit, /*allow_methods_header=*/base::nullopt,
+        test.input, /*max_age_header=*/base::nullopt, &error);
+    EXPECT_EQ(error, test.strict_check_result);
+
+    if (test.strict_check_result == kNoError) {
+      for (const auto& request_header : test.values_to_be_accepted) {
+        net::HttpRequestHeaders headers;
+        headers.AddHeadersFromString(request_header);
+        EXPECT_EQ(base::nullopt,
+                  result->EnsureAllowedCrossOriginHeaders(headers, false));
+      }
+    }
+  }
+}
+
+TEST_F(PreflightResultTest, ParseAllowControlAllowHeadersLax) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(
+      features::kStrictAccessControlAllowListCheck);
+
+  for (const auto& test : kParseHeadersCases) {
+    base::Optional<mojom::CorsError> error;
+    std::unique_ptr<PreflightResult> result = PreflightResult::Create(
+        mojom::CredentialsMode::kOmit, /*allow_methods_header=*/base::nullopt,
+        test.input, /*max_age_header=*/base::nullopt, &error);
+    EXPECT_EQ(error, kNoError);
+
+    for (const auto& request_header : test.values_to_be_accepted) {
+      net::HttpRequestHeaders headers;
+      headers.AddHeadersFromString(request_header);
+      EXPECT_EQ(base::nullopt,
+                result->EnsureAllowedCrossOriginHeaders(headers, false));
+    }
+  }
+}
+
+TEST_F(PreflightResultTest, ParseAllowControlAllowMethodsStrict) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kStrictAccessControlAllowListCheck);
+
+  for (const auto& test : kParseMethodsCases) {
+    base::Optional<mojom::CorsError> error;
+    std::unique_ptr<PreflightResult> result =
+        PreflightResult::Create(mojom::CredentialsMode::kOmit, test.input,
+                                /*allow_headers_header=*/base::nullopt,
+                                /*max_age_header=*/base::nullopt, &error);
+    EXPECT_EQ(error, test.strict_check_result);
+
+    if (test.strict_check_result == kNoError) {
+      for (const auto& request_method : test.values_to_be_accepted) {
+        EXPECT_EQ(base::nullopt,
+                  result->EnsureAllowedCrossOriginMethod(request_method));
+      }
+    }
+  }
+}
+
+TEST_F(PreflightResultTest, ParseAllowControlAllowMethodsLax) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(
+      features::kStrictAccessControlAllowListCheck);
+
+  for (const auto& test : kParseMethodsCases) {
+    base::Optional<mojom::CorsError> error;
+    std::unique_ptr<PreflightResult> result =
+        PreflightResult::Create(mojom::CredentialsMode::kOmit, test.input,
+                                /*allow_headers_header=*/base::nullopt,
+                                /*max_age_header=*/base::nullopt, &error);
+    EXPECT_EQ(error, kNoError);
+
+    for (const auto& request_method : test.values_to_be_accepted) {
+      EXPECT_EQ(base::nullopt,
+                result->EnsureAllowedCrossOriginMethod(request_method));
+    }
   }
 }
 

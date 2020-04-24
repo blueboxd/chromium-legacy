@@ -252,13 +252,21 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
   // Removes the ServiceWorkerObjectHost corresponding to |version_id|.
   void RemoveServiceWorkerObjectHost(int64_t version_id);
 
+  // Returns true if this container host is for a service worker.
   bool IsContainerForServiceWorker() const;
+
+  // Returns true if this container host is for a service worker client.
   bool IsContainerForClient() const;
 
-  blink::mojom::ServiceWorkerContainerType type() const { return type_; }
+  // Returns the client type of this container host. Can only be called when
+  // IsContainerForClient() is true.
+  blink::mojom::ServiceWorkerClientType GetClientType() const;
 
-  // Can only be called when IsContainerForClient() is true.
-  blink::mojom::ServiceWorkerClientType client_type() const;
+  // Returns true if this container host is specifically for a window client.
+  bool IsContainerForWindowClient() const;
+
+  // Returns true if this container host is specifically for a worker client.
+  bool IsContainerForWorkerClient() const;
 
   // Returns the client info for this container host.
   ServiceWorkerClientInfo GetServiceWorkerClientInfo() const;

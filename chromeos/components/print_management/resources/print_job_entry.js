@@ -6,10 +6,12 @@ import 'chrome://resources/mojo/mojo/public/mojom/base/big_buffer.mojom-lite.js'
 import 'chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-lite.js';
 import 'chrome://resources/mojo/mojo/public/mojom/base/time.mojom-lite.js';
 import 'chrome://resources/mojo/url/mojom/url.mojom-lite.js';
+import './print_management_shared_css.js';
 import './printing_manager.mojom-lite.js';
 
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {assertNotReached} from 'chrome://resources/js/assert.m.js';
+import {FocusRowBehavior} from 'chrome://resources/js/cr/ui/focus_row_behavior.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import './strings.js';
 
@@ -56,6 +58,10 @@ Polymer({
   is: 'print-job-entry',
 
   _template: html`{__html_template__}`,
+
+  behaviors: [
+    FocusRowBehavior,
+  ],
 
   properties: {
     /** @type {!chromeos.printing.printingManager.mojom.PrintJobInfo} */

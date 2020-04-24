@@ -4,6 +4,7 @@
 
 #include "ash/public/cpp/login_screen_test_api.h"
 #include "base/bind.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -103,6 +104,31 @@ class EnrollmentLocalPolicyServerBase : public OobeBaseTest {
     ASSERT_FALSE(InstallAttributes::Get()->IsEnterpriseManaged());
     enrollment_screen()->OnLoginDone(FakeGaiaMixin::kFakeUserEmail,
                                      FakeGaiaMixin::kFakeAuthCode);
+  }
+
+  void ConfirmAndWaitLoginScreen() {
+    auto login_screen_waiter =
+        std::make_unique<content::WindowedNotificationObserver>(
+            chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
+            content::NotificationService::AllSources());
+    enrollment_screen()->OnConfirmationClosed();
+    login_screen_waiter->Wait();
+  }
+
+  void AddPublicUser(const std::string& account_id) {
+    enterprise_management::ChromeDeviceSettingsProto proto;
+    enterprise_management::DeviceLocalAccountInfoProto* account =
+        proto.mutable_device_local_accounts()->add_account();
+    account->set_account_id(account_id);
+    account->set_type(enterprise_management::DeviceLocalAccountInfoProto::
+                          ACCOUNT_TYPE_PUBLIC_SESSION);
+    policy_server_.UpdateDevicePolicy(proto);
+  }
+
+  void SetLoginScreenLocale(const std::string& locale) {
+    enterprise_management::ChromeDeviceSettingsProto proto;
+    proto.mutable_login_screen_locales()->add_login_screen_locales(locale);
+    policy_server_.UpdateDevicePolicy(proto);
   }
 
   LocalPolicyTestServerMixin policy_server_{&mixin_host_};
@@ -956,7 +982,7 @@ class OobeGuestButtonPolicy : public testing::WithParamInterface<bool>,
 IN_PROC_BROWSER_TEST_P(OobeGuestButtonPolicy, MAYBE_VisibilityAfterEnrollment) {
   TriggerEnrollmentAndSignInSuccessfully();
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
-  enrollment_screen()->OnConfirmationClosed();
+  ConfirmAndWaitLoginScreen();
   OobeScreenWaiter(GaiaView::kScreenId).Wait();
 
   ASSERT_EQ(GetParam(),
@@ -973,5 +999,39 @@ IN_PROC_BROWSER_TEST_P(OobeGuestButtonPolicy, MAYBE_VisibilityAfterEnrollment) {
 INSTANTIATE_TEST_SUITE_P(All,
                          OobeGuestButtonPolicy,
                          ::testing::Bool());
+
+IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase, SwitchToViews) {
+  base::HistogramTester histogram_tester;
+  TriggerEnrollmentAndSignInSuccessfully();
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
+  ConfirmAndWaitLoginScreen();
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsOobeDialogVisible());
+  histogram_tester.ExpectTotalCount("OOBE.WebUIToViewsSwitch.Duration", 1);
+}
+
+IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
+                       SwitchToViewsLocalUsers) {
+  AddPublicUser("test_user");
+  base::HistogramTester histogram_tester;
+  TriggerEnrollmentAndSignInSuccessfully();
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
+  ConfirmAndWaitLoginScreen();
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsOobeDialogVisible());
+  EXPECT_EQ(ash::LoginScreenTestApi::GetUsersCount(), 1);
+  histogram_tester.ExpectTotalCount("OOBE.WebUIToViewsSwitch.Duration", 1);
+}
+
+IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase, SwitchToViewsLocales) {
+  auto initial_label = ash::LoginScreenTestApi::GetShutDownButtonLabel();
+
+  SetLoginScreenLocale("ru-RU");
+  base::HistogramTester histogram_tester;
+  TriggerEnrollmentAndSignInSuccessfully();
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
+  ConfirmAndWaitLoginScreen();
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsOobeDialogVisible());
+  EXPECT_NE(ash::LoginScreenTestApi::GetShutDownButtonLabel(), initial_label);
+  histogram_tester.ExpectTotalCount("OOBE.WebUIToViewsSwitch.Duration", 1);
+}
 
 }  // namespace chromeos

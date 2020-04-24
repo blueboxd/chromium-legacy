@@ -81,10 +81,12 @@ class QuickAnswersClientTest : public testing::Test {
   void NotifyAssistantStateChange(
       bool setting_enabled,
       bool context_enabled,
+      bool quick_answers_enabled,
       ash::mojom::AssistantAllowedState assistant_state,
       const std::string& locale) {
     client_->OnAssistantSettingsEnabled(setting_enabled);
     client_->OnAssistantContextEnabled(context_enabled);
+    client_->OnAssistantQuickAnswersEnabled(quick_answers_enabled);
     client_->OnAssistantFeatureAllowedChanged(assistant_state);
     client_->OnLocaleChanged(locale);
   }
@@ -114,6 +116,7 @@ TEST_F(QuickAnswersClientTest, FeatureEligible) {
   NotifyAssistantStateChange(
       /*setting_enabled=*/true,
       /*context_enabled=*/true,
+      /*quick_answers_enabled=*/true,
       /*assistant_state=*/ash::mojom::AssistantAllowedState::ALLOWED,
       /*locale=*/"en-US");
 }
@@ -129,12 +132,14 @@ TEST_F(QuickAnswersClientTest, FeatureIneligibleAfterContextDisabled) {
   NotifyAssistantStateChange(
       /*setting_enabled=*/true,
       /*context_enabled=*/true,
+      /*quick_answers_enabled=*/true,
       /*assistant_state=*/ash::mojom::AssistantAllowedState::ALLOWED,
       /*locale=*/"en-US");
 
   NotifyAssistantStateChange(
       /*setting_enabled=*/true,
       /*context_enabled=*/false,
+      /*quick_answers_enabled=*/true,
       /*assistant_state=*/ash::mojom::AssistantAllowedState::ALLOWED,
       /*locale=*/"en-US");
 }
@@ -145,10 +150,12 @@ TEST_F(QuickAnswersClientTest, FeatureDisabled) {
 
   // Verify that OnEligibilityChanged is called.
   EXPECT_CALL(*mock_delegate_, OnEligibilityChanged(false)).Times(0);
+  EXPECT_CALL(*mock_delegate_, OnEligibilityChanged(true)).Times(0);
 
   NotifyAssistantStateChange(
       /*setting_enabled=*/true,
       /*context_enabled=*/true,
+      /*quick_answers_enabled=*/true,
       /*assistant_state=*/ash::mojom::AssistantAllowedState::ALLOWED,
       /*locale=*/"en-US");
 }
@@ -159,10 +166,12 @@ TEST_F(QuickAnswersClientTest, AssistantSettingDisabled) {
 
   // Verify that OnEligibilityChanged is called.
   EXPECT_CALL(*mock_delegate_, OnEligibilityChanged(false)).Times(0);
+  EXPECT_CALL(*mock_delegate_, OnEligibilityChanged(true)).Times(0);
 
   NotifyAssistantStateChange(
       /*setting_enabled=*/false,
       /*context_enabled=*/true,
+      /*quick_answers_enabled=*/true,
       /*assistant_state=*/ash::mojom::AssistantAllowedState::ALLOWED,
       /*locale=*/"en-US");
 }
@@ -173,10 +182,12 @@ TEST_F(QuickAnswersClientTest, AssistantContextDisabled) {
 
   // Verify that OnEligibilityChanged is called.
   EXPECT_CALL(*mock_delegate_, OnEligibilityChanged(false)).Times(0);
+  EXPECT_CALL(*mock_delegate_, OnEligibilityChanged(true)).Times(0);
 
   NotifyAssistantStateChange(
       /*setting_enabled=*/true,
       /*context_enabled=*/false,
+      /*quick_answers_enabled=*/true,
       /*assistant_state=*/ash::mojom::AssistantAllowedState::ALLOWED,
       /*locale=*/"en-US");
 }
@@ -187,10 +198,12 @@ TEST_F(QuickAnswersClientTest, AssistantNotAllowed) {
 
   // Verify that OnEligibilityChanged is called.
   EXPECT_CALL(*mock_delegate_, OnEligibilityChanged(false)).Times(0);
+  EXPECT_CALL(*mock_delegate_, OnEligibilityChanged(true)).Times(0);
 
   NotifyAssistantStateChange(
       /*setting_enabled=*/true,
       /*context_enabled=*/true,
+      /*quick_answers_enabled=*/true,
       /*assistant_state=*/
       ash::mojom::AssistantAllowedState::DISALLOWED_BY_POLICY,
       /*locale=*/"en-US");
@@ -199,12 +212,27 @@ TEST_F(QuickAnswersClientTest, AssistantNotAllowed) {
 TEST_F(QuickAnswersClientTest, UnsupportedLocale) {
   // Verify that OnEligibilityChanged is called.
   EXPECT_CALL(*mock_delegate_, OnEligibilityChanged(false)).Times(0);
+  EXPECT_CALL(*mock_delegate_, OnEligibilityChanged(true)).Times(0);
 
   NotifyAssistantStateChange(
       /*setting_enabled=*/true,
       /*context_enabled=*/true,
+      /*quick_answers_enabled=*/true,
       /*assistant_state=*/ash::mojom::AssistantAllowedState::ALLOWED,
       /*locale=*/"en-GB");
+}
+
+TEST_F(QuickAnswersClientTest, SettingToggleDisabled) {
+  // Verify that OnEligibilityChanged is called.
+  EXPECT_CALL(*mock_delegate_, OnEligibilityChanged(false)).Times(0);
+  EXPECT_CALL(*mock_delegate_, OnEligibilityChanged(true)).Times(0);
+
+  NotifyAssistantStateChange(
+      /*setting_enabled=*/true,
+      /*context_enabled=*/true,
+      /*quick_answers_enabled=*/false,
+      /*assistant_state=*/ash::mojom::AssistantAllowedState::ALLOWED,
+      /*locale=*/"en-US");
 }
 
 TEST_F(QuickAnswersClientTest, NetworkError) {

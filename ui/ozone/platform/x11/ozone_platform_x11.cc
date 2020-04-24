@@ -67,7 +67,9 @@ constexpr OzonePlatform::PlatformProperties kX11PlatformProperties{
 
     // When the Ozone X11 backend is running, use a UI loop to grab Expose
     // events. See GLSurfaceGLX and https://crbug.com/326995.
-    /*message_pump_type_for_gpu=*/base::MessagePumpType::UI};
+    /*message_pump_type_for_gpu=*/base::MessagePumpType::UI,
+    /*supports_vulkan_swap_chain=*/true,
+};
 
 // Singleton OzonePlatform implementation for X11 platform.
 class OzonePlatformX11 : public OzonePlatform,

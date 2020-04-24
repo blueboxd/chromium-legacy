@@ -75,6 +75,7 @@ class CORE_EXPORT Screen final : public ScriptWrappable,
   bool primary() const;
   float scaleFactor() const;
   const String id() const;
+  bool touchSupport() const;
 
   // Not web-exposed; for internal usage only.
   static constexpr int64_t kInvalidDisplayId = -1;

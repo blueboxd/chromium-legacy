@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {BackgroundSelectionType, BrowserProxy} from 'chrome://new-tab-page/new_tab_page.js';
+import 'chrome://new-tab-page/customize_backgrounds.js';
+
+import {BrowserProxy} from 'chrome://new-tab-page/browser_proxy.js';
+import {BackgroundSelectionType} from 'chrome://new-tab-page/customize_dialog.js';
 import {assertNotStyle, assertStyle, createTestProxy} from 'chrome://test/new_tab_page/test_support.js';
 import {eventToPromise, flushTasks, isVisible} from 'chrome://test/test_util.m.js';
 

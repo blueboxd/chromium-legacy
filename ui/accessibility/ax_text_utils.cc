@@ -13,8 +13,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_enums.mojom.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/strings/grit/ui_strings.h"
 
 namespace ui {
 
@@ -71,7 +69,7 @@ size_t FindAccessibleTextBoundary(const base::string16& text,
   if (boundary == ax::mojom::TextBoundary::kLineStart) {
     if (direction == ax::mojom::MoveDirection::kForward) {
       for (int line_break : line_breaks) {
-        size_t clamped_line_break = std::max(0, line_break);
+        size_t clamped_line_break = size_t{std::max(0, line_break)};
         if ((affinity == ax::mojom::TextAffinity::kDownstream &&
              clamped_line_break > start_offset) ||
             (affinity == ax::mojom::TextAffinity::kUpstream &&
@@ -176,63 +174,6 @@ size_t FindAccessibleTextBoundary(const base::string16& text,
       result--;
     }
   }
-}
-
-base::string16 ActionVerbToLocalizedString(
-    const ax::mojom::DefaultActionVerb action_verb) {
-  switch (action_verb) {
-    case ax::mojom::DefaultActionVerb::kNone:
-      return base::string16();
-    case ax::mojom::DefaultActionVerb::kActivate:
-      return l10n_util::GetStringUTF16(IDS_AX_ACTIVATE_ACTION_VERB);
-    case ax::mojom::DefaultActionVerb::kCheck:
-      return l10n_util::GetStringUTF16(IDS_AX_CHECK_ACTION_VERB);
-    case ax::mojom::DefaultActionVerb::kClick:
-      return l10n_util::GetStringUTF16(IDS_AX_CLICK_ACTION_VERB);
-    case ax::mojom::DefaultActionVerb::kClickAncestor:
-      return l10n_util::GetStringUTF16(IDS_AX_CLICK_ANCESTOR_ACTION_VERB);
-    case ax::mojom::DefaultActionVerb::kJump:
-      return l10n_util::GetStringUTF16(IDS_AX_JUMP_ACTION_VERB);
-    case ax::mojom::DefaultActionVerb::kOpen:
-      return l10n_util::GetStringUTF16(IDS_AX_OPEN_ACTION_VERB);
-    case ax::mojom::DefaultActionVerb::kPress:
-      return l10n_util::GetStringUTF16(IDS_AX_PRESS_ACTION_VERB);
-    case ax::mojom::DefaultActionVerb::kSelect:
-      return l10n_util::GetStringUTF16(IDS_AX_SELECT_ACTION_VERB);
-    case ax::mojom::DefaultActionVerb::kUncheck:
-      return l10n_util::GetStringUTF16(IDS_AX_UNCHECK_ACTION_VERB);
-  }
-  NOTREACHED();
-  return base::string16();
-}
-
-// Some APIs on Linux and Windows need to return non-localized action names.
-base::string16 ActionVerbToUnlocalizedString(
-    const ax::mojom::DefaultActionVerb action_verb) {
-  switch (action_verb) {
-    case ax::mojom::DefaultActionVerb::kNone:
-      return base::UTF8ToUTF16("none");
-    case ax::mojom::DefaultActionVerb::kActivate:
-      return base::UTF8ToUTF16("activate");
-    case ax::mojom::DefaultActionVerb::kCheck:
-      return base::UTF8ToUTF16("check");
-    case ax::mojom::DefaultActionVerb::kClick:
-      return base::UTF8ToUTF16("click");
-    case ax::mojom::DefaultActionVerb::kClickAncestor:
-      return base::UTF8ToUTF16("click-ancestor");
-    case ax::mojom::DefaultActionVerb::kJump:
-      return base::UTF8ToUTF16("jump");
-    case ax::mojom::DefaultActionVerb::kOpen:
-      return base::UTF8ToUTF16("open");
-    case ax::mojom::DefaultActionVerb::kPress:
-      return base::UTF8ToUTF16("press");
-    case ax::mojom::DefaultActionVerb::kSelect:
-      return base::UTF8ToUTF16("select");
-    case ax::mojom::DefaultActionVerb::kUncheck:
-      return base::UTF8ToUTF16("uncheck");
-  }
-  NOTREACHED();
-  return base::string16();
 }
 
 std::vector<int> GetWordStartOffsets(const base::string16& text) {

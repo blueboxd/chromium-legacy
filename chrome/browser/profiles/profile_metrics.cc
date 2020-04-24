@@ -183,11 +183,13 @@ profile_metrics::BrowserProfileType ProfileMetrics::GetBrowserProfileType(
   // should be checked after them.
   if (profile->IsRegularProfile())
     return profile_metrics::BrowserProfileType::kRegular;
+
+  // TODO(https://crrev.com/1033903): To be updated after updating
+  // |IsIncognitoProfile| to return false for non-primary OTR profiles.
   if (profile->IsIncognitoProfile()) {
-    return profile->IsIndependentOffTheRecordProfile()
-               ? profile_metrics::BrowserProfileType::
-                     kIndependentIncognitoProfile
-               : profile_metrics::BrowserProfileType::kIncognito;
+    return profile->IsPrimaryOTRProfile()
+               ? profile_metrics::BrowserProfileType::kIncognito
+               : profile_metrics::BrowserProfileType::kOtherOffTheRecordProfile;
   }
 
   NOTREACHED();

@@ -28,7 +28,7 @@ const char* V8VoidCallbackFunctionDictionaryArg::NameInHeapSnapshot() const {
   return "V8VoidCallbackFunctionDictionaryArg";
 }
 
-v8::Maybe<void> V8VoidCallbackFunctionDictionaryArg::Invoke(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, const TestDictionary*& arg) {
+v8::Maybe<void> V8VoidCallbackFunctionDictionaryArg::Invoke(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, const TestDictionary* arg) {
   ScriptState* callback_relevant_script_state =
       CallbackRelevantScriptStateOrThrowException(
           "VoidCallbackFunctionDictionaryArg",
@@ -114,7 +114,7 @@ v8::Maybe<void> V8VoidCallbackFunctionDictionaryArg::Invoke(bindings::V8ValueOrS
   return v8::JustVoid();
 }
 
-void V8VoidCallbackFunctionDictionaryArg::InvokeAndReportException(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, const TestDictionary*& arg) {
+void V8VoidCallbackFunctionDictionaryArg::InvokeAndReportException(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, const TestDictionary* arg) {
   v8::TryCatch try_catch(GetIsolate());
   try_catch.SetVerbose(true);
 

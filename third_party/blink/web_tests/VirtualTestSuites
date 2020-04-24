@@ -730,5 +730,10 @@
     "prefix": "weakrefs",
     "bases": [ "js/weakrefs" ],
     "args": [ "--js-flags=--harmony-weak-refs" ]
+  },
+  {
+    "prefix": "media-devtools",
+    "bases": [ "inspector-protocol/media" ],
+    "args": ["--enable-features=MediaInspectorLogging"]
   }
 ]

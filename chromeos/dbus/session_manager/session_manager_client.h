@@ -404,13 +404,13 @@ class COMPONENT_EXPORT(SESSION_MANAGER) SessionManagerClient {
       const login_manager::UpgradeArcContainerRequest& request,
       VoidDBusMethodCallback callback) = 0;
 
-  // Asynchronously stops the ARC instance. When |backup_log| is set to true
-  // it also initiates ARC log back up operation on debugd for the given
+  // Asynchronously stops the ARC instance. When |should_backup_log| is set to
+  // true it also initiates ARC log back up operation on debugd for the given
   // |account_id|. Upon completion, invokes |callback| with the result;
   // true on success, false on failure (either session manager failed to
   // stop an instance or session manager can not be reached).
   virtual void StopArcInstance(const std::string& account_id,
-                               bool backup_log,
+                               bool should_backup_log,
                                VoidDBusMethodCallback callback) = 0;
 
   // Adjusts the amount of CPU the ARC instance is allowed to use. When

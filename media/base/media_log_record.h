@@ -13,6 +13,8 @@
 
 namespace media {
 
+// TODO(tmathmeyer) refactor this so that we aren't packing type-erased data
+// with different meanings into "params".
 struct MediaLogRecord {
   MediaLogRecord() {}
 

@@ -13,10 +13,11 @@ namespace blink {
 
 class ExceptionState;
 class GPUTextureCopyView;
-class UnsignedLongSequenceOrGPUExtent3DDict;
+class UnsignedLongEnforceRangeSequenceOrGPUExtent3DDict;
 
-bool ValidateCopySize(UnsignedLongSequenceOrGPUExtent3DDict& copy_size,
-                      ExceptionState& exception_state);
+bool ValidateCopySize(
+    UnsignedLongEnforceRangeSequenceOrGPUExtent3DDict& copy_size,
+    ExceptionState& exception_state);
 bool ValidateTextureCopyView(GPUTextureCopyView* texture_copy_view,
                              ExceptionState& exception_state);
 }  // namespace blink

@@ -1066,7 +1066,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
       if (!user) {
         LOG(WARNING) << "Failed to find user for current profile.";
       } else {
-        chromeos::CryptohomeClient::Get()->TpmAttestationDeleteKeys(
+        chromeos::CryptohomeClient::Get()->TpmAttestationDeleteKeysByPrefix(
             chromeos::attestation::KEY_USER,
             cryptohome::CreateAccountIdentifierFromAccountId(
                 user->GetAccountId()),

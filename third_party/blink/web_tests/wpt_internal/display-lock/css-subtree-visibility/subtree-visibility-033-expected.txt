@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Nodes in hidden non-activatable tree are not exposed to accessibility tree assert_equals: When locked, nodes in hidden subtree are ignored expected 0 but got 2
+Harness: the test ran to completion.
+

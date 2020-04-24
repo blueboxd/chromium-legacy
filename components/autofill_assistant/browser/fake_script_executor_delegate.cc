@@ -25,6 +25,10 @@ const GURL& FakeScriptExecutorDelegate::GetDeeplinkURL() {
   return current_url_;
 }
 
+const GURL& FakeScriptExecutorDelegate::GetScriptURL() {
+  return current_url_;
+}
+
 Service* FakeScriptExecutorDelegate::GetService() {
   return service_;
 }

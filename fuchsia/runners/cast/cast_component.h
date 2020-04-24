@@ -30,9 +30,6 @@ class CastComponent : public WebComponent,
                       public fuchsia::web::NavigationEventListener,
                       public base::MessagePumpFuchsia::ZxHandleWatcher {
  public:
-  // Used to connect to the CastAgent to access Cast-specific services.
-  static const char kAgentComponentUrl[];
-
   struct Params {
     Params();
     Params(Params&&);

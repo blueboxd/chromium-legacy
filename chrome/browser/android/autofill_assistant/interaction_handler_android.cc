@@ -66,155 +66,6 @@ base::Optional<EventHandler::EventKey> CreateEventKeyFromProto(
   }
 }
 
-base::Optional<InteractionHandlerAndroid::InteractionCallback>
-CreateInteractionCallbackFromProto(
-    const CallbackProto& proto,
-    UserModel* user_model,
-    BasicInteractions* basic_interactions,
-    std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>* views,
-    base::android::ScopedJavaGlobalRef<jobject> jcontext,
-    base::android::ScopedJavaGlobalRef<jobject> jdelegate) {
-  switch (proto.kind_case()) {
-    case CallbackProto::kSetValue:
-      if (!proto.set_value().has_value()) {
-        VLOG(1) << "Error creating SetValue interaction: value "
-                   "not set";
-        return base::nullopt;
-      }
-      return base::Optional<InteractionHandlerAndroid::InteractionCallback>(
-          base::BindRepeating(&android_interactions::SetValue,
-                              basic_interactions->GetWeakPtr(),
-                              proto.set_value()));
-    case CallbackProto::kShowInfoPopup: {
-      return base::Optional<InteractionHandlerAndroid::InteractionCallback>(
-          base::BindRepeating(&android_interactions::ShowInfoPopup,
-                              proto.show_info_popup().info_popup(), jcontext));
-    }
-    case CallbackProto::kShowListPopup:
-      if (!proto.show_list_popup().has_item_names()) {
-        VLOG(1) << "Error creating ShowListPopup interaction: "
-                   "item_names not set";
-        return base::nullopt;
-      }
-      if (proto.show_list_popup()
-              .selected_item_indices_model_identifier()
-              .empty()) {
-        VLOG(1) << "Error creating ShowListPopup interaction: "
-                   "selected_item_indices_model_identifier not set";
-        return base::nullopt;
-      }
-      return base::Optional<InteractionHandlerAndroid::InteractionCallback>(
-          base::BindRepeating(&android_interactions::ShowListPopup,
-                              user_model->GetWeakPtr(), proto.show_list_popup(),
-                              jcontext, jdelegate));
-    case CallbackProto::kComputeValue:
-      if (proto.compute_value().result_model_identifier().empty()) {
-        VLOG(1) << "Error creating ComputeValue interaction: "
-                   "result_model_identifier empty";
-        return base::nullopt;
-      }
-      return base::Optional<InteractionHandlerAndroid::InteractionCallback>(
-          base::BindRepeating(&android_interactions::ComputeValue,
-                              basic_interactions->GetWeakPtr(),
-                              proto.compute_value()));
-    case CallbackProto::kSetUserActions:
-      if (!proto.set_user_actions().has_user_actions()) {
-        VLOG(1) << "Error creating SetUserActions interaction: "
-                   "user_actions not set";
-        return base::nullopt;
-      }
-      return base::Optional<InteractionHandlerAndroid::InteractionCallback>(
-          base::BindRepeating(&android_interactions::SetUserActions,
-                              basic_interactions->GetWeakPtr(),
-                              proto.set_user_actions()));
-    case CallbackProto::kEndAction:
-      return base::Optional<InteractionHandlerAndroid::InteractionCallback>(
-          base::BindRepeating(&android_interactions::EndAction,
-                              basic_interactions->GetWeakPtr(),
-                              /* view_inflation_successful = */ true,
-                              proto.end_action()));
-    case CallbackProto::kShowCalendarPopup:
-      if (proto.show_calendar_popup().date_model_identifier().empty()) {
-        VLOG(1) << "Error creating ShowCalendarPopup interaction: "
-                   "date_model_identifier not set";
-        return base::nullopt;
-      }
-      return base::Optional<InteractionHandlerAndroid::InteractionCallback>(
-          base::BindRepeating(&android_interactions::ShowCalendarPopup,
-                              user_model->GetWeakPtr(),
-                              proto.show_calendar_popup(), jcontext,
-                              jdelegate));
-    case CallbackProto::kSetText:
-      if (!proto.set_text().has_text()) {
-        VLOG(1) << "Error creating SetText interaction: "
-                   "text not set";
-        return base::nullopt;
-      }
-      if (proto.set_text().view_identifier().empty()) {
-        VLOG(1) << "Error creating SetText interaction: "
-                   "view_identifier not set";
-        return base::nullopt;
-      }
-      return base::Optional<InteractionHandlerAndroid::InteractionCallback>(
-          base::BindRepeating(&android_interactions::SetViewText,
-                              user_model->GetWeakPtr(), proto.set_text(), views,
-                              jdelegate));
-    case CallbackProto::kToggleUserAction:
-      if (proto.toggle_user_action().user_actions_model_identifier().empty()) {
-        VLOG(1) << "Error creating ToggleUserAction interaction: "
-                   "user_actions_model_identifier not set";
-        return base::nullopt;
-      }
-      if (proto.toggle_user_action().user_action_identifier().empty()) {
-        VLOG(1) << "Error creating ToggleUserAction interaction: "
-                   "user_action_identifier not set";
-        return base::nullopt;
-      }
-      if (!proto.toggle_user_action().has_enabled()) {
-        VLOG(1) << "Error creating ToggleUserAction interaction: "
-                   "enabled not set";
-        return base::nullopt;
-      }
-      return base::Optional<InteractionHandlerAndroid::InteractionCallback>(
-          base::BindRepeating(&android_interactions::ToggleUserAction,
-                              basic_interactions->GetWeakPtr(),
-                              proto.toggle_user_action()));
-    case CallbackProto::kSetViewVisibility:
-      if (proto.set_view_visibility().view_identifier().empty()) {
-        VLOG(1) << "Error creating SetViewVisibility interaction: "
-                   "view_identifier not set";
-        return base::nullopt;
-      }
-      if (!proto.set_view_visibility().has_visible()) {
-        VLOG(1) << "Error creating SetViewVisibility interaction: "
-                   "visible not set";
-        return base::nullopt;
-      }
-      return base::Optional<InteractionHandlerAndroid::InteractionCallback>(
-          base::BindRepeating(&android_interactions::SetViewVisibility,
-                              user_model->GetWeakPtr(),
-                              proto.set_view_visibility(), views));
-    case CallbackProto::kSetViewEnabled:
-      if (proto.set_view_enabled().view_identifier().empty()) {
-        VLOG(1) << "Error creating SetViewEnabled interaction: "
-                   "view_identifier not set";
-        return base::nullopt;
-      }
-      if (!proto.set_view_enabled().has_enabled()) {
-        VLOG(1) << "Error creating SetViewEnabled interaction: "
-                   "enabled not set";
-        return base::nullopt;
-      }
-      return base::Optional<InteractionHandlerAndroid::InteractionCallback>(
-          base::BindRepeating(&android_interactions::SetViewEnabled,
-                              user_model->GetWeakPtr(),
-                              proto.set_view_enabled(), views));
-    case CallbackProto::KIND_NOT_SET:
-      VLOG(1) << "Error creating interaction: kind not set";
-      return base::nullopt;
-  }
-}
-
 }  // namespace
 
 InteractionHandlerAndroid::InteractionHandlerAndroid(
@@ -271,20 +122,17 @@ bool InteractionHandlerAndroid::AddInteractionsFromProto(
   }
 
   for (const auto& callback_proto : proto.callbacks()) {
-    auto callback = CreateInteractionCallbackFromProto(
-        callback_proto, user_model_, basic_interactions_, views_, jcontext_,
-        jdelegate_);
+    auto callback = CreateInteractionCallbackFromProto(callback_proto);
     if (!callback) {
       VLOG(1) << "Invalid callback for interaction";
       return false;
     }
     // Wrap callback in condition handler if necessary.
     if (callback_proto.has_condition_model_identifier()) {
-      callback = base::Optional<InteractionHandlerAndroid::InteractionCallback>(
-          base::BindRepeating(&android_interactions::RunConditionalCallback,
-                              basic_interactions_->GetWeakPtr(),
-                              callback_proto.condition_model_identifier(),
-                              *callback));
+      callback = base::Optional<InteractionCallback>(base::BindRepeating(
+          &android_interactions::RunConditionalCallback,
+          basic_interactions_->GetWeakPtr(),
+          callback_proto.condition_model_identifier(), *callback));
     }
     AddInteraction(*key, *callback);
   }
@@ -320,6 +168,138 @@ void InteractionHandlerAndroid::UpdateRadioButtonGroup(
   }
   basic_interactions_->UpdateRadioButtonGroup(radio_groups_[radio_group],
                                               selected_model_identifier);
+}
+
+base::Optional<InteractionHandlerAndroid::InteractionCallback>
+InteractionHandlerAndroid::CreateInteractionCallbackFromProto(
+    const CallbackProto& proto) {
+  switch (proto.kind_case()) {
+    case CallbackProto::kSetValue:
+      if (!proto.set_value().has_value()) {
+        VLOG(1) << "Error creating SetValue interaction: value "
+                   "not set";
+        return base::nullopt;
+      }
+      return base::Optional<InteractionCallback>(base::BindRepeating(
+          &android_interactions::SetValue, basic_interactions_->GetWeakPtr(),
+          proto.set_value()));
+    case CallbackProto::kShowInfoPopup: {
+      return base::Optional<InteractionCallback>(
+          base::BindRepeating(&android_interactions::ShowInfoPopup,
+                              proto.show_info_popup().info_popup(), jcontext_));
+    }
+    case CallbackProto::kShowListPopup:
+      if (!proto.show_list_popup().has_item_names()) {
+        VLOG(1) << "Error creating ShowListPopup interaction: "
+                   "item_names not set";
+        return base::nullopt;
+      }
+      if (proto.show_list_popup()
+              .selected_item_indices_model_identifier()
+              .empty()) {
+        VLOG(1) << "Error creating ShowListPopup interaction: "
+                   "selected_item_indices_model_identifier not set";
+        return base::nullopt;
+      }
+      return base::Optional<InteractionCallback>(base::BindRepeating(
+          &android_interactions::ShowListPopup, user_model_->GetWeakPtr(),
+          proto.show_list_popup(), jcontext_, jdelegate_));
+    case CallbackProto::kComputeValue:
+      if (proto.compute_value().result_model_identifier().empty()) {
+        VLOG(1) << "Error creating ComputeValue interaction: "
+                   "result_model_identifier empty";
+        return base::nullopt;
+      }
+      return base::Optional<InteractionCallback>(base::BindRepeating(
+          &android_interactions::ComputeValue,
+          basic_interactions_->GetWeakPtr(), proto.compute_value()));
+    case CallbackProto::kSetUserActions:
+      if (!proto.set_user_actions().has_user_actions()) {
+        VLOG(1) << "Error creating SetUserActions interaction: "
+                   "user_actions not set";
+        return base::nullopt;
+      }
+      return base::Optional<InteractionCallback>(base::BindRepeating(
+          &android_interactions::SetUserActions,
+          basic_interactions_->GetWeakPtr(), proto.set_user_actions()));
+    case CallbackProto::kEndAction:
+      return base::Optional<InteractionCallback>(base::BindRepeating(
+          &android_interactions::EndAction, basic_interactions_->GetWeakPtr(),
+          /* view_inflation_successful = */ true, proto.end_action()));
+    case CallbackProto::kShowCalendarPopup:
+      if (proto.show_calendar_popup().date_model_identifier().empty()) {
+        VLOG(1) << "Error creating ShowCalendarPopup interaction: "
+                   "date_model_identifier not set";
+        return base::nullopt;
+      }
+      return base::Optional<InteractionCallback>(base::BindRepeating(
+          &android_interactions::ShowCalendarPopup, user_model_->GetWeakPtr(),
+          proto.show_calendar_popup(), jcontext_, jdelegate_));
+    case CallbackProto::kSetText:
+      if (!proto.set_text().has_text()) {
+        VLOG(1) << "Error creating SetText interaction: "
+                   "text not set";
+        return base::nullopt;
+      }
+      if (proto.set_text().view_identifier().empty()) {
+        VLOG(1) << "Error creating SetText interaction: "
+                   "view_identifier not set";
+        return base::nullopt;
+      }
+      return base::Optional<InteractionCallback>(base::BindRepeating(
+          &android_interactions::SetViewText, user_model_->GetWeakPtr(),
+          proto.set_text(), views_, jdelegate_));
+    case CallbackProto::kToggleUserAction:
+      if (proto.toggle_user_action().user_actions_model_identifier().empty()) {
+        VLOG(1) << "Error creating ToggleUserAction interaction: "
+                   "user_actions_model_identifier not set";
+        return base::nullopt;
+      }
+      if (proto.toggle_user_action().user_action_identifier().empty()) {
+        VLOG(1) << "Error creating ToggleUserAction interaction: "
+                   "user_action_identifier not set";
+        return base::nullopt;
+      }
+      if (!proto.toggle_user_action().has_enabled()) {
+        VLOG(1) << "Error creating ToggleUserAction interaction: "
+                   "enabled not set";
+        return base::nullopt;
+      }
+      return base::Optional<InteractionCallback>(base::BindRepeating(
+          &android_interactions::ToggleUserAction,
+          basic_interactions_->GetWeakPtr(), proto.toggle_user_action()));
+    case CallbackProto::kSetViewVisibility:
+      if (proto.set_view_visibility().view_identifier().empty()) {
+        VLOG(1) << "Error creating SetViewVisibility interaction: "
+                   "view_identifier not set";
+        return base::nullopt;
+      }
+      if (!proto.set_view_visibility().has_visible()) {
+        VLOG(1) << "Error creating SetViewVisibility interaction: "
+                   "visible not set";
+        return base::nullopt;
+      }
+      return base::Optional<InteractionCallback>(base::BindRepeating(
+          &android_interactions::SetViewVisibility, user_model_->GetWeakPtr(),
+          proto.set_view_visibility(), views_));
+    case CallbackProto::kSetViewEnabled:
+      if (proto.set_view_enabled().view_identifier().empty()) {
+        VLOG(1) << "Error creating SetViewEnabled interaction: "
+                   "view_identifier not set";
+        return base::nullopt;
+      }
+      if (!proto.set_view_enabled().has_enabled()) {
+        VLOG(1) << "Error creating SetViewEnabled interaction: "
+                   "enabled not set";
+        return base::nullopt;
+      }
+      return base::Optional<InteractionCallback>(base::BindRepeating(
+          &android_interactions::SetViewEnabled, user_model_->GetWeakPtr(),
+          proto.set_view_enabled(), views_));
+    case CallbackProto::KIND_NOT_SET:
+      VLOG(1) << "Error creating interaction: kind not set";
+      return base::nullopt;
+  }
 }
 
 }  // namespace autofill_assistant

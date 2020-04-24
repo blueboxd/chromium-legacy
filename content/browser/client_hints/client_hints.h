@@ -10,6 +10,7 @@
 
 #include "content/public/browser/client_hints_controller_delegate.h"
 #include "net/http/http_request_headers.h"
+#include "services/network/public/mojom/parsed_headers.mojom-forward.h"
 
 class BrowserContext;
 class FrameTreeNode;
@@ -36,6 +37,14 @@ CONTENT_EXPORT void AddNavigationRequestClientHintsHeaders(
     bool javascript_enabled,
     ClientHintsControllerDelegate* delegate,
     bool is_ua_override_on,
+    FrameTreeNode*);
+
+CONTENT_EXPORT void PersistAcceptCHAfterNagivationRequestRedirect(
+    const GURL& url,
+    const ::network::mojom::ParsedHeadersPtr& headers,
+    BrowserContext* context,
+    bool javascript_enabled,
+    ClientHintsControllerDelegate* delegate,
     FrameTreeNode*);
 
 }  // namespace content

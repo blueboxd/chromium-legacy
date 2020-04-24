@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
+#include "components/browsing_data/content/local_shared_objects_container.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
@@ -21,6 +22,10 @@
 
 namespace content {
 class WebContents;
+}
+
+namespace content_settings {
+class TabSpecificContentSettings;
 }
 
 namespace net {
@@ -252,6 +257,31 @@ class PageInfo : public content::WebContentsObserver {
   // Retrieves all the permissions that are shown in Page Info.
   // Exposed for testing.
   static std::vector<ContentSettingsType> GetAllPermissionsForTesting();
+
+  // Creates if necessary, and returns TabSpecificContentSettings
+  // for the observed WebContents.
+  content_settings::TabSpecificContentSettings* GetTabSpecificContentSettings()
+      const;
+
+  // Whether the content setting of type |type| has changed via Page Info UI.
+  bool HasContentSettingChangedViaPageInfo(ContentSettingsType type);
+
+  // Notifies the delegate that the content setting of type |type| has changed
+  // via Page Info UI.
+  void ContentSettingChangedViaPageInfo(ContentSettingsType type);
+
+  // Get allowed and blocked shared objects like cookies, local storage, etc for
+  // |site_url|.
+  const browsing_data::LocalSharedObjectsContainer& GetAllowedObjects(
+      const GURL& site_url);
+  const browsing_data::LocalSharedObjectsContainer& GetBlockedObjects(
+      const GURL& site_url);
+
+  // Get counts of allowed and blocked cookies.
+  int GetFirstPartyAllowedCookiesCount(const GURL& site_url);
+  int GetFirstPartyBlockedCookiesCount(const GURL& site_url);
+  int GetThirdPartyAllowedCookiesCount(const GURL& site_url);
+  int GetThirdPartyBlockedCookiesCount(const GURL& site_url);
 
   // The page info UI displays information and controls for site-
   // specific data (local stored objects like cookies), site-specific

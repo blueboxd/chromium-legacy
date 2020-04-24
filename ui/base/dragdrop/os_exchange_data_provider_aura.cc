@@ -19,8 +19,8 @@ OSExchangeDataProviderAura::OSExchangeDataProviderAura()
 
 OSExchangeDataProviderAura::~OSExchangeDataProviderAura() = default;
 
-std::unique_ptr<OSExchangeDataProvider> OSExchangeDataProviderAura::Clone()
-    const {
+std::unique_ptr<OSExchangeData::Provider>
+OSExchangeDataProviderAura::Clone() const {
   OSExchangeDataProviderAura* ret = new OSExchangeDataProviderAura();
   ret->formats_ = formats_;
   ret->string_ = string_;
@@ -32,7 +32,7 @@ std::unique_ptr<OSExchangeDataProvider> OSExchangeDataProviderAura::Clone()
   ret->html_ = html_;
   ret->base_url_ = base_url_;
 
-  return base::WrapUnique<OSExchangeDataProvider>(ret);
+  return base::WrapUnique<OSExchangeData::Provider>(ret);
 }
 
 void OSExchangeDataProviderAura::MarkOriginatedFromRenderer() {
@@ -87,13 +87,14 @@ bool OSExchangeDataProviderAura::GetString(base::string16* data) const {
   return true;
 }
 
-bool OSExchangeDataProviderAura::GetURLAndTitle(FilenameToURLPolicy policy,
-                                                GURL* url,
-                                                base::string16* title) const {
+bool OSExchangeDataProviderAura::GetURLAndTitle(
+    OSExchangeData::FilenameToURLPolicy policy,
+    GURL* url,
+    base::string16* title) const {
   if ((formats_ & OSExchangeData::URL) == 0) {
     title->clear();
     return GetPlainTextURL(url) ||
-           (policy == CONVERT_FILENAMES && GetFileURL(url));
+           (policy == OSExchangeData::CONVERT_FILENAMES && GetFileURL(url));
   }
 
   if (!url_.is_valid())
@@ -135,13 +136,14 @@ bool OSExchangeDataProviderAura::HasString() const {
   return (formats_ & OSExchangeData::STRING) != 0;
 }
 
-bool OSExchangeDataProviderAura::HasURL(FilenameToURLPolicy policy) const {
+bool OSExchangeDataProviderAura::HasURL(
+    OSExchangeData::FilenameToURLPolicy policy) const {
   if ((formats_ & OSExchangeData::URL) != 0) {
     return true;
   }
   // No URL, see if we have plain text that can be parsed as a URL.
   return GetPlainTextURL(NULL) ||
-         (policy == CONVERT_FILENAMES && GetFileURL(nullptr));
+         (policy == OSExchangeData::CONVERT_FILENAMES && GetFileURL(nullptr));
 }
 
 bool OSExchangeDataProviderAura::HasFile() const {

@@ -392,7 +392,7 @@ void TabContentManager::SendThumbnailToJava(
     base::android::ScopedJavaGlobalRef<jobject> j_callback,
     bool need_downsampling,
     bool result,
-    SkBitmap bitmap) {
+    const SkBitmap& bitmap) {
   ScopedJavaLocalRef<jobject> j_bitmap;
   if (!bitmap.isNull() && result) {
     // In portrait mode, we want to show thumbnails in squares.

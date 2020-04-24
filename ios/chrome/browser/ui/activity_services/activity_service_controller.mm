@@ -14,14 +14,12 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
-#include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/send_tab_to_self/send_tab_to_self_model.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "components/send_tab_to_self/target_device_info.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/policy/policy_features.h"
 #import "ios/chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
 #include "ios/chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
 #import "ios/chrome/browser/ui/activity_services/activities/bookmark_activity.h"
@@ -54,17 +52,6 @@
 NSString* const kActivityServicesSnackbarCategory =
     @"ActivityServicesSnackbarCategory";
 
-namespace {
-
-// Returns YES if user is allowed to edit any bookmarks.
-bool IsEditBookmarksEnabledInPrefs(PrefService* prefs) {
-  if (IsEditBookmarksIOSEnabled())
-    return prefs->GetBoolean(bookmarks::prefs::kEditBookmarksEnabled);
-  return true;
-}
-
-}  // namespace
-
 @interface ActivityServiceController () {
   __weak id<ActivityServicePresentation> _presentationProvider;
   UIActivityViewController* _activityViewController;
@@ -89,6 +76,7 @@ bool IsEditBookmarksEnabledInPrefs(PrefService* prefs) {
                                      FindInPageCommands,
                                      QRGenerationCommands>)commandHandler
                    bookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
+                     prefService:(PrefService*)prefService
                 canSendTabToSelf:(BOOL)canSendTabToSelf;
 @end
 
@@ -158,12 +146,8 @@ bool IsEditBookmarksEnabledInPrefs(PrefService* prefs) {
 
   _dispatcher = dispatcher;
 
-  // BookmarkModel is only needed to create a bookmark activity. Do not retrieve
-  // a BookmarkModel if editing bookmarks is not allowed.
-  bookmarks::BookmarkModel* bookmarkModel = nullptr;
-  if (IsEditBookmarksEnabledInPrefs(browserState->GetPrefs())) {
-    bookmarkModel = ios::BookmarkModelFactory::GetForBrowserState(browserState);
-  }
+  bookmarks::BookmarkModel* bookmarkModel =
+      ios::BookmarkModelFactory::GetForBrowserState(browserState);
 
   BOOL canSendTabToSelf =
       send_tab_to_self::ShouldOfferFeature(browserState, data.shareURL);
@@ -175,6 +159,8 @@ bool IsEditBookmarksEnabledInPrefs(PrefService* prefs) {
                                 applicationActivitiesForData:data
                                               commandHandler:dispatcher
                                                bookmarkModel:bookmarkModel
+                                                 prefService:browserState
+                                                                 ->GetPrefs()
                                             canSendTabToSelf:canSendTabToSelf]];
 
   // Reading List and Print activities refer to iOS' version of these.
@@ -270,6 +256,7 @@ bool IsEditBookmarksEnabledInPrefs(PrefService* prefs) {
                                      FindInPageCommands,
                                      QRGenerationCommands>)commandHandler
                    bookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
+                     prefService:(PrefService*)prefService
                 canSendTabToSelf:(BOOL)canSendTabToSelf {
   NSMutableArray* applicationActivities = [NSMutableArray array];
 
@@ -295,7 +282,8 @@ bool IsEditBookmarksEnabledInPrefs(PrefService* prefs) {
       BookmarkActivity* bookmarkActivity =
           [[BookmarkActivity alloc] initWithURL:data.visibleURL
                                      bookmarked:bookmarked
-                                     dispatcher:commandHandler];
+                                     dispatcher:commandHandler
+                                    prefService:prefService];
       [applicationActivities addObject:bookmarkActivity];
     }
 

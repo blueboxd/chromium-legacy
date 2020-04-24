@@ -25,6 +25,7 @@ source_set("elements") {
   ]
   deps = [
     "//base",
+    "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common/ui/colors",
   ]

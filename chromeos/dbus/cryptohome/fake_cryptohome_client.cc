@@ -527,10 +527,19 @@ void FakeCryptohomeClient::TpmAttestationSetKeyPayload(
       FROM_HERE, base::BindOnce(std::move(callback), result));
 }
 
-void FakeCryptohomeClient::TpmAttestationDeleteKeys(
+void FakeCryptohomeClient::TpmAttestationDeleteKeysByPrefix(
     attestation::AttestationKeyType key_type,
     const cryptohome::AccountIdentifier& cryptohome_id,
     const std::string& key_prefix,
+    DBusMethodCallback<bool> callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), true));
+}
+
+void FakeCryptohomeClient::TpmAttestationDeleteKey(
+    attestation::AttestationKeyType key_type,
+    const cryptohome::AccountIdentifier& cryptohome_id,
+    const std::string& key_name,
     DBusMethodCallback<bool> callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), true));

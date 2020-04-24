@@ -73,6 +73,10 @@ class ChromePasswordManagerClient
       public autofill::mojom::PasswordGenerationDriver,
       public content::RenderWidgetHost::InputEventObserver {
  public:
+  static void CreateForWebContentsWithAutofillClient(
+      content::WebContents* contents,
+      autofill::AutofillClient* autofill_client);
+
   ~ChromePasswordManagerClient() override;
 
   // PasswordManagerClient implementation.
@@ -116,15 +120,15 @@ class ChromePasswordManagerClient
   void NotifySuccessfulLoginWithExistingPassword(
       const autofill::PasswordForm& form) override;
   void NotifyStorePasswordCalled() override;
-  void AutomaticPasswordSave(
-      std::unique_ptr<password_manager::PasswordFormManagerForUI>
-          saved_form_manager) override;
   void UpdateCredentialCache(
       const GURL& origin,
       const std::vector<const autofill::PasswordForm*>& best_matches,
       bool is_blacklisted) override;
   void UpdateCacheWithBlacklistedForOrigin(const url::Origin& origin,
                                            bool is_blacklisted) override;
+  void AutomaticPasswordSave(
+      std::unique_ptr<password_manager::PasswordFormManagerForUI>
+          saved_form_manager) override;
   void PasswordWasAutofilled(
       const std::vector<const autofill::PasswordForm*>& best_matches,
       const GURL& origin,
@@ -140,13 +144,16 @@ class ChromePasswordManagerClient
   void TriggerReauthForPrimaryAccount(
       base::OnceCallback<void(ReauthSucceeded)> reauth_callback) override;
   void TriggerSignIn(signin_metrics::AccessPoint access_point) override;
-  bool IsIsolationForPasswordSitesEnabled() const override;
-
   PrefService* GetPrefs() const override;
   password_manager::PasswordStore* GetProfilePasswordStore() const override;
   password_manager::PasswordStore* GetAccountPasswordStore() const override;
   password_manager::SyncState GetPasswordSyncState() const override;
   bool WasLastNavigationHTTPError() const override;
+
+#if defined(OS_ANDROID)
+  bool WasCredentialLeakDialogShown() const override;
+#endif  // defined(OS_ANDROID)
+
   net::CertStatus GetMainFrameCertStatus() const override;
   void PromptUserToEnableAutosignin() override;
   bool IsIncognito() const override;
@@ -158,11 +165,39 @@ class ChromePasswordManagerClient
   const GURL& GetMainFrameURL() const override;
   bool IsMainFrameSecure() const override;
   const GURL& GetLastCommittedEntryURL() const override;
-  void AnnotateNavigationEntry(bool has_password_field) override;
-  std::string GetPageLanguage() const override;
   const password_manager::CredentialsFilter* GetStoreResultFilter()
       const override;
   const autofill::LogManager* GetLogManager() const override;
+  void AnnotateNavigationEntry(bool has_password_field) override;
+  std::string GetPageLanguage() const override;
+
+#if defined(ON_FOCUS_PING_ENABLED) || \
+    defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+  safe_browsing::PasswordProtectionService* GetPasswordProtectionService()
+      const override;
+#endif
+
+#if defined(ON_FOCUS_PING_ENABLED)
+  void CheckSafeBrowsingReputation(const GURL& form_action,
+                                   const GURL& frame_url) override;
+#endif
+
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+  void CheckProtectedPasswordEntry(
+      password_manager::metrics_util::PasswordType reused_password_type,
+      const std::string& username,
+      const std::vector<password_manager::MatchingReusedCredential>&
+          matching_reused_credentials,
+      bool password_field_exists) override;
+#endif
+
+#if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
+  void LogPasswordReuseDetectedEvent() override;
+#endif
+
+  ukm::SourceId GetUkmSourceId() override;
+  password_manager::PasswordManagerMetricsRecorder* GetMetricsRecorder()
+      override;
   password_manager::PasswordRequirementsService*
   GetPasswordRequirementsService() override;
   favicon::FaviconService* GetFaviconService() override;
@@ -172,6 +207,7 @@ class ChromePasswordManagerClient
   void UpdateFormManagers() override;
   void NavigateToManagePasswordsPage(
       password_manager::ManagePasswordsReferrer referrer) override;
+  bool IsIsolationForPasswordSitesEnabled() const override;
   bool IsNewTabPage() const override;
   password_manager::FieldInfoManager* GetFieldInfoManager() const override;
 
@@ -201,34 +237,6 @@ class ChromePasswordManagerClient
   void OnImeFinishComposingTextEvent() override;
 #endif  // defined(OS_ANDROID)
 
-#if defined(ON_FOCUS_PING_ENABLED)
-  void CheckSafeBrowsingReputation(const GURL& form_action,
-                                   const GURL& frame_url) override;
-  safe_browsing::PasswordProtectionService* GetPasswordProtectionService()
-      const override;
-#endif
-
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
-  void CheckProtectedPasswordEntry(
-      password_manager::metrics_util::PasswordType reused_password_type,
-      const std::string& username,
-      const std::vector<password_manager::MatchingReusedCredential>&
-          matching_reused_credentials,
-      bool password_field_exists) override;
-#endif
-
-#if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
-  void LogPasswordReuseDetectedEvent() override;
-#endif
-
-  ukm::SourceId GetUkmSourceId() override;
-  password_manager::PasswordManagerMetricsRecorder* GetMetricsRecorder()
-      override;
-
-  static void CreateForWebContentsWithAutofillClient(
-      content::WebContents* contents,
-      autofill::AutofillClient* autofill_client);
-
   // Observer for PasswordGenerationPopup events. Used for testing.
   void SetTestObserver(PasswordGenerationPopupObserver* observer);
 
@@ -247,6 +255,7 @@ class ChromePasswordManagerClient
   }
   bool was_on_paste_called() const { return was_on_paste_called_; }
 #endif
+
 #if defined(OS_ANDROID)
   PasswordAccessoryController* GetOrCreatePasswordAccessory();
 
@@ -256,7 +265,6 @@ class ChromePasswordManagerClient
     return &credential_cache_;
   }
 
-  bool WasCredentialLeakDialogShown() const override;
   void SetCredentialLeakDialogWasShownForTesting(bool value) {
     was_leak_dialog_shown_ = value;
   }

@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill_assistant.metrics.DropOutReason;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
+import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.directactions.DirectActionHandler;
 import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -107,9 +108,9 @@ public class AutofillAssistantFacade {
                                 activity.getFullscreenManager(), activity.getCompositorViewHolder(),
                                 activity.getScrim(), activity, tab.getWebContents(),
                                 !AutofillAssistantPreferencesUtil.getShowOnboarding(),
-                                arguments.getInitialUrl(), arguments.getParameters(),
-                                arguments.getExperimentIds(), arguments.getCallerAccount(),
-                                arguments.getUserName());
+                                activity instanceof CustomTabActivity, arguments.getInitialUrl(),
+                                arguments.getParameters(), arguments.getExperimentIds(),
+                                arguments.getCallerAccount(), arguments.getUserName());
                     });
         });
     }

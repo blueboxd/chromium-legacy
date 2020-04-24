@@ -244,6 +244,8 @@ IN_PROC_BROWSER_TEST_F(TermsOfServiceScreenTest, Accepted) {
   histogram_tester_.ExpectTotalCount(
       "OOBE.StepCompletionTimeByExitReason.Terms-of-service.Declined", 0);
   histogram_tester_.ExpectTotalCount("OOBE.StepCompletionTime.Tos", 1);
+
+  chromeos::test::WaitForPrimaryUserSessionStart();
 }
 
 IN_PROC_BROWSER_TEST_F(TermsOfServiceScreenTest, Declined) {

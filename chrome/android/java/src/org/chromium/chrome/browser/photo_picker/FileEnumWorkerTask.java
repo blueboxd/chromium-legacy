@@ -38,7 +38,7 @@ class FileEnumWorkerTask extends AsyncTask<List<PickerBitmap>> {
     public interface FilesEnumeratedCallback {
         /**
          * A callback to define to receive the list of all images on disk.
-         * @param files The list of images.
+         * @param files The list of images, or null if the function fails.
          */
         void filesEnumeratedCallback(List<PickerBitmap> files);
     }

@@ -35,7 +35,7 @@
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
-#include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -1782,28 +1782,13 @@ String AXObject::RecursiveTextAlternative(const AXObject& ax_obj,
 bool AXObject::IsHiddenViaStyle() const {
   if (GetLayoutObject())
     return GetLayoutObject()->Style()->Visibility() != EVisibility::kVisible;
-  if (Node* node = GetNode()) {
-    if (node->isConnected()) {
-      bool is_first_loop = true;
-      auto* element = DynamicTo<Element>(node);
-      while (element && !element->GetLayoutObject()) {
-        const ComputedStyle* style = element->EnsureComputedStyle();
-        if (!style)
-          continue;
-        if (is_first_loop && style->Visibility() != EVisibility::kVisible)
-          return true;
-        // CSS Display:
-        // - does not inherit
-        // - display: none affects entire subtrees regardless of descendants
-        //   attempting to override it
-        // - causes elements to have no associated layout object
-        // Therefore, check each consecutive parent without a layout object.
-        if (style->Display() == EDisplay::kNone)
-          return true;
-        element = element->parentElement();
-        is_first_loop = false;
-      }
-    }
+  if (Element* element = DynamicTo<Element>(GetNode())) {
+    // TODO(crbug.com/1072447): For subtree-visibility, we should have made sure
+    // that the computed style is updated inside subtrees which are invisible to
+    // rendering, but should have been visible for accessibility.
+    const ComputedStyle* style = element->GetComputedStyle();
+    return !style || style->IsEnsuredInDisplayNone() ||
+           style->Visibility() != EVisibility::kVisible;
   }
   return false;
 }
@@ -1829,6 +1814,19 @@ bool AXObject::IsHiddenForTextAlternativeCalculation() const {
   if (Node* node = GetNode()) {
     auto* element = DynamicTo<Element>(node);
     if (element && node->isConnected()) {
+      // subtree-visibility: hidden subtrees are always hidden.
+      if (DisplayLockUtilities::ShouldIgnoreNodeDueToDisplayLock(
+              *element, DisplayLockActivationReason::kAccessibility)) {
+        return true;
+      }
+      // subtree-visibility: auto with dirty layout tree info are assumed to be
+      // visible. In order to get correct visibility value, the caller must
+      // make sure to update style and layout tree for this node.
+      if (document->NeedsLayoutTreeUpdateForNodeIncludingDisplayLocked(
+              *element, true /* ignore_adjacent_style */)) {
+        DCHECK(DisplayLockUtilities::NearestLockedExclusiveAncestor(*element));
+        return false;
+      }
       const ComputedStyle* style = element->EnsureComputedStyle();
       if (!style)
         return false;

@@ -6,7 +6,6 @@
 
 #include "base/lazy_instance.h"
 #include "ui/base/clipboard/clipboard_constants.h"
-#include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/x/x11_os_exchange_data_provider.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/x/x11_atom_cache.h"
@@ -262,26 +261,6 @@ void XDragDropClient::ProcessMouseMove(const gfx::Point& screen_point,
   }
 }
 
-bool XDragDropClient::HandleXdndEvent(const XClientMessageEvent& event) {
-  Atom message_type = event.message_type;
-  if (message_type == gfx::GetAtom("XdndEnter")) {
-    OnXdndEnter(event);
-  } else if (message_type == gfx::GetAtom("XdndLeave")) {
-    OnXdndLeave(event);
-  } else if (message_type == gfx::GetAtom("XdndPosition")) {
-    OnXdndPosition(event);
-  } else if (message_type == gfx::GetAtom("XdndStatus")) {
-    OnXdndStatus(event);
-  } else if (message_type == gfx::GetAtom("XdndFinished")) {
-    OnXdndFinished(event);
-  } else if (message_type == gfx::GetAtom("XdndDrop")) {
-    OnXdndDrop(event);
-  } else {
-    return false;
-  }
-  return true;
-}
-
 void XDragDropClient::OnXdndEnter(const XClientMessageEvent& event) {
   DVLOG(1) << "OnXdndEnter, version " << ((event.data.l[1] & 0xff000000) >> 24);
 
@@ -439,7 +418,7 @@ void XDragDropClient::OnSelectionNotify(const XSelectionEvent& xselection) {
     XDeleteProperty(xdisplay_, xwindow_, xselection.property);
 }
 
-void XDragDropClient::InitDrag(int operation, const OSExchangeData* data) {
+void XDragDropClient::InitDrag(int operation, OSExchangeData* data) {
   source_current_window_ = x11::None;
   source_state_ = SourceState::kOther;
   waiting_on_status_ = false;
@@ -605,8 +584,28 @@ void XDragDropClient::SendXClientEvent(XID xid, XEvent* xev) {
 
   // Don't send messages to the X11 message queue if we can help it.
   XDragDropClient* short_circuit = GetForWindow(xid);
-  if (short_circuit && short_circuit->HandleXdndEvent(xev->xclient))
-    return;
+  if (short_circuit) {
+    Atom message_type = xev->xclient.message_type;
+    if (message_type == gfx::GetAtom(kXdndEnter)) {
+      short_circuit->OnXdndEnter(xev->xclient);
+      return;
+    } else if (message_type == gfx::GetAtom(kXdndLeave)) {
+      short_circuit->OnXdndLeave(xev->xclient);
+      return;
+    } else if (message_type == gfx::GetAtom(kXdndPosition)) {
+      short_circuit->OnXdndPosition(xev->xclient);
+      return;
+    } else if (message_type == gfx::GetAtom(kXdndStatus)) {
+      short_circuit->OnXdndStatus(xev->xclient);
+      return;
+    } else if (message_type == gfx::GetAtom(kXdndFinished)) {
+      short_circuit->OnXdndFinished(xev->xclient);
+      return;
+    } else if (message_type == gfx::GetAtom(kXdndDrop)) {
+      short_circuit->OnXdndDrop(xev->xclient);
+      return;
+    }
+  }
 
   // I don't understand why the GTK+ code is doing what it's doing here. It
   // goes out of its way to send the XEvent so that it receives a callback on
@@ -669,7 +668,6 @@ void XDragDropClient::SendXdndDrop(XID dest_window) {
 }
 
 void XDragDropClient::EndMoveLoop() {
-  StopEndMoveLoopTimer();
   delegate_->EndMoveLoop();
 }
 

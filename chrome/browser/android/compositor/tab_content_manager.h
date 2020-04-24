@@ -145,7 +145,7 @@ class TabContentManager : public ThumbnailCacheObserver {
       base::android::ScopedJavaGlobalRef<jobject> j_callback,
       bool need_downsampling,
       bool result,
-      SkBitmap bitmap);
+      const SkBitmap& bitmap);
 
   std::unique_ptr<ThumbnailCache> thumbnail_cache_;
   ThumbnailLayerMap static_layer_cache_;

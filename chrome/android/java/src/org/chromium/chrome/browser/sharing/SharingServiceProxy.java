@@ -32,7 +32,7 @@ public class SharingServiceProxy {
         if (sNativeSharingServiceProxyAndroid == 0) {
             // The service hasn't been created yet.
             Natives jni = SharingServiceProxyJni.get();
-            jni.initSharingService(Profile.getLastUsedProfile());
+            jni.initSharingService(Profile.getLastUsedRegularProfile());
         }
 
         sInstance = new SharingServiceProxy();

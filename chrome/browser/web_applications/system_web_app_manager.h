@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/one_shot_event.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -39,6 +40,7 @@ namespace web_app {
 
 class WebAppUiManager;
 class FileHandlerManager;
+class AppRegistryController;
 
 // An enum that lists the different System Apps that exist. Can be used to
 // retrieve the App ID from the underlying Web App system.
@@ -125,6 +127,7 @@ class SystemWebAppManager {
 
   void SetSubsystems(PendingAppManager* pending_app_manager,
                      AppRegistrar* registrar,
+                     AppRegistryController* registry_controller,
                      WebAppUiManager* ui_manager,
                      FileHandlerManager* file_handler_manager);
 
@@ -193,6 +196,9 @@ class SystemWebAppManager {
 
   void SetUpdatePolicyForTesting(UpdatePolicy policy);
 
+  // Updates each system app either disabled/not disabled.
+  void OnAppsPolicyChanged();
+
   void Shutdown();
 
  protected:
@@ -238,9 +244,13 @@ class SystemWebAppManager {
 
   AppRegistrar* registrar_ = nullptr;
 
+  AppRegistryController* registry_controller_ = nullptr;
+
   WebAppUiManager* ui_manager_ = nullptr;
 
   FileHandlerManager* file_handler_manager_ = nullptr;
+
+  PrefChangeRegistrar local_state_pref_change_registrar_;
 
   base::WeakPtrFactory<SystemWebAppManager> weak_ptr_factory_{this};
 

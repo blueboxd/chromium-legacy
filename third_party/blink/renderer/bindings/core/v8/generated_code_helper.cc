@@ -219,6 +219,10 @@ bool IsEsIterableObject(v8::Isolate* isolate,
   return true;
 }
 
+Document* ToDocumentFromExecutionContext(ExecutionContext* execution_context) {
+  return DynamicTo<LocalDOMWindow>(execution_context)->document();
+}
+
 ExecutionContext* ExecutionContextFromV8Wrappable(const Range* range) {
   return range->startContainer()->GetDocument().ToExecutionContext();
 }

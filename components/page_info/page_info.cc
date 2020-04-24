@@ -25,6 +25,7 @@
 #include "build/build_config.h"
 #include "components/browser_ui/util/android/url_constants.h"
 #include "components/browsing_data/content/local_storage_helper.h"
+#include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -471,7 +472,7 @@ void PageInfo::RecordPageInfoAction(PageInfoAction action) {
 
 void PageInfo::OnSitePermissionChanged(ContentSettingsType type,
                                        ContentSetting setting) {
-  delegate_->ContentSettingChangedViaPageInfo(type);
+  ContentSettingChangedViaPageInfo(type);
 
   // Count how often a permission for a specific content type is changed using
   // the Page Info UI.
@@ -924,12 +925,9 @@ void PageInfo::PresentSitePermissions() {
       }
     }
 
-    // TODO(crbug.com/1058597): Remove the call to |delegate_| once
-    // TabSpecificContentSettings has been componentized.
-    if (ShouldShowPermission(permission_info, site_url_, content_settings,
-                             web_contents(),
-                             delegate_->HasContentSettingChangedViaPageInfo(
-                                 permission_info.type))) {
+    if (ShouldShowPermission(
+            permission_info, site_url_, content_settings, web_contents(),
+            HasContentSettingChangedViaPageInfo(permission_info.type))) {
       permission_info_list.push_back(permission_info);
     }
   }
@@ -960,14 +958,14 @@ void PageInfo::PresentSiteData() {
   // TODO(crbug.com/1058597): Remove the calls to the |delegate_| once
   // TabSpecificContentSettings has been componentized.
   PageInfoUI::CookieInfo cookie_info;
-  cookie_info.allowed = delegate_->GetFirstPartyAllowedCookiesCount(site_url_);
-  cookie_info.blocked = delegate_->GetFirstPartyBlockedCookiesCount(site_url_);
+  cookie_info.allowed = GetFirstPartyAllowedCookiesCount(site_url_);
+  cookie_info.blocked = GetFirstPartyBlockedCookiesCount(site_url_);
   cookie_info.is_first_party = true;
   cookie_info_list.push_back(cookie_info);
 
   // Add third party cookie counts.
-  cookie_info.allowed = delegate_->GetThirdPartyAllowedCookiesCount(site_url_);
-  cookie_info.blocked = delegate_->GetThirdPartyBlockedCookiesCount(site_url_);
+  cookie_info.allowed = GetThirdPartyAllowedCookiesCount(site_url_);
+  cookie_info.blocked = GetThirdPartyBlockedCookiesCount(site_url_);
   cookie_info.is_first_party = false;
   cookie_info_list.push_back(cookie_info);
 
@@ -1087,4 +1085,51 @@ void PageInfo::GetSafeBrowsingStatusByMaliciousContentStatus(
       *details = l10n_util::GetStringUTF16(IDS_PAGE_INFO_BILLING_DETAILS);
       break;
   }
+}
+
+content_settings::TabSpecificContentSettings*
+PageInfo::GetTabSpecificContentSettings() const {
+  // When |web_contents| is not from a Tab, |web_contents| does not have a
+  // |TabSpecificContentSettings| and need to create one; otherwise, noop.
+  content_settings::TabSpecificContentSettings::CreateForWebContents(
+      web_contents(), delegate_->GetTabSpecificContentSettingsDelegate());
+  return content_settings::TabSpecificContentSettings::FromWebContents(
+      web_contents());
+}
+
+bool PageInfo::HasContentSettingChangedViaPageInfo(ContentSettingsType type) {
+  return GetTabSpecificContentSettings()->HasContentSettingChangedViaPageInfo(
+      type);
+}
+
+void PageInfo::ContentSettingChangedViaPageInfo(ContentSettingsType type) {
+  GetTabSpecificContentSettings()->ContentSettingChangedViaPageInfo(type);
+}
+
+const browsing_data::LocalSharedObjectsContainer& PageInfo::GetAllowedObjects(
+    const GURL& site_url) {
+  return GetTabSpecificContentSettings()->allowed_local_shared_objects();
+}
+
+const browsing_data::LocalSharedObjectsContainer& PageInfo::GetBlockedObjects(
+    const GURL& site_url) {
+  return GetTabSpecificContentSettings()->blocked_local_shared_objects();
+}
+
+int PageInfo::GetFirstPartyAllowedCookiesCount(const GURL& site_url) {
+  return GetAllowedObjects(site_url).GetObjectCountForDomain(site_url);
+}
+
+int PageInfo::GetFirstPartyBlockedCookiesCount(const GURL& site_url) {
+  return GetBlockedObjects(site_url).GetObjectCountForDomain(site_url);
+}
+
+int PageInfo::GetThirdPartyAllowedCookiesCount(const GURL& site_url) {
+  return GetAllowedObjects(site_url).GetObjectCount() -
+         GetFirstPartyAllowedCookiesCount(site_url);
+}
+
+int PageInfo::GetThirdPartyBlockedCookiesCount(const GURL& site_url) {
+  return GetBlockedObjects(site_url).GetObjectCount() -
+         GetFirstPartyBlockedCookiesCount(site_url);
 }

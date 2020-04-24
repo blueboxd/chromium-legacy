@@ -7,12 +7,22 @@ module network.mojom;
 import "services/network/public/mojom/content_security_policy.mojom";
 import "services/network/public/mojom/cross_origin_embedder_policy.mojom";
 import "services/network/public/mojom/cross_origin_opener_policy.mojom";
+import "services/network/public/mojom/web_client_hints_types.mojom";
 
 // Holds the parsed representation of several security related HTTP headers.
 // This struct should only be populated by network::PopulateParsedHeaders()
 struct ParsedHeaders {
   // The parsed Content-Security-Policy from the response headers.
   array<ContentSecurityPolicy> content_security_policy;
+
+  // The parsed Accept-CH from response headers.
+  //
+  // If this is missing, there is no valid accept-ch header, so client hints
+  // handling should not change.
+  //
+  // If this is present and an empty array, this means that client hints should
+  // be disabled (if updating client hint preference is valid in this context).
+  array<WebClientHintsType>? accept_ch;
 
   // TODO(arthursonzogni): Move COOP/COEP here.
 };

@@ -2514,6 +2514,11 @@ void NavigationRequest::OnRedirectChecksComplete(
         frame_tree_node_->current_frame_host()->GetRenderViewHost();
     const bool javascript_enabled =
         render_view_host->GetWebkitPreferences().javascript_enabled;
+    PersistAcceptCHAfterNagivationRequestRedirect(
+        commit_params_->redirects.back(),
+        commit_params_->redirect_response.back()->parsed_headers,
+        browser_context, javascript_enabled, client_hints_delegate,
+        frame_tree_node_);
     AddNavigationRequestClientHintsHeaders(
         common_params_->url, &client_hints_extra_headers, browser_context,
         javascript_enabled, client_hints_delegate,

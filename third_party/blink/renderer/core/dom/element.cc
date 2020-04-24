@@ -5054,8 +5054,8 @@ const ComputedStyle* Element::EnsureComputedStyle(
   // part of EnsureComputedStyle in an ancestor chain.
   // (see CSSComputedStyleDeclarationTest::NeedsAdjacentStyleRecalc). It is OK
   // that it happens, but we need to ignore the effect on
-  // NeedsLayoutTreeUpdateForNode here.
-  DCHECK(!GetDocument().NeedsLayoutTreeUpdateForNode(
+  // NeedsLayoutTreeUpdateForNodeIncludingDisplayLocked here.
+  DCHECK(!GetDocument().NeedsLayoutTreeUpdateForNodeIncludingDisplayLocked(
       *this, true /* ignore_adjacent_style */));
 
   // FIXME: Find and use the layoutObject from the pseudo element instead of the

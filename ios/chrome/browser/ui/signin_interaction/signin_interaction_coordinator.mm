@@ -162,6 +162,25 @@
   [self showAdvancedSigninSettings];
 }
 
+- (void)showTrustedVaultReauthenticationWithPresentingViewController:
+    (UIViewController*)viewController {
+  DCHECK(!self.signinCompletion);
+  DCHECK(!self.presentingViewController);
+  DCHECK(!self.coordinator);
+  self.presentingViewController = viewController;
+  self.coordinator = [SigninCoordinator
+      trustedVaultReAuthenticationCoordiantorWithBaseViewController:
+          viewController
+                                                            browser:
+                                                                self.browser];
+  __weak SigninInteractionCoordinator* weakSelf = self;
+  self.coordinator.signinCompletion =
+      ^(SigninCoordinatorResult, SigninCompletionInfo*) {
+        [weakSelf trustedVaultReauthenticationDone];
+      };
+  [self.coordinator start];
+}
+
 - (void)cancel {
   [self.controller cancel];
   [self interrupSigninCoordinatorWithAction:
@@ -346,6 +365,13 @@
     }
   };
   [self.coordinator interruptWithAction:action completion:interruptCompletion];
+}
+
+- (void)trustedVaultReauthenticationDone {
+  DCHECK(self.coordinator);
+  [self.coordinator stop];
+  self.coordinator = nil;
+  self.presentingViewController = nil;
 }
 
 @end

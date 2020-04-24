@@ -20,6 +20,7 @@
 #include "third_party/blink/public/platform/web_cache.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/web/blink.h"
+#include "third_party/blink/public/web/web_testing_support.h"
 #include "third_party/blink/public/web/web_view.h"
 
 namespace content {
@@ -28,7 +29,10 @@ TestInterfaces::TestInterfaces()
     : gamepad_controller_(new GamepadController()),
       test_runner_(new TestRunner(this)) {
   // NOTE: please don't put feature specific enable flags here,
-  // instead add them to runtime_enabled_features.json5
+  // instead add them to runtime_enabled_features.json5.
+  //
+  // Stores state to be restored after each test.
+  blink::WebTestingSupport::SaveRuntimeFeatures();
 }
 
 TestInterfaces::~TestInterfaces() {
@@ -50,8 +54,10 @@ void TestInterfaces::Install(blink::WebLocalFrame* frame) {
 }
 
 void TestInterfaces::ResetAll() {
-  gamepad_controller_->Reset();
+  blink::WebTestingSupport::ResetRuntimeFeatures();
   blink::WebCache::Clear();
+
+  gamepad_controller_->Reset();
 
   for (WebViewTestProxy* web_view_test_proxy : window_list_)
     web_view_test_proxy->Reset();

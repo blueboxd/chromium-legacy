@@ -6,11 +6,13 @@
 
 #include <stdlib.h>
 
+#include "base/feature_list.h"
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_ui_constants.h"
 #import "ios/chrome/browser/ui/reading_list/number_badge_view.h"
 #import "ios/chrome/browser/ui/reading_list/text_badge_view.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/material_timing.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
@@ -78,6 +80,11 @@ NSString* const kToolsMenuTextBadgeAccessibilityIdentifier =
 @end
 
 #pragma mark - PopupMenuToolsCell
+
+#if defined(__IPHONE_13_4)
+@interface PopupMenuToolsCell (Pointer) <UIPointerInteractionDelegate>
+@end
+#endif  // defined(__IPHONE_13_4)
 
 @interface PopupMenuToolsCell ()
 
@@ -192,6 +199,15 @@ NSString* const kToolsMenuTextBadgeAccessibilityIdentifier =
         activateConstraints:@[ trailingEdge, heightConstraint ]];
 
     self.isAccessibilityElement = YES;
+
+#if defined(__IPHONE_13_4)
+    if (@available(iOS 13.4, *)) {
+      if (base::FeatureList::IsEnabled(kPointerSupport)) {
+        [self addInteraction:[[UIPointerInteraction alloc]
+                                 initWithDelegate:self]];
+      }
+    }
+#endif  // defined(__IPHONE_13_4)
   }
   return self;
 }
@@ -321,6 +337,28 @@ NSString* const kToolsMenuTextBadgeAccessibilityIdentifier =
   // The name for Voice Control shouldn't include any data from the badge.
   return @[ self.titleLabel.text ];
 }
+
+#if defined(__IPHONE_13_4)
+
+#pragma mark UIPointerInteractionDelegate
+
+- (UIPointerRegion*)pointerInteraction:(UIPointerInteraction*)interaction
+                      regionForRequest:(UIPointerRegionRequest*)request
+                         defaultRegion:(UIPointerRegion*)defaultRegion
+    API_AVAILABLE(ios(13.4)) {
+  return defaultRegion;
+}
+
+- (UIPointerStyle*)pointerInteraction:(UIPointerInteraction*)interaction
+                       styleForRegion:(UIPointerRegion*)region
+    API_AVAILABLE(ios(13.4)) {
+  UIPointerHoverEffect* effect = [UIPointerHoverEffect
+      effectWithPreview:[[UITargetedPreview alloc] initWithView:self]];
+  effect.prefersScaledContent = NO;
+  effect.prefersShadow = NO;
+  return [UIPointerStyle styleWithEffect:effect shape:nil];
+}
+#endif  // defined(__IPHONE_13_4)
 
 #pragma mark - Private
 

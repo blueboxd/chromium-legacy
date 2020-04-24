@@ -4,6 +4,8 @@
 
 #include "services/network/public/cpp/parsed_headers.h"
 
+#include "net/http/http_response_headers.h"
+#include "services/network/public/cpp/client_hints.h"
 #include "services/network/public/cpp/content_security_policy/content_security_policy.h"
 #include "services/network/public/cpp/features.h"
 
@@ -20,6 +22,10 @@ mojom::ParsedHeadersPtr PopulateParsedHeaders(
     AddContentSecurityPolicyFromHeaders(
         *headers, url, &parsed_headers->content_security_policy);
   }
+
+  std::string accept_ch;
+  if (headers->GetNormalizedHeader("Accept-CH", &accept_ch))
+    parsed_headers->accept_ch = ParseAcceptCH(accept_ch);
 
   // TODO(arthursonzogni): Parse COOP and COEP here. Something like:
   //

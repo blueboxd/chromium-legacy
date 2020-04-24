@@ -105,7 +105,7 @@ void ScriptExecutor::Run(const UserData* user_data,
 
   VLOG(2) << "GetActions for " << delegate_->GetCurrentURL().host();
   delegate_->GetService()->GetActions(
-      script_path_, delegate_->GetDeeplinkURL(),
+      script_path_, delegate_->GetScriptURL(),
       MergedTriggerContext(
           {delegate_->GetTriggerContext(), additional_context_.get()}),
       last_global_payload_, last_script_payload_,

@@ -273,6 +273,10 @@ struct VectorCopier;
 template <typename T, typename Allocator>
 struct VectorCopier<false, T, Allocator> {
   STATIC_ONLY(VectorCopier);
+  static void Copy(const T* src, const T* src_end, T* dst) {
+    std::copy(src, src_end, dst);
+  }
+
   template <typename U>
   static void UninitializedCopy(const U* src, const U* src_end, T* dst) {
     while (src != src_end) {
@@ -287,11 +291,21 @@ struct VectorCopier<false, T, Allocator> {
 template <typename T, typename Allocator>
 struct VectorCopier<true, T, Allocator> {
   STATIC_ONLY(VectorCopier);
-  static void UninitializedCopy(const T* src, const T* src_end, T* dst) {
-    if (LIKELY(dst && src)) {
+  static void Copy(const T* src, const T* src_end, T* dst) {
+    if (Allocator::kIsGarbageCollected) {
+      AtomicWriteMemcpy(dst, src,
+                        reinterpret_cast<const char*>(src_end) -
+                            reinterpret_cast<const char*>(src));
+    } else {
       memcpy(dst, src,
              reinterpret_cast<const char*>(src_end) -
                  reinterpret_cast<const char*>(src));
+    }
+  }
+
+  static void UninitializedCopy(const T* src, const T* src_end, T* dst) {
+    if (LIKELY(dst && src)) {
+      Copy(src, src_end, dst);
       ConstructTraits<T, VectorTraits<T>, Allocator>::NotifyNewElements(
           dst, src_end - src);
     }
@@ -400,6 +414,11 @@ struct VectorTypeOperations {
 
   static void Swap(T* src, T* src_end, T* dst) {
     VectorMover<VectorTraits<T>::kCanMoveWithMemcpy, T, Allocator>::Swap(
+        src, src_end, dst);
+  }
+
+  static void Copy(const T* src, const T* src_end, T* dst) {
+    VectorCopier<VectorTraits<T>::kCanCopyWithMemcpy, T, Allocator>::Copy(
         src, src_end, dst);
   }
 
@@ -1518,7 +1537,7 @@ operator=(const Vector<T, inlineCapacity, Allocator>& other) {
   }
 
   ANNOTATE_CHANGE_SIZE(begin(), capacity(), size_, other.size());
-  std::copy(other.begin(), other.begin() + size(), begin());
+  TypeOperations::Copy(other.begin(), other.begin() + size(), begin());
   TypeOperations::UninitializedCopy(other.begin() + size(), other.end(), end());
   size_ = other.size();
 
@@ -1547,7 +1566,7 @@ operator=(const Vector<T, otherCapacity, Allocator>& other) {
   }
 
   ANNOTATE_CHANGE_SIZE(begin(), capacity(), size_, other.size());
-  std::copy(other.begin(), other.begin() + size(), begin());
+  TypeOperations::Copy(other.begin(), other.begin() + size(), begin());
   TypeOperations::UninitializedCopy(other.begin() + size(), other.end(), end());
   size_ = other.size();
 
@@ -1591,7 +1610,7 @@ operator=(std::initializer_list<T> elements) {
   }
 
   ANNOTATE_CHANGE_SIZE(begin(), capacity(), size_, input_size);
-  std::copy(elements.begin(), elements.begin() + size_, begin());
+  TypeOperations::Copy(elements.begin(), elements.begin() + size_, begin());
   TypeOperations::UninitializedCopy(elements.begin() + size_, elements.end(),
                                     end());
   size_ = input_size;

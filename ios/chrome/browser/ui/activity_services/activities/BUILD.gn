@@ -34,7 +34,10 @@ source_set("activities") {
     "resources:activity_services_request_mobile_site",
     "resources:activity_services_send_tab_to_self",
     "//base",
+    "//components/bookmarks/common",
+    "//components/prefs",
     "//ios/chrome/app/strings",
+    "//ios/chrome/browser/policy:feature_flags",
     "//ios/chrome/browser/send_tab_to_self",
     "//ios/chrome/browser/ui/activity_services/requirements",
     "//ios/chrome/browser/ui/commands",
@@ -46,4 +49,21 @@ source_set("activities") {
     "//url",
   ]
   libs = [ "UIKit.framework" ]
+}
+
+source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [ "bookmark_activity_unittest.mm" ]
+  deps = [
+    ":activities",
+    "//base",
+    "//base/test:test_support",
+    "//components/bookmarks/common",
+    "//components/prefs:test_support",
+    "//ios/chrome/browser/policy:feature_flags",
+    "//ios/chrome/browser/ui/commands",
+    "//third_party/ocmock",
+    "//url",
+  ]
 }

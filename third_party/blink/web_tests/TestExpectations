@@ -6440,10 +6440,14 @@ crbug.com/1006759 http/tests/devtools/profiler/heap-snapshot-loader.js [ Pass Fa
 # [2] https://chromium-review.googlesource.com/c/devtools/devtools-frontend/+/2119670
 crbug.com/1064472 http/tests/devtools/elements/elements-tab-stops.js [ Pass Failure ]
 
+# These tests have different output on webkit_layout_tests and
+# not_site_per_process_webkit_layout_tests, as js-self-profiling is only
+# enabled on site-per-process. This means we can't have a consistent
+# -expected.txt file for them, so instead they have to be marked flaky here.
+crbug.com/956688 [ Linux ] external/wpt/js-self-profiling/idlharness.any.html [ Pass Failure ]
+crbug.com/956688 [ Linux ] external/wpt/js-self-profiling/idlharness.any.worker.html [ Pass Failure ]
+
 # Flaky tests blocking WPT import
-crbug.com/1049607 [ Linux ] external/wpt/js-self-profiling/idlharness.any.html [ Pass Failure ]
-crbug.com/1049607 [ Linux ] external/wpt/js-self-profiling/idlharness.any.worker.html [ Pass Failure ]
-crbug.com/1049607 [ Win ] external/wpt/html/semantics/selectors/pseudo-classes/link.html [ Pass Failure ]
 crbug.com/1054577 [ Linux ] virtual/storage-access-api/external/wpt/storage-access-api/requestStorageAccess.sub.window.html [ Pass Failure ]
 crbug.com/1054577 [ Win ] virtual/storage-access-api/external/wpt/storage-access-api/requestStorageAccess.sub.window.html [ Pass Failure ]
 crbug.com/1054577 [ Mac ] external/wpt/media-source/mediasource-detach.html [ Pass Failure ]
@@ -6606,9 +6610,6 @@ crbug.com/1064839 fast/hidpi/image-srcset-svg-canvas-2x.html [ Pass Failure ]
 # Sheriff 2020-03-27
 crbug.com/1064839 fast/hidpi/image-srcset-svg-canvas.html [ Pass Failure ]
 crbug.com/1065335 [ Win ] fast/hidpi/image-srcset-relative-svg-canvas.html [ Pass Failure ]
-
-#Slight change to Skia displacement filter implementation.
-skbug.com/10139 css3/filters/effect-reference-zoom-hw.html [ Pass Failure ]
 
 # Sheriff 2020-03-31
 crbug.com/1065335 [ Win ] fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ Pass Failure ]

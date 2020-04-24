@@ -7,10 +7,12 @@ package org.chromium.chrome.browser.multiwindow;
 import static org.chromium.chrome.browser.multiwindow.MultiWindowTestHelper.createSecondChromeTabbedActivity;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Build;
 import android.support.test.filters.SmallTest;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -19,6 +21,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
@@ -33,6 +36,7 @@ import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Class for testing MultiWindowUtils.
@@ -47,6 +51,11 @@ public class MultiWindowUtilsTest {
     @Before
     public void setUp() throws InterruptedException {
         mActivityTestRule.startMainActivityOnBlankPage();
+    }
+
+    @After
+    public void teardown() {
+        MultiWindowUtils.getInstance().setIsInMultiWindowModeForTesting(false);
     }
 
     /**
@@ -176,5 +185,135 @@ public class MultiWindowUtilsTest {
         MultiWindowUtils.getInstance().getTabbedActivityForIntent(
                 mActivityTestRule.getActivity().getIntent(), mActivityTestRule.getActivity());
         Assert.assertFalse(MultiWindowUtils.getInstance().getTabbedActivity2TaskRunning());
+    }
+
+    /**
+     * Tests that {@link MultiWindowUtils#areMultipleChromeInstancesRunning} behaves correctly in
+     * the case the second instance is killed first.
+     */
+    @Test
+    @SmallTest
+    @Feature("MultiWindow")
+    public void testAreMultipleChromeInstancesRunningSecondInstanceKilledFirst()
+            throws TimeoutException {
+        ChromeTabbedActivity activity1 = mActivityTestRule.getActivity();
+        MultiWindowUtils.getInstance().setIsInMultiWindowModeForTesting(true);
+        Assert.assertFalse("Only a single instance should be running at the start.",
+                MultiWindowUtils.getInstance().areMultipleChromeInstancesRunning(activity1));
+
+        CallbackHelper activity1StoppedCallback = new CallbackHelper();
+        CallbackHelper activity1DestroyedCallback = new CallbackHelper();
+        ApplicationStatus.ActivityStateListener activity1StateListener =
+                new ApplicationStatus.ActivityStateListener() {
+                    @Override
+                    public void onActivityStateChange(Activity activity, int newState) {
+                        switch (newState) {
+                            case ActivityState.STOPPED:
+                                activity1StoppedCallback.notifyCalled();
+                                break;
+                            case ActivityState.DESTROYED:
+                                activity1DestroyedCallback.notifyCalled();
+                                break;
+                        }
+                    }
+                };
+        ApplicationStatus.registerStateListenerForActivity(activity1StateListener, activity1);
+
+        int callCount = activity1StoppedCallback.getCallCount();
+        ChromeTabbedActivity activity2 = createSecondChromeTabbedActivity(activity1);
+        activity1StoppedCallback.waitForCallback(callCount);
+        Assert.assertTrue("Both instances should be running now that the second has started.",
+                MultiWindowUtils.getInstance().areMultipleChromeInstancesRunning(activity1));
+
+        CallbackHelper activity2DestroyedCallback = new CallbackHelper();
+        ApplicationStatus.ActivityStateListener activity2StateListener =
+                new ApplicationStatus.ActivityStateListener() {
+                    @Override
+                    public void onActivityStateChange(Activity activity, int newState) {
+                        switch (newState) {
+                            case ActivityState.DESTROYED:
+                                activity2DestroyedCallback.notifyCalled();
+                                break;
+                        }
+                    }
+                };
+        ApplicationStatus.registerStateListenerForActivity(activity2StateListener, activity2);
+
+        callCount = activity2DestroyedCallback.getCallCount();
+        activity2.finishAndRemoveTask();
+        activity2DestroyedCallback.waitForCallback(callCount);
+        Assert.assertFalse("Only a single instance should be running after the second is killed.",
+                MultiWindowUtils.getInstance().areMultipleChromeInstancesRunning(activity1));
+
+        callCount = activity1DestroyedCallback.getCallCount();
+        activity1.finishAndRemoveTask();
+        activity1DestroyedCallback.waitForCallback(callCount);
+        Assert.assertFalse("No instances should be running as all instances are killed.",
+                MultiWindowUtils.getInstance().areMultipleChromeInstancesRunning(activity1));
+    }
+
+    /**
+     * Tests that {@link MultiWindowUtils#areMultipleChromeInstancesRunning} behaves correctly in
+     * the case the first instance is killed first.
+     */
+    @Test
+    @SmallTest
+    @Feature("MultiWindow")
+    public void testAreMultipleChromeInstancesRunningFirstInstanceKilledFirst()
+            throws TimeoutException {
+        ChromeTabbedActivity activity1 = mActivityTestRule.getActivity();
+        MultiWindowUtils.getInstance().setIsInMultiWindowModeForTesting(true);
+        Assert.assertFalse("Only a single instance should be running at the start.",
+                MultiWindowUtils.getInstance().areMultipleChromeInstancesRunning(activity1));
+
+        CallbackHelper activity1StoppedCallback = new CallbackHelper();
+        CallbackHelper activity1DestroyedCallback = new CallbackHelper();
+        ApplicationStatus.ActivityStateListener activity1StateListener =
+                new ApplicationStatus.ActivityStateListener() {
+                    @Override
+                    public void onActivityStateChange(Activity activity, int newState) {
+                        switch (newState) {
+                            case ActivityState.STOPPED:
+                                activity1StoppedCallback.notifyCalled();
+                                break;
+                            case ActivityState.DESTROYED:
+                                activity1DestroyedCallback.notifyCalled();
+                                break;
+                        }
+                    }
+                };
+        ApplicationStatus.registerStateListenerForActivity(activity1StateListener, activity1);
+
+        int callCount = activity1StoppedCallback.getCallCount();
+        ChromeTabbedActivity activity2 = createSecondChromeTabbedActivity(activity1);
+        activity1StoppedCallback.waitForCallback(callCount);
+        Assert.assertTrue("Both instances should be running now that the second has started.",
+                MultiWindowUtils.getInstance().areMultipleChromeInstancesRunning(activity1));
+
+        CallbackHelper activity2DestroyedCallback = new CallbackHelper();
+        ApplicationStatus.ActivityStateListener activity2StateListener =
+                new ApplicationStatus.ActivityStateListener() {
+                    @Override
+                    public void onActivityStateChange(Activity activity, int newState) {
+                        switch (newState) {
+                            case ActivityState.DESTROYED:
+                                activity2DestroyedCallback.notifyCalled();
+                                break;
+                        }
+                    }
+                };
+        ApplicationStatus.registerStateListenerForActivity(activity2StateListener, activity2);
+
+        callCount = activity1DestroyedCallback.getCallCount();
+        activity1.finishAndRemoveTask();
+        activity1DestroyedCallback.waitForCallback(callCount);
+        Assert.assertFalse("Only a single instance should be running after the first is killed.",
+                MultiWindowUtils.getInstance().areMultipleChromeInstancesRunning(activity1));
+
+        callCount = activity2DestroyedCallback.getCallCount();
+        activity2.finishAndRemoveTask();
+        activity2DestroyedCallback.waitForCallback(callCount);
+        Assert.assertFalse("No instances should be running as all instances are killed.",
+                MultiWindowUtils.getInstance().areMultipleChromeInstancesRunning(activity1));
     }
 }

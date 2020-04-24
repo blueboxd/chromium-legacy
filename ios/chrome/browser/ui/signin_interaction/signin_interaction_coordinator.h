@@ -84,6 +84,10 @@ class Browser;
 - (void)showAdvancedSigninSettingsWithPresentingViewController:
     (UIViewController*)viewController;
 
+// Presents the Trusted Vault re-authentication dialog.
+- (void)showTrustedVaultReauthenticationWithPresentingViewController:
+    (UIViewController*)viewController;
+
 // Cancels any current process. Calls the completion callback when done.
 // |abortAndDismissSettingsViewAnimated:completion:| should not be called after
 // this call.

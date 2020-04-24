@@ -7,6 +7,9 @@
 #include "base/logging.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "components/bookmarks/common/bookmark_pref_names.h"
+#include "components/prefs/pref_service.h"
+#include "ios/chrome/browser/policy/policy_features.h"
 #include "ios/chrome/browser/ui/commands/browser_commands.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -29,6 +32,8 @@ NSString* const kBookmarkActivityType = @"com.google.chrome.bookmarkActivity";
 @property(nonatomic, assign) GURL URL;
 // The dispatcher that handles when the activity is performed.
 @property(nonatomic, weak) id<BrowserCommands> dispatcher;
+// User's preferences service.
+@property(nonatomic, assign) PrefService* prefService;
 @end
 
 @implementation BookmarkActivity
@@ -39,12 +44,14 @@ NSString* const kBookmarkActivityType = @"com.google.chrome.bookmarkActivity";
 
 - (instancetype)initWithURL:(const GURL&)URL
                  bookmarked:(BOOL)bookmarked
-                 dispatcher:(id<BrowserCommands>)dispatcher {
+                 dispatcher:(id<BrowserCommands>)dispatcher
+                prefService:(PrefService*)prefService {
   self = [super init];
   if (self) {
     _URL = URL;
     _bookmarked = bookmarked;
     _dispatcher = dispatcher;
+    _prefService = prefService;
   }
   return self;
 }
@@ -72,7 +79,9 @@ NSString* const kBookmarkActivityType = @"com.google.chrome.bookmarkActivity";
 }
 
 - (BOOL)canPerformWithActivityItems:(NSArray*)activityItems {
-  return YES;
+  // Don't show the add/remove bookmark activity if editing bookmarks is
+  // disabled in the prefs.
+  return [self isEditBookmarksEnabledInPrefs];
 }
 
 - (void)prepareWithActivityItems:(NSArray*)activityItems {
@@ -85,6 +94,16 @@ NSString* const kBookmarkActivityType = @"com.google.chrome.bookmarkActivity";
 - (void)performActivity {
   [self.dispatcher bookmarkPage];
   [self activityDidFinish:YES];
+}
+
+#pragma mark - Private
+
+// Verifies if, based on preferences, the user can edit their bookmarks or not.
+- (BOOL)isEditBookmarksEnabledInPrefs {
+  if (IsEditBookmarksIOSEnabled())
+    return self.prefService->GetBoolean(
+        bookmarks::prefs::kEditBookmarksEnabled);
+  return YES;
 }
 
 @end

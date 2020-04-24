@@ -24,8 +24,6 @@ class TrackedPreferenceValidationDelegate;
 // A TrackedSplitPreference must be tracking a dictionary pref. Each top-level
 // entry in its dictionary is tracked and enforced independently. An optional
 // delegate is notified of the status of the preference during enforcement.
-// Note: preferences using this strategy must be kept in sync with
-// TrackedSplitPreferences in histograms.xml.
 class TrackedSplitPreference : public TrackedPreference {
  public:
   // Constructs a TrackedSplitPreference. |pref_path| must be a dictionary pref.

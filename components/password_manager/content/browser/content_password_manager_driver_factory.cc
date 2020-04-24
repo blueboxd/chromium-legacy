@@ -4,7 +4,6 @@
 
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 
-#include <memory>
 #include <utility>
 #include <vector>
 
@@ -99,12 +98,15 @@ ContentPasswordManagerDriverFactory::GetDriverForFrame(
             content::WebContents::FromRenderFrameHost(render_frame_host));
   DCHECK(render_frame_host->IsRenderFrameCreated());
 
-  auto& driver = frame_driver_map_[render_frame_host];
-  if (!driver) {
-    driver = std::make_unique<ContentPasswordManagerDriver>(
-        render_frame_host, password_client_, autofill_client_);
-  }
-  return driver.get();
+  // TryEmplace() will return an iterator to the driver corresponding to
+  // `render_frame_host`. It creates a new one if required.
+  return &base::TryEmplace(frame_driver_map_, render_frame_host,
+                           // Args passed to the ContentPasswordManagerDriver
+                           // constructor if none exists for `render_frame_host`
+                           // yet.
+                           render_frame_host, password_client_,
+                           autofill_client_)
+              .first->second;
 }
 
 void ContentPasswordManagerDriverFactory::RenderFrameDeleted(
@@ -130,9 +132,8 @@ void ContentPasswordManagerDriverFactory::DidFinishNavigation(
 }
 
 void ContentPasswordManagerDriverFactory::RequestSendLoggingAvailability() {
-  for (const auto& key_val_iterator : frame_driver_map_) {
-    key_val_iterator.second->SendLoggingAvailability();
-  }
+  for (auto& frame_and_driver : frame_driver_map_)
+    frame_and_driver.second.SendLoggingAvailability();
 }
 
 }  // namespace password_manager

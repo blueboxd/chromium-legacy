@@ -46,9 +46,12 @@ export class TestPasswordManagerProxy extends TestBrowserProxy {
       addExceptionListChangedListener: null,
       requestPlaintextPassword: null,
       addCompromisedCredentialsListener: null,
+      addAccountStorageOptInStateListener: null,
     };
 
     this.plaintextPassword_ = '';
+
+    this.isOptedInForAccountStorage_ = false;
   }
 
   /** @override */
@@ -116,6 +119,16 @@ export class TestPasswordManagerProxy extends TestBrowserProxy {
     this.plaintextPassword_ = plaintextPassword;
   }
 
+  // Sets the return value of isOptedInForAccountStorage calls and notifies
+  // the last added listener.
+  setIsOptedInForAccountStorageAndNotify(optIn) {
+    this.isOptedInForAccountStorage_ = optIn;
+    if (this.lastCallback.addAccountStorageOptInStateListener) {
+      this.lastCallback.addAccountStorageOptInStateListener(
+          this.isOptedInForAccountStorage_);
+    }
+  }
+
   /** @override */
   addAccountStorageOptInStateListener(listener) {
     this.actual_.listening.accountStorageOptInState++;
@@ -130,7 +143,7 @@ export class TestPasswordManagerProxy extends TestBrowserProxy {
   /** @override */
   isOptedInForAccountStorage() {
     this.actual_.requested.accountStorageOptInState++;
-    return Promise.resolve(false);
+    return Promise.resolve(this.isOptedInForAccountStorage_);
   }
 
   /**

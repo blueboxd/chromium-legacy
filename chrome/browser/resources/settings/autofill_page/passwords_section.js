@@ -150,6 +150,12 @@ Polymer({
     },
 
     /** @private */
+    eligibleForAccountStorage_: {
+      type: Boolean,
+      computed: 'computeEligibleForAccountStorage_(syncStatus_, signedIn_)',
+    },
+
+    /** @private */
     hasNeverCheckedPasswords_: {
       type: Boolean,
       computed: 'computeHasNeverCheckedPasswords_(status)',
@@ -196,7 +202,7 @@ Polymer({
     },
 
     /** @private */
-    enableAccountStorage_: {
+    accountStorageFeatureEnabled_: {
       type: Boolean,
       value() {
         return loadTimeData.getBoolean('enableAccountStorage');
@@ -445,6 +451,17 @@ Polymer({
     return !!this.syncStatus_ && !!this.syncStatus_.signedIn ?
         !this.syncStatus_.hasError :
         (!!this.storedAccounts_ && this.storedAccounts_.length > 0);
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computeEligibleForAccountStorage_() {
+    // |this.syncStatus_.signedIn| means the user has sync enabled, while
+    // |this.signedIn_| means they have signed in, in the content area.
+    return this.accountStorageFeatureEnabled_ &&
+        (!!this.syncStatus_ && !this.syncStatus_.signedIn) && this.signedIn_;
   },
 
   /**

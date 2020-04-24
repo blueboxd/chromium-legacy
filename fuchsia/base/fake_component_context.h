@@ -26,10 +26,8 @@ namespace cr_fuchsia {
 class FakeComponentContext
     : public fuchsia::modular::testing::ComponentContext_TestBase {
  public:
-  explicit FakeComponentContext(
-      AgentImpl::CreateComponentStateCallback create_component_state_callback,
-      sys::OutgoingDirectory* outgoing_directory,
-      base::StringPiece component_url);
+  FakeComponentContext(sys::OutgoingDirectory* outgoing_directory,
+                       base::StringPiece component_url);
   ~FakeComponentContext() override;
 
   void RegisterCreateComponentStateCallback(
@@ -54,7 +52,6 @@ class FakeComponentContext
   fuchsia::sys::ServiceProviderPtr agent_services_;
 
   std::map<base::StringPiece, std::unique_ptr<AgentImpl>> agent_impl_map_;
-  AgentImpl default_agent_impl_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeComponentContext);
 };

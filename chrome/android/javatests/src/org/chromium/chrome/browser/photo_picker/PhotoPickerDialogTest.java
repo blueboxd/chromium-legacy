@@ -4,9 +4,11 @@
 
 package org.chromium.chrome.browser.photo_picker;
 
+import android.content.ContentResolver;
 import android.net.Uri;
 import android.os.Build;
 import android.os.StrictMode;
+import android.provider.MediaStore;
 import android.support.test.filters.LargeTest;
 import android.view.View;
 import android.view.animation.Animation;
@@ -21,6 +23,7 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -218,15 +221,15 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
         return (RecyclerView) mDialog.findViewById(R.id.recycler_view);
     }
 
-    private PhotoPickerDialog createDialog(final boolean multiselect, final List<String> mimeTypes)
-            throws Exception {
+    private PhotoPickerDialog createDialogWithContentResolver(final ContentResolver contentResolver,
+            final boolean multiselect, final List<String> mimeTypes) throws Exception {
         final PhotoPickerDialog dialog =
                 TestThreadUtils.runOnUiThreadBlocking(new Callable<PhotoPickerDialog>() {
                     @Override
                     public PhotoPickerDialog call() {
-                        final PhotoPickerDialog dialog =
-                                new PhotoPickerDialog(mActivityTestRule.getActivity(),
-                                        PhotoPickerDialogTest.this, multiselect, mimeTypes);
+                        final PhotoPickerDialog dialog = new PhotoPickerDialog(
+                                mActivityTestRule.getActivity(), contentResolver,
+                                PhotoPickerDialogTest.this, multiselect, mimeTypes);
                         dialog.show();
                         return dialog;
                     }
@@ -238,6 +241,12 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
         mDialog = dialog;
 
         return dialog;
+    }
+
+    private PhotoPickerDialog createDialog(final boolean multiselect, final List<String> mimeTypes)
+            throws Exception {
+        return createDialogWithContentResolver(
+                mActivityTestRule.getActivity().getContentResolver(), multiselect, mimeTypes);
     }
 
     private void waitForDecoder() throws Exception {
@@ -297,6 +306,31 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
 
     private void dismissDialog() {
         TestThreadUtils.runOnUiThreadBlocking(() -> mDialog.dismiss());
+    }
+
+    /**
+     * Tests what happens when the ContentResolver returns a null cursor when query() is called (a
+     * regression test for https://crbug.com/1072415).
+     * Note: This test does not call setupTestFiles() so that the real FileEnumWorkerTask is used.
+     */
+    @Test
+    @LargeTest
+    public void testNoCrashWhenContentResolverQueryReturnsNull() throws Throwable {
+        ContentResolver contentResolver = Mockito.mock(ContentResolver.class);
+        Uri contentUri = MediaStore.Files.getContentUri("external");
+        Mockito.doReturn(null)
+                .when(contentResolver)
+                .query(contentUri, new String[] {}, "", new String[] {}, "");
+
+        createDialogWithContentResolver(
+                contentResolver, false, Arrays.asList("image/*")); // Multi-select = false.
+        Assert.assertTrue(mDialog.isShowing());
+        waitForDecoder();
+
+        // The test should not have crashed at this point, as per https://crbug.com/1072415,
+        // so the loading should have aborted (gracefully) because the image cursor could not be
+        // constructed.
+        dismissDialog();
     }
 
     @Test

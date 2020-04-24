@@ -1,7 +1,8 @@
 include_rules = [
   "+components/browser_ui/util/android/url_constants.h",
-  "+components/browsing_data/content/local_storage_helper.h",
+  "+components/browsing_data/content",
   "+components/content_settings/core",
+  "+components/content_settings/browser",
   "+components/password_manager/core/browser/password_manager_metrics_util.h",
   "+components/permissions",
   "+components/prefs/pref_service.h",

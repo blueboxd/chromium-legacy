@@ -121,6 +121,7 @@ bool ClientAndroid::Start(JNIEnv* env,
                           const JavaParamRef<jstring>& jcaller_account,
                           const JavaParamRef<jobjectArray>& jparameter_names,
                           const JavaParamRef<jobjectArray>& jparameter_values,
+                          jboolean jis_cct,
                           const JavaParamRef<jobject>& jonboarding_coordinator,
                           jboolean jonboarding_shown,
                           jlong jservice) {
@@ -143,7 +144,7 @@ bool ClientAndroid::Start(JNIEnv* env,
   GURL initial_url(base::android::ConvertJavaStringToUTF8(env, jinitial_url));
   auto trigger_context = CreateTriggerContext(
       env, jexperiment_ids, jparameter_names, jparameter_values);
-  trigger_context->SetCCT(true);
+  trigger_context->SetCCT(jis_cct);
   trigger_context->SetOnboardingShown(jonboarding_shown);
   if (jcaller_account) {
     trigger_context->SetCallerAccountHash(

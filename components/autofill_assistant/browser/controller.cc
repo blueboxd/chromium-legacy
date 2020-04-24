@@ -103,6 +103,12 @@ bool IsSubdomainOf(const std::string& subdomain,
                         base::StringPiece("." + parent_domain),
                         base::CompareCase::INSENSITIVE_ASCII);
 }
+
+// Check whether two URLs have the same domain.
+bool HasSameDomainAs(const GURL& a, const GURL& b) {
+  return a.host() == b.host();
+}
+
 }  // namespace
 
 Controller::Controller(content::WebContents* web_contents,
@@ -138,6 +144,10 @@ const GURL& Controller::GetCurrentURL() {
 
 const GURL& Controller::GetDeeplinkURL() {
   return deeplink_url_;
+}
+
+const GURL& Controller::GetScriptURL() {
+  return script_url_;
 }
 
 Service* Controller::GetService() {
@@ -647,13 +657,13 @@ void Controller::GetOrCheckScripts() {
     return;
 
   const GURL& url = GetCurrentURL();
-  if (script_domain_ != url.host()) {
+  if (!HasSameDomainAs(script_url_, url)) {
     StopPeriodicScriptChecks();
-    script_domain_ = url.host();
+    script_url_ = url;
 #ifdef NDEBUG
     VLOG(2) << "GetScripts for <redacted>";
 #else
-    VLOG(2) << "GetScripts for " << script_domain_;
+    VLOG(2) << "GetScripts for " << script_url_.host();
 #endif
 
     GetService()->GetScriptsForUrl(
@@ -719,14 +729,14 @@ void Controller::OnGetScripts(const GURL& url,
 
   // If the domain of the current URL changed since the request was sent, the
   // response is not relevant anymore and can be safely discarded.
-  if (url.host() != script_domain_)
+  if (!HasSameDomainAs(script_url_, url))
     return;
 
   if (!result) {
 #ifdef NDEBUG
     VLOG(1) << "Failed to get assistant scripts for <redacted>";
 #else
-    VLOG(1) << "Failed to get assistant scripts for " << script_domain_;
+    VLOG(1) << "Failed to get assistant scripts for " << script_url_.host();
 #endif
     OnFatalError(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_DEFAULT_ERROR),
                  Metrics::DropOutReason::GET_SCRIPTS_FAILED);
@@ -738,7 +748,7 @@ void Controller::OnGetScripts(const GURL& url,
 #ifdef NDEBUG
     VLOG(2) << __func__ << " from <redacted> returned unparseable response";
 #else
-    VLOG(2) << __func__ << " from " << script_domain_ << " returned "
+    VLOG(2) << __func__ << " from " << script_url_.host() << " returned "
             << "unparseable response";
 #endif
     OnFatalError(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_DEFAULT_ERROR),
@@ -768,16 +778,17 @@ void Controller::OnGetScripts(const GURL& url,
   VLOG(2) << __func__ << " from <redacted> returned " << scripts.size()
           << " scripts";
 #else
-  VLOG(2) << __func__ << " from " << script_domain_ << " returned "
+  VLOG(2) << __func__ << " from " << script_url_.host() << " returned "
           << scripts.size() << " scripts";
 #endif
 
   if (VLOG_IS_ON(3)) {
     for (const auto& script : scripts) {
       // Strip domain from beginning if possible (redundant with log above).
-      auto pos = script->handle.path.find(script_domain_);
+      auto pos = script->handle.path.find(script_url_.host());
       if (pos == 0) {
-        DVLOG(3) << "\t" << script->handle.path.substr(script_domain_.length());
+        DVLOG(3) << "\t"
+                 << script->handle.path.substr(script_url_.host().length());
       } else {
         DVLOG(3) << "\t" << script->handle.path;
       }
@@ -1436,7 +1447,7 @@ void Controller::OnFatalError(const std::string& error_message,
   // never will.
   MaybeReportFirstCheckDone();
 
-  if (tracking_ && script_domain_ == GetCurrentURL().host()) {
+  if (tracking_ && HasSameDomainAs(script_url_, GetCurrentURL())) {
     // When tracking the controller should stays until the browser has navigated
     // away from the last domain that was checked to be able to tell callers
     // that the set of user actions is empty.
@@ -1448,7 +1459,8 @@ void Controller::OnFatalError(const std::string& error_message,
 }
 
 void Controller::PerformDelayedShutdownIfNecessary() {
-  if (delayed_shutdown_reason_ && script_domain_ != GetCurrentURL().host()) {
+  if (delayed_shutdown_reason_ &&
+      !HasSameDomainAs(script_url_, GetCurrentURL())) {
     Metrics::DropOutReason reason = delayed_shutdown_reason_.value();
     delayed_shutdown_reason_ = base::nullopt;
     tracking_ = false;
@@ -1634,8 +1646,9 @@ void Controller::DidFinishNavigation(
   // supported.
   if (state_ == AutofillAssistantState::BROWSE) {
     auto current_host = web_contents()->GetLastCommittedURL().host();
-    if (current_host != script_domain_ &&
-        !IsSubdomainOf(current_host, script_domain_)) {
+    auto script_host = script_url_.host();
+    if (current_host != script_host &&
+        !IsSubdomainOf(current_host, script_host)) {
       OnScriptError(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_GIVE_UP),
                     Metrics::DropOutReason::DOMAIN_CHANGE_DURING_BROWSE_MODE);
     }

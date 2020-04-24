@@ -83,7 +83,7 @@ class OwningProvider : public OSExchangeDataProviderMac {
         owned_pasteboard_(new ui::UniquePasteboard) {}
   OwningProvider(const OwningProvider& provider) = default;
 
-  std::unique_ptr<OSExchangeDataProvider> Clone() const override {
+  std::unique_ptr<OSExchangeData::Provider> Clone() const override {
     return std::make_unique<OwningProvider>(*this);
   }
 
@@ -101,7 +101,7 @@ class WrappingProvider : public OSExchangeDataProviderMac {
       : OSExchangeDataProviderMac(), wrapped_pasteboard_([pasteboard retain]) {}
   WrappingProvider(const WrappingProvider& provider) = default;
 
-  std::unique_ptr<OSExchangeDataProvider> Clone() const override {
+  std::unique_ptr<OSExchangeData::Provider> Clone() const override {
     return std::make_unique<WrappingProvider>(*this);
   }
 
@@ -193,16 +193,18 @@ bool OSExchangeDataProviderMac::GetString(base::string16* data) const {
   // There was no NSString, check for an NSURL.
   GURL url;
   base::string16 title;
-  bool result = GetURLAndTitle(DO_NOT_CONVERT_FILENAMES, &url, &title);
+  bool result =
+      GetURLAndTitle(OSExchangeData::DO_NOT_CONVERT_FILENAMES, &url, &title);
   if (result)
     *data = base::UTF8ToUTF16(url.spec());
 
   return result;
 }
 
-bool OSExchangeDataProviderMac::GetURLAndTitle(FilenameToURLPolicy policy,
-                                               GURL* url,
-                                               base::string16* title) const {
+bool OSExchangeDataProviderMac::GetURLAndTitle(
+    OSExchangeData::FilenameToURLPolicy policy,
+    GURL* url,
+    base::string16* title) const {
   DCHECK(url);
   DCHECK(title);
 
@@ -219,7 +221,8 @@ bool OSExchangeDataProviderMac::GetURLAndTitle(FilenameToURLPolicy policy,
   // the trailing slashes off of paths and always returns the last path element
   // as the title whereas no path conversion nor title is wanted.
   base::FilePath path;
-  if (policy != DO_NOT_CONVERT_FILENAMES && GetFilename(&path)) {
+  if (policy != OSExchangeData::DO_NOT_CONVERT_FILENAMES &&
+      GetFilename(&path)) {
     NSURL* fileUrl =
         [NSURL fileURLWithPath:base::SysUTF8ToNSString(path.value())];
     *url =
@@ -270,7 +273,8 @@ bool OSExchangeDataProviderMac::HasString() const {
   return GetString(&string);
 }
 
-bool OSExchangeDataProviderMac::HasURL(FilenameToURLPolicy policy) const {
+bool OSExchangeDataProviderMac::HasURL(
+    OSExchangeData::FilenameToURLPolicy policy) const {
   GURL url;
   base::string16 title;
   return GetURLAndTitle(policy, &url, &title);

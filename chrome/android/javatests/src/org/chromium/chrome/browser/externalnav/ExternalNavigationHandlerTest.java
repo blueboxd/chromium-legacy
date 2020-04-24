@@ -38,6 +38,7 @@ import org.chromium.components.external_intents.ExternalNavigationHandler;
 import org.chromium.components.external_intents.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.components.external_intents.ExternalNavigationParams;
 import org.chromium.components.external_intents.RedirectHandlerImpl;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.NativeLibraryTestRule;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.webapk.lib.common.WebApkConstants;
@@ -1240,7 +1241,7 @@ public class ExternalNavigationHandlerTest {
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
                         START_OTHER_ACTIVITY);
 
-        mDelegate.setPreviousUrl("https://refertest.com");
+        mUrlHandler.mLastCommittedUrl = "https://refertest.com";
         checkUrl("http://refertest.com").expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
     }
 
@@ -1686,6 +1687,7 @@ public class ExternalNavigationHandlerTest {
 
     private static class ExternalNavigationHandlerForTesting extends ExternalNavigationHandler {
         public String defaultSmsPackageName;
+        public String mLastCommittedUrl;
 
         public ExternalNavigationHandlerForTesting(ExternalNavigationDelegate delegate) {
             super(delegate);
@@ -1699,6 +1701,11 @@ public class ExternalNavigationHandlerTest {
         @Override
         protected String getDefaultSmsPackageNameFromSystem() {
             return defaultSmsPackageName;
+        }
+
+        @Override
+        protected String getLastCommittedUrl() {
+            return mLastCommittedUrl;
         }
     };
 
@@ -1868,8 +1875,8 @@ public class ExternalNavigationHandlerTest {
         }
 
         @Override
-        public String getPreviousUrl() {
-            return mPreviousUrl;
+        public WebContents getWebContents() {
+            return null;
         }
 
         @Override
@@ -1954,10 +1961,6 @@ public class ExternalNavigationHandlerTest {
             mIsSerpReferrer = value;
         }
 
-        public void setPreviousUrl(String value) {
-            mPreviousUrl = value;
-        }
-
         public void setIsCallingAppTrusted(boolean trusted) {
             mIsCallingAppTrusted = trusted;
         }
@@ -1989,7 +1992,6 @@ public class ExternalNavigationHandlerTest {
         private boolean mCanHandleWithInstantApp;
         private boolean mHandleWithAutofillAssistant;
         private boolean mIsSerpReferrer;
-        private String mPreviousUrl;
         public boolean mCalledWithProxy;
         public boolean mIsChromeAppInForeground = true;
         private boolean mIsCallingAppTrusted;

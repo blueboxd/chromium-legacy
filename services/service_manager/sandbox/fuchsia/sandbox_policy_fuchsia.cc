@@ -7,6 +7,7 @@
 #include <lib/fdio/spawn.h>
 #include <stdio.h>
 #include <zircon/processargs.h>
+#include <zircon/syscalls/policy.h>
 
 #include <fuchsia/fonts/cpp/fidl.h>
 #include <fuchsia/intl/cpp/fidl.h>
@@ -54,6 +55,9 @@ enum SandboxFeature {
   // instead of automatically connecting to the service directory of the current
   // process' namespace. Intended for use by SandboxType::kWebContext.
   kUseServiceDirectoryOverride = 1 << 3,
+
+  // Allows the process to use the ambient mark-vmo-as-executable capability.
+  kAmbientMarkVmoAsExecutable = 1 << 4,
 };
 
 struct SandboxConfig {
@@ -69,11 +73,11 @@ constexpr SandboxConfig kSandboxConfigs[] = {
         // Services directory is passed by calling SetServiceDirectory().
         base::span<const char* const>(),
 
-        // kCloneJob: Allow Contexts to launch child processes.
-        // kProvideVulkanResources: Context delegates this to the GPU process.
-        // kProvideSslConfig: Context delegates this to the NetworkService.
+        // Context processes only actually use the kUseServiceDirectoryOverride
+        // and kCloneJob |features| themselves. However, they must be granted
+        // all of the other features to delegate to child processes.
         kCloneJob | kProvideVulkanResources | kProvideSslConfig |
-            kUseServiceDirectoryOverride,
+            kAmbientMarkVmoAsExecutable | kUseServiceDirectoryOverride,
     },
     {
         SandboxType::kGpu,
@@ -100,7 +104,7 @@ constexpr SandboxConfig kSandboxConfigs[] = {
             fuchsia::mediacodec::CodecFactory::Name_,
             fuchsia::sysmem::Allocator::Name_,
         }),
-        0,
+        kAmbientMarkVmoAsExecutable,
     },
 };
 
@@ -248,6 +252,16 @@ void SandboxPolicyFuchsia::UpdateLaunchOptionsForSandbox(
   zx_status_t status = zx::job::create(*base::GetDefaultJob(), 0, &job_);
   ZX_CHECK(status == ZX_OK, status) << "zx_job_create";
   options->job_handle = job_.get();
+
+  // Do not allow ambient VMO mark-as-executable capability to be inherited
+  // by processes that do not need to JIT (i.e. do not run V8/WASM).
+  if (!(config.features & kAmbientMarkVmoAsExecutable)) {
+    zx_policy_basic_v2_t deny_ambient_mark_vmo_exec{
+        ZX_POL_AMBIENT_MARK_VMO_EXEC, ZX_POL_ACTION_KILL, ZX_POL_OVERRIDE_DENY};
+    status = job_.set_policy(ZX_JOB_POL_RELATIVE, ZX_JOB_POL_BASIC_V2,
+                             &deny_ambient_mark_vmo_exec, 1);
+    ZX_CHECK(status == ZX_OK, status) << "zx_job_set_policy";
+  }
 }
 
 }  // namespace service_manager

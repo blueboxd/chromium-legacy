@@ -3,14 +3,18 @@
 // found in the LICENSE file.
 
 #include "components/password_manager/core/browser/multi_store_form_fetcher.h"
+#include <memory>
+#include <type_traits>
 
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "components/autofill/core/common/gaia_id_hash.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 #include "url/url_constants.h"
@@ -133,6 +137,8 @@ class MultiStoreFormFetcherTest : public testing::Test {
     account_mock_store_->Init(/*prefs=*/nullptr);
     client_.set_account_store(account_mock_store_.get());
 
+    feature_list_.InitAndEnableFeature(
+        password_manager::features::kEnablePasswordsAccountStorage);
     form_fetcher_ = std::make_unique<MultiStoreFormFetcher>(
         form_digest_, &client_, /*should_migrate_http_passwords=*/false);
   }
@@ -161,6 +167,7 @@ class MultiStoreFormFetcherTest : public testing::Test {
     testing::Mock::VerifyAndClearExpectations(account_mock_store_.get());
   }
 
+  base::test::ScopedFeatureList feature_list_;
   base::test::TaskEnvironment task_environment_;
   PasswordStore::FormDigest form_digest_;
   std::unique_ptr<MultiStoreFormFetcher> form_fetcher_;
@@ -179,6 +186,55 @@ TEST_F(MultiStoreFormFetcherTest, NoStoreResults) {
   EXPECT_CALL(consumer_, OnFetchCompleted).Times(0);
   form_fetcher_->AddConsumer(&consumer_);
   EXPECT_EQ(FormFetcher::State::WAITING, form_fetcher_->GetState());
+}
+
+TEST_F(MultiStoreFormFetcherTest, CloningMultiStoreFetcherClonesState) {
+  Fetch();
+  // Simluate a user in the account mode.
+  ON_CALL(*client()->GetPasswordFeatureManager(), GetDefaultPasswordStore())
+      .WillByDefault(Return(PasswordForm::Store::kAccountStore));
+
+  // Create and push a blacklisted account store entry to complete the fetch.
+  PasswordForm blacklisted = CreateBlacklisted();
+  blacklisted.in_store = PasswordForm::Store::kAccountStore;
+  std::vector<std::unique_ptr<PasswordForm>> results;
+  results.push_back(std::make_unique<PasswordForm>(blacklisted));
+  form_fetcher_->OnGetPasswordStoreResults(std::move(results));
+  form_fetcher_->OnGetPasswordStoreResults({});
+
+  EXPECT_EQ(form_fetcher_->GetState(), FormFetcher::State::NOT_WAITING);
+  EXPECT_TRUE(form_fetcher_->IsBlacklisted());
+
+  // Cloning a fetcher that is done fetching keeps blacklisting information.
+  form_fetcher_.reset(
+      static_cast<MultiStoreFormFetcher*>(form_fetcher_->Clone().release()));
+  EXPECT_EQ(form_fetcher_->GetState(), FormFetcher::State::NOT_WAITING);
+  EXPECT_TRUE(form_fetcher_->IsBlacklisted());
+}
+
+TEST_F(MultiStoreFormFetcherTest, CloningMultiStoreFetcherResumesFetch) {
+  Fetch();
+  // Simluate a user in the account mode.
+  ON_CALL(*client()->GetPasswordFeatureManager(), GetDefaultPasswordStore())
+      .WillByDefault(Return(PasswordForm::Store::kAccountStore));
+
+  // A cloned multi-store fetcher must be a multi-store fetcher itself and
+  // continue the fetching.
+  form_fetcher_.reset(
+      static_cast<MultiStoreFormFetcher*>(form_fetcher_->Clone().release()));
+  EXPECT_EQ(form_fetcher_->GetState(), FormFetcher::State::WAITING);
+  EXPECT_FALSE(form_fetcher_->IsBlacklisted());
+
+  // Create and push a blacklisted account store entry to complete the fetch.
+  PasswordForm blacklisted = CreateBlacklisted();
+  blacklisted.in_store = PasswordForm::Store::kAccountStore;
+  std::vector<std::unique_ptr<PasswordForm>> results;
+  results.push_back(std::make_unique<PasswordForm>(blacklisted));
+  form_fetcher_->OnGetPasswordStoreResults(std::move(results));
+  form_fetcher_->OnGetPasswordStoreResults({});
+
+  EXPECT_EQ(form_fetcher_->GetState(), FormFetcher::State::NOT_WAITING);
+  EXPECT_TRUE(form_fetcher_->IsBlacklisted());
 }
 
 // Check that empty PasswordStore results are handled correctly.

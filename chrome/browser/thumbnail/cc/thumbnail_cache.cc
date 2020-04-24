@@ -350,10 +350,10 @@ void ThumbnailCache::UpdateVisibleIds(const TabIdList& priority,
 }
 
 void ThumbnailCache::ForkToSaveAsJpeg(
-    const base::Callback<void(bool, SkBitmap)>& callback,
+    const base::Callback<void(bool, const SkBitmap&)>& callback,
     int tab_id,
     bool result,
-    SkBitmap bitmap) {
+    const SkBitmap& bitmap) {
   if (result && !bitmap.isNull())
     SaveAsJpeg(tab_id, bitmap);
   callback.Run(result, bitmap);
@@ -361,8 +361,9 @@ void ThumbnailCache::ForkToSaveAsJpeg(
 
 void ThumbnailCache::DecompressThumbnailFromFile(
     TabId tab_id,
-    const base::Callback<void(bool, SkBitmap)>& post_decompress_callback) {
-  base::Callback<void(bool, SkBitmap)> transcoding_callback =
+    const base::Callback<void(bool, const SkBitmap&)>&
+        post_decompress_callback) {
+  base::Callback<void(bool, const SkBitmap&)> transcoding_callback =
       post_decompress_callback;
   if (save_jpeg_thumbnails_) {
     transcoding_callback = base::Bind(&ThumbnailCache::ForkToSaveAsJpeg,
@@ -953,7 +954,8 @@ void ThumbnailCache::RemoveOnMatchedTimeStamp(TabId tab_id,
 }
 
 void ThumbnailCache::DecompressionTask(
-    const base::Callback<void(bool, SkBitmap)>& post_decompression_callback,
+    const base::Callback<void(bool, const SkBitmap&)>&
+        post_decompression_callback,
     sk_sp<SkPixelRef> compressed_data,
     float scale,
     const gfx::Size& content_size) {

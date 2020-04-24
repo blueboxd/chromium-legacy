@@ -797,6 +797,10 @@ const base::Feature kWebRtcEcdsaDefault{"WebRTC-EnableWebRtcEcdsa",
 const base::Feature kWebRtcUseGpuMemoryBufferVideoFrames{
     "WebRTC-UseGpuMemoryBufferVideoFrames", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables report-only Trusted Types experiment on WebUIs
+const base::Feature kWebUIReportOnlyTrustedTypes{
+    "WebUIReportOnlyTrustedTypes", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether the WebUSB API is enabled:
 // https://wicg.github.io/webusb
 const base::Feature kWebUsb{"WebUSB", base::FEATURE_ENABLED_BY_DEFAULT};

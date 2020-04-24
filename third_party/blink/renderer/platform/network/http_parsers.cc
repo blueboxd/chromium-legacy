@@ -112,9 +112,20 @@ WTF::Vector<blink::ContentSecurityPolicyPtr> ConvertToBlink(
   return blink_policies;
 }
 
+WTF::Vector<network::mojom::blink::WebClientHintsType> ConvertToBlink(
+    const std::vector<network::mojom::WebClientHintsType>& accept_ch) {
+  WTF::Vector<network::mojom::blink::WebClientHintsType> blink_accept_ch;
+  blink_accept_ch.AppendRange(accept_ch.begin(), accept_ch.end());
+  return blink_accept_ch;
+}
+
 blink::ParsedHeadersPtr ConvertToBlink(ParsedHeadersPtr parsed_headers) {
   return blink::ParsedHeaders::New(
-      ConvertToBlink(std::move(parsed_headers->content_security_policy)));
+      ConvertToBlink(std::move(parsed_headers->content_security_policy)),
+      parsed_headers->accept_ch.has_value()
+          ? base::make_optional(
+                ConvertToBlink(parsed_headers->accept_ch.value()))
+          : base::nullopt);
 }
 
 }  // namespace mojom

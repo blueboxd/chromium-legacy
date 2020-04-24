@@ -260,13 +260,13 @@ class TestSearchEngineDelegate
 // Customized fake class to count TpmAttestationDeleteKeys call.
 class FakeCryptohomeClient : public chromeos::FakeCryptohomeClient {
  public:
-  void TpmAttestationDeleteKeys(
+  void TpmAttestationDeleteKeysByPrefix(
       chromeos::attestation::AttestationKeyType key_type,
       const cryptohome::AccountIdentifier& cryptohome_id,
       const std::string& key_prefix,
       chromeos::DBusMethodCallback<bool> callback) override {
     ++delete_keys_call_count_;
-    chromeos::FakeCryptohomeClient::TpmAttestationDeleteKeys(
+    chromeos::FakeCryptohomeClient::TpmAttestationDeleteKeysByPrefix(
         key_type, cryptohome_id, key_prefix, std::move(callback));
   }
 

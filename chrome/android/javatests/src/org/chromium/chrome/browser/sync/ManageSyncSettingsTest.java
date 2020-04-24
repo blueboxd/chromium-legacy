@@ -16,6 +16,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.preference.CheckBoxPreference;
 import androidx.preference.Preference;
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -29,6 +30,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
@@ -38,6 +40,8 @@ import org.chromium.chrome.browser.sync.ui.PassphraseDialogFragment;
 import org.chromium.chrome.browser.sync.ui.PassphraseTypeDialogFragment;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ActivityUtils;
+import org.chromium.chrome.test.util.ChromeRenderTestRule;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.sync.ModelType;
@@ -79,7 +83,10 @@ public class ManageSyncSettingsTest {
     public SyncTestRule mSyncTestRule = new SyncTestRule();
     @Rule
     public SettingsActivityTestRule<ManageSyncSettings> mSettingsActivityTestRule =
-            new SettingsActivityTestRule<>(ManageSyncSettings.class);
+            new SettingsActivityTestRule<>(ManageSyncSettings.class, true);
+
+    @Rule
+    public final ChromeRenderTestRule mRenderTestRule = new ChromeRenderTestRule();
 
     @After
     public void tearDown() {
@@ -440,8 +447,59 @@ public class ManageSyncSettingsTest {
         SyncTestUtil.waitForTrustedVaultKeyRequired(false);
     }
 
+    @Test
+    @SmallTest
+    @Feature({"Sync"})
+    @Features.EnableFeatures(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)
+    public void testAdvancedSyncFlowPreferencesAndBottomBarShown() {
+        final ManageSyncSettings fragment = startManageSyncPreferencesFromSyncConsentFlow();
+        Assert.assertTrue(
+                fragment.findPreference(ManageSyncSettings.PREF_SYNCING_CATEGORY).isVisible());
+        Assert.assertTrue(
+                fragment.findPreference(ManageSyncSettings.PREF_SEARCH_AND_BROWSE_CATEGORY)
+                        .isVisible());
+        Assert.assertNotNull(fragment.getView().findViewById(R.id.bottom_bar_shadow));
+        Assert.assertNotNull(fragment.getView().findViewById(R.id.bottom_bar_button_container));
+    }
+
+    @Test
+    @LargeTest
+    @Feature({"Sync", "RenderTest"})
+    @Features.EnableFeatures(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)
+    public void testAdvancedSyncFlowTopView() throws Exception {
+        mSyncTestRule.setUpTestAccountAndSignIn();
+        SyncTestUtil.waitForSyncActive();
+        final ManageSyncSettings fragment = startManageSyncPreferencesFromSyncConsentFlow();
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+        mRenderTestRule.render(fragment.getView(), "advanced_sync_flow_top_view");
+    }
+
+    @Test
+    @LargeTest
+    @Feature({"Sync", "RenderTest"})
+    @Features.EnableFeatures(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)
+    public void testAdvancedSyncFlowBottomView() throws Exception {
+        mSyncTestRule.setUpTestAccountAndSignIn();
+        SyncTestUtil.waitForSyncActive();
+        final ManageSyncSettings fragment = startManageSyncPreferencesFromSyncConsentFlow();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            RecyclerView recyclerView = fragment.getView().findViewById(R.id.recycler_view);
+            recyclerView.scrollToPosition(recyclerView.getAdapter().getItemCount() - 1);
+        });
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+        mRenderTestRule.render(fragment.getView(), "advanced_sync_flow_bottom_view");
+    }
+
     private ManageSyncSettings startManageSyncPreferences() {
         mSettingsActivity = mSettingsActivityTestRule.startSettingsActivity();
+        return mSettingsActivityTestRule.getFragment();
+    }
+
+    private ManageSyncSettings startManageSyncPreferencesFromSyncConsentFlow() {
+        Assert.assertTrue(
+                ChromeFeatureList.isEnabled(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY));
+        mSettingsActivity = mSettingsActivityTestRule.startSettingsActivity(
+                ManageSyncSettings.createArguments(true));
         return mSettingsActivityTestRule.getFragment();
     }
 

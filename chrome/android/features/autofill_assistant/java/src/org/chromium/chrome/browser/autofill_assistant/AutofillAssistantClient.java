@@ -95,6 +95,8 @@ class AutofillAssistantClient {
      * @param experimentIds comma-separated set of experiments to use while running the flow
      * @param callerAccount the account calling the flow
      * @param userName the user name associated with this flow
+     * @param isChromeCustomTab whether this was started from a {@link CustomTabActivity} or a
+     *         normal Chrome tab.
      * @param onboardingCoordinator if non-null, reuse existing UI elements, usually created to show
      *         onboarding.
      *
@@ -103,7 +105,7 @@ class AutofillAssistantClient {
      * still fail after this method returns true; the failure will be displayed on the UI.
      */
     boolean start(String initialUrl, Map<String, String> parameters, String experimentIds,
-            @Nullable String callerAccount, @Nullable String userName,
+            @Nullable String callerAccount, @Nullable String userName, boolean isChromeCustomTab,
             @Nullable AssistantOnboardingCoordinator onboardingCoordinator) {
         if (mNativeClientAndroid == 0) return false;
 
@@ -112,7 +114,8 @@ class AutofillAssistantClient {
         return AutofillAssistantClientJni.get().start(mNativeClientAndroid,
                 AutofillAssistantClient.this, initialUrl, experimentIds, callerAccount,
                 parameters.keySet().toArray(new String[parameters.size()]),
-                parameters.values().toArray(new String[parameters.size()]), onboardingCoordinator,
+                parameters.values().toArray(new String[parameters.size()]), isChromeCustomTab,
+                onboardingCoordinator,
                 /* onboardingShown= */
                 onboardingCoordinator != null && onboardingCoordinator.getOnboardingShown(),
                 AutofillAssistantServiceInjector.getServiceToInject());
@@ -368,7 +371,7 @@ class AutofillAssistantClient {
         AutofillAssistantClient fromWebContents(WebContents webContents);
         boolean start(long nativeClientAndroid, AutofillAssistantClient caller, String initialUrl,
                 String experimentIds, String callerAccount, String[] parameterNames,
-                String[] parameterValues,
+                String[] parameterValues, boolean isChromeCustomTab,
                 @Nullable AssistantOnboardingCoordinator onboardingCoordinator,
                 boolean onboardingShown, long nativeService);
         void onAccessToken(long nativeClientAndroid, AutofillAssistantClient caller,

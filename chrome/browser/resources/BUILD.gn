@@ -322,6 +322,24 @@ if (!is_android && !is_chromeos) {
     ]
     output_dir = "$root_gen_dir/chrome"
   }
+
+  grit("profile_picker_resources") {
+    source = "signin/profile_picker/profile_picker_resources.grd"
+
+    grit_flags = [
+      "-E",
+      "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+    ]
+
+    defines = chrome_grit_defines
+    outputs = [
+      "grit/profile_picker_resources.h",
+      "grit/profile_picker_resources_map.cc",
+      "grit/profile_picker_resources_map.h",
+      "profile_picker_resources.pak",
+    ]
+    output_dir = "$root_gen_dir/chrome"
+  }
 }
 
 if (enable_extensions) {

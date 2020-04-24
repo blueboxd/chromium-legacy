@@ -18,6 +18,9 @@
 class FakeApplicationConfigManager
     : public chromium::cast::ApplicationConfigManager {
  public:
+  // Default agent url used for all applications.
+  static const char kFakeAgentUrl[];
+
   FakeApplicationConfigManager();
   ~FakeApplicationConfigManager() override;
 

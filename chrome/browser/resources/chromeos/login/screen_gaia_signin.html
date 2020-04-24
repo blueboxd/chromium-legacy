@@ -20,6 +20,7 @@
       <div slot="footer" class="flex layout vertical">
         <div id="signin-frame-container" transparent$="[[isLoadingUiShown_]]"
             animated-transparency$="[[!usedSaml_]]"
+            hideshadows$="[[isPopUpOverlayVisible_]]"
             class="flex layout vertical">
           <div id="saml-notice-container"
                class="layout horizontal"
@@ -36,7 +37,6 @@
             </cr-icon-button>
           </div>
           <webview id="signin-frame" class="flex"
-              hideshadows$="[[isPopUpOverlayVisible_]]"
               name="signin-frame"></webview>
         </div>
       </div>

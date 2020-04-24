@@ -142,8 +142,9 @@ void WebFrameTestProxy::Initialize(
 }
 
 void WebFrameTestProxy::Reset() {
-  // TODO(danakj): We navigate to about:blank between frames, do we even keep
-  // the same RenderFrame?
+  // TODO(crbug.com/936696): The RenderDocument project will cause us to replace
+  // the main frame on each navigation, including to about:blank and then to the
+  // next test. So resetting the frame or RenderWidget won't be meaningful then.
 
   if (IsMainFrame()) {
     GetWebFrame()->SetName(blink::WebString());

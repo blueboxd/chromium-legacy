@@ -15,11 +15,12 @@
 }
 </style>
 <div id="container">
-  <div id="target" class=hidden>
+  <div id="target" class=hidden aria-labelledby="target_label">
     target
     <div id="child">
       child
     </div>
+    <div id="target_label">Label</div>
   </div>
 </div>
 
@@ -33,12 +34,14 @@ async_test(async (t) => {
   let axTarget = axElementById("target");
   t.step(() => { assert_false(axTarget.isIgnored); });
   t.step(() => { assert_equals(axTarget.childrenCount, 0, "When locked, nodes in hidden subtree are ignored"); });
+  t.step(() => { assert_equals(axTarget.name, ""); });
 
   target.classList.remove("hidden");
   requestAnimationFrame(() => requestAnimationFrame(() => {
     // The ax object for #target got replaced since the layout object changed, so use the new ax object.
     axTarget = axElementById("target");
-    t.step(() => { assert_equals(axTarget.childrenCount, 2, "After getting unlocked, nodes in hidden subtree are not ignored"); });
+    t.step(() => { assert_equals(axTarget.childrenCount, 3, "After getting unlocked, nodes in hidden subtree are not ignored"); });
+    t.step(() => { assert_equals(axTarget.name, "Label"); });
     t.done();
   }));
 }, "Nodes in hidden non-activatable tree are not exposed to accessibility tree");

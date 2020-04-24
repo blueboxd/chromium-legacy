@@ -329,6 +329,27 @@ const CGFloat kClearButtonSize = 28.0f;
   SetA11yLabelAndUiAutomationName(clearButton, IDS_IOS_ACCNAME_CLEAR_TEXT,
                                   @"Clear Text");
 
+#if defined(__IPHONE_13_4)
+  if (@available(iOS 13.4, *)) {
+    if (base::FeatureList::IsEnabled(kPointerSupport)) {
+      clearButton.pointerInteractionEnabled = YES;
+
+      // Customize the pointer highlight zone around the cancel button to be
+      // snug in the corner of the location view.
+      clearButton.pointerStyleProvider =
+          ^UIPointerStyle*(UIButton* button, UIPointerEffect* proposedEffect,
+                           UIPointerShape* proposedShape) {
+        CGRect rect = button.frame;
+        return [UIPointerStyle
+            styleWithEffect:proposedEffect
+                      shape:[UIPointerShape
+                                shapeWithRoundedRect:rect
+                                        cornerRadius:rect.size.width / 2]];
+      };
+    }
+  }
+#endif  // defined(__IPHONE_13_4)
+
   // Observe text changes to show the clear button when there is text and hide
   // it when the textfield is empty.
   [self.textField addTarget:self

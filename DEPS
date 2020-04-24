@@ -175,11 +175,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '92247633ffd012b82ef67cc68a4eb147d4977564',
+  'skia_revision': '11c6767a17b40430b27397aab584566111c9df05',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'a9913d1fc7b0023c41e59c502e60ae2de20f1206',
+  'v8_revision': '332ae86cfaf8ef5710809664b73a6984f2cfa80b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -187,11 +187,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '21c5af3151fb986a25ab491a4dc768c3645c764b',
+  'angle_revision': 'd7f94536f13aa6ab67e601556b41c9f721c154a7',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': 'e41e86d0fe8cf8252281d179099ae172a2a942a3',
+  'swiftshader_revision': 'f42c698d784ab6945808f3e0b350febeb1b0793e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -246,7 +246,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'e7d5d2a0c9de76f66e7a3ca1d0b26ba058e5daa4',
+  'devtools_frontend_revision': '68132b8d5af81b254b751bdea7f6eafaa079d5fc',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -282,7 +282,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'spv_tools_revision': '67f4838659f475d618c120e13d1a196d7e00ba4b',
+  'spv_tools_revision': '5547553a0c7b1ed2138fc0b8e131df20f8386a0f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -1217,7 +1217,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'a7534f07e8b6c18564724eba5f4f76ab5d458062',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '713f4f709ee7b54f1c515e83140ec54b5d2d97be',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1295,7 +1295,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'ogi24yCX8VK7ub9LZ41DbDfbKq8JKFvyO5kihpO1PM4C'
+              'version': 'FAFGqWcxQp_6t46iYZgX9vjk6cRl5vdr-qmuBfBz9p0C'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1447,7 +1447,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '1fb4a05e9e212cfc418c123f95b5e8cbb14c24be',
+    Var('webrtc_git') + '/src.git' + '@' + 'cda577fd5918bf3debd640f87238b63702e345fa',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1519,7 +1519,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@be4e761d4a7271cc94caee638ca135910904ab0b',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@979f284ff23ea7fb590e9ce82ffcb1e5083a32cf',
     'condition': 'checkout_src_internal',
   },
 

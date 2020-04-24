@@ -39,6 +39,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.site_settings.FourStateCookieSettingsPreference.CookieSettingsState;
 import org.chromium.chrome.browser.site_settings.Website.StoredDataClearedCallback;
+import org.chromium.chrome.browser.webapps.WebappRegistry;
 import org.chromium.components.browser_ui.settings.ChromeBaseCheckBoxPreference;
 import org.chromium.components.browser_ui.settings.ChromeBasePreference;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
@@ -459,13 +460,33 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         if (getActivity() == null || v != mClearButton) return;
 
         long totalUsage = 0;
+        boolean includesApps = false;
+        Set<String> originsWithInstalledApp =
+                WebappRegistry.getInstance().getOriginsWithInstalledApp();
         if (mWebsites != null) {
             for (WebsitePreference preference : mWebsites) {
                 totalUsage += preference.site().getTotalUsage();
+                if (!includesApps) {
+                    includesApps = originsWithInstalledApp.contains(
+                            preference.site().getAddress().getOrigin());
+                }
             }
         }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        View dialogView =
+                getActivity().getLayoutInflater().inflate(R.layout.clear_data_dialog, null);
+        TextView message = dialogView.findViewById(android.R.id.message);
+        TextView signedOutText = dialogView.findViewById(R.id.signed_out_text);
+        TextView offlineText = dialogView.findViewById(R.id.offline_text);
+        signedOutText.setText(R.string.webstorage_clear_data_dialog_sign_out_all_message);
+        offlineText.setText(R.string.webstorage_clear_data_dialog_offline_message);
+        String dialogFormattedText =
+                getString(includesApps ? R.string.webstorage_clear_data_dialog_message_with_app
+                                       : R.string.webstorage_clear_data_dialog_message,
+                        Formatter.formatShortFileSize(getActivity(), totalUsage));
+        message.setText(dialogFormattedText);
+        builder.setView(dialogView);
         builder.setPositiveButton(R.string.storage_clear_dialog_clear_storage_option,
                 new DialogInterface.OnClickListener() {
                     @Override
@@ -475,9 +496,6 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
                 });
         builder.setNegativeButton(R.string.cancel, null);
         builder.setTitle(R.string.storage_clear_site_storage_title);
-        String dialogFormattedText = getString(R.string.storage_clear_dialog_text,
-                Formatter.formatShortFileSize(getActivity(), totalUsage));
-        builder.setMessage(dialogFormattedText);
         builder.create().show();
     }
 

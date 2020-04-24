@@ -42,21 +42,12 @@
 // _msize(), elsewhere it handles it manually by enlarging the malloc and
 // injecting a field. Enable malloc_usable_size() for Linux.
 //
-// malloc_usable_size() is available on Android NDK when building with the
-// minimum API level set to 17 or above. Currently (Apr 2020), this is true for
-// 64-bit Chrome builds, but false for 32-bit Chrome builds. Even though Chrome
-// requires Lollipop (API level 21) or above, the minimum API level is set to
-// 16, for Cronet. https://crbug.com/1042122 tracks bumping the API level for
-// Cronet.
-//
-// The check below is true on 64-bit builds today, and will be true on 32-bit
-// Android builds as soon as the minimum API level will be set to 17.
-// TOOD(pwnall): Remove the Android checks after Chrome uniformly requires
-//               Android API level 17+.
-#if !defined(__ANDROID__) || __ANDROID_API__ >= 17
+// malloc_usable_size() is not exported by the Android NDK. It is not
+// implemented by uclibc.
+#if !defined(__UCLIBC__) && !defined(__ANDROID__)
 #define HAVE_MALLOC_H 1
 #define HAVE_MALLOC_USABLE_SIZE 1
-#endif  // !defined(__ANDROID__) || __ANDROID_API__ >= 17
+#endif
 
 #endif  // defined(__linux__)
 

@@ -14,6 +14,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "components/autofill/core/common/password_form.h"
@@ -24,6 +25,7 @@
 #include "components/password_manager/core/browser/statistics_table.h"
 #include "components/password_manager/core/browser/stub_credentials_filter.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -201,9 +203,13 @@ class FormFetcherImplTest : public testing::Test,
     client_.set_store(mock_store_.get());
 
     if (!GetParam()) {
+      feature_list_.InitAndDisableFeature(
+          password_manager::features::kEnablePasswordsAccountStorage);
       form_fetcher_ = std::make_unique<FormFetcherImpl>(
           form_digest_, &client_, false /* should_migrate_http_passwords */);
     } else {
+      feature_list_.InitAndEnableFeature(
+          password_manager::features::kEnablePasswordsAccountStorage);
       form_fetcher_ = std::make_unique<MultiStoreFormFetcher>(
           form_digest_, &client_, false /* should_migrate_http_passwords */);
     }
@@ -224,6 +230,7 @@ class FormFetcherImplTest : public testing::Test,
     testing::Mock::VerifyAndClearExpectations(mock_store_.get());
   }
 
+  base::test::ScopedFeatureList feature_list_;
   base::test::TaskEnvironment task_environment_;
   PasswordStore::FormDigest form_digest_;
   std::unique_ptr<FormFetcherImpl> form_fetcher_;

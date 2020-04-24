@@ -68,7 +68,8 @@ class ThumbnailCache : ThumbnailDelegate {
   void UpdateVisibleIds(const TabIdList& priority, TabId primary_tab_id);
   void DecompressThumbnailFromFile(
       TabId tab_id,
-      const base::Callback<void(bool, SkBitmap)>& post_decompress_callback);
+      const base::Callback<void(bool, const SkBitmap&)>&
+          post_decompress_callback);
 
   // Called when resident textures were evicted, which requires paging
   // in bitmaps.
@@ -107,10 +108,11 @@ class ThumbnailCache : ThumbnailDelegate {
   void WriteJpegThumbnailIfNecessary(TabId tab_id,
                                      std::vector<uint8_t> compressed_data);
   void SaveAsJpeg(TabId tab_id, const SkBitmap& bitmap);
-  void ForkToSaveAsJpeg(const base::Callback<void(bool, SkBitmap)>& callback,
-                        int tab_id,
-                        bool result,
-                        SkBitmap bitmap);
+  void ForkToSaveAsJpeg(
+      const base::Callback<void(bool, const SkBitmap&)>& callback,
+      int tab_id,
+      bool result,
+      const SkBitmap& bitmap);
 
   void CompressThumbnailIfNecessary(TabId tab_id,
                                     const base::Time& time_stamp,
@@ -143,7 +145,8 @@ class ThumbnailCache : ThumbnailDelegate {
                            sk_sp<SkPixelRef> compressed_data,
                            const gfx::Size& content_size);
   static void DecompressionTask(
-      const base::Callback<void(bool, SkBitmap)>& post_decompress_callback,
+      const base::Callback<void(bool, const SkBitmap&)>&
+          post_decompress_callback,
       sk_sp<SkPixelRef> compressed_data,
       float scale,
       const gfx::Size& encoded_size);

@@ -100,6 +100,25 @@ TEST(EventHandlerTest, UnregisterPreviousDuringNotification) {
   EXPECT_THAT(receiver2.GetEvents(), SizeIs(2));
 }
 
+TEST(EventHandlerTest, RegisterNewDuringNotification) {
+  EventHandler handler;
+  TestObserver receiver1;
+  TestObserver receiver2;
+
+  handler.AddObserver(&receiver1);
+
+  receiver1.RegisterOneTimeCallback(base::BindOnce(
+      &EventHandler::AddObserver, base::Unretained(&handler), &receiver2));
+  handler.DispatchEvent({EventProto::kOnValueChanged, "Event 1"});
+  handler.DispatchEvent({EventProto::kOnValueChanged, "Event 2"});
+
+  EXPECT_THAT(receiver1.GetEvents(), SizeIs(2));
+  // Receiver2 was registered while the first event was being processed. As
+  // such, it should not be notified of the first event, only the second one.
+  EXPECT_THAT(receiver2.GetEvents(),
+              ElementsAre(Pair(EventProto::kOnValueChanged, "Event 2")));
+}
+
 TEST(EventHandlerTest, FireEventDuringNotification) {
   EventHandler handler;
   TestObserver receiver;

@@ -86,6 +86,15 @@ bool MultiStoreFormFetcher::IsMovingBlocked(
   return false;
 }
 
+std::unique_ptr<FormFetcher> MultiStoreFormFetcher::Clone() {
+  std::unique_ptr<FormFetcher> fetcher_ptr = FormFetcherImpl::Clone();
+  MultiStoreFormFetcher& fetcher =
+      *static_cast<MultiStoreFormFetcher*>(fetcher_ptr.get());
+  fetcher.is_blacklisted_in_account_store_ = is_blacklisted_in_account_store_;
+  fetcher.is_blacklisted_in_profile_store_ = is_blacklisted_in_profile_store_;
+  return fetcher_ptr;
+}
+
 void MultiStoreFormFetcher::OnGetPasswordStoreResults(
     std::vector<std::unique_ptr<PasswordForm>> results) {
   DCHECK_EQ(State::WAITING, state_);

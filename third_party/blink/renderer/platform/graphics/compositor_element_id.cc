@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 
+#include <limits>
+
 namespace blink {
 
 UniqueObjectId NewUniqueObjectId() {

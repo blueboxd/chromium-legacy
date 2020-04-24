@@ -31,7 +31,10 @@ namespace apps {
 // See chrome/services/app_service/README.md.
 class AppServiceImpl : public apps::mojom::AppService {
  public:
-  AppServiceImpl(PrefService* profile_prefs, const base::FilePath& profile_dir);
+  AppServiceImpl(
+      PrefService* profile_prefs,
+      const base::FilePath& profile_dir,
+      base::OnceClosure read_completed_for_testing = base::OnceClosure());
   ~AppServiceImpl() override;
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
@@ -118,6 +121,10 @@ class AppServiceImpl : public apps::mojom::AppService {
 
   void WriteCompleted();
 
+  void ReadFromJSON(const base::FilePath& profile_dir);
+
+  void ReadCompleted(std::string preferred_apps_string);
+
   // publishers_ is a std::map, not a mojo::RemoteSet, since we want to
   // be able to find *the* publisher for a given apps::mojom::AppType.
   std::map<apps::mojom::AppType, mojo::Remote<apps::mojom::Publisher>>
@@ -146,6 +153,8 @@ class AppServiceImpl : public apps::mojom::AppService {
   scoped_refptr<base::SequencedTaskRunner> const task_runner_;
 
   base::OnceClosure write_completed_for_testing_;
+
+  base::OnceClosure read_completed_for_testing_;
 
   base::WeakPtrFactory<AppServiceImpl> weak_ptr_factory_{this};
 

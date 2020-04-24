@@ -14,7 +14,7 @@ import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {TestPasswordManagerProxy} from 'chrome://test/settings/test_password_manager_proxy.js';
 import {TestPluralStringProxy} from 'chrome://test/settings/test_plural_string_proxy.js';
-import {getSyncAllPrefs, simulateSyncStatus} from 'chrome://test/settings/sync_test_util.m.js';
+import {getSyncAllPrefs, simulateStoredAccounts, simulateSyncStatus} from 'chrome://test/settings/sync_test_util.m.js';
 import {isChromeOS} from 'chrome://resources/js/cr.m.js';
 // clang-format on
 
@@ -755,6 +755,72 @@ import {isChromeOS} from 'chrome://resources/js/cr.m.js';
             elementFactory.createExportPasswordsDialog(passwordManager);
         return runFireCloseEventAfterExportCompleteTest(
             exportDialog, passwordManager);
+      });
+
+      test('signOutHidesAccountStorageOptInButtons', function() {
+        // Feature flag enabled.
+        loadTimeData.overrideValues({enableAccountStorage: true});
+
+        const passwordsSection =
+            elementFactory.createPasswordsSection(passwordManager, [], []);
+
+        // Sync is disabled and the user is initially signed out.
+        simulateSyncStatus({signedIn: false});
+        const isDisplayed = element => !!element && !element.hidden;
+        assertFalse(
+            isDisplayed(passwordsSection.$.accountStorageButtonsContainer));
+
+        // User signs in but is not opted in yet.
+        simulateStoredAccounts([{
+          fullName: 'john doe',
+          givenName: 'john',
+          email: 'john@gmail.com',
+        }]);
+        passwordManager.setIsOptedInForAccountStorageAndNotify(false);
+        assertTrue(
+            isDisplayed(passwordsSection.$.accountStorageButtonsContainer));
+        assertTrue(isDisplayed(passwordsSection.$.optInToAccountStorageButton));
+        assertFalse(
+            isDisplayed(passwordsSection.$.optOutOfAccountStorageButton));
+
+        // Opt in.
+        passwordManager.setIsOptedInForAccountStorageAndNotify(true);
+        assertTrue(
+            isDisplayed(passwordsSection.$.accountStorageButtonsContainer));
+        assertFalse(
+            isDisplayed(passwordsSection.$.optInToAccountStorageButton));
+        assertTrue(
+            isDisplayed(passwordsSection.$.optOutOfAccountStorageButton));
+
+        // Sign out
+        simulateStoredAccounts([]);
+        assertFalse(
+            isDisplayed(passwordsSection.$.accountStorageButtonsContainer));
+      });
+
+      test('enablingSyncHidesAccountStorageOptInButtons', function() {
+        // Feature flag enabled.
+        loadTimeData.overrideValues({enableAccountStorage: true});
+
+        const passwordsSection =
+            elementFactory.createPasswordsSection(passwordManager, [], []);
+
+        simulateSyncStatus({signedIn: false});
+        simulateStoredAccounts([{
+          fullName: 'john doe',
+          givenName: 'john',
+          email: 'john@gmail.com',
+        }]);
+        passwordManager.setIsOptedInForAccountStorageAndNotify(true);
+
+        const isDisplayed = element => !!element && !element.hidden;
+        assertTrue(
+            isDisplayed(passwordsSection.$.accountStorageButtonsContainer));
+
+        // Enable sync.
+        simulateSyncStatus({signedIn: true});
+        assertFalse(
+            isDisplayed(passwordsSection.$.accountStorageButtonsContainer));
       });
     }
 

@@ -16,14 +16,11 @@
 namespace cr_fuchsia {
 
 FakeComponentContext::FakeComponentContext(
-    AgentImpl::CreateComponentStateCallback create_component_state_callback,
     sys::OutgoingDirectory* outgoing_directory,
     base::StringPiece component_url)
     : binding_(outgoing_directory, this),
       component_url_(component_url.as_string()),
-      outgoing_directory_(outgoing_directory),
-      default_agent_impl_(outgoing_directory,
-                          std::move(create_component_state_callback)) {}
+      outgoing_directory_(outgoing_directory) {}
 
 void FakeComponentContext::RegisterCreateComponentStateCallback(
     base::StringPiece agent_url,
@@ -39,11 +36,10 @@ void FakeComponentContext::ConnectToAgent(
     fidl::InterfaceRequest<::fuchsia::sys::ServiceProvider> services,
     fidl::InterfaceRequest<fuchsia::modular::AgentController> controller) {
   auto it = agent_impl_map_.find(agent_url);
-  if (it == agent_impl_map_.end()) {
-    default_agent_impl_.Connect(component_url_, std::move(services));
-  } else {
-    it->second->Connect(component_url_, std::move(services));
-  }
+  CHECK(it != agent_impl_map_.end())
+      << "Received request for an unknown agent URL: " << agent_url;
+
+  it->second->Connect(component_url_, std::move(services));
 }
 
 void FakeComponentContext::ConnectToAgentService(

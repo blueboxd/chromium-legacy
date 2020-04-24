@@ -626,9 +626,9 @@ public class ExternalNavigationHandler {
 
         // TODO(https://crbug.com/1009539): Replace this host parsing with a UrlUtilities or GURL
         //   function call.
-        String delegatePreviousUrl = mDelegate.getPreviousUrl();
+        String lastCommittedUrl = getLastCommittedUrl();
         String previousUriString =
-                delegatePreviousUrl != null ? delegatePreviousUrl : params.getReferrerUrl();
+                lastCommittedUrl != null ? lastCommittedUrl : params.getReferrerUrl();
         if (previousUriString == null || (!isLink && !isFormSubmit)) return false;
 
         URI currentUri;
@@ -1248,6 +1248,15 @@ public class ExternalNavigationHandler {
     protected String getDefaultSmsPackageNameFromSystem() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) return null;
         return Telephony.Sms.getDefaultSmsPackage(ContextUtils.getApplicationContext());
+    }
+
+    /**
+     * @return The last committed URL from the WebContents.
+     */
+    @VisibleForTesting
+    protected String getLastCommittedUrl() {
+        if (mDelegate.getWebContents() == null) return null;
+        return mDelegate.getWebContents().getLastCommittedUrl();
     }
 
     private void recordIntentActionMetrics(Intent intent) {

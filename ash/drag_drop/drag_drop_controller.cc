@@ -30,7 +30,6 @@
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
-#include "ui/base/dragdrop/os_exchange_data_provider.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/events/event.h"
@@ -167,7 +166,7 @@ int DragDropController::StartDragAndDrop(
   if (!enabled_ || IsDragDropInProgress())
     return 0;
 
-  const ui::OSExchangeDataProvider* provider = &data->provider();
+  const ui::OSExchangeData::Provider* provider = &data->provider();
   // We do not support touch drag/drop without a drag image.
   if (source == ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH &&
       provider->GetDragImage().size().IsEmpty())

@@ -54,10 +54,6 @@ class TrackedPreferenceHelper {
   // Reports |reset_action| via UMA under |reporting_id_|.
   void ReportAction(ResetAction reset_action) const;
 
-  // Reports, via UMA, the |count| of split preference entries that were
-  // considered invalid in a CHANGED event.
-  void ReportSplitPreferenceChangedCount(size_t count) const;
-
  private:
   const std::string pref_path_;
 

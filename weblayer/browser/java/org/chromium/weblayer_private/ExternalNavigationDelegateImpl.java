@@ -33,6 +33,7 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.network.mojom.ReferrerPolicy;
 import org.chromium.ui.base.PageTransition;
@@ -338,9 +339,9 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
-    public String getPreviousUrl() {
-        if (mTab == null || mTab.getWebContents() == null) return null;
-        return mTab.getWebContents().getLastCommittedUrl();
+    public WebContents getWebContents() {
+        if (mTab == null) return null;
+        return mTab.getWebContents();
     }
 
     /**

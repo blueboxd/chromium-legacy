@@ -178,19 +178,22 @@
     "includes": [1810],
     "structures": [1820],
   },
-  "chrome/browser/resources/tab_strip/tab_strip_resources.grd": {
+  "chrome/browser/resources/signin/profile_picker/profile_picker_resources.grd": {
     "structures": [1840],
-    "includes": [1860],
+  },
+  "chrome/browser/resources/tab_strip/tab_strip_resources.grd": {
+    "structures": [1860],
+    "includes": [1880],
   },
   "chrome/browser/resources/welcome/welcome_resources.grd": {
-    "includes": [1880],
-    "structures": [1900],
+    "includes": [1900],
+    "structures": [1920],
   },
   "chrome/browser/supervised_user/supervised_user_unscaled_resources.grd": {
-    "includes": [1910],
+    "includes": [1930],
   },
   "chrome/browser/vr/testapp/vr_testapp_resources.grd": {
-    "includes": [1930],
+    "includes": [1950],
   },
   # END chrome/browser section.
 

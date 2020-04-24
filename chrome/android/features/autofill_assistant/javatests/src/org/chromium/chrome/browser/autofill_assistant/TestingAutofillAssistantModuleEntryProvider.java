@@ -66,7 +66,7 @@ class TestingAutofillAssistantModuleEntryProvider extends AutofillAssistantModul
         public void start(BottomSheetController bottomSheetController,
                 ChromeFullscreenManager fullscreenManager,
                 CompositorViewHolder compositorViewHolder, ScrimView scrimView, Context context,
-                @NonNull WebContents webContents, boolean skipOnboarding,
+                @NonNull WebContents webContents, boolean skipOnboarding, boolean isChromeCustomTab,
                 @NonNull String initialUrl, Map<String, String> parameters, String experimentIds,
                 @Nullable String callerAccount, @Nullable String userName) {}
 

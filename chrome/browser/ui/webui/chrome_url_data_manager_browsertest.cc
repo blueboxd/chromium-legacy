@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
@@ -14,6 +15,8 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/common/content_features.h"
+#include "content/public/test/browser_test_utils.h"
 
 namespace {
 
@@ -132,4 +135,33 @@ IN_PROC_BROWSER_TEST_F(ChromeURLDataManagerTest, LargeResourceScale) {
   // The presence of net error means that navigation did not commit to the
   // original url.
   EXPECT_NE(net::OK, observer.net_error());
+}
+
+class ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled
+    : public InProcessBrowserTest {
+ public:
+  ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled() {
+    feature_list_.InitAndEnableFeature(features::kWebUIReportOnlyTrustedTypes);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Verify that there's no Trusted Types violation in chrome://chrome-urls
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInChromeUrls) {
+  std::string message_filter = "*This document requires*assignment*";
+  content::WebContents* content =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::WebContentsConsoleObserver console_observer(content);
+  console_observer.SetPattern(message_filter);
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  ui_test_utils::NavigateToURL(browser(), GURL("chrome://chrome-urls"));
+
+  // Round trip to the renderer to ensure that the page is loaded
+  EXPECT_TRUE(content::ExecuteScript(content, "var a = 0;"));
+  EXPECT_TRUE(console_observer.messages().empty());
 }

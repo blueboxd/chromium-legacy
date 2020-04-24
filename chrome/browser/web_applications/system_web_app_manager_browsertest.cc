@@ -48,10 +48,13 @@
 #include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/policy/system_features_disable_list_policy_handler.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/extension_app_item.h"
 #include "chrome/browser/ui/app_list/test/chrome_app_list_test_support.h"
+#include "chrome/test/base/testing_browser_process.h"
+#include "components/policy/core/common/policy_pref_names.h"
 #endif
 
 namespace web_app {
@@ -177,6 +180,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerBrowserTest, Install) {
         EXPECT_EQ(apps::mojom::OptionalBool::kTrue, update.ShowInLauncher());
         EXPECT_EQ(apps::mojom::OptionalBool::kTrue, update.ShowInSearch());
         EXPECT_EQ(apps::mojom::OptionalBool::kFalse, update.ShowInManagement());
+        EXPECT_EQ(apps::mojom::Readiness::kReady, update.Readiness());
       });
 }
 
@@ -1060,6 +1064,98 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerOriginTrialsBrowserTest,
     ASSERT_EQ("", tab_helper.GetAppId());
   }
 }
+
+#if defined(OS_CHROMEOS)
+
+class SystemWebAppManagerAppSuspensionBrowserTest
+    : public SystemWebAppManagerBrowserTest {
+ public:
+  SystemWebAppManagerAppSuspensionBrowserTest()
+      : SystemWebAppManagerBrowserTest(false) {}
+
+  apps::mojom::Readiness GetAppReadiness(const AppId& app_id) {
+    apps::AppServiceProxy* proxy =
+        apps::AppServiceProxyFactory::GetForProfile(browser()->profile());
+    apps::mojom::Readiness readiness;
+    bool app_found = proxy->AppRegistryCache().ForOneApp(
+        app_id, [&readiness](const apps::AppUpdate& update) {
+          readiness = update.Readiness();
+        });
+    CHECK(app_found);
+    return readiness;
+  }
+};
+
+// Tests that System Apps can be suspended when the policy is set before the app
+// is installed.
+IN_PROC_BROWSER_TEST_P(SystemWebAppManagerAppSuspensionBrowserTest,
+                       AppSuspendedBeforeInstall) {
+  ASSERT_FALSE(
+      GetManager().GetAppIdForSystemApp(SystemAppType::SETTINGS).has_value());
+  {
+    ListPrefUpdate update(TestingBrowserProcess::GetGlobal()->local_state(),
+                          policy::policy_prefs::kSystemFeaturesDisableList);
+    base::ListValue* list = update.Get();
+    list->Append(policy::SystemFeature::OS_SETTINGS);
+  }
+  WaitForTestSystemAppInstall();
+  base::Optional<AppId> settings_id =
+      GetManager().GetAppIdForSystemApp(SystemAppType::SETTINGS);
+  DCHECK(settings_id.has_value());
+
+  EXPECT_EQ(apps::mojom::Readiness::kDisabledByPolicy,
+            GetAppReadiness(*settings_id));
+
+  {
+    ListPrefUpdate update(TestingBrowserProcess::GetGlobal()->local_state(),
+                          policy::policy_prefs::kSystemFeaturesDisableList);
+    base::ListValue* list = update.Get();
+    list->Clear();
+  }
+  apps::AppServiceProxyFactory::GetForProfile(browser()->profile())
+      ->FlushMojoCallsForTesting();
+  EXPECT_EQ(apps::mojom::Readiness::kReady, GetAppReadiness(*settings_id));
+}
+
+// Tests that System Apps can be suspended when the policy is set after the app
+// is installed.
+IN_PROC_BROWSER_TEST_P(SystemWebAppManagerAppSuspensionBrowserTest,
+                       AppSuspendedAfterInstall) {
+  WaitForTestSystemAppInstall();
+  base::Optional<AppId> settings_id =
+      GetManager().GetAppIdForSystemApp(SystemAppType::SETTINGS);
+  DCHECK(settings_id.has_value());
+  EXPECT_EQ(apps::mojom::Readiness::kReady, GetAppReadiness(*settings_id));
+
+  {
+    ListPrefUpdate update(TestingBrowserProcess::GetGlobal()->local_state(),
+                          policy::policy_prefs::kSystemFeaturesDisableList);
+    base::ListValue* list = update.Get();
+    list->Append(policy::SystemFeature::OS_SETTINGS);
+  }
+
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(browser()->profile());
+  proxy->FlushMojoCallsForTesting();
+  EXPECT_EQ(apps::mojom::Readiness::kDisabledByPolicy,
+            GetAppReadiness(*settings_id));
+
+  {
+    ListPrefUpdate update(TestingBrowserProcess::GetGlobal()->local_state(),
+                          policy::policy_prefs::kSystemFeaturesDisableList);
+    base::ListValue* list = update.Get();
+    list->Clear();
+  }
+  proxy->FlushMojoCallsForTesting();
+  EXPECT_EQ(apps::mojom::Readiness::kReady, GetAppReadiness(*settings_id));
+}
+// This feature will only work when DesktopPWAsWithoutExtensions launches.
+INSTANTIATE_TEST_SUITE_P(All,
+                         SystemWebAppManagerAppSuspensionBrowserTest,
+                         ::testing::Values(ProviderType::kWebApps),
+                         ProviderTypeParamToString);
+
+#endif  // defined(OS_CHROMEOS)
 
 // We test with and without enabling kDesktopPWAsWithoutExtensions.
 

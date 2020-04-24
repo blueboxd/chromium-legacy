@@ -268,7 +268,6 @@ TEST_F(AppServiceImplTest, PreferredApps) {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   AppServiceImpl impl(&pref_service_, temp_dir_.GetPath());
   impl.GetPreferredAppsForTesting().Init();
-  // TODO(crbug.com/853604): Update this test after reading from disk done.
 
   const char kAppId1[] = "abcdefg";
   const char kAppId2[] = "aaaaaaa";
@@ -365,6 +364,40 @@ TEST_F(AppServiceImplTest, PreferredApps) {
             sub0.PreferredApps().FindPreferredAppForUrl(another_filter_url));
   EXPECT_EQ(kAppId2,
             sub1.PreferredApps().FindPreferredAppForUrl(another_filter_url));
+}
+
+TEST_F(AppServiceImplTest, PreferredAppsPersistency) {
+  AppServiceImpl::RegisterProfilePrefs(pref_service_.registry());
+  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+
+  const char kAppId1[] = "abcdefg";
+  GURL filter_url = GURL("https://www.google.com/abc");
+  auto intent_filter = apps_util::CreateIntentFilterForUrlScope(filter_url);
+  {
+    base::RunLoop run_loop_read;
+    AppServiceImpl impl(&pref_service_, temp_dir_.GetPath(),
+                        run_loop_read.QuitClosure());
+    impl.FlushMojoCallsForTesting();
+    run_loop_read.Run();
+    base::RunLoop run_loop_write;
+    impl.SetWriteCompletedCallbackForTesting(run_loop_write.QuitClosure());
+    impl.AddPreferredApp(apps::mojom::AppType::kUnknown, kAppId1,
+                         intent_filter->Clone(),
+                         apps_util::CreateIntentFromUrl(filter_url),
+                         /*from_publisher=*/false);
+    run_loop_write.Run();
+    impl.FlushMojoCallsForTesting();
+  }
+  // Create a new impl to initialize preferred apps from the disk.
+  {
+    base::RunLoop run_loop_read;
+    AppServiceImpl impl(&pref_service_, temp_dir_.GetPath(),
+                        run_loop_read.QuitClosure());
+    impl.FlushMojoCallsForTesting();
+    run_loop_read.Run();
+    EXPECT_EQ(kAppId1, impl.GetPreferredAppsForTesting().FindPreferredAppForUrl(
+                           filter_url));
+  }
 }
 
 }  // namespace apps

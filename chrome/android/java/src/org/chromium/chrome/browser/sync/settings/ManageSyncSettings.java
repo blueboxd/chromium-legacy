@@ -79,8 +79,8 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
     @VisibleForTesting
     public static final String FRAGMENT_PASSPHRASE_TYPE = "password_type";
 
-    private static final String PREF_SYNCING_CATEGORY = "syncing_category";
-
+    @VisibleForTesting
+    public static final String PREF_SYNCING_CATEGORY = "syncing_category";
     @VisibleForTesting
     public static final String PREF_SYNC_EVERYTHING = "sync_everything";
     @VisibleForTesting
@@ -103,8 +103,9 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
     public static final String PREF_ENCRYPTION = "encryption";
     @VisibleForTesting
     public static final String PREF_SYNC_MANAGE_DATA = "sync_manage_data";
+    @VisibleForTesting
+    public static final String PREF_SEARCH_AND_BROWSE_CATEGORY = "search_and_browse_category";
 
-    private static final String PREF_SEARCH_AND_BROWSE_CATEGORY = "search_and_browse_category";
     private static final String PREF_URL_KEYED_ANONYMIZED_DATA = "url_keyed_anonymized_data";
 
     private static final int REQUEST_CODE_TRUSTED_VAULT_KEY_RETRIEVAL = 1;

@@ -56,8 +56,6 @@ base::string16 BuildPathFromComponents(
 // Takes a prefix (Domain, or Domain+subdomain) and a collection of path
 // components and elides if possible. Returns a string containing the longest
 // possible elided path, or an empty string if elision is not possible.
-// Warning: This is O(url_path_elements.size() ^ 2), so it should not be called
-// on a very large path.
 base::string16 ElideComponentizedPath(
     const base::string16& url_path_prefix,
     const std::vector<base::string16>& url_path_elements,
@@ -65,18 +63,35 @@ base::string16 ElideComponentizedPath(
     const base::string16& url_query,
     const gfx::FontList& font_list,
     float available_pixel_width) {
-  const size_t url_path_number_of_elements = url_path_elements.size();
+  CHECK(!url_path_elements.empty());
 
-  CHECK(url_path_number_of_elements);
-  for (size_t i = url_path_number_of_elements - 1; i > 0; --i) {
-    base::string16 elided_path = BuildPathFromComponents(
-        url_path_prefix, url_path_elements, url_filename, i);
-    if (available_pixel_width >= gfx::GetStringWidthF(elided_path, font_list))
-      return gfx::ElideText(elided_path + url_query, font_list,
-                            available_pixel_width, gfx::ELIDE_TAIL);
+  // Find the longest set of leading path components that fits in
+  // |available_pixel_width|.  Since BuildPathFromComponents() is O(n), using a
+  // binary search here makes the overall complexity O(n lg n), which is
+  // meaningful since there may be thousands of components in extreme cases.
+  base::string16 elided_path_at_min_index;
+  size_t min_index = 0;
+  for (size_t max_index = url_path_elements.size();
+       min_index != max_index - 1;) {
+    const size_t cutting_index = (min_index + max_index) / 2;
+    const base::string16 elided_path = BuildPathFromComponents(
+        url_path_prefix, url_path_elements, url_filename, cutting_index);
+    if (gfx::GetStringWidthF(elided_path, font_list) <= available_pixel_width) {
+      min_index = cutting_index;
+      elided_path_at_min_index = elided_path;
+    } else {
+      max_index = cutting_index;
+    }
   }
 
-  return base::string16();
+  // If the cutting point is at the beginning and nothing gets elided, return
+  // failure even if the whole text could fit. TODO(https://crbug.com/1074034).
+  if (min_index == 0)
+    return base::string16();
+
+  // Elide starting at |min_index|.
+  return gfx::ElideText(elided_path_at_min_index + url_query, font_list,
+                        available_pixel_width, gfx::ELIDE_TAIL);
 }
 
 // Splits the hostname in the |url| into sub-strings for the full hostname,
@@ -261,18 +276,6 @@ base::string16 ElideUrl(const GURL& url,
     --url_path_number_of_elements;
     url_filename =
         url_path_elements[url_path_number_of_elements - 1] + gfx::kForwardSlash;
-  }
-
-  const size_t kMaxNumberOfUrlPathElementsAllowed = 1024;
-  if (url_path_number_of_elements > kMaxNumberOfUrlPathElementsAllowed) {
-    // Too long of a path (ElideComponentizedPath is O(N^2) so this would result
-    // in degenerate behaviour). Just elide this as a text string.
-    // TODO(mgiuca): Fix ElideComponentizedPath to deal with degenerate cases
-    // itself, so we don't need this special case. We should not fall back on
-    // ElideText if we don't know the entire domain will fit, or else we might
-    // chop off the TLD. https://crbug.com/739975.
-    return gfx::ElideText(url_subdomain + url_domain + url_path_query_etc,
-                          font_list, available_pixel_width, gfx::ELIDE_TAIL);
   }
 
   // Start eliding the path and replacing elements by ".../".

@@ -10,16 +10,20 @@
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/char_iterator.h"
 #include "base/i18n/unicodestring.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversion_utils.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/synchronization/lock.h"
 #include "components/autofill/core/browser/address_rewriter.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/geo/autofill_country.h"
 #include "components/autofill/core/browser/geo/state_names.h"
 #include "components/autofill/core/common/autofill_clock.h"
+#include "third_party/icu/source/common/unicode/unistr.h"
+#include "third_party/icu/source/i18n/unicode/translit.h"
 #include "third_party/libphonenumber/phonenumber_api.h"
 
 using base::UTF16ToUTF8;
@@ -186,28 +190,58 @@ int32_t NormalizingIterator::GetNextChar() {
   return iter_.get();
 }
 
+// This RAII class provides a thread-safe interface to a shared transliterator.
+// Sharing a single transliterator is advisable due its high construction cost.
+class BorrowedTransliterator {
+ public:
+  BorrowedTransliterator() : auto_lock_(GetLock()) {}
+
+  void Transliterate(icu::UnicodeString* text) const {
+    if (GetTransliterator() != nullptr) {
+      GetTransliterator()->transliterate(*text);
+    } else {
+      *text = text->toLower();
+    }
+  }
+
+ private:
+  static base::Lock& GetLock() {
+    static base::NoDestructor<base::Lock> instance;
+    return *instance;
+  }
+
+  // Use ICU transliteration to remove diacritics and fold case.
+  // See http://userguide.icu-project.org/transforms/general
+  static std::unique_ptr<icu::Transliterator> CreateTransliterator() {
+    UErrorCode status = U_ZERO_ERROR;
+    std::unique_ptr<icu::Transliterator> transliterator(
+        icu::Transliterator::createInstance(
+            "NFD; [:Nonspacing Mark:] Remove; Lower; NFC", UTRANS_FORWARD,
+            status));
+    if (U_FAILURE(status) || transliterator == nullptr) {
+      // TODO(rogerm): Add a histogram to count how often this happens.
+      LOG(ERROR) << "Failed to create ICU Transliterator: "
+                 << u_errorName(status);
+    }
+    return transliterator;
+  }
+
+  static std::unique_ptr<icu::Transliterator>& GetTransliterator() {
+    static base::NoDestructor<std::unique_ptr<icu::Transliterator>> instance(
+        CreateTransliterator());
+    return *instance;
+  }
+
+  base::AutoLock auto_lock_;
+};
+
 }  // namespace
 
 AutofillProfileComparator::AutofillProfileComparator(
     const base::StringPiece& app_locale)
-    : app_locale_(app_locale.data(), app_locale.size()) {
-  // Use ICU transliteration to remove diacritics and fold case.
-  // See http://userguide.icu-project.org/transforms/general
-  UErrorCode status = U_ZERO_ERROR;
-  std::unique_ptr<icu::Transliterator> transliterator(
-      icu::Transliterator::createInstance(
-          "NFD; [:Nonspacing Mark:] Remove; Lower; NFC", UTRANS_FORWARD,
-          status));
-  if (U_FAILURE(status) || transliterator == nullptr) {
-    // TODO(rogerm): Add a histogram to count how often this happens.
-    LOG(ERROR) << "Failed to create ICU Transliterator: "
-               << u_errorName(status);
-  }
+    : app_locale_(app_locale.data(), app_locale.size()) {}
 
-  transliterator_ = std::move(transliterator);
-}
-
-AutofillProfileComparator::~AutofillProfileComparator() {}
+AutofillProfileComparator::~AutofillProfileComparator() = default;
 
 bool AutofillProfileComparator::Compare(base::StringPiece16 text1,
                                         base::StringPiece16 text2,
@@ -219,22 +253,17 @@ bool AutofillProfileComparator::Compare(base::StringPiece16 text1,
   NormalizingIterator normalizing_iter1{text1, whitespace_spec};
   NormalizingIterator normalizing_iter2{text2, whitespace_spec};
 
+  BorrowedTransliterator transliterator;
   while (!normalizing_iter1.End() && !normalizing_iter2.End()) {
     icu::UnicodeString char1 =
         icu::UnicodeString(normalizing_iter1.GetNextChar());
     icu::UnicodeString char2 =
         icu::UnicodeString(normalizing_iter2.GetNextChar());
 
-    if (transliterator_ == nullptr) {
-      if (char1.toLower() != char2.toLower()) {
-        return false;
-      }
-    } else {
-      transliterator_->transliterate(char1);
-      transliterator_->transliterate(char2);
-      if (char1 != char2) {
-        return false;
-      }
+    transliterator.Transliterate(&char1);
+    transliterator.Transliterate(&char2);
+    if (char1 != char2) {
+      return false;
     }
     normalizing_iter1.Advance();
     normalizing_iter2.Advance();
@@ -298,11 +327,8 @@ base::string16 AutofillProfileComparator::NormalizeForComparison(
   if (previous_was_whitespace && !result.empty())
     result.resize(result.size() - 1);
 
-  if (transliterator_ == nullptr)
-    return result;
-
   icu::UnicodeString value = icu::UnicodeString(result.data(), result.length());
-  transliterator_->transliterate(value);
+  BorrowedTransliterator().Transliterate(&value);
   return base::i18n::UnicodeStringToString16(value);
 }
 

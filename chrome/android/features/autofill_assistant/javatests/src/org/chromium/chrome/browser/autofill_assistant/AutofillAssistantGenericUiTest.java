@@ -2150,4 +2150,125 @@ public class AutofillAssistantGenericUiTest {
         onView(withText("toggle view")).perform(click());
         onView(withText("text view")).check(matches(not(isEnabled())));
     }
+
+    /**
+     * Runs multiple generic UI actions, one after another. Tests that earlier runs properly clean
+     * up after themselves.
+     */
+    @Test
+    @MediumTest
+    public void testMultipleActions() {
+        List<InteractionProto> interactionsA = new ArrayList<>();
+        interactionsA.add(
+                (InteractionProto) InteractionProto.newBuilder()
+                        .setTriggerEvent(EventProto.newBuilder().setOnValueChanged(
+                                OnModelValueChangedEventProto.newBuilder().setModelIdentifier(
+                                        "chips")))
+                        .addCallbacks(CallbackProto.newBuilder().setSetUserActions(
+                                SetUserActionsProto.newBuilder().setUserActions(
+                                        ValueReferenceProto.newBuilder().setModelIdentifier(
+                                                "chips"))))
+                        .build());
+        interactionsA.add((InteractionProto) InteractionProto.newBuilder()
+                                  .setTriggerEvent(EventProto.newBuilder().setOnUserActionCalled(
+                                          OnUserActionCalled.newBuilder().setUserActionIdentifier(
+                                                  "shared_identifier")))
+                                  .addCallbacks(CallbackProto.newBuilder().setEndAction(
+                                          EndActionProto.newBuilder().setStatus(
+                                                  ProcessedActionStatusProto.ACTION_APPLIED)))
+                                  .build());
+
+        List<ModelProto.ModelValue> modelValuesA = new ArrayList<>();
+        modelValuesA.add(
+                (ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
+                        .setIdentifier("chips")
+                        .setValue(ValueProto.newBuilder().setUserActions(
+                                UserActionList.newBuilder().addValues(
+                                        UserActionProto.newBuilder()
+                                                .setChip(ChipProto.newBuilder()
+                                                                 .setText("Next")
+                                                                 .setType(ChipType.NORMAL_ACTION))
+                                                .setIdentifier("shared_identifier"))))
+                        .build());
+
+        GenericUserInterfaceProto genericUserInterfaceA =
+                (GenericUserInterfaceProto) GenericUserInterfaceProto.newBuilder()
+                        .setModel(ModelProto.newBuilder().addAllValues(modelValuesA))
+                        .setInteractions(
+                                InteractionsProto.newBuilder().addAllInteractions(interactionsA))
+                        .build();
+
+        // Define a different interaction for the second action, but using the same user action
+        // identifier as the first action. This tests that the first action has gone out of scope
+        // correctly, and the EndAction interaction defined there no longer exists.
+        List<InteractionProto> interactionsB = new ArrayList<>();
+        interactionsB.add(
+                (InteractionProto) InteractionProto.newBuilder()
+                        .setTriggerEvent(EventProto.newBuilder().setOnValueChanged(
+                                OnModelValueChangedEventProto.newBuilder().setModelIdentifier(
+                                        "chips")))
+                        .addCallbacks(CallbackProto.newBuilder().setSetUserActions(
+                                SetUserActionsProto.newBuilder().setUserActions(
+                                        ValueReferenceProto.newBuilder().setModelIdentifier(
+                                                "chips"))))
+                        .build());
+        interactionsB.add((InteractionProto) InteractionProto.newBuilder()
+                                  .setTriggerEvent(EventProto.newBuilder().setOnUserActionCalled(
+                                          OnUserActionCalled.newBuilder().setUserActionIdentifier(
+                                                  "shared_identifier")))
+                                  .addCallbacks(CallbackProto.newBuilder().setShowInfoPopup(
+                                          ShowInfoPopupProto.newBuilder().setInfoPopup(
+                                                  InfoPopupProto.newBuilder()
+                                                          .setText("Info message")
+                                                          .setTitle("Title"))))
+                                  .build());
+
+        List<ModelProto.ModelValue> modelValuesB = new ArrayList<>();
+        modelValuesB.add(
+                (ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
+                        .setIdentifier("chips")
+                        .setValue(ValueProto.newBuilder().setUserActions(
+                                UserActionList.newBuilder().addValues(
+                                        UserActionProto.newBuilder()
+                                                .setChip(ChipProto.newBuilder()
+                                                                 .setText("Done")
+                                                                 .setType(ChipType.NORMAL_ACTION))
+                                                .setIdentifier("shared_identifier"))))
+                        .build());
+
+        GenericUserInterfaceProto genericUserInterfaceB =
+                (GenericUserInterfaceProto) GenericUserInterfaceProto.newBuilder()
+                        .setModel(ModelProto.newBuilder().addAllValues(modelValuesB))
+                        .setInteractions(
+                                InteractionsProto.newBuilder().addAllInteractions(interactionsB))
+                        .build();
+
+        ArrayList<ActionProto> list = new ArrayList<>();
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setShowGenericUi(ShowGenericUiProto.newBuilder().setGenericUserInterface(
+                                 genericUserInterfaceA))
+                         .build());
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setShowGenericUi(ShowGenericUiProto.newBuilder().setGenericUserInterface(
+                                 genericUserInterfaceB))
+                         .build());
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath("autofill_assistant_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Autostart")))
+                        .build(),
+                list);
+
+        AutofillAssistantTestService testService =
+                new AutofillAssistantTestService(Collections.singletonList(script));
+        startAutofillAssistant(mTestRule.getActivity(), testService);
+
+        waitUntilViewMatchesCondition(withText("Next"), isCompletelyDisplayed());
+        onView(withText("Next")).perform(click());
+
+        waitUntilViewMatchesCondition(withText("Done"), isCompletelyDisplayed());
+        onView(withText("Done")).perform(click());
+        onView(withText("Info message")).check(matches(isDisplayed()));
+    }
 }

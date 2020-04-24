@@ -27,6 +27,7 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   const ClientSettings& GetSettings() override;
   const GURL& GetCurrentURL() override;
   const GURL& GetDeeplinkURL() override;
+  const GURL& GetScriptURL() override;
   Service* GetService() override;
   WebController* GetWebController() override;
   TriggerContext* GetTriggerContext() override;

@@ -10,6 +10,7 @@ import android.content.pm.ResolveInfo;
 import androidx.annotation.NonNull;
 
 import org.chromium.components.external_intents.ExternalNavigationHandler.OverrideUrlLoadingResult;
+import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -148,9 +149,9 @@ public interface ExternalNavigationDelegate {
     boolean isSerpReferrer();
 
     /**
-     * @return The previously committed URL from the WebContents.
+     * @return The WebContents instance associated with this delegate instance.
      */
-    String getPreviousUrl();
+    WebContents getWebContents();
 
     /**
      * @param intent The intent to launch.

@@ -925,11 +925,21 @@ TEST_F(ControllerTest, DelayStartupIfLoading) {
 
   Start("http://a.example.com/");
   EXPECT_EQ(AutofillAssistantState::INACTIVE, controller_->GetState());
+  EXPECT_EQ(controller_->GetDeeplinkURL().host(), "a.example.com");
 
-  content::NavigationSimulator::NavigateAndCommitFromDocument(
-      GURL("http://b.example.com"), web_contents()->GetMainFrame());
+  // Initial navigation.
+  SimulateNavigateToUrl(GURL("http://b.example.com"));
   EXPECT_THAT(states_, ElementsAre(AutofillAssistantState::STARTING,
                                    AutofillAssistantState::STOPPED));
+  EXPECT_EQ(controller_->GetDeeplinkURL().host(), "a.example.com");
+  EXPECT_EQ(controller_->GetScriptURL().host(), "b.example.com");
+  EXPECT_EQ(controller_->GetCurrentURL().host(), "b.example.com");
+
+  // Navigation during the flow.
+  SimulateNavigateToUrl(GURL("http://c.example.com"));
+  EXPECT_EQ(controller_->GetDeeplinkURL().host(), "a.example.com");
+  EXPECT_EQ(controller_->GetScriptURL().host(), "b.example.com");
+  EXPECT_EQ(controller_->GetCurrentURL().host(), "c.example.com");
 }
 
 TEST_F(ControllerTest, WaitForNavigationActionTimesOut) {

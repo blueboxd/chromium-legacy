@@ -45,12 +45,24 @@ void WriteDataBlocking(const base::FilePath& preferred_apps_file,
   }
 }
 
+// Performs blocking I/O. Called on another thread.
+std::string ReadDataBlocking(const base::FilePath& preferred_apps_file) {
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
+  std::string preferred_apps_string;
+  if (!base::ReadFileToString(preferred_apps_file, &preferred_apps_string)) {
+    DVLOG(0) << "Fail to read file from " << preferred_apps_file;
+  }
+  return preferred_apps_string;
+}
+
 }  // namespace
 
 namespace apps {
 
 AppServiceImpl::AppServiceImpl(PrefService* profile_prefs,
-                               const base::FilePath& profile_dir)
+                               const base::FilePath& profile_dir,
+                               base::OnceClosure read_completed_for_testing)
     : pref_service_(profile_prefs),
       profile_dir_(profile_dir),
       should_write_preferred_apps_to_file_(false),
@@ -58,7 +70,8 @@ AppServiceImpl::AppServiceImpl(PrefService* profile_prefs,
       task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
           {base::ThreadPool(), base::MayBlock(),
            base::TaskPriority::BEST_EFFORT,
-           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
+      read_completed_for_testing_(std::move(read_completed_for_testing)) {
   DCHECK(pref_service_);
   InitializePreferredApps();
 }
@@ -246,7 +259,14 @@ void AppServiceImpl::AddPreferredApp(apps::mojom::AppType app_type,
                                      apps::mojom::IntentFilterPtr intent_filter,
                                      apps::mojom::IntentPtr intent,
                                      bool from_publisher) {
-  DCHECK(preferred_apps_.IsInitialized());
+  // TODO(crbug.com/853604): Make sure the ARC preference init happens after
+  // this. Might need to change the interface to call that after read completed.
+  // Might also need to record the change before data read and make the update
+  // after initialization in the future.
+  if (!preferred_apps_.IsInitialized()) {
+    DVLOG(0) << "Preferred apps not initialised when try to add.";
+    return;
+  }
 
   apps::mojom::ReplacedAppPreferencesPtr replaced_app_preferences =
       preferred_apps_.AddPreferredApp(app_id, intent_filter);
@@ -276,7 +296,14 @@ void AppServiceImpl::AddPreferredApp(apps::mojom::AppType app_type,
 
 void AppServiceImpl::RemovePreferredApp(apps::mojom::AppType app_type,
                                         const std::string& app_id) {
-  DCHECK(preferred_apps_.IsInitialized());
+  // TODO(crbug.com/853604): Make sure the ARC preference init happens after
+  // this. Might need to change the interface to call that after read completed.
+  // Might also need to record the change before data read and make the update
+  // after initialization in the future.
+  if (!preferred_apps_.IsInitialized()) {
+    DVLOG(0) << "Preferred apps not initialised when try to remove an app id.";
+    return;
+  }
 
   preferred_apps_.DeleteAppId(app_id);
 
@@ -287,7 +314,14 @@ void AppServiceImpl::RemovePreferredAppForFilter(
     apps::mojom::AppType app_type,
     const std::string& app_id,
     apps::mojom::IntentFilterPtr intent_filter) {
-  DCHECK(preferred_apps_.IsInitialized());
+  // TODO(crbug.com/853604): Make sure the ARC preference init happens after
+  // this. Might need to change the interface to call that after read completed.
+  // Might also need to record the change before data read and make the update
+  // after initialization in the future.
+  if (!preferred_apps_.IsInitialized()) {
+    DVLOG(0) << "Preferred apps not initialised when try to remove a filter.";
+    return;
+  }
 
   preferred_apps_.DeletePreferredApp(app_id, intent_filter);
 
@@ -312,11 +346,7 @@ void AppServiceImpl::OnPublisherDisconnected(apps::mojom::AppType app_type) {
 }
 
 void AppServiceImpl::InitializePreferredApps() {
-  // TODO(crbug.com/853604): Read the data from the disk.
-  preferred_apps_.Init();
-  for (auto& subscriber : subscribers_) {
-    subscriber->InitializePreferredApps(preferred_apps_.GetValue());
-  }
+  ReadFromJSON(profile_dir_);
 }
 
 void AppServiceImpl::WriteToJSON(
@@ -361,6 +391,46 @@ void AppServiceImpl::WriteCompleted() {
   // from memory to file.
   should_write_preferred_apps_to_file_ = false;
   WriteToJSON(profile_dir_, preferred_apps_);
+}
+
+void AppServiceImpl::ReadFromJSON(const base::FilePath& profile_dir) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  task_runner_->PostTaskAndReplyWithResult(
+      FROM_HERE,
+      base::BindOnce(&ReadDataBlocking,
+                     profile_dir.Append(kPreferredAppsDirname)),
+      base::BindOnce(&AppServiceImpl::ReadCompleted,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void AppServiceImpl::ReadCompleted(std::string preferred_apps_string) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (preferred_apps_string.empty()) {
+    preferred_apps_.Init();
+  } else {
+    std::string json_string;
+    JSONStringValueDeserializer deserializer(preferred_apps_string);
+    int error_code;
+    std::string error_message;
+    auto preferred_apps_value =
+        deserializer.Deserialize(&error_code, &error_message);
+
+    if (!preferred_apps_value) {
+      DVLOG(0) << "Fail to deserialize json value from string with error code: "
+               << error_code << " and error message: " << error_message;
+      preferred_apps_.Init();
+    } else {
+      auto preferred_apps =
+          apps::ParseValueToPreferredApps(*preferred_apps_value);
+      preferred_apps_.Init(preferred_apps);
+    }
+  }
+  for (auto& subscriber : subscribers_) {
+    subscriber->InitializePreferredApps(preferred_apps_.GetValue());
+  }
+  if (read_completed_for_testing_) {
+    std::move(read_completed_for_testing_).Run();
+  }
 }
 
 }  // namespace apps

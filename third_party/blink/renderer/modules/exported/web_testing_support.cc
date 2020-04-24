@@ -29,15 +29,29 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_internals_partial.h"
 #include "third_party/blink/renderer/core/testing/scoped_mock_overlay_scrollbars.h"
 #include "third_party/blink/renderer/core/testing/v8/web_core_test_support.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "v8/include/v8.h"
 
 namespace blink {
 
+namespace {
+RuntimeEnabledFeatures::Backup* g_features_backup = nullptr;
+}
+
 WebTestingSupport::WebScopedMockScrollbars::WebScopedMockScrollbars()
-    : use_mock_scrollbars_(new ScopedMockOverlayScrollbars) {}
+    : use_mock_scrollbars_(std::make_unique<ScopedMockOverlayScrollbars>()) {}
 
 WebTestingSupport::WebScopedMockScrollbars::~WebScopedMockScrollbars() =
     default;
+
+void WebTestingSupport::SaveRuntimeFeatures() {
+  DCHECK(!g_features_backup);
+  g_features_backup = new RuntimeEnabledFeatures::Backup;
+}
+
+void WebTestingSupport::ResetRuntimeFeatures() {
+  g_features_backup->Restore();
+}
 
 void WebTestingSupport::InjectInternalsObject(WebLocalFrame* frame) {
   V8InternalsPartial::Initialize();
@@ -45,15 +59,15 @@ void WebTestingSupport::InjectInternalsObject(WebLocalFrame* frame) {
   web_core_test_support::InjectInternalsObject(frame->MainWorldScriptContext());
 }
 
-void WebTestingSupport::ResetInternalsObject(WebLocalFrame* frame) {
-  v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
-  web_core_test_support::ResetInternalsObject(frame->MainWorldScriptContext());
-}
-
 void WebTestingSupport::InjectInternalsObject(v8::Local<v8::Context> context) {
   V8InternalsPartial::Initialize();
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
   web_core_test_support::InjectInternalsObject(context);
+}
+
+void WebTestingSupport::ResetInternalsObject(WebLocalFrame* frame) {
+  v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
+  web_core_test_support::ResetInternalsObject(frame->MainWorldScriptContext());
 }
 
 }  // namespace blink

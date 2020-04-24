@@ -35,8 +35,9 @@ interface AutofillAssistantModuleEntry {
     void start(BottomSheetController bottomSheetController,
             ChromeFullscreenManager fullscreenManager, CompositorViewHolder compositorViewHolder,
             ScrimView scrimView, Context context, @NonNull WebContents webContents,
-            boolean skipOnboarding, @NonNull String initialUrl, Map<String, String> parameters,
-            String experimentIds, @Nullable String callerAccount, @Nullable String userName);
+            boolean skipOnboarding, boolean isChromeCustomTab, @NonNull String initialUrl,
+            Map<String, String> parameters, String experimentIds, @Nullable String callerAccount,
+            @Nullable String userName);
     /**
      * Returns a {@link AutofillAssistantActionHandler} instance tied to the activity owning the
      * given bottom sheet, and scrim view.

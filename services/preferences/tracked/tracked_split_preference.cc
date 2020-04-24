@@ -60,9 +60,6 @@ bool TrackedSplitPreference::EnforceAndReport(
   ValueState value_state =
       transaction->CheckSplitValue(pref_path_, dict_value, &invalid_keys);
 
-  if (value_state == ValueState::CHANGED)
-    helper_.ReportSplitPreferenceChangedCount(invalid_keys.size());
-
   helper_.ReportValidationResult(value_state, transaction->GetStoreUMASuffix());
 
   ValueState external_validation_value_state = ValueState::UNSUPPORTED;

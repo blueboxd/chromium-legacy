@@ -6,5 +6,5 @@ declare_args() {
   # Controls whether //ios/third_party/material_components_ios (and its
   # dependencies) is build as a framework bundle. This boolean allows
   # migrating the internal code to the framework incrementally.
-  ios_third_party_material_components_built_as_framework = false
+  ios_third_party_material_components_built_as_framework = true
 }

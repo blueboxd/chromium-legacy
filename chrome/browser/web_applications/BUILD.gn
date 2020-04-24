@@ -250,7 +250,10 @@ source_set("web_applications_browser_tests") {
   ]
 
   if (is_chromeos) {
-    deps += [ "//chrome/browser/ui" ]
+    deps += [
+      "//chrome/browser/chromeos",
+      "//chrome/browser/ui",
+    ]
   }
 }
 

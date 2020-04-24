@@ -6,7 +6,6 @@
 #define COMPONENTS_PASSWORD_MANAGER_CONTENT_BROWSER_CONTENT_PASSWORD_MANAGER_DRIVER_FACTORY_H_
 
 #include <map>
-#include <memory>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -65,8 +64,7 @@ class ContentPasswordManagerDriverFactory
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
 
-  std::map<content::RenderFrameHost*,
-           std::unique_ptr<ContentPasswordManagerDriver>>
+  std::map<content::RenderFrameHost*, ContentPasswordManagerDriver>
       frame_driver_map_;
 
   PasswordManagerClient* password_client_;

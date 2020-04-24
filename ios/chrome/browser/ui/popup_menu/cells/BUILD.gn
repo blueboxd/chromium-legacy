@@ -12,6 +12,7 @@ source_set("cells") {
   ]
   deps = [
     "//base",
+    "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/favicon/resources:default_favicon",
     "//ios/chrome/browser/ui/popup_menu/public:ui_constants",
     "//ios/chrome/browser/ui/popup_menu/public/cells",

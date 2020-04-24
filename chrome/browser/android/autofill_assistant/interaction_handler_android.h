@@ -77,6 +77,9 @@ class InteractionHandlerAndroid : public EventHandler::Observer {
                               const std::string& selected_model_identifier);
 
  private:
+  base::Optional<InteractionCallback> CreateInteractionCallbackFromProto(
+      const CallbackProto& proto);
+
   // Maps event keys to the corresponding list of callbacks to execute.
   std::map<EventHandler::EventKey, std::vector<InteractionCallback>>
       interactions_;

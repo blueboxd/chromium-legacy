@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.settings;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.rule.ActivityTestRule;
 
@@ -46,11 +47,27 @@ public class SettingsActivityTestRule<T extends Fragment>
     /**
      * Launches the settings activity with the specified fragment.
      * @return The activity that just started.
+     * TODO(https://crbug.com/1074252): Replace this method with startSettingsActivity(null)
      */
     public SettingsActivity startSettingsActivity() {
         Context context = InstrumentationRegistry.getTargetContext();
         Intent intent = SettingsLauncher.getInstance().createIntentForSettingsPage(
                 context, mFragmentClass.getName());
+        SettingsActivity activity = super.launchActivity(intent);
+        Assert.assertNotNull(activity);
+
+        return activity;
+    }
+
+    /**
+     * Launches the settings activity with the specified fragment and provided arguments.
+     * @param arguments Arguments to be passed to the fragment.
+     * @return The activity that just started.
+     */
+    public SettingsActivity startSettingsActivity(Bundle arguments) {
+        Context context = InstrumentationRegistry.getTargetContext();
+        Intent intent = SettingsLauncher.getInstance().createIntentForSettingsPage(
+                context, mFragmentClass.getName(), arguments);
         SettingsActivity activity = super.launchActivity(intent);
         Assert.assertNotNull(activity);
 

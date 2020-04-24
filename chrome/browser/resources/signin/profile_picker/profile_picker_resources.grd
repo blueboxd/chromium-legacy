@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grit latest_public_release="0" current_release="1" output_all_resource_defines="false">
+  <outputs>
+    <output filename="grit/profile_picker_resources.h" type="rc_header">
+      <emit emit_type='prepend'></emit>
+    </output>
+    <output filename="grit/profile_picker_resources_map.cc"
+            type="resource_file_map_source" />
+    <output filename="grit/profile_picker_resources_map.h"
+            type="resource_map_header" />
+    <output filename="profile_picker_resources.pak" type="data_package" />
+  </outputs>
+  <release seq="1">
+    <structures>
+      <structure
+          name="IDR_PROFILE_PICKER_PROFILE_PICKER_HTML"
+          file="profile_picker.html"
+          type="chrome_html"
+          compress="false"/>
+    </structures>
+  </release>
+</grit>

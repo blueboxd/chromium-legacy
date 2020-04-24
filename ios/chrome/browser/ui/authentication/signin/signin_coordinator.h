@@ -94,6 +94,16 @@ class Browser;
                                               (signin_metrics::PromoAction)
                                                   promoAction;
 
+// Returns a coordinator for re-authentication workflow for Trusted
+// Vault for the primary identity. This is done with ChromeTrustedVaultService.
+// Related to IOSTrustedVaultClient.
+// |viewController| presents the sign-in.
++ (instancetype)
+    trustedVaultReAuthenticationCoordiantorWithBaseViewController:
+        (UIViewController*)viewcontroller
+                                                          browser:
+                                                              (Browser*)browser;
+
 // Interrupts the sign-in flow.
 // |signinCompletion(SigninCoordinatorResultInterrupted, nil)| is guaranteed to
 // be called before |completion()|.

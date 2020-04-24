@@ -48,18 +48,6 @@ Profile* ChromePageInfoDelegate::GetProfile() const {
   return Profile::FromBrowserContext(web_contents_->GetBrowserContext());
 }
 
-content_settings::TabSpecificContentSettings*
-ChromePageInfoDelegate::GetTabSpecificContentSettings() const {
-  // When |web_contents| is not from a Tab, |web_contents| does not have a
-  // |TabSpecificContentSettings| and need to create one; otherwise, noop.
-  content_settings::TabSpecificContentSettings::CreateForWebContents(
-      web_contents_,
-      std::make_unique<chrome::TabSpecificContentSettingsDelegate>(
-          web_contents_));
-  return content_settings::TabSpecificContentSettings::FromWebContents(
-      web_contents_);
-}
-
 permissions::ChooserContextBase* ChromePageInfoDelegate::GetChooserContext(
     ContentSettingsType type) {
   switch (type) {
@@ -82,49 +70,6 @@ permissions::ChooserContextBase* ChromePageInfoDelegate::GetChooserContext(
       NOTREACHED();
       return nullptr;
   }
-}
-
-bool ChromePageInfoDelegate::HasContentSettingChangedViaPageInfo(
-    ContentSettingsType type) {
-  return GetTabSpecificContentSettings()->HasContentSettingChangedViaPageInfo(
-      type);
-}
-
-void ChromePageInfoDelegate::ContentSettingChangedViaPageInfo(
-    ContentSettingsType type) {
-  GetTabSpecificContentSettings()->ContentSettingChangedViaPageInfo(type);
-}
-
-const browsing_data::LocalSharedObjectsContainer&
-ChromePageInfoDelegate::GetAllowedObjects(const GURL& site_url) {
-  return GetTabSpecificContentSettings()->allowed_local_shared_objects();
-}
-
-const browsing_data::LocalSharedObjectsContainer&
-ChromePageInfoDelegate::GetBlockedObjects(const GURL& site_url) {
-  return GetTabSpecificContentSettings()->blocked_local_shared_objects();
-}
-
-int ChromePageInfoDelegate::GetFirstPartyAllowedCookiesCount(
-    const GURL& site_url) {
-  return GetAllowedObjects(site_url).GetObjectCountForDomain(site_url);
-}
-
-int ChromePageInfoDelegate::GetFirstPartyBlockedCookiesCount(
-    const GURL& site_url) {
-  return GetBlockedObjects(site_url).GetObjectCountForDomain(site_url);
-}
-
-int ChromePageInfoDelegate::GetThirdPartyAllowedCookiesCount(
-    const GURL& site_url) {
-  return GetAllowedObjects(site_url).GetObjectCount() -
-         GetFirstPartyAllowedCookiesCount(site_url);
-}
-
-int ChromePageInfoDelegate::GetThirdPartyBlockedCookiesCount(
-    const GURL& site_url) {
-  return GetBlockedObjects(site_url).GetObjectCount() -
-         GetFirstPartyBlockedCookiesCount(site_url);
 }
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
@@ -239,6 +184,13 @@ ChromePageInfoDelegate::GetVisibleSecurityState() {
   auto* helper = SecurityStateTabHelper::FromWebContents(web_contents_);
   DCHECK(helper);
   return *helper->GetVisibleSecurityState();
+}
+
+std::unique_ptr<content_settings::TabSpecificContentSettings::Delegate>
+ChromePageInfoDelegate::GetTabSpecificContentSettingsDelegate() {
+  auto delegate = std::make_unique<chrome::TabSpecificContentSettingsDelegate>(
+      web_contents_);
+  return std::move(delegate);
 }
 
 void ChromePageInfoDelegate::SetSecurityStateForTests(

@@ -1319,7 +1319,10 @@ group("extra_resources") {
   }
 
   if (!is_android && !is_chromeos) {
-    public_deps += [ "//chrome/browser/resources:welcome_resources" ]
+    public_deps += [
+      "//chrome/browser/resources:profile_picker_resources",
+      "//chrome/browser/resources:welcome_resources",
+    ]
   }
 
   if (enable_extensions) {

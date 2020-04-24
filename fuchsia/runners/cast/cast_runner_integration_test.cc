@@ -59,7 +59,6 @@ constexpr char kTestServerRoot[] =
 constexpr char kDummyAgentUrl[] =
     "fuchsia-pkg://fuchsia.com/dummy_agent#meta/dummy_agent.cmx";
 
-
 // Helper used to ensure that cr_fuchsia::RegisterFuchsiaDirScheme() is called
 // once per process to register fuchsia-dir scheme. In cast_runner this function
 // is called in main.cc, but that code is not executed in
@@ -328,9 +327,11 @@ class CastRunnerIntegrationTest : public testing::Test {
     url_request_rewrite_rules_provider_ =
         std::make_unique<FakeUrlRequestRewriteRulesProvider>();
     component_context_ = std::make_unique<cr_fuchsia::FakeComponentContext>(
-        base::BindRepeating(&CastRunnerIntegrationTest::OnComponentConnect,
-                            base::Unretained(this)),
         &component_services_, component_url);
+    component_context_->RegisterCreateComponentStateCallback(
+        FakeApplicationConfigManager::kFakeAgentUrl,
+        base::BindRepeating(&CastRunnerIntegrationTest::OnComponentConnect,
+                            base::Unretained(this)));
   }
 
   void StartCastComponent(base::StringPiece component_url) {
@@ -555,7 +556,7 @@ TEST_F(CastRunnerIntegrationTest, IncorrectCastAppId) {
   });
   run_loop.Run();
 
-  EXPECT_FALSE(component_state_->api_bindings_has_clients());
+  EXPECT_TRUE(!component_state_);
 }
 
 TEST_F(CastRunnerIntegrationTest, UrlRequestRewriteRulesProvider) {
@@ -672,28 +673,35 @@ TEST_F(CastRunnerIntegrationTest, ApplicationConfigAgentUrl) {
   auto component_url = base::StringPrintf("cast:%s", kTestAppId);
   CreateComponentContext(component_url);
   EXPECT_NE(component_context_, nullptr);
+
+  base::RunLoop run_loop;
+  FakeComponentState* dummy_component_state = nullptr;
   component_context_->RegisterCreateComponentStateCallback(
       kDummyAgentUrl,
       base::BindLambdaForTesting(
           [&](base::StringPiece component_url)
               -> std::unique_ptr<cr_fuchsia::AgentImpl::ComponentStateBase> {
-            return std::make_unique<FakeComponentState>(
+            run_loop.Quit();
+            auto result = std::make_unique<FakeComponentState>(
                 component_url, &app_config_manager_, &dummy_agent_api_bindings,
                 &dummy_url_request_rewrite_rules_provider);
+            dummy_component_state = result.get();
+            return result;
           }));
 
   StartCastComponent(component_url);
-  WaitComponentState();
 
-  base::RunLoop().RunUntilIdle();
+  // Wait for the component state to be created.
+  run_loop.Run();
 
-  // Validate that the correct bindings were requested.
-  EXPECT_FALSE(component_state_->api_bindings_has_clients());
-  // Validate that the correct rewrite rules were requested.
-  EXPECT_FALSE(component_state_->url_request_rules_provider_has_clients());
+  // Validate that the component state in the default agent wasn't crated.
+  EXPECT_FALSE(component_state_);
 
   // Shutdown component before destroying dummy_agent_api_bindings.
-  ShutdownComponent();
+  base::RunLoop shutdown_run_loop;
+  dummy_component_state->set_on_delete(shutdown_run_loop.QuitClosure());
+  component_controller_.Unbind();
+  shutdown_run_loop.Run();
 }
 
 // Test that when RewriteRules are not provided, a WebComponent is still
@@ -720,29 +728,34 @@ TEST_F(CastRunnerIntegrationTest, ApplicationConfigAgentUrlRewriteOptional) {
 
   auto component_url = base::StringPrintf("cast:%s", kTestAppId);
   CreateComponentContext(component_url);
-  EXPECT_NE(component_context_, nullptr);
+  base::RunLoop run_loop;
+  FakeComponentState* dummy_component_state = nullptr;
   component_context_->RegisterCreateComponentStateCallback(
       kDummyAgentUrl,
       base::BindLambdaForTesting(
           [&](base::StringPiece component_url)
               -> std::unique_ptr<cr_fuchsia::AgentImpl::ComponentStateBase> {
-            return std::make_unique<FakeComponentState>(
+            run_loop.Quit();
+            auto result = std::make_unique<FakeComponentState>(
                 component_url, &app_config_manager_, &dummy_agent_api_bindings,
                 nullptr);
+            dummy_component_state = result.get();
+            return result;
           }));
 
   StartCastComponent(component_url);
-  WaitComponentState();
 
-  base::RunLoop().RunUntilIdle();
+  // Wait for the component state to be created.
+  run_loop.Run();
 
-  // Validate that the primary agent didn't provide API bindings.
-  EXPECT_FALSE(component_state_->api_bindings_has_clients());
-  // Validate that the primary agent didn't provide its RewriteRules.
-  EXPECT_FALSE(component_state_->url_request_rules_provider_has_clients());
+  // Validate that the component state in the default agent wasn't crated.
+  EXPECT_FALSE(component_state_);
 
   // Shutdown component before destroying dummy_agent_api_bindings.
-  ShutdownComponent();
+  base::RunLoop shutdown_run_loop;
+  dummy_component_state->set_on_delete(shutdown_run_loop.QuitClosure());
+  component_controller_.Unbind();
+  shutdown_run_loop.Run();
 }
 
 TEST_F(CastRunnerIntegrationTest, MicrophoneRedirect) {

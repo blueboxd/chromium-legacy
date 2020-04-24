@@ -41,7 +41,8 @@ class EventHandler {
   void RemoveObserver(const Observer* observer);
 
  private:
-  base::ReentrantObserverList<Observer> observers_;
+  base::ReentrantObserverList<Observer> observers_{
+      base::ObserverListPolicy::EXISTING_ONLY};
   DISALLOW_COPY_AND_ASSIGN(EventHandler);
 };
 

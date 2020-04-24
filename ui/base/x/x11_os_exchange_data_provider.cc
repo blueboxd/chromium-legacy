@@ -84,14 +84,6 @@ SelectionFormatMap XOSExchangeDataProvider::GetFormatMap() const {
   return selection_owner_.selection_format_map();
 }
 
-#if defined(USE_OZONE)
-std::unique_ptr<OSExchangeDataProvider> XOSExchangeDataProvider::Clone() const {
-  std::unique_ptr<XOSExchangeDataProvider> ret(new XOSExchangeDataProvider());
-  ret->set_format_map(format_map());
-  return std::move(ret);
-}
-#endif
-
 void XOSExchangeDataProvider::MarkOriginatedFromRenderer() {
   std::string empty;
   format_map_.Insert(gfx::GetAtom(kRendererTaint),
@@ -214,9 +206,10 @@ bool XOSExchangeDataProvider::GetString(base::string16* result) const {
   return false;
 }
 
-bool XOSExchangeDataProvider::GetURLAndTitle(FilenameToURLPolicy policy,
-                                             GURL* url,
-                                             base::string16* title) const {
+bool XOSExchangeDataProvider::GetURLAndTitle(
+    OSExchangeData::FilenameToURLPolicy policy,
+    GURL* url,
+    base::string16* title) const {
   std::vector<Atom> url_atoms = ui::GetURLAtomsFrom();
   std::vector<Atom> requested_types;
   GetAtomIntersection(url_atoms, GetTargets(), &requested_types);
@@ -248,7 +241,8 @@ bool XOSExchangeDataProvider::GetURLAndTitle(FilenameToURLPolicy policy,
       std::vector<std::string> tokens = ui::ParseURIList(data);
       for (const std::string& token : tokens) {
         GURL test_url(token);
-        if (!test_url.SchemeIsFile() || policy == CONVERT_FILENAMES) {
+        if (!test_url.SchemeIsFile() ||
+            policy == OSExchangeData::CONVERT_FILENAMES) {
           *url = test_url;
           *title = base::string16();
           return true;
@@ -316,7 +310,8 @@ bool XOSExchangeDataProvider::HasString() const {
   return !requested_types.empty() && !HasFile();
 }
 
-bool XOSExchangeDataProvider::HasURL(FilenameToURLPolicy policy) const {
+bool XOSExchangeDataProvider::HasURL(
+    OSExchangeData::FilenameToURLPolicy policy) const {
   std::vector<Atom> url_atoms = ui::GetURLAtomsFrom();
   std::vector<Atom> requested_types;
   GetAtomIntersection(url_atoms, GetTargets(), &requested_types);
@@ -334,7 +329,8 @@ bool XOSExchangeDataProvider::HasURL(FilenameToURLPolicy policy) const {
     } else if (data.GetType() == gfx::GetAtom(ui::kMimeTypeURIList)) {
       std::vector<std::string> tokens = ui::ParseURIList(data);
       for (const std::string& token : tokens) {
-        if (!GURL(token).SchemeIsFile() || policy == CONVERT_FILENAMES)
+        if (!GURL(token).SchemeIsFile() ||
+            policy == OSExchangeData::CONVERT_FILENAMES)
           return true;
       }
 

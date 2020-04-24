@@ -50,6 +50,7 @@ class ClientAndroid : public Client,
       const base::android::JavaParamRef<jstring>& jcaller_account,
       const base::android::JavaParamRef<jobjectArray>& parameter_names,
       const base::android::JavaParamRef<jobjectArray>& parameter_values,
+      jboolean jis_cct,
       const base::android::JavaParamRef<jobject>& jonboarding_coordinator,
       jboolean jonboarding_shown,
       jlong jservice);

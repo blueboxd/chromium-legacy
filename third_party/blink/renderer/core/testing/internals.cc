@@ -200,6 +200,8 @@ using ui::mojom::ImeTextSpanUnderlineStyle;
 
 namespace {
 
+std::unique_ptr<ScopedMockOverlayScrollbars> g_mock_overlay_scrollbars;
+
 class UseCounterHelperObserverImpl final : public UseCounterHelper::Observer {
  public:
   UseCounterHelperObserverImpl(ScriptPromiseResolver* resolver,
@@ -270,15 +272,9 @@ static ScrollableArea* ScrollableAreaForNode(Node* node) {
   return ToLayoutBox(layout_object)->GetScrollableArea();
 }
 
-static RuntimeEnabledFeatures::Backup* g_s_features_backup = nullptr;
-static std::unique_ptr<ScopedMockOverlayScrollbars> g_s_mock_overlay_scrollbars;
-
 void Internals::ResetToConsistentState(Page* page) {
   DCHECK(page);
 
-  if (!g_s_features_backup)
-    g_s_features_backup = new RuntimeEnabledFeatures::Backup;
-  g_s_features_backup->Restore();
   page->SetIsCursorVisible(true);
   // Ensure the PageScaleFactor always stays within limits, if the test changed
   // the limits. BlinkTestRunner will reset the limits to those set by
@@ -312,7 +308,7 @@ void Internals::ResetToConsistentState(Page* page) {
       OverrideCapsLockState::kDefault);
 
   IntersectionObserver::SetThrottleDelayEnabledForTesting(true);
-  g_s_mock_overlay_scrollbars.reset();
+  g_mock_overlay_scrollbars.reset();
 }
 
 Internals::Internals(ExecutionContext* context)
@@ -3534,7 +3530,8 @@ String Internals::getAgentId(DOMWindow* window) {
 }
 
 void Internals::useMockOverlayScrollbars() {
-  g_s_mock_overlay_scrollbars.reset(new ScopedMockOverlayScrollbars(true));
+  g_mock_overlay_scrollbars =
+      std::make_unique<ScopedMockOverlayScrollbars>(true);
 }
 
 bool Internals::overlayScrollbarsEnabled() const {

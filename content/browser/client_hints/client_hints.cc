@@ -27,6 +27,7 @@
 #include "net/base/url_util.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/nqe/network_quality_estimator_params.h"
+#include "services/network/public/cpp/client_hints.h"
 #include "services/network/public/cpp/network_quality_tracker.h"
 #include "third_party/blink/public/common/client_hints/client_hints.h"
 #include "third_party/blink/public/common/device_memory/approximated_device_memory.h"
@@ -589,6 +590,52 @@ void AddNavigationRequestClientHintsHeaders(
   // headers stay attached to the redirected request. Consider removing/adding
   // the client hints headers if the request is redirected with a change in
   // scheme or a change in the origin.
+}
+
+void PersistAcceptCHAfterNagivationRequestRedirect(
+    const GURL& url,
+    const ::network::mojom::ParsedHeadersPtr& headers,
+    BrowserContext* context,
+    bool javascript_enabled,
+    ClientHintsControllerDelegate* delegate,
+    FrameTreeNode* frame_tree_node) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(context);
+  DCHECK(headers);
+
+  if (!headers->accept_ch)
+    return;
+
+  if (!IsValidURLForClientHints(url))
+    return;
+
+  // Client hints should only be enabled when JavaScript is enabled. Platforms
+  // which enable/disable JavaScript on a per-origin basis should implement
+  // IsJavaScriptAllowed to check a given origin. Other platforms (Android
+  // WebView) enable/disable JavaScript on a per-View basis, using the
+  // WebPreferences setting.
+  if (!delegate->IsJavaScriptAllowed(url) || !javascript_enabled)
+    return;
+
+  // Only the main frame should parse accept-CH.
+  if (!frame_tree_node->IsMainFrame())
+    return;
+
+  // TODO(morlovich): No browser-side knowledge on what permit_lang_hints should
+  // be, so this is failing shut for now.
+  base::Optional<std::vector<network::mojom::WebClientHintsType>> parsed =
+      blink::FilterAcceptCH(headers->accept_ch.value(),
+                            false /* permit_lang_hints */,
+                            UserAgentClientHintEnabled());
+  if (!parsed.has_value())
+    return;
+
+  // JSON cannot store "non-finite" values (i.e. NaN or infinite) so
+  // base::TimeDelta::Max cannot be used. As accept-ch-lifetime will be removed
+  // once the FeaturePolicyForClientHints feature is shipped, a reasonably large
+  // value was chosen instead.
+  delegate->PersistClientHints(url::Origin::Create(url), parsed.value(),
+                               base::TimeDelta::FromDays(1000000));
 }
 
 }  // namespace content

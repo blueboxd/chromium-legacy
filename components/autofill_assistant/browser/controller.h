@@ -100,6 +100,7 @@ class Controller : public ScriptExecutorDelegate,
   const ClientSettings& GetSettings() override;
   const GURL& GetCurrentURL() override;
   const GURL& GetDeeplinkURL() override;
+  const GURL& GetScriptURL() override;
   Service* GetService() override;
   WebController* GetWebController() override;
   const TriggerContext* GetTriggerContext() override;
@@ -326,12 +327,12 @@ class Controller : public ScriptExecutorDelegate,
   AutofillAssistantState state_ = AutofillAssistantState::INACTIVE;
 
   // The URL passed to Start(). Used only as long as there's no committed URL.
-  // Note that this is the deeplink passed by a caller and reported to the
-  // backend in an initial get action request.
+  // Note that this is the deeplink passed by a caller.
   GURL deeplink_url_;
 
-  // Domain of the last URL the controller requested scripts from.
-  std::string script_domain_;
+  // The last URL the controller requested scripts from. Note that this is
+  // reported to the backend in an initial get action request.
+  GURL script_url_;
 
   // Whether a task for periodic checks is scheduled.
   bool periodic_script_check_scheduled_ = false;
@@ -440,8 +441,8 @@ class Controller : public ScriptExecutorDelegate,
   std::vector<base::OnceCallback<void()>> on_has_run_first_check_;
 
   // If set, the controller entered the STOPPED state but shutdown was delayed
-  // until the browser has left the |script_domain_| for which the decision was
-  // taken.
+  // until the browser has left the |script_url_.host()| for which the decision
+  // was taken.
   base::Optional<Metrics::DropOutReason> delayed_shutdown_reason_;
 
   EventHandler event_handler_;

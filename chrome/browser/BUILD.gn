@@ -5402,12 +5402,6 @@ jumbo_static_library("browser") {
       "supervised_user/supervised_user_service_management_api_delegate.h",
     ]
   }
-  if (is_chromeos) {
-    sources += [
-      "supervised_user/child_accounts/secondary_account_consent_logger.cc",
-      "supervised_user/child_accounts/secondary_account_consent_logger.h",
-    ]
-  }
 
   if (enable_vr) {
     if (enable_gvr_services) {

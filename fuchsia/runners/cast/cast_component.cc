@@ -27,9 +27,6 @@ constexpr int kRewriteRulesProviderDisconnectExitCode = 130;
 
 }  // namespace
 
-const char CastComponent::kAgentComponentUrl[] =
-    "fuchsia-pkg://fuchsia.com/cast_agent#meta/cast_agent.cmx";
-
 CastComponent::Params::Params() = default;
 CastComponent::Params::Params(Params&&) = default;
 CastComponent::Params::~Params() = default;
@@ -108,7 +105,7 @@ void CastComponent::StartComponent() {
   application_controller_ = std::make_unique<ApplicationControllerImpl>(
       frame(),
       agent_manager_->ConnectToAgentService<chromium::cast::ApplicationContext>(
-          kAgentComponentUrl));
+          application_config_.agent_url()));
 
   // Pass application permissions to the frame.
   std::string origin = GURL(application_config_.web_url()).GetOrigin().spec();

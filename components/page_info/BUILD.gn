@@ -15,6 +15,7 @@ static_library("page_info") {
   deps = [
     "//base",
     "//components/browsing_data/content",
+    "//components/content_settings/browser",
     "//components/content_settings/core/browser",
     "//components/password_manager/core/browser",
     "//components/permissions",

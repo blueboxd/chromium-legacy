@@ -59,6 +59,7 @@ void PushPullFIFO::Push(const AudioBus* input_bus) {
                "input_bus length", input_bus->length());
 
   MutexLocker locker(lock_);
+  TRACE_EVENT0("webaudio", "PushPullFIFO::Push under lock");
 
   CHECK(input_bus);
   CHECK_EQ(input_bus->length(), audio_utilities::kRenderQuantumFrames);
@@ -87,7 +88,7 @@ void PushPullFIFO::Push(const AudioBus* input_bus) {
   // Update the write index; wrap it around if necessary.
   index_write_ = (index_write_ + input_bus_length) % fifo_length_;
 
-  // In case of overflow, move the |index_read_| to the updated |index_write_|
+  // In case of overflow, move the |index_read_| to the ipdated |index_write_|
   // to avoid reading overwritten frames by the next pull.
   if (input_bus_length > fifo_length_ - frames_available_) {
     index_read_ = index_write_;
@@ -114,6 +115,7 @@ size_t PushPullFIFO::Pull(AudioBus* output_bus, size_t frames_requested) {
                "frames_requested", frames_requested);
 
   MutexLocker locker(lock_);
+  TRACE_EVENT0("webaudio", "PushPullFIFO::Pull under lock");
 
 #if defined(OS_ANDROID)
   if (!output_bus) {
@@ -172,6 +174,8 @@ size_t PushPullFIFO::Pull(AudioBus* output_bus, size_t frames_requested) {
     // The frames available was not enough to fulfill the requested frames. Fill
     // the rest of the channel with silence.
     if (frames_requested > frames_to_fill) {
+      TRACE_EVENT1("webaudio", "PushPullFIFO::Pull underrun", "missing frames",
+                   frames_requested - frames_to_fill);
       memset(output_bus_channel + frames_to_fill, 0,
              (frames_requested - frames_to_fill) * sizeof(*output_bus_channel));
     }

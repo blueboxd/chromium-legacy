@@ -169,6 +169,7 @@ void TranslateInfoBarDelegate::RevertTranslation() {
 
 void TranslateInfoBarDelegate::RevertWithoutClosingInfobar() {
   ui_delegate_.RevertTranslation();
+  step_ = TRANSLATE_STEP_BEFORE_TRANSLATE;
 }
 
 void TranslateInfoBarDelegate::ReportLanguageDetectionError() {

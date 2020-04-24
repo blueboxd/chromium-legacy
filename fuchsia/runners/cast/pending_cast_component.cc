@@ -44,21 +44,6 @@ PendingCastComponent::PendingCastComponent(
   // API and remove the AgentManager.
   params_.agent_manager = std::make_unique<cr_fuchsia::AgentManager>(
       params_.startup_context->component_context()->svc().get());
-
-  // Connect to the component-specific ApplicationContext to retrieve the
-  // media-session identifier assigned to this instance.
-  application_context_ =
-      params_.agent_manager
-          ->ConnectToAgentService<chromium::cast::ApplicationContext>(
-              CastComponent::kAgentComponentUrl);
-  application_context_.set_error_handler([this](zx_status_t status) {
-    ZX_LOG(ERROR, status) << "ApplicationContext disconnected.";
-    delegate_->CancelPendingComponent(this);
-  });
-  application_context_->GetMediaSessionId([this](uint64_t session_id) {
-    params_.media_session_id = session_id;
-    MaybeLaunchComponent();
-  });
 }
 
 PendingCastComponent::~PendingCastComponent() = default;
@@ -113,6 +98,21 @@ void PendingCastComponent::OnApplicationConfigReceived(
         params_.initial_url_rewrite_rules.emplace(std::move(rewrite_rules));
         MaybeLaunchComponent();
       });
+
+  // Connect to the component-specific ApplicationContext to retrieve the
+  // media-session identifier assigned to this instance.
+  application_context_ =
+      params_.agent_manager
+          ->ConnectToAgentService<chromium::cast::ApplicationContext>(
+              params_.application_config.agent_url());
+  application_context_.set_error_handler([this](zx_status_t status) {
+    ZX_LOG(ERROR, status) << "ApplicationContext disconnected.";
+    delegate_->CancelPendingComponent(this);
+  });
+  application_context_->GetMediaSessionId([this](uint64_t session_id) {
+    params_.media_session_id = session_id;
+    MaybeLaunchComponent();
+  });
 }
 
 void PendingCastComponent::OnApiBindingsInitialized() {

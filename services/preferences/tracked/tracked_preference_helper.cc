@@ -125,15 +125,3 @@ void TrackedPreferenceHelper::ReportAction(ResetAction reset_action) const {
       break;
   }
 }
-
-void TrackedPreferenceHelper::ReportSplitPreferenceChangedCount(
-    size_t count) const {
-  // The histogram below is an expansion of the UMA_HISTOGRAM_COUNTS_100 macro
-  // adapted to allow for a dynamically suffixed histogram name.
-  // Note: The factory creates and owns the histogram.
-  base::HistogramBase* histogram = base::LinearHistogram::FactoryGet(
-      user_prefs::tracked::kTrackedSplitPrefHistogramChanged + pref_path_, 1,
-      100,  // Allow counts up to 100.
-      101, base::HistogramBase::kUmaTargetedHistogramFlag);
-  histogram->Add(count);
-}

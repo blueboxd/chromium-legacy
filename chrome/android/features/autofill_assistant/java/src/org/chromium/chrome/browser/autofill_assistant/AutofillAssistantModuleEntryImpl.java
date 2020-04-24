@@ -30,12 +30,14 @@ public class AutofillAssistantModuleEntryImpl implements AutofillAssistantModule
     public void start(BottomSheetController bottomSheetController,
             ChromeFullscreenManager fullscreenManager, CompositorViewHolder compositorViewHolder,
             ScrimView scrimView, Context context, @NonNull WebContents webContents,
-            boolean skipOnboarding, @NonNull String initialUrl, Map<String, String> parameters,
-            String experimentIds, @Nullable String callerAccount, @Nullable String userName) {
+            boolean skipOnboarding, boolean isChromeCustomTab, @NonNull String initialUrl,
+            Map<String, String> parameters, String experimentIds, @Nullable String callerAccount,
+            @Nullable String userName) {
         if (skipOnboarding) {
             AutofillAssistantMetrics.recordOnBoarding(OnBoarding.OB_NOT_SHOWN);
             AutofillAssistantClient.fromWebContents(webContents)
                     .start(initialUrl, parameters, experimentIds, callerAccount, userName,
+                            isChromeCustomTab,
                             /* onboardingCoordinator= */ null);
             return;
         }
@@ -48,7 +50,7 @@ public class AutofillAssistantModuleEntryImpl implements AutofillAssistantModule
 
             AutofillAssistantClient.fromWebContents(webContents)
                     .start(initialUrl, parameters, experimentIds, callerAccount, userName,
-                            onboardingCoordinator);
+                            isChromeCustomTab, onboardingCoordinator);
         });
     }
 

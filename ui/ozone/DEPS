@@ -9,8 +9,6 @@ include_rules = [
   "+ui/display",
   "+ui/events",
   "+ui/base/clipboard/clipboard_buffer.h",
-  "+ui/base/dragdrop/os_exchange_data.h",
-  "+ui/base/dragdrop/os_exchange_data_provider_factory.h",
   "+ui/base/cursor",
   "+ui/gfx",
   "+ui/gl",

@@ -288,6 +288,7 @@ extern const char kChromeUIDiscardsHost[];
 extern const char kChromeUIDiscardsURL[];
 extern const char kChromeUIHatsHost[];
 extern const char kChromeUIHatsURL[];
+extern const char kChromeUIProfilePickerHost[];
 
 #endif
 

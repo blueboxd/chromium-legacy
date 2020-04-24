@@ -156,7 +156,7 @@ class WebDragSourceAura : public NotificationObserver {
 // Fill out the OSExchangeData with a file contents, synthesizing a name if
 // necessary.
 void PrepareDragForFileContents(const DropData& drop_data,
-                                ui::OSExchangeDataProvider* provider) {
+                                ui::OSExchangeData::Provider* provider) {
   base::Optional<base::FilePath> filename =
       drop_data.GetSafeFilenameForImageFileContents();
   if (filename)
@@ -165,9 +165,10 @@ void PrepareDragForFileContents(const DropData& drop_data,
 #endif
 
 #if defined(OS_WIN)
-void PrepareDragForDownload(const DropData& drop_data,
-                            ui::OSExchangeDataProvider* provider,
-                            WebContentsImpl* web_contents) {
+void PrepareDragForDownload(
+    const DropData& drop_data,
+    ui::OSExchangeData::Provider* provider,
+    WebContentsImpl* web_contents) {
   const GURL& page_url = web_contents->GetLastCommittedURL();
   const std::string& page_encoding = web_contents->GetEncoding();
 
@@ -214,8 +215,8 @@ void PrepareDragForDownload(const DropData& drop_data,
       download_path, base::File(), download_url,
       Referrer(page_url, drop_data.referrer_policy), page_encoding,
       web_contents);
-  ui::DownloadFileInfo file_download(base::FilePath(),
-                                     std::move(download_file));
+  ui::OSExchangeData::DownloadFileInfo file_download(base::FilePath(),
+                                                     std::move(download_file));
   provider->SetDownloadFileInfo(&file_download);
 }
 #endif  // defined(OS_WIN)
@@ -229,7 +230,7 @@ const ui::ClipboardFormatType& GetFileSystemFileFormatType() {
 
 // Utility to fill a ui::OSExchangeDataProvider object from DropData.
 void PrepareDragData(const DropData& drop_data,
-                     ui::OSExchangeDataProvider* provider,
+                     ui::OSExchangeData::Provider* provider,
                      WebContentsImpl* web_contents) {
   provider->MarkOriginatedFromRenderer();
 #if defined(OS_WIN)
@@ -314,7 +315,8 @@ void PrepareDropData(DropData* drop_data, const ui::OSExchangeData& data) {
 
   GURL url;
   base::string16 url_title;
-  data.GetURLAndTitle(ui::DO_NOT_CONVERT_FILENAMES, &url, &url_title);
+  data.GetURLAndTitle(
+      ui::OSExchangeData::DO_NOT_CONVERT_FILENAMES, &url, &url_title);
   if (url.is_valid()) {
     drop_data->url = url;
     drop_data->url_title = url_title;
@@ -1069,7 +1071,7 @@ void WebContentsViewAura::StartDragging(
   ui::TouchSelectionController* selection_controller = GetSelectionController();
   if (selection_controller)
     selection_controller->HideAndDisallowShowingAutomatically();
-  std::unique_ptr<ui::OSExchangeDataProvider> provider =
+  std::unique_ptr<ui::OSExchangeData::Provider> provider =
       ui::OSExchangeDataProviderFactory::CreateProvider();
   PrepareDragData(drop_data, provider.get(), web_contents_);
 

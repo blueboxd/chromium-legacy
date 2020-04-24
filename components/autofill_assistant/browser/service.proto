@@ -346,7 +346,7 @@ message InitialScriptActionsRequestProto {
     // The backend expects the |script_path| to be a repeated field. This field
     // is expected to contain only one element.
     repeated string script_path = 1;
-    // The exact URL on which the script is triggered.
+    // The exact URL on which the script was initially started.
     optional string url = 2;
     optional PolicyType policy = 3;
   }

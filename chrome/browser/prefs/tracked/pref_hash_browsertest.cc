@@ -895,16 +895,10 @@ class PrefHashBrowserTestChangedSplitPref : public PrefHashBrowserTestBase {
   }
 
   void VerifyReactionToPrefAttack() override {
-    // Expect a single split pref changed report with a count of 2 for tracked
-    // pref #5 (extensions).
     EXPECT_EQ(protection_level_ > PROTECTION_DISABLED_ON_PLATFORM ? 1 : 0,
               GetTrackedPrefHistogramCount(
                   user_prefs::tracked::kTrackedPrefHistogramChanged,
                   BEGIN_ALLOW_SINGLE_BUCKET + 5));
-    EXPECT_EQ(protection_level_ > PROTECTION_DISABLED_ON_PLATFORM ? 1 : 0,
-              GetTrackedPrefHistogramCount(
-                  "Settings.TrackedSplitPreferenceChanged.extensions.settings",
-                  BEGIN_ALLOW_SINGLE_BUCKET + 2));
 
     // Everything else should have remained unchanged.
     EXPECT_EQ(

@@ -13,6 +13,8 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/testing_pref_service.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/ui/activity_services/activities/bookmark_activity.h"
@@ -53,6 +55,7 @@
                                      FindInPageCommands,
                                      QRGenerationCommands>)commandHandler
                    bookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
+                     prefService:(PrefService*)prefService
                 canSendTabToSelf:(BOOL)canSendTabToSelf;
 
 - (void)shareDidComplete:(ShareTo::ShareResult)shareStatus
@@ -261,6 +264,7 @@ class ActivityServiceControllerTest : public PlatformTest {
 
   base::test::ScopedFeatureList scoped_features_;
   web::WebTaskEnvironment task_environment_;
+  TestingPrefServiceSimple pref_service_;
   UIViewController* parentController_;
   ShareToData* shareData_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
@@ -320,6 +324,7 @@ TEST_F(ActivityServiceControllerTest, ApplicationActivitiesForData) {
       [activityController applicationActivitiesForData:data
                                         commandHandler:nil
                                          bookmarkModel:bookmark_model_
+                                           prefService:&pref_service_
                                       canSendTabToSelf:false];
   ASSERT_EQ(5U, [items count]);
   EXPECT_TRUE(ArrayContainsObjectOfClass(items, [PrintActivity class]));
@@ -337,6 +342,7 @@ TEST_F(ActivityServiceControllerTest, ApplicationActivitiesForData) {
   items = [activityController applicationActivitiesForData:data
                                             commandHandler:nil
                                              bookmarkModel:bookmark_model_
+                                               prefService:&pref_service_
                                           canSendTabToSelf:false];
   EXPECT_EQ(4U, [items count]);
   EXPECT_FALSE(ArrayContainsObjectOfClass(items, [PrintActivity class]));
@@ -363,6 +369,7 @@ TEST_F(ActivityServiceControllerTest, HTTPActivities) {
       [activityController applicationActivitiesForData:data
                                         commandHandler:nil
                                          bookmarkModel:bookmark_model_
+                                           prefService:&pref_service_
                                       canSendTabToSelf:false];
   ASSERT_EQ(6U, [items count]);
 
@@ -378,6 +385,7 @@ TEST_F(ActivityServiceControllerTest, HTTPActivities) {
   items = [activityController applicationActivitiesForData:data
                                             commandHandler:nil
                                              bookmarkModel:bookmark_model_
+                                               prefService:&pref_service_
                                           canSendTabToSelf:false];
   ASSERT_EQ(2U, [items count]);
 }
@@ -402,6 +410,7 @@ TEST_F(ActivityServiceControllerTest, BookmarkActivities) {
       [activityController applicationActivitiesForData:data
                                         commandHandler:nil
                                          bookmarkModel:bookmark_model_
+                                           prefService:&pref_service_
                                       canSendTabToSelf:false];
   ASSERT_EQ(5U, [items count]);
   UIActivity* activity = [items objectAtIndex:2];
@@ -428,6 +437,7 @@ TEST_F(ActivityServiceControllerTest, BookmarkActivities) {
   items = [activityController applicationActivitiesForData:data
                                             commandHandler:nil
                                              bookmarkModel:bookmark_model_
+                                               prefService:&pref_service_
                                           canSendTabToSelf:false];
   ASSERT_EQ(5U, [items count]);
   activity = [items objectAtIndex:2];
@@ -461,6 +471,7 @@ TEST_F(ActivityServiceControllerTest, RequestMobileDesktopSite) {
       [activityController applicationActivitiesForData:data
                                         commandHandler:mockBrowserCommandHandler
                                          bookmarkModel:bookmark_model_
+                                           prefService:&pref_service_
                                       canSendTabToSelf:false];
   ASSERT_EQ(6U, [items count]);
   UIActivity* activity = [items objectAtIndex:4];
@@ -487,6 +498,7 @@ TEST_F(ActivityServiceControllerTest, RequestMobileDesktopSite) {
       [activityController applicationActivitiesForData:data
                                         commandHandler:mockBrowserCommandHandler
                                          bookmarkModel:bookmark_model_
+                                           prefService:&pref_service_
                                       canSendTabToSelf:false];
   ASSERT_EQ(6U, [items count]);
   activity = [items objectAtIndex:4];
@@ -576,6 +588,7 @@ TEST_F(ActivityServiceControllerTest, FindInPageActivity) {
       [activityController applicationActivitiesForData:data
                                         commandHandler:nil
                                          bookmarkModel:bookmark_model_
+                                           prefService:&pref_service_
                                       canSendTabToSelf:false];
   ASSERT_EQ(5U, [items count]);
   EXPECT_TRUE(ArrayContainsObjectOfClass(items, [FindInPageActivity class]));
@@ -593,6 +606,7 @@ TEST_F(ActivityServiceControllerTest, FindInPageActivity) {
   items = [activityController applicationActivitiesForData:data
                                             commandHandler:nil
                                              bookmarkModel:bookmark_model_
+                                               prefService:&pref_service_
                                           canSendTabToSelf:false];
   EXPECT_EQ(4U, [items count]);
   EXPECT_FALSE(ArrayContainsObjectOfClass(items, [FindInPageActivity class]));
@@ -619,6 +633,7 @@ TEST_F(ActivityServiceControllerTest, SendTabToSelfActivity) {
       [activityController applicationActivitiesForData:data
                                         commandHandler:nil
                                          bookmarkModel:bookmark_model_
+                                           prefService:&pref_service_
                                       canSendTabToSelf:true];
   ASSERT_EQ(6U, [items count]);
   EXPECT_TRUE(ArrayContainsObjectOfClass(items, [SendTabToSelfActivity class]));
@@ -641,6 +656,7 @@ TEST_F(ActivityServiceControllerTest, SendTabToSelfActivity) {
   items = [activityController applicationActivitiesForData:data
                                             commandHandler:nil
                                              bookmarkModel:bookmark_model_
+                                               prefService:&pref_service_
                                           canSendTabToSelf:false];
   ASSERT_EQ(5U, [items count]);
   EXPECT_FALSE(
@@ -658,6 +674,7 @@ TEST_F(ActivityServiceControllerTest, SendTabToSelfActivity) {
   items = [activityController applicationActivitiesForData:data
                                             commandHandler:nil
                                              bookmarkModel:bookmark_model_
+                                               prefService:&pref_service_
                                           canSendTabToSelf:true];
   EXPECT_EQ(2U, [items count]);
   EXPECT_FALSE(
@@ -710,6 +727,7 @@ TEST_F(ActivityServiceControllerTest, GenerateQRCodeActivity_FlagEnabled) {
       [activityController applicationActivitiesForData:data
                                         commandHandler:nil
                                          bookmarkModel:bookmark_model_
+                                           prefService:&pref_service_
                                       canSendTabToSelf:false];
 
   // Verify that the QR code activity is present at the right index and has the
